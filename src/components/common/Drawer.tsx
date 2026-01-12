@@ -38,6 +38,13 @@ export default function Drawer({
       <div
         className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            onClose();
+          }
+        }}
       />
 
       {/* DRAWER */}
