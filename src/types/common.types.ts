@@ -47,3 +47,56 @@ export interface SelectOption {
   value: string | number;
   disabled?: boolean;
 }
+
+
+
+
+
+export interface ApiResponse<T = unknown> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  message?: string;
+}
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger'|'save' | 'cancel' | 'add' | 'upload' | 'import' | 'export';
+  size?: 'sm' | 'md' | 'lg';
+  isLoading?: boolean;
+  fullWidth?: boolean;
+}
+export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+  variant?: 'default' | 'bordered' | 'elevated';
+  padding?: 'none' | 'sm' | 'md' | 'lg';
+}
+export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  label?: string;
+  error?: string;
+  helperText?: string;
+  fullWidth?: boolean;
+}
+export interface PageContainerProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export interface SelectOption {
+  label: string;
+  value: string;
+}
+
+
+
+
+export interface TableColumn<T = unknown> {
+  key: keyof T | string;
+  label: string;
+  sortable?: boolean;
+  render?: (value: unknown, row: T) => React.ReactNode;
+}
+export interface SelectProps{
+  name: string;
+  value: string;
+  onChange: (value: string, name: string) => void;
+  placeholder?: string;
+  className?: string;
+}
