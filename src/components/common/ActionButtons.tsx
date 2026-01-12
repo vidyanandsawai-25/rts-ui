@@ -150,7 +150,8 @@ export function ActionButton({
         ${shapeClass}
         ${className}
       `}
-       {...props} // forward remaining props to <button>
+      {/* forward remaining props to <button> */}
+      {...props}
     >
       {/* SHINE EFFECT */}
       {(variant === "edit-icon" || variant === "delete-icon") && (

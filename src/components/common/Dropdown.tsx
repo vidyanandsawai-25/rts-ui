@@ -13,7 +13,7 @@ interface Option {
 interface MultiSelectDropdownProps {
   label?: string;
   options: Option[];
-  value: string[]; // single selected value
+  value: string[]; // selected values
   onChange: (values: string[]) => void;
   placeholder?: string;
   className?: string;

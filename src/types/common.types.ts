@@ -1,7 +1,3 @@
-/**
- * Common TypeScript types used across the application
- */
-
 export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
@@ -47,11 +43,6 @@ export interface SelectOption {
   value: string | number;
   disabled?: boolean;
 }
-
-
-
-
-
 export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
@@ -67,36 +58,4 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: 'default' | 'bordered' | 'elevated';
   padding?: 'none' | 'sm' | 'md' | 'lg';
-}
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label?: string;
-  error?: string;
-  helperText?: string;
-  fullWidth?: boolean;
-}
-export interface PageContainerProps {
-  children: React.ReactNode;
-  className?: string;
-}
-
-export interface SelectOption {
-  label: string;
-  value: string;
-}
-
-
-
-
-export interface TableColumn<T = unknown> {
-  key: keyof T | string;
-  label: string;
-  sortable?: boolean;
-  render?: (value: unknown, row: T) => React.ReactNode;
-}
-export interface SelectProps{
-  name: string;
-  value: string;
-  onChange: (value: string, name: string) => void;
-  placeholder?: string;
-  className?: string;
 }

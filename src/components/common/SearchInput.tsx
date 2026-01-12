@@ -20,7 +20,7 @@ export function SearchInput({
   showClear = true,
 }: SearchInputProps) {
   return (
-    <div className={cn("relative mb-4 w-300", className)}>
+     <div className={cn("relative mb-4 w-[300px]", className)}>
       {/* SEARCH ICON */}
       <MagnifyingGlassIcon
         className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400"

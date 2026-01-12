@@ -34,13 +34,20 @@ export default function Drawer({
 
   return (
     <>
-      {/* BACKDROP */}
+
       <div
         className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            onClose();
+          }
+        }}
       />
 
-      {/* DRAWER */}
+
       <div
         className={`
           fixed top-0 right-0 z-50 h-full
@@ -50,6 +57,10 @@ export default function Drawer({
           flex flex-col
           animate-in slide-in-from-right duration-300
         `}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="drawer-title"
+
       >
         {/* ================= HEADER ================= */}
         <div className="

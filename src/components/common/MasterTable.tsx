@@ -19,6 +19,7 @@ export interface Column<
   headerClassName?: string;
   cellClassName?: string;
 }
+
 export interface MasterTableProps<
   T extends Record<string, unknown> = Record<string, unknown>
 > {
@@ -100,7 +101,9 @@ function buildPagination(current: number, total: number): PageToken[] {
 /* =========================
    MASTER TABLE
 ========================= */
-export function MasterTable<T = any>({
+export function MasterTable<
+  T extends Record<string, unknown> = Record<string, unknown>
+>({
   columns,
   data,
   loading,
@@ -210,7 +213,7 @@ export function MasterTable<T = any>({
                     )}
                   >
                     {columns.map((col) => {
-                      const value = (row as any)?.[col.key];
+                      const value = row[col.key];
                       return (
                         <td
                           key={col.key}
@@ -221,10 +224,7 @@ export function MasterTable<T = any>({
                         >
                           {col.render ? (
                             col.render(value, row, i)
-                          ) : col.isStatus ||
-                            col.key
-                              .toLowerCase()
-                              .includes("status") ? (
+                          ) : col.isStatus ? (
                             <StatusBadge value={value} />
                           ) : (
                             <span className="font-medium">
@@ -310,7 +310,7 @@ export function MasterTable<T = any>({
                     "h-6 min-w-6 px-3 text-sm font-medium bg-gray-100",
                     pageNumber === p
                       ? "bg-[#2563EB] text-white border-[#2563EB]"
-                      : "bg-white border border-[#DCEAFF] text-[#1E3A8A] hover:bg-gray-150"
+                      : "bg-white border border-[#DCEAFF] text-[#1E3A8A] hover:bg-gray-100"
                   )}
                 />
               )

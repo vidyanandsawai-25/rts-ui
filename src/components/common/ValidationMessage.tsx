@@ -53,10 +53,10 @@ export function ValidationMessage({
         config.bg,
         config.border,
         className
-      )}
+       )}
     >
       <Icon size={14} />
-      <span >{message}</span>
+      <span>{message}</span>
     </div>
   );
 }
