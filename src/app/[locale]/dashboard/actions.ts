@@ -68,12 +68,12 @@ export async function createRoute(
       id: String(Date.now()),
       lastUpdate: new Date().toISOString(),
     } as DashboardData;
-    
+
     dashboardRoutes.push(newRoute);
-    
+
     // Revalidate to trigger re-render
     revalidatePath('/dashboard');
-    
+
     return { success: true };
   } catch (error) {
     console.error('Create error:', error);
@@ -89,16 +89,16 @@ export async function createRoute(
 export async function deleteRoute(id: string): Promise<{ success: boolean; error?: string }> {
   try {
     const index = dashboardRoutes.findIndex((route) => route.id === id);
-    
+
     if (index === -1) {
       return { success: false, error: 'Route not found' };
     }
-    
+
     dashboardRoutes.splice(index, 1);
-    
+
     // Revalidate to trigger re-render
     revalidatePath('/dashboard');
-    
+
     return { success: true };
   } catch (error) {
     console.error('Delete error:', error);

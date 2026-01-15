@@ -1,0 +1,76 @@
+{
+  "buttons": {
+    "save": "सहेजें",
+    "cancel": "रद्द करें",
+    "delete": "हटाएं",
+    "edit": "संपादित करें",
+    "close": "बंद करें",
+    "submit": "जमा करें",
+    "add": "जोड़ें",
+    "addRoute": "रूट जोड़ें",
+    "remove": "हटाएं",
+    "confirm": "पुष्टि करें",
+    "back": "पीछे",
+    "next": "आगे"
+  },
+  "actions": {
+    "loading": "लोड हो रहा है...",
+    "saving": "सहेजा जा रहा है...",
+    "deleting": "हटाया जा रहा है...",
+    "adding": "जोड़ा जा रहा है...",
+    "updating": "अपडेट हो रहा है...",
+    "processing": "प्रक्रिया जारी है..."
+  },
+  "validation": {
+    "required": "यह फ़ील्ड आवश्यक है",
+    "invalidEmail": "अमान्य ईमेल पता",
+    "minLength": "कम से कम {count} वर्ण आवश्यक हैं",
+    "maxLength": "अधिकतम {count} वर्ण की अनुमति है",
+    "invalidFormat": "अमान्य प्रारूप"
+  },
+  "errors": {
+    "generic": "कुछ गलत हो गया",
+    "network": "नेटवर्क त्रुटि। कृपया पुनः प्रयास करें",
+    "unauthorized": "आप अधिकृत नहीं हैं",
+    "notFound": "संसाधन नहीं मिला",
+    "serverError": "सर्वर त्रुटि। कृपया बाद में पुनः प्रयास करें",
+    "deleteError": "हटाने में विफल",
+    "createError": "बनाने में विफल",
+    "updateError": "अपडेट करने में विफल"
+  },
+  "status": {
+    "active": "सक्रिय",
+    "inactive": "निष्क्रिय",
+    "pending": "लंबित",
+    "completed": "पूर्ण",
+    "delayed": "विलंबित",
+    "cancelled": "रद्द"
+  },
+  "messages": {
+    "noData": "कोई डेटा उपलब्ध नहीं है",
+    "success": "कार्य सफल",
+    "confirmDelete": "क्या आप वाकई हटाना चाहते हैं?",
+    "unsavedChanges": "आपके पास असहेजे परिवर्तन हैं"
+  },
+  "language": {
+    "select": "भाषा चुनें",
+    "english": "English",
+    "hindi": "हिंदी (Hindi)",
+    "marathi": "मराठी (Marathi)"
+  },
+  "navigation": {
+    "dashboard": "डैशबोर्ड",
+    "profile": "प्रोफ़ाइल",
+    "settings": "सेटिंग्स"
+  },
+  "footer": {
+    "copyright": "सर्वाधिकार सुरक्षित",
+    "privacyPolicy": "गोपनीयता नीति",
+    "termsOfService": "सेवा की शर्तें",
+    "contact": "संपर्क करें"
+  },
+  "app": {
+    "title": "ऐप",
+    "noServicesAvailable": "कोई सेवा उपलब्ध नहीं है"
+  }
+}

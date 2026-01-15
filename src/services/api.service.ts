@@ -15,10 +15,7 @@ class ApiClient {
     this.timeout = appConfig.api.timeout;
   }
 
-  private async request<T>(
-    endpoint: string,
-    options: RequestInit = {}
-  ): Promise<ApiResponse<T>> {
+  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
@@ -60,11 +57,7 @@ class ApiClient {
     return this.request<T>(endpoint, { ...options, method: 'GET' });
   }
 
-  async post<T>(
-    endpoint: string,
-    body?: unknown,
-    options?: RequestInit
-  ): Promise<ApiResponse<T>> {
+  async post<T>(endpoint: string, body?: unknown, options?: RequestInit): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
       ...options,
       method: 'POST',
@@ -72,11 +65,7 @@ class ApiClient {
     });
   }
 
-  async put<T>(
-    endpoint: string,
-    body?: unknown,
-    options?: RequestInit
-  ): Promise<ApiResponse<T>> {
+  async put<T>(endpoint: string, body?: unknown, options?: RequestInit): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
       ...options,
       method: 'PUT',

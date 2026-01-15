@@ -22,11 +22,7 @@ export const formatDateTime = (date: string | Date, locale = 'en-US'): string =>
   }).format(dateObj);
 };
 
-export const formatCurrency = (
-  amount: number,
-  currency = 'USD',
-  locale = 'en-US'
-): string => {
+export const formatCurrency = (amount: number, currency = 'USD', locale = 'en-US'): string => {
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,
