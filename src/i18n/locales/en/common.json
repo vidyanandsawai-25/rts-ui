@@ -1,0 +1,76 @@
+{
+  "buttons": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "submit": "Submit",
+    "add": "Add",
+    "addRoute": "Add Route",
+    "remove": "Remove",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next"
+  },
+  "actions": {
+    "loading": "Loading...",
+    "saving": "Saving...",
+    "deleting": "Deleting...",
+    "adding": "Adding...",
+    "updating": "Updating...",
+    "processing": "Processing..."
+  },
+  "validation": {
+    "required": "This field is required",
+    "invalidEmail": "Invalid email address",
+    "minLength": "Minimum {count} characters required",
+    "maxLength": "Maximum {count} characters allowed",
+    "invalidFormat": "Invalid format"
+  },
+  "errors": {
+    "generic": "Something went wrong",
+    "network": "Network error. Please try again",
+    "unauthorized": "You are not authorized",
+    "notFound": "Resource not found",
+    "serverError": "Server error. Please try again later",
+    "deleteError": "Failed to delete",
+    "createError": "Failed to create",
+    "updateError": "Failed to update"
+  },
+  "status": {
+    "active": "Active",
+    "inactive": "Inactive",
+    "pending": "Pending",
+    "completed": "Completed",
+    "delayed": "Delayed",
+    "cancelled": "Cancelled"
+  },
+  "messages": {
+    "noData": "No data available",
+    "success": "Operation successful",
+    "confirmDelete": "Are you sure you want to delete?",
+    "unsavedChanges": "You have unsaved changes"
+  },
+  "language": {
+    "select": "Select Language",
+    "english": "English",
+    "hindi": "हिंदी (Hindi)",
+    "marathi": "मराठी (Marathi)"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "settings": "Settings"
+  },
+  "footer": {
+    "copyright": "All rights reserved",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service",
+    "contact": "Contact"
+  },
+  "app": {
+    "title": "App",
+    "noServicesAvailable": "No services available"
+  }
+}

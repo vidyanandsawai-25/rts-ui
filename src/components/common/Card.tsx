@@ -39,16 +39,15 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
 
 Card.displayName = 'Card';
 
-export const CardHeader = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ children, className, ...props }, ref) => {
-  return (
-    <div ref={ref} className={cn('mb-4', className)} {...props}>
-      {children}
-    </div>
-  );
-});
+export const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ children, className, ...props }, ref) => {
+    return (
+      <div ref={ref} className={cn('mb-4', className)} {...props}>
+        {children}
+      </div>
+    );
+  }
+);
 
 CardHeader.displayName = 'CardHeader';
 
@@ -65,15 +64,14 @@ export const CardTitle = React.forwardRef<
 
 CardTitle.displayName = 'CardTitle';
 
-export const CardContent = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ children, className, ...props }, ref) => {
-  return (
-    <div ref={ref} className={cn('', className)} {...props}>
-      {children}
-    </div>
-  );
-});
+export const CardContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ children, className, ...props }, ref) => {
+    return (
+      <div ref={ref} className={cn('', className)} {...props}>
+        {children}
+      </div>
+    );
+  }
+);
 
 CardContent.displayName = 'CardContent';

@@ -1,8 +1,7 @@
-import React from 'react';
 import { cn } from '@/lib/utils/cn';
 import { TableColumn } from '@/types/common.types';
 
-export interface TableProps<T = any> {
+export interface TableProps<T extends Record<string, unknown> = Record<string, unknown>> {
   data: T[];
   columns: TableColumn<T>[];
   className?: string;
@@ -14,7 +13,7 @@ export interface TableProps<T = any> {
  * Reusable Table component with generic type support
  * Handles loading states and empty data scenarios
  */
-export function Table<T extends Record<string, any>>({
+export function Table<T extends Record<string, unknown> = Record<string, unknown>>({
   data,
   columns,
   className,
@@ -30,11 +29,7 @@ export function Table<T extends Record<string, any>>({
   }
 
   if (data.length === 0) {
-    return (
-      <div className="flex items-center justify-center p-8 text-gray-500">
-        {emptyMessage}
-      </div>
-    );
+    return <div className="flex items-center justify-center p-8 text-gray-500">{emptyMessage}</div>;
   }
 
   return (

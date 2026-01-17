@@ -9,27 +9,24 @@ export function useAsync<T>() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const execute = useCallback(
-    async (asyncFn: () => Promise<ApiResponse<T>>) => {
-      setIsLoading(true);
-      setError(null);
+  const execute = useCallback(async (asyncFn: () => Promise<ApiResponse<T>>) => {
+    setIsLoading(true);
+    setError(null);
 
-      try {
-        const response = await asyncFn();
+    try {
+      const response = await asyncFn();
 
-        if (response.success && response.data) {
-          setData(response.data);
-        } else {
-          setError(response.error || 'An error occurred');
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
-      } finally {
-        setIsLoading(false);
+      if (response.success && response.data) {
+        setData(response.data);
+      } else {
+        setError(response.error || 'An error occurred');
       }
-    },
-    []
-  );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   const reset = useCallback(() => {
     setData(null);

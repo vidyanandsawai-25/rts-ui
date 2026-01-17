@@ -148,7 +148,7 @@ export function ActionButton({
         ${shapeClass}
         ${className}
       `}
-      {/* forward remaining props to <button> */}
+      
       {...props}
     >
       {/* SHINE EFFECT */}
