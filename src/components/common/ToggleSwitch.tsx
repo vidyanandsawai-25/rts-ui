@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-interface ToggleSwitchProps {
+export interface  ToggleSwitchProps {
   checked: boolean;
   onChange: () => void;
   label?: string;

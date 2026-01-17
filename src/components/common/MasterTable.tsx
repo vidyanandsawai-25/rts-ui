@@ -2,8 +2,9 @@
 
 import React, { useMemo } from "react";
 import { cn } from "@/lib/utils/cn";
-import { ActionButton } from "./Button";
+import { Button } from "./Button";
 import { StatusBadge } from "./StatusBadge";
+import { EditButton, DeleteButton } from "./ActionButtons";
 export interface Column<
   T extends Record<string, unknown> = Record<string, unknown>
 > {
@@ -240,16 +241,12 @@ export function MasterTable<
                       <td className="px-2 py-2 text-center">
                         <div className="flex justify-center gap-3">
                           {onEdit && (
-                            <ActionButton
-                              variant="edit"
-                              size="sm"
+                            <EditButton
                               onClick={() => onEdit(row)}
                             />
                           )}
                           {onDelete && (
-                            <ActionButton
-                              variant="delete"
-                              size="sm"
+                            <DeleteButton
                               onClick={() => onDelete(row)}
                             />
                           )}
@@ -271,28 +268,30 @@ export function MasterTable<
         </span>
 
         <div className="flex items-center justify-between md:justify-end gap-2 w-full md:w-auto">
-          <ActionButton
+          <Button
             variant="ghost"
             size="sm"
             disabled={pageNumber <= 1}
             onClick={() => onPageChange(pageNumber - 1)}
-            label="‹"
             className="h-9 w-9 px-0 border border-[#DCEAFF]"
-          />
+          >
+            ‹
+          </Button>
 
           <span className="md:hidden text-sm font-semibold text-[#1E3A8A]">
             Page {pageNumber} of {totalPages}
           </span>
 
           <div className="hidden md:flex items-center gap-1">
-            <ActionButton
+            <Button
               variant="ghost"
               size="sm"
               disabled={pageNumber === 1}
               onClick={() => onPageChange(1)}
-              label="«"
               className="h-9 w-9 px-0 border border-[#DCEAFF]"
-            />
+            >
+              «
+            </Button>
 
 
             {pages.map((p, i) =>
@@ -301,10 +300,9 @@ export function MasterTable<
                   ...
                 </span>
               ) : (
-                <ActionButton
+                <Button
                   key={`page-${p}-${i}`}
                   size="sm"
-                  label={String(p)}
                   onClick={() => onPageChange(p)}
                   variant={pageNumber === p ? "primary" : "secondary"}
                   className={cn(
@@ -313,29 +311,33 @@ export function MasterTable<
                       ? "bg-[#2563EB] text-white border-[#2563EB]"
                       : "bg-white border border-[#DCEAFF] text-[#1E3A8A] hover:bg-gray-100"
                   )}
-                />
+                >
+                  {String(p)}
+                </Button>
               )
             )}
 
 
-            <ActionButton
+            <Button
               variant="ghost"
               size="sm"
               disabled={pageNumber === totalPages}
               onClick={() => onPageChange(totalPages)}
-              label="»"
-                className="h-9 w-9 px-0 border border-[#DCEAFF]"
-            />
+              className="h-9 w-9 px-0 border border-[#DCEAFF]"
+            >
+              »
+            </Button>
           </div>
 
-          <ActionButton
+          <Button
             variant="ghost"
             size="sm"
             disabled={pageNumber >= totalPages}
             onClick={() => onPageChange(pageNumber + 1)}
-            label="›"
             className="h-9 w-9 px-0 border border-[#DCEAFF]"
-          />
+          >
+            ›
+          </Button>
         </div>
       </div>
     </div>

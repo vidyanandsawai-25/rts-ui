@@ -1,6 +1,8 @@
 "use client";
 
 import { toast } from "sonner";
+import { Button } from "./Button";
+import { CancelButton } from "./ActionButtons";
 
 export function confirmDeleteToast(onConfirm: () => Promise<void> | void) {
   const toastId = toast.custom(
@@ -14,24 +16,19 @@ export function confirmDeleteToast(onConfirm: () => Promise<void> | void) {
         </p>
 
         <div className="flex justify-end gap-2 mt-4">
-          <button
-            type="button"
+          <CancelButton
             onClick={() => toast.dismiss(toastId)}
-            className="px-3 py-1 rounded bg-gray-200 text-gray-900 hover:bg-gray-300 text-sm"
-          >
-            Cancel
-          </button>
+          />
 
-          <button
-            type="button"
+          <Button
+            variant="danger"
             onClick={async () => {
               toast.dismiss(toastId);
               await onConfirm(); // ✅ ALWAYS awaited
             }}
-            className="px-3 py-1 rounded bg-red-600 hover:bg-red-700 text-white text-sm"
           >
             Delete
-          </button>
+          </Button>
         </div>
       </div>
     ),

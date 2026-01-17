@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { getTranslations } from '@/lib/i18n/getTranslations';
+import { getTranslations } from 'next-intl/server';
 import { ROUTES } from '@/lib/constants/routes';
 
 /**

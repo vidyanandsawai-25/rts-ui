@@ -2,7 +2,7 @@
 
 import React from "react";
 import { LucideIcon } from "lucide-react";
-import { ActionButton } from "@/components/common/Button";
+import { Button } from "@/components/common/Button";
 import { cn } from "@/lib/utils/cn";
 
 interface TableHeaderProps {
@@ -62,13 +62,14 @@ export function TableHeader({
           {rightContent}
 
           {actionLabel && onActionClick && (
-            <ActionButton
-              variant="add"
+            <Button
+              variant="primary"
               icon={actionIcon}
-              label={actionLabel}
               onClick={onActionClick}
               disabled={actionDisabled}
-            />
+            >
+              {actionLabel}
+            </Button>
           )}
         </div>
       </div>
