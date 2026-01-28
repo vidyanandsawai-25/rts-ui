@@ -1,6 +1,6 @@
 'use client';
 import { useRouter, usePathname } from 'next/navigation';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { UserCircleIcon } from '@heroicons/react/24/solid';
 import { LogOut, Globe } from 'lucide-react';
@@ -23,6 +23,39 @@ const HEADER_COLORS = {
   langBtnTo: '#6FB1FC',
 } as const;
 
+/**
+ * Read username from cookie - defined outside component to avoid recreation on each render
+ * Uses non-capturing group for better regex clarity per code review
+ */
+function getUsernameFromCookie(): string | undefined {
+  if (typeof document === 'undefined') return undefined;
+
+  // Use non-capturing group (?:) for proper space handling in cookie parsing
+  const match = document.cookie.match(/(?:^|; )user_name=([^;]+)/);
+  const rawUserName = match ? match[1] : undefined;
+
+  let decodedUserName: string | undefined;
+  if (typeof rawUserName === 'string') {
+    try {
+      // Cookies may encode spaces as '+' or '%20'
+      const plusNormalized = rawUserName.replace(/\+/g, ' ');
+      decodedUserName = decodeURIComponent(plusNormalized);
+    } catch {
+      decodedUserName = undefined;
+    }
+  }
+
+  const safeUserName =
+    typeof decodedUserName === 'string' ? sanitizeInput(decodedUserName) : undefined;
+
+  // Allow international usernames (Hindi/Marathi) - sanitizeInput handles dangerous patterns
+  // Length validation uses same limit as sanitizeInput (50 chars)
+  if (typeof safeUserName === 'string' && safeUserName.length > 0 && safeUserName.length <= 50) {
+    return safeUserName;
+  }
+  return undefined;
+}
+
 interface HeaderProps {
   ulbData?: UlbMaster;
   // username prop removed, fetched client-side
@@ -33,50 +66,14 @@ export function Header({ ulbData }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [langOpen, setLangOpen] = useState(false);
-  // Track logo URL to reset error state when it changes - derived state pattern
-  const [logoState, setLogoState] = useState<{ url: string | undefined; hasError: boolean }>({
-    url: ulbData?.ulbLogo,
-    hasError: false,
-  });
 
-  // Reset logo error when ulbLogo prop changes - using derived state pattern
-  if (ulbData?.ulbLogo !== logoState.url) {
-    setLogoState({ url: ulbData?.ulbLogo, hasError: false });
-  }
+  // Track logo error state - simplified to only track hasError
+  const [logoHasError, setLogoHasError] = useState(false);
 
-  // Read username from cookie - extracted as a function to use for initial state
-  // Uses non-capturing group for better regex clarity per code review
-  const getUsernameFromCookie = (): string | undefined => {
-    if (typeof document === 'undefined') return undefined;
-
-    // Use non-capturing group (?:) for proper space handling in cookie parsing
-    const match = document.cookie.match(/(?:^|; )user_name=([^;]+)/);
-    const rawUserName = match ? match[1] : undefined;
-
-    let decodedUserName: string | undefined;
-    if (typeof rawUserName === 'string') {
-      try {
-        // Cookies may encode spaces as '+' or '%20'
-        const plusNormalized = rawUserName.replace(/\+/g, ' ');
-        decodedUserName = decodeURIComponent(plusNormalized);
-      } catch {
-        decodedUserName = undefined;
-      }
-    }
-
-    const safeUserName =
-      typeof decodedUserName === 'string' ? sanitizeInput(decodedUserName) : undefined;
-
-    // Allow international usernames (Hindi/Marathi) - sanitizeInput handles dangerous patterns
-    if (
-      typeof safeUserName === 'string' &&
-      safeUserName.length > 0 &&
-      safeUserName.length <= 50
-    ) {
-      return safeUserName;
-    }
-    return undefined;
-  };
+  // Reset logo error when ulbLogo prop changes - using useEffect instead of derived state pattern
+  useEffect(() => {
+    setLogoHasError(false);
+  }, [ulbData?.ulbLogo]);
 
   // Initialize username state lazily to avoid hydration mismatch
   const [username, setUsername] = useState<string | undefined>(undefined);
@@ -86,7 +83,6 @@ export function Header({ ulbData }: HeaderProps) {
   useEffect(() => {
     const cookieUsername = getUsernameFromCookie();
     if (cookieUsername) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- Reading from cookie on mount is valid external state sync
       setUsername(cookieUsername);
     }
   }, []);
@@ -110,7 +106,8 @@ export function Header({ ulbData }: HeaderProps) {
     return () => window.removeEventListener('keydown', handleEsc);
   }, [langOpen]);
 
-  const handleLogout = async () => {
+  // handleLogout is synchronous - removed async as no awaits are needed
+  const handleLogout = useCallback(() => {
     if (typeof window !== 'undefined') {
       try {
         window.localStorage.clear();
@@ -127,7 +124,7 @@ export function Header({ ulbData }: HeaderProps) {
     // Ensure we redirect to a locale-prefixed route (localePrefix: 'always')
     const currentLocale = getLocaleFromPathname(pathname);
     router.push(`/${currentLocale}`);
-  };
+  }, [pathname, router]);
 
   return (
     <header className="fixed inset-x-0 top-0 z-40">
@@ -137,16 +134,13 @@ export function Header({ ulbData }: HeaderProps) {
         style={{ backgroundColor: HEADER_COLORS.background }}
       >
         {/* DECORATIVE PARTICLES - CSS containment isolates repaints for better performance */}
-        <div className="pointer-events-none absolute inset-0 hidden sm:block opacity-30" style={{ contain: 'layout style paint' }}>
-          <div
-            className="absolute left-[15%] top-4 h-16 w-16 rounded-full bg-orange-400 blur-xl motion-safe:animate-pulse motion-reduce:animate-none"
-          />
-          <div
-            className="absolute left-[50%] top-2 h-20 w-20 rounded-full bg-blue-400 blur-xl motion-safe:animate-pulse motion-reduce:animate-none"
-          />
-          <div
-            className="absolute right-[15%] top-6 h-20 w-20 rounded-full bg-purple-400 blur-xl motion-safe:animate-pulse motion-reduce:animate-none"
-          />
+        <div
+          className="pointer-events-none absolute inset-0 hidden sm:block opacity-30"
+          style={{ contain: 'layout style paint' }}
+        >
+          <div className="absolute left-[15%] top-4 h-16 w-16 rounded-full bg-orange-400 blur-xl motion-safe:animate-pulse motion-reduce:animate-none" />
+          <div className="absolute left-[50%] top-2 h-20 w-20 rounded-full bg-blue-400 blur-xl motion-safe:animate-pulse motion-reduce:animate-none" />
+          <div className="absolute right-[15%] top-6 h-20 w-20 rounded-full bg-purple-400 blur-xl motion-safe:animate-pulse motion-reduce:animate-none" />
         </div>
 
         {/* MAIN HEADER CONTENT */}
@@ -156,20 +150,20 @@ export function Header({ ulbData }: HeaderProps) {
             <div className="relative flex h-10 w-10 md:h-14 md:w-14 items-center justify-center">
               <div className="absolute inset-0 rounded-full bg-white/30 blur-xl opacity-70" />
               <div className="relative h-full w-full overflow-hidden rounded-full bg-white ring-2 ring-white/40 shadow-xl">
-                {ulbData?.ulbLogo && !logoState.hasError ? (
+                {ulbData?.ulbLogo && !logoHasError ? (
                   <Image
                     src={ulbData.ulbLogo}
                     alt={`${title} Logo`}
                     width={56}
                     height={56}
                     className="h-full w-full object-contain"
-                    onError={() => setLogoState((prev) => ({ ...prev, hasError: true }))}
+                    onError={() => setLogoHasError(true)}
                     // unoptimized: ULB logos come from external/dynamic sources that may not be configured in next.config
                     unoptimized
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-blue-600 to-purple-600 text-white font-bold text-xs">
-                    {ulbData?.ulbCode ?? 'TMC'}
+                    {ulbData?.ulbCode ?? t('app.defaultUlbCode')}
                   </div>
                 )}
               </div>
@@ -199,7 +193,7 @@ export function Header({ ulbData }: HeaderProps) {
                 type="button"
                 onClick={() => setLangOpen(!langOpen)}
                 aria-expanded={langOpen}
-                aria-haspopup="true"
+                aria-haspopup="listbox"
                 aria-controls="language-dropdown"
                 aria-label={t('language.selectLanguage')}
                 id="language-btn"
@@ -239,10 +233,10 @@ export function Header({ ulbData }: HeaderProps) {
                     onClick={() => setLangOpen(false)}
                   />
 
-                  {/* Dropdown panel */}
+                  {/* Dropdown panel - using listbox role for language selection */}
                   <div
                     id="language-dropdown"
-                    role="menu"
+                    role="listbox"
                     aria-labelledby="language-btn"
                     className="
                       absolute right-0 mt-2 w-44 rounded-xl
@@ -251,8 +245,8 @@ export function Header({ ulbData }: HeaderProps) {
                     "
                     style={{ backgroundColor: `${HEADER_COLORS.dropdown}e6` }}
                   >
-                    {locales.map((code: typeof locales[number]) => {
-                      const labelMap: Record<typeof locales[number], string> = {
+                    {locales.map((code: (typeof locales)[number]) => {
+                      const labelMap: Record<(typeof locales)[number], string> = {
                         en: t('language.english'),
                         mr: t('language.marathi'),
                         hi: t('language.hindi'),
@@ -262,7 +256,7 @@ export function Header({ ulbData }: HeaderProps) {
                         <button
                           type="button"
                           key={code}
-                          role="menuitem"
+                          role="option"
                           className="w-full px-4 py-2 text-left text-xs sm:text-sm text-white hover:bg-white/10 transition"
                           onClick={() => {
                             try {
@@ -270,7 +264,8 @@ export function Header({ ulbData }: HeaderProps) {
                               setLangOpen(false);
                             } catch (error) {
                               console.error('Language switch failed:', error);
-                              // Keep dropdown open on failure so user knows action didn't complete
+                              // Show user-visible feedback when language switch fails
+                              window.alert(t('language.switchFailed'));
                             }
                           }}
                         >
