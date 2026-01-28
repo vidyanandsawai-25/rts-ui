@@ -58,7 +58,8 @@
     "selectLanguage": "अॅप्लिकेशन भाषा निवडा",
     "english": "English",
     "hindi": "हिंदी (Hindi)",
-    "marathi": "मराठी (Marathi)"
+    "marathi": "मराठी (Marathi)",
+    "switchFailed": "भाषा बदलण्यात अयशस्वी. कृपया पुन्हा प्रयत्न करा."
   },
   "navigation": {
     "dashboard": "डॅशबोर्ड",
@@ -77,7 +78,8 @@
     "departmentName": "मालमत्ता कर विभाग",
     "assessmentSystem": "मालमत्ता कर आकारणी आणि व्यवस्थापन प्रणाली",
     "defaultUser": "वापरकर्ता",
-    "defaultUlbName": "ठाणे महानगरपालिका"
+    "defaultUlbName": "ठाणे महानगरपालिका",
+    "defaultUlbCode": "ठ.म."
   },
   "menu": {
     "analytics": "डेटा विश्लेषण",
