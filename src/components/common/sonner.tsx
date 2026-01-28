@@ -8,12 +8,17 @@ export interface ToasterPropsExtended extends ToasterProps {
   "data-testid"?: string;
 }
 
-export function Toaster({ className = "", style = {}, ...props }: ToasterPropsExtended) {
+export function Toaster({
+  className = "",
+  style = {},
+  "data-testid": dataTestId,
+  ...props
+}: ToasterPropsExtended) {
   return (
     <Sonner
       className={`toaster group ${className}`}
       style={style}
-      data-testid={props["data-testid"] || "toaster"}
+      data-testid={dataTestId ?? "toaster"}
       {...props}
     />
   );
