@@ -29,3 +29,23 @@ export type { InputProps } from './Input';
 
 export { Table } from './Table';
 export type { TableProps } from './Table';
+
+export { Tabs } from './Tabs';
+export type {
+  TabsProps,
+  TabListProps,
+  TabProps,
+  TabPanelProps,
+  TabItem,
+  TabValue,
+  TabVariant,
+  TabSize,
+  TabOrientation,
+  TabJustify,
+} from './Tabs';
+
+export { Badge } from './Badge';
+export type { BadgeProps, BadgeVariant, BadgeSize } from './Badge';
+
+export { ContextMenu } from './ContextMenu';
+export type { ContextMenuProps, ContextMenuItem } from './ContextMenu';
