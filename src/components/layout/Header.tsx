@@ -110,8 +110,8 @@ export function Header({ ulbData }: HeaderProps) {
         className="relative h-20 w-full shadow-2xl border-b border-white/10"
         style={{ backgroundColor: HEADER_COLORS.background }}
       >
-        {/* DECORATIVE PARTICLES (optimized performance by removing willChange) */}
-        <div className="pointer-events-none absolute inset-0 hidden sm:block opacity-30">
+        {/* DECORATIVE PARTICLES - CSS containment isolates repaints for better performance */}
+        <div className="pointer-events-none absolute inset-0 hidden sm:block opacity-30" style={{ contain: 'layout style paint' }}>
           <div
             className="absolute left-[15%] top-4 h-16 w-16 rounded-full bg-orange-400 blur-xl motion-safe:animate-bounce motion-reduce:animate-none"
             style={{ animationDuration: '4s' }}
@@ -241,10 +241,10 @@ export function Header({ ulbData }: HeaderProps) {
                           onClick={() => {
                             try {
                               switchLocale(code, pathname, router);
+                              setLangOpen(false);
                             } catch (error) {
                               console.error('Language switch failed:', error);
-                            } finally {
-                              setLangOpen(false);
+                              // Keep dropdown open on failure so user knows action didn't complete
                             }
                           }}
                         >
