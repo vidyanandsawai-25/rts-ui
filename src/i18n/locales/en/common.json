@@ -72,5 +72,14 @@
   "app": {
     "title": "App",
     "noServicesAvailable": "No services available"
+  },
+  "multiSelect": {
+    "selectAll": "Select All",
+    "allSelected": "All selected",
+    "selectedCount": "{count} selected",
+    "placeholder": "Select options...",
+    "clearAll": "Clear All",
+    "noOptions": "No options found",
+    "search": "Search..."
   }
 }

@@ -1,0 +1,316 @@
+"use client";
+
+import { useTranslations } from "next-intl";
+import { useState, useEffect, useRef, useCallback, useId, useMemo } from "react";
+
+/**
+ * Option type for the MultiSelect component.
+ *
+ * @property value - The unique value for the option.
+ * @property label - The display label for the option.
+ */
+export interface Option {
+  value: string;
+  label: string;
+}
+
+/**
+ * Props for the {@link MultiSelect} component.
+ *
+ * @property options - Array of selectable options.
+ * @property value - Array of selected option values.
+ * @property onChange - Callback when selection changes.
+ * @property placeholder - Placeholder text when no selection.
+ * @property disabled - If true, disables the component.
+ * @property className - Additional CSS classes for the wrapper.
+ * @property id - Unique identifier for the component.
+ * @property name - Name attribute for form integration.
+ * @property error - If true, applies error styling.
+ */
+interface MultiSelectProps {
+  options: Option[];
+  value: string[];
+  onChange: (selected: string[]) => void;
+  placeholder?: string;
+  disabled?: boolean;
+  className?: string;
+  id?: string;
+  name?: string;
+  error?: boolean;
+}
+
+/**
+ * MultiSelect component for selecting multiple options from a dropdown list.
+ *
+ * Features:
+ * - Keyboard accessible and screen reader friendly.
+ * - Supports "Select All", custom placeholder, and disabled state.
+ * - Calls `onChange` with the updated array of selected values.
+ *
+ * @param options - Array of selectable options.
+ * @param value - Array of selected option values.
+ * @param onChange - Callback when selection changes.
+ * @param placeholder - Placeholder text when no selection.
+ * @param disabled - If true, disables the component.
+ * @param className - Additional CSS classes for the wrapper.
+ */
+export function MultiSelect({
+  options,
+  value,
+  onChange,
+  placeholder,
+  disabled = false,
+  className = "",
+  id,
+  name,
+  error = false,
+}: MultiSelectProps) {
+  const tCommon = useTranslations('common');
+  const [isOpen, setIsOpen] = useState(false);
+  const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  // Generate a unique and stable ID for the dropdown for aria-controls
+  const reactId = useId();
+  const dropdownId = id || `multiselect-dropdown-${reactId}`;
+  // Use a stable callback ref pattern for each option and 'Select All'
+  const optionsRefs = useRef<{ items: Array<HTMLDivElement | null>; selectAll?: HTMLDivElement | null }>({ items: [] });
+
+  // Close dropdown on outside click
+  const handleClickOutside = useCallback((event: MouseEvent) => {
+    if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+      setIsOpen(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [handleClickOutside]);
+
+  const handleToggle = (optionValue: string) => {
+    if (disabled) return;
+
+    const newValue = value.includes(optionValue)
+      ? value.filter(v => v !== optionValue)
+      : [...value, optionValue];
+
+    onChange(newValue);
+  };
+
+  const handleSelectAll = () => {
+    if (disabled) return;
+
+    if (value.length === options.length) {
+      onChange([]);
+    } else {
+      onChange(options.map(opt => opt.value));
+    }
+  };
+
+  const getDisplayText = useMemo(() => {
+    if (value.length === 0) return placeholder || tCommon("multiSelect.placeholder");
+    if (value.length === options.length) return tCommon("multiSelect.allSelected");
+    if (value.length === 1) {
+      const selected = options.find(opt => opt.value === value[0]);
+      return selected?.label || placeholder || tCommon("multiSelect.placeholder");
+    }
+    return tCommon("multiSelect.selectedCount", { count: value.length });
+  }, [value, options, placeholder, tCommon]);
+
+  const renderOption = (option: Option, idx: number) => (
+    <div
+      key={option.value}
+      role="option"
+      aria-selected={value.includes(option.value)}
+      tabIndex={0}
+      ref={el => { optionsRefs.current.items[idx] = el; }}
+      onFocus={() => setFocusedIndex(idx)}
+      onKeyDown={e => handleLabelKeyDown(e, idx)}
+      className={`flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 cursor-pointer transition-colors ${focusedIndex === idx ? 'bg-blue-50' : ''}`}
+      aria-label={option.label}
+    >
+      <input
+        type="checkbox"
+        checked={value.includes(option.value)}
+        onChange={() => handleToggle(option.value)}
+        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+        tabIndex={-1}
+        aria-hidden="true"
+      />
+      <span className="text-sm text-gray-700">{option.label}</span>
+    </div>
+  );
+
+  // Keyboard navigation for dropdown
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement | HTMLDivElement>) => {
+    if (!isOpen) {
+      if (e.key === "ArrowDown" || e.key === "Enter" || e.key === " ") {
+        setIsOpen(true);
+        setFocusedIndex(0);
+        e.preventDefault();
+      }
+      return;
+    }
+    if (e.key === "Escape") {
+      setIsOpen(false);
+      setFocusedIndex(null);
+      e.preventDefault();
+    } else if (e.key === "ArrowDown") {
+      setFocusedIndex((prev) => {
+        const next = prev === null ? 0 : Math.min(options.length - 1, prev + 1);
+        optionsRefs.current.items[next]?.focus();
+        return next;
+      });
+      e.preventDefault();
+    } else if (e.key === "ArrowUp") {
+      setFocusedIndex((prev) => {
+        const next = prev === null ? options.length - 1 : Math.max(0, prev - 1);
+        optionsRefs.current.items[next]?.focus();
+        return next;
+      });
+      e.preventDefault();
+    } else if (e.key === "Enter" || e.key === " ") {
+      if (focusedIndex !== null) {
+        handleToggle(options[focusedIndex].value);
+      }
+      e.preventDefault();
+    }
+  };
+
+  // Keyboard navigation for label elements
+  const handleLabelKeyDown = (e: React.KeyboardEvent<HTMLDivElement>, idx: number) => {
+    if (e.key === "Enter" || e.key === " ") {
+      handleToggle(options[idx].value);
+      e.preventDefault();
+    } else if (e.key === "ArrowDown") {
+      const next = Math.min(options.length - 1, idx + 1);
+      optionsRefs.current.items[next]?.focus();
+      setFocusedIndex(next);
+      e.preventDefault();
+    } else if (e.key === "ArrowUp") {
+      const prev = idx <= 0 ? 0 : idx - 1;
+      optionsRefs.current.items[prev]?.focus();
+      setFocusedIndex(prev);
+      e.preventDefault();
+    } else if (e.key === "Escape") {
+      setIsOpen(false);
+      setFocusedIndex(null);
+      e.preventDefault();
+    }
+  };
+
+  return (
+    <div ref={wrapperRef} className={`relative ${className}`}>
+      {/* Trigger Button */}
+      <button
+        type="button"
+        id={id}
+        name={name}
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        onKeyDown={handleKeyDown}
+        disabled={disabled}
+        role="combobox"
+        aria-expanded={isOpen}
+        aria-haspopup="listbox"
+        aria-controls={dropdownId}
+        aria-label={placeholder || tCommon("multiSelect.placeholder")}
+        className={`
+          w-full px-3 py-2 text-left
+          border rounded-lg
+          bg-white
+          focus:outline-none focus:ring-2 focus:ring-blue-500
+          ${disabled ? 'bg-gray-100 cursor-not-allowed' : 'hover:border-gray-400'}
+          ${isOpen ? 'border-blue-500' : error ? 'border-red-500' : 'border-gray-300'}
+        `}
+      >
+        <div className="flex items-center justify-between">
+          <span className={value.length === 0 ? 'text-gray-400' : 'text-gray-900'}>
+            {getDisplayText}
+          </span>
+          <svg
+            className={`w-5 h-5 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
+      </button>
+
+      {/* Dropdown */}
+      {isOpen && !disabled && (
+        <div
+          id={dropdownId}
+          className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-64 overflow-hidden"
+        >
+          {/* Select All Option */}
+          <div className="border-b border-gray-200 bg-gray-50">
+            <div
+              className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 cursor-pointer"
+              tabIndex={0}
+              ref={el => { optionsRefs.current.selectAll = el; }}
+              onFocus={() => setFocusedIndex(-1)}
+              onKeyDown={e => {
+                if (e.key === "Enter" || e.key === " ") {
+                  handleSelectAll();
+                  e.preventDefault();
+                } else if (e.key === "ArrowDown") {
+                  if (options.length > 0) {
+                    optionsRefs.current.items[0]?.focus();
+                    setFocusedIndex(0);
+                  }
+                  e.preventDefault();
+                } else if (e.key === "ArrowUp") {
+                  if (options.length > 0) {
+                    optionsRefs.current.items[options.length - 1]?.focus();
+                    setFocusedIndex(options.length - 1);
+                  }
+                  e.preventDefault();
+                } else if (e.key === "Escape") {
+                  setIsOpen(false);
+                  setFocusedIndex(null);
+                  e.preventDefault();
+                }
+              }}
+              aria-selected={value.length === options.length}
+              aria-label={tCommon("multiSelect.selectAll")}
+            >
+              <input
+                  type="checkbox"
+                  checked={value.length === options.length}
+                  onChange={handleSelectAll}
+                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  tabIndex={-1}
+                  aria-hidden="true"
+                />
+                <span className="text-sm font-medium text-gray-700">{tCommon("multiSelect.selectAll")}</span>
+            </div>
+          </div>
+
+          {/* Options List */}
+          <div
+            className="overflow-y-auto max-h-52"
+            role="listbox"
+            aria-multiselectable="true"
+            tabIndex={-1}
+            onKeyDown={handleKeyDown}
+          >
+            {options.map(renderOption)}
+          </div>
+
+          {/* Selected Count */}
+          {value.length > 0 && (
+            <div className="border-t border-gray-200 bg-gray-50 px-4 py-2">
+              <span className="text-xs text-gray-600">
+                {tCommon("multiSelect.selectedCount", { count: value.length })}
+              </span>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+MultiSelect.displayName = "MultiSelect";

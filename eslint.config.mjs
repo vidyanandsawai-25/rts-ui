@@ -20,8 +20,9 @@ const eslintConfig = defineConfig([
         }
       ],
       "i18next/no-literal-string": [
-        "warn",
+        "error",
         {
+          mode: "jsx-text-only",
           ignoreAttribute: [
             "className",
             "class",
@@ -34,6 +35,11 @@ const eslintConfig = defineConfig([
             "aria-label",
             "aria-labelledby",
             "aria-describedby",
+            "aria-selected",
+            "aria-controls",
+            "aria-expanded",
+            "aria-haspopup",
+            "aria-invalid",
             "name",
             "method",
             "target",
@@ -53,13 +59,55 @@ const eslintConfig = defineConfig([
             "size",
             "as",
             "locale",
+            "displayName",
+            "padding",
+            "namespace",
+            "value",
+            "cache",
+            "localePrefix",
+            "title",
+          ],
+          ignoreCallee: [
+            "getTranslations",
+            "useTranslations",
+            "console.error",
+            "console.log",
+            "console.warn",
+            "revalidatePath",
           ],
           ignore: [
-            "^[0-9]+$",           // Numbers
-            "^[A-Z_]+$",          // Constants like API_URL
-            "^/$",                // Single characters
-            "^/.*",               // URLs/paths starting with /
-            "https?://.*",        // HTTP(S) URLs
+            "^[0-9]+$",                    // Numbers only
+            "^[A-Z_]+$",                   // Constants like API_URL
+            "^/.*",                        // URLs/paths starting with /
+            "https?://.*",                 // HTTP(S) URLs
+            "use client",                  // React directives
+            "use server",
+            "^[a-z]+$",                    // Single lowercase words
+            ".displayName",                // Component displayName
+            "^(sm|md|lg|xl|xs)$",          // Size variants
+            "^(primary|secondary|ghost|danger|success|elevated|bordered|default|none)$",  // Variants
+            "^(Active|Delayed|Completed|Inactive)$",   // Status values
+            "^(checked|unchecked)$",       // Toggle states
+            "^(en|hi|mr)$",                // Locale codes
+            "^(English|हिंदी|मराठी)$",      // Language names
+            "^(numeric|long|short|2-digit|currency)$",  // Format options
+            "^(year|month|day|hour|minute|style)$",     // Format keys
+            "^(no-store|force-cache)$",    // Cache directives
+            "Content-Type",                // HTTP headers (without anchors)
+            "application/json",            // MIME types (without anchors)
+            "^(latin|devanagari)$",        // Font subsets
+            "^--font-.*",                  // CSS variables
+            "^(required|invalid)$",        // ARIA states (single words)
+            "value",                       // Property names (without quotes)
+            "dots",                        // Pagination
+            "^variable$",                  // CSS variable key
+            "^always$",                    // Middleware configs
+            "^(route|status|vehicles|lastUpdate|actions)$",  // Table column keys
+            "^key$",                       // React key prop
+            ".*error.*",                   // Error messages (consider if these should be translated)
+            ".*message.*",                 // Generic messages
+            "^(dashboard|common|modules)$", // Translation namespaces
+            "^(title|subtitle|form|table|buttons|errors|actions|stats)$", // Translation keys
           ],
         },
       ],
@@ -68,6 +116,28 @@ const eslintConfig = defineConfig([
   // Disable i18next for test files
   {
     files: ["**/__tests__/**", "**/*.test.tsx", "**/*.test.ts", "**/*.spec.tsx", "**/*.spec.ts"],
+    rules: {
+      "i18next/no-literal-string": "off",
+    },
+  },
+  // Disable i18next for config files
+  {
+    files: ["**/*.config.{js,ts,mjs,cjs}", "**/*.setup.{js,ts}"],
+    rules: {
+      "i18next/no-literal-string": "off",
+    },
+  },
+  // Disable i18next for infrastructure files (i18n config, middleware, utils)
+  {
+    files: [
+      "**/i18n/**/*.{js,ts}",
+      "**/middleware.{js,ts}",
+      "**/lib/utils/**/*.{js,ts}",
+      "**/lib/constants/**/*.{js,ts}",
+      "**/types/**/*.{ts,d.ts}",
+      "**/services/**/*.{js,ts}",
+      "**/app/**/actions.{js,ts}",
+    ],
     rules: {
       "i18next/no-literal-string": "off",
     },

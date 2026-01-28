@@ -72,5 +72,14 @@
   "app": {
     "title": "ऐप",
     "noServicesAvailable": "कोई सेवा उपलब्ध नहीं है"
+  },
+  "multiSelect": {
+    "selectAll": "सभी का चयन करें",
+    "allSelected": "सभी चयनित",
+    "selectedCount": "{count} चयनित",
+    "placeholder": "विकल्प चुनें...",
+    "clearAll": "सभी हटाएं",
+    "noOptions": "कोई विकल्प नहीं मिला",
+    "search": "खोजें..."
   }
 }
