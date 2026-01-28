@@ -76,7 +76,8 @@
     "noServicesAvailable": "No services available",
     "departmentName": "Property Tax Department",
     "assessmentSystem": "Property Tax Assessment & Management System",
-    "defaultUser": "User"
+    "defaultUser": "User",
+    "defaultUlbName": "Thane Municipal Corporation"
   },
   "menu": {
     "analytics": "Data Analytics",

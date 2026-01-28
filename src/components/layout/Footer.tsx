@@ -13,7 +13,10 @@ export async function Footer({ ulbData }: FooterProps) {
   const t = await getTranslations('common');
 
   const currentYear = new Date().getFullYear();
-  const ulbDisplayName = sanitizeInput(ulbData?.ulbName || 'Thane Municipal Corporation');
+  // Use translated default if ulbName not provided
+  const ulbDisplayName = ulbData?.ulbName
+    ? sanitizeInput(ulbData.ulbName)
+    : t('app.defaultUlbName');
 
   return (
     <footer className="relative mt-auto z-30 print:hidden">

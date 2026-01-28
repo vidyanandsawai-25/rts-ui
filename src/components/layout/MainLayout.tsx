@@ -1,7 +1,7 @@
 import { Header } from './Header';
 import { Footer } from './Footer';
 
-interface MainLayoutProps {
+export interface MainLayoutProps {
   children: React.ReactNode;
 }
 

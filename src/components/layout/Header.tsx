@@ -45,11 +45,13 @@ export function Header({ ulbData }: HeaderProps) {
   }
 
   // Read username from cookie - extracted as a function to use for initial state
+  // Uses non-capturing group for better regex clarity per code review
   const getUsernameFromCookie = (): string | undefined => {
     if (typeof document === 'undefined') return undefined;
 
-    const match = document.cookie.match(/(^| )user_name=([^;]+)/);
-    const rawUserName = match ? match[2] : undefined;
+    // Use non-capturing group (?:) for proper space handling in cookie parsing
+    const match = document.cookie.match(/(?:^|; )user_name=([^;]+)/);
+    const rawUserName = match ? match[1] : undefined;
 
     let decodedUserName: string | undefined;
     if (typeof rawUserName === 'string') {
@@ -90,8 +92,8 @@ export function Header({ ulbData }: HeaderProps) {
   }, []);
 
   const title = useMemo(
-    () => sanitizeInput(ulbData?.ulbName || 'Thane Municipal Corporation'),
-    [ulbData?.ulbName]
+    () => sanitizeInput(ulbData?.ulbName) || t('app.defaultUlbName'),
+    [ulbData?.ulbName, t]
   );
 
   // Page title translation - simple lookup, no memoization needed
@@ -113,6 +115,8 @@ export function Header({ ulbData }: HeaderProps) {
       try {
         window.localStorage.clear();
         window.sessionStorage.clear();
+        // Clear the user_name cookie for complete logout
+        document.cookie = 'user_name=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
       } catch (error) {
         // Log storage clearing errors in development for debugging, but continue with redirect
         if (process.env.NODE_ENV === 'development') {
@@ -163,6 +167,7 @@ export function Header({ ulbData }: HeaderProps) {
                     height={56}
                     className="h-full w-full object-contain"
                     onError={() => setLogoState((prev) => ({ ...prev, hasError: true }))}
+                    // unoptimized: ULB logos come from external/dynamic sources that may not be configured in next.config
                     unoptimized
                   />
                 ) : (
@@ -217,6 +222,7 @@ export function Header({ ulbData }: HeaderProps) {
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
+                  aria-hidden="true"
                 >
                   <path
                     strokeLinecap="round"

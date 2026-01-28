@@ -76,7 +76,8 @@
     "noServicesAvailable": "कोणत्याही सेवा उपलब्ध नाहीत",
     "departmentName": "मालमत्ता कर विभाग",
     "assessmentSystem": "मालमत्ता कर आकारणी आणि व्यवस्थापन प्रणाली",
-    "defaultUser": "वापरकर्ता"
+    "defaultUser": "वापरकर्ता",
+    "defaultUlbName": "ठाणे महानगरपालिका"
   },
   "menu": {
     "analytics": "डेटा विश्लेषण",
