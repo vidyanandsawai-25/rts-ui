@@ -50,6 +50,39 @@ function buildMetaSuffix(meta?: ConfirmMeta) {
   return "";
 }
 
+/* ================= DialogButton Component ================= */
+function DialogButton({
+  label,
+  onClick,
+  icon: BtnIcon,
+  variant,
+}: {
+  label: string;
+  onClick: () => void;
+  icon?: React.ElementType;
+  variant: "confirm" | "cancel";
+}) {
+  const base =
+    "inline-flex items-center justify-center gap-2 rounded-lg px-4 h-10 text-sm font-semibold " +
+    "transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2";
+
+  const cancelBtn = "bg-gray-200 text-gray-800 hover:bg-gray-300 border border-gray-300 focus:ring-gray-300";
+
+  const confirmBtn =
+    variant === "confirm"
+      ? "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-300"
+      : "bg-red-600 text-white hover:bg-red-700 focus:ring-red-300";
+
+  const cls = variant === "cancel" ? cancelBtn : confirmBtn;
+
+  return (
+    <button type="button" onClick={onClick} className={`${base} ${cls}`}>
+      {BtnIcon ? <BtnIcon className="h-4 w-4" /> : null}
+      <span>{label}</span>
+    </button>
+  );
+}
+
 /* ================= Provider ================= */
 export default function ConfirmProvider({ children }: { children: React.ReactNode }) {
   const t = useTranslations("common.confirm");
@@ -58,7 +91,10 @@ export default function ConfirmProvider({ children }: { children: React.ReactNod
   const [payload, setPayload] = useState<ConfirmPayload | null>(null);
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    const timeout = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(timeout);
+  }, []);
 
   const confirm = useCallback((p: ConfirmPayload) => {
     setPayload(p);
@@ -142,39 +178,6 @@ export default function ConfirmProvider({ children }: { children: React.ReactNod
     : "bg-blue-50 border-blue-200 text-blue-700";
 
   const confirmIcon = isDelete ? Trash2 : isAdd ? Plus : isUpdate ? Pencil : isWarning ? AlertTriangle : CheckCircle2;
-
-  // confirm button theme
-  const confirmBtn = isDanger
-    ? "bg-red-600 text-white hover:bg-red-700 focus:ring-red-300"
-    : "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-300";
-
-  /* ✅ Local Common Button (no separate file) */
-  function DialogButton({
-    label,
-    onClick,
-    icon: BtnIcon,
-    variant,
-  }: {
-    label: string;
-    onClick: () => void;
-    icon?: React.ElementType;
-    variant: "confirm" | "cancel";
-  }) {
-    const base =
-      "inline-flex items-center justify-center gap-2 rounded-lg px-4 h-10 text-sm font-semibold " +
-      "transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2";
-
-    const cancelBtn = "bg-gray-200 text-gray-800 hover:bg-gray-300 border border-gray-300 focus:ring-gray-300";
-
-    const cls = variant === "cancel" ? cancelBtn : confirmBtn;
-
-    return (
-      <button type="button" onClick={onClick} className={`${base} ${cls}`}>
-        {BtnIcon ? <BtnIcon className="h-4 w-4" /> : null}
-        <span>{label}</span>
-      </button>
-    );
-  }
 
   return (
     <ConfirmContext.Provider value={{ confirm }}>
