@@ -1,3 +1,5 @@
+"use client";
+
 function isPrimitive(val: unknown): val is string | number | boolean | null | undefined {
   return (
     typeof val === "string" ||
@@ -7,7 +9,6 @@ function isPrimitive(val: unknown): val is string | number | boolean | null | un
     typeof val === "undefined"
   );
 }
-"use client";
 
 import React, { useMemo } from "react";
 import { useTranslations } from "next-intl";
@@ -60,8 +61,6 @@ export interface MasterTableProps<T extends Record<string, unknown> = Record<str
   /* ===== HEADER ===== */
   headerTitle?: string;
   headerSubtitle?: string;
-
-
 
   headerExtra?: React.ReactNode;
   /* ===== FOOTER ===== */
