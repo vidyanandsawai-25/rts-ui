@@ -1,3 +1,12 @@
+function isPrimitive(val: unknown): val is string | number | boolean | null | undefined {
+  return (
+    typeof val === "string" ||
+    typeof val === "number" ||
+    typeof val === "boolean" ||
+    val === null ||
+    typeof val === "undefined"
+  );
+}
 "use client";
 
 import React, { useMemo } from "react";
@@ -230,18 +239,7 @@ export function MasterTable<T extends Record<string, unknown> = any>({
                         <StatusBadge value={value} />
                       ) : (
                         <span className="font-medium">
-                          {(() => {
-                            if (
-                              typeof value === "string" ||
-                              typeof value === "number" ||
-                              typeof value === "boolean" ||
-                              value === null ||
-                              typeof value === "undefined"
-                            ) {
-                              return value;
-                            }
-                            return "-";
-                          })()}
+                          {isPrimitive(value) ? value : "-"}
                         </span>
                       )}
                     </td>
