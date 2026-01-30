@@ -6,47 +6,32 @@
  */
 
 import { useState, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { Globe } from 'lucide-react';
-import { Locale, locales, localeNames, defaultLocale } from '@/i18n/config';
-
-// Extract locale from pathname (e.g., /en/dashboard -> en)
-const getLocaleFromPath = (pathname: string): Locale => {
-  const segments = pathname.split('/').filter(Boolean);
-  const firstSegment = segments[0] as Locale;
-  return locales.includes(firstSegment) ? firstSegment : defaultLocale;
-};
+import type { Locale } from '@/i18n/config';
+import {
+  locales,
+  localeNames,
+  defaultLocale,
+  switchLocale,
+  getLocaleFromPathname,
+} from '@/i18n/config';
 
 export function LanguageSelector() {
   const pathname = usePathname();
-  
+  const router = useRouter();
+
   const [currentLocale, setCurrentLocale] = useState<Locale>(defaultLocale);
   const [isOpen, setIsOpen] = useState(false);
-  
+
   // Update current locale when pathname changes
   useEffect(() => {
-    setCurrentLocale(getLocaleFromPath(pathname));
+    setCurrentLocale(getLocaleFromPathname(pathname));
   }, [pathname]);
 
   const handleLanguageChange = (locale: Locale) => {
-    // Save to cookie first (expires in 1 year)
-    const expires = new Date();
-    expires.setFullYear(expires.getFullYear() + 1);
-    // eslint-disable-next-line react-hooks/immutability -- Browser APIs like document.cookie are safe to modify in event handlers
-    document.cookie = `NEXT_LOCALE=${locale}; path=/; expires=${expires.toUTCString()}`;
-
-    // Save to localStorage as backup
-    localStorage.setItem('NEXT_LOCALE', locale);
-
-    // Extract the current path without locale prefix (dynamically built from locales array)
-    const localePattern = new RegExp(`^/(${locales.join('|')})`);
-    const pathWithoutLocale = pathname.replace(localePattern, '') || '/';
-    
-    // Always include locale prefix in the path
-    const path = `/${locale}${pathWithoutLocale}`;
-    
-    // Force hard reload to ensure middleware and layout re-run with new locale
-    window.location.replace(path);
+    setIsOpen(false);
+    switchLocale(locale, pathname, router);
   };
 
   return (

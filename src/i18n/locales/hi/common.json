@@ -19,7 +19,8 @@
     "deleting": "हटाया जा रहा है...",
     "adding": "जोड़ा जा रहा है...",
     "updating": "अपडेट हो रहा है...",
-    "processing": "प्रक्रिया जारी है..."
+    "processing": "प्रक्रिया जारी है...",
+    "logout": "लॉग आउट"
   },
   "validation": {
     "required": "यह फ़ील्ड आवश्यक है",
@@ -54,9 +55,11 @@
   },
   "language": {
     "select": "भाषा चुनें",
+    "selectLanguage": "एप्लिकेशन भाषा चुनें",
     "english": "English",
     "hindi": "हिंदी (Hindi)",
-    "marathi": "मराठी (Marathi)"
+    "marathi": "मराठी (Marathi)",
+    "switchFailed": "भाषा बदलने में विफल। कृपया पुनः प्रयास करें।"
   },
   "navigation": {
     "dashboard": "डैशबोर्ड",
@@ -71,6 +74,43 @@
   },
   "app": {
     "title": "ऐप",
+    "noServicesAvailable": "कोई सेवा उपलब्ध नहीं है",
+    "departmentName": "संपत्ति कर विभाग",
+    "assessmentSystem": "संपत्ति कर निर्धारण और प्रबंधन प्रणाली",
+    "defaultUser": "डिफ़ॉल्ट उपयोगकर्ता",
+    "defaultUlbName": "ठाणे नगरपालिका महानगरपालिका",
+    "defaultUlbCode": "ठ.म.न."
+  },
+  "menu": {
+    "analytics": "डेटा विश्लेषण",
+    "searchProperty": "संपत्ति खोजें",
+    "dashboard": "पी.टी.आई.एस.",
+    "assessmentProcess": "निर्धारण प्रक्रिया",
+    "dataCenter": "डेटा सेंटर",
+    "ulbApproval": "यूएलबी अनुमोदन",
+    "hearingApplication": "सुनवाई आवेदन",
+    "autoAppeal": "ऑटो अपील",
+    "hearingApproval": "सुनवाई अनुमोदन",
+    "reportEngine": "रिपोर्ट इंजन",
+    "utility": "उपयोगिता",
+    "lockProperty": "संपत्ति लॉक करें",
+    "addTaxes": "कर जोड़ें",
+    "autoWardEntry": "ऑटो वार्ड प्रविष्टि",
+    "updateCommonDetails": "सामान्य विवरण अपडेट करें",
+    "deleteProperty": "संपत्ति हटाएं",
+    "qrGeneration": "क्यूआर जेनरेशन",
+    "dataImport": "डेटा आयात",
+    "services": "सेवाएं",
+    "payPropertyTax": "संपत्ति कर का भुगतान करें",
+    "payWaterTax": "जल कर का भुगतान करें",
+    "payTradeLicense": "व्यापार लाइसेंस शुल्क का भुगतान करें",
+    "rts": "आरटीएस",
+    "rti": "आरटीआई",
+    "igr": "आईजीआर",
+    "aapleSarkar": "आपले सरकार",
+    "gis": "जीआईएस",
+    "master": "मास्टर",
+    "userManagement": "उपयोगकर्ता प्रबंधन",
     "noServicesAvailable": "कोई सेवा उपलब्ध नहीं है"
   },
   "multiSelect": {
