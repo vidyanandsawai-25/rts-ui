@@ -85,7 +85,7 @@ function DialogButton({
 
 /* ================= Provider ================= */
 export default function ConfirmProvider({ children }: { children: React.ReactNode }) {
-  const t = useTranslations("common.confirm");
+  const t = useTranslations("common");
 
   const [open, setOpen] = useState(false);
   const [payload, setPayload] = useState<ConfirmPayload | null>(null);
@@ -141,8 +141,14 @@ export default function ConfirmProvider({ children }: { children: React.ReactNod
 
   const handleConfirm = useCallback(async () => {
     if (!computed.onConfirm) return;
-    if (computed.closeOnConfirm) close();
-    await computed.onConfirm(computed.meta);
+    try {
+      if (computed.closeOnConfirm) close();
+      await computed.onConfirm(computed.meta);
+    } catch (error) {
+      console.error("Error during confirmation:", error);
+      // Optionally, you can add user feedback here, e.g.,
+      // setErrorMessage("An error occurred. Please try again.");
+    }
   }, [computed, close]);
 
   // ESC close

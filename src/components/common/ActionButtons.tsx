@@ -87,8 +87,7 @@ export function ImportButton({ label = "Import", ...props }: ActionButtonProps) 
   );
 }
 
-
-// * ===== FIRST PAGE ===== */
+/* ===== FIRST PAGE ===== */
 export function FirstPageButton(props: Omit<ButtonProps, "icon" | "variant">) {
   return (
     <Button

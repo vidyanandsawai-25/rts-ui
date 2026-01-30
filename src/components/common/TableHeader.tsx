@@ -22,7 +22,6 @@ export default function TableHeader({
   subtitle,
   icon: Icon,
   actionLabel,
-  // actionIcon, //comment beacause unused
   onActionClick,
   actionDisabled = false,
   rightContent,
@@ -67,7 +66,7 @@ export default function TableHeader({
               onClick={onActionClick}
               disabled={actionDisabled}
             >
-              {actionLabel}
+             
             </AddButton>
 
           )}

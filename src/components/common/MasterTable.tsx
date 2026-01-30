@@ -237,10 +237,14 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
                       ) : col.isStatus ? (
                         isPrimitive(value)
                           ? <StatusBadge value={value} />
-                          : <span className="font-medium">-</span>
+                           : <span className="font-medium">-</span>
                       ) : (
                         <span className="font-medium">
-                          {isPrimitive(value) ? value : "-"}
+                         {value === null || typeof value === "undefined"
+                            ? "-"
+                            : isPrimitive(value)
+                              ? String(value)
+                              : "-"}
                         </span>
                       )}
                     </td>
@@ -321,82 +325,6 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
       </div>
 
       {/* ================= PAGINATION ================= */}
-
-      {/* <div className="bg-[#F8FAFF] border border-[#DCEAFF] rounded-xl px-4 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3 shadow-sm">
-        <span className="text-sm text-[#6B7280]">
-          {t("table.showingEntries", { start, end, total: totalCount })}
-        </span>
-
-        <div className="flex items-center justify-between md:justify-end gap-2 w-full md:w-auto">
-          <ActionButton
-            variant="ghost"
-            size="sm"
-            disabled={pageNumber <= 1}
-            onClick={() => onPageChange(pageNumber - 1)}
-            label="‹"
-            className="h-9 w-9 px-0 border border-[#DCEAFF]"
-          />
-
-          <span className="md:hidden text-sm font-semibold text-[#1E3A8A]">
-            {t("table.page", { current: pageNumber, total: totalPages })}
-          </span>
-
-          <div className="hidden md:flex items-center gap-1">
-            <ActionButton
-              variant="ghost"
-              size="sm"
-              disabled={pageNumber === 1}
-              onClick={() => onPageChange(1)}
-              label="«"
-              className="h-9 w-9 px-0 border border-[#DCEAFF]"
-            />
-
-
-            {pages.map((p, i) =>
-              p === "dots" ? (
-                <span key={`dots-${i}`} className="px-2 text-[#94A3B8]">
-                  ...
-                </span>
-              ) : (
-                <ActionButton
-                  key={`page-${p}-${i}`}
-                  size="sm"
-                  label={String(p)}
-                  onClick={() => onPageChange(p as number)}
-                  variant={pageNumber === p ? "primary" : "secondary"}
-                  className={cn(
-                    "h-9 min-w-[36px] px-3 text-sm font-medium",
-                    pageNumber === p
-                      ? "bg-[#2563EB] text-white border-[#2563EB]"
-                      : "bg-white border border-[#DCEAFF] text-[#1E3A8A] hover:bg-gray-50"
-                  )}
-                />
-              )
-            )}
-
-
-            <ActionButton
-              variant="secondary"
-              size="sm"
-              disabled={pageNumber === totalPages}
-              onClick={() => onPageChange(totalPages)}
-              label="»"
-              className="h-9 w-9 px-0 border border-[#DCEAFF]"
-            />
-          </div>
-
-          <ActionButton
-            variant="secondary"
-            size="sm"
-            disabled={pageNumber >= totalPages}
-            onClick={() => onPageChange(pageNumber + 1)}
-            label="›"
-            className="h-9 w-9 px-0 border border-[#DCEAFF]"
-          />
-        </div>
-      </div> */}
-
-
       <div className="bg-[#F8FAFF] border border-[#DCEAFF] rounded-xl px-4 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3 shadow-sm">
         <span className="text-sm text-[#6B7280]">
           {t("table.showingEntries", { start, end, total: totalCount })}
