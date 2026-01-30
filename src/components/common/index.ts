@@ -18,8 +18,8 @@ export {
   UploadButton,
   ExportButton,
   ImportButton,
-  IconButton,
 } from './ActionButtons';
+export { default as IconButton } from './ActionButtons';
 
 export { Card, CardHeader, CardTitle, CardContent } from './Card';
 export type { CardProps } from './Card';
@@ -48,7 +48,7 @@ export { SearchInput } from './SearchInput';
 
 export { StatusBadge } from './StatusBadge';
 
-export { TableHeader } from './TableHeader';
+export { default as TableHeader } from './TableHeader';
 
 export { ValidationMessage } from './ValidationMessage';
 export { Tabs } from './Tabs';

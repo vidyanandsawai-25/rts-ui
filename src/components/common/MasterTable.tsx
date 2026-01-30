@@ -92,7 +92,7 @@ function buildPagination(current: number, total: number): PageToken[] {
    MASTER TABLE
 ========================= */
 
-export function MasterTable<T = any>({
+export function MasterTable<T extends Record<string, unknown> = any>({
   columns,
   data,
   loading,
@@ -110,7 +110,7 @@ export function MasterTable<T = any>({
   emptyText,
   loadingText,
 
-  containerClassName,
+  // containerClassName, // Removed because unused
   tableClassName,
   theadClassName,
   rowClassName,
@@ -164,7 +164,7 @@ export function MasterTable<T = any>({
           <tr>
             {columns.map((col, index) => (
               <th
-                key={col.key}
+                key={String(col.key)}
                 style={{ width: col.width }}
                 className={cn(
                   "px-2 py-3 text-left text-sm font-semibold text-[#1E3A8A]",
@@ -218,7 +218,7 @@ export function MasterTable<T = any>({
                   const value = row[col.key];
                   return (
                     <td
-                      key={col.key}
+                      key={String(col.key)}
                       className={cn(
                         "px-2 py-2 text-gray-700",
                         col.cellClassName
@@ -230,7 +230,13 @@ export function MasterTable<T = any>({
                         <StatusBadge value={value} />
                       ) : (
                         <span className="font-medium">
-                          {value ?? "-"}
+                          {typeof value === "string" || typeof value === "number" || typeof value === "boolean"
+                            ? value
+                            : value == null || typeof value === "undefined"
+                              ? "-"
+                              : typeof value === "object"
+                                ? JSON.stringify(value)
+                                : "-"}
                         </span>
                       )}
                     </td>

@@ -2,7 +2,6 @@
 
 import React from "react";
 import { LucideIcon } from "lucide-react";
-import { Button } from "@/components/common/Button";
 import { cn } from "@/lib/utils/cn";
 import { AddButton } from "./ActionButtons";
 
@@ -23,7 +22,7 @@ export default function TableHeader({
   subtitle,
   icon: Icon,
   actionLabel,
-  actionIcon,
+  // actionIcon, //comment beacause unused
   onActionClick,
   actionDisabled = false,
   rightContent,
