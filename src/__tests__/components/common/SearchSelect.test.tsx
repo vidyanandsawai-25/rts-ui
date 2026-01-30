@@ -118,6 +118,20 @@ describe('SearchSelect', () => {
     expect(onChange).toHaveBeenCalledWith('test-select', 'opt2');
   });
 
+  it('is disabled when disabled prop is true', () => {
+    render(
+      <SearchSelect
+        name="test-select"
+        options={options}
+        value=""
+        onChange={() => {}}
+        disabled={true}
+      />
+    );
+    
+    expect(screen.getByRole('combobox')).toBeDisabled();
+  });
+
 
 
   it('shows no options available message when options are empty', () => {
