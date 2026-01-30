@@ -124,6 +124,7 @@
     "search": "Search..."
   },
   "Grid": {
-    "action": "Action"
+    "action": "Action",
+    "currencySymbol": "₹"
   }
 }

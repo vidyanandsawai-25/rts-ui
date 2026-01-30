@@ -80,22 +80,26 @@ export default function SearchSelect({
   /* Sync selected value */
   useEffect(() => {
     if (!hasOptions) {
-      setSearch("");
+      if (search !== "") Promise.resolve().then(() => setSearch(""));
       return;
     }
 
     if (forceSearchText !== undefined) {
-      setSearch(forceSearchText);
-      setHasTyped(false);
+      Promise.resolve().then(() => {
+        setSearch(forceSearchText);
+        setHasTyped(false);
+      });
       return;
     }
 
     const selected = validOptions.find((o) => o.value === value);
     if (selected) {
-      setSearch(selected.label);
-      setHasTyped(false);
+      Promise.resolve().then(() => {
+        setSearch(selected.label);
+        setHasTyped(false);
+      });
     } else {
-      setSearch("");
+      Promise.resolve().then(() => setSearch(""));
     }
   }, [value, validOptions, forceSearchText, hasOptions]);
 

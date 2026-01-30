@@ -191,7 +191,7 @@ const MatrixGrid: React.FC<MatrixGridProps> = ({
                             colorClass
                           )}
                         >
-                          ₹{value.toFixed(2)}
+                          {t('currencySymbol')}{value.toFixed(2)}
                         </div>
                       )}
                     </div>

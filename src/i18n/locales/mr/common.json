@@ -124,6 +124,7 @@
     "search": "शोधा..."
   },
   "Grid": {
-    "action": "कृती"
+    "action": "कृती",
+    "currencySymbol": "₹"
   }
 }

@@ -124,6 +124,7 @@
     "search": "खोजें..."
   },
   "Grid": {
-    "action": "कार्रवाई"
+    "action": "कार्रवाई",
+    "currencySymbol": "₹"
   }
 }
