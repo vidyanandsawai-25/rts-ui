@@ -79,8 +79,8 @@ function buildPagination(current: number, total: number): PageToken[] {
   const pages: PageToken[] = [];
   const window = 3;
 
-  let start = Math.max(1, current - Math.floor(window / 2));
-  let end = Math.min(total, start + window - 1);
+  const start = Math.max(1, current - Math.floor(window / 2));
+  const end = Math.min(total, start + window - 1);
 
   if (start > 1) {
     pages.push(1);
@@ -101,7 +101,7 @@ function buildPagination(current: number, total: number): PageToken[] {
    MASTER TABLE
 ========================= */
 
-export function MasterTable<T extends Record<string, unknown> = any>({
+export function MasterTable<T extends Record<string, unknown> = Record<string, unknown>>({
   columns,
   data,
   loading,
