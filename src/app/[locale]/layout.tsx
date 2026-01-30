@@ -29,7 +29,7 @@ interface RootLayoutProps {
 
 export default async function RootLayout({ children, params }: Readonly<RootLayoutProps>) {
   const { locale } = await params;
-  
+
   // Important: Pass locale to getMessages to ensure correct translations are loaded
   const messages = await getMessages({ locale });
 

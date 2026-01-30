@@ -17,7 +17,7 @@ interface DashboardPageProps {
 
 export default async function DashboardPage({ params }: DashboardPageProps) {
   const { locale } = await params;
-  
+
   // Server-side data fetching
   const dashboardData = await getDashboardData();
 
@@ -33,7 +33,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
   };
 
   return (
-    <MainLayout locale={locale}>
+    <MainLayout>
       <div className="space-y-6">
         <div className="flex justify-between items-start">
           <div>

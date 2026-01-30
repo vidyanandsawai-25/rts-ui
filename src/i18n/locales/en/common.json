@@ -19,7 +19,8 @@
     "deleting": "Deleting...",
     "adding": "Adding...",
     "updating": "Updating...",
-    "processing": "Processing..."
+    "processing": "Processing...",
+    "logout": "Logout"
   },
   "validation": {
     "required": "This field is required",
@@ -54,9 +55,11 @@
   },
   "language": {
     "select": "Select Language",
+    "selectLanguage": "Select application language",
     "english": "English",
     "hindi": "हिंदी (Hindi)",
-    "marathi": "मराठी (Marathi)"
+    "marathi": "मराठी (Marathi)",
+    "switchFailed": "Failed to switch language. Please try again."
   },
   "navigation": {
     "dashboard": "Dashboard",
@@ -71,6 +74,43 @@
   },
   "app": {
     "title": "App",
+    "noServicesAvailable": "No services available",
+    "departmentName": "Property Tax Department",
+    "assessmentSystem": "Property Tax Assessment & Management System",
+    "defaultUser": "User",
+    "defaultUlbName": "Thane Municipal Corporation",
+    "defaultUlbCode": "TMC"
+  },
+  "menu": {
+    "analytics": "Data Analytics",
+    "searchProperty": "Search Property",
+    "dashboard": "PTIS",
+    "assessmentProcess": "Assessment Process",
+    "dataCenter": "Data Center",
+    "ulbApproval": "ULB Approval",
+    "hearingApplication": "Hearing Application",
+    "autoAppeal": "Auto Appeal",
+    "hearingApproval": "Hearing Approval",
+    "reportEngine": "Report Engine",
+    "utility": "Utility",
+    "lockProperty": "Lock Property",
+    "addTaxes": "Add Taxes",
+    "autoWardEntry": "Auto Ward Entry",
+    "updateCommonDetails": "Update Common Details",
+    "deleteProperty": "Delete Property",
+    "qrGeneration": "QR Generation",
+    "dataImport": "Data Import",
+    "services": "Services",
+    "payPropertyTax": "Pay Property Tax",
+    "payWaterTax": "Pay Water Tax",
+    "payTradeLicense": "Pay Trade License Fee",
+    "rts": "RTS",
+    "rti": "RTI",
+    "igr": "IGR",
+    "aapleSarkar": "Aaple Sarkar",
+    "gis": "GIS",
+    "master": "Master",
+    "userManagement": "User Management",
     "noServicesAvailable": "No services available"
   },
   "multiSelect": {

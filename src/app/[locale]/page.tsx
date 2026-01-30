@@ -5,11 +5,11 @@ interface HomeProps {
   params: Promise<{ locale: string }>;
 }
 
-export default async function Home({ params }: HomeProps) {
-  const { locale } = await params;
-  
+export default async function Home({ params: _params }: HomeProps) {
+  // Unused params are now prefixed with underscore to satisfy no-unused-vars
+
   return (
-    <MainLayout locale={locale}>
+    <MainLayout>
       <ServiceCards />
     </MainLayout>
   );
