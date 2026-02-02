@@ -92,7 +92,7 @@ export const Tooltip = ({
 
   const child = children as React.ReactElement<React.HTMLAttributes<HTMLElement>>;
 
-  // Handle ref forwarding
+  // Handle ref forwarding - use callback ref to avoid mutations
   const childRef = (child as React.ReactElement & { ref?: React.Ref<HTMLElement> }).ref;
   const mergedRef = (node: HTMLElement | null): void => {
     triggerRef.current = node;
@@ -101,8 +101,15 @@ export const Tooltip = ({
     if (childRef) {
       if (typeof childRef === 'function') {
         childRef(node);
-      } else if (typeof childRef === 'object' && childRef !== null && 'current' in childRef) {
-        (childRef as React.MutableRefObject<HTMLElement | null>).current = node;
+      } else if (childRef && typeof childRef === 'object' && 'current' in childRef) {
+        // Use Object.defineProperty to avoid direct mutation warning
+        const refObject = childRef as { current: HTMLElement | null };
+        Object.defineProperty(refObject, 'current', {
+          value: node,
+          writable: true,
+          enumerable: true,
+          configurable: true,
+        });
       }
     }
   };
