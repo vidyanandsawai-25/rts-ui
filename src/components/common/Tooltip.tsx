@@ -84,18 +84,16 @@ export const Tooltip = ({
     right: "translate-x-0 -translate-y-1/2",
   };
 
-  if (!hasContent) return <>{children}</>;
+  // Extract child and ref before early returns to satisfy Rules of Hooks
+  const child = isValidElement(children)
+    ? (children as React.ReactElement<React.HTMLAttributes<HTMLElement>>)
+    : null;
+  
+  const childRef = child
+    ? (child as React.ReactElement & { ref?: React.Ref<HTMLElement> }).ref
+    : null;
 
-  if (!isValidElement(children)) {
-    console.warn("Tooltip children must be a valid React element.");
-    return <>{children}</>;
-  }
-
-  const child = children as React.ReactElement<React.HTMLAttributes<HTMLElement>>;
-
-  // Handle ref forwarding safely
-  const childRef = (child as React.ReactElement & { ref?: React.Ref<HTMLElement> }).ref;
-
+  // Handle ref forwarding safely - must be before early returns
   const mergedRef = useCallback(
     (node: HTMLElement | null): void => {
       triggerRef.current = node;
@@ -116,6 +114,14 @@ export const Tooltip = ({
     },
     [childRef]
   );
+
+  // Early returns AFTER all hooks
+  if (!hasContent) return <>{children}</>;
+
+  if (!child) {
+    console.warn("Tooltip children must be a valid React element.");
+    return <>{children}</>;
+  }
 
   return (
     <>
