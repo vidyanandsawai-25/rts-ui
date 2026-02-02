@@ -3,20 +3,20 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useTranslations } from "next-intl";
 
-export interface SelectOption {
+export interface SearchSelectOption {
   label: string;
   value: string;
 }
 
-export interface BaseSelectProps  {
+export interface BaseSearchSelectProps  {
   id?: string;
   name: string;
   label?: string;
-  options: SelectOption[];
+  options: SearchSelectOption[];
   required?: boolean;
 }
 
-export interface SelectProps extends BaseSelectProps  {
+export interface SearchSelectProps extends BaseSearchSelectProps  {
   value: string;
   onChange: (name: string, value: string) => void;
   placeholder?: string;
@@ -49,7 +49,7 @@ export function SearchSelect({
   disabled = false,
   forceSearchText,
   sanitizeInput,
-}: SelectProps) {
+}: SearchSelectProps) {
   const t = useTranslations("common.multiSelect");
 
   const [search, setSearch] = useState<string>("");
@@ -60,7 +60,7 @@ export function SearchSelect({
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   /* ---------------- Valid options ---------------- */
-  const validOptions = useMemo<SelectOption[]>(() => {
+  const validOptions = useMemo<SearchSelectOption[]>(() => {
     return Array.isArray(options)
       ? options.filter(
           (o) => o && typeof o.label === "string" && typeof o.value === "string"
@@ -93,7 +93,7 @@ export function SearchSelect({
   }, []);
 
   /* ---------------- Filter options ---------------- */
-  const filteredOptions = useMemo<SelectOption[]>(() => {
+  const filteredOptions = useMemo<SearchSelectOption[]>(() => {
     if (!hasTyped) return validOptions;
 
     return validOptions.filter((opt) =>

@@ -2,17 +2,6 @@ import { render, screen, fireEvent, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { MatrixGrid, MatrixColumn, MatrixRow } from '@/components/common/MatrixGrid';
 
-// Mock next-intl
-vi.mock('next-intl', () => ({
-  useTranslations: () => (key: string) => {
-    const translations: Record<string, string> = {
-      action: 'Action',
-      currencySymbol: '₹',
-    };
-    return translations[key] || key;
-  },
-}));
-
 const mockTranslations = {
   action: 'Action',
   currencySymbol: '₹',

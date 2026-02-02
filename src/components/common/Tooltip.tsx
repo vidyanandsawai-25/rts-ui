@@ -126,7 +126,7 @@ export const Tooltip = ({
   return (
     <>
       {/* ================= TRIGGER ================= */}
-      {/* eslint-disable-next-line react-hooks/refs */}
+    
       {cloneElement(child, {
         ref: mergedRef,
         onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {

@@ -75,7 +75,7 @@ export { Tooltip } from './Tooltip';
 export type { TooltipProps } from './Tooltip';
 
 export { SearchSelect } from './SearchSelect';
-export type { SelectProps as SearchSelectProps, SelectOption as SearchOption } from './SearchSelect';
+export type { SearchSelectProps, SearchSelectOption } from './SearchSelect';
 
 export { MatrixGrid } from './MatrixGrid';
 export type { MatrixGridProps, MatrixColumn, MatrixRow } from './MatrixGrid';
