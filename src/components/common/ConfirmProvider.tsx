@@ -1,46 +1,48 @@
 "use client";
 
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import React, { createContext, JSX, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
 import { AlertTriangle, CheckCircle2, Info, Pencil, Plus, Trash2, X } from "lucide-react";
 
 /* ================= Types ================= */
-type ConfirmVariant = "delete" | "add" | "update" | "info" | "warning";
 
-type ConfirmMeta = {
+export type ConfirmVariant = "delete" | "add" | "update" | "info" | "warning";
+
+export type ConfirmMeta = {
   id?: string | number;
   name?: string;
   [key: string]: unknown;
 };
 
-type ConfirmPayload = {
+export interface ConfirmOptions {
   variant?: ConfirmVariant;
   title?: string;
-  description?: string; // optional override
+  description?: string;
   confirmText?: string;
   cancelText?: string;
   meta?: ConfirmMeta;
-
   onConfirm: (meta?: ConfirmMeta) => Promise<void> | void;
   onCancel?: () => void;
   closeOnConfirm?: boolean;
-};
+}
 
-type ConfirmContextType = {
+export type ConfirmPayload = ConfirmOptions;
+
+export interface ConfirmContextType {
   confirm: (payload: ConfirmPayload) => void;
-};
+}
 
 const ConfirmContext = createContext<ConfirmContextType | null>(null);
 
-export function useConfirm() {
+export function useConfirm(): ConfirmContextType {
   const ctx = useContext(ConfirmContext);
   if (!ctx) throw new Error("useConfirm must be used inside ConfirmProvider");
   return ctx;
 }
 
 /* ✅ same line meta injection (no separate box) */
-function buildMetaSuffix(meta?: ConfirmMeta) {
+function buildMetaSuffix(meta?: ConfirmMeta): string {
   const name = meta?.name ? String(meta.name).trim() : "";
   const id = meta?.id !== undefined && meta?.id !== null ? String(meta.id).trim() : "";
 
@@ -51,17 +53,18 @@ function buildMetaSuffix(meta?: ConfirmMeta) {
 }
 
 /* ================= DialogButton Component ================= */
+interface DialogButtonProps {
+  label: string;
+  onClick: () => void;
+  icon?: React.ElementType;
+  variant: "confirm" | "cancel";
+}
 function DialogButton({
   label,
   onClick,
   icon: BtnIcon,
   variant,
-}: {
-  label: string;
-  onClick: () => void;
-  icon?: React.ElementType;
-  variant: "confirm" | "cancel";
-}) {
+}: DialogButtonProps): JSX.Element {
   const base =
     "inline-flex items-center justify-center gap-2 rounded-lg px-4 h-10 text-sm font-semibold " +
     "transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2";
@@ -84,7 +87,7 @@ function DialogButton({
 }
 
 /* ================= Provider ================= */
-export default function ConfirmProvider({ children }: { children: React.ReactNode }) {
+export function ConfirmProvider({ children }: { children: React.ReactNode }): JSX.Element {
   const t = useTranslations("common");
 
   const [open, setOpen] = useState(false);

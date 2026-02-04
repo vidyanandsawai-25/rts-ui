@@ -1,4 +1,4 @@
-import React from "react";
+import React, { JSX } from "react";
 import { Loader2 } from "lucide-react";
 
 /* ----------------------------------------------------------
@@ -16,6 +16,15 @@ export type ButtonVariant =
 
 export type ButtonSize = "xs" | "sm" | "md" | "lg";
 
+/**
+ * Props for the Button component
+ * @property {ButtonVariant} variant - The visual style variant of the button
+ * @property {ButtonSize} size - The size of the button
+ * @property {React.ElementType} icon - Optional icon component to display
+ * @property {"left" | "right"} iconPosition - Position of the icon relative to text
+ * @property {boolean} isLoading - Whether the button is in a loading state
+ * @property {React.ReactNode} children - Button content/text
+ */
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   size?: ButtonSize;
@@ -25,6 +34,18 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   children?: React.ReactNode;
 }
 
+/**
+ * A versatile button component with multiple variants, sizes, and loading states.
+ * Server Component compatible.
+ *
+ * @example
+ * <Button variant="primary" size="md" isLoading={false}>
+ *   Click Me
+ * </Button>
+ *
+ * @param {ButtonProps} props - The button props
+ * @returns {JSX.Element} The rendered button element
+ */
 export function Button({
   variant = "primary",
   size = "md",
@@ -36,7 +57,7 @@ export function Button({
   children,
   type = "button",
   ...props
-}: ButtonProps) {
+}: ButtonProps): JSX.Element {
   const sizeClasses: Record<ButtonSize, string> = {
     xs: "h-7 px-2.5 text-xs gap-1.5",
     sm: "h-8 px-3 text-sm gap-2",
