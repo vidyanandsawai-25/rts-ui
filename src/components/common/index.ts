@@ -18,9 +18,12 @@ export {
   UploadButton,
   ExportButton,
   ImportButton,
+  FirstPageButton,
+  PrevPageButton,
+  NextPageButton,
+  LastPageButton,
 } from './ActionButtons';
 export { default as IconButton } from './ActionButtons';
-
 export { Card, CardHeader, CardTitle, CardContent } from './Card';
 export type { CardProps } from './Card';
 
@@ -70,3 +73,5 @@ export type { BadgeProps, BadgeVariant, BadgeSize } from './Badge';
 
 export { ContextMenu } from './ContextMenu';
 export type { ContextMenuProps, ContextMenuItem } from './ContextMenu';
+export {ConfirmProvider, useConfirm} from './ConfirmProvider';
+export type { ConfirmOptions, ConfirmPayload, ConfirmContextType, ConfirmVariant, ConfirmMeta } from './ConfirmProvider';
