@@ -1,0 +1,59 @@
+import { render, screen, fireEvent, act } from "@testing-library/react";
+import { describe, it, expect } from "vitest";
+import React from "react";
+import { ToggleSwitch } from "@/components/common/ToggleSwitch";
+
+describe("ToggleSwitch", () => {
+  it("renders with label", () => {
+    render(<ToggleSwitch checked={false} onChange={() => {}} label="Status" />);
+    expect(screen.getByText("Status")).toBeInTheDocument();
+  });
+
+  it("renders switch button", () => {
+    render(<ToggleSwitch checked={false} onChange={() => {}} />);
+    expect(screen.getByRole("button")).toBeInTheDocument();
+  });
+
+  it("calls onChange when toggled", () => {
+    const handleChange = vi.fn();
+    render(<ToggleSwitch checked={false} onChange={handleChange} />);
+    fireEvent.click(screen.getByRole("button"));
+    expect(handleChange).toHaveBeenCalled();
+  });
+
+  it("shows popup when toggled and hides after timeout", async () => {
+    vi.useFakeTimers();
+    render(<ToggleSwitch checked={false} onChange={() => {}} />);
+    fireEvent.click(screen.getByRole("button"));
+    expect(screen.getByText("Active")).toBeInTheDocument();
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
+    expect(screen.queryByText("Active")).not.toBeInTheDocument();
+    vi.useRealTimers();
+  });
+
+  it("shows 'Inactive' popup when toggling off", () => {
+    render(<ToggleSwitch checked={true} onChange={() => {}} />);
+    fireEvent.click(screen.getByRole("button"));
+    expect(screen.getByText("Inactive")).toBeInTheDocument();
+  });
+
+  it("does not show popup if showPopup is false", () => {
+    render(<ToggleSwitch checked={false} onChange={() => {}} showPopup={false} />);
+    fireEvent.click(screen.getByRole("button"));
+    expect(screen.queryByText("Active")).not.toBeInTheDocument();
+  });
+
+  it("switch thumb moves when checked", () => {
+    render(<ToggleSwitch checked={true} onChange={() => {}} />);
+    const thumb = screen.getByRole("button").querySelector("span");
+    expect(thumb).toHaveAttribute("data-state", "checked");
+  });
+
+  it("switch thumb moves when unchecked", () => {
+    render(<ToggleSwitch checked={false} onChange={() => {}} />);
+    const thumb = screen.getByRole("button").querySelector("span");
+    expect(thumb).toHaveAttribute("data-state", "unchecked");
+  });
+});
