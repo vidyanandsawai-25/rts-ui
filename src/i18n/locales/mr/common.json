@@ -120,6 +120,12 @@
     "placeholder": "पर्याय निवडा...",
     "clearAll": "सर्व काढा",
     "noOptions": "कोणतेही पर्याय सापडले नाहीत",
+    "noOptionsAvailable": "कोणतेही पर्याय उपलब्ध नाहीत",
     "search": "शोधा..."
+  },
+  "Grid": {
+    "action": "कृती",
+    "currencySymbol": "₹",
+    "deleteRow": "पंक्ती काढा"
   }
 }

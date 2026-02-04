@@ -70,3 +70,18 @@ export type { BadgeProps, BadgeVariant, BadgeSize } from './Badge';
 
 export { ContextMenu } from './ContextMenu';
 export type { ContextMenuProps, ContextMenuItem } from './ContextMenu';
+
+export { Tooltip } from './Tooltip';
+export type { TooltipProps } from './Tooltip';
+
+export { SearchSelect } from './SearchSelect';
+export type { SearchSelectProps, SearchSelectOption } from './SearchSelect';
+
+export { MatrixGrid } from './MatrixGrid';
+export type { MatrixGridProps, MatrixColumn, MatrixRow } from './MatrixGrid';
+
+export { MatrixDeleteButton } from './MatrixDeleteButton';
+export type { MatrixDeleteButtonProps } from './MatrixDeleteButton';
+
+export { MatrixCellInput } from './MatrixCellInput';
+export type { MatrixCellInputProps } from './MatrixCellInput';

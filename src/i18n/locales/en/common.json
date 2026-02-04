@@ -120,6 +120,12 @@
     "placeholder": "Select options...",
     "clearAll": "Clear All",
     "noOptions": "No options found",
+    "noOptionsAvailable": "No options available",
     "search": "Search..."
+  },
+  "Grid": {
+    "action": "Action",
+    "currencySymbol": "₹",
+    "deleteRow": "Delete Row"
   }
 }
