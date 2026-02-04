@@ -1,6 +1,7 @@
 "use client";
 
-import ConfirmProvider from "@/components/common/ConfirmProvider";
+
+import { ConfirmProvider } from "@/components/common";
 import { Toaster } from "sonner";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
