@@ -11,7 +11,8 @@
     "remove": "हटाएं",
     "confirm": "पुष्टि करें",
     "back": "पीछे",
-    "next": "आगे"
+    "next": "आगे",
+    "clear": "साफ करें"
   },
   "actions": {
     "loading": "लोड हो रहा है...",
@@ -20,7 +21,13 @@
     "adding": "जोड़ा जा रहा है...",
     "updating": "अपडेट हो रहा है...",
     "processing": "प्रक्रिया जारी है...",
-    "logout": "लॉग आउट"
+    "logout": "लॉग आउट",
+    "cancel": "रद्द करें",
+    "save": "सहेजें",
+    "update": "अपडेट करें",
+    "submit": "जमा करें",
+    "pleaseWait": "कृपया प्रतीक्षा करें..."
+
   },
   "validation": {
     "required": "यह फ़ील्ड आवश्यक है",
@@ -51,15 +58,69 @@
     "noData": "कोई डेटा उपलब्ध नहीं है",
     "success": "कार्य सफल",
     "confirmDelete": "क्या आप वाकई हटाना चाहते हैं?",
-    "unsavedChanges": "आपके पास असहेजे परिवर्तन हैं"
+    "unsavedChanges": "आपके पास असहेजे परिवर्तन हैं",
+    "loadingData": "डेटा लोड हो रहा है...",
+    "fetchError": "डेटा लाने में त्रुटि हुई",
+    "updateSuccess": "सफलतापूर्वक अपडेट किया गया",
+    "createSuccess": "सफलतापूर्वक बनाया गया",
+    "deleteSuccess": "सफलतापूर्वक हटाया गया",
+    "pleaseWait": "कृपया प्रतीक्षा करें...",
+    "noRecordsFound": "कोई रिकॉर्ड नहीं मिला",
+    "actionCompleted": "कार्रवाई सफलतापूर्वक पूरी हुई",
+    "recordsFound": "रिकॉर्ड मिले"
+  },
+  "confirm": {
+    "delete": {
+      "title": "हटाने की पुष्टि करें",
+      "description": "क्या आप वाकई इस आइटम को हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती।",
+      "confirm": "हटाएं"
+    },
+    "add": {
+      "title": "जोड़ने की पुष्टि करें",
+      "description": "क्या आप वाकई इस आइटम को जोड़ना चाहते हैं?",
+      "confirm": "जोड़ें"
+    },
+    "update": {
+      "title": "अपडेट की पुष्टि करें",
+      "description": "क्या आप वाकई इस आइटम को अपडेट करना चाहते हैं?",
+      "confirm": "अपडेट करें"
+    },
+    "info": {
+      "title": "जानकारी",
+      "description": "कृपया आगे बढ़ने के लिए पुष्टि करें।",
+      "confirm": "आगे बढ़ें"
+    },
+    "warning": {
+      "title": "चेतावनी",
+      "description": "क्या आप वाकई आगे बढ़ना चाहते हैं?",
+      "confirm": "आगे बढ़ें"
+    },
+    "cancel": "रद्द करें"
+  },
+  "table": {
+    "show": "दिखाएं",
+    "entries": "प्रविष्टियां",
+    "showing": "दिखा रहा है",
+    "to": "से",
+    "of": "में से",
+    "columns": {
+      "status": "स्थिति",
+      "actions": "कार्रवाई"
+    },
+     "noData": "कोई डेटा उपलब्ध नहीं है",
+    "noRecordsFound": "कोई रिकॉर्ड नहीं मिला",
+    "showingEntries": "{start} से {end} तक {total} प्रविष्टियां दिखा रहे हैं",
+    "page": "पृष्ठ {current} का {total}",
+    "firstPage": "पहला पृष्ठ",
+    "lastPage": "अंतिम पृष्ठ",
+    "previousPage": "पिछला पृष्ठ",
+    "nextPage": "अगला पृष्ठ"
   },
   "language": {
     "select": "भाषा चुनें",
-    "selectLanguage": "एप्लिकेशन भाषा चुनें",
     "english": "English",
     "hindi": "हिंदी (Hindi)",
-    "marathi": "मराठी (Marathi)",
-    "switchFailed": "भाषा बदलने में विफल। कृपया पुनः प्रयास करें।"
+    "marathi": "मराठी (Marathi)"
   },
   "navigation": {
     "dashboard": "डैशबोर्ड",
@@ -76,10 +137,7 @@
     "title": "ऐप",
     "noServicesAvailable": "कोई सेवा उपलब्ध नहीं है",
     "departmentName": "संपत्ति कर विभाग",
-    "assessmentSystem": "संपत्ति कर निर्धारण और प्रबंधन प्रणाली",
-    "defaultUser": "डिफ़ॉल्ट उपयोगकर्ता",
-    "defaultUlbName": "ठाणे नगरपालिका महानगरपालिका",
-    "defaultUlbCode": "ठ.म.न."
+    "assessmentSystem": "संपत्ति कर निर्धारण और प्रबंधन प्रणाली"
   },
   "menu": {
     "analytics": "डेटा विश्लेषण",

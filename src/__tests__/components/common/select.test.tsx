@@ -8,42 +8,72 @@ import { Select, Option } from "@/components/common/select";
 
 describe("Select", () => {
   const options: Option[] = [
-    { label: "Option 1", value: "1" },
-    { label: "Option 2", value: "2" },
-    { label: "Option 3", value: "3", disabled: true },
+    { label: "Apple", value: "apple" },
+    { label: "Banana", value: "banana" },
+    { label: "Cherry", value: "cherry", disabled: true },
   ];
 
-  it("renders with placeholder", () => {
+  it("renders placeholder when no value", () => {
     render(<Select options={options} placeholder="Pick one" />);
     expect(screen.getByText("Pick one")).toBeInTheDocument();
   });
 
-  it("shows options on click and selects value", () => {
+  it("renders selected value label", () => {
+    render(<Select options={options} value="banana" />);
+    expect(screen.getByText("Banana")).toBeInTheDocument();
+  });
+
+  it("opens dropdown on button click", () => {
+    render(<Select options={options} />);
+    fireEvent.click(screen.getByRole("button"));
+    expect(screen.getByRole("listbox")).toBeInTheDocument();
+    expect(screen.getByText("Apple")).toBeInTheDocument();
+    expect(screen.getByText("Banana")).toBeInTheDocument();
+  });
+
+  it("selects option and calls onChange", () => {
     const handleChange = vi.fn();
     render(<Select options={options} onChange={handleChange} />);
     fireEvent.click(screen.getByRole("button"));
-    expect(screen.getByText("Option 1")).toBeInTheDocument();
-    fireEvent.click(screen.getByText("Option 2"));
-    expect(handleChange).toHaveBeenCalledWith("2");
+    fireEvent.click(screen.getByText("Banana"));
+    expect(handleChange).toHaveBeenCalledWith("banana");
+    // Should close dropdown
+    expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
   });
 
   it("does not select disabled option", () => {
     const handleChange = vi.fn();
     render(<Select options={options} onChange={handleChange} />);
     fireEvent.click(screen.getByRole("button"));
-    fireEvent.click(screen.getByText("Option 3"));
+    fireEvent.click(screen.getByText("Cherry"));
     expect(handleChange).not.toHaveBeenCalled();
   });
 
-  it("shows selected value", () => {
-    render(<Select options={options} value="1" />);
-    expect(screen.getByText("Option 1")).toBeInTheDocument();
+  it("applies custom className", () => {
+    const { container } = render(<Select options={options} className="custom-class" />);
+    expect(container.firstChild).toHaveClass("custom-class");
   });
 
-  it("applies custom className", () => {
-    const { container } = render(
-      <Select options={options} className="custom-select" />
-    );
-    expect(container.firstChild).toHaveClass("custom-select");
+  it("renders with selectSize 'sm' and 'md'", () => {
+    const { rerender, container } = render(<Select options={options} selectSize="sm" />);
+    expect(container.querySelector("button")).toHaveClass("h-8");
+    rerender(<Select options={options} selectSize="md" />);
+    expect(container.querySelector("button")).toHaveClass("h-10");
+  });
+
+  it("renders as disabled", () => {
+    render(<Select options={options} disabled />);
+    const button = screen.getByRole("button");
+    expect(button).toBeDisabled();
+    expect(button).toHaveClass("cursor-not-allowed");
+  });
+
+  it("closes dropdown on blur", () => {
+    render(<Select options={options} />);
+    const selectDiv = screen.getByRole("button").parentElement;
+    fireEvent.click(screen.getByRole("button"));
+    expect(screen.getByRole("listbox")).toBeInTheDocument();
+    fireEvent.blur(selectDiv!);
+    expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
   });
 });

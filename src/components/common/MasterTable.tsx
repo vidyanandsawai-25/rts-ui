@@ -1,13 +1,22 @@
 "use client";
 
+
+
 import React, { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils/cn";
-import { AddButton, EditButton, DeleteButton } from "./ActionButtons";
 import { StatusBadge } from "./StatusBadge";
-// ...existing code...
+import { DeleteButton, EditButton, FirstPageButton, LastPageButton, NextPageButton, PageNumberButton, PrevPageButton } from "./ActionButtons";
 
-
+function isPrimitive(val: unknown): val is string | number | boolean | null | undefined {
+  return (
+    typeof val === "string" ||
+    typeof val === "number" ||
+    typeof val === "boolean" ||
+    val === null ||
+    typeof val === "undefined"
+  );
+}
 
 export interface Column<T extends Record<string, unknown> = Record<string, unknown>> {
   key: keyof T;
@@ -48,15 +57,14 @@ export interface MasterTableProps<T extends Record<string, unknown> = Record<str
   theadClassName?: string;
   rowClassName?: (row: T, index: number) => string;
 
-  // ===== FOOTER =====
-  footerLeftContent?: React.ReactNode;
-  footerRightContent?: React.ReactNode;
-
   /* ===== HEADER ===== */
   headerTitle?: string;
   headerSubtitle?: string;
+
   headerExtra?: React.ReactNode;
   /* ===== FOOTER ===== */
+  footerLeftContent?: React.ReactNode;
+  footerRightContent?: React.ReactNode;
 }
 
 type PageToken = number | "dots";
@@ -91,7 +99,7 @@ function buildPagination(current: number, total: number): PageToken[] {
    MASTER TABLE
 ========================= */
 
- export function MasterTable<T extends Record<string, unknown> = Record<string, unknown>>({
+export function MasterTable<T extends Record<string, unknown> = Record<string, unknown>>({
   columns,
   data,
   loading,
@@ -108,8 +116,6 @@ function buildPagination(current: number, total: number): PageToken[] {
   maxBodyHeightClassName = "max-h-[calc(100vh-260px)]",
   emptyText,
   loadingText,
-
-  // ...existing code...
   tableClassName,
   theadClassName,
   rowClassName,
@@ -121,12 +127,12 @@ function buildPagination(current: number, total: number): PageToken[] {
   footerRightContent,
 }: MasterTableProps<T>) {
   const t = useTranslations("common");
-  
+
   // Use translations for default values
   const actualActionLabel = actionLabel || t("table.columns.actions");
   const actualEmptyText = emptyText || t("messages.noData");
   const actualLoadingText = loadingText || t("actions.loading");
-  
+
   const hasActions = !!(onEdit || onDelete);
   const hasHeader =
     !!headerTitle ||
@@ -148,121 +154,123 @@ function buildPagination(current: number, total: number): PageToken[] {
   ========================= */
   const TableContent = (
     <div className={cn("overflow-auto", maxBodyHeightClassName)}>
-        <table className={cn("w-full text-sm", tableClassName)}>
-            <thead
-              className={cn(
-                "sticky top-0 z-20",
-                "bg-gradient-to-r from-[#E2EEFF] via-[#D6E8FF] to-[#E2EEFF]",
-                "border-b border-blue-200",
-                "transition-colors duration-200",
-                "hover:from-[#D6E8FF] hover:via-[#CFE3FF] hover:to-[#D6E8FF]",
+      <table className={cn("w-full text-sm", tableClassName)}>
+        <thead
+          className={cn(
+            "sticky top-0 z-20",
+            "bg-gradient-to-r from-[#E2EEFF] via-[#D6E8FF] to-[#E2EEFF]",
+            "border-b border-blue-200",
+            "transition-colors duration-200",
+            "hover:from-[#D6E8FF] hover:via-[#CFE3FF] hover:to-[#D6E8FF]",
 
-                theadClassName
-              )}
-            >
-              <tr>
-                {columns.map((col, index) => (
-                  <th
-                    key={String(col.key)}
-                    style={{ width: col.width }}
-                    className={cn(
-                      "px-2 py-3 text-left text-sm font-semibold text-[#1E3A8A]",
-                      index === 0 ,
-                      !hasActions &&
-                      index === columns.length - 1 &&
-                      "rounded-tr-lg",
-                      col.headerClassName
-                    )}
-                  >
-                    {col.label}
-                  </th>
-                ))}
+            theadClassName
+          )}
+        >
+          <tr>
+            {columns.map((col, index) => (
+              <th
+                key={String(col.key)}
+                style={{ width: col.width }}
+                className={cn(
+                  "px-2 py-3 text-left text-sm font-semibold text-[#1E3A8A]",
+                  index === 0 && "rounded-tl-lg",
+                  !hasActions &&
+                  index === columns.length - 1 &&
+                  "rounded-tr-lg",
+                  col.headerClassName
+                )}
+              >
+                {col.label}
+              </th>
+            ))}
+            {hasActions && (
+              <th className="px-4 py-3 text-center text-sm font-semibold text-[#1E3A8A]">
+                {actualActionLabel}
+              </th>
+            )}
+          </tr>
+        </thead>
+
+        <tbody>
+          {loading ? (
+            <tr>
+              <td
+                colSpan={columns.length + (hasActions ? 1 : 0)}
+                className="py-10 text-center text-gray-500"
+              >
+                {actualLoadingText}
+              </td>
+            </tr>
+          ) : data.length === 0 ? (
+            <tr>
+              <td
+                colSpan={columns.length + (hasActions ? 1 : 0)}
+                className="py-10 text-center text-gray-500"
+              >
+                {actualEmptyText}
+              </td>
+            </tr>
+          ) : (
+            data.map((row, i) => (
+              <tr
+                key={getRowKey ? getRowKey(row, i) : i}
+                className={cn(
+                  "border-b border-blue-100 hover:bg-blue-50/40",
+                  rowClassName?.(row, i)
+                )}
+              >
+                {columns.map((col) => {
+                  const value = row[col.key];
+                  return (
+                    <td
+                      key={String(col.key)}
+                      className={cn(
+                        "px-2 py-2 text-gray-700",
+                        col.cellClassName
+                      )}
+                    >
+                      {col.render ? (
+                        col.render(value, row, i)
+                      ) : col.isStatus ? (
+                        isPrimitive(value)
+                          ? <StatusBadge value={value} />
+                           : <span className="font-medium">-</span>
+                      ) : (
+                        <span className="font-medium">
+                         {value === null || typeof value === "undefined"
+                            ? "-"
+                            : isPrimitive(value)
+                              ? String(value)
+                              : "-"}
+                        </span>
+                      )}
+                    </td>
+                  );
+                })}
+
                 {hasActions && (
-                  <th className="px-4 py-3 text-center text-sm font-semibold text-[#1E3A8A]">
-                    {actualActionLabel}
-                  </th>
+                  <td className="px-2 py-2 text-center">
+                    <div className="flex justify-center gap-3">
+                      {onEdit && (
+                        <EditButton
+                          size="sm"
+                          onClick={() => onEdit(row)}
+                        />
+                      )}
+                      {onDelete && (
+                        <DeleteButton
+                          size="sm"
+                          onClick={() => onDelete(row)}
+                        />
+                      )}
+                    </div>
+                  </td>
                 )}
               </tr>
-            </thead>
-
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td
-                    colSpan={columns.length + (hasActions ? 1 : 0)}
-                    className="py-10 text-center text-gray-500"
-                  >
-                    {actualLoadingText}
-                  </td>
-                </tr>
-              ) : data.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={columns.length + (hasActions ? 1 : 0)}
-                    className="py-10 text-center text-gray-500"
-                  >
-                    {actualEmptyText}
-                  </td>
-                </tr>
-              ) : (
-                data.map((row, i) => (
-                  <tr
-                    key={getRowKey ? getRowKey(row, i) : i}
-                    className={cn(
-                      "border-b border-blue-100 hover:bg-blue-50/40",
-                      rowClassName?.(row, i)
-                    )}
-                  >
-                    {columns.map((col) => {
-                        const value = row[col.key];
-                        return (
-                          <td
-                            key={String(col.key)}
-                            className={cn(
-                              "px-2 py-2 text-gray-700",
-                              col.cellClassName
-                            )}
-                          >
-                            {col.render ? (
-                              col.render(value, row, i)
-                            ) : col.isStatus ? (
-                              <StatusBadge value={
-                                value == null || typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean'
-                                  ? value as string | number | boolean | null | undefined
-                                  : String(value)
-                              } />
-                            ) : (
-                              <span className="font-medium">
-                                {value != null && value !== undefined ? String(value) : "-"}
-                              </span>
-                            )}
-                          </td>
-                        );
-                    })}
-
-                    {hasActions && (
-                      <td className="px-2 py-2 text-center">
-                        <div className="flex justify-center gap-3">
-                          {onEdit && (
-                            <EditButton
-                              size="sm"
-                              onClick={() => onEdit(row)}
-                            />
-                          )}
-                          {onDelete && (
-                            <DeleteButton
-                              size="sm"
-                              onClick={() => onDelete(row)}
-                            />
-                          )}
-                        </div>
-                      </td>
-                    )}
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+            ))
+          )}
+        </tbody>
+      </table>
     </div>
   );
 
@@ -314,34 +322,26 @@ function buildPagination(current: number, total: number): PageToken[] {
       </div>
 
       {/* ================= PAGINATION ================= */}
-
       <div className="bg-[#F8FAFF] border border-[#DCEAFF] rounded-xl px-4 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3 shadow-sm">
         <span className="text-sm text-[#6B7280]">
           {t("table.showingEntries", { start, end, total: totalCount })}
         </span>
 
         <div className="flex items-center justify-between md:justify-end gap-2 w-full md:w-auto">
-            <AddButton
-              size="sm"
-              disabled={pageNumber <= 1}
-              onClick={() => onPageChange(pageNumber - 1)}
-              label="‹"
-              className="h-9 w-9 px-0 border border-[#DCEAFF]"
-            />
+          <PrevPageButton
+            disabled={pageNumber <= 1}
+            onClick={() => onPageChange(pageNumber - 1)}
+          />
 
           <span className="md:hidden text-sm font-semibold text-[#1E3A8A]">
             {t("table.page", { current: pageNumber, total: totalPages })}
           </span>
 
           <div className="hidden md:flex items-center gap-1">
-              <AddButton
-                size="sm"
-                disabled={pageNumber === 1}
-                onClick={() => onPageChange(1)}
-                label="«"
-                className="h-9 w-9 px-0 border border-[#DCEAFF]"
-              />
-
+            <FirstPageButton
+              disabled={pageNumber === 1}
+              onClick={() => onPageChange(1)}
+            />
 
             {pages.map((p, i) =>
               p === "dots" ? (
@@ -349,40 +349,28 @@ function buildPagination(current: number, total: number): PageToken[] {
                   ...
                 </span>
               ) : (
-                <AddButton
+                <PageNumberButton
                   key={`page-${p}-${i}`}
-                  size="sm"
-                  label={String(p)}
+                  page={p as number}
+                  active={pageNumber === p}
                   onClick={() => onPageChange(p as number)}
-                  className={cn(
-                    "h-9 min-w-[36px] px-3 text-sm font-medium",
-                    pageNumber === p
-                      ? "bg-[#2563EB] text-white border-[#2563EB]"
-                      : "bg-white border border-[#DCEAFF] text-[#1E3A8A] hover:bg-gray-50"
-                  )}
                 />
               )
             )}
 
-
-              <AddButton
-                size="sm"
-                disabled={pageNumber === totalPages}
-                onClick={() => onPageChange(totalPages)}
-                label="»"
-                className="h-9 w-9 px-0 border border-[#DCEAFF]"
-              />
+            <LastPageButton
+              disabled={pageNumber === totalPages}
+              onClick={() => onPageChange(totalPages)}
+            />
           </div>
 
-            <AddButton
-              size="sm"
-              disabled={pageNumber >= totalPages}
-              onClick={() => onPageChange(pageNumber + 1)}
-              label="›"
-              className="h-9 w-9 px-0 border border-[#DCEAFF]"
-            />
+          <NextPageButton
+            disabled={pageNumber >= totalPages}
+            onClick={() => onPageChange(pageNumber + 1)}
+          />
         </div>
       </div>
+
     </div>
   );
 }

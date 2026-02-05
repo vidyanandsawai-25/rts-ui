@@ -10,10 +10,21 @@ export type ButtonVariant =
   | "secondary" 
   | "ghost" 
   | "danger" 
-  | "success";
+  | "success"
+  | "edit"
+  | "delete";
 
 export type ButtonSize = "xs" | "sm" | "md" | "lg";
 
+/**
+ * Props for the Button component
+ * @property {ButtonVariant} variant - The visual style variant of the button
+ * @property {ButtonSize} size - The size of the button
+ * @property {React.ElementType} icon - Optional icon component to display
+ * @property {"left" | "right"} iconPosition - Position of the icon relative to text
+ * @property {boolean} isLoading - Whether the button is in a loading state
+ * @property {React.ReactNode} children - Button content/text
+ */
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   size?: ButtonSize;
@@ -23,6 +34,18 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   children?: React.ReactNode;
 }
 
+/**
+ * A versatile button component with multiple variants, sizes, and loading states.
+ * Server Component compatible.
+ *
+ * @example
+ * <Button variant="primary" size="md" isLoading={false}>
+ *   Click Me
+ * </Button>
+ *
+ * @param {ButtonProps} props - The button props
+ * @returns {React.ReactElement} The rendered button element
+ */
 export function Button({
   variant = "primary",
   size = "md",
@@ -34,7 +57,7 @@ export function Button({
   children,
   type = "button",
   ...props
-}: ButtonProps) {
+}: ButtonProps): React.ReactElement {
   const sizeClasses: Record<ButtonSize, string> = {
     xs: "h-7 px-2.5 text-xs gap-1.5",
     sm: "h-8 px-3 text-sm gap-2",
@@ -55,6 +78,8 @@ export function Button({
     ghost: "text-gray-600 hover:bg-gray-100",
     danger: "bg-red-600 text-white hover:bg-red-700 shadow-sm",
     success: "bg-green-600 text-white hover:bg-green-700 shadow-sm",
+     edit: "text-[#1A86E8] hover:bg-blue-50 border border-blue-400 hover:shadow-md hover:scale-105",
+    delete: "text-red-500 hover:bg-red-50 border border-red-400 hover:shadow-md hover:scale-105",
   };
 
   return (

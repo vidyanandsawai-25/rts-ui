@@ -11,7 +11,8 @@
     "remove": "काढा",
     "confirm": "पुष्टी करा",
     "back": "मागे",
-    "next": "पुढे"
+    "next": "पुढे",
+    "clear": "साफ करा"
   },
   "actions": {
     "loading": "लोड होत आहे...",
@@ -20,7 +21,13 @@
     "adding": "जोडत आहे...",
     "updating": "अपडेट होत आहे...",
     "processing": "प्रक्रिया सुरू आहे...",
-    "logout": "बाहेर पडा"
+    "logout": "बाहेर पडा",
+    "cancel": "रद्द करा",
+    "save": "जतन करा",
+    "update": "अपडेट करा",
+    "submit": "सबमिट करा",
+    "pleaseWait": "कृपया थांबा..."
+
   },
   "validation": {
     "required": "हे फील्ड आवश्यक आहे",
@@ -51,15 +58,69 @@
     "noData": "डेटा उपलब्ध नाही",
     "success": "कार्य यशस्वी",
     "confirmDelete": "तुम्हाला खात्री आहे की तुम्ही हटवू इच्छिता?",
-    "unsavedChanges": "तुमच्याकडे न जतन केलेले बदल आहेत"
+    "unsavedChanges": "तुमच्याकडे न जतन केलेले बदल आहेत",
+    "loadingData": "डेटा लोड करत आहे...",
+    "fetchError": "डेटा आणण्यात त्रुटी",
+    "updateSuccess": "यशस्वीपणे अपडेट केले",
+    "createSuccess": "यशस्वीपणे तयार केले",
+    "deleteSuccess": "यशस्वीपणे हटवले",
+    "pleaseWait": "कृपया थांबा...",
+    "noRecordsFound": "कोणतेही रेकॉर्ड सापडले नाहीत",
+    "actionCompleted": "क्रिया यशस्वीपणे पूर्ण झाली",
+    "recordsFound": "रेकॉर्ड सापडले"
+  },
+  "confirm": {
+    "delete": {
+      "title": "हटवण्याची पुष्टी करा",
+      "description": "तुम्हाला खात्री आहे की तुम्ही हा आयटम हटवू इच्छिता? ही क्रिया पूर्ववत करता येणार नाही।",
+      "confirm": "हटवा"
+    },
+    "add": {
+      "title": "जोडण्याची पुष्टी करा",
+      "description": "तुम्हाला खात्री आहे की तुम्ही हा आयटम जोडू इच्छिता?",
+      "confirm": "जोडा"
+    },
+    "update": {
+      "title": "अपडेटची पुष्टी करा",
+      "description": "तुम्हाला खात्री आहे की तुम्ही हा आयटम अपडेट करू इच्छिता?",
+      "confirm": "अपडेट करा"
+    },
+    "info": {
+      "title": "माहिती",
+      "description": "कृपया पुढे जाण्यासाठी पुष्टी करा।",
+      "confirm": "पुढे जा"
+    },
+    "warning": {
+      "title": "चेतावणी",
+      "description": "तुम्हाला खात्री आहे की तुम्ही पुढे जाऊ इच्छिता?",
+      "confirm": "पुढे जा"
+    },
+    "cancel": "रद्द करा"
+  },
+  "table": {
+    "show": "दाखवा",
+    "entries": "नोंदी",
+    "showing": "दाखवत आहे",
+    "to": "ते",
+    "of": "पैकी",
+    "columns": {
+      "status": "स्थिती",
+      "actions": "कृती"
+    },
+     "noData": "डेटा उपलब्ध नाही",
+    "noRecordsFound": "कोणतेही रेकॉर्ड सापडले नाहीत",
+    "showingEntries": "{start} ते {end} पर्यंत {total} नोंदी दर्शवित आहे",
+    "page": "पृष्ठ {current} चे {total}",
+    "firstPage": "पहिले पृष्ठ",
+    "lastPage": "शेवटचे पृष्ठ",
+    "previousPage": "मागील पृष्ठ",
+    "nextPage": "पुढील पृष्ठ"
   },
   "language": {
     "select": "भाषा निवडा",
-    "selectLanguage": "अॅप्लिकेशन भाषा निवडा",
     "english": "English",
     "hindi": "हिंदी (Hindi)",
-    "marathi": "मराठी (Marathi)",
-    "switchFailed": "भाषा बदलण्यात अयशस्वी. कृपया पुन्हा प्रयत्न करा."
+    "marathi": "मराठी (Marathi)"
   },
   "navigation": {
     "dashboard": "डॅशबोर्ड",
@@ -73,13 +134,10 @@
     "contact": "संपर्क करा"
   },
   "app": {
-    "title": "अॅप",
+    "title": "अ‍ॅप",
     "noServicesAvailable": "कोणत्याही सेवा उपलब्ध नाहीत",
     "departmentName": "मालमत्ता कर विभाग",
-    "assessmentSystem": "मालमत्ता कर आकारणी आणि व्यवस्थापन प्रणाली",
-    "defaultUser": "वापरकर्ता",
-    "defaultUlbName": "ठाणे महानगरपालिका",
-    "defaultUlbCode": "ठ.म."
+    "assessmentSystem": "मालमत्ता कर आकारणी आणि व्यवस्थापन प्रणाली"
   },
   "menu": {
     "analytics": "डेटा विश्लेषण",
@@ -105,7 +163,7 @@
     "payWaterTax": "पाणी पट्टी भरा",
     "payTradeLicense": "व्यवसाय परवाना शुल्क भरा",
     "rts": "आरटीएस",
-    "rti": "आरटीआय",
+    "rti": "आरअी आय",
     "igr": "आयजीआर",
     "aapleSarkar": "आपले सरकार",
     "gis": "जी.आय.एस.",

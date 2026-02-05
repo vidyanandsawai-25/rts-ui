@@ -3,8 +3,8 @@
  * Centralized exports for all reusable UI components
  */
 
-export { Button } from './Button';
-export type { ButtonProps, ButtonVariant, ButtonSize } from './Button';
+export { Button } from './ActionButton';
+export type { ButtonProps, ButtonVariant, ButtonSize } from './ActionButton';
 
 export { ToggleSwitch } from './ToggleSwitch';
 export type { ToggleSwitchProps } from './ToggleSwitch';
@@ -18,9 +18,12 @@ export {
   UploadButton,
   ExportButton,
   ImportButton,
-  IconButton,
+  FirstPageButton,
+  PrevPageButton,
+  NextPageButton,
+  LastPageButton,
 } from './ActionButtons';
-
+export { IconButton } from './ActionButtons';
 export { Card, CardHeader, CardTitle, CardContent } from './Card';
 export type { CardProps } from './Card';
 
@@ -48,7 +51,7 @@ export { SearchInput } from './SearchInput';
 
 export { StatusBadge } from './StatusBadge';
 
-export { TableHeader } from './TableHeader';
+export { default as TableHeader } from './TableHeader';
 
 export { ValidationMessage } from './ValidationMessage';
 export { Tabs } from './Tabs';
@@ -85,3 +88,6 @@ export type { MatrixDeleteButtonProps } from './MatrixDeleteButton';
 
 export { MatrixCellInput } from './MatrixCellInput';
 export type { MatrixCellInputProps } from './MatrixCellInput';
+
+export { ConfirmProvider, useConfirm } from './ConfirmProvider';
+export type { ConfirmContextType, ConfirmOptions, ConfirmVariant, ConfirmMeta } from './ConfirmProvider';
