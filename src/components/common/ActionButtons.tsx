@@ -1,6 +1,6 @@
 "use client";
 
-import React, { JSX } from "react";
+import React from "react";
 import {
   Plus,
   Pencil,
@@ -15,7 +15,7 @@ import {
   ChevronRight,
   ChevronsRight,
 } from "lucide-react";
-import { Button, type ButtonProps } from "./Button";
+import { Button, type ButtonProps } from "./ActionButton";
 import { cn } from "@/lib/utils/cn";
 
 /* ----------------------------------------------------------
@@ -50,7 +50,7 @@ export type PageNumberButtonProps = {
 export function AddButton({
   label = "Add",
   ...props
-}: LabeledActionButtonProps): JSX.Element {
+}: LabeledActionButtonProps): React.ReactElement {
   return (
     <Button variant="primary" icon={Plus} {...props}>
       {label}
@@ -61,7 +61,7 @@ export function AddButton({
 export function SaveButton({
   label = "Save",
   ...props
-}: LabeledActionButtonProps): JSX.Element {
+}: LabeledActionButtonProps): React.ReactElement {
   return (
     <Button variant="success" icon={Save} {...props}>
       {label}
@@ -72,7 +72,7 @@ export function SaveButton({
 export function CancelButton({
   label = "Cancel",
   ...props
-}: LabeledActionButtonProps): JSX.Element {
+}: LabeledActionButtonProps): React.ReactElement {
   return (
     <Button variant="secondary" icon={X} {...props}>
       {label}
@@ -83,7 +83,7 @@ export function CancelButton({
 export function UploadButton({
   label = "Upload",
   ...props
-}: LabeledActionButtonProps): JSX.Element {
+}: LabeledActionButtonProps): React.ReactElement {
   return (
     <Button variant="primary" icon={Upload} {...props}>
       {label}
@@ -94,7 +94,7 @@ export function UploadButton({
 export function ExportButton({
   label = "Export",
   ...props
-}: LabeledActionButtonProps): JSX.Element {
+}: LabeledActionButtonProps): React.ReactElement {
   return (
     <Button variant="secondary" icon={Share} {...props}>
       {label}
@@ -105,7 +105,7 @@ export function ExportButton({
 export function ImportButton({
   label = "Import",
   ...props
-}: LabeledActionButtonProps): JSX.Element {
+}: LabeledActionButtonProps): React.ReactElement {
   return (
     <Button variant="secondary" icon={Download} {...props}>
       {label}
@@ -119,7 +119,7 @@ export function ImportButton({
 
 export function EditButton(
   { ["aria-label"]: ariaLabel, ...props }: Omit<ButtonProps, "icon" | "variant">
-): JSX.Element {
+): React.ReactElement {
   return (
     <Button
       variant="edit"
@@ -133,7 +133,7 @@ export function EditButton(
 
 export function DeleteButton(
   { ["aria-label"]: ariaLabel, ...props }: Omit<ButtonProps, "icon" | "variant">
-): JSX.Element {
+): React.ReactElement {
   return (
     <Button
       variant="delete"
@@ -151,7 +151,7 @@ export function DeleteButton(
 
 export function FirstPageButton(
   { ["aria-label"]: ariaLabel, ...props }: Omit<ButtonProps, "icon" | "variant">
-): JSX.Element {
+): React.ReactElement {
   return (
     <Button
       variant="secondary"
@@ -165,7 +165,7 @@ export function FirstPageButton(
 
 export function PrevPageButton(
   { ["aria-label"]: ariaLabel, ...props }: Omit<ButtonProps, "icon" | "variant">
-): JSX.Element {
+): React.ReactElement {
   return (
     <Button
       variant="secondary"
@@ -179,7 +179,7 @@ export function PrevPageButton(
 
 export function NextPageButton(
   { ["aria-label"]: ariaLabel, ...props }: Omit<ButtonProps, "icon" | "variant">
-): JSX.Element {
+): React.ReactElement {
   return (
     <Button
       variant="secondary"
@@ -193,7 +193,7 @@ export function NextPageButton(
 
 export function LastPageButton(
   { ["aria-label"]: ariaLabel, ...props }: Omit<ButtonProps, "icon" | "variant">
-): JSX.Element {
+): React.ReactElement {
   return (
     <Button
       variant="secondary"
@@ -214,7 +214,7 @@ export default function IconButton({
   variant = "primary",
   className = "",
   ...props
-}: IconOnlyButtonProps): JSX.Element {
+}: IconOnlyButtonProps): React.ReactElement {
   const gradientClass =
     variant === "danger"
       ? "bg-gradient-to-br from-red-400 to-red-600 hover:from-red-500 hover:to-red-700 hover:shadow-red-300/50"
@@ -242,7 +242,7 @@ export function PageNumberButton({
   page,
   active = false,
   onClick,
-}: PageNumberButtonProps): JSX.Element {
+}: PageNumberButtonProps): React.ReactElement {
   return (
     <Button
       size="sm"

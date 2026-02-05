@@ -1,4 +1,4 @@
-import React, { JSX } from "react";
+import React from "react";
 import { Loader2 } from "lucide-react";
 
 /* ----------------------------------------------------------
@@ -44,7 +44,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
  * </Button>
  *
  * @param {ButtonProps} props - The button props
- * @returns {JSX.Element} The rendered button element
+ * @returns {React.ReactElement} The rendered button element
  */
 export function Button({
   variant = "primary",
@@ -57,7 +57,7 @@ export function Button({
   children,
   type = "button",
   ...props
-}: ButtonProps): JSX.Element {
+}: ButtonProps): React.ReactElement {
   const sizeClasses: Record<ButtonSize, string> = {
     xs: "h-7 px-2.5 text-xs gap-1.5",
     sm: "h-8 px-3 text-sm gap-2",

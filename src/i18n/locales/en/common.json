@@ -6,7 +6,7 @@
     "edit": "Edit",
     "close": "Close",
     "submit": "Submit",
-    "add": "Adaxs",
+    "add": "Add",
     "addRoute": "Add Route",
     "remove": "Remove",
     "confirm": "Confirm",
@@ -107,7 +107,8 @@
     "select": "Select Language",
     "english": "English",
     "hindi": "हिंदी (Hindi)",
-    "marathi": "मराठी (Marathi)"
+     "marathi": "मराठी (Marathi)",
+    "switchFailed": "Failed to switch language"
   },
   "navigation": {
     "dashboard": "Dashboard",
@@ -187,15 +188,6 @@
     "previousPage": "Previous page",
     "nextPage": "Next page"
   },
-<<<<<<< feature/PTISMaster-PTIS2/updatedcommoncomponenent
-  "form": {
-    "name": "Name",
-    "namePlaceholder": "Enter name",
-    "description": "Description",
-    "descriptionPlaceholder": "Enter description",
-    "status": "Status",
-    "selectStatus": "Select status"
-=======
   "multiSelect": {
     "selectAll": "Select All",
     "allSelected": "All selected",
@@ -210,6 +202,5 @@
     "action": "Action",
     "currencySymbol": "₹",
     "deleteRow": "Delete Row"
->>>>>>> main
   }
 }

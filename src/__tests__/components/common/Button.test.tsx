@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
-import { Button, type ButtonProps } from "@/components/common/Button";
+import { Button, type ButtonProps } from "@/components/common/ActionButton";
 import type { LucideProps } from "lucide-react";
 
 const DummyIcon = (props: LucideProps) => <svg data-testid="dummy-icon" {...props} />;

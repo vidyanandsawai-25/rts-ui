@@ -3,8 +3,8 @@
  * Centralized exports for all reusable UI components
  */
 
-export { Button } from './Button';
-export type { ButtonProps, ButtonVariant, ButtonSize } from './Button';
+export { Button } from './ActionButton';
+export type { ButtonProps, ButtonVariant, ButtonSize } from './ActionButton';
 
 export { ToggleSwitch } from './ToggleSwitch';
 export type { ToggleSwitchProps } from './ToggleSwitch';
