@@ -170,6 +170,22 @@
     "aapleSarkar": "आपले सरकार",
     "gis": "जीआईएस",
     "master": "मास्टर",
-    "userManagement": "उपयोगकर्ता प्रबंधन"
+    "userManagement": "उपयोगकर्ता प्रबंधन",
+    "noServicesAvailable": "कोई सेवा उपलब्ध नहीं है"
+  },
+  "multiSelect": {
+    "selectAll": "सभी का चयन करें",
+    "allSelected": "सभी चयनित",
+    "selectedCount": "{count} चयनित",
+    "placeholder": "विकल्प चुनें...",
+    "clearAll": "सभी हटाएं",
+    "noOptions": "कोई विकल्प नहीं मिला",
+    "noOptionsAvailable": "कोई विकल्प उपलब्ध नहीं है",
+    "search": "खोजें..."
+  },
+  "Grid": {
+    "action": "कार्रवाई",
+    "currencySymbol": "₹",
+    "deleteRow": "पंक्ति हटाएं"
   }
 }

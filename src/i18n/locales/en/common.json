@@ -187,6 +187,7 @@
     "previousPage": "Previous page",
     "nextPage": "Next page"
   },
+<<<<<<< feature/PTISMaster-PTIS2/updatedcommoncomponenent
   "form": {
     "name": "Name",
     "namePlaceholder": "Enter name",
@@ -194,5 +195,21 @@
     "descriptionPlaceholder": "Enter description",
     "status": "Status",
     "selectStatus": "Select status"
+=======
+  "multiSelect": {
+    "selectAll": "Select All",
+    "allSelected": "All selected",
+    "selectedCount": "{count} selected",
+    "placeholder": "Select options...",
+    "clearAll": "Clear All",
+    "noOptions": "No options found",
+    "noOptionsAvailable": "No options available",
+    "search": "Search..."
+  },
+  "Grid": {
+    "action": "Action",
+    "currencySymbol": "₹",
+    "deleteRow": "Delete Row"
+>>>>>>> main
   }
 }
