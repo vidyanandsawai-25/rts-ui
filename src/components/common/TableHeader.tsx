@@ -10,7 +10,6 @@ interface TableHeaderProps {
   subtitle?: string;
   icon: LucideIcon;
   actionLabel?: string;
-  actionIcon?: LucideIcon;
   onActionClick?: () => void;
   actionDisabled?: boolean;
   rightContent?: React.ReactNode;
