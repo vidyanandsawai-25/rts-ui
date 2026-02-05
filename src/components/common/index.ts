@@ -88,3 +88,6 @@ export type { MatrixDeleteButtonProps } from './MatrixDeleteButton';
 
 export { MatrixCellInput } from './MatrixCellInput';
 export type { MatrixCellInputProps } from './MatrixCellInput';
+
+export { ConfirmProvider, useConfirm } from './ConfirmProvider';
+export type { ConfirmContextType, ConfirmOptions, ConfirmVariant, ConfirmMeta } from './ConfirmProvider';
