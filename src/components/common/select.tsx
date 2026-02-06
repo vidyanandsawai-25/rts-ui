@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import { ChevronDownIcon } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
@@ -11,12 +11,14 @@ export interface Option {
 
 export interface SelectProps {
   options: Option[];
-  value?: string;
-  onChange?: (value: string) => void;
+  value?: string | null;
+  onChange?: (value: string | null) => void;
   placeholder?: string;
   className?: string;
   selectSize?: "sm" | "md";
   disabled?: boolean;
+  id?: string;
+  name?: string;
 }
 
 export function Select({
@@ -27,24 +29,122 @@ export function Select({
   className = "",
   selectSize = "md",
   disabled = false,
+  id,
+  name,
 }: SelectProps) {
   const [open, setOpen] = useState(false);
-  const [internalValue, setInternalValue] = useState(value || "");
+  const [internalValue, setInternalValue] = useState<string | null>(value ?? null);
   const selectRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const listRef = useRef<HTMLUListElement>(null);
+  const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
 
-  const handleSelect = (val: string) => {
+  // Find the index of the selected value
+  const selectedIndex = options.findIndex((opt) => opt.value === internalValue);
+
+  // Handle selection
+  const handleSelect = useCallback((val: string) => {
     setInternalValue(val);
     setOpen(false);
+    setHighlightedIndex(-1);
     onChange?.(val);
+    // Focus back to button after selection
+    buttonRef.current?.focus();
+  }, [onChange]);
+
+  // Keyboard navigation
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement | HTMLUListElement>) => {
+    if (disabled) return;
+    if (!open) {
+      if (e.key === "ArrowDown" || e.key === "ArrowUp" || e.key === "Enter" || e.key === " ") {
+        setOpen(true);
+        setTimeout(() => {
+          // Focus first or selected option
+          setHighlightedIndex(selectedIndex >= 0 ? selectedIndex : 0);
+        }, 0);
+        e.preventDefault();
+      }
+      return;
+    }
+    if (open) {
+      if (e.key === "Escape") {
+        setOpen(false);
+        setHighlightedIndex(-1);
+        buttonRef.current?.focus();
+        e.preventDefault();
+      } else if (e.key === "ArrowDown") {
+        let next = highlightedIndex + 1;
+        while (next < options.length && options[next].disabled) next++;
+        if (next >= options.length) next = 0;
+        while (options[next].disabled) next = (next + 1) % options.length;
+        setHighlightedIndex(next);
+        e.preventDefault();
+      } else if (e.key === "ArrowUp") {
+        let prev = highlightedIndex - 1;
+        while (prev >= 0 && options[prev].disabled) prev--;
+        if (prev < 0) prev = options.length - 1;
+        while (options[prev].disabled) prev = (prev - 1 + options.length) % options.length;
+        setHighlightedIndex(prev);
+        e.preventDefault();
+      } else if (e.key === "Enter" || e.key === " ") {
+        if (highlightedIndex >= 0 && !options[highlightedIndex].disabled) {
+          handleSelect(options[highlightedIndex].value);
+        }
+        e.preventDefault();
+      }
+    }
   };
 
+  // Keep internal value in sync with prop
   React.useEffect(() => {
-    setInternalValue(value || "");
+    setInternalValue(value ?? null);
   }, [value]);
+
+  // Reset highlight when menu closes
+  React.useEffect(() => {
+    if (!open) setHighlightedIndex(-1);
+  }, [open]);
+
+  // Focus the highlighted option when open
+  React.useEffect(() => {
+    if (open && highlightedIndex >= 0 && listRef.current) {
+      const el = listRef.current.children[highlightedIndex] as HTMLElement;
+      el?.scrollIntoView({ block: "nearest" });
+    }
+  }, [highlightedIndex, open]);
 
   const sizeClasses = {
     sm: "h-8 px-3 text-sm",
     md: "h-10 px-4 text-base",
+  };
+
+  // For ARIA
+  const listboxId = id ? `${id}-listbox` : undefined;
+
+  // Placeholder logic: treat null/undefined as no value
+  const displayLabel =
+    internalValue == null
+      ? placeholder
+      : options.find((opt) => opt.value === internalValue)?.label ?? placeholder;
+
+  // Blur handler: close only if focus leaves the whole widget
+  const handleBlur = (e: React.FocusEvent<HTMLDivElement>) => {
+    if (!selectRef.current?.contains(e.relatedTarget as Node)) {
+      setOpen(false);
+      setHighlightedIndex(-1);
+    }
+  };
+
+  // Click handler for option
+  const handleOptionClick = (opt: Option, _idx: number) => {
+    if (!opt.disabled) {
+      handleSelect(opt.value);
+    }
+  };
+
+  // Mouse enter: highlight option
+  const handleOptionMouseEnter = (idx: number) => {
+    setHighlightedIndex(idx);
   };
 
   return (
@@ -55,47 +155,65 @@ export function Select({
         disabled && "opacity-50 cursor-not-allowed",
         className
       )}
-      tabIndex={0}
-      onBlur={(e) => {
-        // Only close if focus left the entire component
-        if (!selectRef.current?.contains(e.relatedTarget as Node)) {
-          setOpen(false);
-        }
-      }}
+      onBlur={handleBlur}
+      data-testid="select-root"
     >
+      {/* Hidden input for form integration */}
+      {name && (
+        <input type="hidden" name={name} value={internalValue ?? ""} data-testid="select-hidden-input" />
+      )}
       <button
+        ref={buttonRef}
         type="button"
+        id={id}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-controls={listboxId}
+        aria-activedescendant={open && highlightedIndex >= 0 ? `${listboxId}-option-${highlightedIndex}` : undefined}
         className={cn(
           "flex items-center justify-between w-full border rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all",
           sizeClasses[selectSize],
           disabled && "opacity-50 cursor-not-allowed"
         )}
         onClick={() => !disabled && setOpen((o) => !o)}
+        onKeyDown={handleKeyDown}
         disabled={disabled}
+        tabIndex={0}
+        data-testid="select-button"
       >
         <span className="truncate text-left flex-1">
-          {options.find((opt) => opt.value === internalValue)?.label || placeholder}
+          {displayLabel}
         </span>
         <ChevronDownIcon className="ml-2 w-4 h-4 text-gray-400" />
       </button>
       {open && (
         <ul
+          ref={listRef}
+          id={listboxId}
           className="absolute z-10 mt-1 w-full bg-white border rounded-md shadow-lg max-h-60 overflow-auto"
           role="listbox"
-          onMouseDown={(e) => e.preventDefault()} // Prevent blur from firing before click
+          tabIndex={-1}
+          aria-labelledby={id}
+          onKeyDown={handleKeyDown}
+          data-testid="select-listbox"
         >
-          {options.map((opt) => (
+          {options.map((opt, idx) => (
             <li
               key={opt.value}
+              id={`${listboxId}-option-${idx}`}
               className={cn(
                 "px-4 py-2 cursor-pointer hover:bg-blue-50",
                 internalValue === opt.value && "bg-blue-100 text-blue-700",
+                highlightedIndex === idx && "bg-blue-200",
                 opt.disabled && "opacity-50 cursor-not-allowed"
               )}
-              onClick={() => !opt.disabled && handleSelect(opt.value)}
+              onClick={() => handleOptionClick(opt, idx)}
+              onMouseEnter={() => handleOptionMouseEnter(idx)}
               aria-selected={internalValue === opt.value}
+              aria-disabled={opt.disabled}
               role="option"
               tabIndex={-1}
+              data-testid={`select-option-${idx}`}
             >
               {opt.label}
             </li>
