@@ -171,7 +171,7 @@ export function Select({
         aria-controls={listboxId}
         aria-activedescendant={open && highlightedIndex >= 0 ? `${listboxId}-option-${highlightedIndex}` : undefined}
         className={cn(
-          "flex items-center justify-between w-full border rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all",
+          "flex items-center justify-between w-full border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all",
           sizeClasses[selectSize],
           disabled && "opacity-50 cursor-not-allowed"
         )}
@@ -190,7 +190,7 @@ export function Select({
         <ul
           ref={listRef}
           id={listboxId}
-          className="absolute z-10 mt-1 w-full bg-white border rounded-md shadow-lg max-h-60 overflow-auto"
+          className="absolute z-40 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto"
           role="listbox"
           tabIndex={-1}
           aria-labelledby={id}
