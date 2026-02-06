@@ -24,7 +24,6 @@ describe("ToggleSwitch", () => {
   it("calls onChange() when toggled (legacy signature)", () => {
     let called = false;
     function legacyChange() { called = true; }
-    // @ts-expect-error intentionally using legacy signature
     render(<ToggleSwitch checked={false} onChange={legacyChange} />);
     fireEvent.click(screen.getByRole("switch"));
     expect(called).toBe(true);
