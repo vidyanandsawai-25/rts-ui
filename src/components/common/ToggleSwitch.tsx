@@ -47,10 +47,12 @@ export function ToggleSwitch({
 
   const state = checked ? "checked" : "unchecked";
 
+  // Generate a unique id for the label if label is provided
+  const labelId = label ? `toggle-switch-label-${Math.random().toString(36).slice(2, 10)}` : undefined;
   return (
     <div className="flex items-center gap-3">
       {label && (
-        <span className="text-sm font-medium text-gray-700">{label}</span>
+        <span id={labelId} className="text-sm font-medium text-gray-700">{label}</span>
       )}
 
       <div className="relative inline-flex items-center">
@@ -59,7 +61,8 @@ export function ToggleSwitch({
           type="button"
           role="switch"
           aria-checked={checked}
-          aria-label={label}
+          aria-label={!label ? (checked ? activeLabel : inactiveLabel) : undefined}
+          aria-labelledby={label ? labelId : undefined}
           data-state={state}
           onClick={handleToggle}
           onKeyDown={handleKeyDown}
