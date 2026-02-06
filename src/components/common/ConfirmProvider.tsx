@@ -88,7 +88,7 @@ function DialogButton({
 
 /* ================= Provider ================= */
 export function ConfirmProvider({ children }: { children: React.ReactNode }): JSX.Element {
-  const t = useTranslations("common");
+  const t = useTranslations("common.confirm");
 
   const [open, setOpen] = useState(false);
   const [payload, setPayload] = useState<ConfirmPayload | null>(null);
@@ -129,7 +129,7 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }): JS
       title: payload?.title ?? d.title,
       description: `${baseDesc}${metaSuffix}`,
       confirmText: payload?.confirmText ?? d.confirmText,
-      cancelText: payload?.cancelText ?? t("confirm.cancel"),
+      cancelText: payload?.cancelText ?? t("cancel"),
       closeOnConfirm: payload?.closeOnConfirm ?? true,
       meta: payload?.meta,
       onConfirm: payload?.onConfirm,

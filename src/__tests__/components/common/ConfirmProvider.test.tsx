@@ -23,13 +23,18 @@ describe("ConfirmProvider", () => {
     closeOnConfirm: true,
   };
 
-   const mockMessages = {
-    delete: { title: 'Delete', description: 'Delete desc', confirm: 'Delete' },
-    add: { title: 'Add', description: 'Add desc', confirm: 'Add' },
-    update: { title: 'Update', description: 'Update desc', confirm: 'Update' },
-    info: { title: 'Info', description: 'Info desc', confirm: 'OK' },
-    warning: { title: 'Warning', description: 'Warning desc', confirm: 'Warn' },
-    cancel: 'Cancel',
+  const mockMessages = {
+    confirm: {
+      delete: { title: 'Delete', description: 'Delete desc', confirm: 'Delete' },
+      add: { title: 'Add', description: 'Add desc', confirm: 'Add' },
+      update: { title: 'Update', description: 'Update desc', confirm: 'Update' },
+      info: { title: 'Info', description: 'Info desc', confirm: 'OK' },
+      warning: { title: 'Warning', description: 'Warning desc', confirm: 'Warn' },
+      cancel: 'Cancel',
+      recordName: 'Name',
+      recordId: 'ID',
+    },
+    // Add other keys if needed for your tests
   };
   function setup(payload = basePayload) {
     return render(

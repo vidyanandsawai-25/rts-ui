@@ -1,14 +1,11 @@
 "use client";
-
 import { useEffect, useState } from "react";
-
 export interface  ToggleSwitchProps {
   checked: boolean;
   onChange: () => void;
   label?: string;
   showPopup?: boolean;
 }
-
 export function ToggleSwitch({
   checked,
   onChange,
@@ -54,7 +51,9 @@ export function ToggleSwitch({
             focus-visible:border-ring
             focus-visible:ring-ring/50
             focus-visible:ring-[3px]
-
+            text-gray-900
+            bg-gray-200
+            hover:bg-gray-300
             disabled:cursor-not-allowed
             disabled:opacity-50
           `}

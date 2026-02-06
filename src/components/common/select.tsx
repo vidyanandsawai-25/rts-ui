@@ -56,7 +56,12 @@ export function Select({
         className
       )}
       tabIndex={0}
-      onBlur={() => setOpen(false)}
+      onBlur={(e) => {
+        // Only close if focus left the entire component
+        if (!selectRef.current?.contains(e.relatedTarget as Node)) {
+          setOpen(false);
+        }
+      }}
     >
       <button
         type="button"
@@ -77,6 +82,7 @@ export function Select({
         <ul
           className="absolute z-10 mt-1 w-full bg-white border rounded-md shadow-lg max-h-60 overflow-auto"
           role="listbox"
+          onMouseDown={(e) => e.preventDefault()} // Prevent blur from firing before click
         >
           {options.map((opt) => (
             <li
