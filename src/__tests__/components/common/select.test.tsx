@@ -1,8 +1,5 @@
 import { render, fireEvent, screen } from "@testing-library/react";
-// Add this as the first line
-import { describe, it, expect } from "vitest";
-// ...existing code...
-import { vi } from "vitest";
+import { describe, it, expect, beforeAll, vi } from "vitest";
 import { Select, Option } from "@/components/common/select";
 
 // Mock scrollIntoView for all tests
