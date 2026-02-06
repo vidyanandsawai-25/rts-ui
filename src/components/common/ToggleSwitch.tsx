@@ -65,7 +65,6 @@ export function ToggleSwitch({
 
   const state = checked ? "checked" : "unchecked";
 
-  // Generate a unique id for the label if label is provided
   // Generate a stable unique id for the label if label is provided
   const reactId = useId();
   const labelId = label ? `toggle-switch-label-${reactId}` : undefined;
