@@ -70,7 +70,7 @@ export function Select({
         setOpen(true);
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
         timeoutRef.current = setTimeout(() => {
-          let initialIndex = selectedIndex >= 0 && !options[selectedIndex]?.disabled
+          const initialIndex = selectedIndex >= 0 && !options[selectedIndex]?.disabled
             ? selectedIndex
             : getFirstEnabledIndex();
           setHighlightedIndex(initialIndex);
