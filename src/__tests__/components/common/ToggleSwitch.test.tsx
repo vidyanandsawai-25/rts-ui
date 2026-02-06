@@ -1,7 +1,6 @@
 import { render, screen, fireEvent, act } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { ToggleSwitch } from "@/components/common/ToggleSwitch";
-
 describe("ToggleSwitch", () => {
   it("renders with label", () => {
     render(<ToggleSwitch checked={false} onChange={() => {}} label="Status" />);

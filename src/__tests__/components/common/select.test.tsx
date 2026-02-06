@@ -1,4 +1,4 @@
-import { render, fireEvent, screen } from "@testing-library/react";
+import { render, fireEvent, screen, act, waitFor } from "@testing-library/react";
 import { describe, it, expect, beforeAll, vi } from "vitest";
 import { Select, Option } from "@/components/common/select";
 
@@ -143,5 +143,44 @@ describe("Select", () => {
 
     fireEvent.keyDown(button, { key: "ArrowDown" });
     expect(button.getAttribute("aria-activedescendant")).toContain("option-1");
+  });
+
+  it("highlights first enabled option when first option is disabled and opening with keyboard", async () => {
+    const optionsWithDisabledFirst: Option[] = [
+      { label: "Disabled1", value: "disabled1", disabled: true },
+      { label: "Disabled2", value: "disabled2", disabled: true },
+      { label: "Enabled", value: "enabled" },
+    ];
+    render(<Select options={optionsWithDisabledFirst} />);
+    const button = screen.getByTestId("select-button");
+    
+    // Open dropdown with ArrowDown key (not click)
+    fireEvent.keyDown(button, { key: "ArrowDown" });
+    
+    // Wait for setTimeout in handleKeyDown to complete
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    });
+    
+    // Should highlight the first ENABLED option (index 2), not the disabled first option
+    const enabledOption = screen.getByTestId("select-option-2");
+    expect(enabledOption).toHaveClass("bg-blue-200");
+  });
+
+  it("highlights first enabled option when value is invalid and opening with keyboard", async () => {
+    render(<Select options={options} value="nonexistent" />);
+    const button = screen.getByTestId("select-button");
+    
+    // Open dropdown with ArrowDown key
+    fireEvent.keyDown(button, { key: "ArrowDown" });
+    
+    // Wait for setTimeout in handleKeyDown to complete
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    });
+    
+    // Should highlight the first enabled option (Apple at index 0)
+    const appleOption = screen.getByTestId("select-option-0");
+    expect(appleOption).toHaveClass("bg-blue-200");
   });
 });
