@@ -1,10 +1,14 @@
-
 import { render, fireEvent, screen } from "@testing-library/react";
 // Add this as the first line
 import { describe, it, expect } from "vitest";
 // ...existing code...
 import { vi } from "vitest";
 import { Select, Option } from "@/components/common/select";
+
+// Mock scrollIntoView for all tests
+beforeAll(() => {
+  window.HTMLElement.prototype.scrollIntoView = function() {};
+});
 
 describe("Select", () => {
   const options: Option[] = [
@@ -75,5 +79,72 @@ describe("Select", () => {
     expect(screen.getByRole("listbox")).toBeInTheDocument();
     fireEvent.blur(selectDiv);
     expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+  });
+
+  it("navigates options with ArrowDown/ArrowUp and selects with Enter", () => {
+    const handleChange = vi.fn();
+    render(<Select options={options} onChange={handleChange} />);
+    fireEvent.click(screen.getByTestId("select-button"));
+    const button = screen.getByTestId("select-button");
+
+    // ArrowDown highlights first option
+    fireEvent.keyDown(button, { key: "ArrowDown" });
+    const appleOption = screen.getByTestId("select-option-0");
+    expect(appleOption).toHaveClass("bg-blue-200");
+
+    // ArrowDown highlights second option
+    fireEvent.keyDown(button, { key: "ArrowDown" });
+    const bananaOption = screen.getByTestId("select-option-1");
+    expect(bananaOption).toHaveClass("bg-blue-200");
+
+    // ArrowUp goes back to first option
+    fireEvent.keyDown(button, { key: "ArrowUp" });
+    expect(appleOption).toHaveClass("bg-blue-200");
+
+    // Enter selects highlighted option
+    fireEvent.keyDown(button, { key: "Enter" });
+    expect(handleChange).toHaveBeenCalledWith("apple");
+    expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+  });
+
+  it("skips disabled options during keyboard navigation", () => {
+    render(<Select options={options} />);
+    fireEvent.click(screen.getByTestId("select-button"));
+    const button = screen.getByTestId("select-button");
+
+    // ArrowDown to Apple
+    fireEvent.keyDown(button, { key: "ArrowDown" });
+    const appleOption = screen.getByTestId("select-option-0");
+    expect(appleOption).toHaveClass("bg-blue-200");
+
+    // ArrowDown to Banana
+    fireEvent.keyDown(button, { key: "ArrowDown" });
+    const bananaOption = screen.getByTestId("select-option-1");
+    expect(bananaOption).toHaveClass("bg-blue-200");
+
+    // ArrowDown should skip Cherry (disabled) and wrap to Apple
+    fireEvent.keyDown(button, { key: "ArrowDown" });
+    expect(appleOption).toHaveClass("bg-blue-200");
+  });
+
+  it("closes dropdown with Escape key", () => {
+    render(<Select options={options} />);
+    fireEvent.click(screen.getByTestId("select-button"));
+    const button = screen.getByTestId("select-button");
+    expect(screen.getByRole("listbox")).toBeInTheDocument();
+    fireEvent.keyDown(button, { key: "Escape" });
+    expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+  });
+
+  it("aria-activedescendant updates during navigation", () => {
+    render(<Select options={options} />);
+    fireEvent.click(screen.getByTestId("select-button"));
+    const button = screen.getByTestId("select-button");
+
+    fireEvent.keyDown(button, { key: "ArrowDown" });
+    expect(button.getAttribute("aria-activedescendant")).toContain("option-0");
+
+    fireEvent.keyDown(button, { key: "ArrowDown" });
+    expect(button.getAttribute("aria-activedescendant")).toContain("option-1");
   });
 });

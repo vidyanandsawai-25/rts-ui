@@ -162,7 +162,8 @@ export function Select({
 
   // For ARIA: always provide a valid id
   const reactId = useId();
-  const listboxId = `${id ?? reactId}-listbox`;
+  const buttonId = id ?? `select-button-${reactId}`;
+  const listboxId = `${buttonId}-listbox`;
 
   // Placeholder logic: treat null/undefined as no value
   const displayLabel =
@@ -208,7 +209,7 @@ export function Select({
       <button
         ref={buttonRef}
         type="button"
-        id={id}
+        id={buttonId}
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={listboxId}
@@ -233,10 +234,10 @@ export function Select({
         <ul
           ref={listRef}
           id={listboxId}
-          className="absolute z-40 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto"
+          className="absolute z-50 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto"
           role="listbox"
           tabIndex={-1}
-          aria-labelledby={id}
+          aria-labelledby={buttonId}
           onKeyDown={handleKeyDown}
           data-testid="select-listbox"
         >

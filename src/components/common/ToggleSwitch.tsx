@@ -38,22 +38,8 @@ export function ToggleSwitch({
     if (disabled) return;
     setPopupText(!checked ? activeLabel : inactiveLabel);
     if (showPopup) setShowStatusPopup(true);
-    // Type guard for vitest/jest mock functions
-    function isMockFn(fn: unknown): fn is { (checked: boolean): void; _isMockFunction: boolean } {
-      return typeof fn === "function" && Object.prototype.hasOwnProperty.call(fn, "_isMockFunction");
-    }
-
-    // If onChange is a mock, always call with argument for test compatibility
-    if (isMockFn(onChange)) {
-      onChange(!checked);
-      return;
-    }
-    // Support both (checked: boolean) => void and () => void
-    if (onChange.length === 0) {
-      (onChange as () => void)();
-    } else {
-      (onChange as (checked: boolean) => void)(!checked);
-    }
+    // Always call onChange with the new checked state; callbacks that ignore arguments remain compatible.
+    onChange(!checked);
   };
   const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
     if (disabled) return;
