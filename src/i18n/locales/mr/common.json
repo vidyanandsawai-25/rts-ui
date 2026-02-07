@@ -27,7 +27,6 @@
     "update": "अपडेट करा",
     "submit": "सबमिट करा",
     "pleaseWait": "कृपया थांबा..."
-
   },
   "validation": {
     "required": "हे फील्ड आवश्यक आहे",
@@ -107,7 +106,7 @@
       "status": "स्थिती",
       "actions": "कृती"
     },
-     "noData": "डेटा उपलब्ध नाही",
+    "noData": "डेटा उपलब्ध नाही",
     "noRecordsFound": "कोणतेही रेकॉर्ड सापडले नाहीत",
     "showingEntries": "{start} ते {end} पर्यंत {total} नोंदी दर्शवित आहे",
     "page": "पृष्ठ {current} चे {total}",
