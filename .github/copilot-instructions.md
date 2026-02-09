@@ -628,15 +628,6 @@ try {
 - **Implement proper authentication checks** in Server Components and API routes
 - **Use CSRF protection** for mutations
 
-### 10. Accessibility (a11y) ♿
-
-- **Semantic HTML**: Use proper tags (`<button>`, `<nav>`, `<main>`)
-- **ARIA labels**: Add when semantic HTML isn't enough
-- **Keyboard navigation**: Ensure all interactive elements are keyboard accessible
-- **Focus management**: Proper focus states and trap in modals
-- **Alt text**: All images must have descriptive alt attributes
-- **Color contrast**: Ensure WCAG AA compliance minimum
-
 ---
 
 ## Review Checklist
