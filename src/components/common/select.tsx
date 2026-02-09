@@ -233,7 +233,6 @@ export function Select({
         ref={buttonRef}
         type="button"
         id={buttonId}
-        aria-required={required}
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={listboxId}
