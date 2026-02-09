@@ -1,10 +1,18 @@
 import { render, fireEvent, screen, act } from "@testing-library/react";
-import { describe, it, expect, beforeAll, vi } from "vitest";
+import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from "vitest";
 import { Select, Option } from "@/components/common/select";
 
 // Mock scrollIntoView for all tests
 beforeAll(() => {
   window.HTMLElement.prototype.scrollIntoView = function() {};
+});
+
+beforeEach(() => {
+  vi.useFakeTimers();
+});
+
+afterEach(() => {
+  vi.useRealTimers();
 });
 
 describe("Select", () => {
@@ -86,19 +94,19 @@ describe("Select", () => {
 
     // ArrowDown highlights first option
     fireEvent.keyDown(button, { key: "ArrowDown" });
-    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 10)); });
+    await act(async () => { vi.runOnlyPendingTimers(); });
     const appleOption = screen.getByTestId("select-option-0");
     expect(appleOption).toHaveClass("bg-blue-200");
 
     // ArrowDown highlights second option
     fireEvent.keyDown(button, { key: "ArrowDown" });
-    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 10)); });
+    await act(async () => { vi.runOnlyPendingTimers(); });
     const bananaOption = screen.getByTestId("select-option-1");
     expect(bananaOption).toHaveClass("bg-blue-200");
 
     // ArrowUp goes back to first option
     fireEvent.keyDown(button, { key: "ArrowUp" });
-    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 10)); });
+    await act(async () => { vi.runOnlyPendingTimers(); });
     expect(appleOption).toHaveClass("bg-blue-200");
 
     // Enter selects highlighted option
@@ -114,19 +122,19 @@ describe("Select", () => {
 
     // ArrowDown to Apple
     fireEvent.keyDown(button, { key: "ArrowDown" });
-    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 10)); });
+    await act(async () => { vi.runOnlyPendingTimers(); });
     const appleOption = screen.getByTestId("select-option-0");
     expect(appleOption).toHaveClass("bg-blue-200");
 
     // ArrowDown to Banana
     fireEvent.keyDown(button, { key: "ArrowDown" });
-    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 10)); });
+    await act(async () => { vi.runOnlyPendingTimers(); });
     const bananaOption = screen.getByTestId("select-option-1");
     expect(bananaOption).toHaveClass("bg-blue-200");
 
     // ArrowDown should skip Cherry (disabled) and wrap to Apple
     fireEvent.keyDown(button, { key: "ArrowDown" });
-    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 10)); });
+    await act(async () => { vi.runOnlyPendingTimers(); });
     expect(appleOption).toHaveClass("bg-blue-200");
   });
 
@@ -145,11 +153,11 @@ describe("Select", () => {
     const button = screen.getByTestId("select-button");
 
     fireEvent.keyDown(button, { key: "ArrowDown" });
-    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 10)); });
+    await act(async () => { vi.runOnlyPendingTimers(); });
     expect(button.getAttribute("aria-activedescendant")).toContain("option-0");
 
     fireEvent.keyDown(button, { key: "ArrowDown" });
-    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 10)); });
+    await act(async () => { vi.runOnlyPendingTimers(); });
     expect(button.getAttribute("aria-activedescendant")).toContain("option-1");
   });
 
@@ -164,7 +172,7 @@ describe("Select", () => {
 
     // Open dropdown with ArrowDown key (not click)
     fireEvent.keyDown(button, { key: "ArrowDown" });
-    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 10)); });
+    await act(async () => { vi.runOnlyPendingTimers(); });
 
     // Should highlight the first ENABLED option (index 2), not the disabled first option
     const enabledOption = screen.getByTestId("select-option-2");
@@ -177,7 +185,7 @@ describe("Select", () => {
 
     // Open dropdown with ArrowDown key
     fireEvent.keyDown(button, { key: "ArrowDown" });
-    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 10)); });
+    await act(async () => { vi.runOnlyPendingTimers(); });
 
     // Should highlight the first enabled option (Apple at index 0)
     const appleOption = screen.getByTestId("select-option-0");

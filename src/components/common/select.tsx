@@ -226,7 +226,6 @@ export function Select({
           value={internalValue ?? ""}
           data-testid="select-hidden-input"
           disabled={disabled}
-          required={required}
         />
       )}
       <button
