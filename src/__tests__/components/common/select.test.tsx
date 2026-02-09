@@ -1,4 +1,4 @@
-import { render, fireEvent, screen, act } from "@testing-library/react";
+import { render, fireEvent, screen } from "@testing-library/react";
 import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from "vitest";
 import { Select, Option } from "@/components/common/select";
 
@@ -92,7 +92,9 @@ describe("Select", () => {
     const button = screen.getByRole("button");
     fireEvent.click(button);
     expect(screen.getByRole("listbox")).toBeInTheDocument();
-    fireEvent.blur(selectDiv);
+    if (selectDiv) {
+      fireEvent.blur(selectDiv);
+    }
     expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
   });
 
