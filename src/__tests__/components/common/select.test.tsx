@@ -78,7 +78,7 @@ describe("Select", () => {
     expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
   });
 
-  it("navigates options with ArrowDown/ArrowUp and selects with Enter", () => {
+  it("navigates options with ArrowDown/ArrowUp and selects with Enter", async () => {
     const handleChange = vi.fn();
     render(<Select options={options} onChange={handleChange} />);
     fireEvent.click(screen.getByTestId("select-button"));
@@ -86,16 +86,19 @@ describe("Select", () => {
 
     // ArrowDown highlights first option
     fireEvent.keyDown(button, { key: "ArrowDown" });
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 10)); });
     const appleOption = screen.getByTestId("select-option-0");
     expect(appleOption).toHaveClass("bg-blue-200");
 
     // ArrowDown highlights second option
     fireEvent.keyDown(button, { key: "ArrowDown" });
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 10)); });
     const bananaOption = screen.getByTestId("select-option-1");
     expect(bananaOption).toHaveClass("bg-blue-200");
 
     // ArrowUp goes back to first option
     fireEvent.keyDown(button, { key: "ArrowUp" });
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 10)); });
     expect(appleOption).toHaveClass("bg-blue-200");
 
     // Enter selects highlighted option
@@ -104,23 +107,26 @@ describe("Select", () => {
     expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
   });
 
-  it("skips disabled options during keyboard navigation", () => {
+  it("skips disabled options during keyboard navigation", async () => {
     render(<Select options={options} />);
     fireEvent.click(screen.getByTestId("select-button"));
     const button = screen.getByTestId("select-button");
 
     // ArrowDown to Apple
     fireEvent.keyDown(button, { key: "ArrowDown" });
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 10)); });
     const appleOption = screen.getByTestId("select-option-0");
     expect(appleOption).toHaveClass("bg-blue-200");
 
     // ArrowDown to Banana
     fireEvent.keyDown(button, { key: "ArrowDown" });
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 10)); });
     const bananaOption = screen.getByTestId("select-option-1");
     expect(bananaOption).toHaveClass("bg-blue-200");
 
     // ArrowDown should skip Cherry (disabled) and wrap to Apple
     fireEvent.keyDown(button, { key: "ArrowDown" });
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 10)); });
     expect(appleOption).toHaveClass("bg-blue-200");
   });
 
@@ -133,15 +139,17 @@ describe("Select", () => {
     expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
   });
 
-  it("aria-activedescendant updates during navigation", () => {
+  it("aria-activedescendant updates during navigation", async () => {
     render(<Select options={options} />);
     fireEvent.click(screen.getByTestId("select-button"));
     const button = screen.getByTestId("select-button");
 
     fireEvent.keyDown(button, { key: "ArrowDown" });
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 10)); });
     expect(button.getAttribute("aria-activedescendant")).toContain("option-0");
 
     fireEvent.keyDown(button, { key: "ArrowDown" });
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 10)); });
     expect(button.getAttribute("aria-activedescendant")).toContain("option-1");
   });
 
@@ -153,15 +161,11 @@ describe("Select", () => {
     ];
     render(<Select options={optionsWithDisabledFirst} />);
     const button = screen.getByTestId("select-button");
-    
+
     // Open dropdown with ArrowDown key (not click)
     fireEvent.keyDown(button, { key: "ArrowDown" });
-    
-    // Wait for setTimeout in handleKeyDown to complete
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 10));
-    });
-    
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 10)); });
+
     // Should highlight the first ENABLED option (index 2), not the disabled first option
     const enabledOption = screen.getByTestId("select-option-2");
     expect(enabledOption).toHaveClass("bg-blue-200");
@@ -170,15 +174,11 @@ describe("Select", () => {
   it("highlights first enabled option when value is invalid and opening with keyboard", async () => {
     render(<Select options={options} value="nonexistent" />);
     const button = screen.getByTestId("select-button");
-    
+
     // Open dropdown with ArrowDown key
     fireEvent.keyDown(button, { key: "ArrowDown" });
-    
-    // Wait for setTimeout in handleKeyDown to complete
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 10));
-    });
-    
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 10)); });
+
     // Should highlight the first enabled option (Apple at index 0)
     const appleOption = screen.getByTestId("select-option-0");
     expect(appleOption).toHaveClass("bg-blue-200");
