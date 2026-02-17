@@ -243,6 +243,35 @@ describe("MasterTable", () => {
     expect(screen.getByRole("combobox")).toBeInTheDocument();
   });
 
+  it("paginationConfig.showPageSizeSelector overrides isPageSize when both provided", () => {
+    // even though isPageSize=false, config true should still show selector
+    setup({
+      isPaginationOpen: true,
+      isPageSize: false,
+      paginationConfig: { enabled: true, showPageSizeSelector: true },
+      pageNumber: 1,
+      pageSize: 10,
+      totalCount: 50,
+      totalPages: 5,
+    });
+    // showingEntries text contains dropdown inside
+    expect(screen.getByRole("combobox")).toBeInTheDocument();
+    expect(screen.getByText(/Showing/)).toBeInTheDocument();
+
+    // conversely config false hides even if isPageSize true
+    setup({
+      isPaginationOpen: true,
+      isPageSize: true,
+      paginationConfig: { enabled: true, showPageSizeSelector: false },
+      pageNumber: 1,
+      pageSize: 10,
+      totalCount: 50,
+      totalPages: 5,
+    });
+    // only plain text should appear, no combobox
+    expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
+  });
+
   it("respects paginationConfig.enabled over legacy flag", () => {
     // disabled via config should hide pagination even if legacy flag true
     setup({ paginationConfig: { enabled: false }, isPaginationOpen: true, isPagination: true });
@@ -260,7 +289,14 @@ describe("MasterTable", () => {
     });
     expect(screen.getByText(/Page 1 of 1/)).toBeInTheDocument();
   });
+  it("still respects legacy isPagination when new prop is absent", () => {
+    // only legacy prop provided, should behave same as before
+    setup({ isPagination: true, isPaginationOpen: undefined, pageNumber: 1, pageSize: 10, totalCount: 2, totalPages: 1 });
+    expect(screen.getByText(/Page 1 of 1/)).toBeInTheDocument();
 
+    setup({ isPagination: false, isPaginationOpen: undefined });
+    expect(screen.queryByText(/Page/)).not.toBeInTheDocument();
+  });
   it("renders page size dropdown with custom pageSizeOptions", () => {
     setup({
       isPageSize: true,

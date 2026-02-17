@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useMemo } from "react";
@@ -42,19 +41,7 @@ export interface MasterTableProps<T extends Record<string, unknown> = Record<str
   totalPages?: number;
   onPageChange?: (page: number) => void;
   onPageSizeChange?: (size: number) => void;
-  /**
-   * @deprecated Use `paginationConfig.enabled` instead. When both props are
-   * provided the configuration object takes precedence.  
-   *
-   * Previously called `isPagination`; renamed to `isPaginationOpen` for
-   * clarity but the old name is still accepted for now.
-   */
   isPagination?: boolean;
-  /**
-   * New name for the same boolean flag; controls whether pagination controls
-   * are displayed.  
-   */
-  isPaginationOpen?: boolean;
   isPageSize?: boolean;
 
   onEdit?: (row: T) => void;
@@ -81,13 +68,9 @@ export interface MasterTableProps<T extends Record<string, unknown> = Record<str
   footerRightContent?: React.ReactNode;
   pageSizeOptions?: number[];
 
-  /**
-   * Configuration for pagination behaviour. Supersedes the deprecated
-   * boolean props when provided.
-   */
   paginationConfig?: {
     /**
-     * Whether pagination is enabled. Overrides `isPagination`/`isPaginationOpen`.
+     * Whether pagination is enabled.
      */
     enabled: boolean;
 
@@ -123,6 +106,7 @@ function buildPagination(current: number, total: number): PageToken[] {
     pages.push(total);
   }
 
+
   return pages;
 }
 
@@ -140,13 +124,8 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
   totalPages,
   onPageChange,
   onPageSizeChange,
-  /**
-   * New name for the pagination flag; kept separately from `isPagination`
-   * to ease migration.
-   */
-  isPaginationOpen,
+  isPagination,
   isPageSize,
-  paginationConfig,
   onEdit,
   onDelete,
   actionLabel,
@@ -182,34 +161,13 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
 
   const hasFooter = !!(footerLeftContent || footerRightContent);
 
-  // normalize inputs for paging calculations
-  const safePageNumber = typeof pageNumber === "number" ? pageNumber : 1;
-
-  // effectivePagination respects the new paginationConfig.enabled flag while
-  // still allowing the older boolean props for backwards compatibility.
-  const effectivePagination =
-    paginationConfig?.enabled ?? isPaginationOpen;
-
-  const start =
-    !totalCount || !safePageNumber || !pageSize
-      ? 0
-      : (safePageNumber - 1) * pageSize + 1;
-  const end =
-    !totalCount || !safePageNumber || !pageSize
-      ? 0
-      : Math.min(safePageNumber * pageSize, totalCount);
+  const start = !totalCount || !pageNumber || !pageSize ? 0 : (pageNumber - 1) * pageSize + 1;
+  const end = !totalCount || !pageNumber || !pageSize ? 0 : Math.min(pageNumber * pageSize, totalCount);
 
   const pages = useMemo(
-    () =>
-      safePageNumber && totalPages
-        ? buildPagination(safePageNumber, Math.max(1, totalPages))
-        : [],
-    [safePageNumber, totalPages]
+    () => (pageNumber && totalPages) ? buildPagination(pageNumber, Math.max(1, totalPages)) : [],
+    [pageNumber, totalPages]
   );
-
-  // Determine whether we should display the page-size dropdown.
-  const showPageSizeSelector =
-    paginationConfig?.showPageSizeSelector ?? isPageSize;
 
   /* =========================
      TABLE
@@ -220,7 +178,7 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
         <thead
           className={cn(
             "sticky top-0 z-20",
-            "bg-gradient-to-r from-[#E2EEFF] via-[#D6E8FF] to-[#E2EEFF]",
+            "bg-linear-to-r from-[#E2EEFF] via-[#D6E8FF] to-[#E2EEFF]",
             "border-b border-blue-200",
             "transition-colors duration-200",
             "hover:from-[#D6E8FF] hover:via-[#CFE3FF] hover:to-[#D6E8FF]",
@@ -383,69 +341,52 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
         )}
       </div>
 
-      {/* ================= PAGE SIZE (no pagination) ================= */}
-      {!effectivePagination && showPageSizeSelector && (
-        totalCount !== undefined && pageSize ? (
-          <div className="bg-[#F8FAFF] border border-[#DCEAFF] rounded-xl px-4 py-3 shadow-sm">
-            <div className="flex items-center gap-2 text-sm text-[#6B7280]">
-              {(() => {
-                const safePageSize = pageSize || 10;
-                const startEntry = totalCount === 0 ? 0 : (safePageNumber - 1) * safePageSize + 1;
-                const text = t("table.showingEntries", {
-                  start: startEntry,
-                  end: "DROPDOWN_PLACEHOLDER",
-                  total: totalCount || 0,
-                });
-                const parts = text.split("DROPDOWN_PLACEHOLDER");
-                return (
-                  <>
-                    {parts[0]}
-                    <select
-                      value={safePageSize}
-                      onChange={(e) => onPageSizeChange?.(Number(e.target.value))}
-                      disabled={!onPageSizeChange}
-                      className="border border-gray-300 rounded-md px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed mx-1"
-                    >
-                      {pageSizeOptions.map((s) => (
-                        <option key={s} value={s}>
-                          {s}
-                        </option>
-                      ))}
-                    </select>
-                    {parts[1]}
-                  </>
-                );
-              })()}
-            </div>
-          </div>
-        ) : (
+      {/* ================= PAGE SIZE ONLY ================= */}
+      {!isPagination && isPageSize && pageSize && totalCount !== undefined && (
+        <div className="bg-[#F8FAFF] border border-[#DCEAFF] rounded-xl px-4 py-3 shadow-sm">
           <div className="flex items-center gap-2 text-sm text-[#6B7280]">
-            <select
-              value={pageSize || 10}
-              onChange={(e) => onPageSizeChange?.(Number(e.target.value))}
-              className="border border-gray-300 rounded-md px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed mx-1"
-            >
-              {pageSizeOptions.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
+            {(() => {
+              const text = t("table.showingEntries", {
+                start: 1,
+                end: "DROPDOWN_PLACEHOLDER",
+                total: totalCount,
+              });
+              const parts = text.split("DROPDOWN_PLACEHOLDER");
+              return (
+                <>
+                  {parts[0]}
+                  <select
+                    value={pageSize}
+                    onChange={(e) => onPageSizeChange?.(Number(e.target.value))}
+                    disabled={!onPageSizeChange}
+                    className="border border-gray-300 rounded-md px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed mx-1"
+                  >
+                    {pageSizeOptions.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
+                  </select>
+                  {parts[1]}
+                </>
+              );
+            })()}
           </div>
-        )
+        </div>
       )}
 
       {/* ================= PAGINATION ================= */}
-      {effectivePagination &&
+      {isPagination &&
         typeof pageNumber === "number" &&
         typeof totalPages === "number" &&
         onPageChange && (
           <div className="bg-[#F8FAFF] border border-[#DCEAFF] rounded-xl px-4 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3 shadow-sm">
-            {showPageSizeSelector ? (
+            {isPageSize ? (
               <div className="flex items-center gap-2 text-sm text-[#6B7280]">
                 {(() => {
                   const safePageSize = pageSize || 10;
-                  const startEntry = totalCount === 0 ? 0 : (safePageNumber - 1) * safePageSize + 1;
+                  const startEntry = totalCount === 0 ? 0 : (pageNumber - 1) * safePageSize + 1;
+                  // const endEntry = Math.min(pageNumber * safePageSize, totalCount || 0);
                   const text = t("table.showingEntries", {
                     start: startEntry,
                     end: "DROPDOWN_PLACEHOLDER",
@@ -484,20 +425,20 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
 
             <div className="flex items-center justify-between md:justify-end gap-2 w-full md:w-auto">
               <PrevPageButton
-                disabled={safePageNumber <= 1}
-                onClick={() => onPageChange(safePageNumber - 1)}
+                disabled={pageNumber <= 1}
+                onClick={() => onPageChange(pageNumber - 1)}
               />
 
               <span className="md:hidden text-sm font-semibold text-[#1E3A8A]">
                 {t("table.page", {
-                  current: safePageNumber,
+                  current: pageNumber,
                   total: totalPages,
                 })}
               </span>
 
               <div className="hidden md:flex items-center gap-1">
                 <FirstPageButton
-                  disabled={safePageNumber === 1}
+                  disabled={pageNumber === 1}
                   onClick={() => onPageChange(1)}
                 />
 
@@ -510,21 +451,21 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
                     <PageNumberButton
                       key={`page-${p}-${i}`}
                       page={p as number}
-                      active={safePageNumber === p}
+                      active={pageNumber === p}
                       onClick={() => onPageChange(p as number)}
                     />
                   ),
                 )}
 
                 <LastPageButton
-                  disabled={safePageNumber === totalPages}
+                  disabled={pageNumber === totalPages}
                   onClick={() => onPageChange(totalPages)}
                 />
               </div>
 
               <NextPageButton
-                disabled={safePageNumber >= totalPages}
-                onClick={() => onPageChange(safePageNumber + 1)}
+                disabled={pageNumber >= totalPages}
+                onClick={() => onPageChange(pageNumber + 1)}
               />
             </div>
           </div>
