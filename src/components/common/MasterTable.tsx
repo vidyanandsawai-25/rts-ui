@@ -534,7 +534,7 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
           </div>
         )}
 
-        // Add standalone dropdown rendering logic
+        {/* Standalone page size dropdown when pagination is disabled */}
         {!isPagination && showPageSizeSelector && (
           <div className="flex items-center gap-2 text-sm text-[#6B7280]">
             <select
