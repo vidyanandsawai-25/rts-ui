@@ -216,4 +216,20 @@ describe("MasterTable", () => {
 
     expect(screen.getByRole("combobox")).toBeInTheDocument();
   });
+
+  it("renders page size dropdown with custom pageSizeOptions", () => {
+    setup({
+      isPageSize: true,
+      pageSize: 10,
+      pageSizeOptions: [5, 15, 25],
+      totalCount: 100,
+      isPagination: true
+    });
+
+    const options = screen.getAllByRole("option");
+    expect(options).toHaveLength(3);
+    expect(options[0]).toHaveTextContent("5");
+    expect(options[1]).toHaveTextContent("15");
+    expect(options[2]).toHaveTextContent("25");
+  });
 });
