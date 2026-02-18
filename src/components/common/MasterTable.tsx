@@ -4,7 +4,7 @@ import React, { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils/cn";
 import { StatusBadge } from "./StatusBadge";
-import { DeleteButton, EditButton, FirstPageButton, LastPageButton, NextPageButton, PageNumberButton, PrevPageButton } from "./ActionButtons";
+import { FirstPageButton, LastPageButton, NextPageButton, PageNumberButton, PrevPageButton } from "./ActionButtons";
 
 function isPrimitive(val: unknown): val is string | number | boolean | null | undefined {
   return (
@@ -43,16 +43,12 @@ export interface MasterTableProps<T extends Record<string, unknown> = Record<str
   onPageSizeChange?: (size: number) => void;
   isPagination?: boolean;
   isPageSize?: boolean;
-
-  onEdit?: (row: T) => void;
-  onDelete?: (row: T) => void;
+  renderActions?: (row: T) => React.ReactNode;
   actionLabel?: string;
-
   getRowKey?: (row: T, index: number) => React.Key;
   maxBodyHeightClassName?: string;
   emptyText?: string;
   loadingText?: string;
-
   containerClassName?: string;
   tableClassName?: string;
   theadClassName?: string;
@@ -126,10 +122,8 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
   onPageSizeChange,
   isPagination,
   isPageSize,
-  onEdit,
-  onDelete,
   actionLabel,
-
+renderActions,
   getRowKey,
   maxBodyHeightClassName = "max-h-[calc(100vh-260px)]",
   emptyText,
@@ -158,7 +152,7 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
   const actualEmptyText = emptyText || t("messages.noData");
   const actualLoadingText = loadingText || t("actions.loading");
 
-  const hasActions = !!(onEdit || onDelete);
+  const hasActions = !!renderActions;
   const hasHeader =
     !!headerTitle ||
     !!headerSubtitle ||
@@ -183,7 +177,7 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
         <thead
           className={cn(
             "sticky top-0 z-20",
-            "bg-linear-to-r from-[#E2EEFF] via-[#D6E8FF] to-[#E2EEFF]",
+            "bg-gradient-to-r from-[#E2EEFF] via-[#D6E8FF] to-[#E2EEFF]",
             "border-b border-blue-200",
             "transition-colors duration-200",
             "hover:from-[#D6E8FF] hover:via-[#CFE3FF] hover:to-[#D6E8FF]",
@@ -274,26 +268,16 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
                 })}
 
                 {hasActions && (
-                  <td className="px-2 py-2 text-center">
-                    <div className="flex justify-center gap-3">
-                      {onEdit && (
-                        <EditButton
-                          size="sm"
-                          onClick={() => onEdit(row)}
-                        />
-                      )}
-                      {onDelete && (
-                        <DeleteButton
-                          size="sm"
-                          onClick={() => onDelete(row)}
-                        />
-                      )}
-                    </div>
+                  <td className="px-4 py-2 text-center">
+                     <div className="flex items-center justify-center gap-2">
+                       {renderActions?.(row)}
+                   </div>
                   </td>
                 )}
               </tr>
             ))
           )}
+
         </tbody>
       </table>
     </div>
@@ -351,10 +335,14 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
         <div className="bg-[#F8FAFF] border border-[#DCEAFF] rounded-xl px-4 py-3 shadow-sm">
           <div className="flex items-center gap-2 text-sm text-[#6B7280]">
             {(() => {
+              const total = typeof totalCount === "number" ? totalCount : 0;
+              const effectivePageSize = typeof pageSize === "number" ? pageSize : pageSizeOptions[0];
+              const start = total === 0 ? 0 : 1;
+              const end = total === 0 ? 0 : Math.min(effectivePageSize, total);
               const text = t("table.showingEntries", {
-                start: 1,
+                start,
                 end: "DROPDOWN_PLACEHOLDER",
-                total: totalCount || 0,
+                total,
               });
               const parts = text.split("DROPDOWN_PLACEHOLDER");
               return (
@@ -389,18 +377,16 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
             {isPageSizeEnabled ? (
               <div className="flex items-center gap-2 text-sm text-[#6B7280]">
                 {(() => {
-                  const safePageSize = pageSize || 10;
+                  const safePageSize = typeof pageSize === "number" ? pageSize : 10;
                   const startEntry = totalCount === 0 ? 0 : (pageNumber - 1) * safePageSize + 1;
-                  // const endEntry = Math.min(pageNumber * safePageSize, totalCount || 0);
-                  const text = t("table.showingEntries", {
-                    start: startEntry,
-                    end: "DROPDOWN_PLACEHOLDER",
-                    total: totalCount || 0,
-                  });
-                  const parts = text.split("DROPDOWN_PLACEHOLDER");
+                  const endEntry = totalCount === 0 ? 0 : Math.min(pageNumber * safePageSize, totalCount);
                   return (
                     <>
-                      {parts[0]}
+                      {t("table.showingEntries", {
+                        start: startEntry,
+                        end: endEntry,
+                        total: totalCount || 0,
+                      })}
                       <select
                         value={safePageSize}
                         onChange={(e) => onPageSizeChange?.(Number(e.target.value))}
@@ -413,7 +399,6 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
                           </option>
                         ))}
                       </select>
-                      {parts[1]}
                     </>
                   );
                 })()}

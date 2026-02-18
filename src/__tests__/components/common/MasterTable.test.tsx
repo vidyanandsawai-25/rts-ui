@@ -1,3 +1,25 @@
+  it("renders correct range with page-size selector on later pages", () => {
+    // pageSize = 5, pageNumber = 2, totalCount = 12
+    const data = Array.from({ length: 12 }, (_, i) => ({ id: i + 1, name: `Row ${i + 1}` }));
+    render(
+      <NextIntlClientProvider messages={mockMessages} locale="en">
+        <MasterTable<Row>
+          columns={columns}
+          data={data.slice(5, 10)}
+          pageNumber={2}
+          pageSize={5}
+          totalCount={12}
+          totalPages={3}
+          isPagination={true}
+          isPageSize={true}
+          pageSizeOptions={[5, 10, 20]}
+          onPageChange={() => {}}
+        />
+      </NextIntlClientProvider>
+    );
+    // Should render "Showing 6 to 10 of 12"
+    expect(screen.getByText(/Showing 6.*10.*12/)).toBeInTheDocument();
+  });
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { MasterTable, MasterTableProps, Column } from "@/components/common/MasterTable";
@@ -29,8 +51,7 @@ describe("MasterTable", () => {
   /*
      Helper to render the component with default props appropriate for testing.
      Most test cases exercise pagination, so the helper opts into the
-     feature by passing `isPaginationOpen: true` (and also the legacy
-     `isPagination` flag for backwards compatibility) unless explicitly
+    feature by passing `isPagination: true` unless explicitly
      overridden.
   */
   function setup(props: Partial<MasterTableProps<Row>> = {}, messages = mockMessages) {
@@ -74,34 +95,20 @@ describe("MasterTable", () => {
     expect(screen.getByText("No data available")).toBeInTheDocument();
   });
 
-  it("renders action buttons if onEdit/onDelete provided", () => {
-    const onEdit = vi.fn();
-    const onDelete = vi.fn();
-    setup({ onEdit, onDelete });
+  it("renders action buttons if renderActions provided", () => {
+    const renderActions = () => <button>Test Action</button>;
+    setup({ renderActions });
     expect(screen.getByText("Actions")).toBeInTheDocument();
-    const buttons = screen.getAllByRole("button");
-    // Should render Edit and Delete buttons. 
-    // Since pagination is enabled by default in setup, pagination buttons might also be present.
-    // 2 rows * 2 actions = 4 action buttons at least.
-    expect(buttons.length).toBeGreaterThanOrEqual(4);
+    expect(screen.getAllByText("Test Action").length).toBeGreaterThan(0);
   });
 
-  it("calls onEdit and onDelete when buttons clicked", () => {
-    const onEdit = vi.fn();
-    const onDelete = vi.fn();
-    setup({ onEdit, onDelete });
-
-    // Select specific action buttons to ensure we aren't clicking pagination
-    const editButtons = screen.getAllByRole("button", { name: "Edit" });
-    const deleteButtons = screen.getAllByRole("button", { name: "Delete" });
-
-    // Click first edit button
-    fireEvent.click(editButtons[0]);
-    expect(onEdit).toHaveBeenCalledWith(data[0]);
-
-    // Click second delete button
-    fireEvent.click(deleteButtons[1]);
-    expect(onDelete).toHaveBeenCalledWith(data[1]);
+  it("calls renderActions when action button clicked", () => {
+    const actionSpy = vi.fn();
+    const renderActions = (row: Row) => <button onClick={() => actionSpy(row)}>Test Action</button>;
+    setup({ renderActions });
+    const actionButtons = screen.getAllByText("Test Action");
+    fireEvent.click(actionButtons[0]);
+    expect(actionSpy).toHaveBeenCalled();
   });
 
   it("renders header and footer content", () => {
