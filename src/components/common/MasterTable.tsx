@@ -4,7 +4,7 @@ import React, { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils/cn";
 import { StatusBadge } from "./StatusBadge";
-import { DeleteButton, EditButton, FirstPageButton, LastPageButton, NextPageButton, PageNumberButton, PrevPageButton } from "./ActionButtons";
+import { FirstPageButton, LastPageButton, NextPageButton, PageNumberButton, PrevPageButton } from "./ActionButtons";
 
 function isPrimitive(val: unknown): val is string | number | boolean | null | undefined {
   return (
@@ -43,15 +43,12 @@ export interface MasterTableProps<T extends Record<string, unknown> = Record<str
   onPageSizeChange?: (size: number) => void;
   isPagination?: boolean;
   isPageSize?: boolean;
-
   renderActions?: (row: T) => React.ReactNode;
   actionLabel?: string;
-
   getRowKey?: (row: T, index: number) => React.Key;
   maxBodyHeightClassName?: string;
   emptyText?: string;
   loadingText?: string;
-
   containerClassName?: string;
   tableClassName?: string;
   theadClassName?: string;
