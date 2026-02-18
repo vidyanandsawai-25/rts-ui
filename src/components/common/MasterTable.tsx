@@ -375,7 +375,7 @@ renderActions,
                 {(() => {
                   const safePageSize = pageSize || 10;
                   const startEntry = totalCount === 0 ? 0 : (pageNumber - 1) * safePageSize + 1;
-                  // const endEntry = Math.min(pageNumber * safePageSize, totalCount || 0);
+                  
                   const text = t("table.showingEntries", {
                     start: startEntry,
                     end: "DROPDOWN_PLACEHOLDER",
