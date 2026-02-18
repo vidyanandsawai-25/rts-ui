@@ -123,7 +123,7 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
   isPagination,
   isPageSize,
   actionLabel,
-renderActions,
+  renderActions,
   getRowKey,
   maxBodyHeightClassName = "max-h-[calc(100vh-260px)]",
   emptyText,
@@ -269,9 +269,9 @@ renderActions,
 
                 {hasActions && (
                   <td className="px-4 py-2 text-center">
-                     <div className="flex items-center justify-center gap-2">
-                       {renderActions?.(row)}
-                   </div>
+                    <div className="flex items-center justify-center gap-2">
+                      {renderActions?.(row)}
+                    </div>
                   </td>
                 )}
               </tr>
@@ -286,119 +286,68 @@ renderActions,
   return (
     <div className={cn("flex flex-col gap-4", containerClassName)}>
       <div className="border border-blue-200 rounded-xl bg-white shadow-sm">
-
         {/* ================= HEADER ================= */}
         {hasHeader && (
-          <div className="px-4 py-3 border-b rounded-t-xl border-blue-200 bg-[#F8FAFF]">
-            {/* TITLE + SUBTITLE */}
+          <div className="px-4 py-3 border-b rounded-t-xl border-blue-200 bg-[#F8FAFF] flex flex-col md:flex-row md:items-center justify-between gap-4">
             {(headerTitle || headerSubtitle) && (
-              <div className="mb-3">
+              <div>
                 {headerTitle && (
                   <h3 className="text-sm font-semibold text-[#1E3A8A]">
                     {headerTitle}
                   </h3>
                 )}
                 {headerSubtitle && (
-                  {isPaginationEnabled &&
-                    typeof pageNumber === "number" &&
-                    typeof totalPages === "number" &&
-                    onPageChange &&
-                    (() => {
-                      const currentPage = pageNumber as number;
-                      const totalPagesNum = totalPages as number;
+                  <p className="text-sm text-[#6B7280] mt-1">
+                    {headerSubtitle}
+                  </p>
+                )}
+              </div>
+            )}
+            {headerExtra && (
+              <div className="flex items-center gap-2">{headerExtra}</div>
+            )}
+          </div>
+        )}
 
-                      return (
-                        <div className="bg-[#F8FAFF] border border-[#DCEAFF] rounded-xl px-4 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3 shadow-sm">
-                          {isPageSizeEnabled ? (
-                            <div className="flex items-center gap-2 text-sm text-[#6B7280]">
-                              {(() => {
-                                const safePageSize = pageSize || 10;
-                                const startEntry = totalCount === 0 ? 0 : (currentPage - 1) * safePageSize + 1;
-                                const text = t("table.showingEntries", {
-                                  start: startEntry,
-                                  end: "DROPDOWN_PLACEHOLDER",
-                                  total: totalCount || 0,
-                                });
-                                const parts = text.split("DROPDOWN_PLACEHOLDER");
-                                return (
-                                  <>
-                                    {parts[0]}
-                                    <select
-                                      value={safePageSize}
-                                      onChange={(e) => onPageSizeChange?.(Number(e.target.value))}
-                                      disabled={!onPageSizeChange}
-                                      className="border border-gray-300 rounded-md px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed mx-1"
-                                    >
-                                      {pageSizeOptions.map((s) => (
-                                        <option key={s} value={s}>
-                                          {s}
-                                        </option>
-                                      ))}
-                                    </select>
-                                    {parts[1]}
-                                  </>
-                                );
-                              })()}
-                            </div>
-                          ) : (
-                            <span className="text-sm text-[#6B7280]">
-                              {t("table.showingEntries", {
-                                start: startDefault,
-                                end: endDefault,
-                                total: totalCount || 0,
-                              })}
-                            </span>
-                          )}
+        {/* ================= TABLE ================= */}
+        {TableContent}
 
-                          <div className="flex items-center justify-between md:justify-end gap-2 w-full md:w-auto">
-                            <PrevPageButton
-                              disabled={currentPage <= 1}
-                              onClick={() => onPageChange(currentPage - 1)}
-                            />
-
-                            <span className="md:hidden text-sm font-semibold text-[#1E3A8A]">
-                              {t("table.page", {
-                                current: currentPage,
-                                total: totalPagesNum,
-                              })}
-                            </span>
-
-                            <div className="hidden md:flex items-center gap-1">
-                              <FirstPageButton
-                                disabled={currentPage === 1}
-                                onClick={() => onPageChange(1)}
-                              />
-
-                              {pages.map((p, i) =>
-                                p === "dots" ? (
-                                  <span key={`dots-${i}`} className="px-2 text-[#94A3B8]">
-                                    ...
-                                  </span>
-                                ) : (
-                                  <PageNumberButton
-                                    key={`page-${p}-${i}`}
-                                    page={p as number}
-                                    active={currentPage === p}
-                                    onClick={() => onPageChange(p as number)}
-                                  />
-                                ),
-                              )}
-
-                              <LastPageButton
-                                disabled={currentPage === totalPagesNum}
-                                onClick={() => onPageChange(totalPagesNum)}
-                              />
-                            </div>
-
-                            <NextPageButton
-                              disabled={currentPage >= totalPagesNum}
-                              onClick={() => onPageChange(currentPage + 1)}
-                            />
-                          </div>
-                        </div>
-                      );
-                    })()}
+        {/* ================= FOOTER / PAGINATION ================= */}
+        {isPaginationEnabled &&
+          typeof pageNumber === "number" &&
+          typeof totalPages === "number" &&
+          onPageChange ? (
+          <div className="bg-[#F8FAFF] border-t border-[#DCEAFF] rounded-b-xl px-4 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3 shadow-sm">
+            {isPageSizeEnabled ? (
+              <div className="flex items-center gap-2 text-sm text-[#6B7280]">
+                {(() => {
+                  const safePageSize = pageSize || 10;
+                  const startEntry =
+                    totalCount === 0 ? 0 : (pageNumber - 1) * safePageSize + 1;
+                  const text = t("table.showingEntries", {
+                    start: startEntry,
+                    end: "DROPDOWN_PLACEHOLDER",
+                    total: totalCount || 0,
+                  });
+                  const parts = text.split("DROPDOWN_PLACEHOLDER");
+                  return (
+                    <>
+                      {parts[0]}
+                      <select
+                        value={safePageSize}
+                        onChange={(e) =>
+                          onPageSizeChange?.(Number(e.target.value))
+                        }
+                        disabled={!onPageSizeChange}
+                        className="border border-gray-300 rounded-md px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed mx-1"
+                      >
+                        {pageSizeOptions.map((s) => (
+                          <option key={s} value={s}>
+                            {s}
+                          </option>
+                        ))}
                       </select>
+                      {parts[1]}
                     </>
                   );
                 })()}
@@ -406,8 +355,8 @@ renderActions,
             ) : (
               <span className="text-sm text-[#6B7280]">
                 {t("table.showingEntries", {
-                  start,
-                  end,
+                  start: startDefault,
+                  end: endDefault,
                   total: totalCount || 0,
                 })}
               </span>
@@ -444,7 +393,7 @@ renderActions,
                       active={pageNumber === p}
                       onClick={() => onPageChange(p as number)}
                     />
-                  ),
+                  )
                 )}
 
                 <LastPageButton
@@ -459,8 +408,15 @@ renderActions,
               />
             </div>
           </div>
+        ) : (
+          (footerLeftContent || footerRightContent) && (
+            <div className="bg-[#F8FAFF] border-t border-[#DCEAFF] rounded-b-xl px-4 py-3 flex items-center justify-between shadow-sm">
+              <div>{footerLeftContent}</div>
+              <div>{footerRightContent}</div>
+            </div>
+          )
         )}
-
+      </div>
     </div>
   );
 }
