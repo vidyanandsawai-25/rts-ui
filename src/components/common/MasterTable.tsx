@@ -145,8 +145,13 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
   footerLeftContent,
   footerRightContent,
   pageSizeOptions = [5, 10, 20, 50],
+  paginationConfig,
 }: MasterTableProps<T>) {
   const t = useTranslations("common");
+
+  // Determine effective pagination settings
+  const isPaginationEnabled = paginationConfig?.enabled ?? isPagination;
+  const isPageSizeEnabled = paginationConfig?.showPageSizeSelector ?? isPageSize;
 
   // Use translations for default values
   const actualActionLabel = actionLabel || t("table.columns.actions");
@@ -342,7 +347,7 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
       </div>
 
       {/* ================= PAGE SIZE ONLY ================= */}
-      {!isPagination && isPageSize && pageSize && totalCount !== undefined && (
+      {!isPaginationEnabled && isPageSizeEnabled && pageSize && totalCount !== undefined && (
         <div className="bg-[#F8FAFF] border border-[#DCEAFF] rounded-xl px-4 py-3 shadow-sm">
           <div className="flex items-center gap-2 text-sm text-[#6B7280]">
             {(() => {
@@ -376,12 +381,12 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
       )}
 
       {/* ================= PAGINATION ================= */}
-      {isPagination &&
+      {isPaginationEnabled &&
         typeof pageNumber === "number" &&
         typeof totalPages === "number" &&
         onPageChange && (
           <div className="bg-[#F8FAFF] border border-[#DCEAFF] rounded-xl px-4 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3 shadow-sm">
-            {isPageSize ? (
+            {isPageSizeEnabled ? (
               <div className="flex items-center gap-2 text-sm text-[#6B7280]">
                 {(() => {
                   const safePageSize = pageSize || 10;

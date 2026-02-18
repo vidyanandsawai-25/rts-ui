@@ -42,7 +42,7 @@ describe("MasterTable", () => {
       totalPages: 1,
       onPageChange: vi.fn(),
       // default pagination enabled; support both legacy and new prop names
-      isPaginationOpen: true,
+
       isPagination: true,
       ...props
     };
@@ -113,14 +113,14 @@ describe("MasterTable", () => {
   });
 
   it("shows correct pagination info when pagination is enabled", () => {
-    setup({ pageNumber: 1, pageSize: 10, totalCount: 2, totalPages: 1, isPaginationOpen: true });
+    setup({ pageNumber: 1, pageSize: 10, totalCount: 2, totalPages: 1 });
     expect(screen.getByText(/Showing 1-2 of 2/)).toBeInTheDocument();
     expect(screen.getByText(/Page 1 of 1/)).toBeInTheDocument();
   });
 
   it("calls onPageChange when pagination buttons clicked", () => {
     const onPageChange = vi.fn();
-    setup({ pageNumber: 2, pageSize: 1, totalCount: 2, totalPages: 2, onPageChange, isPaginationOpen: true });
+    setup({ pageNumber: 2, pageSize: 1, totalCount: 2, totalPages: 2, onPageChange });
 
     const prevBtn = screen.getByRole("button", { name: /Go to previous page/i });
     fireEvent.click(prevBtn);
@@ -138,7 +138,7 @@ describe("MasterTable", () => {
   });
 
   it("does not render pagination when pagination disabled", () => {
-    setup({ isPaginationOpen: false });
+    setup({ isPagination: false });
     // "Showing X-Y of Z" text should not be present
     const paginationText = screen.queryByText(/Showing/);
     expect(paginationText).not.toBeInTheDocument();
@@ -163,16 +163,6 @@ describe("MasterTable", () => {
     const paginationText = screen.queryByText(/Showing/);
     expect(paginationText).not.toBeInTheDocument();
   });
-  
-  it("calls onPageSizeChange when page size dropdown changes", () => {
-    const onPageSizeChange = vi.fn();
-    setup({
-      isPageSize: true,
-      pageSize: 10,
-      onPageSizeChange,
-      totalCount: 100,
-      isPaginationOpen: true
-    });
 
   it("applies containerClassName to the outer wrapper", () => {
     const { container } = setup({ containerClassName: "my-custom-container" });
@@ -186,7 +176,7 @@ describe("MasterTable", () => {
       pageSize: 10,
       onPageSizeChange,
       totalCount: 100,
-      isPaginationOpen: true
+      isPagination: true
     });
 
     const selects = screen.getAllByRole("combobox");
@@ -214,7 +204,7 @@ describe("MasterTable", () => {
       isPageSize: true,
       pageSize: 10,
       totalCount: 100,
-      isPaginationOpen: true
+      isPagination: true
     });
 
     expect(screen.getAllByRole("combobox")[0]).toBeInTheDocument();
@@ -222,7 +212,7 @@ describe("MasterTable", () => {
 
   it("renders standalone page size dropdown when pagination is disabled but isPageSize is true", () => {
     setup({
-      isPaginationOpen: false,
+      isPagination: false,
       isPageSize: true,
       pageSize: 10,
       totalCount: 100
@@ -233,7 +223,7 @@ describe("MasterTable", () => {
 
   it("shows plain dropdown when paginationConfig.showPageSizeSelector is true but counts are missing", () => {
     setup({
-      isPaginationOpen: false,
+      isPagination: false,
       paginationConfig: { enabled: false, showPageSizeSelector: true },
       pageSize: undefined,
       totalCount: undefined,
@@ -246,7 +236,7 @@ describe("MasterTable", () => {
   it("paginationConfig.showPageSizeSelector overrides isPageSize when both provided", () => {
     // even though isPageSize=false, config true should still show selector
     setup({
-      isPaginationOpen: true,
+      isPagination: true,
       isPageSize: false,
       paginationConfig: { enabled: true, showPageSizeSelector: true },
       pageNumber: 1,
@@ -260,7 +250,7 @@ describe("MasterTable", () => {
 
     // conversely config false hides even if isPageSize true
     setup({
-      isPaginationOpen: true,
+      isPagination: true,
       isPageSize: true,
       paginationConfig: { enabled: true, showPageSizeSelector: false },
       pageNumber: 1,
@@ -274,7 +264,7 @@ describe("MasterTable", () => {
 
   it("respects paginationConfig.enabled over legacy flag", () => {
     // disabled via config should hide pagination even if legacy flag true
-    setup({ paginationConfig: { enabled: false }, isPaginationOpen: true, isPagination: true });
+    setup({ paginationConfig: { enabled: false }, isPagination: true });
     expect(screen.queryByText(/Showing/)).not.toBeInTheDocument();
 
     // enabled via config should show pagination even if isPagination false
@@ -284,17 +274,16 @@ describe("MasterTable", () => {
       pageSize: 10,
       totalCount: 2,
       totalPages: 1,
-      isPaginationOpen: false,
       isPagination: false,
     });
     expect(screen.getByText(/Page 1 of 1/)).toBeInTheDocument();
   });
   it("still respects legacy isPagination when new prop is absent", () => {
     // only legacy prop provided, should behave same as before
-    setup({ isPagination: true, isPaginationOpen: undefined, pageNumber: 1, pageSize: 10, totalCount: 2, totalPages: 1 });
+    setup({ isPagination: true, pageNumber: 1, pageSize: 10, totalCount: 2, totalPages: 1 });
     expect(screen.getByText(/Page 1 of 1/)).toBeInTheDocument();
 
-    setup({ isPagination: false, isPaginationOpen: undefined });
+    setup({ isPagination: false });
     expect(screen.queryByText(/Page/)).not.toBeInTheDocument();
   });
   it("renders page size dropdown with custom pageSizeOptions", () => {
@@ -303,7 +292,7 @@ describe("MasterTable", () => {
       pageSize: 10,
       pageSizeOptions: [5, 15, 25],
       totalCount: 100,
-      isPaginationOpen: true
+      isPagination: true
     });
 
     const options = screen.getAllByRole("option");
