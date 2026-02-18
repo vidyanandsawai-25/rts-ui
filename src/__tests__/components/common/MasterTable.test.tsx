@@ -82,7 +82,7 @@ describe("MasterTable", () => {
 
   it("calls renderActions when action button clicked", () => {
     const actionSpy = vi.fn();
-    const renderActions = (row: any) => <button onClick={() => actionSpy(row)}>Test Action</button>;
+    const renderActions = (row: Row) => <button onClick={() => actionSpy(row)}>Test Action</button>;
     setup({ renderActions });
     const actionButtons = screen.getAllByText("Test Action");
     fireEvent.click(actionButtons[0]);
