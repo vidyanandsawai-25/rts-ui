@@ -248,6 +248,8 @@ describe("MasterTable", () => {
     expect(screen.getByRole("combobox")).toBeInTheDocument();
     expect(screen.getByText(/Showing/)).toBeInTheDocument();
 
+    cleanup();
+
     // conversely config false hides even if isPageSize true
     setup({
       isPagination: true,
