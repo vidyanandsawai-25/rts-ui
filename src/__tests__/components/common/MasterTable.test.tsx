@@ -3,23 +3,24 @@ import { describe, it, expect, vi } from "vitest";
 import { MasterTable, MasterTableProps, Column } from "@/components/common/MasterTable";
 import { NextIntlClientProvider } from "next-intl";
 
-describe("MasterTable", () => {
-  const mockMessages = {
-    table: {
-      columns: { actions: "Actions" },
-      showingEntries: "Showing {start}-{end} of {total}",
-      page: "Page {current} of {total}",
-    },
-    messages: { noData: "No data available" },
-    actions: { loading: "Loading..." },
-  };
+const mockMessages = {
+  table: {
+    columns: { actions: "Actions" },
+    showingEntries: "Showing {start}-{end} of {total}",
+    page: "Page {current} of {total}",
+  },
+  messages: { noData: "No data available" },
+  actions: { loading: "Loading..." },
+};
 
-  type Row = { id: number; name: string; status?: string };
-  const columns: Column<Row>[] = [
-    { key: "id", label: "ID" },
-    { key: "name", label: "Name" },
-    { key: "status", label: "Status", isStatus: true },
-  ];
+type Row = { id: number; name: string; status?: string };
+const columns: Column<Row>[] = [
+  { key: "id", label: "ID" },
+  { key: "name", label: "Name" },
+  { key: "status", label: "Status", isStatus: true },
+];
+
+describe("MasterTable", () => {
   const data: Row[] = [
     { id: 1, name: "Alice", status: "active" },
     { id: 2, name: "Bob", status: "inactive" },
