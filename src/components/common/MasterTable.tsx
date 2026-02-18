@@ -160,8 +160,7 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
 
   const hasFooter = !!(footerLeftContent || footerRightContent);
 
-  const startDefault = !totalCount || !pageNumber || !pageSize ? 0 : (pageNumber - 1) * pageSize + 1;
-  const endDefault = !totalCount || !pageNumber || !pageSize ? 0 : Math.min(pageNumber * pageSize, totalCount);
+
 
   const pages = useMemo(
     () => (pageNumber && totalPages) ? buildPagination(pageNumber, Math.max(1, totalPages)) : [],
@@ -313,33 +312,30 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
         {TableContent}
 
         {/* ================= FOOTER / PAGINATION ================= */}
-        {isPaginationEnabled &&
-          typeof pageNumber === "number" &&
-          typeof totalPages === "number" &&
-          onPageChange ? (
+        {(hasFooter || isPaginationEnabled || isPageSizeEnabled || (totalCount !== undefined && totalCount > 0)) && (
           <div className="bg-[#F8FAFF] border-t border-[#DCEAFF] rounded-b-xl px-4 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3 shadow-sm">
-            {isPageSizeEnabled ? (
-              <div className="flex items-center gap-2 text-sm text-[#6B7280]">
-                {(() => {
-                  const safePageSize = pageSize || 10;
-                  const startEntry =
-                    totalCount === 0 ? 0 : (pageNumber - 1) * safePageSize + 1;
-                  const text = t("table.showingEntries", {
-                    start: startEntry,
-                    end: "DROPDOWN_PLACEHOLDER",
-                    total: totalCount || 0,
-                  });
-                  const parts = text.split("DROPDOWN_PLACEHOLDER");
-                  return (
-                    <>
-                      {parts[0]}
+
+            {/* LEFT SIDE: Custom Content OR Info Text + PageSize */}
+            <div className="flex items-center gap-4 text-sm text-[#6B7280]">
+              {footerLeftContent ? (
+                footerLeftContent
+              ) : (
+                (isPaginationEnabled || isPageSizeEnabled || totalCount) && (
+                  <div className="flex items-center gap-2">
+                    <span>
+                      {t("table.showingEntries", {
+                        start: totalCount === 0 ? 0 : ((pageNumber || 1) - 1) * (pageSize || 10) + 1,
+                        end: totalCount === 0 ? 0 : Math.min((pageNumber || 1) * (pageSize || 10), totalCount || 0),
+                        total: totalCount || 0,
+                      })}
+                    </span>
+
+                    {isPageSizeEnabled && onPageSizeChange && (
                       <select
-                        value={safePageSize}
-                        onChange={(e) =>
-                          onPageSizeChange?.(Number(e.target.value))
-                        }
-                        disabled={!onPageSizeChange}
-                        className="border border-gray-300 rounded-md px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed mx-1"
+                        value={pageSize || 10}
+                        onChange={(e) => onPageSizeChange(Number(e.target.value))}
+                        className="ml-2 border border-blue-200 rounded-md p-1 focus:ring-2 focus:ring-blue-500 outline-none"
+                        aria-label="Rows per page"
                       >
                         {pageSizeOptions.map((s) => (
                           <option key={s} value={s}>
@@ -347,74 +343,71 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
                           </option>
                         ))}
                       </select>
-                      {parts[1]}
-                    </>
-                  );
-                })()}
-              </div>
-            ) : (
-              <span className="text-sm text-[#6B7280]">
-                {t("table.showingEntries", {
-                  start: startDefault,
-                  end: endDefault,
-                  total: totalCount || 0,
-                })}
-              </span>
-            )}
+                    )}
+                  </div>
+                )
+              )}
+            </div>
 
+            {/* RIGHT SIDE: Custom Content + Pagination Controls */}
             <div className="flex items-center justify-between md:justify-end gap-2 w-full md:w-auto">
-              <PrevPageButton
-                disabled={pageNumber <= 1}
-                onClick={() => onPageChange(pageNumber - 1)}
-              />
+              {footerRightContent}
 
-              <span className="md:hidden text-sm font-semibold text-[#1E3A8A]">
-                {t("table.page", {
-                  current: pageNumber,
-                  total: totalPages,
-                })}
-              </span>
-
-              <div className="hidden md:flex items-center gap-1">
-                <FirstPageButton
-                  disabled={pageNumber === 1}
-                  onClick={() => onPageChange(1)}
-                />
-
-                {pages.map((p, i) =>
-                  p === "dots" ? (
-                    <span key={`dots-${i}`} className="px-2 text-[#94A3B8]">
-                      ...
-                    </span>
-                  ) : (
-                    <PageNumberButton
-                      key={`page-${p}-${i}`}
-                      page={p as number}
-                      active={pageNumber === p}
-                      onClick={() => onPageChange(p as number)}
+              {isPaginationEnabled &&
+                typeof pageNumber === "number" &&
+                typeof totalPages === "number" &&
+                onPageChange && (
+                  <>
+                    <PrevPageButton
+                      disabled={pageNumber <= 1}
+                      onClick={() => onPageChange(pageNumber - 1)}
                     />
-                  )
+
+                    <span className="md:hidden text-sm font-semibold text-[#1E3A8A]">
+                      {t("table.page", {
+                        current: pageNumber,
+                        total: totalPages,
+                      })}
+                    </span>
+
+                    <div className="hidden md:flex items-center gap-1">
+                      <FirstPageButton
+                        disabled={pageNumber === 1}
+                        onClick={() => onPageChange(1)}
+                      />
+
+                      {pages.map((p, i) =>
+                        p === "dots" ? (
+                          <span
+                            key={`dots-${i}`}
+                            className="px-2 text-[#94A3B8]"
+                          >
+                            ...
+                          </span>
+                        ) : (
+                          <PageNumberButton
+                            key={`page-${p}-${i}`}
+                            page={p as number}
+                            active={pageNumber === p}
+                            onClick={() => onPageChange(p as number)}
+                          />
+                        )
+                      )}
+
+                      <LastPageButton
+                        disabled={pageNumber === totalPages}
+                        onClick={() => onPageChange(totalPages)}
+                      />
+                    </div>
+
+                    <NextPageButton
+                      disabled={pageNumber >= totalPages}
+                      onClick={() => onPageChange(pageNumber + 1)}
+                    />
+                  </>
                 )}
-
-                <LastPageButton
-                  disabled={pageNumber === totalPages}
-                  onClick={() => onPageChange(totalPages)}
-                />
-              </div>
-
-              <NextPageButton
-                disabled={pageNumber >= totalPages}
-                onClick={() => onPageChange(pageNumber + 1)}
-              />
             </div>
           </div>
-        ) : (
-          hasFooter && (
-            <div className="bg-[#F8FAFF] border-t border-[#DCEAFF] rounded-b-xl px-4 py-3 flex items-center justify-between shadow-sm">
-              <div>{footerLeftContent}</div>
-              <div>{footerRightContent}</div>
-            </div>
-          )
         )}
       </div>
     </div>
