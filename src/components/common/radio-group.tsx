@@ -170,7 +170,7 @@ const RadioGroupItem = React.forwardRef<HTMLButtonElement, RadioGroupItemProps>(
                     data-state={dataState}
                     disabled={isDisabled}
                     data-value={value}
-                    tabIndex={isSelected ? 0 : -1}
+                    tabIndex={isSelected || !groupValue ? 0 : -1}
                     className={cn(
                         'aspect-square h-4 w-4 rounded-full border border-primary text-primary shadow',
                         'inline-flex items-center justify-center',
