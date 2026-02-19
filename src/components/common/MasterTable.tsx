@@ -383,59 +383,51 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
             <div className="flex items-center justify-between md:justify-end gap-2 w-full md:w-auto">
               {footerRightContent}
 
-              {isPaginationEnabled &&
-                typeof pageNumber === "number" &&
-                typeof totalPages === "number" &&
-                onPageChange && (
-                  <>
-                    <PrevPageButton
-                      disabled={pageNumber <= 1}
-                      onClick={() => onPageChange(pageNumber - 1)}
-                    />
+              {/* RIGHT SIDE: Pagination Controls */}
+{isPaginationEnabled &&
+  typeof pageNumber === "number" &&
+  typeof totalPages === "number" &&
+  onPageChange && (
+    <div className="flex items-center gap-2">
+      <PrevPageButton
+        disabled={pageNumber <= 1}
+        onClick={() => onPageChange(pageNumber - 1)}
+      />
 
-                    <span className="md:hidden text-sm font-semibold text-[#1E3A8A]">
-                      {t("table.page", {
-                        current: pageNumber,
-                        total: totalPages,
-                      })}
-                    </span>
+      <div className="flex items-center gap-1">
+        <FirstPageButton
+          disabled={pageNumber === 1}
+          onClick={() => onPageChange(1)}
+        />
 
-                    <div className="hidden md:flex items-center gap-1">
-                      <FirstPageButton
-                        disabled={pageNumber === 1}
-                        onClick={() => onPageChange(1)}
-                      />
+        {pages.map((p, i) =>
+          p === "dots" ? (
+            <span key={`dots-${i}`} className="px-2 text-[#94A3B8]">
+              ...
+            </span>
+          ) : (
+            <PageNumberButton
+              key={`page-${p}-${i}`}
+              page={p as number}
+              active={pageNumber === p}
+              onClick={() => onPageChange(p as number)}
+            />
+          )
+        )}
 
-                      {pages.map((p, i) =>
-                        p === "dots" ? (
-                          <span
-                            key={`dots-${i}`}
-                            className="px-2 text-[#94A3B8]"
-                          >
-                            ...
-                          </span>
-                        ) : (
-                          <PageNumberButton
-                            key={`page-${p}-${i}`}
-                            page={p as number}
-                            active={pageNumber === p}
-                            onClick={() => onPageChange(p as number)}
-                          />
-                        )
-                      )}
+        <LastPageButton
+          disabled={pageNumber === totalPages}
+          onClick={() => onPageChange(totalPages)}
+        />
+      </div>
 
-                      <LastPageButton
-                        disabled={pageNumber === totalPages}
-                        onClick={() => onPageChange(totalPages)}
-                      />
-                    </div>
+      <NextPageButton
+        disabled={pageNumber >= totalPages}
+        onClick={() => onPageChange(pageNumber + 1)}
+      />
+    </div>
+)}
 
-                    <NextPageButton
-                      disabled={pageNumber >= totalPages}
-                      onClick={() => onPageChange(pageNumber + 1)}
-                    />
-                  </>
-                )}
             </div>
           </div>
         )}
