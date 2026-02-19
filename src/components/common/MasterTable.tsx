@@ -1,11 +1,9 @@
 "use client";
-
 import React, { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils/cn";
 import { StatusBadge } from "./StatusBadge";
 import { FirstPageButton, LastPageButton, NextPageButton, PageNumberButton, PrevPageButton } from "./ActionButtons";
-
 export interface PaginationConfig {
   /** Whether pagination is enabled */
   enabled: boolean;
