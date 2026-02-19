@@ -1,3 +1,6 @@
+describe("MasterTable", () => {
+  // ...existing tests...
+
   it("renders correct range with page-size selector on later pages", () => {
     // pageSize = 5, pageNumber = 2, totalCount = 12
     const data = Array.from({ length: 12 }, (_, i) => ({ id: i + 1, name: `Row ${i + 1}` }));
@@ -29,6 +32,7 @@
     const info = screen.getByTestId("pagination-info");
     expect(info.textContent?.replace(/\s+/g, " ")).toMatch(/Showing 6.*10.*12/);
   });
+});
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { MasterTable, MasterTableProps, Column } from "@/components/common/MasterTable";

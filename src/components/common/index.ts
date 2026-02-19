@@ -45,7 +45,7 @@ export { Drawer } from './Drawer';
 export { MultiSelectDropdown } from './Dropdown';
 
 export { MasterTable } from './MasterTable';
-export type { Column, MasterTableProps } from './MasterTable';
+export type { Column, MasterTableProps, PaginationConfig } from './MasterTable';
 
 export { PageContainer } from './PageContainer';
 

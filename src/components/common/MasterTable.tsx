@@ -147,14 +147,6 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
   const isPaginationEnabled = paginationConfig?.enabled ?? isPagination;
   const isPageSizeEnabled = paginationConfig?.showPageSizeSelector ?? isPageSize;
 
-  console.log("MasterTable Debug:", {
-    propsIsPagination: isPagination,
-    propsIsPageSize: isPageSize,
-    config: paginationConfig,
-    computedPagination: isPaginationEnabled,
-    computedPageSize: isPageSizeEnabled,
-    totalCount
-  });
 
   // Use translations for default values
   const actualActionLabel = actionLabel || t("table.columns.actions");
