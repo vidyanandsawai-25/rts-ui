@@ -181,6 +181,7 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
   const isPaginationEnabled = paginationConfig?.enabled ?? isPagination;
   const isPageSizeEnabled = paginationConfig?.showPageSizeSelector ?? isPageSize;
 
+
   // Use translations for default values
   const actualActionLabel = actionLabel || t("table.columns.actions");
   const actualEmptyText = emptyText || t("messages.noData");

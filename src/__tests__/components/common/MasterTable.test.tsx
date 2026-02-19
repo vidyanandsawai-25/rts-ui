@@ -1,3 +1,38 @@
+describe("MasterTable", () => {
+  // ...existing tests...
+
+  it("renders correct range with page-size selector on later pages", () => {
+    // pageSize = 5, pageNumber = 2, totalCount = 12
+    const data = Array.from({ length: 12 }, (_, i) => ({ id: i + 1, name: `Row ${i + 1}` }));
+    render(
+      <NextIntlClientProvider messages={{ common: {
+        table: {
+          columns: { actions: "Actions" },
+          showingEntries: "Showing {start} to {end} of {total}",
+          page: "Page {current} of {total}",
+        },
+        messages: { noData: "No data available" },
+        actions: { loading: "Loading..." },
+      }}} locale="en">
+        <MasterTable<Row>
+          columns={columns}
+          data={data.slice(5, 10)}
+          pageNumber={2}
+          pageSize={5}
+          totalCount={12}
+          totalPages={3}
+          isPagination={true}
+          isPageSize={true}
+          pageSizeOptions={[5, 10, 20]}
+          onPageChange={() => {}}
+        />
+      </NextIntlClientProvider>
+    );
+    // Should render "Showing 6 to 10 of 12" (may be split by elements)
+    const info = screen.getByTestId("pagination-info");
+    expect(info.textContent?.replace(/\s+/g, " ")).toMatch(/Showing 6.*10.*12/);
+  });
+});
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { MasterTable, MasterTableProps, Column } from "@/components/common/MasterTable";
