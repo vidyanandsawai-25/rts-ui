@@ -1,25 +1,3 @@
-  it("renders correct range with page-size selector on later pages", () => {
-    // pageSize = 5, pageNumber = 2, totalCount = 12
-    const data = Array.from({ length: 12 }, (_, i) => ({ id: i + 1, name: `Row ${i + 1}` }));
-    render(
-      <NextIntlClientProvider messages={mockMessages} locale="en">
-        <MasterTable<Row>
-          columns={columns}
-          data={data.slice(5, 10)}
-          pageNumber={2}
-          pageSize={5}
-          totalCount={12}
-          totalPages={3}
-          isPagination={true}
-          isPageSize={true}
-          pageSizeOptions={[5, 10, 20]}
-          onPageChange={() => {}}
-        />
-      </NextIntlClientProvider>
-    );
-    // Should render "Showing 6 to 10 of 12"
-    expect(screen.getByText(/Showing 6.*10.*12/)).toBeInTheDocument();
-  });
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { MasterTable, MasterTableProps, Column } from "@/components/common/MasterTable";
@@ -312,5 +290,28 @@ describe("MasterTable", () => {
     expect(options[0]).toHaveTextContent("5");
     expect(options[1]).toHaveTextContent("15");
     expect(options[2]).toHaveTextContent("25");
+  });
+
+  it("renders correct range with page-size selector on later pages", () => {
+    // pageSize = 5, pageNumber = 2, totalCount = 12
+    const data = Array.from({ length: 12 }, (_, i) => ({ id: i + 1, name: `Row ${i + 1}` }));
+    render(
+      <NextIntlClientProvider messages={{ common: mockMessages }} locale="en">
+        <MasterTable<Row>
+          columns={columns}
+          data={data.slice(5, 10)}
+          pageNumber={2}
+          pageSize={5}
+          totalCount={12}
+          totalPages={3}
+          isPagination={true}
+          isPageSize={true}
+          pageSizeOptions={[5, 10, 20]}
+          onPageChange={() => {}}
+        />
+      </NextIntlClientProvider>
+    );
+    // Should render "Showing 6 to 10 of 12"
+    expect(screen.getByText(/Showing 6.*10.*12/)).toBeInTheDocument();
   });
 });
