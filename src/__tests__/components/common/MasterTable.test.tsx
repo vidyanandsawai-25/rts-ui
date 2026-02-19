@@ -19,7 +19,8 @@
     );
     // Should render "Showing 6 to 10 of 12" (may be split by elements)
     expect(
-      screen.getByText((content, node) => {
+      screen.getByText((_, node) => {
+        if (!node) return false;
         const text = node.textContent?.replace(/\s+/g, " ") ?? "";
         return text.includes("Showing 6") && text.includes("10") && text.includes("12");
       })
