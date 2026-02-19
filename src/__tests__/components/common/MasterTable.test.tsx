@@ -17,8 +17,13 @@
         />
       </NextIntlClientProvider>
     );
-    // Should render "Showing 6 to 10 of 12"
-    expect(screen.getByText(/Showing 6.*10.*12/)).toBeInTheDocument();
+    // Should render "Showing 6 to 10 of 12" (may be split by elements)
+    expect(
+      screen.getByText((content, node) => {
+        const text = node.textContent?.replace(/\s+/g, " ") ?? "";
+        return text.includes("Showing 6") && text.includes("10") && text.includes("12");
+      })
+    ).toBeInTheDocument();
   });
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
