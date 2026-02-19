@@ -6,6 +6,19 @@ import { cn } from "@/lib/utils/cn";
 import { StatusBadge } from "./StatusBadge";
 import { FirstPageButton, LastPageButton, NextPageButton, PageNumberButton, PrevPageButton } from "./ActionButtons";
 
+export interface PaginationConfig {
+  /** Whether pagination is enabled */
+  enabled: boolean;
+  /** Controls whether the page size selector dropdown is shown */
+  showPageSizeSelector?: boolean;
+}
+
+interface PageSizeSelectorProps {
+  pageSize: number;
+  pageSizeOptions: number[];
+  onPageSizeChange?: (size: number) => void;
+}
+
 function isPrimitive(val: unknown): val is string | number | boolean | null | undefined {
   return (
     typeof val === "string" ||
@@ -40,8 +53,20 @@ export interface MasterTableProps<T extends Record<string, unknown> = Record<str
   totalCount?: number;
   totalPages?: number;
   onPageChange?: (page: number) => void;
+  /**
+   * Callback when page size changes.
+   * Only used if page size selector is enabled.
+   */
   onPageSizeChange?: (size: number) => void;
+  /**
+   * @deprecated Use paginationConfig.enabled instead.
+   * Controls whether pagination is enabled.
+   */
   isPagination?: boolean;
+  /**
+   * @deprecated Use paginationConfig.showPageSizeSelector instead.
+   * Controls whether the page size selector dropdown is shown.
+   */
   isPageSize?: boolean;
   renderActions?: (row: T) => React.ReactNode;
   actionLabel?: string;
@@ -64,17 +89,26 @@ export interface MasterTableProps<T extends Record<string, unknown> = Record<str
   footerRightContent?: React.ReactNode;
   pageSizeOptions?: number[];
 
-  paginationConfig?: {
-    /**
-     * Whether pagination is enabled.
-     */
-    enabled: boolean;
+  paginationConfig?: PaginationConfig;
+}
 
-    /**
-     * Show the page size selector dropdown.
-     */
-    showPageSizeSelector?: boolean;
-  };
+function PageSizeSelector({ pageSize, pageSizeOptions, onPageSizeChange }: PageSizeSelectorProps): React.ReactElement {
+  return (
+    <select
+      value={pageSize}
+      onChange={(e) => onPageSizeChange?.(Number(e.target.value))}
+      disabled={!onPageSizeChange}
+      className="ml-2 border border-blue-200 rounded-md p-1 focus:ring-2 focus:ring-blue-500 outline-none bg-white disabled:opacity-50"
+      aria-label="Rows per page"
+    >
+      {pageSizeOptions.map((s) => (
+        <option key={s} value={s}>
+          {s}
+        </option>
+      ))}
+    </select>
+  );
+
 }
 
 type PageToken = number | "dots";
@@ -140,7 +174,7 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
   footerRightContent,
   pageSizeOptions = [5, 10, 20, 50],
   paginationConfig,
-}: MasterTableProps<T>) {
+}: MasterTableProps<T>): React.ReactElement {
   const t = useTranslations("common");
 
   // Determine effective pagination settings
@@ -157,11 +191,9 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
   const hasHeader =
     !!headerTitle ||
     !!headerSubtitle ||
-    !!headerExtra
+    !!headerExtra;
 
   const hasFooter = !!(footerLeftContent || footerRightContent);
-
-
 
   const pages = useMemo(
     () => (pageNumber && totalPages) ? buildPagination(pageNumber, Math.max(1, totalPages)) : [],
@@ -334,21 +366,13 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
                       </span>
                     )}
 
-                    {/* Show PageSize selector if enabled, regardless of pagination state */}
+                    {/* Show PageSize selector if enabled and onPageSizeChange is provided */}
                     {isPageSizeEnabled && (
-                      <select
-                        value={pageSize || 10}
-                        onChange={(e) => onPageSizeChange?.(Number(e.target.value))}
-                        disabled={!onPageSizeChange}
-                        className="ml-2 border border-blue-200 rounded-md p-1 focus:ring-2 focus:ring-blue-500 outline-none bg-white"
-                        aria-label="Rows per page"
-                      >
-                        {pageSizeOptions.map((s) => (
-                          <option key={s} value={s}>
-                            {s}
-                          </option>
-                        ))}
-                      </select>
+                      <PageSizeSelector
+                        pageSize={pageSize || 10}
+                        pageSizeOptions={pageSizeOptions}
+                        onPageSizeChange={onPageSizeChange}
+                      />
                     )}
                   </div>
                 )
