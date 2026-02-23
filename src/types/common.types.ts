@@ -43,12 +43,6 @@ export interface SelectOption {
   value: string | number;
   disabled?: boolean;
 }
-export interface ApiResponse<T = unknown> {
-  success: boolean;
-  data?: T;
-  error?: string;
-  message?: string;
-}
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'save' | 'cancel' | 'add' | 'upload' | 'import' | 'export';
   size?: 'sm' | 'md' | 'lg';
