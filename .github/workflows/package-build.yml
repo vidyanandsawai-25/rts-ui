@@ -106,7 +106,7 @@ jobs:
       - name: Install dependencies
         run: |
           Write-Output "📦 Installing dependencies..."
-          npm ci
+          npm install
           Write-Output "✅ Dependencies installed"
         shell: pwsh
         
