@@ -41,9 +41,10 @@
     "unauthorized": "तुम्हाला अधिकृत नाही",
     "notFound": "संसाधन सापडले नाही",
     "serverError": "सर्व्हर त्रुटी. कृपया नंतर प्रयत्न करा",
-    "deleteError": "हटवण्यात अयशस्वी",
+    "updateError": "अपडेट करण्यात अयशस्वी",
     "createError": "तयार करण्यात अयशस्वी",
-    "updateError": "अपडेट करण्यात अयशस्वी"
+    "deleteError": "हटवण्यात अयशस्वी",
+    "validationError": "सबमिट करण्यापूर्वी कृपया सर्व पडताळणी त्रुटी दुरुस्त करा"
   },
   "status": {
     "active": "सक्रिय",
@@ -97,6 +98,10 @@
     "cancel": "रद्द करा"
   },
   "table": {
+    "actions": {
+      "edit": "संपादित करा",
+      "delete": "हटवा"
+    },
     "show": "दाखवा",
     "entries": "नोंदी",
     "showing": "दाखवत आहे",
@@ -108,6 +113,7 @@
     },
     "noData": "डेटा उपलब्ध नाही",
     "noRecordsFound": "कोणतेही रेकॉर्ड सापडले नाहीत",
+    "rowsPerPage": "प्रति पृष्ठ ओळी",
     "showingEntries": "{start} ते {end} पर्यंत {total} नोंदी दर्शवित आहे",
     "page": "पृष्ठ {current} चे {total}",
     "firstPage": "पहिले पृष्ठ",
@@ -186,5 +192,8 @@
     "action": "कृती",
     "currencySymbol": "₹",
     "deleteRow": "पंक्ती काढा"
+  },
+  "note": {
+    "mandatory": "* चिन्ह असलेली सर्व क्षेत्रे अनिवार्य आहेत"
   }
 }

@@ -46,6 +46,7 @@
     "deleteError": "Failed to delete",
     "createError": "Failed to create",
     "updateError": "Failed to update",
+    "validationError": "Please fix all validation errors before submitting",
     "duplicateCheckFailed": "Failed to check for duplicates",
     "fixValidation": "Please fix validation errors",
     "saveFailed": "Failed to save"
@@ -172,6 +173,10 @@
     "deleteFloor": "Delete Floor"
   },
   "table": {
+    "actions": {
+      "edit": "Edit",
+      "delete": "Delete"
+    },
     "columns": {
       "srNo": "Sr. No.",
       "name": "Name",
@@ -183,12 +188,17 @@
     "noData": "No data available",
     "show": "Show",
     "noRecordsFound": "No records found",
+    "showing": "Showing",
+    "to": "to",
+    "of": "of",
+    "entries": "entries",
     "showingEntries": "Showing {start} to {end} of {total} entries",
     "page": "Page {current} of {total}",
     "firstPage": "First page",
     "lastPage": "Last page",
     "previousPage": "Previous page",
-    "nextPage": "Next page"
+    "nextPage": "Next page",
+    "rowsPerPage": "Rows per page"
   },
   "multiSelect": {
     "selectAll": "Select All",
@@ -204,5 +214,8 @@
     "action": "Action",
     "currencySymbol": "₹",
     "deleteRow": "Delete Row"
+  },
+  "note": {
+    "mandatory": "Fields marked with * are mandatory"
   }
 }
