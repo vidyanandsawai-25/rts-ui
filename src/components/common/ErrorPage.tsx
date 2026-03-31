@@ -7,7 +7,7 @@ import { Button } from './ActionButton';
 import { Card, CardContent } from './Card';
 import { PageContainer } from './PageContainer';
 
-interface ErrorPageProps {
+export interface ErrorPageProps {
   error: Error & { digest?: string };
   reset: () => void;
   /** Translation namespace for error messages. Defaults to 'common.error' */

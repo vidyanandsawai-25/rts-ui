@@ -52,13 +52,13 @@ export const commonValidations = {
    * Validation for codes (required, alphanumeric, max length)
    */
   code: (
-    label: string,
+    _label: string,
     t: (key: string, values?: Record<string, string | number | Date>) => string
   ): Validator => (value: unknown) => {
     const strVal = String(value || "");
-    if (!strVal || !strVal.trim()) return t('validation.required', { label });
-    if (!CONSTRUCTION_CODE_REGEX.test(strVal)) return t('validation.alphanumeric', { label });
-    if (strVal.length > 50) return t('validation.tooLong', { label });
+    if (!strVal || !strVal.trim()) return t('validation.required');
+    if (!CONSTRUCTION_CODE_REGEX.test(strVal)) return t('validation.invalidFormat');
+    if (strVal.length > 50) return t('validation.maxLength', { count: 50 });
     return undefined;
   },
 
@@ -66,12 +66,12 @@ export const commonValidations = {
    * Validation for names (required, max length)
    */
   name: (
-    label: string,
+    _label: string,
     t: (key: string, values?: Record<string, string | number | Date>) => string
   ): Validator => (value: unknown) => {
     const strVal = String(value || "");
-    if (!strVal || !strVal.trim()) return t('validation.required', { label });
-    if (strVal.length > 100) return t('validation.tooLong', { label });
+    if (!strVal || !strVal.trim()) return t('validation.required');
+    if (strVal.length > 100) return t('validation.maxLength', { count: 100 });
     return undefined;
   },
 
@@ -79,13 +79,13 @@ export const commonValidations = {
    * Validation for descriptions (optional by default, max length)
    */
   description: (
-    label: string,
+    _label: string,
     t: (key: string, values?: Record<string, string | number | Date>) => string,
     required: boolean = false
   ): Validator => (value: unknown) => {
     const strVal = String(value || "");
-    if (required && (!strVal || !strVal.trim())) return t('validation.required', { label });
-    if (strVal && strVal.length > 500) return t('validation.tooLong', { label });
+    if (required && (!strVal || !strVal.trim())) return t('validation.required');
+    if (strVal && strVal.length > 500) return t('validation.maxLength', { count: 500 });
     return undefined;
   }
 };

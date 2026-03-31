@@ -73,25 +73,25 @@ export function getConstructionTypeColumns(
   return [
     {
       key: "constructionCode",
-      label: createSortableLabel(t("list.table.constructionCode"), "constructionCode") as unknown as string,
+      label: createSortableLabel(t("list.table.constructionCode"), "constructionCode"),
       width: "15%",
       render: (value) => (typeof value === "string" ? value : ""),
     },
     {
       key: "description",
-      label: createSortableLabel(t("list.table.description"), "description") as unknown as string,
+      label: createSortableLabel(t("list.table.description"), "description"),
       width: "35%",
       render: (value) => (typeof value === "string" ? value : ""),
     },
     {
       key: "searchSequence",
-      label: createSortableLabel(t("list.table.searchSequence"), "searchSequence") as unknown as string,
+      label: createSortableLabel(t("list.table.searchSequence"), "searchSequence"),
       width: "15%",
       render: (value) => (typeof value === "number" ? value : ""),
     },
     {
       key: "isActive",
-      label: createSortableLabel(t("list.table.status"), "isActive") as unknown as string,
+      label: createSortableLabel(t("list.table.status"), "isActive"),
       width: "20%",
       isStatus: true,
     },

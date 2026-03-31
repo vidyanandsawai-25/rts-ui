@@ -103,7 +103,7 @@ export function ConstructionTypeMaster({
       router.push(`/${locale}/property-tax/constructiontype?${params.toString()}`);
     }, 500);
     return () => clearTimeout(timer);
-  }, [search, pageSize, router, locale, currentSearchTerm]);
+  }, [search, pageSize, router, locale, currentSearchTerm, sortBy, sortOrder]);
 
   /* ================= TABLE COLUMNS ================= */
   const handleSort = useCallback(

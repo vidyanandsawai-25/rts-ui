@@ -50,7 +50,7 @@ export type { Column, MasterTableProps } from './MasterTable';
 export { PageContainer } from './PageContainer';
 
 export { ErrorPage } from './ErrorPage';
-export type { default as ErrorPageProps } from './ErrorPage';
+export type { ErrorPageProps } from './ErrorPage';
 
 export { SearchInput } from './SearchInput';
 

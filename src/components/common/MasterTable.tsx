@@ -35,7 +35,7 @@ function isPrimitive(val: unknown): val is string | number | boolean | null | un
 
 export interface Column<T extends Record<string, unknown> = Record<string, unknown>> {
   key: keyof T;
-  label: string;
+  label: string | React.ReactNode;
   width?: string;
   isStatus?: boolean;
   render?: (value: T[keyof T] | undefined, row: T, rowIndex: number) => React.ReactNode;

@@ -31,7 +31,7 @@ export async function fetchConstructionPagedServerAction(
     // Note: API only supports sorting by constructionCode and description
     const allowedSortColumns = ["constructionCode", "description"];
     const validSortBy = sortBy && allowedSortColumns.includes(sortBy) ? sortBy : undefined;
-    const validSortOrder = sortOrder && ["asc", "desc"].includes(sortOrder.toLowerCase()) ? sortOrder : undefined;
+    const validSortOrder = sortOrder && ["asc", "desc"].includes(sortOrder.toLowerCase()) ? sortOrder.toLowerCase() : undefined;
 
     return await getConstructionPaged(pageNumber, pageSize, searchTerm, validSortBy, validSortOrder);
   } catch (error: unknown) {
