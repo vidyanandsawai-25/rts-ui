@@ -7,7 +7,9 @@ import { ConstructionType, ConstructionTypeFormModel, PagedResponse } from "@/ty
 export async function fetchConstructionPagedServerAction(
   pageNumber: number,
   pageSize: number,
-  searchTerm?: string
+  searchTerm?: string,
+  sortBy?: string,
+  sortOrder?: string
 ): Promise<PagedResponse<ConstructionType>> {
   try {
 
@@ -25,7 +27,13 @@ export async function fetchConstructionPagedServerAction(
       throw new Error("Invalid pagination parameters");
     }
 
-    return await getConstructionPaged(pageNumber, pageSize, searchTerm);
+    // Validate sortBy against allowed columns to prevent injection
+    // Note: API only supports sorting by constructionCode and description
+    const allowedSortColumns = ["constructionCode", "description"];
+    const validSortBy = sortBy && allowedSortColumns.includes(sortBy) ? sortBy : undefined;
+    const validSortOrder = sortOrder && ["asc", "desc"].includes(sortOrder.toLowerCase()) ? sortOrder : undefined;
+
+    return await getConstructionPaged(pageNumber, pageSize, searchTerm, validSortBy, validSortOrder);
   } catch (error: unknown) {
     // Structured API error (from validateResponse)
     if (error instanceof ApiError) {

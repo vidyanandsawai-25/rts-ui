@@ -7,6 +7,8 @@ interface PageProps {
     page?: string;
     pageSize?: string;
     q?: string;
+    sortBy?: string;
+    sortOrder?: string;
   }>;
 }
 
@@ -15,7 +17,9 @@ export default async function Page({ searchParams }: PageProps): Promise<React.R
   const pageNumber = Number(params.page) || 1;
   const pageSize = Number(params.pageSize) || 10;
   const searchTerm = params.q || undefined;
-  const result = await fetchConstructionPagedServerAction(pageNumber, pageSize, searchTerm);
+  const sortBy = params.sortBy || undefined;
+  const sortOrder = params.sortOrder || undefined;
+  const result = await fetchConstructionPagedServerAction(pageNumber, pageSize, searchTerm, sortBy, sortOrder);
   return (
 
     <ConstructionTypeMaster
@@ -24,6 +28,8 @@ export default async function Page({ searchParams }: PageProps): Promise<React.R
       pageSize={result.pageSize}
       totalCount={result.totalCount}
       totalPages={result.totalPages}
+      sortBy={sortBy}
+      sortOrder={sortOrder}
     />
   );
 }

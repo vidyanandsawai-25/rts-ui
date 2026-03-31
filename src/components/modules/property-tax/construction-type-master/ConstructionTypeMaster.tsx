@@ -24,6 +24,8 @@ interface Props {
   pageSize: number;
   totalCount: number;
   totalPages: number;
+  sortBy?: string;
+  sortOrder?: string;
 }
 
 /* ================= PAGE ================= */
@@ -33,6 +35,8 @@ export function ConstructionTypeMaster({
   pageSize,
   totalCount,
   totalPages,
+  sortBy,
+  sortOrder,
 }: Props): React.ReactElement {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -49,12 +53,18 @@ export function ConstructionTypeMaster({
 
   /* ================= URL BUILDER ================= */
   const buildUrl = React.useCallback(
-    (page: number, size: number, searchTerm?: string) => {
+    (page: number, size: number, searchTerm?: string, newSortBy?: string, newSortOrder?: string) => {
       const params = new URLSearchParams();
       params.set("page", String(page));
       params.set("pageSize", String(size));
       if (searchTerm) {
         params.set("q", searchTerm);
+      }
+      if (newSortBy) {
+        params.set("sortBy", newSortBy);
+      }
+      if (newSortOrder) {
+        params.set("sortOrder", newSortOrder);
       }
       return `/${locale}/property-tax/constructiontype?${params.toString()}`;
     },
@@ -83,13 +93,32 @@ export function ConstructionTypeMaster({
       if (trimmedSearch) {
         params.set("q", trimmedSearch);
       }
+      // Preserve sort params when searching
+      if (sortBy) {
+        params.set("sortBy", sortBy);
+      }
+      if (sortOrder) {
+        params.set("sortOrder", sortOrder);
+      }
       router.push(`/${locale}/property-tax/constructiontype?${params.toString()}`);
     }, 500);
     return () => clearTimeout(timer);
   }, [search, pageSize, router, locale, currentSearchTerm]);
 
   /* ================= TABLE COLUMNS ================= */
-  const columns = getConstructionTypeColumns(t);
+  const handleSort = useCallback(
+    (columnKey: string) => {
+      // Toggle sort order: if same column, toggle; if different column, default to asc
+      let newSortOrder = "asc";
+      if (sortBy === columnKey) {
+        newSortOrder = sortOrder === "asc" ? "desc" : "asc";
+      }
+      router.push(buildUrl(1, pageSize, currentSearchTerm, columnKey, newSortOrder));
+    },
+    [sortBy, sortOrder, router, buildUrl, pageSize, currentSearchTerm]
+  );
+
+  const columns = getConstructionTypeColumns(t, sortBy, sortOrder, handleSort);
 
   /* ================= PAGINATION ================= */
   const changePage = (p: number): void => {
@@ -99,6 +128,13 @@ export function ConstructionTypeMaster({
 
     if (currentSearchTerm) {
       params.set("q", currentSearchTerm);
+    }
+    // Preserve sort params when paginating
+    if (sortBy) {
+      params.set("sortBy", sortBy);
+    }
+    if (sortOrder) {
+      params.set("sortOrder", sortOrder);
     }
 
     router.push(`/${locale}/property-tax/constructiontype?${params.toString()}`);
@@ -228,7 +264,7 @@ export function ConstructionTypeMaster({
                   value={String(pageSize)}
                   onChange={(value) =>
                     router.push(
-                      buildUrl(1, Number(value), currentSearchTerm)
+                      buildUrl(1, Number(value), currentSearchTerm, sortBy, sortOrder)
                     )
                   }
                   options={[10, 20, 30, 40, 50].map((s) => ({

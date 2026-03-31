@@ -57,6 +57,8 @@ const defaultProps = {
     pageSize: 10,
     totalCount: 2,
     totalPages: 1,
+    sortBy: undefined,
+    sortOrder: undefined,
 };
 
 describe("ConstructionTypeMaster", () => {
@@ -146,5 +148,93 @@ describe("ConstructionTypeMaster", () => {
         render(<ConstructionTypeMaster {...defaultProps} />);
         // Check that showing info is displayed
         expect(screen.getByText(/common.table.showing/)).toBeInTheDocument();
+    });
+
+    // ========== SORTING TESTS ==========
+
+    it("renders sortable column headers with sort icons", () => {
+        render(<ConstructionTypeMaster {...defaultProps} />);
+        // Check for sort buttons in column headers (only constructionCode and description are sortable)
+        const sortButtons = screen.getAllByRole("button", { name: /Sort by/i });
+        expect(sortButtons.length).toBe(2); // Only 2 columns are sortable
+    });
+
+    it("navigates to sorted URL when clicking column header", () => {
+        mockRouterPush.mockClear();
+        render(<ConstructionTypeMaster {...defaultProps} />);
+        const sortButton = screen.getByRole("button", { name: /Sort by construction.constructionType.list.table.constructionCode/i });
+        fireEvent.click(sortButton);
+        expect(mockRouterPush).toHaveBeenCalled();
+        const pushedUrl = mockRouterPush.mock.calls[0][0];
+        expect(pushedUrl).toContain("sortBy=constructionCode");
+        expect(pushedUrl).toContain("sortOrder=asc");
+    });
+
+    it("toggles sort order when clicking same column header twice", () => {
+        mockRouterPush.mockClear();
+        // Render with existing sort
+        render(<ConstructionTypeMaster {...defaultProps} sortBy="constructionCode" sortOrder="asc" />);
+        const sortButton = screen.getByRole("button", { name: /Sort by construction.constructionType.list.table.constructionCode/i });
+        fireEvent.click(sortButton);
+        expect(mockRouterPush).toHaveBeenCalled();
+        const pushedUrl = mockRouterPush.mock.calls[0][0];
+        expect(pushedUrl).toContain("sortBy=constructionCode");
+        expect(pushedUrl).toContain("sortOrder=desc");
+    });
+
+    it("preserves sort params when changing page size", async () => {
+        mockRouterPush.mockClear();
+        render(<ConstructionTypeMaster {...defaultProps} sortBy="description" sortOrder="asc" />);
+        const pageSizeButton = screen.getByLabelText("common.table.rowsPerPage");
+        fireEvent.click(pageSizeButton);
+        const option20 = await screen.findByRole("option", { name: "20" });
+        fireEvent.click(option20);
+        expect(mockRouterPush).toHaveBeenCalled();
+        const pushedUrl = mockRouterPush.mock.calls[0][0];
+        expect(pushedUrl).toContain("sortBy=description");
+        expect(pushedUrl).toContain("sortOrder=asc");
+        expect(pushedUrl).toContain("pageSize=20");
+    });
+
+    it("preserves sort params when searching", () => {
+        vi.useFakeTimers();
+        try {
+            mockRouterPush.mockClear();
+            render(<ConstructionTypeMaster {...defaultProps} sortBy="description" sortOrder="desc" />);
+            const searchInput = screen.getByPlaceholderText("construction.constructionType.list.filters.search");
+            fireEvent.change(searchInput, { target: { value: "Test" } });
+            vi.runAllTimers();
+            expect(mockRouterPush).toHaveBeenCalled();
+            const pushedUrl = mockRouterPush.mock.calls[0][0];
+            expect(pushedUrl).toContain("sortBy=description");
+            expect(pushedUrl).toContain("sortOrder=desc");
+            expect(pushedUrl).toContain("q=Test");
+        } finally {
+            vi.useRealTimers();
+        }
+    });
+
+    it("can sort by description column", () => {
+        mockRouterPush.mockClear();
+        render(<ConstructionTypeMaster {...defaultProps} />);
+        const sortButton = screen.getByRole("button", { name: /Sort by construction.constructionType.list.table.description/i });
+        fireEvent.click(sortButton);
+        expect(mockRouterPush).toHaveBeenCalled();
+        const pushedUrl = mockRouterPush.mock.calls[0][0];
+        expect(pushedUrl).toContain("sortBy=description");
+    });
+
+    it("searchSequence column is not sortable (API limitation)", () => {
+        render(<ConstructionTypeMaster {...defaultProps} />);
+        // searchSequence should not have a sort button
+        const sortButtons = screen.queryAllByRole("button", { name: /Sort by construction.constructionType.list.table.searchSequence/i });
+        expect(sortButtons.length).toBe(0);
+    });
+
+    it("isActive column is not sortable (API limitation)", () => {
+        render(<ConstructionTypeMaster {...defaultProps} />);
+        // isActive/status should not have a sort button
+        const sortButtons = screen.queryAllByRole("button", { name: /Sort by construction.constructionType.list.table.status/i });
+        expect(sortButtons.length).toBe(0);
     });
 });

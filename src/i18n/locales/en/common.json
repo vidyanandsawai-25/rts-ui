@@ -51,6 +51,13 @@
     "fixValidation": "Please fix validation errors",
     "saveFailed": "Failed to save"
   },
+  "error": {
+    "title": "Something went wrong",
+    "description": "We encountered an unexpected error. Please try again or return to the home page.",
+    "errorId": "Error ID: {id}",
+    "goHome": "Go Home",
+    "tryAgain": "Try Again"
+  },
   "status": {
     "active": "Active",
     "inactive": "Inactive",

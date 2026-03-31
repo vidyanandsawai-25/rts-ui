@@ -144,7 +144,9 @@ export async function getConstruction(): Promise<ConstructionType[]> {
 export async function getConstructionPaged(
   pageNumber: number,
   pageSize: number,
-  searchTerm?: string
+  searchTerm?: string,
+  sortBy?: string,
+  sortOrder?: string
 ): Promise<PagedResponse<ConstructionType>> {
   try {
     const params = new URLSearchParams({
@@ -159,6 +161,14 @@ export async function getConstructionPaged(
         const safeSearchTerm = trimmedSearchTerm.slice(0, MAX_SEARCH_TERM_LENGTH);
         params.append("SearchTerm", safeSearchTerm);
       }
+    }
+
+    // Add sort parameters if provided
+    if (typeof sortBy === "string" && sortBy.trim()) {
+      params.append("SortBy", sortBy.trim());
+    }
+    if (typeof sortOrder === "string" && sortOrder.trim()) {
+      params.append("SortOrder", sortOrder.trim());
     }
 
     const response = await apiClient.get<PagedResponse<ConstructionType>>(
