@@ -212,9 +212,9 @@
     "property": {
         "title": "संपत्ति जानकारी",
         "division": "विभाग",
-        "divisionPlaceholder": "डिवीजन दर्ज करें",
-        "plotNoPlaceholder": "उदा., प्लॉट-१५६",
+        "divisionPlaceholder": "डिवीजन दर्ज करें",        
         "flatShopNoPlaceholder": "फ्लैट नं. / दुकान नं. दर्ज करें",
+        "plotNoPlaceholder": "उदा., प्लॉट-१५६",
         "wing": "विंग",
         "flatShopNo": "फ्लैट नं. / दुकान नं.",
         "propertyDescription": "संपत्ति विवरण",
