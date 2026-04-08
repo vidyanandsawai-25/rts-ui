@@ -10,10 +10,11 @@ import { useConfirm } from "@/components/common/ConfirmProvider";
 
 interface SocietyFormProps {
     societyData: PropertySocietyDetailsApiItem | null;
-    propertyIdSearch: number
+    propertyIdSearch: number;
+    locale: string;
 }
 
-const SocietyForm = ({ societyData, propertyIdSearch }: SocietyFormProps) => {
+const SocietyForm = ({ societyData, propertyIdSearch, locale }: SocietyFormProps) => {
 
     const t = useTranslations("quickDataEntry");
     const { confirm } = useConfirm();
@@ -131,7 +132,7 @@ const SocietyForm = ({ societyData, propertyIdSearch }: SocietyFormProps) => {
             onConfirm: async () => {
                 setIsUpdating(true);
                 try {
-                    await updatePropertySocietyDetailsAction(pid, payload);
+                    await updatePropertySocietyDetailsAction(locale, pid, payload);
                     toast.success(t('society.updateSuccess'));
                 } catch (err) {
                     console.error("Submission error:", err);

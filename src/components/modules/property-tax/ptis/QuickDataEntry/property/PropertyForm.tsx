@@ -7,7 +7,7 @@ import { Label } from '@/components/common/label';
 import { useConfirm } from '@/components/common/ConfirmProvider';
 
 
-import { PropertySocietyDetailsApiItem } from '@/types/property-Society-details.type';
+import { PropertySocietyDetailsApiItem } from '@/types/property-Society-details.types';
 
 import { toast } from 'sonner';
 import { updatePropertyBasicDetailsAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Property/action';
@@ -25,6 +25,7 @@ interface PropertyFormViewProps {
     propertyDescriptions: PropertyTypeApiItem[],
     propertyData: PropertyBasicDetailsApiItem | null;
     propertySocietyDetails: PropertySocietyDetailsApiItem | null;
+    locale: string;
 }
 
 const PropertyFormView = ({
@@ -32,7 +33,8 @@ const PropertyFormView = ({
     propertyCategories: initialPropertyCategoryList,
     propertyDescriptions: initialPropertyDescriptionList,
     propertyData,
-    propertySocietyDetails
+    propertySocietyDetails,
+    locale
 }: PropertyFormViewProps) => {
 
     const t = useTranslations('quickDataEntry');
@@ -95,11 +97,22 @@ const PropertyFormView = ({
         const formData = new FormData(e.currentTarget);
         const pId = propertyData?.propertyId ?? 0;
 
+        const selectedWingIdValue = String(formData.get("wingId") ?? "").trim();
+        const selectedWingId = selectedWingIdValue ? Number(selectedWingIdValue) : null;
+
+        const selectedWing = wingList.find((wing) => wing.wingId === selectedWingId);
+
         const payload: UpdatePropertyBasicDetailsDto = {
             wardId: propertyData?.wardId ?? 0,
             taxZoneId: propertyData?.taxZoneId ?? 0,
             categoryId: Number(formData.get("categoryId")) || null,
             propertyTypeId: Number(propertyTypeId) || null,
+
+            wingId: selectedWing?.wingId ?? null,
+            wingNo: selectedWing?.wingNo ?? null,
+
+            // wingId: Number(formData.get("    ")) || null,
+            wingName: propertySocietyDetails?.wingName || null,
 
             partitionNo: propertyData?.partitionNo || null,
             flatOrShopNo: String(formData.get("flatOrShopNo") ?? "").trim() || null,
@@ -107,21 +120,20 @@ const PropertyFormView = ({
             surveyNo: String(formData.get("surveyNo") ?? "").trim() || null,
             upicId: String(formData.get("upicId") ?? "").trim() || null,
             subZoneNo: String(formData.get("subZoneNo") ?? "").trim() || null,
-            wingNo: String(formData.get("wingName") ?? "").trim() || null,
 
-            noOfResidentialToilets: Number(formData.get("noOfResidentialToilets")) || 0,
-            noOfCommercialToilets: Number(formData.get("noOfCommercialToilets")) || 0,
-            totalBuiltupAreaSqFeet: Number(formData.get("totalBuiltupAreaSqFeet")) || 0,
-            totalCarpetAreaSqFeet: Number(formData.get("totalCarpetAreaSqFeet")) || 0,
+            // wingNo: String(formData.get("wingName") ?? "").trim() || null,
 
-            plotArea: Number(formData.get("plotArea")) || null,
+            noOfResidentialToilets: Number(formData.get("noOfResidentialToilets")),
+            noOfCommercialToilets: Number(formData.get("noOfCommercialToilets")),
+            totalBuiltupAreaSqFeet: Number(formData.get("totalBuiltupAreaSqFeet")),
+            totalCarpetAreaSqFeet: Number(formData.get("totalCarpetAreaSqFeet")),
+            plotArea: Number(formData.get("plotArea")),
+
             plotAreaFtLength: propertyData?.plotAreaFtLength || null,
             plotAreaFtWidth: propertyData?.plotAreaFtWidth || null,
             plotAreaMtrLength: propertyData?.plotAreaMtrLength || null,
             plotAreaMtrWidth: propertyData?.plotAreaMtrWidth || null,
 
-            wingId: Number(formData.get("wingId")) || null,
-            wingName: propertySocietyDetails?.wingName || null,
         };
 
         confirm({
@@ -132,7 +144,7 @@ const PropertyFormView = ({
             onConfirm: async () => {
                 setIsUpdating(true);
                 try {
-                    await updatePropertyBasicDetailsAction(pId, payload);
+                    await updatePropertyBasicDetailsAction(locale, pId, payload);
                     toast.success(t('property.updateSuccess'));
                 } catch (err) {
                     console.error("Submission error:", err);
@@ -223,7 +235,7 @@ const PropertyFormView = ({
                                 <Input
                                     id="pd-plot"
                                     name="plotNo"
-                                    placeholder="e.g., Plot-156"
+                                    placeholder={t('property.plotNoPlaceholder')}
                                     defaultValue={propertyData?.plotNo ?? ''}
                                     className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                                 />

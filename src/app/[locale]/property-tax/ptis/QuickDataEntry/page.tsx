@@ -8,6 +8,7 @@ import { redirect } from 'next/navigation';
 interface QuickDataEntryPageProps {
     params: Promise<{ locale: string }>;
     searchParams: Promise<{
+        propertyId?: string;
         wardNo?: string;
         propertyNo?: string;
         partitionNo?: string;

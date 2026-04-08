@@ -216,6 +216,7 @@
         "flatShopNo": "Flat No / Shop No",
         "propertyDescription": "Property Description",
         "divisionPlaceholder": "Enter division",
+        "plotNoPlaceholder" : "e.g., Plot-156",
         "flatShopNoPlaceholder": "Enter Flat No / Shop No",
         "category": "Category",
         "subcategory": "Subcategory",

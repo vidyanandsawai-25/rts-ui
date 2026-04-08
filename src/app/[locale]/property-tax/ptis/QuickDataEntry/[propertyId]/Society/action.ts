@@ -1,16 +1,16 @@
 'use server';
 
 import { getPropertySocietyDetails, updatePropertySocietyDetails } from '@/lib/api/property-society.service';
-import { UpdatePropertySocietyDetailsDto } from '@/types/property-Society-details.type';
+import { UpdatePropertySocietyDetailsDto } from '@/types/property-Society-details.types';
 import { revalidatePath } from 'next/cache';
 
 /**
  * Action to update property society details
  */
-export async function updatePropertySocietyDetailsAction(propertyId: number, payload: UpdatePropertySocietyDetailsDto) {
+export async function updatePropertySocietyDetailsAction(locale: string, propertyId: number, payload: UpdatePropertySocietyDetailsDto) {
   try {
     const response = await updatePropertySocietyDetails(propertyId, payload);
-    revalidatePath('/property-tax/ptis');
+    revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Society`, "page");
     return response;
   } catch (error) {
     console.error('Action error updating society details:', error);

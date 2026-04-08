@@ -25,6 +25,7 @@ export default async function SocietyFormPage({ params }: PageProps) {
             <SocietyForm
                 societyData={propertySocietyDetails}
                 propertyIdSearch={Number(propertyId)}
+                locale={locale}
             />
         </Suspense>
     )
