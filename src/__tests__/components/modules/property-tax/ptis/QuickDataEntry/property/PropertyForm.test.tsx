@@ -25,9 +25,21 @@ vi.mock('next-intl', () => ({
       'property.commercialToilet': 'Commercial Toilet',
       'property.totalCarpetArea': 'Total Carpet Area',
       'property.buildupArea': 'Buildup Area',
+      'property.updateSuccess': 'Property basic details updated successfully',
+      'property.updateError': 'An error occurred during update.',
+      'property.updateConfirmTitle': 'Confirm Update',
+      'property.updateConfirmText': 'Are you sure?',
+      'property.updateConfirmButton': 'Yes, Update',
     };
     return translations[key] || key;
   },
+}));
+
+// Mock useConfirm
+vi.mock('@/components/common/ConfirmProvider', () => ({
+  useConfirm: () => ({
+    confirm: vi.fn(({ onConfirm }) => onConfirm()),
+  }),
 }));
 
 // Mock sonner
@@ -129,6 +141,7 @@ describe('PropertyFormView', () => {
         propertyDescriptions={mockPropertyDescriptions}
         propertyData={mockPropertyData as never}
         propertySocietyDetails={mockSocietyDetails as never}
+        locale="en"
       />
     );
 
@@ -145,8 +158,6 @@ describe('PropertyFormView', () => {
     expect(screen.getByDisplayValue('1500')).toBeInTheDocument(); // Buildup Area
   });
 
-  // expect(screen.getByDisplayValue('2')).toBeInTheDocument(); // Residential Toilets
-
   it('submits form with updated data', async () => {
     (updatePropertyBasicDetailsAction as Mock).mockResolvedValue({ success: true });
 
@@ -157,6 +168,7 @@ describe('PropertyFormView', () => {
         propertyDescriptions={mockPropertyDescriptions}
         propertyData={mockPropertyData as never}
         propertySocietyDetails={mockSocietyDetails as never}
+        locale="en"
       />
     );
 
@@ -168,6 +180,7 @@ describe('PropertyFormView', () => {
 
     await waitFor(() => {
       expect(updatePropertyBasicDetailsAction).toHaveBeenCalledWith(
+        'en',
         mockPropertyData.propertyId,
         expect.objectContaining({
           flatOrShopNo: '202',
@@ -187,6 +200,7 @@ describe('PropertyFormView', () => {
         propertyDescriptions={mockPropertyDescriptions}
         propertyData={mockPropertyData as never}
         propertySocietyDetails={mockSocietyDetails as never}
+        locale="en"
       />
     );
 
@@ -198,7 +212,6 @@ describe('PropertyFormView', () => {
     });
   });
 
-
   it('ensures readonly fields cannot be modified', () => {
     render(
       <PropertyFormView
@@ -207,6 +220,7 @@ describe('PropertyFormView', () => {
         propertyDescriptions={mockPropertyDescriptions}
         propertyData={mockPropertyData as never}
         propertySocietyDetails={mockSocietyDetails as never}
+        locale="en"
       />
     );
 
@@ -221,7 +235,5 @@ describe('PropertyFormView', () => {
 
     const buildUpAreaInput = screen.getByLabelText(/Buildup Area/i);
     expect(buildUpAreaInput).toHaveAttribute('readOnly');
-
   });
-
 });
