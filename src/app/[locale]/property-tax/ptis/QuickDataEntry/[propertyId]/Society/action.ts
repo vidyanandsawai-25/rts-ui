@@ -4,9 +4,7 @@ import { getPropertySocietyDetails, updatePropertySocietyDetails } from '@/lib/a
 import { UpdatePropertySocietyDetailsDto } from '@/types/property-Society-details.types';
 import { revalidatePath } from 'next/cache';
 
-/**
- * Action to update property society details
- */
+/**  Action to update property society details*/
 export async function updatePropertySocietyDetailsAction(locale: string, propertyId: number, payload: UpdatePropertySocietyDetailsDto) {
   try {
     const response = await updatePropertySocietyDetails(propertyId, payload);
@@ -18,9 +16,7 @@ export async function updatePropertySocietyDetailsAction(locale: string, propert
   }
 }
 
-/**
- * Action to fetch property society details
- */
+/** Action to fetch property society details*/
 export async function getPropertySocietyDetailsAction(propertyId: number) {
   try {
     return await getPropertySocietyDetails(propertyId);

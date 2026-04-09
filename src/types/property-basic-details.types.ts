@@ -1,16 +1,6 @@
-/* -------------------------------------------------------------------------- */
-/*                              PROPERTY API TYPES                            */
-/* -------------------------------------------------------------------------- */
+// PROPERTY API TYPES    
 
-/**
- * Represents a single property type item as returned by the PropertyType API.
- * Endpoint: GET /api/PropertyType?PageSize=200
- */
-
-/**
- * Represents a single owner type item as returned by the OwnerType API.
- * Endpoint: GET /api/OwnerType?PageSize=20
- */
+//  Represents a property category item from PropertyCategory API. Endpoint: GET /api/PropertyCategory
 export interface OwnerTypeApiItem {
     ownerTypeId: number;
     ownerType: string;
@@ -19,9 +9,7 @@ export interface OwnerTypeApiItem {
     updatedDate: string | null;
 }
 
-/**
- * Paginated response wrapper for the OwnerType API.
- */
+// Paginated response wrapper for the OwnerType API.
 export interface OwnerTypeApiResponse {
     items: OwnerTypeApiItem[];
     totalCount: number;
@@ -45,9 +33,7 @@ export interface PropertyTypeApiItem {
     updatedDate: string | null;
 }
 
-/**
- * Paginated response wrapper for the PropertyType API.
- */
+// Paginated response wrapper for the PropertyType API.
 export interface PropertyTypeApiResponse {
     items: PropertyTypeApiItem[];
     totalCount: number;
@@ -58,10 +44,7 @@ export interface PropertyTypeApiResponse {
     hasNext: boolean;
 }
 
-/**
- * Represents a property category item from PropertyCategory API.
- * Endpoint: GET /api/PropertyCategory
- */
+//  Represents a property category item from PropertyCategory API. Endpoint: GET /api/PropertyCategory
 export interface PropertyCategoryApiItem {
     propertyCategoryId: number;
     propertyCategoryName: string;
@@ -70,9 +53,7 @@ export interface PropertyCategoryApiItem {
     updatedDate: string | null;
 }
 
-/**
- * Paginated response wrapper for the PropertyCategory API.
- */
+//  Paginated response wrapper for the PropertyCategory API.
 export interface PropertyCategoryApiResponse {
     items: PropertyCategoryApiItem[];
     totalCount: number;
@@ -118,7 +99,6 @@ export interface PropertyBasicDetailsApiItem {
     plotAreaMtrWidth: number;
 }
 
-
 export interface TypeOfUseApiItem {
     typeOfUseId: number;
     typeOfUseCode: string;
@@ -132,10 +112,7 @@ export interface TypeOfUseApiItem {
     updatedDate: string | null;
 }
 
-/**
- * Represents the DTO for updating property basic details.
- * Matches UpdatePropertyBasicDetailsDto in C#
- */
+// Represents the DTO for updating property basic details. Matches UpdatePropertyBasicDetailsDto in C#
 export interface UpdatePropertyBasicDetailsDto {
     wardId: number;
     taxZoneId: number;
@@ -161,9 +138,7 @@ export interface UpdatePropertyBasicDetailsDto {
     wingName: string | null;
 }
 
-/**
- * Response wrapper for Property Basic Details API.
- */
+//  Response wrapper for Property Basic Details API.
 export interface PropertyBasicDetailsResponse {
     success: boolean;
     message: string;
@@ -204,7 +179,5 @@ export type ActionResult<T = unknown> =
     | { success: true; data?: T }
     | { success: false; error: string };
 
-/**
-* Represents a collection of tax amounts by tax name.
-*/
+//  Represents a collection of tax amounts by tax name.
 export type TaxAmounts = Record<string, number | undefined>;

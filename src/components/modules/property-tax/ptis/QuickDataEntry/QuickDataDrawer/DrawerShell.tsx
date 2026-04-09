@@ -3,16 +3,10 @@
 import Link from 'next/link';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import {
-    Home,
-    Users,
-    Building2,
-    Layers,
-    Percent,
-    FileText,
-    Building,
-} from 'lucide-react';
+import { Home, Building2, FileText } from 'lucide-react';
 import { Drawer } from '@/components/common/Drawer';
+
+// Users, Layers, Percent, Building,
 
 interface Tab {
     label: string;
@@ -22,12 +16,7 @@ interface Tab {
 
 const TABS: Tab[] = [
     { label: 'Property', href: 'Property', icon: Home },
-    { label: 'KYC', href: 'Kyc', icon: Users },
-    { label: 'Society', href: 'Society', icon: Building2 },
-    { label: 'Building Permission', href: 'Building', icon: Building },
-    { label: 'Floor', href: 'FloorSubmission', icon: Layers },
-    { label: 'Discount', href: 'Discount', icon: Percent },
-    { label: 'Old Details', href: 'OldDetails', icon: FileText },
+    { label: 'Society', href: 'Society', icon: Building2 }
 ];
 
 interface DrawerShellProps {

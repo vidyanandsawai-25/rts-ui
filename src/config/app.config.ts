@@ -11,7 +11,7 @@ export const appConfig = {
     env: process.env.NEXT_PUBLIC_APP_ENV || 'development',
   },
   api: {
-    baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || 'https://localhost:44346/api',
+    baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5268/api',
     timeout: 30000,
   },
   auth: {

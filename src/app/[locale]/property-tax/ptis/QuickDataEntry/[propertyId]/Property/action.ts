@@ -62,9 +62,13 @@ export async function getWingMasterAction(): Promise<{ success: boolean; data: W
 //update property basic details
 export const updatePropertyBasicDetailsAction = async (locale: string, propertyId: number, payload: UpdatePropertyBasicDetailsDto): Promise<ActionResult> => {
     try {
-        const data = await updatePropertyBasicDetails(propertyId, payload);
+        const result = await updatePropertyBasicDetails(propertyId, payload);
+        if (!result.success) {
+            return result;
+        }
+
         revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Property`, "page");
-        return { success: true, data };
+        return result;
     } catch (error) {
         return { success: false, error: error instanceof Error ? error.message : "Failed to update data" };
     }

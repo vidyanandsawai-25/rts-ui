@@ -133,7 +133,6 @@ const PropertyFormView = ({
             plotAreaFtWidth: propertyData?.plotAreaFtWidth || null,
             plotAreaMtrLength: propertyData?.plotAreaMtrLength || null,
             plotAreaMtrWidth: propertyData?.plotAreaMtrWidth || null,
-
         };
 
         confirm({
@@ -144,7 +143,14 @@ const PropertyFormView = ({
             onConfirm: async () => {
                 setIsUpdating(true);
                 try {
-                    await updatePropertyBasicDetailsAction(locale, pId, payload);
+                    const result = await updatePropertyBasicDetailsAction(locale, pId, payload);
+
+                    if (!result?.success) {
+                        console.error("Submission error:", result?.error);
+                        toast.error(result?.error || t('property.updateError'));
+                        return;
+                    }
+
                     toast.success(t('property.updateSuccess'));
                 } catch (err) {
                     console.error("Submission error:", err);

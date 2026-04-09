@@ -15,7 +15,6 @@ import {
 } from "@/types/property-basic-details.types";
 
 /* ---------------- PROPERTY TYPE ---------------- */
-
 export async function getPropertyTypes(pageSize: number = 200, searchTerm?: string): Promise<PropertyTypeApiItem[]> {
   const params = new URLSearchParams();
   params.append("PageSize", pageSize.toString());
@@ -29,7 +28,6 @@ export async function getPropertyTypes(pageSize: number = 200, searchTerm?: stri
 }
 
 /* ---------------- PROPERTY CATEGORY ---------------- */
-
 export async function getPropertyCategories(pageSize: number = 50): Promise<PropertyCategoryApiItem[]> {
   const params = new URLSearchParams();
   params.append("PageSize", pageSize.toString());
@@ -40,7 +38,6 @@ export async function getPropertyCategories(pageSize: number = 50): Promise<Prop
 }
 
 /* ---------------- PROPERTY BASIC DETAILS ---------------- */
-
 export async function getPropertyBasicDetails(propertyId: number): Promise<PropertyBasicDetailsApiItem | null> {
   const response = await apiClient.get<PropertyBasicDetailsResponse>(`/Property/${propertyId}/basic-details`);
 
@@ -50,7 +47,6 @@ export async function getPropertyBasicDetails(propertyId: number): Promise<Prope
 }
 
 /* ---------------- UPDATE PROPERTY BASIC DETAILS ---------------- */
-
 export async function updatePropertyBasicDetails(propertyId: number, payload: UpdatePropertyBasicDetailsDto): Promise<ActionResult> {
   const response = await apiClient.put<ActionResult>(`/Property/${propertyId}/basic-details`, payload);
 
@@ -70,10 +66,7 @@ export async function getWingMaster(): Promise<WingItem[]> {
   return response.data.items
 }
 
-/**
- * Fetches stored capital-based tax details (CV) for a specific property.
- * Endpoint: GET /api/Property/{propertyId}/tax-details-cv
- */
+/** Fetches CV tax details for a property. */
 export async function getTaxDetailsCvByPropertyId(propertyId: number): Promise<ActionResult<TaxDetailsApiResponse>> {
   if (!propertyId) {
     return { success: false, error: "Property ID is required" };
