@@ -124,10 +124,25 @@ import { Button } from '@/components/common';
 
 ## Building for Production
 
+### Standard Build
 ```bash
 npm run build
 npm start
 ```
+
+### Standalone Build (for deployment)
+
+The project uses standalone output mode for production deployments. After building with `npm run build:production`:
+
+```bash
+# Run the standalone server directly
+node .next/standalone/server.js
+```
+
+**Important:** When using standalone builds:
+- Use `node .next/standalone/server.js` instead of `npm start`
+- Ensure locale files (`src/i18n/locales/`) are copied to the deployment package
+- Copy `.next/static` files if serving static assets separately
 
 ## License
 

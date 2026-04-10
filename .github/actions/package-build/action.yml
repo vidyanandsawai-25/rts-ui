@@ -132,6 +132,15 @@ runs:
         Copy-Item -Path 'public' -Destination "$deploymentDir\public" -Recurse
         Copy-Item -Path 'package.json' -Destination "$deploymentDir\package.json"
 
+        # Copy locale files for standalone builds (required for next-intl dynamic imports)
+        if (Test-Path 'src/i18n/locales') {
+          New-Item -ItemType Directory -Path "$deploymentDir\src\i18n" -Force | Out-Null
+          Copy-Item -Path 'src/i18n/locales' -Destination "$deploymentDir\src\i18n\locales" -Recurse
+          Copy-Item -Path 'src/i18n/config.ts' -Destination "$deploymentDir\src\i18n\config.ts" -ErrorAction SilentlyContinue
+          Copy-Item -Path 'src/i18n/request.ts' -Destination "$deploymentDir\src\i18n\request.ts" -ErrorAction SilentlyContinue
+          Write-Output "Locale files copied"
+        }
+
         if (Test-Path '.env') {
           Copy-Item -Path '.env' -Destination "$deploymentDir\.env"
         }
