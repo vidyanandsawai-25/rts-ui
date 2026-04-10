@@ -3,14 +3,14 @@
 import Link from 'next/link';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { 
-    Building2, 
-    FileText, 
-    Home, 
-    User, 
-    Building, 
-    Layers, 
-    Percent 
+import {
+    Building2,
+    FileText,
+    Home,
+    User,
+    Building,
+    Layers,
+    Percent
 } from 'lucide-react';
 import { Drawer } from '@/components/common/Drawer';
 import { cn } from '@/lib/utils/cn';
@@ -40,7 +40,7 @@ export default function DrawerShell({ children, locale }: DrawerShellProps) {
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const router = useRouter();
-    
+
     // Scoped translations
     const t = useTranslations("quickDataEntry");
     const tTabs = useTranslations("quickDataEntry.tabs");
@@ -51,11 +51,11 @@ export default function DrawerShell({ children, locale }: DrawerShellProps) {
     const partitionNo = searchParams.get('partitionNo') ?? '';
     const propertyId = searchParams.get('propertyId') ?? '';
 
-    const queryString = new URLSearchParams({ 
-        propertyId, 
-        wardNo, 
-        propertyNo, 
-        partitionNo 
+    const queryString = new URLSearchParams({
+        propertyId,
+        wardNo,
+        propertyNo,
+        partitionNo
     }).toString();
 
     // Hide header and tabs on Renter page

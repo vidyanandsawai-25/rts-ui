@@ -202,12 +202,12 @@
     },
     "tabs": {
         "Property": "Property",
-        "KYC": "KYC",
+        "Kyc": "KYC",
         "Society": "Society",
         "BuildingPermission": "Building Permission",
         "FloorSubmission": "Floor",
         "Discount": "Discount",
-        "Old Details": "Old Details"
+        "OldDetails": "Old Details"
     },
     "property": {
         "title": "Property Information",

@@ -25,13 +25,13 @@ vi.mock('next-intl', () => {
         'quickDataEntry.roomSubmission.info.ward': 'Ward',
         'quickDataEntry.roomSubmission.info.property': 'Property',
         'quickDataEntry.roomSubmission.info.partition': 'Partition',
-        'quickDataEntry.tabs.property': 'Property',
-        'quickDataEntry.tabs.kyc': 'KYC',
-        'quickDataEntry.tabs.society': 'Society',
-        'quickDataEntry.tabs.building': 'Building Permission',
-        'quickDataEntry.tabs.floor': 'Floor',
-        'quickDataEntry.tabs.discount': 'Discount',
-        'quickDataEntry.tabs.oldDetails': 'Old Details'
+        'quickDataEntry.tabs.Property': 'Property',
+        'quickDataEntry.tabs.Kyc': 'KYC',
+        'quickDataEntry.tabs.Society': 'Society',
+        'quickDataEntry.tabs.BuildingPermission': 'Building Permission',
+        'quickDataEntry.tabs.FloorSubmission': 'Floor',
+        'quickDataEntry.tabs.Discount': 'Discount',
+        'quickDataEntry.tabs.OldDetails': 'Old Details'
     };
     return {
         useTranslations: (namespace: string) => (key: string) => {
