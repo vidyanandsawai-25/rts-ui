@@ -134,11 +134,22 @@ runs:
 
         # Copy locale files for standalone builds (required for next-intl dynamic imports)
         if (Test-Path 'src/i18n/locales') {
+          # Copy to root src/ directory
           New-Item -ItemType Directory -Path "$deploymentDir\src\i18n" -Force | Out-Null
           Copy-Item -Path 'src/i18n/locales' -Destination "$deploymentDir\src\i18n\locales" -Recurse
           Copy-Item -Path 'src/i18n/config.ts' -Destination "$deploymentDir\src\i18n\config.ts" -ErrorAction SilentlyContinue
           Copy-Item -Path 'src/i18n/request.ts' -Destination "$deploymentDir\src\i18n\request.ts" -ErrorAction SilentlyContinue
-          Write-Output "Locale files copied"
+          
+          # CRITICAL: Also copy to standalone build directory (where server.js runs from)
+          if (Test-Path "$deploymentDir\.next\standalone") {
+            New-Item -ItemType Directory -Path "$deploymentDir\.next\standalone\src\i18n" -Force | Out-Null
+            Copy-Item -Path 'src/i18n/locales' -Destination "$deploymentDir\.next\standalone\src\i18n\locales" -Recurse
+            Copy-Item -Path 'src/i18n/config.ts' -Destination "$deploymentDir\.next\standalone\src\i18n\config.ts" -ErrorAction SilentlyContinue
+            Copy-Item -Path 'src/i18n/request.ts' -Destination "$deploymentDir\.next\standalone\src\i18n\request.ts" -ErrorAction SilentlyContinue
+            Write-Output "Locale files copied to root and standalone"
+          } else {
+            Write-Output "Locale files copied to root"
+          }
         }
 
         if (Test-Path '.env') {
