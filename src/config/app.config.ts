@@ -1,106 +1,52 @@
 /**
  * Application Configuration
  * Central configuration file for the application
+ * 
+ * Runtime values (API URL, environment, feature flags) are injected at runtime
+ * via RuntimeConfigScript, allowing the same build to be deployed to different environments.
+ * 
+ * Build-time values (version) are embedded during build via NEXT_PUBLIC_ variables.
  */
 
-// Environment variable validation
-const requiredEnvVars = [
-  'NEXT_PUBLIC_API_BASE_URL',
-  'NEXT_PUBLIC_APP_ENV',
-] as const;
+import { getRuntimeConfig } from './runtime-config';
 
-const optionalEnvVars = [
-  'NEXT_PUBLIC_FEATURE_ANALYTICS',
-  'NEXT_PUBLIC_FEATURE_DEBUG',
-  'NEXT_PUBLIC_AUTH_ENABLED',
-] as const;
+// Build-time version (embedded during build, not runtime)
+const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0';
 
-// Validate required environment variables
-function validateEnvironment() {
-  const missingVars: string[] = [];
-  const emptyVars: string[] = [];
-
-  requiredEnvVars.forEach((varName) => {
-    const value = process.env[varName];
-    if (value === undefined) {
-      missingVars.push(varName);
-    } else if (value === '') {
-      emptyVars.push(varName);
-    }
-  });
-
-  if (missingVars.length > 0) {
-    console.error(
-      '❌ ERROR: Missing required environment variables:',
-      missingVars.join(', ')
-    );
-    console.error(
-      '   Please check your .env file and ensure all required variables are defined.'
-    );
-  }
-
-  if (emptyVars.length > 0) {
-    console.error(
-      '❌ ERROR: Empty required environment variables:',
-      emptyVars.join(', ')
-    );
-    console.error(
-      '   These variables are defined but have empty values. Please provide valid values.'
-    );
-  }
-
-  // Warn about empty optional variables
-  const emptyOptionalVars: string[] = [];
-  optionalEnvVars.forEach((varName) => {
-    const value = process.env[varName];
-    if (value === '') {
-      emptyOptionalVars.push(varName);
-    }
-  });
-
-  if (emptyOptionalVars.length > 0) {
-    console.warn(
-      '⚠️  WARNING: Empty optional environment variables:',
-      emptyOptionalVars.join(', ')
-    );
-    console.warn(
-      '   These variables will use default values. Set them explicitly if needed.'
-    );
-  }
-
-  // Display summary
-  if (missingVars.length === 0 && emptyVars.length === 0) {
-    console.log('✅ All required environment variables are configured');
-  } else {
-    console.error(
-      `\n❌ Configuration Error: ${missingVars.length + emptyVars.length} required environment variable(s) need attention\n`
-    );
-  }
+/**
+ * Get the current application configuration
+ * This function reads runtime config on each call, ensuring fresh values
+ */
+export function getAppConfig() {
+  const runtimeConfig = getRuntimeConfig();
+  
+  return {
+    app: {
+      name: 'NTIS UI',
+      description: 'NTIS Platform UI',
+      version: APP_VERSION,
+      env: runtimeConfig.appEnv,
+    },
+    api: {
+      baseUrl: runtimeConfig.apiBaseUrl,
+      timeout: 30000,
+    },
+    auth: {
+      enabled: runtimeConfig.authEnabled,
+      tokenKey: 'auth_token',
+      refreshTokenKey: 'refresh_token',
+    },
+    features: {
+      analytics: runtimeConfig.featureAnalytics,
+      debug: runtimeConfig.featureDebug,
+    },
+  } as const;
 }
 
-// Run validation
-validateEnvironment();
+/**
+ * Static app config for use in server components and metadata
+ * Uses default/server values at module load time
+ */
+export const appConfig = getAppConfig();
 
-export const appConfig = {
-  app: {
-    name: 'App',
-    description: 'Application',
-    version: '1.0.0',
-    env: process.env.NEXT_PUBLIC_APP_ENV || 'development',
-  },
-  api: {
-    baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || 'https://localhost:44346/api',
-    timeout: 30000,
-  },
-  auth: {
-    enabled: process.env.NEXT_PUBLIC_AUTH_ENABLED === 'true',
-    tokenKey: 'auth_token',
-    refreshTokenKey: 'refresh_token',
-  },
-  features: {
-    analytics: process.env.NEXT_PUBLIC_FEATURE_ANALYTICS === 'true',
-    debug: process.env.NEXT_PUBLIC_FEATURE_DEBUG === 'true',
-  },
-} as const;
-
-export type AppConfig = typeof appConfig;
+export type AppConfig = ReturnType<typeof getAppConfig>;
