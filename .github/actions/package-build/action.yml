@@ -132,23 +132,17 @@ runs:
         Copy-Item -Path 'public' -Destination "$deploymentDir\public" -Recurse
         Copy-Item -Path 'package.json' -Destination "$deploymentDir\package.json"
 
-        # Copy locale files for standalone builds (required for next-intl dynamic imports)
-        if (Test-Path 'src/i18n/locales') {
-          # Copy to root src/ directory
-          New-Item -ItemType Directory -Path "$deploymentDir\src\i18n" -Force | Out-Null
-          Copy-Item -Path 'src/i18n/locales' -Destination "$deploymentDir\src\i18n\locales" -Recurse
-          Copy-Item -Path 'src/i18n/config.ts' -Destination "$deploymentDir\src\i18n\config.ts" -ErrorAction SilentlyContinue
-          Copy-Item -Path 'src/i18n/request.ts' -Destination "$deploymentDir\src\i18n\request.ts" -ErrorAction SilentlyContinue
-          
-          # CRITICAL: Also copy to standalone build directory (where server.js runs from)
-          if (Test-Path "$deploymentDir\.next\standalone") {
+        # Verify locale files are in standalone (included via outputFileTracingIncludes in next.config.ts)
+        $standaloneLocales = "$deploymentDir\.next\standalone\src\i18n\locales"
+        if (Test-Path $standaloneLocales) {
+          $count = (Get-ChildItem $standaloneLocales -Recurse -Filter "*.json" | Measure-Object).Count
+          Write-Output "✓ Locale files present in standalone build ($count files)"
+        } else {
+          Write-Warning "Locale files not found in standalone - copying manually..."
+          if (Test-Path 'src/i18n/locales') {
             New-Item -ItemType Directory -Path "$deploymentDir\.next\standalone\src\i18n" -Force | Out-Null
-            Copy-Item -Path 'src/i18n/locales' -Destination "$deploymentDir\.next\standalone\src\i18n\locales" -Recurse
-            Copy-Item -Path 'src/i18n/config.ts' -Destination "$deploymentDir\.next\standalone\src\i18n\config.ts" -ErrorAction SilentlyContinue
-            Copy-Item -Path 'src/i18n/request.ts' -Destination "$deploymentDir\.next\standalone\src\i18n\request.ts" -ErrorAction SilentlyContinue
-            Write-Output "Locale files copied to root and standalone"
-          } else {
-            Write-Output "Locale files copied to root"
+            Copy-Item -Path 'src/i18n/locales' -Destination "$standaloneLocales" -Recurse
+            Write-Output "✓ Locale files copied as fallback"
           }
         }
 
