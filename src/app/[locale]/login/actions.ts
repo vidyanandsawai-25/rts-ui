@@ -55,10 +55,10 @@ async function applyUlbCookiesFromApi(cookieStore: Awaited<ReturnType<typeof coo
     if (!ulbRes.success || !ulbRes.data) return;
     const ulb = ulbRes.data;
     const logo = (ulb.ulbLogo ?? '').trim();
-    (await cookieStore).set('ulb_name', ulb.ulbName || '', CLIENT_ULB_COOKIE);
-    (await cookieStore).set('ulb_name_local', (ulb.ulbNameLocal ?? '').trim(), CLIENT_ULB_COOKIE);
-    (await cookieStore).set('ulb_logo', logo, CLIENT_ULB_COOKIE);
-    (await cookieStore).set('ulb_code', ulb.ulbCode || '', CLIENT_ULB_COOKIE);
+    cookieStore.set('ulb_name', ulb.ulbName || '', CLIENT_ULB_COOKIE);
+    cookieStore.set('ulb_name_local', (ulb.ulbNameLocal ?? '').trim(), CLIENT_ULB_COOKIE);
+    cookieStore.set('ulb_logo', logo, CLIENT_ULB_COOKIE);
+    cookieStore.set('ulb_code', ulb.ulbCode || '', CLIENT_ULB_COOKIE);
 }
 
 /**
@@ -74,20 +74,20 @@ async function completeLoginSession(
     const accessToken = (auth.token ?? '').trim();
     const refreshToken = (auth.refreshToken ?? '').trim();
 
-    (await cookieStore).set('auth_token', accessToken, COOKIE_OPTIONS);
-    (await cookieStore).set('refresh_token', refreshToken, COOKIE_OPTIONS);
-    (await cookieStore).set('session_id', sessionId, COOKIE_OPTIONS);
-    (await cookieStore).set('is_logged_in', 'true', { ...COOKIE_OPTIONS, httpOnly: false });
+    cookieStore.set('auth_token', accessToken, COOKIE_OPTIONS);
+    cookieStore.set('refresh_token', refreshToken, COOKIE_OPTIONS);
+    cookieStore.set('session_id', sessionId, COOKIE_OPTIONS);
+    cookieStore.set('is_logged_in', 'true', { ...COOKIE_OPTIONS, httpOnly: false });
 
     const displayName = (auth.name ?? '').trim() || (auth.username ?? '').trim() || formUsername.trim();
-    (await cookieStore).set('user_name', displayName, { ...COOKIE_OPTIONS, httpOnly: false });
+    cookieStore.set('user_name', displayName, { ...COOKIE_OPTIONS, httpOnly: false });
 
     const uid = auth.userId;
     if (typeof uid === 'number' && Number.isFinite(uid) && uid > 0) {
-        (await cookieStore).set('user_id', String(uid), COOKIE_OPTIONS);
+        cookieStore.set('user_id', String(uid), COOKIE_OPTIONS);
     }
 
-    (await cookieStore).delete('pending_auth');
+    cookieStore.delete('pending_auth');
 
     try {
         await applyUlbCookiesFromApi(cookieStore);
@@ -116,11 +116,19 @@ export async function validateCredentialsAction(formData: FormData) {
         return { success: false as const, errorCode: 'SERVICE_UNAVAILABLE' as const };
     }
 
-    if (!response?.success || !response.data) {
+    if (!response?.success) {
         return {
             success: false as const,
-            errorCode: 'INVALID_CREDENTIALS' as const,
+            errorCode: 'SERVICE_UNAVAILABLE' as const,
             message: response?.error,
+        };
+    }
+
+    if (!response.data) {
+        return {
+            success: false as const,
+            errorCode: 'SERVICE_UNAVAILABLE' as const,
+            message: response.error,
         };
     }
 
@@ -151,8 +159,8 @@ export async function validateCredentialsAction(formData: FormData) {
 
 export async function logoutAction(locale: string = 'en') {
     const cookieStore = await cookies();
-    const token = (await cookieStore).get('auth_token')?.value;
-    const sessionId = (await cookieStore).get('session_id')?.value;
+    const token = cookieStore.get('auth_token')?.value;
+    const sessionId = cookieStore.get('session_id')?.value;
 
     if (token) {
         try {
@@ -179,7 +187,7 @@ export async function logoutAction(locale: string = 'en') {
     ];
 
     for (const name of cookiesToClear) {
-        (await cookieStore).delete({ name, path: '/' });
+        cookieStore.delete({ name, path: '/' });
     }
 
     redirect(`/${locale}/login`);

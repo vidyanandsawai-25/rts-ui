@@ -82,7 +82,13 @@ export function Header({ ulbData, userDisplayName, clientIp }: HeaderProps) {
   const menuRef = useRef<HTMLDivElement>(null);
 
   const branding = ulbData as (UlbMaster & { logoUrl?: string }) | undefined;
-  const logoSrc = branding?.ulbLogo || branding?.logoUrl;
+  const logoSrc = useMemo(() => {
+    const rawLogoSrc = branding?.ulbLogo || branding?.logoUrl;
+    if (typeof rawLogoSrc !== 'string') return undefined;
+
+    const normalizedLogoSrc = rawLogoSrc.trim();
+    return normalizedLogoSrc || undefined;
+  }, [branding?.ulbLogo, branding?.logoUrl]);
 
   const title = useMemo(() => sanitizeInput(ulbData?.ulbName ?? '') || '', [ulbData?.ulbName]);
 
@@ -161,6 +167,24 @@ export function Header({ ulbData, userDisplayName, clientIp }: HeaderProps) {
   const goDashboard = useCallback(() => {
     const loc = getLocaleFromPathname(pathname);
     router.push(`/${loc}/dashboard`);
+    setMenuOpen(false);
+  }, [pathname, router]);
+
+  const goProfile = useCallback(() => {
+    const loc = getLocaleFromPathname(pathname);
+    router.push(`/${loc}/profile`);
+    setMenuOpen(false);
+  }, [pathname, router]);
+
+  const goSettings = useCallback(() => {
+    const loc = getLocaleFromPathname(pathname);
+    router.push(`/${loc}/settings`);
+    setMenuOpen(false);
+  }, [pathname, router]);
+
+  const goChangePassword = useCallback(() => {
+    const loc = getLocaleFromPathname(pathname);
+    router.push(`/${loc}/change-password`);
     setMenuOpen(false);
   }, [pathname, router]);
 
@@ -283,19 +307,19 @@ export function Header({ ulbData, userDisplayName, clientIp }: HeaderProps) {
                   </div>
 
                   <nav className="py-1" aria-label={t('userMenu.openUserMenu')}>
-                    <Button type="button" variant="ghost" size="sm" className={menuNavBtnClass} onClick={goDashboard}>
+                    <Button type="button" variant="ghost" size="sm" className={menuNavBtnClass} onClick={goProfile}>
                       <span className="flex w-full items-center gap-3">
                         <User className="h-4 w-4 shrink-0 text-blue-200" aria-hidden />
                         {t('userMenu.myProfile')}
                       </span>
                     </Button>
-                    <Button type="button" variant="ghost" size="sm" className={menuNavBtnClass} onClick={goDashboard}>
+                    <Button type="button" variant="ghost" size="sm" className={menuNavBtnClass} onClick={goSettings}>
                       <span className="flex w-full items-center gap-3">
                         <Settings className="h-4 w-4 shrink-0 text-blue-200" aria-hidden />
                         {t('userMenu.settings')}
                       </span>
                     </Button>
-                    <Button type="button" variant="ghost" size="sm" className={menuNavBtnClass} onClick={goDashboard}>
+                    <Button type="button" variant="ghost" size="sm" className={menuNavBtnClass} onClick={goChangePassword}>
                       <span className="flex w-full items-center gap-3">
                         <Lock className="h-4 w-4 shrink-0 text-blue-200" aria-hidden />
                         {t('userMenu.changePassword')}
