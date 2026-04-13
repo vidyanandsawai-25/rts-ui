@@ -164,12 +164,6 @@ export function Header({ ulbData, userDisplayName, clientIp }: HeaderProps) {
     await logoutAction(currentLocale);
   }, [pathname]);
 
-  const goDashboard = useCallback(() => {
-    const loc = getLocaleFromPathname(pathname);
-    router.push(`/${loc}/dashboard`);
-    setMenuOpen(false);
-  }, [pathname, router]);
-
   const goProfile = useCallback(() => {
     const loc = getLocaleFromPathname(pathname);
     router.push(`/${loc}/profile`);
