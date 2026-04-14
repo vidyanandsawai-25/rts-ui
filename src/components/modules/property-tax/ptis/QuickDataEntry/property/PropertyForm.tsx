@@ -99,7 +99,7 @@ const PropertyFormView = ({
         return Number.isNaN(parsed) ? null : parsed;
     };
 
-    const parseId = (value: any): number | null => {
+    const parseId = (value: string): number | null => {
         const parsed = Number(value);
         return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
     };
