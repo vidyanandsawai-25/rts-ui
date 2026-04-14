@@ -1,0 +1,91 @@
+{
+  "taxZone": {
+    "list": {
+      "title": "Tax Zone Master",
+      "subtitle": "Manage zones and their types",
+
+      "buttons": {
+        "add": "Add Zone",
+        "edit": "Edit",
+        "delete": "Delete"
+      },
+
+      "filters": {
+        "show": "Show",
+        "search": "Search by Zone No, Zone Type, Remark..."
+      },
+
+      "table": {
+        "zoneNo": "Zone No",
+        "zoneType": "Zone Type",
+        "remark": "Remark",
+        "status": "Status",
+        "actions": "Actions"
+      }
+    },
+
+    "form": {
+      "addTitle": "Add Zone",
+      "editTitle": "Edit Zone",
+      "subtitle": "Create new zone",
+      "editSubtitle": "Update zone details",
+
+      "fields": {
+        "zoneNo": {
+          "label": "Zone No",
+          "placeholder": "e.g. 1 or Z"
+        },
+        "zoneType": {
+          "label": "Zone Type",
+          "placeholder": "e.g. Residential"
+        },
+        "remark": {
+          "label": "Remark",
+          "placeholder": "Enter remark"
+        }
+      },
+
+      "validation": {
+        "zoneNoRequired": "Zone No is required",
+        "zoneNoMax": "Maximum length is 10 characters",
+        "zoneNoFormat": "Only letters and numbers allowed",
+        "zoneNoExists": "Duplicate zone number is not allowed",
+        "zoneTypeRequired": "Zone Type is required",
+        "zoneTypeFormat": "Invalid characters used",
+        "zoneTypeExists": "Duplicate zone type is not allowed",
+        "remarkRequired": "Remark is required",
+        "remarkFormat": "Invalid characters used",
+        "fixErrors": "Please fix validation errors",
+        "duplicateRecord": "This record already exists",
+        "duplicateError": "This record already exists. Please check Zone No and Zone Type - duplicates not allowed."
+      },
+
+      "status": {
+        "label": "Active Status",
+        "active": "Zone is currently active",
+        "inactive": "Zone is currently inactive"
+      },
+
+      "note": {
+        "mandatory": "Fields marked with * are mandatory"
+      },
+
+      "actions": {
+        "cancel": "Cancel",
+        "save": "Save",
+        "update": "Update"
+      },
+
+      "messages": {
+        "createSuccess": "Zone created successfully",
+        "updateSuccess": "Zone updated successfully",
+        "error": "Something went wrong"
+      }
+    },
+
+    "delete": {
+      "success": "Zone deleted successfully",
+      "error": "Cannot delete zone because it is in use"
+    }
+  }
+}
