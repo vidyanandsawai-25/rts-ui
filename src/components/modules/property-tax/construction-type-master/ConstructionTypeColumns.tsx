@@ -1,7 +1,7 @@
 import React from "react";
-import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import type { Column } from "@/components/common/MasterTable";
 import type { ConstructionType } from "@/types/construction.types";
+import { SortAscButton, SortDescButton, SortDefaultButton } from "@/components/common/ActionButtons";
 
 /**
  * Renders a sortable column header with sort icon
@@ -23,18 +23,36 @@ function SortableHeader({
   const isAsc = isActive && sortOrder === "asc";
   const isDesc = isActive && sortOrder === "desc";
 
+  const renderSortButton = () => {
+    if (isAsc) {
+      return (
+        <SortAscButton
+          onClick={() => onSort(columnKey)}
+          aria-label={`Sort ${label} ascending`}
+        />
+      );
+    }
+    if (isDesc) {
+      return (
+        <SortDescButton
+          onClick={() => onSort(columnKey)}
+          aria-label={`Sort ${label} descending`}
+        />
+      );
+    }
+    return (
+      <SortDefaultButton
+        onClick={() => onSort(columnKey)}
+        aria-label={`Sort by ${label}`}
+      />
+    );
+  };
+
   return (
-    <button
-      type="button"
-      onClick={() => onSort(columnKey)}
-      className="flex items-center gap-1 hover:text-blue-600 transition-colors cursor-pointer w-full justify-center"
-      aria-label={`Sort by ${label}`}
-    >
+    <div className="flex items-center gap-1 justify-center w-full">
       <span>{label}</span>
-      {isAsc && <ArrowUp className="h-4 w-4 text-blue-600" />}
-      {isDesc && <ArrowDown className="h-4 w-4 text-blue-600" />}
-      {!isActive && <ArrowUpDown className="h-4 w-4 text-gray-400" />}
-    </button>
+      {renderSortButton()}
+    </div>
   );
 }
 
