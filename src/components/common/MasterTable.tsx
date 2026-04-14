@@ -72,6 +72,7 @@ export interface MasterTableProps<T extends Record<string, unknown> = Record<str
   actionLabel?: string;
   getRowKey?: (row: T, index: number) => React.Key;
   maxBodyHeightClassName?: string;
+  height?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl';
   emptyText?: string;
   loadingText?: string;
   containerClassName?: string;
@@ -161,7 +162,8 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
   actionLabel,
   renderActions,
   getRowKey,
-  maxBodyHeightClassName = 'max-h-[calc(100vh-260px)]',
+  maxBodyHeightClassName,
+  height,
   emptyText,
   loadingText,
   containerClassName,
@@ -178,6 +180,19 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
   paginationConfig,
 }: MasterTableProps<T>): React.ReactElement {
   const t = useTranslations('common');
+
+  const HEIGHT_CLASSES = {
+    xs: 'max-h-[300px]',
+    sm: 'max-h-[400px]',
+    md: 'max-h-[500px]',
+    lg: 'max-h-[600px]',
+    xl: 'max-h-[700px]',
+    xxl: 'max-h-[800px]',
+  };
+
+  const bodyHeightClass = height 
+    ? HEIGHT_CLASSES[height] 
+    : (maxBodyHeightClassName || 'max-h-[calc(100vh-260px)]');
 
   // Determine effective pagination settings
   const isPaginationEnabled = paginationConfig?.enabled ?? isPagination;
@@ -202,11 +217,11 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
      TABLE
   ========================= */
   const TableContent = (
-    <div className={cn('overflow-auto', maxBodyHeightClassName)}>
+    <div className={cn('overflow-auto', bodyHeightClass)}>
       <table className={cn('w-full text-sm', tableClassName)}>
         <thead
           className={cn(
-            'sticky top-0 z-20',
+            'sticky top-0 ',
             'bg-gradient-to-r from-[#E2EEFF] via-[#D6E8FF] to-[#E2EEFF]',
             'border-b border-blue-200',
             'transition-colors duration-200',
@@ -221,7 +236,7 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
                 key={String(col.key)}
                 style={{ width: col.width }}
                 className={cn(
-                  'px-2 py-3 text-left text-sm font-semibold text-[#1E3A8A]',
+                  'px-2 py-3 text-center text-sm font-semibold text-[#1E3A8A]',
                   index === 0 && 'rounded-tl-lg',
                   !hasActions && index === columns.length - 1 && 'rounded-tr-lg',
                   col.headerClassName
@@ -271,7 +286,7 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
                   return (
                     <td
                       key={String(col.key)}
-                      className={cn('px-2 py-2 text-gray-700', col.cellClassName)}
+                      className={cn('px-2 py-2 text-gray-700 text-center', col.cellClassName)}
                     >
                       {col.render ? (
                         col.render(value, row, i)
@@ -323,7 +338,7 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
                 {headerSubtitle && <p className="text-sm text-[#6B7280] mt-1">{headerSubtitle}</p>}
               </div>
             )}
-            {headerExtra && <div className="flex items-center gap-2">{headerExtra}</div>}
+            {headerExtra && <div className="flex items-center gap-2 w-full">{headerExtra}</div>}
           </div>
         )}
 

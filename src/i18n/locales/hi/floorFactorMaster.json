@@ -1,0 +1,32 @@
+{
+  "floorFactorMaster": {
+    "title": "मंजिल कारक मास्टर",
+    "columns": {
+      "floorCode": "मंजिल कोड",
+      "description": "विवरण",
+      "factorWithLift": "कारक (लिफ्ट सहित)",
+      "factorWithoutLift": "कारक (लिफ्ट रहित)",
+      "assessmentYear": "मूल्यांकन वर्ष",
+      "status": "स्थिति",
+      "action": "कार्य"
+    },
+    "filters": {
+      "assessmentYear": "मूल्यांकन वर्ष",
+      "fromFloor": "मंजिल से",
+      "toFloor": "मंजिल तक",
+      "liftStatus": "लिफ्ट स्थिति",
+      "factor": "कारक"
+    },
+    "liftStatusOptions": {
+      "both": "दोनों",
+      "withLift": "लिफ्ट सहित",
+      "withoutLift": "लिफ्ट रहित"
+    },
+    "placeholders": {
+      "select": "चुनें..."
+    },
+    "messages": {
+      "fromFloorGreaterError": "मंजिल से, मंजिल तक से अधिक नहीं हो सकती"
+    }
+  }
+}

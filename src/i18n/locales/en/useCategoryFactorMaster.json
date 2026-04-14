@@ -1,0 +1,34 @@
+{
+  "useCategoryFactorMaster": {
+    "title": "Use Category CV Factor Master",
+    "columns": {
+      "typeOfUseCode": "Type Of Use Code",
+      "typeOfUse": "Type Of Use",
+      "subType": "Sub Type",
+      "factor": "Factor",
+      "assessmentYear": "Assessment Year",
+      "status": "Status",
+      "action": "Action"
+    },
+    "leftTable": {
+      "typeOfUseCode": "Type Of Use Code",
+      "typeOfUse": "Type Of Use",
+      "status": "Status"
+    },
+    "filters": {
+      "assessmentYear": "Assessment Year",
+      "typeOfUse": "Type Of Use",
+      "factor": "Factor"
+    },
+    "placeholders": {
+      "selectAssessmentYear": "Select Assessment Year",
+      "selectTypeOfUse": "Select Type Of Use",
+      "factor": "0.00"
+    },
+    "messages": {
+      "noSubtypeRecordsFound": "No subtype records found for selected type",
+      "selectTypeOfUsePrompt": "Select a Type of Use from left table or use dropdown filter",
+      "noTypeOfUseRecordsFound": "No type of use records found"
+    }
+  }
+}
