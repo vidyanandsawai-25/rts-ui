@@ -1,4 +1,4 @@
-﻿name: NTIS UI Package Build
+name: NTIS UI Package Build
 description: Build, package, and upload the NTIS UI artifact.
 
 inputs:
@@ -69,9 +69,6 @@ runs:
         "environment=$environment" >> $env:GITHUB_OUTPUT
         "branch=$branch" >> $env:GITHUB_OUTPUT
 
-        Write-Output "Building NTIS-UI v$version for $environment"
-        Write-Output "Artifact name: $artifactName"
-
     - name: Setup Node.js
       uses: actions/setup-node@v6
       with:
@@ -81,43 +78,40 @@ runs:
     - name: Install dependencies
       shell: pwsh
       run: |
-        Write-Output "Installing dependencies..."
         npm install
-        Write-Output "Dependencies installed"
 
-    - name: Build with Turbopack
+    # ✅ FIX STARTS HERE
+    - name: Set production environment
+      shell: pwsh
+      run: |
+        echo "NODE_ENV=production" >> $env:GITHUB_ENV
+
+    - name: Build Next.js (Production - NO TURBOPACK)
       shell: pwsh
       env:
         NEXT_PUBLIC_APP_VERSION: ${{ steps.version_setup.outputs.version }}
+        NEXT_DISABLE_TURBOPACK: 1
       run: |
-        $version = '${{ steps.version_setup.outputs.version }}'
-        Write-Output "Starting Turbopack build for v$version..."
-        npm run build:production
-        Write-Output "Turbopack build completed successfully"
+        Write-Output "Cleaning old build..."
+        if (Test-Path ".next") {
+          Remove-Item -Recurse -Force .next
+        }
 
-    - name: Analyze build output
+        Write-Output "Starting production build..."
+        npx next build
+
+        Write-Output "Build completed successfully"
+
+    - name: Verify standalone build
       shell: pwsh
       run: |
-        if (Test-Path '.next') {
-          $buildSize = (Get-ChildItem -Path '.next' -Recurse | Measure-Object -Property Length -Sum).Sum
-          $buildSizeMB = [math]::Round($buildSize / 1MB, 2)
-          Write-Output "Build output size: $buildSizeMB MB"
-
-          $staticDir = '.next/static'
-          $serverDir = '.next/server'
-
-          if (Test-Path $staticDir) {
-            $staticFiles = Get-ChildItem -Path $staticDir -File -Recurse | Measure-Object
-            Write-Output "Static files: $($staticFiles.Count)"
-          }
-
-          if (Test-Path $serverDir) {
-            Write-Output "Server-side artifacts generated"
-          }
+        if (Test-Path ".next/standalone") {
+          Write-Output "✓ Standalone build generated"
         } else {
-          Write-Error "Build failed: .next directory not found"
+          Write-Error "❌ Standalone build NOT generated"
           exit 1
         }
+    # ✅ FIX ENDS HERE
 
     - name: Create deployment package
       shell: pwsh
@@ -125,42 +119,16 @@ runs:
         $version = '${{ steps.version_setup.outputs.version }}'
         $deploymentDir = "ntis-ui-v$version"
 
-        Write-Output "Creating deployment package: $deploymentDir"
-
         New-Item -ItemType Directory -Path $deploymentDir -Force | Out-Null
 
-        # Copy the standalone build as the base
         Copy-Item -Path '.next/standalone/*' -Destination "$deploymentDir" -Recurse
 
-        # CRITICAL: Copy static assets INTO the standalone folder
-        # The standalone server expects these at .next/static and public (relative to server.js)
-        Write-Output "Copying static assets into standalone build..."
         Copy-Item -Path '.next/static' -Destination "$deploymentDir/.next/static" -Recurse
         Copy-Item -Path 'public' -Destination "$deploymentDir/public" -Recurse
-
-        # Verify static files were copied
-        $staticCssFiles = Get-ChildItem -Path "$deploymentDir/.next/static" -Filter "*.css" -Recurse -ErrorAction SilentlyContinue
-        Write-Output "✓ Static CSS files: $($staticCssFiles.Count)"
-
-        # Verify locale files are in standalone (included via outputFileTracingIncludes in next.config.ts)
-        $standaloneLocales = "$deploymentDir/src/i18n/locales"
-        if (Test-Path $standaloneLocales) {
-          $count = (Get-ChildItem $standaloneLocales -Recurse -Filter "*.json" | Measure-Object).Count
-          Write-Output "✓ Locale files present in standalone build ($count files)"
-        } else {
-          Write-Warning "Locale files not found in standalone - copying manually..."
-          if (Test-Path 'src/i18n/locales') {
-            New-Item -ItemType Directory -Path "$deploymentDir/src/i18n" -Force | Out-Null
-            Copy-Item -Path 'src/i18n/locales' -Destination "$standaloneLocales" -Recurse
-            Write-Output "✓ Locale files copied as fallback"
-          }
-        }
 
         if (Test-Path '.env') {
           Copy-Item -Path '.env' -Destination "$deploymentDir/.env"
         }
-
-        Write-Output "Deployment package created (standalone with static assets)"
 
     - name: Create zip archive
       shell: pwsh
@@ -170,10 +138,7 @@ runs:
         $deploymentDir = "ntis-ui-v$version"
         $zipFile = "ntis-ui-$environment-v$version.zip"
 
-        Write-Output "Creating zip archive..."
         Compress-Archive -Path "$deploymentDir/*" -DestinationPath $zipFile -Force
-        $zipSize = [math]::Round((Get-Item $zipFile).Length / 1MB, 2)
-        Write-Output "Created $zipFile ($zipSize MB)"
 
     - name: Upload to Azure Blob Storage
       shell: pwsh
@@ -187,15 +152,9 @@ runs:
         $zipFile = "ntis-ui-$environment-v$version.zip"
         $zipBlob = "$basePath/$zipFile".Replace('\\', '/')
 
-        Write-Output "Uploading to Azure Blob Storage..."
-        Write-Output "Container: $containerName"
-        Write-Output "Path: $basePath"
-
         az storage blob upload `
           --connection-string "$connectionString" `
           --container-name "$containerName" `
           --file $zipFile `
           --name $zipBlob `
           --overwrite
-
-        Write-Output "Uploaded: $zipBlob"
