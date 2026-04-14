@@ -337,3 +337,68 @@ export interface BulkAgeFactorCVMasterUpdate {
   ageFactors: AgeFactorCVBulkUpdateItem[];
 }
 
+//depenacy master service types
+export interface AssessmentYearCV {
+  yearRangeCVId: number;
+  yearId?: number; // Optional for backward compatibility
+  fromYear: number;
+  toYear: number;
+  isActive: boolean;
+  createdDate: string;
+  updatedDate: string | null;
+  [key: string]: unknown;
+}
+export interface AssessmentYearPagedResponseCV {
+  items: AssessmentYearCV[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+  hasPrevious?: boolean;
+  hasNext?: boolean;
+}
+
+
+export interface Floor {
+  floorId: number;
+  floorCode: string;
+  description: string;
+  sequenceNo: number;
+
+  createdDate: string;
+  updatedDate: string | null;
+
+  isActive: boolean;
+
+  [key: string]: unknown;
+}
+
+export type FloorPagedResponse = PagedResponse<Floor>;
+
+export interface ConstructionType {
+  [key: string]: unknown;
+  constructionTypeId: number;
+  constructionCode: string;
+  description: string;
+  searchKey: string;
+  searchSequence: number;
+  isActive: boolean;
+  createdDate: string;
+  updatedDate: string | null;
+}
+export type UseStatus = "Active" | "Inactive";
+export interface UseType {
+  typeOfUseId: number;
+  typeOfUseCode: string;
+  description: string;
+  type: string;
+  typeOfUseGroupId: number;
+  searchKey: string;
+  searchSequence: number;
+  isActive: boolean;
+  createdDate?: string;
+  updatedDate?: string | null;
+  // UI-only computed field
+  status?: UseStatus;
+  [key: string]: unknown; // Index signature for MasterTable compatibility
+}

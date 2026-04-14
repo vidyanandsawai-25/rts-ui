@@ -22,7 +22,7 @@ describe('MatrixCellInput', () => {
     const input = screen.getByRole('spinbutton') as HTMLInputElement;
     // When value is 0, the component renders an empty string so the placeholder is visible
     expect(input.value).toBe('');
-    expect(input).toHaveAttribute('placeholder', '0');
+    expect(input).toHaveAttribute('placeholder', '0.00');
   });
 
   it('calls onCellChange with correct arguments on change', () => {

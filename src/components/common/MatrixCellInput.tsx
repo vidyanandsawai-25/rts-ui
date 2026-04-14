@@ -49,7 +49,16 @@ export const MatrixCellInput = ({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
     setLocalValue(inputValue);
-    onCellChange?.(rowId, columnId, inputValue);
+    
+    // Convert to number for onCellChange call
+    // Type of inputValue from event is always string
+    const numValue = inputValue === "" ? 0 : Number(inputValue);
+    
+    // Ensure we send a valid number to onCellChange
+    // Clamp to 0 to prevent negative factors
+    const safeNumValue = isNaN(numValue) || numValue < 0 ? 0 : numValue;
+    
+    onCellChange?.(rowId, columnId, safeNumValue);
   };
 
   const handleFocus = () => {
@@ -58,9 +67,9 @@ export const MatrixCellInput = ({
 
   const handleBlur = () => {
     setIsFocused(false);
-    // Format to 2 decimal places on blur
+    // Format to 2 decimal places on blur if it's a valid number
     const numValue = localValue === "" ? 0 : Number(localValue);
-    if (numValue !== 0) {
+    if (!isNaN(numValue) && numValue !== 0) {
       setLocalValue(numValue.toFixed(2));
     }
   };

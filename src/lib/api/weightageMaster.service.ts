@@ -1,10 +1,10 @@
 import { apiClient } from '@/services/api.service';
 import type { ApiResponse } from '@/types/common.types';
-import { 
-  FloorFactorCVMaster, 
-  FloorFactorCVMasterUpdate, 
+import {
+  FloorFactorCVMaster,
+  FloorFactorCVMasterUpdate,
   FloorFactorCVMasterQueryParams,
-  PagedResponse, 
+  PagedResponse,
   FloorFactorCVMasterCreate,
   BulkFloorFactorCVMasterCreate,
   BulkFloorFactorCVMasterUpdate,
@@ -27,9 +27,14 @@ import {
   AgeFactorCVMasterCreate,
   AgeFactorCVMasterQueryParams,
   BulkAgeFactorCVMasterCreate,
-  BulkAgeFactorCVMasterUpdate
+  BulkAgeFactorCVMasterUpdate,
+  AssessmentYearPagedResponseCV,
+  FloorPagedResponse,
+  ConstructionType
 } from '@/types/weightageMaster.types';
-import { ApiError } from '../utils/api';
+import { ApiError, createFetchOptions } from '../utils/api';
+import { appConfig } from '@/config/app.config';
+
 
 
 
@@ -76,18 +81,18 @@ export async function getFloorFactorCVMasterWithParams(
   params: FloorFactorCVMasterQueryParams = {}
 ): Promise<ApiResponse<PagedResponse<FloorFactorCVMaster>>> {
   const searchParams = new URLSearchParams();
-  
+
   // Add parameters to query string if they exist
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== '') {
       // Convert camelCase to match API expectations
-      const apiKey = key === 'yearRangeCVId' ? 'YearRangeCVId' : 
-                    key.charAt(0).toUpperCase() + key.slice(1);
+      const apiKey = key === 'yearRangeCVId' ? 'YearRangeCVId' :
+        key.charAt(0).toUpperCase() + key.slice(1);
       searchParams.append(apiKey, String(value));
     }
   });
 
-  const endpoint = searchParams.toString() 
+  const endpoint = searchParams.toString()
     ? `/FloorFactorCVMaster?${searchParams.toString()}`
     : '/FloorFactorCVMaster';
 
@@ -435,18 +440,18 @@ export async function getNatureFactorCVMasterWithParams(
   params: NatureFactorCVMasterQueryParams = {}
 ): Promise<ApiResponse<PagedResponse<NatureFactorCVMaster>>> {
   const searchParams = new URLSearchParams();
-  
+
   // Add parameters to query string if they exist
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== '') {
       // Convert camelCase to match API expectations
-      const apiKey = key === 'yearRangeCVId' ? 'YearRangeCVId' : 
-                    key.charAt(0).toUpperCase() + key.slice(1);
+      const apiKey = key === 'yearRangeCVId' ? 'YearRangeCVId' :
+        key.charAt(0).toUpperCase() + key.slice(1);
       searchParams.append(apiKey, String(value));
     }
   });
 
-  const endpoint = searchParams.toString() 
+  const endpoint = searchParams.toString()
     ? `/NatureFactorCVMaster?${searchParams.toString()}`
     : '/NatureFactorCVMaster';
 
@@ -773,18 +778,18 @@ export async function getUseFactorCVMasterWithParams(
   params: UseFactorCVMasterQueryParams = {}
 ): Promise<ApiResponse<PagedResponse<UseFactorCVMaster>>> {
   const searchParams = new URLSearchParams();
-  
+
   // Add parameters to query string if they exist
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== '') {
       // Convert camelCase to match API expectations
-      const apiKey = key === 'yearRangeCVId' ? 'YearRangeCVId' : 
-                    key.charAt(0).toUpperCase() + key.slice(1);
+      const apiKey = key === 'yearRangeCVId' ? 'YearRangeCVId' :
+        key.charAt(0).toUpperCase() + key.slice(1);
       searchParams.append(apiKey, String(value));
     }
   });
 
-  const endpoint = searchParams.toString() 
+  const endpoint = searchParams.toString()
     ? `/UseFactorCVMaster?${searchParams.toString()}`
     : '/UseFactorCVMaster';
 
@@ -1036,7 +1041,7 @@ export async function getTypeOfUseWithParams(
   params: TypeOfUseQueryParams = {}
 ): Promise<ApiResponse<PagedResponse<TypeOfUseResponse>>> {
   const searchParams = new URLSearchParams();
-  
+
   // Add parameters to query string if they exist
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== '') {
@@ -1044,7 +1049,7 @@ export async function getTypeOfUseWithParams(
     }
   });
 
-  const endpoint = searchParams.toString() 
+  const endpoint = searchParams.toString()
     ? `/TypeOfUse?${searchParams.toString()}`
     : '/TypeOfUse';
 
@@ -1072,18 +1077,18 @@ export async function getAgeFactorCVMasterWithParams(
   params: AgeFactorCVMasterQueryParams = {}
 ): Promise<ApiResponse<PagedResponse<AgeFactorCVMaster>>> {
   const searchParams = new URLSearchParams();
-  
+
   // Add parameters to query string if they exist
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== '') {
       // Convert camelCase to match API expectations
-      const apiKey = key === 'yearRangeCVId' ? 'YearRangeCVId' : 
-                    key.charAt(0).toUpperCase() + key.slice(1);
+      const apiKey = key === 'yearRangeCVId' ? 'YearRangeCVId' :
+        key.charAt(0).toUpperCase() + key.slice(1);
       searchParams.append(apiKey, String(value));
     }
   });
 
-  const endpoint = searchParams.toString() 
+  const endpoint = searchParams.toString()
     ? `/AgeFactorCVMaster?${searchParams.toString()}`
     : '/AgeFactorCVMaster';
 
@@ -1257,10 +1262,10 @@ export async function bulkUpdateAgeFactorCVMaster(
  * @returns Promise resolving to ApiResponse
  */
 export async function deleteAgeFactorCVMaster(id: number): Promise<ApiResponse<any>> {
-    if (id <= 0) {
-        throw new Error('Valid AgeFactorCV ID is required');
-    }
-    return apiClient.delete<any>(`/AgeFactorCVMaster/${id}`);
+  if (id <= 0) {
+    throw new Error('Valid AgeFactorCV ID is required');
+  }
+  return apiClient.delete<any>(`/AgeFactorCVMaster/${id}`);
 }
 
 /**
@@ -1269,10 +1274,149 @@ export async function deleteAgeFactorCVMaster(id: number): Promise<ApiResponse<a
  * @returns Promise resolving to ApiResponse
  */
 export async function bulkDeleteAgeFactorCVMaster(ids: number[]): Promise<ApiResponse<any>> {
-    if (!ids || ids.length === 0) {
-        throw new Error('Valid list of IDs is required for bulk delete');
-    }
-    return apiClient.delete<any>('/AgeFactorCVMaster/bulk', { body: JSON.stringify({ ids }) });
+  if (!ids || ids.length === 0) {
+    throw new Error('Valid list of IDs is required for bulk delete');
+  }
+  return apiClient.delete<any>('/AgeFactorCVMaster/bulk', { body: JSON.stringify({ ids }) });
 }
 
 
+//dependant factor cv master service
+async function validateResponse(response: Response, context: string): Promise<void> {
+  if (!response.ok) {
+    const responseText = await response.text();
+    throw new ApiError(
+      response.status,
+      responseText,
+      `${context}: ${response.status} ${response.statusText}`
+    );
+  }
+}
+export async function getAssessmentYearsPagedServerCV(
+  pageNumber: number,
+  pageSize: number,
+  searchTerm?: string
+): Promise<AssessmentYearPagedResponseCV> {
+  const fetchOptions = await createFetchOptions("GET");
+
+  const params = new URLSearchParams({
+    PageNumber: pageNumber.toString(),
+    PageSize: pageSize.toString(),
+  });
+
+  if (searchTerm?.trim()) params.append("SearchTerm", searchTerm.trim());
+
+  const response = await fetch(
+    `${appConfig.api.baseUrl}/AssessmentYearRangeCV?${params.toString()}`,
+    { ...fetchOptions, cache: "no-store" }
+  );
+
+  await validateResponse(response, "Fetch assessment years CV (server-paged)");
+  const data = await response.json();
+
+  // Handle case where API might return items directly or in a different structure
+  if (Array.isArray(data)) {
+    const items = data.map((item: any) => ({
+      ...item,
+      yearId: item.yearRangeCVId || item.yearId,
+    }));
+    return {
+      items,
+      totalCount: data.length,
+      pageNumber: pageNumber,
+      pageSize: pageSize,
+      totalPages: Math.ceil(data.length / pageSize),
+      hasPrevious: pageNumber > 1,
+      hasNext: pageNumber < Math.ceil(data.length / pageSize)
+    };
+  }
+
+  if (data.items && Array.isArray(data.items)) {
+    data.items = data.items.map((item: any) => ({
+      ...item,
+      yearId: item.yearRangeCVId || item.yearId,
+    }));
+  }
+
+  return data;
+}
+
+function buildUrl(
+  endpoint: string,
+  params?: URLSearchParams
+): string {
+  return `${appConfig.api.baseUrl}${endpoint}${params ? `?${params.toString()}` : ""
+    }`;
+}
+export async function getFloorPaged(
+  pageNumber: number,
+  pageSize: number,
+  searchTerm?: string
+): Promise<FloorPagedResponse> {
+  const params = new URLSearchParams({
+    PageNumber: pageNumber.toString(),
+    PageSize: pageSize.toString(),
+  });
+
+  if (searchTerm?.trim()) {
+    params.append("SearchTerm", searchTerm.trim());
+  }
+
+  const response = await fetch(
+    buildUrl("/Floor", params),
+    createFetchOptions("GET")
+  );
+
+  await validateResponse(response, "Fetch floors");
+
+  return response.json();
+}
+
+export async function getConstructionPaged(
+  pageNumber: number,
+  pageSize: number,
+  searchTerm?: string
+): Promise<PagedResponse<ConstructionType>> {
+  try {
+    const params = new URLSearchParams({
+      PageNumber: pageNumber.toString(),
+      PageSize: pageSize.toString(),
+    });
+
+    if (typeof searchTerm === "string") {
+      const trimmedSearchTerm = searchTerm.trim();
+      if (trimmedSearchTerm.length > 0) {
+        const MAX_SEARCH_TERM_LENGTH = 100;
+        const safeSearchTerm = trimmedSearchTerm.slice(0, MAX_SEARCH_TERM_LENGTH);
+        params.append("SearchTerm", safeSearchTerm);
+      }
+    }
+
+    const response = await apiClient.get<PagedResponse<ConstructionType>>(
+      `/ConstructionType?${params.toString()}`
+    );
+
+    if (!response.success) {
+      throw new ApiError(
+        500,
+        response.error || "Failed to fetch construction types",
+        "Fetch construction types (paged) failed"
+      );
+    }
+
+    const data = response.data;
+
+    if (!isPagedResponse(data)) {
+      throw new ApiError(
+        500,
+        "Invalid response format",
+        "Expected PagedResponse but received unexpected format"
+      );
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error fetching paged construction types:", error);
+    throw error;
+  }
+}

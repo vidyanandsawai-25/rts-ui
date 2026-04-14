@@ -1,8 +1,9 @@
 import React from "react";
 import FloorCvWeightageMaster from "@/components/modules/property-tax/weightage-mastercv/FloorCvWeightageMaster";
 import { fetchFloorFactorCVMasterPagedServerAction } from "./action";
-import { getFloorPaged } from "@/lib/api/floor.services";
-import { getAssessmentYearsPagedServerCV } from "@/lib/api/assessmentYearMasterCV.service";
+import { getAssessmentYearsPagedServerCV, getFloorPaged } from "@/lib/api/weightageMaster.service";
+// import { getFloorPaged } from "@/lib/api/floor.services";
+// import { getAssessmentYearsPagedServerCV } from "@/lib/api/assessmentYearMasterCV.service";
 
 
 interface PageProps {

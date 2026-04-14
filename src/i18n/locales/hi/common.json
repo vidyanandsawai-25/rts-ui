@@ -43,7 +43,10 @@
     "serverError": "सर्वर त्रुटि। कृपया बाद में पुनः प्रयास करें",
     "deleteError": "हटाने में विफल",
     "createError": "बनाने में विफल",
-    "updateError": "अपडेट करने में विफल"
+    "updateError": "अपडेट करने में विफल",
+    "validationError": "कृपया सबमिट करने से पहले सभी सत्यापन त्रुटियों को ठीक करें",
+    "apiValidationFailed": "सत्यापन विफल। कृपया अपना इनपुट जांचें।",
+    "operationFailed": "ऑपरेशन विफल। कृपया पुनः प्रयास करें।"
   },
   "status": {
     "active": "सक्रिय",
@@ -66,7 +69,8 @@
     "pleaseWait": "कृपया प्रतीक्षा करें...",
     "noRecordsFound": "कोई रिकॉर्ड नहीं मिला",
     "actionCompleted": "कार्रवाई सफलतापूर्वक पूरी हुई",
-    "recordsFound": "रिकॉर्ड मिले"
+    "recordsFound": "रिकॉर्ड मिले",
+    "total": "कुल: {count}"
   },
   "confirm": {
     "delete": {
@@ -97,6 +101,10 @@
     "cancel": "रद्द करें"
   },
   "table": {
+    "actions": {
+      "edit": "संपादित करें",
+      "delete": "हटाएं"
+    },
     "show": "दिखाएं",
     "entries": "प्रविष्टियां",
     "showing": "दिखा रहा है",
@@ -113,7 +121,8 @@
     "firstPage": "पहला पृष्ठ",
     "lastPage": "अंतिम पृष्ठ",
     "previousPage": "पिछला पृष्ठ",
-    "nextPage": "अगला पृष्ठ"
+    "nextPage": "अगला पृष्ठ",
+    "rowsPerPage": "प्रति पृष्ठ पंक्तियाँ"
   },
   "language": {
     "select": "भाषा चुनें",
@@ -186,5 +195,13 @@
     "action": "कार्रवाई",
     "currencySymbol": "₹",
     "deleteRow": "पंक्ति हटाएं"
+  },
+  "rateUnit": "(₹/वर्ग.मी.)",
+  "tabs": {
+    "yearWise": "वर्षानुसार प्रतिधारण नीति",
+    "factorWise": "गुणांकानुसार प्रतिधारण नीति"
+  },
+  "note": {
+    "mandatory": "* से चिह्नित सभी फ़ील्ड अनिवार्य हैं"
   }
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { PageContainer, TableHeader, Tabs } from '@/components/common';
+import { TableHeader, Tabs, type TabItem } from '@/components/common';
 import { Lock, Layers, Hammer, Users, Calendar } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
@@ -24,11 +24,11 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
                         ? 'floor'
                         : 'floor';
 
-    const tabs = [
-        { value: 'floor', label: t('tabs.floor'), icon: Layers },
-        { value: 'nature', label: t('tabs.nature'), icon: Hammer },
-        { value: 'subType', label: t('tabs.subType'), icon: Users },
-        { value: 'age', label: t('tabs.age'), icon: Calendar },
+    const tabs: TabItem[] = [
+        { value: 'floor', label: t('tabs.floor'), icon: Layers, content: null },
+        { value: 'nature', label: t('tabs.nature'), icon: Hammer, content: null },
+        { value: 'subType', label: t('tabs.subType'), icon: Users, content: null },
+        { value: 'age', label: t('tabs.age'), icon: Calendar, content: null },
     ];
 
     // Determine the active weightage factor based on the URL
