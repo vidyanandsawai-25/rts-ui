@@ -14,9 +14,9 @@ vi.mock("next/navigation", () => ({
 
 // Mock next-intl
 vi.mock("next-intl", () => ({
-    useTranslations: () => (key: string) => key,
-    useLocale: () => "en",
-    NextIntlClientProvider: ({ children }: { children: ReactNode }) => <>{children}</>,
+  useTranslations: () => (key: string) => key,
+  useLocale: () => "en",
+  NextIntlClientProvider: ({ children }: { children: ReactNode }) => <>{children}</>,
 }));
 
 // Mock sonner
@@ -60,82 +60,82 @@ const mockData: TaxZonningPropertyNo[] = [
 ];
 
 describe("TaxZoningPage", () => {
-    beforeEach(() => {
-        vi.clearAllMocks();
-        // Set up the ward action mock to return a promise
-        mockGetTaxZonningByWardAction.mockResolvedValue({
-            success: true,
-            data: {
-                items: [
-                    { propertyNo: "100" },
-                    { propertyNo: "200" },
-                ],
-                pageNumber: 1,
-                pageSize: 10,
-                totalCount: 2,
-                totalPages: 1,
-            },
-        });
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // Set up the ward action mock to return a promise
+    mockGetTaxZonningByWardAction.mockResolvedValue({
+      success: true,
+      data: {
+        items: [
+          { propertyNo: "100" },
+          { propertyNo: "200" },
+        ],
+        pageNumber: 1,
+        pageSize: 10,
+        totalCount: 2,
+        totalPages: 1,
+      },
+    });
+  });
+
+  const renderComponent = (props = {}) => {
+    return render(
+      <TaxZoningPage
+        data={mockData}
+        pageNumber={1}
+        pageSize={10}
+        totalCount={1}
+        totalPages={1}
+        taxZones={mockTaxZones}
+        wardsData={mockWardsData}
+        {...props}
+      />
+    );
+  };
+
+  it("renders and handles basic form input", async () => {
+    renderComponent({ data: [] });
+
+    expect(screen.getByText("title")).toBeInTheDocument();
+    expect(screen.getByText("subtitle")).toBeInTheDocument();
+
+    // Verify form fields are present
+    expect(screen.getAllByText("form.selectTaxZone").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("form.selectWard").length).toBeGreaterThan(0);
+  });
+
+  it("submits single ward update successfully", async () => {
+    mockUpdateTaxZoningAction.mockResolvedValue({ success: true, message: "OK" });
+    mockGetTaxZonningByWardAction.mockResolvedValue({
+      success: true,
+      data: {
+        items: [{ propertyNo: "101" }, { propertyNo: "102" }],
+        totalCount: 2, pageNumber: 1, pageSize: 10, totalPages: 1, hasPrevious: false, hasNext: false,
+      },
     });
 
-    const renderComponent = (props = {}) => {
-        return render(
-            <TaxZoningPage 
-                data={mockData} 
-                pageNumber={1} 
-                pageSize={10} 
-                totalCount={1} 
-                totalPages={1} 
-                taxZones={mockTaxZones} 
-                wardsData={mockWardsData} 
-                {...props} 
-            />
-        );
-    };
+    renderComponent({ data: [] });
 
-    it("renders and handles basic form input", async () => {
-        renderComponent({ data: [] }); 
-        
-        expect(screen.getByText("title")).toBeInTheDocument();
-        expect(screen.getByText("subtitle")).toBeInTheDocument();
+    // Verify form renders with all necessary fields
+    expect(screen.getAllByText("form.taxZone").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("form.ward").length).toBeGreaterThan(0);
 
-        // Verify form fields are present
-        expect(screen.getAllByText("form.selectTaxZone").length).toBeGreaterThan(0);
-        expect(screen.getAllByText("form.selectWard").length).toBeGreaterThan(0);
-    });
+    // Note: Full form submission requires complex dropdown/select interactions
+    // that are better tested in E2E tests. Here we verify the form structure exists.
+    const updateButtons = screen.getAllByRole("button");
+    const updateBtn = updateButtons.find(btn => btn.textContent?.includes("form.update"));
+    expect(updateBtn).toBeDefined();
 
-    it("submits single ward update successfully", async () => {
-        mockUpdateTaxZoningAction.mockResolvedValue({ success: true, message: "OK" });
-        mockGetTaxZonningByWardAction.mockResolvedValue({
-            success: true,
-            data: {
-              items: [{ propertyNo: "101" }, { propertyNo: "102" }],
-              totalCount: 2, pageNumber: 1, pageSize: 10, totalPages: 1, hasPrevious: false, hasNext: false,
-            },
-        });
+    // The button should be disabled when form is not valid
+    if (updateBtn) {
+      expect(updateBtn).toBeDisabled();
+    }
+  });
 
-        renderComponent({ data: [] });
+  it("displays export and import buttons", () => {
+    renderComponent();
 
-        // Verify form renders with all necessary fields
-        expect(screen.getAllByText("form.taxZone").length).toBeGreaterThan(0);
-        expect(screen.getAllByText("form.ward").length).toBeGreaterThan(0);
-        
-        // Note: Full form submission requires complex dropdown/select interactions
-        // that are better tested in E2E tests. Here we verify the form structure exists.
-        const updateButtons = screen.getAllByRole("button");
-        const updateBtn = updateButtons.find(btn => btn.textContent?.includes("form.update"));
-        expect(updateBtn).toBeDefined();
-        
-        // The button should be disabled when form is not valid
-        if (updateBtn) {
-            expect(updateBtn).toBeDisabled();
-        }
-    });
-
-    it("displays export and import buttons", () => {
-        renderComponent();
-        
-        expect(screen.getByText("buttons.exportCSV")).toBeInTheDocument();
-        expect(screen.getByText("buttons.importFile")).toBeInTheDocument();
-    });
+    expect(screen.getByText("buttons.exportCSV")).toBeInTheDocument();
+    expect(screen.getByText("buttons.importFile")).toBeInTheDocument();
+  });
 });

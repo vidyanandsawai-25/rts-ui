@@ -32,6 +32,9 @@ export type { CardProps } from './Card';
 export { Input } from './Input';
 export type { InputProps } from './Input';
 
+export { Label } from './label';
+export type { LabelProps } from './label';
+
 export { Table } from './Table';
 export type { TableProps } from './Table';
 

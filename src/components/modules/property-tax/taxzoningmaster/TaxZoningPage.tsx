@@ -1,57 +1,25 @@
 "use client";
 
 import React, { useMemo, useState, useEffect, useRef } from "react";
-import { MapPin, Eye, Dot } from "lucide-react";
+import { MapPin, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils/cn";
 import * as XLSX from 'xlsx';
 import { useLocale, useTranslations } from 'next-intl';
-import { MasterTable, Column } from "@/components/common/MasterTable";
+import { MasterTable } from "@/components/common/MasterTable";
 import TableHeader from "@/components/common/TableHeader";
-import { AddButton, CancelButton, Card, CardContent, CardHeader, CardTitle, ExportButton, ImportButton, Input, PageContainer, SaveButton, Select, ValidationMessage } from "@/components/common";
+import { AddButton, CancelButton, Card, CardContent, CardHeader, CardTitle, ExportButton, ImportButton, Input, Label, PageContainer, SaveButton, Select, ValidationMessage } from "@/components/common";
 import { useRouter } from "next/navigation";
 import {
   createTaxZoningAction,
-  getTaxZonningByWardAction,
   updateTaxZoningAction,
 } from "@/app/[locale]/property-tax/taxzoning/tax-zone.actions";
-import { TaxZone, Ward, TaxZonningPropertyNo } from "@/types/taxzoning.types";
+import { TaxZonning, PreviewRow, ZoningRecord, SelectOption, TaxZoningPageProps } from "@/types/taxzoning.types";
+
 
 
 import { MultiSelectDropdown } from "@/components/common/Dropdown";
-import { PagedResponse } from "@/types/common.types";
-
-/* ================= TYPES ================= */
-type PreviewRow = {
-  taxZoneId: string;            // ✅ FIX
-  wardNo: string;
-  propertyNo: string;
-};
-
-type ZoningRecord = {
-  taxZoneId: number;            // Internal ID for API calls
-  taxZoneNo?: string;           // For display in table
-  wardId: number;
-  wardNo?: string;             // For display only, not used in payload
-  fromProperty: string;
-  toProperty: string;
-  status: string;
-};
-
-type SelectOption = {
-  label: string;
-  value: string;
-};
-
-type Props = {
-  data: TaxZonningPropertyNo[];
-  pageNumber: number;
-  pageSize: number;
-  totalCount: number;
-  totalPages: number;
-  taxZones: PagedResponse<TaxZone>;
-  wardsData: PagedResponse<Ward>;
-};
+import { getPreviewColumns, getTaxZoningColumns } from "./taxzoning.columns";
 
 /* ================= COMPONENT ================= */
 export default function TaxZoningPage({
@@ -62,9 +30,10 @@ export default function TaxZoningPage({
   totalPages,
   taxZones,
   wardsData,
-}: Props) {
+  wardProperties,
+}: TaxZoningPageProps) {
   const t = useTranslations('taxZoning');
-  
+
   // Dynamic headers based on current locale
   const REQUIRED_HEADERS = [
     t('columns.wardNo').toLowerCase(),
@@ -98,7 +67,7 @@ export default function TaxZoningPage({
   const PREVIEW_PAGE_SIZE = 5;
   const [importedChanges, setImportedChanges] = useState<ZoningRecord[]>([]);
   const [hasImportedData, setHasImportedData] = useState(false);
-const locale=useLocale()
+  const locale = useLocale()
 
   const changePage = (p: number) => {
     setCurrentPage(p);
@@ -143,8 +112,8 @@ const locale=useLocale()
         // Replace existing record with updated one using stable identity (wardId + property range)
         // This matches the same criteria used in import logic to find existingRecord
         const index = combinedRecords.findIndex(r =>
-          r.wardId === change.wardId && 
-          r.fromProperty === change.fromProperty && 
+          r.wardId === change.wardId &&
+          r.fromProperty === change.fromProperty &&
           r.toProperty === change.toProperty
         );
         if (index !== -1) {
@@ -194,50 +163,54 @@ const locale=useLocale()
 
   /* ================= LOAD PROPERTIES ================= */
 
+  // Navigate to URL with wardNo when ward selection changes
   useEffect(() => {
     if (ward.length !== 1) {
       setPropertyOptionsByWard([]);
       setFromProps("");
       setToProps("");
-
       return;
     }
 
     const selectedWardId = ward[0];
-    // Map wardId to wardNo for the API call
     const wardData = wardsData.items.find(w => String(w.wardId) === selectedWardId);
     if (!wardData) return;
     
-    getTaxZonningByWardAction(wardData.wardNo, 100).then((res) => {
-      if (!res.success) return;
+    // Only navigate if wardNo is different from current URL param
+    const currentParams = new URLSearchParams(window.location.search);
+    const currentWardNo = currentParams.get('wardNo');
+    
+    if (currentWardNo !== wardData.wardNo) {
+      currentParams.set('wardNo', wardData.wardNo);
+      const newUrl = `/${locale}/property-tax/taxzoning?${currentParams.toString()}`;
+      router.replace(newUrl);
+    }
+  }, [ward, wardsData, router, locale]);
 
-      const options = res.data.items
-        .map((i: TaxZonningPropertyNo) => {
-          const v = i.propertyNo.padStart(3, "0");
-          return { label: v, value: v };
-        })
-        .filter(
-          (v: SelectOption, i: number, a: SelectOption[]) => a.findIndex((t: SelectOption) => t.value === v.value) === i
-        );
+  // Process ward properties data when it arrives from server
+  useEffect(() => {
+    if (ward.length !== 1) {
+      setPropertyOptionsByWard([]);
+      return;
+    }
 
-      setPropertyOptionsByWard(options);
-    });
-  }, [ward, wardsData]);
+    // Check if wardProperties exists and has data
+    if (!wardProperties || !wardProperties.success || !wardProperties.data || !wardProperties.data.items) {
+      setPropertyOptionsByWard([]);
+      return;
+    }
 
-  /* ================= PREVIEW ================= */
-  // const previewData: PreviewRow[] = useMemo(() => {
-  //   if (!zone || ward.length !== 1 || !fromProps.length || !toProps.length)
-  //     return [];
+    const options = wardProperties.data.items
+      .map((i: TaxZonning) => {
+        const v = i.propertyNo.padStart(3, "0");
+        return { label: v, value: v };
+      })
+      .filter(
+        (v: SelectOption, i: number, a: SelectOption[]) => a.findIndex((t: SelectOption) => t.value === v.value) === i
+      );
 
-  //   const from = Math.min(...fromProps.map(Number));
-  //   const to = Math.max(...toProps.map(Number));
-
-  //   return Array.from({ length: to - from + 1 }, (_, i) => ({
-  //     zoneNo: zone,                    // ✅ FIX
-  //     wardNo: ward[0],
-  //     propertyNo: String(from + i).padStart(3, "0"),
-  //   }));
-  // }, [zone, ward, fromProps, toProps]);
+    setPropertyOptionsByWard(options);
+  }, [wardProperties, ward]);
 
 
 
@@ -267,19 +240,8 @@ const locale=useLocale()
   }, [zone, ward, fromProps, toProps, wardsData, taxZones]);
 
   /* ================= COLUMNS ================= */
-  const columns: Column<ZoningRecord>[] = [
-    { key: "wardNo", label: t('columns.wardNo') },
-    { key: "fromProperty", label: t('columns.fromProperty') },
-    { key: "toProperty", label: t('columns.toProperty') },
-    { key: "taxZoneNo", label: t('columns.taxZoneNo') },
-   
-  ];
-
-  const previewColumns: Column<PreviewRow>[] = [
-    { key: "taxZoneId", label: t('columns.taxZoneNo') },
-    { key: "wardNo", label: t('columns.wardNo') },
-    { key: "propertyNo", label: t('columns.propertyNo') },
-  ];
+  const columns = useMemo(() => getTaxZoningColumns(t), [t]);
+  const previewColumns = useMemo(() => getPreviewColumns(t), [t]);
 
 
   /* ================= EXPORT CSV ================= */
@@ -396,8 +358,8 @@ const locale=useLocale()
 
           // Check if record exists with same Ward ID and Property range
           const existingRecord = records.find(r =>
-            r.wardId === wardId && 
-            r.fromProperty === fromProperty && 
+            r.wardId === wardId &&
+            r.fromProperty === fromProperty &&
             r.toProperty === toProperty
           );
 
@@ -522,7 +484,7 @@ const locale=useLocale()
       if (ward.length === 1) {
         // ✅ Check if ward exists in records
         const wardExists = records.some(r => r.wardId === Number(ward[0]));
-        
+
         if (!wardExists) {
           // Get ward name for better error message
           const wardData = wardsData.items.find(w => String(w.wardId) === ward[0]);
@@ -785,9 +747,9 @@ const locale=useLocale()
 
                 {/* Tax Zone */}
                 <div>
-                  <label className="flex items-center gap-1 text-sm font-medium text-gray-700">
-                    <Dot className="text-blue-600" /> {t('form.taxZone')} *
-                  </label>
+                  <Label required>
+                    {t('form.taxZone')}
+                  </Label>
                   <Select
                     value={zone}
                     onChange={setZone}
@@ -802,9 +764,9 @@ const locale=useLocale()
 
                 {/* Ward */}
                 <div>
-                  <label className="flex items-center gap-1 text-sm font-medium text-gray-700">
-                    <Dot className="text-green-600" /> {t('form.ward')} *
-                  </label>
+                  <Label required>
+                    {t('form.ward')}
+                  </Label>
 
                   <div className={cn(!zone && "opacity-60 cursor-not-allowed pointer-events-none")}>
                     <MultiSelectDropdown
@@ -822,12 +784,12 @@ const locale=useLocale()
                   />
                 </div>
 
-              
+
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="flex items-center gap-1 text-sm font-medium text-gray-700">
-                      <Dot className="text-purple-600" /> {t('form.fromProperty')}
-                    </label>
+                    <Label>
+                      {t('form.fromProperty')}
+                    </Label>
 
                     <Select
                       value={fromProps}
@@ -839,9 +801,9 @@ const locale=useLocale()
                   </div>
 
                   <div>
-                    <label className="flex items-center gap-1 text-sm font-medium text-gray-700">
-                      <Dot className="text-purple-600" /> {t('form.toProperty')}
-                    </label>
+                    <Label>
+                      {t('form.toProperty')}
+                    </Label>
 
                     <Select
                       value={toProps}
@@ -962,12 +924,7 @@ const locale=useLocale()
 
             {/* ================= TABLE ================= */}
             <div className="mx-4 mb-4 overflow-hidden">
-              {/* Table Header */}
-              {/* <div className="grid grid-cols-3 bg-[#F1F5F9] px-4 py-2 text-xs font-semibold text-gray-700">
-                                <span>Tax Zone No</span>
-                                <span>Ward No</span>
-                                <span>Property No</span>
-                            </div> */}
+
 
               {/* Empty State */}
               {previewData.length === 0 && (
@@ -1043,8 +1000,8 @@ const locale=useLocale()
       "
               >
                 <div className="flex items-center gap-2 w-full sm:w-auto">
-                
-                 
+
+
                   <AddButton
                     label={t('form.bulkUpdate')}
                     disabled={!hasImportedData || saving}
