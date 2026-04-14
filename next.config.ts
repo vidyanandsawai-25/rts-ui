@@ -14,7 +14,7 @@ const nextConfig: NextConfig = {
   // swcMinify is enabled by default in Next.js 13+
   
   // Output configuration for production
-  output: process.env.NODE_ENV ===  'standalone' ,
+  output: process.env.NODE_ENV === 'production' ? 'standalone' : undefined,
   
   // Include locale files in standalone build (required for next-intl)
   outputFileTracingIncludes: {
