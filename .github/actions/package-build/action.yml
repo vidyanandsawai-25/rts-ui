@@ -132,6 +132,20 @@ runs:
         Copy-Item -Path 'public' -Destination "$deploymentDir\public" -Recurse
         Copy-Item -Path 'package.json' -Destination "$deploymentDir\package.json"
 
+        # Verify locale files are in standalone (included via outputFileTracingIncludes in next.config.ts)
+        $standaloneLocales = "$deploymentDir\.next\standalone\src\i18n\locales"
+        if (Test-Path $standaloneLocales) {
+          $count = (Get-ChildItem $standaloneLocales -Recurse -Filter "*.json" | Measure-Object).Count
+          Write-Output "✓ Locale files present in standalone build ($count files)"
+        } else {
+          Write-Warning "Locale files not found in standalone - copying manually..."
+          if (Test-Path 'src/i18n/locales') {
+            New-Item -ItemType Directory -Path "$deploymentDir\.next\standalone\src\i18n" -Force | Out-Null
+            Copy-Item -Path 'src/i18n/locales' -Destination "$standaloneLocales" -Recurse
+            Write-Output "✓ Locale files copied as fallback"
+          }
+        }
+
         if (Test-Path '.env') {
           Copy-Item -Path '.env' -Destination "$deploymentDir\.env"
         }

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import React from 'react';
-import { Stat } from '@/types/service.types';
+import { Service, Stat } from '@/types/service.types';
 import { getServices } from '@/lib/api/services';
 import * as Icons from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
@@ -60,11 +60,11 @@ const ServiceCard = ({ link, icon, title, subtext, stats }: ServiceCardProps) =>
  * Renders a grid of service cards with SSR support
  */
 const ServiceCards = async () => {
-  const services = await getServices();
+  const services: Service[] = await getServices();
   const t = await getTranslations('common');
 
-  // Show empty state if no services
-  if (!services || !services.length) {
+  // Show empty state if no services - defensive check
+  if (!services || !Array.isArray(services) || services.length === 0) {
     return (
       <section className="p-4 sm:p-6 max-w-7xl mx-auto min-h-[250px]">
         <div className="text-center text-gray-500 py-12">{t('app.noServicesAvailable')}</div>

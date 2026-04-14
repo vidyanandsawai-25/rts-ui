@@ -16,6 +16,11 @@ const nextConfig: NextConfig = {
   // Output configuration for production
   output: process.env.NODE_ENV === 'production' ? 'standalone' : undefined,
   
+  // Include locale files in standalone build (required for next-intl)
+  outputFileTracingIncludes: {
+    '/*': ['./src/i18n/locales/**/*'],
+  },
+  
   // Performance optimizations
   compress: true,
   

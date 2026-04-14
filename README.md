@@ -40,10 +40,15 @@ Next.js application
 
 ## Available Scripts
 
-- `npm run dev` - Start development server
+- `npm run dev` - Start development server with hot reload
+- `npm run dev:turbo` - Start development server with Turbopack
 - `npm run build` - Build for production
-- `npm start` - Start production server
+- `npm run build:production` - Build for production with Turbopack
+- `npm start` - Start production standalone server
+- `npm run start:next` - Start production server using `next start` (non-standalone)
 - `npm run lint` - Run ESLint
+- `npm run type-check` - Type check with TypeScript
+- `npm run test` - Run tests
 
 ## Project Structure
 
@@ -124,10 +129,43 @@ import { Button } from '@/components/common';
 
 ## Building for Production
 
+### Development Build
 ```bash
 npm run build
 npm start
 ```
+
+### Production Build (Turbopack)
+```bash
+npm run build:production
+npm start
+```
+
+The project uses **standalone output mode** for production deployments. This creates a self-contained build in `.next/standalone/` that includes:
+- The Node.js server (`server.js`)
+- All required dependencies
+- Locale files for i18n (via `outputFileTracingIncludes` in next.config.ts)
+
+### Running the Standalone Server
+
+```bash
+# Using npm (recommended)
+npm start
+
+# Or directly
+node .next/standalone/server.js
+```
+
+The server runs on port 3000 by default. Configure via `PORT` environment variable.
+
+## Internationalization (i18n)
+
+The project uses **next-intl** for internationalization with support for:
+- English (en)
+- Hindi (hi)
+- Marathi (mr)
+
+Locale files are located in `src/i18n/locales/` and are automatically included in standalone builds.
 
 ## License
 

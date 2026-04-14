@@ -3,7 +3,7 @@
  * Centralized HTTP client for making API requests
  */
 
-import { appConfig } from '@/config/app.config';
+import { getAppConfig } from '@/config/app.config';
 import { ApiResponse } from '@/types/common.types';
 
 class ApiClient {
@@ -11,8 +11,9 @@ class ApiClient {
   private timeout: number;
 
   constructor() {
-    this.baseUrl = appConfig.api.baseUrl;
-    this.timeout = appConfig.api.timeout;
+    const config = getAppConfig();
+    this.baseUrl = config.api.baseUrl;
+    this.timeout = config.api.timeout;
   }
 
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
