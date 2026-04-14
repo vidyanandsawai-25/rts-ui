@@ -1,8 +1,8 @@
 
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { AlertCircle, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { MasterTable } from "@/components/common/MasterTable";
@@ -32,7 +32,6 @@ export default function TaxZoneMaster({
   totalPages,
 }: TaxZoneMasterProps) {
   const router = useRouter();
-  const pathname = usePathname();
   const { confirm } = useConfirm();
 
   // Satisfy TypeScript's noUnusedLocals check by explicitly referencing JSX components
@@ -52,10 +51,10 @@ export default function TaxZoneMaster({
   });
 
   const searchActive = search.trim().length > 0;
-  const [_searchPage, _setSearchPage] = useState(1);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const [_allRecords, setAllRecords] = useState<TaxZone[] | null>(null);
-  const [loadingAll, _setLoadingAll] = useState(false);
+  const [, setAllRecords] = useState<TaxZone[] | null>(null);
+  const [loadingAll] = useState(false);
 
   const t = useTranslations("taxZone");
   const tCommon = useTranslations("common");
@@ -65,46 +64,6 @@ export default function TaxZoneMaster({
     () => (data ?? []).map((x) => ({ ...x, status: x.isActive })),
     [data]
   );
-
-  /**
-   * ✅ BACKEND SEARCH TRIGGER (SAFE)
-   * - Only runs on /taxzone
-   * - Does NOT affect Add / Edit pages
-   */
-  // useEffect(() => {
-  //   if (!searchActive) return;
-  //   if (pathname !== "/taxzone") return;
-
-  //   const t = setTimeout(() => {
-  //     router.push(
-  //       `/taxzone?page=1&pageSize=${pageSize}&search=${encodeURIComponent(search)}`
-  //     );
-  //   }, 400);
-
-  //   return () => clearTimeout(t);
-  // }, [search, searchActive, pageSize, router, pathname]);
-  useEffect(() => {
-    if (!pathname.endsWith("/property-tax/taxzone")) return;
-
-    const t = setTimeout(() => {
-      const trimmedSearch = search.trim();
-      
-      // 🔹 If search is empty → REMOVE search from URL
-      if (!trimmedSearch) {
-        router.replace(
-          `/${locale}/property-tax/taxzone?page=1&pageSize=${pageSize}`
-        );
-        return;
-      }
-
-      // 🔹 If search exists → backend search with search parameter
-      router.replace(
-        `/${locale}/property-tax/taxzone?page=1&pageSize=${pageSize}&search=${encodeURIComponent(trimmedSearch)}`
-      );
-    }, 400);
-
-    return () => clearTimeout(t);
-  }, [search, pageSize, router, pathname, locale]);
 
   const columns = useMemo(() => getTaxZoneColumns(t), [t]);
 
@@ -137,10 +96,6 @@ export default function TaxZoneMaster({
 
   const tableRows = normalizedData;
 
-  // Footer values
-  const start = effectiveTotalCount === 0 ? 0 : ((effectivePageNumber || 1) - 1) * (pageSize || 10) + 1;
-  const total = effectiveTotalCount || 0;
-
   /**
    * ✅ BACKEND PAGINATION
    */
@@ -160,38 +115,56 @@ export default function TaxZoneMaster({
     router.push(url);
   };
 
-  const handleDelete = useCallback(
-    (row: TaxZone) => {
-      confirm({
-        variant: "delete",
-        meta: {
-        //  id: row.taxZoneNo,
-          name: row.taxZoneType,
-          type: "Tax Zone",
-        },
-        onConfirm: async () => {
-          try {
-            const fd = new FormData();
-            fd.append("taxZoneId", String(row.taxZoneId));
-            await deleteTaxZoneAction(fd);
+  const handleSearchChange = (value: string) => {
+    // Sanitize search input
+    const sanitized = value.replace(TEXT_SANITIZE, "");
+    setSearch(sanitized);
 
-            // toast.success(
-            //   `${row.taxZoneType} (${row.taxZoneNo}) deleted successfully`
-            // );
-            toast.success(t("delete.success"));
-            setAllRecords(null);
-            router.refresh();
-          }
-          catch (error) {
-            // toast.error("cannot delete the zone because it is in use");
-            toast.error(t("delete.error"));
-            console.error(error);
-          }
-        },
-      });
-    },
-    [router, confirm, t, setAllRecords]
-  );
+    // Clear existing timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    // Debounce URL update
+    searchTimeoutRef.current = setTimeout(() => {
+      const trimmedSearch = sanitized.trim();
+      
+      if (trimmedSearch) {
+        // Navigate with search parameter
+        router.push(
+          `/${locale}/property-tax/taxzone?page=1&pageSize=${pageSize}&search=${encodeURIComponent(trimmedSearch)}`
+        );
+      } else {
+        // Clear search from URL
+        router.push(`/${locale}/property-tax/taxzone?page=1&pageSize=${pageSize}`);
+      }
+    }, 400);
+  };
+
+  const handleDelete = (row: TaxZone) => {
+    confirm({
+      variant: "delete",
+      meta: {
+        name: row.taxZoneType,
+        type: "Tax Zone",
+      },
+      onConfirm: async () => {
+        try {
+          const fd = new FormData();
+          fd.append("taxZoneId", String(row.taxZoneId));
+          await deleteTaxZoneAction(fd);
+
+          toast.success(t("delete.success"));
+          setAllRecords(null);
+          router.refresh();
+        }
+        catch (error) {
+          toast.error(t("delete.error"));
+          console.error(error);
+        }
+      },
+    });
+  };
 
   return (
     <PageContainer>
@@ -214,11 +187,7 @@ export default function TaxZoneMaster({
             <div className="flex w-full justify-end">
               <SearchInput
                 value={search}
-                onChange={(value) => {
-                  // Sanitize search input to prevent special characters
-                  const sanitized = value.replace(TEXT_SANITIZE, "");
-                  setSearch(sanitized);
-                }}
+                onChange={handleSearchChange}
                 placeholder={t("list.filters.search")}
                 className="mb-0 w-100 text-gray-900"
               />
@@ -264,7 +233,7 @@ export default function TaxZoneMaster({
           totalPages={effectiveTotalPages}
           onPageChange={changePage}
           onPageSizeChange={changePageSize}
-          paginationConfig={{ enabled: true, showPageSizeSelector: false }}
+          paginationConfig={{ enabled: true, showPageSizeSelector: true }}
           // onEdit={(row) => router.push(`/taxzone/edit/${row.taxZoneNo}`)}
           renderActions={(row) => (
             <>
@@ -279,24 +248,6 @@ export default function TaxZoneMaster({
           )}
           actionLabel={t("list.table.actions")}
           getRowKey={(row) => row.taxZoneId}
-          footerLeftContent={
-            <span className="flex items-center gap-1">
-              {'Showing'} {start} {'to'}
-              <select
-                value={pageSize}
-                onChange={(e) => changePageSize(Number(e.target.value))}
-                className="mx-1 border border-blue-200 rounded-md p-1 focus:ring-2 focus:ring-blue-500 outline-none bg-white"
-                aria-label="Rows per page"
-              >
-                {[10, 20, 50, 100].map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
-              {'of'} {total} {'entries'}
-            </span>
-          }
         />
       </div>
     </PageContainer>

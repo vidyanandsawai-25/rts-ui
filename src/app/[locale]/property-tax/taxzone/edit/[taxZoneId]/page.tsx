@@ -4,17 +4,17 @@ import { notFound } from "next/navigation";
 
 interface PageProps {
   params: Promise<{
-    taxZoneNo: string;
+    taxZoneId: string;
   }>;
 }
 
 export default async function EditPage({ params }: PageProps) {
-  const { taxZoneNo } = await params; // taxZoneNo here actually contains the ID due to folder name
+  const { taxZoneId } = await params;
 
-  // ✅ Fetch data server-side
+  // ✅ Fetch data server-side by tax zone ID
   let taxZoneData = null;
   try {
-    taxZoneData = await getTaxZoneById(taxZoneNo);
+    taxZoneData = await getTaxZoneById(taxZoneId);
   } catch (error) {
     console.error("Failed to fetch tax zone:", error);
     notFound();

@@ -11,7 +11,6 @@ interface PageProps {
     page?: string;
     pageSize?: string;
     search?: string;
-
   }>;
 }
 

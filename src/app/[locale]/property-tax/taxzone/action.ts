@@ -37,7 +37,6 @@ export async function saveTaxZone(id: string, formData: FormData) {
       return {
         ok: false,
         error: "duplicate",
-        message: "This record already exists. Please check Zone No and Zone Type - duplicates not allowed.",
       };
     }
     
