@@ -10,7 +10,7 @@ export  function PageContainer({ children, className = "" }: PageContainerProps)
     <div
       className={`
         bg-[#F8FAFC]
-        p-6 lg:p-8
+        p-0 lg:pt-2
 
         ml-0
       

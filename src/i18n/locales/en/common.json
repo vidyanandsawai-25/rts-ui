@@ -73,7 +73,7 @@
     "pleaseWait": "Please wait...",
     "noRecordsFound": "No records found",
     "actionCompleted": "Action completed successfully",
-    "recordsFound": "Records found"
+    "recordsFound": "Records found",
     "total": "Total: {count}"
   },
   "confirm": {

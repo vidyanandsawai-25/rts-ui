@@ -1,4 +1,4 @@
-import { PagedResponse } from "@/types/construction.types";
+import { PagedResponse } from "@/types/common.types";
 import { TaxZone, TaxZoningFormModel, TaxZonning, TaxZonningPropertyNo, Ward } from "@/types/taxzoning.types";
 import { apiClient } from "@/services/api.service";
 

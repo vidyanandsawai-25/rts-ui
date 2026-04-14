@@ -3,6 +3,7 @@
 import React, { useMemo, useState, useEffect, useRef } from "react";
 import { MapPin, Eye, Dot } from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils/cn";
 import * as XLSX from 'xlsx';
 import { useLocale, useTranslations } from 'next-intl';
 import { MasterTable, Column } from "@/components/common/MasterTable";
@@ -15,9 +16,10 @@ import {
   updateTaxZoningAction,
 } from "@/app/[locale]/property-tax/taxzoning/tax-zone.actions";
 import { TaxZone, Ward, TaxZonningPropertyNo } from "@/types/taxzoning.types";
-import { PagedResponse } from "@/types/construction.types";
+
 
 import { MultiSelectDropdown } from "@/components/common/Dropdown";
+import { PagedResponse } from "@/types/common.types";
 
 /* ================= TYPES ================= */
 type PreviewRow = {
@@ -203,12 +205,12 @@ const locale=useLocale()
       if (!res.success) return;
 
       const options = res.data.items
-        .map((i) => {
+        .map((i: TaxZonningPropertyNo) => {
           const v = i.propertyNo.padStart(3, "0");
           return { label: v, value: v };
         })
         .filter(
-          (v, i, a) => a.findIndex((t) => t.value === v.value) === i
+          (v: SelectOption, i: number, a: SelectOption[]) => a.findIndex((t: SelectOption) => t.value === v.value) === i
         );
 
       setPropertyOptionsByWard(options);
@@ -749,7 +751,7 @@ const locale=useLocale()
 
   return (
     <PageContainer>
-      <div className="space-y-6">
+      <div className="space-y-2">
 
         <TableHeader
           title={t('title')}
@@ -804,14 +806,15 @@ const locale=useLocale()
                     <Dot className="text-green-600" /> {t('form.ward')} *
                   </label>
 
-                  <MultiSelectDropdown
-                    options={wardOptions}
-                    value={ward}
-                    onChange={setWard}
-                    placeholder={zone ? t('form.selectWard') : t('form.selectTaxZone')}
-                    disabled={!zone}
-                    className="text-gray-700"
-                  />
+                  <div className={cn(!zone && "opacity-60 cursor-not-allowed pointer-events-none")}>
+                    <MultiSelectDropdown
+                      options={wardOptions}
+                      value={ward}
+                      onChange={setWard}
+                      placeholder={zone ? t('form.selectWard') : t('form.selectTaxZone')}
+                      className="text-gray-700"
+                    />
+                  </div>
 
                   <ValidationMessage
                     visible={submitted && !isWardValid}

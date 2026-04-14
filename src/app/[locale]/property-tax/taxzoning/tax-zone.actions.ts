@@ -2,7 +2,7 @@
 
 import {createTaxZoning, getTaxZonePagedServer, getTaxZonningByWardServer, getTaxZonningPagedServer, getTaxZonningPropertyNoServer, getWardPagedServer, updateTaxZoning } from "@/lib/api/taxzoning.service";
 import { ApiError } from "@/lib/utils/api";
-import { PagedResponse } from "@/types/construction.types";
+import { PagedResponse } from "@/types/common.types";
 import { ActionResult, TaxZone, TaxZoningFormModel, TaxZonning, Ward } from "@/types/taxzoning.types";
 
 
