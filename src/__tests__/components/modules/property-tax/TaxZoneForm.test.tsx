@@ -28,10 +28,13 @@ vi.mock("sonner", () => ({
 }));
 
 // Mock the save action
-const mockSaveTaxZone = vi.fn();
 vi.mock("@/app/[locale]/property-tax/taxzone/action", () => ({
-  saveTaxZone: mockSaveTaxZone,
+  saveTaxZone: vi.fn(),
 }));
+
+// Import the mocked action to get access to the mock function
+import { saveTaxZone } from "@/app/[locale]/property-tax/taxzone/action";
+const mockSaveTaxZone = vi.mocked(saveTaxZone);
 
 const mockMessages = {
   taxZone: {
