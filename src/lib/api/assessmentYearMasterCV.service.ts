@@ -21,27 +21,6 @@ async function createFetchOptions(method: string = "GET", body?: unknown): Promi
     headers: { "Content-Type": "application/json" },
   };
 
-  // Only allow insecure TLS for explicitly opted-in local development usage.
-  if (
-    process.env.NODE_ENV === "development" &&
-    process.env.ALLOW_INSECURE_TLS === "true" &&
-    typeof window === "undefined"
-  ) {
-    try {
-      // For development with self-signed certificates, we need to use a custom agent
-      const https = await import('https');
-
-      const agent = new https.Agent({
-        rejectUnauthorized: false,
-      });
-
-      // @ts-expect-error - Node.js fetch accepts agent
-      options.agent = agent;
-    } catch {
-      // Ignore if https module is not available
-    }
-  }
-
   if (body) options.body = JSON.stringify(body);
   return options;
 }
@@ -63,7 +42,7 @@ export async function getAssessmentYearsPagedServerCV(
   pageSize: number,
   searchTerm?: string
 ): Promise<AssessmentYearPagedResponseCV> {
-  const fetchOptions = createFetchOptions("GET");
+  const fetchOptions = await createFetchOptions("GET");
 
   const params = new URLSearchParams({
     PageNumber: pageNumber.toString(),

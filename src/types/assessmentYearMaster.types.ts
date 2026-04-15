@@ -45,3 +45,27 @@ export interface AssessmentYearPagedResponseCV {
   hasNext?: boolean;
 }
 
+/* ================= COMPONENT PROPS ================= */
+
+export interface AssessmentYearMasterRVProps {
+  paginatedData: AssessmentYearPagedResponseRV;
+}
+
+export interface AssessmentYearMasterCVProps {
+  paginatedData: AssessmentYearPagedResponseCV;
+}
+
+export interface AssessmentYearFormRVProps {
+  open: boolean;
+  onClose?: () => void;
+  onSuccess?: () => void;
+  initialData?: AssessmentYearRV | null;
+}
+
+export interface AssessmentYearFormCVProps {
+  open: boolean;
+  onClose?: () => void;
+  onSuccess?: () => void;
+  initialData?: AssessmentYearCV | null;
+}
+

@@ -8,18 +8,14 @@ import { useLocale, useTranslations } from "next-intl";
 import { MasterTable } from "@/components/common/MasterTable";
 import TableHeader from "@/components/common/TableHeader";
 import { Tabs } from "@/components/common/Tabs";
-import type { AssessmentYearPagedResponseRV, AssessmentYearRV } from "@/types/assessmentYearMaster.types";
+import type { AssessmentYearMasterRVProps, AssessmentYearRV } from "@/types/assessmentYearMaster.types";
 import { deleteAssessmentYearAction } from "@/app/[locale]/property-tax/assessment-year-range/rateablevalue/action";
 import { AddButton, DeleteButton, EditButton, useConfirm } from "@/components/common";
 
 /* ✅ Import Columns */
 import { getAssessmentYearRVColumns } from "./AssessmentYearMasterRVColumns";
 
-interface AssessmentYearMasterProps {
-  paginatedData: AssessmentYearPagedResponseRV;
-}
-
-export default function AssessmentYearMaster({ paginatedData }: AssessmentYearMasterProps) {
+export default function AssessmentYearMaster({ paginatedData }: AssessmentYearMasterRVProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -61,7 +57,7 @@ export default function AssessmentYearMaster({ paginatedData }: AssessmentYearMa
     onConfirm: async () => {
       const deleteId = row.yearId ?? row.yearRangeRVId;
       
-      if (typeof deleteId !== "number") {
+      if (!Number.isInteger(deleteId) || deleteId <= 0) {
         toast.error(t("deleteError"));
         return;
       }

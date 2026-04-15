@@ -7,19 +7,12 @@ import { CheckCircle2, X, Calendar, AlertCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Input } from "@/components/common/Input";
 import { ToggleSwitch } from "@/components/common/ToggleSwitch";
-import { AssessmentYearRV } from "@/types/assessmentYearMaster.types";
+import { AssessmentYearRV, AssessmentYearFormRVProps } from "@/types/assessmentYearMaster.types";
 import { cn } from "@/lib/utils/cn";
 import { CancelButton, Drawer, SaveButton } from "@/components/common";
 import { createAssessmentYearAction, updateAssessmentYearAction, checkAssessmentYearOverlap } from "@/app/[locale]/property-tax/assessment-year-range/rateablevalue/action";
 
-interface Props {
-  open: boolean;
-  onClose?: () => void;
-  onSuccess?: () => void;
-  initialData?: AssessmentYearRV | null;
-}
-
-export default function AssessmentYearForm({ open, onClose, onSuccess, initialData }: Props) {
+export default function AssessmentYearForm({ open, onClose, onSuccess, initialData }: AssessmentYearFormRVProps) {
   const router = useRouter();
   const t = useTranslations("AssessmentYearMasterRV");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -100,14 +93,13 @@ export default function AssessmentYearForm({ open, onClose, onSuccess, initialDa
     if (e) e.preventDefault();
     setIsSubmitting(true);
 
-    // Validate first (async)
-    const isValid = await validate();
-    if (!isValid) {
-        setIsSubmitting(false);
-        return;
-    }
-
     try {
+      // Validate first (async)
+      const isValid = await validate();
+      if (!isValid) {
+        return;
+      }
+
       const result = isEdit 
         ? await updateAssessmentYearAction(formData as AssessmentYearRV)
         : await createAssessmentYearAction(formData);

@@ -10,7 +10,7 @@ import { useConfirm } from "@/components/common";
 
 import type {
   AssessmentYearCV,
-  AssessmentYearPagedResponseCV,
+  AssessmentYearMasterCVProps,
 } from "@/types/assessmentYearMaster.types";
 
 import {
@@ -26,10 +26,6 @@ import { useLocale, useTranslations } from "next-intl";
 
 /* ✅ Import Columns */
 import { getAssessmentYearCVColumns } from "./AssessmentYearMasterCVColumns";
-
-interface AssessmentYearMasterCVProps {
-  paginatedData: AssessmentYearPagedResponseCV;
-}
 
 export default function AssessmentYearMasterCV({
   paginatedData,
@@ -127,7 +123,7 @@ export default function AssessmentYearMasterCV({
 
         const yearIdentifier = row.yearId ?? row.yearRangeCVId;
 
-        if (typeof yearIdentifier !== "number") {
+        if (!Number.isInteger(yearIdentifier) || yearIdentifier <= 0) {
 
           toast.error(
             t("deleteError")
