@@ -123,7 +123,7 @@ export const commonValidations = {
   ): Validator => (value: unknown) => {
     const strVal = String(value || "");
     if (required && (!strVal || !strVal.trim())) return t('validation.required', { label });
-    if (strVal && strVal.length > 500) return t('validation.tooLong', { label });
+    if (strVal && strVal.length > 500) return t('validation.maxChars', { label, count: 500 });
     return undefined;
   }
 };

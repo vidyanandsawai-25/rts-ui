@@ -231,7 +231,7 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
       <table className={cn('w-full text-sm', tableClassName)}>
         <thead
           className={cn(
-            'sticky top-0 ',
+            'sticky top-0 z-20',
             'bg-gradient-to-r from-[#E2EEFF] via-[#D6E8FF] to-[#E2EEFF]',
             'border-b border-blue-200',
             'transition-colors duration-200',
