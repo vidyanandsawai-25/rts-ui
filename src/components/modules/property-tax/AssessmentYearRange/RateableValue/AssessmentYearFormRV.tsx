@@ -67,7 +67,7 @@ export default function AssessmentYearForm({ open, onClose, onSuccess, initialDa
              const result = await checkAssessmentYearOverlap(
                 formData.fromYear,
                 formData.toYear,
-                initialData?.yearId
+                initialData?.yearId ?? initialData?.yearRangeRVId
              );
 
              if (result.hasOverlap) {

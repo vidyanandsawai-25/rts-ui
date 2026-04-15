@@ -12,7 +12,7 @@ export class ApiError extends Error {
   }
 }
  
-async function createFetchOptions(
+export async function createFetchOptions(
   method: string = "GET",
   body?: unknown
 ): Promise<RequestInit> {
@@ -34,7 +34,7 @@ async function createFetchOptions(
   return options;
 }
  
-async function validateResponse(response: Response, context: string): Promise<void> {
+export async function validateResponse(response: Response, context: string): Promise<void> {
   if (!response.ok) {
     const responseText = await response.text();
     throw new ApiError(
@@ -70,21 +70,28 @@ export async function getAssessmentYearsPagedServer(
  
   // Handle case where API might return items directly or in a different structure
   if (Array.isArray(data)) {
-    const items: AssessmentYearRV[] = data.map((item: unknown) => {
+    const allItems: AssessmentYearRV[] = data.map((item: unknown) => {
       const assessmentItem = item as AssessmentYearRV;
       return {
         ...assessmentItem,
         yearId: assessmentItem.yearRangeRVId || assessmentItem.yearId,
       } as AssessmentYearRV;
     });
+
+    const totalCount = allItems.length;
+    const totalPages = Math.ceil(totalCount / pageSize);
+    const startIndex = (pageNumber - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const items = allItems.slice(startIndex, endIndex);
+
     return {
       items,
-      totalCount: data.length,
+      totalCount,
       pageNumber: pageNumber,
       pageSize: pageSize,
-      totalPages: Math.ceil(data.length / pageSize),
+      totalPages,
       hasPrevious: pageNumber > 1,
-      hasNext: pageNumber < Math.ceil(data.length / pageSize)
+      hasNext: pageNumber < totalPages
     };
   }
  
@@ -102,7 +109,7 @@ export async function getAssessmentYearsPagedServer(
 }
  
 export async function createAssessmentYear(data: Partial<AssessmentYearRV>): Promise<AssessmentYearRV> {
-  const payload = { ...data, yearRangeRVId: data.yearId };
+  const payload = { ...data, yearRangeRVId: data.yearRangeRVId ?? data.yearId };
   const fetchOptions = await createFetchOptions("POST", payload);
   const response = await fetch(
     `${appConfig.api.baseUrl}/AssessmentYearRange`,

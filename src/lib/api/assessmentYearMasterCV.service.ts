@@ -1,40 +1,10 @@
 
 import { appConfig } from "@/config/app.config";
 import type { AssessmentYearCV,  AssessmentYearPagedResponseCV } from "@/types/assessmentYearMaster.types";
+import { ApiError, createFetchOptions, validateResponse } from "./assessmentYearMaster.service";
 
-
-export class ApiError extends Error {
-  constructor(
-    public statusCode: number,
-    public responseText: string,
-    message: string
-  ) {
-    super(message);
-    this.name = "ApiError";
-  }
-}
-
-async function createFetchOptions(method: string = "GET", body?: unknown): Promise<RequestInit> {
-  const options: RequestInit = {
-    method,
-    cache: "no-store",
-    headers: { "Content-Type": "application/json" },
-  };
-
-  if (body) options.body = JSON.stringify(body);
-  return options;
-}
-
-async function validateResponse(response: Response, context: string): Promise<void> {
-  if (!response.ok) {
-    const responseText = await response.text();
-    throw new ApiError(
-      response.status,
-      responseText,
-      `${context}: ${response.status} ${response.statusText}`
-    );
-  }
-}
+// Re-export ApiError for consumers that import from this module
+export { ApiError };
 
 /** GET paged (server) */
 export async function getAssessmentYearsPagedServerCV(
@@ -61,7 +31,7 @@ export async function getAssessmentYearsPagedServerCV(
   
   // Handle case where API might return items directly or in a different structure
   if (Array.isArray(data)) {
-    const items: AssessmentYearCV[] = data.map((item: unknown) => {
+    const allItems: AssessmentYearCV[] = data.map((item: unknown) => {
       if (typeof item === "object" && item !== null) {
         const record = item as Record<string, unknown>;
         const yearRangeCVId = record.yearRangeCVId;
@@ -72,14 +42,21 @@ export async function getAssessmentYearsPagedServerCV(
       }
       return item as AssessmentYearCV;
     });
+
+    const totalCount = allItems.length;
+    const totalPages = Math.ceil(totalCount / pageSize);
+    const startIndex = (pageNumber - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const items = allItems.slice(startIndex, endIndex);
+
     return {
       items,
-      totalCount: data.length,
+      totalCount,
       pageNumber: pageNumber,
       pageSize: pageSize,
-      totalPages: Math.ceil(data.length / pageSize),
+      totalPages,
       hasPrevious: pageNumber > 1,
-      hasNext: pageNumber < Math.ceil(data.length / pageSize)
+      hasNext: pageNumber < totalPages
     };
   }
 
@@ -100,7 +77,7 @@ export async function getAssessmentYearsPagedServerCV(
 }
 
 export async function createAssessmentYearCV(data: Partial<AssessmentYearCV>): Promise<AssessmentYearCV> {
-  const payload = { ...data, yearRangeCVId: data.yearId };
+  const payload = { ...data, yearRangeCVId: data.yearRangeCVId ?? data.yearId };
   const fetchOptions = await createFetchOptions("POST", payload);
   const response = await fetch(
     `${appConfig.api.baseUrl}/AssessmentYearRangeCV`,
