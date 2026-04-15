@@ -123,7 +123,6 @@ describe("TaxZoneForm", () => {
     it("validates required fields on submit", async () => {
       setup();
 
-      const saveButton = screen.getByText("Save");
       const zoneNoInput = screen.getByPlaceholderText("e.g. 1 or Z");
       const zoneTypeInput = screen.getByPlaceholderText("e.g. Residential");
       const remarkInput = screen.getByPlaceholderText("Enter remark");
