@@ -372,26 +372,6 @@ export default function ConstructionTypeForm({
                     message={errors.searchSequence}
                     visible={showError("searchSequence")}
                   />
-               
-
-                {/* <div>
-                  <Input
-                    name="searchKey"
-                    label={t("form.fields.searchKey.label")}
-                    required
-                    placeholder={t("form.fields.searchKey.placeholder")}
-                    value={formData.searchKey}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    fullWidth
-                    className="text-gray-700"
-                  />
-                  <ValidationMessage
-                    message={errors.searchKey}
-                    visible={showError("searchKey")}
-                  />
-                </div> */}
-             
             </div>
 
            

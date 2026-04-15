@@ -174,7 +174,8 @@ describe("ConstructionTypeMaster", () => {
         mockRouterPush.mockClear();
         // Render with existing sort
         render(<ConstructionTypeMaster {...defaultProps} sortBy="constructionCode" sortOrder="asc" />);
-        const sortButton = screen.getByRole("button", { name: /Sort by construction.constructionType.list.table.constructionCode/i });
+        // When already sorted, the aria-label is "Sort {label} ascending" not "Sort by {label}"
+        const sortButton = screen.getByRole("button", { name: /Sort construction.constructionType.list.table.constructionCode ascending/i });
         fireEvent.click(sortButton);
         expect(mockRouterPush).toHaveBeenCalled();
         const pushedUrl = mockRouterPush.mock.calls[0][0];

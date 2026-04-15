@@ -7,7 +7,6 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { locales } from '@/i18n/config';
 import Providers from './Providers';
-import { MainLayout } from '@/components/layout';
 
 const inter = Inter({ subsets: ['latin'] });
 const notoSansDevanagari = Noto_Sans_Devanagari({
@@ -44,9 +43,7 @@ export default async function RootLayout({ children, params }: Readonly<RootLayo
       <body className={`${inter.className} ${notoSansDevanagari.variable}`}>
         <NextIntlClientProvider locale={locale} messages={messages}>
           <Providers>
-            <MainLayout>
               {children}
-            </MainLayout>
           </Providers>
         </NextIntlClientProvider>
       </body>

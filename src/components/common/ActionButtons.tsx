@@ -277,7 +277,7 @@ export function SortAscButton(
       icon={ArrowUp}
       size="sm"
       aria-label={ariaLabel ?? "Sort ascending"}
-      className={cn("hover:bg-transparent hover:text-blue-600", className)}
+      className={cn("hover:bg-transparent hover:text-blue-600 focus:!ring-0 focus:!ring-offset-0", className)}
       {...props}
     />
   );
@@ -292,7 +292,7 @@ export function SortDescButton(
       icon={ArrowDown}
       size="sm"
       aria-label={ariaLabel ?? "Sort descending"}
-      className={cn("hover:bg-transparent hover:text-blue-600", className)}
+      className={cn("hover:bg-transparent hover:text-blue-600 focus:!ring-0 focus:!ring-offset-0", className)}
       {...props}
     />
   );
@@ -307,7 +307,7 @@ export function SortDefaultButton(
       icon={ArrowUpDown}
       size="sm"
       aria-label={ariaLabel ?? "Sort"}
-      className={cn("hover:bg-transparent hover:text-blue-600", className)}
+      className={cn("hover:bg-transparent hover:text-blue-600 focus:!ring-0 focus:!ring-offset-0", className)}
       {...props}
     />
   );
