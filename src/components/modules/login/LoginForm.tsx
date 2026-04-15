@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useActionState, useCallback } from 'react';
+import React, { useState, useActionState, useCallback, useId } from 'react';
 import { useFormStatus } from 'react-dom';
 import Image from 'next/image';
 import { Eye, EyeOff, User, Lock, Landmark } from 'lucide-react';
@@ -93,19 +93,24 @@ function LoginCredentialFields({
   const [password, setPassword] = useState('');
   const [usernameInput, setUsernameInput] = useState(initialUsername);
   const [showPassword, setShowPassword] = useState(false);
+  const usernameId = useId();
+  const passwordId = useId();
 
   return (
     <>
       <Input type="hidden" name="locale" value={locale} />
       <div className="space-y-5">
         <div className="space-y-1.5">
-          <Label className="ml-1 text-sm font-semibold text-gray-700">{t('username')}</Label>
+          <Label htmlFor={usernameId} className="ml-1 text-sm font-semibold text-gray-700">
+            {t('username')}
+          </Label>
           <div className="group relative w-full">
             <User
               size={20}
               className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-cyan-600/80 transition-all duration-300 drop-shadow-[0_0_5px_rgba(6,182,212,0.3)] group-focus-within:text-cyan-500"
             />
             <Input
+              id={usernameId}
               name="username"
               value={usernameInput}
               onChange={(e) => setUsernameInput(e.target.value)}
@@ -117,13 +122,16 @@ function LoginCredentialFields({
           </div>
         </div>
         <div className="space-y-1.5">
-          <Label className="ml-1 text-sm font-semibold text-gray-700">{t('password')}</Label>
+          <Label htmlFor={passwordId} className="ml-1 text-sm font-semibold text-gray-700">
+            {t('password')}
+          </Label>
           <div className="group relative w-full">
             <Lock
               size={20}
               className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-amber-600/80 transition-all duration-300 drop-shadow-[0_0_5px_rgba(245,158,11,0.3)] group-focus-within:text-amber-500"
             />
             <Input
+              id={passwordId}
               name="password"
               type={showPassword ? 'text' : 'password'}
               value={password}
@@ -131,6 +139,7 @@ function LoginCredentialFields({
               placeholder={t('passwordPlaceholder')}
               className="rounded-xl border-gray-200 bg-gray-50/50 py-2.5 pl-10 pr-11 transition-all duration-200 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20"
               fullWidth
+              autoComplete="current-password"
             />
             {password.length > 0 ? (
               <Button

@@ -184,8 +184,9 @@ export function Header({ ulbData, userDisplayName, clientIp }: HeaderProps) {
     return '';
   }, [ulbData?.ulbCode, title]);
 
-  const userInitial = (userDisplayName?.trim().charAt(0) || '').toUpperCase();
-  const displayName = userDisplayName?.trim() ?? '';
+  const trimmedUserDisplayName = userDisplayName?.trim() || '';
+  const displayName = trimmedUserDisplayName || t('app.defaultUser');
+  const userInitial = displayName.charAt(0).toUpperCase();
   const ulbCodeRaw = sanitizeInput(ulbData?.ulbCode ?? '') || '';
   const idSubtitle = ulbCodeRaw ? `ID: ${ulbCodeRaw}-${new Date().getFullYear()}` : '';
   const ipDisplay = clientIp?.trim() || t('userMenu.ipUnavailable');
