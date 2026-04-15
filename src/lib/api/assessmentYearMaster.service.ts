@@ -137,7 +137,7 @@ export async function updateAssessmentYear(data: AssessmentYearRV): Promise<Asse
 
   const payload = {
     ...data,
-    ...(data.yearRangeRVId != null ? { yearRangeRVId: data.yearRangeRVId } : {}),
+    yearRangeRVId: data.yearRangeRVId ?? data.yearId,
   };
   const fetchOptions = await createFetchOptions("PUT", payload);
   const response = await fetch(

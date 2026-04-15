@@ -5,13 +5,15 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { Calendar } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { MasterTable, Column } from "@/components/common/MasterTable";
-import { StatusBadge } from "@/components/common/StatusBadge";
+import { MasterTable } from "@/components/common/MasterTable";
 import TableHeader from "@/components/common/TableHeader";
 import { Tabs } from "@/components/common/Tabs";
 import type { AssessmentYearPagedResponseRV, AssessmentYearRV } from "@/types/assessmentYearMaster.types";
 import { deleteAssessmentYearAction } from "@/app/[locale]/property-tax/assessment-year-range/rateablevalue/action";
 import { AddButton, DeleteButton, EditButton, useConfirm } from "@/components/common";
+
+/* ✅ Import Columns */
+import { getAssessmentYearRVColumns } from "./AssessmentYearMasterRVColumns";
 
 interface AssessmentYearMasterProps {
   paginatedData: AssessmentYearPagedResponseRV;
@@ -57,12 +59,14 @@ export default function AssessmentYearMaster({ paginatedData }: AssessmentYearMa
       name: `${row.fromYear} - ${row.toYear}`,
     },
     onConfirm: async () => {
-      if (typeof row.yearId !== "number") {
+      const deleteId = row.yearId ?? row.yearRangeRVId;
+      
+      if (typeof deleteId !== "number") {
         toast.error(t("deleteError"));
         return;
       }
 
-      const res = await deleteAssessmentYearAction(row.yearId);
+      const res = await deleteAssessmentYearAction(deleteId);
 
       if (!res.success) {
         // Show linked-record message only when explicitly indicated by the server
@@ -85,31 +89,14 @@ export default function AssessmentYearMaster({ paginatedData }: AssessmentYearMa
   });
 }
 
-  const columns: Column<AssessmentYearRV>[] = [
-    {
-      key: "fromYear",
-      label: t("fromYear"),
-      width: "30%",
-    },
-    {
-      key: "toYear",
-      label: t("toYear"),
-      width: "30%",
-    },
-    {
-      key: "isActive",
-      label: t("activeStatus"),
-      width: "20%",
-      render: (value: unknown) => {
-        const isActive = Boolean(value);
-        return (
-          <div className="flex justify-start">
-            <StatusBadge value={isActive} />
-          </div>
-        );
-      },
-    }
-  ];
+  /* ================= COLUMNS ================= */
+
+  const columns = useMemo(
+    () => getAssessmentYearRVColumns(t),
+    [t]
+  );
+
+  /* ================= UI ================= */
 
   return (
     <div className="space-y-6 p-0">
