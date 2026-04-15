@@ -73,6 +73,10 @@ const mockMessages = {
     table: {
       showingEntries: "Showing {start}-{end} of {total}",
       page: "Page {current} of {total}",
+      actions: {
+        edit: "Edit",
+        delete: "Delete",
+      },
     },
     messages: {
       noData: "No data available",

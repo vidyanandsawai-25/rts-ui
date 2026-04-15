@@ -24,7 +24,7 @@ export interface TaxZoneFormProps {
 
 export default function TaxZoneForm({ initialData }: TaxZoneFormProps) {
   const router = useRouter();
-  const isEdit = Boolean(initialData?.taxZoneId);
+   const isEdit = initialData?.taxZoneId != null;
 
   const [open, setOpen] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);

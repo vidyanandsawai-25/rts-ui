@@ -63,19 +63,17 @@ export const sanitizePositiveDecimal = (value: string): string => {
  * Generic form validation function
  */
   export const validateForm = (data: unknown, schema: Record<string, Validator>) => {
-    const errors: Record<string, string> = {};
-    const formData = data as Record<string, unknown>;
-    
-    Object.keys(schema).forEach((key) => {
-      const validator = schema[key];
-      if (validator) {
-        const error = validator(formData[key]);
-        if (error) errors[key] = error;
-      }
-    });
-    
-    return errors;
-  };
+  const errors: Record<string, string> = {};
+  const formData = data as Record<string, unknown>;
+  Object.keys(schema).forEach((key) => {
+    const validator = schema[key];
+    if (validator) {
+      const error = validator(formData[key]);
+      if (error) errors[key] = error;
+    }
+  });
+  return errors;
+};
 
 /**
  * Check if a form has any errors

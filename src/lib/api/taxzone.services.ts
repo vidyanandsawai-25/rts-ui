@@ -1,9 +1,6 @@
 import { appConfig } from "@/config/app.config";
 import type { PagedResponse, TaxZone, TaxZoneFormModel } from "@/types/taxzone.types";
 
-// ⚠️ Dev only
-// process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-
 export class ApiError extends Error {
   constructor(
     public statusCode: number,
@@ -69,7 +66,13 @@ export async function getTaxZonePagedServer(
 
 /** GET by id */
 export async function getTaxZoneById(taxZoneId: string | number): Promise<TaxZone> {
-  if (!taxZoneId) throw new Error("TaxZoneId is required");
+   if (
+    taxZoneId === null ||
+    taxZoneId === undefined ||
+    (typeof taxZoneId === "string" && taxZoneId.trim() === "")
+  ) {
+    throw new Error("TaxZoneId is required");
+  }
 
   const fetchOptions = await createFetchOptions("GET");
 
@@ -143,7 +146,7 @@ export async function createTaxZone(data: TaxZoneFormModel): Promise<void> {
 
 
 export async function updateTaxZone(data: TaxZoneFormModel): Promise<void> {
-  if (!data.taxZoneId) throw new Error("TaxZoneId is required for update");
+  if (data.taxZoneId == null) throw new Error("TaxZoneId is required for update");
   if (!data.taxZoneNo?.trim()) throw new Error("Zone No is required");
   if (!data.taxZoneType?.trim()) throw new Error("Zone Type is required");
 
@@ -168,7 +171,7 @@ export async function updateTaxZone(data: TaxZoneFormModel): Promise<void> {
 
 /** DELETE */
 export async function deleteTaxZone(taxZoneId: string | number): Promise<void> {
-  if (!taxZoneId) throw new Error("Valid taxZoneId is required");
+  if (taxZoneId == null) throw new Error("Valid taxZoneId is required");
 
   const fetchOptions = await createFetchOptions("DELETE");
 

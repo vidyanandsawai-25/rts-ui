@@ -33,7 +33,7 @@ export default function TaxZoneMaster({
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const t = useTranslations("taxZone");
-  //const tCommon = useTranslations("common");
+  const tCommon = useTranslations("common");
   const locale = useLocale();
 
   const normalizedData = useMemo(
@@ -174,12 +174,12 @@ export default function TaxZoneMaster({
           renderActions={(row) => (
             <>
               <EditButton
-                aria-label="Edit"
+                aria-label={tCommon("table.actions.edit")}
                 onClick={() =>
                   router.push(`/${locale}/property-tax/taxzone/edit/${row.taxZoneId}`)
                 }
               />
-              <DeleteButton aria-label="Delete" onClick={() => handleDelete(row)} />
+              <DeleteButton aria-label={tCommon("table.actions.delete")} onClick={() => handleDelete(row)} />
             </>
           )}
           actionLabel={t("list.table.actions")}
