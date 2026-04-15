@@ -239,14 +239,16 @@ export function Select({
                 key={opt.value}
                 id={`${optionIdPrefix}-${index}`}
                 className={cn(
-                  "px-4 py-2 cursor-pointer transition-colors",
-                  index === highlightedIndex ? "bg-blue-100" : "hover:bg-blue-50",
+                  "px-4 py-2 transition-colors",
+                  !opt.disabled && "cursor-pointer",
+                  !opt.disabled && (index === highlightedIndex ? "bg-blue-100" : "hover:bg-blue-50"),
                   internalValue === opt.value && "text-blue-700 font-semibold bg-blue-50",
                   opt.disabled && "opacity-50 cursor-not-allowed"
                 )}
                 onClick={() => !opt.disabled && handleSelect(opt.value)}
-                onMouseEnter={() => setHighlightedIndex(index)}
+                onMouseEnter={() => !opt.disabled && setHighlightedIndex(index)}
                 aria-selected={internalValue === opt.value}
+                aria-disabled={opt.disabled || undefined}
                 role="option"
                 tabIndex={-1}
               >

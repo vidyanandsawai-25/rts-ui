@@ -81,13 +81,17 @@ function normalizeConstructionType(data: Record<string, unknown>): ConstructionT
   // Normalize optional fields with safe defaults
   const searchSequence = Number(data.searchSequence);
 
+  // Validate and normalize createdDate - use current date if missing
+  const createdDateStr = String(data.createdDate ?? "").trim();
+  const createdDate = createdDateStr || new Date().toISOString();
+
   return {
     constructionTypeId,
     constructionCode,
     description,
     searchSequence: Number.isFinite(searchSequence) ? searchSequence : 0,
     isActive: Boolean(data.isActive),
-    createdDate: String(data.createdDate ?? ""),
+    createdDate,
     updatedDate: data.updatedDate != null ? String(data.updatedDate) : null,
   };
 }
