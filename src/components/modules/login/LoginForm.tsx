@@ -2,6 +2,7 @@
 
 import React, { useState, useActionState, useCallback } from 'react';
 import { useFormStatus } from 'react-dom';
+import Image from 'next/image';
 import { Eye, EyeOff, User, Lock, Landmark } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -21,6 +22,32 @@ import type { UlbMaster } from '@/types/master.types';
 
 const LOGIN_PRIMARY_SUBMIT_CLASS =
   'w-full max-w-[280px] bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 text-lg rounded-xl shadow-lg shadow-cyan-500/30 transition-all duration-300';
+
+/** Same idea as `HeaderCouncilLogo`: `next/image`, error → Landmark fallback (login card has no letter fallback). */
+function LoginFormCouncilLogo({ logoSrc, title }: { logoSrc: string; title: string }) {
+  const [logoHasError, setLogoHasError] = useState(false);
+  if (logoHasError) {
+    return (
+      <div
+        className="flex h-full w-full items-center justify-center rounded-xl border border-cyan-200/60 bg-cyan-50/80 text-cyan-600"
+        aria-hidden
+      >
+        <Landmark className="h-14 w-14 opacity-90" strokeWidth={1.25} />
+      </div>
+    );
+  }
+  return (
+    <Image
+      src={logoSrc}
+      alt={title ? `${title} Logo` : 'Logo'}
+      width={96}
+      height={112}
+      className="h-full w-full object-contain drop-shadow-md"
+      onError={() => setLogoHasError(true)}
+      unoptimized
+    />
+  );
+}
 
 function useLoginT() {
   const tc = useTranslations('common');
@@ -147,8 +174,8 @@ export const LoginForm = ({
 
   const ulb = ulbData as (UlbMaster & { logoUrl?: string }) | undefined;
   const logoSrc = (ulb?.logoUrl || ulb?.ulbLogo || '').trim();
-  const title = ulbData?.ulbName || 'Sthapatya Consultant (I) Pvt.Ltd';
-  const subTitle = ulbData?.ulbNameLocal || 'स्थापत्य कन्सल्टंट्स (इंडिया) प्रायव्हेट लिमिटेड';
+  const title = (ulbData?.ulbName ?? '').trim();
+  const subTitle = (ulbData?.ulbNameLocal ?? '').trim();
 
   const [credState, credAction] = useActionState(loginCredentialsFormAction, null);
 
@@ -205,12 +232,7 @@ export const LoginForm = ({
           <motion.div whileHover={{ scale: 1.05 }} className="relative mb-6 drop-shadow-lg">
             <div className="relative flex h-28 w-24 items-center justify-center">
               {logoSrc ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={logoSrc}
-                  alt={`${title} Logo`}
-                  className="h-full w-full object-contain drop-shadow-md"
-                />
+                <LoginFormCouncilLogo key={logoSrc} logoSrc={logoSrc} title={title} />
               ) : (
                 <div
                   className="flex h-full w-full items-center justify-center rounded-xl border border-cyan-200/60 bg-cyan-50/80 text-cyan-600"
@@ -222,8 +244,12 @@ export const LoginForm = ({
             </div>
           </motion.div>
 
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900">{title}</h1>
-          <h2 className="text-lg font-medium text-gray-600">{subTitle}</h2>
+          {title ? (
+            <h1 className="text-2xl font-bold tracking-tight text-gray-900">{title}</h1>
+          ) : null}
+          {subTitle ? (
+            <h2 className="text-lg font-medium text-gray-600">{subTitle}</h2>
+          ) : null}
 
           <div className="flex w-full items-center justify-center gap-2 py-4">
             <div className="h-[1px] w-16 bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent" />

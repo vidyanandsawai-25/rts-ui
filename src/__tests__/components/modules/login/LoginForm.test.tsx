@@ -29,12 +29,10 @@ describe('LoginForm', () => {
     mockLoginAction.mockResolvedValue(null);
   });
 
-  it('renders default branding when ulbData is omitted', () => {
+  it('renders without council headings when ulbData is omitted', () => {
     renderWithIntl(<LoginForm locale="en" />);
-    expect(
-      screen.getByRole('heading', { level: 1, name: /Sthapatya Consultant/i })
-    ).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { level: 1 })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { level: 2 })).not.toBeInTheDocument();
     expect(screen.getByText(String(enCommon.login.title))).toBeInTheDocument();
   });
 

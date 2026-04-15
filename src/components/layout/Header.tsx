@@ -21,10 +21,10 @@ const menuNavBtnClass =
   'h-auto w-full rounded-none justify-start px-4 py-2.5 text-left text-sm font-normal text-blue-50/95 hover:bg-white/10 !text-blue-50/95';
 
 const avatarBadgeClass =
-  '!flex !h-9 !w-9 !min-h-9 !min-w-9 !items-center !justify-center !rounded-full !border-2 !border-white/25 !bg-gradient-to-br !from-orange-400 !to-pink-500 !p-0 !text-sm !font-bold !text-white !shadow-inner';
+  '!flex !h-9 !w-9 !shrink-0 !min-h-9 !min-w-9 !items-center !justify-center !rounded-full !border-2 !border-white/25 !bg-gradient-to-br !from-orange-400 !to-pink-500 !p-0 !text-sm !font-bold !text-white !shadow-inner';
 
 const avatarBadgeMenuClass =
-  '!flex !h-11 !w-11 !min-h-11 !min-w-11 !items-center !justify-center !rounded-full !border-2 !border-white/25 !bg-gradient-to-br !from-orange-400 !to-pink-500 !p-0 !text-sm !font-bold !text-white !shadow-inner';
+  '!flex !h-11 !w-11 !shrink-0 !min-h-11 !min-w-11 !items-center !justify-center !rounded-full !border-2 !border-white/25 !bg-gradient-to-br !from-orange-400 !to-pink-500 !p-0 !text-sm !font-bold !text-white !shadow-inner';
 
 /** Isolated logo + error state so `logoSrc` changes remount and clear errors without an effect. */
 function HeaderCouncilLogo({
@@ -185,7 +185,7 @@ export function Header({ ulbData, userDisplayName, clientIp }: HeaderProps) {
   }, [ulbData?.ulbCode, title]);
 
   const userInitial = (userDisplayName?.trim().charAt(0) || '').toUpperCase();
-  const displayName = userDisplayName?.trim() || t('app.defaultUser');
+  const displayName = userDisplayName?.trim() ?? '';
   const ulbCodeRaw = sanitizeInput(ulbData?.ulbCode ?? '') || '';
   const idSubtitle = ulbCodeRaw ? `ID: ${ulbCodeRaw}-${new Date().getFullYear()}` : '';
   const ipDisplay = clientIp?.trim() || t('userMenu.ipUnavailable');
@@ -247,7 +247,7 @@ export function Header({ ulbData, userDisplayName, clientIp }: HeaderProps) {
 
           <div
             ref={menuRef}
-            className="relative z-[60] flex shrink-0 items-center self-center overflow-visible pl-1 md:pl-2"
+            className="relative z-[60] flex shrink-0 items-center self-center overflow-visible pl-2"
           >
             <Button
               type="button"
@@ -260,13 +260,13 @@ export function Header({ ulbData, userDisplayName, clientIp }: HeaderProps) {
                 setLangOpen(false);
                 setMenuOpen((open) => !open);
               }}
-              className="!h-auto min-h-0 max-w-[min(100vw-5.5rem,17.5rem)] rounded-xl border border-white/25 px-3 py-2 text-white shadow-md !justify-start ring-offset-2 ring-offset-[#4b70a6] hover:brightness-110 md:min-w-[13.5rem] md:max-w-xs md:px-4"
+              className="!h-auto min-h-0 max-w-[min(100vw-5.5rem,17.5rem)] rounded-xl border border-white/25 px-4 py-2.5 text-white shadow-md !justify-start ring-offset-2 ring-offset-[#4b70a6] hover:brightness-110 md:min-w-[13.5rem] md:max-w-xs [&>span]:flex [&>span]:w-full [&>span]:min-w-0 [&>span]:items-center"
               style={{
                 background: `linear-gradient(to right, ${HEADER_COLORS.userCardFrom}f0, ${HEADER_COLORS.userCardTo}f0)`,
               }}
             >
               <span className="flex w-full min-w-0 flex-row items-center justify-between gap-3">
-                <span className="flex min-w-0 flex-1 flex-col items-start justify-center gap-0.5 leading-tight">
+                <span className="flex min-w-0 flex-1 flex-col items-start gap-0.5 self-center leading-tight">
                   <span className="w-full truncate text-left text-xs font-semibold md:text-sm">
                     {displayName}
                   </span>
@@ -279,7 +279,7 @@ export function Header({ ulbData, userDisplayName, clientIp }: HeaderProps) {
                 <Badge
                   variant="outline"
                   size="lg"
-                  className={avatarBadgeClass}
+                  className={`${avatarBadgeClass} self-center`}
                   aria-hidden={!userInitial}
                 >
                   {userInitial || <User className="h-4 w-4" strokeWidth={2} aria-hidden />}
@@ -303,7 +303,7 @@ export function Header({ ulbData, userDisplayName, clientIp }: HeaderProps) {
                   className="absolute right-0 top-full z-[70] mt-1.5 w-[min(calc(100vw-2rem),20rem)] max-h-[min(70vh,calc(100dvh-5.5rem))] overflow-y-auto overflow-x-hidden rounded-2xl border-white/15 bg-[#0a1628]/98 py-1 text-white shadow-2xl backdrop-blur-xl !shadow-2xl"
                 >
                   <div className="flex items-center gap-3 border-b border-white/10 px-4 py-3">
-                    <div className="flex min-w-0 flex-1 flex-col">
+                    <div className="flex min-w-0 flex-1 flex-col gap-0.5 self-center">
                       <span className="truncate text-sm font-semibold">{displayName}</span>
                       {ulbCodeRaw ? (
                         <span className="truncate text-xs uppercase tracking-wide text-blue-200/90">
@@ -314,7 +314,7 @@ export function Header({ ulbData, userDisplayName, clientIp }: HeaderProps) {
                     <Badge
                       variant="outline"
                       size="lg"
-                      className={avatarBadgeMenuClass}
+                      className={`${avatarBadgeMenuClass} self-center`}
                       aria-hidden={!userInitial}
                     >
                       {userInitial || <User className="h-5 w-5" strokeWidth={2} aria-hidden />}
