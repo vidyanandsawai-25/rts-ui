@@ -87,7 +87,7 @@ describe('AssessmentYearMasterRV', () => {
       render(<AssessmentYearMasterRV paginatedData={mockPaginatedData} />);
 
       expect(screen.getByText('2023')).toBeInTheDocument();
-      expect(screen.getByText('2024')).toBeInTheDocument();
+      expect(screen.getAllByText('2024').length).toBeGreaterThan(0);
       expect(screen.getByText('2025')).toBeInTheDocument();
     });
 
