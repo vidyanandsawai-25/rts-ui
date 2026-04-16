@@ -19,7 +19,12 @@ import {
 import { ConstructionTypeFormModel, ConstructionType } from "@/types/construction.types";
 import { cn } from "@/lib/utils/cn";
 import type React from "react";
-import { CONSTRUCTION_CODE_REGEX, CONSTRUCTION_CODE_SANITIZE, DESCRIPTION_REGEX, DESCRIPTION_SANITIZE } from "@/lib/utils/validation";
+import { 
+  CODE_SANITIZE, 
+  DESCRIPTION_SANITIZE, 
+  validateForm, 
+  commonValidations 
+} from "@/lib/utils/validation";
 
 const CONSTRUCTION_CODE_MAX = 7;
 const DESCRIPTION_MAX = 100;
@@ -62,39 +67,26 @@ export default function ConstructionTypeForm({
     router.push(`/${locale}/property-tax/constructiontype`);
   }, [router, locale, setOpen]);
 
+  /* ================= VALIDATION SCHEMA ================= */
+  const validationSchema = {
+    constructionCode: commonValidations.masterCode(t, CONSTRUCTION_CODE_MAX, {
+      required: 'form.validation.constructionCodeRequired',
+      format: 'form.validation.constructionCodeFormat',
+      maxLength: 'form.validation.constructionCodeMaxLength',
+    }),
+    description: commonValidations.masterDescription(t, DESCRIPTION_MAX, {
+      required: 'form.validation.descriptionRequired',
+      format: 'form.validation.descriptionFormat',
+      maxLength: 'form.validation.descriptionMaxLength',
+    }),
+    searchSequence: commonValidations.masterSearchSequence(t, 'form.validation.sequenceInvalid'),
+    isActive: commonValidations.masterActiveStatus(t, isEdit, 'form.validation.mustBeActive'),
+  };
+
   /* ================= VALIDATION ================= */
   const validate = useCallback(
     (data: ConstructionTypeFormModel): Partial<Record<keyof ConstructionTypeFormModel, string>> => {
-      const e: Partial<Record<keyof ConstructionTypeFormModel, string>> = {};
-
-      const constructionCode = data.constructionCode.trim();
-      const description = data.description.trim();
-
-      if (!constructionCode) {
-        e.constructionCode = t("form.validation.constructionCodeRequired");
-      } else if (constructionCode.length > CONSTRUCTION_CODE_MAX) {
-        e.constructionCode = t("form.validation.constructionCodeMaxLength");
-      } else if (!CONSTRUCTION_CODE_REGEX.test(constructionCode)) {
-        e.constructionCode = t("form.validation.constructionCodeFormat");
-      }
-
-      if (!description) {
-        e.description = t("form.validation.descriptionRequired");
-      } else if (description.length > DESCRIPTION_MAX) {
-        e.description = t("form.validation.descriptionMaxLength");
-      } else if (!DESCRIPTION_REGEX.test(description)) {
-        e.description = t("form.validation.descriptionFormat");
-      }
-
-      if (!Number.isFinite(data.searchSequence) || data.searchSequence < 0) {
-        e.searchSequence = t("form.validation.sequenceInvalid");
-      }
-
-      if (!data.isActive && !isEdit) {
-        e.isActive = t("form.validation.mustBeActive");
-      }
-
-      return e;
+      return validateForm(data, validationSchema);
     },
     [isEdit, t]
   );
@@ -116,7 +108,7 @@ export default function ConstructionTypeForm({
 
     if (name === "constructionCode") {
       // Only allow alphanumeric characters using shared sanitize regex
-      newValue = newValue.replace(CONSTRUCTION_CODE_SANITIZE, "");
+      newValue = newValue.replace(CODE_SANITIZE, "");
       if (newValue.length > CONSTRUCTION_CODE_MAX) {
         newValue = newValue.substring(0, CONSTRUCTION_CODE_MAX);
       }

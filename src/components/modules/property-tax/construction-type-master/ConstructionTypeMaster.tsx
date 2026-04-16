@@ -7,26 +7,13 @@ import { HardHat } from "lucide-react";
 import { toast } from "sonner";
 import { MasterTable } from "@/components/common/MasterTable";
 import { EditButton, DeleteButton } from "@/components/common/ActionButtons";
-import type { ConstructionType } from "@/types/construction.types";
+import type { ConstructionType, ConstructionTypeProps } from "@/types/construction.types";
 import { deleteConstructionTypeAction } from "@/app/[locale]/property-tax/constructiontype/action";
 import TableHeader from "@/components/common/TableHeader";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { PageContainer, SearchInput, Select } from "@/components/common";
 import { getConstructionTypeColumns } from "./ConstructionTypeColumns";
 import { TEXT_SANITIZE } from "@/lib/utils/validation";
-
-
-
-/* ================= PROPS ================= */
-interface Props {
-  data: ConstructionType[];
-  pageNumber: number;
-  pageSize: number;
-  totalCount: number;
-  totalPages: number;
-  sortBy?: string;
-  sortOrder?: string;
-}
 
 /* ================= PAGE ================= */
 export function ConstructionTypeMaster({
@@ -37,7 +24,7 @@ export function ConstructionTypeMaster({
   totalPages,
   sortBy,
   sortOrder,
-}: Props): React.ReactElement {
+}: ConstructionTypeProps): React.ReactElement {
   const router = useRouter();
   const searchParams = useSearchParams();
 

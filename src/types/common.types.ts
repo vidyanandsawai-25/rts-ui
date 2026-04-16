@@ -84,3 +84,13 @@ export interface RadioGroupItemProps extends Omit<
 > {
   value: string;
 }
+
+export interface PagedResponse<T> {
+  items: T[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+  hasPrevious: boolean;
+  hasNext: boolean;
+}

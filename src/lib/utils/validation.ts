@@ -1,15 +1,43 @@
 /**
  * Common validation functions for forms
+ * 
+ * @module validation
+ * 
+ * ## Exports
+ * 
+ * ### Constants (Regex & Sanitization)
+ * - `CODE_REGEX` - Validates alphanumeric with space/hyphen (A-Z, a-z, 0-9, space, -)
+ * - `CODE_SANITIZE` - Removes invalid characters for code fields
+ * - `DESCRIPTION_REGEX` - Validates multilingual text with punctuation
+ * - `DESCRIPTION_SANITIZE` - Removes invalid characters for descriptions
+ * - `TEXT_SANITIZE` - Generic text sanitization
+ * - `TEXT_ALLOWED` - Generic text validation
+ * - `SEARCH_KEY_REGEX` - Search key validation
+ * 
+ * ### Functions
+ * - `validateForm(data, schema)` - Generic form validation function
+ * - `hasErrors(errors)` - Check if validation errors exist
+ * - `createMasterValidationSchema(t, isEdit, config)` - Factory for master form validators
+ * 
+ * ### Validators (commonValidations)
+ * - `masterCode(t, maxLength, messageKeys)` - Generic code validation for all masters
+ * - `masterDescription(t, maxLength, messageKeys)` - Generic description validation for all masters
+ * - `masterSearchSequence(t, messageKey)` - Generic search sequence validation
+ * - `masterActiveStatus(t, isEdit, messageKey)` - Generic active status validation
+ * 
+ * ### Helpers
+ * - `constructionValidators` - Backward compatibility helpers for construction module
+ * 
+ * @see validation.examples.md for usage examples
  */
 
 export type Validator = (value: unknown) => string | undefined;
 
 /* ================= CONSTANTS ================= */
-//ConstructionTypeMaster 
-
-// Construction Code: Allow alphanumeric characters plus spaces and hyphens (A-Z, a-z, 0-9, space, -)
-export const CONSTRUCTION_CODE_REGEX = /^[A-Za-z0-9 -]+$/;
-export const CONSTRUCTION_CODE_SANITIZE = /[^A-Za-z0-9 -]/g; // Remove any characters except alphanumeric, space, and hyphen
+// Generic Code Validation: Allow alphanumeric characters plus spaces and hyphens (A-Z, a-z, 0-9, space, -)
+// Used across all modules (Construction, Tax Zone, etc.)
+export const CODE_REGEX = /^[A-Za-z0-9 -]+$/;
+export const CODE_SANITIZE = /[^A-Za-z0-9 -]/g; // Remove any characters except alphanumeric, space, and hyphen
 
 // Description: Allow all languages (Marathi, Hindi, English) with basic punctuation
 export const DESCRIPTION_REGEX = /^[\p{L}\p{M}\p{N}\s\/,.\-()]+$/u;
@@ -45,47 +73,209 @@ export const validateForm = (data: unknown, schema: Record<string, Validator>): 
 export const hasErrors = (errors: Record<string, string>) => Object.keys(errors).length > 0;
 
 /**
- * Common validation rules
+ * Common validation rules for Master Forms
+ * These validators are generic and can be used across all master forms (Construction, Tax Zone, etc.)
  */
 export const commonValidations = {
   /**
-   * Validation for codes (required, alphanumeric, max length)
+   * Generic master code validation (alphanumeric with space/hyphen)
+   * Used for: Construction Code, Tax Zone Code, etc.
+   * 
+   * @param t - Translation function
+   * @param maxLength - Maximum allowed length
+   * @param messageKeys - Custom translation keys for errors
    */
-  code: (
-    _label: string,
-    t: (key: string, values?: Record<string, string | number | Date>) => string
-  ): Validator => (value: unknown) => {
-    const strVal = String(value || "");
-    if (!strVal || !strVal.trim()) return t('validation.required');
-    if (!CONSTRUCTION_CODE_REGEX.test(strVal)) return t('validation.invalidFormat');
-    if (strVal.length > 50) return t('validation.maxLength', { count: 50 });
-    return undefined;
-  },
-
-  /**
-   * Validation for names (required, max length)
-   */
-  name: (
-    _label: string,
-    t: (key: string, values?: Record<string, string | number | Date>) => string
-  ): Validator => (value: unknown) => {
-    const strVal = String(value || "");
-    if (!strVal || !strVal.trim()) return t('validation.required');
-    if (strVal.length > 100) return t('validation.maxLength', { count: 100 });
-    return undefined;
-  },
-
-  /**
-   * Validation for descriptions (optional by default, max length)
-   */
-  description: (
-    _label: string,
+  masterCode: (
     t: (key: string, values?: Record<string, string | number | Date>) => string,
-    required: boolean = false
+    maxLength: number = 50,
+    messageKeys?: {
+      required?: string;
+      format?: string;
+      maxLength?: string;
+    }
   ): Validator => (value: unknown) => {
-    const strVal = String(value || "");
-    if (required && (!strVal || !strVal.trim())) return t('validation.required');
-    if (strVal && strVal.length > 500) return t('validation.maxLength', { count: 500 });
+    const strVal = String(value || "").trim();
+    
+    const keys = {
+      required: messageKeys?.required || 'form.validation.codeRequired',
+      format: messageKeys?.format || 'form.validation.codeFormat',
+      maxLength: messageKeys?.maxLength || 'form.validation.codeMaxLength',
+    };
+    
+    if (!strVal) return t(keys.required);
+    if (strVal.length > maxLength) return t(keys.maxLength, { count: maxLength });
+    if (!CODE_REGEX.test(strVal)) return t(keys.format);
+    return undefined;
+  },
+
+  /**
+   * Generic master description validation (multilingual support)
+   * Used for: Construction Description, Tax Zone Description, etc.
+   * 
+   * @param t - Translation function
+   * @param maxLength - Maximum allowed length
+   * @param messageKeys - Custom translation keys for errors
+   */
+  masterDescription: (
+    t: (key: string, values?: Record<string, string | number | Date>) => string,
+    maxLength: number = 100,
+    messageKeys?: {
+      required?: string;
+      format?: string;
+      maxLength?: string;
+    }
+  ): Validator => (value: unknown) => {
+    const strVal = String(value || "").trim();
+    
+    const keys = {
+      required: messageKeys?.required || 'form.validation.descriptionRequired',
+      format: messageKeys?.format || 'form.validation.descriptionFormat',
+      maxLength: messageKeys?.maxLength || 'form.validation.descriptionMaxLength',
+    };
+    
+    if (!strVal) return t(keys.required);
+    if (strVal.length > maxLength) return t(keys.maxLength, { count: maxLength });
+    if (!DESCRIPTION_REGEX.test(strVal)) return t(keys.format);
+    return undefined;
+  },
+
+  /**
+   * Generic search sequence validation
+   * Used across all master forms
+   * 
+   * @param t - Translation function
+   * @param messageKey - Custom translation key for invalid sequence error
+   */
+  masterSearchSequence: (
+    t: (key: string, values?: Record<string, string | number | Date>) => string,
+    messageKey?: string
+  ): Validator => (value: unknown) => {
+    const numVal = Number(value);
+    const key = messageKey || 'form.validation.sequenceInvalid';
+    
+    if (!Number.isFinite(numVal) || numVal < 0) {
+      return t(key);
+    }
+    return undefined;
+  },
+
+  /**
+   * Generic active status validation
+   * Used across all master forms (new records must be active)
+   * 
+   * @param t - Translation function
+   * @param isEdit - Whether this is an edit operation
+   * @param messageKey - Custom translation key for must be active error
+   */
+  masterActiveStatus: (
+    t: (key: string, values?: Record<string, string | number | Date>) => string,
+    isEdit: boolean,
+    messageKey?: string
+  ): Validator => (value: unknown) => {
+    const isActive = Boolean(value);
+    const key = messageKey || 'form.validation.mustBeActive';
+    
+    if (!isActive && !isEdit) {
+      return t(key);
+    }
     return undefined;
   }
+};
+
+/**
+ * Helper factory to create master form validation schema
+ * Simplifies creating validators for master forms with consistent naming
+ * 
+ * @example
+ * // For Construction Type Master
+ * const schema = createMasterValidationSchema(t, isEdit, {
+ *   code: { maxLength: 7, messageKeys: { required: 'form.validation.constructionCodeRequired' } },
+ *   description: { maxLength: 100 },
+ *   searchSequence: true,
+ *   activeStatus: true
+ * });
+ */
+export const createMasterValidationSchema = (
+  t: (key: string, values?: Record<string, string | number | Date>) => string,
+  isEdit: boolean,
+  config: {
+    code?: {
+      maxLength?: number;
+      messageKeys?: {
+        required?: string;
+        format?: string;
+        maxLength?: string;
+      };
+    };
+    description?: {
+      maxLength?: number;
+      messageKeys?: {
+        required?: string;
+        format?: string;
+        maxLength?: string;
+      };
+    };
+    searchSequence?: boolean | { messageKey?: string };
+    activeStatus?: boolean | { messageKey?: string };
+  }
+) => {
+  const schema: Record<string, Validator> = {};
+
+  if (config.code) {
+    schema.code = commonValidations.masterCode(
+      t,
+      config.code.maxLength,
+      config.code.messageKeys
+    );
+  }
+
+  if (config.description) {
+    schema.description = commonValidations.masterDescription(
+      t,
+      config.description.maxLength,
+      config.description.messageKeys
+    );
+  }
+
+  if (config.searchSequence) {
+    const messageKey = typeof config.searchSequence === 'object' 
+      ? config.searchSequence.messageKey 
+      : undefined;
+    schema.searchSequence = commonValidations.masterSearchSequence(t, messageKey);
+  }
+
+  if (config.activeStatus) {
+    const messageKey = typeof config.activeStatus === 'object' 
+      ? config.activeStatus.messageKey 
+      : undefined;
+    schema.isActive = commonValidations.masterActiveStatus(t, isEdit, messageKey);
+  }
+
+  return schema;
+};
+
+/**
+ * Backward compatibility - Construction-specific validators
+ * These use the generic master validators with construction-specific message keys
+ */
+export const constructionValidators = {
+  code: (t: (key: string, values?: Record<string, string | number | Date>) => string, maxLength: number = 7) =>
+    commonValidations.masterCode(t, maxLength, {
+      required: 'form.validation.constructionCodeRequired',
+      format: 'form.validation.constructionCodeFormat',
+      maxLength: 'form.validation.constructionCodeMaxLength',
+    }),
+  
+  description: (t: (key: string, values?: Record<string, string | number | Date>) => string, maxLength: number = 100) =>
+    commonValidations.masterDescription(t, maxLength, {
+      required: 'form.validation.descriptionRequired',
+      format: 'form.validation.descriptionFormat',
+      maxLength: 'form.validation.descriptionMaxLength',
+    }),
+  
+  searchSequence: (t: (key: string, values?: Record<string, string | number | Date>) => string) =>
+    commonValidations.masterSearchSequence(t, 'form.validation.sequenceInvalid'),
+  
+  activeStatus: (t: (key: string, values?: Record<string, string | number | Date>) => string, isEdit: boolean) =>
+    commonValidations.masterActiveStatus(t, isEdit, 'form.validation.mustBeActive'),
 };

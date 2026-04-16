@@ -1,4 +1,4 @@
-import { ApiResponse } from "./common.types";
+import { ApiResponse, PagedResponse } from "./common.types";
 
 /** 
  * Form model for creating and editing construction types
@@ -28,15 +28,15 @@ export interface ConstructionType {
   updatedDate: string | null;
 }
 
-export interface PagedResponse<T> {
-  items: T[];
-  totalCount: number;
-  pageNumber: number;
-  pageSize: number;
-  totalPages: number;
-  hasPrevious: boolean;
-  hasNext: boolean;
-}
+// export interface PagedResponse<T> {
+//   items: T[];
+//   totalCount: number;
+//   pageNumber: number;
+//   pageSize: number;
+//   totalPages: number;
+//   hasPrevious: boolean;
+//   hasNext: boolean;
+// }
 
 /**
  * API payload for creating a new construction type
@@ -50,6 +50,15 @@ export interface ConstructionTypeCreatePayload {
   createdDate?: string;
 }
 
+export interface ConstructionTypeProps {
+  data: ConstructionType[];
+  pageNumber: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+  sortBy?: string;
+  sortOrder?: string;
+}
 /**
  * Paginated response wrapper for list endpoints
  */

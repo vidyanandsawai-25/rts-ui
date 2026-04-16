@@ -3,7 +3,8 @@ import { revalidatePath } from "next/cache";
 import { locales } from "@/i18n/config";
 import {createConstructionType, deleteConstructionType, getConstructionPaged, getConstructionTypeById, updateConstructionType } from "@/lib/api/construction.services";
 import { ApiError } from "@/lib/utils/api";
-import { ConstructionType, ConstructionTypeFormModel, PagedResponse } from "@/types/construction.types";
+import { ConstructionType, ConstructionTypeFormModel} from "@/types/construction.types";
+import { PagedResponse } from "@/types/common.types";
 export async function fetchConstructionPagedServerAction(
   pageNumber: number,
   pageSize: number,
