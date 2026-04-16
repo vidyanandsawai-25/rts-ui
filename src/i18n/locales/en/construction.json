@@ -57,8 +57,8 @@
       "validation": {
         "constructionCodeRequired": "Construction type is required",
         "constructionCodeMaxLength": "Maximum length is 7 characters",
-        "constructionCodeFormat": "Invalid format. Please remove unsupported special characters.",
-        "constructionCodeEnglishOnly": "Only English letters, numbers, spaces, and hyphens allowed. Marathi/Hindi not supported.",
+        "constructionCodeFormat": "Invalid format. Only English letters, numbers, and underscore are allowed.",
+        "constructionCodeEnglishOnly": "Only English letters, numbers, and underscore are allowed. Marathi/Hindi not supported.",
         "constructionCodeExists": "This Construction Code already exists. Please use a different code.",
         "descriptionRequired": "Description is required",
         "descriptionMaxLength": "Maximum length is 100 characters",

@@ -36,12 +36,12 @@ function isConstructionTypeShape(value: unknown): value is Record<string, unknow
   }
   const obj = value as Record<string, unknown>;
 
-  // Must have an ID field
+  // Must have a valid ID field (> 0)
   if (!("constructionTypeId" in obj)) {
     return false;
   }
   const { constructionTypeId } = obj;
-  return typeof constructionTypeId === "number" && Number.isFinite(constructionTypeId);
+  return typeof constructionTypeId === "number" && Number.isFinite(constructionTypeId) && constructionTypeId > 0;
 }
 
 /**

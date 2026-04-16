@@ -57,8 +57,8 @@
       "validation": {
         "constructionCodeRequired": "निर्माण प्रकार आवश्यक है",
         "constructionCodeMaxLength": "अधिकतम लंबाई 7 वर्ण है",
-        "constructionCodeFormat": "अमान्य प्रारूप। कृपया असमर्थित विशेष वर्ण हटा दें।",
-        "constructionCodeEnglishOnly": "केवल अंग्रेजी अक्षर, संख्या, रिक्त स्थान और हाइफ़न की अनुमति है। मराठी/हिंदी समर्थित नहीं है।",
+        "constructionCodeFormat": "अमान्य प्रारूप। केवल अंग्रेजी अक्षर, संख्याएँ और अंडरस्कोर (_) की अनुमति है।",
+        "constructionCodeEnglishOnly": "केवल अंग्रेजी अक्षर, संख्याएँ और अंडरस्कोर (_) की अनुमति है। मराठी/हिंदी समर्थित नहीं है।",
         "constructionCodeExists": "यह निर्माण प्रकार पहले से मौजूद है। कृपया एक अलग प्रकार का उपयोग करें।",
         "descriptionRequired": "विवरण आवश्यक है",
         "descriptionMaxLength": "अधिकतम लंबाई 100 वर्ण है",

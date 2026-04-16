@@ -47,7 +47,7 @@ export const DESCRIPTION_SANITIZE = /[^\p{L}\p{M}\p{N}\s\/,.\-()&]/gu;
 //taxZone
 
 export const TEXT_SANITIZE = /[^\p{L}\p{M}\p{N}\s,.\-\/&]/gu; // Allow Unicode letters, marks, numbers, spaces, and basic punctuation including &
-export const TEXT_ALLOWED = /^[\p{L}\p{M}\p{N}]+(([\p{L}\p{M}\p{N},.\-\/&]|\s(?!\s))*[\p{L}\p{M}\p{N}]+)*$/u; // Validation for allowed characters, special chars in between, single space only
+export const TEXT_ALLOWED = /^[\p{L}\p{M}\p{N}]+(([\p{L}\p{M}\p{N},.\-\/&]|\s(?!\s))*[\p{L}\p{M}\p{N}]+)*$/u; // Validation for allowed characters, special chars in between, single space only, allows single char
 
 export const SEARCH_KEY_REGEX = /^[A-Za-z0-9+\-]+$/;
 /**

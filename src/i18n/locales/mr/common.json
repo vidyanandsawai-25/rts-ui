@@ -35,6 +35,18 @@
     "maxLength": "कमाल {count} वर्णांची परवानगी आहे",
     "invalidFormat": "अवैध स्वरूप"
   },
+  "form": {
+    "validation": {
+      "codeRequired": "कोड आवश्यक आहे",
+      "codeFormat": "अवैध स्वरूप। फक्त अल्फान्युमेरिक आणि अंडरस्कोर ला परवानगी आहे",
+      "codeMaxLength": "कमाल {count} वर्णांची परवानगी आहे",
+      "descriptionRequired": "वर्णन आवश्यक आहे",
+      "descriptionFormat": "वर्णनात अवैध वर्ण",
+      "descriptionMaxLength": "कमाल {count} वर्णांची परवानगी आहे",
+      "sequenceInvalid": "क्रम 0 किंवा त्यापेक्षा जास्त असला पाहिजे",
+      "mustBeActive": "नवीन रेकॉर्ड सक्रिय असले पाहिजे"
+    }
+  },
   "errors": {
     "generic": "काहीतरी चूक झाली",
     "network": "नेटवर्क त्रुटी. कृपया पुन्हा प्रयत्न करा",

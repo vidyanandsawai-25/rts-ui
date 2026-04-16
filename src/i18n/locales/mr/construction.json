@@ -57,8 +57,8 @@
       "validation": {
         "constructionCodeRequired": "बांधकाम प्रकार आवश्यक आहे",
         "constructionCodeMaxLength": "कमाल लांबी 7 वर्ण आहे",
-        "constructionCodeFormat": "फक्त अक्षरे, संख्या, रिक्त स्थाने आणि हायफन (-) वर्णांना परवानगी आहे",
-        "constructionCodeEnglishOnly": "फक्त इंग्रजी अक्षरे, संख्या, रिक्त स्थाने आणि हायफनला परवानगी आहे. मराठी/हिंदी समर्थित नाही.",
+        "constructionCodeFormat": "फक्त इंग्रजी अक्षरे, संख्या आणि अंडरस्कोर (_) वर्णांना परवानगी आहे",
+        "constructionCodeEnglishOnly": "फक्त इंग्रजी अक्षरे, संख्या आणि अंडरस्कोर (_) ला परवानगी आहे. मराठी/हिंदी समर्थित नाही.",
         "constructionCodeExists": "हा बांधकाम प्रकार आधीच अस्तित्वात आहे. कृपया वेगळा प्रकार वापरा.",
         "descriptionRequired": "वर्णन आवश्यक आहे",
         "descriptionMaxLength": "कमाल लांबी 100 वर्ण आहे",

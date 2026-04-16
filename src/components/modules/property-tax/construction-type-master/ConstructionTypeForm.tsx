@@ -376,7 +376,6 @@ export default function ConstructionTypeForm({
                     onChange={handleChange}
                     onBlur={handleBlur}
                     fullWidth
-                    required
                     className="text-gray-700"
                   />
                   <ValidationMessage

@@ -19,6 +19,7 @@ export interface ConstructionTypeFormModel {
 /**
  * Server response model for construction type data
  * Represents the complete construction type record from the database
+ * Note: Index signature allows for extensibility at integration boundaries
  */
 export interface ConstructionType {
   [key: string]: unknown;
@@ -43,12 +44,12 @@ export interface ConstructionTypeCreatePayload {
   createdDate?: string;
 }
 
-export interface ConstructionTypeProps {
+/**
+ * Props for Construction Type list component
+ * Extends PagedResponse with additional sort fields
+ */
+export interface ConstructionTypeProps extends Omit<PagedResponse<ConstructionType>, 'items' | 'hasPrevious' | 'hasNext'> {
   data: ConstructionType[];
-  pageNumber: number;
-  pageSize: number;
-  totalCount: number;
-  totalPages: number;
   sortBy?: string;
   sortOrder?: string;
 }

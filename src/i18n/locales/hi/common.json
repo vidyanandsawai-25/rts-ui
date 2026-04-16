@@ -35,6 +35,18 @@
     "maxLength": "अधिकतम {count} वर्ण की अनुमति है",
     "invalidFormat": "अमान्य प्रारूप"
   },
+  "form": {
+    "validation": {
+      "codeRequired": "कोड आवश्यक है",
+      "codeFormat": "अमान्य प्रारूप। केवल अंकीय और अंडरस्कोर की अनुमति है",
+      "codeMaxLength": "अधिकतम {count} वर्ण की अनुमति है",
+      "descriptionRequired": "विवरण आवश्यक है",
+      "descriptionFormat": "विवरण में अमान्य वर्ण",
+      "descriptionMaxLength": "अधिकतम {count} वर्ण की अनुमति है",
+      "sequenceInvalid": "क्रम 0 या उससे अधिक होना चाहिए",
+      "mustBeActive": "नए रिकॉर्ड सक्रिय होने चाहिए"
+    }
+  },
   "errors": {
     "generic": "कुछ गलत हो गया",
     "network": "नेटवर्क त्रुटि। कृपया पुनः प्रयास करें",
