@@ -60,11 +60,11 @@ const mockMessages = {
       validation: {
         zoneNoRequired: "Zone No is required",
         zoneNoMax: "Maximum length is 10 characters",
-        zoneNoFormat: "Only letters and numbers allowed",
+        zoneNoFormat: "Only letters, numbers and underscore allowed (underscore only in between)",
         zoneTypeRequired: "Zone Type is required",
-        zoneTypeFormat: "Invalid characters used",
+        zoneTypeFormat: "Only letters, numbers and basic punctuation allowed (special characters only in between, single space only)",
         remarkRequired: "Remark is required",
-        remarkFormat: "Invalid characters used",
+        remarkFormat: "Only letters, numbers and basic punctuation allowed (special characters only in between, single space only)",
         fixErrors: "Please fix validation errors",
         duplicateRecord: "This record already exists",
         duplicateError: "This record already exists. Please check Zone No and Zone Type - duplicates not allowed.",
@@ -172,9 +172,10 @@ describe("TaxZoneForm", () => {
       fireEvent.change(zoneTypeInput, { target: { value: "Residential<script>" } });
       fireEvent.change(remarkInput, { target: { value: "Test<script>alert('xss')</script>" } });
 
-      // TEXT_SANITIZE removes all special chars except ,./-
+      // DESCRIPTION_SANITIZE removes < > ' but allows parentheses and &
+      // Consecutive spaces are replaced with single space
       expect(zoneTypeInput).toHaveValue("Residentialscript");
-      expect(remarkInput).toHaveValue("Testscriptalertxss/script");
+      expect(remarkInput).toHaveValue("Testscriptalert(xss)/script");
     });
 
     it("successfully creates a new zone", async () => {

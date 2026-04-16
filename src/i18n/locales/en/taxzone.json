@@ -50,13 +50,13 @@
       "validation": {
         "zoneNoRequired": "Zone No is required",
         "zoneNoMax": "Maximum length is 10 characters",
-        "zoneNoFormat": "Only letters and numbers allowed",
+        "zoneNoFormat": "Only letters, numbers and underscore allowed (underscore only in between)",
         "zoneNoExists": "Duplicate zone number is not allowed",
         "zoneTypeRequired": "Zone Type is required",
-        "zoneTypeFormat": "Invalid characters used",
+        "zoneTypeFormat": "Only letters, numbers and basic punctuation allowed (special characters only in between, single space only)",
         "zoneTypeExists": "Duplicate zone type is not allowed",
         "remarkRequired": "Remark is required",
-        "remarkFormat": "Invalid characters used",
+        "remarkFormat": "Only letters, numbers and basic punctuation allowed (special characters only in between, single space only)",
         "fixErrors": "Please fix validation errors",
         "duplicateRecord": "This record already exists",
         "duplicateError": "This record already exists. Please check Zone No and Zone Type - duplicates not allowed."

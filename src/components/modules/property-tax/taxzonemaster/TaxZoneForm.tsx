@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils/cn";
 import { saveTaxZone } from "@/app/[locale]/property-tax/taxzone/action";
 import { Drawer } from "@/components/common/Drawer";
 import { useTranslations, useLocale } from "next-intl";
-import { TEXT_ALLOWED, TEXT_SANITIZE, ZONE_NO_ALLOWED, ZONE_NO_SANITIZE } from "@/lib/utils/validation";
+import { CODE_REGEX, CODE_SANITIZE, DESCRIPTION_REGEX, DESCRIPTION_SANITIZE } from "@/lib/utils/validation";
 
 
 
@@ -56,23 +56,26 @@ export default function TaxZoneForm({ initialData }: TaxZoneFormProps) {
   const validate = useCallback((data: TaxZoneFormModel) => {
     const e: Record<string, string> = {};
 
+    // Zone No: Use CODE_REGEX (alphanumeric, underscore only in between)
     if (!data.taxZoneNo.trim()) {
       e.taxZoneNo = t("form.validation.zoneNoRequired")
     } else if (data.taxZoneNo.length > ZONE_NO_MAX) {
       e.taxZoneNo = t("form.validation.zoneNoMax");
-    } else if (!ZONE_NO_ALLOWED.test(data.taxZoneNo)) {
+    } else if (!CODE_REGEX.test(data.taxZoneNo)) {
       e.taxZoneNo = t("form.validation.zoneNoFormat")
     }
 
+    // Zone Type: Use DESCRIPTION_REGEX (special chars in between, single space only)
     if (!data.taxZoneType.trim()) {
       e.taxZoneType = t("form.validation.zoneTypeRequired");
-    } else if (!TEXT_ALLOWED.test(data.taxZoneType)) {
+    } else if (!DESCRIPTION_REGEX.test(data.taxZoneType)) {
       e.taxZoneType = t("form.validation.zoneTypeFormat");
     }
 
+    // Remark: Use DESCRIPTION_REGEX (special chars in between, single space only)
     if (!data.remark?.trim()) {
       e.remark = t("form.validation.remarkRequired");
-    } else if (!TEXT_ALLOWED.test(data.remark)) {
+    } else if (!DESCRIPTION_REGEX.test(data.remark)) {
       e.remark = t("form.validation.remarkFormat");
     }
 
@@ -90,11 +93,12 @@ export default function TaxZoneForm({ initialData }: TaxZoneFormProps) {
 
     if (name === "taxZoneNo") {
       if (newValue.length > ZONE_NO_MAX) return;
-      newValue = newValue.replace(ZONE_NO_SANITIZE, ""); // Sanitize for Zone Number (allow marks for Devanagari)
+      newValue = newValue.replace(CODE_SANITIZE, ""); // Sanitize Zone No (alphanumeric and underscore)
     }
 
     if (name === "taxZoneType" || name === "remark") {
-      newValue = newValue.replace(TEXT_SANITIZE, ""); // Sanitize for Zone Type and Remark
+      newValue = newValue.replace(DESCRIPTION_SANITIZE, ""); // Sanitize (multilingual with punctuation)
+      newValue = newValue.replace(/\s{2,}/g, " "); // Replace consecutive spaces with single space
     }
 
     setFormData((p) => ({ ...p, [name]: newValue }));
