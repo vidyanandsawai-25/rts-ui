@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import {
@@ -68,7 +68,7 @@ export default function ConstructionTypeForm({
   }, [router, locale, setOpen]);
 
   /* ================= VALIDATION SCHEMA ================= */
-  const validationSchema = {
+  const validationSchema = useMemo(() => ({
     constructionCode: commonValidations.masterCode(t, CONSTRUCTION_CODE_MAX, {
       required: 'form.validation.constructionCodeRequired',
       format: 'form.validation.constructionCodeFormat',
@@ -81,14 +81,14 @@ export default function ConstructionTypeForm({
     }),
     searchSequence: commonValidations.masterSearchSequence(t, 'form.validation.sequenceInvalid'),
     isActive: commonValidations.masterActiveStatus(t, isEdit, 'form.validation.mustBeActive'),
-  };
+  }), [t, isEdit]);
 
   /* ================= VALIDATION ================= */
   const validate = useCallback(
     (data: ConstructionTypeFormModel): Partial<Record<keyof ConstructionTypeFormModel, string>> => {
       return validateForm(data, validationSchema);
     },
-    [isEdit, t]
+    [validationSchema]
   );
 
   const showError = (field: keyof ConstructionTypeFormModel): boolean =>

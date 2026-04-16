@@ -1,5 +1,8 @@
 import { ApiResponse, PagedResponse } from "./common.types";
 
+// Re-export common types used by construction module
+export type { PagedResponse };
+
 /** 
  * Form model for creating and editing construction types
  * Used in UI forms to capture user input
@@ -27,16 +30,6 @@ export interface ConstructionType {
   createdDate: string;
   updatedDate: string | null;
 }
-
-// export interface PagedResponse<T> {
-//   items: T[];
-//   totalCount: number;
-//   pageNumber: number;
-//   pageSize: number;
-//   totalPages: number;
-//   hasPrevious: boolean;
-//   hasNext: boolean;
-// }
 
 /**
  * API payload for creating a new construction type
