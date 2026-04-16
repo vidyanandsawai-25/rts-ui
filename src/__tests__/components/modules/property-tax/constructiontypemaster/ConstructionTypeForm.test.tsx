@@ -148,12 +148,12 @@ describe("ConstructionTypeForm", () => {
     expect(mockRouterPush).toHaveBeenCalled();
   });
 
-  it("sanitizes construction code to alphanumeric, spaces, and hyphens", async () => {
+  it("sanitizes construction code to alphanumeric and underscore only", async () => {
     render(<ConstructionTypeForm constructionTypeId={null} />);
     const input = screen.getByTestId("constructionCode") as HTMLInputElement;
-    fireEvent.change(input, { target: { value: "AB C-123@#$" } });
-    // The component should strip disallowed characters while preserving spaces and hyphens
-    expect(input.value).toBe("AB C-12");
+    fireEvent.change(input, { target: { value: "AB C-12@#$_" } });
+    // The component should strip disallowed characters (spaces, hyphens, special chars) and keep alphanumeric and underscore
+    expect(input.value).toBe("ABC12_");
   });
 
   it("limits construction code length to 7 characters", async () => {

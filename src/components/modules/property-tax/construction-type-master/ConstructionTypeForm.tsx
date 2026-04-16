@@ -58,6 +58,11 @@ export default function ConstructionTypeForm({
     updatedBy: 1,
   });
 
+  // Track searchSequence separately to allow empty string
+  const [searchSequenceValue, setSearchSequenceValue] = useState<string>(
+    initialData?.searchSequence?.toString() ?? "0"
+  );
+
   const [errors, setErrors] = useState<Partial<Record<keyof ConstructionTypeFormModel, string>>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
@@ -114,11 +119,19 @@ export default function ConstructionTypeForm({
       }
     }
 
-   
+    if (name === "searchSequence") {
+      // Allow empty string or valid number
+      setSearchSequenceValue(newValue);
+      setFormData((p) => ({
+        ...p,
+        searchSequence: newValue === "" ? 0 : Number(newValue),
+      }));
+      return;
+    }
 
     setFormData((p) => ({
       ...p,
-      [name]: name === "searchSequence" ? Number(newValue) : newValue,
+      [name]: newValue,
     }));
   };
 
@@ -127,9 +140,15 @@ export default function ConstructionTypeForm({
     const { name, value } = e.target;
     setTouched((p) => ({ ...p, [name]: true }));
 
+    // For searchSequence, if empty on blur, set to 0
+    if (name === "searchSequence" && value === "") {
+      setSearchSequenceValue("0");
+      setFormData((p) => ({ ...p, searchSequence: 0 }));
+    }
+
     const fieldErrors = validate({
       ...formData,
-      [name]: name === "searchSequence" ? Number(value) : value,
+      [name]: name === "searchSequence" ? Number(value || 0) : value,
     });
 
     setErrors((p) => {
@@ -353,7 +372,7 @@ export default function ConstructionTypeForm({
                     label={t("form.fields.searchSequence.label")}
                     type="number"
                     min={0}
-                    value={formData.searchSequence}
+                    value={searchSequenceValue}
                     onChange={handleChange}
                     onBlur={handleBlur}
                     fullWidth

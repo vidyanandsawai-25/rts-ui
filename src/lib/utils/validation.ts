@@ -6,9 +6,9 @@
  * ## Exports
  * 
  * ### Constants (Regex & Sanitization)
- * - `CODE_REGEX` - Validates alphanumeric with space/hyphen (A-Z, a-z, 0-9, space, -)
+ * - `CODE_REGEX` - Validates alphanumeric and underscore (A-Z, a-z, 0-9, _) - underscore only in between
  * - `CODE_SANITIZE` - Removes invalid characters for code fields
- * - `DESCRIPTION_REGEX` - Validates multilingual text with punctuation
+ * - `DESCRIPTION_REGEX` - Validates multilingual text with punctuation (&, -, /, etc.) - special chars only in between
  * - `DESCRIPTION_SANITIZE` - Removes invalid characters for descriptions
  * - `TEXT_SANITIZE` - Generic text sanitization
  * - `TEXT_ALLOWED` - Generic text validation
@@ -34,19 +34,21 @@
 export type Validator = (value: unknown) => string | undefined;
 
 /* ================= CONSTANTS ================= */
-// Generic Code Validation: Allow alphanumeric characters plus spaces and hyphens (A-Z, a-z, 0-9, space, -)
+// Generic Code Validation: Allow alphanumeric characters and underscore (A-Z, a-z, 0-9, _)
+// Must start and end with alphanumeric, underscore only allowed in between
 // Used across all modules (Construction, Tax Zone, etc.)
-export const CODE_REGEX = /^[A-Za-z0-9 -]+$/;
-export const CODE_SANITIZE = /[^A-Za-z0-9 -]/g; // Remove any characters except alphanumeric, space, and hyphen
+export const CODE_REGEX = /^[A-Za-z0-9]+([A-Za-z0-9_]*[A-Za-z0-9]+)*$/;
+export const CODE_SANITIZE = /[^A-Za-z0-9_]/g; // Remove any characters except alphanumeric and underscore
 
 // Description: Allow all languages (Marathi, Hindi, English) with basic punctuation
-export const DESCRIPTION_REGEX = /^[\p{L}\p{M}\p{N}\s\/,.\-()]+$/u;
-export const DESCRIPTION_SANITIZE = /[^\p{L}\p{M}\p{N}\s\/,.\-()]/gu;
+// Special characters (&, -, /, etc.) must be in between other characters
+export const DESCRIPTION_REGEX = /^[\p{L}\p{M}\p{N}]+([\p{L}\p{M}\p{N}\s\/,.\-()&]*[\p{L}\p{M}\p{N}]+)*$/u;
+export const DESCRIPTION_SANITIZE = /[^\p{L}\p{M}\p{N}\s\/,.\-()&]/gu;
 
 //taxZone
 
-export const TEXT_SANITIZE = /[^\p{L}\p{M}\p{N}\s,.\-\/]/gu; // Allow Unicode letters, marks, numbers, spaces, and basic punctuation
-export const TEXT_ALLOWED = /^[\p{L}\p{M}\p{N}\s,.\-\/]+$/u; // Validation for allowed characters
+export const TEXT_SANITIZE = /[^\p{L}\p{M}\p{N}\s,.\-\/&]/gu; // Allow Unicode letters, marks, numbers, spaces, and basic punctuation including &
+export const TEXT_ALLOWED = /^[\p{L}\p{M}\p{N}]+[\p{L}\p{M}\p{N}\s,.\-\/&]*[\p{L}\p{M}\p{N}]+$/u; // Validation for allowed characters, special chars in between
 
 export const SEARCH_KEY_REGEX = /^[A-Za-z0-9+\-]+$/;
 /**
@@ -78,7 +80,8 @@ export const hasErrors = (errors: Record<string, string>) => Object.keys(errors)
  */
 export const commonValidations = {
   /**
-   * Generic master code validation (alphanumeric with space/hyphen)
+   * Generic master code validation (alphanumeric and underscore)
+   * Underscore (_) must be in between alphanumeric characters, not at start/end
    * Used for: Construction Code, Tax Zone Code, etc.
    * 
    * @param t - Translation function
@@ -110,6 +113,7 @@ export const commonValidations = {
 
   /**
    * Generic master description validation (multilingual support)
+   * Special characters (&, -, /, etc.) must be in between other characters, not at start/end
    * Used for: Construction Description, Tax Zone Description, etc.
    * 
    * @param t - Translation function

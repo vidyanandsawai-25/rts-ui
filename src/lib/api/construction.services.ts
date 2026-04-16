@@ -2,10 +2,10 @@ import {
   ConstructionType,
   ConstructionTypeCreatePayload,
   ConstructionTypeFormModel,
-  PagedResponse,
 } from "@/types/construction.types";
 import { ApiError } from "@/lib/utils/api";
 import { apiClient } from "@/services/api.service";
+import { PagedResponse } from "@/types/common.types";
 
 /**
  * Type guard for PagedResponse<ConstructionType>
