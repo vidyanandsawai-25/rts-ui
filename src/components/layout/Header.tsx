@@ -145,16 +145,6 @@ export function Header({ ulbData, userDisplayName, clientIp }: HeaderProps) {
   const handleLogout = useCallback(async () => {
     setMenuOpen(false);
     setLangOpen(false);
-    if (typeof window !== 'undefined') {
-      try {
-        window.localStorage.clear();
-        window.sessionStorage.clear();
-      } catch (error) {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('Failed to clear web storage during logout:', error);
-        }
-      }
-    }
     const currentLocale = getLocaleFromPathname(pathname);
     await logoutAction(currentLocale);
   }, [logoutAction, pathname]);
