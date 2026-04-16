@@ -32,7 +32,7 @@ export async function saveTaxZone(id: string, formData: FormData) {
   const numericId = isUpdate ? Number(id) : undefined;
   
   const payload = {
-    taxZoneId: numericId && Number.isFinite(numericId) ? numericId : undefined,
+    taxZoneId: Number.isFinite(numericId) ? numericId : undefined,
     taxZoneNo: formData.get("taxZoneNo") as string,
     taxZoneType: formData.get("taxZoneType") as string,
     remark: (formData.get("remark") as string) || "",

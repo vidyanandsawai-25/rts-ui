@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils/cn";
 import { saveTaxZone } from "@/app/[locale]/property-tax/taxzone/action";
 import { Drawer } from "@/components/common/Drawer";
 import { useTranslations, useLocale } from "next-intl";
-import { TEXT_ALLOWED, TEXT_SANITIZE } from "@/lib/utils/validation";
+import { TEXT_ALLOWED, TEXT_SANITIZE, ZONE_NO_ALLOWED, ZONE_NO_SANITIZE } from "@/lib/utils/validation";
 
 
 
@@ -60,7 +60,7 @@ export default function TaxZoneForm({ initialData }: TaxZoneFormProps) {
       e.taxZoneNo = t("form.validation.zoneNoRequired")
     } else if (data.taxZoneNo.length > ZONE_NO_MAX) {
       e.taxZoneNo = t("form.validation.zoneNoMax");
-    } else if (!TEXT_ALLOWED.test(data.taxZoneNo)) {
+    } else if (!ZONE_NO_ALLOWED.test(data.taxZoneNo)) {
       e.taxZoneNo = t("form.validation.zoneNoFormat")
     }
 
@@ -90,7 +90,7 @@ export default function TaxZoneForm({ initialData }: TaxZoneFormProps) {
 
     if (name === "taxZoneNo") {
       if (newValue.length > ZONE_NO_MAX) return;
-      newValue = newValue.replace(/[^\p{L}\p{M}\p{N}]/gu, ""); // Sanitize for Zone Number (allow marks for Devanagari)
+      newValue = newValue.replace(ZONE_NO_SANITIZE, ""); // Sanitize for Zone Number (allow marks for Devanagari)
     }
 
     if (name === "taxZoneType" || name === "remark") {

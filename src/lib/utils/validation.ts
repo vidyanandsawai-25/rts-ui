@@ -17,6 +17,11 @@ export const DESCRIPTION_SANITIZE = /[^\p{L}\p{M}\s\/,.\-()0-9\u200C\u200D]/gu;
 
 //taxZone
 
+// Zone No: Only letters, marks (for Devanagari), and numbers (no spaces, no punctuation)
+export const ZONE_NO_ALLOWED = /^[\p{L}\p{M}\p{N}]+$/u; // Validation for Zone No (stricter)
+export const ZONE_NO_SANITIZE = /[^\p{L}\p{M}\p{N}]/gu; // Sanitize Zone No
+
+// Zone Type and Remark: Allow letters, marks, numbers, spaces, and basic punctuation
 export const TEXT_SANITIZE = /[^\p{L}\p{M}\p{N}\s,./-]/gu; // Allow Unicode letters, marks, numbers, spaces, and basic punctuation
 export const TEXT_ALLOWED = /^[\p{L}\p{M}\p{N}\s,./-]+$/u; // Validation for allowed characters
 

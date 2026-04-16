@@ -12,11 +12,7 @@ export class ApiError extends Error {
   }
 }
 
-async function getHttpsAgent(): Promise<undefined> {
-  return undefined;
-}
-
-async function createFetchOptions(method: string = "GET", body?: unknown): Promise<RequestInit> {
+function createFetchOptions(method: string = "GET", body?: unknown): RequestInit {
   const options: RequestInit = {
     method,
     cache: "no-store",
@@ -25,7 +21,6 @@ async function createFetchOptions(method: string = "GET", body?: unknown): Promi
 
   if (body) options.body = JSON.stringify(body);
 
-  await getHttpsAgent(); // no-op
   return options;
 }
 
@@ -46,7 +41,7 @@ export async function getTaxZonePagedServer(
   pageSize: number,
   searchTerm?: string
 ): Promise<PagedResponse<TaxZone>> {
-  const fetchOptions = await createFetchOptions("GET");
+  const fetchOptions = createFetchOptions("GET");
 
   const params = new URLSearchParams({
     PageNumber: pageNumber.toString(),
@@ -74,7 +69,7 @@ export async function getTaxZoneById(taxZoneId: string | number): Promise<TaxZon
     throw new Error("TaxZoneId is required");
   }
 
-  const fetchOptions = await createFetchOptions("GET");
+  const fetchOptions = createFetchOptions("GET");
 
   const response = await fetch(
     `${appConfig.api.baseUrl}/TaxZone/${taxZoneId}`,
@@ -84,24 +79,6 @@ export async function getTaxZoneById(taxZoneId: string | number): Promise<TaxZon
   await validateResponse(response, `Fetch tax zone ${taxZoneId}`);
   return response.json();
 }
-
-/** POST create */
-// export async function createTaxZone(data: TaxZoneFormModel): Promise<void> {
-//   if (!data.taxZoneNo?.trim()) throw new Error("Zone No is required");
-//   if (!data.taxZoneType?.trim()) throw new Error("Zone Type is required");
-
-//   const payload = {
-//     taxZoneNo: data.taxZoneNo.trim(),
-//     taxZoneType: data.taxZoneType.trim(),
-//     remark: data.remark?.trim() || "",
-//     createdBy: 1, // TODO: replace with auth user id
-//   };
-
-//   const fetchOptions = await createFetchOptions("POST", payload);
-
-//   const response = await fetch(`${appConfig.api.baseUrl}/TaxZone`, fetchOptions);
-//   await validateResponse(response, "Create tax zone");
-// }
 
 export async function createTaxZone(data: TaxZoneFormModel): Promise<void> {
   if (!data.taxZoneNo?.trim()) throw new Error("Zone No is required");
@@ -115,34 +92,11 @@ export async function createTaxZone(data: TaxZoneFormModel): Promise<void> {
     isActive: data.isActive, // ✅ added
   };
 
-  const fetchOptions = await createFetchOptions("POST", payload);
+  const fetchOptions = createFetchOptions("POST", payload);
   const response = await fetch(`${appConfig.api.baseUrl}/TaxZone`, fetchOptions);
 
   await validateResponse(response, "Create tax zone");
 }
-
-
-/** PUT update */
-// export async function updateTaxZone(data: TaxZoneFormModel): Promise<void> {
-//   if (!data.taxZoneNo?.trim()) throw new Error("Zone No is required for update");
-//   if (!data.taxZoneType?.trim()) throw new Error("Zone Type is required");
-
-//   const payload = {
-//     taxZoneNo: data.taxZoneNo.trim(),
-//     taxZoneType: data.taxZoneType.trim(),
-//     remark: data.remark?.trim() || "",
-//     updatedBy: 1, // TODO: replace with auth user id
-//   };
-
-//   const fetchOptions = await createFetchOptions("PUT", payload);
-
-//   const response = await fetch(
-//     `${appConfig.api.baseUrl}/TaxZone/${data.taxZoneNo}`,
-//     fetchOptions
-//   );
-
-//   await validateResponse(response, "Update tax zone");
-// }
 
 
 export async function updateTaxZone(data: TaxZoneFormModel): Promise<void> {
@@ -159,7 +113,7 @@ export async function updateTaxZone(data: TaxZoneFormModel): Promise<void> {
     isActive: data.isActive, // ✅ added
   };
 
-  const fetchOptions = await createFetchOptions("PUT", payload);
+  const fetchOptions = createFetchOptions("PUT", payload);
   const response = await fetch(
     `${appConfig.api.baseUrl}/TaxZone/${data.taxZoneId}`,
     fetchOptions
@@ -173,7 +127,7 @@ export async function updateTaxZone(data: TaxZoneFormModel): Promise<void> {
 export async function deleteTaxZone(taxZoneId: string | number): Promise<void> {
   if (taxZoneId == null) throw new Error("Valid taxZoneId is required");
 
-  const fetchOptions = await createFetchOptions("DELETE");
+  const fetchOptions = createFetchOptions("DELETE");
 
   const response = await fetch(
     `${appConfig.api.baseUrl}/TaxZone/${taxZoneId}`,
