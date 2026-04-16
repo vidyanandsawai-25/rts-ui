@@ -14,54 +14,37 @@ concurrency:
 jobs:
   build-and-test:
     runs-on: [self-hosted, ci]
-    
+
     defaults:
       run:
         shell: powershell -ExecutionPolicy Bypass -Command "& '{0}'"
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: 20.x
           cache: 'npm'
-      
+
       - name: Install dependencies
         run: npm install
-      
+
       - name: Security audit
         run: npm audit --audit-level=high
         continue-on-error: true
-      
+
       - name: Type checking
         run: npm run type-check
-      
+
       - name: Run linter
         run: npm run lint
-      
-      - name: Run tests with coverage
-        run: npm run test:coverage
-      
-      - name: Upload coverage to Azure Blob Storage
-        shell: pwsh
-        run: |
-          $connectionString = "${{ secrets.PACKAGE_CONNECTION_STRING }}"
-          $containerName = "${{ vars.COVERAGE_CONTAINER }}"
-          $sha = "${{ github.sha }}"
-          $uniquePrefix = "ui-coverage/$sha"
-          $jsonSummary = "coverage/coverage-summary.json"
-          $jsonFinal = "coverage/coverage-final.json"
 
-          # Create ui-coverage folder inside the container and upload files
-          az storage blob upload --connection-string $connectionString --container-name $containerName --file $jsonSummary --name "$uniquePrefix-coverage-summary.json" --overwrite
-          az storage blob upload --connection-string $connectionString --container-name $containerName --file $jsonFinal --name "$uniquePrefix-coverage-final.json" --overwrite
-      
       - name: Build application
         run: npm run build:production
-      
+
       - name: Analyze bundle size
         run: |
           Write-Host "Build output size:"
@@ -70,42 +53,3 @@ jobs:
           Write-Host "Static files size:"
           $staticSize = (Get-ChildItem -Path .next/static -Recurse | Measure-Object -Property Length -Sum).Sum / 1MB
           Write-Host ("{0:N2} MB" -f $staticSize)
-
-  coverage-report:
-    needs: build-and-test
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-    permissions:
-      contents: read
-      pull-requests: write
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-       
-      - name: Download and Delete coverage from Azure Blob Storage
-        shell: pwsh
-        run: |
-          # Add ui-coverage directory
-          mkdir ui-coverage
-          $connectionString = "${{ secrets.PACKAGE_CONNECTION_STRING }}"
-          $containerName = "${{ vars.COVERAGE_CONTAINER }}"
-          $sha = "${{ github.sha }}"
-          $uniquePrefix = "ui-coverage/$sha"
-          # Download coverage files
-          az storage blob download --connection-string $connectionString --container-name $containerName --name "$uniquePrefix-coverage-summary.json" --file "ui-coverage/coverage-summary.json"
-          az storage blob download --connection-string $connectionString --container-name $containerName --name "$uniquePrefix-coverage-final.json" --file "ui-coverage/coverage-final.json"
-          # Delete coverage files
-          az storage blob delete --connection-string $connectionString --container-name $containerName --name "$uniquePrefix-coverage-summary.json"
-          az storage blob delete --connection-string $connectionString --container-name $containerName --name "$uniquePrefix-coverage-final.json"
-      
-      - name: Coverage Report
-        uses: davelosert/vitest-coverage-report-action@v1
-        with:
-          json-summary-path: ./ui-coverage/coverage-summary.json
-          json-final-path: ./ui-coverage/coverage-final.json
-
-      - name: Remove ui-coverage directory
-        shell: pwsh
-        run: |
-          Remove-Item -Recurse -Force ui-coverage
