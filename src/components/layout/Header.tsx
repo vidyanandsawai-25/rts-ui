@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { User, Settings, Lock, Globe, ChevronDown, LogOut, Router, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { UlbMaster } from '@/types/master.types';
-import { Badge, Button, Card } from '@/components/common';
+import { Badge, Button, Card, Tooltip } from '@/components/common';
 import { sanitizeInput } from '@/lib/utils/security';
 import { locales, switchLocale, getLocaleFromPathname, type Locale } from '@/i18n/config';
 import { logoutAction } from '@/app/[locale]/login/actions';
@@ -151,31 +151,6 @@ export function Header({ ulbData, userDisplayName, clientIp }: HeaderProps) {
       await logoutAction(currentLocale);
     });
   }, [pathname, startLogoutTransition]);
-
-  const handleUnavailableAccountRoute = useCallback(
-    (routeName: 'profile' | 'settings' | 'change-password') => {
-      setMenuOpen(false);
-      setLangOpen(false);
-      if (process.env.NODE_ENV === 'development') {
-        console.warn(
-          `Navigation to "${routeName}" is disabled until the route is implemented (see PR / Copilot thread).`
-        );
-      }
-    },
-    []
-  );
-
-  const goProfile = useCallback(() => {
-    handleUnavailableAccountRoute('profile');
-  }, [handleUnavailableAccountRoute]);
-
-  const goSettings = useCallback(() => {
-    handleUnavailableAccountRoute('settings');
-  }, [handleUnavailableAccountRoute]);
-
-  const goChangePassword = useCallback(() => {
-    handleUnavailableAccountRoute('change-password');
-  }, [handleUnavailableAccountRoute]);
 
   const logoFallbackText = useMemo(() => {
     const code = sanitizeInput(ulbData?.ulbCode ?? '') || '';
@@ -323,42 +298,60 @@ export function Header({ ulbData, userDisplayName, clientIp }: HeaderProps) {
                   </div>
 
                   <nav className="py-1" aria-label={t('userMenu.openUserMenu')}>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className={menuNavBtnClass}
-                      onClick={goProfile}
-                    >
-                      <span className="flex w-full items-center gap-3">
-                        <User className="h-4 w-4 shrink-0 text-blue-200" aria-hidden />
-                        {t('userMenu.myProfile')}
+                    <Tooltip content={t('userMenu.comingSoon')} placement="top">
+                      <span className="block w-full">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          disabled
+                          aria-disabled
+                          aria-label={`${t('userMenu.myProfile')}: ${t('userMenu.comingSoon')}`}
+                          className={`${menuNavBtnClass} cursor-not-allowed`}
+                        >
+                          <span className="flex w-full items-center gap-3">
+                            <User className="h-4 w-4 shrink-0 text-blue-200" aria-hidden />
+                            {t('userMenu.myProfile')}
+                          </span>
+                        </Button>
                       </span>
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className={menuNavBtnClass}
-                      onClick={goSettings}
-                    >
-                      <span className="flex w-full items-center gap-3">
-                        <Settings className="h-4 w-4 shrink-0 text-blue-200" aria-hidden />
-                        {t('userMenu.settings')}
+                    </Tooltip>
+                    <Tooltip content={t('userMenu.comingSoon')} placement="top">
+                      <span className="block w-full">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          disabled
+                          aria-disabled
+                          aria-label={`${t('userMenu.settings')}: ${t('userMenu.comingSoon')}`}
+                          className={`${menuNavBtnClass} cursor-not-allowed`}
+                        >
+                          <span className="flex w-full items-center gap-3">
+                            <Settings className="h-4 w-4 shrink-0 text-blue-200" aria-hidden />
+                            {t('userMenu.settings')}
+                          </span>
+                        </Button>
                       </span>
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className={menuNavBtnClass}
-                      onClick={goChangePassword}
-                    >
-                      <span className="flex w-full items-center gap-3">
-                        <Lock className="h-4 w-4 shrink-0 text-blue-200" aria-hidden />
-                        {t('userMenu.changePassword')}
+                    </Tooltip>
+                    <Tooltip content={t('userMenu.comingSoon')} placement="top">
+                      <span className="block w-full">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          disabled
+                          aria-disabled
+                          aria-label={`${t('userMenu.changePassword')}: ${t('userMenu.comingSoon')}`}
+                          className={`${menuNavBtnClass} cursor-not-allowed`}
+                        >
+                          <span className="flex w-full items-center gap-3">
+                            <Lock className="h-4 w-4 shrink-0 text-blue-200" aria-hidden />
+                            {t('userMenu.changePassword')}
+                          </span>
+                        </Button>
                       </span>
-                    </Button>
+                    </Tooltip>
                   </nav>
 
                   <div className="border-t border-white/10 py-1">
