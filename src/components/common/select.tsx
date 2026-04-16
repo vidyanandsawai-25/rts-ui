@@ -180,6 +180,7 @@ export function Select({
         <button
           ref={buttonRef}
           type="button"
+          role="combobox"
           className={cn(
             "flex items-center justify-between w-full border text-sm rounded-md bg-white focus:outline-none focus:ring-2 transition-all",
             sizeClasses[selectSize],

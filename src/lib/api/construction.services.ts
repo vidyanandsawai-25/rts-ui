@@ -81,9 +81,15 @@ function normalizeConstructionType(data: Record<string, unknown>): ConstructionT
   // Normalize optional fields with safe defaults
   const searchSequence = Number(data.searchSequence);
 
-  // Validate and normalize createdDate - use current date if missing
+  // Validate createdDate - it's required from the backend
   const createdDateStr = String(data.createdDate ?? "").trim();
-  const createdDate = createdDateStr || new Date().toISOString();
+  if (!createdDateStr) {
+    throw new ApiError(
+      500,
+      "Invalid data received from server",
+      "Missing required field: createdDate"
+    );
+  }
 
   return {
     constructionTypeId,
@@ -91,7 +97,7 @@ function normalizeConstructionType(data: Record<string, unknown>): ConstructionT
     description,
     searchSequence: Number.isFinite(searchSequence) ? searchSequence : 0,
     isActive: Boolean(data.isActive),
-    createdDate,
+    createdDate: createdDateStr,
     updatedDate: data.updatedDate != null ? String(data.updatedDate) : null,
   };
 }

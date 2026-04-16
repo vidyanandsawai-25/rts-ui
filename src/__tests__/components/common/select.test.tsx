@@ -35,7 +35,7 @@ describe("Select", () => {
   it("opens dropdown on button click", () => {
     render(<Select options={options} />);
     // Find the button by role
-    const button = screen.getByRole("button");
+    const button = screen.getByRole("combobox");
     fireEvent.click(button);
     expect(screen.getByRole("listbox")).toBeInTheDocument();
     expect(screen.getByText("Apple")).toBeInTheDocument();
@@ -45,7 +45,7 @@ describe("Select", () => {
   it("selects option and calls onChange", () => {
     const handleChange = vi.fn();
     render(<Select options={options} onChange={handleChange} />);
-    const button = screen.getByRole("button");
+    const button = screen.getByRole("combobox");
     fireEvent.click(button);
     fireEvent.click(screen.getByText("Banana"));
     expect(handleChange).toHaveBeenCalledWith("banana");
@@ -56,7 +56,7 @@ describe("Select", () => {
   it("does not select disabled option", () => {
     const handleChange = vi.fn();
     render(<Select options={options} onChange={handleChange} />);
-    const button = screen.getByRole("button");
+    const button = screen.getByRole("combobox");
     fireEvent.click(button);
     fireEvent.click(screen.getByText("Cherry"));
     expect(handleChange).not.toHaveBeenCalled();
@@ -80,14 +80,14 @@ describe("Select", () => {
 
   it("renders as disabled", () => {
     render(<Select options={options} disabled />);
-    const button = screen.getByRole("button");
+    const button = screen.getByRole("combobox");
     expect(button).toBeDisabled();
     expect(button).toHaveClass("cursor-not-allowed");
   });
 
   it("closes dropdown on blur", () => {
     render(<Select options={options} />);
-    const button = screen.getByRole("button");
+    const button = screen.getByRole("combobox");
     fireEvent.click(button);
     expect(screen.getByRole("listbox")).toBeInTheDocument();
     // Blur the button to close the dropdown

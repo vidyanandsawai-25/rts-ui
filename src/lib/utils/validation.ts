@@ -27,8 +27,6 @@
  * 
  * ### Helpers
  * - `constructionValidators` - Backward compatibility helpers for construction module
- * 
- * @see validation.examples.md for usage examples
  */
 
 export type Validator = (value: unknown) => string | undefined;
@@ -191,13 +189,23 @@ export const commonValidations = {
  * Simplifies creating validators for master forms with consistent naming
  * 
  * @example
- * // For Construction Type Master
+ * // For Construction Type Master - map to actual form field names
  * const schema = createMasterValidationSchema(t, isEdit, {
- *   code: { maxLength: 7, messageKeys: { required: 'form.validation.constructionCodeRequired' } },
- *   description: { maxLength: 100 },
- *   searchSequence: true,
- *   activeStatus: true
+ *   code: { maxLength: 7, messageKeys: { 
+ *     required: 'form.validation.constructionCodeRequired',
+ *     format: 'form.validation.constructionCodeFormat',
+ *     maxLength: 'form.validation.constructionCodeMaxLength'
+ *   }},
+ *   description: { maxLength: 100, messageKeys: {
+ *     required: 'form.validation.descriptionRequired',
+ *     format: 'form.validation.descriptionFormat',
+ *     maxLength: 'form.validation.descriptionMaxLength'
+ *   }},
+ *   searchSequence: { messageKey: 'form.validation.sequenceInvalid' },
+ *   activeStatus: { messageKey: 'form.validation.mustBeActive' }
  * });
+ * // Then map schema keys to form model field names:
+ * // constructionCode: schema.code, description: schema.description, etc.
  */
 export const createMasterValidationSchema = (
   t: (key: string, values?: Record<string, string | number | Date>) => string,
