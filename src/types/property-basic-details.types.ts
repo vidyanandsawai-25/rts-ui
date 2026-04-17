@@ -1,7 +1,7 @@
 // PROPERTY API TYPES    
 import { PropertySocietyDetailsApiItem } from "./property-society-details.types";
 
-//  Represents a property category item from PropertyCategory API. Endpoint: GET /api/PropertyCategory
+// Represents an owner type item from OwnerType API. Endpoint: GET /api/OwnerType
 export interface OwnerTypeApiItem {
     ownerTypeId: number;
     ownerType: string;
@@ -45,7 +45,7 @@ export interface PropertyTypeApiResponse {
     hasNext: boolean;
 }
 
-//  Represents a property category item from PropertyCategory API. Endpoint: GET /api/PropertyCategory
+// Represents an owner type item from OwnerType API. Endpoint: GET /api/OwnerType
 export interface PropertyCategoryApiItem {
     id: number;
     propertyCategoryName: string;
