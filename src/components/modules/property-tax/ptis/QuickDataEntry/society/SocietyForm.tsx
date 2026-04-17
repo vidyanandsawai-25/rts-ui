@@ -350,7 +350,7 @@ const SocietyForm = ({ societyData, propertyIdSearch, locale }: SocietyFormProps
                                                 pattern="[0-9]"
                                                 value={secretaryMobileDigits[i]}
                                                 onChange={(e) => {
-                                                    const val = e.target.value.replace(/\D/, "");
+                                                      const val = e.target.value.replace(/\D/g, "").slice(0, 1);
                                                     setSecretaryMobileDigits(prev => {
                                                         const next = [...prev];
                                                         next[i] = val;

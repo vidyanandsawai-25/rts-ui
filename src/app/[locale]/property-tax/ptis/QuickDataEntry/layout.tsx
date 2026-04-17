@@ -119,7 +119,7 @@ export default function QuickDataEntryLayout({ children }: { children: React.Rea
                                             key={tab.href}
                                             href={`${tab.href}?${queryString}`}
                                             shallow={true} // Next.js 13 App Router: preserves layout & only updates segment
-                                            className={[
+                                            className={[                                              
                                                 'inline-flex items- gap-1 px-2 py-2 text-[11px] rounded-md border font-semibold transition-all hover:shadow-md',
                                                 isActive
                                                     ? `bg-gradient-to-br ${gradientClass} text-white shadow-lg`

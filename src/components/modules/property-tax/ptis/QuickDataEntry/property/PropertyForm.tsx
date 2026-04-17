@@ -93,8 +93,13 @@ const PropertyFormView = ({
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
+        if (!propertyData) {
+            toast.error(t('property.updateError'));
+            return;
+        }
+
         const formData = new FormData(e.currentTarget);
-        const pId = propertyData?.propertyId ?? 0;
+        const pId = propertyData.propertyId;
 
         // const selectedWingIdValue = String(formData.get("wingId") ?? "").trim();
         // const selectedWingId = selectedWingIdValue ? Number(selectedWingIdValue) : null;
@@ -102,8 +107,8 @@ const PropertyFormView = ({
         const selectedWing = wingList.find((wing) => wing.id === selectedWingId);
 
         const payload: UpdatePropertyBasicDetailsDto = {
-            wardId: propertyData?.wardId ?? 0,
-            taxZoneId: propertyData?.taxZoneId ?? 0,
+            wardId: propertyData.wardId,
+            taxZoneId: propertyData.taxZoneId,
             categoryId: parseId(categoryId),
             propertyTypeId: parseId(propertyTypeId) || null,
 

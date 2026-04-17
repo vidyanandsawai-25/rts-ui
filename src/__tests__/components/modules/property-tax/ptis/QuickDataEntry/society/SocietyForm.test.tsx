@@ -158,7 +158,7 @@ describe('SocietyForm', () => {
     });
 
     describe('Mobile Number Input Behavior', () => {
-        it('should auto-focus next input on entering a digit', () => {
+        it('should auto-focus next input on entering a digit', async () => {
             render(
                 <SocietyForm
                     societyData={null}
@@ -175,7 +175,7 @@ describe('SocietyForm', () => {
             fireEvent.change(firstInput, { target: { value: '9' } });
 
             // Check if value is set
-            waitFor(() => {
+            await waitFor(() => {
                 expect(firstInput.value).toBe('9');
             });
         });
@@ -200,7 +200,7 @@ describe('SocietyForm', () => {
             expect(secondInput).toBeInTheDocument();
         });
 
-        it('should only accept numeric values', () => {
+        it('should only accept numeric values', async () => {
             render(
                 <SocietyForm
                     societyData={null}
