@@ -321,9 +321,8 @@ export default function AssessmentYearMasterCV({
               );
             }}
 
-            /* ================= HEADER ================= */
 
-            headerTitle=" "
+            // headerTitle omitted to avoid empty heading
 
             headerExtra={
 

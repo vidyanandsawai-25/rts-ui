@@ -31,9 +31,9 @@ vi.mock('@/app/[locale]/property-tax/assessment-year-range/rateablevalue/action'
 
 vi.mock('@/components/common', () => ({
   useConfirm: () => ({
-    confirm: vi.fn((options) => {
+    confirm: vi.fn(async (options) => {
       if (options.onConfirm) {
-        options.onConfirm();
+        await options.onConfirm();
       }
     }),
   }),

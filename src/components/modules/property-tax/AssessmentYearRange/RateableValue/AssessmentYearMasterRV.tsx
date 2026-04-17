@@ -152,7 +152,7 @@ export default function AssessmentYearMaster({ paginatedData }: AssessmentYearMa
                 </div>
               )
             }}    
-            headerTitle=" "
+            // headerTitle omitted to avoid empty heading
             headerExtra={
               <div className="flex justify-end items-center w-full">
                 <AddButton

@@ -96,7 +96,7 @@ export async function createAssessmentYearCV(data: Partial<AssessmentYearCV>): P
   } else {
     item = resJson as Record<string, unknown>;
   }
-  return { ...item, yearId: (item.yearRangeCVId as number) || (item.yearId as number) } as AssessmentYearCV;
+  return { ...item, yearId: (item.yearRangeCVId as number) ?? (item.yearId as number) } as AssessmentYearCV;
 }
 
 export async function updateAssessmentYearCV(data: AssessmentYearCV): Promise<AssessmentYearCV> {
@@ -125,7 +125,7 @@ export async function updateAssessmentYearCV(data: AssessmentYearCV): Promise<As
   } else {
     item = resJson as Record<string, unknown>;
   }
-  return { ...item, yearId: (item.yearRangeCVId as number) || (item.yearId as number) } as AssessmentYearCV;
+  return { ...item, yearId: (item.yearRangeCVId as number) ?? (item.yearId as number) } as AssessmentYearCV;
 }
 
 export async function deleteAssessmentYearCV(id: number): Promise<void> {
@@ -153,5 +153,5 @@ export async function getAssessmentYearByIdCV(id: number): Promise<AssessmentYea
   } else {
     item = resJson as Record<string, unknown>;
   }
-  return { ...item, yearId: (item.yearRangeCVId as number) || (item.yearId as number) } as AssessmentYearCV;
+  return { ...item, yearId: (item.yearRangeCVId as number) ?? (item.yearId as number) } as AssessmentYearCV;
 }
