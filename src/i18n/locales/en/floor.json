@@ -1,3 +1,9 @@
+    "apiErrors": {
+      "duplicateRecord": "Duplicate record already exists",
+      "invalidData": "Invalid data provided",
+      "notFound": "Record not found",
+      "operationFailed": "Operation failed"
+    },
 {
   "floor": {
     "floor": "Floor",

@@ -1,3 +1,9 @@
+    "apiErrors": {
+      "duplicateRecord": "रिकॉर्ड पहले से मौजूद है",
+      "invalidData": "अमान्य डेटा प्रदान किया गया",
+      "notFound": "रिकॉर्ड नहीं मिला",
+      "operationFailed": "ऑपरेशन विफल रहा"
+    },
 {
   "floor": {
     "floor": "फ्लोर",

@@ -105,7 +105,7 @@ export default function FloorMaster({
             if (result.statusCode === 409) {
               msg = t("messages.deleteInUse");
             } else if (result.statusCode === 404) {
-              msg = t("messages.notFound");
+                msg = tCommon("errors.notFound");
             } else if (result.message) {
               msg = result.message;
             }
