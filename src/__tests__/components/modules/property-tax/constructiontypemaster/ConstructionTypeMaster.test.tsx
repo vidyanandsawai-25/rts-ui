@@ -12,10 +12,35 @@ vi.mock("next/navigation", () => ({
     })),
     redirect: vi.fn(),
 }));
-vi.mock("next-intl", () => ({
-    useTranslations: vi.fn((ns?: string) => (key: string) => ns ? `${ns}.${key}` : key),
-    useLocale: vi.fn(() => "en"),
-}));
+vi.mock("next-intl", () => {
+    // Real EN translations for sort-button keys (mirrors en/common.json table.sort.*)
+    const COMMON_SORT_STRINGS: Record<string, string> = {
+        "table.sort.verb": "Sort",
+        "table.sort.ascending": "ascending",
+        "table.sort.descending": "descending",
+        "table.sort.by": "Sort by",
+    };
+    return {
+        useTranslations: vi.fn((ns?: string) => {
+            const t = (key: string, values?: Record<string, string>) => {
+                // For the "common" namespace, return real strings for sort keys
+                if (ns === "common" && key in COMMON_SORT_STRINGS) {
+                    return COMMON_SORT_STRINGS[key];
+                }
+                let result = ns ? `${ns}.${key}` : key;
+                if (values) {
+                    Object.entries(values).forEach(([k, v]) => {
+                        result = result.replace(`{${k}}`, v);
+                    });
+                }
+                return result;
+            };
+            return t;
+        }),
+        useLocale: vi.fn(() => "en"),
+    };
+});
+
 vi.mock("@/components/common/ConfirmProvider", () => ({
     useConfirm: vi.fn(() => ({ confirm: vi.fn() })),
 }));

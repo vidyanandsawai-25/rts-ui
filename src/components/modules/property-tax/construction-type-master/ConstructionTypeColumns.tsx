@@ -20,7 +20,8 @@ function SortableHeader({
   sortBy?: string;
   sortOrder?: string;
   onSort: (key: string) => void;
-  tCommon: (key: string, values?: Record<string, string>) => string;
+  /** Returns the localized verb phrase, e.g. "Sort ascending" / "Sort by" */
+  tCommon: (key: string) => string;
 }): React.ReactElement {
   const isActive = sortBy === columnKey;
   const isAsc = isActive && sortOrder === "asc";
@@ -31,7 +32,7 @@ function SortableHeader({
       return (
         <SortAscButton
           onClick={() => onSort(columnKey)}
-          aria-label={tCommon("table.sort.ascending", { column: label })}
+          aria-label={`${tCommon("table.sort.verb")} ${label} ${tCommon("table.sort.ascending")}`}
         />
       );
     }
@@ -39,14 +40,14 @@ function SortableHeader({
       return (
         <SortDescButton
           onClick={() => onSort(columnKey)}
-          aria-label={tCommon("table.sort.descending", { column: label })}
+          aria-label={`${tCommon("table.sort.verb")} ${label} ${tCommon("table.sort.descending")}`}
         />
       );
     }
     return (
       <SortDefaultButton
         onClick={() => onSort(columnKey)}
-        aria-label={tCommon("table.sort.by", { column: label })}
+        aria-label={`${tCommon("table.sort.by")} ${label}`}
       />
     );
   };
@@ -87,9 +88,7 @@ export function getConstructionTypeColumns(
           sortBy={sortBy}
           sortOrder={sortOrder}
           onSort={onSort}
-          tCommon={(k, values) =>
-            tCommon.rich(k, values) as unknown as string
-          }
+          tCommon={(k) => tCommon(k)}
         />
       );
     }

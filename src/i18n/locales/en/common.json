@@ -197,9 +197,10 @@
       "delete": "Delete"
     },
     "sort": {
-      "ascending": "Sort {column} ascending",
-      "descending": "Sort {column} descending",
-      "by": "Sort by {column}"
+      "verb": "Sort",
+      "ascending": "ascending",
+      "descending": "descending",
+      "by": "Sort by"
     },
     "columns": {
       "srNo": "Sr. No.",
