@@ -23,13 +23,10 @@ export const getAssessmentYearRVColumns = (
     key: "isActive",
     label: t("activeStatus"),
     width: "20%",
-    render: (value: unknown) => {
-      const isActive = Boolean(value);
-      return (
-        <div className="flex justify-start">
-          <StatusBadge value={isActive} />
-        </div>
-      );
-    },
+    render: (value: unknown) => (
+      <div className="flex justify-start">
+        <StatusBadge value={value as string | number | boolean | null | undefined} />
+      </div>
+    ),
   },
 ];
