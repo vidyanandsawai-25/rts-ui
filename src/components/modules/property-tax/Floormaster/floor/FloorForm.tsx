@@ -65,7 +65,7 @@ export default function FloorForm({
     description: initialData?.description ?? "",
     sequenceNo: initialData?.sequenceNo ?? 0,
     isActive: initialData?.isActive ?? true,
-    updatedBy: 1,
+   
   });
 
   const [errors, setErrors] = useState<Partial<Record<keyof FloorFormModel, string>>>({});

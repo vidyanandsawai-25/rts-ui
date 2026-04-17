@@ -36,7 +36,7 @@ export default async function Page({
     );
 
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={null}>
       <FloorMaster 
         floorPaged={result} 
         sortBy={sortBy}
