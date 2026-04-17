@@ -306,6 +306,9 @@ const PropertyFormView = ({
                                     id="pd-taxzone"
                                     name="taxZoneNo"
                                     placeholder="Z-03"
+                                    readOnly
+                                    disabled
+                                    title={t('property.taxZoneNo')}
                                     defaultValue={propertyData?.taxZoneNo?.toString() ?? ''}
                                     className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                                 />

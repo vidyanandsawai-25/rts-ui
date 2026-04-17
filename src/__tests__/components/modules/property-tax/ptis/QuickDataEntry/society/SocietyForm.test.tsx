@@ -216,7 +216,7 @@ describe('SocietyForm', () => {
 
             fireEvent.change(firstInput, { target: { value: 'a' } });
 
-            waitFor(() => {
+            await waitFor(() => {
                 expect(firstInput.value).toBe('');
             });
         });

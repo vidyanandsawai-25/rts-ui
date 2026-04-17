@@ -82,8 +82,12 @@ export default function QuickDataEntryLayout({ children }: { children: React.Rea
                         <div className="bg-white border-b-2 border-slate-300 px-3 py-2 shadow-sm overflow-x-auto no-scrollbar">
                             <nav className="flex md:grid w-full grid-cols-7 gap-1.5 h-auto p-1 rounded-lg">
                                 {TABS.map((tab) => {
-                                    // const isActive = activeSegment === tab.href || pathname === `${baseDrawerPath}/${tab.href}`;
-                                    const isActive = activeSegment === tab.href || pathname === `/${tab.href}`;
+
+                                    const currentPath = pathname.split('?')[0];
+                                    const baseTabPath = `/${currentPath.split('/').filter(Boolean).slice(0, -1).join('/')}`;
+                                    const tabPath = `${baseTabPath}/${tab.href}`;
+                                    const tabHref = queryString ? `${tabPath}?${queryString}` : tabPath;
+                                    const isActive = activeSegment === tab.href || pathname === tabPath;
                                     const Icon = tab.icon;
 
                                     // Set gradient colors per tab
@@ -117,10 +121,9 @@ export default function QuickDataEntryLayout({ children }: { children: React.Rea
                                     return (
                                         <Link
                                             key={tab.href}
-                                            href={`${tab.href}?${queryString}`}
-                                            shallow={true} // Next.js 13 App Router: preserves layout & only updates segment
-                                            className={[                                              
-                                                'inline-flex items- gap-1 px-2 py-2 text-[11px] rounded-md border font-semibold transition-all hover:shadow-md',
+                                            href={tabHref}
+                                            className={[
+                                                'inline-flex items-center gap-1 px-2 py-2 text-[11px] rounded-md border font-semibold transition-all hover:shadow-md',
                                                 isActive
                                                     ? `bg-gradient-to-br ${gradientClass} text-white shadow-lg`
                                                     : 'bg-white text-gray-600 border-gray-300'
