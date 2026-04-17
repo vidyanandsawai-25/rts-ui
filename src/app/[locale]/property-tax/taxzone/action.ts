@@ -28,11 +28,13 @@ export async function deleteTaxZoneAction(formData: FormData) {
 
 export async function saveTaxZone(id: string, formData: FormData) {
   const locale = formData.get("locale") as string;
-  const isUpdate = id !== "" && id != null;
-  const numericId = isUpdate ? Number(id) : undefined;
+  
+  // Parse and validate id for update operations
+  const numericId = id && id.trim() !== "" ? Number(id) : undefined;
+  const isUpdate = Number.isFinite(numericId);
   
   const payload = {
-    taxZoneId: Number.isFinite(numericId) ? numericId : undefined,
+    taxZoneId: numericId,
     taxZoneNo: formData.get("taxZoneNo") as string,
     taxZoneType: formData.get("taxZoneType") as string,
     remark: (formData.get("remark") as string) || "",
