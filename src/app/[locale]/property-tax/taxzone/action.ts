@@ -20,7 +20,6 @@ export async function getTaxZoneByIdAction(taxZoneId: string | number): Promise<
 export async function deleteTaxZoneAction(formData: FormData) {
   const taxZoneId = formData.get("taxZoneId") as string;
   const locale = formData.get("locale") as string;
-  if (!taxZoneId) throw new Error("taxZoneId is required");
 
   await deleteTaxZone(taxZoneId);
   revalidatePath(`/${locale}/property-tax/taxzone`);
@@ -28,6 +27,10 @@ export async function deleteTaxZoneAction(formData: FormData) {
 
 export async function saveTaxZone(id: string, formData: FormData) {
   const locale = formData.get("locale") as string;
+  const taxZoneNo = (formData.get("taxZoneNo") as string) || "";
+  const taxZoneType = (formData.get("taxZoneType") as string) || "";
+  const remark = (formData.get("remark") as string) || "";
+  const isActive = (formData.get("isActive") as string) === "true";
   
   // Parse and validate id for update operations
   const numericId = id && id.trim() !== "" ? Number(id) : undefined;
@@ -35,10 +38,10 @@ export async function saveTaxZone(id: string, formData: FormData) {
   
   const payload = {
     taxZoneId: numericId,
-    taxZoneNo: formData.get("taxZoneNo") as string,
-    taxZoneType: formData.get("taxZoneType") as string,
-    remark: (formData.get("remark") as string) || "",
-    isActive: (formData.get("isActive") as string) === "true",
+    taxZoneNo: taxZoneNo,
+    taxZoneType: taxZoneType,
+    remark: remark,
+    isActive: isActive,
   };
 
   try {

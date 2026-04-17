@@ -76,8 +76,8 @@ export async function getTaxZoneById(taxZoneId: string | number): Promise<TaxZon
 
 export async function createTaxZone(data: TaxZoneFormModel): Promise<void> {
   const payload = {
-    taxZoneNo: data.taxZoneNo.trim(),
-    taxZoneType: data.taxZoneType.trim(),
+    taxZoneNo: data.taxZoneNo?.trim() || "",
+    taxZoneType: data.taxZoneType?.trim() || "",
     remark: data.remark?.trim() || "",
     isActive: data.isActive,
   };
@@ -92,8 +92,8 @@ export async function createTaxZone(data: TaxZoneFormModel): Promise<void> {
 export async function updateTaxZone(data: TaxZoneFormModel): Promise<void> {
   const payload = {
     taxZoneId: data.taxZoneId,
-    taxZoneNo: data.taxZoneNo.trim(),
-    taxZoneType: data.taxZoneType.trim(),
+    taxZoneNo: data.taxZoneNo?.trim() || "",
+    taxZoneType: data.taxZoneType?.trim() || "",
     remark: data.remark?.trim() || "",
     isActive: data.isActive,
   };

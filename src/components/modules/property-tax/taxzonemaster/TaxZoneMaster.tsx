@@ -43,6 +43,16 @@ export default function TaxZoneMaster({
 
   const columns = useMemo(() => getTaxZoneColumns(t), [t]);
 
+  // Sync search state when initialSearch prop changes (e.g., browser back/forward navigation)
+  useEffect(() => {
+    setSearch(initialSearch);
+    // Clear any pending debounce timer to prevent stale searches
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+      searchTimeoutRef.current = null;
+    }
+  }, [initialSearch]);
+
   // Cleanup timeout on component unmount to prevent memory leaks
   useEffect(() => {
     return () => {
