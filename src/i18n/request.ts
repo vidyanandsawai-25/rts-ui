@@ -3,7 +3,6 @@
  * Server-side locale detection and message loading
  */
 
-import { DEFAULT_ULB_CODE, DEFAULT_ULB_NAME } from '@/config/app.config';
 import { getRequestConfig } from 'next-intl/server';
 import { defaultLocale, locales, Locale } from './config';
 
@@ -24,19 +23,10 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
   ]);
 
-  const common = {
-    ...commonMessages,
-    app: {
-      ...commonMessages.app,
-      defaultUlbCode: DEFAULT_ULB_CODE,
-      defaultUlbName: DEFAULT_ULB_NAME,
-    },
-  };
-
   return {
     locale: validatedLocale,
     messages: {
-      common,
+      common: commonMessages,
       dashboard: dashboardMessages,
       modules: modulesMessages,
     },

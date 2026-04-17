@@ -1,5 +1,8 @@
-import { DEFAULT_ULB_CODE, DEFAULT_ULB_NAME } from '@/config/app.config';
 import type { UlbMaster } from '@/types/master.types';
+
+/** Cookie fallbacks; keep in sync with `common.app.defaultUlbCode` / `defaultUlbName` in locale JSON. */
+const DEFAULT_ULB_CODE = 'TMC';
+const DEFAULT_ULB_NAME = 'Sthapatya Consultant (I) Pvt.Ltd';
 import { sanitizeInput } from '@/lib/utils/security';
 
 /** Decode a raw cookie value (shared by client readers and Server Component cookie store). */

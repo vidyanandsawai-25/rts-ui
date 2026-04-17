@@ -140,7 +140,9 @@
     "departmentName": "Property Tax Department",
     "defaultUser": "Default User",
     "assessmentSystem": "Property Tax Assessment & Management System",
-    "welcome": "Welcome,"
+    "welcome": "Welcome,",
+    "defaultUlbCode": "TMC",
+    "defaultUlbName": "Sthapatya Consultant (I) Pvt.Ltd"
   },
   "menu": {
     "analytics": "Data Analytics",
