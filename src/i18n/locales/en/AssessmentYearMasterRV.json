@@ -40,6 +40,6 @@
   "failedToCreate": "Failed to create assessment year",
   "failedToUpdate": "Failed to update assessment year",
   "failedToDelete": "Failed to delete assessment year",
-    "linkedError": "Cannot delete assessment year range {range} because it is linked with other records."
+  "linkedError": "Cannot delete assessment year range {range} because it is linked with other records."
 
 }
