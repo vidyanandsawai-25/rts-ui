@@ -38,11 +38,27 @@ export async function createAssessmentYearActionCV(data: Partial<AssessmentYearC
     revalidatePath("/property-tax/assessment-year-range/capitalvalue");
     return { success: true, data: res };
   } catch (error: unknown) {
-    if (error instanceof ApiError && error.statusCode === 409) {
-      return { success: false, error: t("duplicateRecordError") };
-    }
-    if (error instanceof ApiError && error.statusCode === 500) {
-      return { success: false, error: t("overlapError") };
+    if (error instanceof ApiError) {
+      let code: string | undefined;
+      try {
+        const text = (error.responseText || "").trim();
+        if (text.startsWith("{")) {
+          const parsed = JSON.parse(text);
+          code = parsed.code || parsed.errorCode;
+        }
+      } catch {}
+      if (code === "DUPLICATE") {
+        return { success: false, error: t("duplicateRecordError") };
+      }
+      if (code === "OVERLAP") {
+        return { success: false, error: t("overlapError") };
+      }
+      if (error.statusCode === 409) {
+        return { success: false, error: t("duplicateRecordError") };
+      }
+      if (error.statusCode === 500) {
+        return { success: false, error: t("overlapError") };
+      }
     }
     const message = extractApiError(error, t, t("failedToCreate"));
     return { success: false, error: message };
@@ -56,11 +72,27 @@ export async function updateAssessmentYearActionCV(data: AssessmentYearCV) {
     revalidatePath("/property-tax/assessment-year-range/capitalvalue");
     return { success: true, data: res };
   } catch (error: unknown) {
-    if (error instanceof ApiError && error.statusCode === 409) {
-      return { success: false, error: t("duplicateRecordError") };
-    }
-    if (error instanceof ApiError && error.statusCode === 500) {
-      return { success: false, error: t("overlapError") };
+    if (error instanceof ApiError) {
+      let code: string | undefined;
+      try {
+        const text = (error.responseText || "").trim();
+        if (text.startsWith("{")) {
+          const parsed = JSON.parse(text);
+          code = parsed.code || parsed.errorCode;
+        }
+      } catch {}
+      if (code === "DUPLICATE") {
+        return { success: false, error: t("duplicateRecordError") };
+      }
+      if (code === "OVERLAP") {
+        return { success: false, error: t("overlapError") };
+      }
+      if (error.statusCode === 409) {
+        return { success: false, error: t("duplicateRecordError") };
+      }
+      if (error.statusCode === 500) {
+        return { success: false, error: t("overlapError") };
+      }
     }
     const message = extractApiError(error, t, t("failedToUpdate"));
     return { success: false, error: message };

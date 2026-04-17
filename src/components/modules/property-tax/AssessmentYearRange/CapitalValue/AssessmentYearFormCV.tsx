@@ -63,7 +63,7 @@ export default function AssessmentYearFormCV({ open, onClose, onSuccess, initial
         if (formData.fromYear >= formData.toYear) {
           newErrors.toYear = t("toYearGreater");
         }
-        // Overlap validation is handled by the backend (returns 409 Conflict)
+        // Overlap validation is handled by the backend/server-side validation flow.
     }
 
     setErrors(newErrors);

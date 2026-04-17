@@ -63,7 +63,7 @@ export default function AssessmentYearForm({ open, onClose, onSuccess, initialDa
         if (formData.fromYear >= formData.toYear) {
             newErrors.toYear = t("toYearGreater");
         }
-        // Overlap validation is handled by the backend (returns 409 Conflict)
+        // Overlap validation is handled server-side during create/update submission.
     }
 
     setErrors(newErrors);

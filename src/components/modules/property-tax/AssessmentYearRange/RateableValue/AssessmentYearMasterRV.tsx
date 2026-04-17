@@ -83,7 +83,7 @@ export default function AssessmentYearMaster({ paginatedData }: AssessmentYearMa
       router.refresh();
     },
   });
-}
+};
 
   /* ================= COLUMNS ================= */
 
