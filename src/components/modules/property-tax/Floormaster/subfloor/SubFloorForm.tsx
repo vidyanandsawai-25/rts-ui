@@ -22,7 +22,8 @@ import {
 /* ================= CONSTANTS ================= */
 
 const CODE_MAX = 10;
-const CODE_REGEX = /^[A-Za-z0-9/_-]+$/;
+// Allow alphanumeric and underscore - validation will enforce "not at start/end" rule
+const CODE_REGEX = /^[A-Za-z0-9_]*$/;
 
 /* ================= TYPES ================= */
 

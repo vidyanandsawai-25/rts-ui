@@ -1,5 +1,6 @@
 /* =====================================================
-   PAGINATION (LOCAL TO THIS FILE)
+   PAGINATION - SHARED TYPE
+   Used by floor and subfloor APIs for paginated responses
 ===================================================== */
 
 export interface PagedResponse<T> {

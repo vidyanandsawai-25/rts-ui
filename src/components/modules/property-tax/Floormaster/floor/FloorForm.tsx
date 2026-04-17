@@ -23,7 +23,8 @@ import {
 /* ================= CONSTANTS ================= */
 
 const CODE_MAX = 5;
-const CODE_REGEX = /^[A-Za-z0-9]+$/;
+// Allow alphanumeric and underscore - validation will enforce "not at start/end" rule
+const CODE_REGEX = /^[A-Za-z0-9_]*$/;
 
 const DEFAULT_VALUES: FloorFormModel = {
   floorCode: "",

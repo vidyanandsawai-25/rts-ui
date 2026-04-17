@@ -40,7 +40,15 @@
       "isActive": "सक्रिय",
       "activeStatusTitle": "फ्लोर स्थिति",
       "activeStatusOn": "यह फ्लोर वर्तमान में सक्रिय है",
-      "activeStatusOff": "यह फ्लोर वर्तमान में निष्क्रिय है"
+      "activeStatusOff": "यह फ्लोर वर्तमान में निष्क्रिय है",
+      "validation": {
+        "codeRequired": "कोड आवश्यक है",
+        "codeFormat": "कोड में केवल अक्षर, संख्या और अंडरस्कोर हो सकते हैं (शुरुआत/अंत में नहीं)",
+        "codeMaxLength": "कोड {count} वर्णों से अधिक नहीं हो सकता",
+        "descriptionRequired": "विवरण आवश्यक है",
+        "descriptionFormat": "विवरण में अमान्य वर्ण या स्वरूपण है",
+        "descriptionMaxLength": "विवरण {count} वर्णों से अधिक नहीं हो सकता"
+      }
     },
     "table": {
       "columns": {
@@ -116,7 +124,15 @@
       "code": "सब-फ्लोर कोड",
       "codePlaceholder": "उदा., SF01, SF02",
       "description": "विवरण",
-      "descriptionPlaceholder": "सब-फ्लोर विवरण या अतिरिक्त जानकारी दर्ज करें"
+      "descriptionPlaceholder": "सब-फ्लोर विवरण या अतिरिक्त जानकारी दर्ज करें",
+      "validation": {
+        "codeRequired": "कोड आवश्यक है",
+        "codeFormat": "कोड में केवल अक्षर, संख्या और अंडरस्कोर हो सकते हैं (शुरुआत/अंत में नहीं)",
+        "codeMaxLength": "कोड {count} वर्णों से अधिक नहीं हो सकता",
+        "descriptionRequired": "विवरण आवश्यक है",
+        "descriptionFormat": "विवरण में अमान्य वर्ण या स्वरूपण है",
+        "descriptionMaxLength": "विवरण {count} वर्णों से अधिक नहीं हो सकता"
+      }
       
     },
     "table": {

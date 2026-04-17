@@ -3,9 +3,6 @@
 
 import {
   useCallback,
-  useEffect,
-  useRef,
-  useState,
 } from "react";
 import {
   useRouter,
@@ -87,38 +84,6 @@ export default function FloorPage({
 
   const currentSearchTerm =
     searchParams.get("q") ?? "";
-
-  const [search, setSearch] =
-    useState<string>(currentSearchTerm);
-
-  useEffect(() => {
-    setSearch(currentSearchTerm);
-  }, [currentSearchTerm]);
-
-  const isFirstRender = useRef(true);
-
-  useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
-
-    if (search === currentSearchTerm) return;
-
-    const timer = setTimeout(() => {
-      router.push(
-        buildUrl(1, pageSize, search)
-      );
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [
-    search,
-    currentSearchTerm,
-    pageSize,
-    router,
-    buildUrl,
-  ]);
 
   /* ============================================================
      PAGINATION
