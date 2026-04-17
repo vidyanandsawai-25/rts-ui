@@ -1,192 +1,199 @@
-    "apiErrors": {
-      "duplicateRecord": "रेकॉर्ड आधीच अस्तित्वात आहे",
-      "invalidData": "अवैध डेटा प्रदान केला आहे",
-      "notFound": "रेकॉर्ड सापडला नाही",
-      "operationFailed": "ऑपरेशन अयशस्वी"
-    },
 {
   "floor": {
-    "floor": "फ्लोअर",
-    "title": "फ्लोअर मास्टर व्यवस्थापन",
-    "delete": {
-      "confirmTitle": "फ्लोअर हटवा",
-      "confirmDescription": "आपण हा फ्लोअर हटवू इच्छिता? ही क्रिया पूर्ववत करता येणार नाही."
-    },
-    "subtitle": "फ्लोअर माहिती जोडा, संपादित करा आणि व्यवस्थापित करा",
-    "tableTitle": "फ्लोअर यादी",
-    "search": {
-      "placeholder": "कोड किंवा वर्णनाने शोधा..."
-    },
-    "buttons": {
-      "add": "फ्लोअर जोडा"
-    },
-    "tabs": {
+    "floor": {
       "floor": "फ्लोअर",
-      "subfloor": "सब-फ्लोअर"
-    },
-    "form": {
-      "title": "फ्लोअर तपशील",
-      "addTitle": "नवीन फ्लोअर जोडा",
-      "addSubtitle": "नवीन फ्लोअर नोंद तयार करा",
-      "editTitle": "फ्लोअर संपादित करा",
-      "editSubtitle": "फ्लोअर माहिती अपडेट करा",
-      "entryMode": "फ्लोअर तयार करण्याचा मोड निवडा",
-      "singleFloor": "एकल फ्लोअर",
-      "floorRange": "फ्लोअर श्रेणी",
-      "floorCode": "फ्लोअर कोड",
-      "floorCodePlaceholder": "उदा., GF, 1F, 2F",
-      "floorCodePattern": "फक्त अक्षरे, संख्या, /, _, - फ्लोअर कोडसाठी परवानगी आहे",
-      "floorName": "फ्लोअरचे नाव",
-      "floorNamePlaceholder": "उदा., तळमजला, पहिला मजला, तळघर",
-      "floorNameEnglish": "फ्लोअरचे नाव (इंग्रजी)",
-      "floorNameEnglishPlaceholder": "इंग्रजीमध्ये फ्लोअरचे नाव प्रविष्ट करा",
-      "regionalName": "प्रादेशिक नाव",
-      "regionalNamePlaceholder": "प्रादेशिक भाषेत फ्लोअरचे नाव प्रविष्ट करा",
-      "floorNumber": "फ्लोअर क्रमांक",
-      "floorNumberPlaceholder": "उदा., 0, 1, 2, -1",
-      "sequenceNo": "क्रम क्रमांक",
-      "sequenceNoPlaceholder": "क्रम क्रमांक प्रविष्ट करा",
-      "description": "वर्णन",
-      "descriptionPlaceholder": "फ्लोअर वर्णन किंवा अतिरिक्त तपशील प्रविष्ट करा",
-      "searchPlaceholder": "आयडी किंवा फ्लोअर नावाने शोधा...",
-      "status": "स्थिती",
-      "isActive": "सक्रिय",
-      "activeStatusTitle": "फ्लोअर स्थिती",
-      "activeStatusOn": "हा फ्लोअर सध्या सक्रिय आहे",
-      "activeStatusOff": "हा फ्लोअर सध्या निष्क्रिय आहे",
+      "title": "फ्लोअर मास्टर व्यवस्थापन",
+      "delete": {
+        "confirmTitle": "फ्लोअर हटवा",
+        "confirmDescription": "आपण हा फ्लोअर हटवू इच्छिता? ही क्रिया पूर्ववत करता येणार नाही."
+      },
+      "subtitle": "फ्लोअर माहिती जोडा, संपादित करा आणि व्यवस्थापित करा",
+      "tableTitle": "फ्लोअर यादी",
+      "search": {
+        "placeholder": "कोड किंवा वर्णनाने शोधा..."
+      },
+      "buttons": {
+        "add": "फ्लोअर जोडा"
+      },
+      "tabs": {
+        "floor": "फ्लोअर",
+        "subfloor": "सब-फ्लोअर"
+      },
+      "form": {
+        "title": "फ्लोअर तपशील",
+        "addTitle": "नवीन फ्लोअर जोडा",
+        "addSubtitle": "नवीन फ्लोअर नोंद तयार करा",
+        "editTitle": "फ्लोअर संपादित करा",
+        "editSubtitle": "फ्लोअर माहिती अपडेट करा",
+        "entryMode": "फ्लोअर तयार करण्याचा मोड निवडा",
+        "singleFloor": "एकल फ्लोअर",
+        "floorRange": "फ्लोअर श्रेणी",
+        "floorCode": "फ्लोअर कोड",
+        "floorCodePlaceholder": "उदा., GF, 1F, 2F",
+        "floorCodePattern": "फक्त अक्षरे, संख्या, /, _, - फ्लोअर कोडसाठी परवानगी आहे",
+        "floorName": "फ्लोअरचे नाव",
+        "floorNamePlaceholder": "उदा., तळमजला, पहिला मजला, तळघर",
+        "floorNameEnglish": "फ्लोअरचे नाव (इंग्रजी)",
+        "floorNameEnglishPlaceholder": "इंग्रजीमध्ये फ्लोअरचे नाव प्रविष्ट करा",
+        "regionalName": "प्रादेशिक नाव",
+        "regionalNamePlaceholder": "प्रादेशिक भाषेत फ्लोअरचे नाव प्रविष्ट करा",
+        "floorNumber": "फ्लोअर क्रमांक",
+        "floorNumberPlaceholder": "उदा., 0, 1, 2, -1",
+        "sequenceNo": "क्रम क्रमांक",
+        "sequenceNoPlaceholder": "क्रम क्रमांक प्रविष्ट करा",
+        "description": "वर्णन",
+        "descriptionPlaceholder": "फ्लोअर वर्णन किंवा अतिरिक्त तपशील प्रविष्ट करा",
+        "searchPlaceholder": "आयडी किंवा फ्लोअर नावाने शोधा...",
+        "status": "स्थिती",
+        "isActive": "सक्रिय",
+        "activeStatusTitle": "फ्लोअर स्थिती",
+        "activeStatusOn": "हा फ्लोअर सध्या सक्रिय आहे",
+        "activeStatusOff": "हा फ्लोअर सध्या निष्क्रिय आहे",
+        "validation": {
+          "codeRequired": "कोड आवश्यक आहे",
+          "codeFormat": "कोडमध्ये फक्त अक्षरे, संख्या आणि अंडरस्कोर असू शकतात (सुरुवात/शेवटी नाही)",
+          "codeMaxLength": "कोड {count} वर्णांपेक्षा जास्त असू शकत नाही",
+          "descriptionRequired": "वर्णन आवश्यक आहे",
+          "descriptionFormat": "वर्णनात अवैध वर्ण किंवा स्वरूपन आहे",
+          "descriptionMaxLength": "वर्णन {count} वर्णांपेक्षा जास्त असू शकत नाही"
+        }
+      },
+      "table": {
+        "columns": {
+          "srNo": "अ. क्र.",
+          "floorCode": "फ्लोअर",
+          "floorName": "फ्लोअरचे नाव",
+          "descriptionEnglish": "फ्लोअरचे नाव (इंग्रजी)",
+          "descriptionRegional": "प्रादेशिक नाव",
+          "floorNumber": "फ्लोअर क्रमांक",
+          "description": "वर्णन",
+          "sequenceNo": "क्रम क्रमांक",
+          "status": "स्थिती",
+          "actions": "क्रिया"
+        },
+        "pagination": {
+          "showing": "दाखवत आहे",
+          "entries": "{total} प्रविष्ट्यांपैकी"
+        }
+      },
+      "messages": {
+        "addSuccess": "फ्लोअर यशस्वीरित्या जोडला गेला",
+        "createSuccess": "फ्लोअर यशस्वीरित्या तयार केला गेला",
+        "updateSuccess": "फ्लोअर यशस्वीरित्या अपडेट केला गेला",
+        "deleteSuccess": "फ्लोअर यशस्वीरित्या हटवला गेला",
+        "deleteFailed": "फ्लोअर हटवण्यात अयशस्वी. कृपया पुन्हा प्रयत्न करा.",
+        "deleteInUse": "हा फ्लोअर वापरात असल्यामुळे तुम्ही तो हटवू शकत नाही.",
+        "deleteConfirm": "तुम्हाला खात्री आहे की तुम्ही हा फ्लोअर हटवू इच्छिता?",
+        "noFloors": "कोणतेही फ्लोअर उपलब्ध नाहीत. सुरू करण्यासाठी नवीन फ्लोअर जोडा."
+      },
       "validation": {
-        "codeRequired": "कोड आवश्यक आहे",
-        "codeFormat": "कोडमध्ये फक्त अक्षरे, संख्या आणि अंडरस्कोर असू शकतात (सुरुवात/शेवटी नाही)",
-        "codeMaxLength": "कोड {count} वर्णांपेक्षा जास्त असू शकत नाही",
-        "descriptionRequired": "वर्णन आवश्यक आहे",
-        "descriptionFormat": "वर्णनात अवैध वर्ण किंवा स्वरूपन आहे",
-        "descriptionMaxLength": "वर्णन {count} वर्णांपेक्षा जास्त असू शकत नाही"
+        "floorIdPattern": "फक्त अक्षरे, संख्या, /, _, - याची परवानगी आहे",
+        "duplicateFloorCode": "फ्लोअर कोड आधीपासूनच अस्तित्वात आहे",
+        "maxFloorGteSequence": "कमाल फ्लोअर >= क्रम क्रमांक असायला पाहिजे",
+        "duplicateSequenceNo": "या फ्लोअरचा क्रमांक आधीपासूनच अस्तित्वात आहे",
+        "mustBeNumber": "वैध संख्या असणे आवश्यक आहे",
+        "required": "हे फील्ड आवश्यक आहे"
+      },
+      "apiErrors": {
+        "duplicateRecord": "रेकॉर्ड आधीच अस्तित्वात आहे",
+        "invalidData": "अवैध डेटा प्रदान केला आहे",
+        "notFound": "रेकॉर्ड सापडला नाही",
+        "operationFailed": "ऑपरेशन अयशस्वी"
+      },
+      "note": {
+        "mandatory": "* चिन्हांकित फील्ड अनिवार्य आहेत"
       }
     },
-    "table": {
-      "columns": {
-        "srNo": "अ. क्र.",
-        "floorCode": "फ्लोअर",
-        "floorName": "फ्लोअरचे नाव",
-        "descriptionEnglish": "फ्लोअरचे नाव (इंग्रजी)",
-        "descriptionRegional": "प्रादेशिक नाव",
-        "floorNumber": "फ्लोअर क्रमांक",
-        "description": "वर्णन",
-        "sequenceNo": "क्रम क्रमांक",
-        "status": "स्थिती",
-        "actions": "क्रिया"
-      },
-        "pagination": {
-  "showing": "दाखवत आहे",
-  "entries": "{total} प्रविष्ट्यांपैकी"
-}
-    },
-      "messages": {
-      "addSuccess": "फ्लोअर यशस्वीरित्या जोडला गेला",
-      "createSuccess": "फ्लोअर यशस्वीरित्या तयार केला गेला",
-      "updateSuccess": "फ्लोअर यशस्वीरित्या अपडेट केला गेला",
-      "deleteSuccess": "फ्लोअर यशस्वीरित्या हटवला गेला",
-      "deleteFailed": "फ्लोअर हटवण्यात अयशस्वी. कृपया पुन्हा प्रयत्न करा.",
-      "deleteInUse": "हा फ्लोअर वापरात असल्यामुळे तुम्ही तो हटवू शकत नाही.",
-      "deleteConfirm": "तुम्हाला खात्री आहे की तुम्ही हा फ्लोअर हटवू इच्छिता?",
-      "noFloors": "कोणतेही फ्लोअर उपलब्ध नाहीत. सुरू करण्यासाठी नवीन फ्लोअर जोडा."
-    },
-    "validation": {
-      "floorIdPattern": "फक्त अक्षरे, संख्या, /, _, - याची परवानगी आहे",
-      "duplicateFloorCode": "फ्लोअर कोड आधीपासूनच अस्तित्वात आहे",
-      "maxFloorGteSequence": "कमाल फ्लोअर >= क्रम क्रमांक असायला पाहिजे",
-      "duplicateSequenceNo": "या फ्लोअरचा क्रमांक आधीपासूनच अस्तित्वात आहे",
-      "mustBeNumber": "वैध संख्या असणे आवश्यक आहे",
-      "required": "हे फील्ड आवश्यक आहे"
-    },
-    "note": {
-      "mandatory": "* चिन्हांकित फील्ड अनिवार्य आहेत"
-    }
-  },
-
     "subfloor": {
       "delete": {
         "confirmTitle": "सब-फ्लोअर हटवा",
         "confirmDescription": "तुम्हाला हा सब-फ्लोअर हटवायचा आहे का? ही क्रिया पूर्ववत करता येणार नाही."
       },
-    "title": "सब-फ्लोअर मास्टर व्यवस्थापन",
-    "subtitle": "सब-फ्लोअर श्रेण्या जोडा, संपादित करा आणि व्यवस्थापित करा",
-    "tableTitle": "सब-फ्लोअर यादी",
-    "search": {
-      "placeholder": "कोड किंवा वर्णनाने शोधा..."
-    },
-    "buttons": {
-      "add": "सब-फ्लोअर जोडा"
-    },
-    "tabs": {
-      "floor": "फ्लोअर",
-      "subfloor": "सब-फ्लोअर"
-    },
-    "form": {
-      "title": "सब-फ्लोअर तपशील",
-      "addTitle": "सब-फ्लोअर जोडा",
-      "addSubtitle": "नवीन उप-श्रेणी दर तयार करा",
-      "editTitle": "सब-फ्लोअर संपादित करा",
-      "editSubtitle": "उप-श्रेणी तपशील अपडेट करा",
-      "subFloorId": "सब-फ्लोअर आयडी",
-      "subFloorIdPlaceholder": "उदा., SF01, SF02",
-      "descriptionEnglish": "वर्णन (इंग्रजी)",
-      "descriptionEnglishPlaceholder": "इंग्रजीमध्ये वर्णन प्रविष्ट करा",
-      "descriptionRegional": "वर्णन (प्रादेशिक)",
-      "descriptionRegionalPlaceholder": "प्रादेशिक भाषेत वर्णन प्रविष्ट करा",
-      "searchPlaceholder": "आयडी किंवा वर्णनाने शोधा...",
-      "activeStatusTitle": "सक्रिय स्थिती",
-      "activeStatusOn": "सध्या सक्षम आहे",
-      "activeStatusOff": "सध्या अक्षम आहे",
-      "code": "सब-फ्लोअर कोड",
-      "codePlaceholder": "उदा., SF01, SF02",
-      "description": "वर्णन",
-      "descriptionPlaceholder": "सब-फ्लोअर वर्णन या अतिरिक्त माहिती प्रविष्ट करा",
-      "validation": {
-        "codeRequired": "कोड आवश्यक आहे",
-        "codeFormat": "कोडमध्ये फक्त अक्षरे, संख्या आणि अंडरस्कोर असू शकतात (सुरुवात/शेवटी नाही)",
-        "codeMaxLength": "कोड {count} वर्णांपेक्षा जास्त असू शकत नाही",
-        "descriptionRequired": "वर्णन आवश्यक आहे",
-        "descriptionFormat": "वर्णनात अवैध वर्ण किंवा स्वरूपन आहे",
-        "descriptionMaxLength": "वर्णन {count} वर्णांपेक्षा जास्त असू शकत नाही"
-      }
-    },
-    "table": {
-      "columns": {
-        "srNo": "अ. क्र.",
-        "subFloorId": "सब-फ्लोअर",
-        "descriptionEnglish": "वर्णन (इंग्रजी)",
-        "descriptionRegional": "वर्णन",
-        "status": "स्थिती",
-        "actions": "क्रिया",
-        "subFloorCode": "सब-फ्लोअर",
-        "subFloorDescription": "वर्णन"
+      "title": "सब-फ्लोअर मास्टर व्यवस्थापन",
+      "subtitle": "सब-फ्लोअर श्रेण्या जोडा, संपादित करा आणि व्यवस्थापित करा",
+      "tableTitle": "सब-फ्लोअर यादी",
+      "search": {
+        "placeholder": "कोड किंवा वर्णनाने शोधा..."
       },
-      "pagination": {
-  "showing": "दाखवत आहे",
-  "entries": "{total} प्रविष्ट्यांपैकी"
+      "buttons": {
+        "add": "सब-फ्लोअर जोडा"
+      },
+      "tabs": {
+        "floor": "फ्लोअर",
+        "subfloor": "सब-फ्लोअर"
+      },
+      "form": {
+        "title": "सब-फ्लोअर तपशील",
+        "addTitle": "सब-फ्लोअर जोडा",
+        "addSubtitle": "नवीन उप-श्रेणी दर तयार करा",
+        "editTitle": "सब-फ्लोअर संपादित करा",
+        "editSubtitle": "उप-श्रेणी तपशील अपडेट करा",
+        "subFloorId": "सब-फ्लोअर आयडी",
+        "subFloorIdPlaceholder": "उदा., SF01, SF02",
+        "descriptionEnglish": "वर्णन (इंग्रजी)",
+        "descriptionEnglishPlaceholder": "इंग्रजीमध्ये वर्णन प्रविष्ट करा",
+        "descriptionRegional": "वर्णन (प्रादेशिक)",
+        "descriptionRegionalPlaceholder": "प्रादेशिक भाषेत वर्णन प्रविष्ट करा",
+        "searchPlaceholder": "आयडी किंवा वर्णनाने शोधा...",
+        "activeStatusTitle": "सक्रिय स्थिती",
+        "activeStatusOn": "सध्या सक्षम आहे",
+        "activeStatusOff": "सध्या अक्षम आहे",
+        "code": "सब-फ्लोअर कोड",
+        "codePlaceholder": "उदा., SF01, SF02",
+        "description": "वर्णन",
+        "descriptionPlaceholder": "सब-फ्लोअर वर्णन या अतिरिक्त माहिती प्रविष्ट करा",
+        "validation": {
+          "codeRequired": "कोड आवश्यक आहे",
+          "codeFormat": "कोडमध्ये फक्त अक्षरे, संख्या आणि अंडरस्कोर असू शकतात (सुरुवात/शेवटी नाही)",
+          "codeMaxLength": "कोड {count} वर्णांपेक्षा जास्त असू शकत नाही",
+          "descriptionRequired": "वर्णन आवश्यक आहे",
+          "descriptionFormat": "वर्णनात अवैध वर्ण किंवा स्वरूपन आहे",
+          "descriptionMaxLength": "वर्णन {count} वर्णांपेक्षा जास्त असू शकत नाही"
+        }
+      },
+      "table": {
+        "columns": {
+          "srNo": "अ. क्र.",
+          "subFloorId": "सब-फ्लोअर",
+          "descriptionEnglish": "वर्णन (इंग्रजी)",
+          "descriptionRegional": "वर्णन",
+          "status": "स्थिती",
+          "actions": "क्रिया",
+          "subFloorCode": "सब-फ्लोअर",
+          "subFloorDescription": "वर्णन"
+        },
+        "pagination": {
+          "showing": "दाखवत आहे",
+          "entries": "{total} प्रविष्ट्यांपैकी"
+        }
+      },
+      "messages": {
+        "addSuccess": "सब-फ्लोअर यशस्वीरित्या जोडला गेला",
+        "createSuccess": "सब-फ्लोअर यशस्वीरित्या तयार केला गेला",
+        "updateSuccess": "सब-फ्लोअर यशस्वीरित्या अपडेट केला गेला",
+        "deleteSuccess": "सब-फ्लोअर यशस्वीरित्या हटवला गेला",
+        "deleteFailed": "सब-फ्लोअर हटवण्यात अयशस्वी. कृपया पुन्हा प्रयत्न करा.",
+        "deleteInUse": "हा सब-फ्लोअर वापरात असल्यामुळे तुम्ही तो हटवू शकत नाही.",
+        "deleteConfirm": "तुम्हाला खात्री आहे की तुम्ही हा सब-फ्लोअर हटवू इच्छिता?",
+        "noSubFloors": "कोणतेही सब-फ्लोअर उपलब्ध नाहीत. सुरू करण्यासाठी नवीन सब-फ्लोअर जोडा."
+      },
+      "validation": {
+        "subFloorIdPattern": "फक्त अक्षरे, संख्या, /, _, - याची परवानगी आहे",
+        "duplicateSubFloorId": "डुप्लिकेट सब-फ्लोअर आयडीची परवानगी नाही",
+        "maxChars": "जास्तीत जास्त {count} अक्षरे अनुमत आहेत",
+        "mustBeNumber": "कृपया वैध संख्या टाका",
+        "duplicateCode": "सब-फ्लोअर कोड आधीपासूनच अस्तित्वात आहे",
+        "required": "हे फील्ड आवश्यक आहे"
+      },
+      "apiErrors": {
+        "duplicateRecord": "रेकॉर्ड आधीच अस्तित्वात आहे",
+        "invalidData": "अवैध डेटा प्रदान केला आहे",
+        "notFound": "रेकॉर्ड सापडला नाही",
+        "operationFailed": "ऑपरेशन अयशस्वी"
+      },
+      "note": {
+        "mandatory": "* चिन्हांकित फील्ड अनिवार्य आहेत"
       }
-    },
-    "messages": {
-      "addSuccess": "सब-फ्लोअर यशस्वीरित्या जोडला गेला",
-      "createSuccess": "सब-फ्लोअर यशस्वीरित्या तयार केला गेला",
-      "updateSuccess": "सब-फ्लोअर यशस्वीरित्या अपडेट केला गेला",
-      "deleteSuccess": "सब-फ्लोअर यशस्वीरित्या हटवला गेला",
-      "deleteFailed": "सब-फ्लोअर हटवण्यात अयशस्वी. कृपया पुन्हा प्रयत्न करा.",
-      "deleteInUse": "हा सब-फ्लोअर वापरात असल्यामुळे तुम्ही तो हटवू शकत नाही.",
-      "deleteConfirm": "तुम्हाला खात्री आहे की तुम्ही हा सब-फ्लोअर हटवू इच्छिता?",
-      "noSubFloors": "कोणतेही सब-फ्लोअर उपलब्ध नाहीत. सुरू करण्यासाठी नवीन सब-फ्लोअर जोडा."
-    },
-    "validation": {
-      "subFloorIdPattern": "फक्त अक्षरे, संख्या, /, _, - याची परवानगी आहे",
-      "duplicateSubFloorId": "डुप्लिकेट सब-फ्लोअर आयडीची परवानगी नाही",
-      "maxChars": "जास्तीत जास्त {count} अक्षरे अनुमत आहेत",
-      "mustBeNumber": "कृपया वैध संख्या टाका",
-      "duplicateCode": "सब-फ्लोअर कोड आधीपासूनच अस्तित्वात आहे",
-      "required": "हे फील्ड आवश्यक आहे"
-    },
-    "note": {
-      "mandatory": "* चिन्हांकित फील्ड अनिवार्य आहेत"
     }
   }
 }

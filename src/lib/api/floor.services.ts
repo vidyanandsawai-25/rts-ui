@@ -208,7 +208,7 @@ export async function updateFloor(data: FloorFormModel): Promise<void> {
       description: data.description.trim(),
       sequenceNo: Number(data.sequenceNo) || 0,
       isActive: data.isActive,
-      updatedBy: 1,
+      
     };
 
     const response = await apiClient.put(`/Floor/${data.floorId}`, payload);
