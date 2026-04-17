@@ -96,8 +96,9 @@ export async function getAssessmentYearsPagedServer(
   }
  
   // Ensure data is a non-null object before accessing data.items
-  if (data && typeof data === "object" && Array.isArray((data as any).items)) {
-    (data as any).items = (data as any).items.map((item: unknown) => {
+  if (data && typeof data === "object" && Array.isArray((data as Record<string, unknown>).items)) {
+    const pagedData = data as Record<string, unknown>;
+    pagedData.items = (pagedData.items as unknown[]).map((item: unknown) => {
       const assessmentItem = item as AssessmentYearRV;
       return {
         ...assessmentItem,
@@ -118,15 +119,15 @@ export async function createAssessmentYear(data: Partial<AssessmentYearRV>): Pro
   );
   await validateResponse(response, "Create assessment year");
   const resJson = await response.json();
-  let item: any;
+  let item: Record<string, unknown>;
   if (Array.isArray(resJson.items)) {
-    item = resJson.items[0];
+    item = resJson.items[0] as Record<string, unknown>;
   } else if (resJson.items && typeof resJson.items === "object") {
-    item = resJson.items;
+    item = resJson.items as Record<string, unknown>;
   } else {
-    item = resJson;
+    item = resJson as Record<string, unknown>;
   }
-  return { ...item, yearId: item.yearRangeRVId || item.yearId } as AssessmentYearRV;
+  return { ...item, yearId: (item.yearRangeRVId as number) || (item.yearId as number) } as AssessmentYearRV;
 }
  
 export async function updateAssessmentYear(data: AssessmentYearRV): Promise<AssessmentYearRV> {
@@ -151,15 +152,15 @@ export async function updateAssessmentYear(data: AssessmentYearRV): Promise<Asse
   );
   await validateResponse(response, "Update assessment year");
   const resJson = await response.json();
-  let item: any;
+  let item: Record<string, unknown>;
   if (Array.isArray(resJson.items)) {
-    item = resJson.items[0];
+    item = resJson.items[0] as Record<string, unknown>;
   } else if (resJson.items && typeof resJson.items === "object") {
-    item = resJson.items;
+    item = resJson.items as Record<string, unknown>;
   } else {
-    item = resJson;
+    item = resJson as Record<string, unknown>;
   }
-  return { ...item, yearId: item.yearRangeRVId || item.yearId } as AssessmentYearRV;
+  return { ...item, yearId: (item.yearRangeRVId as number) || (item.yearId as number) } as AssessmentYearRV;
 }
  
 export async function deleteAssessmentYear(id: number): Promise<void> {
@@ -179,13 +180,13 @@ export async function getAssessmentYearById(id: number): Promise<AssessmentYearR
   );
   await validateResponse(response, "Get assessment year by id");
   const resJson = await response.json();
-  let item: any;
+  let item: Record<string, unknown>;
   if (Array.isArray(resJson.items)) {
-    item = resJson.items[0];
+    item = resJson.items[0] as Record<string, unknown>;
   } else if (resJson.items && typeof resJson.items === "object") {
-    item = resJson.items;
+    item = resJson.items as Record<string, unknown>;
   } else {
-    item = resJson;
+    item = resJson as Record<string, unknown>;
   }
-  return { ...item, yearId: item.yearRangeRVId || item.yearId } as AssessmentYearRV;
+  return { ...item, yearId: (item.yearRangeRVId as number) || (item.yearId as number) } as AssessmentYearRV;
 }

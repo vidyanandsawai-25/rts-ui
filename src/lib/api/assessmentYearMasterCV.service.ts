@@ -88,15 +88,15 @@ export async function createAssessmentYearCV(data: Partial<AssessmentYearCV>): P
   );
   await validateResponse(response, "Create assessment year CV");
   const resJson = await response.json();
-  let item: any;
+  let item: Record<string, unknown>;
   if (Array.isArray(resJson.items)) {
-    item = resJson.items[0];
+    item = resJson.items[0] as Record<string, unknown>;
   } else if (resJson.items && typeof resJson.items === "object") {
-    item = resJson.items;
+    item = resJson.items as Record<string, unknown>;
   } else {
-    item = resJson;
+    item = resJson as Record<string, unknown>;
   }
-  return { ...item, yearId: item.yearRangeCVId || item.yearId } as AssessmentYearCV;
+  return { ...item, yearId: (item.yearRangeCVId as number) || (item.yearId as number) } as AssessmentYearCV;
 }
 
 export async function updateAssessmentYearCV(data: AssessmentYearCV): Promise<AssessmentYearCV> {
@@ -117,15 +117,15 @@ export async function updateAssessmentYearCV(data: AssessmentYearCV): Promise<As
   );
   await validateResponse(response, "Update assessment year CV");
   const resJson = await response.json();
-  let item: any;
+  let item: Record<string, unknown>;
   if (Array.isArray(resJson.items)) {
-    item = resJson.items[0];
+    item = resJson.items[0] as Record<string, unknown>;
   } else if (resJson.items && typeof resJson.items === "object") {
-    item = resJson.items;
+    item = resJson.items as Record<string, unknown>;
   } else {
-    item = resJson;
+    item = resJson as Record<string, unknown>;
   }
-  return { ...item, yearId: item.yearRangeCVId || item.yearId } as AssessmentYearCV;
+  return { ...item, yearId: (item.yearRangeCVId as number) || (item.yearId as number) } as AssessmentYearCV;
 }
 
 export async function deleteAssessmentYearCV(id: number): Promise<void> {
@@ -145,13 +145,13 @@ export async function getAssessmentYearByIdCV(id: number): Promise<AssessmentYea
   );
   await validateResponse(response, "Get assessment year CV by id");
   const resJson = await response.json();
-  let item: any;
+  let item: Record<string, unknown>;
   if (Array.isArray(resJson.items)) {
-    item = resJson.items[0];
+    item = resJson.items[0] as Record<string, unknown>;
   } else if (resJson.items && typeof resJson.items === "object") {
-    item = resJson.items;
+    item = resJson.items as Record<string, unknown>;
   } else {
-    item = resJson;
+    item = resJson as Record<string, unknown>;
   }
-  return { ...item, yearId: item.yearRangeCVId || item.yearId } as AssessmentYearCV;
+  return { ...item, yearId: (item.yearRangeCVId as number) || (item.yearId as number) } as AssessmentYearCV;
 }

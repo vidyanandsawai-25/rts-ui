@@ -142,7 +142,7 @@ export default function AssessmentYearForm({ open, onClose, onSuccess, initialDa
         </>
       }
     >
-      <form id="assessment-year-form" onSubmit={handleSubmit} className="flex flex-col gap-6 h-full">
+      <form id="assessment-year-form" onSubmit={handleSubmit} noValidate className="flex flex-col gap-6 h-full">
          {/* Form Fields */}
          <div className="space-y-4 p-6">        
               {isEdit && (
