@@ -253,7 +253,9 @@ export async function getConstructionTypeById(
 
     if (!response.success) {
       throw new ApiError(
-        500,
+        // Use the real HTTP status (e.g. 404) so callers can distinguish
+        // "not found" from auth failures, timeouts, and server errors
+        response.statusCode ?? 500,
         response.error || "Failed to fetch construction type",
         `Fetch construction type ${constructionId} failed`
       );

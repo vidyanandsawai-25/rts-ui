@@ -3,6 +3,8 @@ export interface ApiResponse<T = unknown> {
   data?: T;
   error?: string;
   message?: string;
+  /** The HTTP status code from the server response; absent for network/timeout errors */
+  statusCode?: number;
 }
 
 export interface PaginatedResponse<T> {
