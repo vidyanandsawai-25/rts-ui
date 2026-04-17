@@ -118,7 +118,14 @@ export async function createAssessmentYear(data: Partial<AssessmentYearRV>): Pro
   );
   await validateResponse(response, "Create assessment year");
   const resJson = await response.json();
-  const item = (resJson.items ?? resJson);
+  let item: any;
+  if (Array.isArray(resJson.items)) {
+    item = resJson.items[0];
+  } else if (resJson.items && typeof resJson.items === "object") {
+    item = resJson.items;
+  } else {
+    item = resJson;
+  }
   return { ...item, yearId: item.yearRangeRVId || item.yearId } as AssessmentYearRV;
 }
  
@@ -144,7 +151,14 @@ export async function updateAssessmentYear(data: AssessmentYearRV): Promise<Asse
   );
   await validateResponse(response, "Update assessment year");
   const resJson = await response.json();
-  const item = (resJson.items ?? resJson);
+  let item: any;
+  if (Array.isArray(resJson.items)) {
+    item = resJson.items[0];
+  } else if (resJson.items && typeof resJson.items === "object") {
+    item = resJson.items;
+  } else {
+    item = resJson;
+  }
   return { ...item, yearId: item.yearRangeRVId || item.yearId } as AssessmentYearRV;
 }
  
@@ -165,6 +179,13 @@ export async function getAssessmentYearById(id: number): Promise<AssessmentYearR
   );
   await validateResponse(response, "Get assessment year by id");
   const resJson = await response.json();
-  const item = (resJson.items ?? resJson);
+  let item: any;
+  if (Array.isArray(resJson.items)) {
+    item = resJson.items[0];
+  } else if (resJson.items && typeof resJson.items === "object") {
+    item = resJson.items;
+  } else {
+    item = resJson;
+  }
   return { ...item, yearId: item.yearRangeRVId || item.yearId } as AssessmentYearRV;
 }

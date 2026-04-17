@@ -60,17 +60,20 @@ export async function getAssessmentYearsPagedServerCV(
     };
   }
 
-  if (data.items && Array.isArray(data.items)) {
-    data.items = data.items.map((item: unknown) => {
-      if (typeof item === "object" && item !== null) {
-        const i = item as Record<string, unknown>;
-        return {
-          ...i,
-          yearId: typeof i.yearRangeCVId === "number" ? i.yearRangeCVId : i.yearId,
-        };
-      }
-      return item;
-    });
+  if (typeof data === "object" && data !== null) {
+    const pagedData = data as Record<string, unknown>;
+    if (Array.isArray(pagedData.items)) {
+      pagedData.items = pagedData.items.map((item: unknown) => {
+        if (typeof item === "object" && item !== null) {
+          const i = item as Record<string, unknown>;
+          return {
+            ...i,
+            yearId: typeof i.yearRangeCVId === "number" ? i.yearRangeCVId : i.yearId,
+          };
+        }
+        return item;
+      });
+    }
   }
 
   return data;
@@ -85,7 +88,14 @@ export async function createAssessmentYearCV(data: Partial<AssessmentYearCV>): P
   );
   await validateResponse(response, "Create assessment year CV");
   const resJson = await response.json();
-  const item = (resJson.items ?? resJson);
+  let item: any;
+  if (Array.isArray(resJson.items)) {
+    item = resJson.items[0];
+  } else if (resJson.items && typeof resJson.items === "object") {
+    item = resJson.items;
+  } else {
+    item = resJson;
+  }
   return { ...item, yearId: item.yearRangeCVId || item.yearId } as AssessmentYearCV;
 }
 
@@ -107,7 +117,14 @@ export async function updateAssessmentYearCV(data: AssessmentYearCV): Promise<As
   );
   await validateResponse(response, "Update assessment year CV");
   const resJson = await response.json();
-  const item = (resJson.items ?? resJson);
+  let item: any;
+  if (Array.isArray(resJson.items)) {
+    item = resJson.items[0];
+  } else if (resJson.items && typeof resJson.items === "object") {
+    item = resJson.items;
+  } else {
+    item = resJson;
+  }
   return { ...item, yearId: item.yearRangeCVId || item.yearId } as AssessmentYearCV;
 }
 
@@ -128,6 +145,13 @@ export async function getAssessmentYearByIdCV(id: number): Promise<AssessmentYea
   );
   await validateResponse(response, "Get assessment year CV by id");
   const resJson = await response.json();
-  const item = (resJson.items ?? resJson);
+  let item: any;
+  if (Array.isArray(resJson.items)) {
+    item = resJson.items[0];
+  } else if (resJson.items && typeof resJson.items === "object") {
+    item = resJson.items;
+  } else {
+    item = resJson;
+  }
   return { ...item, yearId: item.yearRangeCVId || item.yearId } as AssessmentYearCV;
 }
