@@ -45,13 +45,16 @@ export default function TaxZoneMaster({
 
   // Sync search state when initialSearch prop changes (e.g., browser back/forward navigation)
   useEffect(() => {
-    setSearch(initialSearch);
-    // Clear any pending debounce timer to prevent stale searches
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current);
-      searchTimeoutRef.current = null;
+    // Only update if value has actually changed to prevent cascading renders
+    if (search !== initialSearch) {
+      setSearch(initialSearch);
+      // Clear any pending debounce timer to prevent stale searches
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+        searchTimeoutRef.current = null;
+      }
     }
-  }, [initialSearch]);
+  }, [initialSearch, search]);
 
   // Cleanup timeout on component unmount to prevent memory leaks
   useEffect(() => {
