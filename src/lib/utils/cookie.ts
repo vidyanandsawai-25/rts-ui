@@ -1,4 +1,4 @@
-import { DEFAULT_ULB_CODE, DEFAULT_ULB_NAME } from '@/config/app-defaults';
+import { DEFAULT_ULB_CODE, DEFAULT_ULB_NAME } from '@/config/app.config';
 import type { UlbMaster } from '@/types/master.types';
 import { sanitizeInput } from '@/lib/utils/security';
 

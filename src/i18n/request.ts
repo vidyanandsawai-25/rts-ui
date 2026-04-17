@@ -3,7 +3,7 @@
  * Server-side locale detection and message loading
  */
 
-import { DEFAULT_ULB_CODE, DEFAULT_ULB_NAME } from '@/config/app-defaults';
+import { DEFAULT_ULB_CODE, DEFAULT_ULB_NAME } from '@/config/app.config';
 import { getRequestConfig } from 'next-intl/server';
 import { defaultLocale, locales, Locale } from './config';
 
