@@ -1,329 +1,350 @@
-
 "use server";
 
 import { revalidatePath } from "next/cache";
-import type {
-  FloorFormModel,
-  SubFloorFormModel,
-} from "@/types/floor.types";
+import { locales } from "@/i18n/config";
+
 import {
-  getFloorById,
-  getSubFloorById,
+  getFloorPaged,
   createFloor,
   updateFloor,
   deleteFloor,
+  getSubFloorPaged,
   createSubFloor,
   updateSubFloor,
   deleteSubFloor,
-  checkFloorSequenceExists,
-  checkFloorCodeExists,
-  checkSubFloorCodeExists,
   ApiError,
 } from "@/lib/api/floor.services";
 
+import type {
+  Floor,
+  FloorFormModel,
+  SubFloor,
+  SubFloorFormModel,
+  PagedResponse,
+} from "@/types/floor.types";
+
 /* ============================================================
-   ACTION RESULT TYPE
+   FLOOR PAGED (SEARCH + SORT)
 ============================================================ */
+export async function fetchFloorPagedServerAction(
+  pageNumber: number,
+  pageSize: number,
+  searchTerm?: string,
+  sortBy?: string,
+  sortOrder?: string
+): Promise<PagedResponse<Floor>> {
+  try {
+    const MAX_PAGE_SIZE = 100;
+    const MAX_PAGE_NUMBER = 10000;
 
-export type ActionResult<T = void> =
-  | { success: true; data?: T; message?: string }
-  | { success: false; error: string };
+    if (
+      !Number.isFinite(pageNumber) ||
+      !Number.isFinite(pageSize) ||
+      pageNumber <= 0 ||
+      pageSize <= 0 ||
+      pageSize > MAX_PAGE_SIZE ||
+      pageNumber > MAX_PAGE_NUMBER
+    ) {
+      throw new Error("Invalid pagination parameters");
+    }
 
-/* ============================================================
-   ERROR HELPERS
-============================================================ */
+    // ✅ allowed sorting columns
+    const allowedSortColumns = ["floorCode", "description", "sequenceNo"];
 
-function isErrorWithMessage(
-  error: unknown
-): error is { message: string } {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    "message" in error &&
-    typeof (error as { message?: unknown }).message ===
-    "string"
-  );
+    const validSortBy = sortBy && allowedSortColumns.includes(sortBy)
+      ? sortBy
+      : undefined;
+
+    const validSortOrder =
+      sortOrder && ["asc", "desc"].includes(sortOrder.toLowerCase())
+        ? sortOrder.toLowerCase()
+        : undefined;
+
+    return await getFloorPaged(
+      pageNumber,
+      pageSize,
+      searchTerm,
+      validSortBy,
+      validSortOrder
+    );
+  } catch (error: unknown) {
+    if (error instanceof ApiError) {
+      console.error(
+        `[fetchFloorPagedServerAction] API Error ${error.statusCode}:`,
+        error.responseText
+      );
+    } else if (error instanceof Error) {
+      console.error(
+        "[fetchFloorPagedServerAction] Error:",
+        error.message
+      );
+    } else {
+      console.error("[fetchFloorPagedServerAction] Unknown error:", error);
+    }
+
+    throw error;
+  }
 }
 
-function getErrorMessage(error: unknown): string {
-  if (error instanceof ApiError) {
-    return error.message;
-  }
-
-  if (isErrorWithMessage(error)) {
-    return error.message;
-  }
-
-  return "Something went wrong";
-}
-
 /* ============================================================
-   FLOOR ACTIONS
+   CREATE FLOOR
 ============================================================ */
-
 export async function createFloorAction(
-  payload: FloorFormModel
-): Promise<ActionResult> {
+  data: FloorFormModel
+): Promise<{ success: boolean; message?: string; statusCode?: number }> {
   try {
-    await createFloor(payload);
-    revalidatePath("/property-tax/floormaster/floor");
+    await createFloor(data);
 
-    return {
-      success: true,
-      message: "Floor created successfully",
-    };
+    for (const locale of locales) {
+      revalidatePath(`/${locale}/property-tax/floormaster/floor`, "page");
+    }
+
+    return { success: true };
   } catch (error: unknown) {
-    return {
-      success: false,
-      error: getErrorMessage(error),
-    };
+    if (error instanceof ApiError) {
+      return {
+        success: false,
+        message: error.responseText,
+        statusCode: error.statusCode,
+      };
+    }
+    if (error instanceof Error) {
+      return { success: false, message: error.message };
+    }
+    return { success: false, message: "Failed to create floor" };
   }
 }
 
+/* ============================================================
+   UPDATE FLOOR
+============================================================ */
 export async function updateFloorAction(
-  id: number,
-  payload: FloorFormModel
-): Promise<ActionResult> {
+  data: FloorFormModel
+): Promise<{ success: boolean; message?: string; statusCode?: number }> {
   try {
-    await updateFloor(id, payload);
-    revalidatePath("/property-tax/floormaster/floor");
+    await updateFloor(data);
 
-    return {
-      success: true,
-      message: "Floor updated successfully",
-    };
+    for (const locale of locales) {
+      revalidatePath(`/${locale}/property-tax/floormaster/floor`, "page");
+    }
+
+    return { success: true };
   } catch (error: unknown) {
-    return {
-      success: false,
-      error: getErrorMessage(error),
-    };
+    if (error instanceof ApiError) {
+      return {
+        success: false,
+        message: error.responseText,
+        statusCode: error.statusCode,
+      };
+    }
+    if (error instanceof Error) {
+      return { success: false, message: error.message };
+    }
+    return { success: false, message: "Failed to update floor" };
   }
 }
 
+/* ============================================================
+   DELETE FLOOR
+============================================================ */
 export async function deleteFloorAction(
-  id: number
-): Promise<ActionResult> {
+  floorId: number
+): Promise<{ success: boolean; message?: string; statusCode?: number }> {
+
+  if (!floorId || floorId <= 0) {
+    return {
+      success: false,
+      message: "Valid Floor ID is required",
+      statusCode: 400,
+    };
+  }
+
   try {
-    await deleteFloor(id);
-    revalidatePath("/property-tax/floormaster/floor");
+    await deleteFloor(floorId);
+
+    for (const locale of locales) {
+      revalidatePath(`/${locale}/property-tax/floormaster/floor`, "page");
+    }
 
     return {
       success: true,
       message: "Floor deleted successfully",
     };
-  } catch (error: unknown) {
-    const message = getErrorMessage(error);
-
-    // Return the actual backend error message instead of generic message
-    return {
-      success: false,
-      error: message,
-    };
-  }
-}
-
-export async function toggleFloorStatusAction(
-  id: number,
-  nextStatus: boolean
-): Promise<ActionResult> {
-  try {
-    const current = await getFloorById(id);
-
-    const payload: FloorFormModel = {
-      floorCode: current.floorCode,
-      description: current.description ?? "",
-      sequenceNo: current.sequenceNo ?? 0,
-      isActive: nextStatus,
-    };
-
-    await updateFloor(id, payload);
-    revalidatePath("/property-tax/floormaster/floor");
-
-    return { success: true };
-  } catch (error: unknown) {
-    return {
-      success: false,
-      error: getErrorMessage(error),
-    };
-  }
-}
-
-export async function checkFloorCodeExistsAction(
-  floorCode: string,
-  excludeId?: number
-): Promise<ActionResult<{ exists: boolean }>> {
-
-  const code = floorCode.trim();
-
-  if (!code) {
-    return { success: true, data: { exists: false } };
-  }
-
-  try {
-    let exists = await checkFloorCodeExists(code);
-    if (exists && excludeId !== undefined) {
-      const current = await getFloorById(excludeId);
-      const currentCode = current.floorCode?.trim() ?? "";
-      if (currentCode === code) {
-        exists = false;
-      }
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return {
+        success: false,
+        message: error.responseText,
+        statusCode: error.statusCode,
+      };
     }
 
     return {
-      success: true,
-      data: { exists },
-    };
-
-  } catch (error: unknown) {
-    return {
       success: false,
-      error: getErrorMessage(error),
+      message: "Failed to delete floor",
     };
   }
 }
 
-
-export async function checkFloorSequenceExistsAction(
-  sequenceNo: number,
-  excludeFloorId?: string
-): Promise<ActionResult<{ exists: boolean }>> {
-  try {
-    const exists =
-      await checkFloorSequenceExists(
-        sequenceNo,
-        excludeFloorId
-      );
-
-    return {
-      success: true,
-      data: { exists },
-    };
-  } catch (error: unknown) {
-    return {
-      success: false,
-      error: getErrorMessage(error),
-    };
-  }
-}
 /* ============================================================
-   SUBFLOOR ACTIONS
+   SUBFLOOR PAGED
 ============================================================ */
+export async function fetchSubFloorPagedServerAction(
+  pageNumber: number,
+  pageSize: number,
+  searchTerm?: string,
+  sortBy?: string,
+  sortOrder?: string
+): Promise<PagedResponse<SubFloor>> {
+  try {
+    const MAX_PAGE_SIZE = 100;
+    const MAX_PAGE_NUMBER = 10000;
 
+    if (
+      !Number.isFinite(pageNumber) ||
+      !Number.isFinite(pageSize) ||
+      pageNumber <= 0 ||
+      pageSize <= 0 ||
+      pageSize > MAX_PAGE_SIZE ||
+      pageNumber > MAX_PAGE_NUMBER
+    ) {
+      throw new Error("Invalid pagination parameters");
+    }
+
+    const allowedSortColumns = ["subFloorCode", "description"];
+
+    const validSortBy =
+      sortBy && allowedSortColumns.includes(sortBy)
+        ? sortBy
+        : undefined;
+
+    const validSortOrder =
+      sortOrder && ["asc", "desc"].includes(sortOrder.toLowerCase())
+        ? sortOrder.toLowerCase()
+        : undefined;
+
+    return await getSubFloorPaged(
+      pageNumber,
+      pageSize,
+      searchTerm,
+      validSortBy,
+      validSortOrder
+    );
+  } catch (error: unknown) {
+    if (error instanceof ApiError) {
+      console.error(
+        `[fetchSubFloorPagedServerAction] API Error ${error.statusCode}:`,
+        error.responseText
+      );
+    } else if (error instanceof Error) {
+      console.error(
+        "[fetchSubFloorPagedServerAction] Error:",
+        error.message
+      );
+    } else {
+      console.error("[fetchSubFloorPagedServerAction] Unknown error:", error);
+    }
+
+    throw error;
+  }
+}
+
+/* ============================================================
+   CREATE SUBFLOOR
+============================================================ */
 export async function createSubFloorAction(
-  payload: SubFloorFormModel
-): Promise<ActionResult> {
+  data: SubFloorFormModel
+): Promise<{ success: boolean; message?: string; statusCode?: number }> {
   try {
-    await createSubFloor(payload);
-    revalidatePath("/property-tax/floormaster/subfloor");
+    await createSubFloor(data);
 
-    return {
-      success: true,
-      message: "SubFloor created successfully",
-    };
+    for (const locale of locales) {
+      revalidatePath(`/${locale}/property-tax/floormaster/subfloor`, "page");
+    }
+
+    return { success: true };
   } catch (error: unknown) {
-    return {
-      success: false,
-      error: getErrorMessage(error),
-    };
+    if (error instanceof ApiError) {
+      return {
+        success: false,
+        message: error.responseText,
+        statusCode: error.statusCode,
+      };
+    }
+    if (error instanceof Error) {
+      return { success: false, message: error.message };
+    }
+    return { success: false, message: "Failed to create subfloor" };
   }
 }
 
+/* ============================================================
+   UPDATE SUBFLOOR
+============================================================ */
 export async function updateSubFloorAction(
-  id: number,
-  payload: SubFloorFormModel
-): Promise<ActionResult> {
+  data: SubFloorFormModel
+): Promise<{ success: boolean; message?: string; statusCode?: number }> {
   try {
-    await updateSubFloor(id, payload);
-    revalidatePath("/property-tax/floormaster/subfloor");
+    await updateSubFloor(data);
 
-    return {
-      success: true,
-      message: "SubFloor updated successfully",
-    };
+    for (const locale of locales) {
+      revalidatePath(`/${locale}/property-tax/floormaster/subfloor`, "page");
+    }
+
+    return { success: true };
   } catch (error: unknown) {
-    return {
-      success: false,
-      error: getErrorMessage(error),
-    };
+    if (error instanceof ApiError) {
+      return {
+        success: false,
+        message: error.responseText,
+        statusCode: error.statusCode,
+      };
+    }
+    if (error instanceof Error) {
+      return { success: false, message: error.message };
+    }
+    return { success: false, message: "Failed to update subfloor" };
   }
 }
 
+/* ============================================================
+   DELETE SUBFLOOR
+============================================================ */
 export async function deleteSubFloorAction(
-  id: number
-): Promise<ActionResult> {
+  subFloorId: number
+): Promise<{ success: boolean; message?: string; statusCode?: number }> {
+
+  if (!subFloorId || subFloorId <= 0) {
+    return {
+      success: false,
+      message: "Valid SubFloor ID is required",
+      statusCode: 400,
+    };
+  }
+
   try {
-    await deleteSubFloor(id);
-    revalidatePath("/property-tax/floormaster/subfloor");
+    await deleteSubFloor(subFloorId);
+
+    for (const locale of locales) {
+      revalidatePath(`/${locale}/property-tax/floormaster/subfloor`, "page");
+    }
 
     return {
       success: true,
       message: "SubFloor deleted successfully",
     };
-  } catch (error: unknown) {
-    return {
-      success: false,
-      error: getErrorMessage(error),
-    };
-  }
-}
-
-export async function toggleSubFloorStatusAction(
-  id: number,
-  nextStatus: boolean
-): Promise<ActionResult> {
-  try {
-    const current = await getSubFloorById(id);
-
-    const payload: SubFloorFormModel = {
-      subFloorCode: current.subFloorCode,
-      description: current.description ?? "",
-      isActive: nextStatus,
-    };
-
-    await updateSubFloor(id, payload);
-    revalidatePath("/property-tax/floormaster/subfloor");
-
-    return { success: true };
-  } catch (error: unknown) {
-    return {
-      success: false,
-      error: getErrorMessage(error),
-    };
-  }
-}
-
-/* ============================================================
-   CHECK DUPLICATE SUBFLOOR CODE
-============================================================ */
-
-export async function checkSubFloorCodeExistsAction(
-  subFloorCode: string,
-  excludeId?: number
-): Promise<ActionResult<{ exists: boolean }>> {
-
-  const code = subFloorCode.trim();
-
-  if (!code) {
-    return { success: true, data: { exists: false } };
-  }
-
-  try {
-    let exists = await checkSubFloorCodeExists(code);
-    if (exists && excludeId !== undefined) {
-      const current = await getSubFloorById(excludeId);
-      const currentCode = current.subFloorCode?.trim() ?? "";
-      if (currentCode === code) {
-        exists = false;
-      }
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return {
+        success: false,
+        message: error.responseText,
+        statusCode: error.statusCode,
+      };
     }
-    return {
-      success: true,
-      data: { exists },
-    };
-  } catch (error: unknown) {
+
     return {
       success: false,
-      error: getErrorMessage(error),
+      message: "Failed to delete subfloor",
     };
   }
 }

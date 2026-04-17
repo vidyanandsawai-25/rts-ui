@@ -187,4 +187,8 @@
     "currencySymbol": "₹",
     "deleteRow": "पंक्ति हटाएं"
   }
+  ,
+  "note": {
+    "mandatory": "* चिह्नित फ़ील्ड अनिवार्य हैं"
+  }
 }

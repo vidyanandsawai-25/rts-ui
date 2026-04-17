@@ -6,17 +6,17 @@ import SubFloorPage from "@/components/modules/property-tax/Floormaster/subfloor
 export const dynamic = "force-dynamic";
 
 interface PageProps {
-  readonly searchParams: {
+  readonly searchParams: Promise<{
     page?: string;
     pageSize?: string;
     q?: string;
-  };
+  }>;
 }
 
 export default async function Page({
   searchParams,
 }: PageProps) {
-  const params = searchParams;
+  const params = await searchParams;
 
   const pageNumber = Number(params?.page) || 1;
   const pageSize = Number(params?.pageSize) || 10;
@@ -30,8 +30,6 @@ export default async function Page({
     );
 
   return (
-    <div className="p-6">
-      <SubFloorPage subFloorPaged={result} />
-    </div>
+    <SubFloorPage subFloorPaged={result} />
   );
 }

@@ -3,7 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { Layers } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { PageContainer } from "@/components/common/PageContainer";
 import TableHeader from "@/components/common/TableHeader";
@@ -15,9 +15,9 @@ type TabKey = "floor" | "subfloor";
 
 export default function FloorMasterLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -111,7 +111,9 @@ export default function FloorMasterLayout({
           }
         />
 
-        {children}
+        <div className="p-6">
+          {children}
+        </div>
       </div>
     </PageContainer>
   );

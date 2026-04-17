@@ -1,11 +1,13 @@
-import FloorForm from "@/components/modules/property-tax/Floormaster/floor/FloorForm";
+import { FloorForm } from "@/components/modules/property-tax/Floormaster/floor";
 import { getFloorById } from "@/lib/api/floor.services";
+import React from "react";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-
-export default async function Page({ params }: Readonly<{ params: { id: string } }>) {
-  const floor = await getFloorById(Number(params.id));
+export default async function EditPage({ 
+  params 
+}: Readonly<{ params: Promise<{ id: string }> }>): Promise<React.ReactElement> {
+  const { id } = await params;
+  const floorId = Number(id);
+  const floor = await getFloorById(floorId);
   
-  return <FloorForm mode="edit" initialData={floor} />;
+  return <FloorForm floorId={floorId} initialData={floor} />;
 }

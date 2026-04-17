@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AlertCircle, Layers, CheckCircle2, X } from "lucide-react";
 import { toast } from "sonner";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 import { Drawer } from "@/components/common/Drawer";
 import { CancelButton, Input, SaveButton } from "@/components/common";
@@ -16,34 +16,27 @@ import type { SubFloor, SubFloorFormModel } from "@/types/floor.types";
 import {
   createSubFloorAction,
   updateSubFloorAction,
-  checkSubFloorCodeExistsAction,
 } from "@/app/[locale]/property-tax/floormaster/actions";
 
 /* ================= CONSTANTS ================= */
 
 const CODE_MAX = 10;
 // Allow alphanumeric and underscore - validation will enforce "not at start/end" rule
-const CODE_REGEX = /^[A-Za-z0-9_]*$/;
+const CODE_REGEX = /^\w*$/;
 
-/* ================= TYPES ================= */
-
-const DEFAULT_VALUES: SubFloorFormModel = {
-  subFloorCode: "",
-  description: "",
-  isActive: true,
-};
-
-type Props =
-  | { mode: "add"; initialData?: never }
-  | { mode: "edit"; initialData: SubFloor };
+/* ================= PROPS ================= */
+export interface SubFloorFormProps {
+  subFloorId: number | null;
+  initialData?: SubFloor;
+}
 
 function ValidationMessage({
   message,
   visible,
-}: {
+}: Readonly<{
   message?: string;
   visible: boolean;
-}) {
+}>) {
   if (!visible || !message) return null;
 
   return (
@@ -54,28 +47,36 @@ function ValidationMessage({
   );
 }
 
-export default function SubFloorForm(props: Props) {
+/* ================= MAIN ================= */
+export default function SubFloorForm({
+  subFloorId,
+  initialData,
+}: Readonly<SubFloorFormProps>) {
   const router = useRouter();
-  const isEdit = props.mode === "edit";
+  const isEdit = Boolean(subFloorId);
 
   const t = useTranslations("floor.subfloor");
   const tCommon = useTranslations("common");
+  const locale = useLocale();
 
   const [open, setOpen] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [checkingCode, setCheckingCode] = useState(false);
 
   const initial = useMemo<SubFloorFormModel>(() => {
-    if (!isEdit) return DEFAULT_VALUES;
-
-    const s = props.initialData;
+    if (!initialData) {
+      return {
+        subFloorCode: "",
+        description: "",
+        isActive: true,
+      };
+    }
 
     return {
-      subFloorCode: s.subFloorCode ?? "",
-      description: s.description ?? "",
-      isActive: s.isActive ?? true,
+      subFloorCode: initialData.subFloorCode ?? "",
+      description: initialData.description ?? "",
+      isActive: initialData.isActive ?? true,
     };
-  }, [isEdit, props.initialData]);
+  }, [initialData]);
 
   const [formData, setFormData] = useState(initial);
   const [errors, setErrors] =
@@ -89,10 +90,10 @@ export default function SubFloorForm(props: Props) {
     setFormData(initial);
   }, [initial]);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setOpen(false);
-    router.back();
-  };
+    router.push(`/${locale}/property-tax/floormaster/subfloor`);
+  }, [router, locale, setOpen]);
 
   /* ================= VALIDATION ================= */
 
@@ -151,37 +152,12 @@ export default function SubFloorForm(props: Props) {
     const validationErrors = validate(formData);
     setErrors(validationErrors);
 
-    if (key === "subFloorCode" && !validationErrors.subFloorCode) {
-      setCheckingCode(true);
-      try {
-        const result = await checkSubFloorCodeExistsAction(
-          formData.subFloorCode.trim(),
-          isEdit ? props.initialData.subFloorId : undefined
-        );
-
-        if (!result.success) throw new Error(result.error);
-
-        if (result.data?.exists) {
-          setErrors((prev) => ({
-            ...prev,
-            subFloorCode: t("validation.duplicateCode"),
-          }));
-        }
-      } catch (error) {
-        toast.error(
-          error instanceof Error
-            ? error.message
-            : tCommon("errors.saveFailed")
-        );
-      } finally {
-        setCheckingCode(false);
-      }
-    }
+    // Note: Duplicate code check disabled until checkSubFloorCodeExistsAction is implemented
   };
 
   /* ================= SUBMIT ================= */
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const validationErrors = validate(formData);
@@ -201,14 +177,16 @@ export default function SubFloorForm(props: Props) {
         isActive: formData.isActive,
       };
 
+      // Add subFloorId for updates
+      if (isEdit && initialData?.subFloorId) {
+        payload.subFloorId = initialData.subFloorId;
+      }
+
       const result = isEdit
-        ? await updateSubFloorAction(
-            props.initialData.subFloorId,
-            payload
-          )
+        ? await updateSubFloorAction(payload)
         : await createSubFloorAction(payload);
 
-      if (!result.success) throw new Error(result.error);
+      if (!result.success) throw new Error(result.message);
 
       toast.success(
         isEdit
@@ -217,6 +195,7 @@ export default function SubFloorForm(props: Props) {
       );
 
       handleClose();
+      router.refresh();
     } catch (error) {
       toast.error(
         error instanceof Error
@@ -234,10 +213,10 @@ export default function SubFloorForm(props: Props) {
     <Drawer
       open={open}
       onClose={handleClose}
-   
+      className="border-l-4 border-[#4F6A94]"
       title={
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center bg-indigo-600 rounded-lg text-white">
+          <div className="flex h-10 w-10 items-center justify-center bg-linear-to-br from-blue-500 to-blue-600 rounded-lg text-white">
             <Layers size={20} />
           </div>
           <div>
@@ -259,7 +238,7 @@ export default function SubFloorForm(props: Props) {
             label={isEdit ? tCommon("actions.update") : tCommon("actions.save")}
             type="submit"
             form="subfloor-form"
-            isLoading={isSubmitting || checkingCode}
+            isLoading={isSubmitting}
           />
         </>
       }
@@ -267,14 +246,14 @@ export default function SubFloorForm(props: Props) {
       <form
         id="subfloor-form"
         onSubmit={handleSubmit}
-        className="space-y-6 p-5"
+        className="space-y-6 bg-[#F8FAFF] p-5"
       >
         {/* Active Toggle - Show at top for edit mode */}
         {isEdit && (
           <div className="rounded-xl border border-[#DCEAFF] bg-slate-50 p-4">
             <div
               className={cn(
-                "rounded-xl p-2 flex items-center justify-between",
+                "rounded-xl p-3 flex items-center justify-between",
                 isActive
                   ? "border border-blue-200 bg-[#F0F6FF]"
                   : "border border-gray-200 bg-gray-50"
@@ -286,18 +265,17 @@ export default function SubFloorForm(props: Props) {
                     "flex h-9 w-9 items-center justify-center rounded-full",
                     isActive
                       ? "bg-green-100 text-green-600"
-                      : "bg-gray-200 text-gray-800"
+                      : "bg-gray-200 text-gray-900"
                   )}
                 >
                   {isActive ? <CheckCircle2 size={18} /> : <X size={18} />}
                 </div>
 
                 <div>
-                  <div className="font-medium text-gray-700">
+                  <div className="font-medium text-gray-900">
                     {t("form.activeStatusTitle")}
-                    <span className="text-red-600 ml-1">*</span>
                   </div>
-                  <div className="text-sm text-gray-600">
+                  <div className="text-sm text-gray-500">
                     {isActive
                       ? t("form.activeStatusOn")
                       : t("form.activeStatusOff")}
@@ -319,41 +297,46 @@ export default function SubFloorForm(props: Props) {
           </div>
         )}
 
-        <Input
-          name="subFloorCode"
-          label={t("form.code")}
-          required
-          value={formData.subFloorCode}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          placeholder={t("form.codePlaceholder")}
-        />
-        <ValidationMessage
-          message={errors.subFloorCode}
-          visible={showError("subFloorCode")}
-        />
+        <div className="rounded-xl border border-[#DCEAFF] bg-slate-50 p-5 space-y-4">
+          <Input
+            name="subFloorCode"
+            label={t("form.code")}
+            required
+            value={formData.subFloorCode}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            placeholder={t("form.codePlaceholder")}
+            fullWidth
+            className="text-gray-700"
+          />
+          <ValidationMessage
+            message={errors.subFloorCode}
+            visible={showError("subFloorCode")}
+          />
 
-        <Input
-          name="description"
-          label={t("form.description")}
-          required
-          value={formData.description}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          placeholder={t("form.descriptionPlaceholder")}
-        />
-        <ValidationMessage
-          message={errors.description}
-          visible={showError("description")}
-        />
+          <Input
+            name="description"
+            label={t("form.description")}
+            required
+            value={formData.description}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            placeholder={t("form.descriptionPlaceholder")}
+            fullWidth
+            className="text-gray-700"
+          />
+          <ValidationMessage
+            message={errors.description}
+            visible={showError("description")}
+          />
+        </div>
 
-
-         <div className="flex items-center gap-2 rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-700">
-              <AlertCircle size={16} />
-              <span>
-                {t("note.mandatory")}
-              </span>
-            </div>
+        <div className="flex items-center gap-2 rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-700">
+          <AlertCircle size={16} />
+          <span>
+            {t("note.mandatory")}
+          </span>
+        </div>
       </form>
     </Drawer>
   );

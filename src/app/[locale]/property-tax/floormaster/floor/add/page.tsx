@@ -1,8 +1,6 @@
-import FloorForm from "@/components/modules/property-tax/Floormaster/floor/FloorForm";
+import { FloorForm } from "@/components/modules/property-tax/Floormaster/floor";
+import React from "react";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-
-export default function Page() {
-  return <FloorForm mode="add" />
+export default async function AddPage(): Promise<React.ReactElement> {
+  return <FloorForm floorId={null} initialData={undefined} />;
 }

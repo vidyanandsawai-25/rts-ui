@@ -8,6 +8,12 @@
     },
     "subtitle": "Add, edit, and manage floor information",
     "tableTitle": "Floor List",
+    "search": {
+      "placeholder": "Search by code or description..."
+    },
+    "buttons": {
+      "add": "Add Floor"
+    },
     "tabs": {
       "floor": "Floor",
       "subfloor": "Sub-Floor"
@@ -105,6 +111,12 @@
     "title": "Sub-Floor Master Management",
     "subtitle": "Add, edit, and manage sub-floor categories",
     "tableTitle": "Sub-Floor List",
+    "search": {
+      "placeholder": "Search by code or description..."
+    },
+    "buttons": {
+      "add": "Add Sub-Floor"
+    },
     "tabs": {
       "floor": "Floor",
       "subfloor": "Sub-Floor"

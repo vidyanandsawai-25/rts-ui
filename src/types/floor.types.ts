@@ -1,74 +1,116 @@
-/* =====================================================
-   PAGINATION - SHARED TYPE
-   Used by floor and subfloor APIs for paginated responses
-===================================================== */
+import { PagedResponse } from "./common.types";
 
-export interface PagedResponse<T> {
-  items: T[];
-  totalCount: number;
-  pageNumber: number;
-  pageSize: number;
-  totalPages: number;
-  hasPrevious: boolean;
-  hasNext: boolean;
-}
+/* =====================================================
+   EXPORT PagedResponse for use in other modules
+===================================================== */
+export type { PagedResponse } from "./common.types";
 
 /* =====================================================
    FLOOR - FORM MODEL
+   Used in UI forms (create/update)
 ===================================================== */
-
 export interface FloorFormModel {
+  floorId?: number; // optional for create
   floorCode: string;
   description: string;
   sequenceNo: number;
   isActive: boolean;
+  updatedBy?: number;
 }
 
 /* =====================================================
-   FLOOR - ENTITY MODEL
+   FLOOR - ENTITY MODEL (DB RESPONSE)
 ===================================================== */
-
 export interface Floor {
+  [key: string]: unknown;
+
   floorId: number;
   floorCode: string;
   description: string;
   sequenceNo: number;
 
+  isActive: boolean;
   createdDate: string;
   updatedDate: string | null;
-
-  isActive: boolean;
-
-  [key: string]: unknown;
 }
 
-export type FloorPagedResponse = PagedResponse<Floor>;
+/* =====================================================
+   FLOOR - CREATE PAYLOAD (API)
+===================================================== */
+export interface FloorCreatePayload {
+  floorCode: string;
+  description: string;
+  sequenceNo: number;
+  isActive: boolean;
+  createdBy?: number;
+  createdDate?: string;
+}
+
+/* =====================================================
+   FLOOR - LIST PROPS (UI TABLE)
+===================================================== */
+export interface FloorProps
+  extends Omit<
+    PagedResponse<Floor>,
+    "items" | "hasPrevious" | "hasNext"
+  > {
+  data: Floor[];
+  sortBy?: string;
+  sortOrder?: string;
+}
 
 /* =====================================================
    SUBFLOOR - FORM MODEL
 ===================================================== */
-
 export interface SubFloorFormModel {
+  subFloorId?: number;
   subFloorCode: string;
   description: string;
   isActive: boolean;
+  updatedBy?: number;
 }
 
 /* =====================================================
    SUBFLOOR - ENTITY MODEL
 ===================================================== */
-
 export interface SubFloor {
+  [key: string]: unknown;
+
   subFloorId: number;
   subFloorCode: string;
   description: string;
 
   isActive: boolean;
-
   createdDate: string;
   updatedDate: string | null;
-
-  [key: string]: unknown;
 }
 
+/* =====================================================
+   SUBFLOOR - CREATE PAYLOAD
+===================================================== */
+export interface SubFloorCreatePayload {
+  subFloorCode: string;
+  description: string;
+  isActive: boolean;
+  createdBy?: number;
+  createdDate?: string;
+}
+
+/* =====================================================
+   SUBFLOOR - LIST PROPS
+===================================================== */
+export interface SubFloorProps
+  extends Omit<
+    PagedResponse<SubFloor>,
+    "items" | "hasPrevious" | "hasNext"
+  > {
+  data: SubFloor[];
+  sortBy?: string;
+  sortOrder?: string;
+}
+
+/* =====================================================
+   PAGINATED API RESPONSE (COMMON)
+===================================================== */
+export type FloorPagedResponse = PagedResponse<Floor>;
 export type SubFloorPagedResponse = PagedResponse<SubFloor>;

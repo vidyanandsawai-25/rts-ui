@@ -1,53 +1,39 @@
-
 "use client";
 
-import {
-  useCallback,
-} from "react";
-import {
-  useRouter,
-  useSearchParams,
-} from "next/navigation";
-import {
-  useLocale,
-  useTranslations,
-} from "next-intl";
+import { useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Select } from "@/components/common/select";
-import { PageContainer } from "@/components/common/PageContainer";
-import { MasterTable } from "@/components/common/MasterTable";
-import { useConfirm } from "@/components/common/ConfirmProvider";
 
-import type {
-  Floor,
-  FloorPagedResponse,
-} from "@/types/floor.types";
+import { MasterTable } from "@/components/common/MasterTable";
+import { EditButton, DeleteButton } from "@/components/common/ActionButtons";
+import { useConfirm } from "@/components/common/ConfirmProvider";
+import { Select } from "@/components/common";
+
+import type { Floor, FloorPagedResponse } from "@/types/floor.types";
 
 import { deleteFloorAction } from "@/app/[locale]/property-tax/floormaster/actions";
-import { DeleteButton, EditButton } from "@/components/common";
-import { floorColumns } from "./columns";
+import { floorColumns } from "./floorColumns";
 
-
-/* ============================================================
-   PROPS
-============================================================ */
-
+/* ================= PROPS ================= */
 interface Props {
   floorPaged: FloorPagedResponse;
+  sortBy?: string;
+  sortOrder?: string;
 }
 
-/* ============================================================
-   COMPONENT
-============================================================ */
-
-export default function FloorPage({
+/* ================= MAIN ================= */
+export default function FloorMaster({
   floorPaged,
-}: Props) {
+  sortBy,
+  sortOrder,
+}: Readonly<Props>) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const locale = useLocale();
 
   const t = useTranslations("floor.floor");
+  const tCommon = useTranslations("common");
 
   const { confirm } = useConfirm();
 
@@ -59,178 +45,133 @@ export default function FloorPage({
     totalPages,
   } = floorPaged;
 
-  /* ============================================================
-     URL BUILDER (DRY)
-  ============================================================ */
+  const currentSearchTerm = searchParams.get("q") || "";
 
+  /* ================= URL BUILDER ================= */
   const buildUrl = useCallback(
-    (page: number, size: number, query?: string) => {
+    (
+      page: number,
+      size: number,
+      searchTerm?: string,
+      newSortBy?: string,
+      newSortOrder?: string
+    ) => {
       const params = new URLSearchParams();
       params.set("page", String(page));
       params.set("pageSize", String(size));
 
-      if (query?.trim()) {
-        params.set("q", query.trim());
-      }
+      if (searchTerm) params.set("q", searchTerm);
+      if (newSortBy) params.set("sortBy", newSortBy);
+      if (newSortOrder) params.set("sortOrder", newSortOrder);
 
       return `/${locale}/property-tax/floormaster/floor?${params.toString()}`;
     },
     [locale]
   );
 
-  /* ============================================================
-     SEARCH
-  ============================================================ */
+  const columns = floorColumns(t);
 
-  const currentSearchTerm =
-    searchParams.get("q") ?? "";
+  /* ================= PAGINATION ================= */
+  const changePage = (p: number) => {
+    router.push(buildUrl(p, pageSize, currentSearchTerm, sortBy, sortOrder));
+  };
 
-  /* ============================================================
-     PAGINATION
-  ============================================================ */
-
-  const changePage = useCallback(
-    (page: number) => {
-      router.push(
-        buildUrl(
-          page,
-          pageSize,
-          currentSearchTerm
-        )
-      );
+  /* ================= EDIT ================= */
+  const handleEdit = useCallback(
+    (row: Floor) => {
+      router.push(`/${locale}/property-tax/floormaster/floor/edit/${row.floorId}`);
     },
-    [
-      router,
-      pageSize,
-      currentSearchTerm,
-      buildUrl,
-    ]
+    [router, locale]
   );
 
-  const total = totalCount;
-
-  /* ============================================================
-     PAGE SIZE
-  ============================================================ */
-
-  // No local pageSize state; use MasterTable's onPageSizeChange
-
-  /* ============================================================
-     DELETE
-  ============================================================ */
-
+  /* ================= DELETE ================= */
   const handleDelete = useCallback(
-  (row: Floor) => {
-    confirm({
-      variant: "delete",
-      title: t("delete.confirmTitle", {
-        id: row.floorCode,
-      }),
-      description: t("delete.confirmDescription"),
-      meta: {
-        id: row.floorCode,
-        name: row.description,
-      },
-   onConfirm: async () => {
-  try {
-    const result = await deleteFloorAction(row.floorId);
+    (row: Floor) => {
+      confirm({
+        variant: "delete",
+        title: `${t("table.columns.floorCode")}: ${row.floorCode}`,
+        description: t("delete.confirmDescription"),
+        meta: { name: row.description },
 
-    if (result.success) {
-      toast.success(t("messages.deleteSuccess"));
-      router.refresh();
-      return;
-    }
+        onConfirm: async () => {
+          const result = await deleteFloorAction(row.floorId);
 
-    // Handle specific backend key
-    if (result.error === "floor.messages.deleteInUse") {
-      toast.error(t("messages.deleteInUse"));
-    } else {
-      toast.error(result.error || t("messages.deleteFailed"));
-    }
+          if (result.success) {
+            toast.success(t("messages.deleteSuccess"));
+            router.refresh();
+          } else {
+            let msg = tCommon("errors.deleteError");
 
-  } catch (error) {
-    toast.error(
-      error instanceof Error
-        ? error.message
-        : t("messages.deleteFailed")
-    );
-  }
-},
-    });
-  },
-  [confirm, t, router]
-);
+            if (result.statusCode === 409) {
+              msg = t("messages.deleteInUse");
+            } else if (result.statusCode === 404) {
+              msg = t("messages.notFound");
+            } else if (result.message) {
+              msg = result.message;
+            }
 
-  /* ============================================================
-     TABLE COLUMNS
-  ============================================================ */
+            toast.error(msg);
+          }
+        },
+      });
+    },
+    [confirm, router, t, tCommon]
+  );
 
-  const columns = floorColumns(t);
-  /* ============================================================
-     UI
-  ============================================================ */
+  /* ================= FOOTER ================= */
+  const start =
+    totalCount === 0 ? 0 : (pageNumber - 1) * pageSize + 1;
+  const end = Math.min(start + pageSize - 1, totalCount);
 
- return (
-  <PageContainer>
-    <div className="w-full">
+  /* ================= UI ================= */
+  return (
+    <MasterTable<Floor>
+          columns={columns}
+          data={data}
+          loading={false}
+          height="lg"
 
-      <MasterTable<Floor>
-        columns={columns}
-        data={data}
-        loading={false}
-        height="lg"
-        pageNumber={pageNumber}
-        pageSize={pageSize}
-        totalCount={totalCount}
-        totalPages={totalPages}
-         
-        onPageChange={changePage}
-        onPageSizeChange={(size) => {
-          router.push(buildUrl(1, size, currentSearchTerm));
-        }}
-        
+          pageNumber={pageNumber}
+          pageSize={pageSize}
+          totalCount={totalCount}
+          totalPages={totalPages}
+          onPageChange={changePage}
 
-        // Disable internal selector
-        paginationConfig={{ enabled: true, showPageSizeSelector: false }}
+          renderActions={(row) => (
+            <>
+              <EditButton onClick={() => handleEdit(row)} />
+              <DeleteButton onClick={() => handleDelete(row)} />
+            </>
+          )}
 
-        // Custom footer
-       footerLeftContent={
-  <div className="flex items-center gap-1 ">
-    {t('table.pagination.showing')}
-    <Select
-      options={[5, 10, 20, 50].map((s) => ({ label: String(s), value: String(s) }))}
-      value={String(pageSize)}
-      onChange={(val) => router.push(buildUrl(1, Number(val), currentSearchTerm))}
-      selectSize="sm"
-      className="min-w-[60px] border-blue-200"
-      aria-label="Rows per page"
+          actionLabel={tCommon("table.columns.actions")}
+
+          paginationConfig={{ enabled: true, showPageSizeSelector: false }}
+
+          footerLeftContent={
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-gray-700">
+                {tCommon("table.showing")} {start} {tCommon("table.to")} {end} {tCommon("table.of")} {totalCount}
+              </span>
+
+              <Select
+                value={String(pageSize)}
+                onChange={(val) =>
+                  router.push(
+                    buildUrl(1, Number(val), currentSearchTerm, sortBy, sortOrder)
+                  )
+                }
+                options={[10, 20, 30, 50].map((s) => ({
+                  label: String(s),
+                  value: String(s),
+                }))}
+                selectSize="sm"
+                className="w-20"
+              />
+            </div>
+          }
+
+      getRowKey={(row) => String(row.floorId)}
     />
-    <span>{t('table.pagination.entries', { total })}</span>
-  </div>
-}
-
-
-       renderActions={(row) => (
-  <>
-    <EditButton
-      onClick={() =>
-        router.push(
-          `/${locale}/property-tax/floormaster/floor/edit/${row.floorId}`
-        )
-      }
-    />
-    <DeleteButton
-      onClick={() => handleDelete(row)}
-    />
-  </>
-)}
-
-        getRowKey={(row) => row.floorId}
-
-        
-      />
-
-    </div>
-  </PageContainer>
-);
+  );
 }
