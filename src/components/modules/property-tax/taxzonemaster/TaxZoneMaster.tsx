@@ -13,7 +13,7 @@ import { useConfirm } from "@/components/common/ConfirmProvider";
 import { PageContainer, SearchInput } from "@/components/common";
 import { EditButton, DeleteButton, AddButton } from "@/components/common/ActionButtons";
 import { useTranslations, useLocale } from "next-intl";
-import { getTaxZoneColumns } from "./columns";
+import { getTaxZoneColumns } from "./TaxZoneColumn";
 import { TEXT_SANITIZE } from "@/lib/utils/validation";
 
 export default function TaxZoneMaster({

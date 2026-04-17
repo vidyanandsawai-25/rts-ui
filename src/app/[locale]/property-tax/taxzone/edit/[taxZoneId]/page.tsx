@@ -1,6 +1,7 @@
 import TaxZoneForm from "@/components/modules/property-tax/taxzonemaster/TaxZoneForm";
 import { getTaxZoneByIdAction } from "../../action";
 import { notFound } from "next/navigation";
+import { ApiError } from "@/lib/api/taxzone.services";
 
 interface PageProps {
   params: Promise<{
@@ -16,8 +17,12 @@ export default async function EditPage({ params }: PageProps) {
   try {
     taxZoneData = await getTaxZoneByIdAction(taxZoneId);
   } catch (error) {
-    console.error("Failed to fetch tax zone:", error);
-    notFound();
+    // Only call notFound() for real 404s; let other failures hit error.tsx
+    if (error instanceof ApiError && error.statusCode === 404) {
+      notFound();
+    }
+    // Re-throw other errors (500s, timeouts, auth failures) so they reach error.tsx
+    throw error;
   }
 
   return (
