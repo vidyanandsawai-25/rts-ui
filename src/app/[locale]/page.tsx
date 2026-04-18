@@ -1,4 +1,3 @@
-// import { MainLayout } from '@/components/layout';
 
 interface HomeProps {
   params: Promise<{ locale: string }>;

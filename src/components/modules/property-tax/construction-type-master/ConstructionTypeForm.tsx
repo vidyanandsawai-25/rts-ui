@@ -50,7 +50,7 @@ export default function ConstructionTypeForm({
   const [isActive, setIsActive] = useState(initialData?.isActive ?? true);
 
   const [formData, setFormData] = useState<ConstructionTypeFormModel>({
-    constructionTypeId: initialData?.constructionTypeId,
+      constructionTypeId: constructionTypeId ?? initialData?.constructionTypeId,
     constructionCode: initialData?.constructionCode ?? "",
     description: initialData?.description ?? "",
     searchSequence: initialData?.searchSequence ?? 0,
