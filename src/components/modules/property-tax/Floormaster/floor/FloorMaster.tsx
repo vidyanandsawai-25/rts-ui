@@ -123,7 +123,7 @@ export default function FloorMaster({
           data={data}
           loading={false}
           height="lg"
-
+        
           pageNumber={pageNumber}
           pageSize={pageSize}
           totalCount={totalCount}

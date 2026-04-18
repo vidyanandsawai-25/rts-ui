@@ -136,7 +136,17 @@ export async function getFloorPaged(
       throw new ApiError(500, 'Invalid format', 'Invalid floor response');
     }
 
-    const items = response.data.items.filter(isFloorShape).map(normalizeFloor);
+    
+    const items = response.data.items.map((item, index) => {
+  if (!isFloorShape(item)) {
+    throw new ApiError(
+      500,
+      'Invalid data',
+      `Invalid floor item at index ${index}`
+    );
+  }
+  return normalizeFloor(item);
+});
 
     return { ...response.data, items };
   } catch (err) {
@@ -278,7 +288,16 @@ export async function getSubFloorPaged(
       throw new ApiError(500, 'Invalid format', 'Invalid subfloor response');
     }
 
-    const items = response.data.items.filter(isSubFloorShape).map(normalizeSubFloor);
+   const items = response.data.items.map((item, index) => {
+  if (!isSubFloorShape(item)) {
+    throw new ApiError(
+      500,
+      'Invalid data',
+      `Invalid subfloor item at index ${index}`
+    );
+  }
+  return normalizeSubFloor(item);
+});
 
     return { ...response.data, items };
   } catch (err) {
@@ -345,6 +364,12 @@ export async function updateSubFloor(data: SubFloorFormModel): Promise<void> {
   try {
     if (!data.subFloorId || data.subFloorId <= 0) {
       throw new Error('SubFloor ID required');
+    }
+    if(!data.subFloorCode?.trim()){
+      throw new Error('subFloorCode required');
+    }
+    if(!data.description?.trim()){
+      throw new Error('description required');
     }
 
     const payload = {
