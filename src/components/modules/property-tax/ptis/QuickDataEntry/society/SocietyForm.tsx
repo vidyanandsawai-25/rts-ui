@@ -14,6 +14,7 @@ import { useState } from "react";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 
 import { societyValidations, validateForm, hasErrors } from "@/lib/utils/validation";
+import { useEffect, useRef } from "react";
 
 const SocietyForm = ({ societyData, propertyIdSearch, locale }: SocietyFormProps) => {
 
@@ -32,6 +33,48 @@ const SocietyForm = ({ societyData, propertyIdSearch, locale }: SocietyFormProps
     const [secretaryMobileDigits, setSecretaryMobileDigits] = useState<string[]>(
         Array.from({ length: 10 }, (_, i) => initialSecretaryMobile[i] ?? "")
     );
+
+    const formRef = useRef<HTMLFormElement>(null);
+    const [hasChanges, setHasChanges] = useState(false);
+
+    const checkFormChanges = () => {
+        if (!formRef.current) return;
+        const formData = new FormData(formRef.current);
+
+        const societyName = String(formData.get("societyName") ?? "").trim();
+        const societyAddress = String(formData.get("societyAddress") ?? "").trim();
+        const societyEmailId = String(formData.get("societyEmailId") ?? "").trim();
+
+        const managerName = String(formData.get("managerName") ?? "").trim();
+        const managerEmailId = String(formData.get("managerEmailId") ?? "").trim();
+        const managerMobileStr = managerMobileDigits.join("");
+
+        const secretaryName = String(formData.get("secretaryName") ?? "").trim();
+        const secretaryEmailId = String(formData.get("secretaryEmailId") ?? "").trim();
+        const secretaryMobileStr = secretaryMobileDigits.join("");
+
+        const landOwnerName = String(formData.get("landOwnerName") ?? "").trim();
+        const builderName = String(formData.get("builderName") ?? "").trim();
+
+        const isChanged =
+            (landOwnerName || "") !== (societyData?.landOwnerName || "") ||
+            (builderName || "") !== (societyData?.builderName || "") ||
+            (societyName || "") !== (societyData?.societyName || "") ||
+            (societyAddress || "") !== (societyData?.societyAddress || "") ||
+            (societyEmailId || "") !== (societyData?.societyEmailId || "") ||
+            (managerName || "") !== (societyData?.managerName || "") ||
+            (managerEmailId || "") !== (societyData?.managerEmailId || "") ||
+            (managerMobileStr || "") !== (societyData?.managerMobileNo || "") ||
+            (secretaryName || "") !== (societyData?.secretaryName || "") ||
+            (secretaryEmailId || "") !== (societyData?.secretaryEmailId || "") ||
+            (secretaryMobileStr || "") !== (societyData?.secretaryMobileNo || "");
+
+        setHasChanges(isChanged);
+    };
+
+    useEffect(() => {
+        checkFormChanges();
+    }, [managerMobileDigits, secretaryMobileDigits]);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -146,7 +189,7 @@ const SocietyForm = ({ societyData, propertyIdSearch, locale }: SocietyFormProps
     };
 
     return (
-        <form onSubmit={handleSubmit} noValidate>
+        <form ref={formRef} onSubmit={handleSubmit} onChange={checkFormChanges} noValidate>
             <Tabs value="society">
                 <Tabs.TabPanel value="society" className="mt-0 p-4 space-y-3">
                     <div className="bg-white rounded-xl shadow-md border-2 border-purple-100 p-4">
@@ -382,7 +425,12 @@ const SocietyForm = ({ societyData, propertyIdSearch, locale }: SocietyFormProps
 
                         </div>
                         <div className="flex justify-end space-x-2 mt-4">
-                            <AddButton label={t('society.updateButton')} type="submit" isLoading={isUpdating} />
+                            <AddButton
+                                label={isUpdating ? t('footer.saving') : t('common.saveChanges')}
+                                type="submit"
+                                isLoading={isUpdating}
+                                disabled={isUpdating || !hasChanges}
+                            />
                         </div>
                     </div>
                 </Tabs.TabPanel>

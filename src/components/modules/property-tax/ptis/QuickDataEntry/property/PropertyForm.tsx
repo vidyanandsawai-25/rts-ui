@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { Tabs, Input, AddButton, SearchSelect } from '@/components/common';
 import { Label } from '@/components/common/label';
@@ -46,6 +46,32 @@ const PropertyFormView = ({
     const [wingName, setWingName] = useState(initialWingName);
 
     const [isUpdating, setIsUpdating] = useState(false);
+
+    const formRef = useRef<HTMLFormElement>(null);
+    const [hasChanges, setHasChanges] = useState(false);
+
+    const checkFormChanges = () => {
+        if (!formRef.current) return;
+        const formData = new FormData(formRef.current);
+
+        const isChanged =
+            categoryId !== (propertyData?.categoryId?.toString() ?? '') ||
+            propertyTypeId !== (propertyData?.propertyTypeId?.toString() ?? '') ||
+            wingId !== initialWingId ||
+            String(formData.get("flatOrShopNo") ?? "").trim() !== (propertyData?.flatOrShopNo ?? "") ||
+            String(formData.get("plotNo") ?? "").trim() !== (propertyData?.plotNo ?? "") ||
+            String(formData.get("surveyNo") ?? "").trim() !== (propertyData?.surveyNo ?? "") ||
+            String(formData.get("subZoneNo") ?? "").trim() !== (propertyData?.subZoneNo ?? "") ||
+            (parseOptionalNumber(formData.get("noOfResidentialToilets")) ?? 0) !== (propertyData?.noOfResidentialToilets ?? 0) ||
+            (parseOptionalNumber(formData.get("noOfCommercialToilets")) ?? 0) !== (propertyData?.noOfCommercialToilets ?? 0) ||
+            (parseOptionalNumber(formData.get("plotArea")) ?? 0) !== (propertyData?.plotArea ?? 0);
+
+        setHasChanges(isChanged);
+    };
+
+    useEffect(() => {
+        checkFormChanges();
+    }, [categoryId, propertyTypeId, wingId]);
 
     const categoryOptions = propertyCategoryList.map((item) => ({
         label: item.propertyCategoryName,
@@ -135,12 +161,11 @@ const PropertyFormView = ({
             totalCarpetAreaSqMeter: parseOptionalNumber(formData.get("totalCarpetAreaSqMeter")),
             plotArea: parseOptionalNumber(formData.get("plotArea")),
 
-            plotAreaFtLength: propertyData?.plotAreaFtLength ?? null,
             plotAreaFtWidth: propertyData?.plotAreaFtWidth ?? null,
-            plotAreaMtrLength: propertyData?.plotAreaMtrLength ?? null,
+            plotAreaFtLength: propertyData?.plotAreaFtLength ?? null,
             plotAreaMtrWidth: propertyData?.plotAreaMtrWidth ?? null,
+            plotAreaMtrLength: propertyData?.plotAreaMtrLength ?? null,
         };
-
         confirm({
             variant: "update",
             title: t('property.updateConfirmTitle'),
@@ -170,7 +195,7 @@ const PropertyFormView = ({
     };
 
     return (
-        <form onSubmit={handleSubmit}>
+        <form ref={formRef} onSubmit={handleSubmit} onChange={checkFormChanges}>
             <Tabs defaultValue="property">
                 <Tabs.TabPanel value="property" className="mt-0 p-4 space-y-3">
                     <div className="bg-white rounded-xl shadow-md border-2 border-blue-100 p-4">
@@ -458,7 +483,12 @@ const PropertyFormView = ({
                             </div>
                         </div>
                         <div className="flex justify-end space-x-2 mt-4">
-                            <AddButton label={t('property.updateButton')} type='submit' isLoading={isUpdating} />
+                            <AddButton
+                                label={isUpdating ? t('footer.saving') : t('common.saveChanges')}
+                                type="submit"
+                                isLoading={isUpdating}
+                                disabled={isUpdating || !hasChanges}
+                            />
                         </div>
                     </div>
                 </Tabs.TabPanel>
