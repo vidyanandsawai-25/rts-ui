@@ -91,7 +91,7 @@ export async function fetchFloorPagedServerAction(
 ============================================================ */
 export async function createFloorAction(
   data: FloorFormModel
-): Promise<{ success: boolean; message?: string; statusCode?: number }> {
+): Promise<{ success: boolean; message?: string; messageKey?: string; statusCode?: number }> {
   try {
     await createFloor(data);
 
@@ -120,7 +120,7 @@ export async function createFloorAction(
 ============================================================ */
 export async function updateFloorAction(
   data: FloorFormModel
-): Promise<{ success: boolean; message?: string; statusCode?: number }> {
+): Promise<{ success: boolean; message?: string; messageKey?: string; statusCode?: number }> {
   try {
     await updateFloor(data);
 
@@ -149,12 +149,12 @@ export async function updateFloorAction(
 ============================================================ */
 export async function deleteFloorAction(
   floorId: number
-): Promise<{ success: boolean; message?: string; statusCode?: number }> {
+): Promise<{ success: boolean; message?: string; messageKey?: string; statusCode?: number }> {
 
   if (!floorId || floorId <= 0) {
     return {
       success: false,
-      message: "floor.messages.validFloorIdRequired", // i18n key
+      messageKey: "messages.validFloorIdRequired",
       statusCode: 400,
     };
   }
@@ -168,7 +168,7 @@ export async function deleteFloorAction(
 
     return {
       success: true,
-      message: "floor.messages.deleteSuccess", // i18n key
+      messageKey: "messages.deleteSuccess",
     };
   } catch (error) {
     if (error instanceof ApiError) {
@@ -181,7 +181,7 @@ export async function deleteFloorAction(
 
     return {
       success: false,
-      message: "floor.messages.deleteFailed", // i18n key
+      messageKey: "messages.deleteFailed",
     };
   }
 }
@@ -254,7 +254,7 @@ export async function fetchSubFloorPagedServerAction(
 ============================================================ */
 export async function createSubFloorAction(
   data: SubFloorFormModel
-): Promise<{ success: boolean; message?: string; statusCode?: number }> {
+): Promise<{ success: boolean; message?: string; messageKey?: string; statusCode?: number }> {
   try {
     await createSubFloor(data);
 
@@ -283,7 +283,7 @@ export async function createSubFloorAction(
 ============================================================ */
 export async function updateSubFloorAction(
   data: SubFloorFormModel
-): Promise<{ success: boolean; message?: string; statusCode?: number }> {
+): Promise<{ success: boolean; message?: string; messageKey?: string; statusCode?: number }> {
   try {
     await updateSubFloor(data);
 
@@ -312,12 +312,12 @@ export async function updateSubFloorAction(
 ============================================================ */
 export async function deleteSubFloorAction(
   subFloorId: number
-): Promise<{ success: boolean; message?: string; statusCode?: number }> {
+): Promise<{ success: boolean; message?: string; messageKey?: string; statusCode?: number }> {
 
   if (!subFloorId || subFloorId <= 0) {
     return {
       success: false,
-      message: "subfloor.messages.validSubFloorIdRequired", // i18n key
+      messageKey: "messages.validSubFloorIdRequired",
       statusCode: 400,
     };
   }
@@ -331,7 +331,7 @@ export async function deleteSubFloorAction(
 
     return {
       success: true,
-      message: "subfloor.messages.deleteSuccess", // i18n key
+      messageKey: "messages.deleteSuccess",
     };
   } catch (error) {
     if (error instanceof ApiError) {
@@ -344,7 +344,7 @@ export async function deleteSubFloorAction(
 
     return {
       success: false,
-      message: "subfloor.messages.deleteFailed", // i18n key
+      messageKey: "messages.deleteFailed",
     };
   }
 }

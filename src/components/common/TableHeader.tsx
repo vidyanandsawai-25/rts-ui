@@ -41,7 +41,7 @@ export default function TableHeader({
   // Resolve icon component
   const Icon = React.useMemo(() => {
     if (typeof icon === 'string') {
-      return ICON_MAP[icon] || null;
+      return ICON_MAP[icon];
     }
     return icon;
   }, [icon]);

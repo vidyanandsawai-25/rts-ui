@@ -1,40 +1,32 @@
-"use client";
+'use client';
 
-import { useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import { useTranslations, useLocale } from "next-intl";
+import { useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import { useTranslations, useLocale } from 'next-intl';
+import { AlertCircle, Layers } from 'lucide-react';
+import { toast } from 'sonner';
+import { Drawer } from '@/components/common/Drawer';
 import {
-  AlertCircle,
-  CheckCircle2,
-  Layers,
-  X,
-} from "lucide-react";
-import { toast } from "sonner";
-import { Drawer } from "@/components/common/Drawer";
-import {
-  Input,
   CancelButton,
   SaveButton,
-  ToggleSwitch,
-  ValidationMessage,
-} from "@/components/common";
+} from '@/components/common';
 
 import {
   createFloorAction,
   updateFloorAction,
-} from "@/app/[locale]/property-tax/floormaster/actions";
+} from '@/app/[locale]/property-tax/floormaster/actions';
 
-import { FloorFormModel, Floor } from "@/types/floor.types";
-import { FloorFormFields } from "./FloorFormFields";
-import { cn } from "@/lib/utils/cn";
-import type React from "react";
+import { FloorFormModel, Floor } from '@/types/floor.types';
+import { FloorFormFields } from './FloorFormFields';
+import { cn } from '@/lib/utils/cn';
+import type React from 'react';
 import {
   CODE_REGEX,
   CODE_SANITIZE,
   DESCRIPTION_REGEX,
   DESCRIPTION_SANITIZE,
-} from "@/lib/utils/validation";
-import { StatusToggleField } from "../StatusToggleField";
+} from '@/lib/utils/validation';
+import { StatusToggleField } from '../StatusToggleField';
 
 /* ================= CONSTANTS ================= */
 const FLOOR_CODE_MAX = 7;
@@ -47,13 +39,10 @@ export interface FloorFormProps {
 }
 
 /* ================= MAIN ================= */
-export default function FloorForm({
-  floorId,
-  initialData,
-}: Readonly<FloorFormProps>) {
+export default function FloorForm({ floorId, initialData }: Readonly<FloorFormProps>) {
   const router = useRouter();
-  const t = useTranslations("floor.floor");
-  const tCommon = useTranslations("common");
+  const t = useTranslations('floor.floor');
+  const tCommon = useTranslations('common');
   const isEdit = Boolean(floorId);
 
   const [open, setOpen] = useState(true);
@@ -62,8 +51,8 @@ export default function FloorForm({
 
   const [formData, setFormData] = useState<FloorFormModel>({
     floorId: initialData?.floorId,
-    floorCode: initialData?.floorCode ?? "",
-    description: initialData?.description ?? "",
+    floorCode: initialData?.floorCode ?? '',
+    description: initialData?.description ?? '',
     sequenceNo: initialData?.sequenceNo ?? 0,
     isActive: initialData?.isActive ?? true,
   });
@@ -86,27 +75,27 @@ export default function FloorForm({
       const description = data.description.trim();
 
       if (!floorCode) {
-        e.floorCode = t("form.validation.codeRequired");
+        e.floorCode = t('form.validation.codeRequired');
       } else if (floorCode.length > FLOOR_CODE_MAX) {
-        e.floorCode = t("form.validation.codeMaxLength", { count: FLOOR_CODE_MAX });
+        e.floorCode = t('form.validation.codeMaxLength', { count: FLOOR_CODE_MAX });
       } else if (!CODE_REGEX.test(floorCode)) {
-        e.floorCode = t("form.validation.codeFormat");
+        e.floorCode = t('form.validation.codeFormat');
       }
 
       if (!description) {
-        e.description = t("form.validation.descriptionRequired");
+        e.description = t('form.validation.descriptionRequired');
       } else if (description.length > DESCRIPTION_MAX) {
-        e.description = t("form.validation.descriptionMaxLength", { count: DESCRIPTION_MAX });
+        e.description = t('form.validation.descriptionMaxLength', { count: DESCRIPTION_MAX });
       } else if (!DESCRIPTION_REGEX.test(description)) {
-        e.description = t("form.validation.descriptionFormat");
+        e.description = t('form.validation.descriptionFormat');
       }
 
       if (!Number.isFinite(data.sequenceNo) || data.sequenceNo < 0) {
-        e.sequenceNo = t("validation.mustBeNumber");
+        e.sequenceNo = t('validation.mustBeNumber');
       }
 
       if (!data.isActive && !isEdit) {
-        e.isActive = t("form.validation.mustBeActive");
+        e.isActive = t('form.validation.mustBeActive');
       }
 
       return e;
@@ -122,15 +111,15 @@ export default function FloorForm({
     const { name, value } = e.target;
     let newValue = value;
 
-    if (name === "description") {
-      newValue = newValue.replace(DESCRIPTION_SANITIZE, "");
+    if (name === 'description') {
+      newValue = newValue.replace(DESCRIPTION_SANITIZE, '');
       if (newValue.length > DESCRIPTION_MAX) {
         newValue = newValue.substring(0, DESCRIPTION_MAX);
       }
     }
 
-    if (name === "floorCode") {
-      newValue = newValue.replace(CODE_SANITIZE, "");
+    if (name === 'floorCode') {
+      newValue = newValue.replace(CODE_SANITIZE, '');
       if (newValue.length > FLOOR_CODE_MAX) {
         newValue = newValue.substring(0, FLOOR_CODE_MAX);
       }
@@ -138,7 +127,7 @@ export default function FloorForm({
 
     setFormData((p) => ({
       ...p,
-      [name]: name === "sequenceNo" ? Number(newValue) : newValue,
+      [name]: name === 'sequenceNo' ? Number(newValue) : newValue,
     }));
   };
 
@@ -149,38 +138,39 @@ export default function FloorForm({
 
     const fieldErrors = validate({
       ...formData,
-      [name]: name === "sequenceNo" ? Number(value) : value,
+      [name]: name === 'sequenceNo' ? Number(value) : value,
     });
 
     setErrors((p) => {
       const newErrors = { ...p };
       const fieldName = name as keyof FloorFormModel;
-      
+
       if (fieldErrors[fieldName]) {
         newErrors[fieldName] = fieldErrors[fieldName];
       } else {
         delete newErrors[fieldName];
       }
-      
+
       return newErrors;
     });
   };
 
   /* ================= ERROR HELPER ================= */
   const getErrorMessage = (result: { statusCode?: number; message?: string }): string => {
-    if (result.statusCode === 409) return t("apiErrors.duplicateRecord");
+    if (result.statusCode === 409) return t('apiErrors.duplicateRecord');
     if (result.statusCode === 400) {
-      const msg = result.message?.toLowerCase() || "";
-      if (msg.includes("duplicate") || msg.includes("already exists")) {
-        return t("apiErrors.duplicateRecord");
+      const msg = result.message?.toLowerCase() || '';
+      if (msg.includes('duplicate') || msg.includes('already exists')) {
+        return t('apiErrors.duplicateRecord');
       }
-      return result.message || t("apiErrors.invalidData");
+      return result.message || t('apiErrors.invalidData');
     }
-    if (result.statusCode === 404) return t("apiErrors.notFound");
-    if (result.statusCode === 401 || result.statusCode === 403) return tCommon("errors.unauthorized");
-    if (result.statusCode && result.statusCode >= 500) return tCommon("errors.serverError");
+    if (result.statusCode === 404) return t('apiErrors.notFound');
+    if (result.statusCode === 401 || result.statusCode === 403)
+      return tCommon('errors.unauthorized');
+    if (result.statusCode && result.statusCode >= 500) return tCommon('errors.serverError');
     if (result.message) return result.message;
-    return t("apiErrors.operationFailed");
+    return t('apiErrors.operationFailed');
   };
 
   /* ================= SUBMIT ================= */
@@ -197,9 +187,7 @@ export default function FloorForm({
 
     setIsSubmitting(true);
     try {
-      const result = isEdit
-        ? await updateFloorAction(formData)
-        : await createFloorAction(formData);
+      const result = isEdit ? await updateFloorAction(formData) : await createFloorAction(formData);
 
       if (!result.success) {
         toast.error(getErrorMessage(result));
@@ -207,18 +195,15 @@ export default function FloorForm({
       }
 
       const successMessage = isEdit
-        ? t("messages.updateSuccess", { code: formData.floorCode })
-        : t("messages.createSuccess", { code: formData.floorCode });
+        ? t('messages.updateSuccess', { code: formData.floorCode })
+        : t('messages.createSuccess', { code: formData.floorCode });
 
       toast.success(successMessage);
       handleClose();
       router.refresh();
-
     } catch (error) {
       const errorMessage =
-        error instanceof Error && error.message
-          ? error.message
-          : t("apiErrors.operationFailed");
+        error instanceof Error && error.message ? error.message : t('apiErrors.operationFailed');
       toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -242,12 +227,10 @@ export default function FloorForm({
           </div>
           <div>
             <div className="text-lg font-bold text-blue-900">
-              {isEdit ? t("form.editTitle") : t("form.addTitle")}
+              {isEdit ? t('form.editTitle') : t('form.addTitle')}
             </div>
             <div className="text-sm text-slate-500">
-              {isEdit
-                ? t("form.editSubtitle")
-                : t("form.addSubtitle")}
+              {isEdit ? t('form.editSubtitle') : t('form.addSubtitle')}
             </div>
           </div>
         </div>
@@ -255,12 +238,12 @@ export default function FloorForm({
       footer={
         <>
           <CancelButton
-            label={tCommon("buttons.cancel")}
+            label={tCommon('buttons.cancel')}
             onClick={handleClose}
             disabled={isSubmitting}
           />
           <SaveButton
-            label={isEdit ? tCommon("actions.update") : tCommon("actions.save")}
+            label={isEdit ? tCommon('actions.update') : tCommon('actions.save')}
             type="submit"
             form="form"
             isLoading={isSubmitting}
@@ -268,45 +251,39 @@ export default function FloorForm({
         </>
       }
     >
-      <form
-        id="form"
-        onSubmit={handleSubmit}
-        className="space-y-6 bg-[#F8FAFF] p-5"
-      >
-          {isEdit && (
-            <StatusToggleField
-              isActive={formData.isActive}
-              onChange={handleToggleStatus}
-              error={errors.isActive}
-              labels={{
-                title: t("form.activeStatusTitle"),
-                activeText: t("form.activeStatusOn"),
-                inactiveText: t("form.activeStatusOff"),
-              }}
-            />
-          )}
-
-          <FloorFormFields
-            formData={formData}
-            errors={errors}
-            showError={showError}
-            onChange={handleChange}
-            onBlur={handleBlur}
+      <form id="form" onSubmit={handleSubmit} className="space-y-6 bg-[#F8FAFF] p-5">
+        {isEdit && (
+          <StatusToggleField
+            isActive={formData.isActive}
+            onChange={handleToggleStatus}
+            error={errors.isActive}
             labels={{
-              floorCode: t("form.floorCode"),
-              floorCodePlaceholder: t("form.floorCodePlaceholder"),
-              description: t("form.description"),
-              descriptionPlaceholder: t("form.descriptionPlaceholder"),
-              sequenceNo: t("form.sequenceNo"),
+              title: t('form.activeStatusTitle'),
+              activeText: t('form.activeStatusOn'),
+              inactiveText: t('form.activeStatusOff'),
             }}
           />
+        )}
 
-          <div className="flex items-center gap-2 rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-700">
-            <AlertCircle size={16} />
-            <span>
-              {tCommon("note.mandatory")}
-            </span>
-          </div>
+        <FloorFormFields
+          formData={formData}
+          errors={errors}
+          showError={showError}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          labels={{
+            floorCode: t('form.floorCode'),
+            floorCodePlaceholder: t('form.floorCodePlaceholder'),
+            description: t('form.description'),
+            descriptionPlaceholder: t('form.descriptionPlaceholder'),
+            sequenceNo: t('form.sequenceNo'),
+          }}
+        />
+
+        <div className="flex items-center gap-2 rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-700">
+          <AlertCircle size={16} />
+          <span>{tCommon('note.mandatory')}</span>
+        </div>
       </form>
     </Drawer>
   );

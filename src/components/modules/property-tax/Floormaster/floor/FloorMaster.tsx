@@ -98,8 +98,12 @@ export default function FloorMaster({
             if (result.statusCode === 409) {
               msg = t("messages.deleteInUse");
             } else if (result.statusCode === 404) {
-                msg = tCommon("errors.notFound");
+              msg = tCommon("errors.notFound");
+            } else if (result.messageKey) {
+              // Translate i18n key from server
+              msg = t(result.messageKey);
             } else if (result.message) {
+              // Display raw error message from API
               msg = result.message;
             }
 

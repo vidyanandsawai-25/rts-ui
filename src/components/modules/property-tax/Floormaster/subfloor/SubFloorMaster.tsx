@@ -120,9 +120,16 @@ export default function SubFloorMaster({
             toast.success(t("messages.deleteSuccess"));
             router.refresh();
           } else {
-            toast.error(
-              result.message || t("messages.deleteFailed")
-            );
+            let msg = t("messages.deleteFailed");
+
+            // Check for i18n key first, then raw message
+            if (result.messageKey) {
+              msg = t(result.messageKey);
+            } else if (result.message) {
+              msg = result.message;
+            }
+
+            toast.error(msg);
           }
         },
       });

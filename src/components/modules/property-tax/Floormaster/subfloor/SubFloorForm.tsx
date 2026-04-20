@@ -7,12 +7,7 @@ import { AlertCircle, Layers } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Drawer } from '@/components/common/Drawer';
-import {
-  Input,
-  CancelButton,
-  SaveButton,
-  ValidationMessage,
-} from '@/components/common';
+import { CancelButton, SaveButton } from '@/components/common';
 
 import {
   createSubFloorAction,
@@ -190,7 +185,7 @@ export default function SubFloorForm({ subFloorId, initialData }: Readonly<SubFl
 
       toast.success(
         isEdit
-          ?t('messages.updateSuccess', { code: formData.subFloorCode })
+          ? t('messages.updateSuccess', { code: formData.subFloorCode })
           : t('messages.createSuccess', { code: formData.subFloorCode })
       );
 
@@ -275,7 +270,6 @@ export default function SubFloorForm({ subFloorId, initialData }: Readonly<SubFl
           <AlertCircle size={16} /> <span> {t('note.mandatory')} </span>{' '}
         </div>{' '}
       </form>
-   
     </Drawer>
   );
 }

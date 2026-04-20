@@ -110,11 +110,10 @@ function renderEdit(sf: SubFloor = existingSubFloor) {
 }
 
 /**
- * Submit form directly by id.
- * NOTE: SubFloorForm component has a known id mismatch — the form is
- * `id="subfloor-form"` but the SaveButton uses `form="form"`.
- * Clicking the button in JSDOM therefore does NOT submit the form.
- * We work around this by submitting the form element directly.
+ * Submit the subfloor form directly by id.
+ * This helper targets the rendered form element explicitly to trigger
+ * submission in tests. The form and SaveButton now both use id/form="subfloor-form",
+ * so this workaround is for test reliability, not a real-world mismatch.
  */
 function submitSubFloorForm(container: HTMLElement) {
   const form = container.querySelector('#subfloor-form') as HTMLFormElement;

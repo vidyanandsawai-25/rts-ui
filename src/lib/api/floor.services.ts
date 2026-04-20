@@ -84,7 +84,6 @@ function normalizeSubFloor(data: Record<string, unknown>): SubFloor {
   if (!Number.isFinite(subFloorId) || subFloorId <= 0) {
     throw new ApiError(500, 'Invalid data', 'Invalid subFloorId');
   }
-
   const subFloorCode = typeof data.subFloorCode === 'string' ? data.subFloorCode.trim() : '';
   const description = typeof data.description === 'string' ? data.description.trim() : '';
 
@@ -129,7 +128,8 @@ export async function getFloorPaged(
     const response = await apiClient.get<unknown>(`/Floor?${params.toString()}`);
 
     if (!response.success) {
-      throw new ApiError(500, response.error || '', 'Fetch floor failed');
+    
+      throw new ApiError(response.statusCode || 500, response.error || '', 'Fetch floor failed');
     }
 
     if (!isPagedResponse<Floor>(response.data)) {
