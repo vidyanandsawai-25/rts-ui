@@ -34,6 +34,7 @@ import {
   DESCRIPTION_REGEX,
   DESCRIPTION_SANITIZE,
 } from "@/lib/utils/validation";
+import { StatusToggleField } from "../StatusToggleField";
 
 /* ================= CONSTANTS ================= */
 const FLOOR_CODE_MAX = 7;
@@ -58,7 +59,6 @@ export default function FloorForm({
   const [open, setOpen] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedOnce, setSubmittedOnce] = useState(false);
-  const [isActive, setIsActive] = useState(initialData?.isActive ?? true);
 
   const [formData, setFormData] = useState<FloorFormModel>({
     floorId: initialData?.floorId,
@@ -66,7 +66,6 @@ export default function FloorForm({
     description: initialData?.description ?? "",
     sequenceNo: initialData?.sequenceNo ?? 0,
     isActive: initialData?.isActive ?? true,
-   
   });
 
   const [errors, setErrors] = useState<Partial<Record<keyof FloorFormModel, string>>>({});
@@ -208,8 +207,8 @@ export default function FloorForm({
       }
 
       const successMessage = isEdit
-        ? t("success.updated", { code: formData.floorCode })
-        : t("success.created", { code: formData.floorCode });
+        ? t("messages.updateSuccess", { code: formData.floorCode })
+        : t("messages.createSuccess", { code: formData.floorCode });
 
       toast.success(successMessage);
       handleClose();
@@ -227,11 +226,7 @@ export default function FloorForm({
   };
 
   const handleToggleStatus = (): void => {
-    setIsActive((prev) => {
-      const newValue = !prev;
-      setFormData((p) => ({ ...p, isActive: newValue }));
-      return newValue;
-    });
+    setFormData((p) => ({ ...p, isActive: !p.isActive }));
   };
 
   /* ================= UI ================= */
@@ -279,48 +274,16 @@ export default function FloorForm({
         className="space-y-6 bg-[#F8FAFF] p-5"
       >
           {isEdit && (
-            <div className="rounded-xl border border-[#DCEAFF] bg-slate-50 p-4">
-              <div
-                className={cn(
-                  "rounded-xl p-3 flex items-center justify-between",
-                  isActive
-                    ? "border border-blue-200 bg-[#F0F6FF]"
-                    : "border border-gray-200 bg-gray-50"
-                )}
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className={cn(
-                      "h-9 w-9 flex items-center justify-center rounded-full",
-                      isActive
-                        ? "bg-green-100 text-green-600"
-                        : "bg-gray-200 text-gray-900"
-                    )}
-                  >
-                    {isActive ? <CheckCircle2 size={18} /> : <X size={18} />}
-                  </div>
-                  <div>
-                    <div className="font-medium text-gray-900">{t("form.activeStatusTitle")}</div>
-                    <div className="text-sm text-gray-500">
-                      {isActive ? t("form.activeStatusOn") : t("form.activeStatusOff")}
-                    </div>
-                  </div>
-                </div>
-
-                {isEdit && (
-                  <ToggleSwitch
-                    checked={isActive}
-                    onChange={handleToggleStatus}
-                    showPopup={false}
-                  />
-                )}
-              </div>
-
-              <ValidationMessage
-                message={errors.isActive}
-                visible={!!errors.isActive}
-              />
-            </div>
+            <StatusToggleField
+              isActive={formData.isActive}
+              onChange={handleToggleStatus}
+              error={errors.isActive}
+              labels={{
+                title: t("form.activeStatusTitle"),
+                activeText: t("form.activeStatusOn"),
+                inactiveText: t("form.activeStatusOff"),
+              }}
+            />
           )}
 
           <FloorFormFields

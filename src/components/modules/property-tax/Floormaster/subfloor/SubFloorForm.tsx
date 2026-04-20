@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
-import { AlertCircle, CheckCircle2, Layers, X } from 'lucide-react';
+import { AlertCircle, Layers } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Drawer } from '@/components/common/Drawer';
@@ -11,7 +11,6 @@ import {
   Input,
   CancelButton,
   SaveButton,
-  ToggleSwitch,
   ValidationMessage,
 } from '@/components/common';
 
@@ -22,6 +21,7 @@ import {
 
 import { SubFloorFormModel, SubFloor } from '@/types/floor.types';
 import { SubFloorFormFields } from './SubFloorFormFields';
+import { StatusToggleField } from '../StatusToggleField';
 import { cn } from '@/lib/utils/cn';
 
 import type React from 'react';
@@ -53,7 +53,6 @@ export default function SubFloorForm({ subFloorId, initialData }: Readonly<SubFl
   const [open, setOpen] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedOnce, setSubmittedOnce] = useState(false);
-  const [isActive, setIsActive] = useState(initialData?.isActive ?? true);
 
   const [formData, setFormData] = useState<SubFloorFormModel>({
     subFloorId: initialData?.subFloorId,
@@ -191,8 +190,8 @@ export default function SubFloorForm({ subFloorId, initialData }: Readonly<SubFl
 
       toast.success(
         isEdit
-          ? t('success.updated', { code: formData.subFloorCode })
-          : t('success.created', { code: formData.subFloorCode })
+          ?t('messages.updateSuccess', { code: formData.subFloorCode })
+          : t('messages.createSuccess', { code: formData.subFloorCode })
       );
 
       handleClose();
@@ -205,11 +204,7 @@ export default function SubFloorForm({ subFloorId, initialData }: Readonly<SubFl
   };
 
   const handleToggleStatus = () => {
-    setIsActive((prev) => {
-      const newValue = !prev;
-      setFormData((p) => ({ ...p, isActive: newValue }));
-      return newValue;
-    });
+    setFormData((p) => ({ ...p, isActive: !p.isActive }));
   };
 
   /* ================= UI ================= */
@@ -243,58 +238,25 @@ export default function SubFloorForm({ subFloorId, initialData }: Readonly<SubFl
           <SaveButton
             label={isEdit ? tCommon('actions.update') : tCommon('actions.save')}
             type="submit"
-            form="form"
+            form="subfloor-form"
             isLoading={isSubmitting}
           />
         </>
       }
     >
       <form id="subfloor-form" onSubmit={handleSubmit} className="space-y-6 bg-[#F8FAFF] p-5">
-        {' '}
-        {/* Active Toggle - Show at top for edit mode */}{' '}
         {isEdit && (
-          <div className="rounded-xl border border-[#DCEAFF] bg-slate-50 p-4">
-           
-            <div
-              className={cn(
-                'rounded-xl p-3 flex items-center justify-between',
-                isActive
-                  ? 'border border-blue-200 bg-[#F0F6FF]'
-                  : 'border border-gray-200 bg-gray-50'
-              )}
-            >
-            
-              <div className="flex items-center gap-3">
-           
-                <div
-                  className={cn(
-                    'flex h-9 w-9 items-center justify-center rounded-full',
-                    isActive ? 'bg-green-100 text-green-600' : 'bg-gray-200 text-gray-900'
-                  )}
-                >
-                
-                  {isActive ? <CheckCircle2 size={18} /> : <X size={18} />}{' '}
-                </div>
-                <div>
-                  
-                  <div className="font-medium text-gray-900">
-                    
-                    {t('form.activeStatusTitle')}
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    
-                    {isActive ? t('form.activeStatusOn') : t('form.activeStatusOff')}{' '}
-                  </div>
-                </div>
-              </div>
-              <ToggleSwitch
-                checked={isActive}
-                onChange={() => setFormData((p) => ({ ...p, isActive: !p.isActive }))}
-                showPopup={false}
-              />
-            </div>
-          </div>
-        )}{' '}
+          <StatusToggleField
+            isActive={formData.isActive}
+            onChange={handleToggleStatus}
+            error={errors.isActive}
+            labels={{
+              title: t('form.activeStatusTitle'),
+              activeText: t('form.activeStatusOn'),
+              inactiveText: t('form.activeStatusOff'),
+            }}
+          />
+        )}
         <SubFloorFormFields
           formData={formData}
           errors={errors}
