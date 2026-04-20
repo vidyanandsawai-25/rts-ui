@@ -158,7 +158,7 @@ describe('FloorMaster', () => {
   it('shows page count info in footer', () => {
     setup();
     expect(screen.getByText(/Showing/)).toBeInTheDocument();
-    expect(screen.getByText(/2/)).toBeInTheDocument();
+    expect(screen.getByText(/of 2/)).toBeInTheDocument();
   });
 
   it('renders pagination buttons when multiple pages', () => {
