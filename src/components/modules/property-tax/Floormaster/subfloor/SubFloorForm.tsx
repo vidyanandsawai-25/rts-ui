@@ -21,6 +21,7 @@ import {
 } from '@/app/[locale]/property-tax/floormaster/actions';
 
 import { SubFloorFormModel, SubFloor } from '@/types/floor.types';
+import { SubFloorFormFields } from './SubFloorFormFields';
 import { cn } from '@/lib/utils/cn';
 
 import type React from 'react';
@@ -294,33 +295,19 @@ export default function SubFloorForm({ subFloorId, initialData }: Readonly<SubFl
             </div>
           </div>
         )}{' '}
-        <div className="rounded-xl border border-[#DCEAFF] bg-slate-50 p-5 space-y-4">
-          {' '}
-          <Input
-            name="subFloorCode"
-            label={t('form.code')}
-            required
-            value={formData.subFloorCode}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            placeholder={t('form.codePlaceholder')}
-            fullWidth
-            className="text-gray-700"
-          />{' '}
-          <ValidationMessage message={errors.subFloorCode} visible={showError('subFloorCode')} />{' '}
-          <Input
-            name="description"
-            label={t('form.description')}
-            required
-            value={formData.description}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            placeholder={t('form.descriptionPlaceholder')}
-            fullWidth
-            className="text-gray-700"
-          />{' '}
-          <ValidationMessage message={errors.description} visible={showError('description')} />{' '}
-        </div>{' '}
+        <SubFloorFormFields
+          formData={formData}
+          errors={errors}
+          showError={showError}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          labels={{
+            code: t('form.code'),
+            codePlaceholder: t('form.codePlaceholder'),
+            description: t('form.description'),
+            descriptionPlaceholder: t('form.descriptionPlaceholder'),
+          }}
+        />
         <div className="flex items-center gap-2 rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-700">
           {' '}
           <AlertCircle size={16} /> <span> {t('note.mandatory')} </span>{' '}

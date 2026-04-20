@@ -25,6 +25,7 @@ import {
 } from "@/app/[locale]/property-tax/floormaster/actions";
 
 import { FloorFormModel, Floor } from "@/types/floor.types";
+import { FloorFormFields } from "./FloorFormFields";
 import { cn } from "@/lib/utils/cn";
 import type React from "react";
 import {
@@ -322,56 +323,20 @@ export default function FloorForm({
             </div>
           )}
 
-          <div className="rounded-xl border border-[#DCEAFF] bg-slate-50 p-5 space-y-4">
-            <Input
-              name="floorCode"
-              label={t("form.floorCode")}
-              required
-              placeholder={t("form.floorCodePlaceholder")}
-              value={formData.floorCode}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              fullWidth
-              className="text-gray-700"
-            />
-            <ValidationMessage
-              message={errors.floorCode}
-              visible={showError("floorCode")}
-            />
-
-            <Input
-              name="description"
-              label={t("form.description")}
-              required={true}
-              placeholder={t("form.descriptionPlaceholder")}
-              value={formData.description}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              fullWidth
-              className="text-gray-700"
-            />
-            <ValidationMessage
-              message={errors.description}
-              visible={showError("description")}
-            />
-
-            <Input
-              name="sequenceNo"
-              label={t("form.sequenceNo")}
-              type="number"
-              min={0}
-              value={formData.sequenceNo}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              fullWidth
-              required
-              className="text-gray-700"
-            />
-            <ValidationMessage
-              message={errors.sequenceNo}
-              visible={showError("sequenceNo")}
-            />
-          </div>
+          <FloorFormFields
+            formData={formData}
+            errors={errors}
+            showError={showError}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            labels={{
+              floorCode: t("form.floorCode"),
+              floorCodePlaceholder: t("form.floorCodePlaceholder"),
+              description: t("form.description"),
+              descriptionPlaceholder: t("form.descriptionPlaceholder"),
+              sequenceNo: t("form.sequenceNo"),
+            }}
+          />
 
           <div className="flex items-center gap-2 rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-700">
             <AlertCircle size={16} />
