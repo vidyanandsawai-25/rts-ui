@@ -129,7 +129,7 @@ export default function QuickDataEntryLayout({ children }: { children: React.Rea
                                             ].join(' ')}
                                         >
                                             <Icon className="w-4 h-4" />
-                                            <span>{tab.label}</span>
+                                            <span>{t(`tabs.${tab.label}`)}</span>
                                         </Link>
                                     );
                                 })}
