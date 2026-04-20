@@ -88,6 +88,19 @@
     "delete": {
       "success": "Zone deleted successfully",
       "error": "Cannot delete zone because it is in use"
+    },
+
+    "error": {
+      "title": "Tax Zone Error",
+      "description": "An error occurred while loading the tax zone page. Please try again.",
+      "errorId": "Error ID: {id}",
+      "goHome": "Go Home",
+      "tryAgain": "Try Again"
+    },
+
+    "loading": {
+      "message": "Loading Tax Zone...",
+      "description": "Please wait while we fetch the tax zone data"
     }
   }
 }

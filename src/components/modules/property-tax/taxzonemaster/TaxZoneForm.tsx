@@ -2,17 +2,18 @@
 
 import React, { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { AlertCircle, CheckCircle2, MapPin, X } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { toast } from "sonner";
 
-import { CancelButton, Input, SaveButton, ToggleSwitch, ValidationMessage } from "@/components/common";
-
+import { CancelButton, SaveButton } from "@/components/common";
 import type { TaxZoneFormModel } from "@/types/taxzone.types";
-import { cn } from "@/lib/utils/cn";
 import { saveTaxZone } from "@/app/[locale]/property-tax/taxzone/action";
 import { Drawer } from "@/components/common/Drawer";
 import { useTranslations, useLocale } from "next-intl";
 import { CODE_REGEX, CODE_SANITIZE, DESCRIPTION_REGEX, DESCRIPTION_SANITIZE } from "@/lib/utils/validation";
+import { StatusToggleCard } from "./StatusToggleCard";
+import { FormFieldsSection } from "./FormFieldsSection";
+import { MandatoryFieldsNotice } from "./MandatoryFieldsNotice";
 
 
 
@@ -28,7 +29,6 @@ export default function TaxZoneForm({ initialData }: TaxZoneFormProps) {
 
   const [open, setOpen] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submittedOnce, setSubmittedOnce] = useState(false);
 
   const t = useTranslations("taxZone");
   const tCommon = useTranslations("common");
@@ -83,7 +83,7 @@ export default function TaxZoneForm({ initialData }: TaxZoneFormProps) {
   }, [t]);
 
   const showError = (field: keyof TaxZoneFormModel) =>
-    (submittedOnce || touched[field]) && !!errors[field];
+    touched[field] && !!errors[field];
 
   // ✅ No need for useEffect - data comes from server via props
 
@@ -118,7 +118,13 @@ export default function TaxZoneForm({ initialData }: TaxZoneFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmittedOnce(true);
+
+    // Mark all fields as touched on submit
+    setTouched({
+      taxZoneNo: true,
+      taxZoneType: true,
+      remark: true,
+    });
 
     // 1) basic required/regex validation
     const v = validate(formData);
@@ -221,89 +227,24 @@ export default function TaxZoneForm({ initialData }: TaxZoneFormProps) {
       }
     >
       <form id="form" onSubmit={handleSubmit} className="space-y-6 bg-[#F8FAFF] p-5">
-        <div className="rounded-xl border border-[#DCEAFF] bg-slate-50 p-4 space-y-4">
-          <div
-            className={cn(
-              "rounded-xl p-2 flex items-center justify-between transition-colors",
-              formData.isActive ? "border border-blue-200 bg-[#F0F6FF]" : "border border-gray-200 bg-gray-50"
-            )}
-          >
-            <div className="flex items-center gap-3">
-              <div
-                className={cn(
-                  "flex h-9 w-9 items-center justify-center rounded-full",
-                  formData.isActive ? "bg-green-100 text-green-600" : "bg-gray-200 text-gray-500"
-                )}
-              >
-                {formData.isActive ? <CheckCircle2 size={18} /> : <X size={18} />}
-              </div>
+        <StatusToggleCard
+          isActive={formData.isActive}
+          onToggle={handleToggleStatus}
+          activeLabel={t("form.status.active")}
+          inactiveLabel={t("form.status.inactive")}
+          statusLabel={t("form.status.label")}
+        />
 
-              <div>
-                <div className={cn("font-medium", formData.isActive ? "text-[#1E3A8A]" : "text-gray-700")}>
-                  {/* Active Status */}
-                  {t("form.status.label")}
-                </div>
-                <div className={cn("text-sm", formData.isActive ? "text-gray-500" : "text-gray-400")}>
-                  {/* {formData.isActive ? "Zone is currently active" : "Zone is currently inactive"} */}
-                  {formData.isActive
-                    ? t("form.status.active")
-                    : t("form.status.inactive")}
-                </div>
-              </div>
-            </div>
+        <FormFieldsSection
+          formData={formData}
+          errors={errors}
+          showError={showError}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          t={t}
+        />
 
-            <ToggleSwitch checked={formData.isActive} onChange={handleToggleStatus} showPopup={false} />
-          </div>
-        </div>
-
-        <div className="rounded-xl border border-[#DCEAFF] bg-slate-50 p-5 space-y-4">
-          <Input
-            name="taxZoneNo"
-            label={t("form.fields.zoneNo.label")}
-            required={true}
-            value={formData.taxZoneNo}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            placeholder={t("form.fields.zoneNo.placeholder")}
-            fullWidth
-          />
-          <ValidationMessage message={errors.taxZoneNo} visible={showError("taxZoneNo")} />
-
-          <Input
-            name="taxZoneType"
-            label={t("form.fields.zoneType.label")}
-            required={true}
-            value={formData.taxZoneType}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            placeholder={t("form.fields.zoneType.placeholder")}
-            fullWidth
-          />
-          <ValidationMessage message={errors.taxZoneType} visible={showError("taxZoneType")} />
-
-          <Input
-            name="remark"
-            label={t("form.fields.remark.label")}
-            required={true}
-            value={formData.remark}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            placeholder={t("form.fields.remark.placeholder")}
-            fullWidth
-          />
-          <ValidationMessage message={errors.remark} visible={showError("remark")} />
-        </div>
-
-        {/* STATUS BLOCK (UI like your ConstructionType) */}
-      
-
-        <div className="flex items-center gap-2 rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-700">
-          <AlertCircle size={16} />
-          {/* <span>
-            Fields marked with <b>*</b> are mandatory
-          </span> */}
-          <span>{tCommon("note.mandatory")}</span>
-        </div>
+        <MandatoryFieldsNotice message={tCommon("note.mandatory")} />
       </form>
     </Drawer>
   );

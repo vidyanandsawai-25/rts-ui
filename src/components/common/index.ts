@@ -79,6 +79,12 @@ export type { ContextMenuProps, ContextMenuItem } from './ContextMenu';
 export { Tooltip } from './Tooltip';
 export type { TooltipProps } from './Tooltip';
 
+export { ErrorPage } from './ErrorPage';
+export type { ErrorPageProps } from './ErrorPage';
+
+export { LoadingPage } from './LoadingPage';
+export type { LoadingPageProps } from './LoadingPage';
+
 export { SearchSelect } from './SearchSelect';
 export type { SearchSelectProps, SearchSelectOption } from './SearchSelect';
 

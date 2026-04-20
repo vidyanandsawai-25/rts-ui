@@ -20,9 +20,6 @@ export interface TaxZone {
 
   // optional for MasterTable status column (if your backend supports it later)
   status?: boolean;
-
-  // Index signature for MasterTable compatibility
-  [key: string]: unknown;
 }
 
 export interface TaxZoneMasterProps {
