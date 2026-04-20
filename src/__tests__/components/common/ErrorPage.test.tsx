@@ -13,7 +13,7 @@ vi.mock('next-intl', () => ({
   useLocale: () => 'en',
 }));
 
-import ErrorPage from '../ErrorPage';
+import ErrorPage from '../../../components/common/ErrorPage';
 
 describe('ErrorPage', () => {
   const error = new Error('Test error message');
