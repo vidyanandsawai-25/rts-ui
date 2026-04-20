@@ -32,9 +32,24 @@ export async function saveTaxZone(id: string, formData: FormData) {
   const remark = (formData.get("remark") as string) || "";
   const isActive = (formData.get("isActive") as string) === "true";
   
-  // Parse and validate id for update operations
-  const numericId = id && id.trim() !== "" ? Number(id) : undefined;
-  const isUpdate = Number.isFinite(numericId);
+  // ✅ Validate id parameter - must be empty or a valid number
+  let numericId: number | undefined = undefined;
+  let isUpdate = false;
+
+  if (id && id.trim() !== "") {
+    numericId = Number(id);
+    
+    // ❌ Reject malformed IDs - security fix
+    if (!Number.isFinite(numericId) || numericId <= 0) {
+      return {
+        ok: false,
+        error: "invalid_id",
+        message: "Invalid ID format. ID must be a positive number.",
+      };
+    }
+    
+    isUpdate = true;
+  }
   
   const payload = {
     taxZoneId: numericId,

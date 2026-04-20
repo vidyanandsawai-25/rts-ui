@@ -172,8 +172,7 @@ describe("TaxZoneForm", () => {
       fireEvent.change(zoneTypeInput, { target: { value: "Residential<script>" } });
       fireEvent.change(remarkInput, { target: { value: "Test<script>alert('xss')</script>" } });
 
-      // DESCRIPTION_SANITIZE removes < > ' but allows parentheses and &
-      // Consecutive spaces are replaced with single space
+      // DESCRIPTION_SANITIZE removes characters like <, >, and ' without collapsing whitespace
       expect(zoneTypeInput).toHaveValue("Residentialscript");
       expect(remarkInput).toHaveValue("Testscriptalert(xss)/script");
     });

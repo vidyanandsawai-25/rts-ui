@@ -136,8 +136,16 @@ export async function getAllTaxZonesSafe(): Promise<TaxZone[]> {
     }
 
     return collected;
-  } catch {
-    return [];
+  } catch (error) {
+    // ✅ Log error for debugging/telemetry
+    console.error("Failed to fetch all tax zones for duplicate check:", error);
+    
+    // ✅ Throw specific error so callers can handle failure
+    throw new ApiError(
+      500,
+      "Failed to verify duplicates. Please try again.",
+      error instanceof Error ? error.message : "Unknown error"
+    );
   }
 }
 

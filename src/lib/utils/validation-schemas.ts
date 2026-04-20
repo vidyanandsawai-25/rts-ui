@@ -124,7 +124,9 @@ export const commonValidations = {
     isEdit: boolean,
     messageKey?: string
   ): Validator => (value: unknown) => {
-    const isActive = Boolean(value);
+    // ✅ Explicitly parse boolean values - handles both boolean and string types
+    // Common with HTML inputs/FormData which store booleans as strings
+    const isActive = value === true || value === "true";
     const key = messageKey || 'form.validation.mustBeActive';
    
     if (!isActive && !isEdit) {
