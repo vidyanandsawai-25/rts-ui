@@ -18,15 +18,40 @@ export async function getTaxZoneByIdAction(taxZoneId: string | number): Promise<
 }
 
 export async function deleteTaxZoneAction(formData: FormData) {
-  const taxZoneId = formData.get("taxZoneId") as string;
-  const locale = formData.get("locale") as string;
+  const taxZoneIdRaw = formData.get("taxZoneId");
+  const locale = formData.get("locale");
 
-  await deleteTaxZone(taxZoneId);
+  // Validate locale
+  if (!locale || typeof locale !== "string" || locale.trim() === "") {
+    throw new Error("Invalid or missing locale");
+  }
+
+  // Validate taxZoneId
+  if (!taxZoneIdRaw || typeof taxZoneIdRaw !== "string") {
+    throw new Error("Invalid or missing taxZoneId");
+  }
+
+  const taxZoneId = Number(taxZoneIdRaw);
+  if (!Number.isFinite(taxZoneId) || taxZoneId <= 0) {
+    throw new Error("Invalid taxZoneId: must be a positive number");
+  }
+
+  await deleteTaxZone(taxZoneIdRaw);
   revalidatePath(`/${locale}/property-tax/taxzone`);
 }
 
 export async function saveTaxZone(id: string, formData: FormData) {
-  const locale = formData.get("locale") as string;
+  const localeRaw = formData.get("locale");
+  
+  // Validate locale
+  if (!localeRaw || typeof localeRaw !== "string" || localeRaw.trim() === "") {
+    return {
+      ok: false,
+      error: "invalid_locale",
+    };
+  }
+  
+  const locale = localeRaw;
   const taxZoneNo = (formData.get("taxZoneNo") as string) || "";
   const taxZoneType = (formData.get("taxZoneType") as string) || "";
   const remark = (formData.get("remark") as string) || "";

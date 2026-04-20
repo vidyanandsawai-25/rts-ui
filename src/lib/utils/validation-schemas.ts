@@ -44,7 +44,7 @@ export const commonValidations = {
       maxLength?: string;
     }
   ): Validator => (value: unknown) => {
-    const strVal = String(value || "").trim();
+    const strVal = String(value ?? "").trim();
    
     const keys = {
       required: messageKeys?.required || 'form.validation.codeRequired',
@@ -77,7 +77,7 @@ export const commonValidations = {
       maxLength?: string;
     }
   ): Validator => (value: unknown) => {
-    const strVal = String(value || "").trim();
+    const strVal = String(value ?? "").trim();
    
     const keys = {
       required: messageKeys?.required || 'form.validation.descriptionRequired',
