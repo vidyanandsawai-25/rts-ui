@@ -9,6 +9,18 @@ export interface LoginPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
+/** Resolved on the server (`getTranslations`) so the login shell ships real copy in the RSC HTML. */
+export interface LoginFormCopy {
+  loginTitle: string;
+  username: string;
+  usernamePlaceholder: string;
+  password: string;
+  passwordPlaceholder: string;
+  signIn: string;
+  showPassword: string;
+  hidePassword: string;
+}
+
 export interface LoginFormProps {
   username?: string;
   locale: string;
@@ -16,6 +28,8 @@ export interface LoginFormProps {
   /** SSR flash (e.g. query-driven messages). */
   infoMessage?: string;
   ulbData?: UlbMaster;
+  /** Server-resolved UI strings for SSR + shared client fields. */
+  copy: LoginFormCopy;
 }
 
 // ---------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 import { LoginForm } from '@/components/modules/login/LoginForm';
 import { setRequestLocale } from 'next-intl/server';
 import { getTranslations } from 'next-intl/server';
-import type { LoginPageProps } from '@/types/login.types';
+import type { LoginFormCopy, LoginPageProps } from '@/types/login.types';
 import { fetchLoginBrandingAction } from '@/app/[locale]/login/actions';
 
 export default async function LoginPage({ params, searchParams }: LoginPageProps) {
@@ -48,6 +48,17 @@ export default async function LoginPage({ params, searchParams }: LoginPageProps
 
   const { ulbData } = await fetchLoginBrandingAction();
 
+  const copy: LoginFormCopy = {
+    loginTitle: t('login.title'),
+    username: t('login.username'),
+    usernamePlaceholder: t('login.usernamePlaceholder'),
+    password: t('login.password'),
+    passwordPlaceholder: t('login.passwordPlaceholder'),
+    signIn: t('login.signIn'),
+    showPassword: t('login.showPassword'),
+    hidePassword: t('login.hidePassword'),
+  };
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-slate-100 via-cyan-50/80 to-blue-100 px-4 py-10">
       <LoginForm
@@ -57,6 +68,7 @@ export default async function LoginPage({ params, searchParams }: LoginPageProps
         errorMessage={errorMessage}
         infoMessage={infoMessage}
         ulbData={ulbData}
+        copy={copy}
       />
     </div>
   );

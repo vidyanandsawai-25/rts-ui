@@ -5,7 +5,19 @@ import { NextIntlClientProvider } from 'next-intl';
 import * as React from 'react';
 
 import { LoginForm } from '@/components/modules/login/LoginForm';
+import type { LoginFormCopy } from '@/types/login.types';
 import enCommon from '@/i18n/locales/en/common.json';
+
+const enCopy: LoginFormCopy = {
+  loginTitle: String(enCommon.login.title),
+  username: String(enCommon.login.username),
+  usernamePlaceholder: String(enCommon.login.usernamePlaceholder),
+  password: String(enCommon.login.password),
+  passwordPlaceholder: String(enCommon.login.passwordPlaceholder),
+  signIn: String(enCommon.login.signIn),
+  showPassword: String(enCommon.login.showPassword),
+  hidePassword: String(enCommon.login.hidePassword),
+};
 
 const { mockLoginAction } = vi.hoisted(() => ({
   mockLoginAction: vi.fn(),
@@ -38,7 +50,7 @@ describe('LoginForm', () => {
   });
 
   it('renders without council headings when ulbData is omitted', () => {
-    renderWithIntl(<LoginForm locale="en" />);
+    renderWithIntl(<LoginForm locale="en" copy={enCopy} />);
     expect(screen.queryByRole('heading', { level: 1 })).not.toBeInTheDocument();
     expect(screen.queryByRole('heading', { level: 2 })).not.toBeInTheDocument();
     expect(screen.getByText(String(enCommon.login.title))).toBeInTheDocument();
@@ -48,6 +60,7 @@ describe('LoginForm', () => {
     renderWithIntl(
       <LoginForm
         locale="en"
+        copy={enCopy}
         ulbData={{
           id: 1,
           ulbCode: 'TMC',
@@ -68,6 +81,7 @@ describe('LoginForm', () => {
     renderWithIntl(
       <LoginForm
         locale="en"
+        copy={enCopy}
         ulbData={{
           id: 1,
           ulbCode: 'TMC',
@@ -83,17 +97,19 @@ describe('LoginForm', () => {
   });
 
   it('shows SSR errorMessage when provided', () => {
-    renderWithIntl(<LoginForm locale="en" errorMessage="Session expired" />);
+    renderWithIntl(<LoginForm locale="en" copy={enCopy} errorMessage="Session expired" />);
     expect(screen.getByText('Session expired')).toBeInTheDocument();
   });
 
   it('shows infoMessage when provided', () => {
-    renderWithIntl(<LoginForm locale="en" infoMessage="Please check your email." />);
+    renderWithIntl(
+      <LoginForm locale="en" copy={enCopy} infoMessage="Please check your email." />
+    );
     expect(screen.getByText('Please check your email.')).toBeInTheDocument();
   });
 
   it('includes hidden locale field', () => {
-    renderWithIntl(<LoginForm locale="mr" />);
+    renderWithIntl(<LoginForm locale="mr" copy={enCopy} />);
     const localeInput = document.querySelector('input[name="locale"]') as HTMLInputElement;
     expect(localeInput).toBeTruthy();
     expect(localeInput.value).toBe('mr');
@@ -106,7 +122,7 @@ describe('LoginForm', () => {
     });
 
     const user = userEvent.setup();
-    renderWithIntl(<LoginForm locale="en" username="preuser" />);
+    renderWithIntl(<LoginForm locale="en" copy={enCopy} username="preuser" />);
 
     const usernameInput = screen.getByPlaceholderText(String(enCommon.login.usernamePlaceholder));
     expect(usernameInput).toHaveValue('preuser');
@@ -133,7 +149,7 @@ describe('LoginForm', () => {
 
   it('toggles password visibility when password is non-empty', async () => {
     const user = userEvent.setup();
-    renderWithIntl(<LoginForm locale="en" />);
+    renderWithIntl(<LoginForm locale="en" copy={enCopy} />);
 
     const passwordInput = screen.getByPlaceholderText(String(enCommon.login.passwordPlaceholder));
     expect(
@@ -158,7 +174,7 @@ describe('LoginForm', () => {
     });
 
     const user = userEvent.setup();
-    renderWithIntl(<LoginForm locale="en" />);
+    renderWithIntl(<LoginForm locale="en" copy={enCopy} />);
 
     await user.type(screen.getByPlaceholderText(String(enCommon.login.usernamePlaceholder)), 'u1');
     await user.type(screen.getByPlaceholderText(String(enCommon.login.passwordPlaceholder)), 'p1');
@@ -178,7 +194,7 @@ describe('LoginForm', () => {
     });
 
     const user = userEvent.setup();
-    renderWithIntl(<LoginForm locale="en" />);
+    renderWithIntl(<LoginForm locale="en" copy={enCopy} />);
 
     await user.click(screen.getByRole('button', { name: String(enCommon.login.signIn) }));
 
