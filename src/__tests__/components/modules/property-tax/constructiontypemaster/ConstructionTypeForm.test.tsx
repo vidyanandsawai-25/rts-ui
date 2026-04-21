@@ -145,7 +145,9 @@ describe("ConstructionTypeForm", () => {
     render(<ConstructionTypeForm constructionTypeId={null} />);
     const cancelBtn = screen.getByText("common.buttons.cancel");
     fireEvent.click(cancelBtn);
-    expect(mockRouterPush).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(mockRouterPush).toHaveBeenCalled();
+    }, { timeout: 1000 });
   });
 
   it("sanitizes construction code to alphanumeric and underscore only", async () => {

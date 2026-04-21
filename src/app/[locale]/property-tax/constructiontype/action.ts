@@ -1,10 +1,12 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { locales } from "@/i18n/config";
-import {createConstructionType, deleteConstructionType, getConstructionPaged, getConstructionTypeById, updateConstructionType } from "@/lib/api/construction.services";
+import {createConstructionType, deleteConstructionType, getConstructionPaged, getConstructionTypeById, updateConstructionType } from "@/lib/api/construction-crud.service";
 import { ApiError } from "@/lib/utils/api";
 import { ConstructionType, ConstructionTypeFormModel} from "@/types/construction.types";
 import { PagedResponse } from "@/types/common.types";
+// import { getConstructionPaged } from "@/lib/api/construction-crud.service@/lib/api/construction-crud.service";
+
 export async function fetchConstructionPagedServerAction(
   pageNumber: number,
   pageSize: number,
@@ -13,7 +15,6 @@ export async function fetchConstructionPagedServerAction(
   sortOrder?: string
 ): Promise<PagedResponse<ConstructionType>> {
   try {
-
     // Basic validation with upper bounds
     const MAX_PAGE_SIZE = 100;
     const MAX_PAGE_NUMBER = 10000;
@@ -25,7 +26,7 @@ export async function fetchConstructionPagedServerAction(
       pageSize > MAX_PAGE_SIZE ||
       pageNumber > MAX_PAGE_NUMBER
     ) {
-      throw new Error("Invalid pagination parameters");
+      throw new ApiError(400, "Invalid pagination parameters", "Validation failed");
     }
 
     // Validate sortBy against allowed columns to prevent injection
@@ -34,31 +35,28 @@ export async function fetchConstructionPagedServerAction(
     const validSortBy = sortBy && allowedSortColumns.includes(sortBy) ? sortBy : undefined;
     const validSortOrder = sortOrder && ["asc", "desc"].includes(sortOrder.toLowerCase()) ? sortOrder.toLowerCase() : undefined;
 
-    return await getConstructionPaged(pageNumber, pageSize, searchTerm, validSortBy, validSortOrder);
+    const result = await getConstructionPaged(pageNumber, pageSize, searchTerm, validSortBy, validSortOrder);
+    return result;
   } catch (error: unknown) {
-    // Structured API error (from validateResponse)
+    // Log the error for debugging
     if (error instanceof ApiError) {
       console.error(
         `[fetchConstructionPagedServerAction] API Error ${error.statusCode}:`,
         error.responseText
       );
-    }
-    // Generic error
-    else if (error instanceof Error) {
+    } else if (error instanceof Error) {
       console.error(
         "[fetchConstructionPagedServerAction] Error:",
         error.message
       );
-    }
-    // Unknown error type
-    else {
+    } else {
       console.error(
         "[fetchConstructionPagedServerAction] Unknown error:",
         error
       );
     }
 
-    // Rethrow so UI or calling component can handle it
+    // Re-throw the error so Next.js error boundary can catch it
     throw error;
   }
 }
@@ -158,9 +156,13 @@ export async function getConstructionTypeByIdAction(
 ): Promise<ConstructionType> {
   try {
     if (!constructionTypeId || constructionTypeId <= 0) {
-      throw new Error("Valid Construction Type ID is required");
+      throw new ApiError(400, "Valid Construction Type ID is required", "Validation failed");
     }
-    return await getConstructionTypeById(constructionTypeId);
+    const result = await getConstructionTypeById(constructionTypeId);
+    if (!result) {
+      throw new ApiError(404, "Construction Type not found", "Not Found");
+    }
+    return result;
   } catch (error) {
     if (error instanceof ApiError) {
       console.error(

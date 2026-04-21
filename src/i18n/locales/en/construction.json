@@ -108,6 +108,10 @@
       "tryAgain": "Try Again",
       "goHome": "Go to Home",
       "errorId": "Error ID: {id}"
+    },
+    "loading": {
+      "message": "Loading Construction Type...",
+      "description": "Please wait while we fetch the construction type data"
     }
   }
 }

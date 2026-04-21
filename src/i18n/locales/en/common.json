@@ -242,5 +242,9 @@
   },
   "note": {
     "mandatory": "Fields marked with * are mandatory"
+  },
+  "loading": {
+    "message": "Loading...",
+    "description": "Please wait while we load the data"
   }
 }

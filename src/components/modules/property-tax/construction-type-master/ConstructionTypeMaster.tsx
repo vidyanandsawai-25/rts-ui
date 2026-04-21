@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import React, { useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { HardHat } from "lucide-react";
 import { toast } from "sonner";
@@ -13,7 +13,8 @@ import TableHeader from "@/components/common/TableHeader";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { PageContainer, SearchInput, Select } from "@/components/common";
 import { getConstructionTypeColumns } from "./ConstructionTypeColumns";
-import { TEXT_SANITIZE } from "@/lib/utils/validation";
+import { useConstructionSearch } from "@/hooks/useConstructionSearch";
+import { useConstructionPagination } from "@/hooks/useConstructionPagination";
 
 /* ================= PAGE ================= */
 export function ConstructionTypeMaster({
@@ -26,72 +27,32 @@ export function ConstructionTypeMaster({
   sortOrder,
 }: ConstructionTypeProps): React.ReactElement {
   const router = useRouter();
-  const searchParams = useSearchParams();
-
   /* ===== TRANSLATIONS ===== */
   const t = useTranslations("construction.constructionType");
   const tCommon = useTranslations("common");
   const locale = useLocale();
 
-  /* ================= SEARCH ================= */
-  const currentSearchTerm = searchParams.get("q") || "";
-  const [search, setSearch] = useState(currentSearchTerm);
   const { confirm } = useConfirm();
-
-  /* ================= URL BUILDER ================= */
-  const buildUrl = React.useCallback(
-    (page: number, size: number, searchTerm?: string, newSortBy?: string, newSortOrder?: string) => {
-      const params = new URLSearchParams();
-      params.set("page", String(page));
-      params.set("pageSize", String(size));
-      if (searchTerm) {
-        params.set("q", searchTerm);
-      }
-      if (newSortBy) {
-        params.set("sortBy", newSortBy);
-      }
-      if (newSortOrder) {
-        params.set("sortOrder", newSortOrder);
-      }
-      return `/${locale}/property-tax/constructiontype?${params.toString()}`;
-    },
-    [locale]
-  );
-
-  // Sync search state with URL on mount/navigation
-  useEffect(() => {
-    setSearch(currentSearchTerm);
-  }, [currentSearchTerm]);
-
-  // Debounced search - navigate to URL with search parameter
-  const isFirstRender = useRef(true);
-  useEffect(() => {
-    // Only trigger when user changes search term, not on initial mount
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
-    if (search === currentSearchTerm) return;
-    const timer = setTimeout(() => {
-      const trimmedSearch = search.trim();
-      const params = new URLSearchParams();
-      params.set("page", "1");
-      params.set("pageSize", String(pageSize));
-      if (trimmedSearch) {
-        params.set("q", trimmedSearch);
-      }
-      // Preserve sort params when searching
-      if (sortBy) {
-        params.set("sortBy", sortBy);
-      }
-      if (sortOrder) {
-        params.set("sortOrder", sortOrder);
-      }
-      router.push(`/${locale}/property-tax/constructiontype?${params.toString()}`);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [search, pageSize, router, locale, currentSearchTerm, sortBy, sortOrder]);
-
+  const [isPending, startTransition] = React.useTransition();
+  /* ================= SEARCH ================= */
+  const { search, currentSearchTerm, handleSearchChange } = useConstructionSearch({
+    pageSize,
+    locale,
+    sortBy,
+    sortOrder,
+    startTransition,
+  });
+  /* ================= PAGINATION ================= */
+  const { buildUrl, changePage, handlePageSizeChange, paginationInfo } = useConstructionPagination({
+    pageNumber,
+    pageSize,
+    totalCount,
+    locale,
+    currentSearchTerm,
+    sortBy,
+    sortOrder,
+    startTransition,
+  });
   /* ================= TABLE COLUMNS ================= */
   const handleSort = useCallback(
     (columnKey: string) => {
@@ -100,36 +61,20 @@ export function ConstructionTypeMaster({
       if (sortBy === columnKey) {
         newSortOrder = sortOrder === "asc" ? "desc" : "asc";
       }
-      router.push(buildUrl(1, pageSize, currentSearchTerm, columnKey, newSortOrder));
+      startTransition(() => {
+        router.push(buildUrl(1, pageSize, currentSearchTerm, columnKey, newSortOrder));
+      });
     },
     [sortBy, sortOrder, router, buildUrl, pageSize, currentSearchTerm]
   );
 
   const columns = getConstructionTypeColumns(t, tCommon, sortBy, sortOrder, handleSort);
 
-  /* ================= PAGINATION ================= */
-  const changePage = (p: number): void => {
-    const params = new URLSearchParams();
-    params.set("page", String(p));
-    params.set("pageSize", String(pageSize));
-
-    if (currentSearchTerm) {
-      params.set("q", currentSearchTerm);
-    }
-    // Preserve sort params when paginating
-    if (sortBy) {
-      params.set("sortBy", sortBy);
-    }
-    if (sortOrder) {
-      params.set("sortOrder", sortOrder);
-    }
-
-    router.push(`/${locale}/property-tax/constructiontype?${params.toString()}`);
-  };
-
   const handleEdit = useCallback(
     (row: ConstructionType) => {
-      router.push(`/${locale}/property-tax/constructiontype/edit/${row.constructionTypeId}`);
+      startTransition(() => {
+        router.push(`/${locale}/property-tax/constructiontype/edit/${row.constructionTypeId}`);
+      });
     },
     [router, locale]
   );
@@ -141,20 +86,19 @@ export function ConstructionTypeMaster({
         title: `${t("list.table.constructionCode")}: ${row.constructionCode}`,
         description: `${t("delete.confirmDescription")}`,
         meta: {
-
           name: row.description,
         },
         onConfirm: async () => {
           const fd = new FormData();
           fd.append("constructionTypeId", String(row.constructionTypeId));
-
           const result = await deleteConstructionTypeAction(fd);
-
           if (result.success) {
             toast.success(
               t("success.deleted", { code: row.constructionCode })
             );
-            router.refresh();
+            startTransition(() => {
+              router.refresh();
+            });
           } else {
             // Show appropriate error message based on status code
             let errorMessage = tCommon("errors.deleteError");
@@ -170,7 +114,6 @@ export function ConstructionTypeMaster({
             } else if (result.message) {
               errorMessage = result.message;
             }
-
             toast.error(errorMessage);
           }
         },
@@ -178,13 +121,8 @@ export function ConstructionTypeMaster({
     },
     [confirm, router, t, tCommon]
   );
-
   /* ================= UI ================= */
-  // Footer values
-  const start = totalCount === 0 ? 0 : ((pageNumber || 1) - 1) * (pageSize || 10) + 1;
-  const end = Math.min(start + (pageSize || 10) - 1, totalCount);
-  const total = totalCount || 0;
-
+  const { start, end, total } = paginationInfo;
   return (
     <PageContainer>
       <div className="space-y-4">
@@ -193,36 +131,32 @@ export function ConstructionTypeMaster({
           subtitle={t("list.subtitle")}
           icon={HardHat}
           actionLabel={t("list.buttons.add")}
-          onActionClick={() => router.push(`/${locale}/property-tax/constructiontype/add`)}
+          onActionClick={() => {
+            startTransition(() => {
+                router.push(`/${locale}/property-tax/constructiontype/add`);
+            });
+          }}
           rightContent={
             <div className="flex w-full justify-end">
               <SearchInput
                 value={search}
-                onChange={(value) => {
-                  // Sanitize search input to prevent special characters
-                  const sanitized = value.replace(TEXT_SANITIZE, "");
-                  setSearch(sanitized);
-                }}
+                onChange={handleSearchChange}
                 placeholder={t("list.filters.search") || "Search Construction Type..."}
                 className="mb-0 w-full text-gray-900"
               />
             </div>
           }
         />
-
         <MasterTable<ConstructionType>
           columns={columns}
           data={data}
-          loading={false}
+          loading={isPending}
           height="lg"
-          // Pagination handled internally by MasterTable
           pageNumber={pageNumber}
           pageSize={pageSize}
           totalCount={totalCount}
           totalPages={totalPages}
           onPageChange={changePage}
-
-          // Actions in last column
           renderActions={(row) => (
             <>
               <EditButton
@@ -236,10 +170,7 @@ export function ConstructionTypeMaster({
             </>
           )}
           actionLabel={tCommon("table.columns.actions")}
-
-
           paginationConfig={{ enabled: true, showPageSizeSelector: false }}
-
           footerLeftContent={
             <div className="flex items-center gap-4">
               <span className="text-sm text-gray-700">
@@ -249,11 +180,7 @@ export function ConstructionTypeMaster({
                 <span className="text-sm text-gray-600">{tCommon("table.rowsPerPage")}:</span>
                 <Select
                   value={String(pageSize)}
-                  onChange={(value) =>
-                    router.push(
-                      buildUrl(1, Number(value), currentSearchTerm, sortBy, sortOrder)
-                    )
-                  }
+                  onChange={handlePageSizeChange}
                   options={[10, 20, 30, 40, 50].map((s) => ({
                     label: String(s),
                     value: String(s),
@@ -265,7 +192,6 @@ export function ConstructionTypeMaster({
               </div>
             </div>
           }
-
           getRowKey={(row) => String(row.constructionTypeId)}
         />
       </div>

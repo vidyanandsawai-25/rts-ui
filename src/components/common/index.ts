@@ -102,3 +102,6 @@ export type { CheckboxProps } from '@/types/common.types';
 
 export {RadioGroup, RadioGroupItem} from './radio-group';
 export type { RadioGroupProps, RadioGroupItemProps } from '@/types/common.types';
+
+export { LoadingPage } from './LoadingPage';
+export type { LoadingPageProps } from './LoadingPage';
