@@ -72,16 +72,11 @@ export async function fetchRangesPagedServerAction(
     const rangeTotalCount = allRanges.length;
     const rangeTotalPages = Math.ceil(rangeTotalCount / pageSize) || 1;
 
-    console.log('[fetchRangesPagedServerAction] Unique ranges found:', rangeTotalCount);
-    console.log('[fetchRangesPagedServerAction] All ranges:', allRanges.map(r => `${r.minYear}-${r.maxYear}`));
-    console.log('[fetchRangesPagedServerAction] Page:', pageNumber, 'PageSize:', pageSize, 'TotalPages:', rangeTotalPages);
-
     // Apply pagination to ranges
     const startIndex = (pageNumber - 1) * pageSize;
     const endIndex = startIndex + pageSize;
     const paginatedRanges = allRanges.slice(startIndex, endIndex);
 
-    console.log('[fetchRangesPagedServerAction] Paginated ranges for this page:', paginatedRanges.map(r => `${r.minYear}-${r.maxYear}`));
 
     // Filter rows that belong to paginated ranges only
     const paginatedRangeKeys = new Set(
@@ -91,7 +86,6 @@ export async function fetchRangesPagedServerAction(
       paginatedRangeKeys.has(`${row.minYear}-${row.maxYear}`)
     );
 
-    console.log('[fetchRangesPagedServerAction] Filtered rows count:', filteredRows.length);
 
     return {
       success: true,
@@ -177,15 +171,15 @@ export async function addRangeAction(
   payload: { minYear: number; maxYear: number; defaultRate?: number }
 ): Promise<ActionResult> {
   try {
-    console.log("📞 [ACTION] addRangeAction called:", payload);
+   
     await addDepreciationRangeBulk(payload);
     
     revalidatePath(getPagePath(locale));
-    console.log("✅ [ACTION] addRangeAction completed successfully");
+    
     
     return { success: true };
   } catch (error: any) {
-    console.error("❌ [ACTION] addRangeAction Error:", error);
+  
     return { success: false, error: error.message || "Add range failed" };
   }
 }
@@ -199,15 +193,13 @@ export async function deleteRangeAction(
   payload: { minYear: number; maxYear: number }
 ): Promise<ActionResult> {
   try {
-    console.log("📞 [ACTION] deleteRangeAction called:", payload);
+    
     await deleteDepreciationRange(payload);
     
     revalidatePath(getPagePath(locale));
-    console.log("✅ [ACTION] deleteRangeAction completed successfully");
-    
+   
     return { success: true };
   } catch (error: any) {
-    console.error("❌ [ACTION] deleteRangeAction Error:", error);
     return { success: false, error: error.message || "Delete failed" };
   }
 }
