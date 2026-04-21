@@ -4,6 +4,7 @@
 import { revalidatePath } from "next/cache";
 import { createTaxZone, updateTaxZone, deleteTaxZone, getTaxZonePagedServer, getTaxZoneById, ApiError } from "@/lib/api/taxzone.services";
 import type { PagedResponse, TaxZone } from "@/types/taxzone.types";
+import { validateRequiredStringFromFormData } from "@/lib/utils/validation-helpers";
 
 export async function getTaxZonePagedAction(
   pageNumber: number,
@@ -18,40 +19,32 @@ export async function getTaxZoneByIdAction(taxZoneId: string | number): Promise<
 }
 
 export async function deleteTaxZoneAction(formData: FormData) {
-  const taxZoneIdRaw = formData.get("taxZoneId");
-  const locale = formData.get("locale");
-
-  // Validate locale
-  if (!locale || typeof locale !== "string" || locale.trim() === "") {
-    throw new Error("Invalid or missing locale");
-  }
-
-  // Validate taxZoneId
-  if (!taxZoneIdRaw || typeof taxZoneIdRaw !== "string") {
-    throw new Error("Invalid or missing taxZoneId");
-  }
-
+  // ✅ Use generic reusable validator
+  const locale = validateRequiredStringFromFormData(formData, "locale");
+  const taxZoneIdRaw = validateRequiredStringFromFormData(formData, "taxZoneId");
+  
+  // Validate taxZoneId is a positive number
   const taxZoneId = Number(taxZoneIdRaw);
   if (!Number.isFinite(taxZoneId) || taxZoneId <= 0) {
     throw new Error("Invalid taxZoneId: must be a positive number");
   }
 
-  await deleteTaxZone(taxZoneIdRaw);
+  await deleteTaxZone(taxZoneId);
   revalidatePath(`/${locale}/property-tax/taxzone`);
 }
 
 export async function saveTaxZone(id: string, formData: FormData) {
-  const localeRaw = formData.get("locale");
-  
-  // Validate locale
-  if (!localeRaw || typeof localeRaw !== "string" || localeRaw.trim() === "") {
+  // ✅ Use generic reusable validator with error handling
+  let locale: string;
+  try {
+    locale = validateRequiredStringFromFormData(formData, "locale");
+  } catch {
     return {
       ok: false,
       error: "invalid_locale",
     };
   }
   
-  const locale = localeRaw;
   const taxZoneNo = (formData.get("taxZoneNo") as string) || "";
   const taxZoneType = (formData.get("taxZoneType") as string) || "";
   const remark = (formData.get("remark") as string) || "";

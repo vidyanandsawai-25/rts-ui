@@ -11,9 +11,36 @@
  * ### Functions
  * - `validateForm(data, schema)` - Generic form validation function
  * - `hasErrors(errors)` - Check if validation errors exist
+ * - `validateRequiredStringFromFormData(formData, fieldName)` - Extract and validate required string from FormData
  */
 
 export type Validator = (value: unknown) => string | undefined;
+
+/**
+ * Validate and extract a required string from FormData
+ * Generic validator that can be used for locale, name, or any required string field
+ * 
+ * @param formData - The FormData object
+ * @param fieldName - The name of the field to extract (e.g., "locale", "name")
+ * @returns The validated non-empty string
+ * @throws Error if field is missing, not a string, or empty
+ * 
+ * @example
+ * const locale = validateRequiredStringFromFormData(formData, "locale");
+ * const name = validateRequiredStringFromFormData(formData, "name");
+ */
+export const validateRequiredStringFromFormData = (
+  formData: FormData,
+  fieldName: string
+): string => {
+  const value = formData.get(fieldName);
+
+  if (!value || typeof value !== "string" || value.trim() === "") {
+    throw new Error(`Invalid or missing ${fieldName}`);
+  }
+
+  return value;
+};
 
 /**
  * Generic form validation function

@@ -43,8 +43,8 @@ export const commonValidations = {
       format?: string;
       maxLength?: string;
     }
-  ): Validator => (value: unknown) => {
-    const strVal = String(value ?? "").trim();
+  ): Validator => (fieldValue: unknown) => {
+    const strVal = String(fieldValue ?? "").trim();
    
     const keys = {
       required: messageKeys?.required || 'form.validation.codeRequired',
@@ -76,8 +76,8 @@ export const commonValidations = {
       format?: string;
       maxLength?: string;
     }
-  ): Validator => (value: unknown) => {
-    const strVal = String(value ?? "").trim();
+  ): Validator => (fieldValue: unknown) => {
+    const strVal = String(fieldValue ?? "").trim();
    
     const keys = {
       required: messageKeys?.required || 'form.validation.descriptionRequired',
@@ -101,8 +101,8 @@ export const commonValidations = {
   masterSearchSequence: (
     t: (key: string, values?: Record<string, string | number | Date>) => string,
     messageKey?: string
-  ): Validator => (value: unknown) => {
-    const numVal = Number(value);
+  ): Validator => (fieldValue: unknown) => {
+    const numVal = Number(fieldValue);
     const key = messageKey || 'form.validation.sequenceInvalid';
    
     if (!Number.isFinite(numVal) || numVal < 0) {
@@ -123,10 +123,10 @@ export const commonValidations = {
     t: (key: string, values?: Record<string, string | number | Date>) => string,
     isEdit: boolean,
     messageKey?: string
-  ): Validator => (value: unknown) => {
+  ): Validator => (fieldValue: unknown) => {
     // ✅ Explicitly parse boolean values - handles both boolean and string types
     // Common with HTML inputs/FormData which store booleans as strings
-    const isActive = value === true || value === "true";
+    const isActive = fieldValue === true || fieldValue === "true";
     const key = messageKey || 'form.validation.mustBeActive';
    
     if (!isActive && !isEdit) {
