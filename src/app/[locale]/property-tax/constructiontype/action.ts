@@ -5,7 +5,6 @@ import {createConstructionType, deleteConstructionType, getConstructionPaged, ge
 import { ApiError } from "@/lib/utils/api";
 import { ConstructionType, ConstructionTypeFormModel} from "@/types/construction.types";
 import { PagedResponse } from "@/types/common.types";
-// import { getConstructionPaged } from "@/lib/api/construction-crud.service@/lib/api/construction-crud.service";
 
 export async function fetchConstructionPagedServerAction(
   pageNumber: number,

@@ -38,7 +38,7 @@ export function validateCreateFormData(data: ConstructionTypeFormModel): void {
  */
 export function validateUpdateFormData(data: ConstructionTypeFormModel): void {
   if (!data.constructionTypeId || data.constructionTypeId <= 0) {
-    throw new ApiError(400, "Construction ID is required for update", "Validation failed");
+    throw new ApiError(400, "Construction Type ID is required for update", "Validation failed");
   }
   if (!data.constructionCode?.trim()) {
     throw new ApiError(400, "Construction code is required", "Validation failed");

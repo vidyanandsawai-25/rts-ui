@@ -18,7 +18,8 @@ export async function getConstruction(): Promise<ConstructionType[]> {
     if (!response.data) {
       throw new ApiError(500, "No data received from server", "Invalid response format");
     }
-    return response.data.items ?? [];
+    const items = response.data.items ?? [];
+    return items.filter(isConstructionTypeShape).map(normalizeConstructionType);
   } catch (error) {
     console.error("Error fetching construction types:", error);
     throw error;
@@ -60,7 +61,7 @@ export async function getConstructionPaged(
 export async function getConstructionTypeById(constructionId: number): Promise<ConstructionType | null> {
   try {
     if (!validateConstructionTypeId(constructionId)) {
-      throw new ApiError(400, "Valid Construction ID is required", "Invalid construction ID");
+      throw new ApiError(400, "Valid Construction Type ID is required", "Invalid construction type ID");
     }
     const response = await apiClient.get<ConstructionType>(`/ConstructionType/${encodeURIComponent(String(constructionId))}`);
     if (!response.success) {
@@ -71,7 +72,9 @@ export async function getConstructionTypeById(constructionId: number): Promise<C
     if (isConstructionTypeShape(response.data)) {
       return normalizeConstructionType(response.data as Record<string, unknown>);
     }
-    return response.data;
+    
+    // Fallback for unexpected shape
+    throw new ApiError(500, "Unexpected data format received from server", "Data validation failed");
   } catch (error) {
     console.error(`Error fetching construction type ${constructionId}:`, error);
     throw error;
@@ -125,7 +128,7 @@ export async function updateConstructionType(data: ConstructionTypeFormModel): P
 export async function deleteConstructionType(constructionTypeId: number): Promise<void> {
   try {
     if (!validateConstructionTypeId(constructionTypeId)) {
-      throw new ApiError(400, "Valid constructionTypeId is required", "Validation failed");
+      throw new ApiError(400, "Valid Construction Type ID is required", "Validation failed");
     }
     const response = await apiClient.delete<void>(`/ConstructionType/${encodeURIComponent(String(constructionTypeId))}`);
     if (!response.success) {

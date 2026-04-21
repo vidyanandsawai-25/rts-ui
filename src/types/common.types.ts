@@ -7,15 +7,6 @@ export interface ApiResponse<T = unknown> {
   statusCode?: number;
 }
 
-export interface PaginatedResponse<T> {
-  data: T[];
-  pagination: {
-    page: number;
-    pageSize: number;
-    total: number;
-    totalPages: number;
-  };
-}
 
 export interface User {
   id: string;
@@ -87,12 +78,23 @@ export interface RadioGroupItemProps extends Omit<
   value: string;
 }
 
+/**
+ * Standard paginated response shape for API endpoints.
+ * This is the primary type used for all paginated lists in the application.
+ */
 export interface PagedResponse<T> {
+  /** Array of items for the current page */
   items: T[];
+  /** Total number of items across all pages */
   totalCount: number;
+  /** The current page number (1-indexed) */
   pageNumber: number;
+  /** Number of items per page */
   pageSize: number;
+  /** Total number of pages available */
   totalPages: number;
+  /** Whether there is a previous page available */
   hasPrevious: boolean;
+  /** Whether there is a next page available */
   hasNext: boolean;
 }
