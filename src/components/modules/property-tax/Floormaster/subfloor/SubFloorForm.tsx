@@ -3,11 +3,11 @@
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
-import { AlertCircle, Layers } from 'lucide-react';
+import { Layers } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Drawer } from '@/components/common/Drawer';
-import { CancelButton, SaveButton } from '@/components/common';
+import { CancelButton, SaveButton, MandatoryFieldsNotice } from '@/components/common';
 
 import {
   createSubFloorAction,
@@ -19,17 +19,12 @@ import { SubFloorFormFields } from './SubFloorFormFields';
 import { StatusToggleField } from '../StatusToggleField';
 
 import type React from 'react';
+import { getApiErrorMessage } from '@/lib/utils/form-errors';
 import {
-  CODE_REGEX,
-  CODE_SANITIZE,
-  DESCRIPTION_REGEX,
-  DESCRIPTION_SANITIZE,
-  commonValidations,
-} from '@/lib/utils/validation';
-
-/* ================= CONSTANTS ================= */
-const CODE_MAX = 10;
-const DESCRIPTION_MAX = 100;
+  validateSubFloorForm,
+  sanitizeSubFloorCode,
+  sanitizeDescription,
+} from './validation';
 
 /* ================= PROPS ================= */
 export interface SubFloorFormProps {
@@ -68,34 +63,7 @@ export default function SubFloorForm({ id, initialData }: Readonly<SubFloorFormP
   /* ================= VALIDATION ================= */
   const validate = useCallback(
     (data: SubFloorFormModel) => {
-      const e: Partial<Record<keyof SubFloorFormModel, string>> = {};
-
-      const code = data.subFloorCode.trim();
-      const description = data.description.trim();
-
-      if (!code) {
-        e.subFloorCode = t('form.validation.codeRequired');
-      } else if (code.length > CODE_MAX) {
-        e.subFloorCode = t('form.validation.codeMaxLength', { count: CODE_MAX });
-      } else if (!CODE_REGEX.test(code)) {
-        e.subFloorCode = t('form.validation.codeFormat');
-      }
-
-      if (!description) {
-        e.description = t('form.validation.descriptionRequired');
-      } else if (description.length > DESCRIPTION_MAX) {
-        e.description = t('form.validation.descriptionMaxLength', { count: DESCRIPTION_MAX });
-      } else if (!DESCRIPTION_REGEX.test(description)) {
-        e.description = t('form.validation.descriptionFormat');
-      }
-
-      // Use commonValidations.masterActiveStatus for isActive validation
-      const isActiveError = commonValidations.masterActiveStatus(t, isEdit)(data.isActive);
-      if (isActiveError) {
-        e.isActive = isActiveError;
-      }
-
-      return e;
+      return validateSubFloorForm(data, t, isEdit);
     },
     [isEdit, t]
   );
@@ -109,17 +77,11 @@ export default function SubFloorForm({ id, initialData }: Readonly<SubFloorFormP
     let newValue = value;
 
     if (name === 'description') {
-      newValue = newValue.replace(DESCRIPTION_SANITIZE, '');
-      if (newValue.length > DESCRIPTION_MAX) {
-        newValue = newValue.substring(0, DESCRIPTION_MAX);
-      }
+      newValue = sanitizeDescription(newValue);
     }
 
     if (name === 'subFloorCode') {
-      newValue = newValue.replace(CODE_SANITIZE, '');
-      if (newValue.length > CODE_MAX) {
-        newValue = newValue.substring(0, CODE_MAX);
-      }
+      newValue = sanitizeSubFloorCode(newValue);
     }
 
     setFormData((p) => ({
@@ -149,27 +111,6 @@ export default function SubFloorForm({ id, initialData }: Readonly<SubFloorFormP
     });
   };
 
-  /* ================= ERROR HELPER ================= */
-  const getErrorMessage = (result: { statusCode?: number; message?: string }) => {
-    // First check the actual message content for duplicates
-    const msg = result.message?.toLowerCase() || '';
-    if (msg.includes('duplicate') || msg.includes('already exists') || msg.includes('same details')) {
-      // Return the backend message directly for duplicate errors
-      return result.message || t('apiErrors.duplicateRecord');
-    }
-
-    // Then check status codes
-    if (result.statusCode === 409) return t('apiErrors.duplicateRecord');
-    if (result.statusCode === 400) return result.message || t('apiErrors.invalidData');
-    if (result.statusCode === 404) return t('apiErrors.notFound');
-    if (result.statusCode === 401 || result.statusCode === 403)
-      return tCommon('errors.unauthorized');
-    if (result.statusCode && result.statusCode >= 500) return tCommon('errors.serverError');
-    
-    // Return backend message if available, otherwise generic error
-    return result.message || t('apiErrors.operationFailed');
-  };
-
   /* ================= SUBMIT ================= */
   const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -188,7 +129,7 @@ export default function SubFloorForm({ id, initialData }: Readonly<SubFloorFormP
         : await createSubFloorAction(formData);
 
       if (!result.success) {
-        toast.error(getErrorMessage(result));
+        toast.error(getApiErrorMessage(result, { t, tCommon }));
         return;
       }
 
@@ -274,10 +215,7 @@ export default function SubFloorForm({ id, initialData }: Readonly<SubFloorFormP
             descriptionPlaceholder: t('form.descriptionPlaceholder'),
           }}
         />
-        <div className="flex items-center gap-2 rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-700">
-          {' '}
-          <AlertCircle size={16} /> <span> {t('note.mandatory')} </span>{' '}
-        </div>{' '}
+        <MandatoryFieldsNotice message={tCommon('note.mandatory')} />
       </form>
     </Drawer>
   );

@@ -3,12 +3,13 @@
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
-import { AlertCircle, Layers } from 'lucide-react';
+import { Layers } from 'lucide-react';
 import { toast } from 'sonner';
 import { Drawer } from '@/components/common/Drawer';
 import {
   CancelButton,
   SaveButton,
+  MandatoryFieldsNotice,
 } from '@/components/common';
 
 import {
@@ -19,18 +20,13 @@ import {
 import { FloorFormModel, Floor } from '@/types/floor.types';
 import { FloorFormFields } from './FloorFormFields';
 import type React from 'react';
-import {
-  CODE_REGEX,
-  CODE_SANITIZE,
-  DESCRIPTION_REGEX,
-  DESCRIPTION_SANITIZE,
-  commonValidations,
-} from '@/lib/utils/validation';
+import { getApiErrorMessage } from '@/lib/utils/form-errors';
 import { StatusToggleField } from '../StatusToggleField';
-
-/* ================= CONSTANTS ================= */
-const FLOOR_CODE_MAX = 7;
-const DESCRIPTION_MAX = 100;
+import {
+  validateFloorForm,
+  sanitizeFloorCode,
+  sanitizeDescription,
+} from './validation';
 
 /* ================= PROPS ================= */
 export interface FloorFormProps {
@@ -69,38 +65,7 @@ export default function FloorForm({ id, initialData }: Readonly<FloorFormProps>)
   /* ================= VALIDATION ================= */
   const validate = useCallback(
     (data: FloorFormModel): Partial<Record<keyof FloorFormModel, string>> => {
-      const e: Partial<Record<keyof FloorFormModel, string>> = {};
-
-      const floorCode = data.floorCode.trim();
-      const description = data.description.trim();
-
-      if (!floorCode) {
-        e.floorCode = t('form.validation.codeRequired');
-      } else if (floorCode.length > FLOOR_CODE_MAX) {
-        e.floorCode = t('form.validation.codeMaxLength', { count: FLOOR_CODE_MAX });
-      } else if (!CODE_REGEX.test(floorCode)) {
-        e.floorCode = t('form.validation.codeFormat');
-      }
-
-      if (!description) {
-        e.description = t('form.validation.descriptionRequired');
-      } else if (description.length > DESCRIPTION_MAX) {
-        e.description = t('form.validation.descriptionMaxLength', { count: DESCRIPTION_MAX });
-      } else if (!DESCRIPTION_REGEX.test(description)) {
-        e.description = t('form.validation.descriptionFormat');
-      }
-
-      if (!Number.isFinite(data.sequenceNo) || data.sequenceNo < 0) {
-        e.sequenceNo = t('validation.mustBeNumber');
-      }
-
-      // Use commonValidations.masterActiveStatus for isActive validation
-      const isActiveError = commonValidations.masterActiveStatus(t, isEdit)(data.isActive);
-      if (isActiveError) {
-        e.isActive = isActiveError;
-      }
-
-      return e;
+      return validateFloorForm(data, t, isEdit);
     },
     [isEdit, t]
   );
@@ -114,17 +79,11 @@ export default function FloorForm({ id, initialData }: Readonly<FloorFormProps>)
     let newValue = value;
 
     if (name === 'description') {
-      newValue = newValue.replace(DESCRIPTION_SANITIZE, '');
-      if (newValue.length > DESCRIPTION_MAX) {
-        newValue = newValue.substring(0, DESCRIPTION_MAX);
-      }
+      newValue = sanitizeDescription(newValue);
     }
 
     if (name === 'floorCode') {
-      newValue = newValue.replace(CODE_SANITIZE, '');
-      if (newValue.length > FLOOR_CODE_MAX) {
-        newValue = newValue.substring(0, FLOOR_CODE_MAX);
-      }
+      newValue = sanitizeFloorCode(newValue);
     }
 
     setFormData((p) => ({
@@ -157,28 +116,6 @@ export default function FloorForm({ id, initialData }: Readonly<FloorFormProps>)
     });
   };
 
-  /* ================= ERROR HELPER ================= */
-  const getErrorMessage = (result: { statusCode?: number; message?: string }): string => {
-    // First check the actual message content for duplicates
-    const msg = result.message?.toLowerCase() || '';
-    if (msg.includes('duplicate') || msg.includes('already exists') || msg.includes('same details')) {
-      // Return the backend message directly for duplicate errors
-      return result.message || t('apiErrors.duplicateRecord');
-    }
-
-    // Then check status codes
-    if (result.statusCode === 409) return t('apiErrors.duplicateRecord');
-    if (result.statusCode === 400) return result.message || t('apiErrors.invalidData');
-    if (result.statusCode === 404) return t('apiErrors.notFound');
-    if (result.statusCode === 401 || result.statusCode === 403)
-      return tCommon('errors.unauthorized');
-    if (result.statusCode && result.statusCode >= 500) return tCommon('errors.serverError');
-    
-    // Return backend message if available, otherwise generic error
-    if (result.message) return result.message;
-    return t('apiErrors.operationFailed');
-  };
-
   /* ================= SUBMIT ================= */
   const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
@@ -196,7 +133,7 @@ export default function FloorForm({ id, initialData }: Readonly<FloorFormProps>)
       const result = isEdit ? await updateFloorAction(formData) : await createFloorAction(formData);
 
       if (!result.success) {
-        toast.error(getErrorMessage(result));
+        toast.error(getApiErrorMessage(result, { t, tCommon }));
         return;
       }
 
@@ -286,10 +223,7 @@ export default function FloorForm({ id, initialData }: Readonly<FloorFormProps>)
           }}
         />
 
-        <div className="flex items-center gap-2 rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-700">
-          <AlertCircle size={16} />
-          <span>{tCommon('note.mandatory')}</span>
-        </div>
+        <MandatoryFieldsNotice message={tCommon('note.mandatory')} />
       </form>
     </Drawer>
   );
