@@ -54,20 +54,26 @@ export default function middleware(request: NextRequest) {
 
   // Use intl middleware for locale handling
   const intlResponse = intlMiddleware(request);
-  
-  // Create a new response that passes our custom header to the request
+
+  // Redirect/rewrite from intl (e.g. locale prefix) must not be replaced with a bare `next()`
+  const intlDidRedirectOrRewrite =
+    intlResponse.headers.has('location') || intlResponse.headers.has('x-middleware-rewrite');
+  if (intlDidRedirectOrRewrite) {
+    intlResponse.headers.set('x-pathname', pathname);
+    return intlResponse;
+  }
+
   const response = NextResponse.next({
     request: {
       headers: requestHeaders,
     },
   });
 
-  // Copy headers and cookies from intl middleware response
   intlResponse.headers.forEach((value, key) => {
     response.headers.set(key, value);
   });
   intlResponse.cookies.getAll().forEach((cookie) => {
-    response.cookies.set(cookie.name, cookie.value);
+    response.cookies.set(cookie);
   });
 
   return response;

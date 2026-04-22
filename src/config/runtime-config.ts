@@ -32,7 +32,7 @@ export interface RuntimeConfig {
  * Default configuration values
  */
 const defaultConfig: RuntimeConfig = {
-  apiBaseUrl: 'https://localhost:44346/api',
+  apiBaseUrl: 'https://localhost:7293/api',
   appEnv: 'development',
   authEnabled: false,
   featureAnalytics: false,

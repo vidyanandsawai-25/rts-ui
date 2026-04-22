@@ -9,7 +9,15 @@
  * @module useLoginForm
  */
 
-import { useState, useCallback, useMemo } from 'react';
+import {
+  useState,
+  useCallback,
+  useMemo,
+  type ChangeEvent,
+  type FocusEvent,
+  type Dispatch,
+  type SetStateAction,
+} from 'react';
 import { useTranslations } from 'next-intl';
 import {
   AUTH_CONSTRAINTS,
@@ -49,9 +57,9 @@ export interface UseLoginFormReturn {
   /** Whether form has been submitted at least once */
   submittedOnce: boolean;
   /** Handle input change with sanitization */
-  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleChange: (e: ChangeEvent<HTMLInputElement>) => void;
   /** Handle input blur for validation */
-  handleBlur: (e: React.FocusEvent<HTMLInputElement>) => void;
+  handleBlur: (e: FocusEvent<HTMLInputElement>) => void;
   /** Check if error should be shown for a field */
   showError: (field: keyof LoginFormErrors) => boolean;
   /** Validate entire form, returns true if valid */
@@ -59,7 +67,7 @@ export interface UseLoginFormReturn {
   /** Reset form to initial state */
   resetForm: () => void;
   /** Set form data directly (for external updates) */
-  setFormData: React.Dispatch<React.SetStateAction<LoginFormData>>;
+  setFormData: Dispatch<SetStateAction<LoginFormData>>;
   /** Mark form as submitted */
   markSubmitted: () => void;
   /** Check if form is valid (no errors) */
@@ -119,7 +127,7 @@ export function useLoginForm(options: UseLoginFormOptions = {}): UseLoginFormRet
   // Event Handlers
   // ---------------------------------------------------------------------------
 
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     
     let sanitizedValue = value;
@@ -152,7 +160,7 @@ export function useLoginForm(options: UseLoginFormOptions = {}): UseLoginFormRet
     }
   }, [errors]);
 
-  const handleBlur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
+  const handleBlur = useCallback((e: FocusEvent<HTMLInputElement>) => {
     const { name } = e.target;
     
     // Mark field as touched

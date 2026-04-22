@@ -84,7 +84,11 @@ async function authJsonRequest<T>(
       try {
         data = JSON.parse(text) as unknown;
       } catch {
-        return { success: false, error: 'Invalid JSON from API' };
+        return {
+          success: false,
+          error: 'Invalid JSON from API',
+          statusCode: response.status,
+        };
       }
     } else {
       data = undefined;
@@ -98,12 +102,14 @@ async function authJsonRequest<T>(
       return {
         success: false,
         error: msg || 'An error occurred',
+        statusCode: response.status,
       };
     }
 
     return {
       success: true,
       data: data as T,
+      statusCode: response.status,
     };
   } catch (error) {
     clearTimeout(timeoutId);
