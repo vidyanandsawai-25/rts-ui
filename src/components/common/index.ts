@@ -82,8 +82,7 @@ export type { ContextMenuProps, ContextMenuItem } from './ContextMenu';
 export { Tooltip } from './Tooltip';
 export type { TooltipProps } from './Tooltip';
 
-export { ErrorPage } from './ErrorPage';
-export type { ErrorPageProps } from './ErrorPage';
+
 
 export { LoadingPage } from './LoadingPage';
 export type { LoadingPageProps } from './LoadingPage';
@@ -108,6 +107,4 @@ export type { CheckboxProps } from '@/types/common.types';
 
 export {RadioGroup, RadioGroupItem} from './radio-group';
 export type { RadioGroupProps, RadioGroupItemProps } from '@/types/common.types';
-
-export { LoadingPage } from './LoadingPage';
-export type { LoadingPageProps } from './LoadingPage';
+
