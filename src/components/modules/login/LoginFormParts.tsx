@@ -10,6 +10,22 @@ import { Label } from '@/components/common/label';
 
 import type { LoginFormCopy } from '@/types/login.types';
 
+// Import centralized constants for validation and sanitization
+import {
+  AUTH_CONSTRAINTS,
+  USERNAME_SANITIZE,
+  PASSWORD_SANITIZE,
+  AUTH_ERROR_CODES,
+  LOGIN_PRIMARY_SUBMIT_CLASS,
+} from './constants';
+
+// ---------------------------------------------------------------------------
+// Translation Helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Hook to access login-specific translations with a `login.` prefix.
+ */
 export function useLoginT() {
   const tc = useTranslations('common');
   return useCallback(
@@ -23,6 +39,10 @@ export function useLoginT() {
   );
 }
 
+/**
+ * Hook providing localized error message lookup for login errors.
+ * Uses centralized error codes for consistent error handling.
+ */
 export function useLoginFormHelpers() {
   const t = useLoginT();
   const commonT = useTranslations('common');
@@ -30,34 +50,65 @@ export function useLoginFormHelpers() {
   const getLocalizedError = useCallback(
     (errorCode: string | undefined): string => {
       if (!errorCode) return '';
+      
+      // Comprehensive error code mapping using centralized constants
       const errorKeyMap: Record<string, string> = {
-        USERNAME_REQUIRED: 'errors.USERNAME_REQUIRED',
-        CREDENTIALS_REQUIRED: 'errors.credentialsRequired',
-        INVALID_OTP_FORMAT: 'errors.enterValidToken',
-        INVALID_CREDENTIALS: 'errors.invalidCredentials',
-        SESSION_EXPIRED: 'errors.sessionExpired',
-        USER_NOT_FOUND: 'errors.Auth_UserNotFound',
-        ACCOUNT_LOCKED: 'errors.Auth_AccountLocked_Temporary',
-        PASSWORDS_MISMATCH: 'errors.passwordsMismatch',
-        SERVICE_UNAVAILABLE: 'errors.serviceUnavailable',
-        RESET_FAILED: 'errors.RESET_FAILED',
-        LOGIN_FAILED: 'errors.LOGIN_FAILED',
-        RESEND_FAILED: 'errors.RESEND_FAILED',
-        VERIFICATION_FAILED: 'errors.VERIFICATION_FAILED',
+        // Credential errors
+        [AUTH_ERROR_CODES.USERNAME_REQUIRED]: 'errors.USERNAME_REQUIRED',
+        [AUTH_ERROR_CODES.PASSWORD_REQUIRED]: 'errors.PASSWORD_REQUIRED',
+        [AUTH_ERROR_CODES.CREDENTIALS_REQUIRED]: 'errors.credentialsRequired',
+        [AUTH_ERROR_CODES.INVALID_CREDENTIALS]: 'errors.invalidCredentials',
+        [AUTH_ERROR_CODES.USERNAME_TOO_SHORT]: 'errors.USERNAME_TOO_SHORT',
+        [AUTH_ERROR_CODES.USERNAME_TOO_LONG]: 'errors.USERNAME_TOO_LONG',
+        [AUTH_ERROR_CODES.PASSWORD_TOO_LONG]: 'errors.PASSWORD_TOO_LONG',
+        
+        // Account status errors
+        [AUTH_ERROR_CODES.USER_NOT_FOUND]: 'errors.Auth_UserNotFound',
+        [AUTH_ERROR_CODES.ACCOUNT_LOCKED]: 'errors.Auth_AccountLocked_Temporary',
+        [AUTH_ERROR_CODES.ACCOUNT_INACTIVE]: 'errors.accountInactive',
+        [AUTH_ERROR_CODES.SESSION_EXPIRED]: 'errors.sessionExpired',
+        [AUTH_ERROR_CODES.PASSWORD_CHANGE_REQUIRED]: 'errors.passwordChangeRequired',
+        
+        // Rate limiting
+        [AUTH_ERROR_CODES.TOO_MANY_ATTEMPTS]: 'errors.tooManyAttempts',
+        
+        // Service errors
+        [AUTH_ERROR_CODES.SERVICE_UNAVAILABLE]: 'errors.serviceUnavailable',
+        [AUTH_ERROR_CODES.REQUEST_TIMEOUT]: 'errors.requestTimeout',
+        [AUTH_ERROR_CODES.LOGIN_FAILED]: 'errors.LOGIN_FAILED',
+        
+        // Verification errors
+        [AUTH_ERROR_CODES.INVALID_OTP_FORMAT]: 'errors.enterValidToken',
+        [AUTH_ERROR_CODES.VERIFICATION_FAILED]: 'errors.VERIFICATION_FAILED',
+        [AUTH_ERROR_CODES.RESEND_FAILED]: 'errors.RESEND_FAILED',
+        [AUTH_ERROR_CODES.RESET_FAILED]: 'errors.RESET_FAILED',
+        
+        // Legacy mappings for backward compatibility
+        'PASSWORDS_MISMATCH': 'errors.passwordsMismatch',
       };
+      
       const translationKey = errorKeyMap[errorCode];
       if (translationKey) {
-        return t(translationKey);
+        try {
+          return t(translationKey);
+        } catch {
+          // Fall through to dynamic lookup
+        }
       }
+      
+      // Try dynamic key lookup
       const dynamicKey = `login.errors.${errorCode}`;
       try {
         return commonT(dynamicKey);
       } catch {
-        try {
-          return commonT('errors.generic');
-        } catch {
-          return errorCode;
-        }
+        // Fall through to generic error
+      }
+      
+      // Final fallback
+      try {
+        return commonT('errors.generic');
+      } catch {
+        return errorCode;
       }
     },
     [t, commonT]
@@ -66,9 +117,17 @@ export function useLoginFormHelpers() {
   return { getLocalizedError };
 }
 
-export const LOGIN_PRIMARY_SUBMIT_CLASS =
-  'w-full max-w-[280px] bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 text-lg rounded-xl shadow-lg shadow-cyan-500/30 transition-all duration-300';
+// Re-export for backward compatibility
+export { LOGIN_PRIMARY_SUBMIT_CLASS };
 
+// ---------------------------------------------------------------------------
+// Form Components
+// ---------------------------------------------------------------------------
+
+/**
+ * Submit button that integrates with React form status.
+ * Shows loading state during form submission.
+ */
 function FormSubmitButton({
   children,
   className,
@@ -86,6 +145,16 @@ function FormSubmitButton({
   );
 }
 
+/**
+ * Login credential input fields with sanitization.
+ * Implements input validation patterns from Construction Type Master.
+ * 
+ * Features:
+ * - Username sanitization (removes invalid characters)
+ * - Password sanitization (removes zero-width/control characters)
+ * - Max length enforcement
+ * - Password visibility toggle
+ */
 export function LoginCredentialFields({
   initialUsername,
   locale,
@@ -101,10 +170,47 @@ export function LoginCredentialFields({
   const usernameId = useId();
   const passwordId = useId();
 
+  /**
+   * Handles username input with sanitization.
+   * Removes invalid characters and enforces max length.
+   */
+  const handleUsernameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value;
+    
+    // Sanitize: remove characters not allowed in usernames
+    value = value.replace(USERNAME_SANITIZE, '');
+    
+    // Enforce max length
+    if (value.length > AUTH_CONSTRAINTS.USERNAME_MAX_LENGTH) {
+      value = value.slice(0, AUTH_CONSTRAINTS.USERNAME_MAX_LENGTH);
+    }
+    
+    setUsernameInput(value);
+  }, []);
+
+  /**
+   * Handles password input with sanitization.
+   * Removes zero-width and control characters that could cause issues.
+   */
+  const handlePasswordChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value;
+    
+    // Sanitize: remove zero-width and control characters
+    value = value.replace(PASSWORD_SANITIZE, '');
+    
+    // Enforce max length
+    if (value.length > AUTH_CONSTRAINTS.PASSWORD_MAX_LENGTH) {
+      value = value.slice(0, AUTH_CONSTRAINTS.PASSWORD_MAX_LENGTH);
+    }
+    
+    setPassword(value);
+  }, []);
+
   return (
     <>
       <Input type="hidden" name="locale" value={locale} />
       <div className="space-y-5">
+        {/* Username Field */}
         <div className="space-y-1.5">
           <Label htmlFor={usernameId} className="ml-1 text-sm font-semibold text-gray-700">
             {copy.username}
@@ -118,14 +224,17 @@ export function LoginCredentialFields({
               id={usernameId}
               name="username"
               value={usernameInput}
-              onChange={(e) => setUsernameInput(e.target.value)}
+              onChange={handleUsernameChange}
               placeholder={copy.usernamePlaceholder}
+              maxLength={AUTH_CONSTRAINTS.USERNAME_MAX_LENGTH}
               className="rounded-xl border-gray-200 bg-gray-50/50 py-2.5 pl-10 transition-all duration-200 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20"
               fullWidth
               autoComplete="username"
             />
           </div>
         </div>
+        
+        {/* Password Field */}
         <div className="space-y-1.5">
           <Label htmlFor={passwordId} className="ml-1 text-sm font-semibold text-gray-700">
             {copy.password}
@@ -140,8 +249,9 @@ export function LoginCredentialFields({
               name="password"
               type={showPassword ? 'text' : 'password'}
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={handlePasswordChange}
               placeholder={copy.passwordPlaceholder}
+              maxLength={AUTH_CONSTRAINTS.PASSWORD_MAX_LENGTH}
               className="rounded-xl border-gray-200 bg-gray-50/50 py-2.5 pl-10 pr-11 transition-all duration-200 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20"
               fullWidth
               autoComplete="current-password"
@@ -165,6 +275,8 @@ export function LoginCredentialFields({
           </div>
         </div>
       </div>
+      
+      {/* Submit Button */}
       <motion.div
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}

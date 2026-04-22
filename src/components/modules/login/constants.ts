@@ -1,0 +1,194 @@
+/**
+ * Login Module Constants
+ * 
+ * Centralized configuration for the login module following the pattern
+ * from construction-type-master/constants.ts.
+ * 
+ * @module login/constants
+ */
+
+// ---------------------------------------------------------------------------
+// Field Length Constraints
+// ---------------------------------------------------------------------------
+
+/** Authentication field constraints */
+export const AUTH_CONSTRAINTS = {
+  /** Minimum username length */
+  USERNAME_MIN_LENGTH: 3,
+  /** Maximum username length */
+  USERNAME_MAX_LENGTH: 50,
+  /** Minimum password length (display only - backend validates actual policy) */
+  PASSWORD_MIN_LENGTH: 8,
+  /** Maximum password length (prevent DoS via very long passwords) */
+  PASSWORD_MAX_LENGTH: 128,
+} as const;
+
+// ---------------------------------------------------------------------------
+// Validation Patterns
+// ---------------------------------------------------------------------------
+
+/**
+ * Username validation regex.
+ * Allows: letters, numbers, @, ., _, -
+ * Common patterns: email addresses, usernames with dots/underscores
+ */
+export const USERNAME_REGEX = /^[A-Za-z0-9@._-]+$/;
+
+/**
+ * Username sanitization regex.
+ * Removes any characters not allowed in usernames.
+ */
+export const USERNAME_SANITIZE = /[^A-Za-z0-9@._-]/g;
+
+/**
+ * Password sanitization regex.
+ * Removes zero-width characters and control characters.
+ * Preserves all printable characters including special symbols.
+ */
+export const PASSWORD_SANITIZE = /[\u200B-\u200D\uFEFF\u0000-\u001F]/g;
+
+// ---------------------------------------------------------------------------
+// Cookie Names (Centralized)
+// ---------------------------------------------------------------------------
+
+/**
+ * Authentication-related cookie names.
+ * Centralizing these prevents typos and makes refactoring easier.
+ */
+export const AUTH_COOKIES = {
+  /** JWT access token */
+  AUTH_TOKEN: 'auth_token',
+  /** JWT refresh token */
+  REFRESH_TOKEN: 'refresh_token',
+  /** Session identifier */
+  SESSION_ID: 'session_id',
+  /** Client-readable login status flag */
+  IS_LOGGED_IN: 'is_logged_in',
+  /** User display name (client-readable) */
+  USER_NAME: 'user_name',
+  /** User ID */
+  USER_ID: 'user_id',
+  /** Pending auth state (for multi-step flows) */
+  PENDING_AUTH: 'pending_auth',
+} as const;
+
+/**
+ * ULB (Urban Local Body) branding cookie names.
+ * Client-readable for UI display.
+ */
+export const ULB_COOKIES = {
+  /** Council name in English */
+  ULB_NAME: 'ulb_name',
+  /** Council name in local language */
+  ULB_NAME_LOCAL: 'ulb_name_local',
+  /** Council logo URL */
+  ULB_LOGO: 'ulb_logo',
+  /** Council code */
+  ULB_CODE: 'ulb_code',
+} as const;
+
+/**
+ * All cookies that should be cleared on logout.
+ */
+export const LOGOUT_CLEAR_COOKIES = [
+  AUTH_COOKIES.AUTH_TOKEN,
+  AUTH_COOKIES.REFRESH_TOKEN,
+  AUTH_COOKIES.SESSION_ID,
+  AUTH_COOKIES.PENDING_AUTH,
+  AUTH_COOKIES.IS_LOGGED_IN,
+  AUTH_COOKIES.USER_NAME,
+  AUTH_COOKIES.USER_ID,
+  ULB_COOKIES.ULB_NAME,
+  ULB_COOKIES.ULB_NAME_LOCAL,
+  ULB_COOKIES.ULB_LOGO,
+  ULB_COOKIES.ULB_CODE,
+  'forgot_flow',
+  'forgot_reset_otp',
+] as const;
+
+// ---------------------------------------------------------------------------
+// Cookie Configuration
+// ---------------------------------------------------------------------------
+
+/**
+ * Default cookie options for secure HTTP-only cookies.
+ * Used for sensitive data like tokens.
+ */
+export const SECURE_COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'lax' as const,
+  path: '/',
+  maxAge: 60 * 60 * 24 * 7, // 7 days
+} as const;
+
+/**
+ * Cookie options for client-readable cookies.
+ * Used for UI display data like user name.
+ */
+export const CLIENT_COOKIE_OPTIONS = {
+  httpOnly: false,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'lax' as const,
+  path: '/',
+  maxAge: 60 * 60 * 24 * 7, // 7 days
+} as const;
+
+// ---------------------------------------------------------------------------
+// Error Code Constants
+// ---------------------------------------------------------------------------
+
+/**
+ * Standard error codes used across the login module.
+ * These map to translation keys in the i18n files.
+ */
+export const AUTH_ERROR_CODES = {
+  // Credential errors
+  CREDENTIALS_REQUIRED: 'CREDENTIALS_REQUIRED',
+  INVALID_CREDENTIALS: 'INVALID_CREDENTIALS',
+  USERNAME_REQUIRED: 'USERNAME_REQUIRED',
+  PASSWORD_REQUIRED: 'PASSWORD_REQUIRED',
+  USERNAME_TOO_SHORT: 'USERNAME_TOO_SHORT',
+  USERNAME_TOO_LONG: 'USERNAME_TOO_LONG',
+  PASSWORD_TOO_LONG: 'PASSWORD_TOO_LONG',
+  
+  // Account status errors
+  ACCOUNT_LOCKED: 'ACCOUNT_LOCKED',
+  ACCOUNT_INACTIVE: 'ACCOUNT_INACTIVE',
+  USER_NOT_FOUND: 'USER_NOT_FOUND',
+  SESSION_EXPIRED: 'SESSION_EXPIRED',
+  PASSWORD_CHANGE_REQUIRED: 'PASSWORD_CHANGE_REQUIRED',
+  
+  // Rate limiting
+  TOO_MANY_ATTEMPTS: 'TOO_MANY_ATTEMPTS',
+  
+  // Service errors
+  SERVICE_UNAVAILABLE: 'SERVICE_UNAVAILABLE',
+  REQUEST_TIMEOUT: 'REQUEST_TIMEOUT',
+  INVALID_REQUEST: 'INVALID_REQUEST',
+  LOGIN_FAILED: 'LOGIN_FAILED',
+  
+  // Verification errors (for OTP/2FA flows)
+  INVALID_OTP_FORMAT: 'INVALID_OTP_FORMAT',
+  VERIFICATION_FAILED: 'VERIFICATION_FAILED',
+  RESEND_FAILED: 'RESEND_FAILED',
+  RESET_FAILED: 'RESET_FAILED',
+} as const;
+
+export type AuthErrorCode = typeof AUTH_ERROR_CODES[keyof typeof AUTH_ERROR_CODES];
+
+// ---------------------------------------------------------------------------
+// UI Constants
+// ---------------------------------------------------------------------------
+
+/**
+ * CSS class for primary login submit button.
+ * Consistent styling across login forms.
+ */
+export const LOGIN_PRIMARY_SUBMIT_CLASS =
+  'w-full max-w-[280px] bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 text-lg rounded-xl shadow-lg shadow-cyan-500/30 transition-all duration-300';
+
+/**
+ * Debounce delay for form validation (ms).
+ */
+export const VALIDATION_DEBOUNCE_MS = 300;

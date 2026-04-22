@@ -8,26 +8,46 @@ import { locales, defaultLocale } from '@/i18n/config';
 import type { AuthLoginApiBody, UlbConfigApiBody } from '@/types/login.types';
 import type { UlbMaster } from '@/types/master.types';
 
+// Import centralized constants and validation utilities
+import {
+  AUTH_COOKIES,
+  ULB_COOKIES,
+  LOGOUT_CLEAR_COOKIES,
+  SECURE_COOKIE_OPTIONS,
+  CLIENT_COOKIE_OPTIONS,
+  AUTH_ERROR_CODES,
+} from '@/components/modules/login/constants';
+import {
+  validateCredentials as validateCredentialsInput,
+  mapAuthErrorToCode,
+  mapValidationErrorToCode,
+  AuthValidationError,
+} from '@/lib/api/auth-validation';
+import {
+  isAuthLoginResponseShape,
+  normalizeAuthLoginResponse,
+  hasValidSessionTokens,
+  extractUserDisplayName,
+} from '@/lib/api/auth-types-guard';
+
+// ---------------------------------------------------------------------------
+// Utility Functions
+// ---------------------------------------------------------------------------
+
+/**
+ * Validates and normalizes locale string.
+ * @param raw - Raw locale from form data
+ * @returns Valid locale string
+ */
 function sanitizeLocale(raw: string): string {
   return (locales as readonly string[]).includes(raw) ? raw : defaultLocale;
 }
 
-const COOKIE_OPTIONS = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax' as const,
-  path: '/',
-  maxAge: 60 * 60 * 24 * 7,
-};
-
-const CLIENT_ULB_COOKIE = {
-  httpOnly: false,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax' as const,
-  path: '/',
-  maxAge: 60 * 60 * 24 * 7,
-};
-
+/**
+ * Detects Next.js redirect errors to allow them to propagate.
+ * @param e - Caught error
+ * @returns True if this is a Next.js redirect
+ */
 function isRedirectError(e: unknown): boolean {
   return (
     typeof e === 'object' &&
@@ -38,14 +58,11 @@ function isRedirectError(e: unknown): boolean {
   );
 }
 
-function userDisplayNameFromAuth(auth: AuthLoginApiBody, formUsername: string): string {
-  const parts = [auth.firstName, auth.middleName, auth.lastName]
-    .map((p) => (typeof p === 'string' ? p.trim() : ''))
-    .filter(Boolean);
-  if (parts.length > 0) return parts.join(' ');
-  return (auth.username ?? '').trim() || formUsername.trim();
-}
-
+/**
+ * Maps ULB config API response to master data type.
+ * @param raw - Raw ULB config from API
+ * @returns Normalized UlbMaster object
+ */
 function mapUlbConfigApiToMaster(raw: UlbConfigApiBody): UlbMaster {
   return {
     id: raw.ulbId,
@@ -62,21 +79,42 @@ function mapUlbConfigApiToMaster(raw: UlbConfigApiBody): UlbMaster {
   };
 }
 
+// ---------------------------------------------------------------------------
+// Cookie Management
+// ---------------------------------------------------------------------------
+
+/**
+ * Fetches ULB config and applies branding cookies.
+ * @param cookieStore - Next.js cookie store
+ */
 async function applyUlbCookiesFromApi(
   cookieStore: Awaited<ReturnType<typeof cookies>>
 ): Promise<void> {
   const ulbRes = await authService.getUlbConfig();
   if (!ulbRes.success || !ulbRes.data) return;
+  
   const ulb = ulbRes.data;
   const logo = (ulb.ulbLogo ?? '').trim();
-  cookieStore.set('ulb_name', ulb.ulbName || '', CLIENT_ULB_COOKIE);
-  cookieStore.set('ulb_name_local', (ulb.ulbNameLocal ?? '').trim(), CLIENT_ULB_COOKIE);
-  cookieStore.set('ulb_logo', logo, CLIENT_ULB_COOKIE);
-  cookieStore.set('ulb_code', ulb.ulbCode || '', CLIENT_ULB_COOKIE);
+  
+  // Use centralized cookie names
+  cookieStore.set(ULB_COOKIES.ULB_NAME, ulb.ulbName || '', CLIENT_COOKIE_OPTIONS);
+  cookieStore.set(ULB_COOKIES.ULB_NAME_LOCAL, (ulb.ulbNameLocal ?? '').trim(), CLIENT_COOKIE_OPTIONS);
+  cookieStore.set(ULB_COOKIES.ULB_LOGO, logo, CLIENT_COOKIE_OPTIONS);
+  cookieStore.set(ULB_COOKIES.ULB_CODE, ulb.ulbCode || '', CLIENT_COOKIE_OPTIONS);
 }
+
+// ---------------------------------------------------------------------------
+// Session Management
+// ---------------------------------------------------------------------------
 
 /**
  * Persists auth + ULB cookies and redirects to dashboard after successful `/Auth/login`.
+ * Uses centralized cookie names and validated auth data.
+ * 
+ * @param locale - User's locale for redirect
+ * @param auth - Normalized auth response
+ * @param sessionId - Generated session ID
+ * @param formUsername - Username from form (fallback for display name)
  */
 async function completeLoginSession(
   locale: string,
@@ -85,127 +123,195 @@ async function completeLoginSession(
   formUsername: string
 ): Promise<never> {
   const cookieStore = await cookies();
+  
+  // Extract tokens (already validated by caller)
   const accessToken = (auth.token ?? '').trim();
   const refreshToken = (auth.refreshToken ?? '').trim();
 
-  cookieStore.set('auth_token', accessToken, COOKIE_OPTIONS);
-  cookieStore.set('refresh_token', refreshToken, COOKIE_OPTIONS);
-  cookieStore.set('session_id', sessionId, COOKIE_OPTIONS);
-  cookieStore.set('is_logged_in', 'true', { ...COOKIE_OPTIONS, httpOnly: false });
+  // Set secure auth cookies using centralized names
+  cookieStore.set(AUTH_COOKIES.AUTH_TOKEN, accessToken, SECURE_COOKIE_OPTIONS);
+  cookieStore.set(AUTH_COOKIES.REFRESH_TOKEN, refreshToken, SECURE_COOKIE_OPTIONS);
+  cookieStore.set(AUTH_COOKIES.SESSION_ID, sessionId, SECURE_COOKIE_OPTIONS);
+  cookieStore.set(AUTH_COOKIES.IS_LOGGED_IN, 'true', CLIENT_COOKIE_OPTIONS);
 
-  const displayName = userDisplayNameFromAuth(auth, formUsername);
-  cookieStore.set('user_name', displayName, { ...COOKIE_OPTIONS, httpOnly: false });
+  // Set user display name using type guard utility
+  const displayName = extractUserDisplayName(auth, formUsername);
+  cookieStore.set(AUTH_COOKIES.USER_NAME, displayName, CLIENT_COOKIE_OPTIONS);
 
+  // Set user ID if valid
   const uid = auth.userId;
   if (typeof uid === 'number' && Number.isFinite(uid) && uid > 0) {
-    cookieStore.set('user_id', String(uid), COOKIE_OPTIONS);
+    cookieStore.set(AUTH_COOKIES.USER_ID, String(uid), SECURE_COOKIE_OPTIONS);
   }
 
-  cookieStore.delete('pending_auth');
+  // Clean up pending auth state
+  cookieStore.delete(AUTH_COOKIES.PENDING_AUTH);
 
+  // Apply ULB branding cookies (non-blocking)
   try {
     await applyUlbCookiesFromApi(cookieStore);
   } catch {
-    /* ignore */
+    // ULB branding is optional, don't fail login
   }
 
   redirect(`/${locale}/dashboard`);
 }
 
+// ---------------------------------------------------------------------------
+// Server Actions
+// ---------------------------------------------------------------------------
+
+/**
+ * Validates user credentials and establishes a session on success.
+ * Uses server-side validation utilities for input sanitization and
+ * type guards for API response validation.
+ * 
+ * @param formData - Form data containing username, password, and locale
+ * @returns Result object with success status and error details if failed
+ */
 export async function validateCredentialsAction(formData: FormData) {
   const usernameEntry = formData.get('username');
   const passwordEntry = formData.get('password');
   const localeEntry = formData.get('locale');
-
-  const username = typeof usernameEntry === 'string' ? usernameEntry.trim() : '';
-  const password = typeof passwordEntry === 'string' ? passwordEntry : '';
   const locale = sanitizeLocale(typeof localeEntry === 'string' ? localeEntry : 'en');
 
-  if (!username || !password) {
-    return { success: false as const, errorCode: 'CREDENTIALS_REQUIRED' as const };
-  }
-
-  const sessionId = crypto.randomUUID();
-
-  let response;
+  // ---------------------------------------------------------------------------
+  // Step 1: Validate and sanitize input using validation utilities
+  // ---------------------------------------------------------------------------
+  let validatedUsername: string;
+  let validatedPassword: string;
+  
   try {
-    response = await authService.validateCredentials({ username, password });
-  } catch {
-    return { success: false as const, errorCode: 'SERVICE_UNAVAILABLE' as const };
-  }
-
-  if (!response?.success) {
+    const validated = validateCredentialsInput(usernameEntry, passwordEntry);
+    validatedUsername = validated.username;
+    validatedPassword = validated.password;
+  } catch (error) {
+    if (error instanceof AuthValidationError) {
+      return {
+        success: false as const,
+        errorCode: mapValidationErrorToCode(error),
+        statusCode: 400,
+      };
+    }
     return {
       success: false as const,
-      errorCode: 'SERVICE_UNAVAILABLE' as const,
+      errorCode: AUTH_ERROR_CODES.CREDENTIALS_REQUIRED,
+      statusCode: 400,
+    };
+  }
+
+  // Generate session ID for this login attempt
+  const sessionId = crypto.randomUUID();
+
+  // ---------------------------------------------------------------------------
+  // Step 2: Call authentication API
+  // ---------------------------------------------------------------------------
+  let response;
+  try {
+    response = await authService.validateCredentials({
+      username: validatedUsername,
+      password: validatedPassword,
+    });
+  } catch (error) {
+    // Network or service error
+    const message = error instanceof Error ? error.message : undefined;
+    return {
+      success: false as const,
+      errorCode: mapAuthErrorToCode(503, message),
+      statusCode: 503,
+    };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Step 3: Validate API response structure
+  // ---------------------------------------------------------------------------
+  if (!response?.success || !response.data) {
+    return {
+      success: false as const,
+      errorCode: mapAuthErrorToCode(response?.statusCode, response?.error),
+      statusCode: response?.statusCode ?? 500,
       message: response?.error,
     };
   }
 
-  if (!response.data) {
+  // Validate response shape using type guard
+  if (!isAuthLoginResponseShape(response.data)) {
     return {
       success: false as const,
-      errorCode: 'SERVICE_UNAVAILABLE' as const,
-      message: response.error,
+      errorCode: AUTH_ERROR_CODES.SERVICE_UNAVAILABLE,
+      statusCode: 500,
+      message: 'Invalid response format from authentication service',
     };
   }
 
-  const apiData = response.data;
+  // Normalize the auth response for consistent field access
+  const normalizedAuth = normalizeAuthLoginResponse(response.data as Record<string, unknown>);
 
-  if (!apiData.success) {
+  // ---------------------------------------------------------------------------
+  // Step 4: Check authentication result
+  // ---------------------------------------------------------------------------
+  if (!normalizedAuth.success) {
     return {
       success: false as const,
-      errorCode: 'INVALID_CREDENTIALS' as const,
-      message: apiData.message || response.error,
+      errorCode: mapAuthErrorToCode(401, normalizedAuth.message),
+      statusCode: 401,
+      message: normalizedAuth.message,
     };
   }
 
-  const token = (apiData.token ?? '').trim();
-  const refresh = (apiData.refreshToken ?? '').trim();
-  const hasFullSession = token.length > 0 && refresh.length > 0;
-
-  if (hasFullSession) {
-    await completeLoginSession(locale, apiData, sessionId, username);
+  // Check for password change requirement
+  if (normalizedAuth.requiresPasswordChange) {
+    return {
+      success: false as const,
+      errorCode: AUTH_ERROR_CODES.PASSWORD_CHANGE_REQUIRED,
+      statusCode: 403,
+      message: normalizedAuth.message,
+    };
   }
 
+  // ---------------------------------------------------------------------------
+  // Step 5: Validate session tokens using type guard utility
+  // ---------------------------------------------------------------------------
+  if (hasValidSessionTokens(normalizedAuth)) {
+    // Success - complete the login session
+    await completeLoginSession(locale, normalizedAuth, sessionId, validatedUsername);
+    // Note: completeLoginSession redirects and never returns
+  }
+
+  // Tokens missing or invalid
   return {
     success: false as const,
-    errorCode: 'LOGIN_FAILED' as const,
-    message: apiData.message || response.error,
+    errorCode: AUTH_ERROR_CODES.LOGIN_FAILED,
+    statusCode: 500,
+    message: normalizedAuth.message || 'Authentication succeeded but session could not be established',
   };
 }
 
+/**
+ * Logs out the user by clearing all auth cookies and calling the logout API.
+ * Uses centralized cookie list for consistency.
+ * 
+ * @param locale - User's locale for redirect
+ */
 export async function logoutAction(locale: string = 'en') {
   const safeLocale = sanitizeLocale(locale);
   const cookieStore = await cookies();
-  const token = cookieStore.get('auth_token')?.value;
-  const sessionId = cookieStore.get('session_id')?.value;
+  
+  // Get token using centralized cookie name
+  const token = cookieStore.get(AUTH_COOKIES.AUTH_TOKEN)?.value;
+  const sessionId = cookieStore.get(AUTH_COOKIES.SESSION_ID)?.value;
 
+  // Attempt to notify server of logout (non-blocking)
   if (token) {
     try {
       await authService.logout(sessionId || '', token);
     } catch {
-      /* ignore */
+      // Server logout is best-effort, don't fail client logout
     }
   }
 
-  const cookiesToClear = [
-    'auth_token',
-    'refresh_token',
-    'session_id',
-    'pending_auth',
-    'is_logged_in',
-    'user_name',
-    'user_id',
-    'ulb_name',
-    'ulb_name_local',
-    'ulb_logo',
-    'ulb_code',
-    'forgot_flow',
-    'forgot_reset_otp',
-  ];
-
-  for (const name of cookiesToClear) {
+  // Clear all auth-related cookies using centralized list
+  for (const name of LOGOUT_CLEAR_COOKIES) {
     cookieStore.delete({ name, path: '/' });
   }
 

@@ -304,7 +304,7 @@
       "credentialsRequired": "Username and Password are required",
       "authFailed": "Authentication Failed",
       "invalidCredentials": "Invalid credentials",
-      "serviceUnavailable": "Service unavailable",
+      "serviceUnavailable": "Service unavailable. Please try again later.",
       "invalidToken": "Invalid Token",
       "enterValidToken": "Please enter a valid 6-digit token",
       "sessionExpired": "Session Expired",
@@ -317,6 +317,10 @@
       "Auth_UserNotFound": "No account found with this username.",
       "forgotSessionInvalid": "Password reset session expired. Please start again.",
       "USERNAME_REQUIRED": "Username is required",
+      "PASSWORD_REQUIRED": "Password is required",
+      "USERNAME_TOO_SHORT": "Username is too short",
+      "USERNAME_TOO_LONG": "Username exceeds maximum length",
+      "PASSWORD_TOO_LONG": "Password exceeds maximum length",
       "INVALID_OTP": "Invalid verification code",
       "INVALID_OTP_FORMAT": "Please enter a valid 6-digit code",
       "USER_NOT_FOUND": "User not found",
@@ -326,7 +330,17 @@
       "RESET_FAILED": "Password reset failed",
       "LOGIN_FAILED": "Login failed. Please try again.",
       "RESEND_FAILED": "Failed to resend verification code.",
-      "VERIFICATION_FAILED": "Verification failed. Please try again."
+      "VERIFICATION_FAILED": "Verification failed. Please try again.",
+      "accountInactive": "Your account is inactive. Please contact support.",
+      "passwordChangeRequired": "You must change your password before continuing.",
+      "tooManyAttempts": "Too many login attempts. Please try again later.",
+      "requestTimeout": "Request timed out. Please check your connection and try again.",
+      "ACCOUNT_LOCKED": "Your account has been locked. Please contact support.",
+      "ACCOUNT_INACTIVE": "Your account is inactive. Please contact support.",
+      "PASSWORD_CHANGE_REQUIRED": "You must change your password before continuing.",
+      "TOO_MANY_ATTEMPTS": "Too many login attempts. Please try again later.",
+      "REQUEST_TIMEOUT": "Request timed out. Please check your connection.",
+      "INVALID_REQUEST": "Invalid request. Please try again."
     }
   },
   "sidebar": {

@@ -1,0 +1,303 @@
+'use client';
+
+/**
+ * Custom hook for login form state management.
+ * 
+ * Following the pattern from useConstructionForm.ts for consistent
+ * form handling across the application.
+ * 
+ * @module useLoginForm
+ */
+
+import { useState, useCallback, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
+import {
+  AUTH_CONSTRAINTS,
+  USERNAME_SANITIZE,
+  PASSWORD_SANITIZE,
+  AUTH_ERROR_CODES,
+} from '@/components/modules/login/constants';
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+export interface LoginFormData {
+  username: string;
+  password: string;
+}
+
+export interface LoginFormErrors {
+  username?: string;
+  password?: string;
+}
+
+export interface UseLoginFormOptions {
+  /** Initial username value (e.g., from URL param or cookie) */
+  initialUsername?: string;
+  /** Callback when form is submitted successfully (before action) */
+  onBeforeSubmit?: (data: LoginFormData) => void;
+}
+
+export interface UseLoginFormReturn {
+  /** Current form data */
+  formData: LoginFormData;
+  /** Current validation errors */
+  errors: LoginFormErrors;
+  /** Which fields have been touched/interacted with */
+  touched: Record<string, boolean>;
+  /** Whether form has been submitted at least once */
+  submittedOnce: boolean;
+  /** Handle input change with sanitization */
+  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  /** Handle input blur for validation */
+  handleBlur: (e: React.FocusEvent<HTMLInputElement>) => void;
+  /** Check if error should be shown for a field */
+  showError: (field: keyof LoginFormErrors) => boolean;
+  /** Validate entire form, returns true if valid */
+  validateForm: () => boolean;
+  /** Reset form to initial state */
+  resetForm: () => void;
+  /** Set form data directly (for external updates) */
+  setFormData: React.Dispatch<React.SetStateAction<LoginFormData>>;
+  /** Mark form as submitted */
+  markSubmitted: () => void;
+  /** Check if form is valid (no errors) */
+  isValid: boolean;
+  /** Check if form can be submitted (has required data) */
+  canSubmit: boolean;
+}
+
+// ---------------------------------------------------------------------------
+// Hook Implementation
+// ---------------------------------------------------------------------------
+
+export function useLoginForm(options: UseLoginFormOptions = {}): UseLoginFormReturn {
+  const { initialUsername = '' } = options;
+  
+  const t = useTranslations('common');
+  
+  // Form state
+  const [formData, setFormData] = useState<LoginFormData>({
+    username: initialUsername,
+    password: '',
+  });
+  
+  // Validation state
+  const [errors, setErrors] = useState<LoginFormErrors>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [submittedOnce, setSubmittedOnce] = useState(false);
+
+  // ---------------------------------------------------------------------------
+  // Validation
+  // ---------------------------------------------------------------------------
+  
+  const validate = useCallback((data: LoginFormData): LoginFormErrors => {
+    const errs: LoginFormErrors = {};
+    
+    // Username validation
+    const trimmedUsername = data.username.trim();
+    if (!trimmedUsername) {
+      errs.username = t(`login.errors.${AUTH_ERROR_CODES.USERNAME_REQUIRED}`);
+    } else if (trimmedUsername.length < AUTH_CONSTRAINTS.USERNAME_MIN_LENGTH) {
+      errs.username = t(`login.errors.${AUTH_ERROR_CODES.USERNAME_TOO_SHORT}`);
+    } else if (trimmedUsername.length > AUTH_CONSTRAINTS.USERNAME_MAX_LENGTH) {
+      errs.username = t(`login.errors.${AUTH_ERROR_CODES.USERNAME_TOO_LONG}`);
+    }
+    
+    // Password validation
+    if (!data.password) {
+      errs.password = t(`login.errors.${AUTH_ERROR_CODES.PASSWORD_REQUIRED}`);
+    } else if (data.password.length > AUTH_CONSTRAINTS.PASSWORD_MAX_LENGTH) {
+      errs.password = t(`login.errors.${AUTH_ERROR_CODES.PASSWORD_TOO_LONG}`);
+    }
+    
+    return errs;
+  }, [t]);
+
+  // ---------------------------------------------------------------------------
+  // Event Handlers
+  // ---------------------------------------------------------------------------
+
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    
+    let sanitizedValue = value;
+    
+    if (name === 'username') {
+      // Sanitize username - remove invalid characters
+      sanitizedValue = value.replace(USERNAME_SANITIZE, '');
+      // Enforce max length
+      if (sanitizedValue.length > AUTH_CONSTRAINTS.USERNAME_MAX_LENGTH) {
+        sanitizedValue = sanitizedValue.slice(0, AUTH_CONSTRAINTS.USERNAME_MAX_LENGTH);
+      }
+    } else if (name === 'password') {
+      // Remove zero-width and control characters
+      sanitizedValue = value.replace(PASSWORD_SANITIZE, '');
+      // Enforce max length
+      if (sanitizedValue.length > AUTH_CONSTRAINTS.PASSWORD_MAX_LENGTH) {
+        sanitizedValue = sanitizedValue.slice(0, AUTH_CONSTRAINTS.PASSWORD_MAX_LENGTH);
+      }
+    }
+    
+    setFormData(prev => ({ ...prev, [name]: sanitizedValue }));
+    
+    // Clear error for this field on change
+    if (errors[name as keyof LoginFormErrors]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[name as keyof LoginFormErrors];
+        return newErrors;
+      });
+    }
+  }, [errors]);
+
+  const handleBlur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
+    const { name } = e.target;
+    
+    // Mark field as touched
+    setTouched(prev => ({ ...prev, [name]: true }));
+    
+    // Validate this field
+    const fieldErrors = validate(formData);
+    setErrors(prev => ({
+      ...prev,
+      [name]: fieldErrors[name as keyof LoginFormErrors],
+    }));
+  }, [formData, validate]);
+
+  // ---------------------------------------------------------------------------
+  // Utility Functions
+  // ---------------------------------------------------------------------------
+
+  const showError = useCallback((field: keyof LoginFormErrors): boolean => {
+    return (submittedOnce || touched[field]) && !!errors[field];
+  }, [submittedOnce, touched, errors]);
+
+  const validateForm = useCallback((): boolean => {
+    const allErrors = validate(formData);
+    setErrors(allErrors);
+    setSubmittedOnce(true);
+    
+    // Mark all fields as touched
+    setTouched({
+      username: true,
+      password: true,
+    });
+    
+    return Object.keys(allErrors).length === 0;
+  }, [formData, validate]);
+
+  const resetForm = useCallback(() => {
+    setFormData({
+      username: initialUsername,
+      password: '',
+    });
+    setErrors({});
+    setTouched({});
+    setSubmittedOnce(false);
+  }, [initialUsername]);
+
+  const markSubmitted = useCallback(() => {
+    setSubmittedOnce(true);
+  }, []);
+
+  // ---------------------------------------------------------------------------
+  // Computed Values
+  // ---------------------------------------------------------------------------
+
+  const isValid = useMemo(() => {
+    return Object.keys(errors).length === 0;
+  }, [errors]);
+
+  const canSubmit = useMemo(() => {
+    const hasUsername = formData.username.trim().length >= AUTH_CONSTRAINTS.USERNAME_MIN_LENGTH;
+    const hasPassword = formData.password.length > 0;
+    return hasUsername && hasPassword;
+  }, [formData]);
+
+  // ---------------------------------------------------------------------------
+  // Return
+  // ---------------------------------------------------------------------------
+
+  return {
+    formData,
+    errors,
+    touched,
+    submittedOnce,
+    handleChange,
+    handleBlur,
+    showError,
+    validateForm,
+    resetForm,
+    setFormData,
+    markSubmitted,
+    isValid,
+    canSubmit,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Error Message Helper Hook
+// ---------------------------------------------------------------------------
+
+/**
+ * Hook to convert error codes to localized messages.
+ * Separated for reuse in components that don't need full form management.
+ */
+export function useLoginErrorMessages() {
+  const t = useTranslations('common');
+
+  const getLocalizedError = useCallback((errorCode: string | undefined): string => {
+    if (!errorCode) return '';
+    
+    // Map error codes to translation keys
+    const errorKeyMap: Record<string, string> = {
+      [AUTH_ERROR_CODES.USERNAME_REQUIRED]: 'login.errors.USERNAME_REQUIRED',
+      [AUTH_ERROR_CODES.PASSWORD_REQUIRED]: 'login.errors.PASSWORD_REQUIRED',
+      [AUTH_ERROR_CODES.CREDENTIALS_REQUIRED]: 'login.errors.credentialsRequired',
+      [AUTH_ERROR_CODES.INVALID_CREDENTIALS]: 'login.errors.invalidCredentials',
+      [AUTH_ERROR_CODES.ACCOUNT_LOCKED]: 'login.errors.Auth_AccountLocked_Temporary',
+      [AUTH_ERROR_CODES.ACCOUNT_INACTIVE]: 'login.errors.accountInactive',
+      [AUTH_ERROR_CODES.USER_NOT_FOUND]: 'login.errors.Auth_UserNotFound',
+      [AUTH_ERROR_CODES.SESSION_EXPIRED]: 'login.errors.sessionExpired',
+      [AUTH_ERROR_CODES.TOO_MANY_ATTEMPTS]: 'login.errors.tooManyAttempts',
+      [AUTH_ERROR_CODES.SERVICE_UNAVAILABLE]: 'login.errors.serviceUnavailable',
+      [AUTH_ERROR_CODES.REQUEST_TIMEOUT]: 'login.errors.requestTimeout',
+      [AUTH_ERROR_CODES.LOGIN_FAILED]: 'login.errors.LOGIN_FAILED',
+      [AUTH_ERROR_CODES.PASSWORD_CHANGE_REQUIRED]: 'login.errors.passwordChangeRequired',
+      [AUTH_ERROR_CODES.USERNAME_TOO_SHORT]: 'login.errors.USERNAME_TOO_SHORT',
+      [AUTH_ERROR_CODES.USERNAME_TOO_LONG]: 'login.errors.USERNAME_TOO_LONG',
+      [AUTH_ERROR_CODES.PASSWORD_TOO_LONG]: 'login.errors.PASSWORD_TOO_LONG',
+      [AUTH_ERROR_CODES.INVALID_OTP_FORMAT]: 'login.errors.enterValidToken',
+      [AUTH_ERROR_CODES.VERIFICATION_FAILED]: 'login.errors.VERIFICATION_FAILED',
+      [AUTH_ERROR_CODES.RESEND_FAILED]: 'login.errors.RESEND_FAILED',
+      [AUTH_ERROR_CODES.RESET_FAILED]: 'login.errors.RESET_FAILED',
+    };
+    
+    const translationKey = errorKeyMap[errorCode];
+    if (translationKey) {
+      try {
+        return t(translationKey);
+      } catch {
+        // Fall through to generic handling
+      }
+    }
+    
+    // Try direct key lookup
+    try {
+      return t(`login.errors.${errorCode}`);
+    } catch {
+      // Fall through
+    }
+    
+    // Final fallback
+    try {
+      return t('errors.generic');
+    } catch {
+      return errorCode;
+    }
+  }, [t]);
+
+  return { getLocalizedError };
+}
