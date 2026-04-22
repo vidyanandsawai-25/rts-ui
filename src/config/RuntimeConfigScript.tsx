@@ -5,7 +5,7 @@
  * as a script tag, making it available to client components via window.__RUNTIME_CONFIG__
  */
 
-import { getServerRuntimeConfig, validateRuntimeConfig } from './runtime-config';
+import { getServerRuntimeConfig, validateRuntimeConfig } from './app.config';
 
 export function RuntimeConfigScript() {
   const config = getServerRuntimeConfig();
