@@ -1,6 +1,6 @@
 import TaxZoningPage from "@/components/modules/property-tax/taxzoningmaster/TaxZoningPage";
 
-import { fetchTaxZonePagedAction, fetchWardPagedAction, getAllTaxZonningAction, getTaxZonningPropertyNoPagedAction } from "./actions";
+import { fetchTaxZonePagedAction, fetchWardPagedAction, getAllTaxZoningAction, getTaxZoningPropertyNoPagedAction } from "./actions";
 
 // Force dynamic rendering - this page requires runtime API data
 export const dynamic = 'force-dynamic';
@@ -20,8 +20,8 @@ export default async function Page({ searchParams }: PageProps) {
 
   // Run all independent server actions concurrently to avoid unnecessary TTFB.
   const [result, allPropertiesOptions, taxZonesResult, wardsDataResult] = await Promise.all([
-    getTaxZonningPropertyNoPagedAction(pageNumber, pageSize),
-    getAllTaxZonningAction(1, -1),
+    getTaxZoningPropertyNoPagedAction(pageNumber, pageSize),
+    getAllTaxZoningAction(1, -1),
     fetchTaxZonePagedAction(1, -1),
     fetchWardPagedAction(1, -1)
   ]);

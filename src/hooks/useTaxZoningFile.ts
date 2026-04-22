@@ -96,16 +96,11 @@ export const useTaxZoningFile = (
           seenKeys.add(key);
 
           const existing = records.find(r => r.wardId === wardData.wardId && r.fromProperty === fromProperty && r.toProperty === toProperty);
-          const sameWardZone = records.find(r => r.wardId === wardData.wardId && r.taxZoneId === taxZoneData.taxZoneId);
 
           if (existing && existing.taxZoneId !== taxZoneData.taxZoneId) {
             updatedRecords.push({ taxZoneId: taxZoneData.taxZoneId, taxZoneNo: taxZoneNoStr, wardId: wardData.wardId, wardNo: wardNoStr, fromProperty, toProperty, status: "Updated" });
           } else if (!existing) {
-            if (sameWardZone) {
-              updatedRecords.push({ taxZoneId: taxZoneData.taxZoneId, taxZoneNo: taxZoneNoStr, wardId: wardData.wardId, wardNo: wardNoStr, fromProperty, toProperty, status: "Updated" });
-            } else {
-              newChanges.push({ taxZoneId: taxZoneData.taxZoneId, taxZoneNo: taxZoneNoStr, wardId: wardData.wardId, wardNo: wardNoStr, fromProperty, toProperty, status: "New" });
-            }
+            newChanges.push({ taxZoneId: taxZoneData.taxZoneId, taxZoneNo: taxZoneNoStr, wardId: wardData.wardId, wardNo: wardNoStr, fromProperty, toProperty, status: "New" });
           }
         });
 

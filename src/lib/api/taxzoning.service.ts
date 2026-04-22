@@ -1,5 +1,5 @@
 import { PagedResponse } from "@/types/common.types";
-import { TaxZone, TaxZoningFormModel, TaxZonning, TaxZonningPropertyNo, Ward } from "@/types/taxzoning.types";
+import { TaxZone, TaxZoningFormModel, TaxZoning, TaxZoningPropertyNo, Ward } from "@/types/taxzoning.types";
 import { apiClient } from "@/services/api.service";
 
 export async function getTaxZonePagedServer(
@@ -16,7 +16,7 @@ export async function getTaxZonePagedServer(
   );
 
   if (!response.success || !response.data) {
-    throw new Error(response.error || "Failed to fetch Tax Zone data");
+    throw new Error(response.error || "messages.fetchTaxZonesFailed");
   }
 
   return response.data;
@@ -36,89 +36,89 @@ export async function getWardPagedServer(
   );
 
   if (!response.success || !response.data) {
-    throw new Error(response.error || "Failed to fetch Ward data");
+    throw new Error(response.error || "messages.fetchWardsFailed");
   }
 
   return response.data;
 }
 
-export async function getTaxZonningPagedServer(
+export async function getTaxZoningPagedServer(
   pageNumber: number,
   pageSize: number
-): Promise<PagedResponse<TaxZonning>> {
+): Promise<PagedResponse<TaxZoning>> {
   const params = new URLSearchParams({
     PageNumber: pageNumber.toString(),
     PageSize: pageSize.toString(),
   });
 
-  const response = await apiClient.get<PagedResponse<TaxZonning>>(
+  const response = await apiClient.get<PagedResponse<TaxZoning>>(
     `/TaxZonning?${params.toString()}`
   );
 
   if (!response.success || !response.data) {
-    throw new Error(response.error || "Failed to fetch Tax Zonning data");
+    throw new Error(response.error || "messages.fetchZoningDataFailed");
   }
 
   return response.data;
 }
 
-export async function getTaxZonningByWardServer(
+export async function getTaxZoningByWardServer(
   wardNo: string,
   pageSize = 100,
   pageNumber = 1
-): Promise<PagedResponse<TaxZonning>> {
+): Promise<PagedResponse<TaxZoning>> {
   const params = new URLSearchParams({
     WardNo: wardNo,
     PageSize: pageSize.toString(),
     PageNumber: pageNumber.toString(),
   });
 
-  const response = await apiClient.get<PagedResponse<TaxZonning>>(
+  const response = await apiClient.get<PagedResponse<TaxZoning>>(
     `/TaxZonning/GetAll?${params.toString()}`
   );
 
   if (!response.success || !response.data) {
-    throw new Error(response.error || "Failed to fetch Tax Zonning by Ward");
+    throw new Error(response.error || "messages.fetchByWardFailed");
   }
 
   return response.data;
 }
 
-export async function getAllTaxZonningServer(
+export async function getAllTaxZoningServer(
   pageNumber: number,
   pageSize: number
-): Promise<PagedResponse<TaxZonning>> {
+): Promise<PagedResponse<TaxZoning>> {
   const params = new URLSearchParams({
     PageNumber: pageNumber.toString(),
     PageSize: pageSize.toString(),
   });
 
-  const response = await apiClient.get<PagedResponse<TaxZonning>>(
+  const response = await apiClient.get<PagedResponse<TaxZoning>>(
     `/TaxZonning/GetAll?${params.toString()}`
   );
 
   if (!response.success || !response.data) {
-    throw new Error(response.error || "Failed to fetch all Tax Zonning data");
+    throw new Error(response.error || "messages.fetchAllFailed");
   }
 
   return response.data;
 }
 
-export async function getTaxZonningPropertyNoServer(
+export async function getTaxZoningPropertyNoServer(
   pageNumber: number,
   pageSize: number
-): Promise<PagedResponse<TaxZonningPropertyNo>> {
+): Promise<PagedResponse<TaxZoningPropertyNo>> {
   const params = new URLSearchParams({
     PageNumber: pageNumber.toString(),
     PageSize: pageSize.toString(),
   });
 
-  const response = await apiClient.get<PagedResponse<TaxZonningPropertyNo>>(
+  const response = await apiClient.get<PagedResponse<TaxZoningPropertyNo>>(
     `/TaxZonning/GetPropertyNo?${params.toString()}`
   );
 
   if (!response.success || !response.data) {
-    throw new Error(response.error || "Failed to fetch Tax Zonning Property No data");
+    throw new Error(response.error || "messages.fetchPropertyNoFailed");
   }
 
   return response.data;
@@ -128,11 +128,11 @@ export async function createTaxZoning(
   data: TaxZoningFormModel
 ): Promise<void> {
   if (!data.taxZoneId) {
-    throw new Error("Tax Zone is required");
+    throw new Error("messages.taxZoneRequired");
   }
 
   if (!data.wardId) {
-    throw new Error("Ward No is required");
+    throw new Error("messages.wardRequired");
   }
 
   const payload = {
@@ -150,7 +150,7 @@ export async function createTaxZoning(
   const response = await apiClient.post<void>(`/TaxZonning`, payload);
 
   if (!response.success) {
-    throw new Error(response.error || "Failed to create Tax Zoning");
+    throw new Error(response.error || "messages.createFailed");
   }
 }
 
@@ -158,11 +158,11 @@ export async function updateTaxZoning(
   data: TaxZoningFormModel
 ): Promise<void> {
   if (!data.taxZoneId) {
-    throw new Error("Tax Zone is required");
+    throw new Error("messages.taxZoneRequired");
   }
 
   if (!data.wardId) {
-    throw new Error("Ward No is required");
+    throw new Error("messages.wardRequired");
   }
 
   const payload = {
@@ -180,6 +180,6 @@ export async function updateTaxZoning(
   const response = await apiClient.put<void>(`/TaxZonning`, payload);
 
   if (!response.success) {
-    throw new Error(response.error || "Failed to update Tax Zoning");
+    throw new Error(response.error || "messages.updateFailed");
   }
 }

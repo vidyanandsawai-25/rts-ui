@@ -246,7 +246,8 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
                 key={String(col.key)}
                 style={{ width: col.width }}
                 className={cn(
-                  'px-2 py-3 text-center text-sm font-semibold text-[#1E3A8A]',
+                  'px-2 py-3 text-sm font-semibold text-[#1E3A8A]',
+                  col.align === 'left' ? 'text-left' : col.align === 'right' ? 'text-right' : 'text-center',
                   index === 0 && 'rounded-tl-lg',
                   !hasActions && index === columns.length - 1 && 'rounded-tr-lg',
                   col.headerClassName
@@ -296,7 +297,11 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
                   return (
                     <td
                       key={String(col.key)}
-                      className={cn('px-2 py-2 text-gray-700 text-center', col.cellClassName)}
+                      className={cn(
+                        'px-2 py-2 text-gray-700',
+                        col.align === 'left' ? 'text-left' : col.align === 'right' ? 'text-right' : 'text-center',
+                        col.cellClassName
+                      )}
                     >
                       {col.render ? (
                         col.render(value, row, i)

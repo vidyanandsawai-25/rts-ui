@@ -38,7 +38,6 @@ export const useTaxZoningActions = (t: (key: string, values?: Record<string, str
           const wardData = wardsData.items.find((w: Ward) => String(w.wardId) === ward[0]);
           const wardName = wardData?.wardNo || ward[0];
           toast.error(`${t('messages.wardNotFound')}: ${wardName}. ${t('messages.wardNotFoundDetail')}`);
-          setSaving(false);
           return;
         }
 
@@ -73,7 +72,6 @@ export const useTaxZoningActions = (t: (key: string, values?: Record<string, str
 
         if (nonExistentWards.length > 0) {
           toast.error(`${t('messages.wardsNotFound')}: ${nonExistentWards.join(', ')}. ${t('messages.wardNotFoundDetail')}`);
-          setSaving(false);
           return;
         }
 
@@ -98,7 +96,6 @@ export const useTaxZoningActions = (t: (key: string, values?: Record<string, str
           toast.warning(`${successCount} ${t('messages.wardsUpdatedSuccessfully')}, ${errorCount} ${t('messages.wardsFailed')}`);
         } else {
           toast.error(t('messages.updateFailed'));
-          setSaving(false);
           return;
         }
       }

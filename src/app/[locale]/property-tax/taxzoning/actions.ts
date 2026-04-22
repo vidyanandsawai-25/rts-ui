@@ -1,9 +1,9 @@
 "use server";
 
-import {createTaxZoning, getAllTaxZonningServer, getTaxZonePagedServer, getTaxZonningByWardServer, getTaxZonningPagedServer, getTaxZonningPropertyNoServer, getWardPagedServer, updateTaxZoning } from "@/lib/api/taxzoning.service";
+import {createTaxZoning, getAllTaxZoningServer, getTaxZonePagedServer, getTaxZoningByWardServer, getTaxZoningPagedServer, getTaxZoningPropertyNoServer, getWardPagedServer, updateTaxZoning } from "@/lib/api/taxzoning.service";
 import { ApiError } from "@/lib/utils/api";
 import { PagedResponse } from "@/types/common.types";
-import { ActionResult, TaxZone, TaxZoningFormModel, TaxZonning, Ward } from "@/types/taxzoning.types";
+import { ActionResult, TaxZone, TaxZoningFormModel, TaxZoning, Ward } from "@/types/taxzoning.types";
 
 
 export async function fetchTaxZonePagedAction(
@@ -47,12 +47,12 @@ export async function fetchWardPagedAction(
 
 
 
-export async function getTaxZonningPagedAction(
+export async function getTaxZoningPagedAction(
   pageNumber: number,
   pageSize: number
 ) {
   try {
-    const data = await getTaxZonningPagedServer(pageNumber, pageSize);
+    const data = await getTaxZoningPagedServer(pageNumber, pageSize);
 
     return {
       success: true,
@@ -74,12 +74,12 @@ export async function getTaxZonningPagedAction(
     };
   }
 }
-export async function getTaxZonningPropertyNoPagedAction(
+export async function getTaxZoningPropertyNoPagedAction(
   pageNumber: number,
   pageSize: number
 ) {
   try {
-    const data = await getTaxZonningPropertyNoServer(pageNumber, pageSize);
+    const data = await getTaxZoningPropertyNoServer(pageNumber, pageSize);
 
     return {
       success: true,
@@ -101,12 +101,12 @@ export async function getTaxZonningPropertyNoPagedAction(
     };
   }
 }
-// export async function getTaxZonningByWardAction(
+// export async function getTaxZoningByWardAction(
 //   wardNo: string,
 //   pageSize = 100
 // ) {
 //   try {
-//     const data = await getTaxZonningByWardServer(wardNo, pageSize);
+//     const data = await getTaxZoningByWardServer(wardNo, pageSize);
 
 //     return {
 //       success: true,
@@ -127,13 +127,13 @@ export async function getTaxZonningPropertyNoPagedAction(
 //   }
 // }
 
-export async function getTaxZonningByWardAction(
+export async function getTaxZoningByWardAction(
   wardNo: string,
   pageSize = 100,
   pageNumber = 1
-): Promise<ActionResult<PagedResponse<TaxZonning>>> {
+): Promise<ActionResult<PagedResponse<TaxZoning>>> {
   try {
-    const data = await getTaxZonningByWardServer(
+    const data = await getTaxZoningByWardServer(
       wardNo,
       pageSize,
       pageNumber
@@ -159,12 +159,12 @@ export async function getTaxZonningByWardAction(
   }
 }
 
-export async function getAllTaxZonningAction(
+export async function getAllTaxZoningAction(
   pageNumber: number,
   pageSize: number
-): Promise<ActionResult<PagedResponse<TaxZonning>>> {
+): Promise<ActionResult<PagedResponse<TaxZoning>>> {
   try {
-    const data = await getAllTaxZonningServer(pageNumber, pageSize);
+    const data = await getAllTaxZoningServer(pageNumber, pageSize);
 
     return {
       success: true,

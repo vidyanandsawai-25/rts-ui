@@ -3,7 +3,7 @@
 import { useMemo, useState, useRef } from "react";
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from "next/navigation";
-import { TaxZonning, ZoningRecord, SelectOption, TaxZoningPageProps } from "@/types/taxzoning.types";
+import { TaxZoning, ZoningRecord, SelectOption, TaxZoningPageProps } from "@/types/taxzoning.types";
 import { getPreviewColumns, getTaxZoningColumns } from "@/components/modules/property-tax/taxzoningmaster/TaxZoningColumns";
 import { useTaxZoningActions } from "./useTaxZoningActions";
 import { useTaxZoningFile } from "./useTaxZoningFile";
@@ -45,8 +45,8 @@ export const useTaxZoning = (props: TaxZoningPageProps) => {
     if (!wardData || !allProperties?.success || !allProperties.data?.items) return [];
     
     return allProperties.data.items
-      .filter((i: TaxZonning) => i.wardNo === wardData.wardNo)
-      .map((i: TaxZonning) => ({ label: i.propertyNo.padStart(3, "0"), value: i.propertyNo.padStart(3, "0") }))
+      .filter((i: TaxZoning) => i.wardNo === wardData.wardNo)
+      .map((i: TaxZoning) => ({ label: i.propertyNo.padStart(3, "0"), value: i.propertyNo.padStart(3, "0") }))
       .filter((v: SelectOption, i: number, a: SelectOption[]) => a.findIndex(t => t.value === v.value) === i);
   }, [ward, wardsData, allProperties]);
 
@@ -88,7 +88,7 @@ export const useTaxZoning = (props: TaxZoningPageProps) => {
     if (isNaN(from) || isNaN(to) || from > to) return [];
     const wardNo = wardsData.items.find(w => String(w.wardId) === ward[0])?.wardNo || ward[0];
     const taxZoneNo = taxZones.items.find(z => String(z.taxZoneId) === zone)?.taxZoneNo || zone;
-    return Array.from({ length: to - from + 1 }, (_, i) => ({ taxZoneId: taxZoneNo, wardNo, propertyNo: String(from + i).padStart(3, "0") }));
+    return Array.from({ length: to - from + 1 }, (_, i) => ({ taxZoneNo: taxZoneNo, wardNo, propertyNo: String(from + i).padStart(3, "0") }));
   }, [zone, ward, fromProps, toProps, wardsData, taxZones]);
 
   const onFormClear = () => { setZone(""); setWard([]); setFromProps(""); setToProps(""); setSubmitted(false); };

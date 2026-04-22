@@ -18,7 +18,7 @@ const mockUpdateTaxZoningAction = vi.fn();
 vi.mock("@/app/[locale]/property-tax/taxzoning/actions", () => ({
     createTaxZoningAction: vi.fn(),
     updateTaxZoningAction: (...args: unknown[]) => mockUpdateTaxZoningAction(...args),
-    getTaxZonningByWardAction: vi.fn().mockResolvedValue({ success: true, data: { items: [], totalCount: 0 } }),
+    getTaxZoningByWardAction: vi.fn().mockResolvedValue({ success: true, data: { items: [], totalCount: 0 } }),
 }));
 
 const mockTaxZones = {

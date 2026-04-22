@@ -62,7 +62,7 @@ describe("TaxZoningPreview", () => {
   it("shows property count in header", () => {
     const propsWithData = {
       ...mockProps,
-      previewData: [{ taxZoneId: "1", wardNo: "1", propertyNo: "001" }]
+      previewData: [{ taxZoneNo: "1", wardNo: "1", propertyNo: "001" }]
     };
     renderWithIntl(<TaxZoningPreview {...propsWithData} />);
     expect(screen.getByText(/1.*columns\.propertyNo/i)).toBeInTheDocument();

@@ -1,5 +1,5 @@
 import { renderHook, act } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { useTaxZoningFile } from "@/hooks/useTaxZoningFile";
 import { ZoningRecord, Ward, TaxZone } from "@/types/taxzoning.types";
 import { PagedResponse } from "@/types/common.types";
@@ -25,6 +25,11 @@ describe("useTaxZoningFile", () => {
     vi.clearAllMocks();
   });
 
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
   it("handles clearing imported data", () => {
     const { result } = renderHook(() => useTaxZoningFile(t, REQUIRED_HEADERS, records, wardsData, taxZones));
 
@@ -42,7 +47,7 @@ describe("useTaxZoningFile", () => {
     
     // Mock URL.createObjectURL and document.createElement
     const createObjectURLMock = vi.fn(() => "blob:url");
-    global.URL.createObjectURL = createObjectURLMock as unknown as (obj: Blob | MediaSource) => string;
+    vi.stubGlobal('URL', { createObjectURL: createObjectURLMock, revokeObjectURL: vi.fn() });
     const clickMock = vi.fn();
     const linkMock = { href: "", download: "", click: clickMock };
     vi.spyOn(document, "createElement").mockReturnValue(linkMock as unknown as HTMLAnchorElement);

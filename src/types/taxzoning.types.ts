@@ -22,7 +22,7 @@ export interface Ward {
   updatedBy: string | null;
   updatedDate: string | null;
 }
-export interface TaxZonning {
+export interface TaxZoning {
   taxZoneId: number;
   wardId: number;
   taxZone: string;
@@ -35,9 +35,8 @@ export interface TaxZonning {
   updatedDate: string | null;
 }
 
-export type TaxZonningPropertyNo = TaxZonning;
+export type TaxZoningPropertyNo = TaxZoning;
 
-// src/types/action-result.ts
 export type ActionResult<T> =
   | { success: true; data: T }
   | { success: false; error: string; statusCode?: number };
@@ -55,7 +54,7 @@ export interface TaxZoningFormModel {
 }
 
 export type PreviewRow = {
-  taxZoneId: string;
+  taxZoneNo: string;
   wardNo: string;
   propertyNo: string;
 };
@@ -76,12 +75,12 @@ export type SelectOption = {
 };
 
 export type TaxZoningPageProps = {
-  data: TaxZonningPropertyNo[];
+  data: TaxZoningPropertyNo[];
   pageNumber: number;
   pageSize: number;
   totalCount: number;
   totalPages: number;
   taxZones: PagedResponse<TaxZone>;
   wardsData: PagedResponse<Ward>;
-  allProperties: ActionResult<PagedResponse<TaxZonning>>;
+  allProperties: ActionResult<PagedResponse<TaxZoning>>;
 };
