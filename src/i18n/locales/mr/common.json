@@ -227,6 +227,17 @@
     "pending": "…",
     "showPassword": "पासवर्ड दाखवा",
     "hidePassword": "पासवर्ड लपवा",
+    "pageError": {
+      "title": "काहीतरी चूक झाली",
+      "description": "साइन इन पृष्ठ लोड करता आले नाही. कृपया पुन्हा प्रयत्न करा.",
+      "errorId": "त्रुटी ID: {id}",
+      "goHome": "मुख्य पृष्ठावर जा",
+      "tryAgain": "पुन्हा प्रयत्न करा"
+    },
+    "pageLoading": {
+      "message": "साइन इन लोड होत आहे...",
+      "description": "कृपया प्रतीक्षा करा, आम्ही लॉगिन पृष्ठ तयार करत आहोत"
+    },
     "errors": {
       "validationError": "सत्यापन त्रुटी",
       "credentialsRequired": "वापरकर्तानाव आणि पासवर्ड आवश्यक आहे",

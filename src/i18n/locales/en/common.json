@@ -299,6 +299,17 @@
     "pending": "…",
     "showPassword": "Show password",
     "hidePassword": "Hide password",
+    "pageError": {
+      "title": "Something went wrong",
+      "description": "We could not load the sign in page. Please try again.",
+      "errorId": "Error ID: {id}",
+      "goHome": "Go Home",
+      "tryAgain": "Try Again"
+    },
+    "pageLoading": {
+      "message": "Loading sign in...",
+      "description": "Please wait while we prepare the login page"
+    },
     "errors": {
       "validationError": "Validation Error",
       "credentialsRequired": "Username and Password are required",
