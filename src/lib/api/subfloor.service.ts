@@ -4,20 +4,7 @@ import {
   SubFloorFormModel,
   PagedResponse,
 } from '@/types/floor.types';
-
-/* ============================================================
-   API ERROR
-============================================================ */
-export class ApiError extends Error {
-  constructor(
-    public statusCode: number,
-    public responseText: string,
-    message: string
-  ) {
-    super(message);
-    this.name = 'ApiError';
-  }
-}
+import { ApiError } from '@/lib/utils/api';
 
 /* ============================================================
    TYPE GUARDS
