@@ -351,7 +351,8 @@
       "PASSWORD_CHANGE_REQUIRED": "You must change your password before continuing.",
       "TOO_MANY_ATTEMPTS": "Too many login attempts. Please try again later.",
       "REQUEST_TIMEOUT": "Request timed out. Please check your connection.",
-      "INVALID_REQUEST": "Invalid request. Please try again."
+      "INVALID_REQUEST": "Invalid request. Please try again.",
+      "retryInSeconds": "Try again in {seconds} seconds."
     }
   },
   "sidebar": {

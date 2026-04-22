@@ -188,6 +188,28 @@ export type AuthErrorCode = typeof AUTH_ERROR_CODES[keyof typeof AUTH_ERROR_CODE
 export const LOGIN_PRIMARY_SUBMIT_CLASS =
   'w-full max-w-[280px] bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 text-lg rounded-xl shadow-lg shadow-cyan-500/30 transition-all duration-300';
 
+/** Text input (username) shared styles */
+export const LOGIN_FIELD_INPUT_CLASS =
+  'rounded-xl border-gray-200 bg-gray-50/50 py-2.5 pl-10 transition-all duration-200 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20';
+
+/** Password field adds right padding for visibility toggle */
+export const LOGIN_PASSWORD_INPUT_CLASS = `${LOGIN_FIELD_INPUT_CLASS} pr-11`;
+
+/**
+ * Lucide icon position classes for login fields (user / lock).
+ */
+export const LOGIN_FIELD_ICON_CLASS =
+  'pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2';
+
+export const LOGIN_USERNAME_ICON_ACCENT = 'text-cyan-600/80';
+export const LOGIN_PASSWORD_ICON_ACCENT = 'text-amber-600/80';
+
+/**
+ * When the server returns {@link AUTH_ERROR_CODES.TOO_MANY_ATTEMPTS} without a
+ * `Retry-After` value, show this countdown (seconds) for user feedback.
+ */
+export const RATE_LIMIT_COUNTDOWN_INITIAL_SECONDS = 60;
+
 /**
  * Debounce delay for form validation (ms).
  */

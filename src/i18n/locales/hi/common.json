@@ -260,7 +260,8 @@
       "RESET_FAILED": "पासवर्ड रीसेट विफल",
       "LOGIN_FAILED": "लॉगिन विफल। कृपया पुनः प्रयास करें।",
       "RESEND_FAILED": "सत्यापन कोड पुनः भेजने में विफल।",
-      "VERIFICATION_FAILED": "सत्यापन विफल। कृपया पुनः प्रयास करें।"
+      "VERIFICATION_FAILED": "सत्यापन विफल। कृपया पुनः प्रयास करें।",
+      "retryInSeconds": "{seconds} सेकंड में पुनः प्रयास करें।"
     }
   },
   "sidebar": {

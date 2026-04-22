@@ -176,7 +176,10 @@ describe('LoginForm', () => {
     const user = userEvent.setup();
     renderWithIntl(<LoginForm locale="en" copy={enCopy} />);
 
-    await user.type(screen.getByPlaceholderText(String(enCommon.login.usernamePlaceholder)), 'u1');
+    await user.type(
+      screen.getByPlaceholderText(String(enCommon.login.usernamePlaceholder)),
+      'u12'
+    );
     await user.type(screen.getByPlaceholderText(String(enCommon.login.passwordPlaceholder)), 'p1');
     await user.click(screen.getByRole('button', { name: String(enCommon.login.signIn) }));
 
@@ -196,6 +199,11 @@ describe('LoginForm', () => {
     const user = userEvent.setup();
     renderWithIntl(<LoginForm locale="en" copy={enCopy} />);
 
+    await user.type(
+      screen.getByPlaceholderText(String(enCommon.login.usernamePlaceholder)),
+      'abc'
+    );
+    await user.type(screen.getByPlaceholderText(String(enCommon.login.passwordPlaceholder)), 'x');
     await user.click(screen.getByRole('button', { name: String(enCommon.login.signIn) }));
 
     await waitFor(() => {
@@ -203,5 +211,82 @@ describe('LoginForm', () => {
         screen.getByText(String(enCommon.login.errors.credentialsRequired))
       ).toBeInTheDocument();
     });
+  });
+
+  it('maps SERVICE_UNAVAILABLE from action state to translated message', async () => {
+    mockLoginAction.mockResolvedValue({
+      message: 'SERVICE_UNAVAILABLE',
+      resetKey: 'rk-4',
+    });
+
+    const user = userEvent.setup();
+    renderWithIntl(<LoginForm locale="en" copy={enCopy} />);
+
+    await user.type(
+      screen.getByPlaceholderText(String(enCommon.login.usernamePlaceholder)),
+      'abc'
+    );
+    await user.type(screen.getByPlaceholderText(String(enCommon.login.passwordPlaceholder)), 'x');
+    await user.click(screen.getByRole('button', { name: String(enCommon.login.signIn) }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(String(enCommon.login.errors.serviceUnavailable))
+      ).toBeInTheDocument();
+    });
+  });
+
+  it('does not submit when username is shorter than minimum length (client validation)', async () => {
+    const user = userEvent.setup();
+    renderWithIntl(<LoginForm locale="en" copy={enCopy} />);
+
+    await user.type(
+      screen.getByPlaceholderText(String(enCommon.login.usernamePlaceholder)),
+      'ab'
+    );
+    await user.type(screen.getByPlaceholderText(String(enCommon.login.passwordPlaceholder)), 'secret');
+    await user.click(screen.getByRole('button', { name: String(enCommon.login.signIn) }));
+
+    await waitFor(() => {
+      expect(screen.getByText(String(enCommon.login.errors.USERNAME_TOO_SHORT))).toBeInTheDocument();
+    });
+    expect(mockLoginAction).not.toHaveBeenCalled();
+  });
+
+  it('strips disallowed characters from username input (sanitization)', async () => {
+    const user = userEvent.setup();
+    renderWithIntl(<LoginForm locale="en" copy={enCopy} />);
+
+    const usernameInput = screen.getByPlaceholderText(
+      String(enCommon.login.usernamePlaceholder)
+    ) as HTMLInputElement;
+    await user.type(usernameInput, 'a#b$c');
+
+    expect(usernameInput).toHaveValue('abc');
+  });
+
+  it('clears password field after a failed sign-in (remount on new resetKey)', async () => {
+    mockLoginAction.mockResolvedValue({
+      message: 'INVALID_CREDENTIALS',
+      resetKey: 'rk-pw',
+    });
+
+    const user = userEvent.setup();
+    renderWithIntl(<LoginForm locale="en" copy={enCopy} username="uzer" />);
+
+    const passwordInput = screen.getByPlaceholderText(
+      String(enCommon.login.passwordPlaceholder)
+    ) as HTMLInputElement;
+    await user.type(passwordInput, 'hunter2');
+    await user.click(screen.getByRole('button', { name: String(enCommon.login.signIn) }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(String(enCommon.login.errors.invalidCredentials))
+      ).toBeInTheDocument();
+    });
+    expect(
+      screen.getByPlaceholderText(String(enCommon.login.passwordPlaceholder)) as HTMLInputElement
+    ).toHaveValue('');
   });
 });

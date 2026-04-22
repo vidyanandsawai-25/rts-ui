@@ -83,7 +83,7 @@ export interface UseLoginFormReturn {
 export function useLoginForm(options: UseLoginFormOptions = {}): UseLoginFormReturn {
   const { initialUsername = '' } = options;
   
-  const t = useTranslations('common');
+  const t = useTranslations('common.login');
   
   // Form state
   const [formData, setFormData] = useState<LoginFormData>({
@@ -106,18 +106,18 @@ export function useLoginForm(options: UseLoginFormOptions = {}): UseLoginFormRet
     // Username validation
     const trimmedUsername = data.username.trim();
     if (!trimmedUsername) {
-      errs.username = t(`login.errors.${AUTH_ERROR_CODES.USERNAME_REQUIRED}`);
+      errs.username = t(`errors.${AUTH_ERROR_CODES.USERNAME_REQUIRED}`);
     } else if (trimmedUsername.length < AUTH_CONSTRAINTS.USERNAME_MIN_LENGTH) {
-      errs.username = t(`login.errors.${AUTH_ERROR_CODES.USERNAME_TOO_SHORT}`);
+      errs.username = t(`errors.${AUTH_ERROR_CODES.USERNAME_TOO_SHORT}`);
     } else if (trimmedUsername.length > AUTH_CONSTRAINTS.USERNAME_MAX_LENGTH) {
-      errs.username = t(`login.errors.${AUTH_ERROR_CODES.USERNAME_TOO_LONG}`);
+      errs.username = t(`errors.${AUTH_ERROR_CODES.USERNAME_TOO_LONG}`);
     }
     
     // Password validation
     if (!data.password) {
-      errs.password = t(`login.errors.${AUTH_ERROR_CODES.PASSWORD_REQUIRED}`);
+      errs.password = t(`errors.${AUTH_ERROR_CODES.PASSWORD_REQUIRED}`);
     } else if (data.password.length > AUTH_CONSTRAINTS.PASSWORD_MAX_LENGTH) {
-      errs.password = t(`login.errors.${AUTH_ERROR_CODES.PASSWORD_TOO_LONG}`);
+      errs.password = t(`errors.${AUTH_ERROR_CODES.PASSWORD_TOO_LONG}`);
     }
     
     return errs;
@@ -250,60 +250,63 @@ export function useLoginForm(options: UseLoginFormOptions = {}): UseLoginFormRet
 // ---------------------------------------------------------------------------
 
 /**
+ * Maps {@link AUTH_ERROR_CODES} values to message keys under `common.login.errors`
+ * when the key differs from the code (e.g. camelCase vs SCREAMING_SNAKE).
+ */
+const AUTH_ERROR_TO_LOGIN_I18N_KEY: Record<string, string> = {
+  [AUTH_ERROR_CODES.CREDENTIALS_REQUIRED]: 'credentialsRequired',
+  [AUTH_ERROR_CODES.INVALID_CREDENTIALS]: 'invalidCredentials',
+  [AUTH_ERROR_CODES.ACCOUNT_LOCKED]: 'Auth_AccountLocked_Temporary',
+  [AUTH_ERROR_CODES.ACCOUNT_INACTIVE]: 'ACCOUNT_INACTIVE',
+  [AUTH_ERROR_CODES.USER_NOT_FOUND]: 'Auth_UserNotFound',
+  [AUTH_ERROR_CODES.SESSION_EXPIRED]: 'SESSION_EXPIRED',
+  [AUTH_ERROR_CODES.TOO_MANY_ATTEMPTS]: 'TOO_MANY_ATTEMPTS',
+  [AUTH_ERROR_CODES.SERVICE_UNAVAILABLE]: 'serviceUnavailable',
+  [AUTH_ERROR_CODES.REQUEST_TIMEOUT]: 'REQUEST_TIMEOUT',
+  [AUTH_ERROR_CODES.LOGIN_FAILED]: 'LOGIN_FAILED',
+  [AUTH_ERROR_CODES.PASSWORD_CHANGE_REQUIRED]: 'passwordChangeRequired',
+  [AUTH_ERROR_CODES.INVALID_OTP_FORMAT]: 'enterValidToken',
+  [AUTH_ERROR_CODES.VERIFICATION_FAILED]: 'VERIFICATION_FAILED',
+  [AUTH_ERROR_CODES.RESEND_FAILED]: 'RESEND_FAILED',
+  [AUTH_ERROR_CODES.RESET_FAILED]: 'RESET_FAILED',
+  [AUTH_ERROR_CODES.INVALID_REQUEST]: 'INVALID_REQUEST',
+  PASSWORDS_MISMATCH: 'passwordsMismatch',
+};
+
+/**
  * Hook to convert error codes to localized messages.
  * Separated for reuse in components that don't need full form management.
  */
 export function useLoginErrorMessages() {
-  const t = useTranslations('common');
+  const t = useTranslations('common.login');
 
   const getLocalizedError = useCallback((errorCode: string | undefined): string => {
     if (!errorCode) return '';
-    
-    // Map error codes to translation keys
-    const errorKeyMap: Record<string, string> = {
-      [AUTH_ERROR_CODES.USERNAME_REQUIRED]: 'login.errors.USERNAME_REQUIRED',
-      [AUTH_ERROR_CODES.PASSWORD_REQUIRED]: 'login.errors.PASSWORD_REQUIRED',
-      [AUTH_ERROR_CODES.CREDENTIALS_REQUIRED]: 'login.errors.credentialsRequired',
-      [AUTH_ERROR_CODES.INVALID_CREDENTIALS]: 'login.errors.invalidCredentials',
-      [AUTH_ERROR_CODES.ACCOUNT_LOCKED]: 'login.errors.Auth_AccountLocked_Temporary',
-      [AUTH_ERROR_CODES.ACCOUNT_INACTIVE]: 'login.errors.accountInactive',
-      [AUTH_ERROR_CODES.USER_NOT_FOUND]: 'login.errors.Auth_UserNotFound',
-      [AUTH_ERROR_CODES.SESSION_EXPIRED]: 'login.errors.sessionExpired',
-      [AUTH_ERROR_CODES.TOO_MANY_ATTEMPTS]: 'login.errors.tooManyAttempts',
-      [AUTH_ERROR_CODES.SERVICE_UNAVAILABLE]: 'login.errors.serviceUnavailable',
-      [AUTH_ERROR_CODES.REQUEST_TIMEOUT]: 'login.errors.requestTimeout',
-      [AUTH_ERROR_CODES.LOGIN_FAILED]: 'login.errors.LOGIN_FAILED',
-      [AUTH_ERROR_CODES.PASSWORD_CHANGE_REQUIRED]: 'login.errors.passwordChangeRequired',
-      [AUTH_ERROR_CODES.USERNAME_TOO_SHORT]: 'login.errors.USERNAME_TOO_SHORT',
-      [AUTH_ERROR_CODES.USERNAME_TOO_LONG]: 'login.errors.USERNAME_TOO_LONG',
-      [AUTH_ERROR_CODES.PASSWORD_TOO_LONG]: 'login.errors.PASSWORD_TOO_LONG',
-      [AUTH_ERROR_CODES.INVALID_OTP_FORMAT]: 'login.errors.enterValidToken',
-      [AUTH_ERROR_CODES.VERIFICATION_FAILED]: 'login.errors.VERIFICATION_FAILED',
-      [AUTH_ERROR_CODES.RESEND_FAILED]: 'login.errors.RESEND_FAILED',
-      [AUTH_ERROR_CODES.RESET_FAILED]: 'login.errors.RESET_FAILED',
-    };
-    
-    const translationKey = errorKeyMap[errorCode];
-    if (translationKey) {
+
+    const suffix = AUTH_ERROR_TO_LOGIN_I18N_KEY[errorCode] ?? errorCode;
+    const primary = `errors.${suffix}`;
+
+    if (typeof t.has === 'function' && t.has(primary)) {
+      return t(primary);
+    }
+
+    const fallbackCode = `errors.${errorCode}`;
+    if (typeof t.has === 'function' && t.has(fallbackCode)) {
+      return t(fallbackCode);
+    }
+
+    try {
+      return t(primary);
+    } catch {
       try {
-        return t(translationKey);
+        return t(fallbackCode);
       } catch {
-        // Fall through to generic handling
+        try {
+          return t('errors.LOGIN_FAILED');
+        } catch {
+          return errorCode;
+        }
       }
-    }
-    
-    // Try direct key lookup
-    try {
-      return t(`login.errors.${errorCode}`);
-    } catch {
-      // Fall through
-    }
-    
-    // Final fallback
-    try {
-      return t('errors.generic');
-    } catch {
-      return errorCode;
     }
   }, [t]);
 
