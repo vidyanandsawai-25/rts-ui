@@ -1,4 +1,3 @@
-import { MainLayout } from "@/components/layout";
 import TaxZoningPage from "@/components/modules/property-tax/taxzoningmaster/TaxZoningPage";
 
 import { fetchTaxZonePagedAction, fetchWardPagedAction, getAllTaxZonningAction, getTaxZonningPropertyNoPagedAction } from "./actions";
@@ -16,22 +15,15 @@ interface PageProps {
 export default async function Page({ searchParams }: PageProps) {
   const params = await searchParams;
 
-  const pageNumber = Number(params.page) || 1;
-  const pageSize = Number(params.pageSize) ||5;
+  const pageNumber = Math.max(1, Number(params.page) || 1);
+  const pageSize = Math.min(100, Math.max(1, Number(params.pageSize) || 5));
 
-  // ✅ CALL ACTION (not server service)
-  const result = await getTaxZonningPropertyNoPagedAction(
-    pageNumber,
-    pageSize
-  );
-  // Fetch all TaxZonning properties (no ward filter - will be filtered client-side)
-  const allPropertiesOptions = await getAllTaxZonningAction(1, -1);
-
-  // Await all server data
-  const [taxZonesResult, wardsDataResult] = await Promise.all([
+  // Run all independent server actions concurrently to avoid unnecessary TTFB.
+  const [result, allPropertiesOptions, taxZonesResult, wardsDataResult] = await Promise.all([
+    getTaxZonningPropertyNoPagedAction(pageNumber, pageSize),
+    getAllTaxZonningAction(1, -1),
     fetchTaxZonePagedAction(1, -1),
     fetchWardPagedAction(1, -1)
-
   ]);
 
   const tableData = result.success && result.data ? result.data.items : [];
@@ -39,7 +31,6 @@ export default async function Page({ searchParams }: PageProps) {
   const totalPages = result.success && result.data ? result.data.totalPages : 1;
 
   return (
-    <MainLayout>
       <TaxZoningPage
         data={tableData}
         pageNumber={pageNumber}
@@ -50,6 +41,5 @@ export default async function Page({ searchParams }: PageProps) {
         wardsData={wardsDataResult}
         allProperties={allPropertiesOptions}
       />
-    </MainLayout>
   );
 }

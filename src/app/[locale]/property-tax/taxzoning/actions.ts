@@ -19,7 +19,7 @@ export async function fetchTaxZonePagedAction(
 
     throw new ApiError(
       500,
-      "Unable to load Tax Zones",
+      "messages.fetchTaxZonesFailed",
       "fetchTaxZonePagedAction: Unknown error"
     );
   }
@@ -35,7 +35,7 @@ export async function fetchWardPagedAction(
       throw error;
     }
     // Preserve the original error message and stack if possible
-    const message = error instanceof Error ? error.message : "Unable to load Wards";
+    const message = error instanceof Error ? error.message : "messages.fetchWardsFailed";
     const details = error instanceof Error && error.stack ? error.stack : String(error);
     throw new ApiError(
       500,
@@ -69,7 +69,7 @@ export async function getTaxZonningPagedAction(
 
     return {
       success: false,
-      error: "Failed to fetch TaxZonning data",
+      error: "messages.fetchZoningDataFailed",
       statusCode: 500,
     };
   }
@@ -96,7 +96,7 @@ export async function getTaxZonningPropertyNoPagedAction(
 
     return {
       success: false,
-      error: "Failed to fetch TaxZonning Property No data",
+      error: "messages.fetchPropertyNoFailed",
       statusCode: 500,
     };
   }
@@ -154,7 +154,7 @@ export async function getTaxZonningByWardAction(
 
     return {
       success: false,
-      error: "Failed to fetch TaxZonning by Ward",
+      error: "messages.fetchByWardFailed",
     };
   }
 }
@@ -181,7 +181,7 @@ export async function getAllTaxZonningAction(
 
     return {
       success: false,
-      error: "Failed to fetch all TaxZonning data",
+      error: "messages.fetchAllFailed",
     };
   }
 }
@@ -197,15 +197,14 @@ export async function createTaxZoningAction(
 
     return {
       success: true,
-      message: "Tax zoning created successfully",
+      message: "messages.createSuccess",
     };
   } catch (error: unknown) {
     console.error("Create Tax Zoning Error:", error);
-
     return {
       success: false,
       message:
-        error instanceof Error ? error.message : "Failed to create tax zoning. Please try again.",
+        error instanceof Error ? error.message : "messages.createFailed",
     };
   }
 }
@@ -221,15 +220,14 @@ export async function updateTaxZoningAction(
 
     return {
       success: true,
-      message: "Tax zoning updated successfully",
+      message: "messages.updateSuccess",
     };
   } catch (error: unknown) {
     console.error("Update Tax Zoning Error:", error);
-
     return {
       success: false,
       message:
-        error instanceof Error ? error.message : "Failed to update tax zoning. Please try again.",
+        error instanceof Error ? error.message : "messages.updateFailed",
     };
   }
 }

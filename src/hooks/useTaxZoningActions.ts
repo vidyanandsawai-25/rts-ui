@@ -55,13 +55,13 @@ export const useTaxZoningActions = (t: (key: string, values?: Record<string, str
 
         const result = await updateTaxZoningAction(payload);
         if (!result.success) {
-          toast.error(t('messages.updateFailed'));
+          toast.error(t(result.message));
           return;
         }
-        toast.success(result.message);
+        toast.success(t(result.message));
       } else {
-        const validWards = [];
-        const nonExistentWards = [];
+        const validWards: string[] = [];
+        const nonExistentWards: string[] = [];
         for (const wardId of ward) {
           if (records.some(r => r.wardId === Number(wardId))) {
             validWards.push(wardId);

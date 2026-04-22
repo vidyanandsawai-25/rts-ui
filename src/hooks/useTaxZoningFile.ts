@@ -27,10 +27,15 @@ export const useTaxZoningFile = (
     const csv = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "tax-zoning-records.csv";
-    link.click();
-    toast.success(t('messages.csvExportSuccess'));
+    const url = URL.createObjectURL(blob);
+    try {
+      link.href = url;
+      link.download = "tax-zoning-records.csv";
+      link.click();
+      toast.success(t('messages.csvExportSuccess'));
+    } finally {
+      URL.revokeObjectURL(url);
+    }
   };
 
   const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {

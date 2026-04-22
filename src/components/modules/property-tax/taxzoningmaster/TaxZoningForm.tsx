@@ -3,9 +3,10 @@
 import React from "react";
 import { MapPin, Eye } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
-import { Card, CardContent, CardHeader, CardTitle, Label, Select, ValidationMessage, SaveButton, CancelButton } from "@/components/common";
+import { Card, CardContent, CardHeader, CardTitle, Select, ValidationMessage, SaveButton, CancelButton } from "@/components/common";
 import { MultiSelectDropdown } from "@/components/common/Dropdown";
 import { SelectOption } from "@/types/taxzoning.types";
+import { Label } from "@/components/common/label";
 
 interface TaxZoningFormProps {
   t: (key: string, values?: Record<string, string | number>) => string;
