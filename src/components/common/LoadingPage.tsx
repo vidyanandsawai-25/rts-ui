@@ -6,12 +6,12 @@ import { PageContainer } from './PageContainer';
 import { Card, CardContent } from './Card';
 
 export interface LoadingPageProps {
-    /** Translation namespace for loading messages. Defaults to 'common.loading' */
-    translationNamespace?: string;
-    /** Custom loading message key. Defaults to 'message' */
-    messageKey?: string;
-    /** Custom description key. Defaults to 'description' */
-    descriptionKey?: string;
+  /** Translation namespace for loading messages. Defaults to 'common.loading' */
+  translationNamespace?: string;
+  /** Custom loading message key. Defaults to 'message' */
+  messageKey?: string;
+  /** Custom description key. Defaults to 'description' */
+  descriptionKey?: string;
 }
 
 /**
@@ -34,36 +34,36 @@ export interface LoadingPageProps {
  * }
  */
 export function LoadingPage({
-    translationNamespace = 'common.loading',
-    messageKey = 'message',
-    descriptionKey = 'description',
+  translationNamespace = 'common.loading',
+  messageKey = 'message',
+  descriptionKey = 'description',
 }: LoadingPageProps) {
-    const t = useTranslations(translationNamespace);
+  const t = useTranslations(translationNamespace);
 
-    return (
-        <PageContainer>
-            <div className="flex items-center justify-center min-h-[60vh]">
-                <Card className="w-full max-w-lg">
-                    <CardContent className="p-8">
-                        <div className="flex flex-col items-center text-center space-y-4">
-                            {/* Loading Spinner */}
-                            <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
+  return (
+    <PageContainer>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Card className="w-full max-w-lg">
+          <CardContent className="p-8">
+            <div className="flex flex-col items-center text-center space-y-4">
+              {/* Loading Spinner */}
+              <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
 
-                            {/* Loading Message */}
-                            <h2 className="text-xl font-semibold text-gray-900">
-                                {t(messageKey)}
-                            </h2>
+              {/* Loading Message */}
+              <h2 className="text-xl font-semibold text-gray-900">
+                {t(messageKey)}
+              </h2>
 
-                            {/* Loading Description */}
-                            <p className="text-gray-600 text-sm">
-                                {t(descriptionKey)}
-                            </p>
-                        </div>
-                    </CardContent>
-                </Card>
+              {/* Loading Description */}
+              <p className="text-gray-600 text-sm">
+                {t(descriptionKey)}
+              </p>
             </div>
-        </PageContainer>
-    );
+          </CardContent>
+        </Card>
+      </div>
+    </PageContainer>
+  );
 }
 
 export default LoadingPage;
