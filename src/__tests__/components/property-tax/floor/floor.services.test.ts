@@ -18,12 +18,14 @@ import {
   createFloor,
   updateFloor,
   deleteFloor,
+} from '@/lib/api/floor.service';
+import {
   getSubFloorPaged,
   getSubFloorById,
   createSubFloor,
   updateSubFloor,
   deleteSubFloor,
-} from '@/lib/api/floor.services';
+} from '@/lib/api/subfloor.service';
 import type { FloorFormModel, SubFloorFormModel } from '@/types/floor.types';
 
 // ── Shared helpers ────────────────────────────────────────────────────────────
@@ -387,7 +389,7 @@ describe('floor.services — updateSubFloor', () => {
   beforeEach(() => vi.clearAllMocks());
 
   const validPayload: SubFloorFormModel = {
-    subFloorId: 5,
+    id: 5,
     subFloorCode: 'B1',
     description: 'Basement 1',
     isActive: true,
@@ -400,12 +402,12 @@ describe('floor.services — updateSubFloor', () => {
 
     expect(mockPut).toHaveBeenCalledWith(
       '/SubFloor/5',
-      expect.objectContaining({ subFloorId: 5, subFloorCode: 'B1' })
+      expect.objectContaining({ id: 5, subFloorCode: 'B1' })
     );
   });
 
-  it('throws when subFloorId is missing', async () => {
-    await expect(updateSubFloor({ ...validPayload, subFloorId: undefined })).rejects.toThrow(
+  it('throws when id is missing', async () => {
+    await expect(updateSubFloor({ ...validPayload, id: undefined })).rejects.toThrow(
       'SubFloor ID required'
     );
   });

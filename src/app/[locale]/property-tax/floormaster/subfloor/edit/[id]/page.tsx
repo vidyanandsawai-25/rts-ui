@@ -1,5 +1,5 @@
 import { SubFloorForm } from "@/components/modules/property-tax/Floormaster/subfloor";
-import { getSubFloorById } from "@/lib/api/floor.services";
+import { getSubFloorById } from "@/lib/api/subfloor.service";
 import React from "react";
 
 export const dynamic = "force-dynamic";

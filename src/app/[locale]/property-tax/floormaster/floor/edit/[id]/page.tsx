@@ -1,5 +1,5 @@
 import { FloorForm } from "@/components/modules/property-tax/Floormaster/floor";
-import { getFloorById } from "@/lib/api/floor.services";
+import { getFloorById } from "@/lib/api/floor.service";
 import React from "react";
 
 export const dynamic = "force-dynamic";

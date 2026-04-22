@@ -8,12 +8,15 @@ import {
   createFloor,
   updateFloor,
   deleteFloor,
+  ApiError,
+} from "@/lib/api/floor.service";
+
+import {
   getSubFloorPaged,
   createSubFloor,
   updateSubFloor,
   deleteSubFloor,
-  ApiError,
-} from "@/lib/api/floor.services";
+} from "@/lib/api/subfloor.service";
 
 import type {
   Floor,
@@ -48,7 +51,7 @@ export async function fetchFloorPagedServerAction(
       throw new Error("Invalid pagination parameters");
     }
 
-    // ✅ allowed sorting columns
+  
     const allowedSortColumns = ["floorCode", "description", "sequenceNo"];
 
     const validSortBy = sortBy && allowedSortColumns.includes(sortBy)
