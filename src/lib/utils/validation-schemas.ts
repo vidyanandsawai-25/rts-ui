@@ -1,83 +1,25 @@
 /**
- * Common validation functions for forms
- *
- * @module validation
+ * Validation Schemas - Reusable validators for master forms
  * 
- * @deprecated This file is kept for backward compatibility.
- * New code should import from the specific modules:
- * - validation-rules.ts for regex and sanitization patterns
- * - validation-helpers.ts for utility functions
- * - validation-schemas.ts for validators and schema factories
- *
+ * @module validation-schemas
+ * 
  * ## Exports
- *
- * ### Constants (Regex & Sanitization)
- * - `CODE_REGEX` - Validates alphanumeric and underscore (A-Z, a-z, 0-9, _) - underscore only in between
- * - `CODE_SANITIZE` - Removes invalid characters for code fields
- * - `DESCRIPTION_REGEX` - Validates multilingual text with punctuation (&, -, /, etc.) - special chars only in between, single space only
- * - `DESCRIPTION_SANITIZE` - Removes invalid characters for descriptions
- * - `TEXT_SANITIZE` - Generic text sanitization
- * - `TEXT_ALLOWED` - Generic text validation - single space only
- * - `SEARCH_KEY_REGEX` - Search key validation
- *
- * ### Functions
- * - `validateForm(data, schema)` - Generic form validation function
- * - `hasErrors(errors)` - Check if validation errors exist
- * - `createMasterValidationSchema(t, isEdit, config)` - Factory for master form validators
- *
- * ### Validators (commonValidations)
+ * 
+ * ### Common Validators (commonValidations)
  * - `masterCode(t, maxLength, messageKeys)` - Generic code validation for all masters
  * - `masterDescription(t, maxLength, messageKeys)` - Generic description validation for all masters
  * - `masterSearchSequence(t, messageKey)` - Generic search sequence validation
  * - `masterActiveStatus(t, isEdit, messageKey)` - Generic active status validation
- *
- * ### Helpers
- * - `constructionValidators` - Backward compatibility helpers for construction module
+ * 
+ * ### Schema Factory
+ * - `createMasterValidationSchema(t, isEdit, config)` - Factory for master form validators
+ * 
+ * ### Backward Compatibility
+ * - `constructionValidators` - Construction-specific validators
  */
 
-export type Validator = (value: unknown) => string | undefined;
-
-/* ================= CONSTANTS ================= */
-// Generic Code Validation: Allow alphanumeric characters and underscore (A-Z, a-z, 0-9, _)
-// Must start and end with alphanumeric, underscore only allowed in between
-// Used across all modules (Construction, Tax Zone, etc.)
-export const CODE_REGEX = /^[A-Za-z0-9]+([A-Za-z0-9_]*[A-Za-z0-9]+)*$/;
-export const CODE_SANITIZE = /[^A-Za-z0-9_]/g; // Remove any characters except alphanumeric and underscore
-
-// Description: Allow all languages (Marathi, Hindi, English) with basic punctuation
-// Special characters (&, -, /, etc.) must be in between other characters
-// Only single space allowed between characters, no consecutive spaces
-export const DESCRIPTION_REGEX = /^[\p{L}\p{M}\p{N}]+(([\p{L}\p{M}\p{N}\/,.\-()&]|\s(?!\s))*[\p{L}\p{M}\p{N}]+)*$/u;
-export const DESCRIPTION_SANITIZE = /[^\p{L}\p{M}\p{N}\s\/,.\-()&]/gu;
-
-//taxZone
-
-export const TEXT_SANITIZE = /[^\p{L}\p{M}\p{N}\s,.\-\/&]/gu; // Allow Unicode letters, marks, numbers, spaces, and basic punctuation including &
-export const TEXT_ALLOWED = /^[\p{L}\p{M}\p{N}]+(([\p{L}\p{M}\p{N},.\-\/&]|\s(?!\s))*[\p{L}\p{M}\p{N}]+)*$/u; // Validation for allowed characters, special chars in between, single space only, allows single char
-
-export const SEARCH_KEY_REGEX = /^[A-Za-z0-9+\-]+$/;
-/**
- * Generic form validation function
- */
-export const validateForm = (data: unknown, schema: Record<string, Validator>): Record<string, string> => {
-  const errors: Record<string, string> = {};
-  const formData = (typeof data === 'object' && data !== null) ? data as Record<string, unknown> : {};
-
-  Object.keys(schema).forEach((key) => {
-    const validator = schema[key];
-    if (validator) {
-      const error = validator(formData[key]);
-      if (error) errors[key] = error;
-    }
-  });
-
-  return errors;
-};
-
-/**
- * Check if a form has any errors
- */
-export const hasErrors = (errors: Record<string, string>): boolean => Object.keys(errors).length > 0;
+import { CODE_REGEX, DESCRIPTION_REGEX } from './validation-rules';
+import type { Validator } from './validation-helpers';
 
 /**
  * Common validation rules for Master Forms
@@ -88,7 +30,7 @@ export const commonValidations = {
    * Generic master code validation (alphanumeric and underscore)
    * Underscore (_) must be in between alphanumeric characters, not at start/end
    * Used for: Construction Code, Tax Zone Code, etc.
-   * 
+   *
    * @param t - Translation function
    * @param maxLength - Maximum allowed length
    * @param messageKeys - Custom translation keys for errors
@@ -101,15 +43,15 @@ export const commonValidations = {
       format?: string;
       maxLength?: string;
     }
-  ): Validator => (value: unknown) => {
-    const strVal = String(value ?? "").trim();
-    
+  ): Validator => (fieldValue: unknown) => {
+    const strVal = String(fieldValue ?? "").trim();
+   
     const keys = {
       required: messageKeys?.required || 'form.validation.codeRequired',
       format: messageKeys?.format || 'form.validation.codeFormat',
       maxLength: messageKeys?.maxLength || 'form.validation.codeMaxLength',
     };
-    
+   
     if (!strVal) return t(keys.required);
     if (strVal.length > maxLength) return t(keys.maxLength, { count: maxLength });
     if (!CODE_REGEX.test(strVal)) return t(keys.format);
@@ -121,7 +63,7 @@ export const commonValidations = {
    * Special characters (&, -, /, etc.) must be in between other characters, not at start/end
    * Only single space allowed between words, no consecutive spaces
    * Used for: Construction Description, Tax Zone Description, etc.
-   * 
+   *
    * @param t - Translation function
    * @param maxLength - Maximum allowed length
    * @param messageKeys - Custom translation keys for errors
@@ -134,15 +76,15 @@ export const commonValidations = {
       format?: string;
       maxLength?: string;
     }
-  ): Validator => (value: unknown) => {
-    const strVal = String(value ?? "").trim();
-    
+  ): Validator => (fieldValue: unknown) => {
+    const strVal = String(fieldValue ?? "").trim();
+   
     const keys = {
       required: messageKeys?.required || 'form.validation.descriptionRequired',
       format: messageKeys?.format || 'form.validation.descriptionFormat',
       maxLength: messageKeys?.maxLength || 'form.validation.descriptionMaxLength',
     };
-    
+   
     if (!strVal) return t(keys.required);
     if (strVal.length > maxLength) return t(keys.maxLength, { count: maxLength });
     if (!DESCRIPTION_REGEX.test(strVal)) return t(keys.format);
@@ -152,17 +94,17 @@ export const commonValidations = {
   /**
    * Generic search sequence validation
    * Used across all master forms
-   * 
+   *
    * @param t - Translation function
    * @param messageKey - Custom translation key for invalid sequence error
    */
   masterSearchSequence: (
     t: (key: string, values?: Record<string, string | number | Date>) => string,
     messageKey?: string
-  ): Validator => (value: unknown) => {
-    const numVal = Number(value);
+  ): Validator => (fieldValue: unknown) => {
+    const numVal = Number(fieldValue);
     const key = messageKey || 'form.validation.sequenceInvalid';
-    
+   
     if (!Number.isFinite(numVal) || numVal < 0) {
       return t(key);
     }
@@ -172,7 +114,7 @@ export const commonValidations = {
   /**
    * Generic active status validation
    * Used across all master forms (new records must be active)
-   * 
+   *
    * @param t - Translation function
    * @param isEdit - Whether this is an edit operation
    * @param messageKey - Custom translation key for must be active error
@@ -181,20 +123,12 @@ export const commonValidations = {
     t: (key: string, values?: Record<string, string | number | Date>) => string,
     isEdit: boolean,
     messageKey?: string
-  ): Validator => (value: unknown) => {
-    // Explicitly handle boolean values and 'true'/'false' strings
-    // to avoid Boolean('false') being true
-    let isActive = false;
-    if (typeof value === 'boolean') {
-      isActive = value;
-    } else if (typeof value === 'string') {
-      isActive = value.toLowerCase() === 'true';
-    } else {
-      isActive = Boolean(value);
-    }
-
+  ): Validator => (fieldValue: unknown) => {
+    // ✅ Explicitly parse boolean values - handles both boolean and string types
+    // Common with HTML inputs/FormData which store booleans as strings
+    const isActive = fieldValue === true || fieldValue === "true";
     const key = messageKey || 'form.validation.mustBeActive';
-    
+   
     if (!isActive && !isEdit) {
       return t(key);
     }
@@ -205,11 +139,11 @@ export const commonValidations = {
 /**
  * Helper factory to create master form validation schema
  * Simplifies creating validators for master forms with consistent naming
- * 
+ *
  * @example
  * // For Construction Type Master - map to actual form field names
  * const schema = createMasterValidationSchema(t, isEdit, {
- *   code: { maxLength: 7, messageKeys: { 
+ *   code: { maxLength: 7, messageKeys: {
  *     required: 'form.validation.constructionCodeRequired',
  *     format: 'form.validation.constructionCodeFormat',
  *     maxLength: 'form.validation.constructionCodeMaxLength'
@@ -268,17 +202,17 @@ export const createMasterValidationSchema = (
   }
 
   if (config.searchSequence) {
-    const messageKey = typeof config.searchSequence === 'object' 
-      ? config.searchSequence.messageKey 
+    const messageKey = typeof config.searchSequence === 'object'
+      ? config.searchSequence.messageKey
       : undefined;
     schema.searchSequence = commonValidations.masterSearchSequence(t, messageKey);
   }
 
   if (config.activeStatus) {
-    const messageKey = typeof config.activeStatus === 'object' 
-      ? config.activeStatus.messageKey 
+    const messageKey = typeof config.activeStatus === 'object'
+      ? config.activeStatus.messageKey
       : undefined;
-    schema.activeStatus = commonValidations.masterActiveStatus(t, isEdit, messageKey);
+    schema.isActive = commonValidations.masterActiveStatus(t, isEdit, messageKey);
   }
 
   return schema;
@@ -295,92 +229,17 @@ export const constructionValidators = {
       format: 'form.validation.constructionCodeFormat',
       maxLength: 'form.validation.constructionCodeMaxLength',
     }),
-  
+
   description: (t: (key: string, values?: Record<string, string | number | Date>) => string, maxLength: number = 100) =>
     commonValidations.masterDescription(t, maxLength, {
       required: 'form.validation.descriptionRequired',
       format: 'form.validation.descriptionFormat',
       maxLength: 'form.validation.descriptionMaxLength',
     }),
-  
+
   searchSequence: (t: (key: string, values?: Record<string, string | number | Date>) => string) =>
     commonValidations.masterSearchSequence(t, 'form.validation.sequenceInvalid'),
-  
+
   activeStatus: (t: (key: string, values?: Record<string, string | number | Date>) => string, isEdit: boolean) =>
     commonValidations.masterActiveStatus(t, isEdit, 'form.validation.mustBeActive'),
 };
-
-
-
-/**
- * Society form validations
- */
-
-export const PERSON_NAME_REGEX = /^[\p{L}\p{M}\s.,'-]+$/u;
-export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-export const MOBILE_10_REGEX = /^[0-9]{10}$/;
-
-export const societyValidations = {
-  personName:
-    (
-      label: string,
-      t: (key: string, values?: Record<string, string | number | Date>) => string
-    ): Validator =>
-    (value: unknown) => {
-      const strVal = String(value ?? "").trim();
-      if (!strVal) return undefined; // optional field
-      if (!PERSON_NAME_REGEX.test(strVal)) {
-        return t(`society.validation.${label}`);
-      }
-      return undefined;
-    },
-
-  email:
-    (
-      label: string,
-      t: (key: string, values?: Record<string, string | number | Date>) => string
-    ): Validator =>
-    (value: unknown) => {
-      const strVal = String(value ?? "").trim();
-      if (!strVal) return undefined; // optional field
-      if (!EMAIL_REGEX.test(strVal)) {
-        return t(`society.validation.${label}`);
-      }
-      return undefined;
-    },
-
-  mobile10:
-    (
-      label: string,
-      t: (key: string, values?: Record<string, string | number | Date>) => string
-    ): Validator =>
-    (value: unknown) => {
-      const strVal = String(value ?? "").trim();
-      if (!strVal) return undefined; // optional field
-      if (!MOBILE_10_REGEX.test(strVal)) {
-        return t(`society.validation.${label}`);
-      }
-      return undefined;
-    },
-};
-// Re-export from validation-rules.ts
-export {
-  CODE_REGEX,
-  CODE_SANITIZE,
-  DESCRIPTION_REGEX,
-  DESCRIPTION_SANITIZE,
-  TEXT_SANITIZE,
-  TEXT_ALLOWED,
-  SEARCH_KEY_REGEX,
-} from './validation-rules';
-
-// Re-export from validation-helpers.ts
-export type { Validator } from './validation-helpers';
-export { validateForm, hasErrors } from './validation-helpers';
-
-// Re-export from validation-schemas.ts
-export {
-  commonValidations,
-  createMasterValidationSchema,
-  constructionValidators,
-} from './validation-schemas';
