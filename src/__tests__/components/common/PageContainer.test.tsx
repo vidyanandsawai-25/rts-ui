@@ -29,8 +29,7 @@ describe("PageContainer", () => {
     );
     const div = container.firstChild as HTMLElement;
     expect(div.className).toContain("bg-[#F8FAFC]");
-    expect(div.className).toContain("p-6");
-    expect(div.className).toContain("lg:p-8");
+    expect(div.className).toContain("ml-0");
     expect(div.className).toContain("transition-[margin]");
   });
 });

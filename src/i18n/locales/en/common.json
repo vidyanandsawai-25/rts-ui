@@ -38,6 +38,18 @@
     "invalidFormat": "Invalid format",
     "mustBeNumber": "Must be a valid number"
   },
+  "form": {
+    "validation": {
+      "codeRequired": "Code is required",
+      "codeFormat": "Invalid format. Only alphanumeric and underscore allowed",
+      "codeMaxLength": "Maximum {count} characters allowed",
+      "descriptionRequired": "Description is required",
+      "descriptionFormat": "Invalid characters in description",
+      "descriptionMaxLength": "Maximum {count} characters allowed",
+      "sequenceInvalid": "Sequence must be 0 or greater",
+      "mustBeActive": "New records must be active"
+    }
+  },
   "errors": {
     "generic": "Something went wrong",
     "network": "Network error. Please try again",
@@ -189,6 +201,12 @@
     "actions": {
       "edit": "Edit",
       "delete": "Delete"
+    },
+    "sort": {
+      "verb": "Sort",
+      "ascending": "ascending",
+      "descending": "descending",
+      "by": "Sort by"
     },
     "columns": {
       "srNo": "Sr. No.",
