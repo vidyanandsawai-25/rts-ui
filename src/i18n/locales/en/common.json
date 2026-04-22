@@ -71,6 +71,10 @@
     "goHome": "Go Home",
     "tryAgain": "Try Again"
   },
+  "loading": {
+    "message": "Loading...",
+    "description": "Please wait while we load the data"
+  },
   "status": {
     "active": "Active",
     "inactive": "Inactive",
@@ -245,11 +249,12 @@
     "currencySymbol": "₹",
     "deleteRow": "Delete Row"
   },
+  "tabs": {
+    "yearWise": "Retention Policy Year Wise",
+    "factorWise": "Retention Policy Factor Wise"
+  },
   "note": {
     "mandatory": "Fields marked with * are mandatory"
   },
-  "loading": {
-    "message": "Loading...",
-    "description": "Please wait while we load the data"
-  }
+  "rateUnit": "(₹/Sq.mtr)"
 }

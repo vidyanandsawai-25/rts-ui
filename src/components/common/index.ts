@@ -32,9 +32,6 @@ export type { CardProps } from './Card';
 export { Input } from './Input';
 export type { InputProps } from './Input';
 
-export { Label } from './label';
-export type { LabelProps } from './label';
-
 export { Table } from './Table';
 export type { TableProps } from './Table';
 
@@ -85,6 +82,11 @@ export type { ContextMenuProps, ContextMenuItem } from './ContextMenu';
 export { Tooltip } from './Tooltip';
 export type { TooltipProps } from './Tooltip';
 
+
+
+export { LoadingPage } from './LoadingPage';
+export type { LoadingPageProps } from './LoadingPage';
+
 export { SearchSelect } from './SearchSelect';
 export type { SearchSelectProps, SearchSelectOption } from './SearchSelect';
 
@@ -106,5 +108,3 @@ export type { CheckboxProps } from '@/types/common.types';
 export {RadioGroup, RadioGroupItem} from './radio-group';
 export type { RadioGroupProps, RadioGroupItemProps } from '@/types/common.types';
 
-export { LoadingPage } from './LoadingPage';
-export type { LoadingPageProps } from './LoadingPage';

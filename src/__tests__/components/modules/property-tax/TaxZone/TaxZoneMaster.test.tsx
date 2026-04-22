@@ -1,0 +1,209 @@
+import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { NextIntlClientProvider } from "next-intl";
+import TaxZoneMaster from "@/components/modules/property-tax/taxzonemaster/TaxZoneMaster";
+import type { TaxZone } from "@/types/taxzone.types";
+
+// Mock next/navigation
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    back: vi.fn(),
+    refresh: vi.fn(),
+  }),
+  usePathname: () => "/property-tax/taxzone",
+}));
+
+// Mock sonner toast
+vi.mock("sonner", () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+  },
+}));
+
+// Mock the delete action
+vi.mock("@/app/[locale]/property-tax/taxzone/action", () => ({
+  deleteTaxZoneAction: vi.fn(),
+}));
+
+// Mock ConfirmProvider
+vi.mock("@/components/common/ConfirmProvider", () => ({
+  useConfirm: () => ({
+    confirm: vi.fn((options) => {
+      if (options.onConfirm) {
+        options.onConfirm();
+      }
+    }),
+  }),
+}));
+
+const mockMessages = {
+  taxZone: {
+    list: {
+      title: "Tax Zone Master",
+      subtitle: "Manage zones and their types",
+      buttons: {
+        add: "Add Zone",
+        edit: "Edit",
+        delete: "Delete",
+      },
+      filters: {
+        search: "Search by Zone No, Zone Type, Remark...",
+        searching: "Searching...",
+        recordsFound: "Found {count} records",
+      },
+      table: {
+        zoneNo: "Zone No",
+        zoneType: "Zone Type",
+        remark: "Remark",
+        status: "Status",
+        actions: "Actions",
+      },
+    },
+    delete: {
+      success: "Zone deleted successfully",
+      error: "Cannot delete zone because it is in use",
+    },
+  },
+  common: {
+    buttons: {
+      clear: "Clear",
+    },
+    table: {
+      showingEntries: "Showing {start}-{end} of {total}",
+      page: "Page {current} of {total}",
+      actions: {
+        edit: "Edit",
+        delete: "Delete",
+      },
+    },
+    messages: {
+      noData: "No data available",
+    },
+    actions: {
+      loading: "Loading...",
+    },
+  },
+};
+
+const mockTaxZones: TaxZone[] = [
+  {
+    taxZoneId: 1,
+    taxZoneNo: "Z1",
+    taxZoneType: "Residential",
+    remark: "Test zone 1",
+    isActive: true,
+  },
+  {
+    taxZoneId: 2,
+    taxZoneNo: "Z2",
+    taxZoneType: "Commercial",
+    remark: "Test zone 2",
+    isActive: false,
+  },
+];
+
+describe("TaxZoneMaster", () => {
+  const defaultProps = {
+    data: mockTaxZones,
+    pageNumber: 1,
+    pageSize: 10,
+    totalCount: 2,
+    totalPages: 1,
+  };
+
+  function setup(props = {}) {
+    return render(
+      <NextIntlClientProvider locale="en" messages={mockMessages}>
+        <TaxZoneMaster {...defaultProps} {...props} />
+      </NextIntlClientProvider>
+    );
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("renders tax zone master list with data", () => {
+    setup();
+    
+    expect(screen.getByText("Tax Zone Master")).toBeInTheDocument();
+    expect(screen.getByText("Manage zones and their types")).toBeInTheDocument();
+    expect(screen.getByText("Z1")).toBeInTheDocument();
+    expect(screen.getByText("Residential")).toBeInTheDocument();
+    expect(screen.getByText("Z2")).toBeInTheDocument();
+    expect(screen.getByText("Commercial")).toBeInTheDocument();
+  });
+
+  it("renders search input", () => {
+    setup();
+    
+    const searchInput = screen.getByPlaceholderText("Search by Zone No, Zone Type, Remark...");
+    expect(searchInput).toBeInTheDocument();
+  });
+
+  it("renders add zone button", () => {
+    setup();
+    
+    const addButton = screen.getByText("Add Zone");
+    expect(addButton).toBeInTheDocument();
+  });
+
+  it("displays action buttons for each row", () => {
+    setup();
+    
+    const editButtons = screen.getAllByLabelText("Edit");
+    const deleteButtons = screen.getAllByLabelText("Delete");
+    
+    expect(editButtons).toHaveLength(2);
+    expect(deleteButtons).toHaveLength(2);
+  });
+
+  it("handles search input change", async () => {
+    setup();
+    
+    const searchInput = screen.getByPlaceholderText("Search by Zone No, Zone Type, Remark...");
+    fireEvent.change(searchInput, { target: { value: "Z1" } });
+    
+    expect(searchInput).toHaveValue("Z1");
+  });
+
+  it("sanitizes search input with TEXT_SANITIZE regex", () => {
+    setup();
+    
+    const searchInput = screen.getByPlaceholderText("Search by Zone No, Zone Type, Remark...");
+    fireEvent.change(searchInput, { target: { value: "Z1<script>alert('xss')</script>" } });
+    
+    // Should sanitize script tags - TEXT_SANITIZE removes all special chars except ,./-
+    expect(searchInput).toHaveValue("Z1scriptalertxss/script");
+  });
+
+  // Note: Search active message feature was removed from component
+  // it("shows search active message when searching", () => {
+  //   Object.defineProperty(window, "location", {
+  //     value: { search: "?search=Z1" },
+  //     writable: true,
+  //   });
+  //   setup({ totalCount: 5 });
+  //   expect(screen.getByText(/Found 5 records/i)).toBeInTheDocument();
+  // });
+
+  it("displays no data message when data is empty", () => {
+    setup({ data: [], totalCount: 0 });
+    
+    expect(screen.getByText("No data available")).toBeInTheDocument();
+  });
+
+  it("respects pagination props", () => {
+    setup({
+      pageNumber: 2,
+      pageSize: 5,
+      totalCount: 15,
+      totalPages: 3,
+    });
+    
+    // Check that the table is rendered (pagination is handled by MasterTable)
+    expect(screen.getByText("Z1")).toBeInTheDocument();
+  });
+});
