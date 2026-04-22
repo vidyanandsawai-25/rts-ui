@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, ChangeEvent } from "react";
 import { toast } from "sonner";
 import * as XLSX from 'xlsx';
 import { ZoningRecord, TaxZone, Ward } from "@/types/taxzoning.types";
@@ -38,7 +38,7 @@ export const useTaxZoningFile = (
     }
   };
 
-  const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImportFile = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -65,7 +65,7 @@ export const useTaxZoningFile = (
           return;
         }
 
-        const headers = data[0].map((h: unknown) => h?.toString().trim().toLowerCase());
+        const headers = data[0].map((h: unknown) => (h?.toString() ?? "").trim().toLowerCase());
         const STABLE_HEADERS = ['wardno', 'fromproperty', 'toproperty', 'taxzoneno'];
         const isValidHeader = headers.length === STABLE_HEADERS.length &&
           headers.every((h: string | undefined, i: number) => h === STABLE_HEADERS[i] || h === REQUIRED_HEADERS[i]);
