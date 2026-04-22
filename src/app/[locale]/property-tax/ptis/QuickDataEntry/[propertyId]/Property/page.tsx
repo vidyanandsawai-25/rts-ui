@@ -41,7 +41,7 @@ export default async function PropertyFormPage({ params }: PageProps): Promise<R
     const propertyDescriptionList = propertyDescriptionResponse.success ? propertyDescriptionResponse.data : [];
     const propertyCategoryList = propertyCategoryResponse.success ? propertyCategoryResponse.data : [];
     const propertyBasicDetails = propertyBasicDetailsResponse.success ? propertyBasicDetailsResponse.data : null;
-    const propertySocietyDetails = propertySociety;
+    const propertySocietyDetails = propertySociety.success ? propertySociety.data : null;
     const WingMasterList = WingMaster.success ? WingMaster.data : [];
 
 

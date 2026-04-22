@@ -20,14 +20,13 @@ import {
 import { revalidatePath } from "next/cache";
 
 // Property Basic Details
-export async function getPropertyBasicDetailsAction(propertyId: number): Promise<{ success: boolean; data: PropertyBasicDetailsApiItem | null }> {
+export async function getPropertyBasicDetailsAction(propertyId: number): Promise<{ success: boolean; data: PropertyBasicDetailsApiItem | null; error?: string }> {
     try {
         const data = await getPropertyBasicDetails(propertyId);       
-        
         return { success: true, data };
     } catch (error) {
         console.error("Get property basic details error:", error);
-        throw error;
+        return { success: false, data: null, error: error instanceof Error ? error.message : "Failed to fetch property details" };
     }
 }
 
@@ -75,6 +74,7 @@ export const updatePropertyBasicDetailsAction = async (locale: string, propertyI
         revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Property`, "page");
         return result;
     } catch (error) {
+        console.error("Update property basic details error:", error);
         return { success: false, error: error instanceof Error ? error.message : "Failed to update data" };
     }
 };

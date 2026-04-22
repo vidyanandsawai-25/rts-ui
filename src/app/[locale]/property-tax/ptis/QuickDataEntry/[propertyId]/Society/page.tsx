@@ -15,7 +15,8 @@ export default async function SocietyFormPage({ params }: PageProps) {
     const { locale, propertyId } = await params;
     setRequestLocale(locale);
 
-    const propertySocietyDetails = await getPropertySocietyDetailsAction(Number(propertyId));
+    const result = await getPropertySocietyDetailsAction(Number(propertyId));
+    const propertySocietyDetails = result.success ? result.data : null;
 
     return (
         <SocietyForm

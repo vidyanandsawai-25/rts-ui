@@ -1,16 +1,17 @@
 import { ApiResponse } from "@/types/common.types";
 
-/**
- * Custom error class for API errors with structured information
- */
 export class ApiError extends Error {
+  public responseText: string;
+
   constructor(
     public statusCode: number,
-    public responseText: string,
-    message: string
+    public error: string,
+    public contextMessage: string
   ) {
-    super(message);
+    super(`${contextMessage}: ${error} (${statusCode})`);
     this.name = "ApiError";
+    this.responseText = error; // Keep compatibility with existing code that uses responseText
+    
     // Ensure instanceof works correctly
     Object.setPrototypeOf(this, ApiError.prototype);
     // Optionally capture stack trace for V8 environments
@@ -18,6 +19,20 @@ export class ApiError extends Error {
       Error.captureStackTrace(this, ApiError);
     }
   }
+}
+
+/**
+ * Identifies wrapped inner API payloads that encode failure with their own success flag.
+ * This intentionally excludes generic action/result payloads like { success: false, error }
+ * so callers can handle those responses without an exception being thrown.
+ */
+function isWrappedInnerApiError(data: unknown): data is Record<string, unknown> {
+  if (!data || typeof data !== "object") {
+    return false;
+  }
+  const payload = data as Record<string, unknown>;
+  // We check for 'items' or 'errors' to identify a wrapped API response vs a simple ActionResult
+  return payload["success"] === false && ("items" in payload || "errors" in payload);
 }
 
 /**
@@ -32,12 +47,12 @@ export function handleApiResponse<T>(response: ApiResponse<T>, message: string):
     );
   }
 
-  // Check for inner API success flag if present (as seen in some endpoints)
+  // Check for wrapped inner API failures without treating generic ActionResult payloads as exceptions
   const data = response.data as Record<string, unknown>;
-  if (data && typeof data === 'object' && 'success' in data && data['success'] === false) {
+  if (isWrappedInnerApiError(data)) {
     throw new ApiError(
       response.statusCode || 500,
-      String(data['message'] || data['error'] || "API execution failed"),
+      String(data["message"] || data["error"] || "API execution failed"),
       message
     );
   }
