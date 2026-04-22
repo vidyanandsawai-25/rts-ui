@@ -34,8 +34,21 @@
     "minLength": "Minimum {count} characters required",
     "maxLength": "Maximum {count} characters allowed",
     "maxChars": "Maximum {count} characters allowed",
+    "alphanumericUnderscore": "{label} must be alphanumeric (underscores and hyphens allowed)",
     "invalidFormat": "Invalid format",
     "mustBeNumber": "Must be a valid number"
+  },
+  "form": {
+    "validation": {
+      "codeRequired": "Code is required",
+      "codeFormat": "Invalid format. Only alphanumeric and underscore allowed",
+      "codeMaxLength": "Maximum {count} characters allowed",
+      "descriptionRequired": "Description is required",
+      "descriptionFormat": "Invalid characters in description",
+      "descriptionMaxLength": "Maximum {count} characters allowed",
+      "sequenceInvalid": "Sequence must be 0 or greater",
+      "mustBeActive": "New records must be active"
+    }
   },
   "errors": {
     "generic": "Something went wrong",
@@ -46,9 +59,21 @@
     "deleteError": "Failed to delete",
     "createError": "Failed to create",
     "updateError": "Failed to update",
+    "validationError": "Please fix all validation errors before submitting",
     "duplicateCheckFailed": "Failed to check for duplicates",
     "fixValidation": "Please fix validation errors",
     "saveFailed": "Failed to save"
+  },
+  "error": {
+    "title": "Something went wrong",
+    "description": "We encountered an unexpected error. Please try again or return to the home page.",
+    "errorId": "Error ID: {id}",
+    "goHome": "Go Home",
+    "tryAgain": "Try Again"
+  },
+  "loading": {
+    "message": "Loading...",
+    "description": "Please wait while we load the data"
   },
   "status": {
     "active": "Active",
@@ -71,7 +96,8 @@
     "pleaseWait": "Please wait...",
     "noRecordsFound": "No records found",
     "actionCompleted": "Action completed successfully",
-    "recordsFound": "Records found"
+    "recordsFound": "Records found",
+    "total": "Total: {count}"
   },
   "confirm": {
     "delete": {
@@ -186,6 +212,16 @@
     "deleteFloor": "Delete Floor"
   },
   "table": {
+    "actions": {
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "sort": {
+      "verb": "Sort",
+      "ascending": "ascending",
+      "descending": "descending",
+      "by": "Sort by"
+    },
     "columns": {
       "srNo": "Sr. No.",
       "name": "Name",
@@ -197,12 +233,20 @@
     "noData": "No data available",
     "show": "Show",
     "noRecordsFound": "No records found",
+    "showing": "Showing",
+    "to": "to",
+    "of": "of",
+    "entries": "entries",
     "showingEntries": "Showing {start} to {end} of {total} entries",
+    "showingPage": "Page",
+    "ofPages": "of {total}",
+    "entriesInfo": "({start}-{end} of {total} entries)",
     "page": "Page {current} of {total}",
     "firstPage": "First page",
     "lastPage": "Last page",
     "previousPage": "Previous page",
-    "nextPage": "Next page"
+    "nextPage": "Next page",
+    "rowsPerPage": "Rows per page"
   },
   "multiSelect": {
     "selectAll": "Select All",
@@ -293,5 +337,13 @@
     "footerCopyright": "© NTIS",
     "openMenu": "Open menu",
     "closeMenu": "Close menu"
-  }
+  },
+  "tabs": {
+    "yearWise": "Retention Policy Year Wise",
+    "factorWise": "Retention Policy Factor Wise"
+  },
+  "note": {
+    "mandatory": "Fields marked with * are mandatory"
+  },
+  "rateUnit": "(₹/Sq.mtr)"
 }

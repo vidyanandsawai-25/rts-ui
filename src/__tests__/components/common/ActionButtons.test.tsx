@@ -14,6 +14,9 @@ import {
   NextPageButton,
   LastPageButton,
   PageNumberButton,
+  SortAscButton,
+  SortDescButton,
+  SortDefaultButton,
 } from "@/components/common/ActionButtons";
 import { IconButton } from "@/components/common/ActionButtons";
 
@@ -296,6 +299,164 @@ describe("ActionButtons", () => {
     });
   });
 
+  describe("Sort Buttons", () => {
+    describe("SortAscButton", () => {
+      it("renders without text", () => {
+        const { container } = render(<SortAscButton />);
+        const button = container.querySelector("button");
+        expect(button).toBeInTheDocument();
+        expect(button?.textContent).toBe("");
+      });
+
+      it("calls onClick handler when clicked", () => {
+        const handleClick = vi.fn();
+        const { container } = render(<SortAscButton onClick={handleClick} />);
+        const button = container.querySelector("button");
+        if (button) {
+          fireEvent.click(button);
+        }
+        expect(handleClick).toHaveBeenCalledTimes(1);
+      });
+
+      it("is disabled when disabled prop is true", () => {
+        const { container } = render(<SortAscButton disabled />);
+        const button = container.querySelector("button");
+        expect(button).toBeDisabled();
+      });
+
+      it("has correct hover classes", () => {
+        const { container } = render(<SortAscButton />);
+        const button = container.querySelector("button");
+        expect(button).toHaveClass("hover:bg-transparent");
+        expect(button).toHaveClass("hover:text-blue-600");
+      });
+
+      it("has default aria-label", () => {
+        const { container } = render(<SortAscButton />);
+        const button = container.querySelector("button");
+        expect(button).toHaveAttribute("aria-label", "Sort ascending");
+      });
+
+      it("accepts custom aria-label", () => {
+        const { container } = render(<SortAscButton aria-label="Custom sort" />);
+        const button = container.querySelector("button");
+        expect(button).toHaveAttribute("aria-label", "Custom sort");
+      });
+
+      it("accepts additional className", () => {
+        const { container } = render(<SortAscButton className="custom-sort-class" />);
+        const button = container.querySelector("button");
+        expect(button).toHaveClass("custom-sort-class");
+      });
+    });
+
+    describe("SortDescButton", () => {
+      it("renders without text", () => {
+        const { container } = render(<SortDescButton />);
+        const button = container.querySelector("button");
+        expect(button).toBeInTheDocument();
+        expect(button?.textContent).toBe("");
+      });
+
+      it("calls onClick handler when clicked", () => {
+        const handleClick = vi.fn();
+        const { container } = render(<SortDescButton onClick={handleClick} />);
+        const button = container.querySelector("button");
+        if (button) {
+          fireEvent.click(button);
+        }
+        expect(handleClick).toHaveBeenCalledTimes(1);
+      });
+
+      it("is disabled when disabled prop is true", () => {
+        const { container } = render(<SortDescButton disabled />);
+        const button = container.querySelector("button");
+        expect(button).toBeDisabled();
+      });
+
+      it("has correct hover classes", () => {
+        const { container } = render(<SortDescButton />);
+        const button = container.querySelector("button");
+        expect(button).toHaveClass("hover:bg-transparent");
+        expect(button).toHaveClass("hover:text-blue-600");
+      });
+
+      it("has default aria-label", () => {
+        const { container } = render(<SortDescButton />);
+        const button = container.querySelector("button");
+        expect(button).toHaveAttribute("aria-label", "Sort descending");
+      });
+
+      it("accepts custom aria-label", () => {
+        const { container } = render(<SortDescButton aria-label="Custom sort desc" />);
+        const button = container.querySelector("button");
+        expect(button).toHaveAttribute("aria-label", "Custom sort desc");
+      });
+
+      it("accepts additional className", () => {
+        const { container } = render(<SortDescButton className="custom-desc-class" />);
+        const button = container.querySelector("button");
+        expect(button).toHaveClass("custom-desc-class");
+      });
+    });
+
+    describe("SortDefaultButton", () => {
+      it("renders without text", () => {
+        const { container } = render(<SortDefaultButton />);
+        const button = container.querySelector("button");
+        expect(button).toBeInTheDocument();
+        expect(button?.textContent).toBe("");
+      });
+
+      it("calls onClick handler when clicked", () => {
+        const handleClick = vi.fn();
+        const { container } = render(<SortDefaultButton onClick={handleClick} />);
+        const button = container.querySelector("button");
+        if (button) {
+          fireEvent.click(button);
+        }
+        expect(handleClick).toHaveBeenCalledTimes(1);
+      });
+
+      it("is disabled when disabled prop is true", () => {
+        const { container } = render(<SortDefaultButton disabled />);
+        const button = container.querySelector("button");
+        expect(button).toBeDisabled();
+      });
+
+      it("has correct hover classes", () => {
+        const { container } = render(<SortDefaultButton />);
+        const button = container.querySelector("button");
+        expect(button).toHaveClass("hover:bg-transparent");
+        expect(button).toHaveClass("hover:text-blue-600");
+      });
+
+      it("has default aria-label", () => {
+        const { container } = render(<SortDefaultButton />);
+        const button = container.querySelector("button");
+        expect(button).toHaveAttribute("aria-label", "Sort");
+      });
+
+      it("accepts custom aria-label", () => {
+        const { container } = render(<SortDefaultButton aria-label="Custom default sort" />);
+        const button = container.querySelector("button");
+        expect(button).toHaveAttribute("aria-label", "Custom default sort");
+      });
+
+      it("accepts additional className", () => {
+        const { container } = render(<SortDefaultButton className="custom-default-class" />);
+        const button = container.querySelector("button");
+        expect(button).toHaveClass("custom-default-class");
+      });
+
+      it("has small size by default", () => {
+        const { container } = render(<SortDefaultButton />);
+        const button = container.querySelector("button");
+        expect(button).toHaveClass("h-8");
+      });
+    });
+  });
+
   describe("IconButton (Default Export)", () => {
     it("renders with icon", () => {
       const MockIcon = () => <span data-testid="mock-icon">Icon</span>;
@@ -437,6 +598,30 @@ describe("ActionButtons", () => {
         button.focus();
         expect(button).toHaveFocus();
       }
+    });
+
+    it("sort buttons are keyboard accessible", () => {
+      const handleClick = vi.fn();
+      const { container } = render(<SortAscButton onClick={handleClick} />);
+      const button = container.querySelector("button");
+      if (button) {
+        button.focus();
+        expect(button).toHaveFocus();
+      }
+    });
+
+    it("sort buttons have proper aria-labels", () => {
+      const { container: ascContainer } = render(<SortAscButton />);
+      const ascButton = ascContainer.querySelector("button");
+      expect(ascButton).toHaveAttribute("aria-label", "Sort ascending");
+
+      const { container: descContainer } = render(<SortDescButton />);
+      const descButton = descContainer.querySelector("button");
+      expect(descButton).toHaveAttribute("aria-label", "Sort descending");
+
+      const { container: defaultContainer } = render(<SortDefaultButton />);
+      const defaultButton = defaultContainer.querySelector("button");
+      expect(defaultButton).toHaveAttribute("aria-label", "Sort");
     });
 
     it("disabled buttons cannot be focused programmatically", () => {
