@@ -1,4 +1,3 @@
-import { MainLayout } from '@/components/layout';
 import { getDashboardData } from './actions';
 import { getTranslations } from 'next-intl/server';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/common';
@@ -33,8 +32,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
   };
 
   return (
-    <MainLayout>
-      <div className="space-y-6">
+    <div className="space-y-6">
         <div className="flex justify-between items-start">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">{tDashboard('title')}</h1>
@@ -76,6 +74,5 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
           </CardContent>
         </Card>
       </div>
-    </MainLayout>
   );
 }

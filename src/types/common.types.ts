@@ -3,26 +3,10 @@ export interface ApiResponse<T = unknown> {
   data?: T;
   error?: string;
   message?: string;
+  /** The HTTP status code from the server response; absent for network/timeout errors */
+  statusCode?: number;
 }
 
-export interface PaginatedResponse<T> {
-  data: T[];
-  pagination: {
-    page: number;
-    pageSize: number;
-    total: number;
-    totalPages: number;
-  };
-}
-export interface PagedResponse<T> {
-  items: T[];
-  totalCount: number;
-  pageNumber: number;
-  pageSize: number;
-  totalPages: number;
-  hasPrevious: boolean;
-  hasNext: boolean;
-}
 
 export interface User {
   id: string;
@@ -92,4 +76,25 @@ export interface RadioGroupItemProps extends Omit<
   'role' | 'onChange' | 'value' | 'name'
 > {
   value: string;
+}
+
+/**
+ * Standard paginated response shape for API endpoints.
+ * This is the primary type used for all paginated lists in the application.
+ */
+export interface PagedResponse<T> {
+  /** Array of items for the current page */
+  items: T[];
+  /** Total number of items across all pages */
+  totalCount: number;
+  /** The current page number (1-indexed) */
+  pageNumber: number;
+  /** Number of items per page */
+  pageSize: number;
+  /** Total number of pages available */
+  totalPages: number;
+  /** Whether there is a previous page available */
+  hasPrevious: boolean;
+  /** Whether there is a next page available */
+  hasNext: boolean;
 }

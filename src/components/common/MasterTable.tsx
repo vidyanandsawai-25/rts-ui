@@ -35,7 +35,7 @@ function isPrimitive(val: unknown): val is string | number | boolean | null | un
 
 export interface Column<T extends Record<string, unknown> = Record<string, unknown>> {
   key: keyof T;
-  label: string;
+  label: string | React.ReactNode;
   width?: string;
   isStatus?: boolean;
   render?: (value: T[keyof T] | undefined, row: T, rowIndex: number) => React.ReactNode;
@@ -246,8 +246,7 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
                 key={String(col.key)}
                 style={{ width: col.width }}
                 className={cn(
-                  'px-2 py-3 text-sm font-semibold text-[#1E3A8A]',
-                  col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left',
+                  'px-2 py-3 text-center text-sm font-semibold text-[#1E3A8A]',
                   index === 0 && 'rounded-tl-lg',
                   !hasActions && index === columns.length - 1 && 'rounded-tr-lg',
                   col.headerClassName
@@ -297,11 +296,7 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
                   return (
                     <td
                       key={String(col.key)}
-                      className={cn(
-                        'px-2 py-2 text-gray-700',
-                        col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left',
-                        col.cellClassName
-                      )}
+                      className={cn('px-2 py-2 text-gray-700 text-center', col.cellClassName)}
                     >
                       {col.render ? (
                         col.render(value, row, i)

@@ -1,6 +1,6 @@
 "use client";
-
-import React, { useState, useRef } from "react";
+ 
+import React, { useState, useRef, useId } from "react";
 import { ChevronDownIcon } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
  
@@ -18,13 +18,14 @@ export interface SelectProps {
   className?: string;
   selectSize?: "sm" | "md";
   disabled?: boolean;
- 
+  ariaLabel?: string;
+
   /* Added */
   label?: string;
   required?: boolean;
   error?: string;
 }
- 
+
 export function Select({
   options,
   value,
@@ -33,17 +34,67 @@ export function Select({
   className = "",
   selectSize = "md",
   disabled = false,
+  ariaLabel,
   label,
   required,
   error,
 }: SelectProps) {
   const [open, setOpen] = useState(false);
   const [internalValue, setInternalValue] = useState(value || "");
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const [openUpward, setOpenUpward] = useState(false);
   const selectRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLUListElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const listboxId = useId();
+  const optionIdPrefix = useId();
+ 
  
   React.useEffect(() => {
     setInternalValue(value || "");
   }, [value]);
+ 
+  // Initialize highlighted index when opening
+  React.useEffect(() => {
+    if (open) {
+      if (options.length === 0) {
+        setHighlightedIndex(-1);
+      } else {
+        const index = options.findIndex((opt) => opt.value === internalValue);
+        setHighlightedIndex(index >= 0 ? index : 0);
+      }
+    } else {
+      setHighlightedIndex(-1);
+    }
+  }, [open, internalValue, options]);
+ 
+  // Scroll highlighted item into view
+  React.useEffect(() => {
+    if (open && highlightedIndex >= 0 && listRef.current) {
+      const highlightedElement = listRef.current.children[highlightedIndex] as HTMLElement;
+      if (highlightedElement && typeof highlightedElement.scrollIntoView === 'function') {
+        highlightedElement.scrollIntoView({
+          block: "nearest",
+          inline: "start",
+        });
+      }
+    }
+  }, [highlightedIndex, open]);
+
+  // Calculate if dropdown should open upward based on viewport space
+  React.useEffect(() => {
+    if (open && buttonRef.current) {
+      const buttonRect = buttonRef.current.getBoundingClientRect();
+      const dropdownHeight = 240; // max-h-60 = 240px
+      const viewportHeight = window.innerHeight;
+      const spaceBelow = viewportHeight - buttonRect.bottom;
+      const spaceAbove = buttonRect.top;
+
+      // Open upward if not enough space below and more space above
+      setOpenUpward(spaceBelow < dropdownHeight && spaceAbove > spaceBelow);
+    }
+  }, [open]);
+ 
  
   const handleSelect = (val: string) => {
     setInternalValue(val);
@@ -60,12 +111,59 @@ export function Select({
     md: "h-10 px-4 text-base",
   };
  
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (disabled) return;
+ 
+    if (!open) {
+      if (e.key === "ArrowDown" || e.key === "ArrowUp" || e.key === "Enter" || e.key === " ") {
+        setOpen(true);
+        e.preventDefault();
+      }
+      return;
+    }
+ 
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        if (options.length > 0) {
+          setHighlightedIndex((prev) => Math.min(prev + 1, options.length - 1));
+        }
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        if (options.length > 0) {
+          setHighlightedIndex((prev) => Math.max(prev - 1, 0));
+        }
+        break;
+      case "Enter":
+      case " ":
+        e.preventDefault();
+        if (
+          highlightedIndex >= 0 &&
+          highlightedIndex < options.length &&
+          options[highlightedIndex] &&
+          !options[highlightedIndex].disabled
+        ) {
+          handleSelect(options[highlightedIndex].value);
+        }
+        break;
+      case "Escape":
+        e.preventDefault();
+        setOpen(false);
+        break;
+      case "Tab":
+        setOpen(false);
+        break;
+    }
+  };
+ 
+ 
   return (
     <div className="flex flex-col gap-1">
  
       {/* Label */}
       {label && (
-        <span className="text-sm font-medium text-gray-700">
+        <span id={`${listboxId}-label`} className="text-sm font-medium text-gray-700">
           {label}
           {required && <span className="ml-1 text-red-500">*</span>}
         </span>
@@ -78,24 +176,11 @@ export function Select({
           disabled && "opacity-50 cursor-not-allowed",
           className
         )}
-        tabIndex={0}
-        onBlur={(e) => {
-          const nextTarget = e.relatedTarget;
- 
-          // If focus leaves the window or there is no related target,
-          // close the dropdown safely without calling contains(null).
-          if (!nextTarget || !(nextTarget instanceof Node)) {
-            setOpen(false);
-            return;
-          }
- 
-          if (!selectRef.current?.contains(nextTarget)) {
-            setOpen(false);
-          }
-        }}
       >
         <button
+          ref={buttonRef}
           type="button"
+          role="combobox"
           className={cn(
             "flex items-center justify-between w-full border text-sm rounded-md bg-white focus:outline-none focus:ring-2 transition-all",
             sizeClasses[selectSize],
@@ -105,7 +190,28 @@ export function Select({
             disabled && "opacity-50 cursor-not-allowed"
           )}
           onClick={() => !disabled && setOpen((o) => !o)}
+          onKeyDown={handleKeyDown}
+          onBlur={(e) => {
+            const nextTarget = e.relatedTarget;
+
+            // If focus leaves the window or there is no related target,
+            // close the dropdown safely without calling contains(null).
+            if (!nextTarget || !(nextTarget instanceof Node)) {
+              setOpen(false);
+              return;
+            }
+
+            if (!selectRef.current?.contains(nextTarget)) {
+              setOpen(false);
+            }
+          }}
           disabled={disabled}
+          aria-label={ariaLabel ?? (!label ? placeholder : undefined)}
+          aria-labelledby={!ariaLabel && label ? `${listboxId}-label` : undefined}
+          aria-expanded={open}
+          aria-haspopup="listbox"
+          aria-controls={listboxId}
+          aria-activedescendant={open && highlightedIndex >= 0 ? `${optionIdPrefix}-${highlightedIndex}` : undefined}
         >
           <span
             className={cn(
@@ -121,20 +227,30 @@ export function Select({
  
         {open && (
           <ul
-            className="absolute z-50 mt-1 w-full text-gray-800 text-sm bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto"
+            ref={listRef}
+            id={listboxId}
+            className={cn(
+              "absolute z-50 w-full text-gray-800 text-sm bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto",
+              openUpward ? "bottom-full mb-1" : "top-full mt-1"
+            )}
             role="listbox"
             onMouseDown={(e) => e.preventDefault()}
           >
-            {options.map((opt) => (
+            {options.map((opt, index) => (
               <li
                 key={opt.value}
+                id={`${optionIdPrefix}-${index}`}
                 className={cn(
-                  "px-4 py-2 cursor-pointer hover:bg-blue-50",
-                  internalValue === opt.value && "bg-blue-100 text-blue-700",
+                  "px-4 py-2 transition-colors",
+                  !opt.disabled && "cursor-pointer",
+                  !opt.disabled && (index === highlightedIndex ? "bg-blue-100" : "hover:bg-blue-50"),
+                  internalValue === opt.value && "text-blue-700 font-semibold bg-blue-50",
                   opt.disabled && "opacity-50 cursor-not-allowed"
                 )}
                 onClick={() => !opt.disabled && handleSelect(opt.value)}
+                onMouseEnter={() => !opt.disabled && setHighlightedIndex(index)}
                 aria-selected={internalValue === opt.value}
+                aria-disabled={opt.disabled || undefined}
                 role="option"
                 tabIndex={-1}
               >
@@ -143,6 +259,7 @@ export function Select({
             ))}
           </ul>
         )}
+ 
       </div>
  
       {/* Error Message */}

@@ -1,0 +1,117 @@
+{
+  "constructionType": {
+    "list": {
+      "title": "Construction Type Master",
+      "subtitle": "Manage construction types and their classifications",
+      "buttons": {
+        "add": "Add Construction Type",
+        "edit": "Edit",
+        "delete": "Delete"
+      },
+      "filters": {
+        "show": "Show",
+        "search": "Search by Construction Type or Description..."
+      },
+      "table": {
+        "constructionCode": "Construction Type",
+        "description": "Description",
+        "searchKey": "Search Key",
+        "searchSequence": "Search Sequence",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "pagination": {
+        "showing": "Showing",
+        "entries": "entries"
+      }
+    },
+    "form": {
+      "addTitle": "Add Construction Type",
+      "editTitle": "Edit Construction Type",
+      "subtitle": "Create new construction type",
+      "editSubtitle": "Update construction type details",
+      "fields": {
+        "constructionId": {
+          "label": "Construction ID"
+        },
+        "constructionCode": {
+          "label": "Construction Type",
+          "placeholder": "e.g. A"
+        },
+        "description": {
+          "label": "Description",
+          "placeholder": "e.g. RCC Construction Type"
+        },
+        "searchSequence": {
+          "label": "Search Sequence"
+        },
+        "searchKey": {
+          "label": "Search Key",
+          "placeholder": "e.g. 7"
+        }
+      },
+      "validation": {
+        "constructionCodeRequired": "Construction type is required",
+        "constructionCodeMaxLength": "Maximum length is 7 characters",
+        "constructionCodeFormat": "Invalid format. Only English letters, numbers, and underscore are allowed.",
+        "constructionCodeEnglishOnly": "Only English letters, numbers, and underscore are allowed. Marathi/Hindi not supported.",
+        "constructionCodeExists": "This Construction Code already exists. Please use a different code.",
+        "descriptionRequired": "Description is required",
+        "descriptionMaxLength": "Maximum length is 100 characters",
+        "descriptionFormat": "Only letters (any language), numbers, spaces, and basic punctuation allowed (,./-()).",
+        "descriptionExists": "Description already exists. Please enter a different description.",
+        "searchKeyRequired": "Search key is required",
+        "searchKeyMaxLength": "Maximum length is 20 characters",
+        "searchKeyFormat": "Only letters, numbers and + - characters are allowed",
+        "sequenceInvalid": "Search sequence must be 0 or greater",
+        "mustBeActive": "Construction Type must be active to save"
+      },
+      "status": {
+        "label": "Active Status",
+        "description": "Construction type is currently"
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "save": "Save",
+        "update": "Update"
+      }
+    },
+    "delete": {
+      "confirmTitle": "Delete Construction Type ({id})?",
+      "confirmDescription": "Are you sure you want to delete this construction type record?",
+      "successMessage": "Construction Type ({id}) deleted successfully",
+      "errorMessage": "Cannot delete Construction Type ({id}) because it is linked to other records."
+    },
+    "apiErrors": {
+      "duplicateCode": "Construction code already exists. Please use a different code.",
+      "duplicateDescription": "Description already exists. Please use a different description.",
+      "duplicateRecord": "Please check Construction Code and Description - duplicates not allowed.",
+      "validationError": "Invalid data provided. Please check all fields.",
+      "invalidData": "Invalid data provided. Please check all fields.",
+      "notFound": "Construction type not found.",
+      "inUse": "Cannot delete this record as it is in use.",
+      "operationFailed": "Operation failed. Please try again later.",
+      "linkedRecordError": "Cannot modify this construction type because it is linked to other records."
+    },
+    "success": {
+      "created": "New construction type created successfully with code: {code}",
+      "updated": "Construction type updated successfully with code: {code}",
+      "deleted": "Construction type deleted successfully with code: {code}"
+    },
+    "error": {
+      "title": "Something Went Wrong",
+      "description": "We encountered an error while loading the construction type page. Please try again.",
+      "tryAgain": "Try Again",
+      "goHome": "Go to Home",
+      "errorId": "Error ID: {id}"
+    },
+    "loading": {
+      "message": "Loading Construction Type...",
+      "description": "Please wait while we fetch the construction type data"
+    }
+  }
+}

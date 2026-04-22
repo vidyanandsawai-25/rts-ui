@@ -9,31 +9,11 @@ export class ApiError extends Error {
   ) {
     super(message);
     this.name = "ApiError";
+    // Ensure instanceof works correctly
+    Object.setPrototypeOf(this, ApiError.prototype);
+    // Optionally capture stack trace for V8 environments
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, ApiError);
+    }
   }
-}
-
-/**
- * Creates base fetch options with common headers
- *
- * @param method HTTP method (GET, POST, PUT, DELETE)
- * @param body Optional request body
- * @returns Configured RequestInit object
- */
-export function createFetchOptions(
-  method: string = "GET",
-  body?: unknown
-): RequestInit {
-  const options: RequestInit = {
-    method,
-    cache: "no-store",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  };
-
-  if (body !== undefined) {
-    options.body = JSON.stringify(body);
-  }
-
-  return options;
 }

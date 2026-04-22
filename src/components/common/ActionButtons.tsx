@@ -14,9 +14,9 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronsRight,
-  RefreshCw,
-  Check,
-  Eraser,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
 import { Button, type ButtonProps } from "./ActionButton";
 import { cn } from "@/lib/utils/cn";
@@ -369,5 +369,54 @@ export function PageNumberButton({
     >
       {page}
     </Button>
+  );
+}
+
+/* ----------------------------------------------------------
+   ICON-ONLY SORT BUTTONS
+---------------------------------------------------------- */
+
+export function SortAscButton(
+  { ["aria-label"]: ariaLabel, className = "", ...props }: Omit<ButtonProps, "icon" | "variant" | "children">
+): React.ReactElement {
+  return (
+    <Button
+      variant="ghost"
+      icon={ArrowUp}
+      size="sm"
+      aria-label={ariaLabel ?? "Sort ascending"}
+      className={cn("hover:bg-transparent hover:text-blue-600 focus:!ring-0 focus:!ring-offset-0", className)}
+      {...props}
+    />
+  );
+}
+
+export function SortDescButton(
+  { ["aria-label"]: ariaLabel, className = "", ...props }: Omit<ButtonProps, "icon" | "variant" | "children">
+): React.ReactElement {
+  return (
+    <Button
+      variant="ghost"
+      icon={ArrowDown}
+      size="sm"
+      aria-label={ariaLabel ?? "Sort descending"}
+      className={cn("hover:bg-transparent hover:text-blue-600 focus:!ring-0 focus:!ring-offset-0", className)}
+      {...props}
+    />
+  );
+}
+
+export function SortDefaultButton(
+  { ["aria-label"]: ariaLabel, className = "", ...props }: Omit<ButtonProps, "icon" | "variant" | "children">
+): React.ReactElement {
+  return (
+    <Button
+      variant="ghost"
+      icon={ArrowUpDown}
+      size="sm"
+      aria-label={ariaLabel ?? "Sort"}
+      className={cn("hover:bg-transparent hover:text-blue-600 focus:!ring-0 focus:!ring-offset-0", className)}
+      {...props}
+    />
   );
 }
