@@ -72,7 +72,7 @@ export default function FloorMaster({
   /* ================= EDIT ================= */
   const handleEdit = useCallback(
     (row: Floor) => {
-      router.push(`/${locale}/property-tax/floormaster/floor/edit/${row.floorId}`);
+      router.push(`/${locale}/property-tax/floormaster/floor/edit/${row.id}`);
     },
     [router, locale]
   );
@@ -87,7 +87,7 @@ export default function FloorMaster({
         meta: { name: row.description },
 
         onConfirm: async () => {
-          const result = await deleteFloorAction(row.floorId);
+          const result = await deleteFloorAction(row.id);
 
           if (result.success) {
             toast.success(t("messages.deleteSuccess"));
@@ -168,7 +168,7 @@ export default function FloorMaster({
             </div>
           }
 
-      getRowKey={(row) => String(row.floorId)}
+      getRowKey={(row) => String(row.id)}
     />
   );
 }

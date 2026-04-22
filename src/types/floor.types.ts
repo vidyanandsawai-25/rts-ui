@@ -10,7 +10,7 @@ export type { PagedResponse } from "./common.types";
    Used in UI forms (create/update)
 ===================================================== */
 export interface FloorFormModel {
-  floorId?: number; // optional for create
+  id?: number; // optional for create
   floorCode: string;
   description: string;
   sequenceNo: number;
@@ -24,7 +24,7 @@ export interface FloorFormModel {
 export interface Floor {
   [key: string]: unknown;
 
-  floorId: number;
+  id: number;
   floorCode: string;
   description: string;
   sequenceNo: number;
@@ -63,7 +63,7 @@ export interface FloorProps
    SUBFLOOR - FORM MODEL
 ===================================================== */
 export interface SubFloorFormModel {
-  subFloorId?: number;
+  id?: number;
   subFloorCode: string;
   description: string;
   isActive: boolean;
@@ -76,7 +76,7 @@ export interface SubFloorFormModel {
 export interface SubFloor {
   [key: string]: unknown;
 
-  subFloorId: number;
+  id: number;
   subFloorCode: string;
   description: string;
 

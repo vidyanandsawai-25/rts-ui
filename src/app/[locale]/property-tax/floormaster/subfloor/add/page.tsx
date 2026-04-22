@@ -4,5 +4,5 @@ import React from "react";
 export const dynamic = "force-dynamic";
 
 export default async function AddPage(): Promise<React.ReactElement> {
-  return <SubFloorForm subFloorId={null} initialData={undefined} />;
+  return <SubFloorForm id={null} initialData={undefined} />;
 }

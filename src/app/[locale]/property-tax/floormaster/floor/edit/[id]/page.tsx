@@ -11,5 +11,5 @@ export default async function EditPage({
   const floorId = Number(id);
   const floor = await getFloorById(floorId);
   
-  return <FloorForm floorId={floorId} initialData={floor} />;
+  return <FloorForm id={floorId} initialData={floor} />;
 }

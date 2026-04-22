@@ -90,7 +90,7 @@ const messages = {
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
 const existingSubFloor: SubFloor = {
-  subFloorId: 5,
+  id: 5,
   subFloorCode: 'B1',
   description: 'Basement 1',
   isActive: true,
@@ -101,7 +101,7 @@ const existingSubFloor: SubFloor = {
 function renderAdd() {
   return render(
     <NextIntlClientProvider locale="en" messages={messages}>
-      <SubFloorForm subFloorId={null} />
+      <SubFloorForm id={null} />
     </NextIntlClientProvider>
   );
 }
@@ -109,7 +109,7 @@ function renderAdd() {
 function renderEdit(sf: SubFloor = existingSubFloor) {
   return render(
     <NextIntlClientProvider locale="en" messages={messages}>
-      <SubFloorForm subFloorId={sf.subFloorId} initialData={sf} />
+      <SubFloorForm id={sf.id} initialData={sf} />
     </NextIntlClientProvider>
   );
 }
@@ -241,7 +241,7 @@ describe('SubFloorForm — Edit Mode', () => {
 
     await waitFor(() => {
       expect(updateSubFloorAction).toHaveBeenCalledWith(
-        expect.objectContaining({ subFloorId: 5, subFloorCode: 'B1' })
+        expect.objectContaining({ id: 5, subFloorCode: 'B1' })
       );
     });
   });

@@ -28,7 +28,7 @@ import type { FloorFormModel, SubFloorFormModel } from '@/types/floor.types';
 
 // ── Shared helpers ────────────────────────────────────────────────────────────
 const makeFloorItem = (overrides = {}) => ({
-  floorId: 1,
+  id: 1,
   floorCode: 'GF',
   description: 'Ground Floor',
   sequenceNo: 1,
@@ -39,7 +39,7 @@ const makeFloorItem = (overrides = {}) => ({
 });
 
 const makeSubFloorItem = (overrides = {}) => ({
-  subFloorId: 1,
+  id: 1,
   subFloorCode: 'B1',
   description: 'Basement 1',
   isActive: true,
@@ -79,7 +79,7 @@ describe('floor.services — getFloorPaged', () => {
     const result = await getFloorPaged(1, 10);
 
     expect(result.items).toHaveLength(1);
-    expect(result.items[0].floorId).toBe(1);
+    expect(result.items[0].id).toBe(1);
     expect(result.items[0].floorCode).toBe('GF');
     expect(result.items[0].isActive).toBe(true);
     expect(result.totalCount).toBe(1);
@@ -111,13 +111,13 @@ describe('floor.services — getFloorPaged', () => {
     await expect(getFloorPaged(1, 10)).rejects.toThrow();
   });
 
-  it('throws ApiError when item has invalid floorId', async () => {
+  it('throws ApiError when item has invalid id', async () => {
     mockGet.mockResolvedValue({
       success: true,
-      data: makePagedRaw([{ ...makeFloorItem(), floorId: -1 }]),
+      data: makePagedRaw([{ ...makeFloorItem(), id: -1 }]),
     });
 
-    await expect(getFloorPaged(1, 10)).rejects.toThrow('Invalid floorId');
+    await expect(getFloorPaged(1, 10)).rejects.toThrow('Invalid id');
   });
 
   it('throws ApiError when item has missing floorCode', async () => {
@@ -138,11 +138,11 @@ describe('floor.services — getFloorById', () => {
 
     const result = await getFloorById(1);
 
-    expect(result.floorId).toBe(1);
+    expect(result.id).toBe(1);
     expect(result.floorCode).toBe('GF');
   });
 
-  it('throws when floorId is 0 or negative', async () => {
+  it('throws when id is 0 or negative', async () => {
     await expect(getFloorById(0)).rejects.toThrow('Valid Floor ID is required');
     await expect(getFloorById(-5)).rejects.toThrow('Valid Floor ID is required');
   });
@@ -204,7 +204,7 @@ describe('floor.services — updateFloor', () => {
   beforeEach(() => vi.clearAllMocks());
 
   const validPayload: FloorFormModel = {
-    floorId: 1,
+    id: 1,
     floorCode: 'GF',
     description: 'Ground Floor',
     sequenceNo: 1,
@@ -218,12 +218,12 @@ describe('floor.services — updateFloor', () => {
 
     expect(mockPut).toHaveBeenCalledWith(
       '/Floor/1',
-      expect.objectContaining({ floorId: 1, floorCode: 'GF' })
+      expect.objectContaining({ id: 1, floorCode: 'GF' })
     );
   });
 
-  it('throws when floorId is missing', async () => {
-    await expect(updateFloor({ ...validPayload, floorId: undefined })).rejects.toThrow(
+  it('throws when id is missing', async () => {
+    await expect(updateFloor({ ...validPayload, id: undefined })).rejects.toThrow(
       'Floor ID required'
     );
   });
@@ -252,7 +252,7 @@ describe('floor.services — deleteFloor', () => {
     expect(mockDelete).toHaveBeenCalledWith('/Floor/3');
   });
 
-  it('throws when floorId is 0 or negative', async () => {
+  it('throws when id is 0 or negative', async () => {
     await expect(deleteFloor(0)).rejects.toThrow('Valid Floor ID required');
     await expect(deleteFloor(-1)).rejects.toThrow('Valid Floor ID required');
   });
@@ -280,7 +280,7 @@ describe('floor.services — getSubFloorPaged', () => {
     const result = await getSubFloorPaged(1, 10);
 
     expect(result.items).toHaveLength(1);
-    expect(result.items[0].subFloorId).toBe(1);
+    expect(result.items[0].id).toBe(1);
     expect(result.items[0].subFloorCode).toBe('B1');
   });
 

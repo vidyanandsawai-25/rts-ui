@@ -148,10 +148,10 @@ export async function updateFloorAction(
    DELETE FLOOR
 ============================================================ */
 export async function deleteFloorAction(
-  floorId: number
+  id: number
 ): Promise<{ success: boolean; message?: string; messageKey?: string; statusCode?: number }> {
 
-  if (!floorId || floorId <= 0) {
+  if (!id || id <= 0) {
     return {
       success: false,
       messageKey: "messages.validFloorIdRequired",
@@ -160,7 +160,7 @@ export async function deleteFloorAction(
   }
 
   try {
-    await deleteFloor(floorId);
+    await deleteFloor(id);
 
     for (const locale of locales) {
       revalidatePath(`/${locale}/property-tax/floormaster/floor`, "page");
@@ -311,10 +311,10 @@ export async function updateSubFloorAction(
    DELETE SUBFLOOR
 ============================================================ */
 export async function deleteSubFloorAction(
-  subFloorId: number
+  id: number
 ): Promise<{ success: boolean; message?: string; messageKey?: string; statusCode?: number }> {
 
-  if (!subFloorId || subFloorId <= 0) {
+  if (!id || id <= 0) {
     return {
       success: false,
       messageKey: "messages.validSubFloorIdRequired",
@@ -323,7 +323,7 @@ export async function deleteSubFloorAction(
   }
 
   try {
-    await deleteSubFloor(subFloorId);
+    await deleteSubFloor(id);
 
     for (const locale of locales) {
       revalidatePath(`/${locale}/property-tax/floormaster/subfloor`, "page");

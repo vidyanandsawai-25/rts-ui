@@ -42,11 +42,11 @@ function isPagedResponse<T>(value: unknown): value is PagedResponse<T> {
 }
 
 function isFloorShape(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && 'floorId' in value;
+  return typeof value === 'object' && value !== null && 'id' in value;
 }
 
 function isSubFloorShape(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && 'subFloorId' in value;
+  return typeof value === 'object' && value !== null && 'id' in value;
 }
 
 /* ============================================================
@@ -54,10 +54,11 @@ function isSubFloorShape(value: unknown): value is Record<string, unknown> {
 ============================================================ */
 
 function normalizeFloor(data: Record<string, unknown>): Floor {
-  const floorId = Number(data.floorId);
+  // Backend DTO has 'Id' which serializes to 'id' in JSON
+  const id = Number(data.id);
 
-  if (!Number.isFinite(floorId) || floorId <= 0) {
-    throw new ApiError(500, 'Invalid data', 'Invalid floorId');
+  if (!Number.isFinite(id) || id <= 0) {
+    throw new ApiError(500, 'Invalid data', 'Invalid id');
   }
 
   const floorCode = typeof data.floorCode === 'string' ? data.floorCode.trim() : '';
@@ -68,7 +69,7 @@ function normalizeFloor(data: Record<string, unknown>): Floor {
   }
 
   return {
-    floorId,
+    id,
     floorCode,
     description,
     sequenceNo: Number(data.sequenceNo) || 0,
@@ -79,10 +80,11 @@ function normalizeFloor(data: Record<string, unknown>): Floor {
 }
 
 function normalizeSubFloor(data: Record<string, unknown>): SubFloor {
-  const subFloorId = Number(data.subFloorId);
+  // Backend DTO has 'Id' which serializes to 'id' in JSON
+  const id = Number(data.id);
 
-  if (!Number.isFinite(subFloorId) || subFloorId <= 0) {
-    throw new ApiError(500, 'Invalid data', 'Invalid subFloorId');
+  if (!Number.isFinite(id) || id <= 0) {
+    throw new ApiError(500, 'Invalid data', 'Invalid id');
   }
   const subFloorCode = typeof data.subFloorCode === 'string' ? data.subFloorCode.trim() : '';
   const description = typeof data.description === 'string' ? data.description.trim() : '';
@@ -92,7 +94,7 @@ function normalizeSubFloor(data: Record<string, unknown>): SubFloor {
   }
 
   return {
-    subFloorId,
+    id,
     subFloorCode,
     description,
     isActive: Boolean(data.isActive),
@@ -128,7 +130,11 @@ export async function getFloorPaged(
     const response = await apiClient.get<unknown>(`/Floor?${params.toString()}`);
 
     if (!response.success) {
-    
+      console.error('[getFloorPaged] API request failed:', {
+        statusCode: response.statusCode,
+        error: response.error,
+        endpoint: `/Floor?${params.toString()}`
+      });
       throw new ApiError(response.statusCode || 500, response.error || '', 'Fetch floor failed');
     }
 
@@ -155,13 +161,13 @@ export async function getFloorPaged(
   }
 }
 
-export async function getFloorById(floorId: number): Promise<Floor> {
+export async function getFloorById(id: number): Promise<Floor> {
   try {
-    if (!floorId || floorId <= 0) {
+    if (!id || id <= 0) {
       throw new Error('Valid Floor ID is required');
     }
 
-    const response = await apiClient.get<unknown>(`/Floor/${floorId}`);
+    const response = await apiClient.get<unknown>(`/Floor/${id}`);
 
     if (!response.success) {
       throw new ApiError(500, response.error || '', 'Fetch floor by ID failed');
@@ -207,21 +213,22 @@ export async function createFloor(data: FloorFormModel): Promise<void> {
 
 export async function updateFloor(data: FloorFormModel): Promise<void> {
   try {
-    if (!data.floorId || data.floorId <= 0) {
+    if (!data.id || data.id <= 0) {
       throw new Error('Floor ID required');
     }
     if (!data.floorCode?.trim()) throw new Error('floorCode required');
     if (!data.description?.trim()) throw new Error('description required');
 
+    // Backend DTO expects 'id' (from C# 'Id' property)
     const payload = {
-      floorId: data.floorId,
+      id: data.id,
       floorCode: data.floorCode.trim(),
       description: data.description.trim(),
       sequenceNo: Number(data.sequenceNo) || 0,
       isActive: data.isActive,
     };
 
-    const response = await apiClient.put(`/Floor/${data.floorId}`, payload);
+    const response = await apiClient.put(`/Floor/${data.id}`, payload);
 
     if (!response.success) {
       throw new ApiError(500, response.error || '', 'Update floor failed');
@@ -232,11 +239,11 @@ export async function updateFloor(data: FloorFormModel): Promise<void> {
   }
 }
 
-export async function deleteFloor(floorId: number): Promise<void> {
+export async function deleteFloor(id: number): Promise<void> {
   try {
-    if (floorId <= 0) throw new Error('Valid Floor ID required');
+    if (id <= 0) throw new Error('Valid Floor ID required');
 
-    const response = await apiClient.delete(`/Floor/${floorId}`);
+    const response = await apiClient.delete(`/Floor/${id}`);
 
     if (!response.success) {
       throw new ApiError(
@@ -303,13 +310,13 @@ export async function getSubFloorPaged(
   }
 }
 
-export async function getSubFloorById(subFloorId: number): Promise<SubFloor> {
+export async function getSubFloorById(id: number): Promise<SubFloor> {
   try {
-    if (!subFloorId || subFloorId <= 0) {
+    if (!id || id <= 0) {
       throw new Error('Valid SubFloor ID is required');
     }
 
-    const response = await apiClient.get<unknown>(`/SubFloor/${subFloorId}`);
+    const response = await apiClient.get<unknown>(`/SubFloor/${id}`);
 
     if (!response.success) {
       throw new ApiError(500, response.error || '', 'Fetch subfloor by ID failed');
@@ -358,7 +365,7 @@ export async function createSubFloor(data: SubFloorFormModel): Promise<void> {
 
 export async function updateSubFloor(data: SubFloorFormModel): Promise<void> {
   try {
-    if (!data.subFloorId || data.subFloorId <= 0) {
+    if (!data.id || data.id <= 0) {
       throw new Error('SubFloor ID required');
     }
     if(!data.subFloorCode?.trim()){
@@ -368,14 +375,15 @@ export async function updateSubFloor(data: SubFloorFormModel): Promise<void> {
       throw new Error('description required');
     }
 
+    // Backend DTO expects 'id' (from C# 'Id' property)
     const payload = {
-      subFloorId: data.subFloorId,
+      id: data.id,
       subFloorCode: data.subFloorCode.trim(),
       description: data.description.trim(),
       isActive: data.isActive,
     };
 
-    const response = await apiClient.put(`/SubFloor/${data.subFloorId}`, payload);
+    const response = await apiClient.put(`/SubFloor/${data.id}`, payload);
 
     if (!response.success) {
       throw new ApiError(500, response.error || '', 'Update subfloor failed');
@@ -386,13 +394,13 @@ export async function updateSubFloor(data: SubFloorFormModel): Promise<void> {
   }
 }
 
-export async function deleteSubFloor(subFloorId: number): Promise<void> {
+export async function deleteSubFloor(id: number): Promise<void> {
   try {
-    if (subFloorId <= 0) {
+    if (id <= 0) {
       throw new Error('Valid SubFloor ID required');
     }
 
-    const response = await apiClient.delete(`/SubFloor/${subFloorId}`);
+    const response = await apiClient.delete(`/SubFloor/${id}`);
 
     if (!response.success) {
       throw new ApiError(

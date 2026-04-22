@@ -13,5 +13,5 @@ export default async function EditPage({ params }: PageProps): Promise<React.Rea
   const subFloorId = Number(id);
   const subFloor = await getSubFloorById(subFloorId);
   
-  return <SubFloorForm subFloorId={subFloorId} initialData={subFloor} />;
+  return <SubFloorForm id={subFloorId} initialData={subFloor} />;
 }

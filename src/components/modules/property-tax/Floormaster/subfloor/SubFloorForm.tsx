@@ -33,23 +33,23 @@ const DESCRIPTION_MAX = 100;
 
 /* ================= PROPS ================= */
 export interface SubFloorFormProps {
-  subFloorId: number | null;
+  id: number | null;
   initialData?: SubFloor;
 }
 
 /* ================= MAIN ================= */
-export default function SubFloorForm({ subFloorId, initialData }: Readonly<SubFloorFormProps>) {
+export default function SubFloorForm({ id, initialData }: Readonly<SubFloorFormProps>) {
   const router = useRouter();
   const t = useTranslations('floor.subfloor');
   const tCommon = useTranslations('common');
-  const isEdit = Boolean(subFloorId);
+  const isEdit = Boolean(id);
 
   const [open, setOpen] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedOnce, setSubmittedOnce] = useState(false);
 
   const [formData, setFormData] = useState<SubFloorFormModel>({
-    subFloorId: initialData?.subFloorId,
+    id: initialData?.id,
     subFloorCode: initialData?.subFloorCode ?? '',
     description: initialData?.description ?? '',
     isActive: initialData?.isActive ?? true,
@@ -151,12 +151,22 @@ export default function SubFloorForm({ subFloorId, initialData }: Readonly<SubFl
 
   /* ================= ERROR HELPER ================= */
   const getErrorMessage = (result: { statusCode?: number; message?: string }) => {
+    // First check the actual message content for duplicates
+    const msg = result.message?.toLowerCase() || '';
+    if (msg.includes('duplicate') || msg.includes('already exists') || msg.includes('same details')) {
+      // Return the backend message directly for duplicate errors
+      return result.message || t('apiErrors.duplicateRecord');
+    }
+
+    // Then check status codes
     if (result.statusCode === 409) return t('apiErrors.duplicateRecord');
-    if (result.statusCode === 400) return t('apiErrors.invalidData');
+    if (result.statusCode === 400) return result.message || t('apiErrors.invalidData');
     if (result.statusCode === 404) return t('apiErrors.notFound');
     if (result.statusCode === 401 || result.statusCode === 403)
       return tCommon('errors.unauthorized');
     if (result.statusCode && result.statusCode >= 500) return tCommon('errors.serverError');
+    
+    // Return backend message if available, otherwise generic error
     return result.message || t('apiErrors.operationFailed');
   };
 

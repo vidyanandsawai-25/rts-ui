@@ -107,15 +107,15 @@ export default function SubFloorMaster({
       confirm({
         variant: "delete",
         title: t("delete.confirmTitle", {
-          id: row.subFloorId,
+          id: row.id,
         }),
         description: t("delete.confirmDescription"),
         meta: {
-          id: row.subFloorId,
+          id: row.id,
           name: row.description
         },
         onConfirm: async () => {
-          const result = await deleteSubFloorAction(row.subFloorId);
+          const result = await deleteSubFloorAction(row.id);
           if (result.success) {
             toast.success(t("messages.deleteSuccess"));
             router.refresh();
@@ -165,7 +165,7 @@ export default function SubFloorMaster({
           <EditButton
             onClick={() =>
               router.push(
-                `/${locale}/property-tax/floormaster/subfloor/edit/${row.subFloorId}`
+                `/${locale}/property-tax/floormaster/subfloor/edit/${row.id}`
               )
             }
           />
@@ -202,7 +202,7 @@ export default function SubFloorMaster({
         </div>
       }
 
-      getRowKey={(row) => row.subFloorId}
+      getRowKey={(row) => row.id}
     />
   );
 }

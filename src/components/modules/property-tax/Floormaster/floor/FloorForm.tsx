@@ -33,23 +33,23 @@ const DESCRIPTION_MAX = 100;
 
 /* ================= PROPS ================= */
 export interface FloorFormProps {
-  floorId: number | null;
+  id: number | null;
   initialData?: Floor;
 }
 
 /* ================= MAIN ================= */
-export default function FloorForm({ floorId, initialData }: Readonly<FloorFormProps>) {
+export default function FloorForm({ id, initialData }: Readonly<FloorFormProps>) {
   const router = useRouter();
   const t = useTranslations('floor.floor');
   const tCommon = useTranslations('common');
-  const isEdit = Boolean(floorId);
+  const isEdit = Boolean(id);
 
   const [open, setOpen] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedOnce, setSubmittedOnce] = useState(false);
 
   const [formData, setFormData] = useState<FloorFormModel>({
-    floorId: initialData?.floorId,
+    id: initialData?.id,
     floorCode: initialData?.floorCode ?? '',
     description: initialData?.description ?? '',
     sequenceNo: initialData?.sequenceNo ?? 0,
@@ -156,18 +156,22 @@ export default function FloorForm({ floorId, initialData }: Readonly<FloorFormPr
 
   /* ================= ERROR HELPER ================= */
   const getErrorMessage = (result: { statusCode?: number; message?: string }): string => {
-    if (result.statusCode === 409) return t('apiErrors.duplicateRecord');
-    if (result.statusCode === 400) {
-      const msg = result.message?.toLowerCase() || '';
-      if (msg.includes('duplicate') || msg.includes('already exists')) {
-        return t('apiErrors.duplicateRecord');
-      }
-      return result.message || t('apiErrors.invalidData');
+    // First check the actual message content for duplicates
+    const msg = result.message?.toLowerCase() || '';
+    if (msg.includes('duplicate') || msg.includes('already exists') || msg.includes('same details')) {
+      // Return the backend message directly for duplicate errors
+      return result.message || t('apiErrors.duplicateRecord');
     }
+
+    // Then check status codes
+    if (result.statusCode === 409) return t('apiErrors.duplicateRecord');
+    if (result.statusCode === 400) return result.message || t('apiErrors.invalidData');
     if (result.statusCode === 404) return t('apiErrors.notFound');
     if (result.statusCode === 401 || result.statusCode === 403)
       return tCommon('errors.unauthorized');
     if (result.statusCode && result.statusCode >= 500) return tCommon('errors.serverError');
+    
+    // Return backend message if available, otherwise generic error
     if (result.message) return result.message;
     return t('apiErrors.operationFailed');
   };
