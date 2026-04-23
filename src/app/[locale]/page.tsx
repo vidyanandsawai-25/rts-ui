@@ -1,4 +1,3 @@
-
 interface HomeProps {
   params: Promise<{ locale: string }>;
 }

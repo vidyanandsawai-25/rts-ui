@@ -1,7 +1,7 @@
 import TaxZoneForm from "@/components/modules/property-tax/taxzonemaster/TaxZoneForm";
 import { getTaxZoneByIdAction } from "../../action";
 import { notFound } from "next/navigation";
-import { ApiError } from "@/lib/api/taxzone.services";
+import { ApiError } from "@/lib/utils/api";
 
 interface PageProps {
   params: Promise<{

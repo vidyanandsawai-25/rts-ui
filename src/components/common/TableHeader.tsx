@@ -1,31 +1,51 @@
 "use client";
 
 import React from "react";
-import { LucideIcon } from "lucide-react";
+import { LucideIcon, Layers, FileText, Users, Settings, Home, Database } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { AddButton } from "./ActionButtons";
 
+// Icon mapping for server-to-client compatibility
+const ICON_MAP = {
+  layers: Layers,
+  fileText: FileText,
+  users: Users,
+  settings: Settings,
+  home: Home,
+  database: Database,
+} as const;
+
+type IconName = keyof typeof ICON_MAP;
+
 interface TableHeaderProps {
-  title: string;
-  subtitle?: string;
-  icon: LucideIcon;
-  actionLabel?: string;
-  onActionClick?: () => void;
-  actionDisabled?: boolean;
-  rightContent?: React.ReactNode;
-  className?: string;
+  readonly title: string;
+  readonly subtitle?: string;
+  readonly icon: LucideIcon | IconName;
+  readonly actionLabel?: string;
+  readonly onActionClick?: () => void;
+  readonly actionDisabled?: boolean;
+  readonly rightContent?: React.ReactNode;
+  readonly className?: string;
 }
 
 export default function TableHeader({
   title,
   subtitle,
-  icon: Icon,
+  icon,
   actionLabel,
   onActionClick,
   actionDisabled = false,
   rightContent,
   className = "",
-}: TableHeaderProps) {
+}: Readonly<TableHeaderProps>) {
+  // Resolve icon component
+  const Icon = React.useMemo(() => {
+    if (typeof icon === 'string') {
+      return ICON_MAP[icon];
+    }
+    return icon;
+  }, [icon]);
+
   return (
     <header
       className={cn(

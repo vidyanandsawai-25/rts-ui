@@ -45,9 +45,9 @@ export default async function RootLayout({ children, params }: Readonly<RootLayo
       <body className={`${inter.className} ${notoSansDevanagari.variable}`}>
         <NextIntlClientProvider locale={locale} messages={messages}>
           <Providers>
-             <MainLayout>
-               {children}
-             </MainLayout>
+            <MainLayout>
+              {children}
+            </MainLayout>
           </Providers>
         </NextIntlClientProvider>
       </body>
