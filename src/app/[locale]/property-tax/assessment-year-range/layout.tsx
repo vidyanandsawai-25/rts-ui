@@ -10,7 +10,7 @@ export default function AssessmentYearRangeLayout({
     <Suspense
       fallback={
         <div
-          className="flex items-center justify-center p-6"
+          className="flex items-center justify-center pt-6"
           aria-busy="true"
           aria-live="polite"
         >
