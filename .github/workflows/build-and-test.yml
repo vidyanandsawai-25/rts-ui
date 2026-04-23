@@ -1,11 +1,11 @@
-﻿﻿name: CI Build and Test
+﻿name: CI Build and Test
 
 on:
   pull_request:
     branches:
       - main
-      - qa
       - dev
+      - qa
   workflow_dispatch:
 
 concurrency:
