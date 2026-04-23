@@ -1,6 +1,7 @@
 "use client";
 
 import { CalendarRange } from "lucide-react";
+import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 
 import { PageContainer } from "@/components/common/PageContainer";
@@ -14,14 +15,20 @@ interface AssessmentYearRangeLayoutContentProps {
 export function AssessmentYearRangeLayoutContent({
   children,
 }: AssessmentYearRangeLayoutContentProps) {
-  const t = useTranslations("assessmentYearRange.shared");
+  const pathname = usePathname();
+  const tRV = useTranslations("assessmentYearRange.rateableValue");
+  const tCV = useTranslations("assessmentYearRange.capitalValue");
+
+  // Detect active tab from pathname
+  const isCapitalValue = pathname.includes("/capitalvalue");
+  const t = isCapitalValue ? tCV : tRV;
 
   return (
     <PageContainer>
       <div className="">
         <TableHeader
-          title={t("title")}
-          subtitle={t("subtitle")}
+          title={t("list.title")}
+          subtitle={t("list.subtitle")}
           icon={CalendarRange}
           rightContent={<AssessmentYearRangeToolbar />}
         />
