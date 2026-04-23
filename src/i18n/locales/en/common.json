@@ -316,6 +316,8 @@
       "authFailed": "Authentication Failed",
       "invalidCredentials": "Invalid credentials",
       "serviceUnavailable": "Service unavailable. Please try again later.",
+      "invalidResponseFormat": "Invalid response format from authentication service",
+      "sessionEstablishmentFailed": "Authentication succeeded but session could not be established",
       "invalidToken": "Invalid Token",
       "enterValidToken": "Please enter a valid 6-digit token",
       "sessionExpired": "Session Expired",

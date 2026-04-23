@@ -23,7 +23,7 @@ import {
 
 // Re-export for consumers that import from this file
 export { LOGIN_PRIMARY_SUBMIT_CLASS };
-export { useLoginErrorMessages } from '@/hooks/useLoginForm';
+export { useLoginErrorMessages } from '@/hooks/useLoginErrorMessages';
 
 // ---------------------------------------------------------------------------
 // Form Components

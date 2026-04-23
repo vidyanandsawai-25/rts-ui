@@ -239,6 +239,8 @@
       "authFailed": "प्रमाणीकरण विफल",
       "invalidCredentials": "अमान्य प्रमाण-पत्र",
       "serviceUnavailable": "सेवा उपलब्ध नहीं है",
+      "invalidResponseFormat": "प्रमाणीकरण सेवा से अमान्य प्रतिस्वरूप।",
+      "sessionEstablishmentFailed": "प्रमाणीकरण सफल रहा, लेकिन सत्र स्थापित नहीं हो सका।",
       "invalidToken": "अमान्य टोकन",
       "enterValidToken": "कृपया वैध 6 अंकों का टोकन दर्ज करें",
       "sessionExpired": "सत्र समाप्त",

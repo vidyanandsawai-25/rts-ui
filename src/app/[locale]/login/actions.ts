@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
+import { getTranslations } from 'next-intl/server';
 
 import { authService } from '@/lib/api/auth.service';
 import { locales, defaultLocale } from '@/i18n/config';
@@ -216,11 +217,12 @@ export async function validateCredentialsAction(formData: FormData) {
 
   // Validate response shape using type guard
   if (!isAuthLoginResponseShape(response.data)) {
+    const t = await getTranslations({ locale, namespace: 'common' });
     return {
       success: false as const,
       errorCode: AUTH_ERROR_CODES.SERVICE_UNAVAILABLE,
       statusCode: 500,
-      message: 'Invalid response format from authentication service',
+      message: t('login.errors.invalidResponseFormat'),
     };
   }
 
@@ -259,11 +261,12 @@ export async function validateCredentialsAction(formData: FormData) {
   }
 
   // Tokens missing or invalid
+  const tCommon = await getTranslations({ locale, namespace: 'common' });
   return {
     success: false as const,
     errorCode: AUTH_ERROR_CODES.LOGIN_FAILED,
     statusCode: 500,
-    message: normalizedAuth.message || 'Authentication succeeded but session could not be established',
+    message: normalizedAuth.message || tCommon('login.errors.sessionEstablishmentFailed'),
   };
 }
 

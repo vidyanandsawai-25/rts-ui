@@ -244,6 +244,8 @@
       "authFailed": "प्रमाणीकरण अयशस्वी",
       "invalidCredentials": "अवैध प्रमाणपत्रे",
       "serviceUnavailable": "सेवा उपलब्ध नाही",
+      "invalidResponseFormat": "प्रमाणीकरण सेवेकडून अवैध प्रतिस्वरूप।",
+      "sessionEstablishmentFailed": "प्रमाणीकरण यशस्वी, पण सत्र स्थापित होऊ शकले नाही।",
       "invalidToken": "अवैध टोकन",
       "enterValidToken": "कृपया वैध 6 अंकी टोकन प्रविष्ट करा",
       "sessionExpired": "सत्र कालबाह्य",

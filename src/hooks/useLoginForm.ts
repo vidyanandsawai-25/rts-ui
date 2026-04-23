@@ -15,8 +15,6 @@ import {
   useMemo,
   type ChangeEvent,
   type FocusEvent,
-  type Dispatch,
-  type SetStateAction,
 } from 'react';
 import { useTranslations } from 'next-intl';
 import {
@@ -25,59 +23,11 @@ import {
   PASSWORD_SANITIZE,
   AUTH_ERROR_CODES,
 } from '@/components/modules/login/constants';
+import type { LoginFormData, LoginFormErrors, UseLoginFormOptions, UseLoginFormReturn } from '@/types/login.types';
+export type { LoginFormData, LoginFormErrors, UseLoginFormOptions, UseLoginFormReturn } from '@/types/login.types';
 
 // ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
-export interface LoginFormData {
-  username: string;
-  password: string;
-}
-
-export interface LoginFormErrors {
-  username?: string;
-  password?: string;
-}
-
-export interface UseLoginFormOptions {
-  /** Initial username value (e.g., from URL param or cookie) */
-  initialUsername?: string;
-  /** Callback when form is submitted successfully (before action) */
-  onBeforeSubmit?: (data: LoginFormData) => void;
-}
-
-export interface UseLoginFormReturn {
-  /** Current form data */
-  formData: LoginFormData;
-  /** Current validation errors */
-  errors: LoginFormErrors;
-  /** Which fields have been touched/interacted with */
-  touched: Record<string, boolean>;
-  /** Whether form has been submitted at least once */
-  submittedOnce: boolean;
-  /** Handle input change with sanitization */
-  handleChange: (e: ChangeEvent<HTMLInputElement>) => void;
-  /** Handle input blur for validation */
-  handleBlur: (e: FocusEvent<HTMLInputElement>) => void;
-  /** Check if error should be shown for a field */
-  showError: (field: keyof LoginFormErrors) => boolean;
-  /** Validate entire form, returns true if valid */
-  validateForm: () => boolean;
-  /** Reset form to initial state */
-  resetForm: () => void;
-  /** Set form data directly (for external updates) */
-  setFormData: Dispatch<SetStateAction<LoginFormData>>;
-  /** Mark form as submitted */
-  markSubmitted: () => void;
-  /** Check if form is valid (no errors) */
-  isValid: boolean;
-  /** Check if form can be submitted (has required data) */
-  canSubmit: boolean;
-}
-
-// ---------------------------------------------------------------------------
-// Hook Implementation
+// Hook implementation
 // ---------------------------------------------------------------------------
 
 export function useLoginForm(options: UseLoginFormOptions = {}): UseLoginFormReturn {
@@ -243,72 +193,4 @@ export function useLoginForm(options: UseLoginFormOptions = {}): UseLoginFormRet
     isValid,
     canSubmit,
   };
-}
-
-// ---------------------------------------------------------------------------
-// Error Message Helper Hook
-// ---------------------------------------------------------------------------
-
-/**
- * Maps {@link AUTH_ERROR_CODES} values to message keys under `common.login.errors`
- * when the key differs from the code (e.g. camelCase vs SCREAMING_SNAKE).
- */
-const AUTH_ERROR_TO_LOGIN_I18N_KEY: Record<string, string> = {
-  [AUTH_ERROR_CODES.CREDENTIALS_REQUIRED]: 'credentialsRequired',
-  [AUTH_ERROR_CODES.INVALID_CREDENTIALS]: 'invalidCredentials',
-  [AUTH_ERROR_CODES.ACCOUNT_LOCKED]: 'Auth_AccountLocked_Temporary',
-  [AUTH_ERROR_CODES.ACCOUNT_INACTIVE]: 'ACCOUNT_INACTIVE',
-  [AUTH_ERROR_CODES.USER_NOT_FOUND]: 'Auth_UserNotFound',
-  [AUTH_ERROR_CODES.SESSION_EXPIRED]: 'SESSION_EXPIRED',
-  [AUTH_ERROR_CODES.TOO_MANY_ATTEMPTS]: 'TOO_MANY_ATTEMPTS',
-  [AUTH_ERROR_CODES.SERVICE_UNAVAILABLE]: 'serviceUnavailable',
-  [AUTH_ERROR_CODES.REQUEST_TIMEOUT]: 'REQUEST_TIMEOUT',
-  [AUTH_ERROR_CODES.LOGIN_FAILED]: 'LOGIN_FAILED',
-  [AUTH_ERROR_CODES.PASSWORD_CHANGE_REQUIRED]: 'passwordChangeRequired',
-  [AUTH_ERROR_CODES.INVALID_OTP_FORMAT]: 'enterValidToken',
-  [AUTH_ERROR_CODES.VERIFICATION_FAILED]: 'VERIFICATION_FAILED',
-  [AUTH_ERROR_CODES.RESEND_FAILED]: 'RESEND_FAILED',
-  [AUTH_ERROR_CODES.RESET_FAILED]: 'RESET_FAILED',
-  [AUTH_ERROR_CODES.INVALID_REQUEST]: 'INVALID_REQUEST',
-  PASSWORDS_MISMATCH: 'passwordsMismatch',
-};
-
-/**
- * Hook to convert error codes to localized messages.
- * Separated for reuse in components that don't need full form management.
- */
-export function useLoginErrorMessages() {
-  const t = useTranslations('common.login');
-
-  const getLocalizedError = useCallback((errorCode: string | undefined): string => {
-    if (!errorCode) return '';
-
-    const suffix = AUTH_ERROR_TO_LOGIN_I18N_KEY[errorCode] ?? errorCode;
-    const primary = `errors.${suffix}`;
-
-    if (typeof t.has === 'function' && t.has(primary)) {
-      return t(primary);
-    }
-
-    const fallbackCode = `errors.${errorCode}`;
-    if (typeof t.has === 'function' && t.has(fallbackCode)) {
-      return t(fallbackCode);
-    }
-
-    try {
-      return t(primary);
-    } catch {
-      try {
-        return t(fallbackCode);
-      } catch {
-        try {
-          return t('errors.LOGIN_FAILED');
-        } catch {
-          return errorCode;
-        }
-      }
-    }
-  }, [t]);
-
-  return { getLocalizedError };
 }

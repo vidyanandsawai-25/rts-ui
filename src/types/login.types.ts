@@ -1,3 +1,4 @@
+import type { ChangeEvent, Dispatch, FocusEvent, SetStateAction } from 'react';
 import { UlbMaster } from '@/types/master.types';
 
 // ---------------------------------------------------------------------------
@@ -30,6 +31,56 @@ export interface LoginFormProps {
   ulbData?: UlbMaster;
   /** Server-resolved UI strings for SSR + shared client fields. */
   copy: LoginFormCopy;
+}
+
+// ---------------------------------------------------------------------------
+// `useLoginForm` hook
+// ---------------------------------------------------------------------------
+
+export interface LoginFormData {
+  username: string;
+  password: string;
+}
+
+export interface LoginFormErrors {
+  username?: string;
+  password?: string;
+}
+
+export interface UseLoginFormOptions {
+  /** Initial username value (e.g., from URL param or cookie) */
+  initialUsername?: string;
+  /** Callback when form is submitted successfully (before action) */
+  onBeforeSubmit?: (data: LoginFormData) => void;
+}
+
+export interface UseLoginFormReturn {
+  /** Current form data */
+  formData: LoginFormData;
+  /** Current validation errors */
+  errors: LoginFormErrors;
+  /** Which fields have been touched/interacted with */
+  touched: Record<string, boolean>;
+  /** Whether form has been submitted at least once */
+  submittedOnce: boolean;
+  /** Handle input change with sanitization */
+  handleChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  /** Handle input blur for validation */
+  handleBlur: (e: FocusEvent<HTMLInputElement>) => void;
+  /** Check if error should be shown for a field */
+  showError: (field: keyof LoginFormErrors) => boolean;
+  /** Validate entire form, returns true if valid */
+  validateForm: () => boolean;
+  /** Reset form to initial state */
+  resetForm: () => void;
+  /** Set form data directly (for external updates) */
+  setFormData: Dispatch<SetStateAction<LoginFormData>>;
+  /** Mark form as submitted */
+  markSubmitted: () => void;
+  /** Check if form is valid (no errors) */
+  isValid: boolean;
+  /** Check if form can be submitted (has required data) */
+  canSubmit: boolean;
 }
 
 // ---------------------------------------------------------------------------

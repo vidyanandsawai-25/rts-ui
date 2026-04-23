@@ -12,7 +12,8 @@ import { useTranslations } from 'next-intl';
 import { ValidationMessage, Button } from '@/components/common';
 
 import { loginCredentialsFormAction } from '@/app/[locale]/login/actions';
-import { useLoginForm, useLoginErrorMessages } from '@/hooks/useLoginForm';
+import { useLoginForm } from '@/hooks/useLoginForm';
+import { useLoginErrorMessages } from '@/hooks/useLoginErrorMessages';
 import {
   AUTH_ERROR_CODES,
   RATE_LIMIT_COUNTDOWN_INITIAL_SECONDS,
