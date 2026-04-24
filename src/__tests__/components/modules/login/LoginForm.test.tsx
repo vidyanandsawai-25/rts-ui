@@ -32,7 +32,6 @@ vi.mock('next/image', () => ({
     const { unoptimized: _u, priority: _p, placeholder: _ph, blurDataURL: _b, fill: _f, loader: _l, ...rest } =
       props;
     // eslint-disable-next-line @next/next/no-img-element
-      // eslint-disable-next-line @next/next/no-img-element
     return <img {...rest} alt={props.alt ?? ''} />;
   },
 }));
