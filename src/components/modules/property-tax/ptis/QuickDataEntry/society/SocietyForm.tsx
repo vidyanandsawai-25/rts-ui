@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { SocietyFormProps } from "@/types/property-society-details.types";
 import { SocietyFormFields } from "./SocietyFormFields";
 import { SocietyFormActions } from "./SocietyFormActions";
-import { useSocietyForm } from "./useSocietyForm";
+import { useSocietyForm } from "@/hooks/useSocietyForm";
 
 const SocietyForm = (props: SocietyFormProps) => {
     const {
