@@ -21,7 +21,6 @@ const SocietyForm = (props: SocietyFormProps) => {
 
     const t = useTranslations("quickDataEntry");
 
-
     return (
         <form ref={formRef} onSubmit={handleSubmit} onChange={checkFormChanges} noValidate>
             <Tabs defaultValue="society">
