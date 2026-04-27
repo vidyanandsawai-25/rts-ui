@@ -20,6 +20,7 @@
     "createDepChart": "दर जोड़ने के लिए मूल्यह्रास चार्ट बनाएं",
     "ageRange": "आयु रेंज",
     "yearRange": "आयु रेंज",
+    "active": "सक्रिय",
     "minPlaceholder": "न्यूनतम आयु दर्ज करें",
     "maxPlaceholder": "अधिकतम आयु दर्ज करें",
     "deleteRangeConfirm": "हटाएं",

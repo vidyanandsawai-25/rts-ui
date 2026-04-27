@@ -8,7 +8,7 @@ import {
   getDepreciationsAll,
   syncDepreciationRates,
 } from "@/lib/api/depreciation.services";
-import type { ActionResult, DepreciationRow } from "@/types/depreciation.types";
+import type { ActionResult, ConstructionType, DepreciationRow } from "@/types/depreciation.types";
 
 /**
  * Path helper to ensure consistency across revalidations
@@ -34,7 +34,7 @@ export async function fetchRangesPagedServerAction(
   success: boolean;
   data?: {
     rows: DepreciationRow[];
-    constructionTypes: any[];
+    constructionTypes: ConstructionType[];
     // Pagination info for ranges
     rangePageNumber: number;
     rangePageSize: number;
@@ -98,11 +98,11 @@ export async function fetchRangesPagedServerAction(
         rangeTotalPages,
       },
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[fetchRangesPagedServerAction] Error:", error);
     return {
       success: false,
-      error: error.message || "Failed to load depreciation data",
+      error: error instanceof Error ? error.message : "Failed to load depreciation data",
     };
   }
 }
@@ -112,8 +112,8 @@ export async function fetchRangesPagedServerAction(
  * Gets both columns (ConstructionTypes) and data (Rows).
  */
 export async function getDepreciationScreenAction(): Promise<ActionResult<{
-  constructionTypes: any[];
-  rows: any[];
+  constructionTypes: ConstructionType[];
+  rows: DepreciationRow[];
 }>> {
   try {
     // Parallel fetch for better performance
@@ -126,11 +126,11 @@ export async function getDepreciationScreenAction(): Promise<ActionResult<{
       success: true, 
       data: { constructionTypes, rows } 
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[getDepreciationScreenAction] Error:", error);
     return { 
       success: false, 
-      error: error.message || "Failed to load screen data" 
+      error: error instanceof Error ? error.message : "Failed to load screen data" 
     };
   }
 }
@@ -156,9 +156,9 @@ export async function syncDepreciationRatesAction(
     revalidatePath(getPagePath(locale));
     
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[syncDepreciationRatesAction] Error:", error);
-    return { success: false, error: error.message || "Sync failed" };
+    return { success: false, error: error instanceof Error ? error.message : "Sync failed" };
   }
 }
 
@@ -178,9 +178,9 @@ export async function addRangeAction(
     
     
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
   
-    return { success: false, error: error.message || "Add range failed" };
+    return { success: false, error: error instanceof Error ? error.message : "Add range failed" };
   }
 }
 
@@ -199,7 +199,7 @@ export async function deleteRangeAction(
     revalidatePath(getPagePath(locale));
    
     return { success: true };
-  } catch (error: any) {
-    return { success: false, error: error.message || "Delete failed" };
+  } catch (error: unknown) {
+    return { success: false, error: error instanceof Error ? error.message : "Delete failed" };
   }
 }

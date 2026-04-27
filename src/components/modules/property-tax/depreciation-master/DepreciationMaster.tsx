@@ -151,8 +151,8 @@ export default function DepreciationMaster({
     try {
       refreshPage();
       setPendingChanges({});
-    } catch (err: any) {
-      toast.error(err.message || t("errors.load"));
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : t("errors.load"));
     } finally {
       setSaving(false);
     }
@@ -199,8 +199,8 @@ export default function DepreciationMaster({
       if (!res.success) throw new Error(res.error);
       toast.success(t("success.updated"), { id: tid });
       await reloadData();
-    } catch (err: any) {
-      toast.error(err.message || t("errors.update"), { id: tid });
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : t("errors.update"), { id: tid });
     } finally {
       setSaving(false);
     }
@@ -239,8 +239,8 @@ export default function DepreciationMaster({
       setMinValue("");
       setMaxValue("");
       await reloadData();
-    } catch (err: any) {
-      toast.error(err.message || t("errors.add"), { id: tid });
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : t("errors.add"), { id: tid });
     } finally {
       setSaving(false);
     }
@@ -264,8 +264,8 @@ export default function DepreciationMaster({
           if (!res.success) throw new Error(res.error);
           toast.success(t("success.deleted"));
           await reloadData();
-        } catch (err: any) {
-          toast.error(err.message || t("errors.delete"));
+        } catch (err: unknown) {
+          toast.error(err instanceof Error ? err.message : t("errors.delete"));
         } finally {
           setSaving(false);
         }

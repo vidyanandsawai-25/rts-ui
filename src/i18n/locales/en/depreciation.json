@@ -21,6 +21,7 @@
     "ageRange": "Age Range",
     "yearRange": "Age Range",
     "action": "Action",
+    "active": "ACTIVE",
     "minPlaceholder": "Enter minimum age",
     "maxPlaceholder": "Enter maximum age",
     "deleteRangeConfirm": "Delete",

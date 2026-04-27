@@ -27,7 +27,7 @@ export interface DepreciationPagedResponse {
   hasNext: boolean;
 }
 
-export interface ActionResult<T = any> {
+export interface ActionResult<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;

@@ -69,7 +69,7 @@ export function RightPanel({
             onCellChange={onCellChange}
             translations={{
               action: t("action"),
-              currencySymbol: "₹",
+            
               deleteRow: t("deleteRow"),
             }}
           />
