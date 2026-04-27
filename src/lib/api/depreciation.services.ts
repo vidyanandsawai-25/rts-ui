@@ -1,18 +1,11 @@
-import { appConfig } from '@/config/app.config';
-import { createFetchOptions } from '@/lib/utils/api';
-import type { 
-  ConstructionType, 
+import { apiClient } from '@/services/api.service';
+import { ApiError } from '@/lib/utils/api';
+import type {
+  ConstructionType,
   DepreciationRow,
-  DepreciationPagedResponse
+  DepreciationPagedResponse,
 } from '@/types/depreciation.types';
-
-const getUrl = (path: string): string => `${appConfig.api.baseUrl}${path}`;
-
-const extractItems = (raw: any): any[] => {
-  if (Array.isArray(raw)) return raw;
-  if (raw && Array.isArray(raw.items)) return raw.items;
-  return [];
-};
+import { getConstruction } from './construction-crud.service';
 
 /**
  * Fetch paginated depreciation records (for range-wise pagination)
@@ -29,66 +22,34 @@ export async function getDepreciationPaged(
     pageSize: pageSize.toString(),
   });
 
-  const response = await fetch(
-    getUrl(`/Depreciation?${params.toString()}`),
-    createFetchOptions('GET')
+  const response = await apiClient.get<DepreciationPagedResponse>(
+    `/Depreciation?${params.toString()}`
   );
 
-  if (!response.ok) {
-    throw new Error('Failed to fetch paginated depreciation records');
+  if (!response.success) {
+    throw new ApiError(
+      response.statusCode ?? 500,
+      response.error || 'Failed to fetch depreciation records',
+      'Get depreciation records failed'
+    );
   }
 
-  const data = await response.json();
-
-  // Handle both array and paginated response formats
-  if (Array.isArray(data)) {
-    const items = data.map((x) => ({
-      depreciationId: Number(x.depreciationId),
-      constructionTypeId: Number(x.constructionTypeId),
-      minYear: Number(x.minYear),
-      maxYear: Number(x.maxYear),
-      rate: Number(x.rate),
-    }));
-    return {
-      items,
-      totalCount: items.length,
-      pageNumber: 1,
-      pageSize: items.length,
-      totalPages: 1,
-      hasPrevious: false,
-      hasNext: false,
-    };
+  if (!response.data) {
+    throw new ApiError(500, 'No data received from server', 'Invalid response format');
   }
 
-  // Standard paginated response
-  const items = extractItems(data).map((x) => ({
-    depreciationId: Number(x.depreciationId),
-    constructionTypeId: Number(x.constructionTypeId),
-    minYear: Number(x.minYear),
-    maxYear: Number(x.maxYear),
-    rate: Number(x.rate),
-  }));
-
-  return {
-    items,
-    totalCount: data.totalCount || items.length,
-    pageNumber: data.pageNumber || pageNumber,
-    pageSize: data.pageSize || pageSize,
-    totalPages: data.totalPages || Math.ceil((data.totalCount || items.length) / pageSize),
-    hasPrevious: data.hasPrevious ?? (pageNumber > 1),
-    hasNext: data.hasNext ?? (pageNumber < (data.totalPages || 1)),
-  };
+  return response.data;
 }
 
+/**
+ * Get construction types from construction-crud service
+ */
 export async function getConstructionTypes(): Promise<ConstructionType[]> {
-  const response = await fetch(getUrl('/ConstructionType?pageSize=5000'), createFetchOptions('GET'));
-  if (!response.ok) throw new Error('Failed to fetch construction types');
-  const raw = await response.json();
-  return extractItems(raw)
-    .map((x) => ({
-      constructionId: Number(x.constructionTypeId),
-      constructionCode: String(x.constructionCode ?? ''),
-    }));
+  const constructionTypes = await getConstruction();
+  return constructionTypes.map((ct) => ({
+    constructionId: ct.constructionTypeId, // constructionTypeId is mapped from API's 'id' field
+    constructionCode: ct.constructionCode,
+  }));
 }
 
 /**
@@ -99,74 +60,69 @@ export async function getConstructionTypes(): Promise<ConstructionType[]> {
 export async function getDepreciationsAll(): Promise<DepreciationRow[]> {
   const allItems: DepreciationRow[] = [];
   let pageNumber = 1;
-  const pageSize = 100; // API's max page size
+  const pageSize = 100;
   let hasMore = true;
 
   while (hasMore) {
     const params = new URLSearchParams({
       pageNumber: pageNumber.toString(),
       pageSize: pageSize.toString(),
-      _t: Date.now().toString(),
     });
 
-    const response = await fetch(
-      getUrl(`/Depreciation?${params.toString()}`),
-      {
-        ...createFetchOptions('GET'),
-        cache: 'no-store',
-      }
+    const response = await apiClient.get<DepreciationPagedResponse>(
+      `/Depreciation?${params.toString()}`
     );
-    
-    if (!response.ok) throw new Error('Failed to fetch depreciation records');
-    const raw = await response.json();
-    
-    const items = extractItems(raw).map((x) => ({
-      depreciationId: Number(x.depreciationId),
-      constructionTypeId: Number(x.constructionTypeId),
-      minYear: Number(x.minYear),
-      maxYear: Number(x.maxYear),
-      rate: Number(x.rate),
-    }));
-    
+
+    if (!response.success) {
+      throw new ApiError(
+        response.statusCode ?? 500,
+        response.error || 'Failed to fetch depreciation records',
+        'Get depreciation records failed'
+      );
+    }
+
+    if (!response.data) {
+      throw new ApiError(500, 'No data received from server', 'Invalid response format');
+    }
+
+    const items = response.data.items || [];
     allItems.push(...items);
-    
-    // Check if there are more pages
-    hasMore = raw.hasNext === true && items.length > 0;
+
+    hasMore = response.data.hasNext === true && items.length > 0;
     pageNumber++;
-    
-    // Safety limit to prevent infinite loops
+
     if (pageNumber > 100) break;
   }
 
-  console.log('[getDepreciationsAll] Total items fetched from all pages:', allItems.length);
-  
   return allItems;
 }
 
-/***
- * NEW: Professional Sync for Global Grid Updates using Bulk API
- **/
 export async function syncDepreciationRates(updates: Record<number, number>): Promise<void> {
   const allData = await getDepreciationsAll();
 
   const depreciations = Object.entries(updates)
-    .map(([id, newRate]) => {
-      const depId = Number(id);
-      const existing = allData.find((d) => d.depreciationId === depId);
+    .map(([idStr, newRate]) => {
+      const id = Number(idStr);
+      const existing = allData.find((d) => d.id === id);
 
-      if (!existing || existing.rate === newRate) return null;
+      if (!existing) {
+        return null;
+      }
 
       return {
-        depreciationId: existing.depreciationId,
+        id: existing.id,
         minYear: existing.minYear,
         maxYear: existing.maxYear,
         constructionTypeId: existing.constructionTypeId,
         rate: newRate,
+        yearRangeRVId: existing.yearRangeRVId,
       };
     })
     .filter((item): item is NonNullable<typeof item> => item !== null);
 
-  if (depreciations.length === 0) return;
+  if (depreciations.length === 0) {
+    return;
+  }
 
   await bulkUpdateDepreciationRates({
     depreciations,
@@ -174,7 +130,9 @@ export async function syncDepreciationRates(updates: Record<number, number>): Pr
   });
 }
 
-
+/**
+ * Bulk create depreciation records
+ */
 export async function bulkCreateDepreciation(payload: {
   minYear: number;
   maxYear: number;
@@ -184,73 +142,53 @@ export async function bulkCreateDepreciation(payload: {
   }>;
   createdBy?: number;
 }): Promise<void> {
-  const url = getUrl('/Depreciation/bulk');
-  console.log("🌐 [API] POST request to:", url);
-  console.log("📤 [API] Request payload:", {
+  const bulkPayload = payload.rates.map((item) => ({
+    isActive: true,
+    createdBy: payload.createdBy || 0,
+    constructionTypeId: item.constructionTypeId,
     minYear: payload.minYear,
     maxYear: payload.maxYear,
-    ratesCount: payload.rates.length,
-    createdBy: payload.createdBy || 0,
-    sampleRate: payload.rates[0]
-  });
-  
-  const response = await fetch(
-    url, 
-    createFetchOptions('POST', {
-      minYear: payload.minYear,
-      maxYear: payload.maxYear,
-      rates: payload.rates,
-      createdBy: payload.createdBy || 0
-    })
-  );
-  
-  console.log("📥 [API] Response status:", response.status, response.statusText);
-  
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error("❌ [API] Error response:", {
-      status: response.status,
-      statusText: response.statusText,
-      body: errorText
-    });
-    throw new Error(`Failed to create bulk depreciation records: ${response.status} - ${errorText}`);
+    rate: item.rate,
+    yearRangeRVId: 1,
+  }));
+
+  const response = await apiClient.post<unknown>('/Depreciation/Bulk', bulkPayload);
+
+  if (!response.success) {
+    throw new ApiError(
+      response.statusCode ?? 500,
+      response.error || 'Failed to create bulk depreciation records',
+      'Bulk create failed'
+    );
   }
-  
-  console.log("✅ [API] Bulk create successful");
 }
 
+/**
+ * Add depreciation range for all construction types
+ */
 export async function addDepreciationRangeBulk(payload: {
   minYear: number;
   maxYear: number;
   defaultRate?: number;
 }): Promise<void> {
-  console.log("📦 [SERVICE] addDepreciationRangeBulk called:", payload);
-  
-  // Get all active construction types
-  console.log("📞 [SERVICE] Fetching construction types...");
   const constructionTypes = await getConstructionTypes();
-  console.log("✅ [SERVICE] Construction types fetched:", constructionTypes.length);
-  
-  // Create rates array for all construction types
-  const rates = constructionTypes.map(type => ({
+
+  const rates = constructionTypes.map((type) => ({
     constructionTypeId: type.constructionId,
-    rate: payload.defaultRate || 0
+    rate: payload.defaultRate || 0,
   }));
-  
-  console.log("📊 [SERVICE] Rates array created:", { count: rates.length, sample: rates[0] });
-  
-  // Use bulk API to create all records at once
-  console.log("📞 [SERVICE] Calling bulkCreateDepreciation API...");
+
   await bulkCreateDepreciation({
     minYear: payload.minYear,
     maxYear: payload.maxYear,
     rates: rates,
-    createdBy: 0
+    createdBy: 0,
   });
-  
-  console.log("✅ [SERVICE] addDepreciationRangeBulk completed successfully");
 }
 
+/**
+ * Delete depreciation range - uses purge for hard delete
+ */
 export async function deleteDepreciationRange(payload: {
   minYear: number;
   maxYear: number;
@@ -259,53 +197,70 @@ export async function deleteDepreciationRange(payload: {
   const targets = allData.filter(
     (x) => x.minYear === payload.minYear && x.maxYear === payload.maxYear
   );
-  const depreciationIds = targets.map((row) => row.depreciationId);
-  
-  if (depreciationIds.length > 0) {
-    await bulkDeleteDepreciations(depreciationIds);
+
+  // Use purge for hard delete - delete one by one
+  for (const target of targets) {
+    await purgeDepreciation(target.id);
   }
 }
 
 /**
- * Bulk update depreciation rates for multiple records
- * payload.depreciations: Array of { depreciationId, minYear, maxYear, constructionTypeId, rate }
- * payload.updatedBy: user id
+ * Bulk update depreciation rates
  */
 export async function bulkUpdateDepreciationRates(payload: {
   depreciations: Array<{
-    depreciationId: number;
+    id: number;
     minYear: number;
     maxYear: number;
     constructionTypeId: number;
     rate: number;
+    yearRangeRVId: number;
   }>;
   updatedBy?: number;
 }): Promise<void> {
-  const response = await fetch(
-    getUrl('/Depreciation/bulk'),
-    createFetchOptions('PUT', {
-      depreciations: payload.depreciations,
-      updatedBy: payload.updatedBy || 0
-    })
-  );
-  if (!response.ok) {
-    throw new Error('Failed to bulk update depreciation rates');
+  // Build payload exactly as backend expects: [{id, data: {...}}]
+  const bulkPayload = payload.depreciations.map((item) => ({
+    id: item.id,
+    data: {
+      id: item.id,
+      constructionTypeId: item.constructionTypeId,
+      minYear: item.minYear,
+      maxYear: item.maxYear,
+      rate: item.rate,
+      yearRangeRVId: item.yearRangeRVId,
+      isActive: true,
+      updatedBy: payload.updatedBy || 1,
+    },
+  }));
+
+  const response = await apiClient.put<unknown>('/Depreciation/Bulk', bulkPayload);
+
+  if (!response.success) {
+    throw new ApiError(
+      response.statusCode ?? 500,
+      response.error || 'Failed to bulk update depreciation rates',
+      'Bulk update failed'
+    );
   }
 }
 
 /**
- * Bulk delete depreciation rates
- * @param depreciationIds - Array of depreciation IDs to delete
+ * Hard delete (purge) a single depreciation record
  */
-export async function bulkDeleteDepreciations(depreciationIds: number[]): Promise<void> {
-  const response = await fetch(
-    getUrl('/Depreciation/bulk'),
-    createFetchOptions('DELETE', {
-      depreciationIds: depreciationIds
-    })
+export async function purgeDepreciation(id: number): Promise<void> {
+  if (!id || id <= 0) {
+    throw new ApiError(400, 'Valid depreciation ID is required', 'Validation failed');
+  }
+
+  const response = await apiClient.delete<void>(
+    `/Depreciation/${encodeURIComponent(String(id))}/purge`
   );
-  
-  if (!response.ok) {
-    throw new Error('Failed to bulk delete depreciation records');
+
+  if (!response.success) {
+    throw new ApiError(
+      response.statusCode ?? 500,
+      response.error || 'Failed to purge depreciation record',
+      `Purge depreciation ${id} failed`
+    );
   }
 }

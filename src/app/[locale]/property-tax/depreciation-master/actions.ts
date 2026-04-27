@@ -139,7 +139,7 @@ export async function getDepreciationScreenAction(): Promise<ActionResult<{
  * NEW: Professional Global Sync Action
  * This handles the "Dirty Tracking" update. It only updates the records 
  * that were actually changed in the UI grid.
- * @param changes - Object mapping depreciationId to new rate value
+ * @param changes - Object mapping id to new rate value
  */
 export async function syncDepreciationRatesAction(
   locale: string,

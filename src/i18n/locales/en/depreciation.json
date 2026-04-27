@@ -4,8 +4,8 @@
     "subtitle": "Property Tax Assessment System",
     "assessmentYear": "Assessment Year",
     "createRange": "Create Range",
-    "min": "Min Year",
-    "max": "Max Year",
+    "min": "Minimum Age",
+    "max": "Maximum Age",
     "deleteRow": "Delete Row",
     "addRange": "Add Range",
     "currencySymbol": "₹",
@@ -13,15 +13,16 @@
     "noRangesFound": "No ranges found",
     "deleteRange": "Delete Range",
     "deleteRangeConfirmTitle": "Delete Range?",
-    "deleteRangeConfirmDesc": "Delete range {min}-{max} for Year {year}?",
+    "deleteRangeConfirmDesc": "Delete range {min}-{max} for Age {age}?",
     "cancel": "Cancel",
     "updateRates": "Update Rates",
     "changesReverted": "Changes reverted",
     "createDepChart": "Create Depreciation Chart For Adding Rates",
-    "yearRange": "Year Range",
+    "ageRange": "Age Range",
+    "yearRange": "Age Range",
     "action": "Action",
-    "minPlaceholder": "Enter minimum year",
-    "maxPlaceholder": "Enter maximum year",
+    "minPlaceholder": "Enter minimum age",
+    "maxPlaceholder": "Enter maximum age",
     "deleteRangeConfirm": "Delete",
     "success": {
       "deleted": "Range deleted successfully.",
@@ -36,8 +37,10 @@
       "update": "Failed to update rates.",
       "delete": "Failed to delete range.",
       "exists": "This range already exists.",
-      "minMax": "Please enter both minimum and maximum year.",
-      "invalidRange": "Minimum year must be less than maximum year."
+      "minMax": "Please enter both minimum and maximum age.",
+      "invalidRange": "Minimum age must be less than maximum age.",
+      "overlap": "Range overlaps with existing range.",
+      "mustBeNumber": "Must be a valid number"
     }
   }
 }

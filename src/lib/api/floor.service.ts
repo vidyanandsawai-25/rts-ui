@@ -200,7 +200,7 @@ export async function deleteFloor(id: number): Promise<void> {
   try {
     if (id <= 0) throw new Error('Valid Floor ID required');
 
-    const response = await apiClient.delete(`/Floor/${id}`);
+    const response = await apiClient.delete(`/Floor/${id}/purge`);
 
     if (!response.success) {
       throw new ApiError(

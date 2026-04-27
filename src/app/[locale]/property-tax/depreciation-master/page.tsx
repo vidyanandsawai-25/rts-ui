@@ -22,7 +22,7 @@ export default async function Page({ params, searchParams }: PageProps) {
 
 
   const pageNumber = Number(resolvedSearchParams?.page) || 1;
-  const pageSize = Number(resolvedSearchParams?.pageSize) || 5;
+  const pageSize = Number(resolvedSearchParams?.pageSize) || 10;
 
   // Fetch paginated ranges data (server-side pagination for unique ranges)
   const res = await fetchRangesPagedServerAction(pageNumber, pageSize);

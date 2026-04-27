@@ -5,11 +5,15 @@ export interface ConstructionType {
 }
 
 export interface DepreciationRow {
-  depreciationId: number; // API key name
+  id: number;
   constructionTypeId: number;
   minYear: number;
   maxYear: number;
   rate: number;
+  yearRangeRVId: number;
+  isActive: boolean;
+  createdDate: string;
+  updatedDate: string | null;
 }
 
 // Paginated response for depreciation records
