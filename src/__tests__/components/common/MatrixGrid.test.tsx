@@ -93,17 +93,18 @@ describe('MatrixGrid', () => {
       />
     );
     
-    // All cells are MatrixCellInput now, but only col1 is editable (not readonly)
-    const inputs = screen.getAllByRole('spinbutton');
+    // All cells are rendered as inputs, but only col1 is editable
+    const inputs = screen.getAllByRole('spinbutton'); // input type="number"
     expect(inputs).toHaveLength(4); // 2 rows × 2 columns
-    
-    // col1 inputs (editable) - indices 0, 2
+    // col1 inputs (first and third) are editable, col2 inputs are readOnly
     expect(inputs[0]).toHaveValue(10);
-    expect(inputs[0]).not.toHaveAttribute('readonly');
-    
-    // col2 inputs (readonly) - indices 1, 3
+    expect(inputs[0]).not.toHaveAttribute('readOnly');
     expect(inputs[1]).toHaveValue(20);
-    expect(inputs[1]).toHaveAttribute('readonly');
+    expect(inputs[1]).toHaveAttribute('readOnly');
+    expect(inputs[2]).toHaveValue(30);
+    expect(inputs[2]).not.toHaveAttribute('readOnly');
+    expect(inputs[3]).toHaveValue(40);
+    expect(inputs[3]).toHaveAttribute('readOnly');
   });
 
   it('calls onCellChange when input value changes', () => {
@@ -154,14 +155,14 @@ describe('MatrixGrid', () => {
     render(<MatrixGrid columns={columns} rows={rows} colorMap={colorMap} translations={mockTranslations} />);
     
     // Check header for Col1
-    // The text 'Column 1' is inside a div which is inside the columnheader div
-    const col1Header = screen.getByText('Column 1').closest('[role="columnheader"]');
+    // The text 'Column 1' is inside a div which is inside the th
+    const col1Header = screen.getByText('Column 1').closest('th');
     expect(col1Header).toHaveClass('bg-red-100');
     
     // Check cell for Col1 (in row 1)
-    // The cell value '₹10.00' is directly inside the div that has the color class
-    const col1Cell = screen.getByText('₹10.00');
-    expect(col1Cell).toHaveClass('bg-red-100');
+    // The input for col1, row1 should have the color class
+    const inputs = screen.getAllByRole('spinbutton');
+    expect(inputs[0]).toHaveClass('bg-red-100');
   });
 
   it('renders tooltip for columns with tooltip property', () => {
