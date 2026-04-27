@@ -69,7 +69,7 @@ export function RightPanel({
             onCellChange={onCellChange}
             translations={{
               action: t("action"),
-            
+              currencySymbol: t("currencySymbol"),
               deleteRow: t("deleteRow"),
             }}
           />
@@ -88,7 +88,7 @@ export function RightPanel({
 
         <div className="p-4 border-t flex justify-end rounded-b-2xl">
           <SaveButton
-            label={saving ? "Processing..." : `${t("updateRates")}`}
+            label={saving ? t("processing") : `${t("updateRates")}`}
             onClick={onUpdateRates}
             disabled={saving}
           />

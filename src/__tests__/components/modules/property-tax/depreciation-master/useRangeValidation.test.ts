@@ -1,5 +1,5 @@
 import { renderHook } from "@testing-library/react";
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { useRangeValidation } from "@/components/modules/property-tax/depreciation-master/useRangeValidation";
 
 // Mock translation function

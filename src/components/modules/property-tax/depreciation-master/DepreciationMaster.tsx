@@ -188,12 +188,12 @@ export default function DepreciationMaster({
   const handleUpdateRates = async () => {
     const changeCount = Object.keys(pendingChanges).length;
     if (changeCount === 0) {
-      toast.info("No changes to update.");
+      toast.info(t("messages.noChanges"));
       return;
     }
 
     setSaving(true);
-    const tid = toast.loading(`Updating ${changeCount} records...`);
+    const tid = toast.loading(t("messages.updating", { count: changeCount }));
     try {
       const res = await syncDepreciationRatesAction(locale, pendingChanges);
       if (!res.success) throw new Error(res.error);
@@ -226,7 +226,7 @@ export default function DepreciationMaster({
     if (!result.valid) return;
 
     setSaving(true);
-    const tid = toast.loading("Creating range for all construction types...");
+    const tid = toast.loading(t("messages.creatingRange"));
     try {
       const res = await addRangeAction(locale, {
         minYear: Number(minValue),

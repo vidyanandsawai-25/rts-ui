@@ -54,31 +54,31 @@ export function useRangeValidation(t: TranslationFn, existingRanges: RangeRow[])
 
       // Must be number
       if (min && !/^\d+$/.test(min)) {
-        minError = t("errors.mustBeNumber") || "Must be a valid number";
+        minError = t("errors.mustBeNumber");
         valid = false;
       }
       if (max && !/^\d+$/.test(max)) {
-        maxError = t("errors.mustBeNumber") || "Must be a valid number";
+        maxError = t("errors.mustBeNumber");
         valid = false;
       }
 
       // No negative
       if (min && Number(min) < 0) {
-        minError = "Cannot be negative";
+        minError = t("errors.cannotBeNegative");
         valid = false;
       }
       if (max && Number(max) < 0) {
-        maxError = "Cannot be negative";
+        maxError = t("errors.cannotBeNegative");
         valid = false;
       }
 
       // Max limit (9999)
       if (min && Number(min) > 9999) {
-        minError = "Must be 9999 or less";
+        minError = t("errors.mustBe9999OrLess");
         valid = false;
       }
       if (max && Number(max) > 9999) {
-        maxError = "Must be 9999 or less";
+        maxError = t("errors.mustBe9999OrLess");
         valid = false;
       }
 
@@ -92,7 +92,7 @@ export function useRangeValidation(t: TranslationFn, existingRanges: RangeRow[])
       if (valid && min && max) {
         const hasOverlap = checkOverlap(Number(min), Number(max));
         if (hasOverlap) {
-          minError = t("errors.overlap") || "Range overlaps with existing range";
+          minError = t("errors.overlap");
           valid = false;
         }
       }

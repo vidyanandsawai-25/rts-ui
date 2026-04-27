@@ -1,14 +1,14 @@
-"use server";
+'use server';
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath } from 'next/cache';
 import {
   addDepreciationRangeBulk,
   deleteDepreciationRange,
   getConstructionTypes,
   getDepreciationsAll,
   syncDepreciationRates,
-} from "@/lib/api/depreciation.services";
-import type { ActionResult, ConstructionType, DepreciationRow } from "@/types/depreciation.types";
+} from '@/lib/api/depreciation.services';
+import type { ActionResult, ConstructionType, DepreciationRow } from '@/types/depreciation.types';
 
 /**
  * Path helper to ensure consistency across revalidations
@@ -46,17 +46,13 @@ export async function fetchRangesPagedServerAction(
   try {
     // Validate pagination parameters
     if (pageNumber <= 0 || pageSize <= 0) {
-      return { success: false, error: "Invalid pagination parameters" };
+      return { success: false, error: 'Invalid pagination parameters' };
     }
 
-    // Fetch all data in parallel
     const [allRows, constructionTypes] = await Promise.all([
       getDepreciationsAll(),
       getConstructionTypes(),
     ]);
-
-    console.log('[fetchRangesPagedServerAction] Total rows fetched:', allRows.length);
-    console.log('[fetchRangesPagedServerAction] Construction types:', constructionTypes.length);
 
     // Extract unique ranges from all rows
     const rangeMap = new Map<string, UniqueRange>();
@@ -77,15 +73,11 @@ export async function fetchRangesPagedServerAction(
     const endIndex = startIndex + pageSize;
     const paginatedRanges = allRanges.slice(startIndex, endIndex);
 
-
     // Filter rows that belong to paginated ranges only
-    const paginatedRangeKeys = new Set(
-      paginatedRanges.map((r) => `${r.minYear}-${r.maxYear}`)
-    );
+    const paginatedRangeKeys = new Set(paginatedRanges.map((r) => `${r.minYear}-${r.maxYear}`));
     const filteredRows = allRows.filter((row) =>
       paginatedRangeKeys.has(`${row.minYear}-${row.maxYear}`)
     );
-
 
     return {
       success: true,
@@ -99,10 +91,10 @@ export async function fetchRangesPagedServerAction(
       },
     };
   } catch (error: unknown) {
-    console.error("[fetchRangesPagedServerAction] Error:", error);
+    console.error('[fetchRangesPagedServerAction] Error:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to load depreciation data",
+      error: error instanceof Error ? error.message : 'Failed to load depreciation data',
     };
   }
 }
@@ -111,10 +103,12 @@ export async function fetchRangesPagedServerAction(
  * Fetches all necessary data for the Depreciation Screen.
  * Gets both columns (ConstructionTypes) and data (Rows).
  */
-export async function getDepreciationScreenAction(): Promise<ActionResult<{
-  constructionTypes: ConstructionType[];
-  rows: DepreciationRow[];
-}>> {
+export async function getDepreciationScreenAction(): Promise<
+  ActionResult<{
+    constructionTypes: ConstructionType[];
+    rows: DepreciationRow[];
+  }>
+> {
   try {
     // Parallel fetch for better performance
     const [constructionTypes, rows] = await Promise.all([
@@ -122,22 +116,22 @@ export async function getDepreciationScreenAction(): Promise<ActionResult<{
       getDepreciationsAll(),
     ]);
 
-    return { 
-      success: true, 
-      data: { constructionTypes, rows } 
+    return {
+      success: true,
+      data: { constructionTypes, rows },
     };
   } catch (error: unknown) {
-    console.error("[getDepreciationScreenAction] Error:", error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : "Failed to load screen data" 
+    console.error('[getDepreciationScreenAction] Error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to load screen data',
     };
   }
 }
 
 /**
  * NEW: Professional Global Sync Action
- * This handles the "Dirty Tracking" update. It only updates the records 
+ * This handles the "Dirty Tracking" update. It only updates the records
  * that were actually changed in the UI grid.
  * @param changes - Object mapping id to new rate value
  */
@@ -148,17 +142,14 @@ export async function syncDepreciationRatesAction(
   try {
     if (!changes || Object.keys(changes).length === 0) return { success: true };
 
-    // Yahan loop chalao ya service ko array bhejo
-    // Backend multiple hits maarega (Parallel)
     await syncDepreciationRates(changes);
-    
-    // IMPORTANT: Yeh line data refresh karti hai
+
     revalidatePath(getPagePath(locale));
-    
+
     return { success: true };
   } catch (error: unknown) {
-    console.error("[syncDepreciationRatesAction] Error:", error);
-    return { success: false, error: error instanceof Error ? error.message : "Sync failed" };
+    console.error('[syncDepreciationRatesAction] Error:', error);
+    return { success: false, error: error instanceof Error ? error.message : 'Sync failed' };
   }
 }
 
@@ -171,16 +162,13 @@ export async function addRangeAction(
   payload: { minYear: number; maxYear: number; defaultRate?: number }
 ): Promise<ActionResult> {
   try {
-   
     await addDepreciationRangeBulk(payload);
-    
+
     revalidatePath(getPagePath(locale));
-    
-    
+
     return { success: true };
   } catch (error: unknown) {
-  
-    return { success: false, error: error instanceof Error ? error.message : "Add range failed" };
+    return { success: false, error: error instanceof Error ? error.message : 'Add range failed' };
   }
 }
 
@@ -193,13 +181,12 @@ export async function deleteRangeAction(
   payload: { minYear: number; maxYear: number }
 ): Promise<ActionResult> {
   try {
-    
     await deleteDepreciationRange(payload);
-    
+
     revalidatePath(getPagePath(locale));
-   
+
     return { success: true };
   } catch (error: unknown) {
-    return { success: false, error: error instanceof Error ? error.message : "Delete failed" };
+    return { success: false, error: error instanceof Error ? error.message : 'Delete failed' };
   }
 }
