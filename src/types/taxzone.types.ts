@@ -1,5 +1,5 @@
 export interface TaxZoneFormModel {
-  taxZoneId?: number;
+  id?: number;
   taxZoneNo: string;
   taxZoneType: string;
   remark: string;
@@ -7,7 +7,7 @@ export interface TaxZoneFormModel {
 }
 
 export interface TaxZone extends Record<string, unknown> {
-  taxZoneId: number;
+  id: number;
   taxZoneNo: string;
   taxZoneType: string;
   remark: string;

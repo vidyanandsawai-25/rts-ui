@@ -39,7 +39,7 @@ export default async function EditPage({ params }: PageProps): Promise<React.Rea
   return (
     <>
       <ConstructionTypeForm 
-        constructionTypeId={constructionId} 
+        id={constructionId} 
         initialData={constructionData}
       />
     </>

@@ -236,7 +236,7 @@ describe("TaxZoneForm", () => {
 
   describe("Edit Mode", () => {
     const mockInitialData: TaxZoneFormModel = {
-      taxZoneId: 1,
+      id: 1,
       taxZoneNo: "Z1",
       taxZoneType: "Residential",
       remark: "Existing zone",

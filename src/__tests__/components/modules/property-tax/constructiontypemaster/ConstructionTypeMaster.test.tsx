@@ -60,7 +60,7 @@ vi.mocked(useRouter).mockImplementation(() => ({
 const defaultProps = {
     data: [
         {
-            constructionTypeId: 1,
+            id: 1,
             constructionCode: "C1",
             description: "Concrete",
             searchSequence: 1,
@@ -69,7 +69,7 @@ const defaultProps = {
             updatedDate: "2024-01-01T00:00:00Z",
         },
         {
-            constructionTypeId: 2,
+            id: 2,
             constructionCode: "B1",
             description: "Brick",
             searchSequence: 2,
