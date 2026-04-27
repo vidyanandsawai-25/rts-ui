@@ -4,7 +4,7 @@ import { ApiError } from "@/lib/utils/api";
 /**
  * Validates construction type ID
  */
-export function validateConstructionTypeId(id: number): boolean {
+export function validateid(id: number): boolean {
   return Number.isFinite(id) && id > 0;
 }
 
@@ -37,7 +37,7 @@ export function validateCreateFormData(data: ConstructionTypeFormModel): void {
  * Validates form data for update operation
  */
 export function validateUpdateFormData(data: ConstructionTypeFormModel): void {
-  if (!data.constructionTypeId || data.constructionTypeId <= 0) {
+  if (!data.id || data.id <= 0) {
     throw new ApiError(400, "Construction Type ID is required for update", "Validation failed");
   }
   if (!data.constructionCode?.trim()) {

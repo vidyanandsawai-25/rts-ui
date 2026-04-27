@@ -73,7 +73,7 @@ export function ConstructionTypeMaster({
   const handleEdit = useCallback(
     (row: ConstructionType) => {
       startTransition(() => {
-        router.push(`/${locale}/property-tax/constructiontype/edit/${row.constructionTypeId}`);
+        router.push(`/${locale}/property-tax/constructiontype/edit/${row.id}`);
       });
     },
     [router, locale]
@@ -90,7 +90,7 @@ export function ConstructionTypeMaster({
         },
         onConfirm: async () => {
           const fd = new FormData();
-          fd.append("constructionTypeId", String(row.constructionTypeId));
+          fd.append("id", String(row.id));
           const result = await deleteConstructionTypeAction(fd);
           if (result.success) {
             toast.success(
@@ -192,7 +192,7 @@ export function ConstructionTypeMaster({
               </div>
             </div>
           }
-          getRowKey={(row) => String(row.constructionTypeId)}
+          getRowKey={(row) => String(row.id)}
         />
       </div>
     </PageContainer>

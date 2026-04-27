@@ -33,11 +33,11 @@ export function isConstructionTypeShape(value: unknown): value is Record<string,
   const obj = value as Record<string, unknown>;
 
   // Must have a valid ID field (> 0)
-  if (!("constructionTypeId" in obj)) {
+  if (!("id" in obj)) {
     return false;
   }
-  const { constructionTypeId } = obj;
-  return typeof constructionTypeId === "number" && Number.isFinite(constructionTypeId) && constructionTypeId > 0;
+  const { id } = obj;
+  return typeof id === "number" && Number.isFinite(id) && id > 0;
 }
 
 /**
@@ -46,12 +46,12 @@ export function isConstructionTypeShape(value: unknown): value is Record<string,
  */
 export function normalizeConstructionType(data: Record<string, unknown>): ConstructionType {
   // Validate required ID field
-  const constructionTypeId = Number(data.constructionTypeId);
-  if (!Number.isFinite(constructionTypeId) || constructionTypeId <= 0) {
+  const id = Number(data.id);
+  if (!Number.isFinite(id) || id <= 0) {
     throw new ApiError(
       500,
       "Invalid data received from server",
-      `Invalid constructionTypeId: ${data.constructionTypeId}`
+      `Invalid id: ${data.id}`
     );
   }
 
@@ -88,7 +88,7 @@ export function normalizeConstructionType(data: Record<string, unknown>): Constr
   }
 
   return {
-    constructionTypeId,
+    id,
     constructionCode,
     description,
     searchSequence: Number.isFinite(searchSequence) ? searchSequence : 0,
