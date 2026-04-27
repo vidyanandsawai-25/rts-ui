@@ -47,7 +47,7 @@ export async function getDepreciationPaged(
 export async function getConstructionTypes(): Promise<ConstructionType[]> {
   const constructionTypes = await getConstruction();
   return constructionTypes.map((ct) => ({
-    constructionId: ct.constructionTypeId, 
+    constructionId: ct.id, 
     constructionCode: ct.constructionCode,
   }));
 }
