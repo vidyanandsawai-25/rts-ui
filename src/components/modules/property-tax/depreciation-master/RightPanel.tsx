@@ -7,13 +7,7 @@ import {
   type MatrixColumn,
   type MatrixRow,
 } from "@/components/common/MatrixGrid";
-
-type RangeRow = {
-  id: string;
-  min: number;
-  max: number;
-  label: string;
-};
+import type { RangeRow } from "@/types/depreciation.types";
 
 type RightPanelProps = {
   matrixColumns: MatrixColumn[];

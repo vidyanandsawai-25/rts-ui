@@ -32,3 +32,11 @@ export interface ActionResult<T = any> {
   data?: T;
   error?: string;
 }
+
+// UI types for depreciation master components
+export type RangeRow = {
+  id: string;
+  min: number;
+  max: number;
+  label: string;
+};

@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen,waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi, beforeEach, Mock } from "vitest";
 import DepreciationMaster from "@/components/modules/property-tax/depreciation-master/DepreciationMaster";
@@ -418,7 +418,6 @@ describe("DepreciationMaster", () => {
     });
 
     it("should show info toast when trying to update with no changes", async () => {
-      const user = userEvent.setup();
       render(<DepreciationMaster {...defaultProps} />);
       
       // The button is disabled so we can't click it

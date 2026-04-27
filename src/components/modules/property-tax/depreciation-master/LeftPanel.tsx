@@ -1,13 +1,7 @@
 "use client";
 
 import { AddButton, DeleteButton, Input } from "@/components/common";
-
-type RangeRow = {
-  id: string;
-  min: number;
-  max: number;
-  label: string;
-};
+import type { RangeRow } from "@/types/depreciation.types";
 
 type LeftPanelProps = {
   minValue: string;
