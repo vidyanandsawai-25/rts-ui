@@ -2,5 +2,5 @@ import { ConstructionTypeForm } from "@/components/modules/property-tax/construc
 import React from "react";
 
 export default async function AddPage(): Promise<React.ReactElement> {
-  return <ConstructionTypeForm constructionTypeId={null} initialData={undefined} />;
+  return <ConstructionTypeForm id={null} initialData={undefined} />;
 }

@@ -74,7 +74,7 @@ describe("ConstructionTypeForm", () => {
   });
 
   it("renders add form and submits successfully", async () => {
-    render(<ConstructionTypeForm constructionTypeId={null} />);
+    render(<ConstructionTypeForm id={null} />);
     // Fill all required fields (searchKey removed from form)
     fireEvent.change(screen.getByTestId("constructionCode"), { target: { value: "C2" } });
     fireEvent.blur(screen.getByTestId("constructionCode"));
@@ -93,7 +93,7 @@ describe("ConstructionTypeForm", () => {
 
   it("renders edit form and submits successfully", async () => {
     const initialData = {
-      constructionTypeId: 1,
+      id: 1,
       constructionCode: "C1",
       description: "Concrete",
       searchSequence: 1,
@@ -101,7 +101,7 @@ describe("ConstructionTypeForm", () => {
       createdDate: "2024-01-01T00:00:00Z",
       updatedDate: "2024-01-01T00:00:00Z",
     };
-    render(<ConstructionTypeForm constructionTypeId={1} initialData={initialData} />);
+    render(<ConstructionTypeForm id={1} initialData={initialData} />);
     // Verify data is loaded
     expect(screen.getByTestId("constructionCode")).toHaveValue("C1");
     expect(screen.getByTestId("description")).toHaveValue("Concrete");
@@ -118,7 +118,7 @@ describe("ConstructionTypeForm", () => {
   });
 
   it("shows validation errors on empty submit", async () => {
-    render(<ConstructionTypeForm constructionTypeId={null} />);
+    render(<ConstructionTypeForm id={null} />);
     fireEvent.submit(screen.getByTestId("form"));
     // The form doesn't submit on validation errors
     expect(mockCreate).not.toHaveBeenCalled();
@@ -126,7 +126,7 @@ describe("ConstructionTypeForm", () => {
 
   it("toggles active status in edit mode", async () => {
     const initialData = {
-      constructionTypeId: 1,
+      id: 1,
       constructionCode: "C1",
       description: "Concrete",
       searchSequence: 1,
@@ -134,7 +134,7 @@ describe("ConstructionTypeForm", () => {
       createdDate: "2024-01-01T00:00:00Z",
       updatedDate: "2024-01-01T00:00:00Z",
     };
-    render(<ConstructionTypeForm constructionTypeId={1} initialData={initialData} />);
+    render(<ConstructionTypeForm id={1} initialData={initialData} />);
     const toggle = await screen.findByTestId("toggle-switch");
     expect(toggle).toBeChecked();
     fireEvent.click(toggle);
@@ -142,7 +142,7 @@ describe("ConstructionTypeForm", () => {
   });
 
   it("cancels and closes drawer", async () => {
-    render(<ConstructionTypeForm constructionTypeId={null} />);
+    render(<ConstructionTypeForm id={null} />);
     const cancelBtn = screen.getByText("common.buttons.cancel");
     fireEvent.click(cancelBtn);
     await waitFor(() => {
@@ -151,7 +151,7 @@ describe("ConstructionTypeForm", () => {
   });
 
   it("sanitizes construction code to alphanumeric and underscore only", async () => {
-    render(<ConstructionTypeForm constructionTypeId={null} />);
+    render(<ConstructionTypeForm id={null} />);
     const input = screen.getByTestId("constructionCode") as HTMLInputElement;
     fireEvent.change(input, { target: { value: "AB C-12@#$_" } });
     // The component should strip disallowed characters (spaces, hyphens, special chars) and keep alphanumeric and underscore
@@ -159,7 +159,7 @@ describe("ConstructionTypeForm", () => {
   });
 
   it("limits construction code length to 7 characters", async () => {
-    render(<ConstructionTypeForm constructionTypeId={null} />);
+    render(<ConstructionTypeForm id={null} />);
     const input = screen.getByTestId("constructionCode") as HTMLInputElement;
     fireEvent.change(input, { target: { value: "ABCDEFGHIJ" } });
     // The component should truncate to max 7 characters
@@ -168,7 +168,7 @@ describe("ConstructionTypeForm", () => {
 
   it("handles API error on submit", async () => {
     mockCreate.mockResolvedValueOnce({ success: false, statusCode: 409, message: "Duplicate" });
-    render(<ConstructionTypeForm constructionTypeId={null} />);
+    render(<ConstructionTypeForm id={null} />);
     fireEvent.change(screen.getByTestId("constructionCode"), { target: { value: "C2" } });
     fireEvent.blur(screen.getByTestId("constructionCode"));
     fireEvent.change(screen.getByTestId("description"), { target: { value: "Bricks" } });

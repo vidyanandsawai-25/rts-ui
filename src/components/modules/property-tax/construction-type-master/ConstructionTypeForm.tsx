@@ -10,12 +10,12 @@ import { ConstructionType } from "@/types/construction.types";
 import { useConstructionForm } from "@/hooks/useConstructionForm";
 
 export interface ConstructionTypeFormProps {
-  constructionTypeId: number | null;
+  id: number | null;
   initialData?: ConstructionType;
 }
 
 export default function ConstructionTypeForm({
-  constructionTypeId,
+  id,
   initialData,
 }: ConstructionTypeFormProps) {
   const {
@@ -35,7 +35,7 @@ export default function ConstructionTypeForm({
     tCommon,
     isEdit,
   } = useConstructionForm({
-    constructionTypeId,
+    id,
     initialData,
     onSuccess: () => {},
     onCancel: () => {},

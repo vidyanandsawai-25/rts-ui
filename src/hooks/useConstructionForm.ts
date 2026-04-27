@@ -18,14 +18,14 @@ import {
 import { CONSTRUCTION_CODE_MAX, DESCRIPTION_MAX } from "@/components/modules/property-tax/construction-type-master/constants";
 
 interface UseConstructionFormProps {
-  constructionTypeId: number | null;
+  id: number | null;
   initialData?: ConstructionType;
   onSuccess: () => void;
   onCancel: () => void;
 }
 
 export function useConstructionForm({
-  constructionTypeId,
+  id,
   initialData,
   onSuccess,
   onCancel,
@@ -34,13 +34,13 @@ export function useConstructionForm({
   const locale = useLocale();
   const t = useTranslations("construction.constructionType");
   const tCommon = useTranslations("common");
-  const isEdit = Boolean(constructionTypeId);
+  const isEdit = Boolean(id);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedOnce, setSubmittedOnce] = useState(false);
   const [isActive, setIsActive] = useState(initialData?.isActive ?? true);
   const [formData, setFormData] = useState<ConstructionTypeFormModel>({
-    constructionTypeId: constructionTypeId ?? initialData?.constructionTypeId,
+    id: id ?? initialData?.id,
     constructionCode: initialData?.constructionCode ?? "",
     description: initialData?.description ?? "",
     searchSequence: initialData?.searchSequence ?? 0,

@@ -111,11 +111,11 @@ export async function updateConstructionAction(
 export async function deleteConstructionTypeAction(
   formData: FormData
 ): Promise<{ success: boolean; message?: string; statusCode?: number }> {
-  const rawConstructionTypeId = formData.get("constructionTypeId");
-  const constructionTypeId =
-    typeof rawConstructionTypeId === "string" ? parseInt(rawConstructionTypeId, 10) : 0;
+  const rawid = formData.get("id");
+  const id =
+    typeof rawid === "string" ? parseInt(rawid, 10) : 0;
 
-  if (!constructionTypeId || constructionTypeId <= 0) {
+  if (!id || id <= 0) {
     return {
       success: false,
       message: "Valid Construction Type ID is required",
@@ -124,7 +124,7 @@ export async function deleteConstructionTypeAction(
   }
 
   try {
-    await deleteConstructionType(constructionTypeId);
+    await deleteConstructionType(id);
 
     // Revalidate all locale variants of the construction type page
     for (const locale of locales) {
@@ -151,13 +151,13 @@ export async function deleteConstructionTypeAction(
 }
 
 export async function getConstructionTypeByIdAction(
-  constructionTypeId: number
+  id: number
 ): Promise<ConstructionType> {
   try {
-    if (!constructionTypeId || constructionTypeId <= 0) {
+    if (!id || id <= 0) {
       throw new ApiError(400, "Valid Construction Type ID is required", "Validation failed");
     }
-    const result = await getConstructionTypeById(constructionTypeId);
+    const result = await getConstructionTypeById(id);
     if (!result) {
       throw new ApiError(404, "Construction Type not found", "Not Found");
     }

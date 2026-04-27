@@ -4,7 +4,7 @@ import { PagedResponse } from "@/types/common.types";
 import { ApiError } from "@/lib/utils/api";
 import { isConstructionTypeShape, normalizeConstructionType } from "./construction-types-guard";
 import {
-  validateConstructionTypeId, validateAndPrepareSearchTerm, validateCreateFormData,
+  validateid, validateAndPrepareSearchTerm, validateCreateFormData,
   validateUpdateFormData, getDeleteErrorStatusCode, createApiError,
 } from "./construction-validation";
 
@@ -60,7 +60,7 @@ export async function getConstructionPaged(
 /** Fetches a single construction type by ID */
 export async function getConstructionTypeById(constructionId: number): Promise<ConstructionType | null> {
   try {
-    if (!validateConstructionTypeId(constructionId)) {
+    if (!validateid(constructionId)) {
       throw new ApiError(400, "Valid Construction Type ID is required", "Invalid construction type ID");
     }
     const response = await apiClient.get<ConstructionType>(`/ConstructionType/${encodeURIComponent(String(constructionId))}`);
@@ -107,14 +107,14 @@ export async function updateConstructionType(data: ConstructionTypeFormModel): P
   try {
     validateUpdateFormData(data);
     const payload = {
-      constructionTypeId: data.constructionTypeId,
+      id: data.id,
       constructionCode: data.constructionCode.trim(),
       description: data.description.trim(),
       searchSequence: Number(data.searchSequence) || 0,
       isActive: data.isActive,
       updatedBy: data.updatedBy ?? 1, // TODO: Get from auth context
     };
-    const response = await apiClient.put<unknown>(`/ConstructionType/${encodeURIComponent(String(data.constructionTypeId))}`, payload);
+    const response = await apiClient.put<unknown>(`/ConstructionType/${encodeURIComponent(String(data.id))}`, payload);
     if (!response.success) {
       throw createApiError(response.statusCode, response.error, "Update construction type failed");
     }
@@ -125,21 +125,21 @@ export async function updateConstructionType(data: ConstructionTypeFormModel): P
 }
 
 /** Deletes a construction type by ID */
-export async function deleteConstructionType(constructionTypeId: number): Promise<void> {
+export async function deleteConstructionType(id: number): Promise<void> {
   try {
-    if (!validateConstructionTypeId(constructionTypeId)) {
+    if (!validateid(id)) {
       throw new ApiError(400, "Valid Construction Type ID is required", "Validation failed");
     }
-    const response = await apiClient.delete<void>(`/ConstructionType/${encodeURIComponent(String(constructionTypeId))}`);
+    const response = await apiClient.delete<void>(`/ConstructionType/${encodeURIComponent(String(id))}/purge`);
     if (!response.success) {
       let statusCode = response.statusCode;
       if (!statusCode) {
         statusCode = getDeleteErrorStatusCode(response.error || "");
       }
-      throw new ApiError(statusCode, response.error || "Failed to delete construction type", `Delete construction type ${constructionTypeId} failed`);
+      throw new ApiError(statusCode, response.error || "Failed to delete construction type", `Delete construction type ${id} failed`);
     }
   } catch (error) {
-    console.error(`Error deleting construction type ${constructionTypeId}:`, error);
+    console.error(`Error deleting construction type ${id}:`, error);
     throw error;
   }
 }
