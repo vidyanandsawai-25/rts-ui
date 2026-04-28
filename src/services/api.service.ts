@@ -66,10 +66,11 @@ class ApiClient {
    * Check if endpoint is public (no auth required)
    */
   private isPublicEndpoint(endpoint: string): boolean {
-    const normalizedEndpoint = endpoint.toLowerCase();
-    return this.publicEndpoints.some(pe => 
-      normalizedEndpoint.includes(pe.toLowerCase())
-    );
+    const normalizedEndpoint = endpoint.toLowerCase().split('?')[0];
+    return this.publicEndpoints.some(pe => {
+      const peLower = pe.toLowerCase();
+      return normalizedEndpoint === peLower || normalizedEndpoint.startsWith(peLower + '/');
+    });
   }
 
   /**
@@ -103,7 +104,12 @@ class ApiClient {
       ];
       
       const safeCookies = allCookies.filter(c => 
-        allowedCookies.some(allowed => c.name.includes(allowed))
+        allowedCookies.some(allowed => {
+          if (allowed === '.AspNetCore.Antiforgery') {
+            return c.name.startsWith(allowed);
+          }
+          return c.name === allowed;
+        })
       );
 
       if (safeCookies.length === 0) return null;
@@ -288,10 +294,10 @@ class ApiClient {
 
 
       const response = await serverFetch(url, {
+        cache: 'no-store',
         ...options,
         signal: controller.signal,
         headers: cleanHeaders,
-        cache: 'no-store',
       });
 
       clearTimeout(timeoutId);

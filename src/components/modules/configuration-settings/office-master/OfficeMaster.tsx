@@ -126,7 +126,7 @@ export function OfficeMaster({
       accentColor: 'bg-blue-500',
     },
     {
-      label: t('stats.active') || 'Active',
+      label: `${t('stats.active') || 'Active'} (${tCommon('table.onThisPage') || 'on this page'})`,
       value: activeCount,
       icon: CheckCircle2,
       bgColor: 'bg-emerald-100',
@@ -135,7 +135,7 @@ export function OfficeMaster({
       accentColor: 'bg-emerald-500',
     },
     {
-      label: t('stats.inactive') || 'Inactive',
+      label: `${t('stats.inactive') || 'Inactive'} (${tCommon('table.onThisPage') || 'on this page'})`,
       value: inactiveCount,
       icon: BuildingIcon,
       bgColor: 'bg-violet-100',

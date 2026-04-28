@@ -57,10 +57,10 @@ export function useOfficeForm({
     (data: OfficeFormModel): Partial<Record<keyof OfficeFormModel, string>> => {
       const fieldErrors: Partial<Record<keyof OfficeFormModel, string>> = {};
       if (!data.officeCode || !data.officeCode.trim()) {
-        fieldErrors.officeCode = "Office Code is required";
+        fieldErrors.officeCode = t("form.validation.officeCodeRequired");
       }
       if (!data.officeName || !data.officeName.trim()) {
-        fieldErrors.officeName = "Office Name is required";
+        fieldErrors.officeName = t("form.validation.officeNameRequired");
       }
       return fieldErrors;
     },
@@ -74,15 +74,27 @@ export function useOfficeForm({
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>): void => {
     const { name, value } = e.target;
-    setFormData((p) => ({ ...p, [name]: value }));
+    const type = 'type' in e.target ? (e.target as HTMLInputElement).type : undefined;
+    
+    const processedValue = (type === 'number' || ['officeIncharge', 'designationMasterId'].includes(name))
+      ? (value === '' ? null : Number(value))
+      : value;
+      
+    setFormData((p) => ({ ...p, [name]: processedValue }));
   }, []);
 
   const handleBlur = useCallback((e: React.FocusEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>): void => {
     const { name, value } = e.target;
+    const type = 'type' in e.target ? (e.target as HTMLInputElement).type : undefined;
+    
+    const processedValue = (type === 'number' || ['officeIncharge', 'designationMasterId'].includes(name))
+      ? (value === '' ? null : Number(value))
+      : value;
+
     setTouched((p) => ({ ...p, [name]: true }));
     
     setFormData((prev) => {
-        const updated = { ...prev, [name]: value };
+        const updated = { ...prev, [name]: processedValue };
         const ve = validate(updated);
         setErrors((errs) => {
            const newE = { ...errs };
@@ -138,7 +150,7 @@ export function useOfficeForm({
         return;
       }
 
-      toast.success(isEdit ? "Office updated successfully" : "Office created successfully");
+      toast.success(isEdit ? t("success.updated") : t("success.created"));
       
       onSuccess();
       startTransition(() => {

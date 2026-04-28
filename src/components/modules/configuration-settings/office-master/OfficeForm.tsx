@@ -93,79 +93,79 @@ export default function OfficeForm({
           <div className="p-4 space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
-                label="Office Code"
+                label={t("form.fields.officeCode.label") || "Office Code"}
                 required
                 name="officeCode"
                 value={formData.officeCode}
                 onChange={handleChange}
                 onBlur={handleBlur}
                 error={showError("officeCode") ? errors.officeCode : undefined}
-                placeholder="e.g. ZON01"
+                placeholder={t("form.fields.officeCode.placeholder") || "e.g. ZON01"}
               />
 
               <Input
-                label="Office Name"
+                label={t("form.fields.officeName.label") || "Office Name"}
                 required
                 name="officeName"
                 value={formData.officeName}
                 onChange={handleChange}
                 onBlur={handleBlur}
                 error={showError("officeName") ? errors.officeName : undefined}
-                placeholder="Enter office name"
+                placeholder={t("form.fields.officeName.placeholder") || "Enter office name"}
               />
 
               <Select
-                label="Type"
+                label={t("form.fields.type.label") || "Type"}
                 value={formData.type || ""}
                 onChange={(value) => handleChange({ target: { name: "type", value } } as React.ChangeEvent<HTMLSelectElement>)}
                 options={[
-                  { label: "Main Office", value: "Main Office" },
-                  { label: "Zonal Office", value: "Zonal Office" },
-                  { label: "Department Office", value: "Department Office" },
-                  { label: "Ward Office", value: "Ward Office" },
-                  { label: "Sub Office", value: "Sub Office" },
-                  { label: "Head Office", value: "Head Office" },
+                  { label: t("form.fields.type.options.mainOffice") || "Main Office", value: "Main Office" },
+                  { label: t("form.fields.type.options.zonalOffice") || "Zonal Office", value: "Zonal Office" },
+                  { label: t("form.fields.type.options.departmentOffice") || "Department Office", value: "Department Office" },
+                  { label: t("form.fields.type.options.wardOffice") || "Ward Office", value: "Ward Office" },
+                  { label: t("form.fields.type.options.subOffice") || "Sub Office", value: "Sub Office" },
+                  { label: t("form.fields.type.options.headOffice") || "Head Office", value: "Head Office" },
                 ]}
-                placeholder="Select Type"
+                placeholder={t("form.fields.type.placeholder") || "Select Type"}
               />
 
               <Input
                 type="email"
-                label="Email ID"
+                label={t("form.fields.emailId.label") || "Email ID"}
                 name="emailId"
                 value={formData.emailId || ""}
                 onChange={handleChange}
-                placeholder="test@example.com"
+                placeholder={t("form.fields.emailId.placeholder") || "test@example.com"}
               />
 
               <Input
                 type="tel"
-                label="Phone"
+                label={t("form.fields.phone.label") || "Phone"}
                 name="phone"
                 value={formData.phone || ""}
                 onChange={handleChange}
-                placeholder="Phone number"
+                placeholder={t("form.fields.phone.placeholder") || "Phone number"}
               />
               
               <Input
-                label="City"
+                label={t("form.fields.city.label") || "City"}
                 name="city"
                 value={formData.city || ""}
                 onChange={handleChange}
-                placeholder="Enter city"
+                placeholder={t("form.fields.city.placeholder") || "Enter city"}
               />
 
               <Input
-                label="Pincode"
+                label={t("form.fields.pincode.label") || "Pincode"}
                 name="pincode"
                 value={formData.pincode || ""}
                 onChange={handleChange}
-                placeholder="6-digit pincode"
+                placeholder={t("form.fields.pincode.placeholder") || "6-digit pincode"}
               />
 
               <Input
                 type="date"
-                label="Established Date"
+                label={t("form.fields.establishedDate.label") || "Established Date"}
                 name="establishedDate"
                 value={formData.establishedDate ? formData.establishedDate.split("T")[0] : ""}
                 onChange={handleChange}
@@ -191,11 +191,11 @@ export default function OfficeForm({
             </div>
 
             <TextArea
-              label="Address"
+              label={t("form.fields.address.label") || "Address"}
               name="address"
               value={formData.address || ""}
               onChange={handleChange}
-              placeholder="Full office address..."
+              placeholder={t("form.fields.address.placeholder") || "Full office address..."}
               rows={3}
             />
           </div>

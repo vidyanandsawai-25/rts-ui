@@ -8,6 +8,7 @@ import { Sidebar } from './Sidebar';
 import { type MenuItem } from '@/config/menu-items';
 import { sidebarNavigationService } from '@/lib/api/sidebar-navigation.service';
 import { getUserIdFromCookies } from '@/lib/utils/auth-session';
+import { buildSidebarTree } from '@/lib/utils/sidebar-tree';
 
 export interface MainLayoutProps {
   children: React.ReactNode;
@@ -41,27 +42,7 @@ const fetchUserMenuItems = cache(async () => {
       const groups = groupsRes.data?.items || [];
       const screens = screensRes.data?.items || [];
       
-      // Build hierarchical menu structure
-      const menuItems: MenuItem[] = groups.map(group => {
-        // Include screens that are active and have a valid route
-        const groupScreens = screens
-          .filter(s => s.screenGroupId === group.id && s.isActive && (s.isMenu || (s.routePath && s.routePath !== '#')))
-          .sort((a, b) => a.displayOrder - b.displayOrder);
-
-        return {
-          name: group.screenGroupName,
-          nameHi: group.screenGroupLocalName || group.screenGroupName,
-          iconName: group.screenGroupIcon || 'LayoutGrid',
-          href: '#', 
-          subItems: groupScreens.map(s => ({
-            name: s.screenName,
-            href: s.routePath.startsWith('/') ? s.routePath : `/${s.routePath}`
-          }))
-        };
-      });
-
-      // Only show groups that have at least one valid screen
-      return menuItems.filter(m => m.subItems && m.subItems.length > 0);
+      return buildSidebarTree(groups, screens);
     }
   } catch (error) {
     console.error('Failed to fetch dynamic sidebar menu:', error);
