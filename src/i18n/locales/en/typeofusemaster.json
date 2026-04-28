@@ -1,0 +1,184 @@
+
+
+
+{
+    "title": "Type of Use Master",
+    "subtitle": "Use Group → Type → Sub-Type",
+    "group": {
+        "title": "Use Groups",
+        "addSubtitle": "Create a new Sub-Type",
+        "add": "Add Use Group",
+        "edit": "Edit Use Group",
+        "editSubtitle": "Update existing Use Group",
+        "mandatoryNote": "Fields marked with * are mandatory",
+        "fields": {
+            "groupId": "Group ID Code",
+            "groupName": "Group Name",
+            "groupNameEnglish": "Group Name (English)",
+            "iconType": "Icon Type",
+            "status": "Active Status"
+        },
+        "placeholders": {
+            "groupId": "e.g., RES, COM, IND01",
+            "groupName": "e.g., Residential, Local",
+            "groupNameEnglish": "e.g., Residential - Zone 1"
+        }
+    },
+    "type": {
+        "title": "Types of Use",
+        "add": "Add Type of Use",
+        "edit": "Edit Type of Use",
+        "addingToGroup": "Adding to {group} group",
+        "selectGroup": "Select group",
+        "selectType": "Select Type",
+        "selectUseTypeGroup": "Select UseTypeGroup",
+        "selectedGroup": "Selected: ",
+        "displayOrder": "Display order",
+        "searchPlaceholder" : "Search Type of use...",
+        "noTypes": "No types found for selected group.",
+        "selectTypeFirst": "Select a type first",
+        "mandatoryNote": "Fields marked with * are mandatory",
+        "fields": {
+            "typeId": "Type Of Use Code",
+            "type": "Type",
+            "useTypeGroup": "Use Type Group",
+            "typeNameEnglish": "Type Name (English)",
+            "typeNameRegional": "Type Name (Regional)",
+            "description": "Description",
+            "shortcutKey": "Keyboard Shortcut Key",
+            "sequence": "Key Wise Sequence",
+            "status": "Active Status"
+        },
+        "placeholders": {
+            "typeId": "e.g., RES, COM01, IND",
+            "typeNameEnglish": "e.g., Residential, Shop",
+            "typeNameRegional": "Name in regional language",
+            "description": "Enter description",
+            "shortcutKey": "e.g., ALT+T",
+            "sequence": "0"
+        },
+        "options": {
+            "residential": "R - Residential",
+            "commercial": "C - Commercial",
+            "industrial": "I - Industrial",
+            "nontaxable": "N - Non-taxable"
+        }
+    },
+    "subtype": {
+        "title": "Sub-Types of Use",
+        "add": "Add Sub-Type of Use",
+        "edit": "Edit Sub-Type",
+        "addSubtitle": "Create a new Sub-Type",
+        "forType": "For Type: {type}",
+        "searching": "Searching...",
+        "found": "Found {count} matching records",
+        "clear": "Clear",
+        "show": "Show",
+        "entries": "entries",
+        "searchPlaceholder": "Search SubTypes...",
+        "statusDefault": "Status will be saved as Active by default.",
+        "fields": {
+            "subTypeEnglish": "Sub-Type (English)",
+            "subTypeRegional": "Sub-Type (Regional)",
+            "shortcutKey": "Shortcut Key",
+            "sequence": "Sequence",
+            "status": "Status"
+        },
+        "placeholders": {
+            "subTypeEnglish": "Enter sub-type name",
+            "subTypeRegional": "Enter regional name",
+            "shortcutKey": "e.g., ALT+S or CTRL+SHIFT+S",
+            "sequence": "0"
+        }
+    },
+    "table": {
+        "columns": {
+            "serial": "#",
+            "group": "Group",
+            "type": "Type",
+            "subType": "Sub-Type",
+            "subTypeName": "Sub-Type Name",
+            "searchKey": "Search Key",
+            "searchSequence": "Search Sequence",
+            "shortcutKey": "Shortcut Key",
+            "sequence": "Sequence",
+            "status": "Status",
+            "actions": "Actions"
+        },
+        "showing": "Showing",
+        "to": "to",
+        "of": "of",
+        "records": "records",
+        "noRecords": "No records found"
+    },
+    "status": {
+        "active": "Active",
+        "inactive": "Inactive",
+        "is": "is",
+        "isCurrently": "is currently",
+        "toggleDescription": "Usage types are active"
+    },
+    "buttons": {
+        "add": "Add",
+        "edit": "Edit",
+        "delete": "Delete",
+        "save": "Save",
+        "cancel": "Cancel"
+    },
+    "messages": {
+        "createSuccess": "Created successfully.",
+        "updateSuccess": "Updated successfully.",
+        "deleteSuccess": "Deleted successfully.",
+        "createError": "is required.",
+        "updateError": "Error updating entry.",
+        "deleteError": "Error deleting entry.",
+        "maxLength": "must be maximum {count} characters.",
+        "onlyAlphanumeric": "must contain only letters and numbers (no special characters).",
+        "allowedChars": "can contain letters (any language), numbers, spaces and (. - ,).",
+        "allowedEnglishChars": "can contain only English letters, numbers, spaces and (. - ,).",
+        "allowedShortcutChars": "can contain only letters, spaces, '+' and '-' (numbers not allowed).",
+        "atLeastOneLetter": "must contain at least one letter.",
+        "sequenceNonNegative": "must be 0 or greater.",
+        "duplicateGroupId": "Duplicate group id is not allowed.",
+        "duplicateGroupName": "Duplicate group name is not allowed.",
+        "duplicateTypeId": "Duplicate Type Of Use Code is not allowed.",
+        "duplicateDescription": "Duplicate Description is not allowed.",
+        "duplicateSubTypeName": "Duplicate Sub-Type Name is not allowed.",
+        "typeMissing": "Type is missing.",
+        "typeRequired": "Type is required.",
+        "groupRequired": "Type Of Use Group is required.",
+        "descriptionRequired": "Description is required.",
+        "searchKeyRequired": "Search Key is required.",
+        "subTypeNameRequired": "Sub-Type Name is required.",
+        "subTypeNameLabel": "Sub-Type Name",
+        "searchKeyLabel": "Search Key",
+        "searchSequenceLabel": "Search Sequence",
+        "typeNotFound": "Type not found",
+        "subTypeNotFound": "Sub-Type not found",
+        "groupNotFound": "Use group not found",
+        "invalidGroupRecord": "Invalid group record",
+        "invalidTypeRecord": "Invalid type record",
+        "typeCreated": "Type Created",
+        "typeUpdated": "Type Updated",
+        "subTypeCreated": "Sub-Type Created",
+        "subTypeUpdated": "Sub-Type Updated",
+        "groupCreated": "Use Group Created",
+        "groupUpdated": "Use Group Updated",
+        "saveFailed": "Failed to save. Please try again.",
+       "createGroupFailed": "Create group failed. Please try again.",
+        "groupDeletedSuccess": "Group \"{name}\" deleted successfully",
+        "groupDeleteFailed": "Failed to delete group",
+        "typeDeletedSuccess": "Type \"{name}\" deleted successfully",
+        "typeDeleteFailed": "Failed to delete type",
+        "subTypeDeletedSuccess": "Sub-type \"{name}\" deleted successfully",
+        "subTypeDeleteFailed": "Failed to delete sub-type",
+        "noGroups": "No Use Groups found.",
+        "deleteConfirmation": "Delete record?",
+        "deleteWarning": "This action cannot be undone.",
+        "deleteTypeWithSubTypesTitle": "Delete Type with Sub-Types?",
+        "deleteTypeWithSubTypesDescription": "The type you want to delete has sub-types. Deleting it will also delete all its sub-types. Are you sure you want to proceed?",
+        "deleteGroupWithTypesTitle": "Delete Group with Types?",
+        "deleteGroupWithTypesDescription": "The group you want to delete has types associated with it. Deleting this group will also delete ALL its types and their sub-types. This action cannot be undone.",
+        "deleteAll": "Delete All"
+    }
+}
