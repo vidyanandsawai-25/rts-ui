@@ -1,6 +1,4 @@
 
-import type { MatrixColumn, MatrixRow } from "@/components/common/MatrixGrid";
-
 export interface ConstructionType {
   constructionId: number;
   constructionCode: string;
@@ -41,49 +39,4 @@ export type RangeRow = {
   min: number;
   max: number;
   label: string;
-};
-
-// Component props types for depreciation master
-export type DepreciationMasterProps = {
-  data: DepreciationRow[];
-  constructionTypes: ConstructionType[];
-  pageNumber: number;
-  pageSize: number;
-  totalCount: number;
-  totalPages: number;
-  locale?: string;
-};
-
-export type LeftPanelProps = {
-  minValue: string;
-  maxValue: string;
-  minError: string | null;
-  maxError: string | null;
-  ranges: RangeRow[];
-  selectedRangeId: string | null;
-  saving: boolean;
-  onMinChange: (value: string) => void;
-  onMaxChange: (value: string) => void;
-  onAddRange: () => void;
-  onSelectRange: (id: string) => void;
-  onDeleteRange: () => void;
-  t: (key: string) => string;
-};
-
-export type RightPanelProps = {
-  matrixColumns: MatrixColumn[];
-  matrixRows: MatrixRow[];
-  ranges: RangeRow[];
-  selectedRangeId: string | null;
-  saving: boolean;
-  pageNumber: number;
-  pageSize: number;
-  totalCount: number;
-  totalPages: number;
-  editableColumnIds: string[];
-  onCellChange: (rowId: string, columnId: string, value: string | number) => void;
-  onUpdateRates: () => void;
-  onPageChange: (page: number) => void;
-  onPageSizeChange: (size: number) => void;
-  t: (key: string) => string;
 };

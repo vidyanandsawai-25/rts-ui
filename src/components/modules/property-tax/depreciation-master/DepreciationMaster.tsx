@@ -18,14 +18,31 @@ import {
   deleteRangeAction,
 } from "@/app/[locale]/property-tax/depreciation-master/actions";
 
-import type { ConstructionType, DepreciationRow, RangeRow, DepreciationMasterProps } from "@/types/depreciation.types";
+import type { ConstructionType, DepreciationRow } from "@/types/depreciation.types";
 import { LeftPanel } from "./LeftPanel";
 import { RightPanel } from "./RightPanel";
 import { useRangeValidation } from "@/hooks/useRangeValidation";
 
+type RangeRow = {
+  id: string;
+  min: number;
+  max: number;
+  label: string;
+};
+
 function makeRangeId(min: number, max: number): string {
   return `${min}-${max}`;
 }
+
+type DepreciationMasterProps = {
+  data: DepreciationRow[];
+  constructionTypes: ConstructionType[];
+  pageNumber: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+  locale?: string;
+};
 
 export default function DepreciationMaster({
   data,

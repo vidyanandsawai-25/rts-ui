@@ -1,15 +1,38 @@
 "use client";
 
 import { SaveButton } from "@/components/common";
-import { CardPagination } from "@/components/common/CardList";
-import { MatrixGrid } from "@/components/common/MatrixGrid";
-import type { RightPanelProps } from "@/types/depreciation.types";
+import { CardPagination } from "@/components/common/Card";
+import {
+  MatrixGrid,
+  type MatrixColumn,
+  type MatrixRow,
+} from "@/components/common/MatrixGrid";
+import type { RangeRow } from "@/types/depreciation.types";
+
+type RightPanelProps = {
+  matrixColumns: MatrixColumn[];
+  matrixRows: MatrixRow[];
+  ranges: RangeRow[];
+  selectedRangeId: string | null;
+  saving: boolean;
+  pageNumber: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+  editableColumnIds: string[];
+  onCellChange: (rowId: string, columnId: string, value: string | number) => void;
+  onUpdateRates: () => void;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (size: number) => void;
+  t: (key: string) => string;
+};
 
 export function RightPanel({
   matrixColumns,
   matrixRows,
   ranges,
   selectedRangeId,
+  
   saving,
   pageNumber,
   pageSize,
@@ -21,7 +44,7 @@ export function RightPanel({
   onPageChange,
   onPageSizeChange,
   t,
-}: Readonly<RightPanelProps>) {
+}: RightPanelProps) {
   return (
     <div className="col-span-12 lg:col-span-10">
       <div className="bg-white rounded-2xl border shadow-sm h-155 flex flex-col">
