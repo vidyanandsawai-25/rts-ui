@@ -25,3 +25,23 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, var(--font-devanagari), sans-serif;
 }
+
+/* Global Sidebar Layout Shell Context */
+:root {
+  --sidebar-width: 64px;
+}
+
+body.sidebar-expanded {
+  --sidebar-width: 256px;
+}
+
+.layout-content-shifted {
+  margin-left: 0; /* Default for mobile */
+}
+
+@media (min-width: 1024px) {
+  .layout-content-shifted {
+    margin-left: var(--sidebar-width);
+    transition: margin-left 0.3s ease-in-out;
+  }
+}
