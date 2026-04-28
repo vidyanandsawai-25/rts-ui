@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
@@ -25,10 +25,15 @@ export function useEditRateSection({ onClose, onUpdate, zoneId, initialData, rat
   const [errors, setErrors] = useState<RateSectionFormErrors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [submittedOnce, setSubmittedOnce] = useState(false);
+  const prevRateRef = useRef(rate);
 
   useEffect(() => {
-    if (rate) setForm(p => ({ ...p, zoneCode: rate.rateSectionNo || "", zoneRegional: rate.description || "",
-      description: rate.description || "", isActive: Boolean(rate.isActive) }));
+    // Only update if rate has actually changed to prevent cascading renders
+    if (rate && rate !== prevRateRef.current) {
+      prevRateRef.current = rate;
+      setForm(p => ({ ...p, zoneCode: rate.rateSectionNo || "", zoneRegional: rate.description || "",
+        description: rate.description || "", isActive: Boolean(rate.isActive) }));
+    }
   }, [rate]);
 
   // Use shared validation from RateSectionForm

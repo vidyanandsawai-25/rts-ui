@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { TEXT_SANITIZE } from "@/lib/utils/validation";
 import { RateSectionWardItem } from "@/types/rateSectionMaster.types";
@@ -78,15 +78,20 @@ export function useLinkWardPagination({
     return selectedWards.filter(w => w.toLowerCase().includes(q));
   }, [selectedSearch, selectedWards]);
 
+  const prevOpenRef = useRef(open);
   useEffect(() => {
-    if (open) {
-      setSelectedWards(ssrSelectedWards);
-      setSelectedWardsTotalCount(ssrSelectedWardsTotalCount);
-    } else {
-      setCheckedAvailable(new Set());
-      setSelectedWards(ssrSelectedWards);
-      setSelectedWardsTotalCount(ssrSelectedWardsTotalCount);
-      setCheckedSelected(new Set());
+    // Only update when open state transitions to prevent cascading renders
+    if (open !== prevOpenRef.current) {
+      prevOpenRef.current = open;
+      if (open) {
+        setSelectedWards(ssrSelectedWards);
+        setSelectedWardsTotalCount(ssrSelectedWardsTotalCount);
+      } else {
+        setCheckedAvailable(new Set());
+        setSelectedWards(ssrSelectedWards);
+        setSelectedWardsTotalCount(ssrSelectedWardsTotalCount);
+        setCheckedSelected(new Set());
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
