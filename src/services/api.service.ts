@@ -4,7 +4,9 @@
  */
 
 import { getAppConfig } from '@/config/app.config';
+import { getAuthTokenFromCookies } from '@/lib/utils/cookie';
 import { ApiResponse } from '@/types/common.types';
+import { cookies } from 'next/headers';
 
 class ApiClient {
   private baseUrl: string;
@@ -75,7 +77,7 @@ class ApiClient {
         // Success response but invalid JSON - treat as empty/non-JSON response
         return undefined;
       }
-      
+
       // Error response with invalid JSON - throw error with details
       const err = new Error(
         `Invalid JSON response (HTTP ${response.status}): ${text.slice(0, 200)}`
@@ -121,6 +123,9 @@ class ApiClient {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
+    const cookieStore = await cookies();
+    const token = getAuthTokenFromCookies(cookieStore);
+
     try {
       const response = await fetch(`${this.baseUrl}${endpoint}`, {
         ...options,
@@ -128,6 +133,7 @@ class ApiClient {
         headers: {
           'Content-Type': 'application/json',
           ...options.headers,
+          "Authorization": `Bearer ${token}`,
         },
       });
 

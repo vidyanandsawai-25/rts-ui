@@ -52,7 +52,7 @@ function SortableHeader({
   };
 
   return (
-    <div className="flex items-center gap-1 justify-center w-full">
+    <div className="flex items-center gap-1 justify-start w-full">
       <span>{label}</span>
       {renderSortButton()}
     </div>
@@ -100,19 +100,19 @@ export function getConstructionTypeColumns(
     {
       key: "constructionCode",
       label: createSortableLabel(t("list.table.constructionCode"), "constructionCode"),
-      width: "15%",
+      width: "20%",
       render: (value) => (typeof value === "string" ? value : ""),
     },
     {
       key: "description",
       label: createSortableLabel(t("list.table.description"), "description"),
-      width: "35%",
+      width: "20%",
       render: (value) => (typeof value === "string" ? value : ""),
     },
     {
       key: "searchSequence",
       label: createSortableLabel(t("list.table.searchSequence"), "searchSequence"),
-      width: "15%",
+      width: "20%",
       render: (value) => (typeof value === "number" ? value : ""),
     },
     {

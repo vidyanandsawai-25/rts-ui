@@ -130,3 +130,8 @@ export function getUserIdFromCookies(cookieStore: CookieStoreLike): number | nul
   if (!Number.isFinite(id) || id <= 0) return null;
   return id;
 }
+export function getAuthTokenFromCookies(cookieStore: CookieStoreLike): string | null {
+  const token = cookieStore.get('auth_token')?.value;
+  if (!token) return null;
+  return token.trim() || null;
+}
