@@ -4,8 +4,8 @@ on:
   pull_request:
     branches:
       - main
-      - qa
       - dev
+      - qa
   workflow_dispatch:
 
 concurrency:
