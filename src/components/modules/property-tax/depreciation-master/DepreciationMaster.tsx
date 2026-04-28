@@ -18,7 +18,7 @@ import {
   deleteRangeAction,
 } from "@/app/[locale]/property-tax/depreciation-master/actions";
 
-import type { ConstructionType, DepreciationRow, RangeRow, DepreciationMasterProps } from "@/types/depreciation.types";
+import type { DepreciationConstructionType, DepreciationRow, RangeRow, DepreciationMasterProps } from "@/types/depreciation.types";
 import { LeftPanel } from "./LeftPanel";
 import { RightPanel } from "./RightPanel";
 import { useRangeValidation } from "@/hooks/useRangeValidation";
@@ -45,7 +45,7 @@ export default function DepreciationMaster({
   /* ----------------------------- State ----------------------------- */
   const [saving, setSaving] = useState(false);
   const [pendingChanges, setPendingChanges] = useState<Record<number, number>>({});
-  const [constructionTypes, setConstructionTypes] = useState<ConstructionType[]>(initialConstructionTypes);
+  const [constructionTypes, setConstructionTypes] = useState<DepreciationConstructionType[]>(initialConstructionTypes);
   const [dbRows, setDbRows] = useState<DepreciationRow[]>(data);
   const [ranges, setRanges] = useState<RangeRow[]>([]);
   const [selectedRangeId, setSelectedRangeId] = useState<string | null>(null);
@@ -83,7 +83,7 @@ export default function DepreciationMaster({
 
   /* ================= BUILD UI LOGIC ================= */
   const buildUiFromDb = useCallback(
-    (ct: ConstructionType[], currentDbRows: DepreciationRow[]) => {
+    (ct: DepreciationConstructionType[], currentDbRows: DepreciationRow[]) => {
       const rangeMap = new Map<string, RangeRow>();
       const rateMap: Record<string, Record<number, number>> = {};
 

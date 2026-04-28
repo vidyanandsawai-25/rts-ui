@@ -1,7 +1,7 @@
 import { apiClient } from '@/services/api.service';
 import { ApiError } from '@/lib/utils/api';
 import type {
-  ConstructionType,
+  DepreciationConstructionType,
   DepreciationRow,
   DepreciationPagedResponse,
 } from '@/types/depreciation.types';
@@ -44,7 +44,7 @@ export async function getDepreciationPaged(
 /**
  * Get construction types from construction-crud service
  */
-export async function getConstructionTypes(): Promise<ConstructionType[]> {
+export async function getConstructionTypes(): Promise<DepreciationConstructionType[]> {
   const constructionTypes = await getConstruction();
   return constructionTypes.map((ct) => ({
     constructionId: ct.id, 
@@ -229,7 +229,7 @@ export async function bulkUpdateDepreciationRates(payload: {
       rate: item.rate,
       yearRangeRVId: item.yearRangeRVId,
       isActive: true,
-      updatedBy: payload.updatedBy || 1,
+      updatedBy: payload.updatedBy ?? 1,
     },
   }));
 

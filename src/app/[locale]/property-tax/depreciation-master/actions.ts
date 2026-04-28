@@ -8,7 +8,7 @@ import {
   getDepreciationsAll,
   syncDepreciationRates,
 } from '@/lib/api/depreciation.services';
-import type { ActionResult, ConstructionType, DepreciationRow } from '@/types/depreciation.types';
+import type { ActionResult, DepreciationConstructionType, DepreciationRow } from '@/types/depreciation.types';
 
 /**
  * Path helper to ensure consistency across revalidations
@@ -34,7 +34,7 @@ export async function fetchRangesPagedServerAction(
   success: boolean;
   data?: {
     rows: DepreciationRow[];
-    constructionTypes: ConstructionType[];
+    constructionTypes: DepreciationConstructionType[];
     // Pagination info for ranges
     rangePageNumber: number;
     rangePageSize: number;
@@ -105,7 +105,7 @@ export async function fetchRangesPagedServerAction(
  */
 export async function getDepreciationScreenAction(): Promise<
   ActionResult<{
-    constructionTypes: ConstructionType[];
+    constructionTypes: DepreciationConstructionType[];
     rows: DepreciationRow[];
   }>
 > {

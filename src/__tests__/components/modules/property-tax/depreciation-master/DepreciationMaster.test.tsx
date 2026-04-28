@@ -2,7 +2,7 @@ import { render, screen,waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi, beforeEach, Mock } from "vitest";
 import DepreciationMaster from "@/components/modules/property-tax/depreciation-master/DepreciationMaster";
-import type { ConstructionType, DepreciationRow } from "@/types/depreciation.types";
+import type { DepreciationConstructionType, DepreciationRow } from "@/types/depreciation.types";
 
 // Mock next-intl
 vi.mock("next-intl", () => ({
@@ -97,7 +97,7 @@ import { addRangeAction, syncDepreciationRatesAction, deleteRangeAction } from "
 import { toast } from "sonner";
 
 describe("DepreciationMaster", () => {
-  const mockConstructionTypes: ConstructionType[] = [
+  const mockConstructionTypes: DepreciationConstructionType[] = [
     { constructionId: 1, constructionCode: "A" },
     { constructionId: 2, constructionCode: "B" },
     { constructionId: 3, constructionCode: "C" },

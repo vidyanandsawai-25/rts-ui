@@ -1,7 +1,7 @@
 
 import type { MatrixColumn, MatrixRow } from "@/components/common/MatrixGrid";
 
-export interface ConstructionType {
+export interface DepreciationConstructionType {
   constructionId: number;
   constructionCode: string;
 }
@@ -46,7 +46,7 @@ export type RangeRow = {
 // Component props types for depreciation master
 export type DepreciationMasterProps = {
   data: DepreciationRow[];
-  constructionTypes: ConstructionType[];
+  constructionTypes: DepreciationConstructionType[];
   pageNumber: number;
   pageSize: number;
   totalCount: number;
