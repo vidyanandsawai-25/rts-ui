@@ -76,35 +76,17 @@ export default function RateSectionContent({
   // Local state to immediately close drawer before navigation completes
   const [isDrawerClosing, setIsDrawerClosing] = useState(false);
 
-  // Selected rate section (sync with prop)
-  const initialRateSectionDefault = rates.length > 0
-    ? String(rates[0].rateSectionNo ?? '')
-    : null;
-  const [selectedRateSection, setSelectedRateSection] = useState<string | null>(initialSelectedRateSection || initialRateSectionDefault || null);
-
-  // Sync selectedRateSection with prop when it changes (from URL navigation)
-  useEffect(() => {
-    if (initialSelectedRateSection) {
-      setSelectedRateSection(initialSelectedRateSection);
-    }
-  }, [initialSelectedRateSection]);
+  // Selected rate section - use prop value or compute default
+  const selectedRateSection = useMemo(() => {
+    if (initialSelectedRateSection) return initialSelectedRateSection;
+    return rates.length > 0 ? String(rates[0].rateSectionNo ?? '') : null;
+  }, [initialSelectedRateSection, rates]);
 
   // Wards for selected rate section - use sections from SSR directly
   const wards = sections;
 
   // Drawers and highlights
   const [newlyCreatedRateNo, setNewlyCreatedRateNo] = useState<string | null>(null);
-  const [totalRateSections, setTotalRateSections] = useState(totalRateSectionCount);
-  const [totalWards, setTotalWards] = useState(initialTotalWards);
-
-  // Sync total counts with props
-  useEffect(() => {
-    setTotalRateSections(totalRateSectionCount);
-  }, [totalRateSectionCount]);
-
-  useEffect(() => {
-    setTotalWards(initialTotalWards);
-  }, [initialTotalWards]);
 
   // Extract drawer state from URL params using helper
   const { id, wardId, isAddRateSectionOpen, isAddWardOpen, isEditWardOpen } = useDrawerParams(searchParams);
@@ -152,6 +134,7 @@ export default function RateSectionContent({
   // Reset drawer closing state when URL changes (navigation complete)
   useEffect(() => {
     if (!searchParams.has('addWard')) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsDrawerClosing(false);
     }
   }, [searchParams]);
@@ -172,13 +155,13 @@ export default function RateSectionContent({
             <div className="flex items-center gap-3">
               <DashboardCard
                 label={t('dashboard.totalRateSections')}
-                value={totalRateSections}
+                value={totalRateSectionCount}
                 icon={<Layers className="w-5 h-5 text-[#1A86E8]" />}
                 className="min-w-[140px]"
               />
               <DashboardCard
                 label={t('dashboard.totalWards')}
-                value={totalWards}
+                value={initialTotalWards}
                 icon={<Map className="w-5 h-5 text-[#1A86E8]" />}
                 className="min-w-[140px]"
               />
@@ -196,7 +179,7 @@ export default function RateSectionContent({
             selectedRateSection={selectedRateSection}
             newlyCreatedRateNo={newlyCreatedRateNo}
             initialWardCounts={initialWardCounts}
-            totalCount={totalRateSections}
+            totalCount={totalRateSectionCount}
             onDeleteSuccess={() => router.refresh()}
           />
         </div>
