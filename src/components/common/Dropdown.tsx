@@ -28,7 +28,9 @@ interface MultiSelectDropdownProps {
   onChange: (values: string[]) => void;
   placeholder?: string;
   className?: string;
-  styles?: MultiSelectDropdownStyles; // ✅ NEW
+  styles?: MultiSelectDropdownStyles;
+  style?: React.CSSProperties; // ✅ NEW
+  triggerStyle?: React.CSSProperties; // ✅ NEW
 }
 
 /* ---------------- COMPONENT ---------------- */
@@ -40,6 +42,8 @@ export function MultiSelectDropdown({
   placeholder,
   className,
   styles,
+  style,
+  triggerStyle,
 }: MultiSelectDropdownProps) {
   const tCommon = useTranslations("common");
 
@@ -96,6 +100,7 @@ export function MultiSelectDropdown({
     <div
       ref={ref}
       className={cn("relative", styles?.container, className)}
+      style={style}
     >
       {label && (
         <label className="mb-1.5 block text-sm font-medium text-gray-700">
@@ -114,6 +119,7 @@ export function MultiSelectDropdown({
            focus:outline-none focus:ring-2 focus:ring-blue-500`,
           styles?.trigger
         )}
+        style={triggerStyle}
       >
         <span className="truncate text-left">
           {value.length > 0

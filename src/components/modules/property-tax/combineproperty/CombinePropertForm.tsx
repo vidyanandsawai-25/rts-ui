@@ -549,6 +549,7 @@ export default function CombinePropertyForm({
               onChange={handleIndividualChange}
               placeholder="Select properties"
               className="text-[11px] text-gray-500"
+              styles={{ trigger: 'h-[28px] py-0 px-2 rounded-md border-blue-200 shadow-none' }}
             />
           </div>
         )}
