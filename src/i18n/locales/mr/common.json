@@ -338,14 +338,5 @@
   },
   "note": {
     "mandatory": "* चिन्ह असलेली सर्व क्षेत्रे अनिवार्य आहेत"
-  },
-  "sidebar": {
-    "brandTitle": "Property Tax",
-    "brandSubtitle": "मालमत्ता कर विभाग",
-    "backToDashboard": "डॅशबोर्डवर परत जा",
-    "backToDashboardSecondary": "डॅशबोर्ड",
-    "footerCopyright": "© NTIS",
-    "openMenu": "मेनू उघडा",
-    "closeMenu": "मेनू बंद करा"
   }
 }

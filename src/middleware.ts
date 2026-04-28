@@ -54,11 +54,14 @@ export default function middleware(request: NextRequest) {
   // Redirect/rewrite from intl (e.g. locale prefix) must not be replaced with a bare `next()`
   const intlDidRedirectOrRewrite =
     intlResponse.headers.has('location') || intlResponse.headers.has('x-middleware-rewrite');
+  
   if (intlDidRedirectOrRewrite) {
+    intlResponse.headers.set('x-pathname', pathname);
     return intlResponse;
   }
 
   const response = NextResponse.next();
+  response.headers.set('x-pathname', pathname);
 
   intlResponse.headers.forEach((value, key) => {
     response.headers.set(key, value);

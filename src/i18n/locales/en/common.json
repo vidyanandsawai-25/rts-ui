@@ -372,14 +372,5 @@
   "note": {
     "mandatory": "Fields marked with * are mandatory"
   },
-  "rateUnit": "(₹/Sq.mtr)",
-  "sidebar": {
-    "brandTitle": "Property Tax",
-    "brandSubtitle": "मालमत्ता कर विभाग",
-    "backToDashboard": "Back to Dashboard",
-    "backToDashboardSecondary": "डॅशबोर्ड",
-    "footerCopyright": "© NTIS",
-    "openMenu": "Open menu",
-    "closeMenu": "Close menu"
-  }
+  "rateUnit": "(₹/Sq.mtr)"
 }

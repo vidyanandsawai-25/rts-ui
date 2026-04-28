@@ -10,7 +10,7 @@ export interface UserScreenAccess {
   screenNameLocal: string;
   screenIcon: string | null;
   routePath: string;
-  isMenu: boolean;
+  isMenu: boolean | number;
   canView: boolean;
   canEdit: boolean;
   canDelete: boolean;

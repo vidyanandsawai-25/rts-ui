@@ -11,6 +11,9 @@ vi.mock("next/navigation", () => ({
     refresh: vi.fn(),
   }),
   usePathname: () => "/",
+  useSearchParams: () => ({
+    get: vi.fn(() => null),
+  }),
 }));
 
 // Mock next-intl
