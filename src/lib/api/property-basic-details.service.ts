@@ -45,7 +45,7 @@ export async function getPropertyCategories(
   if (searchTerm?.trim()) {
     params.append("SearchTerm", searchTerm.trim());
   }
-  params.append("PageNo", pageNumber.toString());;
+  params.append("PageNo", pageNumber.toString());
 
   const response = await apiClient.get<PropertyCategoryApiResponse>(`/PropertyCategory?${params.toString()}`);
   return handleApiResponse(response, "Failed to fetch property categories").items ?? [];
