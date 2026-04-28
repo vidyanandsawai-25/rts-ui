@@ -286,7 +286,7 @@ class ApiClient {
         cleanHeaders[key] = String(value).replace(/[^\x00-\x7F]/g, '');
       });
 
-      const LOCAL_HTTPS_RE = /^https:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//;
+
       const useRelaxedTls = 
         typeof window === 'undefined' && 
         process.env.NODE_ENV === 'development' && 
