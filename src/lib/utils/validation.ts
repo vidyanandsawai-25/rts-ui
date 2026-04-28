@@ -1,129 +1,58 @@
 /**
  * Common validation functions for forms
+ *
+ * @module validation
+ * 
+ * @deprecated This file is kept for backward compatibility.
+ * New code should import from the specific modules:
+ * - validation-rules.ts for regex and sanitization patterns
+ * - validation-helpers.ts for utility functions
+ * - validation-schemas.ts for validators and schema factories
+ *
+ * ## Exports
+ *
+ * ### Constants (Regex & Sanitization)
+ * - `CODE_REGEX` - Validates alphanumeric and underscore (A-Z, a-z, 0-9, _) - underscore only in between
+ * - `CODE_SANITIZE` - Removes invalid characters for code fields
+ * - `DESCRIPTION_REGEX` - Validates multilingual text with punctuation (&, -, /, etc.) - special chars only in between, single space only
+ * - `DESCRIPTION_SANITIZE` - Removes invalid characters for descriptions
+ * - `TEXT_SANITIZE` - Generic text sanitization
+ * - `TEXT_ALLOWED` - Generic text validation - single space only
+ * - `SEARCH_KEY_REGEX` - Search key validation
+ *
+ * ### Functions
+ * - `validateForm(data, schema)` - Generic form validation function
+ * - `hasErrors(errors)` - Check if validation errors exist
+ * - `createMasterValidationSchema(t, isEdit, config)` - Factory for master form validators
+ *
+ * ### Validators (commonValidations)
+ * - `masterCode(t, maxLength, messageKeys)` - Generic code validation for all masters
+ * - `masterDescription(t, maxLength, messageKeys)` - Generic description validation for all masters
+ * - `masterSearchSequence(t, messageKey)` - Generic search sequence validation
+ * - `masterActiveStatus(t, isEdit, messageKey)` - Generic active status validation
+ *
+ * ### Helpers
+ * - `constructionValidators` - Backward compatibility helpers for construction module
  */
 
-export type Validator = (value: unknown) => string | undefined;
+// Re-export from validation-rules.ts
+export {
+  CODE_REGEX,
+  CODE_SANITIZE,
+  DESCRIPTION_REGEX,
+  DESCRIPTION_SANITIZE,
+  TEXT_SANITIZE,
+  TEXT_ALLOWED,
+  SEARCH_KEY_REGEX,
+} from './validation-rules';
 
-/* ================= CONSTANTS ================= */
-//ConstructionTypeMaster 
+// Re-export from validation-helpers.ts
+export type { Validator } from './validation-helpers';
+export { validateForm, hasErrors } from './validation-helpers';
 
-// Construction Code: Allow alphanumeric, underscore, hyphen (no spaces)
-export const CONSTRUCTION_CODE_REGEX = /^[a-zA-Z0-9_\-]+$/;
-export const CONSTRUCTION_CODE_SANITIZE = /[^a-zA-Z0-9_\-]/g;
-
-// Description: Allow all languages (Marathi, Hindi, English) with basic punctuation
-export const DESCRIPTION_REGEX = /^[\p{L}\p{M}\s\/,.\-()0-9\u200C\u200D]+$/u;
-export const DESCRIPTION_SANITIZE = /[^\p{L}\p{M}\s\/,.\-()0-9\u200C\u200D]/gu;
-
-//taxZone
-
-export const TEXT_SANITIZE = /[^\p{L}\p{M}\p{N}\s,./-]/gu; // Allow Unicode letters, marks, numbers, spaces, and basic punctuation
-export const TEXT_ALLOWED = /^[\p{L}\p{M}\p{N}\s,./-]+$/u; // Validation for allowed characters
-
-// RVRateMaster - Positive decimal validation (only numbers > 0 with decimals allowed)
-export const POSITIVE_DECIMAL_REGEX = /^(?!0(\.0+)?$)\d+(\.\d+)?$/;
-export const POSITIVE_DECIMAL_INVALID_KEYS = /^[eE+\-]$/; // Regex pattern to match invalid keys for positive decimal input
-
-/**
- * Validate positive decimal number (greater than 0, no negative, no letters, no special chars)
- * @param value - The value to validate
- * @returns true if valid positive decimal, false otherwise
- */
-export const isPositiveDecimal = (value: string | number): boolean => {
-  if (value === '' || value === null || value === undefined) return false;
-  const strValue = String(value).trim();
-  return POSITIVE_DECIMAL_REGEX.test(strValue) && Number(strValue) > 0;
-};
-
-/**
- * Sanitize input to allow only positive decimal numbers
- * Removes any invalid characters and ensures value is positive
- * @param value - The input value
- * @returns Sanitized positive decimal value or empty string
- */
-export const sanitizePositiveDecimal = (value: string): string => {
-  // Remove all non-numeric characters except dot
-  let sanitized = value.replace(/[^\d.]/g, '');
-  
-  // Allow only one decimal point
-  const parts = sanitized.split('.');
-  if (parts.length > 2) {
-    sanitized = parts[0] + '.' + parts.slice(1).join('');
-  }
-  
-  // Remove leading zeros (except for decimals like 0.5)
-  if (sanitized.startsWith('0') && sanitized.length > 1 && !sanitized.startsWith('0.')) {
-    sanitized = sanitized.replace(/^0+/, '');
-  }
-  
-  return sanitized;
-};
-
-/**
- * Generic form validation function
- */
-  export const validateForm = (data: unknown, schema: Record<string, Validator>) => {
-    const errors: Record<string, string> = {};
-    const formData = data as Record<string, unknown>;
-    
-    Object.keys(schema).forEach((key) => {
-      const validator = schema[key];
-      if (validator) {
-        const error = validator(formData[key]);
-        if (error) errors[key] = error;
-      }
-    });
-    
-    return errors;
-  };
-
-/**
- * Check if a form has any errors
- */
-export const hasErrors = (errors: Record<string, string>) => Object.keys(errors).length > 0;
-
-/**
- * Common validation rules
- */
-export const commonValidations = {
-  /**
-   * Validation for codes (required, alphanumeric, max length)
-   */
-  code: (
-    label: string,
-    t: (key: string, values?: Record<string, string | number | Date>) => string
-  ): Validator => (value: unknown) => {
-    const strVal = String(value || "");
-    if (!strVal || !strVal.trim()) return t('validation.required', { label });
-    if (!/^[a-zA-Z0-9-]+$/.test(strVal)) return t('validation.alphanumeric', { label });
-    if (strVal.length > 50) return t('validation.tooLong', { label });
-    return undefined;
-  },
-
-  /**
-   * Validation for names (required, max length)
-   */
-  name: (
-    label: string,
-    t: (key: string, values?: Record<string, string | number | Date>) => string
-  ): Validator => (value: unknown) => {
-    const strVal = String(value || "");
-    if (!strVal || !strVal.trim()) return t('validation.required', { label });
-    if (strVal.length > 100) return t('validation.tooLong', { label });
-    return undefined;
-  },
-
-  /**
-   * Validation for descriptions (optional by default, max length)
-   */
-  description: (
-    label: string,
-    t: (key: string, values?: Record<string, string | number | Date>) => string,
-    required: boolean = false
-  ): Validator => (value: unknown) => {
-    const strVal = String(value || "");
-    if (required && (!strVal || !strVal.trim())) return t('validation.required', { label });
-    if (strVal && strVal.length > 500) return t('validation.tooLong', { label });
-    return undefined;
-  }
-};
+// Re-export from validation-schemas.ts
+export {
+  commonValidations,
+  createMasterValidationSchema,
+  constructionValidators,
+} from './validation-schemas';

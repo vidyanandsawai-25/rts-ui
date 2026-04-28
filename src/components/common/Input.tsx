@@ -7,6 +7,7 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
   helperText?: string;
   fullWidth?: boolean;
   required?: boolean;
+  'data-testid'?: string;
 }
 
 /**
@@ -44,6 +45,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           aria-describedby={
             error ? `${inputId}-error` : helperText ? `${inputId}-helper` : undefined
           }
+          data-testid={props['data-testid']}
           {...props}
         />
         {error && (

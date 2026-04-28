@@ -1,29 +1,75 @@
 /**
- * Next.js Middleware for i18n routing
- * Handles locale detection and URL-based language routing
+ * Next.js Middleware: i18n routing + auth gate
+ * All locale routes except /[locale]/login require a valid session cookie pair.
  */
 
 import createMiddleware from 'next-intl/middleware';
-import { locales, defaultLocale } from './i18n/config';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { defaultLocale, locales } from './i18n/config';
 
-export default createMiddleware({
-  // Supported locales
-  locales,
-
-  // Default locale when none specified
+const intlMiddleware = createMiddleware({
+  locales: [...locales],
   defaultLocale,
-
-  // Always show locale in URL for consistency
-  // /en/dashboard = English
-  // /hi/dashboard = Hindi
-  // /mr/dashboard = Marathi
   localePrefix: 'always',
-
-  // Disable auto-detection to prioritize cookie
   localeDetection: false,
 });
 
+function hasFullSession(request: NextRequest): boolean {
+  const token = (request.cookies.get('auth_token')?.value ?? '').trim();
+  const refresh = (request.cookies.get('refresh_token')?.value ?? '').trim();
+  return token.length > 0 && refresh.length > 0;
+}
+
+function localeAndPathWithoutLocale(pathname: string): { locale: string; pathWithoutLocale: string } {
+  const segments = pathname.split('/').filter(Boolean);
+  const first = segments[0];
+  const hasLocalePrefix = (locales as readonly string[]).includes(first);
+  const locale = hasLocalePrefix ? first : defaultLocale;
+  const rest = hasLocalePrefix ? segments.slice(1) : segments;
+  const pathWithoutLocale = rest.length === 0 ? '/' : `/${rest.join('/')}`;
+  return { locale, pathWithoutLocale };
+}
+
+export default function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const { locale, pathWithoutLocale } = localeAndPathWithoutLocale(pathname);
+
+  const isLoginRoute =
+    pathWithoutLocale === '/login' || pathWithoutLocale.startsWith('/login/');
+
+  if (isLoginRoute) {
+    if (hasFullSession(request)) {
+      return NextResponse.redirect(new URL(`/${locale}/dashboard`, request.url));
+    }
+  }
+
+  if (!isLoginRoute && !hasFullSession(request)) {
+    return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
+  }
+
+  // Use intl middleware for locale handling
+  const intlResponse = intlMiddleware(request);
+
+  // Redirect/rewrite from intl (e.g. locale prefix) must not be replaced with a bare `next()`
+  const intlDidRedirectOrRewrite =
+    intlResponse.headers.has('location') || intlResponse.headers.has('x-middleware-rewrite');
+  if (intlDidRedirectOrRewrite) {
+    return intlResponse;
+  }
+
+  const response = NextResponse.next();
+
+  intlResponse.headers.forEach((value, key) => {
+    response.headers.set(key, value);
+  });
+  intlResponse.cookies.getAll().forEach((cookie) => {
+    response.cookies.set(cookie);
+  });
+
+  return response;
+}
+
 export const config = {
-  // Match all paths except API routes, Next.js internals, and static files
   matcher: ['/((?!api|_next|_vercel|.*\\..*).*)'],
 };

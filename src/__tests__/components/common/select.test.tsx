@@ -35,7 +35,7 @@ describe("Select", () => {
   it("opens dropdown on button click", () => {
     render(<Select options={options} />);
     // Find the button by role
-    const button = screen.getByRole("button");
+    const button = screen.getByRole("combobox");
     fireEvent.click(button);
     expect(screen.getByRole("listbox")).toBeInTheDocument();
     expect(screen.getByText("Apple")).toBeInTheDocument();
@@ -45,7 +45,7 @@ describe("Select", () => {
   it("selects option and calls onChange", () => {
     const handleChange = vi.fn();
     render(<Select options={options} onChange={handleChange} />);
-    const button = screen.getByRole("button");
+    const button = screen.getByRole("combobox");
     fireEvent.click(button);
     fireEvent.click(screen.getByText("Banana"));
     expect(handleChange).toHaveBeenCalledWith("banana");
@@ -56,17 +56,17 @@ describe("Select", () => {
   it("does not select disabled option", () => {
     const handleChange = vi.fn();
     render(<Select options={options} onChange={handleChange} />);
-    const button = screen.getByRole("button");
+    const button = screen.getByRole("combobox");
     fireEvent.click(button);
     fireEvent.click(screen.getByText("Cherry"));
     expect(handleChange).not.toHaveBeenCalled();
   });
 
   it("applies custom className", () => {
-    render(<Select options={options} className="custom-class" />);
-    // The custom class is applied to the select root (the second div)
-    const selectDiv = document.querySelector("div[tabindex='0']");
-    expect(selectDiv).toHaveClass("custom-class");
+    const { container } = render(<Select options={options} className="custom-class" />);
+    // The custom class is applied to the select wrapper div (inside the flex container)
+    const selectWrapper = container.querySelector(".relative.w-full");
+    expect(selectWrapper).toHaveClass("custom-class");
   });
 
   it("renders with selectSize 'sm' and 'md'", () => {
@@ -80,21 +80,18 @@ describe("Select", () => {
 
   it("renders as disabled", () => {
     render(<Select options={options} disabled />);
-    const button = screen.getByRole("button");
+    const button = screen.getByRole("combobox");
     expect(button).toBeDisabled();
     expect(button).toHaveClass("cursor-not-allowed");
   });
 
   it("closes dropdown on blur", () => {
     render(<Select options={options} />);
-    // The select root is the div with tabindex=0
-    const selectDiv = document.querySelector("div[tabindex='0']");
-    const button = screen.getByRole("button");
+    const button = screen.getByRole("combobox");
     fireEvent.click(button);
     expect(screen.getByRole("listbox")).toBeInTheDocument();
-    if (selectDiv) {
-      fireEvent.blur(selectDiv);
-    }
+    // Blur the button to close the dropdown
+    fireEvent.blur(button);
     expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
   });
 
