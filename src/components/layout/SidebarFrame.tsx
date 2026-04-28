@@ -76,16 +76,10 @@ export function SidebarFrame({ closeMenuLabel, openMenuLabel = 'Open menu', chil
           fixed top-20 left-0 bottom-0 z-50 bg-white shadow-xl flex flex-col overflow-hidden
           transition-all duration-300 ease-in-out border-r border-gray-200
           ${open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-          ${collapsed ? 'w-16' : 'w-64'}
+          ${collapsed ? 'w-16' : 'w-64 sidebar-expanded-aside'}
         `}
       >
-        <div
-          className={
-            collapsed
-              ? 'flex flex-col flex-1 min-h-0 overflow-hidden [&_.sidebar-brand-row]:justify-center [&_.sidebar-expandable-label]:w-0 [&_.sidebar-expandable-label]:min-w-0 [&_.sidebar-expandable-label]:opacity-0 [&_.sidebar-expandable-label]:overflow-hidden [&_.sidebar-footer-label]:h-0 [&_.sidebar-footer-label]:opacity-0 [&_.sidebar-footer-label]:py-0 [&_.sidebar-back-icon]:mx-auto'
-              : 'flex flex-col flex-1 min-h-0 overflow-hidden'
-          }
-        >
+        <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
           {children}
         </div>
       </aside>

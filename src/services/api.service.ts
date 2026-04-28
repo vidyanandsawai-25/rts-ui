@@ -279,10 +279,17 @@ class ApiClient {
       }
 
       const url = `${this.baseUrl.endsWith('/') ? this.baseUrl : `${this.baseUrl}/`}${endpoint.startsWith('/') ? endpoint.slice(1) : endpoint}`;
+      
+      // Ensure all headers are ASCII-only to prevent undici ByteString errors
+      const cleanHeaders: Record<string, string> = {};
+      Object.entries(headers).forEach(([key, value]) => {
+        cleanHeaders[key] = String(value).replace(/[^\x00-\x7F]/g, '');
+      });
+
       const response = await serverFetch(url, {
         ...options,
         signal: controller.signal,
-        headers,
+        headers: cleanHeaders,
         cache: 'no-store', // SSR should not cache authenticated responses
       });
 
