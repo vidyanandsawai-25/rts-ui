@@ -56,14 +56,15 @@ export async function getConstructionTypes(): Promise<DepreciationConstructionTy
  * Fetch all depreciation records (for bulk operations)
  * Handles API pagination by fetching all pages
  * @returns Array of all depreciation records
+ * @throws ApiError if pagination exceeds safety limit
  */
 export async function getDepreciationsAll(): Promise<DepreciationRow[]> {
   const allItems: DepreciationRow[] = [];
   let pageNumber = 1;
   const pageSize = 100;
-  let hasMore = true;
+  const MAX_PAGES_SAFETY_LIMIT = 100;
 
-  while (hasMore) {
+  while (true) {
     const params = new URLSearchParams({
       pageNumber: pageNumber.toString(),
       pageSize: pageSize.toString(),
@@ -88,10 +89,24 @@ export async function getDepreciationsAll(): Promise<DepreciationRow[]> {
     const items = response.data.items || [];
     allItems.push(...items);
 
-    hasMore = response.data.hasNext === true && items.length > 0;
+    // Use totalPages from response to determine if we should continue
+    const { totalPages, hasNext } = response.data;
+    
+    // Stop if we've reached the last page
+    if (pageNumber >= totalPages || hasNext !== true || items.length === 0) {
+      break;
+    }
+
     pageNumber++;
 
-    if (pageNumber > 100) break;
+    // Safety limit to prevent infinite loops - throw error instead of silent truncation
+    if (pageNumber > MAX_PAGES_SAFETY_LIMIT) {
+      throw new ApiError(
+        500,
+        `Pagination exceeded safety limit of ${MAX_PAGES_SAFETY_LIMIT} pages. Total pages reported: ${totalPages}`,
+        'Data fetch incomplete - too many pages'
+      );
+    }
   }
 
   return allItems;
