@@ -437,7 +437,7 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
                         col.render(value, row, i)
                       ) : col.isStatus ? (
                         isPrimitive(value) ? (
-                          <StatusBadge value={value} />
+                          <StatusBadge value={value ?? null} variant="status" />
                         ) : (
                           <span className="font-medium">-</span>
                         )

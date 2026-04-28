@@ -18,12 +18,13 @@ export default getRequestConfig(async ({ locale }) => {
   const validatedLocale = validateLocale(locale);
 
   // Load all translation files
-  const [commonMessages, dashboardMessages,constructionMessages, floorMessages, taxzoneMessages, modulesMessages] = await Promise.all([
+  const [commonMessages, dashboardMessages,constructionMessages, floorMessages, taxzoneMessages, rateSectionMasterMessages, modulesMessages] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/dashboard.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/construction.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/floor.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/taxzone.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/rateSectionMaster.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
     
   ]);
@@ -34,8 +35,9 @@ export default getRequestConfig(async ({ locale }) => {
       common: commonMessages,
       dashboard: dashboardMessages,
       construction: constructionMessages,
-      floor: floorMessages,
+      floor: floorMessages,      
       taxZone: taxzoneMessages.taxZone,
+      rateSectionMaster: rateSectionMasterMessages,
       modules: modulesMessages,
     },
   };
