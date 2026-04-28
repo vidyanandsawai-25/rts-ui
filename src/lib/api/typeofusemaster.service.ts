@@ -1,4 +1,4 @@
-import { appConfig } from "@/config/app.config";
+import { apiClient } from "@/services/api.service";
 import type {
   TypeOfUseMasterData,
   UseGroup,
@@ -7,41 +7,6 @@ import type {
   UseType,
   UseSubType,
 } from "@/types/typeOfUse.types";
-
-/** helper: dev SSL (✅ FIXED: only attach https agent when baseUrl is https) */
-export async function withDevSsl(fetchOptions: RequestInit): Promise<RequestInit> {
-  const baseUrl = String(appConfig.api.baseUrl ?? "");
-
-  // ✅ If API is http://localhost..., NEVER attach https agent (causes ERR_SSL_WRONG_VERSION_NUMBER)
-  if (!baseUrl.startsWith("https://")) return fetchOptions;
-
-  if (process.env.NODE_ENV === "development" && typeof window === "undefined") {
-    const https = await import("https");
-    const agent = new https.Agent({ rejectUnauthorized: false });
-    // @ts-expect-error node fetch accepts agent
-    fetchOptions.agent = agent;
-  }
-  return fetchOptions;
-}
-
-// export async function withDevSsl(fetchOptions: RequestInit): Promise<RequestInit> {
-//   // ✅ If running in browser, DO NOT try to import https / attach agent
-//   if (typeof window !== "undefined") return fetchOptions;
-
-//   const baseUrl = String(appConfig.api.baseUrl ?? "");
-
-//   // ✅ If API is http://..., don't attach agent
-//   if (!baseUrl.startsWith("https://")) return fetchOptions;
-
-//   if (process.env.NODE_ENV === "development") {
-//     const https = await import("https");
-//     const agent = new https.Agent({ rejectUnauthorized: false });
-//     // @ts-expect-error node fetch accepts agent
-//     fetchOptions.agent = agent;
-//   }
-
-//   return fetchOptions;
-// }
 
 /** -------------------- PAGED RESPONSE -------------------- */
 export interface PagedResponse<T> {
@@ -91,7 +56,7 @@ function iconKeyToApi(iconKey: UseGroupIconKey): string {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapApiGroupToUi(g: any): UseGroup {
   return {
-    typeOfUseGroupId: Number(g.typeOfUseGroupId ?? g.typeOfUseGroupID ?? g.id ?? 0),
+    typeOfUseGroupId: Number(g.id ?? g.typeOfUseGroupId ?? g.typeOfUseGroupID ?? 0),
     typeOfUseGroupCode: String(g.typeOfUseGroupCode ?? ""),
     groupName: String(g.groupName ?? ""),
     groupIcon: String(g.groupIcon ?? "home-icon"),
@@ -107,7 +72,7 @@ function mapApiGroupToUi(g: any): UseGroup {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapApiTypeToUi(t: any): UseType {
   return {
-    typeOfUseId: Number(t.typeOfUseId ?? t.typeOfUseID ?? t.id ?? 0),
+    typeOfUseId: Number(t.id ?? t.typeOfUseId ?? t.typeOfUseID ?? 0),
     typeOfUseCode: String(t.typeOfUseCode ?? ""),
     description: String(t.description ?? ""),
     type: String(t.type ?? ""),
@@ -155,13 +120,6 @@ export async function getUseGroupsPagedServer(params: {
   filterLogic?: number;
   typeOfUseGroupId?: number;
 }): Promise<PagedResponse<UseGroup>> {
-  let fetchOptions: RequestInit = {
-    method: "GET",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
-    cache: "no-store",
-  };
-  fetchOptions = await withDevSsl(fetchOptions);
-
   const qs = new URLSearchParams();
   qs.set("PageNumber", String(params.pageNumber));
   qs.set("PageSize", String(params.pageSize));
@@ -171,28 +129,30 @@ export async function getUseGroupsPagedServer(params: {
   if (typeof params.filterLogic === "number") qs.set("FilterLogic", String(params.filterLogic));
   if (typeof params.typeOfUseGroupId === "number") qs.set("TypeOfUseGroupId", String(params.typeOfUseGroupId));
 
-  const res = await fetch(`${appConfig.api.baseUrl}/TypeOfUseGroup?${qs.toString()}`, fetchOptions);
-  if (!res.ok) {
-    const raw = await res.text().catch(() => "");
-    throw new Error(`Failed to fetch groups: ${res.status} ${res.statusText} ${raw}`);
+  const response = await apiClient.get<PagedResponse<any>>(`/TypeOfUseGroup?${qs.toString()}`, {
+    cache: "no-store",
+    headers: { "Accept": "application/json" },
+  });
+  
+  if (!response.success) {
+    throw new Error(response.error ?? "Failed to fetch groups");
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const data = (await res.json()) as PagedResponse<any>;
+  const data = response.data!;
   return { ...data, items: (data.items ?? []).map(mapApiGroupToUi) };
 }
 
 export async function getUseGroupById(id: string | number): Promise<UseGroup | null> {
-  let fetchOptions: RequestInit = {
-    method: "GET",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
+  const response = await apiClient.get<any>(`/TypeOfUseGroup/${id}`, {
     cache: "no-store",
-  };
-  fetchOptions = await withDevSsl(fetchOptions);
-
-  const res = await fetch(`${appConfig.api.baseUrl}/TypeOfUseGroup/${id}`, fetchOptions);
-  if (!res.ok) return null;
-  return mapApiGroupToUi(await res.json());
+    headers: { "Accept": "application/json" },
+  });
+  
+  if (!response.success) {
+    return null;
+  }
+  
+  return response.data ? mapApiGroupToUi(response.data) : null;
 }
 
 export async function createUseGroupApi(input: {
@@ -211,23 +171,16 @@ export async function createUseGroupApi(input: {
     createdBy: Number(input.createdBy ?? "1"),
   };
 
-  let fetchOptions: RequestInit = {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
+  const response = await apiClient.post<any>("/TypeOfUseGroup", payload, {
     cache: "no-store",
-    body: JSON.stringify(payload),
-  };
-  fetchOptions = await withDevSsl(fetchOptions);
-
-  const res = await fetch(`${appConfig.api.baseUrl}/TypeOfUseGroup`, fetchOptions);
-  const raw = await res.text().catch(() => "");
-  if (!res.ok) throw new Error(`Create group failed: ${res.status} ${res.statusText} ${raw}`);
-
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return raw;
+    headers: { "Accept": "application/json" },
+  });
+  
+  if (!response.success) {
+    throw new Error(response.error ?? "Create group failed");
   }
+  
+  return response.data;
 }
 
 export async function updateUseGroupApi(input: {
@@ -248,45 +201,28 @@ export async function updateUseGroupApi(input: {
     updatedBy: Number(input.updatedBy ?? "1"),
   };
 
-  let fetchOptions: RequestInit = {
-    method: "PUT",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
+  const response = await apiClient.put<any>(`/TypeOfUseGroup/${input.typeOfUseGroupId}`, payload, {
     cache: "no-store",
-    body: JSON.stringify(payload),
-  };
-  fetchOptions = await withDevSsl(fetchOptions);
-
-  const res = await fetch(`${appConfig.api.baseUrl}/TypeOfUseGroup/${input.typeOfUseGroupId}`, fetchOptions);
-  const raw = await res.text().catch(() => "");
-  if (!res.ok) throw new Error(`Update group failed: ${res.status} ${res.statusText} ${raw}`);
-
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return raw;
+    headers: { "Accept": "application/json" },
+  });
+  
+  if (!response.success) {
+    throw new Error(response.error ?? "Update group failed");
   }
+  
+  return response.data;
 }
 
 export async function deleteUseGroupApi(id: string | number) {
-  let fetchOptions: RequestInit = {
-    method: "DELETE",
+  const response = await apiClient.delete<any>(`/TypeOfUseGroup/${id}`, {
     cache: "no-store",
-    headers: { Accept: "application/json" },
-  };
-  fetchOptions = await withDevSsl(fetchOptions);
-
-  const res = await fetch(`${appConfig.api.baseUrl}/TypeOfUseGroup/${id}`, fetchOptions);
-  if (!res.ok) {
-    const raw = await res.text().catch(() => "");
-    let errorMessage = `Delete group failed: ${res.status} ${res.statusText}`;
-    try {
-      const errData = JSON.parse(raw);
-      if (errData.message) {
-        errorMessage = errData.message;
-      }
-    } catch { }
-    throw new Error(errorMessage);
+    headers: { "Accept": "application/json" },
+  });
+  
+  if (!response.success) {
+    throw new Error(response.error ?? "Delete group failed");
   }
+  
   return true;
 }
 
@@ -305,13 +241,6 @@ export async function getUseTypesPagedServer(params: {
   type?: string;
   typeOfUseGroupId?: number;
 }): Promise<PagedResponse<UseType>> {
-  let fetchOptions: RequestInit = {
-    method: "GET",
-    headers: { Accept: "application/json" },
-    cache: "no-store",
-  };
-  fetchOptions = await withDevSsl(fetchOptions);
-
   const qs = new URLSearchParams();
   qs.set("PageNumber", String(params.pageNumber));
   qs.set("PageSize", String(params.pageSize));
@@ -323,28 +252,30 @@ export async function getUseTypesPagedServer(params: {
   if (params.type) qs.set("Type", params.type);
   if (typeof params.typeOfUseGroupId === "number") qs.set("TypeOfUseGroupId", String(params.typeOfUseGroupId));
 
-  const res = await fetch(`${appConfig.api.baseUrl}/TypeOfUse?${qs.toString()}`, fetchOptions);
-  if (!res.ok) {
-    const raw = await res.text().catch(() => "");
-    throw new Error(`Failed to fetch types: ${res.status} ${res.statusText} ${raw}`);
+  const response = await apiClient.get<PagedResponse<any>>(`/TypeOfUse?${qs.toString()}`, {
+    cache: "no-store",
+    headers: { "Accept": "application/json" },
+  });
+  
+  if (!response.success) {
+    throw new Error(response.error ?? "Failed to fetch types");
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const data = (await res.json()) as PagedResponse<any>;
+  const data = response.data!;
   return { ...data, items: (data.items ?? []).map(mapApiTypeToUi) };
 }
 
 export async function getUseTypeById(id: string | number): Promise<UseType | null> {
-  let fetchOptions: RequestInit = {
-    method: "GET",
-    headers: { Accept: "application/json" },
+  const response = await apiClient.get<any>(`/TypeOfUse/${id}`, {
     cache: "no-store",
-  };
-  fetchOptions = await withDevSsl(fetchOptions);
-
-  const res = await fetch(`${appConfig.api.baseUrl}/TypeOfUse/${id}`, fetchOptions);
-  if (!res.ok) return null;
-  return mapApiTypeToUi(await res.json());
+    headers: { "Accept": "application/json" },
+  });
+  
+  if (!response.success) {
+    return null;
+  }
+  
+  return response.data ? mapApiTypeToUi(response.data) : null;
 }
 
 export async function createUseTypeApi(input: {
@@ -369,23 +300,16 @@ export async function createUseTypeApi(input: {
     createdBy: Number(input.createdBy ?? "1"),
   };
 
-  let fetchOptions: RequestInit = {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
+  const response = await apiClient.post<any>("/TypeOfUse", payload, {
     cache: "no-store",
-    body: JSON.stringify(payload),
-  };
-  fetchOptions = await withDevSsl(fetchOptions);
-
-  const res = await fetch(`${appConfig.api.baseUrl}/TypeOfUse`, fetchOptions);
-  const raw = await res.text().catch(() => "");
-  if (!res.ok) throw new Error(`Create type failed: ${res.status} ${res.statusText} ${raw}`);
-
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return raw;
+    headers: { "Accept": "application/json" },
+  });
+  
+  if (!response.success) {
+    throw new Error(response.error ?? "Create type failed");
   }
+  
+  return response.data;
 }
 
 export async function updateUseTypeApi(input: {
@@ -412,45 +336,28 @@ export async function updateUseTypeApi(input: {
     updatedBy: Number(input.updatedBy ?? "1"),
   };
 
-  let fetchOptions: RequestInit = {
-    method: "PUT",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
+  const response = await apiClient.put<any>(`/TypeOfUse/${input.typeOfUseId}`, payload, {
     cache: "no-store",
-    body: JSON.stringify(payload),
-  };
-  fetchOptions = await withDevSsl(fetchOptions);
-
-  const res = await fetch(`${appConfig.api.baseUrl}/TypeOfUse/${input.typeOfUseId}`, fetchOptions);
-  const raw = await res.text().catch(() => "");
-  if (!res.ok) throw new Error(`Update type failed: ${res.status} ${res.statusText} ${raw}`);
-
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return raw;
+    headers: { "Accept": "application/json" },
+  });
+  
+  if (!response.success) {
+    throw new Error(response.error ?? "Update type failed");
   }
+  
+  return response.data;
 }
 
 export async function deleteUseTypeApi(id: string) {
-  let fetchOptions: RequestInit = {
-    method: "DELETE",
+  const response = await apiClient.delete<any>(`/TypeOfUse/${id}`, {
     cache: "no-store",
-    headers: { Accept: "application/json" },
-  };
-  fetchOptions = await withDevSsl(fetchOptions);
-
-  const res = await fetch(`${appConfig.api.baseUrl}/TypeOfUse/${id}`, fetchOptions);
-  if (!res.ok) {
-    const raw = await res.text().catch(() => "");
-    let errorMessage = `Delete type failed: ${res.status} ${res.statusText}`;
-    try {
-      const errData = JSON.parse(raw);
-      if (errData.message) {
-        errorMessage = errData.message;
-      }
-    } catch { }
-    throw new Error(errorMessage);
+    headers: { "Accept": "application/json" },
+  });
+  
+  if (!response.success) {
+    throw new Error(response.error ?? "Delete type failed");
   }
+  
   return true;
 }
 
@@ -521,7 +428,7 @@ export async function deleteUseTypeApi(id: string) {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapApiSubTypeToUi(s: any): UseSubType {
   return {
-    subTypeOfUseId: Number(s.subTypeOfUseId ?? s.subTypeOfUseID ?? s.id ?? 0),
+    subTypeOfUseId: Number(s.id ?? s.subTypeOfUseId ?? s.subTypeOfUseID ?? 0),
     description: String(s.description ?? ""),
     typeOfUseId: Number(s.typeOfUseId ?? s.typeOfUseID ?? s.typeId ?? 0),
     searchKey: String(s.searchKey ?? s.SearchKey ?? ""),
@@ -586,13 +493,6 @@ export async function getSubTypesPagedServer(params: {
   filterLogic?: number;
   typeOfUseId?: number;
 }): Promise<PagedResponse<UseSubType>> {
-  let fetchOptions: RequestInit = {
-    method: "GET",
-    headers: { Accept: "application/json" },
-    cache: "no-store",
-  };
-  fetchOptions = await withDevSsl(fetchOptions);
-
   const qs = new URLSearchParams();
   qs.set("PageNumber", String(params.pageNumber));
   qs.set("PageSize", String(params.pageSize));
@@ -602,28 +502,30 @@ export async function getSubTypesPagedServer(params: {
   if (typeof params.filterLogic === "number") qs.set("FilterLogic", String(params.filterLogic));
   if (typeof params.typeOfUseId === "number") qs.set("TypeOfUseId", String(params.typeOfUseId));
 
-  const res = await fetch(`${appConfig.api.baseUrl}/SubTypeOfUse?${qs.toString()}`, fetchOptions);
-  if (!res.ok) {
-    const raw = await res.text().catch(() => "");
-    throw new Error(`Failed to fetch sub-types: ${res.status} ${res.statusText} ${raw}`);
+  const response = await apiClient.get<PagedResponse<any>>(`/SubTypeOfUse?${qs.toString()}`, {
+    cache: "no-store",
+    headers: { "Accept": "application/json" },
+  });
+  
+  if (!response.success) {
+    throw new Error(response.error ?? "Failed to fetch sub-types");
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const data = (await res.json()) as PagedResponse<any>;
+  const data = response.data!;
   return { ...data, items: (data.items ?? []).map(mapApiSubTypeToUi) };
 }
 
 export async function getSubTypeByIdApi(id: string | number): Promise<UseSubType | null> {
-  let fetchOptions: RequestInit = {
-    method: "GET",
-    headers: { Accept: "application/json" },
+  const response = await apiClient.get<any>(`/SubTypeOfUse/${id}`, {
     cache: "no-store",
-  };
-  fetchOptions = await withDevSsl(fetchOptions);
-
-  const res = await fetch(`${appConfig.api.baseUrl}/SubTypeOfUse/${id}`, fetchOptions);
-  if (!res.ok) return null;
-  return mapApiSubTypeToUi(await res.json());
+    headers: { "Accept": "application/json" },
+  });
+  
+  if (!response.success) {
+    return null;
+  }
+  
+  return response.data ? mapApiSubTypeToUi(response.data) : null;
 }
 
 export async function createSubTypeApi(input: {
@@ -644,23 +546,16 @@ export async function createSubTypeApi(input: {
     createdBy: Number(input.createdBy ?? "1"),
   };
 
-  let fetchOptions: RequestInit = {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
+  const response = await apiClient.post<any>("/SubTypeOfUse", payload, {
     cache: "no-store",
-    body: JSON.stringify(payload),
-  };
-  fetchOptions = await withDevSsl(fetchOptions);
-
-  const res = await fetch(`${appConfig.api.baseUrl}/SubTypeOfUse`, fetchOptions);
-  const raw = await res.text().catch(() => "");
-  if (!res.ok) throw new Error(`Create sub-type failed: ${res.status} ${res.statusText} ${raw}`);
-
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return raw;
+    headers: { "Accept": "application/json" },
+  });
+  
+  if (!response.success) {
+    throw new Error(response.error ?? "Create sub-type failed");
   }
+  
+  return response.data;
 }
 
 export async function updateSubTypeApi(input: {
@@ -683,64 +578,45 @@ export async function updateSubTypeApi(input: {
     updatedBy: Number(input.updatedBy ?? "1"),
   };
 
-  let fetchOptions: RequestInit = {
-    method: "PUT",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
+  const response = await apiClient.put<any>(`/SubTypeOfUse/${input.subTypeOfUseId}`, payload, {
     cache: "no-store",
-    body: JSON.stringify(payload),
-  };
-  fetchOptions = await withDevSsl(fetchOptions);
-
-  const res = await fetch(`${appConfig.api.baseUrl}/SubTypeOfUse/${input.subTypeOfUseId}`, fetchOptions);
-  const raw = await res.text().catch(() => "");
-  if (!res.ok) throw new Error(`Update sub-type failed: ${res.status} ${res.statusText} ${raw}`);
-
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return raw;
+    headers: { "Accept": "application/json" },
+  });
+  
+  if (!response.success) {
+    throw new Error(response.error ?? "Update sub-type failed");
   }
+  
+  return response.data;
 }
 
 /** DELETE SubType - /api/SubTypeOfUse/{id} */
 export async function deleteSubTypeApi(id: string) {
-  let fetchOptions: RequestInit = {
-    method: "DELETE",
+  const response = await apiClient.delete<any>(`/SubTypeOfUse/${id}`, {
     cache: "no-store",
-    headers: { Accept: "application/json" },
-  };
-  fetchOptions = await withDevSsl(fetchOptions);
-
-  const res = await fetch(`${appConfig.api.baseUrl}/SubTypeOfUse/${id}`, fetchOptions);
-  if (!res.ok) {
-    const raw = await res.text().catch(() => "");
-    let errorMessage = `Delete sub-type failed: ${res.status} ${res.statusText}`;
-    try {
-      const errData = JSON.parse(raw);
-      if (errData.message) {
-        errorMessage = errData.message;
-      }
-    } catch { }
-    throw new Error(errorMessage);
+    headers: { "Accept": "application/json" },
+  });
+  
+  if (!response.success) {
+    throw new Error(response.error ?? "Delete sub-type failed");
   }
+  
   return true;
 }
 
 export async function getSubTypeCountByTypeIds(typeIds: string[]) {
-  let fetchOptions: RequestInit = {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    cache: "no-store",
-    body: JSON.stringify({ typeIds }),
-  };
-
-  fetchOptions = await withDevSsl(fetchOptions);
-
-  const res = await fetch(
-    `${appConfig.api.baseUrl}/SubTypeOfUse/CountByType`,
-    fetchOptions
+  const response = await apiClient.post<{ [key: string]: number }>(
+    "/SubTypeOfUse/CountByType",
+    { typeIds },
+    {
+      cache: "no-store",
+      headers: { "Accept": "application/json" },
+    }
   );
 
-  if (!res.ok) throw new Error("Failed to fetch subtype counts");
-  return res.json(); // { [typeId]: number }
+  if (!response.success) {
+    throw new Error(response.error ?? "Failed to fetch subtype counts");
+  }
+
+  return response.data; // { [typeId]: number }
 }
