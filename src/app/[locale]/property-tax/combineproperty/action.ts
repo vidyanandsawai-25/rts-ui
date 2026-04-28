@@ -27,7 +27,7 @@ export async function fetchCombinePropertiesPagedAction(
   params: CombinePropertyParams
 ): Promise<PagedResponse<CombinePropertyItem>> {
   try {
-    const MAX_PAGE_SIZE = 500;
+    const MAX_PAGE_SIZE = 5000;
     const MAX_PAGE_NUMBER = 10000;
 
     // pageSize = -1 is a valid special value meaning "return all records"

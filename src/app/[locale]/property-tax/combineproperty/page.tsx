@@ -17,7 +17,7 @@ export default async function Page({ searchParams }: PageProps) {
   // ── 1. Fetch base property list (all properties) ─────────────────────────
   const baseResult = await fetchCombinePropertiesPagedAction({
     pageNumber: 1,
-    pageSize: -1,
+    pageSize: 1000,
   });
   const basePropertyList: CombinePropertyItem[] = baseResult.items ?? [];
 
@@ -26,8 +26,8 @@ export default async function Page({ searchParams }: PageProps) {
   if (propertyNo && wardId) {
     const subResult = await fetchCombinePropertiesPagedAction({
       pageNumber: 1,
-      pageSize: -1,
-      wardId: Number(wardId),
+      pageSize: 10,
+      // wardId: Number(wardId),
       propertyNo: propertyNo,
     });
     subPropertyList = subResult.items ?? [];

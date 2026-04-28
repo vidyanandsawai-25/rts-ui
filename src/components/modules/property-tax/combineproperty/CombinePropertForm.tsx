@@ -4,6 +4,7 @@
 import { useCallback, useState, useTransition, useEffect, useMemo } from 'react';
 import { Merge, FileText, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { toast } from 'sonner';
 import { Drawer } from '@/components/common/Drawer';
 import { SearchSelect, type SearchSelectOption } from '@/components/common/SearchSelect';
 import { MultiSelectDropdown } from '@/components/common/Dropdown';
@@ -57,7 +58,6 @@ export default function CombinePropertyForm({
   const [isReviewing, setIsReviewing] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   /* ---- Table Columns (Memoized to access reviewData state) ---- */
   const columns = useMemo<Column<PropertyRow>[]>(() => [
@@ -202,13 +202,17 @@ export default function CombinePropertyForm({
   }, [subPropertyList]);
 
   /* ---- Options ---- */
-  const BASE_PROPERTY_OPTIONS: SearchSelectOption[] = basePropertyList.map((item) => ({
-    label: `${item.wardNo} / ${item.propertyNo} / ${item.fromProperty}`,
-    value: String(item.id),
-    meta: { wardId: item.wardId, wardNo: item.wardNo, propertyNo: item.propertyNo },
-  }));
+  const BASE_PROPERTY_OPTIONS = useMemo<SearchSelectOption[]>(() => {
+    return (basePropertyList || []).map((item) => ({
+      label: `${item.wardNo || ''} / ${item.propertyNo || ''} / ${item.fromProperty || ''}`,
+      value: String(item.id || ''),
+      meta: { wardId: item.wardId, wardNo: item.wardNo, propertyNo: item.propertyNo },
+    }));
+  }, [basePropertyList]);
 
-  const SUB_PROPERTY_OPTIONS: SearchSelectOption[] = subPropertyList.map(toSelectOption);
+  const SUB_PROPERTY_OPTIONS = useMemo<SearchSelectOption[]>(() => {
+    return (subPropertyList || []).map(toSelectOption);
+  }, [subPropertyList]);
 
   /* ---- Handlers ---- */
 
@@ -276,11 +280,15 @@ export default function CombinePropertyForm({
 
   /** Proceed — call fetchPropertyCombineDetailsAction with selected partitions */
   const handleProceed = () => {
-    if (!selectedWardId || !selectedPropertyNo) return;
-
+    if (!selectedWardId || !selectedPropertyNo) {
+      toast.error('Base property selection incomplete');
+      return;
+    }
     const partitionNo = searchParams.get('partitionNo') || '';
-
-    if (!partitionNo) return;
+    if (!partitionNo) {
+      toast.error('Please select at least one property to combine');
+      return;
+    }
 
     startTransition(async () => {
       setIsReviewing(true);
@@ -302,8 +310,12 @@ export default function CombinePropertyForm({
   const handleCombine = async () => {
     if (!selectedBasePropertyId || reviewData.length === 0) return;
 
+    if (hasDifferentOwners) {
+      toast.warning('Cannot combine properties with different owner names');
+      return;
+    }
+
     setIsSubmitting(true);
-    setSubmitStatus(null);
 
     try {
       const combinePropertyIds = reviewData.map((r) => r.propertyId).join(',');
@@ -316,18 +328,18 @@ export default function CombinePropertyForm({
       });
 
       if (response.success) {
-        setSubmitStatus({ type: 'success', message: 'Properties combined successfully!' });
+        toast.success('Properties combined successfully!');
         // Optionally clear after short delay
         setTimeout(() => {
           handleClear();
           router.refresh();
         }, 2000);
       } else {
-        setSubmitStatus({ type: 'error', message: response.message || 'Combination failed' });
+        toast.error(response.message || 'Combination failed');
       }
     } catch (error) {
       console.error('Submit error:', error);
-      setSubmitStatus({ type: 'error', message: 'An unexpected error occurred' });
+      toast.error('An unexpected error occurred');
     } finally {
       setIsSubmitting(false);
     }
@@ -390,11 +402,7 @@ export default function CombinePropertyForm({
   const DrawerFooter = (
     <div className="flex items-center justify-between w-full">
       <div className="flex items-center gap-2">
-        {submitStatus && (
-          <div className={`text-xs font-bold ${submitStatus.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>
-            {submitStatus.type === 'success' ? '✓ ' : '✕ '}{submitStatus.message}
-          </div>
-        )}
+        {/* Status messages handled by toast */}
       </div>
       <div className="flex items-center gap-2">
         <CancelButton label="← Clear" onClick={handleClear} size="sm" />
@@ -462,13 +470,7 @@ export default function CombinePropertyForm({
           />
         </div>
 
-        {/* ---- Ward indicator ----
-        {displayWardNo && (
-          <div className="flex items-center gap-1 self-end mb-[6px] shrink-0 text-[10px] text-gray-500 font-medium whitespace-nowrap">
-            <span className="inline-flex items-center justify-center w-3.5 h-3.5 border border-blue-300 text-blue-600 text-[8px] font-bold rounded-[3px]">i</span>
-            Ward: <span className="text-gray-700 font-semibold ml-0.5">{displayWardNo}</span>
-          </div>
-        )} */}
+   
 
         {/* ---- Divider ---- */}
         <div className="h-5 w-px bg-blue-200 self-center shrink-0" />

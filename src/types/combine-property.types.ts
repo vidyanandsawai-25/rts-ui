@@ -1,12 +1,10 @@
 export interface CombinePropertyItem {
-  taxZoneId: number;
-  taxZoneNo: string;
+  id: number;
   wardId: number;
   wardNo: string;
   propertyNo: string;
   fromProperty: string;
   toProperty: string;
-  id: number;
   isActive: boolean;
   createdDate: string | null;
   updatedDate: string | null;
