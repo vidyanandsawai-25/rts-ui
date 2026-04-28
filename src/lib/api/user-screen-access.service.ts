@@ -20,7 +20,7 @@ class UserScreenAccessService {
       console.log(`[UserScreenAccessService] Fetching screens for userId: ${userId}`);
     }
 
-    const response = await apiClient.get<any>(`/UserScreenAccess/user/${userId}`, {
+    const response = await apiClient.get<unknown>(`/UserScreenAccess/user/${userId}`, {
       headers: authHeaders(token),
     });
 
