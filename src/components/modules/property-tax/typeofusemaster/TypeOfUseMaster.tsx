@@ -1,6 +1,6 @@
 "use client";
 import { AddButton, DeleteButton, EditButton, PageContainer, SearchInput, Select } from "@/components/common";
-import { CardList } from "@/components/common/Card";
+import { CardList } from "@/components/common/CardList";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from "next/navigation";
