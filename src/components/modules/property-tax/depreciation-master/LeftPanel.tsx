@@ -1,23 +1,7 @@
 "use client";
 
 import { AddButton, DeleteButton, Input } from "@/components/common";
-import type { RangeRow } from "@/types/depreciation.types";
-
-type LeftPanelProps = {
-  minValue: string;
-  maxValue: string;
-  minError: string | null;
-  maxError: string | null;
-  ranges: RangeRow[];
-  selectedRangeId: string | null;
-  saving: boolean;
-  onMinChange: (value: string) => void;
-  onMaxChange: (value: string) => void;
-  onAddRange: () => void;
-  onSelectRange: (id: string) => void;
-  onDeleteRange: () => void;
-  t: (key: string) => string;
-};
+import type { LeftPanelProps } from "@/types/depreciation.types";
 
 export function LeftPanel({
   minValue,
@@ -33,7 +17,7 @@ export function LeftPanel({
   onSelectRange,
   onDeleteRange,
   t,
-}: LeftPanelProps) {
+}: Readonly<LeftPanelProps>) {
   return (
     <div className="col-span-12 lg:col-span-2">
       <div className="bg-white rounded-2xl border shadow-sm h-155 flex flex-col p-2 space-y-6">

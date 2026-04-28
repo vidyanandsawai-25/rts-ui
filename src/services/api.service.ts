@@ -1,189 +1,203 @@
 /**
  * API Client Service
- * Centralized HTTP client for making API requests
+ * Centralized HTTP client for making API requests with SSR authentication support
+ * SERVER-ONLY: This service can only be used in Server Components and Server Actions
  */
 
-import { getAppConfig } from '@/config/app.config';
+import 'server-only';
+import { cookies } from 'next/headers';
+import { appConfig } from '@/config/app.config';
 import { ApiResponse } from '@/types/common.types';
 
 class ApiClient {
   private baseUrl: string;
   private timeout: number;
+  
+  // Public endpoints that don't require authorization
+  private publicEndpoints: string[] = [
+    '/Auth/login',
+    '/Auth/verify-otp',
+    '/Auth/verify-login-otp',
+    '/Auth/forgot-password',
+    '/Auth/reset-password',
+    '/Auth/send-otp',
+    '/Auth/resend-otp',
+    '/Auth/refresh',
+    '/Auth/ulb-config',
+    '/Auth/validate-reset-token',
+  ];
 
   constructor() {
-    const config = getAppConfig();
-    this.baseUrl = config.api.baseUrl;
-    this.timeout = config.api.timeout;
+    this.baseUrl = appConfig.api.baseUrl;
+    this.timeout = appConfig.api.timeout;
   }
 
   /**
-   * Checks if the Content-Type header indicates a JSON response.
+   * Check if endpoint is public (no auth required)
    */
-  private isJsonContentType(response: Response): boolean {
-    const contentType = response.headers.get('Content-Type') ?? '';
-    return contentType.includes('application/json');
+  private isPublicEndpoint(endpoint: string): boolean {
+    const normalizedEndpoint = endpoint.toLowerCase();
+    return this.publicEndpoints.some(pe => 
+      normalizedEndpoint.includes(pe.toLowerCase())
+    );
   }
 
   /**
-   * Safely parses the response body as JSON when appropriate.
-   * Returns `undefined` for empty-body responses (e.g. 204 No Content)
-   * or non-JSON responses instead of throwing errors.
+   * Get auth token from cookies (Server-side only)
    */
-  private async parseResponseBody<T>(response: Response): Promise<T | undefined> {
-    // 204 No Content – body is intentionally absent
-    if (response.status === 204) {
-      return undefined;
-    }
-
-    // Some servers send Content-Length: 0 with a non-204 success status
-    const contentLength = response.headers.get('Content-Length');
-    if (contentLength === '0') {
-      return undefined;
-    }
-
-    // Read the raw text first to check if body is empty
-    const text = await response.text();
-    if (!text || text.trim() === '') {
-      return undefined;
-    }
-
-    // For non-JSON Content-Type headers, handle based on response status
-    if (!this.isJsonContentType(response)) {
-      if (response.ok) {
-        // Successful non-JSON response (e.g., plain text "OK" from DELETE)
-        // Body already consumed above, just return undefined
-        return undefined;
-      }
-      // Error response with non-JSON body – use text in error message
-      const err = new Error(
-        text.trim() || response.statusText || 'An error occurred'
-      ) as Error & { httpStatus: number; rawText: string };
-      err.httpStatus = response.status;
-      err.rawText = text;
-      throw err;
-    }
-
-    // Content-Type indicates JSON - attempt to parse
+  private async getAuthToken(): Promise<string | null> {
     try {
-      return JSON.parse(text) as T;
+      const cookieStore = await cookies();
+      return cookieStore.get('auth_token')?.value || null;
     } catch {
-      // JSON parsing failed. For successful responses (2xx), treat as non-JSON
-      // and return undefined instead of failing the entire request.
-      // This handles servers that incorrectly set Content-Type: application/json
-      // for plain text responses (e.g., DELETE returning "OK" or "Deleted")
-      if (response.ok) {
-        // Success response but invalid JSON - treat as empty/non-JSON response
-        return undefined;
-      }
-      
-      // Error response with invalid JSON - throw error with details
-      const err = new Error(
-        `Invalid JSON response (HTTP ${response.status}): ${text.slice(0, 200)}`
-      ) as Error & { httpStatus: number };
-      err.httpStatus = response.status;
-      throw err;
+      // Not in server context or during build
+      return null;
     }
   }
 
   /**
-   * Extracts a human-readable error message from a non-2xx response body.
-   *
-   * Priority order:
-   *  1. `message`  – most REST APIs
-   *  2. `error`    – Spring Boot, some Node frameworks
-   *  3. `title`    – RFC 7807 Problem Details
-   *  4. `detail`   – RFC 7807 Problem Details
-   *  5. `response.statusText` – HTTP reason phrase (e.g. "Not Found")
-   *  6. Generic fallback
-   *
-   * Each candidate is only used when it is a non-empty string.
+   * Get CSRF token from cookies (Server-side only)
    */
-  private extractErrorMessage(
-    errBody: Record<string, unknown> | undefined,
-    statusText: string,
-  ): string {
-    const candidates = [
-      errBody?.message,
-      errBody?.error,
-      errBody?.title,
-      errBody?.detail,
-      statusText,
-    ];
-    for (const candidate of candidates) {
-      if (typeof candidate === 'string' && candidate.trim() !== '') {
-        return candidate.trim();
-      }
+  private async getCsrfToken(): Promise<string | null> {
+    try {
+      const cookieStore = await cookies();
+      return cookieStore.get('csrf_token')?.value || null;
+    } catch {
+      return null;
     }
-    return 'An error occurred';
   }
 
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
+  private async request<T>(
+    endpoint: string, 
+    options: RequestInit = {},
+    requireAuth: boolean = true
+  ): Promise<ApiResponse<T>> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
     try {
-      const response = await fetch(`${this.baseUrl}${endpoint}`, {
+      // Check if this is a public endpoint that doesn't need auth
+      const skipAuth = !requireAuth || this.isPublicEndpoint(endpoint);
+
+      // Build headers
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+
+      // Merge additional headers from options
+      if (options.headers) {
+        const additionalHeaders = options.headers as Record<string, string>;
+        Object.assign(headers, additionalHeaders);
+      }
+
+      // Only add auth token for protected endpoints
+      if (!skipAuth) {
+        const token = await this.getAuthToken();
+        const csrfToken = await this.getCsrfToken();
+        
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        // Add CSRF token for state-changing requests
+        if (csrfToken && ['POST', 'PUT', 'DELETE', 'PATCH'].includes(options.method || 'GET')) {
+          headers['X-CSRF-Token'] = csrfToken;
+        }
+      }
+
+      const url = `${this.baseUrl.endsWith('/') ? this.baseUrl : `${this.baseUrl}/`}${endpoint.startsWith('/') ? endpoint.slice(1) : endpoint}`;
+      const response = await fetch(url, {
         ...options,
         signal: controller.signal,
-        headers: {
-          'Content-Type': 'application/json',
-          ...options.headers,
-        },
+        headers,
+        cache: 'no-store', // SSR should not cache authenticated responses
       });
 
       clearTimeout(timeoutId);
 
-      // Parse body safely – handles 204 No Content and other empty responses
-      const data = await this.parseResponseBody<T>(response);
-
-      if (!response.ok) {
-        const errBody = data as Record<string, unknown> | undefined;
+      // Handle 401 Unauthorized
+      if (response.status === 401) {
+        // For public endpoints (login, etc.), return the actual error from API
+        if (skipAuth) {
+          const errorData = await response.json().catch(() => ({}));
+          return {
+            success: false,
+            error: errorData.message || 'Invalid credentials',
+            statusCode: 401,
+          };
+        }
+        // For protected endpoints, indicate token expiry
         return {
           success: false,
+          error: 'Unauthorized: Token expired or invalid',
+          statusCode: 401,
+        };
+      }
+
+      // Handle 403 Forbidden
+      if (response.status === 403) {
+        return {
+          success: false,
+          error: 'Forbidden: Access denied',
+          statusCode: 403,
+        };
+      }
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return {
+          success: false,
+          error: data.message || 'An error occurred',
           statusCode: response.status,
-          error: this.extractErrorMessage(errBody, response.statusText),
         };
       }
 
       return {
         success: true,
+        data,
         statusCode: response.status,
-        data: data as T,
       };
     } catch (error) {
       clearTimeout(timeoutId);
-      // Preserve the HTTP status when parseResponseBody throws for non-JSON bodies
-      const httpStatus = (error as { httpStatus?: number }).httpStatus;
+      
+      if (error instanceof Error && error.name === 'AbortError') {
+        return {
+          success: false,
+          error: 'Request timeout',
+          statusCode: 408,
+        };
+      }
+
       return {
         success: false,
-        ...(httpStatus !== undefined ? { statusCode: httpStatus } : {}),
         error: error instanceof Error ? error.message : 'Network error',
       };
     }
   }
 
-  async get<T>(endpoint: string, options?: RequestInit): Promise<ApiResponse<T>> {
-    return this.request<T>(endpoint, { ...options, method: 'GET' });
+  async get<T>(endpoint: string, options?: RequestInit, requireAuth: boolean = true): Promise<ApiResponse<T>> {
+    return this.request<T>(endpoint, { ...options, method: 'GET' }, requireAuth);
   }
 
-  async post<T>(endpoint: string, body?: unknown, options?: RequestInit): Promise<ApiResponse<T>> {
+  async post<T>(endpoint: string, body?: unknown, options?: RequestInit, requireAuth: boolean = true): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
       ...options,
       method: 'POST',
       body: JSON.stringify(body),
-    });
+    }, requireAuth);
   }
 
-  async put<T>(endpoint: string, body?: unknown, options?: RequestInit): Promise<ApiResponse<T>> {
+  async put<T>(endpoint: string, body?: unknown, options?: RequestInit, requireAuth: boolean = true): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
       ...options,
       method: 'PUT',
       body: JSON.stringify(body),
-    });
+    }, requireAuth);
   }
 
-  async delete<T>(endpoint: string, options?: RequestInit): Promise<ApiResponse<T>> {
-    return this.request<T>(endpoint, { ...options, method: 'DELETE' });
+  async delete<T>(endpoint: string, options?: RequestInit, requireAuth: boolean = true): Promise<ApiResponse<T>> {
+    return this.request<T>(endpoint, { ...options, method: 'DELETE' }, requireAuth);
   }
 }
 
