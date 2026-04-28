@@ -41,7 +41,6 @@ async function serverFetch(url: string, init: RequestInit): Promise<Response> {
 class ApiClient {
   private baseUrl: string;
   private timeout: number;
-  private _relaxedAgent: unknown;
 
   // Public endpoints that don't require authorization
   private publicEndpoints: string[] = [
@@ -288,33 +287,12 @@ class ApiClient {
       });
 
 
-      const useRelaxedTls = 
-        typeof window === 'undefined' && 
-        process.env.NODE_ENV === 'development' && 
-        LOCAL_HTTPS_RE.test(url);
-
-      let response: Response;
-      if (useRelaxedTls) {
-        const undici = await import('undici');
-        if (!this._relaxedAgent) {
-          this._relaxedAgent = new undici.Agent({ connect: { rejectUnauthorized: false } });
-        }
-        
-        const undiciRes = await undici.fetch(url, {
-          ...options,
-          headers: cleanHeaders,
-          dispatcher: this._relaxedAgent as import('undici').Dispatcher,
-          signal: controller.signal,
-        } as import('undici').RequestInit);
-        response = undiciRes as unknown as Response;
-      } else {
-        response = await serverFetch(url, {
-          ...options,
-          signal: controller.signal,
-          headers: cleanHeaders,
-          cache: 'no-store',
-        });
-      }
+      const response = await serverFetch(url, {
+        ...options,
+        signal: controller.signal,
+        headers: cleanHeaders,
+        cache: 'no-store',
+      });
 
       clearTimeout(timeoutId);
 

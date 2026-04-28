@@ -96,7 +96,7 @@ export function useOfficeForm({
   }, [validate]);
 
   const mapApiError = useCallback((result: { statusCode?: number; message?: string }) => {
-    if (result.statusCode === 409) return t("apiErrors.duplicateRecord") || "Duplicate Record";
+    if (result.statusCode === 409) return t("apiErrors.duplicateCode") || "Duplicate Record";
     if (result.statusCode === 404) return t("apiErrors.notFound") || "Not Found";
     return result.message || "Operation failed";
   }, [t]);

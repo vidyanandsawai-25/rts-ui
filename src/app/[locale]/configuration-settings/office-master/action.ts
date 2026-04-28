@@ -1,6 +1,7 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { getLocale } from "next-intl/server";
 import { locales } from "@/i18n/config";
 import { createOffice, deleteOffice, getOfficesPaged, getOfficeById, updateOffice } from "@/lib/api/office-crud.service";
 import { ApiError } from "@/lib/utils/api";
@@ -39,7 +40,8 @@ export async function fetchOfficePagedServerAction(
   } catch (error: unknown) {
     if (error instanceof ApiError) {
       if (error.statusCode === 401) {
-        redirect("/login");
+        const currentLocale = await getLocale();
+        redirect(`/${currentLocale}/login`);
       }
       console.error(`[fetchOfficePagedServerAction] API Error ${error.statusCode}:`, error.responseText);
     } else if (error instanceof Error) {
