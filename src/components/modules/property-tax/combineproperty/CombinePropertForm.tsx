@@ -35,7 +35,7 @@ type PropertyRow = PropertyCombineDetails & Record<string, unknown>;
 
 function toSelectOption(item: CombinePropertyItem): SearchSelectOption {
   const label = `${item.fromProperty}${item.toProperty && item.toProperty !== item.fromProperty ? ' – ' + item.toProperty : ''}`;
-  return { label, value: item.fromProperty };
+  return { label, value: String(item.id) };
 }
 
 /* ------------------------------------------------------------------ */
@@ -188,15 +188,16 @@ export default function CombinePropertyForm({
 
   const calculatePartitionNo = useCallback((method: SelectionMethod, from: string, to: string, individual: string[]) => {
     if (method === 'range' && from && to) {
-      const fromIdx = subPropertyList.findIndex((i) => i.fromProperty === from);
-      const toIdx = subPropertyList.findIndex((i) => i.fromProperty === to);
+      const fromIdx = subPropertyList.findIndex((i) => String(i.id) === from);
+      const toIdx = subPropertyList.findIndex((i) => String(i.id) === to);
       if (fromIdx === -1 || toIdx === -1) return '';
       const start = Math.min(fromIdx, toIdx);
       const end = Math.max(fromIdx, toIdx);
       const slice = subPropertyList.slice(start, end + 1);
       return slice.map((i) => i.fromProperty).join(',');
     } else if (method === 'individual' && individual.length > 0) {
-      return individual.join(',');
+      const items = subPropertyList.filter((i) => individual.includes(String(i.id)));
+      return items.map((i) => i.fromProperty).join(',');
     }
     return '';
   }, [subPropertyList]);
@@ -346,12 +347,16 @@ export default function CombinePropertyForm({
   };
 
   /* ---- derived ---- */
-  const selectedCount =
-    selectionMethod === 'individual'
-      ? selectedProperties.length
-      : rangeFrom && rangeTo
-        ? 2
-        : 0;
+  const selectedCount = useMemo(() => {
+    if (selectionMethod === 'individual') return selectedProperties.length;
+    if (selectionMethod === 'range' && rangeFrom && rangeTo) {
+      const fromIdx = subPropertyList.findIndex((i) => String(i.id) === rangeFrom);
+      const toIdx = subPropertyList.findIndex((i) => String(i.id) === rangeTo);
+      if (fromIdx === -1 || toIdx === -1) return 0;
+      return Math.abs(toIdx - fromIdx) + 1;
+    }
+    return 0;
+  }, [selectionMethod, selectedProperties, rangeFrom, rangeTo, subPropertyList]);
 
   const canProceed =
     !!selectedBasePropertyId &&
