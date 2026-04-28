@@ -3,18 +3,18 @@ import { PropertyBasicDetailsApiItem } from '@/types/property-basic-details.type
 import { PropertySocietyDetailsApiItem } from '@/types/property-society-details.types';
 
 export const usePropertyFormState = (propertyData: PropertyBasicDetailsApiItem | null, propertySocietyDetails: PropertySocietyDetailsApiItem | null) => {
-    const [propertyTypeId, setPropertyTypeId] = useState(propertyData?.propertyTypeId?.toString() ?? '');
-    const [categoryId, setCategoryId] = useState(propertyData?.categoryId?.toString() ?? '');
+    const [propertyTypeId, setPropertyTypeId] = useState<number | null>(propertyData?.propertyTypeId ?? null);
+    const [categoryId, setCategoryId] = useState<number | null>(propertyData?.categoryId ?? null);
 
     const initialWingId = (propertyData?.wingId && propertyData.wingId !== 0)
-        ? propertyData.wingId.toString()
-        : (propertySocietyDetails?.wingId?.toString() ?? '');
+        ? propertyData.wingId
+        : (propertySocietyDetails?.wingId ?? null);
 
     const initialWingName = (propertyData?.wingName && propertyData.wingName.trim() !== "")
         ? propertyData.wingName
         : (propertySocietyDetails?.wingName ?? '');
 
-    const [wingId, setWingId] = useState(initialWingId);
+    const [wingId, setWingId] = useState<number | null>(initialWingId);
     const [wingName, setWingName] = useState(initialWingName);
     const [hasChanges, setHasChanges] = useState(false);
 

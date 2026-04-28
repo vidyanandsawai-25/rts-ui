@@ -20,7 +20,7 @@ vi.mock('next-intl', () => ({
             'society.managerEmailPlaceholder': 'Manager Email',
             'society.secretaryNamePlaceholder': 'Secretary Name',
             'society.secretaryEmailPlaceholder': 'Secretary Email',
-            'common.saveChanges': 'Save Changes',
+            'common.UpdateChanges': 'Update Changes',
             'footer.saving': 'Saving...',
             'society.updateSuccess': 'Society details updated successfully',
             'society.updateError': 'An error occurred during update.',
@@ -188,7 +188,7 @@ describe('SocietyForm', () => {
                 />
             );
 
-            const submitBtn = screen.getByRole('button', { name: /Save Changes/i });
+            const submitBtn = screen.getByRole('button', { name: /Update Changes/i });
             expect(submitBtn).toBeDisabled();
         });
 
@@ -204,7 +204,7 @@ describe('SocietyForm', () => {
             const landOwnerInput = screen.getByPlaceholderText('Land Owner');
             fireEvent.change(landOwnerInput, { target: { value: 'New Owner' } });
 
-            const submitBtn = screen.getByRole('button', { name: /Save Changes/i });
+            const submitBtn = screen.getByRole('button', { name: /Update Changes/i });
             expect(submitBtn).not.toBeDisabled();
         });
     });
@@ -289,7 +289,7 @@ describe('SocietyForm', () => {
             const societyEmailInput = screen.getByPlaceholderText('Society Email');
             fireEvent.change(societyEmailInput, { target: { value: 'invalid-email' } });
 
-            const submitButton = screen.getByRole('button', { name: /Save Changes/i });
+            const submitButton = screen.getByRole('button', { name: /Update Changes/i });
             fireEvent.click(submitButton);
 
             await waitFor(() => {
@@ -320,7 +320,7 @@ describe('SocietyForm', () => {
             fireEvent.change(inputs[3], { target: { value: '6' } });
             fireEvent.change(inputs[4], { target: { value: '5' } });
 
-            const submitButton = screen.getByRole('button', { name: /Save Changes/i });
+            const submitButton = screen.getByRole('button', { name: /Update Changes/i });
             fireEvent.click(submitButton);
 
             await waitFor(() => {
@@ -349,7 +349,7 @@ describe('SocietyForm', () => {
             const landOwnerInput = screen.getByPlaceholderText('Land Owner');
             fireEvent.change(landOwnerInput, { target: { value: 'New Owner' } });
 
-            const submitButton = screen.getByRole('button', { name: /Save Changes/i });
+            const submitButton = screen.getByRole('button', { name: /Update Changes/i });
             fireEvent.click(submitButton);
 
             await waitFor(() => {
@@ -374,7 +374,7 @@ describe('SocietyForm', () => {
             const landOwnerInput = screen.getByPlaceholderText('Land Owner');
             fireEvent.change(landOwnerInput, { target: { value: 'New Owner' } });
 
-            const submitButton = screen.getByRole('button', { name: /Save Changes/i });
+            const submitButton = screen.getByRole('button', { name: /Update Changes/i });
             fireEvent.click(submitButton);
 
             await waitFor(() => {
@@ -399,7 +399,7 @@ describe('SocietyForm', () => {
             const landOwnerInput = screen.getByPlaceholderText('Land Owner');
             fireEvent.change(landOwnerInput, { target: { value: 'New Owner' } });
 
-            const submitButton = screen.getByRole('button', { name: /Save Changes/i });
+            const submitButton = screen.getByRole('button', { name: /Update Changes/i });
             fireEvent.click(submitButton);
 
             await waitFor(() => {
@@ -425,7 +425,7 @@ describe('SocietyForm', () => {
             const landOwnerInput = screen.getByPlaceholderText('Land Owner');
             fireEvent.change(landOwnerInput, { target: { value: 'New Owner' } });
 
-            const submitButton = screen.getByRole('button', { name: /Save Changes/i });
+            const submitButton = screen.getByRole('button', { name: /Update Changes/i });
             fireEvent.click(submitButton);
 
             await waitFor(() => {
@@ -450,7 +450,7 @@ describe('SocietyForm', () => {
             const landOwnerInput = screen.getByPlaceholderText('Land Owner');
             fireEvent.change(landOwnerInput, { target: { value: 'New Owner' } });
 
-            const submitButton = screen.getByRole('button', { name: /Save Changes/i });
+            const submitButton = screen.getByRole('button', { name: /Update Changes/i });
             fireEvent.click(submitButton);
 
             await waitFor(() => {
@@ -477,7 +477,7 @@ describe('SocietyForm', () => {
             const landOwnerInput = screen.getByPlaceholderText('Land Owner');
             fireEvent.change(landOwnerInput, { target: { value: 'New Owner' } });
 
-            const submitButton = screen.getByRole('button', { name: /Save Changes/i });
+            const submitButton = screen.getByRole('button', { name: /Update Changes/i });
             fireEvent.click(submitButton);
 
             // Button should be in loading state
@@ -505,7 +505,7 @@ describe('SocietyForm', () => {
             const landOwnerInput = screen.getByPlaceholderText('Land Owner');
             fireEvent.change(landOwnerInput, { target: { value: 'New Owner' } });
 
-            const submitButton = screen.getByRole('button', { name: /Save Changes/i });
+            const submitButton = screen.getByRole('button', { name: /Update Changes/i });
             fireEvent.click(submitButton);
 
             await waitFor(() => {
@@ -546,7 +546,7 @@ describe('SocietyForm', () => {
             const landOwnerInput = screen.getByPlaceholderText('Land Owner');
             fireEvent.change(landOwnerInput, { target: { value: 'New Owner' } });
 
-            const submitButton = screen.getByRole('button', { name: /Save Changes/i });
+            const submitButton = screen.getByRole('button', { name: /Update Changes/i });
             fireEvent.click(submitButton);
 
             await waitFor(() => {

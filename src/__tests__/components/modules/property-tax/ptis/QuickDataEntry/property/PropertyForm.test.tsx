@@ -38,7 +38,7 @@ vi.mock('next-intl', () => ({
       'property.updateConfirmTitle': 'Confirm Update',
       'property.updateConfirmText': 'Are you sure?',
       'property.updateConfirmButton': 'Yes, Update',
-      'common.saveChanges': 'Save Changes',
+      'common.UpdateChanges': 'Update Changes',
       'footer.saving': 'Saving...',
     };
     return translations[key] || key;
@@ -180,7 +180,7 @@ describe('PropertyFormView', () => {
       />
     );
 
-    const submitBtn = screen.getByRole('button', { name: /Save Changes/i });
+    const submitBtn = screen.getByRole('button', { name: /Update Changes/i });
     expect(submitBtn).toBeDisabled();
   });
 
@@ -199,7 +199,7 @@ describe('PropertyFormView', () => {
     const flatInput = screen.getByLabelText(/Flat\/Shop No/i);
     fireEvent.change(flatInput, { target: { value: '202' } });
 
-    const submitBtn = screen.getByRole('button', { name: /Save Changes/i });
+    const submitBtn = screen.getByRole('button', { name: /Update Changes/i });
     expect(submitBtn).not.toBeDisabled();
   });
 
@@ -220,7 +220,7 @@ describe('PropertyFormView', () => {
     const flatInput = screen.getByLabelText(/Flat\/Shop No/i);
     fireEvent.change(flatInput, { target: { value: '202' } });
 
-    const submitBtn = screen.getByRole('button', { name: /Save Changes/i });
+    const submitBtn = screen.getByRole('button', { name: /Update Changes/i });
     fireEvent.click(submitBtn);
 
     await waitFor(() => {
@@ -253,7 +253,7 @@ describe('PropertyFormView', () => {
     const flatInput = screen.getByLabelText(/Flat\/Shop No/i);
     fireEvent.change(flatInput, { target: { value: '202' } });
 
-    const submitBtn = screen.getByRole('button', { name: /Save Changes/i });
+    const submitBtn = screen.getByRole('button', { name: /Update Changes/i });
     fireEvent.click(submitBtn);
 
     await waitFor(() => {
@@ -284,6 +284,123 @@ describe('PropertyFormView', () => {
 
     const buildUpAreaInputs = screen.getAllByLabelText(/Buildup Area/i);
     expect(buildUpAreaInputs[0]).toHaveAttribute('readOnly');
+  });
+
+  describe('Edge Cases', () => {
+    it('shows error for negative numbers in numeric fields', async () => {
+      render(
+        <PropertyFormView
+          WingMaster={mockWingMaster}
+          propertyCategories={mockPropertyCategories}
+          propertyDescriptions={mockPropertyDescriptions}
+          propertyData={mockPropertyData as never}
+          propertySocietyDetails={mockSocietyDetails as never}
+          locale="en"
+        />
+      );
+
+      const plotAreaInput = screen.getByLabelText(/Plot Area/i);
+      fireEvent.change(plotAreaInput, { target: { value: '-100' } });
+
+      const submitBtn = screen.getByRole('button', { name: /Update Changes/i });
+      fireEvent.click(submitBtn);
+
+      await waitFor(() => {
+        expect(toast.error).toHaveBeenCalled();
+      });
+    });
+
+    it('handles special characters in text fields correctly', async () => {
+      (updatePropertyBasicDetailsAction as Mock).mockResolvedValue({ success: true });
+      render(
+        <PropertyFormView
+          WingMaster={mockWingMaster}
+          propertyCategories={mockPropertyCategories}
+          propertyDescriptions={mockPropertyDescriptions}
+          propertyData={mockPropertyData as never}
+          propertySocietyDetails={mockSocietyDetails as never}
+          locale="en"
+        />
+      );
+
+      const flatInput = screen.getByLabelText(/Flat\/Shop No/i);
+      const specialChars = 'Flat-#123!@$%^&*()';
+      fireEvent.change(flatInput, { target: { value: specialChars } });
+
+      const submitBtn = screen.getByRole('button', { name: /Update Changes/i });
+      fireEvent.click(submitBtn);
+
+      await waitFor(() => {
+        expect(updatePropertyBasicDetailsAction).toHaveBeenCalledWith(
+          'en',
+          mockPropertyData.propertyId,
+          expect.objectContaining({
+            flatOrShopNo: specialChars,
+          })
+        );
+      });
+    });
+
+    it('handles extremely large numeric values', async () => {
+      (updatePropertyBasicDetailsAction as Mock).mockResolvedValue({ success: true });
+      render(
+        <PropertyFormView
+          WingMaster={mockWingMaster}
+          propertyCategories={mockPropertyCategories}
+          propertyDescriptions={mockPropertyDescriptions}
+          propertyData={mockPropertyData as never}
+          propertySocietyDetails={mockSocietyDetails as never}
+          locale="en"
+        />
+      );
+
+      const plotAreaInput = screen.getByLabelText(/Plot Area/i);
+      const largeValue = '999999999';
+      fireEvent.change(plotAreaInput, { target: { value: largeValue } });
+
+      const submitBtn = screen.getByRole('button', { name: /Update Changes/i });
+      fireEvent.click(submitBtn);
+
+      await waitFor(() => {
+        expect(updatePropertyBasicDetailsAction).toHaveBeenCalledWith(
+          'en',
+          mockPropertyData.propertyId,
+          expect.objectContaining({
+            plotArea: Number(largeValue),
+          })
+        );
+      });
+    });
+
+    it('handles boundary values like zero', async () => {
+      (updatePropertyBasicDetailsAction as Mock).mockResolvedValue({ success: true });
+      render(
+        <PropertyFormView
+          WingMaster={mockWingMaster}
+          propertyCategories={mockPropertyCategories}
+          propertyDescriptions={mockPropertyDescriptions}
+          propertyData={mockPropertyData as never}
+          propertySocietyDetails={mockSocietyDetails as never}
+          locale="en"
+        />
+      );
+
+      const residentialToiletsInput = screen.getByLabelText(/Residential Toilet/i);
+      fireEvent.change(residentialToiletsInput, { target: { value: '0' } });
+
+      const submitBtn = screen.getByRole('button', { name: /Update Changes/i });
+      fireEvent.click(submitBtn);
+
+      await waitFor(() => {
+        expect(updatePropertyBasicDetailsAction).toHaveBeenCalledWith(
+          'en',
+          mockPropertyData.propertyId,
+          expect.objectContaining({
+            noOfResidentialToilets: 0,
+          })
+        );
+      });
+    });
   });
 });
 

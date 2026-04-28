@@ -579,7 +579,7 @@
         "saveAll": "Save All"
     },
     "common": {
-        "saveChanges": "Save Changes",
+        "UpdateChanges": "Update Changes",
         "noChanges": "No changes detected to update."
     }
 }

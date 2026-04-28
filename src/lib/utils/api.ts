@@ -66,6 +66,9 @@ export function handleApiResponse<T>(response: ApiResponse<T>, message: string):
   }
 
   return response.data;
+}
+
+/**
  * Validates API response and throws ApiError if not ok
  */
 export async function validateResponse(response: Response, context: string): Promise<void> {

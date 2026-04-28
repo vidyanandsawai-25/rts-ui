@@ -106,6 +106,5 @@ export { Checkbox } from './checkbox';
 export type { CheckboxProps } from '@/types/common.types';
 
 export { RadioGroup, RadioGroupItem } from './radio-group';
-export {RadioGroup, RadioGroupItem} from './radio-group';
 export type { RadioGroupProps, RadioGroupItemProps } from '@/types/common.types';
 

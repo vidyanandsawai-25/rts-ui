@@ -6,13 +6,13 @@ interface BasicPropertyFieldsProps {
     t: (key: string) => string;
     propertyData: PropertyBasicDetailsApiItem | null;
     categoryOptions: { label: string; value: string }[];
-    categoryId: string;
+    categoryId: number | null;
     handleCategoryChange: (name: string, value: string) => void;
     wingOptions: { label: string; value: string }[];
-    wingId: string;
+    wingId: number | null;
     handleWingChange: (name: string, value: string) => void;
     propertyDescriptionOptions: { label: string; value: string }[];
-    propertyTypeId: string;
+    propertyTypeId: number | null;
     handlePropertyDescriptionChange: (name: string, value: string) => void;
 }
 
@@ -69,7 +69,7 @@ export const BasicPropertyFields = ({
                 <SearchSelect
                     name="category"
                     options={categoryOptions}
-                    value={categoryId}
+                    value={categoryId?.toString() ?? ''}
                     placeholder={t('property.select')}
                     onChange={handleCategoryChange}
                     className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
@@ -84,7 +84,7 @@ export const BasicPropertyFields = ({
                 <SearchSelect
                     name="wing"
                     options={wingOptions}
-                    value={wingId}
+                    value={wingId?.toString() ?? ''}
                     placeholder={t('property.select')}
                     onChange={handleWingChange}
                     className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
@@ -143,7 +143,7 @@ export const BasicPropertyFields = ({
                     name="propertyDescription"
                     options={propertyDescriptionOptions}
                     placeholder={t('property.select')}
-                    value={propertyTypeId}
+                    value={propertyTypeId?.toString() ?? ''}
                     onChange={handlePropertyDescriptionChange}
                     className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                 />

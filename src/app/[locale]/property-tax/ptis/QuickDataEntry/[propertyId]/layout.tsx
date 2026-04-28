@@ -7,8 +7,6 @@ interface Props {
 
 export default async function Layout({ children }: Props) {
 
-    // const { locale, propertyId } = await params;
-
     return (
         <QuickDataEntryClientWrapper>
             {children}

@@ -16,21 +16,36 @@ import {
 import { ActionResult } from "@/types/common.types";
 
 /* ---------------- PROPERTY TYPE ---------------- */
-export async function getPropertyTypes(pageSize: number = 200, searchTerm?: string): Promise<PropertyTypeApiItem[]> {
+export async function getPropertyTypes(
+  pageNumber: number,
+  pageSize: number,
+  searchTerm?: string
+): Promise<PropertyTypeApiItem[]> {
+
   const params = new URLSearchParams();
   params.append("PageSize", pageSize.toString());
   if (searchTerm?.trim()) {
     params.append("SearchTerm", searchTerm.trim());
   }
+  params.append("PageNo", pageNumber.toString());
 
   const response = await apiClient.get<PropertyTypeApiResponse>(`/PropertyTypeMaster?${params.toString()}`);
   return handleApiResponse(response, "Failed to fetch property types").items ?? [];
 }
 
 /* ---------------- PROPERTY CATEGORY ---------------- */
-export async function getPropertyCategories(pageSize: number = 50): Promise<PropertyCategoryApiItem[]> {
+export async function getPropertyCategories(
+  pageNumber: number,
+  pageSize: number,
+  searchTerm?: string
+): Promise<PropertyCategoryApiItem[]> {
+
   const params = new URLSearchParams();
   params.append("PageSize", pageSize.toString());
+  if (searchTerm?.trim()) {
+    params.append("SearchTerm", searchTerm.trim());
+  }
+  params.append("PageNo", pageNumber.toString());;
 
   const response = await apiClient.get<PropertyCategoryApiResponse>(`/PropertyCategory?${params.toString()}`);
   return handleApiResponse(response, "Failed to fetch property categories").items ?? [];
@@ -48,8 +63,18 @@ export async function updatePropertyBasicDetails(propertyId: number, payload: Up
   return handleApiResponse(response, "Failed to update property basic details");
 }
 
-export async function getWingMaster(): Promise<WingItem[]> {
-  const response = await apiClient.get<WingResponse>(`/Wing`);
+export async function getWingMaster(
+  pageNumber: number,
+  pageSize: number,
+  searchTerm?: string
+): Promise<WingItem[]> {
+  const params = new URLSearchParams();
+  params.append("PageSize", pageSize.toString());
+  if (searchTerm?.trim()) {
+    params.append("SearchTerm", searchTerm.trim());
+  }
+  params.append("PageNo", pageNumber.toString());
+  const response = await apiClient.get<WingResponse>(`/Wing?${params.toString()}`);
   return handleApiResponse(response, "Failed to fetch wing master").items ?? [];
 }
 

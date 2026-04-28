@@ -1,4 +1,4 @@
-import { AddButton } from '@/components/common';
+import { UploadButton } from '@/components/common';
 
 interface PropertyFormActionsProps {
     t: (key: string) => string;
@@ -13,8 +13,8 @@ export const PropertyFormActions = ({
 }: PropertyFormActionsProps) => {
     return (
         <div className="flex justify-end space-x-2 mt-4">
-            <AddButton
-                label={isUpdating ? t('footer.saving') : t('common.saveChanges')}
+            <UploadButton
+                label={isUpdating ? t('footer.saving') : t('common.UpdateChanges')}
                 type="submit"
                 isLoading={isUpdating}
                 disabled={isUpdating || !hasChanges}

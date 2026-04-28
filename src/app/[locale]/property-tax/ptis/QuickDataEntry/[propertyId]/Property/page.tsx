@@ -30,9 +30,9 @@ export default async function PropertyFormPage({ params }: PageProps): Promise<R
         propertyBasicDetailsResponse,
         propertySociety,
     ] = await Promise.all([
-        getWingMasterAction(),
-        getPropertyTypesAction(),
-        getPropertyCategoriesAction(),
+        getWingMasterAction(1, -1),
+        getPropertyTypesAction(1, -1),
+        getPropertyCategoriesAction(1, -1),
         getPropertyBasicDetailsAction(Number(propertyId)),
         getPropertySocietyDetailsAction(Number(propertyId)),
     ]);

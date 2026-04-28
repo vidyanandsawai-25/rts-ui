@@ -3,8 +3,8 @@ import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useConfirm } from '@/components/common/ConfirmProvider';
-import { useLoading } from '@/hooks/useLoading';
-import { validateForm, hasErrors, propertyValidations } from '@/lib/utils/validation';
+import { useLoading } from '@/hooks/useLoading';    
+import { hasErrors } from '@/lib/utils/validation';
 import { updatePropertyBasicDetailsAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Property/action';
 import {
     UpdatePropertyBasicDetailsDto,
@@ -14,6 +14,8 @@ import {
 import { usePropertyOptions } from '@/hooks/usePropertyOptions';
 import { usePropertyFormState } from '@/hooks/usePropertyFormState';
 import { usePropertyChanges } from '@/hooks/usePropertyChanges';
+import { parseOptionalNumber } from '@/lib/utils/form-helpers';
+import { validatePropertyForm } from '@/lib/utils/validatePropertyForm';
 
 export const usePropertyForm = (props: PropertyFormViewProps) => {
     const {
@@ -53,25 +55,13 @@ export const usePropertyForm = (props: PropertyFormViewProps) => {
         setHasChanges
     });
 
-    // Helper functions
-    const parseOptionalNumber = (value: FormDataEntryValue | null): number | null => {
-        const normalized = typeof value === "string" ? value.trim() : value;
-        if (normalized === null || normalized === "") return null;
-        const parsed = Number(normalized);
-        return Number.isNaN(parsed) ? null : parsed;
-    };
-
-    const parseId = (value: string): number | null => {
-        const parsed = Number(value);
-        return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
-    };
-
     // Handlers
-    const handlePropertyDescriptionChange = (_name: string, value: string) => setPropertyTypeId(value);
-    const handleCategoryChange = (_name: string, value: string) => setCategoryId(value);
+    const handlePropertyDescriptionChange = (_name: string, value: string) => setPropertyTypeId(Number(value) || null);
+    const handleCategoryChange = (_name: string, value: string) => setCategoryId(Number(value) || null);
     const handleWingChange = (_name: string, value: string) => {
-        setWingId(value);
-        const selectedWing = wingList.find((w) => String(w.id) === value);
+        const id = Number(value) || null;
+        setWingId(id);
+        const selectedWing = wingList.find((w) => w.id === id);
         setWingName(selectedWing?.wingNo || '');
     };
 
@@ -84,19 +74,7 @@ export const usePropertyForm = (props: PropertyFormViewProps) => {
 
         const formData = new FormData(e.currentTarget);
         
-        const validationData = {
-            categoryId,
-            plotArea: formData.get("plotArea"),
-            noOfResidentialToilets: formData.get("noOfResidentialToilets"),
-            noOfCommercialToilets: formData.get("noOfCommercialToilets"),
-        };
-
-        const errors = validateForm(validationData, {
-            categoryId: propertyValidations.required("category", t),
-            plotArea: propertyValidations.number("plotArea", t),
-            noOfResidentialToilets: propertyValidations.number("residentialToilets", t),
-            noOfCommercialToilets: propertyValidations.number("commercialToilets", t),
-        });
+        const errors = validatePropertyForm(formData, categoryId, t);
 
         if (hasErrors(errors)) {
             toast.error(Object.values(errors)[0]);
@@ -104,14 +82,13 @@ export const usePropertyForm = (props: PropertyFormViewProps) => {
         }
 
         const pId = propertyData.propertyId;
-        const selectedWingId = parseId(wingId);
-        const selectedWing = wingList.find((wing) => wing.id === selectedWingId);
+        const selectedWing = wingList.find((wing) => wing.id === wingId);
 
         const payload: UpdatePropertyBasicDetailsDto = {
             wardId: propertyData.wardId,
             taxZoneId: propertyData.taxZoneId,
-            categoryId: parseId(categoryId),
-            propertyTypeId: parseId(propertyTypeId) || null,
+            categoryId,
+            propertyTypeId: propertyTypeId || null,
             wingId: selectedWing?.id ?? null,
             wingNo: selectedWing?.wingNo ?? null,
             wingName: wingName || null,

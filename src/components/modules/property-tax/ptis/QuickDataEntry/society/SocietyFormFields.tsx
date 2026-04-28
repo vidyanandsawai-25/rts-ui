@@ -21,7 +21,10 @@ export const SocietyFormFields = ({
 }: SocietyFormFieldsProps) => {
     return (
         <div className="grid grid-cols-3 gap-x-4 gap-y-3">
-            <SocietyGeneralFields t={t} societyData={societyData} />
+            <SocietyGeneralFields
+                t={t}
+                societyData={societyData}
+            />
             <SocietyContactFields
                 t={t}
                 societyData={societyData}

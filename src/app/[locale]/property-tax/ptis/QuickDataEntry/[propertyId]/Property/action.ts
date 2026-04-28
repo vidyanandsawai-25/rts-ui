@@ -38,9 +38,13 @@ export async function getPropertyBasicDetailsAction(propertyId: number): Promise
 }
 
 // Property Categories
-export async function getPropertyCategoriesAction(): Promise<ActionResult<PropertyCategoryApiItem[]>> {
+export async function getPropertyCategoriesAction(
+    pageNumber: number,
+    pageSize: number,
+    searchTerm?: string
+): Promise<ActionResult<PropertyCategoryApiItem[]>> {
     try {
-        const data = await getPropertyCategories(50);
+        const data = await getPropertyCategories(pageNumber, pageSize, searchTerm);
         return { success: true, data: data ?? [] };
     } catch (error) {
         return { success: false, error: getActionErrorMessage(error) };
@@ -48,9 +52,13 @@ export async function getPropertyCategoriesAction(): Promise<ActionResult<Proper
 }
 
 // Property Types
-export async function getPropertyTypesAction(search?: string): Promise<ActionResult<PropertyTypeApiItem[]>> {
+export async function getPropertyTypesAction(
+    pageNumber: number,
+    pageSize: number,
+    searchTerm?: string
+): Promise<ActionResult<PropertyTypeApiItem[]>> {
     try {
-        const data = await getPropertyTypes(200, search);
+        const data = await getPropertyTypes(pageNumber, pageSize, searchTerm);
         return { success: true, data: data ?? [] };
     } catch (error) {
         return { success: false, error: getActionErrorMessage(error) };
@@ -59,9 +67,13 @@ export async function getPropertyTypesAction(search?: string): Promise<ActionRes
 }
 
 // wing master
-export async function getWingMasterAction(): Promise<ActionResult<WingItem[]>> {
+export async function getWingMasterAction(
+    pageNumber: number,
+    pageSize: number,
+    searchTerm?: string
+): Promise<ActionResult<WingItem[]>> {
     try {
-        const data = await getWingMaster();
+        const data = await getWingMaster(pageNumber, pageSize, searchTerm);
         return { success: true, data };
     } catch (error) {
         return { success: false, error: getActionErrorMessage(error) };

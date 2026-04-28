@@ -1,12 +1,13 @@
 import { useCallback, useEffect, RefObject } from 'react';
 import { PropertyBasicDetailsApiItem } from '@/types/property-basic-details.types';
+import { parseOptionalNumber } from '@/lib/utils/form-helpers';
 
 interface UsePropertyChangesProps {
     formRef: RefObject<HTMLFormElement | null>;
-    categoryId: string;
-    propertyTypeId: string;
-    wingId: string;
-    initialWingId: string;
+    categoryId: number | null;
+    propertyTypeId: number | null;
+    wingId: number | null;
+    initialWingId: number | null;
     propertyData: PropertyBasicDetailsApiItem | null;
     setHasChanges: (value: boolean) => void;
 }
@@ -21,12 +22,6 @@ export const usePropertyChanges = ({
     setHasChanges,
 }: UsePropertyChangesProps) => {
     
-    const parseOptionalNumber = (value: FormDataEntryValue | null): number | null => {
-        const normalized = typeof value === "string" ? value.trim() : value;
-        if (normalized === null || normalized === "") return null;
-        const parsed = Number(normalized);
-        return Number.isNaN(parsed) ? null : parsed;
-    };
 
     const checkFormChanges = useCallback(() => {
         if (!formRef.current) return;
@@ -43,8 +38,8 @@ export const usePropertyChanges = ({
             residentialToilets !== (propertyData?.noOfResidentialToilets ?? null) ||
             commercialToilets !== (propertyData?.noOfCommercialToilets ?? null) ||
             plotArea !== (propertyData?.plotArea ?? null) ||
-            categoryId !== (propertyData?.categoryId?.toString() ?? '') ||
-            propertyTypeId !== (propertyData?.propertyTypeId?.toString() ?? '') ||
+            categoryId !== (propertyData?.categoryId ?? null) ||
+            propertyTypeId !== (propertyData?.propertyTypeId ?? null) ||
             wingId !== initialWingId;
 
         setHasChanges(isChanged);

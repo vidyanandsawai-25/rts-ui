@@ -10,7 +10,7 @@ export const SocietyFormActions = ({ t, isUpdating, hasChanges }: SocietyFormAct
     return (
         <div className="flex justify-end space-x-2 mt-4">
             <AddButton
-                label={isUpdating ? t('footer.saving') : t('common.saveChanges')}
+                label={isUpdating ? t('footer.saving') : t('common.UpdateChanges')}
                 type="submit"
                 isLoading={isUpdating}
                 disabled={isUpdating || !hasChanges}

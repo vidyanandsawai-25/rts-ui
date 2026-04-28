@@ -66,6 +66,9 @@ export interface PropertyCategoryApiResponse {
     hasNext: boolean;
 }
 
+/**
+ * Represents the basic details of a property as returned by the API.
+ */
 export interface PropertyBasicDetailsApiItem {
     propertyId: number;
     wardId: number;
@@ -117,6 +120,10 @@ export interface TypeOfUseApiItem {
 }
 
 // Represents the DTO for updating property basic details. Matches UpdatePropertyBasicDetailsDto in C#
+/**
+ * Data Transfer Object for updating property basic details.
+ * Matches the backend UpdatePropertyBasicDetailsDto schema.
+ */
 export interface UpdatePropertyBasicDetailsDto {
     wardId: number;
     taxZoneId: number;
