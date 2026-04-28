@@ -4,8 +4,6 @@ import { fetchRangesPagedServerAction } from "./actions";
 import { getTranslations } from 'next-intl/server';
 import { unstable_noStore as noStore } from "next/cache";
 
-export const dynamic = "force-dynamic";
-
 interface PageProps {
   readonly params: Promise<{ locale: string }>;
   readonly searchParams: Promise<{

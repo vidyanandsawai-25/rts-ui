@@ -50,6 +50,17 @@
       "mustBeNumber": "Must be a valid number",
       "cannotBeNegative": "Cannot be negative",
       "mustBe9999OrLess": "Must be 9999 or less"
+    },
+    "error": {
+      "title": "Something Went Wrong",
+      "description": "We encountered an error while loading the depreciation master page. Please try again.",
+      "tryAgain": "Try Again",
+      "goHome": "Go to Home",
+      "errorId": "Error ID: {id}"
+    },
+    "loading": {
+      "message": "Loading Depreciation Master...",
+      "description": "Please wait while we fetch the depreciation data"
     }
   }
 }
