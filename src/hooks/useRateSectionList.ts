@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 
 interface UseRateSectionListParams {
@@ -18,22 +18,38 @@ export function useRateSectionList({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  // Track ward counts with accumulation/merging behavior
+  // This ensures counts persist even when a rate section isn't currently selected
   const [wardCounts, setWardCounts] = useState<Record<string, number>>(initialWardCounts);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
+  
+  // Track search value - needs to sync with URL for back/forward navigation
   const [searchValue, setSearchValue] = useState(initialSearch);
+  
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const effectivePageSize = pageSize || 10;
   const totalPages = Math.ceil(totalCount / effectivePageSize);
 
-  useEffect(() => {
-    if (initialWardCounts && Object.keys(initialWardCounts).length > 0) {
-      setWardCounts(prev => ({ ...prev, ...initialWardCounts }));
-    }
-  }, [initialWardCounts]);
+  // Merge new ward counts into existing state (accumulate over time)
+  // Uses useMemo to avoid creating new objects on every render
+  const shouldUpdateWardCounts = useMemo(() => {
+    if (!initialWardCounts || Object.keys(initialWardCounts).length === 0) return false;
+    // Check if any new counts differ from current state
+    return Object.keys(initialWardCounts).some(
+      key => wardCounts[key] !== initialWardCounts[key]
+    );
+  }, [initialWardCounts, wardCounts]);
 
-  useEffect(() => {
+  // Update ward counts when new data arrives
+  if (shouldUpdateWardCounts) {
+    setWardCounts(prev => ({ ...prev, ...initialWardCounts }));
+  }
+
+  // Sync searchValue with URL changes (back/forward navigation)
+  // Only update if initialSearch differs from current searchValue
+  if (initialSearch !== searchValue && searchParams.get("q") === initialSearch) {
     setSearchValue(initialSearch);
-  }, [initialSearch]);
+  }
 
   useEffect(() => {
     const timer = setTimeout(() => {

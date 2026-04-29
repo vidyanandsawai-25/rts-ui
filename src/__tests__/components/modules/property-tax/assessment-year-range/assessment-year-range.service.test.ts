@@ -40,7 +40,7 @@ describe("Assessment Year Range Service", () => {
   const mockConfig: AssessmentYearRangeConfig = {
     type: "RV",
     endpoint: "AssessmentYearRange",
-    idField: "yearRangeRVId",
+    idField: "id",
     routePath: "/property-tax/assessment-year-range/rateablevalue",
     translationNamespace: "assessmentYearRange.rateableValue",
   };
@@ -50,7 +50,7 @@ describe("Assessment Year Range Service", () => {
     data: {
       items: [
         {
-          yearRangeRVId: 1,
+          id: 1,
           fromYear: 2020,
           toYear: 2025,
           isActive: true,
@@ -99,7 +99,7 @@ describe("Assessment Year Range Service", () => {
     const mockSingleResponse = {
       success: true,
       data: {
-        yearRangeRVId: 1,
+        id: 1,
         fromYear: 2020,
         toYear: 2025,
         isActive: true,
@@ -186,7 +186,7 @@ describe("Assessment Year Range Service", () => {
       await updateAssessmentYearRange(mockConfig, mockFormData);
 
       expect(mockPut).toHaveBeenCalledWith("/AssessmentYearRange/1", expect.objectContaining({
-        yearRangeRVId: 1,
+        id: 1,
         fromYear: 2020,
         toYear: 2025,
         isActive: true,
@@ -237,7 +237,7 @@ describe("Assessment Year Range Service", () => {
     const cvConfig: AssessmentYearRangeConfig = {
       type: "CV",
       endpoint: "AssessmentYearRangeCV",
-      idField: "yearRangeCVId",
+      idField: "id",
       routePath: "/property-tax/assessment-year-range/capitalvalue",
       translationNamespace: "assessmentYearRange.capitalValue",
     };
@@ -248,7 +248,7 @@ describe("Assessment Year Range Service", () => {
         data: {
           items: [
             {
-              yearRangeCVId: 1,
+              id: 1,
               fromYear: 2018,
               toYear: 2023,
               isActive: true,
@@ -280,7 +280,7 @@ describe("Assessment Year Range Service", () => {
 
       expect(mockPut).toHaveBeenCalledWith(
         "/AssessmentYearRangeCV/1",
-        expect.objectContaining({ yearRangeCVId: 1 })
+        expect.objectContaining({ id: 1 })
       );
     });
   });
