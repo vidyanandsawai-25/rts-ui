@@ -127,10 +127,10 @@ export default function UseSubTypeForm({ id, initialData, typeInfo: typeInfoProp
 
   const setField = <K extends keyof UseSubType>(key: K, value: UseSubType[K]) => {
     setFormData((p) => {
-      let nextValue: any = value;
+      let nextValue: UseSubType[K] = value;
 
       if (key === "description" && typeof value === "string")
-        nextValue = sanitizeDescription(value, 100);
+        nextValue = sanitizeDescription(value, 100) as UseSubType[K];
 
       const next = { ...p, [key]: nextValue };
 
@@ -188,8 +188,8 @@ export default function UseSubTypeForm({ id, initialData, typeInfo: typeInfoProp
       }
 
       router.back();
-    } catch (err: any) {
-      const errorMsg = err?.message || "";
+    } catch (err: unknown) {
+      const errorMsg = (err as Error)?.message || "";
 
       if (
         errorMsg.includes("409") ||

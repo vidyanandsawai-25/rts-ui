@@ -247,9 +247,10 @@ export default function TypeOfUseMaster({
 
     const groupByApiId = findGroupByApiId(urlGroupId);
     if (groupByApiId && groupByApiId.typeOfUseGroupId !== selectedGroupId) {
-      setSelectedGroupId(groupByApiId.typeOfUseGroupId);
+      // Use setTimeout to avoid direct setState in effect
+      setTimeout(() => setSelectedGroupId(groupByApiId.typeOfUseGroupId), 0);
     }
-  }, [urlGroupId, allGroups]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [urlGroupId, allGroups, selectedGroupId]);
 
 
   useEffect(() => {
@@ -777,7 +778,7 @@ export default function TypeOfUseMaster({
                   <div className="flex items-center gap-1 text-xs text-purple-700 bg-purple-50 px-2 py-1 rounded-md border border-purple-300">
                     <Layers3 className="h-4 w-4" />
                     <span>
-                      {subTotalCount} Sub-types
+                      {subTotalCount} {t("subtype.title")}
                     </span>
                   </div>
                 )}

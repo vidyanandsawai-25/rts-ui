@@ -246,8 +246,8 @@ export default function UseTypeForm({ id, initialData, allGroups: allGroupsProp 
         toast.success(t('messages.typeCreated'));
       }
       router.back();
-    } catch (err: any) {
-      toast.error(err?.message || t('messages.saveFailed'));
+    } catch (err: unknown) {
+      toast.error((err as Error)?.message || t('messages.saveFailed'));
     }
   };
 

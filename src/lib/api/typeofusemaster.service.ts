@@ -108,7 +108,7 @@ export async function getUseGroupsPagedServer(params: {
   if (typeof params.filterLogic === "number") qs.set("FilterLogic", String(params.filterLogic));
   if (typeof params.typeOfUseGroupId === "number") qs.set("TypeOfUseGroupId", String(params.typeOfUseGroupId));
 
-  const response = await apiClient.get<PagedResponse<any>>(`/TypeOfUseGroup?${qs.toString()}`, {
+  const response = await apiClient.get<PagedResponse<unknown>>(`/TypeOfUseGroup?${qs.toString()}`, {
     cache: "no-store",
     headers: { "Accept": "application/json" },
   });
@@ -122,7 +122,7 @@ export async function getUseGroupsPagedServer(params: {
 }
 
 export async function getUseGroupById(id: string | number): Promise<UseGroup | null> {
-  const response = await apiClient.get<any>(`/TypeOfUseGroup/${id}`, {
+  const response = await apiClient.get<unknown>(`/TypeOfUseGroup/${id}`, {
     cache: "no-store",
     headers: { "Accept": "application/json" },
   });
@@ -140,8 +140,7 @@ export async function createUseGroupApi(input: {
   groupIcon: UseGroupIconKey;
   isActive: boolean;
   createdBy?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-}): Promise<any> {
+}): Promise<UseGroup> {
   const payload = {
     typeOfUseGroupCode: input.typeOfUseGroupCode?.trim(),
     groupName: input.groupName?.trim(),
@@ -150,7 +149,7 @@ export async function createUseGroupApi(input: {
     createdBy: Number(input.createdBy ?? "1"),
   };
 
-  const response = await apiClient.post<any>("/TypeOfUseGroup", payload, {
+  const response = await apiClient.post<unknown>("/TypeOfUseGroup", payload, {
     cache: "no-store",
     headers: { "Accept": "application/json" },
   });
@@ -169,8 +168,7 @@ export async function updateUseGroupApi(input: {
   groupIcon: UseGroupIconKey;
   isActive: boolean;
   updatedBy?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-}): Promise<any> {
+}): Promise<UseGroup> {
   const payload = {
     typeOfUseGroupId: input.typeOfUseGroupId,
     typeOfUseGroupCode: input.typeOfUseGroupCode?.trim(),
@@ -180,7 +178,7 @@ export async function updateUseGroupApi(input: {
     updatedBy: Number(input.updatedBy ?? "1"),
   };
 
-  const response = await apiClient.put<any>(`/TypeOfUseGroup/${input.typeOfUseGroupId}`, payload, {
+  const response = await apiClient.put<unknown>(`/TypeOfUseGroup/${input.typeOfUseGroupId}`, payload, {
     cache: "no-store",
     headers: { "Accept": "application/json" },
   });
@@ -193,7 +191,7 @@ export async function updateUseGroupApi(input: {
 }
 
 export async function deleteUseGroupApi(id: string | number) {
-  const response = await apiClient.delete<any>(`/TypeOfUseGroup/${id}`, {
+  const response = await apiClient.delete<unknown>(`/TypeOfUseGroup/${id}`, {
     cache: "no-store",
     headers: { "Accept": "application/json" },
   });
@@ -229,7 +227,7 @@ export async function getUseTypesPagedServer(params: {
   if (params.type) qs.set("Type", params.type);
   if (typeof params.typeOfUseGroupId === "number") qs.set("TypeOfUseGroupId", String(params.typeOfUseGroupId));
 
-  const response = await apiClient.get<PagedResponse<any>>(`/TypeOfUse?${qs.toString()}`, {
+  const response = await apiClient.get<PagedResponse<unknown>>(`/TypeOfUse?${qs.toString()}`, {
     cache: "no-store",
     headers: { "Accept": "application/json" },
   });
@@ -243,7 +241,7 @@ export async function getUseTypesPagedServer(params: {
 }
 
 export async function getUseTypeById(id: string | number): Promise<UseType | null> {
-  const response = await apiClient.get<any>(`/TypeOfUse/${id}`, {
+  const response = await apiClient.get<unknown>(`/TypeOfUse/${id}`, {
     cache: "no-store",
     headers: { "Accept": "application/json" },
   });
@@ -275,7 +273,7 @@ export async function createUseTypeApi(input: {
     createdBy: Number(input.createdBy ?? "1"),
   };
 
-  const response = await apiClient.post<any>("/TypeOfUse", payload, {
+  const response = await apiClient.post<unknown>("/TypeOfUse", payload, {
     cache: "no-store",
     headers: { "Accept": "application/json" },
   });
@@ -309,7 +307,7 @@ export async function updateUseTypeApi(input: {
     updatedBy: Number(input.updatedBy ?? "1"),
   };
 
-  const response = await apiClient.put<any>(`/TypeOfUse/${input.typeOfUseId}`, payload, {
+  const response = await apiClient.put<unknown>(`/TypeOfUse/${input.typeOfUseId}`, payload, {
     cache: "no-store",
     headers: { "Accept": "application/json" },
   });
@@ -322,7 +320,7 @@ export async function updateUseTypeApi(input: {
 }
 
 export async function deleteUseTypeApi(id: string) {
-  const response = await apiClient.delete<any>(`/TypeOfUse/${id}`, {
+  const response = await apiClient.delete<unknown>(`/TypeOfUse/${id}`, {
     cache: "no-store",
     headers: { "Accept": "application/json" },
   });
@@ -367,7 +365,7 @@ export async function getSubTypesPagedServer(params: {
   if (typeof params.filterLogic === "number") qs.set("FilterLogic", String(params.filterLogic));
   if (typeof params.typeOfUseId === "number") qs.set("TypeOfUseId", String(params.typeOfUseId));
 
-  const response = await apiClient.get<PagedResponse<any>>(`/SubTypeOfUse?${qs.toString()}`, {
+  const response = await apiClient.get<PagedResponse<unknown>>(`/SubTypeOfUse?${qs.toString()}`, {
     cache: "no-store",
     headers: { "Accept": "application/json" },
   });
@@ -381,7 +379,7 @@ export async function getSubTypesPagedServer(params: {
 }
 
 export async function getSubTypeByIdApi(id: string | number): Promise<UseSubType | null> {
-  const response = await apiClient.get<any>(`/SubTypeOfUse/${id}`, {
+  const response = await apiClient.get<unknown>(`/SubTypeOfUse/${id}`, {
     cache: "no-store",
     headers: { "Accept": "application/json" },
   });
@@ -399,8 +397,7 @@ export async function createSubTypeApi(input: {
   searchSequence: number;
   isActive: boolean;
   createdBy?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-}): Promise<any> {
+}): Promise<UseSubType> {
   const payload = {
     description: input.description?.trim(),
     typeOfUseId: input.typeOfUseId,
@@ -409,7 +406,7 @@ export async function createSubTypeApi(input: {
     createdBy: Number(input.createdBy ?? "1"),
   };
 
-  const response = await apiClient.post<any>("/SubTypeOfUse", payload, {
+  const response = await apiClient.post<unknown>("/SubTypeOfUse", payload, {
     cache: "no-store",
     headers: { "Accept": "application/json" },
   });
@@ -428,8 +425,7 @@ export async function updateSubTypeApi(input: {
   searchSequence: number;
   isActive: boolean;
   updatedBy?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-}): Promise<any> {
+}): Promise<UseSubType> {
   const payload = {
     subTypeOfUseId: input.subTypeOfUseId,
     description: input.description?.trim(),
@@ -439,7 +435,7 @@ export async function updateSubTypeApi(input: {
     updatedBy: Number(input.updatedBy ?? "1"),
   };
 
-  const response = await apiClient.put<any>(`/SubTypeOfUse/${input.subTypeOfUseId}`, payload, {
+  const response = await apiClient.put<unknown>(`/SubTypeOfUse/${input.subTypeOfUseId}`, payload, {
     cache: "no-store",
     headers: { "Accept": "application/json" },
   });
@@ -453,7 +449,7 @@ export async function updateSubTypeApi(input: {
 
 /** DELETE SubType - /api/SubTypeOfUse/{id} */
 export async function deleteSubTypeApi(id: string) {
-  const response = await apiClient.delete<any>(`/SubTypeOfUse/${id}`, {
+  const response = await apiClient.delete<unknown>(`/SubTypeOfUse/${id}`, {
     cache: "no-store",
     headers: { "Accept": "application/json" },
   });

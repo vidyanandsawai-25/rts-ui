@@ -11,7 +11,7 @@ export default async function AddSubTypePage({
   
   // Fetch type info and all subtypes for duplicate checking if typeId is provided
   let typeInfo = null;
-  let allSubTypes: any[] = [];
+  let allSubTypes: UseSubType[] = [];
   
   if (typeId > 0) {
     const [typeData, allSubTypesData] = await Promise.all([
