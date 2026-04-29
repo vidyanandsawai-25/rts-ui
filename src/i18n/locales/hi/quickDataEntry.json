@@ -208,7 +208,10 @@
         "BuildingPermission": "भवन अनुमति",
         "FloorSubmission": "मंजिल",
         "Discount": "छूट",
-        "OldDetails": "पुराने विवरण"
+        "OldDetails": "पुराने विवरण",
+        "OldTaxation": "पुरानी कर व्यवस्था",
+        "FloorInformation": "मंजिल की जानकारी",
+        "TaxationBreakdown": "कर विवरण विभाजन"
     },
     "property": {
         "title": "संपत्ति जानकारी",
@@ -562,6 +565,21 @@
             "yearPlaceholder": "वर्ष",
             "carpetAreaPlaceholder": "वर्गफुट / वर्गमीटर",
             "autoCalculate": "स्वचालित गणना"
+        },
+        "taxationBreakdown": {
+            "title": "पुराना कराधान विवरण",
+            "assessmentYear": "निर्धारण वर्ष",
+            "aggregateTaxSum": "कुल कर राशि",
+            "interestAmount": "ब्याज राशि",
+            "netPayableTotal": "शुद्ध देय कुल",
+            "remarks": "टिप्पणियां",
+            "saveAssessment": "आकारणी सहेजें",
+            "saveConfirmDescription": "क्या आप वाकई इस कराधान विवरण को सहेजना चाहते हैं?",
+            "saveSuccess": "कराधान विवरण सफलतापूर्वक सहेजा गया",
+            "saveError": "डेटा सहेजने में विफल",
+            "unexpectedError": "एक अप्रत्याशित त्रुटि हुई",
+            "saving": "सहेज रहा है...",
+            "update": "अद्यतन करें"
         }
     },
     "footer": {

@@ -208,7 +208,10 @@
         "BuildingPermission": "Building Permission",
         "FloorSubmission": "Floor",
         "Discount": "Discount",
-        "OldDetails": "Old Details"
+        "OldDetails": "Old Details",
+        "OldTaxation": "Old Taxation",
+        "FloorInformation": "Floor Information",
+        "TaxationBreakdown": "Taxation Breakdown"
     },
     "property": {
         "title": "Property Information",
@@ -561,7 +564,23 @@
             "selectPlaceholder": "Select",
             "yearPlaceholder": "YYYY",
             "carpetAreaPlaceholder": "Sqft / SqM",
-            "autoCalculate": "Auto Calculate"
+            "autoCalculate": "Auto Calculate",
+             "use": "Type Of Use"
+        },
+        "taxationBreakdown": {
+            "title": "Old Taxation Breakdown",
+            "assessmentYear": "Assessment Year",
+            "aggregateTaxSum": "Aggregate Tax Sum",
+            "interestAmount": "Interest Amount",
+            "netPayableTotal": "Net Payable Total",
+            "remarks": "Remarks",
+            "saveAssessment": "Save Assessment",
+            "saveConfirmDescription": "Are you sure you want to save this taxation breakdown?",
+            "saveSuccess": "Taxation breakdown saved successfully",
+            "saveError": "Failed to save data",
+            "unexpectedError": "An unexpected error occurred",
+            "saving": "Saving...",
+            "update": "Update"
         }
     },
     "footer": {

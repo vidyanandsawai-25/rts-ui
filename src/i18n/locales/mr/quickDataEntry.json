@@ -208,7 +208,10 @@
         "BuildingPermission": "इमारत परवानगी",
         "FloorSubmission": "मजला",
         "Discount": "सवलत",
-        "OldDetails": "जुने तपशील"
+        "OldDetails": "जुने तपशील",
+        "OldTaxation": "जुना कर आकारणी",
+        "FloorInformation": "मजला माहिती",
+        "TaxationBreakdown": "कर तपशील विभाजन"
     },
     "property": {
         "title": "मालमत्ता माहिती",
@@ -561,7 +564,23 @@
             "selectPlaceholder": "निवडा",
             "yearPlaceholder": "वर्ष",
             "carpetAreaPlaceholder": "चौरस फूट / चौरस मी.",
-            "autoCalculate": "स्वयं गणना"
+            "autoCalculate": "स्वयं गणना",
+            "use": "वापर"  
+        },
+        "taxationBreakdown": {
+            "title": "जुना कर आकारणी तपशील",
+            "assessmentYear": "आकारणी वर्ष",
+            "aggregateTaxSum": "एकूण कर रक्कम",
+            "interestAmount": "व्याज रक्कम",
+            "netPayableTotal": "निव्वळ देय एकूण",
+            "remarks": "शेरा",
+            "saveAssessment": "आकारणी जतन करा",
+            "saveConfirmDescription": "तुम्ही नक्की हा कर आकारणी तपशील जतन करू इच्छिता?",
+            "saveSuccess": "कर आकारणी तपशील यशस्वीरित्या जतन केला",
+            "saveError": "डेटा जतन करण्यात अपयश",
+            "unexpectedError": "एक अनपेक्षित त्रुटी आली",
+            "saving": "जतन करत आहे...",
+            "update": "अद्यतनित करा"
         }
     },
     "footer": {
