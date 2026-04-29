@@ -67,7 +67,7 @@ export function useOfficeForm({
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
-    let processedValue: any = value;
+    let processedValue: string | number | boolean | null = value;
     
     if (type === 'number' || ['officeIncharge', 'designationMasterId'].includes(name)) {
       processedValue = value === '' ? null : Number(value);

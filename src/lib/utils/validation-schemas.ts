@@ -26,6 +26,7 @@ import {
   MOBILE_10_REGEX
 } from './validation-rules';
 import type { Validator } from './validation-helpers';
+import type { OfficeFormModel } from '@/types/office.types';
 
 /**
  * Common validation rules for Master Forms
@@ -350,8 +351,8 @@ export const propertyValidations = {
  */
 export const officeValidations = {
   validate: (
-    data: any,
-    t: (key: string, params?: Record<string, any>) => string,
+    data: Partial<OfficeFormModel>,
+    t: (key: string, params?: Record<string, string | number | boolean | Date>) => string,
     isEdit: boolean
   ) => {
     const errors: Record<string, string> = {};
