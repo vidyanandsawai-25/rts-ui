@@ -43,3 +43,8 @@ export const TEXT_ALLOWED = /^[\p{L}\p{M}\p{N}]+(([\p{L}\p{M}\p{N},.\-\/&]|\s(?!
 
 /* ================= SEARCH VALIDATION ================= */
 export const SEARCH_KEY_REGEX = /^[A-Za-z0-9+\-]+$/;
+
+/* ================= SOCIETY VALIDATION ================= */
+export const PERSON_NAME_REGEX = /^[\p{L}\p{M}\s.,'-]+$/u;
+export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export const MOBILE_10_REGEX = /^[0-9]{10}$/;

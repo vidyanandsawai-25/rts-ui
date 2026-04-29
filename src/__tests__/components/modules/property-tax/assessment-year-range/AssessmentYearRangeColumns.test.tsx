@@ -43,7 +43,7 @@ describe("getAssessmentYearRangeColumns", () => {
     const fromYearCol = columns.find(c => c.key === "fromYear");
     
     const mockRow: AssessmentYearRangeRV = {
-      yearRangeRVId: 1,
+      id: 1,
       fromYear: 2020,
       toYear: 2025,
       isActive: true,
@@ -60,7 +60,7 @@ describe("getAssessmentYearRangeColumns", () => {
     const toYearCol = columns.find(c => c.key === "toYear");
     
     const mockRow: AssessmentYearRangeRV = {
-      yearRangeRVId: 1,
+      id: 1,
       fromYear: 2020,
       toYear: 2025,
       isActive: true,

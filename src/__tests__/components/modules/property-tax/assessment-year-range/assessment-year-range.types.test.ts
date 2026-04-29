@@ -10,7 +10,7 @@ import {
 
 describe("Assessment Year Range Types", () => {
   const mockRVEntity: AssessmentYearRangeRV = {
-    yearRangeRVId: 1,
+    id: 1,
     fromYear: 2020,
     toYear: 2025,
     isActive: true,
@@ -19,7 +19,7 @@ describe("Assessment Year Range Types", () => {
   };
 
   const mockCVEntity: AssessmentYearRangeCV = {
-    yearRangeCVId: 2,
+    id: 2,
     fromYear: 2018,
     toYear: 2023,
     isActive: false,
@@ -28,38 +28,38 @@ describe("Assessment Year Range Types", () => {
   };
 
   describe("isAssessmentYearRangeRV", () => {
-    it("returns true for RV entity", () => {
+    it("returns true for entity with id field", () => {
       expect(isAssessmentYearRangeRV(mockRVEntity)).toBe(true);
     });
 
-    it("returns false for CV entity", () => {
-      expect(isAssessmentYearRangeRV(mockCVEntity)).toBe(false);
+    it("returns true for CV entity (both have same structure now)", () => {
+      expect(isAssessmentYearRangeRV(mockCVEntity)).toBe(true);
     });
   });
 
   describe("isAssessmentYearRangeCV", () => {
-    it("returns true for CV entity", () => {
+    it("returns true for entity with id field", () => {
       expect(isAssessmentYearRangeCV(mockCVEntity)).toBe(true);
     });
 
-    it("returns false for RV entity", () => {
-      expect(isAssessmentYearRangeCV(mockRVEntity)).toBe(false);
+    it("returns true for RV entity (both have same structure now)", () => {
+      expect(isAssessmentYearRangeCV(mockRVEntity)).toBe(true);
     });
   });
 
   describe("getAssessmentYearRangeId", () => {
-    it("returns yearRangeRVId for RV entity", () => {
+    it("returns id for RV entity", () => {
       expect(getAssessmentYearRangeId(mockRVEntity)).toBe(1);
     });
 
-    it("returns yearRangeCVId for CV entity", () => {
+    it("returns id for CV entity", () => {
       expect(getAssessmentYearRangeId(mockCVEntity)).toBe(2);
     });
 
     it("handles entities with ID of 0", () => {
       const entityWithZeroId: AssessmentYearRangeRV = {
         ...mockRVEntity,
-        yearRangeRVId: 0,
+        id: 0,
       };
       expect(getAssessmentYearRangeId(entityWithZeroId)).toBe(0);
     });
@@ -69,7 +69,7 @@ describe("Assessment Year Range Types", () => {
     it("RV entity has all required fields", () => {
       const rv: AssessmentYearRangeRV = mockRVEntity;
       
-      expect(rv).toHaveProperty("yearRangeRVId");
+      expect(rv).toHaveProperty("id");
       expect(rv).toHaveProperty("fromYear");
       expect(rv).toHaveProperty("toYear");
       expect(rv).toHaveProperty("isActive");
@@ -80,7 +80,7 @@ describe("Assessment Year Range Types", () => {
     it("CV entity has all required fields", () => {
       const cv: AssessmentYearRangeCV = mockCVEntity;
       
-      expect(cv).toHaveProperty("yearRangeCVId");
+      expect(cv).toHaveProperty("id");
       expect(cv).toHaveProperty("fromYear");
       expect(cv).toHaveProperty("toYear");
       expect(cv).toHaveProperty("isActive");

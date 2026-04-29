@@ -6,7 +6,7 @@ import { AssessmentYearRangeConfig } from "@/types/assessment-year-range.types";
 export const rateableValueConfig: AssessmentYearRangeConfig = {
   type: "RV",
   endpoint: "AssessmentYearRange",
-  idField: "yearRangeRVId",
+  idField: "id",
   routePath: "/property-tax/assessment-year-range/rateablevalue",
   translationNamespace: "assessmentYearRange.rateableValue",
 };
