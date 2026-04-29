@@ -103,7 +103,7 @@ export function OfficeMaster({
 
   const stats = [
     {
-      label: t("stats.totalOffices"),
+      label: t("stats.total"),
       value: totalCount,
       icon: BuildingIcon,
       bgColor: "bg-blue-500",
@@ -142,11 +142,11 @@ export function OfficeMaster({
 
   return (
     <PageContainer
-      title={t("title")}
-      subtitle={t("subtitle")}
+      title={t("list.title")}
+      subtitle={t("list.subtitle")}
       actions={
         <AddButton 
-          label={t("actions.addOffice")}
+          label={t("list.buttons.add")}
           onClick={() => router.push(`/${locale}/configuration-settings/office-master/add`)} 
         />
       }
@@ -198,7 +198,7 @@ export function OfficeMaster({
               <SearchInput
                 onChange={handleSearchChange}
                 value={currentSearchTerm}
-                placeholder={t("table.searchPlaceholder")}
+                placeholder={t("list.filters.search")}
                 className="md:w-72"
               />
               <div className="flex items-center gap-2 ml-auto">
