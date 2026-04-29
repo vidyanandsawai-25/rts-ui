@@ -56,9 +56,9 @@ export const usePropertyForm = (props: PropertyFormViewProps) => {
     });
 
     // Handlers
-    const handlePropertyDescriptionChange = (_name: string, value: string) => setPropertyTypeId(Number(value) || null);
-    const handleCategoryChange = (_name: string, value: string) => setCategoryId(Number(value) || null);
-    const handleWingChange = (_name: string, value: string) => {
+    const handlePropertyDescriptionChange = (_name: string | undefined, value: string) => setPropertyTypeId(Number(value) || null);
+    const handleCategoryChange = (_name: string | undefined, value: string) => setCategoryId(Number(value) || null);
+    const handleWingChange = (_name: string | undefined, value: string) => {
         const id = Number(value) || null;
         setWingId(id);
         const selectedWing = wingList.find((w) => w.id === id);

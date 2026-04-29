@@ -8,13 +8,13 @@ interface PropertyFormFieldsProps {
     propertyData: PropertyBasicDetailsApiItem | null;
     categoryOptions: { label: string; value: string }[];
     categoryId: number | null;
-    handleCategoryChange: (name: string, value: string) => void;
+    handleCategoryChange: (name: string | undefined, value: string) => void;
     wingOptions: { label: string; value: string }[];
     wingId: number | null;
-    handleWingChange: (name: string, value: string) => void;
+    handleWingChange: (name: string | undefined, value: string) => void;
     propertyDescriptionOptions: { label: string; value: string }[];
     propertyTypeId: number | null;
-    handlePropertyDescriptionChange: (name: string, value: string) => void;
+    handlePropertyDescriptionChange: (name: string | undefined, value: string) => void;
 }
 
 export const PropertyFormFields = (props: PropertyFormFieldsProps) => {
