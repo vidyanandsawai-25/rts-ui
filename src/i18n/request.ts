@@ -14,16 +14,17 @@ const validateLocale = (locale: string | undefined): Locale => {
 export default getRequestConfig(async ({ locale }) => {
   const validatedLocale = validateLocale(locale);
 
-  // Load all translation files
+  // Load all translation files  
   const [
     commonMessages,
     dashboardMessages,
     constructionMessages,
     floorMessages,
     taxzoneMessages,
+    quickDataEntryMessages,
+    modulesMessages,
     rateSectionMasterMessages,
     assessmentYearRangeMessages,
-    modulesMessages,
     officeMessages
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
@@ -31,9 +32,10 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/construction.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/floor.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/taxzone.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/quickDataEntry.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/rateSectionMaster.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/assessmentYearRange.json`).then((m) => m.default),
-    import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/office.json`).catch(() => ({})).then((m) => m.default || m),
   ]);
 
@@ -43,11 +45,12 @@ export default getRequestConfig(async ({ locale }) => {
       common: commonMessages,
       dashboard: dashboardMessages,
       construction: constructionMessages,
-      floor: floorMessages,      
+      modules: modulesMessages,
+      floor: floorMessages,
       taxZone: taxzoneMessages.taxZone,
+      quickDataEntry: quickDataEntryMessages,
       rateSectionMaster: rateSectionMasterMessages,
       assessmentYearRange: assessmentYearRangeMessages,
-      modules: modulesMessages,
       office: officeMessages,
     },
   };

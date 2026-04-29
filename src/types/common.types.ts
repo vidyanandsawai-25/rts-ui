@@ -7,6 +7,14 @@ export interface ApiResponse<T = unknown> {
   statusCode?: number;
 }
 
+/**
+ * Standard action result type for server actions and service methods.
+ */
+export type ActionResult<T = void> =
+  | { success: true; data: T }
+  | { success: false; error: string };
+
+
 
 export interface User {
   id: string;
@@ -57,8 +65,6 @@ export interface CheckboxProps extends Omit<
   onCheckedChange?: (checked: boolean) => void;
   value?: string;
 }
-
-
 
 export interface RadioGroupProps extends Omit<
   React.HTMLAttributes<HTMLDivElement>,
