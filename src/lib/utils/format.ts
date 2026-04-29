@@ -33,3 +33,46 @@ export const truncateText = (text: string, maxLength: number): string => {
   if (text.length <= maxLength) return text;
   return `${text.slice(0, maxLength)}...`;
 };
+
+// --- PTIS Specific Formatting Utilities ---
+
+function formatNumber(value: number | null | undefined, minimumFractionDigits: number, maximumFractionDigits: number) {
+  return new Intl.NumberFormat('en-IN', {
+    minimumFractionDigits,
+    maximumFractionDigits,
+  }).format(Number(value ?? 0));
+}
+
+export function formatIndianNumber(
+  value: number | null | undefined,
+  minimumFractionDigits = 0,
+  maximumFractionDigits = 0
+): string {
+  return formatNumber(value, minimumFractionDigits, maximumFractionDigits);
+}
+
+export function formatNumberPair(
+  first: number | null | undefined,
+  second: number | null | undefined,
+  minimumFractionDigits = 2,
+  maximumFractionDigits = 2
+): string {
+  return `${formatNumber(first, minimumFractionDigits, maximumFractionDigits)} / ${formatNumber(second, minimumFractionDigits, maximumFractionDigits)}`;
+}
+
+export function formatNumericDate(value: string | null | undefined): string {
+  if (!value) {
+    return '-';
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  }).format(date);
+}

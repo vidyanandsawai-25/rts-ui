@@ -1,3 +1,4 @@
+//property-society.service.ts
 /* ---------------- PROPERTY SOCIETY DETAILS ---------------- */
 
 import { apiClient } from "@/services/api.service";
@@ -16,7 +17,7 @@ export async function getPropertySocietyDetails(propertyId: number): Promise<Pro
 }
 
 /* ---------------- UPDATE PROPERTY SOCIETY DETAILS ---------------- */
-export async function updatePropertySocietyDetails(propertyId: number, payload: UpdatePropertySocietyDetailsDto): Promise<ActionResult> {
-    const response = await apiClient.put<ActionResult>(`/Property/${propertyId}/society-details`, payload);
+export async function updatePropertySocietyDetails(propertyId: number, payload: UpdatePropertySocietyDetailsDto): Promise<ActionResult<null>> {
+    const response = await apiClient.put<ActionResult<null>>(`/Property/${propertyId}/society-details`, payload);
     return handleApiResponse(response, "Failed to update property society details");
 }

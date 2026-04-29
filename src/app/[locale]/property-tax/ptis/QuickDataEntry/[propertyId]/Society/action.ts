@@ -17,14 +17,14 @@ export async function updatePropertySocietyDetailsAction(
   locale: string,
   propertyId: number,
   payload: UpdatePropertySocietyDetailsDto
-): Promise<ActionResult<Awaited<ReturnType<typeof updatePropertySocietyDetails>>>> {
+): Promise<ActionResult<null>> {
   try {
     const response = await updatePropertySocietyDetails(propertyId, payload);
     if (!response.success) {
       return response;
     }
     revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Society`, "page");
-    return { success: true, data: response };
+    return response;
   } catch (error) {
     return { success: false, error: getActionErrorMessage(error) };
   }

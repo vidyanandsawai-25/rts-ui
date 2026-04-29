@@ -9,9 +9,6 @@ import { defaultLocale, locales, Locale } from './config';
 // Validate locale and fallback to default if invalid
 const validateLocale = (locale: string | undefined): Locale => {
   return locale && locales.includes(locale as Locale) ? (locale as Locale) : defaultLocale;
-  return locale && locales.includes(locale as Locale)
-    ? (locale as Locale)
-    : defaultLocale;
 };
 
 export default getRequestConfig(async ({ locale }) => {
@@ -27,6 +24,7 @@ export default getRequestConfig(async ({ locale }) => {
     quickDataEntryMessages,
     rateSectionMasterMessages,
     assessmentYearRangeMessages,
+    ptisMessages,
     modulesMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
@@ -37,6 +35,7 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/quickDataEntry.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/rateSectionMaster.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/assessmentYearRange.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/ptis.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
   ]);
 
@@ -51,6 +50,7 @@ export default getRequestConfig(async ({ locale }) => {
       quickDataEntry: quickDataEntryMessages,
       rateSectionMaster: rateSectionMasterMessages,
       assessmentYearRange: assessmentYearRangeMessages,
+      ptis: ptisMessages,
       modules: modulesMessages,
     },
   };
