@@ -31,9 +31,9 @@ function clientIpFromHeaders(h: Headers): string | undefined {
  * Fetches menu entries for a specific user (deduped per request).
  * Currently retrieves global items as the backend handles user-scoping via the session.
  */
-const fetchUserMenuItems = cache(async (userId: number) => {
+const fetchUserMenuItems = cache(async (_userId: number) => {
   try {
-    // Fetch groups and screens in parallel (userId is passed for future-proofing or logging)
+    // Fetch groups and screens in parallel (_userId is passed for future-proofing or logging)
     const [groupsRes, screensRes] = await Promise.all([
       sidebarNavigationService.getScreenGroups(),
       sidebarNavigationService.getScreens(),
