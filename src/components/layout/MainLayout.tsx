@@ -46,7 +46,7 @@ const fetchUserMenuItems = cache(async (userId: number) => {
       return buildSidebarTree(groups, screens);
     }
   } catch (error) {
-    console.error(`Failed to fetch dynamic sidebar menu for user ${userId}:`, error);
+    // Silent fail for sidebar menu fetching
   }
   
   return [];

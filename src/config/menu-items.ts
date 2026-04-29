@@ -101,9 +101,7 @@ export const getIconNameForScreen = (screenName: string, moduleName: string): st
 };
 
 export const transformScreensToMenuItems = (screens: UserScreenAccess[]): MenuItem[] => {
-  if (process.env.NODE_ENV === 'development' && screens.length > 0) {
-    console.log('[transformScreensToMenuItems] Sample screen:', JSON.stringify(screens[0]));
-  }
+
 
   // Handle both boolean and numeric isMenu flag
   const menuScreens = screens.filter((s) => {
@@ -111,9 +109,7 @@ export const transformScreensToMenuItems = (screens: UserScreenAccess[]): MenuIt
     return isMenu && s.routePath && s.routePath !== '#';
   });
 
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`[transformScreensToMenuItems] Filtered ${screens.length} down to ${menuScreens.length} items`);
-  }
+
 
   return menuScreens.map((screen) => {
     let href = screen.routePath;

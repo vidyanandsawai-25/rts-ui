@@ -16,9 +16,8 @@ class UserScreenAccessService {
    * GET /api/UserScreenAccess/user/{userId}
    */
   async getScreensForUser(userId: number, token?: string): Promise<ApiResponse<UserScreenAccess[]>> {
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`[UserScreenAccessService] Fetching screens for userId: ${userId}`);
-    }
+    // Fetching screens for user...
+
 
     const response = await apiClient.get<unknown>(`/UserScreenAccess/user/${userId}`, {
       headers: authHeaders(token),
@@ -29,9 +28,8 @@ class UserScreenAccessService {
       const data = response.data as any;
       const screens = Array.isArray(data) ? data : (data.items || data.data || data.result || []);
       
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`[UserScreenAccessService] Found ${screens.length} screens for userId: ${userId}`);
-      }
+      // Found screens...
+
 
       return {
         ...response,
@@ -39,9 +37,8 @@ class UserScreenAccessService {
       };
     }
 
-    if (process.env.NODE_ENV === 'development' && !response.success) {
-      console.error(`[UserScreenAccessService] Failed to fetch screens: ${response.error} (Status: ${response.statusCode})`);
-    }
+    // Failed to fetch screens...
+
 
     return response as ApiResponse<UserScreenAccess[]>;
   }

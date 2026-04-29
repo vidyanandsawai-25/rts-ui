@@ -21,7 +21,6 @@ export async function getOffices(): Promise<Office[]> {
     const items = response.data.items ?? [];
     return items.filter(isOfficeShape).map(normalizeOffice);
   } catch (error) {
-    console.error("Error fetching offices:", error);
     throw error;
   }
 }
@@ -65,8 +64,6 @@ export async function getOfficesPaged(
   } catch (error) {
     if (error instanceof ApiError && error.statusCode === 401) {
       // Silence expected auth errors in service layer
-    } else {
-      console.error("[getOfficesPaged] Error:", error);
     }
     throw error;
   }
@@ -89,7 +86,6 @@ export async function getOfficeById(officeId: number): Promise<Office | null> {
     }
     throw new ApiError(500, "Unexpected data format received from server", "Data validation failed");
   } catch (error) {
-    console.error(`Error fetching office ${officeId}:`, error);
     throw error;
   }
 }
@@ -123,7 +119,6 @@ export async function createOffice(data: OfficeFormModel, userId: number): Promi
 
     return response.data.items;
   } catch (error) {
-    console.error("[createOffice] Error:", error);
     throw error;
   }
 }
@@ -158,7 +153,6 @@ export async function updateOffice(data: OfficeFormModel, userId: number): Promi
 
     return response.data.items;
   } catch (error) {
-    console.error("[updateOffice] Error:", error);
     throw error;
   }
 }
@@ -178,7 +172,6 @@ export async function deleteOffice(officeId: number): Promise<void> {
       throw new ApiError(statusCode, response.error || "Failed to delete office", `Delete office ${officeId} failed`);
     }
   } catch (error) {
-    console.error(`Error deleting office ${officeId}:`, error);
     throw error;
   }
 }
