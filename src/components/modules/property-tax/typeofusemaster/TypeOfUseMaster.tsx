@@ -1,5 +1,5 @@
 "use client";
-import { AddButton, DeleteButton, EditButton, PageContainer, SearchInput, Select } from "@/components/common";
+import { AddButton, DeleteButton, EditButton, PageContainer, SearchInput } from "@/components/common";
 import { CardList } from "@/components/common/CardList";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from 'next-intl';
@@ -30,12 +30,12 @@ import TableHeader from "@/components/common/TableHeader";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import {
-  deleteUseType,
   deleteUseTypeWithSubTypes,
   deleteUseGroupWithCascade,
   deleteUseGroup,
   deleteSubType
 } from "@/app/[locale]/property-tax/typeofusemaster/actions";
+import { getSubTypeColumns, type SubTypeTableRow } from "./TypeOfUseMasterColumns";
 
 
 
@@ -315,14 +315,6 @@ export default function TypeOfUseMaster({
   // ---------------- TYPE SEARCH ----------------
   const [typeSearch, setTypeSearch] = useState(typeSearchFromServer ?? "");
 
-  // ✅ FIX: Filter types using API identifier (typeOfUseGroupId) - for counting purposes
-  const typesInGroupCount = useMemo(() => {
-    const group = initialData.groups.find(g => g.typeOfUseGroupId === selectedGroupId);
-    if (!group) return 0;
-    const groupApiId = getGroupApiId(group);
-    return allTypes.filter((t) => String(t.typeOfUseGroupId) === groupApiId).length;
-  }, [allTypes, selectedGroupId, initialData.groups]);
-
   // ✅ Get selected type object to display its code
   const selectedType = useMemo(() => {
     if (!selectedTypeId || selectedTypeId === "__NONE__") return null;
@@ -352,21 +344,9 @@ export default function TypeOfUseMaster({
     }));
   }, [subTypes, subPageNumber, subPageSize]);
 
-  // Type for SubType table rows
-  type SubTypeTableRow = UseSubType & { srNo: number } & Record<string, unknown>;
-
+  // Get column definitions from separate file
   const subTypeColumns = useMemo<Column<SubTypeTableRow>[]>(
-    () => [
-      { key: "srNo" as const, label: t('table.columns.serial'), width: "60px" },
-      { key: "description" as const, label: t('table.columns.subTypeName'), width: "25%", render: (v) => (v as string) || "—" },
-      { key: "searchSequence" as const, label: t('table.columns.searchSequence'), width: "25%", render: (v) => String(v ?? "—") },
-      {
-        key: "status" as const,
-        label: t('subtype.fields.status'),
-        width: "25%",
-        render: (v) => <StatusBadge value={(v as string) ?? "Active"} />,
-      },
-    ],
+    () => getSubTypeColumns(t),
     [t]
   );
 
@@ -382,9 +362,6 @@ export default function TypeOfUseMaster({
       q: searchActive ? subTypeSearch : "",
     });
   };
-
-  // ---------------- PAGE SIZE ----------------
-  const pageSizeOptions = [5, 10, 20, 50];
 
 
   const changeSubPageSize = (size: number) => {
