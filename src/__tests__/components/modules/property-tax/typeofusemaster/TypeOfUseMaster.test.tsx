@@ -1,9 +1,8 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextIntlClientProvider } from "next-intl";
 import TypeOfUseMaster from "@/components/modules/property-tax/typeofusemaster/TypeOfUseMaster";
 import type { TypeOfUseMasterData, UseGroup, UseType, UseSubType } from "@/types/typeOfUse.types";
-import { toast } from "sonner";
 
 // Mock next/navigation
 const mockRouterPush = vi.fn();
@@ -43,7 +42,7 @@ vi.mock("sonner", () => ({
 
 // Mock confirm provider
 vi.mock("@/components/common/ConfirmProvider", () => ({
-  useConfirm: () => vi.fn((props) => Promise.resolve(true)),
+  useConfirm: () => vi.fn(() => Promise.resolve(true)),
 }));
 
 // Mock delete actions
@@ -202,8 +201,7 @@ describe("TypeOfUseMaster", () => {
           typesTotalCount={2}
           typesTotalPages={1}
           typePageNumber={1}
-          typePageSize={10}
-        />
+          typePageSize={10}          selectedTypeId="1"        />
       );
 
       expect(screen.getByText("Type of Use Master")).toBeInTheDocument();
@@ -224,6 +222,7 @@ describe("TypeOfUseMaster", () => {
           typesTotalPages={1}
           typePageNumber={1}
           typePageSize={10}
+          selectedTypeId="1"
         />
       );
 
@@ -245,6 +244,7 @@ describe("TypeOfUseMaster", () => {
           typesTotalPages={1}
           typePageNumber={1}
           typePageSize={10}
+          selectedTypeId="1"
         />
       );
 
@@ -267,6 +267,7 @@ describe("TypeOfUseMaster", () => {
           typesTotalPages={1}
           typePageNumber={1}
           typePageSize={10}
+          selectedTypeId="1"
         />
       );
 
@@ -298,6 +299,7 @@ describe("TypeOfUseMaster", () => {
           typesTotalPages={1}
           typePageNumber={1}
           typePageSize={10}
+          selectedTypeId="1"
         />
       );
 
@@ -319,6 +321,7 @@ describe("TypeOfUseMaster", () => {
           typesTotalPages={1}
           typePageNumber={1}
           typePageSize={10}
+          selectedTypeId="1"
         />
       );
 
@@ -341,6 +344,7 @@ describe("TypeOfUseMaster", () => {
           typesTotalPages={1}
           typePageNumber={1}
           typePageSize={10}
+          selectedTypeId="1"
         />
       );
 
@@ -362,6 +366,7 @@ describe("TypeOfUseMaster", () => {
           typesTotalPages={1}
           typePageNumber={1}
           typePageSize={10}
+          selectedTypeId="1"
         />
       );
 
@@ -384,6 +389,7 @@ describe("TypeOfUseMaster", () => {
           typesTotalPages={1}
           typePageNumber={1}
           typePageSize={10}
+          selectedTypeId="1"
         />
       );
 
@@ -408,6 +414,7 @@ describe("TypeOfUseMaster", () => {
           typesTotalPages={1}
           typePageNumber={1}
           typePageSize={10}
+          selectedTypeId="1"
         />
       );
 
@@ -437,6 +444,7 @@ describe("TypeOfUseMaster", () => {
           typesTotalPages={0}
           typePageNumber={1}
           typePageSize={10}
+          selectedTypeId="1"
         />
       );
 
@@ -459,6 +467,7 @@ describe("TypeOfUseMaster", () => {
           typesTotalPages={1}
           typePageNumber={1}
           typePageSize={10}
+          selectedTypeId="1"
         />
       );
 
@@ -484,6 +493,7 @@ describe("TypeOfUseMaster", () => {
           typesTotalPages={1}
           typePageNumber={1}
           typePageSize={10}
+          selectedTypeId="1"
         />
       );
 

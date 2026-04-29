@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { getSubTypeColumns } from "@/components/modules/property-tax/typeofusemaster/TypeOfUseMasterColumns";
+import { getSubTypeColumns, type SubTypeTableRow } from "@/components/modules/property-tax/typeofusemaster/TypeOfUseMasterColumns";
 import type { UseSubType } from "@/types/typeOfUse.types";
 
 // Mock translation function
@@ -8,8 +8,7 @@ const mockT = vi.fn((key: string) => {
     "table.columns.serial": "#",
     "table.columns.subTypeName": "Sub-Type Name",
     "table.columns.searchSequence": "Search Sequence",
-    "table.columns.status": "Status",
-    "table.columns.actions": "Actions",
+    "subtype.fields.status": "Status",
     "status.active": "Active",
     "status.inactive": "Inactive",
   };
@@ -29,146 +28,105 @@ describe("TypeOfUseMasterColumns", () => {
     it("should have correct column headers", () => {
       const columns = getSubTypeColumns(mockT);
 
-      const headers = columns.map(col => col.header);
+      const labels = columns.map(col => col.label);
       
-      expect(headers).toContain("#");
-      expect(headers).toContain("Sub-Type Name");
-      expect(headers).toContain("Search Sequence");
-      expect(headers).toContain("Status");
-      expect(headers).toContain("Actions");
+      expect(labels).toContain("#");
+      expect(labels).toContain("Sub-Type Name");
+      expect(labels).toContain("Search Sequence");
+      expect(labels).toContain("Status");
     });
 
     it("should have serial number column", () => {
       const columns = getSubTypeColumns(mockT);
       
-      const serialColumn = columns.find(col => col.header === "#");
+      const serialColumn = columns.find(col => col.label === "#");
       expect(serialColumn).toBeDefined();
-      expect(serialColumn?.id).toBe("serial");
+      expect(serialColumn?.key).toBe("srNo");
     });
 
     it("should have description column", () => {
       const columns = getSubTypeColumns(mockT);
       
-      const descColumn = columns.find(col => col.header === "Sub-Type Name");
+      const descColumn = columns.find(col => col.label === "Sub-Type Name");
       expect(descColumn).toBeDefined();
-      expect(descColumn?.id).toBe("description");
+      expect(descColumn?.key).toBe("description");
     });
 
     it("should have search sequence column", () => {
       const columns = getSubTypeColumns(mockT);
       
-      const seqColumn = columns.find(col => col.header === "Search Sequence");
+      const seqColumn = columns.find(col => col.label === "Search Sequence");
       expect(seqColumn).toBeDefined();
-      expect(seqColumn?.id).toBe("searchSequence");
+      expect(seqColumn?.key).toBe("searchSequence");
     });
 
     it("should have status column", () => {
       const columns = getSubTypeColumns(mockT);
       
-      const statusColumn = columns.find(col => col.header === "Status");
+      const statusColumn = columns.find(col => col.label === "Status");
       expect(statusColumn).toBeDefined();
-      expect(statusColumn?.id).toBe("status");
-    });
-
-    it("should have actions column", () => {
-      const columns = getSubTypeColumns(mockT);
-      
-      const actionsColumn = columns.find(col => col.header === "Actions");
-      expect(actionsColumn).toBeDefined();
-      expect(actionsColumn?.id).toBe("actions");
-    });
-
-    it("should render serial numbers correctly", () => {
-      const columns = getSubTypeColumns(mockT);
-      const serialColumn = columns.find(col => col.id === "serial");
-
-      const mockRow: UseSubType = {
-        subTypeOfUseId: 1,
-        description: "Test",
-        typeOfUseId: 1,
-        searchSequence: 1,
-        isActive: true,
-        status: "Active",
-      };
-
-      // Test with different indices
-      expect(serialColumn?.cell).toBeDefined();
-      if (serialColumn?.cell && typeof serialColumn.cell === "function") {
-        // Cell function should receive row and context
-        const result1 = serialColumn.cell({ row: mockRow, index: 0 });
-        expect(result1).toBe(1);
-
-        const result2 = serialColumn.cell({ row: mockRow, index: 9 });
-        expect(result2).toBe(10);
-      }
+      expect(statusColumn?.key).toBe("status");
     });
 
     it("should render description correctly", () => {
       const columns = getSubTypeColumns(mockT);
-      const descColumn = columns.find(col => col.id === "description");
+      const descColumn = columns.find(col => col.key === "description");
 
-      const mockRow: UseSubType = {
+      const mockRow: SubTypeTableRow = {
         subTypeOfUseId: 1,
         description: "Ground Floor",
         typeOfUseId: 1,
         searchSequence: 1,
         isActive: true,
         status: "Active",
+        srNo: 1,
       };
 
-      expect(descColumn?.cell).toBeDefined();
-      if (descColumn?.cell && typeof descColumn.cell === "function") {
-        const result = descColumn.cell({ row: mockRow });
+      expect(descColumn?.render).toBeDefined();
+      if (descColumn?.render && typeof descColumn.render === "function") {
+        const result = descColumn.render("Ground Floor", mockRow, 0);
         expect(result).toBe("Ground Floor");
       }
     });
 
     it("should render search sequence correctly", () => {
       const columns = getSubTypeColumns(mockT);
-      const seqColumn = columns.find(col => col.id === "searchSequence");
+      const seqColumn = columns.find(col => col.key === "searchSequence");
 
-      const mockRow: UseSubType = {
+      const mockRow: SubTypeTableRow = {
         subTypeOfUseId: 1,
         description: "Test",
         typeOfUseId: 1,
         searchSequence: 5,
         isActive: true,
         status: "Active",
+        srNo: 1,
       };
 
-      expect(seqColumn?.cell).toBeDefined();
-      if (seqColumn?.cell && typeof seqColumn.cell === "function") {
-        const result = seqColumn.cell({ row: mockRow });
-        expect(result).toBe(5);
+      expect(seqColumn?.render).toBeDefined();
+      if (seqColumn?.render && typeof seqColumn.render === "function") {
+        const result = seqColumn.render(5, mockRow, 0);
+        expect(result).toBe("5");
       }
     });
 
-    it("should use translation function for headers", () => {
+    it("should use translation function for labels", () => {
       getSubTypeColumns(mockT);
 
       expect(mockT).toHaveBeenCalledWith("table.columns.serial");
       expect(mockT).toHaveBeenCalledWith("table.columns.subTypeName");
       expect(mockT).toHaveBeenCalledWith("table.columns.searchSequence");
-      expect(mockT).toHaveBeenCalledWith("table.columns.status");
-      expect(mockT).toHaveBeenCalledWith("table.columns.actions");
+      expect(mockT).toHaveBeenCalledWith("subtype.fields.status");
     });
 
-    it("should handle missing or null values gracefully", () => {
+    it("should handle empty description values", () => {
       const columns = getSubTypeColumns(mockT);
-      const descColumn = columns.find(col => col.id === "description");
+      const descColumn = columns.find(col => col.key === "description");
 
-      const mockRowWithNull: UseSubType = {
-        subTypeOfUseId: 1,
-        description: "",
-        typeOfUseId: 1,
-        searchSequence: 0,
-        isActive: true,
-        status: "Active",
-      };
-
-      if (descColumn?.cell && typeof descColumn.cell === "function") {
-        const result = descColumn.cell({ row: mockRowWithNull });
-        expect(result).toBe("");
+      expect(descColumn?.render).toBeDefined();
+      if (descColumn?.render && typeof descColumn.render === "function") {
+        const result = descColumn.render("", { srNo: 1 } as SubTypeTableRow, 0);
+        expect(result).toBe("—");
       }
     });
   });

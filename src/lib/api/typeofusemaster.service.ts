@@ -158,7 +158,7 @@ export async function createUseGroupApi(input: {
     throw new Error(response.error ?? "Create group failed");
   }
   
-  return response.data;
+  return response.data as UseGroup;
 }
 
 export async function updateUseGroupApi(input: {
@@ -187,7 +187,7 @@ export async function updateUseGroupApi(input: {
     throw new Error(response.error ?? "Update group failed");
   }
   
-  return response.data;
+  return response.data as UseGroup;
 }
 
 export async function deleteUseGroupApi(id: string | number) {
@@ -415,7 +415,7 @@ export async function createSubTypeApi(input: {
     throw new Error(response.error ?? "Create sub-type failed");
   }
   
-  return response.data;
+  return response.data as UseSubType;
 }
 
 export async function updateSubTypeApi(input: {
@@ -444,7 +444,7 @@ export async function updateSubTypeApi(input: {
     throw new Error(response.error ?? "Update sub-type failed");
   }
   
-  return response.data;
+  return response.data as UseSubType;
 }
 
 /** DELETE SubType - /api/SubTypeOfUse/{id} */

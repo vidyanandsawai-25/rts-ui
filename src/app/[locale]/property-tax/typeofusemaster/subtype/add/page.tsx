@@ -1,5 +1,6 @@
 import UseSubTypeForm from "@/components/modules/property-tax/typeofusemaster/UseSubTypeForm";
 import { getTypeById, getAllSubTypes } from "../../actions";
+import type { UseSubType } from "@/types/typeOfUse.types";
 
 export default async function AddSubTypePage({
   searchParams,
