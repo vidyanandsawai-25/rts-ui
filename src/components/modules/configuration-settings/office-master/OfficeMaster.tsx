@@ -22,6 +22,7 @@ import { deleteOfficeAction } from "@/app/[locale]/configuration-settings/office
 import { getOfficeColumns } from "./OfficeColumns";
 import { useOfficeSearch } from "@/hooks/useOfficeSearch";
 import { useOfficePagination } from "@/hooks/useOfficePagination";
+import { cn } from "@/lib/utils/cn";
 
 export function OfficeMaster({
   data, pageNumber, pageSize, totalCount, totalPages, sortBy, sortOrder, type, status
@@ -113,7 +114,8 @@ export function OfficeMaster({
       accentColor: "bg-blue-600"
     },
     {
-      label: `${t("stats.headOffices")} (${tCommon("table.onThisPage")})`,
+      label: t("stats.headOffices"),
+      subLabel: tCommon("table.onThisPage"),
       value: data.filter(o => o.type === "Head Office").length,
       icon: Building2,
       bgColor: "bg-purple-500",
@@ -122,7 +124,8 @@ export function OfficeMaster({
       accentColor: "bg-purple-600"
     },
     {
-      label: `${t("stats.activeOffices")} (${tCommon("table.onThisPage")})`,
+      label: t("stats.activeOffices"),
+      subLabel: tCommon("table.onThisPage"),
       value: data.filter(o => o.isActive).length,
       icon: CheckCircle2,
       bgColor: "bg-green-500",
@@ -131,7 +134,8 @@ export function OfficeMaster({
       accentColor: "bg-green-600"
     },
     {
-      label: `${t("stats.regionalOffices")} (${tCommon("table.onThisPage")})`,
+      label: t("stats.regionalOffices"),
+      subLabel: tCommon("table.onThisPage"),
       value: data.filter(o => o.type === "Regional Office").length,
       icon: Globe2,
       bgColor: "bg-orange-500",
@@ -159,22 +163,41 @@ export function OfficeMaster({
             return (
               <Card
                 key={index}
-                className="group overflow-hidden border border-gray-100 bg-white shadow-sm transition-all duration-300 hover:shadow-lg"
+                className="group relative overflow-hidden border-none bg-white shadow-sm transition-all duration-300 hover:shadow-md"
               >
-                <CardContent className="relative flex items-center justify-between p-4">
-                  <div className="z-10">
-                    <p className="mb-1 text-xs font-medium text-gray-500">{stat.label}</p>
-                    <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium text-slate-500">{stat.label}</p>
+                      <div className="flex items-baseline gap-1">
+                        <p className="text-3xl font-bold text-slate-900 tracking-tight">{stat.value}</p>
+                        {"subLabel" in stat && (
+                          <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">
+                            {stat.subLabel}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div
+                      className={cn(
+                        "rounded-2xl p-3 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 shadow-sm",
+                        stat.iconBg,
+                        stat.iconColor
+                      )}
+                    >
+                      <Icon className="h-6 w-6" />
+                    </div>
                   </div>
-                  <div
-                    className={`z-10 rounded-xl p-3 shadow-md transition-transform group-hover:scale-110 ${stat.iconBg} ${stat.iconColor}`}
-                  >
-                    <Icon className="h-6 w-6" />
-                  </div>
-                  <div
-                    className={`absolute -bottom-6 -right-6 h-20 w-20 rounded-tl-full opacity-60 transition-all group-hover:h-24 group-hover:w-24 ${stat.bgColor}`}
-                  />
-                  <div className={`absolute left-0 top-0 h-full w-1.5 ${stat.accentColor}`} />
+                  
+                  {/* Decorative Elements */}
+                  <div className={cn(
+                    "absolute -bottom-4 -right-4 h-24 w-24 rounded-full opacity-[0.03] transition-all duration-500 group-hover:scale-150",
+                    stat.bgColor
+                  )} />
+                  <div className={cn(
+                    "absolute top-0 left-0 h-full w-1.5 transition-all duration-300",
+                    stat.accentColor
+                  )} />
                 </CardContent>
               </Card>
             );
@@ -207,24 +230,25 @@ export function OfficeMaster({
                   value={selectedType}
                   onChange={handleTypeChange}
                   options={[
-                    { label: t("filters.allTypes"), value: "" },
-                    { label: "Head Office", value: "Head Office" },
-                    { label: "Regional Office", value: "Regional Office" },
-                    { label: "Branch Office", value: "Branch Office" },
+                    { label: t("list.filters.allTypes"), value: "" },
+                    { label: t("form.fields.type.options.headOffice") || "Head Office", value: "Head Office" },
+                    { label: t("form.fields.type.options.zonalOffice") || "Zonal Office", value: "Zonal Office" },
+                    { label: t("form.fields.type.options.wardOffice") || "Ward Office", value: "Ward Office" },
+                    { label: t("form.fields.type.options.departmentOffice") || "Department Office", value: "Department Office" },
                   ]}
-                  className="w-48"
-                  placeholder={t("filters.type")}
+                  className="min-w-[180px]"
+                  placeholder={t("list.filters.type")}
                 />
                 <Select
                   value={selectedStatus}
                   onChange={handleStatusChange}
                   options={[
-                    { label: t("filters.allStatus"), value: "" },
+                    { label: t("list.filters.allStatus"), value: "" },
                     { label: tCommon("status.active"), value: "true" },
                     { label: tCommon("status.inactive"), value: "false" },
                   ]}
-                  className="w-40"
-                  placeholder={t("filters.status")}
+                  className="min-w-[150px]"
+                  placeholder={t("list.filters.status")}
                 />
               </div>
             </div>

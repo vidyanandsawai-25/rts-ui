@@ -149,7 +149,7 @@ export async function updateOffice(data: OfficeFormModel, userId: number): Promi
       updatedBy: userId,
     };
 
-    const response = await apiClient.put<{ items: Office; success: boolean; message: string }>("/Office", payload);
+    const response = await apiClient.put<{ items: Office; success: boolean; message: string }>(`/Office/${encodeURIComponent(String(data.officeId))}`, payload);
     
     if (!response.success || !response.data?.success) {
       const errorMsg = response.error || response.data?.message || "Update office failed";

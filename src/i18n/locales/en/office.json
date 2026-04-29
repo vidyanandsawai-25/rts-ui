@@ -9,7 +9,11 @@
     },
     "filters": {
       "show": "Show",
-      "search": "Search by Office Code or Name..."
+      "search": "Search by Office Code or Name...",
+      "allTypes": "All Types",
+      "type": "Select Type",
+      "allStatus": "All Status",
+      "status": "Select Status"
     },
     "table": {
       "officeCode": "Office Code",
@@ -50,7 +54,9 @@
           "departmentOffice": "Department Office",
           "wardOffice": "Ward Office",
           "subOffice": "Sub Office",
-          "headOffice": "Head Office"
+          "headOffice": "Head Office",
+          "regionalOffice": "Regional Office",
+          "branchOffice": "Branch Office"
         }
       },
       "emailId": {
@@ -114,6 +120,9 @@
   },
   "stats": {
     "total": "Total Offices",
+    "headOffices": "Head Offices",
+    "activeOffices": "Active Offices",
+    "regionalOffices": "Regional Offices",
     "active": "Active",
     "inactive": "Inactive",
     "records": "Total Records"
