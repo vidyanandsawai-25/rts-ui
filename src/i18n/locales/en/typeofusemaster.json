@@ -180,5 +180,17 @@
         "deleteGroupWithTypesTitle": "Delete Group with Types?",
         "deleteGroupWithTypesDescription": "The group you want to delete has types associated with it. Deleting this group will also delete ALL its types and their sub-types. This action cannot be undone.",
         "deleteAll": "Delete All"
+    },
+    "error": {
+      "title": "Type of Use Master error",
+      "description": "An error occurred while loading the Type of Use Master page. Please try again.",
+      "errorId": "Error ID: {id}",
+      "goHome": "Go Home",
+      "tryAgain": "Try Again"
+    },
+
+    "loading": {
+      "message": "Loading Type of Use Master...",
+      "description": "Please wait while we fetch the Type of Use Master data"
     }
 }
