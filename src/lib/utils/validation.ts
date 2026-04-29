@@ -44,6 +44,9 @@ export {
   TEXT_SANITIZE,
   TEXT_ALLOWED,
   SEARCH_KEY_REGEX,
+  PERSON_NAME_REGEX,
+  EMAIL_REGEX,
+  MOBILE_10_REGEX,
 } from './validation-rules';
 
 // Re-export from validation-helpers.ts
@@ -55,4 +58,6 @@ export {
   commonValidations,
   createMasterValidationSchema,
   constructionValidators,
+  societyValidations,
+  propertyValidations,
 } from './validation-schemas';

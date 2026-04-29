@@ -28,7 +28,7 @@ describe("useAssessmentYearRangeForm", () => {
   const mockConfig: AssessmentYearRangeConfig = {
     type: "RV",
     endpoint: "AssessmentYearRange",
-    idField: "yearRangeRVId",
+    idField: "id",
     routePath: "/property-tax/assessment-year-range/rateablevalue",
     translationNamespace: "assessmentYearRange.rateableValue",
   };
@@ -37,7 +37,7 @@ describe("useAssessmentYearRangeForm", () => {
   const mockUpdateAction = vi.fn().mockResolvedValue({ success: true });
 
   const mockInitialData: AssessmentYearRangeRV = {
-    yearRangeRVId: 1,
+    id: 1,
     fromYear: 2020,
     toYear: 2025,
     isActive: true,

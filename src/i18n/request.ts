@@ -17,13 +17,15 @@ const validateLocale = (locale: string | undefined): Locale => {
 export default getRequestConfig(async ({ locale }) => {
   const validatedLocale = validateLocale(locale);
 
-  // Load all translation files
+  // Load all translation files  
   const [
     commonMessages,
     dashboardMessages,
     constructionMessages,
     floorMessages,
     taxzoneMessages,
+    quickDataEntryMessages,
+    modulesMessages,
     rateSectionMasterMessages,
     assessmentYearRangeMessages,
     floorFactorMasterMessages,
@@ -35,12 +37,15 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/construction.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/floor.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/taxzone.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/quickDataEntry.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/rateSectionMaster.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/assessmentYearRange.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/floorFactorMaster.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/weightageMaster.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default)
 
+    import(`./locales/${validatedLocale}/assessmentYearRange.json`).then((m) => m.default)
   ]);
 
   return {
@@ -49,8 +54,10 @@ export default getRequestConfig(async ({ locale }) => {
       common: commonMessages,
       dashboard: dashboardMessages,
       construction: constructionMessages,
+      modules: modulesMessages,
       floor: floorMessages,
       taxZone: taxzoneMessages.taxZone,
+      quickDataEntry: quickDataEntryMessages,
       rateSectionMaster: rateSectionMasterMessages,
       assessmentYearRange: assessmentYearRangeMessages,
       floorFactorMaster: floorFactorMasterMessages.floorFactorMaster,
