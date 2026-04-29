@@ -8,11 +8,16 @@ import {
   validateUpdateFormData, getDeleteErrorStatusCode, createApiError,
 } from "./office-validation";
 
+/** Fetches all offices from the API */
 export async function getOffices(): Promise<Office[]> {
   try {
     const response = await apiClient.get<PagedResponse<Office>>("/Office");
-    if (!response.success) throw new ApiError(response.statusCode ?? 500, response.error || "Failed to fetch offices", "Get offices failed");
-    if (!response.data) throw new ApiError(500, "No data received from server", "Invalid response format");
+    if (!response.success) {
+      throw new ApiError(response.statusCode ?? 500, response.error || "Failed to fetch offices", "Get offices failed");
+    }
+    if (!response.data) {
+      throw new ApiError(500, "No data received from server", "Invalid response format");
+    }
     const items = response.data.items ?? [];
     return items.filter(isOfficeShape).map(normalizeOffice);
   } catch (error) {
@@ -21,6 +26,7 @@ export async function getOffices(): Promise<Office[]> {
   }
 }
 
+/** Fetches paginated offices from the API */
 export async function getOfficesPaged(
   pageNumber: number, 
   pageSize: number, 
@@ -44,14 +50,15 @@ export async function getOfficesPaged(
     if (typeof status === "string" && status.trim()) params.append("Status", status.trim());
 
     const response = await apiClient.get<PagedResponse<Office>>(`/Office?${params.toString()}`);
-    if (!response.success) throw new ApiError(response.statusCode ?? 500, response.error || "Failed to fetch paged offices", "Get paged offices failed");
-    if (!response.data) throw new ApiError(500, "No data received from server", "Invalid response format");
+    if (!response.success) {
+      throw new ApiError(response.statusCode ?? 500, response.error || "Failed to fetch paged offices", "Get paged offices failed");
+    }
+    if (!response.data) {
+      throw new ApiError(500, "No data received from server", "Invalid response format");
+    }
 
-    // Some APIs nest within "result" or "value"
-    const rawItems = response.data.items || (response.data as unknown as Record<string, unknown>)?.data || (response.data as unknown as Record<string, unknown>)?.result || [];
-    const itemsArray = Array.isArray(rawItems) ? rawItems : [];
-    
-    const validItems = itemsArray.filter(isOfficeShape);
+    const items = response.data.items ?? [];
+    const validItems = items.filter(isOfficeShape);
     const normalizedItems = validItems.map(normalizeOffice);
     
     return { ...response.data, items: normalizedItems };
@@ -65,11 +72,16 @@ export async function getOfficesPaged(
   }
 }
 
+/** Fetches a single office by ID */
 export async function getOfficeById(officeId: number): Promise<Office | null> {
   try {
-    if (!validateOfficeId(officeId)) throw new ApiError(400, "Valid Office ID is required", "Invalid office ID");
+    if (!validateOfficeId(officeId)) {
+      throw new ApiError(400, "Valid Office ID is required", "Invalid office ID");
+    }
     const response = await apiClient.get<Office>(`/Office/${encodeURIComponent(String(officeId))}`);
-    if (!response.success) throw new ApiError(response.statusCode ?? 500, response.error || "Failed to fetch office", `Get office ${officeId} failed`);
+    if (!response.success) {
+      throw new ApiError(response.statusCode ?? 500, response.error || "Failed to fetch office", `Get office ${officeId} failed`);
+    }
     if (!response.data) return null;
 
     if (isOfficeShape(response.data)) {
@@ -82,6 +94,7 @@ export async function getOfficeById(officeId: number): Promise<Office | null> {
   }
 }
 
+/** Creates a new office */
 export async function createOffice(data: OfficeFormModel, userId: number): Promise<Office> {
   try {
     validateCreateFormData(data);
@@ -115,6 +128,7 @@ export async function createOffice(data: OfficeFormModel, userId: number): Promi
   }
 }
 
+/** Updates an existing office */
 export async function updateOffice(data: OfficeFormModel, userId: number): Promise<Office> {
   try {
     validateUpdateFormData(data);
@@ -135,7 +149,6 @@ export async function updateOffice(data: OfficeFormModel, userId: number): Promi
       updatedBy: userId,
     };
 
-    // Typically PUT /Office or PUT /Office/{id}. Assuming PUT /Office based on common patterns here.
     const response = await apiClient.put<{ items: Office; success: boolean; message: string }>("/Office", payload);
     
     if (!response.success || !response.data?.success) {
@@ -150,13 +163,18 @@ export async function updateOffice(data: OfficeFormModel, userId: number): Promi
   }
 }
 
+/** Deletes an office by ID */
 export async function deleteOffice(officeId: number): Promise<void> {
   try {
-    if (!validateOfficeId(officeId)) throw new ApiError(400, "Valid Office ID is required", "Validation failed");
+    if (!validateOfficeId(officeId)) {
+      throw new ApiError(400, "Valid Office ID is required", "Validation failed");
+    }
     const response = await apiClient.delete<void>(`/Office/${encodeURIComponent(String(officeId))}`);
     if (!response.success) {
       let statusCode = response.statusCode;
-      if (!statusCode) statusCode = getDeleteErrorStatusCode(response.error || "");
+      if (!statusCode) {
+        statusCode = getDeleteErrorStatusCode(response.error || "");
+      }
       throw new ApiError(statusCode, response.error || "Failed to delete office", `Delete office ${officeId} failed`);
     }
   } catch (error) {

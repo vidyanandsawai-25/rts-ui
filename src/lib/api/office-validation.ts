@@ -1,10 +1,16 @@
 import { ApiError } from "@/lib/utils/api";
 import { OfficeFormModel } from "@/types/office.types";
 
-export function validateOfficeId(id: unknown): id is number {
-  return typeof id === "number" && id > 0 && Number.isInteger(id);
+/**
+ * Validates office ID
+ */
+export function validateOfficeId(id: number): boolean {
+  return Number.isFinite(id) && id > 0;
 }
 
+/**
+ * Validates and prepares search term for API request
+ */
 export function validateAndPrepareSearchTerm(searchTerm?: string): string | undefined {
   if (typeof searchTerm !== "string") return undefined;
   
@@ -15,16 +21,31 @@ export function validateAndPrepareSearchTerm(searchTerm?: string): string | unde
   return trimmedSearchTerm.slice(0, MAX_SEARCH_TERM_LENGTH);
 }
 
+/**
+ * Validates form data for create operation
+ */
 export function validateCreateFormData(data: OfficeFormModel): void {
-  if (!data.officeCode?.trim()) throw new ApiError(400, "Office code is required", "Validation failed");
-  if (!data.officeName?.trim()) throw new ApiError(400, "Office name is required", "Validation failed");
+  if (!data.officeCode?.trim()) {
+    throw new ApiError(400, "Office code is required", "Validation failed");
+  }
+  if (!data.officeName?.trim()) {
+    throw new ApiError(400, "Office name is required", "Validation failed");
+  }
 }
 
+/**
+ * Validates form data for update operation
+ */
 export function validateUpdateFormData(data: OfficeFormModel): void {
-  if (!data.officeId || data.officeId <= 0) throw new ApiError(400, "Valid Office ID is required", "Validation failed");
+  if (!data.officeId || data.officeId <= 0) {
+    throw new ApiError(400, "Valid Office ID is required", "Validation failed");
+  }
   validateCreateFormData(data);
 }
 
+/**
+ * Checks if backend response contains error messages and throws appropriate errors
+ */
 export function checkBackendResponseErrors(responseData: Record<string, unknown> | null, operation: string): void {
   if (!responseData || typeof responseData !== 'object') return;
   
@@ -38,6 +59,7 @@ export function checkBackendResponseErrors(responseData: Record<string, unknown>
     const message = messageValue;
     const lowerMsg = message.toLowerCase();
 
+    // Only throw error if message indicates an actual error
     const isErrorMessage =
       lowerMsg.includes("already exists") ||
       lowerMsg.includes("duplicate") ||
@@ -46,6 +68,7 @@ export function checkBackendResponseErrors(responseData: Record<string, unknown>
       lowerMsg.includes("invalid") ||
       lowerMsg.includes("not found");
 
+    // Skip success messages like "Record inserted successfully"
     const isSuccessMessage =
       lowerMsg.includes("success") ||
       lowerMsg.includes("created") ||
@@ -67,11 +90,14 @@ export function checkBackendResponseErrors(responseData: Record<string, unknown>
   }
 }
 
+/**
+ * Determines status code from error message for delete operations
+ */
 export function getDeleteErrorStatusCode(errorMsg: string): number {
   const lowerMsg = errorMsg.toLowerCase();
 
   if (lowerMsg.includes("not found") || lowerMsg.includes("does not exist")) {
-    return 404;
+    return 404; // Not Found
   } else if (
     lowerMsg.includes("in use") ||
     lowerMsg.includes("linked") ||
@@ -80,15 +106,19 @@ export function getDeleteErrorStatusCode(errorMsg: string): number {
     lowerMsg.includes("cannot delete") ||
     lowerMsg.includes("foreign key")
   ) {
-    return 409;
+    return 409; // Conflict - record in use
   } else if (lowerMsg.includes("invalid") || lowerMsg.includes("bad request")) {
-    return 400;
+    return 400; // Bad Request
   } else {
-    return 500;
+    return 500; // Default to server error
   }
 }
 
+/**
+ * Creates appropriate ApiError based on response status and message
+ */
 export function createApiError(statusCode?: number, errorMessage?: string, defaultMessage: string = "Operation failed"): ApiError {
+  // Detect duplicate error from backend message
   const errorMsg = errorMessage || "";
   const isDuplicate = errorMsg.toLowerCase().includes("already exists") || 
                       errorMsg.toLowerCase().includes("duplicate");
