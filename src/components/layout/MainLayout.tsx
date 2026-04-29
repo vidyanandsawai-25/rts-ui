@@ -45,7 +45,7 @@ const fetchUserMenuItems = cache(async (_userId: number) => {
       
       return buildSidebarTree(groups, screens);
     }
-  } catch (error) {
+  } catch (_error) {
     // Silent fail for sidebar menu fetching
   }
   

@@ -35,7 +35,7 @@ export async function getUlbConfigForLogin(): Promise<UlbMaster | undefined> {
       return undefined;
     }
     return mapUlbConfigApiToMaster(res.data);
-  } catch (e) {
+  } catch (_e) {
     // ULB config threw...
 
     return undefined;
