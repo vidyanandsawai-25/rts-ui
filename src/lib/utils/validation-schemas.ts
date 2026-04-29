@@ -338,6 +338,9 @@ export const propertyValidations = {
     (value: unknown) => {
       const strVal = String(value ?? "").trim();
       if (!strVal) return undefined; // optional
+      if (!pattern.test(strVal)) {
+        return t(`property.validation.${label}Invalid`);
+      }
       return undefined;
     },
 };

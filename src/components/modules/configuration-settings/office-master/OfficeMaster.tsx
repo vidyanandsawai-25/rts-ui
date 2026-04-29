@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback } from "react";
+import React, { useCallback, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { BuildingIcon, Building2, CheckCircle2, Globe2 } from "lucide-react";
@@ -11,7 +11,7 @@ import {
   MasterTable, 
   EditButton, 
   DeleteButton, 
-  TableHeader, 
+  AddButton,
   useConfirm, 
   PageContainer, 
   SearchInput, 
@@ -31,26 +31,41 @@ export function OfficeMaster({
   const tCommon = useTranslations("common");
   const locale = useLocale();
   const { confirm } = useConfirm();
+  const [isPending, startTransition] = useTransition();
 
   const {
     currentSearchTerm,
-    handleSearch
-  } = useOfficeSearch();
+    handleSearchChange,
+    selectedType,
+    handleTypeChange,
+    selectedStatus,
+    handleStatusChange,
+  } = useOfficeSearch({
+    pageSize,
+    locale,
+    sortBy,
+    sortOrder,
+    startTransition,
+    type,
+    status
+  });
 
   const {
+    buildUrl,
     changePage,
-    changePageSize,
-    start,
-    end
+    handlePageSizeChange,
+    paginationInfo
   } = useOfficePagination({
     totalCount,
     pageNumber,
     pageSize,
+    locale,
     sortBy,
     sortOrder,
     currentSearchTerm,
-    type,
-    status
+    startTransition,
+    type: selectedType,
+    status: selectedStatus
   });
 
   const handleEdit = useCallback((row: Office) => {
@@ -64,7 +79,9 @@ export function OfficeMaster({
       description: t("delete.confirmDescription"),
       meta: { name: row.officeName },
       onConfirm: async () => {
-        const result = await deleteOfficeAction(row.officeId);
+        const formData = new FormData();
+        formData.append("officeId", String(row.officeId));
+        const result = await deleteOfficeAction(formData);
         if (result.success) {
           toast.success(t("success.deleted"));
           router.refresh();
@@ -75,7 +92,14 @@ export function OfficeMaster({
     });
   }, [confirm, router, t, tCommon]);
 
-  const columns = getOfficeColumns(t, handleEdit, handleDelete);
+  const onSort = useCallback((key: string) => {
+    const newOrder = sortBy === key && sortOrder === "asc" ? "desc" : "asc";
+    startTransition(() => {
+      router.push(buildUrl(1, pageSize, currentSearchTerm, key, newOrder, selectedType, selectedStatus));
+    });
+  }, [sortBy, sortOrder, buildUrl, pageSize, currentSearchTerm, selectedType, selectedStatus, router]);
+
+  const columns = getOfficeColumns(t, tCommon, sortBy, sortOrder, onSort);
 
   const stats = [
     {
@@ -121,7 +145,7 @@ export function OfficeMaster({
       title={t("title")}
       subtitle={t("subtitle")}
       actions={
-        <EditButton 
+        <AddButton 
           label={t("actions.addOffice")}
           onClick={() => router.push(`/${locale}/configuration-settings/office-master/add`)} 
         />
@@ -156,40 +180,65 @@ export function OfficeMaster({
           })}
         </div>
 
-        <TableHeader
-          onSearch={handleSearch}
-          searchValue={currentSearchTerm}
-          searchPlaceholder={t("table.searchPlaceholder")}
-          totalCount={totalCount}
-        />
-
         <MasterTable<Office>
           columns={columns}
           data={data}
-          loading={false}
+          loading={isPending}
           height="lg"
           pageNumber={pageNumber}
           pageSize={pageSize}
           totalCount={totalCount}
           totalPages={totalPages}
           onPageChange={changePage}
+          onPageSizeChange={(size) => handlePageSizeChange(String(size))}
           actionLabel={tCommon("table.columns.actions")}
-          paginationConfig={{ enabled: true, showPageSizeSelector: false }}
+          paginationConfig={{ enabled: true, showPageSizeSelector: true }}
+          headerExtra={
+            <div className="flex flex-col md:flex-row items-center gap-4 w-full">
+              <SearchInput
+                onChange={handleSearchChange}
+                value={currentSearchTerm}
+                placeholder={t("table.searchPlaceholder")}
+                className="md:w-72"
+              />
+              <div className="flex items-center gap-2 ml-auto">
+                <Select
+                  value={selectedType}
+                  onChange={handleTypeChange}
+                  options={[
+                    { label: t("filters.allTypes"), value: "" },
+                    { label: "Head Office", value: "Head Office" },
+                    { label: "Regional Office", value: "Regional Office" },
+                    { label: "Branch Office", value: "Branch Office" },
+                  ]}
+                  className="w-48"
+                  placeholder={t("filters.type")}
+                />
+                <Select
+                  value={selectedStatus}
+                  onChange={handleStatusChange}
+                  options={[
+                    { label: t("filters.allStatus"), value: "" },
+                    { label: tCommon("status.active"), value: "true" },
+                    { label: tCommon("status.inactive"), value: "false" },
+                  ]}
+                  className="w-40"
+                  placeholder={t("filters.status")}
+                />
+              </div>
+            </div>
+          }
+          renderActions={(row) => (
+            <>
+              <EditButton onClick={() => handleEdit(row)} />
+              <DeleteButton onClick={() => handleDelete(row)} />
+            </>
+          )}
           footerLeftContent={
             <div className="flex items-center gap-4">
               <span className="text-sm text-gray-700">
-                {tCommon("table.showing")} {start} {tCommon("table.to")} {end} {tCommon("table.of")} {totalCount}
+                {tCommon("table.showing")} {paginationInfo.start} {tCommon("table.to")} {paginationInfo.end} {tCommon("table.of")} {totalCount}
               </span>
-              <Select
-                value={String(pageSize)}
-                onChange={changePageSize}
-                options={[10, 20, 30, 50].map((s) => ({
-                  label: String(s),
-                  value: String(s),
-                }))}
-                selectSize="sm"
-                className="w-20"
-              />
             </div>
           }
           getRowKey={(row) => String(row.officeId)}
