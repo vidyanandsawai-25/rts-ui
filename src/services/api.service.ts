@@ -8,14 +8,19 @@ import { getAppConfig } from '@/config/app.config';
 import { ApiResponse } from '@/types/common.types';
 
 const LOCAL_HTTPS_RE = /^https:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//;
-let relaxedTlsDispatcher: any;
+interface ApiError extends Error {
+  httpStatus?: number;
+  rawText?: string;
+}
+
+let relaxedTlsDispatcher: unknown;
 
 async function serverFetch(url: string, init: RequestInit): Promise<Response> {
   const isDev = process.env.NODE_ENV === 'development' && process.env.NTIS_STRICT_LOCAL_TLS !== '1';
   if (typeof window === 'undefined' && isDev && LOCAL_HTTPS_RE.test(url)) {
     const { Agent, fetch: uFetch } = await import('undici');
     relaxedTlsDispatcher ??= new Agent({ connect: { rejectUnauthorized: false } });
-    return uFetch(url, { ...init, body: init.body ?? undefined, dispatcher: relaxedTlsDispatcher } as any) as any;
+    return uFetch(url, { ...init, body: init.body ?? undefined, dispatcher: relaxedTlsDispatcher } as unknown as import('undici').RequestInit) as unknown as Promise<Response>;
   }
   return fetch(url, init);
 }
@@ -77,7 +82,7 @@ class ApiClient {
     const isJson = (response.headers.get('Content-Type') ?? '').includes('application/json');
     if (!isJson) {
       if (response.ok) return undefined;
-      const err = new Error(text.trim() || response.statusText || 'An error occurred') as any;
+      const err = new Error(text.trim() || response.statusText || 'An error occurred') as ApiError;
       err.httpStatus = response.status;
       err.rawText = text;
       throw err;
@@ -87,15 +92,19 @@ class ApiClient {
       return JSON.parse(text) as T;
     } catch {
       if (response.ok) return undefined;
-      const err = new Error(`Invalid JSON response (HTTP ${response.status}): ${text.slice(0, 200)}`) as any;
+      const err = new Error(`Invalid JSON response (HTTP ${response.status}): ${text.slice(0, 200)}`) as ApiError;
       err.httpStatus = response.status;
       throw err;
     }
   }
 
-  private extractErrorMessage(errBody: any, statusText: string): string {
-    return [errBody?.message, errBody?.error, errBody?.title, errBody?.detail, statusText]
-      .find(c => typeof c === 'string' && c.trim())?.trim() || 'An error occurred';
+  private extractErrorMessage(errBody: unknown, statusText: string): string {
+    const body = errBody as Record<string, unknown> | null | undefined;
+    const candidates = [body?.message, body?.error, body?.title, body?.detail, statusText];
+    for (const c of candidates) {
+      if (typeof c === 'string' && c.trim()) return c.trim();
+    }
+    return 'An error occurred';
   }
 
   private async request<T>(endpoint: string, options: RequestInit = {}, requireAuth = true): Promise<ApiResponse<T>> {
@@ -116,24 +125,26 @@ class ApiClient {
       const data = await this.parseResponseBody<T>(response);
       if (!response.ok) {
         if (response.status === 401) {
-          return { success: false, statusCode: 401, error: skipAuth ? (data as any)?.message || 'Invalid credentials' : 'Unauthorized: Token expired or invalid' };
+          const errorMsg = (data as { message?: string })?.message || 'Invalid credentials';
+          return { success: false, statusCode: 401, error: skipAuth ? errorMsg : 'Unauthorized: Token expired or invalid' };
         }
         if (response.status === 403) return { success: false, statusCode: 403, error: 'Forbidden: Access denied' };
         return { success: false, statusCode: response.status, error: this.extractErrorMessage(data, response.statusText) };
       }
       return { success: true, statusCode: response.status, data: data as T };
-    } catch (error: any) {
+    } catch (error: unknown) {
       clearTimeout(timeoutId);
-      if (error.name === 'AbortError') return { success: false, statusCode: 408, error: 'Request timeout' };
-      return { success: false, ...(error.httpStatus ? { statusCode: error.httpStatus } : {}), error: error.message || 'Network error' };
+      const err = error as ApiError;
+      if (err.name === 'AbortError') return { success: false, statusCode: 408, error: 'Request timeout' };
+      return { success: false, ...(err.httpStatus ? { statusCode: err.httpStatus } : {}), error: err.message || 'Network error' };
     }
   }
 
   async get<T>(url: string, opt?: RequestInit, auth = true) { return this.request<T>(url, { ...opt, method: 'GET' }, auth); }
-  async post<T>(url: string, body?: any, opt?: RequestInit, auth = true) { 
+  async post<T>(url: string, body?: unknown, opt?: RequestInit, auth = true) { 
     return this.request<T>(url, { ...opt, method: 'POST', body: JSON.stringify(body) }, auth); 
   }
-  async put<T>(url: string, body?: any, opt?: RequestInit, auth = true) { 
+  async put<T>(url: string, body?: unknown, opt?: RequestInit, auth = true) { 
     return this.request<T>(url, { ...opt, method: 'PUT', body: JSON.stringify(body) }, auth); 
   }
   async delete<T>(url: string, opt?: RequestInit, auth = true) { return this.request<T>(url, { ...opt, method: 'DELETE' }, auth); }
