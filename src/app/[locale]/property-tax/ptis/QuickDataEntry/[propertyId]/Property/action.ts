@@ -81,7 +81,7 @@ export async function getWingMasterAction(
 }
 
 //update property basic details
-export const updatePropertyBasicDetailsAction = async (locale: string, propertyId: number, payload: UpdatePropertyBasicDetailsDto): Promise<ActionResult> => {
+export const updatePropertyBasicDetailsAction = async (locale: string, propertyId: number, payload: UpdatePropertyBasicDetailsDto): Promise<ActionResult<null>> => {
     try {
         const result = await updatePropertyBasicDetails(propertyId, payload);
         if (!result.success) {

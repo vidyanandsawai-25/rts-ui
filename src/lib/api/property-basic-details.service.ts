@@ -1,3 +1,4 @@
+//ntis-ui\src\lib\api\property-basic-details.service.ts
 import { apiClient } from "@/services/api.service";
 import { handleApiResponse } from "@/lib/utils/api";
 
@@ -58,8 +59,8 @@ export async function getPropertyBasicDetails(propertyId: number): Promise<Prope
 }
 
 /* ---------------- UPDATE PROPERTY BASIC DETAILS ---------------- */
-export async function updatePropertyBasicDetails(propertyId: number, payload: UpdatePropertyBasicDetailsDto): Promise<ActionResult> {
-  const response = await apiClient.put<ActionResult>(`/Property/${propertyId}/basic-details`, payload);
+export async function updatePropertyBasicDetails(propertyId: number, payload: UpdatePropertyBasicDetailsDto): Promise<ActionResult<null>> {
+  const response = await apiClient.put<ActionResult<null>>(`/Property/${propertyId}/basic-details`, payload);
   return handleApiResponse(response, "Failed to update property basic details");
 }
 

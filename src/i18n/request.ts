@@ -9,15 +9,12 @@ import { defaultLocale, locales, Locale } from './config';
 // Validate locale and fallback to default if invalid
 const validateLocale = (locale: string | undefined): Locale => {
   return locale && locales.includes(locale as Locale) ? (locale as Locale) : defaultLocale;
-  return locale && locales.includes(locale as Locale)
-    ? (locale as Locale)
-    : defaultLocale;
 };
 
 export default getRequestConfig(async ({ locale }) => {
   const validatedLocale = validateLocale(locale);
 
-  // Load all translation files  
+  // Load all translation files
   const [
     commonMessages,
     dashboardMessages,
@@ -29,6 +26,10 @@ export default getRequestConfig(async ({ locale }) => {
     assessmentYearRangeMessages,
     typeofusemasterMessages,
     modulesMessages
+    ptisMessages,
+    floorFactorMasterMessages,
+    weightageMasterMessages,
+    modulesMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/dashboard.json`).then((m) => m.default),
@@ -40,6 +41,10 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/assessmentYearRange.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/typeofusemaster.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default)  
+    import(`./locales/${validatedLocale}/ptis.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/floorFactorMaster.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/weightageMaster.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
   ]);
 
   return {
@@ -55,6 +60,10 @@ export default getRequestConfig(async ({ locale }) => {
       assessmentYearRange: assessmentYearRangeMessages,
       typeofusemaster: typeofusemasterMessages,
       modules: modulesMessages     
+      ptis: ptisMessages,
+      floorFactorMaster: floorFactorMasterMessages.floorFactorMaster,
+      weightageMaster: weightageMasterMessages.weightageMaster,
+      modules: modulesMessages,
     },
   };
 });

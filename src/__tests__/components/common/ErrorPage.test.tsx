@@ -1,3 +1,4 @@
+import { describe, it, expect, vi, beforeEach, afterEach, type MockInstance } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 
 // Mock next-intl hooks
@@ -18,6 +19,15 @@ import { ErrorPage } from '../../../components/common/ErrorPage';
 describe('ErrorPage', () => {
   const error = new Error('Test error message');
   const reset = vi.fn();
+  let consoleSpy: MockInstance;
+
+  beforeEach(() => {
+    consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    consoleSpy.mockRestore();
+  });
 
   it('renders translated title and description', () => {
     render(

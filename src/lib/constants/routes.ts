@@ -10,6 +10,9 @@ export const ROUTES = {
     REGISTER: '/auth/register',
     FORGOT_PASSWORD: '/auth/forgot-password',
   },
+  PROPERTY_TAX: {
+    PTIS: '/property-tax/ptis',
+  },
   PROFILE: '/profile',
   SETTINGS: '/settings',
 } as const;

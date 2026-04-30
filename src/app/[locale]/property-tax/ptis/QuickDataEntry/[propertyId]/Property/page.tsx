@@ -49,11 +49,11 @@ export default async function PropertyFormPage({ params }: PageProps): Promise<R
     }
 
     // ✅ Clean extracted data
-    const propertyDescriptionList = propertyDescriptionResponse.success ? propertyDescriptionResponse.data : [];
-    const propertyCategoryList = propertyCategoryResponse.success ? propertyCategoryResponse.data : [];
-    const propertyBasicDetails = propertyBasicDetailsResponse.data;
-    const propertySocietyDetails = propertySociety.success ? propertySociety.data : null;
-    const WingMasterList = WingMaster.success ? WingMaster.data : [];
+    const propertyDescriptionList = propertyDescriptionResponse.success ? (propertyDescriptionResponse.data ?? []) : [];
+    const propertyCategoryList = propertyCategoryResponse.success ? (propertyCategoryResponse.data ?? []) : [];
+    const propertyBasicDetails = propertyBasicDetailsResponse.data ?? null;
+    const propertySocietyDetails = propertySociety.success ? (propertySociety.data ?? null) : null;
+    const WingMasterList = WingMaster.success ? (WingMaster.data ?? []) : [];
 
 
 
