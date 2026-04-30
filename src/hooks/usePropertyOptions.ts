@@ -1,0 +1,28 @@
+import { useMemo } from 'react';
+import { PropertyFormViewProps } from '@/types/property-basic-details.types';
+
+export const usePropertyOptions = (props: PropertyFormViewProps) => {
+    const {
+        WingMaster: wingList,
+        propertyCategories: propertyCategoryList,
+        propertyDescriptions: propertyDescriptionList,
+    } = props;
+
+    const categoryOptions = useMemo(() => 
+        propertyCategoryList.map((item) => ({ label: item.propertyCategoryName, value: String(item.id) })),
+    [propertyCategoryList]);
+
+    const wingOptions = useMemo(() => 
+        wingList.map((item) => ({ label: item.wingNo, value: String(item.id) })),
+    [wingList]);
+
+    const propertyDescriptionOptions = useMemo(() => 
+        propertyDescriptionList.map((item) => ({ label: item.propertyDescription, value: String(item.id) })),
+    [propertyDescriptionList]);
+
+    return {
+        categoryOptions,
+        wingOptions,
+        propertyDescriptionOptions,
+    };
+};

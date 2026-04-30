@@ -6,8 +6,12 @@ export interface ApiResponse<T = unknown> {
   /** The HTTP status code from the server response; absent for network/timeout errors */
   statusCode?: number;
 }
-
-
+export interface ActionResult<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  statusCode?: number;
+}
 export interface User {
   id: string;
   email: string;
@@ -57,8 +61,6 @@ export interface CheckboxProps extends Omit<
   onCheckedChange?: (checked: boolean) => void;
   value?: string;
 }
-
-
 
 export interface RadioGroupProps extends Omit<
   React.HTMLAttributes<HTMLDivElement>,
