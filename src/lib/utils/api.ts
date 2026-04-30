@@ -81,3 +81,84 @@ export async function validateResponse(response: Response, context: string): Pro
     );
   }
 }
+
+/**
+ * Retry configuration options
+ */
+export interface RetryOptions {
+  /** Maximum number of retry attempts (default: 3) */
+  maxRetries?: number;
+  /** Initial delay in milliseconds (default: 1000) */
+  initialDelay?: number;
+  /** Maximum delay in milliseconds (default: 10000) */
+  maxDelay?: number;
+  /** Backoff multiplier (default: 2) */
+  backoffMultiplier?: number;
+  /** Function to determine if error is retryable (default: retries network errors) */
+  shouldRetry?: (error: unknown, attempt: number) => boolean;
+}
+
+/**
+ * Default function to determine if an error should be retried
+ */
+function defaultShouldRetry(error: unknown): boolean {
+  if (error instanceof Error) {
+    const message = error.message.toLowerCase();
+    // Retry on network-related errors
+    return (
+      message.includes('fetch failed') ||
+      message.includes('failed to fetch') ||
+      message.includes('network error') ||
+      message.includes('econnrefused') ||
+      message.includes('enotfound') ||
+      message.includes('timeout')
+    );
+  }
+  return false;
+}
+
+/**
+ * Retries an async function with exponential backoff
+ * 
+ * @example
+ * const result = await retryWithBackoff(
+ *   () => fetchData(),
+ *   { maxRetries: 3, initialDelay: 1000 }
+ * );
+ */
+export async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  options: RetryOptions = {}
+): Promise<T> {
+  const {
+    maxRetries = 3,
+    initialDelay = 1000,
+    maxDelay = 10000,
+    backoffMultiplier = 2,
+    shouldRetry = defaultShouldRetry,
+  } = options;
+
+  let lastError: unknown;
+  let delay = initialDelay;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error;
+
+      // Don't retry if this is the last attempt or if error is not retryable
+      if (attempt === maxRetries || !shouldRetry(error, attempt)) {
+        throw error;
+      }
+
+      // Wait before retrying
+      await new Promise((resolve) => setTimeout(resolve, delay));
+
+      // Increase delay for next attempt (exponential backoff)
+      delay = Math.min(delay * backoffMultiplier, maxDelay);
+    }
+  }
+
+  throw lastError;
+}

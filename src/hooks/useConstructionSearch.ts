@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
-import { useSearchNavigation } from "@/hooks/useSearchNavigation";
-import { TEXT_SANITIZE } from "@/lib/utils/validation";
+import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useSearchNavigation } from '@/hooks/useSearchNavigation';
+import { TEXT_SANITIZE } from '@/lib/utils/validation';
 
 interface UseConstructionSearchProps {
   pageSize: number;
@@ -19,13 +19,13 @@ export function useConstructionSearch({
   startTransition,
 }: UseConstructionSearchProps) {
   const searchParams = useSearchParams();
-  const currentSearchTerm = searchParams.get("q") || "";
+  const currentSearchTerm = searchParams.get('q') || '';
   const [search, setSearch] = useState(currentSearchTerm);
-
-  // Sync search state with URL on mount/navigation
-  useEffect(() => {
+  const [prevSearch, setPrevSearch] = useState(currentSearchTerm);
+  if (currentSearchTerm !== prevSearch) {
+    setPrevSearch(currentSearchTerm);
     setSearch(currentSearchTerm);
-  }, [currentSearchTerm]);
+  }
 
   // Debounced search navigation
   useSearchNavigation({
@@ -35,13 +35,13 @@ export function useConstructionSearch({
     locale,
     sortBy,
     sortOrder,
-    basePath: "/property-tax/constructiontype",
+    basePath: '/property-tax/constructiontype',
     startTransition,
   });
 
   const handleSearchChange = (value: string) => {
     // Sanitize search input to prevent special characters
-    const sanitized = value.replace(TEXT_SANITIZE, "");
+    const sanitized = value.replace(TEXT_SANITIZE, '');
     setSearch(sanitized);
   };
 
