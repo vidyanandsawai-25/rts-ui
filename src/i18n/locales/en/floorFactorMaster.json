@@ -1,0 +1,32 @@
+{
+  "floorFactorMaster": {
+    "title": "Floor Factor Master",
+    "columns": {
+      "floorCode": "Floor Code",
+      "description": "Description",
+      "factorWithLift": "Factor (With Lift)",
+      "factorWithoutLift": "Factor (Without Lift)",
+      "assessmentYear": "Assessment Year",
+      "status": "Status",
+      "action": "Action"
+    },
+    "filters": {
+      "assessmentYear": "Assessment Year",
+      "fromFloor": "From Floor",
+      "toFloor": "To Floor",
+      "liftStatus": "Lift Status",
+      "factor": "Factor"
+    },
+    "liftStatusOptions": {
+      "both": "Both",
+      "withLift": "With Lift",
+      "withoutLift": "Without Lift"
+    },
+    "placeholders": {
+      "select": "Select..."
+    },
+    "messages": {
+      "fromFloorGreaterError": "From floor cannot be greater than To floor"
+    }
+  }
+}

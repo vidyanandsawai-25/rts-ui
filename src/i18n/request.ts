@@ -25,6 +25,8 @@ export default getRequestConfig(async ({ locale }) => {
     rateSectionMasterMessages,
     assessmentYearRangeMessages,
     ptisMessages,
+    floorFactorMasterMessages,
+    weightageMasterMessages,
     modulesMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
@@ -36,6 +38,8 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/rateSectionMaster.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/assessmentYearRange.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/ptis.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/floorFactorMaster.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/weightageMaster.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
   ]);
 
@@ -51,6 +55,8 @@ export default getRequestConfig(async ({ locale }) => {
       rateSectionMaster: rateSectionMasterMessages,
       assessmentYearRange: assessmentYearRangeMessages,
       ptis: ptisMessages,
+      floorFactorMaster: floorFactorMasterMessages.floorFactorMaster,
+      weightageMaster: weightageMasterMessages.weightageMaster,
       modules: modulesMessages,
     },
   };
