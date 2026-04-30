@@ -6,16 +6,12 @@ export interface ApiResponse<T = unknown> {
   /** The HTTP status code from the server response; absent for network/timeout errors */
   statusCode?: number;
 }
-
-/**
- * Standard action result type for server actions and service methods.
- */
-export type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: string };
-
-
-
+export interface ActionResult<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  statusCode?: number;
+}
 export interface User {
   id: string;
   email: string;

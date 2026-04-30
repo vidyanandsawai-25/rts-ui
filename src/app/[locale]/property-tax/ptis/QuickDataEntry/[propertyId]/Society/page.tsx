@@ -1,39 +1,39 @@
 import { setRequestLocale } from 'next-intl/server';
-import SocietyForm from "@/components/modules/property-tax/ptis/QuickDataEntry/society/SocietyForm"
+import SocietyForm from '@/components/modules/property-tax/ptis/QuickDataEntry/society/SocietyForm';
 
 import { getPropertySocietyDetailsAction } from './action';
 
 interface PageProps {
-    params: Promise<{
-        propertyId: string;
-        locale: string;
-    }>;
-    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+  params: Promise<{
+    propertyId: string;
+    locale: string;
+  }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export default async function SocietyFormPage({ params }: PageProps) {
-    const { locale, propertyId } = await params;
-    setRequestLocale(locale);
+  const { locale, propertyId } = await params;
+  setRequestLocale(locale);
 
-    const pid = Number(propertyId);
+  const pid = Number(propertyId);
 
-    if (isNaN(pid)) {
-        throw new Error("Invalid Property Id");
-    }
+  if (isNaN(pid)) {
+    throw new Error('Invalid Property Id');
+  }
 
-    const result = await getPropertySocietyDetailsAction(Number(propertyId));
+  const result = await getPropertySocietyDetailsAction(Number(propertyId));
 
-    if (!result.success) {
-        throw new Error(result.error || 'Failed to load society details');
-    }
+  if (!result.success) {
+    throw new Error(result.error || 'Failed to load society details');
+  }
 
-    const propertySocietyDetails = result.data;
+  const propertySocietyDetails = result.data ?? null;
 
-    return (
-        <SocietyForm
-            societyData={propertySocietyDetails}
-            propertyIdSearch={Number(propertyId)}
-            locale={locale}
-        />
-    )
+  return (
+    <SocietyForm
+      societyData={propertySocietyDetails}
+      propertyIdSearch={Number(propertyId)}
+      locale={locale}
+    />
+  );
 }
