@@ -5,14 +5,13 @@
  * Allows users to switch between English, Hindi, and Marathi
  */
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { Globe } from 'lucide-react';
 import type { Locale } from '@/i18n/config';
 import {
   locales,
   localeNames,
-  defaultLocale,
   switchLocale,
   getLocaleFromPathname,
 } from '@/i18n/config';
@@ -21,13 +20,8 @@ export function LanguageSelector() {
   const pathname = usePathname();
   const router = useRouter();
 
-  const [currentLocale, setCurrentLocale] = useState<Locale>(defaultLocale);
+  const currentLocale = getLocaleFromPathname(pathname);
   const [isOpen, setIsOpen] = useState(false);
-
-  // Update current locale when pathname changes
-  useEffect(() => {
-    setCurrentLocale(getLocaleFromPathname(pathname));
-  }, [pathname]);
 
   const handleLanguageChange = (locale: Locale) => {
     setIsOpen(false);

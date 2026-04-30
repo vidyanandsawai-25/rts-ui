@@ -9,7 +9,15 @@
     "searchButton": "Search",
     "loading": "Searching...",
     "success": "Property found successfully",
-    "error": "No property found"
+    "error": "No property found",
+    "noOptionsAvailable": "No options available",
+    "noPartition": "-",
+    "errors": {
+      "fetchWardsFailed": "Failed to load ward list. Please try again.",
+      "fetchPropertiesFailed": "Failed to load property list for this ward.",
+      "navigationFailed": "Navigation failed. Please refresh the page and try again.",
+      "generic": "An unexpected error occurred. Please try again."
+    }
   },
   "tabs": {
     "propertyDetails": "Property Details",
@@ -115,6 +123,10 @@
     "typeOfUse": "Type Of Use",
     "carpetAreaSqFtMtr": "Carpet Area(Sq ft /Sq Mtr)",
     "registration": "Registration",
+    "subFloor": "SubFloor",
+    "assmtYear": "Assmt Year",
+    "subType": "Sub Type",
+    "builtupAreaSqFtMtr": "Builtup Area(Sq.ft / Sq.Mtr)",
     "remark": "Remark",
     "noFloorDetails": "No floor details available",
     "year": "Year",
@@ -138,7 +150,8 @@
     "tax3": "Tax3",
     "taxTotal": "Tax Total",
     "interest": "Interest",
-    "netTotal": "Net Total"
+    "netTotal": "Net Total",
+    "noTaxDetails": "No tax details available"
   },
   "taxes": {
     "generalTax": "General Tax",
@@ -184,6 +197,10 @@
     "hideFloorDetails": "Hide Floor Details",
     "showOldTax": "Show Old Tax",
     "hideOldTax": "Hide Old Tax"
+  },
+  "loading": {
+    "message": "Loading Property Details",
+    "description": "Please wait while we fetch the latest property tax information."
   },
   "assessmentMethods": {
     "rateable": "Rateable",
@@ -296,8 +313,12 @@
       }
     }
   },
-  "errors": {
-    "title": "Error Occurred",
+  "error": {
+    "title": "Module Error",
+    "description": "We encountered an error while loading the Property Tax Information module.",
+    "goHome": "Back to Home",
+    "tryAgain": "Retry",
+    "errorId": "Error Reference: {id}",
     "invalidPropertyId": "The provided property ID is invalid.",
     "notFound": "Property records could not be found.",
     "unauthorized": "You do not have permission to view this data.",
@@ -311,5 +332,22 @@
     "invalidConstructionYear": "Invalid or missing construction year for one or more floor records.",
     "invalidPropertyAge": "Invalid property age detected. Construction year cannot be after assessment year.",
     "typeNotFound": "Property usage type code not found or invalid."
+  },
+  "error": {
+    "title": "Something went wrong",
+    "description": "We encountered an unexpected error. Please try again or return to the home page.",
+    "goHome": "Go Home",
+    "tryAgain": "Try Again",
+    "networkError": {
+      "title": "Unable to Connect to Server",
+      "description": "We could not reach the property tax service. This is usually a temporary network issue.",
+      "troubleshooting": "Troubleshooting Steps",
+      "step1": "Check that you are connected to the corporate network or VPN.",
+      "step2": "Verify the backend service is running and reachable.",
+      "step3": "Clear your browser cache and reload the page.",
+      "step4": "If the problem persists, contact your system administrator.",
+      "errorDetails": "Technical Details (Development Only)",
+      "errorId": "Error ID:"
+    }
   }
 }
