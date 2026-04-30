@@ -1,3 +1,4 @@
+
 import { apiClient } from "@/services/api.service";
 import type {
   TypeOfUseMasterData,
@@ -6,17 +7,9 @@ import type {
   UseType,
   UseSubType,
 } from "@/types/typeOfUse.types";
+import type { PagedResponse } from "@/types/common.types";
 
-/** -------------------- PAGED RESPONSE -------------------- */
-export interface PagedResponse<T> {
-  items: T[];
-  totalCount: number;
-  pageNumber: number;
-  pageSize: number;
-  totalPages: number;
-  hasPrevious: boolean;
-  hasNext: boolean;
-}
+
 
 /** -------------------- ICON MAPPING (GROUP) -------------------- */
 function iconKeyToApi(iconKey: UseGroupIconKey): string {
@@ -39,24 +32,24 @@ function iconKeyToApi(iconKey: UseGroupIconKey): string {
 }
 
 /** -------------------- MAP API -> UI (GROUP) -------------------- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function mapApiGroupToUi(g: any): UseGroup {
+//
+function mapApiGroupToUi(g: Record<string, unknown>): UseGroup {
   return {
     typeOfUseGroupId: Number(g.id ?? g.typeOfUseGroupId ?? g.typeOfUseGroupID ?? 0),
     typeOfUseGroupCode: String(g.typeOfUseGroupCode ?? ""),
     groupName: String(g.groupName ?? ""),
     groupIcon: String(g.groupIcon ?? "home-icon"),
-    isActive: g.isActive ?? g.IsActive ?? true,
-    createdDate: g.createdDate ?? g.CreatedDate ?? undefined,
-    updatedDate: g.updatedDate ?? g.UpdatedDate ?? null,
+    isActive: typeof g.isActive === "boolean" ? g.isActive : (typeof g.IsActive === "boolean" ? g.IsActive : true),
+    createdDate: typeof g.createdDate === "string" ? g.createdDate : (typeof g.CreatedDate === "string" ? g.CreatedDate : undefined),
+    updatedDate: typeof g.updatedDate === "string" ? g.updatedDate : (typeof g.UpdatedDate === "string" ? g.UpdatedDate : null),
     // UI computed field
     status: (g.isActive === false || g.IsActive === false) ? "Inactive" : "Active",
   };
 }
 
 /** -------------------- MAP API -> UI (TYPE) -------------------- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function mapApiTypeToUi(t: any): UseType {
+//
+function mapApiTypeToUi(t: Record<string, unknown>): UseType {
   return {
     typeOfUseId: Number(t.id ?? t.typeOfUseId ?? t.typeOfUseID ?? 0),
     typeOfUseCode: String(t.typeOfUseCode ?? ""),
@@ -64,9 +57,9 @@ function mapApiTypeToUi(t: any): UseType {
     type: String(t.type ?? ""),
     typeOfUseGroupId: Number(t.typeOfUseGroupId ?? t.typeOfUseGroupID ?? t.groupId ?? 0),
     searchSequence: Number(t.searchSequence ?? t.SearchSequence ?? 0),
-    isActive: t.isActive ?? t.IsActive ?? true,
-    createdDate: t.createdDate ?? t.CreatedDate ?? undefined,
-    updatedDate: t.updatedDate ?? t.UpdatedDate ?? null,
+    isActive: typeof t.isActive === "boolean" ? t.isActive : (typeof t.IsActive === "boolean" ? t.IsActive : true),
+    createdDate: typeof t.createdDate === "string" ? t.createdDate : (typeof t.CreatedDate === "string" ? t.CreatedDate : undefined),
+    updatedDate: typeof t.updatedDate === "string" ? t.updatedDate : (typeof t.UpdatedDate === "string" ? t.UpdatedDate : null),
     // UI computed field
     status: (t.isActive === false || t.IsActive === false) ? "Inactive" : "Active",
   };
@@ -118,7 +111,7 @@ export async function getUseGroupsPagedServer(params: {
   }
 
   const data = response.data!;
-  return { ...data, items: (data.items ?? []).map(mapApiGroupToUi) };
+  return { ...data, items: (data.items ?? []).map((g) => mapApiGroupToUi(g as Record<string, unknown>)) };
 }
 
 export async function getUseGroupById(id: string | number): Promise<UseGroup | null> {
@@ -131,7 +124,7 @@ export async function getUseGroupById(id: string | number): Promise<UseGroup | n
     return null;
   }
   
-  return response.data ? mapApiGroupToUi(response.data) : null;
+  return response.data ? mapApiGroupToUi(response.data as Record<string, unknown>) : null;
 }
 
 export async function createUseGroupApi(input: {
@@ -158,7 +151,7 @@ export async function createUseGroupApi(input: {
     throw new Error(response.error ?? "Create group failed");
   }
   
-  return response.data as UseGroup;
+  return mapApiGroupToUi(response.data as Record<string, unknown>);
 }
 
 export async function updateUseGroupApi(input: {
@@ -187,7 +180,7 @@ export async function updateUseGroupApi(input: {
     throw new Error(response.error ?? "Update group failed");
   }
   
-  return response.data as UseGroup;
+  return mapApiGroupToUi(response.data as Record<string, unknown>);
 }
 
 export async function deleteUseGroupApi(id: string | number) {
@@ -237,7 +230,7 @@ export async function getUseTypesPagedServer(params: {
   }
 
   const data = response.data!;
-  return { ...data, items: (data.items ?? []).map(mapApiTypeToUi) };
+  return { ...data, items: (data.items ?? []).map((t) => mapApiTypeToUi(t as Record<string, unknown>)) };
 }
 
 export async function getUseTypeById(id: string | number): Promise<UseType | null> {
@@ -250,7 +243,7 @@ export async function getUseTypeById(id: string | number): Promise<UseType | nul
     return null;
   }
   
-  return response.data ? mapApiTypeToUi(response.data) : null;
+  return response.data ? mapApiTypeToUi(response.data as Record<string, unknown>) : null;
 }
 
 export async function createUseTypeApi(input: {
@@ -261,13 +254,13 @@ export async function createUseTypeApi(input: {
   searchSequence: number;
   isActive: boolean;
   createdBy?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-}): Promise<any> {
+  
+}): Promise<UseType> {
   const payload = {
-    typeofusecode: input.typeOfUseCode?.trim(),
+    typeOfUseCode: input.typeOfUseCode?.trim(),
     description: input.description?.trim(),
     type: input.type,
-    typeOfUsegroupId: input.typeOfUseGroupId,
+    typeOfUseGroupId: input.typeOfUseGroupId,
     searchSequence: input.searchSequence,
     isActive: input.isActive,
     createdBy: Number(input.createdBy ?? "1"),
@@ -282,7 +275,7 @@ export async function createUseTypeApi(input: {
     throw new Error(response.error ?? "Create type failed");
   }
   
-  return response.data;
+  return mapApiTypeToUi(response.data as Record<string, unknown>);
 }
 
 export async function updateUseTypeApi(input: {
@@ -294,14 +287,14 @@ export async function updateUseTypeApi(input: {
   searchSequence: number;
   isActive: boolean;
   updatedBy?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-}): Promise<any> {
+  
+}): Promise<UseType> {
   const payload = {
     typeOfUseId: input.typeOfUseId,
-    typeofusecode: input.typeOfUseCode?.trim(),
+    typeOfUseCode: input.typeOfUseCode?.trim(),
     description: input.description?.trim(),
     type: input.type,
-    typeOfUsegroupId: input.typeOfUseGroupId,
+    typeOfUseGroupId: input.typeOfUseGroupId,
     searchSequence: input.searchSequence,
     isActive: input.isActive,
     updatedBy: Number(input.updatedBy ?? "1"),
@@ -316,7 +309,7 @@ export async function updateUseTypeApi(input: {
     throw new Error(response.error ?? "Update type failed");
   }
   
-  return response.data;
+  return mapApiTypeToUi(response.data as Record<string, unknown>);
 }
 
 export async function deleteUseTypeApi(id: string) {

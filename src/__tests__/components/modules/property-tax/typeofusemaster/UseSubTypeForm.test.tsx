@@ -40,11 +40,16 @@ const mockUpdateSubType = vi.mocked(updateSubType);
 
 const mockMessages = {
   typeofusemaster: {
+    group: {
+      mandatoryNote: "Fields marked with * are mandatory",
+    },
     subtype: {
       add: "Add Sub-Type of Use",
       edit: "Edit Sub-Type",
+      addSubtitle: "Create a new Sub-Type",
       forType: "For Type: {type}",
       mandatoryNote: "Fields marked with * are mandatory",
+      title: "Sub-Types of Use",
       fields: {
         subTypeNameLabel: "Sub-Type Name",
         searchSequenceLabel: "Search Sequence",
@@ -68,20 +73,27 @@ const mockMessages = {
       subTypeNameLabel: "Sub-Type Name",
       searchSequenceLabel: "Search Sequence",
       typeMissing: "Type is missing.",
+      createError: "Failed to create record",
+      updateError: "Failed to update record",
     },
     status: {
       active: "Active",
       inactive: "Inactive",
+      isCurrently: "is currently",
     },
     buttons: {
       save: "Save",
       cancel: "Cancel",
+      edit: "Update",
     },
   },
   common: {
     buttons: {
       cancel: "Cancel",
       save: "Save",
+    },
+    actions: {
+      loading: "Loading...",
     },
   },
 };
@@ -140,21 +152,23 @@ describe("UseSubTypeForm", () => {
       expect(screen.getByText(/For Type:/)).toBeInTheDocument();
     });
 
-    it("should show error when type info is missing", () => {
+    it("should render add mode without type details when type info is missing", () => {
       renderWithIntl(
         <UseSubTypeForm id={null} typeInfo={null} allSubTypes={[]} />
       );
 
-      expect(screen.getByText(/Create a new Sub-Type/i)).toBeInTheDocument();
+      expect(screen.getByText("Add Sub-Type of Use")).toBeInTheDocument();
+      expect(screen.getByRole("textbox")).toBeInTheDocument();
+      expect(screen.queryByText(/For Type:/)).not.toBeInTheDocument();
     });
 
     it("should validate required fields", async () => {
-      renderWithIntl(
+      const { container } = renderWithIntl(
         <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} />
       );
 
-      const saveButton = screen.getByText("Save");
-      fireEvent.click(saveButton);
+      const form = container.querySelector("#use-subtype-form");
+      fireEvent.submit(form!);
 
       await waitFor(() => {
         expect(screen.getByText(/Sub-Type Name is required/i)).toBeInTheDocument();
@@ -163,27 +177,32 @@ describe("UseSubTypeForm", () => {
     });
 
     it("should validate description format", async () => {
-      renderWithIntl(
+      const { container } = renderWithIntl(
         <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} />
       );
 
       const descInput = screen.getByPlaceholderText("Sub-Type Name");
-      fireEvent.change(descInput, { target: { value: "Test@#$%^&" } });
-      fireEvent.blur(descInput);
+      // Use an input that passes sanitization (allows spaces) but fails regex (no double spaces)
+      fireEvent.change(descInput, { target: { value: "Test  Description" } });
+      
+      const form = container.querySelector("#use-subtype-form");
+      fireEvent.submit(form!);
 
       await waitFor(() => {
-        expect(screen.getByText(/Sub-Type Name can contain letters/i)).toBeInTheDocument();
+        expect(screen.getByText((content) => content.includes("can contain letters"))).toBeInTheDocument();
       });
     });
 
     it("should detect duplicate sub-type description", async () => {
-      renderWithIntl(
+      const { container } = renderWithIntl(
         <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} />
       );
 
       const descInput = screen.getByPlaceholderText("Sub-Type Name");
       fireEvent.change(descInput, { target: { value: "Ground Floor" } });
-      fireEvent.blur(descInput);
+      
+      const form = container.querySelector("#use-subtype-form");
+      fireEvent.submit(form!);
 
       await waitFor(() => {
         expect(screen.getByText(/Duplicate Sub-Type Name is not allowed/i)).toBeInTheDocument();
@@ -191,13 +210,15 @@ describe("UseSubTypeForm", () => {
     });
 
     it("should validate sequence is non-negative", async () => {
-      renderWithIntl(
+      const { container } = renderWithIntl(
         <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} />
       );
 
       const seqInput = screen.getByPlaceholderText("0");
       fireEvent.change(seqInput, { target: { value: "-1" } });
-      fireEvent.blur(seqInput);
+      
+      const form = container.querySelector("#use-subtype-form");
+      fireEvent.submit(form!);
 
       await waitFor(() => {
         expect(screen.getByText(/Search Sequence must be 0 or greater/i)).toBeInTheDocument();
@@ -207,7 +228,7 @@ describe("UseSubTypeForm", () => {
     it("should create sub-type successfully with valid data", async () => {
       mockCreateSubType.mockResolvedValue(undefined);
 
-      renderWithIntl(
+      const { container } = renderWithIntl(
         <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} />
       );
 
@@ -217,8 +238,8 @@ describe("UseSubTypeForm", () => {
       const seqInput = screen.getByPlaceholderText("0");
       fireEvent.change(seqInput, { target: { value: "3" } });
 
-      const saveButton = screen.getByText("Save");
-      fireEvent.click(saveButton);
+      const form = container.querySelector("#use-subtype-form");
+      fireEvent.submit(form!);
 
       await waitFor(() => {
         expect(mockCreateSubType).toHaveBeenCalledWith({
@@ -235,15 +256,15 @@ describe("UseSubTypeForm", () => {
     it("should handle create error", async () => {
       mockCreateSubType.mockRejectedValue(new Error("Create failed"));
 
-      renderWithIntl(
+      const { container } = renderWithIntl(
         <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} />
       );
 
       const descInput = screen.getByPlaceholderText("Sub-Type Name");
       fireEvent.change(descInput, { target: { value: "Second Floor" } });
 
-      const saveButton = screen.getByText("Save");
-      fireEvent.click(saveButton);
+      const form = container.querySelector("#use-subtype-form");
+      fireEvent.submit(form!);
 
       await waitFor(() => {
         expect(toast.error).toHaveBeenCalled();
@@ -284,13 +305,14 @@ describe("UseSubTypeForm", () => {
 
       expect(screen.getByText("Edit Sub-Type")).toBeInTheDocument();
       expect(screen.getByDisplayValue("Ground Floor")).toBeInTheDocument();
-      expect(screen.getByDisplayValue("1")).toBeInTheDocument();
+      // Use a more specific selector for the searchSequence input
+      expect(screen.getByRole("spinbutton")).toHaveValue(1);
     });
 
     it("should update sub-type successfully", async () => {
       mockUpdateSubType.mockResolvedValue(undefined);
 
-      renderWithIntl(
+      const { container } = renderWithIntl(
         <UseSubTypeForm
           id="1"
           initialData={initialData}
@@ -302,8 +324,8 @@ describe("UseSubTypeForm", () => {
       const descInput = screen.getByDisplayValue("Ground Floor");
       fireEvent.change(descInput, { target: { value: "Ground Floor Updated" } });
 
-      const saveButton = screen.getByText("Save");
-      fireEvent.click(saveButton);
+      const form = container.querySelector("#use-subtype-form");
+      fireEvent.submit(form!);
 
       await waitFor(() => {
         expect(mockUpdateSubType).toHaveBeenCalledWith({
@@ -363,14 +385,14 @@ describe("UseSubTypeForm", () => {
         <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} />
       );
 
-      const descInput = screen.getByPlaceholderText("Sub-Type Name");
+      const descInput = screen.getByPlaceholderText("Sub-Type Name") as HTMLInputElement;
       
-      // Input with multiple spaces should be sanitized
-      fireEvent.change(descInput, { target: { value: "Test    Multiple    Spaces" } });
+      // Input with invalid characters should be sanitized
+      // Proactive sanitization removes characters like @#$ immediately
+      fireEvent.change(descInput, { target: { value: "Test @#$ Name" } });
       
       await waitFor(() => {
-        // The value should be sanitized (implementation detail may vary)
-        expect(descInput).toHaveValue(expect.any(String));
+        expect(descInput.value).toBe("Test  Name"); // Spaces are preserved, special chars removed
       });
     });
 

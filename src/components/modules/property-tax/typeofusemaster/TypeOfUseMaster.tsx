@@ -206,8 +206,10 @@ export default function TypeOfUseMaster({
   const allGroups = useMemo(() => initialData.groups ?? [], [initialData.groups]);
 
   // ✅ FIX: Helper to find group by its typeOfUseGroupId (what types use as typeOfUseGroupId)
-  const findGroupByApiId = (apiId: string) =>
-    allGroups.find((g) => getGroupApiId(g) === apiId) ?? null;
+  const findGroupByApiId = useCallback(
+    (apiId: string) => allGroups.find((g) => getGroupApiId(g) === apiId) ?? null,
+    [allGroups]
+  );
 
   const firstGroup = allGroups?.[0] ?? null;
   const firstGroupApiId = firstGroup ? getGroupApiId(firstGroup) : "";
@@ -250,7 +252,7 @@ export default function TypeOfUseMaster({
       // Use setTimeout to avoid direct setState in effect
       setTimeout(() => setSelectedGroupId(groupByApiId.typeOfUseGroupId), 0);
     }
-  }, [urlGroupId, allGroups, selectedGroupId]);
+  }, [urlGroupId, allGroups, selectedGroupId, findGroupByApiId]);
 
 
   useEffect(() => {
@@ -723,12 +725,10 @@ export default function TypeOfUseMaster({
                           </div>
 
                           {/* CENTER: Meta badges */}
-                          {/* eslint-disable i18next/no-literal-string */}
                           <div className="flex items-center gap-2 shrink-0">
                             <span className="text-purple-700 bg-purple-50 px-2 py-1 rounded-md border border-purple-300 text-xs whitespace-nowrap">
-                              Seq: <b>{typeItem.searchSequence ?? "—"}</b>
+                              {t("seq")}: <b>{typeItem.searchSequence ?? t("fallback.notAvailable")}</b>
                             </span>
-                            {/* eslint-enable i18next/no-literal-string */}
                             {/* <StatusBadge value={typeItem.status ?? "Active"} /> */}
                           </div>
 
@@ -739,7 +739,7 @@ export default function TypeOfUseMaster({
 
                             <EditButton
                               size="sm"
-                              title="Edit"
+                              title={t('buttons.edit')}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 router.push(`/${locale}/property-tax/typeofusemaster/type/edit/${typeItem.typeOfUseId}`);
@@ -747,7 +747,7 @@ export default function TypeOfUseMaster({
                             />
                             <DeleteButton
                               size="sm"
-                              title="Delete"
+                              title={t('buttons.delete')}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleDeleteType(typeItem);

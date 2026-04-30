@@ -86,7 +86,7 @@ export default function UseSubTypeForm({ id, initialData, typeInfo: typeInfoProp
     const d = normalize(desc);
     if (!d) return false;
     return allSubTypes.some((s) => {
-      if (isEdit && (s.subTypeOfUseId === formData.subTypeOfUseId || normalize(s.description ?? '') === normalize(formData.description ?? ''))) return false;
+      if (isEdit && s.subTypeOfUseId === formData.subTypeOfUseId) return false;
       return normalize(s.description ?? '') === d;
     });
   };
@@ -258,6 +258,13 @@ export default function UseSubTypeForm({ id, initialData, typeInfo: typeInfoProp
         onSubmit={handleSubmit}
         className="space-y-6 bg-[#F8FAFF] p-5"
       >
+        {/* Show error if typeOfUseId is missing */}
+        {errors.typeId && (
+          <div className="flex items-center gap-2 mb-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <AlertCircle size={16} />
+            <span>{errors.typeId}</span>
+          </div>
+        )}
         {isEdit && (
           <input
             type="hidden"

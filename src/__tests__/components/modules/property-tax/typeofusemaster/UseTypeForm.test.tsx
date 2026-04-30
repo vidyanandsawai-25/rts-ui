@@ -40,12 +40,20 @@ const mockUpdateUseType = vi.mocked(updateUseType);
 
 const mockMessages = {
   typeofusemaster: {
+    group: {
+      mandatoryNote: "Fields marked with * are mandatory",
+    },
     type: {
       add: "Add Type of Use",
       edit: "Edit Type of Use",
       selectGroup: "Select group",
       selectType: "Select Type",
+      addingToGroup: "Adding to Group",
+      selectUseTypeGroup: "Select Use Type Group",
+      selectedGroup: "Selected Group",
+      displayOrder: "Display Order",
       mandatoryNote: "Fields marked with * are mandatory",
+      searchPlaceholder: "Search types...",
       fields: {
         typeId: "Type Of Use Code",
         type: "Type",
@@ -79,20 +87,29 @@ const mockMessages = {
       allowedChars: "can contain letters (any language), numbers, spaces and (. - ,).",
       sequenceNonNegative: "must be 0 or greater.",
       searchSequenceLabel: "Key Wise Sequence",
+      createError: "Failed to create record",
+      updateError: "Failed to update record",
+      descriptionRequired: "Description is required.",
     },
     status: {
       active: "Active",
       inactive: "Inactive",
+      is: "is currently",
+      isCurrently: "is currently",
     },
     buttons: {
       save: "Save",
       cancel: "Cancel",
+      edit: "Update",
     },
   },
   common: {
     buttons: {
       cancel: "Cancel",
       save: "Save",
+    },
+    actions: {
+      loading: "Loading...",
     },
   },
 };
@@ -164,12 +181,12 @@ describe("UseTypeForm", () => {
     });
 
     it("should validate required fields", async () => {
-      renderWithIntl(
+      const { container } = renderWithIntl(
         <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} />
       );
 
-      const saveButton = screen.getByText("Save");
-      fireEvent.click(saveButton);
+      const form = container.querySelector("#use-type-form");
+      fireEvent.submit(form!);
 
       await waitFor(() => {
         expect(mockCreateUseType).not.toHaveBeenCalled();
@@ -177,79 +194,98 @@ describe("UseTypeForm", () => {
     });
 
     it("should validate code format (alphanumeric only)", async () => {
-      renderWithIntl(
+      const { container } = renderWithIntl(
         <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} />
       );
 
       const codeInput = screen.getByPlaceholderText("e.g., RES, COM01, IND");
-      fireEvent.change(codeInput, { target: { value: "RES@#$" } });
-      fireEvent.blur(codeInput);
+      // Use an input that passes sanitization (allows underscore) but fails regex (must end with alphanumeric)
+      fireEvent.change(codeInput, { target: { value: "RES_" } });
+      
+      const form = container.querySelector("#use-type-form");
+      fireEvent.submit(form!);
 
       await waitFor(() => {
-        expect(screen.getByText(/must contain only letters and numbers/i)).toBeInTheDocument();
+        expect(screen.getByText((content) => content.includes("only letters and numbers"))).toBeInTheDocument();
       });
     });
 
     it("should validate description format", async () => {
-      renderWithIntl(
+      const { container } = renderWithIntl(
         <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} />
       );
 
       const descInput = screen.getByPlaceholderText("Enter description");
-      fireEvent.change(descInput, { target: { value: "Test@#$%^" } });
-      fireEvent.blur(descInput);
+      // Use an input that passes sanitization (allows spaces) but fails regex (no double spaces)
+      fireEvent.change(descInput, { target: { value: "Test  Description" } });
+      
+      const form = container.querySelector("#use-type-form");
+      fireEvent.submit(form!);
 
       await waitFor(() => {
-        expect(screen.getByText(/can contain letters/i)).toBeInTheDocument();
+        expect(screen.getByText((content) => content.includes("can contain letters"))).toBeInTheDocument();
       });
     });
 
     it("should detect duplicate type code", async () => {
-      renderWithIntl(
+      const { container } = renderWithIntl(
         <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} />
       );
 
       const codeInput = screen.getByPlaceholderText("e.g., RES, COM01, IND");
       fireEvent.change(codeInput, { target: { value: "RES01" } });
-      fireEvent.blur(codeInput);
+      
+      const form = container.querySelector("#use-type-form");
+      fireEvent.submit(form!);
 
       await waitFor(() => {
-        expect(screen.getByText(/Duplicate Type Of Use Code is not allowed/i)).toBeInTheDocument();
+        expect(screen.getByText((content) => content.includes("Duplicate Type Of Use Code"))).toBeInTheDocument();
       });
     });
 
     it("should detect duplicate description", async () => {
-      renderWithIntl(
+      const { container } = renderWithIntl(
         <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} />
       );
 
       const descInput = screen.getByPlaceholderText("Enter description");
       fireEvent.change(descInput, { target: { value: "Residential Building" } });
-      fireEvent.blur(descInput);
+      
+      const form = container.querySelector("#use-type-form");
+      fireEvent.submit(form!);
 
       await waitFor(() => {
-        expect(screen.getByText(/Duplicate Description is not allowed/i)).toBeInTheDocument();
+        expect(screen.getByText((content) => content.includes("Duplicate Description"))).toBeInTheDocument();
       });
     });
 
     it("should validate sequence is non-negative", async () => {
-      renderWithIntl(
+      const { container } = renderWithIntl(
         <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} />
       );
 
+      // Fill required fields to bypass HTML5 validation
+      fireEvent.change(screen.getByPlaceholderText("e.g., RES, COM01, IND"), { target: { value: "IND01" } });
+      fireEvent.change(screen.getByPlaceholderText("Enter description"), { target: { value: "Some description" } });
+      fireEvent.change(screen.getByRole("combobox", { name: /use type group/i }), { target: { value: "1" } });
+      fireEvent.change(screen.getByRole("combobox", { name: /type\s*\*/i }), { target: { value: "I" } });
+
+      // Now test the sequence field
       const seqInput = screen.getByPlaceholderText("0");
       fireEvent.change(seqInput, { target: { value: "-1" } });
-      fireEvent.blur(seqInput);
+      
+      const form = container.querySelector("#use-type-form");
+      fireEvent.submit(form!);
 
       await waitFor(() => {
-        expect(screen.getByText(/Key Wise Sequence must be 0 or greater/i)).toBeInTheDocument();
+        expect(screen.getByText((content) => content.includes("must be 0 or greater"))).toBeInTheDocument();
       });
     });
 
     it("should create type successfully with valid data", async () => {
       mockCreateUseType.mockResolvedValue(undefined);
 
-      renderWithIntl(
+      const { container } = renderWithIntl(
         <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} />
       );
 
@@ -266,15 +302,15 @@ describe("UseTypeForm", () => {
       fireEvent.change(descInput, { target: { value: "Industrial Building" } });
 
       // Select type
-      const typeSelect = screen.getByRole("combobox", { name: /^type$/i });
+      const typeSelect = screen.getByRole("combobox", { name: /type\s*\*/i });
       fireEvent.change(typeSelect, { target: { value: "I" } });
 
       // Fill in sequence
       const seqInput = screen.getByPlaceholderText("0");
       fireEvent.change(seqInput, { target: { value: "1" } });
 
-      const saveButton = screen.getByText("Save");
-      fireEvent.click(saveButton);
+      const form = container.querySelector("#use-type-form");
+      fireEvent.submit(form!);
 
       await waitFor(() => {
         expect(mockCreateUseType).toHaveBeenCalledWith({
@@ -293,7 +329,7 @@ describe("UseTypeForm", () => {
     it("should handle create error", async () => {
       mockCreateUseType.mockRejectedValue(new Error("Create failed"));
 
-      renderWithIntl(
+      const { container } = renderWithIntl(
         <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} />
       );
 
@@ -307,11 +343,11 @@ describe("UseTypeForm", () => {
       const descInput = screen.getByPlaceholderText("Enter description");
       fireEvent.change(descInput, { target: { value: "Industrial" } });
 
-      const typeSelect = screen.getByRole("combobox", { name: /^type$/i });
+      const typeSelect = screen.getByRole("combobox", { name: /type\s*\*/i });
       fireEvent.change(typeSelect, { target: { value: "I" } });
 
-      const saveButton = screen.getByText("Save");
-      fireEvent.click(saveButton);
+      const form = container.querySelector("#use-type-form");
+      fireEvent.submit(form!);
 
       await waitFor(() => {
         expect(toast.error).toHaveBeenCalled();
@@ -323,7 +359,7 @@ describe("UseTypeForm", () => {
         <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} />
       );
 
-      const cancelButton = screen.getByText("Cancel");
+      const cancelButton = screen.getByRole("button", { name: /cancel/i });
       fireEvent.click(cancelButton);
 
       expect(mockRouterBack).toHaveBeenCalled();
@@ -360,7 +396,7 @@ describe("UseTypeForm", () => {
     it("should update type successfully", async () => {
       mockUpdateUseType.mockResolvedValue(undefined);
 
-      renderWithIntl(
+      const { container } = renderWithIntl(
         <UseTypeForm
           id="1"
           initialData={initialData}
@@ -372,8 +408,8 @@ describe("UseTypeForm", () => {
       const descInput = screen.getByDisplayValue("Residential Building");
       fireEvent.change(descInput, { target: { value: "Residential Building Updated" } });
 
-      const saveButton = screen.getByText("Save");
-      fireEvent.click(saveButton);
+      const form = container.querySelector("#use-type-form");
+      fireEvent.submit(form!);
 
       await waitFor(() => {
         expect(mockUpdateUseType).toHaveBeenCalledWith({

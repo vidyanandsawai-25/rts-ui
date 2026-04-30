@@ -3,6 +3,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { locales } from "@/i18n/config";
 import type { TypeOfUseMasterData, UseGroupIconKey, UseStatus, UseType, UseGroup, UseSubType } from "@/types/typeOfUse.types";
 
 import {
@@ -73,7 +74,9 @@ export async function createUseGroup(input: {
     isActive: (input.status ?? "Active") === "Active",
     createdBy: "1",
   });
-  revalidatePath("/[locale]/property-tax/typeofusemaster", "page");
+  for (const locale of locales) {
+    revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+  }
 }
 
 export async function updateUseGroup(input: {
@@ -91,12 +94,16 @@ export async function updateUseGroup(input: {
     isActive: input.status === "Active",
     updatedBy: "1",
   });
-  revalidatePath("/[locale]/property-tax/typeofusemaster", "page");
+  for (const locale of locales) {
+    revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+  }
 }
 
 export async function deleteUseGroup(id: string | number) {
   await deleteUseGroupApi(id);
-  revalidatePath("/[locale]/property-tax/typeofusemaster", "page");
+  for (const locale of locales) {
+    revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+  }
 }
 
 /** ===================== TYPE ACTIONS ===================== */
@@ -118,7 +125,7 @@ export async function getUseTypesPaged(input: {
 export async function getAllUseTypes(searchTerm?: string) {
   const pageSize = 2000; // Reasonable chunk size
   let page = 1;
-  let allItems: UseType[] = [];
+  const allItems: UseType[] = [];
   let hasMore = true;
 
   while (hasMore) {
@@ -129,7 +136,7 @@ export async function getAllUseTypes(searchTerm?: string) {
     });
 
     const newItems = res.items || [];
-    allItems = [...allItems, ...newItems];
+    allItems.push(...newItems);
 
     if (newItems.length === 0 || allItems.length >= res.totalCount) {
       hasMore = false;
@@ -148,7 +155,7 @@ export async function getAllUseTypes(searchTerm?: string) {
 export async function getAllUseGroups() {
   const pageSize = 1000;
   let page = 1;
-  let allItems: UseGroup[] = [];
+  const allItems: UseGroup[] = [];
   let hasMore = true;
 
   while (hasMore) {
@@ -158,7 +165,7 @@ export async function getAllUseGroups() {
     });
 
     const newItems = res.items || [];
-    allItems = [...allItems, ...newItems];
+    allItems.push(...newItems);
 
     if (newItems.length === 0 || allItems.length >= res.totalCount) {
       hasMore = false;
@@ -216,7 +223,9 @@ export async function createUseType(input: {
     isActive: (input.status ?? "Active") === "Active",
     createdBy: "1",
   });
-  revalidatePath("/[locale]/property-tax/typeofusemaster", "page");
+  for (const locale of locales) {
+    revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+  }
 }
 
 export async function updateUseType(input: {
@@ -238,12 +247,16 @@ export async function updateUseType(input: {
     isActive: input.status === "Active",
     updatedBy: "1",
   });
-  revalidatePath("/[locale]/property-tax/typeofusemaster", "page");
+  for (const locale of locales) {
+    revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+  }
 }
 
 export async function deleteUseType(id: string | number) {
   await deleteUseTypeApi(String(id));
-  revalidatePath("/[locale]/property-tax/typeofusemaster", "page");
+  for (const locale of locales) {
+    revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+  }
 }
 
 // ✅ NEW: Delete Type AND its SubTypes
@@ -251,7 +264,7 @@ export async function deleteUseTypeWithSubTypes(typeId: number) {
   // 1. Fetch ALL sub-types for this type
   const pageSize = 1000;
   let page = 1;
-  let allSubTypes: UseSubType[] = [];
+  const allSubTypes: UseSubType[] = [];
   let hasMore = true;
 
   while (hasMore) {
@@ -262,7 +275,7 @@ export async function deleteUseTypeWithSubTypes(typeId: number) {
     });
 
     const newItems = res.items || [];
-    allSubTypes = [...allSubTypes, ...newItems];
+    allSubTypes.push(...newItems);
 
     if (newItems.length === 0 || allSubTypes.length >= res.totalCount) {
       hasMore = false;
@@ -280,7 +293,9 @@ export async function deleteUseTypeWithSubTypes(typeId: number) {
   await deleteUseTypeApi(String(typeId));
 
   // 4. Revalidate
-  revalidatePath("/[locale]/property-tax/typeofusemaster", "page");
+  for (const locale of locales) {
+    revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+  }
 }
 
 // ✅ NEW: Delete Group AND its Types AND their SubTypes
@@ -288,7 +303,7 @@ export async function deleteUseGroupWithCascade(groupId: number) {
   // 1. Fetch ALL types for this group
   const pageSize = 1000;
   let page = 1;
-  let allTypes: UseType[] = [];
+  const allTypes: UseType[] = [];
   let hasMore = true;
 
   while (hasMore) {
@@ -299,7 +314,7 @@ export async function deleteUseGroupWithCascade(groupId: number) {
     });
 
     const newItems = res.items || [];
-    allTypes = [...allTypes, ...newItems];
+    allTypes.push(...newItems);
 
     if (newItems.length === 0 || allTypes.length >= res.totalCount) {
       hasMore = false;
@@ -308,10 +323,10 @@ export async function deleteUseGroupWithCascade(groupId: number) {
     }
   }
 
-  // 2. Delete each type (and its sub-types)
-  await Promise.all(
-    allTypes.map((t) => deleteUseTypeWithSubTypes(t.typeOfUseId))
-  );
+  // 2. Delete each type (and its sub-types) sequentially to avoid creating a large fan-out of concurrent delete requests.
+  for (const type of allTypes) {
+    await deleteUseTypeWithSubTypes(type.typeOfUseId);
+  }
 
   // 3. Delete the Group itself
   await deleteUseGroupApi(groupId);
@@ -334,7 +349,7 @@ export async function getSubTypesPaged(input: {
 export async function getAllSubTypes(typeOfUseId?: number, searchTerm?: string) {
   const pageSize = 2000; // Reasonable chunk size
   let page = 1;
-  let allItems: UseSubType[] = [];
+  const allItems: UseSubType[] = [];
   let hasMore = true;
 
   while (hasMore) {
@@ -346,7 +361,7 @@ export async function getAllSubTypes(typeOfUseId?: number, searchTerm?: string) 
     });
 
     const newItems = res.items || [];
-    allItems = [...allItems, ...newItems];
+    allItems.push(...newItems);
 
     if (newItems.length === 0 || allItems.length >= res.totalCount) {
       hasMore = false;

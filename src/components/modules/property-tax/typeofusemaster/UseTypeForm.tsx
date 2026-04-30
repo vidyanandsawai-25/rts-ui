@@ -103,7 +103,7 @@ export default function UseTypeForm({ id, initialData, allGroups: allGroupsProp 
     const c = normalize(code);
     if (!c) return false;
     return allTypes.some((t) => {
-      if (isEdit && (t.typeOfUseId === formData.typeOfUseId || normalize(t.typeOfUseCode) === normalize(formData.typeOfUseCode))) return false;
+      if (isEdit && t.typeOfUseId === formData.typeOfUseId) return false;
       return normalize(t.typeOfUseCode) === c;
     });
   };
@@ -197,8 +197,15 @@ export default function UseTypeForm({ id, initialData, allGroups: allGroupsProp 
       return;
     }
 
-    setFormData((p) => ({ ...p, [name]: value }));
+    if (name === "typeOfUseGroupId") {
+      // Parse select value as number to ensure strict equality checks work
+      const num = Number(value) || 0;
+      setFormData((p) => ({ ...p, typeOfUseGroupId: num }));
+      if (submittedOnce) clearFieldError("groupId");
+      return;
+    }
 
+    setFormData((p) => ({ ...p, [name]: value }));
     if (submittedOnce) {
       if (name === "typeOfUseGroupId") clearFieldError("groupId");
     }
@@ -341,10 +348,11 @@ export default function UseTypeForm({ id, initialData, allGroups: allGroupsProp 
 
             {/* Type Dropdown */}
             <div className="flex flex-col">
-              <label className="mb-1.5 text-sm font-semibold text-gray-700">
+              <label htmlFor="type-select" className="mb-1.5 text-sm font-semibold text-gray-700">
                 {t('type.fields.type')} <span className="text-red-500">*</span>
               </label>
               <select
+                id="type-select"
                 value={typeValue}
                 onChange={(e) => {
                   setTypeValue(e.target.value);
@@ -368,13 +376,14 @@ export default function UseTypeForm({ id, initialData, allGroups: allGroupsProp 
 
             {/* UseTypeGroup */}
             <div className="flex flex-col">
-              <label className="mb-1.5 text-sm font-semibold text-gray-700">
+              <label htmlFor="use-type-group-select" className="mb-1.5 text-sm font-semibold text-gray-700">
                 {t('type.fields.useTypeGroup')} <span className="text-red-500">*</span>
               </label>
 
               <select
+                id="use-type-group-select"
                 name="typeOfUseGroupId"
-                value={formData.typeOfUseGroupId}
+                value={formData.typeOfUseGroupId || ""}
                 onChange={handleChange}
                 className=" w-full text-slate-700 rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-200"
               >
@@ -411,6 +420,7 @@ export default function UseTypeForm({ id, initialData, allGroups: allGroupsProp 
                 fullWidth
                 className="rounded-xl px-4 py-2"
                 maxLength={100}
+                required
               />
               <ValidationMessage
                 message={errors.description}

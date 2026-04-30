@@ -12,7 +12,6 @@ import {
   GraduationCap,
   Wheat,
   MapPin,
-  Building2,
   ChevronDown,
   Check,
   AlertCircle,
@@ -57,7 +56,6 @@ const ICON_OPTIONS: Array<{ value: UseGroupIconKey; label: string; Icon: any }> 
     { value: "school", label: "School", Icon: GraduationCap },
     { value: "leaf", label: "Wheat", Icon: Wheat },
     { value: "map", label: "MapPin", Icon: MapPin },
-    { value: "building", label: "Building", Icon: Building2 },
   ];
 
 type FieldErrors = {

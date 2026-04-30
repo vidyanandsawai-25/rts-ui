@@ -39,9 +39,11 @@ const mockMessages = {
   typeofusemaster: {
     group: {
       add: "Add Use Group",
+      addSubtitle: "Create a new Use Group",
       edit: "Edit Use Group",
       editSubtitle: "Update existing Use Group",
       mandatoryNote: "Fields marked with * are mandatory",
+      title: "Use Groups",
       fields: {
         groupId: "Group ID Code",
         groupName: "Group Name",
@@ -63,6 +65,9 @@ const mockMessages = {
       onlyAlphanumeric: "must contain only letters and numbers (no special characters).",
       allowedChars: "can contain letters (any language), numbers, spaces and (. - ,).",
       atLeastOneLetter: "must contain at least one letter.",
+      createError: "Failed to create record",
+      updateError: "Failed to update record",
+      createGroupFailed: "Failed to create group",
     },
     status: {
       active: "Active",
@@ -72,12 +77,16 @@ const mockMessages = {
     buttons: {
       save: "Save",
       cancel: "Cancel",
+      edit: "Update",
     },
   },
   common: {
     buttons: {
       cancel: "Cancel",
       save: "Save",
+    },
+    actions: {
+      loading: "Loading...",
     },
   },
 };
@@ -124,10 +133,10 @@ describe("UseGroupForm", () => {
     });
 
     it("should validate required fields", async () => {
-      renderWithIntl(<UseGroupForm id={null} allGroups={existingGroups} />);
+      const { container } = renderWithIntl(<UseGroupForm id={null} allGroups={existingGroups} />);
 
-      const saveButton = screen.getByText("Save");
-      fireEvent.click(saveButton);
+      const form = container.querySelector("#use-group-form");
+      fireEvent.submit(form!);
 
       await waitFor(() => {
         expect(mockCreateUseGroup).not.toHaveBeenCalled();
@@ -135,11 +144,14 @@ describe("UseGroupForm", () => {
     });
 
     it("should validate code format (alphanumeric only)", async () => {
-      renderWithIntl(<UseGroupForm id={null} allGroups={existingGroups} />);
+      const { container } = renderWithIntl(<UseGroupForm id={null} allGroups={existingGroups} />);
 
       const codeInput = screen.getByPlaceholderText("e.g., RES, COM, IND01");
-      fireEvent.change(codeInput, { target: { value: "RES@#$" } });
-      fireEvent.blur(codeInput);
+      // Use an input that passes sanitization (allows underscore) but fails regex (must end with alphanumeric)
+      fireEvent.change(codeInput, { target: { value: "RES_" } });
+      
+      const form = container.querySelector("#use-group-form");
+      fireEvent.submit(form!);
 
       await waitFor(() => {
         expect(screen.getByText(/must contain only letters and numbers/i)).toBeInTheDocument();
@@ -147,14 +159,16 @@ describe("UseGroupForm", () => {
     });
 
     it("should detect duplicate group code", async () => {
-      renderWithIntl(<UseGroupForm id={null} allGroups={existingGroups} />);
+      const { container } = renderWithIntl(<UseGroupForm id={null} allGroups={existingGroups} />);
 
       const codeInput = screen.getByPlaceholderText("e.g., RES, COM, IND01");
       const nameInput = screen.getByPlaceholderText("e.g., Residential, Local");
 
       fireEvent.change(codeInput, { target: { value: "RES" } });
       fireEvent.change(nameInput, { target: { value: "New Residential" } });
-      fireEvent.blur(codeInput);
+      
+      const form = container.querySelector("#use-group-form");
+      fireEvent.submit(form!);
 
       await waitFor(() => {
         expect(screen.getByText(/Duplicate group id is not allowed/i)).toBeInTheDocument();
@@ -162,14 +176,16 @@ describe("UseGroupForm", () => {
     });
 
     it("should detect duplicate group name", async () => {
-      renderWithIntl(<UseGroupForm id={null} allGroups={existingGroups} />);
+      const { container } = renderWithIntl(<UseGroupForm id={null} allGroups={existingGroups} />);
 
       const codeInput = screen.getByPlaceholderText("e.g., RES, COM, IND01");
       const nameInput = screen.getByPlaceholderText("e.g., Residential, Local");
 
       fireEvent.change(codeInput, { target: { value: "RES01" } });
       fireEvent.change(nameInput, { target: { value: "Residential" } });
-      fireEvent.blur(nameInput);
+      
+      const form = container.querySelector("#use-group-form");
+      fireEvent.submit(form!);
 
       await waitFor(() => {
         expect(screen.getByText(/Duplicate group name is not allowed/i)).toBeInTheDocument();
@@ -179,7 +195,7 @@ describe("UseGroupForm", () => {
     it("should create group successfully with valid data", async () => {
       mockCreateUseGroup.mockResolvedValue(undefined);
 
-      renderWithIntl(<UseGroupForm id={null} allGroups={existingGroups} />);
+      const { container } = renderWithIntl(<UseGroupForm id={null} allGroups={existingGroups} />);
 
       const codeInput = screen.getByPlaceholderText("e.g., RES, COM, IND01");
       const nameInput = screen.getByPlaceholderText("e.g., Residential, Local");
@@ -187,8 +203,8 @@ describe("UseGroupForm", () => {
       fireEvent.change(codeInput, { target: { value: "IND" } });
       fireEvent.change(nameInput, { target: { value: "Industrial" } });
 
-      const saveButton = screen.getByText("Save");
-      fireEvent.click(saveButton);
+      const form = container.querySelector("#use-group-form");
+      fireEvent.submit(form!);
 
       await waitFor(() => {
         expect(mockCreateUseGroup).toHaveBeenCalledWith({
@@ -205,7 +221,7 @@ describe("UseGroupForm", () => {
     it("should handle create error", async () => {
       mockCreateUseGroup.mockRejectedValue(new Error("Create failed"));
 
-      renderWithIntl(<UseGroupForm id={null} allGroups={existingGroups} />);
+      const { container } = renderWithIntl(<UseGroupForm id={null} allGroups={existingGroups} />);
 
       const codeInput = screen.getByPlaceholderText("e.g., RES, COM, IND01");
       const nameInput = screen.getByPlaceholderText("e.g., Residential, Local");
@@ -213,8 +229,8 @@ describe("UseGroupForm", () => {
       fireEvent.change(codeInput, { target: { value: "IND" } });
       fireEvent.change(nameInput, { target: { value: "Industrial" } });
 
-      const saveButton = screen.getByText("Save");
-      fireEvent.click(saveButton);
+      const form = container.querySelector("#use-group-form");
+      fireEvent.submit(form!);
 
       await waitFor(() => {
         expect(toast.error).toHaveBeenCalled();
@@ -254,15 +270,15 @@ describe("UseGroupForm", () => {
     it("should update group successfully", async () => {
       mockUpdateUseGroup.mockResolvedValue(undefined);
 
-      renderWithIntl(
+      const { container } = renderWithIntl(
         <UseGroupForm id="1" initialData={initialData} allGroups={existingGroups} />
       );
 
       const nameInput = screen.getByDisplayValue("Residential");
       fireEvent.change(nameInput, { target: { value: "Residential Updated" } });
 
-      const saveButton = screen.getByText("Save");
-      fireEvent.click(saveButton);
+      const form = container.querySelector("#use-group-form");
+      fireEvent.submit(form!);
 
       await waitFor(() => {
         expect(mockUpdateUseGroup).toHaveBeenCalledWith({

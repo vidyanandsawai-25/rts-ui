@@ -42,7 +42,9 @@ vi.mock("sonner", () => ({
 
 // Mock confirm provider
 vi.mock("@/components/common/ConfirmProvider", () => ({
-  useConfirm: () => vi.fn(() => Promise.resolve(true)),
+  useConfirm: () => ({
+    confirm: vi.fn(() => Promise.resolve(true)),
+  }),
 }));
 
 // Mock delete actions
@@ -60,15 +62,27 @@ const mockMessages = {
     group: {
       title: "Use Groups",
       add: "Add Use Group",
+      addSubtitle: "Create a new Use Group",
+      mandatoryNote: "Fields marked with * are mandatory",
     },
     type: {
       title: "Types of Use",
       add: "Add Type of Use",
       noTypes: "No types found for selected group.",
+      searchPlaceholder: "Search types...",
+      addingToGroup: "Adding to Group",
+      selectUseTypeGroup: "Select Use Type Group",
+      selectedGroup: "Selected Group",
+      displayOrder: "Display Order",
     },
     subtype: {
       title: "Sub-Types of Use",
       add: "Add Sub-Type of Use",
+      searchPlaceholder: "Search sub-types...",
+      addSubtitle: "Create a new Sub-Type",
+      fields: {
+        status: "Status",
+      },
     },
     table: {
       columns: {
@@ -96,13 +110,32 @@ const mockMessages = {
       groupDeletedSuccess: "Group deleted successfully",
       typeDeletedSuccess: "Type deleted successfully",
       subTypeDeletedSuccess: "Sub-type deleted successfully",
+      createError: "Failed to create record",
+      updateError: "Failed to update record",
+      deleteError: "Failed to delete record",
     },
+    seq: "Sequence",
   },
   common: {
     buttons: {
       add: "Add",
       edit: "Edit",
       delete: "Delete",
+      save: "Save",
+      cancel: "Cancel",
+    },
+    table: {
+      showingEntries: "Showing {start} to {end} of {total} entries",
+      page: "Page",
+      columns: {
+        actions: "Actions",
+      },
+    },
+    messages: {
+      noData: "No data available",
+    },
+    actions: {
+      loading: "Loading...",
     },
   },
 };

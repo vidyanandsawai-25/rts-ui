@@ -1,12 +1,9 @@
-
-
-
 {
     "title": "Type of Use Master",
     "subtitle": "Use Group → Type → Sub-Type",
     "group": {
         "title": "Use Groups",
-        "addSubtitle": "Create a new Sub-Type",
+        "addSubtitle": "Create a new Use Group",
         "add": "Add Use Group",
         "edit": "Edit Use Group",
         "editSubtitle": "Update existing Use Group",
@@ -68,7 +65,7 @@
         "title": "Sub-Types of Use",
         "add": "Add Sub-Type of Use",
         "edit": "Edit Sub-Type",
-        "addSubtitle": "Create a new Sub-Type",
+        "addSubtitle": "Create a new Use Group",
         "forType": "For Type: {type}",
         "searching": "Searching...",
         "found": "Found {count} matching records",
@@ -192,5 +189,6 @@
     "loading": {
       "message": "Loading Type of Use Master...",
       "description": "Please wait while we fetch the Type of Use Master data"
-    }
+    },
+    "seq": "Seq"
 }
