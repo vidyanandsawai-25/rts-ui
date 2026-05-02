@@ -87,8 +87,8 @@ export function getPropertyTypeColumns(
   typeOfUseValidation?: PropertyTypeAndTypeOfUseValidation[],
   onTypeOfUseClick?: (row: PropertyType) => void
 ): Column<PropertyType>[] {
-  // Only propertyDescription, type, and propertyTypeGroup are sortable
-  const sortableColumns = ["propertyDescription", "type", "propertyTypeGroup"];
+  // Only propertyDescription and type are sortable
+  const sortableColumns = ["propertyDescription", "type"];
 
   const createSortableLabel = (label: string, key: string) => {
     if (onSort && sortableColumns.includes(key)) {
@@ -148,7 +148,7 @@ export function getPropertyTypeColumns(
     },
     {
       key: "propertyTypeGroup",
-      label: createSortableLabel(t("list.table.propertyTypeGroup"), "propertyTypeGroup"),
+      label: t("list.table.propertyTypeGroup"),
       width: "14%",
       render: (value) => (typeof value === "string" ? value : ""),
     },

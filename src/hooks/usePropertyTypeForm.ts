@@ -207,7 +207,7 @@ export function usePropertyTypeForm({
     closeAndRoute();
   }, [onCancel, closeAndRoute]);
 
-  const handleSubmit = async (e: React.FormEvent): Promise<{ success: boolean }> => {
+  const handleSubmit = async (e: React.FormEvent): Promise<{ success: boolean; createdId?: number }> => {
     e.preventDefault();
     setSubmittedOnce(true);
 
@@ -233,7 +233,9 @@ export function usePropertyTypeForm({
       );
 
       onSuccess();
-      return { success: true };
+      // Return createdId for add mode (from createPropertyTypeAction)
+      const createdId = !isEdit && 'createdId' in result ? (result.createdId as number | undefined) : undefined;
+      return { success: true, createdId };
     } catch {
       return { success: false };
     } finally {

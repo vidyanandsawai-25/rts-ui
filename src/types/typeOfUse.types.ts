@@ -1,5 +1,5 @@
 export type UseStatus = "Active" | "Inactive";
-
+ 
 export type UseGroupIconKey =
   | "home"
   | "building"
@@ -7,7 +7,7 @@ export type UseGroupIconKey =
   | "school"
   | "leaf"
   | "map";
-
+ 
 // ✅ Matches API response exactly: /TypeOfUseGroup
 export interface UseGroup {
   typeOfUseGroupId: number;
@@ -20,9 +20,9 @@ export interface UseGroup {
   // UI-only computed field
   status?: UseStatus;
 }
-
+ 
 // ✅ Matches API response exactly: /TypeOfUse  
-export interface UseType {
+export interface UseType extends Record<string, unknown> {
   typeOfUseId: number;
   typeOfUseCode: string;
   description: string;
@@ -34,9 +34,8 @@ export interface UseType {
   updatedDate?: string | null;
   // UI-only computed field
   status?: UseStatus;
-  [key: string]: unknown; // Index signature for MasterTable compatibility
 }
-
+ 
 // ✅ Matches API response exactly: /SubTypeOfUse
 export interface UseSubType {
   subTypeOfUseId: number;
@@ -49,10 +48,9 @@ export interface UseSubType {
   // UI-only computed field
   status?: UseStatus;
 }
-
+ 
 export interface TypeOfUseMasterData {
   groups: UseGroup[];
   types: UseType[];
   subTypes: UseSubType[];
 }
-

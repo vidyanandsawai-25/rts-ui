@@ -48,7 +48,7 @@ export async function getPropertyTypesPaged(
       throw new ApiError(500, "No data received from server", "Invalid response format");
     }
 
-    const validItems = response.data.items.filter(isPropertyTypeShape);
+    const validItems = (response.data.items ?? []).filter(isPropertyTypeShape);
     const normalizedItems = validItems.map(normalizePropertyType);
     return { ...response.data, items: normalizedItems };
   } catch (error) {
@@ -81,8 +81,12 @@ export async function getPropertyTypeById(propertyTypeId: number): Promise<Prope
   }
 }
 
-/** Creates a new property type */
-export async function createPropertyType(data: PropertyTypeFormModel): Promise<void> {
+/** 
+ * Creates a new property type.
+ * Returns the created PropertyType with ID if the API provides it, otherwise null.
+ * The property type IS created successfully even if null is returned.
+ */
+export async function createPropertyType(data: PropertyTypeFormModel): Promise<PropertyType | null> {
   try {
     validateCreateFormData(data);
     const payload = {
@@ -94,10 +98,17 @@ export async function createPropertyType(data: PropertyTypeFormModel): Promise<v
       isActive: data.isActive,
       createdBy: 1, // TODO: Get from auth context
     };
-    const response = await apiClient.post<unknown>("/PropertyTypeMaster", payload);
+    const response = await apiClient.post<PropertyType>("/PropertyTypeMaster", payload);
     if (!response.success) {
       throw createApiError(response.statusCode, response.error, "Create property type failed");
     }
+    // Try to extract the created property type with ID from response
+    if (response.data && isPropertyTypeShape(response.data)) {
+      return normalizePropertyType(response.data as Record<string, unknown>);
+    }
+    // API succeeded but didn't return the created record - this is OK
+    // The property type was created, we just don't have the ID from response
+    return null;
   } catch (error) {
     console.error("Error creating property type:", error);
     throw error;

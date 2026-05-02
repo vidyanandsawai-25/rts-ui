@@ -3,9 +3,10 @@ import { getUseTypesPagedServer } from "@/lib/api/typeofusemaster.service";
 import type { UseType } from "@/types/typeOfUse.types";
 
 // SSR action to fetch all TypeOfUse (for PropertyTypeForm)
+// Uses -1 pageSize to fetch all records without pagination
 export async function getTypeOfUseListAction(): Promise<UseType[]> {
   try {
-    const result = await getUseTypesPagedServer({ pageNumber: 1, pageSize: 5000 });
+    const result = await getUseTypesPagedServer({ pageNumber: 1, pageSize: -1 });
     return result.items;
   } catch (error) {
     console.error("[getTypeOfUseListAction] Error:", error);
@@ -77,13 +78,39 @@ export async function fetchPropertyTypePagedServerAction(
 
 export async function createPropertyTypeAction(
   data: PropertyTypeFormModel
-): Promise<{ success: boolean; message?: string; statusCode?: number }> {
+): Promise<{ success: boolean; message?: string; statusCode?: number; createdId?: number }> {
   try {
-    await createPropertyType(data);
+    const createdPropertyType = await createPropertyType(data);
+    
     // Revalidate all locale variants of the property type page
     for (const locale of locales) {
       revalidatePath(`/${locale}/property-tax/propertytype`, "page");
     }
+    
+    // If API returned the created entity with ID, use it directly
+    if (createdPropertyType?.id) {
+      return { success: true, createdId: createdPropertyType.id };
+    }
+    
+    // Fallback: API didn't return the ID, search for the newly created record
+    // Use exact match on description + type to find the record
+    try {
+      const searchResult = await getPropertyTypesPaged(1, 50, data.propertyDescription.trim());
+      const match = searchResult.items.find(
+        (item) =>
+          item.propertyDescription === data.propertyDescription.trim() &&
+          item.type === data.type.trim()
+      );
+      if (match?.id) {
+        return { success: true, createdId: match.id };
+      }
+    } catch (searchError) {
+      // Log but don't fail - property type was created successfully
+      console.warn("[createPropertyTypeAction] Fallback search failed:", searchError);
+    }
+    
+    // Property type created but couldn't retrieve ID - still success
+    // Type of use validations won't be saved, but core entity is created
     return { success: true };
   } catch (error: unknown) {
     if (error instanceof ApiError) {

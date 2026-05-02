@@ -13,7 +13,7 @@ import { PropertyType } from "@/types/property-type.types";
 import { PropertyTypeCategory } from "@/types/property-type-category.types";
 import { UseType } from "@/types/typeOfUse.types";
 import { usePropertyTypeForm } from "@/hooks/usePropertyTypeForm";
-import { updatePropertyTypeValidationsAction, fetchPropertyTypePagedServerAction } from "@/app/[locale]/property-tax/propertytype/action";
+import { updatePropertyTypeValidationsAction } from "@/app/[locale]/property-tax/propertytype/action";
 import React from "react";
 
 export interface PropertyTypeFormProps {
@@ -61,17 +61,13 @@ export default function PropertyTypeForm({
     new Set(initialTypeOfUseIds)
   );
 
-  // Handler for toggling selection
+  // Handler for toggling selection (no limit)
   const toggleTypeOfUse = (touId: number) => {
     setSelectedTypeOfUseIds((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(touId)) {
         newSet.delete(touId);
       } else {
-        if (newSet.size >= 30) {
-          toast.error(t("form.typeOfUseSection.maxSelection"));
-          return prev;
-        }
         newSet.add(touId);
       }
       return newSet;
@@ -80,24 +76,9 @@ export default function PropertyTypeForm({
 
   const handleSelectAll = () => {
     const newSet = new Set(selectedTypeOfUseIds);
-    let attemptedToAdd = false;
-    let hitCap = false;
-
     for (const item of typeOfUseList) {
-      if (!newSet.has(item.typeOfUseId)) {
-        attemptedToAdd = true;
-        if (newSet.size >= 30) {
-          hitCap = true;
-          break;
-        }
-        newSet.add(item.typeOfUseId);
-      }
+      newSet.add(item.typeOfUseId);
     }
-
-    if (attemptedToAdd && hitCap) {
-      toast.warning(t("form.typeOfUseSection.selectionLimited"));
-    }
-
     setSelectedTypeOfUseIds(newSet);
   };
 
@@ -110,43 +91,38 @@ export default function PropertyTypeForm({
     e.preventDefault();
 
     // 1. Submit the main property type form
-    const { success } = await originalHandleSubmit(e);
+    const { success, createdId } = await originalHandleSubmit(e);
     if (!success) return; // Validation failed or API error — don't proceed
 
     // 2. Determine the property type ID for saving validations
-    let propertyTypeId = id; // For edit mode, we already have the ID
-
-    if (!propertyTypeId) {
-      // Add mode — look up the newly created record by description + type
-      try {
-        const searchRes = await fetchPropertyTypePagedServerAction(1, 50, formData.propertyDescription);
-        const match = searchRes.items.find(
-          (item) =>
-            item.propertyDescription === formData.propertyDescription &&
-            item.type === formData.type
-        );
-        if (match) {
-          propertyTypeId = match.id;
-        }
-      } catch (err) {
-        console.error("Failed to fetch new property type ID:", err);
-      }
-    }
+    // For edit mode: use existing id
+    // For add mode: use createdId returned from the create action
+    const propertyTypeId = id ?? createdId;
 
     // 3. Save type of use validations
-    if (propertyTypeId && selectedTypeOfUseIds.size > 0) {
+    // For edit mode: always call to handle clearing (even if empty array)
+    // For add mode: only call if there are selections AND we have the ID
+    const hasSelectionsToSave = selectedTypeOfUseIds.size > 0;
+    const shouldSaveValidations = propertyTypeId && (isEdit || hasSelectionsToSave);
+    
+    if (shouldSaveValidations) {
       try {
         const result = await updatePropertyTypeValidationsAction(
           propertyTypeId,
           Array.from(selectedTypeOfUseIds)
         );
         if (!result.success) {
-          toast.error(result.message || "Failed to save type of use validations");
+          toast.error(result.message || t("form.typeOfUseSection.saveFailed"));
         }
       } catch (error) {
         console.error("Error saving type of use validations:", error);
-        toast.error("Failed to save type of use validations");
+        toast.error(t("form.typeOfUseSection.saveFailed"));
       }
+    } else if (!isEdit && hasSelectionsToSave && !propertyTypeId) {
+      // Add mode: property type created but couldn't get ID to save type of use
+      // This is a rare edge case - warn user but don't block
+      console.warn("Property type created but ID not available for type of use assignment");
+      toast.warning(t("form.typeOfUseSection.saveWarning"));
     }
 
     // 4. Navigate away after everything is saved

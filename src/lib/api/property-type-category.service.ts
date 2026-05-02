@@ -25,14 +25,16 @@ export async function getPropertyTypeCategories(): Promise<PropertyTypeCategory[
     
     const items = response.data.items ?? [];
     
-    // Filter only active categories and validate structure
+    // Filter only active categories and validate structure (including date fields)
     return items.filter((item): item is PropertyTypeCategory => {
       return (
         typeof item === "object" &&
         item !== null &&
         typeof item.id === "number" &&
         typeof item.propertyTypeCategory === "string" &&
-        item.isActive === true
+        item.isActive === true &&
+        typeof item.createdDate === "string" &&
+        (typeof item.updatedDate === "string" || item.updatedDate === null)
       );
     });
   } catch (error) {

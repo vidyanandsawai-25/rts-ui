@@ -123,9 +123,8 @@ export function getDeleteErrorStatusCode(errorMessage: string): number {
 /**
  * Creates an ApiError with appropriate status code based on error message
  */
-export function createApiError(statusCode: number | undefined, errorMessage: string | undefined, operation: string): ApiError {
-  const message = errorMessage || `${operation} failed`;
+export function createApiError(statusCode: number | undefined, errorMessage: string | undefined, context: string): ApiError {
+  const message = errorMessage || "Operation failed";
   const code = statusCode || 500;
-  
-  return new ApiError(code, message, operation);
+  return new ApiError(code, message, context);
 }

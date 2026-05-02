@@ -16,7 +16,7 @@
         "propertyDescription": "Property Description",
         "type": "Type",
         "propertyTypeGroup": "Property Type Group",
-        "category": "Category",
+        "category": "Property Type Category",
         "searchSequence": "Search Sequence",
         "typeOfUseValidation": "Type of Use Validation",
         "status": "Status",
@@ -56,7 +56,7 @@
           "label": "Search Sequence"
         },
         "category": {
-          "label": "Category",
+          "label": "Property Type Category",
           "placeholder": "Select category"
         }
       },
@@ -71,7 +71,7 @@
         "propertyTypeGroupRequired": "Property type group is required",
         "propertyTypeGroupMaxLength": "Maximum length is 100 characters",
         "sequenceInvalid": "Search sequence must be 0 or greater",
-        "categoryRequired": "Category is required",
+        "categoryRequired": "Property Type Category is required",
         "mustBeActive": "Property Type must be active to save"
       },
       "status": {
@@ -95,8 +95,8 @@
         "clear": "Clear All",
         "noMatches": "No matching items found.",
         "hint": "Select the type of use codes applicable to this property type",
-        "maxSelection": "Maximum 30 selections allowed",
-        "selectionLimited": "Selection limited to 30 items"
+        "saveFailed": "Failed to save type of use validations",
+        "saveWarning": "Property type created, but type of use could not be assigned. Please edit the record to add type of use."
       }
     },
     "modal": {
