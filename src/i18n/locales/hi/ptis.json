@@ -9,7 +9,15 @@
     "searchButton": "खोजें",
     "loading": "लोड हो रहा है...",
     "success": "संपत्ति सफलतापूर्वक मिली",
-    "error": "कोई संपत्ति नहीं मिली"
+    "error": "कोई संपत्ति नहीं मिली",
+    "noOptionsAvailable": "कोई विकल्प उपलब्ध नहीं है",
+    "noPartition": "-",
+    "errors": {
+      "fetchWardsFailed": "वार्ड सूची लोड करने में विफल। कृपया पुन: प्रयास करें।",
+      "fetchPropertiesFailed": "इस वार्ड के लिए संपत्ति सूची लोड करने में विफल।",
+      "navigationFailed": "नेविगेशन विफल रहा। कृपया पेज रीफ्रेश करें और पुन: प्रयास करें।",
+      "generic": "एक अप्रत्याशित त्रुटि हुई। कृपया पुन: प्रयास करें।"
+    }
   },
   "tabs": {
     "propertyDetails": "संपत्ति विवरण",
@@ -115,6 +123,10 @@
     "typeOfUse": "उपयोग का प्रकार",
     "carpetAreaSqFtMtr": "कार्पेट क्षेत्रफल (वर्ग फुट / वर्ग मीटर)",
     "registration": "पंजीकरण",
+    "subFloor": "उप-मंजिल",
+    "assmtYear": "मूल्यांकन वर्ष",
+    "subType": "उप-प्रकार",
+    "builtupAreaSqFtMtr": "निर्मित क्षेत्रफल (वर्ग फुट / वर्ग मीटर)",
     "remark": "टिप्पणी",
     "noFloorDetails": "कोई मंजिल विवरण उपलब्ध नहीं है",
     "year": "वर्ष",
@@ -138,11 +150,62 @@
     "tax3": "कर३",
     "taxTotal": "कुल कर",
     "interest": "ब्याज",
-    "netTotal": "कुल देय"
+    "netTotal": "कुल देय",
+    "noTaxDetails": "कोई कर विवरण उपलब्ध नहीं है"
+  },
+  "taxes": {
+    "generalTax": "सामान्य कर",
+    "stateEducationTax": "राज्य शिक्षा उपकर",
+    "stateEmploymentTax": "राज्य रोजगार उपकर",
+    "treeCess": "वृक्ष उपकर",
+    "spWaterCess": "विशेष जल उपकर",
+    "roadCess": "सड़क उपकर",
+    "fireCess": "अग्नि उपकर",
+    "lightCess": "प्रकाश उपकर",
+    "waterBenefitCess": "जल लाभ उपकर",
+    "sewageDisposalCess": "मलजल निपटान उपकर",
+    "spEducationTax": "विशेष शिक्षा उपकर",
+    "sanitationCess": "स्वच्छता उपकर",
+    "drainCess": "नाली उपकर",
+    "waterBill": "जल बिल",
+    "bigBuilding": "बड़ी इमारत",
+    "illegalConstPenalty": "अवैध निर्माण जुर्माना",
+    "userCharges": "उपयोगकर्ता शुल्क",
+    "serviceTax": "सेवा कर",
+    "oldPenaltyOfULB": "यूएलबी का पुराना जुर्माना",
+    "runTimePenalty": "रन टाइम जुर्माना",
+    "waterTax": "जल कर",
+    "educationCess": "शिक्षा उपकर",
+    "employmentCess": "रोजगार उपकर",
+    "drainageTax": "निकासी कर",
+    "fireTax": "अग्नि कर",
+    "lightTax": "प्रकाश कर",
+    "cleaningTax": "सफाई कर",
+    "sewerageTax": "सीवरेज कर",
+    "treeTax": "वृक्ष कर"
+  },
+  "actions": {
+    "save": "सहेजें",
+    "cancel": "रद्द करें",
+    "edit": "संपादित करें",
+    "delete": "हटाएं",
+    "search": "खोजें",
+    "upload": "अपलोड करें",
+    "preview": "पूर्वावलोकन",
+    "viewDocument": "दस्तावेज़ देखें",
+    "showFloorDetails": "मंजिल का विवरण दिखाएं",
+    "hideFloorDetails": "मंजिल का विवरण छुपाएं",
+    "showOldTax": "पुराना कर दिखाएं",
+    "hideOldTax": "पुराना कर छुपाएं"
+  },
+  "loading": {
+    "message": "संपत्ति विवरण लोड हो रहा है",
+    "description": "कृपया प्रतीक्षा करें जब तक हम नवीनतम संपत्ति कर जानकारी प्राप्त करते हैं।"
   },
   "assessmentMethods": {
     "rateable": "कर निर्धार्य मूल्य",
     "capital": "पूंजीगत मूल्य",
+    "dual": "दोहरी पद्धति",
     "dualmethod": "दोहरी पद्धति",
     "reassessment": "पुनर्मूल्यांकन",
     "apartment": "अपार्टमेंट",
@@ -194,51 +257,6 @@
       "na": "लागू नहीं",
       "none": "---"
     }
-  },
-  "taxes": {
-    "generalTax": "सामान्य कर",
-    "stateEducationTax": "राज्य शिक्षा उपकर",
-    "stateEmploymentTax": "राज्य रोजगार उपकर",
-    "treeCess": "वृक्ष उपकर",
-    "spWaterCess": "विशेष जल उपकर",
-    "roadCess": "सड़क उपकर",
-    "fireCess": "अग्नि उपकर",
-    "lightCess": "प्रकाश उपकर",
-    "waterBenefitCess": "जल लाभ उपकर",
-    "sewageDisposalCess": "मलजल निपटान उपकर",
-    "spEducationTax": "विशेष शिक्षा उपकर",
-    "sanitationCess": "स्वच्छता उपकर",
-    "drainCess": "नाली उपकर",
-    "waterBill": "जल बिल",
-    "bigBuilding": "बड़ी इमारत",
-    "illegalConstPenalty": "अवैध निर्माण जुर्माना",
-    "userCharges": "उपयोगकर्ता शुल्क",
-    "serviceTax": "सेवा कर",
-    "oldPenaltyOfULB": "यूएलबी का पुराना जुर्माना",
-    "runTimePenalty": "रन टाइम जुर्माना",
-    "waterTax": "जल कर",
-    "educationCess": "शिक्षा उपकर",
-    "employmentCess": "रोजगार उपकर",
-    "drainageTax": "निकासी कर",
-    "fireTax": "अग्नि कर",
-    "lightTax": "प्रकाश कर",
-    "cleaningTax": "सफाई कर",
-    "sewerageTax": "सीवरेज कर",
-    "treeTax": "वृक्ष कर"
-  },
-  "actions": {
-    "save": "सहेजें",
-    "cancel": "रद्द करें",
-    "edit": "संपादित करें",
-    "delete": "हटाएं",
-    "search": "खोजें",
-    "upload": "अपलोड करें",
-    "preview": "पूर्वावलोकन",
-    "viewDocument": "दस्तावेज़ देखें",
-    "showFloorDetails": "मंजिल का विवरण दिखाएं",
-    "hideFloorDetails": "मंजिल का विवरण छुपाएं",
-    "showOldTax": "पुराना कर दिखाएं",
-    "hideOldTax": "पुराना कर छुपाएं"
   },
   "modules": {
     "PtisTaxDetails": {
@@ -297,6 +315,23 @@
         "showFloorDetails": "मंजिल का विवरण दिखाएं",
         "hideFloorDetails": "मंजिल का विवरण छुपाएं"
       }
+    }
+  },
+  "error": {
+    "title": "कुछ गलत हो गया",
+    "description": "हमें एक अप्रत्याशित त्रुटि का सामना करना पड़ा। कृपया पुनः प्रयास करें या होम पेज पर वापस जाएं।",
+    "goHome": "होम पर वापस जाएं",
+    "tryAgain": "पुनः प्रयास करें",
+    "networkError": {
+      "title": "सर्वर से कनेक्ट करने में असमर्थ",
+      "description": "हम संपत्ति कर सेवा तक नहीं पहुँच सके। यह आमतौर पर एक अस्थायी नेटवर्क समस्या होती है।",
+      "troubleshooting": "समस्या निवारण चरण",
+      "step1": "जांचें कि आप कॉर्पोरेट नेटवर्क या वीपीएन से जुड़े हैं।",
+      "step2": "सत्यापित करें कि बैकएंड सेवा चल रही है और पहुंच योग्य है।",
+      "step3": "अपने ब्राउज़र की कैशे साफ़ करें और पेज को फिर से लोड करें।",
+      "step4": "यदि समस्या बनी रहती है, तो अपने सिस्टम एडमिनिस्ट्रेटर से संपर्क करें।",
+      "errorDetails": "तकनीकी विवरण (केवल विकास के लिए)",
+      "errorId": "त्रुटि आईडी:"
     }
   },
   "errors": {

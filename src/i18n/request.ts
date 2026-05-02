@@ -14,7 +14,7 @@ const validateLocale = (locale: string | undefined): Locale => {
 export default getRequestConfig(async ({ locale }) => {
   const validatedLocale = validateLocale(locale);
 
-  // Load all translation files  
+  // Load all translation files
   const [
     commonMessages,
     dashboardMessages,

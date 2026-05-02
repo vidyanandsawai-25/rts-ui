@@ -58,7 +58,6 @@ export async function getOldDetails(propertyId: string | number): Promise<{
       oldConstructionYear: data.oldConstructionYear || '',
       oldCarpetAreaSqMeter: data.oldCarpetAreaSqMeter?.toString() || '',
       oldCarpetAreaSqFeet: data.oldCarpetAreaSqFeet?.toString() || '',
-      oldRegistration: data.oldRegistration ?? false,
       oldConstructionTypeId: data.oldConstructionTypeId || '',
       oldTypeOfUseId: data.oldTypeOfUseId || '',
     },
@@ -93,12 +92,16 @@ export async function getOldFloorDetails(propertyId: string | number): Promise<{
     success: true,
     data: items.map((item: OldFloorDetailsApiResponse) => ({
       floor: item.floor || '',
+      subFloor: '', // Not available in API response
+      assessmentYear: '', // Not available in API response
       year: item.year || '',
       constructionType: item.constructionType || '',
       typeOfUse: item.typeOfUse || '',
-      carpetAreaSqFt: item.carpetAreaSqft?.toString() || '',
-      carpetAreaSqMtr: item.carpetAreaSqmtr?.toString() || '',
-      registration: item.registration ? 'Yes' : 'No',
+      subType: '', // Not available in API response
+      carpetArea: item.carpetAreaSqft && item.carpetAreaSqmtr 
+        ? `${item.carpetAreaSqft} / ${item.carpetAreaSqmtr}` 
+        : '',
+      builtupArea: '', // Not available in API response
     })),
   };
 }

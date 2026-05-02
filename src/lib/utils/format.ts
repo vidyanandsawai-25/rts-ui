@@ -34,9 +34,30 @@ export const truncateText = (text: string, maxLength: number): string => {
   return `${text.slice(0, maxLength)}...`;
 };
 
+export const toSafeString = (value: unknown): string =>
+  typeof value === 'string' ? value.trim() : '';
+
+export const toPositiveInt = (value: unknown): number | undefined => {
+  if (typeof value !== 'string') return undefined;
+
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+
+  const num = Number(trimmed);
+  return Number.isInteger(num) && num > 0 ? num : undefined;
+};
+
+export const normalizePartition = (val: string | null | undefined): string => {
+  const trimmed = (val ?? '').trim();
+  return trimmed === '0' ? '' : trimmed;
+};
 // --- PTIS Specific Formatting Utilities ---
 
-function formatNumber(value: number | null | undefined, minimumFractionDigits: number, maximumFractionDigits: number) {
+function formatNumber(
+  value: number | null | undefined,
+  minimumFractionDigits: number,
+  maximumFractionDigits: number
+) {
   return new Intl.NumberFormat('en-IN', {
     minimumFractionDigits,
     maximumFractionDigits,
