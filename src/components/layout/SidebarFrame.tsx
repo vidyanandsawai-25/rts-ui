@@ -20,10 +20,13 @@ export function SidebarFrame({ closeMenuLabel, openMenuLabel = 'Open menu', chil
   const [collapsed, setCollapsed] = useState(true);
 
   const pathname = usePathname();
+  const [prevPathname, setPrevPathname] = useState(pathname);
 
-  useEffect(() => {
+  // Reset open state when pathname changes (React-recommended pattern for resetting state on prop change)
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname);
     setOpen(false);
-  }, [pathname]);
+  }
 
   useEffect(() => {
     if (!collapsed) {
