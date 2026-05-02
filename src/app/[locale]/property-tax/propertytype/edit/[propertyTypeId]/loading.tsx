@@ -1,10 +1,5 @@
 import { LoadingPage } from "@/components/common";
 
 export default function Loading() {
-  return (
-    <LoadingPage
-      translationNamespace="propertyType.propertyType.loading"
-      messageKey="loading"
-    />
-  );
+  return <LoadingPage translationNamespace="propertyType.propertyType.loading" />;
 }
