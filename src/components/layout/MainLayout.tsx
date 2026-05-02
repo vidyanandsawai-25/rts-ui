@@ -30,20 +30,45 @@ function clientIpFromHeaders(h: Headers): string | undefined {
 }
 
 /**
+ * Fetches global menu items (fallback when user-specific screens unavailable)
+ */
+const fetchGlobalMenuItems = cache(async () => {
+  try {
+    const [groupsRes, screensRes] = await Promise.all([
+      sidebarNavigationService.getScreenGroups(),
+      sidebarNavigationService.getScreens(),
+    ]);
+    if (groupsRes.success && screensRes.success) {
+      const groups = Array.isArray(groupsRes.data) ? groupsRes.data : (groupsRes.data?.items || []);
+      const screens = Array.isArray(screensRes.data) ? screensRes.data : (screensRes.data?.items || []);
+      return buildSidebarTree(groups, screens);
+    }
+  } catch (_error) {
+    // Silent fail for global menu fetching
+  }
+  return [];
+});
+
+/**
  * Fetches menu entries for a specific user (deduped per request).
- * Currently retrieves global items as the backend handles user-scoping via the session.
+ * Falls back to global screens if user-specific screens are unavailable.
  */
 const fetchUserMenuItems = cache(async (userId: number, token?: string) => {
   try {
     // Fetch user-specific screens
     const screensRes = await userScreenAccessService.getScreensForUser(userId, token);
-    if (screensRes.success && Array.isArray(screensRes.data)) {
-      return buildSidebarTreeFromUserScreens(screensRes.data);
+    if (screensRes.success && Array.isArray(screensRes.data) && screensRes.data.length > 0) {
+      const userMenuItems = buildSidebarTreeFromUserScreens(screensRes.data);
+      if (userMenuItems.length > 0) {
+        return userMenuItems;
+      }
     }
   } catch (_error) {
-    // Silent fail for sidebar menu fetching
+    // Silent fail for user menu fetching, will try fallback
   }
-  return [];
+  
+  // Fallback to global screens
+  return fetchGlobalMenuItems();
 });
 
 const getLayoutChromeData = cache(async () => {
@@ -55,7 +80,11 @@ const getLayoutChromeData = cache(async () => {
   
   let menuItems: MenuItem[] = [];
   if (authToken && userId != null) {
+    // Try user-specific screens with fallback to global
     menuItems = await fetchUserMenuItems(userId, authToken);
+  } else if (authToken) {
+    // Logged in but no user_id cookie - use global screens
+    menuItems = await fetchGlobalMenuItems();
   }
 
   return {
