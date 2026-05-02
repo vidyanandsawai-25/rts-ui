@@ -93,9 +93,9 @@ export async function createPropertyTypeAction(
     }
     
     // Fallback: API didn't return the ID, search for the newly created record
-    // Use exact match on description + type to find the record
+    // Fetch ALL records matching the description (-1 pageSize = fetch all without pagination)
     try {
-      const searchResult = await getPropertyTypesPaged(1, 50, data.propertyDescription.trim());
+      const searchResult = await getPropertyTypesPaged(1, -1, data.propertyDescription.trim());
       const match = searchResult.items.find(
         (item) =>
           item.propertyDescription === data.propertyDescription.trim() &&
@@ -104,6 +104,10 @@ export async function createPropertyTypeAction(
       if (match?.id) {
         return { success: true, createdId: match.id };
       }
+      console.warn("[createPropertyTypeAction] Fallback search found no exact match", {
+        searchTerm: data.propertyDescription.trim(),
+        totalMatches: searchResult.items.length
+      });
     } catch (searchError) {
       // Log but don't fail - property type was created successfully
       console.warn("[createPropertyTypeAction] Fallback search failed:", searchError);
@@ -241,7 +245,25 @@ export async function getPropertyTypeAndTypeOfUseValidationAction(): Promise<Pro
     return result;
   } catch (error) {
     console.error("[getPropertyTypeAndTypeOfUseValidationAction] Error:", error);
-    return [];
+    throw error; // rethrow so UI does not treat a load failure as 'no validations'
+  }
+}
+
+// SSR action to fetch validation mappings for specific property type IDs (optimized for list page)
+export async function getValidationsByPropertyTypeIdsAction(
+  propertyTypeIds: number[]
+): Promise<PropertyTypeAndTypeOfUseValidation[]> {
+  try {
+    if (!propertyTypeIds || propertyTypeIds.length === 0) {
+      return [];
+    }
+    // Fetch all validations (cached at service layer)
+    const allValidations = await getPropertyTypeAndTypeOfUseValidation();
+    // Filter to only include validations for the requested property type IDs
+    return allValidations.filter((v) => propertyTypeIds.includes(v.propertyTypeId));
+  } catch (error) {
+    console.error("[getValidationsByPropertyTypeIdsAction] Error:", error);
+    throw error; // rethrow so the UI does not treat load failure as "no mappings"
   }
 }
 

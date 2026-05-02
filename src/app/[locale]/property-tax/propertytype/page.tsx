@@ -1,6 +1,6 @@
 import React from "react";
 import { PropertyTypeMaster } from "@/components/modules/property-tax/property-type-master";
-import { fetchPropertyTypePagedServerAction, getPropertyTypeCategoriesAction, getTypeOfUseListAction, getPropertyTypeAndTypeOfUseValidationAction } from "./action";
+import { fetchPropertyTypePagedServerAction, getPropertyTypeCategoriesAction, getTypeOfUseListAction, getValidationsByPropertyTypeIdsAction } from "./action";
 
 interface PageProps {
   searchParams: Promise<{
@@ -63,13 +63,18 @@ export default async function Page({ searchParams }: PageProps): Promise<React.R
   const params = await searchParams;
   const { pageNumber, pageSize, searchTerm, sortBy, sortOrder } = sanitizeParams(params);
   
-  // Fetch data, categories, typeOfUseList, and validation in parallel
-  const [result, categories, typeOfUseList, typeOfUseValidation] = await Promise.all([
+  // Fetch paginated data and categories first
+  const [result, categories, typeOfUseList] = await Promise.all([
     fetchPropertyTypePagedServerAction(pageNumber, pageSize, searchTerm, sortBy, sortOrder),
     getPropertyTypeCategoriesAction(),
     getTypeOfUseListAction(),
-    getPropertyTypeAndTypeOfUseValidationAction(),
   ]);
+  
+  // Only fetch validations for the property types on the current page (performance optimization)
+  const propertyTypeIds = result.items.map((item) => item.id);
+  const typeOfUseValidation = propertyTypeIds.length > 0
+    ? await getValidationsByPropertyTypeIdsAction(propertyTypeIds)
+    : [];
   
   return (
     <PropertyTypeMaster

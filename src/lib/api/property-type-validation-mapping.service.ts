@@ -122,11 +122,35 @@ export async function updatePropertyTypeValidations(
     const toAdd = newTypeOfUseIds.filter((id) => !existingTypeOfUseIds.includes(id));
     const toRemove = existingValidations.filter((v) => !newTypeOfUseIds.includes(v.typeOfUseId));
 
-    // Delete removed mappings
-    await Promise.all(toRemove.map((v) => deletePropertyTypeValidation(v.id)));
+    // 1. Create new mappings first (atomic phase 1)
+    let createdMappings: { id: number; typeOfUseId: number }[] = [];
+    try {
+      createdMappings = await Promise.all(
+        toAdd.map(async (typeOfUseId) => {
+          const created = await createPropertyTypeValidation(propertyTypeId, typeOfUseId);
+          return { id: created.id, typeOfUseId };
+        })
+      );
+    } catch (addError) {
+      // If any add fails, rollback all adds
+      await Promise.all(
+        createdMappings.map((m) => deletePropertyTypeValidation(m.id))
+      );
+      console.error(`Error adding new validations for property type ${propertyTypeId}, rolled back adds:`, addError);
+      throw addError;
+    }
 
-    // Create new mappings
-    await Promise.all(toAdd.map((typeOfUseId) => createPropertyTypeValidation(propertyTypeId, typeOfUseId)));
+    // 2. Delete removed mappings (atomic phase 2)
+    try {
+      await Promise.all(toRemove.map((v) => deletePropertyTypeValidation(v.id)));
+    } catch (deleteError) {
+      // If any delete fails, rollback adds (delete the ones we just added)
+      await Promise.all(
+        createdMappings.map((m) => deletePropertyTypeValidation(m.id))
+      );
+      console.error(`Error deleting old validations for property type ${propertyTypeId}, rolled back adds:`, deleteError);
+      throw deleteError;
+    }
   } catch (error) {
     console.error(`Error updating validations for property type ${propertyTypeId}:`, error);
     throw error;

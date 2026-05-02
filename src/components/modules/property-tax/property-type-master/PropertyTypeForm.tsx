@@ -125,8 +125,34 @@ export default function PropertyTypeForm({
       toast.warning(t("form.typeOfUseSection.saveWarning"));
     }
 
-    // 4. Navigate away after everything is saved
-    refreshAndClose();
+    // 4. Navigate away only if everything is saved successfully
+    let validationSaveFailed = false;
+    if (shouldSaveValidations) {
+      try {
+        const result = await updatePropertyTypeValidationsAction(
+          propertyTypeId,
+          Array.from(selectedTypeOfUseIds)
+        );
+        if (!result.success) {
+          toast.error(result.message || t("form.typeOfUseSection.saveFailed"));
+          validationSaveFailed = true;
+        }
+      } catch (error) {
+        console.error("Error saving type of use validations:", error);
+        toast.error(t("form.typeOfUseSection.saveFailed"));
+        validationSaveFailed = true;
+      }
+    } else if (!isEdit && hasSelectionsToSave && !propertyTypeId) {
+      // Add mode: property type created but couldn't get ID to save type of use
+      // This is a rare edge case - warn user but don't block
+      console.warn("Property type created but ID not available for type of use assignment");
+      toast.warning(t("form.typeOfUseSection.saveWarning"));
+    }
+
+    // Only close the form if validation mapping did not fail
+    if (!validationSaveFailed) {
+      refreshAndClose();
+    }
   };
 
   return (

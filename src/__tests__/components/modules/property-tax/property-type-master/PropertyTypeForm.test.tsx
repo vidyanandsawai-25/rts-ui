@@ -12,10 +12,9 @@ vi.mock("@/hooks/usePropertyTypeForm");
 // Mock Actions
 vi.mock("@/app/[locale]/property-tax/propertytype/action", () => ({
   updatePropertyTypeValidationsAction: vi.fn(),
-  fetchPropertyTypePagedServerAction: vi.fn(),
 }));
 
-import { updatePropertyTypeValidationsAction, fetchPropertyTypePagedServerAction } from "@/app/[locale]/property-tax/propertytype/action";
+import { updatePropertyTypeValidationsAction } from "@/app/[locale]/property-tax/propertytype/action";
 
 // Mock toast
 vi.mock("sonner", () => ({
@@ -98,21 +97,12 @@ describe("PropertyTypeForm", () => {
   });
 
   it("handles form submission in Add Mode with type of use validations", async () => {
-    // Setup mocks for Add Mode
-    const mockHandleSubmit = vi.fn().mockResolvedValue({ success: true });
+    // Setup mocks for Add Mode - return createdId so form can save validations
+    const mockHandleSubmit = vi.fn().mockResolvedValue({ success: true, createdId: 99 });
     vi.mocked(usePropertyTypeForm).mockReturnValue({
       ...defaultHookValues,
       handleSubmit: mockHandleSubmit,
       formData: { ...defaultHookValues.formData, propertyDescription: "TestDesc", type: "TestType" }
-    } as any);
-
-    vi.mocked(fetchPropertyTypePagedServerAction).mockResolvedValue({
-      items: [{ id: 99, propertyDescription: "TestDesc", type: "TestType" }],
-      totalCount: 1,
-      totalPages: 1,
-      pageNumber: 1,
-      pageSize: 50,
-      success: true,
     } as any);
 
     vi.mocked(updatePropertyTypeValidationsAction).mockResolvedValue({ success: true });
@@ -124,7 +114,7 @@ describe("PropertyTypeForm", () => {
 
     await waitFor(() => {
       expect(mockHandleSubmit).toHaveBeenCalled();
-      expect(fetchPropertyTypePagedServerAction).toHaveBeenCalledWith(1, 50, "TestDesc");
+      // When createdId is returned, validations are saved with that ID
       expect(updatePropertyTypeValidationsAction).toHaveBeenCalledWith(99, [1]);
       expect(defaultHookValues.refreshAndClose).toHaveBeenCalled();
     });
@@ -147,8 +137,6 @@ describe("PropertyTypeForm", () => {
 
     await waitFor(() => {
       expect(mockHandleSubmit).toHaveBeenCalled();
-      // fetchPropertyTypePagedServerAction should not be called in edit mode
-      expect(fetchPropertyTypePagedServerAction).not.toHaveBeenCalled();
       expect(updatePropertyTypeValidationsAction).toHaveBeenCalledWith(1, [1]);
       expect(defaultHookValues.refreshAndClose).toHaveBeenCalled();
     });

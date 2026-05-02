@@ -253,10 +253,14 @@ export function usePropertyTypeForm({
 
   const handleCategoryChange = useCallback((value: string): void => {
     const categoryId = value === "" ? 0 : Number(value);
-    setFormData((p) => ({ ...p, propertyTypeCategoryId: categoryId }));
+    setFormData((p) => {
+      const nextFormData = { ...p, propertyTypeCategoryId: categoryId };
+      setErrors(validate(nextFormData));
+      return nextFormData;
+    });
     // Mark as touched for validation
     setTouched((p) => ({ ...p, propertyTypeCategoryId: true }));
-  }, []);
+  }, [validate]);
 
   const refreshAndClose = () => {
     startTransition(() => {

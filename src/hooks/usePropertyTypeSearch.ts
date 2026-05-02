@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useSearchNavigation } from "@/hooks/useSearchNavigation";
 import { TEXT_SANITIZE } from "@/lib/utils/validation";
@@ -21,11 +21,13 @@ export function usePropertyTypeSearch({
   const searchParams = useSearchParams();
   const currentSearchTerm = searchParams.get("q") || "";
   const [search, setSearch] = useState(currentSearchTerm);
+  const [prevSearch, setPrevSearch] = useState(currentSearchTerm);
 
-  // Sync search state with URL on mount/navigation
-  useEffect(() => {
+  // Sync search state with URL on mount/navigation (without useEffect)
+  if (currentSearchTerm !== prevSearch) {
+    setPrevSearch(currentSearchTerm);
     setSearch(currentSearchTerm);
-  }, [currentSearchTerm]);
+  }
 
   // Debounced search navigation
   useSearchNavigation({

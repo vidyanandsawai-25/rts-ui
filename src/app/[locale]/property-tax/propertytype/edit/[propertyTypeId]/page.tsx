@@ -1,5 +1,5 @@
 import PropertyTypeForm from "@/components/modules/property-tax/property-type-master/PropertyTypeForm";
-import { getPropertyTypeByIdAction, getPropertyTypeCategoriesAction, getTypeOfUseListAction, getPropertyTypeAndTypeOfUseValidationAction } from "../../action";
+import { getPropertyTypeByIdAction, getPropertyTypeCategoriesAction, getTypeOfUseListAction, getValidationsByPropertyTypeIdsAction } from "../../action";
 import { notFound } from "next/navigation";
 import React from "react";
 import type { PropertyType } from "@/types/property-type.types";
@@ -20,7 +20,7 @@ export default async function EditPage({ params }: PageProps): Promise<React.Rea
     notFound();
   }
 
-  // Fetch data, categories, typeOfUseList, and validations in parallel
+  // Fetch data, categories, typeOfUseList, and validations in parallel (optimized: only this property type's validations)
   let propertyTypeData: PropertyType;
   let categories;
   let typeOfUseList;
@@ -30,7 +30,7 @@ export default async function EditPage({ params }: PageProps): Promise<React.Rea
       getPropertyTypeByIdAction(propertyTypeId),
       getPropertyTypeCategoriesAction(),
       getTypeOfUseListAction(),
-      getPropertyTypeAndTypeOfUseValidationAction(),
+      getValidationsByPropertyTypeIdsAction([propertyTypeId]),
     ]);
   } catch (error) {
     // Only map a genuine 404 to Next.js's notFound().
@@ -44,10 +44,8 @@ export default async function EditPage({ params }: PageProps): Promise<React.Rea
     throw error;
   }
 
-  // Get the typeOfUseIds assigned to this property type
-  const initialTypeOfUseIds = typeOfUseValidation
-    .filter((v) => v.propertyTypeId === propertyTypeId)
-    .map((v) => v.typeOfUseId);
+  // Get the typeOfUseIds assigned to this property type (already filtered by the action)
+  const initialTypeOfUseIds = typeOfUseValidation.map((v) => v.typeOfUseId);
 
   return (
     <>
