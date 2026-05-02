@@ -2,6 +2,9 @@ import React from "react";
 import { PropertyTypeMaster } from "@/components/modules/property-tax/property-type-master";
 import { fetchPropertyTypePagedServerAction, getPropertyTypeCategoriesAction, getTypeOfUseListAction, getValidationsByPropertyTypeIdsAction } from "./action";
 
+// Force dynamic rendering since this page fetches data from external API
+export const dynamic = "force-dynamic";
+
 interface PageProps {
   searchParams: Promise<{
     page?: string;

@@ -5,6 +5,9 @@ import React from "react";
 import type { PropertyType } from "@/types/property-type.types";
 import { ApiError } from "@/lib/utils/api";
 
+// Force dynamic rendering since this page fetches data from external API
+export const dynamic = "force-dynamic";
+
 interface PageProps {
   params: Promise<{
     propertyTypeId: string;
