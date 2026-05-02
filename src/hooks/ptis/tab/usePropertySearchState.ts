@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import type { PropertySearchParams } from '@/types/ptis.types';
 
 export interface PropertySearchState {
@@ -11,15 +11,16 @@ export interface PropertySearchState {
 
 export function usePropertySearchState(urlState: PropertySearchState) {
   const [draft, setDraft] = useState<PropertySearchState>(urlState);
-  const lastUrlStateKey = useRef(JSON.stringify(urlState));
+  const [prevUrlState, setPrevUrlState] = useState<PropertySearchState>(urlState);
 
-  useEffect(() => {
-    const currentUrlKey = JSON.stringify(urlState);
-    if (currentUrlKey !== lastUrlStateKey.current) {
-      setDraft(urlState);
-      lastUrlStateKey.current = currentUrlKey;
-    }
-  }, [urlState]);
+  // React-recommended pattern for syncing state with props
+  // See: https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+  const currentUrlKey = JSON.stringify(urlState);
+  const prevUrlKey = JSON.stringify(prevUrlState);
+  if (currentUrlKey !== prevUrlKey) {
+    setPrevUrlState(urlState);
+    setDraft(urlState);
+  }
 
   const setWardNo = useCallback((val: string) => {
     setDraft((prev) => ({ ...prev, wardNo: val }));
