@@ -7,8 +7,10 @@ import { Footer } from './Footer';
 import { Sidebar } from './Sidebar';
 import { type MenuItem } from '@/types/menu.types';
 import { sidebarNavigationService } from '@/lib/api/sidebar-navigation.service';
+import { userScreenAccessService } from '@/lib/api/user-screen-access.service';
 import { getUserIdFromCookies } from '@/lib/utils/auth-session';
 import { buildSidebarTree } from '@/lib/utils/sidebar-tree';
+import { buildSidebarTreeFromUserScreens } from '@/lib/utils/sidebar-tree-user';
 
 export interface MainLayoutProps {
   children: React.ReactNode;
@@ -31,24 +33,16 @@ function clientIpFromHeaders(h: Headers): string | undefined {
  * Fetches menu entries for a specific user (deduped per request).
  * Currently retrieves global items as the backend handles user-scoping via the session.
  */
-const fetchUserMenuItems = cache(async (_userId: number) => {
+const fetchUserMenuItems = cache(async (userId: number, token?: string) => {
   try {
-    // Fetch groups and screens in parallel (_userId is passed for future-proofing or logging)
-    const [groupsRes, screensRes] = await Promise.all([
-      sidebarNavigationService.getScreenGroups(),
-      sidebarNavigationService.getScreens(),
-    ]);
-
-    if (groupsRes.success && screensRes.success) {
-      const groups = groupsRes.data?.items || [];
-      const screens = screensRes.data?.items || [];
-      
-      return buildSidebarTree(groups, screens);
+    // Fetch user-specific screens
+    const screensRes = await userScreenAccessService.getScreensForUser(userId, token);
+    if (screensRes.success && Array.isArray(screensRes.data)) {
+      return buildSidebarTreeFromUserScreens(screensRes.data);
     }
   } catch (_error) {
     // Silent fail for sidebar menu fetching
   }
-  
   return [];
 });
 
@@ -61,7 +55,7 @@ const getLayoutChromeData = cache(async () => {
   
   let menuItems: MenuItem[] = [];
   if (authToken && userId != null) {
-    menuItems = await fetchUserMenuItems(userId);
+    menuItems = await fetchUserMenuItems(userId, authToken);
   }
 
   return {
