@@ -44,7 +44,11 @@
       "descriptionFormat": "वर्णनात अवैध वर्ण",
       "descriptionMaxLength": "कमाल {count} वर्णांची परवानगी आहे",
       "sequenceInvalid": "क्रम 0 किंवा त्यापेक्षा जास्त असला पाहिजे",
-      "mustBeActive": "नवीन रेकॉर्ड सक्रिय असले पाहिजे"
+      "mustBeActive": "नवीन रेकॉर्ड सक्रिय असले पाहिजे",
+      "nameMaxLength": "कमाल {count} वर्णांची परवानगी आहे",
+      "typeRequired": "प्रकार आवश्यक आहे",
+      "invalidEmail": "अवैध ईमेल पत्ता",
+      "invalidPincode": "पिनकोड ठीक 6 अंकांचा असणे आवश्यक आहे"
     }
   },
   "errors": {

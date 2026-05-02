@@ -167,6 +167,8 @@ export default function OfficeForm({
                 label={t("form.fields.type.label") || "Type"}
                 value={formData.type || ""}
                 onChange={(value) => handleChange({ target: { name: "type", value } } as React.ChangeEvent<HTMLSelectElement>)}
+                onBlur={() => handleBlur({ target: { name: "type" } } as React.FocusEvent<HTMLSelectElement>)}
+                error={showError("type") ? errors.type : undefined}
                 options={[
                   { label: t("form.fields.type.options.mainOffice") || "Main Office", value: "Main Office" },
                   { label: t("form.fields.type.options.zonalOffice") || "Zonal Office", value: "Zonal Office" },
@@ -174,6 +176,8 @@ export default function OfficeForm({
                   { label: t("form.fields.type.options.wardOffice") || "Ward Office", value: "Ward Office" },
                   { label: t("form.fields.type.options.subOffice") || "Sub Office", value: "Sub Office" },
                   { label: t("form.fields.type.options.headOffice") || "Head Office", value: "Head Office" },
+                  { label: t("form.fields.type.options.regionalOffice") || "Regional Office", value: "Regional Office" },
+                  { label: t("form.fields.type.options.branchOffice") || "Branch Office", value: "Branch Office" },
                 ]}
                 placeholder={t("form.fields.type.placeholder") || "Select Type"}
               />
@@ -184,6 +188,8 @@ export default function OfficeForm({
                 name="emailId"
                 value={formData.emailId || ""}
                 onChange={handleChange}
+                onBlur={handleBlur}
+                error={showError("emailId") ? errors.emailId : undefined}
                 placeholder={t("form.fields.emailId.placeholder") || "test@example.com"}
               />
 
@@ -193,6 +199,8 @@ export default function OfficeForm({
                 name="phone"
                 value={formData.phone || ""}
                 onChange={handleChange}
+                onBlur={handleBlur}
+                error={showError("phone") ? errors.phone : undefined}
                 placeholder={t("form.fields.phone.placeholder") || "Phone number"}
               />
               
@@ -201,6 +209,8 @@ export default function OfficeForm({
                 name="city"
                 value={formData.city || ""}
                 onChange={handleChange}
+                onBlur={handleBlur}
+                error={showError("city") ? errors.city : undefined}
                 placeholder={t("form.fields.city.placeholder") || "Enter city"}
               />
 
@@ -209,6 +219,8 @@ export default function OfficeForm({
                 name="pincode"
                 value={formData.pincode || ""}
                 onChange={handleChange}
+                onBlur={handleBlur}
+                error={showError("pincode") ? errors.pincode : undefined}
                 placeholder={t("form.fields.pincode.placeholder") || "6-digit pincode"}
               />
 

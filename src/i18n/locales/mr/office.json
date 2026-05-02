@@ -9,7 +9,11 @@
     },
     "filters": {
       "show": "दाखवा",
-      "search": "कार्यालय कोड किंवा नावाद्वारे शोधा..."
+      "search": "कार्यालय कोड किंवा नावाद्वारे शोधा...",
+      "allTypes": "सर्व प्रकार",
+      "type": "प्रकार निवडा",
+      "allStatus": "सर्व स्थिती",
+      "status": "स्थिती निवडा"
     },
     "table": {
       "officeCode": "Office Code",
@@ -50,7 +54,9 @@
           "departmentOffice": "विभाग कार्यालय",
           "wardOffice": "प्रभाग कार्यालय",
           "subOffice": "उप कार्यालय",
-          "headOffice": "प्रधान कार्यालय"
+          "headOffice": "प्रधान कार्यालय",
+          "regionalOffice": "क्षेत्रीय कार्यालय",
+          "branchOffice": "शाखा कार्यालय"
         }
       },
       "emailId": {
@@ -114,6 +120,9 @@
   },
   "stats": {
     "total": "एकूण कार्यालये",
+    "headOffices": "प्रधान कार्यालये",
+    "activeOffices": "सक्रिय कार्यालये",
+    "regionalOffices": "क्षेत्रीय कार्यालये",
     "active": "सक्रिय",
     "inactive": "निष्क्रिय",
     "records": "एकूण रेकॉर्ड"
