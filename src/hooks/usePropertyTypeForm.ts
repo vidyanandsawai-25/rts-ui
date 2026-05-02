@@ -227,11 +227,6 @@ export function usePropertyTypeForm({
         return { success: false };
       }
 
-      toast.success(isEdit
-        ? t("success.updated", { description: formData.propertyDescription })
-        : t("success.created", { description: formData.propertyDescription })
-      );
-
       onSuccess();
       // Return createdId for add mode (from createPropertyTypeAction)
       const createdId = !isEdit && 'createdId' in result ? (result.createdId as number | undefined) : undefined;
