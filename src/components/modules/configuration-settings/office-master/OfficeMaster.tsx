@@ -231,10 +231,14 @@ export function OfficeMaster({
                   onChange={handleTypeChange}
                   options={[
                     { label: t("list.filters.allTypes"), value: "" },
-                    { label: t("form.fields.type.options.headOffice") || "Head Office", value: "Head Office" },
+                    { label: t("form.fields.type.options.mainOffice") || "Main Office", value: "Main Office" },
                     { label: t("form.fields.type.options.zonalOffice") || "Zonal Office", value: "Zonal Office" },
-                    { label: t("form.fields.type.options.wardOffice") || "Ward Office", value: "Ward Office" },
                     { label: t("form.fields.type.options.departmentOffice") || "Department Office", value: "Department Office" },
+                    { label: t("form.fields.type.options.wardOffice") || "Ward Office", value: "Ward Office" },
+                    { label: t("form.fields.type.options.subOffice") || "Sub Office", value: "Sub Office" },
+                    { label: t("form.fields.type.options.headOffice") || "Head Office", value: "Head Office" },
+                    { label: t("form.fields.type.options.regionalOffice") || "Regional Office", value: "Regional Office" },
+                    { label: t("form.fields.type.options.branchOffice") || "Branch Office", value: "Branch Office" },
                   ]}
                   className="min-w-[180px]"
                   placeholder={t("list.filters.type")}

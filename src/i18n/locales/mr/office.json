@@ -1,11 +1,11 @@
 {
   "list": {
-    "title": "Office Master",
-    "subtitle": "Manage office list and details",
+    "title": "कार्यालय मास्टर",
+    "subtitle": "कार्यालय यादी आणि तपशील व्यवस्थापित करा",
     "buttons": {
-      "add": "Add Office",
-      "edit": "Edit",
-      "delete": "Delete"
+      "add": "कार्यालय जोडा",
+      "edit": "संपादित करा",
+      "delete": "हटवा"
     },
     "filters": {
       "show": "दाखवा",
@@ -16,15 +16,15 @@
       "status": "स्थिती निवडा"
     },
     "table": {
-      "officeCode": "Office Code",
-      "officeName": "Office Name",
-      "type": "Type",
-      "status": "Status",
-      "actions": "Actions"
+      "officeCode": "कार्यालय कोड",
+      "officeName": "कार्यालयाचे नाव",
+      "type": "प्रकार",
+      "status": "स्थिती",
+      "actions": "क्रिया"
     },
     "status": {
-      "active": "Active",
-      "inactive": "Inactive"
+      "active": "सक्रिय",
+      "inactive": "निष्क्रिय"
     },
     "pagination": {
       "showing": "दाखवत आहे",
@@ -32,18 +32,18 @@
     }
   },
   "form": {
-    "addTitle": "Add Office",
-    "editTitle": "Edit Office",
-    "subtitle": "Create new office",
-    "editSubtitle": "Update office details",
+    "addTitle": "कार्यालय जोडा",
+    "editTitle": "कार्यालय संपादित करा",
+    "subtitle": "नवीन कार्यालय तयार करा",
+    "editSubtitle": "कार्यालय तपशील अद्यतनित करा",
     "fields": {
       "officeCode": {
-        "label": "Office Code",
-        "placeholder": "e.g. O1"
+        "label": "कार्यालय कोड",
+        "placeholder": "उदा. O1"
       },
       "officeName": {
-        "label": "Office Name",
-        "placeholder": "e.g. Main Branch"
+        "label": "कार्यालयाचे नाव",
+        "placeholder": "उदा. मुख्य शाखा"
       },
       "type": {
         "label": "प्रकार",
@@ -93,8 +93,8 @@
     },
     "detailsSection": "कार्यालय तपशील",
     "validation": {
-      "officeCodeRequired": "Office code is required",
-      "officeNameRequired": "Office name is required"
+      "officeCodeRequired": "कार्यालय कोड आवश्यक आहे",
+      "officeNameRequired": "कार्यालयाचे नाव आवश्यक आहे"
     },
     "status": {
       "label": "Active Status",
