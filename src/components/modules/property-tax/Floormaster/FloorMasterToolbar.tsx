@@ -29,9 +29,12 @@ export function FloorMasterToolbar() {
   const currentSearchTerm = searchParams.get("q") ?? "";
   const [search, setSearch] = useState<string>(currentSearchTerm);
 
-  useEffect(() => {
+  // Sync search state with URL when currentSearchTerm changes (e.g., on Back/Forward navigation)
+  const [prevSearchTerm, setPrevSearchTerm] = useState(currentSearchTerm);
+  if (currentSearchTerm !== prevSearchTerm) {
+    setPrevSearchTerm(currentSearchTerm);
     setSearch(currentSearchTerm);
-  }, [currentSearchTerm]);
+  }
 
   const isFirstRender = useRef(true);
 
