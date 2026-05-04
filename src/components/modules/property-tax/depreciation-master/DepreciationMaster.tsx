@@ -122,13 +122,16 @@ export default function DepreciationMaster({
     []
   );
 
+  // Sync constructionTypes state with initialConstructionTypes prop
   useEffect(() => {
-    setConstructionTypes(prev => 
-      prev !== initialConstructionTypes ? initialConstructionTypes : prev
-    );
-    buildUiFromDb(initialConstructionTypes, data);
+    setConstructionTypes(initialConstructionTypes);
+  }, [initialConstructionTypes]);
+
+  // Build UI when construction types or data changes
+  useEffect(() => {
+    buildUiFromDb(constructionTypes, data);
     setPendingChanges({});
-  }, [initialConstructionTypes, data, buildUiFromDb]);
+  }, [constructionTypes, data, buildUiFromDb]);
 
   /* ================= DATA RELOAD ================= */
   const reloadData = useCallback(async () => {
