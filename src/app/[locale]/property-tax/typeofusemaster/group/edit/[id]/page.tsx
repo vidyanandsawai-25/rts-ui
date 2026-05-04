@@ -2,6 +2,9 @@ import UseGroupForm from "@/components/modules/property-tax/typeofusemaster/UseG
 import { getGroupById, getTypeOfUseMasterData } from "../../../actions";
 import { notFound } from "next/navigation";
 
+// Force this page to be dynamic (don't pre-render at build time)
+export const dynamic = 'force-dynamic';
+
 export default async function EditUseGroupPage({
   params,
 }: {

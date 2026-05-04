@@ -2,6 +2,9 @@ import UseSubTypeForm from "@/components/modules/property-tax/typeofusemaster/Us
 import { getTypeById, getAllSubTypes } from "../../actions";
 import type { UseSubType } from "@/types/typeOfUse.types";
 
+// Force this page to be dynamic (don't pre-render at build time)
+export const dynamic = 'force-dynamic';
+
 export default async function AddSubTypePage({
   searchParams,
 }: {

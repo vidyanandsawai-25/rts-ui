@@ -2,6 +2,9 @@ import UseTypeForm from "@/components/modules/property-tax/typeofusemaster/UseTy
 import { getTypeById, getTypeOfUseMasterData } from "../../../actions";
 import { notFound } from "next/navigation";
 
+// Force this page to be dynamic (don't pre-render at build time)
+export const dynamic = 'force-dynamic';
+
 export default async function EditTypePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   

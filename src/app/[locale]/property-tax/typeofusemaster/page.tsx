@@ -9,6 +9,9 @@ import {
 import TypeOfUseMaster from
   "@/components/modules/property-tax/typeofusemaster/TypeOfUseMaster";
 
+// Force this page to be dynamic (don't pre-render at build time)
+export const dynamic = 'force-dynamic';
+
 export default async function Page({
   searchParams,
 }: {
