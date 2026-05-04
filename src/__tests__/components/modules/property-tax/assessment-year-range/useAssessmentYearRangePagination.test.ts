@@ -16,7 +16,7 @@ describe("useAssessmentYearRangePagination", () => {
   const mockConfig: AssessmentYearRangeConfig = {
     type: "RV",
     endpoint: "AssessmentYearRange",
-    idField: "yearRangeRVId",
+    idField: "id",
     routePath: "/property-tax/assessment-year-range/rateablevalue",
     translationNamespace: "assessmentYearRange.rateableValue",
   };
@@ -144,7 +144,7 @@ describe("useAssessmentYearRangePagination", () => {
     const cvConfig: AssessmentYearRangeConfig = {
       type: "CV",
       endpoint: "AssessmentYearRangeCV",
-      idField: "yearRangeCVId",
+      idField: "id",
       routePath: "/property-tax/assessment-year-range/capitalvalue",
       translationNamespace: "assessmentYearRange.capitalValue",
     };

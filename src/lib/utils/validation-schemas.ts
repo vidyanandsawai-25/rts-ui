@@ -18,7 +18,13 @@
  * - `constructionValidators` - Construction-specific validators
  */
 
-import { CODE_REGEX, DESCRIPTION_REGEX } from './validation-rules';
+import { 
+  CODE_REGEX, 
+  DESCRIPTION_REGEX,
+  PERSON_NAME_REGEX,
+  EMAIL_REGEX,
+  MOBILE_10_REGEX
+} from './validation-rules';
 import type { Validator } from './validation-helpers';
 
 /**
@@ -242,4 +248,99 @@ export const constructionValidators = {
 
   activeStatus: (t: (key: string, values?: Record<string, string | number | Date>) => string, isEdit: boolean) =>
     commonValidations.masterActiveStatus(t, isEdit, 'form.validation.mustBeActive'),
+};
+
+/**
+ * Society form validations
+ */
+export const societyValidations = {
+  personName:
+    (
+      label: string,
+      t: (key: string, values?: Record<string, string | number | Date>) => string
+    ): Validator =>
+    (value: unknown) => {
+      const strVal = String(value ?? "").trim();
+      if (!strVal) return undefined; // optional field
+      if (!PERSON_NAME_REGEX.test(strVal)) {
+        return t(`society.validation.${label}`);
+      }
+      return undefined;
+    },
+
+  email:
+    (
+      label: string,
+      t: (key: string, values?: Record<string, string | number | Date>) => string
+    ): Validator =>
+    (value: unknown) => {
+      const strVal = String(value ?? "").trim();
+      if (!strVal) return undefined; // optional field
+      if (!EMAIL_REGEX.test(strVal)) {
+        return t(`society.validation.${label}`);
+      }
+      return undefined;
+    },
+
+  mobile10:
+    (
+      label: string,
+      t: (key: string, values?: Record<string, string | number | Date>) => string
+    ): Validator =>
+    (value: unknown) => {
+      const strVal = String(value ?? "").trim();
+      if (!strVal) return undefined; // optional field
+      if (!MOBILE_10_REGEX.test(strVal)) {
+        return t(`society.validation.${label}`);
+      }
+      return undefined;
+    },
+};
+
+/**
+ * Property form validations
+ */
+export const propertyValidations = {
+  required:
+    (
+      label: string,
+      t: (key: string, values?: Record<string, string | number | Date>) => string
+    ): Validator =>
+    (value: unknown) => {
+      const strVal = String(value ?? "").trim();
+      if (!strVal) {
+        return t(`property.validation.${label}Required`);
+      }
+      return undefined;
+    },
+
+  number:
+    (
+      label: string,
+      t: (key: string, values?: Record<string, string | number | Date>) => string,
+      min: number = 0
+    ): Validator =>
+    (value: unknown) => {
+      const numVal = Number(value);
+      if (value === null || value === undefined || value === "") return undefined; // optional
+      if (!Number.isFinite(numVal) || numVal < min) {
+        return t(`property.validation.${label}Invalid`, { min });
+      }
+      return undefined;
+    },
+
+  pattern:
+    (
+      label: string,
+      pattern: RegExp,
+      t: (key: string, values?: Record<string, string | number | Date>) => string
+    ): Validator =>
+    (value: unknown) => {
+      const strVal = String(value ?? "").trim();
+      if (!strVal) return undefined; // optional
+      if (!pattern.test(strVal)) {
+        return t(`property.validation.${label}Format`);
+      }
+      return undefined;
+    },
 };

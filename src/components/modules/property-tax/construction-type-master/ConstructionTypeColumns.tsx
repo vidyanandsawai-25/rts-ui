@@ -2,7 +2,7 @@ import React from "react";
 import type { Column } from "@/components/common/MasterTable";
 import type { ConstructionType } from "@/types/construction.types";
 import { SortAscButton, SortDescButton, SortDefaultButton } from "@/components/common/ActionButtons";
-
+ 
 /**
  * Renders a sortable column header with sort icon
  */
@@ -25,7 +25,7 @@ function SortableHeader({
   const isActive = sortBy === columnKey;
   const isAsc = isActive && sortOrder === "asc";
   const isDesc = isActive && sortOrder === "desc";
-
+ 
   const renderSortButton = () => {
     if (isAsc) {
       return (
@@ -50,7 +50,7 @@ function SortableHeader({
       />
     );
   };
-
+ 
   return (
     <div className="flex items-center gap-1 justify-start w-full">
       <span>{label}</span>
@@ -58,7 +58,7 @@ function SortableHeader({
     </div>
   );
 }
-
+ 
 /**
  * Returns the table column configuration for Construction Type Master.
  *
@@ -79,7 +79,7 @@ export function getConstructionTypeColumns(
 ): Column<ConstructionType>[] {
   // Only constructionCode and description are sortable (API limitation)
   const sortableColumns = ["constructionCode", "description"];
-
+ 
   const createSortableLabel = (label: string, key: string) => {
     if (onSort && sortableColumns.includes(key)) {
       return (
@@ -95,7 +95,7 @@ export function getConstructionTypeColumns(
     }
     return label;
   };
-
+ 
   return [
     {
       key: "constructionCode",

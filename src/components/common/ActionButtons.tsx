@@ -14,6 +14,9 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronsRight,
+  RefreshCw,
+  Check,
+  Eraser,
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
@@ -60,7 +63,37 @@ export function AddButton({
     </Button>
   );
 }
+export function UpdateButton({
+  label = "Update",
+  ...props
+}: LabeledActionButtonProps): React.ReactElement {
+  return (
+    <Button variant="primary" icon={RefreshCw} {...props}>
+      {label}
+    </Button>
+  );
+}
 
+export function ApplyButton({
+  label = "Apply",
+  ...props
+}: LabeledActionButtonProps): React.ReactElement {
+  return (
+    <Button variant="success" icon={Check} {...props}>
+      {label}
+    </Button>
+  );
+}
+export function ClearButton({
+  label = "Clear",
+  ...props
+}: LabeledActionButtonProps): React.ReactElement {
+  return (
+    <Button variant="secondary" icon={Eraser} {...props}>
+      {label}
+    </Button>
+  );
+}
 export function SaveButton({
   label = "Save",
   ...props

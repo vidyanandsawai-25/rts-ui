@@ -1,22 +1,22 @@
-"use client";
- 
-import React, { useState, useRef, useId } from "react";
-import { ChevronDownIcon } from "lucide-react";
-import { cn } from "@/lib/utils/cn";
- 
+'use client';
+
+import React, { useState, useRef, useId } from 'react';
+import { ChevronDownIcon } from 'lucide-react';
+import { cn } from '@/lib/utils/cn';
+
 export interface Option {
   label: string;
   value: string;
   disabled?: boolean;
 }
- 
+
 export interface SelectProps {
   options: Option[];
   value?: string;
   onChange?: (value: string) => void;
   placeholder?: string;
   className?: string;
-  selectSize?: "sm" | "md";
+  selectSize?: 'sm' | 'md';
   disabled?: boolean;
   ariaLabel?: string;
 
@@ -30,9 +30,9 @@ export function Select({
   options,
   value,
   onChange,
-  placeholder = "Select...",
-  className = "",
-  selectSize = "md",
+  placeholder = 'Select...',
+  className = '',
+  selectSize = 'md',
   disabled = false,
   ariaLabel,
   label,
@@ -40,42 +40,42 @@ export function Select({
   error,
 }: SelectProps) {
   const [open, setOpen] = useState(false);
-  const [internalValue, setInternalValue] = useState(value || "");
+  const [internalValueState, setInternalValueState] = useState(value || '');
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  
+  // Professional Perspective:
+  // We derive the current value from props (controlled) or state (uncontrolled).
+  // This avoids cascading renders and 'set-state-in-effect' lint errors.
+  const internalValue = value !== undefined ? value : internalValueState;
   const [openUpward, setOpenUpward] = useState(false);
   const selectRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const listboxId = useId();
   const optionIdPrefix = useId();
- 
- 
-  React.useEffect(() => {
-    setInternalValue(value || "");
-  }, [value]);
- 
-  // Initialize highlighted index when opening
-  React.useEffect(() => {
-    if (open) {
-      if (options.length === 0) {
-        setHighlightedIndex(-1);
-      } else {
-        const index = options.findIndex((opt) => opt.value === internalValue);
-        setHighlightedIndex(index >= 0 ? index : 0);
-      }
+
+
+  const toggleOpen = () => {
+    if (disabled) return;
+    const nextOpen = !open;
+    setOpen(nextOpen);
+    
+    if (nextOpen) {
+      const index = options.findIndex((opt) => opt.value === internalValue);
+      setHighlightedIndex(index >= 0 ? index : 0);
     } else {
       setHighlightedIndex(-1);
     }
-  }, [open, internalValue, options]);
- 
+  };
+
   // Scroll highlighted item into view
   React.useEffect(() => {
     if (open && highlightedIndex >= 0 && listRef.current) {
       const highlightedElement = listRef.current.children[highlightedIndex] as HTMLElement;
       if (highlightedElement && typeof highlightedElement.scrollIntoView === 'function') {
         highlightedElement.scrollIntoView({
-          block: "nearest",
-          inline: "start",
+          block: 'nearest',
+          inline: 'start',
         });
       }
     }
@@ -94,49 +94,48 @@ export function Select({
       setOpenUpward(spaceBelow < dropdownHeight && spaceAbove > spaceBelow);
     }
   }, [open]);
- 
- 
+
   const handleSelect = (val: string) => {
-    setInternalValue(val);
+    if (value === undefined) {
+      setInternalValueState(val);
+    }
     setOpen(false);
     onChange?.(val);
   };
- 
-  const selectedLabel = options.find(
-    (opt) => opt.value === internalValue
-  )?.label;
- 
+
+  const selectedLabel = options.find((opt) => opt.value === internalValue)?.label;
+
   const sizeClasses = {
-    sm: "h-8 px-3 text-sm",
-    md: "h-10 px-4 text-base",
+    sm: 'h-8 px-3 text-sm',
+    md: 'h-10 px-4 text-base',
   };
- 
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (disabled) return;
- 
+
     if (!open) {
-      if (e.key === "ArrowDown" || e.key === "ArrowUp" || e.key === "Enter" || e.key === " ") {
-        setOpen(true);
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
+        toggleOpen();
       }
       return;
     }
- 
+
     switch (e.key) {
-      case "ArrowDown":
+      case 'ArrowDown':
         e.preventDefault();
         if (options.length > 0) {
           setHighlightedIndex((prev) => Math.min(prev + 1, options.length - 1));
         }
         break;
-      case "ArrowUp":
+      case 'ArrowUp':
         e.preventDefault();
         if (options.length > 0) {
           setHighlightedIndex((prev) => Math.max(prev - 1, 0));
         }
         break;
-      case "Enter":
-      case " ":
+      case 'Enter':
+      case ' ':
         e.preventDefault();
         if (
           highlightedIndex >= 0 &&
@@ -147,20 +146,18 @@ export function Select({
           handleSelect(options[highlightedIndex].value);
         }
         break;
-      case "Escape":
+      case 'Escape':
         e.preventDefault();
         setOpen(false);
         break;
-      case "Tab":
+      case 'Tab':
         setOpen(false);
         break;
     }
   };
- 
- 
+
   return (
     <div className="flex flex-col gap-1">
- 
       {/* Label */}
       {label && (
         <span id={`${listboxId}-label`} className="text-sm font-medium text-gray-700">
@@ -168,28 +165,22 @@ export function Select({
           {required && <span className="ml-1 text-red-500">*</span>}
         </span>
       )}
- 
+
       <div
         ref={selectRef}
-        className={cn(
-          "relative w-full",
-          disabled && "opacity-50 cursor-not-allowed",
-          className
-        )}
+        className={cn('relative w-full', disabled && 'opacity-50 cursor-not-allowed', className)}
       >
         <button
           ref={buttonRef}
           type="button"
           role="combobox"
           className={cn(
-            "flex items-center justify-between w-full border text-sm rounded-md bg-white focus:outline-none focus:ring-2 transition-all",
+            'flex items-center justify-between w-full border text-sm rounded-md bg-white focus:outline-none focus:ring-2 transition-all',
             sizeClasses[selectSize],
-            error
-              ? "border-red-500 focus:ring-red-400"
-              : "border-gray-300 focus:ring-blue-300",
-            disabled && "opacity-50 cursor-not-allowed"
+            error ? 'border-red-500 focus:ring-red-400' : 'border-gray-300 focus:ring-blue-300',
+            disabled && 'opacity-50 cursor-not-allowed'
           )}
-          onClick={() => !disabled && setOpen((o) => !o)}
+          onClick={toggleOpen}
           onKeyDown={handleKeyDown}
           onBlur={(e) => {
             const nextTarget = e.relatedTarget;
@@ -211,27 +202,29 @@ export function Select({
           aria-expanded={open}
           aria-haspopup="listbox"
           aria-controls={listboxId}
-          aria-activedescendant={open && highlightedIndex >= 0 ? `${optionIdPrefix}-${highlightedIndex}` : undefined}
+          aria-activedescendant={
+            open && highlightedIndex >= 0 ? `${optionIdPrefix}-${highlightedIndex}` : undefined
+          }
         >
           <span
             className={cn(
-              "truncate text-left flex-1 text-sm",
-              !selectedLabel ? "text-gray-400" : "text-gray-800"
+              'truncate text-left flex-1 text-sm',
+              !selectedLabel ? 'text-gray-400' : 'text-gray-800'
             )}
           >
             {selectedLabel || placeholder}
           </span>
- 
+
           <ChevronDownIcon className="ml-2 w-4 h-4 text-gray-400" />
         </button>
- 
+
         {open && (
           <ul
             ref={listRef}
             id={listboxId}
             className={cn(
-              "absolute z-50 w-full text-gray-800 text-sm bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto",
-              openUpward ? "bottom-full mb-1" : "top-full mt-1"
+              'absolute z-50 w-full text-gray-800 text-sm bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto',
+              openUpward ? 'bottom-full mb-1' : 'top-full mt-1'
             )}
             role="listbox"
             onMouseDown={(e) => e.preventDefault()}
@@ -241,11 +234,12 @@ export function Select({
                 key={opt.value}
                 id={`${optionIdPrefix}-${index}`}
                 className={cn(
-                  "px-4 py-2 transition-colors",
-                  !opt.disabled && "cursor-pointer",
-                  !opt.disabled && (index === highlightedIndex ? "bg-blue-100" : "hover:bg-blue-50"),
-                  internalValue === opt.value && "text-blue-700 font-semibold bg-blue-50",
-                  opt.disabled && "opacity-50 cursor-not-allowed"
+                  'px-4 py-2 transition-colors',
+                  !opt.disabled && 'cursor-pointer',
+                  !opt.disabled &&
+                    (index === highlightedIndex ? 'bg-blue-100' : 'hover:bg-blue-50'),
+                  internalValue === opt.value && 'text-blue-700 font-semibold bg-blue-50',
+                  opt.disabled && 'opacity-50 cursor-not-allowed'
                 )}
                 onClick={() => !opt.disabled && handleSelect(opt.value)}
                 onMouseEnter={() => !opt.disabled && setHighlightedIndex(index)}
@@ -259,9 +253,8 @@ export function Select({
             ))}
           </ul>
         )}
- 
       </div>
- 
+
       {/* Error Message */}
       {error && <span className="text-sm text-red-600">{error}</span>}
     </div>

@@ -7,12 +7,13 @@ import { PagedResponse } from "./common.types";
 export type AssessmentYearRangeType = "RV" | "CV";
 
 /**
- * Base interface for Assessment Year Range entities
- * Contains common fields shared by both RV and CV
+ * Assessment Year Range entity
+ * Unified structure for both RV and CV (API returns same structure with 'id' field)
  * Index signature allows compatibility with MasterTable
  */
-export interface AssessmentYearRangeBase {
+export interface AssessmentYearRange {
   [key: string]: unknown;
+  id: number;
   fromYear: number;
   toYear: number;
   isActive: boolean;
@@ -21,30 +22,23 @@ export interface AssessmentYearRangeBase {
 }
 
 /**
- * Rateable Value Assessment Year Range entity
+ * @deprecated Use AssessmentYearRange instead - API now returns unified 'id' field
+ * Kept for backward compatibility
  */
-export interface AssessmentYearRangeRV extends AssessmentYearRangeBase {
-  yearRangeRVId: number;
-}
+export type AssessmentYearRangeRV = AssessmentYearRange;
 
 /**
- * Capital Value Assessment Year Range entity
+ * @deprecated Use AssessmentYearRange instead - API now returns unified 'id' field
+ * Kept for backward compatibility
  */
-export interface AssessmentYearRangeCV extends AssessmentYearRangeBase {
-  yearRangeCVId: number;
-}
-
-/**
- * Union type for Assessment Year Range entities
- */
-export type AssessmentYearRange = AssessmentYearRangeRV | AssessmentYearRangeCV;
+export type AssessmentYearRangeCV = AssessmentYearRange;
 
 /**
  * Form model for creating/editing Assessment Year Range
  * Works for both RV and CV
  */
 export interface AssessmentYearRangeFormModel {
-  id?: number; // yearRangeRVId or yearRangeCVId
+  id?: number;
   fromYear: number | string;
   toYear: number | string;
   isActive: boolean;
@@ -69,7 +63,7 @@ export interface AssessmentYearRangeConfig {
   /** API endpoint path (without base URL) */
   endpoint: string;
   /** ID field name in the entity */
-  idField: "yearRangeRVId" | "yearRangeCVId";
+  idField: "id";
   /** Base path for routes */
   routePath: string;
   /** Translation namespace */
@@ -77,31 +71,30 @@ export interface AssessmentYearRangeConfig {
 }
 
 /**
- * Type guard to check if entity is RV type
+ * @deprecated Type guards are no longer needed as both RV and CV use same structure
+ * Always returns true since all entities now have 'id' field
  */
 export function isAssessmentYearRangeRV(
   entity: AssessmentYearRange
 ): entity is AssessmentYearRangeRV {
-  return "yearRangeRVId" in entity;
+  return "id" in entity;
 }
 
 /**
- * Type guard to check if entity is CV type
+ * @deprecated Type guards are no longer needed as both RV and CV use same structure
+ * Always returns true since all entities now have 'id' field
  */
 export function isAssessmentYearRangeCV(
   entity: AssessmentYearRange
 ): entity is AssessmentYearRangeCV {
-  return "yearRangeCVId" in entity;
+  return "id" in entity;
 }
 
 /**
  * Get the ID from an Assessment Year Range entity
  */
 export function getAssessmentYearRangeId(entity: AssessmentYearRange): number {
-  if (isAssessmentYearRangeRV(entity)) {
-    return entity.yearRangeRVId;
-  }
-  return entity.yearRangeCVId;
+  return entity.id;
 }
 
 /**
