@@ -28,6 +28,7 @@ export default getRequestConfig(async ({ locale }) => {
     floorFactorMasterMessages,
     weightageMasterMessages,
     modulesMessages,
+    combinePropertyMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/dashboard.json`).then((m) => m.default),
@@ -41,6 +42,7 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/floorFactorMaster.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/weightageMaster.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/combineProperty.json`).then((m) => m.default),
   ]);
 
   return {
@@ -58,6 +60,7 @@ export default getRequestConfig(async ({ locale }) => {
       floorFactorMaster: floorFactorMasterMessages.floorFactorMaster,
       weightageMaster: weightageMasterMessages.weightageMaster,
       modules: modulesMessages,
+      combineProperty: combinePropertyMessages,
     },
   };
 });
