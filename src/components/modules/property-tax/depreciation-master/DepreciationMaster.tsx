@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { FileText } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
@@ -18,7 +18,7 @@ import {
   deleteRangeAction,
 } from "@/app/[locale]/property-tax/depreciation-master/actions";
 
-import type { DepreciationConstructionType, DepreciationRow, RangeRow, DepreciationMasterProps } from "@/types/depreciation.types";
+import type { RangeRow, DepreciationMasterProps } from "@/types/depreciation.types";
 import { LeftPanel } from "./LeftPanel";
 import { RightPanel } from "./RightPanel";
 import { useDepreciationValidation } from "@/hooks/useDepreciationValidation";
@@ -49,15 +49,68 @@ export default function DepreciationMaster({
   const [maxValue, setMaxValue] = useState("");
   const [minError, setMinError] = useState<string | null>(null);
   const [maxError, setMaxError] = useState<string | null>(null);
-  const [uiState, setUiState] = useState({
-    dbRows: data,
-    ranges: [] as RangeRow[],
-    selectedRangeId: null as string | null,
-    ratesByRange: {} as Record<string, Record<number, number>>,
-  });
+  const [selectedRangeId, setSelectedRangeId] = useState<string | null>(null);
+  const [localRateOverrides, setLocalRateOverrides] = useState<Record<string, Record<number, number>>>({});
+
+  /* ================= DERIVED STATE (useMemo) ================= */
+  const derivedState = useMemo(() => {
+    const rangeMap = new Map<string, RangeRow>();
+    const rateMap: Record<string, Record<number, number>> = {};
+
+    data.forEach((row) => {
+      const id = makeRangeId(row.minYear, row.maxYear);
+
+      if (!rangeMap.has(id)) {
+        rangeMap.set(id, {
+          id,
+          min: row.minYear,
+          max: row.maxYear,
+          label: `${row.minYear}-${row.maxYear}`,
+        });
+      }
+
+      if (!rateMap[id]) rateMap[id] = {};
+      rateMap[id][row.constructionTypeId] = row.rate ?? 0;
+    });
+
+    rangeMap.forEach((r) => {
+      if (!rateMap[r.id]) rateMap[r.id] = {};
+      initialConstructionTypes.forEach((c) => {
+        rateMap[r.id][c.constructionId] ??= 0;
+      });
+    });
+
+    const sortedRanges = Array.from(rangeMap.values()).sort((a, b) => a.min - b.min);
+
+    return {
+      dbRows: data,
+      ranges: sortedRanges,
+      baseRatesByRange: rateMap,
+      defaultSelectedRangeId: sortedRanges[0]?.id ?? null,
+    };
+  }, [initialConstructionTypes, data]);
+
+  // Merge base rates with local overrides
+  const ratesByRange = useMemo(() => {
+    const merged: Record<string, Record<number, number>> = {};
+    for (const rangeId of Object.keys(derivedState.baseRatesByRange)) {
+      const base = derivedState.baseRatesByRange[rangeId];
+      const overrides = localRateOverrides[rangeId];
+      merged[rangeId] = overrides ? { ...base, ...overrides } : base;
+    }
+    return merged;
+  }, [derivedState.baseRatesByRange, localRateOverrides]);
 
   // Destructure for easier access
-  const { dbRows, ranges, selectedRangeId, ratesByRange } = uiState;
+  const { dbRows, ranges, defaultSelectedRangeId } = derivedState;
+
+  // Use selected range or fallback to default
+  const effectiveSelectedRangeId = useMemo(() => {
+    if (selectedRangeId && ranges.some((r) => r.id === selectedRangeId)) {
+      return selectedRangeId;
+    }
+    return defaultSelectedRangeId;
+  }, [selectedRangeId, ranges, defaultSelectedRangeId]);
 
   /* ================= VALIDATION HOOK ================= */
   const { validateMinMax, sanitizeInput } = useDepreciationValidation(t, ranges);
@@ -85,71 +138,13 @@ export default function DepreciationMaster({
 
   const refreshPage = useCallback(() => router.refresh(), [router]);
 
-  /* ================= BUILD UI LOGIC ================= */
-
-  // Pure function to derive UI state from db
-  const buildUiFromDb = useCallback(
-    (ct: DepreciationConstructionType[], currentDbRows: DepreciationRow[]) => {
-      const rangeMap = new Map<string, RangeRow>();
-      const rateMap: Record<string, Record<number, number>> = {};
-
-      currentDbRows.forEach((row) => {
-        const id = makeRangeId(row.minYear, row.maxYear);
-
-        if (!rangeMap.has(id)) {
-          rangeMap.set(id, {
-            id,
-            min: row.minYear,
-            max: row.maxYear,
-            label: `${row.minYear}-${row.maxYear}`,
-          });
-        }
-
-        if (!rateMap[id]) rateMap[id] = {};
-        rateMap[id][row.constructionTypeId] = row.rate ?? 0;
-      });
-
-      rangeMap.forEach((r) => {
-        if (!rateMap[r.id]) rateMap[r.id] = {};
-        ct.forEach((c) => {
-          rateMap[r.id][c.constructionId] ??= 0;
-        });
-      });
-
-      const sortedRanges = Array.from(rangeMap.values()).sort((a, b) => a.min - b.min);
-      const initialSelectedRangeId = sortedRanges[0]?.id ?? null;
-
-      return {
-        sortedRanges,
-        rateMap,
-        currentDbRows,
-        initialSelectedRangeId,
-      };
-    },
-    []
-  );
-
-  // Build UI when construction types or data changes
-  useEffect(() => {
-    const { sortedRanges, rateMap, currentDbRows, initialSelectedRangeId } = buildUiFromDb(initialConstructionTypes, data);
-    setUiState((prev) => ({
-      dbRows: currentDbRows,
-      ranges: sortedRanges,
-      ratesByRange: rateMap,
-      selectedRangeId:
-        prev.selectedRangeId && sortedRanges.some((r) => r.id === prev.selectedRangeId)
-          ? prev.selectedRangeId
-          : initialSelectedRangeId,
-    }));
-    setPendingChanges({});
-  }, [initialConstructionTypes, data, buildUiFromDb]);
-
   /* ================= DATA RELOAD ================= */
   const reloadData = useCallback(async () => {
     setSaving(true);
     try {
       refreshPage();
       setPendingChanges({});
+      setLocalRateOverrides({});
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : t("errors.load"));
     } finally {
@@ -161,13 +156,15 @@ export default function DepreciationMaster({
   const handleCellChange = (rowId: string, colId: string, value: string | number) => {
     const numValue = typeof value === "string" ? Number(value) : value;
 
-    setUiState((prev) => ({
-      ...prev,
-      ratesByRange: {
-        ...prev.ratesByRange,
-        [rowId]: { ...prev.ratesByRange[rowId], [Number(colId)]: numValue },
-      },
-    }));
+    setLocalRateOverrides((prev) => {
+      const existing = prev[rowId];
+      return {
+        ...prev,
+        [rowId]: existing
+          ? { ...existing, [Number(colId)]: numValue }
+          : { [Number(colId)]: numValue },
+      };
+    });
 
     const range = ranges.find((r) => r.id === rowId);
     if (!range) return;
@@ -249,8 +246,8 @@ export default function DepreciationMaster({
   };
 
   const handleDeleteRange = async () => {
-    if (!selectedRangeId) return;
-    const range = ranges.find((r) => r.id === selectedRangeId);
+    if (!effectiveSelectedRangeId) return;
+    const range = ranges.find((r) => r.id === effectiveSelectedRangeId);
     if (!range) return;
 
     confirm({
@@ -276,7 +273,7 @@ export default function DepreciationMaster({
   };
 
   const handleRangeSelection = (rangeId: string | null) => {
-    setUiState((prev) => ({ ...prev, selectedRangeId: rangeId }));
+    setSelectedRangeId(rangeId);
   };
 
   /* ================= GRID MAPPING ================= */
@@ -317,7 +314,7 @@ export default function DepreciationMaster({
             minError={minError}
             maxError={maxError}
             ranges={ranges}
-            selectedRangeId={selectedRangeId}
+            selectedRangeId={effectiveSelectedRangeId}
             saving={saving}
             onMinChange={handleMinChange}
             onMaxChange={handleMaxChange}
@@ -331,7 +328,7 @@ export default function DepreciationMaster({
             matrixColumns={matrixColumns}
             matrixRows={matrixRows}
             ranges={ranges}
-            selectedRangeId={selectedRangeId}
+            selectedRangeId={effectiveSelectedRangeId}
             saving={saving}
             pageNumber={pageNumber}
             pageSize={pageSize}
