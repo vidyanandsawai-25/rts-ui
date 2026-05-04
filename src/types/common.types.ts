@@ -60,6 +60,7 @@ export interface CheckboxProps extends Omit<
   defaultChecked?: boolean;
   onCheckedChange?: (checked: boolean) => void;
   value?: string;
+  label?: string;
 }
 
 export interface RadioGroupProps extends Omit<

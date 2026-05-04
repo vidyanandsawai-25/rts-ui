@@ -399,4 +399,43 @@ describe('Checkbox', () => {
     expect(checkbox).toHaveAttribute('aria-checked', 'true');
   });
 
+  // ─────────────────────────────────────────────────────────────
+  // 16. Built-in Label Prop
+  // ─────────────────────────────────────────────────────────────
+
+  it('renders with a built-in label', () => {
+    render(<Checkbox label="Subscribe" />);
+    expect(screen.getByText('Subscribe')).toBeInTheDocument();
+  });
+
+  it('toggles when clicking the built-in label', async () => {
+    const handleCheckedChange = vi.fn();
+    const user = userEvent.setup();
+    render(<Checkbox label="Subscribe" onCheckedChange={handleCheckedChange} />);
+    
+    const label = screen.getByText('Subscribe');
+    await user.click(label);
+    
+    expect(handleCheckedChange).toHaveBeenCalledWith(true);
+    expect(screen.getByRole('checkbox')).toHaveAttribute('aria-checked', 'true');
+  });
+
+  it('generates a unique id for label linkage when none is provided', () => {
+    render(<Checkbox label="Auto ID" />);
+    const checkbox = screen.getByRole('checkbox');
+    const label = screen.getByText('Auto ID');
+    
+    expect(checkbox).toHaveAttribute('id');
+    expect(label).toHaveAttribute('for', checkbox.getAttribute('id') || '');
+  });
+
+  it('uses provided id for label linkage', () => {
+    render(<Checkbox label="Manual ID" id="my-custom-id" />);
+    const checkbox = screen.getByRole('checkbox');
+    const label = screen.getByText('Manual ID');
+    
+    expect(checkbox).toHaveAttribute('id', 'my-custom-id');
+    expect(label).toHaveAttribute('for', 'my-custom-id');
+  });
+
 });
