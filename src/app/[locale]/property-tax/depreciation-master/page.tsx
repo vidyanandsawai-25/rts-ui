@@ -28,7 +28,7 @@ export default async function Page({ params, searchParams }: PageProps) {
   
   if (!res.success || !res.data) {
     const t = await getTranslations('depreciation.depreciationMaster.errors');
-    return <div>{t('load')}</div>;
+    throw new Error(t('load'));
   }
 
   return (

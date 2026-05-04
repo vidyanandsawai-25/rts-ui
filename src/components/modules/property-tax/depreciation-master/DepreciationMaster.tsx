@@ -81,6 +81,8 @@ export default function DepreciationMaster({
   const refreshPage = useCallback(() => router.refresh(), [router]);
 
   /* ================= BUILD UI LOGIC ================= */
+
+  // Pure function to derive UI state from db
   const buildUiFromDb = useCallback(
     (ct: DepreciationConstructionType[], currentDbRows: DepreciationRow[]) => {
       const rangeMap = new Map<string, RangeRow>();
@@ -110,20 +112,27 @@ export default function DepreciationMaster({
       });
 
       const sortedRanges = Array.from(rangeMap.values()).sort((a, b) => a.min - b.min);
+      const initialSelectedRangeId = sortedRanges[0]?.id ?? null;
 
-      setRanges(sortedRanges);
-      setRatesByRange(rateMap);
-      setDbRows(currentDbRows);
-      setSelectedRangeId((prev) =>
-        prev && sortedRanges.some((r) => r.id === prev) ? prev : sortedRanges[0]?.id ?? null
-      );
+      return {
+        sortedRanges,
+        rateMap,
+        currentDbRows,
+        initialSelectedRangeId,
+      };
     },
     []
   );
 
   // Build UI when construction types or data changes
   useEffect(() => {
-    buildUiFromDb(initialConstructionTypes, data);
+    const { sortedRanges, rateMap, currentDbRows, initialSelectedRangeId } = buildUiFromDb(initialConstructionTypes, data);
+    setRanges(sortedRanges);
+    setRatesByRange(rateMap);
+    setDbRows(currentDbRows);
+    setSelectedRangeId((prev) =>
+      prev && sortedRanges.some((r) => r.id === prev) ? prev : initialSelectedRangeId
+    );
     setPendingChanges({});
   }, [initialConstructionTypes, data, buildUiFromDb]);
 
