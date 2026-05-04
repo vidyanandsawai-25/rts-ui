@@ -1,4 +1,5 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+
 import type { PropertySearchParams } from '@/types/ptis.types';
 
 export interface PropertySearchState {
@@ -10,16 +11,15 @@ export interface PropertySearchState {
 }
 
 export function usePropertySearchState(urlState: PropertySearchState) {
-  const [draft, setDraft] = useState<PropertySearchState>(urlState);
-  const lastUrlStateKey = useRef(JSON.stringify(urlState));
+  const currentUrlKey = useMemo(() => JSON.stringify(urlState), [urlState]);
 
-  useEffect(() => {
-    const currentUrlKey = JSON.stringify(urlState);
-    if (currentUrlKey !== lastUrlStateKey.current) {
-      setDraft(urlState);
-      lastUrlStateKey.current = currentUrlKey;
-    }
-  }, [urlState]);
+  const [draft, setDraft] = useState<PropertySearchState>(urlState);
+  const [prevUrlKey, setPrevUrlKey] = useState(currentUrlKey);
+
+  if (currentUrlKey !== prevUrlKey) {
+    setPrevUrlKey(currentUrlKey);
+    setDraft(urlState);
+  }
 
   const setWardNo = useCallback((val: string) => {
     setDraft((prev) => ({ ...prev, wardNo: val }));
@@ -41,9 +41,6 @@ export function usePropertySearchState(urlState: PropertySearchState) {
     setDraft((prev) => ({ ...prev, propertyId: val }));
   }, []);
 
-  /**
-   * Resets property-level fields when ward changes.
-   */
   const handleWardSelection = useCallback((id: number | null, no: string) => {
     setDraft({
       wardId: id,
