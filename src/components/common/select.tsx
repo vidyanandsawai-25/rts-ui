@@ -13,7 +13,9 @@ export interface Option {
 export interface SelectProps {
   options: Option[];
   value?: string;
-  onChange?: (value: string) => void;
+  name?: string;
+  onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  onBlur?: (e: React.FocusEvent<HTMLSelectElement>) => void;
   placeholder?: string;
   className?: string;
   selectSize?: 'sm' | 'md';
@@ -29,7 +31,9 @@ export interface SelectProps {
 export function Select({
   options,
   value,
+  name,
   onChange,
+  onBlur,
   placeholder = 'Select...',
   className = '',
   selectSize = 'md',
@@ -100,7 +104,17 @@ export function Select({
       setInternalValueState(val);
     }
     setOpen(false);
-    onChange?.(val);
+    
+    if (onChange) {
+      // Simulate a ChangeEvent
+      const event = {
+        target: {
+          name: name || '',
+          value: val,
+        },
+      } as React.ChangeEvent<HTMLSelectElement>;
+      onChange(event);
+    }
   };
 
   const selectedLabel = options.find((opt) => opt.value === internalValue)?.label;
@@ -194,6 +208,15 @@ export function Select({
 
             if (!selectRef.current?.contains(nextTarget)) {
               setOpen(false);
+              if (onBlur) {
+                const event = {
+                  target: {
+                    name: name || '',
+                    value: internalValue,
+                  },
+                } as React.FocusEvent<HTMLSelectElement>;
+                onBlur(event);
+              }
             }
           }}
           disabled={disabled}
