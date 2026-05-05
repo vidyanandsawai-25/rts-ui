@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { useSearchNavigation } from "@/hooks/useSearchNavigation";
 import { TEXT_SANITIZE } from "@/lib/utils/validation";
@@ -27,21 +27,25 @@ export function useOfficeSearch({
   const searchParams = useSearchParams();
   const currentSearchTerm = searchParams.get("q") || "";
   const [search, setSearch] = useState(currentSearchTerm);
-  const [selectedType, setSelectedType] = useState(type || "");
-  const [selectedStatus, setSelectedStatus] = useState(status || "");
-
-  // Sync search state with URL on mount/navigation
-  useEffect(() => {
+  const [prevSearchTerm, setPrevSearchTerm] = useState(currentSearchTerm);
+  if (currentSearchTerm !== prevSearchTerm) {
+    setPrevSearchTerm(currentSearchTerm);
     setSearch(currentSearchTerm);
-  }, [currentSearchTerm]);
+  }
 
-  useEffect(() => {
+  const [selectedType, setSelectedType] = useState(type || "");
+  const [prevType, setPrevType] = useState(type || "");
+  if ((type || "") !== prevType) {
+    setPrevType(type || "");
     setSelectedType(type || "");
-  }, [type]);
+  }
 
-  useEffect(() => {
+  const [selectedStatus, setSelectedStatus] = useState(status || "");
+  const [prevStatus, setPrevStatus] = useState(status || "");
+  if ((status || "") !== prevStatus) {
+    setPrevStatus(status || "");
     setSelectedStatus(status || "");
-  }, [status]);
+  }
 
   const extraParams = useMemo(() => ({
     type: selectedType,
