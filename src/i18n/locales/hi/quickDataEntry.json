@@ -527,7 +527,13 @@
             "loading": {
                 "message": "मंजिल की जानकारी लोड हो रही है...",
                 "description": "ऐतिहासिक मंजिल रिकॉर्ड प्राप्त किए जा रहे हैं"
-            }
+            },
+            "saveSuccess": "मंजिल का विवरण सफलतापूर्वक जोड़ा गया",
+            "updateSuccess": "मंजिल का विवरण सफलतापूर्वक अपडेट किया गया",
+            "deleteSuccess": "मंजिल का विवरण सफलतापूर्वक हटा दिया गया",
+            "saveError": "मंजिल का विवरण सहेजने में विफल",
+            "deleteError": "मंजिल का विवरण हटाने में विफल",
+            "unexpectedError": "एक अप्रत्याशित त्रुटि हुई"
         },
         "zoneName": "क्षेत्र का नाम",
         "wardNo": "वार्ड नं.",
@@ -548,6 +554,7 @@
         "propertyTax": "संपत्ति कर",
         "totalTax": "कुल कर",
         "floorDetailsTitle": "ऐतिहासिक मंज़िल जानकारी",
+        "updateFloorDetailsTitle": "मंजिल की जानकारी अपडेट करें",
         "oldTaxDetailsTitle": "कर विवरण",
         "zoneNamePlaceholder": "ज़ोन दर्ज करें",
         "wardNoPlaceholder": "वार्ड दर्ज करें",

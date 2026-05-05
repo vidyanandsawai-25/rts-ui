@@ -1,0 +1,101 @@
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import OldTaxationForm from '@/components/modules/property-tax/ptis/QuickDataEntry/old-details/OldTaxation/OldTaxationForm';
+import { useConfirm } from '@/components/common/ConfirmProvider';
+import { updatePropertyOldDetailsAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/OldDetails/old-taxation/action';
+
+import { PropertyOldDetailsApiItem } from '@/types/property-old-details.types';
+
+// Mock dependencies
+vi.mock('next-intl', () => ({
+  useTranslations: (namespace: string) => (key: string) => `${namespace}.${key}`,
+}));
+
+vi.mock('next/navigation', () => ({
+  useParams: () => ({ propertyId: '123', locale: 'en' }),
+}));
+
+vi.mock('sonner', () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+  },
+}));
+
+vi.mock('@/components/common/ConfirmProvider', () => ({
+  useConfirm: vi.fn(),
+}));
+
+vi.mock('@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/OldDetails/old-taxation/action', () => ({
+  updatePropertyOldDetailsAction: vi.fn(),
+}));
+
+describe('OldTaxationForm Component', () => {
+  const mockConfirm = vi.fn();
+  const mockPropertyData = {
+    propertyId: 123,
+    oldZoneNo: 'Zone A',
+    oldWardNo: 'Ward 1',
+    oldPropertyNo: 'P-001',
+    oldPartitionNo: '1',
+    oldEgovNo: 'E-123',
+    oldPlotArea: 500,
+    oldPlotNo: 'Plot 1',
+    oldCarpetAreaSqFeet: 1000,
+    oldRV: 5000,
+    oldALV: 6000,
+    oldGeneralTax: '1200',
+    oldTotalTax: 1500,
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(useConfirm).mockReturnValue({ confirm: mockConfirm } as unknown as { confirm: Mock });
+  });
+
+  it('renders correctly with initial data', () => {
+    render(<OldTaxationForm propertyOldDetails={mockPropertyData as unknown as PropertyOldDetailsApiItem} />);
+    
+    expect(screen.getByText('quickDataEntry.oldDetails.title')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Zone A')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('P-001')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('1000')).toBeInTheDocument();
+  });
+
+  it('handles input changes correctly', () => {
+    render(<OldTaxationForm propertyOldDetails={mockPropertyData as unknown as PropertyOldDetailsApiItem} />);
+    
+    const plotNoInput = screen.getByPlaceholderText('quickDataEntry.oldDetails.plotNoPlaceholder');
+    fireEvent.change(plotNoInput, { target: { value: 'Plot 2' } });
+    
+    expect(plotNoInput).toHaveValue('Plot 2');
+  });
+
+  it('calls confirm dialog when update button is clicked', () => {
+    render(<OldTaxationForm propertyOldDetails={mockPropertyData as unknown as PropertyOldDetailsApiItem} />);
+    
+    const updateButton = screen.getByRole('button', { name: /quickDataEntry.property.updateButton/i });
+    fireEvent.click(updateButton);
+    
+    expect(mockConfirm).toHaveBeenCalledTimes(1);
+    expect(mockConfirm).toHaveBeenCalledWith(expect.objectContaining({
+      title: 'quickDataEntry.property.updateConfirmTitle',
+    }));
+  });
+
+  it('triggers API call and shows success toast on successful confirmation', async () => {
+    vi.mocked(updatePropertyOldDetailsAction).mockResolvedValue({ success: true, data: {} as unknown } as unknown as Awaited<ReturnType<typeof updatePropertyOldDetailsAction>>);
+    
+    // Simulate onConfirm call
+    mockConfirm.mockImplementation(({ onConfirm }: { onConfirm: () => void }) => onConfirm());
+    
+    render(<OldTaxationForm propertyOldDetails={mockPropertyData as unknown as PropertyOldDetailsApiItem} />);
+    
+    const updateButton = screen.getByRole('button', { name: /quickDataEntry.property.updateButton/i });
+    fireEvent.click(updateButton);
+    
+    await waitFor(() => {
+      expect(updatePropertyOldDetailsAction).toHaveBeenCalled();
+    });
+  });
+});

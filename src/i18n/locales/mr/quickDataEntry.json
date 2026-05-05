@@ -527,7 +527,13 @@
             "loading": {
                 "message": "मजला माहिती लोड होत आहे...",
                 "description": "ऐतिहासिक मजला नोंदी आणत आहे"
-            }
+            },
+            "saveSuccess": "मजल्याचा तपशील यशस्वीरित्या जोडला गेला",
+            "updateSuccess": "मजल्याचा तपशील यशस्वीरित्या अपडेट केला गेला",
+            "deleteSuccess": "मजल्याचा तपशील यशस्वीरित्या हटविला गेला",
+            "saveError": "मजल्याचा तपशील जतन करण्यात अपयश",
+            "deleteError": "मजल्याचा तपशील हटवण्यात अपयश",
+            "unexpectedError": "एक अनपेक्षित त्रुटी आली"
         },
         "zoneName": "झोन नाव",
         "wardNo": "वार्ड क्र.",
@@ -548,6 +554,7 @@
         "propertyTax": "मालमत्ता कर",
         "totalTax": "एकूण कर",
         "floorDetailsTitle": "ऐतिहासिक मजला माहिती",
+        "updateFloorDetailsTitle": "मजल्याची माहिती अपडेट करा",
         "oldTaxDetailsTitle": "कर तपशील",
         "zoneNamePlaceholder": "झोन टाका",
         "wardNoPlaceholder": "वॉर्ड टाका",

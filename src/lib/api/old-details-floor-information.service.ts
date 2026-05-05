@@ -14,11 +14,7 @@ import {
 import { PagedResponse } from "@/types/common.types";
 
 /* ---------------- GET FLOORS ---------------- */
-export async function getFloors(
-    pageNumber: number,
-    pageSize: number,
-    searchTerm?: string
-): Promise<PagedResponse<Floor>> {
+export async function getFloors( pageNumber: number, pageSize: number, searchTerm?: string): Promise<PagedResponse<Floor>> {
     const params = new URLSearchParams({
         PageNumber: pageNumber.toString(),
         PageSize: pageSize.toString(),
@@ -43,11 +39,7 @@ export async function getSubFloors(pageNumber: number, pageSize: number,
 }
 
 /* ---------------- GET CONSTRUCTION TYPES ---------------- */
-export async function getConstructionTypes(
-    pageNumber: number,
-    pageSize: number,
-    searchTerm?: string
-): Promise<PagedResponse<ConstructionType>> {
+export async function getConstructionTypes( pageNumber: number, pageSize: number, searchTerm?: string): Promise<PagedResponse<ConstructionType>> {
     const params = new URLSearchParams({
         PageNumber: pageNumber.toString(),
         PageSize: pageSize.toString(),
@@ -59,11 +51,7 @@ export async function getConstructionTypes(
 }
 
 /* ---------------- GET TYPE OF USES ---------------- */
-export async function getTypeOfUses(
-    pageNumber: number,
-    pageSize: number,
-    searchTerm?: string
-): Promise<PagedResponse<TypeOfUse>> {
+export async function getTypeOfUses( pageNumber: number, pageSize: number, searchTerm?: string): Promise<PagedResponse<TypeOfUse>> {
     const params = new URLSearchParams({
         PageNumber: pageNumber.toString(),
         PageSize: pageSize.toString(),
@@ -76,13 +64,7 @@ export async function getTypeOfUses(
 }
 
 /* ---------------- GET SUB TYPE OF USES ---------------- */
-export async function getSubTypeOfUses(
-    typeOfUseId: number,
-    pageNumber: number,
-    pageSize: number,
-    searchTerm?: string
-): Promise<PagedResponse<SubTypeOfUse>> {
-
+export async function getSubTypeOfUses( typeOfUseId: number, pageNumber: number, pageSize: number, searchTerm?: string): Promise<PagedResponse<SubTypeOfUse>> {
     const params = new URLSearchParams({
         PageNumber: pageNumber.toString(),
         PageSize: pageSize.toString(),
@@ -106,4 +88,21 @@ export async function getOldFloordetails(propertyId: number): Promise<OldFloorDe
 export async function saveOldFloorDetails(propertyId: number, data: unknown): Promise<OldFloorDetailsResponse> {
     const response = await apiClient.post<OldFloorDetailsResponse>(`/Property/${propertyId}/floor-details-old`, data);
     return handleApiResponse(response, "Failed to save floor details");
+}
+
+/* ---------------- UPDATE OLD FLOOR DETAILS ---------------- */
+export async function updateOldFloorDetails( propertyId: number, floorDetailId: number, data: unknown): Promise<OldFloorDetailsResponse> {
+    const response = await apiClient.put<OldFloorDetailsResponse>(
+        `/Property/${propertyId}/floor-details-old/${floorDetailId}`,
+        data
+    );
+    return handleApiResponse(response, "Failed to update floor details");
+}
+
+/* ---------------- DELETE OLD FLOOR DETAILS ---------------- */
+export async function deleteOldFloorDetails( propertyId: number, floorDetailId: number): Promise<void> {
+    const response = await apiClient.delete<void>(
+        `/Property/${propertyId}/floor-details-old/${floorDetailId}`
+    );
+    return handleApiResponse(response, "Failed to delete floor details");
 }

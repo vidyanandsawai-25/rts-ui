@@ -515,7 +515,13 @@
             "loading": {
                 "message": "Loading Floor Info...",
                 "description": "Fetching historical floor records"
-            }
+            },
+            "saveSuccess": "Floor details added successfully",
+            "updateSuccess": "Floor details updated successfully",
+            "deleteSuccess": "Floor details deleted successfully",
+            "saveError": "Failed to save floor details",
+            "deleteError": "Failed to delete floor details",
+            "unexpectedError": "An unexpected error occurred"
         },
         "zoneName": "Zone Name",
         "wardNo": "Ward No",
@@ -536,6 +542,7 @@
         "propertyTax": "Property Tax",
         "totalTax": "Total Tax",
         "floorDetailsTitle": "Historical Floor Information",
+        "updateFloorDetailsTitle": "Update Floor Information",
         "oldTaxDetailsTitle": "Taxation Breakdown",
         "zoneNamePlaceholder": "Enter zone",
         "wardNoPlaceholder": "Enter ward",

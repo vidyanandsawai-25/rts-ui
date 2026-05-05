@@ -7,7 +7,9 @@ import {
     getTypeOfUses,
     getSubTypeOfUses,
     getOldFloordetails,
-    saveOldFloorDetails
+    saveOldFloorDetails,
+    updateOldFloorDetails,
+    deleteOldFloorDetails
 } from "@/lib/api/old-details-floor-information.service";
 import { ActionResult } from "@/types/common.types";
 import {
@@ -29,7 +31,6 @@ function getActionErrorMessage(error: unknown): string {
     return 'Something went wrong. Please try again.';
 }
 
-// Fetches all Floors.
 export async function GetFloorsAction(
     pageNumber: number,
     pageSize: number,
@@ -49,7 +50,6 @@ export async function GetFloorsAction(
     }
 }
 
-// Fetches all Sub-Floors.
 export async function GetSubFloorsAction(
      pageNumber: number,
     pageSize: number,
@@ -108,13 +108,6 @@ export async function GetTypeOfUsesAction(
         };
     }
 }
-// export async function getTaxZonePagedAction(
-//   pageNumber: number,
-//   pageSize: number,
-//   searchTerm?: string
-// ): Promise<ActionResult<TypeOfUse>> {
-//   return await getTypeOfUses(pageNumber, pageSize, searchTerm);
-// }
 
 /**
  * Fetches Sub Type of Use list based on the selected Type of Use ID.
@@ -168,11 +161,69 @@ export async function SaveOldFloorDetailsAction(propertyId: number, data: unknow
     try {
         const response = await saveOldFloorDetails(propertyId, data);
         
-        // ✅ Revalidate the floor information path to refresh server-side data
+        // ✅ Revalidate the floor information path to refresh server-side data (Existing Floors list)
         revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/OldDetails/floor-information`);
         return {
             success: true,
             data: response
+        };
+    } catch (error) {
+        return {
+            success: false,
+            error: getActionErrorMessage(error)
+        };
+    }
+}
+
+/**
+ * Updates existing Old Floor Details.
+ * @param propertyId The ID of the property
+ * @param floorDetailId The ID of the floor detail to update
+ * @param data The updated floor detail data
+ * @param locale The current locale for revalidation
+ */
+export async function UpdateOldFloorDetailsAction(
+    propertyId: number,
+    floorDetailId: number,
+    data: unknown,
+    locale: string
+): Promise<ActionResult<OldFloorDetailsResponse>> {
+    try {
+        const response = await updateOldFloorDetails(propertyId, floorDetailId, data);
+        
+        // ✅ Revalidate the floor information path to update the UI list with latest changes
+        revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/OldDetails/floor-information`);
+        return {
+            success: true,
+            data: response
+        };
+    } catch (error) {
+        return {
+            success: false,
+            error: getActionErrorMessage(error)
+        };
+    }
+}
+
+/**
+ * Deletes existing Old Floor Details.
+ * @param propertyId The ID of the property
+ * @param floorDetailId The ID of the floor detail to delete
+ * @param locale The current locale for revalidation
+ */
+export async function DeleteOldFloorDetailsAction(
+    propertyId: number,
+    floorDetailId: number,
+    locale: string
+): Promise<ActionResult<void>> {
+    try {
+        await deleteOldFloorDetails(propertyId, floorDetailId);
+        
+        // ✅ Revalidate the floor information path to remove the deleted record from UI
+        revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/OldDetails/floor-information`);
+        return {
+            success: true,
+            data: undefined
         };
     } catch (error) {
         return {
