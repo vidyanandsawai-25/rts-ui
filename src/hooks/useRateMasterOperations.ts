@@ -97,8 +97,12 @@ export function useRateMasterOperations({
         const existingId = rateIdInRow || existing?.Id || existing?.id;
         
         if (existingId) {
-          payload.Id = Number(existingId);
-          updates.push(payload);
+          // Only include in updates if value actually changed
+          const originalValue = existing?.rateSquareMeter ?? existing?.RateSquareMeter ?? 0;
+          if (Number(val) !== Number(originalValue)) {
+            payload.Id = Number(existingId);
+            updates.push(payload);
+          }
         } else {
           inserts.push(payload);
         }
