@@ -1,4 +1,5 @@
 import { apiClient } from '@/services/api.service';
+import { getTranslations } from 'next-intl/server';
 import type { ApiResponse } from '@/types/common.types';
 import { 
   PagedResponse, 
@@ -60,7 +61,8 @@ export async function getUseFactorCVMasterWithParams(
  */
 export async function getUseFactorCVMasterById(id: number): Promise<ApiResponse<UseFactorCVMaster>> {
   if (id <= 0) {
-    throw new Error('Valid UseFactorCV ID is required');
+    const t = await getTranslations('useCategoryFactorMaster');
+    throw new ApiError(400, t('errors.invalidId'), "Validation");
   }
   return apiClient.get<UseFactorCVMaster>(`/UseFactorCVMaster/${id}`);
 }
@@ -76,18 +78,20 @@ export async function updateUseFactorCVMaster(
   payload: UseFactorCVMasterUpdate
 ): Promise<void> {
   try {
+    const t = await getTranslations('useCategoryFactorMaster');
+    
     // Validate required fields
     if (!id || id <= 0) {
-      throw new Error('Valid UseFactorCV ID is required for update');
+      throw new ApiError(400, t('errors.invalidId'), "Validation");
     }
     if (!payload.typeOfUseId || payload.typeOfUseId <= 0) {
-      throw new Error('typeOfUseId is required');
+      throw new ApiError(400, t('errors.typeOfUseIdRequired'), "Validation");
     }
     if (!payload.yearRangeCVId || payload.yearRangeCVId <= 0) {
-      throw new Error('yearRangeCVId is required');
+      throw new ApiError(400, t('errors.yearRangeCVIdRequired'), "Validation");
     }
     if (payload.factor < 0) {
-      throw new Error('factor cannot be negative');
+      throw new ApiError(400, t('errors.factorNegative'), "Validation");
     }
 
     const requestPayload = {
@@ -113,7 +117,7 @@ export async function updateUseFactorCVMaster(
 
       throw new ApiError(
         isDuplicate ? 409 : 500,
-        response.error || 'Failed to update Use Factor CV Master',
+        response.error || t('errors.updateFailed'),
         'Update Use Factor CV Master failed'
       );
     }
@@ -156,14 +160,16 @@ export async function createUseFactorCVMaster(
   payload: UseFactorCVMasterCreate
 ): Promise<ApiResponse<unknown>> {
   try {
+    const t = await getTranslations('useCategoryFactorMaster');
+
     if (!payload.typeOfUseId || payload.typeOfUseId <= 0) {
-      throw new Error('typeOfUseId is required');
+      throw new ApiError(400, t('errors.typeOfUseIdRequired'), "Validation");
     }
     if (!payload.yearRangeCVId || payload.yearRangeCVId <= 0) {
-      throw new Error('yearRangeCVId is required');
+      throw new ApiError(400, t('errors.yearRangeCVIdRequired'), "Validation");
     }
     if (payload.factor < 0) {
-      throw new Error('factor cannot be negative');
+      throw new ApiError(400, t('errors.factorNegative'), "Validation");
     }
 
     const requestPayload = {
@@ -193,7 +199,8 @@ export async function bulkCreateUseFactorCVMaster(
 ): Promise<ApiResponse<unknown>> {
   try {
     if (!payload || payload.length === 0) {
-      throw new Error('Valid payload is required for bulk create');
+      const t = await getTranslations('useCategoryFactorMaster');
+      throw new ApiError(400, t('errors.payloadRequired'), "Validation");
     }
 
 
@@ -213,8 +220,10 @@ export async function bulkUpdateUseFactorCVMaster(
   payload: BulkUseFactorCVMasterUpdate
 ): Promise<void> {
   try {
+    const t = await getTranslations('useCategoryFactorMaster');
+
     if (!payload || payload.length === 0) {
-      throw new Error('Valid payload is required for bulk update');
+      throw new ApiError(400, t('errors.payloadRequired'), "Validation");
     }
 
 
@@ -232,7 +241,7 @@ export async function bulkUpdateUseFactorCVMaster(
 
       throw new ApiError(
         isDuplicate ? 409 : 500,
-        response.error || 'Failed to bulk update Use Factor CV Master',
+        response.error || t('errors.bulkUpdateFailed'),
         'Bulk update Use Factor CV Master failed'
       );
     }

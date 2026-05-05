@@ -40,6 +40,18 @@
       "tryAgain": "पुन्हा प्रयत्न करा",
       "goHome": "घरी परत जा",
       "errorId": "त्रुटी ID: {id}"
+    },
+    "errors": {
+      "invalidId": "वैध वापर घटक CV ID आवश्यक आहे",
+      "typeOfUseIdRequired": "वापराचा प्रकार आवश्यक आहे",
+      "yearRangeCVIdRequired": "मूल्यांकन वर्ष आवश्यक आहे",
+      "factorNegative": "घटक नकारात्मक असू शकत नाही",
+      "fetchFailed": "वापर घटक CV मास्टर रेकॉर्ड मिळवण्यात अयशस्वी",
+      "updateFailed": "वापर घटक CV मास्टर अपडेट करण्यात अयशस्वी",
+      "createFailed": "वापर घटक CV मास्टर तयार करण्यात अयशस्वी",
+      "bulkUpdateFailed": "वापर घटक CV मास्टर मोठ्या प्रमाणात अपडेट करण्यात अयशस्वी",
+      "bulkCreateFailed": "वापर घटक CV मास्टर मोठ्या प्रमाणात तयार करण्यात अयशस्वी",
+      "payloadRequired": "वैध पेलोड आवश्यक आहे"
     }
   }
 }
