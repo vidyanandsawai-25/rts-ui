@@ -32,6 +32,7 @@ export async function getOldTaxesDetailsAction(propertyId: number) {
  */
 export async function saveOldTaxesDetailsAction(propertyId: number, data: OldTaxesDetails, locale: string) {
   try {
+    
     const response = await saveOldTaxesDetails(propertyId, data);
     revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/OldDetails/taxation-breakdown`);
     return {

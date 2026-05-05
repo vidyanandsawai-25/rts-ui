@@ -9,10 +9,14 @@ import { OldTaxesDetails } from '@/types/property-old-details.types';
 // Mock dependencies
 vi.mock('next-intl', () => ({
   useTranslations: (namespace: string) => (key: string) => `${namespace}.${key}`,
+  useLocale: () => 'en',
 }));
 
 vi.mock('next/navigation', () => ({
   useParams: () => ({ propertyId: '123', locale: 'en' }),
+  useRouter: () => ({
+    refresh: vi.fn(),
+  }),
 }));
 
 vi.mock('sonner', () => ({

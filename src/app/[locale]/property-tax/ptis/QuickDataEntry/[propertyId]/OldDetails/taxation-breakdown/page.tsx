@@ -17,6 +17,6 @@ export default async function TaxationBreakdownPage({ params }: PageProps) {
     const taxationData = result.success ? result.data : null;
     
     return (
-        <TaxationBreakdownForm initialData={taxationData} />
+        <TaxationBreakdownForm key={propertyId} initialData={taxationData} />
     );
 }

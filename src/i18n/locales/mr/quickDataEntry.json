@@ -280,7 +280,11 @@
             "categoryRequired": "कृपया श्रेणी निवडा",
             "plotAreaInvalid": "भूखंड क्षेत्रफळ सकारात्मक संख्या असणे आवश्यक आहे",
             "residentialToiletsInvalid": "निवासी स्वच्छतागृहांची संख्या सकारात्मक असणे आवश्यक आहे",
-            "commercialToiletsInvalid": "व्यावसायिक स्वच्छतागृहांची संख्या सकारात्मक असणे आवश्यक आहे"
+            "commercialToiletsInvalid": "व्यावसायिक स्वच्छतागृहांची संख्या सकारात्मक असणे आवश्यक आहे",
+            "floorRequired": "कृपया मजला निवडा",
+            "constructionYearRequired": "कृपया बांधकाम वर्ष प्रविष्ट करा",
+            "constructionTypeRequired": "कृपया बांधकामाचा प्रकार निवडा",
+            "typeOfUseRequired": "कृपया वापराचा प्रकार निवडा"
         }
     },
     "kyc": {
@@ -617,7 +621,7 @@
             "interestAmount": "व्याज रक्कम",
             "netPayableTotal": "निव्वळ देय एकूण",
             "remarks": "शेरा",
-            "saveAssessment": "आकारणी जतन करा",
+            "saveAssessment": "कर आकारणी जतन करा",
             "saveConfirmDescription": "तुम्ही नक्की हा कर आकारणी तपशील जतन करू इच्छिता?",
             "saveSuccess": "कर आकारणी तपशील यशस्वीरित्या जतन केला",
             "saveError": "डेटा जतन करण्यात अपयश",

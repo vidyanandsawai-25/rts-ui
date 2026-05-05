@@ -280,7 +280,11 @@
             "categoryRequired": "Please select a category",
             "plotAreaInvalid": "Plot Area must be a positive number",
             "residentialToiletsInvalid": "Residential Toilet count must be a positive number",
-            "commercialToiletsInvalid": "Commercial Toilet count must be a positive number"
+            "commercialToiletsInvalid": "Commercial Toilet count must be a positive number",
+            "floorRequired": "Please select a floor",
+            "constructionYearRequired": "Please enter construction year",
+            "constructionTypeRequired": "Please select construction type",
+            "typeOfUseRequired": "Please select type of use"
         }
     },
     "kyc": {
@@ -605,7 +609,7 @@
             "interestAmount": "Interest Amount",
             "netPayableTotal": "Net Payable Total",
             "remarks": "Remarks",
-            "saveAssessment": "Save Assessment",
+            "saveAssessment": "Update Old Taxs",
             "saveConfirmDescription": "Are you sure you want to save this taxation breakdown?",
             "saveSuccess": "Taxation breakdown saved successfully",
             "saveError": "Failed to save data",

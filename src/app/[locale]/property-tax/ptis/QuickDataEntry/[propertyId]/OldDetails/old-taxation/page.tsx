@@ -7,12 +7,10 @@ interface PageProps {
         propertyId: string;
         locale: string;
     }>;
-    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default async function OldTaxationPage({ params, searchParams }: PageProps) {
+export default async function OldTaxationPage({ params }: PageProps) {
     const { locale, propertyId } = await params;
-    const { } = await searchParams; // Destructure if needed, but the user snippet had it
     setRequestLocale(locale);
 
     const propertyOldDetails = await getPropertyOldDetailsAction(Number(propertyId));

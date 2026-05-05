@@ -280,7 +280,11 @@
             "categoryRequired": "कृपया एक श्रेणी चुनें",
             "plotAreaInvalid": "भूखंड क्षेत्र एक धनात्मक संख्या होनी चाहिए",
             "residentialToiletsInvalid": "आवासीय शौचालय की संख्या एक धनात्मक संख्या होनी चाहिए",
-            "commercialToiletsInvalid": "व्यावसायिक शौचालय की संख्या एक धनात्मक संख्या होनी चाहिए"
+            "commercialToiletsInvalid": "व्यावसायिक शौचालय की संख्या एक धनात्मक संख्या होनी चाहिए",
+            "floorRequired": "कृपया एक मंजिल चुनें",
+            "constructionYearRequired": "कृपया निर्माण वर्ष दर्ज करें",
+            "constructionTypeRequired": "कृपया निर्माण प्रकार चुनें",
+            "typeOfUseRequired": "कृपया उपयोग का प्रकार चुनें"
         }
     },
     "kyc": {
@@ -616,7 +620,7 @@
             "interestAmount": "ब्याज राशि",
             "netPayableTotal": "शुद्ध देय कुल",
             "remarks": "टिप्पणियां",
-            "saveAssessment": "आकारणी सहेजें",
+            "saveAssessment": "कराधान विवरण सहेजें",
             "saveConfirmDescription": "क्या आप वाकई इस कराधान विवरण को सहेजना चाहते हैं?",
             "saveSuccess": "कराधान विवरण सफलतापूर्वक सहेजा गया",
             "saveError": "डेटा सहेजने में विफल",
