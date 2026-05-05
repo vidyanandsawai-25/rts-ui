@@ -86,7 +86,7 @@ export default function DepreciationMaster({
       baseRatesByRange: rateMap,
       defaultSelectedRangeId: sortedRanges[0]?.id ?? null,
     };
-  }, [initialConstructionTypes, data]);
+  }, [ data]);
 
   // Merge base rates with local overrides
   const ratesByRange = useMemo(() => {
