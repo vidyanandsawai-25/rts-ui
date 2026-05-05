@@ -21,8 +21,8 @@ export async function fetchConstructionPagedServerAction(
       !Number.isFinite(pageNumber) ||
       !Number.isFinite(pageSize) ||
       pageNumber <= 0 ||
-      pageSize <= 0 ||
-      pageSize > MAX_PAGE_SIZE ||
+      (pageSize <= 0 && pageSize !== -1) ||
+      (pageSize > MAX_PAGE_SIZE && pageSize !== -1) ||
       pageNumber > MAX_PAGE_NUMBER
     ) {
       throw new ApiError(400, "Invalid pagination parameters", "Validation failed");

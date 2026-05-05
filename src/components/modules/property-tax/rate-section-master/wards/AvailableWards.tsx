@@ -97,7 +97,7 @@ export default function AvailableWards({
           <Select
             options={PAGE_SIZE_OPTIONS}
             value={String(availablePageSize)}
-            onChange={(val) => onPageSizeChange(Number(val))}
+            onChange={(e) => onPageSizeChange(Number(e.target.value))}
             selectSize="sm"
             className="w-18"
           />

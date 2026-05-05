@@ -47,7 +47,11 @@
       "descriptionFormat": "Invalid characters in description",
       "descriptionMaxLength": "Maximum {count} characters allowed",
       "sequenceInvalid": "Sequence must be 0 or greater",
-      "mustBeActive": "New records must be active"
+      "mustBeActive": "New records must be active",
+      "nameMaxLength": "Maximum {count} characters allowed",
+      "typeRequired": "Type is required",
+      "invalidEmail": "Invalid email address",
+      "invalidPincode": "Pincode must be exactly 6 digits"
     }
   },
   "errors": {
@@ -76,6 +80,8 @@
     "description": "Please wait while we load the data"
   },
   "status": {
+    "all": "All Status",
+    "label": "Status",
     "active": "Active",
     "inactive": "Inactive",
     "pending": "Pending",
@@ -236,6 +242,7 @@
     "to": "to",
     "of": "of",
     "entries": "entries",
+    "onThisPage": "on this page",
     "showingEntries": "Showing {start} to {end} of {total} entries",
     "showingPage": "Page",
     "ofPages": "of {total}",

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
-import { FloorCvHeaderExtra } from "@/components/modules/property-tax/weightage-mastercv/FloorCvHeaderExtra";
+import { FloorCvHeaderExtra } from "@/components/modules/property-tax/weightage-mastercv/floorFactorCv/FloorCvHeaderExtra";
 
 // Minimal mock for next-intl useTranslations return type consumed by the component
 vi.mock("next-intl", () => ({
@@ -8,8 +8,8 @@ vi.mock("next-intl", () => ({
 }));
 
 const mockT = (key: string) => key;
-const mockTW = (key: string) => {
-    const map: Record<string, string> = {
+const mockTW = (key: string, params?: Record<string, unknown>) => {
+    const map: Record<string, string | ((p?: Record<string, unknown>) => string)> = {
         "common.buttons.apply": "Apply",
         "common.buttons.clear": "Clear",
         "common.buttons.update": "Update",
@@ -17,10 +17,12 @@ const mockTW = (key: string) => {
         "common.buttons.generateAll": "Generate All",
         "common.buttons.generating": "Generating...",
         "common.buttons.updating": "Updating...",
-        "common.labels.pendingRecordCreates": "pending creates",
+        "common.labels.pendingRecordCreates": (p?: Record<string, unknown>) => p?.count !== undefined ? `${p.count} pending creates` : "pending creates",
         "common.messages.valueExceedsMax": "Value exceeds max",
     };
-    return map[key] ?? key;
+    const value = map[key];
+    if (typeof value === "function") return value(params);
+    return value ?? key;
 };
 
 const floorOptions = [
