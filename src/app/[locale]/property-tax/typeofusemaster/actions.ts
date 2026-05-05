@@ -1,7 +1,9 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { locales } from "@/i18n/config";
+import { getUserIdFromCookies } from "@/lib/utils/cookie";
 import type { TypeOfUseMasterData, UseGroupIconKey, UseStatus, UseType, UseGroup, UseSubType } from "@/types/typeOfUse.types";
 
 import {
@@ -30,6 +32,13 @@ import {
 // ✅ Configuration constants for pagination
 const DEFAULT_PAGE_SIZE = 1000; // Standard page size for fetching all records
 const MAX_PAGE_SIZE = 5000; // Maximum to prevent memory issues
+
+// ✅ Helper to get current user ID from cookies (fallback to 1 if not found)
+async function getCurrentUserId(): Promise<string> {
+  const cookieStore = await cookies();
+  const userId = getUserIdFromCookies(cookieStore);
+  return userId ? String(userId) : "1";
+}
 
 // ✅ Generic helper to fetch all records with pagination
 async function fetchAllPaged<T>(
@@ -110,7 +119,7 @@ export async function createUseGroup(input: {
     groupName: input.name,
     groupIcon: input.icon,
     isActive: (input.status ?? "Active") === "Active",
-    createdBy: "1",
+    createdBy: await getCurrentUserId(),
   });
   for (const locale of locales) {
     revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
@@ -130,7 +139,7 @@ export async function updateUseGroup(input: {
     groupName: input.name,
     groupIcon: input.icon,
     isActive: input.status === "Active",
-    updatedBy: "1",
+    updatedBy: await getCurrentUserId(),
   });
   for (const locale of locales) {
     revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
@@ -213,7 +222,7 @@ export async function createUseType(input: {
     type: input.type,
     searchSequence: input.searchSequence,
     isActive: (input.status ?? "Active") === "Active",
-    createdBy: "1",
+    createdBy: await getCurrentUserId(),
   });
   for (const locale of locales) {
     revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
@@ -237,7 +246,7 @@ export async function updateUseType(input: {
     type: input.type,
     searchSequence: input.searchSequence,
     isActive: input.status === "Active",
-    updatedBy: "1",
+    updatedBy: await getCurrentUserId(),
   });
   for (const locale of locales) {
     revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
@@ -329,7 +338,7 @@ export async function createSubType(input: {
     description: input.description,
     searchSequence: input.searchSequence,
     isActive: (input.status ?? "Active") === "Active",
-    createdBy: "1",
+    createdBy: await getCurrentUserId(),
   });
 
   for (const locale of locales) {
@@ -350,7 +359,7 @@ export async function updateSubType(input: {
     description: input.description,
     searchSequence: input.searchSequence,
     isActive: input.status === "Active",
-    updatedBy: "1",
+    updatedBy: await getCurrentUserId(),
   });
 
   for (const locale of locales) {
