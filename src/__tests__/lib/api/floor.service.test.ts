@@ -34,7 +34,7 @@ describe('createFloorRange', () => {
   it('should call apiClient.post with correct endpoint and payload', async () => {
     vi.mocked(apiClient.post).mockResolvedValue({ success: true });
 
-    await createFloorRange(validPayload);
+    await createFloorRange(validPayload, '123');
 
     expect(apiClient.post).toHaveBeenCalledWith('/Floor/Range', {
       rangeFrom: '1',
@@ -43,7 +43,8 @@ describe('createFloorRange', () => {
       suffix: 'Floor',
       template: {
         isActive: true,
-        createdBy: 1,
+        createdBy: 123,
+        updatedBy: 123,
         floorCode: '0',
         description: '',
         sequenceNo: 1,
@@ -56,19 +57,19 @@ describe('createFloorRange', () => {
   it('should throw error when rangeFrom is empty', async () => {
     const invalidPayload = { ...validPayload, rangeFrom: '' };
     
-    await expect(createFloorRange(invalidPayload)).rejects.toThrow('rangeFrom required');
+    await expect(createFloorRange(invalidPayload, '123')).rejects.toThrow('rangeFrom required');
   });
 
   it('should throw error when rangeTo is empty', async () => {
     const invalidPayload = { ...validPayload, rangeTo: '' };
     
-    await expect(createFloorRange(invalidPayload)).rejects.toThrow('rangeTo required');
+    await expect(createFloorRange(invalidPayload, '123')).rejects.toThrow('rangeTo required');
   });
 
   it('should throw error when rangeFrom is greater than rangeTo', async () => {
     const invalidPayload = { ...validPayload, rangeFrom: '100', rangeTo: '10' };
     
-    await expect(createFloorRange(invalidPayload)).rejects.toThrow(
+    await expect(createFloorRange(invalidPayload, '123')).rejects.toThrow(
       'rangeFrom cannot be greater than rangeTo'
     );
   });
@@ -76,7 +77,7 @@ describe('createFloorRange', () => {
   it('should throw error when range values are not valid numbers', async () => {
     const invalidPayload = { ...validPayload, rangeFrom: 'abc', rangeTo: '10' };
     
-    await expect(createFloorRange(invalidPayload)).rejects.toThrow(
+    await expect(createFloorRange(invalidPayload, '123')).rejects.toThrow(
       'Range values must be valid numbers'
     );
   });
@@ -88,7 +89,7 @@ describe('createFloorRange', () => {
       error: 'Server error' 
     });
 
-    await expect(createFloorRange(validPayload)).rejects.toThrow();
+    await expect(createFloorRange(validPayload, '123')).rejects.toThrow();
   });
 
   it('should trim prefix and suffix values', async () => {
@@ -100,7 +101,7 @@ describe('createFloorRange', () => {
       suffix: '  Floor  ',
     };
 
-    await createFloorRange(payloadWithSpaces);
+    await createFloorRange(payloadWithSpaces, '123');
 
     expect(apiClient.post).toHaveBeenCalledWith('/Floor/Range', expect.objectContaining({
       prefix: 'Test',
@@ -116,7 +117,7 @@ describe('createFloorRange', () => {
       startSequenceNo: 0,
     };
 
-    await createFloorRange(payloadWithoutStartSeq);
+    await createFloorRange(payloadWithoutStartSeq, '123');
 
     expect(apiClient.post).toHaveBeenCalledWith('/Floor/Range', expect.objectContaining({
       startSequenceNo: 1, // Should use rangeFrom value
@@ -134,7 +135,7 @@ describe('createFloorRange', () => {
       },
     };
 
-    await createFloorRange(payloadWithZeroMaxFloor);
+    await createFloorRange(payloadWithZeroMaxFloor, '123');
 
     expect(apiClient.post).toHaveBeenCalledWith('/Floor/Range', expect.objectContaining({
       template: expect.objectContaining({

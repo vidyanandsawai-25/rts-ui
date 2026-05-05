@@ -133,7 +133,7 @@ export async function getSubFloorById(id: number): Promise<SubFloor> {
   }
 }
 
-export async function createSubFloor(data: SubFloorFormModel): Promise<void> {
+export async function createSubFloor(data: SubFloorFormModel, userId: string): Promise<void> {
   try {
     if (!data.subFloorCode?.trim()) {
       throw new Error('subFloorCode required');
@@ -146,6 +146,8 @@ export async function createSubFloor(data: SubFloorFormModel): Promise<void> {
       subFloorCode: data.subFloorCode.trim(),
       description: data.description.trim(),
       isActive: data.isActive,
+      createdBy: Number(userId),
+      updatedBy: Number(userId),
     };
 
     const response = await apiClient.post('/SubFloor', payload);
@@ -163,7 +165,7 @@ export async function createSubFloor(data: SubFloorFormModel): Promise<void> {
   }
 }
 
-export async function updateSubFloor(data: SubFloorFormModel): Promise<void> {
+export async function updateSubFloor(data: SubFloorFormModel, userId: string): Promise<void> {
   try {
     if (!data.id || data.id <= 0) {
       throw new Error('SubFloor ID required');
@@ -181,6 +183,7 @@ export async function updateSubFloor(data: SubFloorFormModel): Promise<void> {
       subFloorCode: data.subFloorCode.trim(),
       description: data.description.trim(),
       isActive: data.isActive,
+      updatedBy: Number(userId),
     };
 
     const response = await apiClient.put(`/SubFloor/${data.id}`, payload);
@@ -194,12 +197,13 @@ export async function updateSubFloor(data: SubFloorFormModel): Promise<void> {
   }
 }
 
-export async function deleteSubFloor(id: number): Promise<void> {
+export async function deleteSubFloor(id: number, _userId: string): Promise<void> {
   try {
     if (id <= 0) {
       throw new Error('Valid SubFloor ID required');
     }
 
+    // Note: _userId is available for backend auditing/authentication
     // Use shared apiClient for consistent timeout and error handling
     const response = await apiClient.delete(`/SubFloor/${id}/purge`);
 

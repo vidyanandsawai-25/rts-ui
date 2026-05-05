@@ -142,7 +142,7 @@ export async function getFloorById(id: number): Promise<Floor> {
   }
 }
 
-export async function createFloor(data: FloorFormModel): Promise<void> {
+export async function createFloor(data: FloorFormModel, userId: string): Promise<void> {
   try {
     if (!data.floorCode?.trim()) throw new Error('floorCode required');
     if (!data.description?.trim()) throw new Error('description required');
@@ -152,6 +152,8 @@ export async function createFloor(data: FloorFormModel): Promise<void> {
       description: data.description.trim(),
       sequenceNo: Number(data.sequenceNo) || 0,
       isActive: data.isActive,
+      createdBy: Number(userId),
+      updatedBy: Number(userId),
     };
 
     const response = await apiClient.post('/Floor', payload);
@@ -169,7 +171,7 @@ export async function createFloor(data: FloorFormModel): Promise<void> {
   }
 }
 
-export async function updateFloor(data: FloorFormModel): Promise<void> {
+export async function updateFloor(data: FloorFormModel, userId: string): Promise<void> {
   try {
     if (!data.id || data.id <= 0) {
       throw new Error('Floor ID required');
@@ -184,6 +186,7 @@ export async function updateFloor(data: FloorFormModel): Promise<void> {
       description: data.description.trim(),
       sequenceNo: Number(data.sequenceNo) || 0,
       isActive: data.isActive,
+      updatedBy: Number(userId),
     };
 
     const response = await apiClient.put(`/Floor/${data.id}`, payload);
@@ -197,10 +200,11 @@ export async function updateFloor(data: FloorFormModel): Promise<void> {
   }
 }
 
-export async function deleteFloor(id: number): Promise<void> {
+export async function deleteFloor(id: number, _userId: string): Promise<void> {
   try {
     if (id <= 0) throw new Error('Valid Floor ID required');
 
+    // Note: _userId is available for backend auditing/authentication
     // Use shared apiClient for consistent timeout/abort handling
     const response = await apiClient.delete(`/Floor/${id}/purge`);
 
@@ -230,7 +234,7 @@ export async function deleteFloor(id: number): Promise<void> {
 /* ============================================================
    CREATE FLOOR RANGE (BULK CREATE)
 ============================================================ */
-export async function createFloorRange(data: FloorRangePayload): Promise<void> {
+export async function createFloorRange(data: FloorRangePayload, _userId: string): Promise<void> {
   try {
     // Input validation
     if (!data.rangeFrom || data.rangeFrom.trim() === '') {
@@ -241,8 +245,8 @@ export async function createFloorRange(data: FloorRangePayload): Promise<void> {
     }
     const rangeFromNum = Number(data.rangeFrom);
     const rangeToNum = Number(data.rangeTo);
-    if (isNaN(rangeFromNum) || isNaN(rangeToNum)) {
-      throw new Error('Range values must be valid numbers');
+    if (Number.isNaN(rangeFromNum) || Number.isNaN(rangeToNum)) {
+      throw new TypeError('Range values must be valid numbers');
     }
     if (rangeFromNum > rangeToNum) {
       throw new Error('rangeFrom cannot be greater than rangeTo');
@@ -251,6 +255,7 @@ export async function createFloorRange(data: FloorRangePayload): Promise<void> {
     // Validate template.floorCode (same as createFloor)
     if (!data.template.floorCode?.trim()) throw new Error('floorCode required');
 
+    // Note: _userId is available for backend auditing/authentication
     const payload: FloorRangePayload = {
       rangeFrom: data.rangeFrom.trim(),
       rangeTo: data.rangeTo.trim(),
@@ -258,7 +263,8 @@ export async function createFloorRange(data: FloorRangePayload): Promise<void> {
       suffix: data.suffix?.trim() ?? '',
       template: {
         isActive: data.template.isActive,
-        createdBy: data.template.createdBy || 1,
+        createdBy: Number(_userId),
+        updatedBy: Number(_userId),
         floorCode: data.template.floorCode.trim(),
         description: data.template.description?.trim() ?? '',
         sequenceNo: Number(data.template.sequenceNo) || 0,

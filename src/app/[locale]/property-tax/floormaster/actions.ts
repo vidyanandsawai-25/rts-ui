@@ -1,6 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
+import { getUserIdFromCookies } from "@/lib/utils/auth-session";
 import { locales } from "@/i18n/config";
 
 import {
@@ -99,7 +101,14 @@ export async function createFloorAction(
   data: FloorFormModel
 ): Promise<{ success: boolean; message?: string; messageKey?: string; statusCode?: number }> {
   try {
-    await createFloor(data);
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore);
+    
+    if (!userId) {
+      throw new ApiError(401, "Unauthorized", "User session expired");
+    }
+
+    await createFloor(data, userId.toString());
 
     for (const locale of locales) {
       revalidatePath(`/${locale}/property-tax/floormaster/floor`, "page");
@@ -140,7 +149,14 @@ export async function updateFloorAction(
   data: FloorFormModel
 ): Promise<{ success: boolean; message?: string; messageKey?: string; statusCode?: number }> {
   try {
-    await updateFloor(data);
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore);
+
+    if (!userId) {
+      throw new ApiError(401, "Unauthorized", "User session expired");
+    }
+
+    await updateFloor(data, userId.toString());
 
     for (const locale of locales) {
       revalidatePath(`/${locale}/property-tax/floormaster/floor`, "page");
@@ -190,7 +206,14 @@ export async function deleteFloorAction(
   }
 
   try {
-    await deleteFloor(id);
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore);
+
+    if (!userId) {
+      throw new ApiError(401, "Unauthorized", "User session expired");
+    }
+
+    await deleteFloor(id, userId.toString());
 
     for (const locale of locales) {
       revalidatePath(`/${locale}/property-tax/floormaster/floor`, "page");
@@ -223,13 +246,20 @@ export async function createFloorRangeAction(
   data: FloorRangePayload
 ): Promise<{ success: boolean; message?: string; messageKey?: string; statusCode?: number; floorsCreated?: number }> {
   try {
-    await createFloorRange(data);
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore);
+    
+    if (!userId) {
+      throw new ApiError(401, "Unauthorized", "User session expired");
+    }
+
+    await createFloorRange(data, userId.toString());
 
     for (const locale of locales) {
       revalidatePath(`/${locale}/property-tax/floormaster/floor`, "page");
     }
 
-    const floorsCreated = parseInt(data.rangeTo) - parseInt(data.rangeFrom) + 1;
+    const floorsCreated = Number.parseInt(data.rangeTo) - Number.parseInt(data.rangeFrom) + 1;
     return { success: true, floorsCreated };
   } catch (error: unknown) {
     // Handle 409 Conflict (duplicate record)
@@ -328,7 +358,14 @@ export async function createSubFloorAction(
   data: SubFloorFormModel
 ): Promise<{ success: boolean; message?: string; messageKey?: string; statusCode?: number }> {
   try {
-    await createSubFloor(data);
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore);
+    
+    if (!userId) {
+      throw new ApiError(401, "Unauthorized", "User session expired");
+    }
+
+    await createSubFloor(data, userId.toString());
 
     for (const locale of locales) {
       revalidatePath(`/${locale}/property-tax/floormaster/subfloor`, "page");
@@ -369,7 +406,14 @@ export async function updateSubFloorAction(
   data: SubFloorFormModel
 ): Promise<{ success: boolean; message?: string; messageKey?: string; statusCode?: number }> {
   try {
-    await updateSubFloor(data);
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore);
+
+    if (!userId) {
+      throw new ApiError(401, "Unauthorized", "User session expired");
+    }
+
+    await updateSubFloor(data, userId.toString());
 
     for (const locale of locales) {
       revalidatePath(`/${locale}/property-tax/floormaster/subfloor`, "page");
@@ -419,7 +463,14 @@ export async function deleteSubFloorAction(
   }
 
   try {
-    await deleteSubFloor(id);
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore);
+
+    if (!userId) {
+      throw new ApiError(401, "Unauthorized", "User session expired");
+    }
+
+    await deleteSubFloor(id, userId.toString());
 
     for (const locale of locales) {
       revalidatePath(`/${locale}/property-tax/floormaster/subfloor`, "page");
