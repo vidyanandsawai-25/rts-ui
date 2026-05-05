@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Search, CheckSquare, SquareX } from "lucide-react";
+import { Search } from "lucide-react";
 import { Input, Select } from "@/components/common";
+import { SelectAllButton, ClearButton } from "@/components/common/ActionButtons";
+import { Checkbox } from "@/components/common/checkbox";
 import { cn } from "@/lib/utils/cn";
 import type { UseType } from "@/types/typeOfUse.types";
 
@@ -103,22 +105,18 @@ export const TypeOfUseSection = ({
           </div>
 
           <div className="flex gap-2">
-            <button
-              type="button"
+            <SelectAllButton
               onClick={onSelectAll}
-              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors border border-blue-200"
-            >
-              <CheckSquare size={14} />
-              {t("form.typeOfUseSection.selectAll")}
-            </button>
-            <button
-              type="button"
+              label={t("form.typeOfUseSection.selectAll")}
+              size="xs"
+              className="flex-1"
+            />
+            <ClearButton
               onClick={onClearAll}
-              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 bg-white hover:bg-gray-100 rounded-md transition-colors border border-gray-200"
-            >
-              <SquareX size={14} />
-              {t("form.typeOfUseSection.clear")}
-            </button>
+              label={t("form.typeOfUseSection.clear")}
+              size="xs"
+              className="flex-1"
+            />
           </div>
         </div>
 
@@ -139,6 +137,7 @@ export const TypeOfUseSection = ({
                 return (
                   <label
                     key={item.typeOfUseId}
+                    onClick={() => onToggle(item.typeOfUseId)}
                     className={cn(
                       "flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition-all border shadow-sm",
                       isChecked
@@ -146,12 +145,14 @@ export const TypeOfUseSection = ({
                         : "bg-white hover:border-blue-200 border-gray-200"
                     )}
                   >
-                    <input
-                      type="checkbox"
-                      className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                      checked={isChecked}
-                      onChange={() => onToggle(item.typeOfUseId)}
-                    />
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <Checkbox
+                        checked={isChecked}
+                        onCheckedChange={() => onToggle(item.typeOfUseId)}
+                        aria-label={item.typeOfUseCode}
+                        className={isChecked ? 'data-[state=checked]:text-blue-600' : ''}
+                      />
+                    </div>
 
                     {/* ID Badge */}
                     <span className={cn(

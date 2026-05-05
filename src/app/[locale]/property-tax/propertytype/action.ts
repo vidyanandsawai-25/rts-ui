@@ -2,17 +2,6 @@
 import { getUseTypesPagedServer } from "@/lib/api/typeofusemaster.service";
 import type { UseType } from "@/types/typeOfUse.types";
 
-// SSR action to fetch all TypeOfUse (for PropertyTypeForm)
-// Uses -1 pageSize to fetch all records without pagination
-export async function getTypeOfUseListAction(): Promise<UseType[]> {
-  try {
-    const result = await getUseTypesPagedServer({ pageNumber: 1, pageSize: -1 });
-    return result.items;
-  } catch (error) {
-    console.error("[getTypeOfUseListAction] Error:", error);
-    throw error; // Rethrow so UI can distinguish between 'no data' and 'failed to load'
-  }
-}
 import { revalidatePath } from "next/cache";
 import { locales } from "@/i18n/config";
 import { createPropertyType, deletePropertyType, getPropertyTypesPaged, getPropertyTypeById, updatePropertyType } from "@/lib/api/property-type-crud.service";
@@ -22,6 +11,17 @@ import { ApiError } from "@/lib/utils/api";
 import { PropertyType, PropertyTypeFormModel, PropertyTypeAndTypeOfUseValidation } from "@/types/property-type.types";
 import { PropertyTypeCategory } from "@/types/property-type-category.types";
 import { PagedResponse } from "@/types/common.types";
+
+// SSR action to fetch all TypeOfUse (for PropertyTypeForm)
+// Uses -1 pageSize to fetch all records without pagination
+export async function getTypeOfUseListAction(): Promise<UseType[]> {
+  try {
+    const result = await getUseTypesPagedServer({ pageNumber: 1, pageSize: -1 });
+    return result.items;
+  } catch (error) {
+    throw error; // Rethrow so UI can distinguish between 'no data' and 'failed to load'
+  }
+}
 
 export async function fetchPropertyTypePagedServerAction(
   pageNumber: number,
@@ -53,24 +53,6 @@ export async function fetchPropertyTypePagedServerAction(
     const result = await getPropertyTypesPaged(pageNumber, pageSize, searchTerm, validSortBy, validSortOrder);
     return result;
   } catch (error: unknown) {
-    // Log the error for debugging
-    if (error instanceof ApiError) {
-      console.error(
-        `[fetchPropertyTypePagedServerAction] API Error ${error.statusCode}:`,
-        error.responseText
-      );
-    } else if (error instanceof Error) {
-      console.error(
-        "[fetchPropertyTypePagedServerAction] Error:",
-        error.message
-      );
-    } else {
-      console.error(
-        "[fetchPropertyTypePagedServerAction] Unknown error:",
-        error
-      );
-    }
-
     // Re-throw the error so Next.js error boundary can catch it
     throw error;
   }
@@ -104,13 +86,9 @@ export async function createPropertyTypeAction(
       if (match?.id) {
         return { success: true, createdId: match.id };
       }
-      console.warn("[createPropertyTypeAction] Fallback search found no exact match", {
-        searchTerm: data.propertyDescription.trim(),
-        totalMatches: searchResult.items.length
-      });
-    } catch (searchError) {
-      // Log but don't fail - property type was created successfully
-      console.warn("[createPropertyTypeAction] Fallback search failed:", searchError);
+      // Fallback search found no exact match; still return success
+    } catch (_searchError) {
+      // Fallback search failed; still return success
     }
     
     // Property type created but couldn't retrieve ID - still success
@@ -212,17 +190,6 @@ export async function getPropertyTypeByIdAction(
     }
     return result;
   } catch (error) {
-    if (error instanceof ApiError) {
-      console.error(
-        `[getPropertyTypeByIdAction] API Error ${error.statusCode}:`,
-        error.responseText
-      );
-    } else {
-      console.error(
-        "[getPropertyTypeByIdAction] Error:",
-        error
-      );
-    }
     throw error; // rethrow so UI can handle it
   }
 }
@@ -232,7 +199,6 @@ export async function getPropertyTypeCategoriesAction(): Promise<PropertyTypeCat
     const result = await getPropertyTypeCategories();
     return result;
   } catch (error) {
-    console.error("[getPropertyTypeCategoriesAction] Error:", error);
     throw error; // rethrow so UI does not treat a load failure as "no categories"
   }
 }
@@ -243,7 +209,6 @@ export async function getPropertyTypeAndTypeOfUseValidationAction(): Promise<Pro
     const result = await getPropertyTypeAndTypeOfUseValidation();
     return result;
   } catch (error) {
-    console.error("[getPropertyTypeAndTypeOfUseValidationAction] Error:", error);
     throw error; // rethrow so UI does not treat a load failure as 'no validations'
   }
 }
@@ -268,7 +233,6 @@ export async function getValidationsByPropertyTypeIdsAction(
     // Flatten the array of arrays into a single array
     return validationArrays.flat();
   } catch (error) {
-    console.error("[getValidationsByPropertyTypeIdsAction] Error:", error);
     throw error; // rethrow so the UI does not treat load failure as "no mappings"
   }
 }
@@ -286,7 +250,6 @@ export async function updatePropertyTypeValidationsAction(
     }
     return { success: true };
   } catch (error) {
-    console.error("[updatePropertyTypeValidationsAction] Error:", error);
     if (error instanceof ApiError) {
       return { success: false, message: error.responseText };
     }

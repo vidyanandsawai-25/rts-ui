@@ -1,3 +1,8 @@
+// Used for TypeOfUseModal UI
+export interface TypeOfUseItem {
+  id: string;
+  description: string;
+}
 export type UseStatus = "Active" | "Inactive";
  
 export type UseGroupIconKey =

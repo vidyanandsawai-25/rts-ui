@@ -21,7 +21,6 @@ export async function getPropertyTypes(): Promise<PropertyType[]> {
     const items = response.data.items ?? [];
     return items.filter(isPropertyTypeShape).map(normalizePropertyType);
   } catch (error) {
-    console.error("Error fetching property types:", error);
     throw error;
   }
 }
@@ -52,7 +51,6 @@ export async function getPropertyTypesPaged(
     const normalizedItems = validItems.map(normalizePropertyType);
     return { ...response.data, items: normalizedItems };
   } catch (error) {
-    console.error("Error fetching paged property types:", error);
     throw error;
   }
 }
@@ -76,7 +74,6 @@ export async function getPropertyTypeById(propertyTypeId: number): Promise<Prope
     // Fallback for unexpected shape
     throw new ApiError(500, "Unexpected data format received from server", "Data validation failed");
   } catch (error) {
-    console.error(`Error fetching property type ${propertyTypeId}:`, error);
     throw error;
   }
 }
@@ -110,7 +107,6 @@ export async function createPropertyType(data: PropertyTypeFormModel): Promise<P
     // The property type was created, we just don't have the ID from response
     return null;
   } catch (error) {
-    console.error("Error creating property type:", error);
     throw error;
   }
 }
@@ -134,7 +130,6 @@ export async function updatePropertyType(data: PropertyTypeFormModel): Promise<v
       throw createApiError(response.statusCode, response.error, "Update property type failed");
     }
   } catch (error) {
-    console.error("Error updating property type:", error);
     throw error;
   }
 }
@@ -154,7 +149,6 @@ export async function deletePropertyType(id: number): Promise<void> {
       throw new ApiError(statusCode, response.error || "Failed to delete property type", `Delete property type ${id} failed`);
     }
   } catch (error) {
-    console.error(`Error deleting property type ${id}:`, error);
     throw error;
   }
 }
@@ -173,7 +167,6 @@ export async function searchPropertyTypes(query: string): Promise<PropertyType[]
       pt.propertyTypeGroup.toLowerCase().includes(lowerQuery)
     );
   } catch (error) {
-    console.error("Error searching property types:", error);
     throw error;
   }
 }

@@ -42,7 +42,6 @@ export async function getPropertyTypeCategories(): Promise<PropertyTypeCategory[
       );
     });
   } catch (error) {
-    console.error("Error fetching property type categories:", error);
     throw error;
   }
 }
@@ -70,7 +69,6 @@ export async function getPropertyTypeCategoryById(id: number): Promise<PropertyT
     
     return response.data || null;
   } catch (error) {
-    console.error(`Error fetching property type category ${id}:`, error);
     throw error;
   }
 }

@@ -1,12 +1,9 @@
 "use client";
 
+
 import { Modal } from "@/components/common/Modal";
 import { useTranslations } from "next-intl";
-
-export interface TypeOfUseItem {
-  id: string;
-  description: string;
-}
+import type { TypeOfUseItem } from "@/types/typeOfUse.types";
 
 interface TypeOfUseModalProps {
   open: boolean;

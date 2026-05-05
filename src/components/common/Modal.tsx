@@ -3,6 +3,7 @@
 import React, { useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { X } from "lucide-react";
+import { Badge } from "./Badge";
 
 /* =========================
    WIDTH CONFIG (single source)
@@ -138,9 +139,9 @@ export function Modal({
               </h2>
 
               {count !== undefined && (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">
+                <Badge color="blue" size="sm" >
                   {t("messages.total", { count })}
-                </span>
+                </Badge>
               )}
             </div>
 

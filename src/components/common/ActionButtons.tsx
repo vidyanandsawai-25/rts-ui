@@ -20,6 +20,7 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
+  CheckSquare,
 } from "lucide-react";
 import { Button, type ButtonProps } from "./ActionButton";
 import { cn } from "@/lib/utils/cn";
@@ -90,6 +91,16 @@ export function ClearButton({
 }: LabeledActionButtonProps): React.ReactElement {
   return (
     <Button variant="secondary" icon={Eraser} {...props}>
+      {label}
+    </Button>
+  );
+}
+export function SelectAllButton({
+  label = "Select All",
+  ...props
+}: LabeledActionButtonProps): React.ReactElement {
+  return (
+    <Button variant="primary" icon={CheckSquare} {...props}>
       {label}
     </Button>
   );

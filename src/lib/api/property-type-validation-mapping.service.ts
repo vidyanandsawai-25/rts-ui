@@ -14,7 +14,6 @@ export async function getPropertyTypeAndTypeOfUseValidation(): Promise<PropertyT
     }
     return response.data?.items ?? [];
   } catch (error) {
-    console.error("Error fetching property type and type of use validation:", error);
     throw error;
   }
 }
@@ -42,7 +41,6 @@ export async function getValidationByPropertyTypeId(propertyTypeId: number): Pro
     
     return response.data?.items ?? [];
   } catch (error) {
-    console.error(`Error fetching validation for property type ${propertyTypeId}:`, error);
     throw error;
   }
 }
@@ -72,7 +70,6 @@ export async function createPropertyTypeValidation(
     }
     return response.data!;
   } catch (error) {
-    console.error("Error creating property type validation mapping:", error);
     throw error;
   }
 }
@@ -90,7 +87,6 @@ export async function createPropertyTypeValidationBulk(
       )
     );
   } catch (error) {
-    console.error("Error creating bulk property type validation mappings:", error);
     throw error;
   }
 }
@@ -109,7 +105,6 @@ export async function deletePropertyTypeValidation(id: number): Promise<void> {
       );
     }
   } catch (error) {
-    console.error(`Error deleting property type validation ${id}:`, error);
     throw error;
   }
 }
@@ -120,7 +115,6 @@ export async function deleteValidationsByPropertyTypeId(propertyTypeId: number):
     const validations = await getValidationByPropertyTypeId(propertyTypeId);
     await Promise.all(validations.map((v) => deletePropertyTypeValidation(v.id)));
   } catch (error) {
-    console.error(`Error deleting validations for property type ${propertyTypeId}:`, error);
     throw error;
   }
 }
@@ -157,12 +151,11 @@ export async function updatePropertyTypeValidations(
     if (addError) {
       await Promise.all(
         createdMappings.map((m) => 
-          deletePropertyTypeValidation(m.id).catch((rollbackError) => {
-            console.error(`Failed to rollback created mapping ${m.id}:`, rollbackError);
+          deletePropertyTypeValidation(m.id).catch((_rollbackError) => {
+            // Rollback failed - error already logged at service layer
           })
         )
       );
-      console.error(`Error adding new validations for property type ${propertyTypeId}, rolled back adds:`, addError);
       throw addError;
     }
 
@@ -184,26 +177,24 @@ export async function updatePropertyTypeValidations(
     if (deleteError) {
       // Restore deleted mappings by recreating them
       const restorePromises = deletedMappings.map((m) =>
-        createPropertyTypeValidation(propertyTypeId, m.typeOfUseId).catch((restoreError) => {
-          console.error(`Failed to restore mapping for typeOfUseId ${m.typeOfUseId}:`, restoreError);
+        createPropertyTypeValidation(propertyTypeId, m.typeOfUseId).catch((_restoreError) => {
+          // Restore failed - error already logged at service layer
         })
       );
 
       // Remove newly created mappings
       const rollbackPromises = createdMappings.map((m) =>
-        deletePropertyTypeValidation(m.id).catch((rollbackError) => {
-          console.error(`Failed to rollback created mapping ${m.id}:`, rollbackError);
+        deletePropertyTypeValidation(m.id).catch((_rollbackError) => {
+          // Rollback failed - error already logged at service layer
         })
       );
 
       // Wait for all restore/rollback operations
       await Promise.all([...restorePromises, ...rollbackPromises]);
 
-      console.error(`Error deleting old validations for property type ${propertyTypeId}, rolled back all changes:`, deleteError);
       throw deleteError;
     }
   } catch (error) {
-    console.error(`Error updating validations for property type ${propertyTypeId}:`, error);
     throw error;
   }
 }

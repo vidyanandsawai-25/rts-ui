@@ -7,6 +7,8 @@ import {
   UploadButton,
   ExportButton,
   ImportButton,
+  SelectAllButton,
+  ClearButton,
   EditButton,
   DeleteButton,
   FirstPageButton,
@@ -151,6 +153,68 @@ describe("ActionButtons", () => {
         render(<ImportButton onClick={handleClick} />);
         fireEvent.click(screen.getByText("Import"));
         expect(handleClick).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    describe("SelectAllButton", () => {
+      it("renders with default label", () => {
+        render(<SelectAllButton />);
+        expect(screen.getByText("Select All")).toBeInTheDocument();
+      });
+
+      it("renders with custom label", () => {
+        render(<SelectAllButton label="Select Everything" />);
+        expect(screen.getByText("Select Everything")).toBeInTheDocument();
+      });
+
+      it("calls onClick handler when clicked", () => {
+        const handleClick = vi.fn();
+        render(<SelectAllButton onClick={handleClick} />);
+        fireEvent.click(screen.getByText("Select All"));
+        expect(handleClick).toHaveBeenCalledTimes(1);
+      });
+
+      it("is disabled when disabled prop is true", () => {
+        render(<SelectAllButton disabled />);
+        const button = screen.getByText("Select All").closest("button");
+        expect(button).toBeDisabled();
+      });
+
+      it("accepts additional className", () => {
+        render(<SelectAllButton className="custom-select-all-class" />);
+        const button = screen.getByText("Select All").closest("button");
+        expect(button).toHaveClass("custom-select-all-class");
+      });
+    });
+
+    describe("ClearButton", () => {
+      it("renders with default label", () => {
+        render(<ClearButton />);
+        expect(screen.getByText("Clear")).toBeInTheDocument();
+      });
+
+      it("renders with custom label", () => {
+        render(<ClearButton label="Reset" />);
+        expect(screen.getByText("Reset")).toBeInTheDocument();
+      });
+
+      it("calls onClick handler when clicked", () => {
+        const handleClick = vi.fn();
+        render(<ClearButton onClick={handleClick} />);
+        fireEvent.click(screen.getByText("Clear"));
+        expect(handleClick).toHaveBeenCalledTimes(1);
+      });
+
+      it("is disabled when disabled prop is true", () => {
+        render(<ClearButton disabled />);
+        const button = screen.getByText("Clear").closest("button");
+        expect(button).toBeDisabled();
+      });
+
+      it("accepts additional className", () => {
+        render(<ClearButton className="custom-clear-class" />);
+        const button = screen.getByText("Clear").closest("button");
+        expect(button).toHaveClass("custom-clear-class");
       });
     });
   });
