@@ -26,6 +26,7 @@ import {
   MOBILE_10_REGEX
 } from './validation-rules';
 import type { Validator } from './validation-helpers';
+import type { OfficeFormModel } from '@/types/office.types';
 
 /**
  * Common validation rules for Master Forms
@@ -339,8 +340,69 @@ export const propertyValidations = {
       const strVal = String(value ?? "").trim();
       if (!strVal) return undefined; // optional
       if (!pattern.test(strVal)) {
-        return t(`property.validation.${label}Format`);
+        return t(`property.validation.${label}Invalid`);
       }
       return undefined;
     },
 };
+
+/**
+ * Office form validations
+ */
+export const officeValidations = {
+  validate: (
+    data: Partial<OfficeFormModel>,
+    t: (key: string, params?: Record<string, string | number | Date>) => string,
+    isEdit: boolean,
+    tCommon?: (key: string, params?: Record<string, string | number | Date>) => string
+  ) => {
+    const errors: Record<string, string> = {};
+    const officeCode = data.officeCode?.trim();
+    const officeName = data.officeName?.trim();
+    
+    // Use tCommon for shared messages if available, fallback to t
+    const tx = tCommon || t;
+
+    if (!officeCode) {
+      errors.officeCode = t('form.validation.officeCodeRequired');
+    } else if (officeCode.length > 20) {
+      errors.officeCode = tx('form.validation.codeMaxLength', { count: 20 });
+    } else if (!CODE_REGEX.test(officeCode)) {
+      errors.officeCode = tx('form.validation.codeFormat');
+    }
+
+    if (!officeName) {
+      errors.officeName = t('form.validation.officeNameRequired');
+    } else if (officeName.length > 200) {
+      errors.officeName = tx('form.validation.nameMaxLength', { count: 200 });
+    }
+
+    if (!data.type) {
+      errors.type = tx('form.validation.typeRequired');
+    }
+
+    if (data.emailId && !EMAIL_REGEX.test(data.emailId)) {
+      errors.emailId = tx('form.validation.invalidEmail');
+    }
+
+    if (data.pincode && !/^\d{6}$/.test(data.pincode)) {
+      errors.pincode = tx('form.validation.invalidPincode');
+    }
+
+    const isActiveError = commonValidations.masterActiveStatus(tx, isEdit)(data.isActive);
+    if (isActiveError) {
+      errors.isActive = isActiveError;
+    }
+
+    return errors;
+  },
+
+  sanitizeCode: (value: string): string => {
+    let sanitized = value.replace(/[^a-zA-Z0-9_]/g, '');
+    if (sanitized.length > 20) {
+      sanitized = sanitized.substring(0, 20);
+    }
+    return sanitized;
+  }
+};
+

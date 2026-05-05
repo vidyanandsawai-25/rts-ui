@@ -18,18 +18,19 @@ const Checkbox = React.forwardRef<HTMLButtonElement, CheckboxProps>(
             disabled = false,
             name,
             value,
+            label,
             onClick,
             onKeyDown,
+            id: providedId,
             ...restProps
         },
         ref
-    ): React.ReactElement => {
+    ): React.ReactNode => {
         /* ---- state --------------------------------------------------- */
+        const generatedId = React.useId();
+        const id = providedId || generatedId;
         const isControlled: boolean = controlledChecked !== undefined;
         const [internalChecked, setInternalChecked] = React.useState<boolean>(defaultChecked);
-        // derive the checked state from either the controlled prop or internal state.
-        // use nullish coalescing so that `false` remains a valid value while avoiding
-        // non-null assertions that weaken type safety.
         const isChecked: boolean = (isControlled ? controlledChecked : internalChecked) ?? false;
         const dataState: CheckboxState = isChecked ? 'checked' : 'unchecked';
 
@@ -60,8 +61,6 @@ const Checkbox = React.forwardRef<HTMLButtonElement, CheckboxProps>(
                     e.preventDefault();
                     toggle();
                 }
-                // ARIA checkbox spec: only Space toggles, prevent Enter from
-                // triggering the native <button> click which would also toggle.
                 if (e.key === 'Enter') {
                     e.preventDefault();
                 }
@@ -70,7 +69,7 @@ const Checkbox = React.forwardRef<HTMLButtonElement, CheckboxProps>(
         );
 
         /* ---- render -------------------------------------------------- */
-        return (
+        const checkboxContent = (
             <>
                 <input
                     type="checkbox"
@@ -85,6 +84,7 @@ const Checkbox = React.forwardRef<HTMLButtonElement, CheckboxProps>(
                 />
                 <button
                     ref={ref}
+                    id={id}
                     type="button"
                     role="checkbox"
                     aria-checked={isChecked}
@@ -106,6 +106,25 @@ const Checkbox = React.forwardRef<HTMLButtonElement, CheckboxProps>(
                 </button>
             </>
         );
+
+        if (label) {
+            return (
+                <div className="flex items-center gap-2">
+                    {checkboxContent}
+                    <label
+                        htmlFor={id}
+                        className={cn(
+                            "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer",
+                            disabled && "cursor-not-allowed opacity-50"
+                        )}
+                    >
+                        {label}
+                    </label>
+                </div>
+            );
+        }
+
+        return checkboxContent;
     }
 );
 

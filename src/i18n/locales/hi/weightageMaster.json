@@ -23,7 +23,7 @@
       "labels": {
         "active": "सक्रिय",
         "inactive": "निष्क्रिय",
-        "pendingRecordCreates": "लंबित रिकॉर्ड बनाना"
+        "pendingRecordCreates": "{count} लंबित रिकॉर्ड बनाना"
       },
       "messages": {
         "pendingRecordsWarning": "लंबित रिकॉर्ड हैं। कृपया सभी जेनरेट करें बटन पर क्लिक करें।",

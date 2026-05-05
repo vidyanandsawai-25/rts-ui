@@ -1,6 +1,6 @@
 import { render, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import { getFloorCvWeightageMasterColumns } from '@/components/modules/property-tax/weightage-mastercv/floorCvWeightageMasterColumns';
+import { getFloorCvWeightageMasterColumns } from '@/components/modules/property-tax/weightage-mastercv/floorFactorCv/floorCvWeightageMasterColumns';
 import { FloorFactorCVMaster } from '@/types/floor-cv-weightageMaster.types';
 
 // Extend FloorFactorCVMaster to add index signature

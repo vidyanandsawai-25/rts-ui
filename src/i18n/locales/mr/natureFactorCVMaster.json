@@ -1,0 +1,45 @@
+{
+  "natureFactorCVMaster": {
+    "title": "निसर्ग घटक CV मास्टर",
+    "columns": {
+      "constructionCode": "बांधकाम कोड",
+      "description": "वर्णन",
+      "factor": "घटक",
+      "assessmentYear": "मूल्यांकन वर्ष",
+      "status": "स्थिती",
+      "action": "कृती"
+    },
+    "filters": {
+      "assessmentYear": "मूल्यांकन वर्ष",
+      "constructionType": "बांधकाम प्रकार",
+      "factor": "घटक"
+    },
+    "placeholders": {
+      "selectAssessmentYear": "मूल्यांकन वर्ष निवडा",
+      "selectConstructionType": "बांधकाम प्रकार निवडा",
+      "factor": "0.00"
+    },
+    "messages": {
+      "noRecordsFound": "कोणत्याही नोंदी आढळल्या नाहीत"
+    },
+    "loading": {
+      "message": "निसर्ग घटक CV मास्टर लोड होत आहे...",
+      "description": "आम्ही रेकॉर्ड मिळेपर्यंत कृपया प्रतीक्षा करा."
+    },
+    "error": {
+      "title": "काहीतरी चुकले!",
+      "description": "निसर्ग घटक वेटेज रेकॉर्ड लोड करताना त्रुटी आली.",
+      "tryAgain": "पुन्हा प्रयत्न करा",
+      "goHome": "घरी परत जा",
+      "errorId": "त्रुटि आयडी: {id}"
+    },
+    "errors": {
+      "invalidNatureFactorCVId": "वैध निसर्ग घटक CV आयडी आवश्यक आहे",
+      "fetchFailed": "निसर्ग घटक वेटेज रेकॉर्ड आणण्यात अयशस्वी",
+      "updateFailed": "निसर्ग घटक वेटेज रेकॉर्ड अपडेट करण्यात अयशस्वी",
+      "createFailed": "निसर्ग घटक वेटेज रेकॉर्ड तयार करण्यात अयशस्वी",
+      "bulkUpdateFailed": "निसर्ग घटक वेटेज रेकॉर्ड बल्क अपडेट करण्यात अयशस्वी",
+      "bulkCreateFailed": "निसर्ग घटक वेटेज रेकॉर्ड बल्क तयार करण्यात अयशस्वी"
+    }
+  }
+}
