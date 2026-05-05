@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
@@ -44,15 +44,12 @@ export function useFloorInformationForm({
     markedForDeletion: false
   });
 
-  const [subUseTypeOptions, setSubUseTypeOptions] = useState<SubTypeOfUse[]>(initialSubUseTypeOptions);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showErrors, setShowErrors] = useState(false);
 
-  // Sync initial sub-use types when they change via server-side props
-  useEffect(() => {
-    setSubUseTypeOptions(initialSubUseTypeOptions);
-  }, [initialSubUseTypeOptions]);
+
 
   /**
    * Handles Type of Use change and updates sub-type options via URL query params.
@@ -200,7 +197,7 @@ export function useFloorInformationForm({
   return {
     formData,
     setFormData,
-    subUseTypeOptions,
+    subUseTypeOptions: initialSubUseTypeOptions,
     isSubmitting,
     errors,
     showError: (field: string) => showErrors && !!errors[field],

@@ -7,7 +7,7 @@ import {
 } from "@/components/common"
 import { Label } from "@/components/common/label";
 import { Save } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
 import { OldTaxesDetails, OldTaxItem } from "@/types/property-old-details.types";
@@ -44,7 +44,10 @@ export default function TaxationBreakdownForm({
   const [taxes, setTaxes] = useState<OldTaxItem[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
+  const [prevInitialData, setPrevInitialData] = useState<OldTaxesDetails | null>(null);
+
+  if (initialData !== prevInitialData) {
+    setPrevInitialData(initialData);
     if (initialData && initialData.taxYears && initialData.taxYears.length > 0) {
       const yearData = initialData.taxYears[0];
       const taxList = yearData.taxes || [];
@@ -62,7 +65,7 @@ export default function TaxationBreakdownForm({
         rVorCVValue: yearData.rVorCVValue || 0
       });
     }
-  }, [initialData]);
+  }
 
   const handleTaxChange = (taxId: number, value: string) => {
     const numValue = Number(value) || 0;
