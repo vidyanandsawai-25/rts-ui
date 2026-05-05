@@ -28,7 +28,16 @@
     "oldDetails": "पुराने विवरण",
     "rateable": "कर निर्धार्य मूल्य",
     "capital": "पूंजीगत मूल्य",
-    "dual": "दोहरी पद्धति"
+    "dual": "दोहरी पद्धति",
+    "apartment": "अपार्टमेंट"
+  },
+  "apartmentTabs": {
+    "amenities": "सुविधाएँ",
+    "commercial": "व्यावसायिक विवरण",
+    "residential": "आवासीय विवरण",
+    "amenitiesContent": "सुविधाएँ सामग्री",
+    "commercialContent": "व्यावसायिक विवरण सामग्री",
+    "residentialContent": "आवासीय विवरण सामग्री"
   },
   "fields": {
     "upicId": "यूपीआईसी आईडी",

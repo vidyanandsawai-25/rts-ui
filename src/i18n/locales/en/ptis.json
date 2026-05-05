@@ -28,7 +28,16 @@
     "oldDetails": "Old Details",
     "rateable": "Rateable",
     "capital": "Capital",
-    "dual": "Dual Method"
+    "dual": "Dual Method",
+    "apartment": "Apartment"
+  },
+  "apartmentTabs": {
+    "amenities": "Amenities",
+    "commercial": "Commercial Details",
+    "residential": "Residential Details",
+    "amenitiesContent": "Amenities Content",
+    "commercialContent": "Commercial Details Content",
+    "residentialContent": "Residential Details Content"
   },
   "fields": {
     "upicId": "UPIC ID",

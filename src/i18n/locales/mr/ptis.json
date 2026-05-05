@@ -28,7 +28,16 @@
     "oldDetails": "जुने तपशील",
     "rateable": "करयोग्य मूल्य",
     "capital": "भांडवली मूल्य",
-    "dual": "दुहेरी पद्धत"
+    "dual": "दुहेरी पद्धत",
+    "apartment": "अपार्टमेंट"
+  },
+  "apartmentTabs": {
+    "amenities": "सुविधा",
+    "commercial": "व्यावसायिक तपशील",
+    "residential": "निवासी तपशील",
+    "amenitiesContent": "सुविधा सामग्री",
+    "commercialContent": "व्यावसायिक तपशील सामग्री",
+    "residentialContent": "निवासी तपशील सामग्री"
   },
   "fields": {
     "upicId": "यूपीआयसी आयडी",
