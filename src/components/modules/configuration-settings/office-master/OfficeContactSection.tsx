@@ -3,11 +3,11 @@ import { Input, TextArea } from "@/components/common";
 import type { Office, OfficeFormModel } from "@/types/office.types";
 
 interface OfficeContactSectionProps {
-  formData: Partial<Office>;
+  formData: OfficeFormModel;
   errors: Partial<Record<keyof OfficeFormModel, string>>;
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
   handleBlur: (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
-  showError: (name: any) => boolean;
+  showError: (name: keyof OfficeFormModel) => boolean;
   t: (key: string) => string;
 }
 

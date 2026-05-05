@@ -145,8 +145,8 @@ export function useOfficeForm({
     });
   }, [submittedOnce, validate]);
 
-  const showError = useCallback((field: keyof OfficeFormModel) => {
-    return (submittedOnce || touched[field]) && !!errors[field];
+  const showError = useCallback((field: keyof OfficeFormModel): boolean => {
+    return Boolean((submittedOnce || touched[field]) && errors[field]);
   }, [submittedOnce, touched, errors]);
 
   return {

@@ -1,9 +1,9 @@
 import React from "react";
 import { Input } from "@/components/common";
-import type { Office } from "@/types/office.types";
+import type { Office, OfficeFormModel } from "@/types/office.types";
 
 interface OfficeAdditionalSectionProps {
-  formData: Partial<Office>;
+  formData: OfficeFormModel;
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
   t: (key: string) => string;
 }
