@@ -17,15 +17,16 @@ export const getTypeOfUseColumns = (
         label: t('leftTable.typeOfUseCode'),
         width: "30%",
         render: (value, row) => (
-            <div
-                className="cursor-pointer text-blue-600 hover:underline inline-flex items-center gap-2"
+            <button
+                type="button"
+                className="cursor-pointer text-blue-600 hover:underline inline-flex items-center gap-2 bg-transparent border-0 p-0"
                 onClick={() => handleTypeRowClick(row)}
             >
                 <i className="fa-solid fa-list-ul text-blue-500 text-lg"></i>
                 <div className="min-w-[24px] h-[24px] px-1 rounded border border-blue-200 text-blue-500 font-semibold flex items-center justify-center text-[11px] bg-[#E2EEFF]">
                     {String(value || '')}
                 </div>
-            </div>
+            </button>
         ),
     },
     {
@@ -33,12 +34,13 @@ export const getTypeOfUseColumns = (
         label: t('leftTable.typeOfUse'),
         width: "50%",
         render: (value, row) => (
-            <div
-                className="cursor-pointer text-blue-600 hover:underline py-1"
+            <button
+                type="button"
+                className="cursor-pointer text-blue-600 hover:underline py-1 bg-transparent border-0 p-0 text-left w-full"
                 onClick={() => handleTypeRowClick(row)}
             >
                 {String(value || '')}
-            </div>
+            </button>
         ),
     },
     {
@@ -97,6 +99,7 @@ export const getUseFactorColumns = (
                     value={editableValue}
                     rowId={rowUid}
                     columnId="factor"
+                    metaLabel={t('columns.factor')}
                     onCellChange={handleCellChange}
                 />
             );

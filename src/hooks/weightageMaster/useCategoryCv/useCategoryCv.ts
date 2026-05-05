@@ -66,8 +66,10 @@ export function useCategoryCv({
 
     useEffect(() => {
         if (hasNewRecords && !hasShownWarningRef.current) {
-            addToast('warning', tW('common.messages.pendingRecordsWarning'));
             hasShownWarningRef.current = true;
+            setTimeout(() => {
+                addToast('warning', tW('common.messages.pendingRecordsWarning'));
+            }, 0);
         } else if (!hasNewRecords) {
             hasShownWarningRef.current = false;
         }
@@ -133,6 +135,7 @@ export function useCategoryCv({
         setEditableRows({});
         setFactorValue("0.00");
         setTypeOfUseId("");
+        setSelectedTypeId(null);
         setSelectedYear("");
         router.push(`/${locale}/property-tax/weightage-master/sub-type-weightage?page=1&pageSize=${pageSize}&leftPage=1&leftPageSize=${typeOfUsePageSize}`);
         addToast('info', tW('common.messages.allClearedInfo'));
@@ -164,7 +167,8 @@ export function useCategoryCv({
         tW,
     });
 
-    const isApplyDisabled = parseFloat(factorValue) <= 0 || data.length === 0;
+    const parsedFactorValue = parseFloat(factorValue);
+    const isApplyDisabled = Number.isNaN(parsedFactorValue) || parsedFactorValue < 0 || data.length === 0;
     const isBulkUpdateDisabled = Object.keys(editableRows).length === 0 || isBulkUpdating;
 
     return {

@@ -8,13 +8,15 @@ import { UseCategoryCvPageProps } from "@/types/useCategoryCvFactor.types";
 
 export default async function Page({ searchParams }: UseCategoryCvPageProps): Promise<React.ReactElement> {
     const params = await searchParams;
-    const pageNumber = Math.max(1, Number(params.page) || 1);
-    const pageSize = (Number(params.pageSize) === -1) ? -1 : Math.min(1000, Math.max(1, Number(params.pageSize) || 10));
-    const leftPageNumber = Math.max(1, Number(params.leftPage) || 1);
-    const leftPageSize = (Number(params.leftPageSize) === -1) ? -1 : Math.min(1000, Math.max(1, Number(params.leftPageSize) || 10));
+    const pageNumber = Math.max(1, parseInt(params.page as string, 10) || 1);
+    const pageSizeRaw = parseInt(params.pageSize as string, 10);
+    const pageSize = pageSizeRaw === -1 ? -1 : Math.min(1000, Math.max(1, pageSizeRaw || 10));
+    const leftPageNumber = Math.max(1, parseInt(params.leftPage as string, 10) || 1);
+    const leftPageSizeRaw = parseInt(params.leftPageSize as string, 10);
+    const leftPageSize = leftPageSizeRaw === -1 ? -1 : Math.min(1000, Math.max(1, leftPageSizeRaw || 10));
     const searchTerm = params.q || undefined;
     const selectedYearRange = params.selectedYearRange || undefined;
-    const typeOfUseId = (params.typeOfUseId && params.typeOfUseId !== "undefined") ? Number(params.typeOfUseId) : undefined;
+    const typeOfUseId = (params.typeOfUseId && params.typeOfUseId !== "undefined") ? parseInt(params.typeOfUseId as string, 10) : undefined;
 
     // Assessment years for dropdown
     const assessmentYearData = await getAssessmentYearsPagedServerCV(1, -1);

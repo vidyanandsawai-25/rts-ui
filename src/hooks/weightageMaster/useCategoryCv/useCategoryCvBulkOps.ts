@@ -34,7 +34,7 @@ export function useCategoryCvBulkOps({
 
     const handleApplyFilter = () => {
         const factor = parseFloat(factorValue);
-        if (!factorValue || isNaN(factor) || factor <= 0) {
+        if (!factorValue || isNaN(factor) || factor < 0) {
             addToast('warning', tW('common.messages.validFactorRequired'));
             return;
         }
@@ -147,8 +147,6 @@ export function useCategoryCvBulkOps({
                 if (updatedCount > 0) parts.push(`${updatedCount} ${tW('common.messages.updated')}`);
                 parts.push(`${errorCount} ${tW('common.messages.failed')}`);
                 addToast('warning', tW('common.messages.bulkOperationPartialSuccess', { message: parts.join(', ') }));
-                setEditableRows({});
-                setTimeout(() => refreshPage(), 1500);
             } else if (errorCount > 0) {
                 addToast('error', tW('common.messages.bulkOperationFailed'));
             } else {
@@ -169,11 +167,13 @@ export function useCategoryCvBulkOps({
         try {
             const payload: Array<Omit<UseFactorCVMasterCreate, 'createdBy'>> = newRecords.map(row => {
                 const rowUid = getRowUid(row);
-                // Fix: Use user's inline edits if available, otherwise fallback to server value
-                const factorToSave = editableRows[rowUid]?.factor ?? row.factor;
+                const editableRow = editableRows[rowUid];
+                // Use user's inline edits if available, otherwise fallback to server values
+                const factorToSave = editableRow?.factor ?? row.factor;
+                const isActiveToSave = editableRow?.isActive ?? row.isActive;
                 
                 return {
-                    isActive: true,
+                    isActive: isActiveToSave,
                     typeOfUseId: row.typeOfUseId,
                     subTypeOfUseId: row.subTypeOfUseId,
                     factor: factorToSave,
