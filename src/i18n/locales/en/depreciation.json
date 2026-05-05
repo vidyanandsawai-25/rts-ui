@@ -1,0 +1,73 @@
+{
+  "depreciationMaster": {
+    "title": "Depreciation Master",
+    "subtitle": "Property Tax Assessment System",
+    "assessmentYear": "Assessment Year",
+    "createRange": "Create Range",
+    "min": "Minimum Age",
+    "max": "Maximum Age",
+    "deleteRow": "Delete Row",
+    "addRange": "Add Range",
+    "currencySymbol": "₹",
+    "rangesAllYears": "Ranges (All Years)",
+    "noRangesFound": "No ranges found",
+    "deleteRange": "Delete Range",
+    "deleteRangeConfirmTitle": "Delete Range?",
+    "deleteRangeConfirmDesc": "Delete range {min}-{max} for Age {age}?",
+    "cancel": "Cancel",
+    "updateRates": "Update Rates",
+    "changesReverted": "Changes reverted",
+    "createDepChart": "Create Depreciation Chart For Adding Rates",
+    "ageRange": "Age Range",
+    "yearRange": "Age Range",
+    "action": "Action",
+    "active": "ACTIVE",
+    "processing": "Processing...",
+    "minPlaceholder": "Enter minimum age",
+    "maxPlaceholder": "Enter maximum age",
+    "deleteRangeConfirm": "Delete",
+    "success": {
+      "deleted": "Range deleted successfully.",
+      "updated": "Rates updated successfully.",
+      "added": "Range added successfully."
+        
+    },
+    "messages": {
+      "noChanges": "No changes to update.",
+      "updating": "Updating {count} records...",
+      "creatingRange": "Creating range for all construction types..."
+    },
+    "noRanges": "No ranges found",
+    "errors": {
+      "load": "Failed to load depreciation data.",
+      "add": "Failed to add range.",
+      "update": "Failed to update rates.",
+      "delete": "Failed to delete range.",
+      "exists": "This range already exists.",
+      "minMax": "Please enter both minimum and maximum age.",
+      "invalidRange": "Minimum age must be less than maximum age.",
+      "overlap": "Range overlaps with existing range.",
+      "mustBeNumber": "Must be a valid number",
+      "cannotBeNegative": "Cannot be negative",
+      "mustBe9999OrLess": "Must be 9999 or less"
+    },
+    "error": {
+      "title": "Something Went Wrong",
+      "description": "We encountered an error while loading the depreciation master page. Please try again.",
+      "tryAgain": "Try Again",
+      "goHome": "Go to Home",
+      "errorId": "Error ID: {id}"
+    },
+    "loading": {
+      "message": "Loading Depreciation Master...",
+      "description": "Please wait while we fetch the depreciation data"
+    },
+    "pagination": {
+      "showing": "Showing {ranges} ranges on page {page} of {totalPages}",
+      "total": "Total: {count} ranges",
+      "constructionTypes": "Construction Types",
+      "showingTypes": "Showing {shown} of {total} types on this page",
+      "typesMayBeOnOtherPages": "Some construction types may be on other pages. Navigate to see all data."
+    }
+  }
+}

@@ -42,7 +42,7 @@ export async function updateFloorFactorCVMaster(
     
     const requestPayload = {
       isActive: payload.isActive,
-      updatedBy: payload.updatedBy ?? 1,
+      updatedBy: payload.updatedBy,
       floorId: payload.floorId,
       factorWithLift: Number(payload.factorWithLift),
       factorWithoutLift: Number(payload.factorWithoutLift),
@@ -126,7 +126,7 @@ export async function createFloorWeightageCv(payload: FloorFactorCVMasterCreate)
   try {
     const requestPayload = {
       isActive: payload.isActive,
-      createdBy: payload.createdBy ?? 1,
+      createdBy: payload.createdBy,
       floorId: payload.floorId,
       factorWithLift: Number(payload.factorWithLift),
       factorWithoutLift: Number(payload.factorWithoutLift),
@@ -153,7 +153,7 @@ export async function bulkCreateFloorWeightageCv(
 
     const requestPayload = payload.map((factor) => ({
       isActive: factor.isActive,
-      createdBy: factor.createdBy ?? 1,
+      createdBy: factor.createdBy,
       floorId: factor.floorId,
       factorWithLift: Number(factor.factorWithLift),
       factorWithoutLift: Number(factor.factorWithoutLift),
@@ -182,7 +182,7 @@ export async function bulkUpdateFloorFactorCVMaster(
       id: item.id,
       data: {
         isActive: item.data.isActive,
-        updatedBy: item.data.updatedBy ?? 1,
+        updatedBy: item.data.updatedBy,
         floorId: item.data.floorId,
         factorWithLift: Number(item.data.factorWithLift),
         factorWithoutLift: Number(item.data.factorWithoutLift),

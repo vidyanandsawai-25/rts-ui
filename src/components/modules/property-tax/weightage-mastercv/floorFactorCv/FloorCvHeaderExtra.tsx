@@ -8,7 +8,7 @@ import { ApplyButton, ClearButton, UpdateButton, AddButton } from "@/components/
 import { CancelButton } from "@/components/common";
 import { FloorCvHeaderExtraProps } from "@/types/floor-cv-weightageMaster.types";
 
-export const FloorCvHeaderExtra: React.FC<FloorCvHeaderExtraProps> = ({
+export const FloorCvHeaderExtra: React.FC<FloorCvHeaderExtraProps> = React.memo(({
     t,
     tW,
     assessmentYearOptions,
@@ -45,7 +45,7 @@ export const FloorCvHeaderExtra: React.FC<FloorCvHeaderExtraProps> = ({
                     <Select
                         options={assessmentYearOptions}
                         value={selectedYear}
-                        onChange={handleAssessmentYearChange}
+                        onChange={(e) => handleAssessmentYearChange(e.target.value)}
                         label={t("filters.assessmentYear")}
                         selectSize="sm"
                     />
@@ -55,7 +55,7 @@ export const FloorCvHeaderExtra: React.FC<FloorCvHeaderExtraProps> = ({
                     <Select
                         options={floorOptions}
                         value={fromFloor}
-                        onChange={setFromFloor}
+                        onChange={(e) => setFromFloor(e.target.value)}
                         label={t("filters.fromFloor")}
                         selectSize="sm"
                     />
@@ -65,7 +65,7 @@ export const FloorCvHeaderExtra: React.FC<FloorCvHeaderExtraProps> = ({
                     <Select
                         options={floorOptions}
                         value={toFloor}
-                        onChange={setToFloor}
+                        onChange={(e) => setToFloor(e.target.value)}
                         label={t("filters.toFloor")}
                         selectSize="sm"
                     />
@@ -75,7 +75,7 @@ export const FloorCvHeaderExtra: React.FC<FloorCvHeaderExtraProps> = ({
                     <Select
                         options={liftStatusOptions}
                         value={liftStatus}
-                        onChange={setLiftStatus}
+                        onChange={(e) => setLiftStatus(e.target.value)}
                         label={t("filters.liftStatus")}
                         selectSize="sm"
                     />
@@ -120,7 +120,7 @@ export const FloorCvHeaderExtra: React.FC<FloorCvHeaderExtraProps> = ({
                         <div className="flex items-center">
                             <StatusBadge
                                 variant="pending"
-                                label={`${newRecordsCount} ${tW("common.labels.pendingRecordCreates")}`}
+                                label={tW("common.labels.pendingRecordCreates", { count: newRecordsCount })}
                                 className="px-3 py-1.5"
                             />
                         </div>
@@ -157,4 +157,5 @@ export const FloorCvHeaderExtra: React.FC<FloorCvHeaderExtraProps> = ({
             </div>
         </div>
     );
-};
+});
+FloorCvHeaderExtra.displayName = "FloorCvHeaderExtra";

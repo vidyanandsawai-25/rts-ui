@@ -23,7 +23,7 @@
       "labels": {
         "active": "Active",
         "inactive": "Inactive",
-        "pendingRecordCreates": "Pending Record Create"
+        "pendingRecordCreates": "{count, plural, =1 {# Pending Record Create} other {# Pending Record Creates}}"
       },
       "messages": {
         "pendingRecordsWarning": "There are pending records. Please click on Generate All button.",

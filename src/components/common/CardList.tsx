@@ -126,10 +126,19 @@ export const CardPagination = ({
 }: CardPaginationProps) => {
   const t = useTranslations("common");
 
+  // Clamp pageNumber to valid range
+  const safeTotalPages = Math.max(1, totalPages);
+  const clampedPageNumber = Math.min(Math.max(1, pageNumber), safeTotalPages);
+
   const pages = React.useMemo(
-    () => buildPagination(pageNumber, totalPages),
-    [pageNumber, totalPages]
+    () => buildPagination(clampedPageNumber, totalPages),
+    [clampedPageNumber, totalPages]
   );
+
+  // If there are no items, show page 1 of 1 and disable all navigation
+  const isEmpty = totalCount === 0 || totalPages === 0;
+  const start = isEmpty ? 0 : (clampedPageNumber - 1) * pageSize + 1;
+  const end = isEmpty ? 0 : Math.min(clampedPageNumber * pageSize, totalCount);
 
   return (
     <div
@@ -139,40 +148,34 @@ export const CardPagination = ({
       )}
     >
       <div className="flex items-center gap-2 text-sm text-[#6B7280]">
-        {(() => {
-          const start = totalCount === 0 ? 0 : (pageNumber - 1) * pageSize + 1;
-          const end = totalCount === 0 ? 0 : Math.min(pageNumber * pageSize, totalCount);
-          return (
-            <>
-              {t("table.showingEntries", { start, end, total: totalCount })}
-              <select
-                value={pageSize}
-                onChange={(e) => onPageSizeChange?.(Number(e.target.value))}
-                disabled={!onPageSizeChange}
-                className="border border-gray-300 rounded-md px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed mx-1"
-              >
-                {pageSizeOptions.map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
-            </>
-          );
-        })()}
+        <>
+          {t("table.showingEntries", { start, end, total: totalCount })}
+          <select
+            value={pageSize}
+            onChange={(e) => onPageSizeChange?.(Number(e.target.value))}
+            disabled={!onPageSizeChange}
+            className="border border-gray-300 rounded-md px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed mx-1"
+          >
+            {pageSizeOptions.map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+        </>
       </div>
 
       <div className="flex items-center justify-between md:justify-end gap-2 w-full md:w-auto">
         <PrevPageButton
-          disabled={pageNumber <= 1}
-          onClick={() => onPageChange(pageNumber - 1)}
+          disabled={clampedPageNumber <= 1 || isEmpty}
+          onClick={() => onPageChange(clampedPageNumber - 1)}
         />
 
         <span className="md:hidden text-sm font-semibold text-[#1E3A8A]">
-          {t("table.page", { current: pageNumber, total: totalPages })}
+          {t("table.page", { current: isEmpty ? 1 : clampedPageNumber, total: isEmpty ? 1 : totalPages })}
         </span>
 
         <div className="hidden md:flex items-center gap-1">
           <FirstPageButton
-            disabled={pageNumber === 1}
+            disabled={clampedPageNumber === 1 || isEmpty}
             onClick={() => onPageChange(1)}
           />
 
@@ -183,21 +186,21 @@ export const CardPagination = ({
               <PageNumberButton
                 key={`page-${p}-${i}`}
                 page={p as number}
-                active={pageNumber === p}
+                active={clampedPageNumber === p}
                 onClick={() => onPageChange(p as number)}
               />
             )
           )}
 
           <LastPageButton
-            disabled={pageNumber === totalPages || totalPages === 0}
+            disabled={clampedPageNumber === totalPages || isEmpty}
             onClick={() => onPageChange(Math.max(1, totalPages))}
           />
         </div>
 
         <NextPageButton
-          disabled={pageNumber >= totalPages}
-          onClick={() => onPageChange(pageNumber + 1)}
+          disabled={clampedPageNumber >= totalPages || isEmpty}
+          onClick={() => onPageChange(clampedPageNumber + 1)}
         />
       </div>
     </div>

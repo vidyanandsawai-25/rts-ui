@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import FloorCvWeightageMaster from "@/components/modules/property-tax/weightage-mastercv/FloorCvWeightageMaster";
+import FloorCvWeightageMaster from "@/components/modules/property-tax/weightage-mastercv/floorFactorCv/FloorCvWeightageMaster";
 import { Option } from "@/components/common/select";
 import { FloorFactorCVMaster } from "@/types/floor-cv-weightageMaster.types";
 import {
@@ -33,8 +33,8 @@ vi.mock("next/navigation", () => ({
 
 vi.mock("next-intl", () => ({
     useLocale: () => "en",
-    useTranslations: (_namespace: string) => (key: string) => {
-        const map: Record<string, string> = {
+    useTranslations: (_namespace: string) => (key: string, params?: Record<string, unknown>) => {
+        const map: Record<string, string | ((p?: Record<string, unknown>) => string)> = {
             "table.showing": "Showing",
             "table.to": "to",
             "table.entries": "entries",
@@ -63,7 +63,7 @@ vi.mock("next-intl", () => ({
             "common.buttons.updating": "Updating...",
             "common.labels.active": "Active",
             "common.labels.inactive": "Inactive",
-            "common.labels.pendingRecordCreates": "pending creates",
+            "common.labels.pendingRecordCreates": (p?: Record<string, unknown>) => p?.count !== undefined ? `${p.count} pending creates` : "pending creates",
             "common.messages.pendingRecordsWarning": "Pending records warning",
             "common.messages.noChangesToUpdate": "No changes to update",
             "common.messages.noChangesDetected": "No changes detected",
@@ -79,7 +79,9 @@ vi.mock("next-intl", () => ({
             "common.messages.validFactorRequired": "Valid factor required",
             "common.messages.noRecordsMatch": "No records match",
         };
-        return map[key] ?? key;
+        const value = map[key];
+        if (typeof value === "function") return value(params);
+        return value ?? key;
     },
 }));
 

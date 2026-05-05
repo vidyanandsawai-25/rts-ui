@@ -187,9 +187,9 @@ export default function SubFloorMaster({
 
           <Select
             value={String(pageSize)}
-            onChange={(val) =>
+            onChange={(e) =>
               router.push(
-                buildUrl(1, Number(val), currentSearchTerm, sortBy, sortOrder)
+                buildUrl(1, Number(e.target.value), currentSearchTerm, sortBy, sortOrder)
               )
             }
             options={[10, 20, 30, 50].map((s) => ({

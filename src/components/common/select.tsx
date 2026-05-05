@@ -13,7 +13,9 @@ export interface Option {
 export interface SelectProps {
   options: Option[];
   value?: string;
-  onChange?: (value: string) => void;
+  name?: string;
+  onChange?: (e: React.ChangeEvent<HTMLSelectElement>, value: string) => void;
+  onBlur?: (e: React.FocusEvent<HTMLSelectElement>) => void;
   placeholder?: string;
   className?: string;
   selectSize?: 'sm' | 'md';
@@ -29,7 +31,9 @@ export interface SelectProps {
 export function Select({
   options,
   value,
+  name,
   onChange,
+  onBlur,
   placeholder = 'Select...',
   className = '',
   selectSize = 'md',
@@ -100,7 +104,17 @@ export function Select({
       setInternalValueState(val);
     }
     setOpen(false);
-    onChange?.(val);
+    
+    if (onChange) {
+      // Simulate a ChangeEvent
+      const event = {
+        target: {
+          name: name || '',
+          value: val,
+        },
+      } as React.ChangeEvent<HTMLSelectElement>;
+      onChange(event, val);
+    }
   };
 
   const selectedLabel = options.find((opt) => opt.value === internalValue)?.label;
@@ -156,8 +170,112 @@ export function Select({
     }
   };
 
+  const SelectContent = (
+    <div
+      ref={selectRef}
+      className={cn('relative w-full', disabled && 'opacity-50 cursor-not-allowed', className)}
+    >
+      <button
+        ref={buttonRef}
+        type="button"
+        role="combobox"
+        className={cn(
+          'flex items-center justify-between w-full border text-sm rounded-md bg-white focus:outline-none focus:ring-2 transition-all',
+          sizeClasses[selectSize],
+          error ? 'border-red-500 focus:ring-red-400' : 'border-gray-300 focus:ring-blue-300',
+          disabled && 'opacity-50 cursor-not-allowed'
+        )}
+        onClick={toggleOpen}
+        onKeyDown={handleKeyDown}
+        onBlur={(e) => {
+          const nextTarget = e.relatedTarget;
+
+          // If focus leaves the window or there is no related target,
+          // close the dropdown safely without calling contains(null).
+          if (!nextTarget || !(nextTarget instanceof Node)) {
+            setOpen(false);
+            return;
+          }
+
+          if (!selectRef.current?.contains(nextTarget)) {
+            setOpen(false);
+            if (onBlur) {
+              const event = {
+                target: {
+                  name: name || '',
+                  value: internalValue,
+                },
+              } as React.FocusEvent<HTMLSelectElement>;
+              onBlur(event);
+            }
+          }
+        }}
+        disabled={disabled}
+        aria-label={ariaLabel ?? (!label ? placeholder : undefined)}
+        aria-labelledby={!ariaLabel && label ? `${listboxId}-label` : undefined}
+        aria-expanded={open}
+        aria-haspopup="listbox"
+        aria-controls={listboxId}
+        aria-activedescendant={
+          open && highlightedIndex >= 0 ? `${optionIdPrefix}-${highlightedIndex}` : undefined
+        }
+      >
+        <span
+          className={cn(
+            'truncate text-left flex-1 text-sm',
+            !selectedLabel ? 'text-gray-400' : 'text-gray-800'
+          )}
+        >
+          {selectedLabel || placeholder}
+        </span>
+
+        <ChevronDownIcon className="ml-2 w-4 h-4 text-gray-400" />
+      </button>
+
+      {open && (
+        <ul
+          ref={listRef}
+          id={listboxId}
+          className={cn(
+            'absolute z-50 w-full text-gray-800 text-sm bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto',
+            openUpward ? 'bottom-full mb-1' : 'top-full mt-1'
+          )}
+          role="listbox"
+          onMouseDown={(e) => e.preventDefault()}
+        >
+          {options.map((opt, index) => (
+            <li
+              key={opt.value}
+              id={`${optionIdPrefix}-${index}`}
+              className={cn(
+                'px-4 py-2 transition-colors',
+                !opt.disabled && 'cursor-pointer',
+                !opt.disabled &&
+                  (index === highlightedIndex ? 'bg-blue-100' : 'hover:bg-blue-50'),
+                internalValue === opt.value && 'text-blue-700 font-semibold bg-blue-50',
+                opt.disabled && 'opacity-50 cursor-not-allowed'
+              )}
+              onClick={() => !opt.disabled && handleSelect(opt.value)}
+              onMouseEnter={() => !opt.disabled && setHighlightedIndex(index)}
+              aria-selected={internalValue === opt.value}
+              aria-disabled={opt.disabled || undefined}
+              role="option"
+              tabIndex={-1}
+            >
+              {opt.label}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+
+  if (!label && !error) {
+    return SelectContent;
+  }
+
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-1 w-full">
       {/* Label */}
       {label && (
         <span id={`${listboxId}-label`} className="text-sm font-medium text-gray-700">
@@ -166,94 +284,7 @@ export function Select({
         </span>
       )}
 
-      <div
-        ref={selectRef}
-        className={cn('relative w-full', disabled && 'opacity-50 cursor-not-allowed', className)}
-      >
-        <button
-          ref={buttonRef}
-          type="button"
-          role="combobox"
-          className={cn(
-            'flex items-center justify-between w-full border text-sm rounded-md bg-white focus:outline-none focus:ring-2 transition-all',
-            sizeClasses[selectSize],
-            error ? 'border-red-500 focus:ring-red-400' : 'border-gray-300 focus:ring-blue-300',
-            disabled && 'opacity-50 cursor-not-allowed'
-          )}
-          onClick={toggleOpen}
-          onKeyDown={handleKeyDown}
-          onBlur={(e) => {
-            const nextTarget = e.relatedTarget;
-
-            // If focus leaves the window or there is no related target,
-            // close the dropdown safely without calling contains(null).
-            if (!nextTarget || !(nextTarget instanceof Node)) {
-              setOpen(false);
-              return;
-            }
-
-            if (!selectRef.current?.contains(nextTarget)) {
-              setOpen(false);
-            }
-          }}
-          disabled={disabled}
-          aria-label={ariaLabel ?? (!label ? placeholder : undefined)}
-          aria-labelledby={!ariaLabel && label ? `${listboxId}-label` : undefined}
-          aria-expanded={open}
-          aria-haspopup="listbox"
-          aria-controls={listboxId}
-          aria-activedescendant={
-            open && highlightedIndex >= 0 ? `${optionIdPrefix}-${highlightedIndex}` : undefined
-          }
-        >
-          <span
-            className={cn(
-              'truncate text-left flex-1 text-sm',
-              !selectedLabel ? 'text-gray-400' : 'text-gray-800'
-            )}
-          >
-            {selectedLabel || placeholder}
-          </span>
-
-          <ChevronDownIcon className="ml-2 w-4 h-4 text-gray-400" />
-        </button>
-
-        {open && (
-          <ul
-            ref={listRef}
-            id={listboxId}
-            className={cn(
-              'absolute z-50 w-full text-gray-800 text-sm bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto',
-              openUpward ? 'bottom-full mb-1' : 'top-full mt-1'
-            )}
-            role="listbox"
-            onMouseDown={(e) => e.preventDefault()}
-          >
-            {options.map((opt, index) => (
-              <li
-                key={opt.value}
-                id={`${optionIdPrefix}-${index}`}
-                className={cn(
-                  'px-4 py-2 transition-colors',
-                  !opt.disabled && 'cursor-pointer',
-                  !opt.disabled &&
-                    (index === highlightedIndex ? 'bg-blue-100' : 'hover:bg-blue-50'),
-                  internalValue === opt.value && 'text-blue-700 font-semibold bg-blue-50',
-                  opt.disabled && 'opacity-50 cursor-not-allowed'
-                )}
-                onClick={() => !opt.disabled && handleSelect(opt.value)}
-                onMouseEnter={() => !opt.disabled && setHighlightedIndex(index)}
-                aria-selected={internalValue === opt.value}
-                aria-disabled={opt.disabled || undefined}
-                role="option"
-                tabIndex={-1}
-              >
-                {opt.label}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      {SelectContent}
 
       {/* Error Message */}
       {error && <span className="text-sm text-red-600">{error}</span>}

@@ -83,7 +83,7 @@ export default function ViewWards({
           <Select
             options={PAGE_SIZE_OPTIONS}
             value={String(viewWardPageSize)}
-            onChange={(val) => onPageSizeChange(Number(val))}
+            onChange={(e) => onPageSizeChange(Number(e.target.value))}
             selectSize="sm"
             className="w-18"
           />

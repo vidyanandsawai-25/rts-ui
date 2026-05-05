@@ -399,4 +399,58 @@ describe('Checkbox', () => {
     expect(checkbox).toHaveAttribute('aria-checked', 'true');
   });
 
+  // ─────────────────────────────────────────────────────────────
+  // 16. Built-in Label Prop
+  // ─────────────────────────────────────────────────────────────
+
+  it('renders with a built-in label as its accessible name', () => {
+    render(<Checkbox label="Subscribe" />);
+    // Verify the label text exists AND is the accessible name for the checkbox
+    expect(screen.getByRole('checkbox', { name: 'Subscribe' })).toBeInTheDocument();
+  });
+
+  it('toggles when clicking the built-in label', async () => {
+    const handleCheckedChange = vi.fn();
+    const user = userEvent.setup();
+    render(<Checkbox label="Subscribe" onCheckedChange={handleCheckedChange} />);
+    
+    const label = screen.getByText('Subscribe');
+    await user.click(label);
+    
+    expect(handleCheckedChange).toHaveBeenCalledWith(true);
+    // Verify by accessible name here too
+    expect(screen.getByRole('checkbox', { name: 'Subscribe' })).toHaveAttribute('aria-checked', 'true');
+  });
+
+  it('generates unique IDs for label linkage when none is provided', () => {
+    render(
+      <>
+        <Checkbox label="First" />
+        <Checkbox label="Second" />
+      </>
+    );
+    
+    const label1 = screen.getByText('First');
+    const label2 = screen.getByText('Second');
+    const id1 = label1.getAttribute('for');
+    const id2 = label2.getAttribute('for');
+
+    expect(id1).toBeTruthy();
+    expect(id2).toBeTruthy();
+    expect(id1).not.toBe(id2);
+
+    // verify linkage works by selecting by label text
+    expect(screen.getByLabelText('First')).toBeInTheDocument();
+    expect(screen.getByLabelText('Second')).toBeInTheDocument();
+  });
+
+  it('uses provided id for label linkage', () => {
+    render(<Checkbox label="Manual ID" id="my-custom-id" />);
+    const checkbox = screen.getByRole('checkbox');
+    const label = screen.getByText('Manual ID');
+    
+    expect(checkbox).toHaveAttribute('id', 'my-custom-id');
+    expect(label).toHaveAttribute('for', 'my-custom-id');
+  });
+
 });
