@@ -287,6 +287,7 @@ export const useAgeFactorCvWeightage = ({
     const handleClearAll = (): void => {
         clearFilters();
         router.push(`/${locale}/property-tax/weightage-master/age-weightage`);
+        addToast('info', tW('common.messages.allClearedInfo'));
     };
 
     return {

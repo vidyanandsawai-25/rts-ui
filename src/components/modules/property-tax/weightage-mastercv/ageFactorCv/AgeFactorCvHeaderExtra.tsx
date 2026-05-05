@@ -218,7 +218,7 @@ export const AgeFactorCvHeaderExtra: React.FC<AgeFactorCvHeaderExtraProps> = ({
                     onClick={handleGenerateAll}
                     disabled={!canGenerateAll || isGeneratingAll || isBulkUpdating || isUpdating}
                     className="h-[34px] px-4 font-bold bg-[#0052CC]"
-                    label={tW('common.buttons.generateAll')}
+                    label={isGeneratingAll ? tW('common.buttons.generating') : tW('common.buttons.generateAll')}
                 />
                 <ApplyButton
                     size="sm"
@@ -235,7 +235,7 @@ export const AgeFactorCvHeaderExtra: React.FC<AgeFactorCvHeaderExtraProps> = ({
                 />
                 <UpdateButton
                     size="sm"
-                    label={tW('common.buttons.update')}
+                    label={isBulkUpdating ? tW('common.buttons.updating') : tW('common.buttons.update')}
                     onClick={handleBulkUpdate}
                     disabled={editableRowsCount === 0 || isBulkUpdating}
                     className="h-[34px] px-4 font-bold bg-[#69C0FF]"

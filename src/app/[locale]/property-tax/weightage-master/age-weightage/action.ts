@@ -52,9 +52,12 @@ export async function fetchAgeFactorCVMasterPagedServerAction(
   pageSize: number,
   searchTerm?: string,
   selectedYearRange?: string,
-  constructionTypeId?: number
+  constructionTypeId?: number,
+  sortBy?: string,
+  sortOrder?: string
 ): Promise<MasterPagedResponse<AgeFactorCVMaster>> {
   try {
+    // Sanitize and clamp pagination parameters to prevent SSR crashes or bad API requests
     const normalizedPageNumber = Math.max(1, Number(pageNumber) || 1);
     const normalizedPageSize = Math.max(1, Math.min(100, Number(pageSize) || 10));
 
@@ -67,6 +70,8 @@ export async function fetchAgeFactorCVMasterPagedServerAction(
       searchTerm,
       yearRangeCVId: yearRangeParam,
       constructionTypeId,
+      sortBy: sortBy?.trim() || undefined,
+      sortOrder: sortOrder?.trim() || undefined,
     });
 
     if (!response.success || !response.data) {
@@ -96,7 +101,14 @@ export async function updateAgeFactorCVMasterAction(
     }
 
     const cookieStore = await cookies();
-    const userId = getUserIdFromCookies(cookieStore) || 1;
+    const userId = getUserIdFromCookies(cookieStore);
+    if (!userId) {
+      return {
+        success: false,
+        message: 'Authentication required',
+        statusCode: 401,
+      };
+    }
     const updatePayload = {
       ...payload,
       updatedBy: userId
@@ -139,7 +151,14 @@ export async function createAgeFactorCVMasterAction(
 ): Promise<{ success: boolean; message?: string; statusCode?: number; data?: unknown }> {
   try {
     const cookieStore = await cookies();
-    const userId = getUserIdFromCookies(cookieStore) || 1;
+    const userId = getUserIdFromCookies(cookieStore);
+    if (!userId) {
+      return {
+        success: false,
+        message: 'Authentication required',
+        statusCode: 401,
+      };
+    }
     const createPayload = {
       ...payload,
       createdBy: userId
@@ -173,7 +192,14 @@ export async function bulkCreateAgeFactorCVMasterAction(
 ): Promise<{ success: boolean; message?: string; statusCode?: number; data?: unknown }> {
   try {
     const cookieStore = await cookies();
-    const userId = getUserIdFromCookies(cookieStore) || 1;
+    const userId = getUserIdFromCookies(cookieStore);
+    if (!userId) {
+      return {
+        success: false,
+        message: 'Authentication required',
+        statusCode: 401,
+      };
+    }
     const bulkCreatePayload = payload.map(item => ({
       ...item,
       createdBy: userId
@@ -207,7 +233,14 @@ export async function bulkUpdateAgeFactorCVMasterAction(
 ): Promise<{ success: boolean; message?: string; statusCode?: number }> {
   try {
     const cookieStore = await cookies();
-    const userId = getUserIdFromCookies(cookieStore) || 1;
+    const userId = getUserIdFromCookies(cookieStore);
+    if (!userId) {
+      return {
+        success: false,
+        message: 'Authentication required',
+        statusCode: 401,
+      };
+    }
     const bulkUpdatePayload = payload.map(item => ({
       ...item,
       data: {

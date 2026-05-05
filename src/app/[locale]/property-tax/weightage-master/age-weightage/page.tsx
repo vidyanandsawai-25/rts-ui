@@ -15,6 +15,8 @@ interface PageProps {
         q?: string;
         selectedYearRange?: string;
         constructionType?: string;
+        sortBy?: string;
+        sortOrder?: string;
     }>;
 }
 
@@ -34,6 +36,10 @@ export default async function Page({ searchParams }: PageProps): Promise<React.R
     const pageNumber = normalizeParam(params.page, 1, 10000);
     const pageSize = normalizeParam(params.pageSize, 10, 100);
     
+    // Sanitize sorting parameters
+    const sortBy = params.sortBy?.trim() || undefined;
+    const sortOrder = params.sortOrder?.trim() || undefined;
+    
     const searchTerm = params.q?.trim() || undefined;
     const selectedYearRange = params.selectedYearRange?.trim() || undefined;
     const constructionType = params.constructionType?.trim() || undefined;
@@ -45,13 +51,15 @@ export default async function Page({ searchParams }: PageProps): Promise<React.R
         value: year.id.toString(),
     }));
 
-    // Age factor data with filters
+    // Age factor data with filters and sorting
     const ageResult = await fetchAgeFactorCVMasterPagedServerAction(
         pageNumber,
         pageSize,
         searchTerm,
         selectedYearRange,
-        constructionType ? Number(constructionType) : undefined
+        constructionType ? Number(constructionType) : undefined,
+        sortBy,
+        sortOrder
     );
 
     // Fetch construction types for dropdown - use -1 to fetch all records

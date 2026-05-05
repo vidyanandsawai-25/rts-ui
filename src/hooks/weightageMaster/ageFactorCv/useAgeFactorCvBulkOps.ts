@@ -247,6 +247,13 @@ export const useAgeFactorCvBulkOps = ({
                         );
 
                         if (!existingInDb) {
+                            // Reconstruct the UID that would be used for this row if it were in the table
+                            const reconstructedUid = `0-${constTypeId}-${yearId}-${from}-${to}`;
+                            const edit = editableRows[reconstructedUid];
+                            
+                            let finalFactor = edit?.factor ?? defaultFactor;
+                            
+                            // If we find it in current page data, we can also double check its original value
                             const pendingRow = data.find(r => 
                                 r.id === 0 && 
                                 r.constructionTypeId === constTypeId && 
@@ -256,12 +263,8 @@ export const useAgeFactorCvBulkOps = ({
                                 !sessionCreatedUids.has(getRowUid(r))
                             );
 
-                            let finalFactor = defaultFactor;
-                            
-                            if (pendingRow) {
-                                const rowUid = getRowUid(pendingRow);
-                                // FIX: Use edited factor from table if it exists
-                                finalFactor = editableRows[rowUid]?.factor ?? pendingRow.factor;
+                            if (pendingRow && !edit) {
+                                finalFactor = pendingRow.factor;
                             }
 
                             ageFactors.push({
