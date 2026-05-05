@@ -38,7 +38,7 @@ export const NatureFactorCvHeaderExtra: React.FC<NatureFactorCvHeaderExtraProps>
                     <Select
                         options={assessmentYearOptions}
                         value={selectedYear}
-                        onChange={handleAssessmentYearChange}
+                        onChange={(_, val) => handleAssessmentYearChange(val)}
                         label={t('filters.assessmentYear')}
                         selectSize="sm"
                     />
@@ -47,7 +47,7 @@ export const NatureFactorCvHeaderExtra: React.FC<NatureFactorCvHeaderExtraProps>
                     <Select
                         options={constructionTypeOptions}
                         value={constructionType}
-                        onChange={handleConstructionTypeChange}
+                        onChange={(_, val) => handleConstructionTypeChange(val)}
                         label={t('filters.constructionType')}
                         selectSize="sm"
                     />

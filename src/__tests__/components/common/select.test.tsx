@@ -48,7 +48,9 @@ describe("Select", () => {
     const button = screen.getByRole("combobox");
     fireEvent.click(button);
     fireEvent.click(screen.getByText("Banana"));
-    expect(handleChange).toHaveBeenCalledWith("banana");
+    expect(handleChange).toHaveBeenCalledWith(expect.objectContaining({
+      target: expect.objectContaining({ value: "banana" })
+    }), "banana");
     // Should close dropdown
     expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
   });

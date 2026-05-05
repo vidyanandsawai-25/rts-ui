@@ -31,6 +31,7 @@ export default getRequestConfig(async ({ locale }) => {
     natureFactorCVMasterMessages,
 useCategoryFactorMasterMessages,
     modulesMessages,
+    officeMessages
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/dashboard.json`).then((m) => m.default),
@@ -47,6 +48,7 @@ useCategoryFactorMasterMessages,
     import(`./locales/${validatedLocale}/natureFactorCVMaster.json`).then((m) => m.default),
 import(`./locales/${validatedLocale}/useCategoryFactorMaster.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/office.json`).catch(() => ({})).then((m) => m.default || m),
   ]);
 
   return {
@@ -67,6 +69,7 @@ import(`./locales/${validatedLocale}/useCategoryFactorMaster.json`).then((m) => 
       natureFactorCVMaster: natureFactorCVMasterMessages.natureFactorCVMaster,
  useCategoryFactorMaster: useCategoryFactorMasterMessages.useCategoryFactorMaster,
       modules: modulesMessages,
+      office: officeMessages,
     },
   };
 });

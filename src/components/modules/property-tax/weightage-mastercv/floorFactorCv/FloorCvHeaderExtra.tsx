@@ -45,7 +45,7 @@ export const FloorCvHeaderExtra: React.FC<FloorCvHeaderExtraProps> = React.memo(
                     <Select
                         options={assessmentYearOptions}
                         value={selectedYear}
-                        onChange={handleAssessmentYearChange}
+                        onChange={(e) => handleAssessmentYearChange(e.target.value)}
                         label={t("filters.assessmentYear")}
                         selectSize="sm"
                     />
@@ -55,7 +55,7 @@ export const FloorCvHeaderExtra: React.FC<FloorCvHeaderExtraProps> = React.memo(
                     <Select
                         options={floorOptions}
                         value={fromFloor}
-                        onChange={setFromFloor}
+                        onChange={(e) => setFromFloor(e.target.value)}
                         label={t("filters.fromFloor")}
                         selectSize="sm"
                     />
@@ -65,7 +65,7 @@ export const FloorCvHeaderExtra: React.FC<FloorCvHeaderExtraProps> = React.memo(
                     <Select
                         options={floorOptions}
                         value={toFloor}
-                        onChange={setToFloor}
+                        onChange={(e) => setToFloor(e.target.value)}
                         label={t("filters.toFloor")}
                         selectSize="sm"
                     />
@@ -75,7 +75,7 @@ export const FloorCvHeaderExtra: React.FC<FloorCvHeaderExtraProps> = React.memo(
                     <Select
                         options={liftStatusOptions}
                         value={liftStatus}
-                        onChange={setLiftStatus}
+                        onChange={(e) => setLiftStatus(e.target.value)}
                         label={t("filters.liftStatus")}
                         selectSize="sm"
                     />

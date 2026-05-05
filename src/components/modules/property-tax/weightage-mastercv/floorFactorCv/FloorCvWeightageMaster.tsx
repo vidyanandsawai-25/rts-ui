@@ -130,7 +130,7 @@ const FloorCvWeightageMaster: React.FC<FloorCvWeightageMasterProps> = ({
                                 value: String(s)
                             }))}
                             value={String(pageSize)}
-                            onChange={(val) => changePageSize(Number(val))}
+                            onChange={(e) => changePageSize(Number(e.target.value))}
                             selectSize="sm"
                         />
                         <span>{totalCount || 0} {tCommon("table.entries")}</span>
