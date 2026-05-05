@@ -1,6 +1,6 @@
 import React from "react";
 import { Input, Select } from "@/components/common";
-import type { Office, OfficeFormModel } from "@/types/office.types";
+import type { OfficeFormModel } from "@/types/office.types";
 import { getOfficeTypeOptions } from "@/config/office-master.config";
 
 interface OfficeDetailsSectionProps {

@@ -1,6 +1,6 @@
 import React from "react";
 import { Input, TextArea } from "@/components/common";
-import type { Office, OfficeFormModel } from "@/types/office.types";
+import type { OfficeFormModel } from "@/types/office.types";
 
 interface OfficeContactSectionProps {
   formData: OfficeFormModel;
