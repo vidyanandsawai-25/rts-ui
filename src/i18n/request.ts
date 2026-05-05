@@ -29,7 +29,9 @@ export default getRequestConfig(async ({ locale }) => {
     weightageMasterMessages,
     typeofusemasterMessages,
     depreciationMessages,
+    natureFactorCVMasterMessages,
     modulesMessages,
+    officeMessages
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/dashboard.json`).then((m) => m.default),
@@ -44,7 +46,9 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/weightageMaster.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/typeofusemaster.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/depreciation.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/natureFactorCVMaster.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/office.json`).catch(() => ({})).then((m) => m.default || m),
   ]);
 
   return {
@@ -63,7 +67,9 @@ export default getRequestConfig(async ({ locale }) => {
       weightageMaster: weightageMasterMessages.weightageMaster,
       typeofusemaster: typeofusemasterMessages,
       depreciation: depreciationMessages,
+      natureFactorCVMaster: natureFactorCVMasterMessages.natureFactorCVMaster,
       modules: modulesMessages,
+      office: officeMessages,
     },
   };
 });

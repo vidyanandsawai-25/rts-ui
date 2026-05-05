@@ -23,7 +23,7 @@
       "labels": {
         "active": "सक्रिय",
         "inactive": "निष्क्रिय",
-        "pendingRecordCreates": "प्रलंबित नोंदी तयार करणे"
+        "pendingRecordCreates": "{count} प्रलंबित नोंदी तयार करणे"
       },
       "messages": {
         "pendingRecordsWarning": "प्रलंबित नोंदी आहेत. कृपया सर्व तयार करा बटणावर क्लिक करा.",

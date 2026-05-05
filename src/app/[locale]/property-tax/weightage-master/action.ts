@@ -2,7 +2,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { locales } from "@/i18n/config";
+import { getUserIdFromCookies } from "@/lib/utils/cookie";
 import {
   getFloorFactorCVMasterWithPagination,
   updateFloorFactorCVMaster,
@@ -12,10 +14,10 @@ import {
 import { ApiError } from "@/lib/utils/api";
 import {
   FloorFactorCVMaster,
-  FloorFactorCVMasterCreate,
-  FloorFactorCVMasterUpdate,
-  BulkFloorFactorCVMasterCreate,
-  BulkFloorFactorCVMasterUpdate,
+  FloorFactorCVMasterCreateAction,
+  FloorFactorCVMasterUpdateAction,
+  BulkFloorFactorCVMasterCreateAction,
+  BulkFloorFactorCVMasterUpdateAction,
 } from "@/types/floor-cv-weightageMaster.types";
 import { createFloorWeightageCv } from '@/lib/api/floor-cv-weightageMaster.service';
 import { PagedResponse } from "@/types/common.types";
@@ -77,7 +79,7 @@ export async function fetchFloorFactorCVMasterPagedServerAction(
  */
 export async function updateFloorFactorCVMasterAction(
   id: number,
-  payload: FloorFactorCVMasterUpdate
+  payload: FloorFactorCVMasterUpdateAction
 ): Promise<{ success: boolean; message?: string; statusCode?: number }> {
   try {
  
@@ -92,7 +94,14 @@ export async function updateFloorFactorCVMasterAction(
       };
     }
 
-    await updateFloorFactorCVMaster(id, payload);
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore) || 1;
+    const updatePayload = {
+      ...payload,
+      updatedBy: userId
+    };
+
+    await updateFloorFactorCVMaster(id, updatePayload);
     // Revalidate all locale variants of the weightage master page
     for (const locale of locales) {
       revalidatePath(`/${locale}/property-tax/weightage-master`, "page");
@@ -139,10 +148,17 @@ export async function updateFloorFactorCVMasterAction(
  * Create FloorFactorCVMaster record
  */
 export async function createFloorFactorCVMasterAction(
-  payload: FloorFactorCVMasterCreate
+  payload: FloorFactorCVMasterCreateAction
 ): Promise<{ success: boolean; message?: string; statusCode?: number; data?: unknown }> {
   try {
-    const response = await createFloorWeightageCv(payload);
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore) || 1;
+    const createPayload = {
+      ...payload,
+      createdBy: userId
+    };
+
+    const response = await createFloorWeightageCv(createPayload);
     if (response.success) {
       // Optionally revalidate paths if needed
       for (const locale of locales) {
@@ -180,10 +196,17 @@ export async function createFloorFactorCVMasterAction(
  * Bulk Create FloorFactorCVMaster records
  */
 export async function bulkCreateFloorFactorCVMasterAction(
-  payload: BulkFloorFactorCVMasterCreate
+  payload: BulkFloorFactorCVMasterCreateAction
 ): Promise<{ success: boolean; message?: string; statusCode?: number; data?: unknown }> {
   try {
-      const response = await bulkCreateFloorWeightageCv(payload);
+      const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore) || 1;
+    const bulkCreatePayload = payload.map(item => ({
+      ...item,
+      createdBy: userId
+    }));
+
+    const response = await bulkCreateFloorWeightageCv(bulkCreatePayload);
     if (response && response.success) {
       for (const locale of locales) {
         revalidatePath(`/${locale}/property-tax/weightage-master`, "page");
@@ -220,10 +243,20 @@ export async function bulkCreateFloorFactorCVMasterAction(
  * Bulk Update FloorFactorCVMaster records
  */
 export async function bulkUpdateFloorFactorCVMasterAction(
-  payload: BulkFloorFactorCVMasterUpdate
+  payload: BulkFloorFactorCVMasterUpdateAction
 ): Promise<{ success: boolean; message?: string; statusCode?: number }> {
   try {
-    await bulkUpdateFloorFactorCVMaster(payload);
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore) || 1;
+    const bulkUpdatePayload = payload.map(item => ({
+      ...item,
+      data: {
+        ...item.data,
+        updatedBy: userId
+      }
+    }));
+
+    await bulkUpdateFloorFactorCVMaster(bulkUpdatePayload);
 
     for (const locale of locales) {
       revalidatePath(`/${locale}/property-tax/weightage-master`, "page");

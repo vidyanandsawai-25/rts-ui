@@ -131,10 +131,7 @@ export function Header({ ulbData, userDisplayName, clientIp }: HeaderProps) {
         switchLocale(code, pathname, router);
         setLangOpen(false);
         setMenuOpen(false);
-      } catch (error) {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('Language switch failed:', error);
-        }
+      } catch (_error) {
         if (typeof window !== 'undefined') {
           window.alert(t('language.switchFailed'));
         }

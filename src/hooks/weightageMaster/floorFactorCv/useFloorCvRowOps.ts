@@ -2,7 +2,11 @@
 
 import { Dispatch, SetStateAction } from "react";
 import { useTranslations } from "next-intl";
-import { FloorFactorCVMaster } from "@/types/floor-cv-weightageMaster.types";
+import { 
+    FloorFactorCVMaster,
+    FloorFactorCVMasterCreateAction,
+    FloorFactorCVMasterUpdateAction
+} from "@/types/floor-cv-weightageMaster.types";
 import {
     updateFloorFactorCVMasterAction,
     createFloorFactorCVMasterAction,
@@ -32,7 +36,7 @@ export function useFloorCvRowOps({
 }: UseFloorCvRowOpsParams) {
     const tW = useTranslations("weightageMaster");
 
-    const handleCellChange = (rowId: string, columnId: string, value: string | number) => {
+    const handleCellChange = (rowId: string, columnId: string, value: string | number): void => {
         const numValue = typeof value === "string" ? (value === "" ? 0 : parseFloat(value)) : value;
 
         // Prevent negative values
@@ -67,7 +71,7 @@ export function useFloorCvRowOps({
         });
     };
 
-    const handleUpdate = async (row: FloorFactorCVMaster) => {
+    const handleUpdate = async (row: FloorFactorCVMaster): Promise<void> => {
         const rowUid = getRowUid(row);
 
         const updatedData = editableRows[rowUid];
@@ -88,12 +92,10 @@ export function useFloorCvRowOps({
         setIsUpdating(true);
         try {
             let result;
-            // Check if id is 0 - call create, otherwise call update
             if (row.id === 0) {
                 // Prepare CREATE payload
-                const createPayload = {
+                const createPayload: FloorFactorCVMasterCreateAction = {
                     isActive: row.isActive,
-                    createdBy: 1,
                     floorId: row.floorId,
                     factorWithLift: updatedData.factorWithLift ?? row.factorWithLift,
                     factorWithoutLift: updatedData.factorWithoutLift ?? row.factorWithoutLift,
@@ -102,9 +104,8 @@ export function useFloorCvRowOps({
                 result = await createFloorFactorCVMasterAction(createPayload);
             } else {
                 // Prepare UPDATE payload
-                const updatePayload = {
+                const updatePayload: FloorFactorCVMasterUpdateAction = {
                     isActive: row.isActive,
-                    updatedBy: 1,
                     floorId: row.floorId,
                     factorWithLift: updatedData.factorWithLift ?? row.factorWithLift,
                     factorWithoutLift: updatedData.factorWithoutLift ?? row.factorWithoutLift,
@@ -134,15 +135,14 @@ export function useFloorCvRowOps({
             } else {
                 addToast("error", result.message || (row.id === 0 ? tW("common.messages.createFailed") : tW("common.messages.updateFailed")));
             }
-        } catch (error) {
-            console.error("Single row update failed:", error);
+        } catch (_error) {
             addToast("error", tW("common.messages.failedToSaveRow"));
         } finally {
             setIsUpdating(false);
         }
     };
 
-    const handleCancel = (row: FloorFactorCVMaster) => {
+    const handleCancel = (row: FloorFactorCVMaster): void => {
         const rowUid = getRowUid(row);
         setEditableRows((prev) => {
             const updated = { ...prev };

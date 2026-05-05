@@ -136,71 +136,47 @@ export function useFloorCvWeightage({
         clearFilters,
     });
 
+    const buildFloorUrl = (params: {
+        page?: number;
+        pageSize?: number;
+        year?: string;
+        q?: string;
+    }): string => {
+        const urlParams = new URLSearchParams();
+        urlParams.set("page", String(params.page ?? 1));
+        urlParams.set("pageSize", String(params.pageSize ?? pageSize));
+        
+        const q = params.q ?? currentSearchTerm;
+        if (q) urlParams.set("q", q);
+        
+        const year = params.year ?? selectedYear;
+        if (year) urlParams.set("selectedYearRange", year);
+        
+        return `/${locale}/property-tax/weightage-master?${urlParams.toString()}`;
+    };
+
     // Handle clear all changes and filters
     const handleClearAll = () => {
         setEditableRows({});
         clearFilters();
         setSelectedYear("");
 
-        // Navigate to reset server-side filters
-        const params = new URLSearchParams();
-        params.set("page", "1");
-        params.set("pageSize", String(pageSize));
-
-        router.push(`/${locale}/property-tax/weightage-master?${params.toString()}`);
-
+        router.push(buildFloorUrl({ page: 1, year: "" }));
         addToast("info", tW("common.messages.allClearedInfo"));
     };
 
     /* ================= PAGINATION ================= */
     const changePage = (p: number): void => {
-        const params = new URLSearchParams();
-        params.set("page", String(p));
-        params.set("pageSize", String(pageSize));
-
-        if (currentSearchTerm) {
-            params.set("q", currentSearchTerm);
-        }
-
-        if (selectedYear) {
-            params.set("selectedYearRange", selectedYear);
-        }
-
-        router.push(`/${locale}/property-tax/weightage-master?${params.toString()}`);
+        router.push(buildFloorUrl({ page: p }));
     };
 
     const changePageSize = (size: number): void => {
-        const params = new URLSearchParams();
-        params.set("page", "1");
-        params.set("pageSize", String(size));
-
-        if (currentSearchTerm) {
-            params.set("q", currentSearchTerm);
-        }
-
-        if (selectedYear) {
-            params.set("selectedYearRange", selectedYear);
-        }
-
-        router.push(`/${locale}/property-tax/weightage-master?${params.toString()}`);
+        router.push(buildFloorUrl({ page: 1, pageSize: size }));
     };
 
     const handleAssessmentYearChange = (value: string) => {
         setSelectedYear(value);
-
-        const params = new URLSearchParams();
-        params.set("page", "1");
-        params.set("pageSize", String(pageSize));
-
-        if (currentSearchTerm) {
-            params.set("q", currentSearchTerm);
-        }
-
-        if (value) {
-            params.set("selectedYearRange", value);
-        }
-
-        router.push(`/${locale}/property-tax/weightage-master?${params.toString()}`);
+        router.push(buildFloorUrl({ page: 1, year: value }));
     };
 
     // Derived states for button enable/disable logic
