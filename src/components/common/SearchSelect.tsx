@@ -181,7 +181,12 @@ export function SearchSelect({
     setIsOpen(false);
     if (!hasOptions) return;
     const matched = validOptions.find((opt) => opt.label === displayValue);
-    if (!matched) {
+    if (matched) {
+      // If user typed an exact match and blurred, commit it
+      if (hasTyped) {
+        onChange(fallbackName, matched.value);
+      }
+    } else {
       setSearch('');
       setHasTyped(false);
       // Only clear value if user actually typed something that doesn't match

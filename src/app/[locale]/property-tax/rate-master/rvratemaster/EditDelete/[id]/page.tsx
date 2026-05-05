@@ -9,8 +9,8 @@ import {
   getConstructionTypes,
   getRateMasterById,
   getAssessmentYears,
-  getRateMasterTableData,
   getRateMasterByFilters,
+  getRateMasterPagedAction,
 } from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
 
 // Force dynamic rendering to ensure fresh data on each navigation
@@ -122,7 +122,7 @@ export default async function EditRatePage({
   }
   
   // Single record edit logic
-  const [zones, useGroups, paginatedZonesResult, allZonesResult, rateCategories, assessmentYears, editData, tableData] =
+  const [zones, useGroups, paginatedZonesResult, allZonesResult, rateCategories, assessmentYears, editData] =
     await Promise.all([
       getZoneOptions(),
       getUseGroupOptions(),
@@ -131,8 +131,30 @@ export default async function EditRatePage({
       getConstructionTypes(),
       getAssessmentYears(),
       getRateMasterById(resolvedParams.id, matrixPage, matrixPageSize),
-      getRateMasterTableData(matrixPage, matrixPageSize),
     ]);
+
+  // Extract filter values from URL or editData
+  const selectedZone = (resolvedSearchParams.zone as string) || editData?.rateSection || "";
+  const selectedUseGroup = (resolvedSearchParams.useGroup as string) || editData?.useGroup || "";
+  const selectedYear = (resolvedSearchParams.assessmentYear as string) || editData?.assessmentYear || "";
+
+  // Get all zone descriptions for mapping
+  const allZoneDescriptions = allZonesResult;
+  // Get taxZoneIds for the current page of zones (for server-side filtering)
+  const paginatedTaxZoneIds = paginatedZonesResult.items.map(z => z.taxZoneId);
+
+  // Fetch filtered table data for the grid
+  const ratesResult = await getRateMasterPagedAction(
+    1,
+    -1,
+    rateCategories,
+    allZoneDescriptions,
+    selectedZone,
+    selectedUseGroup,
+    selectedYear,
+    paginatedTaxZoneIds
+  );
+  const tableData = ratesResult.items;
 
   // Prepare paginated zones data for the form
   const paginatedZonesData = {
@@ -165,9 +187,9 @@ export default async function EditRatePage({
         rateCategories={rateCategories}
         editData={editData}
         filterValues={{
-          zone: (resolvedSearchParams.zone as string) || editData?.rateSection || "",
-          useGroup: (resolvedSearchParams.useGroup as string) || editData?.useGroup || "",
-          year: (resolvedSearchParams.assessmentYear as string) || editData?.assessmentYear || "",        
+          zone: selectedZone,
+          useGroup: selectedUseGroup,
+          year: selectedYear,        
         }}
         paginatedZonesData={paginatedZonesData}
       />

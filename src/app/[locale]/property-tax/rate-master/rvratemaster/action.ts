@@ -30,6 +30,36 @@ export async function getDetailedRatesAction(
 }
 
 /**
+ * Get paginated rate master data with optional filters
+ */
+export async function getRateMasterPagedAction(
+  pageNumber: number,
+  pageSize: number,
+  constructionTypes: RateCategory[],
+  zoneDescriptions: IZoneDescription[],
+  rateSection?: string,
+  useGroup?: string,
+  assessmentYear?: string,
+  taxZoneIds?: number[]
+) {
+  try {
+    return await rateMasterService.getRateMasterPaged(
+      pageNumber,
+      pageSize,
+      constructionTypes,
+      zoneDescriptions,
+      rateSection,
+      useGroup,
+      assessmentYear,
+      taxZoneIds
+    );
+  } catch (error) {
+    console.error("❌ Action Error [getRateMasterPagedAction]:", error);
+    throw new Error("Failed to fetch paginated rate master data. Please try again.");
+  }
+}
+
+/**
  * Get paginated zone descriptions for matrix grid
  */
 export async function getZoneDescriptionsPaged(
@@ -95,15 +125,22 @@ export async function getZoneOptions(): Promise<ISelectOption[]> {
       pageNumber: 1,
       pageSize: -1,
     });
+    
     const items = response.rateSectionMaster || [];
-    // Only include items with a valid numeric Id
-    const activeItems = items.filter((item: RateItem & { Id?: number }) =>
-      item.isActive === true && typeof item.Id === 'number' && item.Id > 0
-    );
+    
+    // Only include items with a valid numeric Id - robust field casing and value handling
+    const activeItems = items.filter((item: RateItem & { Id?: number; id?: number; IsActive?: number | boolean | string; isActive?: number | boolean | string }) => {
+      // Handle both camelCase and PascalCase, both boolean true and numeric 1, and string "1"/"true"
+      const isActiveValue = (item.isActive !== undefined ? item.isActive : item.IsActive);
+      const isActive = isActiveValue === true || isActiveValue === 1 || isActiveValue === "1" || isActiveValue === "true";
+      const hasValidId = (typeof item.Id === 'number' && item.Id > 0) || (typeof item.id === 'number' && item.id > 0);
+      
+      return isActive && hasValidId;
+    });
 
-    return activeItems.map((item: RateItem & { Id?: number; RateSectionNo?: string; Description?: string }) => ({
-      label: item.Description || String(item.RateSectionNo || ""),
-      value: String(item.Id),
+    return activeItems.map((item: RateItem & { Id?: number; id?: number; RateSectionNo?: string; rateSectionNo?: string; Description?: string; description?: string }) => ({
+      label: item.description || item.Description || String(item.rateSectionNo || item.RateSectionNo || ""),
+      value: String(item.id || item.Id),
     })).filter((opt: ISelectOption) => opt.value && opt.value !== 'undefined' && opt.value !== '0');
   } catch (error) {
     console.error('❌ Action Error [getZoneOptions]:', error);
@@ -122,11 +159,16 @@ export async function getUseGroupOptions(): Promise<ISelectOption[]> {
     });
     
     const activeItems = (response.items || [])
-      .filter((item: { status?: string; typeOfUseGroupId?: number }) => item.status === 'Active' && item.typeOfUseGroupId && item.typeOfUseGroupId > 0);
+      .filter((item: { status?: string; Status?: string; typeOfUseGroupId?: number; TypeOfUseGroupId?: number }) => {
+        const status = item.status || item.Status;
+        const isActive = status === 'Active' || status === 'active' || status === 'ACTIVE';
+        const useGroupId = item.typeOfUseGroupId || item.TypeOfUseGroupId;
+        return isActive && useGroupId && useGroupId > 0;
+      });
     
-    return activeItems.map((item: { groupName?: string; typeOfUseGroupId?: number }) => ({
-      label: item.groupName || String(item.typeOfUseGroupId),
-      value: String(item.typeOfUseGroupId),
+    return activeItems.map((item: { groupName?: string; GroupName?: string; typeOfUseGroupId?: number; TypeOfUseGroupId?: number }) => ({
+      label: item.groupName || item.GroupName || String(item.typeOfUseGroupId || item.TypeOfUseGroupId),
+      value: String(item.typeOfUseGroupId || item.TypeOfUseGroupId),
     })).filter((opt: ISelectOption) => opt.value && opt.value !== 'undefined' && opt.value !== '0');
   } catch (error) {
     console.error('❌ Action Error [getUseGroupOptions]:', error);
@@ -143,12 +185,17 @@ export async function getAssessmentYears(): Promise<AssessmentYearRangeOption[]>
     const items = response.items || [];
     
     return items
-      .filter((item: { isActive?: boolean; id?: number }) => item.isActive === true && item.id)
-      .map((item: { id?: number; fromYear?: string | number; toYear?: string | number; isActive?: boolean }) => ({
-        label: `${item.fromYear ?? ''}-${item.toYear ?? ''}`,
-        value: String(item.id ?? ''),
-        fromYear: item.fromYear ?? '',
-        toYear: item.toYear ?? '',
+      .filter((item: { isActive?: boolean | number | string; IsActive?: boolean | number | string; id?: number; Id?: number }) => {
+        const isActiveValue = (item.isActive !== undefined ? item.isActive : item.IsActive);
+        const isActive = isActiveValue === true || isActiveValue === 1 || isActiveValue === "1" || isActiveValue === "true";
+        const hasValidId = (typeof item.id === 'number' && item.id > 0) || (typeof item.Id === 'number' && item.Id > 0);
+        return isActive && hasValidId;
+      })
+      .map((item: { id?: number; Id?: number; fromYear?: string | number; FromYear?: string | number; toYear?: string | number; ToYear?: string | number }) => ({
+        label: `${item.fromYear ?? item.FromYear ?? ''}-${item.toYear ?? item.ToYear ?? ''}`,
+        value: String(item.id ?? item.Id ?? ''),
+        fromYear: item.fromYear ?? item.FromYear ?? '',
+        toYear: item.toYear ?? item.ToYear ?? '',
       }))
       .filter((opt: AssessmentYearRangeOption) => opt.value && opt.value !== 'undefined')
       .sort((a, b) => a.label.localeCompare(b.label));

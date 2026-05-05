@@ -30,7 +30,7 @@ const RateMasterPageServer = async ({ searchParams }: PageProps) => {
     allMasterData,
     paginatedZonesResult
   ] = await Promise.all([
-    getRateMasterData(1, Number.MAX_SAFE_INTEGER), // get all zones for mapping
+    getRateMasterData(1, -1), // get all zones for mapping (pageSize: -1 gets all items)
     getZoneDescriptionsPaged(zonePage, zonePageSize)
   ]);
 
@@ -54,23 +54,23 @@ const RateMasterPageServer = async ({ searchParams }: PageProps) => {
   const totalZonePages = paginatedZonesResult.totalPages;
   const totalZonesCount = paginatedZonesResult.totalCount;
 
-  // STEP 2: Fetch ALL rates for selected filters (large page size to get all data)
-  const largePageSize = -1; // Fetch all matching rates
-  const allRatesResult = await getRateMasterPaged(
+  // STEP 2: Get taxZoneIds for the current page of zones (for server-side filtering)
+  const paginatedTaxZoneIds = paginatedZones.map(z => z.taxZoneId);
+
+  // STEP 3: Fetch ONLY rates for the paginated zones (server-side zone pagination)
+  const ratesResult = await getRateMasterPaged(
     1, 
-    largePageSize, 
+    -1, // Fetch all matching rates for the filtered zones
     constructionTypes, 
     zoneDescriptions, 
     selectedZone, 
     selectedUseGroup, 
-    selectedYear
+    selectedYear,
+    paginatedTaxZoneIds // Pass only the current page's zone IDs
   );
 
-  // STEP 3: Filter rates to only include the paginated zones
-  const paginatedZoneNumbers = new Set(paginatedZones.map(z => z.zoneNo));
-  const filteredRates = allRatesResult.items.filter(rate => 
-    paginatedZoneNumbers.has(rate.zoneNo ?? rate.zoneSection)
-  );
+  // Use the filtered rates directly (already filtered by taxZoneIds in getRateMasterPaged)
+  const filteredRates = ratesResult.items;
 
   return (
     <RateMasterView

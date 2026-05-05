@@ -342,13 +342,16 @@ export function useRateMasterFormState({
       const activeZones = paginatedZoneDescriptions.length > 0 ? paginatedZoneDescriptions : zoneDescriptions;
       const updatedMatrix = activeZones.map((z, idx) => {
         const zoneRates = ratesToUse.filter((row: IBackendRateMaster) => {
-          return row.taxZoneId === z.taxZoneId || String(row.taxZoneId) === z.zoneNo;
+          const taxZoneId = row.taxZoneId ?? row.TaxZoneId;
+          return taxZoneId === z.taxZoneId || String(taxZoneId) === z.zoneNo;
         });
         const rateValues: { [key: string]: number } = {};
         zoneRates.forEach((rate: IBackendRateMaster) => {
-          const constructionKey = String(rate.constructionTypeId);
-          if (rate.rateSquareMeter !== undefined) {
-            rateValues[constructionKey] = rate.rateSquareMeter;
+          const constructionTypeId = rate.constructionTypeId ?? rate.ConstructionTypeId;
+          const constructionKey = String(constructionTypeId);
+          const rateSqM = rate.rateSquareMeter ?? rate.RateSquareMeter;
+          if (rateSqM !== undefined) {
+            rateValues[constructionKey] = rateSqM;
           }
         });
         

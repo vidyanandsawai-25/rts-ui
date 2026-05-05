@@ -1,3 +1,21 @@
+  it('commits selection on blur when exact match is typed', async () => {
+    const options = [
+      { label: 'Option 1', value: 'opt1' },
+      { label: 'Option 2', value: 'opt2' },
+      { label: 'Banana', value: 'banana' },
+    ];
+    const onChange = vi.fn();
+    render(<SearchSelect id="test-select" name="test-select" options={options} value="" onChange={onChange} />);
+
+    const input = screen.getByRole('combobox');
+    fireEvent.change(input, { target: { value: 'Banana' } });
+    fireEvent.blur(input);
+
+    // Wait for any async state updates
+    await waitFor(() => {
+      expect(onChange).toHaveBeenCalledWith('test-select', 'banana');
+    });
+  });
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { SearchSelect } from '@/components/common/SearchSelect';

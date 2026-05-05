@@ -439,16 +439,31 @@ export function useRateMasterOperations({
   }, [assessmentYear, selectedZone, selectedUseGroup, multipliers, rateCategories, t, buildPayloadFromMatrix, useGroupOptions]);
 
   // Delete handler
-  const handleDelete = useCallback(async (latestBackendRates: IBackendRateMaster[], matrixData: Array<Record<string, unknown>>) => {
+  const handleDelete = useCallback(async (latestBackendRates: IBackendRateMaster[]) => {
     if (!latestBackendRates || latestBackendRates.length === 0) {
       toast.error(t('messages.noRatesToDelete'));
       return { success: false };
     }
 
-    const configuredRatesCount = matrixData.reduce((count, row) => {
+
+    // Helper to safely get value for both camelCase and PascalCase keys
+    function getRateValue(rate: IBackendRateMaster, key: string): number | undefined {
+      if (Object.prototype.hasOwnProperty.call(rate, key)) {
+        return rate[key as keyof IBackendRateMaster] as number | undefined;
+      }
+      const pascalKey = key.charAt(0).toUpperCase() + key.slice(1);
+      if (Object.prototype.hasOwnProperty.call(rate, pascalKey)) {
+        return rate[pascalKey as keyof IBackendRateMaster] as number | undefined;
+      }
+      return undefined;
+    }
+
+    // Count configured (non-zero) rates across all backend rates
+    const configuredRatesCount = latestBackendRates.reduce((count, rate) => {
       return count + rateCategories.filter(cat => {
         const key = cat.constructionCode || cat.constructionId;
-        return Number(row[key]) && Number(row[key]) > 0;
+        const value = getRateValue(rate, key);
+        return Number(value) && Number(value) > 0;
       }).length;
     }, 0);
 

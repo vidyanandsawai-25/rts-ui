@@ -328,16 +328,29 @@ const RateMasterForm: React.FC<RateMasterFormProps> = ({
       return;
     }
 
-    // Calculate configured (non-zero) rates count
-    const configuredRatesCount = matrixData.reduce((count, row) => {
+    // Helper to safely get value for both camelCase and PascalCase keys
+    function getRateValue(rate: IBackendRateMaster, key: string): number | undefined {
+      // Try camelCase
+      if (Object.prototype.hasOwnProperty.call(rate, key)) {
+        return rate[key as keyof IBackendRateMaster] as number | undefined;
+      }
+      // Try PascalCase
+      const pascalKey = key.charAt(0).toUpperCase() + key.slice(1);
+      if (Object.prototype.hasOwnProperty.call(rate, pascalKey)) {
+        return rate[pascalKey as keyof IBackendRateMaster] as number | undefined;
+      }
+      return undefined;
+    }
+
+    // Calculate configured (non-zero) rates count across all fetched backend rates
+    const configuredRatesCount = latestBackendRates.reduce((count, rate) => {
       return (
         count +
-        rateCategories.filter(
-          (cat) => {
-            const key = cat.constructionCode || cat.constructionId;
-            return Number(row[key]) && Number(row[key]) > 0;
-          }
-        ).length
+        rateCategories.filter(cat => {
+          const key = cat.constructionCode || cat.constructionId;
+          const value = getRateValue(rate, key);
+          return Number(value) && Number(value) > 0;
+        }).length
       );
     }, 0);
 
@@ -376,7 +389,7 @@ const RateMasterForm: React.FC<RateMasterFormProps> = ({
       cancelText: t('dialogs.cancel'),
       onConfirm: async () => {
         // Use hook's delete handler
-        const result = await handleDelete(latestBackendRates, matrixData);
+        const result = await handleDelete(latestBackendRates);
         
         // Close drawer and navigate on success
         if (result?.success) {
@@ -1316,7 +1329,7 @@ return (
   }}
   translations={{
     action: tCommon('table.columns.actions'),
-    currencySymbol: tCommon('currencySymbol'),
+    currencySymbol: "₹",
     deleteRow: tCommon('table.actions.delete'),
   }}
  />

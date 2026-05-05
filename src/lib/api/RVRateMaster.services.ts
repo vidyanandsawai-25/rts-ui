@@ -66,6 +66,7 @@ export async function bulkCreateRateMaster(payload: IRateCreate[]): Promise<{ su
 /* ========== GET REQUESTS (Data Fetching) ========== */
 /**
  * Fetch paged rate master data for the main list
+ * @param taxZoneIds - Optional array of taxZoneIds to filter by (for server-side zone pagination)
  */
 export async function getRateMasterPaged(
   pageNumber: number,
@@ -74,7 +75,8 @@ export async function getRateMasterPaged(
   zoneDescriptions: IZoneDescription[],
   rateSection?: string | { value: string },
   useGroup?: string | { value: string },
-  assessmentYear?: string | { value: string }
+  assessmentYear?: string | { value: string },
+  taxZoneIds?: number[]
 ): Promise<PagedResponse<IRateMaster>> {
   const params = new URLSearchParams({
     PageNumber: pageNumber.toString(),
@@ -101,6 +103,12 @@ export async function getRateMasterPaged(
     params.append('YearRangeRVId', assessmentYearStr);
   }
 
+  // Add TaxZoneIds filter if provided (for server-side zone pagination)
+  // Backend may support comma-separated TaxZoneIds or multiple params
+  if (taxZoneIds && taxZoneIds.length > 0) {
+    params.append('TaxZoneIds', taxZoneIds.join(','));
+  }
+
   const response = await apiClient.get<PagedResponse<IBackendRateMaster>>(`/Rate?${params.toString()}`);
   if (!response.success || !response.data) {
     throw new ApiError(response.statusCode || 500, "", response.error || 'Failed to fetch paged rate data');
@@ -111,13 +119,20 @@ export async function getRateMasterPaged(
   const taxZoneIdToNo = new Map(zoneDescriptions.map(z => [z.taxZoneId, String(z.zoneNo).trim()]));
   const groupedData = new Map<string, IRateMaster>();
 
+
   backendData.forEach((item) => {
     try {
-      const taxZoneNo = String(taxZoneIdToNo.get(item.taxZoneId) || item.taxZoneNo || item.taxZoneId).trim();
-      const typeOfUseGroupId = String(item.typeOfUseGroupId);
-      const rateSectionNo = item.rateSectionNo || String(item.rateSectionId);
-      const yearRangeRVId = item.yearRangeRVId || item.yearRangeId;
-      const key = `${taxZoneNo}-${typeOfUseGroupId}-${item.year}-${yearRangeRVId}-${item.rateSectionId}`;
+      // Read both camelCase and PascalCase fields for robustness
+      const taxZoneId = item.taxZoneId ?? item.TaxZoneId;
+      const taxZoneNo = String(taxZoneIdToNo.get(taxZoneId) || item.taxZoneNo || taxZoneId).trim();
+      const typeOfUseGroupId = String(item.typeOfUseGroupId ?? item.TypeOfUseGroupId);
+      const rateSectionId = item.rateSectionId ?? item.RateSectionId;
+      const rateSectionNo = item.rateSectionNo || String(rateSectionId);
+      const yearRangeRVId = item.yearRangeRVId ?? item.YearRangeRVId ?? item.yearRangeId ?? item.YearRangeId;
+      
+      // Simplified grouping key: only by taxZoneNo since filters are applied on backend
+      // This ensures one row per tax zone in the matrix grid
+      const key = taxZoneNo;
 
       if (!groupedData.has(key)) {
         const initialRates = constructionTypes.map(ct => ({
@@ -126,7 +141,7 @@ export async function getRateMasterPaged(
         }));
 
         groupedData.set(key, {
-          id: String(item.Id),
+          id: String(item.Id ?? item.id),
           rateSection: rateSectionNo as "A" | "B" | "C",
           zoneNo: taxZoneNo,
           useGroup: typeOfUseGroupId,
@@ -137,7 +152,7 @@ export async function getRateMasterPaged(
 
       const group = groupedData.get(key);
       if (group) {
-        const constructionTypeId = Number(item.constructionTypeId);
+        const constructionTypeId = Number(item.constructionTypeId ?? item.ConstructionTypeId);
         const construction = constructionTypes.find(ct => Number(ct.constructionId) === constructionTypeId);
 
         if (construction) {
@@ -145,8 +160,11 @@ export async function getRateMasterPaged(
           const rateIndex = group.rates.findIndex(r => r.rateCategory === constructionCode);
 
           if (rateIndex !== -1) {
-            group.rates[rateIndex].ratePerSqMtr = item.rateSquareMeter;
-            group.rates[rateIndex].id = item.Id;
+            // If rate already exists, keep the non-zero value (prefer filled data over nulls)
+            const existingRate = group.rates[rateIndex].ratePerSqMtr;
+            const newRate = item.rateSquareMeter ?? item.RateSquareMeter;
+            group.rates[rateIndex].ratePerSqMtr = existingRate && existingRate !== 0 ? existingRate : newRate;
+            group.rates[rateIndex].id = item.Id ?? item.id;
           }
         }
       }
@@ -157,9 +175,31 @@ export async function getRateMasterPaged(
 
   let transformedData = Array.from(groupedData.values());
 
-  if (rateSectionStr && rateSectionStr !== "ALL" && rateSectionStr !== "undefined" && !isNaN(Number(rateSectionStr))) {
-    const selectedRateSectionId = Number(rateSectionStr);
-    transformedData = transformedData.filter(row => Number(row.rateSection) === selectedRateSectionId);
+  // Client-side filter by taxZoneIds (fallback if backend doesn't support TaxZoneIds param)
+  if (taxZoneIds && taxZoneIds.length > 0) {
+    const zoneNoSet = new Set(taxZoneIds.map(id => {
+      const zoneNo = zoneDescriptions.find(z => z.taxZoneId === id)?.zoneNo;
+      return zoneNo || String(id);
+    }));
+    transformedData = transformedData.filter(row => 
+      zoneNoSet.has(row.zoneNo) || zoneNoSet.has(row.zoneSection || '')
+    );
+  }
+
+  if (rateSectionStr && rateSectionStr !== "ALL" && rateSectionStr !== "undefined") {
+    // If rateSectionStr is numeric, compare as number; otherwise, compare as string
+    if (!isNaN(Number(rateSectionStr)) && rateSectionStr.trim() !== "") {
+      const selectedRateSectionId = Number(rateSectionStr);
+      transformedData = transformedData.filter(row => {
+        // row.rateSection can be string (A/B/C) or number
+        return Number(row.rateSection) === selectedRateSectionId;
+      });
+    } else {
+      transformedData = transformedData.filter(row => {
+        // Compare as string for human-readable rateSectionNo (A/B/C)
+        return String(row.rateSection) === rateSectionStr;
+      });
+    }
   }
 
   return {

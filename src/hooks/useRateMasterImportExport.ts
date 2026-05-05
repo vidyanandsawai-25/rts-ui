@@ -158,22 +158,24 @@ export function useRateMasterImportExport({
       // Group fetched rates by zone
       const ratesByZone = new Map<string, Map<string, number>>();
       fetchedRates.forEach((rate: IBackendRateMaster) => {
-        const zoneId = rate.taxZoneId;
-        const constructionTypeId = rate.constructionTypeId;
-        
+        // Read both camelCase and PascalCase fields for robustness
+        const zoneId = rate.taxZoneId ?? rate.TaxZoneId;
+        const constructionTypeId = rate.constructionTypeId ?? rate.ConstructionTypeId;
+
         if (!zoneId || !constructionTypeId) {
           return;
         }
-        
+
         const zoneKey = String(zoneId);
         const constructionKey = String(constructionTypeId);
-        
+
         if (!ratesByZone.has(zoneKey)) {
           ratesByZone.set(zoneKey, new Map());
         }
         const zoneRates = ratesByZone.get(zoneKey)!;
-        if (rate.rateSquareMeter !== undefined) {
-          zoneRates.set(constructionKey, rate.rateSquareMeter);
+        const rateSqM = rate.rateSquareMeter ?? rate.RateSquareMeter;
+        if (rateSqM !== undefined) {
+          zoneRates.set(constructionKey, rateSqM);
         }
       });
       
@@ -463,9 +465,10 @@ export function useRateMasterImportExport({
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const validTypes = ['text/csv', 'application/vnd.ms-excel'];
-    if (!validTypes.includes(file.type) && !file.name.endsWith('.csv')) {
-      toast.error(t('ptis_RVRateMaster.messages.csvOnly'));
+    // Only allow CSV files by MIME type or extension
+    const validTypes = ['text/csv'];
+    if (!validTypes.includes(file.type) && !file.name.toLowerCase().endsWith('.csv')) {
+      toast.error(t('messages.csvOnly'));
       return;
     }
 
