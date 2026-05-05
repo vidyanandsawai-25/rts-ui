@@ -60,7 +60,8 @@
             "commercial": "C - वाणिज्यिक",
             "industrial": "I - औद्योगिक",
             "nontaxable": "N - कर-मुक्त"
-        }
+        },
+        "statusMessage": "उपयोग के प्रकार वर्तमान में {status} है"
     },
     "subtype": {
         "title": "उपयोग के उप-प्रकार",

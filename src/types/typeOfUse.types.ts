@@ -56,4 +56,25 @@ export interface TypeOfUseMasterData {
   subTypes: UseSubType[];
 }
 
+// Form component props interfaces
+export interface UseGroupFormProps {
+  id: string | null;
+  initialData?: UseGroup | null;
+  allGroups?: UseGroup[];
+}
+
+export interface UseTypeFormProps {
+  id: string | null;
+  initialData?: UseType | null;
+  allGroups?: UseGroup[];
+  allTypes?: UseType[];
+}
+
+export interface UseSubTypeFormProps {
+  id: string | null;
+  initialData?: UseSubType | null;
+  typeInfo?: UseType | null;
+  allSubTypes?: UseSubType[];
+}
+
 

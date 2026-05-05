@@ -1,5 +1,3 @@
-
-//-----------------------------------------------------------
 "use server";
 
 import { revalidatePath } from "next/cache";
@@ -28,6 +26,46 @@ import {
   updateSubTypeApi,
   deleteSubTypeApi,
 } from "@/lib/api/typeofusemaster.service";
+
+// ✅ Configuration constants for pagination
+const DEFAULT_PAGE_SIZE = 1000; // Standard page size for fetching all records
+const MAX_PAGE_SIZE = 5000; // Maximum to prevent memory issues
+
+// ✅ Generic helper to fetch all records with pagination
+async function fetchAllPaged<T>(
+  fetchFn: (params: { pageNumber: number; pageSize: number; [key: string]: unknown }) => Promise<{ items: T[]; totalCount: number }>,
+  additionalParams: Record<string, unknown> = {},
+  pageSize: number = DEFAULT_PAGE_SIZE
+): Promise<{ items: T[]; totalCount: number }> {
+  // Validate page size to prevent memory issues
+  const safPageSize = Math.min(pageSize, MAX_PAGE_SIZE);
+  
+  let page = 1;
+  const allItems: T[] = [];
+  let hasMore = true;
+
+  while (hasMore) {
+    const res = await fetchFn({
+      pageNumber: page,
+      pageSize: safPageSize,
+      ...additionalParams,
+    });
+
+    const newItems = res.items || [];
+    allItems.push(...newItems);
+
+    if (newItems.length === 0 || allItems.length >= res.totalCount) {
+      hasMore = false;
+    } else {
+      page++;
+    }
+  }
+
+  return {
+    items: allItems,
+    totalCount: allItems.length,
+  };
+}
 
 
 export async function getTypeOfUseMasterData(): Promise<TypeOfUseMasterData> {
@@ -123,61 +161,15 @@ export async function getUseTypesPaged(input: {
 
 // ✅ NEW: Helper to fetch ALL types (handles backend page limits)
 export async function getAllUseTypes(searchTerm?: string) {
-  const pageSize = 2000; // Reasonable chunk size
-  let page = 1;
-  const allItems: UseType[] = [];
-  let hasMore = true;
-
-  while (hasMore) {
-    const res = await getUseTypesPagedServer({
-      pageNumber: page,
-      pageSize,
-      searchTerm,
-    });
-
-    const newItems = res.items || [];
-    allItems.push(...newItems);
-
-    if (newItems.length === 0 || allItems.length >= res.totalCount) {
-      hasMore = false;
-    } else {
-      page++;
-    }
-  }
-
-  return {
-    items: allItems,
-    totalCount: allItems.length,
-  };
+  return await fetchAllPaged<UseType>(
+    getUseTypesPagedServer,
+    searchTerm ? { searchTerm } : {}
+  );
 }
 
 // ✅ NEW: Helper to fetch ALL groups
 export async function getAllUseGroups() {
-  const pageSize = 1000;
-  let page = 1;
-  const allItems: UseGroup[] = [];
-  let hasMore = true;
-
-  while (hasMore) {
-    const res = await getUseGroupsPagedServer({
-      pageNumber: page,
-      pageSize,
-    });
-
-    const newItems = res.items || [];
-    allItems.push(...newItems);
-
-    if (newItems.length === 0 || allItems.length >= res.totalCount) {
-      hasMore = false;
-    } else {
-      page++;
-    }
-  }
-
-  return {
-    items: allItems,
-    totalCount: allItems.length,
-  };
+  return await fetchAllPaged<UseGroup>(getUseGroupsPagedServer);
 }
 
 // ✅ NEW: Get paginated types by groupId (for server-side pagination)
@@ -262,27 +254,10 @@ export async function deleteUseType(id: string | number) {
 // ✅ NEW: Delete Type AND its SubTypes
 export async function deleteUseTypeWithSubTypes(typeId: number) {
   // 1. Fetch ALL sub-types for this type
-  const pageSize = 1000;
-  let page = 1;
-  const allSubTypes: UseSubType[] = [];
-  let hasMore = true;
-
-  while (hasMore) {
-    const res = await getSubTypesPagedServer({
-      pageNumber: page,
-      pageSize,
-      typeOfUseId: typeId,
-    });
-
-    const newItems = res.items || [];
-    allSubTypes.push(...newItems);
-
-    if (newItems.length === 0 || allSubTypes.length >= res.totalCount) {
-      hasMore = false;
-    } else {
-      page++;
-    }
-  }
+  const { items: allSubTypes } = await fetchAllPaged<UseSubType>(
+    getSubTypesPagedServer,
+    { typeOfUseId: typeId }
+  );
 
   // 2. Delete ALL sub-types
   await Promise.all(
@@ -301,27 +276,10 @@ export async function deleteUseTypeWithSubTypes(typeId: number) {
 // ✅ NEW: Delete Group AND its Types AND their SubTypes
 export async function deleteUseGroupWithCascade(groupId: number) {
   // 1. Fetch ALL types for this group
-  const pageSize = 1000;
-  let page = 1;
-  const allTypes: UseType[] = [];
-  let hasMore = true;
-
-  while (hasMore) {
-    const res = await getUseTypesPagedServer({
-      pageNumber: page,
-      pageSize,
-      typeOfUseGroupId: groupId,
-    });
-
-    const newItems = res.items || [];
-    allTypes.push(...newItems);
-
-    if (newItems.length === 0 || allTypes.length >= res.totalCount) {
-      hasMore = false;
-    } else {
-      page++;
-    }
-  }
+  const { items: allTypes } = await fetchAllPaged<UseType>(
+    getUseTypesPagedServer,
+    { typeOfUseGroupId: groupId }
+  );
 
   // 2. Delete each type (and its sub-types) sequentially to avoid creating a large fan-out of concurrent delete requests.
   for (const type of allTypes) {
@@ -349,33 +307,11 @@ export async function getSubTypesPaged(input: {
 
 // ✅ NEW: Helper to fetch ALL subtypes for a given typeId
 export async function getAllSubTypes(typeOfUseId?: number, searchTerm?: string) {
-  const pageSize = 2000; // Reasonable chunk size
-  let page = 1;
-  const allItems: UseSubType[] = [];
-  let hasMore = true;
+  const params: Record<string, unknown> = {};
+  if (typeOfUseId) params.typeOfUseId = typeOfUseId;
+  if (searchTerm) params.searchTerm = searchTerm;
 
-  while (hasMore) {
-    const res = await getSubTypesPagedServer({
-      pageNumber: page,
-      pageSize,
-      typeOfUseId,
-      searchTerm,
-    });
-
-    const newItems = res.items || [];
-    allItems.push(...newItems);
-
-    if (newItems.length === 0 || allItems.length >= res.totalCount) {
-      hasMore = false;
-    } else {
-      page++;
-    }
-  }
-
-  return {
-    items: allItems,
-    totalCount: allItems.length,
-  };
+  return await fetchAllPaged<UseSubType>(getSubTypesPagedServer, params);
 }
 
 export async function getSubTypeById(id: string | number) {

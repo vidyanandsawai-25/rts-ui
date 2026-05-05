@@ -1,9 +1,9 @@
 "use client";
 import { AddButton, DeleteButton, EditButton, PageContainer, SearchInput } from "@/components/common";
 import { CardList } from "@/components/common/CardList";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useLocale, useTranslations } from 'next-intl';
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
   Layers3,
   Home,
@@ -36,6 +36,10 @@ import {
   deleteSubType
 } from "@/app/[locale]/property-tax/typeofusemaster/actions";
 import { getSubTypeColumns, type SubTypeTableRow } from "./TypeOfUseMasterColumns";
+import { useTypeOfUseMasterUrl } from "@/hooks/useTypeOfUseMasterUrl";
+import { useTypeOfUseMasterSelection } from "@/hooks/useTypeOfUseMasterSelection";
+import { useSubTypeManagement } from "@/hooks/useSubTypeManagement";
+import { useTypeSearch } from "@/hooks/useTypeSearch";
 
 
 
@@ -80,11 +84,6 @@ function countTypesForGroup(group: UseGroup, types: UseType[]) {
   return types.filter((t) => String(t.typeOfUseGroupId) === groupApiId).length;
 }
 
-function safeNum(v: string | null, fallback: number) {
-  const n = Number(v);
-  return Number.isFinite(n) && n > 0 ? n : fallback;
-}
-
 export default function TypeOfUseMaster({
   initialData,
   subTypes,
@@ -92,7 +91,6 @@ export default function TypeOfUseMaster({
   subTotalPages,
   pageNumber,
   pageSize,
-  // Type pagination (server-side)
   paginatedTypes,
   typesTotalCount,
   typesTotalPages,
@@ -107,7 +105,6 @@ export default function TypeOfUseMaster({
   subTotalPages: number;
   pageNumber: number;
   pageSize: number;
-  // Type pagination (server-side)
   paginatedTypes: UseType[];
   typesTotalCount: number;
   typesTotalPages: number;
@@ -118,285 +115,62 @@ export default function TypeOfUseMaster({
 }) {
   const t = useTranslations('typeofusemaster');
   const router = useRouter();
-  const sp = useSearchParams();
-
-  // ---------------- URL PARAMS (used only for paging/search) ----------------
-  const urlGroupId = sp.get("groupId") ?? ""; // Group ID from URL
-  const urlTypeId = sp.get("typeId") ?? ""; // optional (for deep-link)
-  const urlQ = sp.get("q") ?? "";
-
+  const locale = useLocale();
   const { confirm } = useConfirm();
-  // const selectedTypeId = urlTypeId || serverSelectedTypeId || "";
-  const selectedTypeId = urlTypeId
-    ? urlTypeId
-    : serverSelectedTypeId;
-  const locale = useLocale(); // ✅ MOVE THIS UP
 
-
-  const pushUrl = useCallback(
-    (
-      next: {
-        groupId?: string;
-        typeId?: string;
-        pn?: number;
-        ps?: number;
-        typePn?: number;   // 🆕 Type page number
-        typePs?: number;   // 🆕 Type page size
-        q?: string;
-        typeSearch?: string;
-      }
-    ) => {
-      const qs = new URLSearchParams(sp.toString());
-
-      const groupId = next.groupId ?? qs.get("groupId") ?? "";
-      // ✅ FIX: When typeId is explicitly passed (even as undefined), use it. Don't fallback to URL.
-      const typeId = 'typeId' in next
-        ? (next.typeId ?? "")  // Explicitly passed (use it, convert undefined to "")
-        : (qs.get("typeId") ?? ""); // Not passed (keep current URL value)
-      const pn = next.pn ?? safeNum(qs.get("pn"), 1);
-      const ps = next.ps ?? safeNum(qs.get("ps"), 5);
-      // Type pagination params
-      const typePn = next.typePn ?? safeNum(qs.get("typePn"), 1);
-      const typePs = next.typePs ?? safeNum(qs.get("typePs"), 10);
-      const q = next.q ?? qs.get("q") ?? "";
-      const typeSearch = next.typeSearch !== undefined ? next.typeSearch : (qs.get("typeSearch") ?? "");
-
-      // Build URL params in correct order
-      const params = new URLSearchParams();
-
-      // 1. Group ID (always first if present)
-      if (groupId) {
-        params.set("groupId", groupId);
-      }
-
-      // 2. Type ID (only if present and not __NONE__)
-      if (typeId && typeId !== "__NONE__") {
-        params.set("typeId", typeId);
-      }
-
-      // 3. SubType pagination parameters (only if we have a type selected)
-      if (typeId && typeId !== "__NONE__") {
-        params.set("pn", String(pn));
-        params.set("ps", String(ps));
-      }
-
-      // 4. Type pagination parameters (always include)
-      params.set("typePn", String(typePn));
-      params.set("typePs", String(typePs));
-
-      // 5. SubType search
-      if (q && q.trim()) {
-        params.set("q", q.trim());
-      }
-
-      // 6. Type search
-      if (typeSearch?.trim()) {
-        params.set("typeSearch", typeSearch.trim());
-      }
-
-      const href = `/${locale}/property-tax/typeofusemaster?${params.toString()}`;
-      router.push(href); // ✅ FORCE SERVER NAVIGATION
-    },
-    [router, sp, locale]
-  );
-
-
-  // ---------------- INITIAL GROUP/TYPE ----------------
   const allTypes = useMemo(() => initialData.types ?? [], [initialData.types]);
   const allGroups = useMemo(() => initialData.groups ?? [], [initialData.groups]);
 
-  // ✅ FIX: Helper to find group by its typeOfUseGroupId (what types use as typeOfUseGroupId)
-  const findGroupByApiId = useCallback(
-    (apiId: string) => allGroups.find((g) => getGroupApiId(g) === apiId) ?? null,
-    [allGroups]
-  );
+  // Use custom hooks
+  const { urlGroupId, urlTypeId, urlQ, pushUrl } = useTypeOfUseMasterUrl();
 
-  const firstGroup = allGroups?.[0] ?? null;
-  const firstGroupApiId = firstGroup ? getGroupApiId(firstGroup) : "";
-  // ✅ FIX: Use typeOfUseGroupId for matching types
-  const firstTypeInFirstGroup = allTypes.find((t) => String(t.typeOfUseGroupId) === firstGroupApiId);
-  const firstTypeInFirstGroupId = firstTypeInFirstGroup ? String(getTypeApiId(firstTypeInFirstGroup)) : "";
-
-  // if URL has typeId, start with that; else start with first type
-  const initialSelectedTypeId = urlTypeId || firstTypeInFirstGroupId || "";
-
-  // ✅ FIX: Find the group.typeOfUseGroupId for the selected type
-  const initialSelectedGroupId = (() => {
-    // 🆕 If URL has groupId, use it to find the group
-    if (urlGroupId) {
-      const groupByApiId = findGroupByApiId(urlGroupId);
-      if (groupByApiId) return groupByApiId.typeOfUseGroupId;
-    }
-
-    // Otherwise, derive from selected type
-    if (initialSelectedTypeId) {
-      const type = allTypes.find((t) => getTypeApiId(t) === String(initialSelectedTypeId));
-      if (type) {
-        // type.typeOfUseGroupId is the API identifier, find the group by it
-        const group = findGroupByApiId(String(type.typeOfUseGroupId));
-        if (group) return group.typeOfUseGroupId; // Return the group's typeOfUseGroupId
-      }
-    }
-    return firstGroup?.typeOfUseGroupId ?? 0;
-  })();
-
-  const [selectedGroupId, setSelectedGroupId] = useState(initialSelectedGroupId);
-  // const [selectedTypeId, setSelectedTypeId] = useState(initialSelectedTypeId);
-
-  // ✅ Sync selectedGroupId from URL (takes precedence over local state)
-  useEffect(() => {
-    if (!urlGroupId) return;
-
-    const groupByApiId = findGroupByApiId(urlGroupId);
-    if (groupByApiId && groupByApiId.typeOfUseGroupId !== selectedGroupId) {
-      // Use setTimeout to avoid direct setState in effect
-      setTimeout(() => setSelectedGroupId(groupByApiId.typeOfUseGroupId), 0);
-    }
-  }, [urlGroupId, allGroups, selectedGroupId, findGroupByApiId]);
-
-
-  useEffect(() => {
-    if (!selectedTypeId) return;
-    if (urlGroupId) return; // URL has explicit groupId, don't override
-
-    const type = allTypes.find((t) => getTypeApiId(t) === String(selectedTypeId));
-    if (!type) return;
-
-    // type.typeOfUseGroupId is the API identifier, find the actual group
-    const group = findGroupByApiId(String(type.typeOfUseGroupId));
-    if (!group) return;
-
-    // Only update if different (use group.typeOfUseGroupId)
-    if (group.typeOfUseGroupId !== selectedGroupId) {
-      setTimeout(() => setSelectedGroupId(group.typeOfUseGroupId), 0);
-    }
-  }, [selectedTypeId, allTypes, allGroups, urlGroupId]); // eslint-disable-line react-hooks/exhaustive-deps
-
-
-  // ✅ FIX: When group is selected but no type, select first type in that group
-  // NOTE: Only run this on initial load, not when explicitly navigating to an empty group
-  useEffect(() => {
-    // Skip if a valid type is already selected
-    if (selectedTypeId && selectedTypeId !== "__NONE__") return;
-
-    // Skip if URL has explicit groupId (user navigated to specific group)
-    if (urlGroupId) return;
-
-    // Find group by typeOfUseGroupId, then get its API ID for filtering types
-    const group = allGroups.find((g) => g.typeOfUseGroupId === selectedGroupId);
-    if (!group) return;
-
-    const groupApiId = getGroupApiId(group);
-    const firstType = allTypes.find(
-      (t) => String(t.typeOfUseGroupId) === groupApiId
-    );
-
-    if (!firstType) return; // No types in this group, don't navigate
-
-    const firstTypeId = getTypeApiId(firstType);
-    const currentGroupApiId = getGroupApiId(group);
-
-    pushUrl({
-      groupId: currentGroupApiId,
-      typeId: firstTypeId,
-      pn: 1,
-      ps: pageSize,
-      q: "",
-    });
-  }, [
-    selectedTypeId,
-    selectedGroupId,
+  const { selectedGroupId, selectedTypeId, selectedType } = useTypeOfUseMasterSelection({
+    allGroups,
     allTypes,
+    urlGroupId,
+    urlTypeId: urlTypeId || serverSelectedTypeId,
+    pageSize,
+    pushUrl,
+  });
+
+  const { typeSearch, setTypeSearch, onTypeSearchChange } = useTypeSearch({
+    typeSearchFromServer,
+    selectedGroupId,
     allGroups,
     pushUrl,
+  });
+
+  const {
+    subTypeSearch,
+    searchActive,
+    subLoading,
+    loadingAll,
+    subPageSize,
+    effectivePageNumber,
+    effectiveTotalCount,
+    effectiveTotalPages,
+    subTypeTableRows,
+    changeSubPage,
+    changeSubPageSize,
+    onSearchChange,
+  } = useSubTypeManagement({
+    subTypes,
+    subTotalCount,
+    subTotalPages,
+    pageNumber,
     pageSize,
-    urlGroupId,
-  ]);
-
-
-
-  // ---------------- TYPE SEARCH ----------------
-  const [typeSearch, setTypeSearch] = useState(typeSearchFromServer ?? "");
-
-  // ✅ Get selected type object to display its code
-  const selectedType = useMemo(() => {
-    if (!selectedTypeId || selectedTypeId === "__NONE__") return null;
-    return allTypes.find((t) => getTypeApiId(t) === String(selectedTypeId));
-  }, [selectedTypeId, allTypes]);
-
-
-  // ---------------- SUBTYPE STATE ----------------
-  const [subLoading] = useState(false);
-  const [loadingAll] = useState(false);
-
-  const subPageSize = pageSize;
-  const subPageNumber = pageNumber;
-
-  // ✅ SEARCH
-  const [subTypeSearch, setSubTypeSearch] = useState(urlQ);
-  const searchActive = subTypeSearch.trim().length > 0;
-
-  const effectivePageNumber = subPageNumber;
-  const effectiveTotalCount = subTotalCount;
-  const effectiveTotalPages = subTotalPages;
-
-  const subTypeTableRows = useMemo(() => {
-    return (subTypes ?? []).map((s, idx) => ({
-      ...s,
-      srNo: (subPageNumber - 1) * subPageSize + idx + 1,
-    }));
-  }, [subTypes, subPageNumber, subPageSize]);
+    urlQ,
+    selectedTypeId,
+    selectedGroupId,
+    allGroups,
+    pushUrl,
+  });
 
   // Get column definitions from separate file
   const subTypeColumns = useMemo<Column<SubTypeTableRow>[]>(
     () => getSubTypeColumns(t),
     [t]
   );
-
-  const changeSubPage = (p: number) => {
-    const currentGroup = allGroups.find((g) => g.typeOfUseGroupId === selectedGroupId);
-    const currentGroupApiId = currentGroup ? getGroupApiId(currentGroup) : "";
-
-    pushUrl({
-      groupId: currentGroupApiId,
-      typeId: selectedTypeId,
-      pn: p,
-      ps: subPageSize,
-      q: searchActive ? subTypeSearch : "",
-    });
-  };
-
-
-  const changeSubPageSize = (size: number) => {
-    const currentGroup = allGroups.find((g) => g.typeOfUseGroupId === selectedGroupId);
-    const currentGroupApiId = currentGroup ? getGroupApiId(currentGroup) : "";
-
-    // Reset search state (variables commented out, just call pushUrl)
-    pushUrl({
-      groupId: currentGroupApiId,
-      typeId: selectedTypeId,
-      pn: 1,
-      ps: size,
-      q: searchActive ? subTypeSearch : "",
-    });
-  };
-
-
-
-  const onSearchChange = (val: string) => {
-    const currentGroup = allGroups.find((g) => g.typeOfUseGroupId === selectedGroupId);
-    const currentGroupApiId = currentGroup ? getGroupApiId(currentGroup) : "";
-
-    setSubTypeSearch(val);
-
-    pushUrl({
-      groupId: currentGroupApiId,
-      typeId: selectedTypeId,
-      pn: 1,
-      ps: subPageSize,
-      q: val.trim() || "",
-    });
-  };
 
   const handleDeleteGroup = (g: UseGroup) => {
     const groupId = String(g.typeOfUseGroupId);
@@ -443,19 +217,12 @@ export default function TypeOfUseMaster({
       return;
     }
 
-    const typeApiId = getTypeApiId(useType);
-    // Check if this is the selected type to show accurate count
-    const isSelectedType = typeApiId === selectedTypeId;
-    const hasSubTypes = isSelectedType && subTotalCount > 0;
-
     confirm({
-      variant: hasSubTypes ? "warning" : "delete",
-      title: hasSubTypes ? t("messages.deleteTypeWithSubTypesTitle") : t("messages.deleteConfirmation"),
-      description: hasSubTypes
-        ? t("messages.deleteTypeWithSubTypesDescription")
-        : undefined,
+      variant: "warning",
+      title: t("messages.deleteTypeWithSubTypesTitle"),
+      description: t("messages.deleteTypeWithSubTypesDescription"),
       meta: { name: useType.description },
-      confirmText: hasSubTypes ? t("messages.deleteAll") : undefined,
+      confirmText: t("messages.deleteAll"),
       onConfirm: async () => {
         try {
           // Always use cascade delete to handle subtypes if they exist
@@ -578,7 +345,6 @@ export default function TypeOfUseMaster({
 
                         <div className="flex gap-2">
                           <EditButton
-                            // variant="edit"
                             size="sm"
                             title={t('buttons.edit') + ' ' + t('group.title')}
                             onClick={(e) => {
@@ -587,7 +353,6 @@ export default function TypeOfUseMaster({
                             }}
                           />
                           <DeleteButton
-                            //variant="delete"
                             size="sm"
                             title={t('buttons.delete') + ' ' + t('group.title')}
                             onClick={(e) => {
@@ -602,8 +367,6 @@ export default function TypeOfUseMaster({
                       </div>
                       <div className="mt-1 text-xs flex items-center gap-2">
                         <span className="text-slate-600">{typesCount} {t('type.title')}</span>
-
-                        {/* ✅ StatusBadge */}
                         <StatusBadge value={g.status ?? "Active"} />
                       </div>
 
@@ -630,20 +393,7 @@ export default function TypeOfUseMaster({
               <div className="font-semibold text-slate-900">{t('type.title')}</div>
               <SearchInput className="mb-0 ml-auto w-full max-w-sm"
                 value={typeSearch}
-                onChange={(val) => {
-                  const currentGroup = allGroups.find((g) => g.typeOfUseGroupId === selectedGroupId);
-                  const currentGroupApiId = currentGroup ? getGroupApiId(currentGroup) : "";
-
-                  setTypeSearch(val);
-
-                  pushUrl({
-                    groupId: currentGroupApiId,
-                    typeSearch: val,
-                    typeId: undefined, // reset selected type
-                    pn: 1,
-                    typePn: 1, // reset type page on search
-                  });
-                }}
+                onChange={onTypeSearchChange}
                 placeholder={t('type.searchPlaceholder')}
               />
               <AddButton
@@ -684,7 +434,7 @@ export default function TypeOfUseMaster({
                   });
                 }}
                 pageSizeOptions={[5, 10, 20, 50]}
-                emptyText={t('type.noTypes', { defaultValue: 'No types found for selected group.' })}
+                emptyText={t('type.noTypes')}
                 maxHeightClassName="max-h-[320px] sm:max-h-[350px] lg:max-h-[415px] overflow-y-auto"
                 className="border-none rounded-none shadow-none"
                 renderCard={(typeItem) => {
@@ -792,14 +542,12 @@ export default function TypeOfUseMaster({
                 <SearchInput
                   value={subTypeSearch}
                   onChange={onSearchChange}
-                  placeholder={t('subtype.searchPlaceholder', { defaultValue: 'Search SubTypes...' })}
+                  placeholder={t('subtype.searchPlaceholder')}
                   className="mb-0 w-full md:w-80 lg:w-96 text-gray-700"
                 />
               </div>
 
-              {/* Right */}
               <AddButton
-                //variant="add"
                 size="md"
                 label={t('subtype.add')}
                 disabled={!selectedTypeId}
@@ -813,7 +561,7 @@ export default function TypeOfUseMaster({
                   <div className="flex items-center gap-2">
                     <AlertCircle size={16} />
                     {loadingAll ? (
-                      <span>{t('subtype.searching', { defaultValue: 'Searching...' })}</span>
+                      <span>{t('subtype.searching')}</span>
                     ) : (
                       <span>
                         {/* {t('subtype.found', { count: filteredAll.length, defaultValue: 'Found {count} matching records' })} */}
@@ -827,14 +575,14 @@ export default function TypeOfUseMaster({
                     onClick={() => onSearchChange("")}
                     className="text-blue-600 hover:underline font-medium"
                   >
-                    {t('subtype.clear', { defaultValue: 'Clear' })}
+                    {t('subtype.clear')}
                   </button>
                 </div>
               )}
 
               <div className="mt-0">
                 {!selectedTypeId ? (
-                  <div className="p-8 text-center text-sm text-slate-500">{t('type.selectTypeFirst', { defaultValue: 'Select a type first' })}</div>
+                  <div className="p-8 text-center text-sm text-slate-500">{t('type.selectTypeFirst')}</div>
                 ) : (
                   <MasterTable
                     columns={subTypeColumns}

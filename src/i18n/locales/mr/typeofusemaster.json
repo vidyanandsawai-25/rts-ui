@@ -59,7 +59,8 @@
             "commercial": "C - व्यावसायिक",
             "industrial": "I - औद्योगिक",
             "nontaxable": "N - करमुक्त"
-        }
+        },
+        "statusMessage": "वापराचा प्रकार सध्या {status} आहे"
     },
     "subtype": {
         "title": "वापराचे उप-प्रकार",

@@ -234,7 +234,9 @@ describe("TypeOfUseMaster", () => {
           typesTotalCount={2}
           typesTotalPages={1}
           typePageNumber={1}
-          typePageSize={10}          selectedTypeId="1"        />
+          typePageSize={10}
+          selectedTypeId="1"
+        />
       );
 
       expect(screen.getByText("Type of Use Master")).toBeInTheDocument();

@@ -7,7 +7,7 @@ import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AlertCircle, ListTree } from "lucide-react";
 
-import type { UseSubType, UseType } from "@/types/typeOfUse.types";
+import type { UseSubType, UseType, UseSubTypeFormProps } from "@/types/typeOfUse.types";
 
 import { Input } from "@/components/common/Input";
 
@@ -25,20 +25,13 @@ import { validateForm } from '@/lib/utils/validation-helpers';
 import { DESCRIPTION_REGEX, DESCRIPTION_SANITIZE } from '@/lib/utils/validation-rules';
 import type { Validator } from '@/lib/utils/validation-helpers';
 
-interface Props {
-  id: string | null;
-  initialData?: UseSubType | null; // Server-side fetched data for edit mode
-  typeInfo?: UseType | null; // Server-side fetched type info
-  allSubTypes?: UseSubType[]; // Server-side fetched subtypes for duplicate check
-}
-
 type FieldErrors = {
   typeId?: string;
   description?: string;
   searchSequence?: string;
 };
 
-export default function UseSubTypeForm({ id, initialData, typeInfo: typeInfoProp = null, allSubTypes: allSubTypesProp = [] }: Props) {
+export default function UseSubTypeForm({ id, initialData, typeInfo: typeInfoProp = null, allSubTypes: allSubTypesProp = [] }: UseSubTypeFormProps) {
   const t = useTranslations("typeofusemaster");
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -225,12 +218,9 @@ export default function UseSubTypeForm({ id, initialData, typeInfo: typeInfoProp
             <div className="text-sm text-slate-500">
               {typeLabel
                 ? t("subtype.forType", {
-                    type: typeLabel,
-                    defaultValue: `For Type: ${typeLabel}`,
+                    type: typeLabel
                   })
-                : t("subtype.addSubtitle", {
-                    defaultValue: "Create a new Sub-Type",
-                  })}
+                : t("subtype.addSubtitle")}
             </div>
           </div>
         </div>
@@ -244,7 +234,7 @@ export default function UseSubTypeForm({ id, initialData, typeInfo: typeInfoProp
           <SaveButton
             label={
               isEdit
-                ? t("buttons.edit", { defaultValue: "Update" })
+                ? t("buttons.edit")
                 : t("buttons.save")
             }
             type="submit"
@@ -292,9 +282,7 @@ export default function UseSubTypeForm({ id, initialData, typeInfo: typeInfoProp
                   </div>
                   <div className="text-sm text-slate-500">
                     {t("subtype.title")}{" "}
-                    {t("status.isCurrently", {
-                      defaultValue: "is currently",
-                    })}{" "}
+                    {t("status.isCurrently")}{" "}
                     <span
                       className={
                         isActive
@@ -372,9 +360,7 @@ export default function UseSubTypeForm({ id, initialData, typeInfo: typeInfoProp
         <div className="flex items-center gap-2 rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-700">
           <AlertCircle size={16} />
           <span>
-            {t("group.mandatoryNote", {
-              defaultValue: "Fields marked with * are mandatory",
-            })}
+            {t("group.mandatoryNote")}
           </span>
         </div>
       </form>

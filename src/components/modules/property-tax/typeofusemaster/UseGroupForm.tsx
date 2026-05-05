@@ -2,7 +2,7 @@
 "use client";
 import { useTranslations } from 'next-intl';
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import {
@@ -12,25 +12,18 @@ import {
   GraduationCap,
   Wheat,
   MapPin,
-  ChevronDown,
-  Check,
   AlertCircle,
   Layers3,
 } from "lucide-react";
 
-import type { UseGroup, UseGroupIconKey } from "@/types/typeOfUse.types";
-// import Drawer from "@/components/common/Drawer";
-// import { ActionButton } from "@/components/common/Buttons";
+import type { UseGroup, UseGroupIconKey, UseGroupFormProps } from "@/types/typeOfUse.types";
 import { Input } from "@/components/common/Input";
 import { Select } from "@/components/common/select";
-
-
 
 import {
   createUseGroup,
   updateUseGroup,
 } from "@/app/[locale]/property-tax/typeofusemaster/actions";
-
 
 import { ToggleSwitch } from "@/components/common/ToggleSwitch"; // ✅ adjust path if different
 import { CheckCircle2 } from "lucide-react";
@@ -40,13 +33,6 @@ import { CancelButton, SaveButton, ValidationMessage } from '@/components/common
 import { validateForm } from '@/lib/utils/validation-helpers';
 import { CODE_REGEX, CODE_SANITIZE, TEXT_ALLOWED, TEXT_SANITIZE } from '@/lib/utils/validation-rules';
 import type { Validator } from '@/lib/utils/validation-helpers';
-
-
-interface Props {
-  id: string | null;
-  initialData?: UseGroup | null; // Server-side fetched data for edit mode
-  allGroups?: UseGroup[]; // Server-side fetched groups for duplicate check
-}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ICON_OPTIONS: Array<{ value: UseGroupIconKey; label: string; Icon: any }> =
@@ -64,7 +50,7 @@ type FieldErrors = {
   name?: string;
 };
 
-export default function UseGroupForm({ id, initialData, allGroups: allGroupsProp = [] }: Props) {
+export default function UseGroupForm({ id, initialData, allGroups: allGroupsProp = [] }: UseGroupFormProps) {
   const t = useTranslations('typeofusemaster');
   const router = useRouter();
   const isEdit = Boolean(id);
@@ -85,8 +71,7 @@ export default function UseGroupForm({ id, initialData, allGroups: allGroupsProp
   const [submittedOnce, setSubmittedOnce] = useState(false);
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
-  const [iconOpen, setIconOpen] = useState(false);
-  const iconWrapRef = useRef<HTMLDivElement | null>(null);
+  // Removed unused iconOpen and iconWrapRef
 
   // Sanitization helpers using common validation patterns
   const sanitizeCode = (value: string, maxLength: number = 10): string => {
@@ -111,8 +96,7 @@ export default function UseGroupForm({ id, initialData, allGroups: allGroupsProp
     return 'home';
   };
 
-  const selectedIconOption =
-    ICON_OPTIONS.find((o) => o.value === getIconKey(formData.groupIcon)) ?? ICON_OPTIONS[0];
+  // Removed unused selectedIconOption
 
 
   const isActiveStatus = formData.isActive ?? true;
@@ -124,15 +108,6 @@ export default function UseGroupForm({ id, initialData, allGroups: allGroupsProp
       status: p.isActive ? "Inactive" : "Active",
     }));
   };
-
-  // close icon dropdown
-  useEffect(() => {
-    const onDown = (e: MouseEvent) => {
-      if (!iconWrapRef.current?.contains(e.target as Node)) setIconOpen(false);
-    };
-    document.addEventListener("mousedown", onDown);
-    return () => document.removeEventListener("mousedown", onDown);
-  }, []);
 
   const isDuplicateCode = (code: string): boolean => {
     const c = normalize(code);
@@ -267,7 +242,7 @@ export default function UseGroupForm({ id, initialData, allGroups: allGroupsProp
               {isEdit ? t('group.edit') : t('group.add')}
             </div>
             <div className="text-sm text-slate-500">
-              {isEdit ? t('group.editSubtitle', { defaultValue: 'Update use group details' }) : t('group.addSubtitle', { defaultValue: 'Create new use group' })}
+              {isEdit ? t('group.editSubtitle') : t('group.addSubtitle')}
             </div>
           </div>
         </div>
@@ -275,13 +250,11 @@ export default function UseGroupForm({ id, initialData, allGroups: allGroupsProp
       footer={
         <>
           <CancelButton
-           // variant="cancel"
             label={t('buttons.cancel')}
             onClick={() => router.back()}
           />
           <SaveButton
-           // variant="save"
-            label={isEdit ? t('buttons.edit', { defaultValue: 'Update' }) : t('buttons.save')}
+            label={isEdit ? t('buttons.edit') : t('buttons.save')}
             type="submit"
             form="use-group-form"
           />
@@ -305,7 +278,7 @@ export default function UseGroupForm({ id, initialData, allGroups: allGroupsProp
                 <div>
                   <div className="text-base font-semibold text-slate-900">{t('group.fields.status')}</div>
                   <div className="text-sm text-slate-500">
-                    {t('group.title')} {t('status.isCurrently', { defaultValue: 'is currently' })} <span className={isActiveStatus ? "text-emerald-700 font-medium" : "text-slate-600 font-medium"}>{isActiveStatus ? t('status.active') : t('status.inactive')}</span>
+                    {t('group.title')} {t('status.isCurrently')} <span className={isActiveStatus ? "text-emerald-700 font-medium" : "text-slate-600 font-medium"}>{isActiveStatus ? t('status.active') : t('status.inactive')}</span>
                   </div>
                 </div>
               </div>
@@ -322,10 +295,9 @@ export default function UseGroupForm({ id, initialData, allGroups: allGroupsProp
         {/* ================= BASIC DETAILS ================= */}
         <div className="rounded-xl border border-[#DCEAFF] bg-slate-50 p-5 space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            {/* Group Code */}
             <div className="flex flex-col">
               <Input
-                label={t('group.fields.groupId')} // Keeping the translation key but it represents 'Code' now
+                label={t('group.fields.groupId')}
                 name="typeOfUseGroupCode"
                 value={formData.typeOfUseGroupCode}
                 onChange={(e) => {
@@ -387,12 +359,7 @@ export default function UseGroupForm({ id, initialData, allGroups: allGroupsProp
               <Select
                 label={t('group.fields.iconType')}
                 options={ICON_OPTIONS.map(opt => ({
-                  label: (
-                    <span className="flex items-center gap-2">
-                      <opt.Icon className="h-4 w-4" />
-                      {opt.label}
-                    </span>
-                  ),
+                  label: opt.label,
                   value: opt.value
                 }))}
                 value={getIconKey(formData.groupIcon)}
@@ -413,7 +380,7 @@ export default function UseGroupForm({ id, initialData, allGroups: allGroupsProp
         <div className="flex items-center gap-2 rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-700">
           <AlertCircle size={16} />
           <span>
-            {t('group.mandatoryNote', { defaultValue: 'Fields marked with * are mandatory' })}
+            {t('group.mandatoryNote')}
           </span>
         </div>
       </form>

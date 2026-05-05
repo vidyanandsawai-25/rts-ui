@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from "next/navigation";
 import { Tag, AlertCircle } from "lucide-react";
 
-import type { UseGroup, UseType } from "@/types/typeOfUse.types";
+import type { UseGroup, UseType, UseTypeFormProps } from "@/types/typeOfUse.types";
 
 import { Input } from "@/components/common/Input";
 
@@ -26,13 +26,6 @@ import { validateForm } from '@/lib/utils/validation-helpers';
 import { CODE_REGEX, CODE_SANITIZE, DESCRIPTION_REGEX, DESCRIPTION_SANITIZE } from '@/lib/utils/validation-rules';
 import type { Validator } from '@/lib/utils/validation-helpers';
 
-interface Props {
-  id: string | null; // null = add
-  initialData?: UseType | null; // Server-side fetched data for edit mode
-  allGroups?: UseGroup[]; // Server-side fetched groups
-  allTypes?: UseType[]; // Server-side fetched types for duplicate check
-}
-
 type FieldErrors = {
   code?: string;
   typeValue?: string;
@@ -41,7 +34,7 @@ type FieldErrors = {
   searchSequence?: string;
 };
 
-export default function UseTypeForm({ id, initialData, allGroups: allGroupsProp = [], allTypes: allTypesProp = [] }: Props) {
+export default function UseTypeForm({ id, initialData, allGroups: allGroupsProp = [], allTypes: allTypesProp = [] }: UseTypeFormProps) {
   const t = useTranslations('typeofusemaster');
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -274,8 +267,8 @@ export default function UseTypeForm({ id, initialData, allGroups: allGroupsProp 
             </div>
             <div className="text-sm text-slate-500">
               {selectedGroup
-                ? t('type.addingToGroup', { group: selectedGroup.groupName, defaultValue: `Adding to ${selectedGroup.groupName} group` })
-                : t('type.selectGroup', { defaultValue: 'Select group' })}
+                ? t('type.addingToGroup', { group: selectedGroup.groupName })
+                : t('type.selectGroup')}
             </div>
           </div>
         </div>
@@ -283,13 +276,11 @@ export default function UseTypeForm({ id, initialData, allGroups: allGroupsProp 
       footer={
         <>
           <CancelButton
-          //  variant="cancel"
             label={t('buttons.cancel')}
             onClick={() => router.back()}
           />
           <SaveButton
-           // variant="save"
-            label={isEdit ? t('buttons.edit', { defaultValue: 'Update' }) : t('buttons.save')}
+            label={isEdit ? t('buttons.edit') : t('buttons.save')}
             type="submit"
             form="use-type-form"
           />
@@ -315,7 +306,9 @@ export default function UseTypeForm({ id, initialData, allGroups: allGroupsProp 
                 <div>
                   <div className="text-base font-semibold text-slate-900">{t('type.fields.status')}</div>
                   <div className="text-sm text-slate-500">
-                    {t('type.title')} {t('status.is', { defaultValue: 'is currently' })} <span className={isActive ? "text-emerald-700 font-medium" : "text-slate-600 font-medium"}>{isActive ? t('status.active') : t('status.inactive')}</span>
+                    {t('type.statusMessage', { 
+                      status: isActive ? t('status.active') : t('status.inactive')
+                    })}
                   </div>
                 </div>
               </div>
@@ -327,9 +320,6 @@ export default function UseTypeForm({ id, initialData, allGroups: allGroupsProp 
 
         <div className="rounded-xl border border-[#DCEAFF] bg-slate-50 p-5 space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            {/* Type Code */}
-            
-
             {/* Type Dropdown */}
             <div className="flex flex-col">
               <label htmlFor="type-select" className="mb-1.5 text-sm font-semibold text-gray-700">
@@ -345,12 +335,12 @@ export default function UseTypeForm({ id, initialData, allGroups: allGroupsProp 
                 className="w-full text-slate-700 rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-200"
               >
                 <option value="" disabled>
-                  {t('type.selectType', { defaultValue: 'Select Type' })}
+                  {t('type.selectType')}
                 </option>
-                <option value="R">{t('type.options.residential', { defaultValue: 'R - Residential' })}</option>
-                <option value="C">{t('type.options.commercial', { defaultValue: 'C - Commercial' })}</option>
-                <option value="I">{t('type.options.industrial', { defaultValue: 'I - Industrial' })}</option>
-                <option value="N">{t('type.options.nontaxable', { defaultValue: 'N - Non-taxable' })}</option>
+                <option value="R">{t('type.options.residential')}</option>
+                <option value="C">{t('type.options.commercial')}</option>
+                <option value="I">{t('type.options.industrial')}</option>
+                <option value="N">{t('type.options.nontaxable')}</option>
               </select>
               <ValidationMessage
                 message={errors.typeValue}
@@ -372,7 +362,7 @@ export default function UseTypeForm({ id, initialData, allGroups: allGroupsProp 
                 className=" w-full text-slate-700 rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-200"
               >
                 <option value="" disabled>
-                  {t('type.selectUseTypeGroup', { defaultValue: 'Select UseTypeGroup' })}
+                  {t('type.selectUseTypeGroup')}
                 </option>
                 {allGroups.map((g) => (
                   <option key={g.typeOfUseGroupId} value={g.typeOfUseGroupId}>
@@ -388,7 +378,7 @@ export default function UseTypeForm({ id, initialData, allGroups: allGroupsProp 
 
               {/* {selectedGroup && (
                 <div className="mt-2 text-xs text-slate-600">
-                  {t('type.selectedGroup', { group: selectedGroup.groupName, defaultValue: 'Selected: ' })}<b>{selectedGroup.groupName}</b>
+                  {t('type.selectedGroup', { group: selectedGroup.groupName })}<b>{selectedGroup.groupName}</b>
                 </div>
               )} */}
             </div>
@@ -456,7 +446,7 @@ export default function UseTypeForm({ id, initialData, allGroups: allGroupsProp 
         <div className="flex items-center gap-2 rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-700">
           <AlertCircle size={16} />
           <span>
-            {t('type.mandatoryNote', { defaultValue: 'Fields marked with * are mandatory' })}
+            {t('type.mandatoryNote')}
           </span>
         </div>
       </form>

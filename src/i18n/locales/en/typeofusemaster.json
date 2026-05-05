@@ -59,7 +59,8 @@
             "commercial": "C - Commercial",
             "industrial": "I - Industrial",
             "nontaxable": "N - Non-taxable"
-        }
+        },
+        "statusMessage": "Types of Use is currently {status}"
     },
     "subtype": {
         "title": "Sub-Types of Use",
