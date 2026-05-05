@@ -63,4 +63,6 @@ export {
   constructionValidators,
   societyValidations,
   propertyValidations,
+  officeValidations,
 } from './validation-schemas';
+

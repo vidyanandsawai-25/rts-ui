@@ -180,7 +180,7 @@ export function ConstructionTypeMaster({
                 <span className="text-sm text-gray-600">{tCommon("table.rowsPerPage")}:</span>
                 <Select
                   value={String(pageSize)}
-                  onChange={handlePageSizeChange}
+                  onChange={(e) => handlePageSizeChange(e.target.value)}
                   options={[10, 20, 30, 40, 50].map((s) => ({
                     label: String(s),
                     value: String(s),

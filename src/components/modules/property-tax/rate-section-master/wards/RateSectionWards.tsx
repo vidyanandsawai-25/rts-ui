@@ -99,7 +99,7 @@ export default function RateSectionWards({
           <Select
             options={PAGE_SIZE_OPTIONS}
             value={String(selectedPageSize)}
-            onChange={(val) => onPageSizeChange(Number(val))}
+            onChange={(e) => onPageSizeChange(Number(e.target.value))}
             selectSize="sm"
             className="w-18"
           />

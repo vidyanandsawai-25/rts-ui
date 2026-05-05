@@ -1,5 +1,5 @@
 import React from "react";
-import FloorCvWeightageMaster from "@/components/modules/property-tax/weightage-mastercv/FloorCvWeightageMaster";
+import FloorCvWeightageMaster from "@/components/modules/property-tax/weightage-mastercv/floorFactorCv/FloorCvWeightageMaster";
 import { fetchFloorFactorCVMasterPagedServerAction } from "./action";
 import { getAssessmentYearsPagedServerCV, getFloorPaged } from "@/lib/api/floor-cv-weightageMaster.service";
 

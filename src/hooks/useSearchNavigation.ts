@@ -11,6 +11,7 @@ interface UseSearchNavigationProps {
   basePath: string;
   debounceMs?: number;
   startTransition: (callback: () => void) => void;
+  extraParams?: Record<string, string | number | boolean | undefined>;
 }
 
 export function useSearchNavigation({
@@ -23,6 +24,7 @@ export function useSearchNavigation({
   basePath,
   debounceMs = 500,
   startTransition,
+  extraParams,
 }: UseSearchNavigationProps) {
   const router = useRouter();
   const isFirstRender = useRef(true);
@@ -33,8 +35,10 @@ export function useSearchNavigation({
       isFirstRender.current = false;
       return;
     }
-    if (search === currentSearchTerm) return;
-
+    
+    // Check if parameters have actually changed
+    // We compare search, but we should also consider extraParams changes
+    
     const timer = setTimeout(() => {
       const trimmedSearch = search.trim();
       const params = new URLSearchParams();
@@ -52,12 +56,26 @@ export function useSearchNavigation({
       if (sortOrder) {
         params.set("sortOrder", sortOrder);
       }
+
+      // Add extra parameters
+      if (extraParams) {
+        Object.entries(extraParams).forEach(([key, value]) => {
+          if (value !== undefined && value !== "") {
+            params.set(key, String(value));
+          }
+        });
+      }
       
-      startTransition(() => {
-        router.push(`/${locale}${basePath}?${params.toString()}`);
-      });
+      const newUrl = `/${locale}${basePath}?${params.toString()}`;
+      const currentUrl = `${window.location.pathname}${window.location.search}`;
+
+      if (newUrl !== currentUrl) {
+        startTransition(() => {
+          router.push(newUrl);
+        });
+      }
     }, debounceMs);
 
     return () => clearTimeout(timer);
-  }, [search, pageSize, router, locale, currentSearchTerm, sortBy, sortOrder, basePath, debounceMs, startTransition]);
+  }, [search, pageSize, router, locale, currentSearchTerm, sortBy, sortOrder, basePath, debounceMs, startTransition, extraParams]);
 }

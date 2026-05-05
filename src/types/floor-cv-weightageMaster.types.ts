@@ -26,6 +26,8 @@ export interface FloorFactorCVMasterUpdate {
   yearRangeCVId: number;
 }
 
+export type FloorFactorCVMasterUpdateAction = Omit<FloorFactorCVMasterUpdate, 'updatedBy'>;
+
 export interface FloorFactorCVMasterCreate {
   isActive: boolean;
   createdBy: number;
@@ -34,6 +36,8 @@ export interface FloorFactorCVMasterCreate {
   factorWithoutLift: number;
   yearRangeCVId: number;
 }
+
+export type FloorFactorCVMasterCreateAction = Omit<FloorFactorCVMasterCreate, 'createdBy'>;
 
 export interface FloorFactorCVBulkCreateItem {
   isActive: boolean;
@@ -44,14 +48,21 @@ export interface FloorFactorCVBulkCreateItem {
   yearRangeCVId: number;
 }
 
-export type BulkFloorFactorCVMasterCreate = FloorFactorCVBulkCreateItem[];
-
 export interface FloorFactorCVBulkUpdateItem {
   id: number;
   data: FloorFactorCVMasterUpdate;
 }
 
+export interface FloorFactorCVBulkUpdateActionItem {
+  id: number;
+  data: FloorFactorCVMasterUpdateAction;
+}
+
+export type BulkFloorFactorCVMasterCreate = FloorFactorCVBulkCreateItem[];
+export type BulkFloorFactorCVMasterCreateAction = FloorFactorCVMasterCreateAction[];
+
 export type BulkFloorFactorCVMasterUpdate = FloorFactorCVBulkUpdateItem[];
+export type BulkFloorFactorCVMasterUpdateAction = FloorFactorCVBulkUpdateActionItem[];
 //dependency master service types
 export interface AssessmentYearCV {
   id: number;

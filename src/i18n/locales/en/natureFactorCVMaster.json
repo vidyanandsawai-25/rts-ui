@@ -1,0 +1,45 @@
+{
+  "natureFactorCVMaster": {
+    "title": "Nature Factor CV Master",
+    "columns": {
+      "constructionCode": "Construction Code",
+      "description": "Description",
+      "factor": "Factor",
+      "assessmentYear": "Assessment Year",
+      "status": "Status",
+      "action": "Action"
+    },
+    "filters": {
+      "assessmentYear": "Assessment Year",
+      "constructionType": "Construction Type",
+      "factor": "Factor"
+    },
+    "placeholders": {
+      "selectAssessmentYear": "Select Assessment Year",
+      "selectConstructionType": "Select Construction Type",
+      "factor": "0.00"
+    },
+    "messages": {
+      "noRecordsFound": "No records found"
+    },
+    "loading": {
+      "message": "Loading Nature Factor CV Master...",
+      "description": "Please wait while we fetch the records."
+    },
+    "error": {
+      "title": "Something went wrong!",
+      "description": "An error occurred while loading the nature factor weightage records.",
+      "tryAgain": "Try again",
+      "goHome": "Go back home",
+      "errorId": "Error ID: {id}"
+    },
+    "errors": {
+      "invalidNatureFactorCVId": "Valid Nature Factor CV ID is required",
+      "fetchFailed": "Failed to fetch nature factor weightage records",
+      "updateFailed": "Failed to update nature factor weightage record",
+      "createFailed": "Failed to create nature factor weightage record",
+      "bulkUpdateFailed": "Failed to bulk update nature factor weightage records",
+      "bulkCreateFailed": "Failed to bulk create nature factor weightage records"
+    }
+  }
+}
