@@ -29,6 +29,7 @@ export default getRequestConfig(async ({ locale }) => {
     weightageMasterMessages,
     depreciationMessages,
     natureFactorCVMasterMessages,
+useCategoryFactorMasterMessages,
     modulesMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
@@ -44,6 +45,7 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/weightageMaster.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/depreciation.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/natureFactorCVMaster.json`).then((m) => m.default),
+import(`./locales/${validatedLocale}/useCategoryFactorMaster.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
   ]);
 
@@ -63,6 +65,7 @@ export default getRequestConfig(async ({ locale }) => {
       weightageMaster: weightageMasterMessages.weightageMaster,
       depreciation: depreciationMessages,
       natureFactorCVMaster: natureFactorCVMasterMessages.natureFactorCVMaster,
+ useCategoryFactorMaster: useCategoryFactorMasterMessages.useCategoryFactorMaster,
       modules: modulesMessages,
     },
   };
