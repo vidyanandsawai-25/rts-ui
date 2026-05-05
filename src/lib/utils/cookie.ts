@@ -130,3 +130,11 @@ export function getUserIdFromCookies(cookieStore: CookieStoreLike): number | nul
   if (!Number.isFinite(id) || id <= 0) return null;
   return id;
 }
+/** Client-side: Reads authenticated user id from `user_id` cookie. */
+export function getUserIdFromCookie(): number | null {
+  const raw = getCookieValue('user_id');
+  if (!raw) return null;
+  const id = parseInt(raw, 10);
+  if (!Number.isFinite(id) || id <= 0) return null;
+  return id;
+}

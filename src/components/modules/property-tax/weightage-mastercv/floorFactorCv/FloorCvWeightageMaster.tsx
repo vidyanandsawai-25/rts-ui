@@ -1,14 +1,15 @@
 "use client";
 
 import React from "react";
-import {Select } from "@/components/common/select";
+import { Select } from "@/components/common/select";
 import { MasterTable, Column } from "@/components/common/MasterTable";
 import { FloorCvWeightageMasterProps, FloorFactorCVMaster } from "@/types/floor-cv-weightageMaster.types";
 import { UpdateButton, ClearButton, SaveButton } from "@/components/common/ActionButtons";
 import { ToastContainer } from "@/components/common/Toast";
 import { getFloorCvWeightageMasterColumns } from "./floorCvWeightageMasterColumns";
 import { FloorCvHeaderExtra } from "./FloorCvHeaderExtra";
-import { useFloorCvWeightage } from "@/hooks/useFloorCvWeightage";
+import { useFloorCvWeightage } from "@/hooks/weightageMaster/floorFactorCv/useFloorCvWeightage";
+
 
 // Extend FloorFactorCVMaster to add index signature
 type FloorFactorCVMasterWithIndex = FloorFactorCVMaster & Record<string, unknown>;
