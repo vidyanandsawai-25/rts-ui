@@ -3,11 +3,11 @@ import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import {
+  deleteOldFloorDetailsAction,
   saveOldFloorDetailsAction,
-  DeleteOldFloorDetailsAction,
-  UpdateOldFloorDetailsAction
+  updateOldFloorDetailsAction,  
 } from "@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/OldDetails/floor-information/action";
-import { SubTypeOfUse, OldFloorDetail } from "@/types/property-old-details.types";
+import { SubTypeOfUse, OldFloorDetail, SaveOldFloorDetailPayload } from "@/types/property-old-details.types";
 import { hasErrors } from "@/lib/utils/validation";
 import { validateFloorInformationForm } from "@/lib/utils/validateFloorInformationForm";
 
@@ -144,21 +144,21 @@ export function useFloorInformationForm({
 
     setIsSubmitting(true);
     try {
-      const payload = {
-        ...formData,
+      const payload: SaveOldFloorDetailPayload = {
         propertyId: propertyId,
         oldFloorId: Number(formData.oldFloorId),
         oldSubFloorId: formData.oldSubFloorId ? Number(formData.oldSubFloorId) : null,
+        oldConstructionYear: formData.oldConstructionYear.toString(),
         oldConstructionTypeId: Number(formData.oldConstructionTypeId),
         oldTypeOfUseId: Number(formData.oldTypeOfUseId),
         oldSubTypeOfUseId: formData.oldSubTypeOfUseId ? Number(formData.oldSubTypeOfUseId) : null,
         oldCarpetAreaSqFeet: Number(formData.oldCarpetAreaSqFeet) || 0,
-        oldConstructionYear: formData.oldConstructionYear.toString()
+        markedForDeletion: false
       };
 
       let result;
       if (formData.id) {
-        result = await UpdateOldFloorDetailsAction(propertyId, formData.id, payload, locale);
+        result = await updateOldFloorDetailsAction(propertyId, formData.id, payload, locale);
       } else {
         result = await saveOldFloorDetailsAction(propertyId, payload, locale);
       }
@@ -181,7 +181,7 @@ export function useFloorInformationForm({
    */
   const handleDelete = async (id: number) => {
     try {
-      const result = await DeleteOldFloorDetailsAction(propertyId, id, locale);
+      const result = await deleteOldFloorDetailsAction(propertyId, id, locale);
       if (result.success) {
         toast.success(t('oldDetails.floorInformation.deleteSuccess'));
       } else {

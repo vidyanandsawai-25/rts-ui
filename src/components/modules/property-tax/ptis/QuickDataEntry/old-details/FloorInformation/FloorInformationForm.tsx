@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useCallback, useState } from "react";
+import { useMemo, useCallback } from "react";
 import { Button, DeleteButton, EditButton, Input, MasterTable, SearchSelect, useConfirm, ValidationMessage } from "@/components/common";
 import { Label } from "@/components/common/label";
 import { Layers, Plus, RotateCcw, Save } from "lucide-react";
@@ -48,22 +48,6 @@ export default function FloorInformationForm({
     locale,
     initialSubUseTypeOptions
   });
-
-  // Client-side pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 4;
-
-  const paginatedData = useMemo(() => {
-    const start = (currentPage - 1) * pageSize;
-    return existingFloorDetails.slice(start, start + pageSize);
-  }, [existingFloorDetails, currentPage]);
-
-  const totalPages = Math.ceil(existingFloorDetails.length / pageSize);
-
-  // Reset to first page if current page exceeds total pages after a delete
-  if (currentPage > totalPages && totalPages > 0) {
-    setCurrentPage(totalPages);
-  }
 
   // Transformation helpers for SearchSelect
   const initialFloorOptions = useMemo(() => floorOptions.map(opt => ({ label: opt.description, value: String(opt.id) })), [floorOptions]);
@@ -230,7 +214,7 @@ export default function FloorInformationForm({
         <div className="border border-blue-100 rounded-xl overflow-hidden bg-gray-50/30 mb-10">
           <MasterTable
             columns={getFloorInformationColumns(t)}
-            data={paginatedData.map(f => ({
+            data={existingFloorDetails.map(f => ({
               id: f.id,
               originalRow: f, // Keep reference for edit
               floor: f.floorDescription,
@@ -241,16 +225,7 @@ export default function FloorInformationForm({
               subUse: f.subTypeOfUseDescription,
               areaSqFt: f.oldCarpetAreaSqFeet,
             }))}
-            pageNumber={currentPage}
-            pageSize={pageSize}
             totalCount={existingFloorDetails.length}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-            paginationConfig={{
-              enabled: true,
-              showPageSizeSelector: false
-            }}
-
             getRowKey={(row: FloorTableRow) => String(row.id || "")}
             maxBodyHeightClassName="max-h-[400px]"
             theadClassName="bg-blue-50 text-blue-900 border-b border-blue-100"

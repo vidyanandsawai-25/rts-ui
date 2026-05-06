@@ -187,7 +187,7 @@ export async function saveOldFloorDetailsAction(
  * @param data The updated floor detail data
  * @param locale The current locale for revalidation
  */
-export async function UpdateOldFloorDetailsAction(
+export async function updateOldFloorDetailsAction(
     propertyId: number,
     floorDetailId: number,
     data: SaveOldFloorDetailPayload,
@@ -216,7 +216,7 @@ export async function UpdateOldFloorDetailsAction(
  * @param floorDetailId The ID of the floor detail to delete
  * @param locale The current locale for revalidation
  */
-export async function DeleteOldFloorDetailsAction(
+export async function deleteOldFloorDetailsAction(
     propertyId: number,
     floorDetailId: number,
     locale: string
