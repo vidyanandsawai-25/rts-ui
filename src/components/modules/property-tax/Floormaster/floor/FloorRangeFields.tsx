@@ -30,10 +30,16 @@ export function FloorRangeFields({
             label={t('form.range.start')}
             type="number"
             min={1}
+            max={9999}
             required
             placeholder={t('form.range.startPlaceholder')}
             value={formData.rangeFrom || ''}
-            onChange={(e) => onChange('rangeFrom', parseInt(e.target.value) || 0)}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (value.length <= 4) {
+                onChange('rangeFrom', parseInt(value) || 0);
+              }
+            }}
             onBlur={() => onBlur('rangeFrom')}
             fullWidth
             className="text-gray-700"
@@ -49,10 +55,16 @@ export function FloorRangeFields({
             label={t('form.range.end')}
             type="number"
             min={1}
+            max={9999}
             required
             placeholder={t('form.range.endPlaceholder')}
             value={formData.rangeTo || ''}
-            onChange={(e) => onChange('rangeTo', parseInt(e.target.value) || 0)}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (value.length <= 4) {
+                onChange('rangeTo', parseInt(value) || 0);
+              }
+            }}
             onBlur={() => onBlur('rangeTo')}
             fullWidth
             className="text-gray-700"
@@ -96,10 +108,16 @@ export function FloorRangeFields({
         label={t('form.floorCode')}
         placeholder={t('form.floorCodePlaceholder')}
         value={formData.floorCode}
-        onChange={(e) => onChange('floorCode', e.target.value)}
+        onChange={(e) => {
+          const value = e.target.value;
+          if (value.length <= 4) {
+            onChange('floorCode', value);
+          }
+        }}
         onBlur={() => onBlur('floorCode')}
         fullWidth
         required
+        maxLength={4}
         className="text-gray-700"
       />
       <ValidationMessage

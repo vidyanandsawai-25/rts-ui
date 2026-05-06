@@ -184,4 +184,85 @@ describe('FloorRangeFields', () => {
     expect(startInput.value).toBe('1');
     expect(endInput.value).toBe('10');
   });
+
+  // ── 4-Digit Limit Tests ──────────────────────────────────────────────────────
+  it('restricts Start field to 4 digits maximum', () => {
+    const onChangeMock = vi.fn();
+    renderFloorRangeFields({ onChange: onChangeMock });
+    
+    const startInput = screen.getByLabelText(/Start/);
+    
+    // Try to enter 5 digits - should only accept first 4
+    fireEvent.change(startInput, { target: { value: '12345' } });
+    
+    // onChange should not be called for 5-digit input
+    expect(onChangeMock).not.toHaveBeenCalledWith('rangeFrom', 12345);
+    
+    // Try to enter 4 digits - should work
+    fireEvent.change(startInput, { target: { value: '1234' } });
+    expect(onChangeMock).toHaveBeenCalledWith('rangeFrom', 1234);
+  });
+
+  it('restricts End field to 4 digits maximum', () => {
+    const onChangeMock = vi.fn();
+    renderFloorRangeFields({ onChange: onChangeMock });
+    
+    const endInput = screen.getByLabelText(/End/);
+    
+    // Try to enter 5 digits - should only accept first 4
+    fireEvent.change(endInput, { target: { value: '98765' } });
+    
+    // onChange should not be called for 5-digit input
+    expect(onChangeMock).not.toHaveBeenCalledWith('rangeTo', 98765);
+    
+    // Try to enter 4 digits - should work
+    fireEvent.change(endInput, { target: { value: '9876' } });
+    expect(onChangeMock).toHaveBeenCalledWith('rangeTo', 9876);
+  });
+
+  it('restricts Floor Code field to 4 characters maximum', () => {
+    const onChangeMock = vi.fn();
+    renderFloorRangeFields({ onChange: onChangeMock });
+    
+    const floorCodeInput = screen.getByLabelText(/Floor Code/);
+    
+    // Try to enter 5 characters - should only accept first 4
+    fireEvent.change(floorCodeInput, { target: { value: 'ABCDE' } });
+    
+    // onChange should not be called for 5-character input
+    expect(onChangeMock).not.toHaveBeenCalledWith('floorCode', 'ABCDE');
+    
+    // Try to enter 4 characters - should work
+    fireEvent.change(floorCodeInput, { target: { value: 'ABCD' } });
+    expect(onChangeMock).toHaveBeenCalledWith('floorCode', 'ABCD');
+  });
+
+  it('accepts valid 4-digit values for Start and End fields', () => {
+    const onChangeMock = vi.fn();
+    renderFloorRangeFields({ onChange: onChangeMock });
+    
+    const startInput = screen.getByLabelText(/Start/);
+    const endInput = screen.getByLabelText(/End/);
+    
+    // Test boundary values
+    fireEvent.change(startInput, { target: { value: '9999' } });
+    fireEvent.change(endInput, { target: { value: '9999' } });
+    
+    expect(onChangeMock).toHaveBeenCalledWith('rangeFrom', 9999);
+    expect(onChangeMock).toHaveBeenCalledWith('rangeTo', 9999);
+  });
+
+  it('accepts valid 4-character values for Floor Code field', () => {
+    const onChangeMock = vi.fn();
+    renderFloorRangeFields({ onChange: onChangeMock });
+    
+    const floorCodeInput = screen.getByLabelText(/Floor Code/);
+    
+    // Test different 4-character combinations
+    fireEvent.change(floorCodeInput, { target: { value: 'FL01' } });
+    expect(onChangeMock).toHaveBeenCalledWith('floorCode', 'FL01');
+    
+    fireEvent.change(floorCodeInput, { target: { value: '1234' } });
+    expect(onChangeMock).toHaveBeenCalledWith('floorCode', '1234');
+  });
 });
