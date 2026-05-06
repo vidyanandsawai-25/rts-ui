@@ -135,11 +135,14 @@ export interface SubFloorMasterProps {
 
 /* =====================================================
    FLOOR RANGE - TEMPLATE MODEL
+   Audit fields are derived server-side from the
+   authenticated session, so they are optional here
+   to avoid forcing UI callers to provide placeholder IDs.
 ===================================================== */
 export interface FloorRangeTemplate {
   isActive: boolean;
-  createdBy: number;
-  updatedBy: number;
+  createdBy?: number;
+  updatedBy?: number;
   floorCode: string;
   description: string;
   sequenceNo: number;

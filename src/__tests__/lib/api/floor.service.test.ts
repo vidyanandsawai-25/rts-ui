@@ -22,8 +22,6 @@ describe('createFloorRange', () => {
     suffix: 'Floor',
     template: {
       isActive: true,
-      createdBy: 1,
-      updatedBy: 1,
       floorCode: '0',
       description: '',
       sequenceNo: 1,

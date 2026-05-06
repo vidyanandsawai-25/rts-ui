@@ -234,7 +234,7 @@ export async function deleteFloor(id: number, _userId: string): Promise<void> {
 /* ============================================================
    CREATE FLOOR RANGE (BULK CREATE)
 ============================================================ */
-export async function createFloorRange(data: FloorRangePayload, _userId: string): Promise<void> {
+export async function createFloorRange(data: FloorRangePayload, userId: string): Promise<void> {
   try {
     // Input validation
     if (!data.rangeFrom || data.rangeFrom.trim() === '') {
@@ -252,10 +252,21 @@ export async function createFloorRange(data: FloorRangePayload, _userId: string)
       throw new Error('rangeFrom cannot be greater than rangeTo');
     }
 
+    // Server-side range size limits to prevent abuse
+    const MAX_RANGE_VALUE = 999;
+    const MAX_RANGE_SIZE = 1000;
+    if (rangeToNum > MAX_RANGE_VALUE) {
+      throw new Error(`Range end value cannot exceed ${MAX_RANGE_VALUE}`);
+    }
+    const rangeSize = rangeToNum - rangeFromNum + 1;
+    if (rangeSize > MAX_RANGE_SIZE) {
+      throw new Error(`Range size cannot exceed ${MAX_RANGE_SIZE} floors`);
+    }
+
     // Validate template.floorCode (same as createFloor)
     if (!data.template.floorCode?.trim()) throw new Error('floorCode required');
 
-    // Note: _userId is available for backend auditing/authentication
+    // Note: userId is used for backend auditing/authentication
     const payload: FloorRangePayload = {
       rangeFrom: data.rangeFrom.trim(),
       rangeTo: data.rangeTo.trim(),
@@ -263,8 +274,8 @@ export async function createFloorRange(data: FloorRangePayload, _userId: string)
       suffix: data.suffix?.trim() ?? '',
       template: {
         isActive: data.template.isActive,
-        createdBy: Number(_userId),
-        updatedBy: Number(_userId),
+        createdBy: Number(userId),
+        updatedBy: Number(userId),
         floorCode: data.template.floorCode.trim(),
         description: data.template.description?.trim() ?? '',
         sequenceNo: Number(data.template.sequenceNo) || 0,
@@ -272,8 +283,6 @@ export async function createFloorRange(data: FloorRangePayload, _userId: string)
       },
       startSequenceNo: Number(data.startSequenceNo) || rangeFromNum,
     };
-
-    console.log('API Service Floor Range Payload:', JSON.stringify(payload, null, 2));
 
     const response = await apiClient.post('/Floor/Range', payload);
 

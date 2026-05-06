@@ -228,8 +228,6 @@ export default function FloorForm({ id, initialData }: Readonly<FloorFormProps>)
           suffix: rangeData.suffix,
           template: {
             isActive: rangeData.isActive,
-            createdBy: 1,
-            updatedBy: 1,
             floorCode: sanitizeFloorCode(rangeData.floorCode),
             description: '',
             sequenceNo: 0,
@@ -238,8 +236,8 @@ export default function FloorForm({ id, initialData }: Readonly<FloorFormProps>)
           startSequenceNo: rangeData.rangeFrom,
         };
 
-        console.log('Frontend Floor Range Payload:', JSON.stringify(payload, null, 2));
-        console.log('Range Data:', rangeData);
+        
+        
 
         const result = await createFloorRangeAction(payload);
 
