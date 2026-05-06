@@ -81,6 +81,38 @@ describe('createFloorRange', () => {
     );
   });
 
+  it('should throw error when rangeFrom is less than 1', async () => {
+    const invalidPayload = { ...validPayload, rangeFrom: '0', rangeTo: '10' };
+    
+    await expect(createFloorRange(invalidPayload, '123')).rejects.toThrow(
+      'rangeFrom must be greater than or equal to 1'
+    );
+  });
+
+  it('should throw error when rangeTo is less than 1', async () => {
+    const invalidPayload = { ...validPayload, rangeFrom: '1', rangeTo: '0' };
+    
+    await expect(createFloorRange(invalidPayload, '123')).rejects.toThrow(
+      'rangeTo must be greater than or equal to 1'
+    );
+  });
+
+  it('should throw error when rangeFrom exceeds maximum value', async () => {
+    const invalidPayload = { ...validPayload, rangeFrom: '1000', rangeTo: '1000' };
+    
+    await expect(createFloorRange(invalidPayload, '123')).rejects.toThrow(
+      'Range start value cannot exceed 999'
+    );
+  });
+
+  it('should throw error when rangeTo exceeds maximum value', async () => {
+    const invalidPayload = { ...validPayload, rangeFrom: '1', rangeTo: '1000' };
+    
+    await expect(createFloorRange(invalidPayload, '123')).rejects.toThrow(
+      'Range end value cannot exceed 999'
+    );
+  });
+
   it('should throw ApiError when API call fails', async () => {
     vi.mocked(apiClient.post).mockResolvedValue({ 
       success: false, 

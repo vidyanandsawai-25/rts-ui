@@ -248,15 +248,24 @@ export async function createFloorRange(data: FloorRangePayload, userId: string):
     if (Number.isNaN(rangeFromNum) || Number.isNaN(rangeToNum)) {
       throw new TypeError('Range values must be valid numbers');
     }
-    if (rangeFromNum > rangeToNum) {
-      throw new Error('rangeFrom cannot be greater than rangeTo');
-    }
 
-    // Server-side range size limits to prevent abuse
+    // Server-side range limits to prevent invalid or abusive payloads
     const MAX_RANGE_VALUE = 999;
     const MAX_RANGE_SIZE = 1000;
+    if (rangeFromNum < 1) {
+      throw new Error('rangeFrom must be greater than or equal to 1');
+    }
+    if (rangeToNum < 1) {
+      throw new Error('rangeTo must be greater than or equal to 1');
+    }
+    if (rangeFromNum > MAX_RANGE_VALUE) {
+      throw new Error(`Range start value cannot exceed ${MAX_RANGE_VALUE}`);
+    }
     if (rangeToNum > MAX_RANGE_VALUE) {
       throw new Error(`Range end value cannot exceed ${MAX_RANGE_VALUE}`);
+    }
+    if (rangeFromNum > rangeToNum) {
+      throw new Error('rangeFrom cannot be greater than rangeTo');
     }
     const rangeSize = rangeToNum - rangeFromNum + 1;
     if (rangeSize > MAX_RANGE_SIZE) {

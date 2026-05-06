@@ -74,13 +74,7 @@
         "suffix": "प्रत्यय",
         "suffixPlaceholder": "Floor"
       },
-      "regionalNameSection": {
-        "title": "क्षेत्रीय नाम",
-        "prefix": "उपसर्ग",
-        "prefixPlaceholder": "स्वचालित",
-        "suffix": "प्रत्यय",
-        "suffixPlaceholder": "मंजिल"
-      },
+     
       "autoGenerateSubFloor": "सब-फ्लोर स्वचालित रूप से बनाएं",
       "autoGenerateSubFloorDesc": "रेंज में प्रत्येक फ्लोर के लिए एक सब-फ्लोर बनाता है",
       "rangeExample": "उदाहरण: रेंज 1-5 बनाता है 1F, 2F, 3F, 4F, 5F",

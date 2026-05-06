@@ -30,13 +30,13 @@ export function FloorRangeFields({
             label={t('form.range.start')}
             type="number"
             min={1}
-            max={9999}
+            max={999}
             required
             placeholder={t('form.range.startPlaceholder')}
             value={formData.rangeFrom || ''}
             onChange={(e) => {
               const value = e.target.value;
-              if (value.length <= 4) {
+              if (value.length <= 3) {
                 onChange('rangeFrom', parseInt(value) || 0);
               }
             }}
@@ -55,13 +55,13 @@ export function FloorRangeFields({
             label={t('form.range.end')}
             type="number"
             min={1}
-            max={9999}
+            max={999}
             required
             placeholder={t('form.range.endPlaceholder')}
             value={formData.rangeTo || ''}
             onChange={(e) => {
               const value = e.target.value;
-              if (value.length <= 4) {
+              if (value.length <= 3) {
                 onChange('rangeTo', parseInt(value) || 0);
               }
             }}

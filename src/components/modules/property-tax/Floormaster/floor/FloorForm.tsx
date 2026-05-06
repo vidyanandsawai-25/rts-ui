@@ -260,9 +260,12 @@ export default function FloorForm({ id, initialData }: Readonly<FloorFormProps>)
     } else {
       // Single floor submission
       const v = validateSingle(formData);
-      setErrors(v);
+      const normalizedErrors = Object.fromEntries(
+        Object.entries(v).filter(([_key, message]) => typeof message === 'string')
+      ) as Record<string, string>;
+      setErrors(normalizedErrors);
 
-      if (Object.keys(v).length) {
+      if (Object.keys(normalizedErrors).length) {
         return;
       }
 

@@ -76,13 +76,7 @@
         "suffix": "Suffix",
         "suffixPlaceholder": "Floor"
       },
-      "regionalNameSection": {
-        "title": "Regional Name",
-        "prefix": "Prefix",
-        "prefixPlaceholder": "स्वचालित",
-        "suffix": "Suffix",
-        "suffixPlaceholder": "मंजिल"
-      },
+      
       "autoGenerateSubFloor": "Auto-Generate SubFloor",
       "autoGenerateSubFloorDesc": "Creates a subfloor for every floor in the range",
       "rangeExample": "Example: Range 1-5 creates 1F, 2F, 3F, 4F, 5F",
