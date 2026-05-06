@@ -23,6 +23,7 @@ describe('createFloorRange', () => {
     template: {
       isActive: true,
       createdBy: 1,
+      updatedBy: 1,
       floorCode: '0',
       description: '',
       sequenceNo: 1,
@@ -132,6 +133,7 @@ describe('createFloorRange', () => {
       template: {
         ...validPayload.template,
         maxFloorNo: 0,
+        updatedBy: validPayload.template.updatedBy,
       },
     };
 
