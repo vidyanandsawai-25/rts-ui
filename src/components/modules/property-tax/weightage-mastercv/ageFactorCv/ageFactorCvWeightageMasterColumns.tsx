@@ -59,7 +59,10 @@ export const getAgeFactorCvWeightageMasterColumns = ({
         key: "fromYear",
         label: t('columns.assessmentYear'),
         width: "14%",
-        render: (_value, row) => `${row.fromYear}-${row.toYear}`,
+        render: (_value, row) => 
+            row.fromYear != null && row.toYear != null 
+                ? `${row.fromYear}-${row.toYear}` 
+                : "-",
     },
     {
         key: "isActive",

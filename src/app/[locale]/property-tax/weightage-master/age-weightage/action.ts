@@ -12,7 +12,7 @@ import {
   bulkUpdateAgeFactorCVMaster,
   deleteAgeFactorCVMaster,
   bulkDeleteAgeFactorCVMaster,
-} from "@/lib/api/weightageMaster.service";
+} from "@/lib/api/ageFactorCv.service";
 
 import { ApiError } from "@/lib/utils/api";
 import {
@@ -75,10 +75,21 @@ export async function fetchAgeFactorCVMasterPagedServerAction(
     });
 
     if (!response.success || !response.data) {
-      throw new Error(response.error || "Failed to fetch AgeFactorCVMaster records");
+      throw new ApiError(response.statusCode || 500, response.error || "Failed to fetch AgeFactorCVMaster records", "Fetch failed");
     }
 
-    return response.data;
+    const data = response.data;
+    
+    // Ensure all pagination fields are present and have sensible defaults to prevent UI breakage
+    return {
+      items: data.items || [],
+      totalCount: data.totalCount ?? 0,
+      pageNumber: data.pageNumber ?? normalizedPageNumber,
+      pageSize: data.pageSize ?? normalizedPageSize,
+      totalPages: data.totalPages ?? Math.max(1, Math.ceil((data.totalCount ?? 0) / normalizedPageSize)),
+      hasPrevious: data.hasPrevious ?? (normalizedPageNumber > 1),
+      hasNext: data.hasNext ?? (normalizedPageNumber < (data.totalPages ?? 1))
+    };
   } catch (error: unknown) {
     throw error;
   }
@@ -117,6 +128,7 @@ export async function updateAgeFactorCVMasterAction(
     await updateAgeFactorCVMaster(id, updatePayload);
 
     for (const locale of locales) {
+      revalidatePath(`/${locale}/property-tax/weightage-master`, "page");
       revalidatePath(`/${locale}/property-tax/weightage-master/age-weightage`, "page");
     }
     return { success: true };
@@ -167,6 +179,7 @@ export async function createAgeFactorCVMasterAction(
     const response = await createAgeFactorCVMaster(createPayload);
     if (response.success) {
       for (const locale of locales) {
+        revalidatePath(`/${locale}/property-tax/weightage-master`, "page");
         revalidatePath(`/${locale}/property-tax/weightage-master/age-weightage`, "page");
       }
       return { success: true, data: response.data };
@@ -208,6 +221,7 @@ export async function bulkCreateAgeFactorCVMasterAction(
     const response = await bulkCreateAgeFactorCVMaster(bulkCreatePayload);
     if (response && response.success) {
       for (const locale of locales) {
+        revalidatePath(`/${locale}/property-tax/weightage-master`, "page");
         revalidatePath(`/${locale}/property-tax/weightage-master/age-weightage`, "page");
       }
       return { success: true, data: response.data };
@@ -252,6 +266,7 @@ export async function bulkUpdateAgeFactorCVMasterAction(
     await bulkUpdateAgeFactorCVMaster(bulkUpdatePayload);
 
     for (const locale of locales) {
+      revalidatePath(`/${locale}/property-tax/weightage-master`, "page");
       revalidatePath(`/${locale}/property-tax/weightage-master/age-weightage`, "page");
     }
     
@@ -278,6 +293,7 @@ export async function deleteAgeFactorCVMasterAction(
         const response = await deleteAgeFactorCVMaster(id);
         if (response.success) {
             for (const locale of locales) {
+                revalidatePath(`/${locale}/property-tax/weightage-master`, "page");
                 revalidatePath(`/${locale}/property-tax/weightage-master/age-weightage`, "page");
             }
             return { success: true };
@@ -305,6 +321,7 @@ export async function bulkDeleteAgeFactorCVMasterAction(
         const response = await bulkDeleteAgeFactorCVMaster(ids);
         if (response.success) {
             for (const locale of locales) {
+                revalidatePath(`/${locale}/property-tax/weightage-master`, "page");
                 revalidatePath(`/${locale}/property-tax/weightage-master/age-weightage`, "page");
             }
             return { success: true };

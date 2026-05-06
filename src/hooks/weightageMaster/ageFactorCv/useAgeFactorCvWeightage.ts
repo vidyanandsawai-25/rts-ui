@@ -76,10 +76,10 @@ export const useAgeFactorCvWeightage = ({
         return data.find(row => getRowUid(row) === uid);
     };
 
-    const addToast = (type: "success" | "error" | "info" | "warning", message: string): void => {
+    const addToast = useCallback((type: "success" | "error" | "info" | "warning", message: string): void => {
         const id = Date.now().toString();
         setToasts((prev) => [...prev, { id, type, message }]);
-    };
+    }, []);
 
     const removeToast = (id: string): void => {
         setToasts((prev) => prev.filter((t) => t.id !== id));
@@ -97,7 +97,7 @@ export const useAgeFactorCvWeightage = ({
         } else if (!hasNewRecords) {
             hasShownWarningRef.current = false;
         }
-    }, [hasNewRecords, tW]);
+    }, [hasNewRecords, tW, addToast]);
 
     const missingRecordsCount = useMemo(() => {
         if (!selectedYear) return 0;

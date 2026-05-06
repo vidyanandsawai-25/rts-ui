@@ -35,6 +35,153 @@ interface UseAgeFactorCvBulkOpsParams {
     clearFilters: () => void;
 }
 
+/**
+ * Pure helper to build the payload for generating all missing age factor records.
+ * Extracted for better testability and to reduce complexity in the hook.
+ */
+export const buildGenerateAllPayload = ({
+    selectedYear,
+    selectedAgeRange,
+    ageRangeOptions,
+    data,
+    constructionType,
+    constructionTypeOptions,
+    allAgeFactors,
+    editableRows,
+    defaultFactor,
+    userId,
+    sessionCreatedUids,
+    getRowUid,
+}: {
+    selectedYear: string;
+    selectedAgeRange: string;
+    ageRangeOptions: Option[];
+    data: AgeFactorCVMaster[];
+    constructionType: string;
+    constructionTypeOptions: Option[];
+    allAgeFactors: AgeFactorCVMaster[];
+    editableRows: Record<string, AgeFactorCVMaster>;
+    defaultFactor: number;
+    userId: number;
+    sessionCreatedUids: Set<string>;
+    getRowUid: (row: AgeFactorCVMaster) => string;
+}): BulkAgeFactorCVMasterCreate => {
+    const ageFactors: BulkAgeFactorCVMasterCreate = [];
+
+    const parseRangeValue = (rangeVal: string) => {
+        const [ageFrom, ageTo] = rangeVal.split("-").map(Number);
+        if (isNaN(ageFrom) || isNaN(ageTo)) {
+            return null;
+        }
+        return { ageFrom, ageTo };
+    };
+
+    const hasExistingAgeFactor = (
+        constructionTypeId: number,
+        targetYearId: number,
+        ageFrom: number,
+        ageTo: number
+    ) =>
+        allAgeFactors.some(r =>
+            r.id > 0 &&
+            r.constructionTypeId === constructionTypeId &&
+            (r.yearRangeCVId === targetYearId || r.yearRangeCVID === targetYearId) &&
+            r.ageFrom === ageFrom &&
+            r.ageTo === ageTo
+        );
+
+    const resolveFactorForGeneratedRow = (
+        constructionTypeId: number,
+        targetYearId: number,
+        ageFrom: number,
+        ageTo: number
+    ) => {
+        const reconstructedUid = `0-${constructionTypeId}-${targetYearId}-${ageFrom}-${ageTo}`;
+        const edit = editableRows[reconstructedUid];
+
+        if (edit?.factor !== undefined) {
+            return edit.factor;
+        }
+
+        const pendingRow = data.find(r =>
+            r.id === 0 &&
+            r.constructionTypeId === constructionTypeId &&
+            (r.yearRangeCVId === targetYearId || r.yearRangeCVID === targetYearId) &&
+            r.ageFrom === ageFrom &&
+            r.ageTo === ageTo &&
+            !sessionCreatedUids.has(getRowUid(r))
+        );
+
+        return pendingRow?.factor ?? defaultFactor;
+    };
+
+    const buildGenerationPayloadForYear = (
+        targetYearId: number
+    ): BulkAgeFactorCVMasterCreate => {
+        const generatedRows: BulkAgeFactorCVMasterCreate = [];
+
+        const typesToProcess = constructionType
+            ? constructionTypeOptions.filter(ct => ct.value === constructionType)
+            : constructionTypeOptions;
+
+        typesToProcess.forEach(constTypeOpt => {
+            const constructionTypeId = parseInt(constTypeOpt.value);
+            if (isNaN(constructionTypeId)) return;
+
+            let rangesToProcess: string[] = [];
+            if (selectedAgeRange) {
+                rangesToProcess = [selectedAgeRange];
+            } else if (ageRangeOptions.length > 0) {
+                rangesToProcess = ageRangeOptions.map(o => o.value);
+            } else {
+                const pendingRanges = new Set<string>();
+                data.forEach(row => {
+                    if (row.ageFrom !== undefined && row.ageTo !== undefined) {
+                        pendingRanges.add(`${row.ageFrom}-${row.ageTo}`);
+                    }
+                });
+                rangesToProcess = Array.from(pendingRanges);
+            }
+
+            rangesToProcess.forEach(rangeVal => {
+                const parsedRange = parseRangeValue(rangeVal);
+                if (!parsedRange) return;
+                const { ageFrom, ageTo } = parsedRange;
+
+                if (hasExistingAgeFactor(constructionTypeId, targetYearId, ageFrom, ageTo)) {
+                    return;
+                }
+
+                generatedRows.push({
+                    isActive: true,
+                    createdBy: userId,
+                    constructionTypeId,
+                    ageFrom,
+                    ageTo,
+                    factor: resolveFactorForGeneratedRow(
+                        constructionTypeId,
+                        targetYearId,
+                        ageFrom,
+                        ageTo
+                    ),
+                    yearRangeCVId: targetYearId
+                });
+            });
+        });
+
+        return generatedRows;
+    };
+
+    const yearsToProcess = selectedYear ? [selectedYear] : [];
+    yearsToProcess.forEach(yearIdStr => {
+        const yearId = parseInt(yearIdStr);
+        if (isNaN(yearId)) return;
+        ageFactors.push(...buildGenerationPayloadForYear(yearId));
+    });
+
+    return ageFactors;
+};
+
 export const useAgeFactorCvBulkOps = ({
     data,
     editableRows,
@@ -184,101 +331,21 @@ export const useAgeFactorCvBulkOps = ({
         setIsGeneratingAll(true);
         try {
             const userId = getUserIdFromCookie() || 1;
-            const ageFactors: BulkAgeFactorCVMasterCreate = [];
             const defaultFactor = parseFloat(factorValue) || 0.00;
             
-            const yearsToProcess = selectedYear ? [selectedYear] : [];
-
-            if (yearsToProcess.length === 0) {
-                addToast('warning', t('messages.assessmentYearMissing'));
-                setIsGeneratingAll(false);
-                return;
-            }
-
-            const hasAgeRanges = selectedAgeRange || ageRangeOptions.length > 0 || 
-                data.some(row => row.ageFrom !== undefined && row.ageTo !== undefined);
-            if (!hasAgeRanges) {
-                addToast('warning', t('messages.noAgeRangesAvailable'));
-                setIsGeneratingAll(false);
-                return;
-            }
-
-            yearsToProcess.forEach(yearIdStr => {
-                const yearId = parseInt(yearIdStr);
-                if (isNaN(yearId)) return;
-                
-                let rangesToProcess: string[] = [];
-                if (selectedAgeRange) {
-                    rangesToProcess = [selectedAgeRange];
-                } else if (ageRangeOptions.length > 0) {
-                    rangesToProcess = ageRangeOptions.map(o => o.value);
-                } else {
-                    const pendingRanges = new Set<string>();
-                    data.forEach(row => {
-                        if (row.ageFrom !== undefined && row.ageTo !== undefined) {
-                            pendingRanges.add(`${row.ageFrom}-${row.ageTo}`);
-                        }
-                    });
-                    rangesToProcess = Array.from(pendingRanges);
-                }
-                
-                if (rangesToProcess.length === 0) {
-                    return;
-                }
-
-                const typesToProcess = constructionType 
-                    ? constructionTypeOptions.filter(ct => ct.value === constructionType)
-                    : constructionTypeOptions;
-
-                typesToProcess.forEach(constTypeOpt => {
-                    const constTypeId = parseInt(constTypeOpt.value);
-                    if (isNaN(constTypeId)) return;
-                    
-                    rangesToProcess.forEach(rangeVal => {
-                        const [from, to] = rangeVal.split("-").map(Number);
-                        if (isNaN(from) || isNaN(to)) return;
-                        
-                        const existingInDb = allAgeFactors.find(r => 
-                            r.id > 0 && 
-                            r.constructionTypeId === constTypeId && 
-                            (r.yearRangeCVId === yearId || r.yearRangeCVID === yearId) && 
-                            r.ageFrom === from && 
-                            r.ageTo === to
-                        );
-
-                        if (!existingInDb) {
-                            // Reconstruct the UID that would be used for this row if it were in the table
-                            const reconstructedUid = `0-${constTypeId}-${yearId}-${from}-${to}`;
-                            const edit = editableRows[reconstructedUid];
-                            
-                            let finalFactor = edit?.factor ?? defaultFactor;
-                            
-                            // If we find it in current page data, we can also double check its original value
-                            const pendingRow = data.find(r => 
-                                r.id === 0 && 
-                                r.constructionTypeId === constTypeId && 
-                                (r.yearRangeCVId === yearId || r.yearRangeCVID === yearId) && 
-                                r.ageFrom === from && 
-                                r.ageTo === to &&
-                                !sessionCreatedUids.has(getRowUid(r))
-                            );
-
-                            if (pendingRow && !edit) {
-                                finalFactor = pendingRow.factor;
-                            }
-
-                            ageFactors.push({
-                                isActive: true,
-                                createdBy: userId,
-                                constructionTypeId: constTypeId,
-                                ageFrom: from,
-                                ageTo: to,
-                                factor: finalFactor,
-                                yearRangeCVId: yearId
-                            });
-                        }
-                    });
-                });
+            const ageFactors = buildGenerateAllPayload({
+                selectedYear,
+                selectedAgeRange,
+                ageRangeOptions,
+                data,
+                constructionType,
+                constructionTypeOptions,
+                allAgeFactors,
+                editableRows,
+                defaultFactor,
+                userId,
+                sessionCreatedUids,
+                getRowUid,
             });
 
             if (ageFactors.length === 0) {

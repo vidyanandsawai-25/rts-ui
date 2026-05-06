@@ -7,42 +7,51 @@ import {
 
 import { getAssessmentYearsPagedServerCV } from "@/lib/api/floor-cv-weightageMaster.service";
 import AgeFactorCvWeightageMaster from "@/components/modules/property-tax/weightage-mastercv/ageFactorCv/AgeFactorCvWeightageMaster";
+import { PagePropsAgeFactor, AgeFactorCVMasterSearchParams } from "@/types/ageFactorCv.types";
 
-interface PageProps {
-    searchParams: Promise<{
-        page?: string;
-        pageSize?: string;
-        q?: string;
-        selectedYearRange?: string;
-        constructionType?: string;
-        sortBy?: string;
-        sortOrder?: string;
-    }>;
-}
+
+// Pagination constraints
+const MIN_PAGE = 1;
+const MAX_PAGE = 10_000;
+const MIN_PAGE_SIZE = 1;
+const DEFAULT_PAGE_SIZE = 10;
+const MAX_PAGE_SIZE = 100;
 
 /**
- * Normalizes a string input to a positive integer within bounds, or a default value.
+ * Sanitizes and clamps query-string parameters before they reach the server action.
+ * Malformed values (e.g. ?page=-1) are normalized to safe defaults.
  */
-function normalizeParam(val: string | undefined, defaultValue: number, max: number): number {
-    const num = parseInt(val || "", 10);
-    if (!Number.isFinite(num) || num <= 0) return defaultValue;
-    return Math.min(num, max);
+function sanitizeParams(raw: AgeFactorCVMasterSearchParams) {
+    const rawPage = parseInt(raw.page ?? "", 10);
+    const pageNumber = Number.isFinite(rawPage)
+        ? Math.min(Math.max(rawPage, MIN_PAGE), MAX_PAGE)
+        : MIN_PAGE;
+
+    const rawPageSize = parseInt(raw.pageSize ?? "", 10);
+    const pageSize = Number.isFinite(rawPageSize)
+        ? Math.min(Math.max(rawPageSize, MIN_PAGE_SIZE), MAX_PAGE_SIZE)
+        : DEFAULT_PAGE_SIZE;
+
+    const searchTerm = raw.q?.trim() || undefined;
+    const selectedYearRange = raw.selectedYearRange?.trim() || undefined;
+    const constructionType = raw.constructionType?.trim() || undefined;
+    const sortBy = raw.sortBy?.trim() || undefined;
+    const sortOrder = raw.sortOrder?.trim() || undefined;
+
+    return { pageNumber, pageSize, searchTerm, selectedYearRange, constructionType, sortBy, sortOrder };
 }
 
-export default async function Page({ searchParams }: PageProps): Promise<React.ReactElement> {
+export default async function Page({ searchParams }: PagePropsAgeFactor): Promise<React.ReactElement> {
     const params = await searchParams;
-    
-    // Normalize and clamp pagination parameters to prevent SSR crashes or bad API requests
-    const pageNumber = normalizeParam(params.page, 1, 10000);
-    const pageSize = normalizeParam(params.pageSize, 10, 100);
-    
-    // Sanitize sorting parameters
-    const sortBy = params.sortBy?.trim() || undefined;
-    const sortOrder = params.sortOrder?.trim() || undefined;
-    
-    const searchTerm = params.q?.trim() || undefined;
-    const selectedYearRange = params.selectedYearRange?.trim() || undefined;
-    const constructionType = params.constructionType?.trim() || undefined;
+    const { 
+        pageNumber, 
+        pageSize, 
+        searchTerm, 
+        selectedYearRange, 
+        constructionType, 
+        sortBy, 
+        sortOrder 
+    } = sanitizeParams(params);
 
     // Fetch assessment years for dropdown - use -1 to fetch all records
     const assessmentYearData = await getAssessmentYearsPagedServerCV(1, -1);

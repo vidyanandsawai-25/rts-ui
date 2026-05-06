@@ -26,6 +26,7 @@ export interface AgeFactorCVMaster {
   isActive: boolean;
   createdDate?: string;
   updatedDate?: string | null;
+  yearRangeCVID?: number;
   [key: string]: string | number | boolean | null | undefined;
 }
 
@@ -87,5 +88,17 @@ export interface AgeFactorCVBulkUpdateItem {
     updatedBy: number;
   };
 }
+export interface AgeFactorCVMasterSearchParams {
+    page?: string;
+    pageSize?: string;
+    q?: string;
+    selectedYearRange?: string;
+    constructionType?: string;
+    sortBy?: string;
+    sortOrder?: string;
+}
 
+export interface PagePropsAgeFactor {
+    searchParams: Promise<AgeFactorCVMasterSearchParams>;
+}
 export type BulkAgeFactorCVMasterUpdate = AgeFactorCVBulkUpdateItem[];

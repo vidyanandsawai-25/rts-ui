@@ -1,7 +1,7 @@
 import { apiClient } from '@/services/api.service';
 import type { ApiResponse } from '@/types/common.types';
-import { 
-  PagedResponse, 
+import {
+  PagedResponse,
   AgeFactorCVMaster,
   AgeFactorCVMasterUpdate,
   AgeFactorCVMasterCreate,
@@ -20,18 +20,19 @@ export async function getAgeFactorCVMasterWithParams(
   params: AgeFactorCVMasterQueryParams = {}
 ): Promise<ApiResponse<PagedResponse<AgeFactorCVMaster>>> {
   const searchParams = new URLSearchParams();
-  
+
   // Add parameters to query string if they exist
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== '') {
-      // Convert camelCase to match API expectations
-      const apiKey = key === 'yearRangeCVId' ? 'YearRangeCVId' : 
-                    key.charAt(0).toUpperCase() + key.slice(1);
+      // Map frontend camelCase to backend PascalCase
+      const apiKey = key === 'yearRangeCVId' ? 'YearRangeCVId' :
+                     key === 'constructionTypeId' ? 'ConstructionTypeId' :
+                     key.charAt(0).toUpperCase() + key.slice(1);
       searchParams.append(apiKey, String(value));
     }
   });
 
-  const endpoint = searchParams.toString() 
+  const endpoint = searchParams.toString()
     ? `/AgeFactorCVMaster?${searchParams.toString()}`
     : '/AgeFactorCVMaster';
 
@@ -48,33 +49,37 @@ export async function updateAgeFactorCVMaster(
   id: number,
   payload: AgeFactorCVMasterUpdate
 ): Promise<void> {
-  if (!id || id <= 0) {
-    throw new ApiError(400, 'Valid AgeFactorCV ID is required for update', 'Validation failed');
-  }
-  if (!payload.constructionTypeId || payload.constructionTypeId <= 0) {
-    throw new ApiError(400, 'constructionTypeId is required', 'Validation failed');
-  }
-  if (!payload.yearRangeCVId || payload.yearRangeCVId <= 0) {
-    throw new ApiError(400, 'yearRangeCVId is required', 'Validation failed');
-  }
+  try {
+    if (!id || id <= 0) {
+      throw new ApiError(400, 'Valid AgeFactorCV ID is required for update', 'Validation');
+    }
+    if (!payload.constructionTypeId || payload.constructionTypeId <= 0) {
+      throw new ApiError(400, 'constructionTypeId is required', 'Validation');
+    }
+    if (!payload.yearRangeCVId || payload.yearRangeCVId <= 0) {
+      throw new ApiError(400, 'yearRangeCVId is required', 'Validation');
+    }
 
-  const requestPayload = {
-    isActive: payload.isActive,
-    updatedBy: payload.updatedBy ?? 1,
-    constructionTypeId: payload.constructionTypeId,
-    ageFrom: Number(payload.ageFrom),
-    ageTo: Number(payload.ageTo),
-    factor: Number(payload.factor),
-    yearRangeCVId: payload.yearRangeCVId,
-  };
+    const requestPayload = {
+      isActive: payload.isActive,
+      updatedBy: payload.updatedBy,
+      constructionTypeId: payload.constructionTypeId,
+      ageFrom: Number(payload.ageFrom),
+      ageTo: Number(payload.ageTo),
+      factor: Number(payload.factor),
+      yearRangeCVId: payload.yearRangeCVId,
+    };
 
-  const response = await apiClient.put<unknown>(
-    `/AgeFactorCVMaster/${encodeURIComponent(String(id))}`,
-    requestPayload
-  );
+    const response = await apiClient.put<unknown>(
+      `/AgeFactorCVMaster/${encodeURIComponent(String(id))}`,
+      requestPayload
+    );
 
-  if (!response.success) {
-    throw new ApiError(500, response.error || 'Failed to update Age Factor CV Master', 'Update Age Factor CV Master failed');
+    if (!response.success) {
+      throw new ApiError(500, response.error || 'Failed to update Age Factor CV Master', 'Update Age Factor CV Master failed');
+    }
+  } catch (error) {
+    throw error;
   }
 }
 
@@ -86,24 +91,28 @@ export async function updateAgeFactorCVMaster(
 export async function createAgeFactorCVMaster(
   payload: AgeFactorCVMasterCreate
 ): Promise<ApiResponse<unknown>> {
-  if (!payload.constructionTypeId || payload.constructionTypeId <= 0) {
-    throw new ApiError(400, "constructionTypeId is required", "Validation failed");
-  }
-  if (!payload.yearRangeCVId || payload.yearRangeCVId <= 0) {
-    throw new ApiError(400, "yearRangeCVId is required", "Validation failed");
-  }
+  try {
+    if (!payload.constructionTypeId || payload.constructionTypeId <= 0) {
+      throw new ApiError(400, 'constructionTypeId is required', 'Validation');
+    }
+    if (!payload.yearRangeCVId || payload.yearRangeCVId <= 0) {
+      throw new ApiError(400, 'yearRangeCVId is required', 'Validation');
+    }
 
-  const requestPayload = {
-    isActive: payload.isActive,
-    createdBy: payload.createdBy ?? 1,
-    constructionTypeId: payload.constructionTypeId,
-    ageFrom: Number(payload.ageFrom),
-    ageTo: Number(payload.ageTo),
-    factor: Number(payload.factor),
-    yearRangeCVId: payload.yearRangeCVId,
-  };
+    const requestPayload = {
+      isActive: payload.isActive,
+      createdBy: payload.createdBy,
+      constructionTypeId: payload.constructionTypeId,
+      ageFrom: Number(payload.ageFrom),
+      ageTo: Number(payload.ageTo),
+      factor: Number(payload.factor),
+      yearRangeCVId: payload.yearRangeCVId,
+    };
 
-  return await apiClient.post<unknown>('/AgeFactorCVMaster', requestPayload);
+    return await apiClient.post<unknown>('/AgeFactorCVMaster', requestPayload);
+  } catch (error) {
+    throw error;
+  }
 }
 
 /**
@@ -114,21 +123,25 @@ export async function createAgeFactorCVMaster(
 export async function bulkCreateAgeFactorCVMaster(
   payload: BulkAgeFactorCVMasterCreate
 ): Promise<ApiResponse<unknown>> {
-  if (!payload || payload.length === 0) {
-    throw new ApiError(400, 'Valid payload with ageFactors is required for bulk create', 'Validation failed');
+  try {
+    if (!payload || payload.length === 0) {
+      throw new ApiError(400, 'Valid payload with ageFactors is required for bulk create', 'Validation');
+    }
+
+    const requestPayload = payload.map((f) => ({
+      isActive: f.isActive,
+      createdBy: f.createdBy,
+      constructionTypeId: f.constructionTypeId,
+      ageFrom: Number(f.ageFrom),
+      ageTo: Number(f.ageTo),
+      factor: Number(f.factor),
+      yearRangeCVId: f.yearRangeCVId,
+    }));
+
+    return await apiClient.post<unknown>('/AgeFactorCVMaster/bulk', requestPayload);
+  } catch (error) {
+    throw error;
   }
-
-  const requestPayload = payload.map((f) => ({
-    isActive: f.isActive,
-    createdBy: f.createdBy ?? 1,
-    constructionTypeId: f.constructionTypeId,
-    ageFrom: Number(f.ageFrom),
-    ageTo: Number(f.ageTo),
-    factor: Number(f.factor),
-    yearRangeCVId: f.yearRangeCVId,
-  }));
-
-  return await apiClient.post<unknown>('/AgeFactorCVMaster/bulk', requestPayload);
 }
 
 /**
@@ -139,29 +152,35 @@ export async function bulkCreateAgeFactorCVMaster(
 export async function bulkUpdateAgeFactorCVMaster(
   payload: BulkAgeFactorCVMasterUpdate
 ): Promise<void> {
-  if (!payload || payload.length === 0) {
-    throw new ApiError(400, 'Valid payload with ageFactors is required for bulk update', 'Validation failed');
-  }
-
-  const requestPayload = payload.map((f) => ({
-    id: f.id,
-    data: {
-      constructionTypeId: f.data.constructionTypeId,
-      ageFrom: Number(f.data.ageFrom),
-      ageTo: Number(f.data.ageTo),
-      factor: Number(f.data.factor),
-      yearRangeCVId: f.data.yearRangeCVId,
-      isActive: f.data.isActive,
+  try {
+    if (!payload || payload.length === 0) {
+      throw new ApiError(400, 'Valid payload with ageFactors is required for bulk update', 'Validation');
     }
-  }));
 
-  const response = await apiClient.put<unknown>(
-    '/AgeFactorCVMaster/bulk',
-    requestPayload
-  );
+    const requestPayload = payload.map((f) => ({
+      id: f.id,
+      data: {
+        ageFactorId: f.data.ageFactorId,
+        constructionTypeId: f.data.constructionTypeId,
+        ageFrom: Number(f.data.ageFrom),
+        ageTo: Number(f.data.ageTo),
+        factor: Number(f.data.factor),
+        yearRangeCVId: f.data.yearRangeCVId,
+        isActive: f.data.isActive,
+        updatedBy: f.data.updatedBy,
+      }
+    }));
 
-  if (!response.success) {
-    throw new ApiError(500, response.error || 'Failed to bulk update Age Factor CV Master', 'Bulk update Age Factor CV Master failed');
+    const response = await apiClient.put<unknown>(
+      '/AgeFactorCVMaster/bulk',
+      requestPayload
+    );
+
+    if (!response.success) {
+      throw new ApiError(500, response.error || 'Failed to bulk update Age Factor CV Master', 'Bulk update Age Factor CV Master failed');
+    }
+  } catch (error) {
+    throw error;
   }
 }
 
@@ -171,10 +190,10 @@ export async function bulkUpdateAgeFactorCVMaster(
  * @returns Promise resolving to ApiResponse
  */
 export async function deleteAgeFactorCVMaster(id: number): Promise<ApiResponse<unknown>> {
-    if (id <= 0) {
-        throw new ApiError(400, 'Valid AgeFactorCV ID is required', 'Validation failed');
-    }
-    return apiClient.delete<unknown>(`/AgeFactorCVMaster/${id}`);
+  if (id <= 0) {
+    throw new ApiError(400, 'Valid AgeFactorCV ID is required', 'Validation');
+  }
+  return apiClient.delete<unknown>(`/AgeFactorCVMaster/${id}`);
 }
 
 /**
@@ -183,8 +202,8 @@ export async function deleteAgeFactorCVMaster(id: number): Promise<ApiResponse<u
  * @returns Promise resolving to ApiResponse
  */
 export async function bulkDeleteAgeFactorCVMaster(ids: number[]): Promise<ApiResponse<unknown>> {
-    if (!ids || ids.length === 0) {
-        throw new ApiError(400, 'Valid list of IDs is required for bulk delete', 'Validation failed');
-    }
-    return apiClient.delete<unknown>('/AgeFactorCVMaster/bulk', { body: JSON.stringify({ ids }) });
+  if (!ids || ids.length === 0) {
+    throw new ApiError(400, 'Valid list of IDs is required for bulk delete', 'Validation');
+  }
+  return apiClient.delete<unknown>('/AgeFactorCVMaster/bulk', { body: JSON.stringify({ ids }) });
 }
