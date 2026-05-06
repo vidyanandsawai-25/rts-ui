@@ -53,9 +53,14 @@ export async function fetchUseFactorCVMasterPagedServerAction(
       throw new Error("Invalid pagination parameters");
     }
 
-    const yearRangeParam =
+    const parsedYearRange =
       selectedYearRange && selectedYearRange.trim() !== "" && selectedYearRange !== "undefined"
         ? Number(selectedYearRange.trim()) 
+        : undefined;
+
+    const yearRangeParam =
+      parsedYearRange !== undefined && Number.isFinite(parsedYearRange)
+        ? parsedYearRange
         : undefined;
 
     const response = await getUseFactorCVMasterWithParams({

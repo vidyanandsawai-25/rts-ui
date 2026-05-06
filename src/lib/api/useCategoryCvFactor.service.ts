@@ -230,8 +230,17 @@ export async function bulkCreateUseFactorCVMaster(
       throw new ApiError(400, t('errors.payloadRequired'), "Validation");
     }
 
+    const requestPayload = payload.map((item) => ({
+      isActive: item.isActive,
+      createdBy: item.createdBy ?? 1,
+      typeOfUseId: item.typeOfUseId,
+      subTypeOfUseId: item.subTypeOfUseId,
+      factor: Number(item.factor),
+      yearRangeCVId: item.yearRangeCVId,
+    }));
 
-    const response = await apiClient.post<unknown>('/UseFactorCVMaster/bulk', payload);
+
+    const response = await apiClient.post<unknown>('/UseFactorCVMaster/bulk', requestPayload);
 
     if (!response.success) {
       const t = await getTranslations('useCategoryFactorMaster');
@@ -265,10 +274,22 @@ export async function bulkUpdateUseFactorCVMaster(
       throw new ApiError(400, t('errors.payloadRequired'), "Validation");
     }
 
+    const requestPayload = payload.map((item) => ({
+      id: item.id,
+      data: {
+        isActive: item.data.isActive,
+        updatedBy: item.data.updatedBy ?? 1,
+        typeOfUseId: item.data.typeOfUseId,
+        subTypeOfUseId: item.data.subTypeOfUseId,
+        factor: Number(item.data.factor),
+        yearRangeCVId: item.data.yearRangeCVId,
+      }
+    }));
+
 
     const response = await apiClient.put<unknown>(
       '/UseFactorCVMaster/bulk',
-      payload
+      requestPayload
     );
 
 
@@ -309,7 +330,9 @@ export async function getTypeOfUseWithParams(
   // Add parameters to query string if they exist
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== '') {
-      searchParams.append(key, String(value));
+      // Map keys to PascalCase as expected by the backend
+      const apiKey = key === 'id' ? 'Id' : key.charAt(0).toUpperCase() + key.slice(1);
+      searchParams.append(apiKey, String(value));
     }
   });
   const endpoint = searchParams.toString() 

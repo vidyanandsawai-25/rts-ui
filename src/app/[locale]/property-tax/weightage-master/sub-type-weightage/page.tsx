@@ -14,8 +14,13 @@ export default async function Page({ searchParams }: UseCategoryCvPageProps): Pr
     const leftPageNumber = Math.max(1, parseInt(params.leftPage as string, 10) || 1);
     const leftPageSizeRaw = parseInt(params.leftPageSize as string, 10);
     const leftPageSize = leftPageSizeRaw === -1 ? -1 : Math.min(1000, Math.max(1, leftPageSizeRaw || 10));
-    const searchTerm = params.q || undefined;
-    const selectedYearRange = params.selectedYearRange || undefined;
+    const searchTerm = params.q?.trim() || undefined;
+    const selectedYearRange =
+        params.selectedYearRange &&
+        params.selectedYearRange.trim() !== "" &&
+        params.selectedYearRange !== "undefined"
+            ? params.selectedYearRange.trim()
+            : undefined;
     const typeOfUseId = (params.typeOfUseId && params.typeOfUseId !== "undefined") ? parseInt(params.typeOfUseId as string, 10) : undefined;
 
     // Assessment years for dropdown

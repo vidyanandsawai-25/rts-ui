@@ -29,7 +29,7 @@ export default getRequestConfig(async ({ locale }) => {
     weightageMasterMessages,
     depreciationMessages,
     natureFactorCVMasterMessages,
-useCategoryFactorMasterMessages,
+    useCategoryFactorMasterMessages,
     modulesMessages,
     officeMessages
   ] = await Promise.all([
@@ -46,7 +46,7 @@ useCategoryFactorMasterMessages,
     import(`./locales/${validatedLocale}/weightageMaster.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/depreciation.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/natureFactorCVMaster.json`).then((m) => m.default),
-import(`./locales/${validatedLocale}/useCategoryFactorMaster.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/useCategoryFactorMaster.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/office.json`).catch(() => ({})).then((m) => m.default || m),
   ]);
@@ -67,7 +67,7 @@ import(`./locales/${validatedLocale}/useCategoryFactorMaster.json`).then((m) => 
       weightageMaster: weightageMasterMessages.weightageMaster,
       depreciation: depreciationMessages,
       natureFactorCVMaster: natureFactorCVMasterMessages.natureFactorCVMaster,
- useCategoryFactorMaster: useCategoryFactorMasterMessages.useCategoryFactorMaster,
+      useCategoryFactorMaster: useCategoryFactorMasterMessages.useCategoryFactorMaster,
       modules: modulesMessages,
       office: officeMessages,
     },
