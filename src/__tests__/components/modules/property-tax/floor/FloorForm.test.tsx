@@ -296,7 +296,7 @@ describe('FloorForm — Range Mode', () => {
     fireEvent.change(screen.getByLabelText(/End/), { target: { value: '3' } });
     fireEvent.change(screen.getByLabelText('Prefix'), { target: { value: 'F' } });
     fireEvent.change(screen.getByLabelText('Suffix'), { target: { value: 'A' } });
-    fireEvent.change(screen.getByLabelText(/Floor Code/), { target: { value: 'FLOOR-RANGE' } });
+    fireEvent.change(screen.getByLabelText(/Floor Code/), { target: { value: 'FL01' } });
     // Floor Code is required, but in range mode it may be auto-filled or not required
     submitForm(document.body);
     await waitFor(() => {
@@ -317,7 +317,7 @@ describe('FloorForm — Range Mode', () => {
     fireEvent.click(screen.getByText('Floor Range'));
     fireEvent.change(screen.getByLabelText(/Start/), { target: { value: '1' } });
     fireEvent.change(screen.getByLabelText(/End/), { target: { value: '2' } });
-    fireEvent.change(screen.getByLabelText(/Floor Code/), { target: { value: 'FLOOR-RANGE' } });
+    fireEvent.change(screen.getByLabelText(/Floor Code/), { target: { value: 'FL02' } });
     submitForm(document.body);
     await waitFor(() => {
       expect(createFloorRangeAction).toHaveBeenCalled();
