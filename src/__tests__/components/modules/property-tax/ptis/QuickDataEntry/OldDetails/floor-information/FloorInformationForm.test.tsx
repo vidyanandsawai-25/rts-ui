@@ -17,7 +17,7 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
-vi.mock('@/hooks/useFloorInformationForm', () => ({
+vi.mock('@/hooks/ptis/QuickDataEntry/Olddetails/useFloorInformationForm', () => ({
   useFloorInformationForm: vi.fn(),
 }));
 
