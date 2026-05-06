@@ -109,8 +109,6 @@ export async function deleteOldFloorDetails(propertyId: number, floorDetailId: n
     const response = await apiClient.delete<void>(
         `/Property/${propertyId}/floor-details-old/${floorDetailId}`
     );
-    if (!response.success) {
-        throw new Error("Failed to delete floor details");
-    }
+    handleApiResponse(response, "Failed to delete floor details");
     // No return needed for void/empty body on success
 }

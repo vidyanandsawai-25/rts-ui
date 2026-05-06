@@ -40,8 +40,7 @@ export function useFloorInformationForm({
     oldConstructionTypeId: "" as string | number,
     oldTypeOfUseId: "" as string | number,
     oldSubTypeOfUseId: "" as string | number,
-    oldCarpetAreaSqFeet: "",
-    markedForDeletion: false
+    oldCarpetAreaSqFeet: ""
   });
 
 
@@ -89,8 +88,7 @@ export function useFloorInformationForm({
       oldConstructionTypeId: String(row.oldConstructionTypeId),
       oldTypeOfUseId: row.oldTypeOfUseId ? String(row.oldTypeOfUseId) : "",
       oldSubTypeOfUseId: row.oldSubTypeOfUseId ? String(row.oldSubTypeOfUseId) : "",
-      oldCarpetAreaSqFeet: String(row.oldCarpetAreaSqFeet),
-      markedForDeletion: row.markedForDeletion
+      oldCarpetAreaSqFeet: String(row.oldCarpetAreaSqFeet)
     });
 
     if (row.oldTypeOfUseId !== undefined && row.oldTypeOfUseId !== null) {
@@ -113,8 +111,7 @@ export function useFloorInformationForm({
       oldConstructionTypeId: "",
       oldTypeOfUseId: "",
       oldSubTypeOfUseId: "",
-      oldCarpetAreaSqFeet: "",
-      markedForDeletion: false
+      oldCarpetAreaSqFeet: ""
     });
     setErrors({});
     setShowErrors(false);
@@ -152,8 +149,7 @@ export function useFloorInformationForm({
         oldConstructionTypeId: Number(formData.oldConstructionTypeId),
         oldTypeOfUseId: Number(formData.oldTypeOfUseId),
         oldSubTypeOfUseId: formData.oldSubTypeOfUseId ? Number(formData.oldSubTypeOfUseId) : null,
-        oldCarpetAreaSqFeet: Number(formData.oldCarpetAreaSqFeet) || 0,
-        markedForDeletion: false
+        oldCarpetAreaSqFeet: Number(formData.oldCarpetAreaSqFeet) || 0,  
       };
 
       let result;

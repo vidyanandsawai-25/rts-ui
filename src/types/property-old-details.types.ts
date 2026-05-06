@@ -73,7 +73,7 @@ export interface SubTypeOfUse {
 
 export interface ConstructionType {
   [key: string]: unknown;
-  constructionTypeId: number;
+  id: number; // Standardized to match API and select option usage
   constructionCode: string;
   description: string;
   searchSequence: number;
@@ -196,7 +196,6 @@ export interface FloorInformationFormData {
   oldTypeOfUseId: string | number;
   oldSubTypeOfUseId: string | number;
   oldCarpetAreaSqFeet: string;
-  markedForDeletion: boolean;
 }
 
 export interface FloorTableRow {
@@ -232,8 +231,6 @@ export interface SaveOldFloorDetailPayload {
   oldSubTypeOfUseId: number | null;
   /** Carpet area in square feet */
   oldCarpetAreaSqFeet: number;
-  /** Whether the record is flagged for removal */
-  markedForDeletion: boolean;
 }
 /* =====================================================
    OLD TAXES DETAILS - API RESPONSE MODELS

@@ -73,6 +73,12 @@ export default function TaxationBreakdownForm({
   };
 
   const handleSave = () => {
+    // Validate year: must be a 4-digit number
+    const yearStr = String(formData.year).trim();
+    if (!/^[0-9]{4}$/.test(yearStr)) {
+      toast.error(t("invalidYear") || "Please enter a valid 4-digit assessment year.");
+      return;
+    }
     confirm({
       title: t("saveAssessment"),
       description: t("saveConfirmDescription"),
@@ -82,7 +88,7 @@ export default function TaxationBreakdownForm({
           const updatedTaxYears = [...(initialData?.taxYears || [])];
           const currentYearData: OldTaxYear = {
             financeYearId: formData.financeYearId,
-            year: Number(formData.year) || 0,
+            year: Number(formData.year),
             yearCode: formData.yearCode,
             rVorCV: formData.rVorCV,
             rVorCVValue: Number(formData.rVorCVValue) || 0,
