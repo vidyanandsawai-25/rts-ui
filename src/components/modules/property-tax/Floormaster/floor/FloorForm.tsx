@@ -229,7 +229,8 @@ export default function FloorForm({ id, initialData }: Readonly<FloorFormProps>)
           template: {
             isActive: rangeData.isActive,
             createdBy: 1,
-            floorCode: rangeData.floorCode,
+            updatedBy: 1,
+            floorCode: sanitizeFloorCode(rangeData.floorCode),
             description: '',
             sequenceNo: 0,
             maxFloorNo: rangeData.rangeTo,

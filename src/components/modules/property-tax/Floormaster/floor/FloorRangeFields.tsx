@@ -95,7 +95,7 @@ export function FloorRangeFields({
       <Input
         label={t('form.floorCode')}
         placeholder={t('form.floorCodePlaceholder')}
-        value={formData.floorCode === '0' ? '' : formData.floorCode}
+        value={formData.floorCode}
         onChange={(e) => onChange('floorCode', e.target.value)}
         onBlur={() => onBlur('floorCode')}
         fullWidth

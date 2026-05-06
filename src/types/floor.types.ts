@@ -139,6 +139,7 @@ export interface SubFloorMasterProps {
 export interface FloorRangeTemplate {
   isActive: boolean;
   createdBy: number;
+  updatedBy: number;
   floorCode: string;
   description: string;
   sequenceNo: number;

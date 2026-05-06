@@ -1,4 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+// Mock sonner toast
+vi.mock('sonner', () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextIntlClientProvider } from 'next-intl';
 
@@ -62,11 +64,11 @@ const messages = {
         rangeExample: 'E.g. F1-F5',
         englishName: {
           label: 'English Name',
-          placeholder: 'Enter English name',
-          prefix: 'English Prefix',
-          prefixPlaceholder: 'Enter English prefix',
-          suffix: 'English Suffix',
-          suffixPlaceholder: 'Enter English suffix',
+          placeholder: 'Enter name',
+          prefix: 'Prefix',
+          prefixPlaceholder: 'Enter prefix',
+          suffix: ' Suffix',
+          suffixPlaceholder: 'Enter suffix',
         },
         validation: {
           codeRequired: 'Floor code is required',
@@ -293,6 +295,7 @@ describe('FloorForm — Range Mode', () => {
     fireEvent.change(screen.getByLabelText(/End/), { target: { value: '3' } });
     fireEvent.change(screen.getByLabelText('Prefix'), { target: { value: 'F' } });
     fireEvent.change(screen.getByLabelText('Suffix'), { target: { value: 'A' } });
+    fireEvent.change(screen.getByLabelText(/Floor Code/), { target: { value: 'FLOOR-RANGE' } });
     // Floor Code is required, but in range mode it may be auto-filled or not required
     submitForm(document.body);
     await waitFor(() => {
@@ -308,6 +311,7 @@ describe('FloorForm — Range Mode', () => {
   });
 
   it('shows error toast if createFloorRangeAction fails', async () => {
+    const { toast } = require('sonner');
     vi.mocked(createFloorRangeAction).mockResolvedValue({ success: false, message: 'Server error' });
     renderAdd();
     fireEvent.click(screen.getByText('Floor Range'));
@@ -317,7 +321,7 @@ describe('FloorForm — Range Mode', () => {
     submitForm(document.body);
     await waitFor(() => {
       expect(createFloorRangeAction).toHaveBeenCalled();
-      expect(screen.getByText(/Server error/)).toBeInTheDocument();
+      expect(toast.error).toHaveBeenCalledWith(expect.stringMatching(/Server error/));
     });
   });
 });
