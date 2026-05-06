@@ -19,7 +19,7 @@ export default async function EditPage({ params }: PageProps) {
   } catch (error) {
     // Only call notFound() for real 404s; let other failures hit error.tsx
     if (error instanceof ApiError && error.statusCode === 404) {
-      notFound();
+      notFound(); 
     }
     // Re-throw other errors (500s, timeouts, auth failures) so they reach error.tsx
     throw error;

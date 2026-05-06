@@ -89,14 +89,14 @@ const mockMessages = {
 
 const mockTaxZones: TaxZone[] = [
   {
-    taxZoneId: 1,
+    id: 1,
     taxZoneNo: "Z1",
     taxZoneType: "Residential",
     remark: "Test zone 1",
     isActive: true,
   },
   {
-    taxZoneId: 2,
+    id: 2,
     taxZoneNo: "Z2",
     taxZoneType: "Commercial",
     remark: "Test zone 2",

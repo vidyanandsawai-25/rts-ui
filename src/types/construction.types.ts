@@ -6,7 +6,7 @@ import { ApiResponse, PagedResponse } from "./common.types";
  * Used in UI forms to capture user input
  */
 export interface ConstructionTypeFormModel {
-  constructionTypeId?: number; // Optional for create, required for update
+  id?: number; // Optional for create, required for update
   constructionCode: string;
   description: string;
   searchSequence: number;
@@ -21,7 +21,7 @@ export interface ConstructionTypeFormModel {
  */
 export interface ConstructionType {
   [key: string]: unknown;
-  constructionTypeId: number;
+  id: number;
   constructionCode: string;
   description: string;
   searchSequence: number;

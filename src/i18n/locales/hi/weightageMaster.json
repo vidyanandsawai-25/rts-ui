@@ -1,0 +1,70 @@
+{
+  "weightageMaster": {
+    "title": "भारांकन मास्टर",
+    "subtitle": "CV गणना भारांकन कारकों को कॉन्फ़िगर करें",
+    "tabs": {
+      "floor": "मंजिल संख्या",
+      "nature": "भवन का प्रकार और प्रकृति",
+      "subType": "उपयोगकर्ता श्रेणी",
+      "age": "भवन की आयु"
+    },
+    "common": {
+      "buttons": {
+        "create": "बनाएं",
+        "update": "अपडेट करें",
+        "apply": "लागू करें",
+        "clear": "साफ़ करें",
+        "generateAll": "सभी जेनरेट करें",
+        "generating": "जेनरेट हो रहा है...",
+        "updating": "अपडेट हो रहा है...",
+        "cancel": "रद्द करें",
+        "add": "जोड़ें"
+      },
+      "labels": {
+        "active": "सक्रिय",
+        "inactive": "निष्क्रिय",
+        "pendingRecordCreates": "{count} लंबित रिकॉर्ड बनाना"
+      },
+      "messages": {
+        "pendingRecordsWarning": "लंबित रिकॉर्ड हैं। कृपया सभी जेनरेट करें बटन पर क्लिक करें।",
+        "negativeValuesNotAllowed": "नकारात्मक मानों की अनुमति नहीं है",
+        "valueExceedsMax": "मान 999999 से अधिक नहीं हो सकता",
+        "noChangesToUpdate": "इस पंक्ति के लिए अपडेट करने के लिए कोई परिवर्तन नहीं",
+        "noChangesDetected": "इस पंक्ति के लिए कोई परिवर्तन नहीं मिला",
+        "recordCreatedSuccess": "रिकॉर्ड सफलतापूर्वक बनाया गया",
+        "recordUpdatedSuccess": "रिकॉर्ड सफलतापूर्वक अपडेट किया गया",
+        "createFailed": "बनाना विफल",
+        "updateFailed": "अपडेट विफल",
+        "failedToSaveRow": "पंक्ति अपडेट करने में विफल। कृपया पुनः प्रयास करें।",
+        "changesDiscarded": "इस पंक्ति के लिए परिवर्तन त्याग दिए गए",        "assessmentYearRequired": "बल्क फैक्टर लागू करने से पहले कृपया मूल्यांकन वर्ष चुनें",        "validFactorRequired": "कृपया 0 से अधिक एक वैध कारक मान दर्ज करें",
+        "negativeFactorsNotAllowed": "नकारात्मक कारकों की अनुमति नहीं है",
+        "factorApplied": "{count} रिकॉर्ड(ों) में कारक {factor} लागू किया गया",
+        "noRecordsMatch": "चयनित मानदंडों से कोई रिकॉर्ड मेल नहीं खाता",
+        "noRecordsToUpdate": "अपडेट करने के लिए कोई रिकॉर्ड नहीं",
+        "bulkOperationSuccess": "सफलतापूर्वक {message}",
+        "bulkOperationPartialSuccess": "{message}",
+        "bulkOperationFailed": "रिकॉर्ड प्रोसेस करने में विफल। लॉग जांचें।",
+        "noChangesDetectedBulk": "कोई परिवर्तन नहीं मिला",
+        "bulkActionFailed": "थोक कार्य विफल। कृपया पुनः प्रयास करें।",
+        "recordsGeneratedSuccess": "सफलतापूर्वक {count} रिकॉर्ड जेनरेट किए गए",
+        "generationFailed": "रिकॉर्ड जेनरेट करने में विफल",
+        "generateAllFailed": "सभी जेनरेट करना विफल। कृपया पुनः प्रयास करें।",
+        "allClearedInfo": "सभी परिवर्तन और फ़िल्टर साफ़ कर दिए गए",
+        "created": "बनाया गया",
+        "updated": "अपडेट किया गया",
+        "failed": "विफल"
+      }
+    },
+    "error": {
+      "title": "कुछ गलत हो गया",
+      "description": "भारांकन मास्टर पेज लोड करते समय हमें एक त्रुटि मिली। कृपया पुनः प्रयास करें।",
+      "tryAgain": "पुनः प्रयास करें",
+      "goHome": "होम पर जाएं",
+      "errorId": "त्रुटि आईडी: {id}"
+    },
+    "loading": {
+      "message": "भारांकन मास्टर लोड हो रहा है...",
+      "description": "जब तक हम भारांकन कारक डेटा प्राप्त करते हैं, कृपया प्रतीक्षा करें"
+    }
+  }
+}

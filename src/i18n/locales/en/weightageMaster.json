@@ -1,0 +1,72 @@
+ {
+  "weightageMaster": {
+    "title": "Weightage Master",
+    "subtitle": "Configure CV calculation weightage factors",
+    "tabs": {
+      "floor": "Floor No.",
+      "nature": "Nature & Type of Building",
+      "subType": "User Category",
+      "age": "Age Of Building"
+    },
+    "common": {
+      "buttons": {
+        "create": "Create",
+        "update": "Update",
+        "apply": "Apply",
+        "clear": "Clear",
+        "generateAll": "Generate All",
+        "generating": "Generating...",
+        "updating": "Updating...",
+        "cancel": "Cancel",
+        "add": "Add"
+      },
+      "labels": {
+        "active": "Active",
+        "inactive": "Inactive",
+        "pendingRecordCreates": "{count, plural, =1 {# Pending Record Create} other {# Pending Record Creates}}"
+      },
+      "messages": {
+        "pendingRecordsWarning": "There are pending records. Please click on Generate All button.",
+        "negativeValuesNotAllowed": "Negative values are not allowed",
+        "valueExceedsMax": "Value cannot exceed 999999",
+        "noChangesToUpdate": "No changes to update for this row",
+        "noChangesDetected": "No changes detected for this row",
+        "recordCreatedSuccess": "Record created successfully",
+        "recordUpdatedSuccess": "Record updated successfully",
+        "createFailed": "Create failed",
+        "updateFailed": "Update failed",
+        "failedToSaveRow": "Failed to update row. Please try again.",
+        "changesDiscarded": "Changes discarded for this row",
+        "assessmentYearRequired": "Please select an assessment year before applying bulk factor",
+        "validFactorRequired": "Please enter a valid factor value greater than 0",
+        "negativeFactorsNotAllowed": "Negative factors are not allowed",
+        "factorApplied": "Applied factor {factor} to {count} record(s)",
+        "noRecordsMatch": "No records match the selected criteria",
+        "noRecordsToUpdate": "No records to update",
+        "bulkOperationSuccess": "Successfully {message}",
+        "bulkOperationPartialSuccess": "{message}",
+        "bulkOperationFailed": "Failed to process records. Check logs.",
+        "noChangesDetectedBulk": "No changes detected",
+        "bulkActionFailed": "Bulk action failed. Please try again.",
+        "recordsGeneratedSuccess": "Successfully generated {count} record(s)",
+        "generationFailed": "Failed to generate records",
+        "generateAllFailed": "Generate All failed. Please try again.",
+        "allClearedInfo": "All changes and filters cleared",
+        "created": "created",
+        "updated": "updated",
+        "failed": "failed"
+      }
+    },
+    "error": {
+      "title": "Something Went Wrong",
+      "description": "We encountered an error while loading the weightage master page. Please try again.",
+      "tryAgain": "Try Again",
+      "goHome": "Go to Home",
+      "errorId": "Error ID: {id}"
+    },
+    "loading": {
+      "message": "Loading Weightage Master...",
+      "description": "Please wait while we fetch the weightage factors data"
+    }
+  }
+}

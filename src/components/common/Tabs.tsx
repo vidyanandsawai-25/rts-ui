@@ -465,6 +465,7 @@ export const Tab = React.forwardRef<HTMLButtonElement, TabProps>(
         role="tab"
         id={`${baseId}-tab-${value}`}
         aria-selected={isActive}
+        data-state={isActive ? 'active' : 'inactive'}
         aria-controls={`${baseId}-panel-${value}`}
         tabIndex={disabled ? -1 : isActive ? 0 : -1}
         disabled={disabled}

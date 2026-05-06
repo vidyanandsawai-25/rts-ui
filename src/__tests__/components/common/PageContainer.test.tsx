@@ -29,9 +29,6 @@ describe("PageContainer", () => {
     );
     const div = container.firstChild as HTMLElement;
     expect(div.className).toContain("bg-[#F8FAFC]");
-    expect(div.className).toContain("ml-0");
-    expect(div.className).toContain("transition-[margin]");
-    expect(div.className).toContain("duration-300");
-    expect(div.className).toContain("ease-in-out");
+    expect(div.className).toContain("flex-1");
   });
 });

@@ -46,7 +46,11 @@
       "descriptionFormat": "विवरण में अमान्य वर्ण",
       "descriptionMaxLength": "अधिकतम {count} वर्ण की अनुमति है",
       "sequenceInvalid": "क्रम 0 या उससे अधिक होना चाहिए",
-      "mustBeActive": "नए रिकॉर्ड सक्रिय होने चाहिए"
+      "mustBeActive": "नए रिकॉर्ड सक्रिय होने चाहिए",
+      "nameMaxLength": "अधिकतम {count} वर्ण की अनुमति है",
+      "typeRequired": "प्रकार आवश्यक है",
+      "invalidEmail": "अमान्य ईमेल पता",
+      "invalidPincode": "पिनकोड ठीक 6 अंकों का होना चाहिए"
     }
   },
   "errors": {
@@ -74,6 +78,8 @@
     "description": "कृपया प्रतीक्षा करें जब तक हम डेटा लोड करते हैं"
   },
   "status": {
+    "all": "सभी स्थिति",
+    "label": "स्थिति",
     "active": "सक्रिय",
     "inactive": "निष्क्रिय",
     "pending": "लंबित",
@@ -138,6 +144,7 @@
     },
     "show": "दिखाएं",
     "entries": "प्रविष्टियां",
+    "onThisPage": "इस पृष्ठ पर",
     "showing": "दिखा रहा है",
     "to": "से",
     "of": "में से",

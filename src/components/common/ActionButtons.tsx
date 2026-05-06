@@ -14,6 +14,9 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronsRight,
+  RefreshCw,
+  Check,
+  Eraser,
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
@@ -275,7 +278,6 @@ export function LastPageButton(
     />
   );
 }
-
 /* ----------------------------------------------------------
    TRANSFER LIST BUTTONS
 ---------------------------------------------------------- */

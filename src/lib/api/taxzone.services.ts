@@ -1,79 +1,54 @@
-import { appConfig } from "@/config/app.config";
+import { apiClient } from "@/services/api.service";
+import { ApiError } from "@/lib/utils/api";
 import type { PagedResponse, TaxZone, TaxZoneFormModel } from "@/types/taxzone.types";
-
-export class ApiError extends Error {
-  constructor(
-    public statusCode: number,
-    public responseText: string,
-    message: string
-  ) {
-    super(message);
-    this.name = "ApiError";
-  }
-}
-
-function createFetchOptions(method: string = "GET", body?: unknown): RequestInit {
-  const options: RequestInit = {
-    method,
-    cache: "no-store",
-  };
-
-  if (body) {
-    options.body = JSON.stringify(body);
-    options.headers = { "Content-Type": "application/json" };
-  }
-
-  return options;
-}
-
-async function validateResponse(response: Response, context: string): Promise<void> {
-  if (!response.ok) {
-    const responseText = await response.text();
-    throw new ApiError(
-      response.status,
-      responseText,
-      `${context}: ${response.status} ${response.statusText}`
-    );
-  }
-}
-
+ 
+// Re-export ApiError to maintain compatibility with files importing it from here
+export { ApiError };
+ 
 /** GET paged (server) */
 export async function getTaxZonePagedServer(
   pageNumber: number,
   pageSize: number,
   searchTerm?: string
 ): Promise<PagedResponse<TaxZone>> {
-  const fetchOptions = createFetchOptions("GET");
-
   const params = new URLSearchParams({
     PageNumber: pageNumber.toString(),
     PageSize: pageSize.toString(),
   });
-
+ 
   if (searchTerm?.trim()) params.append("SearchTerm", searchTerm.trim());
-
-  const response = await fetch(
-    `${appConfig.api.baseUrl}/TaxZone?${params.toString()}`,
-    { ...fetchOptions, cache: "no-store" }
+ 
+  const response = await apiClient.get<PagedResponse<TaxZone>>(
+    `/TaxZone?${params.toString()}`
   );
-
-  await validateResponse(response, "Fetch tax zones (server-paged)");
-  return response.json();
+ 
+  if (!response.success || !response.data) {
+    throw new ApiError(
+      response.statusCode || 500,
+      "",
+      response.error || "Fetch tax zones (server-paged) failed"
+    );
+  }
+ 
+  return response.data;
 }
-
+ 
 /** GET by id */
-export async function getTaxZoneById(taxZoneId: string | number): Promise<TaxZone> {
-  const fetchOptions = createFetchOptions("GET");
-
-  const response = await fetch(
-    `${appConfig.api.baseUrl}/TaxZone/${taxZoneId}`,
-    fetchOptions
-  );
-
-  await validateResponse(response, `Fetch tax zone ${taxZoneId}`);
-  return response.json();
+export async function getTaxZoneById(id: string | number): Promise<TaxZone> {
+  const response = await apiClient.get<TaxZone>(`/TaxZone/${id}`);
+ 
+  if (!response.success || !response.data) {
+    throw new ApiError(
+      response.statusCode || 500,
+      "",
+      response.error || `Fetch tax zone ${id} failed`
+    );
+  }
+ 
+  return response.data;
 }
-
+ 
+/** CREATE */
 export async function createTaxZone(data: TaxZoneFormModel): Promise<void> {
   const payload = {
     taxZoneNo: data.taxZoneNo?.trim() || "",
@@ -81,44 +56,50 @@ export async function createTaxZone(data: TaxZoneFormModel): Promise<void> {
     remark: data.remark?.trim() || "",
     isActive: data.isActive,
   };
-
-  const fetchOptions = createFetchOptions("POST", payload);
-  const response = await fetch(`${appConfig.api.baseUrl}/TaxZone`, fetchOptions);
-
-  await validateResponse(response, "Create tax zone");
+ 
+  const response = await apiClient.post<void>("/TaxZone", payload);
+ 
+  if (!response.success) {
+    throw new ApiError(
+      response.statusCode || 500,
+      "",
+      response.error || "Create tax zone failed"
+    );
+  }
 }
-
-
+ 
+/** UPDATE */
 export async function updateTaxZone(data: TaxZoneFormModel): Promise<void> {
   const payload = {
-    taxZoneId: data.taxZoneId,
+    id: data.id,
     taxZoneNo: data.taxZoneNo?.trim() || "",
     taxZoneType: data.taxZoneType?.trim() || "",
     remark: data.remark?.trim() || "",
     isActive: data.isActive,
   };
-
-  const fetchOptions = createFetchOptions("PUT", payload);
-  const response = await fetch(
-    `${appConfig.api.baseUrl}/TaxZone/${data.taxZoneId}`,
-    fetchOptions
-  );
-
-  await validateResponse(response, "Update tax zone");
+ 
+  const response = await apiClient.put<void>(`/TaxZone/${data.id}`, payload);
+ 
+  if (!response.success) {
+    throw new ApiError(
+      response.statusCode || 500,
+      "",
+      response.error || "Update tax zone failed"
+    );
+  }
 }
-
-
+ 
 /** DELETE */
-export async function deleteTaxZone(taxZoneId: string | number): Promise<void> {
-  const fetchOptions = createFetchOptions("DELETE");
-
-  const response = await fetch(
-    `${appConfig.api.baseUrl}/TaxZone/${taxZoneId}`,
-    fetchOptions
-  );
-
-  await validateResponse(response, `Delete tax zone ${taxZoneId}`);
+export async function deleteTaxZone(id: string | number): Promise<void> {
+  const response = await apiClient.delete<void>(`/TaxZone/${id}/purge`);
+ 
+  if (!response.success) {
+    throw new ApiError(
+      response.statusCode || 500,
+      "",
+      response.error || `Delete tax zone ${id} failed`
+    );
+  }
 }
-
-
-
+ 
+ 

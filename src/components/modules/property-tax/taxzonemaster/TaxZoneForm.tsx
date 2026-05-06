@@ -25,7 +25,7 @@ export interface TaxZoneFormProps {
 
 export default function TaxZoneForm({ initialData }: TaxZoneFormProps) {
   const router = useRouter();
-   const isEdit = initialData?.taxZoneId != null;
+   const isEdit = initialData?.id != null;
 
   const [open, setOpen] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -37,7 +37,7 @@ export default function TaxZoneForm({ initialData }: TaxZoneFormProps) {
   // ✅ Initialize form data from server-side props
   const [formData, setFormData] = useState<TaxZoneFormModel>(
     initialData ?? {
-      taxZoneId: undefined,
+      id: undefined,
       taxZoneNo: "",
       taxZoneType: "",
       remark: "",
@@ -146,7 +146,7 @@ export default function TaxZoneForm({ initialData }: TaxZoneFormProps) {
       fd.append("isActive", String(formData.isActive));
       fd.append("locale", locale);
 
-      const res = await saveTaxZone(isEdit ? String(formData.taxZoneId) : "", fd);
+      const res = await saveTaxZone(isEdit ? String(formData.id) : "", fd);
 
       if (res?.ok) {
         toast.success(

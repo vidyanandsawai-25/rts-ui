@@ -14,22 +14,22 @@ export async function getTaxZonePagedAction(
   return await getTaxZonePagedServer(pageNumber, pageSize, searchTerm);
 }
 
-export async function getTaxZoneByIdAction(taxZoneId: string | number): Promise<TaxZone> {
-  return await getTaxZoneById(taxZoneId);
+export async function getTaxZoneByIdAction(id: string | number): Promise<TaxZone> {
+  return await getTaxZoneById(id);
 }
 
 export async function deleteTaxZoneAction(formData: FormData) {
   // ✅ Use generic reusable validator
   const locale = validateRequiredStringFromFormData(formData, "locale");
-  const taxZoneIdRaw = validateRequiredStringFromFormData(formData, "taxZoneId");
+  const idRaw = validateRequiredStringFromFormData(formData, "id");
   
-  // Validate taxZoneId is a positive number
-  const taxZoneId = Number(taxZoneIdRaw);
-  if (!Number.isFinite(taxZoneId) || taxZoneId <= 0) {
-    throw new Error("Invalid taxZoneId: must be a positive number");
+  // Validate id is a positive number
+  const id = Number(idRaw);
+  if (!Number.isFinite(id) || id <= 0) {
+    throw new Error("Invalid id: must be a positive number");
   }
 
-  await deleteTaxZone(taxZoneId);
+  await deleteTaxZone(id);
   revalidatePath(`/${locale}/property-tax/taxzone`);
 }
 
@@ -80,7 +80,7 @@ export async function saveTaxZone(id: string, formData: FormData) {
   }
   
   const payload = {
-    taxZoneId: numericId,
+    id: numericId,
     taxZoneNo: taxZoneNo,
     taxZoneType: taxZoneType,
     remark: remark,

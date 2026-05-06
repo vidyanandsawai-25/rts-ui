@@ -119,7 +119,7 @@ export default function TaxZoneMaster({
       onConfirm: async () => {
         try {
           const fd = new FormData();
-          fd.append("taxZoneId", String(row.taxZoneId));
+          fd.append("id", String(row.id));
           fd.append("locale", locale);
           await deleteTaxZoneAction(fd);
 
@@ -177,14 +177,14 @@ export default function TaxZoneMaster({
               <EditButton
                 aria-label={tCommon("table.actions.edit")}
                 onClick={() =>
-                  router.push(`/${locale}/property-tax/taxzone/edit/${row.taxZoneId}`)
+                  router.push(`/${locale}/property-tax/taxzone/edit/${row.id}`)
                 }
               />
               <DeleteButton aria-label={tCommon("table.actions.delete")} onClick={() => handleDelete(row)} />
             </>
           )}
           actionLabel={t("list.table.actions")}
-          getRowKey={(row) => row.taxZoneId}
+          getRowKey={(row) => row.id}
         />
       </div>
     </PageContainer>

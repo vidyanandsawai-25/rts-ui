@@ -1,0 +1,72 @@
+{
+  "weightageMaster": {
+    "title": "भारांकन मास्टर",
+    "subtitle": "CV गणना भारांकन घटक कॉन्फिगर करा",
+    "tabs": {
+      "floor": "मजला क्रमांक",
+      "nature": "इमारतीचा प्रकार आणि स्वरूप",
+      "subType": "वापरकर्ता श्रेणी",
+      "age": "इमारतीचे वय"
+    },
+    "common": {
+      "buttons": {
+        "create": "तयार करा",
+        "update": "अद्यतनित करा",
+        "apply": "लागू करा",
+        "clear": "साफ करा",
+        "generateAll": "सर्व तयार करा",
+        "generating": "तयार होत आहे...",
+        "updating": "अद्यतनित होत आहे...",
+        "cancel": "रद्द करा",
+        "add": "जोडा"
+      },
+      "labels": {
+        "active": "सक्रिय",
+        "inactive": "निष्क्रिय",
+        "pendingRecordCreates": "{count} प्रलंबित नोंदी तयार करणे"
+      },
+      "messages": {
+        "pendingRecordsWarning": "प्रलंबित नोंदी आहेत. कृपया सर्व तयार करा बटणावर क्लिक करा.",
+        "negativeValuesNotAllowed": "ऋण मूल्यांना परवानगी नाही",
+        "valueExceedsMax": "मूल्य 999999 पेक्षा जास्त असू शकत नाही",
+        "noChangesToUpdate": "या ओळीसाठी अद्यतनित करण्यासाठी कोणतेही बदल नाहीत",
+        "noChangesDetected": "या ओळीसाठी कोणतेही बदल आढळले नाहीत",
+        "recordCreatedSuccess": "नोंद यशस्वीरित्या तयार केली",
+        "recordUpdatedSuccess": "नोंद यशस्वीरित्या अद्यतनित केली",
+        "createFailed": "तयार करणे अयशस्वी",
+        "updateFailed": "अद्यतनित करणे अयशस्वी",
+        "failedToSaveRow": "ओळ अद्यतनित करण्यात अयशस्वी. कृपया पुन्हा प्रयत्न करा.",
+        "changesDiscarded": "या ओळीसाठी बदल रद्द केले",
+        "assessmentYearRequired": "मोठ्या प्रमाणात घटक लागू करण्यापूर्वी कृपया मूल्यांकन वर्ष निवडा",
+        "validFactorRequired": "कृपया 0 पेक्षा जास्त वैध घटक मूल्य प्रविष्ट करा",
+        "negativeFactorsNotAllowed": "ऋण घटकांना परवानगी नाही",
+        "factorApplied": "{count} नोंदी(नोंदींना) घटक {factor} लागू केला",
+        "noRecordsMatch": "निवडलेल्या निकषांशी कोणतीही नोंद जुळत नाही",
+        "noRecordsToUpdate": "अद्यतनित करण्यासाठी कोणत्याही नोंदी नाहीत",
+        "bulkOperationSuccess": "यशस्वीरित्या {message}",
+        "bulkOperationPartialSuccess": "{message}",
+        "bulkOperationFailed": "नोंदी प्रक्रिया करण्यात अयशस्वी. तपासा.",
+        "noChangesDetectedBulk": "कोणतेही बदल आढळले नाहीत",
+        "bulkActionFailed": "मोठ्या प्रमाणात कृती अयशस्वी. कृपया पुन्हा प्रयत्न करा.",
+        "recordsGeneratedSuccess": "यशस्वीरित्या {count} नोंदी तयार केल्या",
+        "generationFailed": "नोंदी तयार करण्यात अयशस्वी",
+        "generateAllFailed": "सर्व तयार करणे अयशस्वी. कृपया पुन्हा प्रयत्न करा.",
+        "allClearedInfo": "सर्व बदल आणि फिल्टर साफ केले",
+        "created": "तयार केले",
+        "updated": "अद्यतनित केले",
+        "failed": "अयशस्वी"
+      }
+    },
+    "error": {
+      "title": "काहीतरी चुकले आहे",
+      "description": "भारांकन मास्टर पेज लोड करताना आम्हाला त्रुटी आली. कृपया पुन्हा प्रयत्न करा.",
+      "tryAgain": "पुन्हा प्रयत्न करा",
+      "goHome": "होमवर जा",
+      "errorId": "त्रुटी आयडी: {id}"
+    },
+    "loading": {
+      "message": "भारांकन मास्टर लोड होत आहे...",
+      "description": "आम्ही भारांकन घटक डेटा मिळवत असताना कृपया प्रतीक्षा करा"
+    }
+  }
+}
