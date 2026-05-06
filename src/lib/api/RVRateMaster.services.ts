@@ -192,8 +192,8 @@ export async function getRateMasterPaged(
           }
         }
       }
-    } catch (error) {
-      console.error('Error transforming rate item:', error);
+    } catch {
+      // Skip invalid rate items
     }
   });
 

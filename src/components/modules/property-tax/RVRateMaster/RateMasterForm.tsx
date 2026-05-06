@@ -5,7 +5,7 @@
 // This useEffect should be inside the component, not at the top level
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { X, Building2, Grid2X2, MapPin, Calendar, Users, CheckCircle, CalendarDays, TrendingUp } from "lucide-react";
+import { Building2, Grid2X2, MapPin, Calendar, Users, CheckCircle, CalendarDays, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslations, useLocale } from "next-intl";
 import { SaveButton, DeleteLabelButton, DownloadButton, UploadButton, MultiplierButton, GenerateMatrixButton, CopyRatesButton, CloseIconButton, TabButton } from "@/components/common/ActionButtons";
@@ -19,10 +19,10 @@ import { useConfirm } from "@/components/common/ConfirmProvider";
 import { getRateMasterByFilters } from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
 import { sanitizePositiveDecimal, POSITIVE_DECIMAL_INVALID_KEYS } from "@/lib/utils/validation";
 import { MatrixCellInput } from "@/components/common/MatrixCellInput";
-import { useRateMasterFilters } from "@/hooks/useRateMasterFilters";
-import { useRateMasterOperations } from "@/hooks/useRateMasterOperations";
-import { useRateMasterFormState } from "@/hooks/useRateMasterFormState";
-import { useRateMasterImportExport } from "@/hooks/useRateMasterImportExport";
+import { useRateMasterFilters } from "@/hooks/RVRateMaster/useRateMasterFilters";
+import { useRateMasterOperations } from "@/hooks/RVRateMaster/useRateMasterOperations";
+import { useRateMasterFormState } from "@/hooks/RVRateMaster/useRateMasterFormState";
+import { useRateMasterImportExport } from "@/hooks/RVRateMaster/useRateMasterImportExport";
 import { Input } from "@/components/common";
 import { Label } from "@/components/common/label";
 import { Tabs } from '@/components/common/Tabs';

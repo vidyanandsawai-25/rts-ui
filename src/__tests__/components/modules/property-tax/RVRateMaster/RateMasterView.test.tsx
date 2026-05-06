@@ -3,6 +3,20 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextIntlClientProvider } from "next-intl";
 import RateMasterView from "@/components/modules/property-tax/RVRateMaster/RateMasterView";
 
+// Mock server-only modules
+vi.mock("@/services/api.service", () => ({
+  apiClient: {
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    delete: vi.fn(),
+  },
+}));
+
+vi.mock("@/app/[locale]/property-tax/rate-master/rvratemaster/action", () => ({
+  getDetailedRatesAction: vi.fn().mockResolvedValue({ items: [] }),
+}));
+
 // Mock hooks
 vi.mock("@/hooks/useRateMasterFilters", () => ({
   useRateMasterFilters: () => ({
@@ -77,6 +91,8 @@ const mockMessages = {
       showingEntries: "Showing entries",
       rowsPerPage: "Rows per page",
       page: "Page",
+      noData: "No data available",
+      noRecordsFound: "No records found",
       columns: {
         actions: "Actions",
       },

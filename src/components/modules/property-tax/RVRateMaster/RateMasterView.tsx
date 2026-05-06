@@ -12,7 +12,7 @@ import { GridContainerCard, GridContainerCardHeader, GridContainerCardContent } 
 import { toast } from "sonner";
 import { getDetailedRatesAction } from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
 import type { IRateValue, IRateMaster, RateMasterClientProps } from "@/types/RVRateMaster";
-import { useRateMasterFilters } from "@/hooks/useRateMasterFilters";
+import { useRateMasterFilters } from "@/hooks/RVRateMaster/useRateMasterFilters";
 
 /* ---------------- Rate Header Styles ---------------- */
 

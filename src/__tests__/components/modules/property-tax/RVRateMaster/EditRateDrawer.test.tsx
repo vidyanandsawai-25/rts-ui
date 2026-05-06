@@ -75,7 +75,7 @@ const mockProps = {
   ],
   backendRates: [
     {
-      Id: 1,
+      id: 1,
       year: 2023,
       floorId: 1,
       constructionTypeId: 1,

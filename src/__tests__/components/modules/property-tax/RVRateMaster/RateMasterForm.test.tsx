@@ -2,13 +2,28 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextIntlClientProvider } from "next-intl";
 import RateMasterForm from "@/components/modules/property-tax/RVRateMaster/RateMasterForm";
-import { useRateMasterFormState } from "@/hooks/useRateMasterFormState";
+import { useRateMasterFormState } from "@/hooks/RVRateMaster/useRateMasterFormState";
+
+// Mock server-only modules
+vi.mock("@/services/api.service", () => ({
+  apiClient: {
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    delete: vi.fn(),
+  },
+}));
+
+vi.mock("@/app/[locale]/property-tax/rate-master/rvratemaster/action", () => ({
+  getRateMasterByFilters: vi.fn().mockResolvedValue([]),
+  getDetailedRatesAction: vi.fn().mockResolvedValue({ items: [] }),
+}));
 
 // Mock the module
-vi.mock("@/hooks/useRateMasterFormState");
+vi.mock("@/hooks/RVRateMaster/useRateMasterFormState");
 
 // Mock all hooks
-vi.mock("@/hooks/useRateMasterFilters", () => ({
+vi.mock("@/hooks/RVRateMaster/useRateMasterFilters", () => ({
   useRateMasterFilters: () => ({
     selectedZone: "1",
     selectedUseGroup: "1",
@@ -25,7 +40,7 @@ vi.mock("@/hooks/useRateMasterFilters", () => ({
   }),
 }));
 
-vi.mock("@/hooks/useRateMasterOperations", () => ({
+vi.mock("@/hooks/RVRateMaster/useRateMasterOperations", () => ({
   useRateMasterOperations: () => ({
     handleBulkCreate: vi.fn().mockResolvedValue({ success: true }),
     handleBulkUpdate: vi.fn().mockResolvedValue({ success: true }),
@@ -33,7 +48,7 @@ vi.mock("@/hooks/useRateMasterOperations", () => ({
   }),
 }));
 
-vi.mock("@/hooks/useRateMasterImportExport", () => ({
+vi.mock("@/hooks/RVRateMaster/useRateMasterImportExport", () => ({
   useRateMasterImportExport: () => ({
     sourceUseGroup: "",
     setSourceUseGroup: vi.fn(),
@@ -127,6 +142,12 @@ const mockMessages = {
       page: "Page",
       noData: "No data available",
       noRecordsFound: "No records found",
+      columns: {
+        actions: "Actions",
+      },
+      actions: {
+        delete: "Delete",
+      },
     },
   },
 };
