@@ -30,6 +30,7 @@ export async function RateableTaxDetailsSection({
   showInlineError = true,
   locale,
 }: Props) {
+  
   const { data: rateableData, error } = await resolveValuationData<RateableValueResponse>({
     propertyId,
     initialData,

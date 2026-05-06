@@ -283,6 +283,7 @@
             "commercialToiletsInvalid": "Commercial Toilet count must be a positive number",
             "floorRequired": "Please select a floor",
             "constructionYearRequired": "Please enter construction year",
+            "constructionYearInvalid": "Please enter a valid 4-digit year",
             "constructionTypeRequired": "Please select construction type",
             "typeOfUseRequired": "Please select type of use"
         }
@@ -624,7 +625,7 @@
                 "description": "There was a problem loading the taxation breakdown.",
                 "goHome": "Go Home",
                 "tryAgain": "Try Again",
-                "errorId": "Error ID"
+                "errorId": "Error ID: {id}"
             },
             "loading": {
                 "message": "Loading Breakdown...",
@@ -642,7 +643,8 @@
             "saveError": "Failed to save data",
             "unexpectedError": "An unexpected error occurred",
             "saving": "Saving...",
-            "update": "Update"
+            "update": "Update",
+            "invalidYear": "Please enter a valid 4-digit assessment year."
         }
     },
     "footer": {

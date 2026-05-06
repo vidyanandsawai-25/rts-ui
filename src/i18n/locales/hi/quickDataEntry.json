@@ -283,6 +283,7 @@
             "commercialToiletsInvalid": "व्यावसायिक शौचालय की संख्या एक धनात्मक संख्या होनी चाहिए",
             "floorRequired": "कृपया एक मंजिल चुनें",
             "constructionYearRequired": "कृपया निर्माण वर्ष दर्ज करें",
+            "constructionYearInvalid": "कृपया मान्य 4 अंकों का वर्ष दर्ज करें",
             "constructionTypeRequired": "कृपया निर्माण प्रकार चुनें",
             "typeOfUseRequired": "कृपया उपयोग का प्रकार चुनें"
         }
@@ -642,7 +643,8 @@
             "saveError": "डेटा सहेजने में विफल",
             "unexpectedError": "एक अप्रत्याशित त्रुटि हुई",
             "saving": "सहेज रहा है...",
-            "update": "अद्यतन करें"
+            "update": "अद्यतन करें",
+            "invalidYear": "कृपया मान्य 4 अंकों का मूल्यांकन वर्ष दर्ज करें."
         }
     },
     "footer": {

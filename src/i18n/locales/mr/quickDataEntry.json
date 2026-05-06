@@ -283,6 +283,7 @@
             "commercialToiletsInvalid": "व्यावसायिक स्वच्छतागृहांची संख्या सकारात्मक असणे आवश्यक आहे",
             "floorRequired": "कृपया मजला निवडा",
             "constructionYearRequired": "कृपया बांधकाम वर्ष प्रविष्ट करा",
+            "constructionYearInvalid": "कृपया वैध ४ अंकी वर्ष प्रविष्ट करा",
             "constructionTypeRequired": "कृपया बांधकामाचा प्रकार निवडा",
             "typeOfUseRequired": "कृपया वापराचा प्रकार निवडा"
         }
@@ -642,7 +643,8 @@
             "saveError": "डेटा जतन करण्यात अपयश",
             "unexpectedError": "एक अनपेक्षित त्रुटी आली",
             "saving": "जतन करत आहे...",
-            "update": "अद्यतनित करा"
+            "update": "अद्यतनित करा",
+            "invalidYear": "कृपया वैध ४ अंकी मूल्यांकन वर्ष प्रविष्ट करा."
         }
     },
     "footer": {

@@ -76,7 +76,7 @@ export default function TaxationBreakdownForm({
     // Validate year: must be a 4-digit number
     const yearStr = String(formData.year).trim();
     if (!/^[0-9]{4}$/.test(yearStr)) {
-      toast.error(t("invalidYear") || "Please enter a valid 4-digit assessment year.");
+      toast.error(t("invalidYear"));
       return;
     }
     confirm({
