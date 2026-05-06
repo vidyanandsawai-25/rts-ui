@@ -20,9 +20,6 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
-  RefreshCw,
-  Check,
-  Eraser,
 } from "lucide-react";
 import { Button, type ButtonProps } from "./ActionButton";
 import { cn } from "@/lib/utils/cn";
@@ -152,41 +149,6 @@ export function ImportButton({
   );
 }
 
-export function DownloadButton({
-  label = "Download",
-  ...props
-}: LabeledActionButtonProps): React.ReactElement {
-  return (
-    <Button variant="secondary" icon={Download} {...props}>
-      {label}
-    </Button>
-  );
-}
-
-
-export function EditLabelButton({
-  label = "Edit",
-  size = "sm",
-  ...props
-}: LabeledActionButtonProps): React.ReactElement {
-  return (
-    <Button variant="edit" icon={Pencil} size={size} {...props}>
-      {label}
-    </Button>
-  );
-}
-
-export function DeleteLabelButton({
-  label = "Delete",
-  size = "sm",
-  ...props
-}: LabeledActionButtonProps): React.ReactElement {
-  return (
-    <Button variant="delete" icon={Trash2} size={size} {...props}>
-      {label}
-    </Button>
-  );
-}
 /* ----------------------------------------------------------
    ICON-ONLY CRUD BUTTONS
 ---------------------------------------------------------- */
@@ -278,49 +240,6 @@ export function LastPageButton(
     />
   );
 }
-/* ----------------------------------------------------------
-   TRANSFER LIST BUTTONS
----------------------------------------------------------- */
-
-export function MoveRightButton(
-  { ["aria-label"]: ariaLabel, ...props }: Omit<ButtonProps, "icon" | "variant">
-): React.ReactElement {
-  return (
-    <Button 
-    variant="secondary" 
-    icon={ChevronRight} 
-    size="sm" 
-    aria-label={ariaLabel ?? "Move right"}
-    {...props} />
-  );
-}
-
-export function MoveLeftButton(
-  { ["aria-label"]: ariaLabel, ...props }: Omit<ButtonProps, "icon" | "variant">
-): React.ReactElement {
-  return (
-    <Button 
-    variant="secondary" 
-    icon={ChevronLeft} 
-    size="sm" 
-    aria-label={ariaLabel ?? "Move left"}
-    {...props} />
-  );
-}
-
-export function MoveAllRightButton(
-  { ["aria-label"]: ariaLabel, ...props }: Omit<ButtonProps, "icon" | "variant">
-): React.ReactElement {
-  return (
-    <Button 
-    variant="secondary" 
-    icon={ChevronsRight} 
-    size="sm" 
-    aria-label={ariaLabel ?? "Move all right"}
-    {...props} />
-  );
-}
-
 /* ----------------------------------------------------------
    ICON-ONLY FANCY BUTTON
 ---------------------------------------------------------- */

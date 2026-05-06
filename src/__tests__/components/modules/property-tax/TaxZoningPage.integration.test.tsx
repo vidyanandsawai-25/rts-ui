@@ -22,11 +22,11 @@ vi.mock("@/app/[locale]/property-tax/taxzoning/actions", () => ({
 }));
 
 const mockTaxZones = {
-    items: [{ taxZoneId: 1, taxZoneNo: "TZ001", taxZoneType: "Residential", isActive: true }] as TaxZone[],
+    items: [{ id: 1, taxZoneNo: "TZ001", taxZoneType: "Residential", isActive: true }] as unknown as TaxZone[],
     pageNumber: 1, pageSize: 10, totalCount: 1, totalPages: 1, hasPrevious: false, hasNext: false,
 };
 const mockWardsData = {
-    items: [{ wardId: 1, wardNo: "W001", zoneNo: "1", isActive: true }] as Ward[],
+    items: [{ id: 1, wardNo: "W001", zoneNo: "1", isActive: true }] as unknown as Ward[],
     pageNumber: 1, pageSize: 10, totalCount: 1, totalPages: 1, hasPrevious: false, hasNext: false,
 };
 
@@ -56,20 +56,8 @@ describe("TaxZoningPage Integration", () => {
                 pageSize={10}
                 totalCount={1}
                 totalPages={1}
-                taxZones={mockTaxZones}
-                wardsData={mockWardsData}
-                allProperties={{
-                    success: true,
-                    data: {
-                        items: mockDataWithRecord,
-                        pageNumber: 1,
-                        pageSize: 10,
-                        totalCount: 1,
-                        totalPages: 1,
-                        hasPrevious: false,
-                        hasNext: false,
-                    },
-                }}
+                taxZones={mockTaxZones as any}
+                wardsData={mockWardsData as any}
             />
         );
 

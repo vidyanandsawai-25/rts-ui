@@ -75,7 +75,7 @@ export const TaxZoningForm = ({
               </Label>
               <Select
                 value={zone}
-                onChange={setZone}
+                onChange={(_, val) => setZone(val)}
                 options={zoneOptions}
                 placeholder={t('form.selectTaxZone')}
               />
@@ -112,7 +112,7 @@ export const TaxZoningForm = ({
               </Label>
               <Select
                 value={fromProps}
-                onChange={setFromProps}
+                onChange={(_, val) => setFromProps(val)}
                 options={propertyOptionsByWard}
                 placeholder={t('form.selectFromProperty')}
                 disabled={ward.length !== 1}
@@ -125,7 +125,7 @@ export const TaxZoningForm = ({
               </Label>
               <Select
                 value={toProps}
-                onChange={setToProps}
+                onChange={(_, val) => setToProps(val)}
                 options={propertyOptionsByWard}
                 placeholder={t('form.selectToProperty')}
                 disabled={ward.length !== 1}

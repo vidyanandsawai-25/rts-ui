@@ -49,10 +49,13 @@ export async function fetchWardPagedAction(
 
 export async function getTaxZoningPagedAction(
   pageNumber: number,
-  pageSize: number
+  pageSize: number,
+  taxZoneId?: number,
+  wardId?: number,
+  groupBy?: string
 ) {
   try {
-    const data = await getTaxZoningPagedServer(pageNumber, pageSize);
+    const data = await getTaxZoningPagedServer(pageNumber, pageSize, taxZoneId, wardId, groupBy);
 
     return {
       success: true,
@@ -76,10 +79,12 @@ export async function getTaxZoningPagedAction(
 }
 export async function getTaxZoningPropertyNoPagedAction(
   pageNumber: number,
-  pageSize: number
+  pageSize: number,
+  taxZoneId?: number,
+  wardId?: number
 ) {
   try {
-    const data = await getTaxZoningPropertyNoServer(pageNumber, pageSize);
+    const data = await getTaxZoningPropertyNoServer(pageNumber, pageSize, taxZoneId, wardId);
 
     return {
       success: true,
@@ -101,31 +106,6 @@ export async function getTaxZoningPropertyNoPagedAction(
     };
   }
 }
-// export async function getTaxZoningByWardAction(
-//   wardNo: string,
-//   pageSize = 100
-// ) {
-//   try {
-//     const data = await getTaxZoningByWardServer(wardNo, pageSize);
-
-//     return {
-//       success: true,
-//       data,
-//     };
-//   } catch (error) {
-//     if (error instanceof ApiError) {
-//       return {
-//         success: false,
-//         error: error.message,
-//       };
-//     }
-
-//     return {
-//       success: false,
-//       error: "Failed to fetch property numbers",
-//     };
-//   }
-// }
 
 export async function getTaxZoningByWardAction(
   wardNo: string,
@@ -161,10 +141,12 @@ export async function getTaxZoningByWardAction(
 
 export async function getAllTaxZoningAction(
   pageNumber: number,
-  pageSize: number
+  pageSize: number,
+  taxZoneId?: number,
+  wardId?: number
 ): Promise<ActionResult<PagedResponse<TaxZoning>>> {
   try {
-    const data = await getAllTaxZoningServer(pageNumber, pageSize);
+    const data = await getAllTaxZoningServer(pageNumber, pageSize, taxZoneId, wardId);
 
     return {
       success: true,

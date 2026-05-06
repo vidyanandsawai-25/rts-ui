@@ -91,16 +91,16 @@ export const useTaxZoningFile = (
           const fromProperty = fromP.padStart(3, "0"), toProperty = toP.padStart(3, "0");
           if (Number(fromProperty) > Number(toProperty)) return;
 
-          const key = `${wardData.wardId}_${fromProperty}_${toProperty}`;
+          const key = `${wardData.id}_${fromProperty}_${toProperty}`;
           if (seenKeys.has(key)) return;
           seenKeys.add(key);
 
-          const existing = records.find(r => r.wardId === wardData.wardId && r.fromProperty === fromProperty && r.toProperty === toProperty);
+          const existing = records.find(r => r.wardId === wardData.id && r.fromProperty === fromProperty && r.toProperty === toProperty);
 
-          if (existing && existing.taxZoneId !== taxZoneData.taxZoneId) {
-            updatedRecords.push({ taxZoneId: taxZoneData.taxZoneId, taxZoneNo: taxZoneNoStr, wardId: wardData.wardId, wardNo: wardNoStr, fromProperty, toProperty, status: "Updated" });
+          if (existing && existing.taxZoneId !== taxZoneData.id) {
+            updatedRecords.push({ taxZoneId: taxZoneData.id, taxZoneNo: taxZoneNoStr, wardId: wardData.id, wardNo: wardNoStr, fromProperty, toProperty, status: "Updated" });
           } else if (!existing) {
-            newChanges.push({ taxZoneId: taxZoneData.taxZoneId, taxZoneNo: taxZoneNoStr, wardId: wardData.wardId, wardNo: wardNoStr, fromProperty, toProperty, status: "New" });
+            newChanges.push({ taxZoneId: taxZoneData.id, taxZoneNo: taxZoneNoStr, wardId: wardData.id, wardNo: wardNoStr, fromProperty, toProperty, status: "New" });
           }
         });
 

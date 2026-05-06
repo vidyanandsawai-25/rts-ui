@@ -1,7 +1,7 @@
 import { PagedResponse } from './common.types';
 
 export interface TaxZone {
-  taxZoneId: number;
+  id: number;
   taxZoneNo: string;
   taxZoneType: string;
   remark: string | null;
@@ -10,7 +10,7 @@ export interface TaxZone {
   isActive: boolean;
 }
 export interface Ward {
-  wardId: number;
+  id: number;
   wardNo: string;
   zoneNo: string;
   description: string | null;
@@ -23,6 +23,7 @@ export interface Ward {
   updatedDate: string | null;
 }
 export interface TaxZoning {
+  // id: number;
   taxZoneId: number;
   wardId: number;
   taxZone: string;
@@ -82,5 +83,5 @@ export type TaxZoningPageProps = {
   totalPages: number;
   taxZones: PagedResponse<TaxZone>;
   wardsData: PagedResponse<Ward>;
-  allProperties: ActionResult<PagedResponse<TaxZoning>>;
+  allProperties?: ActionResult<PagedResponse<TaxZoning>>;
 };

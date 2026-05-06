@@ -11,7 +11,7 @@ export async function getTaxZonePagedServer(
     PageSize: pageSize.toString(),
   });
 
-  const response = await apiClient.get<PagedResponse<TaxZone>>(
+  const response = await apiClient.get<any>(
     `/TaxZone?${params.toString()}`
   );
 
@@ -19,7 +19,29 @@ export async function getTaxZonePagedServer(
     throw new Error(response.error || "messages.fetchTaxZonesFailed");
   }
 
-  return response.data;
+  const rootData = response.data;
+  if (rootData.items && typeof rootData.items === 'object' && Array.isArray(rootData.items.items)) {
+    return rootData.items;
+  }
+
+  if (Array.isArray(rootData.items)) {
+    return rootData;
+  }
+
+  // Normalize array response to PagedResponse
+  if (Array.isArray(rootData)) {
+    return {
+      items: rootData,
+      totalCount: rootData.length,
+      pageNumber: 1,
+      pageSize: rootData.length,
+      totalPages: 1,
+      hasPrevious: false,
+      hasNext: false
+    };
+  }
+
+  return rootData;
 }
 
 export async function getWardPagedServer(
@@ -31,7 +53,7 @@ export async function getWardPagedServer(
     PageSize: pageSize.toString(),
   });
 
-  const response = await apiClient.get<PagedResponse<Ward>>(
+  const response = await apiClient.get<any>(
     `/Ward?${params.toString()}`
   );
 
@@ -39,27 +61,80 @@ export async function getWardPagedServer(
     throw new Error(response.error || "messages.fetchWardsFailed");
   }
 
-  return response.data;
+  const rootData = response.data;
+  if (rootData.items && typeof rootData.items === 'object' && Array.isArray(rootData.items.items)) {
+    return rootData.items;
+  }
+
+  if (Array.isArray(rootData.items)) {
+    return rootData;
+  }
+
+  // Normalize array response to PagedResponse
+  if (Array.isArray(rootData)) {
+    return {
+      items: rootData,
+      totalCount: rootData.length,
+      pageNumber: 1,
+      pageSize: rootData.length,
+      totalPages: 1,
+      hasPrevious: false,
+      hasNext: false
+    };
+  }
+
+  return rootData;
 }
 
 export async function getTaxZoningPagedServer(
   pageNumber: number,
-  pageSize: number
+  pageSize: number,
+  taxZoneId?: number,
+  wardId?: number,
+  groupBy?: string
 ): Promise<PagedResponse<TaxZoning>> {
   const params = new URLSearchParams({
     PageNumber: pageNumber.toString(),
     PageSize: pageSize.toString(),
   });
 
-  const response = await apiClient.get<PagedResponse<TaxZoning>>(
-    `/TaxZonning?${params.toString()}`
+  if (taxZoneId) params.append("TaxZoneId", taxZoneId.toString());
+  if (wardId) params.append("WardId", wardId.toString());
+  if (groupBy) params.append("GroupBy", groupBy);
+
+  const response = await apiClient.get<any>(
+    `/TaxZoning?${params.toString()}`
   );
 
   if (!response.success || !response.data) {
     throw new Error(response.error || "messages.fetchZoningDataFailed");
   }
 
-  return response.data;
+  // Handle double-nested items structure: { success, message, items: { items: [], ... } }
+  const rootData = response.data;
+  if (rootData.items && typeof rootData.items === 'object' && Array.isArray(rootData.items.items)) {
+    return rootData.items;
+  }
+
+  // Handle single-nested items structure: { items: [], ... }
+  if (Array.isArray(rootData.items)) {
+    return rootData;
+  }
+
+  // Handle flat array response
+  if (Array.isArray(rootData)) {
+    return {
+      items: rootData,
+      totalCount: rootData.length,
+      pageNumber: 1,
+      pageSize: rootData.length,
+      totalPages: 1,
+      hasPrevious: false,
+      hasNext: false
+    };
+  }
+
+  return rootData;
 }
 
 export async function getTaxZoningByWardServer(
@@ -73,55 +148,128 @@ export async function getTaxZoningByWardServer(
     PageNumber: pageNumber.toString(),
   });
 
-  const response = await apiClient.get<PagedResponse<TaxZoning>>(
-    `/TaxZonning/GetAll?${params.toString()}`
+  const response = await apiClient.get<any>(
+    `/TaxZoning?${params.toString()}`
   );
 
   if (!response.success || !response.data) {
     throw new Error(response.error || "messages.fetchByWardFailed");
   }
 
-  return response.data;
+  const rootData = response.data;
+  if (rootData.items && typeof rootData.items === 'object' && Array.isArray(rootData.items.items)) {
+    return rootData.items;
+  }
+
+  if (Array.isArray(rootData.items)) {
+    return rootData;
+  }
+
+  if (Array.isArray(rootData)) {
+    return {
+      items: rootData,
+      totalCount: rootData.length,
+      pageNumber: 1,
+      pageSize: rootData.length,
+      totalPages: 1,
+      hasPrevious: false,
+      hasNext: false
+    };
+  }
+
+  return rootData;
 }
 
 export async function getAllTaxZoningServer(
   pageNumber: number,
-  pageSize: number
+  pageSize: number,
+  taxZoneId?: number,
+  wardId?: number
 ): Promise<PagedResponse<TaxZoning>> {
   const params = new URLSearchParams({
     PageNumber: pageNumber.toString(),
     PageSize: pageSize.toString(),
   });
 
-  const response = await apiClient.get<PagedResponse<TaxZoning>>(
-    `/TaxZonning/GetAll?${params.toString()}`
+  if (taxZoneId) params.append("TaxZoneId", taxZoneId.toString());
+  if (wardId) params.append("WardId", wardId.toString());
+
+  const response = await apiClient.get<any>(
+    `/TaxZoning?${params.toString()}`
   );
 
   if (!response.success || !response.data) {
     throw new Error(response.error || "messages.fetchAllFailed");
   }
 
-  return response.data;
+  const rootData = response.data;
+  if (rootData.items && typeof rootData.items === 'object' && Array.isArray(rootData.items.items)) {
+    return rootData.items;
+  }
+
+  if (Array.isArray(rootData.items)) {
+    return rootData;
+  }
+
+  if (Array.isArray(rootData)) {
+    return {
+      items: rootData,
+      totalCount: rootData.length,
+      pageNumber: 1,
+      pageSize: rootData.length,
+      totalPages: 1,
+      hasPrevious: false,
+      hasNext: false
+    };
+  }
+
+  return rootData;
 }
 
 export async function getTaxZoningPropertyNoServer(
   pageNumber: number,
-  pageSize: number
+  pageSize: number,
+  taxZoneId?: number,
+  wardId?: number
 ): Promise<PagedResponse<TaxZoningPropertyNo>> {
   const params = new URLSearchParams({
     PageNumber: pageNumber.toString(),
     PageSize: pageSize.toString(),
   });
 
-  const response = await apiClient.get<PagedResponse<TaxZoningPropertyNo>>(
-    `/TaxZonning/GetPropertyNo?${params.toString()}`
+  if (taxZoneId) params.append("TaxZoneId", taxZoneId.toString());
+  if (wardId) params.append("WardId", wardId.toString());
+
+  const response = await apiClient.get<any>(
+    `/TaxZoning?${params.toString()}`
   );
 
   if (!response.success || !response.data) {
     throw new Error(response.error || "messages.fetchPropertyNoFailed");
   }
 
-  return response.data;
+  const rootData = response.data;
+  if (rootData.items && typeof rootData.items === 'object' && Array.isArray(rootData.items.items)) {
+    return rootData.items;
+  }
+
+  if (Array.isArray(rootData.items)) {
+    return rootData;
+  }
+
+  if (Array.isArray(rootData)) {
+    return {
+      items: rootData,
+      totalCount: rootData.length,
+      pageNumber: 1,
+      pageSize: rootData.length,
+      totalPages: 1,
+      hasPrevious: false,
+      hasNext: false
+    };
+  }
+
+  return rootData;
 }
 
 export async function createTaxZoning(
@@ -147,7 +295,7 @@ export async function createTaxZoning(
     updatedBy: data.updatedBy ?? 1,
   };
 
-  const response = await apiClient.post<void>(`/TaxZonning`, payload);
+  const response = await apiClient.post<void>(`/TaxZoning`, payload);
 
   if (!response.success) {
     throw new Error(response.error || "messages.createFailed");
@@ -177,7 +325,7 @@ export async function updateTaxZoning(
     updatedBy: data.updatedBy ?? 1,
   };
 
-  const response = await apiClient.put<void>(`/TaxZonning`, payload);
+  const response = await apiClient.put<void>(`/TaxZoning`, payload);
 
   if (!response.success) {
     throw new Error(response.error || "messages.updateFailed");

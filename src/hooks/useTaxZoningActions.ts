@@ -35,7 +35,7 @@ export const useTaxZoningActions = (t: (key: string, values?: Record<string, str
       if (ward.length === 1) {
         const wardExists = records.some(r => r.wardId === Number(ward[0]));
         if (!wardExists) {
-          const wardData = wardsData.items.find((w: Ward) => String(w.wardId) === ward[0]);
+          const wardData = wardsData.items.find((w: Ward) => String(w.id) === ward[0]);
           const wardName = wardData?.wardNo || ward[0];
           toast.error(`${t('messages.wardNotFound')}: ${wardName}. ${t('messages.wardNotFoundDetail')}`);
           return;
@@ -65,7 +65,7 @@ export const useTaxZoningActions = (t: (key: string, values?: Record<string, str
           if (records.some(r => r.wardId === Number(wardId))) {
             validWards.push(wardId);
           } else {
-            const wardData = wardsData.items.find((w: Ward) => String(w.wardId) === wardId);
+            const wardData = wardsData.items.find((w: Ward) => String(w.id) === wardId);
             nonExistentWards.push(wardData?.wardNo || wardId);
           }
         }

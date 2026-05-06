@@ -61,7 +61,7 @@ export const TaxZoningPreview = ({
           </p>
           <p className="text-[12px] text-gray-900">
             {zone
-              ? (taxZones.items.find(z => String(z.taxZoneId) === zone)?.taxZoneNo || zone)
+              ? (taxZones.items.find(z => String(z.id) === zone)?.taxZoneNo || zone)
               : t('form.selectTaxZone')}
           </p>
         </div>
@@ -73,7 +73,7 @@ export const TaxZoningPreview = ({
           <p className="text-[12px] text-gray-900 text-right">
             {Array.isArray(ward) && ward.length > 0
               ? ward.map(wardId =>
-                wardsData.items.find(w => String(w.wardId) === wardId)?.wardNo || wardId
+                wardsData.items.find(w => String(w.id) === wardId)?.wardNo || wardId
               ).join(", ")
               : t('form.selectWard')}
           </p>
