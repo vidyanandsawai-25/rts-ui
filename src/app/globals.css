@@ -70,3 +70,12 @@ aside:not(.sidebar-expanded-aside) .sidebar-back-icon {
     transition: margin-left 0.3s ease-in-out;
   }
 }
+
+/* Hide sidebar and mobile toggle behind backdrop when drawer is open */
+body.drawer-open aside {
+  z-index: 30 !important;
+}
+
+body.drawer-open .sidebar-mobile-toggle {
+  z-index: 30 !important;
+}
