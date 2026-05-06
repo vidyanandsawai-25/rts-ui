@@ -187,14 +187,26 @@ export interface FloorInformationFormProps {
   existingFloorDetails?: OldFloorDetail[];
 }
 
+/**
+ * Data structure for the Floor Information Form state.
+ * Uses strings for numeric fields to handle controlled input state smoothly.
+ */
 export interface FloorInformationFormData {
+  /** Optional ID for existing records being edited */
   id?: number;
+  /** ID of the selected floor from master data */
   oldFloorId: string | number;
+  /** Optional ID of the selected sub-floor from master data */
   oldSubFloorId: string | number;
+  /** Year of construction (YYYY) */
   oldConstructionYear: string;
+  /** ID of the selected construction type */
   oldConstructionTypeId: string | number;
+  /** ID of the selected type of use */
   oldTypeOfUseId: string | number;
+  /** Optional ID of the selected sub-type of use */
   oldSubTypeOfUseId: string | number;
+  /** Carpet area in square feet */
   oldCarpetAreaSqFeet: string;
 }
 
@@ -268,4 +280,11 @@ export interface OldTaxesDetailsResponse {
 
 export interface TaxationBreakdownFormProps {
   initialData?: OldTaxesDetails | null;
+}
+
+
+export interface UseFloorInformationFormProps {
+  propertyId: number;
+  locale: string;
+  initialSubUseTypeOptions: SubTypeOfUse[];
 }

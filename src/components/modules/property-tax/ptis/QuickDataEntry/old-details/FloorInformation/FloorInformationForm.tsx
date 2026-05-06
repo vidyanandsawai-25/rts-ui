@@ -12,8 +12,8 @@ import {
   FloorTableRow
 } from "@/types/property-old-details.types";
 
-import { useFloorInformationForm } from "@/hooks/useFloorInformationForm";
 import { getFloorInformationColumns } from "./FloorInformationColumns";
+import { useFloorInformationForm } from "@/hooks/ptis/QuickDataEntry/Olddetails/useFloorInformationForm";
 
 export default function FloorInformationForm({
   floorOptions = [],
@@ -240,7 +240,9 @@ export default function FloorInformationForm({
                       variant: "delete",
                       title: tCommon("messages.confirmDelete"),
                       meta: { id: row.id, name: row.floor },
-                      onConfirm: () => handleDelete(row.id)
+                      onConfirm: async () => {
+                        await handleDelete(row.id);
+                      }
                     });
                   }}
                 />

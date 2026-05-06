@@ -622,9 +622,9 @@
             "error": {
                 "title": "Taxation Breakdown Error",
                 "description": "There was a problem loading the taxation breakdown.",
-                 "goHome": "Go Home",
-                 "tryAgain": "Try Again",
-                 "errorId": "Error ID"
+                "goHome": "Go Home",
+                "tryAgain": "Try Again",
+                "errorId": "Error ID"
             },
             "loading": {
                 "message": "Loading Breakdown...",

@@ -9,12 +9,30 @@ import { Column } from "@/components/common/MasterTable";
  * @returns Array of column definitions
  */
 export const getFloorInformationColumns = (t: (key: string) => string): Column<FloorTableRow>[] => [
-  { key: 'floor', label: t('floor.floorLabel') },
-  { key: 'subFloor', label: t('floor.subFloor') },
-  { key: 'conYr', label: t('floor.conYr') },
-  { key: 'conTyp', label: t('floor.conTyp') },
-  { key: 'use', label: t('floor.use') },
-  { key: 'subUse', label: t('floor.subTyp') },
+  {
+    key: 'floor',
+    label: t('floor.floorLabel')
+  },
+  {
+    key: 'subFloor',
+    label: t('floor.subFloor')
+  },
+  {
+    key: 'conYr',
+    label: t('floor.conYr')
+  },
+  {
+    key: 'conTyp',
+    label: t('floor.conTyp')
+  },
+  {
+    key: 'use',
+    label: t('floor.use')
+  },
+  {
+    key: 'subUse',
+    label: t('floor.subTyp')
+  },
   {
     key: 'areaSqFt',
     label: t('floor.carpetArea'),

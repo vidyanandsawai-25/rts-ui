@@ -47,6 +47,7 @@ export {
   PERSON_NAME_REGEX,
   EMAIL_REGEX,
   MOBILE_10_REGEX,
+  YEAR_REGEX,
 } from './validation-rules';
 
 // Re-export from validation-helpers.ts
@@ -61,5 +62,6 @@ export {
   societyValidations,
   propertyValidations,
   officeValidations,
+  oldDetailsValidations,
 } from './validation-schemas';
 
