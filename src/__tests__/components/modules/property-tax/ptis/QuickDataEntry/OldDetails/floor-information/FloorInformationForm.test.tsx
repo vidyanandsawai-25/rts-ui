@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import FloorInformationForm from '@/components/modules/property-tax/ptis/QuickDataEntry/old-details/FloorInformation/FloorInformationForm';
-import { useFloorInformationForm } from '@/hooks/useFloorInformationForm';
 import { useConfirm } from '@/components/common';
 
 import { OldFloorDetail } from '@/types/property-old-details.types';
+import { useFloorInformationForm } from '@/hooks/ptis/QuickDataEntry/Olddetails/useFloorInformationForm';
 
 // Mock dependencies
 vi.mock('next-intl', () => ({
