@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { useHeaderState } from '@/hooks/home/useHeaderState';
+import { useHeaderState } from '@/hooks/useHeaderState';
 
 import { Settings, User } from "lucide-react";
 
