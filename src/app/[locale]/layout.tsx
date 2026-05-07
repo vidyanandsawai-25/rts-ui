@@ -32,15 +32,17 @@ interface RootLayoutProps {
   params: Promise<{ locale: string }>;
 }
 
+import { ConditionalShell } from '@/components/layout/ConditionalShell';
+
 export default async function RootLayout({ children, params }: Readonly<RootLayoutProps>) {
   const { locale } = await params;
 
   // Important: Pass locale to getMessages to ensure correct translations are loaded
   const messages = await getMessages({ locale });
 
-  // Get current path from headers (set by middleware) to conditionally show layout
+  // Get current path from headers (set by middleware) for initial SSR detection
   const headerList = await headers();
-  const isAuthOrHome = headerList.get('x-is-auth-or-home') === 'true';
+  const isAuthOrHomeServer = headerList.get('x-is-auth-or-home') === 'true';
 
   return (
     <html lang={locale}>
@@ -50,7 +52,12 @@ export default async function RootLayout({ children, params }: Readonly<RootLayo
       <body className={`${inter.className} ${notoSansDevanagari.variable}`}>
         <NextIntlClientProvider locale={locale} messages={messages}>
           <Providers>
-            {isAuthOrHome ? children : <MainLayout locale={locale}>{children}</MainLayout>}
+            <ConditionalShell 
+              initialIsAuthOrHome={isAuthOrHomeServer}
+              shell={<MainLayout locale={locale}>{children}</MainLayout>}
+            >
+              {children}
+            </ConditionalShell>
           </Providers>
         </NextIntlClientProvider>
       </body>
