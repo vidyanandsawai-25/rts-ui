@@ -18,8 +18,6 @@ export const useTaxZoningActions = (t: (key: string, values?: Record<string, str
     zone,
     ward,
     previewData,
-    records,
-    wardsData,
     onSuccess
   }: {
     zone: string;
@@ -33,14 +31,6 @@ export const useTaxZoningActions = (t: (key: string, values?: Record<string, str
       setSaving(true);
 
       if (ward.length === 1) {
-        const wardExists = records.some(r => r.wardId === Number(ward[0]));
-        if (!wardExists) {
-          const wardData = wardsData.items.find((w: Ward) => String(w.id) === ward[0]);
-          const wardName = wardData?.wardNo || ward[0];
-          toast.error(`${t('messages.wardNotFound')}: ${wardName}. ${t('messages.wardNotFoundDetail')}`);
-          return;
-        }
-
         const payload = {
           taxZoneId: Number(zone),
           wardId: Number(ward[0]),
@@ -59,21 +49,7 @@ export const useTaxZoningActions = (t: (key: string, values?: Record<string, str
         }
         toast.success(t(result.message));
       } else {
-        const validWards: string[] = [];
-        const nonExistentWards: string[] = [];
-        for (const wardId of ward) {
-          if (records.some(r => r.wardId === Number(wardId))) {
-            validWards.push(wardId);
-          } else {
-            const wardData = wardsData.items.find((w: Ward) => String(w.id) === wardId);
-            nonExistentWards.push(wardData?.wardNo || wardId);
-          }
-        }
-
-        if (nonExistentWards.length > 0) {
-          toast.error(`${t('messages.wardsNotFound')}: ${nonExistentWards.join(', ')}. ${t('messages.wardNotFoundDetail')}`);
-          return;
-        }
+        const validWards: string[] = [...ward];
 
         let successCount = 0;
         let errorCount = 0;
@@ -133,16 +109,22 @@ export const useTaxZoningActions = (t: (key: string, values?: Record<string, str
             propertyId: 0,
           };
 
-          const result = row.status === "New" 
-            ? await createTaxZoningAction(payload) 
+          console.log(`[BulkUpdate] ${row.status} → ward:${row.wardId} from:${row.fromProperty} to:${row.toProperty} taxZone:${row.taxZoneId}`, payload);
+
+          const result = row.status === "New"
+            ? await createTaxZoningAction(payload)
             : await updateTaxZoningAction(payload);
 
           if (result.success) {
             if (row.status === "Updated") updateCount++; else newCount++;
           } else {
+            console.error(`[BulkUpdate] FAILED ${row.status} ward:${row.wardId}`, result.message);
             errorCount++;
           }
-        } catch (_err) { errorCount++; }
+        } catch (err) {
+          console.error(`[BulkUpdate] ERROR ${row.status} ward:${row.wardId}`, err);
+          errorCount++;
+        }
       }
 
       if (newCount > 0 || updateCount > 0) {

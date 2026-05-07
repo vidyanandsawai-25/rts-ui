@@ -3,7 +3,7 @@
 import {createTaxZoning, getAllTaxZoningServer, getTaxZonePagedServer, getTaxZoningByWardServer, getTaxZoningPagedServer, getTaxZoningPropertyNoServer, getWardPagedServer, updateTaxZoning } from "@/lib/api/taxzoning.service";
 import { ApiError } from "@/lib/utils/api";
 import { PagedResponse } from "@/types/common.types";
-import { ActionResult, TaxZone, TaxZoningFormModel, TaxZoning, Ward } from "@/types/taxzoning.types";
+import { ActionResult, TaxZone, TaxZoningFormModel, TaxZoning, TaxZoningPropertyNo, Ward } from "@/types/taxzoning.types";
 
 
 export async function fetchTaxZonePagedAction(
@@ -53,7 +53,7 @@ export async function getTaxZoningPagedAction(
   taxZoneId?: number,
   wardId?: number,
   groupBy?: string
-) {
+): Promise<ActionResult<PagedResponse<TaxZoning>>> {
   try {
     const data = await getTaxZoningPagedServer(pageNumber, pageSize, taxZoneId, wardId, groupBy);
 
@@ -82,7 +82,7 @@ export async function getTaxZoningPropertyNoPagedAction(
   pageSize: number,
   taxZoneId?: number,
   wardId?: number
-) {
+): Promise<ActionResult<PagedResponse<TaxZoningPropertyNo>>> {
   try {
     const data = await getTaxZoningPropertyNoServer(pageNumber, pageSize, taxZoneId, wardId);
 

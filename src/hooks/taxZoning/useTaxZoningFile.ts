@@ -5,11 +5,12 @@ import { toast } from "sonner";
 import * as XLSX from 'xlsx';
 import { ZoningRecord, TaxZone, Ward } from "@/types/taxzoning.types";
 import { PagedResponse } from "@/types/common.types";
+import { getTaxZoningPagedAction } from "@/app/[locale]/property-tax/taxzoning/actions";
 
 export const useTaxZoningFile = (
   t: (key: string, values?: Record<string, string | number>) => string,
   REQUIRED_HEADERS: string[],
-  records: ZoningRecord[],
+  _records: ZoningRecord[],
   wardsData: PagedResponse<Ward>,
   taxZones: PagedResponse<TaxZone>
 ) => {
@@ -49,7 +50,7 @@ export const useTaxZoningFile = (
     }
 
     const reader = new FileReader();
-    reader.onload = () => {
+    reader.onload = async () => {
       try {
         let data: (string | number | boolean | null | undefined)[][] = [];
         if (fileExt === 'csv') {
@@ -75,6 +76,20 @@ export const useTaxZoningFile = (
           return;
         }
 
+        // Fetch ALL existing records from server (grouped by ward) for accurate comparison
+        const allRecordsResult = await getTaxZoningPagedAction(1, 10000, undefined, undefined, "ward");
+        const allServerRecords: { wardId: number; taxZoneId: number; fromProperty: string; toProperty: string }[] = [];
+        if (allRecordsResult.success && allRecordsResult.data?.items) {
+          allRecordsResult.data.items.forEach(item => {
+            allServerRecords.push({
+              wardId: Number(item.wardId),
+              taxZoneId: Number(item.taxZoneId),
+              fromProperty: item.fromProperty || "",
+              toProperty: item.toProperty || "",
+            });
+          });
+        }
+
         const newChanges: ZoningRecord[] = [];
         const updatedRecords: ZoningRecord[] = [];
         const seenKeys = new Set<string>();
@@ -88,23 +103,33 @@ export const useTaxZoningFile = (
           const taxZoneData = taxZones.items.find((z: TaxZone) => z.taxZoneNo === taxZoneNoStr);
           if (!wardData || !taxZoneData) return;
 
-          const fromProperty = fromP.padStart(3, "0"), toProperty = toP.padStart(3, "0");
+          // Use raw values from CSV - NO padding
+          const fromProperty = fromP;
+          const toProperty = toP;
           if (Number(fromProperty) > Number(toProperty)) return;
 
           const key = `${wardData.id}_${fromProperty}_${toProperty}`;
           if (seenKeys.has(key)) return;
           seenKeys.add(key);
 
-          const existing = records.find(r => r.wardId === wardData.id && r.fromProperty === fromProperty && r.toProperty === toProperty);
+          // Compare against ALL server records, not just current page
+          const existing = allServerRecords.find(r =>
+            r.wardId === wardData.id &&
+            r.fromProperty === fromProperty &&
+            r.toProperty === toProperty
+          );
 
           if (existing && existing.taxZoneId !== taxZoneData.id) {
+            // TaxZone changed → mark for update
             updatedRecords.push({ taxZoneId: taxZoneData.id, taxZoneNo: taxZoneNoStr, wardId: wardData.id, wardNo: wardNoStr, fromProperty, toProperty, status: "Updated" });
           } else if (!existing) {
+            // New record
             newChanges.push({ taxZoneId: taxZoneData.id, taxZoneNo: taxZoneNoStr, wardId: wardData.id, wardNo: wardNoStr, fromProperty, toProperty, status: "New" });
           }
+          // else: no change, skip
         });
 
-        const allChanges = [...newChanges, ...updatedRecords];
+        const allChanges = [...updatedRecords, ...newChanges];
         if (!allChanges.length) {
           toast.warning(t('messages.noNewOrChangedRecords'));
           return;
@@ -112,8 +137,13 @@ export const useTaxZoningFile = (
 
         setImportedChanges(allChanges);
         setHasImportedData(true);
-        toast.success(newChanges.length > 0 ? `${newChanges.length} ${t('messages.newRecordsReadyToImport')}` : `${updatedRecords.length} ${t('messages.updatesReadyToImport')}`);
+
+        const parts: string[] = [];
+        if (updatedRecords.length > 0) parts.push(`${updatedRecords.length} ${t('messages.updatesReadyToImport')}`);
+        if (newChanges.length > 0) parts.push(`${newChanges.length} ${t('messages.newRecordsReadyToImport')}`);
+        toast.success(parts.join(', '));
       } catch (_err) {
+        console.error("File processing error:", _err);
         toast.error(t('messages.fileProcessingError'));
       }
     };

@@ -5,7 +5,7 @@ import { PageContainer } from "@/components/common";
 import TableHeader from "@/components/common/TableHeader";
 import { TaxZoningPageProps } from "@/types/taxzoning.types";
 
-import { useTaxZoning } from "@/hooks/useTaxZoning";
+import { useTaxZoning } from "@/hooks/taxZoning/useTaxZoning";
 import { TaxZoningForm } from "./TaxZoningForm";
 import { TaxZoningPreview } from "./TaxZoningPreview";
 import { TaxZoningTable } from "./TaxZoningTable";

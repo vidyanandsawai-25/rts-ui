@@ -5,8 +5,8 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from "next/navigation";
 import { TaxZoning, ZoningRecord, SelectOption, TaxZoningPageProps } from "@/types/taxzoning.types";
 import { getPreviewColumns, getTaxZoningColumns } from "@/components/modules/property-tax/taxzoningmaster/TaxZoningColumns";
-import { useTaxZoningActions } from "./useTaxZoningActions";
-import { useTaxZoningFile } from "./useTaxZoningFile";
+import { useTaxZoningActions } from "@/hooks/taxZoning/useTaxZoningActions";
+import { useTaxZoningFile } from "@/hooks/taxZoning/useTaxZoningFile";
 
 export const useTaxZoning = (props: TaxZoningPageProps) => {
   const { data, pageNumber, pageSize, taxZones, wardsData, allProperties } = props;
@@ -34,7 +34,7 @@ export const useTaxZoning = (props: TaxZoningPageProps) => {
   const zoneOptions = useMemo(() => {
     return taxZones?.items?.map(z => ({ label: String(z.taxZoneNo), value: String(z.id) })) || [];
   }, [taxZones]);
-  
+
   const wardOptions = useMemo(() => {
     if (!zone || !wardsData?.items) return [];
     return wardsData.items.map(w => ({ label: w.wardNo, value: String(w.id) }));
@@ -42,11 +42,11 @@ export const useTaxZoning = (props: TaxZoningPageProps) => {
 
   const propertyOptionsByWard = useMemo(() => {
     if (ward.length !== 1 || !allProperties?.success || !allProperties.data?.items) return [];
-    
+
     return allProperties.data.items
-      .map((i: TaxZoning) => ({ 
-        label: i.propertyNo.padStart(3, "0"), 
-        value: i.propertyNo.padStart(3, "0") 
+      .map((i: TaxZoning) => ({
+        label: i.propertyNo,
+        value: i.propertyNo
       }))
       .filter((v: SelectOption, i: number, a: SelectOption[]) => a.findIndex(t => t.value === v.value) === i);
   }, [ward, allProperties]);
@@ -59,8 +59,8 @@ export const useTaxZoning = (props: TaxZoningPageProps) => {
         taxZoneId: Number(item.taxZoneId),
         taxZoneNo: taxZoneData?.taxZoneNo || String(item.taxZoneId),
         wardId: Number(item.wardId), wardNo: String(item.wardNo),
-        fromProperty: item.fromProperty?.padStart(3, "0") || "",
-        toProperty: item.toProperty?.padStart(3, "0") || "",
+        fromProperty: item.fromProperty || "",
+        toProperty: item.toProperty || "",
         status: item.isActive ? "Active" : "Inactive",
       };
     });
@@ -105,11 +105,11 @@ export const useTaxZoning = (props: TaxZoningPageProps) => {
     if (isNaN(from) || isNaN(to) || from > to) return [];
     const wardNo = wardsData.items.find(w => String(w.id) === ward[0])?.wardNo || ward[0];
     const taxZoneNo = taxZones.items.find(z => String(z.id) === zone)?.taxZoneNo || zone;
-    return Array.from({ length: to - from + 1 }, (_, i) => ({ taxZoneNo: taxZoneNo, wardNo, propertyNo: String(from + i).padStart(3, "0") }));
+    return Array.from({ length: to - from + 1 }, (_, i) => ({ taxZoneNo: taxZoneNo, wardNo, propertyNo: String(from + i) }));
   }, [zone, ward, fromProps, toProps, wardsData, taxZones]);
 
-  const onFormClear = () => { 
-    setZoneState(""); setWardState([]); setFromProps(""); setToProps(""); setSubmitted(false); 
+  const onFormClear = () => {
+    setZoneState(""); setWardState([]); setFromProps(""); setToProps(""); setSubmitted(false);
     const params = new URLSearchParams(searchParams.toString());
     params.delete("taxZoneId");
     params.delete("wardId");

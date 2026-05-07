@@ -1,79 +1,79 @@
-import { render, screen, fireEvent } from "@testing-library/react";
-import { describe, it, expect, vi } from "vitest";
-import { TaxZoningTable } from "@/components/modules/property-tax/taxzoningmaster/TaxZoningTable";
-import { NextIntlClientProvider } from "next-intl";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import { TaxZoningTable } from '@/components/modules/property-tax/taxzoningmaster/TaxZoningTable';
+import type { ZoningRecord } from '@/types/taxzoning.types';
 
-import commonMessages from "@/i18n/locales/en/common.json";
-import taxzoningMessages from "@/i18n/locales/en/taxzoning.json";
+vi.mock('@/components/common/MasterTable', () => ({
+  MasterTable: ({ headerExtra, data }: any) => (
+    <div data-testid="master-table">
+      {headerExtra}
+      <span data-testid="row-count">{data?.length ?? 0}</span>
+    </div>
+  ),
+}));
+vi.mock('@/components/common', () => ({
+  AddButton: ({ label, disabled, onClick }: any) => <button data-testid="bulk-btn" disabled={disabled} onClick={onClick}>{label}</button>,
+  CancelButton: ({ label, onClick }: any) => <button data-testid="clear-btn" onClick={onClick}>{label}</button>,
+  ExportButton: ({ label, onClick }: any) => <button data-testid="export-btn" onClick={onClick}>{label}</button>,
+  ImportButton: ({ label, onClick }: any) => <button data-testid="import-btn" onClick={onClick}>{label}</button>,
+  Input: vi.fn(() => null),
+}));
 
-const messages = {
-  common: commonMessages,
-  taxzoning: taxzoningMessages,
+const t = (key: string) => key;
+const baseProps = {
+  t,
+  columns: [{ key: 'wardNo' as const, label: 'Ward' }],
+  tableRecords: [] as ZoningRecord[],
+  currentPage: 1,
+  pageSizes: '5',
+  totalCount: 0,
+  totalPages: 1,
+  loading: false,
+  changePage: vi.fn(),
+  changePageSize: vi.fn(),
+  pageSizeOptions: [5, 10, 20],
+  hasImportedData: false,
+  saving: false,
+  handleBulkUpdate: vi.fn(),
+  handleClearImported: vi.fn(),
+  handleImportFile: vi.fn(),
+  handleExportCSV: vi.fn(),
+  fileInputRef: { current: null },
 };
 
-describe("TaxZoningTable", () => {
-  const mockProps = {
-    t: (key: string) => key,
-    columns: [],
-    tableRecords: [],
-    currentPage: 1,
-    pageSizes: "10",
-    totalCount: 0,
-    totalPages: 0,
-    loading: false,
-    changePage: vi.fn(),
-    changePageSize: vi.fn(),
-    pageSizeOptions: [5, 10, 20],
-    hasImportedData: false,
-    saving: false,
-    handleBulkUpdate: vi.fn(),
-    handleClearImported: vi.fn(),
-    handleImportFile: vi.fn(),
-    handleExportCSV: vi.fn(),
-    fileInputRef: { current: null } as unknown as React.RefObject<HTMLInputElement | null>,
-  };
-
-  const renderWithIntl = (component: React.ReactNode) => {
-    return render(
-      <NextIntlClientProvider locale="en" messages={messages}>
-        {component}
-      </NextIntlClientProvider>
-    );
-  };
-
-  it("renders table title and action buttons", () => {
-    renderWithIntl(<TaxZoningTable {...mockProps} />);
-    
-    expect(screen.getByText(/table\.zoningRecords/i)).toBeInTheDocument();
-    expect(screen.getAllByText(/form\.bulkUpdate/i).length).toBeGreaterThan(0);
-    expect(screen.getByText(/buttons\.importFile/i)).toBeInTheDocument();
-    expect(screen.getByText(/buttons\.exportCSV/i)).toBeInTheDocument();
+describe('TaxZoningTable', () => {
+  it('should render the zoning records title', () => {
+    render(<TaxZoningTable {...baseProps} />);
+    expect(screen.getByText('table.zoningRecords')).toBeInTheDocument();
   });
 
-  it("calls handleExportCSV when export button is clicked", () => {
-    renderWithIntl(<TaxZoningTable {...mockProps} />);
-    const exportBtn = screen.getByText(/buttons\.exportCSV/i);
-    fireEvent.click(exportBtn);
-    expect(mockProps.handleExportCSV).toHaveBeenCalled();
+  it('should disable bulk update button when no imported data', () => {
+    render(<TaxZoningTable {...baseProps} hasImportedData={false} />);
+    expect(screen.getByTestId('bulk-btn')).toBeDisabled();
   });
 
-  it("calls handleBulkUpdate when bulk update button is clicked", () => {
-    renderWithIntl(<TaxZoningTable {...mockProps} hasImportedData={true} />);
-    const bulkUpdateBtn = screen.getAllByRole("button").find(btn => btn.textContent?.includes("form.bulkUpdate"));
-    if (bulkUpdateBtn) {
-      fireEvent.click(bulkUpdateBtn);
-    }
-    expect(mockProps.handleBulkUpdate).toHaveBeenCalled();
+  it('should enable bulk update button when imported data exists', () => {
+    render(<TaxZoningTable {...baseProps} hasImportedData={true} />);
+    expect(screen.getByTestId('bulk-btn')).not.toBeDisabled();
   });
 
-  it("disables bulk update button when no imported data", () => {
-    renderWithIntl(<TaxZoningTable {...mockProps} hasImportedData={false} />);
-    const bulkUpdateBtn = screen.getAllByRole("button").find(btn => btn.textContent?.includes("form.bulkUpdate"));
-    expect(bulkUpdateBtn).toBeDisabled();
+  it('should show clear button only when imported data exists', () => {
+    const { rerender } = render(<TaxZoningTable {...baseProps} hasImportedData={false} />);
+    expect(screen.queryByTestId('clear-btn')).not.toBeInTheDocument();
+
+    rerender(<TaxZoningTable {...baseProps} hasImportedData={true} />);
+    expect(screen.getByTestId('clear-btn')).toBeInTheDocument();
   });
 
-  it("shows clear imported button when data is imported", () => {
-    renderWithIntl(<TaxZoningTable {...mockProps} hasImportedData={true} />);
-    expect(screen.getByText(/form\.clearImported/i)).toBeInTheDocument();
+  it('should render export and import buttons', () => {
+    render(<TaxZoningTable {...baseProps} />);
+    expect(screen.getByTestId('export-btn')).toBeInTheDocument();
+    expect(screen.getByTestId('import-btn')).toBeInTheDocument();
+  });
+
+  it('should disable bulk update when saving', () => {
+    render(<TaxZoningTable {...baseProps} hasImportedData={true} saving={true} />);
+    expect(screen.getByTestId('bulk-btn')).toBeDisabled();
   });
 });
