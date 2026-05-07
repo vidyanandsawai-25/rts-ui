@@ -31,7 +31,7 @@ export const Navbar = ({ username, ulbName }: NavbarProps) => {
             <nav className="bg-[#004c8c] text-white flex justify-end items-center px-6 py-1 shadow-md overflow-x-auto">
                 <div className="flex items-center gap-6">
                     <Link
-                        href={`/${locale}/configuration-settings`}
+                        href={`/${locale}/configuration-settings/office-master`}
                         className="flex items-center gap-2 hover:text-blue-200 transition-colors"
                     >
                         <Settings className="w-4 h-4" />

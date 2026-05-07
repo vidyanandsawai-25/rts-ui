@@ -200,15 +200,31 @@
     "language": "भाषा",
     "yourIp": "आपका IP",
     "ipUnavailable": "अनुपलब्ध",
+    "userId": "उपयोगकर्ता आईडी",
+    "role": "भूमिका",
+    "department": "विभाग",
+    "publicIp": "सार्वजनिक IP पता",
+    "sessionId": "सत्र आईडी",
+    "loginTime": "लॉगिन समय",
+    "mockName": "राजेश कुमार",
+    "mockEmail": "rajesh.kumar@propertytax.gov.in",
+    "mockUserId": "USR-2025-1047",
+    "mockRole": "कर निर्धारण अधिकारी",
+    "mockDepartment": "संपत्ति कर विभाग",
+    "mockIp": "115.242.194.254",
+    "mockSessionId": "SES-1767942012755-w0ehgm4ps",
+    "mockLoginTime": "09/01/2026, 12:30:12",
     "logout": "लॉग आउट"
   },
   "navigation": {
     "dashboard": "डैशबोर्ड",
     "profile": "प्रोफ़ाइल",
-    "settings": "सेटिंग्स"
+    "settings": "कॉन्फ़िगरेशन सेटिंग",
+    "ConstructionTypeMaster": "निर्माण प्रकार मास्टर"
   },
   "footer": {
     "copyright": "सर्वाधिकार सुरक्षित",
+    "allRightsReserved": "सर्वाधिकार सुरक्षित।",
     "privacyPolicy": "गोपनीयता नीति",
     "termsOfService": "सेवा की शर्तें",
     "contact": "संपर्क करें"
@@ -219,6 +235,10 @@
     "departmentName": "संपत्ति कर विभाग",
     "defaultUser": "डिफ़ॉल्ट उपयोगकर्ता",
     "assessmentSystem": "संपत्ति कर निर्धारण और प्रबंधन प्रणाली",
+    "welcome": "स्वागत है,",
+    "welcomeTo": "{name} में आपका स्वागत है",
+    "smartGovernance": "स्मार्ट शासन को सशक्त बनाना!",
+    "securityPurpose": "सुरक्षा उद्देश्यों के लिए सभी संचालन लॉग और मॉनिटर किए जाते हैं।",
     "defaultUlbCode": "TMC",
     "defaultUlbName": "Sthapatya Consultant (I) Pvt.Ltd"
   },

@@ -1,10 +1,11 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { useIsAuthPage } from '@/hooks/useIsAuthPage';
 
 interface ConditionalShellProps {
-  children: React.ReactNode;
-  shell: React.ReactNode;
+  children: ReactNode;
+  shell: ReactNode;
   initialIsAuthOrHome?: boolean;
 }
 

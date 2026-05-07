@@ -199,15 +199,31 @@
     "language": "भाषा",
     "yourIp": "तुमचा IP",
     "ipUnavailable": "उपलब्ध नाही",
+    "userId": "वापरकर्ता आयडी",
+    "role": "भूमिका",
+    "department": "विभाग",
+    "publicIp": "सार्वजनिक IP पत्ता",
+    "sessionId": "सत्र आयडी",
+    "loginTime": "लॉगिन वेळ",
+    "mockName": "राजेश कुमार",
+    "mockEmail": "rajesh.kumar@propertytax.gov.in",
+    "mockUserId": "USR-2025-1047",
+    "mockRole": "कर निर्धारण अधिकारी",
+    "mockDepartment": "मालमत्ता कर विभाग",
+    "mockIp": "115.242.194.254",
+    "mockSessionId": "SES-1767942012755-w0ehgm4ps",
+    "mockLoginTime": "09/01/2026, 12:30:12",
     "logout": "लॉग आउट"
   },
   "navigation": {
     "dashboard": "डॅशबोर्ड",
     "profile": "प्रोफाइल",
-    "settings": "सेटिंग्ज"
+    "settings": "कॉन्फिगरेशन सेटिंग",
+    "ConstructionTypeMaster": "बांधकाम प्रकार मास्टर"
   },
   "footer": {
     "copyright": "सर्व हक्क राखीव",
+    "allRightsReserved": "सर्व हक्क राखीव.",
     "privacyPolicy": "गोपनीयता धोरण",
     "termsOfService": "सेवा अटी",
     "contact": "संपर्क करा"
@@ -217,8 +233,10 @@
     "noServicesAvailable": "कोणत्याही सेवा उपलब्ध नाहीत",
     "departmentName": "मालमत्ता कर विभाग",
     "defaultUser": "डिफॉल्ट उपयोगकर्ता",
-    "assessmentSystem": "मालमत्ता कर आकारणी आणि व्यवस्थापन प्रणाली",
-    "defaultUlbCode": "TMC",
+    "assessmentSystem": "मालमत्ता कर आकारणी आणि व्यवस्थापन प्रणाली",    "welcome": "स्वागत आहे,",
+    "welcomeTo": "{name} मध्ये आपले स्वागत आहे",
+    "smartGovernance": "स्मार्ट शासन सशक्त करणे!",
+    "securityPurpose": "सुरक्षिततेसाठी सर्व कार्य्ये लॉग आणि मॉनिटर केली जातात.",    "defaultUlbCode": "TMC",
     "defaultUlbName": "Sthapatya Consultant (I) Pvt.Ltd"
   },
   "login": {

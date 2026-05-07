@@ -83,8 +83,8 @@ const ServiceCards: React.FC<ServiceCardsProps> = ({ services = [] }) => {
     return (
         <section className="w-full p-4 sm:p-8 md:p-12 min-h-[400px]">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8 sm:gap-10 max-w-7xl mx-auto">
-                {services.map((service) => (
-                    <ServiceCard key={service.id} {...service} />
+                {services.map(({ id, ...rest }) => (
+                    <ServiceCard key={id} {...rest} />
                 ))}
             </div>
         </section>
