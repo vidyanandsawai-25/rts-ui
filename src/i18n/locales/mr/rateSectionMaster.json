@@ -26,6 +26,7 @@
     "deleteTitle": "प्रभाग हटवा",
     "deleteSuccess": "{count, plural, =1 {प्रभाग यशस्वीरित्या काढला} other {# प्रभाग यशस्वीरित्या काढले}}",
     "deleteError": "प्रभाग हटविण्यात त्रुटी",
+    "inUseError": "\"{wardName}\" वापरात आहे तुम्ही हा प्रभाग हटवू शकत नाही",
     "partialDeleteSuccess": "{success} प्रभाग यशस्वीरित्या काढले, {failed} अयशस्वी.",
     "noWardsToDelete": "हटविण्यासाठी कोणताही प्रभाग सापडला नाही",
     "removed": "काढले",
@@ -132,7 +133,8 @@
     "updateSuccess": "दर विभाग \"{name}\" यशस्वीरित्या अद्यतनित केला",
     "updateError": "दर विभाग \"{name}\" अद्यतनित करण्यात अयशस्वी",
     "deleteSuccess": "दर विभाग \"{name}\" यशस्वीरित्या हटविला",
-    "deleteError": "दर विभाग \"{name}\" हटविण्यात अयशस्वी",
+    "deleteError": "दर विभाग हटविण्यात अयशस्वी",
+    "inUseError": "\"{name}\" वापरात आहे तुम्ही हा दर विभाग हटवू शकत नाही",
     "thisRateSection": "हा दर विभाग"
   },
   "pagination": {

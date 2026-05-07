@@ -1,7 +1,7 @@
 "use client";
 
+import { useState, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMemo } from "react";
 import { Drawer } from "@/components/common/Drawer";
 import { useTranslations } from "next-intl";
 import { Map } from "lucide-react";
@@ -9,7 +9,7 @@ import { PrevPageButton, NextPageButton } from "@/components/common/ActionButton
 import { LinkWardProps } from "@/types/rateSectionMaster.types";
 import RateSectionWards from "./RateSectionWards";
 import LinkWardTabs from "./LinkWardTabs";
-import { getRateSectionDisplayLabel, getSelectedZoneName, handleToggleAvailable, handleToggleSelected} from "./linkWardHelpers";
+import { getRateSectionDisplayLabel, getSelectedZoneName, handleToggleAvailable, handleToggleSelected } from "./linkWardHelpers";
 import { useLinkWardHandlers } from "@/hooks/useLinkWardHandlers";
 import { useLinkWardActions } from "@/hooks/useLinkWardActions";
 import { useLinkWardPagination } from "@/hooks/useLinkWardPagination";
@@ -35,7 +35,15 @@ export default function AddWard({
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const wardAssignments = ssrWardAssignments;
+  const [wardAssignments, setWardAssignments] = useState(ssrWardAssignments);
+  const [prevSsrWardAssignments, setPrevSsrWardAssignments] = useState(ssrWardAssignments);
+
+  // Sync state with props in render phase (same pattern as useLinkWardPagination)
+  if (ssrWardAssignments !== prevSsrWardAssignments) {
+    setPrevSsrWardAssignments(ssrWardAssignments);
+    setWardAssignments(ssrWardAssignments);
+  }
+
   const allAvailableWards = ssrAllWards;
   const totalViewAllCount = ssrViewAllWardsTotalCount || ssrAllWardsCount;
 
@@ -67,7 +75,9 @@ export default function AddWard({
     setLoading: state.setLoading,
     setSelectedWards: state.setSelectedWards,
     setSelectedWardsTotalCount: state.setSelectedWardsTotalCount,
+    setWardAssignments,
     getRateSectionDisplayLabel: getRateSectionLabel,
+    router,
     t
   });
 

@@ -43,22 +43,22 @@ export async function handleRateSectionDelete({
 
       if (onDeleteSuccess) onDeleteSuccess();
     } else {
-      if (hasWards) {
+      const errorMsg = result.error?.toLowerCase() || result.message?.toLowerCase() || "";
+      
+      // Check for "referenced by other entities" error message
+      if (
+        errorMsg.includes("referenced by other entities") ||
+        errorMsg.includes("cannot delete") ||
+        errorMsg.includes("still referenced") ||
+        errorMsg.includes("foreign key") ||
+        errorMsg.includes("in use")
+      ) {
+        // Show custom localized error message
+        toast.error(t('messages.inUseError', { name: formattedName }));
+      } else if (hasWards) {
         toast.warning(t('dialogs.deleteErrorWards', { name: formattedName }));
       } else {
-        const errorMsg = result.error?.toLowerCase() || "";
-        
-        if (
-          errorMsg.includes("409") || 
-          errorMsg.includes("cannot be deleted") || 
-          errorMsg.includes("in use") ||
-          errorMsg.includes("rate") ||
-          errorMsg.includes("foreign key")
-        ) {
-          toast.warning(t('dialogs.deleteErrorRateMaster', { name: formattedName }));
-        } else {
-          toast.error(t('messages.deleteError'));
-        }
+        toast.error(result.error || result.message || t('messages.deleteError'));
       }
     }
   } catch (error: unknown) {
@@ -66,16 +66,16 @@ export async function handleRateSectionDelete({
     const errorLower = msg.toLowerCase();
     
     if (
-      errorLower.includes("409") ||
-      errorLower.includes("cannot be deleted") ||
-      errorLower.includes("record is in use") ||
-      errorLower.includes("foreign key")
+      errorLower.includes("referenced by other entities") ||
+      errorLower.includes("cannot delete") ||
+      errorLower.includes("still referenced") ||
+      errorLower.includes("foreign key") ||
+      errorLower.includes("in use")
     ) {
-      if (hasWards) {
-        toast.warning(t('dialogs.deleteErrorWards', { name: formattedName }));
-      } else {
-        toast.warning(t('dialogs.deleteErrorRateMaster', { name: formattedName }));
-      }
+      // Show custom localized error message
+      toast.error(t('messages.inUseError', { name: formattedName }));
+    } else if (hasWards) {
+      toast.warning(t('dialogs.deleteErrorWards', { name: formattedName }));
     } else {
       toast.error(t('messages.deleteError'));
     }

@@ -220,7 +220,7 @@ export interface WardListProps {
  * Params for getWardColumns function
  */
 export interface GetWardColumnsParams {
-  t: (key: string) => string;
+  t: (key: string, values?: Record<string, string | number>) => string;
 }
 
 /**
@@ -286,12 +286,10 @@ export interface HandleWardDeleteParams {
   row: SectionItem;
   rateSectionLabel: string | null;
   effectiveSelectedRateSection: string | null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  confirm: any;
+  confirm: (params: { title: string; description: string; onConfirm: () => void; variant?: "delete" | "add" | "update" | "info" | "warning" }) => void;
   setDeletedIds: (updater: (prev: Set<number>) => Set<number>) => void;
   onWardsChanged?: () => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  t: any;
+  t: (key: string, values?: Record<string, string | number>) => string;
 }
 
 /**
@@ -437,6 +435,5 @@ export interface LinkWardTabsProps {
   onViewAllSearch: (value: string) => void;
   onViewWardPageChange: (page: number) => void;
   onViewWardPageSizeChange: (size: number) => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  t: any;
+  t: (key: string, values?: Record<string, string | number>) => string;
 }

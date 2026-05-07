@@ -11,11 +11,14 @@ export function getWardColumns({
     {
       key: "wardNo",
       label: t('wards.wardNo'),
-      render: (_, row) => (
-        <div className="flex justify-center">
-          <StatusBadge label={String(row.wardNo ?? row.WardNo ?? "-")} variant="info" />
-        </div>
-      ),
+      render: (_, row) => {
+        const wardNo = row.wardNo ?? row["WardNo"] ?? "-";
+        return (
+          <div className="flex justify-center">
+            <StatusBadge label={String(wardNo)} variant="info" />
+          </div>
+        );
+      },
     },
   ];
 }
