@@ -54,6 +54,7 @@ const mockMessages = {
       displayOrder: "Display Order",
       mandatoryNote: "Fields marked with * are mandatory",
       searchPlaceholder: "Search types...",
+      statusMessage: "{status}",
       fields: {
         typeId: "Type Of Use Code",
         type: "Type",
@@ -267,8 +268,8 @@ describe("UseTypeForm", () => {
       // Fill required fields to bypass HTML5 validation
       fireEvent.change(screen.getByPlaceholderText("e.g., RES, COM01, IND"), { target: { value: "IND01" } });
       fireEvent.change(screen.getByPlaceholderText("Enter description"), { target: { value: "Some description" } });
-      fireEvent.change(screen.getByRole("combobox", { name: /use type group/i }), { target: { value: "1" } });
-      fireEvent.change(screen.getByRole("combobox", { name: /type\s*\*/i }), { target: { value: "I" } });
+      fireEvent.change(screen.getByRole("combobox", { name: /use type group.*required/i }), { target: { value: "1" } });
+      fireEvent.change(screen.getByRole("combobox", { name: /^type\s+required$/i }), { target: { value: "I" } });
 
       // Now test the sequence field
       const seqInput = screen.getByPlaceholderText("0");
@@ -302,7 +303,7 @@ describe("UseTypeForm", () => {
       fireEvent.change(descInput, { target: { value: "Industrial Building" } });
 
       // Select type
-      const typeSelect = screen.getByRole("combobox", { name: /type\s*\*/i });
+      const typeSelect = screen.getByRole("combobox", { name: /^type\s+required$/i });
       fireEvent.change(typeSelect, { target: { value: "I" } });
 
       // Fill in sequence
@@ -343,7 +344,7 @@ describe("UseTypeForm", () => {
       const descInput = screen.getByPlaceholderText("Enter description");
       fireEvent.change(descInput, { target: { value: "Industrial" } });
 
-      const typeSelect = screen.getByRole("combobox", { name: /type\s*\*/i });
+      const typeSelect = screen.getByRole("combobox", { name: /^type\s+required$/i });
       fireEvent.change(typeSelect, { target: { value: "I" } });
 
       const form = container.querySelector("#use-type-form");
