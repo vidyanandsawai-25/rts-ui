@@ -1,0 +1,228 @@
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
+import KycFormView from '@/components/modules/property-tax/ptis/QuickDataEntry/kyc/KycFormView';
+import { toast } from 'sonner';
+import { updatePropertyKycAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Kyc/action';
+import { KycDetails } from '@/types/property-kyc.types';
+
+// Mock next/navigation
+vi.mock('next/navigation', () => ({
+  useRouter: vi.fn(() => ({
+    push: vi.fn(),
+    refresh: vi.fn(),
+  })),
+}));
+
+// Mock next-intl
+vi.mock('next-intl', () => ({
+  useTranslations: () => (key: string) => {
+    const translations: Record<string, string> = {
+      'kyc.title': 'Owner & Contact Information',
+      'kyc.ownerType': 'Owner Type',
+      'kyc.titleLabel': 'Title',
+      'kyc.propertyHolderName': 'Property Holder Name',
+      'kyc.occupierName': 'Occupier Name',
+      'kyc.shopName': 'Shop Name',
+      'kyc.address': 'Address',
+      'kyc.emailId': 'Email ID',
+      'kyc.aadharCardNo': 'Aadhar Card No',
+      'kyc.mobileNo': 'Mobile No',
+      'kyc.select': 'Select',
+      'kyc.enterFullName': 'Enter full name',
+      'common.saveChanges': 'Update Changes', // legacy, keep for test compatibility
+      'common.UpdateChanges': 'Update Changes',
+      'footer.saving': 'Saving...',
+    };
+    return translations[key] || key;
+  },
+}));
+
+// Mock useConfirm
+vi.mock('@/components/common', async () => {
+  const actual = await vi.importActual('@/components/common');
+  return {
+    ...actual,
+    useConfirm: () => ({
+      confirm: vi.fn(({ onConfirm }) => onConfirm()),
+    }),
+  };
+});
+
+// Mock sonner
+vi.mock('sonner', () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+  },
+}));
+
+// Mock the action
+vi.mock('@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Kyc/action', () => ({
+  updatePropertyKycAction: vi.fn(),
+}));
+
+const mockOwnerTypeMasterList = [
+  { ownerTypeId: 1, ownerType: 'Self', isActive: true, createdDate: '', updatedDate: null },
+  { ownerTypeId: 2, ownerType: 'Soldier', isActive: true, createdDate: '', updatedDate: null },
+];
+
+const mockKycDetailsData = {
+  propertyId: 550726,
+  ownerTypeId: 1,
+  ownerType: 'Self',
+  adharCardNo: '123456789012',
+  ownerTitle: 'Mr',
+  ownerName: 'John Doe',
+  ownerTitleEnglish: 'Mr',
+  ownerNameEnglish: 'John Doe',
+  occupierTitle: 'Mr',
+  occupierName: 'Jane Doe',
+  occupierTitleEnglish: 'Mr',
+  occupierNameEnglish: 'Jane Doe',
+  address: '123 Street',
+  location: 'City',
+  addressEnglish: '123 Street',
+  locationEnglish: 'City',
+  flatOrShopName: 'My Shop',
+  flatOrShopNameEnglish: 'My Shop',
+  flatOrShopNo: '101',
+  flatOrShopNoEnglish: '101',
+  mobileNo: '9876543210',
+  emailId: 'john@example.com',
+};
+
+describe('KycFormView', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('renders correctly with initial data', () => {
+    render(
+      <KycFormView
+        KycDetailsData={mockKycDetailsData as KycDetails}
+        OwnerTypeMasterList={mockOwnerTypeMasterList}
+        locale="en"
+      />
+    );
+
+    expect(screen.getByDisplayValue('John Doe')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Jane Doe')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('My Shop')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('123 Street')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('john@example.com')).toBeInTheDocument();
+
+    // Check Aadhar digits
+    const aadharInputs = screen.getAllByLabelText(/Aadhar Card No/i);
+    expect(aadharInputs).toHaveLength(12);
+    expect(aadharInputs[0]).toHaveValue('1');
+    expect(aadharInputs[11]).toHaveValue('2');
+
+    // Check Mobile digits
+    const mobileInputs = screen.getAllByLabelText(/Mobile No/i);
+    expect(mobileInputs).toHaveLength(10);
+    expect(mobileInputs[0]).toHaveValue('9');
+    expect(mobileInputs[9]).toHaveValue('0');
+  });
+
+  // Helper to support both button label queries in tests
+  const getSaveButton = () =>
+    screen.getByRole('button', { name: /Save Changes|Update Changes/i });
+
+  it('disables save button initially', () => {
+    render(
+      <KycFormView
+        KycDetailsData={mockKycDetailsData as KycDetails}
+        OwnerTypeMasterList={mockOwnerTypeMasterList}
+        locale="en"
+      />
+    );
+
+    const submitBtn = getSaveButton();
+    expect(submitBtn).toBeDisabled();
+  });
+
+  it('enables save button when data is modified', async () => {
+    render(
+      <KycFormView
+        KycDetailsData={mockKycDetailsData as KycDetails}
+        OwnerTypeMasterList={mockOwnerTypeMasterList}
+        locale="en"
+      />
+    );
+
+    const nameInput = screen.getByLabelText(/Property Holder Name/i);
+    fireEvent.change(nameInput, { target: { value: 'John Smith' } });
+
+    const submitBtn = getSaveButton();
+    expect(submitBtn).not.toBeDisabled();
+  });
+
+  it('submits form with updated data', async () => {
+    (updatePropertyKycAction as Mock).mockResolvedValue({ success: true, message: 'Updated' });
+
+    render(
+      <KycFormView
+        KycDetailsData={mockKycDetailsData as KycDetails}
+        OwnerTypeMasterList={mockOwnerTypeMasterList}
+        locale="en"
+      />
+    );
+
+    const nameInput = screen.getByLabelText(/Property Holder Name/i);
+    fireEvent.change(nameInput, { target: { value: 'John Smith' } });
+
+    const submitBtn = getSaveButton();
+    fireEvent.click(submitBtn);
+
+    await waitFor(() => {
+      expect(updatePropertyKycAction).toHaveBeenCalledWith(
+        mockKycDetailsData.propertyId,
+        expect.objectContaining({
+          ownerName: 'John Smith',
+          mobileNo: '9876543210',
+          adharCardNo: '123456789012',
+        }),
+        'en'
+      );
+      expect(toast.success).toHaveBeenCalledWith('Updated');
+    });
+  });
+
+  it('handles submission error correctly', async () => {
+    (updatePropertyKycAction as Mock).mockResolvedValue({ success: false, error: 'Failed' });
+
+    render(
+      <KycFormView
+        KycDetailsData={mockKycDetailsData as KycDetails}
+        OwnerTypeMasterList={mockOwnerTypeMasterList}
+        locale="en"
+      />
+    );
+
+    const nameInput = screen.getByLabelText(/Property Holder Name/i);
+    fireEvent.change(nameInput, { target: { value: 'John Smith' } });
+
+    const submitBtn = getSaveButton();
+    fireEvent.click(submitBtn);
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith('Failed');
+    });
+  });
+
+  it('validates email correctly', async () => {
+    render(
+      <KycFormView
+        KycDetailsData={mockKycDetailsData as KycDetails}
+        OwnerTypeMasterList={mockOwnerTypeMasterList}
+        locale="en"
+      />
+    );
+
+    const emailInput = screen.getByLabelText(/Email ID/i);
+    fireEvent.change(emailInput, { target: { value: 'invalid-email' } });
+
+    const submitBtn = getSaveButton();
+    expect(submitBtn).toBeDisabled();
+  });
+});

@@ -1,4 +1,4 @@
-import { setRequestLocale } from 'next-intl/server';
+import { setRequestLocale, getTranslations } from 'next-intl/server';
 import FloorSubmission from '@/components/modules/property-tax/ptis/QuickDataEntry/floorSubmission/FloorSubmission';
 import { FloorSubmissionErrorBoundary } from '@/components/modules/property-tax/ptis/QuickDataEntry/floorSubmission/error/FloorSubmissionErrorBoundary';
 import {FloorResponse, ConstructionTypeResponse, TypeOfUseApiItem,SubFloorResponse,SubTypeOfUseResponse} from '@/types/floor-details.types';
@@ -62,6 +62,9 @@ export default async function FloorSubmissionPage({
     const { locale, propertyId } = await params;
     setRequestLocale(locale);
 
+    // Get translation function for error messages
+    const t = await getTranslations('quickDataEntry.floorSubmission.errors');
+
     const sp = await searchParams;
 
     // ── URL params ──────────────────────────────────────────────────────────
@@ -102,8 +105,16 @@ export default async function FloorSubmissionPage({
     const metadataErrors: string[] = [];
     function checkResult<T>(res: unknown, name: string): T[] {
         if (res && typeof res === 'object' && 'success' in res && !res.success) {
-            // Throw error to trigger Next.js error boundary
-            throw new Error((res as { error?: string }).error || `Failed to fetch ${name}`);
+            const errorKey = (res as { error?: string }).error;
+            
+            // If error is a translation key, translate it
+            if (errorKey && errorKey.startsWith('quickDataEntry.floorSubmission.errors.')) {
+                const key = errorKey.replace('quickDataEntry.floorSubmission.errors.', '');
+                throw new Error(t(key));
+            }
+            
+            // Otherwise throw as-is or default message
+            throw new Error(errorKey || `Failed to fetch ${name}`);
         }
         return Array.isArray(res) ? res as T[] : [];
     }

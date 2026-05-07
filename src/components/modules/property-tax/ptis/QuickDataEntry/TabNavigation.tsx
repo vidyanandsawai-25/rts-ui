@@ -3,17 +3,19 @@
 import Link from 'next/link';
 import { usePathname, useSearchParams, useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { Building2, Home } from 'lucide-react';
+import { Building2, Home, UserCheck } from 'lucide-react';
 import { Tab } from '@/types/property-basic-details.types';
 
 const TABS: Tab[] = [
     { label: 'Property', href: 'Property', icon: Home },
+    { label: 'Kyc', href: 'Kyc', icon: UserCheck },
     { label: 'Society', href: 'Society', icon: Building2 },
     { label: 'FloorSubmission', href: 'FloorSubmission', icon: Building2 },
 ];
 
 const TAB_GRADIENT_CLASSES: Record<string, string> = {
     Property: 'from-blue-500 to-blue-600 border-blue-700',
+    Kyc: 'from-emerald-500 to-emerald-600 border-emerald-700',
     Society: 'from-purple-500 to-purple-600 border-purple-700',
     FloorSubmission: 'from-orange-500 to-orange-600 border-orange-700',
 
