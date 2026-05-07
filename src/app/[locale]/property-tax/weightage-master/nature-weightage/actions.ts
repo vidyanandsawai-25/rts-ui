@@ -13,6 +13,7 @@ import {
   bulkUpdateNatureFactorCVMaster,
 } from "@/lib/api/natureofbuilding-cv-weightageMaster.service";
 import { ApiError } from "@/lib/utils/api";
+import { createLogger } from "@/lib/utils/server-logger";
 import {
   NatureFactorCVMaster,
   NatureFactorCVMasterCreate,
@@ -57,14 +58,12 @@ export async function fetchNatureFactorCVMasterPagedServerAction(
       constructionTypeId
     );
   } catch (error: unknown) {
-    if (error instanceof ApiError) {
-      console.error(
-        `[fetchNatureFactorCVMasterPagedServerAction] API Error ${error.statusCode}:`,
-        error.responseText
-      );
-    } else {
-      console.error("[fetchNatureFactorCVMasterPagedServerAction] Error:", error);
-    }
+    const logger = createLogger('fetchNatureFactorCVMasterPaged');
+    logger.error('Failed to fetch NatureFactorCVMaster records', {
+      operation: 'fetchNatureFactorCVMasterPagedServerAction',
+      pageNumber,
+      pageSize,
+    }, error);
     throw error;
   }
 }
@@ -101,6 +100,8 @@ export async function updateNatureFactorCVMasterAction(
     }
     return { success: true };
   } catch (error: unknown) {
+    const logger = createLogger('updateNatureFactorCVMaster');
+    logger.error('Failed to update NatureFactorCVMaster', { operation: 'updateNatureFactorCVMasterAction', id }, error);
     if (error instanceof ApiError) {
       const t = await getTranslations('common');
       return {
@@ -144,6 +145,8 @@ export async function createNatureFactorCVMasterAction(
       return { success: false, message: response.error || t('errors.createFailed'), statusCode: 500 };
     }
   } catch (error: unknown) {
+    const logger = createLogger('createNatureFactorCVMaster');
+    logger.error('Failed to create NatureFactorCVMaster', { operation: 'createNatureFactorCVMasterAction' }, error);
     if (error instanceof ApiError) {
       const t = await getTranslations('common');
       return {
@@ -187,6 +190,8 @@ export async function bulkCreateNatureFactorCVMasterAction(
       return { success: false, message: response?.error || t('errors.bulkCreateFailed'), statusCode: 500 };
     }
   } catch (error: unknown) {
+    const logger = createLogger('bulkCreateNatureFactorCVMaster');
+    logger.error('Failed to bulk create NatureFactorCVMaster', { operation: 'bulkCreateNatureFactorCVMasterAction', count: payload.length }, error);
     if (error instanceof ApiError) {
       const t = await getTranslations('common');
       return {
@@ -228,6 +233,9 @@ export async function bulkUpdateNatureFactorCVMasterAction(
     }
     return { success: true };
   } catch (error: unknown) {
+    const logger = createLogger('bulkUpdateNatureFactorCVMaster');
+    logger.error('Failed to bulk update NatureFactorCVMaster', { operation: 'bulkUpdateNatureFactorCVMasterAction', count: payload.length }, error);
+
     if (error instanceof ApiError) {
       const t = await getTranslations('common');
       return {
