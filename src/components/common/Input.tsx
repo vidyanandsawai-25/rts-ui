@@ -7,18 +7,54 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
   helperText?: string;
   fullWidth?: boolean;
   required?: boolean;
+  /**
+   * Render just the bare input element without wrapper, label, error, or default styling.
+   * In naked mode, consumers have full control via className - no default padding, borders, or focus styles are applied.
+   * Useful for custom-styled inputs like digit-by-digit fields (Aadhar/Mobile).
+   */
+  naked?: boolean;
   'data-testid'?: string;
 }
 
 /**
  * Input component with label, error, and helper text support
  * Follows accessibility best practices
+ * 
+ * @param naked - If true, renders only the bare input element without any default styling.
+ *                Consumers must provide all styling via className for complete control.
+ * 
+ * @example
+ * ```tsx
+ * // Standard mode with label and validation
+ * <Input label="Email" error="Invalid email" value={email} onChange={setEmail} />
+ * 
+ * // Naked mode for custom styling (digit inputs, etc.)
+ * <Input naked className="w-8 h-8 text-center border" maxLength={1} />
+ * ```
  */
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, label, error, helperText, fullWidth = false, id, disabled, required, ...props }, ref) => {
+  ({ className, label, error, helperText, fullWidth = false, naked = false, id, disabled, required, ...props }, ref) => {
     const generatedId = useId();
     const inputId = id || `input-${generatedId}`;
 
+    // Naked mode: render just the input element with minimal/no default styling
+    // Consumers have full control over appearance via className
+    if (naked) {
+      return (
+        <input
+          id={inputId}
+          ref={ref}
+          required={required}
+          aria-required={required}
+          className={className}
+          disabled={disabled}
+          aria-invalid={error ? 'true' : 'false'}
+          {...props}
+        />
+      );
+    }
+
+    // Standard mode: render with wrapper, label, and error text
     return (
       <div className={cn('flex flex-col', fullWidth && 'w-full')}>
         {label && (
@@ -45,7 +81,6 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           aria-describedby={
             error ? `${inputId}-error` : helperText ? `${inputId}-helper` : undefined
           }
-          data-testid={props['data-testid']}
           {...props}
         />
         {error && (

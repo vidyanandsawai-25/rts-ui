@@ -28,7 +28,7 @@ export async function getFloorDataAction() {
     try {
         return await getFloorData();
     } catch (_error) {
-        return { success: false, error: "floor.errors.fetchFloorData" };
+        return { success: false, error: "quickDataEntry.floorSubmission.errors.fetchFloorData" };
     }
 }
 
@@ -36,7 +36,7 @@ export async function getConstructionTypeDataAction() {
     try {
         return await getConstructionTypeData();
     } catch (_error) {
-        return { success: false, error: "floor.errors.fetchConstructionTypes" };
+        return { success: false, error: "quickDataEntry.floorSubmission.errors.fetchConstructionTypes" };
     }
 }
 
@@ -44,7 +44,7 @@ export async function getTypeOfUseDataAction() {
     try {
         return await getTypeOfUseData();
     } catch (_error) {
-        return { success: false, error: "floor.errors.fetchUsageTypes" };
+        return { success: false, error: "quickDataEntry.floorSubmission.errors.fetchUsageTypes" };
     }
 }
 
@@ -52,7 +52,7 @@ export async function getSubTypeOfUseDataAction(typeOfUseId?: string) {
     try {
         return await getSubTypeOfUseData(typeOfUseId);
     } catch (_error) {
-        return { success: false, error: "floor.errors.fetchSubUsageTypes" };
+        return { success: false, error: "quickDataEntry.floorSubmission.errors.fetchSubUsageTypes" };
     }
 }
 
@@ -60,7 +60,7 @@ export async function getSubFloorDataAction() {
     try {
         return await getSubFloorData();
     } catch (_error) {
-        return { success: false, error: "floor.errors.fetchSubFloorData" };
+        return { success: false, error: "quickDataEntry.floorSubmission.errors.fetchSubFloorData" };
     }
 }
 
@@ -92,7 +92,7 @@ export const submitFloorSubmissionNoRedirectAction = async (payload: FloorSubmis
         revalidatePath(getRevalidatePath(locale, propertyId || (payload.propertyId as string | number)), "page");
         return { success: true, data };
     } catch (error) {
-        return { success: false, error: error instanceof Error ? error.message : "Failed to submit data" };
+        return { success: false, error: error instanceof Error ? error.message : "quickDataEntry.floorSubmission.errors.submitFailed" };
     }
 };
 
@@ -107,7 +107,7 @@ export const updateFloorSubmissionNoRedirectAction = async (submissionId: number
         revalidatePath(getRevalidatePath(locale, propertyId || (payload.propertyId as string | number)), "page");
         return { success: true, data };
     } catch (error) {
-        return { success: false, error: error instanceof Error ? error.message : "Failed to update data" };
+        return { success: false, error: error instanceof Error ? error.message : "quickDataEntry.floorSubmission.errors.updateFailed" };
     }
 };
 
@@ -120,7 +120,7 @@ export const deleteFloorSubmissionNoRedirectAction = async (submissionId: number
         revalidatePath(getRevalidatePath(locale, propertyId), "page");
         return { success: true, data: undefined };
     } catch (error) {
-        return { success: false, error: error instanceof Error ? error.message : "Failed to delete floor" };
+        return { success: false, error: error instanceof Error ? error.message : "quickDataEntry.floorSubmission.errors.deleteFailed" };
     }
 };
 
@@ -132,8 +132,8 @@ export const getFloorByIdAction = async (floorId: number | string) => {
     try {
         const data = await getFloorById(floorId);
         return { success: true, data };
-    } catch (_error) {
-        return { success: false, error: "floor.errors.fetchFloorById" };
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : 'quickDataEntry.floorSubmission.errors.fetchFloorById' };
     }
 };
 
@@ -141,8 +141,8 @@ export const getQuickDataEntryAction = async (wardNo: string, propNo: string, pa
     try {
         const data = await getQuickDataEntry(wardNo, propNo, partNo);
         return data
-    } catch (_error) {
-        return { success: false, error: "floor.errors.fetchFloorData" };
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : 'quickDataEntry.floorSubmission.errors.fetchQuickDataEntry' };
     }
 };
 
@@ -150,8 +150,8 @@ export const getPropertyByDetailsAction = async (wardNo: string, propNo: string,
     try {
         const data = await getPropertyByDetails(wardNo, propNo, partNo);
         return data
-    } catch (_error) {
-        return { success: false, error: "property.updateError" };
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : 'quickDataEntry.floorSubmission.errors.fetchPropertyDetails' };
     }
 };
 
@@ -159,7 +159,7 @@ export const getFloorSubmissionsByOwnerAction = async (ownerId: number | string)
     try {
         const data = await getFloorSubmissionsByOwner(ownerId);
         return data
-    } catch (_error) {
-        return { success: false, error: "floor.errors.fetchFloorData" };
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : 'quickDataEntry.floorSubmission.errors.fetchFloorSubmissions' };
     }
 };

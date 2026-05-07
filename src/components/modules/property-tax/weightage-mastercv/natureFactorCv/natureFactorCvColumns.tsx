@@ -23,13 +23,13 @@ export const getNatureFactorCvColumns = ({
             key: "constructionCode",
             label: t('columns.constructionCode'),
             width: "15%",
-            render: (value) => value || "-",
+            render: (value) => (value as string) || "-",
         },
         {
             key: "constructionDescription",
             label: t('columns.description'),
             width: "25%",
-            render: (value) => value || "-",
+            render: (value) => (value as string) || "-",
         },
         {
             key: "factor",

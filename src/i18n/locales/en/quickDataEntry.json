@@ -215,6 +215,20 @@
         "loading": {
             "message": "Loading floor details...",
             "description": "Please wait while we fetch the floor data"
+        },
+        "errors": {
+            "fetchFloorData": "Failed to fetch floor data. Please try again later.",
+            "fetchConstructionTypes": "Failed to fetch construction types. Please try again later.",
+            "fetchUsageTypes": "Failed to fetch usage types. Please try again later.",
+            "fetchSubUsageTypes": "Failed to fetch sub-usage types. Please try again later.",
+            "fetchSubFloorData": "Failed to fetch sub-floor data. Please try again later.",
+            "submitFailed": "Failed to submit floor details. Please check your data and try again.",
+            "updateFailed": "Failed to update floor details. Please check your data and try again.",
+            "deleteFailed": "Failed to delete floor submission. Please try again later.",
+            "fetchFloorById": "Failed to fetch floor details. Please try again later.",
+            "fetchQuickDataEntry": "Failed to fetch quick data entry. Please try again later.",
+            "fetchPropertyDetails": "Failed to fetch property details. Please try again later.",
+            "fetchFloorSubmissions": "Failed to fetch floor submissions. Please try again later."
         }
     },
     "property": {
@@ -317,7 +331,30 @@
         "enterAddress": "Enter complete address",
         "enterLandmark": "Enter nearby landmark",
         "enterPinCode": "Enter 6 digit pin code",
-        "select": "Select"
+        "select": "Select",
+        "validation": {
+            "invalidEmail": "Please enter a valid email address",
+            "invalidName": "Name must be between 2 and 100 characters",
+            "invalidMobile": "Mobile number must be exactly 10 digits",
+            "invalidAadhar": "Aadhar number must be exactly 12 digits",
+            "pleaseFixErrors": "Please fix the highlighted validation errors before submitting."
+        },
+        "errors": {
+            "fetchOwnerTypes": "Failed to fetch owner types",
+            "loadKycDetails": "Failed to load property KYC details",
+            "updateKycDetails": "Failed to update property KYC details",
+            "invalidPropertyId": "Invalid property ID provided",
+            "ownerNameRequired": "Owner name is required",
+            "kycNotFound": "KYC details not found",
+            "fetchKycDetails": "Failed to fetch KYC details"
+        },
+        "propertyIdMissing": "Property ID is missing. Cannot update KYC.",
+        "recordLabel": "KYC Record",
+        "unexpectedError": "An unexpected error occurred. Please try again.",
+        "loading": {
+            "message": "Loading KYC details...",
+            "description": "Please wait while we fetch the owner and contact information"
+        }
     },
     "society": {
         "title": "Society & Management Information",
