@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { locales } from "@/i18n/config";
 import {
   getRateSectionTotalCount,
@@ -11,9 +12,12 @@ import {
 } from "@/lib/api/rateSection.services";
 import {
   getAllRateSectionDetails,
-  createRateSectionDetailsBatch,
   getWardTotalCount,
   getWardPagedServer,
+  bulkUpdateRateSectionDetails,
+  bulkPurgeRateSectionDetails,
+  bulkCreateRateSectionDetails,
+  getRateSectionDetailsPaged,
 } from "@/lib/api/rateSectionDetails.services";
 import { getWards, getWardById } from "@/lib/api/ward.services";
 import {
@@ -25,6 +29,24 @@ import {
 } from "@/types/rateSectionMaster.types";
 import type { WardItem } from "@/types/wardMaster.types";
 import { apiClient } from "@/services/api.service";
+import { getUserIdFromCookies } from "@/lib/utils/cookie";
+
+/** 
+ * Use the API's PageSize=-1 behavior to fetch all linked wards
+ * without truncating results at an arbitrary cap.
+ */
+const MAX_LINK_WARD_PAGE_SIZE = -1;
+const DEFAULT_PAGE_NUMBER = 1;
+
+/**
+ * Common helper to retrieve the authenticated user ID from cookies.
+ * Resolves type mismatches (null to undefined) for service payloads.
+ */
+async function getAuthenticatedUserId(): Promise<number | undefined> {
+  const cookieStore = await cookies();
+  const userId = getUserIdFromCookies(cookieStore);
+  return userId ?? undefined;
+}
 
 
 /* ------------------------------------------------------------------ */
@@ -222,13 +244,20 @@ export async function updateRateSectionAction(
       return { success: false, message: "Description is required", statusCode: 400 };
     }
 
+    const userId = await getAuthenticatedUserId();
+
+    if (userId === undefined) {
+      return { success: false, error: "User authentication required", statusCode: 401 };
+    }
+
     const result = await updateRateSection(String(id), {
       zoneCode: payload.rateSectionNo,
       zoneEnglish: payload.rateSectionNo,
       zoneRegional: payload.description,
       description: payload.description,
       isActive: payload.isActive,
-      wards: []
+      wards: [],
+      updatedBy: userId
     });
 
     if (!result.success) {
@@ -286,13 +315,21 @@ export async function createRateSectionAction(payload: {
       return { success: false, message: "Description is required", statusCode: 400 };
     }
 
+    const userId = await getAuthenticatedUserId();
+
+    if (userId === undefined) {
+      return { success: false, error: "User authentication required", statusCode: 401 };
+    }
+
     const result = await createRateSection({
       zoneCode: payload.rateSectionNo.trim(),
       zoneEnglish: payload.rateSectionNo.trim(),
       zoneRegional: payload.description.trim(),
       description: payload.description.trim(),
       isActive: payload.isActive,
-      wards: []
+      wards: [],
+      createdBy: userId,
+      updatedBy: userId
     });
 
     if (!result.success) {
@@ -386,9 +423,9 @@ export async function getWardsPagedWithSearchAction(
 }
 
 /**
- * Link wards to a rate section - server-side only.
- * Takes rateSectionId and wardNos, fetches ward IDs server-side,
- * then creates the batch payload and makes the API call.
+ * Link wards to a rate section using bulk update API.
+ * Takes rateSectionId and wardNos, fetches ward details server-side,
+ * then creates the bulk update payload and calls the new PUT /api/RateSectionDetails/Bulk endpoint.
  * This hides the full payload from the client.
  */
 export async function linkWardsToRateSectionAction(
@@ -409,6 +446,13 @@ export async function linkWardsToRateSectionAction(
       return { success: false, error: "At least one ward is required", statusCode: 400 };
     }
 
+    // Get authenticated user ID from cookies
+    const userId = await getAuthenticatedUserId();
+    
+    if (userId === undefined) {
+      return { success: false, error: "User authentication required", statusCode: 401 };
+    }
+
     // Fetch all wards to get their IDs
     const wardsData = await getWards(1, -1);
     const allWards = wardsData.items || [];
@@ -419,33 +463,111 @@ export async function linkWardsToRateSectionAction(
       wardNoToId[w.wardNo] = w.id;
     });
 
-    // Build batch payload server-side
-    const batchPayload = wardNos
-      .filter(wardNo => wardNoToId[wardNo])
-      .map(wardNo => ({
-        rateSectionId,
-        wardId: wardNoToId[wardNo],
-        isActive: true,
-        createdBy: 0
-      }));
+    // Fetch ALL rate section details to find existing IDs for these wards
+    // This handles cases where a ward might be assigned to a different rate section
+    // or previously assigned to this one (even if inactive)
+    // PERFORMANCE NOTE: This fetches all details (capped at 50 pages/~25k records).
+    // Consider adding a backend API endpoint that accepts wardNos[] and returns
+    // only the relevant RateSectionDetails to avoid loading the entire dataset.
+    const allDetailsRes = await getAllRateSectionDetails();
+    const wardToAssignment: Record<string, { id: number; rateSectionId: number }> = {};
+    
+    allDetailsRes.forEach(detail => {
+      const detailRecord = detail as Record<string, unknown>;
+      const wNo = (detail.wardNo || detailRecord.WardNo) as string | undefined;
+      const detailId = (detail.id) as number | undefined;
+      if (wNo && detailId) {
+        wardToAssignment[wNo] = { 
+          id: detailId, 
+          rateSectionId: detail.rateSectionId || 0 
+        };
+      }
+    });
 
-    if (batchPayload.length === 0) {
+    const toCreate: Array<{ 
+      isActive: boolean; createdBy: number; updatedBy: number; 
+      rateSectionId: number; wardId: number;
+    }> = [];
+    
+    const toUpdate: Array<{ 
+      id: number; 
+      data: { isActive: boolean; updatedBy: number; rateSectionId: number; wardId: number } 
+    }> = [];
+
+    wardNos.forEach(wardNo => {
+      const wardId = wardNoToId[wardNo];
+      if (!wardId) return;
+
+      const existing = wardToAssignment[wardNo];
+      if (existing) {
+        // Update existing record (even if it belonged to another rate section)
+        toUpdate.push({
+          id: existing.id,
+          data: {
+            isActive: true,
+            updatedBy: userId,
+            rateSectionId,
+            wardId
+          }
+        });
+      } else {
+        // Truly new assignment
+        toCreate.push({
+          isActive: true,
+          createdBy: userId,
+          updatedBy: userId,
+          rateSectionId,
+          wardId
+        });
+      }
+    });
+
+    if (toCreate.length === 0 && toUpdate.length === 0) {
       return { success: false, error: "No valid wards to link", statusCode: 400 };
     }
 
-    // Make the batch API call
-    const result = await createRateSectionDetailsBatch(batchPayload);
-    
+    let successCount = 0;
+    let failedCount = 0;
+    let hasFailures = false;
+
+    // 1. Handle New Assignments (POST)
+    if (toCreate.length > 0) {
+      const createRes = await bulkCreateRateSectionDetails(toCreate);
+      successCount += createRes.items?.successCount || 0;
+      failedCount += createRes.items?.failedCount || 0;
+      if (createRes.items?.hasFailures) hasFailures = true;
+      if (!createRes.success && toUpdate.length === 0) {
+        return { success: false, error: createRes.message || "Bulk create failed", statusCode: 500 };
+      }
+    }
+
+    // 2. Handle Existing Assignments (PUT)
+    if (toUpdate.length > 0) {
+      const updateRes = await bulkUpdateRateSectionDetails(toUpdate);
+      successCount += updateRes.items?.successCount || 0;
+      failedCount += updateRes.items?.failedCount || 0;
+      if (updateRes.items?.hasFailures) hasFailures = true;
+      if (!updateRes.success && toCreate.length === 0) {
+        return { success: false, error: updateRes.message || "Bulk update failed", statusCode: 500 };
+      }
+    }
+
+    // Revalidate all locale variants
+    for (const locale of locales) {
+      revalidatePath(`/${locale}/property-tax/rate-section-master`, "page");
+    }
+
     return {
       success: true,
       data: {
-        successCount: result.items?.successCount || batchPayload.length,
-        failedCount: result.items?.failedCount || 0,
-        hasFailures: result.items?.hasFailures || false
+        successCount,
+        failedCount,
+        hasFailures
       }
     };
-  } catch (_error) {
-    return { success: false, error: "Failed to link wards" };
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : "Failed to link wards";
+    return { success: false, error: errorMsg, statusCode: 500 };
   }
 }
 
@@ -466,20 +588,22 @@ export async function getSelectedWardsWithCountAction(rateSectionId: number): Pr
       return { success: false, wardNos: [], totalCount: 0, error: "Rate section ID is required" };
     }
 
-    const params = new URLSearchParams({
-      RateSectionId: rateSectionId.toString(),
-      PageNumber: "1",
-      PageSize: "1000"
-    });
-
-    const response = await apiClient.get<{ items?: { wardNo?: string }[]; totalCount?: number }>(`/RateSectionDetails?${params.toString()}`);
+    const response = await getRateSectionDetailsPaged(
+      DEFAULT_PAGE_NUMBER,
+      MAX_LINK_WARD_PAGE_SIZE,
+      undefined,
+      undefined,
+      rateSectionId
+    );
     
     if (!response.success || !response.data) {
       return { success: false, wardNos: [], totalCount: 0, error: response.error || "Failed to fetch" };
     }
 
     // Extract only wardNo values - don't expose IDs to client
-    const wardNos = (response.data.items || []).map((item) => item.wardNo || "").filter(Boolean);
+    const wardNos = (response.data.items || [])
+       .map((item: SectionItem) => item.wardNo || (item as SectionItem & { WardNo?: string }).WardNo || "")
+       .filter(Boolean);
 
     return {
       success: true,
@@ -508,19 +632,22 @@ export async function refreshSelectedWardsAction(rateSectionId: number): Promise
       return { success: false, wardNos: [], totalCount: 0, error: "Rate section ID is required" };
     }
 
-    const params = new URLSearchParams({
-      RateSectionId: rateSectionId.toString(),
-      PageSize: "-1"
-    });
-
-    const response = await apiClient.get<{ items?: { wardNo?: string }[]; totalCount?: number }>(`/RateSectionDetails?${params.toString()}`);
+    const response = await getRateSectionDetailsPaged(
+      DEFAULT_PAGE_NUMBER,
+      MAX_LINK_WARD_PAGE_SIZE,
+      undefined,
+      undefined,
+      rateSectionId
+    );
     
     if (!response.success || !response.data) {
       return { success: false, wardNos: [], totalCount: 0, error: response.error || "Failed to fetch" };
     }
 
     // Extract only wardNo values - don't expose IDs to client
-    const wardNos = (response.data.items || []).map((item) => item.wardNo || "").filter(Boolean);
+    const wardNos = (response.data.items || [])
+      .map((item: SectionItem) => item.wardNo || (item as SectionItem & { WardNo?: string }).WardNo || "")
+      .filter(Boolean);
 
     return {
       success: true,
@@ -533,9 +660,9 @@ export async function refreshSelectedWardsAction(rateSectionId: number): Promise
 }
 
 /**
- * Deletes selected wards from a rate section by their ward numbers.
- * Looks up id server-side to avoid exposing IDs to client.
- * API: DELETE /api/RateSectionDetails/batch/purge
+ * Deletes selected wards from a rate section by their ward numbers using bulk purge delete API.
+ * Looks up IDs server-side to avoid exposing IDs to client.
+ * API: DELETE /api/RateSectionDetails/Bulk/purge
  */
 export async function deleteSelectedWardsAction(rateSectionId: number, wardNos: string[]): Promise<{
   success: boolean;
@@ -548,22 +675,28 @@ export async function deleteSelectedWardsAction(rateSectionId: number, wardNos: 
     }
 
     // Fetch all rate section details to get the IDs for the selected wardNos
-    const params = new URLSearchParams({
-      RateSectionId: rateSectionId.toString(),
-      PageSize: "-1"
-    });
-
-    const response = await apiClient.get<{ items?: { wardNo?: string; id?: number }[] }>(`/RateSectionDetails?${params.toString()}`);
+    const response = await getRateSectionDetailsPaged(
+      DEFAULT_PAGE_NUMBER,
+      MAX_LINK_WARD_PAGE_SIZE,
+      undefined,
+      undefined,
+      rateSectionId
+    );
     
     if (!response.success || !response.data) {
-      return { success: false, deletedCount: 0, error: "Failed to fetch details" };
+      return { success: false, deletedCount: 0, error: response.error || "Failed to fetch details" };
     }
 
     // Build wardNo to id map
     const wardNoToId: Record<string, number> = {};
-    (response.data.items || []).forEach((item) => {
-      if (item.wardNo && item.id) {
-        wardNoToId[item.wardNo] = item.id;
+    const items = response.data.items || [];
+
+    items.forEach((item: SectionItem) => {
+      const itemRecord = item as Record<string, unknown>;
+      const wNo = (item.wardNo || itemRecord.WardNo) as string | undefined;
+      const id = item.id;
+      if (wNo && id) {
+        wardNoToId[wNo] = id;
       }
     });
 
@@ -576,11 +709,11 @@ export async function deleteSelectedWardsAction(rateSectionId: number, wardNos: 
       return { success: false, deletedCount: 0, error: "No matching wards found" };
     }
 
-    // Call batch purge delete API
-    const deleteResponse = await apiClient.delete<{ items?: { successCount?: number } }>(`/RateSectionDetails/batch/purge`, { body: JSON.stringify(idsToDelete) });
+    // Call bulk purge delete API
+    const deleteResponse = await bulkPurgeRateSectionDetails(idsToDelete);
 
     if (!deleteResponse.success) {
-      return { success: false, deletedCount: 0, error: deleteResponse.error || "Delete failed" };
+      return { success: false, deletedCount: 0, error: deleteResponse.message || "Delete failed" };
     }
 
     // Revalidate all locale variants
@@ -590,7 +723,7 @@ export async function deleteSelectedWardsAction(rateSectionId: number, wardNos: 
     
     return {
       success: true,
-      deletedCount: deleteResponse.data?.items?.successCount || idsToDelete.length
+      deletedCount: deleteResponse.items?.successCount || idsToDelete.length
     };
   } catch (_error) {
     return { success: false, deletedCount: 0, error: "Failed to delete wards" };

@@ -26,6 +26,7 @@
     "deleteTitle": "Delete Ward",
     "deleteSuccess": "{count, plural, =1 {Ward removed successfully} other {# wards removed successfully}}",
     "deleteError": "Error deleting ward",
+    "inUseError": "\"{wardName}\" is in use. You cannot delete this ward.",
     "partialDeleteSuccess": "{success} wards removed successfully, {failed} failed.",
     "noWardsToDelete": "No wards found to delete",
     "removed": "Removed",
@@ -133,6 +134,7 @@
     "updateError": "Failed to update rate section",
     "deleteSuccess": "Rate Section \"{name}\" deleted successfully",
     "deleteError": "Failed to delete rate section",
+    "inUseError": "\"{name}\" is in use. You cannot delete this rate section.",
     "thisRateSection": "this rate section"
   },
   "pagination": {

@@ -33,7 +33,9 @@ export const handleToggleAvailable = (
 ) => {
   const assignment = wardAssignments[wardNo];
   if (assignment && assignment.rateSectionNo !== selectedZoneNo) {
-    const assignedLabel = getRateSectionDisplayLabel(assignment.rateSectionNo, rates);
+    const assignedLabel = assignment.description 
+      ? `${assignment.rateSectionNo} - ${assignment.description}` 
+      : getRateSectionDisplayLabel(assignment.rateSectionNo, rates);
     const selectedLabel = getRateSectionDisplayLabel(selectedZoneNo || "", rates);
     toast.warning(
       t("wards.alreadyPresentInOtherRateSection", {

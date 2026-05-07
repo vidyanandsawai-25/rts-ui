@@ -79,6 +79,7 @@ export default function AvailableWards({
                 checked={isSelfSelected}
                 onCheckedChange={() => onToggle(w.wardNo)}
               />
+
               <span className="text-sm font-medium transition-colors text-gray-700 group-hover:text-blue-700">
                 {w.wardNo}
               </span>

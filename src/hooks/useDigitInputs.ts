@@ -1,12 +1,13 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback } from 'react';
 
 /**
  * Hook to manage multi-digit input fields (like Aadhar or Mobile numbers)
  * Handles state, focus management, and keyboard navigation.
  * 
- * Syncs with initialValue and length changes using a useEffect that tracks previous values.
+ * Syncs with initialValue and length changes using render-phase comparison.
  * Only updates when initialValue or length actually changes, preserving user input otherwise.
  * This prevents out-of-bounds issues when length changes dynamically.
+ * Uses the same pattern as useLinkWardPagination for prop-to-state sync.
  * 
  * @param length The number of digits/inputs
  * @param initialValue Initial string value
@@ -18,33 +19,23 @@ export const useDigitInputs = (length: number, initialValue: string = '') => {
     return Array.from({ length }, (_, i) => sanitized[i] ?? '');
   });
 
-  // Track previous initialValue and length to detect actual changes
-  const prevInitialValueRef = useRef(initialValue);
-  const prevLengthRef = useRef(length);
+  const [prevInitialValue, setPrevInitialValue] = useState(initialValue);
+  const [prevLength, setPrevLength] = useState(length);
 
-  // Sync with initialValue or length changes in an effect (runs after render)
-  useEffect(() => {
-    const sanitizedInitialValue = initialValue.replace(/\D/g, '');
-    const prevSanitized = prevInitialValueRef.current.replace(/\D/g, '');
-
-    let needsUpdate = false;
-    if (
-      sanitizedInitialValue !== prevSanitized ||
-      length !== prevLengthRef.current ||
-      digits.length !== length
-    ) {
-      needsUpdate = true;
-    }
-
-    if (needsUpdate) {
-      // Avoid cascading renders: schedule state update after paint
-      setTimeout(() => {
-        setDigits(Array.from({ length }, (_, i) => sanitizedInitialValue[i] ?? ''));
-        prevInitialValueRef.current = initialValue;
-        prevLengthRef.current = length;
-      }, 0);
-    }
-  }, [initialValue, length, digits.length]);
+  // Sync with initialValue or length changes in render phase
+  const sanitizedInitialValue = initialValue.replace(/\D/g, '');
+  const prevSanitized = prevInitialValue.replace(/\D/g, '');
+  
+  if (
+    sanitizedInitialValue !== prevSanitized || 
+    length !== prevLength ||
+    digits.length !== length
+  ) {
+    setPrevInitialValue(initialValue);
+    setPrevLength(length);
+    const newDigits = Array.from({ length }, (_, i) => sanitizedInitialValue[i] ?? '');
+    setDigits(newDigits);
+  }
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 

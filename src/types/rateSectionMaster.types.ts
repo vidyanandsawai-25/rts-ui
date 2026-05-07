@@ -112,6 +112,8 @@ export interface RateSectionFormState {
   wards: string[];
   // status: boolean;
   isActive?: boolean;
+  createdBy?: number;
+  updatedBy?: number;
 }
 
 /* ------------------------------------------------------------------ */
@@ -291,7 +293,7 @@ export interface RateSectionCardProps {
   deletingId: string | null;
   searchParams: URLSearchParams;
   pathname: string;
-  t: (key: string) => string;
+  t: (key: string, values?: Record<string, string | number>) => string;
 }
 
 /**
@@ -350,7 +352,6 @@ export interface HandleRateSectionDeleteParams {
     refresh: () => void;
   };
   onDeleteSuccess?: () => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  t: any;
+  t: (key: string, values?: Record<string, string | number>) => string;
   setDeletingId: (id: string | null) => void;
 }
