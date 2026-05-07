@@ -1,9 +1,10 @@
 'use server';
 
 import { Service } from "@/types/home/home.types";
-import { getModuleMaster } from "@/lib/api/home/module-master.service";
-import { ModuleMaster } from "@/types/home/module-master.types";
 import { getIconNameForModule, getRouteForModule } from "@/config/home-services.config";
+import { getUserProfileAction } from "./user-profile.action";
+import { cookies } from "next/headers";
+import { getUserIdFromCookies } from "@/lib/utils/cookie";
 
 /**
  * Response type for listServices including error state
@@ -14,59 +15,72 @@ export interface ListServicesResponse {
 }
 
 /**
- * Maps ModuleMaster API item to the UI Service interface
- * 
- * NOTE: Stats are intentionally omitted until the stats API endpoint is available.
- * When stats API is implemented, uncomment the stats property and populate with real data.
- * See: JIRA-XXXX for stats API implementation ticket
+ * Maps module access item from user profile API to the UI Service interface
  */
-function mapModuleToService(module: ModuleMaster, locale: string): Service {
-    const code = module.moduleCode.toLowerCase();
+function mapModuleAccessToService(
+    moduleAccess: {
+        moduleId: number;
+        moduleName: string;
+        moduleNameLocal: string;
+        departmentId: number;
+        departmentName: string;
+    },
+    locale: string
+): Service {
+    const code = moduleAccess.moduleName.toLowerCase();
     return {
-        id: module.id,
-        name: module.moduleName,
-        title: module.departmentName,
-        subtext: module.moduleDescription || `Access ${module.moduleName} services and manage your applications.`,
+        id: moduleAccess.moduleId,
+        name: moduleAccess.moduleName,
+        title: moduleAccess.departmentName,
+        subtext: `Access ${moduleAccess.moduleName} services and manage your applications.`,
         icon: getIconNameForModule(code),
         link: getRouteForModule(code, locale),
-        // Stats intentionally omitted - will be populated when stats API is available
-        // stats: await fetchModuleStats(module.moduleCode),
     };
 }
 
 /**
- * Fetches home services data from the ModuleMaster API
+ * Fetches home services data from the User Profile API (moduleAccess)
  * Returns both services and potential error message for UI feedback
  */
 export async function listServices(locale: string): Promise<ListServicesResponse> {
     try {
-        const response = await getModuleMaster();
-        const modules = response.items ?? [];
+        const cookieStore = await cookies();
+        const userId = getUserIdFromCookies(cookieStore);
         
-        if (modules.length === 0) {
-            console.warn("listServices: No modules returned from API");
+        if (!userId) {
+            console.warn("listServices: No user ID found in cookies");
+            return { services: [], error: "User not authenticated" };
+        }
+        
+        const response = await getUserProfileAction(userId);
+        
+        if (!response.success || !response.data) {
+            console.warn("listServices: Failed to fetch user profile");
+            return { services: [], error: response.error || "Failed to load user profile" };
+        }
+        
+        const moduleAccess = response.data.moduleAccess?.filter(m => m.isActive) ?? [];
+        
+        if (moduleAccess.length === 0) {
+            console.warn("listServices: No modules returned from user profile");
             return { services: [] };
         }
 
-        return { services: modules.map(m => mapModuleToService(m, locale)) };
+        // Remove duplicates based on moduleId
+        const uniqueModules = moduleAccess.reduce((acc, current) => {
+            const exists = acc.find(item => item.moduleId === current.moduleId);
+            if (!exists) {
+                acc.push(current);
+            }
+            return acc;
+        }, [] as typeof moduleAccess);
+
+        return { services: uniqueModules.map(m => mapModuleAccessToService(m, locale)) };
     } catch (error) {
-        // Detailed logging to help identify the root cause of the API error
-        let status: unknown = undefined;
-        let context: unknown = undefined;
-        if (typeof error === "object" && error !== null && "statusCode" in error) {
-            status = (error as { statusCode?: unknown }).statusCode;
-        }
-        if (typeof error === "object" && error !== null && "contextMessage" in error) {
-            context = (error as { contextMessage?: unknown }).contextMessage;
-        }
         console.error("listServices API Failure:", {
             message: error instanceof Error ? error.message : "Unknown error",
-            status,
-            context
         });
         
-        // Return empty array with error message to allow Home screen to render
-        // while notifying the UI about the failure
         return { 
             services: [], 
             error: "Failed to load services. Please try refreshing the page." 
