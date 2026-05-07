@@ -32,6 +32,9 @@ export function TabNavigation() {
     const partitionNo = searchParams.get("partitionNo") || "";
 
 
+    // Check if we have search parameters that can resolve authoritative property ID
+    const hasPropertyKeys = wardNo && propertyNo && partitionNo;
+
     const params = new URLSearchParams();
     if (propertyId) params.set('propertyId', propertyId);
     if (wardNo) params.set('wardNo', wardNo);
@@ -47,12 +50,21 @@ export function TabNavigation() {
                 {TABS.map((tab) => {
                     const baseTabPath = `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}`;
                     const tabPath = `${baseTabPath}/${tab.href}`;
-                    const tabHref = queryString ? `${tabPath}?${queryString}` : tabPath;
-
-                    // Extract the base segment of the tab (e.g., 'OldDetails' from 'OldDetails/old-taxation')
-                    const tabBaseSegment = tab.href.split('/')[0];
-                    const isActive = pathname.startsWith(`${baseTabPath}/${tabBaseSegment}`);
-
+                    
+                    // For FloorSubmission tab: exclude propertyId if we have search params
+                    // to let the page resolve authoritative ID from backend
+                    let tabQueryString = queryString;
+                    if (tab.href === 'FloorSubmission' && hasPropertyKeys) {
+                        const tabParams = new URLSearchParams();
+                        if (wardNo) tabParams.set('wardNo', wardNo);
+                        if (wardId) tabParams.set('wardId', wardId);
+                        if (propertyNo) tabParams.set('propertyNo', propertyNo);
+                        if (partitionNo) tabParams.set('partitionNo', partitionNo);
+                        tabQueryString = tabParams.toString();
+                    }
+                    
+                    const tabHref = tabQueryString ? `${tabPath}?${tabQueryString}` : tabPath;
+                    const isActive = activeSegment === tab.href || pathname === tabPath;
                     const Icon = tab.icon;
 
                     const gradientClass =
