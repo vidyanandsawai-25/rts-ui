@@ -10,7 +10,7 @@ import { ModuleMaster } from "@/types/home/module-master.types";
 const iconMap: Record<string, string> = {
     'pt': 'property-tax',
     'wt': 'water-tax',
-    'TL': 'bajar-parwana',
+    'tl': 'bajar-parwana',
     'bd': 'birth-death',
     'gc': 'garbage-collection',
     'bp': 'building-permission',
@@ -25,7 +25,7 @@ const iconMap: Record<string, string> = {
 const routeMap: Record<string, string> = {
     'pt': '/property-tax/ptis',
     'wt': '/water-tax',
-    'TL': '/bajar-parwana',
+    'tl': '/bajar-parwana',
     'bd': '/birth-death-certificates',
     'gc': '/garbage-collection',
     'bp': '/building-permission',
@@ -37,15 +37,16 @@ const routeMap: Record<string, string> = {
 /**
  * Maps ModuleMaster API item to the UI Service interface
  */
-function mapModuleToService(module: ModuleMaster): Service {
-    const code = module.moduleCode;
+function mapModuleToService(module: ModuleMaster, locale: string): Service {
+    const code = module.moduleCode.toLowerCase();
+    const route = routeMap[code];
     return {
         id: module.id,
         name: module.moduleName,
         title: module.departmentName,
         subtext: module.moduleDescription || `Access ${module.moduleName} services and manage your applications.`,
         icon: iconMap[code] || 'property-tax',
-        link: routeMap[code] || '#',
+        link: route ? `/${locale}${route}` : '#',
         // Mock stats for now as the API doesn't provide them yet
         stats: [
             { label: "Total", value: "0" },
@@ -58,7 +59,7 @@ function mapModuleToService(module: ModuleMaster): Service {
 /**
  * Fetches home services data from the ModuleMaster API
  */
-export async function listServices(): Promise<Service[]> {
+export async function listServices(locale: string): Promise<Service[]> {
     try {
         const response = await getModuleMaster();
         const modules = response.items ?? [];
@@ -67,7 +68,7 @@ export async function listServices(): Promise<Service[]> {
             return [];
         }
 
-        return modules.map(mapModuleToService);
+        return modules.map(m => mapModuleToService(m, locale));
     } catch (error) {
         console.error("Error in listServices action:", error);
         // Throwing here allows Next.js error.tsx to catch it and show an error UI

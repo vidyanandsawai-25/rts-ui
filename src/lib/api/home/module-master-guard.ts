@@ -10,7 +10,10 @@ export function isModuleMasterShape(value: unknown): value is Record<string, unk
     return false;
   }
   const obj = value as Record<string, unknown>;
-  return "id" in obj && typeof obj.id === "number" && Number.isFinite(obj.id) && obj.id > 0;
+  return (
+    "id" in obj && typeof obj.id === "number" && Number.isFinite(obj.id) && obj.id > 0 &&
+    "moduleCode" in obj && typeof obj.moduleCode === "string" && obj.moduleCode.trim().length > 0
+  );
 }
 
 /**

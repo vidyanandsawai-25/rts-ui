@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useHeaderState } from '@/hooks/useHeaderState';
+import { useParams } from "next/navigation";
 
 import { Settings, User } from "lucide-react";
 
@@ -17,6 +18,7 @@ interface NavbarProps {
 export const Navbar = ({ username, ulbName }: NavbarProps) => {
     const t = useTranslations('common');
     const displayUlbName = ulbName || t('app.defaultUlbName');
+    const { locale } = useParams();
     const {
         handleLogout,
         showProfileDropdown,
@@ -30,7 +32,7 @@ export const Navbar = ({ username, ulbName }: NavbarProps) => {
             <nav className="bg-[#004c8c] text-white flex justify-end items-center px-6 py-1 shadow-md overflow-x-auto">
                 <div className="flex items-center gap-6">
                     <Link
-                        href="/configuration-setting"
+                        href={`/${locale}/configuration-settings`}
                         className="flex items-center gap-2 hover:text-blue-200 transition-colors"
                     >
                         <Settings className="w-4 h-4" />

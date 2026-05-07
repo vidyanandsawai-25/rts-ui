@@ -1,5 +1,5 @@
-import React from 'react';
-import { User, Shield, Building, Globe, Hash, Clock, Mail } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { User, Shield, Building, Globe, Hash, Clock, Mail, X } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { Badge } from '@/components/common/Badge';
 import { Label } from '@/components/common/label';
@@ -10,8 +10,19 @@ interface UserProfilePopupProps {
     onClose: () => void;
 }
 
-export const UserProfilePopup: React.FC<UserProfilePopupProps> = ({ isOpen }) => {
+export const UserProfilePopup: React.FC<UserProfilePopupProps> = ({ isOpen, onClose }) => {
     const t = useTranslations('common');
+
+    useEffect(() => {
+        const handleEscape = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') onClose();
+        };
+        if (isOpen) {
+            window.addEventListener('keydown', handleEscape);
+        }
+        return () => window.removeEventListener('keydown', handleEscape);
+    }, [isOpen, onClose]);
+
     if (!isOpen) return null;
 
     return (
@@ -20,14 +31,23 @@ export const UserProfilePopup: React.FC<UserProfilePopupProps> = ({ isOpen }) =>
             "profile-dropdown-container animate-in fade-in zoom-in-95 duration-200"
         )}>
             {/* Header */}
-            <div className="p-4 border-b border-gray-100 flex items-center gap-4 bg-gray-50/50 rounded-t-lg">
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
-                    <User className="w-6 h-6" />
+            <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50 rounded-t-lg">
+                <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
+                        <User className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <h3 className="text-sm font-bold text-gray-900">{t('userMenu.mockName')}</h3>
+                        <p className="text-xs text-gray-500">{t('userMenu.mockEmail')}</p>
+                    </div>
                 </div>
-                <div>
-                    <h3 className="text-sm font-bold text-gray-900">{t('userMenu.mockName')}</h3>
-                    <p className="text-xs text-gray-500">{t('userMenu.mockEmail')}</p>
-                </div>
+                <button 
+                    onClick={onClose}
+                    className="p-1 hover:bg-gray-200 rounded-full transition-colors text-gray-400 hover:text-gray-600"
+                    title="Close"
+                >
+                    <X className="w-4 h-4" />
+                </button>
             </div>
 
             {/* Body */}

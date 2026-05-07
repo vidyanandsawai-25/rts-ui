@@ -7,7 +7,7 @@ import { cookies } from 'next/headers';
 
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
     const { locale } = await params;
-    const services = await listServices();
+    const services = await listServices(locale);
     const cookieStore = await cookies();
     const userName = cookieStore.get('user_name')?.value;
 
