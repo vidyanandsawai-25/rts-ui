@@ -35,19 +35,19 @@ export default function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const { locale, pathWithoutLocale } = localeAndPathWithoutLocale(pathname);
 
-  const isLoginRoute =
-    pathWithoutLocale === '/login' || pathWithoutLocale.startsWith('/login/');
+  const isLoggedIn = hasFullSession(request);
+  const isLoginRoute = pathWithoutLocale === '/login' || pathWithoutLocale.startsWith('/login/');
 
-  if (isLoginRoute) {
-    if (hasFullSession(request)) {
-      return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
-    }
+  // 1. Redirect logic
+  if (isLoginRoute && isLoggedIn) {
+    return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
   }
 
-  if (!isLoginRoute && !hasFullSession(request)) {
+  if (!isLoginRoute && !isLoggedIn) {
     return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
   }
 
+  // 2. Identify shell-less routes (auth or home landing)
   const isAuthOrHome = 
     pathWithoutLocale === '/' ||
     pathWithoutLocale === '/home' || 
@@ -55,12 +55,18 @@ export default function middleware(request: NextRequest) {
     pathWithoutLocale === '/login' || 
     pathWithoutLocale.startsWith('/login/');
     
-  // To pass data from middleware to Server Components, use request header overrides
+  // 3. Prepare headers for downstream Server Components
   request.headers.set('x-pathname', pathname);
   request.headers.set('x-is-auth-or-home', isAuthOrHome ? 'true' : 'false');
 
-  // Use intl middleware for locale handling
-  return intlMiddleware(request);
+  // 4. Handle locale routing with next-intl
+  const response = intlMiddleware(request);
+  
+  // Ensure custom headers are also set on the response object
+  response.headers.set('x-pathname', pathname);
+  response.headers.set('x-is-auth-or-home', isAuthOrHome ? 'true' : 'false');
+
+  return response;
 }
 
 export const config = {
