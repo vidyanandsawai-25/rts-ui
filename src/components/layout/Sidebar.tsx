@@ -167,7 +167,7 @@ export async function Sidebar({ menuItems, locale }: SidebarProps) {
 
       <div className="px-2 mt-auto mb-2">
         <Link
-          href={withLocale(locale, '/dashboard')}
+          href={withLocale(locale, '/home')}
           className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[15px] font-semibold transition-all duration-300 bg-gradient-to-r from-[#4b70a6] to-[#3d5a8a] hover:from-[#3d5a8a] hover:to-[#2e466e] text-white shadow-md hover:shadow-lg hover:-translate-y-0.5 border border-white/20"
         >
           <ArrowLeft className="h-5 w-5 shrink-0 sidebar-back-icon" />

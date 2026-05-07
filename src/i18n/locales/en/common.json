@@ -385,8 +385,8 @@
   "sidebar": {
     "brandTitle": "Property Tax",
     "brandSubtitle": "Property Tax Department",
-    "backToDashboard": "Back to Dashboard",
-    "backToDashboardSecondary": "Dashboard",
+    "backToDashboard": "Back to Home",
+    "backToDashboardSecondary": "Home",
     "footerCopyright": "© NTIS",
     "openMenu": "Open menu",
     "closeMenu": "Close menu"
