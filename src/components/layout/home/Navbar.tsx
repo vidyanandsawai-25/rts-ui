@@ -33,7 +33,7 @@ export const Navbar = ({ username, ulbName }: NavbarProps) => {
                         className="flex items-center gap-2 hover:text-blue-200 transition-colors"
                     >
                         <Settings className="w-4 h-4" />
-                        <span className="text-sm font-medium">Configuration Setting</span>
+                        <span className="text-sm font-medium">{t('navigation.settings')}</span>
                     </Link>
 
                     {/* User info */}
@@ -46,7 +46,7 @@ export const Navbar = ({ username, ulbName }: NavbarProps) => {
                                 <User className="w-5 h-5 text-blue-100" />
                             </div>
                             <div className="hidden sm:flex items-baseline gap-1">
-                                <span className="text-xs text-blue-200">Welcome,</span>
+                                <span className="text-xs text-blue-200">{t('app.welcome')}</span>
                                 <span className="text-sm font-semibold text-white">{username || "User"}</span>
                             </div>
                         </button>
@@ -64,7 +64,7 @@ export const Navbar = ({ username, ulbName }: NavbarProps) => {
                         size="xs"
                         className="rounded-full px-4 shadow-md hover:shadow-lg hover:scale-105"
                     >
-                        Logout
+                        {t('actions.logout')}
                     </Button>
                 </div>
             </nav>
@@ -72,7 +72,7 @@ export const Navbar = ({ username, ulbName }: NavbarProps) => {
             {/* Animated Welcome Message */}
             <div className="bg-[#d1ecf1] text-[#004c8c] font-bold py-1 text-sm sm:text-base text-center overflow-hidden">
                 <div className="inline-block animate-marquee whitespace-nowrap px-4">
-                    Welcome to {displayUlbName} &ndash; Empowering Smart Governance!
+                    {t('app.welcomeTo', { name: displayUlbName })} &ndash; {t('app.smartGovernance')}
                 </div>
             </div>
 

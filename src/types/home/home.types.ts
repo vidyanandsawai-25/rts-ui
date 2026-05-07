@@ -12,14 +12,14 @@ export interface Service {
     subtext: string;
     stats?: Stat[];
     description?: string;
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
 export interface DashboardStats {
     totalUsers: number;
     activeProperties: number;
     totalRevenue: number;
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
-export interface ServiceCardProps extends Omit<Service, 'id'> { }
+export type ServiceCardProps = Omit<Service, 'id'>;

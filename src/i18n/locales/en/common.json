@@ -153,6 +153,20 @@
     "language": "Language",
     "yourIp": "Your IP",
     "ipUnavailable": "Unavailable",
+    "userId": "User ID",
+    "role": "Role",
+    "department": "Department",
+    "publicIp": "Public IP Address",
+    "sessionId": "Session ID",
+    "loginTime": "Login Time",
+    "mockName": "Rajesh Kumar",
+    "mockEmail": "rajesh.kumar@propertytax.gov.in",
+    "mockUserId": "USR-2025-1047",
+    "mockRole": "Tax Assessment Officer",
+    "mockDepartment": "Property Tax Department",
+    "mockIp": "115.242.194.254",
+    "mockSessionId": "SES-1767942012755-w0ehgm4ps",
+    "mockLoginTime": "09/01/2026, 12:30:12",
     "logout": "Logout"
   },
   "navigation": {
@@ -163,6 +177,7 @@
   },
   "footer": {
     "copyright": "All rights reserved",
+    "allRightsReserved": "All rights reserved.",
     "privacyPolicy": "Privacy Policy",
     "termsOfService": "Terms of Service",
     "contact": "Contact"
@@ -174,6 +189,9 @@
     "defaultUser": "Default User",
     "assessmentSystem": "Property Tax Assessment & Management System",
     "welcome": "Welcome,",
+    "welcomeTo": "Welcome to {name}",
+    "smartGovernance": "Empowering Smart Governance!",
+    "securityPurpose": "All operations are logged and monitored for security purposes.",
     "defaultUlbCode": "TMC",
     "defaultUlbName": "Sthapatya Consultant (I) Pvt.Ltd"
   },

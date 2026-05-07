@@ -3,6 +3,7 @@ import { User, Shield, Building, Globe, Hash, Clock, Mail } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { Badge } from '@/components/common/Badge';
 import { Label } from '@/components/common/label';
+import { useTranslations } from 'next-intl';
 
 interface UserProfilePopupProps {
     isOpen: boolean;
@@ -10,6 +11,7 @@ interface UserProfilePopupProps {
 }
 
 export const UserProfilePopup: React.FC<UserProfilePopupProps> = ({ isOpen }) => {
+    const t = useTranslations('common');
     if (!isOpen) return null;
 
     return (
@@ -23,8 +25,8 @@ export const UserProfilePopup: React.FC<UserProfilePopupProps> = ({ isOpen }) =>
                     <User className="w-6 h-6" />
                 </div>
                 <div>
-                    <h3 className="text-sm font-bold text-gray-900">Rajesh Kumar</h3>
-                    <p className="text-xs text-gray-500">rajesh.kumar@propertytax.gov.in</p>
+                    <h3 className="text-sm font-bold text-gray-900">{t('userMenu.mockName')}</h3>
+                    <p className="text-xs text-gray-500">{t('userMenu.mockEmail')}</p>
                 </div>
             </div>
 
@@ -33,17 +35,17 @@ export const UserProfilePopup: React.FC<UserProfilePopupProps> = ({ isOpen }) =>
                 <div className="flex items-start gap-3">
                     <Hash className="w-4 h-4 text-gray-400 mt-0.5" />
                     <div className="flex-1">
-                        <Label className="text-[10px] text-gray-500 uppercase font-bold mb-0.5">User ID</Label>
-                        <p className="text-sm font-medium text-gray-900">USR-2025-1047</p>
+                        <Label className="text-[10px] text-gray-500 uppercase font-bold mb-0.5">{t('userMenu.userId')}</Label>
+                        <p className="text-sm font-medium text-gray-900">{t('userMenu.mockUserId')}</p>
                     </div>
                 </div>
 
                 <div className="flex items-start gap-3">
                     <Shield className="w-4 h-4 text-gray-400 mt-0.5" />
                     <div className="flex-1">
-                        <Label className="text-[10px] text-gray-500 uppercase font-bold mb-1">Role</Label>
+                        <Label className="text-[10px] text-gray-500 uppercase font-bold mb-1">{t('userMenu.role')}</Label>
                         <Badge variant="default" size="sm" className="bg-blue-50 text-blue-700 border-blue-100">
-                            Tax Assessment Officer
+                            {t('userMenu.mockRole')}
                         </Badge>
                     </div>
                 </div>
@@ -51,8 +53,8 @@ export const UserProfilePopup: React.FC<UserProfilePopupProps> = ({ isOpen }) =>
                 <div className="flex items-start gap-3">
                     <Building className="w-4 h-4 text-gray-400 mt-0.5" />
                     <div className="flex-1">
-                        <Label className="text-[10px] text-gray-500 uppercase font-bold mb-0.5">Department</Label>
-                        <p className="text-sm font-medium text-gray-900">Property Tax Department</p>
+                        <Label className="text-[10px] text-gray-500 uppercase font-bold mb-0.5">{t('userMenu.department')}</Label>
+                        <p className="text-sm font-medium text-gray-900">{t('userMenu.mockDepartment')}</p>
                     </div>
                 </div>
 
@@ -61,24 +63,24 @@ export const UserProfilePopup: React.FC<UserProfilePopupProps> = ({ isOpen }) =>
                 <div className="flex items-start gap-3">
                     <Globe className="w-4 h-4 text-gray-400 mt-0.5" />
                     <div>
-                        <p className="text-[10px] text-gray-500 uppercase font-semibold">Public IP Address</p>
-                        <p className="text-sm font-medium text-gray-900 font-mono">115.242.194.254</p>
+                        <p className="text-[10px] text-gray-500 uppercase font-semibold">{t('userMenu.publicIp')}</p>
+                        <p className="text-sm font-medium text-gray-900 font-mono">{t('userMenu.mockIp')}</p>
                     </div>
                 </div>
 
                 <div className="flex items-start gap-3">
                     <Hash className="w-4 h-4 text-gray-400 mt-0.5" />
                     <div>
-                        <p className="text-[10px] text-gray-500 uppercase font-semibold">Session ID</p>
-                        <p className="text-sm font-medium text-gray-900 font-mono truncate w-48">SES-1767942012755-w0ehgm4ps</p>
+                        <p className="text-[10px] text-gray-500 uppercase font-semibold">{t('userMenu.sessionId')}</p>
+                        <p className="text-sm font-medium text-gray-900 font-mono truncate w-48">{t('userMenu.mockSessionId')}</p>
                     </div>
                 </div>
 
                 <div className="flex items-start gap-3">
                     <Clock className="w-4 h-4 text-gray-400 mt-0.5" />
                     <div>
-                        <p className="text-[10px] text-gray-500 uppercase font-semibold">Login Time</p>
-                        <p className="text-sm font-medium text-gray-900">09/01/2026, 12:30:12</p>
+                        <p className="text-[10px] text-gray-500 uppercase font-semibold">{t('userMenu.loginTime')}</p>
+                        <p className="text-sm font-medium text-gray-900">{t('userMenu.mockLoginTime')}</p>
                     </div>
                 </div>
             </div>
@@ -87,9 +89,10 @@ export const UserProfilePopup: React.FC<UserProfilePopupProps> = ({ isOpen }) =>
             <div className="p-3 bg-blue-50/50 rounded-b-lg border-t border-blue-100">
                 <div className="flex gap-2 text-xs text-gray-500">
                     <Mail className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-                    <p>All operations are logged and monitored for security purposes.</p>
+                    <p>{t('app.securityPurpose')}</p>
                 </div>
             </div>
         </div>
     );
 };
+

@@ -10,8 +10,8 @@ import { isModuleMasterShape, normalizeModuleMaster } from "./module-master-guar
  */
 export async function getModuleMaster(): Promise<PagedResponse<ModuleMaster>> {
     try {
-        // Fetch raw data as PagedResponse<any> to allow for normalization/guarding
-        const response = await apiClient.get<PagedResponse<any>>("/ModuleMaster");
+        // Fetch raw data as PagedResponse<unknown> to allow for normalization/guarding
+        const response = await apiClient.get<PagedResponse<unknown>>("/ModuleMaster");
         const data = handleApiResponse(response, "Failed to fetch module master data");
         
         if (!data || !Array.isArray(data.items)) {
@@ -19,7 +19,7 @@ export async function getModuleMaster(): Promise<PagedResponse<ModuleMaster>> {
         }
 
         // Apply guards and normalization
-        const normalizedItems = (data.items as any[])
+        const normalizedItems = (data.items as unknown[])
             .filter(isModuleMasterShape)
             .map(normalizeModuleMaster);
 
