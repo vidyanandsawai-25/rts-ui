@@ -4,6 +4,9 @@ import {createTaxZoning, getAllTaxZoningServer, getTaxZonePagedServer, getTaxZon
 import { ApiError } from "@/lib/utils/api";
 import { PagedResponse } from "@/types/common.types";
 import { ActionResult, TaxZone, TaxZoningFormModel, TaxZoning, TaxZoningPropertyNo, Ward } from "@/types/taxzoning.types";
+import { createLogger } from "@/lib/utils/server-logger";
+
+const logger = createLogger('TaxZoningActions');
 
 
 export async function fetchTaxZonePagedAction(
@@ -62,6 +65,7 @@ export async function getTaxZoningPagedAction(
       data,
     };
   } catch (error) {
+    logger.error('Failed to get tax zoning paged', { pageNumber, pageSize, taxZoneId, wardId, groupBy }, error);
     if (error instanceof ApiError) {
       return {
         success: false,
@@ -91,6 +95,7 @@ export async function getTaxZoningPropertyNoPagedAction(
       data,
     };
   } catch (error) {
+    logger.error('Failed to get tax zoning property numbers', { pageNumber, pageSize, taxZoneId, wardId }, error);
     if (error instanceof ApiError) {
       return {
         success: false,
@@ -109,8 +114,8 @@ export async function getTaxZoningPropertyNoPagedAction(
 
 export async function getTaxZoningByWardAction(
   wardNo: string,
-  pageSize = 100,
-  pageNumber = 1
+  pageSize: number,
+  pageNumber: number
 ): Promise<ActionResult<PagedResponse<TaxZoning>>> {
   try {
     const data = await getTaxZoningByWardServer(
@@ -124,6 +129,7 @@ export async function getTaxZoningByWardAction(
       data,
     };
   } catch (error) {
+    logger.error('Failed to get tax zoning by ward', { wardNo, pageSize, pageNumber }, error);
     if (error instanceof ApiError) {
       return {
         success: false,
@@ -153,6 +159,7 @@ export async function getAllTaxZoningAction(
       data,
     };
   } catch (error) {
+    logger.error('Failed to get all tax zoning', { pageNumber, pageSize, taxZoneId, wardId }, error);
     if (error instanceof ApiError) {
       return {
         success: false,
@@ -182,7 +189,7 @@ export async function createTaxZoningAction(
       message: "messages.createSuccess",
     };
   } catch (error: unknown) {
-    console.error("Create Tax Zoning Error:", error);
+    logger.error("Create Tax Zoning Error:", { data }, error);
     return {
       success: false,
       message:
@@ -205,7 +212,7 @@ export async function updateTaxZoningAction(
       message: "messages.updateSuccess",
     };
   } catch (error: unknown) {
-    console.error("Update Tax Zoning Error:", error);
+    logger.error("Update Tax Zoning Error:", { data }, error);
     return {
       success: false,
       message:

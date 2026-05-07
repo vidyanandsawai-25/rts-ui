@@ -2,6 +2,7 @@ import { PagedResponse } from "@/types/common.types";
 import { TaxZone, TaxZoningFormModel, TaxZoning, TaxZoningPropertyNo, Ward } from "@/types/taxzoning.types";
 import { apiClient } from "@/services/api.service";
 
+
 export async function getTaxZonePagedServer(
   pageNumber: number,
   pageSize: number
@@ -139,8 +140,8 @@ export async function getTaxZoningPagedServer(
 
 export async function getTaxZoningByWardServer(
   wardNo: string,
-  pageSize = 100,
-  pageNumber = 1
+  pageSize:number,
+  pageNumber:number
 ): Promise<PagedResponse<TaxZoning>> {
   const params = new URLSearchParams({
     WardNo: wardNo,

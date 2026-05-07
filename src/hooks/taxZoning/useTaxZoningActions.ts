@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { logger } from "@/lib/utils/logger";
 import {
   createTaxZoningAction,
   updateTaxZoningAction,
@@ -79,7 +80,7 @@ export const useTaxZoningActions = (t: (key: string, values?: Record<string, str
       router.refresh();
       onSuccess();
     } catch (error) {
-      console.error("Tax zoning update failed:", error);
+      logger.error("Tax zoning update failed", { zone, ward, error: error as Error });
       toast.error(t('messages.somethingWrong'));
     } finally {
       setSaving(false);
@@ -109,7 +110,8 @@ export const useTaxZoningActions = (t: (key: string, values?: Record<string, str
             propertyId: 0,
           };
 
-          console.log(`[BulkUpdate] ${row.status} → ward:${row.wardId} from:${row.fromProperty} to:${row.toProperty} taxZone:${row.taxZoneId}`, payload);
+          logger.info(`[BulkUpdate] ${row.status} → ward:${row.wardId} from:${row.fromProperty} to:${row.toProperty} taxZone:${row.taxZoneId}`);
+
 
           const result = row.status === "New"
             ? await createTaxZoningAction(payload)
@@ -118,11 +120,11 @@ export const useTaxZoningActions = (t: (key: string, values?: Record<string, str
           if (result.success) {
             if (row.status === "Updated") updateCount++; else newCount++;
           } else {
-            console.error(`[BulkUpdate] FAILED ${row.status} ward:${row.wardId}`, result.message);
+            logger.error(`[BulkUpdate] FAILED ${row.status} ward:${row.wardId}`, { message: result.message });
             errorCount++;
           }
         } catch (err) {
-          console.error(`[BulkUpdate] ERROR ${row.status} ward:${row.wardId}`, err);
+          logger.error(`[BulkUpdate] EXCEPTION ${row.status} ward:${row.wardId}`, { error: err as Error });
           errorCount++;
         }
       }
@@ -138,7 +140,7 @@ export const useTaxZoningActions = (t: (key: string, values?: Record<string, str
         }
 
         if (errorCount > 0) {
-          message += `. ⚠️ ${errorCount} ${t('messages.recordsFailed')}`;
+          message += `. ${errorCount} ${t('messages.recordsFailed')}`;
           toast.warning(message);
         } else {
           toast.success(message);
@@ -150,7 +152,7 @@ export const useTaxZoningActions = (t: (key: string, values?: Record<string, str
         toast.error(t('messages.noRecordsProcessed'));
       }
     } catch (err) {
-      console.error("❌ Bulk update critical error:", err);
+      logger.error("Bulk update critical error", { error: err as Error });
       toast.error(t('messages.criticalError'));
     } finally {
       setSaving(false);

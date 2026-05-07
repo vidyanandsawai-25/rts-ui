@@ -143,7 +143,6 @@ export const useTaxZoningFile = (
         if (newChanges.length > 0) parts.push(`${newChanges.length} ${t('messages.newRecordsReadyToImport')}`);
         toast.success(parts.join(', '));
       } catch (_err) {
-        console.error("File processing error:", _err);
         toast.error(t('messages.fileProcessingError'));
       }
     };
