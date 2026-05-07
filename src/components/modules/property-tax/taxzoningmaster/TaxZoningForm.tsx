@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { MapPin, Eye } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { Card, CardContent, CardHeader, CardTitle, Select, ValidationMessage, SaveButton, CancelButton } from "@/components/common";
