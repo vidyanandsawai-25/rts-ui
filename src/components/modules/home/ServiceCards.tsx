@@ -4,9 +4,12 @@
 import React, { useEffect } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
+import { AlertCircle, RefreshCw } from "lucide-react";
 import { Service, ServiceCardProps } from "@/types/home/home.types";
 import { cn } from "@/lib/utils/cn";
 import { Badge } from "@/components/common/Badge";
+import { Button } from "@/components/common/ActionButton";
 import { HOME_SERVICE_ICONS, DEFAULT_SERVICE_ICON, MODULE_ICON_MAP } from "@/config/home-services.config";
 
 /**
@@ -73,12 +76,48 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
 
 interface ServiceCardsProps {
     services?: Service[];
-    /** Error message to display as toast notification */
+    /** Error message to display inline and as toast notification */
     error?: string;
 }
 
+/**
+ * Inline error component displayed when services fail to load
+ */
+const ServiceLoadError: React.FC<{ error: string }> = ({ error }) => {
+    const t = useTranslations('common');
+    
+    const handleRefresh = () => {
+        window.location.reload();
+    };
+
+    return (
+        <section className="w-full p-4 sm:p-8 md:p-12 min-h-[300px]" aria-label="Service Load Error">
+            <div className="max-w-md mx-auto text-center">
+                <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+                    <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" aria-hidden="true" />
+                    <h3 className="text-lg font-semibold text-red-800 mb-2">
+                        {t('errors.generic')}
+                    </h3>
+                    <p className="text-sm text-red-600 mb-4">
+                        {error}
+                    </p>
+                    <Button
+                        onClick={handleRefresh}
+                        variant="secondary"
+                        size="sm"
+                        className="inline-flex items-center gap-2"
+                    >
+                        <RefreshCw className="w-4 h-4" />
+                        {t('error.tryAgain')}
+                    </Button>
+                </div>
+            </div>
+        </section>
+    );
+};
+
 const ServiceCards: React.FC<ServiceCardsProps> = ({ services = [], error }) => {
-    // Show toast notification if there's an API error
+    // Show toast notification if there's an API error (in addition to inline error)
     useEffect(() => {
         if (error) {
             toast.error(error, {
@@ -87,6 +126,11 @@ const ServiceCards: React.FC<ServiceCardsProps> = ({ services = [], error }) => 
             });
         }
     }, [error]);
+
+    // Show inline error when services fail to load
+    if (error && (!services || services.length === 0)) {
+        return <ServiceLoadError error={error} />;
+    }
 
     if (!services || !services.length) return null;
 

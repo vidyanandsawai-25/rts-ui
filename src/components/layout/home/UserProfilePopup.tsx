@@ -1,11 +1,67 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { User, Shield, Building, Globe, Hash, Clock, Mail, X } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { Badge } from '@/components/common/Badge';
 import { Label } from '@/components/common/label';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
+
+/**
+ * Session data structure for user profile display
+ * Populated from localStorage and cookies on mount
+ */
+interface SessionData {
+    userId: string | null;
+    email: string | null;
+    role: string | null;
+    sessionId: string | null;
+    loginTime: string | null;
+    ipAddress: string | null;
+}
+
+/**
+ * Reads session data from localStorage (client-side only)
+ * Returns null for server-side rendering
+ */
+function getSessionData(): SessionData {
+    if (typeof window === 'undefined') {
+        return {
+            userId: null,
+            email: null,
+            role: null,
+            sessionId: null,
+            loginTime: null,
+            ipAddress: null,
+        };
+    }
+
+    return {
+        userId: localStorage.getItem('ntis_user_id'),
+        email: localStorage.getItem('ntis_user_email'),
+        role: localStorage.getItem('ntis_user_role'),
+        sessionId: localStorage.getItem('ntis_session_id'),
+        loginTime: localStorage.getItem('ntis_session_start'),
+        ipAddress: localStorage.getItem('ntis_user_ip'),
+    };
+}
+
+/**
+ * Formats login time for display
+ */
+function formatLoginTime(timestamp: string | null, locale: string): string {
+    if (!timestamp) return '-';
+    try {
+        const date = new Date(timestamp);
+        if (isNaN(date.getTime())) return timestamp;
+        return date.toLocaleString(locale === 'en' ? 'en-IN' : locale, {
+            dateStyle: 'short',
+            timeStyle: 'medium',
+        });
+    } catch {
+        return timestamp;
+    }
+}
 
 interface UserProfilePopupProps {
     isOpen: boolean;
@@ -16,6 +72,32 @@ interface UserProfilePopupProps {
 
 export const UserProfilePopup: React.FC<UserProfilePopupProps> = ({ isOpen, onClose, username, ulbName }) => {
     const t = useTranslations('common');
+    const locale = useLocale();
+    const [sessionData, setSessionData] = useState<SessionData>({
+        userId: null,
+        email: null,
+        role: null,
+        sessionId: null,
+        loginTime: null,
+        ipAddress: null,
+    });
+
+    // Load session data on mount (client-side only)
+    useEffect(() => {
+        setSessionData(getSessionData());
+    }, []);
+
+    // Format values with fallbacks
+    const displayValues = useMemo(() => ({
+        userId: sessionData.userId || t('userMenu.notAvailable', { default: 'N/A' }),
+        email: sessionData.email || t('userMenu.notAvailable', { default: 'N/A' }),
+        role: sessionData.role || t('userMenu.defaultRole', { default: 'User' }),
+        sessionId: sessionData.sessionId 
+            ? `${sessionData.sessionId.slice(0, 8)}...` 
+            : t('userMenu.notAvailable', { default: 'N/A' }),
+        loginTime: formatLoginTime(sessionData.loginTime, locale),
+        ipAddress: sessionData.ipAddress || t('userMenu.notAvailable', { default: 'N/A' }),
+    }), [sessionData, locale, t]);
 
     useEffect(() => {
         const handleEscape = (e: KeyboardEvent) => {
@@ -41,8 +123,8 @@ export const UserProfilePopup: React.FC<UserProfilePopupProps> = ({ isOpen, onCl
                         <User className="w-6 h-6" />
                     </div>
                     <div>
-                        <h3 className="text-sm font-bold text-gray-900">{username || t('userMenu.mockName')}</h3>
-                        <p className="text-xs text-gray-500">{t('userMenu.mockEmail')}</p>
+                        <h3 className="text-sm font-bold text-gray-900">{username || t('userMenu.defaultUser', { default: 'User' })}</h3>
+                        <p className="text-xs text-gray-500">{displayValues.email}</p>
                     </div>
                 </div>
                 <button 
@@ -61,7 +143,7 @@ export const UserProfilePopup: React.FC<UserProfilePopupProps> = ({ isOpen, onCl
                     <Hash className="w-4 h-4 text-gray-400 mt-0.5" />
                     <div className="flex-1">
                         <Label className="text-[10px] text-gray-500 uppercase font-bold mb-0.5">{t('userMenu.userId')}</Label>
-                        <p className="text-sm font-medium text-gray-900">{t('userMenu.mockUserId')}</p>
+                        <p className="text-sm font-medium text-gray-900">{displayValues.userId}</p>
                     </div>
                 </div>
 
@@ -70,7 +152,7 @@ export const UserProfilePopup: React.FC<UserProfilePopupProps> = ({ isOpen, onCl
                     <div className="flex-1">
                         <Label className="text-[10px] text-gray-500 uppercase font-bold mb-1">{t('userMenu.role')}</Label>
                         <Badge variant="default" size="sm" className="bg-blue-50 text-blue-700 border-blue-100">
-                            {t('userMenu.mockRole')}
+                            {displayValues.role}
                         </Badge>
                     </div>
                 </div>
@@ -79,7 +161,7 @@ export const UserProfilePopup: React.FC<UserProfilePopupProps> = ({ isOpen, onCl
                     <Building className="w-4 h-4 text-gray-400 mt-0.5" />
                     <div className="flex-1">
                         <Label className="text-[10px] text-gray-500 uppercase font-bold mb-0.5">{t('userMenu.department')}</Label>
-                        <p className="text-sm font-medium text-gray-900">{ulbName || t('userMenu.mockDepartment')}</p>
+                        <p className="text-sm font-medium text-gray-900">{ulbName || t('userMenu.notAvailable', { default: 'N/A' })}</p>
                     </div>
                 </div>
 
@@ -89,7 +171,7 @@ export const UserProfilePopup: React.FC<UserProfilePopupProps> = ({ isOpen, onCl
                     <Globe className="w-4 h-4 text-gray-400 mt-0.5" />
                     <div>
                         <p className="text-[10px] text-gray-500 uppercase font-semibold">{t('userMenu.publicIp')}</p>
-                        <p className="text-sm font-medium text-gray-900 font-mono">{t('userMenu.mockIp')}</p>
+                        <p className="text-sm font-medium text-gray-900 font-mono">{displayValues.ipAddress}</p>
                     </div>
                 </div>
 
@@ -97,7 +179,7 @@ export const UserProfilePopup: React.FC<UserProfilePopupProps> = ({ isOpen, onCl
                     <Hash className="w-4 h-4 text-gray-400 mt-0.5" />
                     <div>
                         <p className="text-[10px] text-gray-500 uppercase font-semibold">{t('userMenu.sessionId')}</p>
-                        <p className="text-sm font-medium text-gray-900 font-mono truncate w-48">{t('userMenu.mockSessionId')}</p>
+                        <p className="text-sm font-medium text-gray-900 font-mono truncate w-48">{displayValues.sessionId}</p>
                     </div>
                 </div>
 
@@ -105,7 +187,7 @@ export const UserProfilePopup: React.FC<UserProfilePopupProps> = ({ isOpen, onCl
                     <Clock className="w-4 h-4 text-gray-400 mt-0.5" />
                     <div>
                         <p className="text-[10px] text-gray-500 uppercase font-semibold">{t('userMenu.loginTime')}</p>
-                        <p className="text-sm font-medium text-gray-900">{t('userMenu.mockLoginTime')}</p>
+                        <p className="text-sm font-medium text-gray-900">{displayValues.loginTime}</p>
                     </div>
                 </div>
             </div>

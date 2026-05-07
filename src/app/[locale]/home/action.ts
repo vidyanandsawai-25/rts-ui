@@ -15,6 +15,10 @@ export interface ListServicesResponse {
 
 /**
  * Maps ModuleMaster API item to the UI Service interface
+ * 
+ * NOTE: Stats are intentionally omitted until the stats API endpoint is available.
+ * When stats API is implemented, uncomment the stats property and populate with real data.
+ * See: JIRA-XXXX for stats API implementation ticket
  */
 function mapModuleToService(module: ModuleMaster, locale: string): Service {
     const code = module.moduleCode.toLowerCase();
@@ -25,12 +29,8 @@ function mapModuleToService(module: ModuleMaster, locale: string): Service {
         subtext: module.moduleDescription || `Access ${module.moduleName} services and manage your applications.`,
         icon: getIconNameForModule(code),
         link: getRouteForModule(code, locale),
-        // TODO: Implement actual stats API when available
-        stats: [
-            { label: "Total", value: "0" },
-            { label: "Paid", value: "0" },
-            { label: "Pending", value: "0" },
-        ]
+        // Stats intentionally omitted - will be populated when stats API is available
+        // stats: await fetchModuleStats(module.moduleCode),
     };
 }
 

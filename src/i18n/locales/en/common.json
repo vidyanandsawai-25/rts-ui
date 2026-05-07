@@ -159,14 +159,9 @@
     "publicIp": "Public IP Address",
     "sessionId": "Session ID",
     "loginTime": "Login Time",
-    "mockName": "Rajesh Kumar",
-    "mockEmail": "rajesh.kumar@propertytax.gov.in",
-    "mockUserId": "USR-2025-1047",
-    "mockRole": "Tax Assessment Officer",
-    "mockDepartment": "Property Tax Department",
-    "mockIp": "115.242.194.254",
-    "mockSessionId": "SES-1767942012755-w0ehgm4ps",
-    "mockLoginTime": "09/01/2026, 12:30:12",
+    "notAvailable": "N/A",
+    "defaultRole": "User",
+    "defaultUser": "User",
     "logout": "Logout"
   },
   "navigation": {

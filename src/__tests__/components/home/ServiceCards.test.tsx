@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import ServiceCards from '@/components/modules/home/ServiceCards';
 import { Service } from '@/types/home/home.types';
 import { toast } from 'sonner';
@@ -15,6 +15,17 @@ vi.mock('next/link', () => ({
 vi.mock('sonner', () => ({
   toast: {
     error: vi.fn(),
+  },
+}));
+
+// Mock next-intl
+vi.mock('next-intl', () => ({
+  useTranslations: () => (key: string) => {
+    const translations: Record<string, string> = {
+      'errors.generic': 'Something went wrong',
+      'error.tryAgain': 'Try Again',
+    };
+    return translations[key] || key;
   },
 }));
 
@@ -164,5 +175,50 @@ describe('ServiceCards Icon Mapping', () => {
       render(<ServiceCards services={service} />);
       expect(screen.getByText(title)).toBeInTheDocument();
     });
+  });
+});
+
+describe('ServiceCards Inline Error', () => {
+  beforeEach(() => {
+    vi.mocked(toast.error).mockClear();
+  });
+
+  it('displays inline error when services array is empty and error prop provided', () => {
+    render(<ServiceCards services={[]} error="Failed to load services" />);
+    expect(screen.getByText('Something went wrong')).toBeInTheDocument();
+    expect(screen.getByText('Failed to load services')).toBeInTheDocument();
+  });
+
+  it('displays inline error when services is undefined and error prop provided', () => {
+    render(<ServiceCards error="Network error" />);
+    expect(screen.getByText('Something went wrong')).toBeInTheDocument();
+    expect(screen.getByText('Network error')).toBeInTheDocument();
+  });
+
+  it('displays Try Again button in error state', () => {
+    render(<ServiceCards services={[]} error="Failed to load" />);
+    expect(screen.getByRole('button', { name: /try again/i })).toBeInTheDocument();
+  });
+
+  it('still displays services when error and services are both provided', () => {
+    const mockServices: Service[] = [
+      {
+        id: 1,
+        link: '/property-tax',
+        icon: 'property-tax',
+        title: 'Property Tax',
+        subtext: 'Pay your property tax online',
+      },
+    ];
+    render(<ServiceCards services={mockServices} error="Some warning" />);
+    // Services should still render, error is shown as toast
+    expect(screen.getByText('Property Tax')).toBeInTheDocument();
+    expect(toast.error).toHaveBeenCalled();
+  });
+
+  it('renders error section with correct accessibility label', () => {
+    const { container } = render(<ServiceCards services={[]} error="Error" />);
+    const section = container.querySelector('section');
+    expect(section).toHaveAttribute('aria-label', 'Service Load Error');
   });
 });
