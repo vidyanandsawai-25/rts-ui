@@ -12,6 +12,12 @@ export async function getModuleMaster(): Promise<PagedResponse<ModuleMaster>> {
     try {
         // Fetch raw data as PagedResponse<unknown> to allow for normalization/guarding
         const response = await apiClient.get<PagedResponse<unknown>>("/ModuleMaster");
+        
+        if (process.env.NODE_ENV === 'development') {
+            console.log("[getModuleMaster] API Response Status:", response.success ? "Success" : "Failure", 
+                response.statusCode, response.error || "");
+        }
+
         const data = handleApiResponse(response, "Failed to fetch module master data");
         
         if (!data || !Array.isArray(data.items)) {

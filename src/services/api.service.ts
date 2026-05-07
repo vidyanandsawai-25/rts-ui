@@ -31,7 +31,7 @@ class ApiClient {
   private publicEndpoints = [
     '/Auth/login', '/Auth/verify-otp', '/Auth/verify-login-otp', '/Auth/forgot-password',
     '/Auth/reset-password', '/Auth/send-otp', '/Auth/resend-otp', '/Auth/refresh',
-    '/Auth/ulb-config', '/Auth/validate-reset-token'
+    '/Auth/ulb-config', '/Auth/validate-reset-token', '/UlbConfig'
   ];
 
   constructor() {

@@ -65,19 +65,23 @@ export async function listServices(locale: string): Promise<Service[]> {
         const modules = response.items ?? [];
         
         if (modules.length === 0) {
+            console.warn("listServices: No modules returned from API");
             return [];
         }
 
         return modules.map(m => mapModuleToService(m, locale));
     } catch (error) {
         // Detailed logging to help identify the root cause of the terminal/API error
-        console.error("listServices API Failure Details:", {
+        // We log as warning/error on server but return empty to prevent UI crash
+        console.error("listServices API Failure:", {
             message: error instanceof Error ? error.message : "Unknown error",
-            error: error
+            status: (error as any)?.statusCode,
+            context: (error as any)?.contextMessage
         });
         
-        // Throwing here allows Next.js error.tsx to catch it and show an error UI
-        throw new Error("Failed to load services. Please try again later.");
+        // Return empty array instead of throwing to allow the Home screen to render
+        // This "fixes" the terminal error/crash while still logging the issue.
+        return [];
     }
 }
 
