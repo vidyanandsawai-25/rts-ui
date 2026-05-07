@@ -34,13 +34,39 @@ import { getConstructionPaged } from "@/lib/api/construction-crud.service";
  * Fetch all AgeFactorCVMaster records to extract unique age ranges
  */
 export async function fetchAllAgeFactorsAction(): Promise<AgeFactorCVMaster[]> {
+  const PAGE_SIZE = 250;
+  const MAX_TOTAL_RECORDS = 10000;
+
   try {
-    // Request a large page size to ensure we get all records for the missing records detection logic
-    const response = await getAgeFactorCVMasterWithParams({ pageNumber: 1, pageSize: 10000 });
-    if (response && response.success && response.data) {
-      return response.data.items;
+    const allItems: AgeFactorCVMaster[] = [];
+    let pageNumber = 1;
+
+    while (allItems.length < MAX_TOTAL_RECORDS) {
+      const response = await getAgeFactorCVMasterWithParams({
+        pageNumber,
+        pageSize: PAGE_SIZE,
+      });
+
+      if (!response?.success || !response.data) {
+        break;
+      }
+
+      const items = Array.isArray(response.data.items) ? response.data.items : [];
+
+      if (items.length === 0) {
+        break;
+      }
+
+      allItems.push(...items);
+
+      if (items.length < PAGE_SIZE) {
+        break;
+      }
+
+      pageNumber += 1;
     }
-    return [];
+
+    return allItems.slice(0, MAX_TOTAL_RECORDS);
   } catch (_error) {
     return [];
   }

@@ -58,6 +58,13 @@
       "message": "Loading Age Factor Master...",
       "description": "Please wait while we fetch the age factor weightage data"
     },
+    "error": {
+      "title": "Something went wrong",
+      "description": "An unexpected error occurred while loading the Age Factor Master page.",
+      "tryAgain": "Try Again",
+      "goHome": "Go Home",
+      "errorId": "Error ID"
+    },
     "errors": {
       "validIdRequired": "Valid Age Factor CV ID is required",
       "constructionTypeRequired": "Construction Type ID is required",
