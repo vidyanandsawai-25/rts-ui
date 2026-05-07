@@ -9,15 +9,24 @@ import { Tab } from '@/types/property-basic-details.types';
 const TABS: Tab[] = [
     { label: 'Property', href: 'Property', icon: Home },
     { label: 'Society', href: 'Society', icon: Building2 },
-    { label: 'FloorSubmission', href: 'FloorSubmission', icon: Building2 },
+<<<<<<<<< Temporary merge branch 1
     { label: 'OldDetails', href: 'OldDetails/old-taxation', icon: Building2 },
+];
+
+const TAB_GRADIENT_CLASSES: Record<string, string> = {
+    Property: "from-blue-500 to-blue-600 border-blue-700",
+    Society: "from-purple-500 to-purple-600 border-purple-700",
+    OldDetails: "from-rose-500 to-red-600 border-red-700"
+=========
+    { label: 'FloorSubmission', href: 'FloorSubmission', icon: Building2 },
 ];
 
 const TAB_GRADIENT_CLASSES: Record<string, string> = {
     Property: 'from-blue-500 to-blue-600 border-blue-700',
     Society: 'from-purple-500 to-purple-600 border-purple-700',
     FloorSubmission: 'from-orange-500 to-orange-600 border-orange-700',
-    OldDetails: "from-rose-500 to-red-600 border-red-700"
+
+>>>>>>>>> Temporary merge branch 2
 };
 
 export function TabNavigation() {
@@ -54,7 +63,15 @@ export function TabNavigation() {
                     const pathSegments = currentPath.split('/').filter(Boolean);
                     const baseTabPath = `/${pathSegments.slice(0, -1).join('/')}`;
                     const tabPath = `${baseTabPath}/${tab.href}`;
+<<<<<<<<< Temporary merge branch 1
+                    const tabHref = queryString ? `${tabPath}?${queryString}` : tabPath;
 
+                    // Extract the base segment of the tab (e.g., 'OldDetails' from 'OldDetails/old-taxation')
+                    const tabBaseSegment = tab.href.split('/')[0];
+                    const isActive = pathname.startsWith(`${baseTabPath}/${tabBaseSegment}`);
+
+=========
+                    
                     // For FloorSubmission tab: exclude propertyId if we have search params
                     // to let the page resolve authoritative ID from backend
                     let tabQueryString = queryString;
