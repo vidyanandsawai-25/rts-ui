@@ -148,7 +148,7 @@
     "openUserMenu": "Open user menu",
     "comingSoon": "Coming soon",
     "myProfile": "My Profile",
-    "settings": "Settings",
+    "settings": "Configuration Setting",
     "changePassword": "Change Password",
     "language": "Language",
     "yourIp": "Your IP",
@@ -172,7 +172,7 @@
   "navigation": {
     "dashboard": "Dashboard",
     "profile": "Profile",
-    "settings": "Settings",
+    "settings": "Configuration Setting",
     "ConstructionTypeMaster": "Construction Type Master"
   },
   "footer": {
