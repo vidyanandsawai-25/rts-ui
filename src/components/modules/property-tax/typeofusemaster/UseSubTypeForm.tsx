@@ -3,27 +3,18 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-
 import { useRouter, useSearchParams } from "next/navigation";
-import { AlertCircle, ListTree } from "lucide-react";
-
+import { AlertCircle } from "lucide-react";
 import type { UseSubType, UseType, UseSubTypeFormProps } from "@/types/typeOfUse.types";
-
-import { Input } from "@/components/common/Input";
-
-import {
-  createSubType,
-  updateSubType,
-} from "@/app/[locale]/property-tax/typeofusemaster/actions";
-
-import { CheckCircle2 } from "lucide-react";
-import { ToggleSwitch } from "@/components/common/ToggleSwitch";
-import { toast } from "sonner";
 import { Drawer } from "@/components/common/Drawer";
-import { CancelButton, SaveButton, ValidationMessage } from "@/components/common";
 import { validateForm } from '@/lib/utils/validation-helpers';
-import { DESCRIPTION_REGEX, DESCRIPTION_SANITIZE } from '@/lib/utils/validation-rules';
-import type { Validator } from '@/lib/utils/validation-helpers';
+import { sanitizeDescription } from '@/lib/utils/sanitization';
+import { useSubTypeFormValidation } from '@/hooks/TypeOfUseMaster/useSubTypeFormValidation';
+import { useSubTypeFormSubmit } from '@/hooks/TypeOfUseMaster/useSubTypeFormSubmit';
+import { DescriptionInput, SearchSequenceInput } from './TypeFormFields';
+import { SubTypeStatusSection } from './SubTypeStatusSection';
+import { SubTypeFormHeader } from './SubTypeFormHeader';
+import { SubTypeFormFooter } from './SubTypeFormFooter';
 
 type FieldErrors = {
   typeId?: string;
@@ -67,50 +58,13 @@ export default function UseSubTypeForm({ id, initialData, typeInfo: typeInfoProp
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [submittedOnce, setSubmittedOnce] = useState(false);
 
-  // Sanitization helper using common validation patterns
-  const sanitizeDescription = (value: string, maxLength: number = 100): string => {
-    return value.replace(DESCRIPTION_SANITIZE, '').slice(0, maxLength);
-  };
-
-  // Duplicate check helper
-  const normalize = (v: string) => v.trim().toLowerCase();
-
-  const isDuplicateDescription = (desc: string): boolean => {
-    const d = normalize(desc);
-    if (!d) return false;
-    return allSubTypes.some((s) => {
-      if (isEdit && s.subTypeOfUseId === formData.subTypeOfUseId) return false;
-      return normalize(s.description ?? '') === d;
-    });
-  };
-
-  // Validation schema using common validation patterns
-  const validationSchema: Record<string, Validator> = {
-    typeOfUseId: (value: unknown) => {
-      const typeId = Number(value);
-      if (!typeId) return t('messages.typeMissing');
-      return undefined;
-    },
-    
-    description: (value: unknown) => {
-      const desc = String(value ?? '').trim();
-      
-      if (!desc) return t('messages.subTypeNameRequired');
-      if (desc.length > 100) return t('messages.subTypeNameLabel') + ' ' + t('messages.maxLength', { count: 100 });
-      if (!DESCRIPTION_REGEX.test(desc)) return t('messages.subTypeNameLabel') + ' ' + t('messages.allowedChars');
-      if (isDuplicateDescription(desc)) return t('messages.duplicateSubTypeName');
-      
-      return undefined;
-    },
-    
-    searchSequence: (value: unknown) => {
-      const seq = Number(value);
-      if (!Number.isFinite(seq) || seq < 0) {
-        return t('messages.searchSequenceLabel') + ' ' + t('messages.sequenceNonNegative');
-      }
-      return undefined;
-    }
-  };
+  // Use validation hook
+  const { validationSchema } = useSubTypeFormValidation({
+    formData,
+    allSubTypes,
+    isEdit,
+    t,
+  });
 
   const showError = (field: keyof FieldErrors) =>
     (submittedOnce || touched[field as string]) && !!errors[field];
@@ -122,8 +76,14 @@ export default function UseSubTypeForm({ id, initialData, typeInfo: typeInfoProp
     setFormData((p) => {
       let nextValue: UseSubType[K] = value;
 
-      if (key === "description" && typeof value === "string")
+      if (key === "description" && typeof value === "string") {
         nextValue = sanitizeDescription(value, 100) as UseSubType[K];
+        markTouched("description");
+      }
+
+      if (key === "searchSequence") {
+        markTouched("searchSequence");
+      }
 
       const next = { ...p, [key]: nextValue };
 
@@ -131,7 +91,7 @@ export default function UseSubTypeForm({ id, initialData, typeInfo: typeInfoProp
       setErrors({
         typeId: validationErrors.typeOfUseId,
         description: validationErrors.description,
-        searchSequence: validationErrors.searchSequence
+        searchSequence: validationErrors.searchSequence,
       });
 
       return next;
@@ -139,6 +99,15 @@ export default function UseSubTypeForm({ id, initialData, typeInfo: typeInfoProp
   };
 
   const typeLabel = useMemo(() => typeInfo?.description || "", [typeInfo]);
+
+  // Use submit hook
+  const { handleSubmit: handleFormSubmit } = useSubTypeFormSubmit({
+    formData,
+    isEdit,
+    t,
+    setErrors,
+    setTouched,
+  });
 
   /* ================= SUBMIT ================= */
   const handleSubmit = async (e: React.FormEvent) => {
@@ -155,49 +124,12 @@ export default function UseSubTypeForm({ id, initialData, typeInfo: typeInfoProp
     setErrors({
       typeId: validationErrors.typeOfUseId,
       description: validationErrors.description,
-      searchSequence: validationErrors.searchSequence
+      searchSequence: validationErrors.searchSequence,
     });
 
     if (Object.keys(validationErrors).length > 0) return;
 
-    try {
-      if (isEdit) {
-        await updateSubType({
-          id: Number(formData.subTypeOfUseId),
-          typeId: Number(formData.typeOfUseId),
-          description: formData.description,
-          searchSequence: Number(formData.searchSequence ?? 0),
-          status: formData.isActive ? "Active" : "Inactive",
-        });
-        toast.success(t("messages.subTypeUpdated"));
-      } else {
-        await createSubType({
-          typeId: Number(formData.typeOfUseId),
-          description: formData.description,
-          searchSequence: Number(formData.searchSequence ?? 0),
-          status: formData.isActive ? "Active" : "Inactive",
-        });
-        toast.success(t("messages.subTypeCreated"));
-      }
-
-      router.back();
-    } catch (err: unknown) {
-      const errorMsg = (err as Error)?.message || "";
-
-      if (
-        errorMsg.includes("409") ||
-        errorMsg.toLowerCase().includes("duplicate") ||
-        errorMsg.includes("same details already")
-      ) {
-        setErrors((prev) => ({
-          ...prev,
-          description: t("messages.duplicateSubTypeName"),
-        }));
-        setTouched((prev) => ({ ...prev, description: true }));
-      } else {
-        toast.error(errorMsg || t("messages.saveFailed"));
-      }
-    }
+    await handleFormSubmit();
   };
 
   return (
@@ -206,42 +138,8 @@ export default function UseSubTypeForm({ id, initialData, typeInfo: typeInfoProp
       onClose={() => router.back()}
       className="border-l-4 border-[#4F6A94]"
       width="md"
-      title={
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-md text-white">
-            <ListTree size={20} />
-          </div>
-          <div>
-            <div className="text-lg font-bold text-blue-900">
-              {isEdit ? t("subtype.edit") : t("subtype.add")}
-            </div>
-            <div className="text-sm text-slate-500">
-              {typeLabel
-                ? t("subtype.forType", {
-                    type: typeLabel
-                  })
-                : t("subtype.addSubtitle")}
-            </div>
-          </div>
-        </div>
-      }
-      footer={
-        <>
-          <CancelButton
-            label={t("buttons.cancel")}
-            onClick={() => router.back()}
-          />
-          <SaveButton
-            label={
-              isEdit
-                ? t("buttons.edit")
-                : t("buttons.save")
-            }
-            type="submit"
-            form="use-subtype-form"
-          />
-        </>
-      }
+      title={<SubTypeFormHeader isEdit={isEdit} typeLabel={typeLabel} t={t} />}
+      footer={<SubTypeFormFooter isEdit={isEdit} onCancel={() => router.back()} t={t} />}
     >
       <form
         id="use-subtype-form"
@@ -270,89 +168,38 @@ export default function UseSubTypeForm({ id, initialData, typeInfo: typeInfoProp
 
         {/* ================= ACTIVE STATUS (EDIT ONLY) ================= */}
         {isEdit && (
-          <div className="rounded-xl border border-blue-200 bg-blue-50/50 p-4">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100 text-green-700">
-                  <CheckCircle2 size={20} />
-                </div>
-                <div>
-                  <div className="text-base font-semibold text-slate-900">
-                    {t("subtype.fields.status")}
-                  </div>
-                  <div className="text-sm text-slate-500">
-                    {t("subtype.title")}{" "}
-                    {t("status.isCurrently")}{" "}
-                    <span
-                      className={
-                        isActive
-                          ? "text-emerald-700 font-medium"
-                          : "text-slate-600 font-medium"
-                      }
-                    >
-                      {isActive ? t("status.active") : t("status.inactive")}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <ToggleSwitch
-                checked={isActive}
-                onChange={handleStatusToggle}
-                showPopup={false}
-              />
-            </div>
-          </div>
+          <SubTypeStatusSection
+            isActive={isActive}
+            onToggle={handleStatusToggle}
+            t={t}
+          />
         )}
 
         {/* ================= BASIC DETAILS ================= */}
         <div className="rounded-xl border border-[#DCEAFF] bg-slate-50 p-5 space-y-4">
           {/* Sub-Type Name — full width */}
-          <div className="flex flex-col">
-            <Input
-              label={t("messages.subTypeNameLabel")}
-              required
-              name="description"
-              value={formData.description || ""}
-              onChange={(e) => setField("description", e.target.value)}
-              onBlur={() => markTouched("description")}
-              placeholder={t("messages.subTypeNameLabel")}
-              fullWidth
-              maxLength={100}
-            />
-            <ValidationMessage
-              message={errors.description}
-              visible={showError("description")}
-            />
-          </div>
+          <DescriptionInput
+            value={formData.description || ""}
+            onChange={(value) => setField("description", value)}
+            error={errors.description}
+            showError={showError("description")}
+            t={(key, values) => {
+              // Map to appropriate translation keys for subtype
+              if (key === 'type.fields.description') return t('messages.subTypeNameLabel');
+              if (key === 'type.placeholders.description') return t('messages.subTypeNameLabel');
+              return t(key, values);
+            }}
+          />
 
-          {/* Search Key + Sequence in ONE ROW */}
+          {/* Search Sequence */}
           <div className="grid grid-cols-2 gap-4">
-            {/* Search Key */}
-
-            {/* Sequence */}
-            <div className="flex flex-col">
-              <Input
-                label={t("messages.searchSequenceLabel")}
-                name="searchSequence"
-                required
-                type="number"
-                min={0}
-                value={String(formData.searchSequence ?? 0)}
-                onChange={(e) =>
-                  setField(
-                    "searchSequence",
-                    e.target.value === "" ? 0 : Number(e.target.value)
-                  )
-                }
-                onBlur={() => markTouched("searchSequence")}
-                placeholder="0"
-                fullWidth
-              />
-              <ValidationMessage
-                message={errors.searchSequence}
-                visible={showError("searchSequence")}
-              />
-            </div>
+            <SearchSequenceInput
+              value={formData.searchSequence ?? 0}
+              onChange={(value) => setField("searchSequence", value)}
+              error={errors.searchSequence}
+              showError={showError("searchSequence")}
+              t={t}
+            />
           </div>
         </div>
 

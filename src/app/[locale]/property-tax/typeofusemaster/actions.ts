@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { locales } from "@/i18n/config";
 import { getUserIdFromCookies } from "@/lib/utils/cookie";
+import { fetchAllPaged } from "@/lib/utils/pagination-helpers";
 import type { TypeOfUseMasterData, UseGroupIconKey, UseStatus, UseType, UseGroup, UseSubType } from "@/types/typeOfUse.types";
 
 import {
@@ -29,53 +30,12 @@ import {
   deleteSubTypeApi,
 } from "@/lib/api/typeofusemaster.service";
 
-// ✅ Configuration constants for pagination
-const DEFAULT_PAGE_SIZE = 1000; // Standard page size for fetching all records
-const MAX_PAGE_SIZE = 5000; // Maximum to prevent memory issues
-
 // ✅ Helper to get current user ID from cookies (fallback to 1 if not found)
 async function getCurrentUserId(): Promise<string> {
   const cookieStore = await cookies();
   const userId = getUserIdFromCookies(cookieStore);
   return userId ? String(userId) : "1";
 }
-
-// ✅ Generic helper to fetch all records with pagination
-async function fetchAllPaged<T>(
-  fetchFn: (params: { pageNumber: number; pageSize: number; [key: string]: unknown }) => Promise<{ items: T[]; totalCount: number }>,
-  additionalParams: Record<string, unknown> = {},
-  pageSize: number = DEFAULT_PAGE_SIZE
-): Promise<{ items: T[]; totalCount: number }> {
-  // Validate page size to prevent memory issues
-  const safPageSize = Math.min(pageSize, MAX_PAGE_SIZE);
-  
-  let page = 1;
-  const allItems: T[] = [];
-  let hasMore = true;
-
-  while (hasMore) {
-    const res = await fetchFn({
-      pageNumber: page,
-      pageSize: safPageSize,
-      ...additionalParams,
-    });
-
-    const newItems = res.items || [];
-    allItems.push(...newItems);
-
-    if (newItems.length === 0 || allItems.length >= res.totalCount) {
-      hasMore = false;
-    } else {
-      page++;
-    }
-  }
-
-  return {
-    items: allItems,
-    totalCount: allItems.length,
-  };
-}
-
 
 export async function getTypeOfUseMasterData(): Promise<TypeOfUseMasterData> {
   const [groupsResp, typesResp] = await Promise.all([
@@ -205,6 +165,30 @@ export async function getTypesByGroupPaged(input: {
 
 export async function getTypeById(id: string | number) {
   return await getUseTypeById(id);
+}
+
+// ✅ NEW: Lightweight lookup to resolve a type by ID or code without fetching all
+export async function resolveTypeId(typeIdOrCode: string): Promise<string> {
+  if (!typeIdOrCode) return "";
+  
+  try {
+    // Try as direct ID first
+    const type = await getUseTypeById(typeIdOrCode);
+    if (type) return String(type.typeOfUseId);
+  } catch {
+    // If ID lookup fails, it might be a code - search with pagination
+    const result = await getUseTypesPagedServer({
+      pageNumber: 1,
+      pageSize: 1,
+      searchTerm: typeIdOrCode, // Search by code
+    });
+    
+    // Find exact match by code
+    const match = result.items?.find(t => t.typeOfUseCode === typeIdOrCode);
+    if (match) return String(match.typeOfUseId);
+  }
+  
+  return "";
 }
 
 export async function createUseType(input: {

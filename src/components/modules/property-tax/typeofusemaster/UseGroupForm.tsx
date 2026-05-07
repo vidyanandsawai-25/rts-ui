@@ -1,49 +1,27 @@
 
 "use client";
 import { useTranslations } from 'next-intl';
-
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import {
-  Home,
-  Briefcase,
-  Factory,
-  GraduationCap,
-  Wheat,
-  MapPin,
   AlertCircle,
   Layers3,
-  ChevronDown,
+  CheckCircle2,
 } from "lucide-react";
-
-import type { UseGroup, UseGroupIconKey, UseGroupFormProps } from "@/types/typeOfUse.types";
+import type { UseGroup, UseGroupFormProps } from "@/types/typeOfUse.types";
 import { Input } from "@/components/common/Input";
-
 import {
   createUseGroup,
   updateUseGroup,
 } from "@/app/[locale]/property-tax/typeofusemaster/actions";
-
-import { ToggleSwitch } from "@/components/common/ToggleSwitch"; // ✅ adjust path if different
-import { CheckCircle2 } from "lucide-react";
+import { ToggleSwitch } from "@/components/common/ToggleSwitch";
 import { Drawer } from '@/components/common/Drawer';
-
 import { CancelButton, SaveButton, ValidationMessage } from '@/components/common';
 import { validateForm } from '@/lib/utils/validation-helpers';
-import { CODE_REGEX, CODE_SANITIZE, TEXT_ALLOWED, TEXT_SANITIZE } from '@/lib/utils/validation-rules';
-import type { Validator } from '@/lib/utils/validation-helpers';
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const ICON_OPTIONS: Array<{ value: UseGroupIconKey; label: string; Icon: any }> =
-  [
-    { value: "home", label: "Home", Icon: Home },
-    { value: "building", label: "Briefcase", Icon: Briefcase },
-    { value: "factory", label: "Factory", Icon: Factory },
-    { value: "school", label: "School", Icon: GraduationCap },
-    { value: "leaf", label: "Wheat", Icon: Wheat },
-    { value: "map", label: "MapPin", Icon: MapPin },
-  ];
+import { sanitizeCode, sanitizeText } from '@/lib/utils/sanitization';
+import { useGroupFormValidation } from '@/hooks/TypeOfUseMaster/useGroupFormValidation';
+import { GroupIconSelector, getIconKey } from './GroupIconSelector';
 
 type FieldErrors = {
   code?: string;
@@ -70,55 +48,16 @@ export default function UseGroupForm({ id, initialData, allGroups: allGroupsProp
   const [errors, setErrors] = useState<FieldErrors>({});
   const [submittedOnce, setSubmittedOnce] = useState(false);
   const [touched, setTouched] = useState<Record<string, boolean>>({});
-  const [iconDropdownOpen, setIconDropdownOpen] = useState(false);
-  const iconDropdownRef = useRef<HTMLDivElement>(null);
 
-  // Removed unused iconOpen and iconWrapRef
-
-  // Sanitization helpers using common validation patterns
-  const sanitizeCode = (value: string, maxLength: number = 10): string => {
-    return value.replace(CODE_SANITIZE, '').slice(0, maxLength);
-  };
-
-  const sanitizeText = (value: string, maxLength: number = 100): string => {
-    return value.replace(TEXT_SANITIZE, '').slice(0, maxLength);
-  };
-
-  // Duplicate check helpers
-  const normalize = (v: string) => v.trim().toLowerCase();
-
-  // Helper to convert groupIcon string to UseGroupIconKey for display
-  const getIconKey = (iconStr: string): UseGroupIconKey => {
-    if (iconStr.includes('home')) return 'home';
-    if (iconStr.includes('building') || iconStr.includes('briefcase')) return 'building';
-    if (iconStr.includes('factory')) return 'factory';
-    if (iconStr.includes('school') || iconStr.includes('graduation')) return 'school';
-    if (iconStr.includes('leaf') || iconStr.includes('wheat')) return 'leaf';
-    if (iconStr.includes('map') || iconStr.includes('pin')) return 'map';
-    return 'home';
-  };
-
-  // Removed unused selectedIconOption
-
+  // Use validation hook
+  const { validationSchema } = useGroupFormValidation({
+    formData,
+    allGroups,
+    isEdit,
+    t,
+  });
 
   const isActiveStatus = formData.isActive ?? true;
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (iconDropdownRef.current && !iconDropdownRef.current.contains(event.target as Node)) {
-        setIconDropdownOpen(false);
-      }
-    };
-
-    if (iconDropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [iconDropdownOpen]);
 
   const handleStatusToggle = () => {
     setFormData((p) => ({
@@ -128,54 +67,11 @@ export default function UseGroupForm({ id, initialData, allGroups: allGroupsProp
     }));
   };
 
-  const isDuplicateCode = (code: string): boolean => {
-    const c = normalize(code);
-    if (!c) return false;
-    return allGroups.some((g) => {
-      if (isEdit && g.typeOfUseGroupId === formData.typeOfUseGroupId) return false;
-      return normalize(g.typeOfUseGroupCode || '') === c;
-    });
-  };
-
-  const isDuplicateGroupName = (name: string): boolean => {
-    const nm = normalize(name);
-    if (!nm) return false;
-    return allGroups.some((g) => {
-      if (isEdit && g.typeOfUseGroupId === formData.typeOfUseGroupId) return false;
-      return normalize(g.groupName || '') === nm;
-    });
-  };
-
-  // Validation schema using common validation patterns
-  const validationSchema: Record<string, Validator> = {
-    typeOfUseGroupCode: (value: unknown) => {
-      const code = String(value ?? '').trim();
-      
-      if (!code) return t('group.fields.groupId') + ' ' + t('messages.createError');
-      if (code.length > 10) return t('group.fields.groupId') + ' ' + t('messages.maxLength', { count: 10 });
-      if (!CODE_REGEX.test(code)) return t('group.fields.groupId') + ' ' + t('messages.onlyAlphanumeric');
-      if (isDuplicateCode(code)) return t('messages.duplicateGroupId');
-      
-      return undefined;
-    },
-    
-    groupName: (value: unknown) => {
-      const name = String(value ?? '').trim();
-      
-      if (!name) return t('group.fields.groupName') + ' ' + t('messages.createError');
-      if (name.length > 100) return t('group.fields.groupName') + ' ' + t('messages.maxLength', { count: 100 });
-      if (!TEXT_ALLOWED.test(name)) return t('group.fields.groupName') + ' ' + t('messages.allowedChars');
-      if (isDuplicateGroupName(name)) return t('messages.duplicateGroupName');
-      
-      return undefined;
-    }
-  };
-
   const showError = (field: keyof FieldErrors) =>
     (submittedOnce || touched[field as string]) && !!errors[field];
 
-  const handleBlur = (name: keyof UseGroup | "code") => {
-    setTouched((p) => ({ ...p, [name as string]: true }));
+  const handleBlur = (field: keyof FieldErrors) => {
+    setTouched((p) => ({ ...p, [field]: true }));
 
     const validationErrors = validateForm(formData, validationSchema);
     setErrors({
@@ -217,11 +113,8 @@ export default function UseGroupForm({ id, initialData, allGroups: allGroupsProp
       }
 
       router.back();
-    }
-   
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    catch (err: any) {
-      const msg = String(err?.message ?? "").toLowerCase();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message.toLowerCase() : '';
 
       const isDup =
         msg.includes("duplicate") ||
@@ -331,7 +224,7 @@ export default function UseGroupForm({ id, initialData, allGroups: allGroupsProp
                     });
                   }
                 }}
-                onBlur={() => handleBlur("typeOfUseGroupCode")}
+                onBlur={() => handleBlur("code")}
                 placeholder={t('group.placeholders.groupId')}
                 required
                 fullWidth
@@ -362,7 +255,7 @@ export default function UseGroupForm({ id, initialData, allGroups: allGroupsProp
                     });
                   }
                 }}
-                onBlur={() => handleBlur("groupName")}
+                onBlur={() => handleBlur("name")}
                 placeholder={t('group.placeholders.groupName')}
                 required
                 fullWidth
@@ -374,58 +267,12 @@ export default function UseGroupForm({ id, initialData, allGroups: allGroupsProp
             </div>
 
             {/* ICON DROPDOWN (custom with icon display) */}
-            <div className="flex flex-col">
-              <label className="mb-1.5 text-sm font-semibold text-gray-700">
-                {t('group.fields.iconType')} <span className="text-red-500">*</span>
-              </label>
-              <div ref={iconDropdownRef} className="relative">
-                <button
-                  type="button"
-                  onClick={() => setIconDropdownOpen(!iconDropdownOpen)}
-                  className="flex items-center justify-between w-full h-10 px-4 text-sm rounded-md border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all"
-                >
-                  <div className="flex items-center gap-2">
-                    {(() => {
-                      const selectedOption = ICON_OPTIONS.find(opt => opt.value === getIconKey(formData.groupIcon));
-                      const IconComponent = selectedOption?.Icon || Home;
-                      return (
-                        <>
-                          <IconComponent size={18} className="text-blue-600" />
-                          <span className="text-gray-800">{selectedOption?.label || 'Select icon'}</span>
-                        </>
-                      );
-                    })()}
-                  </div>
-                  <ChevronDown className="w-4 h-4 text-gray-400" />
-                </button>
-
-                {iconDropdownOpen && (
-                  <ul className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
-                    {ICON_OPTIONS.map((option) => {
-                      const IconComponent = option.Icon;
-                      const isSelected = getIconKey(formData.groupIcon) === option.value;
-                      return (
-                        <li
-                          key={option.value}
-                          onClick={() => {
-                            setFormData((p) => ({ ...p, groupIcon: `${option.value}-icon` }));
-                            setIconDropdownOpen(false);
-                          }}
-                          className={`flex items-center gap-3 px-4 py-2 cursor-pointer transition-colors hover:bg-blue-50 ${
-                            isSelected ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-gray-800'
-                          }`}
-                        >
-                          <IconComponent size={18} className={isSelected ? 'text-blue-600' : 'text-gray-600'} />
-                          <span>{option.label}</span>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
-              </div>
-              {/* spacing to match other fields */}
-              <div className="h-[18px]" />
-            </div>
+            <GroupIconSelector
+              value={formData.groupIcon}
+              onChange={(iconValue) => setFormData((p) => ({ ...p, groupIcon: iconValue }))}
+              label={t('group.fields.iconType')}
+              required
+            />
           </div>
         </div>
 

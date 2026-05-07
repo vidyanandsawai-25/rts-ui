@@ -1,9 +1,10 @@
 
 import {
   getSubTypesPaged,
-  getAllUseTypes,   // ✅ New
-  getAllUseGroups,  // ✅ New
-  getTypesByGroupPaged, // ✅ New - paginated types by group
+  getAllUseGroups,
+  getAllUseTypes, // ✅ Keep for counting across all groups
+  getTypesByGroupPaged,
+  resolveTypeId, // ✅ NEW - lightweight type lookup
 } from "./actions";
 
 import TypeOfUseMaster from
@@ -50,35 +51,19 @@ export default async function Page({
   const groupsResp = await getAllUseGroups();
 
   /* ---------------------------------------------------
-   * 3️⃣ Load TYPES (PAGINATED BY GROUP)
+   * 3️⃣ Fetch ALL types for counting & selection logic
    * --------------------------------------------------- */
-  // If groupId is provided, fetch paginated types for that group
-  // Otherwise, fetch first group's types
-  const effectiveGroupId = groupId || (groupsResp.items?.[0])?.typeOfUseGroupId || "";
-  
-  const typesResp = effectiveGroupId
-    ? await getTypesByGroupPaged({
-        pageNumber: typePageNumber,
-        pageSize: typePageSize,
-        typeOfUseGroupId: Number(effectiveGroupId) || undefined,
-        searchTerm: typeSearch || undefined,
-      })
-    : { items: [], totalCount: 0, totalPages: 1 };
-
-  // Also fetch ALL types for resolving selectedTypeId (needed for cross-group type selection)
+  // ✅ Needed for: 
+  //    - Displaying accurate type counts for ALL groups (not just selected)
+  //    - Selection logic in hooks (useTypeOfUseMasterSelection, etc.)
+  //    - First type lookup when switching groups
+  // Note: This is fetched ONCE per page load and cached in initialData
   const allTypesResp = await getAllUseTypes();
 
   /* ---------------------------------------------------
-   * 4️⃣ Build master data
+   * 4️⃣ Resolve SELECTED TYPE ID (from all types or URL)
    * --------------------------------------------------- */
-  const masterData = {
-    groups: groupsResp.items,
-    types: allTypesResp.items, // Keep all types for selection logic
-    subTypes: [],
-  };
-
-
-  const selectedTypeId = (() => {
+  const selectedTypeId = await (async () => {
     const typeParam = params.typeId;
     const groupParam = params.groupId;
 
@@ -92,31 +77,60 @@ export default async function Page({
       return "";
     }
 
-    // ✅ If we have typeId in URL, use it
+    // ✅ If we have typeId in URL, try to find it in allTypes first (fast)
     if (typeParam) {
-      const directMatch = masterData.types.find(
+      const directMatch = allTypesResp.items.find(
         (t) => String(t.typeOfUseId) === typeParam
       );
       if (directMatch) return String(directMatch.typeOfUseId);
 
-      const codeMatch = masterData.types.find(
+      const codeMatch = allTypesResp.items.find(
         (t) => t.typeOfUseCode === typeParam
       );
       if (codeMatch) return String(codeMatch.typeOfUseId);
+      
+      // ✅ Fallback: If not found in allTypes, try API lookup
+      const resolvedId = await resolveTypeId(typeParam);
+      if (resolvedId) return resolvedId;
     }
 
     // ✅ Default to first type only if no params at all (initial load)
     if (!typeParam && !groupParam) {
-      return String(masterData.types?.[0]?.typeOfUseId ?? "");
+      return String(allTypesResp.items?.[0]?.typeOfUseId ?? "");
     }
 
     return "";
   })();
 
-
+  /* ---------------------------------------------------
+   * 5️⃣ Load TYPES (PAGINATED BY GROUP for display)
+   * --------------------------------------------------- */
+  // ✅ PERFORMANCE: Fetch only current page of types for the selected group
+  // This reduces data transfer when displaying the type list
+  const effectiveGroupId = groupId || (groupsResp.items?.[0])?.typeOfUseGroupId || "";
+  
+  const typesResp = effectiveGroupId
+    ? await getTypesByGroupPaged({
+        pageNumber: typePageNumber,
+        pageSize: typePageSize,
+        typeOfUseGroupId: Number(effectiveGroupId) || undefined,
+        searchTerm: typeSearch || undefined,
+      })
+    : { items: [], totalCount: 0, totalPages: 1 };
 
   /* ---------------------------------------------------
-   * 6️⃣ Load SUBTYPES (SERVER PAGED + SEARCH)
+   * 6️⃣ Build master data
+   * --------------------------------------------------- */
+  // ✅ Pass ALL types for counting and selection logic
+  // ✅ Pagination happens in the UI layer for type display
+  const masterData = {
+    groups: groupsResp.items,
+    types: allTypesResp.items, // ✅ ALL types for accurate counts across all groups
+    subTypes: [],
+  };
+
+  /* ---------------------------------------------------
+   * 7️⃣ Load SUBTYPES (SERVER PAGED + SEARCH)
    * --------------------------------------------------- */
   const subTypeResp = selectedTypeId
     ? await getSubTypesPaged({
@@ -132,26 +146,27 @@ export default async function Page({
       };
 
   /* ---------------------------------------------------
-   * 7️⃣ Render UI
+   * 8️⃣ Render UI
    * --------------------------------------------------- */
   return (
     <TypeOfUseMaster
       initialData={masterData}
-      // SubType pagination
-      subTypes={subTypeResp.items}
-      subTotalCount={subTypeResp.totalCount}
-      subTotalPages={subTypeResp.totalPages}
-      pageNumber={pageNumber}
-      pageSize={pageSize}
-      // Type pagination (server-side)
-      paginatedTypes={typesResp.items}
-      typesTotalCount={typesResp.totalCount}
-      typesTotalPages={typesResp.totalPages}
-      typePageNumber={typePageNumber}
-      typePageSize={typePageSize}
-      // Selected type
+      typesPagination={{
+        paginatedTypes: typesResp.items,
+        totalCount: typesResp.totalCount,
+        totalPages: typesResp.totalPages,
+        pageNumber: typePageNumber,
+        pageSize: typePageSize,
+        searchFromServer: typeSearch,
+      }}
+      subTypesPagination={{
+        subTypes: subTypeResp.items,
+        totalCount: subTypeResp.totalCount,
+        totalPages: subTypeResp.totalPages,
+        pageNumber: pageNumber,
+        pageSize: pageSize,
+      }}
       selectedTypeId={selectedTypeId}
-      typeSearchFromServer={typeSearch}
     />
   );
 }

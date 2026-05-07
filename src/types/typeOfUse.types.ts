@@ -77,4 +77,29 @@ export interface UseSubTypeFormProps {
   allSubTypes?: UseSubType[];
 }
 
+// TypeOfUseMaster page component props with grouped structure
+export interface TypesPaginationProps {
+  paginatedTypes: UseType[];
+  totalCount: number;
+  totalPages: number;
+  pageNumber: number;
+  pageSize: number;
+  searchFromServer?: string;
+}
+
+export interface SubTypesPaginationProps {
+  subTypes: UseSubType[];
+  totalCount: number;
+  totalPages: number;
+  pageNumber: number;
+  pageSize: number;
+}
+
+export interface TypeOfUseMasterPageProps {
+  initialData: TypeOfUseMasterData;
+  typesPagination: TypesPaginationProps;
+  subTypesPagination: SubTypesPaginationProps;
+  selectedTypeId: string;
+}
+
 

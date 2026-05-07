@@ -207,6 +207,41 @@ const mockInitialData: TypeOfUseMasterData = {
   subTypes: [],
 };
 
+// Helper function to create grouped props for the new component structure
+const createMockProps = ({
+  initialData = mockInitialData,
+  subTypes = mockSubTypes,
+  subTotalCount = 2,
+  subTotalPages = 1,
+  pageNumber = 1,
+  pageSize = 10,
+  paginatedTypes = mockTypes,
+  typesTotalCount = 2,
+  typesTotalPages = 1,
+  typePageNumber = 1,
+  typePageSize = 10,
+  selectedTypeId = "1",
+  typeSearchFromServer = undefined,
+} = {}) => ({
+  initialData,
+  typesPagination: {
+    paginatedTypes,
+    totalCount: typesTotalCount,
+    totalPages: typesTotalPages,
+    pageNumber: typePageNumber,
+    pageSize: typePageSize,
+    searchFromServer: typeSearchFromServer,
+  },
+  subTypesPagination: {
+    subTypes,
+    totalCount: subTotalCount,
+    totalPages: subTotalPages,
+    pageNumber,
+    pageSize,
+  },
+  selectedTypeId,
+});
+
 const renderWithIntl = (component: React.ReactElement) => {
   return render(
     <NextIntlClientProvider locale="en" messages={mockMessages}>
@@ -223,20 +258,7 @@ describe("TypeOfUseMaster", () => {
   describe("Rendering", () => {
     it("should render the component with title", () => {
       renderWithIntl(
-        <TypeOfUseMaster
-          initialData={mockInitialData}
-          subTypes={mockSubTypes}
-          subTotalCount={2}
-          subTotalPages={1}
-          pageNumber={1}
-          pageSize={10}
-          paginatedTypes={mockTypes}
-          typesTotalCount={2}
-          typesTotalPages={1}
-          typePageNumber={1}
-          typePageSize={10}
-          selectedTypeId="1"
-        />
+        <TypeOfUseMaster {...createMockProps()} />
       );
 
       expect(screen.getByText("Type of Use Master")).toBeInTheDocument();
@@ -245,20 +267,7 @@ describe("TypeOfUseMaster", () => {
 
     it("should render use groups", () => {
       renderWithIntl(
-        <TypeOfUseMaster
-          initialData={mockInitialData}
-          subTypes={mockSubTypes}
-          subTotalCount={2}
-          subTotalPages={1}
-          pageNumber={1}
-          pageSize={10}
-          paginatedTypes={mockTypes}
-          typesTotalCount={2}
-          typesTotalPages={1}
-          typePageNumber={1}
-          typePageSize={10}
-          selectedTypeId="1"
-        />
+        <TypeOfUseMaster {...createMockProps()} />
       );
 
       expect(screen.getByText("Residential")).toBeInTheDocument();
@@ -267,20 +276,7 @@ describe("TypeOfUseMaster", () => {
 
     it("should render add group button", () => {
       renderWithIntl(
-        <TypeOfUseMaster
-          initialData={mockInitialData}
-          subTypes={mockSubTypes}
-          subTotalCount={2}
-          subTotalPages={1}
-          pageNumber={1}
-          pageSize={10}
-          paginatedTypes={mockTypes}
-          typesTotalCount={2}
-          typesTotalPages={1}
-          typePageNumber={1}
-          typePageSize={10}
-          selectedTypeId="1"
-        />
+        <TypeOfUseMaster {...createMockProps()} />
       );
 
       expect(screen.getByText("Add Use Group")).toBeInTheDocument();
@@ -290,20 +286,7 @@ describe("TypeOfUseMaster", () => {
   describe("Group Selection", () => {
     it("should highlight selected group", () => {
       renderWithIntl(
-        <TypeOfUseMaster
-          initialData={mockInitialData}
-          subTypes={mockSubTypes}
-          subTotalCount={2}
-          subTotalPages={1}
-          pageNumber={1}
-          pageSize={10}
-          paginatedTypes={mockTypes}
-          typesTotalCount={2}
-          typesTotalPages={1}
-          typePageNumber={1}
-          typePageSize={10}
-          selectedTypeId="1"
-        />
+        <TypeOfUseMaster {...createMockProps()} />
       );
 
       const groupCards = screen.getAllByRole("button");
@@ -322,20 +305,7 @@ describe("TypeOfUseMaster", () => {
   describe("Type Management", () => {
     it("should show types for selected group", () => {
       renderWithIntl(
-        <TypeOfUseMaster
-          initialData={mockInitialData}
-          subTypes={mockSubTypes}
-          subTotalCount={2}
-          subTotalPages={1}
-          pageNumber={1}
-          pageSize={10}
-          paginatedTypes={mockTypes}
-          typesTotalCount={2}
-          typesTotalPages={1}
-          typePageNumber={1}
-          typePageSize={10}
-          selectedTypeId="1"
-        />
+        <TypeOfUseMaster {...createMockProps()} />
       );
 
       // Types should be visible
@@ -344,20 +314,7 @@ describe("TypeOfUseMaster", () => {
 
     it("should render add type button", () => {
       renderWithIntl(
-        <TypeOfUseMaster
-          initialData={mockInitialData}
-          subTypes={mockSubTypes}
-          subTotalCount={2}
-          subTotalPages={1}
-          pageNumber={1}
-          pageSize={10}
-          paginatedTypes={mockTypes}
-          typesTotalCount={2}
-          typesTotalPages={1}
-          typePageNumber={1}
-          typePageSize={10}
-          selectedTypeId="1"
-        />
+        <TypeOfUseMaster {...createMockProps()} />
       );
 
       expect(screen.getByText("Add Type of Use")).toBeInTheDocument();
@@ -367,20 +324,7 @@ describe("TypeOfUseMaster", () => {
   describe("SubType Management", () => {
     it("should render subtypes table", () => {
       renderWithIntl(
-        <TypeOfUseMaster
-          initialData={mockInitialData}
-          subTypes={mockSubTypes}
-          subTotalCount={2}
-          subTotalPages={1}
-          pageNumber={1}
-          pageSize={10}
-          paginatedTypes={mockTypes}
-          typesTotalCount={2}
-          typesTotalPages={1}
-          typePageNumber={1}
-          typePageSize={10}
-          selectedTypeId="1"
-        />
+        <TypeOfUseMaster {...createMockProps()} />
       );
 
       expect(screen.getByText("Ground Floor")).toBeInTheDocument();
@@ -389,20 +333,7 @@ describe("TypeOfUseMaster", () => {
 
     it("should render add subtype button", () => {
       renderWithIntl(
-        <TypeOfUseMaster
-          initialData={mockInitialData}
-          subTypes={mockSubTypes}
-          subTotalCount={2}
-          subTotalPages={1}
-          pageNumber={1}
-          pageSize={10}
-          paginatedTypes={mockTypes}
-          typesTotalCount={2}
-          typesTotalPages={1}
-          typePageNumber={1}
-          typePageSize={10}
-          selectedTypeId="1"
-        />
+        <TypeOfUseMaster {...createMockProps()} />
       );
 
       expect(screen.getByText("Add Sub-Type of Use")).toBeInTheDocument();
@@ -412,20 +343,7 @@ describe("TypeOfUseMaster", () => {
   describe("Search Functionality", () => {
     it("should have search input for types", () => {
       renderWithIntl(
-        <TypeOfUseMaster
-          initialData={mockInitialData}
-          subTypes={mockSubTypes}
-          subTotalCount={2}
-          subTotalPages={1}
-          pageNumber={1}
-          pageSize={10}
-          paginatedTypes={mockTypes}
-          typesTotalCount={2}
-          typesTotalPages={1}
-          typePageNumber={1}
-          typePageSize={10}
-          selectedTypeId="1"
-        />
+        <TypeOfUseMaster {...createMockProps()} />
       );
 
       // Search input should be present
@@ -437,20 +355,7 @@ describe("TypeOfUseMaster", () => {
   describe("Status Display", () => {
     it("should display active status badges", () => {
       renderWithIntl(
-        <TypeOfUseMaster
-          initialData={mockInitialData}
-          subTypes={mockSubTypes}
-          subTotalCount={2}
-          subTotalPages={1}
-          pageNumber={1}
-          pageSize={10}
-          paginatedTypes={mockTypes}
-          typesTotalCount={2}
-          typesTotalPages={1}
-          typePageNumber={1}
-          typePageSize={10}
-          selectedTypeId="1"
-        />
+        <TypeOfUseMaster {...createMockProps()} />
       );
 
       const activeBadges = screen.getAllByText("Active");
@@ -467,20 +372,15 @@ describe("TypeOfUseMaster", () => {
       };
 
       renderWithIntl(
-        <TypeOfUseMaster
-          initialData={emptyData}
-          subTypes={[]}
-          subTotalCount={0}
-          subTotalPages={0}
-          pageNumber={1}
-          pageSize={10}
-          paginatedTypes={[]}
-          typesTotalCount={0}
-          typesTotalPages={0}
-          typePageNumber={1}
-          typePageSize={10}
-          selectedTypeId="1"
-        />
+        <TypeOfUseMaster {...createMockProps({
+          initialData: emptyData,
+          subTypes: [],
+          subTotalCount: 0,
+          subTotalPages: 0,
+          paginatedTypes: [],
+          typesTotalCount: 0,
+          typesTotalPages: 0,
+        })} />
       );
 
       expect(screen.getByText("No types found for selected group.")).toBeInTheDocument();
@@ -490,20 +390,7 @@ describe("TypeOfUseMaster", () => {
   describe("Navigation", () => {
     it("should navigate to add group page", () => {
       renderWithIntl(
-        <TypeOfUseMaster
-          initialData={mockInitialData}
-          subTypes={mockSubTypes}
-          subTotalCount={2}
-          subTotalPages={1}
-          pageNumber={1}
-          pageSize={10}
-          paginatedTypes={mockTypes}
-          typesTotalCount={2}
-          typesTotalPages={1}
-          typePageNumber={1}
-          typePageSize={10}
-          selectedTypeId="1"
-        />
+        <TypeOfUseMaster {...createMockProps()} />
       );
 
       const addGroupButton = screen.getByText("Add Use Group");
@@ -516,20 +403,7 @@ describe("TypeOfUseMaster", () => {
 
     it("should navigate to add type page with groupId", () => {
       renderWithIntl(
-        <TypeOfUseMaster
-          initialData={mockInitialData}
-          subTypes={mockSubTypes}
-          subTotalCount={2}
-          subTotalPages={1}
-          pageNumber={1}
-          pageSize={10}
-          paginatedTypes={mockTypes}
-          typesTotalCount={2}
-          typesTotalPages={1}
-          typePageNumber={1}
-          typePageSize={10}
-          selectedTypeId="1"
-        />
+        <TypeOfUseMaster {...createMockProps()} />
       );
 
       const addTypeButton = screen.getByText("Add Type of Use");

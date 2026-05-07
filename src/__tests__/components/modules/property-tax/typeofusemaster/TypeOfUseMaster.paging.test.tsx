@@ -81,6 +81,42 @@ const mockSubTypes: UseSubType[] = [
   { subTypeOfUseId: 2, description: "First Floor", typeOfUseId: 1, searchSequence: 2, isActive: true, status: "Active" },
 ];
 const mockInitialData: TypeOfUseMasterData = { groups: mockGroups, types: mockTypes, subTypes: [] };
+
+// Helper function to create grouped props for the new component structure
+const createMockProps = ({
+  initialData = mockInitialData,
+  subTypes = mockSubTypes,
+  subTotalCount = 2,
+  subTotalPages = 1,
+  pageNumber = 1,
+  pageSize = 10,
+  paginatedTypes = mockTypes,
+  typesTotalCount = 2,
+  typesTotalPages = 1,
+  typePageNumber = 1,
+  typePageSize = 10,
+  selectedTypeId = "1",
+  typeSearchFromServer = undefined,
+} = {}) => ({
+  initialData,
+  typesPagination: {
+    paginatedTypes,
+    totalCount: typesTotalCount,
+    totalPages: typesTotalPages,
+    pageNumber: typePageNumber,
+    pageSize: typePageSize,
+    searchFromServer: typeSearchFromServer,
+  },
+  subTypesPagination: {
+    subTypes,
+    totalCount: subTotalCount,
+    totalPages: subTotalPages,
+    pageNumber,
+    pageSize,
+  },
+  selectedTypeId,
+});
+
 const renderWithIntl = (component: React.ReactElement) => {
   return render(
     <NextIntlClientProvider locale="en" messages={mockMessages}>
@@ -94,20 +130,10 @@ describe("TypeOfUseMaster - Paging & URL", () => {
 
   it("should update page when pagination is used", () => {
     renderWithIntl(
-      <TypeOfUseMaster
-        initialData={mockInitialData}
-        subTypes={mockSubTypes}
-        subTotalCount={2}
-        subTotalPages={2}
-        pageNumber={1}
-        pageSize={1}
-        paginatedTypes={mockTypes}
-        typesTotalCount={2}
-        typesTotalPages={1}
-        typePageNumber={1}
-        typePageSize={10}
-        selectedTypeId="1"
-      />
+      <TypeOfUseMaster {...createMockProps({
+        subTotalPages: 2,
+        pageSize: 1,
+      })} />
     );
     // Simulate clicking next page (assume a button with label 'Next page' exists)
     const nextBtns = screen.getAllByLabelText(/next page/i);
@@ -118,20 +144,7 @@ describe("TypeOfUseMaster - Paging & URL", () => {
 
   it("should reflect group/type selection in URL", () => {
     renderWithIntl(
-      <TypeOfUseMaster
-        initialData={mockInitialData}
-        subTypes={mockSubTypes}
-        subTotalCount={2}
-        subTotalPages={1}
-        pageNumber={1}
-        pageSize={10}
-        paginatedTypes={mockTypes}
-        typesTotalCount={2}
-        typesTotalPages={1}
-        typePageNumber={1}
-        typePageSize={10}
-        selectedTypeId="1"
-      />
+      <TypeOfUseMaster {...createMockProps()} />
     );
     // Simulate group selection (assume a button with group name exists)
     const groupBtn = screen.getByText("Commercial");
@@ -141,20 +154,7 @@ describe("TypeOfUseMaster - Paging & URL", () => {
 
   it("should prevent duplicate type codes and descriptions", () => {
     renderWithIntl(
-      <TypeOfUseMaster
-        initialData={mockInitialData}
-        subTypes={mockSubTypes}
-        subTotalCount={2}
-        subTotalPages={1}
-        pageNumber={1}
-        pageSize={10}
-        paginatedTypes={mockTypes}
-        typesTotalCount={2}
-        typesTotalPages={1}
-        typePageNumber={1}
-        typePageSize={10}
-        selectedTypeId="1"
-      />
+      <TypeOfUseMaster {...createMockProps()} />
     );
     // Simulate trying to add a duplicate type (assume a form/input exists)
     // This is a placeholder: actual implementation depends on your form structure

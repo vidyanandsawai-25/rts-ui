@@ -3,28 +3,27 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from 'next-intl';
-
 import { useRouter, useSearchParams } from "next/navigation";
-import { Tag, AlertCircle } from "lucide-react";
-
+import { Tag, AlertCircle, CheckCircle2 } from "lucide-react";
 import type { UseGroup, UseType, UseTypeFormProps } from "@/types/typeOfUse.types";
-
-import { Input } from "@/components/common/Input";
-
 import {
   createUseType,
   updateUseType,
 } from "@/app/[locale]/property-tax/typeofusemaster/actions";
-
-
-import { CheckCircle2 } from "lucide-react";
 import { ToggleSwitch } from "@/components/common/ToggleSwitch";
 import { toast } from "sonner";
 import { Drawer } from "@/components/common/Drawer";
-import { CancelButton, SaveButton, ValidationMessage } from "@/components/common";
+import { CancelButton, SaveButton } from "@/components/common";
 import { validateForm } from '@/lib/utils/validation-helpers';
-import { CODE_REGEX, CODE_SANITIZE, DESCRIPTION_REGEX, DESCRIPTION_SANITIZE } from '@/lib/utils/validation-rules';
-import type { Validator } from '@/lib/utils/validation-helpers';
+import { sanitizeCode, sanitizeDescription } from '@/lib/utils/sanitization';
+import { useTypeFormValidation } from '@/hooks/TypeOfUseMaster/useTypeFormValidation';
+import {
+  TypeSelector,
+  GroupSelector,
+  TypeCodeInput,
+  SearchSequenceInput,
+  DescriptionInput,
+} from './TypeFormFields';
 
 type FieldErrors = {
   code?: string;
@@ -43,7 +42,7 @@ export default function UseTypeForm({ id, initialData, allGroups: allGroupsProp 
   const queryGroupId = Number(searchParams.get("groupId") || 0);
 
   const [allGroups] = useState<UseGroup[]>(allGroupsProp);
-  const [allTypes] = useState<UseType[]>(allTypesProp); // ✅ for duplicate check
+  const [allTypes] = useState<UseType[]>(allTypesProp);
 
   const [formData, setFormData] = useState<UseType>(
     initialData || {
@@ -62,17 +61,14 @@ export default function UseTypeForm({ id, initialData, allGroups: allGroupsProp 
   const [errors, setErrors] = useState<FieldErrors>({});
   const [submittedOnce, setSubmittedOnce] = useState(false);
 
-  // Sanitization helpers using common validation patterns
-  const sanitizeCode = (value: string, maxLength: number = 10): string => {
-    return value.replace(CODE_SANITIZE, '').slice(0, maxLength);
-  };
-
-  const sanitizeDescription = (value: string, maxLength: number = 100): string => {
-    return value.replace(DESCRIPTION_SANITIZE, '').slice(0, maxLength);
-  };
-
-  // Duplicate check helpers
-  const normalize = (v: string) => v.trim().toLowerCase();
+  // Use validation hook
+  const { validationSchema } = useTypeFormValidation({
+    formData,
+    typeValue,
+    allTypes,
+    isEdit,
+    t,
+  });
 
   const isActive = formData.isActive ?? true;
 
@@ -92,69 +88,6 @@ export default function UseTypeForm({ id, initialData, allGroups: allGroupsProp 
     [allGroups, formData.typeOfUseGroupId]
   );
 
-  const isDuplicateCode = (code: string): boolean => {
-    const c = normalize(code);
-    if (!c) return false;
-    return allTypes.some((t) => {
-      if (isEdit && t.typeOfUseId === formData.typeOfUseId) return false;
-      return normalize(t.typeOfUseCode) === c;
-    });
-  };
-
-  const isDuplicateDescription = (desc: string): boolean => {
-    const d = normalize(desc);
-    if (!d) return false;
-    return allTypes.some((t) => {
-      if (isEdit && t.typeOfUseId === formData.typeOfUseId) return false;
-      return normalize(t.description ?? '') === d;
-    });
-  };
-
-  // Validation schema using common validation patterns
-  const validationSchema: Record<string, Validator> = {
-    typeOfUseCode: (value: unknown) => {
-      const code = String(value ?? '').trim();
-      
-      if (!code) return t('type.fields.typeId') + ' ' + t('messages.createError');
-      if (code.length > 10) return t('type.fields.typeId') + ' ' + t('messages.maxLength', { count: 10 });
-      if (!CODE_REGEX.test(code)) return t('type.fields.typeId') + ' ' + t('messages.onlyAlphanumeric');
-      if (isDuplicateCode(code)) return t('messages.duplicateTypeId');
-      
-      return undefined;
-    },
-    
-    type: (value: unknown) => {
-      const type = String(value ?? '').trim();
-      if (!type) return t('messages.typeRequired');
-      return undefined;
-    },
-    
-    typeOfUseGroupId: (value: unknown) => {
-      const groupId = Number(value);
-      if (!groupId) return t('messages.groupRequired');
-      return undefined;
-    },
-    
-    description: (value: unknown) => {
-      const desc = String(value ?? '').trim();
-      
-      if (!desc) return t('messages.descriptionRequired');
-      if (desc.length > 100) return t('type.fields.description') + ' ' + t('messages.maxLength', { count: 100 });
-      if (!DESCRIPTION_REGEX.test(desc)) return t('type.fields.description') + ' ' + t('messages.allowedChars');
-      if (isDuplicateDescription(desc)) return t('messages.duplicateDescription');
-      
-      return undefined;
-    },
-    
-    searchSequence: (value: unknown) => {
-      const seq = Number(value);
-      if (!Number.isFinite(seq) || seq < 0) {
-        return t('type.fields.sequence') + ' ' + t('messages.sequenceNonNegative');
-      }
-      return undefined;
-    }
-  };
-
   const clearFieldError = (field: keyof FieldErrors) => {
     setErrors((p) => {
       if (!p[field]) return p;
@@ -162,46 +95,6 @@ export default function UseTypeForm({ id, initialData, allGroups: allGroupsProp 
       delete next[field];
       return next;
     });
-  };
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-
-    if (name === "typeOfUseCode") {
-      const cleaned = sanitizeCode(value, 10);
-      setFormData((p) => ({ ...p, typeOfUseCode: cleaned }));
-      if (submittedOnce) clearFieldError("code");
-      return;
-    }
-
-    if (name === "description") {
-      const cleaned = sanitizeDescription(value, 100);
-      setFormData((p) => ({ ...p, description: cleaned }));
-      if (submittedOnce) clearFieldError("description");
-      return;
-    }
-
-    if (name === "searchSequence") {
-      const num = parseInt(value || "0", 10);
-      setFormData((p) => ({ ...p, searchSequence: num }));
-      if (submittedOnce) clearFieldError("searchSequence");
-      return;
-    }
-
-    if (name === "typeOfUseGroupId") {
-      // Parse select value as number to ensure strict equality checks work
-      const num = Number(value) || 0;
-      setFormData((p) => ({ ...p, typeOfUseGroupId: num }));
-      if (submittedOnce) clearFieldError("groupId");
-      return;
-    }
-
-    setFormData((p) => ({ ...p, [name]: value }));
-    if (submittedOnce) {
-      if (name === "typeOfUseGroupId") clearFieldError("groupId");
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -247,7 +140,7 @@ export default function UseTypeForm({ id, initialData, allGroups: allGroupsProp 
       }
       router.back();
     } catch (err: unknown) {
-      toast.error((err as Error)?.message || t('messages.saveFailed'));
+      toast.error(err instanceof Error ? err.message : t('messages.saveFailed'));
     }
   };
 
@@ -321,125 +214,66 @@ export default function UseTypeForm({ id, initialData, allGroups: allGroupsProp 
         <div className="rounded-xl border border-[#DCEAFF] bg-slate-50 p-5 space-y-4">
           <div className="grid grid-cols-2 gap-4">
             {/* Type Dropdown */}
-            <div className="flex flex-col">
-              <label htmlFor="type-select" className="mb-1.5 text-sm font-semibold text-gray-700">
-                {t('type.fields.type')} <span className="text-red-500">*</span>
-              </label>
-              <select
-                id="type-select"
-                value={typeValue}
-                onChange={(e) => {
-                  setTypeValue(e.target.value);
-                  if (submittedOnce) clearFieldError("typeValue");
-                }}
-                className="w-full text-slate-700 rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-200"
-              >
-                <option value="" disabled>
-                  {t('type.selectType')}
-                </option>
-                <option value="R">{t('type.options.residential')}</option>
-                <option value="C">{t('type.options.commercial')}</option>
-                <option value="I">{t('type.options.industrial')}</option>
-                <option value="N">{t('type.options.nontaxable')}</option>
-              </select>
-              <ValidationMessage
-                message={errors.typeValue}
-                visible={submittedOnce && !!errors.typeValue}
-              />
-            </div>
+            <TypeSelector
+              value={typeValue}
+              onChange={setTypeValue}
+              onClearError={() => clearFieldError("typeValue")}
+              error={errors.typeValue}
+              showError={submittedOnce && !!errors.typeValue}
+              t={t}
+            />
 
             {/* UseTypeGroup */}
-            <div className="flex flex-col">
-              <label htmlFor="use-type-group-select" className="mb-1.5 text-sm font-semibold text-gray-700">
-                {t('type.fields.useTypeGroup')} <span className="text-red-500">*</span>
-              </label>
+            <GroupSelector
+              allGroups={allGroups}
+              selectedGroupId={formData.typeOfUseGroupId}
+              onChange={(groupId) => {
+                setFormData((p) => ({ ...p, typeOfUseGroupId: groupId }));
+                if (submittedOnce) clearFieldError("groupId");
+              }}
+              onClearError={() => clearFieldError("groupId")}
+              error={errors.groupId}
+              showError={submittedOnce && !!errors.groupId}
+              t={t}
+            />
 
-              <select
-                id="use-type-group-select"
-                name="typeOfUseGroupId"
-                value={formData.typeOfUseGroupId || ""}
-                onChange={handleChange}
-                className=" w-full text-slate-700 rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-200"
-              >
-                <option value="" disabled>
-                  {t('type.selectUseTypeGroup')}
-                </option>
-                {allGroups.map((g) => (
-                  <option key={g.typeOfUseGroupId} value={g.typeOfUseGroupId}>
-                    {g.groupName}
-                  </option>
-                ))}
-              </select>
+            {/* Type Code Input */}
+            <TypeCodeInput
+              value={formData.typeOfUseCode}
+              onChange={(value) => {
+                const cleaned = sanitizeCode(value, 10);
+                setFormData((p) => ({ ...p, typeOfUseCode: cleaned }));
+                if (submittedOnce) clearFieldError("code");
+              }}
+              error={errors.code}
+              showError={submittedOnce && !!errors.code}
+              t={t}
+            />
 
-              <ValidationMessage
-                message={errors.groupId}
-                visible={submittedOnce && !!errors.groupId}
-              />
-
-              {/* {selectedGroup && (
-                <div className="mt-2 text-xs text-slate-600">
-                  {t('type.selectedGroup', { group: selectedGroup.groupName })}<b>{selectedGroup.groupName}</b>
-                </div>
-              )} */}
-            </div>
-
-            <div className="flex flex-col">
-              <Input
-                label={t('type.fields.typeId')}
-                name="typeOfUseCode"
-                value={formData.typeOfUseCode}
-                onChange={handleChange}
-                placeholder={t('type.placeholders.typeId')}
-                fullWidth
-                required={true}
-                className="rounded-xl px-4 py-2"
-                maxLength={10}
-              />
-              <ValidationMessage
-                message={errors.code}
-                visible={submittedOnce && !!errors.code}
-              />
-            </div>
-
-            
             {/* Search Sequence */}
-            <div className="flex flex-col">
-              <Input
-                label={t('messages.searchSequenceLabel')}
-                name="searchSequence"
-                type="number"
-                value={String(formData.searchSequence ?? 0)}
-                onChange={handleChange}
-                placeholder="0"
-                min={0}
-                fullWidth
-                className="rounded-xl px-4 py-2"
-              />
-              <ValidationMessage
-                message={errors.searchSequence}
-                visible={submittedOnce && !!errors.searchSequence}
-              />
-            </div>
+            <SearchSequenceInput
+              value={formData.searchSequence ?? 0}
+              onChange={(value) => {
+                setFormData((p) => ({ ...p, searchSequence: value }));
+                if (submittedOnce) clearFieldError("searchSequence");
+              }}
+              error={errors.searchSequence}
+              showError={submittedOnce && !!errors.searchSequence}
+              t={t}
+            />
 
-            {/* ✅ Description (REQUIRED) */}
-            <div className="flex flex-col col-span-2">
-              <Input
-                label={t('type.fields.description')}
-                name="description"
-                value={formData.description || ""}
-                onChange={handleChange}
-                placeholder={t('type.placeholders.description')}
-                fullWidth
-                className="rounded-xl px-4 py-2"
-                maxLength={100}
-                required
-              />
-              <ValidationMessage
-                message={errors.description}
-                visible={submittedOnce && !!errors.description}
-              />
-            </div>
-
+            {/* Description */}
+            <DescriptionInput
+              value={formData.description || ""}
+              onChange={(value) => {
+                const cleaned = sanitizeDescription(value, 100);
+                setFormData((p) => ({ ...p, description: cleaned }));
+                if (submittedOnce) clearFieldError("description");
+              }}
+              error={errors.description}
+              showError={submittedOnce && !!errors.description}
+              t={t}
+            />
           </div>
         </div>
 
