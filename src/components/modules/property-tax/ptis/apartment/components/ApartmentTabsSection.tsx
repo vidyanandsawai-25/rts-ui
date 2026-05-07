@@ -10,12 +10,15 @@ interface ApartmentTabsSectionProps {
   searchParams: Record<string, string | string[] | undefined>;
 }
 
+
 const ApartmentTabsSection: React.FC<ApartmentTabsSectionProps> = () => {
   const t = useTranslations('ptis.apartmentTabs');
+  const [activeTab, setActiveTab] = React.useState<string | number>('amenities');
   return (
     <div className="pt-2">
       <Tabs
-        defaultValue="amenities"
+        value={activeTab}
+        onChange={setActiveTab}
         items={[
           {
             value: 'amenities',
