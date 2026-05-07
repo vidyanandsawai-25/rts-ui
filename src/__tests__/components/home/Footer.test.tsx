@@ -1,7 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-// Mock Footer as a synchronous component for testing
-import React from 'react';
 
 // Sync mock Footer for testing (matches expected output structure)
 const Footer = ({ ulbName }: { ulbName?: string }) => {
@@ -29,14 +27,14 @@ describe('Footer Component', () => {
 
   it('renders with provided ulbName', async () => {
     render(<Footer ulbName="Test Municipality" />);
-    const matches = await screen.findAllByText((content, node) => node.textContent?.includes('Test Municipality'));
+    const matches = await screen.findAllByText((_content, node) => node?.textContent?.includes('Test Municipality') ?? false);
     expect(matches.length).toBeGreaterThan(0);
   });
 
 
   it('renders with default ulbName when not provided', async () => {
     render(<Footer />);
-    const matches = await screen.findAllByText((content, node) => node.textContent?.includes('Default Municipality'));
+    const matches = await screen.findAllByText((_content, node) => node?.textContent?.includes('Default Municipality') ?? false);
     expect(matches.length).toBeGreaterThan(0);
   });
 
@@ -44,14 +42,14 @@ describe('Footer Component', () => {
   it('displays copyright symbol and current year', async () => {
     const currentYear = new Date().getFullYear();
     render(<Footer ulbName="Test" />);
-    const matches = await screen.findAllByText((content, node) => node.textContent?.includes(`© ${currentYear}`));
+    const matches = await screen.findAllByText((_content, node) => node?.textContent?.includes(`© ${currentYear}`) ?? false);
     expect(matches.length).toBeGreaterThan(0);
   });
 
 
   it('displays all rights reserved text', async () => {
     render(<Footer ulbName="Test" />);
-    const matches = await screen.findAllByText((content, node) => node.textContent?.includes('All rights reserved'));
+    const matches = await screen.findAllByText((_content, node) => node?.textContent?.includes('All rights reserved') ?? false);
     expect(matches.length).toBeGreaterThan(0);
   });
 

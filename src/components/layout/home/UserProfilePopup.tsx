@@ -73,19 +73,9 @@ interface UserProfilePopupProps {
 export const UserProfilePopup: React.FC<UserProfilePopupProps> = ({ isOpen, onClose, username, ulbName }) => {
     const t = useTranslations('common');
     const locale = useLocale();
-    const [sessionData, setSessionData] = useState<SessionData>({
-        userId: null,
-        email: null,
-        role: null,
-        sessionId: null,
-        loginTime: null,
-        ipAddress: null,
-    });
-
-    // Load session data on mount (client-side only)
-    useEffect(() => {
-        setSessionData(getSessionData());
-    }, []);
+    // Use lazy initializer to load session data once on mount (client-side)
+    // getSessionData() handles server-side safety by checking for window
+    const [sessionData] = useState<SessionData>(() => getSessionData());
 
     // Format values with fallbacks
     const displayValues = useMemo(() => ({
