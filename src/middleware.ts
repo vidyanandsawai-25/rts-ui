@@ -40,7 +40,7 @@ export default function middleware(request: NextRequest) {
 
   if (isLoginRoute) {
     if (hasFullSession(request)) {
-      return NextResponse.redirect(new URL(`/${locale}/dashboard`, request.url));
+      return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
     }
   }
 
