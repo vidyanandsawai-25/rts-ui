@@ -56,6 +56,8 @@ export const Navbar = ({ username, ulbName }: NavbarProps) => {
                         <UserProfilePopup
                             isOpen={showProfileDropdown}
                             onClose={() => setShowProfileDropdown(false)}
+                            username={username}
+                            ulbName={ulbName}
                         />
                     </div>
 

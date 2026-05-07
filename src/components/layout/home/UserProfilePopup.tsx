@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useEffect } from 'react';
 import { User, Shield, Building, Globe, Hash, Clock, Mail, X } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
@@ -8,9 +10,11 @@ import { useTranslations } from 'next-intl';
 interface UserProfilePopupProps {
     isOpen: boolean;
     onClose: () => void;
+    username?: string;
+    ulbName?: string;
 }
 
-export const UserProfilePopup: React.FC<UserProfilePopupProps> = ({ isOpen, onClose }) => {
+export const UserProfilePopup: React.FC<UserProfilePopupProps> = ({ isOpen, onClose, username, ulbName }) => {
     const t = useTranslations('common');
 
     useEffect(() => {
@@ -37,7 +41,7 @@ export const UserProfilePopup: React.FC<UserProfilePopupProps> = ({ isOpen, onCl
                         <User className="w-6 h-6" />
                     </div>
                     <div>
-                        <h3 className="text-sm font-bold text-gray-900">{t('userMenu.mockName')}</h3>
+                        <h3 className="text-sm font-bold text-gray-900">{username || t('userMenu.mockName')}</h3>
                         <p className="text-xs text-gray-500">{t('userMenu.mockEmail')}</p>
                     </div>
                 </div>
@@ -74,7 +78,7 @@ export const UserProfilePopup: React.FC<UserProfilePopupProps> = ({ isOpen, onCl
                     <Building className="w-4 h-4 text-gray-400 mt-0.5" />
                     <div className="flex-1">
                         <Label className="text-[10px] text-gray-500 uppercase font-bold mb-0.5">{t('userMenu.department')}</Label>
-                        <p className="text-sm font-medium text-gray-900">{t('userMenu.mockDepartment')}</p>
+                        <p className="text-sm font-medium text-gray-900">{ulbName || t('userMenu.mockDepartment')}</p>
                     </div>
                 </div>
 

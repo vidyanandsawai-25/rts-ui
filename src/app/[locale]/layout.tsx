@@ -9,7 +9,7 @@ import { locales } from '@/i18n/config';
 import Providers from './Providers';
 import { headers } from 'next/headers';
 import { MainLayout } from '@/components/layout';
-
+import { ConditionalShell } from '@/components/layout/ConditionalShell';
 
 const inter = Inter({ subsets: ['latin'] });
 const notoSansDevanagari = Noto_Sans_Devanagari({
@@ -31,8 +31,6 @@ interface RootLayoutProps {
   children: React.ReactNode;
   params: Promise<{ locale: string }>;
 }
-
-import { ConditionalShell } from '@/components/layout/ConditionalShell';
 
 export default async function RootLayout({ children, params }: Readonly<RootLayoutProps>) {
   const { locale } = await params;

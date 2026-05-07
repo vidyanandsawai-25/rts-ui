@@ -9,8 +9,9 @@ export default async function LocaleRootPage({ params }: RootPageProps) {
   const { locale } = await params;
   const cookieStore = await cookies();
   const authToken = cookieStore.get('auth_token')?.value;
+  const refreshToken = cookieStore.get('refresh_token')?.value;
 
-  if (authToken) {
+  if (authToken && refreshToken) {
     redirect(`/${locale}/home`);
   }
 
