@@ -78,7 +78,7 @@ export function FloorMasterToolbar() {
       </div>
       
       <Tabs
-        className="flex items-center gap-3 mt-6"
+        className="flex items-center gap-3 mt-0 flex-row"
         value={activeTab}
         variant="pills"
         items={[

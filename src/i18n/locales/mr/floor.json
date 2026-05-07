@@ -59,6 +59,30 @@
       "activeStatusTitle": "फ्लोअर स्थिती",
       "activeStatusOn": "हा फ्लोअर सध्या सक्रिय आहे",
       "activeStatusOff": "हा फ्लोअर सध्या निष्क्रिय आहे",
+      "range": {
+        "title": "फ्लोअर श्रेणी",
+        "start": "सुरू",
+        "end": "शेवट",
+        "startPlaceholder": "1",
+        "endPlaceholder": "10"
+      },
+      "englishName": {
+        "title": "इंग्रजी नाव",
+        "prefix": "पूर्वसर्ग",
+        "prefixPlaceholder": "First",
+        "suffix": "प्रत्यय",
+        "suffixPlaceholder": "Floor"
+      },
+      "regionalNameSection": {
+        "title": "प्रादेशिक नाव",
+        "prefix": "पूर्वसर्ग",
+        "prefixPlaceholder": "स्वचालित",
+        "suffix": "प्रत्यय",
+        "suffixPlaceholder": "मंजिल"
+      },
+      "autoGenerateSubFloor": "सब-फ्लोअर स्वयंचलितपणे तयार करा",
+      "autoGenerateSubFloorDesc": "श्रेणीत प्रत्येक फ्लोअर साठी एक सब-फ्लोअर तयार करतो",
+      "rangeExample": "उदाहरण: श्रेणी 1-5 तयार करते 1F, 2F, 3F, 4F, 5F",
       "validation": {
         "codeRequired": "कोड आवश्यक आहे",
         "codeFormat": "कोडमध्ये फक्त अक्षरे, संख्या आणि अंडरस्कोर असू शकतात (सुरुवात/शेवटी नाही)",
@@ -66,7 +90,13 @@
         "descriptionRequired": "वर्णन आवश्यक आहे",
         "descriptionFormat": "वर्णनात अवैध वर्ण किंवा स्वरूपन आहे",
         "descriptionMaxLength": "वर्णन {count} वर्णांपेक्षा जास्त असू शकत नाही",
-        "mustBeActive": "नवीन फ्लोअर सक्रिय असणे आवश्यक आहे"
+        "mustBeActive": "नवीन फ्लोअर सक्रिय असणे आवश्यक आहे",
+        "rangeStartRequired": "सुरू मूल्य आवश्यक आहे",
+        "rangeEndRequired": "शेवट मूल्य आवश्यक आहे",
+        "rangeStartMinValue": "सुरू मूल्य किमान 1 असावे",
+        "rangeEndMinValue": "शेवट मूल्य किमान 1 असावे",
+        "rangeStartLessThanEnd": "सुरू शेवटपेक्षा कमी किंवा समान असावे",
+        "rangeMaxValue": "मूल्य {count} पेक्षा जास्त असू शकत नाही"
       }
     },
     "table": {
@@ -88,6 +118,7 @@
       }
     },
     "messages": {
+      "createRangeSuccess": "{count} फ्लोअर्स यशस्वीरित्या तयार केले गेले",
       "addSuccess": "फ्लोअर यशस्वीरित्या जोडला गेला",
       "createSuccess": "फ्लोअर यशस्वीरित्या तयार केला गेला",
       "updateSuccess": "फ्लोअर यशस्वीरित्या अपडेट केला गेला",

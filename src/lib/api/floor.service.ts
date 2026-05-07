@@ -2,6 +2,7 @@ import { apiClient } from '@/services/api.service';
 import {
   Floor,
   FloorFormModel,
+  FloorRangePayload,
   PagedResponse,
 } from '@/types/floor.types';
 import { ApiError } from '@/lib/utils/api';
@@ -141,7 +142,7 @@ export async function getFloorById(id: number): Promise<Floor> {
   }
 }
 
-export async function createFloor(data: FloorFormModel): Promise<void> {
+export async function createFloor(data: FloorFormModel, userId: string): Promise<void> {
   try {
     if (!data.floorCode?.trim()) throw new Error('floorCode required');
     if (!data.description?.trim()) throw new Error('description required');
@@ -151,6 +152,8 @@ export async function createFloor(data: FloorFormModel): Promise<void> {
       description: data.description.trim(),
       sequenceNo: Number(data.sequenceNo) || 0,
       isActive: data.isActive,
+      createdBy: Number(userId),
+      updatedBy: Number(userId),
     };
 
     const response = await apiClient.post('/Floor', payload);
@@ -168,7 +171,7 @@ export async function createFloor(data: FloorFormModel): Promise<void> {
   }
 }
 
-export async function updateFloor(data: FloorFormModel): Promise<void> {
+export async function updateFloor(data: FloorFormModel, userId: string): Promise<void> {
   try {
     if (!data.id || data.id <= 0) {
       throw new Error('Floor ID required');
@@ -183,6 +186,7 @@ export async function updateFloor(data: FloorFormModel): Promise<void> {
       description: data.description.trim(),
       sequenceNo: Number(data.sequenceNo) || 0,
       isActive: data.isActive,
+      updatedBy: Number(userId),
     };
 
     const response = await apiClient.put(`/Floor/${data.id}`, payload);
@@ -191,15 +195,15 @@ export async function updateFloor(data: FloorFormModel): Promise<void> {
       throw new ApiError(response.statusCode || 500, response.error || '', 'Update floor failed');
     }
   } catch (err) {
-    console.error('Update floor error:', err);
     throw err;
   }
 }
 
-export async function deleteFloor(id: number): Promise<void> {
+export async function deleteFloor(id: number, _userId: string): Promise<void> {
   try {
     if (id <= 0) throw new Error('Valid Floor ID required');
 
+    // Note: _userId is available for backend auditing/authentication
     // Use shared apiClient for consistent timeout/abort handling
     const response = await apiClient.delete(`/Floor/${id}/purge`);
 
@@ -221,7 +225,82 @@ export async function deleteFloor(id: number): Promise<void> {
       'Delete floor failed'
     );
   } catch (err) {
-    console.error('Delete floor error:', err);
+    throw err;
+  }
+}
+
+/* ============================================================
+   CREATE FLOOR RANGE (BULK CREATE)
+============================================================ */
+export async function createFloorRange(data: FloorRangePayload, userId: string): Promise<void> {
+  try {
+    // Input validation
+    if (!data.rangeFrom || data.rangeFrom.trim() === '') {
+      throw new Error('rangeFrom required');
+    }
+    if (!data.rangeTo || data.rangeTo.trim() === '') {
+      throw new Error('rangeTo required');
+    }
+    const rangeFromNum = Number(data.rangeFrom);
+    const rangeToNum = Number(data.rangeTo);
+    if (Number.isNaN(rangeFromNum) || Number.isNaN(rangeToNum)) {
+      throw new TypeError('Range values must be valid numbers');
+    }
+
+    // Server-side range limits to prevent invalid or abusive payloads
+    const MAX_RANGE_VALUE = 999;
+    const MAX_RANGE_SIZE = 1000;
+    if (rangeFromNum < 1) {
+      throw new Error('rangeFrom must be greater than or equal to 1');
+    }
+    if (rangeToNum < 1) {
+      throw new Error('rangeTo must be greater than or equal to 1');
+    }
+    if (rangeFromNum > MAX_RANGE_VALUE) {
+      throw new Error(`Range start value cannot exceed ${MAX_RANGE_VALUE}`);
+    }
+    if (rangeToNum > MAX_RANGE_VALUE) {
+      throw new Error(`Range end value cannot exceed ${MAX_RANGE_VALUE}`);
+    }
+    if (rangeFromNum > rangeToNum) {
+      throw new Error('rangeFrom cannot be greater than rangeTo');
+    }
+    const rangeSize = rangeToNum - rangeFromNum + 1;
+    if (rangeSize > MAX_RANGE_SIZE) {
+      throw new Error(`Range size cannot exceed ${MAX_RANGE_SIZE} floors`);
+    }
+
+    // Validate template.floorCode (same as createFloor)
+    if (!data.template.floorCode?.trim()) throw new Error('floorCode required');
+
+    // Note: userId is used for backend auditing/authentication
+    const payload: FloorRangePayload = {
+      rangeFrom: data.rangeFrom.trim(),
+      rangeTo: data.rangeTo.trim(),
+      prefix: data.prefix?.trim() ?? '',
+      suffix: data.suffix?.trim() ?? '',
+      template: {
+        isActive: data.template.isActive,
+        createdBy: Number(userId),
+        updatedBy: Number(userId),
+        floorCode: data.template.floorCode.trim(),
+        description: data.template.description?.trim() ?? '',
+        sequenceNo: Number(data.template.sequenceNo) || 0,
+        maxFloorNo: Number(data.template.maxFloorNo) || rangeToNum,
+      },
+      startSequenceNo: Number(data.startSequenceNo) || rangeFromNum,
+    };
+
+    const response = await apiClient.post('/Floor/Range', payload);
+
+    if (!response.success) {
+      throw new ApiError(
+        response.statusCode || 500,
+        response.error || '',
+        'Create floor range failed'
+      );
+    }
+  } catch (err) {
     throw err;
   }
 }

@@ -72,8 +72,7 @@ export function FloorFormFields({
         name="sequenceNo"
         label={labels.sequenceNo}
         type="number"
-        min={0}
-        value={formData.sequenceNo}
+        value={formData.sequenceNo === 0 ? '' : formData.sequenceNo}
         onChange={onChange}
         onBlur={onBlur}
         fullWidth
