@@ -7,6 +7,8 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { locales } from '@/i18n/config';
 import Providers from './Providers';
+import { headers } from 'next/headers';
+import { MainLayout } from '@/components/layout';
 
 
 const inter = Inter({ subsets: ['latin'] });
@@ -36,6 +38,19 @@ export default async function RootLayout({ children, params }: Readonly<RootLayo
   // Important: Pass locale to getMessages to ensure correct translations are loaded
   const messages = await getMessages({ locale });
 
+  // Get current path from headers (set by middleware) to conditionally show layout
+  const headerList = await headers();
+  const pathname = headerList.get('x-pathname') || '';
+  
+  // Define paths that should NOT include the main Header/Footer/Sidebar
+  const isAuthOrHome = 
+    pathname.endsWith('/login') || 
+    pathname.includes('/login/') || 
+    pathname.endsWith('/home') || 
+    pathname.includes('/home/') ||
+    pathname === `/${locale}` || 
+    pathname === `/${locale}/`;
+
   return (
     <html lang={locale}>
       <head>
@@ -44,7 +59,7 @@ export default async function RootLayout({ children, params }: Readonly<RootLayo
       <body className={`${inter.className} ${notoSansDevanagari.variable}`}>
         <NextIntlClientProvider locale={locale} messages={messages}>
           <Providers>
-            {children}
+            {isAuthOrHome ? children : <MainLayout locale={locale}>{children}</MainLayout>}
           </Providers>
         </NextIntlClientProvider>
       </body>
