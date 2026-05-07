@@ -13,11 +13,11 @@ export default async function OldTaxationPage({ params }: PageProps) {
     const { locale, propertyId } = await params;
     setRequestLocale(locale);
 
-    const propertyOldDetails = await getPropertyOldDetailsAction(Number(propertyId));
+    const result = await getPropertyOldDetailsAction(Number(propertyId));
 
     return (
         <OldTaxationForm
-            propertyOldDetails={propertyOldDetails}
+            propertyOldDetails={result.success ? result.data : null}
         />
     );
 }

@@ -2,16 +2,11 @@
 import {
   Button,
   Input,
-  useConfirm
 } from "@/components/common"
 import { Label } from "@/components/common/label";
-import { useState } from "react";
-import { useParams } from "next/navigation";
-import { toast } from "sonner";
 import { PropertyOldDetailsApiItem } from "@/types/property-old-details.types";
-import { updatePropertyOldDetailsAction } from "@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/OldDetails/old-taxation/action";
-import { useTranslations } from "next-intl";
 import { Save } from "lucide-react";
+import { useOldTaxationForm } from "@/hooks/ptis/QuickDataEntry/Olddetails/useOldTaxationForm";
 
 interface OldTaxationFormProps {
   propertyOldDetails?: PropertyOldDetailsApiItem | null;
@@ -21,45 +16,13 @@ export default function OldTaxationForm({
   propertyOldDetails = null,
 }: OldTaxationFormProps) {
 
-  const t = useTranslations('quickDataEntry');
-  const { confirm } = useConfirm();
-  const params = useParams();
-  const propertyId = Number(params.propertyId);
-  const locale = params.locale as string;
-
-  const [formData, setFormData] = useState({
-    oldPlotNo: propertyOldDetails?.oldPlotNo || "",
-    oldCarpetAreaSqFeet: propertyOldDetails?.oldCarpetAreaSqFeet || 0,
-    oldRV: propertyOldDetails?.oldRV || 0,
-    oldALV: propertyOldDetails?.oldALV || 0,
-    oldGeneralTax: propertyOldDetails?.oldGeneralTax || "0",
-    oldTotalTax: propertyOldDetails?.oldTotalTax || 0,
-  });
-
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleUpdate = () => {
-    confirm({
-      title: t("property.updateConfirmTitle"),
-      description: t("property.updateConfirmText"),
-      onConfirm: async () => {
-        setIsSubmitting(true);
-        try {
-          const payload = {
-            ...(propertyOldDetails ?? {}),
-            ...formData,
-          };
-          await updatePropertyOldDetailsAction(propertyId, payload, locale);
-          toast.success(t("oldDetails.oldTaxation.updateSuccess"));
-        } catch (error) {
-          toast.error(t("oldDetails.oldTaxation.updateError"));
-          console.error(error);
-        } finally {
-          setIsSubmitting(false);
-        }
-      },
-    });
-  };
+  const {
+    formData,
+    isSubmitting,
+    handleUpdate,
+    handleInputChange,
+    t
+  } = useOldTaxationForm(propertyOldDetails);
 
   return (
     <div className="p-3 space-y-6">
@@ -157,7 +120,7 @@ export default function OldTaxationForm({
               placeholder={t("oldDetails.plotNoPlaceholder")}
               className="h-11 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-gray-50/50"
               value={formData.oldPlotNo}
-              onChange={(e) => setFormData(prev => ({ ...prev, oldPlotNo: e.target.value }))}
+              onChange={(e) => handleInputChange('oldPlotNo', e.target.value)}
             />
           </div>
 
@@ -171,7 +134,7 @@ export default function OldTaxationForm({
               placeholder={t("oldDetails.constructionAreaPlaceholder")}
               className="h-11 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-gray-50/50"
               value={formData.oldCarpetAreaSqFeet}
-              onChange={(e) => setFormData(prev => ({ ...prev, oldCarpetAreaSqFeet: Number(e.target.value) }))}
+              onChange={(e) => handleInputChange('oldCarpetAreaSqFeet', Number(e.target.value))}
             />
           </div>
 
@@ -185,7 +148,7 @@ export default function OldTaxationForm({
               placeholder={t("oldDetails.rvPlaceholder")}
               className="h-11 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-gray-50/50"
               value={formData.oldRV}
-              onChange={(e) => setFormData(prev => ({ ...prev, oldRV: Number(e.target.value) }))}
+              onChange={(e) => handleInputChange('oldRV', Number(e.target.value))}
             />
           </div>
 
@@ -199,7 +162,7 @@ export default function OldTaxationForm({
               placeholder={t("oldDetails.alvPlaceholder")}
               className="h-11 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-gray-50/50"
               value={formData.oldALV}
-              onChange={(e) => setFormData(prev => ({ ...prev, oldALV: Number(e.target.value) }))}
+              onChange={(e) => handleInputChange('oldALV', Number(e.target.value))}
             />
           </div>
 
@@ -213,7 +176,7 @@ export default function OldTaxationForm({
               placeholder={t("oldDetails.propertyTaxPlaceholder")}
               className="h-11 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-gray-50/50"
               value={formData.oldGeneralTax || ""}
-              onChange={(e) => setFormData(prev => ({ ...prev, oldGeneralTax: e.target.value }))}
+              onChange={(e) => handleInputChange('oldGeneralTax', e.target.value)}
             />
           </div>
 
@@ -227,7 +190,7 @@ export default function OldTaxationForm({
               placeholder={t("oldDetails.totalTaxPlaceholder")}
               className="h-11 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-gray-50/50"
               value={formData.oldTotalTax}
-              onChange={(e) => setFormData(prev => ({ ...prev, oldTotalTax: Number(e.target.value) }))}
+              onChange={(e) => handleInputChange('oldTotalTax', Number(e.target.value))}
             />
           </div>
         </div>

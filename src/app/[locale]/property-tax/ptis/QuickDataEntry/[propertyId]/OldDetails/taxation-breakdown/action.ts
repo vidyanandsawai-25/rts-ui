@@ -39,10 +39,10 @@ export async function saveOldTaxesDetailsAction(propertyId: number, data: OldTax
       success: true,
       data: response
     };
-  } catch (_error) {
+  } catch (error) {
     return {
       success: false,
-      error: "Failed to save old taxes details"
+      error: error instanceof Error ? error.message : "Failed to save old taxes details"
     };
   }
 }
