@@ -1,12 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
+import type { ReactNode } from 'react';
 import ServiceCards from '@/components/modules/home/ServiceCards';
 import { Service } from '@/types/home/home.types';
 import { toast } from 'sonner';
 
 // Mock next/link
 vi.mock('next/link', () => ({
-  default: ({ children, href }: { children: React.ReactNode; href: string }) => (
+  default: ({ children, href }: { children: ReactNode; href: string }) => (
     <a href={href}>{children}</a>
   ),
 }));

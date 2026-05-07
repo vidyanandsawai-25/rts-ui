@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
+import type { ReactNode } from 'react';
 import { Navbar } from '@/components/layout/home/Navbar';
 
 // Mock next-intl
@@ -21,7 +22,7 @@ vi.mock('next-intl', () => ({
 
 // Mock next/link
 vi.mock('next/link', () => ({
-  default: ({ children, href }: { children: React.ReactNode; href: string }) => (
+  default: ({ children, href }: { children: ReactNode; href: string }) => (
     <a href={href}>{children}</a>
   ),
 }));
@@ -63,7 +64,7 @@ describe('Navbar Component', () => {
   it('settings link points to correct URL', () => {
     render(<Navbar />);
     const settingsLink = screen.getByText('Settings').closest('a');
-    expect(settingsLink).toHaveAttribute('href', '/en/configuration-settings');
+    expect(settingsLink).toHaveAttribute('href', '/en/configuration-settings/office-master');
   });
 
   it('displays provided username', () => {
