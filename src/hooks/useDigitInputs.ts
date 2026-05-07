@@ -26,20 +26,23 @@ export const useDigitInputs = (length: number, initialValue: string = '') => {
   useEffect(() => {
     const sanitizedInitialValue = initialValue.replace(/\D/g, '');
     const prevSanitized = prevInitialValueRef.current.replace(/\D/g, '');
-    
-    // Rebuild array if:
-    // 1. initialValue changed
-    // 2. length changed
-    // 3. Current digits array length doesn't match expected length (safety check)
+
+    let needsUpdate = false;
     if (
-      sanitizedInitialValue !== prevSanitized || 
+      sanitizedInitialValue !== prevSanitized ||
       length !== prevLengthRef.current ||
       digits.length !== length
     ) {
-      prevInitialValueRef.current = initialValue;
-      prevLengthRef.current = length;
-      const newDigits = Array.from({ length }, (_, i) => sanitizedInitialValue[i] ?? '');
-      setDigits(newDigits);
+      needsUpdate = true;
+    }
+
+    if (needsUpdate) {
+      // Avoid cascading renders: schedule state update after paint
+      setTimeout(() => {
+        setDigits(Array.from({ length }, (_, i) => sanitizedInitialValue[i] ?? ''));
+        prevInitialValueRef.current = initialValue;
+        prevLengthRef.current = length;
+      }, 0);
     }
   }, [initialValue, length, digits.length]);
 

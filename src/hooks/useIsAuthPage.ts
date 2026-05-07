@@ -1,6 +1,7 @@
-'use client';
+"use client";
 
-import { usePathname } from 'next/navigation';
+import { usePathname } from "next/navigation";
+import { locales } from "@/i18n/config";
 
 /**
  * Custom hook to determine if the current page is an authentication or home-style page
@@ -16,23 +17,23 @@ export function useIsAuthPage(initialValue = false) {
 
   // Standardized logic for identifying "No-Shell" pages
   // We check the segment after the locale (e.g., /en/login -> login)
-  const segments = pathname.split('/').filter(Boolean);
-  
+  const segments = pathname.split("/").filter(Boolean);
+
+
   // Case 1: Root path (e.g., / or /en or /mr)
   if (segments.length <= 1) {
-    const lastSegment = segments[0] || '';
-    const { locales } = require('@/i18n/config');
-    const isLocaleOnly = locales.includes(lastSegment) || lastSegment === '';
+    const lastSegment = segments[0] || "";
+    const isLocaleOnly = locales.includes(lastSegment as typeof locales[number]) || lastSegment === "";
     return isLocaleOnly;
   }
 
   // Case 2: Specific auth/home segments
-  const { locales } = require('@/i18n/config');
-  const firstRealSegment = locales.includes(segments[0])
+
+  const firstRealSegment = locales.includes(segments[0] as typeof locales[number])
     ? segments[1]
     : segments[0];
 
-  const noShellSegments = ['login', 'home'];
-  
+  const noShellSegments = ["login", "home"];
+
   return noShellSegments.includes(firstRealSegment);
 }

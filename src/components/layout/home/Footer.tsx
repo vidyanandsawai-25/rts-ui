@@ -1,11 +1,12 @@
-import { useTranslations } from "next-intl";
+
+import { getTranslations } from "next-intl/server";
 
 interface FooterProps {
     ulbName?: string;
 }
 
-export const Footer = ({ ulbName }: FooterProps) => {
-    const t = useTranslations('common');
+export const Footer = async ({ ulbName }: FooterProps) => {
+    const t = await getTranslations('common');
     const displayUlbName = ulbName || t('app.defaultUlbName');
     const currentYear = new Date().getFullYear();
 

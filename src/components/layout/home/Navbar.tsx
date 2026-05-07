@@ -74,7 +74,7 @@ export const Navbar = ({ username, ulbName }: NavbarProps) => {
                 </div>
             </nav>
 
-            {/* Animated Welcome Message */}
+            {/* Animated Welcome Message with prefers-reduced-motion check */}
             <div className="bg-[#d1ecf1] text-[#004c8c] font-bold py-1 text-sm sm:text-base text-center overflow-hidden">
                 <div className="inline-block animate-marquee whitespace-nowrap px-4">
                     {t('app.welcomeTo', { name: displayUlbName })} &ndash; {t('app.smartGovernance')}
@@ -89,6 +89,12 @@ export const Navbar = ({ username, ulbName }: NavbarProps) => {
                 .animate-marquee {
                     animation: marquee 20s linear infinite;
                     min-width: 100%;
+                }
+                @media (prefers-reduced-motion: reduce) {
+                    .animate-marquee {
+                        animation: none !important;
+                        transform: none !important;
+                    }
                 }
             `}</style>
         </div>
