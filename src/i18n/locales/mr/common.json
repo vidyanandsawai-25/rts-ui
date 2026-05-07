@@ -33,7 +33,8 @@
     "invalidEmail": "अवैध ईमेल पत्ता",
     "minLength": "किमान {count} वर्ण आवश्यक आहेत",
     "maxLength": "कमाल {count} वर्णांची परवानगी आहे",
-    "invalidFormat": "अवैध स्वरूप"
+    "invalidFormat": "अवैध स्वरूप",
+    "submissionIdRequired": "सबमिशन आयडी आवश्यक आहे"
   },
   "form": {
     "validation": {

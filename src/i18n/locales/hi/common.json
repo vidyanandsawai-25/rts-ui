@@ -33,7 +33,8 @@
     "invalidEmail": "अमान्य ईमेल पता",
     "minLength": "कम से कम {count} वर्ण आवश्यक हैं",
     "maxLength": "अधिकतम {count} वर्ण की अनुमति है",
-    "invalidFormat": "अमान्य प्रारूप"
+    "invalidFormat": "अमान्य प्रारूप",
+    "submissionIdRequired": "सबमिशन आईडी आवश्यक है"
   },
   "form": {
     "validation": {

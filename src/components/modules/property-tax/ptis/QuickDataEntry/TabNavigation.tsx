@@ -9,13 +9,11 @@ import { Tab } from '@/types/property-basic-details.types';
 const TABS: Tab[] = [
     { label: 'Property', href: 'Property', icon: Home },
     { label: 'Society', href: 'Society', icon: Building2 },
-    { label: 'OldDetails', href: 'OldDetails/old-taxation', icon: Building2 },
 ];
 
 const TAB_GRADIENT_CLASSES: Record<string, string> = {
-    Property: "from-blue-500 to-blue-600 border-blue-700",
-    Society: "from-purple-500 to-purple-600 border-purple-700",
-    OldDetails: "from-rose-500 to-red-600 border-red-700"
+    Property: 'from-blue-500 to-blue-600 border-blue-700',
+    Society: 'from-purple-500 to-purple-600 border-purple-700',
 };
 
 export function TabNavigation() {
@@ -31,6 +29,7 @@ export function TabNavigation() {
     const propertyNo = searchParams.get("propertyNo") || "";
     const partitionNo = searchParams.get("partitionNo") || "";
 
+    const activeSegment = pathname.split('/').pop() ?? '';
 
     const params = new URLSearchParams();
     if (propertyId) params.set('propertyId', propertyId);
@@ -48,11 +47,7 @@ export function TabNavigation() {
                     const baseTabPath = `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}`;
                     const tabPath = `${baseTabPath}/${tab.href}`;
                     const tabHref = queryString ? `${tabPath}?${queryString}` : tabPath;
-
-                    // Extract the base segment of the tab (e.g., 'OldDetails' from 'OldDetails/old-taxation')
-                    const tabBaseSegment = tab.href.split('/')[0];
-                    const isActive = pathname.startsWith(`${baseTabPath}/${tabBaseSegment}`);
-
+                    const isActive = activeSegment === tab.href || pathname === tabPath;
                     const Icon = tab.icon;
 
                     const gradientClass =

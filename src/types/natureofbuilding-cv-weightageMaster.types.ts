@@ -12,7 +12,7 @@ export interface NatureFactorCVMaster {
   isActive: boolean;
   createdDate?: string;
   updatedDate?: string | null;
-  [key: string]: string | number | boolean | null | undefined;
+  [key: string]: unknown;
 }
 
 export interface NatureFactorCVMasterUpdate {
