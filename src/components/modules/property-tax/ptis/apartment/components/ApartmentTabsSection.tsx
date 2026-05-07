@@ -27,8 +27,7 @@ interface ApartmentTabsSectionProps {
 }
 
 const ApartmentTabsSection: React.FC<ApartmentTabsSectionProps> = ({
-  propertyId,
-  searchParams: _searchParams,
+  propertyId
 }) => {
   const t = useTranslations('ptis.apartmentTabs');
 
@@ -129,8 +128,7 @@ const ApartmentTabsSection: React.FC<ApartmentTabsSectionProps> = ({
         <div className="flex-1">
           <div
             className="rounded-2xl bg-[#f6fcfd] p-1 shadow-sm border border-[#d9eef1] flex gap-2"
-            role="tablist"
-            aria-label={t('amenities')}
+            aria-label="Apartment QC category"
           >
             {[
               { value: 'amenities' as InnerTabType, label: (
@@ -157,8 +155,7 @@ const ApartmentTabsSection: React.FC<ApartmentTabsSectionProps> = ({
                 <button
                   key={tab.value}
                   type="button"
-                  role="tab"
-                  aria-selected={isActive}
+                  aria-pressed={isActive}
                   onClick={() => setActiveInnerTab(tab.value)}
                   className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
                     isActive
@@ -174,7 +171,7 @@ const ApartmentTabsSection: React.FC<ApartmentTabsSectionProps> = ({
         </div>
         
         {/* Right side: QC tabs (Rateable, Capital, Dual) */}
-        <div className="flex gap-2" role="tablist" aria-label={t('rateable')}>
+        <div className="flex gap-2" aria-label="QC method">
           {[
             { value: 'rateable' as ApartmentQCTab, label: t('rateable') },
             { value: 'capital' as ApartmentQCTab, label: t('capital') },
@@ -185,8 +182,7 @@ const ApartmentTabsSection: React.FC<ApartmentTabsSectionProps> = ({
               <button
                 key={tab.value}
                 type="button"
-                role="tab"
-                aria-selected={isActive}
+                aria-pressed={isActive}
                 onClick={() => setActiveQCTab(tab.value)}
                 className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
                   isActive
