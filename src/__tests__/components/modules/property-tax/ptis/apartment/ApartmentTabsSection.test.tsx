@@ -72,7 +72,7 @@ describe('ApartmentTabsSection', () => {
         () => new Promise((resolve) => setTimeout(() => resolve({ success: true, data: { items: [] } }), 100))
       );
 
-      render(<ApartmentTabsSection locale="en" />);
+      render(<ApartmentTabsSection locale="en" propertyId={123} />);
       expect(screen.getByText('Loading...')).toBeInTheDocument();
     });
   });
@@ -97,7 +97,7 @@ describe('ApartmentTabsSection', () => {
         error: 'API Error',
       });
 
-      render(<ApartmentTabsSection locale="en" />);
+      render(<ApartmentTabsSection locale="en" propertyId={123} />);
 
       await waitFor(() => {
         expect(screen.getByText('API Error')).toBeInTheDocument();
@@ -107,7 +107,7 @@ describe('ApartmentTabsSection', () => {
     it('handles exception during fetch', async () => {
       mockFetchAction.mockRejectedValue(new Error('Network error'));
 
-      render(<ApartmentTabsSection locale="en" />);
+      render(<ApartmentTabsSection locale="en" propertyId={123} />);
 
       await waitFor(() => {
         expect(screen.getByText('error')).toBeInTheDocument();
