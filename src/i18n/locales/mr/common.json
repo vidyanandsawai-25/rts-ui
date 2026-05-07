@@ -1,3 +1,25 @@
+  "userMenu": {
+    "userId": "वापरकर्ता आयडी",
+    "role": "भूमिका",
+    "department": "विभाग",
+    "publicIp": "सार्वजनिक आयपी पत्ता",
+    "sessionId": "सत्र आयडी",
+    "loginTime": "लॉगिन वेळ",
+    "mockName": "राजेश कुमार",
+    "mockEmail": "rajesh.kumar@propertytax.gov.in",
+    "mockUserId": "USR-2025-1047",
+    "mockRole": "कर मूल्यांकन अधिकारी",
+    "mockDepartment": "मालमत्ता कर विभाग",
+    "mockIp": "115.242.194.254",
+    "mockSessionId": "SES-1767942012755-w0ehgm4ps",
+    "mockLoginTime": "09/01/2026, 12:30:12"
+  },
+  "footer": {
+    "allRightsReserved": "सर्व हक्क राखीव."
+  },
+  "app": {
+    "defaultUlbName": "नगरपालिका"
+  },
 {
   "buttons": {
     "save": "जतन करा",

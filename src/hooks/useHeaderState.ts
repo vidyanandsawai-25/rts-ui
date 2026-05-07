@@ -59,6 +59,10 @@ export function useHeaderState(initialIp = '192.168.1.100') {
             // Call Server Action to clear cookies
             await logoutAction(typeof locale === 'string' ? locale : 'en');
         } catch (error) {
+            // Only handle real errors, not NEXT_REDIRECT
+            if (typeof error === 'object' && error && 'digest' in error && String(error.digest).startsWith('NEXT_REDIRECT')) {
+                throw error;
+            }
             console.error("Logout error:", error);
             toast.error("Logout failed. Please try again.");
             setIsLoggingOut(false);

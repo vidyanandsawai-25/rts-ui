@@ -21,13 +21,15 @@ export function useIsAuthPage(initialValue = false) {
   // Case 1: Root path (e.g., / or /en or /mr)
   if (segments.length <= 1) {
     const lastSegment = segments[0] || '';
-    const isLocaleOnly = ['en', 'hi', 'mr'].includes(lastSegment) || lastSegment === '';
+    const { locales } = require('@/i18n/config');
+    const isLocaleOnly = locales.includes(lastSegment) || lastSegment === '';
     return isLocaleOnly;
   }
 
   // Case 2: Specific auth/home segments
-  const firstRealSegment = segments[0] === 'en' || segments[0] === 'hi' || segments[0] === 'mr' 
-    ? segments[1] 
+  const { locales } = require('@/i18n/config');
+  const firstRealSegment = locales.includes(segments[0])
+    ? segments[1]
     : segments[0];
 
   const noShellSegments = ['login', 'home'];

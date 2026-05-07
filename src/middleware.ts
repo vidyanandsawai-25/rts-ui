@@ -60,17 +60,32 @@ export default function middleware(request: NextRequest) {
     pathWithoutLocale === '/login' || 
     pathWithoutLocale.startsWith('/login/');
     
-  // 3. Prepare headers for downstream Server Components
-  request.headers.set('x-pathname', pathname);
-  request.headers.set('x-is-auth-or-home', isAuthOrHome ? 'true' : 'false');
+  // 3. Prepare custom headers for downstream Server Components
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-pathname', pathname);
+  requestHeaders.set('x-is-auth-or-home', isAuthOrHome ? 'true' : 'false');
 
   // 4. Handle locale routing with next-intl
-  const response = intlMiddleware(request);
-  
+  const intlResponse = intlMiddleware(request);
+
+  // If it's a redirect, just return it as is
+  if (intlResponse.headers.has('location')) {
+    return intlResponse;
+  }
+
+  // Merge headers and cookies from intlResponse into our final response
+  const response = NextResponse.next({
+    request: { headers: requestHeaders },
+  });
+  intlResponse.headers.forEach((value, key) => {
+    response.headers.set(key, value);
+  });
+  intlResponse.cookies.getAll().forEach((cookie) => {
+    response.cookies.set(cookie);
+  });
   // Ensure custom headers are also set on the response object
   response.headers.set('x-pathname', pathname);
   response.headers.set('x-is-auth-or-home', isAuthOrHome ? 'true' : 'false');
-
   return response;
 }
 

@@ -11,7 +11,7 @@ export const Footer = ({ ulbName }: FooterProps) => {
 
     return (
         <footer className="bg-[#004c8c] text-white text-center py-3 text-xs sm:text-sm mt-auto">
-            &copy; {currentYear} {displayUlbName}. {t('footer.allRightsReserved')}
+            &copy; {currentYear} {displayUlbName}. {t('footer.allRightsReserved', { default: 'All rights reserved' })}
         </footer>
     );
 };

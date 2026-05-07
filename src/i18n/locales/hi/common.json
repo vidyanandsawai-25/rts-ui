@@ -1,3 +1,25 @@
+  "userMenu": {
+    "userId": "यूज़र आईडी",
+    "role": "भूमिका",
+    "department": "विभाग",
+    "publicIp": "सार्वजनिक आईपी पता",
+    "sessionId": "सत्र आईडी",
+    "loginTime": "लॉगिन समय",
+    "mockName": "राजेश कुमार",
+    "mockEmail": "rajesh.kumar@propertytax.gov.in",
+    "mockUserId": "USR-2025-1047",
+    "mockRole": "कर निर्धारण अधिकारी",
+    "mockDepartment": "संपत्ति कर विभाग",
+    "mockIp": "115.242.194.254",
+    "mockSessionId": "SES-1767942012755-w0ehgm4ps",
+    "mockLoginTime": "09/01/2026, 12:30:12"
+  },
+  "footer": {
+    "allRightsReserved": "सर्वाधिकार सुरक्षित।"
+  },
+  "app": {
+    "defaultUlbName": "नगरपालिका"
+  },
 {
   "buttons": {
     "save": "सहेजें",
