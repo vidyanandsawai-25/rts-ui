@@ -1,0 +1,81 @@
+{
+  "ageFactorMaster": {
+    "title": "आयु कारक मास्टर",
+    "columns": {
+      "constructionType": "निर्माण प्रकार",
+      "ageFrom": "आयु से",
+      "ageTo": "आयु तक",
+      "factor": "कारक",
+      "assessmentYear": "मूल्यांकन वर्ष",
+      "status": "स्थिति",
+      "action": "कार्य"
+    },
+    "filters": {
+      "assessmentYear": "मूल्यांकन वर्ष",
+      "constructionType": "निर्माण प्रकार",
+      "ageRange": "आयु सीमा",
+      "factor": "कारक"
+    },
+    "placeholders": {
+      "select": "चुनें...",
+      "selectRange": "सीमा चुनें",
+      "minYear": "उदा. 0",
+      "maxYear": "उदा. 5"
+    },
+    "buttons": {
+      "addAge": "आयु जोड़ें"
+    },
+    "labels": {
+      "addAgeRange": "आयु सीमा जोड़ें",
+      "minYear": "न्यूनतम वर्ष",
+      "maxYear": "अधिकतम वर्ष",
+      "close": "बंद करें"
+    },
+    "messages": {
+      "selectYearAndRange": "कृपया रिकॉर्ड बनाने से पहले मूल्यांकन वर्ष और आयु सीमा चुनें",
+      "recordSavedSuccess": "रिकॉर्ड सफलतापूर्वक सहेजा गया",
+      "actionFailed": "कार्य विफल",
+      "failedToSaveRow": "पंक्ति सहेजने में विफल",
+      "provideBothAges": "कृपया आयु से और आयु तक दोनों प्रदान करें",
+      "fromAgeGreaterError": "आयु से, आयु तक से अधिक नहीं हो सकती",
+      "ageRangeExists": "आयु सीमा पहले से मौजूद है",
+      "ageRangeAdded": "{from} से {to} तक आयु सीमा जोड़ी गई",
+      "invalidFactorValue": "अमान्य कारक मान",
+      "factorAppliedLocally": "{count} पंक्ति(यों) में कारक {factor} स्थानीय रूप से लागू किया गया। सहेजने के लिए \"अपडेट\" पर क्लिक करें।",
+      "noRecordsMatch": "तालिका में वर्तमान चयनों से कोई रिकॉर्ड मेल नहीं खाता",
+      "bulkOperationSuccess": "थोक संचालन सफल",
+      "bulkOperationFailed": "थोक संचालन विफल",
+      "noConstructionTypes": "कोई निर्माण प्रकार उपलब्ध नहीं",
+      "assessmentYearMissing": "मूल्यांकन वर्ष विकल्प गायब हैं",
+      "noAgeRangesAvailable": "कोई आयु सीमा उपलब्ध नहीं है। कृपया पहले आयु सीमा जोड़ें।",
+      "factorRequiredForGeneration": "कृपया रिकॉर्ड जेनरेट करने से पहले 0 से अधिक फैक्टर मान दर्ज करें या लागू करें।",
+      "allRecordsExist": "वर्तमान चयन के लिए सभी रिकॉर्ड पहले से मौजूद हैं",
+      "recordsGeneratedSuccess": "{count} रिकॉर्ड सफलतापूर्वक जेनरेट किए गए",
+      "generationFailed": "जेनरेशन विफल",
+      "errorGeneratingRecords": "रिकॉर्ड जेनरेट करते समय एक त्रुटि हुई"
+    },
+    "loading": {
+      "message": "आयु कारक मास्टर लोड हो रहा है...",
+      "description": "जब हम आयु कारक भार डेटा प्राप्त करते हैं तो कृपया प्रतीक्षा करें"
+    },
+    "error": {
+      "title": "कुछ गलत हो गया",
+      "description": "आयु कारक मास्टर लोड करते समय एक अप्रत्याशित त्रुटि हुई।",
+      "tryAgain": "पुनः प्रयास करें",
+      "goHome": "होम पर जाएं",
+      "errorId": "त्रुटि आईडी"
+    },
+    "errors": {
+      "validIdRequired": "मान्य आयु कारक सीवी आईडी आवश्यक है",
+      "constructionTypeRequired": "निर्माण प्रकार आईडी आवश्यक है",
+      "yearRangeRequired": "वर्ष सीमा आईडी आवश्यक है",
+      "updateFailed": "आयु कारक सीवी मास्टर को अपडेट करने में विफल",
+      "createFailed": "आयु कारक सीवी मास्टर बनाने में विफल",
+      "bulkCreateRequired": "थोक निर्माण के लिए आयु कारकों के साथ मान्य पेलोड आवश्यक है",
+      "bulkUpdateRequired": "थोक अपडेट के लिए आयु कारकों के साथ मान्य पेलोड आवश्यक है",
+      "bulkUpdateFailed": "थोक अपडेट आयु कारक सीवी मास्टर विफल रहा",
+      "bulkDeleteRequired": "थोक विलोपन के लिए आईडी की मान्य सूची आवश्यक है",
+      "bulkDeleteFailed": "थोक विलोपन आयु कारक सीवी मास्टर विफल रहा"
+    }
+  }
+}

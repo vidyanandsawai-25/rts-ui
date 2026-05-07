@@ -1,0 +1,239 @@
+"use client";
+
+import { useState, useEffect, useRef, useMemo } from "react";
+import { useTranslations } from "next-intl";
+import { AgeFactorCVMaster } from "@/types/ageFactorCv.types";
+import { useAgeFactorCvRowOps } from "./useAgeFactorCvRowOps";
+import { useAgeFactorCvBulkOps } from "./useAgeFactorCvBulkOps";
+import { useAgeFactorCvToasts } from "./useAgeFactorCvToasts";
+import { useAgeFactorCvFilters } from "./useAgeFactorCvFilters";
+import { useAgeFactorCvSessionTracking } from "./useAgeFactorCvSessionTracking";
+import type { Option } from "@/components/common/select";
+
+interface UseAgeFactorCvWeightageParams {
+    paginationData: {
+        data: AgeFactorCVMaster[];
+        pageNumber: number;
+        pageSize: number;
+        totalCount: number;
+        totalPages: number;
+    };
+    options: {
+        constructionTypeOptions: Option[];
+        initialAgeRangeOptions: Option[];
+    };
+    allAgeFactors: AgeFactorCVMaster[];
+}
+
+/**
+ * Main orchestration hook for Age Factor CV Weightage Master.
+ * Composes specialized sub-hooks for filters, toasts, and session tracking.
+ */
+export const useAgeFactorCvWeightage = ({
+    paginationData,
+    options,
+    allAgeFactors,
+}: UseAgeFactorCvWeightageParams) => {
+    const { data, pageSize } = paginationData;
+    const { constructionTypeOptions, initialAgeRangeOptions } = options;
+
+    const t = useTranslations('ageFactorMaster');
+    const tW = useTranslations('weightageMaster');
+
+    const [isAddYearRangeModalOpen, setIsAddYearRangeModalOpen] = useState(false);
+
+    const { toasts, addToast, removeToast } = useAgeFactorCvToasts();
+    
+    const {
+        editableRows,
+        setEditableRows,
+        sessionCreatedUids,
+        setSessionCreatedUids,
+        getRowUid,
+        findRowByUid,
+    } = useAgeFactorCvSessionTracking({ data });
+
+    const {
+        selectedYear,
+        constructionType,
+        factorValue,
+        setFactorValue,
+        ageFrom,
+        setAgeFrom,
+        ageTo,
+        setAgeTo,
+        selectedAgeRange,
+        setSelectedAgeRange,
+        setUserAddedAgeRanges,
+        ageRangeOptions,
+        isAgeRangeAdded,
+        setIsAgeRangeAdded,
+        clearFilters,
+        handleAgeRangeChange,
+        handleAssessmentYearChange,
+        handleConstructionTypeChange,
+        changePage,
+        changePageSize,
+        handleClearAll,
+        getMissingRecordsCount,
+    } = useAgeFactorCvFilters({ initialAgeRangeOptions });
+
+    const newRecords = data.filter(row => row.id === 0 && !sessionCreatedUids.has(getRowUid(row)));
+    const hasNewRecords = newRecords.length > 0;
+    const newRecordsCount = newRecords.length;
+    const hasShownWarningRef = useRef(false);
+
+    useEffect(() => {
+        if (hasNewRecords && !hasShownWarningRef.current) {
+            addToast('warning', tW('common.messages.pendingRecordsWarning'));
+            hasShownWarningRef.current = true;
+        } else if (!hasNewRecords) {
+            hasShownWarningRef.current = false;
+        }
+    }, [hasNewRecords, tW, addToast]);
+
+    const missingRecordsCount = useMemo(
+        () => getMissingRecordsCount(constructionTypeOptions, allAgeFactors),
+        [getMissingRecordsCount, constructionTypeOptions, allAgeFactors]
+    );
+
+    const canGenerateAll = hasNewRecords || isAgeRangeAdded || missingRecordsCount > 0;
+
+    const {
+        isUpdating,
+        handleUpdate,
+        handleCancelRow,
+    } = useAgeFactorCvRowOps({
+        selectedYear,
+        editableRows,
+        setEditableRows,
+        setSessionCreatedUids,
+        addToast,
+        getRowUid,
+    });
+
+    const {
+        isBulkUpdating,
+        isGeneratingAll,
+        handleApplyFilter,
+        handleBulkUpdate,
+        handleGenerateAll,
+    } = useAgeFactorCvBulkOps({
+        selectionState: {
+            selectedYear,
+            constructionType,
+            selectedAgeRange,
+            ageFrom,
+            ageTo,
+            factorValue,
+        },
+        masterData: {
+            data,
+            allAgeFactors,
+            constructionTypeOptions,
+            ageRangeOptions,
+        },
+        sessionState: {
+            editableRows,
+            setEditableRows,
+            sessionCreatedUids,
+            getRowUid,
+            findRowByUid,
+        },
+        callbacks: {
+            addToast,
+            clearFilters,
+        }
+    });
+
+    const handleCellChange = (rowId: string, columnId: string, value: number): void => {
+        if (value < 0) {
+            addToast('error', tW('common.messages.negativeValuesNotAllowed'));
+            return;
+        }
+        if (value > 999999) {
+            addToast('error', tW('common.messages.valueExceedsMax'));
+            return;
+        }
+
+        setEditableRows((prev) => {
+            const originalRow = findRowByUid(rowId);
+            if (!originalRow) return prev;
+
+            const existingEdit = prev[rowId];
+            const updatedRow: AgeFactorCVMaster = {
+                ...originalRow,
+                ...(existingEdit || {}),
+                [columnId]: value,
+            };
+            return { ...prev, [rowId]: updatedRow };
+        });
+    };
+
+    const handleAddAgeRange = (): void => {
+        if (!ageFrom || !ageTo) {
+            addToast('warning', t('messages.provideBothAges'));
+            return;
+        }
+        if (parseInt(ageFrom) > parseInt(ageTo)) {
+            addToast('error', t('messages.fromAgeGreaterError'));
+            return;
+        }
+        const newRange = `${ageFrom}-${ageTo}`;
+        if (ageRangeOptions.find(opt => opt.value === newRange)) {
+            addToast('info', t('messages.ageRangeExists'));
+            return;
+        }
+        setUserAddedAgeRanges(prev => [...prev, { label: newRange, value: newRange }]);
+        setSelectedAgeRange(newRange);
+        addToast('success', t('messages.ageRangeAdded', { from: ageFrom, to: ageTo }));
+        setIsAgeRangeAdded(true);
+        setIsAddYearRangeModalOpen(false);
+        setAgeFrom("");
+        setAgeTo("");
+    };
+
+    return {
+        t,
+        tW,
+        selectedYear,
+        editableRows,
+        constructionType,
+        selectedAgeRange,
+        ageFrom,
+        setAgeFrom,
+        ageTo,
+        setAgeTo,
+        ageRangeOptions,
+        factorValue,
+        setFactorValue,
+        isAddYearRangeModalOpen,
+        setIsAddYearRangeModalOpen,
+        toasts,
+        isUpdating,
+        isBulkUpdating,
+        isGeneratingAll,
+        hasNewRecords,
+        newRecordsCount,
+        canGenerateAll,
+        getRowUid,
+        addToast,
+        removeToast,
+        handleCellChange,
+        handleUpdate,
+        handleCancelRow,
+        handleAddAgeRange,
+        handleAgeRangeChange,
+        handleAssessmentYearChange,
+        handleConstructionTypeChange,
+        handleApplyFilter,
+        handleBulkUpdate,
+        handleGenerateAll,
+        handleClearAll: () => {
+            handleClearAll(addToast, tW);
+            setEditableRows({});
+        },
+        changePage: (page: number) => changePage(page, pageSize),
+        changePageSize,
+    };
+};
