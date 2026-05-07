@@ -45,16 +45,13 @@ function normalizeApartmentQCResponse(data: ApartmentQCResponse): ApartmentQCRes
 
 /**
  * Service to fetch Apartment QC details
- * @param propertyId - Optional property ID to filter results
+ * @param propertyId - Required property ID to filter results
  */
 export async function getApartmentQCDetails(
-  propertyId?: number
+  propertyId: number
 ): Promise<ActionResult<ApartmentQCResponse>> {
   try {
-    const endpoint = propertyId
-      ? `/Property/apartmentQC-details?propertyId=${propertyId}`
-      : `/Property/apartmentQC-details`;
-
+    const endpoint = `/Property/apartmentQC-details?propertyId=${propertyId}`;
     const response = await apiClient.get<ApartmentQCResponse>(endpoint, {
       cache: 'no-store',
     });

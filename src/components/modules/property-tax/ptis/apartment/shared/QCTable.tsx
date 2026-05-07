@@ -69,15 +69,20 @@ export const QCTable: React.FC<QCTableProps> = ({
           {data.map((row, rowIdx) => (
             <tr key={row.id || rowIdx} className="hover:bg-gray-50 transition-colors">
               {columns.map((col, colIdx) => {
-                const value = col.render
-                  ? col.render(row)
-                  : row[col.key as keyof ApartmentQCDetail];
+                let content: React.ReactNode;
+                if (col.render) {
+                  content = col.render(row);
+                  if (content === null || content === undefined) content = '-';
+                } else {
+                  const value = row[col.key as keyof ApartmentQCDetail];
+                  content = value !== null && value !== undefined ? String(value) : '-';
+                }
                 return (
                   <td
                     key={col.key + colIdx}
                     className="px-3 py-2 whitespace-nowrap text-sm text-gray-900"
                   >
-                    {value !== null && value !== undefined ? String(value) : '-'}
+                    {content}
                   </td>
                 );
               })}

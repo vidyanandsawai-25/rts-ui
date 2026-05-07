@@ -171,6 +171,13 @@ export async function fetchOldTaxesDetailsAction(propertyId: number) {
 }
 
 export async function fetchApartmentQCDetailsAction(propertyId?: number) {
+  if (propertyId === undefined) {
+    return { success: false, error: 'Property ID is required' };
+  }
+  const validation = wardIdActionSchema.safeParse({ wardId: propertyId });
+  if (!validation.success) {
+    return { success: false, error: validation.error.issues[0].message };
+  }
   const { getApartmentQCDetails } = await import('@/lib/api/apartmentQC.service');
   return createAction(() => getApartmentQCDetails(propertyId));
 }

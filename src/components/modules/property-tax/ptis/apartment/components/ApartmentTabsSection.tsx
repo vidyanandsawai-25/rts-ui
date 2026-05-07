@@ -27,9 +27,7 @@ interface ApartmentTabsSectionProps {
 }
 
 const ApartmentTabsSection: React.FC<ApartmentTabsSectionProps> = ({
-  locale: _locale,
   propertyId,
-  initialOldDetails: _initialOldDetails,
   searchParams: _searchParams,
 }) => {
   const t = useTranslations('ptis.apartmentTabs');
@@ -49,6 +47,14 @@ const ApartmentTabsSection: React.FC<ApartmentTabsSectionProps> = ({
 
   // Fetch apartment QC details on mount
   React.useEffect(() => {
+    if (propertyId === undefined) {
+      setAmenitiesData([]);
+      setCommercialData([]);
+      setResidentialData([]);
+      setError(null);
+      setLoading(false);
+      return;
+    }
     async function fetchData() {
       setLoading(true);
       setError(null);
@@ -56,8 +62,6 @@ const ApartmentTabsSection: React.FC<ApartmentTabsSectionProps> = ({
         const result = await fetchApartmentQCDetailsAction(propertyId);
         if (result.success && result.data) {
           const items = result.data.items || [];
-          // Filter data by category (you can adjust the filter logic based on your API response)
-          // For now, using same data for all tabs - update this when API provides category-specific data
           setAmenitiesData(items);
           setCommercialData(items);
           setResidentialData(items);
@@ -145,38 +149,78 @@ const ApartmentTabsSection: React.FC<ApartmentTabsSectionProps> = ({
       <div className="flex items-center justify-between gap-4 mb-0">
         {/* Left side: Inner tabs */}
         <div className="flex-1">
-          <Tabs
-            value={activeInnerTab}
-            onChange={(val) => setActiveInnerTab(val as InnerTabType)}
-            items={innerTabs}
-            variant="pills"
-            size="sm"
-            tabListClassName="
-              rounded-2xl
-              bg-[#f6fcfd]
-              p-1
-              shadow-sm
-              border
-              border-[#d9eef1]
-              flex
-              gap-2
-            "
-          />
+          <div
+            className="rounded-2xl bg-[#f6fcfd] p-1 shadow-sm border border-[#d9eef1] flex gap-2"
+            role="tablist"
+            aria-label={t('amenities')}
+          >
+            {[
+              { value: 'amenities' as InnerTabType, label: (
+                <span className="flex items-center gap-2">
+                  <MdOtherHouses className="text-lg" />
+                  <span>{t('amenities')}</span>
+                </span>
+              ) },
+              { value: 'commercial' as InnerTabType, label: (
+                <span className="flex items-center gap-2">
+                  <MdStoreMallDirectory className="text-lg" />
+                  <span>{t('commercial')}</span>
+                </span>
+              ) },
+              { value: 'residential' as InnerTabType, label: (
+                <span className="flex items-center gap-2">
+                  <MdHome className="text-lg" />
+                  <span>{t('residential')}</span>
+                </span>
+              ) },
+            ].map((tab) => {
+              const isActive = activeInnerTab === tab.value;
+              return (
+                <button
+                  key={tab.value}
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  onClick={() => setActiveInnerTab(tab.value)}
+                  className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                    isActive
+                      ? 'bg-primary text-white'
+                      : 'bg-[#f6fcfd] text-foreground border border-[#d9eef1]'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
         
         {/* Right side: QC tabs (Rateable, Capital, Dual) */}
-        <Tabs
-          value={activeQCTab}
-          onChange={(val) => setActiveQCTab(val as ApartmentQCTab)}
-          items={[
-            { value: 'rateable', label: t('rateable'), content: null },
-            { value: 'capital', label: t('capital'), content: null },
-            { value: 'dual', label: t('dual'), content: null },
-          ]}
-          variant="pills"
-          size="sm"
-          tabListClassName="gap-2"
-        />
+        <div className="flex gap-2" role="tablist" aria-label={t('rateable')}>
+          {[
+            { value: 'rateable' as ApartmentQCTab, label: t('rateable') },
+            { value: 'capital' as ApartmentQCTab, label: t('capital') },
+            { value: 'dual' as ApartmentQCTab, label: t('dual') },
+          ].map((tab) => {
+            const isActive = activeQCTab === tab.value;
+            return (
+              <button
+                key={tab.value}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                onClick={() => setActiveQCTab(tab.value)}
+                className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                  isActive
+                    ? 'bg-primary text-white'
+                    : 'bg-[#f6fcfd] text-foreground border border-[#d9eef1]'
+                }`}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Content Area */}
