@@ -1,6 +1,6 @@
 'use client';
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useHeaderState } from '@/hooks/useHeaderState';
 import { useParams } from "next/navigation";
@@ -18,7 +18,7 @@ interface NavbarProps {
 export const Navbar = ({ username, ulbName }: NavbarProps) => {
     const t = useTranslations('common');
     const displayUlbName = ulbName || t('app.defaultUlbName');
-    const { locale } = useParams();
+    const locale = useLocale();
     const {
         handleLogout,
         showProfileDropdown,

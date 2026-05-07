@@ -43,6 +43,11 @@ export default function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
   }
 
+  // Explicitly redirect root path to home if logged in, or login if not
+  if (pathWithoutLocale === '/') {
+    return NextResponse.redirect(new URL(`/${locale}/${isLoggedIn ? 'home' : 'login'}`, request.url));
+  }
+
   if (!isLoginRoute && !isLoggedIn) {
     return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
   }
