@@ -51,7 +51,9 @@
       "createFailed": "वापर घटक CV मास्टर तयार करण्यात अयशस्वी",
       "bulkUpdateFailed": "वापर घटक CV मास्टर मोठ्या प्रमाणात अपडेट करण्यात अयशस्वी",
       "bulkCreateFailed": "वापर घटक CV मास्टर मोठ्या प्रमाणात तयार करण्यात अयशस्वी",
-      "payloadRequired": "वैध पेलोड आवश्यक आहे"
+      "payloadRequired": "वैध पेलोड आवश्यक आहे",
+      "invalidPaginationParameters": "अवैध पृष्ठ पॅरामीटर्स",
+      "fetchTypeOfUseFailed": "वापर प्रकार रेकॉर्ड मिळवण्यात अयशस्वी"
     }
   }
 }

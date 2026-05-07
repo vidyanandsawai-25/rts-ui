@@ -1,7 +1,8 @@
 "use client";
 
-import { UseFactorCVMaster, UseFactorCVMasterCreate, UseFactorCVMasterUpdate } from "@/types/useCategoryCvFactor.types";
+import { UseFactorCVMaster, UseFactorCVMasterCreate } from "@/types/useCategoryCvFactor.types";
 import { bulkCreateUseFactorCVMasterAction, bulkUpdateUseFactorCVMasterAction } from "@/app/[locale]/property-tax/weightage-master/sub-type-weightage/action";
+import { processBulkOperations } from "./useBulkOperationHandler";
 
 interface UseCategoryCvBulkOpsProps {
     data: UseFactorCVMaster[];
@@ -66,91 +67,37 @@ export function useCategoryCvBulkOps({
     };
 
     const handleBulkUpdate = async () => {
-        const updatedRecords = Object.entries(editableRows);
-
-        if (updatedRecords.length === 0) {
-            addToast('warning', tW('common.messages.noRecordsToUpdate'));
-            return;
-        }
-
         setIsBulkUpdating(true);
 
-        const createPayloadVars: Array<Omit<UseFactorCVMasterCreate, 'createdBy'>> = [];
-        const updatePayloadVars: Array<{ id: number; data: Omit<UseFactorCVMasterUpdate, 'updatedBy'> }> = [];
-        let errorCount = 0;
-
-        for (const [rowUid, updatedData] of updatedRecords) {
-            const originalRow = findRowByUid(rowUid);
-            if (!originalRow) { errorCount++; continue; }
-
-            const newFactor = updatedData.factor ?? originalRow.factor;
-            const hasChanges = originalRow.factor !== newFactor;
-
-            if (hasChanges) {
-                if (originalRow.id === 0) {
-                    createPayloadVars.push({
-                        isActive: originalRow.isActive,
-                        typeOfUseId: originalRow.typeOfUseId,
-                        subTypeOfUseId: originalRow.subTypeOfUseId,
-                        factor: newFactor,
-                        yearRangeCVId: originalRow.yearRangeCVId
-                    });
-                } else {
-                    updatePayloadVars.push({
-                        id: originalRow.id,
-                        data: {
-                            isActive: originalRow.isActive,
-                            typeOfUseId: originalRow.typeOfUseId,
-                            subTypeOfUseId: originalRow.subTypeOfUseId,
-                            factor: newFactor,
-                            yearRangeCVId: originalRow.yearRangeCVId
-                        }
-                    });
-                }
-            }
-        }
-
         try {
-            let createdCount = 0;
-            let updatedCount = 0;
+            const result = await processBulkOperations({
+                editableRows,
+                findRowByUid,
+                bulkCreateAction: bulkCreateUseFactorCVMasterAction,
+                bulkUpdateAction: bulkUpdateUseFactorCVMasterAction,
+                tW
+            });
 
-            if (createPayloadVars.length > 0) {
-                const result = await bulkCreateUseFactorCVMasterAction(createPayloadVars);
-                if (result && result.success) {
-                    createdCount = createPayloadVars.length;
-                } else {
-                    errorCount += createPayloadVars.length;
-                }
-            }
+            // Handle result messaging
+            const { success, createdCount, updatedCount, errorCount, message } = result;
 
-            if (updatePayloadVars.length > 0) {
-                const result = await bulkUpdateUseFactorCVMasterAction(updatePayloadVars);
-                if (result && result.success) {
-                    updatedCount = updatePayloadVars.length;
-                } else {
-                    errorCount += updatePayloadVars.length;
-                }
-            }
-
-            const totalSuccess = createdCount + updatedCount;
-
-            if (totalSuccess > 0 && errorCount === 0) {
-                const parts: string[] = [];
-                if (createdCount > 0) parts.push(`${createdCount} ${tW('common.messages.created')}`);
-                if (updatedCount > 0) parts.push(`${updatedCount} ${tW('common.messages.updated')}`);
-                addToast('success', tW('common.messages.bulkOperationSuccess', { message: parts.join(', ') }));
+            if (!success && errorCount === 0 && createdCount === 0 && updatedCount === 0) {
+                // No records to update case
+                addToast('warning', message || tW('common.messages.noRecordsToUpdate'));
+            } else if (success && errorCount === 0) {
+                // Complete success
+                addToast('success', message || tW('common.messages.bulkOperationSuccess'));
                 setEditableRows({});
                 setTimeout(() => refreshPage(), 1500);
-            } else if (totalSuccess > 0 && errorCount > 0) {
-                const parts: string[] = [];
-                if (createdCount > 0) parts.push(`${createdCount} ${tW('common.messages.created')}`);
-                if (updatedCount > 0) parts.push(`${updatedCount} ${tW('common.messages.updated')}`);
-                parts.push(`${errorCount} ${tW('common.messages.failed')}`);
-                addToast('warning', tW('common.messages.bulkOperationPartialSuccess', { message: parts.join(', ') }));
+            } else if (success && errorCount > 0) {
+                // Partial success
+                addToast('warning', message || tW('common.messages.bulkOperationPartialSuccess'));
             } else if (errorCount > 0) {
-                addToast('error', tW('common.messages.bulkOperationFailed'));
+                // Complete failure
+                addToast('error', message || tW('common.messages.bulkOperationFailed'));
             } else {
-                addToast('info', tW('common.messages.noChangesDetectedBulk'));
+                // No changes detected
+                addToast('info', message || tW('common.messages.noChangesDetectedBulk'));
             }
         } catch (_error) {
             addToast('error', tW('common.messages.bulkActionFailed'));

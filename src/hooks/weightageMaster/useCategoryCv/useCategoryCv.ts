@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { UseFactorCVMaster, UseType } from "@/types/useCategoryCvFactor.types";
 import { useCategoryCvRowOps } from "./useCategoryCvRowOps";
 import { useCategoryCvBulkOps } from "./useCategoryCvBulkOps";
+import { useCategoryCvState } from "./useCategoryCvState";
+import { useCategoryCvPagination } from "./useCategoryCvPagination";
 
 export interface UseCategoryCvProps {
     data: UseFactorCVMaster[];
@@ -15,6 +17,10 @@ export interface UseCategoryCvProps {
     typeOfUsePageNumber: number;
 }
 
+/**
+ * Main hook for the Use Category CV Master module.
+ * Orchestrates state, pagination, and various business operations (row and bulk).
+ */
 export function useCategoryCv({
     data,
     pageSize,
@@ -31,20 +37,27 @@ export function useCategoryCv({
     const currentSelectedYear = searchParams.get("selectedYearRange") || "";
     const currentTypeOfUse = searchParams.get("typeOfUseId") || "";
 
-    const [selectedYear, setSelectedYear] = useState<string>(currentSelectedYear);
-    const [editableRows, setEditableRows] = useState<Record<string, UseFactorCVMaster>>({});
-    const [selectedTypeId, setSelectedTypeId] = useState<number | null>(currentTypeOfUse ? Number(currentTypeOfUse) : null);
-    const [typeOfUseId, setTypeOfUseId] = useState<string>(currentTypeOfUse);
-    const [factorValue, setFactorValue] = useState<string>("0.00");
+    // 1. Core State management
+    const state = useCategoryCvState(currentSelectedYear, currentTypeOfUse);
+    const { 
+        selectedYear, setSelectedYear,
+        editableRows, setEditableRows,
+        selectedTypeId, setSelectedTypeId,
+        typeOfUseId, setTypeOfUseId,
+        factorValue, setFactorValue,
+        isUpdating, setIsUpdating,
+        isBulkUpdating, setIsBulkUpdating,
+        isGeneratingAll, setIsGeneratingAll,
+        toasts, addToast, removeToast,
+        hasShownWarningRef
+    } = state;
 
-    const [isUpdating, setIsUpdating] = useState(false);
-    const [isBulkUpdating, setIsBulkUpdating] = useState(false);
-    const [isGeneratingAll, setIsGeneratingAll] = useState(false);
+    // 2. Pagination and Navigation
+    const pagination = useCategoryCvPagination(pageNumber, pageSize, typeOfUsePageNumber, typeOfUsePageSize);
+    const { buildUrl, ...paginationHandlers } = pagination;
 
     const newRecordsCount = data.filter(row => row.id === 0).length;
     const hasNewRecords = newRecordsCount > 0;
-
-    const [toasts, setToasts] = useState<Array<{ id: string; type: "success" | "error" | "info" | "warning"; message: string }>>([]);
 
     const getRowUid = useCallback((row: UseFactorCVMaster): string => 
         `${row.id}-${row.typeOfUseId}-${row.subTypeOfUseId}-${row.yearRangeCVId || 'noYear'}`, []);
@@ -53,17 +66,7 @@ export function useCategoryCv({
         return data.find(row => getRowUid(row) === uid);
     };
 
-    const addToast = useCallback((type: "success" | "error" | "info" | "warning", message: string): void => {
-        const id = Date.now().toString();
-        setToasts((prev) => [...prev, { id, type, message }]);
-    }, []);
-
-    const removeToast = (id: string): void => {
-        setToasts((prev) => prev.filter((t) => t.id !== id));
-    };
-
-    const hasShownWarningRef = useRef(false);
-
+    // Auto-warning for pending records
     useEffect(() => {
         if (hasNewRecords && !hasShownWarningRef.current) {
             hasShownWarningRef.current = true;
@@ -73,47 +76,11 @@ export function useCategoryCv({
         } else if (!hasNewRecords) {
             hasShownWarningRef.current = false;
         }
-    }, [hasNewRecords, tW, addToast]);
+    }, [hasNewRecords, tW, addToast, hasShownWarningRef]);
 
     const refreshPage = (): void => router.refresh();
 
-    // Utility to build URL with persistent and new params
-    const buildUrl = (paramsObj: Record<string, string | number | undefined>) => {
-        const params = new URLSearchParams(searchParams.toString());
-        
-        // Default values if not in searchParams
-        if (!params.has("page")) params.set("page", String(pageNumber));
-        if (!params.has("pageSize")) params.set("pageSize", String(pageSize));
-        if (!params.has("leftPage")) params.set("leftPage", String(typeOfUsePageNumber));
-        if (!params.has("leftPageSize")) params.set("leftPageSize", String(typeOfUsePageSize));
-
-        Object.entries(paramsObj).forEach(([key, value]) => {
-            if (value === undefined || value === "") {
-                params.delete(key);
-            } else {
-                params.set(key, String(value));
-            }
-        });
-
-        return `/${locale}/property-tax/weightage-master/sub-type-weightage?${params.toString()}`;
-    };
-
-    const changePage = (page: number): void => {
-        router.push(buildUrl({ page }));
-    };
-
-    const changePageSize = (size: number): void => {
-        router.push(buildUrl({ page: 1, pageSize: size }));
-    };
-
-    const changeLeftPage = (page: number): void => {
-        router.push(buildUrl({ leftPage: page }));
-    };
-
-    const changeLeftPageSize = (size: number): void => {
-        router.push(buildUrl({ leftPage: 1, leftPageSize: size }));
-    };
-
+    // Specific change handlers
     const handleAssessmentYearChange = (value: string): void => {
         setSelectedYear(value);
         router.push(buildUrl({ page: 1, selectedYearRange: value }));
@@ -141,7 +108,7 @@ export function useCategoryCv({
         addToast('info', tW('common.messages.allClearedInfo'));
     };
 
-    // Operations
+    // 3. Row-level Operations
     const rowOps = useCategoryCvRowOps({
         editableRows,
         setEditableRows,
@@ -153,6 +120,7 @@ export function useCategoryCv({
         tW,
     });
 
+    // 4. Bulk Operations
     const bulkOps = useCategoryCvBulkOps({
         data,
         editableRows,
@@ -183,6 +151,6 @@ export function useCategoryCv({
         getRowUid, ...rowOps,
         handleAssessmentYearChange, handleTypeOfUseChange, handleTypeRowClick,
         ...bulkOps, handleClearAll,
-        changePage, changePageSize, changeLeftPage, changeLeftPageSize
+        ...paginationHandlers
     };
 }

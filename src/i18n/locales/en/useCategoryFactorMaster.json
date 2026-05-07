@@ -51,7 +51,9 @@
       "createFailed": "Failed to create Use Factor CV Master",
       "bulkUpdateFailed": "Failed to bulk update Use Factor CV Master",
       "bulkCreateFailed": "Failed to bulk create Use Factor CV Master",
-      "payloadRequired": "Valid payload is required"
+      "payloadRequired": "Valid payload is required",
+      "invalidPaginationParameters": "Invalid pagination parameters",
+      "fetchTypeOfUseFailed": "Failed to fetch TypeOfUse records"
     }
   }
 }

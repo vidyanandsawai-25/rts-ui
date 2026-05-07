@@ -51,7 +51,9 @@
       "createFailed": "उपयोग कारक सीवी मास्टर बनाने में विफल",
       "bulkUpdateFailed": "उपयोग कारक सीवी मास्टर को थोक में अपडेट करने में विफल",
       "bulkCreateFailed": "उपयोग कारक सीवी मास्टर को थोक में बनाने में विफल",
-      "payloadRequired": "मान्य पेलोड आवश्यक है"
+      "payloadRequired": "मान्य पेलोड आवश्यक है",
+      "invalidPaginationParameters": "अमान्य पृष्ठांकन पैरामीटर",
+      "fetchTypeOfUseFailed": "उपयोग प्रकार रिकॉर्ड प्राप्त करने में विफल"
     }
   }
 }

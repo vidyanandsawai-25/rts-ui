@@ -4,24 +4,20 @@ import { fetchUseFactorCVMasterPagedServerAction, fetchTypeOfUsePaged } from "./
 import UseCategoryCvFactorMaster from "@/components/modules/property-tax/weightage-mastercv/useCategoryCv/UseCategoryCvFactorMaster";
 import { getAssessmentYearsPagedServerCV } from "@/lib/api/floor-cv-weightageMaster.service";
 import { UseCategoryCvPageProps } from "@/types/useCategoryCvFactor.types";
+import { parsePaginationParams } from "@/lib/utils/pagination";
+import { sanitizeNumericParam } from "@/lib/utils/params";
 
 
 export default async function Page({ searchParams }: UseCategoryCvPageProps): Promise<React.ReactElement> {
     const params = await searchParams;
-    const pageNumber = Math.max(1, parseInt(params.page as string, 10) || 1);
-    const pageSizeRaw = parseInt(params.pageSize as string, 10);
-    const pageSize = pageSizeRaw === -1 ? -1 : Math.min(1000, Math.max(1, pageSizeRaw || 10));
-    const leftPageNumber = Math.max(1, parseInt(params.leftPage as string, 10) || 1);
-    const leftPageSizeRaw = parseInt(params.leftPageSize as string, 10);
-    const leftPageSize = leftPageSizeRaw === -1 ? -1 : Math.min(1000, Math.max(1, leftPageSizeRaw || 10));
+    
+    // Parse pagination for both main and left tables
+    const { pageNumber, pageSize } = parsePaginationParams(params.page, params.pageSize);
+    const { pageNumber: leftPageNumber, pageSize: leftPageSize } = parsePaginationParams(params.leftPage, params.leftPageSize);
+
     const searchTerm = params.q?.trim() || undefined;
-    const selectedYearRange =
-        params.selectedYearRange &&
-        params.selectedYearRange.trim() !== "" &&
-        params.selectedYearRange !== "undefined"
-            ? params.selectedYearRange.trim()
-            : undefined;
-    const typeOfUseId = (params.typeOfUseId && params.typeOfUseId !== "undefined") ? parseInt(params.typeOfUseId as string, 10) : undefined;
+    const selectedYearRange = sanitizeNumericParam(params.selectedYearRange)?.toString();
+    const typeOfUseId = sanitizeNumericParam(params.typeOfUseId);
 
     // Assessment years for dropdown
     const assessmentYearData = await getAssessmentYearsPagedServerCV(1, -1);

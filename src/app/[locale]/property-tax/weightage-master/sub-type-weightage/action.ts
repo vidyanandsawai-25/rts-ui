@@ -10,9 +10,11 @@ import {
   bulkCreateUseFactorCVMaster,
   bulkUpdateUseFactorCVMaster,
   getTypeOfUseWithParams,
-} from "@/lib/api/useCategoryCvFactor.service";
+} from "@/lib/api/weightagemaster/useCategoryCvFactor/useCategoryCvFactor.service";
 import { ApiError } from "@/lib/utils/api";
 import { getUserIdFromCookies } from "@/lib/utils/cookie";
+import { createLogger } from "@/lib/utils/server-logger";
+import { sanitizeNumericParam } from "@/lib/utils/params";
 import {
   UseFactorCVMaster,
   UseFactorCVMasterCreate,
@@ -41,8 +43,8 @@ export async function fetchUseFactorCVMasterPagedServerAction(
     const MAX_PAGE_NUMBER = 10000;
     
     // Handle potential "undefined" string or NaN
-    const safeTypeOfUseId = (typeOfUseId && !isNaN(typeOfUseId)) ? typeOfUseId : undefined;
-    const safeSubTypeOfUseId = (subTypeOfUseId && !isNaN(subTypeOfUseId)) ? subTypeOfUseId : undefined;
+    const safeTypeOfUseId = sanitizeNumericParam(typeOfUseId);
+    const safeSubTypeOfUseId = sanitizeNumericParam(subTypeOfUseId);
 
     if (
       pageNumber <= 0 ||
@@ -50,18 +52,12 @@ export async function fetchUseFactorCVMasterPagedServerAction(
       pageSize > MAX_PAGE_SIZE ||
       pageNumber > MAX_PAGE_NUMBER
     ) {
-      throw new Error("Invalid pagination parameters");
+      const { getTranslations } = await import('next-intl/server');
+      const t = await getTranslations('useCategoryFactorMaster');
+      throw new Error(t('errors.invalidPaginationParameters'));
     }
 
-    const parsedYearRange =
-      selectedYearRange && selectedYearRange.trim() !== "" && selectedYearRange !== "undefined"
-        ? Number(selectedYearRange.trim()) 
-        : undefined;
-
-    const yearRangeParam =
-      parsedYearRange !== undefined && Number.isFinite(parsedYearRange)
-        ? parsedYearRange
-        : undefined;
+    const yearRangeParam = sanitizeNumericParam(selectedYearRange);
 
     const response = await getUseFactorCVMasterWithParams({
       pageNumber,
@@ -73,20 +69,37 @@ export async function fetchUseFactorCVMasterPagedServerAction(
     });
 
     if (!response.success || !response.data) {
-      throw new Error(response.error || "Failed to fetch UseFactorCVMaster records");
+      const { getTranslations } = await import('next-intl/server');
+      const t = await getTranslations('useCategoryFactorMaster');
+      throw new Error(response.error || t('errors.fetchFailed'));
     }
 
     return response.data;
   } catch (error: unknown) {
+    const logger = createLogger('fetchUseFactorCVMasterPaged');
+    
     if (error instanceof ApiError) {
-      console.error(
-        `[fetchUseFactorCVMasterPagedServerAction] API Error ${error.statusCode}:`,
-        error.responseText
+      logger.error(
+        'Failed to fetch UseFactorCVMaster records',
+        {
+          operation: 'fetchUseFactorCVMasterPagedServerAction',
+          statusCode: error.statusCode,
+          pageNumber,
+          pageSize,
+          hasSearchTerm: !!searchTerm,
+          hasYearRange: !!selectedYearRange,
+        },
+        error
       );
     } else if (error instanceof Error) {
-      console.error(
-        "[fetchUseFactorCVMasterPagedServerAction] Error:",
-        error.message
+      logger.error(
+        'Failed to fetch UseFactorCVMaster records',
+        {
+          operation: 'fetchUseFactorCVMasterPagedServerAction',
+          pageNumber,
+          pageSize,
+        },
+        error
       );
     }
     throw error;
@@ -115,6 +128,9 @@ export async function updateUseFactorCVMasterAction(
     }
     return { success: true };
   } catch (error: unknown) {
+    const logger = createLogger('updateUseFactorCVMaster');
+    logger.error('Failed to update UseFactorCVMaster', { operation: 'updateUseFactorCVMasterAction', id }, error);
+
     if (error instanceof ApiError) {
       return {
         success: false,
@@ -154,6 +170,9 @@ export async function createUseFactorCVMasterAction(
       return { success: false, message: response.error || 'Failed to create record', statusCode: 500 };
     }
   } catch (error: unknown) {
+    const logger = createLogger('createUseFactorCVMaster');
+    logger.error('Failed to create UseFactorCVMaster', { operation: 'createUseFactorCVMasterAction' }, error);
+
     if (error instanceof ApiError) {
       return { success: false, message: error.responseText || 'API Error occurred', statusCode: error.statusCode };
     }
@@ -185,6 +204,9 @@ export async function bulkCreateUseFactorCVMasterAction(
       return { success: false, message: response?.error || 'Failed to bulk create records', statusCode: 500 };
     }
   } catch (error: unknown) {
+    const logger = createLogger('bulkCreateUseFactorCVMaster');
+    logger.error('Failed to bulk create UseFactorCVMaster', { operation: 'bulkCreateUseFactorCVMasterAction', count: payload.length }, error);
+
     if (error instanceof ApiError) {
       return { success: false, message: error.responseText || 'API Error occurred', statusCode: error.statusCode };
     }
@@ -217,6 +239,9 @@ export async function bulkUpdateUseFactorCVMasterAction(
 
     return { success: true };
   } catch (error: unknown) {
+    const logger = createLogger('bulkUpdateUseFactorCVMaster');
+    logger.error('Failed to bulk update UseFactorCVMaster', { operation: 'bulkUpdateUseFactorCVMasterAction', count: payload.length }, error);
+
     if (error instanceof ApiError) {
       return { success: false, message: error.responseText || 'API Error occurred', statusCode: error.statusCode };
     }
@@ -236,7 +261,9 @@ export async function fetchTypeOfUsePaged(
     const response = await getTypeOfUseWithParams(params);
 
     if (!response.success || !response.data) {
-      throw new Error(response.error || "Failed to fetch TypeOfUse records");
+      const { getTranslations } = await import('next-intl/server');
+      const t = await getTranslations('useCategoryFactorMaster');
+      throw new Error(response.error || t('errors.fetchTypeOfUseFailed'));
     }
 
     // Map API response to UseType interface
@@ -258,7 +285,15 @@ export async function fetchTypeOfUsePaged(
       items: mappedItems
     };
   } catch (error: unknown) {
-    console.error("[fetchTypeOfUsePaged] Error:", error);
+    const logger = createLogger('fetchTypeOfUsePaged');
+    logger.error(
+      'Failed to fetch TypeOfUse records',
+      {
+        operation: 'fetchTypeOfUsePaged',
+        hasParams: !!params,
+      },
+      error
+    );
     throw error;
   }
 }
