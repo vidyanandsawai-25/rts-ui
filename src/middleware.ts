@@ -48,33 +48,19 @@ export default function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
   }
 
-  // Use intl middleware for locale handling
-  const intlResponse = intlMiddleware(request);
-
-  // If it's a redirect, just return it as is
-  if (intlResponse.headers.has('location')) {
-    return intlResponse;
-  }
-
+  const isAuthOrHome = 
+    pathWithoutLocale === '/' ||
+    pathWithoutLocale === '/home' || 
+    pathWithoutLocale.startsWith('/home/') ||
+    pathWithoutLocale === '/login' || 
+    pathWithoutLocale.startsWith('/login/');
+    
   // To pass data from middleware to Server Components, use request header overrides
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set('x-pathname', pathname);
+  request.headers.set('x-pathname', pathname);
+  request.headers.set('x-is-auth-or-home', isAuthOrHome ? 'true' : 'false');
 
-  const response = NextResponse.next({
-    request: {
-      headers: requestHeaders,
-    },
-  });
-
-  // Merge headers and cookies from intlResponse into our final response
-  intlResponse.headers.forEach((value, key) => {
-    response.headers.set(key, value);
-  });
-  intlResponse.cookies.getAll().forEach((cookie) => {
-    response.cookies.set(cookie);
-  });
-
-  return response;
+  // Use intl middleware for locale handling
+  return intlMiddleware(request);
 }
 
 export const config = {

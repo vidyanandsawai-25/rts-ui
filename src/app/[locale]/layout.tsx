@@ -40,16 +40,7 @@ export default async function RootLayout({ children, params }: Readonly<RootLayo
 
   // Get current path from headers (set by middleware) to conditionally show layout
   const headerList = await headers();
-  const pathname = headerList.get('x-pathname') || '';
-  
-  // Define paths that should NOT include the main Header/Footer/Sidebar
-  const isAuthOrHome = 
-    pathname.endsWith('/login') || 
-    pathname.includes('/login/') || 
-    pathname.endsWith('/home') || 
-    pathname.includes('/home/') ||
-    pathname === `/${locale}` || 
-    pathname === `/${locale}/`;
+  const isAuthOrHome = headerList.get('x-is-auth-or-home') === 'true';
 
   return (
     <html lang={locale}>
