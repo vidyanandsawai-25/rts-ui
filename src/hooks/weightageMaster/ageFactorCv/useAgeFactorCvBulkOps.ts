@@ -3,204 +3,81 @@
 import { useState, Dispatch, SetStateAction } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import {
-    AgeFactorCVMaster,
-    BulkAgeFactorCVMasterCreate,
-    BulkAgeFactorCVMasterUpdate,
-} from "@/types/ageFactorCv.types";
+import { AgeFactorCVMaster } from "@/types/ageFactorCv.types";
 import type { Option } from "@/components/common/select";
 import {
     bulkCreateAgeFactorCVMasterAction,
     bulkUpdateAgeFactorCVMasterAction
 } from "@/app/[locale]/property-tax/weightage-master/age-weightage/action";
 import { getUserIdFromCookie } from "@/lib/utils/cookie";
+import { buildGenerateAllPayload, prepareBulkUpdatePayloads } from "@/lib/utils/weightageMaster/ageFactorCv/ageFactorCvBulkHelpers";
+import { validateFactorValue, matchesFilterCriteria } from "@/lib/utils/weightageMaster/ageFactorCv/ageFactorCvValidation";
 
 interface UseAgeFactorCvBulkOpsParams {
-    data: AgeFactorCVMaster[];
-    editableRows: Record<string, AgeFactorCVMaster>;
-    setEditableRows: Dispatch<SetStateAction<Record<string, AgeFactorCVMaster>>>;
-    selectedYear: string;
-    constructionType: string;
-    selectedAgeRange: string;
-    ageFrom: string;
-    ageTo: string;
-    factorValue: string;
-    constructionTypeOptions: Option[];
-    ageRangeOptions: Option[];
-    allAgeFactors: AgeFactorCVMaster[];
-    sessionCreatedUids: Set<string>;
-    addToast: (type: "success" | "error" | "info" | "warning", message: string) => void;
-    getRowUid: (row: AgeFactorCVMaster) => string;
-    findRowByUid: (uid: string) => AgeFactorCVMaster | undefined;
-    clearFilters: () => void;
+    selectionState: {
+        selectedYear: string;
+        constructionType: string;
+        selectedAgeRange: string;
+        ageFrom: string;
+        ageTo: string;
+        factorValue: string;
+    };
+    masterData: {
+        data: AgeFactorCVMaster[];
+        allAgeFactors: AgeFactorCVMaster[];
+        constructionTypeOptions: Option[];
+        ageRangeOptions: Option[];
+    };
+    sessionState: {
+        editableRows: Record<string, AgeFactorCVMaster>;
+        setEditableRows: Dispatch<SetStateAction<Record<string, AgeFactorCVMaster>>>;
+        sessionCreatedUids: Set<string>;
+        getRowUid: (row: AgeFactorCVMaster) => string;
+        findRowByUid: (uid: string) => AgeFactorCVMaster | undefined;
+    };
+    callbacks: {
+        addToast: (type: "success" | "error" | "info" | "warning", message: string) => void;
+        clearFilters: () => void;
+    };
 }
 
 /**
- * Pure helper to build the payload for generating all missing age factor records.
- * Extracted for better testability and to reduce complexity in the hook.
+ * Main hook for handling bulk operations for Age Factor CV.
+ * Refactored to use modular helper functions for payload building and validation.
+ * Parameters are grouped into cohesive objects to reduce coupling.
  */
-export const buildGenerateAllPayload = ({
-    selectedYear,
-    selectedAgeRange,
-    ageRangeOptions,
-    data,
-    constructionType,
-    constructionTypeOptions,
-    allAgeFactors,
-    editableRows,
-    defaultFactor,
-    userId,
-    sessionCreatedUids,
-    getRowUid,
-}: {
-    selectedYear: string;
-    selectedAgeRange: string;
-    ageRangeOptions: Option[];
-    data: AgeFactorCVMaster[];
-    constructionType: string;
-    constructionTypeOptions: Option[];
-    allAgeFactors: AgeFactorCVMaster[];
-    editableRows: Record<string, AgeFactorCVMaster>;
-    defaultFactor: number;
-    userId: number;
-    sessionCreatedUids: Set<string>;
-    getRowUid: (row: AgeFactorCVMaster) => string;
-}): BulkAgeFactorCVMasterCreate => {
-    const ageFactors: BulkAgeFactorCVMasterCreate = [];
-
-    const parseRangeValue = (rangeVal: string) => {
-        const [ageFrom, ageTo] = rangeVal.split("-").map(Number);
-        if (isNaN(ageFrom) || isNaN(ageTo)) {
-            return null;
-        }
-        return { ageFrom, ageTo };
-    };
-
-    const hasExistingAgeFactor = (
-        constructionTypeId: number,
-        targetYearId: number,
-        ageFrom: number,
-        ageTo: number
-    ) =>
-        allAgeFactors.some(r =>
-            r.id > 0 &&
-            r.constructionTypeId === constructionTypeId &&
-            (r.yearRangeCVId === targetYearId || r.yearRangeCVID === targetYearId) &&
-            r.ageFrom === ageFrom &&
-            r.ageTo === ageTo
-        );
-
-    const resolveFactorForGeneratedRow = (
-        constructionTypeId: number,
-        targetYearId: number,
-        ageFrom: number,
-        ageTo: number
-    ) => {
-        const reconstructedUid = `0-${constructionTypeId}-${targetYearId}-${ageFrom}-${ageTo}`;
-        const edit = editableRows[reconstructedUid];
-
-        if (edit?.factor !== undefined) {
-            return edit.factor;
-        }
-
-        const pendingRow = data.find(r =>
-            r.id === 0 &&
-            r.constructionTypeId === constructionTypeId &&
-            (r.yearRangeCVId === targetYearId || r.yearRangeCVID === targetYearId) &&
-            r.ageFrom === ageFrom &&
-            r.ageTo === ageTo &&
-            !sessionCreatedUids.has(getRowUid(r))
-        );
-
-        return pendingRow?.factor ?? defaultFactor;
-    };
-
-    const buildGenerationPayloadForYear = (
-        targetYearId: number
-    ): BulkAgeFactorCVMasterCreate => {
-        const generatedRows: BulkAgeFactorCVMasterCreate = [];
-
-        const typesToProcess = constructionType
-            ? constructionTypeOptions.filter(ct => ct.value === constructionType)
-            : constructionTypeOptions;
-
-        typesToProcess.forEach(constTypeOpt => {
-            const constructionTypeId = parseInt(constTypeOpt.value);
-            if (isNaN(constructionTypeId)) return;
-
-            let rangesToProcess: string[] = [];
-            if (selectedAgeRange) {
-                rangesToProcess = [selectedAgeRange];
-            } else if (ageRangeOptions.length > 0) {
-                rangesToProcess = ageRangeOptions.map(o => o.value);
-            } else {
-                const pendingRanges = new Set<string>();
-                data.forEach(row => {
-                    if (row.ageFrom !== undefined && row.ageTo !== undefined) {
-                        pendingRanges.add(`${row.ageFrom}-${row.ageTo}`);
-                    }
-                });
-                rangesToProcess = Array.from(pendingRanges);
-            }
-
-            rangesToProcess.forEach(rangeVal => {
-                const parsedRange = parseRangeValue(rangeVal);
-                if (!parsedRange) return;
-                const { ageFrom, ageTo } = parsedRange;
-
-                if (hasExistingAgeFactor(constructionTypeId, targetYearId, ageFrom, ageTo)) {
-                    return;
-                }
-
-                generatedRows.push({
-                    isActive: true,
-                    createdBy: userId,
-                    constructionTypeId,
-                    ageFrom,
-                    ageTo,
-                    factor: resolveFactorForGeneratedRow(
-                        constructionTypeId,
-                        targetYearId,
-                        ageFrom,
-                        ageTo
-                    ),
-                    yearRangeCVId: targetYearId
-                });
-            });
-        });
-
-        return generatedRows;
-    };
-
-    const yearsToProcess = selectedYear ? [selectedYear] : [];
-    yearsToProcess.forEach(yearIdStr => {
-        const yearId = parseInt(yearIdStr);
-        if (isNaN(yearId)) return;
-        ageFactors.push(...buildGenerationPayloadForYear(yearId));
-    });
-
-    return ageFactors;
-};
-
 export const useAgeFactorCvBulkOps = ({
-    data,
-    editableRows,
-    setEditableRows,
-    selectedYear,
-    constructionType,
-    selectedAgeRange,
-    ageFrom,
-    ageTo,
-    factorValue,
-    constructionTypeOptions,
-    ageRangeOptions,
-    allAgeFactors,
-    sessionCreatedUids,
-    addToast,
-    getRowUid,
-    findRowByUid,
-    clearFilters,
+    selectionState,
+    masterData,
+    sessionState,
+    callbacks,
 }: UseAgeFactorCvBulkOpsParams) => {
+    const { 
+        selectedYear, 
+        constructionType, 
+        selectedAgeRange, 
+        ageFrom, 
+        ageTo, 
+        factorValue 
+    } = selectionState;
+    
+    const { 
+        data, 
+        allAgeFactors, 
+        constructionTypeOptions, 
+        ageRangeOptions 
+    } = masterData;
+    
+    const { 
+        editableRows, 
+        setEditableRows, 
+        sessionCreatedUids, 
+        getRowUid, 
+        findRowByUid 
+    } = sessionState;
+    
+    const { addToast, clearFilters } = callbacks;
+
     const t = useTranslations('ageFactorMaster');
     const tW = useTranslations('weightageMaster');
     const locale = useLocale();
@@ -209,8 +86,8 @@ export const useAgeFactorCvBulkOps = ({
     const [isGeneratingAll, setIsGeneratingAll] = useState(false);
 
     const handleApplyFilter = (): void => {
-        const factor = parseFloat(factorValue);
-        if (isNaN(factor) || factor <= 0) {
+        const { isValid, factor } = validateFactorValue(factorValue);
+        if (!isValid) {
             addToast('warning', t('messages.invalidFactorValue'));
             return;
         }
@@ -219,25 +96,8 @@ export const useAgeFactorCvBulkOps = ({
         let updatedCount = 0;
 
         data.forEach((row) => {
-            const rowUid = getRowUid(row);
-
-            const matchesConstruction = !constructionType || row.constructionTypeId === parseInt(constructionType);
-
-            let matchesAge = true;
-            if (selectedAgeRange) {
-                const [minAge, maxAge] = selectedAgeRange.split("-").map(Number);
-                // Exact match for dropdown selection to avoid updating overlapping sub-ranges
-                matchesAge = row.ageFrom === minAge && row.ageTo === maxAge;
-            } else if (ageFrom || ageTo) {
-                // Inclusive logic for manual min/max inputs
-                matchesAge = (!ageFrom || row.ageFrom >= parseInt(ageFrom)) &&
-                             (!ageTo || row.ageTo <= parseInt(ageTo));
-            }
-
-            const rowYearId = row.yearRangeCVId || row.yearRangeCVID || 0;
-            const matchesYear = !selectedYear || Number(rowYearId) === parseInt(selectedYear);
-
-            if (matchesConstruction && matchesAge && matchesYear) {
+            if (matchesFilterCriteria(row, { constructionType, selectedAgeRange, ageFrom, ageTo, selectedYear })) {
+                const rowUid = getRowUid(row);
                 updatedRows[rowUid] = {
                     ...row,
                     ...editableRows[rowUid],
@@ -262,50 +122,13 @@ export const useAgeFactorCvBulkOps = ({
         setIsBulkUpdating(true);
         try {
             const userId = getUserIdFromCookie() || 1;
-            const creates: BulkAgeFactorCVMasterCreate = [];
-            const updates: BulkAgeFactorCVMasterUpdate = [];
-
-            for (const [uid, updatedData] of updatedEntries) {
-                const originalRow = findRowByUid(uid);
-                if (!originalRow) continue;
-
-                const originalYearId = Number(originalRow.yearRangeCVId || originalRow.yearRangeCVID || 0);
-                const yearId = parseInt(selectedYear) || originalYearId;
-
-                if (originalRow.id === 0) {
-                    creates.push({
-                        isActive: true,
-                        createdBy: userId,
-                        constructionTypeId: originalRow.constructionTypeId,
-                        ageFrom: originalRow.ageFrom,
-                        ageTo: originalRow.ageTo,
-                        factor: updatedData.factor,
-                        yearRangeCVId: yearId
-                    });
-                } else if (originalRow.factor !== updatedData.factor) {
-                    updates.push({
-                        id: originalRow.id,
-                        data: {
-                            ageFactorId: originalRow.id,
-                            constructionTypeId: originalRow.constructionTypeId,
-                            ageFrom: originalRow.ageFrom,
-                            ageTo: originalRow.ageTo,
-                            factor: updatedData.factor,
-                            yearRangeCVId: yearId,
-                            isActive: originalRow.isActive,
-                            updatedBy: userId
-                        }
-                    });
-                }
-            }
+            const { creates, updates } = prepareBulkUpdatePayloads(updatedEntries, findRowByUid, selectedYear, userId);
 
             if (creates.length > 0) {
-                const payload: BulkAgeFactorCVMasterCreate = creates;
-                await bulkCreateAgeFactorCVMasterAction(payload);
+                await bulkCreateAgeFactorCVMasterAction(creates);
             }
             if (updates.length > 0) {
-                const payload: BulkAgeFactorCVMasterUpdate = updates;
-                await bulkUpdateAgeFactorCVMasterAction(payload);
+                await bulkUpdateAgeFactorCVMasterAction(updates);
             }
 
             addToast('success', t('messages.bulkOperationSuccess'));
@@ -356,8 +179,7 @@ export const useAgeFactorCvBulkOps = ({
                 return;
             }
 
-            const payload: BulkAgeFactorCVMasterCreate = ageFactors;
-            const result = await bulkCreateAgeFactorCVMasterAction(payload);
+            const result = await bulkCreateAgeFactorCVMasterAction(ageFactors);
             
             if (result.success) {
                 addToast('success', t('messages.recordsGeneratedSuccess', { count: ageFactors.length }));

@@ -2,17 +2,20 @@
 
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
+import { getTranslations } from "next-intl/server";
 import { locales } from "@/i18n/config";
 import { getUserIdFromCookies } from "@/lib/utils/cookie";
 import {
   getAgeFactorCVMasterWithParams,
   updateAgeFactorCVMaster,
   createAgeFactorCVMaster,
+  deleteAgeFactorCVMaster,
+} from "@/lib/api/weightagemaster/ageOfBuildingCvFactor/ageFactorCv.service";
+import {
   bulkCreateAgeFactorCVMaster,
   bulkUpdateAgeFactorCVMaster,
-  deleteAgeFactorCVMaster,
   bulkDeleteAgeFactorCVMaster,
-} from "@/lib/api/ageFactorCv.service";
+} from "@/lib/api/weightagemaster/ageOfBuildingCvFactor/ageFactorCv.bulk.service";
 
 import { ApiError } from "@/lib/utils/api";
 import {
@@ -60,11 +63,7 @@ export async function fetchAgeFactorCVMasterPagedServerAction(
     const normalizedPageNumber = Math.max(1, Number(pageNumber) || 1);
     const normalizedPageSize = Math.max(1, Math.min(100, Number(pageSize) || 10));
 
-    const trimmedYearRange = selectedYearRange?.trim();
-    const parsedYearRangeParam = trimmedYearRange && trimmedYearRange !== "" ? Number(trimmedYearRange) : undefined;
-    const yearRangeParam = parsedYearRangeParam !== undefined && Number.isFinite(parsedYearRangeParam)
-      ? parsedYearRangeParam
-      : undefined;
+    const yearRangeParam = normalizeYearRangeParam(selectedYearRange);
 
     const normalizedConstructionTypeId = constructionTypeId !== undefined && Number.isFinite(constructionTypeId)
       ? constructionTypeId
@@ -86,19 +85,7 @@ export async function fetchAgeFactorCVMasterPagedServerAction(
 
     const data = response.data;
     
-    const totalCount = data.totalCount ?? 0;
-    const computedTotalPages = data.totalPages ?? Math.max(1, Math.ceil(totalCount / normalizedPageSize));
-    
-    // Ensure all pagination fields are present and have sensible defaults to prevent UI breakage
-    return {
-      items: data.items || [],
-      totalCount,
-      pageNumber: data.pageNumber ?? normalizedPageNumber,
-      pageSize: data.pageSize ?? normalizedPageSize,
-      totalPages: computedTotalPages,
-      hasPrevious: data.hasPrevious ?? (normalizedPageNumber > 1),
-      hasNext: data.hasNext ?? (normalizedPageNumber < computedTotalPages)
-    };
+    return normalizePagedResponse(data, normalizedPageNumber, normalizedPageSize);
   } catch (error: unknown) {
     throw error;
   }
@@ -112,10 +99,11 @@ export async function updateAgeFactorCVMasterAction(
   payload: AgeFactorCVMasterUpdate
 ): Promise<{ success: boolean; message?: string; statusCode?: number }> {
   try {
+    const t = await getTranslations('ageFactorMaster');
     if (!id || id <= 0) {
       return {
         success: false,
-        message: 'Invalid Age Factor CV Master ID',
+        message: t('errors.validIdRequired'),
         statusCode: 400,
       };
     }
@@ -134,7 +122,9 @@ export async function updateAgeFactorCVMasterAction(
       updatedBy: userId
     };
 
-    await updateAgeFactorCVMaster(id, updatePayload);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const tService = (key: string) => t(key as any);
+    await updateAgeFactorCVMaster(id, updatePayload, tService);
 
     for (const locale of locales) {
       revalidatePath(`/${locale}/property-tax/weightage-master`, "page");
@@ -158,7 +148,7 @@ export async function updateAgeFactorCVMasterAction(
     }
     return { 
       success: false, 
-      message: "Failed to update AgeFactorCVMaster",
+      message: error instanceof Error ? error.message : "Failed to update AgeFactorCVMaster",
       statusCode: 500,
     };
   }
@@ -185,7 +175,10 @@ export async function createAgeFactorCVMasterAction(
       createdBy: userId
     };
 
-    const response = await createAgeFactorCVMaster(createPayload);
+    const t = await getTranslations('ageFactorMaster');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const tService = (key: string) => t(key as any);
+    const response = await createAgeFactorCVMaster(createPayload, tService);
     if (response.success) {
       for (const locale of locales) {
         revalidatePath(`/${locale}/property-tax/weightage-master`, "page");
@@ -227,7 +220,10 @@ export async function bulkCreateAgeFactorCVMasterAction(
       createdBy: userId
     }));
 
-    const response = await bulkCreateAgeFactorCVMaster(bulkCreatePayload);
+    const t = await getTranslations('ageFactorMaster');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const tService = (key: string) => t(key as any);
+    const response = await bulkCreateAgeFactorCVMaster(bulkCreatePayload, tService);
     if (response && response.success) {
       for (const locale of locales) {
         revalidatePath(`/${locale}/property-tax/weightage-master`, "page");
@@ -272,7 +268,10 @@ export async function bulkUpdateAgeFactorCVMasterAction(
       }
     }));
 
-    await bulkUpdateAgeFactorCVMaster(bulkUpdatePayload);
+    const t = await getTranslations('ageFactorMaster');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const tService = (key: string) => t(key as any);
+    await bulkUpdateAgeFactorCVMaster(bulkUpdatePayload, tService);
 
     for (const locale of locales) {
       revalidatePath(`/${locale}/property-tax/weightage-master`, "page");
@@ -299,7 +298,10 @@ export async function deleteAgeFactorCVMasterAction(
     id: number
 ): Promise<{ success: boolean; message?: string; statusCode?: number }> {
     try {
-        const response = await deleteAgeFactorCVMaster(id);
+        const t = await getTranslations('ageFactorMaster');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const tService = (key: string) => t(key as any);
+        const response = await deleteAgeFactorCVMaster(id, tService);
         if (response.success) {
             for (const locale of locales) {
                 revalidatePath(`/${locale}/property-tax/weightage-master`, "page");
@@ -327,7 +329,10 @@ export async function bulkDeleteAgeFactorCVMasterAction(
     ids: number[]
 ): Promise<{ success: boolean; message?: string; statusCode?: number }> {
     try {
-        const response = await bulkDeleteAgeFactorCVMaster(ids);
+        const t = await getTranslations('ageFactorMaster');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const tService = (key: string) => t(key as any);
+        const response = await bulkDeleteAgeFactorCVMaster(ids, tService);
         if (response.success) {
             for (const locale of locales) {
                 revalidatePath(`/${locale}/property-tax/weightage-master`, "page");
@@ -362,4 +367,39 @@ export async function fetchConstructionTypePagedAction(
   } catch (error: unknown) {
     throw error;
   }
+}
+/**
+ * Normalizes the year range parameter from a string to a valid number or undefined
+ * @param selectedYearRange The year range string to normalize
+ */
+function normalizeYearRangeParam(selectedYearRange?: string): number | undefined {
+  const trimmed = selectedYearRange?.trim();
+  if (!trimmed || trimmed === "") return undefined;
+  
+  const parsed = Number(trimmed);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+/**
+ * Normalizes a paged response with defensive defaults and fallback calculations.
+ */
+function normalizePagedResponse(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    data: any, 
+    pageNumber: number, 
+    pageSize: number
+): PagedResponse<AgeFactorCVMaster> {
+    const totalCount = data.totalCount ?? 0;
+    const totalPages = data.totalPages ?? Math.max(1, Math.ceil(totalCount / pageSize));
+    const normalizedPageNumber = data.pageNumber ?? pageNumber;
+
+    return {
+        items: data.items || [],
+        totalCount,
+        pageNumber: normalizedPageNumber,
+        pageSize: data.pageSize ?? pageSize,
+        totalPages,
+        hasPrevious: data.hasPrevious ?? (normalizedPageNumber > 1),
+        hasNext: data.hasNext ?? (normalizedPageNumber < totalPages)
+    };
 }

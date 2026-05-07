@@ -58,11 +58,17 @@
       "message": "Loading Age Factor Master...",
       "description": "Please wait while we fetch the age factor weightage data"
     },
-    "error": {
-      "title": "Something Went Wrong",
-      "description": "We encountered an error while loading the age factor master page. Please try again.",
-      "tryAgain": "Try Again",
-      "goHome": "Go to Home"
+    "errors": {
+      "validIdRequired": "Valid Age Factor CV ID is required",
+      "constructionTypeRequired": "Construction Type ID is required",
+      "yearRangeRequired": "Year Range ID is required",
+      "updateFailed": "Failed to update Age Factor CV Master",
+      "createFailed": "Failed to create Age Factor CV Master",
+      "bulkCreateRequired": "Valid payload with age factors is required for bulk create",
+      "bulkUpdateRequired": "Valid payload with age factors is required for bulk update",
+      "bulkUpdateFailed": "Bulk update Age Factor CV Master failed",
+      "bulkDeleteRequired": "Valid list of IDs is required for bulk delete",
+      "bulkDeleteFailed": "Bulk delete Age Factor CV Master failed"
     }
   }
 }

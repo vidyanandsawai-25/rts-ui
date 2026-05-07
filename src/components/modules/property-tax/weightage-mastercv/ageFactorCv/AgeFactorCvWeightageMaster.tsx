@@ -72,13 +72,17 @@ const AgeFactorCvWeightageMaster: React.FC<AgeFactorCvWeightageMasterProps> = ({
         changePage,
         changePageSize,
     } = useAgeFactorCvWeightage({
-        data,
-        pageNumber,
-        pageSize,
-        totalCount,
-        totalPages,
-        constructionTypeOptions,
-        initialAgeRangeOptions,
+        paginationData: {
+            data,
+            pageNumber,
+            pageSize,
+            totalCount,
+            totalPages,
+        },
+        options: {
+            constructionTypeOptions,
+            initialAgeRangeOptions,
+        },
         allAgeFactors,
     });
 
