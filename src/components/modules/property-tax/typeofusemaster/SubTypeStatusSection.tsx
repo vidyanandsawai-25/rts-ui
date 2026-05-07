@@ -1,7 +1,6 @@
 import { CheckCircle2 } from 'lucide-react';
 import { ToggleSwitch } from '@/components/common/ToggleSwitch';
-
-type TranslatorFunction = (key: string, values?: Record<string, string | number>) => string;
+import type { TranslatorFunction } from '@/types/typeOfUse.types';
 
 interface SubTypeStatusSectionProps {
   isActive: boolean;

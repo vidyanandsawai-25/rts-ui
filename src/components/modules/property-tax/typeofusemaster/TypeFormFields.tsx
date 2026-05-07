@@ -5,11 +5,10 @@
  * Includes type selector, group selector, and input fields
  */
 
-import type { UseGroup } from '@/types/typeOfUse.types';
+import type { UseGroup, TranslatorFunction } from '@/types/typeOfUse.types';
 import { Input } from '@/components/common/Input';
 import { ValidationMessage } from '@/components/common';
-
-type TranslatorFunction = (key: string, values?: Record<string, string | number>) => string;
+import { Label } from '@/components/common/label';
 
 interface TypeSelectorProps {
   value: string;
@@ -30,9 +29,9 @@ export function TypeSelector({
 }: TypeSelectorProps) {
   return (
     <div className="flex flex-col">
-      <label htmlFor="type-select" className="mb-1.5 text-sm font-semibold text-gray-700">
-        {t('type.fields.type')} <span className="text-red-500">*</span>
-      </label>
+      <Label htmlFor="type-select" required>
+        {t('type.fields.type')}
+      </Label>
       <select
         id="type-select"
         value={value}
@@ -76,9 +75,9 @@ export function GroupSelector({
 }: GroupSelectorProps) {
   return (
     <div className="flex flex-col">
-      <label htmlFor="use-type-group-select" className="mb-1.5 text-sm font-semibold text-gray-700">
-        {t('type.fields.useTypeGroup')} <span className="text-red-500">*</span>
-      </label>
+      <Label htmlFor="use-type-group-select" required>
+        {t('type.fields.useTypeGroup')}
+      </Label>
 
       <select
         id="use-type-group-select"

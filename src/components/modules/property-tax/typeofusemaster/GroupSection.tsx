@@ -2,7 +2,7 @@ import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
 import { AddButton, DeleteButton, EditButton } from "@/components/common";
 import { StatusBadge } from "@/components/common/StatusBadge";
-import type { UseGroup, UseType } from "@/types/typeOfUse.types";
+import type { UseGroup, UseType, TranslatorFunction } from "@/types/typeOfUse.types";
 import {
   clsx,
   getIconKey,
@@ -11,8 +11,6 @@ import {
   countTypesForGroup,
   getTypeApiId,
 } from "./typeOfUseMasterUtils";
-
-type TranslatorFunction = (key: string, values?: Record<string, string | number>) => string;
 
 interface GroupSectionProps {
   groups: UseGroup[];
@@ -106,7 +104,6 @@ export function GroupSection({
                     </div>
                   </div>
 
-                  <div className="mt-1 text-xs"></div>
                   <div className="mt-1 text-xs flex items-center gap-2">
                     <span className="text-slate-600">
                       {typesCount} {t('type.title')}

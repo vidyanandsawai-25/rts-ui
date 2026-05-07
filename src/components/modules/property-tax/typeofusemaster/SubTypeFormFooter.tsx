@@ -1,6 +1,5 @@
 import { CancelButton, SaveButton } from '@/components/common';
-
-type TranslatorFunction = (key: string, values?: Record<string, string | number>) => string;
+import type { TranslatorFunction } from '@/types/typeOfUse.types';
 
 interface SubTypeFormFooterProps {
   isEdit: boolean;

@@ -3,10 +3,8 @@ import { useLocale } from "next-intl";
 import { AddButton, DeleteButton, EditButton, SearchInput } from "@/components/common";
 import { CardList } from "@/components/common/CardList";
 import { StatusBadge } from "@/components/common/StatusBadge";
-import type { UseGroup, UseType } from "@/types/typeOfUse.types";
+import type { UseGroup, UseType, TranslatorFunction } from "@/types/typeOfUse.types";
 import { clsx, getTypeApiId, getGroupApiId } from "./typeOfUseMasterUtils";
-
-type TranslatorFunction = (key: string, values?: Record<string, string | number>) => string;
 
 interface TypeSectionProps {
   paginatedTypes: UseType[];
@@ -117,11 +115,6 @@ export function TypeSection({
                       <span className="text-sm font-semibold text-slate-900">
                         {typeItem.description}
                       </span>
-                    </div>
-
-                    {/* CENTER: Meta badges */}
-                    <div className="flex items-center gap-2 shrink-0">
-                      {/* Placeholder for future badges */}
                     </div>
 
                     {/* RIGHT: Action buttons */}

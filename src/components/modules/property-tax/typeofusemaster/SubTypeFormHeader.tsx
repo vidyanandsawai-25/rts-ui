@@ -1,6 +1,5 @@
 import { ListTree } from 'lucide-react';
-
-type TranslatorFunction = (key: string, values?: Record<string, string | number>) => string;
+import type { TranslatorFunction } from '@/types/typeOfUse.types';
 
 interface SubTypeFormHeaderProps {
   isEdit: boolean;

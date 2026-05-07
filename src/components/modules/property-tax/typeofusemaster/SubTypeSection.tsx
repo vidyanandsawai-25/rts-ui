@@ -3,10 +3,8 @@ import { useLocale } from "next-intl";
 import { Layers3, AlertCircle } from "lucide-react";
 import { AddButton, DeleteButton, EditButton, SearchInput } from "@/components/common";
 import { MasterTable, type Column } from "@/components/common/MasterTable";
-import type { UseSubType, UseType } from "@/types/typeOfUse.types";
+import type { UseSubType, UseType, TranslatorFunction } from "@/types/typeOfUse.types";
 import type { SubTypeTableRow } from "./TypeOfUseMasterColumns";
-
-type TranslatorFunction = (key: string, values?: Record<string, string | number>) => string;
 
 interface SubTypeSectionProps {
   selectedType: UseType | undefined | null;

@@ -153,18 +153,6 @@ export default function UseSubTypeForm({ id, initialData, typeInfo: typeInfoProp
             <span>{errors.typeId}</span>
           </div>
         )}
-        {isEdit && (
-          <input
-            type="hidden"
-            name="subTypeOfUseId"
-            value={formData.subTypeOfUseId}
-          />
-        )}
-        <input
-          type="hidden"
-          name="typeOfUseId"
-          value={formData.typeOfUseId}
-        />
 
         {/* ================= ACTIVE STATUS (EDIT ONLY) ================= */}
         {isEdit && (

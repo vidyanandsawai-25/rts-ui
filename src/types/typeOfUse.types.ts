@@ -8,6 +8,9 @@ export type UseGroupIconKey =
   | "leaf"
   | "map";
 
+// Translation function type for next-intl
+export type TranslatorFunction = (key: string, values?: Record<string, string | number>) => string;
+
 // ✅ Matches API response exactly: /TypeOfUseGroup
 export interface UseGroup {
   typeOfUseGroupId: number;
