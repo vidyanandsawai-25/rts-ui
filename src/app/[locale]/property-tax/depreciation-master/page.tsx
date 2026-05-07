@@ -39,7 +39,6 @@ export default async function Page({ params, searchParams }: PageProps) {
       pageSize={res.data.pageSize}
       totalCount={res.data.totalRanges}
       totalPages={res.data.totalPages}
-      rangeCountInCurrentPage={res.data.rangeCountInCurrentPage}
       locale={locale}
     />
   );

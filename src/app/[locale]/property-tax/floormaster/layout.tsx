@@ -24,7 +24,7 @@ async function FloorMasterLayoutContent({
           rightContent={<FloorMasterToolbar />}
         />
 
-        <div className="p-6">
+        <div className="mt-2">
           {children}
         </div>
       </div>

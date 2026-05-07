@@ -1,6 +1,9 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+// Mock sonner toast
+vi.mock('sonner', () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextIntlClientProvider } from 'next-intl';
+import { toast } from 'sonner';
 
 // ── Hoisted spies (must be above vi.mock so the factory can close over them) ─
 const pushSpy = vi.hoisted(() => vi.fn());
@@ -18,10 +21,11 @@ vi.mock('next-intl', async (importOriginal) => {
 vi.mock('@/app/[locale]/property-tax/floormaster/actions', () => ({
   createFloorAction: vi.fn(),
   updateFloorAction: vi.fn(),
+  createFloorRangeAction: vi.fn(),
 }));
 
 import FloorForm from '@/components/modules/property-tax/Floormaster/floor/FloorForm';
-import { createFloorAction, updateFloorAction } from '@/app/[locale]/property-tax/floormaster/actions';
+import { createFloorAction, updateFloorAction, createFloorRangeAction } from '@/app/[locale]/property-tax/floormaster/actions';
 import type { Floor } from '@/types/floor.types';
 
 // ── i18n messages ─────────────────────────────────────────────────────────────
@@ -39,6 +43,9 @@ const messages = {
         editTitle: 'Edit Floor',
         addSubtitle: 'Create a new floor',
         editSubtitle: 'Update floor details',
+        entryMode: 'Select Floor Creation Mode',
+        singleFloor: 'Single Floor',
+        floorRange: 'Floor Range',
         floorCode: 'Floor Code',
         floorCodePlaceholder: 'Enter floor code',
         description: 'Description',
@@ -47,6 +54,23 @@ const messages = {
         activeStatusTitle: 'Active Status',
         activeStatusOn: 'Active',
         activeStatusOff: 'Inactive',
+        range: {
+          start: 'Start',
+          end: 'End',
+          prefix: 'Prefix',
+          suffix: 'Suffix',
+          startPlaceholder: 'Enter start value',
+          endPlaceholder: 'Enter end value',
+        },
+        rangeExample: 'E.g. F1-F5',
+        englishName: {
+          label: 'English Name',
+          placeholder: 'Enter name',
+          prefix: 'Prefix',
+          prefixPlaceholder: 'Enter prefix',
+          suffix: 'Suffix',
+          suffixPlaceholder: 'Enter suffix',
+        },
         validation: {
           codeRequired: 'Floor code is required',
           codeMaxLength: 'Max {count} characters',
@@ -55,6 +79,8 @@ const messages = {
           descriptionMaxLength: 'Max {count} characters',
           descriptionFormat: 'Invalid format',
           mustBeActive: 'Must be active on create',
+          rangeStartMinValue: 'Start value must be at least 1',
+          rangeEndMinValue: 'End value must be at least 1',
         },
       },
       validation: { mustBeNumber: 'Must be a valid number' },
@@ -69,6 +95,7 @@ const messages = {
         createSuccess: 'Floor {code} created',
         updateSuccess: 'Floor {code} updated',
         deleteSuccess: 'Deleted',
+        createRangeSuccess: '{count} floors created',
       },
     },
   },
@@ -230,6 +257,71 @@ describe('FloorForm — Edit Mode', () => {
 
     await waitFor(() => {
       expect(updateFloorAction).toHaveBeenCalled();
+    });
+  });
+});
+
+describe('FloorForm — Range Mode', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('switches to range mode and shows range fields', () => {
+    renderAdd();
+    // Switch to range mode
+    fireEvent.click(screen.getByText('Floor Range'));
+    expect(screen.getByLabelText(/Start/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/End/)).toBeInTheDocument();
+    expect(screen.getByLabelText('Prefix')).toBeInTheDocument();
+    expect(screen.getByLabelText('Suffix')).toBeInTheDocument();
+    expect(screen.getByLabelText(/Floor Code/)).toBeInTheDocument();
+  });
+
+  it('shows validation errors for invalid range input', async () => {
+    renderAdd();
+    fireEvent.click(screen.getByText('Floor Range'));
+    // Submit with empty fields
+    submitForm(document.body);
+    await waitFor(() => {
+      expect(screen.getByText(/Start value must be at least 1/)).toBeInTheDocument();
+      expect(screen.getByText(/End value must be at least 1/)).toBeInTheDocument();
+    });
+  });
+
+  it('calls createFloorRangeAction with correct payload on valid range submit', async () => {
+    vi.mocked(createFloorRangeAction).mockResolvedValue({ success: true, floorsCreated: 3 });
+    renderAdd();
+    fireEvent.click(screen.getByText('Floor Range'));
+    fireEvent.change(screen.getByLabelText(/Start/), { target: { value: '1' } });
+    fireEvent.change(screen.getByLabelText(/End/), { target: { value: '3' } });
+    fireEvent.change(screen.getByLabelText('Prefix'), { target: { value: 'F' } });
+    fireEvent.change(screen.getByLabelText('Suffix'), { target: { value: 'A' } });
+    fireEvent.change(screen.getByLabelText(/Floor Code/), { target: { value: 'FL01' } });
+    // Floor Code is required, but in range mode it may be auto-filled or not required
+    submitForm(document.body);
+    await waitFor(() => {
+      expect(createFloorRangeAction).toHaveBeenCalledWith(
+        expect.objectContaining({
+          rangeFrom: '1',
+          rangeTo: '3',
+          prefix: 'F',
+          suffix: 'A',
+        })
+      );
+    });
+  });
+
+  it('shows error toast if createFloorRangeAction fails', async () => {
+    vi.mocked(createFloorRangeAction).mockResolvedValue({ success: false, message: 'Server error' });
+    renderAdd();
+    fireEvent.click(screen.getByText('Floor Range'));
+    fireEvent.change(screen.getByLabelText(/Start/), { target: { value: '1' } });
+    fireEvent.change(screen.getByLabelText(/End/), { target: { value: '2' } });
+    fireEvent.change(screen.getByLabelText(/Floor Code/), { target: { value: 'FL02' } });
+    submitForm(document.body);
+    await waitFor(() => {
+      expect(createFloorRangeAction).toHaveBeenCalled();
+      expect(toast.error).toHaveBeenCalledWith(expect.stringMatching(/Server error/));
     });
   });
 });

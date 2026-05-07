@@ -34,7 +34,6 @@ export default function DepreciationMaster({
   pageSize,
   totalCount,
   totalPages,
-  rangeCountInCurrentPage,
   locale: localeProp,
 }: Readonly<DepreciationMasterProps>): JSX.Element {
   const t = useTranslations("depreciation.depreciationMaster");
@@ -326,22 +325,6 @@ export default function DepreciationMaster({
     <PageContainer>
       <div className="space-y-4">
         <TableHeader title={t("title")} subtitle={t("subtitle")} icon={FileText} />
-        
-        {/* Range-based Pagination Info */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800">
-          <div className="flex items-center justify-between">
-            <span>
-              {t("pagination.showing", { 
-                ranges: rangeCountInCurrentPage, 
-                page: pageNumber, 
-                totalPages 
-              })}
-            </span>
-            <span className="text-blue-600">
-              {t("pagination.total", { count: totalCount })}
-            </span>
-          </div>
-        </div>
 
         {/* Construction Type Visibility Info */}
         {matrixColumns.length < initialConstructionTypes.length && (

@@ -115,7 +115,8 @@ export async function getDepreciationsAll(): Promise<DepreciationRow[]> {
  */
 export async function syncDepreciationRatesFromPage(
   currentPageRecords: DepreciationRow[],
-  updates: Record<number, number>
+  updates: Record<number, number>,
+  userId: string
 ): Promise<void> {
   const depreciations = Object.entries(updates)
     .map(([idStr, newRate]) => {
@@ -146,7 +147,7 @@ export async function syncDepreciationRatesFromPage(
 
   await bulkUpdateDepreciationRates({
     depreciations,
-    updatedBy: 0,
+    updatedBy: Number(userId),
   });
 }
 
@@ -154,8 +155,10 @@ export async function syncDepreciationRatesFromPage(
  * @deprecated Use syncDepreciationRatesFromPage for better performance
  * This function fetches all records which is inefficient for large datasets
  */
-export async function syncDepreciationRates(updates: Record<number, number>): Promise<void> {
-  console.warn('syncDepreciationRates is deprecated - use syncDepreciationRatesFromPage instead');
+export async function syncDepreciationRates(
+  updates: Record<number, number>,
+  userId?: string
+): Promise<void> {
   const allData = await getDepreciationsAll();
 
   const depreciations = Object.entries(updates)
@@ -184,7 +187,7 @@ export async function syncDepreciationRates(updates: Record<number, number>): Pr
 
   await bulkUpdateDepreciationRates({
     depreciations,
-    updatedBy: 0,
+    updatedBy: userId ? Number(userId) : 0,
   });
 }
 
@@ -224,11 +227,14 @@ export async function bulkCreateDepreciation(payload: {
 /**
  * Add depreciation range for all construction types
  */
-export async function addDepreciationRangeBulk(payload: {
-  minYear: number;
-  maxYear: number;
-  defaultRate?: number;
-}): Promise<void> {
+export async function addDepreciationRangeBulk(
+  payload: {
+    minYear: number;
+    maxYear: number;
+    defaultRate?: number;
+  },
+  userId: string
+): Promise<void> {
   const constructionTypes = await getConstructionTypes();
 
   const rates = constructionTypes.map((type) => ({
@@ -240,17 +246,20 @@ export async function addDepreciationRangeBulk(payload: {
     minYear: payload.minYear,
     maxYear: payload.maxYear,
     rates: rates,
-    createdBy: 0,
+    createdBy: Number(userId),
   });
 }
 
 /**
  * Delete depreciation range - uses bulk purge for transactional hard delete
  */
-export async function deleteDepreciationRange(payload: {
-  minYear: number;
-  maxYear: number;
-}): Promise<void> {
+export async function deleteDepreciationRange(
+  payload: {
+    minYear: number;
+    maxYear: number;
+  },
+  userId: string
+): Promise<void> {
   const allData = await getDepreciationsAll();
 
   const targetIds = allData
@@ -262,7 +271,7 @@ export async function deleteDepreciationRange(payload: {
     return;
   }
 
-  console.log('Bulk deleting depreciation IDs:', targetIds);
+  console.log(`Bulk deleting depreciation IDs by user ${userId}:`, targetIds);
 
   // Use DELETE with body - pass body via options
   const response = await apiClient.delete<void>('/Depreciation/Bulk/purge', {
