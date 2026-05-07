@@ -37,7 +37,7 @@ export function FloorRangeFields({
             onChange={(e) => {
               const value = e.target.value;
               if (value.length <= 3) {
-                onChange('rangeFrom', parseInt(value) || 0);
+                onChange('rangeFrom', parseInt(value, 10) || 0);
               }
             }}
             onBlur={() => onBlur('rangeFrom')}
@@ -62,7 +62,7 @@ export function FloorRangeFields({
             onChange={(e) => {
               const value = e.target.value;
               if (value.length <= 3) {
-                onChange('rangeTo', parseInt(value) || 0);
+                onChange('rangeTo', parseInt(value, 10) || 0);
               }
             }}
             onBlur={() => onBlur('rangeTo')}

@@ -68,7 +68,7 @@ const messages = {
           placeholder: 'Enter name',
           prefix: 'Prefix',
           prefixPlaceholder: 'Enter prefix',
-          suffix: ' Suffix',
+          suffix: 'Suffix',
           suffixPlaceholder: 'Enter suffix',
         },
         validation: {
