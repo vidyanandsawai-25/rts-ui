@@ -1,6 +1,8 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { cookies } from 'next/headers';
+import { getUserIdFromCookies } from '@/lib/utils/auth-session';
 import {
   addDepreciationRangeBulk,
   deleteDepreciationRange,
@@ -9,6 +11,7 @@ import {
   syncDepreciationRatesFromPage,
 } from '@/lib/api/depreciation.services';
 import type { ActionResult, DepreciationConstructionType, DepreciationRow } from '@/types/depreciation.types';
+import { ApiError } from '@/lib/utils/api';
 
 /**
  * Path helper to ensure consistency across revalidations
@@ -33,7 +36,6 @@ export async function fetchRangesPagedServerAction(
     pageSize: number; // Ranges per page (what user selected)
     totalRanges: number;
     totalPages: number;
-    rangeCountInCurrentPage: number;
     // For backwards compatibility
     totalRecords: number;
   };
@@ -90,7 +92,6 @@ export async function fetchRangesPagedServerAction(
         pageSize: rangePageSize, // Return range page size (what user selected)
         totalRanges,
         totalPages,
-        rangeCountInCurrentPage: uniqueRanges.size,
         totalRecords: finalTotalCount || 0,
       },
     };
@@ -150,7 +151,14 @@ export async function syncDepreciationRatesAction(
   try {
     if (!changes || Object.keys(changes).length === 0) return { success: true };
 
-    await syncDepreciationRatesFromPage(currentPageRecords, changes);
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore);
+    
+    if (!userId) {
+      throw new ApiError(401, 'Unauthorized', 'User session expired');
+    }
+
+    await syncDepreciationRatesFromPage(currentPageRecords, changes, userId.toString());
 
     revalidatePath(getPagePath(locale));
 
@@ -171,7 +179,14 @@ export async function addRangeAction(
   payload: { minYear: number; maxYear: number; defaultRate?: number }
 ): Promise<ActionResult> {
   try {
-    await addDepreciationRangeBulk(payload);
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore);
+    
+    if (!userId) {
+      throw new ApiError(401, 'Unauthorized', 'User session expired');
+    }
+
+    await addDepreciationRangeBulk(payload, userId.toString());
 
     revalidatePath(getPagePath(locale));
 
@@ -204,7 +219,14 @@ export async function deleteRangeAction(
   payload: { minYear: number; maxYear: number }
 ): Promise<ActionResult> {
   try {
-    await deleteDepreciationRange(payload);
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore);
+    
+    if (!userId) {
+      throw new ApiError(401, 'Unauthorized', 'User session expired');
+    }
+
+    await deleteDepreciationRange(payload, userId.toString());
 
     revalidatePath(getPagePath(locale));
 

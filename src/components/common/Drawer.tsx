@@ -22,6 +22,26 @@ export  function Drawer({
   children,
   footer,
 }: DrawerProps) {
+  React.useEffect(() => {
+    if (open) {
+      document.body.classList.add("drawer-open");
+    } else {
+      const otherDrawers = document.querySelectorAll(".drawer-instance");
+      if (otherDrawers.length === 0) {
+        document.body.classList.remove("drawer-open");
+      }
+    }
+    return () => {
+      const otherDrawers = document.querySelectorAll(".drawer-instance");
+      // Since this cleanup runs when the component unmounts or open changes,
+      // we check if there's more than 0 or 1 depending on the timing.
+      // But simple check is usually enough if we are careful.
+      if (otherDrawers.length <= 1) {
+        document.body.classList.remove("drawer-open");
+      }
+    };
+  }, [open]);
+
   if (!open) return null;
  
   const widthClass = {
@@ -49,6 +69,7 @@ export  function Drawer({
  
       <div
         className={`
+          drawer-instance
           fixed top-0 right-0 z-50 h-full
           ${widthClass}
           bg-[#F8FAFF]

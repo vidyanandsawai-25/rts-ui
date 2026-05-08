@@ -31,13 +31,15 @@
     },
     "form": {
       "title": "फ्लोर विवरण",
-      "addTitle": "नया फ्लोर जोड़ें",
-      "addSubtitle": "एक नयी फ्लोर प्रविष्टि बनाएं",
+      "addTitle": "फ्लोर जोड़ें",
+      "addSubtitle": "उन्नत कॉन्फ़िगरेशन के साथ नया फ्लोर बनाएं",
       "editTitle": "फ्लोर संपादित करें",
       "editSubtitle": "फ्लोर जानकारी अपडेट करें",
-      "entryMode": "प्रविष्टी मोड चुनें",
+      "entryMode": "फ्लोर निर्माण मोड चुनें",
       "singleFloor": "एकल फ्लोर",
+      "singleFloorDesc": "कस्टम विवरण के साथ एक फ्लोर जोड़ें",
       "floorRange": "फ्लोर रेंज",
+      "floorRangeDesc": "एक साथ कई फ्लोर जोड़ें",
       "floorCode": "फ्लोर कोड",
       "floorCodePlaceholder": "उदा., GF, 1F, 2F",
       "floorName": "फ्लोर का नाम",
@@ -56,8 +58,26 @@
       "status": "स्थिति",
       "isActive": "सक्रिय",
       "activeStatusTitle": "फ्लोर स्थिति",
-      "activeStatusOn": "यह फ्लोर वर्तमान में सक्रिय है",
-      "activeStatusOff": "यह फ्लोर वर्तमान में निष्क्रिय है",
+      "activeStatusOn": "सक्रिय",
+      "activeStatusOff": "निष्क्रिय",
+      "range": {
+        "title": "फ्लोर रेंज",
+        "start": "शुरू",
+        "end": "अंत",
+        "startPlaceholder": "1",
+        "endPlaceholder": "10"
+      },
+      "englishName": {
+        "title": "अंग्रेजी नाम",
+        "prefix": "उपसर्ग",
+        "prefixPlaceholder": "स्वचालित नंबरिंग",
+        "suffix": "प्रत्यय",
+        "suffixPlaceholder": "Floor"
+      },
+     
+      "autoGenerateSubFloor": "सब-फ्लोर स्वचालित रूप से बनाएं",
+      "autoGenerateSubFloorDesc": "रेंज में प्रत्येक फ्लोर के लिए एक सब-फ्लोर बनाता है",
+      "rangeExample": "उदाहरण: रेंज 1-5 बनाता है 1F, 2F, 3F, 4F, 5F",
       "validation": {
         "codeRequired": "कोड आवश्यक है",
         "codeFormat": "कोड में केवल अक्षर, संख्या और अंडरस्कोर हो सकते हैं (शुरुआत/अंत में नहीं)",
@@ -65,7 +85,13 @@
         "descriptionRequired": "विवरण आवश्यक है",
         "descriptionFormat": "विवरण में अमान्य वर्ण या स्वरूपण है",
         "descriptionMaxLength": "विवरण {count} वर्णों से अधिक नहीं हो सकता",
-        "mustBeActive": "नया फ्लोर सक्रिय होना चाहिए"
+        "mustBeActive": "नया फ्लोर सक्रिय होना चाहिए",
+        "rangeStartRequired": "शुरू मान आवश्यक है",
+        "rangeEndRequired": "अंत मान आवश्यक है",
+        "rangeStartMinValue": "शुरू मान कम से कम 1 होना चाहिए",
+        "rangeEndMinValue": "अंत मान कम से कम 1 होना चाहिए",
+        "rangeStartLessThanEnd": "शुरू अंत से कम या बराबर होना चाहिए",
+        "rangeMaxValue": "मान {count} से अधिक नहीं हो सकता"
       }
     },
     "table": {
@@ -89,6 +115,7 @@
     "messages": {
       "addSuccess": "फ्लोर सफलतापूर्वक जोड़ा गया",
       "createSuccess": "फ्लोर सफलतापूर्वक बनाया गया",
+      "createRangeSuccess": "{count} फ्लोर सफलतापूर्वक बनाए गए",
       "updateSuccess": "फ्लोर सफलतापूर्वक अपडेट किया गया",
       "deleteSuccess": "फ्लोर सफलतापूर्वक हटाया गया",
       "deleteFailed": "फ्लोर हटाने में विफल। कृपया पुनः प्रयास करें।",

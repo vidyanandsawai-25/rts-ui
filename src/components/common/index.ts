@@ -120,6 +120,8 @@ export { Checkbox } from './checkbox';
 export type { CheckboxProps } from '@/types/common.types';
 
 export { RadioGroup, RadioGroupItem } from './radio-group';
+
+export { FormFieldGroup } from './FormFieldGroup';
 export type { RadioGroupProps, RadioGroupItemProps } from '@/types/common.types';
 
 export { FloorDetailsTable } from './FloorDetailsTable';

@@ -68,7 +68,7 @@ describe("WardColumns", () => {
       expect(screen.getByTestId("status-badge")).toHaveAttribute("data-variant", "info");
     });
 
-    it("uses WardNo fallback when wardNo is missing", () => {
+    it("renders wardNo from row if first argument is missing", () => {
       const columns = getWardColumns(defaultParams);
       const wardNoColumn = columns.find(col => col.key === "wardNo");
       
@@ -76,7 +76,7 @@ describe("WardColumns", () => {
         rateSectionDetailsId: 1,
         rateSectionId: 1,
         wardId: 101,
-        WardNo: "W002", // PascalCase fallback
+        wardNo: "W002",
         isActive: true,
       };
       

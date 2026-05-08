@@ -207,8 +207,29 @@
         "Society": "Society",
         "BuildingPermission": "Building Permission",
         "FloorSubmission": "Floor",
+        "Floor": "Floor",
         "Discount": "Discount",
         "OldDetails": "Old Details"
+    },
+    "floorSubmission": {
+        "loading": {
+            "message": "Loading floor details...",
+            "description": "Please wait while we fetch the floor data"
+        },
+        "errors": {
+            "fetchFloorData": "Failed to fetch floor data. Please try again later.",
+            "fetchConstructionTypes": "Failed to fetch construction types. Please try again later.",
+            "fetchUsageTypes": "Failed to fetch usage types. Please try again later.",
+            "fetchSubUsageTypes": "Failed to fetch sub-usage types. Please try again later.",
+            "fetchSubFloorData": "Failed to fetch sub-floor data. Please try again later.",
+            "submitFailed": "Failed to submit floor details. Please check your data and try again.",
+            "updateFailed": "Failed to update floor details. Please check your data and try again.",
+            "deleteFailed": "Failed to delete floor submission. Please try again later.",
+            "fetchFloorById": "Failed to fetch floor details. Please try again later.",
+            "fetchQuickDataEntry": "Failed to fetch quick data entry. Please try again later.",
+            "fetchPropertyDetails": "Failed to fetch property details. Please try again later.",
+            "fetchFloorSubmissions": "Failed to fetch floor submissions. Please try again later."
+        }
     },
     "property": {
         "title": "Property Information",
@@ -310,7 +331,30 @@
         "enterAddress": "Enter complete address",
         "enterLandmark": "Enter nearby landmark",
         "enterPinCode": "Enter 6 digit pin code",
-        "select": "Select"
+        "select": "Select",
+        "validation": {
+            "invalidEmail": "Please enter a valid email address",
+            "invalidName": "Name must be between 2 and 100 characters",
+            "invalidMobile": "Mobile number must be exactly 10 digits",
+            "invalidAadhar": "Aadhar number must be exactly 12 digits",
+            "pleaseFixErrors": "Please fix the highlighted validation errors before submitting."
+        },
+        "errors": {
+            "fetchOwnerTypes": "Failed to fetch owner types",
+            "loadKycDetails": "Failed to load property KYC details",
+            "updateKycDetails": "Failed to update property KYC details",
+            "invalidPropertyId": "Invalid property ID provided",
+            "ownerNameRequired": "Owner name is required",
+            "kycNotFound": "KYC details not found",
+            "fetchKycDetails": "Failed to fetch KYC details"
+        },
+        "propertyIdMissing": "Property ID is missing. Cannot update KYC.",
+        "recordLabel": "KYC Record",
+        "unexpectedError": "An unexpected error occurred. Please try again.",
+        "loading": {
+            "message": "Loading KYC details...",
+            "description": "Please wait while we fetch the owner and contact information"
+        }
     },
     "society": {
         "title": "Society & Management Information",
@@ -419,6 +463,8 @@
             "grandTotal": "Grand Total"
         },
         "actions": "Actions",
+        "sqFt": "Sq Ft",
+        "sqM": "m²",
         "sqFtSqM": "(Sq Ft / Sq M)",
         "areaSqFt": "Area (Sq Ft)",
         "areaSqM": "Area (Sq M)",
@@ -430,6 +476,27 @@
         "updateFloor": "Update Floor",
         "add": "Add",
         "noFloorsYet": "No floors added yet. Click \"Add Floor\" to begin.",
+        "noFloorsFound": "No floors found for this property.",
+        "errors": {
+            "invalidFloorIdForProperty": "Invalid floorId: This floor does not belong to the current property.",
+            "fetchFloorData": "Failed to fetch floor data",
+            "fetchConstructionTypes": "Failed to fetch construction types",
+            "fetchUsageTypes": "Failed to fetch usage types",
+            "fetchSubFloorData": "Failed to fetch sub-floor data",
+            "fetchSubUsageTypes": "Failed to fetch sub-usage types",
+            "fetchFloorById": "Failed to fetch floor details for the selected floor",
+            "propertyIdRequired": "Property ID is required",
+            "floorRequired": "Floor selection is required",
+            "floorDescriptionRequired": "Floor description is required",
+            "constructionYearInvalid": "Construction year must be 4 digits",
+            "assessmentYearInvalid": "Assessment year must be 4 digits",
+            "constructionTypeRequired": "Construction type is required",
+            "typeOfUseRequired": "Type of use is required",
+            "carpetAreaRequired": "Carpet area must be greater than zero",
+            "roomCountRequired": "Number of rooms must be greater than zero",
+            "submissionIdRequired": "Submission ID is required",
+            "invalidData": "Invalid data submitted"
+        },
         "deleteConfirmTitle": "Are you sure?",
         "deleteConfirmText": "You want to delete this floor?",
         "deleteConfirmButton": "Yes, delete it!",
@@ -440,6 +507,7 @@
         "validationError": "Validation Error",
         "validationErrorTitle": "Validation Error",
         "fillRequiredFields": "Please fill in all required fields.",
+        "fixValidationErrors": "Please fix validation errors before saving.",
         "selectFloor": "Select floor",
         "searchFloorsPlaceholder": "Search floors...",
         "selectSubFloor": "Select sub floor",
@@ -456,9 +524,13 @@
         "isTaxable": "Is Taxable",
         "selectTaxableStatus": "Select status",
         "openRoomSubmission": "Open Room Submission",
+        "openRenterPage": "Open Renter Management",
         "selectSubTypeFirst": "Select Sub Type first",
+        "selectFloorFirst": "Please select a floor first",
+        "noSubtypesAvailable": "No subtypes available for the selected usage.",
         "availableRooms": "Available",
         "addFloorDetails": "Add Floor Details",
+        "floorAddedSuccess": "Floor added successfully",
         "floorUpdatedSuccess": "Floor updated successfully",
         "syncingWithServer": "Syncing with server",
         "manageDetails": "Manage Details",
@@ -467,7 +539,36 @@
         "addConfirmButton": "Yes, Add",
         "updateConfirmTitle": "Confirm Update",
         "updateConfirmText": "Are you sure you want to update this floor details?",
-        "updateConfirmButton": "Yes, Update"
+        "updateConfirmButton": "Yes, Update",
+        "saving": "Saving...",
+        "addingFloor": "Adding Floor...",
+        "updatingFloor": "Updating Floor...",
+        "pleaseWait": "Please wait while we process your request",
+        "saveFloorBeforeRenterManagement": "Please save the floor before managing renter details",
+        "renterManagementNotAvailable": "Renter management is not available from this screen yet",
+        "roomSubmissionModal": {
+            "title": "Room Submission Feature",
+            "description": "The room submission interface is currently under development. This feature will allow you to:",
+            "feature1": "Enter detailed room dimensions and properties",
+            "feature2": "Automatically calculate floor areas",
+            "feature3": "Manage room shapes and deductions",
+            "note": "Note:",
+            "noteDescription": "For now, you can manually enter the total area in the area field to proceed with floor submission.",
+            "close": "Close"
+        },
+        "roomSubmission": {
+            "comingSoonTitle": "Room Details Entry - Coming Soon",
+            "comingSoonDescription": "Detailed room-wise data entry is currently under development and will be available in a future update.",
+            "whatYouCanDo": "What you can do now:",
+            "step1": "Enter the total <strong>carpet area</strong> (in sq. ft.) in the main form",
+            "step2": "Specify the total <strong>number of rooms</strong>",
+            "step3": "Save your floor details normally - room-wise breakdown is optional",
+            "plannedFeatures": "Planned features:",
+            "feature1": "• Add individual room dimensions and shapes",
+            "feature2": "• Automatic area calculation based on room measurements",
+            "feature3": "• Support for various shapes (rectangle, triangle, trapezoid, etc.)",
+            "continueButton": "Got it, Continue with Floor Entry"
+        }
     },
     "discount": {
         "title": "Discount Information",
@@ -580,6 +681,15 @@
     },
     "common": {
         "UpdateChanges": "Update Changes",
-        "noChanges": "No changes detected to update."
+        "noChanges": "No changes detected to update.",
+        "delete": "Delete"
+    },
+    "errorBoundary": {
+        "title": "Something went wrong",
+        "description": "An error occurred while loading the floor submission form. Please try again or contact support if the problem persists.",
+        "tryAgain": "Try Again",
+        "reloadPage": "Reload Page",
+        "goHome": "Go Home",
+        "errorDetails": "Error Details (Development Only)"
     }
 }

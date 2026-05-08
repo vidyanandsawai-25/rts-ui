@@ -26,6 +26,7 @@
     "deleteTitle": "वार्ड हटाएं",
     "deleteSuccess": "{count, plural, =1 {वार्ड सफलतापूर्वक हटाया गया} other {# वार्ड सफलतापूर्वक हटाए गए}}",
     "deleteError": "वार्ड हटाने में त्रुटि",
+    "inUseError": "\"{wardName}\" उपयोग में है आप इस वार्ड को हटा नहीं सकते",
     "partialDeleteSuccess": "{success} वार्ड सफलतापूर्वक हटाए गए, {failed} विफल।",
     "noWardsToDelete": "हटाने के लिए कोई वार्ड नहीं मिला",
     "removed": "हटाया गया",
@@ -66,7 +67,7 @@
     "verifyError": "वार्ड असाइनमेंट सत्यापित करने में विफल. कृपया पुनः प्रयास करें.",
     "validationError": "वार्ड सत्यापित करते समय एक त्रुटि हुई.",
     "moveAllError": "सभी वार्डों को स्थानांतरित करते समय एक त्रुटि हुई.",
-    "alreadyPresentInOtherRateSection": "क्लिक किया गया {wardNo} पहले से ही दर विभाग {rateSectionNo} में मौजूद है, आप इसे इस दर विभाग {selectedRateSectionName} में नहीं जोड़ सकते।",
+    "alreadyPresentInOtherRateSection": "क्लिक किया गया {wardNo} पहले से ही दर विभाग {rateSectionNo} मौजूद है, आप इसे इस दर विभाग {selectedRateSectionName} में नहीं जोड़ सकते।",
     "selectRateSection": "दर विभाग चुनें",
     "editTitle": "वार्ड संपादित करें",
     "editDescription": "वार्ड विवरण संपादित करें",
@@ -132,7 +133,8 @@
     "updateSuccess": "दर विभाग \"{name}\" सफलतापूर्वक अद्यतन किया गया",
     "updateError": "दर विभाग \"{name}\" अद्यतन करने में विफल",
     "deleteSuccess": "दर विभाग \"{name}\" सफलतापूर्वक हटा दिया गया",
-    "deleteError": "दर विभाग \"{name}\" हटाने में विफल",
+    "deleteError": "दर विभाग हटाने में विफल",
+    "inUseError": "\"{name}\" उपयोग में है आप इस दर विभाग को हटा नहीं सकते",
     "thisRateSection": "यह दर विभाग"
   },
   "pagination": {

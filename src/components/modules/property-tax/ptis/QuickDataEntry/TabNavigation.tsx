@@ -3,17 +3,22 @@
 import Link from 'next/link';
 import { usePathname, useSearchParams, useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { Building2, Home } from 'lucide-react';
+import { Building2, Home, UserCheck } from 'lucide-react';
 import { Tab } from '@/types/property-basic-details.types';
 
 const TABS: Tab[] = [
     { label: 'Property', href: 'Property', icon: Home },
+    { label: 'Kyc', href: 'Kyc', icon: UserCheck },
     { label: 'Society', href: 'Society', icon: Building2 },
+    { label: 'FloorSubmission', href: 'FloorSubmission', icon: Building2 },
 ];
 
 const TAB_GRADIENT_CLASSES: Record<string, string> = {
     Property: 'from-blue-500 to-blue-600 border-blue-700',
+    Kyc: 'from-emerald-500 to-emerald-600 border-emerald-700',
     Society: 'from-purple-500 to-purple-600 border-purple-700',
+    FloorSubmission: 'from-orange-500 to-orange-600 border-orange-700',
+
 };
 
 export function TabNavigation() {
@@ -29,6 +34,9 @@ export function TabNavigation() {
     const partitionNo = searchParams.get("partitionNo") || "";
 
     const activeSegment = pathname.split('/').pop() ?? '';
+
+    // Check if we have search parameters that can resolve authoritative property ID
+    const hasPropertyKeys = wardNo && propertyNo && partitionNo;
 
     const params = new URLSearchParams();
     if (propertyId) params.set('propertyId', propertyId);
@@ -47,7 +55,20 @@ export function TabNavigation() {
                     const pathSegments = currentPath.split('/').filter(Boolean);
                     const baseTabPath = `/${pathSegments.slice(0, -1).join('/')}`;
                     const tabPath = `${baseTabPath}/${tab.href}`;
-                    const tabHref = queryString ? `${tabPath}?${queryString}` : tabPath;
+                    
+                    // For FloorSubmission tab: exclude propertyId if we have search params
+                    // to let the page resolve authoritative ID from backend
+                    let tabQueryString = queryString;
+                    if (tab.href === 'FloorSubmission' && hasPropertyKeys) {
+                        const tabParams = new URLSearchParams();
+                        if (wardNo) tabParams.set('wardNo', wardNo);
+                        if (wardId) tabParams.set('wardId', wardId);
+                        if (propertyNo) tabParams.set('propertyNo', propertyNo);
+                        if (partitionNo) tabParams.set('partitionNo', partitionNo);
+                        tabQueryString = tabParams.toString();
+                    }
+                    
+                    const tabHref = tabQueryString ? `${tabPath}?${tabQueryString}` : tabPath;
                     const isActive = activeSegment === tab.href || pathname === tabPath;
                     const Icon = tab.icon;
 

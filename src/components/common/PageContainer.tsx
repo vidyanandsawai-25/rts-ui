@@ -17,7 +17,7 @@ export function PageContainer({
   className = "" 
 }: PageContainerProps) {
   return (
-    <div className={cn("flex-1 overflow-y-auto bg-[#F8FAFC] p-4 lg:p-8", className)}>
+    <div className={cn("flex-1 overflow-y-auto bg-[#F8FAFC]", className)}>
       {(title || actions) && (
         <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>

@@ -19,9 +19,10 @@ interface UseLinkWardActionsParams {
   setLoading: (loading: boolean) => void;
   setSelectedWards: (wards: string[]) => void;
   setSelectedWardsTotalCount: (count: number) => void;
+  setWardAssignments: (updater: (prev: Record<string, { rateSectionNo: string; id: number; description: string }>) => Record<string, { rateSectionNo: string; id: number; description: string }>) => void;
   getRateSectionDisplayLabel: (rateSectionNo: string) => string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  t: any;
+  router: { refresh: () => void };
+  t: (key: string, values?: Record<string, string | number>) => string;
 }
 
 export function useLinkWardActions({
@@ -36,7 +37,9 @@ export function useLinkWardActions({
   setLoading,
   setSelectedWards,
   setSelectedWardsTotalCount,
+  setWardAssignments,
   getRateSectionDisplayLabel,
+  router,
   t
 }: UseLinkWardActionsParams) {
 
@@ -69,7 +72,11 @@ export function useLinkWardActions({
     if (blockedWards.length > 0) {
       if (blockedWards.length === 1) {
         const assignment = wardAssignments[blockedWards[0]];
-        const assignedLabel = assignment ? getRateSectionDisplayLabel(assignment.rateSectionNo) : "";
+        const assignedLabel = assignment 
+          ? (assignment.description 
+            ? `${assignment.rateSectionNo} - ${assignment.description}` 
+            : getRateSectionDisplayLabel(assignment.rateSectionNo)) 
+          : "";
         const selectedLabel = getRateSectionDisplayLabel(selectedZoneNo || "");
         toast.warning(
           t("wards.alreadyPresentInOtherRateSection", {
@@ -112,6 +119,15 @@ export function useLinkWardActions({
         toast.success(t("wards.saveSuccess"));
       }
 
+      // Manually update ward assignments for immediate UI feedback
+      setWardAssignments(prev => {
+        const next = { ...prev };
+        validWards.forEach(w => {
+          next[w] = { rateSectionNo: selectedZoneNo || "", id: 0, description: "" };
+        });
+        return next;
+      });
+
       const refreshResult = await refreshSelectedWardsAction(id);
       if (refreshResult.success) {
         setSelectedWards(refreshResult.wardNos);
@@ -119,6 +135,7 @@ export function useLinkWardActions({
       }
 
       setCheckedAvailable(new Set());
+      router.refresh();
 
     } catch {
       toast.error(t("wards.saveError"));
@@ -128,7 +145,7 @@ export function useLinkWardActions({
   }, [
     checkedAvailable, rates, selectedZoneNo, wardAssignments, selectedWards,
     setCheckedAvailable, setLoading, setSelectedWards, setSelectedWardsTotalCount,
-    getRateSectionDisplayLabel, t
+    setWardAssignments, getRateSectionDisplayLabel, router, t
   ]);
 
   const moveToAvailable = useCallback(async () => {
@@ -157,6 +174,15 @@ export function useLinkWardActions({
 
       toast.success(t("wards.deleteSuccess", { count: result.deletedCount }));
 
+      // Manually remove from ward assignments for immediate UI feedback
+      setWardAssignments(prev => {
+        const next = { ...prev };
+        toMove.forEach(w => {
+          delete next[w];
+        });
+        return next;
+      });
+
       const refreshResult = await refreshSelectedWardsAction(id);
       if (refreshResult.success) {
         setSelectedWards(refreshResult.wardNos);
@@ -164,6 +190,7 @@ export function useLinkWardActions({
       }
 
       setCheckedSelected(new Set());
+      router.refresh();
 
     } catch {
       toast.error(t("wards.deleteError"));
@@ -172,7 +199,7 @@ export function useLinkWardActions({
     setLoading(false);
   }, [
     checkedSelected, rates, selectedZoneNo, setLoading, setSelectedWards,
-    setSelectedWardsTotalCount, setCheckedSelected, t
+    setSelectedWardsTotalCount, setCheckedSelected, setWardAssignments, router, t
   ]);
 
   return { moveToSelected, moveToAvailable };

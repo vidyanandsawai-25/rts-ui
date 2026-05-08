@@ -82,3 +82,19 @@ export function buildPtisUrl(
 
   return `?${params.toString()}`;
 }
+
+/**
+ * Sanitizes a numeric parameter that might be a string "undefined" or NaN.
+ * 
+ * @param value The value to sanitize
+ * @returns The numeric value or undefined
+ */
+export function sanitizeNumericParam(value: string | number | undefined | null): number | undefined {
+  if (value === undefined || value === null || value === '' || value === 'undefined') {
+    return undefined;
+  }
+  
+  const num = typeof value === 'number' ? value : Number(value);
+  return isNaN(num) ? undefined : num;
+}
+

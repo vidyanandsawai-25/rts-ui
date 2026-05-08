@@ -146,7 +146,6 @@ describe("DepreciationMaster", () => {
     pageSize: 10,
     totalCount: 3,
     totalPages: 1,
-    rangeCountInCurrentPage: 1, // All 3 records are for range 0-10
     locale: "en",
   };
 
@@ -497,7 +496,6 @@ describe("DepreciationMaster", () => {
       pageSize: 10,
       totalCount: 3,
       totalPages: 1,
-      rangeCountInCurrentPage: 2, // 2 unique ranges
       locale: "en",
     };
 
@@ -543,7 +541,6 @@ describe("DepreciationMaster", () => {
       const incompleteProps = {
         ...defaultProps,
         data: incompleteRangeData,
-        rangeCountInCurrentPage: 1,
       };
 
       render(<DepreciationMaster {...incompleteProps} />);

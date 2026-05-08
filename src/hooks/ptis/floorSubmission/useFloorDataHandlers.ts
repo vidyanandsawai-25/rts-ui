@@ -1,0 +1,151 @@
+'use client';
+
+import { useCallback, useRef, useState } from 'react';
+import { type AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
+import { toast } from 'sonner';
+import { FloorData } from '@/types/room-details.types';
+import { FloorSubmissionPayload, EditSidebarProps } from '@/types/floor-details.types';
+import { LookupData } from '@/types/common-details.types';
+import { ConfirmOptions } from '@/components/common';
+import { mapFormToPayload } from '@/lib/utils/floorSubmission/floor-mappers';
+import { createOptimisticFloor, getOptimisticFloorsList, parseServerError } from '@/lib/utils/floorSubmission/floor-optimistic.utils';
+import {submitFloorSubmissionNoRedirectAction,updateFloorSubmissionNoRedirectAction,} from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/FloorSubmission/actions';
+import { useFloorDeletion } from './useFloorDeletion';
+
+// Threshold for distinguishing temporary IDs (Date.now()) from persistent database IDs
+const TEMP_ID_THRESHOLD = 1_000_000_000_000;
+
+export const useFloorDataHandlers = (params: {
+  props: EditSidebarProps;
+  editingFloorForm: FloorData;
+  selectedFloor: FloorData | null;
+  isAddingNewFloor: boolean;
+  setIsAddingNewFloor: (val: boolean) => void;
+  setSelectedFloor: (val: FloorData | null) => void;
+  setEditingFloorForm: (val: FloorData) => void;
+  localFloors: FloorData[];
+  setLocalFloors: (val: FloorData[]) => void;
+  setFormErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+  validateForm: () => boolean;
+  startTransition: React.TransitionStartFunction;
+  router: AppRouterInstance;
+  locale: string;
+  propertyId: string;
+  confirm: (payload: ConfirmOptions) => void;
+  t: (key: string) => string;
+  INITIAL_FORM_STATE: FloorData;
+}) => {
+  const {
+    props, editingFloorForm, selectedFloor, isAddingNewFloor,
+    setIsAddingNewFloor, setSelectedFloor, setEditingFloorForm, localFloors, setLocalFloors, setFormErrors,
+    validateForm: _validateForm, startTransition,
+    router, locale, propertyId, confirm, t, INITIAL_FORM_STATE
+  } = params;
+
+  const { floorData: floorLookup, constructionTypeData: constructionLookup, useData: useLookup, subFloorData: subFloorLookup, subTypeData } = props;
+
+  // Separate loading states
+  const [isSaving, setIsSaving] = useState(false);
+  const isSavingRef = useRef(false);
+
+  // Use deletion hook
+  const { handleDeleteFloor } = useFloorDeletion({
+    localFloors,
+    setLocalFloors,
+    setSelectedFloor,
+    setEditingFloorForm,
+    router,
+    startTransition,
+    locale,
+    propertyId,
+    confirm,
+    t,
+    INITIAL_FORM_STATE,
+  });
+
+  const handleSave = useCallback(async () => {
+    const isValid = _validateForm();
+    if (isSavingRef.current || !isValid) {
+      if (!isValid) toast.error(t('floor.fixValidationErrors'));
+      return;
+    }
+
+    confirm({
+      variant: isAddingNewFloor ? 'add' : 'update',
+      title: isAddingNewFloor ? t('floor.addConfirmTitle') : t('floor.updateConfirmTitle'),
+      description: isAddingNewFloor ? t('floor.addConfirmText') : t('floor.updateConfirmText'),
+      confirmText: isAddingNewFloor ? t('floor.addConfirmButton') : t('floor.updateConfirmButton'),
+      onConfirm: async () => {
+        isSavingRef.current = true;
+        setIsSaving(true);
+        const previousFloors = [...localFloors];
+        try {
+          const payload: FloorSubmissionPayload = mapFormToPayload({
+            formData: editingFloorForm,
+            floorLookup: floorLookup as LookupData[],
+            subFloorLookup: subFloorLookup as LookupData[],
+            constructionLookup: constructionLookup as LookupData[],
+            useLookup: useLookup as LookupData[],
+            subTypeLookup: (subTypeData as LookupData[]) || [],
+            propertyId: Number(props.initialPropertyID || 0),
+            isAddingNew: isAddingNewFloor,
+            existingFloorId: selectedFloor?.id,
+          });
+
+          // Optimistic Update
+          const optimisticFloor = createOptimisticFloor(editingFloorForm, isAddingNewFloor, selectedFloor?.id);
+          setLocalFloors(getOptimisticFloorsList(localFloors, optimisticFloor, isAddingNewFloor));
+
+          const response = isAddingNewFloor
+            ? await submitFloorSubmissionNoRedirectAction(payload, locale, propertyId)
+            : await updateFloorSubmissionNoRedirectAction(Number(selectedFloor?.id || 0), payload, locale, propertyId);
+
+          if (!response.success) {
+            setLocalFloors(previousFloors);
+            throw new Error(parseServerError(response.error, t));
+          }
+
+          if (isAddingNewFloor) {
+            setIsAddingNewFloor(false);
+            setSelectedFloor(null);
+            setEditingFloorForm(INITIAL_FORM_STATE);
+          }
+          toast.success(t(isAddingNewFloor ? 'floor.floorAddedSuccess' : 'floor.floorUpdatedSuccess'));
+          startTransition(() => { router.refresh(); });
+        } catch (error: unknown) {
+          if (error instanceof Error && error.message === 'NEXT_REDIRECT') throw error;
+          setLocalFloors(previousFloors);
+          toast.error(error instanceof Error ? error.message : 'An unexpected error occurred.');
+        } finally {
+          isSavingRef.current = false;
+          setIsSaving(false);
+        }
+      },
+    });
+  }, [isAddingNewFloor, editingFloorForm, selectedFloor, props.initialPropertyID, floorLookup, subFloorLookup, constructionLookup, useLookup, subTypeData, router, t, confirm, INITIAL_FORM_STATE, setIsAddingNewFloor, setSelectedFloor, setEditingFloorForm, startTransition, localFloors, setLocalFloors, locale, propertyId, _validateForm]);
+
+  const handleOpenRenterManagement = useCallback(async (formToUse?: FloorData) => {
+    const currentForm = formToUse || editingFloorForm;
+    if (!currentForm.floor) {
+      setFormErrors((prev) => ({ ...prev, floor: t('floor.selectFloorFirst') }));
+      toast.error(t('floor.selectFloorFirst'));
+      return;
+    }
+
+    const hasPersistentFloorId = currentForm.id !== undefined
+      && currentForm.id !== null
+      && Number(currentForm.id) < TEMP_ID_THRESHOLD;
+
+    if (!hasPersistentFloorId) {
+      toast.info(t('floor.saveFloorBeforeRenterManagement') || 'Please save the floor before managing renter details');
+      return;
+    }
+
+    const renterManagementUrl = `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/RenterManagement?floorId=${encodeURIComponent(String(currentForm.id))}`;
+    router.push(renterManagementUrl);
+  }, [editingFloorForm, t, setFormErrors, router, locale, propertyId]);
+
+  return {
+    handleSave,handleDeleteFloor,handleOpenRenterManagement,isSaving,
+  };
+};

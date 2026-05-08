@@ -170,14 +170,17 @@ export default async function Page({ searchParams }: PageProps) {
     });
 
     allRateSectionDetails.forEach(detail => {
-      const wardNo = detail.wardNo || detail.WardNo;
-      const rateSectionId = detail.rateSectionId;
+      const wardNo = (detail.wardNo || detail["WardNo"]) as string | undefined;
+      const rateSectionId = detail.rateSectionId as number | undefined;
+      const detailId = (detail.id) as number | undefined;
+      
       if (wardNo && rateSectionId && typeof wardNo === 'string') {
         const rateInfo = rateSectionIdToInfo[rateSectionId];
-        const rateSectionNo = rateInfo?.rateSectionNo || detail.rateSectionNo || detail.RateSectionNo || String(rateSectionId);
+        const rateSectionNo = rateInfo?.rateSectionNo || detail.rateSectionNo || detail["RateSectionNo"] || String(rateSectionId);
         const description = rateInfo?.description || "";
         if (typeof rateSectionNo === 'string') {
-          ssrWardAssignmentsMap[wardNo] = { rateSectionNo, id: rateSectionId, description };
+          // IMPORTANT: Store the RateSectionDetails PK (detailId) here, not the rateSectionId
+          ssrWardAssignmentsMap[wardNo] = { rateSectionNo, id: detailId || 0, description };
         }
       }
     });

@@ -36,7 +36,8 @@
     "maxChars": "Maximum {count} characters allowed",
     "alphanumericUnderscore": "{label} must be alphanumeric (underscores and hyphens allowed)",
     "invalidFormat": "Invalid format",
-    "mustBeNumber": "Must be a valid number"
+    "mustBeNumber": "Must be a valid number",
+    "submissionIdRequired": "Submission ID is required"
   },
   "form": {
     "validation": {
