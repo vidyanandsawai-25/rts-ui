@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { getUserProfileDisplayAction } from '@/app/[locale]/home/user-profile.action';
+import { getUserProfileDisplayAction } from '@/app/[locale]/home/action';
 
 /**
  * User profile display data structure

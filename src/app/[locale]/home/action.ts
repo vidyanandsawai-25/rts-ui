@@ -1,13 +1,15 @@
 'use server';
 
-import { Service } from "@/types/home/home.types";
-import { getIconNameForModule, getRouteForModule } from "@/config/home-services.config";
-import { getUserProfileAction } from "./user-profile.action";
 import { cookies } from "next/headers";
+import { apiClient } from "@/services/api.service";
+import { Service } from "@/types/home/home.types";
+import { getDepartmentConfig, getDepartmentRoute } from "@/config/home-services.config";
 import { getUserIdFromCookies } from "@/lib/utils/cookie";
+import type { UserProfile, UserDepartment } from "@/types/user-profile.types";
+import type { ApiResponse } from "@/types/common.types";
 
 /**
- * Response type for listServices including error state
+ * Response type for listServices
  */
 export interface ListServicesResponse {
     services: Service[];
@@ -15,32 +17,46 @@ export interface ListServicesResponse {
 }
 
 /**
- * Maps module access item from user profile API to the UI Service interface
+ * Fetches user profile from API
+ * GET /api/users/{userId}
  */
-function mapModuleAccessToService(
-    moduleAccess: {
-        moduleId: number;
-        moduleName: string;
-        moduleNameLocal: string;
-        departmentId: number;
-        departmentName: string;
-    },
+async function fetchUserProfile(userId: number): Promise<ApiResponse<UserProfile>> {
+    try {
+        return await apiClient.get<UserProfile>(`/users/${userId}`);
+    } catch (error) {
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : 'Failed to fetch user profile',
+        };
+    }
+}
+
+/**
+ * Maps user department from API to UI Service interface
+ */
+function mapDepartmentToService(
+    department: UserDepartment,
     locale: string
-): Service {
-    const code = moduleAccess.moduleName.toLowerCase();
+): Service | null {
+    const config = getDepartmentConfig(department.departmentName);
+    
+    if (!config) {
+        return null;
+    }
+
     return {
-        id: moduleAccess.moduleId,
-        name: moduleAccess.moduleName,
-        title: moduleAccess.departmentName,
-        subtext: `Access ${moduleAccess.moduleName} services and manage your applications.`,
-        icon: getIconNameForModule(code),
-        link: getRouteForModule(code, locale),
+        id: department.departmentId,
+        name: department.departmentName,
+        title: department.departmentName,
+        subtext: `Access ${department.departmentName} services`,
+        icon: department.departmentName,
+        link: getDepartmentRoute(department.departmentName, locale),
     };
 }
 
 /**
- * Fetches home services data from the User Profile API (moduleAccess)
- * Returns both services and potential error message for UI feedback
+ * Fetches user departments from User Profile API and returns as services
+ * Only shows departments the user has active access to
  */
 export async function listServices(locale: string): Promise<ListServicesResponse> {
     try {
@@ -48,39 +64,38 @@ export async function listServices(locale: string): Promise<ListServicesResponse
         const userId = getUserIdFromCookies(cookieStore);
         
         if (!userId) {
-            console.warn("listServices: No user ID found in cookies");
             return { services: [], error: "User not authenticated" };
         }
         
-        const response = await getUserProfileAction(userId);
+        const response = await fetchUserProfile(userId);
         
         if (!response.success || !response.data) {
-            console.warn("listServices: Failed to fetch user profile");
             return { services: [], error: response.error || "Failed to load user profile" };
         }
         
-        const moduleAccess = response.data.moduleAccess?.filter(m => m.isActive) ?? [];
+        // Get active departments only
+        const activeDepartments = response.data.departments?.filter(d => d.isActive) ?? [];
         
-        if (moduleAccess.length === 0) {
-            console.warn("listServices: No modules returned from user profile");
+        if (activeDepartments.length === 0) {
             return { services: [] };
         }
 
-        // Remove duplicates based on moduleId
-        const uniqueModules = moduleAccess.reduce((acc, current) => {
-            const exists = acc.find(item => item.moduleId === current.moduleId);
+        // Remove duplicates based on departmentId
+        const uniqueDepartments = activeDepartments.reduce((acc, current) => {
+            const exists = acc.find(d => d.departmentId === current.departmentId);
             if (!exists) {
                 acc.push(current);
             }
             return acc;
-        }, [] as typeof moduleAccess);
+        }, [] as UserDepartment[]);
 
-        return { services: uniqueModules.map(m => mapModuleAccessToService(m, locale)) };
+        // Map departments to services, filtering out any that don't have config
+        const services = uniqueDepartments
+            .map(dept => mapDepartmentToService(dept, locale))
+            .filter((service): service is Service => service !== null);
+
+        return { services };
     } catch (error) {
-        console.error("listServices API Failure:", {
-            message: error instanceof Error ? error.message : "Unknown error",
-        });
-        
         return { 
             services: [], 
             error: "Failed to load services. Please try refreshing the page." 
@@ -88,5 +103,84 @@ export async function listServices(locale: string): Promise<ListServicesResponse
     }
 }
 
-// NOTE: getDashboardStats removed - implement actual API call when stats endpoint is available
-// export async function getDashboardStats(): Promise<DashboardStats> { ... }
+/**
+ * Server action to get formatted display values for user profile
+ * Used by UserProfilePopup component
+ */
+export async function getUserProfileDisplayAction(userId: number): Promise<{
+    success: boolean;
+    data?: {
+        fullName: string;
+        email: string;
+        roles: string[];
+        departments: string[];
+        modules: string[];
+        userId: string;
+        userCode: string;
+        mobileNo: string;
+        address: string;
+        language: string;
+        primaryRole: string;
+        primaryDepartment: string;
+    };
+    error?: string;
+}> {
+    try {
+        const response = await fetchUserProfile(userId);
+        
+        if (!response.success || !response.data) {
+            return {
+                success: false,
+                error: response.error || 'Failed to fetch user profile',
+            };
+        }
+
+        const profile = response.data;
+        
+        // Format profile for display
+        const fullName = [profile.firstName, profile.middleName, profile.lastName]
+            .filter(Boolean)
+            .join(' ');
+
+        const roles = [...new Set(
+            profile.roleAllocations
+                .filter(r => r.isActive)
+                .map(r => r.userRoleName)
+        )];
+
+        const departments = [...new Set(
+            profile.departments
+                .filter(d => d.isActive)
+                .map(d => d.departmentName)
+        )];
+
+        const modules = [...new Set(
+            profile.moduleAccess
+                .filter(m => m.isActive)
+                .map(m => m.moduleName)
+        )];
+
+        return {
+            success: true,
+            data: {
+                fullName,
+                email: profile.email,
+                roles,
+                departments,
+                modules,
+                userId: profile.id.toString(),
+                userCode: profile.userCode,
+                mobileNo: profile.mobileNo,
+                address: profile.address,
+                language: profile.language,
+                primaryRole: roles[0] || 'User',
+                primaryDepartment: departments[0] || '',
+            },
+        };
+    } catch (error) {
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : 'Failed to fetch user profile',
+        };
+    }
+}

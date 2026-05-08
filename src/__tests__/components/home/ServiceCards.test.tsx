@@ -1,9 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import ServiceCards from '@/components/modules/home/ServiceCards';
 import { Service } from '@/types/home/home.types';
-import { toast } from 'sonner';
 
 // Mock next/link
 vi.mock('next/link', () => ({
@@ -12,29 +11,11 @@ vi.mock('next/link', () => ({
   ),
 }));
 
-// Mock sonner toast
-vi.mock('sonner', () => ({
-  toast: {
-    error: vi.fn(),
-  },
-}));
-
-// Mock next-intl
-vi.mock('next-intl', () => ({
-  useTranslations: () => (key: string) => {
-    const translations: Record<string, string> = {
-      'errors.generic': 'Something went wrong',
-      'error.tryAgain': 'Try Again',
-    };
-    return translations[key] || key;
-  },
-}));
-
 const mockServices: Service[] = [
   {
     id: 1,
     link: '/property-tax',
-    icon: 'property-tax',
+    icon: 'Property Tax',
     title: 'Property Tax',
     subtext: 'Pay your property tax online',
     stats: [{ label: 'Due', value: '₹5000' }],
@@ -42,7 +23,7 @@ const mockServices: Service[] = [
   {
     id: 2,
     link: '/water-tax',
-    icon: 'water-tax',
+    icon: 'Water Tax',
     title: 'Water Tax',
     subtext: 'Pay your water tax online',
     stats: [{ label: 'Due', value: '₹1000' }],
@@ -50,17 +31,13 @@ const mockServices: Service[] = [
   {
     id: 3,
     link: '/garbage-collection',
-    icon: 'garbage-collection',
+    icon: 'Garbage Collection',
     title: 'Garbage Collection',
     subtext: 'Schedule garbage collection',
   },
 ];
 
 describe('ServiceCards Component', () => {
-  beforeEach(() => {
-    vi.mocked(toast.error).mockClear();
-  });
-
   it('renders service cards for provided services', () => {
     render(<ServiceCards services={mockServices} />);
     expect(screen.getByText('Property Tax')).toBeInTheDocument();
@@ -68,14 +45,14 @@ describe('ServiceCards Component', () => {
     expect(screen.getByText('Garbage Collection')).toBeInTheDocument();
   });
 
-  it('renders nothing when services array is empty', () => {
-    const { container } = render(<ServiceCards services={[]} />);
-    expect(container.firstChild).toBeNull();
+  it('renders empty state when services array is empty', () => {
+    render(<ServiceCards services={[]} />);
+    expect(screen.getByText('No departments assigned')).toBeInTheDocument();
   });
 
-  it('renders nothing when services is undefined', () => {
-    const { container } = render(<ServiceCards />);
-    expect(container.firstChild).toBeNull();
+  it('renders empty state when services is undefined', () => {
+    render(<ServiceCards />);
+    expect(screen.getByText('No departments assigned')).toBeInTheDocument();
   });
 
   it('renders correct links for each service', () => {
@@ -122,19 +99,6 @@ describe('ServiceCards Component', () => {
     expect(section).toHaveClass('w-full', 'min-h-[400px]');
   });
 
-  it('displays error toast when error prop is provided', () => {
-    render(<ServiceCards services={mockServices} error="Failed to load services" />);
-    expect(toast.error).toHaveBeenCalledWith('Failed to load services', expect.objectContaining({
-      duration: 5000,
-      id: 'services-load-error',
-    }));
-  });
-
-  it('does not display error toast when no error prop', () => {
-    render(<ServiceCards services={mockServices} />);
-    expect(toast.error).not.toHaveBeenCalled();
-  });
-
   it('renders section with correct accessibility attributes', () => {
     const { container } = render(<ServiceCards services={mockServices} />);
     const section = container.querySelector('section');
@@ -148,18 +112,43 @@ describe('ServiceCards Component', () => {
   });
 });
 
+describe('ServiceCards Error Handling', () => {
+  it('displays error message when error prop is provided', () => {
+    render(<ServiceCards error="Failed to load services" />);
+    expect(screen.getByText('Unable to load services')).toBeInTheDocument();
+    expect(screen.getByText('Failed to load services')).toBeInTheDocument();
+  });
+
+  it('displays Try Again button in error state', () => {
+    render(<ServiceCards error="Network error" />);
+    expect(screen.getByRole('button', { name: /try again/i })).toBeInTheDocument();
+  });
+
+  it('renders error section with correct accessibility label', () => {
+    const { container } = render(<ServiceCards error="Error" />);
+    const section = container.querySelector('section');
+    expect(section).toHaveAttribute('aria-label', 'Service Load Error');
+  });
+
+  it('shows error state even when some services are provided', () => {
+    render(<ServiceCards services={mockServices} error="API Error" />);
+    // Error takes precedence
+    expect(screen.getByText('Unable to load services')).toBeInTheDocument();
+  });
+});
+
 describe('ServiceCards Icon Mapping', () => {
   const iconTestCases = [
-    { icon: 'property-tax', title: 'Property Tax' },
-    { icon: 'water-tax', title: 'Water Tax' },
-    { icon: 'bajar-parwana', title: 'Bajar Parwana' },
-    { icon: 'birth-death', title: 'Birth Death' },
-    { icon: 'garbage-collection', title: 'Garbage Collection' },
-    { icon: 'building-permission', title: 'Building Permission' },
-    { icon: 'grievance', title: 'Grievance' },
-    { icon: 'rts', title: 'RTS' },
-    { icon: 'assets', title: 'Assets' },
-    { icon: 'unknown', title: 'Unknown Service' },
+    { icon: 'Property Tax', title: 'Property Tax' },
+    { icon: 'Water Tax', title: 'Water Tax' },
+    { icon: 'Trade License', title: 'Trade License' },
+    { icon: 'Birth & Death', title: 'Birth & Death' },
+    { icon: 'Garbage Collection', title: 'Garbage Collection' },
+    { icon: 'Building Permission', title: 'Building Permission' },
+    { icon: 'Grievance', title: 'Grievance' },
+    { icon: 'RTS', title: 'RTS' },
+    { icon: 'Asset Management', title: 'Asset Management' },
+    { icon: 'Unknown Department', title: 'Unknown Department' },
   ];
 
   iconTestCases.forEach(({ icon, title }) => {
@@ -176,50 +165,5 @@ describe('ServiceCards Icon Mapping', () => {
       render(<ServiceCards services={service} />);
       expect(screen.getByText(title)).toBeInTheDocument();
     });
-  });
-});
-
-describe('ServiceCards Inline Error', () => {
-  beforeEach(() => {
-    vi.mocked(toast.error).mockClear();
-  });
-
-  it('displays inline error when services array is empty and error prop provided', () => {
-    render(<ServiceCards services={[]} error="Failed to load services" />);
-    expect(screen.getByText('Something went wrong')).toBeInTheDocument();
-    expect(screen.getByText('Failed to load services')).toBeInTheDocument();
-  });
-
-  it('displays inline error when services is undefined and error prop provided', () => {
-    render(<ServiceCards error="Network error" />);
-    expect(screen.getByText('Something went wrong')).toBeInTheDocument();
-    expect(screen.getByText('Network error')).toBeInTheDocument();
-  });
-
-  it('displays Try Again button in error state', () => {
-    render(<ServiceCards services={[]} error="Failed to load" />);
-    expect(screen.getByRole('button', { name: /try again/i })).toBeInTheDocument();
-  });
-
-  it('still displays services when error and services are both provided', () => {
-    const mockServices: Service[] = [
-      {
-        id: 1,
-        link: '/property-tax',
-        icon: 'property-tax',
-        title: 'Property Tax',
-        subtext: 'Pay your property tax online',
-      },
-    ];
-    render(<ServiceCards services={mockServices} error="Some warning" />);
-    // Services should still render, error is shown as toast
-    expect(screen.getByText('Property Tax')).toBeInTheDocument();
-    expect(toast.error).toHaveBeenCalled();
-  });
-
-  it('renders error section with correct accessibility label', () => {
-    const { container } = render(<ServiceCards services={[]} error="Error" />);
-    const section = container.querySelector('section');
-    expect(section).toHaveAttribute('aria-label', 'Service Load Error');
   });
 });
