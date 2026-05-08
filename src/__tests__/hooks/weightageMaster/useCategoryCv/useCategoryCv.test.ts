@@ -16,6 +16,15 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => mockSearchParams,
 }));
 
+vi.mock('@/app/[locale]/property-tax/weightage-master/sub-type-weightage/action', () => ({
+  updateUseFactorCVMasterAction: vi.fn(),
+  createUseFactorCVMasterAction: vi.fn(),
+  bulkCreateUseFactorCVMasterAction: vi.fn(),
+  bulkUpdateUseFactorCVMasterAction: vi.fn(),
+  fetchUseFactorCVMasterPagedServerAction: vi.fn(),
+  fetchTypeOfUsePaged: vi.fn(),
+}));
+
 vi.mock('next-intl', () => ({
   useTranslations: (namespace: string) => {
     return (key: string) => {

@@ -1,4 +1,4 @@
-import { ApiResponse } from "@/types/common.types";
+import { ApiResponse, PagedResponse } from "@/types/common.types";
 
 /**
  * API Utilities
@@ -161,4 +161,42 @@ export async function retryWithBackoff<T>(
   }
 
   throw lastError;
+}
+
+/**
+ * Normalizes API response to PagedResponse format.
+ * Handles double-nested, single-nested, and flat array responses.
+ * @param data The data received from the API
+ * @returns Normalized PagedResponse
+ */
+export function normalizePagedResponse<T>(data: unknown): PagedResponse<T> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const rootData = data as any;
+  
+  if (!rootData) return rootData;
+
+  // Handle double-nested items structure: { success, message, items: { items: [], ... } }
+  if (rootData?.items && typeof rootData.items === 'object' && 'items' in rootData.items && Array.isArray(rootData.items.items)) {
+    return rootData.items as PagedResponse<T>;
+  }
+
+  // Handle single-nested items structure: { items: [], ... }
+  if (rootData?.items && Array.isArray(rootData.items)) {
+    return rootData as PagedResponse<T>;
+  }
+
+  // Handle flat array response
+  if (Array.isArray(rootData)) {
+    return {
+      items: rootData,
+      totalCount: rootData.length,
+      pageNumber: 1,
+      pageSize: rootData.length,
+      totalPages: 1,
+      hasPrevious: false,
+      hasNext: false
+    } as PagedResponse<T>;
+  }
+
+  return rootData as PagedResponse<T>;
 }
