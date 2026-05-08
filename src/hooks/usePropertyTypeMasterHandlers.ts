@@ -85,7 +85,7 @@ export function usePropertyTypeMasterHandlers({
         },
       });
     },
-    [confirm, router, t, tCommon, locale, startTransition]
+    [confirm, router, t, tCommon, startTransition]
   );
 
   return {
