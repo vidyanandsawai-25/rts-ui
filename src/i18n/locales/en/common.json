@@ -266,7 +266,8 @@
     "lastPage": "Last page",
     "previousPage": "Previous page",
     "nextPage": "Next page",
-    "rowsPerPage": "Rows per page"
+    "rowsPerPage": "Rows per page",
+    "clickToView": "Click to view details"
   },
   "multiSelect": {
     "selectAll": "Select All",

@@ -20,6 +20,7 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
+  CheckSquare,
 } from "lucide-react";
 import { Button, type ButtonProps } from "./ActionButton";
 import { cn } from "@/lib/utils/cn";
@@ -90,6 +91,16 @@ export function ClearButton({
 }: LabeledActionButtonProps): React.ReactElement {
   return (
     <Button variant="secondary" icon={Eraser} {...props}>
+      {label}
+    </Button>
+  );
+}
+export function SelectAllButton({
+  label = "Select All",
+  ...props
+}: LabeledActionButtonProps): React.ReactElement {
+  return (
+    <Button variant="primary" icon={CheckSquare} {...props}>
       {label}
     </Button>
   );
@@ -342,5 +353,93 @@ export function SortDefaultButton(
       className={cn("hover:bg-transparent hover:text-blue-600 focus:!ring-0 focus:!ring-offset-0", className)}
       {...props}
     />
+  );
+}
+
+/* ----------------------------------------------------------
+   BADGE LIST BUTTON
+---------------------------------------------------------- */
+
+export type BadgeListButtonProps = {
+  /** Array of items to display as badges */
+  items: string[];
+  /** Maximum number of badges to display before showing "+N" (default: 3) */
+  maxVisible?: number;
+  /** Click handler for the button */
+  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  /** Title attribute for the button */
+  title?: string;
+  /** Additional CSS classes */
+  className?: string;
+  /** CSS class for individual badge items */
+  badgeClassName?: string;
+  /** CSS class for the overflow count badge */
+  overflowBadgeClassName?: string;
+  /** Disabled state */
+  disabled?: boolean;
+  /** Aria label for accessibility */
+  "aria-label"?: string;
+};
+
+/**
+ * A button that displays a list of badges with an overflow count.
+ * Useful for showing multiple tags/codes in a compact format.
+ */
+export function BadgeListButton({
+  items,
+  maxVisible = 3,
+  onClick,
+  title,
+  className = "",
+  badgeClassName = "",
+  overflowBadgeClassName = "",
+  disabled = false,
+  "aria-label": ariaLabel,
+}: BadgeListButtonProps): React.ReactElement {
+  const displayItems = items.slice(0, maxVisible);
+  const remainingCount = items.length - maxVisible;
+
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    if (onClick && !disabled) {
+      onClick(e);
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      className={cn(
+        "flex flex-wrap gap-1 items-center cursor-pointer hover:opacity-80 transition-opacity",
+        disabled && "opacity-50 cursor-not-allowed",
+        className
+      )}
+      title={title}
+      disabled={disabled}
+      aria-label={ariaLabel}
+    >
+      {displayItems.map((item, idx) => (
+        <span
+          key={idx}
+          className={cn(
+            "px-2 py-0.5 rounded bg-blue-100 text-blue-800 text-xs font-mono font-bold",
+            badgeClassName
+          )}
+        >
+          {item}
+        </span>
+      ))}
+      {remainingCount > 0 && (
+        <span
+          className={cn(
+            "px-2 py-0.5 rounded bg-gray-100 text-gray-600 text-xs font-medium",
+            overflowBadgeClassName
+          )}
+        >
+          +{remainingCount}
+        </span>
+      )}
+    </button>
   );
 }
