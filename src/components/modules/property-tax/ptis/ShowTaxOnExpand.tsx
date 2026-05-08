@@ -1,4 +1,7 @@
-import { getTranslations } from 'next-intl/server';
+'use client';
+
+import React from 'react';
+import { useTranslations } from 'next-intl';
 import { formatTaxAmount, getTranslatedTaxLabel } from '@/lib/utils/ptis';
 import type { PtisTaxDetail } from '@/types/ptis-core.types';
 
@@ -42,18 +45,18 @@ function buildTaxEntries(taxes: TaxEntry[] | undefined): TaxEntry[] {
  * A shared component to display a horizontal list of tax breakdowns.
  * Used when expanding rows in PTIS tables (Rateable, Capital, etc.)
  */
-export async function ShowTaxOnExpand({
+export const ShowTaxOnExpand: React.FC<ShowTaxOnExpandProps> = ({
   taxes,
-  locale,
+  locale: _locale,
   color = '#1D4ED8',
   borderColor = '#93C5FD',
-}: ShowTaxOnExpandProps) {
-  const t = await getTranslations({ locale, namespace: 'ptis' });
-  const commonT = await getTranslations({ locale, namespace: 'common' });
+}) => {
+  const t = useTranslations('ptis');
+  const commonT = useTranslations('common');
   const currencySymbol = commonT('Grid.currencySymbol');
 
   const entries = buildTaxEntries(taxes).map((tax) => ({
-    displayLabel: getTranslatedTaxLabel(t, tax.taxName),
+    displayLabel: getTranslatedTaxLabel(t as any, tax.taxName),
     color,
     borderColor,
     ...tax,
@@ -81,4 +84,4 @@ export async function ShowTaxOnExpand({
       </div>
     </div>
   );
-}
+};

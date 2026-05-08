@@ -211,8 +211,8 @@ const TabsRoot = React.forwardRef<HTMLDivElement, TabsProps>(
       ) {
         devWarning(
           `Tabs: The \`value\` prop did not update to "${pendingValueRef.current}" after \`onChange\` was called. ` +
-            'This may cause the component to be in an inconsistent state. ' +
-            'Make sure the parent component updates the controlled value in the onChange handler.'
+          'This may cause the component to be in an inconsistent state. ' +
+          'Make sure the parent component updates the controlled value in the onChange handler.'
         );
       }
       pendingValueRef.current = null;
@@ -444,9 +444,9 @@ export const Tab = React.forwardRef<HTMLButtonElement, TabProps>(
           : isActive
             ? cn('border-blue-600 text-blue-600', isVertical && 'bg-blue-50/50')
             : cn(
-                'border-transparent text-gray-500 hover:text-gray-700',
-                isVertical ? 'hover:bg-gray-50' : 'hover:border-gray-300'
-              )
+              'border-transparent text-gray-500 hover:text-gray-700',
+              isVertical ? 'hover:bg-gray-50' : 'hover:border-gray-300'
+            )
       ),
       pills: cn(
         'rounded-lg font-medium transition-all duration-200',

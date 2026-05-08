@@ -179,6 +179,4 @@ export async function fetchApartmentQCDetailsAction(propertyId?: number) {
   if (!validation.success) {
     return { success: false, error: validation.error.issues[0].message };
   }
-  const { getApartmentQCDetails } = await import('@/lib/api/apartmentQC.service');
-  return createAction(() => getApartmentQCDetails(propertyId));
 }

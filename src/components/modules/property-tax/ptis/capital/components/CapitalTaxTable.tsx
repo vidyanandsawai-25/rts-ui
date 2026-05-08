@@ -1,4 +1,7 @@
-import { getTranslations } from 'next-intl/server';
+'use client';
+
+import React from 'react';
+import { useTranslations } from 'next-intl';
 import { FloorDetailsTable } from '@/components/common';
 import { ShowTaxOnExpand } from '@/components/modules/property-tax/ptis/ShowTaxOnExpand';
 import {
@@ -17,22 +20,27 @@ interface Props {
   locale: string;
 }
 
-export async function CapitalTaxTable({ capitalData, searchParams, locale }: Props) {
-  const t = await getTranslations({ locale, namespace: 'ptis.modules.PtisTaxDetails' });
-  const rootT = await getTranslations({ locale, namespace: 'ptis' });
+export const CapitalTaxTable: React.FC<Props> = ({ capitalData, searchParams, locale }) => {
+  const t = useTranslations('ptis.modules.PtisTaxDetails');
+  const rootT = useTranslations('ptis');
   const items = getCapitalItems(capitalData);
   const rows = items.map(mapCapitalRow);
-  const expandedRowIds = parseExpandedRowIds(searchParams.capitalExpand);
+  
+  const expandedParam = Array.isArray(searchParams.capitalExpand) 
+    ? searchParams.capitalExpand[searchParams.capitalExpand.length - 1] 
+    : searchParams.capitalExpand;
+    
+  const expandedRowIds = parseExpandedRowIds(expandedParam);
 
   return (
     <div className={PTIS_TABLE_PRESETS.container}>
       <FloorDetailsTable
         data={rows}
-        columns={getCapitalColumns(rootT)}
+        columns={getCapitalColumns(rootT as any)}
         emptyMessage={t('noCapitalRows')}
         expandedLabel={t('viewTaxBreakdown')}
         expandedRowIds={expandedRowIds}
-        getExpandHref={(row) => buildExpandHref(searchParams, row.id, expandedRowIds)}
+        getExpandHref={(row) => buildExpandHref(searchParams as any, row.id, expandedRowIds)}
         tableClassName="w-full min-w-[1400px]"
         headerBadgeClassName={PTIS_TABLE_PRESETS.headerBadge}
         cellClassName={PTIS_TABLE_PRESETS.cellText}
@@ -40,4 +48,4 @@ export async function CapitalTaxTable({ capitalData, searchParams, locale }: Pro
       />
     </div>
   );
-}
+};

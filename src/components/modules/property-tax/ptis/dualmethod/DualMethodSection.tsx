@@ -1,7 +1,10 @@
+'use client';
+
+import React from 'react';
 import Link from 'next/link';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { ToastNotifier } from '@/components/common';
-import { getTranslations } from 'next-intl/server';
+import { useTranslations } from 'next-intl';
 import { DualMethodComparisonTable } from './components/ComparisonTable';
 import { DualMethodSummary } from './components/DualMethodSummary';
 import { DualMethodFloorDetails } from './components/DualMethodFloorDetails';
@@ -9,27 +12,33 @@ import { buildPtisUrl } from '@/lib/utils/params';
 import { OldDetailsData } from '@/types/ptis.types';
 import { PTIS_UI_CLASSES } from '@/components/modules/property-tax/ptis/constants';
 import { DUAL_METHOD_QUERY_PARAMS } from './constants';
-import { assembleDualMethodSectionData } from './dual-method-data';
+import type { DualMethodSectionData } from './dual-method-data';
 
 interface DualMethodSectionProps {
   propertyId?: number;
   initialOldDetails: OldDetailsData;
   searchParams: Record<string, string | string[] | undefined>;
   locale: string;
+  initialData?: DualMethodSectionData;
 }
 
-export async function DualMethodSection({
+export const DualMethodSection: React.FC<DualMethodSectionProps> = ({
   propertyId,
   initialOldDetails,
   searchParams,
   locale,
-}: DualMethodSectionProps) {
-  const rawShowDetails = Array.isArray(searchParams.showDetails)
-    ? searchParams.showDetails[searchParams.showDetails.length - 1]
-    : searchParams.showDetails;
-  const canShowFloorDetails = propertyId != null;
-  const showFloorDetails =
-    canShowFloorDetails && rawShowDetails === DUAL_METHOD_QUERY_PARAMS.SHOW_DETAILS;
+  initialData,
+}) => {
+  const t = useTranslations('ptis.modules.DualMethod');
+
+  if (!initialData) {
+    return (
+      <div className="p-10 text-center text-gray-500 italic">
+        {t('messages.noData')}
+      </div>
+    );
+  }
+
   const {
     initialDualMethodData,
     initialRateableData,
@@ -46,11 +55,17 @@ export async function DualMethodSection({
     rvTotalTax,
     cvTotalTax,
     retainTotalTax,
-  } = await assembleDualMethodSectionData(propertyId, initialOldDetails);
+  } = initialData;
 
-  const t = await getTranslations({ locale, namespace: 'ptis.modules.DualMethod' });
+  const rawShowDetails = Array.isArray(searchParams.showDetails)
+    ? searchParams.showDetails[searchParams.showDetails.length - 1]
+    : searchParams.showDetails;
+    
+  const canShowFloorDetails = propertyId != null;
+  const showFloorDetails = canShowFloorDetails && rawShowDetails === DUAL_METHOD_QUERY_PARAMS.SHOW_DETAILS;
+  
   const ptisPath = `/${locale}/property-tax/ptis`;
-  const toggleHref = `${ptisPath}${buildPtisUrl(searchParams, {
+  const toggleHref = `${ptisPath}${buildPtisUrl(searchParams as any, {
     showDetails: !showFloorDetails,
   })}`;
 
@@ -70,7 +85,7 @@ export async function DualMethodSection({
 
       {canShowFloorDetails && (
         <div className="my-1 flex justify-center">
-          <Link href={toggleHref} className={PTIS_UI_CLASSES.expandButton}>
+          <Link href={toggleHref} className={PTIS_UI_CLASSES.expandButton} scroll={false}>
             {showFloorDetails ? (
               <>
                 {t('buttons.hideFloorDetails')} <ChevronUp className="h-4 w-4" />
@@ -100,4 +115,4 @@ export async function DualMethodSection({
       )}
     </div>
   );
-}
+};

@@ -16,6 +16,11 @@ import {
   fetchOldFloorDetailsAction,
   fetchOldTaxesDetailsAction,
 } from './actions';
+import { getApartmentQCDataAction } from './appartmentQC.action';
+import { getCapitalValue } from './CapitalValue.action';
+import { getRateableValue } from './RateableValue.action';
+import { getDualMethod } from './DualMethod.action';
+import { assembleDualMethodSectionData } from '@/components/modules/property-tax/ptis/dualmethod/dual-method-data';
 import type { SearchSelectOption } from '@/components/common/SearchSelect';
 import type {
   PropertyListItem,
@@ -29,7 +34,7 @@ import type {
 import { toPositiveInt, toSafeString } from '@/lib/utils/format';
 import { PTIS_TABS, PtisTabId } from '@/types/ptis.types';
 import { redirect } from 'next/navigation';
-import { PtisMainScreen } from '@/components/modules/property-tax/ptis/PtisMainScreen';
+import PtisMainScreen from '@/components/modules/property-tax/ptis/PtisMainScreen';
 import { parsePtisSearchParams } from '@/lib/utils/params';
 import { getPtisUserSafeErrorMessage } from '@/components/modules/property-tax/ptis/shared/valuation-fetch';
 
@@ -126,6 +131,12 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
   const propertyIdParam = toPositiveInt(resolvedSearchParams?.propertyId);
   const showFloorParam = resolvedSearchParams?.showFloor === 'true';
   const showOldTaxParam = resolvedSearchParams?.showOldTax === 'true';
+
+  const pageNumber = toPositiveInt(resolvedSearchParams?.pageNumber) || 1;
+  const pageSize = toPositiveInt(resolvedSearchParams?.pageSize) || 10;
+  const searchTerm = toSafeString(resolvedSearchParams?.searchTerm);
+  const appartmentTab = toSafeString(resolvedSearchParams?.appartmentTab) || 'amenities';
+
   const [wardListSettled, initialWardIdSettled] = await Promise.allSettled([
     getWardListAction(),
     !wardIdParam && wardNo ? fetchWardIdAction(wardNo) : Promise.resolve(null),
@@ -196,36 +207,53 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
 
   const resolvedPropertyId = propertyIdParam ?? propertyDetailsResult.propertyId;
 
-  if (resolvedPropertyId && activeTab === 'kycdetails') {
-    const kycResult = await fetchKycDetailsOnlyAction(resolvedPropertyId);
-    if (kycResult.success && kycResult.data) {
-      kycDetails = kycResult.data;
-    }
-  } else if (resolvedPropertyId && activeTab === 'societydetails') {
-    const societyResult = await fetchSocietyDetailsOnlyAction(resolvedPropertyId);
-    if (societyResult.success && societyResult.data) {
-      societyDetails = societyResult.data;
-    }
-  } else if (resolvedPropertyId && activeTab === 'olddetails') {
-    const oldResult = await fetchOldDetailsOnlyAction(resolvedPropertyId);
-    if (oldResult.success && oldResult.data) {
-      oldDetails = oldResult.data;
-    }
+  // Fetch Apartment QC data and Valuations if property info is available
+  const emptyPaged = { items: [], totalCount: 0, pageNumber: 1, pageSize: 10, totalPages: 1, hasPrevious: false, hasNext: false };
+  
+  const [
+    apartmentData, 
+    rateableResult, 
+    capitalResult,
+    kycResult,
+    societyResult,
+    oldDetailsResult,
+    oldFloorResult,
+    oldTaxesResult
+  ] = await Promise.all([
+    resolvedWardId && propertyNo
+      ? getApartmentQCDataAction(resolvedWardId, propertyNo, appartmentTab, pageNumber, pageSize, searchTerm, resolvedPropertyId)
+      : Promise.resolve({ amenities: emptyPaged, commercial: emptyPaged, residential: emptyPaged }),
+    resolvedPropertyId ? getRateableValue(resolvedPropertyId) : Promise.resolve(null),
+    resolvedPropertyId ? getCapitalValue(resolvedPropertyId) : Promise.resolve(null),
+    resolvedPropertyId ? fetchKycDetailsOnlyAction(resolvedPropertyId) : Promise.resolve(null),
+    resolvedPropertyId ? fetchSocietyDetailsOnlyAction(resolvedPropertyId) : Promise.resolve(null),
+    resolvedPropertyId ? fetchOldDetailsOnlyAction(resolvedPropertyId) : Promise.resolve(null),
+    resolvedPropertyId ? fetchOldFloorDetailsAction(resolvedPropertyId) : Promise.resolve(null),
+    resolvedPropertyId ? fetchOldTaxesDetailsAction(resolvedPropertyId) : Promise.resolve(null),
+  ]);
 
-    if (showFloorParam) {
-      const floorResult = await fetchOldFloorDetailsAction(resolvedPropertyId);
-      if (floorResult.success && floorResult.data) {
-        oldFloorTableData = floorResult.data;
-      }
-    }
-
-    if (showOldTaxParam) {
-      const taxResult = await fetchOldTaxesDetailsAction(resolvedPropertyId);
-      if (taxResult.success && taxResult.data) {
-        oldTaxesData = taxResult.data;
-      }
-    }
+  // Map results to data objects
+  if (kycResult?.success && kycResult.data) {
+    kycDetails = { ...defaultKycDetails, ...kycResult.data };
   }
+  if (societyResult?.success && societyResult.data) {
+    societyDetails = { ...defaultSocietyDetails, ...societyResult.data };
+  }
+  if (oldDetailsResult?.success && oldDetailsResult.data) {
+    oldDetails = { ...defaultOldDetails, ...oldDetailsResult.data };
+  }
+  if (oldFloorResult?.success && Array.isArray(oldFloorResult.data)) {
+    oldFloorTableData = oldFloorResult.data;
+  }
+  if (oldTaxesResult?.success && oldTaxesResult.data) {
+    oldTaxesData = oldTaxesResult.data;
+  }
+
+  // Dual Method logic relies on oldDetails being ready
+  const dualSectionData = await assembleDualMethodSectionData(
+    resolvedPropertyId, 
+    oldDetails
+  );
 
   const initialData: PtisInitialData = {
     propertyDetails: propertyDetailsResult.propertyDetails,
@@ -292,6 +320,12 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
         ptisParams={ptisParams}
         resolvedSearchParams={resolvedSearchParams}
         error={sanitizedInitialError}
+        initialApartmentData={apartmentData}
+        initialRateableData={rateableResult}
+        initialCapitalData={capitalResult}
+        initialDualSectionData={dualSectionData}
+        wardId={resolvedWardId}
+        propertyNo={propertyNo}
       />
     </>
   );
