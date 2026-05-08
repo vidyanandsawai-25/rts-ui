@@ -9,6 +9,7 @@ import { locales } from '@/i18n/config';
 import Providers from './Providers';
 import { MainLayout } from '@/components/layout';
 
+
 const inter = Inter({ subsets: ['latin'] });
 const notoSansDevanagari = Noto_Sans_Devanagari({
   subsets: ['devanagari', 'latin'],

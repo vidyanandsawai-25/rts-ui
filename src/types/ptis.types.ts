@@ -2,6 +2,10 @@ import type { SearchSelectOption } from '@/components/common/SearchSelect';
 export const PTIS_TABS = ['propertydetails', 'kycdetails', 'societydetails', 'olddetails'] as const;
 export type PtisTabId = (typeof PTIS_TABS)[number];
 
+// Separate constant/type for valuation tabs
+export const VALUATION_TABS = ['rateable', 'capital', 'dual', 'apartment'] as const;
+export type ValuationTabId = (typeof VALUATION_TABS)[number];
+
 /** Maximum number of properties to fetch for a single ward to prevent OOM / backend overload. */
 export const MAX_PROPERTY_FETCH = 500;
 

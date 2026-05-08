@@ -28,7 +28,39 @@
     "oldDetails": "पुराने विवरण",
     "rateable": "कर निर्धार्य मूल्य",
     "capital": "पूंजीगत मूल्य",
-    "dual": "दोहरी पद्धति"
+    "dual": "दोहरी पद्धति",
+    "apartment": "अपार्टमेंट"
+  },
+  "apartmentTabs": {
+    "amenities": "सुविधाएँ",
+    "commercial": "व्यावसायिक विवरण",
+    "residential": "आवासीय विवरण",
+    "amenitiesContent": "सुविधाएँ सामग्री",
+    "commercialContent": "व्यावसायिक विवरण सामग्री",
+    "residentialContent": "आवासीय विवरण सामग्री",
+    "rateable": "किराया योग्य",
+    "capital": "पूंजी",
+    "dual": "दोहरी विधि",
+    "loading": "लोड हो रहा है...",
+    "noData": "कोई डेटा उपलब्ध नहीं",
+    "error": "डेटा लोड करने में त्रुटि",
+    "columns": {
+      "propertyNo": "संपत्ति नं",
+      "floor": "मंजिल",
+      "assessmentYear": "निर्धारण वर्ष",
+      "constructionYear": "निर्माण वर्ष",
+      "typeOfUse": "उपयोग",
+      "carpetArea": "कार्पेट क्षे (वर्ग फुट/वर्ग मीटर)",
+      "builtupArea": "बिल्टअप क्षे (वर्ग फुट/वर्ग मीटर)",
+      "oldConstArea": "पुराना निर्माण क्षे",
+      "oldRV": "पुराना RV",
+      "newRV": "नया RV",
+      "totalTax": "कुल कर",
+      "cv": "CV",
+      "newTaxTotalCV": "नया कर (CV)",
+      "newTaxTotalRV": "नया कर (RV)",
+      "rVorCVValue": "RV/CV मूल्य"
+    }
   },
   "fields": {
     "upicId": "यूपीआईसी आईडी",
@@ -322,6 +354,7 @@
     "description": "हमें एक अप्रत्याशित त्रुटि का सामना करना पड़ा। कृपया पुनः प्रयास करें या होम पेज पर वापस जाएं।",
     "goHome": "होम पर वापस जाएं",
     "tryAgain": "पुनः प्रयास करें",
+    "errorId": "त्रुटि आईडी: {id}",
     "networkError": {
       "title": "सर्वर से कनेक्ट करने में असमर्थ",
       "description": "हम संपत्ति कर सेवा तक नहीं पहुँच सके। यह आमतौर पर एक अस्थायी नेटवर्क समस्या होती है।",

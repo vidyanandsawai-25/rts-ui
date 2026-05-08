@@ -1,4 +1,4 @@
-export type PtisTab = 'rateable' | 'capital' | 'dual';
+export type PtisTab = 'rateable' | 'capital' | 'dual' | 'apartment';
 
 export interface PtisPageProps {
   params: Promise<{ locale: string }>;

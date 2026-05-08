@@ -7,6 +7,7 @@ import { ToastNotifier } from '@/components/common';
 import { DualMethodSection } from '@/components/modules/property-tax/ptis/dualmethod';
 import { CapitalTaxDetailsSection } from '@/components/modules/property-tax/ptis/capital';
 import { RateableTaxDetailsSection } from '@/components/modules/property-tax/ptis/rateable';
+import ApartmentTaxDetailsSection from '@/components/modules/property-tax/ptis/apartment/components/ApartmentTaxDetailsSection';
 import { type PtisSearchParams, buildPtisUrl } from '@/lib/utils/params';
 import { OldDetailsData, defaultOldDetails } from '@/types/ptis.types';
 import PtisLoading from '@/app/[locale]/property-tax/ptis/loading';
@@ -41,7 +42,7 @@ export async function PtisMainScreen({
   const rateableTabHref = `${ptisPath}${buildPtisUrl(resolvedSearchParams, { tab: 'rateable' })}`;
   const capitalTabHref = `${ptisPath}${buildPtisUrl(resolvedSearchParams, { tab: 'capital' })}`;
   const dualTabHref = `${ptisPath}${buildPtisUrl(resolvedSearchParams, { tab: 'dual' })}`;
-
+  const apartmentTabHref = `${ptisPath}${buildPtisUrl(resolvedSearchParams, { tab: 'apartment' })}`;
   return (
     <div className="bg-[#f1f5f9]">
       <div className="w-full px-1 py-0 sm:px-2">
@@ -89,6 +90,18 @@ export async function PtisMainScreen({
                   >
                     {t('tabs.dual')}
                   </Link>
+                  <Link
+  href={apartmentTabHref}
+  scroll={false}
+  className={cn(
+    'inline-flex items-center justify-center min-w-[100px] rounded-full text-xs font-bold px-4 py-2 transition-all outline-none',
+    activeTab === 'apartment'
+      ? PTIS_UI_CLASSES.tabActive
+      : PTIS_UI_CLASSES.tabInactive
+  )}
+>
+  {t('tabs.apartment')}
+</Link>
                 </div>
               </div>
 
@@ -123,6 +136,19 @@ export async function PtisMainScreen({
                   <TabPanel value="dual">
                     <Suspense fallback={<PtisLoading />}>
                       <DualMethodSection
+                        locale={locale}
+                        propertyId={propertyId}
+                        initialOldDetails={initialOldDetails || defaultOldDetails}
+                        searchParams={resolvedSearchParams}
+                      />
+                    </Suspense>
+                  </TabPanel>
+                )}
+
+                {activeTab === 'apartment' && (
+                  <TabPanel value="apartment">
+                    <Suspense fallback={<PtisLoading />}>
+                      <ApartmentTaxDetailsSection
                         locale={locale}
                         propertyId={propertyId}
                         initialOldDetails={initialOldDetails || defaultOldDetails}

@@ -1,8 +1,3 @@
-// Used for TypeOfUseModal UI
-export interface TypeOfUseItem {
-  id: string;
-  description: string;
-}
 export type UseStatus = "Active" | "Inactive";
  
 export type UseGroupIconKey =
@@ -12,6 +7,9 @@ export type UseGroupIconKey =
   | "school"
   | "leaf"
   | "map";
+ 
+// Translation function type for next-intl
+export type TranslatorFunction = (key: string, values?: Record<string, string | number>) => string;
  
 // ✅ Matches API response exactly: /TypeOfUseGroup
 export interface UseGroup {
@@ -27,7 +25,7 @@ export interface UseGroup {
 }
  
 // ✅ Matches API response exactly: /TypeOfUse  
-export interface UseType extends Record<string, unknown> {
+export interface UseType {
   typeOfUseId: number;
   typeOfUseCode: string;
   description: string;
@@ -39,6 +37,7 @@ export interface UseType extends Record<string, unknown> {
   updatedDate?: string | null;
   // UI-only computed field
   status?: UseStatus;
+  [key: string]: unknown; // Index signature for MasterTable compatibility
 }
  
 // ✅ Matches API response exactly: /SubTypeOfUse
@@ -59,3 +58,53 @@ export interface TypeOfUseMasterData {
   types: UseType[];
   subTypes: UseSubType[];
 }
+ 
+// Form component props interfaces
+export interface UseGroupFormProps {
+  id: string | null;
+  initialData?: UseGroup | null;
+  allGroups?: UseGroup[];
+}
+ 
+export interface UseTypeFormProps {
+  id: string | null;
+  initialData?: UseType | null;
+  allGroups?: UseGroup[];
+  allTypes?: UseType[];
+}
+ 
+export interface UseSubTypeFormProps {
+  id: string | null;
+  initialData?: UseSubType | null;
+  typeInfo?: UseType | null;
+  allSubTypes?: UseSubType[];
+}
+ 
+// TypeOfUseMaster page component props with grouped structure
+export interface TypesPaginationProps {
+  paginatedTypes: UseType[];
+  totalCount: number;
+  totalPages: number;
+  pageNumber: number;
+  pageSize: number;
+  searchFromServer?: string;
+}
+ 
+export interface SubTypesPaginationProps {
+  subTypes: UseSubType[];
+  totalCount: number;
+  totalPages: number;
+  pageNumber: number;
+  pageSize: number;
+}
+ 
+export interface TypeOfUseMasterPageProps {
+  initialData: TypeOfUseMasterData;
+  typesPagination: TypesPaginationProps;
+  subTypesPagination: SubTypesPaginationProps;
+  selectedTypeId: string;
+}
+ 
+ 
+ 
+ 

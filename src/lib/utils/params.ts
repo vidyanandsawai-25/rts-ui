@@ -1,5 +1,6 @@
 import { validatePropertyId } from './ptis-normalization';
-import type { PtisTab } from '@/types/ptis.types';
+import type { PtisTab } from '@/types/ptis-page.types';
+import { VALUATION_TABS } from '@/types/ptis.types';
 
 export interface PtisSearchParams {
   wardNo?: string;
@@ -34,11 +35,10 @@ export function parsePtisSearchParams(
   const propertyIdStr = getSingleSearchParamValue(searchParams.propertyId);
   const tabParam = getSingleSearchParamValue(searchParams.tab) || 'rateable';
   
-  // Validate tab
-  const tab: PtisTab = 
-    tabParam === 'capital' || tabParam === 'dual' 
-      ? tabParam 
-      : 'rateable';
+  // Validate tab against centralized VALUATION_TABS list
+  const tab: PtisTab = (VALUATION_TABS as readonly string[]).includes(tabParam)
+    ? (tabParam as PtisTab)
+    : 'rateable';
 
   return {
     wardNo: getSingleSearchParamValue(searchParams.wardNo),
