@@ -52,6 +52,12 @@ export interface UseSubType {
   // UI-only computed field
   status?: UseStatus;
 }
+
+// UI-only type for Type of Use modal display items
+export interface TypeOfUseItem {
+  id: string;
+  description: string;
+}
  
 export interface TypeOfUseMasterData {
   groups: UseGroup[];
