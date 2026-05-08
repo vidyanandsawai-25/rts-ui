@@ -306,7 +306,9 @@
             "constructionYearRequired": "Please enter construction year",
             "constructionYearInvalid": "Please enter a valid 4-digit year",
             "constructionTypeRequired": "Please select construction type",
-            "typeOfUseRequired": "Please select type of use"
+            "typeOfUseRequired": "Please select type of use",
+            "assessmentYearRequired": "Please enter assessment year",
+            "assessmentYearInvalid": "Please enter a valid 4-digit assessment year"
         }
     },
     "kyc": {

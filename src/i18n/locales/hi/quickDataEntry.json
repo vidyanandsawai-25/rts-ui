@@ -305,7 +305,9 @@
             "constructionYearRequired": "कृपया निर्माण वर्ष दर्ज करें",
             "constructionYearInvalid": "कृपया मान्य 4 अंकों का वर्ष दर्ज करें",
             "constructionTypeRequired": "कृपया निर्माण प्रकार चुनें",
-            "typeOfUseRequired": "कृपया उपयोग का प्रकार चुनें"
+            "typeOfUseRequired": "कृपया उपयोग का प्रकार चुनें",
+            "assessmentYearRequired": "कृपया मूल्यांकन वर्ष दर्ज करें",
+            "assessmentYearInvalid": "कृपया मान्य 4 अंकों का मूल्यांकन वर्ष दर्ज करें"
         }
     },
     "kyc": {

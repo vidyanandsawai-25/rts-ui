@@ -33,6 +33,12 @@ vi.mock('@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/OldDetails
   deleteOldFloorDetailsAction: vi.fn(),
 }));
 
+vi.mock('@/components/common', () => ({
+  useConfirm: vi.fn(() => ({
+    confirm: vi.fn(({ onConfirm }) => onConfirm()),
+  })),
+}));
+
 describe('useFloorFormApi', () => {
   const mockRefresh = vi.fn();
   const mockOnSuccess = vi.fn();

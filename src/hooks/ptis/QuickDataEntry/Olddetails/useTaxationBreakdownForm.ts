@@ -13,6 +13,7 @@ export function useTaxationBreakdownForm(initialData: OldTaxesDetails | null) {
   const router = useRouter();
   const locale = useLocale();
   const t = useTranslations("quickDataEntry.oldDetails.taxationBreakdown");
+  const tValidation = useTranslations("quickDataEntry");
   const propertyId = Number(params.propertyId);
 
   const yearData = initialData?.taxYears?.[0];
@@ -63,7 +64,7 @@ export function useTaxationBreakdownForm(initialData: OldTaxesDetails | null) {
 
   const validate = () => {
     // Use unified validation utility
-    const yearError = propertyValidations.year("assessmentYear", t)(formData.year);
+    const yearError = propertyValidations.year("assessmentYear", tValidation)(formData.year);
     if (yearError) {
       toast.error(yearError);
       return false;

@@ -24,6 +24,9 @@ export default async function FloorInformationPage({ params, searchParams }: Pag
     const { typeOfUseId } = await searchParams;
     setRequestLocale(locale);
 
+    const typeOfUseIdParam = Array.isArray(typeOfUseId) ? typeOfUseId[0] : typeOfUseId;
+    const numericTypeOfUseId = typeOfUseIdParam ? Number(typeOfUseIdParam) : 0;
+
     // ✅ Parallel API calls with individual actions for better granularity
     const [
         floorsRes,
@@ -37,8 +40,10 @@ export default async function FloorInformationPage({ params, searchParams }: Pag
         getSubFloorsAction(1, -1),
         getConstructionTypesAction(1, -1),
         getTypeOfUsesAction(1, -1),
-        // Coerce typeOfUseId to a single string before converting to number (handles string[] case)
-        typeOfUseId ? getSubTypeOfUsesAction(Number(typeof typeOfUseId === 'string' ? typeOfUseId : ''), 1, -1) : Promise.resolve({ success: true, data: [] as SubTypeOfUse[] }),
+        // Fetch sub-use types only if a valid typeOfUseId is provided
+        numericTypeOfUseId > 0
+            ? getSubTypeOfUsesAction(numericTypeOfUseId, 1, -1)
+            : Promise.resolve({ success: true, data: [] as SubTypeOfUse[] }),
         getOldFloorDetailsAction(Number(propertyId))
     ]);
 
