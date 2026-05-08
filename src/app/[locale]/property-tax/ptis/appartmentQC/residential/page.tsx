@@ -21,9 +21,9 @@ const Page = async ({ searchParams }: PageProps) => {
   const wardId = params.WardId || params.wardId || "89";
   const propertyNo = params.PropertyNo ||params.propertyNo || "20";
   
-  const pageNumber = Number(params.pageNumber) || Number((params as any).page) || 1;
-  const pageSize = Number(params.pageSize) || Number((params as any).limit) || 10;
-  const searchTerm = params.searchTerm || (params as any).q || "";
+  const pageNumber = Number(params.pageNumber) || 1;
+  const pageSize = Number(params.pageSize) || 10;
+  const searchTerm = params.searchTerm || "";
 
   const result = await fetchApartmentQCDetailsPagedAction({
     partType: "R",
@@ -46,7 +46,7 @@ const Page = async ({ searchParams }: PageProps) => {
       initialPageSize={pageSize}
       initialTotalPages={totalPages}
       initialSearchTerm={searchTerm}
-      error={result.success ? undefined : (result as any).error}
+      error={result.success ? undefined : result.error}
     />
   );
 };

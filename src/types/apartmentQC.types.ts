@@ -93,6 +93,18 @@ export interface ApartmentQCDetail {
   builtupASqMtr: number;
   /** Built-up area in square feet */
   builtupASqFt: number;
+  /** Building number */
+  buildingNo?: string | null;
+  /** Society name */
+  society?: string | null;
+  /** BHK */
+  bhk?: string | number | null;
+  /** Toilet count */
+  toiletCount?: string | number | null;
+  /** Remark */
+  remark?: string | null;
+  /** Wing name */
+  wingName?: string | null;
 }
 
 /**

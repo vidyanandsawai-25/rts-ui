@@ -19,7 +19,6 @@ import {
 import { getApartmentQCDataAction } from './appartmentQC.action';
 import { getCapitalValue } from './CapitalValue.action';
 import { getRateableValue } from './RateableValue.action';
-import { getDualMethod } from './DualMethod.action';
 import { assembleDualMethodSectionData } from '@/components/modules/property-tax/ptis/dualmethod/dual-method-data';
 import type { SearchSelectOption } from '@/components/common/SearchSelect';
 import type {

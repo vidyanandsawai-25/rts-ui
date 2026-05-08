@@ -3,13 +3,15 @@
 import { revalidatePath } from "next/cache";
 import type { ApartmentQCDetail, ApartmentQCSearchParams } from "@/types/apartmentQC.types";
 import {
-  getApartmentQCDetails,
+  getApartmentQCDetailsLocalized,
   getApartmentQCDetailsSafe,
+  updateApartmentQCDetailsLocalized,
 } from "@/lib/api/appartmentQC.service";
+import { ApiError } from "@/lib/utils/api";
 
 /* ============================================================
    ACTION RESULT TYPE
-============================================================ */
+ ============================================================ */
 
 export type ActionResult<T = void> =
   | { success: true; data?: T; message?: string }
@@ -17,64 +19,39 @@ export type ActionResult<T = void> =
 
 /* ============================================================
    ERROR HELPERS
-============================================================ */
+ ============================================================ */
 
-function isErrorWithMessage(error: unknown): error is { message: string } {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    "message" in error &&
-    typeof (error as { message?: unknown }).message === "string"
-  );
-}
-
-function getErrorMessage(error: unknown): string {
-  if (isErrorWithMessage(error)) {
-    return error.message;
+function handleActionError(error: unknown, defaultKey: string): { success: false; error: string } {
+  if (error instanceof ApiError) {
+    return { success: false, error: error.contextMessage };
   }
-  return "Something went wrong";
+  return { success: false, error: defaultKey };
 }
 
 /* ============================================================
    SEARCH / FETCH ACTIONS
-============================================================ */
+ ============================================================ */
 
 /**
  * Fetch apartment QC detail records for the given search parameters.
- * Supports pagination, sorting, and advanced search filters.
  */
 export async function fetchApartmentQCDetailsAction(
   params: ApartmentQCSearchParams
 ): Promise<ActionResult<ApartmentQCDetail[]>> {
   try {
-    const res = await getApartmentQCDetails(params);
-
-    if (!res.success || !res.data?.success) {
-      return {
-        success: false,
-        error:
-          res.data?.message ||
-          res.error ||
-          "Failed to fetch apartment QC details",
-      };
-    }
-
+    const data = await getApartmentQCDetailsLocalized(params);
     return {
       success: true,
-      data: res.data.items ?? [],
-      message: res.data.message,
+      data: data.items ?? [],
+      message: data.message,
     };
   } catch (error: unknown) {
-    return {
-      success: false,
-      error: getErrorMessage(error),
-    };
+    return handleActionError(error, "ptis.apartmentQC.errors.fetchFailed");
   }
 }
 
 /**
  * Fetch apartment QC detail records with full pagination response metadata.
- * Useful for building data tables with pagination controls.
  */
 export async function fetchApartmentQCDetailsPagedAction(
   params: ApartmentQCSearchParams
@@ -88,43 +65,27 @@ export async function fetchApartmentQCDetailsPagedAction(
   hasPrevious: boolean;
 }>> {
   try {
-    const res = await getApartmentQCDetails(params);
-
-    if (!res.success || !res.data?.success) {
-      return {
-        success: false,
-        error: res.data?.message || res.error || "Failed to fetch paged records",
-      };
-    }
-
-    // Note: The API response might return items directly or via a paged structure.
-    // Based on the provided response schema, it's an envelope with "items".
-    // If pagination meta is added to the envelope, we can extract it here.
-
+    const data = await getApartmentQCDetailsLocalized(params);
     return {
       success: true,
       data: {
-        items: res.data.items ?? [],
-        totalCount: res.data.totalCount ?? res.data.items?.length ?? 0,
-        totalPages: res.data.totalPages ?? 1,
-        pageNumber: res.data.pageNumber ?? 1,
-        pageSize: res.data.pageSize ?? (res.data.items?.length || 10),
-        hasNext: !!res.data.hasNext,
-        hasPrevious: !!res.data.hasPrevious
+        items: data.items ?? [],
+        totalCount: data.totalCount ?? data.items?.length ?? 0,
+        totalPages: data.totalPages ?? 1,
+        pageNumber: data.pageNumber ?? 1,
+        pageSize: data.pageSize ?? (data.items?.length || 10),
+        hasNext: !!data.hasNext,
+        hasPrevious: !!data.hasPrevious
       },
-      message: res.data.message,
+      message: data.message,
     };
   } catch (error: unknown) {
-    return {
-      success: false,
-      error: getErrorMessage(error),
-    };
+    return handleActionError(error, "ptis.apartmentQC.errors.fetchPagedFailed");
   }
 }
 
 /**
  * Safe variant — always resolves; returns an empty array on API failure.
- * Useful for server-component data loading where a hard error is undesirable.
  */
 export async function fetchApartmentQCDetailsSafeAction(
   params: ApartmentQCSearchParams
@@ -133,6 +94,26 @@ export async function fetchApartmentQCDetailsSafeAction(
     return await getApartmentQCDetailsSafe(params);
   } catch {
     return [];
+  }
+}
+
+/**
+ * Update apartment QC property details.
+ */
+export async function updateApartmentQCAction(
+  propertyDetailsId: number | string,
+  payload: Partial<ApartmentQCDetail>
+): Promise<ActionResult<ApartmentQCDetail>> {
+  try {
+    const data = await updateApartmentQCDetailsLocalized(propertyDetailsId, payload);
+    revalidatePath("/property-tax/ptis/appartmentQC");
+    return {
+      success: true,
+      data,
+      message: "ptis.apartmentQC.actions.updateSuccess",
+    };
+  } catch (error: unknown) {
+    return handleActionError(error, "ptis.apartmentQC.errors.updateFailed");
   }
 }
 
@@ -152,30 +133,18 @@ export async function fetchApartmentQCByPropertyAction(
   wardId: number | string,
   propertyNo: number | string
 ): Promise<ActionResult<ApartmentQCDetail[]>> {
-  return fetchApartmentQCDetailsAction({ wardId, propertyNo });
-}
-
-/**
- * Fetch details with all three search parameters.
- */
-export async function fetchApartmentQCFullSearchAction(
-  wardId: number | string,
-  propertyNo: number | string,
-  partType: string
-): Promise<ActionResult<ApartmentQCDetail[]>> {
-  return fetchApartmentQCDetailsAction({ wardId, propertyNo, partType });
+  return fetchApartmentQCDetailsAction({ wardId, propertyNo: String(propertyNo) });
 }
 
 /* ============================================================
    REVALIDATION HELPER
-   Call after any mutation that affects the listing page.
-============================================================ */
+ ============================================================ */
 
 export async function revalidateApartmentQCAction(): Promise<ActionResult> {
   try {
-    revalidatePath("/property-tax/appartmentQC");
-    return { success: true, message: "Cache revalidated" };
+    revalidatePath("/property-tax/ptis/appartmentQC");
+    return { success: true, message: "ptis.apartmentQC.actions.refreshing" };
   } catch (error: unknown) {
-    return { success: false, error: getErrorMessage(error) };
+    return handleActionError(error, "ptis.apartmentQC.errors.revalidateFailed");
   }
 }

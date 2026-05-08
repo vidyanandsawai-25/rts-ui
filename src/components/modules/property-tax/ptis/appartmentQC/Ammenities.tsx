@@ -1,109 +1,69 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState, useCallback, useTransition, useMemo } from 'react';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import CommonPropertyTable from './CommonPropertyTable';
-import TaxDetailsTable from './TaxDetailsTable';
+import { toast } from "sonner";
 import { ApartmentQCDetail } from '@/types/apartmentQC.types';
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AmenitiesRow = Record<string, any>;
+import { getApartmentQCColumns } from './apartmentQC.columns';
+import { transformApartmentData } from './apartmentQC.utils';
 
 interface AmenitiesProps {
-  data: ApartmentQCDetail[];
-  // pageNumber: number;
-  // pageSize: number;
-  // totalCount: number;
-  // totalPages: number;
+  initialData: ApartmentQCDetail[];
+  initialTotalCount: number;
+  initialPageNumber: number;
+  initialPageSize: number;
+  initialTotalPages: number;
+  initialSearchTerm: string;
+  error?: string;
 }
 
-const Amenities = ({ data }: AmenitiesProps) => {
+const Amenities = ({
+  initialData,
+  initialTotalCount,
+  initialPageNumber,
+  initialPageSize,
+  initialTotalPages,
+  initialSearchTerm,
+  error,
+}: AmenitiesProps) => {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const pathname = usePathname();
+  const [isPending, startTransition] = useTransition();
   const activeTab = searchParams.get('subTab') || 'rateable';
 
-  const [searchQuery, setSearchQuery] = useState('');
+  useEffect(() => {
+    if (error) toast.error(error);
+  }, [error]);
+
+  const [searchQuery, setSearchQuery] = useState(initialSearchTerm);
   const [isAutoScrolling, setIsAutoScrolling] = useState(false);
 
-  const toggleAutoScroll = () => {
-    setIsAutoScrolling((prev) => !prev);
-  };
+  const updateQueryParams = useCallback((newParams: Record<string, string | number | undefined>) => {
+    const params = new URLSearchParams(searchParams.toString());
+    Object.entries(newParams).forEach(([key, value]) => {
+      if (value === undefined || value === "") params.delete(key);
+      else params.set(key, String(value));
+    });
+    startTransition(() => router.push(`${pathname}?${params.toString()}`));
+  }, [pathname, router, searchParams]);
 
-  const handleRowClick = useCallback(
-    (row: AmenitiesRow) => {
-      // Navigate to amenities edit page with property ID
-      const propertyId = row.propertyNo || row.propertyId;
-      router.push(`/property-tax/appartmentQC/amenities/edit/${propertyId}`);
-    },
-    [router]
-  );
-
-  // Define columns based on active tab
-  const columns = useMemo(() => {
-    const baseColumns = [
-      { key: 'propertyNo', label: 'Property No' },
-      { key: 'floor', label: 'Floor' },
-      { key: 'assessmentYear', label: 'Asst Year' },
-      { key: 'constructionYear', label: 'Con Year' },
-      { key: 'typeOfUse', label: 'Use' },
-      { key: 'carpetArea', label: 'Carpet A (sqFt/sqMtr)' },
-      { key: 'builtupArea', label: 'Buildup A (sqFt/sqMtr)' },
-      { key: 'oldConstArea', label: 'Old Con A' },
-      { key: 'oldRV', label: 'Old RV' },
-    ];
-
-    // Add CV/RV columns based on active tab
-    if (activeTab === 'capital') {
-      baseColumns.push({ key: 'cv', label: 'CV' });
-    } else if (activeTab === 'dual-method') {
-      // For dual-method, show both CV and New RV
-      baseColumns.push({ key: 'cv', label: 'CV' });
-      baseColumns.push({ key: 'newRV', label: 'New RV' });
-    } else {
-      // Default rateable tab
-      baseColumns.push({ key: 'newRV', label: 'New RV' });
-    }
-
-    baseColumns.push({ key: 'totalTax', label: 'Total Tax' });
-    return baseColumns;
-  }, [activeTab]);
-
-  // Convert data to the format expected by CommonPropertyTable
-  const convertedData: AmenitiesRow[] = useMemo(() => {
-    return data.map((item) => ({
-      propertyNo: item.propertyNo,
-      floor: item.floor,
-      assessmentYear: item.assessmentYear,
-      constructionYear: item.constructionYear,
-      typeOfUse: item.typeOfUse,
-      carpetArea: `${item.carpetASqFt} / ${item.carpetASqMtr}`,
-      builtupArea: `${item.builtupASqFt} / ${item.builtupASqMtr}`,
-      oldConstArea: item.oldConstArea || '-',
-      oldRV: item.oldRV || '-',
-      newRV: item.newTaxTotalRV || '-',
-      cv: item.newTaxTotalCV || '-',
-      totalTax: item.newTaxTotal,
-    }));
-  }, [data]);
+  const tAqc = useTranslations("appartmentQC");
+  const columns = useMemo(() => getApartmentQCColumns('amenities', activeTab, tAqc), [activeTab, tAqc]);
+  const transformedData = useMemo(() => transformApartmentData(initialData, 'amenities'), [initialData]);
 
   return (
     <div className="space-y-6">
       <CommonPropertyTable
-        columns={columns}
-        data={convertedData}
-        title="Property Tax Amenities"
-        activeTab={activeTab}
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        onRowClick={handleRowClick}
-        isAutoScrolling={isAutoScrolling}
-        onToggleAutoScroll={toggleAutoScroll}
-        // pageNumber={pageNumber}
-        // pageSize={pageSize}
-        // totalCount={totalCount}
-        // totalPages={totalPages}
+        columns={columns} data={transformedData as Record<string, unknown>[]} title={tAqc("apartmentTabs.amenitiesTitle")} activeTab={activeTab}
+        searchQuery={searchQuery} onSearchChange={(q) => { setSearchQuery(q); updateQueryParams({ searchTerm: q, pageNumber: 1 }); }}
+        onRowClick={(row: Record<string, unknown>) => router.push(`/property-tax/appartmentQC/amenities/edit/${row.id}`)}
+        loading={isPending} isAutoScrolling={isAutoScrolling} onToggleAutoScroll={() => setIsAutoScrolling(!isAutoScrolling)}
+        pageNumber={initialPageNumber} pageSize={initialPageSize} totalCount={initialTotalCount} totalPages={initialTotalPages}
+        onPageChange={(p) => updateQueryParams({ pageNumber: p })} onPageSizeChange={(s) => updateQueryParams({ pageSize: s, pageNumber: 1 })}
       />
-      <TaxDetailsTable />
     </div>
   );
 };

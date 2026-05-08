@@ -25,11 +25,11 @@ export const CapitalTaxTable: React.FC<Props> = ({ capitalData, searchParams, lo
   const rootT = useTranslations('ptis');
   const items = getCapitalItems(capitalData);
   const rows = items.map(mapCapitalRow);
-  
-  const expandedParam = Array.isArray(searchParams.capitalExpand) 
-    ? searchParams.capitalExpand[searchParams.capitalExpand.length - 1] 
+
+  const expandedParam = Array.isArray(searchParams.capitalExpand)
+    ? searchParams.capitalExpand[searchParams.capitalExpand.length - 1]
     : searchParams.capitalExpand;
-    
+
   const expandedRowIds = parseExpandedRowIds(expandedParam);
 
   return (

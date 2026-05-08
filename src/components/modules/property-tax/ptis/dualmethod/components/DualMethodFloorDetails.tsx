@@ -13,8 +13,6 @@ interface Props {
   propertyId?: number;
   initialRateableData: RateableValueResponse | null;
   initialCapitalData: CapitalValueResponse | null;
-  hasFetchedRateableData?: boolean;
-  hasFetchedCapitalData?: boolean;
   initialOldDetails: OldDetailsData;
   rateableError?: string;
   capitalError?: string;
@@ -30,8 +28,6 @@ export const DualMethodFloorDetails: React.FC<Props> = ({
   propertyId,
   initialRateableData,
   initialCapitalData,
-  hasFetchedRateableData = false,
-  hasFetchedCapitalData = false,
   initialOldDetails,
   rateableError,
   capitalError,

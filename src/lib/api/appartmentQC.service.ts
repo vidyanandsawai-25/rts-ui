@@ -1,4 +1,5 @@
 import { apiClient } from '@/services/api.service';
+import { ApiError, handleApiResponse } from '@/lib/utils/api';
 import type { ApartmentQCDetail, ApartmentQCResponse, ApartmentQCSearchParams } from '@/types/apartmentQC.types';
 import type { ApiResponse } from '@/types/common.types';
 
@@ -53,13 +54,6 @@ function buildQueryParams(params: ApartmentQCSearchParams): URLSearchParams {
 
 /**
  * Fetch apartment QC details.
- *
- * @param params - WardId, PropertyNo, PartType, Type, PageNumber, PageSize, SearchTerm, SortBy, SortOrder, FilterLogic (all optional).
- * @returns The full API response envelope containing `items[]`.
- *
- * @example
- * const res = await getApartmentQCDetails({ wardId: 91, propertyNo: 1, partType: 'Commercial' });
- * const details = res.data?.items ?? [];
  */
 export async function getApartmentQCDetails(
   params: ApartmentQCSearchParams = {}
@@ -69,57 +63,42 @@ export async function getApartmentQCDetails(
     ? `/Property/apartmentQC-details?${qs.toString()}`
     : '/Property/apartmentQC-details';
 
-  console.log('[appartmentQC.service] Calling API:', endpoint);
-  const response = await apiClient.get<ApartmentQCResponse>(endpoint);
-  console.log('[appartmentQC.service] API Response:', response);
-  
-  return response;
+  return apiClient.get<ApartmentQCResponse>(endpoint);
+}
+
+/**
+ * Fetch apartment QC details with error handling and localization keys.
+ */
+export async function getApartmentQCDetailsLocalized(
+  params: ApartmentQCSearchParams = {}
+): Promise<ApartmentQCResponse> {
+  try {
+    const res = await getApartmentQCDetails(params);
+    return handleApiResponse(res, "ptis.apartmentQC.errors.fetchFailed");
+  } catch (error) {
+    if (error instanceof ApiError) throw error;
+    throw new ApiError(500, (error as Error).message, "ptis.apartmentQC.errors.fetchFailed");
+  }
 }
 
 /**
  * Convenience wrapper that returns the flat `items[]` array directly,
  * or an empty array on failure.
- *
- * @param params - WardId, PropertyNo, PartType (all optional).
  */
 export async function getApartmentQCDetailsSafe(
   params: ApartmentQCSearchParams = {}
 ): Promise<ApartmentQCDetail[]> {
   try {
-    const res = await getApartmentQCDetails(params);
-
-    console.log('[appartmentQC.service] Safe wrapper - Full response:', JSON.stringify(res, null, 2));
-
-    // Check if the API client request was successful
-    if (!res.success) {
-      console.warn('[appartmentQC.service] API client returned failure:', res.error);
-      return [];
-    }
-
-    // Check if the API response itself is successful
-    if (!res.data?.success) {
-      console.warn('[appartmentQC.service] API data returned failure:', res.data?.message);
-      return [];
-    }
-
-    const items = res.data?.items ?? [];
-    console.log('[appartmentQC.service] Safe wrapper - Returning items:', items.length, items);
-    return items;
+    const data = await getApartmentQCDetailsLocalized(params);
+    return data.items ?? [];
   } catch (err) {
-    console.error('[appartmentQC.service] Unexpected error:', err);
+    console.error('[appartmentQC.service] Safe wrapper error:', err);
     return [];
   }
 }
 
 /**
  * Update apartment QC property details.
- *
- * @param propertyDetailsId - The property details ID to update
- * @param payload - The updated property data
- * @returns The API response
- *
- * @example
- * const res = await updateApartmentQCDetails(206192, { ownerName: "New Owner", ... });
  */
 export async function updateApartmentQCDetails(
   propertyDetailsId: number | string,
@@ -127,4 +106,20 @@ export async function updateApartmentQCDetails(
 ): Promise<ApiResponse<ApartmentQCDetail>> {
   const endpoint = `/Property/apartmentQC-details/${propertyDetailsId}`;
   return apiClient.put<ApartmentQCDetail>(endpoint, payload);
+}
+
+/**
+ * Update apartment QC property details with error handling and localization keys.
+ */
+export async function updateApartmentQCDetailsLocalized(
+  propertyDetailsId: number | string,
+  payload: Partial<ApartmentQCDetail>
+): Promise<ApartmentQCDetail> {
+  try {
+    const res = await updateApartmentQCDetails(propertyDetailsId, payload);
+    return handleApiResponse(res, "ptis.apartmentQC.errors.updateFailed");
+  } catch (error) {
+    if (error instanceof ApiError) throw error;
+    throw new ApiError(500, (error as Error).message, "ptis.apartmentQC.errors.updateFailed");
+  }
 }

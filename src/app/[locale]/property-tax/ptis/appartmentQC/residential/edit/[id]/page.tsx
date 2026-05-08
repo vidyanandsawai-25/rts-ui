@@ -1,11 +1,12 @@
 // Server Component — fetches dropdown data only when requested via URL params
 import { getFloorPaged } from "@/lib/api/floor.service";
-import { getConstructionPaged } from "@/lib/api/construction.service";
 import { getUseTypesPagedServer, getSubTypesPagedServer } from "@/lib/api/typeofusemaster.service";
 import type { Floor } from "@/types/floor.types";
 import type { ConstructionType } from "@/types/construction.types";
 import type { UseType, UseSubType } from "@/types/typeOfUse.types";
+import type { ApartmentQCDetail } from "@/types/apartmentQC.types";
 import ResidentialEditScreen from "@/components/modules/property-tax/ptis/appartmentQC/PropertyDetailsEditScreen";
+import { getConstructionPaged } from "@/lib/api/construction-crud.service";
 
 interface PageProps {
   params: Promise<{ id: string; locale: string }>;
@@ -95,36 +96,42 @@ export default async function Page({ params, searchParams }: PageProps) {
 
   // TODO: Replace mock data below with an actual property API call using `id`
   const propertyData = {
+    id: Number(id),
+    pdnId: 1,
+    taxZoneId: 1,
+    zoneNo: "1",
     propertyNo: id,
-    ward: "13",
+    wardId: 13,
     buildingNo: "N/A",
     society: "N/A",
     oldPropertyNo: `OLD-${id}`,
     wingName: "A",
-    flatNo: "101",
+    flatOrShopNo: "101",
+    flatOrShopName: "N/A",
     ownerName: "Rajesh Sharma",
     occupierName: "Rajesh Sharma",
-    rent: "15000",
+    rentMonthly: 15000,
     renterName: "-",
-    description: "2 BHK Flat",
+    typeOfUse: "2 BHK Flat",
     type: "Residential",
     floor: "1",
-    asstYear: "2023",
-    conYear: "2015",
-    conType: "RCC",
+    assessmentYear: "2023",
+    constructionYear: "2015",
+    constructionType: "RCC",
     bhk: "2",
     toiletCount: "2",
-    carpetArea: "750",
-    buildupArea: "950",
-    oldConstructionArea: "700",
-    oldRV: "25000",
-    newRV: "28000",
-    oldTax: "2500",
-    newTax: "2800",
+    carpetASqFt: 750,
+    builtupASqMtr: 950,
+    oldConstArea: 700,
+    oldRV: 25000,
+    rateableValue: 28000,
+    oldTotalTax: 2500,
+    newTaxTotal: 2800,
     mobileNo: "9876543210",
-    email: "rajesh@example.com",
+    emailId: "rajesh@example.com",
     ocDate: "2015-03-15",
-  };
+    remark: "N/A",
+  } as unknown as ApartmentQCDetail;
 
   return (
     <ResidentialEditScreen

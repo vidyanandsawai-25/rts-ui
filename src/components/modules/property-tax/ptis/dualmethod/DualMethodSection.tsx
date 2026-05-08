@@ -43,8 +43,6 @@ export const DualMethodSection: React.FC<DualMethodSectionProps> = ({
     initialDualMethodData,
     initialRateableData,
     initialCapitalData,
-    hasFetchedRateableData,
-    hasFetchedCapitalData,
     rateableError,
     capitalError,
     finalErrorMessage,
@@ -105,8 +103,6 @@ export const DualMethodSection: React.FC<DualMethodSectionProps> = ({
           propertyId={propertyId}
           initialRateableData={initialRateableData}
           initialCapitalData={initialCapitalData}
-          hasFetchedRateableData={hasFetchedRateableData}
-          hasFetchedCapitalData={hasFetchedCapitalData}
           rateableError={rateableError}
           capitalError={capitalError}
           initialOldDetails={initialOldDetails}

@@ -8,7 +8,6 @@ import type { RateableValueResponse } from '@/types/rateableValue.types';
 import { RateableTaxTable } from './components/RateableTaxTable';
 import { ValuationSummaryFooter } from '@/components/modules/property-tax/ptis/shared/ValuationSummaryFooter';
 import { calculateRateableTotal } from '@/lib/utils/ptis-calculations';
-import { PTIS_TABLE_PRESETS } from '../constants';
 
 interface Props {
   propertyId?: number;

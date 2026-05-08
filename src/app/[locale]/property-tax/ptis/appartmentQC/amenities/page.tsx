@@ -49,11 +49,13 @@ const Page = async ({ searchParams }: PageProps) => {
 
   return (
     <Ammenities
-      data={data}
-    //   pageNumber={pageNumber}
-    //   pageSize={pageSize}
-    //   totalCount={totalCount}
-    //   totalPages={totalPages}
+      initialData={data}
+      initialPageNumber={pageNumber}
+      initialPageSize={pageSize}
+      initialTotalCount={totalCount}
+      initialTotalPages={totalPages}
+      initialSearchTerm={searchTerm}
+      error={result.success ? undefined : result.error}
     />
   );
 };

@@ -5,6 +5,7 @@ import { getUseTypesPagedServer, getSubTypesPagedServer } from "@/lib/api/typeof
 import type { Floor } from "@/types/floor.types";
 import type { ConstructionType } from "@/types/construction.types";
 import type { UseType, UseSubType } from "@/types/typeOfUse.types";
+import type { ApartmentQCDetail } from "@/types/apartmentQC.types";
 import CommercialEditScreen from "@/components/modules/property-tax/ptis/appartmentQC/PropertyDetailsEditScreen";
 import { getConstructionPaged } from "@/lib/api/construction-crud.service";
 
@@ -96,36 +97,42 @@ export default async function Page({ params, searchParams }: PageProps) {
 
   // TODO: Replace mock data below with an actual property API call using `id`
   const propertyData = {
+    id: Number(id),
+    pdnId: 1,
+    taxZoneId: 1,
+    zoneNo: "1",
     propertyNo: id,
-    ward: "13",
+    wardId: 13,
     buildingNo: "N/A",
     society: "N/A",
     oldPropertyNo: `OLD-${id}`,
     wingName: "A",
-    flatNo: "101",
-    ownerName: "Rajesh Sharma",
-    occupierName: "Rajesh Sharma",
-    rent: "15000",
+    flatOrShopNo: "101",
+    flatOrShopName: "N/A",
+    ownerName: "Commercial Owner",
+    occupierName: "Commercial Occupier",
+    rentMonthly: 50000,
     renterName: "-",
-    description: "Commercial Unit",
+    typeOfUse: "Shop",
     type: "Commercial",
-    floor: "1",
-    asstYear: "2023",
-    conYear: "2015",
-    conType: "RCC",
-    bhk: "2",
-    toiletCount: "2",
-    carpetArea: "750",
-    buildupArea: "950",
-    oldConstructionArea: "700",
-    oldRV: "25000",
-    newRV: "28000",
-    oldTax: "2500",
-    newTax: "2800",
-    mobileNo: "9876543210",
-    email: "rajesh@example.com",
-    ocDate: "2015-03-15",
-  };
+    floor: "0",
+    assessmentYear: "2023",
+    constructionYear: "2010",
+    constructionType: "RCC",
+    bhk: "0",
+    toiletCount: "1",
+    carpetASqFt: 500,
+    builtupASqMtr: 600,
+    oldConstArea: 450,
+    oldRV: 100000,
+    rateableValue: 120000,
+    oldTotalTax: 10000,
+    newTaxTotal: 12000,
+    mobileNo: "9876543211",
+    emailId: "commercial@example.com",
+    ocDate: "2010-05-20",
+    remark: "N/A",
+  } as unknown as ApartmentQCDetail;
 
   return (
     <CommercialEditScreen

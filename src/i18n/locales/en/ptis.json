@@ -1,6 +1,11 @@
 {
   "title": "Property Tax Information System",
   "subtitle": "Manage property tax records and assessments",
+  "taxDetailsDualMethod": "Tax Details (Dual Method)",
+  "taxDetailsRateable": "Tax Details (Rateable Value)",
+  "taxDetailsCapital": "Tax Details (Capital Value)",
+  "rateableValue": "Rateable Value",
+  "capitalValue": "Capital Value",
   "search": {
     "title": "Search Property",
     "wardNo": "Ward No",
@@ -60,6 +65,29 @@
       "newTaxTotalCV": "New Tax (CV)",
       "newTaxTotalRV": "New Tax (RV)",
       "rVorCVValue": "RV/CV Value"
+    }
+  },
+  "apartmentQC": {
+    "errors": {
+      "fetchFailed": "Failed to fetch apartment QC details. Please try again.",
+      "fetchPagedFailed": "Failed to load paged apartment records.",
+      "updateFailed": "Failed to update property details. Please check your connection.",
+      "invalidParams": "Invalid search parameters provided.",
+      "revalidateFailed": "Could not refresh apartment data cache."
+    },
+    "actions": {
+      "updateSuccess": "Property details updated successfully",
+      "loading": "Updating property...",
+      "refreshing": "Refreshing data...",
+      "previous": "← Previous",
+      "next": "Next →"
+    },
+    "edit": {
+      "title": "Property Details",
+      "basicInfo": "Basic Information",
+      "floorQC": "Floor QC",
+      "floorsCount": "{count} floors",
+      "photoGallery": "Photo Gallery"
     }
   },
   "fields": {

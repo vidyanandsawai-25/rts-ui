@@ -29,15 +29,15 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     const activeSubTab = searchParams.get('subTab') || 'rateable';
 
     const tabs = [
-        { value: 'amenities', label: 'Amenities', icon: Building2 },
-        { value: 'commercial', label: 'Commercial Details', icon: Building },
-        { value: 'residential', label: 'Residential Details', icon: Home },
+        { value: 'amenities', label: 'Amenities', icon: Building2, content: null },
+        { value: 'commercial', label: 'Commercial Details', icon: Building, content: null },
+        { value: 'residential', label: 'Residential Details', icon: Home, content: null },
     ];
 
     const subTabs = [
-        { value: 'rateable', label: 'Rateable', icon: Calculator },
-        { value: 'capital', label: 'Capital', icon: IndianRupee },
-        { value: 'dual-method', label: 'Dual Method', icon: GitMerge },
+        { value: 'rateable', label: 'Rateable', icon: Calculator, content: null },
+        { value: 'capital', label: 'Capital', icon: IndianRupee, content: null },
+        { value: 'dual-method', label: 'Dual Method', icon: GitMerge, content: null },
     ];
 
     const handleMainTabChange = (v: string | number) => {

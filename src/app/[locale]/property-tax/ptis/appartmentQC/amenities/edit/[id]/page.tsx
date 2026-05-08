@@ -1,11 +1,14 @@
 // Server Component — fetches dropdown data only when requested via URL params
 import { getFloorPaged } from "@/lib/api/floor.service";
-import { getConstructionPaged } from "@/lib/api/construction.service";
-import { getUseTypesPagedServer, getSubTypesPagedServer } from "@/lib/api/typeOfUse.service";
+
 import type { Floor } from "@/types/floor.types";
 import type { ConstructionType } from "@/types/construction.types";
 import type { UseType, UseSubType } from "@/types/typeOfUse.types";
+import type { ApartmentQCDetail } from "@/types/apartmentQC.types";
 import AmenitiesEditScreen from "@/components/modules/property-tax/ptis/appartmentQC/PropertyDetailsEditScreen";
+import { getConstructionPaged } from "@/lib/api/construction-crud.service";
+import { getUseTypesPagedServer } from "@/lib/api/typeofuse.service";
+import { getSubTypesPagedServer } from "@/lib/api/typeofusesubtype.service";
 
 interface PageProps {
   params: Promise<{ id: string; locale: string }>;
@@ -95,36 +98,42 @@ export default async function Page({ params, searchParams }: PageProps) {
 
   // TODO: Replace mock data below with an actual property API call using `id`
   const propertyData = {
+    id: Number(id),
+    pdnId: 1,
+    taxZoneId: 1,
+    zoneNo: "1",
     propertyNo: id,
-    ward: "13",
+    wardId: 13,
     buildingNo: "N/A",
     society: "N/A",
     oldPropertyNo: `OLD-${id}`,
     wingName: "A",
-    flatNo: "101",
-    ownerName: "Rajesh Sharma",
-    occupierName: "Rajesh Sharma",
-    rent: "15000",
+    flatOrShopNo: "N/A",
+    flatOrShopName: "Clubhouse",
+    ownerName: "Society Admin",
+    occupierName: "Society Admin",
+    rentMonthly: 0,
     renterName: "-",
-    description: "Amenity Unit",
-    type: "Amenities",
-    floor: "1",
-    asstYear: "2023",
-    conYear: "2015",
-    conType: "RCC",
-    bhk: "2",
-    toiletCount: "2",
-    carpetArea: "750",
-    buildupArea: "950",
-    oldConstructionArea: "700",
-    oldRV: "25000",
-    newRV: "28000",
-    oldTax: "2500",
-    newTax: "2800",
-    mobileNo: "9876543210",
-    email: "rajesh@example.com",
-    ocDate: "2015-03-15",
-  };
+    typeOfUse: "Clubhouse",
+    type: "Amenity",
+    floor: "0",
+    assessmentYear: "2023",
+    constructionYear: "2018",
+    constructionType: "RCC",
+    bhk: "0",
+    toiletCount: "4",
+    carpetASqFt: 2000,
+    builtupASqMtr: 2200,
+    oldConstArea: 1800,
+    oldRV: 0,
+    rateableValue: 0,
+    oldTotalTax: 0,
+    newTaxTotal: 0,
+    mobileNo: "9876543212",
+    emailId: "amenities@example.com",
+    ocDate: "2018-08-10",
+    remark: "N/A",
+  } as unknown as ApartmentQCDetail;
 
   return (
     <AmenitiesEditScreen
