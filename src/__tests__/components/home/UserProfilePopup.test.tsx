@@ -37,11 +37,27 @@ const localStorageMock = (() => {
 Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 
 describe('UserProfilePopup Component', () => {
+  const mockUserProfile = {
+    fullName: 'Test User',
+    email: 'test@example.com',
+    roles: ['Admin'],
+    departments: ['Property Tax'],
+    modules: ['PTIS'],
+    userId: 'USR-2025-1047',
+    userCode: 'USR001',
+    mobileNo: '9876543210',
+    address: '123 Test Street',
+    language: 'en',
+    primaryRole: 'Admin',
+    primaryDepartment: 'Property Tax',
+  };
+
   const defaultProps = {
     isOpen: true,
     onClose: vi.fn(),
     username: 'Test User',
     ulbName: 'Test Municipality',
+    userProfile: mockUserProfile,
   };
 
   beforeEach(() => {
@@ -71,24 +87,23 @@ describe('UserProfilePopup Component', () => {
   });
 
   it('displays default username when not provided', () => {
-    render(<UserProfilePopup {...defaultProps} username={undefined} />);
+    render(<UserProfilePopup {...defaultProps} username={undefined} userProfile={undefined} />);
     // Default username 'User' appears in the header; use getAllByText as 'User' may appear in multiple places
     const userElements = screen.getAllByText('User');
     expect(userElements.length).toBeGreaterThan(0);
   });
 
-  it('displays N/A for email when not in localStorage', () => {
-    render(<UserProfilePopup {...defaultProps} />);
+  it('displays N/A for email when userProfile not provided', () => {
+    render(<UserProfilePopup {...defaultProps} userProfile={undefined} />);
     // Email should show N/A when not set
     const naElements = screen.getAllByText('N/A');
     expect(naElements.length).toBeGreaterThan(0);
   });
 
-  it('displays user ID from localStorage when available', () => {
-    localStorageMock.setItem('ntis_user_id', 'USR-2025-1047');
+  it('displays user ID from userProfile prop', () => {
     render(<UserProfilePopup {...defaultProps} />);
     expect(screen.getByText('User ID')).toBeInTheDocument();
-    expect(screen.getByText('USR-2025-1047')).toBeInTheDocument();
+    expect(screen.getByText(/USR-2025-1047/)).toBeInTheDocument();
   });
 
   it('displays role label', () => {
@@ -96,10 +111,11 @@ describe('UserProfilePopup Component', () => {
     expect(screen.getByText('Role')).toBeInTheDocument();
   });
 
-  it('displays department with ulbName', () => {
+  it('displays department from userProfile', () => {
     render(<UserProfilePopup {...defaultProps} />);
     expect(screen.getByText('Department')).toBeInTheDocument();
-    expect(screen.getByText('Test Municipality')).toBeInTheDocument();
+    // Department comes from userProfile.departments
+    expect(screen.getByText('Property Tax')).toBeInTheDocument();
   });
 
   it('displays N/A for department when ulbName not provided', () => {
@@ -141,18 +157,18 @@ describe('UserProfilePopup Component', () => {
     expect(defaultProps.onClose).toHaveBeenCalledTimes(1);
   });
 
-  it('reads session data from localStorage', () => {
-    localStorageMock.setItem('ntis_user_id', 'USER-123');
-    localStorageMock.setItem('ntis_user_email', 'test@example.com');
-    localStorageMock.setItem('ntis_user_role', 'Admin');
+  it('displays user profile data from props and session data from localStorage', () => {
     localStorageMock.setItem('ntis_session_id', 'session-12345678-abcd');
     localStorageMock.setItem('ntis_user_ip', '192.168.1.1');
 
     render(<UserProfilePopup {...defaultProps} />);
 
-    expect(screen.getByText('USER-123')).toBeInTheDocument();
+    // User profile data from props
+    expect(screen.getByText(/USR-2025-1047/)).toBeInTheDocument();
     expect(screen.getByText('test@example.com')).toBeInTheDocument();
     expect(screen.getByText('Admin')).toBeInTheDocument();
+    
+    // Session data from localStorage
     expect(screen.getByText('192.168.1.1')).toBeInTheDocument();
   });
 

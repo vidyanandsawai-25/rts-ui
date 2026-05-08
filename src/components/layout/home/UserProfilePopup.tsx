@@ -1,13 +1,12 @@
 'use client';
 
 import React, { useEffect, useState, useMemo } from 'react';
-import { User, Shield, Building, Globe, Hash, Clock, Mail, X, Phone, MapPin, Briefcase, Loader2 } from 'lucide-react';
+import { User, Shield, Building, Globe, Hash, Clock, X, Phone, MapPin, Briefcase, Mail } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { Badge } from '@/components/common/Badge';
 import { Label } from '@/components/common/label';
 import { useTranslations, useLocale } from 'next-intl';
-import { useUserProfile } from '@/hooks/useUserProfile';
-import { getUserIdFromCookie } from '@/lib/utils/cookie';
+import type { UserProfileDisplayValues } from '@/types/user-profile.types';
 
 /**
  * Session data structure for supplementary display info
@@ -61,41 +60,36 @@ interface UserProfilePopupProps {
     onClose: () => void;
     username?: string;
     ulbName?: string;
+    userProfile?: UserProfileDisplayValues | null;
 }
 
-export const UserProfilePopup: React.FC<UserProfilePopupProps> = ({ isOpen, onClose, username, ulbName }) => {
+export const UserProfilePopup: React.FC<UserProfilePopupProps> = ({ 
+    isOpen, 
+    onClose, 
+    username, 
+    ulbName,
+    userProfile 
+}) => {
     const t = useTranslations('common');
     const locale = useLocale();
-    
-    // Get user ID from cookie for API call
-    const [userId, setUserId] = useState<number | null>(null);
-    
-    useEffect(() => {
-        // Only run on client side
-        const id = getUserIdFromCookie();
-        setUserId(id);
-    }, []);
-    
-    // Fetch user profile from API
-    const { profile, isLoading, error } = useUserProfile(userId);
     
     // Session-specific data from localStorage
     const [sessionData] = useState<SessionData>(() => getSessionData());
 
-    // Format values with API data and fallbacks
+    // Format values with SSR data and fallbacks
     const displayValues = useMemo(() => ({
-        // User profile data from API
-        fullName: profile?.fullName || username || t('userMenu.defaultUser', { default: 'User' }),
-        email: profile?.email || t('userMenu.notAvailable', { default: 'N/A' }),
-        userId: profile?.userId || t('userMenu.notAvailable', { default: 'N/A' }),
-        userCode: profile?.userCode || t('userMenu.notAvailable', { default: 'N/A' }),
-        mobileNo: profile?.mobileNo || t('userMenu.notAvailable', { default: 'N/A' }),
-        address: profile?.address || t('userMenu.notAvailable', { default: 'N/A' }),
-        primaryRole: profile?.primaryRole || t('userMenu.defaultRole', { default: 'User' }),
-        roles: profile?.roles || [],
-        departments: profile?.departments || [],
-        modules: profile?.modules || [],
-        primaryDepartment: profile?.primaryDepartment || ulbName || t('userMenu.notAvailable', { default: 'N/A' }),
+        // User profile data from SSR
+        fullName: userProfile?.fullName || username || t('userMenu.defaultUser', { default: 'User' }),
+        email: userProfile?.email || t('userMenu.notAvailable', { default: 'N/A' }),
+        userId: userProfile?.userId || t('userMenu.notAvailable', { default: 'N/A' }),
+        userCode: userProfile?.userCode || t('userMenu.notAvailable', { default: 'N/A' }),
+        mobileNo: userProfile?.mobileNo || t('userMenu.notAvailable', { default: 'N/A' }),
+        address: userProfile?.address || t('userMenu.notAvailable', { default: 'N/A' }),
+        primaryRole: userProfile?.primaryRole || t('userMenu.defaultRole', { default: 'User' }),
+        roles: userProfile?.roles || [],
+        departments: userProfile?.departments || [],
+        modules: userProfile?.modules || [],
+        primaryDepartment: userProfile?.primaryDepartment || ulbName || t('userMenu.notAvailable', { default: 'N/A' }),
         
         // Session data from localStorage
         sessionId: sessionData.sessionId 
@@ -103,7 +97,7 @@ export const UserProfilePopup: React.FC<UserProfilePopupProps> = ({ isOpen, onCl
             : t('userMenu.notAvailable', { default: 'N/A' }),
         loginTime: formatLoginTime(sessionData.loginTime, locale),
         ipAddress: sessionData.ipAddress || t('userMenu.notAvailable', { default: 'N/A' }),
-    }), [profile, username, sessionData, locale, t, ulbName]);
+    }), [userProfile, username, sessionData, locale, t, ulbName]);
 
     useEffect(() => {
         const handleEscape = (e: KeyboardEvent) => {
@@ -143,141 +137,124 @@ export const UserProfilePopup: React.FC<UserProfilePopupProps> = ({ isOpen, onCl
                 </button>
             </div>
 
-            {/* Loading State */}
-            {isLoading && (
-                <div className="p-8 flex items-center justify-center">
-                    <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
-                    <span className="ml-2 text-sm text-gray-500">{t('userMenu.loading', { default: 'Loading...' })}</span>
-                </div>
-            )}
-
-            {/* Error State */}
-            {error && !isLoading && (
-                <div className="p-4 text-center text-red-500 text-sm">
-                    {error}
-                </div>
-            )}
-
             {/* Body */}
-            {!isLoading && (
-                <div className="p-4 space-y-3 max-h-96 overflow-y-auto">
-                    {/* User ID & Code */}
-                    <div className="flex items-start gap-3">
-                        <Hash className="w-4 h-4 text-gray-400 mt-0.5" />
-                        <div className="flex-1">
-                            <Label className="text-[10px] text-gray-500 uppercase font-bold mb-0.5">{t('userMenu.userId')}</Label>
-                            <p className="text-sm font-medium text-gray-900">
-                                {displayValues.userId} 
-                                {displayValues.userCode && displayValues.userCode !== t('userMenu.notAvailable', { default: 'N/A' }) && (
-                                    <span className="text-gray-500 ml-1">({displayValues.userCode})</span>
-                                )}
-                            </p>
-                        </div>
+            <div className="p-4 space-y-3 max-h-96 overflow-y-auto">
+                {/* User ID & Code */}
+                <div className="flex items-start gap-3">
+                    <Hash className="w-4 h-4 text-gray-400 mt-0.5" />
+                    <div className="flex-1">
+                        <Label className="text-[10px] text-gray-500 uppercase font-bold mb-0.5">{t('userMenu.userId')}</Label>
+                        <p className="text-sm font-medium text-gray-900">
+                            {displayValues.userId} 
+                            {displayValues.userCode && displayValues.userCode !== t('userMenu.notAvailable', { default: 'N/A' }) && (
+                                <span className="text-gray-500 ml-1">({displayValues.userCode})</span>
+                            )}
+                        </p>
                     </div>
+                </div>
 
-                    {/* Phone */}
-                    <div className="flex items-start gap-3">
-                        <Phone className="w-4 h-4 text-gray-400 mt-0.5" />
-                        <div className="flex-1">
-                            <Label className="text-[10px] text-gray-500 uppercase font-bold mb-0.5">{t('userMenu.phone', { default: 'Phone' })}</Label>
-                            <p className="text-sm font-medium text-gray-900">{displayValues.mobileNo}</p>
-                        </div>
+                {/* Phone */}
+                <div className="flex items-start gap-3">
+                    <Phone className="w-4 h-4 text-gray-400 mt-0.5" />
+                    <div className="flex-1">
+                        <Label className="text-[10px] text-gray-500 uppercase font-bold mb-0.5">{t('userMenu.phone', { default: 'Phone' })}</Label>
+                        <p className="text-sm font-medium text-gray-900">{displayValues.mobileNo}</p>
                     </div>
+                </div>
 
-                    {/* Address */}
-                    <div className="flex items-start gap-3">
-                        <MapPin className="w-4 h-4 text-gray-400 mt-0.5" />
-                        <div className="flex-1">
-                            <Label className="text-[10px] text-gray-500 uppercase font-bold mb-0.5">{t('userMenu.address', { default: 'Address' })}</Label>
-                            <p className="text-sm font-medium text-gray-900">{displayValues.address}</p>
-                        </div>
+                {/* Address */}
+                <div className="flex items-start gap-3">
+                    <MapPin className="w-4 h-4 text-gray-400 mt-0.5" />
+                    <div className="flex-1">
+                        <Label className="text-[10px] text-gray-500 uppercase font-bold mb-0.5">{t('userMenu.address', { default: 'Address' })}</Label>
+                        <p className="text-sm font-medium text-gray-900">{displayValues.address}</p>
                     </div>
+                </div>
 
-                    {/* Roles */}
-                    <div className="flex items-start gap-3">
-                        <Shield className="w-4 h-4 text-gray-400 mt-0.5" />
-                        <div className="flex-1">
-                            <Label className="text-[10px] text-gray-500 uppercase font-bold mb-1">{t('userMenu.role')}</Label>
-                            <div className="flex flex-wrap gap-1">
-                                {displayValues.roles.length > 0 ? (
-                                    displayValues.roles.map((role, idx) => (
-                                        <Badge key={idx} variant="default" size="sm" className="bg-blue-50 text-blue-700 border-blue-100">
-                                            {role}
-                                        </Badge>
-                                    ))
-                                ) : (
-                                    <Badge variant="default" size="sm" className="bg-blue-50 text-blue-700 border-blue-100">
-                                        {displayValues.primaryRole}
+                {/* Roles */}
+                <div className="flex items-start gap-3">
+                    <Shield className="w-4 h-4 text-gray-400 mt-0.5" />
+                    <div className="flex-1">
+                        <Label className="text-[10px] text-gray-500 uppercase font-bold mb-1">{t('userMenu.role')}</Label>
+                        <div className="flex flex-wrap gap-1">
+                            {displayValues.roles.length > 0 ? (
+                                displayValues.roles.map((role, idx) => (
+                                    <Badge key={idx} variant="default" size="sm" className="bg-blue-50 text-blue-700 border-blue-100">
+                                        {role}
                                     </Badge>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Departments */}
-                    <div className="flex items-start gap-3">
-                        <Building className="w-4 h-4 text-gray-400 mt-0.5" />
-                        <div className="flex-1">
-                            <Label className="text-[10px] text-gray-500 uppercase font-bold mb-1">{t('userMenu.department')}</Label>
-                            <div className="flex flex-wrap gap-1">
-                                {displayValues.departments.length > 0 ? (
-                                    displayValues.departments.map((dept, idx) => (
-                                        <Badge key={idx} variant="outline" size="sm" className="bg-green-50 text-green-700 border-green-200">
-                                            {dept}
-                                        </Badge>
-                                    ))
-                                ) : (
-                                    <p className="text-sm font-medium text-gray-900">{displayValues.primaryDepartment}</p>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Modules */}
-                    {displayValues.modules.length > 0 && (
-                        <div className="flex items-start gap-3">
-                            <Briefcase className="w-4 h-4 text-gray-400 mt-0.5" />
-                            <div className="flex-1">
-                                <Label className="text-[10px] text-gray-500 uppercase font-bold mb-1">{t('userMenu.modules', { default: 'Modules' })}</Label>
-                                <div className="flex flex-wrap gap-1">
-                                    {displayValues.modules.map((module, idx) => (
-                                        <Badge key={idx} variant="outline" size="sm" className="bg-purple-50 text-purple-700 border-purple-200">
-                                            {module}
-                                        </Badge>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    <div className="border-t border-gray-100 my-2"></div>
-
-                    {/* Session Info */}
-                    <div className="flex items-start gap-3">
-                        <Globe className="w-4 h-4 text-gray-400 mt-0.5" />
-                        <div>
-                            <p className="text-[10px] text-gray-500 uppercase font-semibold">{t('userMenu.publicIp')}</p>
-                            <p className="text-sm font-medium text-gray-900 font-mono">{displayValues.ipAddress}</p>
-                        </div>
-                    </div>
-
-                    <div className="flex items-start gap-3">
-                        <Hash className="w-4 h-4 text-gray-400 mt-0.5" />
-                        <div>
-                            <p className="text-[10px] text-gray-500 uppercase font-semibold">{t('userMenu.sessionId')}</p>
-                            <p className="text-sm font-medium text-gray-900 font-mono truncate w-48">{displayValues.sessionId}</p>
-                        </div>
-                    </div>
-
-                    <div className="flex items-start gap-3">
-                        <Clock className="w-4 h-4 text-gray-400 mt-0.5" />
-                        <div>
-                            <p className="text-[10px] text-gray-500 uppercase font-semibold">{t('userMenu.loginTime')}</p>
-                            <p className="text-sm font-medium text-gray-900">{displayValues.loginTime}</p>
+                                ))
+                            ) : (
+                                <Badge variant="default" size="sm" className="bg-blue-50 text-blue-700 border-blue-100">
+                                    {displayValues.primaryRole}
+                                </Badge>
+                            )}
                         </div>
                     </div>
                 </div>
-            )}
+
+                {/* Departments */}
+                <div className="flex items-start gap-3">
+                    <Building className="w-4 h-4 text-gray-400 mt-0.5" />
+                    <div className="flex-1">
+                        <Label className="text-[10px] text-gray-500 uppercase font-bold mb-1">{t('userMenu.department')}</Label>
+                        <div className="flex flex-wrap gap-1">
+                            {displayValues.departments.length > 0 ? (
+                                displayValues.departments.map((dept, idx) => (
+                                    <Badge key={idx} variant="outline" size="sm" className="bg-green-50 text-green-700 border-green-200">
+                                        {dept}
+                                    </Badge>
+                                ))
+                            ) : (
+                                <p className="text-sm font-medium text-gray-900">{displayValues.primaryDepartment}</p>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Modules */}
+                {displayValues.modules.length > 0 && (
+                    <div className="flex items-start gap-3">
+                        <Briefcase className="w-4 h-4 text-gray-400 mt-0.5" />
+                        <div className="flex-1">
+                            <Label className="text-[10px] text-gray-500 uppercase font-bold mb-1">{t('userMenu.modules', { default: 'Modules' })}</Label>
+                            <div className="flex flex-wrap gap-1">
+                                {displayValues.modules.map((module, idx) => (
+                                    <Badge key={idx} variant="outline" size="sm" className="bg-purple-50 text-purple-700 border-purple-200">
+                                        {module}
+                                    </Badge>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                <div className="border-t border-gray-100 my-2"></div>
+
+                {/* Session Info */}
+                <div className="flex items-start gap-3">
+                    <Globe className="w-4 h-4 text-gray-400 mt-0.5" />
+                    <div>
+                        <p className="text-[10px] text-gray-500 uppercase font-semibold">{t('userMenu.publicIp')}</p>
+                        <p className="text-sm font-medium text-gray-900 font-mono">{displayValues.ipAddress}</p>
+                    </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                    <Hash className="w-4 h-4 text-gray-400 mt-0.5" />
+                    <div>
+                        <p className="text-[10px] text-gray-500 uppercase font-semibold">{t('userMenu.sessionId')}</p>
+                        <p className="text-sm font-medium text-gray-900 font-mono truncate w-48">{displayValues.sessionId}</p>
+                    </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                    <Clock className="w-4 h-4 text-gray-400 mt-0.5" />
+                    <div>
+                        <p className="text-[10px] text-gray-500 uppercase font-semibold">{t('userMenu.loginTime')}</p>
+                        <p className="text-sm font-medium text-gray-900">{displayValues.loginTime}</p>
+                    </div>
+                </div>
+            </div>
 
             {/* Footer */}
             <div className="p-3 bg-blue-50/50 rounded-b-lg border-t border-blue-100">

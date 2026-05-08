@@ -5,7 +5,7 @@ import { userProfileService } from "@/lib/api/user-profile.service";
 import { Service } from "@/types/home/home.types";
 import { getDepartmentConfig, getDepartmentRoute } from "@/config/home-services.config";
 import { getUserIdFromCookies } from "@/lib/utils/cookie";
-import type { UserDepartment } from "@/types/user-profile.types";
+import type { UserDepartment, UserProfileDisplayValues } from "@/types/user-profile.types";
 
 /**
  * Response type for listServices
@@ -166,5 +166,68 @@ export async function getUserProfileDisplayAction(userId: number): Promise<{
             success: false,
             error: error instanceof Error ? error.message : 'Failed to fetch user profile',
         };
+    }
+}
+
+/**
+ * Server-side function to get user profile for SSR
+ * Reads userId from cookies and fetches profile data
+ * Called from page.tsx server component
+ */
+export async function getUserProfileSSR(): Promise<UserProfileDisplayValues | null> {
+    try {
+        const cookieStore = await cookies();
+        const userId = getUserIdFromCookies(cookieStore);
+        
+        if (!userId) {
+            return null;
+        }
+        
+        const response = await userProfileService.getUserProfile(userId);
+        
+        if (!response.success || !response.data) {
+            return null;
+        }
+
+        const profile = response.data;
+        
+        const fullName = [profile.firstName, profile.middleName, profile.lastName]
+            .filter(Boolean)
+            .join(' ');
+
+        const roles = [...new Set(
+            profile.roleAllocations
+                .filter(r => r.isActive)
+                .map(r => r.userRoleName)
+        )];
+
+        const departments = [...new Set(
+            profile.departments
+                .filter(d => d.isActive)
+                .map(d => d.departmentName)
+        )];
+
+        const modules = [...new Set(
+            profile.moduleAccess
+                .filter(m => m.isActive)
+                .map(m => m.moduleName)
+        )];
+
+        return {
+            fullName,
+            email: profile.email,
+            roles,
+            departments,
+            modules,
+            userId: profile.id.toString(),
+            userCode: profile.userCode,
+            mobileNo: profile.mobileNo,
+            address: profile.address,
+            language: profile.language,
+            primaryRole: roles[0] || 'User',
+            primaryDepartment: departments[0] || '',
+        };
+    } catch {
+        return null;
     }
 }
