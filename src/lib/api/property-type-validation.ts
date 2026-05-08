@@ -1,5 +1,6 @@
 import { PropertyTypeFormModel } from "@/types/property-type.types";
 import { ApiError } from "@/lib/utils/api";
+import { PROPERTY_TYPE_ERROR_CODES } from "@/lib/constants/property-type-error-codes";
 
 /**
  * Validates property type ID
@@ -26,13 +27,13 @@ export function validateAndPrepareSearchTerm(searchTerm?: string): string | unde
  */
 export function validateCreateFormData(data: PropertyTypeFormModel): void {
   if (!data.propertyDescription?.trim()) {
-    throw new ApiError(400, "Property description is required", "Validation failed");
+    throw new ApiError(400, PROPERTY_TYPE_ERROR_CODES.PROPERTY_DESCRIPTION_REQUIRED, "Validation failed");
   }
   if (!data.type?.trim()) {
-    throw new ApiError(400, "Type is required", "Validation failed");
+    throw new ApiError(400, PROPERTY_TYPE_ERROR_CODES.TYPE_REQUIRED, "Validation failed");
   }
   if (!data.propertyTypeGroup?.trim()) {
-    throw new ApiError(400, "Property type group is required", "Validation failed");
+    throw new ApiError(400, PROPERTY_TYPE_ERROR_CODES.PROPERTY_TYPE_GROUP_REQUIRED, "Validation failed");
   }
   if (
     data.propertyTypeCategoryId === undefined ||
@@ -40,7 +41,7 @@ export function validateCreateFormData(data: PropertyTypeFormModel): void {
     data.propertyTypeCategoryId === 0 ||
     !Number.isFinite(data.propertyTypeCategoryId)
   ) {
-    throw new ApiError(400, "Property type category is required", "Validation failed");
+    throw new ApiError(400, PROPERTY_TYPE_ERROR_CODES.CATEGORY_REQUIRED, "Validation failed");
   }
 }
 
@@ -49,23 +50,23 @@ export function validateCreateFormData(data: PropertyTypeFormModel): void {
  */
 export function validateUpdateFormData(data: PropertyTypeFormModel): void {
   if (!data.id || data.id <= 0) {
-    throw new ApiError(400, "Property Type ID is required for update", "Validation failed");
+    throw new ApiError(400, PROPERTY_TYPE_ERROR_CODES.ID_REQUIRED_FOR_UPDATE, "Validation failed");
   }
   if (!data.propertyDescription?.trim()) {
-    throw new ApiError(400, "Property description is required", "Validation failed");
+    throw new ApiError(400, PROPERTY_TYPE_ERROR_CODES.PROPERTY_DESCRIPTION_REQUIRED, "Validation failed");
   }
   if (!data.type?.trim()) {
-    throw new ApiError(400, "Type is required", "Validation failed");
+    throw new ApiError(400, PROPERTY_TYPE_ERROR_CODES.TYPE_REQUIRED, "Validation failed");
   }
   if (!data.propertyTypeGroup?.trim()) {
-    throw new ApiError(400, "Property type group is required", "Validation failed");
+    throw new ApiError(400, PROPERTY_TYPE_ERROR_CODES.PROPERTY_TYPE_GROUP_REQUIRED, "Validation failed");
   }
   if (
     !data.propertyTypeCategoryId ||
     data.propertyTypeCategoryId === 0 ||
     !Number.isFinite(data.propertyTypeCategoryId)
   ) {
-    throw new ApiError(400, "Property type category is required", "Validation failed");
+    throw new ApiError(400, PROPERTY_TYPE_ERROR_CODES.CATEGORY_REQUIRED, "Validation failed");
   }
 }
 

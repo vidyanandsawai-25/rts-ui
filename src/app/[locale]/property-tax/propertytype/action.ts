@@ -13,11 +13,21 @@ import { PropertyType, PropertyTypeFormModel, PropertyTypeAndTypeOfUseValidation
 import { PropertyTypeCategory } from "@/types/property-type-category.types";
 import { PagedResponse } from "@/types/common.types";
 import { getUserIdFromCookies } from "@/lib/utils/cookie";
+import { 
+  PROPERTY_TYPE_ERROR_CODES, 
+  PROPERTY_TYPE_SEARCH_MAX_RECORDS 
+} from "@/lib/constants/property-type-error-codes";
 
-// SSR action to fetch all TypeOfUse (for PropertyTypeForm)
-// Uses -1 pageSize to fetch all records without pagination
+/**
+ * SSR action to fetch all TypeOfUse (for PropertyTypeForm)
+ * Uses -1 pageSize to fetch all records without pagination limit
+ * 
+ * Business context: Type of Use master needs all records for form selection
+ */
 export async function getTypeOfUseListAction(): Promise<UseType[]> {
   try {
+    // Use -1 to fetch all records without pagination
+    // The backend API interprets -1 as "return all records"
     const result = await getUseTypesPagedServer({ pageNumber: 1, pageSize: -1 });
     return result.items;
   } catch (error) {
@@ -77,11 +87,24 @@ export async function createPropertyTypeAction(
     if (createdPropertyType?.id) {
       return { success: true, createdId: createdPropertyType.id };
     }
-    
-    // Fallback: API didn't return the ID, search for the newly created record
-    // Fetch ALL records matching the description (-1 pageSize = fetch all without pagination)
+
+    /**
+     * FALLBACK SEARCH LOGIC
+     *
+     * This fallback is needed because the API currently does not always return
+     * the created entity ID in the response. The search approach has drawbacks:
+     *
+     * 1. Performance: Additional API call with search overhead
+     * 2. Race condition: Another identical record could match first
+     * 3. Reliability: Search might fail, leaving the ID unknown
+     *
+     * RECOMMENDED: The API should be updated to always return the created entity
+     * ID in the POST response. Once the API is updated, this fallback can be removed.
+     *
+     * See: Backend endpoint POST /PropertyTypeMaster should return { id: number }
+     */
     try {
-      const searchResult = await getPropertyTypesPaged(1, -1, data.propertyDescription.trim());
+      const searchResult = await getPropertyTypesPaged(1, PROPERTY_TYPE_SEARCH_MAX_RECORDS, data.propertyDescription.trim());
       const match = searchResult.items.find(
         (item) =>
           item.propertyDescription === data.propertyDescription.trim() &&
@@ -109,7 +132,7 @@ export async function createPropertyTypeAction(
     if (error instanceof Error) {
       return { success: false, message: error.message };
     }
-    return { success: false, message: "Failed to create property type" };
+    return { success: false, message: PROPERTY_TYPE_ERROR_CODES.CREATE_FAILED };
   }
 }
 
@@ -137,7 +160,7 @@ export async function updatePropertyTypeAction(
     if (error instanceof Error) {
       return { success: false, message: error.message };
     }
-    return { success: false, message: "Failed to update property type" };
+    return { success: false, message: PROPERTY_TYPE_ERROR_CODES.UPDATE_FAILED };
   }
 }
 
@@ -151,7 +174,7 @@ export async function deletePropertyTypeAction(
   if (!id || id <= 0) {
     return {
       success: false,
-      message: "Valid Property Type ID is required",
+      message: PROPERTY_TYPE_ERROR_CODES.INVALID_PROPERTY_TYPE_ID,
       statusCode: 400,
     };
   }
@@ -165,7 +188,6 @@ export async function deletePropertyTypeAction(
     }
     return {
       success: true,
-      message: "Property type deleted successfully",
     };
   } catch (error) {
     if (error instanceof ApiError) {
@@ -178,7 +200,7 @@ export async function deletePropertyTypeAction(
 
     return {
       success: false,
-      message: "Failed to delete property type",
+      message: PROPERTY_TYPE_ERROR_CODES.DELETE_FAILED,
     };
   }
 }
@@ -188,7 +210,7 @@ export async function getPropertyTypeByIdAction(
 ): Promise<PropertyType> {
   try {
     if (!id || id <= 0) {
-      throw new ApiError(400, "Valid Property Type ID is required", "Validation failed");
+      throw new ApiError(400, PROPERTY_TYPE_ERROR_CODES.INVALID_PROPERTY_TYPE_ID, "Validation failed");
     }
     const result = await getPropertyTypeById(id);
     if (!result) {

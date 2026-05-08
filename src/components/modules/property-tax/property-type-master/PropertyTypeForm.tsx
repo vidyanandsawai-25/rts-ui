@@ -7,14 +7,13 @@ import { StatusToggleSection } from "./components/StatusToggleSection";
 import { FormFieldsSection } from "./components/FormFieldsSection";
 import { ValidationSection } from "./components/ValidationSection";
 import { TypeOfUseSection } from "./components/TypeOfUseSection";
-import { toast } from "sonner";
 
 import { PropertyType } from "@/types/property-type.types";
 import { PropertyTypeCategory } from "@/types/property-type-category.types";
 import { UseType } from "@/types/typeOfUse.types";
 import { usePropertyTypeForm } from "@/hooks/usePropertyTypeForm";
-import { updatePropertyTypeValidationsAction } from "@/app/[locale]/property-tax/propertytype/action";
-import React from "react";
+import { useTypeOfUseValidations } from "@/hooks/useTypeOfUseValidations";
+import { usePropertyTypeSubmit } from "@/hooks/usePropertyTypeSubmit";
 
 export interface PropertyTypeFormProps {
   id: number | null;
@@ -57,100 +56,32 @@ export default function PropertyTypeForm({
   });
 
   // --- TypeOfUse selection state ---
-  const [selectedTypeOfUseIds, setSelectedTypeOfUseIds] = React.useState<Set<number>>(
-    new Set(initialTypeOfUseIds)
-  );
+  const {
+    selectedTypeOfUseIds,
+    persistedPropertyTypeId,
+    setPersistedPropertyTypeId,
+    toggleTypeOfUse,
+    handleSelectAll,
+    handleClearAll,
+    saveValidations,
+  } = useTypeOfUseValidations({
+    initialTypeOfUseIds,
+    typeOfUseList,
+    t,
+  });
 
-  // Track createdId from successful creation in add mode to avoid re-creating on validation save failure
-  const [persistedPropertyTypeId, setPersistedPropertyTypeId] = React.useState<number | null>(null);
-
-  // Handler for toggling selection (no limit)
-  const toggleTypeOfUse = (touId: number) => {
-    setSelectedTypeOfUseIds((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(touId)) {
-        newSet.delete(touId);
-      } else {
-        newSet.add(touId);
-      }
-      return newSet;
-    });
-  };
-
-  const handleSelectAll = () => {
-    const newSet = new Set(selectedTypeOfUseIds);
-    for (const item of typeOfUseList) {
-      newSet.add(item.typeOfUseId);
-    }
-    setSelectedTypeOfUseIds(newSet);
-  };
-
-  const handleClearAll = () => {
-    setSelectedTypeOfUseIds(new Set());
-  };
-
-  // Enhanced submit handler that also saves type of use validations
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    // 1. Submit the main property type form
-    // In edit mode: always submit to update the property type
-    // In add mode: skip if already created (persistedPropertyTypeId exists)
-    let createdId: number | undefined;
-    if (isEdit || !persistedPropertyTypeId) {
-      const result = await originalHandleSubmit(e);
-      if (!result.success) return; // Validation failed or API error — don't proceed
-      createdId = result.createdId;
-      
-      // Persist the created ID in add mode so we don't re-create on retry
-      if (!isEdit && createdId) {
-        setPersistedPropertyTypeId(createdId);
-      }
-    }
-
-    // 2. Determine the property type ID for saving validations
-    // Edit mode: use existing id
-    // Add mode: use persisted ID first (from previous attempt), then createdId
-    const propertyTypeId = isEdit ? id : (persistedPropertyTypeId ?? createdId);
-
-    // 3. Save type of use validations
-    // For edit mode: always call to handle clearing (even if empty array)
-    // For add mode: only call if there are selections AND we have the ID
-    const hasSelectionsToSave = selectedTypeOfUseIds.size > 0;
-    const shouldSaveValidations = propertyTypeId && (isEdit || hasSelectionsToSave);
-
-    let validationSaveFailed = false;
-    if (shouldSaveValidations) {
-      try {
-        const result = await updatePropertyTypeValidationsAction(
-          propertyTypeId,
-          Array.from(selectedTypeOfUseIds)
-        );
-        if (!result.success) {
-          toast.error(result.message || t("form.typeOfUseSection.saveFailed"));
-          validationSaveFailed = true;
-        }
-      } catch (error) {
-        console.error("Error saving type of use validations:", error);
-        toast.error(t("form.typeOfUseSection.saveFailed"));
-        validationSaveFailed = true;
-      }
-    } else if (!isEdit && hasSelectionsToSave && !propertyTypeId) {
-      // Add mode: property type created but couldn't get ID to save type of use
-      // This is a rare edge case - warn user but don't block
-      console.warn("Property type created but ID not available for type of use assignment");
-      toast.warning(t("form.typeOfUseSection.saveWarning"));
-    }
-
-    // Only show success and close if everything is saved successfully
-    if (!validationSaveFailed) {
-      toast.success(isEdit
-        ? t("success.updated", { description: formData.propertyDescription })
-        : t("success.created", { description: formData.propertyDescription })
-      );
-      refreshAndClose();
-    }
-  };
+  // Use the extracted submit hook for multi-step submission logic
+  const { handleSubmit } = usePropertyTypeSubmit({
+    isEdit,
+    id,
+    formData,
+    persistedPropertyTypeId,
+    setPersistedPropertyTypeId,
+    originalHandleSubmit,
+    saveValidations,
+    refreshAndClose,
+    t,
+  });
 
   return (
     <Drawer

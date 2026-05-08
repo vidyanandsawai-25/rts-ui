@@ -7,8 +7,22 @@ import {
   validatePropertyTypeId, validateAndPrepareSearchTerm, validateCreateFormData,
   validateUpdateFormData, getDeleteErrorStatusCode, createApiError,
 } from "./property-type-validation";
+import { PROPERTY_TYPE_ERROR_CODES } from "@/lib/constants/property-type-error-codes";
 
-/** Fetches all property types from the API */
+/**
+ * Fetches all property types from the API without pagination.
+ *
+ * @deprecated This function fetches all records in a single request, which could
+ * cause performance issues as the dataset grows. Prefer using `getPropertyTypesPaged()`
+ * for production use cases that display data in tables with pagination.
+ *
+ * This function is retained for:
+ * - Dropdown/select lists that need all options loaded upfront
+ * - Export functionality that requires the complete dataset
+ * - Migration scripts or one-time data operations
+ *
+ * @returns Array of all property types
+ */
 export async function getPropertyTypes(): Promise<PropertyType[]> {
   try {
     const response = await apiClient.get<PagedResponse<PropertyType>>("/PropertyTypeMaster");
@@ -59,7 +73,7 @@ export async function getPropertyTypesPaged(
 export async function getPropertyTypeById(propertyTypeId: number): Promise<PropertyType | null> {
   try {
     if (!validatePropertyTypeId(propertyTypeId)) {
-      throw new ApiError(400, "Valid Property Type ID is required", "Invalid property type ID");
+      throw new ApiError(400, PROPERTY_TYPE_ERROR_CODES.INVALID_PROPERTY_TYPE_ID, "Invalid property type ID");
     }
     const response = await apiClient.get<PropertyType>(`/PropertyTypeMaster/${encodeURIComponent(String(propertyTypeId))}`);
     if (!response.success) {

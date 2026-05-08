@@ -12,7 +12,18 @@ export async function getPropertyTypeAndTypeOfUseValidation(): Promise<PropertyT
     if (!response.success) {
       throw new ApiError(response.statusCode ?? 500, response.error || "Failed to fetch type of use validation", "Get validation failed");
     }
-    return response.data?.items ?? [];
+    
+    // If API returns success with empty/non-JSON body, fail loudly instead of silently returning []
+    // This prevents the list page from masking upstream API issues as "no mappings"
+    if (!response.data) {
+      throw new ApiError(
+        500,
+        "Server returned success but no data - cannot load validation mappings",
+        "Invalid API response"
+      );
+    }
+    
+    return response.data.items ?? [];
   } catch (error) {
     throw error;
   }

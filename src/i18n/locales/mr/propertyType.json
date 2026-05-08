@@ -126,6 +126,17 @@
       "updated": "मालमत्ता प्रकार यशस्वीरित्या अद्यतित: {description}",
       "deleted": "मालमत्ता प्रकार यशस्वीरित्या हटविला: {description}"
     },
+    "serverValidation": {
+      "invalidPropertyTypeId": "वैध मालमत्ता प्रकार ID आवश्यक आहे",
+      "propertyDescriptionRequired": "मालमत्ता वर्णन आवश्यक आहे",
+      "typeRequired": "प्रकार आवश्यक आहे",
+      "propertyTypeGroupRequired": "मालमत्ता प्रकार गट आवश्यक आहे",
+      "categoryRequired": "मालमत्ता प्रकार श्रेणी आवश्यक आहे",
+      "idRequiredForUpdate": "अद्यतनासाठी मालमत्ता प्रकार ID आवश्यक आहे",
+      "createFailed": "मालमत्ता प्रकार तयार करण्यात अयशस्वी",
+      "updateFailed": "मालमत्ता प्रकार अद्यतन करण्यात अयशस्वी",
+      "deleteFailed": "मालमत्ता प्रकार हटविण्यात अयशस्वी"
+    },
     "error": {
       "title": "काहीतरी चुकले",
       "description": "मालमत्ता प्रकार पृष्ठ लोड करताना आम्हाला त्रुटी आली. कृपया पुन्हा प्रयत्न करा.",

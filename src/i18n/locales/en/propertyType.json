@@ -126,6 +126,17 @@
       "updated": "Property type updated successfully: {description}",
       "deleted": "Property type deleted successfully: {description}"
     },
+    "serverValidation": {
+      "invalidPropertyTypeId": "Valid Property Type ID is required",
+      "propertyDescriptionRequired": "Property description is required",
+      "typeRequired": "Type is required",
+      "propertyTypeGroupRequired": "Property type group is required",
+      "categoryRequired": "Property type category is required",
+      "idRequiredForUpdate": "Property Type ID is required for update",
+      "createFailed": "Failed to create property type",
+      "updateFailed": "Failed to update property type",
+      "deleteFailed": "Failed to delete property type"
+    },
     "error": {
       "title": "Something Went Wrong",
       "description": "We encountered an error while loading the property type page. Please try again.",
