@@ -4,6 +4,19 @@ import type { ReactNode } from 'react';
 import ServiceCards from '@/components/modules/home/ServiceCards';
 import { Service } from '@/types/home/home.types';
 
+// Mock next-intl
+vi.mock('next-intl', () => ({
+  useTranslations: () => (key: string) => {
+    const translations: Record<string, string> = {
+      'services.unableToLoad': 'Unable to load services',
+      'services.tryAgain': 'Try Again',
+      'services.noDepartmentsTitle': 'No departments assigned',
+      'services.noDepartmentsMessage': "You don't have access to any departments yet. Please contact your administrator.",
+    };
+    return translations[key] || key;
+  },
+}));
+
 // Mock next/link
 vi.mock('next/link', () => ({
   default: ({ children, href }: { children: ReactNode; href: string }) => (

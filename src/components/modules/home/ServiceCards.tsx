@@ -4,6 +4,7 @@
 import React from "react";
 import Link from "next/link";
 import { AlertCircle, RefreshCw } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Service, ServiceCardProps } from "@/types/home/home.types";
 import { cn } from "@/lib/utils/cn";
 import { Badge } from "@/components/common/Badge";
@@ -71,6 +72,7 @@ interface ServiceCardsProps {
  * Error state component
  */
 const ServiceLoadError: React.FC<{ error: string }> = ({ error }) => {
+    const t = useTranslations('home');
     const handleRefresh = () => window.location.reload();
 
     return (
@@ -79,7 +81,7 @@ const ServiceLoadError: React.FC<{ error: string }> = ({ error }) => {
                 <div className="bg-red-50 border border-red-200 rounded-lg p-6">
                     <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" aria-hidden="true" />
                     <h3 className="text-lg font-semibold text-red-800 mb-2">
-                        Unable to load services
+                        {t('services.unableToLoad')}
                     </h3>
                     <p className="text-sm text-red-600 mb-4">{error}</p>
                     <Button
@@ -89,7 +91,7 @@ const ServiceLoadError: React.FC<{ error: string }> = ({ error }) => {
                         className="inline-flex items-center gap-2"
                     >
                         <RefreshCw className="w-4 h-4" />
-                        Try Again
+                        {t('services.tryAgain')}
                     </Button>
                 </div>
             </div>
@@ -100,21 +102,25 @@ const ServiceLoadError: React.FC<{ error: string }> = ({ error }) => {
 /**
  * Empty state when user has no department access
  */
-const NoDepartmentsMessage: React.FC = () => (
-    <section className="w-full p-4 sm:p-8 md:p-12 min-h-[300px]" aria-label="No Services">
-        <div className="max-w-md mx-auto text-center">
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
-                <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" aria-hidden="true" />
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                    No departments assigned
-                </h3>
-                <p className="text-sm text-gray-500">
-                    You don&apos;t have access to any departments yet. Please contact your administrator.
-                </p>
+const NoDepartmentsMessage: React.FC = () => {
+    const t = useTranslations('home');
+    
+    return (
+        <section className="w-full p-4 sm:p-8 md:p-12 min-h-[300px]" aria-label="No Services">
+            <div className="max-w-md mx-auto text-center">
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
+                    <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" aria-hidden="true" />
+                    <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                        {t('services.noDepartmentsTitle')}
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                        {t('services.noDepartmentsMessage')}
+                    </p>
+                </div>
             </div>
-        </div>
-    </section>
-);
+        </section>
+    );
+};
 
 const ServiceCards: React.FC<ServiceCardsProps> = ({ services = [], error }) => {
     // Show error state

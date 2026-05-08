@@ -1,5 +1,5 @@
 import { apiClient } from '@/services/api.service';
-import type { UserProfile } from '@/types/user-profile.types';
+import type { UserProfile } from '@/types/home/user-profile.types';
 import type { ApiResponse } from '@/types/common.types';
 
 /**

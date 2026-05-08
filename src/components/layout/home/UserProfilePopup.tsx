@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils/cn';
 import { Badge } from '@/components/common/Badge';
 import { Label } from '@/components/common/label';
 import { useTranslations, useLocale } from 'next-intl';
-import type { UserProfileDisplayValues } from '@/types/user-profile.types';
+import type { UserProfileDisplayValues } from '@/types/home/user-profile.types';
 
 /**
  * Session data structure for supplementary display info

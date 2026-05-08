@@ -8,13 +8,15 @@ import { Settings, User } from "lucide-react";
 
 import { UserProfilePopup } from "./UserProfilePopup";
 import { Button } from "@/components/common/ActionButton";
+import type { UserProfileDisplayValues } from "@/types/home/user-profile.types";
 
 interface NavbarProps {
     username?: string;
     ulbName?: string;
+    userProfile?: UserProfileDisplayValues | null;
 }
 
-export const Navbar = ({ username, ulbName }: NavbarProps) => {
+export const Navbar = ({ username, ulbName, userProfile }: NavbarProps) => {
     const t = useTranslations('common');
     const displayUlbName = ulbName || t('app.defaultUlbName');
     const locale = useLocale();
@@ -58,6 +60,7 @@ export const Navbar = ({ username, ulbName }: NavbarProps) => {
                             onClose={() => setShowProfileDropdown(false)}
                             username={username}
                             ulbName={ulbName}
+                            userProfile={userProfile}
                         />
                     </div>
 

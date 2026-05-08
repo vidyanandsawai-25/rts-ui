@@ -5,7 +5,7 @@ import { userProfileService } from "@/lib/api/user-profile.service";
 import { Service } from "@/types/home/home.types";
 import { getDepartmentConfig, getDepartmentRoute } from "@/config/home-services.config";
 import { getUserIdFromCookies } from "@/lib/utils/cookie";
-import type { UserDepartment, UserProfileDisplayValues } from "@/types/user-profile.types";
+import type { UserDepartment, UserProfileDisplayValues } from "@/types/home/user-profile.types";
 
 /**
  * Response type for listServices
@@ -79,7 +79,7 @@ export async function listServices(locale: string): Promise<ListServicesResponse
             .filter((service): service is Service => service !== null);
 
         return { services };
-    } catch (error) {
+    } catch (_error) {
         return { 
             services: [], 
             error: "Failed to load services. Please try refreshing the page." 
