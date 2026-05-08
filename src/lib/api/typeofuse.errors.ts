@@ -1,0 +1,26 @@
+/**
+ * Error message constants for Type Of Use Master services
+ * These match i18n translation keys for proper error handling
+ */
+export const TypeOfUseErrorMessages = {
+  // Group errors
+  FETCH_GROUPS_FAILED: 'messages.fetchGroupsFailed',
+  CREATE_GROUP_FAILED: 'messages.createGroupFailed',
+  UPDATE_GROUP_FAILED: 'messages.updateGroupFailed',
+  DELETE_GROUP_FAILED: 'messages.deleteGroupFailed',
+
+  // Type errors
+  FETCH_TYPES_FAILED: 'messages.fetchTypesFailed',
+  CREATE_TYPE_FAILED: 'messages.createTypeFailed',
+  UPDATE_TYPE_FAILED: 'messages.updateTypeFailed',
+  DELETE_TYPE_FAILED: 'messages.deleteTypeFailed',
+
+  // SubType errors
+  FETCH_SUBTYPES_FAILED: 'messages.fetchSubTypesFailed',
+  CREATE_SUBTYPE_FAILED: 'messages.createSubTypeFailed',
+  UPDATE_SUBTYPE_FAILED: 'messages.updateSubTypeFailed',
+  DELETE_SUBTYPE_FAILED: 'messages.deleteSubTypeFailed',
+  FETCH_SUBTYPE_COUNTS_FAILED: 'messages.fetchSubTypeCountsFailed',
+} as const;
+
+export type TypeOfUseErrorMessageKey = typeof TypeOfUseErrorMessages[keyof typeof TypeOfUseErrorMessages];
