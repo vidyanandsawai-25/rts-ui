@@ -34,6 +34,7 @@ export default getRequestConfig(async ({ locale }) => {
     natureFactorCVMasterMessages,
     useCategoryFactorMasterMessages,
     ageFactorMasterMessages,
+    zoneMasterMessages,
     modulesMessages,
     officeMessages
   ] = await Promise.all([
@@ -55,6 +56,7 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/natureFactorCVMaster.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/useCategoryFactorMaster.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/ageFactorMaster.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/zoneMaster.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/office.json`).catch(() => ({})).then((m) => m.default || m),
 
@@ -81,6 +83,7 @@ export default getRequestConfig(async ({ locale }) => {
       useCategoryFactorMaster: useCategoryFactorMasterMessages.useCategoryFactorMaster,
       ageFactorMaster: ageFactorMasterMessages.ageFactorMaster,
       typeofusemaster: typeofusemasterMessages,
+      zoneMaster: zoneMasterMessages,
       modules: modulesMessages,
       office: officeMessages,
     },

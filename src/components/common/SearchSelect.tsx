@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 export interface SearchSelectOption {
   label: string;
@@ -216,54 +217,63 @@ export function SearchSelect({
         </label>
       )}
 
-      <input
-        id={id}
-        type="text"
-        name={name}
-        value={displayValue}
-        placeholder={
-          isLoading
-            ? loadingPlaceholder || t('actions.loading') || 'Loading...'
-            : !hasOptions && !value && !forceSearchText
-              ? noOptionsPlaceholder ||
-                t('multiSelect.noOptionsAvailable') ||
-                'No options available'
-              : placeholder
-        }
-        required={required}
-        autoComplete="off"
-        role="combobox"
-        aria-expanded={isOpen && (filteredOptions.length > 0 || isLoading)}
-        aria-controls={
-          isOpen && (filteredOptions.length > 0 || isLoading)
-            ? `${accessibleId}-listbox`
-            : undefined
-        }
-        aria-activedescendant={
-          isOpen && highlightedIndex >= 0 && highlightedIndex < filteredOptions.length
-            ? `${accessibleId}-option-${highlightedIndex}`
-            : undefined
-        }
-        disabled={disabled}
-        inputMode={inputMode}
-        onFocus={() => {
-          isFocused.current = true;
-          onInputFocus?.(); // May trigger async load; auto-open effect handles the delayed case
-          // Open immediately if not disabled — covers both "options already loaded" and
-          // "first focus before load starts" scenarios. The useEffect above handles the
-          // case where options arrive after this focus event fires.
-          if (!disabled) {
-            setIsOpen(true);
+      <div className="relative">
+        <input
+          id={id}
+          type="text"
+          name={name}
+          value={displayValue}
+          placeholder={
+            isLoading
+              ? loadingPlaceholder || t('actions.loading') || 'Loading...'
+              : !hasOptions && !value && !forceSearchText
+                ? noOptionsPlaceholder ||
+                  t('multiSelect.noOptionsAvailable') ||
+                  'No options available'
+                : placeholder
           }
-        }}
-        onBlur={handleBlur}
-        onChange={handleInputChange}
-        onKeyDown={handleKeyDown}
-        className={`w-full rounded-lg border border-blue-200 px-2.5 py-1 text-sm bg-white
-          focus:ring-2 focus:ring-blue-500 outline-none text-gray-900
-          cursor-pointer focus:cursor-text disabled:bg-gray-100 disabled:cursor-not-allowed
-          ${className ?? ''}`}
-      />
+          required={required}
+          autoComplete="off"
+          role="combobox"
+          aria-expanded={isOpen && (filteredOptions.length > 0 || isLoading)}
+          aria-controls={
+            isOpen && (filteredOptions.length > 0 || isLoading)
+              ? `${accessibleId}-listbox`
+              : undefined
+          }
+          aria-activedescendant={
+            isOpen && highlightedIndex >= 0 && highlightedIndex < filteredOptions.length
+              ? `${accessibleId}-option-${highlightedIndex}`
+              : undefined
+          }
+          disabled={disabled}
+          inputMode={inputMode}
+          onFocus={() => {
+            isFocused.current = true;
+            onInputFocus?.(); // May trigger async load; auto-open effect handles the delayed case
+            // Open immediately if not disabled — covers both "options already loaded" and
+            // "first focus before load starts" scenarios. The useEffect above handles the
+            // case where options arrive after this focus event fires.
+            if (!disabled) {
+              setIsOpen(true);
+            }
+          }}
+          onBlur={handleBlur}
+          onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
+          className={`w-full rounded-lg border border-blue-200 px-2.5 py-1 pr-8 text-sm bg-white
+            focus:ring-2 focus:ring-blue-500 outline-none text-gray-900
+            cursor-pointer focus:cursor-text disabled:bg-gray-100 disabled:cursor-not-allowed
+            ${className ?? ''}`}
+        />
+        <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+          {isOpen ? (
+            <ChevronUp size={16} />
+          ) : (
+            <ChevronDown size={16} />
+          )}
+        </div>
+      </div>
 
       {isOpen && (filteredOptions.length > 0 || isLoading) && (
         <ul

@@ -67,6 +67,15 @@ export interface BatchWardCreatePayload {
   template: BatchWardTemplate;
 }
 
+export interface BatchRangeWardCreatePayload {
+  rangeFrom: string;
+  rangeTo: string;
+  prefix: string;
+  suffix: string;
+  template: BatchWardTemplate;
+  startSequenceNo: number;
+}
+
 export interface BatchWardResultItem {
   id: number;
   wardNo: string;
@@ -82,7 +91,7 @@ export interface BatchWardItems {
   successCount: number;
   failedCount: number;
   results: BatchWardResultItem[];
-  errors: string[] | null;
+  errors: string[] | string | null;
   hasFailures: boolean;
   allSucceeded: boolean;
 }
@@ -91,5 +100,45 @@ export interface BatchWardCreateResponse {
   success: boolean;
   message: string;
   items: BatchWardItems | null;
+  errors: string[] | string | null;
+}
+
+/* Bulk Ward Update Types - PUT /Ward/Bulk */
+export interface BulkWardUpdateItem {
+  id: number;
+  data: {
+    isActive: boolean;
+    updatedBy: number;
+    wardNo: string;
+    zoneId: number;
+    description: string;
+    sequenceNo: number | null;
+  };
+}
+
+export interface BulkWardUpdateResultItem {
+  id: number;
+  wardNo: string;
+  zoneId: number;
+  description: string;
+  sequenceNo: number | null;
+  isActive: boolean;
+  createdDate: string;
+  updatedDate: string;
+}
+
+export interface BulkWardUpdateItems {
+  successCount: number;
+  failedCount: number;
+  results: BulkWardUpdateResultItem[];
+  errors: string[] | null;
+  hasFailures: boolean;
+  allSucceeded: boolean;
+}
+
+export interface BulkWardUpdateResponse {
+  success: boolean;
+  message: string;
+  items: BulkWardUpdateItems | null;
   errors: string[] | null;
 }

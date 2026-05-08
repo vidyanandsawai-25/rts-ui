@@ -82,7 +82,8 @@
     "updateSuccess": "Ward updated successfully",
     "updateError": "Failed to update ward",
     "emptyState": "No wards assigned to this rate section. Select wards from Available Wards or View Wards tab to add them.",
-    "alreadyAdded": "Added to {rateSectionNo}"
+    "alreadyAdded": "Added to {rateSectionNo}",
+    "selected": "Selected"
   },
   "form": {
     "rateSectionNo": "Rate Section No",

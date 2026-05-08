@@ -100,7 +100,7 @@ export default function AvailableWards({
             value={String(availablePageSize)}
             onChange={(e) => onPageSizeChange(Number(e.target.value))}
             selectSize="sm"
-            className="w-18"
+            className="w-20"
           />
         </div>
         <div className="flex items-center gap-1">

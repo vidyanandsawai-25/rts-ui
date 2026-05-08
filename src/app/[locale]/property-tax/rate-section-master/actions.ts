@@ -17,7 +17,7 @@ import {
   bulkUpdateRateSectionDetails,
   bulkPurgeRateSectionDetails,
   bulkCreateRateSectionDetails,
-  getRateSectionDetailsPaged,
+  getWardsByRateSectionId,
 } from "@/lib/api/rateSectionDetails.services";
 import { getWards, getWardById } from "@/lib/api/ward.services";
 import {
@@ -31,12 +31,7 @@ import type { WardItem } from "@/types/wardMaster.types";
 import { apiClient } from "@/services/api.service";
 import { getUserIdFromCookies } from "@/lib/utils/cookie";
 
-/** 
- * Use the API's PageSize=-1 behavior to fetch all linked wards
- * without truncating results at an arbitrary cap.
- */
-const MAX_LINK_WARD_PAGE_SIZE = -1;
-const DEFAULT_PAGE_NUMBER = 1;
+
 
 /**
  * Common helper to retrieve the authenticated user ID from cookies.
@@ -588,27 +583,19 @@ export async function getSelectedWardsWithCountAction(rateSectionId: number): Pr
       return { success: false, wardNos: [], totalCount: 0, error: "Rate section ID is required" };
     }
 
-    const response = await getRateSectionDetailsPaged(
-      DEFAULT_PAGE_NUMBER,
-      MAX_LINK_WARD_PAGE_SIZE,
-      undefined,
-      undefined,
-      rateSectionId
-    );
-    
-    if (!response.success || !response.data) {
-      return { success: false, wardNos: [], totalCount: 0, error: response.error || "Failed to fetch" };
-    }
+    // Use getWardsByRateSectionId (proper pagination, 500/page) because
+    // /RateSectionDetails does NOT support PageSize=-1 unlike /Ward.
+    const items = await getWardsByRateSectionId(rateSectionId);
 
     // Extract only wardNo values - don't expose IDs to client
-    const wardNos = (response.data.items || [])
-       .map((item: SectionItem) => item.wardNo || (item as SectionItem & { WardNo?: string }).WardNo || "")
-       .filter(Boolean);
+    const wardNos = items
+      .map((item: SectionItem) => item.wardNo || (item as SectionItem & { WardNo?: string }).WardNo || "")
+      .filter(Boolean);
 
     return {
       success: true,
       wardNos,
-      totalCount: response.data.totalCount || wardNos.length
+      totalCount: wardNos.length
     };
   } catch (_error) {
     return { success: false, wardNos: [], totalCount: 0, error: "Failed to fetch selected wards" };
@@ -616,9 +603,9 @@ export async function getSelectedWardsWithCountAction(rateSectionId: number): Pr
 }
 
 /**
- * Refreshes selected wards for a rate section with PageSize=-1.
+ * Refreshes selected wards for a rate section.
  * Used after batch operations to get the updated list.
- * API: GET /api/RateSectionDetails?RateSectionId={id}&PageSize=-1
+ * API: GET /api/RateSectionDetails?RateSectionId={id} (paginated 500/page)
  * Returns minimal data to client - only wardNo array and count.
  */
 export async function refreshSelectedWardsAction(rateSectionId: number): Promise<{
@@ -632,27 +619,19 @@ export async function refreshSelectedWardsAction(rateSectionId: number): Promise
       return { success: false, wardNos: [], totalCount: 0, error: "Rate section ID is required" };
     }
 
-    const response = await getRateSectionDetailsPaged(
-      DEFAULT_PAGE_NUMBER,
-      MAX_LINK_WARD_PAGE_SIZE,
-      undefined,
-      undefined,
-      rateSectionId
-    );
-    
-    if (!response.success || !response.data) {
-      return { success: false, wardNos: [], totalCount: 0, error: response.error || "Failed to fetch" };
-    }
+    // Use getWardsByRateSectionId (proper pagination, 500/page) because
+    // /RateSectionDetails does NOT support PageSize=-1 unlike /Ward.
+    const items = await getWardsByRateSectionId(rateSectionId);
 
     // Extract only wardNo values - don't expose IDs to client
-    const wardNos = (response.data.items || [])
+    const wardNos = items
       .map((item: SectionItem) => item.wardNo || (item as SectionItem & { WardNo?: string }).WardNo || "")
       .filter(Boolean);
 
     return {
       success: true,
       wardNos,
-      totalCount: response.data.totalCount || wardNos.length
+      totalCount: wardNos.length
     };
   } catch (_error) {
     return { success: false, wardNos: [], totalCount: 0, error: "Failed to fetch selected wards" };
@@ -674,24 +653,14 @@ export async function deleteSelectedWardsAction(rateSectionId: number, wardNos: 
       return { success: false, deletedCount: 0, error: "Invalid parameters" };
     }
 
-    // Fetch all rate section details to get the IDs for the selected wardNos
-    const response = await getRateSectionDetailsPaged(
-      DEFAULT_PAGE_NUMBER,
-      MAX_LINK_WARD_PAGE_SIZE,
-      undefined,
-      undefined,
-      rateSectionId
-    );
-    
-    if (!response.success || !response.data) {
-      return { success: false, deletedCount: 0, error: response.error || "Failed to fetch details" };
-    }
+    // Fetch all assigned wards for this rate section using proper pagination
+    // (PageSize=-1 is NOT supported by /RateSectionDetails)
+    const allItems = await getWardsByRateSectionId(rateSectionId);
 
     // Build wardNo to id map
     const wardNoToId: Record<string, number> = {};
-    const items = response.data.items || [];
 
-    items.forEach((item: SectionItem) => {
+    allItems.forEach((item: SectionItem) => {
       const itemRecord = item as Record<string, unknown>;
       const wNo = (item.wardNo || itemRecord.WardNo) as string | undefined;
       const id = item.id;

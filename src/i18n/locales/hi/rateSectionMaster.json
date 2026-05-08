@@ -82,7 +82,8 @@
     "wardId": "वार्ड आईडी",
     "isActive": "सक्रिय",
     "linkTitle": "दर अनुभाग में वार्ड लिंक करें",
-    "alreadyAdded": "{rateSectionNo} में जोड़ा गया"
+    "alreadyAdded": "{rateSectionNo} में जोड़ा गया",
+    "selected": "चयनित"
   },
   "form": {
     "rateSectionNo": "दर विभाग क्र.",
