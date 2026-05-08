@@ -24,6 +24,8 @@ export {
   PrevPageButton,
   NextPageButton,
   LastPageButton,
+  SelectAllButton,
+  ClearButton,
   SortAscButton,
   SortDescButton,
   SortDefaultButton,

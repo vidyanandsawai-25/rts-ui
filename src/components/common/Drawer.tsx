@@ -33,9 +33,6 @@ export  function Drawer({
     }
     return () => {
       const otherDrawers = document.querySelectorAll(".drawer-instance");
-      // Since this cleanup runs when the component unmounts or open changes,
-      // we check if there's more than 0 or 1 depending on the timing.
-      // But simple check is usually enough if we are careful.
       if (otherDrawers.length <= 1) {
         document.body.classList.remove("drawer-open");
       }
@@ -55,7 +52,7 @@ export  function Drawer({
     <>
  
         <div
-        className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+        className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm"
         onClick={onClose}
         role="button"
         tabIndex={0}
@@ -70,7 +67,7 @@ export  function Drawer({
       <div
         className={`
           drawer-instance
-          fixed top-0 right-0 z-50 h-full
+          fixed top-0 right-0 z-[110] h-full
           ${widthClass}
           bg-[#F8FAFF]
           shadow-2xl

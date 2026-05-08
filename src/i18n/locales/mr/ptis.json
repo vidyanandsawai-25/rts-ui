@@ -28,7 +28,39 @@
     "oldDetails": "जुने तपशील",
     "rateable": "करयोग्य मूल्य",
     "capital": "भांडवली मूल्य",
-    "dual": "दुहेरी पद्धत"
+    "dual": "दुहेरी पद्धत",
+    "apartment": "अपार्टमेंट"
+  },
+  "apartmentTabs": {
+    "amenities": "सुविधा",
+    "commercial": "व्यावसायिक तपशील",
+    "residential": "निवासी तपशील",
+    "amenitiesContent": "सुविधा सामग्री",
+    "commercialContent": "व्यावसायिक तपशील सामग्री",
+    "residentialContent": "निवासी तपशील सामग्री",
+    "rateable": "किराया योग्य",
+    "capital": "भांडवल",
+    "dual": "दुहेरी पद्धत",
+    "loading": "लोड होत आहे...",
+    "noData": "डेटा उपलब्ध नाही",
+    "error": "डेटा लोड करताना त्रुटी",
+    "columns": {
+      "propertyNo": "मालमत्ता क्र",
+      "floor": "मजला",
+      "assessmentYear": "मूल्यांकन वर्ष",
+      "constructionYear": "बांधकाम वर्ष",
+      "typeOfUse": "वापर",
+      "carpetArea": "कार्पेट क्षे (चौ फूट/चौ मी)",
+      "builtupArea": "बिल्टअप क्षे (चौ फूट/चौ मी)",
+      "oldConstArea": "जुने बांधकाम क्षे",
+      "oldRV": "जुने RV",
+      "newRV": "नवीन RV",
+      "totalTax": "एकूण कर",
+      "cv": "CV",
+      "newTaxTotalCV": "नवीन कर (CV)",
+      "newTaxTotalRV": "नवीन कर (RV)",
+      "rVorCVValue": "RV/CV मूल्य"
+    }
   },
   "fields": {
     "upicId": "यूपीआयसी आयडी",
@@ -322,6 +354,7 @@
     "description": "आम्हाला अनपेक्षित त्रुटी आली. कृपया पुन्हा प्रयत्न करा किंवा मुख्यपृष्ठावर परत जा.",
     "goHome": "मुख्यपृष्ठावर परत",
     "tryAgain": "पुन्हा प्रयत्न करा",
+    "errorId": "त्रुटी आयडी: {id}",
     "networkError": {
       "title": "सर्व्हरशी कनेक्ट होऊ शकले नाही",
       "description": "आम्ही मालमत्ता कर सेवेशी संपर्क साधू शकलो नाही. ही सहसा तात्पुरती नेटवर्क समस्या असते.",

@@ -159,7 +159,8 @@
     "lastPage": "अंतिम पृष्ठ",
     "previousPage": "पिछला पृष्ठ",
     "nextPage": "अगला पृष्ठ",
-    "rowsPerPage": "प्रति पृष्ठ पंक्तियाँ"
+    "rowsPerPage": "प्रति पृष्ठ पंक्तियाँ",
+    "clickToView": "विवरण देखने के लिए क्लिक करें"
   },
   "language": {
     "select": "भाषा चुनें",

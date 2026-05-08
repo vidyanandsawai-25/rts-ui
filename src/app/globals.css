@@ -71,11 +71,4 @@ aside:not(.sidebar-expanded-aside) .sidebar-back-icon {
   }
 }
 
-/* Hide sidebar and mobile toggle behind backdrop when drawer is open */
-body.drawer-open aside {
-  z-index: 30 !important;
-}
 
-body.drawer-open .sidebar-mobile-toggle {
-  z-index: 30 !important;
-}

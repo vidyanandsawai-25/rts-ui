@@ -7,6 +7,8 @@ import {
   UploadButton,
   ExportButton,
   ImportButton,
+  SelectAllButton,
+  ClearButton,
   EditButton,
   DeleteButton,
   FirstPageButton,
@@ -17,6 +19,7 @@ import {
   SortAscButton,
   SortDescButton,
   SortDefaultButton,
+  BadgeListButton,
 } from "@/components/common/ActionButtons";
 import { IconButton } from "@/components/common/ActionButtons";
 
@@ -151,6 +154,68 @@ describe("ActionButtons", () => {
         render(<ImportButton onClick={handleClick} />);
         fireEvent.click(screen.getByText("Import"));
         expect(handleClick).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    describe("SelectAllButton", () => {
+      it("renders with default label", () => {
+        render(<SelectAllButton />);
+        expect(screen.getByText("Select All")).toBeInTheDocument();
+      });
+
+      it("renders with custom label", () => {
+        render(<SelectAllButton label="Select Everything" />);
+        expect(screen.getByText("Select Everything")).toBeInTheDocument();
+      });
+
+      it("calls onClick handler when clicked", () => {
+        const handleClick = vi.fn();
+        render(<SelectAllButton onClick={handleClick} />);
+        fireEvent.click(screen.getByText("Select All"));
+        expect(handleClick).toHaveBeenCalledTimes(1);
+      });
+
+      it("is disabled when disabled prop is true", () => {
+        render(<SelectAllButton disabled />);
+        const button = screen.getByText("Select All").closest("button");
+        expect(button).toBeDisabled();
+      });
+
+      it("accepts additional className", () => {
+        render(<SelectAllButton className="custom-select-all-class" />);
+        const button = screen.getByText("Select All").closest("button");
+        expect(button).toHaveClass("custom-select-all-class");
+      });
+    });
+
+    describe("ClearButton", () => {
+      it("renders with default label", () => {
+        render(<ClearButton />);
+        expect(screen.getByText("Clear")).toBeInTheDocument();
+      });
+
+      it("renders with custom label", () => {
+        render(<ClearButton label="Reset" />);
+        expect(screen.getByText("Reset")).toBeInTheDocument();
+      });
+
+      it("calls onClick handler when clicked", () => {
+        const handleClick = vi.fn();
+        render(<ClearButton onClick={handleClick} />);
+        fireEvent.click(screen.getByText("Clear"));
+        expect(handleClick).toHaveBeenCalledTimes(1);
+      });
+
+      it("is disabled when disabled prop is true", () => {
+        render(<ClearButton disabled />);
+        const button = screen.getByText("Clear").closest("button");
+        expect(button).toBeDisabled();
+      });
+
+      it("accepts additional className", () => {
+        render(<ClearButton className="custom-clear-class" />);
+        const button = screen.getByText("Clear").closest("button");
+        expect(button).toHaveClass("custom-clear-class");
       });
     });
   });
@@ -652,6 +717,203 @@ describe("ActionButtons", () => {
       const button = screen.getByRole("button");
       expect(button).toBeInTheDocument();
       expect(button.textContent).toBe("");
+    });
+  });
+
+  describe("BadgeListButton", () => {
+    describe("Rendering", () => {
+      it("renders all items when count is within maxVisible", () => {
+        render(<BadgeListButton items={["A", "B", "C"]} />);
+        expect(screen.getByText("A")).toBeInTheDocument();
+        expect(screen.getByText("B")).toBeInTheDocument();
+        expect(screen.getByText("C")).toBeInTheDocument();
+      });
+
+      it("renders only maxVisible items and shows overflow count", () => {
+        render(<BadgeListButton items={["A", "B", "C", "D", "E"]} maxVisible={3} />);
+        expect(screen.getByText("A")).toBeInTheDocument();
+        expect(screen.getByText("B")).toBeInTheDocument();
+        expect(screen.getByText("C")).toBeInTheDocument();
+        expect(screen.queryByText("D")).not.toBeInTheDocument();
+        expect(screen.queryByText("E")).not.toBeInTheDocument();
+        expect(screen.getByText("+2")).toBeInTheDocument();
+      });
+
+      it("does not show overflow badge when items equal maxVisible", () => {
+        render(<BadgeListButton items={["A", "B", "C"]} maxVisible={3} />);
+        expect(screen.queryByText(/^\+/)).not.toBeInTheDocument();
+      });
+
+      it("renders empty button with no items", () => {
+        const { container } = render(<BadgeListButton items={[]} />);
+        const button = container.querySelector("button");
+        expect(button).toBeInTheDocument();
+        expect(button?.textContent).toBe("");
+      });
+
+      it("respects custom maxVisible value", () => {
+        render(<BadgeListButton items={["A", "B", "C", "D"]} maxVisible={2} />);
+        expect(screen.getByText("A")).toBeInTheDocument();
+        expect(screen.getByText("B")).toBeInTheDocument();
+        expect(screen.queryByText("C")).not.toBeInTheDocument();
+        expect(screen.getByText("+2")).toBeInTheDocument();
+      });
+
+      it("uses default maxVisible of 3", () => {
+        render(<BadgeListButton items={["A", "B", "C", "D"]} />);
+        expect(screen.getByText("A")).toBeInTheDocument();
+        expect(screen.getByText("B")).toBeInTheDocument();
+        expect(screen.getByText("C")).toBeInTheDocument();
+        expect(screen.getByText("+1")).toBeInTheDocument();
+      });
+    });
+
+    describe("Interaction", () => {
+      it("calls onClick handler when clicked", () => {
+        const handleClick = vi.fn();
+        render(<BadgeListButton items={["A", "B"]} onClick={handleClick} />);
+        fireEvent.click(screen.getByText("A").closest("button")!);
+        expect(handleClick).toHaveBeenCalledTimes(1);
+      });
+
+      it("stops propagation on click", () => {
+        const outerClick = vi.fn();
+        const buttonClick = vi.fn();
+        render(
+          <div onClick={outerClick}>
+            <BadgeListButton items={["A"]} onClick={buttonClick} />
+          </div>
+        );
+        fireEvent.click(screen.getByText("A").closest("button")!);
+        expect(buttonClick).toHaveBeenCalledTimes(1);
+        expect(outerClick).not.toHaveBeenCalled();
+      });
+
+      it("does not call onClick when disabled", () => {
+        const handleClick = vi.fn();
+        render(<BadgeListButton items={["A"]} onClick={handleClick} disabled />);
+        const button = screen.getByText("A").closest("button")!;
+        fireEvent.click(button);
+        expect(handleClick).not.toHaveBeenCalled();
+      });
+
+      it("is disabled when disabled prop is true", () => {
+        render(<BadgeListButton items={["A"]} disabled />);
+        const button = screen.getByText("A").closest("button");
+        expect(button).toBeDisabled();
+      });
+    });
+
+    describe("Styling", () => {
+      it("applies custom className to button", () => {
+        render(<BadgeListButton items={["A"]} className="custom-btn-class" />);
+        const button = screen.getByText("A").closest("button");
+        expect(button).toHaveClass("custom-btn-class");
+      });
+
+      it("applies custom badgeClassName to badges", () => {
+        render(<BadgeListButton items={["A"]} badgeClassName="custom-badge" />);
+        const badge = screen.getByText("A");
+        expect(badge).toHaveClass("custom-badge");
+      });
+
+      it("applies custom overflowBadgeClassName to overflow badge", () => {
+        render(<BadgeListButton items={["A", "B", "C", "D"]} overflowBadgeClassName="custom-overflow" />);
+        const overflowBadge = screen.getByText("+1");
+        expect(overflowBadge).toHaveClass("custom-overflow");
+      });
+
+      it("applies disabled styling when disabled", () => {
+        render(<BadgeListButton items={["A"]} disabled />);
+        const button = screen.getByText("A").closest("button");
+        expect(button).toHaveClass("opacity-50");
+        expect(button).toHaveClass("cursor-not-allowed");
+      });
+
+      it("has default badge styling", () => {
+        render(<BadgeListButton items={["A"]} />);
+        const badge = screen.getByText("A");
+        expect(badge).toHaveClass("bg-blue-100");
+        expect(badge).toHaveClass("text-blue-800");
+        expect(badge).toHaveClass("font-mono");
+      });
+
+      it("has default overflow badge styling", () => {
+        render(<BadgeListButton items={["A", "B", "C", "D"]} />);
+        const overflowBadge = screen.getByText("+1");
+        expect(overflowBadge).toHaveClass("bg-gray-100");
+        expect(overflowBadge).toHaveClass("text-gray-600");
+      });
+    });
+
+    describe("Accessibility", () => {
+      it("renders title attribute when provided", () => {
+        render(<BadgeListButton items={["A"]} title="Click to view" />);
+        const button = screen.getByText("A").closest("button");
+        expect(button).toHaveAttribute("title", "Click to view");
+      });
+
+      it("renders aria-label when provided", () => {
+        render(<BadgeListButton items={["A"]} aria-label="View badges" />);
+        const button = screen.getByText("A").closest("button");
+        expect(button).toHaveAttribute("aria-label", "View badges");
+      });
+
+      it("is keyboard accessible", () => {
+        const handleClick = vi.fn();
+        render(<BadgeListButton items={["A"]} onClick={handleClick} />);
+        const button = screen.getByText("A").closest("button")!;
+        button.focus();
+        expect(button).toHaveFocus();
+      });
+
+      it("has type button to prevent form submission", () => {
+        render(<BadgeListButton items={["A"]} />);
+        const button = screen.getByText("A").closest("button");
+        expect(button).toHaveAttribute("type", "button");
+      });
+    });
+
+    describe("Edge Cases", () => {
+      it("handles single item", () => {
+        render(<BadgeListButton items={["Single"]} />);
+        expect(screen.getByText("Single")).toBeInTheDocument();
+        expect(screen.queryByText(/^\+/)).not.toBeInTheDocument();
+      });
+
+      it("handles items with special characters", () => {
+        render(<BadgeListButton items={["A&B", "C<D", "E>F"]} />);
+        expect(screen.getByText("A&B")).toBeInTheDocument();
+        expect(screen.getByText("C<D")).toBeInTheDocument();
+        expect(screen.getByText("E>F")).toBeInTheDocument();
+      });
+
+      it("handles very long item text", () => {
+        const longText = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        render(<BadgeListButton items={[longText]} />);
+        expect(screen.getByText(longText)).toBeInTheDocument();
+      });
+
+      it("handles large number of items", () => {
+        const items = Array.from({ length: 100 }, (_, i) => `Item${i}`);
+        render(<BadgeListButton items={items} maxVisible={2} />);
+        expect(screen.getByText("Item0")).toBeInTheDocument();
+        expect(screen.getByText("Item1")).toBeInTheDocument();
+        expect(screen.getByText("+98")).toBeInTheDocument();
+      });
+
+      it("handles maxVisible of 0", () => {
+        render(<BadgeListButton items={["A", "B"]} maxVisible={0} />);
+        expect(screen.queryByText("A")).not.toBeInTheDocument();
+        expect(screen.getByText("+2")).toBeInTheDocument();
+      });
+
+      it("handles maxVisible greater than items length", () => {
+        render(<BadgeListButton items={["A", "B"]} maxVisible={10} />);
+        expect(screen.getByText("A")).toBeInTheDocument();
+        expect(screen.getByText("B")).toBeInTheDocument();
+        expect(screen.queryByText(/^\+/)).not.toBeInTheDocument();
+      });
     });
   });
 });
