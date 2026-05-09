@@ -37,7 +37,7 @@ describe('useOldTaxationForm', () => {
     oldCarpetAreaSqFeet: 100,
     oldRV: 500,
     oldALV: 600,
-    oldGeneralTax: '100',
+    oldGeneralTax: 100,
     oldTotalTax: 1000,
     oldWardNo: 'W1',
     oldPropertyNo: 'PN1',
@@ -45,9 +45,10 @@ describe('useOldTaxationForm', () => {
     oldEgovNo: 'E1',
     oldPlotArea: 200,
     oldZoneNo: 'Z1',
-    oldConstructionYear: 2020,
+    oldCSN: null,
+    oldConstructionArea: 250,
+    oldConstructionYear: '2020',
     oldCarpetAreaSqMeter: 10,
-    oldRegistration: 'R1',
     oldConstructionTypeId: 1,
     oldTypeOfUseId: 1,
   };
@@ -64,7 +65,7 @@ describe('useOldTaxationForm', () => {
     const { result } = renderHook(() => useOldTaxationForm(mockPropertyOldDetails));
 
     expect(result.current.formData.oldPlotNo).toBe('P1');
-    expect(result.current.formData.oldRV).toBe(500);
+    expect(result.current.formData.oldRV).toBe('500');
   });
 
   it('should update form data when handleInputChange is called', () => {

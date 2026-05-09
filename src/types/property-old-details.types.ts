@@ -2,8 +2,6 @@
  * Interface representing the basic old property details returned from the API.
  */
 export interface PropertyOldDetailsApiItem {
-  /** The historical general tax amount */
-  oldGeneralTax: string | null;
   /** Unique identifier for the property */
   propertyId: number;
   /** Historical ward number */
@@ -26,14 +24,18 @@ export interface PropertyOldDetailsApiItem {
   oldTotalTax: number | null;
   /** Historical zone number or name */
   oldZoneNo: string | null;
-  /** Year of construction */
-  oldConstructionYear: number | null;
+  /** The historical general tax amount */
+  oldGeneralTax: number | null;
+  /** Historical CSN (Customer Service Number) */
+  oldCSN: string | null;
+  /** Historical construction area */
+  oldConstructionArea: number | null;
+  /** Year of construction (as string from API) */
+  oldConstructionYear: string | null;
   /** Carpet area in square feet */
   oldCarpetAreaSqFeet: number | null;
   /** Carpet area in square meters */
   oldCarpetAreaSqMeter: number | null;
-  /** Registration status or number */
-  oldRegistration: string | null;
   /** ID for construction type master */
   oldConstructionTypeId: number | null;
   /** ID for type of use master */

@@ -18,7 +18,9 @@ import { handleApiResponse } from "@/lib/utils/api";
 export async function getPropertyOldDetails(propertyId: number): Promise<PropertyOldDetailsApiItem | null> {
   const response = await apiClient.get<PropertyOldDetailsResponse>(`/Property/${propertyId}/old-details`);
   const data = handleApiResponse(response, `Fetch property old details ${propertyId} failed`);
-  return data.items || null;
+  
+  // Return the items object directly (it's a single object, not an array)
+  return data.items ?? null;
 }
 
 /**

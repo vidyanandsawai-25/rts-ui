@@ -14,12 +14,13 @@ export function useOldTaxationForm(propertyOldDetails: PropertyOldDetailsApiItem
   const locale = params.locale as string;
 
   const [formData, setFormData] = useState({
-    oldPlotNo: propertyOldDetails?.oldPlotNo || "",
-    oldCarpetAreaSqFeet: propertyOldDetails?.oldCarpetAreaSqFeet || 0,
-    oldRV: propertyOldDetails?.oldRV || 0,
-    oldALV: propertyOldDetails?.oldALV || 0,
-    oldGeneralTax: propertyOldDetails?.oldGeneralTax || "0",
-    oldTotalTax: propertyOldDetails?.oldTotalTax || 0,
+    oldPlotNo: propertyOldDetails?.oldPlotNo ?? "",
+    oldCarpetAreaSqFeet: propertyOldDetails?.oldCarpetAreaSqFeet ?? 0,
+    oldConstructionArea: propertyOldDetails?.oldConstructionArea?.toString() ?? "0",
+    oldRV: propertyOldDetails?.oldRV?.toString() ?? "0",
+    oldALV: propertyOldDetails?.oldALV?.toString() ?? "0",
+    oldGeneralTax: propertyOldDetails?.oldGeneralTax?.toString() ?? "0",
+    oldTotalTax: propertyOldDetails?.oldTotalTax ?? 0,
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -34,6 +35,10 @@ export function useOldTaxationForm(propertyOldDetails: PropertyOldDetailsApiItem
           const payload = {
             ...(propertyOldDetails ?? {}),
             ...formData,
+            oldConstructionArea: Number(formData.oldConstructionArea) || 0,
+            oldRV: Number(formData.oldRV) || 0,
+            oldALV: Number(formData.oldALV) || 0,
+            oldGeneralTax: Number(formData.oldGeneralTax) || 0,
           };
           const result = await updatePropertyOldDetailsAction(propertyId, payload, locale);
           if (result.success) {

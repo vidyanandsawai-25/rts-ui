@@ -42,10 +42,16 @@ describe('OldTaxationForm Component', () => {
     oldPlotArea: 500,
     oldPlotNo: 'Plot 1',
     oldCarpetAreaSqFeet: 1000,
+    oldCarpetAreaSqMeter: 93,
+    oldCSN: null,
+    oldConstructionArea: 1201,
+    oldConstructionYear: '2020',
     oldRV: 5000,
     oldALV: 6000,
-    oldGeneralTax: '1200',
+    oldGeneralTax: 1202,
     oldTotalTax: 1500,
+    oldConstructionTypeId: 1,
+    oldTypeOfUseId: 2,
   };
 
   beforeEach(() => {
@@ -59,7 +65,9 @@ describe('OldTaxationForm Component', () => {
     expect(screen.getByText('quickDataEntry.oldDetails.title')).toBeInTheDocument();
     expect(screen.getByDisplayValue('Zone A')).toBeInTheDocument();
     expect(screen.getByDisplayValue('P-001')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('1000')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Plot 1')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('1201')).toBeInTheDocument(); // Construction Area
+    expect(screen.getByDisplayValue('5000')).toBeInTheDocument(); // RV
   });
 
   it('handles input changes correctly', () => {

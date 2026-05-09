@@ -133,8 +133,8 @@ export default function OldTaxationForm({
               type="number"
               placeholder={t("oldDetails.constructionAreaPlaceholder")}
               className="h-11 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-gray-50/50"
-              value={formData.oldCarpetAreaSqFeet}
-              onChange={(e) => handleInputChange('oldCarpetAreaSqFeet', Number(e.target.value))}
+              value={formData.oldConstructionArea || ""}
+              onChange={(e) => handleInputChange('oldConstructionArea', e.target.value)}
             />
           </div>
 
@@ -147,8 +147,8 @@ export default function OldTaxationForm({
               type="number"
               placeholder={t("oldDetails.rvPlaceholder")}
               className="h-11 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-gray-50/50"
-              value={formData.oldRV}
-              onChange={(e) => handleInputChange('oldRV', Number(e.target.value))}
+              value={formData.oldRV || ""}
+              onChange={(e) => handleInputChange('oldRV', e.target.value)}
             />
           </div>
 
@@ -161,8 +161,8 @@ export default function OldTaxationForm({
               type="number"
               placeholder={t("oldDetails.alvPlaceholder")}
               className="h-11 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-gray-50/50"
-              value={formData.oldALV}
-              onChange={(e) => handleInputChange('oldALV', Number(e.target.value))}
+              value={formData.oldALV || ""}
+              onChange={(e) => handleInputChange('oldALV', e.target.value)}
             />
           </div>
 
