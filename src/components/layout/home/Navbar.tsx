@@ -14,9 +14,11 @@ interface NavbarProps {
     username?: string;
     ulbName?: string;
     userProfile?: UserProfileDisplayValues | null;
+    profileError?: string;
+    sessionId?: string;
 }
 
-export const Navbar = ({ username, ulbName, userProfile }: NavbarProps) => {
+export const Navbar = ({ username, ulbName, userProfile, profileError, sessionId }: NavbarProps) => {
     const t = useTranslations('common');
     const displayUlbName = ulbName || t('app.defaultUlbName');
     const locale = useLocale();
@@ -61,6 +63,8 @@ export const Navbar = ({ username, ulbName, userProfile }: NavbarProps) => {
                             username={username}
                             ulbName={ulbName}
                             userProfile={userProfile}
+                            profileError={profileError}
+                            sessionId={sessionId}
                         />
                     </div>
 

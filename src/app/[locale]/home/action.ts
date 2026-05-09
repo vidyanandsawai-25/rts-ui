@@ -176,19 +176,25 @@ export async function getUserProfileDisplayAction(): Promise<{
  * Reads userId from cookies and fetches profile data
  * Called from page.tsx server component
  */
-export async function getUserProfileSSR(): Promise<UserProfileDisplayValues | null> {
+export async function getUserProfileSSR(): Promise<{ 
+    data: UserProfileDisplayValues | null; 
+    error?: string;
+}> {
     try {
         const cookieStore = await cookies();
         const userId = getUserIdFromCookies(cookieStore);
         
         if (!userId) {
-            return null;
+            return { data: null, error: "User not authenticated" };
         }
         
         const response = await getUserProfileCached(userId);
         
         if (!response.success || !response.data) {
-            return null;
+            return { 
+                data: null, 
+                error: response.error || "Failed to fetch user profile" 
+            };
         }
 
         const profile = response.data;
@@ -215,7 +221,7 @@ export async function getUserProfileSSR(): Promise<UserProfileDisplayValues | nu
                 .map(m => m.moduleName)
         )];
 
-        return {
+        const data: UserProfileDisplayValues = {
             fullName,
             email: profile.email,
             roles,
@@ -229,7 +235,12 @@ export async function getUserProfileSSR(): Promise<UserProfileDisplayValues | nu
             primaryRole: roles[0] || 'User',
             primaryDepartment: departments[0] || '',
         };
-    } catch {
-        return null;
+
+        return { data };
+    } catch (error) {
+        return { 
+            data: null, 
+            error: error instanceof Error ? error.message : "Failed to synchronize profile details" 
+        };
     }
 }

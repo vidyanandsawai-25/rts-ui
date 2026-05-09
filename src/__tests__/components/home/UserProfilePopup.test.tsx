@@ -138,6 +138,12 @@ describe('UserProfilePopup Component', () => {
     render(<UserProfilePopup {...defaultProps} />);
     expect(screen.getByText('Login Time')).toBeInTheDocument();
   });
+  
+  it('displays error message when profileError is provided', () => {
+    const errorMsg = 'Failed to synchronize profile details';
+    render(<UserProfilePopup {...defaultProps} profileError={errorMsg} />);
+    expect(screen.getByText(errorMsg)).toBeInTheDocument();
+  });
 
   it('displays security message in footer', () => {
     render(<UserProfilePopup {...defaultProps} />);
@@ -157,24 +163,22 @@ describe('UserProfilePopup Component', () => {
     expect(defaultProps.onClose).toHaveBeenCalledTimes(1);
   });
 
-  it('displays user profile data from props and session data from localStorage', () => {
-    localStorageMock.setItem('ntis_session_id', 'session-12345678-abcd');
+  it('displays user profile data from props and session data from props', () => {
     localStorageMock.setItem('ntis_user_ip', '192.168.1.1');
 
-    render(<UserProfilePopup {...defaultProps} />);
+    render(<UserProfilePopup {...defaultProps} sessionId="session-12345678-abcd" />);
 
     // User profile data from props
     expect(screen.getByText(/USR-2025-1047/)).toBeInTheDocument();
     expect(screen.getByText('test@example.com')).toBeInTheDocument();
     expect(screen.getByText('Admin')).toBeInTheDocument();
     
-    // Session data from localStorage
+    // Session data from props
     expect(screen.getByText('192.168.1.1')).toBeInTheDocument();
   });
 
   it('truncates long session IDs', () => {
-    localStorageMock.setItem('ntis_session_id', 'very-long-session-id-that-should-be-truncated');
-    render(<UserProfilePopup {...defaultProps} />);
+    render(<UserProfilePopup {...defaultProps} sessionId="very-long-session-id-that-should-be-truncated" />);
     expect(screen.getByText('very-lon...')).toBeInTheDocument();
   });
 });

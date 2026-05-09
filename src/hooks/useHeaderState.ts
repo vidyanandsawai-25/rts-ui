@@ -8,7 +8,7 @@ import { logoutAction } from '@/app/[locale]/login/actions';
 
 export type LanguageType = 'English' | 'हिन्दी (Hindi)' | 'मराठी (Marathi)';
 
-export function useHeaderState(initialIp = '192.168.1.100') {
+export function useHeaderState(initialIp = '') {
     const [language, setLanguage] = useState<LanguageType>('English');
     const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
     const [showSessionInfo, setShowSessionInfo] = useState(false);

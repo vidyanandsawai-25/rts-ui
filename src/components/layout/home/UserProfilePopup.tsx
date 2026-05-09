@@ -13,7 +13,6 @@ import type { UserProfileDisplayValues } from '@/types/home/user-profile.types';
  * (Session-specific data like IP, session ID, login time from localStorage)
  */
 interface SessionData {
-    sessionId: string | null;
     loginTime: string | null;
     ipAddress: string | null;
 }
@@ -25,14 +24,12 @@ interface SessionData {
 function getSessionData(): SessionData {
     if (typeof window === 'undefined') {
         return {
-            sessionId: null,
             loginTime: null,
             ipAddress: null,
         };
     }
 
     return {
-        sessionId: localStorage.getItem('ntis_session_id'),
         loginTime: localStorage.getItem('ntis_session_start'),
         ipAddress: localStorage.getItem('ntis_user_ip'),
     };
@@ -61,6 +58,8 @@ interface UserProfilePopupProps {
     username?: string;
     ulbName?: string;
     userProfile?: UserProfileDisplayValues | null;
+    profileError?: string;
+    sessionId?: string;
 }
 
 export const UserProfilePopup: React.FC<UserProfilePopupProps> = ({ 
@@ -68,7 +67,9 @@ export const UserProfilePopup: React.FC<UserProfilePopupProps> = ({
     onClose, 
     username, 
     ulbName,
-    userProfile 
+    userProfile,
+    profileError,
+    sessionId
 }) => {
     const t = useTranslations('common');
     const locale = useLocale();
@@ -91,13 +92,13 @@ export const UserProfilePopup: React.FC<UserProfilePopupProps> = ({
         modules: userProfile?.modules || [],
         primaryDepartment: userProfile?.primaryDepartment || ulbName || t('userMenu.notAvailable', { default: 'N/A' }),
         
-        // Session data from localStorage
-        sessionId: sessionData.sessionId 
-            ? `${sessionData.sessionId.slice(0, 8)}...` 
+        // Session data
+        sessionId: sessionId 
+            ? `${sessionId.slice(0, 8)}...` 
             : t('userMenu.notAvailable', { default: 'N/A' }),
         loginTime: formatLoginTime(sessionData.loginTime, locale),
         ipAddress: sessionData.ipAddress || t('userMenu.notAvailable', { default: 'N/A' }),
-    }), [userProfile, username, sessionData, locale, t, ulbName]);
+    }), [userProfile, username, sessionData, locale, t, ulbName, sessionId]);
 
     useEffect(() => {
         const handleEscape = (e: KeyboardEvent) => {
@@ -139,6 +140,13 @@ export const UserProfilePopup: React.FC<UserProfilePopupProps> = ({
 
             {/* Body */}
             <div className="p-4 space-y-3 max-h-96 overflow-y-auto">
+                {/* Profile Error Warning */}
+                {profileError && (
+                    <div className="mb-4 p-2 bg-amber-50 border border-amber-200 rounded text-[11px] text-amber-800 flex gap-2 items-start">
+                        <Shield className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                        <p>{profileError}</p>
+                    </div>
+                )}
                 {/* User ID & Code */}
                 <div className="flex items-start gap-3">
                     <Hash className="w-4 h-4 text-gray-400 mt-0.5" />
