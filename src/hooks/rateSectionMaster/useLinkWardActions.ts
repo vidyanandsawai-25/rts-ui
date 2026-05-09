@@ -119,6 +119,11 @@ export function useLinkWardActions({
         toast.success(t("wards.saveSuccess"));
       }
 
+      // Optimistically update selectedWards immediately for instant UI feedback
+      const newSelectedWards = [...new Set([...selectedWards, ...validWards])];
+      setSelectedWards(newSelectedWards);
+      setSelectedWardsTotalCount(newSelectedWards.length);
+
       // Manually update ward assignments for immediate UI feedback
       setWardAssignments(prev => {
         const next = { ...prev };
@@ -174,6 +179,11 @@ export function useLinkWardActions({
 
       toast.success(t("wards.deleteSuccess", { count: result.deletedCount }));
 
+      // Optimistically remove from selectedWards immediately for instant UI feedback
+      const newSelectedWards = selectedWards.filter((w: string) => !toMove.includes(w));
+      setSelectedWards(newSelectedWards);
+      setSelectedWardsTotalCount(newSelectedWards.length);
+
       // Manually remove from ward assignments for immediate UI feedback
       setWardAssignments(prev => {
         const next = { ...prev };
@@ -198,7 +208,7 @@ export function useLinkWardActions({
 
     setLoading(false);
   }, [
-    checkedSelected, rates, selectedZoneNo, setLoading, setSelectedWards,
+    checkedSelected, rates, selectedZoneNo, setLoading, setSelectedWards, selectedWards,
     setSelectedWardsTotalCount, setCheckedSelected, setWardAssignments, router, t
   ]);
 

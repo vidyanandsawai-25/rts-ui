@@ -60,6 +60,11 @@ export default function ViewWards({
 
               <span className="text-sm font-medium text-gray-700 group-hover:text-blue-700 transition-colors flex items-center gap-2">
                 {w.wardNo}
+                {isAlreadyInSelected && (
+                  <Badge size="sm" variant="default">
+                    {t("wards.selected")}
+                  </Badge>
+                )}
                 {assignment && !isAlreadyInSelected && (
                   <Badge size="sm" variant="success">
                     {assignment.description

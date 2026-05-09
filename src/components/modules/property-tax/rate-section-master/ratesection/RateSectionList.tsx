@@ -9,7 +9,7 @@ import { CardList } from "@/components/common/CardList";
 import RateSectionCard from "./RateSectionCard";
 import RateSectionListHeader from "./RateSectionListHeader";
 import { handleRateSectionDelete } from "./rateSectionHandlers";
-import { useRateSectionList } from "@/hooks/useRateSectionList";
+import { useRateSectionList } from "@/hooks/rateSectionMaster/useRateSectionList";
 
 export default function RateSectionList({
   rates = [],

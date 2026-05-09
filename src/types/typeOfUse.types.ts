@@ -1,5 +1,5 @@
 export type UseStatus = "Active" | "Inactive";
-
+ 
 export type UseGroupIconKey =
   | "home"
   | "building"
@@ -7,10 +7,10 @@ export type UseGroupIconKey =
   | "school"
   | "leaf"
   | "map";
-
+ 
 // Translation function type for next-intl
 export type TranslatorFunction = (key: string, values?: Record<string, string | number>) => string;
-
+ 
 // ✅ Matches API response exactly: /TypeOfUseGroup
 export interface UseGroup {
   typeOfUseGroupId: number;
@@ -23,7 +23,7 @@ export interface UseGroup {
   // UI-only computed field
   status?: UseStatus;
 }
-
+ 
 // ✅ Matches API response exactly: /TypeOfUse  
 export interface UseType {
   typeOfUseId: number;
@@ -39,7 +39,7 @@ export interface UseType {
   status?: UseStatus;
   [key: string]: unknown; // Index signature for MasterTable compatibility
 }
-
+ 
 // ✅ Matches API response exactly: /SubTypeOfUse
 export interface UseSubType {
   subTypeOfUseId: number;
@@ -53,33 +53,39 @@ export interface UseSubType {
   status?: UseStatus;
 }
 
+// UI-only type for Type of Use modal display items
+export interface TypeOfUseItem {
+  id: string;
+  description: string;
+}
+ 
 export interface TypeOfUseMasterData {
   groups: UseGroup[];
   types: UseType[];
   subTypes: UseSubType[];
 }
-
+ 
 // Form component props interfaces
 export interface UseGroupFormProps {
   id: string | null;
   initialData?: UseGroup | null;
   allGroups?: UseGroup[];
 }
-
+ 
 export interface UseTypeFormProps {
   id: string | null;
   initialData?: UseType | null;
   allGroups?: UseGroup[];
   allTypes?: UseType[];
 }
-
+ 
 export interface UseSubTypeFormProps {
   id: string | null;
   initialData?: UseSubType | null;
   typeInfo?: UseType | null;
   allSubTypes?: UseSubType[];
 }
-
+ 
 // TypeOfUseMaster page component props with grouped structure
 export interface TypesPaginationProps {
   paginatedTypes: UseType[];
@@ -89,7 +95,7 @@ export interface TypesPaginationProps {
   pageSize: number;
   searchFromServer?: string;
 }
-
+ 
 export interface SubTypesPaginationProps {
   subTypes: UseSubType[];
   totalCount: number;
@@ -97,12 +103,14 @@ export interface SubTypesPaginationProps {
   pageNumber: number;
   pageSize: number;
 }
-
+ 
 export interface TypeOfUseMasterPageProps {
   initialData: TypeOfUseMasterData;
   typesPagination: TypesPaginationProps;
   subTypesPagination: SubTypesPaginationProps;
   selectedTypeId: string;
 }
-
-
+ 
+ 
+ 
+ 

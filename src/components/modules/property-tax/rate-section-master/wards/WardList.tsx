@@ -9,8 +9,8 @@ import { TEXT_SANITIZE } from "@/lib/utils/validation";
 import WardTable from "./WardTable";
 import WardListHeader from "./WardListHeader";
 import { handleWardDelete, handleWardEdit } from "./wardHandlers";
-import { useWardData } from "@/hooks/useWardData";
-import { useWardRateSectionLabel } from "@/hooks/useWardRateSectionLabel";
+import { useWardData } from "@/hooks/rateSectionMaster/useWardData";
+import { useWardRateSectionLabel } from "@/hooks/rateSectionMaster/useWardRateSectionLabel";
 
 const sanitizeSearch = (value: string) => value.replace(TEXT_SANITIZE, '');
 

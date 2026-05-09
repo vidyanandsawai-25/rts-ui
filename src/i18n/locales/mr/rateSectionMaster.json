@@ -82,7 +82,8 @@
     "wardId": "प्रभाग आयडी",
     "isActive": "सक्रिय",
     "linkTitle": "दर विभागात प्रभाग लिंक करा",
-    "alreadyAdded": "{rateSectionNo} मध्ये जोडले"
+    "alreadyAdded": "{rateSectionNo} मध्ये जोडले",
+    "selected": "निवडले"
   },
   "form": {
     "rateSectionNo": "दर विभाग क्र.",

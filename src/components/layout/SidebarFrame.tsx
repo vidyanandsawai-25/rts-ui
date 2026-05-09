@@ -52,7 +52,7 @@ export function SidebarFrame({ closeMenuLabel, openMenuLabel = 'Open menu', chil
         aria-label={open ? closeMenuLabel : openMenuLabel}
         aria-expanded={open}
         aria-controls="mobile-sidebar"
-        className="sidebar-mobile-toggle lg:hidden fixed top-4 left-4 z-[9999] bg-[#4b70a6] hover:bg-[#3d5a8a] backdrop-blur-xl p-3 rounded-xl border border-white/30 shadow-lg"
+        className="sidebar-mobile-toggle lg:hidden fixed top-4 left-4 z-[60] bg-[#4b70a6] hover:bg-[#3d5a8a] backdrop-blur-xl p-3 rounded-xl border border-white/30 shadow-lg"
       >
         {open ? <X className="h-7 w-7 text-white" /> : <Menu className="h-7 w-7 text-white" />}
       </Button>

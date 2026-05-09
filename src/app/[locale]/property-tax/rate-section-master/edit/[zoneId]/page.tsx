@@ -92,7 +92,6 @@ export default async function EditRateSectionPage({ params, searchParams }: Page
     if (typeof error === "object" && error && "statusCode" in error && (error as { statusCode: number }).statusCode === 404) {
       notFound();
     }
-    console.error("Failed to fetch rate section:", error);
     // Rethrow — Next.js will catch this and render the nearest error.tsx
     throw error;
   }

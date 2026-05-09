@@ -6,7 +6,10 @@ import {
   CreateWardPayload, 
   UpdateWardPayload,
   BatchWardCreatePayload,
-  BatchWardCreateResponse
+  BatchRangeWardCreatePayload,
+  BatchWardCreateResponse,
+  BulkWardUpdateItem,
+  BulkWardUpdateResponse
 } from "@/types/wardMaster.types";
 
 /**
@@ -82,10 +85,12 @@ export async function updateWard(id: number | string, data: UpdateWardPayload): 
 
 /**
  * Deletes a ward by its ID.
+ * Uses /purge endpoint for permanent deletion as per API specification.
  * @param id - The numeric ward ID
  */
 export async function deleteWard(id: number | string): Promise<WardMutationResponse<null>> {
-  const response = await apiClient.delete<WardMutationResponse<null>>(`/Ward/${id}`);
+  // Use /purge endpoint for permanent deletion as per API specification
+  const response = await apiClient.delete<WardMutationResponse<null>>(`/Ward/${id}/purge`);
   
   // DELETE can return 204 No Content with empty body - only check success flag
   if (!response.success) {
@@ -106,6 +111,33 @@ export async function createWardBatch(payload: BatchWardCreatePayload): Promise<
   
   if (!response.success || !response.data) {
     return { success: false, message: response.error || "Failed to create wards in batch", items: null, errors: null };
+  }
+  
+  return response.data;
+}
+/**
+ * Creates multiple wards in batch using a range (e.g., prefix "wkd", range 40 to 44).
+ * Uses the /Ward/Range endpoint.
+ */
+export async function createWardRange(payload: BatchRangeWardCreatePayload): Promise<BatchWardCreateResponse> {
+  const response = await apiClient.post<BatchWardCreateResponse>(`/Ward/Range`, payload);
+  
+  if (!response.success || !response.data) {
+    return { success: false, message: response.error || "Failed to create wards in range", items: null, errors: null };
+  }
+  
+  return response.data;
+}
+
+/**
+ * Bulk update multiple wards at once.
+ * PUT /api/Ward/Bulk
+ */
+export async function bulkUpdateWards(payload: BulkWardUpdateItem[]): Promise<BulkWardUpdateResponse> {
+  const response = await apiClient.put<BulkWardUpdateResponse>(`/Ward/Bulk`, payload);
+  
+  if (!response.success || !response.data) {
+    return { success: false, message: response.error || "Failed to bulk update wards", items: null, errors: null };
   }
   
   return response.data;
