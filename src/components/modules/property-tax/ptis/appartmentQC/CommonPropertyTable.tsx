@@ -4,7 +4,7 @@ import { useMemo, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { MasterTable, Column } from "@/components/common/MasterTable";
 import { Button, SearchInput } from "@/components/common";
-import { ArrowUpDown, Eye, EyeOff, ExternalLink } from "lucide-react";
+import { ArrowUpDown, Eye, EyeOff } from "lucide-react";
 import { useTableAutoScroll } from "@/hooks/apartmentQc/useTableAutoScroll";
 
 type CommonPropertyTableProps<T extends Record<string, unknown>> = {
@@ -14,7 +14,6 @@ type CommonPropertyTableProps<T extends Record<string, unknown>> = {
   activeTab: string;
   searchQuery: string;
   onSearchChange: (query: string) => void;
-  onRowClick: (row: T) => void;
   loading?: boolean;
   isAutoScrolling: boolean;
   onToggleAutoScroll: () => void;
@@ -28,7 +27,7 @@ type CommonPropertyTableProps<T extends Record<string, unknown>> = {
 };
 
 function CommonPropertyTable<T extends Record<string, unknown>>({
-  columns, data, title, activeTab, searchQuery, onSearchChange, onRowClick,
+  columns, data, title, activeTab, searchQuery, onSearchChange,
   loading = false, isAutoScrolling, onToggleAutoScroll, pageNumber = 1, pageSize = 10,
   totalCount, totalPages, onPageChange, onPageSizeChange, applyTypeColors = false,
 }: CommonPropertyTableProps<T>) {
@@ -59,13 +58,12 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
         const displayValue = value === null || value === undefined || value === "" ? "-" : String(value);
         const colorClass = getCellColorClass(String(row.type || ''));
         return (
-          <div className={`group relative ${colorClass} rounded border px-1 py-0.5 text-xs text-center transition cursor-pointer`} onClick={() => onRowClick(row)}>
-            <span className="group-hover:underline">{displayValue}</span>
-            <ExternalLink className="inline-block w-3 h-3 ml-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+          <div className={`group relative ${colorClass} rounded border px-1 py-0.5 text-xs text-center transition`}>
+            <span>{displayValue}</span>
           </div>
         );
       },
-    })), [columns, onRowClick, getCellColorClass]);
+    })), [columns, getCellColorClass]);
 
   const filteredData = useMemo(() => {
     if (!searchQuery.trim()) return data;

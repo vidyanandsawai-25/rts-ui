@@ -59,7 +59,6 @@ const Amenities = ({
       <CommonPropertyTable
         columns={columns} data={transformedData as Record<string, unknown>[]} title={tAqc("apartmentTabs.amenitiesTitle")} activeTab={activeTab}
         searchQuery={searchQuery} onSearchChange={(q) => { setSearchQuery(q); updateQueryParams({ searchTerm: q, pageNumber: 1 }); }}
-        onRowClick={(row: Record<string, unknown>) => router.push(`/property-tax/appartmentQC/amenities/edit/${row.id}`)}
         loading={isPending} isAutoScrolling={isAutoScrolling} onToggleAutoScroll={() => setIsAutoScrolling(!isAutoScrolling)}
         pageNumber={initialPageNumber} pageSize={initialPageSize} totalCount={initialTotalCount} totalPages={initialTotalPages}
         onPageChange={(p) => updateQueryParams({ pageNumber: p })} onPageSizeChange={(s) => updateQueryParams({ pageSize: s, pageNumber: 1 })}

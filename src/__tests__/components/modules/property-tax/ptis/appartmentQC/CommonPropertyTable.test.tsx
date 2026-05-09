@@ -22,7 +22,6 @@ describe('CommonPropertyTable', () => {
     activeTab: 'residential',
     searchQuery: '',
     onSearchChange: vi.fn(),
-    onRowClick: vi.fn(),
     isAutoScrolling: false,
     onToggleAutoScroll: vi.fn(),
   };
@@ -45,12 +44,5 @@ describe('CommonPropertyTable', () => {
     const searchInput = screen.getByPlaceholderText('Search properties...');
     fireEvent.change(searchInput, { target: { value: 'test' } });
     expect(mockProps.onSearchChange).toHaveBeenCalledWith('test');
-  });
-
-  it('calls onRowClick when a row is clicked', () => {
-    render(<CommonPropertyTable {...mockProps} />);
-    const rowCell = screen.getByText('Prop 1');
-    fireEvent.click(rowCell);
-    expect(mockProps.onRowClick).toHaveBeenCalledWith(mockProps.data[0]);
   });
 });

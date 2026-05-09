@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState, useCallback, useTransition, useMemo } from "react";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useSearchParams, usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import CommonPropertyTable from "./CommonPropertyTable";
 import { toast } from "sonner";
 import { ApartmentQCDetail } from "@/types/apartmentQC.types";
 import { getApartmentQCColumns } from "./apartmentQC.columns";
 import { transformApartmentData } from "./apartmentQC.utils";
+import { useRouter } from "next/navigation";
 
 interface CommercialProps {
   initialData: ApartmentQCDetail[];
@@ -59,7 +60,6 @@ const Commercial = ({
       <CommonPropertyTable
         columns={columns} data={transformedData} title={tAqc("apartmentTabs.commercialTitle")} activeTab={activeTab}
         searchQuery={searchQuery} onSearchChange={(q) => { setSearchQuery(q); updateQueryParams({ searchTerm: q, pageNumber: 1 }); }}
-        onRowClick={(row) => router.push(`/property-tax/appartmentQC/commercial/edit/${row.id}`)}
         loading={isPending} isAutoScrolling={isAutoScrolling} onToggleAutoScroll={() => setIsAutoScrolling(!isAutoScrolling)}
         pageNumber={initialPageNumber} pageSize={initialPageSize} totalCount={initialTotalCount} totalPages={initialTotalPages}
         onPageChange={(p) => updateQueryParams({ pageNumber: p })} onPageSizeChange={(s) => updateQueryParams({ pageSize: s, pageNumber: 1 })}
