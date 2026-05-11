@@ -9,12 +9,7 @@ import { useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { Globe } from 'lucide-react';
 import type { Locale } from '@/i18n/config';
-import {
-  locales,
-  localeNames,
-  switchLocale,
-  getLocaleFromPathname,
-} from '@/i18n/config';
+import { locales, localeNames, switchLocale, getLocaleFromPathname } from '@/i18n/config';
 
 export function LanguageSelector() {
   const pathname = usePathname();
