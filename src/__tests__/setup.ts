@@ -41,8 +41,10 @@ vi.mock('next/navigation', () => ({
 }));
 
 // Mock lucide-react with all icons used in the project
-vi.mock('lucide-react', async () => {
+// Using importOriginal for better stability in CI
+vi.mock('lucide-react', async (importOriginal) => {
   const React = await import('react');
+  const original = await importOriginal<typeof import('lucide-react')>();
   
   // Create a mock icon component factory  
   const createIcon = (name: string) => {
@@ -63,7 +65,9 @@ vi.mock('lucide-react', async () => {
     return IconComponent;
   };
 
+  // Spread original module to get any exports we didn't explicitly mock
   return {
+    ...original,
     // Common icons
     Layers: createIcon('Layers'),
     Layers3: createIcon('Layers3'),
