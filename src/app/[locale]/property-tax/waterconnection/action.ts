@@ -38,9 +38,9 @@ export async function getWaterConnectionPageData(
 ): Promise<WaterConnectionPageData> {
   const [connectionsResponse, typeOptions, sizeOptions, statusOptions] = await Promise.all([
     getWaterConnectionsPaged(propertyId),
-    getWaterConnectionTypes(),
-    getWaterConnectionSizes(),
-    getWaterConnectionStatuses(),
+    getWaterConnectionTypes().catch(() => [] as Awaited<ReturnType<typeof getWaterConnectionTypes>>),
+    getWaterConnectionSizes().catch(() => [] as Awaited<ReturnType<typeof getWaterConnectionSizes>>),
+    getWaterConnectionStatuses().catch(() => [] as Awaited<ReturnType<typeof getWaterConnectionStatuses>>),
   ]);
 
   return {

@@ -76,6 +76,10 @@
           "25Inch": "25 Inch",
           "32Inch": "32 Inch"
         },
+        "status": {
+          "label": "Connection Status",
+          "placeholder": "Select status"
+        },
         "applicableRate": {
           "label": "Applicable Rate (₹)",
           "autoCalculated": "Auto-calculated based on Tap Size"
@@ -118,7 +122,8 @@
       "title": "Water Connection Error",
       "description": "An error occurred while loading the water connection page. Please try again.",
       "goHome": "Go Home",
-      "tryAgain": "Try Again"
+      "tryAgain": "Try Again",
+      "errorId": "Error ID: {id}"
     }
   }
 }
