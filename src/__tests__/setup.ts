@@ -202,6 +202,10 @@ vi.mock('lucide-react', async () => {
     Edit2: createIcon('Edit2'),
     Layout: createIcon('Layout'),
     LucideIcon: createIcon('LucideIcon'),
+    CalendarDays: createIcon('CalendarDays'),
+    TrendingUp: createIcon('TrendingUp'),
+    Grid2X2: createIcon('Grid2X2'),
+    ClipboardCopy: createIcon('ClipboardCopy'),
   };
 });
 
