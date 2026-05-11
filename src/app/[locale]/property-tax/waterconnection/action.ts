@@ -1,13 +1,27 @@
 "use server";
 
-import type { WaterConnectionPageData } from "@/types/waterconnection.types";
+import type {
+  WaterConnectionFormModel,
+  WaterConnectionPageData,
+  PropertyInfo,
+} from "@/types/waterconnection.types";
+import {
+  getWaterConnectionsPaged,
+  getWaterConnectionTypes,
+  getWaterConnectionSizes,
+  createWaterConnection,
+  updateWaterConnection,
+  deleteWaterConnection,
+  ApiError,
+} from "@/lib/api/waterconnection.services";
 
-const MOCK_DATA: WaterConnectionPageData = {
-  property: {
-    id: 1,
+// Placeholder property — replace with real property API call when endpoint is available
+function getMockProperty(propertyId: number): PropertyInfo {
+  return {
+    id: propertyId,
     propertyNo: "FR09-2024-001",
     ownerName: "Rajesh Kumar",
-    customerId: "CID-12454",
+    customerId: `CID-${propertyId}`,
     customerType: "Individual",
     contact: "+91 90743 42210",
     email: "rajesh.kumar@email.com",
@@ -15,53 +29,54 @@ const MOCK_DATA: WaterConnectionPageData = {
     zone: "Zone-3",
     ward: "Ward-21",
     buildingType: "Residential",
-  },
-  connections: [
-    {
-      id: 1,
-      connectionNo: "WC-2024-001",
-      meterNo: "MN-001",
-      type: "Domestic",
-      tapSize: "15 Inch",
-      applicableRate: 150,
-      category: "Yearly",
-      applicableCharges: 1800,
-      installDate: "2022-03-15",
-      activatedDate: "15/03/2022",
-      isActive: true,
-      status: true,
-    },
-    {
-      id: 2,
-      connectionNo: "WC-2024-002",
-      meterNo: "MN-002",
-      type: "Commercial",
-      tapSize: "20 Inch",
-      applicableRate: 200,
-      category: "Yearly",
-      applicableCharges: 2400,
-      installDate: "2023-06-20",
-      activatedDate: "20/06/2023",
-      isActive: true,
-      status: true,
-    },
-    {
-      id: 3,
-      connectionNo: "WC-2024-003",
-      meterNo: "MN-003",
-      type: "Domestic",
-      tapSize: "15 Inch",
-      applicableRate: 150,
-      category: "Yearly",
-      applicableCharges: 0,
-      installDate: "2024-10-01",
-      stoppedDate: "01/10/2024",
-      isActive: false,
-      status: false,
-    },
-  ],
-};
+  };
+}
 
-export async function getWaterConnectionPageData(): Promise<WaterConnectionPageData> {
-  return MOCK_DATA;
+export async function getWaterConnectionPageData(
+  propertyId: number
+): Promise<WaterConnectionPageData> {
+  const [connectionsResponse, typeOptions, sizeOptions] = await Promise.all([
+    getWaterConnectionsPaged(propertyId),
+    getWaterConnectionTypes(),
+    getWaterConnectionSizes(),
+  ]);
+
+  return {
+    property: getMockProperty(propertyId),
+    connections: connectionsResponse.data ?? [],
+    typeOptions,
+    sizeOptions,
+  };
+}
+
+export async function saveWaterConnectionAction(
+  data: WaterConnectionFormModel
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    if (data.id != null) {
+      await updateWaterConnection(data.id, data);
+    } else {
+      await createWaterConnection(data);
+    }
+    return { ok: true };
+  } catch (e) {
+    return {
+      ok: false,
+      error: e instanceof ApiError ? e.message : "Save failed",
+    };
+  }
+}
+
+export async function deleteWaterConnectionAction(
+  id: number
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    await deleteWaterConnection(id);
+    return { ok: true };
+  } catch (e) {
+    return {
+      ok: false,
+      error: e instanceof ApiError ? e.message : "Delete failed",
+    };
+  }
 }

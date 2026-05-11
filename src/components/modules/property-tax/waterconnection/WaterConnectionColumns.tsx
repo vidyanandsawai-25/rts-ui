@@ -1,4 +1,3 @@
-import React from "react";
 import type { Column } from "@/components/common/MasterTable";
 import type { WaterConnection } from "@/types/waterconnection.types";
 import { cn } from "@/lib/utils/cn";
@@ -56,7 +55,7 @@ export function getWaterConnectionColumns(
       width: "12%",
       render: (value) => (
         <div>
-          <span className="text-blue-600 font-semibold">₹{Number(value)}</span>
+          <span className="text-blue-600 font-semibold">₹{value != null ? Number(value) : 0}</span>
           <div className="text-xs text-gray-400">{t("list.table.perMonth")}</div>
         </div>
       ),
@@ -103,7 +102,7 @@ export function getWaterConnectionColumns(
             />
             {value ? t("list.status.active") : t("list.status.stopped")}
           </span>
-          {value && row.activatedDate && (
+          {Boolean(value) && row.activatedDate && (
             <span className="text-xs text-orange-500">
               {t("list.status.activated")}: {String(row.activatedDate)}
             </span>

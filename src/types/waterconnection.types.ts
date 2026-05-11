@@ -1,21 +1,23 @@
-export type ConnectionType = 'Domestic' | 'Commercial';
-export type TapSizeValue = '15 Inch' | '20 Inch' | '25 Inch' | '32 Inch';
-export type BillingCategory = 'Yearly' | 'Monthly';
-
 export interface WaterConnection extends Record<string, unknown> {
   id: number;
+  propertyId: number;
   connectionNo: string;
-  meterNo: string;
-  type: ConnectionType;
-  tapSize: TapSizeValue;
-  applicableRate: number;
-  category: BillingCategory;
-  applicableCharges: number;
-  installDate: string;
-  activatedDate?: string;
-  stoppedDate?: string;
+  meterNo: string | null;
+  waterConnectionTypeId: number;
+  type: string;
+  waterConnectionSizeId: number;
+  tapSize: string;
+  waterConnectionStatusId: number | null;
+  statusName: string | null;
+  connectionStartDate: string;
+  connectionStopDate: string | null;
+  installDate: string | null;
+  activatedDate: string | null;
+  stoppedDate: string | null;
+  applicableRate: number | null;
+  applicableCharges: number | null;
+  category: string;
   isActive: boolean;
-  status?: boolean;
 }
 
 export interface PropertyInfo {
@@ -34,23 +36,40 @@ export interface PropertyInfo {
 
 export interface WaterConnectionFormModel {
   id?: number;
+  propertyId: number;
   connectionNo: string;
   meterNo: string;
-  type: ConnectionType;
-  tapSize: TapSizeValue;
-  applicableRate: number;
+  waterConnectionTypeId: number | '';
+  waterConnectionSizeId: number | '';
+  waterConnectionStatusId?: number | null;
   installDate: string;
   isActive: boolean;
+}
+
+export interface WaterConnectionTypeLookup {
+  id: number;
+  connectionTypeCode: string;
+  connectionTypeName: string;
+}
+
+export interface WaterConnectionSizeLookup {
+  id: number;
+  connectionSize: number;
+  connectionSizeUnit: string;
+  displayLabel: string;
 }
 
 export interface WaterConnectionPageData {
   property: PropertyInfo;
   connections: WaterConnection[];
+  typeOptions: WaterConnectionTypeLookup[];
+  sizeOptions: WaterConnectionSizeLookup[];
 }
 
-export const TAP_SIZE_RATES: Record<TapSizeValue, number> = {
-  '15 Inch': 150,
-  '20 Inch': 200,
-  '25 Inch': 250,
-  '32 Inch': 320,
-};
+export interface PagedResponse<T> {
+  data: T[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+}

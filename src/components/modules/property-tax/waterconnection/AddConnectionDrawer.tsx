@@ -9,76 +9,84 @@ import { useTranslations } from "next-intl";
 import type {
   WaterConnection,
   WaterConnectionFormModel,
-  TapSizeValue,
-  ConnectionType,
+  WaterConnectionTypeLookup,
+  WaterConnectionSizeLookup,
 } from "@/types/waterconnection.types";
-import { TAP_SIZE_RATES } from "@/types/waterconnection.types";
+import { saveWaterConnectionAction } from "@/app/[locale]/property-tax/waterconnection/action";
 import { StatusToggleCard } from "../taxzonemaster/StatusToggleCard";
 import { MandatoryFieldsNotice } from "../taxzonemaster/MandatoryFieldsNotice";
 import { ConnectionFormFields } from "./ConnectionFormFields";
 
-const EMPTY_FORM: WaterConnectionFormModel = {
-  connectionNo: "",
-  meterNo: "",
-  type: "Domestic",
-  tapSize: "15 Inch",
-  applicableRate: TAP_SIZE_RATES["15 Inch"],
-  installDate: new Date().toISOString().slice(0, 10),
-  isActive: true,
-};
+function makeEmptyForm(propertyId: number): WaterConnectionFormModel {
+  return {
+    propertyId,
+    connectionNo: "",
+    meterNo: "",
+    waterConnectionTypeId: "",
+    waterConnectionSizeId: "",
+    installDate: new Date().toISOString().slice(0, 10),
+    isActive: true,
+  };
+}
 
 interface AddConnectionDrawerProps {
   open: boolean;
+  propertyId: number;
   editingConnection: WaterConnection | null;
+  typeOptions: WaterConnectionTypeLookup[];
+  sizeOptions: WaterConnectionSizeLookup[];
   onClose: () => void;
-  onSave: (data: WaterConnectionFormModel) => void;
+  onSaved: () => void;
 }
 
 export function AddConnectionDrawer({
   open,
+  propertyId,
   editingConnection,
+  typeOptions,
+  sizeOptions,
   onClose,
-  onSave,
+  onSaved,
 }: AddConnectionDrawerProps) {
   const isEdit = editingConnection != null;
   const t = useTranslations("waterConnection");
   const tCommon = useTranslations("common");
 
-  const [formData, setFormData] = useState<WaterConnectionFormModel>(EMPTY_FORM);
+  const [formData, setFormData] = useState<WaterConnectionFormModel>(() => makeEmptyForm(propertyId));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Populate form when editing connection changes
   useEffect(() => {
     if (editingConnection) {
       setFormData({
         id: editingConnection.id,
+        propertyId,
         connectionNo: editingConnection.connectionNo,
-        meterNo: editingConnection.meterNo,
-        type: editingConnection.type as ConnectionType,
-        tapSize: editingConnection.tapSize as TapSizeValue,
-        applicableRate: editingConnection.applicableRate,
-        installDate: editingConnection.installDate,
+        meterNo: editingConnection.meterNo ?? "",
+        waterConnectionTypeId: editingConnection.waterConnectionTypeId,
+        waterConnectionSizeId: editingConnection.waterConnectionSizeId,
+        installDate: editingConnection.installDate ?? editingConnection.connectionStartDate ?? "",
         isActive: editingConnection.isActive,
       });
     } else {
-      setFormData(EMPTY_FORM);
+      setFormData(makeEmptyForm(propertyId));
     }
     setErrors({});
     setTouched({});
-  }, [editingConnection, open]);
+  }, [editingConnection, open, propertyId]);
 
   const validate = useCallback(
     (data: WaterConnectionFormModel): Record<string, string> => {
       const e: Record<string, string> = {};
       if (!data.connectionNo.trim())
         e.connectionNo = t("form.validation.connectionNoRequired");
-      if (!data.meterNo.trim())
-        e.meterNo = t("form.validation.meterNoRequired");
-      if (!data.type) e.type = t("form.validation.typeRequired");
-      if (!data.tapSize) e.tapSize = t("form.validation.tapSizeRequired");
-      if (!data.installDate) e.installDate = t("form.validation.installDateRequired");
+      if (!data.waterConnectionTypeId)
+        e.waterConnectionTypeId = t("form.validation.typeRequired");
+      if (!data.waterConnectionSizeId)
+        e.waterConnectionSizeId = t("form.validation.tapSizeRequired");
+      if (!data.installDate)
+        e.installDate = t("form.validation.installDateRequired");
       return e;
     },
     [t]
@@ -94,13 +102,12 @@ export function AddConnectionDrawer({
   };
 
   const handleSelectChange = (name: string, value: string) => {
-    setFormData((prev) => {
-      const updated = { ...prev, [name]: value };
-      if (name === "tapSize") {
-        updated.applicableRate = TAP_SIZE_RATES[value as TapSizeValue] ?? 0;
-      }
-      return updated;
-    });
+    setFormData((prev) => ({
+      ...prev,
+      [name]: name === "waterConnectionTypeId" || name === "waterConnectionSizeId"
+        ? (value === "" ? "" : Number(value))
+        : value,
+    }));
     setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
@@ -117,7 +124,12 @@ export function AddConnectionDrawer({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setTouched({ connectionNo: true, meterNo: true, type: true, tapSize: true, installDate: true });
+    setTouched({
+      connectionNo: true,
+      waterConnectionTypeId: true,
+      waterConnectionSizeId: true,
+      installDate: true,
+    });
     const v = validate(formData);
     setErrors(v);
     if (Object.keys(v).length) {
@@ -126,8 +138,13 @@ export function AddConnectionDrawer({
     }
     setIsSubmitting(true);
     try {
-      onSave(formData);
+      const result = await saveWaterConnectionAction(formData);
+      if (!result.ok) {
+        toast.error(result.error ?? t("form.messages.error"));
+        return;
+      }
       toast.success(isEdit ? t("form.messages.updateSuccess") : t("form.messages.createSuccess"));
+      onSaved();
       onClose();
     } catch {
       toast.error(t("form.messages.error"));
@@ -187,6 +204,8 @@ export function AddConnectionDrawer({
           onChange={handleChange}
           onSelectChange={handleSelectChange}
           onBlur={handleBlur}
+          typeOptions={typeOptions}
+          sizeOptions={sizeOptions}
           t={t}
         />
 

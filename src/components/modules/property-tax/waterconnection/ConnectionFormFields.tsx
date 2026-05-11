@@ -1,6 +1,10 @@
 import React from "react";
 import { Input, Select, ValidationMessage } from "@/components/common";
-import type { WaterConnectionFormModel } from "@/types/waterconnection.types";
+import type {
+  WaterConnectionFormModel,
+  WaterConnectionTypeLookup,
+  WaterConnectionSizeLookup,
+} from "@/types/waterconnection.types";
 
 interface ConnectionFormFieldsProps {
   formData: WaterConnectionFormModel;
@@ -9,6 +13,8 @@ interface ConnectionFormFieldsProps {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSelectChange: (name: string, value: string) => void;
   onBlur: (e: React.FocusEvent<HTMLInputElement>) => void;
+  typeOptions: WaterConnectionTypeLookup[];
+  sizeOptions: WaterConnectionSizeLookup[];
   t: (key: string) => string;
 }
 
@@ -19,19 +25,19 @@ export function ConnectionFormFields({
   onChange,
   onSelectChange,
   onBlur,
+  typeOptions,
+  sizeOptions,
   t,
 }: ConnectionFormFieldsProps) {
-  const typeOptions = [
-    { value: "Domestic", label: t("form.fields.type.domestic") },
-    { value: "Commercial", label: t("form.fields.type.commercial") },
-  ];
+  const typeSelectOptions = typeOptions.map((opt) => ({
+    value: String(opt.id),
+    label: opt.connectionTypeName,
+  }));
 
-  const tapSizeOptions = [
-    { value: "15 Inch", label: t("form.fields.tapSize.15Inch") },
-    { value: "20 Inch", label: t("form.fields.tapSize.20Inch") },
-    { value: "25 Inch", label: t("form.fields.tapSize.25Inch") },
-    { value: "32 Inch", label: t("form.fields.tapSize.32Inch") },
-  ];
+  const sizeSelectOptions = sizeOptions.map((opt) => ({
+    value: String(opt.id),
+    label: opt.displayLabel,
+  }));
 
   return (
     <div className="rounded-xl border border-[#DCEAFF] bg-slate-50 p-5 space-y-4">
@@ -57,16 +63,11 @@ export function ConnectionFormFields({
           <Input
             name="meterNo"
             label={t("form.fields.meterNo.label")}
-            required
             value={formData.meterNo}
             onChange={onChange}
             onBlur={onBlur}
             placeholder={t("form.fields.meterNo.placeholder")}
             fullWidth
-          />
-          <ValidationMessage
-            message={errors.meterNo}
-            visible={showError("meterNo")}
           />
         </div>
       </div>
@@ -75,14 +76,14 @@ export function ConnectionFormFields({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Select
-            name="type"
+            name="waterConnectionTypeId"
             label={t("form.fields.type.label")}
             required
-            options={typeOptions}
-            value={formData.type}
-            onChange={(_, val) => onSelectChange("type", val)}
+            options={typeSelectOptions}
+            value={formData.waterConnectionTypeId !== '' ? String(formData.waterConnectionTypeId) : ''}
+            onChange={(_, val) => onSelectChange("waterConnectionTypeId", val)}
             placeholder={t("form.fields.type.placeholder")}
-            error={showError("type") ? errors.type : undefined}
+            error={showError("waterConnectionTypeId") ? errors.waterConnectionTypeId : undefined}
           />
         </div>
         <div>
@@ -103,30 +104,18 @@ export function ConnectionFormFields({
         </div>
       </div>
 
-      {/* Row 3: Tap Size | Applicable Rate */}
+      {/* Row 3: Size | (empty) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Select
-            name="tapSize"
+            name="waterConnectionSizeId"
             label={t("form.fields.tapSize.label")}
             required
-            options={tapSizeOptions}
-            value={formData.tapSize}
-            onChange={(_, val) => onSelectChange("tapSize", val)}
+            options={sizeSelectOptions}
+            value={formData.waterConnectionSizeId !== '' ? String(formData.waterConnectionSizeId) : ''}
+            onChange={(_, val) => onSelectChange("waterConnectionSizeId", val)}
             placeholder={t("form.fields.tapSize.placeholder")}
-            error={showError("tapSize") ? errors.tapSize : undefined}
-          />
-        </div>
-        <div>
-          <Input
-            name="applicableRate"
-            type="number"
-            label={t("form.fields.applicableRate.label")}
-            value={String(formData.applicableRate || "")}
-            onChange={onChange}
-            fullWidth
-            disabled
-            helperText={t("form.fields.applicableRate.autoCalculated")}
+            error={showError("waterConnectionSizeId") ? errors.waterConnectionSizeId : undefined}
           />
         </div>
       </div>

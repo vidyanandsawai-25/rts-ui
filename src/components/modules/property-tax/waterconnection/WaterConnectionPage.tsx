@@ -3,23 +3,19 @@
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Droplets } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { PageContainer } from "@/components/common";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import type {
   WaterConnection,
-  WaterConnectionFormModel,
   WaterConnectionPageData,
-  TapSizeValue,
-  BillingCategory,
 } from "@/types/waterconnection.types";
-import { TAP_SIZE_RATES } from "@/types/waterconnection.types";
+import { deleteWaterConnectionAction } from "@/app/[locale]/property-tax/waterconnection/action";
 import { PropertyStatsCards } from "./PropertyStatsCards";
 import { PropertyInfoCard } from "./PropertyInfoCard";
 import { ConnectionsTable } from "./ConnectionsTable";
 import { AddConnectionDrawer } from "./AddConnectionDrawer";
-
-let nextId = 100;
 
 function computeStats(connections: WaterConnection[]) {
   const active = connections.filter((c) => c.isActive);
@@ -27,23 +23,24 @@ function computeStats(connections: WaterConnection[]) {
     totalConnections: connections.length,
     activeConnections: active.length,
     stoppedConnections: connections.length - active.length,
-    yearlyRevenue: active.reduce((sum, c) => sum + c.applicableCharges, 0),
+    yearlyRevenue: active.reduce((sum, c) => sum + (c.applicableCharges ?? 0), 0),
   };
 }
 
 interface WaterConnectionPageProps {
   initialData: WaterConnectionPageData;
+  propertyId: number;
 }
 
-export default function WaterConnectionPage({ initialData }: WaterConnectionPageProps) {
+export default function WaterConnectionPage({ initialData, propertyId }: WaterConnectionPageProps) {
   const t = useTranslations("waterConnection");
   const { confirm } = useConfirm();
+  const router = useRouter();
 
-  const [connections, setConnections] = useState<WaterConnection[]>(initialData.connections);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingConnection, setEditingConnection] = useState<WaterConnection | null>(null);
 
-  const stats = useMemo(() => computeStats(connections), [connections]);
+  const stats = useMemo(() => computeStats(initialData.connections), [initialData.connections]);
 
   const handleAdd = () => {
     setEditingConnection(null);
@@ -60,53 +57,8 @@ export default function WaterConnectionPage({ initialData }: WaterConnectionPage
     setEditingConnection(null);
   };
 
-  const handleSave = (data: WaterConnectionFormModel) => {
-    const tapSize = data.tapSize as TapSizeValue;
-    const applicableRate = TAP_SIZE_RATES[tapSize] ?? data.applicableRate;
-    const yearlyCharges = data.isActive ? applicableRate * 12 : 0;
-
-    if (data.id != null) {
-      // Update existing
-      setConnections((prev) =>
-        prev.map((c) =>
-          c.id === data.id
-            ? {
-                ...c,
-                connectionNo: data.connectionNo,
-                meterNo: data.meterNo,
-                type: data.type,
-                tapSize: data.tapSize,
-                applicableRate,
-                applicableCharges: yearlyCharges,
-                installDate: data.installDate,
-                isActive: data.isActive,
-                status: data.isActive,
-                stoppedDate: !data.isActive
-                  ? new Date().toLocaleDateString("en-IN")
-                  : c.stoppedDate,
-              }
-            : c
-        )
-      );
-    } else {
-      // Add new
-      const todayStr = new Date().toLocaleDateString("en-IN");
-      const newConnection: WaterConnection = {
-        id: ++nextId,
-        connectionNo: data.connectionNo,
-        meterNo: data.meterNo,
-        type: data.type,
-        tapSize: data.tapSize,
-        applicableRate,
-        category: "Yearly" as BillingCategory,
-        applicableCharges: yearlyCharges,
-        installDate: data.installDate,
-        activatedDate: todayStr,
-        isActive: true,
-        status: true,
-      };
-      setConnections((prev) => [...prev, newConnection]);
-    }
+  const handleSaved = () => {
+    router.refresh();
   };
 
   const handleDelete = (connection: WaterConnection) => {
@@ -114,8 +66,13 @@ export default function WaterConnectionPage({ initialData }: WaterConnectionPage
       variant: "delete",
       meta: { name: connection.connectionNo },
       onConfirm: async () => {
-        setConnections((prev) => prev.filter((c) => c.id !== connection.id));
-        toast.success(t("delete.success"));
+        const result = await deleteWaterConnectionAction(connection.id);
+        if (result.ok) {
+          toast.success(t("delete.success"));
+          router.refresh();
+        } else {
+          toast.error(result.error ?? t("delete.error"));
+        }
       },
     });
   };
@@ -168,7 +125,7 @@ export default function WaterConnectionPage({ initialData }: WaterConnectionPage
         {/* Connections Table */}
         <ConnectionsTable
           propertyNo={initialData.property.propertyNo}
-          connections={connections}
+          connections={initialData.connections}
           onAdd={handleAdd}
           onEdit={handleEdit}
           onDelete={handleDelete}
@@ -178,9 +135,12 @@ export default function WaterConnectionPage({ initialData }: WaterConnectionPage
       {/* Drawer for Add / Edit */}
       <AddConnectionDrawer
         open={drawerOpen}
+        propertyId={propertyId}
         editingConnection={editingConnection}
+        typeOptions={initialData.typeOptions}
+        sizeOptions={initialData.sizeOptions}
         onClose={handleClose}
-        onSave={handleSave}
+        onSaved={handleSaved}
       />
     </PageContainer>
   );
