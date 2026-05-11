@@ -3,6 +3,10 @@
 import type {
   WaterConnectionFormModel,
   WaterConnectionPageData,
+  WaterConnectionTypeLookup,
+  WaterConnectionSizeLookup,
+  WaterConnectionStatusLookup,
+  WaterRateMasterLookup,
   PropertyInfo,
 } from "@/types/waterconnection.types";
 import {
@@ -15,6 +19,40 @@ import {
   deleteWaterConnection,
   ApiError,
 } from "@/lib/api/waterconnection.services";
+
+const MOCK_TYPE_OPTIONS: WaterConnectionTypeLookup[] = [
+  { id: 1, connectionTypeCode: "DOM", connectionTypeName: "Domestic" },
+  { id: 2, connectionTypeCode: "COM", connectionTypeName: "Commercial" },
+  { id: 3, connectionTypeCode: "IND", connectionTypeName: "Industrial" },
+];
+
+const MOCK_SIZE_OPTIONS: WaterConnectionSizeLookup[] = [
+  { id: 1, connectionSize: 15, connectionSizeUnit: "mm", displayLabel: '15 mm (½")' },
+  { id: 2, connectionSize: 20, connectionSizeUnit: "mm", displayLabel: '20 mm (¾")' },
+  { id: 3, connectionSize: 25, connectionSizeUnit: "mm", displayLabel: '25 mm (1")' },
+  { id: 4, connectionSize: 32, connectionSizeUnit: "mm", displayLabel: '32 mm (1¼")' },
+];
+
+const MOCK_STATUS_OPTIONS: WaterConnectionStatusLookup[] = [
+  { id: 1, statusName: "Active" },
+  { id: 2, statusName: "Stopped" },
+  { id: 3, statusName: "Disconnected" },
+];
+
+const MOCK_RATE_MASTERS: WaterRateMasterLookup[] = [
+  { id: 1,  waterConnectionTypeId: 1, connectionTypeName: "Domestic",   waterConnectionSizeId: 1, connectionSizeDisplay: "15 mm", financeYearId: 1, yearCode: "2025-26", yearlyRate: 1200,  isActive: true },
+  { id: 2,  waterConnectionTypeId: 1, connectionTypeName: "Domestic",   waterConnectionSizeId: 2, connectionSizeDisplay: "20 mm", financeYearId: 1, yearCode: "2025-26", yearlyRate: 1800,  isActive: true },
+  { id: 3,  waterConnectionTypeId: 1, connectionTypeName: "Domestic",   waterConnectionSizeId: 3, connectionSizeDisplay: "25 mm", financeYearId: 1, yearCode: "2025-26", yearlyRate: 2400,  isActive: true },
+  { id: 4,  waterConnectionTypeId: 1, connectionTypeName: "Domestic",   waterConnectionSizeId: 4, connectionSizeDisplay: "32 mm", financeYearId: 1, yearCode: "2025-26", yearlyRate: 3600,  isActive: true },
+  { id: 5,  waterConnectionTypeId: 2, connectionTypeName: "Commercial", waterConnectionSizeId: 1, connectionSizeDisplay: "15 mm", financeYearId: 1, yearCode: "2025-26", yearlyRate: 2400,  isActive: true },
+  { id: 6,  waterConnectionTypeId: 2, connectionTypeName: "Commercial", waterConnectionSizeId: 2, connectionSizeDisplay: "20 mm", financeYearId: 1, yearCode: "2025-26", yearlyRate: 3600,  isActive: true },
+  { id: 7,  waterConnectionTypeId: 2, connectionTypeName: "Commercial", waterConnectionSizeId: 3, connectionSizeDisplay: "25 mm", financeYearId: 1, yearCode: "2025-26", yearlyRate: 4800,  isActive: true },
+  { id: 8,  waterConnectionTypeId: 2, connectionTypeName: "Commercial", waterConnectionSizeId: 4, connectionSizeDisplay: "32 mm", financeYearId: 1, yearCode: "2025-26", yearlyRate: 7200,  isActive: true },
+  { id: 9,  waterConnectionTypeId: 3, connectionTypeName: "Industrial", waterConnectionSizeId: 1, connectionSizeDisplay: "15 mm", financeYearId: 1, yearCode: "2025-26", yearlyRate: 3600,  isActive: true },
+  { id: 10, waterConnectionTypeId: 3, connectionTypeName: "Industrial", waterConnectionSizeId: 2, connectionSizeDisplay: "20 mm", financeYearId: 1, yearCode: "2025-26", yearlyRate: 5400,  isActive: true },
+  { id: 11, waterConnectionTypeId: 3, connectionTypeName: "Industrial", waterConnectionSizeId: 3, connectionSizeDisplay: "25 mm", financeYearId: 1, yearCode: "2025-26", yearlyRate: 7200,  isActive: true },
+  { id: 12, waterConnectionTypeId: 3, connectionTypeName: "Industrial", waterConnectionSizeId: 4, connectionSizeDisplay: "32 mm", financeYearId: 1, yearCode: "2025-26", yearlyRate: 10800, isActive: true },
+];
 
 // Placeholder property — replace with real property API call when endpoint is available
 function getMockProperty(propertyId: number): PropertyInfo {
@@ -38,18 +76,67 @@ export async function getWaterConnectionPageData(
 ): Promise<WaterConnectionPageData> {
   const [connectionsResponse, typeOptions, sizeOptions, statusOptions] = await Promise.all([
     getWaterConnectionsPaged(propertyId),
-    getWaterConnectionTypes().catch(() => [] as Awaited<ReturnType<typeof getWaterConnectionTypes>>),
-    getWaterConnectionSizes().catch(() => [] as Awaited<ReturnType<typeof getWaterConnectionSizes>>),
-    getWaterConnectionStatuses().catch(() => [] as Awaited<ReturnType<typeof getWaterConnectionStatuses>>),
+    getWaterConnectionTypes().catch((err) => {
+      console.error('[waterconnection] getWaterConnectionTypes failed:', err);
+      return [] as Awaited<ReturnType<typeof getWaterConnectionTypes>>;
+    }),
+    getWaterConnectionSizes().catch((err) => {
+      console.error('[waterconnection] getWaterConnectionSizes failed:', err);
+      return [] as Awaited<ReturnType<typeof getWaterConnectionSizes>>;
+    }),
+    getWaterConnectionStatuses().catch((err) => {
+      console.error('[waterconnection] getWaterConnectionStatuses failed:', err);
+      return [] as Awaited<ReturnType<typeof getWaterConnectionStatuses>>;
+    }),
   ]);
+
+  console.log('[waterconnection] Lookup data loaded:', {
+    typeOptions: typeOptions.length,
+    sizeOptions: sizeOptions.length,
+    statusOptions: statusOptions.length,
+  });
 
   return {
     property: getMockProperty(propertyId),
-    connections: connectionsResponse.data ?? [],
-    typeOptions,
-    sizeOptions,
-    statusOptions,
+    connections: connectionsResponse.items ?? connectionsResponse.data ?? [],
+    typeOptions: typeOptions.length > 0 ? typeOptions : MOCK_TYPE_OPTIONS,
+    sizeOptions: sizeOptions.length > 0 ? sizeOptions : MOCK_SIZE_OPTIONS,
+    statusOptions: statusOptions.length > 0 ? statusOptions : MOCK_STATUS_OPTIONS,
+    rateMasters: MOCK_RATE_MASTERS,
   };
+}
+
+export async function getConnectionLookupsAction(): Promise<{
+  typeOptions: WaterConnectionTypeLookup[];
+  sizeOptions: WaterConnectionSizeLookup[];
+  statusOptions: WaterConnectionStatusLookup[];
+  rateMasters: WaterRateMasterLookup[];
+}> {
+  const [typeOptions, sizeOptions, statusOptions] = await Promise.all([
+    getWaterConnectionTypes().catch((err) => {
+      console.error('[waterconnection] getWaterConnectionTypes failed:', err);
+      return [] as WaterConnectionTypeLookup[];
+    }),
+    getWaterConnectionSizes().catch((err) => {
+      console.error('[waterconnection] getWaterConnectionSizes failed:', err);
+      return [] as WaterConnectionSizeLookup[];
+    }),
+    getWaterConnectionStatuses().catch((err) => {
+      console.error('[waterconnection] getWaterConnectionStatuses failed:', err);
+      return [] as WaterConnectionStatusLookup[];
+    }),
+  ]);
+
+  return {
+    typeOptions: typeOptions.length > 0 ? typeOptions : MOCK_TYPE_OPTIONS,
+    sizeOptions: sizeOptions.length > 0 ? sizeOptions : MOCK_SIZE_OPTIONS,
+    statusOptions: statusOptions.length > 0 ? statusOptions : MOCK_STATUS_OPTIONS,
+    rateMasters: MOCK_RATE_MASTERS,
+  };
+}
+
+export async function getWaterRateMastersAction(): Promise<WaterRateMasterLookup[]> {
+  return MOCK_RATE_MASTERS;
 }
 
 export async function saveWaterConnectionAction(

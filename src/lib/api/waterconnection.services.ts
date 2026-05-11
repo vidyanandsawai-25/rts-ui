@@ -128,6 +128,8 @@ export async function getWaterConnectionTypes(): Promise<WaterConnectionTypeLook
     `/WaterConnectionType?${params.toString()}`
   );
 
+  console.log('[waterconnection] getWaterConnectionTypes response:', JSON.stringify(response, null, 2));
+
   if (!response.success || !response.data) {
     throw new ApiError(
       response.statusCode || 500,
@@ -136,7 +138,7 @@ export async function getWaterConnectionTypes(): Promise<WaterConnectionTypeLook
     );
   }
 
-  return response.data.data ?? [];
+  return response.data.items ?? response.data.data ?? [];
 }
 
 /** GET connection sizes for dropdown */
@@ -146,6 +148,8 @@ export async function getWaterConnectionSizes(): Promise<WaterConnectionSizeLook
     `/WaterConnectionSize?${params.toString()}`
   );
 
+  console.log('[waterconnection] getWaterConnectionSizes response:', JSON.stringify(response, null, 2));
+
   if (!response.success || !response.data) {
     throw new ApiError(
       response.statusCode || 500,
@@ -154,7 +158,7 @@ export async function getWaterConnectionSizes(): Promise<WaterConnectionSizeLook
     );
   }
 
-  return response.data.data ?? [];
+  return response.data.items ?? response.data.data ?? [];
 }
 
 /** GET connection statuses for dropdown */
@@ -164,6 +168,8 @@ export async function getWaterConnectionStatuses(): Promise<WaterConnectionStatu
     `/WaterConnectionStatus?${params.toString()}`
   );
 
+  console.log('[waterconnection] getWaterConnectionStatuses response:', JSON.stringify(response, null, 2));
+
   if (!response.success || !response.data) {
     throw new ApiError(
       response.statusCode || 500,
@@ -172,7 +178,7 @@ export async function getWaterConnectionStatuses(): Promise<WaterConnectionStatu
     );
   }
 
-  return response.data.data ?? [];
+  return response.data.items ?? response.data.data ?? [];
 }
 
 /** GET water rate masters — optionally filter by typeId / sizeId */

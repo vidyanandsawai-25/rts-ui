@@ -12,11 +12,16 @@ import type {
   WaterConnectionTypeLookup,
   WaterConnectionSizeLookup,
   WaterConnectionStatusLookup,
+  WaterRateMasterLookup,
 } from "@/types/waterconnection.types";
-import { saveWaterConnectionAction } from "@/app/[locale]/property-tax/waterconnection/action";
+import {
+  saveWaterConnectionAction,
+  getConnectionLookupsAction,
+} from "@/app/[locale]/property-tax/waterconnection/action";
 import { StatusToggleCard } from "../taxzonemaster/StatusToggleCard";
 import { MandatoryFieldsNotice } from "../taxzonemaster/MandatoryFieldsNotice";
 import { ConnectionFormFields } from "./ConnectionFormFields";
+import { findApplicableRate } from "./applicableRateHelper";
 
 function makeEmptyForm(propertyId: number): WaterConnectionFormModel {
   return {
@@ -27,6 +32,7 @@ function makeEmptyForm(propertyId: number): WaterConnectionFormModel {
     waterConnectionSizeId: "",
     installDate: new Date().toISOString().slice(0, 10),
     isActive: true,
+    applicableRate: null,
   };
 }
 
@@ -37,6 +43,7 @@ interface AddConnectionDrawerProps {
   typeOptions: WaterConnectionTypeLookup[];
   sizeOptions: WaterConnectionSizeLookup[];
   statusOptions: WaterConnectionStatusLookup[];
+  rateMasters: WaterRateMasterLookup[];
   onClose: () => void;
   onSaved: () => void;
 }
@@ -45,9 +52,10 @@ export function AddConnectionDrawer({
   open,
   propertyId,
   editingConnection,
-  typeOptions,
-  sizeOptions,
-  statusOptions,
+  typeOptions: initialTypeOptions,
+  sizeOptions: initialSizeOptions,
+  statusOptions: initialStatusOptions,
+  rateMasters: initialRateMasters,
   onClose,
   onSaved,
 }: AddConnectionDrawerProps) {
@@ -55,10 +63,37 @@ export function AddConnectionDrawer({
   const t = useTranslations("waterConnection");
   const tCommon = useTranslations("common");
 
+  const [typeOptions, setTypeOptions] = useState(initialTypeOptions);
+  const [sizeOptions, setSizeOptions] = useState(initialSizeOptions);
+  const [statusOptions, setStatusOptions] = useState(initialStatusOptions);
+  const [rateMasters, setRateMasters] = useState(initialRateMasters);
+
   const [formData, setFormData] = useState<WaterConnectionFormModel>(() => makeEmptyForm(propertyId));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [rateError, setRateError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    getConnectionLookupsAction().then(({ typeOptions: t, sizeOptions: s, statusOptions: st, rateMasters: rm }) => {
+      setTypeOptions(t);
+      setSizeOptions(s);
+      setStatusOptions(st);
+      setRateMasters(rm);
+    });
+  }, [open]);
+
+  // Auto-compute applicable rate whenever type or size selection changes
+  useEffect(() => {
+    const { rate, notFound } = findApplicableRate(
+      formData.waterConnectionTypeId,
+      formData.waterConnectionSizeId,
+      rateMasters
+    );
+    setFormData((prev) => ({ ...prev, applicableRate: rate }));
+    setRateError(notFound ? t("form.validation.rateNotFound") : null);
+  }, [formData.waterConnectionTypeId, formData.waterConnectionSizeId, rateMasters, t]);
 
   useEffect(() => {
     if (editingConnection) {
@@ -72,12 +107,14 @@ export function AddConnectionDrawer({
         waterConnectionStatusId: editingConnection.waterConnectionStatusId ?? null,
         installDate: editingConnection.installDate ?? editingConnection.connectionStartDate ?? "",
         isActive: editingConnection.isActive,
+        applicableRate: editingConnection.applicableRate ?? null,
       });
     } else {
       setFormData(makeEmptyForm(propertyId));
     }
     setErrors({});
     setTouched({});
+    setRateError(null);
   }, [editingConnection, open, propertyId]);
 
   const validate = useCallback(
@@ -213,6 +250,8 @@ export function AddConnectionDrawer({
           typeOptions={typeOptions}
           sizeOptions={sizeOptions}
           statusOptions={statusOptions}
+          applicableRate={formData.applicableRate ?? null}
+          rateError={rateError}
           t={t}
         />
 

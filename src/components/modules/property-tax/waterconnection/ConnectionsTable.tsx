@@ -40,13 +40,13 @@ export function ConnectionsTable({
           <div>
             <div className="font-semibold text-gray-900">{t("list.title")}</div>
             <div className="text-xs text-gray-500">
-              {t("list.subtitle").replace("{propertyNo}", propertyNo)}
+              {t("list.subtitle", { propertyNo })}
             </div>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <Badge variant="info" size="sm">
-            {t("list.connections").replace("{count}", String(connections.length))}
+            {t("list.connections", { count: connections.length })}
           </Badge>
           <AddButton
             size="sm"

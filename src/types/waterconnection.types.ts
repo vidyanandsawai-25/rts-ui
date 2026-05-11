@@ -44,6 +44,7 @@ export interface WaterConnectionFormModel {
   waterConnectionStatusId?: number | null;
   installDate: string;
   isActive: boolean;
+  applicableRate?: number | null;
 }
 
 export interface WaterConnectionTypeLookup {
@@ -73,6 +74,7 @@ export interface WaterRateMasterLookup {
   financeYearId: number;
   yearCode: string | null;
   yearlyRate: number;
+  isActive: boolean;
 }
 
 export interface WaterConnectionPageData {
@@ -81,10 +83,12 @@ export interface WaterConnectionPageData {
   typeOptions: WaterConnectionTypeLookup[];
   sizeOptions: WaterConnectionSizeLookup[];
   statusOptions: WaterConnectionStatusLookup[];
+  rateMasters: WaterRateMasterLookup[];
 }
 
 export interface PagedResponse<T> {
-  data: T[];
+  data?: T[];
+  items?: T[];
   totalCount: number;
   pageNumber: number;
   pageSize: number;

@@ -17,6 +17,8 @@ interface ConnectionFormFieldsProps {
   typeOptions: WaterConnectionTypeLookup[];
   sizeOptions: WaterConnectionSizeLookup[];
   statusOptions: WaterConnectionStatusLookup[];
+  applicableRate: number | null;
+  rateError: string | null;
   t: (key: string) => string;
 }
 
@@ -30,6 +32,8 @@ export function ConnectionFormFields({
   typeOptions,
   sizeOptions,
   statusOptions,
+  applicableRate,
+  rateError,
   t,
 }: ConnectionFormFieldsProps) {
   const typeSelectOptions = typeOptions.map((opt) => ({
@@ -134,6 +138,27 @@ export function ConnectionFormFields({
             value={formData.waterConnectionStatusId != null ? String(formData.waterConnectionStatusId) : ''}
             onChange={(_, val) => onSelectChange("waterConnectionStatusId", val)}
             placeholder={t("form.fields.status.placeholder")}
+          />
+        </div>
+      </div>
+
+      {/* Row 4: Applicable Rate (read-only, auto-calculated) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <Input
+            name="applicableRate"
+            label={t("form.fields.applicableRate.label")}
+            value={applicableRate != null ? `₹${applicableRate.toLocaleString("en-IN")}` : ""}
+            readOnly
+            onChange={() => {}}
+            helperText={applicableRate == null && !rateError ? t("form.fields.applicableRate.autoCalculated") : undefined}
+            fullWidth
+            className="bg-slate-100 cursor-default font-medium text-slate-700"
+          />
+          <ValidationMessage
+            message={rateError ?? ""}
+            visible={rateError != null}
+            type="warning"
           />
         </div>
       </div>

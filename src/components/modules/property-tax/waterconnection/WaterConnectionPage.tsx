@@ -140,6 +140,7 @@ export default function WaterConnectionPage({ initialData, propertyId }: WaterCo
         typeOptions={initialData.typeOptions}
         sizeOptions={initialData.sizeOptions}
         statusOptions={initialData.statusOptions}
+        rateMasters={initialData.rateMasters}
         onClose={handleClose}
         onSaved={handleSaved}
       />
