@@ -26,7 +26,6 @@ export default function AddRateDrawer({
   const handleClose = () => {
     router.replace(`/${locale}/property-tax/rate-master/rvratemaster`);
   };
-
   return (
     <Drawer
       open={true}
