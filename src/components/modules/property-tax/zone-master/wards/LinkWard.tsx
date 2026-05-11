@@ -283,7 +283,7 @@ export default function LinkWard({
 		>
 			<div className="flex flex-col md:flex-row gap-3 h-[75vh] p-6">
 				{/* View All Wards */}
-				<div className="flex-1 flex flex-col rounded-xl overflow-hidden bg-gradient-to-br from-blue-50/80 to-indigo-50/80 backdrop-blur-md border-2 border-blue-200/50 shadow-lg" data-testid="available-wards-list">
+				<div className="flex-1 flex flex-col rounded-xl bg-gradient-to-br from-blue-50/80 to-indigo-50/80 backdrop-blur-md border-2 border-blue-200/50 shadow-lg" data-testid="available-wards-list">
 					<div className="bg-gradient-to-r from-[#1A86E8] via-[#1A86E8] to-[#1A86E8] px-4 py-3 font-semibold text-sm text-[#fff] shadow-md">
 						<span className="flex items-center gap-2">
 							{t("wardList.viewWards")}
@@ -321,7 +321,7 @@ export default function LinkWard({
 				</div>
 
 				{/* Selected Wards */}
-				<div className="flex-1 flex flex-col rounded-xl overflow-hidden bg-gradient-to-br from-purple-50/80 to-indigo-50/80 backdrop-blur-md border-2 border-purple-200/50 shadow-lg" data-testid="selected-wards-list">
+				<div className="flex-1 flex flex-col rounded-xl bg-gradient-to-br from-purple-50/80 to-indigo-50/80 backdrop-blur-md border-2 border-purple-200/50 shadow-lg" data-testid="selected-wards-list">
 					<div className="bg-gradient-to-r from-[#1A86E8] via-[#1A86E8] to-[#1A86E8] px-4 py-3 font-semibold text-sm text-[#fff] shadow-md">
 						<div className="flex items-center justify-between gap-3">
 							<span className="flex items-center gap-2">
