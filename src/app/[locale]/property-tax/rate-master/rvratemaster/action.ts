@@ -1,3 +1,4 @@
+
 'use server';
 
 import { revalidatePath } from "next/cache";
@@ -6,15 +7,17 @@ import { getUserIdFromCookies } from "@/lib/utils/auth-session";
 import { locales } from "@/i18n/config";
 import { ApiError } from "@/lib/utils/api";
 import { IRateMaster, ISelectOption, IZoneDescription, RateCategory, AssessmentYearRangeOption, IRateCreate, IBackendRateMaster } from "@/types/RVRateMaster";
-import * as rateMasterService from "@/lib/api/RVRateMaster.services";
+import * as rateMasterService from "@/lib/api/rvRateMaster";
 import { queryRateSections } from "@/lib/api/rateSection.services";
 import type { RateItem } from "@/types/rateSectionMaster.types";
 import { getUseGroupsPagedServer } from "@/lib/api/typeofusemaster.service";
 import { getAssessmentYearRangePaged } from "@/lib/api/assessment-year-range.service";
 import { rateableValueConfig } from "@/components/modules/property-tax/assessment-year-range/config/rateableValue.config";
 import { getTaxZonePagedServer } from "@/lib/api/taxzone.services";
-import { getDetailedRates } from "@/lib/api/RVRateMaster.services";
+import { getDetailedRates } from "@/lib/api/rvRateMaster";
 import { getConstructionPaged } from "@/lib/api/construction-crud.service";
+import { createLogger } from "@/lib/utils/server-logger";
+const logger = createLogger('RVRateMasterAction');
 
 /* ========== DATA FETCHING (GET) ========== */
 export async function getDetailedRatesAction(
@@ -27,6 +30,7 @@ export async function getDetailedRatesAction(
   try {
     return await getDetailedRates(rateSection, useGroup, assessmentYear, pageNumber, pageSize);
   } catch (error) {
+    logger.error('Failed to load detailed rates', { operation: 'getDetailedRatesAction', rateSection, useGroup, assessmentYear, pageNumber, pageSize }, error);
     if (error instanceof ApiError) {
       throw new ApiError(error.statusCode, error.responseText, 'Failed to load detailed rates for RV Rate Master');
     }
@@ -59,6 +63,7 @@ export async function getRateMasterPagedAction(
       taxZoneIds
     );
   } catch (error) {
+    logger.error('Failed to load RV Rate Master data', { operation: 'getRateMasterPagedAction', pageNumber, pageSize }, error);
     if (error instanceof ApiError) {
       throw new ApiError(error.statusCode, error.responseText, 'Failed to load RV Rate Master data');
     }
@@ -95,6 +100,7 @@ export async function getZoneDescriptionsPaged(
       totalCount: response.totalCount || 0,
     };
   } catch (error) {
+    logger.error('Failed to load zones', { operation: 'getZoneDescriptionsPaged', pageNumber, pageSize }, error);
     if (error instanceof ApiError) {
       throw new ApiError(error.statusCode, error.responseText, 'Failed to load zones for RV Rate Master');
     }
@@ -120,6 +126,7 @@ export async function getAllZoneDescriptions(): Promise<IZoneDescription[]> {
         description: String(item.remark ?? '').trim(),
       }));
   } catch (error) {
+    logger.error('Failed to load all zones', { operation: 'getAllZoneDescriptions' }, error);
     if (error instanceof ApiError) {
       throw new ApiError(error.statusCode, error.responseText, 'Failed to load all zones for RV Rate Master');
     }
@@ -154,6 +161,7 @@ export async function getZoneOptions(): Promise<ISelectOption[]> {
       value: String(item.id || item.Id),
     })).filter((opt: ISelectOption) => opt.value && opt.value !== 'undefined' && opt.value !== '0');
   } catch (error) {
+    logger.error('Failed to load rate sections', { operation: 'getZoneOptions' }, error);
     if (error instanceof ApiError) {
       throw new ApiError(error.statusCode, error.responseText, 'Failed to load rate sections for RV Rate Master');
     }
@@ -184,6 +192,7 @@ export async function getUseGroupOptions(): Promise<ISelectOption[]> {
       value: String(item.typeOfUseGroupId || item.TypeOfUseGroupId),
     })).filter((opt: ISelectOption) => opt.value && opt.value !== 'undefined' && opt.value !== '0');
   } catch (error) {
+    logger.error('Failed to load use groups', { operation: 'getUseGroupOptions' }, error);
     if (error instanceof ApiError) {
       throw new ApiError(error.statusCode, error.responseText, 'Failed to load use groups for RV Rate Master');
     }
@@ -215,6 +224,7 @@ export async function getAssessmentYears(): Promise<AssessmentYearRangeOption[]>
       .filter((opt: AssessmentYearRangeOption) => opt.value && opt.value !== 'undefined')
       .sort((a, b) => a.label.localeCompare(b.label));
   } catch (error) {
+    logger.error('Failed to load assessment years', { operation: 'getAssessmentYears' }, error);
     if (error instanceof ApiError) {
       throw new ApiError(error.statusCode, error.responseText, 'Failed to load assessment years for RV Rate Master');
     }
@@ -238,6 +248,7 @@ export async function getConstructionTypes(): Promise<RateCategory[]> {
         description: item.description || '',
       }));
   } catch (error) {
+    logger.error('Failed to load construction types', { operation: 'getConstructionTypes' }, error);
     if (error instanceof ApiError) {
       throw new ApiError(error.statusCode, error.responseText, 'Failed to load construction types for RV Rate Master');
     }
@@ -286,6 +297,7 @@ export async function getRateMasterByFilters(
   try {
     return await rateMasterService.getRateMasterByFilters(zoneSection, useGroup, assessmentYear);
   } catch (error) {
+    logger.error('Failed to filter RV Rate Master data', { operation: 'getRateMasterByFilters', zoneSection, useGroup, assessmentYear }, error);
     if (error instanceof ApiError) {
       throw new ApiError(error.statusCode, error.responseText, 'Failed to filter RV Rate Master data');
     }
@@ -321,6 +333,7 @@ export async function getRateMasterData(pageNumber: number = 1, pageSize: number
       totalCount: zoneDescriptionsResult.totalCount
     };
   } catch (error) {
+    logger.error('Failed to load RV Rate Master page data', { operation: 'getRateMasterData', pageNumber, pageSize }, error);
     if (error instanceof ApiError) {
       throw new ApiError(error.statusCode, error.responseText, 'Failed to load RV Rate Master page data');
     }
@@ -335,6 +348,7 @@ export async function getRateMasterData(pageNumber: number = 1, pageSize: number
  */
 export async function deleteRateMasterAction(backendRates: IBackendRateMaster[]): Promise<{ success: boolean; message?: string; statusCode?: number }> {  
   if (!backendRates || backendRates.length === 0) {
+    logger.warn('No rates found to delete', { operation: 'deleteRateMasterAction' });
     return { success: false, message: 'No rates found to delete.' };
   }
   const ids = backendRates
@@ -342,6 +356,7 @@ export async function deleteRateMasterAction(backendRates: IBackendRateMaster[])
     .filter((id): id is number => typeof id === 'number' && id > 0);
 
   if (ids.length === 0) {
+    logger.warn('No valid rate IDs found to delete', { operation: 'deleteRateMasterAction' });
     return { success: false, message: 'No valid rate IDs found to delete.' };
   }
   try {
@@ -351,6 +366,7 @@ export async function deleteRateMasterAction(backendRates: IBackendRateMaster[])
     }
     return { success: true, message: 'Rates deleted successfully' };
   } catch (error: unknown) {
+    logger.error('Failed to delete rates', { operation: 'deleteRateMasterAction', idsCount: ids.length }, error);
     if (error instanceof ApiError) {
       return {
         success: false,
@@ -373,22 +389,24 @@ export async function bulkCreateRateMasterAction(
 ): Promise<{ success: boolean; message?: string; data?: unknown; statusCode?: number }> {
   // Wrap everything in try-catch to ensure we always return a serializable response
   try {   
-   // Validate input
+    // Validate input
     if (!rates) {     
+      logger.warn('No rates data received', { operation: 'bulkCreateRateMasterAction' });
       return { success: false, message: 'No rates data received.' };
     }
-    
     if (!Array.isArray(rates)) {     
+      logger.warn('Invalid rates data format. Expected an array.', { operation: 'bulkCreateRateMasterAction' });
       return { success: false, message: 'Invalid rates data format. Expected an array.' };
     }
-    
     if (rates.length === 0) {    
+      logger.warn('No rates to create. Please enter at least one rate value.', { operation: 'bulkCreateRateMasterAction' });
       return { success: false, message: 'No rates to create. Please enter at least one rate value.' };
     }
 
     // Set createdBy from authenticated user
     const userId = getUserIdFromCookies(await cookies());
     if (!userId) {
+      logger.warn('User not authenticated. Cannot set createdBy.', { operation: 'bulkCreateRateMasterAction' });
       return { success: false, message: 'User not authenticated. Cannot set createdBy.' };
     }
     const ratesWithUser = rates.map(rate => ({
@@ -396,12 +414,12 @@ export async function bulkCreateRateMasterAction(
       createdBy: userId,
     }));
     await rateMasterService.bulkCreateRateMaster(ratesWithUser);
-      
     for (const locale of locales) {
       revalidatePath(`/${locale}/property-tax/rate-master/rvratemaster`);
     }
     return { success: true, message: 'Rates created successfully' };
   } catch (error: unknown) {
+    logger.error('Failed to bulk create rates', { operation: 'bulkCreateRateMasterAction', ratesCount: rates?.length }, error);
     if (error instanceof ApiError) {
       return {
         success: false,
@@ -424,12 +442,14 @@ export async function bulkUpdateRateMasterAction(
 ): Promise<{ success: boolean; message?: string; data?: unknown; statusCode?: number }> {
   try {
     if (!payload || payload.length === 0) {
+      logger.warn('No rates to update. Please enter at least one rate value.', { operation: 'bulkUpdateRateMasterAction' });
       return { success: false, message: 'No rates to update. Please enter at least one rate value.' };
     }
 
     // Set updatedBy from authenticated user
     const userId = getUserIdFromCookies(await cookies());
     if (!userId) {
+      logger.warn('User not authenticated. Cannot set updatedBy.', { operation: 'bulkUpdateRateMasterAction' });
       return { success: false, message: 'User not authenticated. Cannot set updatedBy.' };
     }
     const payloadWithUser = payload.map(item => ({
@@ -440,12 +460,12 @@ export async function bulkUpdateRateMasterAction(
       },
     }));
     await rateMasterService.bulkUpdateRateMaster(payloadWithUser);
-    
     for (const locale of locales) {
       revalidatePath(`/${locale}/property-tax/rate-master/rvratemaster`);
     }
     return { success: true, message: 'Rates updated successfully' };
   } catch (error: unknown) {
+    logger.error('Failed to bulk update rates', { operation: 'bulkUpdateRateMasterAction', payloadCount: payload?.length }, error);
     if (error instanceof ApiError) {
       return {
         success: false,

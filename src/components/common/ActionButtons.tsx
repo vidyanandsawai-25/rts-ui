@@ -358,7 +358,7 @@ export function PageNumberButton({
       onClick={onClick}
       variant={active ? "primary" : "secondary"}
       className={cn(
-        "min-w-[36px] px-3 text-sm font-medium",
+        "min-w-9 px-3 text-sm font-medium",
         active
           ? "bg-[#2563EB] text-white border border-[#2563EB]"
           : "bg-white border border-[#DCEAFF] text-[#1E3A8A] hover:bg-gray-50"
@@ -383,7 +383,7 @@ export function SortAscButton(
       icon={ArrowUp}
       size="sm"
       aria-label={ariaLabel ?? "Sort ascending"}
-      className={cn("hover:bg-transparent hover:text-blue-600 focus:!ring-0 focus:!ring-offset-0", className)}
+      className={cn("hover:bg-transparent hover:text-blue-600 focus:ring-0! focus:ring-offset-0!", className)}
       {...props}
     />
   );
@@ -398,7 +398,7 @@ export function SortDescButton(
       icon={ArrowDown}
       size="sm"
       aria-label={ariaLabel ?? "Sort descending"}
-      className={cn("hover:bg-transparent hover:text-blue-600 focus:!ring-0 focus:!ring-offset-0", className)}
+      className={cn("hover:bg-transparent hover:text-blue-600 focus:ring-0! focus:ring-offset-0!", className)}
       {...props}
     />
   );
@@ -413,7 +413,7 @@ export function SortDefaultButton(
       icon={ArrowUpDown}
       size="sm"
       aria-label={ariaLabel ?? "Sort"}
-      className={cn("hover:bg-transparent hover:text-blue-600 focus:!ring-0 focus:!ring-offset-0", className)}
+      className={cn("hover:bg-transparent hover:text-blue-600 focus:ring-0! focus:ring-offset-0!", className)}
       {...props}
     />
   );
@@ -436,6 +436,9 @@ export function TabButton({ icon: Icon, label, active, className = "", ...props 
     >
       <Icon size={18} />
       <span className="text-xs font-medium">{label}</span>
+    </button>
+  );
+}
 /* ----------------------------------------------------------
    BADGE LIST BUTTON
 ---------------------------------------------------------- */

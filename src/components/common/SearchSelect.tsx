@@ -122,9 +122,13 @@ export function SearchSelect({
   const [search, setSearch] = useState('');
   const [hasTyped, setHasTyped] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
+    // Accessible id for aria attributes and listbox
+    const accessibleId = name || id || 'search-select';
 
   const wrapperRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
+  // Tracks whether the input is currently focused so the auto-open effect works correctly
+  const isFocused = useRef<boolean>(false);
 
   /* ---------------- Safety checks ---------------- */
 
@@ -256,7 +260,7 @@ export function SearchSelect({
   /* ---------------- Render ---------------- */
 
   const t = useTranslations("common");
-  const defaultNoOptionsPlaceholder = t("multiSelect.noOptionsAvailable");
+  // Removed unused defaultNoOptionsPlaceholder
 
   return (
     <div ref={wrapperRef} className="relative">
@@ -299,9 +303,6 @@ export function SearchSelect({
           onFocus={() => {
             isFocused.current = true;
             onInputFocus?.(); // May trigger async load; auto-open effect handles the delayed case
-            // Open immediately if not disabled — covers both "options already loaded" and
-            // "first focus before load starts" scenarios. The useEffect above handles the
-            // case where options arrive after this focus event fires.
             if (!disabled) {
               setIsOpen(true);
             }
@@ -332,15 +333,15 @@ export function SearchSelect({
       {isOpen && (filteredOptions.length > 0 || isLoading) && (
         <ul
           ref={listRef}
-          id={`${fallbackName}-listbox`}
+          id={`${accessibleId}-listbox`}
           role="listbox"
-          className="absolute left-0 right-0 z-[10000] mt-1 max-h-60 overflow-auto
+          className="absolute left-0 right-0 z-10000 mt-1 max-h-60 overflow-auto
           rounded-lg border bg-white shadow-lg text-gray-900"
         >
           {filteredOptions.map((opt, index) => (
             <li
               key={opt.value}
-              id={`${fallbackName}-option-${index}`}
+              id={`${accessibleId}-option-${index}`}
               role="option"
               aria-selected={index === highlightedIndex}
               onMouseDown={() => handleSelect(opt.value)}

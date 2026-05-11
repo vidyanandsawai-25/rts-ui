@@ -94,6 +94,16 @@ export interface ISelectOption {
   value: string;
 }
 
+/**
+ * Matrix column configuration for rate grid display
+ */
+export interface MatrixColumn {
+  id: string;
+  label: React.ReactNode;
+  tooltip?: string;
+  headerClassName?: string;
+}
+
 export interface IZoneOption {
   id: number;
   name: string;

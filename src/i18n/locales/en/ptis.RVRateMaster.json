@@ -148,5 +148,18 @@
         "message": "Loading RV Rate Master...",
         "description": "Please wait while we fetch the rate master data"
       }
+    },
+    "rvRateMasterErrors": {
+    "errorsResponse": {
+      "bulkUpdateFailed": "Failed to bulk update rate master records",
+      "fetchDetailedRatesFailed": "Failed to fetch detailed rates",
+      "noDataReceived": "No data received from server",
+      "bulkCreateFailed": "Failed to bulk create rate master records",
+      "fetchPagedRateDataFailed": "Failed to fetch paged rate data",
+      "fetchRateMasterDataFailed": "Failed to fetch rate master data",
+      "fetchRateDataByFiltersFailed": "Failed to fetch rate data by filters",
+      "bulkPurgeFailed": "Failed to bulk purge rate master records",
+      "unknownError": "An unknown error occurred"
     }
+  }
 }

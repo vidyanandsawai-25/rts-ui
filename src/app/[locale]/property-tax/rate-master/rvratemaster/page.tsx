@@ -3,7 +3,7 @@ import {
   getRateMasterData,
   getZoneDescriptionsPaged
 } from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
-import { getRateMasterPaged } from "@/lib/api/RVRateMaster.services";
+import { getRateMasterPaged } from "@/lib/api/rvRateMaster";
 
 // Force dynamic rendering to ensure fresh data on each navigation
 export const dynamic = 'force-dynamic';

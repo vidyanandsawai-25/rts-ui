@@ -133,7 +133,8 @@
     "rateSqMtr": "दर (₹/चौ.मी.)",
     "rateSqFt": "दर (₹/चौ.फुट)",
     "rateRemark": "दर टिप्पणी"
-  },    "rvRateMaster": {
+  },   
+   "rvRateMaster": {
       "error": {
         "title": "काहीतरी चूक झाली",
         "description": "RV दर मास्टर पृष्ठ लोड करताना आम्हाला एक त्रुटी आली. कृपया पुन्हा प्रयत्न करा.",
@@ -145,5 +146,18 @@
         "message": "RV दर मास्टर लोड होत आहे...",
         "description": "कृपया प्रतीक्षा करा आम्ही दर मास्टर डेटा आणत आहोत"
       }
+    },
+    "rvRateMasterErrors": {
+    "errorsResponse": {
+      "bulkUpdateFailed": "दर मास्टर रेकॉर्ड बल्क अपडेट करण्यात अयशस्वी",
+      "fetchDetailedRatesFailed": "तपशीलवार दर मिळवण्यात अयशस्वी",
+      "noDataReceived": "सर्व्हरकडून डेटा प्राप्त झाला नाही",
+      "bulkCreateFailed": "दर मास्टर रेकॉर्ड बल्क तयार करण्यात अयशस्वी",
+      "fetchPagedRateDataFailed": "पृष्ठित दर डेटा मिळवण्यात अयशस्वी",
+      "fetchRateMasterDataFailed": "दर मास्टर डेटा मिळवण्यात अयशस्वी",
+      "fetchRateDataByFiltersFailed": "फिल्टरद्वारे दर डेटा मिळवण्यात अयशस्वी",
+      "bulkPurgeFailed": "दर मास्टर रेकॉर्ड बल्क काढण्यात अयशस्वी",
+      "unknownError": "एक अज्ञात त्रुटी आली"
     }
+  }
 }

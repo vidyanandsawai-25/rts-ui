@@ -613,7 +613,7 @@ describe("ActionButtons", () => {
     it("has correct size classes", () => {
       render(<PageNumberButton page={1} />);
       const button = screen.getByText("1").closest("button");
-      expect(button).toHaveClass("min-w-[36px]");
+      expect(button).toHaveClass("min-w-9");
       expect(button).toHaveClass("text-sm");
     });
   });
@@ -845,6 +845,10 @@ describe("ActionButtons", () => {
         render(<DeleteLabelButton className="custom-delete-label-class" />);
         const button = screen.getByText("Delete").closest("button");
         expect(button).toHaveClass("custom-delete-label-class");
+      });
+    });
+  });
+
   describe("BadgeListButton", () => {
     describe("Rendering", () => {
       it("renders all items when count is within maxVisible", () => {
@@ -1042,3 +1046,4 @@ describe("ActionButtons", () => {
     });
   });
 });
+
