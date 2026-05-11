@@ -195,6 +195,13 @@ vi.mock('lucide-react', async () => {
     ShoppingCart: createIcon('ShoppingCart'),
     Megaphone: createIcon('Megaphone'),
     Timer: createIcon('Timer'),
+    Unlock: createIcon('Unlock'),
+    Monitor: createIcon('Monitor'),
+    FolderTree: createIcon('FolderTree'),
+    XCircle: createIcon('XCircle'),
+    Edit2: createIcon('Edit2'),
+    Layout: createIcon('Layout'),
+    LucideIcon: createIcon('LucideIcon'),
   };
 });
 
