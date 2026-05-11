@@ -135,7 +135,7 @@ async function completeLoginSession(
     // ULB branding is optional, don't fail login
   }
 
-  redirect(`/${locale}/dashboard`);
+  redirect(`/${locale}/home`);
 }
 
 // ---------------------------------------------------------------------------

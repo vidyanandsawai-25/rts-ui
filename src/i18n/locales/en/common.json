@@ -148,21 +148,31 @@
     "openUserMenu": "Open user menu",
     "comingSoon": "Coming soon",
     "myProfile": "My Profile",
-    "settings": "Settings",
+    "settings": "Configuration Setting",
     "changePassword": "Change Password",
     "language": "Language",
     "yourIp": "Your IP",
     "ipUnavailable": "Unavailable",
+    "userId": "User ID",
+    "role": "Role",
+    "department": "Department",
+    "publicIp": "Public IP Address",
+    "sessionId": "Session ID",
+    "loginTime": "Login Time",
+    "notAvailable": "N/A",
+    "defaultRole": "User",
+    "defaultUser": "User",
     "logout": "Logout"
   },
   "navigation": {
     "dashboard": "Dashboard",
     "profile": "Profile",
-    "settings": "Settings",
+    "settings": "Configuration Setting",
     "ConstructionTypeMaster": "Construction Type Master"
   },
   "footer": {
     "copyright": "All rights reserved",
+    "allRightsReserved": "All rights reserved.",
     "privacyPolicy": "Privacy Policy",
     "termsOfService": "Terms of Service",
     "contact": "Contact"
@@ -174,6 +184,9 @@
     "defaultUser": "Default User",
     "assessmentSystem": "Property Tax Assessment & Management System",
     "welcome": "Welcome,",
+    "welcomeTo": "Welcome to {name}",
+    "smartGovernance": "Empowering Smart Governance!",
+    "securityPurpose": "All operations are logged and monitored for security purposes.",
     "defaultUlbCode": "TMC",
     "defaultUlbName": "Sthapatya Consultant (I) Pvt.Ltd"
   },
@@ -368,8 +381,8 @@
   "sidebar": {
     "brandTitle": "Property Tax",
     "brandSubtitle": "Property Tax Department",
-    "backToDashboard": "Back to Dashboard",
-    "backToDashboardSecondary": "Dashboard",
+    "backToDashboard": "Back to Home",
+    "backToDashboardSecondary": "Home",
     "footerCopyright": "© NTIS",
     "openMenu": "Open menu",
     "closeMenu": "Close menu"
