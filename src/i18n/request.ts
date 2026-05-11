@@ -37,7 +37,7 @@ export default getRequestConfig(async ({ locale }) => {
     zoneMasterMessages,
     officeMessages,
     bankMasterMessages,
-    appartmentQCMessages
+    appartmentQCMessages,
     modulesMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
