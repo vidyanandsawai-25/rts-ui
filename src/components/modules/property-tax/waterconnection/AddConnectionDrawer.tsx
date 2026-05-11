@@ -11,6 +11,7 @@ import type {
   WaterConnectionFormModel,
   WaterConnectionTypeLookup,
   WaterConnectionSizeLookup,
+  WaterConnectionStatusLookup,
 } from "@/types/waterconnection.types";
 import { saveWaterConnectionAction } from "@/app/[locale]/property-tax/waterconnection/action";
 import { StatusToggleCard } from "../taxzonemaster/StatusToggleCard";
@@ -35,6 +36,7 @@ interface AddConnectionDrawerProps {
   editingConnection: WaterConnection | null;
   typeOptions: WaterConnectionTypeLookup[];
   sizeOptions: WaterConnectionSizeLookup[];
+  statusOptions: WaterConnectionStatusLookup[];
   onClose: () => void;
   onSaved: () => void;
 }
@@ -45,6 +47,7 @@ export function AddConnectionDrawer({
   editingConnection,
   typeOptions,
   sizeOptions,
+  statusOptions,
   onClose,
   onSaved,
 }: AddConnectionDrawerProps) {
@@ -66,6 +69,7 @@ export function AddConnectionDrawer({
         meterNo: editingConnection.meterNo ?? "",
         waterConnectionTypeId: editingConnection.waterConnectionTypeId,
         waterConnectionSizeId: editingConnection.waterConnectionSizeId,
+        waterConnectionStatusId: editingConnection.waterConnectionStatusId ?? null,
         installDate: editingConnection.installDate ?? editingConnection.connectionStartDate ?? "",
         isActive: editingConnection.isActive,
       });
@@ -104,9 +108,11 @@ export function AddConnectionDrawer({
   const handleSelectChange = (name: string, value: string) => {
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "waterConnectionTypeId" || name === "waterConnectionSizeId"
-        ? (value === "" ? "" : Number(value))
-        : value,
+      [name]: name === "waterConnectionStatusId"
+        ? (value === "" ? null : Number(value))
+        : (name === "waterConnectionTypeId" || name === "waterConnectionSizeId")
+          ? (value === "" ? "" : Number(value))
+          : value,
     }));
     setErrors((prev) => ({ ...prev, [name]: "" }));
   };
@@ -206,6 +212,7 @@ export function AddConnectionDrawer({
           onBlur={handleBlur}
           typeOptions={typeOptions}
           sizeOptions={sizeOptions}
+          statusOptions={statusOptions}
           t={t}
         />
 

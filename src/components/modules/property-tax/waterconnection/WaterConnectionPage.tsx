@@ -139,6 +139,7 @@ export default function WaterConnectionPage({ initialData, propertyId }: WaterCo
         editingConnection={editingConnection}
         typeOptions={initialData.typeOptions}
         sizeOptions={initialData.sizeOptions}
+        statusOptions={initialData.statusOptions}
         onClose={handleClose}
         onSaved={handleSaved}
       />

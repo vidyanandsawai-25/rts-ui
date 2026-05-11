@@ -9,6 +9,7 @@ import {
   getWaterConnectionsPaged,
   getWaterConnectionTypes,
   getWaterConnectionSizes,
+  getWaterConnectionStatuses,
   createWaterConnection,
   updateWaterConnection,
   deleteWaterConnection,
@@ -35,10 +36,11 @@ function getMockProperty(propertyId: number): PropertyInfo {
 export async function getWaterConnectionPageData(
   propertyId: number
 ): Promise<WaterConnectionPageData> {
-  const [connectionsResponse, typeOptions, sizeOptions] = await Promise.all([
+  const [connectionsResponse, typeOptions, sizeOptions, statusOptions] = await Promise.all([
     getWaterConnectionsPaged(propertyId),
     getWaterConnectionTypes(),
     getWaterConnectionSizes(),
+    getWaterConnectionStatuses(),
   ]);
 
   return {
@@ -46,6 +48,7 @@ export async function getWaterConnectionPageData(
     connections: connectionsResponse.data ?? [],
     typeOptions,
     sizeOptions,
+    statusOptions,
   };
 }
 

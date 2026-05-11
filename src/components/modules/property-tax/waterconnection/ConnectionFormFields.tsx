@@ -4,6 +4,7 @@ import type {
   WaterConnectionFormModel,
   WaterConnectionTypeLookup,
   WaterConnectionSizeLookup,
+  WaterConnectionStatusLookup,
 } from "@/types/waterconnection.types";
 
 interface ConnectionFormFieldsProps {
@@ -15,6 +16,7 @@ interface ConnectionFormFieldsProps {
   onBlur: (e: React.FocusEvent<HTMLInputElement>) => void;
   typeOptions: WaterConnectionTypeLookup[];
   sizeOptions: WaterConnectionSizeLookup[];
+  statusOptions: WaterConnectionStatusLookup[];
   t: (key: string) => string;
 }
 
@@ -27,6 +29,7 @@ export function ConnectionFormFields({
   onBlur,
   typeOptions,
   sizeOptions,
+  statusOptions,
   t,
 }: ConnectionFormFieldsProps) {
   const typeSelectOptions = typeOptions.map((opt) => ({
@@ -37,6 +40,11 @@ export function ConnectionFormFields({
   const sizeSelectOptions = sizeOptions.map((opt) => ({
     value: String(opt.id),
     label: opt.displayLabel,
+  }));
+
+  const statusSelectOptions = statusOptions.map((opt) => ({
+    value: String(opt.id),
+    label: opt.statusName,
   }));
 
   return (
@@ -104,7 +112,7 @@ export function ConnectionFormFields({
         </div>
       </div>
 
-      {/* Row 3: Size | (empty) */}
+      {/* Row 3: Size | Status */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Select
@@ -116,6 +124,16 @@ export function ConnectionFormFields({
             onChange={(_, val) => onSelectChange("waterConnectionSizeId", val)}
             placeholder={t("form.fields.tapSize.placeholder")}
             error={showError("waterConnectionSizeId") ? errors.waterConnectionSizeId : undefined}
+          />
+        </div>
+        <div>
+          <Select
+            name="waterConnectionStatusId"
+            label={t("form.fields.status.label")}
+            options={statusSelectOptions}
+            value={formData.waterConnectionStatusId != null ? String(formData.waterConnectionStatusId) : ''}
+            onChange={(_, val) => onSelectChange("waterConnectionStatusId", val)}
+            placeholder={t("form.fields.status.placeholder")}
           />
         </div>
       </div>

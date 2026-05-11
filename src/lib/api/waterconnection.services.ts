@@ -6,6 +6,8 @@ import type {
   WaterConnectionFormModel,
   WaterConnectionTypeLookup,
   WaterConnectionSizeLookup,
+  WaterConnectionStatusLookup,
+  WaterRateMasterLookup,
 } from "@/types/waterconnection.types";
 
 export { ApiError };
@@ -149,6 +151,48 @@ export async function getWaterConnectionSizes(): Promise<WaterConnectionSizeLook
       response.statusCode || 500,
       "",
       response.error || "Fetch connection sizes failed"
+    );
+  }
+
+  return response.data.data ?? [];
+}
+
+/** GET connection statuses for dropdown */
+export async function getWaterConnectionStatuses(): Promise<WaterConnectionStatusLookup[]> {
+  const params = new URLSearchParams({ PageSize: "200", IsActive: "true" });
+  const response = await apiClient.get<PagedResponse<WaterConnectionStatusLookup>>(
+    `/WaterConnectionStatus?${params.toString()}`
+  );
+
+  if (!response.success || !response.data) {
+    throw new ApiError(
+      response.statusCode || 500,
+      "",
+      response.error || "Fetch connection statuses failed"
+    );
+  }
+
+  return response.data.data ?? [];
+}
+
+/** GET water rate masters — optionally filter by typeId / sizeId */
+export async function getWaterRateMasters(
+  typeId?: number,
+  sizeId?: number
+): Promise<WaterRateMasterLookup[]> {
+  const params = new URLSearchParams({ PageSize: "200", IsActive: "true" });
+  if (typeId != null) params.append("WaterConnectionTypeId", typeId.toString());
+  if (sizeId != null) params.append("WaterConnectionSizeId", sizeId.toString());
+
+  const response = await apiClient.get<PagedResponse<WaterRateMasterLookup>>(
+    `/WaterRateMaster?${params.toString()}`
+  );
+
+  if (!response.success || !response.data) {
+    throw new ApiError(
+      response.statusCode || 500,
+      "",
+      response.error || "Fetch water rate masters failed"
     );
   }
 

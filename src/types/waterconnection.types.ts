@@ -59,11 +59,28 @@ export interface WaterConnectionSizeLookup {
   displayLabel: string;
 }
 
+export interface WaterConnectionStatusLookup {
+  id: number;
+  statusName: string;
+}
+
+export interface WaterRateMasterLookup {
+  id: number;
+  waterConnectionTypeId: number;
+  connectionTypeName: string;
+  waterConnectionSizeId: number;
+  connectionSizeDisplay: string;
+  financeYearId: number;
+  yearCode: string | null;
+  yearlyRate: number;
+}
+
 export interface WaterConnectionPageData {
   property: PropertyInfo;
   connections: WaterConnection[];
   typeOptions: WaterConnectionTypeLookup[];
   sizeOptions: WaterConnectionSizeLookup[];
+  statusOptions: WaterConnectionStatusLookup[];
 }
 
 export interface PagedResponse<T> {
