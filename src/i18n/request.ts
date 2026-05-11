@@ -38,6 +38,7 @@ export default getRequestConfig(async ({ locale }) => {
     zoneMasterMessages,
     officeMessages,
     bankMasterMessages,
+    screenAccessMessages,
     modulesMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
@@ -64,6 +65,7 @@ export default getRequestConfig(async ({ locale }) => {
       .catch(() => ({}))
       .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/bank-master.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/screenAccess.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
   ]);
 
@@ -92,6 +94,7 @@ export default getRequestConfig(async ({ locale }) => {
       zoneMaster: zoneMasterMessages,
       office: officeMessages,
       bankMaster: bankMasterMessages,
+      screenAccess: screenAccessMessages,
       modules: modulesMessages,
     },
   };

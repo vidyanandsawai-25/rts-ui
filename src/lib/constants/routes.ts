@@ -15,4 +15,5 @@ export const ROUTES = {
   },
   PROFILE: '/profile',
   SETTINGS: '/settings',
+  SCREEN_ACCESS: '/configuration-settings/screenAccess',
 } as const;
