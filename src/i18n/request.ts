@@ -38,6 +38,7 @@ export default getRequestConfig(async ({ locale }) => {
     officeMessages,
     bankMasterMessages,
     modulesMessages,
+    waterConnectionMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/dashboard.json`).then((m) => m.default),
@@ -63,6 +64,7 @@ export default getRequestConfig(async ({ locale }) => {
       .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/bank-master.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/waterconnection.json`).then((m) => m.default),
   ]);
 
   return {
@@ -90,6 +92,7 @@ export default getRequestConfig(async ({ locale }) => {
       office: officeMessages,
       bankMaster: bankMasterMessages,
       modules: modulesMessages,
+      waterConnection: waterConnectionMessages.waterConnection,
     },
   };
 });

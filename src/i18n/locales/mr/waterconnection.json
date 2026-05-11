@@ -1,0 +1,124 @@
+{
+  "waterConnection": {
+    "page": {
+      "title": "जल जोडणी व्यवस्थापन",
+      "subtitle": "वैयक्तिक मालमत्ता दृश्य"
+    },
+    "stats": {
+      "totalConnections": "एकूण जोडण्या",
+      "activeConnections": "सक्रिय जोडण्या",
+      "stoppedConnections": "थांबवलेल्या जोडण्या",
+      "yearlyRevenue": "वार्षिक महसूल"
+    },
+    "property": {
+      "owner": "मालक",
+      "contact": "संपर्क",
+      "email": "ईमेल",
+      "address": "पत्ता",
+      "propertyNo": "मालमत्ता क्रमांक",
+      "zone": "क्षेत्र",
+      "ward": "वार्ड",
+      "buildingType": "इमारत प्रकार"
+    },
+    "list": {
+      "title": "जल जोडण्या",
+      "subtitle": "{propertyNo} साठी सर्व जोडण्या व्यवस्थापित करा",
+      "buttons": {
+        "add": "नवीन जोडा"
+      },
+      "connections": "{count} जोडण्या",
+      "status": {
+        "active": "सक्रिय",
+        "stopped": "थांबवलेले",
+        "activated": "सक्रिय केले",
+        "stoppedOn": "थांबवले"
+      },
+      "table": {
+        "connectionNo": "जोडणी क्रमांक",
+        "type": "प्रकार",
+        "tapSize": "नळाचा आकार",
+        "applicableRate": "लागू दर",
+        "perMonth": "प्रति महिना",
+        "category": "श्रेणी",
+        "applicableCharges": "लागू शुल्क",
+        "status": "स्थिती",
+        "actions": "कृती"
+      }
+    },
+    "form": {
+      "addTitle": "नवीन जोडणी जोडा",
+      "editTitle": "जोडणी संपादित करा",
+      "subtitle": "या मालमत्तेसाठी नवीन जल जोडणी तयार करा.",
+      "editSubtitle": "जल जोडणी तपशील अद्यतनित करा.",
+      "fields": {
+        "connectionNo": {
+          "label": "जोडणी क्रमांक",
+          "placeholder": "जोडणी क्रमांक प्रविष्ट करा"
+        },
+        "meterNo": {
+          "label": "मीटर क्रमांक",
+          "placeholder": "मीटर क्रमांक प्रविष्ट करा"
+        },
+        "type": {
+          "label": "प्रकार",
+          "placeholder": "प्रकार निवडा",
+          "domestic": "घरगुती",
+          "commercial": "व्यावसायिक"
+        },
+        "installDate": {
+          "label": "स्थापना तारीख"
+        },
+        "tapSize": {
+          "label": "नळाचा आकार",
+          "placeholder": "नळाचा आकार निवडा",
+          "15Inch": "15 इंच",
+          "20Inch": "20 इंच",
+          "25Inch": "25 इंच",
+          "32Inch": "32 इंच"
+        },
+        "applicableRate": {
+          "label": "लागू दर (₹)",
+          "autoCalculated": "नळाच्या आकारावर आधारित स्वयं-गणना"
+        }
+      },
+      "validation": {
+        "connectionNoRequired": "जोडणी क्रमांक आवश्यक आहे",
+        "connectionNoFormat": "फक्त अक्षरे, संख्या आणि हायफन परवानगी आहे",
+        "meterNoRequired": "मीटर क्रमांक आवश्यक आहे",
+        "typeRequired": "प्रकार आवश्यक आहे",
+        "tapSizeRequired": "नळाचा आकार आवश्यक आहे",
+        "installDateRequired": "स्थापना तारीख आवश्यक आहे",
+        "fixErrors": "कृपया प्रमाणीकरण त्रुटी दुरुस्त करा"
+      },
+      "status": {
+        "label": "जोडणी स्थिती",
+        "active": "जोडणी सध्या सक्रिय आहे",
+        "inactive": "जोडणी सध्या थांबवलेली आहे"
+      },
+      "actions": {
+        "cancel": "रद्द करा",
+        "add": "जोडणी जोडा",
+        "update": "जोडणी अद्यतनित करा"
+      },
+      "messages": {
+        "createSuccess": "जोडणी यशस्वीरित्या जोडली",
+        "updateSuccess": "जोडणी यशस्वीरित्या अद्यतनित केली",
+        "error": "काहीतरी चुकले"
+      }
+    },
+    "delete": {
+      "success": "जोडणी यशस्वीरित्या हटवली",
+      "error": "ही जोडणी हटवता येत नाही"
+    },
+    "loading": {
+      "message": "जल जोडण्या लोड होत आहेत...",
+      "description": "कृपया थांबा"
+    },
+    "error": {
+      "title": "जल जोडणी त्रुटी",
+      "description": "पृष्ठ लोड करताना त्रुटी आली. कृपया पुन्हा प्रयत्न करा.",
+      "goHome": "मुख्यपृष्ठ",
+      "tryAgain": "पुन्हा प्रयत्न करा"
+    }
+  }
+}

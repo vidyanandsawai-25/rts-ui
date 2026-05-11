@@ -1,0 +1,124 @@
+{
+  "waterConnection": {
+    "page": {
+      "title": "जल कनेक्शन प्रबंधन",
+      "subtitle": "व्यक्तिगत संपत्ति दृश्य"
+    },
+    "stats": {
+      "totalConnections": "कुल कनेक्शन",
+      "activeConnections": "सक्रिय कनेक्शन",
+      "stoppedConnections": "रोके गए कनेक्शन",
+      "yearlyRevenue": "वार्षिक राजस्व"
+    },
+    "property": {
+      "owner": "मालिक",
+      "contact": "संपर्क",
+      "email": "ईमेल",
+      "address": "पता",
+      "propertyNo": "संपत्ति क्रमांक",
+      "zone": "क्षेत्र",
+      "ward": "वार्ड",
+      "buildingType": "भवन प्रकार"
+    },
+    "list": {
+      "title": "जल कनेक्शन",
+      "subtitle": "{propertyNo} के सभी कनेक्शन प्रबंधित करें",
+      "buttons": {
+        "add": "नया जोड़ें"
+      },
+      "connections": "{count} कनेक्शन",
+      "status": {
+        "active": "सक्रिय",
+        "stopped": "रोका गया",
+        "activated": "सक्रिय किया",
+        "stoppedOn": "रोका गया"
+      },
+      "table": {
+        "connectionNo": "कनेक्शन क्रमांक",
+        "type": "प्रकार",
+        "tapSize": "नल का आकार",
+        "applicableRate": "लागू दर",
+        "perMonth": "प्रति माह",
+        "category": "श्रेणी",
+        "applicableCharges": "लागू शुल्क",
+        "status": "स्थिति",
+        "actions": "कार्य"
+      }
+    },
+    "form": {
+      "addTitle": "नया कनेक्शन जोड़ें",
+      "editTitle": "कनेक्शन संपादित करें",
+      "subtitle": "इस संपत्ति के लिए नया जल कनेक्शन बनाएं।",
+      "editSubtitle": "जल कनेक्शन विवरण अपडेट करें।",
+      "fields": {
+        "connectionNo": {
+          "label": "कनेक्शन क्रमांक",
+          "placeholder": "कनेक्शन क्रमांक दर्ज करें"
+        },
+        "meterNo": {
+          "label": "मीटर क्रमांक",
+          "placeholder": "मीटर क्रमांक दर्ज करें"
+        },
+        "type": {
+          "label": "प्रकार",
+          "placeholder": "प्रकार चुनें",
+          "domestic": "घरेलू",
+          "commercial": "व्यावसायिक"
+        },
+        "installDate": {
+          "label": "स्थापना तिथि"
+        },
+        "tapSize": {
+          "label": "नल का आकार",
+          "placeholder": "नल का आकार चुनें",
+          "15Inch": "15 इंच",
+          "20Inch": "20 इंच",
+          "25Inch": "25 इंच",
+          "32Inch": "32 इंच"
+        },
+        "applicableRate": {
+          "label": "लागू दर (₹)",
+          "autoCalculated": "नल के आकार के आधार पर स्वतः गणना"
+        }
+      },
+      "validation": {
+        "connectionNoRequired": "कनेक्शन क्रमांक आवश्यक है",
+        "connectionNoFormat": "केवल अक्षर, संख्याएं और हाइफन अनुमत हैं",
+        "meterNoRequired": "मीटर क्रमांक आवश्यक है",
+        "typeRequired": "प्रकार आवश्यक है",
+        "tapSizeRequired": "नल का आकार आवश्यक है",
+        "installDateRequired": "स्थापना तिथि आवश्यक है",
+        "fixErrors": "कृपया सत्यापन त्रुटियां ठीक करें"
+      },
+      "status": {
+        "label": "कनेक्शन स्थिति",
+        "active": "कनेक्शन वर्तमान में सक्रिय है",
+        "inactive": "कनेक्शन वर्तमान में रोका गया है"
+      },
+      "actions": {
+        "cancel": "रद्द करें",
+        "add": "कनेक्शन जोड़ें",
+        "update": "कनेक्शन अपडेट करें"
+      },
+      "messages": {
+        "createSuccess": "कनेक्शन सफलतापूर्वक जोड़ा गया",
+        "updateSuccess": "कनेक्शन सफलतापूर्वक अपडेट किया गया",
+        "error": "कुछ गलत हो गया"
+      }
+    },
+    "delete": {
+      "success": "कनेक्शन सफलतापूर्वक हटाया गया",
+      "error": "यह कनेक्शन हटाया नहीं जा सकता"
+    },
+    "loading": {
+      "message": "जल कनेक्शन लोड हो रहा है...",
+      "description": "कृपया प्रतीक्षा करें"
+    },
+    "error": {
+      "title": "जल कनेक्शन त्रुटि",
+      "description": "पृष्ठ लोड करते समय त्रुटि हुई। कृपया पुनः प्रयास करें।",
+      "goHome": "मुख्य पृष्ठ",
+      "tryAgain": "पुनः प्रयास करें"
+    }
+  }
+}
