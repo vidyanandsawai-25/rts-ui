@@ -48,3 +48,7 @@ export const SEARCH_KEY_REGEX = /^[A-Za-z0-9+\-]+$/;
 export const PERSON_NAME_REGEX = /^[\p{L}\p{M}\s.,'-]+$/u;
 export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const MOBILE_10_REGEX = /^[0-9]{10}$/;
+
+/* ================= POSITIVE DECIMAL VALIDATION ================= */
+// Regex pattern to match invalid keys for positive decimal input (blocks e, E, +, -)
+export const POSITIVE_DECIMAL_INVALID_KEYS = /^[eE+\-]$/;

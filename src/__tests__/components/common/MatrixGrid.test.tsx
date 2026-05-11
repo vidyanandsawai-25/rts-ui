@@ -46,11 +46,11 @@ describe('MatrixGrid', () => {
     expect(screen.getByText('(kg)')).toBeInTheDocument();
     expect(screen.getByText('Column 2')).toBeInTheDocument();
     
-    // All cells are now MatrixCellInput (inputs), so check values via inputs
-    const inputs = screen.getAllByRole('spinbutton');
-    expect(inputs).toHaveLength(4); // 2 rows × 2 columns
-    expect(inputs[0]).toHaveValue(10);
-    expect(inputs[1]).toHaveValue(20);
+    // In view mode (default), cells are rendered as static divs with formatted values
+    expect(screen.getByText('₹10.00')).toBeInTheDocument();
+    expect(screen.getByText('₹20.00')).toBeInTheDocument();
+    expect(screen.getByText('₹30.00')).toBeInTheDocument();
+    expect(screen.getByText('₹40.00')).toBeInTheDocument();
   });
 
   it('renders meta columns correctly', () => {
@@ -93,18 +93,17 @@ describe('MatrixGrid', () => {
       />
     );
     
-    // All cells are rendered as inputs, but only col1 is editable
+    // Only col1 is editable, so only 2 inputs (col1 for row1 and row2)
     const inputs = screen.getAllByRole('spinbutton'); // input type="number"
-    expect(inputs).toHaveLength(4); // 2 rows × 2 columns
-    // col1 inputs (first and third) are editable, col2 inputs are readOnly
-    expect(inputs[0]).toHaveValue(10);
+    expect(inputs).toHaveLength(2); // Only col1 cells are inputs
+    expect(inputs[0]).toHaveValue(10); // row1, col1
     expect(inputs[0]).not.toHaveAttribute('readOnly');
-    expect(inputs[1]).toHaveValue(20);
-    expect(inputs[1]).toHaveAttribute('readOnly');
-    expect(inputs[2]).toHaveValue(30);
-    expect(inputs[2]).not.toHaveAttribute('readOnly');
-    expect(inputs[3]).toHaveValue(40);
-    expect(inputs[3]).toHaveAttribute('readOnly');
+    expect(inputs[1]).toHaveValue(30); // row2, col1
+    expect(inputs[1]).not.toHaveAttribute('readOnly');
+    
+    // col2 cells are still static divs (not editable)
+    expect(screen.getByText('₹20.00')).toBeInTheDocument(); // row1, col2
+    expect(screen.getByText('₹40.00')).toBeInTheDocument(); // row2, col2
   });
 
   it('calls onCellChange when input value changes', () => {
@@ -160,9 +159,13 @@ describe('MatrixGrid', () => {
     expect(col1Header).toHaveClass('bg-red-100');
     
     // Check cell for Col1 (in row 1)
-    // The input for col1, row1 should have the color class
-    const inputs = screen.getAllByRole('spinbutton');
-    expect(inputs[0]).toHaveClass('bg-red-100');
+    // In view mode, cells are rendered as divs with formatted values
+    const col1Cell = screen.getByText('₹10.00').closest('div');
+    expect(col1Cell).toHaveClass('bg-red-100');
+    
+    // Check cell for Col2 (in row 1)
+    const col2Cell = screen.getByText('₹20.00').closest('div');
+    expect(col2Cell).toHaveClass('bg-green-100');
   });
 
   it('renders tooltip for columns with tooltip property', () => {
@@ -184,5 +187,21 @@ describe('MatrixGrid', () => {
     
     expect(screen.getByRole('tooltip')).toBeInTheDocument();
     expect(screen.getByText('Helpful info')).toBeInTheDocument();
+  });
+
+  it('handles custom cell rendering with colorMap', () => {
+    const colorMap = { 'COL1': 'bg-blue-100 text-blue-900' };
+    render(
+      <MatrixGrid 
+        columns={columns} 
+        rows={rows} 
+        colorMap={colorMap} 
+        translations={mockTranslations} 
+      />
+    );
+    
+    const cell = screen.getByText('₹10.00');
+    expect(cell).toHaveClass('bg-blue-100');
+    expect(cell).toHaveClass('text-blue-900');
   });
 });

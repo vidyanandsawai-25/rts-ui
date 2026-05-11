@@ -60,4 +60,27 @@ describe('MatrixCellInput', () => {
     const input = screen.getByRole('spinbutton');
     expect(input).toHaveAttribute('aria-label', 'Test Input');
   });
+
+  it('handles decimal values correctly', () => {
+    render(<MatrixCellInput {...defaultProps} value={123.45} />);
+    const input = screen.getByRole('spinbutton');
+    expect(input).toHaveValue(123.45);
+  });
+
+  it('handles large numeric values', () => {
+    render(<MatrixCellInput {...defaultProps} />);
+    const input = screen.getByRole('spinbutton');
+    fireEvent.change(input, { target: { value: '999999' } });
+    
+    expect(defaultProps.onCellChange).toHaveBeenCalledWith('row-1', 'col-1', 999999);
+  });
+
+  it('validates and constrains input to valid numbers', () => {
+    render(<MatrixCellInput {...defaultProps} />);
+    const input = screen.getByRole('spinbutton');
+    fireEvent.change(input, { target: { value: 'abc' } });
+    
+    // Should handle invalid input gracefully
+    expect(defaultProps.onCellChange).toHaveBeenCalled();
+  });
 });

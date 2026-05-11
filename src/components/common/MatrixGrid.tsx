@@ -239,8 +239,9 @@ export const MatrixGrid = ({
  
               return (
                 <th
-                  key={meta.id}
+                  key={meta.id || `meta-${idx}`}
                   scope="col"
+                  role="columnheader"
                   className={cn(
                     "px-1 md:px-2 py-2 md:py-2 font-bold text-xs md:text-sm text-center text-blue-700 bg-blue-50",
                     idx === 0 && "sticky left-0 z-30 bg-blue-50"
@@ -259,7 +260,7 @@ export const MatrixGrid = ({
             })}
  
             {/* Rate headers */}
-            {rateColumns.map((col) => {
+            {rateColumns.map((col, colIdx) => {
               const colorClass: string =
                 colorMap[col.id?.toUpperCase()] || col.headerClassName || "bg-blue-50 text-blue-700";
  
@@ -276,8 +277,9 @@ export const MatrixGrid = ({
  
               return (
                 <th
-                  key={col.id}
+                  key={col.id || `col-${colIdx}`}
                   scope="col"
+                  role="columnheader"
                   className={cn(
                     "px-1 py-1 h-7 text-xs font-semibold text-center bg-blue-50",
                     colorClass
@@ -311,7 +313,7 @@ export const MatrixGrid = ({
         {/* ================= ROWS ================= */}
         <tbody>
           {rows.map((row, rowIndex) => (
-            <tr key={row.id} className="bg-white hover:bg-gray-50">
+            <tr key={row.id || `row-${rowIndex}`} className="bg-white hover:bg-gray-50">
               {/* Meta cells - first column sticky left */}
               {metaColumns.map((meta, idx) => {
                 // Get tooltip from row meta (e.g., zoneNo_tooltip) or use meta.tooltip as fallback
@@ -331,7 +333,7 @@ export const MatrixGrid = ({
  
                 return (
                   <td
-                    key={meta.id}
+                    key={meta.id || `meta-cell-${idx}`}
                     className={cn(
                       "px-0.5 md:px-1 py-1 md:py-1",
                       idx === 0 && "sticky left-0 z-10 bg-white"
@@ -349,8 +351,8 @@ export const MatrixGrid = ({
               })}
  
               {/* Rate cells */}
-              {rateColumns.map((col) => {
-                const colorClass: string = colorMap[col.id.toUpperCase()] || "";
+              {rateColumns.map((col, colIdx) => {
+                const colorClass: string = colorMap[col.id?.toUpperCase?.()] || colorMap[col.id?.toLowerCase?.()] || "";
                 const rawValue = row.cells[col.id];
                 const value: number = Number(rawValue) || 0;
  
@@ -369,19 +371,37 @@ export const MatrixGrid = ({
                   : row.id;
                 const metaLabel = `${labelText} for ${metaText}`;
  
+                if (canEdit) {
+                  return (
+                    <td key={col.id || `cell-${colIdx}`} className="px-0.5 md:px-1 py-1 md:py-1">
+                      <MatrixCellInput
+                        value={value}
+                        rowId={row.id}
+                        columnId={col.id}
+                        metaLabel={metaLabel}
+                        colorClass={colorClass}
+                        className={customCellClass}
+                        readOnly={false}
+                        onCellChange={onCellChange}
+                        onKeyDown={onCellKeyDown}
+                      />
+                    </td>
+                  );
+                }
+
+                // View mode or non-editable column
                 return (
-                  <td key={col.id} className="px-0.5 md:px-1 py-1 md:py-1">
-                    <MatrixCellInput
-                      value={value}
-                      rowId={row.id}
-                      columnId={col.id}
-                      metaLabel={metaLabel}
-                      colorClass={colorClass}
-                      className={customCellClass}
-                      readOnly={!canEdit}
-                      onCellChange={onCellChange}
-                      onKeyDown={onCellKeyDown}
-                    />
+                  <td key={col.id || `cell-${colIdx}`} className="px-0.5 md:px-1 py-1 md:py-1 text-center">
+                    <div
+                      className={cn(
+                        "px-1 md:px-2 py-1 md:py-1 rounded-md md:rounded-lg font-bold text-xs md:text-sm text-center border w-full",
+                        value > 0 ? "bg-blue-50 text-blue-800 border-blue-300" : "bg-gray-50 text-gray-500 border-gray-200",
+                        colorClass,
+                        customCellClass
+                      )}
+                    >
+                      {translations.currencySymbol}{Number(value).toFixed(2)}
+                    </div>
                   </td>
                 );
               })}
