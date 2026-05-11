@@ -188,6 +188,11 @@ vi.mock('lucide-react', async () => {
     Share: createIcon('Share'),
     Eraser: createIcon('Eraser'),
     CheckSquare: createIcon('CheckSquare'),
+    Droplet: createIcon('Droplet'),
+    Hash: createIcon('Hash'),
+    ShoppingCart: createIcon('ShoppingCart'),
+    Megaphone: createIcon('Megaphone'),
+    Timer: createIcon('Timer'),
   };
 });
 

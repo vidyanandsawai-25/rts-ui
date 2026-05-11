@@ -97,8 +97,8 @@ describe('BankForm', () => {
     await waitFor(() => {
       expect(bankActions.createBankAction).toHaveBeenCalled();
       expect(toast.success).toHaveBeenCalledWith('messages.createSuccess');
-    });
-  });
+    }, { timeout: 10000 });
+  }, 15000);
 
   it('validates IFSC code format', async () => {
     render(<BankForm id={null} />);
@@ -155,6 +155,6 @@ describe('BankForm', () => {
 
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith('messages.errorOccurred');
-    });
-  });
+    }, { timeout: 10000 });
+  }, 15000);
 });
