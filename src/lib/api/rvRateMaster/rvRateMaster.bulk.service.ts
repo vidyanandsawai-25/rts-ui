@@ -11,15 +11,23 @@ export async function bulkCreateRateMaster(payload: IRateCreate[]): Promise<void
   try {
     const response = await apiClient.post<{ data?: unknown }>(`/Rate/Bulk`, payload);
     if (!response.success) {
-      const t = await getTranslations('rvRateMasterErrors');
-      throw new ApiError(response.statusCode ?? 500, response.error || t('errorsResponse.bulkCreateFailed'), 'Bulk create rate master failed');
+      const t = await getTranslations('ptis_RVRateMaster');
+      throw new ApiError(
+        response.statusCode ?? 500,
+        response.error || t('rvRateMasterErrors.bulkCreateFailed'),
+        'Bulk create rate master failed'
+      );
     }
   } catch (error) {
     if (error instanceof ApiError) {
       throw error;
     }
-    const t = await getTranslations('rvRateMasterErrors');
-    throw new ApiError(500, error instanceof Error ? error.message : t('errorsResponse.unknownError'), 'Bulk create rate master failed');
+    const t = await getTranslations('ptis_RVRateMaster');
+    throw new ApiError(
+      500,
+      error instanceof Error ? error.message : t('rvRateMasterErrors.unknownError'),
+      'Bulk create rate master failed'
+    );
   }
 }
 
@@ -31,15 +39,23 @@ export async function bulkUpdateRateMaster(payload: Array<{ id: number, data: Re
   try {
     const response = await apiClient.put<{ data?: unknown }>(`/Rate/Bulk`, payload);
     if (!response.success) {
-      const t = await getTranslations('rvRateMasterErrors');
-      throw new ApiError(response.statusCode ?? 500, response.error || t('errorsResponse.bulkUpdateFailed'), 'Bulk update rate master failed');
+      const t = await getTranslations('ptis_RVRateMaster');
+      throw new ApiError(
+        response.statusCode ?? 500,
+        response.error || t('rvRateMasterErrors.bulkUpdateFailed'),
+        'Bulk update rate master failed'
+      );
     }
   } catch (error) {
     if (error instanceof ApiError) {
       throw error;
     }
-    const t = await getTranslations('rvRateMasterErrors');
-    throw new ApiError(500, error instanceof Error ? error.message : t('errorsResponse.unknownError'), 'Bulk update rate master failed');
+    const t = await getTranslations('ptis_RVRateMaster');
+    throw new ApiError(
+      500,
+      error instanceof Error ? error.message : t('rvRateMasterErrors.unknownError'),
+      'Bulk update rate master failed'
+    );
   }
 }
 
@@ -52,14 +68,22 @@ export async function bulkPurgeRateMaster(ids: number[]): Promise<void> {
       body: JSON.stringify(ids),
     });
     if (!response.success) {
-      const t = await getTranslations('rvRateMasterErrors');
-      throw new ApiError(response.statusCode ?? 500, response.error || t('errorsResponse.bulkPurgeFailed'), 'Bulk purge rate master failed');
+      const t = await getTranslations('ptis_RVRateMaster');
+      throw new ApiError(
+        response.statusCode ?? 500,
+        response.error || t('rvRateMasterErrors.bulkPurgeFailed'),
+        'Bulk purge rate master failed'
+      );
     }
   } catch (error) {
     if (error instanceof ApiError) {
       throw error;
     }
-    const t = await getTranslations('rvRateMasterErrors');
-    throw new ApiError(500, error instanceof Error ? error.message : t('errorsResponse.unknownError'), 'Bulk purge rate master failed');
+    const t = await getTranslations('ptis_RVRateMaster');
+    throw new ApiError(
+      500,
+      error instanceof Error ? error.message : t('rvRateMasterErrors.unknownError'),
+      'Bulk purge rate master failed'
+    );
   }
 }

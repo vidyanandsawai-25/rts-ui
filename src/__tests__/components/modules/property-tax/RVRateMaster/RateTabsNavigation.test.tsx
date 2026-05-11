@@ -3,9 +3,11 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextIntlClientProvider } from "next-intl";
 import { RateTabsNavigation } from "@/components/modules/property-tax/RVRateMaster/RateTabsNavigation";
 
+// Expose mockPush for assertions
+export const mockPush = vi.fn();
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
-    push: vi.fn(),
+    push: mockPush,
     replace: vi.fn(),
   }),
   usePathname: () => "/en/property-tax/rate-master/rvratemaster",
@@ -53,9 +55,6 @@ describe("RateTabsNavigation", () => {
   });
 
   it("navigates to Rateable Value when clicked", () => {
-    const mockPush = vi.fn();
-    vi.mocked(vi.mocked(() => ({ push: mockPush })));
-
     render(
       <NextIntlClientProvider locale="en" messages={mockMessages}>
         <RateTabsNavigation />
@@ -64,7 +63,8 @@ describe("RateTabsNavigation", () => {
 
     const rateableTab = screen.getByText("Rateable Value");
     fireEvent.click(rateableTab);
-    // Verify navigation logic
+    // Assert navigation was triggered with the expected URL
+    expect(mockPush).toHaveBeenCalledWith("/en/property-tax/rate-master/rvratemaster");
   });
 
   it("renders with proper styling", () => {

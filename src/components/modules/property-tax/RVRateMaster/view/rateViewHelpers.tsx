@@ -14,7 +14,8 @@ export function filterTableData(
     return rateMasterData;
   }
   return rateMasterData.filter((row) => {
-    if (selectedZone !== "ALL" && row.zoneSection !== selectedZone) return false;
+    // Use rateSection if present, fallback to zoneSection for zone filtering
+    if (selectedZone !== "ALL" && (row.rateSection ?? row.zoneSection) !== selectedZone) return false;
     if (selectedYear !== "ALL" && row.assessmentYear !== selectedYear) return false;
     if (selectedUseGroup !== "ALL" && row.useGroup !== selectedUseGroup) return false;
     return true;

@@ -383,7 +383,7 @@ export function SortAscButton(
       icon={ArrowUp}
       size="sm"
       aria-label={ariaLabel ?? "Sort ascending"}
-      className={cn("hover:bg-transparent hover:text-blue-600 focus:ring-0! focus:ring-offset-0!", className)}
+      className={cn("hover:bg-transparent hover:text-blue-600 focus:!ring-0 focus:!ring-offset-0", className)}
       {...props}
     />
   );

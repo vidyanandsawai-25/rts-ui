@@ -29,12 +29,20 @@ export async function getRateMasterTableData(
   try {
     const response = await apiClient.get<PagedResponse<IBackendRateMaster>>(`/Rate?PageSize=-1`);
     if (!response.success) {
-      const t = await getTranslations('rvRateMasterErrors');
-      throw new ApiError(response.statusCode ?? 500, response.error || t('errorsResponse.fetchRateMasterDataFailed'), 'Get rate master data failed');
+      const t = await getTranslations('ptis_RVRateMaster');
+      throw new ApiError(
+        response.statusCode ?? 500,
+        response.error || t('rvRateMasterErrors.fetchRateMasterDataFailed'),
+        'Get rate master data failed'
+      );
     }
     if (!response.data) {
-      const t = await getTranslations('rvRateMasterErrors');
-      throw new ApiError(500, t('errorsResponse.noDataReceived'), 'Invalid response format');
+      const t = await getTranslations('ptis_RVRateMaster');
+      throw new ApiError(
+        500,
+        t('rvRateMasterErrors.noDataReceived'),
+        'Invalid response format'
+      );
     }
 
     const data = response.data;

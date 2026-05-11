@@ -27,10 +27,18 @@ vi.mock("@/components/common/Drawer", () => ({
 // Mock RateMasterForm
 import type { ISelectOption } from "@/types/RVRateMaster";
 vi.mock("@/components/modules/property-tax/RVRateMaster/RateMasterForm", () => ({
-  default: ({ mode, zones, useGroups }: { mode: string; zones?: ISelectOption[]; useGroups?: ISelectOption[] }) => (
+  default: ({
+    mode,
+    zoneOptions,
+    useGroupOptions,
+  }: {
+    mode: string;
+    zoneOptions?: ISelectOption[];
+    useGroupOptions?: ISelectOption[];
+  }) => (
     <div data-testid="rate-master-form" data-mode={mode}>
-      <div>Zones: {zones?.length || 0}</div>
-      <div>UseGroups: {useGroups?.length || 0}</div>
+      <div>Zones: {zoneOptions?.length || 0}</div>
+      <div>UseGroups: {useGroupOptions?.length || 0}</div>
     </div>
   ),
 }));

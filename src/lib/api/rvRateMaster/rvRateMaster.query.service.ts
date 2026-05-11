@@ -27,20 +27,32 @@ export async function getDetailedRates(
 
     const response = await apiClient.get(`/Rate/detailed?${params.toString()}`);
     if (!response.success) {
-      const t = await getTranslations('rvRateMasterErrors');
-      throw new ApiError(response.statusCode ?? 500, response.error || t('errorsResponse.fetchDetailedRatesFailed'), 'Get detailed rates failed');
+      const t = await getTranslations('ptis_RVRateMaster');
+      throw new ApiError(
+        response.statusCode ?? 500,
+        response.error || t('rvRateMasterErrors.fetchDetailedRatesFailed'),
+        'Get detailed rates failed'
+      );
     }
     if (!response.data) {
-      const t = await getTranslations('rvRateMasterErrors');
-      throw new ApiError(500, t('errorsResponse.noDataReceived'), 'Invalid response format');
+      const t = await getTranslations('ptis_RVRateMaster');
+      throw new ApiError(
+        500,
+        t('rvRateMasterErrors.noDataReceived'),
+        'Invalid response format'
+      );
     }
     return response.data;
   } catch (error) {
     if (error instanceof ApiError) {
       throw error;
     }
-    const t = await getTranslations('rvRateMasterErrors');
-    throw new ApiError(500, error instanceof Error ? error.message : t('errorsResponse.unknownError'), 'Get detailed rates failed');
+    const t = await getTranslations('ptis_RVRateMaster');
+    throw new ApiError(
+      500,
+      error instanceof Error ? error.message : t('rvRateMasterErrors.unknownError'),
+      'Get detailed rates failed'
+    );
   }
 }
 
@@ -61,12 +73,20 @@ export async function getRateMasterByFilters(
 
     const response = await apiClient.get<PagedResponse<IBackendRateMaster>>(`/Rate?${params.toString()}`);
     if (!response.success) {
-      const t = await getTranslations('rvRateMasterErrors');
-      throw new ApiError(response.statusCode ?? 500, response.error || t('errorsResponse.fetchRateDataByFiltersFailed'), 'Get rate data by filters failed');
+      const t = await getTranslations('ptis_RVRateMaster');
+      throw new ApiError(
+        response.statusCode ?? 500,
+        response.error || t('rvRateMasterErrors.fetchRateDataByFiltersFailed'),
+        'Get rate data by filters failed'
+      );
     }
     if (!response.data) {
-      const t = await getTranslations('rvRateMasterErrors');
-      throw new ApiError(500, t('errorsResponse.noDataReceived'), 'Invalid response format');
+      const t = await getTranslations('ptis_RVRateMaster');
+      throw new ApiError(
+        500,
+        t('rvRateMasterErrors.noDataReceived'),
+        'Invalid response format'
+      );
     }
 
     return response.data.items || [];
@@ -74,8 +94,12 @@ export async function getRateMasterByFilters(
     if (error instanceof ApiError) {
       throw error;
     }
-    const t = await getTranslations('rvRateMasterErrors');
-    throw new ApiError(500, error instanceof Error ? error.message : t('errorsResponse.unknownError'), 'Get rate data by filters failed');
+    const t = await getTranslations('ptis_RVRateMaster');
+    throw new ApiError(
+      500,
+      error instanceof Error ? error.message : t('rvRateMasterErrors.unknownError'),
+      'Get rate data by filters failed'
+    );
   }
 }
 
@@ -107,12 +131,20 @@ export async function getRateMasterPaged(
 
     const response = await apiClient.get<PagedResponse<IBackendRateMaster>>(`/Rate?${params.toString()}`);
     if (!response.success) {
-      const t = await getTranslations('rvRateMasterErrors');
-      throw new ApiError(response.statusCode ?? 500, response.error || t('errorsResponse.fetchPagedRateDataFailed'), 'Get paged rate data failed');
+      const t = await getTranslations('ptis_RVRateMaster');
+      throw new ApiError(
+        response.statusCode ?? 500,
+        response.error || t('rvRateMasterErrors.fetchPagedRateDataFailed'),
+        'Get paged rate data failed'
+      );
     }
     if (!response.data) {
-      const t = await getTranslations('rvRateMasterErrors');
-      throw new ApiError(500, t('errorsResponse.noDataReceived'), 'Invalid response format');
+      const t = await getTranslations('ptis_RVRateMaster');
+      throw new ApiError(
+        500,
+        t('rvRateMasterErrors.noDataReceived'),
+        'Invalid response format'
+      );
     }
 
     const data = response.data;
@@ -135,7 +167,11 @@ export async function getRateMasterPaged(
     if (error instanceof ApiError) {
       throw error;
     }
-    const t = await getTranslations('rvRateMasterErrors');
-    throw new ApiError(500, error instanceof Error ? error.message : t('errorsResponse.unknownError'), 'Get paged rate data failed');
+    const t = await getTranslations('ptis_RVRateMaster');
+    throw new ApiError(
+      500,
+      error instanceof Error ? error.message : t('rvRateMasterErrors.unknownError'),
+      'Get paged rate data failed'
+    );
   }
 }

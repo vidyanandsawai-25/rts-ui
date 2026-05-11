@@ -66,7 +66,8 @@ export function transformBackendRatesToMatrix(
       const rateSectionId = item.rateSectionId;
       const rateSectionNo = item.rateSectionNo || String(rateSectionId);
       const yearRangeRVId = item.yearRangeRVId ?? item.yearRangeId;
-      const key = taxZoneNo;
+      // Use a composite key to avoid overwriting data for the same zone with different section/useGroup/year
+      const key = [taxZoneNo, rateSectionNo, typeOfUseGroupId, yearRangeRVId].join('|');
 
       if (!groupedData.has(key)) {
         const initialRates = constructionTypes.map(ct => ({
@@ -146,7 +147,5 @@ export function filterByTaxZoneIds(
     return zoneNo || String(id);
   }));
 
-  return data.filter(row => 
-    zoneNoSet.has(row.zoneNo) || zoneNoSet.has(row.rateSection || '')
-  );
+  return data.filter(row => zoneNoSet.has(row.zoneNo));
 }
