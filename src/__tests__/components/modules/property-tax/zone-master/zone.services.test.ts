@@ -72,9 +72,7 @@ describe("zone.services", () => {
         error: "Failed to fetch zones",
       });
 
-      const result = await getZones(1, 10);
-      expect(result.items).toEqual([]);
-      expect(result.totalCount).toBe(0);
+      await expect(getZones(1, 10)).rejects.toThrow("Get zones failed");
     });
   });
 
