@@ -1,0 +1,165 @@
+{
+  "header": {
+    "rateableTitle": "Rateable Value Rate Master",
+    "rateableDescription": "Manage rateable value rates and related configurations for different zones, use groups, and assessment years",
+    "capitalTitle": "Capital Value Rate Master",
+    "capitalDescription": "Ready-Reckoner based Capital Value rates.",
+    "rateableTab": "Rateable Value",
+    "capitalTab": "Capital Value"
+  },
+  "filters": {
+    "financeYear": "Finance Year",
+    "rateSection": "Rate Section",
+    "assessmentYear": "Assessment Year",
+    "useGroup": "Use Group",
+    "typeOfUseGroup": "Type of Use Group",
+    "allUseGroups": "All Use Groups",
+    "assessmentYearRange": "Assessment Year Range"
+  },
+  "options": {
+    "monthly": "Monthly",
+    "yearly": "Yearly"
+  },
+  "buttons": {
+    "generateRate": "Generate Rate",
+    "editRates": "Edit Rates",
+    "deleteRate": "Delete Rate",
+    "downloadRates": "Download Rates",
+    "addRates": "Add Rates",
+    "updateRates": "Update Rates",
+    "copyRates": "Copy Rates",
+    "applyMultipliers": "Apply Multipliers",
+    "hideCopy": "Hide Copy",
+    "copyRatesNow": "Copy Rates Now",
+    "deleteRates": "Delete Rates",
+    "downloadTemplate": "Download Template",
+    "uploadExcel": "Upload Excel"
+  },
+  "messages": {
+    "csvOnly": "Please upload a valid CSV file. Excel (.xlsx) files are not supported.",
+    "rateConfiguration": "Rate Configuration",
+    "ratesConfigured": "{count} Rate(s) Configured",
+    "active": "Active",
+    "selectFinanceYear": "Please select finance year first",
+    "selectUseGroupCopy": "Please select a use group to copy from",
+    "selectRateSection": "Please select Rate Section first",
+    "selectUseGroup": "Please select Type of Use Group first",
+    "selectAssessmentYearRange": "Please select assessment year range first",
+    "selectAssessmentYearRangeFull": "Please select assessment year range (From Year and To Year) first",
+    "multiplierAdded": "Multiplier added for {groups}. Proceed to add rates",
+    "noMultipliersChanged": "No multipliers were changed. All values are set to 1.0",
+    "generateNewRateDetails": "Generate New Rate Details",
+    "fillRateDetails": "Fill rate details for selected zone and use group",
+    "editRateDetails": "Edit Rate Details",
+    "updateRateDetails": "Update rate details for selected zone and use group",
+    "deleteRateConfiguration": "Delete Rate Configuration",
+    "deleteRateDetails": "Delete rate details for selected zone and use group",
+    "deleteRecordsFirst": "First delete records for {year} finance year, and then proceed to generate rates for other year.",
+    "ratesCopiedSuccess": "Rates copied for {source} - {group} - {year}",
+    "ratesAddedSuccess": "Rates added successfully for {groups}!",
+    "ratesUpdatedSuccess": "Rates updated successfully for {groups}!",
+    "ratesDeletedSuccess": "Successfully deleted {count} rate(s)!",
+    "templateDownloadedSuccess": "Template downloaded successfully!",
+    "importedRecordsSuccess": "Imported {count} rate records from file",
+    "ratesAddedPartial": "Added rates for {count} use group(s). Errors: {errors}",
+    "ratesAddedFailed": "Failed to add rates. Errors: {errors}",
+    "ratesUpdatedPartial": "Updated rates for {count} use group(s). Errors: {errors}",
+    "ratesUpdatedFailed": "Failed to update rates. Errors: {errors}",
+    "ratesDeleteFailed": "Failed to delete rates.",
+    "fetchRatesForDeleteFailed": "Failed to fetch rates for delete. Please try again.",
+    "noRatesToDelete": "No rates found to delete.",
+    "downloadingRates": "Downloading rates...",
+    "ratesDownloaded": "Rates downloaded successfully!",
+    "downloadFailed": "Failed to download rates. Please try again.",
+    "validationSelectAssessmentYear": "Please select Assessment Year",
+    "validationEnterFromYear": "Please enter From Year",
+    "validationEnterToYear": "Please enter To Year",
+    "validationSelectRateSectionToCopy": "Please select a rate section to copy from",
+    "validationNoRatesAvailable": "No rates available for selected {source} - {group} and Assessment Year {year}",
+    "validationCopyFailed": "Failed to copy rates. Please try again.",
+    "validationSelectValidFinanceYear": "Please select a valid Finance Year",
+    "validationEnterRateValue": "Please enter at least one rate value",
+    "validationDeleteRecordsFirst": "First delete records for {year} finance year, and then proceed to generate rates for other year.",
+    "validationFetchUpdateFailed": "Failed to fetch rates for update",
+    "validationDownloadTemplateFailed": "Failed to download template",
+    "validationUploadValidFile": "Please upload a valid CSV or Excel file",
+    "validationRatesAlreadyExist": "Rates already exist for selected filters. Please use Update instead",
+    "validationIncompleteMatrix": "Please fill all rate values before adding rates. Current completion: {percentage}%",
+    "validationFileEmpty": "File is empty or invalid",
+    "validationParseFailed": "Failed to parse file. Please check the format.",
+    "validationReadFileFailed": "Failed to read file",
+    "noRatesAvailable": "No rates available",
+    "noRatesMatch": "No data matches the selected filters. Try adjusting your criteria or generate new rates."
+  },
+  "sections": {
+    "copyRatesTitle": "Copy Rates",
+    "copyRatesSubtitle": "Select source to copy rates from",
+    "useGroupTab": "Use Group",
+    "rateSectionTab": "Rate Section",
+    "copyRatesUseGroupTitle": "Copy Rates from Another Use Group",
+    "copyRatesUseGroupSubtitle": "Duplicate rates from existing use group configuration",
+    "copyRatesRateSectionTitle": "Copy Rates from Another Rate Section",
+    "copyRatesRateSectionSubtitle": "Duplicate rates from existing rate section configuration",
+    "multipliersTitle": "Use Group Multipliers",
+    "multipliersSubtitle": "Set multiplier values for different use groups",
+    "matrixCompletion": "Matrix Completion Progress",
+    "selectSourceUseGroup": "Select Source Use Group",
+    "selectSourceRateSection": "Select Source Rate Section",
+    "quickImport": "Quick Import:",
+    "rateFrequency": "Rate Frequency:",
+    "rateEntryMatrix": "Rate Entry Matrix"
+  },
+  "placeholders": {
+    "selectUseGroup": "Select use group...",
+    "selectRateSection": "Select rate section...",
+    "selectAssessmentYear": "-- Select --",
+    "selectAssessmentYearRange": "Select year range..."
+  },
+  "columns": {
+    "taxZoneNo": "Tax Zone No",
+    "zoneDescription": "Zone Description",
+    "assessmentYear": "Assessment Year"
+  },
+  "dialogs": {
+    "deleteRatesTitle": "Delete Rates",
+    "deleteRatesDescription": "Are you sure you want to permanently delete {count} rate records(s) for:\n\n- Rate Section: {zoneName}, Use Group: {useGroup}, Assessment Year: {assessmentYear}\n\nThis action cannot be undone.",
+    "confirmDelete": "Delete",
+    "cancel": "Cancel"
+  },
+  "downloadHeaders": {
+    "rateSection": "Rate Section",
+    "taxZoneNo": "Tax Zone No",
+    "useGroup": "Use Group",
+    "assessmentYearRange": "Assessment Year Range",
+    "constructionType": "Construction Type",
+    "rateSqMtr": "Rate (₹/Sq.mtr)",
+    "rateSqFt": "Rate (₹/Sq.ft)",
+    "rateRemark": "Rate Remark"
+  },
+    "rvRateMaster": {
+      "error": {
+        "title": "Something Went Wrong",
+        "description": "We encountered an error while loading the RV Rate Master page. Please try again.",
+        "tryAgain": "Try Again",
+        "goHome": "Go to Home",
+        "errorId": "Error ID: {id}"
+      },
+      "loading": {
+        "message": "Loading RV Rate Master...",
+        "description": "Please wait while we fetch the rate master data"
+      }
+    },
+    "rvRateMasterErrors": {
+    "errorsResponse": {
+      "bulkUpdateFailed": "Failed to bulk update rate master records",
+      "fetchDetailedRatesFailed": "Failed to fetch detailed rates",
+      "noDataReceived": "No data received from server",
+      "bulkCreateFailed": "Failed to bulk create rate master records",
+      "fetchPagedRateDataFailed": "Failed to fetch paged rate data",
+      "fetchRateMasterDataFailed": "Failed to fetch rate master data",
+      "fetchRateDataByFiltersFailed": "Failed to fetch rate data by filters",
+      "bulkPurgeFailed": "Failed to bulk purge rate master records",
+      "unknownError": "An unknown error occurred"
+    }
+  }
+}

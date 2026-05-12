@@ -1,0 +1,147 @@
+import type { IBackendRateMaster, RateCategory } from "@/types/RVRateMaster";
+import { getRateMasterByFilters } from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
+import { bulkCreateRateMasterAction, bulkUpdateRateMasterAction } from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
+import { buildPayloadFromMatrix, applyMultiplierToMatrix, buildBulkUpdatePayload, buildBulkCreatePayload } from "./ratePayloadHelpers";
+
+interface RateSubmission {
+  matrixData: Array<Record<string, unknown>>;
+  useGroup: string;
+  multiplier: number;
+  backendRates?: IBackendRateMaster[];
+}
+
+interface BuildPayloadConfig {
+  selectedZone: string;
+  selectedUseGroup: string;
+  assessmentYear: string;
+  rateFrequency: "Monthly" | "Yearly";
+  rateCategories: RateCategory[];
+}
+
+interface ProcessSubmissionsResult {
+  successCount: number;
+  errorMessages: string[];
+}
+
+/**
+ * Build all rate submissions including multiplied variants
+ */
+export function buildRateSubmissions(
+  completeMatrixData: Array<Record<string, unknown>>,
+  selectedUseGroup: string,
+  multipliers: Record<string, number>,
+  rateCategories: RateCategory[]
+): RateSubmission[] {
+  const currentMultiplier = multipliers[selectedUseGroup] || 1.0;
+  const finalMatrixData = applyMultiplierToMatrix(completeMatrixData, currentMultiplier, rateCategories);
+
+  const submissions: RateSubmission[] = [
+    { matrixData: finalMatrixData, useGroup: selectedUseGroup, multiplier: currentMultiplier }
+  ];
+
+  // Add multiplied variants for other use groups
+  const activeMultipliers = Object.entries(multipliers).filter(
+    ([useGroup, value]) => value > 0 && value !== 1.0 && useGroup !== selectedUseGroup
+  );
+
+  activeMultipliers.forEach(([useGroup, multiplier]) => {
+    const multipliedMatrixData = applyMultiplierToMatrix(completeMatrixData, multiplier, rateCategories);
+    submissions.push({ matrixData: multipliedMatrixData, useGroup, multiplier });
+  });
+
+  return submissions;
+}
+
+/**
+ * Fetch backend rates for a submission
+ */
+export async function fetchBackendRatesForSubmission(
+  selectedZone: string,
+  useGroup: string,
+  assessmentYear: string
+): Promise<IBackendRateMaster[]> {
+  try {
+    return await getRateMasterByFilters(selectedZone, useGroup, assessmentYear);
+  } catch (_err) {
+    return [];
+  }
+}
+
+/**
+ * Process a single rate submission (updates + inserts)
+ */
+export async function processSingleSubmission(
+  submission: RateSubmission,
+  backendRates: IBackendRateMaster[],
+  config: BuildPayloadConfig,
+  getUseGroupLabel: (useGroup: string) => string
+): Promise<{ success: boolean; errors: string[] }> {
+  const errors: string[] = [];
+  
+  const { updates, inserts } = buildPayloadFromMatrix(
+    submission.matrixData,
+    backendRates,
+    { ...config, selectedUseGroup: submission.useGroup },
+    submission.useGroup
+  );
+
+  // Process updates
+  if (updates.length > 0) {
+    try {
+      const updateResult = await bulkUpdateRateMasterAction(buildBulkUpdatePayload(updates));
+      if (!updateResult.success) {
+        errors.push(`${getUseGroupLabel(submission.useGroup)} (Update): ${updateResult.message || 'Failed to update rates'}`);
+      }
+    } catch (error) {
+      errors.push(error instanceof Error ? error.message : 'Server action failed');
+    }
+  }
+
+  // Process inserts
+  if (inserts.length > 0) {
+    try {
+      const createResult = await bulkCreateRateMasterAction(buildBulkCreatePayload(inserts));
+      if (!createResult.success) {
+        errors.push(`${getUseGroupLabel(submission.useGroup)} (Create): ${createResult.message || 'Failed to create rates'}`);
+      }
+    } catch (error) {
+      errors.push(error instanceof Error ? error.message : 'Server action failed');
+    }
+  }
+
+  const hasOperations = updates.length > 0 || inserts.length > 0;
+  const success = hasOperations && errors.length === 0;
+
+  return { success, errors };
+}
+
+/**
+ * Process multiple rate submissions and collect results
+ */
+export async function processRateSubmissions(
+  submissions: RateSubmission[],
+  config: BuildPayloadConfig,
+  getUseGroupLabel: (useGroup: string) => string
+): Promise<ProcessSubmissionsResult> {
+  let successCount = 0;
+  const errorMessages: string[] = [];
+
+  for (const submission of submissions) {
+    const { success, errors } = await processSingleSubmission(
+      submission,
+      submission.backendRates || [],
+      config,
+      getUseGroupLabel
+    );
+
+    if (success) {
+      successCount++;
+    }
+    
+    if (errors.length > 0) {
+      errorMessages.push(...errors);
+    }
+  }
+
+  return { successCount, errorMessages };
+}

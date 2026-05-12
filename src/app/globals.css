@@ -69,6 +69,8 @@ aside:not(.sidebar-expanded-aside) .sidebar-back-icon {
     margin-left: var(--sidebar-width);
     transition: margin-left 0.3s ease-in-out;
   }
+}/* Hide Edge/IE password reveal and clear buttons to avoid double icons with custom toggles */
+input::-ms-reveal,
+input::-ms-clear {
+  display: none;
 }
-
-

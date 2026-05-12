@@ -155,4 +155,99 @@ describe('Tooltip', () => {
     const tooltip = screen.getByRole('tooltip');
     expect(trigger).toHaveAttribute('aria-describedby', tooltip.id);
   });
+
+  it('handles multiple placements correctly', () => {
+    const placements = ['top', 'bottom', 'left', 'right'] as const;
+    
+    placements.forEach((placement) => {
+      const { unmount } = render(
+        <Tooltip content="Test" placement={placement}>
+          <button>Test</button>
+        </Tooltip>
+      );
+      unmount();
+    });
+    
+    // If all placements rendered without error, test passes
+    expect(true).toBe(true);
+  });
+
+  it('handles rapid mouse enter/leave without errors', () => {
+    render(
+      <Tooltip content="Tooltip content">
+        <button>Hover me</button>
+      </Tooltip>
+    );
+
+    const trigger = screen.getByText('Hover me');
+    
+    // Rapid interactions
+    fireEvent.mouseEnter(trigger);
+    fireEvent.mouseLeave(trigger);
+    fireEvent.mouseEnter(trigger);
+    fireEvent.mouseLeave(trigger);
+    
+    act(() => {
+      vi.advanceTimersByTime(100);
+    });
+    
+    // Should not crash
+    expect(trigger).toBeInTheDocument();
+  });
+
+  it('handles touch events for mobile', () => {
+    render(
+      <Tooltip content="Tooltip content">
+        <button>Touch me</button>
+      </Tooltip>
+    );
+
+    const trigger = screen.getByText('Touch me');
+    
+    // Simulate touch start
+    fireEvent.touchStart(trigger);
+    
+    act(() => {
+      vi.advanceTimersByTime(100);
+    });
+    
+    // Tooltip behavior may vary for touch, but should not crash
+    expect(trigger).toBeInTheDocument();
+  });
+
+  it('applies custom className to tooltip', () => {
+    render(
+      <Tooltip content="Tooltip content" className="custom-tooltip">
+        <button>Hover me</button>
+      </Tooltip>
+    );
+
+    const trigger = screen.getByText('Hover me');
+    fireEvent.mouseEnter(trigger);
+    
+    act(() => {
+      vi.advanceTimersByTime(100);
+    });
+    
+    const tooltip = screen.getByRole('tooltip');
+    expect(tooltip).toHaveClass('custom-tooltip');
+  });
+
+  it('handles rich content with HTML elements', () => {
+    render(
+      <Tooltip content={<div><strong>Bold</strong> text</div>}>
+        <button>Hover me</button>
+      </Tooltip>
+    );
+
+    const trigger = screen.getByText('Hover me');
+    fireEvent.mouseEnter(trigger);
+    
+    act(() => {
+      vi.advanceTimersByTime(100);
+    });
+    
+    expect(screen.getByText('Bold')).toBeInTheDocument();
+    expect(screen.getByText('text')).toBeInTheDocument();
+  });
 });

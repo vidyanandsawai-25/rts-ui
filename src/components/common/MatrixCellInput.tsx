@@ -120,7 +120,7 @@ export const MatrixCellInput = ({
       readOnly={readOnly}
       disabled={readOnly}
       className={cn(
-        "px-2 md:px-3 py-1.5 md:py-2 rounded-lg md:rounded-xl font-bold text-xs md:text-sm text-center border w-full outline-none placeholder:text-gray-400",
+        "px-1 md:px-2 py-1 md:py-1 rounded-md md:rounded-lg font-bold text-xs md:text-sm text-center border w-full outline-none placeholder:text-gray-400",
         readOnly ? "cursor-default" : "focus:ring-2 focus:ring-blue-400",
         valueBasedClass,
         colorClass,

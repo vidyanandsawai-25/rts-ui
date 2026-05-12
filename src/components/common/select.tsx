@@ -46,7 +46,7 @@ export function Select({
   const [open, setOpen] = useState(false);
   const [internalValueState, setInternalValueState] = useState(value || '');
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
-  
+
   // Professional Perspective:
   // We derive the current value from props (controlled) or state (uncontrolled).
   // This avoids cascading renders and 'set-state-in-effect' lint errors.
@@ -58,12 +58,11 @@ export function Select({
   const listboxId = useId();
   const optionIdPrefix = useId();
 
-
   const toggleOpen = () => {
     if (disabled) return;
     const nextOpen = !open;
     setOpen(nextOpen);
-    
+
     if (nextOpen) {
       const index = options.findIndex((opt) => opt.value === internalValue);
       setHighlightedIndex(index >= 0 ? index : 0);
