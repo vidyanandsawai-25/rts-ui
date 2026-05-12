@@ -53,7 +53,7 @@ export default function FloorInformationForm({
   const initialFloorOptions = useMemo(() => floorOptions.map(opt => ({ label: opt.description, value: String(opt.id) })), [floorOptions]);
   const initialSubFloorOptions = useMemo(() => subFloorOptions.map(opt => ({ label: opt.description, value: String(opt.id) })), [subFloorOptions]);
   const initialConstructionTypeOptions = useMemo(() => constructionTypeOptions.map(opt => ({ label: opt.description, value: String(opt.id) })), [constructionTypeOptions]);
-  const initialUseOptions = useMemo(() => useOptions.map(opt => ({ label: opt.description, value: String(opt.id) })), [useOptions]);
+  const initialUseOptions = useMemo(() => useOptions.map(opt => ({ label: `${opt.typeOfUseCode} - ${opt.description}`, value: String(opt.id) })), [useOptions]);
   const currentSubUseTypeOptions = useMemo(() => subUseTypeOptions.map(opt => ({ label: opt.description, value: String(opt.id) })), [subUseTypeOptions]);
 
   return (
@@ -65,9 +65,9 @@ export default function FloorInformationForm({
         </h3>
 
         {/* Floor Entry Form Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 border border-blue-100 rounded-xl overflow-hidden bg-gray-50/30 p-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 border border-blue-100 rounded-xl bg-gray-50/30 p-5">
           {/* Floor */}
-          <div className="space-y-2 relative focus-within:z-50">
+          <div className="space-y-2 relative focus-within:z-100">
             <Label className="text-sm font-bold text-blue-900 flex items-center gap-1">
               {t('floor.floorLabel')} <span className="text-red-500">*</span>
             </Label>
@@ -83,7 +83,7 @@ export default function FloorInformationForm({
           </div>
 
           {/* Sub Floor */}
-          <div className="space-y-2 relative focus-within:z-50">
+          <div className="space-y-2 relative focus-within:z-100">
             <Label className="text-sm font-bold text-blue-900">
               {t('floor.subFloor')}
             </Label>
@@ -116,7 +116,7 @@ export default function FloorInformationForm({
           </div>
 
           {/* Construction Type */}
-          <div className="space-y-2 relative focus-within:z-50">
+          <div className="space-y-2 relative focus-within:z-100">
             <Label className="text-sm font-bold text-blue-900 flex items-center gap-1">
               {t('floor.conTyp')} <span className="text-red-500">*</span>
             </Label>
@@ -132,7 +132,7 @@ export default function FloorInformationForm({
           </div>
 
           {/* Type of Use */}
-          <div className="space-y-2 relative focus-within:z-50">
+          <div className="space-y-2 relative focus-within:z-100">
             <Label className="text-sm font-bold text-blue-900 flex items-center gap-1">
               {t('oldDetails.floordtails.use')} <span className="text-red-500">*</span>
             </Label>
@@ -148,7 +148,7 @@ export default function FloorInformationForm({
           </div>
 
           {/* Sub Type */}
-          <div className="space-y-2 relative focus-within:z-50">
+          <div className="space-y-2 relative focus-within:z-100">
             <Label className="text-sm font-bold text-blue-900">
               {t('floor.subTyp')}
             </Label>

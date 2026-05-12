@@ -22,7 +22,7 @@ export async function getFloors(pageNumber: number, pageSize: number, searchTerm
     });
 
     if (searchTerm?.trim()) params.append("SearchTerm", searchTerm.trim());
-    const response = await apiClient.get<PagedResponse<Floor>>(`/Floor?${params.toString()}`);
+    const response = await apiClient.get<PagedResponse<Floor>>(`/Floor?${params.toString()}`,{cache: 'no-store'});
     return handleApiResponse(response, "Failed to fetch floors");
 }
 
@@ -35,7 +35,7 @@ export async function getSubFloors(pageNumber: number, pageSize: number,
     });
 
     if (searchTerm?.trim()) params.append("SearchTerm", searchTerm.trim());
-    const response = await apiClient.get<PagedResponse<SubFloor>>(`/SubFloor?${params.toString()}`);
+    const response = await apiClient.get<PagedResponse<SubFloor>>(`/SubFloor?${params.toString()}`,{cache: 'no-store'});
     return handleApiResponse(response, "Failed to fetch sub-floors");
 }
 
@@ -47,7 +47,7 @@ export async function getConstructionTypes(pageNumber: number, pageSize: number,
     });
 
     if (searchTerm?.trim()) params.append("SearchTerm", searchTerm.trim());
-    const response = await apiClient.get<PagedResponse<ConstructionType>>(`/ConstructionType?${params.toString()}`);
+    const response = await apiClient.get<PagedResponse<ConstructionType>>(`/ConstructionType?${params.toString()}`,{cache: 'no-store'});
     return handleApiResponse(response, "Failed to fetch construction types");
 }
 
@@ -60,7 +60,7 @@ export async function getTypeOfUses(pageNumber: number, pageSize: number, search
 
     if (searchTerm?.trim()) params.append("SearchTerm", searchTerm.trim());
 
-    const response = await apiClient.get<PagedResponse<TypeOfUse>>(`/TypeOfUse?${params.toString()}`);
+    const response = await apiClient.get<PagedResponse<TypeOfUse>>(`/TypeOfUse?${params.toString()}`,{cache: 'no-store'});
     return handleApiResponse(response, "Failed to fetch type of uses (server-paged)");
 }
 
@@ -75,13 +75,13 @@ export async function getSubTypeOfUses(typeOfUseId: number, pageNumber: number, 
 
     if (searchTerm?.trim()) params.append("SearchTerm", searchTerm.trim());
 
-    const response = await apiClient.get<PagedResponse<SubTypeOfUse>>(`/SubTypeOfUse?${params.toString()}`);
+    const response = await apiClient.get<PagedResponse<SubTypeOfUse>>(`/SubTypeOfUse?${params.toString()}`,{cache: 'no-store'});
     return handleApiResponse(response, `Failed to fetch sub-type of uses for ${typeOfUseId}`);
 }
 
 /* ---------------- GET OLD FLOOR DETAILS ---------------- */
 export async function getOldFloorDetailsForFloorInformation(propertyId: number): Promise<OldFloorDetailsResponse> {
-    const response = await apiClient.get<OldFloorDetailsResponse>(`/Property/${propertyId}/floor-details-old`);
+    const response = await apiClient.get<OldFloorDetailsResponse>(`/Property/${propertyId}/floor-details-old`,{cache: 'no-store'});
     return handleApiResponse(response, `Failed to fetch old floor details for property ${propertyId}`);
 }
 
