@@ -19,7 +19,7 @@ class UserScreenAccessService {
     // Fetching screens for user...
 
 
-    const response = await apiClient.get<unknown>(`/UserScreenAccess/user/${userId}`, {
+    const response = await apiClient.get<unknown>(`/users/access?UserId=${userId}`, {
       headers: authHeaders(token),
     });
 
