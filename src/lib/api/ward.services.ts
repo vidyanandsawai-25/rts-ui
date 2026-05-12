@@ -11,10 +11,12 @@ import {
   BulkWardUpdateItem,
   BulkWardUpdateResponse
 } from "@/types/wardMaster.types";
+import { ApiError } from "@/lib/utils/api";
 
 /**
  * Fetches paginated ward master list from /Ward endpoint.
  * Supports filtering by zoneId and search term.
+ * Throws ApiError on failure so Next.js error boundary can catch it.
  */
 export async function getWards(
   pageNumber: number,
@@ -37,7 +39,11 @@ export async function getWards(
   const response = await apiClient.get<WardListResponse>(`/Ward?${params.toString()}`);
   
   if (!response.success || !response.data) {
-    return { items: [], totalCount: 0, pageNumber, pageSize, totalPages: 0, hasPrevious: false, hasNext: false };
+    throw new ApiError(
+      response.statusCode ?? 500,
+      response.error || "Failed to fetch wards",
+      "Get wards failed"
+    );
   }
   
   return response.data;

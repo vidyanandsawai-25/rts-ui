@@ -10,6 +10,7 @@ import { WardItem, WardListResponse, CreateWardPayload, UpdateWardPayload, Batch
 import { apiClient } from "@/services/api.service";
 import { ApiError } from "@/lib/utils/api";
 import { isBackendErrorMessage, getErrorStatusCode } from "@/lib/utils/backend-error-detection";
+import { logger } from "@/lib/utils/logger";
 
 /* ===================================================================================
    HELPER FUNCTIONS
@@ -52,6 +53,25 @@ export async function fetchZonesPagedAction(
     const result = await getZones(pageNumber, pageSize, searchTerm);
     return result;
   } catch (error: unknown) {
+    // Log the error for debugging using centralized logger
+    if (error instanceof ApiError) {
+      logger.error(`[fetchZonesPagedAction] API Error ${error.statusCode}`, {
+        error,
+        statusCode: error.statusCode,
+        responseText: error.responseText,
+        contextMessage: error.contextMessage,
+      });
+    } else if (error instanceof Error) {
+      logger.error("[fetchZonesPagedAction] Error", {
+        error,
+        message: error.message,
+        stack: error.stack,
+      });
+    } else {
+      logger.error("[fetchZonesPagedAction] Unknown error", {
+        error: error as Error,
+      });
+    }
     // Re-throw the error so Next.js error boundary can catch it
     throw error;
   }
@@ -238,6 +258,26 @@ export async function fetchWardsPagedAction(
     const result = await getWards(pageNumber, pageSize, searchTerm, zoneId);
     return result;
   } catch (error: unknown) {
+    // Log the error for debugging using centralized logger
+    if (error instanceof ApiError) {
+      logger.error(`[fetchWardsPagedAction] API Error ${error.statusCode}`, {
+        error,
+        statusCode: error.statusCode,
+        responseText: error.responseText,
+        contextMessage: error.contextMessage,
+      });
+    } else if (error instanceof Error) {
+      logger.error("[fetchWardsPagedAction] Error", {
+        error,
+        message: error.message,
+        stack: error.stack,
+      });
+    } else {
+      logger.error("[fetchWardsPagedAction] Unknown error", {
+        error: error as Error,
+      });
+    }
+
     // Re-throw the error so Next.js error boundary can catch it
     throw error;
   }
