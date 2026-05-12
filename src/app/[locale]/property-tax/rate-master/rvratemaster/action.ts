@@ -15,7 +15,7 @@ import { getAssessmentYearRangePaged } from "@/lib/api/assessment-year-range.ser
 import { rateableValueConfig } from "@/components/modules/property-tax/assessment-year-range/config/rateableValue.config";
 import { getTaxZonePagedServer } from "@/lib/api/taxzone.services";
 import { getDetailedRates } from "@/lib/api/rvRateMaster";
-import { getConstructionPaged } from "@/lib/api/construction-crud.service";
+import { getConstructionPaged } from "@/lib/api/constructiontypemaster/construction-crud.service";
 import { createLogger } from "@/lib/utils/server-logger";
 const logger = createLogger('RVRateMasterAction');
 

@@ -3,8 +3,6 @@
 import { CalendarRange } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-
-import { PageContainer } from "@/components/common/PageContainer";
 import TableHeader from "@/components/common/TableHeader";
 import { AssessmentYearRangeToolbar } from "./AssessmentYearRangeToolbar";
 
@@ -24,19 +22,17 @@ export function AssessmentYearRangeLayoutContent({
   const t = isCapitalValue ? tCV : tRV;
 
   return (
-    <PageContainer>
-      <div className="">
-        <TableHeader
-          title={t("list.title")}
-          subtitle={t("list.subtitle")}
-          icon={CalendarRange}
-          rightContent={<AssessmentYearRangeToolbar />}
-        />
+    <div className="">
+      <TableHeader
+        title={t("list.title")}
+        subtitle={t("list.subtitle")}
+        icon={CalendarRange}
+        rightContent={<AssessmentYearRangeToolbar />}
+      />
 
-        <div className="pt-6">
-          {children}
-        </div>
+      <div className="pt-6">
+        {children}
       </div>
-    </PageContainer>
+    </div>
   );
 }
