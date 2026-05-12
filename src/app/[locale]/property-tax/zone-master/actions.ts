@@ -10,8 +10,9 @@ import { WardItem, WardListResponse, CreateWardPayload, UpdateWardPayload, Batch
 import { apiClient } from "@/services/api.service";
 import { ApiError } from "@/lib/utils/api";
 import { isBackendErrorMessage, getErrorStatusCode } from "@/lib/utils/backend-error-detection";
-import { logger } from "@/lib/utils/logger";
+import { createLogger } from "@/lib/utils/server-logger";
 
+  const logger = createLogger("property-tax/zone-master/actions");
 /* ===================================================================================
    HELPER FUNCTIONS
    =================================================================================== */
