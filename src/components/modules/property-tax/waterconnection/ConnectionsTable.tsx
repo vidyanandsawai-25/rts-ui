@@ -12,6 +12,12 @@ import { getWaterConnectionColumns } from "./WaterConnectionColumns";
 interface ConnectionsTableProps {
   propertyNo: string;
   connections: WaterConnection[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (size: number) => void;
   onAdd: () => void;
   onEdit: (connection: WaterConnection) => void;
   onDelete: (connection: WaterConnection) => void;
@@ -20,6 +26,12 @@ interface ConnectionsTableProps {
 export function ConnectionsTable({
   propertyNo,
   connections,
+  totalCount,
+  pageNumber,
+  pageSize,
+  totalPages,
+  onPageChange,
+  onPageSizeChange,
   onAdd,
   onEdit,
   onDelete,
@@ -46,7 +58,7 @@ export function ConnectionsTable({
         </div>
         <div className="flex items-center gap-2">
           <Badge variant="info" size="sm">
-            {t("list.connections", { count: connections.length })}
+            {t("list.connections", { count: totalCount })}
           </Badge>
           <AddButton
             size="sm"
@@ -61,7 +73,13 @@ export function ConnectionsTable({
         columns={columns}
         data={connections}
         loading={false}
-        paginationConfig={{ enabled: false }}
+        pageNumber={pageNumber}
+        pageSize={pageSize}
+        totalCount={totalCount}
+        totalPages={totalPages}
+        onPageChange={onPageChange}
+        onPageSizeChange={onPageSizeChange}
+        paginationConfig={{ enabled: true, showPageSizeSelector: true }}
         renderActions={(row) => (
           <>
             <EditButton

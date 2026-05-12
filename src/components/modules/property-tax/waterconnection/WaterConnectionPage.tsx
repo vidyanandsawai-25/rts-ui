@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { toast } from "sonner";
 import { Droplets } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -39,8 +39,17 @@ export default function WaterConnectionPage({ initialData, propertyId }: WaterCo
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingConnection, setEditingConnection] = useState<WaterConnection | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const stats = useMemo(() => computeStats(initialData.connections), [initialData.connections]);
+
+  const pagedConnections = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return initialData.connections.slice(start, start + pageSize);
+  }, [initialData.connections, page, pageSize]);
+
+  const totalPages = Math.max(1, Math.ceil(initialData.connections.length / pageSize));
 
   const handleAdd = () => {
     setEditingConnection(null);
@@ -58,8 +67,16 @@ export default function WaterConnectionPage({ initialData, propertyId }: WaterCo
   };
 
   const handleSaved = () => {
+    setPage(1);
     router.refresh();
   };
+
+  const handlePageChange = useCallback((p: number) => setPage(p), []);
+
+  const handlePageSizeChange = useCallback((size: number) => {
+    setPageSize(size);
+    setPage(1);
+  }, []);
 
   const handleDelete = (connection: WaterConnection) => {
     confirm({
@@ -125,7 +142,13 @@ export default function WaterConnectionPage({ initialData, propertyId }: WaterCo
         {/* Connections Table */}
         <ConnectionsTable
           propertyNo={initialData.property.propertyNo}
-          connections={initialData.connections}
+          connections={pagedConnections}
+          totalCount={initialData.connections.length}
+          pageNumber={page}
+          pageSize={pageSize}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
           onAdd={handleAdd}
           onEdit={handleEdit}
           onDelete={handleDelete}

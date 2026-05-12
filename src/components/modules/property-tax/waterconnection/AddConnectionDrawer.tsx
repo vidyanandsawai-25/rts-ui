@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import { Droplets } from "lucide-react";
 import { toast } from "sonner";
 import { CancelButton, SaveButton } from "@/components/common";
@@ -73,6 +73,8 @@ export function AddConnectionDrawer({
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [rateError, setRateError] = useState<string | null>(null);
+  // Prevents the auto-rate effect from overwriting the rate we just loaded from the DB when editing
+  const skipNextAutoRate = useRef(false);
 
   useEffect(() => {
     if (!open) return;
@@ -86,6 +88,10 @@ export function AddConnectionDrawer({
 
   // Auto-compute applicable rate whenever type or size selection changes
   useEffect(() => {
+    if (skipNextAutoRate.current) {
+      skipNextAutoRate.current = false;
+      return;
+    }
     const { rate, notFound } = findApplicableRate(
       formData.waterConnectionTypeId,
       formData.waterConnectionSizeId,
@@ -97,6 +103,8 @@ export function AddConnectionDrawer({
 
   useEffect(() => {
     if (editingConnection) {
+      // Signal the auto-rate effect to skip its next run so the DB rate is preserved
+      skipNextAutoRate.current = true;
       setFormData({
         id: editingConnection.id,
         propertyId,
@@ -110,6 +118,7 @@ export function AddConnectionDrawer({
         applicableRate: editingConnection.applicableRate ?? null,
       });
     } else {
+      skipNextAutoRate.current = false;
       setFormData(makeEmptyForm(propertyId));
     }
     setErrors({});

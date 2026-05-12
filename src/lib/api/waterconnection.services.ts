@@ -202,5 +202,5 @@ export async function getWaterRateMasters(
     );
   }
 
-  return response.data.data ?? [];
+  return response.data.items ?? response.data.data ?? [];
 }

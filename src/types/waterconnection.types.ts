@@ -68,11 +68,11 @@ export interface WaterConnectionStatusLookup {
 export interface WaterRateMasterLookup {
   id: number;
   waterConnectionTypeId: number;
-  connectionTypeName: string;
+  connectionTypeName?: string;
   waterConnectionSizeId: number;
-  connectionSizeDisplay: string;
+  connectionSizeDisplay?: string;
   financeYearId: number;
-  yearCode: string | null;
+  yearCode?: string | null;
   yearlyRate: number;
   isActive: boolean;
 }
@@ -80,6 +80,10 @@ export interface WaterRateMasterLookup {
 export interface WaterConnectionPageData {
   property: PropertyInfo;
   connections: WaterConnection[];
+  totalCount: number;
+  totalPages: number;
+  pageNumber: number;
+  pageSize: number;
   typeOptions: WaterConnectionTypeLookup[];
   sizeOptions: WaterConnectionSizeLookup[];
   statusOptions: WaterConnectionStatusLookup[];

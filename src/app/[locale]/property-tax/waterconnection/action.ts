@@ -14,6 +14,7 @@ import {
   getWaterConnectionTypes,
   getWaterConnectionSizes,
   getWaterConnectionStatuses,
+  getWaterRateMasters,
   createWaterConnection,
   updateWaterConnection,
   deleteWaterConnection,
@@ -72,10 +73,12 @@ function getMockProperty(propertyId: number): PropertyInfo {
 }
 
 export async function getWaterConnectionPageData(
-  propertyId: number
+  propertyId: number,
+  pageNumber = 1,
+  pageSize = 100
 ): Promise<WaterConnectionPageData> {
-  const [connectionsResponse, typeOptions, sizeOptions, statusOptions] = await Promise.all([
-    getWaterConnectionsPaged(propertyId),
+  const [connectionsResponse, typeOptions, sizeOptions, statusOptions, rateMastersFromApi] = await Promise.all([
+    getWaterConnectionsPaged(propertyId, pageNumber, pageSize),
     getWaterConnectionTypes().catch((err) => {
       console.error('[waterconnection] getWaterConnectionTypes failed:', err);
       return [] as Awaited<ReturnType<typeof getWaterConnectionTypes>>;
@@ -88,21 +91,23 @@ export async function getWaterConnectionPageData(
       console.error('[waterconnection] getWaterConnectionStatuses failed:', err);
       return [] as Awaited<ReturnType<typeof getWaterConnectionStatuses>>;
     }),
+    getWaterRateMasters().catch((err) => {
+      console.error('[waterconnection] getWaterRateMasters failed:', err);
+      return [] as WaterRateMasterLookup[];
+    }),
   ]);
-
-  console.log('[waterconnection] Lookup data loaded:', {
-    typeOptions: typeOptions.length,
-    sizeOptions: sizeOptions.length,
-    statusOptions: statusOptions.length,
-  });
 
   return {
     property: getMockProperty(propertyId),
     connections: connectionsResponse.items ?? connectionsResponse.data ?? [],
+    totalCount: connectionsResponse.totalCount,
+    totalPages: connectionsResponse.totalPages,
+    pageNumber: connectionsResponse.pageNumber,
+    pageSize: connectionsResponse.pageSize,
     typeOptions: typeOptions.length > 0 ? typeOptions : MOCK_TYPE_OPTIONS,
     sizeOptions: sizeOptions.length > 0 ? sizeOptions : MOCK_SIZE_OPTIONS,
     statusOptions: statusOptions.length > 0 ? statusOptions : MOCK_STATUS_OPTIONS,
-    rateMasters: MOCK_RATE_MASTERS,
+    rateMasters: rateMastersFromApi.length > 0 ? rateMastersFromApi : MOCK_RATE_MASTERS,
   };
 }
 
@@ -112,7 +117,7 @@ export async function getConnectionLookupsAction(): Promise<{
   statusOptions: WaterConnectionStatusLookup[];
   rateMasters: WaterRateMasterLookup[];
 }> {
-  const [typeOptions, sizeOptions, statusOptions] = await Promise.all([
+  const [typeOptions, sizeOptions, statusOptions, rateMastersFromApi] = await Promise.all([
     getWaterConnectionTypes().catch((err) => {
       console.error('[waterconnection] getWaterConnectionTypes failed:', err);
       return [] as WaterConnectionTypeLookup[];
@@ -125,13 +130,17 @@ export async function getConnectionLookupsAction(): Promise<{
       console.error('[waterconnection] getWaterConnectionStatuses failed:', err);
       return [] as WaterConnectionStatusLookup[];
     }),
+    getWaterRateMasters().catch((err) => {
+      console.error('[waterconnection] getWaterRateMasters failed:', err);
+      return [] as WaterRateMasterLookup[];
+    }),
   ]);
 
   return {
     typeOptions: typeOptions.length > 0 ? typeOptions : MOCK_TYPE_OPTIONS,
     sizeOptions: sizeOptions.length > 0 ? sizeOptions : MOCK_SIZE_OPTIONS,
     statusOptions: statusOptions.length > 0 ? statusOptions : MOCK_STATUS_OPTIONS,
-    rateMasters: MOCK_RATE_MASTERS,
+    rateMasters: rateMastersFromApi.length > 0 ? rateMastersFromApi : MOCK_RATE_MASTERS,
   };
 }
 
