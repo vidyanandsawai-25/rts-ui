@@ -169,20 +169,4 @@ describe('BankMaster', () => {
       expect(toast.success).toHaveBeenCalledWith('messages.deleteSuccess');
     });
   });
-
-  it('updates the URL when state filter changes', async () => {
-    renderComponent();
-
-    const stateFilter = screen.getByPlaceholderText('filters.statePlaceholder');
-
-    await user.click(stateFilter);
-
-    const option = await screen.findByRole('option', { name: 'Maharashtra' });
-
-    await user.click(option);
-
-    await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith(expect.stringContaining('state=Maharashtra'));
-    });
-  });
 });

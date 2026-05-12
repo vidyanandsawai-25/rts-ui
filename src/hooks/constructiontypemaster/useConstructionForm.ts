@@ -45,7 +45,6 @@ export function useConstructionForm({
     description: initialData?.description ?? "",
     searchSequence: initialData?.searchSequence ?? 0,
     isActive: initialData?.isActive ?? true,
-    updatedBy: 1,
   });
 
   const [searchSequenceValue, setSearchSequenceValue] = useState<string>(

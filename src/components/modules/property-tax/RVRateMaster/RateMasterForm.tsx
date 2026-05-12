@@ -19,6 +19,8 @@ import {
   RateMatrixSection,
   RateCompletionProgress,
 } from "./components";
+import { useEffect, useRef } from "react";
+import { toast } from "sonner";
 
 const RateMasterForm: React.FC<RateMasterFormProps> = ({ id, zoneOptions, useGroupOptions, assessmentYears, assessmentYearRanges, zoneDescriptions, allZones, rateCategories, editData, bulkEditData, backendRates, filterValues, showCopyRateSection, showMultipliersSection, hideMatrixSection, onClose, mode: propMode, paginatedZonesData, initialExistingRatesCheck }) => {
   const mode: "edit" | "delete" | "add" = propMode || "edit";
@@ -40,10 +42,23 @@ const RateMasterForm: React.FC<RateMasterFormProps> = ({ id, zoneOptions, useGro
 
   const { handleAddRates, handleUpdateRates, handleDeleteRates, handleGenerateMatrix, handleToggleMultipliers, handleToggleCopyRates, handleCloseCopySection, handleCloseMultipliersSection, handleApplyMultipliers, handleCopyRatesWithValidation } = useRateFormHandlers({ mode, id, editData, bulkEditData, selectedZone, selectedUseGroup, assessmentYear, existingRateFound, rateCategories, useGroupOptions, zoneOptions, assessmentYears, assessmentYearRanges, zoneDescriptions, paginatedZoneDescriptions, matrixStorageKey, locale, onClose, router, confirm, buildCompleteMatrixForSubmission, handleBulkCreate, handleBulkUpdate, handleDelete, setMatrixData, setShowMatrix, setCopySectionsExpanded, setShowMultipliersInline, setMultipliers, tempMultipliers, sourceUseGroup, handleCopyRates, t });
 
+
   const isDrawerMode = !!onClose;
   const isEditMode = !!id || !!editData || !!bulkEditData;
   const isImportDisabled = existingRateFound || !selectedZone || selectedZone === 'ALL' ||
     !selectedUseGroup || selectedUseGroup === 'ALL' || !assessmentYear || assessmentYear === 'ALL';
+
+  // Show toast when filters match existing rates
+  const hasShownToastRef = useRef(false);
+  useEffect(() => {
+    if (!isEditMode && existingRateFound && !hasShownToastRef.current) {
+      toast.error(t('messages.validationRatesAlreadyExist'));
+      hasShownToastRef.current = true;
+    }
+    if (!existingRateFound) {
+      hasShownToastRef.current = false;
+    }
+  }, [existingRateFound, isEditMode, t]);
 
   return (
     <div className={isDrawerMode ? "space-y-3" : "max-w-7xl mx-auto p-2 md:p-3"}>

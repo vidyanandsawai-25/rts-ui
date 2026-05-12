@@ -1,8 +1,10 @@
 import { apiClient } from "@/services/api.service";
 import { ZoneListResponse, ZoneItem, ZoneMutationResponse, CreateZonePayload, UpdateZonePayload } from "@/types/zoneMaster.types";
+import { ApiError } from "@/lib/utils/api";
 
 /**
  * Fetches paginated zone list from /Zone endpoint.
+ * Throws ApiError on failure so Next.js error boundary can catch it.
  */
 export async function getZones(
   pageNumber: number,
@@ -19,12 +21,12 @@ export async function getZones(
 
   const response = await apiClient.get<ZoneListResponse>(`/Zone?${params.toString()}`);
   
-  if (!response.success) {
-    return { items: [], totalCount: 0, pageNumber, pageSize, totalPages: 0, hasPrevious: false, hasNext: false };
-  }
-  
-  if (!response.data) {
-    return { items: [], totalCount: 0, pageNumber, pageSize, totalPages: 0, hasPrevious: false, hasNext: false };
+  if (!response.success || !response.data) {
+    throw new ApiError(
+      response.statusCode ?? 500,
+      response.error || "Failed to fetch zones",
+      "Get zones failed"
+    );
   }
 
   const data = response.data;

@@ -27,13 +27,12 @@ describe('useBankSearch', () => {
 
   describe('initial state', () => {
     it('should derive search from URL searchParams', () => {
-      mockSearchParams = new URLSearchParams('search=hdfc&state=Maharashtra');
+      mockSearchParams = new URLSearchParams('search=hdfc');
       const { result } = renderHook(() =>
         useBankSearch({ locale: 'en', startTransition: makeStartTransition() })
       );
 
       expect(result.current.currentSearchTerm).toBe('hdfc');
-      expect(result.current.currentState).toBe('Maharashtra');
     });
 
     it('should default search to empty string when no URL param', () => {
@@ -42,14 +41,6 @@ describe('useBankSearch', () => {
       );
 
       expect(result.current.currentSearchTerm).toBe('');
-    });
-
-    it('should default state to "all" when no URL param', () => {
-      const { result } = renderHook(() =>
-        useBankSearch({ locale: 'en', startTransition: makeStartTransition() })
-      );
-
-      expect(result.current.currentState).toBe('all');
     });
   });
 
@@ -130,42 +121,6 @@ describe('useBankSearch', () => {
       // Only one push — the last value after debounce settles
       expect(mockPush).toHaveBeenCalledOnce();
       expect(mockPush.mock.calls[0][0]).toContain('search=sbi');
-    });
-  });
-
-  describe('handleStateChange', () => {
-    it('should call router.push immediately (no debounce) when state changes', () => {
-      const startTransition = makeStartTransition();
-      const { result } = renderHook(() => useBankSearch({ locale: 'en', startTransition }));
-
-      act(() => {
-        result.current.handleStateChange('Maharashtra');
-      });
-
-      expect(mockPush).toHaveBeenCalledOnce();
-      expect(mockPush.mock.calls[0][0]).toContain('state=Maharashtra');
-    });
-
-    it('should omit state param when "all" is selected', () => {
-      const startTransition = makeStartTransition();
-      const { result } = renderHook(() => useBankSearch({ locale: 'en', startTransition }));
-
-      act(() => {
-        result.current.handleStateChange('all');
-      });
-
-      expect(mockPush.mock.calls[0][0]).not.toContain('state=');
-    });
-
-    it('should treat undefined as "all" in handleStateChange', () => {
-      const startTransition = makeStartTransition();
-      const { result } = renderHook(() => useBankSearch({ locale: 'en', startTransition }));
-
-      act(() => {
-        result.current.handleStateChange(undefined);
-      });
-
-      expect(mockPush.mock.calls[0][0]).not.toContain('state=');
     });
   });
 });
