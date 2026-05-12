@@ -90,7 +90,7 @@ export async function createConstructionType(data: ConstructionTypeFormModel): P
       description: data.description.trim(),
       searchSequence: Number(data.searchSequence) || 0,
       isActive: data.isActive,
-      createdBy: 1, // TODO: Get from auth context
+      createdBy: data.createdBy ?? 1,
     };
     const response = await apiClient.post<unknown>("/ConstructionType", payload);
     if (!response.success) {
@@ -112,7 +112,7 @@ export async function updateConstructionType(data: ConstructionTypeFormModel): P
       description: data.description.trim(),
       searchSequence: Number(data.searchSequence) || 0,
       isActive: data.isActive,
-      updatedBy: data.updatedBy ?? 1, // TODO: Get from auth context
+      updatedBy: data.updatedBy ?? 1,
     };
     const response = await apiClient.put<unknown>(`/ConstructionType/${encodeURIComponent(String(data.id))}`, payload);
     if (!response.success) {

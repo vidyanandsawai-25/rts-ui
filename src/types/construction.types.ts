@@ -11,6 +11,7 @@ export interface ConstructionTypeFormModel {
   description: string;
   searchSequence: number;
   isActive: boolean;
+  createdBy?: number;
   updatedBy?: number;
 }
 

@@ -7,7 +7,7 @@ import { StatusToggleSection } from "./components/StatusToggleSection";
 import { FormFieldsSection } from "./components/FormFieldsSection";
 import { ValidationSection } from "./components/ValidationSection";
 import { ConstructionType } from "@/types/construction.types";
-import { useConstructionForm } from "@/hooks/useConstructionForm";
+import { useConstructionForm } from "@/hooks/constructiontypemaster/useConstructionForm";
 
 export interface ConstructionTypeFormProps {
   id: number | null;
