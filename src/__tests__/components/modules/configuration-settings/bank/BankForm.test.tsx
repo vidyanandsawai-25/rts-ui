@@ -82,14 +82,14 @@ describe('BankForm', () => {
   it('handles successful bank creation', async () => {
     render(<BankForm id={null} />);
 
-    await user.type(screen.getByPlaceholderText('drawer.placeholders.bankCode'), 'HDFC01');
-    await user.type(screen.getByPlaceholderText('drawer.placeholders.bankName'), 'HDFC Bank');
-    await user.type(screen.getByPlaceholderText('drawer.placeholders.ifscCode'), 'HDFC0000001');
-    await user.type(screen.getByPlaceholderText('drawer.placeholders.branchName'), 'Downtown');
-    await user.type(screen.getByPlaceholderText('drawer.placeholders.streetAddress'), 'Street 1');
-    await user.type(screen.getByPlaceholderText('drawer.placeholders.city'), 'Mumbai');
-    await user.type(screen.getByPlaceholderText('drawer.placeholders.state'), 'Maharashtra');
-    await user.type(screen.getByPlaceholderText('drawer.placeholders.pincode'), '400001');
+    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.bankCode'), { target: { value: 'HDFC01' } });
+    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.bankName'), { target: { value: 'HDFC Bank' } });
+    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.ifscCode'), { target: { value: 'HDFC0000001' } });
+    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.branchName'), { target: { value: 'Downtown' } });
+    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.streetAddress'), { target: { value: 'Street 1' } });
+    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.city'), { target: { value: 'Mumbai' } });
+    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.state'), { target: { value: 'Maharashtra' } });
+    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.pincode'), { target: { value: '400001' } });
 
     const submitButton = screen.getByText('drawer.buttons.save');
     await user.click(submitButton);
@@ -104,7 +104,7 @@ describe('BankForm', () => {
     render(<BankForm id={null} />);
 
     const ifscInput = screen.getByPlaceholderText('drawer.placeholders.ifscCode');
-    await user.type(ifscInput, 'INVALID');
+    fireEvent.change(ifscInput, { target: { value: 'INVALID' } });
     fireEvent.blur(ifscInput);
 
     await waitFor(() => {
@@ -118,15 +118,14 @@ describe('BankForm', () => {
     const pincodeInput = screen.getByPlaceholderText('drawer.placeholders.pincode');
 
     // Too short
-    await user.type(pincodeInput, '1234');
+    fireEvent.change(pincodeInput, { target: { value: '1234' } });
     fireEvent.blur(pincodeInput);
     await waitFor(() => {
       expect(screen.getByText('validation.pincodeFormat')).toBeInTheDocument();
     });
 
     // Too long
-    await user.clear(pincodeInput);
-    await user.type(pincodeInput, '1234567');
+    fireEvent.change(pincodeInput, { target: { value: '1234567' } });
     fireEvent.blur(pincodeInput);
     await waitFor(() => {
       expect(screen.getByText('validation.pincodeFormat')).toBeInTheDocument();
@@ -142,14 +141,14 @@ describe('BankForm', () => {
     render(<BankForm id={null} />);
 
     // Fill minimal required fields
-    await user.type(screen.getByPlaceholderText('drawer.placeholders.bankCode'), 'FAIL01');
-    await user.type(screen.getByPlaceholderText('drawer.placeholders.bankName'), 'Fail Bank');
-    await user.type(screen.getByPlaceholderText('drawer.placeholders.ifscCode'), 'FAIL0000001');
-    await user.type(screen.getByPlaceholderText('drawer.placeholders.branchName'), 'Branch');
-    await user.type(screen.getByPlaceholderText('drawer.placeholders.streetAddress'), 'Address');
-    await user.type(screen.getByPlaceholderText('drawer.placeholders.city'), 'City');
-    await user.type(screen.getByPlaceholderText('drawer.placeholders.state'), 'State');
-    await user.type(screen.getByPlaceholderText('drawer.placeholders.pincode'), '123456');
+    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.bankCode'), { target: { value: 'FAIL01' } });
+    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.bankName'), { target: { value: 'Fail Bank' } });
+    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.ifscCode'), { target: { value: 'FAIL0000001' } });
+    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.branchName'), { target: { value: 'Branch' } });
+    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.streetAddress'), { target: { value: 'Address' } });
+    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.city'), { target: { value: 'City' } });
+    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.state'), { target: { value: 'State' } });
+    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.pincode'), { target: { value: '123456' } });
 
     await user.click(screen.getByText('drawer.buttons.save'));
 
