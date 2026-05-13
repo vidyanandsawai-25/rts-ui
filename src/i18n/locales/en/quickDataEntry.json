@@ -435,7 +435,13 @@
         "buildCompletionCertificate": "Build Completion Certificate",
         "title": "Building Permissions & Certificates",
         "uploadDocument": "Upload Document",
-        "viewDocument": "View Document"
+        "viewDocument": "View Document",
+        "uploadSuccess": "Document uploaded successfully!",
+        "uploadError": "Failed to upload document.",
+        "uploading": "Uploading...",
+        "documentUploaded": "Document Uploaded",
+        "saveSuccess": "Building permissions saved successfully!",
+        "saveError": "Error saving building permissions!"
     },
     "floor": {
         "allFloors": "All Floors",
@@ -605,7 +611,13 @@
         "uploadDocument": "Upload Document",
         "viewDocument": "View Document",
         "amountPlaceholder": "Enter amount",
-        "PercentagePlaceholder": "Enter percentage"
+        "PercentagePlaceholder": "Enter percentage",
+        "uploading": "Uploading...",
+        "documentUploaded": "Document Uploaded",
+        "uploadSuccess": "Document uploaded successfully!",
+        "uploadError": "Error uploading document",
+        "saveSuccess": "Discount details saved successfully!",
+        "saveError": "Error saving discount details"
     },
     "oldDetails": {
         "title": "Old Taxation",
@@ -766,8 +778,13 @@
     },
     "common": {
         "UpdateChanges": "Update Changes",
+        "saveChanges": "Save Changes",
         "noChanges": "No changes detected to update.",
-        "delete": "Delete"
+        "delete": "Delete",
+        "validation": {
+            "numberRequired": "Certificate Number is required",
+            "dateRequired": "Certificate Date is required"
+        }
     },
     "errorBoundary": {
         "title": "Something went wrong",
