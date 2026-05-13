@@ -49,8 +49,8 @@ export function useDepreciationValidation(t: TranslationFn) {
     if (errors.minError || errors.maxError) return errors;
 
     // Range and limit validation
-    if (minNum > 100) errors.minError = t("errors.mustBe100OrLess");
-    if (maxNum > 100) errors.maxError = t("errors.mustBe100OrLess");
+    if (minNum > 999) errors.minError = t("errors.mustBe999OrLess");
+    if (maxNum > 999) errors.maxError = t("errors.mustBe999OrLess");
     if (minNum >= maxNum) errors.maxError = t("errors.invalidRange");
 
     return errors;
@@ -71,7 +71,7 @@ export function useDepreciationValidation(t: TranslationFn) {
 
   /**
    * Sanitize input value - allow only digits up to 3 characters.
-   * Numeric range validation is enforced separately by `validateBasicRules` (0-100).
+   * Numeric range validation is enforced separately by `validateBasicRules` (0-999).
    */
   const sanitizeInput = useCallback((value: string): string => {
     return value.replaceAll(/\D/g, "").slice(0, 3);

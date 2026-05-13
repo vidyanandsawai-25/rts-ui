@@ -9,7 +9,7 @@ const mockT = vi.fn((key: string) => {
     "errors.mustBeNumber": "Must be a valid number",
     "errors.invalidRange": "Min must be less than max",
     "errors.cannotBeNegative": "Cannot be negative",
-    "errors.mustBe100OrLess": "Must be 100 or less",
+    "errors.mustBe999OrLess": "Must be 999 or less",
     "errors.mustBe99OrLess": "Must be 99 or less",
   };
   return translations[key] || key;
@@ -103,33 +103,33 @@ describe("useDepreciationValidation", () => {
       expect(validation.maxError).toBe("Min must be less than max");
     });
 
-    it("should return error when min exceeds 100", () => {
+    it("should return error when min exceeds 999", () => {
       const { result } = renderHook(() => useDepreciationValidation(mockT));
-      const validation = result.current.validateMinMax("101", "150");
+      const validation = result.current.validateMinMax("1000", "1500");
 
       expect(validation.valid).toBe(false);
-      expect(validation.minError).toBe("Must be 100 or less");
+      expect(validation.minError).toBe("Must be 999 or less");
     });
 
-    it("should return error when max exceeds 100", () => {
+    it("should return error when max exceeds 999", () => {
       const { result } = renderHook(() => useDepreciationValidation(mockT));
-      const validation = result.current.validateMinMax("10", "101");
+      const validation = result.current.validateMinMax("10", "1000");
 
       expect(validation.valid).toBe(false);
-      expect(validation.maxError).toBe("Must be 100 or less");
+      expect(validation.maxError).toBe("Must be 999 or less");
     });
 
-    it("should accept max value of exactly 100", () => {
+    it("should accept max value of exactly 999", () => {
       const { result } = renderHook(() => useDepreciationValidation(mockT));
-      const validation = result.current.validateMinMax("0", "100");
+      const validation = result.current.validateMinMax("0", "999");
 
       expect(validation.valid).toBe(true);
       expect(validation.maxError).toBeNull();
     });
 
-    it("should accept valid range within 0–100", () => {
+    it("should accept valid range within 0–999", () => {
       const { result } = renderHook(() => useDepreciationValidation(mockT));
-      const validation = result.current.validateMinMax("0", "50");
+      const validation = result.current.validateMinMax("0", "500");
 
       expect(validation.valid).toBe(true);
       expect(validation.minError).toBeNull();
