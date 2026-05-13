@@ -66,7 +66,7 @@ export default function AvailableWards({
         />
       </div>
 
-      <div className="overflow-y-auto p-2 space-y-2 flex-1">
+      <div className="overflow-y-auto p-2 space-y-2 flex-1 mb-4">
         {paginatedUnassignedWards.map(w => {
           const isSelfSelected = checkedAvailable.has(w.wardNo);
 
@@ -74,6 +74,13 @@ export default function AvailableWards({
             <Label
               key={w.wardNo}
               className="flex items-center gap-3 px-4 py-1 backdrop-blur-sm rounded-lg transition-all duration-200 border group cursor-pointer bg-white/60 border-blue-100/50 hover:bg-white/80 hover:border-blue-300/50 hover:shadow-md"
+              onClick={(e) => {
+                // Only toggle if not clicking inside the checkbox button
+                const target = e.target as HTMLElement;
+                if (!target.closest('button[role="checkbox"]')) {
+                  onToggle(w.wardNo);
+                }
+              }}
             >
               <Checkbox
                 checked={isSelfSelected}

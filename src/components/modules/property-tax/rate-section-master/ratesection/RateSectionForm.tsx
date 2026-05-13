@@ -7,6 +7,7 @@ import { RateSectionFormProps, RateSectionFormState, RateSectionFormErrors } fro
 import { Layers, AlertCircle } from "lucide-react";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { CODE_REGEX, CODE_SANITIZE, DESCRIPTION_REGEX, DESCRIPTION_SANITIZE } from "@/lib/utils/validation";
+import { isAllZeros } from "@/lib/utils/validation-rules";
 import { useAddRateSection } from "./AddRateSection";
 import { useEditRateSection, EditRateSectionContent } from "./EditRateSection";
 
@@ -36,6 +37,8 @@ export function validateRateSectionForm(
   // Validate zoneCode (Rate Section No)
   if (!zoneCode) {
     errors.zoneCode = t('validation.required', { label: t('form.rateSectionNo') });
+  } else if (isAllZeros(zoneCode)) {
+    errors.zoneCode = t('validation.allZeros', { label: t('form.rateSectionNo') });
   } else if (zoneCode.length > RATE_SECTION_NO_MAX_LENGTH) {
     errors.zoneCode = t('validation.maxChars', { label: t('form.rateSectionNo'), count: RATE_SECTION_NO_MAX_LENGTH });
   } else if (!CODE_REGEX.test(zoneCode)) {
@@ -45,6 +48,8 @@ export function validateRateSectionForm(
   // Validate zoneRegional (Rate Section Name/Description)
   if (!zoneRegional) {
     errors.zoneRegional = t('validation.required', { label: t('form.rateSectionName') });
+  } else if (isAllZeros(zoneRegional)) {
+    errors.zoneRegional = t('validation.allZeros', { label: t('form.rateSectionName') });
   } else if (zoneRegional.length > RATE_SECTION_NAME_MAX_LENGTH) {
     errors.zoneRegional = t('validation.maxChars', { label: t('form.rateSectionName'), count: RATE_SECTION_NAME_MAX_LENGTH });
   } else if (!DESCRIPTION_REGEX.test(zoneRegional)) {
@@ -133,6 +138,12 @@ export default function RateSectionForm(props: RateSectionFormProps) {
 
   const { form, loading, handleClose, handleSave } = isEdit ? editHook : addHook;
 
+  // Check if form has errors or required fields are empty
+  const currentHook = isEdit ? editHook : addHook;
+  const hasErrors = Object.keys(currentHook.errors).length > 0;
+  const hasEmptyRequiredFields = !form.zoneCode?.trim() || !form.zoneRegional?.trim();
+  const isFormInvalid = hasErrors || hasEmptyRequiredFields;
+
   return (
     <Drawer open={open} onClose={handleClose} width="sm"
       title={
@@ -156,7 +167,7 @@ export default function RateSectionForm(props: RateSectionFormProps) {
       }
       footer={<>
         <CancelButton label={t('actions.cancel')} onClick={handleClose} disabled={loading} />
-        <SaveButton label={loading ? (isEdit ? t('actions.updating') : t('actions.saving')) : (isEdit ? t('actions.update') : t('actions.save'))} onClick={handleSave} disabled={loading} />
+        <SaveButton label={loading ? (isEdit ? t('actions.updating') : t('actions.saving')) : (isEdit ? t('actions.update') : t('actions.save'))} onClick={handleSave} disabled={loading || isFormInvalid} />
       </>}
     >
       <div className="space-y-6 bg-[#F8FAFF] p-5">

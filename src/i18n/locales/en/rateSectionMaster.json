@@ -125,6 +125,7 @@
     "descriptionFormat": "{label} contains invalid characters. Only letters, numbers, and basic punctuation (/, -, &, etc.) are allowed.",
     "maxChars": "{label} cannot exceed {count} characters",
     "tooLong": "{label} is too long",
+    "allZeros": "{label} cannot contain only zeros",
     "duplicate": "Rate Section \"{name}\" already exists."
   },
   "messages": {

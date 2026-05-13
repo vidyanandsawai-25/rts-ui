@@ -51,6 +51,7 @@ export default function ZoneForm(props: Props) {
     validate,
     checkDuplicateZone,
     resetForm,
+    handleBlur,
   } = useZoneForm({
     mode,
     open,
@@ -121,6 +122,11 @@ export default function ZoneForm(props: Props) {
     </div>
   );
 
+  // Check if form has errors or required fields are empty
+  const hasErrors = Object.keys(errors).length > 0;
+  const hasEmptyRequiredFields = !form.zoneNo?.trim() || !form.description?.trim();
+  const isFormInvalid = hasErrors || hasEmptyRequiredFields;
+
   // Drawer footer based on mode
   const drawerFooter = (
     <>
@@ -136,7 +142,7 @@ export default function ZoneForm(props: Props) {
             : mode === "add" ? t("actions.save") : t("actions.update")
         }
         onClick={handleSave}
-        disabled={loading || fetching}
+        disabled={loading || fetching || isFormInvalid}
       />
     </>
   );
@@ -153,6 +159,7 @@ export default function ZoneForm(props: Props) {
         <ZoneFormFields
           data={form}
           onChange={setForm}
+          onBlur={handleBlur}
           disabled={loading || fetching}
           errors={errors}
           showActiveStatus={showActiveStatus}
