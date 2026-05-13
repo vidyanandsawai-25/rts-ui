@@ -1,7 +1,7 @@
 import { vi } from 'vitest';
 
 // Mock next/navigation
-export const mockNextNav = {
+export const nextNavMocks = {
   push: vi.fn(),
   replace: vi.fn(),
   refresh: vi.fn(),
