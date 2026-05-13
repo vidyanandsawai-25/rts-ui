@@ -90,7 +90,8 @@ export interface WaterConnectionPageData {
   rateMasters: WaterRateMasterLookup[];
 }
 
-export interface PagedResponse<T> {
+/** Module-specific paged response that handles APIs returning either items[] or data[] */
+export interface WaterConnectionPagedResponse<T> {
   data?: T[];
   items?: T[];
   totalCount: number;

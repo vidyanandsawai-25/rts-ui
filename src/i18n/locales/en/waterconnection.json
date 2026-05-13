@@ -41,6 +41,7 @@
         "perMonth": "per month",
         "category": "Category",
         "applicableCharges": "Applicable Charges",
+        "installedOn": "Installed",
         "status": "Status",
         "actions": "Action"
       }

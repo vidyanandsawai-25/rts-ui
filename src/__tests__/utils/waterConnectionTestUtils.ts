@@ -265,6 +265,7 @@ export const waterConnectionMessages = {
       },
       table: {
         actions: 'Actions',
+        installedOn: 'Installed',
         connectionNo: 'Connection No',
         type: 'Type',
         tapSize: 'Tap Size',

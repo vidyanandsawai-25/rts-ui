@@ -49,7 +49,7 @@ export default function WaterConnectionPage({ initialData, propertyId }: WaterCo
     return initialData.connections.slice(start, start + pageSize);
   }, [initialData.connections, page, pageSize]);
 
-  const totalPages = Math.max(1, Math.ceil(initialData.connections.length / pageSize));
+  const totalPages = Math.max(1, Math.ceil(initialData.totalCount / pageSize));
 
   const handleAdd = () => {
     setEditingConnection(null);

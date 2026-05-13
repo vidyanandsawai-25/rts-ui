@@ -55,20 +55,20 @@ const MOCK_RATE_MASTERS: WaterRateMasterLookup[] = [
   { id: 12, waterConnectionTypeId: 3, connectionTypeName: "Industrial", waterConnectionSizeId: 4, connectionSizeDisplay: "32 mm", financeYearId: 1, yearCode: "2025-26", yearlyRate: 10800, isActive: true },
 ];
 
-// Placeholder property — replace with real property API call when endpoint is available
+// TODO: Replace with real property API call when endpoint is available
 function getMockProperty(propertyId: number): PropertyInfo {
   return {
     id: propertyId,
-    propertyNo: "FR09-2024-001",
-    ownerName: "Rajesh Kumar",
+    propertyNo: `PROP-${propertyId}`,
+    ownerName: "—",
     customerId: `CID-${propertyId}`,
     customerType: "Individual",
-    contact: "+91 90743 42210",
-    email: "rajesh.kumar@email.com",
-    address: "123 MG Road, Koramangala, Bangalore - 560034",
-    zone: "Zone-3",
-    ward: "Ward-21",
-    buildingType: "Residential",
+    contact: "—",
+    email: "—",
+    address: "—",
+    zone: "—",
+    ward: "—",
+    buildingType: "—",
   };
 }
 
@@ -97,6 +97,7 @@ export async function getWaterConnectionPageData(
     }),
   ]);
 
+  const isDev = process.env.NODE_ENV !== "production";
   return {
     property: getMockProperty(propertyId),
     connections: connectionsResponse.items ?? connectionsResponse.data ?? [],
@@ -104,10 +105,10 @@ export async function getWaterConnectionPageData(
     totalPages: connectionsResponse.totalPages,
     pageNumber: connectionsResponse.pageNumber,
     pageSize: connectionsResponse.pageSize,
-    typeOptions: typeOptions.length > 0 ? typeOptions : MOCK_TYPE_OPTIONS,
-    sizeOptions: sizeOptions.length > 0 ? sizeOptions : MOCK_SIZE_OPTIONS,
-    statusOptions: statusOptions.length > 0 ? statusOptions : MOCK_STATUS_OPTIONS,
-    rateMasters: rateMastersFromApi.length > 0 ? rateMastersFromApi : MOCK_RATE_MASTERS,
+    typeOptions: typeOptions.length > 0 ? typeOptions : (isDev ? MOCK_TYPE_OPTIONS : []),
+    sizeOptions: sizeOptions.length > 0 ? sizeOptions : (isDev ? MOCK_SIZE_OPTIONS : []),
+    statusOptions: statusOptions.length > 0 ? statusOptions : (isDev ? MOCK_STATUS_OPTIONS : []),
+    rateMasters: rateMastersFromApi.length > 0 ? rateMastersFromApi : (isDev ? MOCK_RATE_MASTERS : []),
   };
 }
 
@@ -136,11 +137,12 @@ export async function getConnectionLookupsAction(): Promise<{
     }),
   ]);
 
+  const isDev = process.env.NODE_ENV !== "production";
   return {
-    typeOptions: typeOptions.length > 0 ? typeOptions : MOCK_TYPE_OPTIONS,
-    sizeOptions: sizeOptions.length > 0 ? sizeOptions : MOCK_SIZE_OPTIONS,
-    statusOptions: statusOptions.length > 0 ? statusOptions : MOCK_STATUS_OPTIONS,
-    rateMasters: rateMastersFromApi.length > 0 ? rateMastersFromApi : MOCK_RATE_MASTERS,
+    typeOptions: typeOptions.length > 0 ? typeOptions : (isDev ? MOCK_TYPE_OPTIONS : []),
+    sizeOptions: sizeOptions.length > 0 ? sizeOptions : (isDev ? MOCK_SIZE_OPTIONS : []),
+    statusOptions: statusOptions.length > 0 ? statusOptions : (isDev ? MOCK_STATUS_OPTIONS : []),
+    rateMasters: rateMastersFromApi.length > 0 ? rateMastersFromApi : (isDev ? MOCK_RATE_MASTERS : []),
   };
 }
 

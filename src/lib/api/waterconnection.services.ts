@@ -1,7 +1,7 @@
 import { apiClient } from "@/services/api.service";
 import { ApiError } from "@/lib/utils/api";
 import type {
-  PagedResponse,
+  WaterConnectionPagedResponse,
   WaterConnection,
   WaterConnectionFormModel,
   WaterConnectionTypeLookup,
@@ -17,14 +17,14 @@ export async function getWaterConnectionsPaged(
   propertyId: number,
   pageNumber = 1,
   pageSize = 100
-): Promise<PagedResponse<WaterConnection>> {
+): Promise<WaterConnectionPagedResponse<WaterConnection>> {
   const params = new URLSearchParams({
     PropertyId: propertyId.toString(),
     PageNumber: pageNumber.toString(),
     PageSize: pageSize.toString(),
   });
 
-  const response = await apiClient.get<PagedResponse<WaterConnection>>(
+  const response = await apiClient.get<WaterConnectionPagedResponse<WaterConnection>>(
     `/WaterConnection?${params.toString()}`
   );
 
@@ -56,10 +56,19 @@ export async function getWaterConnectionById(id: number): Promise<WaterConnectio
 
 /** CREATE */
 export async function createWaterConnection(data: WaterConnectionFormModel): Promise<WaterConnection> {
+  const typeId = Number(data.waterConnectionTypeId);
+  const sizeId = Number(data.waterConnectionSizeId);
+  if (!Number.isInteger(typeId) || typeId <= 0) {
+    throw new ApiError(400, "Invalid waterConnectionTypeId", "Create water connection failed");
+  }
+  if (!Number.isInteger(sizeId) || sizeId <= 0) {
+    throw new ApiError(400, "Invalid waterConnectionSizeId", "Create water connection failed");
+  }
+
   const payload = {
     propertyId: data.propertyId,
-    waterConnectionTypeId: data.waterConnectionTypeId,
-    waterConnectionSizeId: data.waterConnectionSizeId,
+    waterConnectionTypeId: typeId,
+    waterConnectionSizeId: sizeId,
     waterConnectionStatusId: data.waterConnectionStatusId ?? null,
     connectionNo: data.connectionNo.trim(),
     meterNo: data.meterNo?.trim() || null,
@@ -82,11 +91,20 @@ export async function createWaterConnection(data: WaterConnectionFormModel): Pro
 
 /** UPDATE */
 export async function updateWaterConnection(id: number, data: WaterConnectionFormModel): Promise<WaterConnection> {
+  const typeId = Number(data.waterConnectionTypeId);
+  const sizeId = Number(data.waterConnectionSizeId);
+  if (!Number.isInteger(typeId) || typeId <= 0) {
+    throw new ApiError(400, "Invalid waterConnectionTypeId", "Update water connection failed");
+  }
+  if (!Number.isInteger(sizeId) || sizeId <= 0) {
+    throw new ApiError(400, "Invalid waterConnectionSizeId", "Update water connection failed");
+  }
+
   const payload = {
     id,
     propertyId: data.propertyId,
-    waterConnectionTypeId: data.waterConnectionTypeId,
-    waterConnectionSizeId: data.waterConnectionSizeId,
+    waterConnectionTypeId: typeId,
+    waterConnectionSizeId: sizeId,
     waterConnectionStatusId: data.waterConnectionStatusId ?? null,
     connectionNo: data.connectionNo.trim(),
     meterNo: data.meterNo?.trim() || null,
@@ -123,7 +141,7 @@ export async function deleteWaterConnection(id: number): Promise<void> {
 /** GET connection types for dropdown */
 export async function getWaterConnectionTypes(): Promise<WaterConnectionTypeLookup[]> {
   const params = new URLSearchParams({ PageSize: "200", IsActive: "true" });
-  const response = await apiClient.get<PagedResponse<WaterConnectionTypeLookup>>(
+  const response = await apiClient.get<WaterConnectionPagedResponse<WaterConnectionTypeLookup>>(
     `/WaterConnectionType?${params.toString()}`
   );
 
@@ -141,7 +159,7 @@ export async function getWaterConnectionTypes(): Promise<WaterConnectionTypeLook
 /** GET connection sizes for dropdown */
 export async function getWaterConnectionSizes(): Promise<WaterConnectionSizeLookup[]> {
   const params = new URLSearchParams({ PageSize: "200", IsActive: "true" });
-  const response = await apiClient.get<PagedResponse<WaterConnectionSizeLookup>>(
+  const response = await apiClient.get<WaterConnectionPagedResponse<WaterConnectionSizeLookup>>(
     `/WaterConnectionSize?${params.toString()}`
   );
 
@@ -159,7 +177,7 @@ export async function getWaterConnectionSizes(): Promise<WaterConnectionSizeLook
 /** GET connection statuses for dropdown */
 export async function getWaterConnectionStatuses(): Promise<WaterConnectionStatusLookup[]> {
   const params = new URLSearchParams({ PageSize: "200", IsActive: "true" });
-  const response = await apiClient.get<PagedResponse<WaterConnectionStatusLookup>>(
+  const response = await apiClient.get<WaterConnectionPagedResponse<WaterConnectionStatusLookup>>(
     `/WaterConnectionStatus?${params.toString()}`
   );
 
@@ -183,7 +201,7 @@ export async function getWaterRateMasters(
   if (typeId != null) params.append("WaterConnectionTypeId", typeId.toString());
   if (sizeId != null) params.append("WaterConnectionSizeId", sizeId.toString());
 
-  const response = await apiClient.get<PagedResponse<WaterRateMasterLookup>>(
+  const response = await apiClient.get<WaterConnectionPagedResponse<WaterRateMasterLookup>>(
     `/WaterRateMaster?${params.toString()}`
   );
 
