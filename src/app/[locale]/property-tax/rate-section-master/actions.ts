@@ -256,7 +256,7 @@ export async function updateRateSectionAction(
     });
 
     if (!result.success) {
-      // return {
+      return {
         success: false,
         message: result.error || "Failed to update rate section",
         statusCode: result.statusCode
