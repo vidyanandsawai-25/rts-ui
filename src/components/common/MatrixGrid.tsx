@@ -54,7 +54,7 @@ export interface MatrixGridProps {
   getCellClassName?: (value: number, rowId: string, columnId: string) => string;
   translations: {
     action: string;
-    currencySymbol: string;
+    currencySymbol?: string;
     deleteRow: string;
   };
   pagination?: MatrixGridPaginationProps;

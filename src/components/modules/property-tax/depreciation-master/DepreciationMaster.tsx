@@ -73,22 +73,15 @@ export default function DepreciationMaster({
       rateMap[id][row.constructionTypeId] = row.rate ?? 0;
     });
 
-    // FIXED: Only show construction types that have actual records in current page
-    // Don't create phantom cells with 0 values for missing construction types
-    // This prevents editable cells that have no backing data and would cause update failures
-    
     const sortedRanges = Array.from(rangeMap.values()).sort((a, b) => a.min - b.min);
-    
-    // Limit ranges to pageSize to ensure proper pagination display
-    const paginatedRanges = sortedRanges.slice(0, pageSize);
 
     return {
       dbRows: data,
-      ranges: paginatedRanges,
+      ranges: sortedRanges,
       baseRatesByRange: rateMap,
-      defaultSelectedRangeId: paginatedRanges[0]?.id ?? null,
+      defaultSelectedRangeId: sortedRanges[0]?.id ?? null,
     };
-  }, [data, pageSize]);
+  }, [data]);
 
   // Merge base rates with local overrides
   const ratesByRange = useMemo(() => {
@@ -296,9 +289,8 @@ export default function DepreciationMaster({
   );
 
   const matrixColumns: MatrixColumn[] = useMemo(() => {
-    // Show ALL construction types on every page so columns are consistent.
-    // Cells without backing data on this page will render as read-only 0.
-    // editableColumnIds already restricts editing to columns that have real records.
+    // Show all construction types for consistent column display.
+    // Edit gating is enforced by MatrixGrid which checks row.cells has the column key.
     return initialConstructionTypes.map((c) => ({
       id: String(c.constructionId),
       label: c.constructionCode,
@@ -307,8 +299,8 @@ export default function DepreciationMaster({
   }, [initialConstructionTypes]);
 
   const editableColumnIds = useMemo(() => {
-    // All columns are editable for all rows
-    // Collect all unique column IDs from all ranges
+    // Collect all column IDs that have backing data across all ranges.
+    // Per-row editability is enforced by MatrixGrid checking row.cells[col.id] exists.
     const allColumnIds = new Set<string>();
     Object.values(ratesByRange).forEach((rates) => {
       Object.keys(rates).forEach((colId) => allColumnIds.add(colId));
