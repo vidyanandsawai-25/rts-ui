@@ -113,7 +113,7 @@ describe('getAgeFactorCvWeightageMasterColumns', () => {
     
     const input = container.querySelector('input');
     expect(input).toBeInTheDocument();
-    expect(input).toHaveDisplayValue('1.50');
+    expect(input).toHaveDisplayValue('1.5');
   });
 
   it('factor column uses editable value when available', () => {

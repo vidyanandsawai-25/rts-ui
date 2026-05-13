@@ -70,21 +70,21 @@ describe('MatrixCellInput', () => {
     expect(input).toHaveValue(50.25);
   });
 
-  describe('Rate max 100 validation', () => {
-    it('clamps rate value to 100 when value exceeds 100', () => {
+  describe('Rate max 9999 validation', () => {
+    it('clamps rate value to 9999 when value exceeds 9999', () => {
       render(<MatrixCellInput {...defaultProps} />);
       const input = screen.getByRole('spinbutton');
-      fireEvent.change(input, { target: { value: '150' } });
+      fireEvent.change(input, { target: { value: '15000' } });
 
-      expect(defaultProps.onCellChange).toHaveBeenCalledWith('row-1', 'col-1', 100);
+      expect(defaultProps.onCellChange).toHaveBeenCalledWith('row-1', 'col-1', 9999);
     });
 
-    it('clamps large values to 100', () => {
+    it('clamps large values to 9999', () => {
       render(<MatrixCellInput {...defaultProps} />);
       const input = screen.getByRole('spinbutton');
-      fireEvent.change(input, { target: { value: '9999' } });
+      fireEvent.change(input, { target: { value: '99999' } });
 
-      expect(defaultProps.onCellChange).toHaveBeenCalledWith('row-1', 'col-1', 100);
+      expect(defaultProps.onCellChange).toHaveBeenCalledWith('row-1', 'col-1', 9999);
     });
 
     it('accepts exactly 100 as valid', () => {

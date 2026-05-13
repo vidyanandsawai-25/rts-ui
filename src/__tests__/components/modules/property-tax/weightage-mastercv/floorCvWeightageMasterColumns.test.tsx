@@ -122,7 +122,7 @@ describe('getFloorCvWeightageMasterColumns', () => {
     
     const input = container.querySelector('input');
     expect(input).toBeInTheDocument();
-    expect(input).toHaveDisplayValue('1.20');
+    expect(input).toHaveDisplayValue('1.2');
   });
 
   it('factorWithLift column uses editable value when available', () => {
@@ -146,7 +146,7 @@ describe('getFloorCvWeightageMasterColumns', () => {
     const { container } = render(<>{result}</>);
     
     const input = container.querySelector('input');
-    expect(input).toHaveDisplayValue('1.50');
+    expect(input).toHaveDisplayValue('1.5');
   });
 
   it('factorWithoutLift column renders MatrixCellInput', () => {

@@ -181,7 +181,7 @@ describe("FloorCvWeightageMaster – row actions", () => {
 
     it("enables Update button and row-Clear button after changing a cell value", async () => {
         renderComponent();
-        const input = screen.getByDisplayValue("1.20");
+        const input = screen.getByDisplayValue("1.2");
         const row = input.closest("tr") as HTMLElement;
         const updateBtn = within(row).getByRole("button", { name: /update/i });
         const clearBtn = within(row).getByRole("button", { name: /clear/i });
@@ -199,7 +199,7 @@ describe("FloorCvWeightageMaster – row actions", () => {
 
     it("disables Update button after Clear is clicked", async () => {
         renderComponent();
-        const input = screen.getByDisplayValue("1.20");
+        const input = screen.getByDisplayValue("1.2");
         const row = input.closest("tr") as HTMLElement;
         const updateBtn = within(row).getByRole("button", { name: /update/i });
         const clearBtn = within(row).getByRole("button", { name: /clear/i });
@@ -214,7 +214,7 @@ describe("FloorCvWeightageMaster – row actions", () => {
     it("calls updateFloorFactorCVMasterAction when Update is clicked on changed row", async () => {
         vi.mocked(updateFloorFactorCVMasterAction).mockResolvedValueOnce({ success: true, message: "" });
         renderComponent();
-        const input = screen.getByDisplayValue("1.20");
+        const input = screen.getByDisplayValue("1.2");
         const row = input.closest("tr") as HTMLElement;
         const updateBtn = within(row).getByRole("button", { name: /update/i });
 
@@ -241,7 +241,7 @@ describe("FloorCvWeightageMaster – bulk update header action", () => {
         vi.mocked(bulkUpdateFloorFactorCVMasterAction).mockResolvedValueOnce({ success: true, message: "" });
         renderComponent();
 
-        const input = screen.getByDisplayValue("1.20");
+        const input = screen.getByDisplayValue("1.2");
         fireEvent.change(input, { target: { value: "2.0" } });
 
         await waitFor(() => {

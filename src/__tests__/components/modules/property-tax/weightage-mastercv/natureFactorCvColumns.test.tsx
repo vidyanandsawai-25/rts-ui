@@ -113,7 +113,7 @@ describe('getNatureFactorCvColumns', () => {
     
     const input = container.querySelector('input');
     expect(input).toBeInTheDocument();
-    expect(input).toHaveDisplayValue('1.20');
+    expect(input).toHaveDisplayValue('1.2');
   });
 
   it('factor column uses editable value when available', () => {
@@ -137,7 +137,7 @@ describe('getNatureFactorCvColumns', () => {
     const { container } = render(<>{result}</>);
     
     const input = container.querySelector('input');
-    expect(input).toHaveDisplayValue('1.50');
+    expect(input).toHaveDisplayValue('1.5');
   });
 
   it('assessmentYear column renders range', () => {

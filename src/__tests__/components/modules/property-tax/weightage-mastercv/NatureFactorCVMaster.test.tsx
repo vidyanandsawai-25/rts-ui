@@ -152,7 +152,7 @@ describe("NatureFactorCVMaster – row actions", () => {
 
     it("enables Update button after changing a cell value", async () => {
         renderComponent();
-        const input = screen.getByDisplayValue("1.20");
+        const input = screen.getByDisplayValue("1.2");
         const row = input.closest("tr") as HTMLElement;
         const updateBtn = within(row).getByRole("button", { name: /update/i });
 
@@ -166,7 +166,7 @@ describe("NatureFactorCVMaster – row actions", () => {
     it("calls updateNatureFactorCVMasterAction when Update is clicked", async () => {
         vi.mocked(updateNatureFactorCVMasterAction).mockResolvedValueOnce({ success: true, message: "" });
         renderComponent();
-        const input = screen.getByDisplayValue("1.20");
+        const input = screen.getByDisplayValue("1.2");
         const row = input.closest("tr") as HTMLElement;
         const updateBtn = within(row).getByRole("button", { name: /update/i });
 
