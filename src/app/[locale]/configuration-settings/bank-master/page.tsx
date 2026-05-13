@@ -5,7 +5,6 @@ export const dynamic = 'force-dynamic';
 
 const DEFAULT_PAGE_NUMBER = 1;
 const DEFAULT_PAGE_SIZE = 10;
-const DEFAULT_STATE_FILTER = 'all';
 const DEFAULT_STATS_DATA = {
   activeCount: 0,
   uniqueStates: [],
@@ -20,7 +19,6 @@ interface PageProps {
     page?: string;
     pageSize?: string;
     search?: string;
-    state?: string;
   }>;
 }
 
@@ -37,9 +35,8 @@ export default async function BankMasterPage({ searchParams }: PageProps) {
   const pageNumber = parsePositiveInteger(sParams.page, DEFAULT_PAGE_NUMBER, MAX_PAGE_NUMBER);
   const pageSize = parsePositiveInteger(sParams.pageSize, DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE);
   const searchTerm = sParams.search?.trim().slice(0, MAX_SEARCH_TERM_LENGTH) || '';
-  const state = sParams.state || DEFAULT_STATE_FILTER;
   const [banksRes, metaRes] = await Promise.all([
-    getBanksAction(pageNumber, pageSize, searchTerm, state),
+    getBanksAction(pageNumber, pageSize, searchTerm, 'all'),
     getBankMasterMetadata(),
   ]);
 

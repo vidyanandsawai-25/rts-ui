@@ -49,6 +49,9 @@ export {
   MOBILE_10_REGEX,
   POSITIVE_DECIMAL_INVALID_KEYS,
   isAllZeros,
+  YEAR_REGEX,
+   POSITIVE_DECIMAL_INVALID_KEYS,
+
 } from './validation-rules';
 
 // Re-export from validation-helpers.ts
@@ -64,5 +67,6 @@ export {
   societyValidations,
   propertyValidations,
   officeValidations,
+  oldDetailsValidations,
 } from './validation-schemas';
 

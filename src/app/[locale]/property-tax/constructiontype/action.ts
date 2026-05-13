@@ -1,10 +1,12 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { locales } from "@/i18n/config";
-import {createConstructionType, deleteConstructionType, getConstructionPaged, getConstructionTypeById, updateConstructionType } from "@/lib/api/construction-crud.service";
+import {createConstructionType, deleteConstructionType, getConstructionPaged, getConstructionTypeById, updateConstructionType } from "@/lib/api/constructiontypemaster/construction-crud.service";
 import { ApiError } from "@/lib/utils/api";
 import { ConstructionType, ConstructionTypeFormModel} from "@/types/construction.types";
 import { PagedResponse } from "@/types/common.types";
+import { cookies } from "next/headers";
+import { getUserIdFromCookies } from "@/lib/utils/cookie";
 
 export async function fetchConstructionPagedServerAction(
   pageNumber: number,
@@ -63,6 +65,11 @@ export async function createConstructionAction(
   data: ConstructionTypeFormModel
 ): Promise<{ success: boolean; message?: string; statusCode?: number }> {
   try {
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore);
+    if (userId) {
+      data.createdBy = userId;
+    }
     await createConstructionType(data);
     // Revalidate all locale variants of the construction type page
     for (const locale of locales) {
@@ -88,6 +95,11 @@ export async function updateConstructionAction(
   data: ConstructionTypeFormModel
 ): Promise<{ success: boolean; message?: string; statusCode?: number }> {
   try {
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore);
+    if (userId) {
+      data.updatedBy = userId;
+    }
     await updateConstructionType(data);
     // Revalidate all locale variants of the construction type page
     for (const locale of locales) {

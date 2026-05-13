@@ -208,7 +208,10 @@
         "BuildingPermission": "इमारत परवानगी",
         "FloorSubmission": "मजला",
         "Discount": "सवलत",
-        "OldDetails": "जुने तपशील"
+        "OldDetails": "जुने तपशील",
+        "OldTaxation": "जुना कर आकारणी",
+        "FloorInformation": "मजला माहिती",
+        "TaxationBreakdown": "कर तपशील विभाजन"
     },
     "floorSubmission": {
         "loading": {
@@ -297,7 +300,14 @@
             "categoryRequired": "कृपया श्रेणी निवडा",
             "plotAreaInvalid": "भूखंड क्षेत्रफळ सकारात्मक संख्या असणे आवश्यक आहे",
             "residentialToiletsInvalid": "निवासी स्वच्छतागृहांची संख्या सकारात्मक असणे आवश्यक आहे",
-            "commercialToiletsInvalid": "व्यावसायिक स्वच्छतागृहांची संख्या सकारात्मक असणे आवश्यक आहे"
+            "commercialToiletsInvalid": "व्यावसायिक स्वच्छतागृहांची संख्या सकारात्मक असणे आवश्यक आहे",
+            "floorRequired": "कृपया मजला निवडा",
+            "constructionYearRequired": "कृपया बांधकाम वर्ष प्रविष्ट करा",
+            "constructionYearInvalid": "कृपया वैध ४ अंकी वर्ष प्रविष्ट करा",
+            "constructionTypeRequired": "कृपया बांधकामाचा प्रकार निवडा",
+            "typeOfUseRequired": "कृपया वापराचा प्रकार निवडा",
+            "assessmentYearRequired": "कृपया मूल्यांकन वर्ष प्रविष्ट करा",
+            "assessmentYearInvalid": "कृपया वैध ४ अंकी मूल्यांकन वर्ष प्रविष्ट करा"
         }
     },
     "kyc": {
@@ -424,7 +434,13 @@
         "billNumberPlaceholder": "बिल क्रमांक टाका",
         "billDatePlaceholder": "बिल दिनांक टाका",
         "buildingPermit": "बांधकाम परवाना",
-        "buildCompletionCertificate": "बांधकाम पूर्णता प्रमाणपत्र"
+        "buildCompletionCertificate": "बांधकाम पूर्णता प्रमाणपत्र",
+        "saveSuccess": "इमारत परवानगी यशस्वीरित्या जतन केली गेली!",
+        "saveError": "इमारत परवानगी जतन करताना त्रुटी आली!",
+        "uploadSuccess": "कागदपत्र यशस्वीरित्या अपलोड केले!",
+        "uploadError": "कागदपत्र अपलोड करताना त्रुटी आली!",
+        "uploading": "कागदपत्र अपलोड होत आहे...",
+        "documentUploaded": "कागदपत्र अपलोड झाले"
     },
     "floor": {
         "allFloors": "सर्व मजले",
@@ -594,10 +610,62 @@
         "uploadDocument": "कागदपत्र अपलोड करा",
         "viewDocument": "कागदपत्र पहा",
         "amountPlaceholder": "रक्कम टाका",
-        "PercentagePlaceholder": "टक्केवारी टाका"
+        "PercentagePlaceholder": "टक्केवारी टाका",
+        "saveSuccess": "सवलतीचा तपशील यशस्वीरित्या जतन केला गेला!",
+        "saveError": "सवलतीचा तपशील जतन करताना त्रुटी आली",
+        "uploadSuccess": "कागदपत्र यशस्वीरित्या अपलोड केले!",
+        "uploadError": "कागदपत्र अपलोड करताना त्रुटी आली!",
+        "uploading": "कागदपत्र अपलोड होत आहे...",
+        "documentUploaded": "कागदपत्र अपलोड झाले"
     },
     "oldDetails": {
-        "title": "जुने कर आणि ऐतिहासिक डेटा",
+        "title": "जुने कर",
+        "error": {
+            "title": "जुने तपशील लोड करताना त्रुटी",
+            "description": "ऐतिहासिक मालमत्ता डेटा मिळवताना आम्हाला त्रुटी आली.",
+            "errorId": "त्रुटी आयडी: {id}",
+            "goHome": "मुख्यपृष्ठावर जा",
+            "tryAgain": "पुन्हा प्रयत्न करा"
+        },
+        "loading": {
+            "message": "जुने तपशील लोड होत आहेत...",
+            "description": "कृपया थांबा, आम्ही ऐतिहासिक माहिती आणत आहोत",
+            "saving": "जतन करत आहे..."
+        },
+        "oldTaxation": {
+            "error": {
+                "title": "जुनी कर आकारणी त्रुटी",
+                "description": "ऐतिहासिक कर आकारणी नोंदी लोड करण्यात अपयश।",
+                "errorId": "त्रुटी आयडी: {id}",
+                "goHome": "मुख्यपृष्ठावर जा",
+                "tryAgain": "पुन्हा प्रयत्न करा"
+            },
+            "loading": {
+                "message": "जुनी कर आकारणी लोड होत आहे...",
+                "description": "ऐतिहासिक कर डेटा आणत आहे"
+            },
+            "updateSuccess": "जुन्या मालमत्ता कर आकारणीचा तपशील यशस्वीरित्या अपडेट केला",
+            "updateError": "जुन्या मालमत्ता कर आकारणीचा तपशील अपडेट करण्यात अपयश"
+        },
+        "floorInformation": {
+            "error": {
+                "title": "मजला माहिती त्रुटी",
+                "description": "ऐतिहासिक मजल्याचा तपशील मिळवता आला नाही.",
+                "errorId": "त्रुटी आयडी: {id}",
+                "goHome": "मुख्यपृष्ठावर जा",
+                "tryAgain": "पुन्हा प्रयत्न करा"
+            },
+            "loading": {
+                "message": "मजला माहिती लोड होत आहे...",
+                "description": "ऐतिहासिक मजला नोंदी आणत आहे"
+            },
+            "saveSuccess": "मजल्याचा तपशील यशस्वीरित्या जोडला गेला",
+            "updateSuccess": "मजल्याचा तपशील यशस्वीरित्या अपडेट केला गेला",
+            "deleteSuccess": "मजल्याचा तपशील यशस्वीरित्या हटविला गेला",
+            "saveError": "मजल्याचा तपशील जतन करण्यात अपयश",
+            "deleteError": "मजल्याचा तपशील हटवण्यात अपयश",
+            "unexpectedError": "एक अनपेक्षित त्रुटी आली"
+        },
         "zoneName": "झोन नाव",
         "wardNo": "वार्ड क्र.",
         "showFloorDetails": "मजला तपशील दाखवा",
@@ -616,7 +684,8 @@
         "alv": "ALV (वार्षिक भाडे मूल्य)",
         "propertyTax": "मालमत्ता कर",
         "totalTax": "एकूण कर",
-        "floorDetailsTitle": "ऐतिहासिक मजला माहिती",
+        "floorDetailsTitle": "मजला माहिती",
+        "updateFloorDetailsTitle": "मजल्याची माहिती अपडेट करा",
         "oldTaxDetailsTitle": "कर तपशील",
         "zoneNamePlaceholder": "झोन टाका",
         "wardNoPlaceholder": "वॉर्ड टाका",
@@ -630,7 +699,7 @@
         "alvPlaceholder": "ALV टाका",
         "propertyTaxPlaceholder": "कर टाका",
         "totalTaxPlaceholder": "एकूण कर",
-        "year": "वर्ष",
+        "year": "बांधकाम वर्ष",
         "prop": "मालमत्ता कर",
         "edu": "शिक्षण कर",
         "spEdu": "विशेष शिक्षण कर",
@@ -661,7 +730,35 @@
             "selectPlaceholder": "निवडा",
             "yearPlaceholder": "वर्ष",
             "carpetAreaPlaceholder": "चौरस फूट / चौरस मी.",
-            "autoCalculate": "स्वयं गणना"
+            "autoCalculate": "स्वयं गणना",
+            "use": "वापर"
+        },
+        "taxationBreakdown": {
+            "error": {
+                "title": "कर तपशील विभाजन त्रुटी",
+                "description": "कर तपशील विभाजन लोड करताना समस्या आली.",
+                "errorId": "त्रुटी आयडी: {id}",
+                "goHome": "मुख्यपृष्ठावर जा",
+                "tryAgain": "पुन्हा प्रयत्न करा"
+            },
+            "loading": {
+                "message": "विभाजन लोड होत आहे...",
+                "description": "ऐतिहासिक कर तपशील विभाजनाची गणना करत आहे"
+            },
+            "title": "जुना कर आकारणी तपशील",
+            "assessmentYear": "आकारणी वर्ष",
+            "aggregateTaxSum": "एकूण कर रक्कम",
+            "interestAmount": "व्याज रक्कम",
+            "netPayableTotal": "निव्वळ देय एकूण",
+            "remarks": "शेरा",
+            "saveAssessment": "कर आकारणी जतन करा",
+            "saveConfirmDescription": "तुम्ही नक्की हा कर आकारणी तपशील जतन करू इच्छिता?",
+            "saveSuccess": "कर आकारणी तपशील यशस्वीरित्या जतन केला",
+            "saveError": "डेटा जतन करण्यात अपयश",
+            "unexpectedError": "एक अनपेक्षित त्रुटी आली",
+            "saving": "जतन करत आहे...",
+            "update": "अद्यतनित करा",
+            "invalidYear": "कृपया वैध ४ अंकी मूल्यांकन वर्ष प्रविष्ट करा."
         }
     },
     "footer": {
@@ -680,8 +777,13 @@
     },
     "common": {
         "UpdateChanges": "बदल जतन करा",
+        "saveChanges": "बदल जतन करा",
         "noChanges": "अपडेट करण्यासाठी कोणतेही बदल आढळले नाहीत.",
-        "delete": "हटवा"
+        "delete": "हटवा",
+        "validation": {
+            "numberRequired": "प्रमाणपत्र क्रमांक आवश्यक आहे",
+            "dateRequired": "प्रमाणपत्र दिनांक आवश्यक आहे"
+        }
     },
     "errorBoundary": {
         "title": "काहीतरी चूक झाली",

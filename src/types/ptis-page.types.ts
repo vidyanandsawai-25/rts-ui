@@ -15,6 +15,7 @@ export interface PtisPageProps {
     pageNumber?: string;
     pageSize?: string;
     searchTerm?: string;
+    appartmentTab?: string;
   }>;
 }
 

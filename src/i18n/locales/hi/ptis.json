@@ -1,6 +1,12 @@
 {
   "title": "संपत्ति कर मूल्यांकन",
   "subtitle": "संपत्ति की जानकारी का व्यापक प्रबंधन करें",
+  "noDataAvailable": "इस अनुभाग के लिए कोई डेटा उपलब्ध नहीं है",
+  "taxDetailsDualMethod": "कर विवरण (दोहरी पद्धति)",
+  "taxDetailsRateable": "कर विवरण (किराया योग्य मूल्य)",
+  "taxDetailsCapital": "कर विवरण (पूंजीगत मूल्य)",
+  "rateableValue": "रटेबल मूल्य",
+  "capitalValue": "पूंजीगत मूल्य",
   "search": {
     "title": "संपत्ति खोजें",
     "wardNo": "वार्ड नं",
@@ -60,6 +66,29 @@
       "newTaxTotalCV": "नया कर (CV)",
       "newTaxTotalRV": "नया कर (RV)",
       "rVorCVValue": "RV/CV मूल्य"
+    }
+  },
+  "apartmentQC": {
+    "errors": {
+      "fetchFailed": "अपार्टमेंट क्यूसी विवरण प्राप्त करने में विफल। कृपया पुन: प्रयास करें।",
+      "fetchPagedFailed": "पेज किए गए अपार्टमेंट रिकॉर्ड लोड करने में विफल।",
+      "updateFailed": "संपत्ति विवरण अपडेट करने में विफल। कृपया अपना कनेक्शन जांचें।",
+      "invalidParams": "अमान्य खोज पैरामीटर प्रदान किए गए।",
+      "revalidateFailed": "अपार्टमेंट डेटा कैश को रीफ्रेश नहीं किया जा सका।"
+    },
+    "actions": {
+      "updateSuccess": "संपत्ति विवरण सफलतापूर्वक अपडेट किया गया",
+      "loading": "संपत्ति अपडेट की जा रही है...",
+      "refreshing": "डेटा रीफ्रेश किया जा रहा है...",
+      "previous": "← पिछला",
+      "next": "अगला →"
+    },
+    "edit": {
+      "title": "संपत्ति विवरण",
+      "basicInfo": "बुनियादी जानकारी",
+      "floorQC": "मंजिल क्यूसी",
+      "floorsCount": "{count} मंजिलें",
+      "photoGallery": "फोटो गैलरी"
     }
   },
   "fields": {

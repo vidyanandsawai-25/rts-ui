@@ -7,6 +7,7 @@ import { StatusBadge } from "@/components/common/StatusBadge";
 import { ApplyButton, ClearButton, UpdateButton, AddButton } from "@/components/common/ActionButtons";
 import { CancelButton } from "@/components/common";
 import { FloorCvHeaderExtraProps } from "@/types/floor-cv-weightageMaster.types";
+import { POSITIVE_DECIMAL_INVALID_KEYS, sanitizePositiveDecimal } from "@/lib/utils/validation";
 
 export const FloorCvHeaderExtra: React.FC<FloorCvHeaderExtraProps> = React.memo(({
     t,
@@ -86,26 +87,25 @@ export const FloorCvHeaderExtra: React.FC<FloorCvHeaderExtraProps> = React.memo(
                         type="number"
                         step="0.01"
                         min="0"
-                        max="999999"
+                        max="999.99"
                         value={factorValue}
                         onChange={(e) => {
-                            const value = e.target.value;
-                            if (value === "") {
-                                setFactorValue(value);
+                            const sanitized = sanitizePositiveDecimal(e.target.value);
+                            if (sanitized === "") {
+                                setFactorValue(sanitized);
                                 return;
                             }
-                            const numValue = parseFloat(value);
+                            const numValue = parseFloat(sanitized);
                             if (numValue < 0) {
                                 addToast("error", tW("common.messages.negativeValuesNotAllowed"));
-                            } else if (numValue > 999999) {
+                            } else if (numValue > 999.99) {
                                 addToast("error", tW("common.messages.valueExceedsMax"));
                             } else {
-                                setFactorValue(value);
+                                setFactorValue(sanitized);
                             }
                         }}
                         onKeyDown={(e) => {
-                            // Prevent minus key from being entered
-                            if (e.key === "-" || e.key === "e" || e.key === "E") {
+                            if (POSITIVE_DECIMAL_INVALID_KEYS.test(e.key)) {
                                 e.preventDefault();
                             }
                         }}
