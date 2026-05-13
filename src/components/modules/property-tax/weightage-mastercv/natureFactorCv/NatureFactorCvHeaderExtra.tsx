@@ -6,7 +6,7 @@ import { Input } from "@/components/common/Input";
 import { ApplyButton, ClearButton, UpdateButton, CancelButton, AddButton } from "@/components/common/ActionButtons";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { NatureFactorCvHeaderExtraProps } from "@/types/natureofbuilding-cv-weightageMaster.types";
-import { POSITIVE_DECIMAL_INVALID_KEYS } from "@/lib/utils/validation-rules";
+import { POSITIVE_DECIMAL_INVALID_KEYS, sanitizePositiveDecimal } from "@/lib/utils/validation";
 
 
 export const NatureFactorCvHeaderExtra: React.FC<NatureFactorCvHeaderExtraProps> = React.memo(({
@@ -61,19 +61,15 @@ export const NatureFactorCvHeaderExtra: React.FC<NatureFactorCvHeaderExtraProps>
                         max="999999"
                         value={factorValue}
                         onChange={(e) => {
-                            const value = e.target.value;
-                            if (value === '' || (!isNaN(parseFloat(value)) && parseFloat(value) >= 0 && parseFloat(value) <= 999999)) {
-                                setFactorValue(value);
+                            const sanitized = sanitizePositiveDecimal(e.target.value);
+                            if (sanitized === '' || (!isNaN(parseFloat(sanitized)) && parseFloat(sanitized) >= 0 && parseFloat(sanitized) <= 999999)) {
+                                setFactorValue(sanitized);
                             }
                         }}
                         onKeyDown={(e) => {
                             if (POSITIVE_DECIMAL_INVALID_KEYS.test(e.key)) {
                                 e.preventDefault();
                             }
-                        }}
-                        onInput={(e) => {
-                            const input = e.currentTarget;
-                            input.value = input.value.replace(/[^0-9.]/g, '');
                         }}
                         label={t('filters.factor')}
                         placeholder={t('placeholders.factor')}

@@ -11,7 +11,7 @@ import {
     CancelButton,
     AddButton
 } from "@/components/common/ActionButtons";
-import { POSITIVE_DECIMAL_INVALID_KEYS } from "@/lib/utils/validation-rules";
+import { POSITIVE_DECIMAL_INVALID_KEYS, sanitizePositiveDecimal } from "@/lib/utils/validation";
 
 interface AgeFactorCvHeaderExtraProps {
     t: (key: string, values?: Record<string, string | number>) => string;
@@ -228,15 +228,11 @@ export const AgeFactorCvHeaderExtra: React.FC<AgeFactorCvHeaderExtraProps> = ({
                     step="0.01"
                     min="0"
                     value={factorValue}
-                    onChange={(e) => setFactorValue(e.target.value)}
+                    onChange={(e) => setFactorValue(sanitizePositiveDecimal(e.target.value))}
                     onKeyDown={(e) => {
                         if (POSITIVE_DECIMAL_INVALID_KEYS.test(e.key)) {
                             e.preventDefault();
                         }
-                    }}
-                    onInput={(e) => {
-                        const input = e.currentTarget;
-                        input.value = input.value.replace(/[^0-9.]/g, '');
                     }}
                     className="h-[34px] w-[80px] text-sm border-[#DCEAFF]"
                     placeholder="0.00"
