@@ -62,6 +62,12 @@ export const MatrixCellInput = ({
       return;
     }
 
+    // Limit integer part to 4 digits max
+    const integerPart = dotIndex !== -1 ? inputValue.substring(0, dotIndex) : inputValue;
+    if (integerPart.length > 4) {
+      return;
+    }
+
     setLocalValue(inputValue);
     
     // Convert to number for onCellChange call

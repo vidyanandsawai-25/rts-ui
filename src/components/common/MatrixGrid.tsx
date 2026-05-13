@@ -403,7 +403,7 @@ export const MatrixGrid = ({
                         customCellClass
                       )}
                     >
-                      {translations.currencySymbol}{Number(value).toFixed(2)}
+                      {String(Number(Number(value).toFixed(2)))}
                     </div>
                   </td>
                 );

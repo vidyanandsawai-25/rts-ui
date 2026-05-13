@@ -228,14 +228,14 @@ describe("DepreciationMaster", () => {
       expect(maxInput).toHaveValue("456");
     });
 
-    it("should limit input to 4 digits", async () => {
+    it("should limit input to 3 digits", async () => {
       const user = userEvent.setup();
       render(<DepreciationMaster {...defaultProps} />);
 
       const minInput = screen.getByPlaceholderText("Enter min");
       await user.type(minInput, "12345");
 
-      expect(minInput).toHaveValue("1234");
+      expect(minInput).toHaveValue("123");
     });
 
     it("should accept max age of exactly 999", async () => {
@@ -255,7 +255,7 @@ describe("DepreciationMaster", () => {
       });
     });
 
-    it("should call addRangeAction when min is 0 and max is 999 (valid boundary)", async () => {
+    it("should NOT call addRangeAction when age values exceed 999", async () => {
       const user = userEvent.setup();
       render(<DepreciationMaster {...defaultProps} data={[]} />);
 
