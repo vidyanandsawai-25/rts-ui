@@ -32,8 +32,8 @@ export async function updateDepartmentStatusAction(
       revalidatePath(`/${locale}/configuration-settings/department-activation`, "page");
     }
     return { success: true };
-  } catch (error: any) {
-    return { success: false, error: error.message };
+  } catch (error: unknown) {
+    return { success: false, error: error instanceof Error ? error.message : "An unexpected error occurred" };
   }
 }
 
@@ -64,7 +64,7 @@ export async function updateModuleStatusAction(
       revalidatePath(`/${locale}/configuration-settings/department-activation`, "page");
     }
     return { success: true };
-  } catch (error: any) {
-    return { success: false, error: error.message };
+  } catch (error: unknown) {
+    return { success: false, error: error instanceof Error ? error.message : "An unexpected error occurred" };
   }
 }

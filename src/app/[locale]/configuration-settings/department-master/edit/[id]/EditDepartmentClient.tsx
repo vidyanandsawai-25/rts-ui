@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+
 import { useRouter } from "next/navigation";
 import DepartmentMasterForm from "@/components/modules/configuration-settings/department-master/DepartmentMasterForm";
 import { DepartmentMaster } from "@/types/departmentMaster.types";

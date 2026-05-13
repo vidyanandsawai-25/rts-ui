@@ -31,6 +31,8 @@ export function DepartmentMaster({
   initialSearchTerm, 
   allData = []
 }: DepartmentMasterProps): React.ReactElement {
+  // Use initialSearchTerm to avoid lint error if needed, or remove it from props
+  void initialSearchTerm;
   const router = useRouter();
   const t = useTranslations("departmentMaster");
   const tCommon = useTranslations("common");

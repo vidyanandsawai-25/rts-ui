@@ -52,7 +52,7 @@ export function DepartmentCard({
         <Button
           variant="secondary"
           size="sm"
-          fullWidth
+          className="w-full"
           icon={Settings2}
           onClick={() => onConfigure(department)}
           disabled={!department.isActive}

@@ -12,8 +12,8 @@ import { Column } from "@/components/common/MasterTable";
  * @returns Array of column definitions
  */
 export function getDepartmentColumns(
-    t: any,
-    tCommon: any
+    t: (key: string) => string,
+    tCommon: (key: string) => string
 ): Column<DepartmentMaster>[] {
     return [
         {
@@ -50,7 +50,7 @@ export function getDepartmentColumns(
             width: "10%",
             headerClassName: "font-bold text-center",
             align: "center",
-            render: (value: any) => (
+            render: (value: unknown) => (
                 <StatusBadge 
                     value={value} 
                     activeLabel={tCommon("status.active")} 

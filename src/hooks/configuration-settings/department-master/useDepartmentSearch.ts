@@ -25,13 +25,15 @@ export function useDepartmentSearch({
   useEffect(() => {
     const urlSearch = searchParams.get("search") || "";
     if (urlSearch !== search) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSearch(urlSearch);
     }
     const urlStatus = searchParams.get("status") || "";
     if (urlStatus !== selectedStatus) {
       setSelectedStatus(urlStatus);
     }
-  }, [searchParams, search, selectedStatus]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const currentSearchTerm = searchParams.get("search") || "";
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);

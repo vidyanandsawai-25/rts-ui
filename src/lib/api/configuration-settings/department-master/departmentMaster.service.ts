@@ -100,3 +100,15 @@ export async function deleteDepartmentMaster(id: number): Promise<void> {
         throw new Error(response.error || `Failed to delete department ${id}`);
     }
 }
+
+/**
+ * Get all Department Masters (utility for bulk actions)
+ */
+export async function getAllDepartmentMasters(): Promise<{ success: boolean; data: DepartmentMaster[] | null; error?: string }> {
+    try {
+        const data = await getDepartmentMasters(1, 1000);
+        return { success: true, data };
+    } catch (error: unknown) {
+        return { success: false, data: null, error: error instanceof Error ? error.message : "An unexpected error occurred" };
+    }
+}

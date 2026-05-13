@@ -5,8 +5,8 @@ import { parseBoolean } from "@/lib/utils/type-guards";
  * Normalizes Department Master data from API to UI format.
  * Cleans up common "mock" values like "string" often returned by Swagger/development APIs.
  */
-export function normalizeDepartmentMaster(data: any): DepartmentMaster {
-    const cleanString = (val: any) => {
+export function normalizeDepartmentMaster(data: Record<string, unknown>): DepartmentMaster {
+    const cleanString = (val: unknown) => {
         const str = String(val ?? "").trim();
         return str.toLowerCase() === "string" ? "" : str;
     };

@@ -9,7 +9,7 @@ import { createConfigValueAction } from '@/app/[locale]/configuration-settings/c
 import { ConfigurationMaster } from '@/components/modules/configuration-settings/config-master/ConfigurationMaster';
 import { configMasterService } from '@/lib/api/configMaster.service';
 import { moduleMasterService } from '@/lib/api/moduleMaster.service';
-import { departmentMasterService } from '@/lib/api/departmentMaster.service';
+import * as departmentMasterService from '@/lib/api/configuration-settings/department-master/departmentMaster.service';
 import { mockVerifySession } from './test-setup';
 import type { ConfigCategory, ConfigItem } from '@/types/configMaster.types';
 
@@ -44,8 +44,10 @@ vi.mock('@/lib/api/moduleMaster.service', () => ({
   moduleMasterService: { getModuleMasters: vi.fn() }
 }));
 
-vi.mock('@/lib/api/departmentMaster.service', () => ({
-  departmentMasterService: { getAllDepartmentMasters: vi.fn() }
+vi.mock('@/lib/api/configuration-settings/department-master/departmentMaster.service', () => ({
+  getAllDepartmentMasters: vi.fn(),
+  getDepartmentMasters: vi.fn(),
+  getDepartmentMastersPaged: vi.fn(),
 }));
 
 describe('Configuration Master PR Smoke Tests', () => {

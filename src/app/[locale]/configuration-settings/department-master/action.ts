@@ -64,8 +64,8 @@ export async function saveDepartmentMasterAction(
     }
 
     return { success: true, message: id ? "Department updated successfully" : "Department created successfully" };
-  } catch (error: any) {
-    return { success: false, error: error.message || "Failed to save department" };
+  } catch (error: unknown) {
+    return { success: false, error: error instanceof Error ? error.message : "Failed to save department" };
   }
 }
 
@@ -78,7 +78,7 @@ export async function deleteDepartmentAction(
       revalidatePath(`/${locale}/configuration-settings/department-master`, "page");
     }
     return { success: true, message: "Department deleted successfully" };
-  } catch (error: any) {
-    return { success: false, error: error.message || "Failed to delete department" };
+  } catch (error: unknown) {
+    return { success: false, error: error instanceof Error ? error.message : "Failed to delete department" };
   }
 }

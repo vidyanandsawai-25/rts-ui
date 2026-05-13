@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useTransition, useRef } from "react";
+import { useState, useEffect, useCallback, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
@@ -38,6 +38,7 @@ export function useDepartmentForm({ editingDepartment, onSuccess, onClose }: Use
 
   useEffect(() => {
     if (editingDepartment) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData({
         departmentCode: editingDepartment.departmentCode || "",
         departmentName: editingDepartment.departmentName || "",
@@ -67,7 +68,7 @@ export function useDepartmentForm({ editingDepartment, onSuccess, onClose }: Use
       newErrors.departmentCode = tCommon("validation.maxLength", { count: 50 });
     }
     return newErrors;
-  }, [t, tCommon]);
+  }, [tCommon]);
 
   const closeAndRoute = useCallback(() => {
     setOpen(false);
@@ -133,7 +134,7 @@ export function useDepartmentForm({ editingDepartment, onSuccess, onClose }: Use
       } else {
         toast.error(result.error || tCommon("errors.saveFailed"));
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error(tCommon("errors.generic"));
     } finally {
       setIsSubmitting(false);

@@ -56,11 +56,11 @@ export interface ModuleUpdateRequest {
 }
 
 export interface DepartmentListResponse {
-  items: Department[];
+  items: Record<string, unknown>[];
 }
 
 export interface ModuleListResponse {
-  items: Module[];
+  items: Record<string, unknown>[];
 }
 
 export interface DepartmentActivationProps {

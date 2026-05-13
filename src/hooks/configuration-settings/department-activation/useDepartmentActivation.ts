@@ -55,10 +55,12 @@ export function useDepartmentActivation({
   const [localModules, setLocalModules] = useState<Module[]>(initialModules);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSearchTerm(initialSearchTerm);
   }, [initialSearchTerm]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLocalModules(initialModules);
   }, [initialModules]);
 

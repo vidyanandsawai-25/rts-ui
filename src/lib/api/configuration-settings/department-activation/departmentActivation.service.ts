@@ -29,14 +29,14 @@ class DepartmentActivationService {
       );
 
       if (response.success && response.data) {
-        const items = (response.data as any).items || [];
+        const items = response.data.items || [];
         const normalized = items.map(normalizeDepartment);
 
         // Deduplicate departments by departmentId to prevent UI issues and duplicate keys
         const uniqueDepartments: Department[] = [];
         const seenIds = new Set<number>();
         
-        normalized.forEach(dept => {
+        normalized.forEach((dept: Department) => {
           if (dept.departmentId > 0 && !seenIds.has(dept.departmentId)) {
             seenIds.add(dept.departmentId);
             uniqueDepartments.push(dept);
@@ -66,7 +66,7 @@ class DepartmentActivationService {
   ): Promise<ApiResponse<Department>> {
     try {
       const payload = { ...data, updatedBy: userId };
-      const response = await apiClient.put<any>(
+      const response = await apiClient.put<Department>(
         API_ENDPOINTS.departmentMaster.update(data.departmentId),
         payload
       );
@@ -97,15 +97,15 @@ class DepartmentActivationService {
         apiClient.get<ModuleListResponse>(`${baseUrl}&isActive=false`),
       ]);
 
-      const mapModule = (mod: any): Module => normalizeModule(mod);
+      const mapModule = (mod: Record<string, unknown>): Module => normalizeModule(mod);
 
       const allItems: Module[] = [];
       const seenIds = new Set<number>();
 
-      const addItems = (response: any) => {
+      const addItems = (response: ApiResponse<ModuleListResponse>) => {
         if (response.success && response.data) {
-          const raw = (response.data as any).items || [];
-          raw.forEach((mod: any) => {
+          const raw = response.data.items || [];
+          raw.forEach((mod: Record<string, unknown>) => {
             const mapped = mapModule(mod);
             if (!seenIds.has(mapped.moduleId)) {
               seenIds.add(mapped.moduleId);
@@ -134,7 +134,7 @@ class DepartmentActivationService {
   ): Promise<ApiResponse<Module>> {
     try {
       const payload = { ...data, updatedBy: userId };
-      const response = await apiClient.put<any>(
+      const response = await apiClient.put<Module>(
         API_ENDPOINTS.moduleMaster.update(data.moduleId),
         payload
       );
