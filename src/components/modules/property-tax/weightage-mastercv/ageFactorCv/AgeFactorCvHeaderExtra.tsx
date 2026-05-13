@@ -227,8 +227,14 @@ export const AgeFactorCvHeaderExtra: React.FC<AgeFactorCvHeaderExtraProps> = ({
                     type="number"
                     step="0.01"
                     min="0"
+                    max="999.99"
                     value={factorValue}
-                    onChange={(e) => setFactorValue(sanitizePositiveDecimal(e.target.value))}
+                    onChange={(e) => {
+                        const sanitized = sanitizePositiveDecimal(e.target.value);
+                        if (sanitized === '' || (parseFloat(sanitized) >= 0 && parseFloat(sanitized) <= 999.99)) {
+                            setFactorValue(sanitized);
+                        }
+                    }}
                     onKeyDown={(e) => {
                         if (POSITIVE_DECIMAL_INVALID_KEYS.test(e.key)) {
                             e.preventDefault();

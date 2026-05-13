@@ -58,11 +58,11 @@ export const NatureFactorCvHeaderExtra: React.FC<NatureFactorCvHeaderExtraProps>
                         type="number"
                         step="0.01"
                         min="0"
-                        max="999999"
+                        max="999.99"
                         value={factorValue}
                         onChange={(e) => {
                             const sanitized = sanitizePositiveDecimal(e.target.value);
-                            if (sanitized === '' || (!isNaN(parseFloat(sanitized)) && parseFloat(sanitized) >= 0 && parseFloat(sanitized) <= 999999)) {
+                            if (sanitized === '' || (!isNaN(parseFloat(sanitized)) && parseFloat(sanitized) >= 0 && parseFloat(sanitized) <= 999.99)) {
                                 setFactorValue(sanitized);
                             }
                         }}

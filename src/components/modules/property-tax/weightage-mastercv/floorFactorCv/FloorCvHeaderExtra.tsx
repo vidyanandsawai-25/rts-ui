@@ -87,7 +87,7 @@ export const FloorCvHeaderExtra: React.FC<FloorCvHeaderExtraProps> = React.memo(
                         type="number"
                         step="0.01"
                         min="0"
-                        max="999999"
+                        max="999.99"
                         value={factorValue}
                         onChange={(e) => {
                             const sanitized = sanitizePositiveDecimal(e.target.value);
@@ -98,7 +98,7 @@ export const FloorCvHeaderExtra: React.FC<FloorCvHeaderExtraProps> = React.memo(
                             const numValue = parseFloat(sanitized);
                             if (numValue < 0) {
                                 addToast("error", tW("common.messages.negativeValuesNotAllowed"));
-                            } else if (numValue > 999999) {
+                            } else if (numValue > 999.99) {
                                 addToast("error", tW("common.messages.valueExceedsMax"));
                             } else {
                                 setFactorValue(sanitized);
