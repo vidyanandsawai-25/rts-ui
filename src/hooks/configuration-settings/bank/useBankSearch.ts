@@ -14,13 +14,12 @@ export function useBankSearch({ locale, startTransition }: UseBankSearchProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const currentSearchTerm = searchParams.get('search') || '';
-  const currentState = searchParams.get('state') || 'all';
 
   const [search, setSearch] = useState(currentSearchTerm);
   const isFirstRender = useRef(true);
 
   const updateFilters = useCallback(
-    (newSearch: string, newState: string) => {
+    (newSearch: string) => {
       const params = new URLSearchParams(searchParams.toString());
 
       const trimmedSearch = newSearch.trim();
@@ -30,11 +29,7 @@ export function useBankSearch({ locale, startTransition }: UseBankSearchProps) {
         params.delete('search');
       }
 
-      if (newState && newState !== 'all') {
-        params.set('state', newState);
-      } else {
-        params.delete('state');
-      }
+      params.delete('state');
 
       params.set('page', '1');
 
@@ -58,26 +53,21 @@ export function useBankSearch({ locale, startTransition }: UseBankSearchProps) {
     if (search === currentSearchTerm) return;
 
     const timer = setTimeout(() => {
-      updateFilters(search, currentState);
+      updateFilters(search);
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [search, currentSearchTerm, currentState, updateFilters]);
+  }, [search, currentSearchTerm, updateFilters]);
 
   const handleSearchChange = (value: string) => {
     const sanitized = value.replace(TEXT_SANITIZE, '');
     setSearch(sanitized);
   };
 
-  const handleStateChange = (value: string | undefined) => {
-    updateFilters(search, value || 'all');
-  };
 
   return {
     search,
     currentSearchTerm,
-    currentState,
     handleSearchChange,
-    handleStateChange,
   };
 }

@@ -209,7 +209,10 @@
         "FloorSubmission": "Floor",
         "Floor": "Floor",
         "Discount": "Discount",
-        "OldDetails": "Old Details"
+        "OldDetails": "Old Details",
+        "OldTaxation": "Old Taxation",
+        "FloorInformation": "Floor Information",
+        "TaxationBreakdown": "Taxation Breakdown"
     },
     "floorSubmission": {
         "loading": {
@@ -298,7 +301,14 @@
             "categoryRequired": "Please select a category",
             "plotAreaInvalid": "Plot Area must be a positive number",
             "residentialToiletsInvalid": "Residential Toilet count must be a positive number",
-            "commercialToiletsInvalid": "Commercial Toilet count must be a positive number"
+            "commercialToiletsInvalid": "Commercial Toilet count must be a positive number",
+            "floorRequired": "Please select a floor",
+            "constructionYearRequired": "Please enter construction year",
+            "constructionYearInvalid": "Please enter a valid 4-digit year",
+            "constructionTypeRequired": "Please select construction type",
+            "typeOfUseRequired": "Please select type of use",
+            "assessmentYearRequired": "Please enter assessment year",
+            "assessmentYearInvalid": "Please enter a valid 4-digit assessment year"
         }
     },
     "kyc": {
@@ -425,7 +435,13 @@
         "buildCompletionCertificate": "Build Completion Certificate",
         "title": "Building Permissions & Certificates",
         "uploadDocument": "Upload Document",
-        "viewDocument": "View Document"
+        "viewDocument": "View Document",
+        "uploadSuccess": "Document uploaded successfully!",
+        "uploadError": "Failed to upload document.",
+        "uploading": "Uploading...",
+        "documentUploaded": "Document Uploaded",
+        "saveSuccess": "Building permissions saved successfully!",
+        "saveError": "Error saving building permissions!"
     },
     "floor": {
         "allFloors": "All Floors",
@@ -595,10 +611,62 @@
         "uploadDocument": "Upload Document",
         "viewDocument": "View Document",
         "amountPlaceholder": "Enter amount",
-        "PercentagePlaceholder": "Enter percentage"
+        "PercentagePlaceholder": "Enter percentage",
+        "uploading": "Uploading...",
+        "documentUploaded": "Document Uploaded",
+        "uploadSuccess": "Document uploaded successfully!",
+        "uploadError": "Error uploading document",
+        "saveSuccess": "Discount details saved successfully!",
+        "saveError": "Error saving discount details"
     },
     "oldDetails": {
-        "title": "Old Taxation & Historical Data",
+        "title": "Old Taxation",
+        "loading": {
+            "message": "Loading Old Details...",
+            "description": "Please wait while we fetch the historical information",
+            "saving": "Saving..."
+        },
+        "error": {
+            "title": "Unable to load old details",
+            "description": "There was a problem fetching the historical information. Please try again.",
+            "errorId": "Error ID: {id}",
+            "goHome": "Go Home",
+            "tryAgain": "Try Again"
+        },
+        "oldTaxation": {
+            "error": {
+                "title": "Old Taxation Error",
+                "description": "Failed to load historical taxation records.",
+                "errorId": "Error ID: {id}",
+                "goHome": "Go Home",
+                "tryAgain": "Try Again"
+            },
+            "loading": {
+                "message": "Loading Old Taxation...",
+                "description": "Fetching historical tax data"
+            },
+            "updateSuccess": "Old property taxation details updated successfully",
+            "updateError": "Failed to update old property taxation details"
+        },
+        "floorInformation": {
+            "error": {
+                "title": "Floor Information Error",
+                "description": "Failed to load historical floor records.",
+                "errorId": "Error ID: {id}",
+                "goHome": "Go Home",
+                "tryAgain": "Try Again"
+            },
+            "loading": {
+                "message": "Loading Floor Info...",
+                "description": "Fetching historical floor records"
+            },
+            "saveSuccess": "Floor details added successfully",
+            "updateSuccess": "Floor details updated successfully",
+            "deleteSuccess": "Floor details deleted successfully",
+            "saveError": "Failed to save floor details",
+            "deleteError": "Failed to delete floor details",
+            "unexpectedError": "An unexpected error occurred"
+        },
         "zoneName": "Zone Name",
         "wardNo": "Ward No",
         "showFloorDetails": "Show Floor Details",
@@ -617,7 +685,8 @@
         "alv": "ALV (Annual Letting Value)",
         "propertyTax": "Property Tax",
         "totalTax": "Total Tax",
-        "floorDetailsTitle": "Historical Floor Information",
+        "floorDetailsTitle": "Floor Information",
+        "updateFloorDetailsTitle": "Update Floor Information",
         "oldTaxDetailsTitle": "Taxation Breakdown",
         "zoneNamePlaceholder": "Enter zone",
         "wardNoPlaceholder": "Enter ward",
@@ -631,7 +700,7 @@
         "alvPlaceholder": "Enter ALV",
         "propertyTaxPlaceholder": "Enter tax",
         "totalTaxPlaceholder": "Total tax",
-        "year": "Year",
+        "year": "Construction Year",
         "prop": "Prop.",
         "edu": "Edu.",
         "spEdu": "Sp. Edu.",
@@ -662,7 +731,35 @@
             "selectPlaceholder": "Select",
             "yearPlaceholder": "YYYY",
             "carpetAreaPlaceholder": "Sqft / SqM",
-            "autoCalculate": "Auto Calculate"
+            "autoCalculate": "Auto Calculate",
+            "use": "Type Of Use"
+        },
+        "taxationBreakdown": {
+            "error": {
+                "title": "Taxation Breakdown Error",
+                "description": "There was a problem loading the taxation breakdown.",
+                "goHome": "Go Home",
+                "tryAgain": "Try Again",
+                "errorId": "Error ID: {id}"
+            },
+            "loading": {
+                "message": "Loading Breakdown...",
+                "description": "Calculating historical taxation breakdown"
+            },
+            "title": "Old Taxation Breakdown",
+            "assessmentYear": "Assessment Year",
+            "aggregateTaxSum": "Aggregate Tax Sum",
+            "interestAmount": "Interest Amount",
+            "netPayableTotal": "Net Payable Total",
+            "remarks": "Remarks",
+            "saveAssessment": "Update Old Taxes",
+            "saveConfirmDescription": "Are you sure you want to save this taxation breakdown?",
+            "saveSuccess": "Taxation breakdown saved successfully",
+            "saveError": "Failed to save data",
+            "unexpectedError": "An unexpected error occurred",
+            "saving": "Saving...",
+            "update": "Update",
+            "invalidYear": "Please enter a valid 4-digit assessment year."
         }
     },
     "footer": {
@@ -681,8 +778,13 @@
     },
     "common": {
         "UpdateChanges": "Update Changes",
+        "saveChanges": "Save Changes",
         "noChanges": "No changes detected to update.",
-        "delete": "Delete"
+        "delete": "Delete",
+        "validation": {
+            "numberRequired": "Certificate Number is required",
+            "dateRequired": "Certificate Date is required"
+        }
     },
     "errorBoundary": {
         "title": "Something went wrong",

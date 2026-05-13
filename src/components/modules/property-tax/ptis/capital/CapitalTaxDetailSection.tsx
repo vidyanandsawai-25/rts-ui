@@ -29,6 +29,7 @@ export async function CapitalTaxDetailsSection({
   showInlineError = true,
   locale,
 }: Props) {
+  
   const { data: capitalData, error } = await resolveValuationData<CapitalValueResponse>({
     propertyId,
     initialData,

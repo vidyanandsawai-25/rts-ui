@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { AlertCircle } from 'lucide-react';
+import { logger } from '@/lib/utils/logger';
 import { Button } from './ActionButton';
 import { Card, CardContent } from './Card';
 import { PageContainer } from './PageContainer';
@@ -45,8 +46,12 @@ export function ErrorPage({
 
   useEffect(() => {
     // Log the error to an error reporting service
-    console.error('Page error:', error);
-  }, [error]);
+    logger.error('Page error occurred', {
+      error,
+      digest: error.digest,
+      namespace: translationNamespace,
+    });
+  }, [error, translationNamespace]);
 
   return (
     <PageContainer>

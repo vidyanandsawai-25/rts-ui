@@ -54,6 +54,7 @@ interface TabsContextType {
   justify: TabJustify;
   fullWidth: boolean;
   baseId: string;
+  activeTabClassName?: string;
 }
 
 export interface TabsProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange'> {
@@ -79,6 +80,8 @@ export interface TabsProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'o
   tabListClassName?: string;
   /** Custom class for the internal TabPanel (only with items prop) */
   tabPanelClassName?: string;
+  /** Custom class for the active tab trigger */
+  activeTabClassName?: string;
   children?: React.ReactNode;
 }
 
@@ -142,6 +145,7 @@ const TabsRoot = React.forwardRef<HTMLDivElement, TabsProps>(
       className,
       tabListClassName,
       tabPanelClassName,
+      activeTabClassName,
       children,
       ...props
     },
@@ -211,8 +215,8 @@ const TabsRoot = React.forwardRef<HTMLDivElement, TabsProps>(
       ) {
         devWarning(
           `Tabs: The \`value\` prop did not update to "${pendingValueRef.current}" after \`onChange\` was called. ` +
-            'This may cause the component to be in an inconsistent state. ' +
-            'Make sure the parent component updates the controlled value in the onChange handler.'
+          'This may cause the component to be in an inconsistent state. ' +
+          'Make sure the parent component updates the controlled value in the onChange handler.'
         );
       }
       pendingValueRef.current = null;
@@ -244,6 +248,7 @@ const TabsRoot = React.forwardRef<HTMLDivElement, TabsProps>(
           justify,
           fullWidth,
           baseId,
+          activeTabClassName,
         }}
       >
         <div
@@ -418,7 +423,7 @@ TabList.displayName = 'TabList';
  */
 export const Tab = React.forwardRef<HTMLButtonElement, TabProps>(
   ({ value, icon: Icon, children, className, disabled, onClick, ...props }, ref) => {
-    const { activeValue, setActiveValue, variant, size, orientation, fullWidth, baseId } =
+    const { activeValue, setActiveValue, variant, size, orientation, fullWidth, baseId, activeTabClassName } =
       useTabsContext();
     const isActive = activeValue === value;
     const isVertical = orientation === 'vertical';
@@ -444,16 +449,16 @@ export const Tab = React.forwardRef<HTMLButtonElement, TabProps>(
           : isActive
             ? cn('border-blue-600 text-blue-600', isVertical && 'bg-blue-50/50')
             : cn(
-                'border-transparent text-gray-500 hover:text-gray-700',
-                isVertical ? 'hover:bg-gray-50' : 'hover:border-gray-300'
-              )
+              'border-transparent text-gray-500 hover:text-gray-700',
+              isVertical ? 'hover:bg-gray-50' : 'hover:border-gray-300'
+            )
       ),
       pills: cn(
         'rounded-lg font-medium transition-all duration-200',
         disabled
           ? 'cursor-not-allowed text-gray-400 opacity-50'
           : isActive
-            ? 'bg-white text-blue-600 shadow-sm'
+            ? cn('bg-white text-blue-600 shadow-sm', activeTabClassName)
             : 'text-gray-500 hover:bg-gray-200/50 hover:text-gray-700'
       ),
     };

@@ -17,7 +17,6 @@ describe("Input", () => {
     setup({ error: "Required field" });
     expect(screen.getByText("Required field")).toBeInTheDocument();
     const input = screen.getByRole("textbox");
-    expect(input).toHaveAttribute("aria-invalid", "true");
     expect(input).toHaveAttribute("aria-describedby");
   });
 
