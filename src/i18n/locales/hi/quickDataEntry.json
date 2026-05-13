@@ -434,7 +434,13 @@
         "uploadDocument": "दस्तावेज़ अपलोड करें",
         "viewDocument": "दस्तावेज़ देखें",
         "buildingPermit": "भवन अनुमति",
-        "buildCompletionCertificate": "भवन पूर्णता प्रमाणपत्र"
+        "buildCompletionCertificate": "भवन पूर्णता प्रमाणपत्र",
+        "saveSuccess": "भवन अनुमति सफलतापूर्वक सहेजी गई!",
+        "saveError": "भवन अनुमति सहेजते समय त्रुटि हुई!",
+        "uploadSuccess": "दस्तावेज़ सफलतापूर्वक अपलोड किया गया।",
+        "uploadError": "दस्तावेज़ अपलोड करते समय त्रुटि हुई।",
+        "uploading": "दस्तावेज़ अपलोड हो रहा है...",
+        "documentUploaded": "दस्तावेज़ अपलोड हो चुका है।"
     },
     "floor": {
         "allFloors": "सभी मंज़िलें",
@@ -604,7 +610,13 @@
         "uploadDocument": "दस्तावेज़ अपलोड करें",
         "viewDocument": "दस्तावेज़ देखें",
         "amountPlaceholder": "राशि दर्ज करें",
-        "PercentagePlaceholder": "प्रतिशत दर्ज करें"
+        "PercentagePlaceholder": "प्रतिशत दर्ज करें",
+        "saveSuccess": "छूट का विवरण सफलतापूर्वक सहेजा गया!",
+        "saveError": "छूट का विवरण सहेजते समय त्रुटि हुई",
+        "uploadSuccess": "दस्तावेज़ सफलतापूर्वक अपलोड किया गया।",
+        "uploadError": "दस्तावेज़ अपलोड करते समय त्रुटि हुई।",
+        "uploading": "दस्तावेज़ अपलोड हो रहा है...",
+        "documentUploaded": "दस्तावेज़ अपलोड हो चुका है।"
     },
     "oldDetails": {
         "title": "पुराना कर",
@@ -765,8 +777,13 @@
     },
     "common": {
         "UpdateChanges": "परिवर्तन सहेजें",
+        "saveChanges": "परिवर्तन सहेजें",
         "noChanges": "अपडेट करने के लिए कोई बदलाव नहीं मिला।",
-        "delete": "हटाएं"
+        "delete": "हटाएं",
+        "validation": {
+            "numberRequired": "प्रमाणपत्र संख्या आवश्यक है",
+            "dateRequired": "प्रमाण पत्र तिथि आवश्यक है"
+        }
     },
     "errorBoundary": {
         "title": "कुछ गलत हो गया",
