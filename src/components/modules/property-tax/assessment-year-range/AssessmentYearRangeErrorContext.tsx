@@ -30,8 +30,9 @@ export function AssessmentYearRangeErrorProvider({ children }: AssessmentYearRan
 export function useAssessmentYearRangeError(): AssessmentYearRangeErrorContextValue {
   const context = useContext(AssessmentYearRangeErrorContext);
   if (!context) {
-    // Return a default value when used outside provider (for SSR or non-error cases)
-    return { hasError: false, setHasError: () => {} };
+    throw new Error(
+      "useAssessmentYearRangeError must be used within an AssessmentYearRangeErrorProvider"
+    );
   }
   return context;
 }

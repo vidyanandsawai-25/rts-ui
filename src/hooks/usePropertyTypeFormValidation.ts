@@ -4,7 +4,8 @@ import { useCallback } from "react";
 import { PropertyTypeFormModel } from "@/types/property-type.types";
 import {
   validateForm,
-  commonValidations
+  commonValidations,
+  isAllZeros
 } from "@/lib/utils/validation";
 import {
   PROPERTY_DESCRIPTION_MAX,
@@ -40,11 +41,24 @@ export function usePropertyTypeFormValidation({
   const validate = useCallback(
     (data: PropertyTypeFormModel): Partial<Record<keyof PropertyTypeFormModel, string>> => {
       const schema = {
-        propertyDescription: commonValidations.masterDescription(t, PROPERTY_DESCRIPTION_MAX, {
-          required: 'form.validation.propertyDescriptionRequired',
-          format: 'form.validation.propertyDescriptionFormat',
-          maxLength: 'form.validation.propertyDescriptionMaxLength',
-        }),
+        propertyDescription: (value: unknown) => {
+          // First run standard master description validation
+          const standardError = commonValidations.masterDescription(t, PROPERTY_DESCRIPTION_MAX, {
+            required: 'form.validation.propertyDescriptionRequired',
+            format: 'form.validation.propertyDescriptionFormat',
+            maxLength: 'form.validation.propertyDescriptionMaxLength',
+          })(value);
+          
+          if (standardError) return standardError;
+          
+          // Check for all zeros
+          const strVal = String(value ?? "").trim();
+          if (isAllZeros(strVal)) {
+            return t('form.validation.propertyDescriptionFormat');
+          }
+          
+          return undefined;
+        },
         type: (value: unknown) => {
           const strVal = String(value ?? "").trim();
           const validTypes = ["R", "C", "I", "N", "R-C", "I-C"];
@@ -61,11 +75,24 @@ export function usePropertyTypeFormValidation({
           }
           return undefined;
         },
-        propertyTypeGroup: commonValidations.masterDescription(t, PROPERTY_TYPE_GROUP_MAX, {
-          required: 'form.validation.propertyTypeGroupRequired',
-          format: 'form.validation.propertyDescriptionFormat',
-          maxLength: 'form.validation.propertyTypeGroupMaxLength',
-        }),
+        propertyTypeGroup: (value: unknown) => {
+          // First run standard master description validation
+          const standardError = commonValidations.masterDescription(t, PROPERTY_TYPE_GROUP_MAX, {
+            required: 'form.validation.propertyTypeGroupRequired',
+            format: 'form.validation.propertyDescriptionFormat',
+            maxLength: 'form.validation.propertyTypeGroupMaxLength',
+          })(value);
+          
+          if (standardError) return standardError;
+          
+          // Check for all zeros
+          const strVal = String(value ?? "").trim();
+          if (isAllZeros(strVal)) {
+            return t('form.validation.propertyDescriptionFormat');
+          }
+          
+          return undefined;
+        },
         searchSequence: commonValidations.masterSearchSequence(t, 'form.validation.sequenceInvalid'),
         propertyTypeCategoryId: (value: unknown) => {
           const numValue = Number(value);
