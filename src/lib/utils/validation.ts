@@ -47,6 +47,7 @@ export {
   PERSON_NAME_REGEX,
   EMAIL_REGEX,
   MOBILE_10_REGEX,
+  YEAR_REGEX,
    POSITIVE_DECIMAL_INVALID_KEYS,
 
 } from './validation-rules';
@@ -64,5 +65,6 @@ export {
   societyValidations,
   propertyValidations,
   officeValidations,
+  oldDetailsValidations,
 } from './validation-schemas';
 

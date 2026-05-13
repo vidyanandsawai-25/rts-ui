@@ -45,7 +45,6 @@ export function useConstructionForm({
     description: initialData?.description ?? "",
     searchSequence: initialData?.searchSequence ?? 0,
     isActive: initialData?.isActive ?? true,
-    updatedBy: 1,
   });
 
   const [searchSequenceValue, setSearchSequenceValue] = useState<string>(
@@ -98,10 +97,12 @@ export function useConstructionForm({
     }
 
     if (name === "searchSequence") {
-      setSearchSequenceValue(value);
+      // Only allow digits and limit to 3 characters
+      const sanitizedValue = value.replace(/[^0-9]/g, "").substring(0, 3);
+      setSearchSequenceValue(sanitizedValue);
       setFormData((p) => ({
         ...p,
-        searchSequence: value === "" ? 0 : Number(value),
+        searchSequence: sanitizedValue === "" ? 0 : Number(sanitizedValue),
       }));
       return;
     }

@@ -44,7 +44,7 @@ export function BankMaster({
 
   const [isPending, startTransition] = useTransition();
 
-  const { search, currentSearchTerm, currentState, handleSearchChange, handleStateChange } =
+    const { search, currentSearchTerm, handleSearchChange } =
     useBankSearch({
       locale,
       startTransition,
@@ -56,25 +56,12 @@ export function BankMaster({
     totalCount,
     locale,
     currentSearchTerm,
-    filterState: currentState,
+    filterState: 'all',
     startTransition,
   });
 
   const columns = useMemo(() => getBankColumns(t, tCommon), [t, tCommon]);
 
-  const stateOptions = useMemo(
-    () => [
-      {
-        label: t('filters.allStates'),
-        value: 'all',
-      },
-      ...statsData.uniqueStates.map((state) => ({
-        label: state,
-        value: state,
-      })),
-    ],
-    [statsData.uniqueStates, t]
-  );
 
   const handleAdd = useCallback(() => {
     startTransition(() => {
@@ -114,9 +101,6 @@ export function BankMaster({
           onAdd={handleAdd}
           search={search}
           onSearchChange={handleSearchChange}
-          currentState={currentState}
-          onStateChange={handleStateChange}
-          stateOptions={stateOptions}
         />
 
         <BankMasterStats

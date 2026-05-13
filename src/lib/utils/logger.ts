@@ -75,13 +75,10 @@ class Logger {
     
     // Fallback for production: log critical errors to console if no monitoring is configured
     // This ensures rendering failures are not silently dropped
-    if (typeof window !== 'undefined') {
-      if (_level === 'error') {
-        console.error('[Logger] PRODUCTION ERROR:', message, context);
-      } else if (process.env.NODE_ENV === 'development') {
-        console.warn('[Logger] Monitoring service not configured. Message:', message, context);
-      }
+    if (_level === 'error') {
+      console.error('[Logger] PRODUCTION ERROR:', message, context);
     }
+    return;
   }
 }
 

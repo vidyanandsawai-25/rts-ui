@@ -27,7 +27,8 @@ import {
   PagedResponse,
 } from "@/types/ageFactorCv.types";
 import { ConstructionType } from "@/types/construction.types";
-import { getConstructionPaged } from "@/lib/api/construction-crud.service";
+import { getConstructionPaged } from "@/lib/api/constructiontypemaster/construction-crud.service";
+
 
 
 /**

@@ -16,4 +16,5 @@ export interface UserScreenAccess {
   canDelete: boolean;
   haveFullAccess: boolean;
   haveNoAccess: boolean;
+  screenGroupName?: string | null;
 }

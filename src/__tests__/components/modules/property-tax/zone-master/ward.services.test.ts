@@ -79,16 +79,13 @@ describe("ward.services", () => {
       );
     });
 
-    it("returns empty response on failed fetch", async () => {
+    it("throws ApiError on failed fetch", async () => {
       mockGet.mockResolvedValueOnce({
         success: false,
         error: "Network error",
       });
 
-      const result = await getWards(1, 10);
-
-      expect(result.items).toHaveLength(0);
-      expect(result.totalCount).toBe(0);
+      await expect(getWards(1, 10)).rejects.toThrow("Get wards failed");
     });
   });
 

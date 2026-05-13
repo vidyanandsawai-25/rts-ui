@@ -18,15 +18,25 @@
  * - `constructionValidators` - Construction-specific validators
  */
 
-import { 
-  CODE_REGEX, 
+import {
+  CODE_REGEX,
   DESCRIPTION_REGEX,
   PERSON_NAME_REGEX,
   EMAIL_REGEX,
-  MOBILE_10_REGEX
+  MOBILE_10_REGEX,
+  YEAR_REGEX
 } from './validation-rules';
+import { validateForm } from './validation-helpers';
 import type { Validator } from './validation-helpers';
 import type { OfficeFormModel } from '@/types/office.types';
+import type {
+  FloorInformationFormData,
+  PropertyOldDetailsApiItem,
+  SaveOldFloorDetailPayload,
+  OldTaxesDetails,
+  OldTaxYear,
+  OldTaxItem
+} from '@/types/property-old-details.types';
 
 /**
  * Common validation rules for Master Forms
@@ -52,13 +62,13 @@ export const commonValidations = {
     }
   ): Validator => (fieldValue: unknown) => {
     const strVal = String(fieldValue ?? "").trim();
-   
+
     const keys = {
       required: messageKeys?.required || 'form.validation.codeRequired',
       format: messageKeys?.format || 'form.validation.codeFormat',
       maxLength: messageKeys?.maxLength || 'form.validation.codeMaxLength',
     };
-   
+
     if (!strVal) return t(keys.required);
     if (strVal.length > maxLength) return t(keys.maxLength, { count: maxLength });
     if (!CODE_REGEX.test(strVal)) return t(keys.format);
@@ -85,13 +95,13 @@ export const commonValidations = {
     }
   ): Validator => (fieldValue: unknown) => {
     const strVal = String(fieldValue ?? "").trim();
-   
+
     const keys = {
       required: messageKeys?.required || 'form.validation.descriptionRequired',
       format: messageKeys?.format || 'form.validation.descriptionFormat',
       maxLength: messageKeys?.maxLength || 'form.validation.descriptionMaxLength',
     };
-   
+
     if (!strVal) return t(keys.required);
     if (strVal.length > maxLength) return t(keys.maxLength, { count: maxLength });
     if (!DESCRIPTION_REGEX.test(strVal)) return t(keys.format);
@@ -111,7 +121,7 @@ export const commonValidations = {
   ): Validator => (fieldValue: unknown) => {
     const numVal = Number(fieldValue);
     const key = messageKey || 'form.validation.sequenceInvalid';
-   
+
     if (!Number.isFinite(numVal) || numVal < 0) {
       return t(key);
     }
@@ -135,7 +145,7 @@ export const commonValidations = {
     // Common with HTML inputs/FormData which store booleans as strings
     const isActive = fieldValue === true || fieldValue === "true";
     const key = messageKey || 'form.validation.mustBeActive';
-   
+
     if (!isActive && !isEdit) {
       return t(key);
     }
@@ -260,42 +270,42 @@ export const societyValidations = {
       label: string,
       t: (key: string, values?: Record<string, string | number | Date>) => string
     ): Validator =>
-    (value: unknown) => {
-      const strVal = String(value ?? "").trim();
-      if (!strVal) return undefined; // optional field
-      if (!PERSON_NAME_REGEX.test(strVal)) {
-        return t(`society.validation.${label}`);
-      }
-      return undefined;
-    },
+      (value: unknown) => {
+        const strVal = String(value ?? "").trim();
+        if (!strVal) return undefined; // optional field
+        if (!PERSON_NAME_REGEX.test(strVal)) {
+          return t(`society.validation.${label}`);
+        }
+        return undefined;
+      },
 
   email:
     (
       label: string,
       t: (key: string, values?: Record<string, string | number | Date>) => string
     ): Validator =>
-    (value: unknown) => {
-      const strVal = String(value ?? "").trim();
-      if (!strVal) return undefined; // optional field
-      if (!EMAIL_REGEX.test(strVal)) {
-        return t(`society.validation.${label}`);
-      }
-      return undefined;
-    },
+      (value: unknown) => {
+        const strVal = String(value ?? "").trim();
+        if (!strVal) return undefined; // optional field
+        if (!EMAIL_REGEX.test(strVal)) {
+          return t(`society.validation.${label}`);
+        }
+        return undefined;
+      },
 
   mobile10:
     (
       label: string,
       t: (key: string, values?: Record<string, string | number | Date>) => string
     ): Validator =>
-    (value: unknown) => {
-      const strVal = String(value ?? "").trim();
-      if (!strVal) return undefined; // optional field
-      if (!MOBILE_10_REGEX.test(strVal)) {
-        return t(`society.validation.${label}`);
-      }
-      return undefined;
-    },
+      (value: unknown) => {
+        const strVal = String(value ?? "").trim();
+        if (!strVal) return undefined; // optional field
+        if (!MOBILE_10_REGEX.test(strVal)) {
+          return t(`society.validation.${label}`);
+        }
+        return undefined;
+      },
 };
 
 /**
@@ -307,13 +317,13 @@ export const propertyValidations = {
       label: string,
       t: (key: string, values?: Record<string, string | number | Date>) => string
     ): Validator =>
-    (value: unknown) => {
-      const strVal = String(value ?? "").trim();
-      if (!strVal) {
-        return t(`property.validation.${label}Required`);
-      }
-      return undefined;
-    },
+      (value: unknown) => {
+        const strVal = String(value ?? "").trim();
+        if (!strVal) {
+          return t(`property.validation.${label}Required`);
+        }
+        return undefined;
+      },
 
   number:
     (
@@ -321,14 +331,14 @@ export const propertyValidations = {
       t: (key: string, values?: Record<string, string | number | Date>) => string,
       min: number = 0
     ): Validator =>
-    (value: unknown) => {
-      const numVal = Number(value);
-      if (value === null || value === undefined || value === "") return undefined; // optional
-      if (!Number.isFinite(numVal) || numVal < min) {
-        return t(`property.validation.${label}Invalid`, { min });
-      }
-      return undefined;
-    },
+      (value: unknown) => {
+        const numVal = Number(value);
+        if (value === null || value === undefined || value === "") return undefined; // optional
+        if (!Number.isFinite(numVal) || numVal < min) {
+          return t(`property.validation.${label}Invalid`, { min });
+        }
+        return undefined;
+      },
 
   pattern:
     (
@@ -336,14 +346,26 @@ export const propertyValidations = {
       pattern: RegExp,
       t: (key: string, values?: Record<string, string | number | Date>) => string
     ): Validator =>
-    (value: unknown) => {
-      const strVal = String(value ?? "").trim();
-      if (!strVal) return undefined; // optional
-      if (!pattern.test(strVal)) {
-        return t(`property.validation.${label}Invalid`);
-      }
-      return undefined;
-    },
+      (value: unknown) => {
+        const strVal = String(value ?? "").trim();
+        if (!strVal) return undefined; // optional
+        if (!pattern.test(strVal)) {
+          return t(`property.validation.${label}Invalid`);
+        }
+        return undefined;
+      },
+
+  year:
+    (
+      label: string,
+      t: (key: string, values?: Record<string, string | number | Date>) => string,
+      pattern: RegExp = YEAR_REGEX
+    ): Validator =>
+      (value: unknown) => {
+        const requiredError = propertyValidations.required(label, t)(value);
+        if (requiredError) return requiredError;
+        return propertyValidations.pattern(label, pattern, t)(value);
+      },
 };
 
 /**
@@ -359,7 +381,7 @@ export const officeValidations = {
     const errors: Record<string, string> = {};
     const officeCode = data.officeCode?.trim();
     const officeName = data.officeName?.trim();
-    
+
     // Use tCommon for shared messages if available, fallback to t
     const tx = tCommon || t;
 
@@ -403,6 +425,232 @@ export const officeValidations = {
       sanitized = sanitized.substring(0, 20);
     }
     return sanitized;
+  }
+};
+
+/**
+ * Old Details form validations
+ */
+export const oldDetailsValidations = {
+  /**
+   * Validates the floor information form data.
+   * 
+   * @param formData - The floor form state
+   * @param t - Translation function
+   * @returns Object containing validation errors
+   */
+  validateFloorInformation: (
+    formData: FloorInformationFormData,
+    t: (key: string, values?: Record<string, string | number | Date>) => string
+  ) => {
+    const validationData = {
+      oldFloorId: formData.oldFloorId,
+      oldConstructionYear: formData.oldConstructionYear,
+      oldConstructionTypeId: formData.oldConstructionTypeId,
+      oldTypeOfUseId: formData.oldTypeOfUseId,
+    };
+
+    return validateForm(validationData, {
+      oldFloorId: propertyValidations.required("floor", t),
+      oldConstructionYear: propertyValidations.year("constructionYear", t),
+      oldConstructionTypeId: propertyValidations.required("constructionType", t),
+      oldTypeOfUseId: propertyValidations.required("typeOfUse", t),
+    });
+  },
+
+  /**
+   * Validates old property taxation details.
+   * 
+   * @param data - The taxation details payload
+   * @param t - Translation function
+   * @returns Object containing validation errors
+   */
+  validateOldPropertyDetails: (
+    data: Partial<PropertyOldDetailsApiItem>,
+    t: (key: string, values?: Record<string, string | number | Date>) => string
+  ) => {
+    const errors: Record<string, string> = {};
+
+    // Numeric fields validation (must be non-negative numbers)
+    const numericFields = [
+      'oldPlotArea', 'oldRV', 'oldALV', 'oldTotalTax',
+      'oldGeneralTax', 'oldConstructionArea',
+      'oldCarpetAreaSqFeet', 'oldCarpetAreaSqMeter',
+      'oldConstructionTypeId', 'oldTypeOfUseId'
+    ] as const;
+
+    numericFields.forEach(field => {
+      const val = data[field];
+      if (val !== undefined && val !== null && String(val) !== '') {
+        const numVal = Number(val);
+        if (isNaN(numVal) || numVal < 0) {
+          errors[field] = t(`property.validation.${field}Invalid`);
+        }
+      }
+    });
+
+    // Construction Year validation (must be 4 digits)
+    if (data.oldConstructionYear) {
+      if (!YEAR_REGEX.test(data.oldConstructionYear)) {
+        errors.oldConstructionYear = t('property.validation.constructionYearInvalid');
+      }
+    }
+
+    return errors;
+  },
+
+  /**
+   * Sanitizes old property taxation details.
+   * Trims strings and ensures consistency.
+   * 
+   * @param data - The taxation details payload
+   * @returns Sanitized payload
+   */
+  sanitizeOldPropertyDetails: (
+    data: Partial<PropertyOldDetailsApiItem>
+  ): Partial<PropertyOldDetailsApiItem> => {
+    const sanitized: Record<string, unknown> = { ...data };
+
+    // Trim string fields
+    const stringFields = [
+      'oldWardNo', 'oldPropertyNo', 'oldPartitionNo',
+      'oldEgovNo', 'oldPlotNo', 'oldZoneNo', 'oldCSN'
+    ] as const;
+
+    stringFields.forEach(field => {
+      const val = sanitized[field];
+      if (typeof val === 'string') {
+        sanitized[field] = val.trim() || null;
+      }
+    });
+
+    return sanitized as Partial<PropertyOldDetailsApiItem>;
+  },
+
+  /**
+   * Validates old floor detail payload.
+   * 
+   * @param data - The floor detail payload
+   * @param t - Translation function
+   * @returns Object containing validation errors
+   */
+  validateOldFloorDetails: (
+    data: SaveOldFloorDetailPayload,
+    t: (key: string, values?: Record<string, string | number | Date>) => string
+  ) => {
+    const errors: Record<string, string> = {};
+
+    // Required numeric fields
+    const requiredNumeric = {
+      oldFloorId: 'floor',
+      oldConstructionTypeId: 'constructionType',
+      oldTypeOfUseId: 'typeOfUse',
+    } as const;
+
+    Object.entries(requiredNumeric).forEach(([field, label]) => {
+      const val = data[field as keyof SaveOldFloorDetailPayload];
+      if (!val || Number(val) <= 0) {
+        errors[field] = t(`property.validation.${label}Required`);
+      }
+    });
+
+    // Carpet area validation (required, positive)
+    if (!data.oldCarpetAreaSqFeet || Number(data.oldCarpetAreaSqFeet) <= 0) {
+      errors.oldCarpetAreaSqFeet = t('property.validation.carpetAreaInvalid');
+    }
+
+    // Construction Year validation (required, 4 digits)
+    if (!data.oldConstructionYear) {
+      errors.oldConstructionYear = t('property.validation.constructionYearRequired');
+    } else if (!YEAR_REGEX.test(data.oldConstructionYear)) {
+      errors.oldConstructionYear = t('property.validation.constructionYearInvalid');
+    }
+
+    return errors;
+  },
+
+  /**
+   * Sanitizes old floor detail payload.
+   * 
+   * @param data - The floor detail payload
+   * @returns Sanitized payload
+   */
+  sanitizeOldFloorDetails: (
+    data: SaveOldFloorDetailPayload
+  ): SaveOldFloorDetailPayload => {
+    return {
+      ...data,
+      oldFloorId: Number(data.oldFloorId),
+      oldSubFloorId: data.oldSubFloorId ? Number(data.oldSubFloorId) : null,
+      oldConstructionTypeId: Number(data.oldConstructionTypeId),
+      oldTypeOfUseId: Number(data.oldTypeOfUseId),
+      oldSubTypeOfUseId: data.oldSubTypeOfUseId ? Number(data.oldSubTypeOfUseId) : null,
+      oldCarpetAreaSqFeet: Number(data.oldCarpetAreaSqFeet),
+      oldConstructionYear: String(data.oldConstructionYear).trim(),
+    };
+  },
+
+  /**
+   * Validates old taxes details payload.
+   * 
+   * @param data - The taxes details payload
+   * @param t - Translation function
+   * @returns Object containing validation errors
+   */
+  validateOldTaxesDetails: (
+    data: OldTaxesDetails,
+    t: (key: string, values?: Record<string, string | number | Date>) => string
+  ) => {
+    const errors: Record<string, string> = {};
+
+    if (!data.propertyId || data.propertyId <= 0) {
+      errors.propertyId = t('property.validation.propertyIdRequired');
+    }
+
+    if (!data.taxYears || !Array.isArray(data.taxYears) || data.taxYears.length === 0) {
+      errors.taxYears = t('property.validation.taxYearsRequired');
+    } else {
+      data.taxYears.forEach((year: OldTaxYear, index: number) => {
+        if (!year.financeYearId || year.financeYearId <= 0) {
+          errors[`taxYears.${index}.financeYearId`] = t('property.validation.financeYearRequired');
+        }
+        if (year.taxTotal < 0) {
+          errors[`taxYears.${index}.taxTotal`] = t('property.validation.taxTotalInvalid');
+        }
+      });
+    }
+
+    return errors;
+  },
+
+  /**
+   * Sanitizes old taxes details payload.
+   * 
+   * @param data - The taxes details payload
+   * @returns Sanitized payload
+   */
+  sanitizeOldTaxesDetails: (
+    data: OldTaxesDetails
+  ): OldTaxesDetails => {
+    return {
+      ...data,
+      propertyId: Number(data.propertyId),
+      taxYears: (data.taxYears || []).map((year: OldTaxYear) => ({
+        ...year,
+        financeYearId: Number(year.financeYearId),
+        year: Number(year.year),
+        rVorCVValue: Number(year.rVorCVValue || 0),
+        taxTotal: Number(year.taxTotal || 0),
+        interest: Number(year.interest || 0),
+        netTotal: Number(year.netTotal || 0),
+        remark: year.remark?.trim(),
+        taxes: (year.taxes || []).map((tax: OldTaxItem) => ({
+          ...tax,
+          taxId: Number(tax.taxId),
+          taxAmount: Number(tax.taxAmount || 0)
+        }))
+      }))
+    };
   }
 };
 
