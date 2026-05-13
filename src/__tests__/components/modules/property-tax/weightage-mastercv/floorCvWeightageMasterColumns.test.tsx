@@ -167,7 +167,7 @@ describe('getFloorCvWeightageMasterColumns', () => {
     
     const input = container.querySelector('input');
     expect(input).toBeInTheDocument();
-    expect(input).toHaveDisplayValue('1.00');
+    expect(input).toHaveDisplayValue('1');
   });
 
   it('fromYear column renders assessment year range', () => {

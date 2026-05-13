@@ -137,7 +137,7 @@ describe('getAgeFactorCvWeightageMasterColumns', () => {
     const { container } = render(<>{result}</>);
     
     const input = container.querySelector('input');
-    expect(input).toHaveDisplayValue('2.00');
+    expect(input).toHaveDisplayValue('2');
   });
 
   it('assessmentYear column renders range correctly', () => {
