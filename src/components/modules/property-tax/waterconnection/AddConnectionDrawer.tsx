@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useEffect, useRef } from "react";
+import React, { useState, useCallback, useEffect, useMemo } from "react";
 import { Droplets } from "lucide-react";
 import { toast } from "sonner";
 import { CancelButton, SaveButton } from "@/components/common";
@@ -32,7 +32,6 @@ function makeEmptyForm(propertyId: number): WaterConnectionFormModel {
     waterConnectionSizeId: "",
     installDate: new Date().toISOString().slice(0, 10),
     isActive: true,
-    applicableRate: null,
   };
 }
 
@@ -72,10 +71,8 @@ export function AddConnectionDrawer({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [rateError, setRateError] = useState<string | null>(null);
-  // Prevents the auto-rate effect from overwriting the rate we just loaded from the DB when editing
-  const skipNextAutoRate = useRef(false);
 
+  // Fetch fresh lookups each time the drawer opens
   useEffect(() => {
     if (!open) return;
     getConnectionLookupsAction().then(({ typeOptions: t, sizeOptions: s, statusOptions: st, rateMasters: rm }) => {
@@ -86,29 +83,13 @@ export function AddConnectionDrawer({
     });
   }, [open]);
 
-  // Auto-compute applicable rate whenever type or size selection changes
-  useEffect(() => {
-    if (skipNextAutoRate.current) {
-      skipNextAutoRate.current = false;
-      return;
-    }
-    const { rate, notFound } = findApplicableRate(
-      formData.waterConnectionTypeId,
-      formData.waterConnectionSizeId,
-      rateMasters
-    );
-    setFormData((prev) => ({ ...prev, applicableRate: rate }));
-    setRateError(notFound ? t("form.validation.rateNotFound") : null);
-  }, [formData.waterConnectionTypeId, formData.waterConnectionSizeId, rateMasters, t]);
-
-  // "Adjusting state on prop change" pattern (avoids setState-in-effect lint error).
-  // A stable key lets us detect when the form should be re-initialised without an effect.
+  // "Adjusting state on prop change" pattern — avoids setState-in-effect.
+  // Re-initialise the form whenever the target connection or open state changes.
   const formInitKey = `${editingConnection?.id ?? "new"}-${String(open)}-${propertyId}`;
   const [prevFormInitKey, setPrevFormInitKey] = useState(formInitKey);
   if (prevFormInitKey !== formInitKey) {
     setPrevFormInitKey(formInitKey);
     if (editingConnection) {
-      skipNextAutoRate.current = true;
       setFormData({
         id: editingConnection.id,
         propertyId,
@@ -119,16 +100,20 @@ export function AddConnectionDrawer({
         waterConnectionStatusId: editingConnection.waterConnectionStatusId ?? null,
         installDate: editingConnection.installDate ?? editingConnection.connectionStartDate ?? "",
         isActive: editingConnection.isActive,
-        applicableRate: editingConnection.applicableRate ?? null,
       });
     } else {
-      skipNextAutoRate.current = false;
       setFormData(makeEmptyForm(propertyId));
     }
     setErrors({});
     setTouched({});
-    setRateError(null);
   }
+
+  // applicableRate is display-only (never sent to the API), so derive it rather than storing it.
+  const { rate: applicableRate, notFound: rateNotFound } = useMemo(
+    () => findApplicableRate(formData.waterConnectionTypeId, formData.waterConnectionSizeId, rateMasters),
+    [formData.waterConnectionTypeId, formData.waterConnectionSizeId, rateMasters]
+  );
+  const rateError = rateNotFound ? t("form.validation.rateNotFound") : null;
 
   const validate = useCallback(
     (data: WaterConnectionFormModel): Record<string, string> => {
@@ -178,7 +163,7 @@ export function AddConnectionDrawer({
     setFormData((prev) => ({ ...prev, isActive: !prev.isActive }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setTouched({
       connectionNo: true,
@@ -263,7 +248,7 @@ export function AddConnectionDrawer({
           typeOptions={typeOptions}
           sizeOptions={sizeOptions}
           statusOptions={statusOptions}
-          applicableRate={formData.applicableRate ?? null}
+          applicableRate={applicableRate}
           rateError={rateError}
           t={t}
         />
