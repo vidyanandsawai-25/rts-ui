@@ -45,10 +45,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           id={inputId}
           ref={ref}
           required={required}
-          aria-required={required}
           className={className}
           disabled={disabled}
-          aria-invalid={error ? 'true' : 'false'}
           {...props}
         />
       );
@@ -67,7 +65,6 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           id={inputId}
           ref={ref}
           required={required}
-          aria-required={required}
           className={cn(
             'px-3 py-2 border rounded-lg text-sm text-gray-800 transition-colors placeholder:text-gray-400',
             'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
@@ -77,7 +74,6 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             className
           )}
           disabled={disabled}
-          aria-invalid={error ? 'true' : 'false'}
           aria-describedby={
             error ? `${inputId}-error` : helperText ? `${inputId}-helper` : undefined
           }
