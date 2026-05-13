@@ -55,7 +55,6 @@ export async function saveOldTaxesDetailsAction(
     if (hasErrors(validationErrors)) {
       return {
         success: false,
-        validationErrors,
         error: t('common.validationError')
       };
     }

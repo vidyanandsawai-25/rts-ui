@@ -183,7 +183,6 @@ export async function saveOldFloorDetailsAction(
         if (hasErrors(validationErrors)) {
             return {
                 success: false,
-                validationErrors,
                 error: t('common.validationError')
             };
         }
@@ -236,7 +235,6 @@ export async function updateOldFloorDetailsAction(
         if (hasErrors(validationErrors)) {
             return {
                 success: false,
-                validationErrors,
                 error: t('common.validationError')
             };
         }

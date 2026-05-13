@@ -45,7 +45,6 @@ export async function updatePropertyOldDetailsAction(
     if (hasErrors(validationErrors)) {
       return {
         success: false,
-        validationErrors,
         error: t('common.validationError')
       };
     }
