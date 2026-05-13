@@ -6,6 +6,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { NextIntlClientProvider } from 'next-intl';
 import { ConnectionFormFields } from '@/components/modules/property-tax/waterconnection/ConnectionFormFields';
+import type { WaterConnectionFormModel } from '@/types/waterconnection.types';
 import {
   mockTypeOptions,
   mockSizeOptions,
@@ -155,14 +156,14 @@ describe('ConnectionFormFields', () => {
   describe('validation errors', () => {
     it('should display error when showError returns true', () => {
       const errors = { connectionNo: 'Connection number is required' };
-      const showError = (field: string) => field === 'connectionNo';
+      const showError = (field: keyof WaterConnectionFormModel) => field === 'connectionNo';
 
       renderWithIntl(
         <ConnectionFormFields
           {...defaultProps}
           {...handlers}
           errors={errors}
-          showError={showError as any}
+          showError={showError}
         />
       );
 

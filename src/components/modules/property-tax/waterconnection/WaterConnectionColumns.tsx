@@ -2,6 +2,14 @@ import type { Column } from "@/components/common/MasterTable";
 import type { WaterConnection } from "@/types/waterconnection.types";
 import { cn } from "@/lib/utils/cn";
 
+function formatINR(amount: number): string {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
 export function getWaterConnectionColumns(
   t: (key: string) => string,
   locale: string
@@ -59,7 +67,7 @@ export function getWaterConnectionColumns(
       width: "12%",
       render: (value) => (
         <div>
-          <span className="text-blue-600 font-semibold">₹{value != null ? Number(value) : 0}</span>
+          <span className="text-blue-600 font-semibold">{formatINR(value != null ? Number(value) : 0)}</span>
           <div className="text-xs text-gray-400">{t("list.table.perMonth")}</div>
         </div>
       ),
@@ -80,7 +88,7 @@ export function getWaterConnectionColumns(
       width: "13%",
       render: (value) => (
         <span className="text-blue-600 font-semibold">
-          ₹{Number(value).toLocaleString("en-IN")}
+          {formatINR(Number(value))}
         </span>
       ),
     },

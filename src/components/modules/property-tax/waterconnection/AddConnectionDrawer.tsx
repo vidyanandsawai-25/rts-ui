@@ -101,9 +101,13 @@ export function AddConnectionDrawer({
     setRateError(notFound ? t("form.validation.rateNotFound") : null);
   }, [formData.waterConnectionTypeId, formData.waterConnectionSizeId, rateMasters, t]);
 
-  useEffect(() => {
+  // "Adjusting state on prop change" pattern (avoids setState-in-effect lint error).
+  // A stable key lets us detect when the form should be re-initialised without an effect.
+  const formInitKey = `${editingConnection?.id ?? "new"}-${String(open)}-${propertyId}`;
+  const [prevFormInitKey, setPrevFormInitKey] = useState(formInitKey);
+  if (prevFormInitKey !== formInitKey) {
+    setPrevFormInitKey(formInitKey);
     if (editingConnection) {
-      // Signal the auto-rate effect to skip its next run so the DB rate is preserved
       skipNextAutoRate.current = true;
       setFormData({
         id: editingConnection.id,
@@ -124,7 +128,7 @@ export function AddConnectionDrawer({
     setErrors({});
     setTouched({});
     setRateError(null);
-  }, [editingConnection, open, propertyId]);
+  }
 
   const validate = useCallback(
     (data: WaterConnectionFormModel): Record<string, string> => {
