@@ -48,8 +48,8 @@ export {
   EMAIL_REGEX,
   MOBILE_10_REGEX,
   YEAR_REGEX,
-   POSITIVE_DECIMAL_INVALID_KEYS,
-   isAllZeros,
+  POSITIVE_DECIMAL_INVALID_KEYS,
+  isAllZeros,
 
 } from './validation-rules';
 

@@ -102,7 +102,8 @@ class ApiClient {
     const body = errBody as Record<string, unknown> | null | undefined;
     
     // First check for specific error messages in the errors object (e.g., validation errors)
-    if (body?.errors && typeof body.errors === 'object') {
+    // Ensure errors is a plain object (not an array) before treating it as a key/value map
+    if (body?.errors && typeof body.errors === 'object' && !Array.isArray(body.errors)) {
       const errors = body.errors as Record<string, unknown>;
       // Check for General error first, then other error keys
       const errorKeys = ['General', ...Object.keys(errors).filter(k => k !== 'General')];
