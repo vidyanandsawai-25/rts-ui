@@ -6,7 +6,7 @@ import { createDepartmentMaster, updateDepartmentMaster, deleteDepartmentMaster,
 import { DepartmentMasterFormModel, DepartmentMaster } from "@/types/departmentMaster.types";
 import { cookies } from "next/headers";
 import { getUserIdFromCookies } from "@/lib/utils/auth-session";
-import { ApiError } from "@/lib/utils/api";
+
 
 export async function fetchDepartmentsPagedAction(
   pageNumber: number,

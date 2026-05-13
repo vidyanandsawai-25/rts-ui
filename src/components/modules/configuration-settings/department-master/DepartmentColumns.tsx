@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+
 import { DepartmentMaster } from "@/types/departmentMaster.types";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { Column } from "@/components/common/MasterTable";

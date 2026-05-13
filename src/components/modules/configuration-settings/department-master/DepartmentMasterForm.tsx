@@ -175,7 +175,7 @@ export default function DepartmentMasterForm({
 
                 <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
                     <AlertCircle size={16} />
-                    <span dangerouslySetInnerHTML={{ __html: tCommon('note.mandatory') }} />
+                    <span>{tCommon('note.mandatory')}</span>
                 </div>
             </form>
         </Drawer>

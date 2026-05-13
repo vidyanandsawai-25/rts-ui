@@ -10,10 +10,10 @@ export interface Department {
   departmentIcon: string | null;
   departmentDescription: string;
   isActive: boolean;
-  createdDate: string | null;
-  updatedDate: string | null;
-  createdBy: number | null;
-  updatedBy: number | null;
+  createdDate?: string | null;
+  updatedDate?: string | null;
+  createdBy?: number | null;
+  updatedBy?: number | null;
 }
 
 export interface DepartmentUpdateRequest {
@@ -37,10 +37,10 @@ export interface Module {
   moduleDescription: string;
   isActive: boolean;
   departmentName: string;
-  createdDate: string | null;
-  updatedDate: string | null;
-  createdBy: number | null;
-  updatedBy: number | null;
+  createdDate?: string | null;
+  updatedDate?: string | null;
+  createdBy?: number | null;
+  updatedBy?: number | null;
 }
 
 export interface ModuleUpdateRequest {
