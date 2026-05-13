@@ -3,13 +3,15 @@
 import Link from 'next/link';
 import { usePathname, useSearchParams, useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { Building2, Home, UserCheck } from 'lucide-react';
+import { Building2, Home, UserCheck, Percent } from 'lucide-react';
 import { Tab } from '@/types/property-basic-details.types';
 
 const TABS: Tab[] = [
     { label: 'Property', href: 'Property', icon: Home },
     { label: 'Kyc', href: 'Kyc', icon: UserCheck },
     { label: 'Society', href: 'Society', icon: Building2 },
+    { label: 'BuildingPermission', href: 'Building', icon: Building2 },
+    { label: 'Discount', href: 'Discount', icon: Percent },
     { label: 'FloorSubmission', href: 'FloorSubmission', icon: Building2 },
     { label: 'OldDetails', href: 'OldDetails/old-taxation', icon: Building2 },
 ];
@@ -18,6 +20,9 @@ const TAB_GRADIENT_CLASSES: Record<string, string> = {
     Property: 'from-blue-500 to-blue-600 border-blue-700',
     Kyc: 'from-emerald-500 to-emerald-600 border-emerald-700',
     Society: 'from-purple-500 to-purple-600 border-purple-700',
+    Building: 'from-green-500 to-green-600 border-green-700',
+    BuildingPermission: 'from-green-500 to-green-600 border-green-700',
+    Discount: 'from-pink-500 to-pink-600 border-pink-700',
     FloorSubmission: 'from-orange-500 to-orange-600 border-orange-700',
     OldDetails: "from-rose-500 to-red-600 border-red-700"
 };

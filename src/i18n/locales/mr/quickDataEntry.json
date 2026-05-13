@@ -434,7 +434,13 @@
         "billNumberPlaceholder": "बिल क्रमांक टाका",
         "billDatePlaceholder": "बिल दिनांक टाका",
         "buildingPermit": "बांधकाम परवाना",
-        "buildCompletionCertificate": "बांधकाम पूर्णता प्रमाणपत्र"
+        "buildCompletionCertificate": "बांधकाम पूर्णता प्रमाणपत्र",
+        "saveSuccess": "इमारत परवानगी यशस्वीरित्या जतन केली गेली!",
+        "saveError": "इमारत परवानगी जतन करताना त्रुटी आली!",
+        "uploadSuccess": "कागदपत्र यशस्वीरित्या अपलोड केले!",
+        "uploadError": "कागदपत्र अपलोड करताना त्रुटी आली!",
+        "uploading": "कागदपत्र अपलोड होत आहे...",
+        "documentUploaded": "कागदपत्र अपलोड झाले"
     },
     "floor": {
         "allFloors": "सर्व मजले",
@@ -604,7 +610,13 @@
         "uploadDocument": "कागदपत्र अपलोड करा",
         "viewDocument": "कागदपत्र पहा",
         "amountPlaceholder": "रक्कम टाका",
-        "PercentagePlaceholder": "टक्केवारी टाका"
+        "PercentagePlaceholder": "टक्केवारी टाका",
+        "saveSuccess": "सवलतीचा तपशील यशस्वीरित्या जतन केला गेला!",
+        "saveError": "सवलतीचा तपशील जतन करताना त्रुटी आली",
+        "uploadSuccess": "कागदपत्र यशस्वीरित्या अपलोड केले!",
+        "uploadError": "कागदपत्र अपलोड करताना त्रुटी आली!",
+        "uploading": "कागदपत्र अपलोड होत आहे...",
+        "documentUploaded": "कागदपत्र अपलोड झाले"
     },
     "oldDetails": {
         "title": "जुने कर",
@@ -765,8 +777,13 @@
     },
     "common": {
         "UpdateChanges": "बदल जतन करा",
+        "saveChanges": "बदल जतन करा",
         "noChanges": "अपडेट करण्यासाठी कोणतेही बदल आढळले नाहीत.",
-        "delete": "हटवा"
+        "delete": "हटवा",
+        "validation": {
+            "numberRequired": "प्रमाणपत्र क्रमांक आवश्यक आहे",
+            "dateRequired": "प्रमाणपत्र दिनांक आवश्यक आहे"
+        }
     },
     "errorBoundary": {
         "title": "काहीतरी चूक झाली",
