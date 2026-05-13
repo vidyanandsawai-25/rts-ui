@@ -62,9 +62,11 @@ export const MatrixCellInput = ({
       return;
     }
 
-    // Limit integer part to 4 digits max
+    // Limit integer part to 4 digits max by clamping oversized values to 9999
     const integerPart = dotIndex !== -1 ? inputValue.substring(0, dotIndex) : inputValue;
     if (integerPart.length > 4) {
+      setLocalValue("9999");
+      onCellChange?.(rowId, columnId, 9999);
       return;
     }
 

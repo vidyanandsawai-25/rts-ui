@@ -175,7 +175,7 @@ export function getApiErrorMessage(
 
   // Then check status codes
   if (result.statusCode === 409) return t('apiErrors.duplicateRecord');
-  if (result.statusCode === 400) return t('apiErrors.invalidData');
+  if (result.statusCode === 400) return result.message || t('apiErrors.invalidData');
   if (result.statusCode === 404) return t('apiErrors.notFound');
   if (result.statusCode === 401 || result.statusCode === 403) {
     return tCommon('errors.unauthorized');

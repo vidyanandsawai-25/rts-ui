@@ -70,7 +70,8 @@ export function useDepreciationValidation(t: TranslationFn) {
   );
 
   /**
-   * Sanitize input value - allow only digits up to 3 characters (max value 999)
+   * Sanitize input value - allow only digits up to 3 characters.
+   * Numeric range validation is enforced separately by `validateBasicRules` (0-100).
    */
   const sanitizeInput = useCallback((value: string): string => {
     return value.replaceAll(/\D/g, "").slice(0, 3);

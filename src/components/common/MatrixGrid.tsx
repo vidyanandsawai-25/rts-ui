@@ -362,6 +362,7 @@ export const MatrixGrid = ({
                   isEditable &&
                   (!editableRowId || row.id === editableRowId) &&
                   editableColumns.includes(col.id) &&
+                  Object.prototype.hasOwnProperty.call(row.cells, col.id) &&
                   typeof onCellChange === "function";
  
                 const customCellClass =
