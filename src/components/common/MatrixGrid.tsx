@@ -47,6 +47,7 @@ export interface MatrixGridProps {
   colorMap?: Record<string, string>;
   mode?: "view" | "edit";
   editableColumns?: string[];
+  editableRowId?: string;
   onCellChange?: (rowId: string, columnId: string, value: string | number) => void;
   onCellKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   onRowDelete?: (index: number) => void;
@@ -202,6 +203,7 @@ export const MatrixGrid = ({
   colorMap = {},
   mode = "view",
   editableColumns = [],
+  editableRowId,
   onCellChange,
   onCellKeyDown,
   onRowDelete,
@@ -358,6 +360,7 @@ export const MatrixGrid = ({
  
                 const canEdit: boolean =
                   isEditable &&
+                  (!editableRowId || row.id === editableRowId) &&
                   editableColumns.includes(col.id) &&
                   typeof onCellChange === "function";
  
@@ -400,7 +403,7 @@ export const MatrixGrid = ({
                         customCellClass
                       )}
                     >
-                      {translations.currencySymbol}{Number(value).toFixed(2)}
+                      {String(Number(Number(value).toFixed(2)))}
                     </div>
                   </td>
                 );

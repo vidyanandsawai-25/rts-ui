@@ -20,7 +20,7 @@ import { StatusToggleField } from '../StatusToggleField';
 import { MandatoryFieldsNotice } from '../MandatoryFieldsNotice';
 
 import type React from 'react';
-import { getApiErrorMessage } from '../form-errors';
+import { getApiErrorMessage, parseApiFieldErrors } from '../form-errors';
 import {
   validateSubFloorForm,
   sanitizeSubFloorCode,
@@ -130,6 +130,18 @@ export default function SubFloorForm({ id, initialData }: Readonly<SubFloorFormP
         : await createSubFloorAction(formData);
 
       if (!result.success) {
+        // Try to parse field-specific errors from API response
+        if (result.message) {
+          const { fieldErrors, genericError } = parseApiFieldErrors(result.message);
+          if (Object.keys(fieldErrors).length > 0) {
+            setErrors(prev => ({ ...prev, ...fieldErrors }));
+            return;
+          }
+          if (genericError) {
+            toast.error(genericError);
+            return;
+          }
+        }
         toast.error(getApiErrorMessage(result, { t, tCommon }));
         return;
       }

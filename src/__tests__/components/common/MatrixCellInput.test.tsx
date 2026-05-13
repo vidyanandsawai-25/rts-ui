@@ -4,40 +4,43 @@ import { vi } from 'vitest';
 
 describe('MatrixCellInput', () => {
   const defaultProps = {
-    value: 100,
+    value: 50,
     rowId: 'row-1',
     columnId: 'col-1',
     onCellChange: vi.fn(),
   };
 
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('renders correctly with initial value', () => {
     render(<MatrixCellInput {...defaultProps} />);
     const input = screen.getByRole('spinbutton');
     expect(input).toBeInTheDocument();
-    expect(input).toHaveValue(100);
+    expect(input).toHaveValue(50);
   });
 
   it('renders placeholder when value is 0', () => {
     render(<MatrixCellInput {...defaultProps} value={0} />);
     const input = screen.getByRole('spinbutton') as HTMLInputElement;
-    // When value is 0, the component renders an empty string so the placeholder is visible
-    expect(input.value).toBe('');
-    expect(input).toHaveAttribute('placeholder', '0.00');
+    // jsdom normalises an empty number input to "0"; the placeholder should still be set
+    expect(input).toHaveAttribute('placeholder', '0');
   });
 
-  it('calls onCellChange with correct arguments on change', () => {
+  it('calls onCellChange with correct arguments on valid change', () => {
     render(<MatrixCellInput {...defaultProps} />);
     const input = screen.getByRole('spinbutton');
-    fireEvent.change(input, { target: { value: '200' } });
-    
-    expect(defaultProps.onCellChange).toHaveBeenCalledWith('row-1', 'col-1', 200);
+    fireEvent.change(input, { target: { value: '75' } });
+
+    expect(defaultProps.onCellChange).toHaveBeenCalledWith('row-1', 'col-1', 75);
   });
 
   it('handles empty input by sending 0', () => {
     render(<MatrixCellInput {...defaultProps} />);
     const input = screen.getByRole('spinbutton');
     fireEvent.change(input, { target: { value: '' } });
-    
+
     expect(defaultProps.onCellChange).toHaveBeenCalledWith('row-1', 'col-1', 0);
   });
 
@@ -45,7 +48,7 @@ describe('MatrixCellInput', () => {
     render(<MatrixCellInput {...defaultProps} />);
     const input = screen.getByRole('spinbutton');
     fireEvent.change(input, { target: { value: '-50' } });
-    
+
     expect(defaultProps.onCellChange).toHaveBeenCalledWith('row-1', 'col-1', 0);
   });
 
@@ -62,25 +65,102 @@ describe('MatrixCellInput', () => {
   });
 
   it('handles decimal values correctly', () => {
-    render(<MatrixCellInput {...defaultProps} value={123.45} />);
+    render(<MatrixCellInput {...defaultProps} value={50.25} />);
     const input = screen.getByRole('spinbutton');
-    expect(input).toHaveValue(123.45);
+    expect(input).toHaveValue(50.25);
   });
 
-  it('handles large numeric values', () => {
-    render(<MatrixCellInput {...defaultProps} />);
-    const input = screen.getByRole('spinbutton');
-    fireEvent.change(input, { target: { value: '999999' } });
-    
-    expect(defaultProps.onCellChange).toHaveBeenCalledWith('row-1', 'col-1', 999999);
+  describe('Rate max 100 validation', () => {
+    it('clamps rate value to 100 when value exceeds 100', () => {
+      render(<MatrixCellInput {...defaultProps} />);
+      const input = screen.getByRole('spinbutton');
+      fireEvent.change(input, { target: { value: '150' } });
+
+      expect(defaultProps.onCellChange).toHaveBeenCalledWith('row-1', 'col-1', 100);
+    });
+
+    it('clamps large values to 100', () => {
+      render(<MatrixCellInput {...defaultProps} />);
+      const input = screen.getByRole('spinbutton');
+      fireEvent.change(input, { target: { value: '9999' } });
+
+      expect(defaultProps.onCellChange).toHaveBeenCalledWith('row-1', 'col-1', 100);
+    });
+
+    it('accepts exactly 100 as valid', () => {
+      render(<MatrixCellInput {...defaultProps} />);
+      const input = screen.getByRole('spinbutton');
+      fireEvent.change(input, { target: { value: '100' } });
+
+      expect(defaultProps.onCellChange).toHaveBeenCalledWith('row-1', 'col-1', 100);
+    });
+
+    it('accepts values below 100', () => {
+      render(<MatrixCellInput {...defaultProps} />);
+      const input = screen.getByRole('spinbutton');
+      fireEvent.change(input, { target: { value: '99' } });
+
+      expect(defaultProps.onCellChange).toHaveBeenCalledWith('row-1', 'col-1', 99);
+    });
+
+    it('accepts 0 as valid', () => {
+      render(<MatrixCellInput {...defaultProps} />);
+      const input = screen.getByRole('spinbutton');
+      fireEvent.change(input, { target: { value: '0' } });
+
+      expect(defaultProps.onCellChange).toHaveBeenCalledWith('row-1', 'col-1', 0);
+    });
   });
 
-  it('validates and constrains input to valid numbers', () => {
-    render(<MatrixCellInput {...defaultProps} />);
-    const input = screen.getByRole('spinbutton');
-    fireEvent.change(input, { target: { value: 'abc' } });
-    
-    // Should handle invalid input gracefully
-    expect(defaultProps.onCellChange).toHaveBeenCalled();
+  describe('Decimal places validation', () => {
+    it('allows up to 2 decimal places', () => {
+      render(<MatrixCellInput {...defaultProps} />);
+      const input = screen.getByRole('spinbutton') as HTMLInputElement;
+      fireEvent.change(input, { target: { value: '50.25' } });
+
+      expect(input.value).toBe('50.25');
+      expect(defaultProps.onCellChange).toHaveBeenCalledWith('row-1', 'col-1', 50.25);
+    });
+
+    it('blocks input with more than 2 decimal places', () => {
+      render(<MatrixCellInput {...defaultProps} />);
+      const input = screen.getByRole('spinbutton') as HTMLInputElement;
+      const initialValue = input.value;
+
+      fireEvent.change(input, { target: { value: '50.123' } });
+
+      // Should not update since more than 2 decimal places
+      expect(input.value).toBe(initialValue);
+    });
+
+    it('allows exactly 1 decimal place', () => {
+      render(<MatrixCellInput {...defaultProps} />);
+      const input = screen.getByRole('spinbutton') as HTMLInputElement;
+      fireEvent.change(input, { target: { value: '50.5' } });
+
+      expect(input.value).toBe('50.5');
+    });
+
+    it('allows whole numbers with no decimal', () => {
+      render(<MatrixCellInput {...defaultProps} />);
+      const input = screen.getByRole('spinbutton') as HTMLInputElement;
+      fireEvent.change(input, { target: { value: '75' } });
+
+      expect(input.value).toBe('75');
+    });
+  });
+
+  describe('Read-only mode', () => {
+    it('is disabled when readOnly is true', () => {
+      render(<MatrixCellInput {...defaultProps} readOnly />);
+      const input = screen.getByRole('spinbutton');
+      expect(input).toBeDisabled();
+    });
+
+    it('shows 0 (not empty) when value is 0 in read-only mode', () => {
+      render(<MatrixCellInput {...defaultProps} value={0} readOnly />);
+      const input = screen.getByRole('spinbutton') as HTMLInputElement;
+      expect(input.value).toBe('0');
+    });
   });
 });

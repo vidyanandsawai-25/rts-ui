@@ -18,7 +18,7 @@ import { FloorFormModel, FloorRangeFormModel, FloorRangePayload, Floor } from '@
 import { FloorFormFields } from './FloorFormFields';
 import { FloorRangeFields } from './FloorRangeFields';
 import type React from 'react';
-import { getApiErrorMessage } from '../form-errors';
+import { getApiErrorMessage, parseApiFieldErrors } from '../form-errors';
 import { StatusToggleField } from '../StatusToggleField';
 import { MandatoryFieldsNotice } from '../MandatoryFieldsNotice';
 import {
@@ -242,6 +242,18 @@ export default function FloorForm({ id, initialData }: Readonly<FloorFormProps>)
         const result = await createFloorRangeAction(payload);
 
         if (!result.success) {
+          // Try to parse field-specific errors from API response
+          if (result.message) {
+            const { fieldErrors, genericError } = parseApiFieldErrors(result.message);
+            if (Object.keys(fieldErrors).length > 0) {
+              setErrors(prev => ({ ...prev, ...fieldErrors }));
+              return;
+            }
+            if (genericError) {
+              toast.error(genericError);
+              return;
+            }
+          }
           toast.error(getApiErrorMessage(result, { t, tCommon }));
           return;
         }
@@ -274,6 +286,18 @@ export default function FloorForm({ id, initialData }: Readonly<FloorFormProps>)
         const result = isEdit ? await updateFloorAction(formData) : await createFloorAction(formData);
 
         if (!result.success) {
+          // Try to parse field-specific errors from API response
+          if (result.message) {
+            const { fieldErrors, genericError } = parseApiFieldErrors(result.message);
+            if (Object.keys(fieldErrors).length > 0) {
+              setErrors(prev => ({ ...prev, ...fieldErrors }));
+              return;
+            }
+            if (genericError) {
+              toast.error(genericError);
+              return;
+            }
+          }
           toast.error(getApiErrorMessage(result, { t, tCommon }));
           return;
         }
