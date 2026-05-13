@@ -164,7 +164,8 @@ export async function createFloorAction(
     if (error instanceof ApiError) {
       return {
         success: false,
-        message: parseFloorApiError(error),
+        // Return raw responseText for client-side field error parsing, fallback to parsed message
+        message: error.responseText || parseFloorApiError(error),
         statusCode: error.statusCode,
       };
     }
@@ -212,7 +213,8 @@ export async function updateFloorAction(
     if (error instanceof ApiError) {
       return {
         success: false,
-        message: parseFloorApiError(error),
+        // Return raw responseText for client-side field error parsing, fallback to parsed message
+        message: error.responseText || parseFloorApiError(error),
         statusCode: error.statusCode,
       };
     }
@@ -310,7 +312,8 @@ export async function createFloorRangeAction(
     if (error instanceof ApiError) {
       return {
         success: false,
-        message: parseFloorApiError(error),
+        // Return raw responseText for client-side field error parsing, fallback to parsed message
+        message: error.responseText || parseFloorApiError(error),
         statusCode: error.statusCode,
       };
     }
@@ -421,7 +424,8 @@ export async function createSubFloorAction(
     if (error instanceof ApiError) {
       return {
         success: false,
-        message: parseFloorApiError(error),
+        // Return raw responseText for client-side field error parsing, fallback to parsed message
+        message: error.responseText || parseFloorApiError(error),
         statusCode: error.statusCode,
       };
     }
@@ -469,7 +473,8 @@ export async function updateSubFloorAction(
     if (error instanceof ApiError) {
       return {
         success: false,
-        message: parseFloorApiError(error),
+        // Return raw responseText for client-side field error parsing, fallback to parsed message
+        message: error.responseText || parseFloorApiError(error),
         statusCode: error.statusCode,
       };
     }

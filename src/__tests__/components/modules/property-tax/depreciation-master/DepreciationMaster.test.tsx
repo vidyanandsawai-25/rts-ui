@@ -255,7 +255,7 @@ describe("DepreciationMaster", () => {
       });
     });
 
-    it("should NOT call addRangeAction when age values exceed 999", async () => {
+    it("should call addRangeAction when age values are at max valid value (999)", async () => {
       const user = userEvent.setup();
       render(<DepreciationMaster {...defaultProps} data={[]} />);
 

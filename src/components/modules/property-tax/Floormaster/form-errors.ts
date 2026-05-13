@@ -22,12 +22,14 @@ const ERROR_CODE_MESSAGES: Record<string, string> = {
   'FloorCode_MaxLen_5': 'Floor Code must be maximum 5 characters',
   'Floor_Description_Required': 'Floor Description is required',
   'Floor_FloorCode_Required': 'Floor Code is required',
+  'FloorCode_Required': 'Floor Code is required',
   'Floor_SequenceNo_Required': 'Sequence Number is required',
   // SubFloor errors
   'SubFloorId_MaxLen_5': 'Sub-Floor Code must be maximum 5 characters',
   'SubFloorCode_MaxLen_5': 'Sub-Floor Code must be maximum 5 characters',
   'SubFloor_Description_Required': 'Sub-Floor Description is required',
   'SubFloor_SubFloorCode_Required': 'Sub-Floor Code is required',
+  'SubFloorCode_Required': 'Sub-Floor Code is required',
   // Generic errors
   'Required': 'This field is required',
   'MaxLength': 'Maximum length exceeded',
@@ -50,15 +52,18 @@ const FIELD_NAME_MAPPING: Record<string, string> = {
 
 /**
  * Parse RFC 9110 Problem Details format and return field-specific errors
- * Returns: { fieldErrors: Record<string, string>, genericError: string | null }
+ * Returns: { fieldErrors: Record<string, string>, genericError: string | null, isRfc9110: boolean }
+ * isRfc9110 indicates whether the message was a valid RFC 9110 payload (use for deciding error handling path)
  */
 export function parseApiFieldErrors(message: string): {
   fieldErrors: Record<string, string>;
   genericError: string | null;
+  isRfc9110: boolean;
 } {
   const result = {
     fieldErrors: {} as Record<string, string>,
     genericError: null as string | null,
+    isRfc9110: false,
   };
 
   try {
@@ -66,6 +71,8 @@ export function parseApiFieldErrors(message: string): {
     
     // Check if it's RFC 9110 Problem Details format
     if (parsed && typeof parsed === 'object' && parsed.errors) {
+      result.isRfc9110 = true;
+      
       // Extract errors from the errors object
       for (const [field, codes] of Object.entries(parsed.errors)) {
         if (Array.isArray(codes) && codes.length > 0) {
@@ -86,8 +93,7 @@ export function parseApiFieldErrors(message: string): {
       }
     }
   } catch {
-    // Not a JSON response
-    result.genericError = message;
+    // Not a JSON response - don't set genericError here, let the caller handle with getApiErrorMessage
   }
 
   return result;

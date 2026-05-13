@@ -16,8 +16,8 @@ import { ApiError } from '@/lib/utils/api';
 const getPagePath = (locale: string) => `/${locale}/property-tax/depreciation-master`;
 
 const SERVER_ERROR_CODES: Record<string, string> = {
-  MaxYear_Range_0_9999: "Maximum age must be between 0 and 100.",
-  MinYear_Range_0_9999: "Minimum age must be between 0 and 100.",
+  MaxYear_Range_0_9999: "Maximum age must be between 0 and 9999.",
+  MinYear_Range_0_9999: "Minimum age must be between 0 and 9999.",
 };
 
 function parseAddRangeError(error: unknown): string {

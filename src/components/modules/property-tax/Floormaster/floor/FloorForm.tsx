@@ -244,12 +244,13 @@ export default function FloorForm({ id, initialData }: Readonly<FloorFormProps>)
         if (!result.success) {
           // Try to parse field-specific errors from API response
           if (result.message) {
-            const { fieldErrors, genericError } = parseApiFieldErrors(result.message);
+            const { fieldErrors, genericError, isRfc9110 } = parseApiFieldErrors(result.message);
             if (Object.keys(fieldErrors).length > 0) {
               setErrors(prev => ({ ...prev, ...fieldErrors }));
               return;
             }
-            if (genericError) {
+            // Only use genericError if it came from a valid RFC9110 payload
+            if (isRfc9110 && genericError) {
               toast.error(genericError);
               return;
             }
@@ -288,12 +289,13 @@ export default function FloorForm({ id, initialData }: Readonly<FloorFormProps>)
         if (!result.success) {
           // Try to parse field-specific errors from API response
           if (result.message) {
-            const { fieldErrors, genericError } = parseApiFieldErrors(result.message);
+            const { fieldErrors, genericError, isRfc9110 } = parseApiFieldErrors(result.message);
             if (Object.keys(fieldErrors).length > 0) {
               setErrors(prev => ({ ...prev, ...fieldErrors }));
               return;
             }
-            if (genericError) {
+            // Only use genericError if it came from a valid RFC9110 payload
+            if (isRfc9110 && genericError) {
               toast.error(genericError);
               return;
             }
