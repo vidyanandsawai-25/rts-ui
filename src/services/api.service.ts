@@ -7,7 +7,7 @@ import { cookies } from 'next/headers';
 import { getAppConfig } from '@/config/app.config';
 import { ApiResponse } from '@/types/common.types';
 
-const LOCAL_HTTPS_RE = /^https:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//;
+export const LOCAL_HTTPS_RE = /^https:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//;
 interface ApiError extends Error {
   httpStatus?: number;
   rawText?: string;
