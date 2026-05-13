@@ -206,6 +206,10 @@ export const createMockPageData = (
 ): WaterConnectionPageData => ({
   property: mockPropertyInfo,
   connections: mockWaterConnections,
+  totalCount: mockWaterConnections.length,
+  totalPages: 1,
+  pageNumber: 1,
+  pageSize: 10,
   typeOptions: mockTypeOptions,
   sizeOptions: mockSizeOptions,
   statusOptions: mockStatusOptions,

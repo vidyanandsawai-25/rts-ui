@@ -3,7 +3,7 @@
  */
 
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { NextIntlClientProvider } from 'next-intl';
 import { ConnectionFormFields } from '@/components/modules/property-tax/waterconnection/ConnectionFormFields';
 import {
@@ -36,7 +36,6 @@ describe('ConnectionFormFields', () => {
     t: (key: string) => {
       // Simple translation function for tests
       const parts = key.split('.');
-      const lastPart = parts[parts.length - 1];
       const translations: Record<string, string> = {
         'connectionNo.label': 'Connection No',
         'connectionNo.placeholder': 'Enter connection number',

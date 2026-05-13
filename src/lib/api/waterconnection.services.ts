@@ -31,8 +31,8 @@ export async function getWaterConnectionsPaged(
   if (!response.success || !response.data) {
     throw new ApiError(
       response.statusCode || 500,
-      "",
-      response.error || "Fetch water connections failed"
+      response.error || "",
+      "Fetch water connections failed"
     );
   }
 
@@ -46,8 +46,8 @@ export async function getWaterConnectionById(id: number): Promise<WaterConnectio
   if (!response.success || !response.data) {
     throw new ApiError(
       response.statusCode || 500,
-      "",
-      response.error || `Fetch water connection ${id} failed`
+      response.error || "",
+      `Fetch water connection ${id} failed`
     );
   }
 
@@ -72,8 +72,8 @@ export async function createWaterConnection(data: WaterConnectionFormModel): Pro
   if (!response.success || !response.data) {
     throw new ApiError(
       response.statusCode || 500,
-      "",
-      response.error || "Create water connection failed"
+      response.error || "",
+      "Create water connection failed"
     );
   }
 
@@ -92,7 +92,6 @@ export async function updateWaterConnection(id: number, data: WaterConnectionFor
     meterNo: data.meterNo?.trim() || null,
     connectionStartDate: data.installDate,
     isActive: data.isActive,
-    updatedBy: null,
   };
 
   const response = await apiClient.put<WaterConnection>(`/WaterConnection/${id}`, payload);
@@ -100,8 +99,8 @@ export async function updateWaterConnection(id: number, data: WaterConnectionFor
   if (!response.success || !response.data) {
     throw new ApiError(
       response.statusCode || 500,
-      "",
-      response.error || "Update water connection failed"
+      response.error || "",
+      "Update water connection failed"
     );
   }
 
@@ -115,8 +114,8 @@ export async function deleteWaterConnection(id: number): Promise<void> {
   if (!response.success) {
     throw new ApiError(
       response.statusCode || 500,
-      "",
-      response.error || `Delete water connection ${id} failed`
+      response.error || "",
+      `Delete water connection ${id} failed`
     );
   }
 }
@@ -128,13 +127,11 @@ export async function getWaterConnectionTypes(): Promise<WaterConnectionTypeLook
     `/WaterConnectionType?${params.toString()}`
   );
 
-  console.log('[waterconnection] getWaterConnectionTypes response:', JSON.stringify(response, null, 2));
-
   if (!response.success || !response.data) {
     throw new ApiError(
       response.statusCode || 500,
-      "",
-      response.error || "Fetch connection types failed"
+      response.error || "",
+      "Fetch connection types failed"
     );
   }
 
@@ -148,13 +145,11 @@ export async function getWaterConnectionSizes(): Promise<WaterConnectionSizeLook
     `/WaterConnectionSize?${params.toString()}`
   );
 
-  console.log('[waterconnection] getWaterConnectionSizes response:', JSON.stringify(response, null, 2));
-
   if (!response.success || !response.data) {
     throw new ApiError(
       response.statusCode || 500,
-      "",
-      response.error || "Fetch connection sizes failed"
+      response.error || "",
+      "Fetch connection sizes failed"
     );
   }
 
@@ -168,13 +163,11 @@ export async function getWaterConnectionStatuses(): Promise<WaterConnectionStatu
     `/WaterConnectionStatus?${params.toString()}`
   );
 
-  console.log('[waterconnection] getWaterConnectionStatuses response:', JSON.stringify(response, null, 2));
-
   if (!response.success || !response.data) {
     throw new ApiError(
       response.statusCode || 500,
-      "",
-      response.error || "Fetch connection statuses failed"
+      response.error || "",
+      "Fetch connection statuses failed"
     );
   }
 
@@ -197,8 +190,8 @@ export async function getWaterRateMasters(
   if (!response.success || !response.data) {
     throw new ApiError(
       response.statusCode || 500,
-      "",
-      response.error || "Fetch water rate masters failed"
+      response.error || "",
+      "Fetch water rate masters failed"
     );
   }
 

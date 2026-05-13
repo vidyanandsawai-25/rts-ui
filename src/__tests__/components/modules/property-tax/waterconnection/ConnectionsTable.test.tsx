@@ -27,6 +27,12 @@ describe('ConnectionsTable', () => {
   const defaultProps = {
     propertyNo: 'FR09-2024-001',
     connections: mockWaterConnections,
+    totalCount: mockWaterConnections.length,
+    pageNumber: 1,
+    pageSize: 10,
+    totalPages: 1,
+    onPageChange: vi.fn(),
+    onPageSizeChange: vi.fn(),
   };
 
   beforeEach(() => {
@@ -271,7 +277,7 @@ describe('ConnectionsTable', () => {
         />
       );
 
-      // Active connections should have visual indication
+      expect(screen.getByText('Active')).toBeInTheDocument();
     });
 
     it('should display inactive badge for inactive connections', () => {
@@ -287,7 +293,7 @@ describe('ConnectionsTable', () => {
         />
       );
 
-      // Inactive connections should have visual indication
+      expect(screen.getByText('Inactive')).toBeInTheDocument();
     });
   });
 

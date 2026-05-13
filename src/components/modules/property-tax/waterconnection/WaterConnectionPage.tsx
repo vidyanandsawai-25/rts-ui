@@ -143,7 +143,7 @@ export default function WaterConnectionPage({ initialData, propertyId }: WaterCo
         <ConnectionsTable
           propertyNo={initialData.property.propertyNo}
           connections={pagedConnections}
-          totalCount={initialData.connections.length}
+          totalCount={initialData.totalCount}
           pageNumber={page}
           pageSize={pageSize}
           totalPages={totalPages}

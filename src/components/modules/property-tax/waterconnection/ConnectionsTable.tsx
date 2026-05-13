@@ -57,7 +57,7 @@ export function ConnectionsTable({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant="info" size="sm">
+          <Badge variant="default" size="sm">
             {t("list.connections", { count: totalCount })}
           </Badge>
           <AddButton

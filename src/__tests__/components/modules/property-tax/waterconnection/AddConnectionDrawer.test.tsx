@@ -15,7 +15,6 @@ vi.mock('@/app/[locale]/property-tax/waterconnection/action', () => ({
   getConnectionLookupsAction: vi.fn(),
 }));
 
-import { toast } from 'sonner';
 import { AddConnectionDrawer } from '@/components/modules/property-tax/waterconnection/AddConnectionDrawer';
 import {
   saveWaterConnectionAction,
@@ -195,47 +194,20 @@ describe('AddConnectionDrawer', () => {
   });
 
   describe('form submission', () => {
-    it('should call saveWaterConnectionAction on valid submission', async () => {
-      (saveWaterConnectionAction as ReturnType<typeof vi.fn>).mockResolvedValue({ ok: true });
-
-      renderWithIntl(
-        <AddConnectionDrawer
-          {...defaultProps}
-          onClose={handlers.onClose}
-          onSaved={handlers.onSaved}
-        />
-      );
-
-      // Fill required fields
-      const connectionNoInput = screen.getByRole('textbox', { name: /connection no/i });
-      fireEvent.change(connectionNoInput, { target: { name: 'connectionNo', value: 'WC-001' } });
-
-      // Simulate selecting type and size (would need to interact with Select component)
-      // For now, we test the action call pattern
-
-      // The full integration test would require properly interacting with Select components
+    it.skip('should call saveWaterConnectionAction on valid submission', async () => {
+      // Requires interacting with controlled Select components — implement with userEvent
     });
 
-    it('should show success toast on successful save', async () => {
-      (saveWaterConnectionAction as ReturnType<typeof vi.fn>).mockResolvedValue({ ok: true });
-
-      // This test requires full form submission which involves Select components
-      // In a real scenario, we would need to properly mock or interact with the Select
+    it.skip('should show success toast on successful save', async () => {
+      // Requires full form submission via Select components — implement with userEvent
     });
 
-    it('should show error toast on failed save', async () => {
-      (saveWaterConnectionAction as ReturnType<typeof vi.fn>).mockResolvedValue({
-        ok: false,
-        error: 'Save failed',
-      });
-
-      // Similar to above, requires full form interaction
+    it.skip('should show error toast on failed save', async () => {
+      // Requires full form submission via Select components — implement with userEvent
     });
 
-    it('should call onSaved and onClose on successful save', async () => {
-      (saveWaterConnectionAction as ReturnType<typeof vi.fn>).mockResolvedValue({ ok: true });
-
-      // Verify callbacks are called after successful save
+    it.skip('should call onSaved and onClose on successful save', async () => {
+      // Requires full form submission via Select components — implement with userEvent
     });
   });
 
@@ -273,9 +245,8 @@ describe('AddConnectionDrawer', () => {
   });
 
   describe('applicable rate calculation', () => {
-    it('should show rate error when no matching rate found', async () => {
-      // When type and size are selected but no rate exists
-      // The rateError should be displayed
+    it.skip('should show rate error when no matching rate found', async () => {
+      // Requires selecting type+size with no matching rate via Select components — implement with userEvent
     });
   });
 

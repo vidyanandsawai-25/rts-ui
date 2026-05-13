@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import { WaterConnectionPage } from "@/components/modules/property-tax/waterconnection";
 import { getWaterConnectionPageData } from "./action";
 
@@ -7,7 +8,10 @@ interface PageProps {
 
 export default async function Page({ searchParams }: PageProps) {
   const { propertyId } = await searchParams;
-  const resolvedPropertyId = Number(propertyId ?? 1);
+  const resolvedPropertyId = parseInt(propertyId ?? "", 10);
+  if (!Number.isFinite(resolvedPropertyId) || resolvedPropertyId <= 0) {
+    notFound();
+  }
   const data = await getWaterConnectionPageData(resolvedPropertyId);
   return <WaterConnectionPage initialData={data} propertyId={resolvedPropertyId} />;
 }
