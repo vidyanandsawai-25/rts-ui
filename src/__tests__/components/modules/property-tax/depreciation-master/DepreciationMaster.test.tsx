@@ -41,8 +41,7 @@ vi.mock("next-intl", () => ({
       "errors.overlap": "Range overlaps with existing range",
       "errors.mustBeNumber": "Must be a valid number",
       "errors.cannotBeNegative": "Cannot be negative",
-      "errors.mustBe9999OrLess": "Must be 9999 or less",
-      "errors.mustBe999OrLess": "Must be 999 or less",
+      "errors.mustBe100OrLess": "Must be 100 or less",
       "errors.mustBe99OrLess": "Must be 99 or less",
     };
     let result = translations[key] || key;
@@ -238,7 +237,7 @@ describe("DepreciationMaster", () => {
       expect(minInput).toHaveValue("123");
     });
 
-    it("should accept max age of exactly 999", async () => {
+    it("should accept max age of exactly 100", async () => {
       const user = userEvent.setup();
       render(<DepreciationMaster {...defaultProps} data={[]} />);
 
@@ -247,15 +246,15 @@ describe("DepreciationMaster", () => {
       const addButton = screen.getByRole("button", { name: /Add Range/i });
 
       await user.type(minInput, "10");
-      await user.type(maxInput, "999");
+      await user.type(maxInput, "100");
       await user.click(addButton);
 
       await waitFor(() => {
-        expect(addRangeAction).toHaveBeenCalledWith("en", { minYear: 10, maxYear: 999 });
+        expect(addRangeAction).toHaveBeenCalledWith("en", { minYear: 10, maxYear: 100 });
       });
     });
 
-    it("should call addRangeAction when age values are at max valid value (999)", async () => {
+    it("should call addRangeAction when age values are at max valid value (100)", async () => {
       const user = userEvent.setup();
       render(<DepreciationMaster {...defaultProps} data={[]} />);
 
@@ -264,7 +263,7 @@ describe("DepreciationMaster", () => {
       const addButton = screen.getByRole("button", { name: /Add Range/i });
 
       await user.type(minInput, "0");
-      await user.type(maxInput, "999");
+      await user.type(maxInput, "100");
       await user.click(addButton);
 
       await waitFor(() => {

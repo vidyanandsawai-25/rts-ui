@@ -49,8 +49,8 @@ export function useDepreciationValidation(t: TranslationFn) {
     if (errors.minError || errors.maxError) return errors;
 
     // Range and limit validation
-    if (minNum > 999) errors.minError = t("errors.mustBe999OrLess");
-    if (maxNum > 999) errors.maxError = t("errors.mustBe999OrLess");
+    if (minNum > 100) errors.minError = t("errors.mustBe100OrLess");
+    if (maxNum > 100) errors.maxError = t("errors.mustBe100OrLess");
     if (minNum >= maxNum) errors.maxError = t("errors.invalidRange");
 
     return errors;
