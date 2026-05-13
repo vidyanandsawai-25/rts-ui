@@ -84,8 +84,8 @@ export default function RateSectionWards({
             className="flex items-center gap-3 px-4 py-1.5 backdrop-purple-sm rounded-lg transition-all duration-200 border group cursor-pointer bg-white/60 border-purple-100/50 hover:bg-white/80 hover:border-purple-300/50 hover:shadow-md"
             onClick={(e) => {
               // Only toggle if not clicking inside the checkbox button
-              const target = e.target as HTMLElement;
-              if (!target.closest('button[role="checkbox"]')) {
+              const target = e.target;
+              if (target instanceof Element && !target.closest('button[role="checkbox"]')) {
                 onToggle(w);
               }
             }}
