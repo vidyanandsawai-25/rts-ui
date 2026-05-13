@@ -58,7 +58,6 @@ export function RateFiltersSection({
   zoneOptions,
   useGroupOptions,
   assessmentYears,
-  assessmentYearRanges,
   errors,
   isEditMode,
   allFiltersSelected,
