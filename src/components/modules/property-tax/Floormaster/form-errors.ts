@@ -20,6 +20,7 @@ interface TranslationFunctions {
 const ERROR_CODE_MESSAGES: Record<string, string> = {
   // Floor errors
   'FloorCode_MaxLen_5': 'Floor Code must be maximum 5 characters',
+  'FloorCode_Required': 'Floor Code is required',
   'Floor_Description_Required': 'Floor Description is required',
   'Floor_FloorCode_Required': 'Floor Code is required',
   'Floor_SequenceNo_Required': 'Sequence Number is required',
@@ -169,7 +170,7 @@ export function getApiErrorMessage(
 
   // Then check status codes
   if (result.statusCode === 409) return t('apiErrors.duplicateRecord');
-  if (result.statusCode === 400) return t('apiErrors.invalidData');
+  if (result.statusCode === 400) return result.message || t('apiErrors.invalidData');
   if (result.statusCode === 404) return t('apiErrors.notFound');
   if (result.statusCode === 401 || result.statusCode === 403) {
     return tCommon('errors.unauthorized');

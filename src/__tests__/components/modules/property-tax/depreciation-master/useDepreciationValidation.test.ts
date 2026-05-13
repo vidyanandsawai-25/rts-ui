@@ -104,31 +104,31 @@ describe("useDepreciationValidation", () => {
       expect(validation.maxError).toBe("Min must be less than max");
     });
 
-    it("should return error when min exceeds 999", () => {
+    it("should return error when min exceeds 9999", () => {
       const { result } = renderHook(() => useDepreciationValidation(mockT));
-      const validation = result.current.validateMinMax("1000", "1500");
+      const validation = result.current.validateMinMax("10000", "15000");
 
       expect(validation.valid).toBe(false);
-      expect(validation.minError).toBe("Must be 999 or less");
+      expect(validation.minError).toBe("Must be 9999 or less");
     });
 
-    it("should return error when max exceeds 999", () => {
+    it("should return error when max exceeds 9999", () => {
       const { result } = renderHook(() => useDepreciationValidation(mockT));
-      const validation = result.current.validateMinMax("10", "1000");
+      const validation = result.current.validateMinMax("10", "10000");
 
       expect(validation.valid).toBe(false);
-      expect(validation.maxError).toBe("Must be 999 or less");
+      expect(validation.maxError).toBe("Must be 9999 or less");
     });
 
-    it("should accept max value of exactly 999", () => {
+    it("should accept max value of exactly 9999", () => {
       const { result } = renderHook(() => useDepreciationValidation(mockT));
-      const validation = result.current.validateMinMax("0", "999");
+      const validation = result.current.validateMinMax("0", "9999");
 
       expect(validation.valid).toBe(true);
       expect(validation.maxError).toBeNull();
     });
 
-    it("should accept valid range within 0–999", () => {
+    it("should accept valid range within 0–9999", () => {
       const { result } = renderHook(() => useDepreciationValidation(mockT));
       const validation = result.current.validateMinMax("0", "500");
 
@@ -155,20 +155,20 @@ describe("useDepreciationValidation", () => {
   });
 
   describe("sanitizeInput", () => {
-    it("should remove non-digit characters and limit to 3 chars", () => {
+    it("should remove non-digit characters and limit to 4 chars", () => {
       const { result } = renderHook(() => useDepreciationValidation(mockT));
 
       expect(result.current.sanitizeInput("abc123")).toBe("123");
-      expect(result.current.sanitizeInput("12.34")).toBe("123");
+      expect(result.current.sanitizeInput("12.34")).toBe("1234");
       expect(result.current.sanitizeInput("-50")).toBe("50");
       expect(result.current.sanitizeInput("1a2b3c")).toBe("123");
     });
 
-    it("should limit input to 3 characters", () => {
+    it("should limit input to 4 characters", () => {
       const { result } = renderHook(() => useDepreciationValidation(mockT));
 
-      expect(result.current.sanitizeInput("1234")).toBe("123");
-      expect(result.current.sanitizeInput("123456789")).toBe("123");
+      expect(result.current.sanitizeInput("1234")).toBe("1234");
+      expect(result.current.sanitizeInput("123456789")).toBe("1234");
     });
 
     it("should return empty string for non-numeric input", () => {
@@ -184,9 +184,10 @@ describe("useDepreciationValidation", () => {
       expect(result.current.sanitizeInput("")).toBe("");
     });
 
-    it("should preserve valid numeric input up to 3 digits", () => {
+    it("should preserve valid numeric input up to 4 digits", () => {
       const { result } = renderHook(() => useDepreciationValidation(mockT));
 
+      expect(result.current.sanitizeInput("9999")).toBe("9999");
       expect(result.current.sanitizeInput("999")).toBe("999");
       expect(result.current.sanitizeInput("0")).toBe("0");
       expect(result.current.sanitizeInput("100")).toBe("100");
