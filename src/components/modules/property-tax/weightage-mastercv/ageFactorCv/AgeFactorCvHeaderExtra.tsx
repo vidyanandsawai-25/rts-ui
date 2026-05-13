@@ -11,6 +11,7 @@ import {
     CancelButton,
     AddButton
 } from "@/components/common/ActionButtons";
+import { POSITIVE_DECIMAL_INVALID_KEYS } from "@/lib/utils/validation-rules";
 
 interface AgeFactorCvHeaderExtraProps {
     t: (key: string, values?: Record<string, string | number>) => string;
@@ -149,20 +150,52 @@ export const AgeFactorCvHeaderExtra: React.FC<AgeFactorCvHeaderExtraProps> = ({
                                     <div className="flex flex-col gap-1.5">
                                         <label className="text-[11px] font-semibold text-gray-500">{t('labels.minYear')}</label>
                                         <Input
-                                            type="number"
+                                            type="text"
+                                            inputMode="numeric"
                                             placeholder={t('placeholders.minYear')}
                                             value={ageFrom}
-                                            onChange={(e) => setAgeFrom(e.target.value)}
+                                            onChange={(e) => {
+                                                const value = e.target.value.replace(/[^0-9]/g, '');
+                                                if (value.length <= 2) {
+                                                    setAgeFrom(value);
+                                                }
+                                            }}
+                                            onKeyDown={(e) => {
+                                                const allowedKeys = ['Backspace', 'Delete', 'Tab', 'Enter', 'ArrowLeft', 'ArrowRight', 'Home', 'End'];
+                                                const isDigit = /^[0-9]$/.test(e.key);
+                                                const isCtrlCmd = e.ctrlKey || e.metaKey;
+                                                if (isCtrlCmd && ['a', 'c', 'v', 'x'].includes(e.key.toLowerCase())) return;
+                                                if (!isDigit && !allowedKeys.includes(e.key)) {
+                                                    e.preventDefault();
+                                                }
+                                            }}
+                                            maxLength={2}
                                             className="h-9 text-sm border-[#DCEAFF]"
                                         />
                                     </div>
                                     <div className="flex flex-col gap-1.5">
                                         <label className="text-[11px] font-semibold text-gray-500">{t('labels.maxYear')}</label>
                                         <Input
-                                            type="number"
+                                            type="text"
+                                            inputMode="numeric"
                                             placeholder={t('placeholders.maxYear')}
                                             value={ageTo}
-                                            onChange={(e) => setAgeTo(e.target.value)}
+                                            onChange={(e) => {
+                                                const value = e.target.value.replace(/[^0-9]/g, '');
+                                                if (value.length <= 3) {
+                                                    setAgeTo(value);
+                                                }
+                                            }}
+                                            onKeyDown={(e) => {
+                                                const allowedKeys = ['Backspace', 'Delete', 'Tab', 'Enter', 'ArrowLeft', 'ArrowRight', 'Home', 'End'];
+                                                const isDigit = /^[0-9]$/.test(e.key);
+                                                const isCtrlCmd = e.ctrlKey || e.metaKey;
+                                                if (isCtrlCmd && ['a', 'c', 'v', 'x'].includes(e.key.toLowerCase())) return;
+                                                if (!isDigit && !allowedKeys.includes(e.key)) {
+                                                    e.preventDefault();
+                                                }
+                                            }}
+                                            maxLength={3}
                                             className="h-9 text-sm border-[#DCEAFF]"
                                         />
                                     </div>
@@ -193,9 +226,20 @@ export const AgeFactorCvHeaderExtra: React.FC<AgeFactorCvHeaderExtraProps> = ({
                 <Input
                     type="number"
                     step="0.01"
+                    min="0"
                     value={factorValue}
                     onChange={(e) => setFactorValue(e.target.value)}
+                    onKeyDown={(e) => {
+                        if (POSITIVE_DECIMAL_INVALID_KEYS.test(e.key)) {
+                            e.preventDefault();
+                        }
+                    }}
+                    onInput={(e) => {
+                        const input = e.currentTarget;
+                        input.value = input.value.replace(/[^0-9.]/g, '');
+                    }}
                     className="h-[34px] w-[80px] text-sm border-[#DCEAFF]"
+                    placeholder="0.00"
                 />
             </div>
 

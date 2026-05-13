@@ -5,6 +5,7 @@ import { Input } from "@/components/common/Input";
 import { ApplyButton, ClearButton, UpdateButton, CancelButton, AddButton } from "@/components/common/ActionButtons";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { Option } from "@/components/common/select";
+import { POSITIVE_DECIMAL_INVALID_KEYS } from "@/lib/utils/validation-rules";
 
 interface UseCategoryCvHeaderExtraProps {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -91,9 +92,13 @@ export function UseCategoryCvHeaderExtra({
                         }
                     }}
                     onKeyDown={(e) => {
-                        if (e.key === '-' || e.key === 'e' || e.key === 'E') {
+                        if (POSITIVE_DECIMAL_INVALID_KEYS.test(e.key)) {
                             e.preventDefault();
                         }
+                    }}
+                    onInput={(e) => {
+                        const input = e.currentTarget;
+                        input.value = input.value.replace(/[^0-9.]/g, '');
                     }}
                     label={t('filters.factor')}
                     placeholder={t('placeholders.factor')}
