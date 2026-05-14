@@ -99,7 +99,7 @@ export const SocietyContactFields = ({
                     <span className="flex items-center justify-center px-1.5 text-[10px] text-gray-600 font-semibold bg-gray-100 border border-gray-200 rounded h-7 shrink-0">
                         +91
                     </span>
-                    <div className="flex gap-0.5 flex-1 h-full items-center">
+                    <div id="manager-mobile-container" className="flex gap-0.5 flex-1 h-full items-center">
                         {Array.from({ length: SOCIETY_VALIDATION_RULES.MOBILE_LENGTH }).map((_, i) => (
                             <Input
                                 key={i}
@@ -187,7 +187,7 @@ export const SocietyContactFields = ({
                     <span className="flex items-center justify-center px-1.5 text-[10px] text-gray-600 font-semibold bg-gray-100 border border-gray-200 rounded h-7 shrink-0">
                         +91
                     </span>
-                    <div className="flex gap-0.5 flex-1 h-full items-center">
+                    <div id="secretary-mobile-container" className="flex gap-0.5 flex-1 h-full items-center">
                         {Array.from({ length: SOCIETY_VALIDATION_RULES.MOBILE_LENGTH }).map((_, i) => (
                             <Input
                                 key={i}
