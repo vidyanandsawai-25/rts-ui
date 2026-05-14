@@ -158,9 +158,16 @@ export function SearchSequenceInput({
         name="searchSequence"
         type="number"
         value={String(value ?? 0)}
-        onChange={(e) => onChange(parseInt(e.target.value || "0", 10))}
+        onChange={(e) => {
+          const num = parseInt(e.target.value || "0", 10);
+          // Only prevent values > 999 (allow negative for validation to catch)
+          if (num <= 999) {
+            onChange(num);
+          }
+        }}
         placeholder="0"
         min={0}
+        max={999}
         fullWidth
         className="rounded-xl px-4 py-2"
       />

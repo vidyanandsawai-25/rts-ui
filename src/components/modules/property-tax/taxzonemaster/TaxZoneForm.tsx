@@ -10,7 +10,7 @@ import type { TaxZoneFormModel } from "@/types/taxzone.types";
 import { saveTaxZone } from "@/app/[locale]/property-tax/taxzone/action";
 import { Drawer } from "@/components/common/Drawer";
 import { useTranslations, useLocale } from "next-intl";
-import { CODE_REGEX, CODE_SANITIZE, DESCRIPTION_REGEX, DESCRIPTION_SANITIZE } from "@/lib/utils/validation-rules";
+import { CODE_REGEX, CODE_SANITIZE, DESCRIPTION_REGEX, DESCRIPTION_SANITIZE, isAllZeros } from "@/lib/utils/validation-rules";
 import { StatusToggleCard } from "./StatusToggleCard";
 import { FormFieldsSection } from "./FormFieldsSection";
 import { MandatoryFieldsNotice } from "./MandatoryFieldsNotice";
@@ -59,6 +59,8 @@ export default function TaxZoneForm({ initialData }: TaxZoneFormProps) {
     // Zone No: Use CODE_REGEX (alphanumeric, underscore only in between)
     if (!data.taxZoneNo.trim()) {
       e.taxZoneNo = t("form.validation.zoneNoRequired")
+    } else if (isAllZeros(data.taxZoneNo)) {
+      e.taxZoneNo = t("form.validation.zoneNoAllZeros");
     } else if (data.taxZoneNo.length > ZONE_NO_MAX) {
       e.taxZoneNo = t("form.validation.zoneNoMax");
     } else if (!CODE_REGEX.test(data.taxZoneNo)) {
@@ -68,6 +70,8 @@ export default function TaxZoneForm({ initialData }: TaxZoneFormProps) {
     // Zone Type: Use DESCRIPTION_REGEX (special chars in between, single space only)
     if (!data.taxZoneType.trim()) {
       e.taxZoneType = t("form.validation.zoneTypeRequired");
+    } else if (isAllZeros(data.taxZoneType)) {
+      e.taxZoneType = t("form.validation.zoneTypeAllZeros");
     } else if (!DESCRIPTION_REGEX.test(data.taxZoneType)) {
       e.taxZoneType = t("form.validation.zoneTypeFormat");
     }
@@ -75,6 +79,8 @@ export default function TaxZoneForm({ initialData }: TaxZoneFormProps) {
     // Remark: Use DESCRIPTION_REGEX (special chars in between, single space only)
     if (!data.remark?.trim()) {
       e.remark = t("form.validation.remarkRequired");
+    } else if (isAllZeros(data.remark)) {
+      e.remark = t("form.validation.remarkAllZeros");
     } else if (!DESCRIPTION_REGEX.test(data.remark)) {
       e.remark = t("form.validation.remarkFormat");
     }
