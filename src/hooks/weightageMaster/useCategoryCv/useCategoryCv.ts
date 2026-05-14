@@ -136,7 +136,7 @@ export function useCategoryCv({
     });
 
     const parsedFactorValue = parseFloat(factorValue);
-    const isApplyDisabled = Number.isNaN(parsedFactorValue) || parsedFactorValue < 0 || data.length === 0;
+    const isApplyDisabled = Number.isNaN(parsedFactorValue) || parsedFactorValue < 0 || (!selectedYear && !typeOfUseId);
     const isBulkUpdateDisabled = Object.keys(editableRows).length === 0 || isBulkUpdating;
 
     return {

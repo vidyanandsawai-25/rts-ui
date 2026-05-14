@@ -7,8 +7,11 @@ import type { ISelectOption } from "@/types/RVRateMaster";
 
 interface RateMatrixHeaderProps {
   selectedZone: string;
+  selectedZoneLabel?: string;
   selectedUseGroup: string;
+  selectedUseGroupLabel?: string;
   assessmentYear: string;
+  assessmentYearLabel?: string;
   zoneOptions: ISelectOption[];
   useGroupOptions: ISelectOption[];
   assessmentYears: ISelectOption[];
@@ -25,12 +28,16 @@ interface RateMatrixHeaderProps {
   onUpdateRates: () => void;
   onDeleteRates: () => void;
   t: ReturnType<typeof import("next-intl").useTranslations>;
+  existingRateFound: boolean;
 }
 
 export function RateMatrixHeader({
   selectedZone,
+  selectedZoneLabel,
   selectedUseGroup,
+  selectedUseGroupLabel,
   assessmentYear,
+  assessmentYearLabel,
   zoneOptions,
   useGroupOptions,
   assessmentYears,
@@ -42,6 +49,7 @@ export function RateMatrixHeader({
   onUpdateRates,
   onDeleteRates,
   t,
+  existingRateFound,
 }: RateMatrixHeaderProps) {
   return (
     <div className="bg-white border-b border-[#e0e7ef] px-6 py-3 flex items-center justify-between">
@@ -56,7 +64,7 @@ export function RateMatrixHeader({
           <StatusBadge
             variant="info"
             icon={<MapPin className="w-4 h-4" />}
-            label={zoneOptions.find(z => z.value === selectedZone)?.label || selectedZone}
+            label={selectedZoneLabel || zoneOptions.find(z => z.value === selectedZone)?.label || selectedZone}
           />
         )}
         {assessmentYear && (
@@ -64,6 +72,7 @@ export function RateMatrixHeader({
             variant="info"
             icon={<Calendar className="w-4 h-4" />}
             label={
+              assessmentYearLabel ||
               assessmentYearRanges?.find(ay => String(ay.value) === String(assessmentYear))?.label ||
               assessmentYears?.find(ay => String(ay.value) === String(assessmentYear))?.label ||
               String(assessmentYear)
@@ -74,7 +83,7 @@ export function RateMatrixHeader({
           <StatusBadge
             variant="info"
             icon={<Users className="w-4 h-4" />}
-            label={useGroupOptions.find(u => u.value === selectedUseGroup)?.label || selectedUseGroup}
+            label={selectedUseGroupLabel || useGroupOptions.find(u => u.value === selectedUseGroup)?.label || selectedUseGroup}
           />
         )}
         <StatusBadge
@@ -91,6 +100,8 @@ export function RateMatrixHeader({
             onClick={id ? onUpdateRates : onAddRates}
             size="md"
             className="px-4 py-2"
+            disabled={existingRateFound}
+            title={existingRateFound ? t('messages.validationRatesAlreadyExist') : undefined}
           />
         )}
         {mode === "delete" && (

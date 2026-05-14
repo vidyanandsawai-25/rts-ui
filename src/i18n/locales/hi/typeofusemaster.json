@@ -137,6 +137,8 @@
         "allowedEnglishChars": "केवल अंग्रेज़ी अक्षर, अंक, स्पेस और (. - ,) ही होने चाहिए।",
         "allowedShortcutChars": "केवल अक्षर, स्पेस, '+' और '-' हो सकते हैं (अंक अनुमति नहीं)।",
         "atLeastOneLetter": "कम से कम एक अक्षर होना आवश्यक है।",
+        "cannotBeAllZeros": "केवल शून्य नहीं हो सकता।",
+        "maxThreeDigits": "अधिकतम 3 अंक (0-999) होने चाहिए।",
         "sequenceNonNegative": "0 या उससे अधिक होना चाहिए।",
         "duplicateGroupId": "डुप्लिकेट समूह आईडी की अनुमति नहीं है।",
         "duplicateGroupName": "डुप्लिकेट समूह नाम की अनुमति नहीं है।",

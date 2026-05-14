@@ -158,7 +158,7 @@ export function useNatureFactorCv({
         addToast('info', tW('common.messages.allClearedInfo'));
     };
 
-    const isApplyDisabled = parseFloat(factorValue) <= 0 || data.length === 0;
+    const isApplyDisabled = parseFloat(factorValue) < 0 || (!selectedYear && !constructionType);
     const isBulkUpdateDisabled = Object.keys(editableRows).length === 0 || isBulkUpdating;
 
     return {

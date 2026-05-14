@@ -1,16 +1,17 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useMemo } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { Building2 } from "lucide-react";
 import { Drawer } from "@/components/common/Drawer";
 import RateMasterForm from "./RateMasterForm";
-import { AddRateDrawerProps } from "@/types/RVRateMaster";
+import { AddRateDrawerProps, ISelectOption } from "@/types/RVRateMaster";
 
 export default function AddRateDrawer({
-  zones,
-  useGroups,
-  assessmentYears,
+  zones: _zones, // Not used, server data is replaced by lazy loading
+  useGroups: _useGroups, // Not used, server data is replaced by lazy loading
+  assessmentYears: _assessmentYears, // Not used, server data is replaced by lazy loading
   assessmentYearRanges,
   zoneDescriptions,
   allZones,
@@ -20,12 +21,28 @@ export default function AddRateDrawer({
   initialExistingRatesCheck,
 }: AddRateDrawerProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const locale = useLocale();
   const t = useTranslations("ptis_RVRateMaster");
+
+  // Read filter values from URL params for persistence on reload
+  const zoneParam = searchParams.get('zone');
+  const useGroupParam = searchParams.get('useGroup');
+  const yearParam = searchParams.get('year');
+  const assessmentYearParam = searchParams.get('assessmentYear');
+  const filterValues = useMemo(() => ({
+    zone: zoneParam || undefined,
+    useGroup: useGroupParam || undefined,
+    year: yearParam || assessmentYearParam || undefined,
+  }), [zoneParam, useGroupParam, yearParam, assessmentYearParam]);
 
   const handleClose = () => {
     router.replace(`/${locale}/property-tax/rate-master/rvratemaster`);
   };
+  
+  // For lazy loading, pass empty arrays initially to trigger lazy loading behavior
+  const emptyOptions = [] as ISelectOption[];
+  
   return (
     <Drawer
       open={true}
@@ -51,13 +68,14 @@ export default function AddRateDrawer({
       <RateMasterForm
         id={null}
         mode="add"
-        zoneOptions={zones}
-        useGroupOptions={useGroups}
-        assessmentYears={assessmentYears}
+        zoneOptions={emptyOptions}
+        useGroupOptions={emptyOptions}
+        assessmentYears={emptyOptions}
         assessmentYearRanges={assessmentYearRanges ?? []}
         zoneDescriptions={zoneDescriptions}
         allZones={allZones || zoneDescriptions} // Use all zones if provided, otherwise fallback to paginated zones
         rateCategories={rateCategories}
+        filterValues={filterValues}
         showCopyRateSection={showCopyRateSection}
         onClose={handleClose}
         paginatedZonesData={paginatedZonesData}

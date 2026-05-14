@@ -1,0 +1,33 @@
+{
+  "title": "विभाग सक्रियकरण",
+  "subtitle": "या ULB साठी विभाग आणि त्यांचे उप-मॉड्यूल कॉन्फ़िगर करा",
+  "searchPlaceholder": "विभाग कोड किंवा नावाने शोधा...",
+  "quickActions": {
+    "activateAll": "सर्व सक्रिय करा",
+    "deactivateAll": "सर्व निष्क्रिय करा"
+  },
+  "stats": {
+    "total": "एकूण विभाग",
+    "active": "सक्रिय",
+    "inactive": "निष्क्रिय"
+  },
+  "card": {
+    "configureSubmodules": "उप-मॉड्यूल कॉन्फ़िगर करा",
+    "noDescription": "कोणतेही वर्णन दिलेले नाही"
+  },
+  "modal": {
+    "title": "उप-मॉड्यूल कॉन्फ़िगर करा",
+    "activateAll": "सर्व सक्रिय करा",
+    "deactivateAll": "सर्व निष्क्रिय करा"
+  },
+  "messages": {
+    "activateAllSuccess": "सर्व निवडलेले विभाग यशस्वीरित्या सक्रिय केले",
+    "deactivateAllSuccess": "सर्व निवडलेले विभाग यशस्वीरित्या निष्क्रिय केले",
+    "moduleUpdateSuccess": "मॉड्यूल कॉन्फ़िगरेशन यशस्वीरित्या अपडेट केले",
+    "activated": "सक्रिय",
+    "deactivated": "निष्क्रिय",
+    "departmentUpdateError": "विभाग अपडेट करण्यात अयशस्वी",
+    "moduleUpdateFailed": "मॉड्यूल अपडेट करण्यात अयशस्वी",
+    "bulkUpdateResult": "{successCount} विभाग अपडेट केले, {failCount} अयशस्वी झाले"
+  }
+}
