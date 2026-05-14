@@ -46,7 +46,7 @@
         },
         "type": {
           "label": "Type",
-          "placeholder": "e.g. C"
+          "placeholder": "Select Type"
         },
         "propertyTypeGroup": {
           "label": "Property Type Group",

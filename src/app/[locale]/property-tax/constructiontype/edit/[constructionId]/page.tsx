@@ -38,8 +38,8 @@ export default async function EditPage({ params }: PageProps): Promise<React.Rea
 
   return (
     <>
-      <ConstructionTypeForm 
-        id={constructionId} 
+      <ConstructionTypeForm
+        id={constructionId}
         initialData={constructionData}
       />
     </>
