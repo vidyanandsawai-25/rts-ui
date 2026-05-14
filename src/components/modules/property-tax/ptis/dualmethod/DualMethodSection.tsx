@@ -20,6 +20,8 @@ interface DualMethodSectionProps {
   searchParams: Record<string, string | string[] | undefined>;
   locale: string;
   initialData?: DualMethodSectionData;
+  rateableSection?: React.ReactNode;
+  capitalSection?: React.ReactNode;
 }
 
 export const DualMethodSection: React.FC<DualMethodSectionProps> = ({
@@ -28,6 +30,8 @@ export const DualMethodSection: React.FC<DualMethodSectionProps> = ({
   searchParams,
   locale,
   initialData,
+  rateableSection,
+  capitalSection,
 }) => {
   const t = useTranslations('ptis.modules.DualMethod');
 
@@ -107,6 +111,8 @@ export const DualMethodSection: React.FC<DualMethodSectionProps> = ({
           capitalError={capitalError}
           initialOldDetails={initialOldDetails}
           searchParams={searchParams}
+          rateableSection={rateableSection}
+          capitalSection={capitalSection}
         />
       )}
     </div>

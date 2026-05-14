@@ -7,8 +7,6 @@ import { useTranslations } from 'next-intl';
 import { Tabs } from '@/components/common/Tabs';
 const { TabList, Tab } = Tabs;
 
-import { CapitalTaxDetailsSection } from '@/components/modules/property-tax/ptis/capital';
-import { RateableTaxDetailsSection } from '@/components/modules/property-tax/ptis/rateable';
 import { DualMethodSection } from '@/components/modules/property-tax/ptis/dualmethod';
 import AppartmentQCSection from '@/components/modules/property-tax/ptis/appartmentQC/AppartmentQCSection';
 import { OldDetailsData } from '@/types/ptis.types';
@@ -36,6 +34,10 @@ interface PtisMainScreenProps {
   initialDualSectionData?: DualMethodSectionData;
   wardId?: number | string;
   propertyNo?: string;
+  rateableSection?: React.ReactNode;
+  capitalSection?: React.ReactNode;
+  dualRateableSection?: React.ReactNode;
+  dualCapitalSection?: React.ReactNode;
 }
 
 const PtisMainScreen: React.FC<PtisMainScreenProps> = (props) => {
@@ -50,7 +52,11 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = (props) => {
     ptisParams,
     initialOldDetails,
     propertyId,
-    resolvedSearchParams
+    resolvedSearchParams,
+    rateableSection,
+    capitalSection,
+    dualRateableSection,
+    dualCapitalSection
   } = props;
 
   const router = useRouter();
@@ -118,23 +124,11 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = (props) => {
             <div className="bg-white min-h-[200px]">
               {activeTab === 'capital' ? (
                 <div className="p-0.5 sm:p-1">
-                  <CapitalTaxDetailsSection
-                    capitalData={capitalData}
-                    oldDetails={initialOldDetails}
-                    propertyId={propertyId}
-                    searchParams={resolvedSearchParams as Record<string, string | string[] | undefined>}
-                    locale={locale}
-                  />
+                  {capitalSection}
                 </div>
               ) : activeTab === 'rateable' ? (
                 <div className="p-0.5 sm:p-1">
-                  <RateableTaxDetailsSection
-                    rateableData={rateableData}
-                    oldDetails={initialOldDetails}
-                    propertyId={propertyId}
-                    searchParams={resolvedSearchParams as Record<string, string | string[] | undefined>}
-                    locale={locale}
-                  />
+                  {rateableSection}
                 </div>
               ) : activeTab === 'apartment' ? (
                 <div className="p-0.5 sm:p-1">
@@ -152,6 +146,8 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = (props) => {
                     searchParams={resolvedSearchParams as Record<string, string | string[] | undefined>}
                     locale={locale}
                     initialData={initialDualSectionData}
+                    rateableSection={dualRateableSection}
+                    capitalSection={dualCapitalSection}
                   />
                 </div>
               ) : (
