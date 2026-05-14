@@ -5,12 +5,28 @@ export const useSocietyChanges = ({
     formRef,
     managerMobileDigits,
     secretaryMobileDigits,
+    landOwnerName,
+    builderName,
+    societyName,
+    managerName,
+    secretaryName,
+    managerEmail,
+    secretaryEmail,
+    societyEmail,
     societyData,
     setHasChanges,
 }: {
     formRef: RefObject<HTMLFormElement | null>;
     managerMobileDigits: string[];
     secretaryMobileDigits: string[];
+    landOwnerName: string;
+    builderName: string;
+    societyName: string;
+    managerName: string;
+    secretaryName: string;
+    managerEmail: string;
+    secretaryEmail: string;
+    societyEmail: string;
     societyData: PropertySocietyDetailsApiItem | null;
     setHasChanges: (value: boolean) => void;
 }) => {
@@ -22,20 +38,34 @@ export const useSocietyChanges = ({
         const secretaryMobileStr = secretaryMobileDigits.join("");
 
         const isChanged =
-            String(formData.get("landOwnerName") ?? "").trim() !== (societyData?.landOwnerName ?? "") ||
-            String(formData.get("builderName") ?? "").trim() !== (societyData?.builderName ?? "") ||
-            String(formData.get("societyName") ?? "").trim() !== (societyData?.societyName ?? "") ||
+            landOwnerName.trim() !== (societyData?.landOwnerName ?? "") ||
+            builderName.trim() !== (societyData?.builderName ?? "") ||
+            societyName.trim() !== (societyData?.societyName ?? "") ||
             String(formData.get("societyAddress") ?? "").trim() !== (societyData?.societyAddress ?? "") ||
-            String(formData.get("societyEmailId") ?? "").trim() !== (societyData?.societyEmailId ?? "") ||
-            String(formData.get("managerName") ?? "").trim() !== (societyData?.managerName ?? "") ||
-            String(formData.get("managerEmailId") ?? "").trim() !== (societyData?.managerEmailId ?? "") ||
+            societyEmail.trim() !== (societyData?.societyEmailId ?? "") ||
+            managerName.trim() !== (societyData?.managerName ?? "") ||
+            managerEmail.trim() !== (societyData?.managerEmailId ?? "") ||
             managerMobileStr !== (societyData?.managerMobileNo ?? "") ||
-            String(formData.get("secretaryName") ?? "").trim() !== (societyData?.secretaryName ?? "") ||
-            String(formData.get("secretaryEmailId") ?? "").trim() !== (societyData?.secretaryEmailId ?? "") ||
+            secretaryName.trim() !== (societyData?.secretaryName ?? "") ||
+            secretaryEmail.trim() !== (societyData?.secretaryEmailId ?? "") ||
             secretaryMobileStr !== (societyData?.secretaryMobileNo ?? "");
 
         setHasChanges(isChanged);
-    }, [managerMobileDigits, secretaryMobileDigits, societyData, formRef, setHasChanges]);
+    }, [
+        managerMobileDigits, 
+        secretaryMobileDigits, 
+        landOwnerName, 
+        builderName, 
+        societyName, 
+        managerName, 
+        secretaryName,
+        managerEmail,
+        secretaryEmail,
+        societyEmail,
+        societyData, 
+        formRef, 
+        setHasChanges
+    ]);
 
     useEffect(() => {
         checkFormChanges();

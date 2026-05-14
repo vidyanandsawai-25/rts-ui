@@ -26,6 +26,27 @@ export const KYC_VALIDATION_RULES = {
   ADDRESS_MAX_LENGTH: 255,
   /** Maximum length for shop name (100 characters) */
   SHOP_NAME_MAX_LENGTH: 100,
+  /** Maximum length for email fields (100 characters) */
+  EMAIL_MAX_LENGTH: 100,
+} as const;
+
+/**
+ * Society form validation rules and constraints
+ * Based on database schema constraints
+ */
+export const SOCIETY_VALIDATION_RULES = {
+  /** Required length for mobile number (10 digits) */
+  MOBILE_LENGTH: 10,
+  /** Minimum length for names (2 characters) */
+  NAME_MIN_LENGTH: 2,
+  /** Maximum length for person names - Manager, Secretary, LandOwner, Builder (200 characters) */
+  PERSON_NAME_MAX_LENGTH: 200,
+  /** Maximum length for society/building name (500 characters) */
+  SOCIETY_NAME_MAX_LENGTH: 500,
+  /** Maximum length for society address (200 characters) */
+  ADDRESS_MAX_LENGTH: 200,
+  /** Maximum length for email fields (100 characters) */
+  EMAIL_MAX_LENGTH: 100,
 } as const;
 
 /**
