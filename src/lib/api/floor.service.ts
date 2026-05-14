@@ -270,9 +270,6 @@ export async function createFloorRange(data: FloorRangePayload, userId: string):
       throw new Error(`Range size cannot exceed ${MAX_RANGE_SIZE} floors`);
     }
 
-    // Validate template.floorCode (same as createFloor)
-    if (!data.template.floorCode?.trim()) throw new Error('floorCode required');
-
     // Note: userId is used for backend auditing/authentication
     const payload: FloorRangePayload = {
       rangeFrom: data.rangeFrom.trim(),
