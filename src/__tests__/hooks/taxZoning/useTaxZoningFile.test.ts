@@ -6,7 +6,7 @@ import type { PagedResponse } from '@/types/common.types';
 
 // Mock server action using vi.hoisted
 const mockGetTaxZoningPagedAction = vi.hoisted(() => vi.fn());
-vi.mock('@/app/[locale]/property-tax/taxzoning/actions', () => ({
+vi.mock('@/app/[locale]/property-tax/taxzone-master/taxzoning/actions', () => ({
   getTaxZoningPagedAction: (...args: unknown[]) => mockGetTaxZoningPagedAction(...args),
 }));
 

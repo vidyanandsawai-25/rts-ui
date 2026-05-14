@@ -2,7 +2,11 @@
   "taxZone": {
     "list": {
       "title": "Tax Zone Master",
-      "subtitle": "Manage zones and their types",
+      "subtitle": "Manage tax zones and their ward-wise configuration",
+      "tabs": {
+        "taxZone": "Tax Zone",
+        "taxZoning": "Tax Zoning"
+      },
 
       "buttons": {
         "add": "Add Zone",

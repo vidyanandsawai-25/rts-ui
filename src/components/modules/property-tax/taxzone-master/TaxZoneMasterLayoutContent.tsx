@@ -21,7 +21,7 @@ export function TaxZoneMasterLayoutContent({
       {!hasError && (
         <TableHeader
           title={t("list.title")}
-          subtitle="Manage tax zones and their ward-wise configuration"
+          subtitle={t("list.subtitle")}
           icon="mapPin"
           rightContent={<TaxZoneMasterToolbar />}
         />

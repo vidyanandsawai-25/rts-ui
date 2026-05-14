@@ -15,7 +15,6 @@ export function TaxZoneMasterToolbar() {
   const locale = useLocale();
 
   const tZone = useTranslations('taxZone');
-  // const tZoning = useTranslations('taxZoning');
 
   const base = `/${locale}/property-tax/taxzone-master`;
 
@@ -78,8 +77,8 @@ export function TaxZoneMasterToolbar() {
         value={activeTab}
         variant="pills"
         items={[
-          { value: 'taxzone', label: 'Tax Zone', icon: Layers, content: null },
-          { value: 'taxzoning', label: 'Tax Zoning', icon: Map, content: null },
+          { value: 'taxzone', label: tZone('list.tabs.taxZone'), icon: Layers, content: null },
+          { value: 'taxzoning', label: tZone('list.tabs.taxZoning'), icon: Map, content: null },
         ]}
         onChange={(v) => router.push(`${base}/${v}`)}
       />

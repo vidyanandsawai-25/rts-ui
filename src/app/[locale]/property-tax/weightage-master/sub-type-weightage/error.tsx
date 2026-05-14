@@ -21,7 +21,7 @@ export default function SubTypeWeightageError({ error, reset }: ErrorProps) {
     <ErrorPage
       error={error}
       reset={reset}
-      translationNamespace="weightageMaster.error"
+      translationNamespace="useCategoryFactorMaster.error"
     />
   );
 }
