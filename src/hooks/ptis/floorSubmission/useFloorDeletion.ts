@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { type AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 import { toast } from 'sonner';
 import { FloorData } from '@/types/room-details.types';
@@ -41,6 +41,7 @@ export const useFloorDeletion = (params: {
     INITIAL_FORM_STATE,
   } = params;
 
+  const [isDeleting, setIsDeleting] = useState(false);
   const isDeletingRef = useRef<Set<string | number>>(new Set());
 
   const handleDeleteFloor = useCallback(
@@ -58,6 +59,7 @@ export const useFloorDeletion = (params: {
         confirmText: t('floor.deleteConfirmButton'),
         onConfirm: async () => {
           if (floorId !== undefined) isDeletingRef.current.add(floorId);
+          setIsDeleting(true);
           try {
             if (!isPersistentId) {
               setLocalFloors(localFloors.filter((f) => f.id !== floor.id));
@@ -104,6 +106,7 @@ export const useFloorDeletion = (params: {
             }
           } finally {
             if (floorId !== undefined) isDeletingRef.current.delete(floorId);
+            setIsDeleting(false);
           }
         },
       });
@@ -125,5 +128,6 @@ export const useFloorDeletion = (params: {
 
   return {
     handleDeleteFloor,
+    isDeleting,
   };
 };

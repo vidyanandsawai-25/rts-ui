@@ -46,7 +46,7 @@
         },
         "type": {
           "label": "प्रकार",
-          "placeholder": "उदा. C"
+          "placeholder": "प्रकार निवडा"
         },
         "propertyTypeGroup": {
           "label": "मालमत्ता प्रकार गट",

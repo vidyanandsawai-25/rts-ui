@@ -22,7 +22,25 @@
         "validation": {
             "error": "Validation Error",
             "atLeastOneRoom": "Please add at least one room before updating",
-            "integrity": "Data integrity error: Expected {maxRooms} rooms but found {rooms.length}."
+            "integrity": "Data integrity error: Expected {maxRooms} rooms but found {rooms.length}.",
+            "deleteConfirm": "Are you sure you want to delete this room?",
+            "deleteSuccess": "Room deleted successfully",
+            "enterRoomNumber": "Please enter a room number",
+            "selectShapeOrEnterArea": "Please select a shape or enter area",
+            "enterValidDimensions": "Please enter valid dimensions for the selected shape",
+            "insufficientEmptySlots": "Insufficient Empty Slots. Please reduce room count or clear some rooms.",
+            "deleteFailed": "Failed to delete one or more rooms or offsets. Please try again.",
+            "someDeletionsFailed": "Some deletions failed. Please try again.",
+            "failedPendingDeletions": "Failed to execute pending deletions. Please try again.",
+            "updateFailed": "An error occurred while updating rooms. Please try again.",
+            "validation": {
+                "deleteFailed": "Failed to delete one or more rooms or offsets. Please try again.",
+                "nonnegative": "Value must be zero or positive.",
+                "shapeRequired": "Shape is required.",
+                "operationRequired": "Operation is required."
+            },
+            "roomNoRequired": "Room number is required.",
+            "roomTypeRequired": "Room type is required."
         },
         "table": {
             "Subtracttitle": "Subtract from total area",
@@ -45,7 +63,27 @@
             "totalBuiltupArea": "Total Built-up Area:",
             "unit": "sq.m",
             "offsetDetails": "Offset Details",
-            "noOffsets": "No offsets added"
+            "noOffsets": "No offsets added",
+            "noData": "No room data available",
+            "floor": "Floor",
+            "subFloor": "Sub Floor",
+            "conYr": "Con Yr",
+            "asstYr": "Asst Yr",
+            "conTyp": "Con Typ",
+            "use": "Use",
+            "subTyp": "Sub Typ",
+            "renter": "Renter",
+            "yes": "Yes",
+            "no": "No",
+            "rooms": "Rooms",
+            "areaSqM": "Area (Sq.M)",
+            "areaSqFt": "Area (Sq.Ft)",
+            "sqMeter": "Sq.Meter",
+            "sqFeet": "Sq.Feet",
+            "ward": "Ward",
+            "property": "Property",
+            "partition": "Partition",
+            "selectedFloorDetails": "Selected Floor Details"
         },
         "input": {
             "placeholders": {
@@ -158,7 +196,8 @@
             "title": "Confirm Deletion",
             "message": "Are you sure you want to delete this offset? This action cannot be undone.",
             "cancel": "Cancel",
-            "delete": "Delete"
+            "delete": "Delete",
+            "deleteFailed": "Failed to delete offset"
         },
         "cannotEnable": {
             "title": "Cannot Enable Offset",
@@ -174,6 +213,8 @@
             "totalNetArea": "Total Net Area =",
             "mainAreaFormula": "Main Area = {formula}",
             "totalNetAreaFormula": "Total Net Area = Main Area {op} Offset",
+            "mainAreaLabelShort": "Main Area",
+            "offsetTitleShort": "Offset",
             "enterValues": "Enter values...",
             "rectangle": "Length × Width",
             "square": "Side²",
@@ -451,14 +492,20 @@
         "editFloorDetails": "Edit Floor Details",
         "selectUseFirst": "Select use first",
         "floorLabel": "Floor",
+        "floor": "Floor",
         "subFloor": "Sub Floor",
         "conYr": "Con Yr",
+        "constructionYear": "Construction Year",
         "asstYr": "Asst Yr",
+        "assessmentYear": "Assessment Year",
         "conTyp": "Con Typ",
+        "constructionType": "Construction Type",
         "use": "Use",
         "subTyp": "Sub Typ",
+        "subType": "Sub Type",
         "renter": "Renter",
         "rooms": "Rooms",
+        "area": "Area",
         "carpetArea": "Carpet Area",
         "builtupArea": "Builtup Area",
         "table": {
@@ -781,6 +828,10 @@
         "saveChanges": "Save Changes",
         "noChanges": "No changes detected to update.",
         "delete": "Delete",
+        "warning": "Warning",
+        "ok": "OK",
+        "cancel": "Cancel",
+        "error": "Error",
         "validation": {
             "numberRequired": "Certificate Number is required",
             "dateRequired": "Certificate Date is required"
@@ -793,5 +844,10 @@
         "reloadPage": "Reload Page",
         "goHome": "Go Home",
         "errorDetails": "Error Details (Development Only)"
-    }
+    },
+    "offsetValidation": {
+        "negative": "Resulting area cannot be negative."
+    },
+    "offsetTooltip": "Offset Details: {details}",
+    "offsetTooltipEmpty": "Click to edit offsets"
 }
