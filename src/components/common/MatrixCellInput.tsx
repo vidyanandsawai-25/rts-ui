@@ -27,12 +27,12 @@ export const MatrixCellInput = ({
   onCellChange,
   onKeyDown,
 }: MatrixCellInputProps): React.ReactElement => {
-  // Helper to format value for display — strips trailing zeros (e.g. 20.00 → "20", 8.50 → "8.5")
+  // Helper to format value for display — empty string for 0, 2 decimal places for others
   const formatValue = (val: number): string => {
     if (val === 0) {
-      return "0";
+      return "";
     }
-    return String(Number(val.toFixed(2)));
+    return val.toFixed(2);
   };
 
   // Safely convert value to number to handle undefined, null, or string values
@@ -90,13 +90,13 @@ export const MatrixCellInput = ({
     // Format to 2 decimal places on blur if it's a valid number
     const numValue = localValue === "" ? 0 : Number(localValue);
     if (Number.isNaN(numValue)) {
-      setLocalValue("0");
+      setLocalValue("");
       onCellChange?.(rowId, columnId, 0);
     } else if (numValue === 0) {
-      setLocalValue("0");
+      setLocalValue("");
     } else {
       const clamped = Math.min(numValue, 9999);
-      setLocalValue(String(Number(clamped.toFixed(2))));
+      setLocalValue(clamped.toFixed(2));
       if (clamped !== numValue) onCellChange?.(rowId, columnId, clamped);
     }
   };
@@ -129,7 +129,7 @@ export const MatrixCellInput = ({
       onKeyDown={handleKeyDown}
       onFocus={handleFocus}
       onBlur={handleBlur}
-      placeholder="0"
+      placeholder="0.00"
       readOnly={readOnly}
       disabled={readOnly}
       className={cn(

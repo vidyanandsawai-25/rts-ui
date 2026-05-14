@@ -299,14 +299,10 @@ export default function DepreciationMaster({
   }, [initialConstructionTypes]);
 
   const editableColumnIds = useMemo(() => {
-    // Collect all column IDs that have backing data across all ranges.
-    // Per-row editability is enforced by MatrixGrid checking row.cells[col.id] exists.
-    const allColumnIds = new Set<string>();
-    Object.values(ratesByRange).forEach((rates) => {
-      Object.keys(rates).forEach((colId) => allColumnIds.add(colId));
-    });
-    return Array.from(allColumnIds);
-  }, [ratesByRange]);
+    // All construction types should be editable, regardless of existing data.
+    // This allows users to add rates for construction types that don't have data yet.
+    return initialConstructionTypes.map((c) => String(c.constructionId));
+  }, [initialConstructionTypes]);
 
   return (
     <PageContainer>
