@@ -80,9 +80,12 @@ export function FloorRangeFields({
         label={t('form.englishName.prefix')}
         placeholder={t('form.englishName.prefixPlaceholder')}
         value={formData.prefix}
-        onChange={(e) => onChange('prefix', e.target.value)}
+        onChange={(e) => {
+          if (e.target.value.length <= 2) onChange('prefix', e.target.value);
+        }}
         onBlur={() => onBlur('prefix')}
         fullWidth
+        maxLength={2}
         className="text-gray-700"
       />
       <ValidationMessage
@@ -94,9 +97,12 @@ export function FloorRangeFields({
         label={t('form.englishName.suffix')}
         placeholder={t('form.englishName.suffixPlaceholder')}
         value={formData.suffix}
-        onChange={(e) => onChange('suffix', e.target.value)}
+        onChange={(e) => {
+          if (e.target.value.length <= 2) onChange('suffix', e.target.value);
+        }}
         onBlur={() => onBlur('suffix')}
         fullWidth
+        maxLength={2}
         className="text-gray-700"
       />
       <ValidationMessage

@@ -69,9 +69,9 @@
       "englishName": {
         "title": "इंग्रजी नाव",
         "prefix": "पूर्वसर्ग",
-        "prefixPlaceholder": "First",
+        "prefixPlaceholder": "FL",
         "suffix": "प्रत्यय",
-        "suffixPlaceholder": "Floor"
+        "suffixPlaceholder": "FL"
       },
       "regionalNameSection": {
         "title": "प्रादेशिक नाव",

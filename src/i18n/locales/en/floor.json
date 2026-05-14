@@ -72,9 +72,9 @@
       "englishName": {
         "title": "English Name",
         "prefix": "Prefix",
-        "prefixPlaceholder": "First",
+        "prefixPlaceholder": "FL",
         "suffix": "Suffix",
-        "suffixPlaceholder": "Floor"
+        "suffixPlaceholder": "FL"
       },
       
       "autoGenerateSubFloor": "Auto-Generate SubFloor",
