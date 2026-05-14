@@ -113,7 +113,7 @@ describe('getAgeFactorCvWeightageMasterColumns', () => {
     
     const input = container.querySelector('input');
     expect(input).toBeInTheDocument();
-    expect(input).toHaveDisplayValue('1.5');
+    expect(input).toHaveDisplayValue('1.50');
   });
 
   it('factor column uses editable value when available', () => {
@@ -137,7 +137,7 @@ describe('getAgeFactorCvWeightageMasterColumns', () => {
     const { container } = render(<>{result}</>);
     
     const input = container.querySelector('input');
-    expect(input).toHaveDisplayValue('2');
+    expect(input).toHaveDisplayValue('2.00');
   });
 
   it('assessmentYear column renders range correctly', () => {

@@ -172,7 +172,7 @@ describe('FloorRangeFields', () => {
   it('restricts Suffix field to 2 characters maximum', () => {
     const onChangeMock = vi.fn();
     renderFloorRangeFields({ onChange: onChangeMock });
-    const suffixInput = screen.getByPlaceholderText('FL');
+    const suffixInput = screen.getByLabelText('Suffix');
     fireEvent.change(suffixInput, { target: { value: 'XYZ' } });
     expect(onChangeMock).not.toHaveBeenCalledWith('suffix', 'XYZ');
     fireEvent.change(suffixInput, { target: { value: 'XY' } });
@@ -182,10 +182,10 @@ describe('FloorRangeFields', () => {
   it('calls onChange when suffix is changed', () => {
     const onChangeMock = vi.fn();
     renderFloorRangeFields({ onChange: onChangeMock });
-    
-    const suffixInput = screen.getByPlaceholderText('FL');
+
+    const suffixInput = screen.getByLabelText('Suffix');
     fireEvent.change(suffixInput, { target: { value: 'F' } });
-    
+
     expect(onChangeMock).toHaveBeenCalledWith('suffix', 'F');
   });
 

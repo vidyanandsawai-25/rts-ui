@@ -155,7 +155,7 @@ describe("AgeFactorCvWeightageMaster – row actions", () => {
 
     it("enables Update button and row-Clear button after changing a cell value", async () => {
         renderComponent();
-        const input = screen.getByDisplayValue("1.5");
+        const input = screen.getByDisplayValue("1.50");
         const row = input.closest("tr") as HTMLElement;
         const updateBtn = within(row).getByRole("button", { name: /update/i });
         const clearBtn = within(row).getByRole("button", { name: /clear/i });
@@ -174,7 +174,7 @@ describe("AgeFactorCvWeightageMaster – row actions", () => {
     it("calls updateAgeFactorCVMasterAction when Update is clicked on changed row", async () => {
         vi.mocked(updateAgeFactorCVMasterAction).mockResolvedValueOnce({ success: true, message: "" });
         renderComponent();
-        const input = screen.getByDisplayValue("1.5");
+        const input = screen.getByDisplayValue("1.50");
         const row = input.closest("tr") as HTMLElement;
         const updateBtn = within(row).getByRole("button", { name: /update/i });
 
@@ -193,7 +193,7 @@ describe("AgeFactorCvWeightageMaster – header actions", () => {
         vi.mocked(bulkUpdateAgeFactorCVMasterAction).mockResolvedValueOnce({ success: true, message: "" });
         renderComponent();
 
-        const input = screen.getByDisplayValue("1.5");
+        const input = screen.getByDisplayValue("1.50");
         fireEvent.change(input, { target: { value: "2.0" } });
 
         await waitFor(() => {

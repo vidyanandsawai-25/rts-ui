@@ -25,7 +25,7 @@ describe('MatrixCellInput', () => {
     render(<MatrixCellInput {...defaultProps} value={0} />);
     const input = screen.getByRole('spinbutton') as HTMLInputElement;
     // jsdom normalises an empty number input to "0"; the placeholder should still be set
-    expect(input).toHaveAttribute('placeholder', '0');
+    expect(input).toHaveAttribute('placeholder', '0.00');
   });
 
   it('calls onCellChange with correct arguments on valid change', () => {
@@ -71,20 +71,20 @@ describe('MatrixCellInput', () => {
   });
 
   describe('Rate max 9999 validation', () => {
-    it('clamps rate value to 9999 when value exceeds 9999', () => {
+    it('rejects input when integer part exceeds 4 digits (> 9999)', () => {
       render(<MatrixCellInput {...defaultProps} />);
       const input = screen.getByRole('spinbutton');
       fireEvent.change(input, { target: { value: '15000' } });
 
-      expect(defaultProps.onCellChange).toHaveBeenCalledWith('row-1', 'col-1', 9999);
+      expect(defaultProps.onCellChange).not.toHaveBeenCalledWith('row-1', 'col-1', 9999);
     });
 
-    it('clamps large values to 9999', () => {
+    it('rejects large values with more than 4 integer digits', () => {
       render(<MatrixCellInput {...defaultProps} />);
       const input = screen.getByRole('spinbutton');
       fireEvent.change(input, { target: { value: '99999' } });
 
-      expect(defaultProps.onCellChange).toHaveBeenCalledWith('row-1', 'col-1', 9999);
+      expect(defaultProps.onCellChange).not.toHaveBeenCalledWith('row-1', 'col-1', 9999);
     });
 
     it('accepts exactly 100 as valid', () => {

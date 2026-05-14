@@ -27,10 +27,10 @@ export const MatrixCellInput = ({
   onCellChange,
   onKeyDown,
 }: MatrixCellInputProps): React.ReactElement => {
-  // Helper to format value for display — empty string for 0, 2 decimal places for others
+  // Helper to format value for display — empty string for 0 in edit mode, "0" in read-only
   const formatValue = (val: number): string => {
     if (val === 0) {
-      return "";
+      return readOnly ? "0" : "";
     }
     return val.toFixed(2);
   };
