@@ -95,7 +95,7 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
   });
 
   const [floorSearch, setFloorSearch] = useState('');
-  
+
   const filteredFloors = useMemo(() => {
     const search = floorSearch.toLowerCase();
     return localFloors.filter(
@@ -107,7 +107,7 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
     );
   }, [localFloors, floorSearch]);
 
-  const subTypeOptionsFromData = useMemo(() => 
+  const subTypeOptionsFromData = useMemo(() =>
     (props.subTypeData || []).map(st => st.description),
     [props.subTypeData]
   );

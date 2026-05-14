@@ -164,8 +164,8 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
             areaSqFt: areaSqFt.toFixed(2),
             builtupAreaSqM: builtUpSqM.toFixed(2),
             builtupAreaSqFt: builtUpAreaSqFt.toFixed(2),
-            rooms: prev.rooms,
-            noOfRooms: prev.noOfRooms
+            rooms: data.rooms.length,
+            noOfRooms: data.rooms.length
           }));
         }}
       />
