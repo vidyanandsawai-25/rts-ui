@@ -24,23 +24,23 @@ export const RoomSubmissionLayout: React.FC<RoomSubmissionLayoutProps> = ({
   displayMode, state, actions, roomActions, offsetActions, props, InlineError, calculateArea, calculateTotal
 }) => {
   const t = useTranslations("quickDataEntry");
-  const { 
-    formData, rooms, isEditMode, validationErrors, offsetModalOpen, currentRoomOffsets, 
-    editingIndex, areaUnit, selectedRoomForPlan, filledParameters, shapeParameters, 
+  const {
+    formData, rooms, isEditMode, validationErrors, offsetModalOpen, currentRoomOffsets,
+    editingIndex, areaUnit, selectedRoomForPlan, filledParameters, shapeParameters,
     inlineEditingCell, setRooms, setInlineEditingCell, setSelectedRoomForPlan, setFilledParameters,
-    setFormData, setShapeParameters, setOffsetModalOpen, setOffsetList, setOffsetData, 
+    setFormData, setShapeParameters, setOffsetModalOpen, setOffsetList, setOffsetData,
     setSelectedOperation, setCurrentRoomOffsets, setSelectedShape
   } = state;
 
   return (
-    <div className="flex flex-col lg:flex-row overflow-y-auto lg:overflow-visible" 
-         style={{ maxHeight: displayMode === 'modal' ? 'calc(95vh - 50px)' : 'none' }}>
-      
+    <div className="flex flex-col lg:flex-row overflow-y-auto lg:overflow-visible"
+      style={{ maxHeight: displayMode === 'modal' ? 'calc(95vh - 50px)' : 'none' }}>
+
       {/* Left Column: Form and Table */}
       <div className="flex-1 flex flex-col p-1 border-b lg:border-r lg:border-b-0 border-gray-200 min-w-0">
-        <div className={`pr-2 pb-4 ${displayMode === 'modal' ? 'overflow-visible' : ''}`} 
-             style={{ maxHeight: displayMode === 'modal' ? 'calc(95vh - 150px)' : 'none' }}>
-          
+        <div className={`pr-2 pb-4 ${displayMode === 'modal' ? 'overflow-visible' : ''}`}
+          style={{ maxHeight: displayMode === 'modal' ? 'calc(95vh - 150px)' : 'none' }}>
+
           <InputBox
             formData={formData}
             handleInputChange={roomActions.handleInputChange}

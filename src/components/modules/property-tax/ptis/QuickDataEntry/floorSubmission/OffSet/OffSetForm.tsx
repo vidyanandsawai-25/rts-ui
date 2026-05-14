@@ -3,7 +3,6 @@
 import React, { useRef } from 'react';
 import { useTranslations } from "next-intl";
 import { FullOffSetFormProps } from "@/types/offset-details.types";
-import { OffsetFormHeader } from "./components/OffsetFormHeader";
 import { OffsetFormSummary } from "./components/OffsetFormSummary";
 import { OffsetShapeInputs } from "./components/OffsetShapeInputs";
 import { OffsetHistoryTable } from "./components/OffsetHistoryTable";
@@ -13,7 +12,6 @@ import { SHAPE_OPTIONS } from "../RoomSubmission/constants/room-submission.const
 export function OffSetForm({
     isInline = false,
     offsetModalOpen,
-    formData,
     calculateAdjustedRoomTotal,
     handleSubtractClick,
     selectedOperation,
@@ -68,12 +66,7 @@ export function OffSetForm({
             id="offset-sidebar-container"
             className={`${isInline ? "" : "bg-gradient-to-br from-white via-blue-50 to-purple-50"} flex flex-col w-full ${shouldShake ? "animate-shake" : ""}`}
         >
-            {!isInline && (
-                <OffsetFormHeader 
-                    roomNo={formData.roomNo} 
-                    onClose={handleOffsetClose} 
-                />
-            )}
+
 
             <div className="p-2 w-full">
                 <OffsetFormSummary

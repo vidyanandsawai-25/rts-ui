@@ -158,9 +158,12 @@ export default function RoomSubmissionSidebar(props: RoomSubmissionSidebarProps)
                     <Layers className="w-4 h-4 text-blue-600" />
                     {t('roomSubmission.title')} ({areaUnit === "sq.m" ? t('roomSubmission.table.sqMeter') : t('roomSubmission.table.sqFeet')})
                 </h2>
-                <p className="text-[11px] text-blue-800/70 mt-0.5 font-medium">
-                    {t('roomSubmission.table.ward')}: <strong className="text-blue-900">{props.wardNo}</strong> • {t('roomSubmission.table.property')}: <strong className="text-blue-900">{props.propertyNo}</strong> • {t('roomSubmission.table.partition')}: <strong className="text-blue-900">{props.partitionNo}</strong> • {t('roomSubmission.table.floor')}: <strong className="text-blue-900">{props.floorNumber}</strong> • {t('roomSubmission.table.rooms')}: <strong className="text-blue-900">{props.maxRooms}</strong>
-                </p>
+                <p className="text-[11px] text-white mt-0.5 font-medium ml-8">
+                    {t('roomSubmission.table.ward')}: <strong className="text-white">{props.wardNo}</strong> •
+                    {t('roomSubmission.table.property')}: <strong className="text-white">{props.propertyNo}</strong> •
+                    {t('roomSubmission.table.partition')}: <strong className="text-white">{props.partitionNo}</strong> •
+                    {t('roomSubmission.table.floor')}: <strong className="text-white">{props.floorNumber}</strong> •
+                    {t('roomSubmission.table.rooms')}: <strong className="text-white">{props.maxRooms}</strong>                </p>
             </div>
 
             {/* Unit Toggle Pill */}

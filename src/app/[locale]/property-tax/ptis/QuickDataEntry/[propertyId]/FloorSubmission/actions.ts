@@ -13,7 +13,7 @@ import {
     getConstructionTypeData,
     getSubTypeOfUseData,
     getSubFloorData,
-     deleteRoomSubmission,
+    deleteRoomSubmission,
     deleteOffsetSubmission,
 } from '@/lib/api/ptis/floorSubmission';
 

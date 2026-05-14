@@ -4,27 +4,33 @@ import {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const sanitizeRoomBase = (room: Record<string, unknown>) => ({
-    isActive: true,
-    id: Number(room.id || 0),
-    propertyDetailsId: Number(room.propertyDetailsId || 0),
-    propertyId: Number(room.propertyId || 0),
-    lengthMtr: Number(room.lengthMtr || 0),
-    widthMtr: Number(room.widthMtr || 0),
-    heightMtr: Number(room.heightMtr || 0),
-    breadth: Number(room.breadth || 0),
-    areaSqMtr: Number(room.areaSqMtr || 0),
-    noOfRooms: Number(room.noOfRooms || 1),
-    totalAreaSqMtr: Number(room.totalAreaSqMtr || 0),
-    roomNo: String(room.roomNo || ''),
-    roomType: String(room.roomType || 'Room'),
-    shape: String(room.shape || 'Rectangle'),
-    outerYesNo: Boolean(room.outerYesNo),
-    minusYesNo: Boolean(room.minusYesNo),
-    submissionType: String(room.submissionType || 'Room'),
-    base1Mtr: Number(room.base1Mtr || room.baseMtr || 0),
-    base2Mtr: Number(room.base2Mtr || 0),
-});
+const sanitizeRoomBase = (room: Record<string, unknown>) => {
+    const id = Number(room.id || 0);
+    const propertyDetailsId = Number(room.propertyDetailsId || 0);
+    const base: Record<string, unknown> = {
+        isActive: true,
+        propertyId: Number(room.propertyId || 0),
+        lengthMtr: Number(room.lengthMtr || 0),
+        widthMtr: Number(room.widthMtr || 0),
+        heightMtr: Number(room.heightMtr || 0),
+        breadth: Number(room.breadth || 0),
+        areaSqMtr: Number(room.areaSqMtr || 0),
+        noOfRooms: Number(room.noOfRooms || 1),
+        totalAreaSqMtr: Number(room.totalAreaSqMtr || 0),
+        roomNo: String(room.roomNo || ''),
+        roomType: String(room.roomType || 'Room'),
+        shape: String(room.shape || 'Rectangle'),
+        outerYesNo: Boolean(room.outerYesNo),
+        minusYesNo: Boolean(room.minusYesNo),
+        submissionType: String(room.submissionType || 'Room'),
+        base1Mtr: Number(room.base1Mtr || room.baseMtr || 0),
+        base2Mtr: Number(room.base2Mtr || 0),
+    };
+    // Only include IDs when valid (> 0) — backend rejects 0 during creation
+    if (id > 0) base.id = id;
+    if (propertyDetailsId > 0) base.propertyDetailsId = propertyDetailsId;
+    return base;
+};
 
 const sanitizeMinusData = (minus: Record<string, unknown>, extra: Record<string, unknown> = {}) => ({
     isActive: true,

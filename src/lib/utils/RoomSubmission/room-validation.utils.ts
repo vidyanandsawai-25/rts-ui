@@ -19,8 +19,9 @@ export const validateRoomDetails = (
   }
 
   // 3. Room Type Validation
-  if (!roomData.roomType || roomData.roomType === "-Select-" || roomData.roomType.trim() === "") {
-    errors.roomType = "roomSubmission.validation.roomTypeRequired";
+  const roomTypeVal = roomData.roomType || roomData.utilities;
+  if (!roomTypeVal || roomTypeVal === "-Select-" || String(roomTypeVal).trim() === "") {
+    errors.utilities = "roomSubmission.validation.roomTypeRequired";
   }
 
   // 4. Dimension/Area Validation
