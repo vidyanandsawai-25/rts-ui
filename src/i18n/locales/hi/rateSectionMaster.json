@@ -85,6 +85,9 @@
     "alreadyAdded": "{rateSectionNo} में जोड़ा गया",
     "selected": "चयनित"
   },
+  "wardList": {
+    "selectAll": "सभी का चयन करें"
+  },
   "form": {
     "rateSectionNo": "दर विभाग क्र.",
     "rateSectionNoPlaceholder": "उदा., DI",

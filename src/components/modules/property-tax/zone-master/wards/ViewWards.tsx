@@ -17,6 +17,10 @@ interface ViewWardsProps {
   pageSizeOptions: Array<{ label: string; value: string }>;
   getZoneLabel: (zoneId: number | undefined | null) => string | null;
   isWardAssigned: (ward: WardItem) => boolean;
+  onSelectAllChange?: (isChecked: boolean) => void;
+  isSelectAllActive?: boolean;
+  selectAllLoading?: boolean;
+  totalCount?: number;
 }
 
 export function ViewWards({
@@ -31,8 +35,18 @@ export function ViewWards({
   onPageSizeChange,
   totalPages,
   pageSizeOptions,
+  onSelectAllChange,
+  isSelectAllActive = false,
+  selectAllLoading = false,
+  totalCount = 0,
 }: ViewWardsProps) {
   const t = useTranslations('zoneMaster');
+
+  const handleSelectAllChange = () => {
+    if (onSelectAllChange) {
+      onSelectAllChange(!isSelectAllActive);
+    }
+  };
 
   return (
     <>
@@ -45,14 +59,34 @@ export function ViewWards({
         />
       </div>
       <div className="flex-1 overflow-y-auto p-3 space-y-2">
+        {onSelectAllChange && (
+          <label
+            className={`flex items-center gap-3 px-4 py-1 bg-white/60 backdrop-blur-sm hover:bg-white/80 rounded-lg cursor-pointer transition-all duration-200 border border-blue-100/50 hover:border-blue-300/50 hover:shadow-md group ${selectAllLoading ? 'opacity-50 cursor-wait' : ''}`}
+          >
+            <input
+              type="checkbox"
+              checked={isSelectAllActive}
+              onChange={handleSelectAllChange}
+              disabled={selectAllLoading}
+              className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+            />
+            <span className="text-sm font-medium text-gray-700 group-hover:text-blue-700 transition-colors flex items-center gap-2 flex-1">
+              {selectAllLoading ? t('wardList.loadingAll') : t('wardList.selectAll')}
+              {isSelectAllActive && totalCount > 0 && (
+                <span className="text-xs text-blue-500">({totalCount})</span>
+              )}
+            </span>
+          </label>
+        )}
         {wards.map((ward) => (
             <WardListItem
               key={ward.wardNo}
               wardNo={ward.wardNo}
               description={ward.description ?? undefined}
-              checked={checkedWards.has(ward.wardNo)}
-              onToggle={() => onToggleWard(ward.wardNo)}
+              checked={!isSelectAllActive && checkedWards.has(ward.wardNo)}
+              onToggle={() => !isSelectAllActive && onToggleWard(ward.wardNo)}
               colorScheme="blue"
+              disabled={isSelectAllActive}
             />
         ))}
         {wards.length === 0 && (

@@ -28,7 +28,9 @@ export default function RateSectionWards({
   onSearch,
   onToggle,
   onPageChange,
-  onPageSizeChange
+  onPageSizeChange,
+  onSelectAll,
+  allSelectedWards = []
 }: RateSectionWardsProps) {
   const t = useTranslations("rateSectionMaster");
 
@@ -39,6 +41,22 @@ export default function RateSectionWards({
     const end = start + selectedPageSize;
     return filteredSelected.slice(start, end);
   }, [filteredSelected, selectedPage, selectedPageSize]);
+
+  // Derive select all state: checked if all wards in the list are checked
+  const allWardsToCheck = allSelectedWards.length > 0 ? allSelectedWards : filteredSelected;
+  const isSelectAllChecked = allWardsToCheck.length > 0 && allWardsToCheck.every(w => checkedSelected.has(w));
+
+  const handleSelectAllChange = () => {
+    if (!onSelectAll) return;
+    
+    if (isSelectAllChecked) {
+      // Deselect all
+      onSelectAll([]);
+    } else {
+      // Select all wards in rate section
+      onSelectAll(allWardsToCheck);
+    }
+  };
 
   return (
     <div className="flex-1 flex flex-col rounded-xl overflow-visible bg-gradient-to-br from-purple-50/80 to-indigo-50/80 backdrop-blur-md border-2 border-purple-200/50 shadow-lg">
@@ -71,6 +89,21 @@ export default function RateSectionWards({
       </div>
 
       <div className="overflow-y-auto p-3 space-y-2 flex-1">
+        {onSelectAll && paginatedSelected.length > 0 && (
+          <label
+            className="flex items-center gap-3 px-4 py-1 bg-white/60 backdrop-blur-sm hover:bg-white/80 rounded-lg cursor-pointer transition-all duration-200 border border-purple-100/50 hover:border-purple-300/50 hover:shadow-md group"
+          >
+            <input
+              type="checkbox"
+              checked={isSelectAllChecked}
+              onChange={handleSelectAllChange}
+              className="w-4 h-4 text-purple-600 rounded focus:ring-2 focus:ring-purple-500 focus:ring-offset-1"
+            />
+            <span className="text-sm font-medium text-gray-700 group-hover:text-purple-700 transition-colors flex items-center gap-2 flex-1">
+              {t('wardList.selectAll')}
+            </span>
+          </label>
+        )}
         {paginatedSelected.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center text-gray-500 py-8">
             <Map size={40} className="text-gray-300 mb-3" />
