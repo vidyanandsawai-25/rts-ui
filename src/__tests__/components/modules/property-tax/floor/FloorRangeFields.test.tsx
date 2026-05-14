@@ -51,7 +51,6 @@ const defaultFormData: FloorRangeFormModel = {
   rangeTo: 10,
   prefix: '',
   suffix: 'Floor',
-  floorCode: '0',
   isActive: true,
   autoGenerateSubFloor: false,
 };
@@ -96,11 +95,6 @@ describe('FloorRangeFields', () => {
     renderFloorRangeFields();
     expect(screen.getByLabelText('Prefix')).toBeInTheDocument();
     expect(screen.getByLabelText('Suffix')).toBeInTheDocument();
-  });
-
-  it('renders Floor Code field', () => {
-    renderFloorRangeFields();
-    expect(screen.getByLabelText(/Floor Code/)).toBeInTheDocument();
   });
 
   it('renders example info message', () => {
@@ -220,23 +214,6 @@ describe('FloorRangeFields', () => {
     expect(onChangeMock).toHaveBeenCalledWith('rangeTo', 987);
   });
 
-  it('restricts Floor Code field to 4 characters maximum', () => {
-    const onChangeMock = vi.fn();
-    renderFloorRangeFields({ onChange: onChangeMock });
-    
-    const floorCodeInput = screen.getByLabelText(/Floor Code/);
-    
-    // Try to enter 5 characters - should only accept first 4
-    fireEvent.change(floorCodeInput, { target: { value: 'ABCDE' } });
-    
-    // onChange should not be called for 5-character input
-    expect(onChangeMock).not.toHaveBeenCalledWith('floorCode', 'ABCDE');
-    
-    // Try to enter 4 characters - should work
-    fireEvent.change(floorCodeInput, { target: { value: 'ABCD' } });
-    expect(onChangeMock).toHaveBeenCalledWith('floorCode', 'ABCD');
-  });
-
   it('accepts valid 3-digit values for Start and End fields', () => {
     const onChangeMock = vi.fn();
     renderFloorRangeFields({ onChange: onChangeMock });
@@ -252,17 +229,4 @@ describe('FloorRangeFields', () => {
     expect(onChangeMock).toHaveBeenCalledWith('rangeTo', 999);
   });
 
-  it('accepts valid 4-character values for Floor Code field', () => {
-    const onChangeMock = vi.fn();
-    renderFloorRangeFields({ onChange: onChangeMock });
-    
-    const floorCodeInput = screen.getByLabelText(/Floor Code/);
-    
-    // Test different 4-character combinations
-    fireEvent.change(floorCodeInput, { target: { value: 'FL01' } });
-    expect(onChangeMock).toHaveBeenCalledWith('floorCode', 'FL01');
-    
-    fireEvent.change(floorCodeInput, { target: { value: '1234' } });
-    expect(onChangeMock).toHaveBeenCalledWith('floorCode', '1234');
-  });
 });
