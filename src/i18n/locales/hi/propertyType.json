@@ -46,7 +46,7 @@
         },
         "type": {
           "label": "प्रकार",
-          "placeholder": "उदा. C"
+          "placeholder": "प्रकार चुनें"
         },
         "propertyTypeGroup": {
           "label": "संपत्ति प्रकार समूह",

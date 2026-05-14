@@ -11,6 +11,7 @@ interface FormFieldsSectionProps {
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleBlur: (e: React.FocusEvent<HTMLInputElement>) => void;
   handleCategoryChange: (value: string) => void;
+  handleTypeChange: (value: string) => void;
   errors: Partial<Record<keyof PropertyTypeFormModel, string>>;
   showError: (field: keyof PropertyTypeFormModel) => boolean;
   categories: PropertyTypeCategory[];
@@ -23,6 +24,7 @@ export const FormFieldsSection = ({
   handleChange,
   handleBlur,
   handleCategoryChange,
+  handleTypeChange,
   errors,
   showError,
   categories,
@@ -46,21 +48,30 @@ export const FormFieldsSection = ({
         visible={showError("propertyDescription")}
       />
 
-      <Input
-        name="type"
-        label={t("form.fields.type.label")}
-        required
-        placeholder={t("form.fields.type.placeholder")}
-        value={formData.type}
-        onChange={handleChange}
-        onBlur={handleBlur}
-        fullWidth
-        className="text-gray-700"
-      />
-      <ValidationMessage
-        message={errors.type}
-        visible={showError("type")}
-      />
+      <div>
+        <Select
+          label={t("form.fields.type.label")}
+          required
+          value={formData.type || ""}
+          onChange={(_, value) => handleTypeChange(value)}
+          options={[
+            { label: t("form.fields.type.placeholder"), value: "", disabled: true },
+            { label: "R", value: "R" },
+            { label: "C", value: "C" },
+            { label: "I", value: "I" },
+            { label: "N", value: "N" },
+            { label: "R-C", value: "R-C" },
+            { label: "I-C", value: "I-C" },
+          ]}
+          placeholder={t("form.fields.type.placeholder")}
+          className="text-gray-700"
+          ariaLabel={t("form.fields.type.label")}
+        />
+        <ValidationMessage
+          message={errors.type}
+          visible={showError("type")}
+        />
+      </div>
 
       <Input
         name="propertyTypeGroup"

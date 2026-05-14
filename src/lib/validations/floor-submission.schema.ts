@@ -10,9 +10,36 @@
 import { z } from 'zod';
 
 /**
- * Translation key schema for validation errors
  * Returns keys that can be translated in the UI layer
  */
+
+export const offsetSchema = z.object({
+    isActive: z.boolean().default(true),
+    lengthMtr: z.number().nonnegative({ message: 'offset.validation.nonnegative' }).default(0),
+    widthMtr: z.number().nonnegative({ message: 'offset.validation.nonnegative' }).default(0),
+    heightMtr: z.number().nonnegative({ message: 'offset.validation.nonnegative' }).default(0),
+    areaSqMtr: z.number().nonnegative({ message: 'offset.validation.nonnegative' }).default(0),
+    shape: z.string().min(1, { message: 'offset.validation.shapeRequired' }).default('Rectangle'),
+    base1Mtr: z.number().nonnegative({ message: 'offset.validation.nonnegative' }).default(0),
+    base2Mtr: z.number().nonnegative({ message: 'offset.validation.nonnegative' }).default(0),
+    operation: z.string().min(1, { message: 'offset.validation.operationRequired' }).default('subtract'),
+});
+
+export const roomSchema = z.object({
+    isActive: z.boolean().default(true),
+    roomNo: z.string().min(1, { message: 'roomSubmission.validation.roomNoRequired' }),
+    roomType: z.string().min(1, { message: 'roomSubmission.validation.roomTypeRequired' }),
+    lengthMtr: z.number().nonnegative({ message: 'roomSubmission.validation.nonnegative' }).default(0),
+    widthMtr: z.number().nonnegative({ message: 'roomSubmission.validation.nonnegative' }).default(0),
+    heightMtr: z.number().nonnegative({ message: 'roomSubmission.validation.nonnegative' }).default(0),
+    areaSqMtr: z.number().nonnegative({ message: 'roomSubmission.validation.nonnegative' }).default(0),
+    shape: z.string().min(1, { message: 'roomSubmission.validation.shapeRequired' }).default('Rectangle'),
+    base1Mtr: z.number().nonnegative({ message: 'roomSubmission.validation.nonnegative' }).default(0),
+    base2Mtr: z.number().nonnegative({ message: 'roomSubmission.validation.nonnegative' }).default(0),
+    roomWiseMinusData: z.array(offsetSchema).optional().default([]),
+    submissionType: z.string().default('Room'),
+});
+
 export const floorSubmissionSchema = z.object({
     isActive: z.boolean().default(true),
     propertyId: z.number()
@@ -74,9 +101,9 @@ export const floorSubmissionSchema = z.object({
     occupancyNumber: z.string().default(''),
     nonCalculateRentMonthly: z.number()
         .nonnegative().default(0),
-    renterDetails: z.array(z.unknown()).optional(),
-    renterMast: z.array(z.unknown()).optional(),
-    roomWiseSubmissionDetails: z.array(z.unknown()).optional(),
+    renterDetails: z.array(z.unknown()).optional().default([]),
+    renterMast: z.array(z.unknown()).optional().default([]),
+    roomWiseSubmissionDetails: z.array(roomSchema).optional().default([]),
     createdBy: z.number().optional(),
     updatedBy: z.number().optional(),
 });

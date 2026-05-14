@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import TableHeader from "@/components/common/TableHeader";
 import { AssessmentYearRangeToolbar } from "./AssessmentYearRangeToolbar";
+import { useAssessmentYearRangeError } from "./AssessmentYearRangeErrorContext";
 
 interface AssessmentYearRangeLayoutContentProps {
   children: React.ReactNode;
@@ -16,6 +17,7 @@ export function AssessmentYearRangeLayoutContent({
   const pathname = usePathname();
   const tRV = useTranslations("assessmentYearRange.rateableValue");
   const tCV = useTranslations("assessmentYearRange.capitalValue");
+  const { hasError } = useAssessmentYearRangeError();
 
   // Detect active tab from pathname
   const isCapitalValue = pathname.includes("/capitalvalue");
@@ -23,14 +25,16 @@ export function AssessmentYearRangeLayoutContent({
 
   return (
     <div className="">
-      <TableHeader
-        title={t("list.title")}
-        subtitle={t("list.subtitle")}
-        icon={CalendarRange}
-        rightContent={<AssessmentYearRangeToolbar />}
-      />
+      {!hasError && (
+        <TableHeader
+          title={t("list.title")}
+          subtitle={t("list.subtitle")}
+          icon={CalendarRange}
+          rightContent={<AssessmentYearRangeToolbar />}
+        />
+      )}
 
-      <div className="pt-6">
+      <div className={hasError ? "" : "pt-6"}>
         {children}
       </div>
     </div>
