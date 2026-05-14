@@ -2,15 +2,15 @@
 
 import { useEffect } from 'react';
 import { ErrorPage } from '@/components/common';
-import { useWeightageMasterError } from '@/components/modules/property-tax/weightage-mastercv/WeightageMasterErrorContext';
+import { useTaxZoneMasterError } from '@/components/modules/property-tax/taxzone-master/TaxZoneMasterErrorContext';
 
 interface ErrorProps {
   error: Error & { digest?: string };
   reset: () => void;
 }
 
-export default function NatureWeightageError({ error, reset }: ErrorProps) {
-  const { setHasError } = useWeightageMasterError();
+export default function TaxZoneMasterError({ error, reset }: ErrorProps) {
+  const { setHasError } = useTaxZoneMasterError();
 
   useEffect(() => {
     setHasError(true);
@@ -21,7 +21,7 @@ export default function NatureWeightageError({ error, reset }: ErrorProps) {
     <ErrorPage
       error={error}
       reset={reset}
-      translationNamespace="natureFactorCVMaster.error"
+      translationNamespace="taxZone.error"
     />
   );
 }

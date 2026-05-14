@@ -1,6 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { WeightageMasterHeader } from '@/components/modules/property-tax/weightage-mastercv/WeightageMasterTabs';
+import { WeightageMasterErrorProvider } from '@/components/modules/property-tax/weightage-mastercv/WeightageMasterErrorContext';
 
 // Mock next/navigation
 const mockPush = vi.fn();
@@ -13,6 +14,15 @@ vi.mock('next/navigation', () => ({
   }),
   usePathname: () => mockPathname(),
 }));
+
+// Helper function to render with required providers
+function renderWithProviders(ui: React.ReactElement) {
+  return render(
+    <WeightageMasterErrorProvider>
+      {ui}
+    </WeightageMasterErrorProvider>
+  );
+}
 
 describe('WeightageMasterHeader', () => {
   const defaultProps = {
@@ -33,14 +43,14 @@ describe('WeightageMasterHeader', () => {
   });
 
   it('renders the header with title and subtitle', () => {
-    render(<WeightageMasterHeader {...defaultProps} />);
+    renderWithProviders(<WeightageMasterHeader {...defaultProps} />);
 
     expect(screen.getByText('Weightage Master')).toBeInTheDocument();
     expect(screen.getByText('Manage weightage factors')).toBeInTheDocument();
   });
 
   it('renders all tab labels', () => {
-    render(<WeightageMasterHeader {...defaultProps} />);
+    renderWithProviders(<WeightageMasterHeader {...defaultProps} />);
 
     expect(screen.getByText('Floor')).toBeInTheDocument();
     expect(screen.getByText('Nature')).toBeInTheDocument();
@@ -49,7 +59,7 @@ describe('WeightageMasterHeader', () => {
   });
 
   it('renders the Lock icon', () => {
-    render(<WeightageMasterHeader {...defaultProps} />);
+    renderWithProviders(<WeightageMasterHeader {...defaultProps} />);
     
     // TableHeader should be rendered (which contains the Lock icon)
     expect(screen.getByRole('banner')).toBeInTheDocument();
@@ -58,7 +68,7 @@ describe('WeightageMasterHeader', () => {
   it('sets floor tab as active when on base path', () => {
     mockPathname.mockReturnValue('/en/property-tax/weightage-master');
     
-    render(<WeightageMasterHeader {...defaultProps} />);
+    renderWithProviders(<WeightageMasterHeader {...defaultProps} />);
     
     const floorButton = screen.getByText('Floor').closest('button');
     expect(floorButton).toHaveAttribute('aria-selected', 'true');
@@ -67,7 +77,7 @@ describe('WeightageMasterHeader', () => {
   it('sets nature tab as active when on nature-weightage path', () => {
     mockPathname.mockReturnValue('/en/property-tax/weightage-master/nature-weightage');
     
-    render(<WeightageMasterHeader {...defaultProps} />);
+    renderWithProviders(<WeightageMasterHeader {...defaultProps} />);
     
     const natureButton = screen.getByText('Nature').closest('button');
     expect(natureButton).toHaveAttribute('aria-selected', 'true');
@@ -76,7 +86,7 @@ describe('WeightageMasterHeader', () => {
   it('sets subType tab as active when on sub-type-weightage path', () => {
     mockPathname.mockReturnValue('/en/property-tax/weightage-master/sub-type-weightage');
     
-    render(<WeightageMasterHeader {...defaultProps} />);
+    renderWithProviders(<WeightageMasterHeader {...defaultProps} />);
     
     const subTypeButton = screen.getByText('Sub Type').closest('button');
     expect(subTypeButton).toHaveAttribute('aria-selected', 'true');
@@ -85,7 +95,7 @@ describe('WeightageMasterHeader', () => {
   it('sets age tab as active when on age-weightage path', () => {
     mockPathname.mockReturnValue('/en/property-tax/weightage-master/age-weightage');
     
-    render(<WeightageMasterHeader {...defaultProps} />);
+    renderWithProviders(<WeightageMasterHeader {...defaultProps} />);
     
     const ageButton = screen.getByText('Age').closest('button');
     expect(ageButton).toHaveAttribute('aria-selected', 'true');
@@ -94,7 +104,7 @@ describe('WeightageMasterHeader', () => {
   it('navigates to floor tab (base path) when floor is clicked', () => {
     mockPathname.mockReturnValue('/en/property-tax/weightage-master/nature-weightage');
     
-    render(<WeightageMasterHeader {...defaultProps} />);
+    renderWithProviders(<WeightageMasterHeader {...defaultProps} />);
     
     const floorButton = screen.getByText('Floor').closest('button');
     fireEvent.click(floorButton!);
@@ -103,7 +113,7 @@ describe('WeightageMasterHeader', () => {
   });
 
   it('navigates to nature-weightage when nature tab is clicked', () => {
-    render(<WeightageMasterHeader {...defaultProps} />);
+    renderWithProviders(<WeightageMasterHeader {...defaultProps} />);
     
     const natureButton = screen.getByText('Nature').closest('button');
     fireEvent.click(natureButton!);
@@ -112,7 +122,7 @@ describe('WeightageMasterHeader', () => {
   });
 
   it('navigates to sub-type-weightage when subType tab is clicked', () => {
-    render(<WeightageMasterHeader {...defaultProps} />);
+    renderWithProviders(<WeightageMasterHeader {...defaultProps} />);
     
     const subTypeButton = screen.getByText('Sub Type').closest('button');
     fireEvent.click(subTypeButton!);
@@ -121,7 +131,7 @@ describe('WeightageMasterHeader', () => {
   });
 
   it('navigates to age-weightage when age tab is clicked', () => {
-    render(<WeightageMasterHeader {...defaultProps} />);
+    renderWithProviders(<WeightageMasterHeader {...defaultProps} />);
     
     const ageButton = screen.getByText('Age').closest('button');
     fireEvent.click(ageButton!);
@@ -135,7 +145,7 @@ describe('WeightageMasterHeader', () => {
       locale: 'np',
     };
     
-    render(<WeightageMasterHeader {...propsWithNpLocale} />);
+    renderWithProviders(<WeightageMasterHeader {...propsWithNpLocale} />);
     
     const natureButton = screen.getByText('Nature').closest('button');
     fireEvent.click(natureButton!);
@@ -144,7 +154,7 @@ describe('WeightageMasterHeader', () => {
   });
 
   it('renders tabs with pills variant', () => {
-    const { container } = render(<WeightageMasterHeader {...defaultProps} />);
+    const { container } = renderWithProviders(<WeightageMasterHeader {...defaultProps} />);
     
     // Pills variant typically has rounded styling
     const tabsContainer = container.querySelector('[role="tablist"]');
@@ -152,7 +162,7 @@ describe('WeightageMasterHeader', () => {
   });
 
   it('renders all tab icons', () => {
-    const { container } = render(<WeightageMasterHeader {...defaultProps} />);
+    const { container } = renderWithProviders(<WeightageMasterHeader {...defaultProps} />);
     
     // Each tab should have an icon - there should be multiple SVG elements
     const svgElements = container.querySelectorAll('svg');
@@ -162,7 +172,7 @@ describe('WeightageMasterHeader', () => {
   it('handles active tab determination with ending slash', () => {
     mockPathname.mockReturnValue('/en/property-tax/weightage-master/');
     
-    render(<WeightageMasterHeader {...defaultProps} />);
+    renderWithProviders(<WeightageMasterHeader {...defaultProps} />);
     
     const floorButton = screen.getByText('Floor').closest('button');
     expect(floorButton).toHaveAttribute('aria-selected', 'true');
@@ -171,14 +181,14 @@ describe('WeightageMasterHeader', () => {
   it('defaults to floor tab for unknown paths', () => {
     mockPathname.mockReturnValue('/en/property-tax/weightage-master/unknown-path');
     
-    render(<WeightageMasterHeader {...defaultProps} />);
+    renderWithProviders(<WeightageMasterHeader {...defaultProps} />);
     
     const floorButton = screen.getByText('Floor').closest('button');
     expect(floorButton).toHaveAttribute('aria-selected', 'true');
   });
 
   it('renders TableHeader component', () => {
-    const { container } = render(<WeightageMasterHeader {...defaultProps} />);
+    const { container } = renderWithProviders(<WeightageMasterHeader {...defaultProps} />);
     
     // TableHeader typically has a header tag with specific role
     const header = container.querySelector('header[role="banner"]');
@@ -186,7 +196,7 @@ describe('WeightageMasterHeader', () => {
   });
 
   it('passes correct props to TableHeader', () => {
-    render(<WeightageMasterHeader {...defaultProps} />);
+    renderWithProviders(<WeightageMasterHeader {...defaultProps} />);
     
     // Verify title and subtitle are rendered within the header
     const title = screen.getByText('Weightage Master');
@@ -197,7 +207,7 @@ describe('WeightageMasterHeader', () => {
   });
 
   it('renders tabs in correct order', () => {
-    render(<WeightageMasterHeader {...defaultProps} />);
+    renderWithProviders(<WeightageMasterHeader {...defaultProps} />);
     
     const tabButtons = screen.getAllByRole('tab');
     expect(tabButtons).toHaveLength(4);
@@ -208,7 +218,7 @@ describe('WeightageMasterHeader', () => {
   });
 
   it('keyboard navigation works on tabs', () => {
-    render(<WeightageMasterHeader {...defaultProps} />);
+    renderWithProviders(<WeightageMasterHeader {...defaultProps} />);
     
     const natureTab = screen.getByText('Nature').closest('button');
     
@@ -222,7 +232,7 @@ describe('WeightageMasterHeader', () => {
   });
 
   it('all tabs are clickable', () => {
-    render(<WeightageMasterHeader {...defaultProps} />);
+    renderWithProviders(<WeightageMasterHeader {...defaultProps} />);
     
     const tabButtons = screen.getAllByRole('tab');
     

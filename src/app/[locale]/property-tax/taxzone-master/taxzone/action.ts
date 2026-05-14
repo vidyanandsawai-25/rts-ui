@@ -30,7 +30,7 @@ export async function deleteTaxZoneAction(formData: FormData) {
   }
 
   await deleteTaxZone(id);
-  revalidatePath(`/${locale}/property-tax/taxzone`);
+  revalidatePath(`/${locale}/property-tax/taxzone-master/taxzone`);
 }
 
 export async function saveTaxZone(id: string, formData: FormData) {
@@ -90,11 +90,11 @@ export async function saveTaxZone(id: string, formData: FormData) {
   try {
     if (isUpdate) {
       await updateTaxZone(payload);
-      revalidatePath(`/${locale}/property-tax/taxzone`);
+      revalidatePath(`/${locale}/property-tax/taxzone-master/taxzone`);
       return { ok: true, mode: "update" as const };
     } else {
       await createTaxZone(payload);
-      revalidatePath(`/${locale}/property-tax/taxzone`);
+      revalidatePath(`/${locale}/property-tax/taxzone-master/taxzone`);
       return { ok: true, mode: "create" as const };
     }
   } catch (error) {

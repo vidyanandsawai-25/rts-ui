@@ -4,10 +4,14 @@ import { Tabs, type TabItem, TableHeader } from '@/components/common';
 import { WeightageMasterHeaderProps } from '@/types/floor-cv-weightageMaster.types';
 import { Lock, Layers, Hammer, Users, Calendar } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
+import { useWeightageMasterError } from './WeightageMasterErrorContext';
 
 export function WeightageMasterHeader({ locale, title, subtitle, labels }: WeightageMasterHeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const { hasError } = useWeightageMasterError();
+
+  if (hasError) return null;
 
   const base = `/${locale}/property-tax/weightage-master`;
 
