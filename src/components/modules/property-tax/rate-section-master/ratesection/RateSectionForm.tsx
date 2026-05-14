@@ -138,9 +138,9 @@ export default function RateSectionForm(props: RateSectionFormProps) {
 
   const { form, loading, handleClose, handleSave } = isEdit ? editHook : addHook;
 
-  // Check if form has errors or required fields are empty
-  const currentHook = isEdit ? editHook : addHook;
-  const hasErrors = Object.keys(currentHook.errors).length > 0;
+  // Check if current form values are invalid or required fields are empty
+  const validationErrors = validateRateSectionForm(form, t);
+  const hasErrors = Object.keys(validationErrors).length > 0;
   const hasEmptyRequiredFields = !form.zoneCode?.trim() || !form.zoneRegional?.trim();
   const isFormInvalid = hasErrors || hasEmptyRequiredFields;
 

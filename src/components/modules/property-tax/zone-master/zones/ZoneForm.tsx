@@ -122,10 +122,9 @@ export default function ZoneForm(props: Props) {
     </div>
   );
 
-  // Check if form has errors or required fields are empty
-  const hasErrors = Object.keys(errors).length > 0;
-  const hasEmptyRequiredFields = !form.zoneNo?.trim() || !form.description?.trim();
-  const isFormInvalid = hasErrors || hasEmptyRequiredFields;
+  // Derive validity from the current form state so the Save button updates immediately
+  const validationErrors = validate(form);
+  const isFormInvalid = Object.keys(validationErrors).length > 0;
 
   // Drawer footer based on mode
   const drawerFooter = (

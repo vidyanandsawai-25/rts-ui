@@ -74,18 +74,14 @@ export default function AvailableWards({
             <Label
               key={w.wardNo}
               className="flex items-center gap-3 px-4 py-1 backdrop-blur-sm rounded-lg transition-all duration-200 border group cursor-pointer bg-white/60 border-blue-100/50 hover:bg-white/80 hover:border-blue-300/50 hover:shadow-md"
-              onClick={(e) => {
-                // Only toggle if not clicking inside the checkbox button
-                const target = e.target;
-                if (target instanceof Element && !target.closest('button[role="checkbox"]')) {
-                  onToggle(w.wardNo);
-                }
-              }}
+              onClick={() => onToggle(w.wardNo)}
             >
-              <Checkbox
-                checked={isSelfSelected}
-                onCheckedChange={() => onToggle(w.wardNo)}
-              />
+              <div onClick={(e) => e.stopPropagation()}>
+                <Checkbox
+                  checked={isSelfSelected}
+                  onCheckedChange={() => onToggle(w.wardNo)}
+                />
+              </div>
 
               <span className="text-sm font-medium transition-colors text-gray-700 group-hover:text-blue-700">
                 {w.wardNo}

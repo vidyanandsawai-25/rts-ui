@@ -51,23 +51,15 @@ export default function ViewWards({
             <Label
               key={w.wardNo}
               className="flex items-center gap-3 px-4 py-1 backdrop-blur-sm rounded-lg transition-all duration-200 border group cursor-pointer bg-white/60 border-blue-100/50 hover:bg-white/80 hover:border-blue-300/50 hover:shadow-md"
-              onClick={(e) => {
-                // Only toggle if not clicking inside the checkbox button and not disabled
-                const target = e.target;
-                if (
-                  target instanceof Element &&
-                  !target.closest('button[role="checkbox"]') &&
-                  !isAlreadyInSelected
-                ) {
-                  onToggle(w.wardNo);
-                }
-              }}
+              onClick={() => !isAlreadyInSelected && onToggle(w.wardNo)}
             >
-              <Checkbox
-                checked={isSelfSelected || isAlreadyInSelected}
-                onCheckedChange={() => !isAlreadyInSelected && onToggle(w.wardNo)}
-                disabled={isAlreadyInSelected}
-              />
+              <div onClick={(e) => e.stopPropagation()}>
+                <Checkbox
+                  checked={isSelfSelected || isAlreadyInSelected}
+                  onCheckedChange={() => !isAlreadyInSelected && onToggle(w.wardNo)}
+                  disabled={isAlreadyInSelected}
+                />
+              </div>
 
               <span className="text-sm font-medium text-gray-700 group-hover:text-blue-700 transition-colors flex items-center gap-2">
                 {w.wardNo}
