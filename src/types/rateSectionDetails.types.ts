@@ -368,6 +368,7 @@ export interface AvailableWardsProps {
   onToggle: (wardNo: string) => void;
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
+  onSelectAll?: (wardNos: string[]) => void;
 }
 
 /**
@@ -387,6 +388,7 @@ export interface ViewWardsProps {
   onToggle: (wardNo: string) => void;
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
+  onSelectAll?: (wardNos: string[]) => void;
 }
 
 /**
@@ -405,6 +407,8 @@ export interface RateSectionWardsProps {
   onToggle: (wardNo: string) => void;
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
+  onSelectAll?: (wardNos: string[]) => void;
+  allSelectedWards?: string[];
 }
 
 /**

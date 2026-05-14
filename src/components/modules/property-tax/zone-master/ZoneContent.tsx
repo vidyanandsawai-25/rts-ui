@@ -18,7 +18,7 @@ import {
   SSRData,
   EditData,
   SelectionState,
-} from "@/types/zoneMasterContent.types";
+} from "@/types/zoneMaster.types";
 
 interface Props {
   zonePagination: ZonePaginationData;

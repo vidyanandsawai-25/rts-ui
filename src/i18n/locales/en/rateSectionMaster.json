@@ -85,6 +85,9 @@
     "alreadyAdded": "Added to {rateSectionNo}",
     "selected": "Selected"
   },
+  "wardList": {
+    "selectAll": "Select All"
+  },
   "form": {
     "rateSectionNo": "Rate Section No",
     "rateSectionNoPlaceholder": "e.g., DI",

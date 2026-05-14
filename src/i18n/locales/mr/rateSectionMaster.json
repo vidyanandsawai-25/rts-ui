@@ -85,6 +85,9 @@
     "alreadyAdded": "{rateSectionNo} मध्ये जोडले",
     "selected": "निवडले"
   },
+  "wardList": {
+    "selectAll": "सर्व निवडा"
+  },
   "form": {
     "rateSectionNo": "दर विभाग क्र.",
     "rateSectionNoPlaceholder": "उदा., DI",

@@ -26,6 +26,7 @@
     "selectZonePrompt": "प्रभाग पाहण्यासाठी झोन निवडा",
     "deleteTitle": "प्रभाग हटवा",
     "selectAll": "सर्व निवडा",
+    "loadingAll": "सर्व प्रभाग लोड होत आहेत...",
     "columns": {
       "srNo": "अनु. क्र.",
       "wardNo": "प्रभाग क्रमांक",
@@ -164,7 +165,9 @@
     "updateSuccess": "प्रभाग यशस्वीरित्या अपडेट झाले",
     "moveSelectedToRight": "निवडलेले उजवीकडे हलवा",
     "wardCannotBeDeleted": "प्रभाग {wardNo} हटविता येणार नाही कारण तो वापरात आहे.",
-    "partialSuccess": "{success} प्रभाग यशस्वीरित्या लिंक झाले; {failed} प्रभाग लिंक करताना अयशस्वी."
+    "partialSuccess": "{success} प्रभाग यशस्वीरित्या लिंक झाले; {failed} प्रभाग लिंक करताना अयशस्वी.",
+    "noWardsToLink": "या झोनमध्ये लिंक करण्यासाठी कोणतेही प्रभाग उपलब्ध नाहीत.",
+    "fetchError": "प्रभाग आणताना अयशस्वी"
   },
   "createWardMessages": {
     "selectZoneBeforeCreate": "प्रभाग तयार करण्यापूर्वी एक झोन निवडा.",

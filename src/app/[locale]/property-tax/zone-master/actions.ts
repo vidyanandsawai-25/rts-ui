@@ -879,9 +879,22 @@ export async function linkWardsToZoneAction(
     // Build bulk update payload
     const bulkPayload: BulkWardUpdateItem[] = [];
     
+    // Allowed sequenceNo range (validated by backend: 1-999)
+    const MIN_SEQUENCE_NO = 1;
+    const MAX_SEQUENCE_NO = 999;
+    
     for (const wardNo of wardNos) {
       const ward = allWards.find((w: WardItem) => w.wardNo === wardNo);
       if (!ward?.id) continue;
+
+      // Ensure sequenceNo is within valid range (1-999) or null
+      let validSequenceNo: number | null = null;
+      if (ward.sequenceNo !== null && ward.sequenceNo !== undefined && typeof ward.sequenceNo === 'number') {
+        if (ward.sequenceNo >= MIN_SEQUENCE_NO && ward.sequenceNo <= MAX_SEQUENCE_NO) {
+          validSequenceNo = ward.sequenceNo;
+        }
+        // If out of range, set to null (valid according to backend schema)
+      }
 
       bulkPayload.push({
         id: ward.id,
@@ -891,7 +904,7 @@ export async function linkWardsToZoneAction(
           wardNo: ward.wardNo,
           zoneId: zoneId,
           description: ward.description ?? "",
-          sequenceNo: ward.sequenceNo,
+          sequenceNo: validSequenceNo,
         }
       });
     }
