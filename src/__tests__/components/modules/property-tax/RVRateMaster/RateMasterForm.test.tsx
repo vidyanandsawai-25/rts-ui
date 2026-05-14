@@ -26,8 +26,11 @@ vi.mock("@/hooks/RVRateMaster/useRateMasterFormState");
 vi.mock("@/hooks/RVRateMaster/useRateMasterFilters", () => ({
   useRateMasterFilters: () => ({
     selectedZone: "1",
+    selectedZoneLabel: "UTHALSAR",
     selectedUseGroup: "1",
+    selectedUseGroupLabel: "Residential",
     assessmentYear: "1",
+    assessmentYearLabel: "1700-1997",
     setSelectedZone: vi.fn(),
     setSelectedUseGroup: vi.fn(),
     setAssessmentYear: vi.fn(),
@@ -37,6 +40,20 @@ vi.mock("@/hooks/RVRateMaster/useRateMasterFilters", () => ({
     multipliers: { "1": 1.0, "2": 1.5 },
     setMultipliers: vi.fn(),
     handleDropdownChange: vi.fn(),
+  }),
+}));
+
+vi.mock("@/hooks/RVRateMaster/useLazyDropdownData", () => ({
+  useLazyDropdownData: () => ({
+    zoneOptions: [],
+    useGroupOptions: [],
+    assessmentYears: [],
+    isLoadingZones: false,
+    isLoadingUseGroups: false,
+    isLoadingAssessmentYears: false,
+    loadZoneOptions: vi.fn(),
+    loadUseGroupOptions: vi.fn(),
+    loadAssessmentYears: vi.fn(),
   }),
 }));
 
