@@ -1,7 +1,7 @@
 import { Input } from "@/components/common";
 import { Label } from "@/components/common/label";
 import { PropertySocietyDetailsApiItem } from "@/types/property-society-details.types";
-import { kycValidators, SOCIETY_VALIDATION_RULES } from '@/lib/utils/kyc-validation.constants';
+import { societyValidators, SOCIETY_VALIDATION_RULES } from '@/lib/utils/kyc-validation.constants';
 import { sanitizeEmail, sanitizeName } from '@/lib/utils/input-sanitization';
 
 interface SocietyGeneralFieldsProps {
@@ -48,7 +48,7 @@ export const SocietyGeneralFields = ({
                     placeholder={t('society.landOwnerPlaceholder')}
                     maxLength={SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH}
                     className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${
-                        showError('landOwnerName', !landOwnerName || kycValidators.isValidName(landOwnerName))
+                        showError('landOwnerName', !landOwnerName || societyValidators.isValidPersonName(landOwnerName))
                             ? 'border-red-300 focus:border-red-500'
                             : ''
                     }`}
@@ -59,7 +59,7 @@ export const SocietyGeneralFields = ({
                         }
                     }}
                 />
-                {showError('landOwnerName', !landOwnerName || kycValidators.isValidName(landOwnerName)) && (
+                {showError('landOwnerName', !landOwnerName || societyValidators.isValidPersonName(landOwnerName)) && (
                     <span className="text-xs text-red-500">{t('kyc.validation.invalidName')}</span>
                 )}
             </div>
@@ -74,7 +74,7 @@ export const SocietyGeneralFields = ({
                     placeholder={t('society.builderNamePlaceholder')}
                     maxLength={SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH}
                     className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${
-                        showError('builderName', !builderName || kycValidators.isValidName(builderName))
+                        showError('builderName', !builderName || societyValidators.isValidPersonName(builderName))
                             ? 'border-red-300 focus:border-red-500'
                             : ''
                     }`}
@@ -85,7 +85,7 @@ export const SocietyGeneralFields = ({
                         }
                     }}
                 />
-                {showError('builderName', !builderName || kycValidators.isValidName(builderName)) && (
+                {showError('builderName', !builderName || societyValidators.isValidPersonName(builderName)) && (
                     <span className="text-xs text-red-500">{t('kyc.validation.invalidName')}</span>
                 )}
             </div>
@@ -100,7 +100,7 @@ export const SocietyGeneralFields = ({
                     placeholder={t('society.buildingSocietyNamePlaceholder')}
                     maxLength={SOCIETY_VALIDATION_RULES.SOCIETY_NAME_MAX_LENGTH}
                     className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${
-                        showError('societyName', !societyName || kycValidators.isValidName(societyName))
+                        showError('societyName', !societyName || societyValidators.isValidSocietyName(societyName))
                             ? 'border-red-300 focus:border-red-500'
                             : ''
                     }`}
@@ -111,7 +111,7 @@ export const SocietyGeneralFields = ({
                         }
                     }}
                 />
-                {showError('societyName', !societyName || kycValidators.isValidName(societyName)) && (
+                {showError('societyName', !societyName || societyValidators.isValidSocietyName(societyName)) && (
                     <span className="text-xs text-red-500">{t('kyc.validation.invalidName')}</span>
                 )}
             </div>
@@ -128,7 +128,7 @@ export const SocietyGeneralFields = ({
                         placeholder={t('society.societyEmailPlaceholder')}
                         value={societyEmail}
                         maxLength={SOCIETY_VALIDATION_RULES.EMAIL_MAX_LENGTH}
-                        className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${showError('societyEmail', kycValidators.isValidEmail(societyEmail))
+                        className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${showError('societyEmail', societyValidators.isValidEmail(societyEmail))
                             ? 'border-red-300 focus:border-red-500'
                             : ''
                         }`}
@@ -139,7 +139,7 @@ export const SocietyGeneralFields = ({
                             }
                         }}
                     />
-                    {showError('societyEmail', kycValidators.isValidEmail(societyEmail)) && (
+                    {showError('societyEmail', societyValidators.isValidEmail(societyEmail)) && (
                         <span className="text-xs text-red-500">{t('kyc.validation.invalidEmail')}</span>
                     )}
                 </div>

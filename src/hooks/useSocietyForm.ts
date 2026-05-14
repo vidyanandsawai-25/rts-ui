@@ -7,7 +7,7 @@ import { useLoading } from '@/hooks/useLoading';
 import { societyValidations, validateForm, hasErrors } from "@/lib/utils/validation";
 import { updatePropertySocietyDetailsAction } from "@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Society/action";
 import { SocietyFormProps, UpdatePropertySocietyDetailsDto } from "@/types/property-society-details.types";
-import { kycValidators } from '@/lib/utils/kyc-validation.constants';
+import { societyValidators } from '@/lib/utils/kyc-validation.constants';
 
 import { useSocietyChanges } from '@/hooks/useSocietyChanges';
 import { useSocietyFormState } from '@/hooks/useSocietyFormState'; 
@@ -125,18 +125,18 @@ export const useSocietyForm = (props: SocietyFormProps) => {
         const secretaryMobileStr = secretaryMobileInput.value;
 
         // Validate emails before proceeding
-        const isManagerEmailValid = kycValidators.isValidEmail(managerEmail);
-        const isSecretaryEmailValid = kycValidators.isValidEmail(secretaryEmail);
-        const isSocietyEmailValid = kycValidators.isValidEmail(societyEmail);
-        const isManagerMobileValid = kycValidators.isValidMobile(managerMobileStr);
-        const isSecretaryMobileValid = kycValidators.isValidMobile(secretaryMobileStr);
+        const isManagerEmailValid = societyValidators.isValidEmail(managerEmail);
+        const isSecretaryEmailValid = societyValidators.isValidEmail(secretaryEmail);
+        const isSocietyEmailValid = societyValidators.isValidEmail(societyEmail);
+        const isManagerMobileValid = societyValidators.isValidMobile(managerMobileStr);
+        const isSecretaryMobileValid = societyValidators.isValidMobile(secretaryMobileStr);
 
         // Validate names
-        const isLandOwnerNameValid = !landOwnerName || kycValidators.isValidName(landOwnerName);
-        const isBuilderNameValid = !builderName || kycValidators.isValidName(builderName);
-        const isSocietyNameValid = !societyName || kycValidators.isValidName(societyName);
-        const isManagerNameValid = !managerName || kycValidators.isValidName(managerName);
-        const isSecretaryNameValid = !secretaryName || kycValidators.isValidName(secretaryName);
+        const isLandOwnerNameValid = !landOwnerName || societyValidators.isValidPersonName(landOwnerName);
+        const isBuilderNameValid = !builderName || societyValidators.isValidPersonName(builderName);
+        const isSocietyNameValid = !societyName || societyValidators.isValidSocietyName(societyName);
+        const isManagerNameValid = !managerName || societyValidators.isValidPersonName(managerName);
+        const isSecretaryNameValid = !secretaryName || societyValidators.isValidPersonName(secretaryName);
 
         // Show specific error messages for invalid fields
         if (!isManagerEmailValid && managerEmail) {

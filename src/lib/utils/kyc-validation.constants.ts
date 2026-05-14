@@ -114,3 +114,53 @@ export const kycValidators = {
   },
 } as const;
 
+/**
+ * Society validation helper functions
+ * Provides reusable validators for society form fields
+ */
+export const societyValidators = {
+  /**
+   * Validate person name length
+   * @param name - Name to validate
+   * @returns True if name meets society person name length requirements
+   */
+  isValidPersonName: (name: string): boolean => {
+    const length = name.trim().length;
+    return length >= SOCIETY_VALIDATION_RULES.NAME_MIN_LENGTH && 
+           length <= SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH;
+  },
+
+  /**
+   * Validate society/building name length
+   * @param name - Name to validate
+   * @returns True if name meets society name length requirements
+   */
+  isValidSocietyName: (name: string): boolean => {
+    const length = name.trim().length;
+    return length >= SOCIETY_VALIDATION_RULES.NAME_MIN_LENGTH && 
+           length <= SOCIETY_VALIDATION_RULES.SOCIETY_NAME_MAX_LENGTH;
+  },
+
+  /**
+   * Validate mobile number (10 digits)
+   * @param mobile - Mobile number string
+   * @returns True if valid (empty or exactly 10 digits)
+   */
+  isValidMobile: (mobile: string): boolean => {
+    const digits = mobile.replace(/\D/g, '');
+    return digits.length === 0 || digits.length === SOCIETY_VALIDATION_RULES.MOBILE_LENGTH;
+  },
+
+  /**
+   * Validate email format and length
+   * @param email - Email to validate
+   * @returns True if valid format and within length constraints
+   */
+  isValidEmail: (email: string): boolean => {
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) return true;
+    return trimmedEmail.length <= SOCIETY_VALIDATION_RULES.EMAIL_MAX_LENGTH && 
+           KYC_VALIDATION_RULES.EMAIL_REGEX.test(trimmedEmail);
+  },
+} as const;
+

@@ -22,10 +22,9 @@ export const AreaDetailsFields = ({
                     readOnly
                     id="pd-carpetarea"
                     name="totalCarpetAreaSqFeet"
-                    type="number"         
-                               
-                    placeholder="1200"                    
-                    defaultValue={propertyData?.totalCarpetAreaSqFeet ?? ''}                    
+                    type="number"
+                    placeholder="1200"
+                    defaultValue={propertyData?.totalCarpetAreaSqFeet ?? ''}
                     className="h-9 text-sm bg-gray-50 text-gray-600 cursor-not-allowed border-gray-300"
                 />
             </div>

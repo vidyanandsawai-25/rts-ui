@@ -1,6 +1,6 @@
 import { Input } from "@/components/common";
 import { Label } from "@/components/common/label";
-import { SOCIETY_VALIDATION_RULES, kycValidators } from '@/lib/utils/kyc-validation.constants';
+import { SOCIETY_VALIDATION_RULES, societyValidators } from '@/lib/utils/kyc-validation.constants';
 import { sanitizeEmail, sanitizeName } from '@/lib/utils/input-sanitization';
 import { useDigitInputs } from '@/hooks/useDigitInputs';
 
@@ -48,7 +48,7 @@ export const SocietyContactFields = ({
                     placeholder={t('society.managerNamePlaceholder')}
                     maxLength={SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH}
                     className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${
-                        showError('managerName', !managerName || kycValidators.isValidName(managerName))
+                        showError('managerName', !managerName || societyValidators.isValidPersonName(managerName))
                             ? 'border-red-300 focus:border-red-500'
                             : ''
                     }`}
@@ -59,7 +59,7 @@ export const SocietyContactFields = ({
                         }
                     }}
                 />
-                {showError('managerName', !managerName || kycValidators.isValidName(managerName)) && (
+                {showError('managerName', !managerName || societyValidators.isValidPersonName(managerName)) && (
                     <span className="text-xs text-red-500">{t('kyc.validation.invalidName')}</span>
                 )}
             </div>
@@ -72,7 +72,7 @@ export const SocietyContactFields = ({
                     placeholder={t('society.managerEmailPlaceholder')}
                     value={managerEmail}
                     maxLength={SOCIETY_VALIDATION_RULES.EMAIL_MAX_LENGTH}
-                    className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${showError('managerEmail', kycValidators.isValidEmail(managerEmail))
+                    className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${showError('managerEmail', societyValidators.isValidEmail(managerEmail))
                         ? 'border-red-300 focus:border-red-500'
                         : ''
                     }`}
@@ -83,7 +83,7 @@ export const SocietyContactFields = ({
                         }
                     }}
                 />
-                {showError('managerEmail', kycValidators.isValidEmail(managerEmail)) && (
+                {showError('managerEmail', societyValidators.isValidEmail(managerEmail)) && (
                     <span className="text-xs text-red-500">{t('kyc.validation.invalidEmail')}</span>
                 )}
             </div>
@@ -92,7 +92,7 @@ export const SocietyContactFields = ({
                 <Label htmlFor="manager-mobile-0" className="text-xs font-semibold text-gray-700">
                     {t('society.managerMobileNo')}
                 </Label>
-                <div className={`flex items-center gap-1 px-1 bg-white border rounded-md h-9 focus-within:ring-1 ${showError('managerMobile', kycValidators.isValidMobile(managerMobileInput.value))
+                <div className={`flex items-center gap-1 px-1 bg-white border rounded-md h-9 focus-within:ring-1 ${showError('managerMobile', societyValidators.isValidMobile(managerMobileInput.value))
                     ? 'border-red-300 focus-within:border-red-500 focus-within:ring-red-300'
                     : 'border-purple-200 focus-within:border-purple-500 focus-within:ring-purple-200'
                 }`}>
@@ -114,7 +114,7 @@ export const SocietyContactFields = ({
                                 onKeyDown={(e) => managerMobileInput.handleKeyDown(i, e)}
                                 ref={managerMobileInput.setRef(i)}
                                 naked
-                                className={`flex-1 min-w-0 w-full h-7 text-center text-xs font-semibold text-gray-900 border rounded bg-white outline-none focus:ring-1 ${showError('managerMobile', kycValidators.isValidMobile(managerMobileInput.value))
+                                className={`flex-1 min-w-0 w-full h-7 text-center text-xs font-semibold text-gray-900 border rounded bg-white outline-none focus:ring-1 ${showError('managerMobile', societyValidators.isValidMobile(managerMobileInput.value))
                                     ? 'border-red-300 focus:border-red-500 focus:ring-red-300'
                                     : 'border-gray-300 focus:border-purple-500 focus:ring-purple-300'
                                 }`}
@@ -122,7 +122,7 @@ export const SocietyContactFields = ({
                         ))}
                     </div>
                 </div>
-                {showError('managerMobile', kycValidators.isValidMobile(managerMobileInput.value)) && (
+                {showError('managerMobile', societyValidators.isValidMobile(managerMobileInput.value)) && (
                     <span className="text-xs text-red-500">{t('kyc.validation.invalidMobile')}</span>
                 )}
             </div>
@@ -136,7 +136,7 @@ export const SocietyContactFields = ({
                     placeholder={t('society.secretaryNamePlaceholder')}
                     maxLength={SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH}
                     className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${
-                        showError('secretaryName', !secretaryName || kycValidators.isValidName(secretaryName))
+                        showError('secretaryName', !secretaryName || societyValidators.isValidPersonName(secretaryName))
                             ? 'border-red-300 focus:border-red-500'
                             : ''
                     }`}
@@ -147,7 +147,7 @@ export const SocietyContactFields = ({
                         }
                     }}
                 />
-                {showError('secretaryName', !secretaryName || kycValidators.isValidName(secretaryName)) && (
+                {showError('secretaryName', !secretaryName || societyValidators.isValidPersonName(secretaryName)) && (
                     <span className="text-xs text-red-500">{t('kyc.validation.invalidName')}</span>
                 )}
             </div>
@@ -160,7 +160,7 @@ export const SocietyContactFields = ({
                     placeholder={t('society.secretaryEmailPlaceholder')}
                     value={secretaryEmail}
                     maxLength={SOCIETY_VALIDATION_RULES.EMAIL_MAX_LENGTH}
-                    className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${showError('secretaryEmail', kycValidators.isValidEmail(secretaryEmail))
+                    className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${showError('secretaryEmail', societyValidators.isValidEmail(secretaryEmail))
                         ? 'border-red-300 focus:border-red-500'
                         : ''
                     }`}
@@ -171,7 +171,7 @@ export const SocietyContactFields = ({
                         }
                     }}
                 />
-                {showError('secretaryEmail', kycValidators.isValidEmail(secretaryEmail)) && (
+                {showError('secretaryEmail', societyValidators.isValidEmail(secretaryEmail)) && (
                     <span className="text-xs text-red-500">{t('kyc.validation.invalidEmail')}</span>
                 )}
             </div>
@@ -180,7 +180,7 @@ export const SocietyContactFields = ({
                 <Label htmlFor="secretary-mobile-0" className="text-xs font-semibold text-gray-700">
                     {t('society.secretaryMobile')}
                 </Label>
-                <div className={`flex items-center gap-1 px-1 bg-white border rounded-md h-9 focus-within:ring-1 ${showError('secretaryMobile', kycValidators.isValidMobile(secretaryMobileInput.value))
+                <div className={`flex items-center gap-1 px-1 bg-white border rounded-md h-9 focus-within:ring-1 ${showError('secretaryMobile', societyValidators.isValidMobile(secretaryMobileInput.value))
                     ? 'border-red-300 focus-within:border-red-500 focus-within:ring-red-300'
                     : 'border-purple-200 focus-within:border-purple-500 focus-within:ring-purple-200'
                 }`}>
@@ -202,7 +202,7 @@ export const SocietyContactFields = ({
                                 onKeyDown={(e) => secretaryMobileInput.handleKeyDown(i, e)}
                                 ref={secretaryMobileInput.setRef(i)}
                                 naked
-                                className={`flex-1 min-w-0 w-full h-7 text-center text-xs font-semibold text-gray-900 border rounded bg-white outline-none focus:ring-1 ${showError('secretaryMobile', kycValidators.isValidMobile(secretaryMobileInput.value))
+                                className={`flex-1 min-w-0 w-full h-7 text-center text-xs font-semibold text-gray-900 border rounded bg-white outline-none focus:ring-1 ${showError('secretaryMobile', societyValidators.isValidMobile(secretaryMobileInput.value))
                                     ? 'border-red-300 focus:border-red-500 focus:ring-red-300'
                                     : 'border-gray-300 focus:border-purple-500 focus:ring-purple-300'
                                 }`}
@@ -210,7 +210,7 @@ export const SocietyContactFields = ({
                         ))}
                     </div>
                 </div>
-                {showError('secretaryMobile', kycValidators.isValidMobile(secretaryMobileInput.value)) && (
+                {showError('secretaryMobile', societyValidators.isValidMobile(secretaryMobileInput.value)) && (
                     <span className="text-xs text-red-500">{t('kyc.validation.invalidMobile')}</span>
                 )}
             </div>
