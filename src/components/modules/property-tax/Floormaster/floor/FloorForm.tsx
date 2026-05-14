@@ -36,7 +36,6 @@ const DEFAULT_RANGE_DATA: FloorRangeFormModel = {
   rangeTo: 0,
   prefix: '',
   suffix: '',
-  floorCode: '',
   isActive: true,
   autoGenerateSubFloor: false,
 };
@@ -104,25 +103,6 @@ export default function FloorForm({ id, initialData }: Readonly<FloorFormProps>)
       }
       if (data.rangeTo > 999) {
         newErrors.rangeTo = t('form.validation.rangeMaxValue', { count: 999 });
-      }
-      // Sanitize and validate floorCode
-      const sanitizedFloorCode = sanitizeFloorCode(data.floorCode);
-      if (!sanitizedFloorCode) {
-        newErrors.floorCode = t('form.validation.codeRequired');
-      } else {
-        const floorCodeErrors = validateFloorForm(
-          {
-            floorCode: sanitizedFloorCode,
-            description: '',
-            sequenceNo: 0,
-            isActive: data.isActive,
-          },
-          t,
-          false
-        );
-        if (floorCodeErrors.floorCode) {
-          newErrors.floorCode = floorCodeErrors.floorCode;
-        }
       }
       return newErrors;
     },
@@ -228,7 +208,7 @@ export default function FloorForm({ id, initialData }: Readonly<FloorFormProps>)
           suffix: rangeData.suffix,
           template: {
             isActive: rangeData.isActive,
-            floorCode: sanitizeFloorCode(rangeData.floorCode),
+            floorCode: '',
             description: '',
             sequenceNo: 0,
             maxFloorNo: rangeData.rangeTo,
@@ -439,6 +419,7 @@ export default function FloorForm({ id, initialData }: Readonly<FloorFormProps>)
               description: t('form.description'),
               descriptionPlaceholder: t('form.descriptionPlaceholder'),
               sequenceNo: t('form.sequenceNo'),
+              sequenceNoPlaceholder: t('form.sequenceNoPlaceholder'),
             }}
           />
         )}

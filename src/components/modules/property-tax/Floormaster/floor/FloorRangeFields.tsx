@@ -104,27 +104,6 @@ export function FloorRangeFields({
         visible={showError('suffix')}
       />
 
-      <Input
-        label={t('form.floorCode')}
-        placeholder={t('form.floorCodePlaceholder')}
-        value={formData.floorCode}
-        onChange={(e) => {
-          const value = e.target.value;
-          if (value.length <= 4) {
-            onChange('floorCode', value);
-          }
-        }}
-        onBlur={() => onBlur('floorCode')}
-        fullWidth
-        required
-        maxLength={4}
-        className="text-gray-700"
-      />
-      <ValidationMessage
-        message={errors.floorCode}
-        visible={showError('floorCode')}
-      />
-
       <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg border border-blue-100">
         {t('form.rangeExample')}
       </div>

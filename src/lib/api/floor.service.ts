@@ -205,9 +205,9 @@ export async function deleteFloor(id: number, _userId: string): Promise<void> {
 
     // Note: _userId is available for backend auditing/authentication
     // Use shared apiClient for consistent timeout/abort handling
-    const response = await apiClient.delete(`/Floor/${id}/purge`);
+    const response = await apiClient.delete(`/Floor/${id}`);
 
-    // Purge endpoints may return 204 No Content with an empty body.
+    // Delete endpoints may return 204 No Content with an empty body.
     // If the shared client marks that response as unsuccessful because it
     // attempts JSON parsing first, still treat HTTP 204 or JSON parse errors as success.
     if (response.success) {

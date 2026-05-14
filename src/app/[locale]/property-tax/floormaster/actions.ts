@@ -262,9 +262,16 @@ export async function deleteFloorAction(
     };
   } catch (error) {
     if (error instanceof ApiError) {
+      let errorMessage = error.responseText;
+      try {
+        const parsed = JSON.parse(error.responseText);
+        if (parsed?.message) errorMessage = parsed.message;
+      } catch {
+        // use raw text
+      }
       return {
         success: false,
-        message: error.responseText,
+        message: errorMessage,
         statusCode: error.statusCode,
       };
     }
