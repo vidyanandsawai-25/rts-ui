@@ -1,0 +1,33 @@
+{
+  "title": "Department Activation",
+  "subtitle": "Configure departments and their submodules for this ULB",
+  "searchPlaceholder": "Search by Department Code or Name...",
+  "quickActions": {
+    "activateAll": "Activate All",
+    "deactivateAll": "Deactivate All"
+  },
+  "stats": {
+    "total": "Total Departments",
+    "active": "Active",
+    "inactive": "Inactive"
+  },
+  "card": {
+    "configureSubmodules": "Configure Submodules",
+    "noDescription": "No description provided"
+  },
+  "modal": {
+    "title": "Configure Submodules",
+    "activateAll": "Activate All",
+    "deactivateAll": "Deactivate All"
+  },
+  "messages": {
+    "activateAllSuccess": "All selected departments activated successfully",
+    "deactivateAllSuccess": "All selected departments deactivated successfully",
+    "moduleUpdateSuccess": "Module configuration updated successfully",
+    "activated": "activated",
+    "deactivated": "deactivated",
+    "departmentUpdateError": "Failed to update department",
+    "moduleUpdateFailed": "Failed to update module",
+    "bulkUpdateResult": "Updated {successCount} departments, {failCount} failed"
+  }
+}
