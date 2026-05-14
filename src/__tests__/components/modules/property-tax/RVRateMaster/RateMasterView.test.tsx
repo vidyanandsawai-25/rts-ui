@@ -21,8 +21,11 @@ vi.mock("@/app/[locale]/property-tax/rate-master/rvratemaster/action", () => ({
 vi.mock("@/hooks/RVRateMaster/useRateMasterFilters", () => ({
   useRateMasterFilters: () => ({
     selectedZone: "1",
+    selectedZoneLabel: "UTHALSAR",
     selectedUseGroup: "1",
+    selectedUseGroupLabel: "Residential",
     assessmentYear: "1",
+    assessmentYearLabel: "1700-1997",
     handleDropdownChange: vi.fn(),
   }),
 }));

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { configMasterService } from '@/lib/api/configMaster.service';
-import { departmentMasterService } from '@/lib/api/departmentMaster.service';
+import * as departmentMasterService from '@/lib/api/configuration-settings/department-master/departmentMaster.service';
 import { moduleMasterService } from '@/lib/api/moduleMaster.service';
 import { SaveDepartmentConfigurationSchema } from '@/lib/validations/config-master.schema';
 import type { DepartmentApiResponse, ConfigValueMaster } from '@/types/configMaster.types';
@@ -46,7 +46,7 @@ export async function getDepartmentConfigurationAction(
 
     const allModules = moduleRes.success && moduleRes.data ? moduleRes.data : [];
     const modulesByDeptId = new Map<number, typeof allModules>();
-    allModules.forEach((m) => {
+    allModules.forEach((m: ModuleMaster) => {
       if (m.departmentId && m.moduleName?.toLowerCase() !== 'string' && m.moduleId > 0) {
         const deptModules = modulesByDeptId.get(m.departmentId) || [];
         deptModules.push(m);

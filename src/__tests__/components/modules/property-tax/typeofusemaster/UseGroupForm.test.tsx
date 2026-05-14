@@ -65,6 +65,7 @@ const mockMessages = {
       onlyAlphanumeric: "must contain only letters and numbers (no special characters).",
       allowedChars: "can contain letters (any language), numbers, spaces and (. - ,).",
       atLeastOneLetter: "must contain at least one letter.",
+      cannotBeAllZeros: "cannot contain only zeros.",
       createError: "Failed to create record",
       updateError: "Failed to update record",
       createGroupFailed: "Failed to create group",
@@ -155,6 +156,37 @@ describe("UseGroupForm", () => {
 
       await waitFor(() => {
         expect(screen.getByText(/must contain only letters and numbers/i)).toBeInTheDocument();
+      });
+    });
+
+    it("should reject group code with only zeros", async () => {
+      const { container } = renderWithIntl(<UseGroupForm id={null} allGroups={existingGroups} />);
+
+      const codeInput = screen.getByPlaceholderText("e.g., RES, COM, IND01");
+      fireEvent.change(codeInput, { target: { value: "000" } });
+      
+      const form = container.querySelector("#use-group-form");
+      fireEvent.submit(form!);
+
+      await waitFor(() => {
+        expect(screen.getByText((content) => content.includes("cannot contain only zeros"))).toBeInTheDocument();
+      });
+    });
+
+    it("should reject group name with only zeros", async () => {
+      const { container } = renderWithIntl(<UseGroupForm id={null} allGroups={existingGroups} />);
+
+      const codeInput = screen.getByPlaceholderText("e.g., RES, COM, IND01");
+      const nameInput = screen.getByPlaceholderText("e.g., Residential, Local");
+
+      fireEvent.change(codeInput, { target: { value: "IND" } });
+      fireEvent.change(nameInput, { target: { value: "000" } });
+      
+      const form = container.querySelector("#use-group-form");
+      fireEvent.submit(form!);
+
+      await waitFor(() => {
+        expect(screen.getByText((content) => content.includes("cannot contain only zeros"))).toBeInTheDocument();
       });
     });
 

@@ -1,6 +1,12 @@
 {
   "title": "मालमत्ता कर मूल्यांकन",
   "subtitle": "मालमत्तेची माहिती सर्वसमावेशक व्यवस्थापित करा",
+  "noDataAvailable": "या विभागासाठी कोणताही डेटा उपलब्ध नाही",
+  "taxDetailsDualMethod": "कर तपशील (दुहेरी पद्धत)",
+  "taxDetailsRateable": "कर तपशील (भाडे मूल्य)",
+  "taxDetailsCapital": "कर तपशील (भांडवली मूल्य)",
+  "rateableValue": "रटेबल मूल्य",
+  "capitalValue": "भांडवली मूल्य",
   "search": {
     "title": "मालमत्ता शोधा",
     "wardNo": "प्रभाग क्र",
@@ -60,6 +66,29 @@
       "newTaxTotalCV": "नवीन कर (CV)",
       "newTaxTotalRV": "नवीन कर (RV)",
       "rVorCVValue": "RV/CV मूल्य"
+    }
+  },
+  "apartmentQC": {
+    "errors": {
+      "fetchFailed": "अपार्टमेंट QC तपशील प्राप्त करण्यात अयशस्वी. कृपया पुन्हा प्रयत्न करा.",
+      "fetchPagedFailed": "पेज केलेले अपार्टमेंट रेकॉर्ड लोड करण्यात अयशस्वी.",
+      "updateFailed": "मालमत्ता तपशील अपडेट करण्यात अयशस्वी. कृपया तुमचे कनेक्शन तपासा.",
+      "invalidParams": "अवैध शोध पॅरामीटर्स प्रदान केले आहेत.",
+      "revalidateFailed": "अपार्टमेंट डेटा कॅशे रिफ्रेश करू शकलो नाही."
+    },
+    "actions": {
+      "updateSuccess": "मालमत्ता तपशील यशस्वीरित्या अपडेट केले",
+      "loading": "मालमत्ता अपडेट करत आहे...",
+      "refreshing": "डेटा रिफ्रेश करत आहे...",
+      "previous": "← मागील",
+      "next": "पुढील →"
+    },
+    "edit": {
+      "title": "मालमत्ता तपशील",
+      "basicInfo": "मूलभूत माहिती",
+      "floorQC": "मजला QC",
+      "floorsCount": "{count} मजले",
+      "photoGallery": "फोटो गॅलरी"
     }
   },
   "fields": {

@@ -194,9 +194,9 @@ export interface RateFormProps {
   bulkEditData?: IRateMaster[] | null;
   backendRates?: IBackendRateMaster[] | null;
   filterValues?: {
-    zone: string;
-    year: string;
-    useGroup: string;
+    zone?: string;
+    year?: string;
+    useGroup?: string;
   };
   showCopyRateSection?: boolean;
   showMultipliersSection?: boolean;
@@ -245,9 +245,9 @@ export interface AddRateDrawerProps {
   allZones?: IZoneDescription[]; // All zones (unpaginated) for copy rates functionality
   rateCategories: { constructionId: string; description?: string }[];
   filterValues?: {
-    zone: string;
-    useGroup: string;
-    year: string;
+    zone?: string;
+    useGroup?: string;
+    year?: string;
     fromYear?: string;
     toYear?: string;
   };
@@ -280,9 +280,9 @@ export interface EditRateDrawerProps {
   bulkEditData?: IRateMaster[] | null;
   backendRates?: IBackendRateMaster[] | null;
   filterValues?: {
-    zone: string;
+    zone?: string;
     year?: string;
-    useGroup: string;
+    useGroup?: string;
   };
   mode?: "edit" | "delete";
   // Server-side paginated zone data

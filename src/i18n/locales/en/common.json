@@ -394,5 +394,6 @@
   "note": {
     "mandatory": "Fields marked with * are mandatory"
   },
-  "rateUnit": "(₹/Sq.mtr)"
+  "rateUnit": "(₹/Sq.mtr)",
+  "searchPlaceholder": "Search properties..."
 }

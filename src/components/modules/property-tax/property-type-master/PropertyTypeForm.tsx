@@ -40,6 +40,7 @@ export default function PropertyTypeForm({
     handleChange,
     handleBlur,
     handleCategoryChange,
+    handleTypeChange,
     handleSubmit: originalHandleSubmit,
     handleToggleStatus,
     handleCancel,
@@ -139,6 +140,7 @@ export default function PropertyTypeForm({
               handleChange={handleChange}
               handleBlur={handleBlur}
               handleCategoryChange={handleCategoryChange}
+              handleTypeChange={handleTypeChange}
               errors={errors}
               showError={showError}
               categories={categories}

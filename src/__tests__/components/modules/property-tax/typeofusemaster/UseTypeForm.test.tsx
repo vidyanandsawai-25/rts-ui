@@ -87,10 +87,12 @@ const mockMessages = {
       onlyAlphanumeric: "must contain only letters and numbers (no special characters).",
       allowedChars: "can contain letters (any language), numbers, spaces and (. - ,).",
       sequenceNonNegative: "must be 0 or greater.",
+      maxThreeDigits: "must be maximum 3 digits (0-999).",
       searchSequenceLabel: "Key Wise Sequence",
       createError: "Failed to create record",
       updateError: "Failed to update record",
       descriptionRequired: "Description is required.",
+      cannotBeAllZeros: "cannot contain only zeros.",
     },
     status: {
       active: "Active",
@@ -211,6 +213,22 @@ describe("UseTypeForm", () => {
       });
     });
 
+    it("should reject code with only zeros", async () => {
+      const { container } = renderWithIntl(
+        <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} />
+      );
+
+      const codeInput = screen.getByPlaceholderText("e.g., RES, COM01, IND");
+      fireEvent.change(codeInput, { target: { value: "000" } });
+      
+      const form = container.querySelector("#use-type-form");
+      fireEvent.submit(form!);
+
+      await waitFor(() => {
+        expect(screen.getByText((content) => content.includes("cannot contain only zeros"))).toBeInTheDocument();
+      });
+    });
+
     it("should validate description format", async () => {
       const { container } = renderWithIntl(
         <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} />
@@ -280,6 +298,62 @@ describe("UseTypeForm", () => {
 
       await waitFor(() => {
         expect(screen.getByText((content) => content.includes("must be 0 or greater"))).toBeInTheDocument();
+      });
+    });
+
+    it("should accept sequence at maximum value (999)", async () => {
+      mockCreateUseType.mockResolvedValue(undefined);
+
+      const { container } = renderWithIntl(
+        <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} />
+      );
+
+      // Fill required fields
+      fireEvent.change(screen.getByPlaceholderText("e.g., RES, COM01, IND"), { target: { value: "IND99" } });
+      fireEvent.change(screen.getByPlaceholderText("Enter description"), { target: { value: "Industrial Max Sequence" } });
+      fireEvent.change(screen.getByRole("combobox", { name: /use type group.*required/i }), { target: { value: "1" } });
+      fireEvent.change(screen.getByRole("combobox", { name: /^type\s+required$/i }), { target: { value: "I" } });
+
+      // Test with sequence = 999 (maximum valid)
+      const seqInput = screen.getByPlaceholderText("0");
+      fireEvent.change(seqInput, { target: { value: "999" } });
+      
+      const form = container.querySelector("#use-type-form");
+      fireEvent.submit(form!);
+
+      await waitFor(() => {
+        expect(mockCreateUseType).toHaveBeenCalledWith({
+          groupId: 1,
+          code: "IND99",
+          description: "Industrial Max Sequence",
+          type: "I",
+          searchSequence: 999,
+          status: "Active",
+        });
+        expect(toast.success).toHaveBeenCalledWith("Type Created");
+      });
+    });
+
+    it("should reject sequence above maximum (1000)", async () => {
+      const { container } = renderWithIntl(
+        <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} />
+      );
+
+      // Fill required fields
+      fireEvent.change(screen.getByPlaceholderText("e.g., RES, COM01, IND"), { target: { value: "IND01" } });
+      fireEvent.change(screen.getByPlaceholderText("Enter description"), { target: { value: "Some description" } });
+      fireEvent.change(screen.getByRole("combobox", { name: /use type group.*required/i }), { target: { value: "1" } });
+      fireEvent.change(screen.getByRole("combobox", { name: /^type\s+required$/i }), { target: { value: "I" } });
+
+      // Test with sequence = 1000 (exceeds maximum)
+      const seqInput = screen.getByPlaceholderText("0");
+      fireEvent.change(seqInput, { target: { value: "1000" } });
+      
+      const form = container.querySelector("#use-type-form");
+      fireEvent.submit(form!);
+
+      await waitFor(() => {
+        expect(screen.getByText((content) => content.includes("must be maximum 3 digits"))).toBeInTheDocument();
       });
     });
 

@@ -8,6 +8,62 @@ import {
   getUseDescription,
   getSubTypeDescription,
 } from "./floor-descriptions";
+import { INITIAL_SHAPE_PARAMETERS } from "@/components/modules/property-tax/ptis/QuickDataEntry/floorSubmission/RoomSubmission/constants/room-submission.constants";
+
+/**
+ * Normalizes a polymorphic room object from API responses.
+ */
+export function normalizeRoomData(raw: Record<string, unknown>): RoomData {
+  if (!raw) return {} as RoomData;
+
+  const shape = raw.shape || "Rectangle";
+  
+  // Helper to safely get property regardless of case
+  const getProp = (obj: Record<string, unknown>, key: string) => {
+    if (!obj) return undefined;
+    const lowerKey = key.toLowerCase();
+    const actualKey = Object.keys(obj).find(k => k.toLowerCase() === lowerKey);
+    return actualKey ? obj[actualKey] : undefined;
+  };
+
+  // Extract parameters with fallbacks
+  const params: Record<string, unknown> = {
+    ...INITIAL_SHAPE_PARAMETERS,
+    ...(raw.shapeParameters || raw.shapeParams || {}),
+  };
+
+  // Explicitly map API fields if they exist at root but not in params (Case-Insensitive)
+  const b1 = getProp(raw, 'base1Mtr') || getProp(raw, 'baseMtr') || getProp(raw, 'base1') || getProp(raw, 'base');
+  if (b1 !== undefined && b1 !== null && !params.base1 && !params.base && !params.radius) {
+    params.base1 = String(b1);
+    params.base = String(b1);
+    params.radius = String(b1);
+  }
+
+  const b2 = getProp(raw, 'base2Mtr') || getProp(raw, 'base2');
+  if (b2 !== undefined && b2 !== null && !params.base2) params.base2 = String(b2);
+
+  const h = getProp(raw, 'heightMtr') || getProp(raw, 'height');
+  if (h !== undefined && h !== null && !params.height) params.height = String(h);
+
+  const l = getProp(raw, 'lengthMtr') || getProp(raw, 'length');
+  if (l !== undefined && l !== null && !params.length) params.length = String(l);
+
+  const w = getProp(raw, 'widthMtr') || getProp(raw, 'width');
+  if (w !== undefined && w !== null && !params.width) params.width = String(w);
+
+  return {
+    ...raw,
+    shape: String(shape || "Rectangle"),
+    shapeParameters: params,
+    shapeParams: params, // Maintain both for compatibility
+    roomCount: String(getProp(raw, 'noOfRooms') || getProp(raw, 'roomCount') || "1"),
+    roomType: String(getProp(raw, 'roomType') || getProp(raw, 'utilities') || "Residential"),
+    carpetArea: parseFloat(String(getProp(raw, 'areaSqMtr') || getProp(raw, 'carpetArea') || getProp(raw, 'area') || 0)),
+    builtUpArea: parseFloat(String(getProp(raw, 'builtUpArea') || 0)),
+    roomNo: String(getProp(raw, 'roomNo') || ""),
+  };
+}
 
 /**
  * Normalizes a polymorphic floor object from various API responses into a 
@@ -81,8 +137,8 @@ export function normalizeFloorData(
     typeOfUseDescription: useDesc,
     subTypeOfUseDescription: subTypeDesc,
     
-    // Nested Data - Preserve already-normalized data if available
-    roomData: (raw.roomData || raw.propertyRooms || raw.roomWiseSubmissionDetails || []) as RoomData[],
+    // Nested Data - Normalize rooms to ensure shapeParameters are present
+    roomWiseSubmissionDetails: ((raw.roomWiseSubmissionDetails || raw.roomData || raw.propertyRooms || []) as unknown[]).map(r => normalizeRoomData(r as Record<string, unknown>)),
     renterDetails: (raw.renterDetails || []) as RenterDetailItem[],
     renterMast: (raw.renterMast || raw.renterMasts || []) as RenterMastItem[],
   };

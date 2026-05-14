@@ -158,9 +158,21 @@ export function SearchSequenceInput({
         name="searchSequence"
         type="number"
         value={String(value ?? 0)}
-        onChange={(e) => onChange(parseInt(e.target.value || "0", 10))}
+        onChange={(e) => {
+          const rawValue = e.target.value;
+          if (rawValue === "") {
+            onChange(0);
+            return;
+          }
+          const parsedValue = parseInt(rawValue, 10);
+          if (Number.isNaN(parsedValue)) {
+            return; // Don't update on invalid input
+          }
+          onChange(parsedValue);
+        }}
         placeholder="0"
         min={0}
+        max={999}
         fullWidth
         className="rounded-xl px-4 py-2"
       />

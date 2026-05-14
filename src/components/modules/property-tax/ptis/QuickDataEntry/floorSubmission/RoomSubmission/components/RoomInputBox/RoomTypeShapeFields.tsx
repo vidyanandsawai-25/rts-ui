@@ -1,0 +1,100 @@
+import React from 'react';
+import { Input, Select } from '@/components/common';
+import { COLUMN_WIDTHS } from '../../RoomTableConfig';
+import { RoomFormData } from '@/types/common-details.types';
+import { RoomTypeSelect } from '../RoomTypeSelect';
+
+interface RoomTypeShapeFieldsProps {
+  formData: RoomFormData;
+  handleInputChange: (field: string, value: string) => void;
+  isEditMode: boolean;
+  validationErrors: Record<string, string>;
+  focusRefs: React.MutableRefObject<Record<string, HTMLElement | null>>;
+  t: (key: string) => string;
+}
+
+export const RoomTypeShapeFields: React.FC<RoomTypeShapeFieldsProps> = ({
+  formData,
+  handleInputChange,
+  isEditMode,
+  validationErrors,
+  focusRefs,
+  t,
+}) => {
+  const setRoomNoRef = (el: HTMLElement | null) => {
+    if (focusRefs.current) {
+      // eslint-disable-next-line react-hooks/immutability
+      focusRefs.current['roomNo'] = el;
+    }
+  };
+
+
+
+  return (
+    <>
+      {/* Room No */}
+      <div className="flex flex-col justify-center flex-shrink-0 px-1" style={{ width: COLUMN_WIDTHS.roomNo }}>
+        <Input
+          ref={setRoomNoRef}
+          id="room-no-input"
+          type="text"
+          fullWidth
+          value={formData.roomNo}
+          onFocus={(e) => e.target.select()}
+          onChange={(e) => {
+            const value = e.target.value;
+            if (value && (value === '0' || parseFloat(value) < 1)) return;
+            handleInputChange('roomNo', value);
+          }}
+          disabled={!isEditMode}
+          className="text-center h-[40px]"
+          placeholder={t('roomSubmission.input.placeholders.auto')}
+          error={isEditMode ? validationErrors.roomNo : undefined}
+        />
+      </div>
+
+      {/* Room Type */}
+      <div className="flex flex-col justify-center flex-shrink-0 px-1" style={{ width: COLUMN_WIDTHS.roomType }}>
+        <RoomTypeSelect
+          value={formData.utilities}
+          onChange={(value) => {
+            handleInputChange('utilities', value);
+            setTimeout(() => { focusRefs?.current['shape']?.focus(); (focusRefs?.current['shape'] as HTMLElement)?.click(); }, 100);
+          }}
+          disabled={!isEditMode}
+          className="w-full h-[40px]"
+        />
+        {isEditMode && validationErrors.utilities && (
+          <span className="text-[10px] text-red-500 mt-0.5">{validationErrors.utilities}</span>
+        )}
+      </div>
+
+      <div className="flex flex-col justify-center flex-shrink-0 px-1" style={{ width: COLUMN_WIDTHS.shape }}>
+        <Select
+          options={[
+            { label: t('roomSubmission.input.shapes.select'), value: '-Select-' },
+            { label: t('roomSubmission.input.shapes.rectangle'), value: 'Rectangle' },
+            { label: t('roomSubmission.input.shapes.square'), value: 'Square' },
+            { label: t('roomSubmission.input.shapes.triangle'), value: 'Triangle' },
+            { label: t('roomSubmission.input.shapes.trapezoid'), value: 'Trapezoid' },
+            { label: t('roomSubmission.input.shapes.circle'), value: 'Circle' },
+            { label: t('roomSubmission.input.shapes.semiCircle'), value: 'Semi Circle' },
+            { label: t('roomSubmission.input.shapes.quarterCircle'), value: 'Quarter Circle' },
+          ]}
+          value={formData.shape || '-Select-'}
+          onChange={(_, value) => {
+            handleInputChange('shape', value);
+            setTimeout(() => {
+              const firstParam = document.querySelector('input[data-param]');
+              if (firstParam instanceof HTMLElement) firstParam.focus();
+              else focusRefs?.current['roomCount']?.focus();
+            }, 100);
+          }}
+          disabled={!isEditMode}
+          className="w-full h-[40px]"
+          error={isEditMode ? validationErrors.shape : undefined}
+        />
+      </div>
+    </>
+  );
+};

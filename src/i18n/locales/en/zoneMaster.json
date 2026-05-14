@@ -26,6 +26,7 @@
     "selectZonePrompt": "Select a zone to view wards",
     "deleteTitle": "Delete Ward",
     "selectAll": "Select All",
+    "loadingAll": "Loading all wards...",
     "columns": {
       "srNo": "Sr. No.",
       "wardNo": "Ward No",
@@ -168,7 +169,9 @@
     "updateSuccess": "Wards updated successfully",
     "moveSelectedToRight": "Move selected to right",
     "wardCannotBeDeleted": "Cannot delete ward {wardNo} because it is in use.",
-    "partialSuccess": "Successfully linked {success} ward(s); failed to link {failed} ward(s)."
+    "partialSuccess": "Successfully linked {success} ward(s); failed to link {failed} ward(s).",
+    "noWardsToLink": "No wards available to link to this zone.",
+    "fetchError": "Failed to fetch wards"
   },
   "createWardMessages": {
     "selectZoneBeforeCreate": "Select a zone before creating a ward.",
@@ -210,7 +213,9 @@
   "validation": {
     "zoneNoRequired": "Zone No is required",
     "zoneNoMaxLength": "Zone No cannot exceed {count} characters",
+    "zoneNoAllZeros": "Zone No cannot contain only zeros",
     "zoneNameMaxLength": "Zone Name cannot exceed {count} characters",
+    "zoneNameAllZeros": "Zone Name cannot contain only zeros",
     "nameEnRequired": "Zone Name (English) is required",
     "nameRegRequired": "Zone Name (Regional) is required",
     "wardNoRequired": "Ward No is required",

@@ -1,5 +1,8 @@
+'use client';
+
+import React from 'react';
 import { TaxBadge } from '@/components/modules/property-tax/ptis/shared/TaxBadge';
-import { getTranslations } from 'next-intl/server';
+import { useTranslations } from 'next-intl';
 
 interface DualMethodSummaryProps {
   oldData: {
@@ -18,14 +21,14 @@ interface DualMethodSummaryProps {
   locale: string;
 }
 
-export async function DualMethodSummary({
+export const DualMethodSummary: React.FC<DualMethodSummaryProps> = ({
   oldData,
   rateableData,
   capitalData,
   retainTotalTax,
-  locale,
-}: DualMethodSummaryProps) {
-  const t = await getTranslations({ locale, namespace: 'ptis.modules.DualMethod' });
+  locale: _locale,
+}) => {
+  const t = useTranslations('ptis.modules.DualMethod');
   return (
     <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-gray-200 bg-white p-1.5 shadow-sm">
       <h3 className="px-2 text-sm font-semibold text-blue-950">{t('title')}</h3>
@@ -40,4 +43,4 @@ export async function DualMethodSummary({
       </div>
     </div>
   );
-}
+};

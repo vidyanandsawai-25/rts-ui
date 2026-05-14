@@ -12,6 +12,7 @@ import { NextPageButton, SearchSelect, StatusBadge } from "@/components/common";
 import { ViewWards } from "./ViewWards";
 import { ZoneWards } from "./ZoneWards";
 import { handleFetchWardsByZone, handleLinkWardsToZone } from "./wardHandlers";
+import { getAllWardsForLinkAction } from "@/app/[locale]/property-tax/zone-master/actions";
 
 const PAGE_SIZE_OPTIONS = [
 	{ label: "10", value: "10" },
@@ -55,6 +56,8 @@ export default function LinkWard({
 	const [checkedAvailable, setCheckedAvailable] = useState<Set<string>>(new Set());
 	const [checkedSelected, setCheckedSelected] = useState<Set<string>>(new Set());
 	const [loading, setLoading] = useState(false);
+	const [selectAllLoading, setSelectAllLoading] = useState(false);
+	const [isSelectAllActive, setIsSelectAllActive] = useState(false);
 
 	// State for zone selection
 	const [currentZoneId, setCurrentZoneId] = useState<number | null>(selectedZoneId);
@@ -155,6 +158,7 @@ export default function LinkWard({
 				if (!searchParams.has("viewwardq")) setViewAllSearchTerm("");
 				setZoneSearchTerm("");
 				setZonePage(1);
+				setIsSelectAllActive(false);
 			}, 0);
 			return () => clearTimeout(timer);
 		}
@@ -200,12 +204,63 @@ export default function LinkWard({
 		});
 	}, []);
 
+	// Handle Select All in ViewWards - just toggle state, don't fetch wards
+	const handleSelectAllViewWards = useCallback((isChecked: boolean) => {
+		setIsSelectAllActive(isChecked);
+		if (!isChecked) {
+			// When unchecked, clear any individual selections
+			setCheckedAvailable(new Set());
+		}
+	}, []);
+
 	// Move checked items from view wards to selected zone
 	const moveToSelected = async () => {
+		if (!currentZoneId) return;
+
+		// If select all is active, fetch all wards server-side and link them
+		if (isSelectAllActive) {
+			setLoading(true);
+			setSelectAllLoading(true);
+			try {
+				const result = await getAllWardsForLinkAction(viewAllSearchTerm || undefined);
+				if (result.success && result.data) {
+					// Filter out wards that are already in the selected zone
+					const wardsToLink = result.data.filter(
+						w => !zoneWardsList.some(zw => zw.wardNo === w.wardNo)
+					);
+					
+					if (wardsToLink.length === 0) {
+						toast.info(t("wardMessages.noWardsToLink"));
+						return;
+					}
+
+					const linkResult = await handleLinkWardsToZone({
+						currentZoneId,
+						wardNos: wardsToLink.map(w => w.wardNo),
+						zoneWardsList,
+						viewAllFilteredWards,
+						onWardsChanged,
+						t: (key: string, values?: Record<string, unknown>) => t(key, values as never)
+					});
+
+					if (linkResult.success && linkResult.updatedWards) {
+						setZoneWardsList(linkResult.updatedWards);
+						setIsSelectAllActive(false);
+						setCheckedAvailable(new Set());
+					}
+				} else {
+					toast.error(result.error || t("wardMessages.fetchError"));
+				}
+			} finally {
+				setLoading(false);
+				setSelectAllLoading(false);
+			}
+			return;
+		}
+
+		// Normal flow: move individually checked wards
 		const toMove = Array.from(checkedAvailable);
 		if (toMove.length === 0) return;
-
-		if (!currentZoneId) return;
 
 		setLoading(true);
 		const result = await handleLinkWardsToZone({
@@ -231,6 +286,7 @@ export default function LinkWard({
 		setZoneSearchTerm("");
 		setViewAllSearchTerm("");
 		setZonePage(1);
+		setIsSelectAllActive(false);
 
 		// Let the parent handle URL cleanup via onClose (handleCloseDrawer in ZoneContent)
 		onClose();
@@ -307,6 +363,10 @@ export default function LinkWard({
 						pageSizeOptions={PAGE_SIZE_OPTIONS}
 						getZoneLabel={getZoneDisplayLabel}
 						isWardAssigned={isWardAssigned}
+						onSelectAllChange={handleSelectAllViewWards}
+						isSelectAllActive={isSelectAllActive}
+						selectAllLoading={selectAllLoading}
+						totalCount={ssrViewAllWardsTotalCount}
 					/>
 				</div>
 
@@ -315,7 +375,7 @@ export default function LinkWard({
 					<NextPageButton
 						size="sm"
 						onClick={moveToSelected}
-						disabled={checkedAvailable.size === 0 || loading}
+						disabled={(checkedAvailable.size === 0 && !isSelectAllActive) || loading}
 						title={t("wardMessages.moveSelectedToRight")}
 					/>
 				</div>
