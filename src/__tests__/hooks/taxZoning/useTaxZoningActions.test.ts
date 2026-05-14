@@ -9,7 +9,7 @@ vi.mock('next/navigation', () => ({
 
 const mockCreateTaxZoningAction = vi.fn();
 const mockUpdateTaxZoningAction = vi.fn();
-vi.mock('@/app/[locale]/property-tax/taxzoning/actions', () => ({
+vi.mock('@/app/[locale]/property-tax/taxzone-master/taxzoning/actions', () => ({
   createTaxZoningAction: (...args: unknown[]) => mockCreateTaxZoningAction(...args),
   updateTaxZoningAction: (...args: unknown[]) => mockUpdateTaxZoningAction(...args),
 }));

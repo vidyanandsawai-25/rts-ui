@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import * as XLSX from 'xlsx';
 import { ZoningRecord, TaxZone, Ward } from "@/types/taxzoning.types";
 import { PagedResponse } from "@/types/common.types";
-import { getTaxZoningPagedAction } from "@/app/[locale]/property-tax/taxzoning/actions";
+import { getTaxZoningPagedAction } from "@/app/[locale]/property-tax/taxzone-master/taxzoning/actions";
 
 export const useTaxZoningFile = (
   t: (key: string, values?: Record<string, string | number>) => string,

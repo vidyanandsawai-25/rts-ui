@@ -7,7 +7,7 @@ import { logger } from "@/lib/utils/logger";
 import {
   createTaxZoningAction,
   updateTaxZoningAction,
-} from "@/app/[locale]/property-tax/taxzoning/actions";
+} from "@/app/[locale]/property-tax/taxzone-master/taxzoning/actions";
 import { ZoningRecord, PreviewRow, Ward } from "@/types/taxzoning.types";
 import { PagedResponse } from "@/types/common.types";
 

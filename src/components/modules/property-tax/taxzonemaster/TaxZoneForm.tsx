@@ -7,7 +7,7 @@ import { toast } from "sonner";
 
 import { CancelButton, SaveButton } from "@/components/common";
 import type { TaxZoneFormModel } from "@/types/taxzone.types";
-import { saveTaxZone } from "@/app/[locale]/property-tax/taxzone/action";
+import { saveTaxZone } from "@/app/[locale]/property-tax/taxzone-master/taxzone/action";
 import { Drawer } from "@/components/common/Drawer";
 import { useTranslations, useLocale } from "next-intl";
 import { CODE_REGEX, CODE_SANITIZE, DESCRIPTION_REGEX, DESCRIPTION_SANITIZE, isAllZeros } from "@/lib/utils/validation-rules";
@@ -161,7 +161,7 @@ export default function TaxZoneForm({ initialData }: TaxZoneFormProps) {
             : t("form.messages.createSuccess") 
         );
         setOpen(false);
-        router.push(`/${locale}/property-tax/taxzone`);
+        router.push(`/${locale}/property-tax/taxzone-master/taxzone`);
         router.refresh();
         return;
       }

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { LucideIcon, Layers, FileText, Users, Settings, Home, Database } from "lucide-react";
+import { LucideIcon, Layers, FileText, Users, Settings, Home, Database, MapPin, Map } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { AddButton } from "./ActionButtons";
 
@@ -13,6 +13,8 @@ const ICON_MAP = {
   settings: Settings,
   home: Home,
   database: Database,
+  mapPin: MapPin,
+  map: Map,
 } as const;
 
 type IconName = keyof typeof ICON_MAP;

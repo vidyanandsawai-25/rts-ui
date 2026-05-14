@@ -69,6 +69,9 @@ vi.mock('lucide-react', () => ({
   Database: () => <div />,
   Languages: () => <div />,
   Globe: () => <div />,
+  MapPin: () => <div />,
+  Map: () => <div />,
+  Lock: () => <div />,
 }));
 
 // ✅ TOTAL PASSIVE UI: Zero logic, just placeholders
