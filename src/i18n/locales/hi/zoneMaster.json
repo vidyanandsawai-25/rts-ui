@@ -26,6 +26,7 @@
     "selectZonePrompt": "वार्ड देखने के लिए एक ज़ोन चुनें",
     "deleteTitle": "वार्ड हटाएं",
     "selectAll": "सभी चुनें",
+    "loadingAll": "सभी वार्ड लोड हो रहे हैं...",
     "columns": {
       "srNo": "क्र.सं.",
       "wardNo": "वार्ड नंबर",
@@ -169,7 +170,9 @@
     "updateSuccess": "वार्ड सफलतापूर्वक अपडेट किए गए",
     "moveSelectedToRight": "चयनित को दाएं स्थानांतरित करें",
     "wardCannotBeDeleted": "वार्ड {wardNo} को हटाया नहीं जा सकता क्योंकि यह उपयोग में है।",
-    "partialSuccess": "{success} वार्ड सफलतापूर्वक लिंक किए गए; {failed} वार्ड लिंक करने में विफल।"
+    "partialSuccess": "{success} वार्ड सफलतापूर्वक लिंक किए गए; {failed} वार्ड लिंक करने में विफल।",
+    "noWardsToLink": "इस ज़ोन में लिंक करने के लिए कोई वार्ड उपलब्ध नहीं।",
+    "fetchError": "वार्ड लाने में विफल"
   },
   "createWardMessages": {
     "selectZoneBeforeCreate": "वार्ड बनाने से पहले एक ज़ोन चुनें।",
@@ -211,7 +214,9 @@
   "validation": {
     "zoneNoRequired": "ज़ोन नंबर आवश्यक है",
     "zoneNoMaxLength": "ज़ोन नंबर {count} अक्षरों से अधिक नहीं हो सकता",
+    "zoneNoAllZeros": "ज़ोन नंबर में केवल शून्य नहीं हो सकते",
     "zoneNameMaxLength": "ज़ोन का नाम {count} अक्षरों से अधिक नहीं हो सकता",
+    "zoneNameAllZeros": "ज़ोन का नाम केवल शून्य नहीं हो सकता",
     "nameEnRequired": "ज़ोन का नाम (अंग्रेजी) आवश्यक है",
     "nameRegRequired": "ज़ोन का नाम (क्षेत्रीय) आवश्यक है",
     "wardNoRequired": "वार्ड नंबर आवश्यक है",

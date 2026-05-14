@@ -7,9 +7,9 @@ interface FormInitializationProps {
   editData?: IRateMaster | null;
   bulkEditData?: IRateMaster[] | null;
   filterValues?: {
-    zone: string;
-    year: string;
-    useGroup: string;
+    zone?: string;
+    year?: string;
+    useGroup?: string;
   };
   backendRates?: IBackendRateMaster[] | null;
   assessmentYears: ISelectOption[];

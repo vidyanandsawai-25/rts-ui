@@ -1,11 +1,7 @@
 "use client";
 
-import { MapPin } from "lucide-react";
-import { PageContainer } from "@/components/common";
-import TableHeader from "@/components/common/TableHeader";
-import { TaxZoningPageProps } from "@/types/taxzoning.types";
-
 import { useTaxZoning } from "@/hooks/taxZoning/useTaxZoning";
+import { TaxZoningPageProps } from "@/types/taxzoning.types";
 import { TaxZoningForm } from "./TaxZoningForm";
 import { TaxZoningPreview } from "./TaxZoningPreview";
 import { TaxZoningTable } from "./TaxZoningTable";
@@ -55,76 +51,68 @@ export default function TaxZoningPage(props: TaxZoningPageProps) {
   } = useTaxZoning(props);
 
   return (
-    <PageContainer>
-      <div className="space-y-2">
-        <TableHeader
-          title={t('title')}
-          subtitle={t('subtitle')}
-          icon={MapPin}
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TaxZoningForm
+          t={t}
+          zone={zone}
+          setZone={setZone}
+          zoneOptions={zoneOptions}
+          isTaxZoneValid={isTaxZoneValid}
+          submitted={submitted}
+          ward={ward}
+          setWard={setWard}
+          wardOptions={wardOptions}
+          isWardValid={isWardValid}
+          fromProps={fromProps}
+          setFromProps={setFromProps}
+          toProps={toProps}
+          setToProps={setToProps}
+          propertyOptionsByWard={propertyOptionsByWard}
+          isPropertyValid={isPropertyValid}
+          saving={saving}
+          isFormValid={isFormValid}
+          handleSubmit={handleSubmit}
+          onClear={onFormClear}
         />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <TaxZoningForm
-            t={t}
-            zone={zone}
-            setZone={setZone}
-            zoneOptions={zoneOptions}
-            isTaxZoneValid={isTaxZoneValid}
-            submitted={submitted}
-            ward={ward}
-            setWard={setWard}
-            wardOptions={wardOptions}
-            isWardValid={isWardValid}
-            fromProps={fromProps}
-            setFromProps={setFromProps}
-            toProps={toProps}
-            setToProps={setToProps}
-            propertyOptionsByWard={propertyOptionsByWard}
-            isPropertyValid={isPropertyValid}
-            saving={saving}
-            isFormValid={isFormValid}
-            handleSubmit={handleSubmit}
-            onClear={onFormClear}
-          />
-
-          <TaxZoningPreview
-            t={t}
-            previewData={previewData}
-            pagedPreviewData={pagedPreviewData}
-            previewColumns={previewColumns}
-            previewPage={previewPage}
-            setPreviewPage={setPreviewPage}
-            PREVIEW_PAGE_SIZE={PREVIEW_PAGE_SIZE}
-            zone={zone}
-            ward={ward}
-            fromProps={fromProps}
-            toProps={toProps}
-            taxZones={props.taxZones}
-            wardsData={props.wardsData}
-          />
-        </div>
-
-        <TaxZoningTable
+        <TaxZoningPreview
           t={t}
-          columns={columns}
-          tableRecords={tableRecords}
-          currentPage={currentPage}
-          pageSizes={pageSizes}
-          totalCount={props.totalCount}
-          totalPages={props.totalPages}
-          loading={loading}
-          changePage={changePage}
-          changePageSize={changePageSize}
-          pageSizeOptions={pageSizeOptions}
-          hasImportedData={hasImportedData}
-          saving={saving}
-          handleBulkUpdate={handleBulkUpdate}
-          handleClearImported={handleClearImported}
-          handleImportFile={handleImportFile}
-          handleExportCSV={handleExportCSV}
-          fileInputRef={fileInputRef}
+          previewData={previewData}
+          pagedPreviewData={pagedPreviewData}
+          previewColumns={previewColumns}
+          previewPage={previewPage}
+          setPreviewPage={setPreviewPage}
+          PREVIEW_PAGE_SIZE={PREVIEW_PAGE_SIZE}
+          zone={zone}
+          ward={ward}
+          fromProps={fromProps}
+          toProps={toProps}
+          taxZones={props.taxZones}
+          wardsData={props.wardsData}
         />
       </div>
-    </PageContainer>
+
+      <TaxZoningTable
+        t={t}
+        columns={columns}
+        tableRecords={tableRecords}
+        currentPage={currentPage}
+        pageSizes={pageSizes}
+        totalCount={props.totalCount}
+        totalPages={props.totalPages}
+        loading={loading}
+        changePage={changePage}
+        changePageSize={changePageSize}
+        pageSizeOptions={pageSizeOptions}
+        hasImportedData={hasImportedData}
+        saving={saving}
+        handleBulkUpdate={handleBulkUpdate}
+        handleClearImported={handleClearImported}
+        handleImportFile={handleImportFile}
+        handleExportCSV={handleExportCSV}
+        fileInputRef={fileInputRef}
+      />
+    </div>
   );
 }

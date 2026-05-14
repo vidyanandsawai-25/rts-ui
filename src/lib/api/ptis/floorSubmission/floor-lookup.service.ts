@@ -9,6 +9,7 @@ import {
     type TypeOfUseApiItem,
     type SubTypeOfUseResponse,
     type SubFloorResponse,
+    type RoomTypeResponse,
 } from '@/types/floor-details.types';
 
 /**
@@ -122,6 +123,30 @@ export async function getSubFloorOptions(): Promise<string[]> {
             const id = item.subFloorCode || item.subFloorId || getPropertySafely(item, ['id', 'ID']);
             const desc = item.description || '';
             return id && desc ? `${id} - ${desc}` : (desc || String(id));
+        }
+    );
+}
+
+/**
+ * Fetches room type data from API
+ * @returns Promise<RoomTypeResponse[]>
+ */
+export async function getRoomTypeData(): Promise<RoomTypeResponse[]> {
+    return fetchItems<RoomTypeResponse>("/RoomTypeMaster?pageNumber=1&pageSize=1000", "Failed to fetch room types");
+}
+
+/**
+ * Generates dropdown options for room type
+ * @returns Promise<string[]>
+ */
+export async function getRoomTypeOptions(): Promise<string[]> {
+    return getOptionsFromData(
+        getRoomTypeData,
+        () => 0,
+        item => {
+            const name = item.roomTypeName || item.description || '';
+            const code = item.roomTypeCode || String(item.roomTypeId || getPropertySafely(item, ['id', 'ID']));
+            return name || code;
         }
     );
 }

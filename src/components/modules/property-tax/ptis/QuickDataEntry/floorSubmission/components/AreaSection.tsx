@@ -7,6 +7,7 @@ import { AreaSectionProps } from '@/types/floor-details.types';
 import { cn } from '@/lib/utils/cn';
 import { FieldWrapper, ReadOnlyField } from './SectionField';
 
+
 export const AreaSection: React.FC<AreaSectionProps> = ({
   t,
   editingFloorForm,
@@ -17,31 +18,6 @@ export const AreaSection: React.FC<AreaSectionProps> = ({
   areaInputRef,
   setShowRoomSubmission,
 }) => {
-  // Area conversion constants
-  const SQFT_TO_SQM = 0.092903;
-  const BUILTUP_MULTIPLIER = 1.2; // 20% increase for built-up area
-
-  // Calculate derived area fields when carpet area changes
-  const calculateDerivedAreas = (carpetAreaSqFt: string) => {
-    const carpetSqFt = parseFloat(carpetAreaSqFt) || 0;
-    if (carpetSqFt === 0) {
-      return {
-        areaSqM: '',
-        builtupAreaSqFt: '',
-        builtupAreaSqM: '',
-      };
-    }
-
-    const carpetSqM = carpetSqFt * SQFT_TO_SQM;
-    const builtupSqFt = carpetSqFt * BUILTUP_MULTIPLIER;
-    const builtupSqM = builtupSqFt * SQFT_TO_SQM;
-
-    return {
-      areaSqM: carpetSqM.toFixed(2),
-      builtupAreaSqFt: builtupSqFt.toFixed(2),
-      builtupAreaSqM: builtupSqM.toFixed(2),
-    };
-  };
 
   return (
     <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-5 gap-4">
@@ -76,7 +52,7 @@ export const AreaSection: React.FC<AreaSectionProps> = ({
           }}
           disabled={!editingFloorForm.use}
           className={cn(
-            "h-9 text-sm transition-all duration-200", 
+            "h-9 text-sm transition-all duration-200",
             !editingFloorForm.use ? "bg-gray-100/80 cursor-not-allowed grayscale" : "bg-white hover:border-blue-400 focus:border-blue-500"
           )}
         />
@@ -107,20 +83,11 @@ export const AreaSection: React.FC<AreaSectionProps> = ({
             type="number"
             placeholder="0.00"
             value={editingFloorForm.areaSqFt || ''}
-            onChange={(e) => {
-              const newAreaSqFt = e.target.value;
-              const derivedAreas = calculateDerivedAreas(newAreaSqFt);
-              setEditingFloorForm({ 
-                ...editingFloorForm, 
-                areaSqFt: newAreaSqFt,
-                ...derivedAreas,
-              });
-              if (formErrors.areaSqFt) setFormErrors((prev) => ({ ...prev, areaSqFt: '' }));
-            }}
+            readOnly
             onKeyDown={(e) => {
               if (['e', 'E', '+', '-'].includes(e.key)) e.preventDefault();
             }}
-            className="h-9 text-sm bg-white group-hover:bg-blue-50/30 transition-colors pr-24 border-gray-300 focus:border-blue-500 focus:ring-blue-200"
+            className="h-9 text-sm bg-gray-50 cursor-default group-hover:bg-blue-50/30 transition-colors pr-24 border-gray-300 focus:border-blue-500 focus:ring-blue-200"
           />
           <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5 bg-slate-100/90 hover:bg-slate-200/90 px-2 py-1 rounded-md border border-slate-300 shadow-sm transition-all duration-200 group-hover:shadow group-focus-within:border-blue-400 group-focus-within:ring-1 group-focus-within:ring-blue-100">
             <span className="text-[10px] font-black text-slate-700 uppercase tracking-wider">

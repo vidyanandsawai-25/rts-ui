@@ -191,6 +191,16 @@ export function usePropertyTypeFormHandlers({
     setTouched((p) => ({ ...p, propertyTypeCategoryId: true }));
   }, [validate, setFormData, setErrors, setTouched]);
 
+  const handleTypeChange = useCallback((value: string): void => {
+    setFormData((p) => {
+      const nextFormData = { ...p, type: value };
+      setErrors(validate(nextFormData));
+      return nextFormData;
+    });
+    // Mark as touched for validation
+    setTouched((p) => ({ ...p, type: true }));
+  }, [validate, setFormData, setErrors, setTouched]);
+
   const handleSubmit = async (e: React.FormEvent): Promise<{ success: boolean; createdId?: number }> => {
     e.preventDefault();
     setSubmittedOnce(true);
@@ -233,6 +243,7 @@ export function usePropertyTypeFormHandlers({
     handleChange,
     handleBlur,
     handleCategoryChange,
+    handleTypeChange,
     handleSubmit,
     handleToggleStatus,
     handleCancel,

@@ -116,8 +116,8 @@ export function RateViewGrid({
                   {
                     id: "zoneNo",
                     label: (
-                      <span className="flex items-center gap-0.5 text-[13px] font-bold text-blue-700">
-                        <MapPin size={12} />
+                      <span className="inline-flex items-center gap-0.5 text-[11px] md:text-[12px] font-bold text-blue-700 whitespace-nowrap">
+                        <MapPin size={11} />
                         {t("columns.taxZoneNo")}
                       </span>
                     ),

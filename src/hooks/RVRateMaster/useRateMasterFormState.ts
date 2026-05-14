@@ -16,9 +16,9 @@ interface UseRateMasterFormStateProps {
   backendRates?: IBackendRateMaster[] | null;
   fetchedBackendRates: IBackendRateMaster[];
   filterValues?: {
-    zone: string;
-    year: string;
-    useGroup: string;
+    zone?: string;
+    year?: string;
+    useGroup?: string;
   };
   selectedZone: string;
   selectedUseGroup: string;

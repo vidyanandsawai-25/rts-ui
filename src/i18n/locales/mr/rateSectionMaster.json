@@ -85,6 +85,9 @@
     "alreadyAdded": "{rateSectionNo} मध्ये जोडले",
     "selected": "निवडले"
   },
+  "wardList": {
+    "selectAll": "सर्व निवडा"
+  },
   "form": {
     "rateSectionNo": "दर विभाग क्र.",
     "rateSectionNoPlaceholder": "उदा., DI",
@@ -125,6 +128,7 @@
     "descriptionFormat": "{label} मध्ये अवैध वर्ण आहेत. फक्त अक्षरे, अंक आणि मूलभूत विरामचिन्हे (/, -, &, इ.) यांना परवानगी आहे.",
     "maxChars": "{label} {count} अक्षरांपेक्षा जास्त असू शकत नाही",
     "tooLong": "{label} खूप मोठा आहे",
+    "allZeros": "{label} मध्ये फक्त शून्य असू शकत नाही",
     "duplicate": "दर विभाग \"{name}\" आधीच अस्तित्वात आहे."
   },
   "messages": {

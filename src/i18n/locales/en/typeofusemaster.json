@@ -136,6 +136,8 @@
         "allowedEnglishChars": "can contain only English letters, numbers, spaces and (. - ,).",
         "allowedShortcutChars": "can contain only letters, spaces, '+' and '-' (numbers not allowed).",
         "atLeastOneLetter": "must contain at least one letter.",
+        "cannotBeAllZeros": "cannot contain only zeros.",
+        "maxThreeDigits": "must be maximum 3 digits (0-999).",
         "sequenceNonNegative": "must be 0 or greater.",
         "duplicateGroupId": "Duplicate group id is not allowed.",
         "duplicateGroupName": "Duplicate group name is not allowed.",
