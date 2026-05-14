@@ -63,8 +63,8 @@ export const POSITIVE_DECIMAL_INVALID_KEYS = /^[eE+\-]$/;
  * @returns true if the value consists only of zeros, false otherwise
  */
 export const isAllZeros = (value: string): boolean => {
-    if (!value) return false;
-    const trimmed = value.trim();
-    if (trimmed.length === 0) return false;
-    return /^0+$/.test(trimmed);
+  if (!value) return false;
+  const trimmed = value.trim();
+  if (trimmed.length === 0) return false;
+  return /^0+$/.test(trimmed);
 };

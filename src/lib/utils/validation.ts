@@ -47,10 +47,9 @@ export {
   PERSON_NAME_REGEX,
   EMAIL_REGEX,
   MOBILE_10_REGEX,
-  YEAR_REGEX,
   POSITIVE_DECIMAL_INVALID_KEYS,
   isAllZeros,
-
+  YEAR_REGEX,
 } from './validation-rules';
 
 // Re-export from validation-helpers.ts

@@ -179,7 +179,7 @@ describe("ZoneForm", () => {
       expect(screen.queryByTestId("drawer")).not.toBeInTheDocument();
     });
 
-    it("shows validation error when zone no is empty", async () => {
+    it("disables save button when zone no is empty", async () => {
       render(
         <ZoneForm
           mode="add"
@@ -191,11 +191,7 @@ describe("ZoneForm", () => {
       );
 
       const saveButton = screen.getByTestId("save-button");
-      fireEvent.click(saveButton);
-
-      await waitFor(() => {
-        expect(screen.getAllByTestId("validation-message").length).toBeGreaterThan(0);
-      });
+      expect(saveButton).toBeDisabled();
     });
 
     it("calls onClose when cancel button is clicked", () => {

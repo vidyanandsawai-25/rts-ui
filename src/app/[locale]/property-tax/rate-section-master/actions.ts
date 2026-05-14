@@ -107,7 +107,7 @@ export async function getWardsByRateAction(
     }
 
     const response = await apiClient.get<{ items?: unknown[]; totalCount?: number }>(`/RateSectionDetails?${params.toString()}`);
-    
+
     if (!response.success || !response.data) {
       return { success: false, data: [], totalCount: 0, error: response.error || "Failed to fetch wards" };
     }
@@ -132,7 +132,7 @@ export async function getRateSectionByNoAction(
     }
 
     const response = await apiClient.get<RateItem>(`/RateSection/GetByNo/${encodeURIComponent(rateSectionNo.trim())}`);
-    
+
     if (!response.success || !response.data) return null;
 
     return response.data;
@@ -155,7 +155,7 @@ export async function getRateSectionByIdAction(
     }
 
     const data = await getRateSectionById(String(rateSectionId));
-    
+
     if (!data) {
       return { success: false, error: "Rate section not found", statusCode: 404 };
     }
@@ -256,7 +256,12 @@ export async function updateRateSectionAction(
     });
 
     if (!result.success) {
-      return { success: false, message: result.error || "Failed to update rate section" };
+      return {
+        success: false,
+        message: result.error || "Failed to update rate section",
+        error: result.error || "Failed to update rate section",
+        statusCode: result.statusCode
+      };
     }
 
     // Revalidate all locale variants
@@ -359,7 +364,7 @@ export async function getAllWardsForLinkAction(searchTerm?: string): Promise<{
 }> {
   try {
     const data = await getWards(1, -1, searchTerm || undefined);
-    
+
     // Transform to simplified format for AddWard
     const items = (data.items || []).map((w) => ({
       id: String(w.id),
@@ -396,7 +401,7 @@ export async function getWardsPagedWithSearchAction(
 }> {
   try {
     const data = await getWards(pageNumber, pageSize, searchTerm || undefined);
-    
+
     // Transform to simplified format for AddWard
     const items = (data.items || []).map((w) => ({
       id: String(w.id),
@@ -443,7 +448,7 @@ export async function linkWardsToRateSectionAction(
 
     // Get authenticated user ID from cookies
     const userId = await getAuthenticatedUserId();
-    
+
     if (userId === undefined) {
       return { success: false, error: "User authentication required", statusCode: 401 };
     }
@@ -466,27 +471,27 @@ export async function linkWardsToRateSectionAction(
     // only the relevant RateSectionDetails to avoid loading the entire dataset.
     const allDetailsRes = await getAllRateSectionDetails();
     const wardToAssignment: Record<string, { id: number; rateSectionId: number }> = {};
-    
+
     allDetailsRes.forEach(detail => {
       const detailRecord = detail as Record<string, unknown>;
       const wNo = (detail.wardNo || detailRecord.WardNo) as string | undefined;
       const detailId = (detail.id) as number | undefined;
       if (wNo && detailId) {
-        wardToAssignment[wNo] = { 
-          id: detailId, 
-          rateSectionId: detail.rateSectionId || 0 
+        wardToAssignment[wNo] = {
+          id: detailId,
+          rateSectionId: detail.rateSectionId || 0
         };
       }
     });
 
-    const toCreate: Array<{ 
-      isActive: boolean; createdBy: number; updatedBy: number; 
+    const toCreate: Array<{
+      isActive: boolean; createdBy: number; updatedBy: number;
       rateSectionId: number; wardId: number;
     }> = [];
-    
-    const toUpdate: Array<{ 
-      id: number; 
-      data: { isActive: boolean; updatedBy: number; rateSectionId: number; wardId: number } 
+
+    const toUpdate: Array<{
+      id: number;
+      data: { isActive: boolean; updatedBy: number; rateSectionId: number; wardId: number }
     }> = [];
 
     wardNos.forEach(wardNo => {
@@ -689,7 +694,7 @@ export async function deleteSelectedWardsAction(rateSectionId: number, wardNos: 
     for (const locale of locales) {
       revalidatePath(`/${locale}/property-tax/rate-section-master`, "page");
     }
-    
+
     return {
       success: true,
       deletedCount: deleteResponse.items?.successCount || idsToDelete.length
@@ -719,7 +724,7 @@ export async function getWardByIdAction(
     }
 
     const data = await getWardById(numericWardId);
-    
+
     if (!data) {
       return { success: false, message: "Ward not found" };
     }

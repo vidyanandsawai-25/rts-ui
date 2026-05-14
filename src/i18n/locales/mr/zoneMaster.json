@@ -206,7 +206,9 @@
   "validation": {
     "zoneNoRequired": "झोन क्रमांक आवश्यक आहे",
     "zoneNoMaxLength": "झोन क्रमांक {count} अक्षरांपेक्षा जास्त असू शकत नाही",
+    "zoneNoAllZeros": "झोन क्रमांकमध्ये फक्त शून्य असू शकत नाही",
     "zoneNameMaxLength": "झोनचे नाव {count} अक्षरांपेक्षा जास्त असू शकत नाही",
+    "zoneNameAllZeros": "झोनच्या नावात फक्त शून्य असू शकत नाही",
     "nameEnRequired": "झोनचे नाव (इंग्रजी) आवश्यक आहे",
     "nameRegRequired": "झोनचे नाव (प्रादेशिक) आवश्यक आहे",
     "wardNoRequired": "प्रभाग क्रमांक आवश्यक आहे",

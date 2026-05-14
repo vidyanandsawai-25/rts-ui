@@ -175,7 +175,7 @@ export async function createRateSection(payload: RateSectionFormState): Promise<
  * Update an existing Rate Section.
  * Use this function in the Edit Rate Section form submission.
  */
-export async function updateRateSection(id: string, payload: RateSectionFormState): Promise<{ success: boolean; error?: string }> {
+export async function updateRateSection(id: string, payload: RateSectionFormState): Promise<{ success: boolean; error?: string; statusCode?: number }> {
   const apiPayload = {
     RateSectionNo: payload.zoneCode,
     Description: payload.zoneRegional || payload.description || "",
@@ -186,7 +186,7 @@ export async function updateRateSection(id: string, payload: RateSectionFormStat
   const response = await apiClient.put(`/RateSection/${id}`, apiPayload);
 
   if (!response.success) {
-    return { success: false, error: response.error || "Failed to update rate section" };
+    return { success: false, error: response.error || "Failed to update rate section", statusCode: response.statusCode };
   }
 
   return { success: true };

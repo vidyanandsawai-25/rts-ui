@@ -11,14 +11,14 @@ import React from "react";
 export const dynamic = "force-dynamic";
 
 interface PageProps {
-  params: Promise<{ locale: string; id: string }>;
+  params: Promise<{ locale: string; zoneId: string }>;
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export default async function EditZonePage({ params, searchParams }: PageProps): Promise<React.ReactElement> {
   noStore();
 
-  const { id } = await params;
+  const { zoneId } = await params;
   const sp = await searchParams;
 
   // =============================
@@ -26,7 +26,7 @@ export default async function EditZonePage({ params, searchParams }: PageProps):
   // =============================
   let editZoneData: ZoneItem | undefined;
   try {
-    const editResult = await getZoneByIdAction(Number(id));
+    const editResult = await getZoneByIdAction(Number(zoneId));
     if (!editResult.success || !editResult.data) {
       notFound();
     }
@@ -156,7 +156,7 @@ export default async function EditZonePage({ params, searchParams }: PageProps):
         <ZoneForm
           mode="edit"
           open={true}
-          zoneId={String(id)}
+          zoneId={String(zoneId)}
           zones={zones}
           existingZones={zones}
           initialData={editZoneData}
