@@ -136,6 +136,8 @@
         "allowedEnglishChars": "फक्त इंग्रजी अक्षरे, अंक, स्पेस आणि (. - ,) असावेत.",
         "allowedShortcutChars": "फक्त अक्षरे, स्पेस, '+' आणि '-' असावेत (अंक परवानगी नाही).",
         "atLeastOneLetter": "किमान एक अक्षर असणे आवश्यक आहे.",
+        "cannotBeAllZeros": "फक्त शून्य असू शकत नाही.",
+        "maxThreeDigits": "कमाल 3 अंक असावे (0-999).",
         "sequenceNonNegative": "0 किंवा त्यापेक्षा मोठे असावे.",
         "duplicateGroupId": "डुप्लिकेट गट आयडी परवानगी नाही.",
         "duplicateGroupName": "डुप्लिकेट गटाचे नाव परवानगी नाही.",

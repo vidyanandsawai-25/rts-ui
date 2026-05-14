@@ -68,6 +68,7 @@ const mockMessages = {
       saveFailed: "Failed to save. Please try again.",
       allowedChars: "can contain letters (any language), numbers, spaces and (. - ,).",
       sequenceNonNegative: "must be 0 or greater.",
+      maxThreeDigits: "must be maximum 3 digits (0-999).",
       maxLength: "must be maximum {count} characters.",
       typeNotFound: "Type not found",
       subTypeNameLabel: "Sub-Type Name",
@@ -75,6 +76,7 @@ const mockMessages = {
       typeMissing: "Type is missing.",
       createError: "Failed to create record",
       updateError: "Failed to update record",
+      cannotBeAllZeros: "cannot contain only zeros.",
     },
     status: {
       active: "Active",
@@ -193,6 +195,22 @@ describe("UseSubTypeForm", () => {
       });
     });
 
+    it("should reject description with only zeros", async () => {
+      const { container } = renderWithIntl(
+        <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} />
+      );
+
+      const descInput = screen.getByPlaceholderText("Sub-Type Name");
+      fireEvent.change(descInput, { target: { value: "000" } });
+      
+      const form = container.querySelector("#use-subtype-form");
+      fireEvent.submit(form!);
+
+      await waitFor(() => {
+        expect(screen.getByText((content) => content.includes("cannot contain only zeros"))).toBeInTheDocument();
+      });
+    });
+
     it("should detect duplicate sub-type description", async () => {
       const { container } = renderWithIntl(
         <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} />
@@ -222,6 +240,52 @@ describe("UseSubTypeForm", () => {
 
       await waitFor(() => {
         expect(screen.getByText(/Search Sequence must be 0 or greater/i)).toBeInTheDocument();
+      });
+    });
+
+    it("should accept sequence at maximum value (999)", async () => {
+      mockCreateSubType.mockResolvedValue(undefined);
+
+      const { container } = renderWithIntl(
+        <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} />
+      );
+
+      const descInput = screen.getByPlaceholderText("Sub-Type Name");
+      fireEvent.change(descInput, { target: { value: "Max Sequence Floor" } });
+
+      const seqInput = screen.getByPlaceholderText("0");
+      fireEvent.change(seqInput, { target: { value: "999" } });
+
+      const form = container.querySelector("#use-subtype-form");
+      fireEvent.submit(form!);
+
+      await waitFor(() => {
+        expect(mockCreateSubType).toHaveBeenCalledWith({
+          typeId: 1,
+          description: "Max Sequence Floor",
+          searchSequence: 999,
+          status: "Active",
+        });
+        expect(toast.success).toHaveBeenCalledWith("Sub-Type Created");
+      });
+    });
+
+    it("should reject sequence above maximum (1000)", async () => {
+      const { container } = renderWithIntl(
+        <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} />
+      );
+
+      const descInput = screen.getByPlaceholderText("Sub-Type Name");
+      fireEvent.change(descInput, { target: { value: "Test Floor" } });
+
+      const seqInput = screen.getByPlaceholderText("0");
+      fireEvent.change(seqInput, { target: { value: "1000" } });
+      
+      const form = container.querySelector("#use-subtype-form");
+      fireEvent.submit(form!);
+
+      await waitFor(() => {
+        expect(screen.getByText((content) => content.includes("must be maximum 3 digits"))).toBeInTheDocument();
       });
     });
 

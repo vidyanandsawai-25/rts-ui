@@ -49,13 +49,16 @@
 
       "validation": {
         "zoneNoRequired": "Zone No is required",
+        "zoneNoAllZeros": "Zone No cannot contain only zeros",
         "zoneNoMax": "Maximum length is 10 characters",
         "zoneNoFormat": "Only letters, numbers and underscore allowed (underscore only in between)",
         "zoneNoExists": "Duplicate zone number is not allowed",
         "zoneTypeRequired": "Zone Type is required",
+        "zoneTypeAllZeros": "Zone Type cannot contain only zeros",
         "zoneTypeFormat": "Only letters, numbers and basic punctuation allowed (special characters only in between, single space only)",
         "zoneTypeExists": "Duplicate zone type is not allowed",
         "remarkRequired": "Remark is required",
+        "remarkAllZeros": "Remark cannot contain only zeros",
         "remarkFormat": "Only letters, numbers and basic punctuation allowed (special characters only in between, single space only)",
         "fixErrors": "Please fix validation errors",
         "duplicateRecord": "This record already exists",
