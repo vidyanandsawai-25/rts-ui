@@ -1,15 +1,16 @@
+
 export interface DepartmentMaster {
     departmentId: number;
-    departmentCode: string; // varchar, YES
-    departmentName: string; // varchar, YES
-    departmentNameLocal?: string; // nvarchar, YES
-    departmentIcon?: string; // varchar, YES
-    departmentDescription?: string; // nvarchar, YES
-    isActive: boolean; // bit, YES -> boolean
+    departmentCode: string;
+    departmentName: string;
+    departmentNameLocal?: string;
+    departmentIcon?: string;
+    departmentDescription?: string;
+    isActive: boolean;
     createdBy?: number;
-    createdAt?: string; // datetime -> string (ISO)
+    createdAt?: string;
     updatedBy?: number;
-    updatedAt?: string; // datetime -> string (ISO)
+    updatedAt?: string;
     [key: string]: unknown;
 }
 
@@ -40,16 +41,14 @@ export interface DashboardCardProps {
     icon: React.ElementType;
 }
 
-
 export interface DepartmentMasterFormProps {
     open: boolean;
     onClose: () => void;
     editingDepartment: DepartmentMaster | null;
-    onSuccess: () => void;
+    onSuccess?: () => void;
 }
 
-
-export interface Props {
+export interface DepartmentMasterProps {
     initialData: DepartmentMaster[];
     allData?: DepartmentMaster[];
     initialPageNumber: number;
@@ -59,5 +58,4 @@ export interface Props {
     initialSearchTerm?: string;
 }
 
-// Use shared PagedResponse from common.types instead of duplicating
-export type { PagedResponse } from './common.types';
+export type { PagedResponse } from "./common.types";
