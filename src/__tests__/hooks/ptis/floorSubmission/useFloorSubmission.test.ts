@@ -80,6 +80,7 @@ vi.mock('@/hooks/ptis/floorSubmission/useFloorDataHandlers', () => ({
     handleDeleteFloor: vi.fn(),
     handleOpenRenterManagement: vi.fn(),
     isSaving: false,
+    isDeleting: false,
   })),
 }));
 
@@ -346,7 +347,7 @@ describe('useFloorSubmission', () => {
         editingFloorForm: {
           id: 1,
           floor: 'Ground Floor',
-          roomData: mockRoomData,
+          roomWiseSubmissionDetails: mockRoomData,
         } as unknown as ReturnType<typeof useFloorFormState>['editingFloorForm'],
       } as unknown as ReturnType<typeof useFloorFormState>);
 
@@ -413,6 +414,7 @@ describe('useFloorSubmission', () => {
       vi.mocked(useFloorDataHandlers).mockReturnValue({
         ...(useFloorDataHandlers as unknown as () => ReturnType<typeof useFloorDataHandlers>)(),
         isSaving: true,
+        isDeleting: false,
       } as unknown as ReturnType<typeof useFloorDataHandlers>);
 
       const { result } = renderHook(() => useFloorSubmission(mockProps));

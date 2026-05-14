@@ -68,6 +68,17 @@ export interface SubFloorResponse {
     [key: string]: unknown;
 }
 
+export interface RoomTypeResponse {
+    roomTypeId: number;
+    roomTypeCode: string;
+    roomTypeName?: string;
+    description: string;
+    isActive: boolean;
+    createdDate: string;
+    updatedDate: string | null;
+    [key: string]: unknown;
+}
+
 /* -------------------------------------------------------------------------- */
 /*                                  LOOKUP TYPES                              */
 /* -------------------------------------------------------------------------- */
@@ -322,16 +333,16 @@ export interface FloorFormProps {
 export interface BaseFormSectionProps {
     /** Translation function for i18n support */
     t: (key: string) => string;
-    
+
     /** Current floor form state containing all field values */
     editingFloorForm: FloorData;
-    
+
     /** Updates the floor form state */
     setEditingFloorForm: React.Dispatch<React.SetStateAction<FloorData>>;
-    
+
     /** Object containing validation errors keyed by field name */
     formErrors: Record<string, string>;
-    
+
     /** Updates the form validation errors */
     setFormErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>;
 }
@@ -353,22 +364,22 @@ export interface BaseFormSectionProps {
 export interface BasicInfoSectionProps extends BaseFormSectionProps {
     /** Floor options - can be string array, response array, or error object */
     floorOptions: string[] | FloorResponse[] | { success: boolean; error: string };
-    
+
     /** Full floor lookup data for ID-to-description mapping */
     floorLookup: LookupData[];
-    
+
     /** Sub-floor options - can be string array, response array, or error object */
     subFloorOptions: string[] | SubFloorResponse[] | { success: boolean; error: string };
-    
+
     /** Full sub-floor lookup data for ID-to-description mapping */
     subFloorLookup: LookupData[];
-    
+
     /** Resolves floor description from ID using lookup data */
     getFloorDescription: (id: string, lookup: LookupData[]) => string;
-    
+
     /** Resolves sub-floor description from ID using lookup data */
     getSubFloorDescription: (id: string, lookup: LookupData[]) => string;
-    
+
     /** Triggers lazy loading for specific dropdown data */
     handleOpenDropdown: (key: 'loadFloor' | 'loadSubFloor' | 'loadConstruction' | 'loadUsage' | 'loadSubType') => void;
 }
@@ -391,37 +402,37 @@ export interface BasicInfoSectionProps extends BaseFormSectionProps {
 export interface UsageSectionProps extends BaseFormSectionProps {
     /** Construction type options - can be string array, response array, or error object */
     constructionTypeOptions: string[] | ConstructionTypeResponse[] | { success: boolean; error: string };
-    
+
     /** Full construction type lookup data */
     constructionLookup: LookupData[];
-    
+
     /** Type of use options - can be string array, response array, or error object */
     useOptions: string[] | TypeOfUseApiItem[] | { success: boolean; error: string };
-    
+
     /** Full type of use lookup data */
     useLookup: LookupData[];
-    
+
     /** Sub-type options derived from current type of use selection */
     subTypeOptionsFromData: string[];
-    
+
     /** Full sub-type lookup data */
     subTypeData: LookupData[];
-    
+
     /** React transition function for non-blocking state updates */
     startTransition: React.TransitionStartFunction;
-    
+
     /** Updates URL parameters for deep linking support */
     updateUrlParams: (params: Record<string, string>) => void;
-    
+
     /** Resolves construction type description from ID */
     getConstructionDescription: (id: string, lookup: LookupData[]) => string;
-    
+
     /** Resolves type of use description from ID */
     getUseDescription: (id: string, lookup: LookupData[]) => string;
-    
+
     /** Resolves sub-type description from ID */
     getSubTypeDescription: (id: string, lookup: LookupData[]) => string;
-    
+
     /** Triggers lazy loading for specific dropdown data */
     handleOpenDropdown: (key: 'loadFloor' | 'loadSubFloor' | 'loadConstruction' | 'loadUsage' | 'loadSubType') => void;
 }
@@ -444,10 +455,10 @@ export interface UsageSectionProps extends BaseFormSectionProps {
 export interface AreaSectionProps extends BaseFormSectionProps {
     /** Ref for the rooms input field for programmatic focus */
     roomsInputRef: React.RefObject<HTMLInputElement | null>;
-    
+
     /** Ref for the area input field for programmatic focus */
     areaInputRef: React.RefObject<HTMLInputElement | null>;
-    
+
     /** Controls visibility of room submission modal */
     setShowRoomSubmission: (show: boolean) => void;
 }
@@ -469,7 +480,7 @@ export interface AreaSectionProps extends BaseFormSectionProps {
 export interface RenterSectionProps extends BaseFormSectionProps {
     /** Opens renter management dialog/page */
     handleOpenRenterManagement: (data?: FloorData) => void;
-    
+
     /** Indicates if a save/update operation is in progress */
     isOperationLoading: boolean;
 }
@@ -481,22 +492,22 @@ export interface RenterSectionProps extends BaseFormSectionProps {
 export interface FieldWrapperProps {
     /** Field label text */
     label: string;
-    
+
     /** HTML ID of the input field for label association */
     htmlFor: string;
-    
+
     /** Whether the field is required (shows asterisk) */
     required?: boolean;
-    
+
     /** Error message to display below the field */
     error?: string;
-    
+
     /** Input element or other form control */
     children: React.ReactNode;
-    
+
     /** Additional CSS classes for the wrapper */
     className?: string;
-    
+
     /** Optional element to display next to the label (e.g., info icon, badge) */
     labelExtra?: React.ReactNode;
 }
@@ -508,7 +519,7 @@ export interface FieldWrapperProps {
 export interface ReadOnlyFieldProps {
     /** Field label text */
     label: string;
-    
+
     /** Value to display in the read-only field */
     value: string | number;
     badgeText?: string;
@@ -517,7 +528,17 @@ export interface ReadOnlyFieldProps {
 
 // Re-export common entities for backward compatibility where possible
 export * from "./common-details.types";
-export * from "./room-details.types";
+export { 
+  type FloorData, 
+  type RoomData, 
+  type RoomAPIResponse, 
+  type RoomWiseSubmissionProps, 
+  type RoomActions, 
+  type OffsetActions, 
+  type RoomSubmissionSidebarProps, 
+  type RoomSubmissionItem, 
+  type ParameterInputProps 
+} from "./room-details.types";
 export * from "./offset-details.types";
 export * from "./renter-details.types";
 
