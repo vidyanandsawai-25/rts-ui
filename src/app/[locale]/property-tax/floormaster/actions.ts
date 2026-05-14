@@ -32,6 +32,41 @@ import type {
 } from "@/types/floor.types";
 
 /* ============================================================
+   SERVER ERROR CODE → HUMAN-READABLE MESSAGE MAP
+============================================================ */
+const FLOOR_SERVER_ERROR_CODES: Record<string, string> = {
+  FloorCode_MaxLen_5: "Floor code cannot exceed 5 characters.",
+  FloorCode_Required: "Floor code is required.",
+  Floor_Description_Required: "Description is required.",
+  Floor_SequenceNo_Required: "Sequence number is required.",
+  SubFloorId_MaxLen_5: "Sub-floor code cannot exceed 5 characters.",
+  SubFloorCode_Required: "Sub-floor code is required.",
+  SubFloor_Description_Required: "Sub-floor description is required.",
+  Template_Description_Required: "Description is required.",
+};
+
+function parseFloorApiError(error: ApiError): string {
+  try {
+    const parsed = JSON.parse(error.responseText);
+    if (parsed?.errors && typeof parsed.errors === "object") {
+      const messages: string[] = [];
+      for (const codes of Object.values(parsed.errors)) {
+        if (Array.isArray(codes)) {
+          for (const code of codes) {
+            const msg = FLOOR_SERVER_ERROR_CODES[code as string];
+            if (msg) messages.push(msg);
+          }
+        }
+      }
+      if (messages.length > 0) return messages.join(" ");
+    }
+  } catch {
+    // not JSON — fall through
+  }
+  return error.responseText || "An unexpected error occurred.";
+}
+
+/* ============================================================
    FLOOR PAGED (SEARCH + SORT)
 ============================================================ */
 export async function fetchFloorPagedServerAction(
@@ -129,7 +164,8 @@ export async function createFloorAction(
     if (error instanceof ApiError) {
       return {
         success: false,
-        message: error.responseText,
+        // Return raw responseText for client-side field error parsing, fallback to parsed message
+        message: error.responseText || parseFloorApiError(error),
         statusCode: error.statusCode,
       };
     }
@@ -177,7 +213,8 @@ export async function updateFloorAction(
     if (error instanceof ApiError) {
       return {
         success: false,
-        message: error.responseText,
+        // Return raw responseText for client-side field error parsing, fallback to parsed message
+        message: error.responseText || parseFloorApiError(error),
         statusCode: error.statusCode,
       };
     }
@@ -225,9 +262,16 @@ export async function deleteFloorAction(
     };
   } catch (error) {
     if (error instanceof ApiError) {
+      let errorMessage = error.responseText;
+      try {
+        const parsed = JSON.parse(error.responseText);
+        if (parsed?.message) errorMessage = parsed.message;
+      } catch {
+        // use raw text
+      }
       return {
         success: false,
-        message: error.responseText,
+        message: errorMessage,
         statusCode: error.statusCode,
       };
     }
@@ -275,7 +319,8 @@ export async function createFloorRangeAction(
     if (error instanceof ApiError) {
       return {
         success: false,
-        message: error.responseText,
+        // Return raw responseText for client-side field error parsing, fallback to parsed message
+        message: error.responseText || parseFloorApiError(error),
         statusCode: error.statusCode,
       };
     }
@@ -386,7 +431,8 @@ export async function createSubFloorAction(
     if (error instanceof ApiError) {
       return {
         success: false,
-        message: error.responseText,
+        // Return raw responseText for client-side field error parsing, fallback to parsed message
+        message: error.responseText || parseFloorApiError(error),
         statusCode: error.statusCode,
       };
     }
@@ -434,7 +480,8 @@ export async function updateSubFloorAction(
     if (error instanceof ApiError) {
       return {
         success: false,
-        message: error.responseText,
+        // Return raw responseText for client-side field error parsing, fallback to parsed message
+        message: error.responseText || parseFloorApiError(error),
         statusCode: error.statusCode,
       };
     }

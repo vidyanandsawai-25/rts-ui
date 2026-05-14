@@ -26,9 +26,9 @@ const messages = {
         englishName: {
           title: 'English Name',
           prefix: 'Prefix',
-          prefixPlaceholder: 'First',
+          prefixPlaceholder: 'FL',
           suffix: 'Suffix',
-          suffixPlaceholder: 'Floor',
+          suffixPlaceholder: 'FL',
         },
       
         autoGenerateSubFloor: 'Auto-Generate SubFloor',
@@ -51,7 +51,6 @@ const defaultFormData: FloorRangeFormModel = {
   rangeTo: 10,
   prefix: '',
   suffix: 'Floor',
-  floorCode: '0',
   isActive: true,
   autoGenerateSubFloor: false,
 };
@@ -96,11 +95,6 @@ describe('FloorRangeFields', () => {
     renderFloorRangeFields();
     expect(screen.getByLabelText('Prefix')).toBeInTheDocument();
     expect(screen.getByLabelText('Suffix')).toBeInTheDocument();
-  });
-
-  it('renders Floor Code field', () => {
-    renderFloorRangeFields();
-    expect(screen.getByLabelText(/Floor Code/)).toBeInTheDocument();
   });
 
   it('renders example info message', () => {
@@ -157,21 +151,41 @@ describe('FloorRangeFields', () => {
     expect(screen.getByText('Start value must be at least 1')).toBeInTheDocument();
   });
 
-  it('calls onChange when prefix is changed', () => {
+  it('calls onChange when prefix is changed with max 2 chars', () => {
     const onChangeMock = vi.fn();
     renderFloorRangeFields({ onChange: onChangeMock });
     const prefixInput = screen.getByLabelText('Prefix');
-    fireEvent.change(prefixInput, { target: { value: 'Test' } });
-    expect(onChangeMock).toHaveBeenCalledWith('prefix', 'Test');
+    fireEvent.change(prefixInput, { target: { value: 'FL' } });
+    expect(onChangeMock).toHaveBeenCalledWith('prefix', 'FL');
+  });
+
+  it('restricts Prefix field to 2 characters maximum', () => {
+    const onChangeMock = vi.fn();
+    renderFloorRangeFields({ onChange: onChangeMock });
+    const prefixInput = screen.getByLabelText('Prefix');
+    fireEvent.change(prefixInput, { target: { value: 'ABC' } });
+    expect(onChangeMock).not.toHaveBeenCalledWith('prefix', 'ABC');
+    fireEvent.change(prefixInput, { target: { value: 'AB' } });
+    expect(onChangeMock).toHaveBeenCalledWith('prefix', 'AB');
+  });
+
+  it('restricts Suffix field to 2 characters maximum', () => {
+    const onChangeMock = vi.fn();
+    renderFloorRangeFields({ onChange: onChangeMock });
+    const suffixInput = screen.getByLabelText('Suffix');
+    fireEvent.change(suffixInput, { target: { value: 'XYZ' } });
+    expect(onChangeMock).not.toHaveBeenCalledWith('suffix', 'XYZ');
+    fireEvent.change(suffixInput, { target: { value: 'XY' } });
+    expect(onChangeMock).toHaveBeenCalledWith('suffix', 'XY');
   });
 
   it('calls onChange when suffix is changed', () => {
     const onChangeMock = vi.fn();
     renderFloorRangeFields({ onChange: onChangeMock });
-    
-    const suffixInput = screen.getByPlaceholderText('Floor');
+
+    const suffixInput = screen.getByLabelText('Suffix');
     fireEvent.change(suffixInput, { target: { value: 'F' } });
-    
+
     expect(onChangeMock).toHaveBeenCalledWith('suffix', 'F');
   });
 
@@ -220,23 +234,6 @@ describe('FloorRangeFields', () => {
     expect(onChangeMock).toHaveBeenCalledWith('rangeTo', 987);
   });
 
-  it('restricts Floor Code field to 4 characters maximum', () => {
-    const onChangeMock = vi.fn();
-    renderFloorRangeFields({ onChange: onChangeMock });
-    
-    const floorCodeInput = screen.getByLabelText(/Floor Code/);
-    
-    // Try to enter 5 characters - should only accept first 4
-    fireEvent.change(floorCodeInput, { target: { value: 'ABCDE' } });
-    
-    // onChange should not be called for 5-character input
-    expect(onChangeMock).not.toHaveBeenCalledWith('floorCode', 'ABCDE');
-    
-    // Try to enter 4 characters - should work
-    fireEvent.change(floorCodeInput, { target: { value: 'ABCD' } });
-    expect(onChangeMock).toHaveBeenCalledWith('floorCode', 'ABCD');
-  });
-
   it('accepts valid 3-digit values for Start and End fields', () => {
     const onChangeMock = vi.fn();
     renderFloorRangeFields({ onChange: onChangeMock });
@@ -252,17 +249,4 @@ describe('FloorRangeFields', () => {
     expect(onChangeMock).toHaveBeenCalledWith('rangeTo', 999);
   });
 
-  it('accepts valid 4-character values for Floor Code field', () => {
-    const onChangeMock = vi.fn();
-    renderFloorRangeFields({ onChange: onChangeMock });
-    
-    const floorCodeInput = screen.getByLabelText(/Floor Code/);
-    
-    // Test different 4-character combinations
-    fireEvent.change(floorCodeInput, { target: { value: 'FL01' } });
-    expect(onChangeMock).toHaveBeenCalledWith('floorCode', 'FL01');
-    
-    fireEvent.change(floorCodeInput, { target: { value: '1234' } });
-    expect(onChangeMock).toHaveBeenCalledWith('floorCode', '1234');
-  });
 });

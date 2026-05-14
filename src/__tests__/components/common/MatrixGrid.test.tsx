@@ -46,11 +46,11 @@ describe('MatrixGrid', () => {
     expect(screen.getByText('(kg)')).toBeInTheDocument();
     expect(screen.getByText('Column 2')).toBeInTheDocument();
     
-    // In view mode (default), cells are rendered as static divs with formatted values
-    expect(screen.getByText('₹10.00')).toBeInTheDocument();
-    expect(screen.getByText('₹20.00')).toBeInTheDocument();
-    expect(screen.getByText('₹30.00')).toBeInTheDocument();
-    expect(screen.getByText('₹40.00')).toBeInTheDocument();
+    // In view mode (default), cells are rendered as static divs with formatted values (no currency symbol)
+    expect(screen.getByText('10')).toBeInTheDocument();
+    expect(screen.getByText('20')).toBeInTheDocument();
+    expect(screen.getByText('30')).toBeInTheDocument();
+    expect(screen.getByText('40')).toBeInTheDocument();
   });
 
   it('renders meta columns correctly', () => {
@@ -101,9 +101,9 @@ describe('MatrixGrid', () => {
     expect(inputs[1]).toHaveValue(30); // row2, col1
     expect(inputs[1]).not.toHaveAttribute('readOnly');
     
-    // col2 cells are still static divs (not editable)
-    expect(screen.getByText('₹20.00')).toBeInTheDocument(); // row1, col2
-    expect(screen.getByText('₹40.00')).toBeInTheDocument(); // row2, col2
+    // col2 cells are still static divs (not editable, no currency symbol)
+    expect(screen.getByText('20')).toBeInTheDocument(); // row1, col2
+    expect(screen.getByText('40')).toBeInTheDocument(); // row2, col2
   });
 
   it('calls onCellChange when input value changes', () => {
@@ -159,12 +159,12 @@ describe('MatrixGrid', () => {
     expect(col1Header).toHaveClass('bg-red-100');
     
     // Check cell for Col1 (in row 1)
-    // In view mode, cells are rendered as divs with formatted values
-    const col1Cell = screen.getByText('₹10.00').closest('div');
+    // In view mode, cells are rendered as divs with formatted values (no currency symbol)
+    const col1Cell = screen.getByText('10').closest('div');
     expect(col1Cell).toHaveClass('bg-red-100');
     
     // Check cell for Col2 (in row 1)
-    const col2Cell = screen.getByText('₹20.00').closest('div');
+    const col2Cell = screen.getByText('20').closest('div');
     expect(col2Cell).toHaveClass('bg-green-100');
   });
 
@@ -200,7 +200,7 @@ describe('MatrixGrid', () => {
       />
     );
     
-    const cell = screen.getByText('₹10.00');
+    const cell = screen.getByText('10');
     expect(cell).toHaveClass('bg-blue-100');
     expect(cell).toHaveClass('text-blue-900');
   });

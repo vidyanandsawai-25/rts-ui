@@ -9,7 +9,8 @@ const mockT = vi.fn((key: string) => {
     "errors.mustBeNumber": "Must be a valid number",
     "errors.invalidRange": "Min must be less than max",
     "errors.cannotBeNegative": "Cannot be negative",
-    "errors.mustBe9999OrLess": "Must be 9999 or less",
+    "errors.mustBe999OrLess": "Must be 999 or less",
+    "errors.mustBe99OrLess": "Must be 99 or less",
   };
   return translations[key] || key;
 });
@@ -102,25 +103,41 @@ describe("useDepreciationValidation", () => {
       expect(validation.maxError).toBe("Min must be less than max");
     });
 
-    it("should return error when min exceeds 9999", () => {
+    it("should return error when min exceeds 999", () => {
       const { result } = renderHook(() => useDepreciationValidation(mockT));
-      const validation = result.current.validateMinMax("10000", "20000");
+      const validation = result.current.validateMinMax("1000", "1500");
 
       expect(validation.valid).toBe(false);
-      expect(validation.minError).toBe("Must be 9999 or less");
+      expect(validation.minError).toBe("Must be 999 or less");
     });
 
-    it("should return error when max exceeds 9999", () => {
+    it("should return error when max exceeds 999", () => {
       const { result } = renderHook(() => useDepreciationValidation(mockT));
-      const validation = result.current.validateMinMax("100", "10000");
+      const validation = result.current.validateMinMax("10", "1000");
 
       expect(validation.valid).toBe(false);
-      expect(validation.maxError).toBe("Must be 9999 or less");
+      expect(validation.maxError).toBe("Must be 999 or less");
+    });
+
+    it("should accept max value of exactly 999", () => {
+      const { result } = renderHook(() => useDepreciationValidation(mockT));
+      const validation = result.current.validateMinMax("0", "999");
+
+      expect(validation.valid).toBe(true);
+      expect(validation.maxError).toBeNull();
+    });
+
+    it("should accept valid range within 0–999", () => {
+      const { result } = renderHook(() => useDepreciationValidation(mockT));
+      const validation = result.current.validateMinMax("0", "500");
+
+      expect(validation.valid).toBe(true);
+      expect(validation.minError).toBeNull();
+      expect(validation.maxError).toBeNull();
     });
 
     it("should accept valid range that would overlap (since overlap validation is server-side)", () => {
       const { result } = renderHook(() => useDepreciationValidation(mockT));
-      // Client-side validation no longer checks overlaps
       const validation = result.current.validateMinMax("5", "10");
 
       expect(validation.valid).toBe(true);
@@ -132,48 +149,46 @@ describe("useDepreciationValidation", () => {
   describe("checkOverlap - Always returns false (server-side validation)", () => {
     it("should always return false since overlap validation is server-side", () => {
       const { result } = renderHook(() => useDepreciationValidation(mockT));
-      
-      // checkOverlap now always returns false
       expect(result.current.checkOverlap()).toBe(false);
     });
   });
 
   describe("sanitizeInput", () => {
-    it("should remove non-digit characters", () => {
+    it("should remove non-digit characters and limit to 3 chars", () => {
       const { result } = renderHook(() => useDepreciationValidation(mockT));
-      
+
       expect(result.current.sanitizeInput("abc123")).toBe("123");
-      expect(result.current.sanitizeInput("12.34")).toBe("1234");
+      expect(result.current.sanitizeInput("12.34")).toBe("123");
       expect(result.current.sanitizeInput("-50")).toBe("50");
       expect(result.current.sanitizeInput("1a2b3c")).toBe("123");
     });
 
-    it("should limit input to 4 characters", () => {
+    it("should limit input to 3 characters", () => {
       const { result } = renderHook(() => useDepreciationValidation(mockT));
-      
-      expect(result.current.sanitizeInput("12345")).toBe("1234");
-      expect(result.current.sanitizeInput("123456789")).toBe("1234");
+
+      expect(result.current.sanitizeInput("1234")).toBe("123");
+      expect(result.current.sanitizeInput("123456789")).toBe("123");
     });
 
     it("should return empty string for non-numeric input", () => {
       const { result } = renderHook(() => useDepreciationValidation(mockT));
-      
+
       expect(result.current.sanitizeInput("abc")).toBe("");
       expect(result.current.sanitizeInput("!@#$")).toBe("");
     });
 
     it("should handle empty input", () => {
       const { result } = renderHook(() => useDepreciationValidation(mockT));
-      
+
       expect(result.current.sanitizeInput("")).toBe("");
     });
 
-    it("should preserve valid numeric input", () => {
+    it("should preserve valid numeric input up to 3 digits", () => {
       const { result } = renderHook(() => useDepreciationValidation(mockT));
-      
-      expect(result.current.sanitizeInput("1234")).toBe("1234");
+
+      expect(result.current.sanitizeInput("999")).toBe("999");
       expect(result.current.sanitizeInput("0")).toBe("0");
-      expect(result.current.sanitizeInput("99")).toBe("99");
+      expect(result.current.sanitizeInput("100")).toBe("100");
     });
   });
 });

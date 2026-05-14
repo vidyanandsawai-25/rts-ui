@@ -205,9 +205,9 @@ export async function deleteFloor(id: number, _userId: string): Promise<void> {
 
     // Note: _userId is available for backend auditing/authentication
     // Use shared apiClient for consistent timeout/abort handling
-    const response = await apiClient.delete(`/Floor/${id}/purge`);
+    const response = await apiClient.delete(`/Floor/${id}`);
 
-    // Purge endpoints may return 204 No Content with an empty body.
+    // Delete endpoints may return 204 No Content with an empty body.
     // If the shared client marks that response as unsuccessful because it
     // attempts JSON parsing first, still treat HTTP 204 or JSON parse errors as success.
     if (response.success) {
@@ -269,9 +269,6 @@ export async function createFloorRange(data: FloorRangePayload, userId: string):
     if (rangeSize > MAX_RANGE_SIZE) {
       throw new Error(`Range size cannot exceed ${MAX_RANGE_SIZE} floors`);
     }
-
-    // Validate template.floorCode (same as createFloor)
-    if (!data.template.floorCode?.trim()) throw new Error('floorCode required');
 
     // Note: userId is used for backend auditing/authentication
     const payload: FloorRangePayload = {

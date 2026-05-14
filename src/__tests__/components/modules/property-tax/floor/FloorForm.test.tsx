@@ -51,6 +51,7 @@ const messages = {
         description: 'Description',
         descriptionPlaceholder: 'Enter description',
         sequenceNo: 'Sequence No',
+        sequenceNoPlaceholder: 'Enter sequence number',
         activeStatusTitle: 'Active Status',
         activeStatusOn: 'Active',
         activeStatusOff: 'Inactive',
@@ -274,7 +275,6 @@ describe('FloorForm — Range Mode', () => {
     expect(screen.getByLabelText(/End/)).toBeInTheDocument();
     expect(screen.getByLabelText('Prefix')).toBeInTheDocument();
     expect(screen.getByLabelText('Suffix')).toBeInTheDocument();
-    expect(screen.getByLabelText(/Floor Code/)).toBeInTheDocument();
   });
 
   it('shows validation errors for invalid range input', async () => {
@@ -296,8 +296,6 @@ describe('FloorForm — Range Mode', () => {
     fireEvent.change(screen.getByLabelText(/End/), { target: { value: '3' } });
     fireEvent.change(screen.getByLabelText('Prefix'), { target: { value: 'F' } });
     fireEvent.change(screen.getByLabelText('Suffix'), { target: { value: 'A' } });
-    fireEvent.change(screen.getByLabelText(/Floor Code/), { target: { value: 'FL01' } });
-    // Floor Code is required, but in range mode it may be auto-filled or not required
     submitForm(document.body);
     await waitFor(() => {
       expect(createFloorRangeAction).toHaveBeenCalledWith(
@@ -317,7 +315,6 @@ describe('FloorForm — Range Mode', () => {
     fireEvent.click(screen.getByText('Floor Range'));
     fireEvent.change(screen.getByLabelText(/Start/), { target: { value: '1' } });
     fireEvent.change(screen.getByLabelText(/End/), { target: { value: '2' } });
-    fireEvent.change(screen.getByLabelText(/Floor Code/), { target: { value: 'FL02' } });
     submitForm(document.body);
     await waitFor(() => {
       expect(createFloorRangeAction).toHaveBeenCalled();

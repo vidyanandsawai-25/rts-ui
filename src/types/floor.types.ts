@@ -169,7 +169,6 @@ export interface FloorRangeFormModel {
   rangeTo: number;
   prefix: string;
   suffix: string;
-  floorCode: string;
   isActive: boolean;
   autoGenerateSubFloor: boolean;
 }
@@ -184,7 +183,6 @@ export interface FloorRangeFieldsProps {
     rangeTo?: string;
     prefix?: string;
     suffix?: string;
-    floorCode?: string;
   };
   showError: (field: keyof FloorRangeFormModel) => boolean;
   onChange: (field: keyof FloorRangeFormModel, value: string | number | boolean) => void;

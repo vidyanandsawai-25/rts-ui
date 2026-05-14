@@ -80,9 +80,12 @@ export function FloorRangeFields({
         label={t('form.englishName.prefix')}
         placeholder={t('form.englishName.prefixPlaceholder')}
         value={formData.prefix}
-        onChange={(e) => onChange('prefix', e.target.value)}
+        onChange={(e) => {
+          if (e.target.value.length <= 2) onChange('prefix', e.target.value);
+        }}
         onBlur={() => onBlur('prefix')}
         fullWidth
+        maxLength={2}
         className="text-gray-700"
       />
       <ValidationMessage
@@ -94,35 +97,17 @@ export function FloorRangeFields({
         label={t('form.englishName.suffix')}
         placeholder={t('form.englishName.suffixPlaceholder')}
         value={formData.suffix}
-        onChange={(e) => onChange('suffix', e.target.value)}
+        onChange={(e) => {
+          if (e.target.value.length <= 2) onChange('suffix', e.target.value);
+        }}
         onBlur={() => onBlur('suffix')}
         fullWidth
+        maxLength={2}
         className="text-gray-700"
       />
       <ValidationMessage
         message={errors.suffix}
         visible={showError('suffix')}
-      />
-
-      <Input
-        label={t('form.floorCode')}
-        placeholder={t('form.floorCodePlaceholder')}
-        value={formData.floorCode}
-        onChange={(e) => {
-          const value = e.target.value;
-          if (value.length <= 4) {
-            onChange('floorCode', value);
-          }
-        }}
-        onBlur={() => onBlur('floorCode')}
-        fullWidth
-        required
-        maxLength={4}
-        className="text-gray-700"
-      />
-      <ValidationMessage
-        message={errors.floorCode}
-        visible={showError('floorCode')}
       />
 
       <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg border border-blue-100">

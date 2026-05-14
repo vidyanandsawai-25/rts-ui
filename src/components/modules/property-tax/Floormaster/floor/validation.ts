@@ -12,7 +12,7 @@ import {
 import { FloorFormModel } from '@/types/floor.types';
 
 /* ================= CONSTANTS ================= */
-export const FLOOR_CODE_MAX = 7;
+export const FLOOR_CODE_MAX = 5;
 export const DESCRIPTION_MAX = 100;
 
 /* ================= TYPES ================= */
