@@ -159,11 +159,16 @@ export function SearchSequenceInput({
         type="number"
         value={String(value ?? 0)}
         onChange={(e) => {
-          const num = parseInt(e.target.value || "0", 10);
-          // Only prevent values > 999 (allow negative for validation to catch)
-          if (num <= 999) {
-            onChange(num);
+          const rawValue = e.target.value;
+          if (rawValue === "") {
+            onChange(0);
+            return;
           }
+          const parsedValue = parseInt(rawValue, 10);
+          if (Number.isNaN(parsedValue)) {
+            return; // Don't update on invalid input
+          }
+          onChange(parsedValue);
         }}
         placeholder="0"
         min={0}
