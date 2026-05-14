@@ -211,7 +211,9 @@
   "validation": {
     "zoneNoRequired": "ज़ोन नंबर आवश्यक है",
     "zoneNoMaxLength": "ज़ोन नंबर {count} अक्षरों से अधिक नहीं हो सकता",
+    "zoneNoAllZeros": "ज़ोन नंबर में केवल शून्य नहीं हो सकते",
     "zoneNameMaxLength": "ज़ोन का नाम {count} अक्षरों से अधिक नहीं हो सकता",
+    "zoneNameAllZeros": "ज़ोन का नाम केवल शून्य नहीं हो सकता",
     "nameEnRequired": "ज़ोन का नाम (अंग्रेजी) आवश्यक है",
     "nameRegRequired": "ज़ोन का नाम (क्षेत्रीय) आवश्यक है",
     "wardNoRequired": "वार्ड नंबर आवश्यक है",

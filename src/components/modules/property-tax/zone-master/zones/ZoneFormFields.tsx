@@ -24,6 +24,7 @@ export interface ZoneFormErrors {
 interface ZoneFormFieldsProps {
   data: ZoneFormState;
   onChange: (v: ZoneFormState) => void;
+  onBlur?: (fieldName: keyof ZoneFormState) => void;
   disabled?: boolean;
   errors?: ZoneFormErrors;
   showActiveStatus?: boolean;
@@ -32,6 +33,7 @@ interface ZoneFormFieldsProps {
 export function ZoneFormFields({
   data,
   onChange,
+  onBlur,
   disabled,
   errors = {},
   showActiveStatus = false,
@@ -94,6 +96,7 @@ export function ZoneFormFields({
             const sanitized = sanitizeCode(e.target.value.toUpperCase());
             onChange({ ...data, zoneNo: sanitized });
           }}
+          onBlur={() => onBlur?.("zoneNo")}
           className={errors.zoneNo ? "border-red-500 focus:ring-red-500" : ""}
         />
         <ValidationMessage message={errors.zoneNo} />
@@ -110,6 +113,7 @@ export function ZoneFormFields({
             const sanitized = sanitizeRegionalText(e.target.value);
             onChange({ ...data, description: sanitized });
           }}
+          onBlur={() => onBlur?.("description")}
           className={errors.description ? "border-red-500 focus:ring-red-500" : ""}
         />
         <ValidationMessage message={errors.description} />

@@ -210,7 +210,9 @@
   "validation": {
     "zoneNoRequired": "Zone No is required",
     "zoneNoMaxLength": "Zone No cannot exceed {count} characters",
+    "zoneNoAllZeros": "Zone No cannot contain only zeros",
     "zoneNameMaxLength": "Zone Name cannot exceed {count} characters",
+    "zoneNameAllZeros": "Zone Name cannot contain only zeros",
     "nameEnRequired": "Zone Name (English) is required",
     "nameRegRequired": "Zone Name (Regional) is required",
     "wardNoRequired": "Ward No is required",
