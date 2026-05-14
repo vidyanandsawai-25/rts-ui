@@ -31,7 +31,6 @@ interface AgeFactorCvHeaderExtraProps {
     isGeneratingAll: boolean;
     isBulkUpdating: boolean;
     isUpdating: boolean;
-    dataLength: number;
     isAddYearRangeModalOpen: boolean;
     setIsAddYearRangeModalOpen: (open: boolean) => void;
     handleAssessmentYearChange: (value: string) => void;
@@ -66,7 +65,6 @@ export const AgeFactorCvHeaderExtra: React.FC<AgeFactorCvHeaderExtraProps> = ({
     isGeneratingAll,
     isBulkUpdating,
     isUpdating,
-    dataLength,
     isAddYearRangeModalOpen,
     setIsAddYearRangeModalOpen,
     handleAssessmentYearChange,
@@ -269,7 +267,7 @@ export const AgeFactorCvHeaderExtra: React.FC<AgeFactorCvHeaderExtraProps> = ({
                     size="sm"
                     label={tW('common.buttons.apply')}
                     onClick={handleApplyFilter}
-                    disabled={dataLength === 0 || (!selectedYear && !constructionType && !selectedAgeRange)}
+                    disabled={!selectedYear && !constructionType && !selectedAgeRange}
                     className="h-[34px] px-4 font-bold bg-[#52C41A]"
                 />
                 <ClearButton

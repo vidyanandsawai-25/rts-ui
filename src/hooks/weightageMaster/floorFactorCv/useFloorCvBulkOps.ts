@@ -70,7 +70,7 @@ export function useFloorCvBulkOps({
             return;
         }
 
-        if (!factorValue || isNaN(factor) || factor === 0) {
+        if (!factorValue || isNaN(factor)) {
             addToast("warning", tW("common.messages.validFactorRequired"));
             return;
         }

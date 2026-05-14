@@ -44,7 +44,7 @@ export function useNatureFactorCvBulkOps({
 
     const handleApplyFilter = (): void => {
         const factor = parseFloat(factorValue);
-        if (!factorValue || isNaN(factor) || factor <= 0) {
+        if (!factorValue || isNaN(factor) || factor < 0) {
             addToast('warning', tW('common.messages.validFactorRequired'));
             return;
         }

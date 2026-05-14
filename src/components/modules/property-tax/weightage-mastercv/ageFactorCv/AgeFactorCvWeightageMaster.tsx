@@ -163,7 +163,6 @@ const AgeFactorCvWeightageMaster: React.FC<AgeFactorCvWeightageMasterProps> = ({
                         isGeneratingAll={isGeneratingAll}
                         isBulkUpdating={isBulkUpdating}
                         isUpdating={isUpdating}
-                        dataLength={data.length}
                         isAddYearRangeModalOpen={isAddYearRangeModalOpen}
                         setIsAddYearRangeModalOpen={setIsAddYearRangeModalOpen}
                         handleAssessmentYearChange={handleAssessmentYearChange}

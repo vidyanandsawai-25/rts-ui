@@ -1,38 +1,21 @@
 'use client';
 
 import React from 'react';
-import { RateableTaxDetailsSection } from '@/components/modules/property-tax/ptis/rateable';
-import { CapitalTaxDetailsSection } from '@/components/modules/property-tax/ptis/capital';
-import { RateableValueResponse } from '@/types/rateableValue.types';
-import { CapitalValueResponse } from '@/types/capitalValue.types';
-import { OldDetailsData } from '@/types/ptis.types';
 import { useTranslations } from 'next-intl';
 import { PTIS_UI_CLASSES } from '@/components/modules/property-tax/ptis/constants';
 
 interface Props {
-  propertyId?: number;
-  initialRateableData: RateableValueResponse | null;
-  initialCapitalData: CapitalValueResponse | null;
-  initialOldDetails: OldDetailsData;
-  rateableError?: string;
-  capitalError?: string;
-  searchParams: Record<string, string | string[] | undefined>;
-  locale: string;
+  rateableSection?: React.ReactNode;
+  capitalSection?: React.ReactNode;
 }
 
 /**
  * Renders the expandable floor details section for Dual Method view.
- * Uses Server Components for nested details.
+ * Receives Server Components as props to avoid client-side translation errors.
  */
 export const DualMethodFloorDetails: React.FC<Props> = ({
-  propertyId,
-  initialRateableData,
-  initialCapitalData,
-  initialOldDetails,
-  rateableError,
-  capitalError,
-  searchParams,
-  locale,
+  rateableSection,
+  capitalSection,
 }) => {
   const t = useTranslations('ptis.modules.DualMethod');
   
@@ -45,15 +28,7 @@ export const DualMethodFloorDetails: React.FC<Props> = ({
             {t('rateableMethod')}
           </h3>
         </div>
-        <RateableTaxDetailsSection
-          locale={locale}
-          propertyId={propertyId}
-          rateableData={initialRateableData}
-          error={rateableError}
-          showInlineError={false}
-          oldDetails={initialOldDetails}
-          searchParams={searchParams}
-        />
+        {rateableSection}
       </div>
 
       <div className={PTIS_UI_CLASSES.sectionCard}>
@@ -63,15 +38,7 @@ export const DualMethodFloorDetails: React.FC<Props> = ({
             {t('capitalMethod')}
           </h3>
         </div>
-        <CapitalTaxDetailsSection
-          locale={locale}
-          propertyId={propertyId}
-          capitalData={initialCapitalData}
-          error={capitalError}
-          showInlineError={false}
-          oldDetails={initialOldDetails}
-          searchParams={searchParams}
-        />
+        {capitalSection}
       </div>
     </div>
   );

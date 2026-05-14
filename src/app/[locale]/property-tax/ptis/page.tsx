@@ -36,6 +36,8 @@ import { redirect } from 'next/navigation';
 import PtisMainScreen from '@/components/modules/property-tax/ptis/PtisMainScreen';
 import { parsePtisSearchParams } from '@/lib/utils/params';
 import { getPtisUserSafeErrorMessage } from '@/components/modules/property-tax/ptis/shared/valuation-fetch';
+import { RateableTaxDetailsSection } from '@/components/modules/property-tax/ptis/rateable';
+import { CapitalTaxDetailsSection } from '@/components/modules/property-tax/ptis/capital';
 
 const toValidTab = (value: unknown): PtisTabId => {
   return typeof value === 'string' && (PTIS_TABS as readonly string[]).includes(value)
@@ -316,16 +318,59 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
       <PtisMainScreen
         locale={locale}
         propertyId={resolvedPropertyId}
-        initialOldDetails={initialData.oldDetails || defaultOldDetails}
         ptisParams={ptisParams}
         resolvedSearchParams={resolvedSearchParams}
         error={sanitizedInitialError}
         initialApartmentData={apartmentData}
-        initialRateableData={rateableResult}
-        initialCapitalData={capitalResult}
         initialDualSectionData={dualSectionData}
         wardId={resolvedWardId}
         propertyNo={propertyNo}
+        rateableSection={
+          <RateableTaxDetailsSection
+            rateableData={rateableResult?.success ? rateableResult.data : null}
+            error={!rateableResult?.success ? rateableResult?.error : undefined}
+            hasFetchedData={rateableResult != null}
+            oldDetails={initialData.oldDetails || defaultOldDetails}
+            propertyId={resolvedPropertyId}
+            searchParams={resolvedSearchParams as Record<string, string | string[] | undefined>}
+            locale={locale}
+          />
+        }
+        capitalSection={
+          <CapitalTaxDetailsSection
+            capitalData={capitalResult?.success ? capitalResult.data : null}
+            error={!capitalResult?.success ? capitalResult?.error : undefined}
+            hasFetchedData={capitalResult != null}
+            oldDetails={initialData.oldDetails || defaultOldDetails}
+            propertyId={resolvedPropertyId}
+            searchParams={resolvedSearchParams as Record<string, string | string[] | undefined>}
+            locale={locale}
+          />
+        }
+        dualRateableSection={
+          <RateableTaxDetailsSection
+            rateableData={dualSectionData?.initialRateableData || null}
+            error={dualSectionData?.rateableError}
+            hasFetchedData={dualSectionData != null}
+            oldDetails={initialData.oldDetails || defaultOldDetails}
+            propertyId={resolvedPropertyId}
+            searchParams={resolvedSearchParams as Record<string, string | string[] | undefined>}
+            locale={locale}
+            showInlineError={false}
+          />
+        }
+        dualCapitalSection={
+          <CapitalTaxDetailsSection
+            capitalData={dualSectionData?.initialCapitalData || null}
+            error={dualSectionData?.capitalError}
+            hasFetchedData={dualSectionData != null}
+            oldDetails={initialData.oldDetails || defaultOldDetails}
+            propertyId={resolvedPropertyId}
+            searchParams={resolvedSearchParams as Record<string, string | string[] | undefined>}
+            locale={locale}
+            showInlineError={false}
+          />
+        }
       />
     </>
   );
