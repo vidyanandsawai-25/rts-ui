@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { PageContainer } from "@/components/common/PageContainer";
-import { TaxZoneMasterErrorProvider } from "@/components/modules/property-tax/taxzone-master/TaxZoneMasterErrorContext";
-import { TaxZoneMasterLayoutContent } from "@/components/modules/property-tax/taxzone-master/TaxZoneMasterLayoutContent";
+import { TaxZoneMasterErrorProvider } from "@/components/modules/property-tax/taxzonemaster/TaxZoneMasterErrorContext";
+import { TaxZoneMasterLayoutContent } from "@/components/modules/property-tax/taxzonemaster/TaxZoneMasterLayoutContent";
 
 interface LayoutProps {
   children: React.ReactNode;

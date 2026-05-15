@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { ErrorPage } from '@/components/common';
-import { useTaxZoneMasterError } from '@/components/modules/property-tax/taxzone-master/TaxZoneMasterErrorContext';
+import { useTaxZoneMasterError } from '@/components/modules/property-tax/taxzonemaster/TaxZoneMasterErrorContext';
 
 interface ErrorProps {
   error: Error & { digest?: string };
