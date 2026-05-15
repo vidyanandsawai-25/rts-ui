@@ -44,6 +44,7 @@ export default getRequestConfig(async ({ locale }) => {
     departmentMasterMessages,
     departmentActivationMessages,
     homeMessages,
+    aliasMasterMessages,
     modulesMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
@@ -82,6 +83,9 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/home.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/aliasMaster.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
   ]);
 
@@ -116,6 +120,7 @@ export default getRequestConfig(async ({ locale }) => {
       departmentMaster: departmentMasterMessages,
       departmentActivation: departmentActivationMessages,
       home: homeMessages,
+      aliasMaster: aliasMasterMessages,
       modules: modulesMessages,
     },
   };

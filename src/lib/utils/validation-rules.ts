@@ -41,6 +41,12 @@ export const TEXT_SANITIZE = /[^\p{L}\p{M}\p{N}\s,.\-\/&]/gu;
 // Validation for allowed characters, special chars in between, single space only, allows single char
 export const TEXT_ALLOWED = /^[\p{L}\p{M}\p{N}]+(([\p{L}\p{M}\p{N},.\-\/&]|\s(?!\s))*[\p{L}\p{M}\p{N}]+)*$/u;
 
+/* ================= TRANSLATION TEXT VALIDATION ================= */
+// Translation text: Allow multilingual characters, underscore, hyphen, basic punctuation
+// Does NOT allow: @#$%^*&
+// Allows: Unicode letters, marks, numbers, spaces, comma, period, hyphen, slash, underscore, parentheses
+export const TRANSLATION_TEXT_SANITIZE = /[^\p{L}\p{M}\p{N}\s,.\-\/_()]/gu;
+
 /* ================= SEARCH VALIDATION ================= */
 export const SEARCH_KEY_REGEX = /^[A-Za-z0-9+\-]+$/;
 
