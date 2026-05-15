@@ -29,6 +29,12 @@ export default function LinkWardTabs({
   onViewAllSearch,
   onViewWardPageChange,
   onViewWardPageSizeChange,
+  isAvailableSelectAllActive,
+  isViewAllSelectAllActive,
+  availableSelectAllLoading,
+  viewAllSelectAllLoading,
+  onAvailableSelectAll,
+  onViewAllSelectAll,
   t
 }: LinkWardTabsProps) {
   return (
@@ -83,6 +89,9 @@ export default function LinkWardTabs({
           onToggle={onToggleAvailable}
           onPageChange={onAvailablePageChange}
           onPageSizeChange={onAvailablePageSizeChange}
+          onSelectAll={onAvailableSelectAll}
+          isSelectAllActive={isAvailableSelectAllActive}
+          selectAllLoading={availableSelectAllLoading}
         />
       )}
 
@@ -101,6 +110,9 @@ export default function LinkWardTabs({
           onToggle={onToggleAvailable}
           onPageChange={onViewWardPageChange}
           onPageSizeChange={onViewWardPageSizeChange}
+          onSelectAll={onViewAllSelectAll}
+          isSelectAllActive={isViewAllSelectAllActive}
+          selectAllLoading={viewAllSelectAllLoading}
         />
       )}
     </div>

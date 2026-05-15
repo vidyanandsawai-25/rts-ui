@@ -100,14 +100,14 @@ export function ViewWards({
           <Select
             options={pageSizeOptions}
             value={String(pageSize)}
-            onChange={(val) => onPageSizeChange(Number(val))}
+            onChange={(e) => onPageSizeChange(Number(e.target.value))}
             selectSize="sm"
             className="w-20"
           />
         </div>
         <div className="flex items-center gap-1">
           <PrevPageButton
-            onClick={() => onPageChange(page - 1)}
+            onClick={() => onPageChange(Math.max(1, page - 1))}
             disabled={page <= 1}
             aria-label={t('pagination.previous')}
           />
@@ -115,7 +115,7 @@ export function ViewWards({
             {page} / {totalPages || 1}
           </span>
           <NextPageButton
-            onClick={() => onPageChange(page + 1)}
+            onClick={() => onPageChange(Math.min(totalPages || 1, page + 1))}
             disabled={page >= (totalPages || 1)}
             aria-label={t('pagination.next')}
           />

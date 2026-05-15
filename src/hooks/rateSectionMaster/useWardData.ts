@@ -20,8 +20,9 @@ export function useWardData({
 
   const wardData = useMemo(() => {
     const sectionList = sections || [];
+    // API already filters by rate section ID, so no additional filtering needed
     return sectionList.filter(s => {
-      const id = s.rateSectionDetailsId;
+      const id = s.id || s.rateSectionDetailsId;
       return id === undefined || !deletedIds.has(id as number);
     });
   }, [sections, deletedIds]);

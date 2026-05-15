@@ -68,8 +68,8 @@ export default function LinkWard({
 	const [zoneSearchTerm, setZoneSearchTerm] = useState("");
 	const [viewAllSearchTerm, setViewAllSearchTerm] = useState(searchParams.get("viewwardq") || "");
 
-	const [zonePage, setZonePage] = useState(1);
-	const [zonePageSize, setZonePageSize] = useState(10);
+	const zonePage = Number(searchParams.get("zonewardpage")) || 1;
+	const zonePageSize = Number(searchParams.get("zonewardpagesize")) || 10;
 
 	const viewWardPage = Number(searchParams.get("viewwardpage")) || 1;
 	const viewWardPageSize = Number(searchParams.get("viewwardpagesize")) || 10;
@@ -141,6 +141,11 @@ export default function LinkWard({
 		setLoadingZoneWards(true);
 		setCheckedSelected(new Set());
 
+		// Reset zone ward page to 1 when changing zones
+		const params = new URLSearchParams(searchParams.toString());
+		params.set("zonewardpage", "1");
+		router.replace(`${pathname}?${params.toString()}`);
+
 		const result = await handleFetchWardsByZone({ zoneId, t: (key: string, values?: Record<string, unknown>) => t(key, values as never) });
 		setZoneWardsList(result.wards);
 		setLoadingZoneWards(false);
@@ -157,12 +162,16 @@ export default function LinkWard({
 				setZoneWardsList(ssrSelectedWards);
 				if (!searchParams.has("viewwardq")) setViewAllSearchTerm("");
 				setZoneSearchTerm("");
-				setZonePage(1);
+				// Reset zone ward pagination in URL
+				const params = new URLSearchParams(searchParams.toString());
+				if (!params.has("zonewardpage")) params.set("zonewardpage", "1");
+				if (!params.has("zonewardpagesize")) params.set("zonewardpagesize", "10");
+				router.replace(`${pathname}?${params.toString()}`);
 				setIsSelectAllActive(false);
 			}, 0);
 			return () => clearTimeout(timer);
 		}
-	}, [open, selectedZoneId, searchParams, ssrSelectedWards]);
+	}, [open, selectedZoneId, searchParams, ssrSelectedWards, router, pathname]);
 
 	// Toggle checkbox in view wards list
 	const toggleAvailableCheck = useCallback((wardNo: string) => {
@@ -285,17 +294,37 @@ export default function LinkWard({
 		setCheckedSelected(new Set());
 		setZoneSearchTerm("");
 		setViewAllSearchTerm("");
-		setZonePage(1);
 		setIsSelectAllActive(false);
+
+		// Clear zone ward pagination from URL
+		const params = new URLSearchParams(searchParams.toString());
+		params.delete("zonewardpage");
+		params.delete("zonewardpagesize");
+		router.replace(`${pathname}?${params.toString()}`);
 
 		// Let the parent handle URL cleanup via onClose (handleCloseDrawer in ZoneContent)
 		onClose();
-	}, [onClose]);
+	}, [onClose, searchParams, router, pathname]);
 
 	const handleZoneSearch = useCallback((value: string) => {
 		setZoneSearchTerm(value);
-		setZonePage(1);
-	}, []);
+		const params = new URLSearchParams(searchParams.toString());
+		params.set("zonewardpage", "1");
+		router.replace(`${pathname}?${params.toString()}`);
+	}, [searchParams, router, pathname]);
+
+	const handleZonePageChange = useCallback((newPage: number) => {
+		const params = new URLSearchParams(searchParams.toString());
+		params.set("zonewardpage", newPage.toString());
+		router.replace(`${pathname}?${params.toString()}`);
+	}, [searchParams, router, pathname]);
+
+	const handleZonePageSizeChange = useCallback((newSize: number) => {
+		const params = new URLSearchParams(searchParams.toString());
+		params.set("zonewardpagesize", newSize.toString());
+		params.set("zonewardpage", "1");
+		router.replace(`${pathname}?${params.toString()}`);
+	}, [searchParams, router, pathname]);
 
 	const handleViewAllSearch = useCallback((value: string) => {
 		setViewAllSearchTerm(value);
@@ -413,8 +442,8 @@ export default function LinkWard({
 						onSearchChange={handleZoneSearch}
 						page={zonePage}
 						pageSize={zonePageSize}
-						onPageChange={setZonePage}
-						onPageSizeChange={setZonePageSize}
+						onPageChange={handleZonePageChange}
+						onPageSizeChange={handleZonePageSizeChange}
 						totalPages={totalZonePages}
 						pageSizeOptions={PAGE_SIZE_OPTIONS}
 						selectedWardCount={zoneWardsList.length}

@@ -63,6 +63,7 @@ describe("useLinkWardActions", () => {
 
   const defaultParams = {
     rates: mockRates,
+    allRateSections: mockRates,
     selectedZoneNo: "RS1",
     wardAssignments: mockWardAssignments,
     checkedAvailable: new Set<string>(),
@@ -77,6 +78,16 @@ describe("useLinkWardActions", () => {
     getRateSectionDisplayLabel: mockGetRateSectionDisplayLabel,
     router: mockRouter,
     t: mockT,
+    isViewAllSelectAllActive: false,
+    isAvailableSelectAllActive: false,
+    isRateSectionSelectAllActive: false,
+    setViewAllSelectAllLoading: vi.fn(),
+    setAvailableSelectAllLoading: vi.fn(),
+    setIsViewAllSelectAllActive: vi.fn(),
+    setIsAvailableSelectAllActive: vi.fn(),
+    setIsRateSectionSelectAllActive: vi.fn(),
+    viewAllSearch: "",
+    availableSearch: ""
   };
 
   beforeEach(() => {

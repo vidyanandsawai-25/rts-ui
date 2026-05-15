@@ -30,7 +30,8 @@ export default function RateSectionWards({
   onPageChange,
   onPageSizeChange,
   onSelectAll,
-  allSelectedWards = []
+  isSelectAllActive = false,
+  selectAllLoading = false
 }: RateSectionWardsProps) {
   const t = useTranslations("rateSectionMaster");
 
@@ -42,19 +43,15 @@ export default function RateSectionWards({
     return filteredSelected.slice(start, end);
   }, [filteredSelected, selectedPage, selectedPageSize]);
 
-  // Derive select all state: checked if all wards in the list are checked
-  const allWardsToCheck = allSelectedWards.length > 0 ? allSelectedWards : filteredSelected;
-  const isSelectAllChecked = allWardsToCheck.length > 0 && allWardsToCheck.every(w => checkedSelected.has(w));
-
   const handleSelectAllChange = () => {
-    if (!onSelectAll) return;
+    if (!onSelectAll || selectAllLoading) return;
     
-    if (isSelectAllChecked) {
-      // Deselect all
+    if (isSelectAllActive) {
+      // Deselect all - pass empty array
       onSelectAll([]);
     } else {
-      // Select all wards in rate section
-      onSelectAll(allWardsToCheck);
+      // Select all - pass placeholder (handler will fetch from API)
+      onSelectAll(filteredSelected);
     }
   };
 
@@ -95,12 +92,14 @@ export default function RateSectionWards({
           >
             <input
               type="checkbox"
-              checked={isSelectAllChecked}
+              checked={isSelectAllActive}
               onChange={handleSelectAllChange}
-              className="w-4 h-4 text-purple-600 rounded focus:ring-2 focus:ring-purple-500 focus:ring-offset-1"
+              disabled={selectAllLoading}
+              className="w-4 h-4 text-purple-600 rounded focus:ring-2 focus:ring-purple-500 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed"
             />
             <span className="text-sm font-medium text-gray-700 group-hover:text-purple-700 transition-colors flex items-center gap-2 flex-1">
               {t('wardList.selectAll')}
+              {selectAllLoading && <span className="text-xs text-gray-500">(Loading...)</span>}
             </span>
           </label>
         )}
@@ -111,23 +110,28 @@ export default function RateSectionWards({
           </div>
         )}
 
-        {paginatedSelected.map(w => (
-          <Label
-            key={w}
-            className="flex items-center gap-3 px-4 py-1.5 backdrop-purple-sm rounded-lg transition-all duration-200 border group cursor-pointer bg-white/60 border-purple-100/50 hover:bg-white/80 hover:border-purple-300/50 hover:shadow-md"
-            onClick={() => onToggle(w)}
-          >
-            <div onClick={(e) => e.stopPropagation()}>
-              <Checkbox
-                checked={checkedSelected.has(w)}
-                onCheckedChange={() => onToggle(w)}
-              />
-            </div>
-            <span className="text-sm font-medium text-gray-700 group-hover:text-purple-700 transition-colors">
-              {w}
-            </span>
-          </Label>
-        ))}
+        {paginatedSelected.map(w => {
+          const isSelfSelected = checkedSelected.has(w);
+
+          return (
+            <Label
+              key={w}
+              className="flex items-center gap-3 px-4 py-1.5 backdrop-purple-sm rounded-lg transition-all duration-200 border group cursor-pointer bg-white/60 border-purple-100/50 hover:bg-white/80 hover:border-purple-300/50 hover:shadow-md"
+              onClick={() => !isSelectAllActive && onToggle(w)}
+            >
+              <div onClick={(e) => e.stopPropagation()}>
+                <Checkbox
+                  checked={isSelfSelected}
+                  onCheckedChange={() => !isSelectAllActive && onToggle(w)}
+                  disabled={isSelectAllActive}
+                />
+              </div>
+              <span className="text-sm font-medium text-gray-700 group-hover:text-purple-700 transition-colors">
+                {w}
+              </span>
+            </Label>
+          );
+        })}
       </div>
 
       <div className="flex justify-between items-center px-4 py-2 bg-white/40 border-t border-purple-100/50">
