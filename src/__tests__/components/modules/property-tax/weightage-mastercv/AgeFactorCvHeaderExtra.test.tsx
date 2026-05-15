@@ -153,3 +153,26 @@ describe("AgeFactorCvHeaderExtra – Action Buttons", () => {
         expect(screen.getByRole("button", { name: /^update$/i })).toBeDisabled();
     });
 });
+
+describe("AgeFactorCvHeaderExtra – factor input", () => {
+    it("renders the factor number input", () => {
+        render(<AgeFactorCvHeaderExtra {...buildDefaultProps()} />);
+        const input = screen.getByPlaceholderText("0.00");
+        expect(input).toBeInTheDocument();
+        expect(input).toHaveAttribute("type", "number");
+    });
+
+    it("calls setFactorValue on valid input change", () => {
+        const setFactorValue = vi.fn();
+        render(<AgeFactorCvHeaderExtra {...buildDefaultProps({ setFactorValue, factorValue: "0.00" })} />);
+        fireEvent.change(screen.getByPlaceholderText("0.00"), { target: { value: "2.5" } });
+        expect(setFactorValue).toHaveBeenCalledWith("2.5");
+    });
+
+    it("restricts input to two decimal places", () => {
+        const setFactorValue = vi.fn();
+        render(<AgeFactorCvHeaderExtra {...buildDefaultProps({ setFactorValue, factorValue: "0.00" })} />);
+        fireEvent.change(screen.getByPlaceholderText("0.00"), { target: { value: "1.234" } });
+        expect(setFactorValue).toHaveBeenCalledWith("1.23");
+    });
+});

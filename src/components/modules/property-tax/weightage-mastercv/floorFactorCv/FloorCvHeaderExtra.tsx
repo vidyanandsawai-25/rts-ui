@@ -90,7 +90,7 @@ export const FloorCvHeaderExtra: React.FC<FloorCvHeaderExtraProps> = React.memo(
                         max="999.99"
                         value={factorValue}
                         onChange={(e) => {
-                            const sanitized = sanitizePositiveDecimal(e.target.value);
+                            const sanitized = sanitizePositiveDecimal(e.target.value, 2);
                             if (sanitized === "") {
                                 setFactorValue(sanitized);
                                 return;
