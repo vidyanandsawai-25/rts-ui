@@ -1,24 +1,57 @@
 import { useState } from 'react';
 import { PropertySocietyDetailsApiItem } from '@/types/property-society-details.types';
+import { useDigitInputs } from './useDigitInputs';
+import { SOCIETY_VALIDATION_RULES } from '@/lib/utils/kyc-validation.constants';
 
 export const useSocietyFormState = (societyData: PropertySocietyDetailsApiItem | null) => {
-    const initialManagerMobile = (societyData?.managerMobileNo ?? "").replace(/\D/g, "").split("").slice(0, 10);
-    const [managerMobileDigits, setManagerMobileDigits] = useState<string[]>(
-        Array.from({ length: 10 }, (_, i) => initialManagerMobile[i] ?? "")
+    // Use useDigitInputs hook for mobile number fields
+    const managerMobileInput = useDigitInputs(
+        SOCIETY_VALIDATION_RULES.MOBILE_LENGTH,
+        societyData?.managerMobileNo ?? ''
     );
 
-    const initialSecretaryMobile = (societyData?.secretaryMobileNo ?? "").replace(/\D/g, "").split("").slice(0, 10);
-    const [secretaryMobileDigits, setSecretaryMobileDigits] = useState<string[]>(
-        Array.from({ length: 10 }, (_, i) => initialSecretaryMobile[i] ?? "")
+    const secretaryMobileInput = useDigitInputs(
+        SOCIETY_VALIDATION_RULES.MOBILE_LENGTH,
+        societyData?.secretaryMobileNo ?? ''
     );
 
+    // Email state management
+    const [managerEmail, setManagerEmail] = useState(societyData?.managerEmailId ?? '');
+    const [secretaryEmail, setSecretaryEmail] = useState(societyData?.secretaryEmailId ?? '');
+    const [societyEmail, setSocietyEmail] = useState(societyData?.societyEmailId ?? '');
+
+    // Name state management
+    const [landOwnerName, setLandOwnerName] = useState(societyData?.landOwnerName ?? '');
+    const [builderName, setBuilderName] = useState(societyData?.builderName ?? '');
+    const [societyName, setSocietyName] = useState(societyData?.societyName ?? '');
+    const [managerName, setManagerName] = useState(societyData?.managerName ?? '');
+    const [secretaryName, setSecretaryName] = useState(societyData?.secretaryName ?? '');
+
+    // Submission state
+    const [isSubmitted, setIsSubmitted] = useState(false);
     const [hasChanges, setHasChanges] = useState(false);
 
     return {
-        managerMobileDigits,
-        setManagerMobileDigits,
-        secretaryMobileDigits,
-        setSecretaryMobileDigits,
+        managerMobileInput,
+        secretaryMobileInput,
+        managerEmail,
+        setManagerEmail,
+        secretaryEmail,
+        setSecretaryEmail,
+        societyEmail,
+        setSocietyEmail,
+        landOwnerName,
+        setLandOwnerName,
+        builderName,
+        setBuilderName,
+        societyName,
+        setSocietyName,
+        managerName,
+        setManagerName,
+        secretaryName,
+        setSecretaryName,
+        isSubmitted,
+        setIsSubmitted,
         hasChanges,
         setHasChanges,
     };
