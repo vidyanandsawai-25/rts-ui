@@ -28,7 +28,9 @@ export default function AvailableWards({
   onToggle,
   onPageChange,
   onPageSizeChange,
-  onSelectAll
+  onSelectAll,
+  isSelectAllActive = false,
+  selectAllLoading = false
 }: AvailableWardsProps) {
   const t = useTranslations("rateSectionMaster");
 
@@ -48,19 +50,9 @@ export default function AvailableWards({
     return filtered;
   }, [allAvailableWards, wardAssignments, selectedWards, availableSearch]);
 
-  // Derive select all state from checked wards
-  const isSelectAllChecked = unassignedWards.length > 0 && unassignedWards.every(w => checkedAvailable.has(w.wardNo));
-
   const handleSelectAllChange = () => {
     if (!onSelectAll) return;
-    
-    if (isSelectAllChecked) {
-      // Deselect all
-      onSelectAll([]);
-    } else {
-      // Select all unassigned wards
-      onSelectAll(unassignedWards.map(w => w.wardNo));
-    }
+    onSelectAll(!isSelectAllActive);
   };
 
   const paginatedUnassignedWards = useMemo(() => {
@@ -90,12 +82,18 @@ export default function AvailableWards({
           >
             <input
               type="checkbox"
-              checked={isSelectAllChecked}
+              checked={isSelectAllActive}
               onChange={handleSelectAllChange}
+              disabled={selectAllLoading}
               className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
             />
             <span className="text-sm font-medium text-gray-700 group-hover:text-blue-700 transition-colors flex items-center gap-2 flex-1">
               {t('wardList.selectAll')}
+              {selectAllLoading && (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs bg-blue-100 text-blue-700">
+                  Loading...
+                </span>
+              )}
             </span>
           </label>
         )}
@@ -106,12 +104,13 @@ export default function AvailableWards({
             <Label
               key={w.wardNo}
               className="flex items-center gap-3 px-4 py-1 backdrop-blur-sm rounded-lg transition-all duration-200 border group cursor-pointer bg-white/60 border-blue-100/50 hover:bg-white/80 hover:border-blue-300/50 hover:shadow-md"
-              onClick={() => onToggle(w.wardNo)}
+              onClick={() => !isSelectAllActive && onToggle(w.wardNo)}
             >
               <div onClick={(e) => e.stopPropagation()}>
                 <Checkbox
                   checked={isSelfSelected}
-                  onCheckedChange={() => onToggle(w.wardNo)}
+                  onCheckedChange={() => !isSelectAllActive && onToggle(w.wardNo)}
+                  disabled={isSelectAllActive}
                 />
               </div>
 

@@ -3,12 +3,15 @@ import { toast } from "sonner";
 import {
   linkWardsToRateSectionAction,
   deleteSelectedWardsAction,
-  refreshSelectedWardsAction
+  refreshSelectedWardsAction,
+  getAllWardsForLinkAction,
+  getAllRateSectionDetailsForRateSectionAction
 } from "@/app/[locale]/property-tax/rate-section-master/actions";
 import { RateItem } from "@/types/rateSectionMaster.types";
 
 interface UseLinkWardActionsParams {
   rates: RateItem[];
+  allRateSections: RateItem[];
   selectedZoneNo: string | undefined;
   wardAssignments: Record<string, { rateSectionNo: string; description?: string }>;
   checkedAvailable: Set<string>;
@@ -23,10 +26,21 @@ interface UseLinkWardActionsParams {
   getRateSectionDisplayLabel: (rateSectionNo: string) => string;
   router: { refresh: () => void };
   t: (key: string, values?: Record<string, string | number>) => string;
+  isViewAllSelectAllActive?: boolean;
+  isAvailableSelectAllActive?: boolean;
+  isRateSectionSelectAllActive?: boolean;
+  setViewAllSelectAllLoading?: (loading: boolean) => void;
+  setAvailableSelectAllLoading?: (loading: boolean) => void;
+  setIsViewAllSelectAllActive?: (active: boolean) => void;
+  setIsAvailableSelectAllActive?: (active: boolean) => void;
+  setIsRateSectionSelectAllActive?: (active: boolean) => void;
+  viewAllSearch?: string;
+  availableSearch?: string;
 }
 
 export function useLinkWardActions({
-  rates,
+  rates: _rates,
+  allRateSections,
   selectedZoneNo,
   wardAssignments,
   checkedAvailable,
@@ -40,15 +54,124 @@ export function useLinkWardActions({
   setWardAssignments,
   getRateSectionDisplayLabel,
   router,
-  t
+  t,
+  isViewAllSelectAllActive = false,
+  isAvailableSelectAllActive = false,
+  isRateSectionSelectAllActive = false,
+  setViewAllSelectAllLoading,
+  setAvailableSelectAllLoading,
+  setIsViewAllSelectAllActive,
+  setIsAvailableSelectAllActive,
+  setIsRateSectionSelectAllActive,
+  viewAllSearch,
+  availableSearch
 }: UseLinkWardActionsParams) {
 
   const moveToSelected = useCallback(async () => {
+    // Check if Select All is active for either ViewAll or Available tabs
+    const isSelectAllMode = isViewAllSelectAllActive || isAvailableSelectAllActive;
+    
+    if (isSelectAllMode) {
+      // Fetch all wards server-side
+      // Use allRateSections (all rate sections) instead of rates (paginated) for lookup
+      const selectedRate = allRateSections.find(r => r.rateSectionNo === selectedZoneNo);
+      if (!selectedRate?.id) {
+        toast.error(t("wards.rateSectionNotFound"));
+        return;
+      }
+
+      setLoading(true);
+      if (isViewAllSelectAllActive && setViewAllSelectAllLoading) {
+        setViewAllSelectAllLoading(true);
+      }
+      if (isAvailableSelectAllActive && setAvailableSelectAllLoading) {
+        setAvailableSelectAllLoading(true);
+      }
+
+      try {
+        // Determine which search term to use
+        const searchTerm = isViewAllSelectAllActive ? viewAllSearch : availableSearch;
+        
+        const result = await getAllWardsForLinkAction(searchTerm);
+        if (result.success && result.data) {
+          // Filter out wards already in selected or assigned to another rate section
+          const wardsToLink = result.data
+            .filter(w => !selectedWards.includes(w.wardNo))
+            .filter(w => {
+              const assignment = wardAssignments[w.wardNo];
+              return !assignment || assignment.rateSectionNo === selectedZoneNo;
+            })
+            .map(w => w.wardNo);
+
+          if (wardsToLink.length === 0) {
+            toast.info(t("wards.noWardsToLink"));
+            return;
+          }
+
+          const linkResult = await linkWardsToRateSectionAction(selectedRate.id, wardsToLink);
+
+          if (!linkResult.success) {
+            toast.error(linkResult.error || t("wards.saveError"));
+            return;
+          }
+
+          if (linkResult.data?.hasFailures) {
+            toast.warning(
+              t("wards.partialSaveSuccess", {
+                success: linkResult.data.successCount,
+                failed: linkResult.data.failedCount
+              })
+            );
+          } else {
+            toast.success(t("wards.saveSuccess"));
+          }
+
+          // Update state
+          const newSelectedWards = [...new Set([...selectedWards, ...wardsToLink])];
+          setSelectedWards(newSelectedWards);
+          setSelectedWardsTotalCount(newSelectedWards.length);
+
+          setWardAssignments(prev => {
+            const next = { ...prev };
+            wardsToLink.forEach(w => {
+              next[w] = { rateSectionNo: selectedZoneNo || "", id: 0, description: "" };
+            });
+            return next;
+          });
+
+          const refreshResult = await refreshSelectedWardsAction(selectedRate.id);
+          if (refreshResult.success) {
+            setSelectedWards(refreshResult.wardNos);
+            setSelectedWardsTotalCount(refreshResult.totalCount);
+          }
+
+          // Reset Select All state
+          if (isViewAllSelectAllActive && setIsViewAllSelectAllActive) {
+            setIsViewAllSelectAllActive(false);
+          }
+          if (isAvailableSelectAllActive && setIsAvailableSelectAllActive) {
+            setIsAvailableSelectAllActive(false);
+          }
+          setCheckedAvailable(new Set());
+          router.refresh();
+        } else {
+          toast.error(result.error || t("wards.fetchError"));
+        }
+      } finally {
+        setLoading(false);
+        if (setViewAllSelectAllLoading) setViewAllSelectAllLoading(false);
+        if (setAvailableSelectAllLoading) setAvailableSelectAllLoading(false);
+      }
+      return;
+    }
+
+    // Normal mode: move individually checked wards
     const toMove = Array.from(checkedAvailable);
 
     if (toMove.length === 0) return;
 
-    const selectedRate = rates.find(r => r.rateSectionNo === selectedZoneNo);
+    // Use allRateSections (all rate sections) instead of rates (paginated) for lookup
+    const selectedRate = allRateSections.find(r => r.rateSectionNo === selectedZoneNo);
     if (!selectedRate?.id) {
       toast.error(t("wards.rateSectionNotFound"));
       return;
@@ -148,17 +271,82 @@ export function useLinkWardActions({
 
     setLoading(false);
   }, [
-    checkedAvailable, rates, selectedZoneNo, wardAssignments, selectedWards,
+    checkedAvailable, allRateSections, selectedZoneNo, wardAssignments, selectedWards,
     setCheckedAvailable, setLoading, setSelectedWards, setSelectedWardsTotalCount,
-    setWardAssignments, getRateSectionDisplayLabel, router, t
+    setWardAssignments, getRateSectionDisplayLabel, router, t,
+    isViewAllSelectAllActive, isAvailableSelectAllActive,
+    setViewAllSelectAllLoading, setAvailableSelectAllLoading,
+    setIsViewAllSelectAllActive, setIsAvailableSelectAllActive,
+    viewAllSearch, availableSearch
   ]);
 
   const moveToAvailable = useCallback(async () => {
+    // Check if Select All is active for RateSectionWards
+    if (isRateSectionSelectAllActive) {
+      // Use allRateSections (all rate sections) instead of rates (paginated) for lookup
+      const selectedRate = allRateSections.find(r => r.rateSectionNo === selectedZoneNo);
+      if (!selectedRate?.id) {
+        toast.error(t("wards.rateSectionNotFound"));
+        return;
+      }
+
+      setLoading(true);
+
+      try {
+        // Fetch all wards for this rate section
+        const result = await getAllRateSectionDetailsForRateSectionAction(selectedRate.id);
+        if (!result.success || !result.wardNos || result.wardNos.length === 0) {
+          toast.info(t("wards.noWardsToDelete"));
+          setLoading(false);
+          if (setIsRateSectionSelectAllActive) setIsRateSectionSelectAllActive(false);
+          return;
+        }
+
+        const allWardNos = result.wardNos;
+
+        // Delete all wards
+        const deleteResult = await deleteSelectedWardsAction(selectedRate.id, allWardNos);
+
+        if (!deleteResult.success) {
+          toast.error(deleteResult.error || t("wards.deleteError"));
+          setLoading(false);
+          return;
+        }
+
+        toast.success(t("wards.deleteSuccess", { count: deleteResult.deletedCount }));
+
+        // Clear all selections and refresh
+        setSelectedWards([]);
+        setSelectedWardsTotalCount(0);
+        setCheckedSelected(new Set());
+
+        // Update ward assignments
+        setWardAssignments(prev => {
+          const next = { ...prev };
+          allWardNos.forEach(w => {
+            delete next[w];
+          });
+          return next;
+        });
+
+        if (setIsRateSectionSelectAllActive) setIsRateSectionSelectAllActive(false);
+        router.refresh();
+
+      } catch {
+        toast.error(t("wards.deleteError"));
+      }
+
+      setLoading(false);
+      return;
+    }
+
+    // Normal mode: move individually checked wards
     const toMove = Array.from(checkedSelected);
 
     if (toMove.length === 0) return;
 
-    const selectedRate = rates.find(r => r.rateSectionNo === selectedZoneNo);
+    // Use allRateSections (all rate sections) instead of rates (paginated) for lookup
+    const selectedRate = allRateSections.find(r => r.rateSectionNo === selectedZoneNo);
     if (!selectedRate?.id) {
       toast.error(t("wards.rateSectionNotFound"));
       return;
@@ -208,8 +396,9 @@ export function useLinkWardActions({
 
     setLoading(false);
   }, [
-    checkedSelected, rates, selectedZoneNo, setLoading, setSelectedWards, selectedWards,
-    setSelectedWardsTotalCount, setCheckedSelected, setWardAssignments, router, t
+    checkedSelected, allRateSections, selectedZoneNo, setLoading, setSelectedWards, selectedWards,
+    setSelectedWardsTotalCount, setCheckedSelected, setWardAssignments, router, t,
+    isRateSectionSelectAllActive, setIsRateSectionSelectAllActive
   ]);
 
   return { moveToSelected, moveToAvailable };

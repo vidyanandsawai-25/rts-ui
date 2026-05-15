@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { SearchInput, Checkbox, Select, Badge } from "@/components/common";
 import { NextPageButton, PrevPageButton } from "@/components/common/ActionButtons";
@@ -28,29 +27,15 @@ export default function ViewWards({
   onToggle,
   onPageChange,
   onPageSizeChange,
-  onSelectAll
+  onSelectAll,
+  isSelectAllActive = false,
+  selectAllLoading = false
 }: ViewWardsProps) {
   const t = useTranslations("rateSectionMaster");
 
-  // Get wards that can be selected (not already in selectedWards)
-  const selectableWards = useMemo(() => 
-    viewAllWards.filter(w => !selectedWards.includes(w.wardNo)),
-    [viewAllWards, selectedWards]
-  );
-
-  // Derive select all state from checked wards
-  const isSelectAllChecked = selectableWards.length > 0 && selectableWards.every(w => checkedAvailable.has(w.wardNo));
-
   const handleSelectAllChange = () => {
     if (!onSelectAll) return;
-    
-    if (isSelectAllChecked) {
-      // Deselect all
-      onSelectAll([]);
-    } else {
-      // Select all wards (excluding already selected ones)
-      onSelectAll(selectableWards.map(w => w.wardNo));
-    }
+    onSelectAll(!isSelectAllActive);
   };
 
   return (
@@ -71,12 +56,18 @@ export default function ViewWards({
           >
             <input
               type="checkbox"
-              checked={isSelectAllChecked}
+              checked={isSelectAllActive}
               onChange={handleSelectAllChange}
+              disabled={selectAllLoading}
               className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
             />
             <span className="text-sm font-medium text-gray-700 group-hover:text-blue-700 transition-colors flex items-center gap-2 flex-1">
               {t('wardList.selectAll')}
+              {selectAllLoading && (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs bg-blue-100 text-blue-700">
+                  Loading...
+                </span>
+              )}
             </span>
           </label>
         )}
@@ -89,13 +80,13 @@ export default function ViewWards({
             <Label
               key={w.wardNo}
               className="flex items-center gap-3 px-4 py-1 backdrop-blur-sm rounded-lg transition-all duration-200 border group cursor-pointer bg-white/60 border-blue-100/50 hover:bg-white/80 hover:border-blue-300/50 hover:shadow-md"
-              onClick={() => !isAlreadyInSelected && onToggle(w.wardNo)}
+              onClick={() => !isAlreadyInSelected && !isSelectAllActive && onToggle(w.wardNo)}
             >
               <div onClick={(e) => e.stopPropagation()}>
                 <Checkbox
                   checked={isSelfSelected || isAlreadyInSelected}
-                  onCheckedChange={() => !isAlreadyInSelected && onToggle(w.wardNo)}
-                  disabled={isAlreadyInSelected}
+                  onCheckedChange={() => !isAlreadyInSelected && !isSelectAllActive && onToggle(w.wardNo)}
+                  disabled={isAlreadyInSelected || isSelectAllActive}
                 />
               </div>
 

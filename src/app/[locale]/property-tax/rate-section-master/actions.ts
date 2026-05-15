@@ -383,6 +383,88 @@ export async function getAllWardsForLinkAction(searchTerm?: string): Promise<{
 }
 
 /**
+ * Fetches all rate sections for Select All functionality.
+ * Used when user clicks Select All in RateSectionWards component.
+ * API: GET /api/RateSection?PageSize=-1
+ */
+export async function getAllRateSectionsForSelectAction(): Promise<{
+  success: boolean;
+  data?: { id: number; rateSectionNo: string; description: string | null }[];
+  totalCount?: number;
+  error?: string;
+}> {
+  try {
+    const data = await queryRateSections({
+      pageNumber: 1,
+      pageSize: -1,
+      searchTerm: undefined
+    });
+
+    const items = (data.rateSectionMaster || [])
+      .filter((rs) => rs.id !== undefined && rs.rateSectionNo !== undefined)
+      .map((rs) => ({
+        id: rs.id!,
+        rateSectionNo: rs.rateSectionNo!,
+        description: rs.description ?? null
+      }));
+
+    return {
+      success: true,
+      data: items,
+      totalCount: data.totalCount || items.length
+    };
+  } catch (_error) {
+    return { success: false, error: "Failed to fetch all rate sections" };
+  }
+}
+
+/**
+ * Fetches all rate section details (wards) for a specific rate section using PageSize=-1.
+ * Used when user clicks Select All in RateSectionWards tab.
+ * API: GET /api/RateSectionDetails?RateSectionId={id}&PageSize=-1
+ * Returns only wardNo array and count - no IDs exposed to client.
+ */
+export async function getAllRateSectionDetailsForRateSectionAction(rateSectionId: number): Promise<{
+  success: boolean;
+  wardNos: string[];
+  totalCount: number;
+  error?: string;
+}> {
+  try {
+    if (!rateSectionId || !Number.isFinite(rateSectionId)) {
+      return { success: false, wardNos: [], totalCount: 0, error: "Valid rate section ID is required" };
+    }
+
+    const params = new URLSearchParams({
+      RateSectionId: rateSectionId.toString(),
+      PageSize: "-1"
+    });
+
+    const response = await apiClient.get<{ 
+      items?: Array<{ wardNo?: string }>; 
+      totalCount?: number 
+    }>(`/RateSectionDetails?${params.toString()}`);
+
+    if (!response.success || !response.data) {
+      return { success: false, wardNos: [], totalCount: 0, error: "Failed to fetch rate section details" };
+    }
+
+    const items = response.data.items || [];
+    const wardNos = items
+      .filter((item) => item.wardNo !== undefined && item.wardNo !== null)
+      .map((item) => item.wardNo!);
+
+    return {
+      success: true,
+      wardNos,
+      totalCount: response.data.totalCount || wardNos.length
+    };
+  } catch (_error) {
+    return { success: false, wardNos: [], totalCount: 0, error: "Failed to fetch all rate section details" };
+  }
+}
+
+/**
  * Fetches wards with pagination and search for View All tab.
  * API: GET /api/Ward?PageNumber={page}&PageSize={size}&SearchTerm={term}
  */

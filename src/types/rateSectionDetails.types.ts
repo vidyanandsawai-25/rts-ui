@@ -368,7 +368,9 @@ export interface AvailableWardsProps {
   onToggle: (wardNo: string) => void;
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
-  onSelectAll?: (wardNos: string[]) => void;
+  onSelectAll?: (isChecked: boolean) => void;
+  isSelectAllActive?: boolean;
+  selectAllLoading?: boolean;
 }
 
 /**
@@ -388,7 +390,9 @@ export interface ViewWardsProps {
   onToggle: (wardNo: string) => void;
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
-  onSelectAll?: (wardNos: string[]) => void;
+  onSelectAll?: (isChecked: boolean) => void;
+  isSelectAllActive?: boolean;
+  selectAllLoading?: boolean;
 }
 
 /**
@@ -408,6 +412,8 @@ export interface RateSectionWardsProps {
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
   onSelectAll?: (wardNos: string[]) => void;
+  isSelectAllActive?: boolean;
+  selectAllLoading?: boolean;
   allSelectedWards?: string[];
 }
 
@@ -439,5 +445,11 @@ export interface LinkWardTabsProps {
   onViewAllSearch: (value: string) => void;
   onViewWardPageChange: (page: number) => void;
   onViewWardPageSizeChange: (size: number) => void;
+  isAvailableSelectAllActive?: boolean;
+  isViewAllSelectAllActive?: boolean;
+  availableSelectAllLoading?: boolean;
+  viewAllSelectAllLoading?: boolean;
+  onAvailableSelectAll?: (isChecked: boolean) => void;
+  onViewAllSelectAll?: (isChecked: boolean) => void;
   t: (key: string, values?: Record<string, string | number>) => string;
 }
