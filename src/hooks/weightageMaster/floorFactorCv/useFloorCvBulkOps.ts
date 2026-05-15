@@ -20,6 +20,8 @@ export interface UseFloorCvBulkOpsParams {
     setEditableRows: Dispatch<SetStateAction<Record<string, FloorFactorCVMaster>>>;
     setIsBulkUpdating: Dispatch<SetStateAction<boolean>>;
     setIsGeneratingAll: Dispatch<SetStateAction<boolean>>;
+    sessionCreatedUids: Set<string>;
+    setSessionCreatedUids: Dispatch<SetStateAction<Set<string>>>;
     selectedYear: string;
     fromFloor: string;
     toFloor: string;
@@ -36,6 +38,8 @@ export function useFloorCvBulkOps({
     data,
     editableRows,
     setEditableRows,
+    sessionCreatedUids,
+    setSessionCreatedUids,
     setIsBulkUpdating,
     setIsGeneratingAll,
     selectedYear,
@@ -138,11 +142,12 @@ export function useFloorCvBulkOps({
 
         const createPayloadVars: FloorFactorCVMasterCreateAction[] = [];
         const updatePayloadVars: FloorFactorCVBulkUpdateActionItem[] = [];
+        const createdUids: string[] = [];
         let errorCount = 0;
 
         for (const [rowUid, updatedData] of updatedRecords) {
             const originalRow = findRowByUid(rowUid);
-            if (!originalRow) {
+            if (!originalRow || sessionCreatedUids.has(rowUid)) {
                 errorCount++;
                 continue;
             }
@@ -163,6 +168,7 @@ export function useFloorCvBulkOps({
                         factorWithoutLift: newFactorWithoutLift,
                         yearRangeCVId: originalRow.yearRangeCVID ?? originalRow.yearRangeCVId ?? 0,
                     });
+                    createdUids.push(rowUid);
                 } else {
                     updatePayloadVars.push({
                         id: originalRow.id,
@@ -186,6 +192,7 @@ export function useFloorCvBulkOps({
                 const result = await bulkCreateFloorFactorCVMasterAction(createPayloadVars);
                 if (result && result.success) {
                     createdCount = createPayloadVars.length;
+                    setSessionCreatedUids((prev) => new Set([...prev, ...createdUids]));
                 } else {
                     errorCount += createPayloadVars.length;
                 }
@@ -235,12 +242,14 @@ export function useFloorCvBulkOps({
 
     // Handle Generate All uncreated records
     const handleGenerateAll = async (): Promise<void> => {
-        const newRecords = data.filter((row) => row.id === 0);
+        const newRecords = data.filter((row) => row.id === 0 && !sessionCreatedUids.has(getRowUid(row)));
         if (newRecords.length === 0) return;
         setIsGeneratingAll(true);
         try {
+            const createdUids: string[] = [];
             const payload: BulkFloorFactorCVMasterCreateAction = newRecords.map((row) => {
                 const rowUid = getRowUid(row);
+                createdUids.push(rowUid);
                 const editedRow = editableRows[rowUid];
 
                 return {
@@ -256,6 +265,7 @@ export function useFloorCvBulkOps({
 
             if (result && result.success) {
                 addToast("success", tW("common.messages.recordsGeneratedSuccess", { count: newRecords.length }));
+                setSessionCreatedUids((prev) => new Set([...prev, ...createdUids]));
                 setTimeout(() => { refreshPage(); }, 1500);
             } else {
                 addToast("error", result?.message || tW("common.messages.generationFailed"));
