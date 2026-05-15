@@ -1,5 +1,5 @@
 import { render, screen, act } from '@testing-library/react';
-import { TaxZoneMasterErrorProvider, useTaxZoneMasterError } from '@/components/modules/property-tax/taxzone-master/TaxZoneMasterErrorContext';
+import { TaxZoneMasterErrorProvider, useTaxZoneMasterError } from '@/components/modules/property-tax/taxzonemaster/TaxZoneMasterErrorContext';
 import { describe, it, expect, vi } from 'vitest';
 
 const TestComponent = () => {
