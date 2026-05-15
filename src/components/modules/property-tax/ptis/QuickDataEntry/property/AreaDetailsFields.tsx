@@ -25,7 +25,7 @@ export const AreaDetailsFields = ({
                     type="number"
                     placeholder="1200"
                     defaultValue={propertyData?.totalCarpetAreaSqFeet ?? ''}
-                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                    className="h-9 text-sm bg-gray-50 text-gray-600 cursor-not-allowed border-gray-300"
                 />
             </div>
 
@@ -41,7 +41,7 @@ export const AreaDetailsFields = ({
                     type="number"
                     placeholder="1350"
                     defaultValue={propertyData?.totalBuiltupAreaSqFeet ?? ''}
-                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                    className="h-9 text-sm bg-gray-50 text-gray-600 cursor-not-allowed border-gray-300"
                 />
             </div>
 
@@ -57,7 +57,7 @@ export const AreaDetailsFields = ({
                     type="number"
                     placeholder="22.66"
                     defaultValue={propertyData?.totalCarpetAreaSqMeter ?? ''}
-                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                    className="h-9 text-sm bg-gray-50 text-gray-600 cursor-not-allowed border-gray-300"
                 />
             </div>
 
@@ -73,7 +73,7 @@ export const AreaDetailsFields = ({
                     type="number"
                     placeholder="27.19"
                     defaultValue={propertyData?.totalBuiltupAreaSqMeter ?? ''}
-                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                    className="h-9 text-sm bg-gray-50 text-gray-600 cursor-not-allowed border-gray-300"
                 />
             </div>
         </>

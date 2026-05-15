@@ -26,6 +26,7 @@ describe("FormFieldsSection", () => {
     handleChange: vi.fn(),
     handleBlur: vi.fn(),
     handleCategoryChange: vi.fn(),
+    handleTypeChange: vi.fn(),
     errors: {},
     showError: vi.fn().mockReturnValue(false),
     categories: mockCategories,
@@ -39,7 +40,7 @@ describe("FormFieldsSection", () => {
     expect(screen.getByPlaceholderText("form.fields.propertyDescription.placeholder")).toBeInTheDocument();
 
     expect(screen.getByText("form.fields.type.label")).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("form.fields.type.placeholder")).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "form.fields.type.label" })).toBeInTheDocument();
 
     expect(screen.getByText("form.fields.propertyTypeGroup.label")).toBeInTheDocument();
     expect(screen.getByPlaceholderText("form.fields.propertyTypeGroup.placeholder")).toBeInTheDocument();
@@ -60,9 +61,22 @@ describe("FormFieldsSection", () => {
   it("calls handleBlur when inputs lose focus", () => {
     render(<FormFieldsSection {...defaultProps} />);
 
-    const typeInput = screen.getByPlaceholderText("form.fields.type.placeholder");
-    fireEvent.blur(typeInput);
+    const descInput = screen.getByPlaceholderText("form.fields.propertyDescription.placeholder");
+    fireEvent.blur(descInput);
     expect(defaultProps.handleBlur).toHaveBeenCalled();
+  });
+
+  it("calls handleTypeChange when a type is selected", () => {
+    render(<FormFieldsSection {...defaultProps} />);
+
+    const typeSelect = screen.getByRole("combobox", { name: "form.fields.type.label" });
+    fireEvent.click(typeSelect);
+    
+    // Select the "R" option
+    const option = screen.getByText("R");
+    fireEvent.click(option);
+
+    expect(defaultProps.handleTypeChange).toHaveBeenCalledWith("R");
   });
 
   it("calls handleCategoryChange when a category is selected", () => {

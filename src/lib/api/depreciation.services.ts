@@ -5,7 +5,8 @@ import type {
   DepreciationRow,
   DepreciationPagedResponse,
 } from '@/types/depreciation.types';
-import { getConstruction } from './construction-crud.service';
+import { getConstruction } from './constructiontypemaster/construction-crud.service';
+import { ConstructionType } from '@/types/construction.types';
 
 /**
  * Fetch paginated depreciation records (for range-wise pagination)
@@ -46,7 +47,7 @@ export async function getDepreciationPaged(
  */
 export async function getConstructionTypes(): Promise<DepreciationConstructionType[]> {
   const constructionTypes = await getConstruction();
-  return constructionTypes.map((ct) => ({
+  return constructionTypes.map((ct: ConstructionType) => ({
     constructionId: ct.id,
     constructionCode: ct.constructionCode,
   }));

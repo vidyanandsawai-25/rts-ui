@@ -8,7 +8,7 @@
 import { useMemo } from 'react';
 import type { UseGroup } from '@/types/typeOfUse.types';
 import type { Validator } from '@/lib/utils/validation-helpers';
-import { CODE_REGEX, TEXT_ALLOWED } from '@/lib/utils/validation-rules';
+import { CODE_REGEX, TEXT_ALLOWED, isAllZeros } from '@/lib/utils/validation-rules';
 import { normalize } from '@/lib/utils/sanitization';
 
 type TranslatorFunction = (key: string, values?: Record<string, string | number>) => string;
@@ -54,6 +54,7 @@ export function useGroupFormValidation({
         const code = String(value ?? '').trim();
         
         if (!code) return t('group.fields.groupId') + ' ' + t('messages.createError');
+        if (isAllZeros(code)) return t('group.fields.groupId') + ' ' + t('messages.cannotBeAllZeros');
         if (code.length > 10) return t('group.fields.groupId') + ' ' + t('messages.maxLength', { count: 10 });
         if (!CODE_REGEX.test(code)) return t('group.fields.groupId') + ' ' + t('messages.onlyAlphanumeric');
         if (isDuplicateCode(code)) return t('messages.duplicateGroupId');
@@ -65,6 +66,7 @@ export function useGroupFormValidation({
         const name = String(value ?? '').trim();
         
         if (!name) return t('group.fields.groupName') + ' ' + t('messages.createError');
+        if (isAllZeros(name)) return t('group.fields.groupName') + ' ' + t('messages.cannotBeAllZeros');
         if (name.length > 100) return t('group.fields.groupName') + ' ' + t('messages.maxLength', { count: 100 });
         if (!TEXT_ALLOWED.test(name)) return t('group.fields.groupName') + ' ' + t('messages.allowedChars');
         if (isDuplicateGroupName(name)) return t('messages.duplicateGroupName');

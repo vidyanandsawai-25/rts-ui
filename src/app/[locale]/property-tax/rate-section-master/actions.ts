@@ -107,7 +107,7 @@ export async function getWardsByRateAction(
     }
 
     const response = await apiClient.get<{ items?: unknown[]; totalCount?: number }>(`/RateSectionDetails?${params.toString()}`);
-    
+
     if (!response.success || !response.data) {
       return { success: false, data: [], totalCount: 0, error: response.error || "Failed to fetch wards" };
     }
@@ -132,7 +132,7 @@ export async function getRateSectionByNoAction(
     }
 
     const response = await apiClient.get<RateItem>(`/RateSection/GetByNo/${encodeURIComponent(rateSectionNo.trim())}`);
-    
+
     if (!response.success || !response.data) return null;
 
     return response.data;
@@ -155,7 +155,7 @@ export async function getRateSectionByIdAction(
     }
 
     const data = await getRateSectionById(String(rateSectionId));
-    
+
     if (!data) {
       return { success: false, error: "Rate section not found", statusCode: 404 };
     }
@@ -256,7 +256,12 @@ export async function updateRateSectionAction(
     });
 
     if (!result.success) {
-      return { success: false, message: result.error || "Failed to update rate section" };
+      return {
+        success: false,
+        message: result.error || "Failed to update rate section",
+        error: result.error || "Failed to update rate section",
+        statusCode: result.statusCode
+      };
     }
 
     // Revalidate all locale variants
@@ -359,7 +364,7 @@ export async function getAllWardsForLinkAction(searchTerm?: string): Promise<{
 }> {
   try {
     const data = await getWards(1, -1, searchTerm || undefined);
-    
+
     // Transform to simplified format for AddWard
     const items = (data.items || []).map((w) => ({
       id: String(w.id),
@@ -374,6 +379,88 @@ export async function getAllWardsForLinkAction(searchTerm?: string): Promise<{
     };
   } catch (_error) {
     return { success: false, error: "Failed to fetch wards" };
+  }
+}
+
+/**
+ * Fetches all rate sections for Select All functionality.
+ * Used when user clicks Select All in RateSectionWards component.
+ * API: GET /api/RateSection?PageSize=-1
+ */
+export async function getAllRateSectionsForSelectAction(): Promise<{
+  success: boolean;
+  data?: { id: number; rateSectionNo: string; description: string | null }[];
+  totalCount?: number;
+  error?: string;
+}> {
+  try {
+    const data = await queryRateSections({
+      pageNumber: 1,
+      pageSize: -1,
+      searchTerm: undefined
+    });
+
+    const items = (data.rateSectionMaster || [])
+      .filter((rs) => rs.id !== undefined && rs.rateSectionNo !== undefined)
+      .map((rs) => ({
+        id: rs.id!,
+        rateSectionNo: rs.rateSectionNo!,
+        description: rs.description ?? null
+      }));
+
+    return {
+      success: true,
+      data: items,
+      totalCount: data.totalCount || items.length
+    };
+  } catch (_error) {
+    return { success: false, error: "Failed to fetch all rate sections" };
+  }
+}
+
+/**
+ * Fetches all rate section details (wards) for a specific rate section using PageSize=-1.
+ * Used when user clicks Select All in RateSectionWards tab.
+ * API: GET /api/RateSectionDetails?RateSectionId={id}&PageSize=-1
+ * Returns only wardNo array and count - no IDs exposed to client.
+ */
+export async function getAllRateSectionDetailsForRateSectionAction(rateSectionId: number): Promise<{
+  success: boolean;
+  wardNos: string[];
+  totalCount: number;
+  error?: string;
+}> {
+  try {
+    if (!rateSectionId || !Number.isFinite(rateSectionId)) {
+      return { success: false, wardNos: [], totalCount: 0, error: "Valid rate section ID is required" };
+    }
+
+    const params = new URLSearchParams({
+      RateSectionId: rateSectionId.toString(),
+      PageSize: "-1"
+    });
+
+    const response = await apiClient.get<{ 
+      items?: Array<{ wardNo?: string }>; 
+      totalCount?: number 
+    }>(`/RateSectionDetails?${params.toString()}`);
+
+    if (!response.success || !response.data) {
+      return { success: false, wardNos: [], totalCount: 0, error: "Failed to fetch rate section details" };
+    }
+
+    const items = response.data.items || [];
+    const wardNos = items
+      .filter((item) => item.wardNo !== undefined && item.wardNo !== null)
+      .map((item) => item.wardNo!);
+
+    return {
+      success: true,
+      wardNos,
+      totalCount: response.data.totalCount || wardNos.length
+    };
+  } catch (_error) {
+    return { success: false, wardNos: [], totalCount: 0, error: "Failed to fetch all rate section details" };
   }
 }
 
@@ -396,7 +483,7 @@ export async function getWardsPagedWithSearchAction(
 }> {
   try {
     const data = await getWards(pageNumber, pageSize, searchTerm || undefined);
-    
+
     // Transform to simplified format for AddWard
     const items = (data.items || []).map((w) => ({
       id: String(w.id),
@@ -443,7 +530,7 @@ export async function linkWardsToRateSectionAction(
 
     // Get authenticated user ID from cookies
     const userId = await getAuthenticatedUserId();
-    
+
     if (userId === undefined) {
       return { success: false, error: "User authentication required", statusCode: 401 };
     }
@@ -466,27 +553,27 @@ export async function linkWardsToRateSectionAction(
     // only the relevant RateSectionDetails to avoid loading the entire dataset.
     const allDetailsRes = await getAllRateSectionDetails();
     const wardToAssignment: Record<string, { id: number; rateSectionId: number }> = {};
-    
+
     allDetailsRes.forEach(detail => {
       const detailRecord = detail as Record<string, unknown>;
       const wNo = (detail.wardNo || detailRecord.WardNo) as string | undefined;
       const detailId = (detail.id) as number | undefined;
       if (wNo && detailId) {
-        wardToAssignment[wNo] = { 
-          id: detailId, 
-          rateSectionId: detail.rateSectionId || 0 
+        wardToAssignment[wNo] = {
+          id: detailId,
+          rateSectionId: detail.rateSectionId || 0
         };
       }
     });
 
-    const toCreate: Array<{ 
-      isActive: boolean; createdBy: number; updatedBy: number; 
+    const toCreate: Array<{
+      isActive: boolean; createdBy: number; updatedBy: number;
       rateSectionId: number; wardId: number;
     }> = [];
-    
-    const toUpdate: Array<{ 
-      id: number; 
-      data: { isActive: boolean; updatedBy: number; rateSectionId: number; wardId: number } 
+
+    const toUpdate: Array<{
+      id: number;
+      data: { isActive: boolean; updatedBy: number; rateSectionId: number; wardId: number }
     }> = [];
 
     wardNos.forEach(wardNo => {
@@ -689,7 +776,7 @@ export async function deleteSelectedWardsAction(rateSectionId: number, wardNos: 
     for (const locale of locales) {
       revalidatePath(`/${locale}/property-tax/rate-section-master`, "page");
     }
-    
+
     return {
       success: true,
       deletedCount: deleteResponse.items?.successCount || idsToDelete.length
@@ -719,7 +806,7 @@ export async function getWardByIdAction(
     }
 
     const data = await getWardById(numericWardId);
-    
+
     if (!data) {
       return { success: false, message: "Ward not found" };
     }

@@ -14,11 +14,11 @@ import {
 import {
   handleActionError,
   validateAndNormalize,
-  revalidateBankMaster,
+ revalidateBankMaster,
   resolveUserId,
   parseApiError,
 } from './actions.utils';
-import { getCachedBankMasterMetadata, type BankMasterMetadata } from './actions.cache';
+import { buildBankMasterMetadata, type BankMasterMetadata } from './actions.cache';
 
 // ---------------------------------------------------------------------------
 // Server Actions
@@ -128,11 +128,12 @@ export async function getBanksSummaryAction(): Promise<ApiResponse<BankMasterDat
 }
 
 /**
- * Retrieves cached metadata (active count, unique states) for the Bank Master module.
+ * Retrieves metadata (active count, unique states) for the Bank Master module.
  */
 export async function getBankMasterMetadata(): Promise<ApiResponse<BankMasterMetadata>> {
   try {
-    const data = await getCachedBankMasterMetadata();
+    const summary = await getBanksSummary();
+    const data = buildBankMasterMetadata(summary);
     return { success: true, data };
   } catch (error: unknown) {
     const fallback: BankMasterMetadata = { activeCount: 0, uniqueStates: [] };

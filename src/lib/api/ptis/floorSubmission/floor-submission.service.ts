@@ -4,9 +4,9 @@ import { normalizeApiFloorData } from "./floor-types-guard";
 import { sanitizeFloorPayload, sanitizeFloorUpdatePayload } from "./payload-sanitization";
 import { validateSubmissionId, validateCreateFormData, validateUpdateFormData } from "./payload-validation";
 import { createApiError, getDeleteErrorStatusCode } from "./error-helpers";
-import { 
-    type FloorSubmissionPayload, 
-    type SubmissionResponse 
+import {
+    type FloorSubmissionPayload,
+    type SubmissionResponse
 } from '@/types/floor-details.types';
 
 /**

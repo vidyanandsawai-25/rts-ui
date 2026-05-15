@@ -190,7 +190,7 @@ export function useFloorCvWeightage({
     const isApplyDisabled =
         !selectedYear ||
         !liftStatus ||
-        parseFloat(factorValue) <= 0 ||
+        parseFloat(factorValue) < 0 ||
         isRangeInvalid;
     const isBulkUpdateDisabled = Object.keys(editableRows).length === 0 || isBulkUpdating;
     // const isSingleUpdateDisabled = isBulkUpdating || isUpdating;

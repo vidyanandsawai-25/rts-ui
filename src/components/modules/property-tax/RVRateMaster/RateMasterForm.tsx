@@ -11,14 +11,15 @@ import { useRateMasterImportExport } from "@/hooks/RVRateMaster/useRateMasterImp
 import { useExistingRateCheck } from "@/hooks/RVRateMaster/useExistingRateCheck";
 import { useUrlParamSync } from "@/hooks/RVRateMaster/useUrlParamSync";
 import { useRateFormHandlers } from "@/hooks/RVRateMaster/useRateFormHandlers";
-import {
-  RateMasterFormHeader,
-  RateFiltersSection,
+import { useLazyDropdownData } from "@/hooks/RVRateMaster/useLazyDropdownData";
+import {RateMasterFormHeader, RateFiltersSection,
   RateFrequencySection,
   RateCopyMultipliersWrapper,
   RateMatrixSection,
   RateCompletionProgress,
 } from "./components";
+import { useEffect, useRef } from "react";
+import { toast } from "sonner";
 
 const RateMasterForm: React.FC<RateMasterFormProps> = ({ id, zoneOptions, useGroupOptions, assessmentYears, assessmentYearRanges, zoneDescriptions, allZones, rateCategories, editData, bulkEditData, backendRates, filterValues, showCopyRateSection, showMultipliersSection, hideMatrixSection, onClose, mode: propMode, paginatedZonesData, initialExistingRatesCheck }) => {
   const mode: "edit" | "delete" | "add" = propMode || "edit";
@@ -27,23 +28,66 @@ const RateMasterForm: React.FC<RateMasterFormProps> = ({ id, zoneOptions, useGro
   const locale = useLocale();
   const router = useRouter();
   const { confirm } = useConfirm();
+  // Use lazy dropdown data hook for on-demand loading
+  const {
+    zoneOptions: lazyZoneOptions,
+    useGroupOptions: lazyUseGroupOptions,
+    assessmentYears: lazyAssessmentYears,
+    isLoadingZones,
+    isLoadingUseGroups,
+    isLoadingAssessmentYears,
+    loadZoneOptions,
+    loadUseGroupOptions,
+    loadAssessmentYears,
+  } = useLazyDropdownData();
 
-  const { selectedZone, selectedUseGroup, assessmentYear, setSelectedZone, setSelectedUseGroup, setAssessmentYear, fetchedBackendRates, rateFrequency, setRateFrequency, multipliers, setMultipliers, handleDropdownChange } = useRateMasterFilters({ mode, backendRates: backendRates || undefined, filterValues, useGroupOptions });
-  const { handleBulkCreate, handleBulkUpdate, handleDelete } = useRateMasterOperations({ mode, id: id || undefined, selectedZone, selectedUseGroup, assessmentYear, rateFrequency, multipliers, rateCategories, useGroupOptions });
+  // Use lazy-loaded options if server-provided options are empty, otherwise use server options
+  const finalZoneOptions = zoneOptions && zoneOptions.length > 0 ? zoneOptions : lazyZoneOptions;
+  const finalUseGroupOptions = useGroupOptions && useGroupOptions.length > 0 ? useGroupOptions : lazyUseGroupOptions;
+  const finalAssessmentYears = assessmentYears && assessmentYears.length > 0 ? assessmentYears : lazyAssessmentYears;
 
-  const { showMatrix, setShowMatrix, matrixData, setMatrixData, matrixPageNumber, matrixPageSize, matrixTotalPages, matrixTotalCount, paginatedZoneDescriptions, allZoneEdits, setAllZoneEdits, existingRateFound, setExistingRateFound, isCheckingRates, setIsCheckingRates, allFiltersSelected, errors, zoneRemarksMap, filledRatesCount, completionPercentage, matrixStorageKey, handleMatrixPaginationChange, buildCompleteMatrixForSubmission } = useRateMasterFormState({ mode, id, editData, bulkEditData, backendRates, fetchedBackendRates, filterValues, selectedZone, selectedUseGroup, assessmentYear, setSelectedZone, setSelectedUseGroup, setAssessmentYear, rateFrequency, setRateFrequency, zoneDescriptions, allZones, rateCategories, assessmentYears, zoneOptions, useGroupOptions, showCopyRateSection, showMultipliersSection, paginatedZonesData, initialExistingRatesCheck });
+  // Trigger lazy loading on mount if filterValues are present (for page reload)
+  useEffect(() => {
+    if (filterValues?.zone && finalZoneOptions.length === 0) {
+      loadZoneOptions();
+    }
+    if (filterValues?.useGroup && finalUseGroupOptions.length === 0) {
+      loadUseGroupOptions();
+    }
+    if (filterValues?.year && finalAssessmentYears.length === 0) {
+      loadAssessmentYears();
+    }
+  }, [filterValues, finalZoneOptions.length, finalUseGroupOptions.length, finalAssessmentYears.length, loadZoneOptions, loadUseGroupOptions, loadAssessmentYears]);
 
-  const { sourceUseGroup, setSourceUseGroup, sourceRateSection, setSourceRateSection, sourceRateSectionOptions, copySectionsExpanded, setCopySectionsExpanded, copyRatesActiveTab, setCopyRatesActiveTab, showMultipliersInline, setShowMultipliersInline, tempMultipliers, setTempMultipliers, fileInputRef, handleCopyRates, handleCopyRatesFromRateSection, handleDownloadTemplate, handleUploadExcel } = useRateMasterImportExport({ selectedZone, selectedUseGroup, assessmentYear, allZones, zoneDescriptions, rateCategories, zoneOptions, useGroupOptions, assessmentYears, assessmentYearRanges, matrixData, setMatrixData, allZoneEdits, setAllZoneEdits, setShowMatrix, showMatrix, showCopyRateSection, t, multipliers, setMultipliers });
+  const { selectedZone, selectedZoneLabel, selectedUseGroup, selectedUseGroupLabel, assessmentYear, assessmentYearLabel, setSelectedZone, setSelectedUseGroup, setAssessmentYear, fetchedBackendRates, rateFrequency, setRateFrequency, multipliers, setMultipliers, handleDropdownChange } = useRateMasterFilters({ mode, backendRates: backendRates || undefined, filterValues, useGroupOptions: finalUseGroupOptions });
+  const { handleBulkCreate, handleBulkUpdate, handleDelete } = useRateMasterOperations({ mode, id: id || undefined, selectedZone, selectedUseGroup, assessmentYear, rateFrequency, multipliers, rateCategories, useGroupOptions: finalUseGroupOptions });
+
+  const { showMatrix, setShowMatrix, matrixData, setMatrixData, matrixPageNumber, matrixPageSize, matrixTotalPages, matrixTotalCount, paginatedZoneDescriptions, allZoneEdits, setAllZoneEdits, existingRateFound, setExistingRateFound, isCheckingRates, setIsCheckingRates, allFiltersSelected, errors, zoneRemarksMap, filledRatesCount, completionPercentage, matrixStorageKey, handleMatrixPaginationChange, buildCompleteMatrixForSubmission } = useRateMasterFormState({ mode, id, editData, bulkEditData, backendRates, fetchedBackendRates, filterValues, selectedZone, selectedUseGroup, assessmentYear, setSelectedZone, setSelectedUseGroup, setAssessmentYear, rateFrequency, setRateFrequency, zoneDescriptions, allZones, rateCategories, assessmentYears: finalAssessmentYears, zoneOptions: finalZoneOptions, useGroupOptions: finalUseGroupOptions, showCopyRateSection, showMultipliersSection, paginatedZonesData, initialExistingRatesCheck });
+
+  const { sourceUseGroup, setSourceUseGroup, sourceRateSection, setSourceRateSection, sourceRateSectionOptions, copySectionsExpanded, setCopySectionsExpanded, copyRatesActiveTab, setCopyRatesActiveTab, showMultipliersInline, setShowMultipliersInline, tempMultipliers, setTempMultipliers, fileInputRef, handleCopyRates, handleCopyRatesFromRateSection, handleDownloadTemplate, handleUploadExcel } = useRateMasterImportExport({ selectedZone, selectedUseGroup, assessmentYear, allZones, zoneDescriptions, rateCategories, zoneOptions: finalZoneOptions, useGroupOptions: finalUseGroupOptions, assessmentYears: finalAssessmentYears, assessmentYearRanges, matrixData, setMatrixData, allZoneEdits, setAllZoneEdits, setShowMatrix, showMatrix, showCopyRateSection, t, multipliers, setMultipliers });
 
   useExistingRateCheck({ mode, id, editData, bulkEditData, selectedZone, selectedUseGroup, assessmentYear, allFiltersSelected, setExistingRateFound, setIsCheckingRates });
   useUrlParamSync({ selectedZone, selectedUseGroup, assessmentYear, copySectionsExpanded, showMultipliersInline });
 
-  const { handleAddRates, handleUpdateRates, handleDeleteRates, handleGenerateMatrix, handleToggleMultipliers, handleToggleCopyRates, handleCloseCopySection, handleCloseMultipliersSection, handleApplyMultipliers, handleCopyRatesWithValidation } = useRateFormHandlers({ mode, id, editData, bulkEditData, selectedZone, selectedUseGroup, assessmentYear, existingRateFound, rateCategories, useGroupOptions, zoneOptions, assessmentYears, assessmentYearRanges, zoneDescriptions, paginatedZoneDescriptions, matrixStorageKey, locale, onClose, router, confirm, buildCompleteMatrixForSubmission, handleBulkCreate, handleBulkUpdate, handleDelete, setMatrixData, setShowMatrix, setCopySectionsExpanded, setShowMultipliersInline, setMultipliers, tempMultipliers, sourceUseGroup, handleCopyRates, t });
+  const { handleAddRates, handleUpdateRates, handleDeleteRates, handleGenerateMatrix, handleToggleMultipliers, handleToggleCopyRates, handleCloseCopySection, handleCloseMultipliersSection, handleApplyMultipliers, handleCopyRatesWithValidation } = useRateFormHandlers({ mode, id, editData, bulkEditData, selectedZone, selectedUseGroup, assessmentYear, existingRateFound, rateCategories, useGroupOptions: finalUseGroupOptions, zoneOptions: finalZoneOptions, assessmentYears: finalAssessmentYears, assessmentYearRanges, zoneDescriptions, paginatedZoneDescriptions, matrixStorageKey, locale, onClose, router, confirm, buildCompleteMatrixForSubmission, handleBulkCreate, handleBulkUpdate, handleDelete, setMatrixData, setShowMatrix, setCopySectionsExpanded, setShowMultipliersInline, setMultipliers, tempMultipliers, sourceUseGroup, handleCopyRates, t });
+
 
   const isDrawerMode = !!onClose;
   const isEditMode = !!id || !!editData || !!bulkEditData;
   const isImportDisabled = existingRateFound || !selectedZone || selectedZone === 'ALL' ||
     !selectedUseGroup || selectedUseGroup === 'ALL' || !assessmentYear || assessmentYear === 'ALL';
+
+  // Show toast when filters match existing rates
+  const hasShownToastRef = useRef(false);
+  useEffect(() => {
+    if (!isEditMode && existingRateFound && !hasShownToastRef.current) {
+      toast.error(t('messages.validationRatesAlreadyExist'));
+      hasShownToastRef.current = true;
+    }
+    if (!existingRateFound) {
+      hasShownToastRef.current = false;
+    }
+  }, [existingRateFound, isEditMode, t]);
 
   return (
     <div className={isDrawerMode ? "space-y-3" : "max-w-7xl mx-auto p-2 md:p-3"}>
@@ -65,20 +109,25 @@ const RateMasterForm: React.FC<RateMasterFormProps> = ({ id, zoneOptions, useGro
             selectedZone={selectedZone}
             selectedUseGroup={selectedUseGroup}
             assessmentYear={assessmentYear}
-            zoneOptions={zoneOptions}
-            useGroupOptions={useGroupOptions}
-            assessmentYears={assessmentYears}
+            zoneOptions={finalZoneOptions}
+            useGroupOptions={finalUseGroupOptions}
+            assessmentYears={finalAssessmentYears}
             assessmentYearRanges={assessmentYearRanges}
             errors={errors}
-            isEditMode={isEditMode}
             allFiltersSelected={allFiltersSelected}
             existingRateFound={existingRateFound}
             isCheckingRates={isCheckingRates}
             mode={mode}
+            isLoadingZones={isLoadingZones}
+            isLoadingUseGroups={isLoadingUseGroups}
+            isLoadingAssessmentYears={isLoadingAssessmentYears}
             onDropdownChange={handleDropdownChange}
             onGenerateMatrix={handleGenerateMatrix}
             onToggleMultipliers={() => handleToggleMultipliers(showMultipliersInline)}
             onToggleCopyRates={handleToggleCopyRates}
+            onLoadZones={loadZoneOptions}
+            onLoadUseGroups={loadUseGroupOptions}
+            onLoadAssessmentYears={loadAssessmentYears}
             t={t}
           />
           {mode === "add" && (
@@ -92,7 +141,7 @@ const RateMasterForm: React.FC<RateMasterFormProps> = ({ id, zoneOptions, useGro
               sourceRateSectionOptions={sourceRateSectionOptions}
               copyRatesActiveTab={copyRatesActiveTab}
               setCopyRatesActiveTab={setCopyRatesActiveTab}
-              useGroupOptions={useGroupOptions}
+              useGroupOptions={finalUseGroupOptions}
               selectedUseGroup={selectedUseGroup}
               selectedZone={selectedZone}
               onCopyRates={handleCopyRatesWithValidation}
@@ -113,11 +162,14 @@ const RateMasterForm: React.FC<RateMasterFormProps> = ({ id, zoneOptions, useGro
                 setAllZoneEdits={setAllZoneEdits}
                 rateCategories={rateCategories}
                 selectedZone={selectedZone}
+                selectedZoneLabel={selectedZoneLabel}
                 selectedUseGroup={selectedUseGroup}
+                selectedUseGroupLabel={selectedUseGroupLabel}
                 assessmentYear={assessmentYear}
-                zoneOptions={zoneOptions}
-                useGroupOptions={useGroupOptions}
-                assessmentYears={assessmentYears}
+                assessmentYearLabel={assessmentYearLabel}
+                zoneOptions={finalZoneOptions}
+                useGroupOptions={finalUseGroupOptions}
+                assessmentYears={finalAssessmentYears}
                 assessmentYearRanges={assessmentYearRanges}
                 zoneRemarksMap={zoneRemarksMap}
                 filledRatesCount={filledRatesCount}
@@ -131,6 +183,7 @@ const RateMasterForm: React.FC<RateMasterFormProps> = ({ id, zoneOptions, useGro
                 onAddRates={handleAddRates}
                 onUpdateRates={handleUpdateRates}
                 onDeleteRates={handleDeleteRates}
+                existingRateFound={existingRateFound}
                 t={t}
                 tCommon={tCommon}
               />

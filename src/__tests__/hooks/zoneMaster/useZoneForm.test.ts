@@ -332,5 +332,105 @@ describe("useZoneForm", () => {
 
       expect(Object.keys(errors).length).toBe(0);
     });
+
+    it("should reject zone number with only zeros", () => {
+      const { result } = renderHook(() =>
+        useZoneForm({
+          mode: "add",
+          open: true,
+          existingZones: mockExistingZones,
+          t: mockT,
+        })
+      );
+
+      const errors = result.current.validate({
+        zoneNo: "0",
+        description: "Valid Zone",
+        descriptionEnglish: "",
+        isActive: true,
+      });
+
+      expect(errors.zoneNo).toBe("validation.zoneNoAllZeros");
+    });
+
+    it("should reject zone number with multiple zeros", () => {
+      const { result } = renderHook(() =>
+        useZoneForm({
+          mode: "add",
+          open: true,
+          existingZones: mockExistingZones,
+          t: mockT,
+        })
+      );
+
+      const errors = result.current.validate({
+        zoneNo: "000",
+        description: "Valid Zone",
+        descriptionEnglish: "",
+        isActive: true,
+      });
+
+      expect(errors.zoneNo).toBe("validation.zoneNoAllZeros");
+    });
+
+    it("should reject description with only zeros", () => {
+      const { result } = renderHook(() =>
+        useZoneForm({
+          mode: "add",
+          open: true,
+          existingZones: mockExistingZones,
+          t: mockT,
+        })
+      );
+
+      const errors = result.current.validate({
+        zoneNo: "Z1",
+        description: "0",
+        descriptionEnglish: "",
+        isActive: true,
+      });
+
+      expect(errors.description).toBe("validation.zoneNameAllZeros");
+    });
+
+    it("should reject description with multiple zeros", () => {
+      const { result } = renderHook(() =>
+        useZoneForm({
+          mode: "add",
+          open: true,
+          existingZones: mockExistingZones,
+          t: mockT,
+        })
+      );
+
+      const errors = result.current.validate({
+        zoneNo: "Z1",
+        description: "000",
+        descriptionEnglish: "",
+        isActive: true,
+      });
+
+      expect(errors.description).toBe("validation.zoneNameAllZeros");
+    });
+
+    it("should accept zone number with zeros mixed with other characters", () => {
+      const { result } = renderHook(() =>
+        useZoneForm({
+          mode: "add",
+          open: true,
+          existingZones: mockExistingZones,
+          t: mockT,
+        })
+      );
+
+      const errors = result.current.validate({
+        zoneNo: "Z01",
+        description: "Valid Zone",
+        descriptionEnglish: "",
+        isActive: true,
+      });
+
+      expect(errors.zoneNo).toBeUndefined();
+    });
   });
 });

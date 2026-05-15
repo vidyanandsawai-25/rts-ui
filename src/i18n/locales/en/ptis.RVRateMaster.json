@@ -89,7 +89,9 @@
     "validationParseFailed": "Failed to parse file. Please check the format.",
     "validationReadFileFailed": "Failed to read file",
     "noRatesAvailable": "No rates available",
-    "noRatesMatch": "No data matches the selected filters. Try adjusting your criteria or generate new rates."
+    "noRatesMatch": "No data matches the selected filters. Try adjusting your criteria or generate new rates.",
+    "rateExceedsMaximum": "Rate value cannot exceed {max}. Please enter a valid rate.",
+    "rateValueInvalid": "Rate value must be valid. Please enter a valid rate value."
   },
   "sections": {
     "copyRatesTitle": "Copy Rates",

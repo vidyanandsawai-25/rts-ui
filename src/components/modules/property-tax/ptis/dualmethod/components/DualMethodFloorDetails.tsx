@@ -1,41 +1,23 @@
-import { RateableTaxDetailsSection } from '@/components/modules/property-tax/ptis/rateable';
-import { CapitalTaxDetailsSection } from '@/components/modules/property-tax/ptis/capital';
-import { RateableValueResponse } from '@/types/rateableValue.types';
-import { CapitalValueResponse } from '@/types/capitalValue.types';
-import { OldDetailsData } from '@/types/ptis.types';
-import { getTranslations } from 'next-intl/server';
+'use client';
+
+import React from 'react';
+import { useTranslations } from 'next-intl';
 import { PTIS_UI_CLASSES } from '@/components/modules/property-tax/ptis/constants';
 
 interface Props {
-  propertyId?: number;
-  initialRateableData: RateableValueResponse | null;
-  initialCapitalData: CapitalValueResponse | null;
-  hasFetchedRateableData?: boolean;
-  hasFetchedCapitalData?: boolean;
-  initialOldDetails: OldDetailsData;
-  rateableError?: string;
-  capitalError?: string;
-  searchParams: Record<string, string | string[] | undefined>;
-  locale: string;
+  rateableSection?: React.ReactNode;
+  capitalSection?: React.ReactNode;
 }
 
 /**
  * Renders the expandable floor details section for Dual Method view.
- * Uses Server Components for nested details.
+ * Receives Server Components as props to avoid client-side translation errors.
  */
-export async function DualMethodFloorDetails({
-  propertyId,
-  initialRateableData,
-  initialCapitalData,
-  hasFetchedRateableData = false,
-  hasFetchedCapitalData = false,
-  initialOldDetails,
-  rateableError,
-  capitalError,
-  searchParams,
-  locale,
-}: Props) {
-  const t = await getTranslations({ locale, namespace: 'ptis.modules.DualMethod' });
+export const DualMethodFloorDetails: React.FC<Props> = ({
+  rateableSection,
+  capitalSection,
+}) => {
+  const t = useTranslations('ptis.modules.DualMethod');
   
   return (
     <div className="space-y-3 mt-2">
@@ -46,16 +28,7 @@ export async function DualMethodFloorDetails({
             {t('rateableMethod')}
           </h3>
         </div>
-        <RateableTaxDetailsSection
-          locale={locale}
-          propertyId={propertyId}
-          rateableData={initialRateableData}
-          hasFetchedData={hasFetchedRateableData}
-          error={rateableError}
-          showInlineError={false}
-          oldDetails={initialOldDetails}
-          searchParams={searchParams}
-        />
+        {rateableSection}
       </div>
 
       <div className={PTIS_UI_CLASSES.sectionCard}>
@@ -65,17 +38,8 @@ export async function DualMethodFloorDetails({
             {t('capitalMethod')}
           </h3>
         </div>
-        <CapitalTaxDetailsSection
-          locale={locale}
-          propertyId={propertyId}
-          capitalData={initialCapitalData}
-          hasFetchedData={hasFetchedCapitalData}
-          error={capitalError}
-          showInlineError={false}
-          oldDetails={initialOldDetails}
-          searchParams={searchParams}
-        />
+        {capitalSection}
       </div>
     </div>
   );
-}
+};

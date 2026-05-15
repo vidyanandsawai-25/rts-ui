@@ -82,7 +82,7 @@ export const useTaxZoning = (props: TaxZoningPageProps) => {
     const params = new URLSearchParams(searchParams.toString());
     if (newZone) params.set("taxZoneId", newZone); else params.delete("taxZoneId");
     if (newWard.length === 1) params.set("wardId", newWard[0]); else params.delete("wardId");
-    router.replace(`/${locale}/property-tax/taxzoning?${params.toString()}`);
+    router.replace(`/${locale}/property-tax/taxzone-master/taxzoning?${params.toString()}`);
   };
 
   const setZone = (val: string) => {
@@ -113,7 +113,7 @@ export const useTaxZoning = (props: TaxZoningPageProps) => {
     const params = new URLSearchParams(searchParams.toString());
     params.delete("taxZoneId");
     params.delete("wardId");
-    router.replace(`/${locale}/property-tax/taxzoning?${params.toString()}`);
+    router.replace(`/${locale}/property-tax/taxzone-master/taxzoning?${params.toString()}`);
   };
   const isTaxZoneValid = !!zone, isWardValid = ward.length > 0, isPropertyValid = ward.length === 1 ? previewData.length > 0 : true;
 
@@ -133,7 +133,7 @@ export const useTaxZoning = (props: TaxZoningPageProps) => {
       const params = new URLSearchParams(searchParams.toString());
       params.set("page", String(p));
       params.set("pageSize", pageSizes);
-      router.replace(`/${locale}/property-tax/taxzoning?${params.toString()}`);
+      router.replace(`/${locale}/property-tax/taxzone-master/taxzoning?${params.toString()}`);
     },
     changePageSize: (s: number) => {
       setPageSize(String(s));
@@ -141,7 +141,7 @@ export const useTaxZoning = (props: TaxZoningPageProps) => {
       const params = new URLSearchParams(searchParams.toString());
       params.set("page", "1");
       params.set("pageSize", String(s));
-      router.replace(`/${locale}/property-tax/taxzoning?${params.toString()}`);
+      router.replace(`/${locale}/property-tax/taxzone-master/taxzoning?${params.toString()}`);
     },
     handleSubmit: (e: React.FormEvent) => { e.preventDefault(); setSubmitted(true); if (isTaxZoneValid && isWardValid && isPropertyValid) handleUpdate({ zone, ward, previewData, records, wardsData, onSuccess: onFormClear }); },
     handleBulkUpdate: () => bulkUpdateAction(importedChanges, () => { setImportedChanges([]); setHasImportedData(false); })

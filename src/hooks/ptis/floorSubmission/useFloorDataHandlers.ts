@@ -49,7 +49,7 @@ export const useFloorDataHandlers = (params: {
   const isSavingRef = useRef(false);
 
   // Use deletion hook
-  const { handleDeleteFloor } = useFloorDeletion({
+  const { handleDeleteFloor, isDeleting } = useFloorDeletion({
     localFloors,
     setLocalFloors,
     setSelectedFloor,
@@ -64,11 +64,7 @@ export const useFloorDataHandlers = (params: {
   });
 
   const handleSave = useCallback(async () => {
-    const isValid = _validateForm();
-    if (isSavingRef.current || !isValid) {
-      if (!isValid) toast.error(t('floor.fixValidationErrors'));
-      return;
-    }
+    if (isSavingRef.current) return;
 
     confirm({
       variant: isAddingNewFloor ? 'add' : 'update',
@@ -122,7 +118,7 @@ export const useFloorDataHandlers = (params: {
         }
       },
     });
-  }, [isAddingNewFloor, editingFloorForm, selectedFloor, props.initialPropertyID, floorLookup, subFloorLookup, constructionLookup, useLookup, subTypeData, router, t, confirm, INITIAL_FORM_STATE, setIsAddingNewFloor, setSelectedFloor, setEditingFloorForm, startTransition, localFloors, setLocalFloors, locale, propertyId, _validateForm]);
+  }, [isAddingNewFloor, editingFloorForm, selectedFloor, props.initialPropertyID, floorLookup, subFloorLookup, constructionLookup, useLookup, subTypeData, router, t, confirm, INITIAL_FORM_STATE, setIsAddingNewFloor, setSelectedFloor, setEditingFloorForm, startTransition, localFloors, setLocalFloors, locale, propertyId]);
 
   const handleOpenRenterManagement = useCallback(async (formToUse?: FloorData) => {
     const currentForm = formToUse || editingFloorForm;
@@ -146,6 +142,10 @@ export const useFloorDataHandlers = (params: {
   }, [editingFloorForm, t, setFormErrors, router, locale, propertyId]);
 
   return {
-    handleSave,handleDeleteFloor,handleOpenRenterManagement,isSaving,
+    handleSave,
+    handleDeleteFloor,
+    handleOpenRenterManagement,
+    isSaving,
+    isDeleting,
   };
 };

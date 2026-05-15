@@ -64,8 +64,8 @@ describe("TaxZoningPage Integration", () => {
             />
         );
 
-        // Verify component renders with data
-        expect(screen.getByText("title")).toBeInTheDocument();
+        // Verify component renders with data (title is combined with form.update as "form.update title")
+        expect(screen.getByText(/form\.update.*title/)).toBeInTheDocument();
         expect(screen.getByText("W001")).toBeInTheDocument();
         expect(screen.getByText("TZ001")).toBeInTheDocument();
 

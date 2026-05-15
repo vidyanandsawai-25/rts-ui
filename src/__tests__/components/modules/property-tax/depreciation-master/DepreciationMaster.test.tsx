@@ -41,7 +41,8 @@ vi.mock("next-intl", () => ({
       "errors.overlap": "Range overlaps with existing range",
       "errors.mustBeNumber": "Must be a valid number",
       "errors.cannotBeNegative": "Cannot be negative",
-      "errors.mustBe9999OrLess": "Must be 9999 or less",
+      "errors.mustBe999OrLess": "Must be 999 or less",
+      "errors.mustBe99OrLess": "Must be 99 or less",
     };
     let result = translations[key] || key;
     if (params && typeof result === "string") {
@@ -209,31 +210,65 @@ describe("DepreciationMaster", () => {
     it("should sanitize non-numeric input in min field", async () => {
       const user = userEvent.setup();
       render(<DepreciationMaster {...defaultProps} />);
-      
+
       const minInput = screen.getByPlaceholderText("Enter min");
       await user.type(minInput, "abc123");
-      
+
       expect(minInput).toHaveValue("123");
     });
 
     it("should sanitize non-numeric input in max field", async () => {
       const user = userEvent.setup();
       render(<DepreciationMaster {...defaultProps} />);
-      
+
       const maxInput = screen.getByPlaceholderText("Enter max");
       await user.type(maxInput, "xyz456");
-      
+
       expect(maxInput).toHaveValue("456");
     });
 
-    it("should limit input to 4 digits", async () => {
+    it("should limit input to 3 digits", async () => {
       const user = userEvent.setup();
       render(<DepreciationMaster {...defaultProps} />);
-      
+
       const minInput = screen.getByPlaceholderText("Enter min");
-      await user.type(minInput, "123456");
-      
-      expect(minInput).toHaveValue("1234");
+      await user.type(minInput, "12345");
+
+      expect(minInput).toHaveValue("123");
+    });
+
+    it("should accept max age of exactly 999", async () => {
+      const user = userEvent.setup();
+      render(<DepreciationMaster {...defaultProps} data={[]} />);
+
+      const minInput = screen.getByPlaceholderText("Enter min");
+      const maxInput = screen.getByPlaceholderText("Enter max");
+      const addButton = screen.getByRole("button", { name: /Add Range/i });
+
+      await user.type(minInput, "10");
+      await user.type(maxInput, "999");
+      await user.click(addButton);
+
+      await waitFor(() => {
+        expect(addRangeAction).toHaveBeenCalledWith("en", { minYear: 10, maxYear: 999 });
+      });
+    });
+
+    it("should call addRangeAction when age values are at max valid value (999)", async () => {
+      const user = userEvent.setup();
+      render(<DepreciationMaster {...defaultProps} data={[]} />);
+
+      const minInput = screen.getByPlaceholderText("Enter min");
+      const maxInput = screen.getByPlaceholderText("Enter max");
+      const addButton = screen.getByRole("button", { name: /Add Range/i });
+
+      await user.type(minInput, "0");
+      await user.type(maxInput, "999");
+      await user.click(addButton);
+
+      await waitFor(() => {
+        expect(addRangeAction).toHaveBeenCalled();
+      });
     });
   });
 

@@ -9,9 +9,6 @@ interface BankMasterHeaderProps {
   onAdd: () => void;
   search: string;
   onSearchChange: (value: string) => void;
-  currentState: string;
-  onStateChange: (value: string) => void;
-  stateOptions: { label: string; value: string }[];
 }
 
 export function BankMasterHeader({
@@ -19,9 +16,6 @@ export function BankMasterHeader({
   onAdd,
   search,
   onSearchChange,
-  currentState,
-  onStateChange,
-  stateOptions,
 }: BankMasterHeaderProps) {
   return (
     <TableHeader
@@ -34,9 +28,6 @@ export function BankMasterHeader({
         <BankFilters
           search={search}
           onSearchChange={onSearchChange}
-          currentState={currentState}
-          onStateChange={onStateChange}
-          stateOptions={stateOptions}
           t={t}
         />
       }

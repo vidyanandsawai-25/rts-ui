@@ -3,6 +3,7 @@
 import { Input, ValidationMessage } from '@/components/common';
 import type { FloorFormModel } from '@/types/floor.types';
 import type React from 'react';
+import { FLOOR_CODE_MAX, DESCRIPTION_MAX } from './validation';
 
 /* ================= TYPES ================= */
 interface FloorFormFieldsProps {
@@ -17,6 +18,7 @@ interface FloorFormFieldsProps {
     description: string;
     descriptionPlaceholder: string;
     sequenceNo: string;
+    sequenceNoPlaceholder: string;
   };
 }
 
@@ -45,6 +47,7 @@ export function FloorFormFields({
         onChange={onChange}
         onBlur={onBlur}
         fullWidth
+        maxLength={FLOOR_CODE_MAX}
         className="text-gray-700"
       />
       <ValidationMessage
@@ -61,6 +64,7 @@ export function FloorFormFields({
         onChange={onChange}
         onBlur={onBlur}
         fullWidth
+        maxLength={DESCRIPTION_MAX}
         className="text-gray-700"
       />
       <ValidationMessage
@@ -72,6 +76,7 @@ export function FloorFormFields({
         name="sequenceNo"
         label={labels.sequenceNo}
         type="number"
+        placeholder={labels.sequenceNoPlaceholder}
         value={formData.sequenceNo === 0 ? '' : formData.sequenceNo}
         onChange={onChange}
         onBlur={onBlur}

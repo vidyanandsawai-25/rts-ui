@@ -13,6 +13,8 @@ import {
     getConstructionTypeData,
     getSubTypeOfUseData,
     getSubFloorData,
+    deleteRoomSubmission,
+    deleteOffsetSubmission,
 } from '@/lib/api/ptis/floorSubmission';
 
 import { validateFloorSubmissionPayload } from '@/lib/validations/validateFloorSubmission';
@@ -77,10 +79,6 @@ function getRevalidatePath(locale: string, propertyId?: string | number) {
     return basePath;
 }
 
-// ----------------------------------------------------------------------
-// FLOOR DETAILS ACTIONS (Mutation)
-// ----------------------------------------------------------------------
-
 /**
  * Validates and submits a floor submission payload without redirect.
  */
@@ -124,10 +122,6 @@ export const deleteFloorSubmissionNoRedirectAction = async (submissionId: number
     }
 };
 
-// ----------------------------------------------------------------------
-// FETCH ACTIONS (Shared)
-// ----------------------------------------------------------------------
-
 export const getFloorByIdAction = async (floorId: number | string) => {
     try {
         const data = await getFloorById(floorId);
@@ -161,5 +155,30 @@ export const getFloorSubmissionsByOwnerAction = async (ownerId: number | string)
         return data
     } catch (error) {
         return { success: false, error: error instanceof Error ? error.message : 'quickDataEntry.floorSubmission.errors.fetchFloorSubmissions' };
+    }
+};
+
+
+/**
+ * Deletes a room submission without redirecting.
+ */
+export const deleteRoomSubmissionNoRedirectAction = async (roomId: number | string): Promise<ActionResult<void>> => {
+    try {
+        await deleteRoomSubmission(roomId);
+        return { success: true, data: undefined };
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : "Failed to delete room" };
+    }
+};
+
+/**
+ * Deletes an offset submission without redirecting.
+ */
+export const deleteOffsetSubmissionNoRedirectAction = async (offsetId: number | string): Promise<ActionResult<void>> => {
+    try {
+        await deleteOffsetSubmission(offsetId);
+        return { success: true, data: undefined };
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : "Failed to delete offset" };
     }
 };

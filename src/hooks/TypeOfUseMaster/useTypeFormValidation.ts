@@ -8,7 +8,7 @@
 import { useMemo } from 'react';
 import type { UseType } from '@/types/typeOfUse.types';
 import type { Validator } from '@/lib/utils/validation-helpers';
-import { CODE_REGEX, DESCRIPTION_REGEX } from '@/lib/utils/validation-rules';
+import { CODE_REGEX, DESCRIPTION_REGEX, isAllZeros } from '@/lib/utils/validation-rules';
 import { normalize } from '@/lib/utils/sanitization';
 
 type TranslatorFunction = (key: string, values?: Record<string, string | number>) => string;
@@ -56,6 +56,7 @@ export function useTypeFormValidation({
         const code = String(value ?? '').trim();
         
         if (!code) return t('type.fields.typeId') + ' ' + t('messages.createError');
+        if (isAllZeros(code)) return t('type.fields.typeId') + ' ' + t('messages.cannotBeAllZeros');
         if (code.length > 10) return t('type.fields.typeId') + ' ' + t('messages.maxLength', { count: 10 });
         if (!CODE_REGEX.test(code)) return t('type.fields.typeId') + ' ' + t('messages.onlyAlphanumeric');
         if (isDuplicateCode(code)) return t('messages.duplicateTypeId');
@@ -79,6 +80,7 @@ export function useTypeFormValidation({
         const desc = String(value ?? '').trim();
         
         if (!desc) return t('messages.descriptionRequired');
+        if (isAllZeros(desc)) return t('type.fields.description') + ' ' + t('messages.cannotBeAllZeros');
         if (desc.length > 100) return t('type.fields.description') + ' ' + t('messages.maxLength', { count: 100 });
         if (!DESCRIPTION_REGEX.test(desc)) return t('type.fields.description') + ' ' + t('messages.allowedChars');
         if (isDuplicateDescription(desc)) return t('messages.duplicateDescription');
@@ -90,6 +92,9 @@ export function useTypeFormValidation({
         const seq = Number(value);
         if (!Number.isFinite(seq) || seq < 0) {
           return t('type.fields.sequence') + ' ' + t('messages.sequenceNonNegative');
+        }
+        if (seq > 999) {
+          return t('type.fields.sequence') + ' ' + t('messages.maxThreeDigits');
         }
         return undefined;
       }

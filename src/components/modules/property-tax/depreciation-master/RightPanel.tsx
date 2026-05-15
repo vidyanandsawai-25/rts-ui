@@ -8,9 +8,6 @@ import type { RightPanelProps } from "@/types/depreciation.types";
 export function RightPanel({
   matrixColumns,
   matrixRows,
-  ranges,
-  selectedRangeId,
-  
   saving,
   pageNumber,
   pageSize,
@@ -30,11 +27,6 @@ export function RightPanel({
           <span className="font-bold text-gray-700 uppercase text-xs tracking-wider">
             {t("createDepChart")}
           </span>
-          {selectedRangeId && (
-            <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-bold">
-              {t("active")}: {ranges.find((r) => r.id === selectedRangeId)?.label}
-            </span>
-          )}
         </div>
 
         <div className="flex-1 overflow-auto text-gray-400">

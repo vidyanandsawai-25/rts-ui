@@ -4,36 +4,44 @@ import {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const sanitizeRoomBase = (room: Record<string, unknown>) => ({
-    isActive: true,
-    propertyDetailsId: Number(room.propertyDetailsId || 0),
-    propertyId: Number(room.propertyId || 0),
-    lengthMtr: Number(room.lengthMtr || 0),
-    widthMtr: Number(room.widthMtr || 0),
-    heightMtr: Number(room.heightMtr || 0),
-    breadth: Number(room.breadth || 0),
-    areaSqMtr: Number(room.areaSqMtr || 0),
-    noOfRooms: Number(room.noOfRooms || 1),
-    totalAreaSqMtr: Number(room.totalAreaSqMtr || 0),
-    roomNo: String(room.roomNo || ''),
-    roomType: String(room.roomType || 'Room'),
-    shape: String(room.shape || 'Rectangle'),
-    outerYesNo: Boolean(room.outerYesNo),
-    minusYesNo: Boolean(room.minusYesNo),
-    submissionType: String(room.submissionType || 'Room'),
-    baseMtr: Number(room.baseMtr || room.base1Mtr || 0),
-    base2Mtr: Number(room.base2Mtr || 0),
-});
+const sanitizeRoomBase = (room: Record<string, unknown>) => {
+    const id = Number(room.id || 0);
+    const propertyDetailsId = Number(room.propertyDetailsId || 0);
+    const base: Record<string, unknown> = {
+        isActive: true,
+        propertyId: Number(room.propertyId || 0),
+        lengthMtr: Number(room.lengthMtr || 0),
+        widthMtr: Number(room.widthMtr || 0),
+        heightMtr: Number(room.heightMtr || 0),
+        breadth: Number(room.breadth || 0),
+        areaSqMtr: Number(room.areaSqMtr || 0),
+        noOfRooms: Number(room.noOfRooms || 1),
+        totalAreaSqMtr: Number(room.totalAreaSqMtr || 0),
+        roomNo: String(room.roomNo || ''),
+        roomType: String(room.roomType || 'Room'),
+        shape: String(room.shape || 'Rectangle'),
+        outerYesNo: Boolean(room.outerYesNo),
+        minusYesNo: Boolean(room.minusYesNo),
+        submissionType: String(room.submissionType || 'Room'),
+        base1Mtr: Number(room.base1Mtr || room.baseMtr || 0),
+        base2Mtr: Number(room.base2Mtr || 0),
+    };
+    // Only include IDs when valid (> 0) — backend rejects 0 during creation
+    if (id > 0) base.id = id;
+    if (propertyDetailsId > 0) base.propertyDetailsId = propertyDetailsId;
+    return base;
+};
 
 const sanitizeMinusData = (minus: Record<string, unknown>, extra: Record<string, unknown> = {}) => ({
     isActive: true,
+    id: Number(minus.id || 0),
     lengthMtr: Number(minus.lengthMtr || 0),
     widthMtr: Number(minus.widthMtr || 0),
     heightMtr: Number(minus.heightMtr || 0),
     breadth: Number(minus.breadth || 0),
     areaSqMtr: Number(minus.areaSqMtr || 0),
     shape: String(minus.shape || 'Rectangle'),
-    baseMtr: Number(minus.baseMtr || minus.base1Mtr || 0),
+    base1Mtr: Number(minus.base1Mtr || minus.baseMtr || 0),
     base2Mtr: Number(minus.base2Mtr || 0),
     offsetValue: Number(minus.offsetValue || 0),
     offsetArea: Number(minus.offsetArea || 0),
@@ -42,6 +50,7 @@ const sanitizeMinusData = (minus: Record<string, unknown>, extra: Record<string,
 
 const sanitizeFloorBase = (payload: FloorSubmissionPayload) => ({
     isActive: true,
+    id: Number(payload.propertyDetailsId || 0),
     propertyDetailsId: Number(payload.propertyDetailsId || 0),
     propertyId: Number(payload.propertyId) || 0,
     floorId: Number(payload.floorId) || 0,
@@ -99,8 +108,8 @@ export function sanitizeFloorUpdatePayload(payload: FloorSubmissionPayload): Rec
     const sanitizeRoomUpdate = (room: Record<string, unknown>) => ({
         ...sanitizeRoomBase(room),
         updatedBy: 0,
-        roomWiseSubmissionId: Number(room.roomWiseSubmissionId || 0),
-        roomWiseMinusData: ((room.roomWiseMinusData || room.minusRooms || []) as Record<string, unknown>[]).map(m => sanitizeMinusData(m, { updatedBy: 0, roomWiseMinusId: Number(m.roomWiseMinusId || 0), roomWiseSubmissionId: Number(m.roomWiseSubmissionId || room.roomWiseSubmissionId || 0) })),
+        roomWiseSubmissionId: Number(room.id || room.roomWiseSubmissionId || 0),
+        roomWiseMinusData: ((room.roomWiseMinusData || room.minusRooms || []) as Record<string, unknown>[]).map(m => sanitizeMinusData(m, { updatedBy: 0, roomWiseMinusId: Number(m.id || m.roomWiseMinusId || 0), roomWiseSubmissionId: Number(m.roomWiseSubmissionId || room.id || room.roomWiseSubmissionId || 0) })),
     });
 
     return {

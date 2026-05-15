@@ -66,8 +66,8 @@ export function ZoneWards({
           <Select
             options={pageSizeOptions}
             value={String(pageSize)}
-            onChange={(val) => {
-              onPageSizeChange(Number(val));
+            onChange={(e) => {
+              onPageSizeChange(Number(e.target.value));
               onPageChange(1);
             }}
             selectSize="sm"

@@ -5,6 +5,7 @@ import { MatrixGridPagination } from "@/components/common/MatrixGrid";
 import { sanitizePositiveDecimal, POSITIVE_DECIMAL_INVALID_KEYS } from "@/lib/utils/validation";
 import type { RateCategory, ISelectOption } from "@/types/RVRateMaster";
 import { RateMatrixHeader } from "./RateMatrixHeader";
+import { toast } from "sonner";
 import {
   buildMatrixColumns,
   buildMatrixMetaColumns,
@@ -12,6 +13,9 @@ import {
   buildCategoryColorMap,
   filterRateCategories
 } from "./rateMatrixHelpers";
+
+// Maximum allowed rate value
+const MAX_RATE_VALUE = 99999;
 
 type MatrixRow = {
   id: number;
@@ -30,8 +34,11 @@ interface RateMatrixSectionProps {
   rateCategories: RateCategory[];
   // Filter values for display
   selectedZone: string;
+  selectedZoneLabel?: string;
   selectedUseGroup: string;
+  selectedUseGroupLabel?: string;
   assessmentYear: string;
+  assessmentYearLabel?: string;
   // Options for labels
   zoneOptions: ISelectOption[];
   useGroupOptions: ISelectOption[];
@@ -58,6 +65,8 @@ interface RateMatrixSectionProps {
   onAddRates: () => void;
   onUpdateRates: () => void;
   onDeleteRates: () => void;
+  // Validation
+  existingRateFound: boolean;
   // Translations
   t: ReturnType<typeof import("next-intl").useTranslations>;
   tCommon: ReturnType<typeof import("next-intl").useTranslations>;
@@ -69,8 +78,11 @@ export function RateMatrixSection({
   setAllZoneEdits,
   rateCategories,
   selectedZone,
+  selectedZoneLabel,
   selectedUseGroup,
+  selectedUseGroupLabel,
   assessmentYear,
+  assessmentYearLabel,
   zoneOptions,
   useGroupOptions,
   assessmentYears,
@@ -87,6 +99,7 @@ export function RateMatrixSection({
   onAddRates,
   onUpdateRates,
   onDeleteRates,
+  existingRateFound,
   t,
   tCommon,
 }: RateMatrixSectionProps) {
@@ -103,8 +116,11 @@ export function RateMatrixSection({
     <div className="mt-2 bg-white rounded-xl border border-blue-200 shadow-lg overflow-hidden">
       <RateMatrixHeader
         selectedZone={selectedZone}
+        selectedZoneLabel={selectedZoneLabel}
         selectedUseGroup={selectedUseGroup}
+        selectedUseGroupLabel={selectedUseGroupLabel}
         assessmentYear={assessmentYear}
+        assessmentYearLabel={assessmentYearLabel}
         zoneOptions={zoneOptions}
         useGroupOptions={useGroupOptions}
         assessmentYears={assessmentYears}
@@ -116,6 +132,7 @@ export function RateMatrixSection({
         onUpdateRates={onUpdateRates}
         onDeleteRates={onDeleteRates}
         t={t}
+        existingRateFound={existingRateFound}
       />
 
       {/* Table Section */}
@@ -132,6 +149,12 @@ export function RateMatrixSection({
               // Sanitize and validate value
               const sanitized = sanitizePositiveDecimal(String(value));
               const numValue = sanitized === "" ? 0 : Number(sanitized);
+              
+              // Check if value exceeds maximum allowed rate
+              if (numValue > MAX_RATE_VALUE) {
+                toast.error(t('messages.rateExceedsMaximum', { max: MAX_RATE_VALUE }));
+                return;
+              }
               
               // Find the row to get zoneNo
               const targetRow = matrixData.find(row => String(row.id) === rowId);

@@ -47,13 +47,14 @@ export interface MatrixGridProps {
   colorMap?: Record<string, string>;
   mode?: "view" | "edit";
   editableColumns?: string[];
+  editableRowId?: string;
   onCellChange?: (rowId: string, columnId: string, value: string | number) => void;
   onCellKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   onRowDelete?: (index: number) => void;
   getCellClassName?: (value: number, rowId: string, columnId: string) => string;
   translations: {
     action: string;
-    currencySymbol: string;
+    currencySymbol?: string;
     deleteRow: string;
   };
   pagination?: MatrixGridPaginationProps;
@@ -202,6 +203,7 @@ export const MatrixGrid = ({
   colorMap = {},
   mode = "view",
   editableColumns = [],
+  editableRowId,
   onCellChange,
   onCellKeyDown,
   onRowDelete,
@@ -243,7 +245,7 @@ export const MatrixGrid = ({
                   scope="col"
                   role="columnheader"
                   className={cn(
-                    "px-1 md:px-2 py-2 md:py-2 font-bold text-xs md:text-sm text-center text-blue-700 bg-blue-50",
+                    "px-1 md:px-2 py-2 h-7 font-bold text-xs md:text-sm text-center text-blue-700 bg-blue-50 whitespace-nowrap",
                     idx === 0 && "sticky left-0 z-30 bg-blue-50"
                   )}
                   style={{ minWidth: meta.width || "120px" }}
@@ -358,6 +360,7 @@ export const MatrixGrid = ({
  
                 const canEdit: boolean =
                   isEditable &&
+                  (!editableRowId || row.id === editableRowId) &&
                   editableColumns.includes(col.id) &&
                   typeof onCellChange === "function";
  
@@ -400,7 +403,7 @@ export const MatrixGrid = ({
                         customCellClass
                       )}
                     >
-                      {translations.currencySymbol}{Number(value).toFixed(2)}
+                      {String(Number(Number(value).toFixed(2)))}
                     </div>
                   </td>
                 );

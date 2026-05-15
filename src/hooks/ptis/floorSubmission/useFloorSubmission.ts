@@ -4,7 +4,7 @@ import { useState, useTransition, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useConfirm } from '@/components/common';
 import { EditSidebarProps } from '@/types/floor-details.types';
-import { FloorData, RoomData } from '@/types/room-details.types';
+import { FloorData } from '@/types/room-details.types';
 
 // Split Hooks
 import { useFloorFormState } from './useFloorFormState';
@@ -63,7 +63,7 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
     INITIAL_FORM_STATE: INITIAL_FORM_STATE as unknown as FloorData,
   });
 
-  const { handleSave, handleDeleteFloor, handleOpenRenterManagement, isSaving } = handlers;
+  const { handleSave, handleDeleteFloor, handleOpenRenterManagement, isSaving, isDeleting } = handlers;
 
   // 4. Floor Actions (Add, Reset, Lazy Loading)
   const actions = useFloorActions({
@@ -95,7 +95,7 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
   });
 
   const [floorSearch, setFloorSearch] = useState('');
-  
+
   const filteredFloors = useMemo(() => {
     const search = floorSearch.toLowerCase();
     return localFloors.filter(
@@ -107,14 +107,14 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
     );
   }, [localFloors, floorSearch]);
 
-  const subTypeOptionsFromData = useMemo(() => 
+  const subTypeOptionsFromData = useMemo(() =>
     (props.subTypeData || []).map(st => st.description),
     [props.subTypeData]
   );
 
   return {
     t,
-    isOperationLoading: isSaving,
+    isOperationLoading: isSaving || isDeleting,
     setIsOperationLoading: () => { }, // Compatibility
     propertyId: props.initialPropertyID,
     floorSearch,
@@ -128,9 +128,9 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
     setEditingFloorForm,
     formErrors,
     setFormErrors,
-    stagedRooms: editingFloorForm.roomData || [], // Derived for compatibility
-    setStagedRooms: (val: RoomData[]) => {
-      setEditingFloorForm(prev => ({ ...prev, roomData: val }));
+    stagedRooms: editingFloorForm.roomWiseSubmissionDetails || [], // Derived for compatibility
+    setStagedRooms: (val: unknown[]) => {
+      setEditingFloorForm(prev => ({ ...prev, roomWiseSubmissionDetails: val }));
     }, // Compatibility setter
     showRoomSubmission,
     setShowRoomSubmission,

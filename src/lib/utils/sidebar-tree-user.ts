@@ -8,22 +8,24 @@ export function buildSidebarTreeFromUserScreens(screens: UserScreenAccess[]): Me
   // Only include menu items the user can view and are marked as menu
   const menuScreens = screens.filter(s => (s.isMenu === true || s.isMenu === 1) && s.canView && !s.haveNoAccess);
 
-  // Group by module (if present)
-  const modulesMap = new Map<number, MenuItem>();
+  // Group by screenGroupName (if present)
+  const groupsMap = new Map<string, MenuItem>();
   const standalone: MenuItem[] = [];
 
   for (const screen of menuScreens) {
-    if (screen.moduleId && screen.moduleName) {
-      if (!modulesMap.has(screen.moduleId)) {
-        modulesMap.set(screen.moduleId, {
-          name: screen.moduleName,
-          nameHi: screen.moduleName, // No local name for module, fallback
+    const groupName = screen.screenGroupName?.trim();
+    
+    if (groupName) {
+      if (!groupsMap.has(groupName)) {
+        groupsMap.set(groupName, {
+          name: groupName,
+          nameHi: groupName, // No local name for group, fallback
           iconName: screen.screenIcon || 'LayoutGrid',
           href: '#',
           subItems: [],
         });
       }
-      modulesMap.get(screen.moduleId)!.subItems!.push({
+      groupsMap.get(groupName)!.subItems!.push({
         name: screen.screenName,
         href: screen.routePath || '#',
       });
@@ -38,9 +40,9 @@ export function buildSidebarTreeFromUserScreens(screens: UserScreenAccess[]): Me
     }
   }
 
-  // Combine modules and standalone screens
+  // Combine standalone screens first, then groups
   return [
-    ...Array.from(modulesMap.values()),
     ...standalone,
+    ...Array.from(groupsMap.values()),
   ];
 }

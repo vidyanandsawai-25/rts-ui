@@ -57,7 +57,8 @@ export function buildPayloadFromMatrix(
       const rowKey = typeof cat === 'string' ? cat : (cat.constructionCode || cat.constructionId);
       const val = row[rowKey];
       
-      if (val === undefined || val === null || val === '' || isNaN(Number(val)) || Number(val) <= 0) return;
+      // Skip if value is invalid
+      if (val === undefined || val === null || val === '' || isNaN(Number(val))) return;
       
       const zoneNoVal = String(row.zoneNo ?? row.zone ?? '');
       const taxZoneIdVal = row.taxZoneId || Number(zoneNoVal);
@@ -69,6 +70,11 @@ export function buildPayloadFromMatrix(
         assessmentYear,
         selectedZone
       );
+      
+      // For new rates (inserts), skip if value is 0 or negative
+      // For existing rates (updates), allow 0 values, but always skip negatives
+      if (Number(val) < 0) return;
+      if (!existing && Number(val) === 0) return;
       
       const payload: RatePayload = {
         taxZoneId: Number(row.taxZoneId) || Number(zoneNoVal),

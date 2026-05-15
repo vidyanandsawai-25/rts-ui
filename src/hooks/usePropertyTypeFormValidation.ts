@@ -4,7 +4,8 @@ import { useCallback } from "react";
 import { PropertyTypeFormModel } from "@/types/property-type.types";
 import {
   validateForm,
-  commonValidations
+  commonValidations,
+  isAllZeros
 } from "@/lib/utils/validation";
 import {
   PROPERTY_DESCRIPTION_MAX,
@@ -17,7 +18,7 @@ interface UsePropertyTypeFormValidationProps {
   submittedOnce: boolean;
   touched: Record<string, boolean>;
   errors: Partial<Record<keyof PropertyTypeFormModel, string>>;
-  t: (key: string) => string;
+  t: (key: string, values?: Record<string, string | number | Date>) => string;
 }
 
 /**
@@ -40,21 +41,58 @@ export function usePropertyTypeFormValidation({
   const validate = useCallback(
     (data: PropertyTypeFormModel): Partial<Record<keyof PropertyTypeFormModel, string>> => {
       const schema = {
-        propertyDescription: commonValidations.masterDescription(t, PROPERTY_DESCRIPTION_MAX, {
-          required: 'form.validation.propertyDescriptionRequired',
-          format: 'form.validation.propertyDescriptionFormat',
-          maxLength: 'form.validation.propertyDescriptionMaxLength',
-        }),
-        type: commonValidations.masterCode(t, TYPE_MAX, {
-          required: 'form.validation.typeRequired',
-          format: 'form.validation.typeFormat',
-          maxLength: 'form.validation.typeMaxLength',
-        }),
-        propertyTypeGroup: commonValidations.masterDescription(t, PROPERTY_TYPE_GROUP_MAX, {
-          required: 'form.validation.propertyTypeGroupRequired',
-          format: 'form.validation.propertyDescriptionFormat',
-          maxLength: 'form.validation.propertyTypeGroupMaxLength',
-        }),
+        propertyDescription: (value: unknown) => {
+          // First run standard master description validation
+          const standardError = commonValidations.masterDescription(t, PROPERTY_DESCRIPTION_MAX, {
+            required: 'form.validation.propertyDescriptionRequired',
+            format: 'form.validation.propertyDescriptionFormat',
+            maxLength: 'form.validation.propertyDescriptionMaxLength',
+          })(value);
+          
+          if (standardError) return standardError;
+          
+          // Check for all zeros
+          const strVal = String(value ?? "").trim();
+          if (isAllZeros(strVal)) {
+            return t('form.validation.propertyDescriptionFormat');
+          }
+          
+          return undefined;
+        },
+        type: (value: unknown) => {
+          const strVal = String(value ?? "").trim();
+          const validTypes = ["R", "C", "I", "N", "R-C", "I-C"];
+          
+          if (!strVal) {
+            return t('form.validation.typeRequired');
+          }
+          if (strVal.length > TYPE_MAX) {
+            return t('form.validation.typeMaxLength', { count: TYPE_MAX });
+          }
+          // Allow specific preset values or validate against CODE_REGEX pattern
+          if (!validTypes.includes(strVal) && !/^[A-Za-z0-9]+([A-Za-z0-9_]*[A-Za-z0-9]+)*$/.test(strVal)) {
+            return t('form.validation.typeFormat');
+          }
+          return undefined;
+        },
+        propertyTypeGroup: (value: unknown) => {
+          // First run standard master description validation
+          const standardError = commonValidations.masterDescription(t, PROPERTY_TYPE_GROUP_MAX, {
+            required: 'form.validation.propertyTypeGroupRequired',
+            format: 'form.validation.propertyDescriptionFormat',
+            maxLength: 'form.validation.propertyTypeGroupMaxLength',
+          })(value);
+          
+          if (standardError) return standardError;
+          
+          // Check for all zeros
+          const strVal = String(value ?? "").trim();
+          if (isAllZeros(strVal)) {
+            return t('form.validation.propertyDescriptionFormat');
+          }
+          
+          return undefined;
+        },
         searchSequence: commonValidations.masterSearchSequence(t, 'form.validation.sequenceInvalid'),
         propertyTypeCategoryId: (value: unknown) => {
           const numValue = Number(value);

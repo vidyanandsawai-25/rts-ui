@@ -26,6 +26,27 @@ export const KYC_VALIDATION_RULES = {
   ADDRESS_MAX_LENGTH: 255,
   /** Maximum length for shop name (100 characters) */
   SHOP_NAME_MAX_LENGTH: 100,
+  /** Maximum length for email fields (100 characters) */
+  EMAIL_MAX_LENGTH: 100,
+} as const;
+
+/**
+ * Society form validation rules and constraints
+ * Based on database schema constraints
+ */
+export const SOCIETY_VALIDATION_RULES = {
+  /** Required length for mobile number (10 digits) */
+  MOBILE_LENGTH: 10,
+  /** Minimum length for names (2 characters) */
+  NAME_MIN_LENGTH: 2,
+  /** Maximum length for person names - Manager, Secretary, LandOwner, Builder (200 characters) */
+  PERSON_NAME_MAX_LENGTH: 200,
+  /** Maximum length for society/building name (500 characters) */
+  SOCIETY_NAME_MAX_LENGTH: 500,
+  /** Maximum length for society address (200 characters) */
+  ADDRESS_MAX_LENGTH: 200,
+  /** Maximum length for email fields (100 characters) */
+  EMAIL_MAX_LENGTH: 100,
 } as const;
 
 /**
@@ -90,6 +111,56 @@ export const kycValidators = {
   isValidAadhar: (aadhar: string): boolean => {
     const digits = aadhar.replace(/\D/g, '');
     return digits.length === 0 || digits.length === KYC_VALIDATION_RULES.AADHAR_LENGTH;
+  },
+} as const;
+
+/**
+ * Society validation helper functions
+ * Provides reusable validators for society form fields
+ */
+export const societyValidators = {
+  /**
+   * Validate person name length
+   * @param name - Name to validate
+   * @returns True if name meets society person name length requirements
+   */
+  isValidPersonName: (name: string): boolean => {
+    const length = name.trim().length;
+    return length >= SOCIETY_VALIDATION_RULES.NAME_MIN_LENGTH && 
+           length <= SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH;
+  },
+
+  /**
+   * Validate society/building name length
+   * @param name - Name to validate
+   * @returns True if name meets society name length requirements
+   */
+  isValidSocietyName: (name: string): boolean => {
+    const length = name.trim().length;
+    return length >= SOCIETY_VALIDATION_RULES.NAME_MIN_LENGTH && 
+           length <= SOCIETY_VALIDATION_RULES.SOCIETY_NAME_MAX_LENGTH;
+  },
+
+  /**
+   * Validate mobile number (10 digits)
+   * @param mobile - Mobile number string
+   * @returns True if valid (empty or exactly 10 digits)
+   */
+  isValidMobile: (mobile: string): boolean => {
+    const digits = mobile.replace(/\D/g, '');
+    return digits.length === 0 || digits.length === SOCIETY_VALIDATION_RULES.MOBILE_LENGTH;
+  },
+
+  /**
+   * Validate email format and length
+   * @param email - Email to validate
+   * @returns True if valid format and within length constraints
+   */
+  isValidEmail: (email: string): boolean => {
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) return true;
+    return trimmedEmail.length <= SOCIETY_VALIDATION_RULES.EMAIL_MAX_LENGTH && 
+           KYC_VALIDATION_RULES.EMAIL_REGEX.test(trimmedEmail);
   },
 } as const;
 

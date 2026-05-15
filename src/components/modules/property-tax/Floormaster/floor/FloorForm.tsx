@@ -18,7 +18,7 @@ import { FloorFormModel, FloorRangeFormModel, FloorRangePayload, Floor } from '@
 import { FloorFormFields } from './FloorFormFields';
 import { FloorRangeFields } from './FloorRangeFields';
 import type React from 'react';
-import { getApiErrorMessage } from '../form-errors';
+import { getApiErrorMessage, parseApiFieldErrors } from '../form-errors';
 import { StatusToggleField } from '../StatusToggleField';
 import { MandatoryFieldsNotice } from '../MandatoryFieldsNotice';
 import {
@@ -36,7 +36,6 @@ const DEFAULT_RANGE_DATA: FloorRangeFormModel = {
   rangeTo: 0,
   prefix: '',
   suffix: '',
-  floorCode: '',
   isActive: true,
   autoGenerateSubFloor: false,
 };
@@ -104,25 +103,6 @@ export default function FloorForm({ id, initialData }: Readonly<FloorFormProps>)
       }
       if (data.rangeTo > 999) {
         newErrors.rangeTo = t('form.validation.rangeMaxValue', { count: 999 });
-      }
-      // Sanitize and validate floorCode
-      const sanitizedFloorCode = sanitizeFloorCode(data.floorCode);
-      if (!sanitizedFloorCode) {
-        newErrors.floorCode = t('form.validation.codeRequired');
-      } else {
-        const floorCodeErrors = validateFloorForm(
-          {
-            floorCode: sanitizedFloorCode,
-            description: '',
-            sequenceNo: 0,
-            isActive: data.isActive,
-          },
-          t,
-          false
-        );
-        if (floorCodeErrors.floorCode) {
-          newErrors.floorCode = floorCodeErrors.floorCode;
-        }
       }
       return newErrors;
     },
@@ -228,7 +208,7 @@ export default function FloorForm({ id, initialData }: Readonly<FloorFormProps>)
           suffix: rangeData.suffix,
           template: {
             isActive: rangeData.isActive,
-            floorCode: sanitizeFloorCode(rangeData.floorCode),
+            floorCode: '',
             description: '',
             sequenceNo: 0,
             maxFloorNo: rangeData.rangeTo,
@@ -242,6 +222,19 @@ export default function FloorForm({ id, initialData }: Readonly<FloorFormProps>)
         const result = await createFloorRangeAction(payload);
 
         if (!result.success) {
+          // Try to parse field-specific errors from API response
+          if (result.message) {
+            const { fieldErrors, genericError, isRfc9110 } = parseApiFieldErrors(result.message);
+            if (Object.keys(fieldErrors).length > 0) {
+              setErrors(prev => ({ ...prev, ...fieldErrors }));
+              return;
+            }
+            // Only use genericError if it came from a valid RFC9110 payload
+            if (isRfc9110 && genericError) {
+              toast.error(genericError);
+              return;
+            }
+          }
           toast.error(getApiErrorMessage(result, { t, tCommon }));
           return;
         }
@@ -274,6 +267,19 @@ export default function FloorForm({ id, initialData }: Readonly<FloorFormProps>)
         const result = isEdit ? await updateFloorAction(formData) : await createFloorAction(formData);
 
         if (!result.success) {
+          // Try to parse field-specific errors from API response
+          if (result.message) {
+            const { fieldErrors, genericError, isRfc9110 } = parseApiFieldErrors(result.message);
+            if (Object.keys(fieldErrors).length > 0) {
+              setErrors(prev => ({ ...prev, ...fieldErrors }));
+              return;
+            }
+            // Only use genericError if it came from a valid RFC9110 payload
+            if (isRfc9110 && genericError) {
+              toast.error(genericError);
+              return;
+            }
+          }
           toast.error(getApiErrorMessage(result, { t, tCommon }));
           return;
         }
@@ -413,6 +419,7 @@ export default function FloorForm({ id, initialData }: Readonly<FloorFormProps>)
               description: t('form.description'),
               descriptionPlaceholder: t('form.descriptionPlaceholder'),
               sequenceNo: t('form.sequenceNo'),
+              sequenceNoPlaceholder: t('form.sequenceNoPlaceholder'),
             }}
           />
         )}

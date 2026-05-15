@@ -11,7 +11,6 @@ import { headers } from 'next/headers';
 import { MainLayout } from '@/components/layout';
 import { ConditionalShell } from '@/components/layout/ConditionalShell';
 
-
 const inter = Inter({ subsets: ['latin'] });
 const notoSansDevanagari = Noto_Sans_Devanagari({
   subsets: ['devanagari', 'latin'],
@@ -51,7 +50,7 @@ export default async function RootLayout({ children, params }: Readonly<RootLayo
       <body className={`${inter.className} ${notoSansDevanagari.variable}`}>
         <NextIntlClientProvider locale={locale} messages={messages}>
           <Providers>
-            <ConditionalShell 
+            <ConditionalShell
               initialIsAuthOrHome={isAuthOrHomeServer}
               shell={<MainLayout locale={locale}>{children}</MainLayout>}
             >

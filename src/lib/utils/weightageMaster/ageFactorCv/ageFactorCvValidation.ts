@@ -46,7 +46,7 @@ export const hasExistingAgeFactor = (
  */
 export const validateFactorValue = (factorValue: string): { isValid: boolean; factor: number } => {
     const factor = parseFloat(factorValue);
-    if (isNaN(factor) || factor <= 0) {
+    if (isNaN(factor) || factor < 0) {
         return { isValid: false, factor: 0 };
     }
     return { isValid: true, factor };

@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, act } from "@testing-library/react";
 
 import { useRouter } from "next/navigation";
 import { useConfirm } from "@/components/common/ConfirmProvider";
@@ -112,7 +112,9 @@ describe("ConstructionTypeMaster", () => {
             render(<ConstructionTypeMaster {...defaultProps} />);
             const searchInput = screen.getByPlaceholderText("construction.constructionType.list.filters.search");
             fireEvent.change(searchInput, { target: { value: "Brick" } });
-            vi.runAllTimers();
+            act(() => {
+                vi.runAllTimers();
+            });
             expect(mockRouterPush).toHaveBeenCalled();
             const pushedUrl = mockRouterPush.mock.calls[0][0];
             expect(typeof pushedUrl).toBe("string");
@@ -229,7 +231,9 @@ describe("ConstructionTypeMaster", () => {
             render(<ConstructionTypeMaster {...defaultProps} sortBy="description" sortOrder="desc" />);
             const searchInput = screen.getByPlaceholderText("construction.constructionType.list.filters.search");
             fireEvent.change(searchInput, { target: { value: "Test" } });
-            vi.runAllTimers();
+            act(() => {
+                vi.runAllTimers();
+            });
             expect(mockRouterPush).toHaveBeenCalled();
             const pushedUrl = mockRouterPush.mock.calls[0][0];
             expect(pushedUrl).toContain("sortBy=description");

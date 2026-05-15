@@ -1,47 +1,91 @@
-/**
- * Offset and deduction type definitions
- */
+import { ShapeParameters, RoomFormData } from "./common-details.types";
+import type { RefObject } from "react";
+
+/* -------------------------------------------------------------------------- */
+/*                                OFFSET TYPES                                 */
+/* -------------------------------------------------------------------------- */
 
 export interface OffsetData {
-    id?: number;
-    offsetId?: number | string;
-    offsetType?: string;
-    offsetTypeId?: number | string;
-    offsetValue?: number | string;
-    offsetArea?: number | string;
-    length?: number | string;
-    breadth?: number | string;
-    [key: string]: unknown;
+    length?: string;
+    width?: string;
+    radius?: string;
+    base?: string;
+    height?: string;
+    side?: string;
+    base1?: string;
+    base2?: string;
+    area: number;
+    shapeType?: string;
+    operation?: string;
+    shape?: string;
+    type?: string;
+    parameters?: Record<string, unknown>;
+    shapeParams?: ShapeParameters;
+    id?: number | string;
+    roomWiseMinusId?: number | string;
 }
 
 export interface OffsetAPIResponse {
-    id?: number;
-    offsetId?: number;
-    offsetType?: string;
-    offsetTypeId?: number;
-    offsetValue?: number;
-    offsetArea?: number;
-    length?: number;
-    lengthMtr?: number;
-    breadth?: number;
-    widthMtr?: number;
-    heightMtr?: number;
-    baseMtr?: number;
-    base2Mtr?: number;
-    areaSqMtr?: number;
-    roomWiseMinusId?: number;
+    id: number | string;
+    roomWiseMinusId?: number | string;
+    lengthMtr: number;
+    widthMtr: number;
+    heightMtr: number;
+    areaSqMtr: number;
+    shape: string;
+    base1Mtr: number;
+    base2Mtr: number;
+    // Alternative/Legacy names
+    length?: number | string;
+    width?: number | string;
+    height?: number | string;
+    base1?: number | string;
+    base2?: number | string;
+    area?: number;
     operation?: string;
     remark?: string;
-    shapeType?: string;
-    shapeParameters?: unknown;
-    [key: string]: unknown;
 }
 
-export interface OffsetSubmissionItem {
-    offsetTypeId?: number | string;
-    offsetValue?: number;
-    offsetArea?: number;
-    length?: number;
-    breadth?: number;
-    [key: string]: unknown;
+export interface MinusRoomItem {
+    roomWiseMinusId?: number | string;
+    isActive?: boolean;
+    updatedBy?: number;
+    lengthMtr?: number;
+    widthMtr?: number;
+    heightMtr?: number;
+    areaSqMtr: number;
+    shape: string;
+    base1Mtr?: number;
+    base2Mtr?: number;
+    propertyId?: number | string;
+    roomWiseSubmissionId?: number | string;
+}
+
+export interface FullOffSetFormProps {
+    isInline?: boolean;
+    offsetModalOpen: boolean;
+    formData: RoomFormData;
+    calculateAdjustedRoomTotal: () => number;
+    handleSubtractClick: () => void;
+    selectedOperation: "add" | "subtract" | null;
+    isShakingSubtract: boolean;
+    offsetData: OffsetData;
+    setOffsetValidationError: (msg: string) => void;
+    setSelectedOperation: (op: "add" | "subtract" | null) => void;
+    offsetValidationError: string;
+    selectedShape: string;
+    handleShapeChange: (shape: string) => void;
+    handleOffsetInputChange: (field: keyof OffsetData, value: string) => void;
+    offsetList: OffsetData[];
+    getDimensionsString: (offset: OffsetData, unit?: string) => string;
+    handleDeleteOffset: (index: number) => void | Promise<void>;
+    handleAddOffset: () => void;
+    isOffsetDataValid: () => boolean;
+    handleOffsetOk: () => void;
+    handleOffsetClose: () => void;
+    areaUnit: "sq.m" | "sq.ft";
+    shouldShake: boolean;
+    deletingOffsetIndex?: number | null;
+     offsetModalRef?: RefObject<HTMLDivElement> | null;
+     offsetShapeRef?: RefObject<HTMLButtonElement> | null;
 }

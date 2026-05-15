@@ -11,12 +11,12 @@ import { LookupData } from "@/types/common-details.types";
 export type { LookupData };
 import { FloorSubmissionPayload } from "@/types/floor-details.types";
 import { FloorData } from "@/types/room-details.types";
-import { 
-  getFloorDescription, 
-  getSubFloorDescription, 
-  getConstructionDescription, 
-  getUseDescription, 
-  getSubTypeDescription 
+import {
+  getFloorDescription,
+  getSubFloorDescription,
+  getConstructionDescription,
+  getUseDescription,
+  getSubTypeDescription
 } from "./floor-descriptions";
 import { resolveIdFromDescription } from "./floor-resolvers";
 import { mapRoomDataToApi } from "./room-mappers";
@@ -101,11 +101,13 @@ export const mapFormToPayload = (params: {
   );
 
   // Build the payload
+  const propDetailsId = isAddingNew ? 0 : Number(existingFloorId || 0);
+
   return {
     isActive: true,
-    propertyDetailsId: isAddingNew ? 0 : Number(existingFloorId || 0),
-    updatedBy: 0,
+    createdBy: 0,
     propertyId: Number(propertyId || 0),
+    propertyDetailsId: propDetailsId,
     floorId,
     floorDescription,
     subFloorId,
@@ -118,31 +120,25 @@ export const mapFormToPayload = (params: {
     typeOfUseDescription,
     subTypeOfUseId: subTypId,
     subTypeOfUseDescription,
-    carpetAreaSqFeet: parseFloat(String(formData.areaSqFt)) || 0,
-    carpetAreaSqMeter: parseFloat(String(formData.areaSqM)) || 0,
+    carpetAreaSqMeter: parseFloat(String(formData.areaSqM || 0)),
+    carpetAreaSqFeet: parseFloat(String(formData.areaSqFt || 0)),
     builtupAreaSqMeter: parseFloat(String(formData.builtupAreaSqM || 0)),
     builtupAreaSqFeet: parseFloat(String(formData.builtupAreaSqFt || 0)),
     noOfRooms: parseInt(String(formData.rooms)) || 0,
-    renterYesNo: formData.renter === 'Yes',
-    // Only include renter data if floor is marked as rented
-    renterName: formData.renter === 'Yes' ? String(formData.renterName || '') : '',
-    renterNameEnglish: formData.renter === 'Yes' ? String(formData.renterNameEnglish || formData.renterName || '') : '',
-    rentYearly: formData.renter === 'Yes' ? Number(formData.rentYearly) || 0 : 0,
-    agreementFromDate: formData.renter === 'Yes' && typeof formData.agreementFromDate === 'string' ? formData.agreementFromDate : undefined,
-    agreementToDate: formData.renter === 'Yes' && typeof formData.agreementToDate === 'string' ? formData.agreementToDate : undefined,
-    agreementDate: formData.renter === 'Yes' && typeof formData.agreementDate === 'string' ? formData.agreementDate : undefined,
-    rentMonthly: formData.renter === 'Yes' ? Number(formData.rentMonthly) || 0 : 0,
-    // isTaxable status is independent of renter status - respect form value
+    renterYesNo: formData.renter === 'Yes' || formData.renter === true,
     isTaxable: formData.isTaxable === 'Yes' || formData.isTaxable === true,
-    taxLiability: formData.renter === 'Yes' ? String(formData.taxLiability || '') : '',
-    occupancyDate: formData.renter === 'Yes' && typeof formData.occupancyDate === 'string' ? formData.occupancyDate : undefined,
-    occupancyApplyOrNot: formData.renter === 'Yes' && (formData.occupancyApplyOrNot === 'Yes' || formData.occupancyApplyOrNot === true || formData.occupancyApplyOrNot === 'true'),
-    occupancyNumber: formData.renter === 'Yes' ? String(formData.occupancyNumber || '') : '',
-    nonCalculateRentMonthly: formData.renter === 'Yes' ? Number(formData.nonCalculateRentMonthly) || 0 : 0,
-    renterDetails: formData.renter === 'Yes' && Array.isArray(formData.renterDetails) ? formData.renterDetails : undefined,
-    renterMast: formData.renter === 'Yes' && Array.isArray(formData.renterMast) ? formData.renterMast : undefined,
-    roomWiseSubmissionDetails: (formData.roomData || [])
-      .filter(r => Number(r.area || 0) > 0)
-      .map(mapRoomDataToApi),
+    renterDetails: formData.renter === 'Yes' && Array.isArray(formData.renterDetails) ? formData.renterDetails : [],
+    renterMast: formData.renter === 'Yes' && Array.isArray(formData.renterMast) ? formData.renterMast : [],
+    roomWiseSubmissionDetails: ([...((formData.roomWiseSubmissionDetails as unknown[]) || []), ...((formData.roomData as unknown[]) || [])] as import("@/types/room-details.types").RoomData[])
+      .filter((r, index, self) => {
+        // Calculate effective area from any possible field
+        const area = Number(r.area || 0) || Number(r.areaSqMtr || 0) || Number(r.totalAreaSqMtr || 0) || Number(r.total || 0);
+        if (area <= 0) return false;
+
+        // Deduplicate: if ID exists, match by ID; otherwise match by roomNo if it exists
+        const matchIndex = self.findIndex(t => (t.id && t.id === r.id) || (t.roomNo && t.roomNo === r.roomNo));
+        return matchIndex === index;
+      })
+      .map(r => mapRoomDataToApi(r as import("@/types/room-details.types").RoomData, Number(propertyId), propDetailsId)),
   };
 };

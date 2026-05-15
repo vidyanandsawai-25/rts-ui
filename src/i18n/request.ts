@@ -28,6 +28,7 @@ export default getRequestConfig(async ({ locale }) => {
     ptisMessages,
     floorFactorMasterMessages,
     weightageMasterMessages,
+    configMasterMessages,
     typeofusemasterMessages,
     depreciationMessages,
     propertyTypeMessages,
@@ -39,6 +40,10 @@ export default getRequestConfig(async ({ locale }) => {
     officeMessages,
     bankMasterMessages,
     screenAccessMessages,
+    appartmentQCMessages,
+    departmentMasterMessages,
+    departmentActivationMessages,
+    homeMessages,
     modulesMessages,
     waterConnectionMessages,
   ] = await Promise.all([
@@ -54,6 +59,7 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/ptis.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/floorFactorMaster.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/weightageMaster.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/config-master.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/typeofusemaster.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/depreciation.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/propertyType.json`).then((m) => m.default),
@@ -67,6 +73,16 @@ export default getRequestConfig(async ({ locale }) => {
       .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/bank-master.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/screenAccess.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/appartmentQC.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/departmentMaster.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/departmentActivation.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/home.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/waterconnection.json`).then((m) => m.default),
   ]);
@@ -86,6 +102,7 @@ export default getRequestConfig(async ({ locale }) => {
       ptis: ptisMessages,
       floorFactorMaster: floorFactorMasterMessages.floorFactorMaster,
       weightageMaster: weightageMasterMessages.weightageMaster,
+      configMaster: configMasterMessages.configMaster || configMasterMessages,
       typeofusemaster: typeofusemasterMessages,
       depreciation: depreciationMessages,
       propertyType: propertyTypeMessages,
@@ -97,6 +114,10 @@ export default getRequestConfig(async ({ locale }) => {
       office: officeMessages,
       bankMaster: bankMasterMessages,
       screenAccess: screenAccessMessages,
+      appartmentQC: appartmentQCMessages,
+      departmentMaster: departmentMasterMessages,
+      departmentActivation: departmentActivationMessages,
+      home: homeMessages,
       modules: modulesMessages,
       waterConnection: waterConnectionMessages.waterConnection,
     },

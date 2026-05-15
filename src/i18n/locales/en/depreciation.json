@@ -49,7 +49,10 @@
       "overlap": "Range overlaps with existing range.",
       "mustBeNumber": "Must be a valid number",
       "cannotBeNegative": "Cannot be negative",
-      "mustBe9999OrLess": "Must be 9999 or less"
+      "mustBe9999OrLess": "Must be 9999 or less",
+      "mustBe100OrLess": "Must be 100 or less",
+      "mustBe999OrLess": "Must be 999 or less",
+      "mustBe99OrLess": "Must be 99 or less"
     },
     "error": {
       "title": "Something Went Wrong",

@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextIntlClientProvider } from "next-intl";
 import TaxZoneMaster from "@/components/modules/property-tax/taxzonemaster/TaxZoneMaster";
@@ -128,27 +128,16 @@ describe("TaxZoneMaster", () => {
   it("renders tax zone master list with data", () => {
     setup();
     
-    expect(screen.getByText("Tax Zone Master")).toBeInTheDocument();
-    expect(screen.getByText("Manage zones and their types")).toBeInTheDocument();
+    // Note: Title and subtitle are now in TaxZoneMasterLayoutContent (layout component)
+    // TaxZoneMaster only renders the table with data
     expect(screen.getByText("Z1")).toBeInTheDocument();
     expect(screen.getByText("Residential")).toBeInTheDocument();
     expect(screen.getByText("Z2")).toBeInTheDocument();
     expect(screen.getByText("Commercial")).toBeInTheDocument();
   });
 
-  it("renders search input", () => {
-    setup();
-    
-    const searchInput = screen.getByPlaceholderText("Search by Zone No, Zone Type, Remark...");
-    expect(searchInput).toBeInTheDocument();
-  });
-
-  it("renders add zone button", () => {
-    setup();
-    
-    const addButton = screen.getByText("Add Zone");
-    expect(addButton).toBeInTheDocument();
-  });
+  // Note: Search input and Add Zone button are now in TaxZoneMasterToolbar (layout component)
+  // and should be tested separately if needed
 
   it("displays action buttons for each row", () => {
     setup();
@@ -160,34 +149,7 @@ describe("TaxZoneMaster", () => {
     expect(deleteButtons).toHaveLength(2);
   });
 
-  it("handles search input change", async () => {
-    setup();
-    
-    const searchInput = screen.getByPlaceholderText("Search by Zone No, Zone Type, Remark...");
-    fireEvent.change(searchInput, { target: { value: "Z1" } });
-    
-    expect(searchInput).toHaveValue("Z1");
-  });
-
-  it("sanitizes search input with TEXT_SANITIZE regex", () => {
-    setup();
-    
-    const searchInput = screen.getByPlaceholderText("Search by Zone No, Zone Type, Remark...");
-    fireEvent.change(searchInput, { target: { value: "Z1<script>alert('xss')</script>" } });
-    
-    // Should sanitize script tags - TEXT_SANITIZE removes all special chars except ,./-
-    expect(searchInput).toHaveValue("Z1scriptalertxss/script");
-  });
-
-  // Note: Search active message feature was removed from component
-  // it("shows search active message when searching", () => {
-  //   Object.defineProperty(window, "location", {
-  //     value: { search: "?search=Z1" },
-  //     writable: true,
-  //   });
-  //   setup({ totalCount: 5 });
-  //   expect(screen.getByText(/Found 5 records/i)).toBeInTheDocument();
-  // });
+  // Note: Search functionality is now in TaxZoneMasterToolbar (layout component)
 
   it("displays no data message when data is empty", () => {
     setup({ data: [], totalCount: 0 });

@@ -9,7 +9,7 @@ import {
   SSRData,
   EditData,
   SelectionState,
-} from "@/types/zoneMasterContent.types";
+} from "@/types/zoneMaster.types";
 
 export interface ZoneMasterProps {
   zonePagination: ZonePaginationData;

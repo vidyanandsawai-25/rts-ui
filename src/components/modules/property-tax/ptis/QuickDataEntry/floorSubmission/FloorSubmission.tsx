@@ -1,6 +1,5 @@
 'use client';
 
-
 import React from 'react';
 import { useFloorSubmission } from '@/hooks/ptis/floorSubmission/useFloorSubmission';
 import { EditSidebarProps } from '@/types/floor-details.types';
@@ -8,6 +7,8 @@ import { LoadingPage } from '@/components/common';
 import FloorTable from './FloorTable';
 import FloorForm from './FloorForm';
 import { RoomSubmissionModal } from './components';
+import { convertSqMToSqFt } from '@/lib/utils/RoomSubmission/conversions';
+import { RoomAPIResponse } from '@/types/room-details.types';
 
 const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
   const {
@@ -70,9 +71,11 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
         {Array.isArray(props.apiErrors) && props.apiErrors.length > 0 && (
           <div className="p-2 mb-2 bg-red-50 border border-red-200 text-red-700 rounded">
             <ul className="list-disc pl-5">
-              {props.apiErrors.map((err, i) => (
-                <li key={i}>{t(err)}</li>
-              ))}
+              {props.apiErrors.map((err, i) => {
+                // Check if it's a translation key (no spaces, contains dots)
+                const isTranslationKey = !err.includes(' ') && err.includes('.');
+                return <li key={i}>{isTranslationKey ? t(err) : err}</li>;
+              })}
             </ul>
           </div>
         )}
@@ -136,9 +139,35 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
       </div>
 
       <RoomSubmissionModal
-        show={showRoomSubmission}
+        isOpen={showRoomSubmission}
         onClose={() => setShowRoomSubmission(false)}
         t={t}
+        wardNo={props.wardNo}
+        propertyNo={props.propertyNo}
+        partitionNo={props.partitionNo}
+        floorNumber={String(editingFloorForm.floor || '')}
+        maxRooms={Number(editingFloorForm.noOfRooms || editingFloorForm.rooms || 0)}
+        floorData={editingFloorForm}
+        initialFloorId={editingFloorForm.floorId || editingFloorForm.id}
+        initialPropertyID={props.initialPropertyID}
+        existingRooms={(editingFloorForm.roomWiseSubmissionDetails as RoomAPIResponse[]) || []}
+        onUpdate={(data) => {
+          const areaSqM = data.totalAreaSqM;
+          const builtUpSqM = data.builtUpAreaSqM;
+          const areaSqFt = convertSqMToSqFt(areaSqM);
+          const builtUpAreaSqFt = convertSqMToSqFt(builtUpSqM);
+
+          setEditingFloorForm(prev => ({
+            ...prev,
+            roomWiseSubmissionDetails: data.rooms as unknown[],
+            areaSqM: areaSqM.toFixed(2),
+            areaSqFt: areaSqFt.toFixed(2),
+            builtupAreaSqM: builtUpSqM.toFixed(2),
+            builtupAreaSqFt: builtUpAreaSqFt.toFixed(2),
+            rooms: data.rooms.length,
+            noOfRooms: data.rooms.length
+          }));
+        }}
       />
     </>
   );

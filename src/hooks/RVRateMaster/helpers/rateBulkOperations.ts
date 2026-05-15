@@ -10,6 +10,25 @@ interface RateSubmission {
   backendRates?: IBackendRateMaster[];
 }
 
+/**
+ * Parse backend error message and return user-friendly message
+ */
+function parseBackendError(errorMessage: string): string {
+  try {
+    // Check if the error contains rate validation errors
+    if (errorMessage.includes('Rate_RateSquareFeet_Min_0') || 
+        errorMessage.includes('Rate_RateSquareMeter_Min_0') ||
+        errorMessage.includes('RateSquareFeet') ||
+        errorMessage.includes('RateSquareMeter')) {
+      return 'Rate value must be valid. Please enter a positive rate value.';
+    }
+    // Return original message if no pattern matches
+    return errorMessage;
+  } catch {
+    return errorMessage;
+  }
+}
+
 interface BuildPayloadConfig {
   selectedZone: string;
   selectedUseGroup: string;
@@ -90,7 +109,8 @@ export async function processSingleSubmission(
     try {
       const updateResult = await bulkUpdateRateMasterAction(buildBulkUpdatePayload(updates));
       if (!updateResult.success) {
-        errors.push(`${getUseGroupLabel(submission.useGroup)} (Update): ${updateResult.message || 'Failed to update rates'}`);
+        const errorMsg = parseBackendError(updateResult.message || 'Failed to update rates');
+        errors.push(`${getUseGroupLabel(submission.useGroup)} (Update): ${errorMsg}`);
       }
     } catch (error) {
       errors.push(error instanceof Error ? error.message : 'Server action failed');
@@ -102,7 +122,8 @@ export async function processSingleSubmission(
     try {
       const createResult = await bulkCreateRateMasterAction(buildBulkCreatePayload(inserts));
       if (!createResult.success) {
-        errors.push(`${getUseGroupLabel(submission.useGroup)} (Create): ${createResult.message || 'Failed to create rates'}`);
+        const errorMsg = parseBackendError(createResult.message || 'Failed to create rates');
+        errors.push(`${getUseGroupLabel(submission.useGroup)} (Create): ${errorMsg}`);
       }
     } catch (error) {
       errors.push(error instanceof Error ? error.message : 'Server action failed');

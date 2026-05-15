@@ -70,9 +70,9 @@
       "englishName": {
         "title": "अंग्रेजी नाम",
         "prefix": "उपसर्ग",
-        "prefixPlaceholder": "स्वचालित नंबरिंग",
+        "prefixPlaceholder": "FL",
         "suffix": "प्रत्यय",
-        "suffixPlaceholder": "Floor"
+        "suffixPlaceholder": "FL"
       },
      
       "autoGenerateSubFloor": "सब-फ्लोर स्वचालित रूप से बनाएं",

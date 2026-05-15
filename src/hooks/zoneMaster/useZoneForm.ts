@@ -4,6 +4,7 @@ import { getZoneByIdAction } from "@/app/[locale]/property-tax/zone-master/actio
 import { ZoneItem } from "@/types/zoneMaster.types";
 import { ZoneFormState, ZoneFormErrors } from "@/components/modules/property-tax/zone-master/zones/ZoneFormFields";
 import { ZONE_WARD_NO_MAX_LENGTH, ZONE_WARD_NAME_MAX_LENGTH } from "@/components/modules/property-tax/zone-master/constants";
+import { isAllZeros } from "@/lib/utils/validation-rules";
 
 const INITIAL: ZoneFormState = {
   zoneNo: "",
@@ -128,8 +129,10 @@ export function useZoneForm({
   const validate = (data: ZoneFormState) => {
     const newErrors: ZoneFormErrors = {};
     if (!data.zoneNo?.trim()) newErrors.zoneNo = t("validation.zoneNoRequired");
+    else if (isAllZeros(data.zoneNo)) newErrors.zoneNo = t("validation.zoneNoAllZeros");
     else if (data.zoneNo.length > ZONE_WARD_NO_MAX_LENGTH) newErrors.zoneNo = t("validation.zoneNoMaxLength", { count: ZONE_WARD_NO_MAX_LENGTH });
     if (!data.description?.trim()) newErrors.description = t("validation.nameRegRequired");
+    else if (isAllZeros(data.description)) newErrors.description = t("validation.zoneNameAllZeros");
     else if (data.description.length > ZONE_WARD_NAME_MAX_LENGTH) newErrors.description = t("validation.zoneNameMaxLength", { count: ZONE_WARD_NAME_MAX_LENGTH });
     return newErrors;
   };
@@ -172,6 +175,23 @@ export function useZoneForm({
     setErrors({});
   };
 
+  const handleBlur = (fieldName: keyof ZoneFormState) => {
+    const fieldErrors = validate(form);
+    setErrors((prev) => {
+      const newErrors = { ...prev };
+      const fieldErrorKey = fieldName as keyof ZoneFormErrors;
+      
+      // Update or clear the specific field error
+      if (fieldErrors[fieldErrorKey]) {
+        newErrors[fieldErrorKey] = fieldErrors[fieldErrorKey];
+      } else {
+        delete newErrors[fieldErrorKey];
+      }
+      
+      return newErrors;
+    });
+  };
+
   return {
     form,
     setForm,
@@ -183,6 +203,7 @@ export function useZoneForm({
     validate,
     checkDuplicateZone,
     resetForm,
+    handleBlur,
     INITIAL,
   };
 }

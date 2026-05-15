@@ -28,12 +28,12 @@ vi.mock("sonner", () => ({
 }));
 
 // Mock the save action
-vi.mock("@/app/[locale]/property-tax/taxzone/action", () => ({
+vi.mock("@/app/[locale]/property-tax/taxzone-master/taxzone/action", () => ({
   saveTaxZone: vi.fn(),
 }));
 
 // Import the mocked action to get access to the mock function
-import { saveTaxZone } from "@/app/[locale]/property-tax/taxzone/action";
+import { saveTaxZone } from "@/app/[locale]/property-tax/taxzone-master/taxzone/action";
 const mockSaveTaxZone = vi.mocked(saveTaxZone);
 
 const mockMessages = {
@@ -195,7 +195,7 @@ describe("TaxZoneForm", () => {
       await waitFor(() => {
         expect(mockSaveTaxZone).toHaveBeenCalled();
         expect(toast.success).toHaveBeenCalledWith("Zone created successfully");
-        expect(mockRouterPush).toHaveBeenCalledWith("/en/property-tax/taxzone");
+        expect(mockRouterPush).toHaveBeenCalledWith("/en/property-tax/taxzone-master/taxzone");
       });
     });
 
@@ -265,7 +265,7 @@ describe("TaxZoneForm", () => {
       await waitFor(() => {
         expect(mockSaveTaxZone).toHaveBeenCalled();
         expect(toast.success).toHaveBeenCalledWith("Zone updated successfully");
-        expect(mockRouterPush).toHaveBeenCalledWith("/en/property-tax/taxzone");
+        expect(mockRouterPush).toHaveBeenCalledWith("/en/property-tax/taxzone-master/taxzone");
       });
     });
 

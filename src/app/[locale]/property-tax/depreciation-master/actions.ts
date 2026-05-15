@@ -13,10 +13,57 @@ import {
 import type { ActionResult, DepreciationConstructionType, DepreciationRow } from '@/types/depreciation.types';
 import { ApiError } from '@/lib/utils/api';
 
-/**
- * Path helper to ensure consistency across revalidations
- */
 const getPagePath = (locale: string) => `/${locale}/property-tax/depreciation-master`;
+
+const SERVER_ERROR_CODES: Record<string, string> = {
+  MaxYear_Range_0_9999: "Maximum age must be between 0 and 999.",
+  MinYear_Range_0_9999: "Minimum age must be between 0 and 999.",
+};
+
+function parseAddRangeError(error: unknown): string {
+  if (!(error instanceof Error)) return "Add range failed";
+
+  const msg = error.message;
+
+  // Check for 409 conflict / duplicate record errors
+  if (msg.includes("(409)") || 
+      msg.toLowerCase().includes("same details already exists") ||
+      msg.toLowerCase().includes("already exists")) {
+    return "This age range already exists. Please choose different age values.";
+  }
+
+  if (msg.toLowerCase().includes("overlap") ||
+      msg.toLowerCase().includes("duplicate") ||
+      msg.toLowerCase().includes("conflict")) {
+    return "Range overlaps with an existing range. Please choose different years.";
+  }
+
+  // Try to parse server validation JSON embedded in the message
+  const jsonStart = msg.indexOf("{");
+  if (jsonStart !== -1) {
+    try {
+      const parsed = JSON.parse(msg.slice(jsonStart, msg.lastIndexOf("}") + 1)) as {
+        title?: string;
+        errors?: Record<string, string[]>;
+      };
+
+      if (parsed.errors && typeof parsed.errors === "object") {
+        const codes = Object.values(parsed.errors).flat();
+        const unique = [...new Set(codes)];
+        const readable = unique
+          .map((c) => SERVER_ERROR_CODES[c] ?? c)
+          .join(" ");
+        return readable || parsed.title || "Validation failed.";
+      }
+
+      if (parsed.title) return parsed.title;
+    } catch {
+      // fall through
+    }
+  }
+
+  return msg;
+}
 
 /**
  * Fetches paginated depreciation records with RANGE-BASED pagination.
@@ -193,20 +240,7 @@ export async function addRangeAction(
     return { success: true };
   } catch (error: unknown) {
     console.error('[addRangeAction] Error:', error);
-    
-    // Extract meaningful error message for overlap or other validation errors
-    let errorMessage = 'Add range failed';
-    if (error instanceof Error) {
-      if (error.message.toLowerCase().includes('overlap') || 
-          error.message.toLowerCase().includes('duplicate') ||
-          error.message.toLowerCase().includes('conflict')) {
-        errorMessage = 'Range overlaps with existing range. Please choose different years.';
-      } else {
-        errorMessage = error.message;
-      }
-    }
-    
-    return { success: false, error: errorMessage };
+    return { success: false, error: parseAddRangeError(error) };
   }
 }
 

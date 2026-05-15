@@ -21,10 +21,13 @@ export function useRateMasterFilters({
 }: UseRateMasterFiltersProps) {
   const router = useRouter();
 
-  // Filter states
+  // Filter states - store both value and label
   const [selectedZone, setSelectedZone] = useState<string>(filterValues?.zone || "");
+  const [selectedZoneLabel, setSelectedZoneLabel] = useState<string>("");
   const [selectedUseGroup, setSelectedUseGroup] = useState(filterValues?.useGroup || "");
+  const [selectedUseGroupLabel, setSelectedUseGroupLabel] = useState<string>("");
   const [assessmentYear, setAssessmentYear] = useState(filterValues?.year || "");
+  const [assessmentYearLabel, setAssessmentYearLabel] = useState<string>("");
   
   // Data states - backendRates are passed from server component
   const [fetchedBackendRates, setFetchedBackendRates] = useState<IBackendRateMaster[]>(backendRates || []);
@@ -69,14 +72,17 @@ export function useRateMasterFilters({
   }, [backendRates]);
 
   // Handler for dropdown changes - uses URL navigation to trigger server re-render (SSR)
-  const handleDropdownChange = useCallback((field: 'zone' | 'useGroup' | 'assessmentYear', value: string) => {
+  const handleDropdownChange = useCallback((field: 'zone' | 'useGroup' | 'assessmentYear', value: string, label?: string) => {
     // Update local state for immediate UI feedback
     if (field === 'zone') {
       setSelectedZone(value);
+      if (label) setSelectedZoneLabel(label);
     } else if (field === 'useGroup') {
       setSelectedUseGroup(value);
+      if (label) setSelectedUseGroupLabel(label);
     } else if (field === 'assessmentYear') {
       setAssessmentYear(value);
+      if (label) setAssessmentYearLabel(label);
     }
     
     // Use URL navigation to trigger server re-render (SSR pattern)
@@ -104,8 +110,11 @@ export function useRateMasterFilters({
   return {
     // Filter states
     selectedZone,
+    selectedZoneLabel,
     selectedUseGroup,
+    selectedUseGroupLabel,
     assessmentYear,
+    assessmentYearLabel,
     setSelectedZone,
     setSelectedUseGroup,
     setAssessmentYear,

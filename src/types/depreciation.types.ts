@@ -73,8 +73,6 @@ export type LeftPanelProps = {
 export type RightPanelProps = {
   matrixColumns: MatrixColumn[];
   matrixRows: MatrixRow[];
-  ranges: RangeRow[];
-  selectedRangeId: string | null;
   saving: boolean;
   pageNumber: number;
   pageSize: number;

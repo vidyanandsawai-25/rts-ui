@@ -13,8 +13,8 @@ import TableHeader from "@/components/common/TableHeader";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { PageContainer, SearchInput, Select } from "@/components/common";
 import { getConstructionTypeColumns } from "./ConstructionTypeColumns";
-import { useConstructionSearch } from "@/hooks/useConstructionSearch";
-import { useConstructionPagination } from "@/hooks/useConstructionPagination";
+import { useConstructionSearch } from "@/hooks/constructiontypemaster/useConstructionSearch";
+import { useConstructionPagination } from "@/hooks/constructiontypemaster/useConstructionPagination";
 
 /* ================= PAGE ================= */
 export function ConstructionTypeMaster({
