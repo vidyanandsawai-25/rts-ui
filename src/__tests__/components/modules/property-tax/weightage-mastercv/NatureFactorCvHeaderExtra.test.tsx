@@ -175,4 +175,11 @@ describe("NatureFactorCvHeaderExtra – factor input", () => {
         input.dispatchEvent(event);
         expect(event.defaultPrevented).toBe(true);
     });
+
+    it("restricts input to two decimal places", () => {
+        const setFactorValue = vi.fn();
+        render(<NatureFactorCvHeaderExtra {...buildDefaultProps({ setFactorValue, factorValue: "0.00" })} />);
+        fireEvent.change(screen.getByPlaceholderText("placeholders.factor"), { target: { value: "1.234" } });
+        expect(setFactorValue).toHaveBeenCalledWith("1.23");
+    });
 });
