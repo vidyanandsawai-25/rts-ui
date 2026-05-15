@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Select} from "@/components/common/select";
+import { SearchSelect } from "@/components/common/SearchSelect";
 import { Input } from "@/components/common/Input";
 import { ApplyButton, ClearButton, UpdateButton, CancelButton, AddButton } from "@/components/common/ActionButtons";
 import { StatusBadge } from "@/components/common/StatusBadge";
@@ -36,21 +36,21 @@ export const NatureFactorCvHeaderExtra: React.FC<NatureFactorCvHeaderExtraProps>
         <div className="w-full">
             <div className="flex items-end gap-4 mb-3 flex-wrap">
                 <div className="min-w-[140px]">
-                    <Select
+                    <SearchSelect
                         options={assessmentYearOptions}
                         value={selectedYear}
                         onChange={(_, val) => handleAssessmentYearChange(val)}
                         label={t('filters.assessmentYear')}
-                        selectSize="sm"
+                        placeholder={t('filters.assessmentYear')}
                     />
                 </div>
                 <div className="min-w-[200px]">
-                    <Select
+                    <SearchSelect
                         options={constructionTypeOptions}
                         value={constructionType}
                         onChange={(_, val) => handleConstructionTypeChange(val)}
                         label={t('filters.constructionType')}
-                        selectSize="sm"
+                        placeholder={t('filters.constructionType')}
                     />
                 </div>
                 <div className="min-w-[100px]">

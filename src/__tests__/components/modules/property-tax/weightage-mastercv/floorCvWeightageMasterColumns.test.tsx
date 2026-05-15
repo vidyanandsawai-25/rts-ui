@@ -185,8 +185,8 @@ describe('getFloorCvWeightageMasterColumns', () => {
     expect(fromYearColumn.render?.(2024, mockRow, 0)).toBe('2024-2025');
   });
 
-  it('isActive column renders pending badge for new records', () => {
-    const newRow: FloorFactorCVMasterWithIndex = { ...mockRow, id: 0 };
+  it('isActive column renders active status badge for new records', () => {
+    const newRow: FloorFactorCVMasterWithIndex = { ...mockRow, id: 0, isActive: true };
     
     const columns = getFloorCvWeightageMasterColumns({
       t: mockT,
@@ -204,10 +204,11 @@ describe('getFloorCvWeightageMasterColumns', () => {
     const result = statusColumn.render?.(true, newRow, 0);
     const { container } = render(<>{result}</>);
     
-    // StatusBadge with pending variant should have amber background
+    // Should show Active status even for id=0
     const badge = container.querySelector('span');
     expect(badge).toBeInTheDocument();
-    expect(badge?.className).toContain('bg-amber-50');
+    expect(badge?.className).toContain('bg-emerald-50');
+    expect(badge?.textContent).toContain('Active');
   });
 
   it('isActive column renders active status badge', () => {

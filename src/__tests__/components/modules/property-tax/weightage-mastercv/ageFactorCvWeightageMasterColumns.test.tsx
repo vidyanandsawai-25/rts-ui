@@ -153,8 +153,8 @@ describe('getAgeFactorCvWeightageMasterColumns', () => {
     expect(column.render?.(undefined, mockRow, 0)).toBe('2024-2025');
   });
 
-  it('isActive column renders pending badge for new records', () => {
-    const newRow: AgeFactorCVMaster = { ...mockRow, id: 0 };
+  it('isActive column renders active status badge for new records', () => {
+    const newRow: AgeFactorCVMaster = { ...mockRow, id: 0, isActive: true };
     
     const columns = getAgeFactorCvWeightageMasterColumns({
       t: mockT,
@@ -170,7 +170,8 @@ describe('getAgeFactorCvWeightageMasterColumns', () => {
     
     const badge = container.querySelector('span');
     expect(badge).toBeInTheDocument();
-    expect(badge?.className).toContain('bg-amber-50');
+    expect(badge?.className).toContain('bg-emerald-50');
+    expect(badge?.textContent).toContain('Active');
   });
 
   it('isActive column renders status badge for existing records', () => {

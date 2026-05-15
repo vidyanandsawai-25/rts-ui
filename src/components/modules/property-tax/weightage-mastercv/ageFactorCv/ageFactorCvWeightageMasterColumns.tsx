@@ -68,8 +68,7 @@ export const getAgeFactorCvWeightageMasterColumns = ({
         key: "isActive",
         label: t('columns.status'),
         width: "14%",
-        render: (value, row) => {
-            if (row.id === 0) return <StatusBadge variant="pending" />;
+        render: (value) => {
             return (
                 <StatusBadge
                     variant="status"
