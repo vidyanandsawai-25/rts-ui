@@ -74,10 +74,7 @@ export const getFloorCvWeightageMasterColumns = ({
       label: t('columns.status'),
       width: "14%",
       isStatus: true,
-      render: (value: unknown, row: FloorFactorCVMaster) => {
-        if (row.id === 0) {
-          return <StatusBadge variant="pending" />;
-        }
+      render: (value: unknown) => {
         return (
           <StatusBadge
             variant="status"

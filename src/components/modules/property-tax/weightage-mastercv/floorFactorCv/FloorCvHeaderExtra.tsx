@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import {Select } from "@/components/common/select";
+import { SearchSelect } from "@/components/common/SearchSelect";
 import { Input } from "@/components/common/Input";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { ApplyButton, ClearButton, UpdateButton, AddButton } from "@/components/common/ActionButtons";
@@ -43,42 +43,42 @@ export const FloorCvHeaderExtra: React.FC<FloorCvHeaderExtraProps> = React.memo(
             <div className="flex items-end gap-4 mb-3 flex-wrap">
 
                 <div className="min-w-[140px]">
-                    <Select
+                    <SearchSelect
                         options={assessmentYearOptions}
                         value={selectedYear}
-                        onChange={(e) => handleAssessmentYearChange(e.target.value)}
+                        onChange={(_, val) => handleAssessmentYearChange(val)}
                         label={t("filters.assessmentYear")}
-                        selectSize="sm"
+                        placeholder={t("filters.assessmentYear")}
                     />
                 </div>
 
                 <div className="min-w-[180px]">
-                    <Select
+                    <SearchSelect
                         options={floorOptions}
                         value={fromFloor}
-                        onChange={(e) => setFromFloor(e.target.value)}
+                        onChange={(_, val) => setFromFloor(val)}
                         label={t("filters.fromFloor")}
-                        selectSize="sm"
+                        placeholder={t("filters.fromFloor")}
                     />
                 </div>
 
                 <div className="min-w-[180px]">
-                    <Select
+                    <SearchSelect
                         options={floorOptions}
                         value={toFloor}
-                        onChange={(e) => setToFloor(e.target.value)}
+                        onChange={(_, val) => setToFloor(val)}
                         label={t("filters.toFloor")}
-                        selectSize="sm"
+                        placeholder={t("filters.toFloor")}
                     />
                 </div>
 
                 <div className="min-w-[120px]">
-                    <Select
+                    <SearchSelect
                         options={liftStatusOptions}
                         value={liftStatus}
-                        onChange={(e) => setLiftStatus(e.target.value)}
+                        onChange={(_, val) => setLiftStatus(val)}
                         label={t("filters.liftStatus")}
-                        selectSize="sm"
+                        placeholder={t("filters.liftStatus")}
                     />
                 </div>
 
