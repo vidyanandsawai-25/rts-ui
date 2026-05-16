@@ -14,7 +14,7 @@ export function OfficeAdditionalSection({
   t 
 }: OfficeAdditionalSectionProps) {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+    <div className="bg-white rounded-xl shadow-sm border border-slate-200">
       <div className="bg-slate-50 px-4 py-3 border-b border-slate-100 dark:bg-slate-800/10 dark:border-slate-800">
         <h3 className="font-semibold text-slate-800">{t("form.additionalSection")}</h3>
       </div>
