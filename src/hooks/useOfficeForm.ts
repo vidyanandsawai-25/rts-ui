@@ -95,13 +95,9 @@ export function useOfficeForm({
 
   const closeAndRoute = useCallback(() => {
     setOpen(false);
-    setTimeout(() => {
-      if (isMounted.current) {
-        startTransition(() => {
-          router.push(`/${locale}/configuration-settings/office-master`);
-        });
-      }
-    }, 400); 
+    // Use router.push immediately to return to the list view
+    router.push(`/${locale}/configuration-settings/office-master`);
+    router.refresh();
   }, [router, locale]);
 
   const handleCancel = useCallback(() => {
@@ -122,10 +118,7 @@ export function useOfficeForm({
       if (result.success) {
         toast.success(isEdit ? t("success.updated") : t("success.created"));
         onSuccess();
-        startTransition(() => {
-          router.refresh();
-          closeAndRoute();
-        });
+        closeAndRoute();
       } else {
         if (result.errors) {
           setErrors((prev) => ({ ...prev, ...result.errors }));
