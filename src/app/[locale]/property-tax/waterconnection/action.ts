@@ -20,6 +20,8 @@ import {
   deleteWaterConnection,
   ApiError,
 } from "@/lib/api/waterconnection.services";
+import { getPropertyBasicDetails } from "@/lib/api/property-basic-details.service";
+import { getPropertyKycById } from "@/lib/api/property-kyc.service";
 
 const MOCK_TYPE_OPTIONS: WaterConnectionTypeLookup[] = [
   { id: 1, connectionTypeCode: "DOM", connectionTypeName: "Domestic" },
@@ -55,29 +57,12 @@ const MOCK_RATE_MASTERS: WaterRateMasterLookup[] = [
   { id: 12, waterConnectionTypeId: 3, connectionTypeName: "Industrial", waterConnectionSizeId: 4, connectionSizeDisplay: "32 mm", financeYearId: 1, yearCode: "2025-26", yearlyRate: 10800, isActive: true },
 ];
 
-// TODO: Replace with real property API call when endpoint is available
-function getMockProperty(propertyId: number): PropertyInfo {
-  return {
-    id: propertyId,
-    propertyNo: `PROP-${propertyId}`,
-    ownerName: "—",
-    customerId: `CID-${propertyId}`,
-    customerType: "Individual",
-    contact: "—",
-    email: "—",
-    address: "—",
-    zone: "—",
-    ward: "—",
-    buildingType: "—",
-  };
-}
-
 export async function getWaterConnectionPageData(
   propertyId: number,
   pageNumber = 1,
   pageSize = 100
 ): Promise<WaterConnectionPageData> {
-  const [connectionsResponse, typeOptions, sizeOptions, statusOptions, rateMastersFromApi] = await Promise.all([
+  const [connectionsResponse, typeOptions, sizeOptions, statusOptions, rateMastersFromApi, basicDetails, kycResponse] = await Promise.all([
     getWaterConnectionsPaged(propertyId, pageNumber, pageSize),
     getWaterConnectionTypes().catch((err) => {
       console.error('[waterconnection] getWaterConnectionTypes failed:', err);
@@ -95,11 +80,34 @@ export async function getWaterConnectionPageData(
       console.error('[waterconnection] getWaterRateMasters failed:', err);
       return [] as WaterRateMasterLookup[];
     }),
+    getPropertyBasicDetails(propertyId).catch((err) => {
+      console.error('[waterconnection] getPropertyBasicDetails failed:', err);
+      return null;
+    }),
+    getPropertyKycById(propertyId).catch((err) => {
+      console.error('[waterconnection] getPropertyKycById failed:', err);
+      return null;
+    }),
   ]);
+
+  const kyc = kycResponse?.items ?? null;
+  const property: PropertyInfo = {
+    id: propertyId,
+    propertyNo: basicDetails?.propertyNo ?? `PROP-${propertyId}`,
+    ownerName: kyc?.ownerName ?? "—",
+    customerId: `CID-${propertyId}`,
+    customerType: "Individual",
+    contact: kyc?.mobileNo ?? "—",
+    email: kyc?.emailId ?? "—",
+    address: kyc?.address ?? "—",
+    zone: basicDetails?.taxZoneNo ?? "—",
+    ward: basicDetails?.wardNo ?? "—",
+    buildingType: basicDetails?.categoryName ?? "—",
+  };
 
   const isDev = process.env.NODE_ENV !== "production";
   return {
-    property: getMockProperty(propertyId),
+    property,
     connections: connectionsResponse.items ?? connectionsResponse.data ?? [],
     totalCount: connectionsResponse.totalCount,
     totalPages: connectionsResponse.totalPages,

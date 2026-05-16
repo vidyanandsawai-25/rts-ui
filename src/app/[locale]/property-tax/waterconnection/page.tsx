@@ -8,7 +8,7 @@ interface PageProps {
 
 export default async function Page({ searchParams }: PageProps) {
   const { propertyId } = await searchParams;
-  const resolvedPropertyId = parseInt(propertyId ?? "1", 10);
+  const resolvedPropertyId = propertyId ? parseInt(propertyId, 10) : NaN;
   if (!Number.isFinite(resolvedPropertyId) || resolvedPropertyId <= 0) {
     notFound();
   }

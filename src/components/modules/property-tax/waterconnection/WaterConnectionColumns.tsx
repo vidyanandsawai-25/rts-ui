@@ -68,7 +68,7 @@ export function getWaterConnectionColumns(
       render: (value) => (
         <div>
           <span className="text-blue-600 font-semibold">{formatINR(value != null ? Number(value) : 0)}</span>
-          <div className="text-xs text-gray-400">{t("list.table.perMonth")}</div>
+          <div className="text-xs text-gray-400">{t("list.table.perYear")}</div>
         </div>
       ),
     },
