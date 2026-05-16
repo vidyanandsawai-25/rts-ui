@@ -88,7 +88,7 @@
       "messages": {
         "createSuccess": "Zone created successfully",
         "updateSuccess": "Zone updated successfully",
-        "error": "Something went wrong",
+        "error": "Cannot delete/Deactivate zone because it is in use",
         "invalidIdError": "Invalid ID format. ID must be a positive number."
       }
     },
