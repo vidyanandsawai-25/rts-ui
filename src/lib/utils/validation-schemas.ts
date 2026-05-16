@@ -421,6 +421,14 @@ export const officeValidations = {
       errors.pincode = tx('form.validation.invalidPincode');
     }
 
+    if (data.officeIncharge != null && String(data.officeIncharge).trim() !== "" && Number(data.officeIncharge) <= 0) {
+      errors.officeIncharge = tx('form.validation.invalidId');
+    }
+
+    if (data.designationMasterId != null && String(data.designationMasterId).trim() !== "" && Number(data.designationMasterId) <= 0) {
+      errors.designationMasterId = tx('form.validation.invalidId');
+    }
+
     const isActiveError = commonValidations.masterActiveStatus(tx, isEdit)(data.isActive);
     if (isActiveError) {
       errors.isActive = isActiveError;

@@ -55,7 +55,8 @@
       "invalidEmailRestricted": "Email must be lowercase and end with .com or .in",
       "invalidPhone": "Phone number must be exactly 10 digits, cannot start with 0, and must be a valid Indian number (starting with 6-9)",
       "invalidCity": "City name cannot contain numbers or special characters",
-      "invalidPincode": "Pincode must be exactly 6 digits and contain only numbers"
+      "invalidPincode": "Pincode must be exactly 6 digits and contain only numbers",
+      "invalidId": "ID must be a positive number"
     }
   },
   "errors": {
