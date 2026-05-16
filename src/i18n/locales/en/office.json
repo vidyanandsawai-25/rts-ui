@@ -110,7 +110,7 @@
   },
   "delete": {
     "confirmTitle": "Delete Office ({id})?",
-    "confirmDescription": "Are you sure you want to delete this office record?",
+    "confirmDescription": "Are you sure you want to inactive the record?",
     "successMessage": "Office deleted successfully",
     "errorMessage": "Cannot delete Office."
   },
