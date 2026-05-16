@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useTransition, useRef, useEffect } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
@@ -53,7 +53,6 @@ export function useOfficeForm({
   const [errors, setErrors] = useState<Partial<Record<keyof OfficeFormModel, string>>>({});
   const [touched, setTouched] = useState<Partial<Record<keyof OfficeFormModel, boolean>>>({});
   const [open, setOpen] = useState(true);
-  const [isPending, startTransition] = useTransition();
   const isMounted = useRef(true);
 
   useEffect(() => {
@@ -145,7 +144,7 @@ export function useOfficeForm({
   return {
     formData,
     errors,
-    isSubmitting: isSubmitting || isPending,
+    isSubmitting: isSubmitting,
     isActive: formData.isActive,
     open,
     setOpen,
