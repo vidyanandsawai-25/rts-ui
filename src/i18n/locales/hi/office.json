@@ -92,8 +92,8 @@
       }
     },
     "detailsSection": "कार्यालय विवरण",
-    "contactSection": "संपर्क जानकारी",
-    "additionalSection": "प्रबंधन और कर्मचारी",
+    "contactSection": "संपर्क विवरण",
+    "additionalSection": "अतिरिक्त विवरण",
     "validation": {
       "officeCodeRequired": "कार्यालय कोड आवश्यक है",
       "officeNameRequired": "कार्यालय का नाम आवश्यक है",

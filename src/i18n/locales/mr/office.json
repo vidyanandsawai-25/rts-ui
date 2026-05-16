@@ -92,8 +92,8 @@
       }
     },
     "detailsSection": "कार्यालय तपशील",
-    "contactSection": "संपर्क माहिती",
-    "additionalSection": "व्यवस्थापन आणि कर्मचारी",
+    "contactSection": "संपर्क तपशील",
+    "additionalSection": "अतिरिक्त तपशील",
     "validation": {
       "officeCodeRequired": "कार्यालय कोड आवश्यक आहे",
       "officeNameRequired": "कार्यालयाचे नाव आवश्यक आहे",
