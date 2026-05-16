@@ -106,8 +106,7 @@ export default function DepreciationMaster({
   }, [selectedRangeId, ranges, defaultSelectedRangeId]);
 
   /* ================= VALIDATION HOOK ================= */
-  // Note: Overlap validation is now handled server-side only
-  const { validateMinMax, sanitizeInput } = useDepreciationValidation(t);
+  const { validateMinMax, sanitizeInput, checkOverlap } = useDepreciationValidation(t);
 
   /* ================= URL NAVIGATION ================= */
   const buildUrl = useCallback(
@@ -218,6 +217,15 @@ export default function DepreciationMaster({
     setMaxError(result.maxError);
 
     if (!result.valid) return;
+
+    const newMin = Number(minValue);
+    const newMax = Number(maxValue);
+
+    const conflictingRange = checkOverlap(newMin, newMax, derivedState.ranges);
+    if (conflictingRange) {
+      setMaxError(t("errors.overlap", { range: `${conflictingRange.min}-${conflictingRange.max}` }));
+      return;
+    }
 
     setSaving(true);
     const tid = toast.loading(t("messages.creatingRange"));
