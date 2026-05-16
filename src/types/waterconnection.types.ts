@@ -43,6 +43,7 @@ export interface WaterConnectionFormModel {
   waterConnectionSizeId: number | '';
   waterConnectionStatusId?: number | null;
   installDate: string;
+  connectionStopDate?: string | null;
   isActive: boolean;
   applicableRate?: number | null;
 }

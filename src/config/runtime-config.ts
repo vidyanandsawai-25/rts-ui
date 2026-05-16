@@ -32,7 +32,7 @@ export interface RuntimeConfig {
  * Default configuration values
  */
 const defaultConfig: RuntimeConfig = {
-  apiBaseUrl: 'https://ptisapiqa.scipl.info.in/api',
+  apiBaseUrl: 'http://localhost:5268/api',
   appEnv: 'development',
   authEnabled: false,
   featureAnalytics: false,
