@@ -399,6 +399,8 @@ export const officeValidations = {
       errors.officeName = t('form.validation.officeNameRequired');
     } else if (officeName.length > 200) {
       errors.officeName = tx('form.validation.nameMaxLength', { count: 200 });
+    } else if (/^\d+$/.test(officeName)) {
+      errors.officeName = t('form.validation.officeNameNumeric');
     }
 
     if (!data.type) {

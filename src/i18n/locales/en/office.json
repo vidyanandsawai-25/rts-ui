@@ -93,7 +93,8 @@
     },
     "validation": {
       "officeCodeRequired": "Office code is required",
-      "officeNameRequired": "Office name is required"
+      "officeNameRequired": "Office name is required",
+      "officeNameNumeric": "Office name cannot contain only numbers"
     },
     "status": {
       "label": "Active Status",

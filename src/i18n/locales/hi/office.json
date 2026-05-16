@@ -97,6 +97,7 @@
     "validation": {
       "officeCodeRequired": "कार्यालय कोड आवश्यक है",
       "officeNameRequired": "कार्यालय का नाम आवश्यक है",
+      "officeNameNumeric": "कार्यालय का नाम केवल संख्यात्मक नहीं हो सकता",
       "typeRequired": "कार्यालय प्रकार आवश्यक है",
       "invalidEmail": "अमान्य ईमेल आईडी",
       "invalidPincode": "अमान्य पिनकोड",
