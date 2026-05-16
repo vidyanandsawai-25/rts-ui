@@ -24,6 +24,8 @@ import {
   EMAIL_REGEX,
   EMAIL_LOWERCASE_RESTRICTED_REGEX,
   MOBILE_10_REGEX,
+  PINCODE_6_REGEX,
+  CITY_NAME_REGEX,
   YEAR_REGEX
 } from './validation-rules';
 import { validateForm } from './validation-helpers';
@@ -411,7 +413,11 @@ export const officeValidations = {
       errors.phone = tx('form.validation.invalidPhone');
     }
 
-    if (data.pincode && !/^\d{6}$/.test(data.pincode)) {
+    if (data.city && !CITY_NAME_REGEX.test(data.city)) {
+      errors.city = tx('form.validation.invalidCity');
+    }
+
+    if (data.pincode && !PINCODE_6_REGEX.test(data.pincode)) {
       errors.pincode = tx('form.validation.invalidPincode');
     }
 
