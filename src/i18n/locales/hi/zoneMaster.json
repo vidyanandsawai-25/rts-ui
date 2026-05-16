@@ -172,6 +172,7 @@
     "wardCannotBeDeleted": "वार्ड {wardNo} को हटाया नहीं जा सकता क्योंकि यह उपयोग में है।",
     "partialSuccess": "{success} वार्ड सफलतापूर्वक लिंक किए गए; {failed} वार्ड लिंक करने में विफल।",
     "noWardsToLink": "इस ज़ोन में लिंक करने के लिए कोई वार्ड उपलब्ध नहीं।",
+    "allWardsAlreadyInZone": "सभी वार्ड पहले से ही ज़ोन {zoneLabel} में हैं।",
     "fetchError": "वार्ड लाने में विफल"
   },
   "createWardMessages": {
