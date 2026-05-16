@@ -46,6 +46,7 @@ export function OfficeContactSection({
             onBlur={handleBlur}
             error={showError("phone") ? errors.phone : undefined}
             placeholder={t("form.fields.phone.placeholder")}
+            maxLength={10}
           />
           
           <Input
@@ -66,6 +67,7 @@ export function OfficeContactSection({
             onBlur={handleBlur}
             error={showError("pincode") ? errors.pincode : undefined}
             placeholder={t("form.fields.pincode.placeholder")}
+            maxLength={6}
           />
         </div>
 

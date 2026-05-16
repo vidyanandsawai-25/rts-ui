@@ -53,7 +53,8 @@ export const SEARCH_KEY_REGEX = /^[A-Za-z0-9+\-]+$/;
 /* ================= SOCIETY VALIDATION ================= */
 export const PERSON_NAME_REGEX = /^[\p{L}\p{M}\s.,'-]+$/u;
 export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-export const MOBILE_10_REGEX = /^[0-9]{10}$/;
+export const EMAIL_LOWERCASE_RESTRICTED_REGEX = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.(com|in)$/;
+export const MOBILE_10_REGEX = /^[1-9][0-9]{9}$/;
 export const YEAR_REGEX = /^\d{4}$/;
 
 

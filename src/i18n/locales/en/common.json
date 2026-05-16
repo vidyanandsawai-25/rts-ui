@@ -52,6 +52,8 @@
       "nameMaxLength": "Maximum {count} characters allowed",
       "typeRequired": "Type is required",
       "invalidEmail": "Invalid email address",
+      "invalidEmailRestricted": "Email must be lowercase and end with .com or .in",
+      "invalidPhone": "Phone number must be exactly 10 digits and cannot start with 0",
       "invalidPincode": "Pincode must be exactly 6 digits"
     }
   },

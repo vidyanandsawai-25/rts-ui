@@ -49,6 +49,8 @@
       "nameMaxLength": "कमाल {count} वर्णांची परवानगी आहे",
       "typeRequired": "प्रकार आवश्यक आहे",
       "invalidEmail": "अवैध ईमेल पत्ता",
+      "invalidEmailRestricted": "ईमेल लहान अक्षरांमध्ये असावा आणि .com किंवा .in वर संपायला हवा",
+      "invalidPhone": "फोन नंबर ठीक १० अंकी असावा आणि ० ने सुरू होऊ नये",
       "invalidPincode": "पिनकोड ठीक 6 अंकांचा असणे आवश्यक आहे"
     }
   },

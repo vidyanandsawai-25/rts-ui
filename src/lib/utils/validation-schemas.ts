@@ -17,12 +17,12 @@
  * ### Backward Compatibility
  * - `constructionValidators` - Construction-specific validators
  */
-
 import {
   CODE_REGEX,
   DESCRIPTION_REGEX,
   PERSON_NAME_REGEX,
   EMAIL_REGEX,
+  EMAIL_LOWERCASE_RESTRICTED_REGEX,
   MOBILE_10_REGEX,
   YEAR_REGEX
 } from './validation-rules';
@@ -403,8 +403,12 @@ export const officeValidations = {
       errors.type = tx('form.validation.typeRequired');
     }
 
-    if (data.emailId && !EMAIL_REGEX.test(data.emailId)) {
-      errors.emailId = tx('form.validation.invalidEmail');
+    if (data.emailId && !EMAIL_LOWERCASE_RESTRICTED_REGEX.test(data.emailId)) {
+      errors.emailId = tx('form.validation.invalidEmailRestricted');
+    }
+
+    if (data.phone && !MOBILE_10_REGEX.test(data.phone)) {
+      errors.phone = tx('form.validation.invalidPhone');
     }
 
     if (data.pincode && !/^\d{6}$/.test(data.pincode)) {

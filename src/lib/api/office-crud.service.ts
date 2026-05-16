@@ -46,7 +46,7 @@ export async function getOfficesPaged(
     if (typeof sortOrder === "string" && sortOrder.trim()) params.append("SortOrder", sortOrder.trim());
     
     if (typeof type === "string" && type.trim()) params.append("Type", type.trim());
-    if (typeof status === "string" && status.trim()) params.append("Status", status.trim());
+    if (typeof status === "string" && status.trim()) params.append("IsActive", status.trim());
 
     const response = await apiClient.get<PagedResponse<Office>>(`/Office?${params.toString()}`);
     if (!response.success) {
