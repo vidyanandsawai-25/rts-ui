@@ -163,7 +163,7 @@ export async function fetchOfficeStatsServerAction() {
       activeOfficesCount: activeOffices.totalCount,
       inactiveOfficesCount: inactiveOffices.totalCount,
     };
-  } catch (error) {
+  } catch (_error) {
     return { headOfficesCount: 0, activeOfficesCount: 0, inactiveOfficesCount: 0 };
   }
 }
