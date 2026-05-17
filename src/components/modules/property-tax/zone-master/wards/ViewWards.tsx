@@ -83,8 +83,8 @@ export function ViewWards({
               key={ward.wardNo}
               wardNo={ward.wardNo}
               description={ward.description ?? undefined}
-              checked={!isSelectAllActive && checkedWards.has(ward.wardNo)}
-              onToggle={() => !isSelectAllActive && onToggleWard(ward.wardNo)}
+              checked={checkedWards.has(ward.wardNo)}
+              onToggle={() => onToggleWard(ward.wardNo)}
               colorScheme="blue"
               disabled={isSelectAllActive}
             />
