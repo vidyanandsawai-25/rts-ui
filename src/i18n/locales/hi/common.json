@@ -135,6 +135,9 @@
     "cancel": "रद्द करें"
   },
   "table": {
+    "paginationFooter": "दिखा रहा है {start} <selector/> में से {total} प्रविष्टियां",
+    "showingStart": "दिखा रहा है {start}",
+    "ofTotalEntries": "में से {total} प्रविष्टियां",
     "actions": {
       "edit": "संपादित करें",
       "delete": "हटाएं"

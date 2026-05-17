@@ -133,6 +133,9 @@
     "cancel": "रद्द करा"
   },
   "table": {
+    "paginationFooter": "दाखवत आहे {start} <selector/> पैकी {total} नोंदी",
+    "showingStart": "दाखवत आहे {start}",
+    "ofTotalEntries": "पैकी {total} नोंदी",
     "actions": {
       "edit": "संपादित करा",
       "delete": "हटवा"

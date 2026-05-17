@@ -236,6 +236,9 @@
     "deleteFloor": "Delete Floor"
   },
   "table": {
+    "paginationFooter": "Showing {start} <selector/> of {total} entries",
+    "showingStart": "Showing {start}",
+    "ofTotalEntries": "of {total} entries",
     "actions": {
       "edit": "Edit",
       "delete": "Delete"
