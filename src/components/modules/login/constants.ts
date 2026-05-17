@@ -199,7 +199,7 @@ export const LOGIN_PASSWORD_INPUT_CLASS = `${LOGIN_FIELD_INPUT_CLASS} pr-11`;
  * Lucide icon position classes for login fields (user / lock).
  */
 export const LOGIN_FIELD_ICON_CLASS =
-  'pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2';
+  'pointer-events-none absolute left-3 top-[22px] z-10 -translate-y-1/2';
 
 export const LOGIN_USERNAME_ICON_ACCENT = 'text-cyan-600/80';
 export const LOGIN_PASSWORD_ICON_ACCENT = 'text-amber-600/80';
