@@ -24,7 +24,7 @@ import { OfficeStatsCards } from "./OfficeStatsCards";
 
 export function OfficeMaster({
   data, pageNumber, pageSize, totalCount, totalPages, sortBy, sortOrder, type, status,
-  headOfficesCount, activeOfficesCount, inactiveOfficesCount
+  headOfficesCount, activeOfficesCount, inactiveOfficesCount, showStatsError
 }: OfficeProps): React.ReactElement {
   const router = useRouter();
   const t = useTranslations("office");
@@ -50,6 +50,12 @@ export function OfficeMaster({
     type,
     status
   });
+
+  React.useEffect(() => {
+    if (showStatsError) {
+      toast.error(t("errors.statsLoadFailed") || "Failed to load office statistics");
+    }
+  }, [showStatsError, t]);
 
   const {
     buildUrl,
@@ -100,32 +106,10 @@ export function OfficeMaster({
     });
   }, [sortBy, sortOrder, buildUrl, pageSize, currentSearchTerm, selectedType, selectedStatus, router]);
 
-  const sortedData = React.useMemo(() => {
-    if (!currentSearchTerm) return data;
-    
-    const getMatchScore = (item: Office, searchTerm: string): number => {
-      const s = searchTerm.toLowerCase();
-      const code = (item.officeCode || "").toLowerCase();
-      const name = (item.officeName || "").toLowerCase();
-      
-      const getStrScore = (str: string): number => {
-        if (!str.includes(s)) return 999;
-        if (str.startsWith(s)) return 1;
-        if (str.endsWith(s)) return 3;
-        return 2;
-      };
-      
-      return Math.min(getStrScore(code), getStrScore(name));
-    };
-
-    return [...data].sort((a, b) => {
-      const scoreA = getMatchScore(a, currentSearchTerm);
-      const scoreB = getMatchScore(b, currentSearchTerm);
-      return scoreA - scoreB;
-    });
-  }, [data, currentSearchTerm]);
-
-  const columns = getOfficeColumns(t, tCommon, sortBy, sortOrder, onSort);
+  const columns = React.useMemo(
+    () => getOfficeColumns(t, tCommon, sortBy, sortOrder, onSort),
+    [t, tCommon, sortBy, sortOrder, onSort]
+  );
 
 
   return (
@@ -146,12 +130,11 @@ export function OfficeMaster({
           activeOfficesCount={activeOfficesCount}
           inactiveOfficesCount={inactiveOfficesCount}
           t={t} 
-          tCommon={tCommon} 
         />
 
         <MasterTable<Office>
           columns={columns}
-          data={sortedData}
+          data={data}
           loading={isPending}
           height="lg"
           pageNumber={pageNumber}

@@ -57,4 +57,5 @@ export interface OfficeProps extends Omit<PagedResponse<Office>, 'items' | 'hasP
   headOfficesCount: number;
   activeOfficesCount: number;
   inactiveOfficesCount: number;
+  showStatsError?: boolean;
 }

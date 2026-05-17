@@ -2,6 +2,9 @@ import React from "react";
 import { OfficeMaster } from "@/components/modules/configuration-settings/office-master/OfficeMaster";
 import { fetchOfficePagedServerAction, fetchOfficeStatsServerAction } from "./action";
 
+// Cache page & stats count queries for 5 minutes (300 seconds) to lower DB load
+export const revalidate = 300;
+
 interface PageProps {
   searchParams: Promise<{
     page?: string;
@@ -74,6 +77,7 @@ export default async function Page({ searchParams }: PageProps): Promise<React.R
       headOfficesCount={stats.headOfficesCount}
       activeOfficesCount={stats.activeOfficesCount}
       inactiveOfficesCount={stats.inactiveOfficesCount}
+      showStatsError={stats.error}
     />
   );
 }

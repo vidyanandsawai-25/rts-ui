@@ -98,28 +98,12 @@ export function formatNumericDate(value: string | null | undefined): string {
   }).format(date);
 }
 
+import { DateUtils } from "./date-helpers";
+
 export function formatDateToDDMMYYYY(dateStr: string | null | undefined): string {
-  if (!dateStr || dateStr === "string") return "";
-  try {
-    const cleanDate = dateStr.split("T")[0];
-    const parts = cleanDate.split("-");
-    if (parts.length === 3) {
-      const [year, month, day] = parts;
-      return `${day}-${month}-${year}`;
-    }
-    return dateStr;
-  } catch {
-    return "";
-  }
+  return DateUtils.formatToDDMMYYYY(dateStr);
 }
 
 export function formatDDMMYYYYToISO(dateStr: string | null | undefined): string | null {
-  if (!dateStr) return null;
-  const normalized = dateStr.replace(/\//g, "-");
-  const parts = normalized.split("-");
-  if (parts.length === 3) {
-    const [day, month, year] = parts;
-    return `${year.padStart(4, '0')}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T00:00:00`;
-  }
-  return dateStr;
+  return DateUtils.parseToISO(dateStr);
 }
