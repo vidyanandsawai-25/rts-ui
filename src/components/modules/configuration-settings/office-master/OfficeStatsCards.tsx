@@ -1,16 +1,22 @@
-import { BuildingIcon, Building2, CheckCircle2, Globe2 } from "lucide-react";
+import { BuildingIcon, Building2, CheckCircle2, XCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/common";
 import { cn } from "@/lib/utils/cn";
-import type { Office } from "@/types/office.types";
-
 interface OfficeStatsCardsProps {
-  data: Office[];
   totalCount: number;
+  headOfficesCount: number;
+  activeOfficesCount: number;
+  inactiveOfficesCount: number;
   t: (key: string) => string;
   tCommon: (key: string) => string;
 }
 
-export function OfficeStatsCards({ data, totalCount, t, tCommon }: OfficeStatsCardsProps) {
+export function OfficeStatsCards({ 
+  totalCount, 
+  headOfficesCount, 
+  activeOfficesCount, 
+  inactiveOfficesCount, 
+  t 
+}: OfficeStatsCardsProps) {
   const stats = [
     {
       label: t("stats.total"),
@@ -23,8 +29,7 @@ export function OfficeStatsCards({ data, totalCount, t, tCommon }: OfficeStatsCa
     },
     {
       label: t("stats.headOffices"),
-      subLabel: tCommon("table.onThisPage"),
-      value: data.filter(o => o.type === "Head Office").length,
+      value: headOfficesCount,
       icon: Building2,
       bgColor: "bg-purple-500",
       iconBg: "bg-purple-50",
@@ -33,8 +38,7 @@ export function OfficeStatsCards({ data, totalCount, t, tCommon }: OfficeStatsCa
     },
     {
       label: t("stats.activeOffices"),
-      subLabel: tCommon("table.onThisPage"),
-      value: data.filter(o => o.isActive).length,
+      value: activeOfficesCount,
       icon: CheckCircle2,
       bgColor: "bg-green-500",
       iconBg: "bg-green-50",
@@ -42,14 +46,13 @@ export function OfficeStatsCards({ data, totalCount, t, tCommon }: OfficeStatsCa
       accentColor: "bg-green-600"
     },
     {
-      label: t("stats.regionalOffices"),
-      subLabel: tCommon("table.onThisPage"),
-      value: data.filter(o => o.type === "Regional Office").length,
-      icon: Globe2,
-      bgColor: "bg-orange-500",
-      iconBg: "bg-orange-50",
-      iconColor: "text-orange-600",
-      accentColor: "bg-orange-600"
+      label: t("stats.inactiveOffices"),
+      value: inactiveOfficesCount,
+      icon: XCircle,
+      bgColor: "bg-red-500",
+      iconBg: "bg-red-50",
+      iconColor: "text-red-600",
+      accentColor: "bg-red-600"
     }
   ];
 

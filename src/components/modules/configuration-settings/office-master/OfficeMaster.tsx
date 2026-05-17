@@ -23,7 +23,8 @@ import { getOfficeTypeOptions } from "@/config/office-master.config";
 import { OfficeStatsCards } from "./OfficeStatsCards";
 
 export function OfficeMaster({
-  data, pageNumber, pageSize, totalCount, totalPages, sortBy, sortOrder, type, status
+  data, pageNumber, pageSize, totalCount, totalPages, sortBy, sortOrder, type, status,
+  headOfficesCount, activeOfficesCount, inactiveOfficesCount
 }: OfficeProps): React.ReactElement {
   const router = useRouter();
   const t = useTranslations("office");
@@ -114,7 +115,14 @@ export function OfficeMaster({
       }
     >
       <div className="space-y-6">
-        <OfficeStatsCards data={data} totalCount={totalCount} t={t} tCommon={tCommon} />
+        <OfficeStatsCards 
+          totalCount={totalCount} 
+          headOfficesCount={headOfficesCount}
+          activeOfficesCount={activeOfficesCount}
+          inactiveOfficesCount={inactiveOfficesCount}
+          t={t} 
+          tCommon={tCommon} 
+        />
 
         <MasterTable<Office>
           columns={columns}

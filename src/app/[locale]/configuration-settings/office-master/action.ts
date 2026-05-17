@@ -149,3 +149,21 @@ export async function getOfficeByIdAction(
     throw error;
   }
 }
+
+export async function fetchOfficeStatsServerAction() {
+  try {
+    const [headOffices, activeOffices, inactiveOffices] = await Promise.all([
+      getOfficesPaged(1, 1, undefined, undefined, undefined, "Head Office", undefined),
+      getOfficesPaged(1, 1, undefined, undefined, undefined, undefined, "true"),
+      getOfficesPaged(1, 1, undefined, undefined, undefined, undefined, "false"),
+    ]);
+
+    return {
+      headOfficesCount: headOffices.totalCount,
+      activeOfficesCount: activeOffices.totalCount,
+      inactiveOfficesCount: inactiveOffices.totalCount,
+    };
+  } catch (error) {
+    return { headOfficesCount: 0, activeOfficesCount: 0, inactiveOfficesCount: 0 };
+  }
+}
