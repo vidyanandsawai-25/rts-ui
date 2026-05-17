@@ -70,10 +70,8 @@ export { StatusBadge } from './StatusBadge';
 
 export { default as TableHeader } from './TableHeader';
 
-
-
 export { ValidationMessage } from './ValidationMessage';
-export { Tabs } from './Tabs';
+export { Tabs, TabList, Tab, TabPanel } from './Tabs';
 export type {
   TabsProps,
   TabListProps,
@@ -96,8 +94,6 @@ export type { ContextMenuProps, ContextMenuItem } from './ContextMenu';
 export { Tooltip } from './Tooltip';
 export type { TooltipProps } from './Tooltip';
 
-
-
 export { LoadingPage } from './LoadingPage';
 export type { LoadingPageProps } from './LoadingPage';
 
@@ -114,7 +110,12 @@ export { MatrixCellInput } from './MatrixCellInput';
 export type { MatrixCellInputProps } from './MatrixCellInput';
 
 export { ConfirmProvider, useConfirm } from './ConfirmProvider';
-export type { ConfirmContextType, ConfirmOptions, ConfirmVariant, ConfirmMeta } from './ConfirmProvider';
+export type {
+  ConfirmContextType,
+  ConfirmOptions,
+  ConfirmVariant,
+  ConfirmMeta,
+} from './ConfirmProvider';
 
 export { Checkbox } from './checkbox';
 export type { CheckboxProps } from '@/types/common.types';

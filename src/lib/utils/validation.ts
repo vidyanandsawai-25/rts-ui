@@ -2,7 +2,7 @@
  * Common validation functions for forms
  *
  * @module validation
- * 
+ *
  * @deprecated This file is kept for backward compatibility.
  * New code should import from the specific modules:
  * - validation-rules.ts for regex and sanitization patterns
@@ -70,4 +70,4 @@ export {
   officeValidations,
   oldDetailsValidations,
 } from './validation-schemas';
-
+export { userManagementValidations } from './user-management-validation';

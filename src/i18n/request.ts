@@ -45,6 +45,7 @@ export default getRequestConfig(async ({ locale }) => {
     departmentActivationMessages,
     homeMessages,
     aliasMasterMessages,
+    userManagementMessages,
     modulesMessages,
     paymentModeMasterMessages,
   ] = await Promise.all([
@@ -57,7 +58,7 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/quickDataEntry.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/rateSectionMaster.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/assessmentYearRange.json`).then((m) => m.default),
-    import(`./locales/${validatedLocale}/ptis.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/ptis.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/floorFactorMaster.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/weightageMaster.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/config-master.json`).then((m) => m.default),
@@ -72,19 +73,26 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/office.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
-    import(`./locales/${validatedLocale}/bank-master.json`).then((m) => m.default),
-    import(`./locales/${validatedLocale}/screenAccess.json`).then((m) => m.default),
-    import(`./locales/${validatedLocale}/appartmentQC.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/bank-master.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/screenAccess.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/appartmentQC.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/departmentMaster.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/departmentActivation.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
-    import(`./locales/${validatedLocale}/home.json`)
+    import(`./locales/${validatedLocale}/home.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/aliasMaster.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
-    import(`./locales/${validatedLocale}/aliasMaster.json`)
+    import(`./locales/${validatedLocale}/user-management.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
@@ -123,6 +131,7 @@ export default getRequestConfig(async ({ locale }) => {
       departmentActivation: departmentActivationMessages,
       home: homeMessages,
       aliasMaster: aliasMasterMessages,
+      userManagement: userManagementMessages,
       modules: modulesMessages,
       paymentModeMaster: paymentModeMasterMessages,
     },
