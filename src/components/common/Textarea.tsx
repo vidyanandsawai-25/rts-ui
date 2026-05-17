@@ -51,7 +51,7 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
     const errorId = `${id || internalId}-error`;
 
     // Support live char count for uncontrolled usage
-    const isControlled = Object.prototype.hasOwnProperty.call(props, 'value');
+    const isControlled = value !== undefined;
     const [uncontrolledValue, setUncontrolledValue] = React.useState(
       typeof defaultValue === 'string' ? defaultValue : ''
     );
