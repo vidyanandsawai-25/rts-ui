@@ -100,6 +100,31 @@ export function OfficeMaster({
     });
   }, [sortBy, sortOrder, buildUrl, pageSize, currentSearchTerm, selectedType, selectedStatus, router]);
 
+  const sortedData = React.useMemo(() => {
+    if (!currentSearchTerm) return data;
+    
+    const getMatchScore = (item: Office, searchTerm: string): number => {
+      const s = searchTerm.toLowerCase();
+      const code = (item.officeCode || "").toLowerCase();
+      const name = (item.officeName || "").toLowerCase();
+      
+      const getStrScore = (str: string): number => {
+        if (!str.includes(s)) return 999;
+        if (str.startsWith(s)) return 1;
+        if (str.endsWith(s)) return 3;
+        return 2;
+      };
+      
+      return Math.min(getStrScore(code), getStrScore(name));
+    };
+
+    return [...data].sort((a, b) => {
+      const scoreA = getMatchScore(a, currentSearchTerm);
+      const scoreB = getMatchScore(b, currentSearchTerm);
+      return scoreA - scoreB;
+    });
+  }, [data, currentSearchTerm]);
+
   const columns = getOfficeColumns(t, tCommon, sortBy, sortOrder, onSort);
 
 
@@ -126,7 +151,7 @@ export function OfficeMaster({
 
         <MasterTable<Office>
           columns={columns}
-          data={data}
+          data={sortedData}
           loading={isPending}
           height="lg"
           pageNumber={pageNumber}

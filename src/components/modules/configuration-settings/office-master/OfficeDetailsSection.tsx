@@ -61,11 +61,14 @@ export function OfficeDetailsSection({
           />
 
           <Input
-            type="date"
+            type="text"
             label={t("form.fields.establishedDate.label")}
             name="establishedDate"
-            value={formData.establishedDate ? formData.establishedDate.split("T")[0] : ""}
+            value={formData.establishedDate || ""}
             onChange={handleChange}
+            onBlur={handleBlur}
+            error={showError("establishedDate") ? errors.establishedDate : undefined}
+            placeholder="DD-MM-YYYY"
           />
         </div>
       </div>

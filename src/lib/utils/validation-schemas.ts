@@ -431,6 +431,30 @@ export const officeValidations = {
       errors.designationMasterId = tx('form.validation.invalidId');
     }
 
+    if (data.establishedDate) {
+      const dateStr = String(data.establishedDate).trim();
+      const dateRegex = /^(0[1-9]|[12][0-9]|3[01])[-/](0[1-9]|1[012])[-/](19|20)\d\d$/;
+      if (!dateRegex.test(dateStr)) {
+        errors.establishedDate = t('form.validation.invalidDateFormat');
+      } else {
+        const parts = dateStr.replace(/\//g, "-").split("-");
+        const day = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1; // 0-indexed
+        const year = parseInt(parts[2], 10);
+        
+        const dateObj = new Date(year, month, day);
+        if (dateObj.getFullYear() !== year || dateObj.getMonth() !== month || dateObj.getDate() !== day) {
+          errors.establishedDate = t('form.validation.invalidDate');
+        } else {
+          const today = new Date();
+          today.setHours(23, 59, 59, 999);
+          if (dateObj > today) {
+            errors.establishedDate = t('form.validation.futureDate');
+          }
+        }
+      }
+    }
+
     const isActiveError = commonValidations.masterActiveStatus(tx, isEdit)(data.isActive);
     if (isActiveError) {
       errors.isActive = isActiveError;
