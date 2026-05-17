@@ -97,3 +97,13 @@ export function formatNumericDate(value: string | null | undefined): string {
     year: 'numeric',
   }).format(date);
 }
+
+import { DateUtils } from "./date-helpers";
+
+export function formatDateToDDMMYYYY(dateStr: string | null | undefined): string {
+  return DateUtils.formatToDDMMYYYY(dateStr);
+}
+
+export function formatDDMMYYYYToISO(dateStr: string | null | undefined): string | null {
+  return DateUtils.parseToISO(dateStr);
+}

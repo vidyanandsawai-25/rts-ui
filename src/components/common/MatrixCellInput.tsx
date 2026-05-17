@@ -28,12 +28,12 @@ export const MatrixCellInput = ({
   onKeyDown,
 }: MatrixCellInputProps): React.ReactElement => {
   // Helper to format value for display — empty string for 0 in edit mode, "0" in read-only
-  const formatValue = (val: number): string => {
+  const formatValue = React.useCallback((val: number): string => {
     if (val === 0) {
       return readOnly ? "0" : "";
     }
     return val.toFixed(2);
-  };
+  }, [readOnly]);
 
   // Safely convert value to number to handle undefined, null, or string values
   const safeValue = typeof value === 'number' && !Number.isNaN(value) ? value : Number(value) || 0;
@@ -51,7 +51,7 @@ export const MatrixCellInput = ({
       setLocalValue(formatValue(currentSafeValue));
     }
     previousValueRef.current = currentSafeValue;
-  }, [value, isFocused]);
+  }, [value, isFocused, formatValue]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;

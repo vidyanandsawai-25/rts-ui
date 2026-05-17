@@ -94,7 +94,10 @@
     "validation": {
       "officeCodeRequired": "Office code is required",
       "officeNameRequired": "Office name is required",
-      "officeNameNumeric": "Office name cannot contain only numbers"
+      "officeNameNumeric": "Office name cannot contain only numbers",
+      "invalidDateFormat": "Date must be in DD-MM-YYYY format",
+      "invalidDate": "Please enter a valid date",
+      "futureDate": "Established date cannot be in the future"
     },
     "status": {
       "label": "Active Status",
@@ -126,6 +129,7 @@
     "headOffices": "Head Offices",
     "activeOffices": "Active Offices",
     "regionalOffices": "Regional Offices",
+    "inactiveOffices": "Inactive Offices",
     "active": "Active",
     "inactive": "Inactive",
     "records": "Total Records"

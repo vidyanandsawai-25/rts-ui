@@ -29,6 +29,7 @@ import {
   YEAR_REGEX
 } from './validation-rules';
 import { validateForm } from './validation-helpers';
+import { DateUtils } from './date-helpers';
 import type { Validator } from './validation-helpers';
 import type { OfficeFormModel } from '@/types/office.types';
 import type {
@@ -429,6 +430,20 @@ export const officeValidations = {
 
     if (data.designationMasterId != null && String(data.designationMasterId).trim() !== "" && Number(data.designationMasterId) <= 0) {
       errors.designationMasterId = tx('form.validation.invalidId');
+    }
+
+    if (data.establishedDate) {
+      const dateStr = String(data.establishedDate).trim();
+      const validation = DateUtils.validate(dateStr);
+      if (!validation.valid && validation.error) {
+        const errorKeyMap = {
+          invalidFormat: 'form.validation.invalidDateFormat',
+          invalidDate: 'form.validation.invalidDate',
+          futureDate: 'form.validation.futureDate',
+        };
+        const key = errorKeyMap[validation.error] || 'form.validation.invalidDate';
+        errors.establishedDate = t(key);
+      }
     }
 
     const isActiveError = commonValidations.masterActiveStatus(tx, isEdit)(data.isActive);
