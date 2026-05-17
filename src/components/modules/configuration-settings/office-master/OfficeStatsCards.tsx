@@ -71,11 +71,6 @@ export function OfficeStatsCards({
                   <p className="text-sm font-medium text-slate-500">{stat.label}</p>
                   <div className="flex items-baseline gap-1">
                     <p className="text-3xl font-bold text-slate-900 tracking-tight">{stat.value}</p>
-                    {"subLabel" in stat && (
-                      <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">
-                        {stat.subLabel}
-                      </span>
-                    )}
                   </div>
                 </div>
                 <div
