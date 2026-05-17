@@ -17,13 +17,15 @@
  * ### Backward Compatibility
  * - `constructionValidators` - Construction-specific validators
  */
-
 import {
   CODE_REGEX,
   DESCRIPTION_REGEX,
   PERSON_NAME_REGEX,
   EMAIL_REGEX,
+  EMAIL_LOWERCASE_RESTRICTED_REGEX,
   MOBILE_10_REGEX,
+  PINCODE_6_REGEX,
+  CITY_NAME_REGEX,
   YEAR_REGEX
 } from './validation-rules';
 import { validateForm } from './validation-helpers';
@@ -397,18 +399,36 @@ export const officeValidations = {
       errors.officeName = t('form.validation.officeNameRequired');
     } else if (officeName.length > 200) {
       errors.officeName = tx('form.validation.nameMaxLength', { count: 200 });
+    } else if (/^\d+$/.test(officeName)) {
+      errors.officeName = t('form.validation.officeNameNumeric');
     }
 
     if (!data.type) {
       errors.type = tx('form.validation.typeRequired');
     }
 
-    if (data.emailId && !EMAIL_REGEX.test(data.emailId)) {
-      errors.emailId = tx('form.validation.invalidEmail');
+    if (data.emailId && !EMAIL_LOWERCASE_RESTRICTED_REGEX.test(data.emailId)) {
+      errors.emailId = tx('form.validation.invalidEmailRestricted');
     }
 
-    if (data.pincode && !/^\d{6}$/.test(data.pincode)) {
+    if (data.phone && !MOBILE_10_REGEX.test(data.phone)) {
+      errors.phone = tx('form.validation.invalidPhone');
+    }
+
+    if (data.city && !CITY_NAME_REGEX.test(data.city)) {
+      errors.city = tx('form.validation.invalidCity');
+    }
+
+    if (data.pincode && !PINCODE_6_REGEX.test(data.pincode)) {
       errors.pincode = tx('form.validation.invalidPincode');
+    }
+
+    if (data.officeIncharge != null && String(data.officeIncharge).trim() !== "" && Number(data.officeIncharge) <= 0) {
+      errors.officeIncharge = tx('form.validation.invalidId');
+    }
+
+    if (data.designationMasterId != null && String(data.designationMasterId).trim() !== "" && Number(data.designationMasterId) <= 0) {
+      errors.designationMasterId = tx('form.validation.invalidId');
     }
 
     const isActiveError = commonValidations.masterActiveStatus(tx, isEdit)(data.isActive);

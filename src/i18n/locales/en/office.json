@@ -93,13 +93,16 @@
     },
     "validation": {
       "officeCodeRequired": "Office code is required",
-      "officeNameRequired": "Office name is required"
+      "officeNameRequired": "Office name is required",
+      "officeNameNumeric": "Office name cannot contain only numbers"
     },
     "status": {
       "label": "Active Status",
       "description": "Office is currently"
     },
     "detailsSection": "Office Details",
+    "contactSection": "Contact Details",
+    "additionalSection": "Additional Details",
     "actions": {
       "cancel": "Cancel",
       "save": "Save",
@@ -108,7 +111,7 @@
   },
   "delete": {
     "confirmTitle": "Delete Office ({id})?",
-    "confirmDescription": "Are you sure you want to delete this office record?",
+    "confirmDescription": "Are you sure you want to inactive the record?",
     "successMessage": "Office deleted successfully",
     "errorMessage": "Cannot delete Office."
   },
