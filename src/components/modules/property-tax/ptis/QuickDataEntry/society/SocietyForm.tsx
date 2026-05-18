@@ -11,10 +11,25 @@ const SocietyForm = (props: SocietyFormProps) => {
         formRef,
         hasChanges,
         isUpdating,
-        managerMobileDigits,
-        setManagerMobileDigits,
-        secretaryMobileDigits,
-        setSecretaryMobileDigits,
+        managerMobileInput,
+        secretaryMobileInput,
+        managerEmail,
+        setManagerEmail,
+        secretaryEmail,
+        setSecretaryEmail,
+        societyEmail,
+        setSocietyEmail,
+        landOwnerName,
+        setLandOwnerName,
+        builderName,
+        setBuilderName,
+        societyName,
+        setSocietyName,
+        managerName,
+        setManagerName,
+        secretaryName,
+        setSecretaryName,
+        showError,
         handleSubmit,
         checkFormChanges,
     } = useSocietyForm(props);
@@ -33,10 +48,25 @@ const SocietyForm = (props: SocietyFormProps) => {
                         <SocietyFormFields
                             t={t}
                             societyData={props.societyData}
-                            managerMobileDigits={managerMobileDigits}
-                            setManagerMobileDigits={setManagerMobileDigits}
-                            secretaryMobileDigits={secretaryMobileDigits}
-                            setSecretaryMobileDigits={setSecretaryMobileDigits}
+                            managerMobileInput={managerMobileInput}
+                            secretaryMobileInput={secretaryMobileInput}
+                            managerEmail={managerEmail}
+                            setManagerEmail={setManagerEmail}
+                            secretaryEmail={secretaryEmail}
+                            setSecretaryEmail={setSecretaryEmail}
+                            societyEmail={societyEmail}
+                            setSocietyEmail={setSocietyEmail}
+                            landOwnerName={landOwnerName}
+                            setLandOwnerName={setLandOwnerName}
+                            builderName={builderName}
+                            setBuilderName={setBuilderName}
+                            societyName={societyName}
+                            setSocietyName={setSocietyName}
+                            managerName={managerName}
+                            setManagerName={setManagerName}
+                            secretaryName={secretaryName}
+                            setSecretaryName={setSecretaryName}
+                            showError={showError}
                         />
 
                         <SocietyFormActions

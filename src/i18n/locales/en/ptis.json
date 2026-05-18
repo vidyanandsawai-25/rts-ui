@@ -1,6 +1,12 @@
 {
   "title": "Property Tax Information System",
   "subtitle": "Manage property tax records and assessments",
+  "noDataAvailable": "No data available for this section",
+  "taxDetailsDualMethod": "Tax Details (Dual Method)",
+  "taxDetailsRateable": "Tax Details (Rateable Value)",
+  "taxDetailsCapital": "Tax Details (Capital Value)",
+  "rateableValue": "Rateable Value",
+  "capitalValue": "Capital Value",
   "search": {
     "title": "Search Property",
     "wardNo": "Ward No",
@@ -28,7 +34,62 @@
     "oldDetails": "Old Details",
     "rateable": "Rateable",
     "capital": "Capital",
-    "dual": "Dual Method"
+    "dual": "Dual Method",
+    "apartment": "Apartment"
+  },
+  "apartmentTabs": {
+    "amenities": "Amenities",
+    "commercial": "Commercial Details",
+    "residential": "Residential Details",
+    "amenitiesContent": "Amenities Content",
+    "commercialContent": "Commercial Details Content",
+    "residentialContent": "Residential Details Content",
+    "rateable": "Rateable",
+    "capital": "Capital",
+    "dual": "Dual Method",
+    "loading": "Loading...",
+    "noData": "No data available",
+    "error": "Error loading data",
+    "columns": {
+      "propertyNo": "Property No",
+      "floor": "Floor",
+      "assessmentYear": "Asst Year",
+      "constructionYear": "Con Year",
+      "typeOfUse": "Use",
+      "carpetArea": "Carpet A (sqFt/sqMtr)",
+      "builtupArea": "Buildup A (sqFt/sqMtr)",
+      "oldConstArea": "Old Con A",
+      "oldRV": "Old RV",
+      "newRV": "New RV",
+      "totalTax": "Total Tax",
+      "cv": "CV",
+      "newTaxTotalCV": "New Tax (CV)",
+      "newTaxTotalRV": "New Tax (RV)",
+      "rVorCVValue": "RV/CV Value"
+    }
+  },
+  "apartmentQC": {
+    "errors": {
+      "fetchFailed": "Failed to fetch apartment QC details. Please try again.",
+      "fetchPagedFailed": "Failed to load paged apartment records.",
+      "updateFailed": "Failed to update property details. Please check your connection.",
+      "invalidParams": "Invalid search parameters provided.",
+      "revalidateFailed": "Could not refresh apartment data cache."
+    },
+    "actions": {
+      "updateSuccess": "Property details updated successfully",
+      "loading": "Updating property...",
+      "refreshing": "Refreshing data...",
+      "previous": "← Previous",
+      "next": "Next →"
+    },
+    "edit": {
+      "title": "Property Details",
+      "basicInfo": "Basic Information",
+      "floorQC": "Floor QC",
+      "floorsCount": "{count} floors",
+      "photoGallery": "Photo Gallery"
+    }
   },
   "fields": {
     "upicId": "UPIC ID",
@@ -314,16 +375,15 @@
     }
   },
   "error": {
-    "title": "Module Error",
-    "description": "We encountered an error while loading the Property Tax Information module.",
-    "goHome": "Back to Home",
-    "tryAgain": "Retry",
-    "errorId": "Error Reference: {id}",
+    "title": "Something went wrong",
+    "description": "We encountered an unexpected error. Please try again or return to the home page.",
+    "goHome": "Go Home",
+    "tryAgain": "Try Again",
+    "errorId": "Error ID: {id}",
     "invalidPropertyId": "The provided property ID is invalid.",
     "notFound": "Property records could not be found.",
     "unauthorized": "You do not have permission to view this data.",
     "serverError": "Internal server error occurred while fetching data.",
-    "networkError": "Unable to connect to the server. Please check your internet connection.",
     "generic": "Something went wrong while processing your request.",
     "noValuationData": "No valuation data available for the selected method.",
     "ratesNotFound": "Rates not found for the selected assessment year. Please configure the Rate Master.",
@@ -331,13 +391,7 @@
     "yearRangeNotFound": "Assessment year range not found in master configuration.",
     "invalidConstructionYear": "Invalid or missing construction year for one or more floor records.",
     "invalidPropertyAge": "Invalid property age detected. Construction year cannot be after assessment year.",
-    "typeNotFound": "Property usage type code not found or invalid."
-  },
-  "error": {
-    "title": "Something went wrong",
-    "description": "We encountered an unexpected error. Please try again or return to the home page.",
-    "goHome": "Go Home",
-    "tryAgain": "Try Again",
+    "typeNotFound": "Property usage type code not found or invalid.",
     "networkError": {
       "title": "Unable to Connect to Server",
       "description": "We could not reach the property tax service. This is usually a temporary network issue.",

@@ -1,5 +1,6 @@
 import { validatePropertyId } from './ptis-normalization';
-import type { PtisTab } from '@/types/ptis.types';
+import type { PtisTab } from '@/types/ptis-page.types';
+import { VALUATION_TABS } from '@/types/ptis.types';
 
 export interface PtisSearchParams {
   wardNo?: string;
@@ -34,11 +35,10 @@ export function parsePtisSearchParams(
   const propertyIdStr = getSingleSearchParamValue(searchParams.propertyId);
   const tabParam = getSingleSearchParamValue(searchParams.tab) || 'rateable';
   
-  // Validate tab
-  const tab: PtisTab = 
-    tabParam === 'capital' || tabParam === 'dual' 
-      ? tabParam 
-      : 'rateable';
+  // Validate tab against centralized VALUATION_TABS list
+  const tab: PtisTab = (VALUATION_TABS as readonly string[]).includes(tabParam)
+    ? (tabParam as PtisTab)
+    : 'rateable';
 
   return {
     wardNo: getSingleSearchParamValue(searchParams.wardNo),
@@ -82,3 +82,19 @@ export function buildPtisUrl(
 
   return `?${params.toString()}`;
 }
+
+/**
+ * Sanitizes a numeric parameter that might be a string "undefined" or NaN.
+ * 
+ * @param value The value to sanitize
+ * @returns The numeric value or undefined
+ */
+export function sanitizeNumericParam(value: string | number | undefined | null): number | undefined {
+  if (value === undefined || value === null || value === '' || value === 'undefined') {
+    return undefined;
+  }
+  
+  const num = typeof value === 'number' ? value : Number(value);
+  return isNaN(num) ? undefined : num;
+}
+

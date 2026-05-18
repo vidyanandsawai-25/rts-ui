@@ -3,7 +3,7 @@
     "title": "भारांकन मास्टर",
     "subtitle": "CV गणना भारांकन घटक कॉन्फिगर करा",
     "tabs": {
-      "floor": "मजला क्रमांक",
+      "floor": "मजला भारांकन",
       "nature": "इमारतीचा प्रकार आणि स्वरूप",
       "subType": "वापरकर्ता श्रेणी",
       "age": "इमारतीचे वय"
@@ -23,12 +23,12 @@
       "labels": {
         "active": "सक्रिय",
         "inactive": "निष्क्रिय",
-        "pendingRecordCreates": "प्रलंबित नोंदी तयार करणे"
+        "pendingRecordCreates": "{count} प्रलंबित नोंदी तयार करणे"
       },
       "messages": {
         "pendingRecordsWarning": "प्रलंबित नोंदी आहेत. कृपया सर्व तयार करा बटणावर क्लिक करा.",
         "negativeValuesNotAllowed": "ऋण मूल्यांना परवानगी नाही",
-        "valueExceedsMax": "मूल्य 999999 पेक्षा जास्त असू शकत नाही",
+        "valueExceedsMax": "मूल्य 999.99 पेक्षा जास्त असू शकत नाही",
         "noChangesToUpdate": "या ओळीसाठी अद्यतनित करण्यासाठी कोणतेही बदल नाहीत",
         "noChangesDetected": "या ओळीसाठी कोणतेही बदल आढळले नाहीत",
         "recordCreatedSuccess": "नोंद यशस्वीरित्या तयार केली",

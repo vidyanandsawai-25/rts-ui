@@ -15,6 +15,7 @@ export interface ToggleSwitchProps {
   activeLabel?: string;
   inactiveLabel?: string;
   popupDuration?: number; // ms, default 2000
+  id?: string;
 }
 export function ToggleSwitch({
   checked,
@@ -25,6 +26,7 @@ export function ToggleSwitch({
   activeLabel = "Active",
   inactiveLabel = "Inactive",
   popupDuration = 2000,
+  id,
 }: ToggleSwitchProps) {
   const [showStatusPopup, setShowStatusPopup] = useState(false);
   const [popupText, setPopupText] = useState("");
@@ -73,6 +75,7 @@ export function ToggleSwitch({
           data-state={state}
           onClick={handleToggle}
           onKeyDown={handleKeyDown}
+          id={id}
           className={`
             peer
             inline-flex h-[1.15rem] w-8 shrink-0 items-center rounded-full

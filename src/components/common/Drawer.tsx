@@ -22,6 +22,23 @@ export  function Drawer({
   children,
   footer,
 }: DrawerProps) {
+  React.useEffect(() => {
+    if (open) {
+      document.body.classList.add("drawer-open");
+    } else {
+      const otherDrawers = document.querySelectorAll(".drawer-instance");
+      if (otherDrawers.length === 0) {
+        document.body.classList.remove("drawer-open");
+      }
+    }
+    return () => {
+      const otherDrawers = document.querySelectorAll(".drawer-instance");
+      if (otherDrawers.length <= 1) {
+        document.body.classList.remove("drawer-open");
+      }
+    };
+  }, [open]);
+
   if (!open) return null;
  
   const widthClass = {
@@ -35,7 +52,7 @@ export  function Drawer({
     <>
  
         <div
-        className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+        className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm"
         onClick={onClose}
         role="button"
         tabIndex={0}
@@ -49,7 +66,8 @@ export  function Drawer({
  
       <div
         className={`
-          fixed top-0 right-0 z-50 h-full
+          drawer-instance
+          fixed top-0 right-0 z-[110] h-full
           ${widthClass}
           bg-[#F8FAFF]
           shadow-2xl

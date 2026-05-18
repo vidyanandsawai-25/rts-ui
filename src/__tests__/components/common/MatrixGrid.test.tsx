@@ -46,8 +46,11 @@ describe('MatrixGrid', () => {
     expect(screen.getByText('(kg)')).toBeInTheDocument();
     expect(screen.getByText('Column 2')).toBeInTheDocument();
     
-    expect(screen.getByText('₹10.00')).toBeInTheDocument();
-    expect(screen.getByText('₹20.00')).toBeInTheDocument();
+    // In view mode (default), cells are rendered as static divs with formatted values (no currency symbol)
+    expect(screen.getByText('10')).toBeInTheDocument();
+    expect(screen.getByText('20')).toBeInTheDocument();
+    expect(screen.getByText('30')).toBeInTheDocument();
+    expect(screen.getByText('40')).toBeInTheDocument();
   });
 
   it('renders meta columns correctly', () => {
@@ -90,12 +93,17 @@ describe('MatrixGrid', () => {
       />
     );
     
-    // col1 should be inputs, col2 should be text
+    // Only col1 is editable, so only 2 inputs (col1 for row1 and row2)
     const inputs = screen.getAllByRole('spinbutton'); // input type="number"
-    expect(inputs).toHaveLength(2); // 2 rows, col1 is editable
-    expect(inputs[0]).toHaveValue(10);
+    expect(inputs).toHaveLength(2); // Only col1 cells are inputs
+    expect(inputs[0]).toHaveValue(10); // row1, col1
+    expect(inputs[0]).not.toHaveAttribute('readOnly');
+    expect(inputs[1]).toHaveValue(30); // row2, col1
+    expect(inputs[1]).not.toHaveAttribute('readOnly');
     
-    expect(screen.getByText('₹20.00')).toBeInTheDocument();
+    // col2 cells are still static divs (not editable, no currency symbol)
+    expect(screen.getByText('20')).toBeInTheDocument(); // row1, col2
+    expect(screen.getByText('40')).toBeInTheDocument(); // row2, col2
   });
 
   it('calls onCellChange when input value changes', () => {
@@ -146,14 +154,18 @@ describe('MatrixGrid', () => {
     render(<MatrixGrid columns={columns} rows={rows} colorMap={colorMap} translations={mockTranslations} />);
     
     // Check header for Col1
-    // The text 'Column 1' is inside a div which is inside the columnheader div
-    const col1Header = screen.getByText('Column 1').closest('[role="columnheader"]');
+    // The text 'Column 1' is inside a div which is inside the th
+    const col1Header = screen.getByText('Column 1').closest('th');
     expect(col1Header).toHaveClass('bg-red-100');
     
     // Check cell for Col1 (in row 1)
-    // The cell value '₹10.00' is directly inside the div that has the color class
-    const col1Cell = screen.getByText('₹10.00');
+    // In view mode, cells are rendered as divs with formatted values (no currency symbol)
+    const col1Cell = screen.getByText('10').closest('div');
     expect(col1Cell).toHaveClass('bg-red-100');
+    
+    // Check cell for Col2 (in row 1)
+    const col2Cell = screen.getByText('20').closest('div');
+    expect(col2Cell).toHaveClass('bg-green-100');
   });
 
   it('renders tooltip for columns with tooltip property', () => {
@@ -175,5 +187,21 @@ describe('MatrixGrid', () => {
     
     expect(screen.getByRole('tooltip')).toBeInTheDocument();
     expect(screen.getByText('Helpful info')).toBeInTheDocument();
+  });
+
+  it('handles custom cell rendering with colorMap', () => {
+    const colorMap = { 'COL1': 'bg-blue-100 text-blue-900' };
+    render(
+      <MatrixGrid 
+        columns={columns} 
+        rows={rows} 
+        colorMap={colorMap} 
+        translations={mockTranslations} 
+      />
+    );
+    
+    const cell = screen.getByText('10');
+    expect(cell).toHaveClass('bg-blue-100');
+    expect(cell).toHaveClass('text-blue-900');
   });
 });

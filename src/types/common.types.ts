@@ -6,12 +6,15 @@ export interface ApiResponse<T = unknown> {
   /** The HTTP status code from the server response; absent for network/timeout errors */
   statusCode?: number;
 }
-export interface ActionResult<T> {
+export interface ActionResult<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
+  message?: string;
   statusCode?: number;
+  validationErrors?: Record<string, string | string[]>;
 }
+
 export interface User {
   id: string;
   email: string;
@@ -60,6 +63,7 @@ export interface CheckboxProps extends Omit<
   defaultChecked?: boolean;
   onCheckedChange?: (checked: boolean) => void;
   value?: string;
+  label?: string;
 }
 
 export interface RadioGroupProps extends Omit<

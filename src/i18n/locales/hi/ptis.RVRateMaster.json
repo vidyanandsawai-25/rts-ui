@@ -1,0 +1,167 @@
+{
+  "header": {
+    "rateableTitle": "करयोग्य मूल्य दर मास्टर",
+    "rateableDescription": "प्रत्येक ज़ोन और निर्माण प्रकार के लिए दरें (₹/वर्ग मीटर) प्रबंधित करें",
+    "capitalTitle": "पूंजी मूल्य दर मास्टर",
+    "capitalDescription": "रेडी-रेकनर आधारित पूंजी मूल्य दरें।",
+    "rateableTab": "करयोग्य मूल्य",
+    "capitalTab": "पूंजी मूल्य"
+  },
+  "filters": {
+    "financeYear": "वित्तीय वर्ष",
+    "rateSection": "दर अनुभाग",
+    "assessmentYear": "मूल्यांकन वर्ष",
+    "useGroup": "उपयोग समूह",
+    "typeOfUseGroup": "उपयोग समूह का प्रकार",
+    "allUseGroups": "सभी उपयोग समूह",
+    "assessmentYearRange": "मूल्यांकन वर्ष सीमा"
+  },
+  "options": {
+    "monthly": "मासिक",
+    "yearly": "वार्षिक"
+  },
+  "buttons": {
+    "generateRate": "दर उत्पन्न करें",
+    "editRates": "दरें संपादित करें",
+    "deleteRate": "दर हटाएं",
+    "downloadRates": "दरें डाउनलोड करें",
+    "addRates": "दरें जोड़ें",
+    "updateRates": "दरें अपडेट करें",
+    "copyRates": "दरें कॉपी करें",
+    "applyMultipliers": "गुणक लागू करें",
+    "hideCopy": "कॉपी छिपाएं",
+    "copyRatesNow": "अभी दरें कॉपी करें",
+    "deleteRates": "दरें हटाएं",
+    "downloadTemplate": "टेम्पलेट डाउनलोड करें",
+    "uploadExcel": "एक्सेल अपलोड करें"
+  },
+  "messages": {
+    "csvOnly": "कृपया केवल वैध CSV फ़ाइल अपलोड करें। Excel (.xlsx) फ़ाइलें समर्थित नहीं हैं।",
+    "rateConfiguration": "दर विन्यास",
+    "ratesConfigured": "{count} दरें विन्यस्त",
+    "active": "सक्रिय",
+    "selectFinanceYear": "कृपया पहले वित्तीय वर्ष चुनें",
+    "selectUseGroupCopy": "कृपया कॉपी करने के लिए एक उपयोग समूह चुनें",
+    "selectRateSection": "कृपया पहले दर अनुभाग चुनें",
+    "selectUseGroup": "कृपया पहले उपयोग समूह का प्रकार चुनें",
+    "selectAssessmentYearRange": "कृपया पहले मूल्यांकन वर्ष सीमा चुनें",
+    "selectAssessmentYearRangeFull": "कृपया पहले मूल्यांकन वर्ष सीमा (से वर्ष और तक वर्ष) चुनें",
+    "multiplierAdded": "{groups} के लिए गुणक जोड़ा गया। दरें जोड़ने के लिए आगे बढ़ें",
+    "noMultipliersChanged": "कोई गुणक नहीं बदला गया। सभी मान 1.0 पर सेट हैं",
+    "generateNewRateDetails": "नई दर विवरण उत्पन्न करें",
+    "fillRateDetails": "चयनित ज़ोन और उपयोग समूह के लिए दर विवरण भरें",
+    "editRateDetails": "दर विवरण संपादित करें",
+    "updateRateDetails": "चयनित ज़ोन और उपयोग समूह के लिए दर विवरण अपडेट करें",
+    "deleteRateConfiguration": "दर विन्यास हटाएं",
+    "deleteRateDetails": "चयनित ज़ोन और उपयोग समूह के लिए दर विवरण हटाएं",
+    "deleteRecordsFirst": "पहले {year} वित्तीय वर्ष के लिए रिकॉर्ड हटाएं, और फिर अन्य वर्ष के लिए दरें उत्पन्न करने के लिए आगे बढ़ें।",
+    "ratesCopiedSuccess": "{source} - {group} - {year} के लिए दरें कॉपी की गईं",
+    "ratesAddedSuccess": "{groups} के लिए दरें सफलतापूर्वक जोड़ी गईं!",
+    "ratesUpdatedSuccess": "{groups} के लिए दरें सफलतापूर्वक अपडेट की गईं!",
+    "ratesDeletedSuccess": "{count} दरें सफलतापूर्वक हटाई गईं!",
+    "templateDownloadedSuccess": "टेम्प्लेट सफलतापूर्वक डाउनलोड किया गया!",
+    "importedRecordsSuccess": "फ़ाइल से {count} दर रिकॉर्ड आयात किए गए",
+    "ratesAddedPartial": "{count} उपयोग समूहों के लिए दरें जोड़ी गईं। त्रुटियां: {errors}",
+    "ratesAddedFailed": "दरें जोड़ने में विफल। त्रुटियां: {errors}",
+    "ratesUpdatedPartial": "{count} उपयोग समूहों के लिए दरें अपडेट की गईं। त्रुटियां: {errors}",
+    "ratesUpdatedFailed": "दरें अपडेट करने में विफल। त्रुटियां: {errors}",
+    "ratesDeleteFailed": "दरें हटाने में विफल।",
+    "fetchRatesForDeleteFailed": "हटाने के लिए दरें प्राप्त करने में विफल। कृपया पुन: प्रयास करें।",
+    "noRatesToDelete": "हटाने के लिए कोई दरें नहीं मिलीं।",
+    "downloadingRates": "दरें डाउनलोड की जा रही हैं...",
+    "ratesDownloaded": "दरें सफलतापूर्वक डाउनलोड हुईं!",
+    "downloadFailed": "दरें डाउनलोड करने में विफल। कृपया पुनः प्रयास करें।",
+    "validationSelectAssessmentYear": "कृपया मूल्यांकन वर्ष चुनें",
+    "validationEnterFromYear": "कृपया 'से वर्ष' दर्ज करें",
+    "validationEnterToYear": "कृपया 'तक वर्ष' दर्ज करें",
+    "validationSelectRateSectionToCopy": "कृपया कॉपी करने के लिए दर अनुभाग चुनें",
+    "validationNoRatesAvailable": "चयनित {source} - {group} और मूल्यांकन वर्ष {year} के लिए कोई दर उपलब्ध नहीं है",
+    "validationCopyFailed": "दरें कॉपी करने में विफल। कृपया पुन: प्रयास करें।",
+    "validationSelectValidFinanceYear": "कृपया वैध वित्तीय वर्ष चुनें",
+    "validationEnterRateValue": "कृपया कम से कम एक दर मान दर्ज करें",
+    "validationDeleteRecordsFirst": "पहले {year} वित्तीय वर्ष के रिकॉर्ड हटाएं, और फिर अन्य वर्ष के लिए दरें बनाने के लिए आगे बढ़ें।",
+    "validationFetchUpdateFailed": "अपडेट के लिए दरें प्राप्त करने में विफल",
+    "validationDownloadTemplateFailed": "टेम्पलेट डाउनलोड करने में विफल",
+    "validationUploadValidFile": "कृपया एक मान्य CSV या Excel फ़ाइल अपलोड करें",
+    "validationRatesAlreadyExist": "चयनित फ़िल्टर के लिए दरें पहले से मौजूद हैं। कृपया अपडेट करें",
+    "validationIncompleteMatrix": "कृपया सभी दर मान भरें। वर्तमान पूर्णता: {percentage}%",
+    "validationFileEmpty": "फ़ाइल खाली या अवैध है",
+    "validationParseFailed": "फ़ाइल पार्स करने में विफल। कृपया प्रारूप की जाँच करें।",
+    "validationReadFileFailed": "फ़ाइल पढ़ने में विफल",
+    "noRatesAvailable": "कोई दरें उपलब्ध नहीं हैं",
+    "noRatesMatch": "चयनित फिल्टर से कोई डेटा मेल नहीं खाता। कृपया अपने मानदंड समायोजित करें या नई दरें उत्पन्न करें।",
+    "rateExceedsMaximum": "दर मूल्य {max} से अधिक नहीं हो सकता। कृपया एक वैध दर दर्ज करें।",
+    "rateValueInvalid": "दर मूल्य वैध होना चाहिए। कृपया एक वैध दर मूल्य दर्ज करें।"
+  },
+  "sections": {
+    "copyRatesTitle": "दरें कॉपी करें",
+    "copyRatesSubtitle": "दरें कॉपी करने के लिए स्रोत चुनें",
+    "useGroupTab": "उपयोग समूह",
+    "rateSectionTab": "दर अनुभाग",
+    "copyRatesUseGroupTitle": "दूसरे उपयोग समूह से दरें कॉपी करें",
+    "copyRatesUseGroupSubtitle": "मौजूदा उपयोग समूह विन्यास से दरें डुप्लिकेट करें",
+    "copyRatesRateSectionTitle": "दूसरे दर अनुभाग से दरें कॉपी करें",
+    "copyRatesRateSectionSubtitle": "मौजूदा दर अनुभाग विन्यास से दरें डुप्लिकेट करें",
+    "multipliersTitle": "उपयोग समूह गुणक",
+    "multipliersSubtitle": "विभिन्न उपयोग समूहों के लिए गुणक मान सेट करें",
+    "matrixCompletion": "मैट्रिक्स पूर्णता प्रगति",
+    "selectSourceUseGroup": "स्रोत उपयोग समूह चुनें",
+    "selectSourceRateSection": "स्रोत दर अनुभाग चुनें",
+    "quickImport": "त्वरित आयात:",
+    "rateFrequency": "दर आवृत्ति:",
+    "rateEntryMatrix": "दर प्रविष्टि मैट्रिक्स"
+  },
+  "placeholders": {
+    "selectUseGroup": "उपयोग समूह चुनें...",
+    "selectRateSection": "दर अनुभाग चुनें...",
+    "selectAssessmentYear": "-- चुनें --",
+    "selectAssessmentYearRange": "वर्ष श्रेणी चुनें..."
+  },
+  "columns": {
+    "taxZoneNo": "करयोग्य क्षेत्र संख्या",
+    "zoneNo": "झोन नंबर",
+    "zoneDescription": "झोन विवरण",
+    "assessmentYear": "मूल्यांकन वर्ष"
+  },
+  "dialogs": {
+    "deleteRatesTitle": "दरें हटाएं",
+    "deleteRatesDescription": "क्या आप निम्नलिखित के लिए {count} दर रिकॉर्ड(्स) को स्थायी रूप से हटाना चाहते हैं:\n\n- दर अनुभाग: {zoneName}, उपयोग समूह: {useGroup}, मूल्यांकन वर्ष: {assessmentYear}\n\nयह कार्रवाई पूर्ववत नहीं की जा सकती है।",
+    "confirmDelete": "हटाएं",
+    "cancel": "रद्द करें"
+  },  "downloadHeaders": {
+    "rateSection": "दर अनुभाग",
+    "taxZoneNo": "कर क्षेत्र संख्या",
+    "useGroup": "उपयोग समूह",
+    "assessmentYearRange": "मूल्यांकन वर्ष सीमा",
+    "constructionType": "निर्माण प्रकार",
+    "rateSqMtr": "दर (₹/वर्ग मीटर)",
+    "rateSqFt": "दर (₹/वर्ग फुट)",
+    "rateRemark": "दर टिप्पणी"
+  },  
+  "rvRateMaster": {
+    "error": {
+      "title": "कुछ गलत हो गया",
+      "description": "RV दर मास्टर पृष्ठ लोड करते समय हमें एक त्रुटि का सामना करना पड़ा। कृपया पुन: प्रयास करें।",
+      "tryAgain": "पुन: प्रयास करें",
+      "goHome": "होम पर जाएं",
+      "errorId": "त्रुटि आईडी: {id}"
+    },
+    "loading": {
+      "message": "RV दर मास्टर लोड हो रहा है...",
+      "description": "कृपया प्रतीक्षा करें जब तक हम दर मास्टर डेटा प्राप्त करते हैं"
+    }
+  },
+  "rvRateMasterErrors": {
+    "errorsResponse": {
+      "bulkUpdateFailed": "दर मास्टर रिकॉर्ड को बल्क अपडेट करने में विफल",
+      "fetchDetailedRatesFailed": "विस्तृत दरें प्राप्त करने में विफल",
+      "noDataReceived": "सर्वर से कोई डेटा प्राप्त नहीं हुआ",
+      "bulkCreateFailed": "दर मास्टर रिकॉर्ड को बल्क बनाने में विफल",
+      "fetchPagedRateDataFailed": "पृष्ठबद्ध दर डेटा प्राप्त करने में विफल",
+      "fetchRateMasterDataFailed": "दर मास्टर डेटा प्राप्त करने में विफल",
+      "fetchRateDataByFiltersFailed": "फ़िल्टर द्वारा दर डेटा प्राप्त करने में विफल",
+      "bulkPurgeFailed": "दर मास्टर रिकॉर्ड को बल्क हटाने में विफल",
+      "unknownError": "एक अज्ञात त्रुटि हुई"
+    }
+  }
+}

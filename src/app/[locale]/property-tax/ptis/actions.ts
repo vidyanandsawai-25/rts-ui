@@ -6,6 +6,7 @@ import {
   wardIdActionSchema,
   propertyDetailsSchema,
   searchSuggestionsSchema,
+  propertyIdActionSchema,
 } from '@/lib/validations/ptis.schema';
 import { retryWithBackoff } from '@/lib/utils/api';
 
@@ -168,4 +169,15 @@ export async function fetchOldTaxesDetailsAction(propertyId: number) {
   }
 
   return createAction(() => ptisService.getOldTaxesDetails(propertyId));
+}
+
+export async function fetchApartmentQCDetailsAction(propertyId?: number) {
+  if (propertyId === undefined) {
+    return { success: false, error: 'Property ID is required' };
+  }
+  const validation = propertyIdActionSchema.safeParse({ propertyId });
+  if (!validation.success) {
+    return { success: false, error: validation.error.issues[0].message };
+  }
+  return { success: false, error: 'Apartment QC details action is not implemented' };
 }

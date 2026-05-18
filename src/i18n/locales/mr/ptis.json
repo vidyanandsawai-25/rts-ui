@@ -1,6 +1,12 @@
 {
   "title": "मालमत्ता कर मूल्यांकन",
   "subtitle": "मालमत्तेची माहिती सर्वसमावेशक व्यवस्थापित करा",
+  "noDataAvailable": "या विभागासाठी कोणताही डेटा उपलब्ध नाही",
+  "taxDetailsDualMethod": "कर तपशील (दुहेरी पद्धत)",
+  "taxDetailsRateable": "कर तपशील (भाडे मूल्य)",
+  "taxDetailsCapital": "कर तपशील (भांडवली मूल्य)",
+  "rateableValue": "रटेबल मूल्य",
+  "capitalValue": "भांडवली मूल्य",
   "search": {
     "title": "मालमत्ता शोधा",
     "wardNo": "प्रभाग क्र",
@@ -28,7 +34,62 @@
     "oldDetails": "जुने तपशील",
     "rateable": "करयोग्य मूल्य",
     "capital": "भांडवली मूल्य",
-    "dual": "दुहेरी पद्धत"
+    "dual": "दुहेरी पद्धत",
+    "apartment": "अपार्टमेंट"
+  },
+  "apartmentTabs": {
+    "amenities": "सुविधा",
+    "commercial": "व्यावसायिक तपशील",
+    "residential": "निवासी तपशील",
+    "amenitiesContent": "सुविधा सामग्री",
+    "commercialContent": "व्यावसायिक तपशील सामग्री",
+    "residentialContent": "निवासी तपशील सामग्री",
+    "rateable": "किराया योग्य",
+    "capital": "भांडवल",
+    "dual": "दुहेरी पद्धत",
+    "loading": "लोड होत आहे...",
+    "noData": "डेटा उपलब्ध नाही",
+    "error": "डेटा लोड करताना त्रुटी",
+    "columns": {
+      "propertyNo": "मालमत्ता क्र",
+      "floor": "मजला",
+      "assessmentYear": "मूल्यांकन वर्ष",
+      "constructionYear": "बांधकाम वर्ष",
+      "typeOfUse": "वापर",
+      "carpetArea": "कार्पेट क्षे (चौ फूट/चौ मी)",
+      "builtupArea": "बिल्टअप क्षे (चौ फूट/चौ मी)",
+      "oldConstArea": "जुने बांधकाम क्षे",
+      "oldRV": "जुने RV",
+      "newRV": "नवीन RV",
+      "totalTax": "एकूण कर",
+      "cv": "CV",
+      "newTaxTotalCV": "नवीन कर (CV)",
+      "newTaxTotalRV": "नवीन कर (RV)",
+      "rVorCVValue": "RV/CV मूल्य"
+    }
+  },
+  "apartmentQC": {
+    "errors": {
+      "fetchFailed": "अपार्टमेंट QC तपशील प्राप्त करण्यात अयशस्वी. कृपया पुन्हा प्रयत्न करा.",
+      "fetchPagedFailed": "पेज केलेले अपार्टमेंट रेकॉर्ड लोड करण्यात अयशस्वी.",
+      "updateFailed": "मालमत्ता तपशील अपडेट करण्यात अयशस्वी. कृपया तुमचे कनेक्शन तपासा.",
+      "invalidParams": "अवैध शोध पॅरामीटर्स प्रदान केले आहेत.",
+      "revalidateFailed": "अपार्टमेंट डेटा कॅशे रिफ्रेश करू शकलो नाही."
+    },
+    "actions": {
+      "updateSuccess": "मालमत्ता तपशील यशस्वीरित्या अपडेट केले",
+      "loading": "मालमत्ता अपडेट करत आहे...",
+      "refreshing": "डेटा रिफ्रेश करत आहे...",
+      "previous": "← मागील",
+      "next": "पुढील →"
+    },
+    "edit": {
+      "title": "मालमत्ता तपशील",
+      "basicInfo": "मूलभूत माहिती",
+      "floorQC": "मजला QC",
+      "floorsCount": "{count} मजले",
+      "photoGallery": "फोटो गॅलरी"
+    }
   },
   "fields": {
     "upicId": "यूपीआयसी आयडी",
@@ -322,6 +383,7 @@
     "description": "आम्हाला अनपेक्षित त्रुटी आली. कृपया पुन्हा प्रयत्न करा किंवा मुख्यपृष्ठावर परत जा.",
     "goHome": "मुख्यपृष्ठावर परत",
     "tryAgain": "पुन्हा प्रयत्न करा",
+    "errorId": "त्रुटी आयडी: {id}",
     "networkError": {
       "title": "सर्व्हरशी कनेक्ट होऊ शकले नाही",
       "description": "आम्ही मालमत्ता कर सेवेशी संपर्क साधू शकलो नाही. ही सहसा तात्पुरती नेटवर्क समस्या असते.",

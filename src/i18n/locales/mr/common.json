@@ -33,7 +33,8 @@
     "invalidEmail": "अवैध ईमेल पत्ता",
     "minLength": "किमान {count} वर्ण आवश्यक आहेत",
     "maxLength": "कमाल {count} वर्णांची परवानगी आहे",
-    "invalidFormat": "अवैध स्वरूप"
+    "invalidFormat": "अवैध स्वरूप",
+    "submissionIdRequired": "सबमिशन आयडी आवश्यक आहे"
   },
   "form": {
     "validation": {
@@ -44,7 +45,14 @@
       "descriptionFormat": "वर्णनात अवैध वर्ण",
       "descriptionMaxLength": "कमाल {count} वर्णांची परवानगी आहे",
       "sequenceInvalid": "क्रम 0 किंवा त्यापेक्षा जास्त असला पाहिजे",
-      "mustBeActive": "नवीन रेकॉर्ड सक्रिय असले पाहिजे"
+      "mustBeActive": "नवीन रेकॉर्ड सक्रिय असले पाहिजे",
+      "nameMaxLength": "कमाल {count} वर्णांची परवानगी आहे",
+      "typeRequired": "प्रकार आवश्यक आहे",
+      "invalidEmail": "अवैध ईमेल पत्ता",
+      "invalidPhone": "फोन नंबर ठीक १० अंकी असावा, ० ने सुरू होऊ नये आणि वैध भारतीय नंबर (६-९ ने सुरू होणारा) असावा",
+      "invalidCity": "शहरच्या नावात संख्या किंवा विशेष वर्ण नसावेत",
+      "invalidPincode": "पिनकोड ठीक ६ अंकी असावा आणि त्यात फक्त संख्या असाव्यात",
+      "invalidId": "आयडी एक सकारात्मक संख्या असावी"
     }
   },
   "errors": {
@@ -71,6 +79,8 @@
   },
 
   "status": {
+    "all": "सर्व स्थिती",
+    "label": "स्थिती",
     "active": "सक्रिय",
     "inactive": "निष्क्रिय",
     "pending": "प्रलंबित",
@@ -123,6 +133,9 @@
     "cancel": "रद्द करा"
   },
   "table": {
+    "paginationFooter": "दाखवत आहे {start} <selector/> पैकी {total} नोंदी",
+    "showingStart": "दाखवत आहे {start}",
+    "ofTotalEntries": "पैकी {total} नोंदी",
     "actions": {
       "edit": "संपादित करा",
       "delete": "हटवा"
@@ -135,6 +148,7 @@
     },
     "show": "दाखवा",
     "entries": "नोंदी",
+    "onThisPage": "या पृष्ठावर",
     "showing": "दाखवत आहे",
     "to": "ते",
     "of": "पैकी",
@@ -150,7 +164,8 @@
     "firstPage": "पहिले पृष्ठ",
     "lastPage": "शेवटचे पृष्ठ",
     "previousPage": "मागील पृष्ठ",
-    "nextPage": "पुढील पृष्ठ"
+    "nextPage": "पुढील पृष्ठ",
+    "clickToView": "तपशील पाहण्यासाठी क्लिक करा"
   },
   "language": {
     "select": "भाषा निवडा",
@@ -169,15 +184,31 @@
     "language": "भाषा",
     "yourIp": "तुमचा IP",
     "ipUnavailable": "उपलब्ध नाही",
+    "userId": "वापरकर्ता आयडी",
+    "role": "भूमिका",
+    "department": "विभाग",
+    "publicIp": "सार्वजनिक IP पत्ता",
+    "sessionId": "सत्र आयडी",
+    "loginTime": "लॉगिन वेळ",
+    "mockName": "राजेश कुमार",
+    "mockEmail": "rajesh.kumar@propertytax.gov.in",
+    "mockUserId": "USR-2025-1047",
+    "mockRole": "कर निर्धारण अधिकारी",
+    "mockDepartment": "मालमत्ता कर विभाग",
+    "mockIp": "115.242.194.254",
+    "mockSessionId": "SES-1767942012755-w0ehgm4ps",
+    "mockLoginTime": "09/01/2026, 12:30:12",
     "logout": "लॉग आउट"
   },
   "navigation": {
     "dashboard": "डॅशबोर्ड",
     "profile": "प्रोफाइल",
-    "settings": "सेटिंग्ज"
+    "settings": "कॉन्फिगरेशन सेटिंग",
+    "ConstructionTypeMaster": "बांधकाम प्रकार मास्टर"
   },
   "footer": {
     "copyright": "सर्व हक्क राखीव",
+    "allRightsReserved": "सर्व हक्क राखीव.",
     "privacyPolicy": "गोपनीयता धोरण",
     "termsOfService": "सेवा अटी",
     "contact": "संपर्क करा"
@@ -188,6 +219,10 @@
     "departmentName": "मालमत्ता कर विभाग",
     "defaultUser": "डिफॉल्ट उपयोगकर्ता",
     "assessmentSystem": "मालमत्ता कर आकारणी आणि व्यवस्थापन प्रणाली",
+    "welcome": "स्वागत आहे,",
+    "welcomeTo": "{name} मध्ये आपले स्वागत आहे",
+    "smartGovernance": "स्मार्ट शासन सशक्त करणे!",
+    "securityPurpose": "सुरक्षिततेसाठी सर्व कार्य्ये लॉग आणि मॉनिटर केली जातात.",
     "defaultUlbCode": "TMC",
     "defaultUlbName": "Sthapatya Consultant (I) Pvt.Ltd"
   },
@@ -338,5 +373,6 @@
   },
   "note": {
     "mandatory": "* चिन्ह असलेली सर्व क्षेत्रे अनिवार्य आहेत"
-  }
+  },
+  "searchPlaceholder": "मालमत्ता शोधा..."
 }

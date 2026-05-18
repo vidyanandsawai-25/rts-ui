@@ -3,7 +3,7 @@
     "title": "Weightage Master",
     "subtitle": "Configure CV calculation weightage factors",
     "tabs": {
-      "floor": "Floor No.",
+      "floor": "Floor Weightage",
       "nature": "Nature & Type of Building",
       "subType": "User Category",
       "age": "Age Of Building"
@@ -23,12 +23,12 @@
       "labels": {
         "active": "Active",
         "inactive": "Inactive",
-        "pendingRecordCreates": "Pending Record Create"
+        "pendingRecordCreates": "{count, plural, =1 {# Pending Record Create} other {# Pending Record Creates}}"
       },
       "messages": {
         "pendingRecordsWarning": "There are pending records. Please click on Generate All button.",
         "negativeValuesNotAllowed": "Negative values are not allowed",
-        "valueExceedsMax": "Value cannot exceed 999999",
+        "valueExceedsMax": "Value cannot exceed 999.99",
         "noChangesToUpdate": "No changes to update for this row",
         "noChangesDetected": "No changes detected for this row",
         "recordCreatedSuccess": "Record created successfully",

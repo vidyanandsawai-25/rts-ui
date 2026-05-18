@@ -29,6 +29,14 @@ describe('ErrorPage', () => {
     consoleSpy.mockRestore();
   });
 
+  beforeEach(() => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('renders translated title and description', () => {
     render(
       <ErrorPage error={error} reset={reset} translationNamespace="common.error" />

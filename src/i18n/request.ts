@@ -19,6 +19,7 @@ export default getRequestConfig(async ({ locale }) => {
     commonMessages,
     dashboardMessages,
     constructionMessages,
+    taxZoningMessages,
     floorMessages,
     taxzoneMessages,
     quickDataEntryMessages,
@@ -27,22 +28,77 @@ export default getRequestConfig(async ({ locale }) => {
     ptisMessages,
     floorFactorMasterMessages,
     weightageMasterMessages,
+    configMasterMessages,
+    typeofusemasterMessages,
+    depreciationMessages,
+    propertyTypeMessages,
+    natureFactorCVMasterMessages,
+    ptisRVRateMasterMessages,
+    useCategoryFactorMasterMessages,
+    ageFactorMasterMessages,
+    zoneMasterMessages,
+    officeMessages,
+    bankMasterMessages,
+    screenAccessMessages,
+    appartmentQCMessages,
+    departmentMasterMessages,
+    departmentActivationMessages,
+    homeMessages,
+    aliasMasterMessages,
+    userManagementMessages,
     modulesMessages,
+    paymentModeMasterMessages,
     combinePropertyMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/dashboard.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/construction.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/taxzoning.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/floor.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/taxzone.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/quickDataEntry.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/rateSectionMaster.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/assessmentYearRange.json`).then((m) => m.default),
-    import(`./locales/${validatedLocale}/ptis.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/ptis.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/floorFactorMaster.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/weightageMaster.json`).then((m) => m.default),
-    import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/config-master.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/typeofusemaster.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/depreciation.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/propertyType.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/natureFactorCVMaster.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/ptis.RVRateMaster.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/useCategoryFactorMaster.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/ageFactorMaster.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/zoneMaster.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/office.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/bank-master.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/screenAccess.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/appartmentQC.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/departmentMaster.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/departmentActivation.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/home.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/aliasMaster.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/user-management.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/combineProperty.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/paymentModeMaster.json`).then((m) => m.default),
   ]);
 
   return {
@@ -51,6 +107,7 @@ export default getRequestConfig(async ({ locale }) => {
       common: commonMessages,
       dashboard: dashboardMessages,
       construction: constructionMessages,
+      taxZoning: taxZoningMessages.taxZoning,
       floor: floorMessages,
       taxZone: taxzoneMessages.taxZone,
       quickDataEntry: quickDataEntryMessages,
@@ -59,8 +116,27 @@ export default getRequestConfig(async ({ locale }) => {
       ptis: ptisMessages,
       floorFactorMaster: floorFactorMasterMessages.floorFactorMaster,
       weightageMaster: weightageMasterMessages.weightageMaster,
-      modules: modulesMessages,
+      configMaster: configMasterMessages.configMaster || configMasterMessages,
+      typeofusemaster: typeofusemasterMessages,
+      depreciation: depreciationMessages,
+      propertyType: propertyTypeMessages,
+      natureFactorCVMaster: natureFactorCVMasterMessages.natureFactorCVMaster,
+      ptis_RVRateMaster: ptisRVRateMasterMessages,
+      useCategoryFactorMaster: useCategoryFactorMasterMessages.useCategoryFactorMaster,
+      ageFactorMaster: ageFactorMasterMessages.ageFactorMaster,
+      zoneMaster: zoneMasterMessages,
+      office: officeMessages,
+      bankMaster: bankMasterMessages,
+      screenAccess: screenAccessMessages,
+      appartmentQC: appartmentQCMessages,
+      departmentMaster: departmentMasterMessages,
+      departmentActivation: departmentActivationMessages,
+      home: homeMessages,
+      aliasMaster: aliasMasterMessages,
+      userManagement: userManagementMessages,
       combineProperty: combinePropertyMessages,
+      modules: modulesMessages,
+      paymentModeMaster: paymentModeMasterMessages,
     },
   };
 });

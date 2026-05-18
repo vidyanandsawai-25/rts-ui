@@ -32,11 +32,11 @@ const buildQueryString = (params: RateSectionQueryParams): string => {
  */
 export async function getAllRateSections(): Promise<RateItem[]> {
   const response = await apiClient.get<RateItem[] | { items?: RateItem[]; data?: RateItem[]; rateSectionMaster?: RateItem[] }>(`/RateSection`);
-  
+
   if (!response.success || !response.data) return [];
 
   const data = response.data;
-  
+
   // Robust parsing logic with proper type handling
   if (Array.isArray(data)) return data;
   if (Array.isArray(data.rateSectionMaster)) return data.rateSectionMaster;
@@ -54,9 +54,9 @@ export async function queryRateSections(
   queryParams: RateSectionQueryParams = {}
 ): Promise<RateSectionCatalogResponse> {
   const queryString = buildQueryString(queryParams);
-  
+
   const response = await apiClient.get<RateSectionCatalogResponse>(`/RateSection${queryString}`);
-  
+
   if (!response.success || !response.data) {
     return {
       rateSectionMaster: [],
@@ -103,7 +103,7 @@ export async function queryRateSections(
  */
 export async function getRateSectionTotalCount(): Promise<number> {
   const response = await apiClient.get<{ totalCount?: number }>(`/RateSection`);
-  
+
   if (!response.success || !response.data) {
     throw new ApiError(response.statusCode ?? 500, response.error || "Failed to fetch total count", "Get rate section total count failed");
   }
@@ -127,11 +127,11 @@ export async function getRateSectionsPaged(
   if (searchTerm) params.append("SearchTerm", searchTerm);
 
   const response = await apiClient.get<RateSectionCatalogResponse>(`/RateSection?${params.toString()}`);
-  
+
   if (!response.success || !response.data) {
     throw new ApiError(response.statusCode ?? 500, response.error || "Failed to fetch paged rate sections", "Get paged rate sections failed");
   }
-  
+
   return response.data;
 }
 
@@ -141,11 +141,11 @@ export async function getRateSectionsPaged(
  */
 export async function getRateSectionById(id: string): Promise<RateItem | null> {
   if (!id || id.trim() === "") return null;
-  
+
   const response = await apiClient.get<RateItem>(`/RateSection/${id}`);
-  
+
   if (!response.success || !response.data) return null;
-  
+
   return response.data;
 }
 
@@ -155,17 +155,19 @@ export async function getRateSectionById(id: string): Promise<RateItem | null> {
  */
 export async function createRateSection(payload: RateSectionFormState): Promise<{ success: boolean; error?: string }> {
   const apiPayload = {
-    rateSectionNo: payload.zoneCode,
-    description: payload.zoneRegional || payload.description || "",
-    isActive: payload.isActive ?? true,
+    RateSectionNo: payload.zoneCode,
+    Description: payload.zoneRegional || payload.description || "",
+    IsActive: payload.isActive ?? true,
+    CreatedBy: payload.createdBy,
+    UpdatedBy: payload.updatedBy
   };
-  
+
   const response = await apiClient.post(`/RateSection`, apiPayload);
-  
+
   if (!response.success) {
     return { success: false, error: response.error || "Failed to create rate section" };
   }
-  
+
   return { success: true };
 }
 
@@ -173,19 +175,20 @@ export async function createRateSection(payload: RateSectionFormState): Promise<
  * Update an existing Rate Section.
  * Use this function in the Edit Rate Section form submission.
  */
-export async function updateRateSection(id: string, payload: RateSectionFormState): Promise<{ success: boolean; error?: string }> {
+export async function updateRateSection(id: string, payload: RateSectionFormState): Promise<{ success: boolean; error?: string; statusCode?: number }> {
   const apiPayload = {
-    rateSectionNo: payload.zoneCode,
-    description: payload.zoneRegional || payload.description || "",
-    isActive: payload.isActive ?? true,
+    RateSectionNo: payload.zoneCode,
+    Description: payload.zoneRegional || payload.description || "",
+    IsActive: payload.isActive ?? true,
+    UpdatedBy: payload.updatedBy
   };
-  
+
   const response = await apiClient.put(`/RateSection/${id}`, apiPayload);
-  
+
   if (!response.success) {
-    return { success: false, error: response.error || "Failed to update rate section" };
+    return { success: false, error: response.error || "Failed to update rate section", statusCode: response.statusCode };
   }
-  
+
   return { success: true };
 }
 
@@ -195,10 +198,10 @@ export async function updateRateSection(id: string, payload: RateSectionFormStat
  */
 export async function deleteRateSection(id: string): Promise<{ success: boolean; error?: string }> {
   const response = await apiClient.delete(`/RateSection/${encodeURIComponent(id)}`);
-  
+
   if (!response.success) {
     return { success: false, error: response.error || "Failed to delete rate section" };
   }
-  
+
   return { success: true };
 }

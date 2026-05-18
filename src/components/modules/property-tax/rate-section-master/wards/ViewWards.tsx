@@ -7,10 +7,10 @@ import { Label } from "@/components/common/label";
 import { ViewWardsProps } from "@/types/rateSectionMaster.types";
 
 const PAGE_SIZE_OPTIONS = [
-  { label: "5", value: "5" },
   { label: "10", value: "10" },
   { label: "20", value: "20" },
-  { label: "50", value: "50" }
+  { label: "50", value: "50" },
+  { label: "100", value: "100" },
 ];
 
 export default function ViewWards({
@@ -26,9 +26,17 @@ export default function ViewWards({
   onSearch,
   onToggle,
   onPageChange,
-  onPageSizeChange
+  onPageSizeChange,
+  onSelectAll,
+  isSelectAllActive = false,
+  selectAllLoading = false
 }: ViewWardsProps) {
   const t = useTranslations("rateSectionMaster");
+
+  const handleSelectAllChange = () => {
+    if (!onSelectAll) return;
+    onSelectAll(!isSelectAllActive);
+  };
 
   return (
     <>
@@ -42,6 +50,27 @@ export default function ViewWards({
       </div>
 
       <div className="overflow-y-auto p-2 space-y-2 flex-1">
+        {onSelectAll && viewAllWards.length > 0 && (
+          <label
+            className="flex items-center gap-3 px-4 py-1 bg-white/60 backdrop-blur-sm hover:bg-white/80 rounded-lg cursor-pointer transition-all duration-200 border border-blue-100/50 hover:border-blue-300/50 hover:shadow-md group"
+          >
+            <input
+              type="checkbox"
+              checked={isSelectAllActive}
+              onChange={handleSelectAllChange}
+              disabled={selectAllLoading}
+              className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+            />
+            <span className="text-sm font-medium text-gray-700 group-hover:text-blue-700 transition-colors flex items-center gap-2 flex-1">
+              {t('wardList.selectAll')}
+              {selectAllLoading && (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs bg-blue-100 text-blue-700">
+                  Loading...
+                </span>
+              )}
+            </span>
+          </label>
+        )}
         {viewAllWards.map(w => {
           const assignment = wardAssignments[w.wardNo];
           const isSelfSelected = checkedAvailable.has(w.wardNo);
@@ -51,15 +80,23 @@ export default function ViewWards({
             <Label
               key={w.wardNo}
               className="flex items-center gap-3 px-4 py-1 backdrop-blur-sm rounded-lg transition-all duration-200 border group cursor-pointer bg-white/60 border-blue-100/50 hover:bg-white/80 hover:border-blue-300/50 hover:shadow-md"
+              onClick={() => !isAlreadyInSelected && !isSelectAllActive && onToggle(w.wardNo)}
             >
-              <Checkbox
-                checked={isSelfSelected || isAlreadyInSelected}
-                onCheckedChange={() => !isAlreadyInSelected && onToggle(w.wardNo)}
-                disabled={isAlreadyInSelected}
-              />
+              <div onClick={(e) => e.stopPropagation()}>
+                <Checkbox
+                  checked={isSelfSelected || isAlreadyInSelected}
+                  onCheckedChange={() => !isAlreadyInSelected && !isSelectAllActive && onToggle(w.wardNo)}
+                  disabled={isAlreadyInSelected || isSelectAllActive}
+                />
+              </div>
 
               <span className="text-sm font-medium text-gray-700 group-hover:text-blue-700 transition-colors flex items-center gap-2">
                 {w.wardNo}
+                {isAlreadyInSelected && (
+                  <Badge size="sm" variant="default">
+                    {t("wards.selected")}
+                  </Badge>
+                )}
                 {assignment && !isAlreadyInSelected && (
                   <Badge size="sm" variant="success">
                     {assignment.description
@@ -83,9 +120,9 @@ export default function ViewWards({
           <Select
             options={PAGE_SIZE_OPTIONS}
             value={String(viewWardPageSize)}
-            onChange={(val) => onPageSizeChange(Number(val))}
+            onChange={(e) => onPageSizeChange(Number(e.target.value))}
             selectSize="sm"
-            className="w-18"
+            className="w-20"
           />
         </div>
         <div className="flex items-center gap-1">

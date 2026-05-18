@@ -1,0 +1,194 @@
+'use client';
+
+import React, { useTransition } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { Tab, TabList, TabPanel, Tabs } from '@/components/common/Tabs';
+import { useConfirm } from '@/components/common/ConfirmProvider';
+import {
+  ScreenMasterData,
+  ScreenGroupMasterData,
+  PaginationData,
+} from '@/types/screen-access.types';
+import {
+  deleteScreenAction,
+  deleteScreenGroupAction,
+} from '@/app/[locale]/configuration-settings/screenAccess/action.mutations';
+
+import { toast } from 'sonner';
+import { ManagementStats } from './components/ManagementStats';
+import { ScreenTableSection } from './components/ScreenTableSection';
+import { GroupTableSection } from './components/GroupTableSection';
+import { useScreenAccessSearch } from '@/hooks/configuration-settings/screenAccess/useScreenAccessSearch';
+import { useScreenAccessPagination } from '@/hooks/configuration-settings/screenAccess/useScreenAccessPagination';
+import { useQueryTransition } from '@/hooks/useQueryTransition';
+
+interface ScreenMasterManagementProps {
+  subTab?: string;
+  initialScreens: ScreenMasterData[];
+  initialGroups: ScreenGroupMasterData[];
+  screensPagination: PaginationData;
+  groupsPagination: PaginationData;
+}
+
+export const ScreenMasterManagement: React.FC<ScreenMasterManagementProps> = ({
+  subTab = 'screens',
+  initialScreens,
+  initialGroups,
+  screensPagination,
+  groupsPagination,
+}) => {
+  const t = useTranslations('screenAccess');
+  const router = useRouter();
+  const pathname = usePathname();
+  const { confirm } = useConfirm();
+  const { searchParams, updateQueries } = useQueryTransition();
+  const [isMutationPending, startTransition] = useTransition();
+
+  // Search & Pagination for Screens
+  const { searchTerm, handleSearch } = useScreenAccessSearch({
+    initialSearchTerm: searchParams.get('search') || '',
+    searchParamKey: 'search',
+    pageParamKey: 'spage',
+  });
+  const {
+    handlePageChange,
+    handlePageSizeChange,
+    isPending: isPagePending,
+  } = useScreenAccessPagination({
+    pageParamKey: 'spage',
+    pageSizeParamKey: 'ssize',
+  });
+
+  // Search & Pagination for Groups
+  const { searchTerm: gSearchTerm, handleSearch: handleGSearch } = useScreenAccessSearch({
+    initialSearchTerm: searchParams.get('gsearch') || '',
+    searchParamKey: 'gsearch',
+    pageParamKey: 'gpage',
+  });
+  const {
+    handlePageChange: handleGPageChange,
+    handlePageSizeChange: handleGPageSizeChange,
+    isPending: isGPagePending,
+  } = useScreenAccessPagination({
+    pageParamKey: 'gpage',
+    pageSizeParamKey: 'gsize',
+  });
+
+  const stats = React.useMemo(() => {
+    const total = screensPagination.totalCount || initialScreens.length;
+    let active = screensPagination.activeCount || 0;
+
+    if (active === 0 && initialScreens.length > 0) {
+      const visibleActive = initialScreens.filter((s) => s.isActive).length;
+      if (visibleActive > 0) active = visibleActive;
+    }
+
+    return {
+      total,
+      active,
+      inactive: Math.max(0, total - active),
+    };
+  }, [screensPagination, initialScreens]);
+
+  const onTabChange = (value: string | number) => {
+    updateQueries({ subTab: String(value) });
+  };
+
+  return (
+    <div className="flex flex-col h-full overflow-hidden">
+      <ManagementStats
+        totalScreens={stats.total}
+        totalGroups={groupsPagination.totalCount}
+        activeScreens={stats.active}
+        inactiveScreens={stats.inactive}
+      />
+
+      <Tabs value={subTab} onChange={onTabChange} className="flex-1 flex flex-col min-h-0">
+        <TabList className="mb-4">
+          <Tab value="screens">{t('screenManagement.tabs.screens')}</Tab>
+          <Tab value="groups">{t('screenManagement.tabs.screenGroups')}</Tab>
+        </TabList>
+
+        <TabPanel value="screens" className="flex-1 min-h-0">
+          <ScreenTableSection
+            screens={initialScreens}
+            pagination={screensPagination}
+            groups={initialGroups}
+            searchTerm={searchTerm}
+            onSearch={handleSearch}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            onAdd={() => router.push(`${pathname}/screens/add`)}
+            onEdit={(item) => router.push(`${pathname}/screens/edit/${item.screenMasterId}`)}
+            onDelete={async (id) => {
+              confirm({
+                variant: 'delete',
+                onConfirm: async () => {
+                  const res = await deleteScreenAction(id);
+                  if (res.success) {
+                    toast.success(t('screenManagement.screens.messages.deleteSuccess'));
+                    await new Promise<void>((resolve) => {
+                      startTransition(() => {
+                        router.refresh();
+                        resolve();
+                      });
+                    });
+                  } else {
+                    toast.error(res.message || t('screenManagement.screens.messages.deleteError'));
+                  }
+                },
+              });
+            }}
+            filterGroup={searchParams.get('sgroup') || 'all'}
+            onFilterGroupChange={(v) =>
+              updateQueries({ sgroup: String(v) }, { resetPage: true, pageParamKey: 'spage' })
+            }
+            filterStatus={searchParams.get('status') || 'all'}
+            onFilterStatusChange={(v) =>
+              updateQueries({ status: String(v) }, { resetPage: true, pageParamKey: 'spage' })
+            }
+            isPending={isPagePending || isMutationPending}
+          />
+        </TabPanel>
+
+        <TabPanel value="groups" className="flex-1 min-h-0">
+          <GroupTableSection
+            groups={initialGroups}
+            pagination={groupsPagination}
+            searchTerm={gSearchTerm}
+            onSearch={handleGSearch}
+            onPageChange={handleGPageChange}
+            onPageSizeChange={handleGPageSizeChange}
+            onAdd={() => router.push(`${pathname}/groups/add`)}
+            onEdit={(item) => router.push(`${pathname}/groups/edit/${item.screenGroupId}`)}
+            onDelete={async (id) => {
+              confirm({
+                variant: 'delete',
+                onConfirm: async () => {
+                  const res = await deleteScreenGroupAction(id);
+                  if (res.success) {
+                    toast.success(t('screenManagement.groups.messages.deleteSuccess'));
+                    await new Promise<void>((resolve) => {
+                      startTransition(() => {
+                        router.refresh();
+                        resolve();
+                      });
+                    });
+                  } else {
+                    toast.error(res.message || t('screenManagement.groups.messages.deleteError'));
+                  }
+                },
+              });
+            }}
+            filterStatus={searchParams.get('gstatus') || 'all'}
+            onFilterStatusChange={(v) =>
+              updateQueries({ gstatus: String(v) }, { resetPage: true, pageParamKey: 'gpage' })
+            }
+            isPending={isGPagePending || isMutationPending}
+          />
+        </TabPanel>
+      </Tabs>
+    </div>
+  );
+};

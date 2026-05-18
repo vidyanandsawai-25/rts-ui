@@ -8,6 +8,7 @@ interface ValidationMessageProps {
   visible?: boolean;
   type?: ValidationType;
   className?: string;
+  id?: string;
 }
 
 /**
@@ -19,6 +20,7 @@ export function ValidationMessage({
   visible = true,
   type = "error",
   className,
+  id,
 }: ValidationMessageProps) {
   if (!visible || !message) return null;
 
@@ -47,6 +49,7 @@ export function ValidationMessage({
 
   return (
     <div
+    id={id}
     className={cn(
         "mt-1 flex items-center gap-2 rounded-md border px-2.5 py-1.5 text-xs",
         config.text,

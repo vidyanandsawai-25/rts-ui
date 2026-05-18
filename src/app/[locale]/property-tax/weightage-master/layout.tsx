@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import { WeightageMasterHeader } from '../../../../components/modules/property-tax/weightage-mastercv/WeightageMasterTabs';
+import { WeightageMasterErrorProvider } from '../../../../components/modules/property-tax/weightage-mastercv/WeightageMasterErrorContext';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -18,17 +19,19 @@ const Layout = async ({ children, params }: LayoutProps) => {
   };
 
   return (
-    <div className='text-gray-900'>
-      <WeightageMasterHeader 
-        locale={locale} 
-        title={t('title')}
-        subtitle={t('subtitle')}
-        labels={tabLabels} 
-      />
-      <div className="mt-0">
-        {children}
+    <WeightageMasterErrorProvider>
+      <div className='text-gray-900'>
+        <WeightageMasterHeader 
+          locale={locale} 
+          title={t('title')}
+          subtitle={t('subtitle')}
+          labels={tabLabels} 
+        />
+        <div className="mt-0">
+          {children}
+        </div>
       </div>
-    </div>
+    </WeightageMasterErrorProvider>
   );
 };
 

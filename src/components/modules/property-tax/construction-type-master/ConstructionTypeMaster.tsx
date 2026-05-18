@@ -13,8 +13,8 @@ import TableHeader from "@/components/common/TableHeader";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { PageContainer, SearchInput, Select } from "@/components/common";
 import { getConstructionTypeColumns } from "./ConstructionTypeColumns";
-import { useConstructionSearch } from "@/hooks/useConstructionSearch";
-import { useConstructionPagination } from "@/hooks/useConstructionPagination";
+import { useConstructionSearch } from "@/hooks/constructiontypemaster/useConstructionSearch";
+import { useConstructionPagination } from "@/hooks/constructiontypemaster/useConstructionPagination";
 
 /* ================= PAGE ================= */
 export function ConstructionTypeMaster({
@@ -180,7 +180,7 @@ export function ConstructionTypeMaster({
                 <span className="text-sm text-gray-600">{tCommon("table.rowsPerPage")}:</span>
                 <Select
                   value={String(pageSize)}
-                  onChange={handlePageSizeChange}
+                  onChange={(e) => handlePageSizeChange(e.target.value)}
                   options={[10, 20, 30, 40, 50].map((s) => ({
                     label: String(s),
                     value: String(s),

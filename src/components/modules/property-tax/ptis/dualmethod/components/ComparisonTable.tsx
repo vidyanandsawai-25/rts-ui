@@ -1,9 +1,11 @@
+'use client';
+
+import React from 'react';
+import { useTranslations } from 'next-intl';
 import { FloorDetailsTable, type FloorDetailsTableColumn } from '@/components/common';
 import { type DualMethodResponse } from '@/types/dualMethod.types';
 import { formatIndianNumber } from '@/lib/utils/format';
 import { cn } from '@/lib/utils/cn';
-
-import { getTranslations } from 'next-intl/server';
 import { getTranslatedTaxLabel } from '@/lib/utils/ptis';
 import {
   type ComparisonRow,
@@ -17,12 +19,12 @@ interface DualMethodComparisonTableProps {
   locale: string;
 }
 
-export async function DualMethodComparisonTable({
+export const DualMethodComparisonTable: React.FC<DualMethodComparisonTableProps> = ({
   dualMethodData,
-  locale,
-}: DualMethodComparisonTableProps) {
-  const t = await getTranslations({ locale, namespace: 'ptis.modules.DualMethod' });
-  const rootT = await getTranslations({ locale, namespace: 'ptis' });
+  locale: _locale,
+}) => {
+  const t = useTranslations('ptis.modules.DualMethod');
+  const rootT = useTranslations('ptis');
 
   const taxNames = getUniqueTaxNames(dualMethodData);
   const taxKeyMap = buildTaxKeyMap(taxNames);
@@ -130,4 +132,4 @@ export async function DualMethodComparisonTable({
       </div>
     </div>
   );
-}
+};

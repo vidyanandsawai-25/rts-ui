@@ -12,6 +12,8 @@ import { cn } from "@/lib/utils/cn";
  */
 export interface TextAreaProps
   extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+  label?: string;
+  required?: boolean;
   error?: boolean;
   errorMessage?: string;
   showCharCount?: boolean;
@@ -31,6 +33,8 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
       id, // Explicitly destructure id for clarity and better IntelliSense
       className,
       rows = 4,
+      label,
+      required,
       error,
       errorMessage,
       showCharCount,
@@ -47,7 +51,7 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
     const errorId = `${id || internalId}-error`;
 
     // Support live char count for uncontrolled usage
-    const isControlled = Object.prototype.hasOwnProperty.call(props, 'value');
+    const isControlled = value !== undefined;
     const [uncontrolledValue, setUncontrolledValue] = React.useState(
       typeof defaultValue === 'string' ? defaultValue : ''
     );
@@ -61,6 +65,12 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
 
     return (
       <div className="w-full">
+            {label && (
+              <label htmlFor={id || internalId} className="mb-1.5 inline-block text-sm font-medium text-gray-700 dark:text-gray-200">
+                {label}
+                {required && <span className="text-red-500"> *</span>}
+              </label>
+            )}
         <textarea
           ref={ref}
           id={id || internalId} // Ensure id is passed to the textarea

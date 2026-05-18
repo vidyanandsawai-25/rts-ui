@@ -1,16 +1,52 @@
 /**
  * API Client Service
- * Centralized HTTP client for making API requests
+ * Centralized HTTP client for making API requests with built-in Auth and TLS support.
  */
-
+import 'server-only';
+import { cookies } from 'next/headers';
 import { getAppConfig } from '@/config/app.config';
 import { getAuthTokenFromCookies } from '@/lib/utils/cookie';
 import { ApiResponse } from '@/types/common.types';
 import { cookies } from 'next/headers';
 
+export const LOCAL_HTTPS_RE = /^https:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//;
+interface ApiError extends Error {
+  httpStatus?: number;
+  rawText?: string;
+}
+
+let relaxedTlsDispatcher: unknown;
+
+async function serverFetch(url: string, init: RequestInit): Promise<Response> {
+  const isDev = process.env.NODE_ENV === 'development' && process.env.NTIS_STRICT_LOCAL_TLS !== '1';
+  if (typeof window === 'undefined' && isDev && LOCAL_HTTPS_RE.test(url)) {
+    const { Agent, fetch: uFetch } = await import('undici');
+    relaxedTlsDispatcher ??= new Agent({ connect: { rejectUnauthorized: false } });
+    return uFetch(url, {
+      ...init,
+      body: init.body ?? undefined,
+      dispatcher: relaxedTlsDispatcher,
+    } as unknown as import('undici').RequestInit) as unknown as Promise<Response>;
+  }
+  return fetch(url, init);
+}
+
 class ApiClient {
   private baseUrl: string;
   private timeout: number;
+  private publicEndpoints = [
+    '/Auth/login',
+    '/Auth/verify-otp',
+    '/Auth/verify-login-otp',
+    '/Auth/forgot-password',
+    '/Auth/reset-password',
+    '/Auth/send-otp',
+    '/Auth/resend-otp',
+    '/Auth/refresh',
+    '/Auth/ulb-config',
+    '/Auth/validate-reset-token',
+    '/UlbConfig',
+  ];
 
   constructor() {
     const config = getAppConfig();
@@ -18,178 +54,181 @@ class ApiClient {
     this.timeout = config.api.timeout;
   }
 
-  /**
-   * Checks if the Content-Type header indicates a JSON response.
-   */
-  private isJsonContentType(response: Response): boolean {
-    const contentType = response.headers.get('Content-Type') ?? '';
-    return contentType.includes('application/json');
+  private isPublicEndpoint(endpoint: string): boolean {
+    const path = endpoint.toLowerCase().split('?')[0];
+    return this.publicEndpoints.some(
+      (pe) => path === pe.toLowerCase() || path.startsWith(pe.toLowerCase() + '/')
+    );
   }
 
-  /**
-   * Safely parses the response body as JSON when appropriate.
-   * Returns `undefined` for empty-body responses (e.g. 204 No Content)
-   * or non-JSON responses instead of throwing errors.
-   */
-  private async parseResponseBody<T>(response: Response): Promise<T | undefined> {
-    // 204 No Content – body is intentionally absent
-    if (response.status === 204) {
-      return undefined;
-    }
+  private async getAuthHeaders(
+    options: RequestInit,
+    skipAuth: boolean
+  ): Promise<Record<string, string>> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      Accept: 'application/json, text/plain, */*',
+      ...(options.headers as Record<string, string>),
+    };
+    if (skipAuth) return headers;
 
-    // Some servers send Content-Length: 0 with a non-204 success status
-    const contentLength = response.headers.get('Content-Length');
-    if (contentLength === '0') {
-      return undefined;
-    }
+    try {
+      const store = await cookies();
+      const has = (n: string) =>
+        Object.keys(headers).some((k) => k.toLowerCase() === n.toLowerCase());
 
-    // Read the raw text first to check if body is empty
-    const text = await response.text();
-    if (!text || text.trim() === '') {
-      return undefined;
-    }
+      const token = store.get('auth_token')?.value;
+      if (token && !has('authorization')) headers['Authorization'] = `Bearer ${token}`;
 
-    // For non-JSON Content-Type headers, handle based on response status
-    if (!this.isJsonContentType(response)) {
-      if (response.ok) {
-        // Successful non-JSON response (e.g., plain text "OK" from DELETE)
-        // Body already consumed above, just return undefined
-        return undefined;
+      const csrf = store.get('csrf_token')?.value;
+      if (csrf && !has('x-csrf-token') && /POST|PUT|DELETE|PATCH/.test(options.method || 'GET')) {
+        headers['X-CSRF-Token'] = csrf;
       }
-      // Error response with non-JSON body – use text in error message
-      const err = new Error(
-        text.trim() || response.statusText || 'An error occurred'
-      ) as Error & { httpStatus: number; rawText: string };
+
+      const cookieStr = store
+        .getAll()
+        .filter((c) =>
+          /auth_token|refresh_token|session_id|csrf_token|\.AspNetCore\.Antiforgery/.test(c.name)
+        )
+        .map(
+          (c) => `${c.name.replace(/[^\x00-\x7F]/g, '')}=${c.value.replace(/[^\x00-\x7F]/g, '')}`
+        )
+        .join('; ');
+      if (cookieStr && !has('cookie')) headers['Cookie'] = cookieStr;
+    } catch {}
+    return headers;
+  }
+
+  private async parseResponseBody<T>(response: Response): Promise<T | undefined> {
+    if (response.status === 204 || response.headers.get('Content-Length') === '0') return undefined;
+    const text = await response.text();
+    if (!text?.trim()) return undefined;
+
+    const isJson = (response.headers.get('Content-Type') ?? '').includes('application/json');
+    if (!isJson) {
+      if (response.ok) return undefined;
+      const err = new Error(text.trim() || response.statusText || 'An error occurred') as ApiError;
       err.httpStatus = response.status;
       err.rawText = text;
       throw err;
     }
 
-    // Content-Type indicates JSON - attempt to parse
     try {
       return JSON.parse(text) as T;
     } catch {
-      // JSON parsing failed. For successful responses (2xx), treat as non-JSON
-      // and return undefined instead of failing the entire request.
-      // This handles servers that incorrectly set Content-Type: application/json
-      // for plain text responses (e.g., DELETE returning "OK" or "Deleted")
-      if (response.ok) {
-        // Success response but invalid JSON - treat as empty/non-JSON response
-        return undefined;
-      }
-
-      // Error response with invalid JSON - throw error with details
+      if (response.ok) return undefined;
       const err = new Error(
         `Invalid JSON response (HTTP ${response.status}): ${text.slice(0, 200)}`
-      ) as Error & { httpStatus: number };
+      ) as ApiError;
       err.httpStatus = response.status;
       throw err;
     }
   }
 
-  /**
-   * Extracts a human-readable error message from a non-2xx response body.
-   *
-   * Priority order:
-   *  1. `message`  – most REST APIs
-   *  2. `error`    – Spring Boot, some Node frameworks
-   *  3. `title`    – RFC 7807 Problem Details
-   *  4. `detail`   – RFC 7807 Problem Details
-   *  5. `response.statusText` – HTTP reason phrase (e.g. "Not Found")
-   *  6. Generic fallback
-   *
-   * Each candidate is only used when it is a non-empty string.
-   */
-  private extractErrorMessage(
-    errBody: Record<string, unknown> | undefined,
-    statusText: string,
-  ): string {
-    const candidates = [
-      errBody?.message,
-      errBody?.error,
-      errBody?.title,
-      errBody?.detail,
-      statusText,
-    ];
-    for (const candidate of candidates) {
-      if (typeof candidate === 'string' && candidate.trim() !== '') {
-        return candidate.trim();
+  private extractErrorMessage(errBody: unknown, statusText: string): string {
+    const body = errBody as Record<string, unknown> | null | undefined;
+
+    // First check for specific error messages in the errors object (e.g., validation errors)
+    // Ensure errors is a plain object (not an array) before treating it as a key/value map
+    if (body?.errors && typeof body.errors === 'object' && !Array.isArray(body.errors)) {
+      const errors = body.errors as Record<string, unknown>;
+      // Check for General error first, then other error keys
+      const errorKeys = ['General', ...Object.keys(errors).filter((k) => k !== 'General')];
+      for (const key of errorKeys) {
+        const errorValue = errors[key];
+        if (typeof errorValue === 'string' && errorValue.trim()) {
+          return errorValue.trim();
+        }
+        // Handle array of error messages
+        if (Array.isArray(errorValue) && errorValue.length > 0) {
+          const firstError = errorValue[0];
+          if (typeof firstError === 'string' && firstError.trim()) {
+            return firstError.trim();
+          }
+        }
       }
+    }
+
+    // Fall back to standard error message fields
+    const candidates = [body?.message, body?.error, body?.title, body?.detail, statusText];
+    for (const c of candidates) {
+      if (typeof c === 'string' && c.trim()) return c.trim();
     }
     return 'An error occurred';
   }
 
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
+  private async request<T>(
+    endpoint: string,
+    options: RequestInit = {},
+    requireAuth = true
+  ): Promise<ApiResponse<T>> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+    const skipAuth = !requireAuth || this.isPublicEndpoint(endpoint);
 
     const cookieStore = await cookies();
     const token = getAuthTokenFromCookies(cookieStore);
 
     try {
-      const response = await fetch(`${this.baseUrl}${endpoint}`, {
+      const headers = await this.getAuthHeaders(options, skipAuth);
+      const url = `${this.baseUrl.replace(/\/$/, '')}/${endpoint.replace(/^\//, '')}`;
+
+      const cleanHeaders: Record<string, string> = {};
+      Object.entries(headers).forEach(
+        ([k, v]) => (cleanHeaders[k] = String(v).replace(/[^\x00-\x7F]/g, ''))
+      );
+
+      const response = await serverFetch(url, {
+        cache: 'no-store',
         ...options,
         signal: controller.signal,
-        headers: {
-          'Content-Type': 'application/json',
-          ...options.headers,
-          "Authorization": `Bearer ${token}`,
-        },
+        headers: cleanHeaders,
       });
-
       clearTimeout(timeoutId);
 
-      // Parse body safely – handles 204 No Content and other empty responses
       const data = await this.parseResponseBody<T>(response);
-
       if (!response.ok) {
-        const errBody = data as Record<string, unknown> | undefined;
+        if (response.status === 401) {
+          const errorMsg = (data as { message?: string })?.message || 'Invalid credentials';
+          return {
+            success: false,
+            statusCode: 401,
+            error: skipAuth ? errorMsg : 'Unauthorized: Token expired or invalid',
+          };
+        }
+        if (response.status === 403)
+          return { success: false, statusCode: 403, error: 'Forbidden: Access denied' };
         return {
           success: false,
           statusCode: response.status,
-          error: this.extractErrorMessage(errBody, response.statusText),
+          error: this.extractErrorMessage(data, response.statusText),
         };
       }
-
-      return {
-        success: true,
-        statusCode: response.status,
-        data: data as T,
-      };
-    } catch (error) {
+      return { success: true, statusCode: response.status, data: data as T };
+    } catch (error: unknown) {
       clearTimeout(timeoutId);
-      // Preserve the HTTP status when parseResponseBody throws for non-JSON bodies
-      const httpStatus = (error as { httpStatus?: number }).httpStatus;
+      const err = error as ApiError;
+      if (err.name === 'AbortError')
+        return { success: false, statusCode: 408, error: 'Request timeout' };
       return {
         success: false,
-        ...(httpStatus !== undefined ? { statusCode: httpStatus } : {}),
-        error: error instanceof Error ? error.message : 'Network error',
+        ...(err.httpStatus ? { statusCode: err.httpStatus } : {}),
+        error: err.message || 'Network error',
       };
     }
   }
 
-  async get<T>(endpoint: string, options?: RequestInit): Promise<ApiResponse<T>> {
-    return this.request<T>(endpoint, { ...options, method: 'GET' });
+  async get<T>(url: string, opt?: RequestInit, auth = true) {
+    return this.request<T>(url, { ...opt, method: 'GET' }, auth);
   }
-
-  async post<T>(endpoint: string, body?: unknown, options?: RequestInit): Promise<ApiResponse<T>> {
-    return this.request<T>(endpoint, {
-      ...options,
-      method: 'POST',
-      body: JSON.stringify(body),
-    });
+  async post<T>(url: string, body?: unknown, opt?: RequestInit, auth = true) {
+    return this.request<T>(url, { ...opt, method: 'POST', body: JSON.stringify(body) }, auth);
   }
-
-  async put<T>(endpoint: string, body?: unknown, options?: RequestInit): Promise<ApiResponse<T>> {
-    return this.request<T>(endpoint, {
-      ...options,
-      method: 'PUT',
-      body: JSON.stringify(body),
-    });
+  async put<T>(url: string, body?: unknown, opt?: RequestInit, auth = true) {
+    return this.request<T>(url, { ...opt, method: 'PUT', body: JSON.stringify(body) }, auth);
   }
-
-  async delete<T>(endpoint: string, options?: RequestInit): Promise<ApiResponse<T>> {
-    return this.request<T>(endpoint, { ...options, method: 'DELETE' });
+  async delete<T>(url: string, opt?: RequestInit, auth = true) {
+    return this.request<T>(url, { ...opt, method: 'DELETE' }, auth);
   }
 }
 

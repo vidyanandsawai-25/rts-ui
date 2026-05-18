@@ -2,7 +2,7 @@
  * Common validation functions for forms
  *
  * @module validation
- * 
+ *
  * @deprecated This file is kept for backward compatibility.
  * New code should import from the specific modules:
  * - validation-rules.ts for regex and sanitization patterns
@@ -46,12 +46,19 @@ export {
   SEARCH_KEY_REGEX,
   PERSON_NAME_REGEX,
   EMAIL_REGEX,
+  EMAIL_LOWERCASE_RESTRICTED_REGEX,
   MOBILE_10_REGEX,
+  PINCODE_6_REGEX,
+  CITY_NAME_REGEX,
+  POSITIVE_DECIMAL_INVALID_KEYS,
+  isAllZeros,
+  YEAR_REGEX,
 } from './validation-rules';
 
 // Re-export from validation-helpers.ts
 export type { Validator } from './validation-helpers';
 export { validateForm, hasErrors } from './validation-helpers';
+export { sanitizePositiveDecimal } from './validation-helpers'; // Export sanitizePositiveDecimal for global access
 
 // Re-export from validation-schemas.ts
 export {
@@ -60,4 +67,7 @@ export {
   constructionValidators,
   societyValidations,
   propertyValidations,
+  officeValidations,
+  oldDetailsValidations,
 } from './validation-schemas';
+export { userManagementValidations } from './user-management-validation';

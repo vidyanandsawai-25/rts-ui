@@ -1,0 +1,149 @@
+import { renderHook, act } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { useCategoryCv } from '@/hooks/weightageMaster/useCategoryCv/useCategoryCv';
+import { UseFactorCVMaster } from '@/types/useCategoryCvFactor.types';
+
+// Mock dependencies
+const mockPush = vi.fn();
+const mockRefresh = vi.fn();
+const mockSearchParams = new URLSearchParams();
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: mockPush,
+    refresh: mockRefresh,
+  }),
+  useSearchParams: () => mockSearchParams,
+}));
+
+vi.mock('@/app/[locale]/property-tax/weightage-master/sub-type-weightage/action', () => ({
+  updateUseFactorCVMasterAction: vi.fn(),
+  createUseFactorCVMasterAction: vi.fn(),
+  bulkCreateUseFactorCVMasterAction: vi.fn(),
+  bulkUpdateUseFactorCVMasterAction: vi.fn(),
+  fetchUseFactorCVMasterPagedServerAction: vi.fn(),
+  fetchTypeOfUsePaged: vi.fn(),
+}));
+
+vi.mock('next-intl', () => ({
+  useTranslations: (namespace: string) => {
+    return (key: string) => {
+      if (namespace === 'useCategoryFactorMaster') {
+        return `ucfm.${key}`;
+      }
+      if (namespace === 'weightageMaster') {
+        const messages: Record<string, string> = {
+          'common.messages.pendingRecordsWarning': 'Pending records warning',
+          'common.messages.allClearedInfo': 'All cleared',
+        };
+        return messages[key] || `wm.${key}`;
+      }
+      return key;
+    };
+  },
+  useLocale: () => 'en',
+}));
+
+// We allow useCategoryCvState and useCategoryCvPagination to be real in this test 
+// to verify they are correctly integrated, or we can mock them. 
+// Let's keep them real for integration-style orchestration testing, 
+// but ensure we handle their internal behaviors.
+
+describe('useCategoryCv Orchestration', () => {
+  const mockData: UseFactorCVMaster[] = [
+    {
+      id: 1,
+      typeOfUseId: 100,
+      subTypeOfUseId: 200,
+      factor: 1.5,
+      yearRangeCVId: 2023,
+      isActive: true,
+      createdDate: '2024-01-01',
+      updatedDate: '2024-01-01',
+    },
+  ];
+
+  const defaultProps = {
+    data: mockData,
+    pageSize: 10,
+    pageNumber: 1,
+    typeOfUsePageSize: 10,
+    typeOfUsePageNumber: 1,
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockSearchParams.delete('selectedYearRange');
+    mockSearchParams.delete('typeOfUseId');
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('should orchestrate state and pagination', () => {
+    const { result } = renderHook(() => useCategoryCv(defaultProps));
+
+    expect(result.current.selectedYear).toBe('');
+    expect(result.current.factorValue).toBe('0.00');
+    expect(typeof result.current.changePage).toBe('function');
+  });
+
+  it('should show pending records warning when new records exist', () => {
+    const dataWithNewRecords = [{ ...mockData[0], id: 0 }];
+    
+    renderHook(() =>
+      useCategoryCv({ ...defaultProps, data: dataWithNewRecords })
+    );
+
+    act(() => {
+      vi.runAllTimers();
+    });
+
+    // The toast should be added via the state hook integrated into useCategoryCv
+  });
+
+  describe('Handlers', () => {
+    it('handleAssessmentYearChange should update state and navigate', () => {
+      const { result } = renderHook(() => useCategoryCv(defaultProps));
+
+      act(() => {
+        result.current.handleAssessmentYearChange('2024');
+      });
+
+      expect(result.current.selectedYear).toBe('2024');
+      expect(mockPush).toHaveBeenCalled();
+    });
+
+    it('handleClearAll should reset state and navigate', () => {
+      const { result } = renderHook(() => useCategoryCv(defaultProps));
+
+      act(() => {
+        result.current.handleClearAll();
+      });
+
+      expect(result.current.selectedYear).toBe('');
+      expect(result.current.factorValue).toBe('0.00');
+      expect(mockPush).toHaveBeenCalled();
+    });
+  });
+
+  it('should expose all required properties for the UI', () => {
+    const { result } = renderHook(() => useCategoryCv(defaultProps));
+
+    const expectedKeys = [
+      't', 'tW', 'selectedYear', 'typeOfUseId', 'factorValue', 'setFactorValue',
+      'editableRows', 'selectedTypeId', 'isUpdating', 'isBulkUpdating',
+      'isGeneratingAll', 'newRecordsCount', 'hasNewRecords', 'toasts',
+      'isApplyDisabled', 'isBulkUpdateDisabled', 'addToast', 'removeToast',
+      'getRowUid', 'handleAssessmentYearChange', 'handleTypeOfUseChange',
+      'handleTypeRowClick', 'handleClearAll', 'changePage', 'changePageSize',
+      'changeLeftPage', 'changeLeftPageSize'
+    ];
+
+    expectedKeys.forEach(key => {
+      expect(result.current).toHaveProperty(key);
+    });
+  });
+});

@@ -27,27 +27,47 @@ export const MatrixCellInput = ({
   onCellChange,
   onKeyDown,
 }: MatrixCellInputProps): React.ReactElement => {
+  // Helper to format value for display — empty string for 0 in edit mode, "0" in read-only
+  const formatValue = React.useCallback((val: number): string => {
+    if (val === 0) {
+      return readOnly ? "0" : "";
+    }
+    return val.toFixed(2);
+  }, [readOnly]);
+
   // Safely convert value to number to handle undefined, null, or string values
-  const safeValue = typeof value === 'number' && !isNaN(value) ? value : Number(value) || 0;
+  const safeValue = typeof value === 'number' && !Number.isNaN(value) ? value : Number(value) || 0;
   
   const [localValue, setLocalValue] = React.useState<string>(
-    safeValue === 0 ? "" : safeValue.toFixed(2)
+    formatValue(safeValue)
   );
   const [isFocused, setIsFocused] = React.useState(false);
   const previousValueRef = React.useRef<number>(safeValue);
-
   // Update local value when prop value changes from external source (not from our own edits)
   React.useEffect(() => {
-    const currentSafeValue = typeof value === 'number' && !isNaN(value) ? value : Number(value) || 0;
+    const currentSafeValue = typeof value === 'number' && !Number.isNaN(value) ? value : Number(value) || 0;
     // Only sync if value actually changed AND we're not focused
     if (!isFocused && currentSafeValue !== previousValueRef.current) {
-      setLocalValue(currentSafeValue === 0 ? "" : currentSafeValue.toFixed(2));
+      setLocalValue(formatValue(currentSafeValue));
     }
     previousValueRef.current = currentSafeValue;
-  }, [value, isFocused]);
+  }, [value, isFocused, formatValue]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
+
+    // Limit to 2 decimal places — reject input if more digits typed after dot
+    const dotIndex = inputValue.indexOf(".");
+    if (dotIndex !== -1 && inputValue.length - dotIndex - 1 > 2) {
+      return;
+    }
+
+    // Limit integer part to 4 digits max - reject input if exceeded
+    const integerPart = dotIndex !== -1 ? inputValue.substring(0, dotIndex) : inputValue;
+    if (integerPart.length > 4) {
+      return;
+    }
+
     setLocalValue(inputValue);
     
     // Convert to number for onCellChange call
@@ -55,8 +75,8 @@ export const MatrixCellInput = ({
     const numValue = inputValue === "" ? 0 : Number(inputValue);
     
     // Ensure we send a valid number to onCellChange
-    // Clamp to 0 to prevent negative factors
-    const safeNumValue = isNaN(numValue) || numValue < 0 ? 0 : numValue;
+    // Max value is 9999 (4 digits)
+    const safeNumValue = Number.isNaN(numValue) || numValue < 0 ? 0 : Math.min(numValue, 9999);
     
     onCellChange?.(rowId, columnId, safeNumValue);
   };
@@ -69,14 +89,15 @@ export const MatrixCellInput = ({
     setIsFocused(false);
     // Format to 2 decimal places on blur if it's a valid number
     const numValue = localValue === "" ? 0 : Number(localValue);
-    if (isNaN(numValue)) {
-      // Reset invalid input to empty string
+    if (Number.isNaN(numValue)) {
       setLocalValue("");
       onCellChange?.(rowId, columnId, 0);
-    } else if (numValue !== 0) {
-      setLocalValue(numValue.toFixed(2));
-    } else {
+    } else if (numValue === 0) {
       setLocalValue("");
+    } else {
+      const clamped = Math.min(numValue, 9999);
+      setLocalValue(clamped.toFixed(2));
+      if (clamped !== numValue) onCellChange?.(rowId, columnId, clamped);
     }
   };
 
@@ -96,7 +117,7 @@ export const MatrixCellInput = ({
     : "bg-gray-50 text-gray-500 border-gray-200";
  
   return (
-    <input
+<input
       type="number"
       min="0"
       step="0.01"
@@ -112,7 +133,7 @@ export const MatrixCellInput = ({
       readOnly={readOnly}
       disabled={readOnly}
       className={cn(
-        "px-2 md:px-3 py-1.5 md:py-2 rounded-lg md:rounded-xl font-bold text-xs md:text-sm text-center border w-full outline-none placeholder:text-gray-400",
+        "px-1 md:px-2 py-1 md:py-1 rounded-md md:rounded-lg font-bold text-xs md:text-sm text-center border w-full outline-none placeholder:text-gray-400",
         readOnly ? "cursor-default" : "focus:ring-2 focus:ring-blue-400",
         valueBasedClass,
         colorClass,

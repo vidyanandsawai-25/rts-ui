@@ -31,13 +31,15 @@
     },
     "form": {
       "title": "Floor Details",
-      "addTitle": "Add New Floor",
-      "addSubtitle": "Create a new floor entry",
+      "addTitle": "Add Floor",
+      "addSubtitle": "Create new floor(s) with advanced configuration",
       "editTitle": "Edit Floor",
       "editSubtitle": "Update floor information",
       "entryMode": "Select Floor Creation Mode",
       "singleFloor": "Single Floor",
+      "singleFloorDesc": "Add one floor with custom details",
       "floorRange": "Floor Range",
+      "floorRangeDesc": "Add multiple floors at once",
       "floorId": "Floor ID",
       "floorCode": "Floor Code",
       "floorCodePlaceholder": "e.g., GF, 1F, 2F",
@@ -58,8 +60,26 @@
       "status": "Status",
       "isActive": "Active",
       "activeStatusTitle": "Floor Status",
-      "activeStatusOn": "This floor is currently active",
-      "activeStatusOff": "This floor is currently inactive",
+      "activeStatusOn": "Active",
+      "activeStatusOff": "Inactive",
+      "range": {
+        "title": "Floor Range",
+        "start": "Start",
+        "end": "End",
+        "startPlaceholder": "1",
+        "endPlaceholder": "10"
+      },
+      "englishName": {
+        "title": "English Name",
+        "prefix": "Prefix",
+        "prefixPlaceholder": "FL",
+        "suffix": "Suffix",
+        "suffixPlaceholder": "FL"
+      },
+      
+      "autoGenerateSubFloor": "Auto-Generate SubFloor",
+      "autoGenerateSubFloorDesc": "Creates a subfloor for every floor in the range",
+      "rangeExample": "Example: Range 1-5 creates 1F, 2F, 3F, 4F, 5F",
       "validation": {
         "codeRequired": "Code is required",
         "codeFormat": "Code can only contain letters, numbers, and underscores (not at start/end)",
@@ -67,7 +87,13 @@
         "descriptionRequired": "Description is required",
         "descriptionFormat": "Description contains invalid characters or formatting",
         "descriptionMaxLength": "Description cannot exceed {count} characters",
-        "mustBeActive": "New floor must be active"
+        "mustBeActive": "New floor must be active",
+        "rangeStartRequired": "Start value is required",
+        "rangeEndRequired": "End value is required",
+        "rangeStartMinValue": "Start value must be at least 1",
+        "rangeEndMinValue": "End value must be at least 1",
+        "rangeStartLessThanEnd": "Start must be less than or equal to End",
+        "rangeMaxValue": "Value cannot exceed {count}"
       }
     },
     "table": {
@@ -92,6 +118,7 @@
     "messages": {
       "addSuccess": "Floor added successfully",
       "createSuccess": "Floor created successfully",
+      "createRangeSuccess": "{count} floors created successfully",
       "updateSuccess": "Floor updated successfully",
       "deleteSuccess": "Floor deleted successfully",
       "deleteFailed": "Failed to delete floor. Please try again.",

@@ -133,3 +133,46 @@ export const validateForm = (
  */
 export const hasErrors = (errors: Record<string, string>): boolean =>
   Object.keys(errors).length > 0;
+
+/**
+ * Sanitize input to allow only positive decimal numbers
+ * Removes any invalid characters and ensures value is positive
+ * @param value - The input value
+ * @param maxDecimals - Optional maximum number of decimal places allowed
+ * @returns Sanitized positive decimal value or empty string
+ */
+export const sanitizePositiveDecimal = (value: string, maxDecimals?: number): string => {
+  // Remove all non-numeric characters except dot
+  let sanitized = value.replace(/[^\d.]/g, '');
+
+  // Return empty string for just a decimal point
+  if (sanitized === '.') {
+    return '';
+  }
+
+  // Allow only one decimal point
+  const parts = sanitized.split('.');
+  if (parts.length > 2) {
+    sanitized = parts[0] + '.' + parts.slice(1).join('');
+  }
+
+  // Restrict decimal places if maxDecimals is provided
+  if (maxDecimals !== undefined && sanitized.includes('.')) {
+    const [integerPart, decimalPart] = sanitized.split('.');
+    if (decimalPart.length > maxDecimals) {
+      sanitized = `${integerPart}.${decimalPart.slice(0, maxDecimals)}`;
+    }
+  }
+
+  // Prepend 0 to values starting with decimal point (e.g., ".5" → "0.5")
+  if (sanitized.startsWith('.')) {
+    sanitized = '0' + sanitized;
+  }
+
+  // Remove leading zeros (except for decimals like 0.5)
+  if (sanitized.startsWith('0') && sanitized.length > 1 && !sanitized.startsWith('0.')) {
+    sanitized = sanitized.replace(/^0+/, '');
+  }
+
+  return sanitized;
+};

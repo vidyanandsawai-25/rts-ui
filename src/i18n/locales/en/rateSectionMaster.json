@@ -26,6 +26,7 @@
     "deleteTitle": "Delete Ward",
     "deleteSuccess": "{count, plural, =1 {Ward removed successfully} other {# wards removed successfully}}",
     "deleteError": "Error deleting ward",
+    "inUseError": "\"{wardName}\" is in use. You cannot delete this ward.",
     "partialDeleteSuccess": "{success} wards removed successfully, {failed} failed.",
     "noWardsToDelete": "No wards found to delete",
     "removed": "Removed",
@@ -81,7 +82,11 @@
     "updateSuccess": "Ward updated successfully",
     "updateError": "Failed to update ward",
     "emptyState": "No wards assigned to this rate section. Select wards from Available Wards or View Wards tab to add them.",
-    "alreadyAdded": "Added to {rateSectionNo}"
+    "alreadyAdded": "Added to {rateSectionNo}",
+    "selected": "Selected"
+  },
+  "wardList": {
+    "selectAll": "Select All"
   },
   "form": {
     "rateSectionNo": "Rate Section No",
@@ -123,6 +128,7 @@
     "descriptionFormat": "{label} contains invalid characters. Only letters, numbers, and basic punctuation (/, -, &, etc.) are allowed.",
     "maxChars": "{label} cannot exceed {count} characters",
     "tooLong": "{label} is too long",
+    "allZeros": "{label} cannot contain only zeros",
     "duplicate": "Rate Section \"{name}\" already exists."
   },
   "messages": {
@@ -133,6 +139,7 @@
     "updateError": "Failed to update rate section",
     "deleteSuccess": "Rate Section \"{name}\" deleted successfully",
     "deleteError": "Failed to delete rate section",
+    "inUseError": "\"{name}\" is in use. You cannot delete this rate section.",
     "thisRateSection": "this rate section"
   },
   "pagination": {

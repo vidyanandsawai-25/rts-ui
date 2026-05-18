@@ -1,11 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
+import { getUserIdFromCookies } from "@/lib/utils/auth-session";
 import { locales } from "@/i18n/config";
 
 import {
   getFloorPaged,
   createFloor,
+  createFloorRange,
   updateFloor,
   deleteFloor,
  
@@ -22,10 +25,46 @@ import { ApiError } from "@/lib/utils/api";
 import type {
   Floor,
   FloorFormModel,
+  FloorRangePayload,
   SubFloor,
   SubFloorFormModel,
   PagedResponse,
 } from "@/types/floor.types";
+
+/* ============================================================
+   SERVER ERROR CODE → HUMAN-READABLE MESSAGE MAP
+============================================================ */
+const FLOOR_SERVER_ERROR_CODES: Record<string, string> = {
+  FloorCode_MaxLen_5: "Floor code cannot exceed 5 characters.",
+  FloorCode_Required: "Floor code is required.",
+  Floor_Description_Required: "Description is required.",
+  Floor_SequenceNo_Required: "Sequence number is required.",
+  SubFloorId_MaxLen_5: "Sub-floor code cannot exceed 5 characters.",
+  SubFloorCode_Required: "Sub-floor code is required.",
+  SubFloor_Description_Required: "Sub-floor description is required.",
+  Template_Description_Required: "Description is required.",
+};
+
+function parseFloorApiError(error: ApiError): string {
+  try {
+    const parsed = JSON.parse(error.responseText);
+    if (parsed?.errors && typeof parsed.errors === "object") {
+      const messages: string[] = [];
+      for (const codes of Object.values(parsed.errors)) {
+        if (Array.isArray(codes)) {
+          for (const code of codes) {
+            const msg = FLOOR_SERVER_ERROR_CODES[code as string];
+            if (msg) messages.push(msg);
+          }
+        }
+      }
+      if (messages.length > 0) return messages.join(" ");
+    }
+  } catch {
+    // not JSON — fall through
+  }
+  return error.responseText || "An unexpected error occurred.";
+}
 
 /* ============================================================
    FLOOR PAGED (SEARCH + SORT)
@@ -97,7 +136,14 @@ export async function createFloorAction(
   data: FloorFormModel
 ): Promise<{ success: boolean; message?: string; messageKey?: string; statusCode?: number }> {
   try {
-    await createFloor(data);
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore);
+    
+    if (!userId) {
+      throw new ApiError(401, "Unauthorized", "User session expired");
+    }
+
+    await createFloor(data, userId.toString());
 
     for (const locale of locales) {
       revalidatePath(`/${locale}/property-tax/floormaster/floor`, "page");
@@ -118,7 +164,8 @@ export async function createFloorAction(
     if (error instanceof ApiError) {
       return {
         success: false,
-        message: error.responseText,
+        // Return raw responseText for client-side field error parsing, fallback to parsed message
+        message: error.responseText || parseFloorApiError(error),
         statusCode: error.statusCode,
       };
     }
@@ -138,7 +185,14 @@ export async function updateFloorAction(
   data: FloorFormModel
 ): Promise<{ success: boolean; message?: string; messageKey?: string; statusCode?: number }> {
   try {
-    await updateFloor(data);
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore);
+
+    if (!userId) {
+      throw new ApiError(401, "Unauthorized", "User session expired");
+    }
+
+    await updateFloor(data, userId.toString());
 
     for (const locale of locales) {
       revalidatePath(`/${locale}/property-tax/floormaster/floor`, "page");
@@ -159,7 +213,8 @@ export async function updateFloorAction(
     if (error instanceof ApiError) {
       return {
         success: false,
-        message: error.responseText,
+        // Return raw responseText for client-side field error parsing, fallback to parsed message
+        message: error.responseText || parseFloorApiError(error),
         statusCode: error.statusCode,
       };
     }
@@ -188,7 +243,14 @@ export async function deleteFloorAction(
   }
 
   try {
-    await deleteFloor(id);
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore);
+
+    if (!userId) {
+      throw new ApiError(401, "Unauthorized", "User session expired");
+    }
+
+    await deleteFloor(id, userId.toString());
 
     for (const locale of locales) {
       revalidatePath(`/${locale}/property-tax/floormaster/floor`, "page");
@@ -200,9 +262,16 @@ export async function deleteFloorAction(
     };
   } catch (error) {
     if (error instanceof ApiError) {
+      let errorMessage = error.responseText;
+      try {
+        const parsed = JSON.parse(error.responseText);
+        if (parsed?.message) errorMessage = parsed.message;
+      } catch {
+        // use raw text
+      }
       return {
         success: false,
-        message: error.responseText,
+        message: errorMessage,
         statusCode: error.statusCode,
       };
     }
@@ -211,6 +280,56 @@ export async function deleteFloorAction(
       success: false,
       messageKey: "messages.deleteFailed",
     };
+  }
+}
+
+/* ============================================================
+   CREATE FLOOR RANGE (BULK CREATE)
+============================================================ */
+export async function createFloorRangeAction(
+  data: FloorRangePayload
+): Promise<{ success: boolean; message?: string; messageKey?: string; statusCode?: number; floorsCreated?: number }> {
+  try {
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore);
+    
+    if (!userId) {
+      throw new ApiError(401, "Unauthorized", "User session expired");
+    }
+
+    await createFloorRange(data, userId.toString());
+
+    for (const locale of locales) {
+      revalidatePath(`/${locale}/property-tax/floormaster/floor`, "page");
+    }
+
+    const floorsCreated = Number.parseInt(data.rangeTo) - Number.parseInt(data.rangeFrom) + 1;
+    return { success: true, floorsCreated };
+  } catch (error: unknown) {
+    // Handle 409 Conflict (duplicate record)
+    if (error instanceof ApiError && error.statusCode === 409) {
+      return {
+        success: false,
+        messageKey: "messages.duplicateRecord",
+        statusCode: 409,
+      };
+    }
+
+    // Handle other API errors
+    if (error instanceof ApiError) {
+      return {
+        success: false,
+        // Return raw responseText for client-side field error parsing, fallback to parsed message
+        message: error.responseText || parseFloorApiError(error),
+        statusCode: error.statusCode,
+      };
+    }
+
+    // Handle generic errors
+    if (error instanceof Error) {
+      return { success: false, message: error.message };
+    }
+    return { success: false, messageKey: "messages.createFailed" };
   }
 }
 
@@ -284,7 +403,14 @@ export async function createSubFloorAction(
   data: SubFloorFormModel
 ): Promise<{ success: boolean; message?: string; messageKey?: string; statusCode?: number }> {
   try {
-    await createSubFloor(data);
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore);
+    
+    if (!userId) {
+      throw new ApiError(401, "Unauthorized", "User session expired");
+    }
+
+    await createSubFloor(data, userId.toString());
 
     for (const locale of locales) {
       revalidatePath(`/${locale}/property-tax/floormaster/subfloor`, "page");
@@ -305,7 +431,8 @@ export async function createSubFloorAction(
     if (error instanceof ApiError) {
       return {
         success: false,
-        message: error.responseText,
+        // Return raw responseText for client-side field error parsing, fallback to parsed message
+        message: error.responseText || parseFloorApiError(error),
         statusCode: error.statusCode,
       };
     }
@@ -325,7 +452,14 @@ export async function updateSubFloorAction(
   data: SubFloorFormModel
 ): Promise<{ success: boolean; message?: string; messageKey?: string; statusCode?: number }> {
   try {
-    await updateSubFloor(data);
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore);
+
+    if (!userId) {
+      throw new ApiError(401, "Unauthorized", "User session expired");
+    }
+
+    await updateSubFloor(data, userId.toString());
 
     for (const locale of locales) {
       revalidatePath(`/${locale}/property-tax/floormaster/subfloor`, "page");
@@ -346,7 +480,8 @@ export async function updateSubFloorAction(
     if (error instanceof ApiError) {
       return {
         success: false,
-        message: error.responseText,
+        // Return raw responseText for client-side field error parsing, fallback to parsed message
+        message: error.responseText || parseFloorApiError(error),
         statusCode: error.statusCode,
       };
     }
@@ -375,7 +510,14 @@ export async function deleteSubFloorAction(
   }
 
   try {
-    await deleteSubFloor(id);
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore);
+
+    if (!userId) {
+      throw new ApiError(401, "Unauthorized", "User session expired");
+    }
+
+    await deleteSubFloor(id, userId.toString());
 
     for (const locale of locales) {
       revalidatePath(`/${locale}/property-tax/floormaster/subfloor`, "page");

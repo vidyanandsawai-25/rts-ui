@@ -88,7 +88,43 @@ export function useEditRateSection({ onClose, onUpdate, zoneId, initialData, rat
     }
   };
 
-  const handleToggleStatus = (): void => { setForm((p) => ({ ...p, isActive: !p.isActive })); };
+  const handleToggleStatus = async (): Promise<void> => {
+    if (!rate || loading) return;
+    
+    const newStatus = !form.isActive;
+
+    setLoading(true);
+    try {
+      const result = await updateRateSectionAction(rate.id!, {
+        rateSectionNo: form.zoneCode,
+        description: form.zoneRegional,
+        isActive: newStatus
+      });
+      
+      if (result.success) {
+        setForm((p) => ({ ...p, isActive: newStatus }));
+        toast.success(t('messages.updateSuccess', { name: `${form.zoneCode} - ${form.zoneRegional}` }));
+        router.refresh();
+        if (onUpdate) {
+          onUpdate({ ...rate, isActive: newStatus } as RateItem);
+        }
+      } else {
+        // Show error with status code if available
+        const errorMsg = result.statusCode 
+          ? `${result.message || result.error || t('messages.updateError')} (Status: ${result.statusCode})`
+          : result.message || result.error || t('messages.updateError');
+        toast.error(errorMsg);
+      }
+    } catch (error: unknown) {
+      const err = error as { message?: string; statusCode?: number };
+      const errorMsg = err.statusCode
+        ? `${err.message || t('messages.updateError')} (Status: ${err.statusCode})`
+        : err.message || t('messages.updateError');
+      toast.error(errorMsg);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return { form, loading, errors, showError, handleChange, handleBlur, handleClose, handleSave, handleToggleStatus };
 }

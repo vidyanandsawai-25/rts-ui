@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Drawer } from "@/components/common/Drawer";
 import { useTranslations } from "next-intl";
 import { Map } from "lucide-react";
@@ -10,9 +10,9 @@ import { LinkWardProps } from "@/types/rateSectionMaster.types";
 import RateSectionWards from "./RateSectionWards";
 import LinkWardTabs from "./LinkWardTabs";
 import { getRateSectionDisplayLabel, getSelectedZoneName, handleToggleAvailable, handleToggleSelected} from "./linkWardHelpers";
-import { useLinkWardHandlers } from "@/hooks/useLinkWardHandlers";
-import { useLinkWardActions } from "@/hooks/useLinkWardActions";
-import { useLinkWardPagination } from "@/hooks/useLinkWardPagination";
+import { useLinkWardHandlers } from "@/hooks/rateSectionMaster/useLinkWardHandlers";
+import { useLinkWardPagination } from "@/hooks/rateSectionMaster/useLinkWardPagination";
+import { useLinkWardActions } from "@/hooks/rateSectionMaster/useLinkWardActions";
 
 export default function AddWard({
   open,
@@ -24,7 +24,7 @@ export default function AddWard({
   ssrAllWards,
   ssrAllWardsCount,
   ssrWardAssignments,
-  ssrAllRateSections: _ssrAllRateSections,
+  ssrAllRateSections,
   ssrSelectedWards,
   ssrSelectedWardsTotalCount = 0,
   ssrViewAllWards = [],
@@ -35,9 +35,17 @@ export default function AddWard({
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const wardAssignments = ssrWardAssignments;
+  const [wardAssignments, setWardAssignments] = useState(ssrWardAssignments);
   const allAvailableWards = ssrAllWards;
   const totalViewAllCount = ssrViewAllWardsTotalCount || ssrAllWardsCount;
+
+  // Select All state management
+  const [isViewAllSelectAllActive, setIsViewAllSelectAllActive] = useState(false);
+  const [isAvailableSelectAllActive, setIsAvailableSelectAllActive] = useState(false);
+  const [isRateSectionSelectAllActive, setIsRateSectionSelectAllActive] = useState(false);
+  const [viewAllSelectAllLoading, setViewAllSelectAllLoading] = useState(false);
+  const [availableSelectAllLoading, setAvailableSelectAllLoading] = useState(false);
+  const [rateSectionSelectAllLoading, setRateSectionSelectAllLoading] = useState(false);
 
   const state = useLinkWardPagination({
     open,
@@ -57,6 +65,7 @@ export default function AddWard({
 
   const { moveToSelected, moveToAvailable } = useLinkWardActions({
     rates,
+    allRateSections: ssrAllRateSections,
     selectedZoneNo: selectedZoneNo ?? undefined,
     wardAssignments,
     checkedAvailable: state.checkedAvailable,
@@ -67,8 +76,20 @@ export default function AddWard({
     setLoading: state.setLoading,
     setSelectedWards: state.setSelectedWards,
     setSelectedWardsTotalCount: state.setSelectedWardsTotalCount,
+    setWardAssignments,
     getRateSectionDisplayLabel: getRateSectionLabel,
-    t
+    router,
+    t,
+    isViewAllSelectAllActive,
+    isAvailableSelectAllActive,
+    isRateSectionSelectAllActive,
+    setViewAllSelectAllLoading,
+    setAvailableSelectAllLoading,
+    setIsViewAllSelectAllActive,
+    setIsAvailableSelectAllActive,
+    setIsRateSectionSelectAllActive,
+    viewAllSearch: state.viewAllSearch,
+    availableSearch: state.availableSearch
   });
 
   const selectedZoneName = useMemo(
@@ -77,8 +98,10 @@ export default function AddWard({
   );
 
   const totalUnassignedForHeader = useMemo(() => {
-    return allAvailableWards.filter(ward => !wardAssignments[ward.wardNo]).length;
-  }, [allAvailableWards, wardAssignments]);
+    return allAvailableWards.filter(ward => 
+      !wardAssignments[ward.wardNo] && !state.selectedWards.includes(ward.wardNo)
+    ).length;
+  }, [allAvailableWards, wardAssignments, state.selectedWards]);
 
   const toggleAvailable = (wardNo: string) =>
     handleToggleAvailable(
@@ -97,6 +120,48 @@ export default function AddWard({
       state.checkedSelected,
       state.setCheckedSelected
     );
+
+  // Handle Select All for ViewWards
+  const handleViewAllSelectAll = useCallback((isChecked: boolean) => {
+    setIsViewAllSelectAllActive(isChecked);
+    if (!isChecked) {
+      state.setCheckedAvailable(new Set());
+    }
+  }, [state]);
+
+  // Handle Select All for AvailableWards
+  const handleAvailableSelectAll = useCallback((isChecked: boolean) => {
+    setIsAvailableSelectAllActive(isChecked);
+    if (!isChecked) {
+      state.setCheckedAvailable(new Set());
+    }
+  }, [state]);
+
+  // Handle Select All for RateSectionWards
+  const handleRateSectionSelectAll = useCallback(async (wardNos: string[]) => {
+    if (wardNos.length === 0) {
+      // Deselect all
+      setIsRateSectionSelectAllActive(false);
+      state.setCheckedSelected(new Set());
+      return;
+    }
+
+    // Find the rate section by rateSectionNo
+    const selectedRate = ssrAllRateSections.find(r => r.rateSectionNo === selectedZoneNo);
+    if (!selectedRate?.id) {
+      return;
+    }
+
+    setRateSectionSelectAllLoading(true);
+    try {
+      // Just set the Select All state to active without checking individual checkboxes
+      // The API will be called when user clicks "Move to Available" button
+      setIsRateSectionSelectAllActive(true);
+      state.setCheckedSelected(new Set()); // Clear individual selections
+    } finally {
+      setRateSectionSelectAllLoading(false);
+    }
+  }, [selectedZoneNo, ssrAllRateSections, state]);
 
   return (
     <Drawer
@@ -142,18 +207,24 @@ export default function AddWard({
           onViewAllSearch={handlers.handleViewAllSearch}
           onViewWardPageChange={handlers.updateViewWardPage}
           onViewWardPageSizeChange={handlers.updateViewWardPageSize}
+          isAvailableSelectAllActive={isAvailableSelectAllActive}
+          isViewAllSelectAllActive={isViewAllSelectAllActive}
+          availableSelectAllLoading={availableSelectAllLoading}
+          viewAllSelectAllLoading={viewAllSelectAllLoading}
+          onAvailableSelectAll={handleAvailableSelectAll}
+          onViewAllSelectAll={handleViewAllSelectAll}
           t={t}
         />
 
         <div className="flex flex-col gap-2 justify-center">
           <NextPageButton
             onClick={moveToSelected}
-            disabled={state.checkedAvailable.size === 0 || state.loading}
+            disabled={(state.checkedAvailable.size === 0 && !isAvailableSelectAllActive && !isViewAllSelectAllActive) || state.loading || availableSelectAllLoading || viewAllSelectAllLoading}
             aria-label={t('wards.moveRight')}
           />
           <PrevPageButton
             onClick={moveToAvailable}
-            disabled={state.checkedSelected.size === 0 || state.loading}
+            disabled={(state.checkedSelected.size === 0 && !isRateSectionSelectAllActive) || state.loading || rateSectionSelectAllLoading}
             aria-label={t('wards.moveLeft')}
           />
         </div>
@@ -171,6 +242,9 @@ export default function AddWard({
           onToggle={toggleSelected}
           onPageChange={handlers.updateSelectedPage}
           onPageSizeChange={handlers.updateSelectedPageSize}
+          onSelectAll={handleRateSectionSelectAll}
+          isSelectAllActive={isRateSectionSelectAllActive}
+          selectAllLoading={rateSectionSelectAllLoading}
         />
       </div>
     </Drawer>

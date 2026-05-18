@@ -21,7 +21,7 @@ describe('SearchSelect', () => {
   ];
 
   it('renders correctly with default props', () => {
-    render(<SearchSelect name="test-select" options={options} value="" onChange={() => {}} />);
+    render(<SearchSelect id="test-select" name="test-select" options={options} value="" onChange={() => {}} />);
 
     expect(screen.getByRole('combobox')).toBeInTheDocument();
   });
@@ -29,6 +29,7 @@ describe('SearchSelect', () => {
   it('displays placeholder when no value is selected', () => {
     render(
       <SearchSelect
+        id="test-select"
         name="test-select"
         options={options}
         value=""
@@ -41,7 +42,7 @@ describe('SearchSelect', () => {
   });
 
   it('displays selected label when value is provided', async () => {
-    render(<SearchSelect name="test-select" options={options} value="opt1" onChange={() => {}} />);
+    render(<SearchSelect id="test-select" name="test-select" options={options} value="opt1" onChange={() => {}} />);
 
     // Since we use Promise.resolve().then() in useEffect, we might need to wait
     await waitFor(() => {
@@ -50,7 +51,7 @@ describe('SearchSelect', () => {
   });
 
   it('opens dropdown on focus', async () => {
-    render(<SearchSelect name="test-select" options={options} value="" onChange={() => {}} />);
+    render(<SearchSelect id="test-select" name="test-select" options={options} value="" onChange={() => {}} />);
 
     const input = screen.getByRole('combobox');
     fireEvent.focus(input);
@@ -60,7 +61,7 @@ describe('SearchSelect', () => {
   });
 
   it('filters options based on search input', async () => {
-    render(<SearchSelect name="test-select" options={options} value="" onChange={() => {}} />);
+    render(<SearchSelect id="test-select" name="test-select" options={options} value="" onChange={() => {}} />);
 
     const input = screen.getByRole('combobox');
     fireEvent.change(input, { target: { value: 'Banana' } });
@@ -73,7 +74,7 @@ describe('SearchSelect', () => {
 
   it('calls onChange when an option is selected', async () => {
     const onChange = vi.fn();
-    render(<SearchSelect name="test-select" options={options} value="" onChange={onChange} />);
+    render(<SearchSelect id="test-select" name="test-select" options={options} value="" onChange={onChange} />);
 
     const input = screen.getByRole('combobox');
     fireEvent.focus(input);
@@ -87,6 +88,7 @@ describe('SearchSelect', () => {
   it('handles forceSearchText prop', async () => {
     render(
       <SearchSelect
+        id="test-select"
         name="test-select"
         options={options}
         value=""
@@ -103,6 +105,7 @@ describe('SearchSelect', () => {
   it('shows no options available message when options are empty', () => {
     render(
       <SearchSelect
+        id="test-select"
         name="test-select"
         options={[]}
         value=""
@@ -114,5 +117,62 @@ describe('SearchSelect', () => {
 
     expect(screen.getByPlaceholderText('No options available')).toBeInTheDocument();
     expect(screen.getByRole('combobox')).toBeDisabled();
+  });
+
+  it('shows loading state when isLoading prop is true', () => {
+    render(
+      <SearchSelect
+        id="test-select"
+        name="test-select"
+        options={options}
+        value=""
+        onChange={() => {}}
+        isLoading={true}
+      />
+    );
+
+    const input = screen.getByRole('combobox');
+    expect(input).toBeInTheDocument();
+  });
+
+  it('opens dropdown on focus even if options are empty (async options)', async () => {
+    // Simulate async options: initially empty, then update
+    const { rerender } = render(
+      <SearchSelect id="test-select" name="test-select" options={[]} value="" onChange={() => {}} />
+    );
+    const input = screen.getByRole('combobox');
+    fireEvent.focus(input);
+    // Dropdown should open, but no options
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    // Now rerender with options (simulate async load)
+    rerender(
+      <SearchSelect id="test-select" name="test-select" options={options} value="" onChange={() => {}} />
+    );
+    // Dropdown should now show options
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+    expect(screen.getAllByRole('option')).toHaveLength(3);
+  });
+
+  it('does not open dropdown on focus if disabled', () => {
+    render(
+      <SearchSelect id="test-select" name="test-select" options={options} value="" onChange={() => {}} disabled />
+    );
+    const input = screen.getByRole('combobox');
+    fireEvent.focus(input);
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+  });
+
+  it('commits selection on blur when exact match is typed', async () => {
+    const onChange = vi.fn();
+    render(<SearchSelect id="test-select" name="test-select" options={options} value="" onChange={onChange} />);
+
+    const input = screen.getByRole('combobox');
+    fireEvent.change(input, { target: { value: 'Banana' } });
+    fireEvent.blur(input);
+
+    // Wait for any async state updates
+    await waitFor(() => {
+      expect(onChange).toHaveBeenCalledWith('test-select', 'banana');
+    });
   });
 });

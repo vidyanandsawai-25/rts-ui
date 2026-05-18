@@ -7,7 +7,9 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { locales } from '@/i18n/config';
 import Providers from './Providers';
+import { headers } from 'next/headers';
 import { MainLayout } from '@/components/layout';
+import { ConditionalShell } from '@/components/layout/ConditionalShell';
 
 const inter = Inter({ subsets: ['latin'] });
 const notoSansDevanagari = Noto_Sans_Devanagari({
@@ -36,6 +38,10 @@ export default async function RootLayout({ children, params }: Readonly<RootLayo
   // Important: Pass locale to getMessages to ensure correct translations are loaded
   const messages = await getMessages({ locale });
 
+  // Get current path from headers (set by middleware) for initial SSR detection
+  const headerList = await headers();
+  const isAuthOrHomeServer = headerList.get('x-is-auth-or-home') === 'true';
+
   return (
     <html lang={locale}>
       <head>
@@ -44,9 +50,12 @@ export default async function RootLayout({ children, params }: Readonly<RootLayo
       <body className={`${inter.className} ${notoSansDevanagari.variable}`}>
         <NextIntlClientProvider locale={locale} messages={messages}>
           <Providers>
-            <MainLayout>
+            <ConditionalShell
+              initialIsAuthOrHome={isAuthOrHomeServer}
+              shell={<MainLayout locale={locale}>{children}</MainLayout>}
+            >
               {children}
-            </MainLayout>
+            </ConditionalShell>
           </Providers>
         </NextIntlClientProvider>
       </body>

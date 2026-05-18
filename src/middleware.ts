@@ -35,38 +35,57 @@ export default function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const { locale, pathWithoutLocale } = localeAndPathWithoutLocale(pathname);
 
-  const isLoginRoute =
-    pathWithoutLocale === '/login' || pathWithoutLocale.startsWith('/login/');
+  const isLoggedIn = hasFullSession(request);
+  const isLoginRoute = pathWithoutLocale === '/login' || pathWithoutLocale.startsWith('/login/');
 
-  if (isLoginRoute) {
-    if (hasFullSession(request)) {
-      return NextResponse.redirect(new URL(`/${locale}/dashboard`, request.url));
-    }
+  // 1. Redirect logic
+  if (isLoginRoute && isLoggedIn) {
+    return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
   }
 
-  if (!isLoginRoute && !hasFullSession(request)) {
+  // Explicitly redirect root path to home if logged in, or login if not
+  if (pathWithoutLocale === '/') {
+    return NextResponse.redirect(new URL(`/${locale}/${isLoggedIn ? 'home' : 'login'}`, request.url));
+  }
+
+  if (!isLoginRoute && !isLoggedIn) {
     return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
   }
 
-  // Use intl middleware for locale handling
+  // 2. Identify shell-less routes (auth or home landing)
+  const isAuthOrHome = 
+    pathWithoutLocale === '/' ||
+    pathWithoutLocale === '/home' || 
+    pathWithoutLocale.startsWith('/home/') ||
+    pathWithoutLocale === '/login' || 
+    pathWithoutLocale.startsWith('/login/');
+    
+  // 3. Prepare custom headers for downstream Server Components
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-pathname', pathname);
+  requestHeaders.set('x-is-auth-or-home', isAuthOrHome ? 'true' : 'false');
+
+  // 4. Handle locale routing with next-intl
   const intlResponse = intlMiddleware(request);
 
-  // Redirect/rewrite from intl (e.g. locale prefix) must not be replaced with a bare `next()`
-  const intlDidRedirectOrRewrite =
-    intlResponse.headers.has('location') || intlResponse.headers.has('x-middleware-rewrite');
-  if (intlDidRedirectOrRewrite) {
+  // If it's a redirect, just return it as is
+  if (intlResponse.headers.has('location')) {
     return intlResponse;
   }
 
-  const response = NextResponse.next();
-
+  // Merge headers and cookies from intlResponse into our final response
+  const response = NextResponse.next({
+    request: { headers: requestHeaders },
+  });
   intlResponse.headers.forEach((value, key) => {
     response.headers.set(key, value);
   });
   intlResponse.cookies.getAll().forEach((cookie) => {
     response.cookies.set(cookie);
   });
-
+  // Ensure custom headers are also set on the response object
+  response.headers.set('x-pathname', pathname);
+  response.headers.set('x-is-auth-or-home', isAuthOrHome ? 'true' : 'false');
   return response;
 }
 

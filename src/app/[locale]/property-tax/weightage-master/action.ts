@@ -2,7 +2,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { locales } from "@/i18n/config";
+import { getUserIdFromCookies } from "@/lib/utils/cookie";
 import {
   getFloorFactorCVMasterWithPagination,
   updateFloorFactorCVMaster,
@@ -12,13 +14,14 @@ import {
 import { ApiError } from "@/lib/utils/api";
 import {
   FloorFactorCVMaster,
-  FloorFactorCVMasterCreate,
-  FloorFactorCVMasterUpdate,
-  BulkFloorFactorCVMasterCreate,
-  BulkFloorFactorCVMasterUpdate,
+  FloorFactorCVMasterCreateAction,
+  FloorFactorCVMasterUpdateAction,
+  BulkFloorFactorCVMasterCreateAction,
+  BulkFloorFactorCVMasterUpdateAction,
 } from "@/types/floor-cv-weightageMaster.types";
 import { createFloorWeightageCv } from '@/lib/api/floor-cv-weightageMaster.service';
 import { PagedResponse } from "@/types/common.types";
+import { createLogger } from "@/lib/utils/server-logger";
 
 /**
  * Fetch paginated FloorFactorCVMaster records with filtering and sorting
@@ -52,22 +55,12 @@ export async function fetchFloorFactorCVMasterPagedServerAction(
       yearRangeParam
     );
   } catch (error: unknown) {
-    if (error instanceof ApiError) {
-      console.error(
-        `[fetchFloorFactorCVMasterPagedServerAction] API Error ${error.statusCode}:`,
-        error.responseText
-      );
-    } else if (error instanceof Error) {
-      console.error(
-        "[fetchFloorFactorCVMasterPagedServerAction] Error:",
-        error.message
-      );
-    } else {
-      console.error(
-        "[fetchFloorFactorCVMasterPagedServerAction] Unknown error:",
-        error
-      );
-    }
+    const logger = createLogger('fetchFloorFactorCVMasterPaged');
+    logger.error('Failed to fetch FloorFactorCVMaster records', {
+      operation: 'fetchFloorFactorCVMasterPagedServerAction',
+      pageNumber,
+      pageSize,
+    }, error);
     throw error;
   }
 }
@@ -77,14 +70,15 @@ export async function fetchFloorFactorCVMasterPagedServerAction(
  */
 export async function updateFloorFactorCVMasterAction(
   id: number,
-  payload: FloorFactorCVMasterUpdate
+  payload: FloorFactorCVMasterUpdateAction
 ): Promise<{ success: boolean; message?: string; statusCode?: number }> {
   try {
  
     
     // Validate inputs before calling service
     if (!id || id <= 0) {
-      console.error('[updateFloorFactorCVMasterAction] Invalid ID:', id);
+      const logger = createLogger('updateFloorFactorCVMaster');
+      logger.warn('Invalid Floor Factor CV Master ID provided', { operation: 'updateFloorFactorCVMasterAction', id });
       return {
         success: false,
         message: 'Invalid Floor Factor CV Master ID',
@@ -92,7 +86,14 @@ export async function updateFloorFactorCVMasterAction(
       };
     }
 
-    await updateFloorFactorCVMaster(id, payload);
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore) || 1;
+    const updatePayload = {
+      ...payload,
+      updatedBy: userId
+    };
+
+    await updateFloorFactorCVMaster(id, updatePayload);
     // Revalidate all locale variants of the weightage master page
     for (const locale of locales) {
       revalidatePath(`/${locale}/property-tax/weightage-master`, "page");
@@ -101,35 +102,19 @@ export async function updateFloorFactorCVMasterAction(
    
     return { success: true };
   } catch (error: unknown) {
-   
+    const logger = createLogger('updateFloorFactorCVMaster');
+    logger.error('Failed to update FloorFactorCVMaster', { operation: 'updateFloorFactorCVMasterAction', id }, error);
     
     if (error instanceof ApiError) {
-      console.error(
-        `[updateFloorFactorCVMasterAction] API Error ${error.statusCode}:`,
-        error.responseText
-      );
       return {
         success: false,
         message: error.responseText || 'API Error occurred',
         statusCode: error.statusCode,
       };
     }
-    if (error instanceof Error) {
-      console.error(
-        '[updateFloorFactorCVMasterAction] Error:',
-        error.message
-      );
-      return { 
-        success: false, 
-        message: error.message,
-        statusCode: 500,
-      };
-    }
-    
-    console.error('[updateFloorFactorCVMasterAction] Unknown error type');
     return { 
       success: false, 
-      message: "Failed to update FloorFactorCVMaster",
+      message: error instanceof Error ? error.message : "Failed to update record",
       statusCode: 500,
     };
   }
@@ -139,10 +124,17 @@ export async function updateFloorFactorCVMasterAction(
  * Create FloorFactorCVMaster record
  */
 export async function createFloorFactorCVMasterAction(
-  payload: FloorFactorCVMasterCreate
+  payload: FloorFactorCVMasterCreateAction
 ): Promise<{ success: boolean; message?: string; statusCode?: number; data?: unknown }> {
   try {
-    const response = await createFloorWeightageCv(payload);
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore) || 1;
+    const createPayload = {
+      ...payload,
+      createdBy: userId
+    };
+
+    const response = await createFloorWeightageCv(createPayload);
     if (response.success) {
       // Optionally revalidate paths if needed
       for (const locale of locales) {
@@ -153,7 +145,9 @@ export async function createFloorFactorCVMasterAction(
       return { success: false, message: response.error || 'Failed to create record', statusCode: 500 };
     }
   } catch (error: unknown) {
-    console.error('[createFloorFactorCVMasterAction] Error occurred:', error);
+    const logger = createLogger('createFloorFactorCVMaster');
+    logger.error('Failed to create FloorFactorCVMaster', { operation: 'createFloorFactorCVMasterAction' }, error);
+    
     if (error instanceof ApiError) {
       return {
         success: false,
@@ -161,16 +155,9 @@ export async function createFloorFactorCVMasterAction(
         statusCode: error.statusCode,
       };
     }
-    if (error instanceof Error) {
-      return {
-        success: false,
-        message: error.message,
-        statusCode: 500,
-      };
-    }
     return {
       success: false,
-      message: 'Unknown error',
+      message: error instanceof Error ? error.message : 'Unknown error',
       statusCode: 500,
     };
   }
@@ -180,10 +167,17 @@ export async function createFloorFactorCVMasterAction(
  * Bulk Create FloorFactorCVMaster records
  */
 export async function bulkCreateFloorFactorCVMasterAction(
-  payload: BulkFloorFactorCVMasterCreate
+  payload: BulkFloorFactorCVMasterCreateAction
 ): Promise<{ success: boolean; message?: string; statusCode?: number; data?: unknown }> {
   try {
-      const response = await bulkCreateFloorWeightageCv(payload);
+      const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore) || 1;
+    const bulkCreatePayload = payload.map(item => ({
+      ...item,
+      createdBy: userId
+    }));
+
+    const response = await bulkCreateFloorWeightageCv(bulkCreatePayload);
     if (response && response.success) {
       for (const locale of locales) {
         revalidatePath(`/${locale}/property-tax/weightage-master`, "page");
@@ -193,7 +187,9 @@ export async function bulkCreateFloorFactorCVMasterAction(
       return { success: false, message: response?.error || 'Failed to bulk create records', statusCode: 500 };
     }
   } catch (error: unknown) {
-    console.error('[bulkCreateFloorFactorCVMasterAction] Error occurred:', error);
+    const logger = createLogger('bulkCreateFloorFactorCVMaster');
+    logger.error('Failed to bulk create FloorFactorCVMaster', { operation: 'bulkCreateFloorFactorCVMasterAction', count: payload.length }, error);
+    
     if (error instanceof ApiError) {
       return {
         success: false,
@@ -201,16 +197,9 @@ export async function bulkCreateFloorFactorCVMasterAction(
         statusCode: error.statusCode,
       };
     }
-    if (error instanceof Error) {
-      return {
-        success: false,
-        message: error.message,
-        statusCode: 500,
-      };
-    }
     return {
       success: false,
-      message: 'Unknown error',
+      message: error instanceof Error ? error.message : 'Unknown error',
       statusCode: 500,
     };
   }
@@ -220,10 +209,20 @@ export async function bulkCreateFloorFactorCVMasterAction(
  * Bulk Update FloorFactorCVMaster records
  */
 export async function bulkUpdateFloorFactorCVMasterAction(
-  payload: BulkFloorFactorCVMasterUpdate
+  payload: BulkFloorFactorCVMasterUpdateAction
 ): Promise<{ success: boolean; message?: string; statusCode?: number }> {
   try {
-    await bulkUpdateFloorFactorCVMaster(payload);
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore) || 1;
+    const bulkUpdatePayload = payload.map(item => ({
+      ...item,
+      data: {
+        ...item.data,
+        updatedBy: userId
+      }
+    }));
+
+    await bulkUpdateFloorFactorCVMaster(bulkUpdatePayload);
 
     for (const locale of locales) {
       revalidatePath(`/${locale}/property-tax/weightage-master`, "page");
@@ -231,35 +230,19 @@ export async function bulkUpdateFloorFactorCVMasterAction(
     
     return { success: true };
   } catch (error: unknown) {
-    console.error('[bulkUpdateFloorFactorCVMasterAction] Error occurred:', error);
+    const logger = createLogger('bulkUpdateFloorFactorCVMaster');
+    logger.error('Failed to bulk update FloorFactorCVMaster', { operation: 'bulkUpdateFloorFactorCVMasterAction', count: payload.length }, error);
     
     if (error instanceof ApiError) {
-      console.error(
-        `[bulkUpdateFloorFactorCVMasterAction] API Error ${error.statusCode}:`,
-        error.responseText
-      );
       return {
         success: false,
         message: error.responseText || 'API Error occurred',
         statusCode: error.statusCode,
       };
     }
-    if (error instanceof Error) {
-      console.error(
-        '[bulkUpdateFloorFactorCVMasterAction] Error:',
-        error.message
-      );
-      return { 
-        success: false, 
-        message: error.message,
-        statusCode: 500,
-      };
-    }
-    
-    console.error('[bulkUpdateFloorFactorCVMasterAction] Unknown error type');
     return { 
       success: false, 
-      message: "Failed to bulk update FloorFactorCVMaster",
+      message: error instanceof Error ? error.message : "Failed to bulk update",
       statusCode: 500,
     };
   }

@@ -3,7 +3,7 @@
     "title": "भारांकन मास्टर",
     "subtitle": "CV गणना भारांकन कारकों को कॉन्फ़िगर करें",
     "tabs": {
-      "floor": "मंजिल संख्या",
+      "floor": "मंजिल भारांक",
       "nature": "भवन का प्रकार और प्रकृति",
       "subType": "उपयोगकर्ता श्रेणी",
       "age": "भवन की आयु"
@@ -23,12 +23,12 @@
       "labels": {
         "active": "सक्रिय",
         "inactive": "निष्क्रिय",
-        "pendingRecordCreates": "लंबित रिकॉर्ड बनाना"
+        "pendingRecordCreates": "{count} लंबित रिकॉर्ड बनाना"
       },
       "messages": {
         "pendingRecordsWarning": "लंबित रिकॉर्ड हैं। कृपया सभी जेनरेट करें बटन पर क्लिक करें।",
         "negativeValuesNotAllowed": "नकारात्मक मानों की अनुमति नहीं है",
-        "valueExceedsMax": "मान 999999 से अधिक नहीं हो सकता",
+        "valueExceedsMax": "मान 999.99 से अधिक नहीं हो सकता",
         "noChangesToUpdate": "इस पंक्ति के लिए अपडेट करने के लिए कोई परिवर्तन नहीं",
         "noChangesDetected": "इस पंक्ति के लिए कोई परिवर्तन नहीं मिला",
         "recordCreatedSuccess": "रिकॉर्ड सफलतापूर्वक बनाया गया",

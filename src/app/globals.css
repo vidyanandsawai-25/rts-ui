@@ -25,3 +25,52 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, var(--font-devanagari), sans-serif;
 }
+
+/* Global Sidebar Layout Shell Context */
+.layout-content-shifted {
+  margin-left: 0; /* Default for mobile */
+}
+
+/* Sidebar width variables and state logic */
+:root {
+  --sidebar-width: 64px;
+}
+
+body.sidebar-expanded {
+  --sidebar-width: 256px;
+}
+
+/* Sidebar collapsed state overrides */
+aside:not(.sidebar-expanded-aside) .sidebar-expandable-label {
+  width: 0 !important;
+  min-width: 0 !important;
+  opacity: 0 !important;
+  overflow: hidden !important;
+  display: none !important;
+}
+
+aside:not(.sidebar-expanded-aside) .sidebar-footer-label {
+  height: 0 !important;
+  opacity: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+aside:not(.sidebar-expanded-aside) .sidebar-brand-row {
+  justify-content: center !important;
+}
+
+aside:not(.sidebar-expanded-aside) .sidebar-back-icon {
+  margin: 0 auto !important;
+}
+
+@media (min-width: 1024px) {
+  .layout-content-shifted {
+    margin-left: var(--sidebar-width);
+    transition: margin-left 0.3s ease-in-out;
+  }
+}/* Hide Edge/IE password reveal and clear buttons to avoid double icons with custom toggles */
+input::-ms-reveal,
+input::-ms-clear {
+  display: none;
+}

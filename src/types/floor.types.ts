@@ -132,3 +132,59 @@ export interface SubFloorMasterProps {
   sortBy?: string;
   sortOrder?: string;
 }
+
+/* =====================================================
+   FLOOR RANGE - TEMPLATE MODEL
+   Audit fields are derived server-side from the
+   authenticated session, so they are optional here
+   to avoid forcing UI callers to provide placeholder IDs.
+===================================================== */
+export interface FloorRangeTemplate {
+  isActive: boolean;
+  createdBy?: number;
+  updatedBy?: number;
+  floorCode: string;
+  description: string;
+  sequenceNo: number;
+  maxFloorNo: number;
+}
+
+/* =====================================================
+   FLOOR RANGE - API PAYLOAD
+===================================================== */
+export interface FloorRangePayload {
+  rangeFrom: string;
+  rangeTo: string;
+  prefix: string;
+  suffix: string;
+  template: FloorRangeTemplate;
+  startSequenceNo: number;
+}
+
+/* =====================================================
+   FLOOR RANGE - FORM MODEL (UI)
+===================================================== */
+export interface FloorRangeFormModel {
+  rangeFrom: number;
+  rangeTo: number;
+  prefix: string;
+  suffix: string;
+  isActive: boolean;
+  autoGenerateSubFloor: boolean;
+}
+
+/* =====================================================
+   FLOOR RANGE - FIELDS PROPS (COMPONENT)
+===================================================== */
+export interface FloorRangeFieldsProps {
+  formData: FloorRangeFormModel;
+  errors: {
+    rangeFrom?: string;
+    rangeTo?: string;
+    prefix?: string;
+    suffix?: string;
+  };
+  showError: (field: keyof FloorRangeFormModel) => boolean;
+  onChange: (field: keyof FloorRangeFormModel, value: string | number | boolean) => void;
+  onBlur: (field: keyof FloorRangeFormModel) => void;
+}

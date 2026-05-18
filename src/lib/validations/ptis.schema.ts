@@ -1,3 +1,9 @@
+/**
+ * Validation schema for Property ID (used in actions)
+ */
+export const propertyIdActionSchema = z.object({
+  propertyId: z.number({ message: 'Property ID is required' }).positive('Property ID must be a positive number').finite('Property ID must be a finite number'),
+});
 import { z } from 'zod';
 
 /**

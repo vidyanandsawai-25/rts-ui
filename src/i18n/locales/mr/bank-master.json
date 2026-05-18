@@ -1,0 +1,112 @@
+{
+  "title": "बँक मास्टर",
+  "subtitle": "बँक आणि शाखा तपशील व्यवस्थापित करा",
+  "addBank": "बँक जोडा",
+  "stats": {
+    "totalBanks": "एकूण बँका",
+    "active": "सक्रिय",
+    "states": "राज्ये"
+  },
+  "filters": {
+    "allStates": "सर्व राज्ये",
+    "statePlaceholder": "राज्यानुसार फिल्टर करा",
+    "searchPlaceholder": "बँक, शाखेनुसार शोधा..."
+  },
+  "table": {
+    "code": "कोड",
+    "bankBranch": "बँक आणि शाखा",
+    "ifscCode": "IFSC कोड",
+    "location": "स्थान",
+    "status": "स्थिती"
+  },
+  "aria": {
+    "editBank": "{name} संपादित करा",
+    "deleteBank": "{name} हटवा"
+  },
+  "drawer": {
+    "addTitle": "नवीन बँक जोडा",
+    "editTitle": "बँक तपशील संपादित करा",
+    "subtitle": "बँक तपशील कॉन्फ़िगर करण्यासाठी आवश्यक माहिती भरा",
+    "sections": {
+      "basicDetails": "बँक मूलभूत तपशील",
+      "addressDetails": "शाखा पत्ता तपशील"
+    },
+    "labels": {
+      "bankCode": "बँक कोड",
+      "bankName": "बँकेचे नाव",
+      "ifscCode": "IFSC कोड",
+      "branchName": "शाखेचे नाव",
+      "streetAddress": "रस्त्याचा पत्ता",
+      "city": "शहर",
+      "state": "राज्य",
+      "pincode": "पिनकोड",
+      "status": "स्थिती"
+    },
+    "placeholders": {
+      "bankCode": "उदा., SBI001",
+      "bankName": "उदा., स्टेट बँक ऑफ इंडिया",
+      "ifscCode": "उदा., SBIN0000001",
+      "branchName": "उदा., मुख्य शाखा, सिटी सेंटर शाखा",
+      "streetAddress": "इमारत/रस्त्याच्या तपशिलासह पूर्ण शाखा पत्ता प्रविष्ट करा",
+      "city": "उदा., शहर नाव",
+      "state": "उदा., राज्य नाव",
+      "pincode": "उदा., 400001"
+    },
+    "footer": {
+      "adding": "नवीन बँक जोडत आहे",
+      "editing": "संपादन: {bankName}"
+    },
+    "buttons": {
+      "save": "बँक जतन करा",
+      "update": "बँक अपडेट करा"
+    }
+  },
+  "messages": {
+    "createSuccess": "बँक यशस्वीरित्या तयार केली",
+    "createFailed": "बँक तयार करण्यात अयशस्वी",
+    "updateSuccess": "बँक यशस्वीरित्या अपडेट केली",
+    "updateFailed": "बँक अपडेट करण्यात अयशस्वी",
+    "deleteSuccess": "बँक यशस्वीरित्या हटविली",
+    "deleteFailed": "बँक हटविण्यात अयशस्वी",
+    "fetchFailed": "बँक डेटा प्राप्त करण्यात अयशस्वी",
+    "errorOccurred": "एक अनपेक्षित त्रुटी आली",
+    "networkError": "नेटवर्क त्रुटी — कृपया तुमचे कनेक्शन तपासा आणि पुन्हा प्रयत्न करा",
+    "searchResult": "\"{term}\" साठी {count} रेकॉर्ड सापडले",
+    "validationError": "कृपया फॉर्ममधील त्रुटी सुधारा"
+  },
+  "confirm": {
+    "deleteTitle": "बँक हटवायची ({bankName})?",
+    "deleteDescription": "तुम्हाला खात्री आहे की तुम्ही हा बँक रेकॉर्ड हटवू इच्छिता? ही क्रिया पूर्ववत केली जाऊ शकत नाही."
+  },
+  "validation": {
+    "bankCodeRequired": "बँक कोड आवश्यक आहे",
+    "bankNameRequired": "बँकेचे नाव आवश्यक आहे",
+    "ifscRequired": "IFSC कोड आवश्यक आहे",
+    "ifscFormat": "अवैध IFSC स्वरूप (उदा., SBIN0000001)",
+    "branchRequired": "शाखेचे नाव आवश्यक आहे",
+    "addressRequired": "रस्त्याचा पत्ता आवश्यक आहे",
+    "cityRequired": "शहर आवश्यक आहे",
+    "stateRequired": "राज्य आवश्यक आहे",
+    "pincodeRequired": "पिनकोड आवश्यक आहे",
+    "pincodeFormat": "पिनकोड {count} अंकी असावा",
+    "bankCodeLength": "बँक कोड {count} अक्षरांपेक्षा जास्त नसावा",
+    "bankNameLength": "बँकेचे नाव {count} अक्षरांपेक्षा जास्त नसावे",
+    "branchNameLength": "शाखेचे नाव {count} अक्षरांपेक्षा जास्त नसावे",
+    "addressLength": "पत्ता {count} अक्षरांपेक्षा जास्त नसावा",
+    "cityLength": "शहर {count} अक्षरांपेक्षा जास्त नसावे",
+    "stateLength": "राज्य {count} अक्षरांपेक्षा जास्त नसावे",
+    "bankCodeExists": "बँक कोड आधीच अस्तित्वात आहे",
+    "bankNameExists": "बँकेचे नाव आधीच अस्तित्वात आहे"
+  },
+  "error": {
+    "title": "काहीतरी चुकले आहे",
+    "description": "बँक मास्टर पेज लोड करताना आम्हाला त्रुटी आली. कृपया पुन्हा प्रयत्न करा.",
+    "tryAgain": "पुन्हा प्रयत्न करा",
+    "goHome": "मुख्यपृष्ठावर जा",
+    "errorId": "त्रुटी ID: {id}"
+  },
+  "loading": {
+    "message": "बँक मास्टर लोड होत आहे...",
+    "description": "आम्ही बँक मास्टर डेटा प्राप्त करेपर्यंत कृपया प्रतीक्षा करा"
+  }
+}

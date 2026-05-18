@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useEffect, useRef, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useLocale, useTranslations } from "next-intl";
+import { useEffect, useRef, useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useLocale, useTranslations } from 'next-intl';
 
-import { AddButton, Tabs } from "@/components/common";
-import { SearchInput } from "@/components/common/SearchInput";
-import { sanitizeInput } from "@/lib/utils/security";
+import { AddButton, Tabs } from '@/components/common';
+import { SearchInput } from '@/components/common/SearchInput';
+import { sanitizeInput } from '@/lib/utils/security';
 
-type TabKey = "floor" | "subfloor";
+type TabKey = 'floor' | 'subfloor';
 
 export function FloorMasterToolbar() {
   const router = useRouter();
@@ -16,17 +16,17 @@ export function FloorMasterToolbar() {
   const searchParams = useSearchParams();
   const locale = useLocale();
 
-  const tFloor = useTranslations("floor.floor");
-  const tSubFloor = useTranslations("floor.subfloor");
+  const tFloor = useTranslations('floor.floor');
+  const tSubFloor = useTranslations('floor.subfloor');
 
   const base = `/${locale}/property-tax/floormaster`;
-  
+
   // Detect active tab from pathname
-  const activeTab: TabKey = pathname.includes("/subfloor") ? "subfloor" : "floor";
-  const t = activeTab === "floor" ? tFloor : tSubFloor;
+  const activeTab: TabKey = pathname.includes('/subfloor') ? 'subfloor' : 'floor';
+  const t = activeTab === 'floor' ? tFloor : tSubFloor;
 
   // Search functionality
-  const currentSearchTerm = searchParams.get("q") ?? "";
+  const currentSearchTerm = searchParams.get('q') ?? '';
   const [search, setSearch] = useState<string>(currentSearchTerm);
 
   // Sync search state with URL when currentSearchTerm changes (e.g., on Back/Forward navigation)
@@ -48,12 +48,12 @@ export function FloorMasterToolbar() {
 
     const timer = setTimeout(() => {
       const params = new URLSearchParams(searchParams);
-      params.set("page", "1"); // Reset to first page on search
-      
+      params.set('page', '1'); // Reset to first page on search
+
       if (search.trim()) {
-        params.set("q", search.trim());
+        params.set('q', search.trim());
       } else {
-        params.delete("q");
+        params.delete('q');
       }
 
       router.push(`${pathname}?${params.toString()}`);
@@ -72,28 +72,26 @@ export function FloorMasterToolbar() {
             const sanitized = sanitizeInput(value);
             setSearch(sanitized);
           }}
-          placeholder={t("form.searchPlaceholder")}
+          placeholder={t('form.searchPlaceholder')}
           className="mb-0 w-80 text-gray-900"
         />
       </div>
-      
+
       <Tabs
-        className="flex items-center gap-3 mt-6"
+        className="flex items-center gap-3 mt-0 flex-row"
         value={activeTab}
         variant="pills"
         items={[
-          { value: "floor", label: tFloor("tabs.floor"), content: null },
-          { value: "subfloor", label: tFloor("tabs.subfloor"), content: null }
+          { value: 'floor', label: tFloor('tabs.floor'), content: null },
+          { value: 'subfloor', label: tFloor('tabs.subfloor'), content: null },
         ]}
         onChange={(v) => router.push(`${base}/${v}`)}
       />
 
       <AddButton
         className="w-full"
-        label={t("form.addTitle")}
-        onClick={() =>
-          router.push(`${base}/${activeTab}/add`)
-        }
+        label={t('form.addTitle')}
+        onClick={() => router.push(`${base}/${activeTab}/add`)}
       />
     </div>
   );
