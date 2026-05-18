@@ -27,12 +27,12 @@ export function FloorRangeFields({
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Input
-            label={t('form.range.start')}
+            label={String(t('form.range.start'))}
             type="number"
             min={1}
             max={999}
             required
-            placeholder={t('form.range.startPlaceholder')}
+            placeholder={String(t('form.range.startPlaceholder'))}
             value={formData.rangeFrom || ''}
             onChange={(e) => {
               const value = e.target.value;
@@ -52,12 +52,12 @@ export function FloorRangeFields({
         
         <div>
           <Input
-            label={t('form.range.end')}
+            label={String(t('form.range.end'))}
             type="number"
             min={1}
             max={999}
             required
-            placeholder={t('form.range.endPlaceholder')}
+            placeholder={String(t('form.range.endPlaceholder'))}
             value={formData.rangeTo || ''}
             onChange={(e) => {
               const value = e.target.value;
@@ -77,8 +77,8 @@ export function FloorRangeFields({
       </div>
 
       <Input
-        label={t('form.englishName.prefix')}
-        placeholder={t('form.englishName.prefixPlaceholder')}
+        label={String(t('form.englishName.prefix'))}
+        placeholder={String(t('form.englishName.prefixPlaceholder'))}
         value={formData.prefix}
         onChange={(e) => {
           if (e.target.value.length <= 2) onChange('prefix', e.target.value);
@@ -94,8 +94,8 @@ export function FloorRangeFields({
       />
 
       <Input
-        label={t('form.englishName.suffix')}
-        placeholder={t('form.englishName.suffixPlaceholder')}
+        label={String(t('form.englishName.suffix'))}
+        placeholder={String(t('form.englishName.suffixPlaceholder'))}
         value={formData.suffix}
         onChange={(e) => {
           if (e.target.value.length <= 2) onChange('suffix', e.target.value);

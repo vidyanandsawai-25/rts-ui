@@ -120,10 +120,14 @@ export function AddConnectionDrawer({
       const e: Record<string, string> = {};
       if (!data.connectionNo.trim())
         e.connectionNo = t("form.validation.connectionNoRequired");
+      if (!data.meterNo || !data.meterNo.trim())
+        e.meterNo = t("form.validation.meterNoRequired");
       if (!data.waterConnectionTypeId)
         e.waterConnectionTypeId = t("form.validation.typeRequired");
       if (!data.waterConnectionSizeId)
         e.waterConnectionSizeId = t("form.validation.tapSizeRequired");
+      if (!data.waterConnectionStatusId)
+        e.waterConnectionStatusId = t("form.validation.statusRequired");
       if (!data.installDate)
         e.installDate = t("form.validation.installDateRequired");
       return e;

@@ -93,6 +93,7 @@
         "meterNoRequired": "Meter No is required",
         "typeRequired": "Type is required",
         "tapSizeRequired": "Tap Size is required",
+        "statusRequired": "Connection Status is required",
         "installDateRequired": "Install Date is required",
         "fixErrors": "Please fix validation errors",
         "rateNotFound": "No applicable rate found for the selected Type and Tap Size"

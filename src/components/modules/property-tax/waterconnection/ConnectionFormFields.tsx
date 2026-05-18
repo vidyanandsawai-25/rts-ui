@@ -75,11 +75,16 @@ export function ConnectionFormFields({
           <Input
             name="meterNo"
             label={t("form.fields.meterNo.label")}
+            required
             value={formData.meterNo}
             onChange={onChange}
             onBlur={onBlur}
             placeholder={t("form.fields.meterNo.placeholder")}
             fullWidth
+          />
+          <ValidationMessage
+            message={errors.meterNo}
+            visible={showError("meterNo")}
           />
         </div>
       </div>
@@ -134,10 +139,12 @@ export function ConnectionFormFields({
           <Select
             name="waterConnectionStatusId"
             label={t("form.fields.status.label")}
+            required
             options={statusSelectOptions}
             value={formData.waterConnectionStatusId != null ? String(formData.waterConnectionStatusId) : ''}
             onChange={(_, val) => onSelectChange("waterConnectionStatusId", val)}
             placeholder={t("form.fields.status.placeholder")}
+            error={showError("waterConnectionStatusId") ? errors.waterConnectionStatusId : undefined}
           />
         </div>
       </div>

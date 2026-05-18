@@ -153,7 +153,7 @@ export default function FloorMaster({
 
               <Select
                 value={String(pageSize)}
-                onChange={(e) =>
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
                   router.push(
                     buildUrl(1, Number(e.target.value), currentSearchTerm, sortBy, sortOrder)
                   )

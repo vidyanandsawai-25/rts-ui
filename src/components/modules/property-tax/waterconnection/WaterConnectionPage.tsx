@@ -1,9 +1,8 @@
 "use client";
 
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { Droplets } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { PageContainer } from "@/components/common";
 import { useConfirm } from "@/components/common/ConfirmProvider";
@@ -11,7 +10,10 @@ import type {
   WaterConnection,
   WaterConnectionPageData,
 } from "@/types/waterconnection.types";
-import { deleteWaterConnectionAction } from "@/app/[locale]/property-tax/waterconnection/action";
+import { 
+  deleteWaterConnectionAction,
+  getWaterConnectionPageData
+} from "@/app/[locale]/property-tax/waterconnection/action";
 import { PropertyStatsCards } from "./PropertyStatsCards";
 import { PropertyInfoCard } from "./PropertyInfoCard";
 import { ConnectionsTable } from "./ConnectionsTable";
@@ -35,21 +37,42 @@ interface WaterConnectionPageProps {
 export default function WaterConnectionPage({ initialData, propertyId }: WaterConnectionPageProps) {
   const t = useTranslations("waterConnection");
   const { confirm } = useConfirm();
-  const router = useRouter();
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingConnection, setEditingConnection] = useState<WaterConnection | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [loading, setLoading] = useState(false);
+  const [pageData, setPageData] = useState<WaterConnectionPageData>(initialData);
+  const isFirstRender = useRef(true);
 
-  const stats = useMemo(() => computeStats(initialData.connections), [initialData.connections]);
+  // Fetch data from server when page or pageSize changes (but not on initial mount)
+  useEffect(() => {
+    // Skip first render since we already have initialData
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
 
-  const pagedConnections = useMemo(() => {
-    const start = (page - 1) * pageSize;
-    return initialData.connections.slice(start, start + pageSize);
-  }, [initialData.connections, page, pageSize]);
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const data = await getWaterConnectionPageData(propertyId, page, pageSize);
+        setPageData(data);
+      } catch (error) {
+        console.error("Failed to fetch water connections:", error);
+        toast.error(t("error.description"));
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const totalPages = Math.max(1, Math.ceil(initialData.totalCount / pageSize));
+    fetchData();
+  }, [propertyId, page, pageSize, t]);
+
+  const stats = useMemo(() => computeStats(pageData.connections), [pageData.connections]);
+
+  const totalPages = Math.max(1, Math.ceil(pageData.totalCount / pageSize));
 
   const handleAdd = () => {
     setEditingConnection(null);
@@ -68,7 +91,21 @@ export default function WaterConnectionPage({ initialData, propertyId }: WaterCo
 
   const handleSaved = () => {
     setPage(1);
-    router.refresh();
+    // Trigger re-fetch by updating a dependency (page will change)
+    // Or we can manually fetch here
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const data = await getWaterConnectionPageData(propertyId, 1, pageSize);
+        setPageData(data);
+        setPage(1);
+      } catch (error) {
+        console.error("Failed to refresh water connections:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
   };
 
   const handlePageChange = useCallback((p: number) => setPage(p), []);
@@ -86,7 +123,9 @@ export default function WaterConnectionPage({ initialData, propertyId }: WaterCo
         const result = await deleteWaterConnectionAction(connection.id);
         if (result.ok) {
           toast.success(t("delete.success"));
-          router.refresh();
+          // Refresh data after delete
+          const data = await getWaterConnectionPageData(propertyId, page, pageSize);
+          setPageData(data);
         } else {
           toast.error(result.error ?? t("delete.error"));
         }
@@ -107,7 +146,7 @@ export default function WaterConnectionPage({ initialData, propertyId }: WaterCo
             <p className="text-sm text-gray-500">
               {t("page.subtitle")} &bull;{" "}
               <span className="font-medium text-blue-600">
-                {initialData.property.propertyNo}
+                {pageData.property.propertyNo}
               </span>
             </p>
           </div>
@@ -126,7 +165,7 @@ export default function WaterConnectionPage({ initialData, propertyId }: WaterCo
 
         {/* Property Info */}
         <PropertyInfoCard
-          property={initialData.property}
+          property={pageData.property}
           labels={{
             owner: t("property.owner"),
             contact: t("property.contact"),
@@ -141,9 +180,9 @@ export default function WaterConnectionPage({ initialData, propertyId }: WaterCo
 
         {/* Connections Table */}
         <ConnectionsTable
-          propertyNo={initialData.property.propertyNo}
-          connections={pagedConnections}
-          totalCount={initialData.totalCount}
+          propertyNo={pageData.property.propertyNo}
+          connections={pageData.connections}
+          totalCount={pageData.totalCount}
           pageNumber={page}
           pageSize={pageSize}
           totalPages={totalPages}
@@ -152,6 +191,7 @@ export default function WaterConnectionPage({ initialData, propertyId }: WaterCo
           onAdd={handleAdd}
           onEdit={handleEdit}
           onDelete={handleDelete}
+          loading={loading}
         />
       </div>
 
@@ -160,10 +200,10 @@ export default function WaterConnectionPage({ initialData, propertyId }: WaterCo
         open={drawerOpen}
         propertyId={propertyId}
         editingConnection={editingConnection}
-        typeOptions={initialData.typeOptions}
-        sizeOptions={initialData.sizeOptions}
-        statusOptions={initialData.statusOptions}
-        rateMasters={initialData.rateMasters}
+        typeOptions={pageData.typeOptions}
+        sizeOptions={pageData.sizeOptions}
+        statusOptions={pageData.statusOptions}
+        rateMasters={pageData.rateMasters}
         onClose={handleClose}
         onSaved={handleSaved}
       />

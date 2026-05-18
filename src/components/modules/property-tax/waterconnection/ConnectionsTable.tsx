@@ -21,6 +21,7 @@ interface ConnectionsTableProps {
   onAdd: () => void;
   onEdit: (connection: WaterConnection) => void;
   onDelete: (connection: WaterConnection) => void;
+  loading?: boolean;
 }
 
 export function ConnectionsTable({
@@ -35,6 +36,7 @@ export function ConnectionsTable({
   onAdd,
   onEdit,
   onDelete,
+  loading = false,
 }: ConnectionsTableProps) {
   const t = useTranslations("waterConnection");
   const tCommon = useTranslations("common");
@@ -73,7 +75,7 @@ export function ConnectionsTable({
       <MasterTable<WaterConnection>
         columns={columns}
         data={connections}
-        loading={false}
+        loading={loading}
         pageNumber={pageNumber}
         pageSize={pageSize}
         totalCount={totalCount}

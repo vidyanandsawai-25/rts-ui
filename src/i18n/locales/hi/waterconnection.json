@@ -93,6 +93,7 @@
         "meterNoRequired": "मीटर क्रमांक आवश्यक है",
         "typeRequired": "प्रकार आवश्यक है",
         "tapSizeRequired": "नल का आकार आवश्यक है",
+        "statusRequired": "कनेक्शन स्थिति आवश्यक है",
         "installDateRequired": "स्थापना तिथि आवश्यक है",
         "fixErrors": "कृपया सत्यापन त्रुटियां ठीक करें",
         "rateNotFound": "चुने गए प्रकार और नल के आकार के लिए कोई लागू दर नहीं मिली"
