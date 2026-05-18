@@ -51,6 +51,40 @@ export async function saveDepartmentMasterAction(
       isActive: formData.get("isActive") === "true",
     };
 
+    // Server-side validation
+    const code = data.departmentCode?.trim() || "";
+    const name = data.departmentName?.trim() || "";
+    const nameLocal = data.departmentNameLocal?.trim() || "";
+    const icon = data.departmentIcon?.trim() || "";
+    const desc = data.departmentDescription?.trim() || "";
+
+    if (!code) return { success: false, error: "Department Code is required" };
+    if (code.length < 2 || code.length > 50) return { success: false, error: "Department Code must be between 2 and 50 characters" };
+    if (/^0+$/.test(code)) return { success: false, error: "Department Code cannot consist only of zeros" };
+    if (!/[a-zA-Z0-9]/.test(code)) return { success: false, error: "Department Code must contain at least one letter or digit" };
+    if (!/^[A-Za-z0-9]+([A-Za-z0-9\s_-]*[A-Za-z0-9]+)*$/.test(code)) return { success: false, error: "Department Code must be alphanumeric (underscores, spaces and hyphens allowed)" };
+
+    if (!name) return { success: false, error: "Department Name is required" };
+    if (name.length < 3 || name.length > 100) return { success: false, error: "Department Name must be between 3 and 100 characters" };
+    if (!/[\p{L}]/u.test(name)) return { success: false, error: "Department Name must contain at least one letter" };
+    if (/^[0-9\s,.\-\/()]+$/.test(name)) return { success: false, error: "Department Name cannot consist only of numbers or punctuation" };
+    if (!/^[\p{L}\p{M}\p{N}]+(([\p{L}\p{M}\p{N}\/,.\-()&]|\s(?!\s))*[\p{L}\p{M}\p{N}]+)*$/u.test(name)) return { success: false, error: "Department Name contains invalid characters or consecutive spaces" };
+
+    if (nameLocal) {
+      if (nameLocal.length < 3 || nameLocal.length > 100) return { success: false, error: "Local Name must be between 3 and 100 characters" };
+      if (!/[\p{L}]/u.test(nameLocal)) return { success: false, error: "Local Name must contain at least one letter" };
+    }
+
+    if (icon) {
+      if (icon.length > 100) return { success: false, error: "Icon Class must be at most 100 characters" };
+      if (!/^[a-zA-Z0-9\s_-]+$/.test(icon)) return { success: false, error: "Icon Class can only contain letters, numbers, spaces, hyphens, and underscores" };
+    }
+
+    if (desc) {
+      if (desc.length > 500) return { success: false, error: "Description must be at most 500 characters" };
+      if (!/[\p{L}\p{N}]/u.test(desc)) return { success: false, error: "Description must contain at least one letter or digit" };
+    }
+
     if (id) {
       await updateDepartmentMaster(data, userId);
     } else {
