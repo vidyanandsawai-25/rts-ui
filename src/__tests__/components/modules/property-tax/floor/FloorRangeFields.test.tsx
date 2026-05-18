@@ -26,9 +26,9 @@ const messages = {
         englishName: {
           title: 'English Name',
           prefix: 'Prefix',
-          prefixPlaceholder: 'FL',
+          prefixPlaceholder: 'Floor',
           suffix: 'Suffix',
-          suffixPlaceholder: 'FL',
+          suffixPlaceholder: 'Floor',
         },
       
         autoGenerateSubFloor: 'Auto-Generate SubFloor',

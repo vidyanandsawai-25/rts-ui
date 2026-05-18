@@ -72,9 +72,9 @@
       "englishName": {
         "title": "English Name",
         "prefix": "Prefix",
-        "prefixPlaceholder": "FL",
+        "prefixPlaceholder": "Floor",
         "suffix": "Suffix",
-        "suffixPlaceholder": "FL"
+        "suffixPlaceholder": "Floor"
       },
       
       "autoGenerateSubFloor": "Auto-Generate SubFloor",
@@ -211,12 +211,12 @@
     "table": {
       "columns": {
         "srNo": "Sr. No.",
-        "subFloorId": "Sub-Floor",
+        "subFloorId": "Sub-Floor Code",
         "descriptionEnglish": "Description (English)",
         "descriptionRegional": "Description",
         "status": "Status",
         "actions": "Actions",
-        "subFloorCode": "Sub-Floor",
+        "subFloorCode": "Sub-Floor Code",
         "subFloorDescription": "Description"
       },
       "pagination": {
