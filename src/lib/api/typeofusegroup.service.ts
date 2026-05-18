@@ -114,6 +114,7 @@ export async function updateUseGroupApi(input: {
   });
   
   if (!response.success) {
+    // Return raw backend error - forms will map reference errors to appropriate i18n keys
     throw new Error(response.error ?? TypeOfUseErrorMessages.UPDATE_GROUP_FAILED);
   }
   
@@ -130,11 +131,11 @@ export async function deleteUseGroupApi(id: string | number) {
   });
   
   if (!response.success) {
-    // Customize backend reference error message
+    // Map backend reference error to the corresponding i18n key
     let errorMessage = response.error ?? TypeOfUseErrorMessages.DELETE_GROUP_FAILED;
     
     if (errorMessage.includes("referenced by other entities")) {
-      errorMessage = "This group cannot be deleted because it still has associated types. Please delete all types within this group first.";
+      errorMessage = TypeOfUseErrorMessages.DELETE_GROUP_REFERENCED;
     }
     
     throw new Error(errorMessage);

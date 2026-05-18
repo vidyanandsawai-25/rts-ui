@@ -114,6 +114,7 @@ export async function updateSubTypeApi(input: {
   });
   
   if (!response.success) {
+    // Return raw backend error - forms will map reference errors to appropriate i18n keys
     throw new Error(response.error ?? TypeOfUseErrorMessages.UPDATE_SUBTYPE_FAILED);
   }
   
@@ -130,11 +131,11 @@ export async function deleteSubTypeApi(id: string) {
   });
   
   if (!response.success) {
-    // Customize backend reference error message
+    // Map backend reference error to the corresponding i18n key
     let errorMessage = response.error ?? TypeOfUseErrorMessages.DELETE_SUBTYPE_FAILED;
     
     if (errorMessage.includes("referenced by other entities")) {
-      errorMessage = "This sub-type cannot be deleted because it is being used by other records. Please remove all references first.";
+      errorMessage = TypeOfUseErrorMessages.DELETE_SUBTYPE_REFERENCED;
     }
     
     throw new Error(errorMessage);

@@ -126,6 +126,7 @@ export async function updateUseTypeApi(input: {
   });
   
   if (!response.success) {
+    // Return raw backend error - forms will map reference errors to appropriate i18n keys
     throw new Error(response.error ?? TypeOfUseErrorMessages.UPDATE_TYPE_FAILED);
   }
   
@@ -142,11 +143,11 @@ export async function deleteUseTypeApi(id: string) {
   });
   
   if (!response.success) {
-    // Customize backend reference error message
+    // Map backend reference error to the corresponding i18n key
     let errorMessage = response.error ?? TypeOfUseErrorMessages.DELETE_TYPE_FAILED;
     
     if (errorMessage.includes("referenced by other entities")) {
-      errorMessage = "This type cannot be deleted because it still has associated sub-types. Please delete all sub-types for this type first.";
+      errorMessage = TypeOfUseErrorMessages.DELETE_TYPE_REFERENCED;
     }
     
     throw new Error(errorMessage);

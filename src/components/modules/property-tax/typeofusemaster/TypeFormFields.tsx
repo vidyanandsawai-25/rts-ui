@@ -184,11 +184,14 @@ export function SearchSequenceInput({
           onChange(parsedValue);
         }}
         onKeyDown={(e) => {
-          // Prevent typing numbers if already at 3 digits (special keys are allowed)
+          // Prevent typing numbers only when the resulting value would exceed 3 digits
           const currentValue = e.currentTarget.value;
           const isNumber = /^[0-9]$/.test(e.key);
+          const selectionStart = e.currentTarget.selectionStart ?? currentValue.length;
+          const selectionEnd = e.currentTarget.selectionEnd ?? currentValue.length;
+          const selectedLength = selectionEnd - selectionStart;
           
-          if (isNumber && currentValue.length >= 3) {
+          if (isNumber && currentValue.length - selectedLength + 1 > 3) {
             e.preventDefault();
           }
         }}
