@@ -121,16 +121,23 @@ export async function updateSubTypeApi(input: {
 }
 
 /**
- * Delete a use subtype
+ * Delete a use subtype (purge - permanent delete)
  */
 export async function deleteSubTypeApi(id: string) {
-  const response = await apiClient.delete<unknown>(`/SubTypeOfUse/${id}`, {
+  const response = await apiClient.delete<unknown>(`/SubTypeOfUse/${id}/purge`, {
     cache: "no-store",
     headers: { "Accept": "application/json" },
   });
   
   if (!response.success) {
-    throw new Error(response.error ?? TypeOfUseErrorMessages.DELETE_SUBTYPE_FAILED);
+    // Customize backend reference error message
+    let errorMessage = response.error ?? TypeOfUseErrorMessages.DELETE_SUBTYPE_FAILED;
+    
+    if (errorMessage.includes("referenced by other entities")) {
+      errorMessage = "This sub-type cannot be deleted because it is being used by other records. Please remove all references first.";
+    }
+    
+    throw new Error(errorMessage);
   }
   
   return true;

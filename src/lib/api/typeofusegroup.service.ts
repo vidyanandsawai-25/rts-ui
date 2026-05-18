@@ -121,16 +121,23 @@ export async function updateUseGroupApi(input: {
 }
 
 /**
- * Delete a use group
+ * Delete a use group (purge - permanent delete)
  */
 export async function deleteUseGroupApi(id: string | number) {
-  const response = await apiClient.delete<unknown>(`/TypeOfUseGroup/${id}`, {
+  const response = await apiClient.delete<unknown>(`/TypeOfUseGroup/${id}/purge`, {
     cache: "no-store",
     headers: { "Accept": "application/json" },
   });
   
   if (!response.success) {
-    throw new Error(response.error ?? TypeOfUseErrorMessages.DELETE_GROUP_FAILED);
+    // Customize backend reference error message
+    let errorMessage = response.error ?? TypeOfUseErrorMessages.DELETE_GROUP_FAILED;
+    
+    if (errorMessage.includes("referenced by other entities")) {
+      errorMessage = "This group cannot be deleted because it still has associated types. Please delete all types within this group first.";
+    }
+    
+    throw new Error(errorMessage);
   }
   
   return true;

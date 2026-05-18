@@ -114,7 +114,8 @@ export default function UseGroupForm({ id, initialData, allGroups: allGroupsProp
 
       router.back();
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message.toLowerCase() : '';
+      const errorMessage = err instanceof Error ? err.message : '';
+      const msg = errorMessage.toLowerCase();
 
       const isDup =
         msg.includes("duplicate") ||
@@ -135,7 +136,8 @@ export default function UseGroupForm({ id, initialData, allGroups: allGroupsProp
         return;
       }
 
-      toast.error(t('messages.createGroupFailed'));
+      // Show actual backend error message or fallback to generic message
+      toast.error(errorMessage || (isEdit ? t('messages.updateGroupFailed') : t('messages.createGroupFailed')));
     }
   };
 

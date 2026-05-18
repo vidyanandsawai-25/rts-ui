@@ -191,7 +191,11 @@
         "deleteTypeWithSubTypesDescription": "The type you want to delete has sub-types. Deleting it will also delete all its sub-types. Are you sure you want to proceed?",
         "deleteGroupWithTypesTitle": "Delete Group with Types?",
         "deleteGroupWithTypesDescription": "The group you want to delete has types associated with it. Deleting this group will also delete ALL its types and their sub-types. This action cannot be undone.",
-        "deleteAll": "Delete All"
+        "deleteAll": "Delete All",
+        "typeHasSubTypes": "This type cannot be deleted because it has sub-types. Please delete all sub-types for this type first.",
+        "groupHasTypes": "This group cannot be deleted because it has types. Please delete all types within this group first.",
+        "cannotDeactivateGroup": "This group cannot be deactivated because it has active types. Please deactivate or delete all types within this group first.",
+        "cannotDeactivateType": "This type cannot be deactivated because it has active sub-types. Please deactivate or delete all sub-types for this type first."
     },
     "error": {
       "title": "Type of Use Master error",

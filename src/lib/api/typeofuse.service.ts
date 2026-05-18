@@ -133,16 +133,23 @@ export async function updateUseTypeApi(input: {
 }
 
 /**
- * Delete a use type
+ * Delete a use type (purge - permanent delete)
  */
 export async function deleteUseTypeApi(id: string) {
-  const response = await apiClient.delete<unknown>(`/TypeOfUse/${id}`, {
+  const response = await apiClient.delete<unknown>(`/TypeOfUse/${id}/purge`, {
     cache: "no-store",
     headers: { "Accept": "application/json" },
   });
   
   if (!response.success) {
-    throw new Error(response.error ?? TypeOfUseErrorMessages.DELETE_TYPE_FAILED);
+    // Customize backend reference error message
+    let errorMessage = response.error ?? TypeOfUseErrorMessages.DELETE_TYPE_FAILED;
+    
+    if (errorMessage.includes("referenced by other entities")) {
+      errorMessage = "This type cannot be deleted because it still has associated sub-types. Please delete all sub-types for this type first.";
+    }
+    
+    throw new Error(errorMessage);
   }
   
   return true;
