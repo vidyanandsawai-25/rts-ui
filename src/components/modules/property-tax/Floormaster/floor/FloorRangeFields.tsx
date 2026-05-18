@@ -27,15 +27,12 @@ export function FloorRangeFields({
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Input
-            label={
-              <span>
-                {t('form.range.start')} <span className="text-red-500">*</span>
-              </span>
-            }
+            label={String(t('form.range.start'))}
             type="number"
             min={1}
             max={999}
-            placeholder={t('form.range.startPlaceholder')}
+            required
+            placeholder={String(t('form.range.startPlaceholder'))}
             value={formData.rangeFrom || ''}
             onChange={(e) => {
               const value = e.target.value;
@@ -55,15 +52,12 @@ export function FloorRangeFields({
         
         <div>
           <Input
-            label={
-              <span>
-                {t('form.range.end')} <span className="text-red-500">*</span>
-              </span>
-            }
+            label={String(t('form.range.end'))}
             type="number"
             min={1}
             max={999}
-            placeholder={t('form.range.endPlaceholder')}
+            required
+            placeholder={String(t('form.range.endPlaceholder'))}
             value={formData.rangeTo || ''}
             onChange={(e) => {
               const value = e.target.value;

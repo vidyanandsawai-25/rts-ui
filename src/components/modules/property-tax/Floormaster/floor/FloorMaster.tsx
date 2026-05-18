@@ -7,8 +7,8 @@ import { toast } from "sonner";
 import { MasterTable } from "@/components/common/MasterTable";
 import { EditButton, DeleteButton } from "@/components/common/ActionButtons";
 import { useConfirm } from "@/components/common/ConfirmProvider";
+import { Select } from "@/components/common";
 import { useSearchNavigation } from "@/hooks/useSearchNavigation";
-import { TEXT_SANITIZE } from "@/lib/utils/validation";
 
 import type { Floor, FloorMasterProps } from "@/types/floor.types";
 
@@ -63,12 +63,6 @@ export default function FloorMaster({
     startTransition,
   });
 
-  const handleSearchChange = (value: string) => {
-    // Sanitize search input to prevent special characters
-    const sanitized = value.replace(TEXT_SANITIZE, "");
-    setSearch(sanitized);
-  };
-
   /* ================= URL BUILDER ================= */
   const buildUrl = useCallback(
     (
@@ -91,28 +85,7 @@ export default function FloorMaster({
     [locale]
   );
 
-  /* ================= SORTING ================= */
-  const handleSort = useCallback(
-    (columnKey: string) => {
-      let newSortOrder: string = "asc";
-
-      // Toggle sort order if clicking the same column
-      if (sortBy === columnKey) {
-        if (sortOrder === "asc") {
-          newSortOrder = "desc";
-        } else if (sortOrder === "desc") {
-          // Reset to no sorting
-          router.push(buildUrl(1, pageSize, currentSearchTerm));
-          return;
-        }
-      }
-
-      router.push(buildUrl(1, pageSize, currentSearchTerm, columnKey, newSortOrder));
-    },
-    [sortBy, sortOrder, router, buildUrl, pageSize, currentSearchTerm]
-  );
-
-  const columns = floorColumns(t, tCommon, sortBy, sortOrder, handleSort);
+  const columns = floorColumns(t);
 
   /* ================= PAGINATION ================= */
   const changePage = (p: number) => {
@@ -203,7 +176,7 @@ export default function FloorMaster({
                 <span className="text-sm text-gray-600">{tCommon("table.rowsPerPage")}:</span>
                 <Select
                   value={String(pageSize)}
-                  onChange={(e) => {
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
                     startTransition(() => {
                       router.push(
                         buildUrl(1, Number(e.target.value), currentSearchTerm, sortBy, sortOrder)
