@@ -149,7 +149,7 @@ export function LoginCredentialFields({
                 size="xs"
                 onClick={() => setShowPassword(!showPassword)}
                 aria-label={showPassword ? copy.hidePassword : copy.showPassword}
-                className="absolute right-1 top-1/2 z-10 -translate-y-1/2 p-1 text-gray-400 hover:text-cyan-600"
+                className="absolute right-1 top-[22px] z-10 -translate-y-1/2 p-1 text-gray-400 hover:text-cyan-600"
               >
                 {showPassword ? (
                   <EyeOff size={20} className="text-cyan-600" />
