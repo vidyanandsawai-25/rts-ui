@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { AlertCircle } from 'lucide-react';
 import { logger } from '@/lib/utils/logger';
@@ -15,6 +15,69 @@ export interface ErrorPageProps {
   translationNamespace?: string;
   /** Custom home URL. Defaults to locale root */
   homeUrl?: string;
+}
+
+/**
+ * Extracts a user-friendly error message from an API error.
+ * Handles RFC 9110 problem details format and other common API error formats.
+ */
+function parseUserFriendlyError(errorMessage: string): { userMessage: string; technicalDetails?: string } {
+  // Try to extract JSON from the error message
+  const jsonMatch = errorMessage.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) {
+    // No JSON found, return the message as-is (but clean up common prefixes)
+    const cleanMessage = errorMessage.replace(/^[^:]+:\s*/, '').replace(/\s*\(\d+\)$/, '');
+    return { userMessage: cleanMessage || errorMessage };
+  }
+
+  try {
+    const parsed = JSON.parse(jsonMatch[0]) as {
+      title?: string;
+      message?: string;
+      errors?: Record<string, string[]>;
+      detail?: string;
+    };
+
+    // Build user-friendly message from parsed API response
+    const messages: string[] = [];
+
+    // Use title or message as primary message
+    if (parsed.title && parsed.title !== 'One or more validation errors occurred.') {
+      messages.push(parsed.title);
+    } else if (parsed.message) {
+      messages.push(parsed.message);
+    } else if (parsed.detail) {
+      messages.push(parsed.detail);
+    }
+
+    // Extract validation errors in a readable format
+    if (parsed.errors && typeof parsed.errors === 'object') {
+      const errorMessages = Object.entries(parsed.errors)
+        .flatMap(([field, fieldErrors]) => {
+          if (Array.isArray(fieldErrors)) {
+            return fieldErrors.map(e => `${field}: ${e}`);
+          }
+          return [];
+        });
+      messages.push(...errorMessages);
+    }
+
+    const userMessage = messages.length > 0 
+      ? messages.join('. ') 
+      : 'An unexpected error occurred. Please try again.';
+
+    return {
+      userMessage,
+      technicalDetails: errorMessage,
+    };
+  } catch {
+    // JSON parse failed, extract text before the JSON
+    const prefix = errorMessage.substring(0, errorMessage.indexOf('{')).trim().replace(/:$/, '');
+    return { 
+      userMessage: prefix || 'An unexpected error occurred. Please try again.',
+      technicalDetails: errorMessage,
+    };
+  }
 }
 
 /**
@@ -43,6 +106,12 @@ export function ErrorPage({
   const t = useTranslations(translationNamespace);
   const locale = useLocale();
   const defaultHomeUrl = `/${locale}`;
+
+  // Parse error message for user-friendly display
+  const { userMessage, technicalDetails } = useMemo(
+    () => parseUserFriendlyError(error.message),
+    [error.message]
+  );
 
   useEffect(() => {
     // Log the error to an error reporting service
@@ -74,18 +143,28 @@ export function ErrorPage({
                 {t('description')}
               </p>
 
-              {/* Error Details (development only) */}
-              {process.env.NODE_ENV === 'development' && (
-                <div className="w-full mt-4 p-4 bg-gray-100 rounded-md text-left">
-                  <p className="text-sm font-mono text-gray-800 break-words">
-                    {error.message}
+              {/* User-friendly error message */}
+              <div className="w-full mt-4 p-4 bg-gray-100 rounded-md text-left">
+                <p className="text-sm text-gray-800 break-words">
+                  {userMessage}
+                </p>
+                {error.digest && (
+                  <p className="text-xs text-gray-500 mt-2">
+                    {t('errorId', { id: error.digest })}
                   </p>
-                  {error.digest && (
-                    <p className="text-xs text-gray-600 mt-2">
-                      {t('errorId', { id: error.digest })}
-                    </p>
-                  )}
-                </div>
+                )}
+              </div>
+
+              {/* Technical details (development only) */}
+              {process.env.NODE_ENV === 'development' && technicalDetails && (
+                <details className="w-full mt-2 text-left">
+                  <summary className="text-xs text-gray-500 cursor-pointer hover:text-gray-700">
+                    Technical Details
+                  </summary>
+                  <div className="mt-2 p-3 bg-gray-200 rounded text-xs font-mono text-gray-700 break-all overflow-auto max-h-40">
+                    {technicalDetails}
+                  </div>
+                </details>
               )}
 
               {/* Action Buttons */}
