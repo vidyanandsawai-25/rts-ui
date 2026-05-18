@@ -1,7 +1,7 @@
 import { Input, SearchSelect } from '@/components/common';
 import { Label } from '@/components/common/label';
 import { PropertyBasicDetailsApiItem } from '@/types/property-basic-details.types';
-import { sanitizeFlatShopNo, sanitizePlotNo } from '@/lib/utils/input-sanitization';
+import { sanitizeFlatShopNo, sanitizePositiveInteger } from '@/lib/utils/input-sanitization';
 import { propertyValidators, PROPERTY_VALIDATION_RULES } from '@/lib/utils/kyc-validation.constants';
 import { useState } from 'react';
 
@@ -140,24 +140,34 @@ export const BasicPropertyFields = ({
                 <Input
                     id="pd-plot"
                     name="plotNo"
+                    type="number"
+                    min="0"
                     placeholder={t('property.plotNoPlaceholder')}
                     value={plotNo}
                     maxLength={PROPERTY_VALIDATION_RULES.PLOT_NO_MAX_LENGTH}
                     className={`h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${
-                        showPlotNoError && !propertyValidators.isValidPlotNo(plotNo)
+                        showPlotNoError && !propertyValidators.isValidPositiveNumber(plotNo)
                             ? 'border-red-300 focus:border-red-500'
                             : ''
                     }`}
                     onChange={(e) => {
-                        const sanitized = sanitizePlotNo(e.target.value);
-                        setPlotNo(sanitized);
-                        if (sanitized) setShowPlotNoError(true);
+                        const value = e.target.value;
+                        if (value && parseFloat(value) < 0) return;
+                        const sanitized = sanitizePositiveInteger(value);
+                        const limited = sanitized.slice(0, PROPERTY_VALIDATION_RULES.PLOT_NO_MAX_LENGTH);
+                        setPlotNo(limited);
+                        if (limited) setShowPlotNoError(true);
+                    }}
+                    onKeyDown={(e) => {
+                        if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+' || e.key === '.') {
+                            e.preventDefault();
+                        }
                     }}
                     onBlur={() => setShowPlotNoError(true)}
                 />
-                {showPlotNoError && !propertyValidators.isValidPlotNo(plotNo) && (
+                {showPlotNoError && !propertyValidators.isValidPositiveNumber(plotNo) && (
                     <span className="text-xs text-red-500">
-                        {t('property.validation.invalidPlotNo') || 'Invalid plot number. Only alphanumeric characters allowed.'}
+                        {t('property.validation.invalidPlotNo') || 'Invalid plot number. Only digits (0-999) allowed.'}
                     </span>
                 )}
             </div>

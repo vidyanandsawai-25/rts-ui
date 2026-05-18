@@ -253,12 +253,18 @@ export const societyValidators = {
 export const PROPERTY_VALIDATION_RULES = {
   /** Maximum length for flat/shop number */
   FLAT_SHOP_NO_MAX_LENGTH: 50,
-  /** Maximum length for plot number */
-  PLOT_NO_MAX_LENGTH: 50,
+  /** Maximum length for plot number (3 digits only) */
+  PLOT_NO_MAX_LENGTH: 3,
+  /** Maximum length for plot area (3 digits only) */
+  PLOT_AREA_MAX_LENGTH: 3,
   /** Maximum length for survey number */
   SURVEY_NO_MAX_LENGTH: 50,
   /** Maximum length for sub zone number */
   SUB_ZONE_NO_MAX_LENGTH: 50,
+  /** Maximum length for residential toilet count (3 digits) */
+  RESIDENTIAL_TOILET_MAX_LENGTH: 3,
+  /** Maximum length for commercial toilet count (3 digits) */
+  COMMERCIAL_TOILET_MAX_LENGTH: 3,
 } as const;
 
 /**
