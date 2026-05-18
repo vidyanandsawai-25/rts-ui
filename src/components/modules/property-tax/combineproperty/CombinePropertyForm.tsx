@@ -9,7 +9,7 @@ import { MultiSelectDropdown } from '@/components/common/Dropdown';
 import { CancelButton, AddButton } from '@/components/common/ActionButtons';
 import { MasterTable } from '@/components/common/MasterTable';
 import { CombinePropertyItem } from '@/types/combine-property.types';
-import { useCombinePropertyForm, SelectionMethod } from '@/hooks/useCombineProperty';
+import { useCombinePropertyForm, SelectionMethod } from '@/hooks/combineProperty/useCombineProperty';
 import { getCombinePropertyColumns, PropertyRow } from './combinePropertyColumns';
 
 /* ------------------------------------------------------------------ */
@@ -144,7 +144,7 @@ export default function CombinePropertyForm({
   /* ============================================================
      EMPTY STATE
   ============================================================ */
-  const EmptyState = () => (
+  const emptyStateContent = (
     <div className="flex flex-col items-center justify-center min-h-[380px] text-center gap-4 select-none">
       <div className="w-[72px] h-[72px] rounded-full bg-blue-50 flex items-center justify-center">
         <FileText className="w-9 h-9 text-blue-200" strokeWidth={1.5} />
@@ -287,7 +287,7 @@ export default function CombinePropertyForm({
       <div className="px-4 py-4 flex flex-col gap-4">
 
         {/* Empty state */}
-        {!isReviewing && !selectedBasePropertyId && <EmptyState />}
+        {!isReviewing && !selectedBasePropertyId && emptyStateContent}
 
         {/* Review header + warning */}
         {isReviewing && reviewData.length > 0 && (
@@ -331,7 +331,7 @@ export default function CombinePropertyForm({
             paginationConfig={{ enabled: false }}
             height="md"
             getRowKey={(row, i) => `row-${row.propertyId || 0}-${i}`}
-            emptyText="No property details found."
+            emptyText={t('emptyTableText')}
           />
         )}
       </div>

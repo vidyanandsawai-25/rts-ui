@@ -36,6 +36,14 @@ export interface PropertyCombineDetails {
   pendingAmount: number;
 }
 
+export interface PropertyCombineDetailsResponse {
+  success: boolean;
+  message: string;
+  items: PropertyCombineDetails[];
+  errors: string[] | null;
+  correlationId: string | null;
+}
+
 export interface GetPropertyCombineDetailsParams {
   wardId: number;
   propertyNo: string;

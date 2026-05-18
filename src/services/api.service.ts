@@ -5,9 +5,7 @@
 import 'server-only';
 import { cookies } from 'next/headers';
 import { getAppConfig } from '@/config/app.config';
-import { getAuthTokenFromCookies } from '@/lib/utils/cookie';
 import { ApiResponse } from '@/types/common.types';
-import { cookies } from 'next/headers';
 
 export const LOCAL_HTTPS_RE = /^https:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//;
 interface ApiError extends Error {
@@ -165,9 +163,6 @@ class ApiClient {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.timeout);
     const skipAuth = !requireAuth || this.isPublicEndpoint(endpoint);
-
-    const cookieStore = await cookies();
-    const token = getAuthTokenFromCookies(cookieStore);
 
     try {
       const headers = await this.getAuthHeaders(options, skipAuth);

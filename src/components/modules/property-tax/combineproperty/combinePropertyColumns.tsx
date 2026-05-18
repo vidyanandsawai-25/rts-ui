@@ -84,6 +84,7 @@ export const getCombinePropertyColumns = (
     align: 'right',
     width: '110px',
     render: (val) => (
+      /* eslint-disable-next-line i18next/no-literal-string */
       <span className="font-semibold text-gray-800">
         ₹{Number(val ?? 0).toLocaleString('en-IN')}
       </span>
@@ -95,6 +96,7 @@ export const getCombinePropertyColumns = (
     align: 'right',
     width: '110px',
     render: (val) => (
+      /* eslint-disable-next-line i18next/no-literal-string */
       <span className="font-semibold text-gray-800">
         ₹{Number(val ?? 0).toLocaleString('en-IN')}
       </span>

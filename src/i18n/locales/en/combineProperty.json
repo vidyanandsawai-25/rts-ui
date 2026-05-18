@@ -33,6 +33,7 @@
   "occupierName": "OCCUPIER NAME",
   "currentTax": "CURRENT TAX",
   "pendingTax": "PENDING TAX",
+  "emptyTableText": "No property details found.",
   "basePropertyIncomplete": "Base property selection incomplete",
   "selectAtLeastOne": "Please select at least one property to combine",
   "differentOwnersError": "Cannot combine properties with different owner names",

@@ -33,6 +33,7 @@
   "occupierName": "भोगवटादाराचे नाव",
   "currentTax": "चालू कर",
   "pendingTax": "थकीत कर",
+  "emptyTableText": "कोणतीही मालमत्ता तपशील आढळली नाहीत.",
   "basePropertyIncomplete": "आधार मालमत्ता निवड अपूर्ण आहे",
   "selectAtLeastOne": "कृपया एकत्रित करण्यासाठी किमान एक मालमत्ता निवडा",
   "differentOwnersError": "वेगवेगळ्या मालकांची नावे असलेल्या मालमत्ता एकत्रित करता येणार नाहीत",

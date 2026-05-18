@@ -33,6 +33,7 @@
   "occupierName": "कब्जेदार का नाम",
   "currentTax": "वर्तमान कर",
   "pendingTax": "लंबित कर",
+  "emptyTableText": "कोई संपत्ति विवरण नहीं मिला।",
   "basePropertyIncomplete": "आधार संपत्ति चयन अपूर्ण है",
   "selectAtLeastOne": "कृपया मिलाने के लिए कम से कम एक संपत्ति का चयन करें",
   "differentOwnersError": "विभिन्न मालिकों के नाम वाली संपत्तियों को नहीं मिलाया जा सकता",

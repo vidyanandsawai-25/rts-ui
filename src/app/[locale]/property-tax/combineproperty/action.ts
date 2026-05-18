@@ -1,13 +1,16 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { locales } from "@/i18n/config";
 import { ApiError } from "@/lib/utils/api";
+import { getUserIdFromCookies } from "@/lib/utils/cookie";
+import { createLogger } from "@/lib/utils/server-logger";
 import {
   getCombinePropertiesPaged,
   getPropertyCombineDetails,
   createCombineProperty,
-} from "@/lib/api/combine-property.service";
+} from "@/lib/api/combine-property/combine-property.service";
 import {
   CombinePropertyParams,
   CombinePropertyItem,
@@ -16,6 +19,8 @@ import {
   PropertyCombineDetails,
 } from "@/types/combine-property.types";
 import { PagedResponse } from "@/types/common.types";
+
+const logger = createLogger("CombinePropertyAction");
 
 /* ================================================================
    GET ALL (Paged)
@@ -40,23 +45,14 @@ export async function fetchCombinePropertiesPagedAction(
       (!isAllRecords && (params.pageSize <= 0 || params.pageSize > MAX_PAGE_SIZE)) ||
       params.pageNumber > MAX_PAGE_NUMBER
     ) {
-      console.error("[fetchCombinePropertiesPagedAction] Invalid pagination parameters");
+      logger.warn("Invalid pagination parameters", { pageNumber: params.pageNumber, pageSize: params.pageSize });
       return { items: [], totalCount: 0, pageNumber: params.pageNumber, pageSize: params.pageSize, totalPages: 0, hasPrevious: false, hasNext: false };
     }
 
     const result = await getCombinePropertiesPaged(params);
     return result;
   } catch (error: unknown) {
-    if (error instanceof ApiError) {
-      console.error(
-        `[fetchCombinePropertiesPagedAction] API Error ${error.statusCode}:`,
-        error.responseText
-      );
-    } else if (error instanceof Error) {
-      console.error("[fetchCombinePropertiesPagedAction] Error:", error.message);
-    } else {
-      console.error("[fetchCombinePropertiesPagedAction] Unknown error:", error);
-    }
+    logger.error("Error fetching paged combine properties", undefined, error);
     // Return empty result instead of throwing so the page doesn't crash
     return { items: [], totalCount: 0, pageNumber: params.pageNumber, pageSize: params.pageSize, totalPages: 0, hasPrevious: false, hasNext: false };
   }
@@ -66,49 +62,51 @@ export async function fetchCombinePropertiesPagedAction(
    GET PROPERTY COMBINE DETAILS
    Mandatory: wardId, propertyNo, partitionNo
 ================================================================ */
-export async function   fetchPropertyCombineDetailsAction(
+export async function fetchPropertyCombineDetailsAction(
   params: GetPropertyCombineDetailsParams
 ): Promise<PropertyCombineDetails[]> {
   try {
     if (!Number.isFinite(params.wardId) || params.wardId <= 0) {
-      throw new ApiError(400, "Valid Ward ID is required", "Validation failed");
+      logger.warn("Invalid Ward ID", { wardId: params.wardId });
+      return [];
     }
     if (!params.propertyNo?.trim()) {
-      throw new ApiError(400, "Property No is required", "Validation failed");
+      logger.warn("Property No is required");
+      return [];
     }
     if (!params.partitionNo?.trim()) {
-      throw new ApiError(400, "Partition No is required", "Validation failed");
+      logger.warn("Partition No is required");
+      return [];
     }
 
     const result = await getPropertyCombineDetails(params);
     return result;
   } catch (error: unknown) {
-    if (error instanceof ApiError) {
-      console.error(
-        `[fetchPropertyCombineDetailsAction] API Error ${error.statusCode}:`,
-        error.responseText
-      );
-    } else if (error instanceof Error) {
-      console.error("[fetchPropertyCombineDetailsAction] Error:", error.message);
-    } else {
-      console.error("[fetchPropertyCombineDetailsAction] Unknown error:", error);
-    }
-    throw error;
+    logger.error("Error fetching property combine details", undefined, error);
+    return [];
   }
 }
 
 /* ================================================================
    POST – COMBINE PROPERTIES
-   All fields required:
-     mainPropertyId   : number
+   Required from client:
+     mainPropertyId     : number
      combinePropertyIds : comma-separated string of property IDs
-     remark           : string
-     createdBy        : number
+     remark             : string
+   createdBy is read from cookies (userId)
 ================================================================ */
 export async function createCombinePropertyAction(
-  payload: CombinePropertyPayload
-): Promise<{ success: boolean; message?: string; statusCode?: number; data?: any }> {
+  payload: Omit<CombinePropertyPayload, "createdBy">
+): Promise<{ success: boolean; message?: string; statusCode?: number; data?: unknown }> {
   try {
+    // Get userId from cookies
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore);
+    if (!userId) {
+      logger.warn("Unauthorized: userId not found in cookies");
+      return { success: false, message: "Unauthorized", statusCode: 401 };
+    }
+
     // Validate required fields
     if (!Number.isFinite(payload.mainPropertyId) || payload.mainPropertyId <= 0) {
       return { success: false, message: "Valid Main Property ID is required", statusCode: 400 };
@@ -116,19 +114,23 @@ export async function createCombinePropertyAction(
     if (!payload.combinePropertyIds?.trim()) {
       return { success: false, message: "Combine Property IDs are required", statusCode: 400 };
     }
-    if (!Number.isFinite(payload.createdBy) || payload.createdBy <= 0) {
-      return { success: false, message: "Valid Created By user ID is required", statusCode: 400 };
-    }
 
-    const result = await createCombineProperty(payload) as any;
+    const fullPayload: CombinePropertyPayload = {
+      ...payload,
+      createdBy: userId,
+    };
+
+    const result = (await createCombineProperty(fullPayload)) as Record<string, unknown>;
 
     // Revalidate all locale variants of the combine property page
     for (const locale of locales) {
       revalidatePath(`/${locale}/property-tax/combineproperty`, "page");
     }
 
-    return { success: true, message: result?.message || result?.items?.message, data: result };
+    const resultData = result as { message?: string; items?: { message?: string } };
+    return { success: true, message: resultData?.message || resultData?.items?.message, data: result };
   } catch (error: unknown) {
+    logger.error("Error combining properties", undefined, error);
     if (error instanceof ApiError) {
       return {
         success: false,

@@ -1,4 +1,4 @@
-import { useCallback, useState, useTransition, useEffect, useMemo } from 'react';
+import { useCallback, useState, useTransition, useMemo } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { CombinePropertyItem, PropertyCombineDetails } from '@/types/combine-property.types';
@@ -12,7 +12,7 @@ export interface UseCombinePropertyParams {
   selectedBasePropertyId?: string;
   selectedWardId?: string;
   selectedPropertyNo?: string;
-  t: (key: string, values?: any) => string;
+  t: (key: string, values?: Record<string, string | number>) => string;
 }
 
 export function useCombinePropertyForm({
@@ -32,17 +32,13 @@ export function useCombinePropertyForm({
   const [isPending, startTransition] = useTransition();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [rangeFrom, setRangeFrom] = useState(searchParams.get('from') ?? '');
-  const [rangeTo, setRangeTo] = useState(searchParams.get('to') ?? '');
-  const [selectedProperties, setSelectedProperties] = useState<string[]>(
-    searchParams.get('individual')?.split(',').filter(Boolean) ?? []
+  // Derive state directly from searchParams instead of syncing with useEffect
+  const rangeFrom = searchParams.get('from') ?? '';
+  const rangeTo = searchParams.get('to') ?? '';
+  const selectedProperties = useMemo(
+    () => searchParams.get('individual')?.split(',').filter(Boolean) ?? [],
+    [searchParams]
   );
-
-  useEffect(() => {
-    setRangeFrom(searchParams.get('from') ?? '');
-    setRangeTo(searchParams.get('to') ?? '');
-    setSelectedProperties(searchParams.get('individual')?.split(',').filter(Boolean) ?? []);
-  }, [searchParams]);
 
   const selectionMethod = (searchParams.get('method') as SelectionMethod) ?? 'range';
 
@@ -101,19 +97,16 @@ export function useCombinePropertyForm({
   };
 
   const handleRangeFromChange = (_name: string, value: string) => {
-    setRangeFrom(value);
     const pNo = calculatePartitionNo('range', value, rangeTo, []);
     router.replace(buildUrl({ from: value, partitionNo: pNo }), { scroll: false });
   };
 
   const handleRangeToChange = (_name: string, value: string) => {
-    setRangeTo(value);
     const pNo = calculatePartitionNo('range', rangeFrom, value, []);
     router.replace(buildUrl({ to: value, partitionNo: pNo }), { scroll: false });
   };
 
   const handleIndividualChange = (values: string[]) => {
-    setSelectedProperties(values);
     const pNo = calculatePartitionNo('individual', '', '', values);
     router.replace(buildUrl({ individual: values.join(','), partitionNo: pNo }), { scroll: false });
   };
@@ -136,6 +129,8 @@ export function useCombinePropertyForm({
   };
 
   const handleProceed = () => {
+    // Race-condition guard
+    if (isPending || isSubmitting) return;
     if (!selectedWardId || !selectedPropertyNo) {
       toast.error(t('basePropertyIncomplete'));
       return;
@@ -154,15 +149,16 @@ export function useCombinePropertyForm({
           propertyNo: selectedPropertyNo,
           partitionNo,
         });
-        setReviewData(data.items);
-      } catch (error) {
-        console.error('Error fetching combine details:', error);
+        setReviewData(data);
+      } catch {
         setReviewData([]);
       }
     });
   };
 
   const handleCombine = async () => {
+    // Race-condition guard
+    if (isSubmitting || isPending) return;
     if (!selectedBasePropertyId || reviewData.length === 0) return;
 
     const uniqueOwners = [...new Set(reviewData.map((r) => r.ownerName).filter(Boolean))];
@@ -180,7 +176,6 @@ export function useCombinePropertyForm({
         mainPropertyId: Number(selectedBasePropertyId),
         combinePropertyIds,
         remark: t('defaultRemark'),
-        createdBy: 1,
       });
 
       if (response.success) {
@@ -192,8 +187,7 @@ export function useCombinePropertyForm({
       } else {
         toast.error(response.message || t('combineFailed'));
       }
-    } catch (error) {
-      console.error('Submit error:', error);
+    } catch {
       toast.error(t('unexpectedError'));
     } finally {
       setIsSubmitting(false);
