@@ -1,8 +1,8 @@
 import React from 'react';
 import { Input } from '@/components/common';
 import { Label } from '@/components/common/label';
-import { KYC_VALIDATION_RULES, kycValidators } from '@/lib/utils/kyc-validation.constants';
-import { sanitizeEmail } from '@/lib/utils/input-sanitization';
+import { KYC_VALIDATION_RULES, kycValidators, enhancedKycValidators } from '@/lib/utils/kyc-validation.constants';
+import { sanitizeEmailStrict } from '@/lib/utils/input-sanitization';
 import { KycFormData } from '@/types/property-kyc.types';
 import { useDigitInputs } from '@/hooks/useDigitInputs';
 
@@ -35,16 +35,17 @@ export const ContactInfoFields: React.FC<ContactInfoFieldsProps> = ({
           type="email"
           placeholder={t('kyc.enterEmailId')}
           value={formData.emailId ?? ''}
-          className={`h-9 text-sm border-gray-300 focus:border-gray-600 focus:ring-2 focus:ring-gray-200 ${showError('emailId', kycValidators.isValidEmail(formData.emailId ?? ''))
+          maxLength={KYC_VALIDATION_RULES.EMAIL_MAX_LENGTH}
+          className={`h-9 text-sm border-gray-300 focus:border-gray-600 focus:ring-2 focus:ring-gray-200 ${showError('emailId', enhancedKycValidators.isValidEmail(formData.emailId ?? ''))
             ? 'border-red-300 focus:border-red-500'
             : ''
             }`}
           onChange={(e) => {
-            const sanitized = sanitizeEmail(e.target.value);
+            const sanitized = sanitizeEmailStrict(e.target.value);
             setFormData((prev) => ({ ...prev, emailId: sanitized }));
           }}
         />
-        {showError('emailId', kycValidators.isValidEmail(formData.emailId ?? '')) && (
+        {showError('emailId', enhancedKycValidators.isValidEmail(formData.emailId ?? '')) && (
           <span className="text-xs text-red-500">{t('kyc.validation.invalidEmail')}</span>
         )}
       </div>

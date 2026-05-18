@@ -1,6 +1,9 @@
 import { Input, SearchSelect } from '@/components/common';
 import { Label } from '@/components/common/label';
 import { PropertyBasicDetailsApiItem } from '@/types/property-basic-details.types';
+import { sanitizeFlatShopNo, sanitizePlotNo } from '@/lib/utils/input-sanitization';
+import { propertyValidators, PROPERTY_VALIDATION_RULES } from '@/lib/utils/kyc-validation.constants';
+import { useState } from 'react';
 
 interface BasicPropertyFieldsProps {
     t: (key: string) => string;
@@ -29,6 +32,14 @@ export const BasicPropertyFields = ({
     propertyTypeId,
     handlePropertyDescriptionChange,
 }: BasicPropertyFieldsProps) => {
+    const [flatShopNo, setFlatShopNo] = useState(propertyData?.flatOrShopNo ?? '');
+    const [plotNo, setPlotNo] = useState(propertyData?.plotNo ?? '');
+    const [plotArea, setPlotArea] = useState(propertyData?.plotArea?.toString() ?? '');
+    
+    const [showFlatShopError, setShowFlatShopError] = useState(false);
+    const [showPlotNoError, setShowPlotNoError] = useState(false);
+    const [showPlotAreaError, setShowPlotAreaError] = useState(false);
+
     return (
         <>
             {/* Division */}
@@ -100,9 +111,25 @@ export const BasicPropertyFields = ({
                     id="pd-flat-shop"
                     name="flatOrShopNo"
                     placeholder={t('property.flatShopNoPlaceholder')}
-                    defaultValue={propertyData?.flatOrShopNo ?? ''}
-                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                    value={flatShopNo}
+                    maxLength={PROPERTY_VALIDATION_RULES.FLAT_SHOP_NO_MAX_LENGTH}
+                    className={`h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${
+                        showFlatShopError && !propertyValidators.isValidFlatShopNo(flatShopNo)
+                            ? 'border-red-300 focus:border-red-500'
+                            : ''
+                    }`}
+                    onChange={(e) => {
+                        const sanitized = sanitizeFlatShopNo(e.target.value);
+                        setFlatShopNo(sanitized);
+                        if (sanitized) setShowFlatShopError(true);
+                    }}
+                    onBlur={() => setShowFlatShopError(true)}
                 />
+                {showFlatShopError && !propertyValidators.isValidFlatShopNo(flatShopNo) && (
+                    <span className="text-xs text-red-500">
+                        {t('property.validation.invalidFlatShopNo') || 'Invalid flat/shop number. Only alphanumeric and hyphen allowed.'}
+                    </span>
+                )}
             </div>
 
             {/* Plot No */}
@@ -114,9 +141,25 @@ export const BasicPropertyFields = ({
                     id="pd-plot"
                     name="plotNo"
                     placeholder={t('property.plotNoPlaceholder')}
-                    defaultValue={propertyData?.plotNo ?? ''}
-                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                    value={plotNo}
+                    maxLength={PROPERTY_VALIDATION_RULES.PLOT_NO_MAX_LENGTH}
+                    className={`h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${
+                        showPlotNoError && !propertyValidators.isValidPlotNo(plotNo)
+                            ? 'border-red-300 focus:border-red-500'
+                            : ''
+                    }`}
+                    onChange={(e) => {
+                        const sanitized = sanitizePlotNo(e.target.value);
+                        setPlotNo(sanitized);
+                        if (sanitized) setShowPlotNoError(true);
+                    }}
+                    onBlur={() => setShowPlotNoError(true)}
                 />
+                {showPlotNoError && !propertyValidators.isValidPlotNo(plotNo) && (
+                    <span className="text-xs text-red-500">
+                        {t('property.validation.invalidPlotNo') || 'Invalid plot number. Only alphanumeric characters allowed.'}
+                    </span>
+                )}
             </div>
 
             {/* Plot Area */}
@@ -128,10 +171,35 @@ export const BasicPropertyFields = ({
                     id="pd-plotarea"
                     name="plotArea"
                     type="number"
-                    defaultValue={propertyData?.plotArea ?? undefined}
+                    min="0"
+                    step="0.01"
+                    value={plotArea}
                     placeholder="1500"
-                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                    className={`h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${
+                        showPlotAreaError && !propertyValidators.isValidPositiveNumber(plotArea)
+                            ? 'border-red-300 focus:border-red-500'
+                            : ''
+                    }`}
+                    onChange={(e) => {
+                        const value = e.target.value;
+                        // Prevent negative values
+                        if (value && parseFloat(value) < 0) return;
+                        setPlotArea(value);
+                        if (value) setShowPlotAreaError(true);
+                    }}
+                    onKeyDown={(e) => {
+                        // Prevent negative sign and 'e' character
+                        if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+') {
+                            e.preventDefault();
+                        }
+                    }}
+                    onBlur={() => setShowPlotAreaError(true)}
                 />
+                {showPlotAreaError && !propertyValidators.isValidPositiveNumber(plotArea) && (
+                    <span className="text-xs text-red-500">
+                        {t('property.validation.invalidPlotArea') || 'Invalid plot area. Only positive numbers allowed.'}
+                    </span>
+                )}
             </div>
 
             {/* Property Description */}

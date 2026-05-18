@@ -24,9 +24,11 @@ interface SocietyFormFieldsProps {
     setManagerName: (name: string) => void;
     secretaryName: string;
     setSecretaryName: (name: string) => void;
+    societyAddress: string;
+    setSocietyAddress: (address: string) => void;
     showError: (
         field: 'managerMobile' | 'secretaryMobile' | 'managerEmail' | 'secretaryEmail' | 'societyEmail' |
-               'landOwnerName' | 'builderName' | 'societyName' | 'managerName' | 'secretaryName',
+               'landOwnerName' | 'builderName' | 'societyName' | 'managerName' | 'secretaryName' | 'societyAddress',
         isValid: boolean
     ) => boolean;
 }
@@ -52,6 +54,8 @@ export const SocietyFormFields = ({
     setManagerName,
     secretaryName,
     setSecretaryName,
+    societyAddress,
+    setSocietyAddress,
     showError,
 }: SocietyFormFieldsProps) => {
     return (
@@ -67,6 +71,8 @@ export const SocietyFormFields = ({
                 setBuilderName={setBuilderName}
                 societyName={societyName}
                 setSocietyName={setSocietyName}
+                societyAddress={societyAddress}
+                setSocietyAddress={setSocietyAddress}
                 showError={showError}
             />
             <SocietyContactFields

@@ -343,6 +343,13 @@
             "plotAreaInvalid": "Plot Area must be a positive number",
             "residentialToiletsInvalid": "Residential Toilet count must be a positive number",
             "commercialToiletsInvalid": "Commercial Toilet count must be a positive number",
+            "invalidFlatShopNo": "Invalid Flat/Shop No. Only alphanumeric characters and hyphen (-) are allowed. Special characters like *()_++_)(&&^%$#@!~}{};  are not permitted.",
+            "invalidPlotNo": "Invalid Plot No. Only alphanumeric characters are allowed. Special characters like *()_++_)(&&^%$#@!~}{};-  are not permitted.",
+            "invalidSurveyNo": "Invalid Survey No. Only alphanumeric characters and separators (/ -) are allowed. Special characters like *()_++_)(&^%$#@!~}{};  are not permitted.",
+            "invalidSubZoneNo": "Invalid Sub Zone No. Only alphanumeric characters and hyphen (-) are allowed. Special characters like *()_++_)(&&^%$#@!~}{};  are not permitted.",
+            "invalidPlotArea": "Invalid Plot Area. Only positive numbers are allowed. Negative values are not permitted.",
+            "invalidResidentialToilets": "Invalid Residential Toilet count. Only positive whole numbers are allowed. Negative values are not permitted.",
+            "invalidCommercialToilets": "Invalid Commercial Toilet count. Only positive whole numbers are allowed. Negative values are not permitted.",
             "floorRequired": "Please select a floor",
             "constructionYearRequired": "Please enter construction year",
             "constructionYearInvalid": "Please enter a valid 4-digit year",
@@ -384,10 +391,11 @@
         "enterPinCode": "Enter 6 digit pin code",
         "select": "Select",
         "validation": {
-            "invalidEmail": "Please enter a valid email address",
-            "invalidName": "Name must be between 2 and 100 characters",
+            "invalidEmail": "Invalid email address. Only letters (a-z), numbers (0-9), and periods (.) are allowed. Email must contain @ and a valid domain extension.",
+            "invalidName": "Invalid name. Only letters and basic punctuation (. , ' -) are allowed. Numbers (0-9) and special characters like *()_++_)(&&^%$#@!~}{};  are not permitted.",
             "invalidMobile": "Mobile number must be exactly 10 digits",
             "invalidAadhar": "Aadhar number must be exactly 12 digits",
+            "invalidAddress": "Invalid address. Only letters, numbers, and common punctuation (. , - / #) are allowed. Special characters like *()_++_)(&&^%$@!~}{};  are not permitted.",
             "pleaseFixErrors": "Please fix the highlighted validation errors before submitting."
         },
         "errors": {

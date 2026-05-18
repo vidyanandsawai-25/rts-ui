@@ -1,7 +1,7 @@
 import { Input } from "@/components/common";
 import { Label } from "@/components/common/label";
 import { SOCIETY_VALIDATION_RULES, societyValidators } from '@/lib/utils/kyc-validation.constants';
-import { sanitizeEmail, sanitizeName } from '@/lib/utils/input-sanitization';
+import { sanitizeEmailStrict, sanitizeName } from '@/lib/utils/input-sanitization';
 import { useDigitInputs } from '@/hooks/useDigitInputs';
 
 interface SocietyContactFieldsProps {
@@ -53,14 +53,17 @@ export const SocietyContactFields = ({
                             : ''
                     }`}
                     onChange={(e) => {
-                        const sanitized = sanitizeName(e.target.value.trimStart());
+                        // Sanitize to remove invalid characters immediately
+                        const sanitized = sanitizeName(e.target.value);
                         if (sanitized.length <= SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH) {
                             setManagerName(sanitized);
                         }
                     }}
                 />
                 {showError('managerName', !managerName || societyValidators.isValidPersonName(managerName)) && (
-                    <span className="text-xs text-red-500">{t('kyc.validation.invalidName')}</span>
+                    <span className="text-xs text-red-500">
+                        {t('kyc.validation.invalidName') || 'Invalid name. Cannot contain only special characters.'}
+                    </span>
                 )}
             </div>
 
@@ -77,7 +80,7 @@ export const SocietyContactFields = ({
                         : ''
                     }`}
                     onChange={(e) => {
-                        const sanitized = sanitizeEmail(e.target.value);
+                        const sanitized = sanitizeEmailStrict(e.target.value);
                         if (sanitized.length <= SOCIETY_VALIDATION_RULES.EMAIL_MAX_LENGTH) {
                             setManagerEmail(sanitized);
                         }
@@ -141,14 +144,17 @@ export const SocietyContactFields = ({
                             : ''
                     }`}
                     onChange={(e) => {
-                        const sanitized = sanitizeName(e.target.value.trimStart());
+                        // Sanitize to remove invalid characters immediately
+                        const sanitized = sanitizeName(e.target.value);
                         if (sanitized.length <= SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH) {
                             setSecretaryName(sanitized);
                         }
                     }}
                 />
                 {showError('secretaryName', !secretaryName || societyValidators.isValidPersonName(secretaryName)) && (
-                    <span className="text-xs text-red-500">{t('kyc.validation.invalidName')}</span>
+                    <span className="text-xs text-red-500">
+                        {t('kyc.validation.invalidName') || 'Invalid name. Cannot contain only special characters.'}
+                    </span>
                 )}
             </div>
 
@@ -165,7 +171,7 @@ export const SocietyContactFields = ({
                         : ''
                     }`}
                     onChange={(e) => {
-                        const sanitized = sanitizeEmail(e.target.value);
+                        const sanitized = sanitizeEmailStrict(e.target.value);
                         if (sanitized.length <= SOCIETY_VALIDATION_RULES.EMAIL_MAX_LENGTH) {
                             setSecretaryEmail(sanitized);
                         }

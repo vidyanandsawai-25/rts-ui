@@ -13,6 +13,7 @@ export const useSocietyChanges = ({
     managerEmail,
     secretaryEmail,
     societyEmail,
+    societyAddress,
     societyData,
     setHasChanges,
 }: {
@@ -27,13 +28,13 @@ export const useSocietyChanges = ({
     managerEmail: string;
     secretaryEmail: string;
     societyEmail: string;
+    societyAddress: string;
     societyData: PropertySocietyDetailsApiItem | null;
     setHasChanges: (value: boolean) => void;
 }) => {
     
     const checkFormChanges = useCallback(() => {
         if (!formRef.current) return;
-        const formData = new FormData(formRef.current);
         const managerMobileStr = managerMobileDigits.join("");
         const secretaryMobileStr = secretaryMobileDigits.join("");
 
@@ -41,7 +42,7 @@ export const useSocietyChanges = ({
             landOwnerName.trim() !== (societyData?.landOwnerName ?? "") ||
             builderName.trim() !== (societyData?.builderName ?? "") ||
             societyName.trim() !== (societyData?.societyName ?? "") ||
-            String(formData.get("societyAddress") ?? "").trim() !== (societyData?.societyAddress ?? "") ||
+            societyAddress.trim() !== (societyData?.societyAddress ?? "") ||
             societyEmail.trim() !== (societyData?.societyEmailId ?? "") ||
             managerName.trim() !== (societyData?.managerName ?? "") ||
             managerEmail.trim() !== (societyData?.managerEmailId ?? "") ||
@@ -62,6 +63,7 @@ export const useSocietyChanges = ({
         managerEmail,
         secretaryEmail,
         societyEmail,
+        societyAddress,
         societyData, 
         formRef, 
         setHasChanges

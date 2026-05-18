@@ -29,7 +29,10 @@ const SocietyForm = (props: SocietyFormProps) => {
         setManagerName,
         secretaryName,
         setSecretaryName,
+        societyAddress,
+        setSocietyAddress,
         showError,
+        canSubmit,
         handleSubmit,
         checkFormChanges,
     } = useSocietyForm(props);
@@ -66,6 +69,8 @@ const SocietyForm = (props: SocietyFormProps) => {
                             setManagerName={setManagerName}
                             secretaryName={secretaryName}
                             setSecretaryName={setSecretaryName}
+                            societyAddress={societyAddress}
+                            setSocietyAddress={setSocietyAddress}
                             showError={showError}
                         />
 
@@ -73,6 +78,7 @@ const SocietyForm = (props: SocietyFormProps) => {
                             t={t}
                             isUpdating={isUpdating}
                             hasChanges={hasChanges}
+                            canSubmit={canSubmit()}
                         />
                     </div>
                 </Tabs.TabPanel>

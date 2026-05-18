@@ -1,6 +1,9 @@
 import { Input } from '@/components/common';
 import { Label } from '@/components/common/label';
 import { PropertyBasicDetailsApiItem } from '@/types/property-basic-details.types';
+import { sanitizeSurveyNo, sanitizeSubZoneNo, sanitizePositiveInteger } from '@/lib/utils/input-sanitization';
+import { propertyValidators, PROPERTY_VALIDATION_RULES } from '@/lib/utils/kyc-validation.constants';
+import { useState } from 'react';
 
 interface AdditionalPropertyFieldsProps {
     t: (key: string) => string;
@@ -11,6 +14,16 @@ export const AdditionalPropertyFields = ({
     t,
     propertyData,
 }: AdditionalPropertyFieldsProps) => {
+    const [surveyNo, setSurveyNo] = useState(propertyData?.surveyNo ?? '');
+    const [subZoneNo, setSubZoneNo] = useState(propertyData?.subZoneNo ?? '');
+    const [residentialToilets, setResidentialToilets] = useState(propertyData?.noOfResidentialToilets?.toString() ?? '');
+    const [commercialToilets, setCommercialToilets] = useState(propertyData?.noOfCommercialToilets?.toString() ?? '');
+    
+    const [showSurveyNoError, setShowSurveyNoError] = useState(false);
+    const [showSubZoneNoError, setShowSubZoneNoError] = useState(false);
+    const [showResidentialToiletsError, setShowResidentialToiletsError] = useState(false);
+    const [showCommercialToiletsError, setShowCommercialToiletsError] = useState(false);
+
     return (
         <>
             {/* Tax Zone No */}
@@ -39,9 +52,25 @@ export const AdditionalPropertyFields = ({
                     id="pd-survey"
                     name="surveyNo"
                     placeholder="45/2B"
-                    defaultValue={propertyData?.surveyNo ?? ''}
-                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                    value={surveyNo}
+                    maxLength={PROPERTY_VALIDATION_RULES.SURVEY_NO_MAX_LENGTH}
+                    className={`h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${
+                        showSurveyNoError && !propertyValidators.isValidSurveyNo(surveyNo)
+                            ? 'border-red-300 focus:border-red-500'
+                            : ''
+                    }`}
+                    onChange={(e) => {
+                        const sanitized = sanitizeSurveyNo(e.target.value);
+                        setSurveyNo(sanitized);
+                        if (sanitized) setShowSurveyNoError(true);
+                    }}
+                    onBlur={() => setShowSurveyNoError(true)}
                 />
+                {showSurveyNoError && !propertyValidators.isValidSurveyNo(surveyNo) && (
+                    <span className="text-xs text-red-500">
+                        {t('property.validation.invalidSurveyNo') || 'Invalid survey number. Only alphanumeric and / - allowed.'}
+                    </span>
+                )}
             </div>
 
             {/* Sub Zone No */}
@@ -53,9 +82,25 @@ export const AdditionalPropertyFields = ({
                     id="pd-subzone"
                     name="subZoneNo"
                     placeholder="SZ-12"
-                    defaultValue={propertyData?.subZoneNo ?? ''}
-                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                    value={subZoneNo}
+                    maxLength={PROPERTY_VALIDATION_RULES.SUB_ZONE_NO_MAX_LENGTH}
+                    className={`h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${
+                        showSubZoneNoError && !propertyValidators.isValidSubZoneNo(subZoneNo)
+                            ? 'border-red-300 focus:border-red-500'
+                            : ''
+                    }`}
+                    onChange={(e) => {
+                        const sanitized = sanitizeSubZoneNo(e.target.value);
+                        setSubZoneNo(sanitized);
+                        if (sanitized) setShowSubZoneNoError(true);
+                    }}
+                    onBlur={() => setShowSubZoneNoError(true)}
                 />
+                {showSubZoneNoError && !propertyValidators.isValidSubZoneNo(subZoneNo) && (
+                    <span className="text-xs text-red-500">
+                        {t('property.validation.invalidSubZoneNo') || 'Invalid sub zone number. Only alphanumeric and hyphen allowed.'}
+                    </span>
+                )}
             </div>
 
             {/* UPIC ID */}
@@ -85,10 +130,36 @@ export const AdditionalPropertyFields = ({
                     id="pd-residentialtoilet"
                     name="noOfResidentialToilets"
                     type="number"
+                    min="0"
+                    step="1"
+                    value={residentialToilets}
                     placeholder="0"
-                    defaultValue={propertyData?.noOfResidentialToilets ?? 0}
-                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                    className={`h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${
+                        showResidentialToiletsError && !propertyValidators.isValidPositiveNumber(residentialToilets)
+                            ? 'border-red-300 focus:border-red-500'
+                            : ''
+                    }`}
+                    onChange={(e) => {
+                        const value = e.target.value;
+                        // Prevent negative values
+                        if (value && parseFloat(value) < 0) return;
+                        const sanitized = sanitizePositiveInteger(value);
+                        setResidentialToilets(sanitized);
+                        if (sanitized) setShowResidentialToiletsError(true);
+                    }}
+                    onKeyDown={(e) => {
+                        // Prevent negative sign, decimal point, and 'e' character
+                        if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+' || e.key === '.') {
+                            e.preventDefault();
+                        }
+                    }}
+                    onBlur={() => setShowResidentialToiletsError(true)}
                 />
+                {showResidentialToiletsError && !propertyValidators.isValidPositiveNumber(residentialToilets) && (
+                    <span className="text-xs text-red-500">
+                        {t('property.validation.invalidResidentialToilets') || 'Invalid value. Only positive whole numbers allowed.'}
+                    </span>
+                )}
             </div>
 
             {/* Commercial Toilet */}
@@ -103,10 +174,36 @@ export const AdditionalPropertyFields = ({
                     id="pd-commercialtoilet"
                     name="noOfCommercialToilets"
                     type="number"
+                    min="0"
+                    step="1"
+                    value={commercialToilets}
                     placeholder="0"
-                    defaultValue={propertyData?.noOfCommercialToilets ?? 0}
-                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                    className={`h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${
+                        showCommercialToiletsError && !propertyValidators.isValidPositiveNumber(commercialToilets)
+                            ? 'border-red-300 focus:border-red-500'
+                            : ''
+                    }`}
+                    onChange={(e) => {
+                        const value = e.target.value;
+                        // Prevent negative values
+                        if (value && parseFloat(value) < 0) return;
+                        const sanitized = sanitizePositiveInteger(value);
+                        setCommercialToilets(sanitized);
+                        if (sanitized) setShowCommercialToiletsError(true);
+                    }}
+                    onKeyDown={(e) => {
+                        // Prevent negative sign, decimal point, and 'e' character
+                        if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+' || e.key === '.') {
+                            e.preventDefault();
+                        }
+                    }}
+                    onBlur={() => setShowCommercialToiletsError(true)}
                 />
+                {showCommercialToiletsError && !propertyValidators.isValidPositiveNumber(commercialToilets) && (
+                    <span className="text-xs text-red-500">
+                        {t('property.validation.invalidCommercialToilets') || 'Invalid value. Only positive whole numbers allowed.'}
+                    </span>
+                )}
             </div>
         </>
     );
