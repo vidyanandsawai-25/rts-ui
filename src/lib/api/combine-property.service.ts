@@ -27,7 +27,7 @@ export async function getCombinePropertiesPaged(
     if (params.sortOrder?.trim()) queryParams.append("SortOrder", params.sortOrder.trim());
     if (params.filterLogic !== undefined) queryParams.append("FilterLogic", params.filterLogic.toString());
 
-    const response = await apiClient.get<PagedResponse<CombinePropertyItem>>(`/CombineProperty/GetAll?${queryParams.toString()}`);
+    const response = await apiClient.get<PagedResponse<CombinePropertyItem>>(`/Property/combine-properties?${queryParams.toString()}`);
     
     if (!response.success) {
       throw new ApiError(
@@ -61,7 +61,7 @@ export async function getPropertyCombineDetails(
     queryParams.append("PropertyNo", params.propertyNo);
     queryParams.append("PartitionNo", params.partitionNo);
 
-    const response = await apiClient.get<PropertyCombineDetails[]>(`/CombineProperty/GetPropertyCombineDetails?${queryParams.toString()}`);
+    const response = await apiClient.get<PropertyCombineDetails[]>(`/Property/combine-properties-details?${queryParams.toString()}`);
 
     if (!response.success) {
       throw new ApiError(
@@ -88,7 +88,7 @@ export async function getPropertyCombineDetails(
  */
 export async function createCombineProperty(payload: CombinePropertyPayload): Promise<void> {
   try {
-    const response = await apiClient.post<unknown>("/CombineProperty/CombineProperties", payload);
+    const response = await apiClient.post<unknown>("/Property/combine-properties", payload);
     
     if (!response.success) {
       throw new ApiError(
