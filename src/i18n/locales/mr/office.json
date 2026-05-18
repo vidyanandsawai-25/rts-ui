@@ -92,11 +92,12 @@
       }
     },
     "detailsSection": "कार्यालय तपशील",
-    "contactSection": "संपर्क माहिती",
-    "additionalSection": "व्यवस्थापन आणि कर्मचारी",
+    "contactSection": "संपर्क तपशील",
+    "additionalSection": "अतिरिक्त तपशील",
     "validation": {
       "officeCodeRequired": "कार्यालय कोड आवश्यक आहे",
       "officeNameRequired": "कार्यालयाचे नाव आवश्यक आहे",
+      "officeNameNumeric": "कार्यालयाचे नाव फक्त संख्यात्मक असू शकत नाही",
       "typeRequired": "कार्यालय प्रकार आवश्यक आहे",
       "invalidEmail": "अवैध ईमेल आयडी",
       "invalidPincode": "अवैध पिनकोड",
@@ -116,7 +117,7 @@
   },
   "delete": {
     "confirmTitle": "कार्यालय ({id}) हटवायचे?",
-    "confirmDescription": "तुम्हाला खात्री आहे की तुम्हाला हे कार्यालय रेकॉर्ड हटवायचे आहे?",
+    "confirmDescription": "तुम्हाला खात्री आहे की तुम्हाला रेकॉर्ड निष्क्रिय करायचे आहे?",
     "successMessage": "कार्यालय यशस्वीरित्या हटवले गेले",
     "errorMessage": "कार्यालय हटवता आले नाही."
   },

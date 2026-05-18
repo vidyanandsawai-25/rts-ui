@@ -9,6 +9,7 @@ import { Office, OfficeFormModel } from "@/types/office.types";
 import { PagedResponse } from "@/types/common.types";
 import { cookies } from "next/headers";
 import { getUserIdFromCookies } from "@/lib/utils/auth-session";
+import { logger } from "@/lib/utils/logger";
 
 function parseOfficeActionError(error: unknown, operation: string) {
   if (error instanceof ApiError) {
@@ -53,6 +54,12 @@ export async function fetchOfficePagedServerAction(
     const validSortOrder = sortOrder && ["asc", "desc"].includes(sortOrder.toLowerCase()) ? sortOrder.toLowerCase() : undefined;
 
     const result = await getOfficesPaged(pageNumber, pageSize, searchTerm, validSortBy, validSortOrder, type, status);
+    
+    // Apply smart search ranking server-side if search is active
+    if (searchTerm && result.items && result.items.length > 0) {
+      result.items = applySearchRanking(result.items, searchTerm);
+    }
+    
     return result;
   } catch (error: unknown) {
     if (error instanceof ApiError) {
@@ -148,4 +155,64 @@ export async function getOfficeByIdAction(
   } catch (error) {
     throw error;
   }
+}
+
+export async function fetchOfficeStatsServerAction() {
+  try {
+    const [headOffices, activeOffices, inactiveOffices] = await Promise.all([
+      getOfficesPaged(1, 1, undefined, undefined, undefined, "Head Office", undefined),
+      getOfficesPaged(1, 1, undefined, undefined, undefined, undefined, "true"),
+      getOfficesPaged(1, 1, undefined, undefined, undefined, undefined, "false"),
+    ]);
+
+    return {
+      headOfficesCount: headOffices.totalCount,
+      activeOfficesCount: activeOffices.totalCount,
+      inactiveOfficesCount: inactiveOffices.totalCount,
+    };
+  } catch (error) {
+    logger.error("Failed to fetch office statistics", {
+      error: error instanceof Error ? error : new Error(String(error)),
+      stack: error instanceof Error ? error.stack : undefined,
+      timestamp: new Date().toISOString()
+    });
+    return {
+      headOfficesCount: 0,
+      activeOfficesCount: 0,
+      inactiveOfficesCount: 0,
+      error: true,
+    };
+  }
+}
+
+/**
+ * Applies a smart match-position priority search ranking to items.
+ */
+function applySearchRanking(items: Office[], searchTerm: string): Office[] {
+  const s = searchTerm.toLowerCase();
+  
+  const scored = items.map((item) => ({
+    item,
+    score: getMatchScore(item, s),
+  }));
+  
+  scored.sort((a, b) => a.score - b.score);
+  return scored.map((scored) => scored.item);
+}
+
+/**
+ * Calculates a match score for an office based on search term position.
+ */
+function getMatchScore(item: Office, searchTerm: string): number {
+  const code = (item.officeCode || "").toLowerCase();
+  const name = (item.officeName || "").toLowerCase();
+  
+  const getStrScore = (str: string): number => {
+    if (!str.includes(searchTerm)) return 999;
+    if (str.startsWith(searchTerm)) return 1;
+    if (str.endsWith(searchTerm)) return 3;
+    return 2;
+  };
+  
+  return Math.min(getStrScore(code), getStrScore(name));
 }

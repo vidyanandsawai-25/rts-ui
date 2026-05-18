@@ -93,13 +93,19 @@
     },
     "validation": {
       "officeCodeRequired": "Office code is required",
-      "officeNameRequired": "Office name is required"
+      "officeNameRequired": "Office name is required",
+      "officeNameNumeric": "Office name cannot contain only numbers",
+      "invalidDateFormat": "Date must be in DD-MM-YYYY format",
+      "invalidDate": "Please enter a valid date",
+      "futureDate": "Established date cannot be in the future"
     },
     "status": {
       "label": "Active Status",
       "description": "Office is currently"
     },
     "detailsSection": "Office Details",
+    "contactSection": "Contact Details",
+    "additionalSection": "Additional Details",
     "actions": {
       "cancel": "Cancel",
       "save": "Save",
@@ -108,7 +114,7 @@
   },
   "delete": {
     "confirmTitle": "Delete Office ({id})?",
-    "confirmDescription": "Are you sure you want to delete this office record?",
+    "confirmDescription": "Are you sure you want to inactive the record?",
     "successMessage": "Office deleted successfully",
     "errorMessage": "Cannot delete Office."
   },
@@ -123,6 +129,7 @@
     "headOffices": "Head Offices",
     "activeOffices": "Active Offices",
     "regionalOffices": "Regional Offices",
+    "inactiveOffices": "Inactive Offices",
     "active": "Active",
     "inactive": "Inactive",
     "records": "Total Records"
