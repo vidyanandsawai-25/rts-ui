@@ -2,9 +2,8 @@ import CombinePropertyForm from "@/components/modules/property-tax/combineproper
 import { fetchCombinePropertiesPagedAction } from "./action";
 import { CombinePropertyItem } from "@/types/combine-property.types";
 
-/** Page size constants */
-const BASE_LIST_PAGE_SIZE = 1000;
-const SUB_LIST_PAGE_SIZE = 100;
+/** Use pageSize = -1 to fetch all records (supported by the action) */
+const ALL_RECORDS_PAGE_SIZE = -1;
 
 interface PageProps {
   searchParams: Promise<{
@@ -21,7 +20,7 @@ export default async function Page({ searchParams }: PageProps) {
   // ── 1. Fetch base property list (all properties) ─────────────────────────
   const baseResult = await fetchCombinePropertiesPagedAction({
     pageNumber: 1,
-    pageSize: BASE_LIST_PAGE_SIZE,
+    pageSize: ALL_RECORDS_PAGE_SIZE,
   });
   const basePropertyList: CombinePropertyItem[] = baseResult.items ?? [];
 
@@ -30,7 +29,7 @@ export default async function Page({ searchParams }: PageProps) {
   if (propertyNo && wardId) {
     const subResult = await fetchCombinePropertiesPagedAction({
       pageNumber: 1,
-      pageSize: SUB_LIST_PAGE_SIZE,
+      pageSize: ALL_RECORDS_PAGE_SIZE,
       wardId: Number(wardId),
       propertyNo: propertyNo,
     });

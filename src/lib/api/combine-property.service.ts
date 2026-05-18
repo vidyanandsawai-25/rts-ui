@@ -17,7 +17,7 @@ import {
   normalizeCombinePropertyItem,
   isPropertyCombineDetailsShape,
   normalizePropertyCombineDetails,
-} from "./combine-property-types-guard";
+} from "./combine-property/combine-property-types-guard";
 
 const logger = createLogger("CombinePropertyService");
 
@@ -30,7 +30,7 @@ export async function getCombinePropertiesPaged(
 ): Promise<PagedResponse<CombinePropertyItem>> {
   try {
     const queryParams = new URLSearchParams();
-
+    
     // Mandatory Parameters
     queryParams.append("PageNumber", params.pageNumber.toString());
     queryParams.append("PageSize", params.pageSize.toString());
@@ -46,29 +46,21 @@ export async function getCombinePropertiesPaged(
     if (params.filterLogic !== undefined) queryParams.append("FilterLogic", params.filterLogic.toString());
 
     const response = await apiClient.get<PagedResponse<CombinePropertyItem>>(`/Property/combine-properties?${queryParams.toString()}`);
-
+    
     if (!response.success) {
       throw new ApiError(
-        response.statusCode ?? 500,
-        response.error || "Failed to fetch paged combine properties",
+        response.statusCode ?? 500, 
+        response.error || "Failed to fetch paged combine properties", 
         "Get paged combine properties failed"
       );
     }
-
+    
     if (!response.data) {
       throw new ApiError(500, "No data received from server", "Invalid response format");
     }
 
-    // Normalize wrapped paged response: API may return { items: [...] } or { items: { items: [...] } }
-    let rawItems: unknown[] = [];
-    const dataItems = response.data.items;
-    if (Array.isArray(dataItems)) {
-      rawItems = dataItems;
-    } else if (dataItems && typeof dataItems === "object" && "items" in dataItems && Array.isArray((dataItems as { items: unknown[] }).items)) {
-      rawItems = (dataItems as { items: unknown[] }).items;
-    }
-
-    const validItems = rawItems.filter(isCombinePropertyItemShape);
+    const items = (response.data.items ?? []) as unknown[];
+    const validItems = items.filter(isCombinePropertyItemShape);
     const normalizedItems = validItems.map(normalizeCombinePropertyItem);
 
     return { ...response.data, items: normalizedItems };
@@ -129,7 +121,7 @@ export async function getPropertyCombineDetails(
 export async function createCombineProperty(payload: CombinePropertyPayload): Promise<unknown> {
   try {
     const response = await apiClient.post<unknown>("/Property/combine-properties", payload);
-
+    
     return handleApiResponse(response, "Combine properties failed");
   } catch (error) {
     logger.error("Error creating combine property", undefined, error);

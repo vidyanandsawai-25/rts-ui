@@ -176,7 +176,7 @@ export default function CombinePropertyForm({
 
         {/* ---- Base Property ---- */}
         <div className="flex flex-col gap-0.5 w-[160px] shrink-0">
-          <label className="text-[10px] font-semibold text-gray-600 flex items-center gap-1">
+          <label htmlFor="baseProperty" className="text-[10px] font-semibold text-gray-600 flex items-center gap-1">
             <span className="inline-flex items-center justify-center w-3.5 h-3.5 bg-blue-600 text-white text-[8px] font-bold rounded-[3px]">B</span>
             {t('baseProperty')} <span className="text-red-500">*</span>
           </label>
@@ -198,12 +198,13 @@ export default function CombinePropertyForm({
         {/* ---- Selection Method pill toggle ---- */}
         <div className="flex flex-col gap-0.5 shrink-0">
           <label className="text-[10px] font-semibold text-gray-600">{t('selectionMethod')}</label>
-          <div className="flex h-[28px] bg-white border border-blue-200 p-0.5 rounded-md gap-px">
+          <div className="flex h-[28px] bg-white border border-blue-200 p-0.5 rounded-md gap-px" role="group" aria-label={t('selectionMethod')}>
             {(['range', 'individual'] as SelectionMethod[]).map((method) => (
               <button
                 key={method}
                 type="button"
                 onClick={() => handleMethodChange(method)}
+                aria-pressed={selectionMethod === method}
                 className={`px-2.5 text-[11px] font-semibold rounded h-full transition-all duration-150 capitalize ${
                   selectionMethod === method
                     ? 'bg-blue-600 text-white shadow-sm'
@@ -220,7 +221,7 @@ export default function CombinePropertyForm({
         {selectionMethod === 'range' && (
           <>
             <div className="flex flex-col gap-0.5 w-[120px] shrink-0">
-              <label className="text-[10px] font-semibold text-gray-600">
+              <label htmlFor="rangeFrom" className="text-[10px] font-semibold text-gray-600">
                 {t('from')} <span className="text-red-500">*</span>
               </label>
               <SearchSelect
@@ -235,7 +236,7 @@ export default function CombinePropertyForm({
               />
             </div>
             <div className="flex flex-col gap-0.5 w-[120px] shrink-0">
-              <label className="text-[10px] font-semibold text-gray-600">
+              <label htmlFor="rangeTo" className="text-[10px] font-semibold text-gray-600">
                 {t('to')} <span className="text-red-500">*</span>
               </label>
               <SearchSelect
@@ -255,10 +256,16 @@ export default function CombinePropertyForm({
         {/* ---- Conditional: Individual multi-select ---- */}
         {selectionMethod === 'individual' && (
           <div className="flex flex-col gap-0.5 w-[200px] shrink-0">
-            <label className="text-[10px] font-semibold text-gray-600">
+            <label
+              id="selectedPropertiesLabel"
+              htmlFor="selectedProperties"
+              className="text-[10px] font-semibold text-gray-600"
+            >
               {t('selectProperties')} <span className="text-red-500">*</span>
             </label>
             <MultiSelectDropdown
+              id="selectedProperties"
+              aria-labelledby="selectedPropertiesLabel"
               options={SUB_PROPERTY_OPTIONS}
               value={selectedProperties}
               onChange={handleIndividualChange}

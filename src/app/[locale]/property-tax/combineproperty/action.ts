@@ -53,8 +53,11 @@ export async function fetchCombinePropertiesPagedAction(
     return result;
   } catch (error: unknown) {
     logger.error("Error fetching paged combine properties", undefined, error);
-    // Return empty result instead of throwing so the page doesn't crash
-    return { items: [], totalCount: 0, pageNumber: params.pageNumber, pageSize: params.pageSize, totalPages: 0, hasPrevious: false, hasNext: false };
+    // Re-throw so error boundary can render and users see the actual failure
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error("Error fetching paged combine properties");
   }
 }
 
@@ -83,7 +86,10 @@ export async function fetchPropertyCombineDetailsAction(
     return result;
   } catch (error: unknown) {
     logger.error("Error fetching property combine details", undefined, error);
-    return [];
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    throw new ApiError(500, "Failed to fetch property combine details", "Fetch property combine details failed");
   }
 }
 
@@ -121,6 +127,12 @@ export async function createCombinePropertyAction(
     };
 
     const result = (await createCombineProperty(fullPayload)) as Record<string, unknown>;
+
+    // Check if the API returned an explicit failure
+    if (result.success === false) {
+      const errorMessage = typeof result.message === 'string' ? result.message : 'Combine operation failed';
+      return { success: false, message: errorMessage };
+    }
 
     // Revalidate all locale variants of the combine property page
     for (const locale of locales) {

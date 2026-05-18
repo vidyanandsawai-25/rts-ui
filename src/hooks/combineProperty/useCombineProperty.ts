@@ -97,16 +97,25 @@ export function useCombinePropertyForm({
   };
 
   const handleRangeFromChange = (_name: string, value: string) => {
+    // Clear review state when selection changes
+    setReviewData([]);
+    setIsReviewing(false);
     const pNo = calculatePartitionNo('range', value, rangeTo, []);
     router.replace(buildUrl({ from: value, partitionNo: pNo }), { scroll: false });
   };
 
   const handleRangeToChange = (_name: string, value: string) => {
+    // Clear review state when selection changes
+    setReviewData([]);
+    setIsReviewing(false);
     const pNo = calculatePartitionNo('range', rangeFrom, value, []);
     router.replace(buildUrl({ to: value, partitionNo: pNo }), { scroll: false });
   };
 
   const handleIndividualChange = (values: string[]) => {
+    // Clear review state when selection changes
+    setReviewData([]);
+    setIsReviewing(false);
     const pNo = calculatePartitionNo('individual', '', '', values);
     router.replace(buildUrl({ individual: values.join(','), partitionNo: pNo }), { scroll: false });
   };

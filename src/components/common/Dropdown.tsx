@@ -29,8 +29,12 @@ interface MultiSelectDropdownProps {
   placeholder?: string;
   className?: string;
   styles?: MultiSelectDropdownStyles;
-  style?: React.CSSProperties; // ✅ NEW
-  triggerStyle?: React.CSSProperties; // ✅ NEW
+  style?: React.CSSProperties;
+  triggerStyle?: React.CSSProperties;
+  /** HTML id for the trigger button */
+  id?: string;
+  /** aria-labelledby for accessibility */
+  'aria-labelledby'?: string;
 }
 
 /* ---------------- COMPONENT ---------------- */
@@ -44,6 +48,8 @@ export function MultiSelectDropdown({
   styles,
   style,
   triggerStyle,
+  id,
+  'aria-labelledby': ariaLabelledby,
 }: MultiSelectDropdownProps) {
   const tCommon = useTranslations("common");
 
@@ -111,6 +117,8 @@ export function MultiSelectDropdown({
       {/* -------- TRIGGER -------- */}
       <button
         type="button"
+        id={id}
+        aria-labelledby={ariaLabelledby}
         onClick={() => setOpen((p) => !p)}
         className={cn(
           `w-full flex items-center justify-between
