@@ -1,8 +1,8 @@
 'use client';
 
 import { MasterTable } from '@/components/common/MasterTable';
-import { TaxDetailsData, TaxRow } from '@/types/ptisMain-taxdetails.types';
 import { useTaxDetailsTable } from './useTaxDetailsTable';
+import { TaxDetailsData, TaxRow } from '@/types/ptisMain-taxdetails.types';
 
 /**
  * TaxDetails Component
