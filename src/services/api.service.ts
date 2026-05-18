@@ -20,7 +20,11 @@ async function serverFetch(url: string, init: RequestInit): Promise<Response> {
   if (typeof window === 'undefined' && isDev && LOCAL_HTTPS_RE.test(url)) {
     const { Agent, fetch: uFetch } = await import('undici');
     relaxedTlsDispatcher ??= new Agent({ connect: { rejectUnauthorized: false } });
-    return uFetch(url, { ...init, body: init.body ?? undefined, dispatcher: relaxedTlsDispatcher } as unknown as import('undici').RequestInit) as unknown as Promise<Response>;
+    return uFetch(url, {
+      ...init,
+      body: init.body ?? undefined,
+      dispatcher: relaxedTlsDispatcher,
+    } as unknown as import('undici').RequestInit) as unknown as Promise<Response>;
   }
   return fetch(url, init);
 }
@@ -29,9 +33,17 @@ class ApiClient {
   private baseUrl: string;
   private timeout: number;
   private publicEndpoints = [
-    '/Auth/login', '/Auth/verify-otp', '/Auth/verify-login-otp', '/Auth/forgot-password',
-    '/Auth/reset-password', '/Auth/send-otp', '/Auth/resend-otp', '/Auth/refresh',
-    '/Auth/ulb-config', '/Auth/validate-reset-token', '/UlbConfig'
+    '/Auth/login',
+    '/Auth/verify-otp',
+    '/Auth/verify-login-otp',
+    '/Auth/forgot-password',
+    '/Auth/reset-password',
+    '/Auth/send-otp',
+    '/Auth/resend-otp',
+    '/Auth/refresh',
+    '/Auth/ulb-config',
+    '/Auth/validate-reset-token',
+    '/UlbConfig',
   ];
 
   constructor() {
@@ -42,21 +54,27 @@ class ApiClient {
 
   private isPublicEndpoint(endpoint: string): boolean {
     const path = endpoint.toLowerCase().split('?')[0];
-    return this.publicEndpoints.some(pe => path === pe.toLowerCase() || path.startsWith(pe.toLowerCase() + '/'));
+    return this.publicEndpoints.some(
+      (pe) => path === pe.toLowerCase() || path.startsWith(pe.toLowerCase() + '/')
+    );
   }
 
-  private async getAuthHeaders(options: RequestInit, skipAuth: boolean): Promise<Record<string, string>> {
+  private async getAuthHeaders(
+    options: RequestInit,
+    skipAuth: boolean
+  ): Promise<Record<string, string>> {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      'Accept': 'application/json, text/plain, */*',
-      ...options.headers as Record<string, string>,
+      Accept: 'application/json, text/plain, */*',
+      ...(options.headers as Record<string, string>),
     };
     if (skipAuth) return headers;
 
     try {
       const store = await cookies();
-      const has = (n: string) => Object.keys(headers).some(k => k.toLowerCase() === n.toLowerCase());
-      
+      const has = (n: string) =>
+        Object.keys(headers).some((k) => k.toLowerCase() === n.toLowerCase());
+
       const token = store.get('auth_token')?.value;
       if (token && !has('authorization')) headers['Authorization'] = `Bearer ${token}`;
 
@@ -65,9 +83,14 @@ class ApiClient {
         headers['X-CSRF-Token'] = csrf;
       }
 
-      const cookieStr = store.getAll()
-        .filter(c => /auth_token|refresh_token|session_id|csrf_token|\.AspNetCore\.Antiforgery/.test(c.name))
-        .map(c => `${c.name.replace(/[^\x00-\x7F]/g, '')}=${c.value.replace(/[^\x00-\x7F]/g, '')}`)
+      const cookieStr = store
+        .getAll()
+        .filter((c) =>
+          /auth_token|refresh_token|session_id|csrf_token|\.AspNetCore\.Antiforgery/.test(c.name)
+        )
+        .map(
+          (c) => `${c.name.replace(/[^\x00-\x7F]/g, '')}=${c.value.replace(/[^\x00-\x7F]/g, '')}`
+        )
         .join('; ');
       if (cookieStr && !has('cookie')) headers['Cookie'] = cookieStr;
     } catch {}
@@ -92,7 +115,9 @@ class ApiClient {
       return JSON.parse(text) as T;
     } catch {
       if (response.ok) return undefined;
-      const err = new Error(`Invalid JSON response (HTTP ${response.status}): ${text.slice(0, 200)}`) as ApiError;
+      const err = new Error(
+        `Invalid JSON response (HTTP ${response.status}): ${text.slice(0, 200)}`
+      ) as ApiError;
       err.httpStatus = response.status;
       throw err;
     }
@@ -100,13 +125,13 @@ class ApiClient {
 
   private extractErrorMessage(errBody: unknown, statusText: string): string {
     const body = errBody as Record<string, unknown> | null | undefined;
-    
+
     // First check for specific error messages in the errors object (e.g., validation errors)
     // Ensure errors is a plain object (not an array) before treating it as a key/value map
     if (body?.errors && typeof body.errors === 'object' && !Array.isArray(body.errors)) {
       const errors = body.errors as Record<string, unknown>;
       // Check for General error first, then other error keys
-      const errorKeys = ['General', ...Object.keys(errors).filter(k => k !== 'General')];
+      const errorKeys = ['General', ...Object.keys(errors).filter((k) => k !== 'General')];
       for (const key of errorKeys) {
         const errorValue = errors[key];
         if (typeof errorValue === 'string' && errorValue.trim()) {
@@ -121,7 +146,7 @@ class ApiClient {
         }
       }
     }
-    
+
     // Fall back to standard error message fields
     const candidates = [body?.message, body?.error, body?.title, body?.detail, statusText];
     for (const c of candidates) {
@@ -130,7 +155,11 @@ class ApiClient {
     return 'An error occurred';
   }
 
-  private async request<T>(endpoint: string, options: RequestInit = {}, requireAuth = true): Promise<ApiResponse<T>> {
+  private async request<T>(
+    endpoint: string,
+    options: RequestInit = {},
+    requireAuth = true
+  ): Promise<ApiResponse<T>> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.timeout);
     const skipAuth = !requireAuth || this.isPublicEndpoint(endpoint);
@@ -138,39 +167,64 @@ class ApiClient {
     try {
       const headers = await this.getAuthHeaders(options, skipAuth);
       const url = `${this.baseUrl.replace(/\/$/, '')}/${endpoint.replace(/^\//, '')}`;
-      
-      const cleanHeaders: Record<string, string> = {};
-      Object.entries(headers).forEach(([k, v]) => cleanHeaders[k] = String(v).replace(/[^\x00-\x7F]/g, ''));
 
-      const response = await serverFetch(url, { cache: 'no-store', ...options, signal: controller.signal, headers: cleanHeaders });
+      const cleanHeaders: Record<string, string> = {};
+      Object.entries(headers).forEach(
+        ([k, v]) => (cleanHeaders[k] = String(v).replace(/[^\x00-\x7F]/g, ''))
+      );
+
+      const response = await serverFetch(url, {
+        cache: 'no-store',
+        ...options,
+        signal: controller.signal,
+        headers: cleanHeaders,
+      });
       clearTimeout(timeoutId);
 
       const data = await this.parseResponseBody<T>(response);
       if (!response.ok) {
         if (response.status === 401) {
           const errorMsg = (data as { message?: string })?.message || 'Invalid credentials';
-          return { success: false, statusCode: 401, error: skipAuth ? errorMsg : 'Unauthorized: Token expired or invalid' };
+          return {
+            success: false,
+            statusCode: 401,
+            error: skipAuth ? errorMsg : 'Unauthorized: Token expired or invalid',
+          };
         }
-        if (response.status === 403) return { success: false, statusCode: 403, error: 'Forbidden: Access denied' };
-        return { success: false, statusCode: response.status, error: this.extractErrorMessage(data, response.statusText) };
+        if (response.status === 403)
+          return { success: false, statusCode: 403, error: 'Forbidden: Access denied' };
+        return {
+          success: false,
+          statusCode: response.status,
+          error: this.extractErrorMessage(data, response.statusText),
+        };
       }
       return { success: true, statusCode: response.status, data: data as T };
     } catch (error: unknown) {
       clearTimeout(timeoutId);
       const err = error as ApiError;
-      if (err.name === 'AbortError') return { success: false, statusCode: 408, error: 'Request timeout' };
-      return { success: false, ...(err.httpStatus ? { statusCode: err.httpStatus } : {}), error: err.message || 'Network error' };
+      if (err.name === 'AbortError')
+        return { success: false, statusCode: 408, error: 'Request timeout' };
+      return {
+        success: false,
+        ...(err.httpStatus ? { statusCode: err.httpStatus } : {}),
+        error: err.message || 'Network error',
+      };
     }
   }
 
-  async get<T>(url: string, opt?: RequestInit, auth = true) { return this.request<T>(url, { ...opt, method: 'GET' }, auth); }
-  async post<T>(url: string, body?: unknown, opt?: RequestInit, auth = true) { 
-    return this.request<T>(url, { ...opt, method: 'POST', body: JSON.stringify(body) }, auth); 
+  async get<T>(url: string, opt?: RequestInit, auth = true) {
+    return this.request<T>(url, { ...opt, method: 'GET' }, auth);
   }
-  async put<T>(url: string, body?: unknown, opt?: RequestInit, auth = true) { 
-    return this.request<T>(url, { ...opt, method: 'PUT', body: JSON.stringify(body) }, auth); 
+  async post<T>(url: string, body?: unknown, opt?: RequestInit, auth = true) {
+    return this.request<T>(url, { ...opt, method: 'POST', body: JSON.stringify(body) }, auth);
   }
-  async delete<T>(url: string, opt?: RequestInit, auth = true) { return this.request<T>(url, { ...opt, method: 'DELETE' }, auth); }
+  async put<T>(url: string, body?: unknown, opt?: RequestInit, auth = true) {
+    return this.request<T>(url, { ...opt, method: 'PUT', body: JSON.stringify(body) }, auth);
+  }
+  async delete<T>(url: string, opt?: RequestInit, auth = true) {
+    return this.request<T>(url, { ...opt, method: 'DELETE' }, auth);
+  }
 }
 
 export const apiClient = new ApiClient();

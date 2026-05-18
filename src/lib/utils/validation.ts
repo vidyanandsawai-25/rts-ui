@@ -2,7 +2,7 @@
  * Common validation functions for forms
  *
  * @module validation
- * 
+ *
  * @deprecated This file is kept for backward compatibility.
  * New code should import from the specific modules:
  * - validation-rules.ts for regex and sanitization patterns
@@ -46,7 +46,10 @@ export {
   SEARCH_KEY_REGEX,
   PERSON_NAME_REGEX,
   EMAIL_REGEX,
+  EMAIL_LOWERCASE_RESTRICTED_REGEX,
   MOBILE_10_REGEX,
+  PINCODE_6_REGEX,
+  CITY_NAME_REGEX,
   POSITIVE_DECIMAL_INVALID_KEYS,
   isAllZeros,
   YEAR_REGEX,
@@ -67,4 +70,4 @@ export {
   officeValidations,
   oldDetailsValidations,
 } from './validation-schemas';
-
+export { userManagementValidations } from './user-management-validation';

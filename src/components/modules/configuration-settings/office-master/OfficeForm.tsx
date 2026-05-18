@@ -111,7 +111,9 @@ export default function OfficeForm({
 
         <OfficeAdditionalSection 
           formData={formData} 
+          errors={errors}
           handleChange={handleChange} 
+          showError={showError}
           t={t} 
         />
 
