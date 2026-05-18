@@ -4,13 +4,9 @@ import { useCallback, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Layers } from "lucide-react";
-
 import { MasterTable } from "@/components/common/MasterTable";
 import { EditButton, DeleteButton } from "@/components/common/ActionButtons";
 import { useConfirm } from "@/components/common/ConfirmProvider";
-import { PageContainer, SearchInput, Select } from "@/components/common";
-import TableHeader from "@/components/common/TableHeader";
 import { useSearchNavigation } from "@/hooks/useSearchNavigation";
 import { TEXT_SANITIZE } from "@/lib/utils/validation";
 
