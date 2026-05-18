@@ -50,7 +50,6 @@ const SocietyForm = (props: SocietyFormProps) => {
 
                         <SocietyFormFields
                             t={t}
-                            societyData={props.societyData}
                             managerMobileInput={managerMobileInput}
                             secretaryMobileInput={secretaryMobileInput}
                             managerEmail={managerEmail}

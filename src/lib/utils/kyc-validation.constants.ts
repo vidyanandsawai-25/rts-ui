@@ -180,13 +180,14 @@ export const societyValidators = {
   },
 
   /**
-   * Validate mobile number (10 digits)
+   * Validate mobile number (10 digits starting with 6-9)
    * @param mobile - Mobile number string
-   * @returns True if valid (empty or exactly 10 digits)
+   * @returns True if valid (empty or exactly 10 digits and starting with 6-9)
    */
   isValidMobile: (mobile: string): boolean => {
     const digits = mobile.replace(/\D/g, '');
-    return digits.length === 0 || digits.length === SOCIETY_VALIDATION_RULES.MOBILE_LENGTH;
+    if (digits.length === 0) return true;
+    return digits.length === SOCIETY_VALIDATION_RULES.MOBILE_LENGTH && /^[6-9]/.test(digits);
   },
 
   /**
@@ -466,11 +467,8 @@ export const enhancedKycValidators = {
     const trimmed = name.trim();
     if (trimmed.length === 0) return true;
     
-    // Check if name contains any numbers (0-9) - REJECT if found
-    if (/\d/.test(trimmed)) return false;
-    
-    // Check if contains at least some valid letters
-    const hasValidChars = /[\p{L}]/u.test(trimmed);
+    // Check if contains at least some valid letters or numbers
+    const hasValidChars = /[\p{L}\p{N}]/u.test(trimmed);
     return hasValidChars;
   },
 

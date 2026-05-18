@@ -37,6 +37,18 @@ export const SocietyContactFields = ({
     setSecretaryName,
     showError,
 }: SocietyContactFieldsProps) => {
+    const getMobileErrorMessage = (value: string): string => {
+        const digits = value.replace(/\D/g, '');
+        if (digits.length === 0) return '';
+        if (!/^[6-9]/.test(digits)) {
+            return t('kyc.validation.invalidMobileStart') || 'Mobile number must start with 6 to 9.';
+        }
+        if (digits.length !== 10) {
+            return t('kyc.validation.invalidMobile') || 'Mobile number must be exactly 10 digits.';
+        }
+        return '';
+    };
+
     return (
         <>
             {/* Manager Details */}
@@ -126,7 +138,7 @@ export const SocietyContactFields = ({
                     </div>
                 </div>
                 {showError('managerMobile', societyValidators.isValidMobile(managerMobileInput.value)) && (
-                    <span className="text-xs text-red-500">{t('kyc.validation.invalidMobile')}</span>
+                    <span className="text-xs text-red-500">{getMobileErrorMessage(managerMobileInput.value)}</span>
                 )}
             </div>
 
@@ -217,7 +229,7 @@ export const SocietyContactFields = ({
                     </div>
                 </div>
                 {showError('secretaryMobile', societyValidators.isValidMobile(secretaryMobileInput.value)) && (
-                    <span className="text-xs text-red-500">{t('kyc.validation.invalidMobile')}</span>
+                    <span className="text-xs text-red-500">{getMobileErrorMessage(secretaryMobileInput.value)}</span>
                 )}
             </div>
         </>

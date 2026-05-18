@@ -119,7 +119,7 @@ export const sanitizeName = (name: string): string => {
 export const sanitizeAddress = (address: string): string => {
   if (!address || typeof address !== 'string') return '';
   
-  let sanitized = address
+  const sanitized = address
     // Remove HTML tags
     .replace(/<[^>]*>/g, '')
     // Remove script content
@@ -152,7 +152,7 @@ export const sanitizeAddress = (address: string): string => {
 export const sanitizeFlatShopNo = (input: string): string => {
   if (!input || typeof input !== 'string') return '';
   
-  let sanitized = input
+  const sanitized = input
     // Allow only alphanumeric and hyphen
     .replace(/[^a-zA-Z0-9-]/g, '')
     // Block consecutive hyphens
@@ -196,7 +196,7 @@ export const sanitizePlotNo = (input: string): string => {
 export const sanitizeSurveyNo = (input: string): string => {
   if (!input || typeof input !== 'string') return '';
   
-  let sanitized = input
+  const sanitized = input
     // Allow alphanumeric and / or - separators
     .replace(/[^a-zA-Z0-9/-]/g, '')
     // Block consecutive separators
@@ -224,7 +224,7 @@ export const sanitizeSurveyNo = (input: string): string => {
 export const sanitizeSubZoneNo = (input: string): string => {
   if (!input || typeof input !== 'string') return '';
   
-  let sanitized = input
+  const sanitized = input
     // Allow alphanumeric and hyphen
     .replace(/[^a-zA-Z0-9-]/g, '')
     // Block consecutive hyphens

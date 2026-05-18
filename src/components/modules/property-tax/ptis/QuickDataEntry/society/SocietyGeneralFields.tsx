@@ -1,12 +1,10 @@
 import { Input } from "@/components/common";
 import { Label } from "@/components/common/label";
-import { PropertySocietyDetailsApiItem } from "@/types/property-society-details.types";
 import { societyValidators, SOCIETY_VALIDATION_RULES, propertyValidators } from '@/lib/utils/kyc-validation.constants';
 import { sanitizeEmailStrict, sanitizeName, sanitizeAddress } from '@/lib/utils/input-sanitization';
 
 interface SocietyGeneralFieldsProps {
     t: (key: string) => string;
-    societyData: PropertySocietyDetailsApiItem | null;
     societyEmail: string;
     setSocietyEmail: (email: string) => void;
     landOwnerName: string;
@@ -25,8 +23,7 @@ interface SocietyGeneralFieldsProps {
 }
 
 export const SocietyGeneralFields = ({ 
-    t, 
-    societyData,
+    t,
     societyEmail,
     setSocietyEmail,
     landOwnerName,

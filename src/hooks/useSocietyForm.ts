@@ -12,6 +12,18 @@ import { societyValidators, propertyValidators } from '@/lib/utils/kyc-validatio
 import { useSocietyChanges } from '@/hooks/useSocietyChanges';
 import { useSocietyFormState } from '@/hooks/useSocietyFormState'; 
 
+const getMobileErrorMessage = (value: string, t: (key: string) => string): string => {
+    const digits = value.replace(/\D/g, '');
+    if (digits.length === 0) return '';
+    if (!/^[6-9]/.test(digits)) {
+        return t('kyc.validation.invalidMobileStart') || 'Mobile number must start with 6 to 9.';
+    }
+    if (digits.length !== 10) {
+        return t('kyc.validation.invalidMobile') || 'Mobile number must be exactly 10 digits.';
+    }
+    return '';
+};
+
 export const useSocietyForm = (props: SocietyFormProps) => {
     const { societyData, propertyIdSearch, locale } = props;
     
@@ -165,7 +177,6 @@ export const useSocietyForm = (props: SocietyFormProps) => {
         e.preventDefault();
         setIsSubmitted(true);
 
-        const formData = new FormData(e.currentTarget);
         const pid = societyData?.propertyId || propertyIdSearch;
         const managerMobileStr = managerMobileInput.value;
         const secretaryMobileStr = secretaryMobileInput.value;
@@ -199,11 +210,11 @@ export const useSocietyForm = (props: SocietyFormProps) => {
             return;
         }
         if (!isManagerMobileValid && managerMobileStr) {
-            toast.error(t('kyc.validation.invalidMobile'));
+            toast.error(getMobileErrorMessage(managerMobileStr, t));
             return;
         }
         if (!isSecretaryMobileValid && secretaryMobileStr) {
-            toast.error(t('kyc.validation.invalidMobile'));
+            toast.error(getMobileErrorMessage(secretaryMobileStr, t));
             return;
         }
         if (!isLandOwnerNameValid) {

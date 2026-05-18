@@ -352,14 +352,18 @@ export const societyValidations = {
 
   mobile10:
     (
-      label: string,
+      _label: string,
       t: (key: string, values?: Record<string, string | number | Date>) => string
     ): Validator =>
     (value: unknown) => {
       const strVal = String(value ?? '').trim();
       if (!strVal) return undefined; // optional field
-      if (!MOBILE_10_REGEX.test(strVal)) {
-        return t(`society.validation.${label}`);
+      const digits = strVal.replace(/\D/g, '');
+      if (!/^[6-9]/.test(digits)) {
+        return t('kyc.validation.invalidMobileStart');
+      }
+      if (digits.length !== 10) {
+        return t('kyc.validation.invalidMobile');
       }
       return undefined;
     },

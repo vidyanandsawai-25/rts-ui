@@ -4,7 +4,6 @@ import { Label } from '@/components/common/label';
 import { KYC_VALIDATION_RULES, enhancedKycValidators } from '@/lib/utils/kyc-validation.constants';
 import { sanitizeName, sanitizeAddress } from '@/lib/utils/input-sanitization';
 import { KycFormData } from '@/types/property-kyc.types';
-import { useTranslations } from 'next-intl';
 
 interface AddressInfoFieldsProps {
   t: (key: string) => string;
@@ -20,7 +19,6 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
   showError,
 }) => {
   
-  const t2 = useTranslations('quickDataEntry');
   
   return (
     <>
@@ -46,7 +44,7 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
         />
         {showError('occupierName', enhancedKycValidators.isValidOccupierName(formData.occupierName ?? '')) && (
           <span className="text-xs text-red-500">
-            {t2('kyc.validation.invalidName')}
+            {t('kyc.validation.invalidName')}
           </span>
         )}
       </div>

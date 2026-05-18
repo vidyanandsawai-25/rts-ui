@@ -1,11 +1,9 @@
-import { PropertySocietyDetailsApiItem } from "@/types/property-society-details.types";
 import { SocietyGeneralFields } from './SocietyGeneralFields';
 import { SocietyContactFields } from './SocietyContactFields';
 import { useDigitInputs } from '@/hooks/useDigitInputs';
 
 interface SocietyFormFieldsProps {
     t: (key: string) => string;
-    societyData: PropertySocietyDetailsApiItem | null;
     managerMobileInput: ReturnType<typeof useDigitInputs>;
     secretaryMobileInput: ReturnType<typeof useDigitInputs>;
     managerEmail: string;
@@ -35,7 +33,6 @@ interface SocietyFormFieldsProps {
 
 export const SocietyFormFields = ({
     t,
-    societyData,
     managerMobileInput,
     secretaryMobileInput,
     managerEmail,
@@ -62,7 +59,6 @@ export const SocietyFormFields = ({
         <div className="grid grid-cols-3 gap-x-4 gap-y-3">
             <SocietyGeneralFields
                 t={t}
-                societyData={societyData}
                 societyEmail={societyEmail}
                 setSocietyEmail={setSocietyEmail}
                 landOwnerName={landOwnerName}

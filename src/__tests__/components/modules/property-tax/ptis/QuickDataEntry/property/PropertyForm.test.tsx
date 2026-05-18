@@ -335,7 +335,7 @@ describe('PropertyFormView', () => {
           'en',
           mockPropertyData.propertyId,
           expect.objectContaining({
-            flatOrShopNo: specialChars,
+            flatOrShopNo: 'Flat-123', // Expect the sanitized value
           })
         );
       });
