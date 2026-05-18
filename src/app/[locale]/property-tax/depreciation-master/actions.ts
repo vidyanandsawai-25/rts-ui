@@ -35,7 +35,7 @@ function parseAddRangeError(error: unknown): string {
   if (msg.toLowerCase().includes("overlap") ||
       msg.toLowerCase().includes("duplicate") ||
       msg.toLowerCase().includes("conflict")) {
-    return "Age range overlaps with existing range. Please choose different years.";
+    return "Age range overlaps with existing range. Please choose different values.";
   }
 
   // Try to parse server validation JSON embedded in the message

@@ -176,27 +176,23 @@ export default function FloorMaster({
 
   /* ================= UI ================= */
   return (
-    <PageContainer>
-      <div className="space-y-4">
-       
-        <MasterTable<Floor>
-          columns={columns}
-          data={data}
-          loading={isPending}
-          height="lg"
-        
-          pageNumber={pageNumber}
-          pageSize={pageSize}
-          totalCount={totalCount}
-          totalPages={totalPages}
-          onPageChange={changePage}
-
-          renderActions={(row) => (
-            <>
-              <EditButton onClick={() => handleEdit(row)} />
-              <DeleteButton onClick={() => handleDelete(row)} />
-            </>
-          )}
+    <div className="space-y-4">
+      <MasterTable<Floor>
+        columns={columns}
+        data={data}
+        loading={isPending}
+        height="lg"
+        pageNumber={pageNumber}
+        pageSize={pageSize}
+        totalCount={totalCount}
+        totalPages={totalPages}
+        onPageChange={changePage}
+        renderActions={(row) => (
+          <>
+            <EditButton onClick={() => handleEdit(row)} />
+            <DeleteButton onClick={() => handleDelete(row)} />
+          </>
+        )}
 
           actionLabel={tCommon("table.columns.actions")}
 
