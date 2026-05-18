@@ -164,11 +164,33 @@ export function SearchSequenceInput({
             onChange(0);
             return;
           }
+          
+          // Restrict to 3 digits maximum
+          if (rawValue.length > 3) {
+            return; // Don't update if more than 3 digits
+          }
+          
           const parsedValue = parseInt(rawValue, 10);
           if (Number.isNaN(parsedValue)) {
             return; // Don't update on invalid input
           }
+          
+          // Ensure value doesn't exceed 999
+          if (parsedValue > 999) {
+            onChange(999);
+            return;
+          }
+          
           onChange(parsedValue);
+        }}
+        onKeyDown={(e) => {
+          // Prevent typing numbers if already at 3 digits (special keys are allowed)
+          const currentValue = e.currentTarget.value;
+          const isNumber = /^[0-9]$/.test(e.key);
+          
+          if (isNumber && currentValue.length >= 3) {
+            e.preventDefault();
+          }
         }}
         placeholder="0"
         min={0}
