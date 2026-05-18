@@ -1,13 +1,13 @@
 import { Column } from '@/components/common/MasterTable';
 import { formatIndianNumber } from '@/lib/utils/format';
-import { TAX_LABEL_CLASSES } from './constants';
 import { TaxRow } from '@/types/ptisMain-taxdetails.types';
-
-// UI Constants for styling
-export const HEADER_TEXT_CLASSES = 'text-white text-[9.5px] font-bold uppercase tracking-tighter py-1.5';
-export const CELL_CENTER_CLASS = 'text-center';
-export const NUMBER_CELL_CLASSES = 'border border-blue-200 rounded px-1 py-0.5 text-center bg-white text-[10px] min-w-[55px] shadow-sm';
-export const TOTAL_CELL_CLASSES = 'border border-indigo-300 rounded px-1 py-0.5 text-center bg-white text-[10px] min-w-[55px] font-bold';
+import {
+  TAX_LABEL_CLASSES,
+  HEADER_TEXT_CLASSES,
+  CELL_CENTER_CLASS,
+  NUMBER_CELL_CLASSES,
+  TOTAL_CELL_CLASSES,
+} from './config';
 
 /**
  * Returns the column configuration for the TaxDetails table.

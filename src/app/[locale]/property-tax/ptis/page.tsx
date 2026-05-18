@@ -38,8 +38,7 @@ import { parsePtisSearchParams } from '@/lib/utils/params';
 import { getPtisUserSafeErrorMessage } from '@/components/modules/property-tax/ptis/shared/valuation-fetch';
 import { RateableTaxDetailsSection } from '@/components/modules/property-tax/ptis/rateable';
 import { CapitalTaxDetailsSection } from '@/components/modules/property-tax/ptis/capital';
-import { getCapitalTaxDetails, getRateableTaxDetails } from './TaxDetails/action';
-import type { TaxDetailsData } from '@/types/ptisMain-taxdetails.types';
+import { fetchTaxDetailsByTab } from './TaxDetails/fetchTaxDetails';
 
 const toValidTab = (value: unknown): PtisTabId => {
   return typeof value === 'string' && (PTIS_TABS as readonly string[]).includes(value)
@@ -311,47 +310,9 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
     : undefined;
 
   // Fetch tax details based on valuation tab (ptisParams.tab), not property tab (activeTab)
-  let rateableTaxDetails: TaxDetailsData | undefined;
-  let capitalTaxDetails: TaxDetailsData | undefined;
-  let rateableTaxError: string | undefined;
-  let capitalTaxError: string | undefined;
   const valuationTab = ptisParams.tab;
-
-  if (resolvedPropertyId) {
-    if (valuationTab === 'capital') {
-      const result = await getCapitalTaxDetails(resolvedPropertyId);
-      if (result.success && result.data) {
-        capitalTaxDetails = result.data;
-      } else {
-        capitalTaxError = result.error;
-      }
-    } else if (valuationTab === 'rateable') {
-      const result = await getRateableTaxDetails(resolvedPropertyId);
-      if (result.success && result.data) {
-        rateableTaxDetails = result.data;
-      } else {
-        rateableTaxError = result.error;
-      }
-    } else if (valuationTab === 'dual') {
-      const [capitalTaxResult, rateableTaxResult] = await Promise.all([
-        getCapitalTaxDetails(resolvedPropertyId),
-        getRateableTaxDetails(resolvedPropertyId),
-      ]);
-
-      capitalTaxDetails = capitalTaxResult.success ? capitalTaxResult.data : undefined;
-      capitalTaxError = !capitalTaxResult.success ? capitalTaxResult.error : undefined;
-      rateableTaxDetails = rateableTaxResult.success ? rateableTaxResult.data : undefined;
-      rateableTaxError = !rateableTaxResult.success ? rateableTaxResult.error : undefined;
-    } else {
-      // Default to rateable for apartment or other tabs
-      const result = await getRateableTaxDetails(resolvedPropertyId);
-      if (result.success && result.data) {
-        rateableTaxDetails = result.data;
-      } else {
-        rateableTaxError = result.error;
-      }
-    }
-  }
+  const { rateableTaxDetails, capitalTaxDetails, rateableTaxError, capitalTaxError } =
+    await fetchTaxDetailsByTab(resolvedPropertyId, valuationTab);
 
   return (
     <>

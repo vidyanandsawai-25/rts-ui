@@ -60,28 +60,13 @@ export interface PtisMainTaxDetailsApiResponse {
 }
 
 /**
- * Legacy tax details response types (deprecated)
- * @deprecated Use PtisMainTaxDetailsApiResponse instead
+ * Represents a row in the tax details table
+ * Contains fixed fields plus dynamic tax name columns
  */
-export interface TaxDetailsResponse {
-  success: boolean;
-  message: string;
-  items: {
-    propertyId: number;
-    policies: Array<{
-      policyCode: string;
-      taxAmounts: Record<string, number>;
-    }>;
-  };
-  errors: null | string | string[];
-}
-
-export interface TaxData {
+export interface TaxRow {
   id: number;
   taxes: string;
   labelKey?: string;
   totalTax: string;
   [key: string]: string | number | undefined;
 }
-
-export type TaxRow = TaxData & { [key: string]: unknown };

@@ -6,6 +6,7 @@
 import { apiClient } from '@/services/api.service';
 import { PtisMainTaxDetailsApiResponse, TaxDetailsData } from '@/types/ptisMain-taxdetails.types';
 import { ApiResponse } from '@/types/common.types';
+import { validateAndExtractApiResponse } from '@/lib/utils/api-response-validators';
 
 /**
  * Extracts TaxDetailsData from the API response with comprehensive error handling.
@@ -20,36 +21,7 @@ function extractTaxDetailsFromResponse(
   apiResponse: ApiResponse<PtisMainTaxDetailsApiResponse>,
   endpoint: string
 ): TaxDetailsData {
-  // Check transport-level success (HTTP status)
-  if (!apiResponse.success || !apiResponse.data) {
-    throw new Error(apiResponse.error || `Failed to fetch data from ${endpoint} API`);
-  }
-
-  // Check backend payload success flag
-  const response = apiResponse.data;
-  if (response.success === false) {
-    const errorMsg =
-      response.errors?.[0] || response.message || `Backend error from ${endpoint} API`;
-    throw new Error(errorMsg);
-  }
-
-  // Check nested structure success flag if present
-  if (response.data?.success === false) {
-    const nestedErrorMsg =
-      response.data.errors?.[0] ||
-      response.data.message ||
-      `Backend error from ${endpoint} API (nested)`;
-    throw new Error(nestedErrorMsg);
-  }
-
-  // Extract items from the response data (handles nested structure)
-  const items = response?.items || response?.data?.items;
-
-  if (items) {
-    return items;
-  }
-
-  throw new Error(`Invalid response structure from ${endpoint} API`);
+  return validateAndExtractApiResponse<TaxDetailsData>(apiResponse, endpoint);
 }
 
 /**
