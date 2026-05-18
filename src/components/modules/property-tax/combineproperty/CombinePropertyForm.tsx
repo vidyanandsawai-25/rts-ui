@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { Drawer } from '@/components/common/Drawer';
 import { SearchSelect, type SearchSelectOption } from '@/components/common/SearchSelect';
 import { MultiSelectDropdown } from '@/components/common/Dropdown';
+import { Tabs, TabList, Tab } from '@/components/common/Tabs';
 import { CancelButton, AddButton } from '@/components/common/ActionButtons';
 import { MasterTable } from '@/components/common/MasterTable';
 import { CombinePropertyItem } from '@/types/combine-property.types';
@@ -198,23 +199,21 @@ export default function CombinePropertyForm({
         {/* ---- Selection Method pill toggle ---- */}
         <div className="flex flex-col gap-0.5 shrink-0">
           <label className="text-[10px] font-semibold text-gray-600">{t('selectionMethod')}</label>
-          <div className="flex h-[28px] bg-white border border-blue-200 p-0.5 rounded-md gap-px" role="group" aria-label={t('selectionMethod')}>
-            {(['range', 'individual'] as SelectionMethod[]).map((method) => (
-              <button
-                key={method}
-                type="button"
-                onClick={() => handleMethodChange(method)}
-                aria-pressed={selectionMethod === method}
-                className={`px-2.5 text-[11px] font-semibold rounded h-full transition-all duration-150 capitalize ${
-                  selectionMethod === method
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-gray-500 hover:bg-blue-50 hover:text-blue-700'
-                }`}
-              >
-                {method === 'range' ? t('range') : t('individual')}
-              </button>
-            ))}
-          </div>
+          <Tabs
+            value={selectionMethod}
+            onChange={(value) => handleMethodChange(value as SelectionMethod)}
+            variant="pills"
+            size="sm"
+          >
+            <TabList className="h-[28px] p-0.5 bg-gray-100 rounded-md" scrollable={false}>
+              <Tab value="range" className="text-[11px] px-2.5 py-0">
+                {t('range')}
+              </Tab>
+              <Tab value="individual" className="text-[11px] px-2.5 py-0">
+                {t('individual')}
+              </Tab>
+            </TabList>
+          </Tabs>
         </div>
 
         {/* ---- Conditional: Range fields ---- */}
