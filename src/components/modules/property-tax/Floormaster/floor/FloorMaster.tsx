@@ -229,6 +229,6 @@ export default function FloorMaster({
           getRowKey={(row) => String(row.id)}
         />
       </div>
-    </PageContainer>
+    
   );
 }
