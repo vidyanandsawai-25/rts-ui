@@ -1,12 +1,9 @@
 import { useTranslations } from 'next-intl';
 import { SearchInput, Select, PrevPageButton, NextPageButton } from '@/components/common';
 import { WardItem } from '@/types/wardMaster.types';
-import { WardListItem } from './WardListItem';
 
 interface ZoneWardsProps {
   wards: WardItem[];
-  checkedWards: Set<string>;
-  onToggleWard: (wardNo: string) => void;
   searchTerm: string;
   onSearchChange: (value: string) => void;
   page: number;
@@ -20,8 +17,6 @@ interface ZoneWardsProps {
 
 export function ZoneWards({
   wards,
-  checkedWards,
-  onToggleWard,
   searchTerm,
   onSearchChange,
   page,
@@ -45,15 +40,14 @@ export function ZoneWards({
       </div>
       <div className="flex-1 overflow-y-auto p-3 space-y-2">
         {wards.map((ward) => (
-            <WardListItem
-              key={ward.wardNo}
-              wardNo={ward.wardNo}
-              description={ward.description ?? undefined}
-              checked={checkedWards.has(ward.wardNo)}
-              onToggle={() => onToggleWard(ward.wardNo)}
-              disabled={true}
-              colorScheme="purple"
-            />
+          <div
+            key={ward.wardNo}
+            className="flex items-center gap-3 px-4 py-1 bg-white/60 backdrop-blur-sm rounded-lg transition-all duration-200 border border-purple-100/50 hover:border-purple-300/50 hover:shadow-md group"
+          >
+            <span className="text-sm font-medium text-gray-700 group-hover:text-purple-700 transition-colors flex items-center gap-2 flex-1">
+              {ward.wardNo}
+            </span>
+          </div>
         ))}
         {wards.length === 0 && (
           <div className="text-center text-gray-500 py-4">
@@ -67,8 +61,8 @@ export function ZoneWards({
             options={pageSizeOptions}
             value={String(pageSize)}
             onChange={(e) => {
+              // Only call onPageSizeChange - it already handles resetting page to 1
               onPageSizeChange(Number(e.target.value));
-              onPageChange(1);
             }}
             selectSize="sm"
             className="w-20"

@@ -52,7 +52,11 @@
       "nameMaxLength": "Maximum {count} characters allowed",
       "typeRequired": "Type is required",
       "invalidEmail": "Invalid email address",
-      "invalidPincode": "Pincode must be exactly 6 digits"
+      "invalidEmailRestricted": "Email must be lowercase and end with .com or .in",
+      "invalidPhone": "Phone number must be exactly 10 digits, cannot start with 0, and must be a valid Indian number (starting with 6-9)",
+      "invalidCity": "City name cannot contain numbers or special characters",
+      "invalidPincode": "Pincode must be exactly 6 digits and contain only numbers",
+      "invalidId": "ID must be a positive number"
     }
   },
   "errors": {
@@ -232,6 +236,9 @@
     "deleteFloor": "Delete Floor"
   },
   "table": {
+    "paginationFooter": "Showing {start} <selector/> of {total} entries",
+    "showingStart": "Showing {start}",
+    "ofTotalEntries": "of {total} entries",
     "actions": {
       "edit": "Edit",
       "delete": "Delete"

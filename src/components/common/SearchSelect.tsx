@@ -129,6 +129,8 @@ export function SearchSelect({
   const listRef = useRef<HTMLUListElement>(null);
   // Tracks whether the input is currently focused so the auto-open effect works correctly
   const isFocused = useRef<boolean>(false);
+  // Tracks whether a selection was just made to prevent blur from clearing
+  const didSelectRef = useRef<boolean>(false);
 
   /* ---------------- Safety checks ---------------- */
 
@@ -183,6 +185,12 @@ export function SearchSelect({
   /* ---------------- Validate and clear on blur ---------------- */
 
   const handleBlur = useCallback((): void => {
+    // If a selection was just made, skip the blur clearing logic
+    if (didSelectRef.current) {
+      didSelectRef.current = false;
+      setIsOpen(false);
+      return;
+    }
     setIsOpen(false);
     if (!hasOptions) return;
     const matched = validOptions.find((opt) => opt.label === displayValue);
@@ -207,6 +215,7 @@ export function SearchSelect({
   const handleSelect = (val: string): void => {
     const selected = validOptions.find((o) => o.value === val);
     if (!selected) return;
+    didSelectRef.current = true; // Mark that selection happened
     setSearch(selected.label);
     setHasTyped(false);
     setIsOpen(false);

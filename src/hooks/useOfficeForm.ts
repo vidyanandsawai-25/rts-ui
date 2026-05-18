@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useTransition, useRef, useEffect } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
@@ -10,6 +10,7 @@ import {
 } from "@/app/[locale]/configuration-settings/office-master/action";
 import { Office, OfficeFormModel } from "@/types/office.types";
 import { officeValidations } from "@/lib/utils/validation";
+import { formatDateToDDMMYYYY, formatDDMMYYYYToISO } from "@/lib/utils/format";
 
 
 interface UseOfficeFormProps {
@@ -45,7 +46,9 @@ export function useOfficeForm({
     emailId: initialData?.emailId ?? "",
     officeIncharge: initialData?.officeIncharge ?? null,
     designationMasterId: initialData?.designationMasterId ?? null,
-    establishedDate: initialData?.establishedDate ?? "",
+    establishedDate: initialData?.establishedDate 
+      ? formatDateToDDMMYYYY(initialData.establishedDate) 
+      : "",
     isActive: initialData?.isActive ?? true,
     updatedBy: undefined,
   });
@@ -53,7 +56,6 @@ export function useOfficeForm({
   const [errors, setErrors] = useState<Partial<Record<keyof OfficeFormModel, string>>>({});
   const [touched, setTouched] = useState<Partial<Record<keyof OfficeFormModel, boolean>>>({});
   const [open, setOpen] = useState(true);
-  const [isPending, startTransition] = useTransition();
   const isMounted = useRef(true);
 
   useEffect(() => {
@@ -95,13 +97,9 @@ export function useOfficeForm({
 
   const closeAndRoute = useCallback(() => {
     setOpen(false);
-    setTimeout(() => {
-      if (isMounted.current) {
-        startTransition(() => {
-          router.push(`/${locale}/configuration-settings/office-master`);
-        });
-      }
-    }, 400); 
+    // Use router.push immediately to return to the list view
+    router.push(`/${locale}/configuration-settings/office-master`);
+    router.refresh();
   }, [router, locale]);
 
   const handleCancel = useCallback(() => {
@@ -118,14 +116,15 @@ export function useOfficeForm({
 
     setIsSubmitting(true);
     try {
-      const result = isEdit ? await updateOfficeAction(formData) : await createOfficeAction(formData);
+      const submissionData = {
+        ...formData,
+        establishedDate: formatDDMMYYYYToISO(formData.establishedDate)
+      };
+      const result = isEdit ? await updateOfficeAction(submissionData) : await createOfficeAction(submissionData);
       if (result.success) {
         toast.success(isEdit ? t("success.updated") : t("success.created"));
         onSuccess();
-        startTransition(() => {
-          router.refresh();
-          closeAndRoute();
-        });
+        closeAndRoute();
       } else {
         if (result.errors) {
           setErrors((prev) => ({ ...prev, ...result.errors }));
@@ -152,7 +151,7 @@ export function useOfficeForm({
   return {
     formData,
     errors,
-    isSubmitting: isSubmitting || isPending,
+    isSubmitting: isSubmitting,
     isActive: formData.isActive,
     open,
     setOpen,
