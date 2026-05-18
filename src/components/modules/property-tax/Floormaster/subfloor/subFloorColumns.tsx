@@ -51,7 +51,7 @@ function SortableHeader({
   };
 
   return (
-    <div className="flex items-center gap-1 justify-start w-full">
+    <div className="flex items-center gap-1 justify-center w-full">
       <span>{label}</span>
       {renderSortButton()}
     </div>
@@ -65,7 +65,7 @@ export const subFloorColumns = (
   sortOrder?: string,
   onSort?: (key: string) => void
 ): Column<SubFloor>[] => {
-  // Sortable columns (matching backend API validation)
+  // Sortable columns (all columns sortable in UI)
   const sortableColumns = ["subFloorCode", "description", "isActive"];
 
   const createSortableLabel = (label: string, key: string) => {

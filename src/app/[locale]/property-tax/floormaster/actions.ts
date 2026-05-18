@@ -80,19 +80,20 @@ export async function fetchFloorPagedServerAction(
     const MAX_PAGE_SIZE = 100;
     const MAX_PAGE_NUMBER = 10000;
 
+    // Allow pageSize -1 to fetch all records (like construction type)
     if (
       !Number.isFinite(pageNumber) ||
       !Number.isFinite(pageSize) ||
       pageNumber <= 0 ||
-      pageSize <= 0 ||
-      pageSize > MAX_PAGE_SIZE ||
+      (pageSize !== -1 && pageSize <= 0) ||
+      (pageSize !== -1 && pageSize > MAX_PAGE_SIZE) ||
       pageNumber > MAX_PAGE_NUMBER
     ) {
       throw new Error("Invalid pagination parameters");
     }
 
   
-    const allowedSortColumns = ["floorCode", "description", "sequenceNo"];
+    const allowedSortColumns = ["floorCode", "description", "sequenceNo", "isActive"];
 
     const validSortBy = sortBy && allowedSortColumns.includes(sortBy)
       ? sortBy
@@ -347,18 +348,19 @@ export async function fetchSubFloorPagedServerAction(
     const MAX_PAGE_SIZE = 100;
     const MAX_PAGE_NUMBER = 10000;
 
+    // Allow pageSize -1 to fetch all records (like construction type)
     if (
       !Number.isFinite(pageNumber) ||
       !Number.isFinite(pageSize) ||
       pageNumber <= 0 ||
-      pageSize <= 0 ||
-      pageSize > MAX_PAGE_SIZE ||
+      (pageSize !== -1 && pageSize <= 0) ||
+      (pageSize !== -1 && pageSize > MAX_PAGE_SIZE) ||
       pageNumber > MAX_PAGE_NUMBER
     ) {
       throw new Error("Invalid pagination parameters");
     }
 
-    const allowedSortColumns = ["subFloorCode", "description"];
+    const allowedSortColumns = ["subFloorCode", "description", "isActive"];
 
     const validSortBy =
       sortBy && allowedSortColumns.includes(sortBy)

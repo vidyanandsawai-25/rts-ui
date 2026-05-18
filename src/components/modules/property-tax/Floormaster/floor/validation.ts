@@ -49,7 +49,9 @@ export function validateFloorForm(
   }
 
   // Sequence number validation
-  if (!Number.isFinite(data.sequenceNo) || data.sequenceNo < 0) {
+  if (data.sequenceNo === null || data.sequenceNo === undefined) {
+    errors.sequenceNo = t('form.validation.sequenceNoRequired');
+  } else if (!Number.isFinite(data.sequenceNo) || data.sequenceNo < 0) {
     errors.sequenceNo = t('validation.mustBeNumber');
   }
 

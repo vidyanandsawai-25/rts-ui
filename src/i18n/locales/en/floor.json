@@ -87,6 +87,7 @@
         "descriptionRequired": "Description is required",
         "descriptionFormat": "Description contains invalid characters or formatting",
         "descriptionMaxLength": "Description cannot exceed {count} characters",
+        "sequenceNoRequired": "Sequence No is required",
         "mustBeActive": "New floor must be active",
         "rangeStartRequired": "Start value is required",
         "rangeEndRequired": "End value is required",

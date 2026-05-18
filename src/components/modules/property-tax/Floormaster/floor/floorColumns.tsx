@@ -1,6 +1,6 @@
 import React from "react";
 import type { Column } from "@/components/common/MasterTable";
-import type { SubFloor } from "@/types/floor.types";
+import type { Floor } from "@/types/floor.types";
 import { SortAscButton, SortDescButton, SortDefaultButton } from "@/components/common/ActionButtons";
 
 /**
@@ -51,22 +51,22 @@ function SortableHeader({
   };
 
   return (
-    <div className="flex items-center gap-1 justify-start w-full">
+    <div className="flex items-center gap-1 justify-center w-full">
       <span>{label}</span>
       {renderSortButton()}
     </div>
   );
 }
 
-export const subFloorColumns = (
+export const floorColumns = (
   t: (key: string) => string,
   tCommon: (key: string) => string,
   sortBy?: string,
   sortOrder?: string,
   onSort?: (key: string) => void
-): Column<SubFloor>[] => {
-  // Sortable columns (matching backend API validation)
-  const sortableColumns = ["subFloorCode", "description", "isActive"];
+): Column<Floor>[] => {
+  // Sortable columns (all columns sortable in UI)
+  const sortableColumns = ["floorCode", "description", "sequenceNo", "isActive"];
 
   const createSortableLabel = (label: string, key: string) => {
     if (onSort && sortableColumns.includes(key)) {
@@ -86,8 +86,8 @@ export const subFloorColumns = (
 
   return [
     {
-      key: "subFloorCode",
-      label: createSortableLabel(t("table.columns.subFloorCode"), "subFloorCode"),
+      key: "floorCode",
+      label: createSortableLabel(t("table.columns.floorCode"), "floorCode"),
       width: "15%",
       headerClassName: "text-center",
       cellClassName: "text-center",
@@ -95,14 +95,21 @@ export const subFloorColumns = (
     {
       key: "description",
       label: createSortableLabel(t("table.columns.descriptionRegional"), "description"),
-      width: "25%",
+      width: "30%",
+      headerClassName: "text-center",
+      cellClassName: "text-center",
+    },
+    {
+      key: "sequenceNo",
+      label: createSortableLabel(t("table.columns.sequenceNo"), "sequenceNo"),
+      width: "15%",
       headerClassName: "text-center",
       cellClassName: "text-center",
     },
     {
       key: "isActive",
       label: createSortableLabel(t("table.columns.status"), "isActive"),
-      width: "15%",
+      width: "20%",
       isStatus: true,
       headerClassName: "text-center",
       cellClassName: "text-center",

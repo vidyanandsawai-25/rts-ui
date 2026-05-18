@@ -27,11 +27,14 @@ export function FloorRangeFields({
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Input
-            label={t('form.range.start')}
+            label={
+              <span>
+                {t('form.range.start')} <span className="text-red-500">*</span>
+              </span>
+            }
             type="number"
             min={1}
             max={999}
-            required
             placeholder={t('form.range.startPlaceholder')}
             value={formData.rangeFrom || ''}
             onChange={(e) => {
@@ -52,11 +55,14 @@ export function FloorRangeFields({
         
         <div>
           <Input
-            label={t('form.range.end')}
+            label={
+              <span>
+                {t('form.range.end')} <span className="text-red-500">*</span>
+              </span>
+            }
             type="number"
             min={1}
             max={999}
-            required
             placeholder={t('form.range.endPlaceholder')}
             value={formData.rangeTo || ''}
             onChange={(e) => {
@@ -81,11 +87,13 @@ export function FloorRangeFields({
         placeholder={t('form.englishName.prefixPlaceholder')}
         value={formData.prefix}
         onChange={(e) => {
-          if (e.target.value.length <= 2) onChange('prefix', e.target.value);
+          // Allow only letters, numbers, /, -, _ (block @, #, (, ) etc)
+          const sanitized = e.target.value.replace(/[^A-Za-z0-9/_-]/g, '');
+          if (sanitized.length <= 10) onChange('prefix', sanitized);
         }}
         onBlur={() => onBlur('prefix')}
         fullWidth
-        maxLength={2}
+        maxLength={10}
         className="text-gray-700"
       />
       <ValidationMessage
@@ -98,11 +106,13 @@ export function FloorRangeFields({
         placeholder={t('form.englishName.suffixPlaceholder')}
         value={formData.suffix}
         onChange={(e) => {
-          if (e.target.value.length <= 2) onChange('suffix', e.target.value);
+          // Allow only letters, numbers, /, -, _ (block @, #, (, ) etc)
+          const sanitized = e.target.value.replace(/[^A-Za-z0-9/_-]/g, '');
+          if (sanitized.length <= 10) onChange('suffix', sanitized);
         }}
         onBlur={() => onBlur('suffix')}
         fullWidth
-        maxLength={2}
+        maxLength={10}
         className="text-gray-700"
       />
       <ValidationMessage

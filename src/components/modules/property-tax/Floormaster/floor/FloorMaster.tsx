@@ -1,14 +1,18 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { Layers } from "lucide-react";
 
 import { MasterTable } from "@/components/common/MasterTable";
 import { EditButton, DeleteButton } from "@/components/common/ActionButtons";
 import { useConfirm } from "@/components/common/ConfirmProvider";
-import { Select } from "@/components/common";
+import { PageContainer, SearchInput, Select } from "@/components/common";
+import TableHeader from "@/components/common/TableHeader";
+import { useSearchNavigation } from "@/hooks/useSearchNavigation";
+import { TEXT_SANITIZE } from "@/lib/utils/validation";
 
 import type { Floor, FloorMasterProps } from "@/types/floor.types";
 
@@ -29,6 +33,7 @@ export default function FloorMaster({
   const tCommon = useTranslations("common");
 
   const { confirm } = useConfirm();
+  const [isPending, startTransition] = useTransition();
 
   const {
     items: data,
@@ -39,6 +44,34 @@ export default function FloorMaster({
   } = floorPaged;
 
   const currentSearchTerm = searchParams.get("q") || "";
+
+  /* ================= SEARCH ================= */
+  const [search, setSearch] = useState(currentSearchTerm);
+  const [prevSearch, setPrevSearch] = useState(currentSearchTerm);
+
+  // Sync search state with URL
+  if (currentSearchTerm !== prevSearch) {
+    setPrevSearch(currentSearchTerm);
+    setSearch(currentSearchTerm);
+  }
+
+  // Debounced search navigation
+  useSearchNavigation({
+    search,
+    currentSearchTerm,
+    pageSize,
+    locale,
+    sortBy,
+    sortOrder,
+    basePath: "/property-tax/floormaster/floor",
+    startTransition,
+  });
+
+  const handleSearchChange = (value: string) => {
+    // Sanitize search input to prevent special characters
+    const sanitized = value.replace(TEXT_SANITIZE, "");
+    setSearch(sanitized);
+  };
 
   /* ================= URL BUILDER ================= */
   const buildUrl = useCallback(
@@ -62,7 +95,28 @@ export default function FloorMaster({
     [locale]
   );
 
-  const columns = floorColumns(t);
+  /* ================= SORTING ================= */
+  const handleSort = useCallback(
+    (columnKey: string) => {
+      let newSortOrder: string = "asc";
+
+      // Toggle sort order if clicking the same column
+      if (sortBy === columnKey) {
+        if (sortOrder === "asc") {
+          newSortOrder = "desc";
+        } else if (sortOrder === "desc") {
+          // Reset to no sorting
+          router.push(buildUrl(1, pageSize, currentSearchTerm));
+          return;
+        }
+      }
+
+      router.push(buildUrl(1, pageSize, currentSearchTerm, columnKey, newSortOrder));
+    },
+    [sortBy, sortOrder, router, buildUrl, pageSize, currentSearchTerm]
+  );
+
+  const columns = floorColumns(t, tCommon, sortBy, sortOrder, handleSort);
 
   /* ================= PAGINATION ================= */
   const changePage = (p: number) => {
@@ -122,10 +176,13 @@ export default function FloorMaster({
 
   /* ================= UI ================= */
   return (
-    <MasterTable<Floor>
+    <PageContainer>
+      <div className="space-y-4">
+       
+        <MasterTable<Floor>
           columns={columns}
           data={data}
-          loading={false}
+          loading={isPending}
           height="lg"
         
           pageNumber={pageNumber}
@@ -148,27 +205,34 @@ export default function FloorMaster({
           footerLeftContent={
             <div className="flex items-center gap-4">
               <span className="text-sm text-gray-700">
-                {tCommon("table.showing")} {start} {tCommon("table.to")} {end} {tCommon("table.of")} {totalCount}
+                {tCommon("table.showing")} {start} {tCommon("table.to")} {end} {tCommon("table.of")} {totalCount} {tCommon("table.entries")}
               </span>
-
-              <Select
-                value={String(pageSize)}
-                onChange={(e) =>
-                  router.push(
-                    buildUrl(1, Number(e.target.value), currentSearchTerm, sortBy, sortOrder)
-                  )
-                }
-                options={[10, 20, 30, 50].map((s) => ({
-                  label: String(s),
-                  value: String(s),
-                }))}
-                selectSize="sm"
-                className="w-20"
-              />
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">{tCommon("table.rowsPerPage")}:</span>
+                <Select
+                  value={String(pageSize)}
+                  onChange={(e) => {
+                    startTransition(() => {
+                      router.push(
+                        buildUrl(1, Number(e.target.value), currentSearchTerm, sortBy, sortOrder)
+                      );
+                    });
+                  }}
+                  options={[10, 20, 30, 50].map((s) => ({
+                    label: String(s),
+                    value: String(s),
+                  }))}
+                  selectSize="sm"
+                  className="w-20"
+                  ariaLabel={tCommon("table.rowsPerPage") || "Rows per page"}
+                />
+              </div>
             </div>
           }
 
-      getRowKey={(row) => String(row.id)}
-    />
+          getRowKey={(row) => String(row.id)}
+        />
+      </div>
+    </PageContainer>
   );
 }
