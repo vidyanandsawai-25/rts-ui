@@ -1,8 +1,8 @@
 import { renderHook } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { useTaxDetailsTable } from '../../../../components/modules/property-tax/ptis/TaxDetails/useTaxDetailsTable';
-import type { TaxDetailsData } from '../../../../types/ptisMain-taxdetails.types';
-import { TAX_ROW_LABELS } from '../../../../components/modules/property-tax/ptis/TaxDetails/constants';
+import { useTaxDetailsTable } from '@/components/modules/property-tax/ptis/TaxDetails/useTaxDetailsTable';
+import type { TaxDetailsData } from '@/types/ptisMain-taxdetails.types';
+import { TAX_ROW_LABELS } from '@/components/modules/property-tax/ptis/TaxDetails/constants';
 
 // Mock next-intl
 vi.mock('next-intl', () => ({
@@ -20,7 +20,7 @@ vi.mock('next-intl', () => ({
 }));
 
 // Mock the column utility to isolate hook logic testing
-vi.mock('../../../../components/modules/property-tax/ptis/TaxDetails/TaxDetailsColumns', () => ({
+vi.mock('@/components/modules/property-tax/ptis/TaxDetails/TaxDetailsColumns', () => ({
   getTaxDetailsColumns: vi.fn((_names, t) => [
     {
       key: 'taxes',

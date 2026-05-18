@@ -7,7 +7,7 @@ import { ValuationSummaryFooter } from '@/components/modules/property-tax/ptis/s
 import { getCapitalValue } from '@/app/[locale]/property-tax/ptis/CapitalValue.action';
 import { calculateCapitalTotal } from '@/lib/utils/ptis-calculations';
 import { resolveValuationData } from '@/components/modules/property-tax/ptis/shared/valuation-fetch';
-import { TaxDetailsData } from '@/types/ptisMain-taxdetails.types';
+import type { TaxDetailsData } from '@/types/ptisMain-taxdetails.types';
 
 interface Props {
   propertyId?: number;

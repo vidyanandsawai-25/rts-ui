@@ -39,7 +39,7 @@ import { getPtisUserSafeErrorMessage } from '@/components/modules/property-tax/p
 import { RateableTaxDetailsSection } from '@/components/modules/property-tax/ptis/rateable';
 import { CapitalTaxDetailsSection } from '@/components/modules/property-tax/ptis/capital';
 import { getCapitalTaxDetails, getRateableTaxDetails } from './TaxDetails/action';
-import { TaxDetailsData } from '@/types/ptisMain-taxdetails.types';
+import type { TaxDetailsData } from '@/types/ptisMain-taxdetails.types';
 
 const toValidTab = (value: unknown): PtisTabId => {
   return typeof value === 'string' && (PTIS_TABS as readonly string[]).includes(value)

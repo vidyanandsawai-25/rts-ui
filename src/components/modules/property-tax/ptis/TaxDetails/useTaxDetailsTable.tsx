@@ -58,12 +58,13 @@ export const useTaxDetailsTable = (initialTaxDetails?: TaxDetailsData) => {
 
     return taxRowsDefinition.map((rowDef) => {
       const translatedLabel = t(rowDef.labelKey);
-      const row: TaxRow = {
+      // Use Object.create(null) to prevent prototype pollution from API-provided taxName keys
+      const row: TaxRow = Object.assign(Object.create(null), {
         id: rowDef.id,
         taxes: translatedLabel,
         labelKey: rowDef.labelKey,
         totalTax: '0.00',
-      };
+      });
 
       // Find policy by policyCode directly (locale-independent)
       const policy = policies.find((p) => p.policyCode === rowDef.policyCode);
@@ -71,6 +72,7 @@ export const useTaxDetailsTable = (initialTaxDetails?: TaxDetailsData) => {
       let total = 0;
       if (policy) {
         policy.taxAmounts.forEach((item) => {
+          // Safe to assign taxName as key since row has null prototype
           row[item.taxName] = String(item.taxAmount || 0);
           total += Number(item.taxAmount || 0);
         });

@@ -1,4 +1,4 @@
-import { TaxDetailsData } from '@/types/ptisMain-taxdetails.types';
+import type { TaxDetailsData } from '@/types/ptisMain-taxdetails.types';
 import TaxDetails from '../TaxDetails/TaxDetails';
 import { TaxBadge, type BadgeThemeColor } from './TaxBadge';
 
