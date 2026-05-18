@@ -83,7 +83,7 @@ export default function CombinePropertyForm({
   /* ---- Options ---- */
   const BASE_PROPERTY_OPTIONS = useMemo<SearchSelectOption[]>(() => {
     return (basePropertyList || []).map((item) => ({
-      label: `${item.wardNo || ''} / ${item.propertyNo || ''} / ${item.fromProperty || ''}`,
+      label: `${item.wardNo ||  ''} / ${item.propertyNo || ''}/ ${item.fromProperty || ''}`,
       value: String(item.id || ''),
       meta: { wardId: item.wardId, wardNo: item.wardNo, propertyNo: item.propertyNo },
     }));

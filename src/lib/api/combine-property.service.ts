@@ -1,6 +1,6 @@
 import { apiClient } from "@/services/api.service";
 import { PagedResponse } from "@/types/common.types";
-import { ApiError } from "@/lib/utils/api";
+import { ApiError, handleApiResponse } from "@/lib/utils/api";
 import { CombinePropertyItem, CombinePropertyPayload, CombinePropertyParams, PropertyCombineDetails, GetPropertyCombineDetailsParams } from "@/types/combine-property.types";
 
 /** 
@@ -86,17 +86,11 @@ export async function getPropertyCombineDetails(
  * Combines properties 
  * All fields are required as per the specifications
  */
-export async function createCombineProperty(payload: CombinePropertyPayload): Promise<void> {
+export async function createCombineProperty(payload: CombinePropertyPayload): Promise<unknown> {
   try {
     const response = await apiClient.post<unknown>("/Property/combine-properties", payload);
     
-    if (!response.success) {
-      throw new ApiError(
-        response.statusCode ?? 500, 
-        response.error || "Failed to combine properties", 
-        "Combine properties failed"
-      );
-    }
+    return handleApiResponse(response, "Combine properties failed");
   } catch (error) {
     console.error("Error creating combine property:", error);
     throw error;

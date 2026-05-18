@@ -154,7 +154,7 @@ export function useCombinePropertyForm({
           propertyNo: selectedPropertyNo,
           partitionNo,
         });
-        setReviewData(data);
+        setReviewData(data.items);
       } catch (error) {
         console.error('Error fetching combine details:', error);
         setReviewData([]);
@@ -184,7 +184,7 @@ export function useCombinePropertyForm({
       });
 
       if (response.success) {
-        toast.success(t('combineSuccess'));
+        toast.success(response.message || t('combineSuccess'));
         setTimeout(() => {
           handleClear();
           router.refresh();

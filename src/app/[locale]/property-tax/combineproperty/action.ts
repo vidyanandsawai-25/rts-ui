@@ -66,7 +66,7 @@ export async function fetchCombinePropertiesPagedAction(
    GET PROPERTY COMBINE DETAILS
    Mandatory: wardId, propertyNo, partitionNo
 ================================================================ */
-export async function fetchPropertyCombineDetailsAction(
+export async function   fetchPropertyCombineDetailsAction(
   params: GetPropertyCombineDetailsParams
 ): Promise<PropertyCombineDetails[]> {
   try {
@@ -107,7 +107,7 @@ export async function fetchPropertyCombineDetailsAction(
 ================================================================ */
 export async function createCombinePropertyAction(
   payload: CombinePropertyPayload
-): Promise<{ success: boolean; message?: string; statusCode?: number }> {
+): Promise<{ success: boolean; message?: string; statusCode?: number; data?: any }> {
   try {
     // Validate required fields
     if (!Number.isFinite(payload.mainPropertyId) || payload.mainPropertyId <= 0) {
@@ -120,14 +120,14 @@ export async function createCombinePropertyAction(
       return { success: false, message: "Valid Created By user ID is required", statusCode: 400 };
     }
 
-    await createCombineProperty(payload);
+    const result = await createCombineProperty(payload) as any;
 
     // Revalidate all locale variants of the combine property page
     for (const locale of locales) {
       revalidatePath(`/${locale}/property-tax/combineproperty`, "page");
     }
 
-    return { success: true };
+    return { success: true, message: result?.message || result?.items?.message, data: result };
   } catch (error: unknown) {
     if (error instanceof ApiError) {
       return {
