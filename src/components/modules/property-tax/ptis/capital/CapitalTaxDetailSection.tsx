@@ -7,6 +7,7 @@ import { ValuationSummaryFooter } from '@/components/modules/property-tax/ptis/s
 import { getCapitalValue } from '@/app/[locale]/property-tax/ptis/CapitalValue.action';
 import { calculateCapitalTotal } from '@/lib/utils/ptis-calculations';
 import { resolveValuationData } from '@/components/modules/property-tax/ptis/shared/valuation-fetch';
+import { TaxDetailsData } from '@/types/ptisMain-taxdetails.types';
 
 interface Props {
   propertyId?: number;
@@ -16,6 +17,8 @@ interface Props {
   hasFetchedData?: boolean;
   error?: string;
   showInlineError?: boolean;
+  initialTaxDetails?: TaxDetailsData;
+  taxDetailsError?: string;
   locale: string;
 }
 
@@ -27,6 +30,8 @@ export async function CapitalTaxDetailsSection({
   hasFetchedData = false,
   error: initialError,
   showInlineError = true,
+  initialTaxDetails,
+  taxDetailsError,
   locale,
 }: Props) {
   
@@ -46,7 +51,9 @@ export async function CapitalTaxDetailsSection({
 
   return (
     <div className="space-y-0.5 p-0.5">
-      {showInlineError && finalErrorMessage && <ToastNotifier message={finalErrorMessage} />}
+      {showInlineError && (finalErrorMessage || taxDetailsError) && (
+        <ToastNotifier message={finalErrorMessage || taxDetailsError || ''} />
+      )}
       <CapitalTaxTable locale={locale} capitalData={capitalData} searchParams={searchParams} />
       <ValuationSummaryFooter
         title={t('title')}
@@ -56,6 +63,7 @@ export async function CapitalTaxDetailsSection({
           { label: t('totalCv'), value: cv, color: 'purple' },
           { label: t('totalTax'), value: tax, color: 'purple' },
         ]}
+        initialTaxDetails={initialTaxDetails}
       />
     </div>
   );

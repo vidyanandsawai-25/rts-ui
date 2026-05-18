@@ -1,3 +1,5 @@
+import { TaxDetailsData } from '@/types/ptisMain-taxdetails.types';
+import TaxDetails from '../TaxDetails/TaxDetails';
 import { TaxBadge, type BadgeThemeColor } from './TaxBadge';
 
 /**
@@ -20,13 +22,15 @@ export interface ValuationSummaryFooterProps {
   title: string;
   /** List of badges to display on the right side */
   badges: SummaryBadge[];
+
+  initialTaxDetails?: TaxDetailsData;
 }
 
 /**
  * A shared footer component for valuation sections across modules (Property Tax, Water Tax, etc.)
  * Displays a title and a set of badges with values.
  */
-export function ValuationSummaryFooter({ title, badges }: ValuationSummaryFooterProps) {
+export function ValuationSummaryFooter({ title, badges, initialTaxDetails }: ValuationSummaryFooterProps) {
   return (
     <div className="overflow-hidden rounded-lg border border-gray-200 bg-white p-1 shadow-sm">
       <div className="flex w-full items-center justify-between gap-3 border-b border-indigo-100 bg-[#FAF8FF] p-2">
@@ -39,6 +43,7 @@ export function ValuationSummaryFooter({ title, badges }: ValuationSummaryFooter
           ))}
         </div>
       </div>
+      <TaxDetails initialTaxDetails={initialTaxDetails} />
     </div>
   );
 }

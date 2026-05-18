@@ -38,6 +38,8 @@ import { parsePtisSearchParams } from '@/lib/utils/params';
 import { getPtisUserSafeErrorMessage } from '@/components/modules/property-tax/ptis/shared/valuation-fetch';
 import { RateableTaxDetailsSection } from '@/components/modules/property-tax/ptis/rateable';
 import { CapitalTaxDetailsSection } from '@/components/modules/property-tax/ptis/capital';
+import { getCapitalTaxDetails, getRateableTaxDetails } from './TaxDetails/action';
+import { TaxDetailsData } from '@/types/ptisMain-taxdetails.types';
 
 const toValidTab = (value: unknown): PtisTabId => {
   return typeof value === 'string' && (PTIS_TABS as readonly string[]).includes(value)
@@ -160,9 +162,9 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
   const wardOptions: SearchSelectOption[] =
     wardListResult.success && wardListResult.data
       ? wardListResult.data.map((w: Ward) => ({
-          label: w.wardNo || '',
-          value: (w.wardId ?? w.wardID ?? '').toString(),
-        }))
+        label: w.wardNo || '',
+        value: (w.wardId ?? w.wardID ?? '').toString(),
+      }))
       : [];
 
   let resolvedWardId = wardIdParam;
@@ -210,10 +212,10 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
 
   // Fetch Apartment QC data and Valuations if property info is available
   const emptyPaged = { items: [], totalCount: 0, pageNumber: 1, pageSize: 10, totalPages: 1, hasPrevious: false, hasNext: false };
-  
+
   const [
-    apartmentData, 
-    rateableResult, 
+    apartmentData,
+    rateableResult,
     capitalResult,
     kycResult,
     societyResult,
@@ -302,11 +304,55 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
 
   const sanitizedInitialError = propertyDetailsResult.error
     ? getPtisUserSafeErrorMessage(
-        propertyDetailsResult.error,
-        undefined,
-        'Unable to load PTIS details. Please try again.'
-      )
+      propertyDetailsResult.error,
+      undefined,
+      'Unable to load PTIS details. Please try again.'
+    )
     : undefined;
+
+  // Fetch tax details based on valuation tab (ptisParams.tab), not property tab (activeTab)
+  let rateableTaxDetails: TaxDetailsData | undefined;
+  let capitalTaxDetails: TaxDetailsData | undefined;
+  let rateableTaxError: string | undefined;
+  let capitalTaxError: string | undefined;
+  const valuationTab = ptisParams.tab;
+
+  if (resolvedPropertyId) {
+    if (valuationTab === 'capital') {
+      const result = await getCapitalTaxDetails(resolvedPropertyId);
+      if (result.success && result.data) {
+        capitalTaxDetails = result.data;
+      } else {
+        capitalTaxError = result.error;
+      }
+    } else if (valuationTab === 'rateable') {
+      const result = await getRateableTaxDetails(resolvedPropertyId);
+      if (result.success && result.data) {
+        rateableTaxDetails = result.data;
+      } else {
+        rateableTaxError = result.error;
+      }
+    } else if (valuationTab === 'dual') {
+      const [capitalTaxResult, rateableTaxResult] = await Promise.all([
+        getCapitalTaxDetails(resolvedPropertyId),
+        getRateableTaxDetails(resolvedPropertyId),
+      ]);
+
+      capitalTaxDetails = capitalTaxResult.success ? capitalTaxResult.data : undefined;
+      capitalTaxError = !capitalTaxResult.success ? capitalTaxResult.error : undefined;
+      rateableTaxDetails = rateableTaxResult.success ? rateableTaxResult.data : undefined;
+      rateableTaxError = !rateableTaxResult.success ? rateableTaxResult.error : undefined;
+    } else {
+      // Default to rateable for apartment or other tabs
+      const result = await getRateableTaxDetails(resolvedPropertyId);
+      if (result.success && result.data) {
+        rateableTaxDetails = result.data;
+      } else {
+        rateableTaxError = result.error;
+      }
+    }
+  }
+
   return (
     <>
       <PropertyTabSection
@@ -333,6 +379,8 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
             oldDetails={initialData.oldDetails || defaultOldDetails}
             propertyId={resolvedPropertyId}
             searchParams={resolvedSearchParams as Record<string, string | string[] | undefined>}
+            initialTaxDetails={rateableTaxDetails}
+            taxDetailsError={rateableTaxError}
             locale={locale}
           />
         }
@@ -344,6 +392,8 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
             oldDetails={initialData.oldDetails || defaultOldDetails}
             propertyId={resolvedPropertyId}
             searchParams={resolvedSearchParams as Record<string, string | string[] | undefined>}
+            initialTaxDetails={capitalTaxDetails}
+            taxDetailsError={capitalTaxError}
             locale={locale}
           />
         }
@@ -356,6 +406,8 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
             propertyId={resolvedPropertyId}
             searchParams={resolvedSearchParams as Record<string, string | string[] | undefined>}
             locale={locale}
+            initialTaxDetails={rateableTaxDetails}
+            taxDetailsError={rateableTaxError}
             showInlineError={false}
           />
         }
@@ -368,6 +420,8 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
             propertyId={resolvedPropertyId}
             searchParams={resolvedSearchParams as Record<string, string | string[] | undefined>}
             locale={locale}
+            initialTaxDetails={capitalTaxDetails}
+            taxDetailsError={capitalTaxError}
             showInlineError={false}
           />
         }

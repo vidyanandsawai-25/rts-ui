@@ -8,6 +8,7 @@ import { ValuationSummaryFooter } from '@/components/modules/property-tax/ptis/s
 import { getRateableValue } from '@/app/[locale]/property-tax/ptis/RateableValue.action';
 import { calculateRateableTotal } from '@/lib/utils/ptis-calculations';
 import { resolveValuationData } from '@/components/modules/property-tax/ptis/shared/valuation-fetch';
+import { TaxDetailsData } from '@/types/ptisMain-taxdetails.types';
 
 interface Props {
   propertyId?: number;
@@ -17,6 +18,8 @@ interface Props {
   hasFetchedData?: boolean;
   error?: string;
   showInlineError?: boolean;
+  initialTaxDetails?: TaxDetailsData;
+  taxDetailsError?: string;
   locale: string;
 }
 
@@ -28,6 +31,8 @@ export async function RateableTaxDetailsSection({
   hasFetchedData = false,
   error: initialError,
   showInlineError = true,
+  initialTaxDetails,
+  taxDetailsError,
   locale,
 }: Props) {
   
@@ -51,7 +56,9 @@ export async function RateableTaxDetailsSection({
 
   return (
     <div className="space-y-0.5 p-0.5">
-      {showInlineError && finalErrorMessage && <ToastNotifier message={finalErrorMessage} />}
+      {showInlineError && (finalErrorMessage || taxDetailsError) && (
+        <ToastNotifier message={finalErrorMessage || taxDetailsError || ''} />
+      )}
       <RateableTaxTable locale={locale} rateableData={rateableData} searchParams={searchParams} />
 
 
@@ -65,6 +72,7 @@ export async function RateableTaxDetailsSection({
           { label: t('oldTotalAlv'), value: oldAreaALV, color: 'blue' },
           { label: t('totalAlv'), value: alv, color: 'purple' },
         ]}
+        initialTaxDetails={initialTaxDetails}
       />
     </div>
   );
