@@ -6,6 +6,13 @@ on:
       - main
       - dev
       - qa
+
+  push:
+    branches:
+      - main
+      - dev
+      - qa
+  
   workflow_dispatch:
 
 concurrency:

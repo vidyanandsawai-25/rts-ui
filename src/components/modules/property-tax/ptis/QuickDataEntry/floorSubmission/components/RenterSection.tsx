@@ -30,7 +30,7 @@ export const RenterSection: React.FC<RenterSectionProps> = ({
               // Users can click the button to open renter details if needed
               setEditingFloorForm({ ...editingFloorForm, renter: value });
             }}
-            placeholder={t('property.select')}
+            placeholder={t('floor.select')}
             className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
           />
         </div>

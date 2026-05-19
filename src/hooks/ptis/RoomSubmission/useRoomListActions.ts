@@ -1,6 +1,7 @@
 import { useTranslations } from "next-intl";
 import { useConfirm } from "@/components/common";
 import { useTransition } from "react";
+import { toast } from "sonner";
 import { RoomWiseSubmissionProps, FloorData, RoomData } from "@/types/room-details.types";
 import { calculateRoomArea } from "@/lib/utils/RoomSubmission/room-submission.utils";
 import { validateRoomDetails } from "@/lib/utils/RoomSubmission/room-validation.utils";
@@ -17,7 +18,7 @@ export const useRoomListActions = (state: RoomSubmissionState, props: RoomWiseSu
   const [, startTransition] = useTransition();
   const {
     rooms, setRooms, formData, shapeParameters, editingIndex, currentRoomOffsets,
-    areaUnit
+    areaUnit, setValidationErrors
   } = state;
 
   const warning = (msg: string) => {
@@ -44,8 +45,9 @@ export const useRoomListActions = (state: RoomSubmissionState, props: RoomWiseSu
     );
 
     if (!success) {
+      setValidationErrors(errors);
       const firstErrorKey = Object.values(errors)[0];
-      warning(t(firstErrorKey));
+      toast.error(t(firstErrorKey));
       return;
     }
 
@@ -104,8 +106,9 @@ export const useRoomListActions = (state: RoomSubmissionState, props: RoomWiseSu
     );
 
     if (!success) {
+      setValidationErrors(errors);
       const firstErrorKey = Object.values(errors)[0];
-      warning(t(firstErrorKey));
+      toast.error(t(firstErrorKey));
       return;
     }
 
