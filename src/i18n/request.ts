@@ -50,7 +50,6 @@ export default getRequestConfig(async ({ locale }) => {
     paymentModeMasterMessages,
     modulesMessages,
     waterConnectionMessages,
-    modulesMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/dashboard.json`).then((m) => m.default),
@@ -101,7 +100,9 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/combineProperty.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/paymentModeMaster.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
-   
+    import(`./locales/${validatedLocale}/waterconnection.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
   ]);
 
   return {
@@ -139,7 +140,8 @@ export default getRequestConfig(async ({ locale }) => {
       userManagement: userManagementMessages,
       combineProperty: combinePropertyMessages,
       paymentModeMaster: paymentModeMasterMessages,
-       modules: modulesMessages,
+      modules: modulesMessages,
+      waterConnection: waterConnectionMessages,
     },
   };
 });
