@@ -46,8 +46,10 @@ export default function FloorMaster({
 
   // Sync search state with URL (moved to useEffect to avoid state update during render)
   useEffect(() => {
-    setSearch(currentSearchTerm);
-  }, [currentSearchTerm]);
+    if (search !== currentSearchTerm) {
+      setSearch(currentSearchTerm);
+    }
+  }, [currentSearchTerm, search]);
 
   // Debounced search navigation
   useSearchNavigation({
