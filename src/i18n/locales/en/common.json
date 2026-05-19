@@ -60,7 +60,7 @@
     }
   },
   "errors": {
-    "generic": "Something went wrong",
+    "generic": "Failed to connect to the server. Please try again later.",
     "network": "Network error. Please try again",
     "unauthorized": "You are not authorized",
     "notFound": "Resource not found",
