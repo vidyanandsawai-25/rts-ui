@@ -197,7 +197,7 @@ export const societyValidators = {
    * @param email - Email to validate
    * @returns True if valid format and within length constraints
    */
-  isValidEmail: (email: string): boolean => {
+  isValidEmail: (email: string, isStrict = false): boolean => {
     const trimmedEmail = email.trim();
     if (!trimmedEmail) return true;
     
@@ -217,14 +217,14 @@ export const societyValidators = {
     if ((trimmedEmail.match(/@/g) || []).length !== 1) return false;
     
     // If email doesn't contain @, it's incomplete but not invalid yet
-    if (!trimmedEmail.includes('@')) return true;
+    if (!trimmedEmail.includes('@')) return !isStrict;
     
     // Check for valid domain structure
     const atIndex = trimmedEmail.indexOf('@');
     const domain = trimmedEmail.substring(atIndex + 1);
     
     // If domain is empty or too short, it's incomplete (allow while typing)
-    if (!domain || domain.length < 2) return true;
+    if (!domain || domain.length < 2) return !isStrict;
     
     // If domain has a dot, check for valid TLD format
     if (domain.includes('.')) {
@@ -236,7 +236,7 @@ export const societyValidators = {
       if (!tld || tld.length < 2 || !/^[a-zA-Z]+$/.test(tld)) return false;
     } else {
       // Domain has no dot yet - allow while typing (e.g., xyz@gmail)
-      return true;
+      return !isStrict;
     }
     
     // Strict email validation pattern for complete emails
@@ -400,7 +400,7 @@ export const enhancedKycValidators = {
    * @param email - Email address to validate
    * @returns True if valid or empty, false if invalid format
    */
-  isValidEmail: (email: string): boolean => {
+  isValidEmail: (email: string, isStrict = false): boolean => {
     const trimmedEmail = email.trim();
     if (!trimmedEmail) return true;
     
@@ -420,14 +420,14 @@ export const enhancedKycValidators = {
     if ((trimmedEmail.match(/@/g) || []).length !== 1) return false;
     
     // If email doesn't contain @, it's incomplete but not invalid yet
-    if (!trimmedEmail.includes('@')) return true;
+    if (!trimmedEmail.includes('@')) return !isStrict;
     
     // Check for valid domain structure - must have at least one dot after @
     const atIndex = trimmedEmail.indexOf('@');
     const domain = trimmedEmail.substring(atIndex + 1);
     
     // If domain is empty or doesn't have content, it's incomplete (allow while typing)
-    if (!domain || domain.length < 2) return true;
+    if (!domain || domain.length < 2) return !isStrict;
     
     // If domain has a dot, check for valid TLD format
     if (domain.includes('.')) {
@@ -439,7 +439,7 @@ export const enhancedKycValidators = {
       if (!tld || tld.length < 2 || !/^[a-zA-Z]+$/.test(tld)) return false;
     } else {
       // Domain has no dot yet - allow while typing (e.g., xyz@gmail)
-      return true;
+      return !isStrict;
     }
     
     // Strict email validation pattern for complete emails

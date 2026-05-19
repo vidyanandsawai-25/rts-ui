@@ -85,7 +85,7 @@ export const escapeHtml = (text: string): string => {
 
 /**
  * Validate and sanitize a name input
- * Allows letters, numbers, spaces, hyphens, apostrophes, dots, and common punctuation
+ * Allows letters, spaces, hyphens, apostrophes, dots, and common punctuation
  * Blocks all invalid special characters like *()_++_)(&&^%$#@!~!!@#$%}{};'.,, etc.
  * 
  * @param name - Raw name input
@@ -99,9 +99,9 @@ export const sanitizeName = (name: string): string => {
     .replace(/<[^>]*>/g, '')
     // Remove script content
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-    // Block all invalid special characters - only allow letters, numbers, spaces, and . , ' -
+    // Block all invalid special characters - only allow letters, spaces, and . , ' -
     // Supports international characters (Unicode letters)
-    .replace(/[^a-zA-Z0-9\u00C0-\u024F\u0900-\u097F\u0D00-\u0D7F\s.,'\-]/g, '')
+    .replace(/[^a-zA-Z\u00C0-\u024F\u0900-\u097F\u0D00-\u0D7F\s.,'\-]/g, '')
     // Remove multiple consecutive spaces
     .replace(/\s+/g, ' ');
 };

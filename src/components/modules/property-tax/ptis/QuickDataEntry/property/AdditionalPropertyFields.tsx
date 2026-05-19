@@ -51,6 +51,7 @@ export const AdditionalPropertyFields = ({
                 <Input
                     id="pd-survey"
                     name="surveyNo"
+                    readOnly
                     placeholder="45/2B"
                     value={surveyNo}
                     maxLength={PROPERTY_VALIDATION_RULES.SURVEY_NO_MAX_LENGTH}
@@ -81,6 +82,7 @@ export const AdditionalPropertyFields = ({
                 <Input
                     id="pd-subzone"
                     name="subZoneNo"
+                    readOnly
                     placeholder="SZ-12"
                     value={subZoneNo}
                     maxLength={PROPERTY_VALIDATION_RULES.SUB_ZONE_NO_MAX_LENGTH}

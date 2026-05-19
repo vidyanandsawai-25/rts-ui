@@ -139,10 +139,10 @@ export const useSocietyForm = (props: SocietyFormProps) => {
         const managerMobileStr = managerMobileInput.value;
         const secretaryMobileStr = secretaryMobileInput.value;
 
-        // Check emails - if filled, must be valid
-        const isManagerEmailValid = !managerEmail || societyValidators.isValidEmail(managerEmail);
-        const isSecretaryEmailValid = !secretaryEmail || societyValidators.isValidEmail(secretaryEmail);
-        const isSocietyEmailValid = !societyEmail || societyValidators.isValidEmail(societyEmail);
+        // Check emails - if filled, must be valid (strict)
+        const isManagerEmailValid = !managerEmail || societyValidators.isValidEmail(managerEmail, true);
+        const isSecretaryEmailValid = !secretaryEmail || societyValidators.isValidEmail(secretaryEmail, true);
+        const isSocietyEmailValid = !societyEmail || societyValidators.isValidEmail(societyEmail, true);
         
         // Check mobile numbers - if filled, must be valid
         const isManagerMobileValid = !managerMobileStr || societyValidators.isValidMobile(managerMobileStr);
@@ -181,10 +181,10 @@ export const useSocietyForm = (props: SocietyFormProps) => {
         const managerMobileStr = managerMobileInput.value;
         const secretaryMobileStr = secretaryMobileInput.value;
 
-        // Validate emails before proceeding
-        const isManagerEmailValid = societyValidators.isValidEmail(managerEmail);
-        const isSecretaryEmailValid = societyValidators.isValidEmail(secretaryEmail);
-        const isSocietyEmailValid = societyValidators.isValidEmail(societyEmail);
+        // Validate emails before proceeding (strict)
+        const isManagerEmailValid = societyValidators.isValidEmail(managerEmail, true);
+        const isSecretaryEmailValid = societyValidators.isValidEmail(secretaryEmail, true);
+        const isSocietyEmailValid = societyValidators.isValidEmail(societyEmail, true);
         const isManagerMobileValid = societyValidators.isValidMobile(managerMobileStr);
         const isSecretaryMobileValid = societyValidators.isValidMobile(secretaryMobileStr);
 
