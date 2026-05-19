@@ -78,16 +78,16 @@ export function FloorRangeFields({
 
       <Input
         label={t('form.englishName.prefix')}
-        placeholder={t('form.englishName.prefixPlaceholder')}
+        placeholder="FL"
         value={formData.prefix}
         onChange={(e) => {
           // Allow only letters, numbers, /, -, _ (block @, #, (, ) etc)
           const sanitized = e.target.value.replace(/[^A-Za-z0-9/_-]/g, '');
-          if (sanitized.length <= 10) onChange('prefix', sanitized);
+          if (sanitized.length <= 2) onChange('prefix', sanitized);
         }}
         onBlur={() => onBlur('prefix')}
         fullWidth
-        maxLength={10}
+        maxLength={2}
         className="text-gray-700"
       />
       <ValidationMessage
