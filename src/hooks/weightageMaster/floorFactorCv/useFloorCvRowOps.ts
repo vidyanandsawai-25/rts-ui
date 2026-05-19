@@ -17,6 +17,7 @@ export interface UseFloorCvRowOpsParams {
     editableRows: Record<string, FloorFactorCVMaster>;
     setEditableRows: Dispatch<SetStateAction<Record<string, FloorFactorCVMaster>>>;
     setIsUpdating: Dispatch<SetStateAction<boolean>>;
+    setSessionCreatedUids: Dispatch<SetStateAction<Set<string>>>;
     getRowUid: (row: FloorFactorCVMaster) => string;
     findRowByUid: (uid: string) => FloorFactorCVMaster | undefined;
     addToast: (type: "success" | "error" | "info" | "warning", message: string) => void;
@@ -28,6 +29,7 @@ export function useFloorCvRowOps({
     editableRows,
     setEditableRows,
     setIsUpdating,
+    setSessionCreatedUids,
     getRowUid,
     findRowByUid,
     addToast,
@@ -117,6 +119,7 @@ export function useFloorCvRowOps({
             if (result.success) {
                 if (row.id === 0) {
                     addToast("success", tW("common.messages.recordCreatedSuccess"));
+                    setSessionCreatedUids((prev) => new Set([...prev, rowUid]));
                 } else {
                     addToast("success", tW("common.messages.recordUpdatedSuccess"));
                 }

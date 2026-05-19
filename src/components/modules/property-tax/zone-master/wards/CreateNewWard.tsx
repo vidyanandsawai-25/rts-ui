@@ -12,6 +12,7 @@ import { ZoneItem } from "@/types/zoneMaster.types";
 import { WardItem } from "@/types/wardMaster.types";
 import { ZONE_WARD_NO_MAX_LENGTH, ZONE_WARD_NAME_MAX_LENGTH } from "../constants";
 import { handleWardCreate, handleWardBulkCreate } from "./wardHandlers";
+import { isAllZeros } from "@/lib/utils/validation-rules";
 
 // Max length for bulk fields
 const BULK_PREFIX_MAX_LENGTH = 10;
@@ -70,8 +71,10 @@ export default function CreateNewWard({ open, onClose, onSuccess, currentZone, e
     const newErrors: WardFormErrors = {};
     if (!data.wardNo?.trim()) newErrors.wardNo = t("validation.wardNoRequired");
     else if (data.wardNo.length > ZONE_WARD_NO_MAX_LENGTH) newErrors.wardNo = t("validation.wardNoMaxLength", { count: ZONE_WARD_NO_MAX_LENGTH });
+    else if (isAllZeros(data.wardNo)) newErrors.wardNo = t("validation.wardNoAllZeros");
     if (!data.description?.trim()) newErrors.description = t("validation.wardNameRequired");
     else if (data.description.length > ZONE_WARD_NAME_MAX_LENGTH) newErrors.description = t("validation.wardNameMaxLength", { count: ZONE_WARD_NAME_MAX_LENGTH });
+    else if (isAllZeros(data.description)) newErrors.description = t("validation.wardNameAllZeros");
     return newErrors;
   };
 
@@ -110,6 +113,27 @@ export default function CreateNewWard({ open, onClose, onSuccess, currentZone, e
     }
     
     return newErrors;
+  };
+
+  // Check if any ward in bulk range already exists
+  const checkBulkDuplicates = (prefix: string, from: string, to: string): string | null => {
+    const fromNum = parseInt(from, 10);
+    const toNum = parseInt(to, 10);
+    
+    if (isNaN(fromNum) || isNaN(toNum)) return null;
+    
+    const existingWardNos = new Set(
+      existingWards.map((w) => w.wardNo?.trim().toUpperCase())
+    );
+    
+    for (let i = fromNum; i <= toNum; i++) {
+      const generatedWardNo = `${prefix}${i}`.toUpperCase();
+      if (existingWardNos.has(generatedWardNo)) {
+        return generatedWardNo;
+      }
+    }
+    
+    return null;
   };
 
   const checkDuplicateWard = (wardNo: string) => {
@@ -154,6 +178,13 @@ export default function CreateNewWard({ open, onClose, onSuccess, currentZone, e
       const bulkValidationErrors = validateBulk(prefix, from, to);
       if (Object.keys(bulkValidationErrors).length > 0) {
         setBulkErrors(bulkValidationErrors);
+        return;
+      }
+
+      // Check for duplicate ward numbers before creating
+      const duplicateWardNo = checkBulkDuplicates(prefix, from, to);
+      if (duplicateWardNo) {
+        toast.error(t("createWardMessages.duplicateWard", { wardNo: duplicateWardNo }));
         return;
       }
 

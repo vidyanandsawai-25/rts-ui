@@ -9,10 +9,10 @@ import { AvailableWardsProps } from "@/types/rateSectionMaster.types";
 import { Checkbox } from "@/components/common";
 
 const PAGE_SIZE_OPTIONS = [
-  { label: "5", value: "5" },
   { label: "10", value: "10" },
   { label: "20", value: "20" },
-  { label: "50", value: "50" }
+  { label: "50", value: "50" },
+  { label: "100", value: "100" },
 ];
 
 export default function AvailableWards({

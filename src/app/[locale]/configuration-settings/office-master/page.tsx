@@ -1,6 +1,9 @@
 import React from "react";
 import { OfficeMaster } from "@/components/modules/configuration-settings/office-master/OfficeMaster";
-import { fetchOfficePagedServerAction } from "./action";
+import { fetchOfficePagedServerAction, fetchOfficeStatsServerAction } from "./action";
+
+// Cache page & stats count queries for 5 minutes (300 seconds) to lower DB load
+export const revalidate = 300;
 
 interface PageProps {
   searchParams: Promise<{
@@ -55,7 +58,10 @@ function sanitizeParams(raw: Awaited<PageProps["searchParams"]>) {
 export default async function Page({ searchParams }: PageProps): Promise<React.ReactElement> {
   const params = await searchParams;
   const { pageNumber, pageSize, searchTerm, sortBy, sortOrder, type, status } = sanitizeParams(params);
-  const result = await fetchOfficePagedServerAction(pageNumber, pageSize, searchTerm, sortBy, sortOrder, type, status);
+  const [result, stats] = await Promise.all([
+    fetchOfficePagedServerAction(pageNumber, pageSize, searchTerm, sortBy, sortOrder, type, status),
+    fetchOfficeStatsServerAction()
+  ]);
   
   return (
     <OfficeMaster
@@ -68,6 +74,10 @@ export default async function Page({ searchParams }: PageProps): Promise<React.R
       sortOrder={sortOrder}
       type={type}
       status={status}
+      headOfficesCount={stats.headOfficesCount}
+      activeOfficesCount={stats.activeOfficesCount}
+      inactiveOfficesCount={stats.inactiveOfficesCount}
+      showStatsError={stats.error}
     />
   );
 }

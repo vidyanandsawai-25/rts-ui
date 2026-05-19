@@ -8,18 +8,21 @@ export const TypeOfUseErrorMessages = {
   CREATE_GROUP_FAILED: 'messages.createGroupFailed',
   UPDATE_GROUP_FAILED: 'messages.updateGroupFailed',
   DELETE_GROUP_FAILED: 'messages.deleteGroupFailed',
+  DELETE_GROUP_REFERENCED: 'messages.deleteGroupReferenced',
 
   // Type errors
   FETCH_TYPES_FAILED: 'messages.fetchTypesFailed',
   CREATE_TYPE_FAILED: 'messages.createTypeFailed',
   UPDATE_TYPE_FAILED: 'messages.updateTypeFailed',
   DELETE_TYPE_FAILED: 'messages.deleteTypeFailed',
+  DELETE_TYPE_REFERENCED: 'messages.deleteTypeReferenced',
 
   // SubType errors
   FETCH_SUBTYPES_FAILED: 'messages.fetchSubTypesFailed',
   CREATE_SUBTYPE_FAILED: 'messages.createSubTypeFailed',
   UPDATE_SUBTYPE_FAILED: 'messages.updateSubTypeFailed',
   DELETE_SUBTYPE_FAILED: 'messages.deleteSubTypeFailed',
+  DELETE_SUBTYPE_REFERENCED: 'messages.deleteSubTypeReferenced',
   FETCH_SUBTYPE_COUNTS_FAILED: 'messages.fetchSubTypeCountsFailed',
 } as const;
 

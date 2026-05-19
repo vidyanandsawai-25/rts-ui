@@ -54,6 +54,9 @@ describe("OfficeMaster", () => {
           totalPages={1}
           sortBy=""
           sortOrder="asc"
+          headOfficesCount={0}
+          activeOfficesCount={0}
+          inactiveOfficesCount={0}
         />
       </ConfirmProvider>
     );
@@ -71,6 +74,9 @@ describe("OfficeMaster", () => {
           totalPages={1}
           sortBy=""
           sortOrder="asc"
+          headOfficesCount={0}
+          activeOfficesCount={0}
+          inactiveOfficesCount={0}
         />
       </ConfirmProvider>
     );

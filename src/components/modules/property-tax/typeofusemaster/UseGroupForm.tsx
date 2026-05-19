@@ -114,7 +114,8 @@ export default function UseGroupForm({ id, initialData, allGroups: allGroupsProp
 
       router.back();
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message.toLowerCase() : '';
+      const errorMessage = err instanceof Error ? err.message : '';
+      const msg = errorMessage.toLowerCase();
 
       const isDup =
         msg.includes("duplicate") ||
@@ -135,7 +136,21 @@ export default function UseGroupForm({ id, initialData, allGroups: allGroupsProp
         return;
       }
 
-      toast.error(t('messages.createGroupFailed'));
+      // Detect backend reference errors and map to i18n keys
+      if (errorMessage.includes('referenced in:') || errorMessage.includes('referenced by')) {
+        toast.error(t('messages.cannotDeactivateGroup'));
+      } else {
+        // Show actual backend error message or fallback to generic message
+        const fallbackMessage = isEdit
+          ? t('messages.updateGroupFailed')
+          : t('messages.createGroupFailed');
+        
+        const displayMessage = errorMessage
+          ? (errorMessage.startsWith('messages.') ? t(errorMessage) : errorMessage)
+          : fallbackMessage;
+        
+        toast.error(displayMessage);
+      }
     }
   };
 

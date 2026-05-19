@@ -46,87 +46,48 @@ export async function getWardTotalCount(): Promise<number> {
 
 /**
  * Fetch all SectionItems (ward assignments) for a specific Rate Section ID.
- * Uses proper pagination (500/page) because /RateSectionDetails does NOT support PageSize=-1.
+ * Uses PageSize=-1 to fetch all items in a single request.
  * @param rateSectionId - The numeric rate section ID to filter by
  */
 export async function getWardsByRateSectionId(
   rateSectionId: number
 ): Promise<SectionItem[]> {
-  let allItems: SectionItem[] = [];
-  let page = 1;
-  const pageSize = 500;
-  let hasMore = true;
+  const params = new URLSearchParams({
+    RateSectionId: rateSectionId.toString(),
+    PageSize: "-1",
+  });
 
-  while (hasMore) {
-    const params = new URLSearchParams({
-      PageNumber: page.toString(),
-      PageSize: pageSize.toString(),
-      RateSectionId: rateSectionId.toString(),
-    });
+  const response = await apiClient.get<RateSectionDetailsPagedResponse>(
+    `/RateSectionDetails?${params.toString()}`
+  );
 
-    const response = await apiClient.get<RateSectionDetailsPagedResponse>(
-      `/RateSectionDetails?${params.toString()}`
-    );
+  if (!response.success || !response.data) return [];
 
-    if (!response.success || !response.data) break;
+  const data = response.data;
+  const dataObj = data as unknown as Record<string, unknown>;
+  const items = (data.items ?? dataObj.Items ?? []) as SectionItem[];
 
-    const data = response.data;
-    const dataObj = data as unknown as Record<string, unknown>;
-    const items = (data.items ?? dataObj.Items ?? []) as SectionItem[];
-
-    if (items.length === 0) break;
-
-    allItems = [...allItems, ...items];
-
-    const totalCount = (data.totalCount ?? dataObj.TotalCount ?? 0) as number;
-    if (items.length < pageSize || allItems.length >= totalCount || page >= 50) {
-      hasMore = false;
-    } else {
-      page++;
-    }
-  }
-
-  return allItems;
+  return items;
 }
 
 /**
- * Fetch all Rate Section Details (Assigned Wards) across all pages.
- * Use this when you need a full list of all assignments.
+ * Fetch all Rate Section Details (Assigned Wards) in a single request.
+ * Uses PageSize=-1 to get all assignments at once.
  */
 export async function getAllRateSectionDetails(): Promise<SectionItem[]> {
-  let allItems: SectionItem[] = [];
-  let page = 1;
-  const pageSize = 500;
-  let hasMore = true;
+  const params = new URLSearchParams({
+    PageSize: "-1",
+  });
 
-  while (hasMore) {
-    const params = new URLSearchParams({
-      PageNumber: page.toString(),
-      PageSize: pageSize.toString(),
-    });
+  const response = await apiClient.get<RateSectionDetailsPagedResponse>(`/RateSectionDetails?${params.toString()}`);
 
-    const response = await apiClient.get<RateSectionDetailsPagedResponse>(`/RateSectionDetails?${params.toString()}`);
+  if (!response.success || !response.data) return [];
 
-    if (!response.success || !response.data) break;
+  const data = response.data;
+  const dataObj = data as unknown as Record<string, unknown>;
+  const items = (data.items ?? dataObj.Items ?? []) as SectionItem[];
 
-    const data = response.data;
-    const dataObj = data as unknown as Record<string, unknown>;
-    const items = (data.items ?? dataObj.Items ?? []) as SectionItem[];
-
-    // If we get an empty array but expected more, stop
-    if (items.length === 0) break;
-
-    allItems = [...allItems, ...items];
-
-    const totalCount = (data.totalCount ?? dataObj.TotalCount ?? dataObj.count ?? 0) as number;
-    if (items.length < pageSize || allItems.length >= totalCount || page >= 50) {
-      hasMore = false;
-    } else {
-      page++;
-    }
-  }
-
-  return allItems;
+  return items;
 }
 
 /**

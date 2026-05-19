@@ -1,15 +1,15 @@
 interface WardListItemProps {
   wardNo: string;
   description?: string;
-  checked: boolean;
-  onToggle: () => void;
+  checked?: boolean;
+  onToggle?: () => void;
   disabled?: boolean;
   colorScheme?: 'blue' | 'purple' | 'green';
 }
 
 export function WardListItem({
   wardNo,
-  checked,
+  checked = false,
   onToggle,
   disabled = false,
   colorScheme = 'blue',

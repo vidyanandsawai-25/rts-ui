@@ -759,6 +759,53 @@ export async function getAllWardsForLinkAction(searchTerm?: string): Promise<{
 }
 
 /**
+ * Fetches ALL wards for a specific zone with PageSize=-1 in a single API call.
+ * Used for Link Ward drawer when zone is selected or after Select All + move.
+ * API: GET /api/Ward?ZoneId={zoneId}&PageSize=-1
+ */
+export async function getAllWardsForZoneAction(zoneId: number): Promise<{
+  success: boolean;
+  data?: WardItem[];
+  totalCount?: number;
+  error?: string;
+}> {
+  try {
+    if (!zoneId || zoneId <= 0) {
+      return { success: false, error: "Invalid zone ID" };
+    }
+    
+    const params = new URLSearchParams();
+    params.set("ZoneId", zoneId.toString());
+    params.set("PageSize", "-1");
+    
+    const response = await apiClient.get<{ items?: WardItem[]; totalCount?: number }>(`/Ward?${params.toString()}`);
+
+    if (!response.success || !response.data) {
+      return { success: false, error: response.error || "Failed to fetch wards for zone" };
+    }
+
+    const items = response.data.items || [];
+
+    return {
+      success: true,
+      data: items,
+      totalCount: response.data.totalCount || items.length
+    };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return {
+        success: false,
+        error: error.responseText
+      };
+    }
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to fetch wards for zone" };
+  }
+}
+
+/**
  * Fetches wards with pagination and search for View All tab.
  * API: GET /api/Ward?PageNumber={page}&PageSize={size}&SearchTerm={term}
  */

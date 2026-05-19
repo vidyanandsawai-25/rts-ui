@@ -60,10 +60,7 @@ export const getNatureFactorCvColumns = ({
             label: t('columns.status'),
             width: "10%",
             isStatus: true,
-            render: (value, row) => {
-                if (row.id === 0) {
-                    return <StatusBadge variant="pending" />;
-                }
+            render: (value) => {
                 return (
                     <StatusBadge
                         variant="status"

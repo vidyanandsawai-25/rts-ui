@@ -172,6 +172,7 @@
     "wardCannotBeDeleted": "वार्ड {wardNo} को हटाया नहीं जा सकता क्योंकि यह उपयोग में है।",
     "partialSuccess": "{success} वार्ड सफलतापूर्वक लिंक किए गए; {failed} वार्ड लिंक करने में विफल।",
     "noWardsToLink": "इस ज़ोन में लिंक करने के लिए कोई वार्ड उपलब्ध नहीं।",
+    "allWardsAlreadyInZone": "सभी वार्ड पहले से ही ज़ोन {zoneLabel} में हैं।",
     "fetchError": "वार्ड लाने में विफल"
   },
   "createWardMessages": {
@@ -221,8 +222,10 @@
     "nameRegRequired": "ज़ोन का नाम (क्षेत्रीय) आवश्यक है",
     "wardNoRequired": "वार्ड नंबर आवश्यक है",
     "wardNoMaxLength": "वार्ड नंबर {count} अक्षरों से अधिक नहीं हो सकता",
+    "wardNoAllZeros": "वार्ड नंबर में केवल शून्य नहीं हो सकते",
     "wardNameRequired": "वार्ड का नाम आवश्यक है",
     "wardNameMaxLength": "वार्ड का नाम {count} अक्षरों से अधिक नहीं हो सकता",
+    "wardNameAllZeros": "वार्ड का नाम केवल शून्य नहीं हो सकता",
     "wardNameEnRequired": "वार्ड का नाम (अंग्रेजी) आवश्यक है",
     "wardNameRegRequired": "वार्ड का नाम (क्षेत्रीय) आवश्यक है",
     "sequenceNoRequired": "अनुक्रम संख्या आवश्यक है",
