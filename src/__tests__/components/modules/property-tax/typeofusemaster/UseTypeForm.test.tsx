@@ -334,7 +334,9 @@ describe("UseTypeForm", () => {
       });
     });
 
-    it("should reject sequence above maximum (1000)", async () => {
+    it("should reject sequence above maximum (1000) by input restriction", async () => {
+      mockCreateUseType.mockResolvedValue(undefined);
+      
       const { container } = renderWithIntl(
         <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} />
       );
@@ -345,15 +347,26 @@ describe("UseTypeForm", () => {
       fireEvent.change(screen.getByRole("combobox", { name: /use type group.*required/i }), { target: { value: "1" } });
       fireEvent.change(screen.getByRole("combobox", { name: /^type\s+required$/i }), { target: { value: "I" } });
 
-      // Test with sequence = 1000 (exceeds maximum)
-      const seqInput = screen.getByPlaceholderText("0");
+      // Try to set value to 1000 (4 digits) - should be rejected by input restriction
+      const seqInput = screen.getByPlaceholderText("0") as HTMLInputElement;
       fireEvent.change(seqInput, { target: { value: "1000" } });
+      
+      // The input should reject values with more than 3 digits, keeping the original value (0)
+      expect(seqInput.value).toBe("0");
       
       const form = container.querySelector("#use-type-form");
       fireEvent.submit(form!);
 
+      // Since the value stayed at 0, form should submit successfully (no validation error)
       await waitFor(() => {
-        expect(screen.getByText((content) => content.includes("must be maximum 3 digits"))).toBeInTheDocument();
+        expect(mockCreateUseType).toHaveBeenCalledWith({
+          code: "IND01",
+          description: "Some description",
+          groupId: 1,
+          type: "I",
+          searchSequence: 0,
+          status: "Active",
+        });
       });
     });
 

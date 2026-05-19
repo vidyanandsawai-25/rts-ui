@@ -114,6 +114,7 @@ export async function updateSubTypeApi(input: {
   });
   
   if (!response.success) {
+    // Return raw backend error - forms will map reference errors to appropriate i18n keys
     throw new Error(response.error ?? TypeOfUseErrorMessages.UPDATE_SUBTYPE_FAILED);
   }
   
@@ -121,16 +122,23 @@ export async function updateSubTypeApi(input: {
 }
 
 /**
- * Delete a use subtype
+ * Delete a use subtype (purge - permanent delete)
  */
 export async function deleteSubTypeApi(id: string) {
-  const response = await apiClient.delete<unknown>(`/SubTypeOfUse/${id}`, {
+  const response = await apiClient.delete<unknown>(`/SubTypeOfUse/${id}/purge`, {
     cache: "no-store",
     headers: { "Accept": "application/json" },
   });
   
   if (!response.success) {
-    throw new Error(response.error ?? TypeOfUseErrorMessages.DELETE_SUBTYPE_FAILED);
+    // Map backend reference error to the corresponding i18n key
+    let errorMessage = response.error ?? TypeOfUseErrorMessages.DELETE_SUBTYPE_FAILED;
+    
+    if (errorMessage.includes("referenced by other entities")) {
+      errorMessage = TypeOfUseErrorMessages.DELETE_SUBTYPE_REFERENCED;
+    }
+    
+    throw new Error(errorMessage);
   }
   
   return true;

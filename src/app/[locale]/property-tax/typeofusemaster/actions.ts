@@ -244,48 +244,38 @@ export async function deleteUseType(id: string | number) {
   }
 }
 
-// ✅ NEW: Delete Type AND its SubTypes
-export async function deleteUseTypeWithSubTypes(typeId: number) {
-  // 1. Fetch ALL sub-types for this type
-  const { items: allSubTypes } = await fetchAllPaged<UseSubType>(
-    getSubTypesPagedServer,
-    { typeOfUseId: typeId }
-  );
+/** ===================== DEPENDENCY CHECKING ===================== */
 
-  // 2. Delete ALL sub-types
-  await Promise.all(
-    allSubTypes.map((sub) => deleteSubTypeApi(String(sub.subTypeOfUseId)))
-  );
-
-  // 3. Delete the parent Type
-  await deleteUseTypeApi(String(typeId));
-
-  // 4. Revalidate
-  for (const locale of locales) {
-    revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
-  }
+/**
+ * Check if a type has any sub-types
+ */
+export async function checkTypeHasSubTypes(typeId: number): Promise<{ hasSubTypes: boolean; count: number }> {
+  const { totalCount } = await getSubTypesPagedServer({
+    pageNumber: 1,
+    pageSize: 1,
+    typeOfUseId: typeId,
+  });
+  
+  return {
+    hasSubTypes: totalCount > 0,
+    count: totalCount,
+  };
 }
 
-// ✅ NEW: Delete Group AND its Types AND their SubTypes
-export async function deleteUseGroupWithCascade(groupId: number) {
-  // 1. Fetch ALL types for this group
-  const { items: allTypes } = await fetchAllPaged<UseType>(
-    getUseTypesPagedServer,
-    { typeOfUseGroupId: groupId }
-  );
-
-  // 2. Delete each type (and its sub-types) sequentially to avoid creating a large fan-out of concurrent delete requests.
-  for (const type of allTypes) {
-    await deleteUseTypeWithSubTypes(type.typeOfUseId);
-  }
-
-  // 3. Delete the Group itself
-  await deleteUseGroupApi(groupId);
-
-  // 4. Revalidate locale-specific pages
-  for (const locale of locales) {
-    revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
-  }
+/**
+ * Check if a group has any types
+ */
+export async function checkGroupHasTypes(groupId: number): Promise<{ hasTypes: boolean; count: number }> {
+  const { totalCount } = await getUseTypesPagedServer({
+    pageNumber: 1,
+    pageSize: 1,
+    typeOfUseGroupId: groupId,
+  });
+  
+  return {
+    hasTypes: totalCount > 0,
+    count: totalCount,
+  };
 }
 
 /** ===================== SUBTYPE ACTIONS ===================== */
