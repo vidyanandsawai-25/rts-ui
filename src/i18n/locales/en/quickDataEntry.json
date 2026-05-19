@@ -494,6 +494,7 @@
         "saveError": "Error saving building permissions!"
     },
     "floor": {
+        "select": "Select",
         "allFloors": "All Floors",
         "addFloor": "Add Floor",
         "selectConTypFirst": "Select construction first",
@@ -560,14 +561,16 @@
             "propertyIdRequired": "Property ID is required",
             "floorRequired": "Floor selection is required",
             "floorDescriptionRequired": "Floor description is required",
-            "constructionYearInvalid": "Construction year must be 4 digits",
-            "assessmentYearInvalid": "Assessment year must be 4 digits",
+            "constructionYearInvalid": "Construction year must be between 1900 and the current financial year",
+            "assessmentYearInvalid": "Assessment year must be between 1900 and the current financial year",
             "constructionTypeRequired": "Construction type is required",
             "typeOfUseRequired": "Type of use is required",
             "carpetAreaRequired": "Carpet area must be greater than zero",
             "roomCountRequired": "Number of rooms must be greater than zero",
             "submissionIdRequired": "Submission ID is required",
-            "invalidData": "Invalid data submitted"
+            "invalidData": "Invalid data submitted",
+            "roomsRequiredForDetails": "Number of rooms must be greater than zero before entering room details.",
+            "roomGuidance": "Guidance: To enter room-wise breakdown, please first enter the total number of rooms (1 to 9999) for this floor."
         },
         "deleteConfirmTitle": "Are you sure?",
         "deleteConfirmText": "You want to delete this floor?",

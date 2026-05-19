@@ -55,16 +55,20 @@ export const OffsetShapeInputs: React.FC<OffsetShapeInputsProps> = ({
                                 id="offset-length-input"
                                 type="text"
                                 value={offsetData.length}
+                                maxLength={4}
                                 onFocus={(e) => e.target.select()}
                                 onChange={(e) =>
-                                    handleOffsetInputChange("length", e.target.value)
+                                    handleOffsetInputChange("length", e.target.value.slice(0, 4))
                                 }
-                                inputMode="decimal"
                                 onKeyDown={(e) => {
-                                    // Allow: backspace, delete, tab, escape, enter, period, arrows
-                                    if (["Backspace", "Delete", "Tab", "Escape", "Enter", ".", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(e.key)) return;
-                                    // Block non-numeric
-                                    if (!/^[0-9.]$/.test(e.key)) e.preventDefault();
+                                    if (e.key === "." && String(offsetData.length).includes(".")) {
+                                        e.preventDefault();
+                                        return;
+                                    }
+                                    const controlKeys = ["Backspace", "Delete", "Tab", "Escape", "Enter", ".", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"];
+                                    if (!/^[0-9]$/.test(e.key) && !controlKeys.includes(e.key)) {
+                                        e.preventDefault();
+                                    }
                                 }}
                                 className="w-full h-10 px-3 bg-white text-gray-900 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-gray-400 transition-colors"
                                 placeholder={areaUnit === "sq.m" ? "m" : "ft"}
@@ -78,12 +82,20 @@ export const OffsetShapeInputs: React.FC<OffsetShapeInputsProps> = ({
                                 id="offset-width-input"
                                 type="text"
                                 value={offsetData.width}
+                                maxLength={4}
                                 onFocus={(e) => e.target.select()}
                                 onChange={(e) =>
-                                    handleOffsetInputChange("width", e.target.value)
+                                    handleOffsetInputChange("width", e.target.value.slice(0, 4))
                                 }
-                                onKeyPress={(e) => {
-                                    if (!/[0-9.]/.test(e.key) && e.key !== "Backspace") e.preventDefault();
+                                onKeyDown={(e) => {
+                                    if (e.key === "." && String(offsetData.width).includes(".")) {
+                                        e.preventDefault();
+                                        return;
+                                    }
+                                    const controlKeys = ["Backspace", "Delete", "Tab", "Escape", "Enter", ".", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"];
+                                    if (!/^[0-9]$/.test(e.key) && !controlKeys.includes(e.key)) {
+                                        e.preventDefault();
+                                    }
                                 }}
                                 className="w-full h-10 px-3 bg-white text-gray-900 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-gray-400 transition-colors"
                                 placeholder={areaUnit === "sq.m" ? "m" : "ft"}
@@ -101,12 +113,20 @@ export const OffsetShapeInputs: React.FC<OffsetShapeInputsProps> = ({
                             id="offset-side-input"
                             type="text"
                             value={offsetData.side}
+                            maxLength={4}
                             onFocus={(e) => e.target.select()}
                             onChange={(e) =>
-                                handleOffsetInputChange("side", e.target.value)
+                                handleOffsetInputChange("side", e.target.value.slice(0, 4))
                             }
-                            onKeyPress={(e) => {
-                                if (!/[0-9.]/.test(e.key) && e.key !== "Backspace") e.preventDefault();
+                            onKeyDown={(e) => {
+                                if (e.key === "." && String(offsetData.side).includes(".")) {
+                                    e.preventDefault();
+                                    return;
+                                }
+                                const controlKeys = ["Backspace", "Delete", "Tab", "Escape", "Enter", ".", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"];
+                                if (!/^[0-9]$/.test(e.key) && !controlKeys.includes(e.key)) {
+                                    e.preventDefault();
+                                }
                             }}
                             className="w-full h-10 px-3 bg-white text-gray-900 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-gray-400 transition-colors"
                             placeholder={areaUnit === "sq.m" ? "m" : "ft"}
@@ -124,12 +144,20 @@ export const OffsetShapeInputs: React.FC<OffsetShapeInputsProps> = ({
                                 id="offset-base-input"
                                 type="text"
                                 value={offsetData.base}
+                                maxLength={4}
                                 onFocus={(e) => e.target.select()}
                                 onChange={(e) =>
-                                    handleOffsetInputChange("base", e.target.value)
+                                    handleOffsetInputChange("base", e.target.value.slice(0, 4))
                                 }
-                                onKeyPress={(e) => {
-                                    if (!/[0-9.]/.test(e.key) && e.key !== "Backspace") e.preventDefault();
+                                onKeyDown={(e) => {
+                                    if (e.key === "." && String(offsetData.base).includes(".")) {
+                                        e.preventDefault();
+                                        return;
+                                    }
+                                    const controlKeys = ["Backspace", "Delete", "Tab", "Escape", "Enter", ".", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"];
+                                    if (!/^[0-9]$/.test(e.key) && !controlKeys.includes(e.key)) {
+                                        e.preventDefault();
+                                    }
                                 }}
                                 className="w-full h-10 px-3 bg-white text-gray-900 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-gray-400 transition-colors"
                                 placeholder={areaUnit === "sq.m" ? "m" : "ft"}
@@ -143,12 +171,20 @@ export const OffsetShapeInputs: React.FC<OffsetShapeInputsProps> = ({
                                 id="offset-height-input"
                                 type="text"
                                 value={offsetData.height}
+                                maxLength={4}
                                 onFocus={(e) => e.target.select()}
                                 onChange={(e) =>
-                                    handleOffsetInputChange("height", e.target.value)
+                                    handleOffsetInputChange("height", e.target.value.slice(0, 4))
                                 }
-                                onKeyPress={(e) => {
-                                    if (!/[0-9.]/.test(e.key) && e.key !== "Backspace") e.preventDefault();
+                                onKeyDown={(e) => {
+                                    if (e.key === "." && String(offsetData.height).includes(".")) {
+                                        e.preventDefault();
+                                        return;
+                                    }
+                                    const controlKeys = ["Backspace", "Delete", "Tab", "Escape", "Enter", ".", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"];
+                                    if (!/^[0-9]$/.test(e.key) && !controlKeys.includes(e.key)) {
+                                        e.preventDefault();
+                                    }
                                 }}
                                 className="w-full h-10 px-3 bg-white text-gray-900 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-gray-400 transition-colors"
                                 placeholder={areaUnit === "sq.m" ? "m" : "ft"}
@@ -167,12 +203,20 @@ export const OffsetShapeInputs: React.FC<OffsetShapeInputsProps> = ({
                                 id="offset-base1-input"
                                 type="text"
                                 value={offsetData.base1}
+                                maxLength={4}
                                 onFocus={(e) => e.target.select()}
                                 onChange={(e) =>
-                                    handleOffsetInputChange("base1", e.target.value)
+                                    handleOffsetInputChange("base1", e.target.value.slice(0, 4))
                                 }
-                                onKeyPress={(e) => {
-                                    if (!/[0-9.]/.test(e.key) && e.key !== "Backspace") e.preventDefault();
+                                onKeyDown={(e) => {
+                                    if (e.key === "." && String(offsetData.base1).includes(".")) {
+                                        e.preventDefault();
+                                        return;
+                                    }
+                                    const controlKeys = ["Backspace", "Delete", "Tab", "Escape", "Enter", ".", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"];
+                                    if (!/^[0-9]$/.test(e.key) && !controlKeys.includes(e.key)) {
+                                        e.preventDefault();
+                                    }
                                 }}
                                 className="w-full h-10 px-3 bg-white text-gray-900 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-gray-400 transition-colors"
                                 placeholder={areaUnit === "sq.m" ? "m" : "ft"}
@@ -186,12 +230,20 @@ export const OffsetShapeInputs: React.FC<OffsetShapeInputsProps> = ({
                                 id="offset-base2-input"
                                 type="text"
                                 value={offsetData.base2}
+                                maxLength={4}
                                 onFocus={(e) => e.target.select()}
                                 onChange={(e) =>
-                                    handleOffsetInputChange("base2", e.target.value)
+                                    handleOffsetInputChange("base2", e.target.value.slice(0, 4))
                                 }
-                                onKeyPress={(e) => {
-                                    if (!/[0-9.]/.test(e.key) && e.key !== "Backspace") e.preventDefault();
+                                onKeyDown={(e) => {
+                                    if (e.key === "." && String(offsetData.base2).includes(".")) {
+                                        e.preventDefault();
+                                        return;
+                                    }
+                                    const controlKeys = ["Backspace", "Delete", "Tab", "Escape", "Enter", ".", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"];
+                                    if (!/^[0-9]$/.test(e.key) && !controlKeys.includes(e.key)) {
+                                        e.preventDefault();
+                                    }
                                 }}
                                 className="w-full h-10 px-3 bg-white text-gray-900 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-gray-400 transition-colors"
                                 placeholder={areaUnit === "sq.m" ? "m" : "ft"}
@@ -205,12 +257,20 @@ export const OffsetShapeInputs: React.FC<OffsetShapeInputsProps> = ({
                                 id="offset-height-input-trap"
                                 type="text"
                                 value={offsetData.height}
+                                maxLength={4}
                                 onFocus={(e) => e.target.select()}
                                 onChange={(e) =>
-                                    handleOffsetInputChange("height", e.target.value)
+                                    handleOffsetInputChange("height", e.target.value.slice(0, 4))
                                 }
-                                onKeyPress={(e) => {
-                                    if (!/[0-9.]/.test(e.key) && e.key !== "Backspace") e.preventDefault();
+                                onKeyDown={(e) => {
+                                    if (e.key === "." && String(offsetData.height).includes(".")) {
+                                        e.preventDefault();
+                                        return;
+                                    }
+                                    const controlKeys = ["Backspace", "Delete", "Tab", "Escape", "Enter", ".", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"];
+                                    if (!/^[0-9]$/.test(e.key) && !controlKeys.includes(e.key)) {
+                                        e.preventDefault();
+                                    }
                                 }}
                                 className="w-full h-10 px-3 bg-white text-gray-900 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-gray-400 transition-colors"
                                 placeholder={areaUnit === "sq.m" ? "m" : "ft"}
@@ -228,12 +288,20 @@ export const OffsetShapeInputs: React.FC<OffsetShapeInputsProps> = ({
                             id="offset-radius-input"
                             type="text"
                             value={offsetData.radius}
+                            maxLength={4}
                             onFocus={(e) => e.target.select()}
                             onChange={(e) =>
-                                handleOffsetInputChange("radius", e.target.value)
+                                handleOffsetInputChange("radius", e.target.value.slice(0, 4))
                             }
-                            onKeyPress={(e) => {
-                                if (!/[0-9.]/.test(e.key) && e.key !== "Backspace") e.preventDefault();
+                            onKeyDown={(e) => {
+                                if (e.key === "." && String(offsetData.radius).includes(".")) {
+                                    e.preventDefault();
+                                    return;
+                                }
+                                const controlKeys = ["Backspace", "Delete", "Tab", "Escape", "Enter", ".", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"];
+                                if (!/^[0-9]$/.test(e.key) && !controlKeys.includes(e.key)) {
+                                    e.preventDefault();
+                                }
                             }}
                             className="w-full h-10 px-3 bg-white text-gray-900 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-gray-400 transition-colors"
                             placeholder={areaUnit === "sq.m" ? "m" : "ft"}
