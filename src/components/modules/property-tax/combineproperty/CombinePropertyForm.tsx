@@ -12,6 +12,7 @@ import { MasterTable } from '@/components/common/MasterTable';
 import { CombinePropertyItem } from '@/types/combine-property.types';
 import { useCombinePropertyForm, SelectionMethod } from '@/hooks/combineProperty/useCombineProperty';
 import { getCombinePropertyColumns, PropertyRow } from './combinePropertyColumns';
+import { redirect } from 'next/navigation';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                               */
@@ -68,7 +69,6 @@ export default function CombinePropertyForm({
     handleClear,
     handleProceed,
     handleCombine,
-    router,
   } = useCombinePropertyForm({
     basePropertyList,
     subPropertyList,
@@ -165,7 +165,7 @@ export default function CombinePropertyForm({
   return (
     <Drawer
       open={true}
-      onClose={() => router.back()}
+      onClose={() => redirect('/property-tax/ptis')}
       title={DrawerTitle}
       width="lg"
       footer={DrawerFooter}
