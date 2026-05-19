@@ -70,16 +70,16 @@
       "englishName": {
         "title": "इंग्रजी नाव",
         "prefix": "पूर्वसर्ग",
-        "prefixPlaceholder": "मजला",
+        "prefixPlaceholder": "FL",
         "suffix": "प्रत्यय",
-        "suffixPlaceholder": "मजला"
+        "suffixPlaceholder": "FL"
       },
       "regionalNameSection": {
         "title": "प्रादेशिक नाव",
         "prefix": "पूर्वसर्ग",
-        "prefixPlaceholder": "मजला",
+        "prefixPlaceholder": "FL",
         "suffix": "प्रत्यय",
-        "suffixPlaceholder": "मजला"
+        "suffixPlaceholder": "FL"
       },
       "autoGenerateSubFloor": "उप-मजला स्वयंचलितपणे तयार करा",
       "autoGenerateSubFloorDesc": "श्रेणीत प्रत्येक मजल्यासाठी एक उप-मजला तयार करतो",

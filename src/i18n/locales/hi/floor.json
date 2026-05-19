@@ -70,9 +70,9 @@
       "englishName": {
         "title": "अंग्रेजी नाम",
         "prefix": "उपसर्ग",
-        "prefixPlaceholder": "मजला",
+        "prefixPlaceholder": "FL",
         "suffix": "प्रत्यय",
-        "suffixPlaceholder": "मजला"
+        "suffixPlaceholder": "FL"
       },
      
       "autoGenerateSubFloor": "उप-मजला स्वचालित रूप से बनाएं",

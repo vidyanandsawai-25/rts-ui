@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState, useTransition } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
@@ -43,13 +43,11 @@ export default function FloorMaster({
 
   /* ================= SEARCH ================= */
   const [search, setSearch] = useState(currentSearchTerm);
-  const [prevSearch, setPrevSearch] = useState(currentSearchTerm);
 
-  // Sync search state with URL
-  if (currentSearchTerm !== prevSearch) {
-    setPrevSearch(currentSearchTerm);
+  // Sync search state with URL (moved to useEffect to avoid state update during render)
+  useEffect(() => {
     setSearch(currentSearchTerm);
-  }
+  }, [currentSearchTerm]);
 
   // Debounced search navigation
   useSearchNavigation({
