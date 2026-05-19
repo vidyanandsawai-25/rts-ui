@@ -85,11 +85,17 @@ export default function FloorMaster({
     [locale]
   );
 
-  const columns = floorColumns(t);
+  const columns = floorColumns(t, tCommon, sortBy, sortOrder);
 
   /* ================= PAGINATION ================= */
-  const changePage = (p: number) => {
-    router.push(buildUrl(p, pageSize, currentSearchTerm, sortBy, sortOrder));
+  const changePage = (
+    page: number,
+    size: number = pageSize,
+    searchTerm: string = currentSearchTerm,
+    newSortBy: string = sortBy ?? "",
+    newSortOrder: string = sortOrder ?? ""
+  ) => {
+    router.push(buildUrl(page, size, searchTerm, newSortBy, newSortOrder));
   };
 
   /* ================= EDIT ================= */
