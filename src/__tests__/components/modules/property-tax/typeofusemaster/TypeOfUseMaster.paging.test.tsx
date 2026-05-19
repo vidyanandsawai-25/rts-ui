@@ -32,9 +32,10 @@ vi.mock("@/components/common/ConfirmProvider", () => ({
 }));
 vi.mock("@/app/[locale]/property-tax/typeofusemaster/actions", () => ({
   deleteUseGroup: vi.fn(),
-  deleteUseTypeWithSubTypes: vi.fn(),
-  deleteUseGroupWithCascade: vi.fn(),
+  deleteUseType: vi.fn(),
   deleteSubType: vi.fn(),
+  checkTypeHasSubTypes: vi.fn(),
+  checkGroupHasTypes: vi.fn(),
 }));
 
 const mockMessages = {

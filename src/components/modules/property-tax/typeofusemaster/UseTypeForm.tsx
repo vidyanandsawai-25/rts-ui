@@ -140,7 +140,18 @@ export default function UseTypeForm({ id, initialData, allGroups: allGroupsProp 
       }
       router.back();
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : t('messages.saveFailed'));
+      const errorMessage = err instanceof Error ? err.message : '';
+      
+      // Detect backend reference errors and map to i18n keys
+      if (errorMessage.includes('referenced in:') || errorMessage.includes('referenced by')) {
+        toast.error(t('messages.cannotDeactivateType'));
+      } else {
+        // Check if it's an i18n key or raw message
+        const displayMessage = errorMessage.startsWith('messages.') 
+          ? t(errorMessage) 
+          : errorMessage || t('messages.saveFailed');
+        toast.error(displayMessage);
+      }
     }
   };
 
