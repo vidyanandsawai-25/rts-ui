@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, useTransition } from "react";
+import { useCallback, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
@@ -8,7 +8,6 @@ import { MasterTable } from "@/components/common/MasterTable";
 import { EditButton, DeleteButton } from "@/components/common/ActionButtons";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { Select } from "@/components/common";
-import { useSearchNavigation } from "@/hooks/useSearchNavigation";
 
 import type { Floor, FloorMasterProps } from "@/types/floor.types";
 
@@ -41,28 +40,6 @@ export default function FloorMaster({
 
   const currentSearchTerm = searchParams.get("q") || "";
 
-  /* ================= SEARCH ================= */
-  const [search, setSearch] = useState(currentSearchTerm);
-
-  // Sync search state with URL (moved to useEffect to avoid state update during render)
-  useEffect(() => {
-    if (search !== currentSearchTerm) {
-      setSearch(currentSearchTerm);
-    }
-  }, [currentSearchTerm, search]);
-
-  // Debounced search navigation
-  useSearchNavigation({
-    search,
-    currentSearchTerm,
-    pageSize,
-    locale,
-    sortBy,
-    sortOrder,
-    basePath: "/property-tax/floormaster/floor",
-    startTransition,
-  });
-
   /* ================= URL BUILDER ================= */
   const buildUrl = useCallback(
     (
@@ -85,7 +62,7 @@ export default function FloorMaster({
     [locale]
   );
 
-  const columns = floorColumns(t, tCommon, sortBy, sortOrder);
+  const columns = floorColumns(t);
 
   /* ================= PAGINATION ================= */
   const changePage = (
