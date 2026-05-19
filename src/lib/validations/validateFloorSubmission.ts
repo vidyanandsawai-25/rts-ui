@@ -31,14 +31,40 @@ import {
  *   setFormErrors(result.errors);
  * }
  */
-export function validateFloorForm(data: unknown) {
+export function validateFloorForm(data: unknown, t?: (key: string) => string) {
   const result = floorFormSchema.safeParse(data);
 
   if (!result.success) {
+    // Validation failed - this is expected during initial/partial form states.
+    // We suppress console.error to avoid cluttered dev console output and Next.js overlays.
     const errors: Record<string, string> = {};
     result.error.issues.forEach((issue) => {
       const path = issue.path.join('.');
-      errors[path] = issue.message;
+      let message = issue.message;
+
+      if (t) {
+        if (path === 'floor') {
+          message = t('floor.errors.floorRequired') || 'Floor selection is required';
+        } else if (path === 'conYr') {
+          message = t('floor.errors.constructionYearInvalid') || 'Construction year must be between 1900 and the current financial year';
+        } else if (path === 'asstYr') {
+          if (issue.message.toLowerCase().includes('less than') || issue.message.toLowerCase().includes('cannot be less')) {
+            message = t('floor.asstYrError') || 'Assessment Year cannot be less than Construction Year';
+          } else {
+            message = t('floor.errors.assessmentYearInvalid') || 'Assessment year must be between 1900 and the current financial year';
+          }
+        } else if (path === 'conTyp') {
+          message = t('floor.errors.constructionTypeRequired') || 'Construction type is required';
+        } else if (path === 'use') {
+          message = t('floor.errors.typeOfUseRequired') || 'Type of use is required';
+        } else if (path === 'rooms') {
+          message = t('floor.errors.roomCountRequired') || 'Number of rooms must be greater than zero';
+        } else if (path === 'areaSqFt') {
+          message = t('floor.errors.carpetAreaRequired') || 'Carpet area must be greater than zero';
+        }
+      }
+
+      errors[path] = message;
     });
     return { success: false as const, isValid: false, errors };
   }
