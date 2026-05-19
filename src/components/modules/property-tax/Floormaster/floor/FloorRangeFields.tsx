@@ -10,7 +10,7 @@ import type { FloorRangeFieldsProps } from '@/types/floor.types';
 /* ================= COMPONENT ================= */
 /**
  * Range-specific form fields for FloorForm.
- * Handles: Range Start, Range End, Prefix, Suffix inputs + their validation messages.
+ * Handles: Range Start, Range End, Prefix inputs + their validation messages.
  * Parent (FloorForm) owns state, validation logic, and submit handler.
  */
 export function FloorRangeFields({
@@ -95,24 +95,7 @@ export function FloorRangeFields({
         visible={showError('prefix')}
       />
 
-      <Input
-        label={t('form.englishName.suffix')}
-        placeholder={t('form.englishName.suffixPlaceholder')}
-        value={formData.suffix}
-        onChange={(e) => {
-          // Allow only letters, numbers, /, -, _ (block @, #, (, ) etc)
-          const sanitized = e.target.value.replace(/[^A-Za-z0-9/_-]/g, '');
-          if (sanitized.length <= 10) onChange('suffix', sanitized);
-        }}
-        onBlur={() => onBlur('suffix')}
-        fullWidth
-        maxLength={10}
-        className="text-gray-700"
-      />
-      <ValidationMessage
-        message={errors.suffix}
-        visible={showError('suffix')}
-      />
+
 
       <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg border border-blue-100">
         {t('form.rangeExample')}
