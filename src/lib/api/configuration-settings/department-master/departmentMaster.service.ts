@@ -38,7 +38,7 @@ export async function getDepartmentMastersPaged(
         params.append("SearchTerm", searchTerm.trim());
     }
     if (status) {
-        params.append("Status", status);
+        params.append("IsActive", status);
     }
 
     const response = await apiClient.get<PagedResponse<DepartmentMaster>>(
