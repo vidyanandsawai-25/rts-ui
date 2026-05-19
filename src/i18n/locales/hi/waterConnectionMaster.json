@@ -1,0 +1,134 @@
+{
+  "waterConnectionMaster": {
+    "title": "जल कनेक्शन मास्टर",
+    "subtitle": "जल कनेक्शन स्थिति, प्रकार और आकार प्रबंधित करें",
+    "tabs": {
+      "tapStatus": "नल स्थिति",
+      "tapType": "नल प्रकार",
+      "tapSize": "नल आकार"
+    },
+    "tapStatus": {
+      "title": "नल स्थिति मास्टर",
+      "subtitle": "जल कनेक्शन स्थिति कोड प्रबंधित करें",
+      "searchPlaceholder": "स्थिति कोड या नाम से खोजें...",
+      "addTitle": "नल स्थिति जोड़ें",
+      "editTitle": "नल स्थिति संपादित करें",
+      "table": {
+        "statusCode": "स्थिति कोड",
+        "statusName": "स्थिति नाम",
+        "status": "स्थिति"
+      },
+      "form": {
+        "statusCode": {
+          "label": "स्थिति कोड",
+          "placeholder": "उदा., ACT"
+        },
+        "statusName": {
+          "label": "स्थिति नाम",
+          "placeholder": "उदा., सक्रिय"
+        },
+        "isActive": {
+          "label": "सक्रिय स्थिति"
+        }
+      },
+      "validation": {
+        "statusCodeRequired": "स्थिति कोड आवश्यक है",
+        "statusNameRequired": "स्थिति नाम आवश्यक है",
+        "statusCodeLength": "स्थिति कोड {count} वर्णों से अधिक नहीं हो सकता",
+        "statusNameLength": "स्थिति नाम {count} वर्णों से अधिक नहीं हो सकता"
+      },
+      "messages": {
+        "createSuccess": "नल स्थिति सफलतापूर्वक बनाई गई",
+        "updateSuccess": "नल स्थिति सफलतापूर्वक अपडेट की गई",
+        "deleteSuccess": "नल स्थिति सफलतापूर्वक हटाई गई",
+        "deleteInUse": "यह नल स्थिति वर्तमान में उपयोग में है और इसे हटाया नहीं जा सकता"
+      },
+      "confirm": {
+        "deleteTitle": "नल स्थिति हटाएं?",
+        "deleteDescription": "क्या आप वाकई इस नल स्थिति को हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती।"
+      }
+    },
+    "tapType": {
+      "title": "नल प्रकार मास्टर",
+      "subtitle": "जल कनेक्शन प्रकार कोड प्रबंधित करें",
+      "searchPlaceholder": "प्रकार कोड या नाम से खोजें...",
+      "addTitle": "नल प्रकार जोड़ें",
+      "editTitle": "नल प्रकार संपादित करें",
+      "table": {
+        "typeCode": "प्रकार कोड",
+        "typeName": "प्रकार नाम",
+        "status": "स्थिति"
+      },
+      "form": {
+        "typeCode": {
+          "label": "प्रकार कोड",
+          "placeholder": "उदा., DOM"
+        },
+        "typeName": {
+          "label": "प्रकार नाम",
+          "placeholder": "उदा., घरेलू"
+        },
+        "isActive": {
+          "label": "सक्रिय स्थिति"
+        }
+      },
+      "validation": {
+        "typeCodeRequired": "प्रकार कोड आवश्यक है",
+        "typeNameRequired": "प्रकार नाम आवश्यक है",
+        "typeCodeLength": "प्रकार कोड {count} वर्णों से अधिक नहीं हो सकता",
+        "typeNameLength": "प्रकार नाम {count} वर्णों से अधिक नहीं हो सकता"
+      },
+      "messages": {
+        "createSuccess": "नल प्रकार सफलतापूर्वक बनाया गया",
+        "updateSuccess": "नल प्रकार सफलतापूर्वक अपडेट किया गया",
+        "deleteSuccess": "नल प्रकार सफलतापूर्वक हटाया गया",
+        "deleteInUse": "यह नल प्रकार वर्तमान में उपयोग में है और इसे हटाया नहीं जा सकता"
+      },
+      "confirm": {
+        "deleteTitle": "नल प्रकार हटाएं?",
+        "deleteDescription": "क्या आप वाकई इस नल प्रकार को हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती।"
+      }
+    },
+    "tapSize": {
+      "title": "नल आकार मास्टर",
+      "subtitle": "जल कनेक्शन आकार कोड प्रबंधित करें",
+      "searchPlaceholder": "आकार कोड या नाम से खोजें...",
+      "addTitle": "नल आकार जोड़ें",
+      "editTitle": "नल आकार संपादित करें",
+      "table": {
+        "sizeCode": "आकार कोड",
+        "sizeName": "आकार नाम",
+        "status": "स्थिति"
+      },
+      "form": {
+        "sizeCode": {
+          "label": "आकार कोड",
+          "placeholder": "उदा., 15MM"
+        },
+        "sizeName": {
+          "label": "आकार नाम",
+          "placeholder": "उदा., 15 MM"
+        },
+        "isActive": {
+          "label": "सक्रिय स्थिति"
+        }
+      },
+      "validation": {
+        "sizeCodeRequired": "आकार कोड आवश्यक है",
+        "sizeNameRequired": "आकार नाम आवश्यक है",
+        "sizeCodeLength": "आकार कोड {count} वर्णों से अधिक नहीं हो सकता",
+        "sizeNameLength": "आकार नाम {count} वर्णों से अधिक नहीं हो सकता"
+      },
+      "messages": {
+        "createSuccess": "नल आकार सफलतापूर्वक बनाया गया",
+        "updateSuccess": "नल आकार सफलतापूर्वक अपडेट किया गया",
+        "deleteSuccess": "नल आकार सफलतापूर्वक हटाया गया",
+        "deleteInUse": "यह नल आकार वर्तमान में उपयोग में है और इसे हटाया नहीं जा सकता"
+      },
+      "confirm": {
+        "deleteTitle": "नल आकार हटाएं?",
+        "deleteDescription": "क्या आप वाकई इस नल आकार को हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती।"
+      }
+    }
+  }
+}

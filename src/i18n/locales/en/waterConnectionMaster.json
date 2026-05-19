@@ -1,0 +1,134 @@
+{
+  "waterConnectionMaster": {
+    "title": "Water Connection Master",
+    "subtitle": "Manage water connection status, type, and size",
+    "tabs": {
+      "tapStatus": "Tap Status",
+      "tapType": "Tap Type",
+      "tapSize": "Tap Size"
+    },
+    "tapStatus": {
+      "title": "Tap Status Master",
+      "subtitle": "Manage water connection status codes",
+      "searchPlaceholder": "Search by status code or name...",
+      "addTitle": "Add Tap Status",
+      "editTitle": "Edit Tap Status",
+      "table": {
+        "statusCode": "Status Code",
+        "statusName": "Status Name",
+        "status": "Status"
+      },
+      "form": {
+        "statusCode": {
+          "label": "Status Code",
+          "placeholder": "e.g., ACT"
+        },
+        "statusName": {
+          "label": "Status Name",
+          "placeholder": "e.g., Active"
+        },
+        "isActive": {
+          "label": "Active Status"
+        }
+      },
+      "validation": {
+        "statusCodeRequired": "Status Code is required",
+        "statusNameRequired": "Status Name is required",
+        "statusCodeLength": "Status Code cannot exceed {count} characters",
+        "statusNameLength": "Status Name cannot exceed {count} characters"
+      },
+      "messages": {
+        "createSuccess": "Tap Status created successfully",
+        "updateSuccess": "Tap Status updated successfully",
+        "deleteSuccess": "Tap Status deleted successfully",
+        "deleteInUse": "This tap status is currently in use and cannot be deleted"
+      },
+      "confirm": {
+        "deleteTitle": "Delete Tap Status?",
+        "deleteDescription": "Are you sure you want to delete this tap status? This action cannot be undone."
+      }
+    },
+    "tapType": {
+      "title": "Tap Type Master",
+      "subtitle": "Manage water connection type codes",
+      "searchPlaceholder": "Search by type code or name...",
+      "addTitle": "Add Tap Type",
+      "editTitle": "Edit Tap Type",
+      "table": {
+        "typeCode": "Type Code",
+        "typeName": "Type Name",
+        "status": "Status"
+      },
+      "form": {
+        "typeCode": {
+          "label": "Type Code",
+          "placeholder": "e.g., DOM"
+        },
+        "typeName": {
+          "label": "Type Name",
+          "placeholder": "e.g., Domestic"
+        },
+        "isActive": {
+          "label": "Active Status"
+        }
+      },
+      "validation": {
+        "typeCodeRequired": "Type Code is required",
+        "typeNameRequired": "Type Name is required",
+        "typeCodeLength": "Type Code cannot exceed {count} characters",
+        "typeNameLength": "Type Name cannot exceed {count} characters"
+      },
+      "messages": {
+        "createSuccess": "Tap Type created successfully",
+        "updateSuccess": "Tap Type updated successfully",
+        "deleteSuccess": "Tap Type deleted successfully",
+        "deleteInUse": "This tap type is currently in use and cannot be deleted"
+      },
+      "confirm": {
+        "deleteTitle": "Delete Tap Type?",
+        "deleteDescription": "Are you sure you want to delete this tap type? This action cannot be undone."
+      }
+    },
+    "tapSize": {
+      "title": "Tap Size Master",
+      "subtitle": "Manage water connection size codes",
+      "searchPlaceholder": "Search by size code or name...",
+      "addTitle": "Add Tap Size",
+      "editTitle": "Edit Tap Size",
+      "table": {
+        "sizeCode": "Size Code",
+        "sizeName": "Size Name",
+        "status": "Status"
+      },
+      "form": {
+        "sizeCode": {
+          "label": "Size Code",
+          "placeholder": "e.g., 15MM"
+        },
+        "sizeName": {
+          "label": "Size Name",
+          "placeholder": "e.g., 15 MM"
+        },
+        "isActive": {
+          "label": "Active Status"
+        }
+      },
+      "validation": {
+        "sizeCodeRequired": "Size Code is required",
+        "sizeNameRequired": "Size Name is required",
+        "sizeCodeLength": "Size Code cannot exceed {count} characters",
+        "sizeNameLength": "Size Name cannot exceed {count} characters"
+      },
+      "messages": {
+        "createSuccess": "Tap Size created successfully",
+        "updateSuccess": "Tap Size updated successfully",
+        "deleteSuccess": "Tap Size deleted successfully",
+        "deleteInUse": "This tap size is currently in use and cannot be deleted"
+      },
+      "confirm": {
+        "deleteTitle": "Delete Tap Size?",
+        "deleteDescription": "Are you sure you want to delete this tap size? This action cannot be undone."
+      }
+    }
+  }
+}
