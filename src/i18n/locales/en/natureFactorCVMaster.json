@@ -27,7 +27,7 @@
       "description": "Please wait while we fetch the records."
     },
     "error": {
-      "title": "Something went wrong!",
+      "title": "Failed to connect to the server. Please try again later.",
       "description": "An error occurred while loading the nature factor weightage records.",
       "tryAgain": "Try again",
       "goHome": "Go back home",
