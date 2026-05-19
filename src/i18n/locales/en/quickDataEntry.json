@@ -357,6 +357,21 @@
             "typeOfUseRequired": "Please select type of use",
             "assessmentYearRequired": "Please enter assessment year",
             "assessmentYearInvalid": "Please enter a valid 4-digit assessment year"
+        },
+        "errors": {
+            "failedToConnect": {
+                "title": "Property Details Error",
+                "description": "Failed to fetch property basic details. The API server is unreachable or not responding. Please try again later.",
+                "goHome": "Go Home",
+                "tryAgain": "Try Again",
+                "errorId": "Error ID: {id}"
+            },
+            "fetchPropertyBasicDetails": "Failed to fetch property basic details",
+            "fetchPropertyTypes": "Failed to fetch property types",
+            "fetchPropertyCategories": "Failed to fetch property categories",
+            "fetchWingMaster": "Failed to fetch wing master",
+            "updatePropertyBasicDetails": "Failed to update property basic details",
+            "fetchCvTaxDetails": "Failed to fetch CV tax details"
         }
     },
     "kyc": {
@@ -400,6 +415,13 @@
             "pleaseFixErrors": "Please fix the highlighted validation errors before submitting."
         },
         "errors": {
+            "failedToConnect": {
+                "title": "KYC Details Error",
+                "description": "Failed to fetch owner and contact information. The API server is unreachable or not responding. Please try again later.",
+                "goHome": "Go Home",
+                "tryAgain": "Try Again",
+                "errorId": "Error ID: {id}"
+            },
             "fetchOwnerTypes": "Failed to fetch owner types",
             "loadKycDetails": "Failed to load property KYC details",
             "updateKycDetails": "Failed to update property KYC details",
@@ -418,6 +440,15 @@
     },
     "society": {
         "title": "Society & Management Information",
+        "errors": {
+            "failedToConnect": {
+                "title": "Society Details Error",
+                "description": "Failed to fetch society and management details. The API server is unreachable or not responding. Please try again later.",
+                "goHome": "Go Home",
+                "tryAgain": "Try Again",
+                "errorId": "Error ID: {id}"
+            }
+        },
         "landOwner": "Land Owner",
         "landOwnerPlaceholder": "Enter land owner name",
         "builderName": "Builder Name",
@@ -447,15 +478,15 @@
         "updateError": "An error occurred during update.",
         "updateButton": "Update",
         "validation": {
-            "landOwnerName": "Invalid Land Owner Name. Only letters, spaces, and . , ' - are allowed.",
-            "builderName": "Invalid Builder Name. Only letters, spaces, and . , ' - are allowed.",
-            "managerName": "Invalid Manager Name. Only letters, spaces, and . , ' - are allowed.",
-            "secretaryName": "Invalid Secretary Name. Only letters, spaces, and . , ' - are allowed.",
-            "societyEmail": "Invalid Society Email address format.",
-            "managerEmail": "Invalid Manager Email address format.",
-            "secretaryEmail": "Invalid Secretary Email address format.",
-            "managerMobile": "Manager Mobile Number must be 10 digits.",
-            "secretaryMobile": "Secretary Mobile Number must be 10 digits."
+            "landOwnerName": "Invalid Land Owner Name. Only letters and basic punctuation (. , ' -) are allowed. Numbers (0-9) and special characters like *()_++_)(&&^%$#@!~}{}; are not permitted.",
+            "builderName": "Invalid Builder Name. Only letters and basic punctuation (. , ' -) are allowed. Numbers (0-9) and special characters like *()_++_)(&&^%$#@!~}{}; are not permitted.",
+            "managerName": "Invalid Manager Name. Only letters and basic punctuation (. , ' -) are allowed. Numbers (0-9) and special characters like *()_++_)(&&^%$#@!~}{}; are not permitted.",
+            "secretaryName": "Invalid Secretary Name. Only letters and basic punctuation (. , ' -) are allowed. Numbers (0-9) and special characters like *()_++_)(&&^%$#@!~}{}; are not permitted.",
+            "societyEmail": "Invalid Society Email address format. Only letters (a-z), numbers (0-9), and period (.) are allowed. Email must contain @ and a valid domain extension.",
+            "managerEmail": "Invalid Manager Email address format. Only letters (a-z), numbers (0-9), and period (.) are allowed. Email must contain @ and a valid domain extension.",
+            "secretaryEmail": "Invalid Secretary Email address format. Only letters (a-z), numbers (0-9), and period (.) are allowed. Email must contain @ and a valid domain extension.",
+            "managerMobile": "Manager Mobile Number must be exactly 10 digits and start with 6 to 9.",
+            "secretaryMobile": "Secretary Mobile Number must be exactly 10 digits and start with 6 to 9."
         },
         "loading": {
             "message": "Loading society...",

@@ -1,8 +1,9 @@
-import { setRequestLocale } from 'next-intl/server';
+import { setRequestLocale, getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import KycFormView from '@/components/modules/property-tax/ptis/QuickDataEntry/kyc/KycFormView';
-import { getPropertyKycByIdAction, getOwnerTypesAction } from './action';
+import { getOwnerTypes, getPropertyKycById } from '@/lib/api/property-kyc.service';
 import { KycDetails } from '@/types/property-kyc.types';
+import { OwnerTypeApiItem } from '@/types/property-basic-details.types';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,20 +25,51 @@ export default async function KycFormPage({ params }: PageProps): Promise<React.
     notFound();
   }
 
-  // ✅ Parallel API calls
-  const [kycPropertyResult, ownerTypeResult] = await Promise.all([
-    getPropertyKycByIdAction(propertyIdNum),
-    getOwnerTypesAction(),
-  ]);
+  let ownerTypeList: OwnerTypeApiItem[] = [];
+  let kycDetailsData: KycDetails | null = null;
 
-  // Check if KYC fetch failed or missing data - throw error to route error.tsx
-  if (!kycPropertyResult.success || !kycPropertyResult.data) {
-    throw new Error(kycPropertyResult.error || 'Failed to load KYC data');
+  try {
+    const [kycResponse, ownerTypes] = await Promise.all([
+      getPropertyKycById(propertyIdNum),
+      getOwnerTypes(),
+    ]);
+
+    ownerTypeList = ownerTypes;
+
+    if (kycResponse.items) {
+      const adharCardNo = kycResponse.items.adharCardNo ?? kycResponse.items.aadharCardNo ?? null;
+      kycDetailsData = {
+        ...kycResponse.items,
+        adharCardNo,
+        aadharCardNo: adharCardNo, // Kept for backward compatibility only
+      };
+    }
+  } catch (error: unknown) {
+    const t = await getTranslations('quickDataEntry');
+    const msg = error instanceof Error ? error.message.toLowerCase() : "";
+    if (msg.includes('fetch failed') || msg.includes('failed to fetch') || msg.includes('network error') || msg.includes('econnrefused')) {
+      throw new Error(t('kyc.errors.failedToConnect.description'));
+    }
+    // Check for other known KYC errors
+    if (msg.includes('invalid property id')) {
+      throw new Error(t('kyc.errors.invalidPropertyId'));
+    }
+    if (msg.includes('kyc details not found') || msg.includes('not found')) {
+      throw new Error(t('kyc.errors.kycNotFound'));
+    }
+    if (msg.includes('failed to fetch owner types')) {
+      throw new Error(t('kyc.errors.fetchOwnerTypes'));
+    }
+    if (msg.includes('failed to load property kyc details')) {
+      throw new Error(t('kyc.errors.fetchKycDetails'));
+    }
+    throw error;
   }
 
-  // ✅ Extracted data
-  const ownerTypeList = ownerTypeResult.success ? ownerTypeResult.data : [];
-  const kycDetailsData = kycPropertyResult.data;
+  if (!kycDetailsData) {
+    const t = await getTranslations("quickDataEntry");
+    throw new Error(t('kyc.errors.kycNotFound'));
+  }
 
   return <KycFormView KycDetailsData={kycDetailsData as KycDetails} OwnerTypeMasterList={ownerTypeList} locale={locale} />;
 }
