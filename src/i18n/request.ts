@@ -49,6 +49,7 @@ export default getRequestConfig(async ({ locale }) => {
     ptisMainTaxDetailsMessages,
     modulesMessages,
     paymentModeMasterMessages,
+    modulesMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/dashboard.json`).then((m) => m.default),
@@ -99,6 +100,8 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/ptisMainTaxDetails.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/paymentModeMaster.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
+   
   ]);
 
   return {
@@ -137,6 +140,7 @@ export default getRequestConfig(async ({ locale }) => {
       ptisMainTaxDetails: ptisMainTaxDetailsMessages,
       modules: modulesMessages,
       paymentModeMaster: paymentModeMasterMessages,
+       modules: modulesMessages,
     },
   };
 });
