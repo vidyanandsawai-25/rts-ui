@@ -86,7 +86,7 @@ export const DimensionAreaFields: React.FC<DimensionAreaFieldsProps> = ({
           disabled={!isEditMode}
           className="text-center h-[40px]"
           placeholder={t('roomSubmission.input.placeholders.roomCount')}
-          error={isEditMode ? validationErrors.roomCount : undefined}
+          error={isEditMode && validationErrors.roomCount ? t(validationErrors.roomCount) : undefined}
         />
       </div>
     </>
