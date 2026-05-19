@@ -62,7 +62,17 @@ export default function FloorMaster({
     [locale]
   );
 
-  const columns = floorColumns(t);
+  /* ================= SORTING ================= */
+  const handleSort = useCallback(
+    (columnKey: string) => {
+      const newSortOrder =
+        sortBy === columnKey && sortOrder === "asc" ? "desc" : "asc";
+      router.push(buildUrl(pageNumber, pageSize, currentSearchTerm, columnKey, newSortOrder));
+    },
+    [sortBy, sortOrder, router, buildUrl, pageNumber, pageSize, currentSearchTerm]
+  );
+
+  const columns = floorColumns(t, tCommon, sortBy, sortOrder, handleSort);
 
   /* ================= PAGINATION ================= */
   const changePage = (
