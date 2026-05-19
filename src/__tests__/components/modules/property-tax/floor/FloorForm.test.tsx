@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 // Mock sonner toast
 vi.mock('sonner', () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { NextIntlClientProvider } from 'next-intl';
 import { toast } from 'sonner';
 
@@ -139,6 +139,11 @@ function submitForm(container: HTMLElement, formId = 'form') {
 // ── Tests ─────────────────────────────────────────────────────────────────────
 describe('FloorForm — Add Mode', () => {
   beforeEach(() => vi.clearAllMocks());
+  
+  afterEach(async () => {
+    // Wait for any pending async operations to complete
+    await new Promise(resolve => setTimeout(resolve, 0));
+  });
 
   it('renders Add Floor title', () => {
     renderAdd();
@@ -229,6 +234,11 @@ describe('FloorForm — Add Mode', () => {
 
 describe('FloorForm — Edit Mode', () => {
   beforeEach(() => vi.clearAllMocks());
+  
+  afterEach(async () => {
+    // Wait for any pending async operations to complete
+    await new Promise(resolve => setTimeout(resolve, 0));
+  });
 
   it('renders Edit Floor title', () => {
     renderEdit();
@@ -272,6 +282,11 @@ describe('FloorForm — Edit Mode', () => {
 describe('FloorForm — Range Mode', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+  
+  afterEach(async () => {
+    // Wait for any pending async operations to complete
+    await new Promise(resolve => setTimeout(resolve, 0));
   });
 
   it('switches to range mode and shows range fields', async () => {
