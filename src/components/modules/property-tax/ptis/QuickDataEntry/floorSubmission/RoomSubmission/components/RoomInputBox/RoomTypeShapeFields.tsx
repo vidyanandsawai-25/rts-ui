@@ -34,7 +34,7 @@ export const RoomTypeShapeFields: React.FC<RoomTypeShapeFieldsProps> = ({
     <>
       {/* Room No */}
       <div className="flex flex-col justify-center flex-shrink-0 px-1" style={{ width: COLUMN_WIDTHS.roomNo }}>
-        <Input
+         <Input
           ref={setRoomNoRef}
           id="room-no-input"
           type="text"
@@ -49,7 +49,7 @@ export const RoomTypeShapeFields: React.FC<RoomTypeShapeFieldsProps> = ({
           disabled={!isEditMode}
           className="text-center h-[40px]"
           placeholder={t('roomSubmission.input.placeholders.auto')}
-          error={isEditMode ? validationErrors.roomNo : undefined}
+          error={isEditMode && validationErrors.roomNo ? t(validationErrors.roomNo) : undefined}
         />
       </div>
 
@@ -65,7 +65,7 @@ export const RoomTypeShapeFields: React.FC<RoomTypeShapeFieldsProps> = ({
           className="w-full h-[40px]"
         />
         {isEditMode && validationErrors.utilities && (
-          <span className="text-[10px] text-red-500 mt-0.5">{validationErrors.utilities}</span>
+          <span className="text-[10px] text-red-500 mt-0.5">{t(validationErrors.utilities)}</span>
         )}
       </div>
 
@@ -92,7 +92,6 @@ export const RoomTypeShapeFields: React.FC<RoomTypeShapeFieldsProps> = ({
           }}
           disabled={!isEditMode}
           className="w-full h-[40px]"
-          error={isEditMode ? validationErrors.shape : undefined}
         />
       </div>
     </>

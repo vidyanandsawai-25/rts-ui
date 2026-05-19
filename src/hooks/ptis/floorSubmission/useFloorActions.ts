@@ -96,7 +96,7 @@ export const useFloorActions = (params: {
           ...prev,
           floorId: String(gFloor.floorId || gFloor.floorCode || ''),
           floor: gFloor.description || '',
-          rooms: '1',
+          rooms: '0',
         }));
       }
     });
