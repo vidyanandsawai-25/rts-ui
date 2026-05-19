@@ -1,0 +1,15 @@
+{
+  "title": "कर विवरण",
+  "oldTotalCv": "पुराना कुल सीवी",
+  "oldTotalTax": "पुराना कुल कर",
+  "totalCv": "कुल सीवी",
+  "totalTax": "कुल कर",
+  "reassessmentCv": "पुनर्मूल्यांकन सीवी",
+  "reassessTotalTax": "पुनर्मूल्यांकन कुल कर",
+  "netTaxes": "शुद्ध कर",
+  "retain": "बनाए रखें",
+  "hearing": "सुनवाई",
+  "allTaxes": "सभी कर",
+  "taxes": "कर",
+  "totalTaxes": "कुल कर"
+}
