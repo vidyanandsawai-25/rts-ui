@@ -114,6 +114,7 @@ export async function updateUseGroupApi(input: {
   });
   
   if (!response.success) {
+    // Return raw backend error - forms will map reference errors to appropriate i18n keys
     throw new Error(response.error ?? TypeOfUseErrorMessages.UPDATE_GROUP_FAILED);
   }
   
@@ -121,16 +122,23 @@ export async function updateUseGroupApi(input: {
 }
 
 /**
- * Delete a use group
+ * Delete a use group (purge - permanent delete)
  */
 export async function deleteUseGroupApi(id: string | number) {
-  const response = await apiClient.delete<unknown>(`/TypeOfUseGroup/${id}`, {
+  const response = await apiClient.delete<unknown>(`/TypeOfUseGroup/${id}/purge`, {
     cache: "no-store",
     headers: { "Accept": "application/json" },
   });
   
   if (!response.success) {
-    throw new Error(response.error ?? TypeOfUseErrorMessages.DELETE_GROUP_FAILED);
+    // Map backend reference error to the corresponding i18n key
+    let errorMessage = response.error ?? TypeOfUseErrorMessages.DELETE_GROUP_FAILED;
+    
+    if (errorMessage.includes("referenced by other entities")) {
+      errorMessage = TypeOfUseErrorMessages.DELETE_GROUP_REFERENCED;
+    }
+    
+    throw new Error(errorMessage);
   }
   
   return true;

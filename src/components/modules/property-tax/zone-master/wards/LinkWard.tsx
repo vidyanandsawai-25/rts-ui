@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Map as MapIcon } from "lucide-react";
@@ -11,8 +11,8 @@ import { WardItem } from "@/types/wardMaster.types";
 import { NextPageButton, SearchSelect, StatusBadge } from "@/components/common";
 import { ViewWards } from "./ViewWards";
 import { ZoneWards } from "./ZoneWards";
-import { handleFetchWardsByZone, handleLinkWardsToZone } from "./wardHandlers";
-import { getAllWardsForLinkAction } from "@/app/[locale]/property-tax/zone-master/actions";
+import { handleLinkWardsToZone } from "./wardHandlers";
+import { getAllWardsForLinkAction, getAllWardsForZoneAction } from "@/app/[locale]/property-tax/zone-master/actions";
 
 const PAGE_SIZE_OPTIONS = [
 	{ label: "10", value: "10" },
@@ -54,10 +54,11 @@ export default function LinkWard({
 	const searchParams = useSearchParams();
 
 	const [checkedAvailable, setCheckedAvailable] = useState<Set<string>>(new Set());
-	const [checkedSelected, setCheckedSelected] = useState<Set<string>>(new Set());
 	const [loading, setLoading] = useState(false);
 	const [selectAllLoading, setSelectAllLoading] = useState(false);
 	const [isSelectAllActive, setIsSelectAllActive] = useState(false);
+	const hasInitialized = useRef(false);
+	const prevOpen = useRef(open);
 
 	// State for zone selection
 	const [currentZoneId, setCurrentZoneId] = useState<number | null>(selectedZoneId);
@@ -66,13 +67,16 @@ export default function LinkWard({
 
 	// Search state
 	const [zoneSearchTerm, setZoneSearchTerm] = useState("");
-	const [viewAllSearchTerm, setViewAllSearchTerm] = useState(searchParams.get("viewwardq") || "");
+	const [viewAllSearchTerm, setViewAllSearchTerm] = useState("");
 
 	const zonePage = Number(searchParams.get("zonewardpage")) || 1;
 	const zonePageSize = Number(searchParams.get("zonewardpagesize")) || 10;
 
 	const viewWardPage = Number(searchParams.get("viewwardpage")) || 1;
 	const viewWardPageSize = Number(searchParams.get("viewwardpagesize")) || 10;
+	
+	// Extract viewwardq param value for initialization
+	const initialViewWardSearch = searchParams.get("viewwardq") || "";
 
 	// Zone options for SearchSelect
 	const zoneOptions = useMemo(() => {
@@ -139,39 +143,51 @@ export default function LinkWard({
 
 		setCurrentZoneId(zoneId);
 		setLoadingZoneWards(true);
-		setCheckedSelected(new Set());
 
-		// Reset zone ward page to 1 when changing zones
+		// Reset zone ward page to 1 when changing zones, preserve page size
 		const params = new URLSearchParams(searchParams.toString());
 		params.set("zonewardpage", "1");
+		// Preserve existing page size or set default
+		if (!params.has("zonewardpagesize")) {
+			params.set("zonewardpagesize", String(zonePageSize));
+		}
 		router.replace(`${pathname}?${params.toString()}`);
 
-		const result = await handleFetchWardsByZone({ zoneId, t: (key: string, values?: Record<string, unknown>) => t(key, values as never) });
-		setZoneWardsList(result.wards);
-		setLoadingZoneWards(false);
+		// Fetch wards for the selected zone using the new API
+		try {
+			const result = await getAllWardsForZoneAction(zoneId);
+			if (result.success && result.data) {
+				setZoneWardsList(result.data);
+			} else {
+				toast.error(result.error || t("wardMessages.failedToFetchWards"));
+				setZoneWardsList([]);
+			}
+		} catch {
+			toast.error(t("wardMessages.failedToFetchWards"));
+			setZoneWardsList([]);
+		} finally {
+			setLoadingZoneWards(false);
+		}
 	};
 
-	// Initialize states when drawer opens
+	// Initialize states when drawer opens (only once per open)
 	useEffect(() => {
-		if (open) {
-			// Schedule state updates after render to avoid cascading updates
-			const timer = setTimeout(() => {
-				setCheckedAvailable(new Set());
-				setCheckedSelected(new Set());
-				setCurrentZoneId(selectedZoneId);
-				setZoneWardsList(ssrSelectedWards);
-				if (!searchParams.has("viewwardq")) setViewAllSearchTerm("");
-				setZoneSearchTerm("");
-				// Reset zone ward pagination in URL
-				const params = new URLSearchParams(searchParams.toString());
-				if (!params.has("zonewardpage")) params.set("zonewardpage", "1");
-				if (!params.has("zonewardpagesize")) params.set("zonewardpagesize", "10");
-				router.replace(`${pathname}?${params.toString()}`);
-				setIsSelectAllActive(false);
-			}, 0);
-			return () => clearTimeout(timer);
+		// Only initialize when drawer transitions from closed to open
+		if (open && !prevOpen.current) {
+			hasInitialized.current = false;
 		}
-	}, [open, selectedZoneId, searchParams, ssrSelectedWards, router, pathname]);
+		prevOpen.current = open;
+
+		if (open && !hasInitialized.current) {
+			hasInitialized.current = true;
+			setCheckedAvailable(new Set());
+			setCurrentZoneId(selectedZoneId);
+			setZoneWardsList(ssrSelectedWards);
+			setViewAllSearchTerm(initialViewWardSearch);
+			setZoneSearchTerm("");
+			setIsSelectAllActive(false);
+		}
+	}, [open, selectedZoneId, ssrSelectedWards, initialViewWardSearch]);
 
 	// Toggle checkbox in view wards list
 	const toggleAvailableCheck = useCallback((wardNo: string) => {
@@ -200,20 +216,7 @@ export default function LinkWard({
 		});
 	}, [zoneWardsList, currentZoneId, getZoneDisplayLabel, t]);
 
-	// Toggle checkbox in selected list
-	const toggleSelectedCheck = useCallback((wardNo: string) => {
-		setCheckedSelected(prev => {
-			const newChecked = new Set(prev);
-			if (newChecked.has(wardNo)) {
-				newChecked.delete(wardNo);
-			} else {
-				newChecked.add(wardNo);
-			}
-			return newChecked;
-		});
-	}, []);
-
-	// Handle Select All in ViewWards - just toggle state, don't fetch wards
+	// Handle Select All in ViewWards - just toggle state, API call happens in moveToSelected
 	const handleSelectAllViewWards = useCallback((isChecked: boolean) => {
 		setIsSelectAllActive(isChecked);
 		if (!isChecked) {
@@ -226,39 +229,52 @@ export default function LinkWard({
 	const moveToSelected = async () => {
 		if (!currentZoneId) return;
 
-		// If select all is active, fetch all wards server-side and link them
+		// If select all is active, fetch all wards from API
 		if (isSelectAllActive) {
 			setLoading(true);
 			setSelectAllLoading(true);
 			try {
+				// Fetch all wards when moving to selected (API call happens here, not on checkbox click)
 				const result = await getAllWardsForLinkAction(viewAllSearchTerm || undefined);
-				if (result.success && result.data) {
-					// Filter out wards that are already in the selected zone
-					const wardsToLink = result.data.filter(
-						w => !zoneWardsList.some(zw => zw.wardNo === w.wardNo)
-					);
-					
-					if (wardsToLink.length === 0) {
-						toast.info(t("wardMessages.noWardsToLink"));
-						return;
-					}
-
-					const linkResult = await handleLinkWardsToZone({
-						currentZoneId,
-						wardNos: wardsToLink.map(w => w.wardNo),
-						zoneWardsList,
-						viewAllFilteredWards,
-						onWardsChanged,
-						t: (key: string, values?: Record<string, unknown>) => t(key, values as never)
-					});
-
-					if (linkResult.success && linkResult.updatedWards) {
-						setZoneWardsList(linkResult.updatedWards);
-						setIsSelectAllActive(false);
-						setCheckedAvailable(new Set());
-					}
-				} else {
+				if (!result.success || !result.data) {
 					toast.error(result.error || t("wardMessages.fetchError"));
+					return;
+				}
+				
+				// Filter out wards that are already in the selected zone
+				const wardsToLink = result.data.filter(
+					w => !zoneWardsList.some(zw => zw.wardNo === w.wardNo)
+				);
+				
+				if (wardsToLink.length === 0) {
+					const zoneLabel = getZoneDisplayLabel(currentZoneId);
+					toast.info(
+						t("wardMessages.allWardsAlreadyInZone", {
+							zoneLabel: zoneLabel || ""
+						})
+					);
+					return;
+				}
+
+				const linkResult = await handleLinkWardsToZone({
+					currentZoneId,
+					wardNos: wardsToLink.map(w => w.wardNo),
+					zoneWardsList,
+					viewAllFilteredWards,
+					onWardsChanged,
+					t: (key: string, values?: Record<string, unknown>) => t(key, values as never)
+				});
+
+				if (linkResult.success) {
+					// Refresh zone wards from API after successful linking
+					const zoneWardsResult = await getAllWardsForZoneAction(currentZoneId);
+					if (zoneWardsResult.success && zoneWardsResult.data) {
+						setZoneWardsList(zoneWardsResult.data);
+					} else if (linkResult.updatedWards) {
+						setZoneWardsList(linkResult.updatedWards);
+					}
+					setIsSelectAllActive(false);
+					setCheckedAvailable(new Set());
 				}
 			} finally {
 				setLoading(false);
@@ -281,8 +297,14 @@ export default function LinkWard({
 			t: (key: string, values?: Record<string, unknown>) => t(key, values as never)
 		});
 
-		if (result.success && result.updatedWards) {
-			setZoneWardsList(result.updatedWards);
+		if (result.success) {
+			// Refresh zone wards from API after successful linking
+			const zoneWardsResult = await getAllWardsForZoneAction(currentZoneId);
+			if (zoneWardsResult.success && zoneWardsResult.data) {
+				setZoneWardsList(zoneWardsResult.data);
+			} else if (result.updatedWards) {
+				setZoneWardsList(result.updatedWards);
+			}
 			setCheckedAvailable(new Set());
 		}
 		setLoading(false);
@@ -291,7 +313,6 @@ export default function LinkWard({
 	const handleClose = useCallback(() => {
 		// Reset all states
 		setCheckedAvailable(new Set());
-		setCheckedSelected(new Set());
 		setZoneSearchTerm("");
 		setViewAllSearchTerm("");
 		setIsSelectAllActive(false);
@@ -436,8 +457,6 @@ export default function LinkWard({
 					</div>
 					<ZoneWards
 						wards={paginatedZoneWards}
-						checkedWards={checkedSelected}
-						onToggleWard={toggleSelectedCheck}
 						searchTerm={zoneSearchTerm}
 						onSearchChange={handleZoneSearch}
 						page={zonePage}

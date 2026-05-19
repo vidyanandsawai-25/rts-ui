@@ -9,8 +9,9 @@ import { LookupData } from '@/types/common-details.types';
 import { ConfirmOptions } from '@/components/common';
 import { mapFormToPayload } from '@/lib/utils/floorSubmission/floor-mappers';
 import { createOptimisticFloor, getOptimisticFloorsList, parseServerError } from '@/lib/utils/floorSubmission/floor-optimistic.utils';
-import {submitFloorSubmissionNoRedirectAction,updateFloorSubmissionNoRedirectAction,} from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/FloorSubmission/actions';
+import { submitFloorSubmissionNoRedirectAction, updateFloorSubmissionNoRedirectAction, } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/FloorSubmission/actions';
 import { useFloorDeletion } from './useFloorDeletion';
+// import { validateFloorForm } from '@/lib/validations/validateFloorSubmission';
 
 // Threshold for distinguishing temporary IDs (Date.now()) from persistent database IDs
 const TEMP_ID_THRESHOLD = 1_000_000_000_000;
@@ -65,6 +66,16 @@ export const useFloorDataHandlers = (params: {
 
   const handleSave = useCallback(async () => {
     if (isSavingRef.current) return;
+
+    // const validationResult = validateFloorForm(editingFloorForm);
+    // if (!validationResult.isValid) {
+    //   const errors = validationResult.errors as Record<string, string>;
+    //   setFormErrors(errors);
+    //   const firstErrorKey = Object.keys(errors)[0];
+    //   const firstErrorMessage = errors[firstErrorKey];
+    //   toast.error(firstErrorMessage || t('floor.errors.invalidData') || 'Please fix the highlighted validation errors before saving.');
+    //   return;
+    // }
 
     confirm({
       variant: isAddingNewFloor ? 'add' : 'update',

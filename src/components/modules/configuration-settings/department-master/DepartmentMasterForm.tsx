@@ -118,6 +118,10 @@ export default function DepartmentMasterForm({
                         disabled={isSubmitting}
                         fullWidth
                     />
+                    <ValidationMessage
+                        message={errors.departmentNameLocal}
+                        visible={showError("departmentNameLocal")}
+                    />
 
                     <Input
                         name="departmentIcon"
@@ -128,6 +132,10 @@ export default function DepartmentMasterForm({
                         onBlur={handleBlur}
                         disabled={isSubmitting}
                         fullWidth
+                    />
+                    <ValidationMessage
+                        message={errors.departmentIcon}
+                        visible={showError("departmentIcon")}
                     />
 
                     <div className="w-full flex flex-col items-stretch">
@@ -145,6 +153,10 @@ export default function DepartmentMasterForm({
                             disabled={isSubmitting}
                         />
                     </div>
+                    <ValidationMessage
+                        message={errors.departmentDescription}
+                        visible={showError("departmentDescription")}
+                    />
 
                     {isEdit && (
                         <div className="w-full pt-2 border-t border-[#DCEAFF]">

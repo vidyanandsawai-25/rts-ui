@@ -23,7 +23,8 @@ import { getOfficeTypeOptions } from "@/config/office-master.config";
 import { OfficeStatsCards } from "./OfficeStatsCards";
 
 export function OfficeMaster({
-  data, pageNumber, pageSize, totalCount, totalPages, sortBy, sortOrder, type, status
+  data, pageNumber, pageSize, totalCount, totalPages, sortBy, sortOrder, type, status,
+  headOfficesCount, activeOfficesCount, inactiveOfficesCount, showStatsError
 }: OfficeProps): React.ReactElement {
   const router = useRouter();
   const t = useTranslations("office");
@@ -49,6 +50,12 @@ export function OfficeMaster({
     type,
     status
   });
+
+  React.useEffect(() => {
+    if (showStatsError) {
+      toast.error(t("errors.statsLoadFailed") || "Failed to load office statistics");
+    }
+  }, [showStatsError, t]);
 
   const {
     buildUrl,
@@ -99,7 +106,10 @@ export function OfficeMaster({
     });
   }, [sortBy, sortOrder, buildUrl, pageSize, currentSearchTerm, selectedType, selectedStatus, router]);
 
-  const columns = getOfficeColumns(t, tCommon, sortBy, sortOrder, onSort);
+  const columns = React.useMemo(
+    () => getOfficeColumns(t, tCommon, sortBy, sortOrder, onSort),
+    [t, tCommon, sortBy, sortOrder, onSort]
+  );
 
 
   return (
@@ -114,7 +124,13 @@ export function OfficeMaster({
       }
     >
       <div className="space-y-6">
-        <OfficeStatsCards data={data} totalCount={totalCount} t={t} tCommon={tCommon} />
+        <OfficeStatsCards 
+          totalCount={totalCount} 
+          headOfficesCount={headOfficesCount}
+          activeOfficesCount={activeOfficesCount}
+          inactiveOfficesCount={inactiveOfficesCount}
+          t={t} 
+        />
 
         <MasterTable<Office>
           columns={columns}

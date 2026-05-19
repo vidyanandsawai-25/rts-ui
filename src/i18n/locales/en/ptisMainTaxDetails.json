@@ -1,0 +1,15 @@
+{
+  "title": "Tax Details",
+  "oldTotalCv": "Old Total CV",
+  "oldTotalTax": "Old Total Tax",
+  "totalCv": "Total CV",
+  "totalTax": "Total Tax",
+  "reassessmentCv": "Reassessment CV",
+  "reassessTotalTax": "Reassess Total Tax",
+  "netTaxes": "Net Taxes",
+  "retain": "Retain",
+  "hearing": "Hearing",
+  "allTaxes": "All Taxes",
+  "taxes": "Taxes",
+  "totalTaxes": "Total Taxes"
+}

@@ -6,7 +6,7 @@ import { useLocale, useTranslations } from 'next-intl';
 
 import { AddButton, Tabs } from '@/components/common';
 import { SearchInput } from '@/components/common/SearchInput';
-import { sanitizeInput } from '@/lib/utils/security';
+import { TEXT_SANITIZE } from '@/lib/utils/validation';
 
 type TabKey = 'floor' | 'subfloor';
 
@@ -69,7 +69,7 @@ export function FloorMasterToolbar() {
           value={search}
           onChange={(value) => {
             // Sanitize search input to prevent special characters
-            const sanitized = sanitizeInput(value);
+            const sanitized = value.replace(TEXT_SANITIZE, '');
             setSearch(sanitized);
           }}
           placeholder={t('form.searchPlaceholder')}

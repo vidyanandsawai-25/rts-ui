@@ -93,7 +93,7 @@
       "validationError": "Invalid data provided. Please check all fields.",
       "invalidData": "Invalid data provided. Please check all fields.",
       "notFound": "Construction type not found.",
-      "inUse": "Cannot delete this record as it is in use.",
+      "inUse": "Cannot deactivate/delete this ConstructionType because it is referenced in: Rates, Age Factors, Nature Factors, Property Details, Depreciation Master",
       "operationFailed": "Operation failed. Please try again later.",
       "linkedRecordError": "Cannot modify this construction type because it is linked to other records."
     },
@@ -103,7 +103,7 @@
       "deleted": "Construction type deleted successfully with code: {code}"
     },
     "error": {
-      "title": "Something Went Wrong",
+      "title": "Failed to connect to the server. Please try again later.",
       "description": "We encountered an error while loading the construction type page. Please try again.",
       "tryAgain": "Try Again",
       "goHome": "Go to Home",

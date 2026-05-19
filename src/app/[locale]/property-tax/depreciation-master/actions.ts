@@ -35,7 +35,7 @@ function parseAddRangeError(error: unknown): string {
   if (msg.toLowerCase().includes("overlap") ||
       msg.toLowerCase().includes("duplicate") ||
       msg.toLowerCase().includes("conflict")) {
-    return "Age range overlaps with existing range. Please choose different years.";
+    return "Age range overlaps with existing range. Please choose different values.";
   }
 
   // Try to parse server validation JSON embedded in the message
@@ -89,8 +89,8 @@ export async function fetchRangesPagedServerAction(
   error?: string;
 }> {
   try {
-    // Validate pagination parameters
-    if (pageNumber <= 0 || rangePageSize <= 0) {
+    // Validate pagination parameters (allow -1 to fetch all records like construction type)
+    if (pageNumber <= 0 || (rangePageSize !== -1 && rangePageSize <= 0)) {
       return { success: false, error: 'Invalid pagination parameters' };
     }
 
@@ -99,8 +99,9 @@ export async function fetchRangesPagedServerAction(
     const constructionTypeCount = constructionTypes.length || 10;
     
     // Convert range-based pagination to record-based for API
-    // Each range has N construction types, so multiply
-    const recordPageSize = rangePageSize * constructionTypeCount;
+    // If rangePageSize is -1, pass -1 directly to fetch all records
+    // Otherwise, each range has N construction types, so multiply
+    const recordPageSize = rangePageSize === -1 ? -1 : rangePageSize * constructionTypeCount;
     
     // Fetch records using calculated record page size
     const paginatedResponse = await getDepreciationPaged(pageNumber, recordPageSize);
@@ -109,7 +110,8 @@ export async function fetchRangesPagedServerAction(
 
     // Calculate total ranges (total records / construction types)
     const totalRanges = Math.ceil(totalCount / constructionTypeCount);
-    const totalPages = Math.ceil(totalRanges / rangePageSize) || 1;
+    // When rangePageSize is -1 (fetch all), totalPages should be 1
+    const totalPages = rangePageSize === -1 ? 1 : (Math.ceil(totalRanges / rangePageSize) || 1);
 
     // Clamp pageNumber to valid range (fix for delete-induced page overflow)
     const clampedPageNumber = Math.min(pageNumber, totalPages);

@@ -66,6 +66,61 @@ function parseFloorApiError(error: ApiError): string {
   return error.responseText || "An unexpected error occurred.";
 }
 
+/**
+ * Detects if an API error response indicates a duplicate or overlapping floor range.
+ * Checks response text and JSON payloads for duplicate/overlap keywords.
+ */
+function isFloorRangeDuplicateOrOverlapError(responseText: string): boolean {
+  const hasDuplicateKeyword = (value: string): boolean => {
+    const msg = value.toLowerCase();
+    return (
+      msg.includes("duplicate") ||
+      msg.includes("already exists") ||
+      msg.includes("overlap") ||
+      msg.includes("conflict") ||
+      msg.includes("same details")
+    );
+  };
+
+  if (!responseText) return false;
+  if (hasDuplicateKeyword(responseText)) return true;
+
+  try {
+    const parsed = JSON.parse(responseText) as {
+      title?: string;
+      detail?: string;
+      message?: string;
+      errors?: Record<string, unknown>;
+    };
+
+    if (
+      (parsed.title && hasDuplicateKeyword(parsed.title)) ||
+      (parsed.detail && hasDuplicateKeyword(parsed.detail)) ||
+      (parsed.message && hasDuplicateKeyword(parsed.message))
+    ) {
+      return true;
+    }
+
+    if (parsed.errors && typeof parsed.errors === "object") {
+      for (const value of Object.values(parsed.errors)) {
+        if (Array.isArray(value)) {
+          for (const item of value) {
+            if (typeof item === "string" && hasDuplicateKeyword(item)) {
+              return true;
+            }
+          }
+        } else if (typeof value === "string" && hasDuplicateKeyword(value)) {
+          return true;
+        }
+      }
+    }
+  } catch {
+    // Non-JSON error payload; keyword checks above already handled.
+  }
+
+  return false;
+}
+
 /* ============================================================
    FLOOR PAGED (SEARCH + SORT)
 ============================================================ */
@@ -80,19 +135,20 @@ export async function fetchFloorPagedServerAction(
     const MAX_PAGE_SIZE = 100;
     const MAX_PAGE_NUMBER = 10000;
 
+    // Allow pageSize -1 to fetch all records (like construction type)
     if (
       !Number.isFinite(pageNumber) ||
       !Number.isFinite(pageSize) ||
       pageNumber <= 0 ||
-      pageSize <= 0 ||
-      pageSize > MAX_PAGE_SIZE ||
+      (pageSize !== -1 && pageSize <= 0) ||
+      (pageSize !== -1 && pageSize > MAX_PAGE_SIZE) ||
       pageNumber > MAX_PAGE_NUMBER
     ) {
       throw new Error("Invalid pagination parameters");
     }
 
   
-    const allowedSortColumns = ["floorCode", "description", "sequenceNo"];
+    const allowedSortColumns = ["floorCode", "description", "sequenceNo", "isActive"];
 
     const validSortBy = sortBy && allowedSortColumns.includes(sortBy)
       ? sortBy
@@ -297,6 +353,47 @@ export async function createFloorRangeAction(
       throw new ApiError(401, "Unauthorized", "User session expired");
     }
 
+    const rangeFrom = Number.parseInt(data.rangeFrom, 10);
+    const rangeTo = Number.parseInt(data.rangeTo, 10);
+    const normalizedPrefix = (data.prefix ?? "").trim().toLowerCase();
+    const normalizedSuffix = (data.suffix ?? "").trim().toLowerCase();
+
+    // Pre-check: prevent known duplicate scenario before API call
+    // Check if existing floors overlap with the requested sequence range + prefix/suffix pattern
+    if (Number.isFinite(rangeFrom) && Number.isFinite(rangeTo)) {
+      try {
+        const existingFloors = await getFloorPaged(1, -1);
+        const hasConflict = existingFloors.items.some((floor) => {
+          const sequenceNo = Number(floor.sequenceNo);
+          if (!Number.isFinite(sequenceNo)) return false;
+          // Check if sequence overlaps with requested range
+          if (sequenceNo < rangeFrom || sequenceNo > rangeTo) return false;
+
+          const floorCode = String(floor.floorCode ?? "").trim().toLowerCase();
+
+          // Check prefix match
+          if (normalizedPrefix && !floorCode.startsWith(normalizedPrefix)) return false;
+          // Check suffix match
+          if (normalizedSuffix && !floorCode.endsWith(normalizedSuffix)) return false;
+
+          // Conflict found: same sequence + prefix/suffix pattern
+          return true;
+        });
+
+        if (hasConflict) {
+          return {
+            success: false,
+            messageKey: "messages.duplicateRecord",
+            message: "Floor range with this pattern already exists",
+            statusCode: 409,
+          };
+        }
+      } catch (preCheckError) {
+        // Non-blocking guard: if pre-check fails, let backend API decide
+        console.warn("[createFloorRangeAction] Pre-check failed:", preCheckError);
+      }
+    }
+
     await createFloorRange(data, userId.toString());
 
     for (const locale of locales) {
@@ -317,6 +414,16 @@ export async function createFloorRangeAction(
 
     // Handle other API errors
     if (error instanceof ApiError) {
+      // Check if error response indicates duplicate/overlap (even if status is 500)
+      if (isFloorRangeDuplicateOrOverlapError(error.responseText)) {
+        return {
+          success: false,
+          messageKey: "messages.duplicateRecord",
+          message: error.responseText || "Duplicate floor range detected",
+          statusCode: 409,
+        };
+      }
+
       return {
         success: false,
         // Return raw responseText for client-side field error parsing, fallback to parsed message
@@ -347,18 +454,19 @@ export async function fetchSubFloorPagedServerAction(
     const MAX_PAGE_SIZE = 100;
     const MAX_PAGE_NUMBER = 10000;
 
+    // Allow pageSize -1 to fetch all records (like construction type)
     if (
       !Number.isFinite(pageNumber) ||
       !Number.isFinite(pageSize) ||
       pageNumber <= 0 ||
-      pageSize <= 0 ||
-      pageSize > MAX_PAGE_SIZE ||
+      (pageSize !== -1 && pageSize <= 0) ||
+      (pageSize !== -1 && pageSize > MAX_PAGE_SIZE) ||
       pageNumber > MAX_PAGE_NUMBER
     ) {
       throw new Error("Invalid pagination parameters");
     }
 
-    const allowedSortColumns = ["subFloorCode", "description"];
+    const allowedSortColumns = ["subFloorCode", "description", "isActive"];
 
     const validSortBy =
       sortBy && allowedSortColumns.includes(sortBy)

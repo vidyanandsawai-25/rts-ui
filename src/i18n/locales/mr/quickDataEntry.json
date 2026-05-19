@@ -205,6 +205,8 @@
             "totalNetArea": "एकूण निव्वळ क्षेत्रफळ =",
             "mainAreaFormula": "मुख्य क्षेत्रफळ = {formula}",
             "totalNetAreaFormula": "एकूण निव्वळ क्षेत्रफळ = मुख्य क्षेत्रफळ {op} ऑफसेट",
+            "mainAreaLabelShort": "मुख्य क्षेत्रफळ",
+            "offsetTitleShort": "ऑफसेट",
             "enterValues": "किंमती भरा...",
             "rectangle": "लांबी × रुंदी",
             "square": "बाजू²",
@@ -474,6 +476,7 @@
         "documentUploaded": "कागदपत्र अपलोड झाले"
     },
     "floor": {
+        "select": "निवडा",
         "allFloors": "सर्व मजले",
         "addFloor": "मजला जोडा",
         "searchFloors": "मजले शोधा...",
@@ -541,14 +544,16 @@
             "propertyIdRequired": "मालमत्ता आयडी आवश्यक आहे",
             "floorRequired": "मजला निवडणे आवश्यक आहे",
             "floorDescriptionRequired": "मजला वर्णन आवश्यक आहे",
-            "constructionYearInvalid": "बांधकाम वर्ष ४ अंकी असावे",
-            "assessmentYearInvalid": "मूल्यांकन वर्ष ४ अंकी असावे",
+            "constructionYearInvalid": "बांधकाम वर्ष १९०० ते चालू आर्थिक वर्षाच्या दरम्यान असावे",
+            "assessmentYearInvalid": "मूल्यांकन वर्ष १९०० ते चालू आर्थिक वर्षाच्या दरम्यान असावे",
             "constructionTypeRequired": "बांधकाम प्रकार आवश्यक आहे",
             "typeOfUseRequired": "वापर प्रकार आवश्यक आहे",
             "carpetAreaRequired": "कार्पेट क्षेत्र शून्यापेक्षा जास्त असावे",
             "roomCountRequired": "खोल्यांची संख्या शून्यापेक्षा जास्त असावी",
             "submissionIdRequired": "सबमिशन आयडी आवश्यक आहे",
-            "invalidData": "अवैध डेटा सबमिट केला"
+            "invalidData": "अवैध डेटा सबमिट केला",
+            "roomsRequiredForDetails": "खोलीचे तपशील भरण्यापूर्वी खोल्यांची संख्या शून्यापेक्षा जास्त असणे आवश्यक आहे.",
+            "roomGuidance": "मार्गदर्शन: खोलीचे तपशील भरण्यासाठी, कृपया प्रथम या मजल्यासाठी एकूण खोल्यांची संख्या (१ ते ९९९९) प्रविष्ट करा."
         },
         "deleteConfirmTitle": "तुम्हाला खात्री आहे?",
         "deleteConfirmText": "तुम्हाला हा मजला हटवायचा आहे?",
