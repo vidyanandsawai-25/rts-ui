@@ -1,6 +1,6 @@
-import { Column } from '@/components/common/MasterTable';
+import type { Column } from '@/components/common/MasterTable';
 import { formatIndianNumber } from '@/lib/utils/format';
-import { TaxRow } from '@/types/ptisMain-taxdetails.types';
+import type { TaxRow } from '@/types/ptisMain-taxdetails.types';
 import {
   TAX_LABEL_CLASSES,
   HEADER_TEXT_CLASSES,

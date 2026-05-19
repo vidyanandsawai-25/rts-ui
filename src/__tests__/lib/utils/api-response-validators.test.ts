@@ -194,7 +194,7 @@ describe('API Response Validators', () => {
         error: 'Connection timeout',
       };
 
-      expect(() => validateAndExtractApiResponse(apiResponse, 'tax-details')).toThrow(
+      expect(() => validateAndExtractApiResponse(apiResponse as unknown as Parameters<typeof validateAndExtractApiResponse>[0], 'tax-details')).toThrow(
         'Connection timeout'
       );
     });

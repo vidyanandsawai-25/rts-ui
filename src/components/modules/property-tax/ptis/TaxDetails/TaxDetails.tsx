@@ -2,7 +2,7 @@
 
 import { MasterTable } from '@/components/common/MasterTable';
 import { useTaxDetailsTable } from './useTaxDetailsTable';
-import { TaxDetailsData, TaxRow } from '@/types/ptisMain-taxdetails.types';
+import type { TaxDetailsData, TaxRow } from '@/types/ptisMain-taxdetails.types';
 
 /**
  * TaxDetails Component

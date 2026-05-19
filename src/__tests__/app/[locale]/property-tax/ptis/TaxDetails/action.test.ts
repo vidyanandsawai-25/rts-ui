@@ -260,8 +260,8 @@ describe('TaxDetails Server Actions - Input Validation', () => {
       ];
 
       for (const testCase of testCases) {
-        const rateableResult = await getRateableTaxDetails(testCase.input as any);
-        const capitalResult = await getCapitalTaxDetails(testCase.input as any);
+        const rateableResult = await getRateableTaxDetails(testCase.input as unknown as string | number);
+        const capitalResult = await getCapitalTaxDetails(testCase.input as unknown as string | number);
 
         if (testCase.shouldFail) {
           expect(rateableResult.success).toBe(false);

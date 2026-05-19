@@ -4,8 +4,8 @@
  */
 
 import { apiClient } from '@/services/api.service';
-import { PtisMainTaxDetailsApiResponse, TaxDetailsData } from '@/types/ptisMain-taxdetails.types';
-import { ApiResponse } from '@/types/common.types';
+import type { PtisMainTaxDetailsApiResponse, TaxDetailsData } from '@/types/ptisMain-taxdetails.types';
+import type { ApiResponse } from '@/types/common.types';
 import { validateAndExtractApiResponse } from '@/lib/utils/api-response-validators';
 
 /**

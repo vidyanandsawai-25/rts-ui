@@ -1,7 +1,7 @@
 import { useMemo, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
-import { Column } from '@/components/common/MasterTable';
-import { TaxDetailsData, TaxRow } from '@/types/ptisMain-taxdetails.types';
+import type { Column } from '@/components/common/MasterTable';
+import type { TaxDetailsData, TaxRow } from '@/types/ptisMain-taxdetails.types';
 import { TAX_ROWS_DEFINITIONS, getTaxRowStyleByLabel } from './config';
 import { getTaxDetailsColumns } from './TaxDetailsColumns';
 
