@@ -218,12 +218,9 @@ export default function DepreciationMaster({
 
     if (!result.valid) return;
 
-    const newMin = Number(minValue);
-    const newMax = Number(maxValue);
-
-    const conflictingRange = checkOverlap(newMin, newMax, derivedState.ranges);
-    if (conflictingRange) {
-      setMaxError(t("errors.overlap", { range: `${conflictingRange.min}-${conflictingRange.max}` }));
+    const overlapping = checkOverlap(Number(minValue), Number(maxValue), ranges);
+    if (overlapping) {
+      setMinError(t("errors.overlap", { range: `${overlapping.min}-${overlapping.max}` }));
       return;
     }
 
