@@ -116,7 +116,7 @@
       "description": "Please wait while we load the data"
     },
     "error": {
-      "title": "Tax Zoning Error",
+      "title": "Failed to connect to the server. Please try again later.",
       "description": "We encountered an error while loading the tax zoning page. Please try refreshing or contact support if the issue persists.",
       "errorId": "Error ID: {id}",
       "goHome": "Go Home",
