@@ -5,9 +5,20 @@ import { ChevronDown, Search } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { useTranslations } from "next-intl";
 
+/* ---------------- TYPES ---------------- */
 interface Option {
   label: string;
   value: string;
+}
+
+interface MultiSelectDropdownStyles {
+  container?: string;
+  trigger?: string;
+  dropdown?: string;
+  option?: string;
+  checkbox?: string;
+  searchInput?: string;
+  actionBar?: string;
 }
 
 interface MultiSelectDropdownProps {
@@ -17,8 +28,16 @@ interface MultiSelectDropdownProps {
   onChange: (values: string[]) => void;
   placeholder?: string;
   className?: string;
+  styles?: MultiSelectDropdownStyles;
+  style?: React.CSSProperties;
+  triggerStyle?: React.CSSProperties;
+  /** HTML id for the trigger button */
+  id?: string;
+  /** aria-labelledby for accessibility */
+  'aria-labelledby'?: string;
 }
 
+/* ---------------- COMPONENT ---------------- */
 export function MultiSelectDropdown({
   label,
   options,
@@ -26,6 +45,11 @@ export function MultiSelectDropdown({
   onChange,
   placeholder,
   className,
+  styles,
+  style,
+  triggerStyle,
+  id,
+  'aria-labelledby': ariaLabelledby,
 }: MultiSelectDropdownProps) {
   const tCommon = useTranslations("common");
 
@@ -79,7 +103,11 @@ export function MultiSelectDropdown({
 
   /* ---------------- RENDER ---------------- */
   return (
-    <div ref={ref} className={cn("relative", className)}>
+    <div
+      ref={ref}
+      className={cn("relative", styles?.container, className)}
+      style={style}
+    >
       {label && (
         <label className="mb-1.5 block text-sm font-medium text-gray-700">
           {label}
@@ -89,13 +117,17 @@ export function MultiSelectDropdown({
       {/* -------- TRIGGER -------- */}
       <button
         type="button"
+        id={id}
+        aria-labelledby={ariaLabelledby}
         onClick={() => setOpen((p) => !p)}
-        className="
-          w-full flex items-center justify-between
-          px-3 py-2 border border-gray-300 rounded-lg
-          bg-white text-sm
-          focus:outline-none focus:ring-2 focus:ring-blue-500
-        "
+        className={cn(
+          `w-full flex items-center justify-between
+           px-3 py-2 border border-gray-300 rounded-lg
+           bg-white text-sm
+           focus:outline-none focus:ring-2 focus:ring-blue-500`,
+          styles?.trigger
+        )}
+        style={triggerStyle}
       >
         <span className="truncate text-left">
           {value.length > 0
@@ -108,13 +140,19 @@ export function MultiSelectDropdown({
       {/* -------- DROPDOWN -------- */}
       {open && (
         <div
-          className="
-            absolute z-50 mt-1 w-full
-            bg-white border border-gray-200 rounded-lg shadow-lg
-          "
+          className={cn(
+            `absolute z-50 mt-1 w-full
+             bg-white border border-gray-200 rounded-lg shadow-lg`,
+            styles?.dropdown
+          )}
         >
           {/* -------- ACTION BAR -------- */}
-          <div className="flex items-center justify-between px-3 py-2 border-b bg-gray-50 text-sm">
+          <div
+            className={cn(
+              "flex items-center justify-between px-3 py-2 border-b bg-gray-50 text-sm",
+              styles?.actionBar
+            )}
+          >
             <button
               onClick={handleSelectAll}
               disabled={allFilteredSelected}
@@ -147,11 +185,12 @@ export function MultiSelectDropdown({
                 placeholder={tCommon("multiSelect.search")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="
-                  w-full pl-8 pr-2 py-1.5 text-sm
-                  border border-gray-300 rounded-md
-                  focus:outline-none focus:ring-2 focus:ring-blue-500
-                "
+                className={cn(
+                  `w-full pl-8 pr-2 py-1.5 text-sm
+                   border border-gray-300 rounded-md
+                   focus:outline-none focus:ring-2 focus:ring-blue-500`,
+                  styles?.searchInput
+                )}
               />
             </div>
           </div>
@@ -167,17 +206,20 @@ export function MultiSelectDropdown({
             {filteredOptions.map((opt) => (
               <label
                 key={opt.value}
-                className="
-                  flex items-center gap-2 px-2 py-1.5
-                  rounded cursor-pointer
-                  hover:bg-blue-50
-                "
+                className={cn(
+                  `flex items-center gap-2 px-2 py-1.5
+                   rounded cursor-pointer hover:bg-blue-50`,
+                  styles?.option
+                )}
               >
                 <input
                   type="checkbox"
                   checked={value.includes(opt.value)}
                   onChange={() => toggleValue(opt.value)}
-                  className="w-4 h-4 accent-blue-600"
+                  className={cn(
+                    "w-4 h-4 accent-blue-600",
+                    styles?.checkbox
+                  )}
                 />
                 <span className="text-sm text-gray-700">
                   {opt.label}

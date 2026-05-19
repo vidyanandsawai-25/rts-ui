@@ -58,8 +58,8 @@ export const useKycFormValidation = (
     // Check if owner name exists and is valid
     const isOwnerNameValid = ownerName.trim().length > 0 && kycValidators.isValidName(ownerName);
     
-    // Check if email is either empty (optional) or valid with enhanced validation
-    const isEmailValid = enhancedKycValidators.isValidEmail(email);
+    // Check if email is either empty (optional) or valid with enhanced validation (strict)
+    const isEmailValid = enhancedKycValidators.isValidEmail(email, true);
     
     // Check if address is valid (can be empty or valid)
     const isAddressValid = enhancedKycValidators.isValidAddress(address);

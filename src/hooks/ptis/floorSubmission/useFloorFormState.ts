@@ -20,7 +20,7 @@ export const INITIAL_FORM_STATE: FloorData = {
   subTypeOfUseId: '',
   subTypeOfUseDescription: '',
   renter: 'No',
-  rooms: '',
+  rooms: '0',
   areaSqFt: '',
   areaSqM: '',
   builtupAreaSqFt: '',

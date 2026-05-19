@@ -51,6 +51,7 @@ export const AdditionalPropertyFields = ({
                 <Input
                     id="pd-survey"
                     name="surveyNo"
+                    readOnly
                     placeholder="45/2B"
                     value={surveyNo}
                     maxLength={PROPERTY_VALIDATION_RULES.SURVEY_NO_MAX_LENGTH}
@@ -81,6 +82,7 @@ export const AdditionalPropertyFields = ({
                 <Input
                     id="pd-subzone"
                     name="subZoneNo"
+                    readOnly
                     placeholder="SZ-12"
                     value={subZoneNo}
                     maxLength={PROPERTY_VALIDATION_RULES.SUB_ZONE_NO_MAX_LENGTH}
@@ -134,6 +136,7 @@ export const AdditionalPropertyFields = ({
                     step="1"
                     value={residentialToilets}
                     placeholder="0"
+                    maxLength={PROPERTY_VALIDATION_RULES.RESIDENTIAL_TOILET_MAX_LENGTH}
                     className={`h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${
                         showResidentialToiletsError && !propertyValidators.isValidPositiveNumber(residentialToilets)
                             ? 'border-red-300 focus:border-red-500'
@@ -144,8 +147,10 @@ export const AdditionalPropertyFields = ({
                         // Prevent negative values
                         if (value && parseFloat(value) < 0) return;
                         const sanitized = sanitizePositiveInteger(value);
-                        setResidentialToilets(sanitized);
-                        if (sanitized) setShowResidentialToiletsError(true);
+                        // Limit to 3 digits (max 999)
+                        const limited = sanitized.slice(0, PROPERTY_VALIDATION_RULES.RESIDENTIAL_TOILET_MAX_LENGTH);
+                        setResidentialToilets(limited);
+                        if (limited) setShowResidentialToiletsError(true);
                     }}
                     onKeyDown={(e) => {
                         // Prevent negative sign, decimal point, and 'e' character
@@ -178,6 +183,7 @@ export const AdditionalPropertyFields = ({
                     step="1"
                     value={commercialToilets}
                     placeholder="0"
+                    maxLength={PROPERTY_VALIDATION_RULES.COMMERCIAL_TOILET_MAX_LENGTH}
                     className={`h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${
                         showCommercialToiletsError && !propertyValidators.isValidPositiveNumber(commercialToilets)
                             ? 'border-red-300 focus:border-red-500'
@@ -188,8 +194,10 @@ export const AdditionalPropertyFields = ({
                         // Prevent negative values
                         if (value && parseFloat(value) < 0) return;
                         const sanitized = sanitizePositiveInteger(value);
-                        setCommercialToilets(sanitized);
-                        if (sanitized) setShowCommercialToiletsError(true);
+                        // Limit to 3 digits (max 999)
+                        const limited = sanitized.slice(0, PROPERTY_VALIDATION_RULES.COMMERCIAL_TOILET_MAX_LENGTH);
+                        setCommercialToilets(limited);
+                        if (limited) setShowCommercialToiletsError(true);
                     }}
                     onKeyDown={(e) => {
                         // Prevent negative sign, decimal point, and 'e' character

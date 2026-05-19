@@ -151,6 +151,7 @@ export function UserManagementClient({
     }, 500);
 
     return () => clearTimeout(timeoutId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm, pathname, router, searchFromUrl]);
 
   const handleSearchChange = (newSearch: string) => {

@@ -58,7 +58,7 @@
       }
     },
     "error": {
-      "title": "Something Went Wrong",
+      "title": "Failed to connect to the server. Please try again later.",
       "description": "We encountered an error while loading the weightage master page. Please try again.",
       "tryAgain": "Try Again",
       "goHome": "Go to Home",

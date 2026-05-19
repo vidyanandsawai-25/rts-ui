@@ -64,7 +64,11 @@ export function useSubTypeFormSubmit({
         }));
         setTouched((prev) => ({ ...prev, description: true }));
       } else {
-        toast.error(errorMsg || t('messages.saveFailed'));
+        // Check if it's an i18n key or raw message
+        const displayMessage = errorMsg.startsWith('messages.') 
+          ? t(errorMsg) 
+          : errorMsg || t('messages.saveFailed');
+        toast.error(displayMessage);
       }
     }
   };
