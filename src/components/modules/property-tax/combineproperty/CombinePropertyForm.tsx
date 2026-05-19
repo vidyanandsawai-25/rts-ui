@@ -129,7 +129,7 @@ export default function CombinePropertyForm({
         {/* Status messages handled by toast */}
       </div>
       <div className="flex items-center gap-2">
-        <CancelButton label={`← ${t('clear')}`} onClick={handleClear} size="sm" />
+        <CancelButton label={`${t('clear')}`} onClick={handleClear} size="sm" />
         {isReviewing && reviewData.length > 0 && (
           <AddButton
             label={isSubmitting ? t('combining') : t('combine')}
