@@ -44,8 +44,8 @@ export default getRequestConfig(async ({ locale }) => {
     departmentMasterMessages,
     departmentActivationMessages,
     homeMessages,
-    modulesMessages,
     waterConnectionMessages,
+    modulesMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/dashboard.json`).then((m) => m.default),
@@ -83,8 +83,11 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/home.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/waterconnection.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
-    import(`./locales/${validatedLocale}/waterconnection.json`).then((m) => m.default),
+   
   ]);
 
   return {
@@ -118,8 +121,8 @@ export default getRequestConfig(async ({ locale }) => {
       departmentMaster: departmentMasterMessages,
       departmentActivation: departmentActivationMessages,
       home: homeMessages,
-      modules: modulesMessages,
       waterConnection: waterConnectionMessages.waterConnection,
+      modules: modulesMessages,
     },
   };
 });
