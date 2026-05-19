@@ -1,5 +1,5 @@
 import { LoadingPage } from "@/components/common";
 
 export default function TapSizeLoading() {
-  return <LoadingPage translationNamespace="waterConnectionMaster.tapSize" />;
+  return <LoadingPage />;
 }

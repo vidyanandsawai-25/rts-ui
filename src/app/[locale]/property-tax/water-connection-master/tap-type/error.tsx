@@ -8,5 +8,5 @@ interface ErrorProps {
 }
 
 export default function TapTypeError({ error, reset }: ErrorProps) {
-  return <ErrorPage error={error} reset={reset} translationNamespace="waterConnectionMaster.tapType" />;
+  return <ErrorPage error={error} reset={reset} />;
 }

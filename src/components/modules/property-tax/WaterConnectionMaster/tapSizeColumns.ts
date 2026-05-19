@@ -8,24 +8,27 @@ export function getTapSizeColumns(
     {
       key: "sizeCode",
       label: t("table.sizeCode"),
-      width: "25%",
+      width: "20%",
+      align: "center",
       headerClassName: "text-center",
       cellClassName: "text-center",
     },
     {
       key: "sizeName",
       label: t("table.sizeName"),
-      width: "45%",
+      width: "40%",
+      align: "center",
       headerClassName: "text-center",
       cellClassName: "text-center",
     },
     {
       key: "isActive",
       label: t("table.status"),
-      width: "30%",
-      isStatus: true,
+      width: "20%",
+      align: "center",
       headerClassName: "text-center",
       cellClassName: "text-center",
+      isStatus: true,
     },
   ];
 }

@@ -8,24 +8,27 @@ export function getTapStatusColumns(
     {
       key: "statusCode",
       label: t("table.statusCode"),
-      width: "25%",
+      width: "20%",
+      align: "center",
       headerClassName: "text-center",
       cellClassName: "text-center",
     },
     {
       key: "statusName",
       label: t("table.statusName"),
-      width: "45%",
+      width: "40%",
+      align: "center",
       headerClassName: "text-center",
       cellClassName: "text-center",
     },
     {
       key: "isActive",
       label: t("table.status"),
-      width: "30%",
-      isStatus: true,
+      width: "20%",
+      align: "center",
       headerClassName: "text-center",
       cellClassName: "text-center",
+      isStatus: true,
     },
   ];
 }
