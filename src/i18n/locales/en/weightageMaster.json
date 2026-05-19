@@ -3,7 +3,7 @@
     "title": "Weightage Master",
     "subtitle": "Configure CV calculation weightage factors",
     "tabs": {
-      "floor": "Floor No.",
+      "floor": "Floor Weightage",
       "nature": "Nature & Type of Building",
       "subType": "User Category",
       "age": "Age Of Building"

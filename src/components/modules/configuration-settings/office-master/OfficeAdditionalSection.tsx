@@ -4,17 +4,21 @@ import type { OfficeFormModel } from "@/types/office.types";
 
 interface OfficeAdditionalSectionProps {
   formData: OfficeFormModel;
+  errors: Partial<Record<keyof OfficeFormModel, string>>;
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
+  showError: (name: keyof OfficeFormModel) => boolean;
   t: (key: string) => string;
 }
 
 export function OfficeAdditionalSection({ 
   formData, 
+  errors,
   handleChange, 
+  showError,
   t 
 }: OfficeAdditionalSectionProps) {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+    <div className="bg-white rounded-xl shadow-sm border border-slate-200">
       <div className="bg-slate-50 px-4 py-3 border-b border-slate-100 dark:bg-slate-800/10 dark:border-slate-800">
         <h3 className="font-semibold text-slate-800">{t("form.additionalSection")}</h3>
       </div>
@@ -26,7 +30,9 @@ export function OfficeAdditionalSection({
             name="officeIncharge"
             value={formData.officeIncharge ? String(formData.officeIncharge) : ""}
             onChange={handleChange}
+            error={showError("officeIncharge") ? errors.officeIncharge : undefined}
             placeholder={t("form.fields.officeIncharge.placeholder")}
+            min={1}
           />
 
           <Input
@@ -35,7 +41,9 @@ export function OfficeAdditionalSection({
             name="designationMasterId"
             value={formData.designationMasterId ? String(formData.designationMasterId) : ""}
             onChange={handleChange}
+            error={showError("designationMasterId") ? errors.designationMasterId : undefined}
             placeholder={t("form.fields.designationMasterId.placeholder")}
+            min={1}
           />
         </div>
       </div>

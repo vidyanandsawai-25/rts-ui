@@ -62,14 +62,77 @@ export function useDepartmentForm({ initialOpen = true, editingDepartment, onSuc
 
   const validate = useCallback((data: DepartmentMasterFormData) => {
     const newErrors: Record<string, string> = {};
-    if (!data.departmentCode?.trim()) newErrors.departmentCode = tCommon("validation.required");
-    if (!data.departmentName?.trim()) newErrors.departmentName = tCommon("validation.required");
     
-    if (data.departmentCode && data.departmentCode.length > 50) {
-      newErrors.departmentCode = tCommon("validation.maxLength", { count: 50 });
+    // ---------------- Department Code Validation ----------------
+    const code = data.departmentCode?.trim() || "";
+    if (!code) {
+      newErrors.departmentCode = tCommon("validation.required");
+    } else {
+      if (code.length < 2) {
+        newErrors.departmentCode = tCommon("validation.minLength", { count: 2 });
+      } else if (code.length > 50) {
+        newErrors.departmentCode = tCommon("validation.maxLength", { count: 50 });
+      } else if (/^0+$/.test(code)) {
+        newErrors.departmentCode = "Department Code cannot consist only of zeros";
+      } else if (!/[a-zA-Z0-9]/.test(code)) {
+        newErrors.departmentCode = "Department Code must contain at least one letter or digit";
+      } else if (!/^[A-Za-z0-9]+([A-Za-z0-9\s_-]*[A-Za-z0-9]+)*$/.test(code)) {
+        newErrors.departmentCode = tCommon("validation.alphanumericUnderscore", { label: t("form.fields.departmentCode") });
+      }
     }
+
+    // ---------------- Department Name Validation ----------------
+    const name = data.departmentName?.trim() || "";
+    if (!name) {
+      newErrors.departmentName = tCommon("validation.required");
+    } else {
+      if (name.length < 3) {
+        newErrors.departmentName = tCommon("validation.minLength", { count: 3 });
+      } else if (name.length > 100) {
+        newErrors.departmentName = tCommon("validation.maxLength", { count: 100 });
+      } else if (!/[\p{L}]/u.test(name)) {
+        newErrors.departmentName = "Department Name must contain at least one letter";
+      } else if (/^[0-9\s,.\-\/()]+$/.test(name)) {
+        newErrors.departmentName = "Department Name cannot consist only of numbers or punctuation";
+      } else if (!/^[\p{L}\p{M}\p{N}]+(([\p{L}\p{M}\p{N}\/,.\-()&]|\s(?!\s))*[\p{L}\p{M}\p{N}]+)*$/u.test(name)) {
+        newErrors.departmentName = "Department Name contains invalid characters or consecutive spaces";
+      }
+    }
+
+    // ---------------- Local Name Validation ----------------
+    const nameLocal = data.departmentNameLocal?.trim() || "";
+    if (nameLocal) {
+      if (nameLocal.length < 3) {
+        newErrors.departmentNameLocal = tCommon("validation.minLength", { count: 3 });
+      } else if (nameLocal.length > 100) {
+        newErrors.departmentNameLocal = tCommon("validation.maxLength", { count: 100 });
+      } else if (!/[\p{L}]/u.test(nameLocal)) {
+        newErrors.departmentNameLocal = "Local Name must contain at least one letter";
+      }
+    }
+
+    // ---------------- Icon Class Validation ----------------
+    const icon = data.departmentIcon?.trim() || "";
+    if (icon) {
+      if (icon.length > 100) {
+        newErrors.departmentIcon = tCommon("validation.maxLength", { count: 100 });
+      } else if (!/^[a-zA-Z0-9\s_-]+$/.test(icon)) {
+        newErrors.departmentIcon = "Icon Class can only contain letters, numbers, spaces, hyphens, and underscores";
+      }
+    }
+
+    // ---------------- Description Validation ----------------
+    const desc = data.departmentDescription?.trim() || "";
+    if (desc) {
+      if (desc.length > 500) {
+        newErrors.departmentDescription = tCommon("validation.maxLength", { count: 500 });
+      } else if (!/[\p{L}\p{N}]/u.test(desc)) {
+        newErrors.departmentDescription = "Description must contain at least one letter or digit";
+      }
+    }
+
     return newErrors;
-  }, [tCommon]);
+  }, [tCommon, t]);
 
   const closeAndRoute = useCallback(() => {
     setOpen(false);

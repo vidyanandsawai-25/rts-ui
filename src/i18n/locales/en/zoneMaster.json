@@ -171,6 +171,7 @@
     "wardCannotBeDeleted": "Cannot delete ward {wardNo} because it is in use.",
     "partialSuccess": "Successfully linked {success} ward(s); failed to link {failed} ward(s).",
     "noWardsToLink": "No wards available to link to this zone.",
+    "allWardsAlreadyInZone": "All wards are already in zone {zoneLabel}.",
     "fetchError": "Failed to fetch wards"
   },
   "createWardMessages": {
@@ -220,8 +221,10 @@
     "nameRegRequired": "Zone Name (Regional) is required",
     "wardNoRequired": "Ward No is required",
     "wardNoMaxLength": "Ward No cannot exceed {count} characters",
+    "wardNoAllZeros": "Ward No cannot contain only zeros",
     "wardNameRequired": "Ward Name is required",
     "wardNameMaxLength": "Ward Name cannot exceed {count} characters",
+    "wardNameAllZeros": "Ward Name cannot contain only zeros",
     "wardNameEnRequired": "Ward Name (English) is required",
     "wardNameRegRequired": "Ward Name (Regional) is required",
     "sequenceNoRequired": "Sequence No is required",

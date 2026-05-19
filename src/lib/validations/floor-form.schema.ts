@@ -7,112 +7,160 @@
 
 import { z } from 'zod';
 
+const currentFinancialStartYear = new Date().getMonth() >= 3 ? new Date().getFullYear() : new Date().getFullYear() - 1;
+
 export const floorFormSchema = z.object({
   // Identity fields
-  id: z.union([z.string(), z.number()]).optional(),
+  id: z.union([z.string(), z.number(), z.null(), z.undefined()]).optional(),
 
   // Basic info - required fields
-  floor: z.string()
-    .transform(val => val.trim())
-    .pipe(z.string().min(1, 'Floor is required')),
-  floorId: z.union([z.string(), z.number()]).optional(),
+  floor: z.union([z.string(), z.null(), z.undefined()])
+    .transform(val => String(val ?? '').trim())
+    .refine(val => val.length > 0, 'Floor is required'),
+  floorId: z.union([z.string(), z.number(), z.null(), z.undefined()]).optional(),
 
-  subFloor: z.string()
-    .default('')
-    .transform(val => val.trim()),
-  subFloorId: z.union([z.string(), z.number()]).optional(),
+  subFloor: z.union([z.string(), z.null(), z.undefined()])
+    .transform(val => String(val ?? '').trim())
+    .default(''),
+  subFloorId: z.union([z.string(), z.number(), z.null(), z.undefined()]).optional(),
 
   // Year validation with consistent rules
-  conYr: z.string()
-    .length(4, 'Construction year must be exactly 4 digits')
-    .regex(/^\d{4}$/, 'Construction year must contain only numbers')
+  conYr: z.union([z.string(), z.number(), z.null(), z.undefined()])
+    .transform(val => String(val ?? '').trim())
+    .refine(val => val.length > 0, 'Construction year is required')
+    .refine(val => /^\d*$/.test(val), 'Construction year must contain only numbers')
+    .refine(val => val.length === 4, 'Construction year must be exactly 4 digits')
     .refine((val) => {
       const year = parseInt(val, 10);
-      const currentYear = new Date().getFullYear();
-      return year >= 1900 && year <= currentYear + 10;
-    }, `Year must be between 1900 and ${new Date().getFullYear() + 10}`),
+      return year >= 1900 && year <= currentFinancialStartYear;
+    }, {
+      message: `Construction year must be between 1900 and the current financial year (${currentFinancialStartYear})`
+    }),
 
-  asstYr: z.string()
-    .length(4, 'Assessment year must be exactly 4 digits')
-    .regex(/^\d{4}$/, 'Assessment year must contain only numbers')
+  asstYr: z.union([z.string(), z.number(), z.null(), z.undefined()])
+    .transform(val => String(val ?? '').trim())
+    .refine(val => val.length > 0, 'Assessment year is required')
+    .refine(val => /^\d*$/.test(val), 'Assessment year must contain only numbers')
+    .refine(val => val.length === 4, 'Assessment year must be exactly 4 digits')
     .refine((val) => {
       const year = parseInt(val, 10);
-      const currentYear = new Date().getFullYear();
-      return year >= 1900 && year <= currentYear + 10;
-    }, `Year must be between 1900 and ${new Date().getFullYear() + 10}`),
+      return year >= 1900 && year <= currentFinancialStartYear;
+    }, {
+      message: `Assessment year must be between 1900 and the current financial year (${currentFinancialStartYear})`
+    }),
 
   // Construction and usage - required
-  conTyp: z.string()
-    .min(1, 'Construction type is required'),
-  constructionTypeId: z.union([z.string(), z.number()]).optional(),
+  conTyp: z.union([z.string(), z.null(), z.undefined()])
+    .transform(val => String(val ?? '').trim())
+    .refine(val => val.length > 0, 'Construction type is required'),
+  constructionTypeId: z.union([z.string(), z.number(), z.null(), z.undefined()]).optional(),
 
-  use: z.string()
-    .min(1, 'Type of use is required'),
-  typeOfUseId: z.union([z.string(), z.number()]).optional(),
+  use: z.union([z.string(), z.null(), z.undefined()])
+    .transform(val => String(val ?? '').trim())
+    .refine(val => val.length > 0, 'Type of use is required'),
+  typeOfUseId: z.union([z.string(), z.number(), z.null(), z.undefined()]).optional(),
 
-  subTyp: z.string().default(''),
-  subTypeOfUseId: z.union([z.string(), z.number()]).optional(),
+  subTyp: z.union([z.string(), z.null(), z.undefined()])
+    .transform(val => String(val ?? '').trim())
+    .default(''),
+  subTypeOfUseId: z.union([z.string(), z.number(), z.null(), z.undefined()]).optional(),
 
   // Descriptions (auto-populated from lookups)
-  floorDescription: z.string().optional(),
-  subFloorDescription: z.string().optional(),
-  constructionTypeDescription: z.string().optional(),
-  typeOfUseDescription: z.string().optional(),
-  subTypeOfUseDescription: z.string().optional(),
+  floorDescription: z.union([z.string(), z.null(), z.undefined()]).optional(),
+  subFloorDescription: z.union([z.string(), z.null(), z.undefined()]).optional(),
+  constructionTypeDescription: z.union([z.string(), z.null(), z.undefined()]).optional(),
+  typeOfUseDescription: z.union([z.string(), z.null(), z.undefined()]).optional(),
+  subTypeOfUseDescription: z.union([z.string(), z.null(), z.undefined()]).optional(),
 
   // Room and area validation
-  rooms: z.string()
-    .min(1, 'Number of rooms is required')
+  rooms: z.union([z.string(), z.number(), z.null(), z.undefined()])
+    .transform(val => String(val ?? '').trim())
+    .refine(val => val.length > 0, 'Number of rooms is required')
     .refine((val) => {
       const num = parseInt(val, 10);
       return !isNaN(num) && num > 0;
     }, 'Number of rooms must be a positive number'),
 
-  areaSqFt: z.string()
-    .min(1, 'Carpet area is required')
+  areaSqFt: z.union([z.string(), z.number(), z.null(), z.undefined()])
+    .transform(val => String(val ?? '').trim())
+    .refine(val => val.length > 0, 'Carpet area is required')
     .refine((val) => {
       const num = parseFloat(val);
       return !isNaN(num) && num > 0;
     }, 'Carpet area must be a positive number'),
 
-  areaSqM: z.string().default(''),
-  builtupAreaSqFt: z.string().default(''),
-  builtupAreaSqM: z.string().default(''),
+  areaSqM: z.union([z.string(), z.number(), z.null(), z.undefined()])
+    .transform(val => String(val ?? '').trim())
+    .default(''),
+  builtupAreaSqFt: z.union([z.string(), z.number(), z.null(), z.undefined()])
+    .transform(val => String(val ?? '').trim())
+    .default(''),
+  builtupAreaSqM: z.union([z.string(), z.number(), z.null(), z.undefined()])
+    .transform(val => String(val ?? '').trim())
+    .default(''),
 
   // Renter information
-  renter: z.union([z.string(), z.boolean()])
+  renter: z.union([z.string(), z.boolean(), z.null(), z.undefined()])
     .transform(val => val === 'Yes' || val === true ? 'Yes' : 'No')
     .default('No'),
 
-  renterName: z.string().default(''),
-  renterNameEnglish: z.string().default(''),
-  rentMonthly: z.string().default(''),
-  rentYearly: z.string().default(''),
+  renterName: z.union([z.string(), z.null(), z.undefined()])
+    .transform(val => String(val ?? '').trim())
+    .default(''),
+  renterNameEnglish: z.union([z.string(), z.null(), z.undefined()])
+    .transform(val => String(val ?? '').trim())
+    .default(''),
+  rentMonthly: z.union([z.string(), z.null(), z.undefined()])
+    .transform(val => String(val ?? '').trim())
+    .default(''),
+  rentYearly: z.union([z.string(), z.null(), z.undefined()])
+    .transform(val => String(val ?? '').trim())
+    .default(''),
 
   // Dates
-  agreementFromDate: z.union([z.string(), z.null()]).optional().nullable(),
-  agreementToDate: z.union([z.string(), z.null()]).optional().nullable(),
-  agreementDate: z.union([z.string(), z.null()]).optional().nullable(),
+  agreementFromDate: z.union([z.string(), z.null(), z.undefined()]).optional().nullable(),
+  agreementToDate: z.union([z.string(), z.null(), z.undefined()]).optional().nullable(),
+  agreementDate: z.union([z.string(), z.null(), z.undefined()]).optional().nullable(),
 
   // Tax information
-  isTaxable: z.union([z.string(), z.boolean()])
+  isTaxable: z.union([z.string(), z.boolean(), z.null(), z.undefined()])
     .transform(val => val === 'Yes' || val === true ? 'Yes' : 'No')
     .default('Yes'),
 
-  taxLiability: z.string().default(''),
+  taxLiability: z.union([z.string(), z.null(), z.undefined()])
+    .transform(val => String(val ?? '').trim())
+    .default(''),
 
   // Occupancy
-  occupancyDate: z.union([z.string(), z.null()]).optional().nullable(),
-  occupancyApplyOrNot: z.union([z.string(), z.boolean()])
+  occupancyDate: z.union([z.string(), z.null(), z.undefined()]).optional().nullable(),
+  occupancyApplyOrNot: z.union([z.string(), z.boolean(), z.null(), z.undefined()])
     .transform(val => val === 'Yes' || val === true ? 'Yes' : 'No')
     .default('No'),
-  occupancyNumber: z.string().default(''),
-  nonCalculateRentMonthly: z.number().default(0),
+  occupancyNumber: z.union([z.string(), z.null(), z.undefined()])
+    .transform(val => String(val ?? '').trim())
+    .default(''),
+  nonCalculateRentMonthly: z.union([z.number(), z.null(), z.undefined()])
+    .transform(val => Number(val ?? 0))
+    .default(0),
 
-  // Related data
-  renterDetails: z.array(z.unknown()).optional().default([]),
-  renterMast: z.array(z.unknown()).optional().default([]),
-  roomData: z.array(z.unknown()).optional().default([]),
+  renterDetails: z.union([z.array(z.unknown()), z.null(), z.undefined()])
+    .transform(val => val ?? [])
+    .default([]),
+  renterMast: z.union([z.array(z.unknown()), z.null(), z.undefined()])
+    .transform(val => val ?? [])
+    .default([]),
+  roomData: z.union([z.array(z.unknown()), z.null(), z.undefined()])
+    .transform(val => val ?? [])
+    .default([]),
+}).refine((data) => {
+  if (!data.conYr || !data.asstYr) return true;
+  const conYear = parseInt(data.conYr, 10);
+  const asstYear = parseInt(data.asstYr, 10);
+  if (isNaN(conYear) || isNaN(asstYear)) return true;
+  return asstYear >= conYear;
+}, {
+  message: 'Assessment year cannot be less than construction year',
+  path: ['asstYr'],
 });
 
 export type FloorFormData = z.infer<typeof floorFormSchema>;

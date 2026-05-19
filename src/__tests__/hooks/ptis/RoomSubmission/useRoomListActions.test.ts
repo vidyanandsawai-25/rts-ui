@@ -108,6 +108,7 @@ describe('useRoomListActions', () => {
       areaUnit: 'sq.m',
       pendingDeletions: { rooms: [], offsets: [] },
       setPendingDeletions: vi.fn(),
+      setValidationErrors: vi.fn(),
     } as unknown as RoomSubmissionState;
 
     mockProps = {

@@ -151,10 +151,10 @@ export const useFloorTableColumns = ({
       cellClassName: 'whitespace-nowrap font-medium',
       headerClassName: 'whitespace-normal min-w-[120px] max-w-[150px] leading-tight',
       render: (_value: unknown, row: FloorData) => (
-        <div className="flex flex-col">
-          <span className="text-blue-700">{row.areaSqFt || '0.00'}</span>
-          <span className="text-[10px] text-gray-400 italic">
-            {row.areaSqM || '0.00'} {t('floor.sqM')}
+        <div className="flex items-center gap-1.5">
+          <span className="text-blue-700 font-semibold">{row.areaSqFt || '0.00'}</span>
+          <span className="text-[10px] text-gray-400 italic font-normal">
+            ({row.areaSqM || '0.00'} {t('floor.sqM')})
           </span>
         </div>
       ),
@@ -165,10 +165,10 @@ export const useFloorTableColumns = ({
       cellClassName: 'whitespace-nowrap font-medium',
       headerClassName: 'whitespace-normal min-w-[120px] max-w-[150px] leading-tight',
       render: (_value: unknown, row: FloorData) => (
-        <div className="flex flex-col">
-          <span className="text-slate-700">{row.builtupAreaSqFt || '0.00'}</span>
-          <span className="text-[10px] text-gray-400 italic">
-            {row.builtupAreaSqM || '0.00'} {t('floor.sqM')}
+        <div className="flex items-center gap-1.5">
+          <span className="text-slate-700 font-semibold">{row.builtupAreaSqFt || '0.00'}</span>
+          <span className="text-[10px] text-gray-400 italic font-normal">
+            ({row.builtupAreaSqM || '0.00'} {t('floor.sqM')})
           </span>
         </div>
       ),

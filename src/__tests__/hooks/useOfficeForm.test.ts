@@ -126,7 +126,10 @@ describe("useOfficeForm", () => {
       await result.current.handleSubmit({ preventDefault: vi.fn() } as unknown as FormEvent);
     });
 
-    expect(actions.createOfficeAction).toHaveBeenCalledWith(result.current.formData);
+    expect(actions.createOfficeAction).toHaveBeenCalledWith({
+      ...result.current.formData,
+      establishedDate: null,
+    });
     expect(toast.success).toHaveBeenCalled();
     expect(mockProps.onSuccess).toHaveBeenCalled();
   });
@@ -143,7 +146,10 @@ describe("useOfficeForm", () => {
       await result.current.handleSubmit({ preventDefault: vi.fn() } as unknown as FormEvent);
     });
 
-    expect(actions.updateOfficeAction).toHaveBeenCalledWith(result.current.formData);
+    expect(actions.updateOfficeAction).toHaveBeenCalledWith({
+      ...result.current.formData,
+      establishedDate: null,
+    });
     expect(toast.success).toHaveBeenCalled();
   });
 

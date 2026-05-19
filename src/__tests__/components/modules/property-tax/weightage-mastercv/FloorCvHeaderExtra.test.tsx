@@ -196,4 +196,11 @@ describe("FloorCvHeaderExtra – factor input", () => {
         input.dispatchEvent(event);
         expect(event.defaultPrevented).toBe(true);
     });
+
+    it("restricts input to two decimal places", () => {
+        const setFactorValue = vi.fn();
+        render(<FloorCvHeaderExtra {...buildDefaultProps({ setFactorValue, factorValue: "0.00" })} />);
+        fireEvent.change(screen.getByPlaceholderText("0.00"), { target: { value: "1.234" } });
+        expect(setFactorValue).toHaveBeenCalledWith("1.23");
+    });
 });

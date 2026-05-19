@@ -56,10 +56,22 @@ export const floorSubmissionSchema = z.object({
     subFloorDescription: z.string().default(''),
     constructionYear: z.string()
         .length(4, 'floor.errors.constructionYearInvalid')
-        .regex(/^\d{4}$/, 'floor.errors.constructionYearInvalid'),
+        .regex(/^\d{4}$/, 'floor.errors.constructionYearInvalid')
+        .refine((val) => {
+            const year = parseInt(val, 10);
+            const today = new Date();
+            const currentFinancialStartYear = today.getMonth() >= 3 ? today.getFullYear() : today.getFullYear() - 1;
+            return year >= 1900 && year <= currentFinancialStartYear;
+        }, { message: 'floor.errors.constructionYearInvalid' }),
     assessmentYear: z.string()
         .length(4, 'floor.errors.assessmentYearInvalid')
-        .regex(/^\d{4}$/, 'floor.errors.assessmentYearInvalid'),
+        .regex(/^\d{4}$/, 'floor.errors.assessmentYearInvalid')
+        .refine((val) => {
+            const year = parseInt(val, 10);
+            const today = new Date();
+            const currentFinancialStartYear = today.getMonth() >= 3 ? today.getFullYear() : today.getFullYear() - 1;
+            return year >= 1900 && year <= currentFinancialStartYear;
+        }, { message: 'floor.errors.assessmentYearInvalid' }),
     constructionTypeId: z.number()
         .positive('floor.errors.constructionTypeRequired'),
     constructionTypeDescription: z.string()
@@ -106,6 +118,14 @@ export const floorSubmissionSchema = z.object({
     roomWiseSubmissionDetails: z.array(roomSchema).optional().default([]),
     createdBy: z.number().optional(),
     updatedBy: z.number().optional(),
+}).refine((data) => {
+    const conYear = parseInt(data.constructionYear, 10);
+    const asstYear = parseInt(data.assessmentYear, 10);
+    if (isNaN(conYear) || isNaN(asstYear)) return true;
+    return asstYear >= conYear;
+}, {
+    message: 'floor.asstYrError',
+    path: ['assessmentYear'],
 });
 
 export type FloorSubmissionSchemaType = z.infer<typeof floorSubmissionSchema>;
