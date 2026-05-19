@@ -47,7 +47,6 @@ export default getRequestConfig(async ({ locale }) => {
     aliasMasterMessages,
     userManagementMessages,
     ptisMainTaxDetailsMessages,
-    modulesMessages,
     paymentModeMasterMessages,
     modulesMessages,
   ] = await Promise.all([
@@ -98,7 +97,6 @@ export default getRequestConfig(async ({ locale }) => {
       .catch(() => ({}))
       .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/ptisMainTaxDetails.json`).then((m) => m.default),
-    import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/paymentModeMaster.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
    
@@ -138,9 +136,8 @@ export default getRequestConfig(async ({ locale }) => {
       aliasMaster: aliasMasterMessages,
       userManagement: userManagementMessages,
       ptisMainTaxDetails: ptisMainTaxDetailsMessages,
-      modules: modulesMessages,
       paymentModeMaster: paymentModeMasterMessages,
-       modules: modulesMessages,
+      modules: modulesMessages,
     },
   };
 });
