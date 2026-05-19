@@ -53,11 +53,8 @@ export async function fetchCombinePropertiesPagedAction(
     return result;
   } catch (error: unknown) {
     logger.error("Error fetching paged combine properties", undefined, error);
-    // Re-throw so error boundary can render and users see the actual failure
-    if (error instanceof Error) {
-      throw error;
-    }
-    throw new Error("Error fetching paged combine properties");
+    // Throw a simple error message for the error boundary to display
+    throw new Error("Failed to load combine properties. Please try again.");
   }
 }
 
@@ -86,10 +83,8 @@ export async function fetchPropertyCombineDetailsAction(
     return result;
   } catch (error: unknown) {
     logger.error("Error fetching property combine details", undefined, error);
-    if (error instanceof ApiError) {
-      throw error;
-    }
-    throw new ApiError(500, "Failed to fetch property combine details", "Fetch property combine details failed");
+    // Throw a simple error message for better user experience
+    throw new Error("Failed to load property details. Please try again.");
   }
 }
 
