@@ -69,7 +69,6 @@ export default function CombinePropertyForm({
     handleClear,
     handleProceed,
     handleCombine,
-    router,
   } = useCombinePropertyForm({
     basePropertyList,
     subPropertyList,
