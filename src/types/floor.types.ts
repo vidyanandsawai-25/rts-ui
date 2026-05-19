@@ -182,6 +182,7 @@ export interface FloorRangeFieldsProps {
     rangeFrom?: string;
     rangeTo?: string;
     prefix?: string;
+    suffix?: string;
   };
   showError: (field: keyof FloorRangeFormModel) => boolean;
   onChange: (field: keyof FloorRangeFormModel, value: string | number | boolean) => void;
