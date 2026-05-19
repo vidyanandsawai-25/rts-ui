@@ -186,11 +186,18 @@ describe('FloorForm — Add Mode', () => {
     fireEvent.change(screen.getByPlaceholderText('Enter description'), {
       target: { name: 'description', value: 'Ground Floor' },
     });
+    fireEvent.change(screen.getByPlaceholderText('Enter sequence number'), {
+      target: { name: 'sequenceNo', value: '1' },
+    });
     submitForm(container);
 
     await waitFor(() => {
       expect(createFloorAction).toHaveBeenCalledWith(
-        expect.objectContaining({ floorCode: 'GF', description: 'Ground Floor' })
+        expect.objectContaining({ 
+          floorCode: 'GF', 
+          description: 'Ground Floor',
+          sequenceNo: 1,
+        })
       );
     });
   });
