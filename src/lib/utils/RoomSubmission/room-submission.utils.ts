@@ -82,6 +82,7 @@ export const isOffsetValid = (offsetData: OffsetData, selectedShape: string): bo
 };
 
 export const validateRoomInput = (field: string, value: string, formData: RoomFormData, availableRooms: number | null) => {
+  if (field === "shape") return null; // Shape parameter validation happens on submit/save
   const tempFormData = { ...formData, [field]: value };
   const { errors } = validateRoomDetails(
     tempFormData as unknown as Partial<RoomData>,

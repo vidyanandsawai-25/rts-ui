@@ -2,13 +2,13 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import {
-  deleteUseTypeWithSubTypes,
-  deleteUseGroupWithCascade,
   deleteUseGroup,
+  deleteUseType,
   deleteSubType,
+  checkTypeHasSubTypes,
+  checkGroupHasTypes,
 } from "@/app/[locale]/property-tax/typeofusemaster/actions";
 import type { UseGroup, UseType, UseSubType } from "@/types/typeOfUse.types";
-import { countTypesForGroup } from "@/components/modules/property-tax/typeofusemaster/typeOfUseMasterUtils";
 
 type TranslatorFunction = (key: string, values?: Record<string, string | number>) => string;
 
@@ -27,7 +27,7 @@ interface DeleteConfig {
   ignoreNextRedirect?: boolean;
 }
 
-export function useTypeOfUseMasterActions(t: TranslatorFunction, allTypes: UseType[]) {
+export function useTypeOfUseMasterActions(t: TranslatorFunction) {
   const router = useRouter();
   const { confirm } = useConfirm();
 
@@ -61,49 +61,68 @@ export function useTypeOfUseMasterActions(t: TranslatorFunction, allTypes: UseTy
     });
   };
 
-  const handleDeleteGroup = (g: UseGroup) => {
-    const groupId = String(g.typeOfUseGroupId);
+  const handleDeleteGroup = async (g: UseGroup) => {
+    const groupId = g.typeOfUseGroupId;
 
     if (!groupId) {
       toast.error(t('messages.invalidGroupRecord'));
       return;
     }
 
-    const typesCount = countTypesForGroup(g, allTypes);
-    const hasTypes = typesCount > 0;
+    try {
+      // Check if group has types
+      const { hasTypes } = await checkGroupHasTypes(groupId);
+      
+      if (hasTypes) {
+        toast.error(t('messages.groupHasTypes'));
+        return;
+      }
 
-    executeDelete({
-      variant: hasTypes ? "warning" : "delete",
-      title: hasTypes ? t("messages.deleteGroupWithTypesTitle") : t("messages.deleteConfirmation"),
-      description: hasTypes ? t("messages.deleteGroupWithTypesDescription") : undefined,
-      meta: { name: g.groupName },
-      confirmText: hasTypes ? t("messages.deleteAll") : undefined,
-      deleteAction: () => hasTypes 
-        ? deleteUseGroupWithCascade(Number(groupId))
-        : deleteUseGroup(groupId),
-      successMessage: t('messages.groupDeletedSuccess', { name: g.groupName }),
-      errorMessage: t('messages.groupDeleteFailed'),
-    });
+      // If no types, proceed with delete
+      executeDelete({
+        variant: "delete",
+        title: t("messages.deleteConfirmation"),
+        meta: { name: g.groupName },
+        deleteAction: () => deleteUseGroup(groupId),
+        successMessage: t('messages.groupDeletedSuccess', { name: g.groupName }),
+        errorMessage: t('messages.groupDeleteFailed'),
+      });
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Failed to check group dependencies';
+      toast.error(errorMsg);
+    }
   };
 
-  const handleDeleteType = (useType: UseType) => {
-    const typeId = String(useType.typeOfUseId);
+  const handleDeleteType = async (useType: UseType) => {
+    const typeId = useType.typeOfUseId;
 
     if (!typeId) {
       toast.error(t('messages.invalidTypeRecord'));
       return;
     }
 
-    executeDelete({
-      variant: "warning",
-      title: t("messages.deleteTypeWithSubTypesTitle"),
-      description: t("messages.deleteTypeWithSubTypesDescription"),
-      meta: { name: useType.description },
-      confirmText: t("messages.deleteAll"),
-      deleteAction: () => deleteUseTypeWithSubTypes(Number(typeId)),
-      successMessage: t('messages.typeDeletedSuccess', { name: useType.description }),
-      errorMessage: t('messages.typeDeleteFailed'),
-    });
+    try {
+      // Check if type has sub-types
+      const { hasSubTypes } = await checkTypeHasSubTypes(typeId);
+      
+      if (hasSubTypes) {
+        toast.error(t('messages.typeHasSubTypes'));
+        return;
+      }
+
+      // If no sub-types, proceed with delete
+      executeDelete({
+        variant: "delete",
+        title: t("messages.deleteConfirmation"),
+        meta: { name: useType.description },
+        deleteAction: () => deleteUseType(typeId),
+        successMessage: t('messages.typeDeletedSuccess', { name: useType.description }),
+        errorMessage: t('messages.typeDeleteFailed'),
+      });
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Failed to check type dependencies';
+      toast.error(errorMsg);
+    }
   };
 
   const handleDeleteSubType = (s: UseSubType) => {

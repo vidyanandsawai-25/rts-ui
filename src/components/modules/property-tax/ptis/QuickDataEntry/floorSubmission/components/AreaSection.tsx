@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { LayoutGrid } from 'lucide-react';
+import { toast } from 'sonner';
 import { Input } from '@/components/common';
 import { AreaSectionProps } from '@/types/floor-details.types';
 import { cn } from '@/lib/utils/cn';
@@ -38,17 +39,20 @@ export const AreaSection: React.FC<AreaSectionProps> = ({
         <Input
           ref={roomsInputRef}
           id="floor-rooms"
-          type="number"
-          placeholder="4"
-          min="1"
-          max="999"
+          type="text"
+          placeholder="0"
+          maxLength={3}
           value={editingFloorForm.rooms || ''}
           onChange={(e) => {
-            setEditingFloorForm({ ...editingFloorForm, rooms: e.target.value });
+            const cleaned = e.target.value.replace(/[^0-9]/g, '').slice(0, 4);
+            setEditingFloorForm({ ...editingFloorForm, rooms: cleaned });
             if (formErrors.rooms) setFormErrors((prev) => ({ ...prev, rooms: '' }));
           }}
           onKeyDown={(e) => {
-            if (['e', 'E', '+', '-', '.'].includes(e.key)) e.preventDefault();
+            const controlKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Enter'];
+            if (!/^[0-9]$/.test(e.key) && !controlKeys.includes(e.key)) {
+              e.preventDefault();
+            }
           }}
           disabled={!editingFloorForm.use}
           className={cn(
@@ -98,6 +102,18 @@ export const AreaSection: React.FC<AreaSectionProps> = ({
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
+                const roomsStr = editingFloorForm.rooms !== undefined && editingFloorForm.rooms !== null ? String(editingFloorForm.rooms) : '';
+                const roomCount = parseInt(roomsStr, 10);
+                if (!roomsStr || isNaN(roomCount) || roomCount <= 0) {
+                  setFormErrors((prev) => ({
+                    ...prev,
+                    rooms: t('floor.errors.roomsRequiredForDetails') || 'Number of rooms must be greater than zero before entering room details.'
+                  }));
+                  toast.error(
+                    t('floor.errors.roomGuidance') || 'Guidance: To enter room-wise breakdown, please first enter the total number of rooms (1 to 9999) for this floor.'
+                  );
+                  return;
+                }
                 setShowRoomSubmission(true);
               }}
               className="flex items-center justify-center p-1 rounded hover:bg-blue-600 hover:text-white text-blue-600 transition-all active:scale-90"

@@ -126,6 +126,7 @@ export async function updateUseTypeApi(input: {
   });
   
   if (!response.success) {
+    // Return raw backend error - forms will map reference errors to appropriate i18n keys
     throw new Error(response.error ?? TypeOfUseErrorMessages.UPDATE_TYPE_FAILED);
   }
   
@@ -133,16 +134,23 @@ export async function updateUseTypeApi(input: {
 }
 
 /**
- * Delete a use type
+ * Delete a use type (purge - permanent delete)
  */
 export async function deleteUseTypeApi(id: string) {
-  const response = await apiClient.delete<unknown>(`/TypeOfUse/${id}`, {
+  const response = await apiClient.delete<unknown>(`/TypeOfUse/${id}/purge`, {
     cache: "no-store",
     headers: { "Accept": "application/json" },
   });
   
   if (!response.success) {
-    throw new Error(response.error ?? TypeOfUseErrorMessages.DELETE_TYPE_FAILED);
+    // Map backend reference error to the corresponding i18n key
+    let errorMessage = response.error ?? TypeOfUseErrorMessages.DELETE_TYPE_FAILED;
+    
+    if (errorMessage.includes("referenced by other entities")) {
+      errorMessage = TypeOfUseErrorMessages.DELETE_TYPE_REFERENCED;
+    }
+    
+    throw new Error(errorMessage);
   }
   
   return true;
