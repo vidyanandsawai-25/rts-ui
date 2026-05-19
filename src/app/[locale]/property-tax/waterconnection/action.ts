@@ -18,6 +18,7 @@ import {
   createWaterConnection,
   updateWaterConnection,
   deleteWaterConnection,
+  getPropertyInfoById,
   ApiError,
 } from "@/lib/api/waterconnection.services";
 
@@ -55,21 +56,59 @@ const MOCK_RATE_MASTERS: WaterRateMasterLookup[] = [
   { id: 12, waterConnectionTypeId: 3, connectionTypeName: "Industrial", waterConnectionSizeId: 4, connectionSizeDisplay: "32 mm", financeYearId: 1, yearCode: "2025-26", yearlyRate: 10800, isActive: true },
 ];
 
-// TODO: Replace with real property API call when endpoint is available
-function getMockProperty(propertyId: number): PropertyInfo {
-  return {
-    id: propertyId,
-    propertyNo: `PROP-${propertyId}`,
-    ownerName: "—",
-    customerId: `CID-${propertyId}`,
-    customerType: "Individual",
-    contact: "—",
-    email: "—",
-    address: "—",
-    zone: "—",
-    ward: "—",
-    buildingType: "—",
-  };
+/**
+ * Fetches property info from API and maps to PropertyInfo for UI display
+ */
+async function getPropertyInfoForUI(propertyId: number): Promise<PropertyInfo> {
+  try {
+    const data = await getPropertyInfoById(propertyId);
+    
+    if (!data) {
+      // Return placeholder if property not found
+      return {
+        id: propertyId,
+        propertyNo: "—",
+        ownerName: "—",
+        customerId: `CID-${propertyId}`,
+        customerType: "Individual",
+        contact: "—",
+        email: "—",
+        address: "—",
+        zone: "—",
+        ward: "—",
+        buildingType: "—",
+      };
+    }
+
+    return {
+      id: data.id,
+      propertyNo: data.displayProperty || data.propertyNo || "—",
+      ownerName: data.ownerName || "—",
+      customerId: `CID-${data.id}`,
+      customerType: data.partType === "individual" ? "Individual" : "Organization",
+      contact: data.mobileNo || "—",
+      email: data.emailId || "—",
+      address: data.address || "—",
+      zone: data.taxZoneId ? `Zone ${data.taxZoneId}` : "—",
+      ward: data.wardId ? `Ward ${data.wardId}` : "—",
+      buildingType: data.propertyTypeId ? `Type ${data.propertyTypeId}` : "—",
+    };
+  } catch (error) {
+    console.error(`[waterconnection] Failed to fetch property ${propertyId}:`, error);
+    return {
+      id: propertyId,
+      propertyNo: "—",
+      ownerName: "—",
+      customerId: `CID-${propertyId}`,
+      customerType: "Individual",
+      contact: "—",
+      email: "—",
+      address: "—",
+      zone: "—",
+      ward: "—",
+      buildingType: "—",
+    };
+  }
 }
 
 export async function getWaterConnectionPageData(
@@ -77,7 +116,8 @@ export async function getWaterConnectionPageData(
   pageNumber = 1,
   pageSize = 100
 ): Promise<WaterConnectionPageData> {
-  const [connectionsResponse, typeOptions, sizeOptions, statusOptions, rateMastersFromApi] = await Promise.all([
+  const [propertyInfo, connectionsResponse, typeOptions, sizeOptions, statusOptions, rateMastersFromApi] = await Promise.all([
+    getPropertyInfoForUI(propertyId),
     getWaterConnectionsPaged(propertyId, pageNumber, pageSize),
     getWaterConnectionTypes().catch((err) => {
       console.error('[waterconnection] getWaterConnectionTypes failed:', err);
@@ -99,7 +139,7 @@ export async function getWaterConnectionPageData(
 
   const isDev = process.env.NODE_ENV !== "production";
   return {
-    property: getMockProperty(propertyId),
+    property: propertyInfo,
     connections: connectionsResponse.items ?? connectionsResponse.data ?? [],
     totalCount: connectionsResponse.totalCount,
     totalPages: connectionsResponse.totalPages,

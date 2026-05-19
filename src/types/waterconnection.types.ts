@@ -20,6 +20,35 @@ export interface WaterConnection extends Record<string, unknown> {
   isActive: boolean;
 }
 
+/** Raw API response from GET /api/Property?Id={id} */
+export interface PropertyApiResponse {
+  id: number;
+  taxZoneId: number;
+  wardId: number;
+  propertyNo: string;
+  partitionNo: string;
+  propertyTypeId: number;
+  upicId: string | null;
+  openPlot: boolean;
+  csn: string;
+  subZoneNo: string;
+  plotNo: string;
+  categoryId: number;
+  type: string | null;
+  partType: string;
+  ownerTitle: string;
+  ownerName: string;
+  ownerTitleEnglish: string;
+  ownerNameEnglish: string;
+  occupierTitle: string;
+  occupierName: string;
+  occupierTitleEnglish: string | null;
+  occupierNameEnglish: string;
+  flatOrShopNo: string;
+  flatOrShopName: string;
+  flatOrShopNoEnglish: string;
+}
+
 export interface PropertyInfo {
   id: number;
   propertyNo: string;
@@ -41,7 +70,7 @@ export interface WaterConnectionFormModel {
   meterNo: string;
   waterConnectionTypeId: number | '';
   waterConnectionSizeId: number | '';
-  waterConnectionStatusId?: number | null;
+  waterConnectionStatusId: number | null;
   installDate: string;
   isActive: boolean;
   applicableRate?: number | null;

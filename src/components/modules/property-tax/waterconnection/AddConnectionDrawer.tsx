@@ -30,6 +30,7 @@ function makeEmptyForm(propertyId: number): WaterConnectionFormModel {
     meterNo: "",
     waterConnectionTypeId: "",
     waterConnectionSizeId: "",
+    waterConnectionStatusId: null,
     installDate: new Date().toISOString().slice(0, 10),
     isActive: true,
   };
@@ -118,14 +119,35 @@ export function AddConnectionDrawer({
   const validate = useCallback(
     (data: WaterConnectionFormModel): Record<string, string> => {
       const e: Record<string, string> = {};
+      
+      // Connection Number validation
       if (!data.connectionNo.trim())
         e.connectionNo = t("form.validation.connectionNoRequired");
+      else if (/[@#$%^&*()_]/.test(data.connectionNo))
+        e.connectionNo = t("form.validation.connectionNoInvalidChars");
+      
+      // Meter Number validation
+      if (!data.meterNo.trim())
+        e.meterNo = t("form.validation.meterNoRequired");
+      else if (/[@#$%^&*()_]/.test(data.meterNo))
+        e.meterNo = t("form.validation.meterNoInvalidChars");
+      
+      // Type validation
       if (!data.waterConnectionTypeId)
         e.waterConnectionTypeId = t("form.validation.typeRequired");
+      
+      // Size validation
       if (!data.waterConnectionSizeId)
         e.waterConnectionSizeId = t("form.validation.tapSizeRequired");
+      
+      // Status validation
+      if (!data.waterConnectionStatusId)
+        e.waterConnectionStatusId = t("form.validation.statusRequired");
+      
+      // Install Date validation
       if (!data.installDate)
         e.installDate = t("form.validation.installDateRequired");
+      
       return e;
     },
     [t]
@@ -136,7 +158,14 @@ export function AddConnectionDrawer({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    
+    // Sanitize connection number and meter number - remove special characters
+    let sanitizedValue = value;
+    if (name === "connectionNo" || name === "meterNo") {
+      sanitizedValue = value.replace(/[@#$%^&*()_]/g, "");
+    }
+    
+    setFormData((prev) => ({ ...prev, [name]: sanitizedValue }));
     setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
