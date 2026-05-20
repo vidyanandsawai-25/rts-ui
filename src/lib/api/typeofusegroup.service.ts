@@ -1,8 +1,11 @@
 import { apiClient } from "@/services/api.service";
 import type { UseGroup, UseGroupIconKey } from "@/types/typeOfUse.types";
 import type { PagedResponse } from "@/types/common.types";
+import { ApiError } from "@/lib/utils/api";
+import { logger } from "@/lib/utils/logger";
 import { mapApiGroupToUi, iconKeyToApi } from "./typeofuse.mappers";
 import { TypeOfUseErrorMessages } from "./typeofuse.errors";
+import { createApiError, mapReferenceErrorToI18nKey } from "./typeofuse-validation";
 
 /* ====================================================================== */
 /* =============================== GROUP APIS ============================ */
@@ -20,42 +23,56 @@ export async function getUseGroupsPagedServer(params: {
   filterLogic?: number;
   typeOfUseGroupId?: number;
 }): Promise<PagedResponse<UseGroup>> {
-  const qs = new URLSearchParams();
-  qs.set("PageNumber", String(params.pageNumber));
-  qs.set("PageSize", String(params.pageSize));
-  if (params.searchTerm) qs.set("SearchTerm", params.searchTerm);
-  if (params.sortBy) qs.set("SortBy", params.sortBy);
-  if (params.sortOrder) qs.set("SortOrder", params.sortOrder);
-  if (typeof params.filterLogic === "number") qs.set("FilterLogic", String(params.filterLogic));
-  if (typeof params.typeOfUseGroupId === "number") qs.set("TypeOfUseGroupId", String(params.typeOfUseGroupId));
+  try {
+    const qs = new URLSearchParams();
+    qs.set("PageNumber", String(params.pageNumber));
+    qs.set("PageSize", String(params.pageSize));
+    if (params.searchTerm) qs.set("SearchTerm", params.searchTerm);
+    if (params.sortBy) qs.set("SortBy", params.sortBy);
+    if (params.sortOrder) qs.set("SortOrder", params.sortOrder);
+    if (typeof params.filterLogic === "number") qs.set("FilterLogic", String(params.filterLogic));
+    if (typeof params.typeOfUseGroupId === "number") qs.set("TypeOfUseGroupId", String(params.typeOfUseGroupId));
 
-  const response = await apiClient.get<PagedResponse<unknown>>(`/TypeOfUseGroup?${qs.toString()}`, {
-    cache: "no-store",
-    headers: { "Accept": "application/json" },
-  });
-  
-  if (!response.success) {
-    throw new Error(response.error ?? TypeOfUseErrorMessages.FETCH_GROUPS_FAILED);
+    const response = await apiClient.get<PagedResponse<unknown>>(`/TypeOfUseGroup?${qs.toString()}`, {
+      cache: "no-store",
+      headers: { "Accept": "application/json" },
+    });
+    
+    if (!response.success) {
+      throw createApiError(response.statusCode, response.error, TypeOfUseErrorMessages.FETCH_GROUPS_FAILED);
+    }
+
+    if (!response.data) {
+      throw new ApiError(500, "No data received from server", "Invalid response format");
+    }
+
+    const data = response.data;
+    return { ...data, items: (data.items ?? []).map((g) => mapApiGroupToUi(g as Record<string, unknown>)) };
+  } catch (error) {
+    logger.error("Error fetching use groups", { error: error as Error });
+    throw error;
   }
-
-  const data = response.data!;
-  return { ...data, items: (data.items ?? []).map((g) => mapApiGroupToUi(g as Record<string, unknown>)) };
 }
 
 /**
  * Get a single use group by ID
  */
 export async function getUseGroupById(id: string | number): Promise<UseGroup | null> {
-  const response = await apiClient.get<unknown>(`/TypeOfUseGroup/${id}`, {
-    cache: "no-store",
-    headers: { "Accept": "application/json" },
-  });
-  
-  if (!response.success) {
-    return null;
+  try {
+    const response = await apiClient.get<unknown>(`/TypeOfUseGroup/${id}`, {
+      cache: "no-store",
+      headers: { "Accept": "application/json" },
+    });
+    
+    if (!response.success) {
+      return null;
+    }
+    
+    return response.data ? mapApiGroupToUi(response.data as Record<string, unknown>) : null;
+  } catch (error) {
+    logger.error(`Error fetching use group ${id}`, { error: error as Error });
+    throw error;
   }
-  
-  return response.data ? mapApiGroupToUi(response.data as Record<string, unknown>) : null;
 }
 
 /**
@@ -68,24 +85,33 @@ export async function createUseGroupApi(input: {
   isActive: boolean;
   createdBy?: string;
 }): Promise<UseGroup> {
-  const payload = {
-    typeOfUseGroupCode: input.typeOfUseGroupCode?.trim(),
-    groupName: input.groupName?.trim(),
-    groupIcon: iconKeyToApi(input.groupIcon),
-    isActive: input.isActive,
-    createdBy: Number(input.createdBy ?? "1"),
-  };
+  try {
+    const payload = {
+      typeOfUseGroupCode: input.typeOfUseGroupCode?.trim(),
+      groupName: input.groupName?.trim(),
+      groupIcon: iconKeyToApi(input.groupIcon),
+      isActive: input.isActive,
+      createdBy: Number(input.createdBy ?? "1"),
+    };
 
-  const response = await apiClient.post<unknown>("/TypeOfUseGroup", payload, {
-    cache: "no-store",
-    headers: { "Accept": "application/json" },
-  });
-  
-  if (!response.success) {
-    throw new Error(response.error ?? TypeOfUseErrorMessages.CREATE_GROUP_FAILED);
+    const response = await apiClient.post<unknown>("/TypeOfUseGroup", payload, {
+      cache: "no-store",
+      headers: { "Accept": "application/json" },
+    });
+    
+    if (!response.success) {
+      throw createApiError(response.statusCode, response.error, TypeOfUseErrorMessages.CREATE_GROUP_FAILED);
+    }
+    
+    if (!response.data) {
+      throw new ApiError(500, "No data received from server", "Invalid response format");
+    }
+    
+    return mapApiGroupToUi(response.data as Record<string, unknown>);
+  } catch (error) {
+    logger.error("Error creating use group", { error: error as Error });
+    throw error;
   }
-  
-  return mapApiGroupToUi(response.data as Record<string, unknown>);
 }
 
 /**
@@ -99,47 +125,57 @@ export async function updateUseGroupApi(input: {
   isActive: boolean;
   updatedBy?: string;
 }): Promise<UseGroup> {
-  const payload = {
-    typeOfUseGroupId: input.typeOfUseGroupId,
-    typeOfUseGroupCode: input.typeOfUseGroupCode?.trim(),
-    groupName: input.groupName?.trim(),
-    groupIcon: iconKeyToApi(input.groupIcon),
-    isActive: input.isActive,
-    updatedBy: Number(input.updatedBy ?? "1"),
-  };
+  try {
+    const payload = {
+      typeOfUseGroupId: input.typeOfUseGroupId,
+      typeOfUseGroupCode: input.typeOfUseGroupCode?.trim(),
+      groupName: input.groupName?.trim(),
+      groupIcon: iconKeyToApi(input.groupIcon),
+      isActive: input.isActive,
+      updatedBy: Number(input.updatedBy ?? "1"),
+    };
 
-  const response = await apiClient.put<unknown>(`/TypeOfUseGroup/${input.typeOfUseGroupId}`, payload, {
-    cache: "no-store",
-    headers: { "Accept": "application/json" },
-  });
-  
-  if (!response.success) {
-    // Return raw backend error - forms will map reference errors to appropriate i18n keys
-    throw new Error(response.error ?? TypeOfUseErrorMessages.UPDATE_GROUP_FAILED);
+    const response = await apiClient.put<unknown>(`/TypeOfUseGroup/${input.typeOfUseGroupId}`, payload, {
+      cache: "no-store",
+      headers: { "Accept": "application/json" },
+    });
+    
+    if (!response.success) {
+      throw createApiError(response.statusCode, response.error, TypeOfUseErrorMessages.UPDATE_GROUP_FAILED);
+    }
+    
+    if (!response.data) {
+      throw new ApiError(500, "No data received from server", "Invalid response format");
+    }
+    
+    return mapApiGroupToUi(response.data as Record<string, unknown>);
+  } catch (error) {
+    logger.error("Error updating use group", { error: error as Error });
+    throw error;
   }
-  
-  return mapApiGroupToUi(response.data as Record<string, unknown>);
 }
 
 /**
  * Delete a use group (purge - permanent delete)
  */
 export async function deleteUseGroupApi(id: string | number) {
-  const response = await apiClient.delete<unknown>(`/TypeOfUseGroup/${id}/purge`, {
-    cache: "no-store",
-    headers: { "Accept": "application/json" },
-  });
-  
-  if (!response.success) {
-    // Map backend reference error to the corresponding i18n key
-    let errorMessage = response.error ?? TypeOfUseErrorMessages.DELETE_GROUP_FAILED;
+  try {
+    const response = await apiClient.delete<unknown>(`/TypeOfUseGroup/${id}/purge`, {
+      cache: "no-store",
+      headers: { "Accept": "application/json" },
+    });
     
-    if (errorMessage.includes("referenced by other entities")) {
-      errorMessage = TypeOfUseErrorMessages.DELETE_GROUP_REFERENCED;
+    if (!response.success) {
+      // Map backend reference error to the corresponding i18n key
+      const errorMessage = response.error ?? TypeOfUseErrorMessages.DELETE_GROUP_FAILED;
+      const mappedError = mapReferenceErrorToI18nKey(errorMessage, 'group', TypeOfUseErrorMessages.DELETE_GROUP_FAILED);
+      
+      throw createApiError(response.statusCode, mappedError, "Delete use group failed");
     }
     
-    throw new Error(errorMessage);
+    return true;
+  } catch (error) {
+    logger.error(`Error deleting use group ${id}`, { error: error as Error });
+    throw error;
   }
-  
-  return true;
 }
