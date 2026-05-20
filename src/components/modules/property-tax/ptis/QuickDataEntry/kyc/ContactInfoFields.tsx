@@ -92,7 +92,11 @@ export const ContactInfoFields: React.FC<ContactInfoFieldsProps> = ({
           ))}
         </div>
         {showError('aadhar', kycValidators.isValidAadhar(aadharInput.value)) && (
-          <span className="text-xs text-red-500">{t('kyc.validation.invalidAadhar')}</span>
+          <span className="text-xs text-red-500">
+            {aadharInput.value && kycValidators.hasRepeatedSequence(aadharInput.value.replace(/\D/g, ''), 5)
+              ? kycValidators.getRepeatedSequenceMessage()
+              : t('kyc.validation.invalidAadhar')}
+          </span>
         )}
       </div>
 
@@ -133,7 +137,11 @@ export const ContactInfoFields: React.FC<ContactInfoFieldsProps> = ({
           </div>
         </div>
         {showError('mobile', kycValidators.isValidMobile(mobileInput.value)) && (
-          <span className="text-xs text-red-500">{t('kyc.validation.invalidMobile')}</span>
+          <span className="text-xs text-red-500">
+            {mobileInput.value && kycValidators.hasRepeatedSequence(mobileInput.value.replace(/\D/g, ''), 5)
+              ? kycValidators.getRepeatedSequenceMessage()
+              : t('kyc.validation.invalidMobile')}
+          </span>
         )}
       </div>
     </>

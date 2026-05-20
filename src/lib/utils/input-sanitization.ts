@@ -85,8 +85,8 @@ export const escapeHtml = (text: string): string => {
 
 /**
  * Validate and sanitize a name input
- * Allows letters, spaces, hyphens, apostrophes, dots, and common punctuation
- * Blocks all invalid special characters like *()_++_)(&&^%$#@!~!!@#$%}{};'.,, etc.
+ * Allows letters, spaces, hyphens, apostrophes, dots, forward slash, and common punctuation
+ * Blocks all invalid special characters like *()_++_)(&&^%$#@!~!!@#$%}{};',, etc.
  * 
  * @param name - Raw name input
  * @returns Sanitized name with only valid characters
@@ -99,9 +99,9 @@ export const sanitizeName = (name: string): string => {
     .replace(/<[^>]*>/g, '')
     // Remove script content
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-    // Block all invalid special characters - only allow letters, spaces, and . , ' -
+    // Block all invalid special characters - only allow letters, spaces, and . , ' - /
     // Supports international characters (Unicode letters)
-    .replace(/[^a-zA-Z\u00C0-\u024F\u0900-\u097F\u0D00-\u0D7F\s.,'\-]/g, '')
+    .replace(/[^a-zA-Z\u00C0-\u024F\u0900-\u097F\u0D00-\u0D7F\s.,'\/\-]/g, '')
     // Remove multiple consecutive spaces
     .replace(/\s+/g, ' ');
 };
@@ -109,8 +109,8 @@ export const sanitizeName = (name: string): string => {
 /**
  * Sanitize address input
  * More permissive than name sanitization but still blocks invalid special characters
- * Allows letters, numbers, spaces, and common address punctuation (.,/-#)
- * Blocks: *()_++_)(&&^%$@!~!!@#$%}{};'.,, etc.
+ * Allows letters, numbers, spaces, and common address punctuation (.,/-#&,)
+ * Blocks: *()_++_)(&&^%$@!~!!@#$%}{};', etc.
  * Also blocks consecutive special characters and address with only special characters
  * 
  * @param address - Raw address input
@@ -126,10 +126,10 @@ export const sanitizeAddress = (address: string): string => {
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
     // Remove event handlers
     .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
-    // Block invalid special characters - only allow letters, numbers, spaces, and address-safe punctuation
-    .replace(/[^a-zA-Z0-9\u00C0-\u024F\u0900-\u097F\u0D00-\u0D7F\s.,\-\/\#]/g, '')
+    // Block invalid special characters - allow letters, numbers, spaces, and address-safe punctuation including &
+    .replace(/[^a-zA-Z0-9\u00C0-\u024F\u0900-\u097F\u0D00-\u0D7F\s.,\-\/\#&]/g, '')
     // Remove multiple consecutive special characters (e.g., ----, ////)
-    .replace(/([.,\-\/\#])\1+/g, '$1')
+    .replace(/([.,\-\/\#&])\1+/g, '$1')
     // Remove multiple consecutive spaces
     .replace(/\s+/g, ' ');
   
@@ -143,8 +143,8 @@ export const sanitizeAddress = (address: string): string => {
 
 /**
  * Sanitize flat/shop number input
- * Allows alphanumeric and hyphen only
- * Blocks consecutive hyphens like -----
+ * Allows alphanumeric, hyphen, and forward slash only
+ * Blocks consecutive special characters like ----- or /////
  * 
  * @param input - Raw flat/shop number input
  * @returns Sanitized flat/shop number
@@ -153,15 +153,15 @@ export const sanitizeFlatShopNo = (input: string): string => {
   if (!input || typeof input !== 'string') return '';
   
   const sanitized = input
-    // Allow only alphanumeric and hyphen
-    .replace(/[^a-zA-Z0-9-]/g, '')
-    // Block consecutive hyphens
-    .replace(/-+/g, '-')
-    // Remove leading/trailing hyphens
-    .replace(/^-+|-+$/g, '')
+    // Allow only alphanumeric, hyphen, and forward slash
+    .replace(/[^a-zA-Z0-9\-/]/g, '')
+    // Block consecutive special characters
+    .replace(/([-/])\1+/g, '$1')
+    // Remove leading/trailing special characters
+    .replace(/^[-/]+|[-/]+$/g, '')
     .trim();
   
-  // If only special characters (hyphens), return empty
+  // If only special characters, return empty
   if (sanitized && !/[a-zA-Z0-9]/.test(sanitized)) {
     return '';
   }
@@ -171,7 +171,8 @@ export const sanitizeFlatShopNo = (input: string): string => {
 
 /**
  * Sanitize plot number input
- * Allows alphanumeric only
+ * Allows alphanumeric, hyphen, and forward slash
+ * Blocks consecutive special characters like ----- or /////
  * 
  * @param input - Raw plot number input
  * @returns Sanitized plot number
@@ -179,10 +180,21 @@ export const sanitizeFlatShopNo = (input: string): string => {
 export const sanitizePlotNo = (input: string): string => {
   if (!input || typeof input !== 'string') return '';
   
-  // Allow only alphanumeric characters
-  return input
-    .replace(/[^a-zA-Z0-9]/g, '')
+  const sanitized = input
+    // Allow alphanumeric, hyphen, and forward slash
+    .replace(/[^a-zA-Z0-9\-/]/g, '')
+    // Block consecutive special characters
+    .replace(/([-/])\1+/g, '$1')
+    // Remove leading/trailing special characters
+    .replace(/^[-/]+|[-/]+$/g, '')
     .trim();
+  
+  // If only special characters, return empty
+  if (sanitized && !/[a-zA-Z0-9]/.test(sanitized)) {
+    return '';
+  }
+  
+  return sanitized;
 };
 
 /**
@@ -215,8 +227,8 @@ export const sanitizeSurveyNo = (input: string): string => {
 
 /**
  * Sanitize sub zone number input
- * Allows alphanumeric and hyphen
- * Blocks consecutive hyphens like -----
+ * Allows alphanumeric, hyphen, and forward slash
+ * Blocks consecutive special characters like ----- or /////
  * 
  * @param input - Raw sub zone number input
  * @returns Sanitized sub zone number
@@ -225,12 +237,12 @@ export const sanitizeSubZoneNo = (input: string): string => {
   if (!input || typeof input !== 'string') return '';
   
   const sanitized = input
-    // Allow alphanumeric and hyphen
-    .replace(/[^a-zA-Z0-9-]/g, '')
-    // Block consecutive hyphens
-    .replace(/-+/g, '-')
-    // Remove leading/trailing hyphens
-    .replace(/^-+|-+$/g, '')
+    // Allow alphanumeric, hyphen, and forward slash
+    .replace(/[^a-zA-Z0-9\-/]/g, '')
+    // Block consecutive special characters
+    .replace(/([-/])\1+/g, '$1')
+    // Remove leading/trailing special characters
+    .replace(/^[-/]+|[-/]+$/g, '')
     .trim();
   
   // If only special characters, return empty
@@ -264,6 +276,47 @@ export const sanitizePositiveNumber = (input: string): string => {
 };
 
 /**
+ * Sanitize plot area input
+ * Allows max 15 digits total with up to 4 decimal places
+ * 
+ * @param input - Raw plot area input
+ * @returns Sanitized plot area string
+ */
+export const sanitizePlotArea = (input: string): string => {
+  if (!input || typeof input !== 'string') return '';
+  
+  // Remove negative signs and allow only digits and one decimal point
+  let sanitized = input.replace(/[^0-9.]/g, '');
+  
+  // Ensure only one decimal point
+  const parts = sanitized.split('.');
+  if (parts.length > 2) {
+    sanitized = parts[0] + '.' + parts.slice(1).join('');
+  }
+  
+  // Limit to 4 decimal places
+  if (parts.length === 2 && parts[1].length > 4) {
+    sanitized = parts[0] + '.' + parts[1].substring(0, 4);
+  }
+  
+  // Limit total digits to 15 (excluding decimal point)
+  const [intPart, decPart] = sanitized.split('.');
+  const totalDigits = (intPart || '').length + (decPart || '').length;
+  
+  if (totalDigits > 15) {
+    // Truncate from the integer part if needed
+    const maxIntDigits = 15 - (decPart || '').length;
+    if (maxIntDigits > 0) {
+      sanitized = intPart.substring(0, maxIntDigits) + (decPart ? '.' + decPart : '');
+    } else {
+      sanitized = intPart.substring(0, 15);
+    }
+  }
+  
+  return sanitized;
+};
+
+/**
  * Sanitize positive integer input
  * Allows only digits, no negative values or decimals
  * 
@@ -275,6 +328,34 @@ export const sanitizePositiveInteger = (input: string): string => {
   
   // Allow only digits
   return input.replace(/[^0-9]/g, '');
+};
+
+/**
+ * Sanitize tax zone number input
+ * Allows alphanumeric, hyphen, and forward slash only
+ * Blocks consecutive special characters like ----- or /////
+ * 
+ * @param input - Raw tax zone number input
+ * @returns Sanitized tax zone number
+ */
+export const sanitizeTaxZoneNo = (input: string): string => {
+  if (!input || typeof input !== 'string') return '';
+  
+  const sanitized = input
+    // Allow only alphanumeric, hyphen, and forward slash
+    .replace(/[^a-zA-Z0-9\-/]/g, '')
+    // Block consecutive special characters
+    .replace(/([-/])\1+/g, '$1')
+    // Remove leading/trailing special characters
+    .replace(/^[-/]+|[-/]+$/g, '')
+    .trim();
+  
+  // If only special characters, return empty
+  if (sanitized && !/[a-zA-Z0-9]/.test(sanitized)) {
+    return '';
+  }
+  
+  return sanitized;
 };
 
 /**

@@ -74,7 +74,7 @@ export default function FloorInformationForm({
             <SearchSelect
               options={initialFloorOptions}
               placeholder={t('oldDetails.floordtails.selectPlaceholder')}
-              className="h-11 border-blue-100 focus:ring-blue-400"
+              className="h-9 border-blue-100 focus:ring-blue-400"
               name="floor"
               onChange={(_, val) => setFormData(prev => ({ ...prev, oldFloorId: val }))}
               value={String(formData.oldFloorId)}
@@ -90,7 +90,7 @@ export default function FloorInformationForm({
             <SearchSelect
               options={initialSubFloorOptions}
               placeholder={t('oldDetails.floordtails.selectPlaceholder')}
-              className="h-11 border-blue-100 focus:ring-blue-400"
+              className="h-9 border-blue-100 focus:ring-blue-400"
               name="subFloor"
               onChange={(_, val) => setFormData(prev => ({ ...prev, oldSubFloorId: val }))}
               value={String(formData.oldSubFloorId)}
@@ -103,7 +103,7 @@ export default function FloorInformationForm({
               {t('oldDetails.year')} <span className="text-red-500">*</span>
             </Label>
             <Input
-              className="h-11 border-blue-100 focus:ring-blue-400"
+              className="h-9 border-blue-100 focus:ring-blue-400"
               placeholder="YYYY"
               maxLength={4}
               value={formData.oldConstructionYear}
@@ -115,6 +115,23 @@ export default function FloorInformationForm({
             <ValidationMessage message={errors.oldConstructionYear} visible={showError("oldConstructionYear")} />
           </div>
 
+          {/* Assessment Year */}
+          <div className="space-y-2">
+            <Label className="text-sm font-bold text-blue-900">
+              {t('oldDetails.assessmentYear')}
+            </Label>
+            <Input
+              className="h-9 border-blue-100 focus:ring-blue-400"
+              placeholder="YYYY"
+              maxLength={4}
+              value={formData.oldAssessmentYear || ''}
+              onChange={(e) => {
+                const val = e.target.value.replace(/\D/g, '').slice(0, 4);
+                setFormData(prev => ({ ...prev, oldAssessmentYear: val }));
+              }}
+            />
+          </div>
+
           {/* Construction Type */}
           <div className="space-y-2 relative focus-within:z-100">
             <Label className="text-sm font-bold text-blue-900 flex items-center gap-1">
@@ -123,7 +140,7 @@ export default function FloorInformationForm({
             <SearchSelect
               options={initialConstructionTypeOptions}
               placeholder={t('oldDetails.floordtails.selectPlaceholder')}
-              className="h-11 border-blue-100 focus:ring-blue-400"
+              className="h-9 border-blue-100 focus:ring-blue-400"
               name="conTyp"
               onChange={(_, val) => setFormData(prev => ({ ...prev, oldConstructionTypeId: val }))}
               value={String(formData.oldConstructionTypeId)}
@@ -139,7 +156,7 @@ export default function FloorInformationForm({
             <SearchSelect
               options={initialUseOptions}
               placeholder={t('oldDetails.floordtails.selectPlaceholder')}
-              className="h-11 border-blue-100 focus:ring-blue-400"
+              className="h-9 border-blue-100 focus:ring-blue-400"
               name="use"
               onChange={(_, val) => handleUseTypeChange(val)}
               value={String(formData.oldTypeOfUseId)}
@@ -155,7 +172,7 @@ export default function FloorInformationForm({
             <SearchSelect
               options={currentSubUseTypeOptions}
               placeholder={t('oldDetails.floordtails.selectPlaceholder')}
-              className="h-11 border-blue-100 focus:ring-blue-400"
+              className="h-9 border-blue-100 focus:ring-blue-400"
               name="subUseType"
               onChange={(_, val) => setFormData(prev => ({ ...prev, oldSubTypeOfUseId: val }))}
               value={String(formData.oldSubTypeOfUseId)}
@@ -169,15 +186,30 @@ export default function FloorInformationForm({
             </Label>
             <Input
               type="number"
-              className="h-11 border-blue-100 focus:ring-blue-400"
+              className="h-9 border-blue-100 focus:ring-blue-400"
               placeholder={t('oldDetails.floordtails.carpetAreaPlaceholder')}
               value={formData.oldCarpetAreaSqFeet}
               onChange={(e) => setFormData(prev => ({ ...prev, oldCarpetAreaSqFeet: e.target.value }))}
             />
           </div>
 
+          {/* Built-up Area */}
+          <div className="space-y-2">
+            <Label className="text-sm font-bold text-blue-900">
+              {t('oldDetails.builtupArea')}
+            </Label>
+            <Input
+              type="number"
+              className="h-9 border-blue-100 focus:ring-blue-400"
+              placeholder={t('oldDetails.floordtails.builtupAreaPlaceholder')}
+              value={formData.oldBuiltupAreaSqFeet || ''}
+              onChange={(e) => setFormData(prev => ({ ...prev, oldBuiltupAreaSqFeet: e.target.value }))}
+            />
+          </div>
+        
+        </div>
           {/* Buttons Group */}
-          <div className="lg:col-span-2 flex items-end gap-4 mt-7">
+          <div className="flex justify-end items-end mb-5">
             {!formData.id ? (
               <Button
                 onClick={handleSave}
@@ -208,7 +240,6 @@ export default function FloorInformationForm({
               </Button>
             )}
           </div>
-        </div>
 
         {/* MasterTable Section */}
         <div className="border border-blue-100 rounded-xl overflow-hidden bg-gray-50/30 mb-10">
@@ -220,10 +251,12 @@ export default function FloorInformationForm({
               floor: f.floorDescription,
               subFloor: f.subFloorDescription,
               conYr: f.oldConstructionYear,
+              assessmentYr: f.oldAssessmentYear || '',
               conTyp: f.constructionTypeDescription,
               use: f.typeOfUseDescription,
               subUse: f.subTypeOfUseDescription,
-              areaSqFt: f.oldCarpetAreaSqFeet,
+              carpetAreaSqFt: f.oldCarpetAreaSqFeet,
+              builtupAreaSqFt: f.oldBuiltupAreaSqFeet || '',
             }))}
             totalCount={existingFloorDetails.length}
             getRowKey={(row: FloorTableRow) => String(row.id || "")}

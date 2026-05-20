@@ -22,6 +22,10 @@ export const getFloorInformationColumns = (t: (key: string) => string): Column<F
     label: t('floor.conYr')
   },
   {
+    key: 'assessmentYr',
+    label: t('floor.assessmentYr')
+  },
+  {
     key: 'conTyp',
     label: t('floor.conTyp')
   },
@@ -34,8 +38,13 @@ export const getFloorInformationColumns = (t: (key: string) => string): Column<F
     label: t('floor.subTyp')
   },
   {
-    key: 'areaSqFt',
+    key: 'carpetAreaSqFt',
     label: t('floor.carpetArea'),
+    render: (value: unknown) => <span className="font-bold text-blue-700">{String(value)}</span>
+  },
+  {
+    key: 'builtupAreaSqFt',
+    label: t('floor.builtupArea'),
     render: (value: unknown) => <span className="font-bold text-blue-700">{String(value)}</span>
   },
 ];

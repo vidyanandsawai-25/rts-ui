@@ -9,9 +9,6 @@ interface PropertyFormFieldsProps {
     categoryOptions: { label: string; value: string }[];
     categoryId: number | null;
     handleCategoryChange: (name: string | undefined, value: string) => void;
-    wingOptions: { label: string; value: string }[];
-    wingId: number | null;
-    handleWingChange: (name: string | undefined, value: string) => void;
     moujaOptions: { label: string; value: string }[];
     moujaId: number | null;
     handleMoujaChange: (name: string | undefined, value: string) => void;
@@ -27,9 +24,6 @@ export const PropertyFormFields = (props: PropertyFormFieldsProps) => {
         categoryOptions,
         categoryId,
         handleCategoryChange,
-        wingOptions,
-        wingId,
-        handleWingChange,
         moujaOptions,
         moujaId,
         handleMoujaChange,
@@ -46,9 +40,6 @@ export const PropertyFormFields = (props: PropertyFormFieldsProps) => {
                 categoryOptions={categoryOptions}
                 categoryId={categoryId}
                 handleCategoryChange={handleCategoryChange}
-                wingOptions={wingOptions}
-                wingId={wingId}
-                handleWingChange={handleWingChange}
                 moujaOptions={moujaOptions}
                 moujaId={moujaId}
                 handleMoujaChange={handleMoujaChange}

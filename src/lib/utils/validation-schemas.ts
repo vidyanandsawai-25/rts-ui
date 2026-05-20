@@ -551,12 +551,22 @@ export const oldDetailsValidations = {
       oldTypeOfUseId: formData.oldTypeOfUseId,
     };
 
-    return validateForm(validationData, {
+    const errors = validateForm(validationData, {
       oldFloorId: propertyValidations.required('floor', t),
       oldConstructionYear: propertyValidations.year('constructionYear', t),
       oldConstructionTypeId: propertyValidations.required('constructionType', t),
       oldTypeOfUseId: propertyValidations.required('typeOfUse', t),
     });
+
+    // Additional validation for construction year range (1700-2026)
+    if (formData.oldConstructionYear) {
+      const year = parseInt(formData.oldConstructionYear, 10);
+      if (!isNaN(year) && (year < 1700 || year > 2026)) {
+        errors.oldConstructionYear = t('property.validation.constructionYearRange');
+      }
+    }
+
+    return errors;
   },
 
   /**

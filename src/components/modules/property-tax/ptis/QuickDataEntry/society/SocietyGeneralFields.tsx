@@ -3,6 +3,7 @@ import { Label } from "@/components/common/label";
 import { societyValidators, SOCIETY_VALIDATION_RULES, propertyValidators } from '@/lib/utils/kyc-validation.constants';
 import { sanitizeEmailStrict, sanitizeName, sanitizeAddress } from '@/lib/utils/input-sanitization';
 import { useTranslations } from "next-intl";
+import { useState } from "react";
 
 interface SocietyGeneralFieldsProps {
     societyEmail: string;
@@ -38,6 +39,7 @@ export const SocietyGeneralFields = ({
 }: SocietyGeneralFieldsProps) => {
 
     const t = useTranslations('quickDataEntry');
+    const [wing, setWing] = useState('');
 
     return (
         <>
@@ -130,6 +132,24 @@ export const SocietyGeneralFields = ({
                             : t('kyc.validation.invalidName')}
                     </span>
                 )}
+            </div>
+
+            {/* Wing Field */}
+            <div className="space-y-1.5">
+                <Label htmlFor="society-wing" className="text-xs font-semibold text-gray-700">
+                    {t('society.wing')}
+                </Label>
+                <Input
+                    id="society-wing"
+                    name="wing"
+                    value={wing}
+                    placeholder={t('society.enterWing')}
+                    maxLength={50}
+                    className="h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
+                    onChange={(e) => {
+                        setWing(e.target.value);
+                    }}
+                />
             </div>
 
             {/* Row 2: Society Email & Society Address (side by side) */}

@@ -1,7 +1,7 @@
 import { Input } from '@/components/common';
 import { Label } from '@/components/common/label';
 import { PropertyBasicDetailsApiItem } from '@/types/property-basic-details.types';
-import { sanitizeSurveyNo, sanitizeSubZoneNo, sanitizePositiveInteger } from '@/lib/utils/input-sanitization';
+import { sanitizeSurveyNo, sanitizeSubZoneNo, sanitizePositiveInteger, sanitizeTaxZoneNo } from '@/lib/utils/input-sanitization';
 import { propertyValidators, PROPERTY_VALIDATION_RULES } from '@/lib/utils/kyc-validation.constants';
 import { useState } from 'react';
 
@@ -14,11 +14,13 @@ export const AdditionalPropertyFields = ({
     t,
     propertyData,
 }: AdditionalPropertyFieldsProps) => {
+    const [taxZoneNo, setTaxZoneNo] = useState(propertyData?.taxZoneNo?.toString() ?? '');
     const [surveyNo, setSurveyNo] = useState(propertyData?.surveyNo ?? '');
     const [subZoneNo, setSubZoneNo] = useState(propertyData?.subZoneNo ?? '');
     const [residentialToilets, setResidentialToilets] = useState(propertyData?.noOfResidentialToilets?.toString() ?? '');
     const [commercialToilets, setCommercialToilets] = useState(propertyData?.noOfCommercialToilets?.toString() ?? '');
     
+    const [showTaxZoneNoError, setShowTaxZoneNoError] = useState(false);
     const [showSurveyNoError, setShowSurveyNoError] = useState(false);
     const [showSubZoneNoError, setShowSubZoneNoError] = useState(false);
     const [showResidentialToiletsError, setShowResidentialToiletsError] = useState(false);
@@ -35,12 +37,26 @@ export const AdditionalPropertyFields = ({
                     id="pd-taxzone"
                     name="taxZoneNo"
                     placeholder="Z-03"
-                    readOnly
-                    disabled
                     title={t('property.taxZoneNo')}
-                    defaultValue={propertyData?.taxZoneNo?.toString() ?? ''}
-                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                    value={taxZoneNo}
+                    maxLength={PROPERTY_VALIDATION_RULES.TAX_ZONE_NO_MAX_LENGTH}
+                    className={`h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${
+                        showTaxZoneNoError && !propertyValidators.isValidTaxZoneNo(taxZoneNo)
+                            ? 'border-red-300 focus:border-red-500'
+                            : ''
+                    }`}
+                    onChange={(e) => {
+                        const sanitized = sanitizeTaxZoneNo(e.target.value);
+                        setTaxZoneNo(sanitized);
+                        if (sanitized) setShowTaxZoneNoError(true);
+                    }}
+                    onBlur={() => setShowTaxZoneNoError(true)}
                 />
+                {showTaxZoneNoError && !propertyValidators.isValidTaxZoneNo(taxZoneNo) && (
+                    <span className="text-xs text-red-500">
+                        {t('property.validation.invalidTaxZoneNo') || 'Invalid tax zone number. Only alphanumeric, -, and / allowed.'}
+                    </span>
+                )}
             </div>
 
             {/* Survey No */}
@@ -51,7 +67,6 @@ export const AdditionalPropertyFields = ({
                 <Input
                     id="pd-survey"
                     name="surveyNo"
-                    readOnly
                     placeholder="45/2B"
                     value={surveyNo}
                     maxLength={PROPERTY_VALIDATION_RULES.SURVEY_NO_MAX_LENGTH}
@@ -69,7 +84,7 @@ export const AdditionalPropertyFields = ({
                 />
                 {showSurveyNoError && !propertyValidators.isValidSurveyNo(surveyNo) && (
                     <span className="text-xs text-red-500">
-                        {t('property.validation.invalidSurveyNo') || 'Invalid survey number. Only alphanumeric and / - allowed.'}
+                        {t('property.validation.invalidSurveyNo') || 'Invalid survey number. Only alphanumeric, -, and / allowed.'}
                     </span>
                 )}
             </div>
@@ -82,7 +97,6 @@ export const AdditionalPropertyFields = ({
                 <Input
                     id="pd-subzone"
                     name="subZoneNo"
-                    readOnly
                     placeholder="SZ-12"
                     value={subZoneNo}
                     maxLength={PROPERTY_VALIDATION_RULES.SUB_ZONE_NO_MAX_LENGTH}
@@ -100,7 +114,7 @@ export const AdditionalPropertyFields = ({
                 />
                 {showSubZoneNoError && !propertyValidators.isValidSubZoneNo(subZoneNo) && (
                     <span className="text-xs text-red-500">
-                        {t('property.validation.invalidSubZoneNo') || 'Invalid sub zone number. Only alphanumeric and hyphen allowed.'}
+                        {t('property.validation.invalidSubZoneNo') || 'Invalid sub zone number. Only alphanumeric, -, and / allowed.'}
                     </span>
                 )}
             </div>
@@ -116,7 +130,8 @@ export const AdditionalPropertyFields = ({
                     readOnly
                     placeholder="UPIC2024001234"
                     defaultValue={propertyData?.upicId ?? ''}
-                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                    // className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                      className="h-9 text-sm bg-gray-50 text-gray-600 cursor-not-allowed border-gray-300"
                 />
             </div>
 
@@ -147,7 +162,7 @@ export const AdditionalPropertyFields = ({
                         // Prevent negative values
                         if (value && parseFloat(value) < 0) return;
                         const sanitized = sanitizePositiveInteger(value);
-                        // Limit to 3 digits (max 999)
+                        // Limit to 2 digits (max 99)
                         const limited = sanitized.slice(0, PROPERTY_VALIDATION_RULES.RESIDENTIAL_TOILET_MAX_LENGTH);
                         setResidentialToilets(limited);
                         if (limited) setShowResidentialToiletsError(true);
@@ -162,7 +177,7 @@ export const AdditionalPropertyFields = ({
                 />
                 {showResidentialToiletsError && !propertyValidators.isValidPositiveNumber(residentialToilets) && (
                     <span className="text-xs text-red-500">
-                        {t('property.validation.invalidResidentialToilets') || 'Invalid value. Only positive whole numbers allowed.'}
+                        {t('property.validation.invalidResidentialToilets') || 'Invalid value. Only positive whole numbers (max 99) allowed.'}
                     </span>
                 )}
             </div>
@@ -194,7 +209,7 @@ export const AdditionalPropertyFields = ({
                         // Prevent negative values
                         if (value && parseFloat(value) < 0) return;
                         const sanitized = sanitizePositiveInteger(value);
-                        // Limit to 3 digits (max 999)
+                        // Limit to 2 digits (max 99)
                         const limited = sanitized.slice(0, PROPERTY_VALIDATION_RULES.COMMERCIAL_TOILET_MAX_LENGTH);
                         setCommercialToilets(limited);
                         if (limited) setShowCommercialToiletsError(true);
@@ -209,7 +224,7 @@ export const AdditionalPropertyFields = ({
                 />
                 {showCommercialToiletsError && !propertyValidators.isValidPositiveNumber(commercialToilets) && (
                     <span className="text-xs text-red-500">
-                        {t('property.validation.invalidCommercialToilets') || 'Invalid value. Only positive whole numbers allowed.'}
+                        {t('property.validation.invalidCommercialToilets') || 'Invalid value. Only positive whole numbers (max 99) allowed.'}
                     </span>
                 )}
             </div>
