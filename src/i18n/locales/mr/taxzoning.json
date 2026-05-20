@@ -48,6 +48,7 @@
       "taxZoneRequired": "कर क्षेत्र आवश्यक आहे",
       "wardRequired": "किमान एक प्रभाग आवश्यक आहे",
       "propertyRequired": "एकल प्रभाग निवडीसाठी मालमत्ता श्रेणी आवश्यक आहे",
+      "fromPropertyMustBeSmallerThanToProperty": "मालमत्ता पासून मालमत्ता पर्यंत पेक्षा लहान असावी",
       "updateSuccess": "कर क्षेत्र यशस्वीरित्या अद्यतनित केले",
       "updateFailed": "कर क्षेत्र अद्यतनित करण्यात अयशस्वी",
       "createSuccess": "कर क्षेत्र यशस्वीरित्या तयार केले",

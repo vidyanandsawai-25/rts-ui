@@ -3,6 +3,7 @@
 import { useMemo, useState, useRef } from "react";
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
 import { TaxZoning, ZoningRecord, SelectOption, TaxZoningPageProps } from "@/types/taxzoning.types";
 import { getPreviewColumns, getTaxZoningColumns } from "@/components/modules/property-tax/taxzoningmaster/TaxZoningColumns";
 import { useTaxZoningActions } from "@/hooks/taxZoning/useTaxZoningActions";
@@ -99,6 +100,34 @@ export const useTaxZoning = (props: TaxZoningPageProps) => {
     updateUrl(zone, val);
   };
 
+  const handleSetFromProps = (val: string) => {
+    setFromProps(val);
+    
+    // Validate if toProps is already selected
+    if (toProps && val) {
+      const from = parseInt(val, 10);
+      const to = parseInt(toProps, 10);
+      
+      if (!isNaN(from) && !isNaN(to) && from >= to) {
+        toast.error(t('messages.fromPropertyMustBeSmallerThanToProperty'));
+      }
+    }
+  };
+
+  const handleSetToProps = (val: string) => {
+    setToProps(val);
+    
+    // Validate if fromProps is already selected
+    if (fromProps && val) {
+      const from = parseInt(fromProps, 10);
+      const to = parseInt(val, 10);
+      
+      if (!isNaN(from) && !isNaN(to) && from >= to) {
+        toast.error(t('messages.fromPropertyMustBeSmallerThanToProperty'));
+      }
+    }
+  };
+
   const previewData = useMemo(() => {
     if (!zone || ward.length !== 1 || !fromProps || !toProps) return [];
     const from = parseInt(fromProps, 10), to = parseInt(toProps, 10);
@@ -118,7 +147,7 @@ export const useTaxZoning = (props: TaxZoningPageProps) => {
   const isTaxZoneValid = !!zone, isWardValid = ward.length > 0, isPropertyValid = ward.length === 1 ? previewData.length > 0 : true;
 
   return {
-    t, zone, setZone, ward, setWard: handleSetWard, fromProps, setFromProps, toProps, setToProps, fileInputRef,
+    t, zone, setZone, ward, setWard: handleSetWard, fromProps, setFromProps: handleSetFromProps, toProps, setToProps: handleSetToProps, fileInputRef,
     zoneOptions, wardOptions, propertyOptionsByWard, loading: false, pageSizeOptions: [5, 10, 20, 50, 100],
     pageSizes, currentPage, submitted, saving, previewPage, setPreviewPage, PREVIEW_PAGE_SIZE,
     importedChanges, hasImportedData, tableRecords, previewData,
