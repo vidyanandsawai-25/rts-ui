@@ -42,7 +42,7 @@
   "unexpectedError": "An unexpected error occurred",
   "defaultRemark": "Combined from UI",
   "error": {
-    "title": "Failed to connect to the server. Please try again later.",
+    "title": "Failed to connect server. Please try again later.",
     "description": "An error occurred while loading the combine property page. Please try again.",
     "errorId": "Error ID: {id}",
     "goHome": "Go Home",
