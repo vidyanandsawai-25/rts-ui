@@ -193,7 +193,6 @@ export const createMockFormModel = (
   installDate: new Date().toISOString().slice(0, 10),
   isActive: true,
   applicableRate: null,
-  waterConnectionStatusId: null,
   ...overrides,
   // Ensure waterConnectionStatusId is never undefined
   waterConnectionStatusId:

@@ -18,7 +18,6 @@ import {
   createWaterConnection,
   updateWaterConnection,
   deleteWaterConnection,
-  getPropertyInfoById,
   ApiError,
 } from "@/lib/api/waterconnection.services";
 import { getPropertyBasicDetails } from "@/lib/api/property-basic-details.service";
@@ -74,7 +73,6 @@ export async function getWaterConnectionPageData(
     buildingType: basicDetails?.categoryName ?? "—",
   };
 
-  const isDev = process.env.NODE_ENV !== "production";
   return {
     property,
     connections: connectionsResponse.items ?? connectionsResponse.data ?? [],
@@ -114,17 +112,19 @@ export async function getConnectionLookupsAction(): Promise<{
     }),
   ]);
 
-  const isDev = process.env.NODE_ENV !== "production";
   return {
-    typeOptions: typeOptions.length > 0 ? typeOptions : (isDev ? MOCK_TYPE_OPTIONS : []),
-    sizeOptions: sizeOptions.length > 0 ? sizeOptions : (isDev ? MOCK_SIZE_OPTIONS : []),
-    statusOptions: statusOptions.length > 0 ? statusOptions : (isDev ? MOCK_STATUS_OPTIONS : []),
-    rateMasters: rateMastersFromApi.length > 0 ? rateMastersFromApi : (isDev ? MOCK_RATE_MASTERS : []),
+    typeOptions,
+    sizeOptions,
+    statusOptions,
+    rateMasters: rateMastersFromApi,
   };
 }
 
 export async function getWaterRateMastersAction(): Promise<WaterRateMasterLookup[]> {
-  return MOCK_RATE_MASTERS;
+  return getWaterRateMasters().catch((err) => {
+    console.error('[waterconnection] getWaterRateMasters failed:', err);
+    return [] as WaterRateMasterLookup[];
+  });
 }
 
 export async function saveWaterConnectionAction(
