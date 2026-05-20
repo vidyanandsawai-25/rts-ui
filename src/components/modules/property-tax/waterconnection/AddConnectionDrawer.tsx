@@ -1,40 +1,20 @@
 "use client";
 
-import React, { useState, useCallback, useEffect, useMemo } from "react";
 import { Droplets } from "lucide-react";
-import { toast } from "sonner";
 import { CancelButton, SaveButton } from "@/components/common";
 import { Drawer } from "@/components/common/Drawer";
 import { useTranslations } from "next-intl";
 import type {
   WaterConnection,
-  WaterConnectionFormModel,
   WaterConnectionTypeLookup,
   WaterConnectionSizeLookup,
   WaterConnectionStatusLookup,
   WaterRateMasterLookup,
 } from "@/types/waterconnection.types";
-import {
-  saveWaterConnectionAction,
-  getConnectionLookupsAction,
-} from "@/app/[locale]/property-tax/waterconnection/action";
 import { StatusToggleCard } from "../taxzonemaster/StatusToggleCard";
 import { MandatoryFieldsNotice } from "../taxzonemaster/MandatoryFieldsNotice";
 import { ConnectionFormFields } from "./ConnectionFormFields";
-import { findApplicableRate } from "./applicableRateHelper";
-
-function makeEmptyForm(propertyId: number): WaterConnectionFormModel {
-  return {
-    propertyId,
-    connectionNo: "",
-    meterNo: "",
-    waterConnectionTypeId: "",
-    waterConnectionSizeId: "",
-    waterConnectionStatusId: null,
-    installDate: new Date().toISOString().slice(0, 10),
-    isActive: true,
-  };
-}
+import { useConnectionForm } from "./useConnectionForm";
 
 interface AddConnectionDrawerProps {
   open: boolean;
@@ -59,169 +39,37 @@ export function AddConnectionDrawer({
   onClose,
   onSaved,
 }: AddConnectionDrawerProps) {
-  const isEdit = editingConnection != null;
   const t = useTranslations("waterConnection");
   const tCommon = useTranslations("common");
 
-  const [typeOptions, setTypeOptions] = useState(initialTypeOptions);
-  const [sizeOptions, setSizeOptions] = useState(initialSizeOptions);
-  const [statusOptions, setStatusOptions] = useState(initialStatusOptions);
-  const [rateMasters, setRateMasters] = useState(initialRateMasters);
-
-  const [formData, setFormData] = useState<WaterConnectionFormModel>(() => makeEmptyForm(propertyId));
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [touched, setTouched] = useState<Record<string, boolean>>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Fetch fresh lookups each time the drawer opens
-  useEffect(() => {
-    if (!open) return;
-    getConnectionLookupsAction().then(({ typeOptions: t, sizeOptions: s, statusOptions: st, rateMasters: rm }) => {
-      setTypeOptions(t);
-      setSizeOptions(s);
-      setStatusOptions(st);
-      setRateMasters(rm);
-    });
-  }, [open]);
-
-  // "Adjusting state on prop change" pattern — avoids setState-in-effect.
-  // Re-initialise the form whenever the target connection or open state changes.
-  const formInitKey = `${editingConnection?.id ?? "new"}-${String(open)}-${propertyId}`;
-  const [prevFormInitKey, setPrevFormInitKey] = useState(formInitKey);
-  if (prevFormInitKey !== formInitKey) {
-    setPrevFormInitKey(formInitKey);
-    if (editingConnection) {
-      setFormData({
-        id: editingConnection.id,
-        propertyId,
-        connectionNo: editingConnection.connectionNo,
-        meterNo: editingConnection.meterNo ?? "",
-        waterConnectionTypeId: editingConnection.waterConnectionTypeId,
-        waterConnectionSizeId: editingConnection.waterConnectionSizeId,
-        waterConnectionStatusId: editingConnection.waterConnectionStatusId ?? null,
-        installDate: editingConnection.installDate ?? editingConnection.connectionStartDate ?? "",
-        isActive: editingConnection.isActive,
-      });
-    } else {
-      setFormData(makeEmptyForm(propertyId));
-    }
-    setErrors({});
-    setTouched({});
-  }
-
-  // applicableRate is display-only (never sent to the API), so derive it rather than storing it.
-  const { rate: applicableRate, notFound: rateNotFound } = useMemo(
-    () => findApplicableRate(formData.waterConnectionTypeId, formData.waterConnectionSizeId, rateMasters),
-    [formData.waterConnectionTypeId, formData.waterConnectionSizeId, rateMasters]
-  );
-  const rateError = rateNotFound ? t("form.validation.rateNotFound") : null;
-
-  const validate = useCallback(
-    (data: WaterConnectionFormModel): Record<string, string> => {
-      const e: Record<string, string> = {};
-      
-      // Connection Number validation
-      if (!data.connectionNo.trim())
-        e.connectionNo = t("form.validation.connectionNoRequired");
-      else if (/[@#$%^&*()_]/.test(data.connectionNo))
-        e.connectionNo = t("form.validation.connectionNoInvalidChars");
-      
-      // Meter Number validation
-      if (!data.meterNo.trim())
-        e.meterNo = t("form.validation.meterNoRequired");
-      else if (/[@#$%^&*()_]/.test(data.meterNo))
-        e.meterNo = t("form.validation.meterNoInvalidChars");
-      
-      // Type validation
-      if (!data.waterConnectionTypeId)
-        e.waterConnectionTypeId = t("form.validation.typeRequired");
-      
-      // Size validation
-      if (!data.waterConnectionSizeId)
-        e.waterConnectionSizeId = t("form.validation.tapSizeRequired");
-      
-      // Status validation
-      if (!data.waterConnectionStatusId)
-        e.waterConnectionStatusId = t("form.validation.statusRequired");
-      
-      // Install Date validation
-      if (!data.installDate)
-        e.installDate = t("form.validation.installDateRequired");
-      
-      return e;
-    },
-    [t]
-  );
-
-  const showError = (field: keyof WaterConnectionFormModel) =>
-    !!touched[field] && !!errors[field];
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    
-    // Sanitize connection number and meter number - remove special characters
-    let sanitizedValue = value;
-    if (name === "connectionNo" || name === "meterNo") {
-      sanitizedValue = value.replace(/[@#$%^&*()_]/g, "");
-    }
-    
-    setFormData((prev) => ({ ...prev, [name]: sanitizedValue }));
-    setErrors((prev) => ({ ...prev, [name]: "" }));
-  };
-
-  const handleSelectChange = (name: string, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      [name]: name === "waterConnectionStatusId"
-        ? (value === "" ? null : Number(value))
-        : (name === "waterConnectionTypeId" || name === "waterConnectionSizeId")
-          ? (value === "" ? "" : Number(value))
-          : value,
-    }));
-    setErrors((prev) => ({ ...prev, [name]: "" }));
-  };
-
-  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setTouched((prev) => ({ ...prev, [name]: true }));
-    const fieldErrors = validate({ ...formData, [name]: value } as WaterConnectionFormModel);
-    setErrors((prev) => ({ ...prev, [name]: fieldErrors[name] ?? "" }));
-  };
-
-  const handleToggleStatus = () => {
-    setFormData((prev) => ({ ...prev, isActive: !prev.isActive }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setTouched({
-      connectionNo: true,
-      waterConnectionTypeId: true,
-      waterConnectionSizeId: true,
-      installDate: true,
-    });
-    const v = validate(formData);
-    setErrors(v);
-    if (Object.keys(v).length) {
-      toast.error(t("form.validation.fixErrors"));
-      return;
-    }
-    setIsSubmitting(true);
-    try {
-      const result = await saveWaterConnectionAction(formData);
-      if (!result.ok) {
-        toast.error(result.error ?? t("form.messages.error"));
-        return;
-      }
-      toast.success(isEdit ? t("form.messages.updateSuccess") : t("form.messages.createSuccess"));
-      onSaved();
-      onClose();
-    } catch {
-      toast.error(t("form.messages.error"));
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  const {
+    isEdit,
+    formData,
+    errors,
+    isSubmitting,
+    typeOptions,
+    sizeOptions,
+    statusOptions,
+    applicableRate,
+    rateError,
+    showError,
+    handleChange,
+    handleSelectChange,
+    handleBlur,
+    handleToggleStatus,
+    handleSubmit,
+  } = useConnectionForm({
+    open,
+    propertyId,
+    editingConnection,
+    initialTypeOptions,
+    initialSizeOptions,
+    initialStatusOptions,
+    initialRateMasters,
+    t,
+    onSaved,
+    onClose,
+  });
 
   return (
     <Drawer
