@@ -1,8 +1,7 @@
 'use client';
 
 import { Label } from '@/components/common/label';
-import { Input, Select, ValidationMessage, ToggleSwitch } from '@/components/common';
-import { TextArea } from '@/components/common/Textarea';
+import { Input, Select, ValidationMessage, TextArea, RequiredFieldsNote, StatusToggleCard } from '@/components/common';
 import type { Option } from '@/components/common';
 import { useTranslations } from 'next-intl';
 import type { FormState } from '@/types/configMaster.types';
@@ -50,7 +49,9 @@ export function ConfigKeyFormFields({
   const t = useTranslations('configMaster');
 
   return (
-    <div className="p-6 space-y-4">
+    <div className="p-6 space-y-5">
+      <RequiredFieldsNote text={t('modals.addKey.form.requiredFields')} />
+
       {/* Category Selection */}
       <div className="space-y-2">
         <Label htmlFor="categoryId" required>
@@ -77,6 +78,7 @@ export function ConfigKeyFormFields({
           placeholder={t('modals.addKey.form.placeholders.code')}
           className={errors.configCode ? 'border-red-500' : ''}
           disabled={isPending}
+          maxLength={50}
         />
         <ValidationMessage message={errors.configCode} visible={!!errors.configCode} />
       </div>
@@ -86,13 +88,15 @@ export function ConfigKeyFormFields({
         <Label htmlFor="configName" required>
           {t('modals.addKey.form.name')}
         </Label>
-        <Input
+        <TextArea
           id="configName"
-          value={formData.configName || ''}
+          defaultValue={formData.configName || ''}
           onChange={(e) => onFieldChange('configName', e.target.value)}
           placeholder={t('modals.addKey.form.placeholders.name')}
           className={errors.configName ? 'border-red-500' : ''}
           disabled={isPending}
+          maxLength={100}
+          rows={2}
         />
         <ValidationMessage message={errors.configName} visible={!!errors.configName} />
       </div>
@@ -107,6 +111,7 @@ export function ConfigKeyFormFields({
           placeholder={t('modals.addKey.form.placeholders.description')}
           rows={2}
           disabled={isPending}
+          maxLength={255}
         />
       </div>
 
@@ -155,8 +160,13 @@ export function ConfigKeyFormFields({
                 onFieldChange('defaultValue', val);
               }
             }}
+            onKeyDown={(e) => {
+              if (formData.dataType === 'int' && /^[eE+\-.,]$/.test(e.key)) e.preventDefault();
+              if (formData.dataType === 'decimal' && /^[eE+\-]$/.test(e.key)) e.preventDefault();
+            }}
             placeholder={t('modals.addKey.form.placeholders.defaultValue')}
             disabled={isPending}
+            maxLength={100}
           />
         )}
       </div>
@@ -174,18 +184,17 @@ export function ConfigKeyFormFields({
 
       {/* Status Toggle - Only show in Edit mode */}
       {isEdit && (
-        <div className="space-y-2">
-          <Label htmlFor="isActive">{t('modals.addKey.form.status')}</Label>
-          <ToggleSwitch
-            checked={formData.isActive}
-            onChange={(checked) => onFieldChange('isActive', checked)}
-            activeLabel={t('modals.addKey.form.active')}
-            inactiveLabel={t('modals.addKey.form.inactive')}
-            disabled={isPending}
-            showPopup={false}
-          />
-        </div>
+        <StatusToggleCard
+          isActive={formData.isActive}
+          onToggle={(checked) => onFieldChange('isActive', checked)}
+          activeLabel={t('modals.addKey.form.active')}
+          inactiveLabel={t('modals.addKey.form.inactive')}
+          statusLabel={t('modals.addKey.form.status')}
+          description={formData.isActive ? t('modals.addKey.form.activeDescription') : t('modals.addKey.form.inactiveDescription')}
+          disabled={isPending}
+        />
       )}
     </div>
   );
 }
+

@@ -1,17 +1,20 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { configMasterService } from '@/lib/api/configMaster.service';
-import type { 
+import { configMasterService } from '@/lib/api/configuration-settings/config-master/configMaster.service';
+import type {
   CreateConfigValueRequest,
   UpdateConfigValueRequest,
-  UpdateConfigKeyRequest
+  UpdateConfigKeyRequest,
+  BackendMutationResponse,
+  ConfigValueMaster,
+  ConfigKeyMaster,
+  DeleteResponse,
 } from '@/types/configMaster.types';
 import { verifySession, getLocaleFromHeaders, tConfigMessage } from './utils';
 import type { ActionResult } from '@/types/common.types';
 import { CreateConfigValueSchema } from '@/lib/validations/config-master.schema';
 import { logError } from '@/lib/utils/logger';
-
 
 /**
  * Create Config Value
@@ -50,18 +53,29 @@ export async function createConfigValueAction(formData: FormData): Promise<Actio
     if (result.success) {
       const locale = await getLocaleFromHeaders();
       revalidatePath(`/${locale}/configuration-settings/config-master`, 'page');
-      return { success: true, message: await tConfigMessage('valueSaved', 'Config Value saved successfully') };
+      const backendMessage = (result.data as BackendMutationResponse<ConfigValueMaster>)?.message;
+      return {
+        success: true,
+        message:
+          (typeof backendMessage === 'string' ? backendMessage : undefined) ||
+          (await tConfigMessage('valueSaved', 'Config Value saved successfully')),
+      };
     }
-    
+
     return {
       success: false,
-      error: result.error || await tConfigMessage('configValueCreateFailed', 'Failed to save config value'),
+      error:
+        result.error ||
+        (await tConfigMessage('configValueCreateFailed', 'Failed to save config value')),
     };
   } catch (err) {
     logError('createConfigValueAction failed', { error: err instanceof Error ? err : undefined });
-    const errorMessage = process.env.NODE_ENV === 'production'
-      ? 'An unexpected error occurred while creating value'
-      : (err instanceof Error ? err.message : 'An unexpected error occurred');
+    const errorMessage =
+      process.env.NODE_ENV === 'production'
+        ? 'An unexpected error occurred while creating value'
+        : err instanceof Error
+          ? err.message
+          : 'An unexpected error occurred';
     return {
       success: false,
       error: errorMessage,
@@ -81,7 +95,8 @@ export async function updateConfigItemAction(data: {
   try {
     const userId = await verifySession();
 
-    const isValueId = data.isKey === true ? false : (!data.id.startsWith('key_') && !isNaN(parseInt(data.id)));
+    const isValueId =
+      data.isKey === true ? false : !data.id.startsWith('key_') && !isNaN(parseInt(data.id));
     const isToggle = typeof data.value === 'boolean';
 
     if (isValueId) {
@@ -90,7 +105,7 @@ export async function updateConfigItemAction(data: {
       if (!valRes.success || !valRes.data) {
         return { success: false, error: await tConfigMessage('failedFetch', 'Value not found') };
       }
-      
+
       const existingVal = valRes.data;
 
       const updatePayload: UpdateConfigValueRequest = {
@@ -106,9 +121,18 @@ export async function updateConfigItemAction(data: {
       if (result.success) {
         const locale = await getLocaleFromHeaders();
         revalidatePath(`/${locale}/configuration-settings/config-master`, 'page');
-        return { success: true, message: await tConfigMessage('valueSaved', 'Updated') };
+        const backendMessage = (result.data as BackendMutationResponse<ConfigValueMaster>)?.message;
+        return {
+          success: true,
+          message:
+            (typeof backendMessage === 'string' ? backendMessage : undefined) ||
+            (await tConfigMessage('valueSaved', 'Updated')),
+        };
       }
-      return { success: false, error: result.error };
+      return {
+        success: false,
+        error: result.error || (result.data as BackendMutationResponse<ConfigValueMaster>)?.message,
+      };
     } else {
       const keyId = data.configKeyId;
       const keyRes = await configMasterService.getConfigKeyById(keyId);
@@ -133,15 +157,30 @@ export async function updateConfigItemAction(data: {
       if (result.success) {
         const locale = await getLocaleFromHeaders();
         revalidatePath(`/${locale}/configuration-settings/config-master`, 'page');
-        return { success: true, message: await tConfigMessage('keyUpdated', 'Key updated') };
+        const backendMessage = (result.data as BackendMutationResponse<ConfigKeyMaster>)?.message;
+        return {
+          success: true,
+          message:
+            (typeof backendMessage === 'string' ? backendMessage : undefined) ||
+            (await tConfigMessage('keyUpdated', 'Key updated')),
+        };
       }
-      return { success: false, error: result.error };
+      return {
+        success: false,
+        error: result.error || (result.data as BackendMutationResponse<ConfigKeyMaster>)?.message,
+      };
     }
   } catch (err) {
-    logError('updateConfigItemAction failed', { error: err instanceof Error ? err : undefined, data });
-    const errorMessage = process.env.NODE_ENV === 'production'
-      ? 'An unexpected error occurred while updating configuration'
-      : (err instanceof Error ? err.message : 'An unexpected error occurred');
+    logError('updateConfigItemAction failed', {
+      error: err instanceof Error ? err : undefined,
+      data,
+    });
+    const errorMessage =
+      process.env.NODE_ENV === 'production'
+        ? 'An unexpected error occurred while updating configuration'
+        : err instanceof Error
+          ? err.message
+          : 'An unexpected error occurred';
     return {
       success: false,
       error: errorMessage,
@@ -155,26 +194,35 @@ export async function updateConfigItemAction(data: {
 export async function deleteConfigValueAction(id: number): Promise<ActionResult> {
   try {
     await verifySession();
-    
+
     const res = await configMasterService.deleteConfigValue(id);
     if (res.success) {
       const locale = await getLocaleFromHeaders();
       revalidatePath(`/${locale}/configuration-settings/config-master`, 'page');
     }
+    const backendMessage = (res.data as DeleteResponse)?.message;
     return {
       success: res.success,
       error: res.error,
-      message: res.success ? await tConfigMessage('valueDeleted', 'Configuration value deleted successfully') : undefined,
+      message: res.success
+        ? (typeof backendMessage === 'string' ? backendMessage : undefined) ||
+          (await tConfigMessage('valueDeleted', 'Configuration value deleted successfully'))
+        : undefined,
     };
   } catch (err) {
-    logError('deleteConfigValueAction failed', { error: err instanceof Error ? err : undefined, id });
-    const errorMessage = process.env.NODE_ENV === 'production'
-      ? 'An unexpected error occurred while deleting value'
-      : (err instanceof Error ? err.message : 'An unexpected error occurred');
+    logError('deleteConfigValueAction failed', {
+      error: err instanceof Error ? err : undefined,
+      id,
+    });
+    const errorMessage =
+      process.env.NODE_ENV === 'production'
+        ? 'An unexpected error occurred while deleting value'
+        : err instanceof Error
+          ? err.message
+          : 'An unexpected error occurred';
     return {
       success: false,
       error: errorMessage,
     };
   }
 }
-

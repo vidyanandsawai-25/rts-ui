@@ -1,14 +1,20 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { configMasterService } from '@/lib/api/configMaster.service';
+import { configMasterService } from '@/lib/api/configuration-settings/config-master/configMaster.service';
 import * as departmentMasterService from '@/lib/api/configuration-settings/department-master/departmentMaster.service';
 import { moduleMasterService } from '@/lib/api/moduleMaster.service';
 import { SaveDepartmentConfigurationSchema } from '@/lib/validations/config-master.schema';
 import type { DepartmentApiResponse, ConfigValueMaster } from '@/types/configMaster.types';
 import type { DepartmentMaster } from '@/types/departmentMaster.types';
 import type { ModuleMaster } from '@/types/moduleMaster.types';
-import { verifySession, getLocaleFromHeaders, processBatch, MAX_CONCURRENT_UPDATES, tConfigMessage } from './utils';
+import {
+  verifySession,
+  getLocaleFromHeaders,
+  processBatch,
+  MAX_CONCURRENT_UPDATES,
+  tConfigMessage,
+} from './utils';
 import type { ActionResult } from '@/types/common.types';
 import { logError } from '@/lib/utils/logger';
 
@@ -27,12 +33,17 @@ export async function getDepartmentConfigurationAction(
     ]);
 
     if (!deptRes.success || !deptRes.data) {
-      return { success: false, error: await tConfigMessage('failedFetch', 'Failed to fetch departments') };
+      return {
+        success: false,
+        error: await tConfigMessage('failedFetch', 'Failed to fetch departments'),
+      };
     }
     if (!keyValues.success || !keyValues.data) {
       return {
         success: false,
-        error: keyValues.error || await tConfigMessage('failedFetch', 'Failed to fetch configuration values'),
+        error:
+          keyValues.error ||
+          (await tConfigMessage('failedFetch', 'Failed to fetch configuration values')),
       };
     }
 
@@ -53,7 +64,7 @@ export async function getDepartmentConfigurationAction(
         modulesByDeptId.set(m.departmentId, deptModules);
       }
     });
-    
+
     const deptSeen = new Set<number>();
     const activeDepartments = departments.filter((d) => {
       const isValid = d.departmentName?.toLowerCase() !== 'string' && d.departmentId > 0;
@@ -67,8 +78,14 @@ export async function getDepartmentConfigurationAction(
     const items = transformDepartmentConfigs(activeDepartments, modulesByDeptId, keyValues.data);
     return { success: true, data: items };
   } catch (err) {
-    logError('getDepartmentConfigurationAction failed', { error: err instanceof Error ? err : undefined, configKeyId });
-    return { success: false, error: err instanceof Error ? err.message : 'Failed to load configuration' };
+    logError('getDepartmentConfigurationAction failed', {
+      error: err instanceof Error ? err : undefined,
+      configKeyId,
+    });
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : 'Failed to load configuration',
+    };
   }
 }
 
@@ -85,7 +102,7 @@ function transformDepartmentConfigs(
   return departments.map((dept) => {
     const deptValueObj = keyValueMap.get(`${dept.departmentId}_0`);
     const submodules = (modulesByDeptId.get(dept.departmentId) || [])
-      .filter((m, i, arr) => arr.findIndex(x => x.moduleId === m.moduleId) === i)
+      .filter((m, i, arr) => arr.findIndex((x) => x.moduleId === m.moduleId) === i)
       .map((mod) => {
         const modValueObj = keyValueMap.get(`${dept.departmentId}_${mod.moduleId}`);
         return {
@@ -119,7 +136,12 @@ export async function saveDepartmentConfigurationAction(rawData: unknown): Promi
   try {
     const userId = await verifySession();
     const validation = SaveDepartmentConfigurationSchema.safeParse(rawData);
-    if (!validation.success) return { success: false, error: await tConfigMessage('saveFailed', 'Invalid data'), validationErrors: validation.error.flatten().fieldErrors };
+    if (!validation.success)
+      return {
+        success: false,
+        error: await tConfigMessage('saveFailed', 'Invalid data'),
+        validationErrors: validation.error.flatten().fieldErrors,
+      };
 
     const { configKeyId, updates } = validation.data;
     const keyId = Number(configKeyId);
@@ -127,36 +149,44 @@ export async function saveDepartmentConfigurationAction(rawData: unknown): Promi
     if (!currentValues.success || !currentValues.data) {
       return {
         success: false,
-        error: currentValues.error || await tConfigMessage('failedFetch', 'Failed to fetch current configuration values'),
+        error:
+          currentValues.error ||
+          (await tConfigMessage('failedFetch', 'Failed to fetch current configuration values')),
       };
     }
-    const valueMap = new Map(currentValues.data.map(v => [`${v.departmentId || 0}_${v.moduleId || 0}`, v.configValueId]));
+    const valueMap = new Map(
+      currentValues.data.map((v) => [`${v.departmentId || 0}_${v.moduleId || 0}`, v.configValueId])
+    );
 
-    const results = await processBatch(updates, async (u) => {
-      const lookupKey = `${u.departmentId || 0}_${u.moduleId || 0}`;
-      const effectiveId = u.configValueId || valueMap.get(lookupKey) || 0;
+    const results = await processBatch(
+      updates,
+      async (u) => {
+        const lookupKey = `${u.departmentId || 0}_${u.moduleId || 0}`;
+        const effectiveId = u.configValueId || valueMap.get(lookupKey) || 0;
 
-      if (effectiveId > 0) {
-        return configMasterService.updateConfigValue(effectiveId, {
-          configKeyId: keyId,
-          departmentId: u.departmentId,
-          moduleId: u.moduleId || null,
-          value: u.value !== undefined ? String(u.value) : '',
-          isActive: u.isEnabled,
-          updatedBy: userId,
-        });
-      } else if (u.isEnabled || (u.value !== undefined && u.value !== '')) {
-        return configMasterService.createConfigValue({
-          configKeyId: keyId,
-          departmentId: u.departmentId,
-          moduleId: u.moduleId || null,
-          value: u.value !== undefined ? String(u.value) : '',
-          isActive: u.isEnabled,
-          createdBy: userId,
-        });
-      }
-      return { success: true };
-    }, MAX_CONCURRENT_UPDATES);
+        if (effectiveId > 0) {
+          return configMasterService.updateConfigValue(effectiveId, {
+            configKeyId: keyId,
+            departmentId: u.departmentId,
+            moduleId: u.moduleId || null,
+            value: u.value !== undefined ? String(u.value) : '',
+            isActive: u.isEnabled,
+            updatedBy: userId,
+          });
+        } else if (u.isEnabled || (u.value !== undefined && u.value !== '')) {
+          return configMasterService.createConfigValue({
+            configKeyId: keyId,
+            departmentId: u.departmentId,
+            moduleId: u.moduleId || null,
+            value: u.value !== undefined ? String(u.value) : '',
+            isActive: u.isEnabled,
+            createdBy: userId,
+          });
+        }
+        return { success: true };
+      },
+      MAX_CONCURRENT_UPDATES
+    );
 
     const failedResults = results.filter((result) => !result.success);
     if (failedResults.length > 0) {
@@ -177,7 +207,9 @@ export async function saveDepartmentConfigurationAction(rawData: unknown): Promi
     revalidatePath(`/${locale}/configuration-settings/config-master`, 'page');
     return { success: true, message: await tConfigMessage('configSaved', 'Saved successfully') };
   } catch (err) {
-    logError('saveDepartmentConfigurationAction failed', { error: err instanceof Error ? err : undefined });
+    logError('saveDepartmentConfigurationAction failed', {
+      error: err instanceof Error ? err : undefined,
+    });
     return { success: false, error: err instanceof Error ? err.message : 'Failed to save' };
   }
 }

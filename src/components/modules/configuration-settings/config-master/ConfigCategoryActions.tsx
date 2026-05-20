@@ -45,8 +45,7 @@ export function CategoryEditDeleteActions({ categoryId, categoryName }: Category
         startTransition(async () => {
           const res = await deleteConfigCategoryAction(parseInt(categoryId));
           if (res.success) {
-            success(t('messages.categoryDeleted') || 'Category deleted');
-
+            success(res.message || t('messages.categoryDeleted') || 'Category deleted');
             // Clear active category so it defaults to next available
             const params = new URLSearchParams(searchParams.toString());
             if (params.get('categoryId') === categoryId) {
@@ -54,7 +53,7 @@ export function CategoryEditDeleteActions({ categoryId, categoryName }: Category
             }
             router.push(`${pathname}?${params.toString()}`, { scroll: false });
           } else {
-            toastError(res.error || t('messages.deleteFailed') || 'Delete failed');
+            toastError(res.message || res.error || t('messages.deleteFailed') || 'Delete failed');
           }
           setActiveAction(null);
         });
