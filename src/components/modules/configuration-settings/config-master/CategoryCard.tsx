@@ -56,7 +56,7 @@ export function CategoryCard({ category, isActive, search }: CategoryCardProps) 
 
           <div className="flex-1 min-w-0 flex flex-col justify-center">
             <h3 className={cn(
-              "text-xs sm:text-sm font-semibold truncate leading-none mb-1",
+              "text-xs sm:text-sm font-semibold leading-tight mb-1 line-clamp-2",
               isActive ? "text-slate-900 dark:text-white" : "text-slate-600 dark:text-slate-300"
             )}>
               {category.name}
