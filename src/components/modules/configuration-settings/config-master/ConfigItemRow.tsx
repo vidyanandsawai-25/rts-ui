@@ -9,28 +9,23 @@ import { useTransition } from 'react';
 import { updateConfigItemAction } from '@/app/[locale]/configuration-settings/config-master/actions';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils/cn';
-import { UserRole } from '@/types/common.types';
 import { highlightText } from './config-master-ui.utils';
 
 interface ConfigItemRowProps {
   item: ConfigItem;
   searchTerm?: string;
   locale: string;
-  role: UserRole | null;
 }
 
 export function ConfigItemRow({ 
   item, 
   searchTerm = '', 
   locale,
-  role,
 }: ConfigItemRowProps) {
   const t = useTranslations('configMaster');
   const router = useRouter();
   const { success, error: toastError } = useToast();
   const [isPending, startTransition] = useTransition();
-
-  const isAdmin = role === UserRole.ADMIN;
 
   const handleToggle = () => {
     const newValue = !item.isEnabled;
@@ -73,10 +68,13 @@ export function ConfigItemRow({
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap mb-1">
-            <span className={cn(
-              "font-bold text-sm sm:text-base tracking-tight transition-colors",
-              item.isEnabled ? "text-slate-900 dark:text-slate-100" : "text-slate-500"
-            )}>
+            <span 
+              className={cn(
+                "font-bold text-sm sm:text-base tracking-tight transition-colors line-clamp-2 flex-1",
+                item.isEnabled ? "text-slate-900 dark:text-slate-100" : "text-slate-500"
+              )}
+              title={item.name}
+            >
               {highlightText(item.name, searchTerm)}
             </span>
             <Badge 
@@ -145,20 +143,18 @@ export function ConfigItemRow({
           "flex items-center justify-end gap-3 sm:gap-4 transition-all duration-200",
           isPending ? "opacity-0 invisible scale-95" : "opacity-100 visible scale-100"
         )}>
-          {isAdmin && (
-            <ConfigItemActions 
-              id={item.id} 
-              configKeyId={item.configKeyId} 
-              name={item.name} 
-              isEnabled={item.isEnabled} 
-            />
-          )}
+          <ConfigItemActions 
+            id={item.id} 
+            configKeyId={item.configKeyId} 
+            name={item.name} 
+            isEnabled={item.isEnabled} 
+          />
           <div className="flex items-center justify-center scale-[0.85] sm:scale-100">
             <ToggleSwitch 
               checked={item.isEnabled} 
               onChange={handleToggle} 
               showPopup={false} 
-              disabled={isPending || !isAdmin} 
+              disabled={isPending} 
             />
           </div>
         </div>

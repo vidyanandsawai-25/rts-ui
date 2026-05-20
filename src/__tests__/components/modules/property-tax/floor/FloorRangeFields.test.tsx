@@ -27,8 +27,6 @@ const messages = {
           title: 'English Name',
           prefix: 'Prefix',
           prefixPlaceholder: 'FL',
-          suffix: 'Suffix',
-          suffixPlaceholder: 'FL',
         },
       
         autoGenerateSubFloor: 'Auto-Generate SubFloor',
@@ -50,7 +48,7 @@ const defaultFormData: FloorRangeFormModel = {
   rangeFrom: 1,
   rangeTo: 10,
   prefix: '',
-  suffix: 'Floor',
+  suffix: '',
   isActive: true,
   autoGenerateSubFloor: false,
 };
@@ -91,10 +89,9 @@ describe('FloorRangeFields', () => {
     expect(screen.getByLabelText(/End/)).toBeInTheDocument();
   });
 
-  it('renders Prefix and Suffix fields', () => {
+  it('renders Prefix field', () => {
     renderFloorRangeFields();
     expect(screen.getByLabelText('Prefix')).toBeInTheDocument();
-    expect(screen.getByLabelText('Suffix')).toBeInTheDocument();
   });
 
   it('renders example info message', () => {
@@ -151,7 +148,7 @@ describe('FloorRangeFields', () => {
     expect(screen.getByText('Start value must be at least 1')).toBeInTheDocument();
   });
 
-  it('calls onChange when prefix is changed with max 2 chars', () => {
+  it('calls onChange when prefix is changed with valid length', () => {
     const onChangeMock = vi.fn();
     renderFloorRangeFields({ onChange: onChangeMock });
     const prefixInput = screen.getByLabelText('Prefix');
@@ -165,29 +162,13 @@ describe('FloorRangeFields', () => {
     const prefixInput = screen.getByLabelText('Prefix');
     fireEvent.change(prefixInput, { target: { value: 'ABC' } });
     expect(onChangeMock).not.toHaveBeenCalledWith('prefix', 'ABC');
-    fireEvent.change(prefixInput, { target: { value: 'AB' } });
-    expect(onChangeMock).toHaveBeenCalledWith('prefix', 'AB');
+    fireEvent.change(prefixInput, { target: { value: 'FL' } });
+    expect(onChangeMock).toHaveBeenCalledWith('prefix', 'FL');
   });
 
-  it('restricts Suffix field to 2 characters maximum', () => {
-    const onChangeMock = vi.fn();
-    renderFloorRangeFields({ onChange: onChangeMock });
-    const suffixInput = screen.getByLabelText('Suffix');
-    fireEvent.change(suffixInput, { target: { value: 'XYZ' } });
-    expect(onChangeMock).not.toHaveBeenCalledWith('suffix', 'XYZ');
-    fireEvent.change(suffixInput, { target: { value: 'XY' } });
-    expect(onChangeMock).toHaveBeenCalledWith('suffix', 'XY');
-  });
 
-  it('calls onChange when suffix is changed', () => {
-    const onChangeMock = vi.fn();
-    renderFloorRangeFields({ onChange: onChangeMock });
 
-    const suffixInput = screen.getByLabelText('Suffix');
-    fireEvent.change(suffixInput, { target: { value: 'F' } });
 
-    expect(onChangeMock).toHaveBeenCalledWith('suffix', 'F');
-  });
 
   it('displays initial form values correctly', () => {
     renderFloorRangeFields();

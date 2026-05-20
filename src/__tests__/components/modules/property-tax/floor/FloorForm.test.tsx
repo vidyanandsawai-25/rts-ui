@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 // Mock sonner toast
 vi.mock('sonner', () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { NextIntlClientProvider } from 'next-intl';
 import { toast } from 'sonner';
 
@@ -139,6 +139,11 @@ function submitForm(container: HTMLElement, formId = 'form') {
 // ── Tests ─────────────────────────────────────────────────────────────────────
 describe('FloorForm — Add Mode', () => {
   beforeEach(() => vi.clearAllMocks());
+  
+  afterEach(async () => {
+    // Wait for any pending async operations to complete
+    await new Promise(resolve => setTimeout(resolve, 0));
+  });
 
   it('renders Add Floor title', () => {
     renderAdd();
@@ -186,11 +191,18 @@ describe('FloorForm — Add Mode', () => {
     fireEvent.change(screen.getByPlaceholderText('Enter description'), {
       target: { name: 'description', value: 'Ground Floor' },
     });
+    fireEvent.change(screen.getByPlaceholderText('Enter sequence number'), {
+      target: { name: 'sequenceNo', value: '1' },
+    });
     submitForm(container);
 
     await waitFor(() => {
       expect(createFloorAction).toHaveBeenCalledWith(
-        expect.objectContaining({ floorCode: 'GF', description: 'Ground Floor' })
+        expect.objectContaining({ 
+          floorCode: 'GF', 
+          description: 'Ground Floor',
+          sequenceNo: 1,
+        })
       );
     });
   });
@@ -222,6 +234,11 @@ describe('FloorForm — Add Mode', () => {
 
 describe('FloorForm — Edit Mode', () => {
   beforeEach(() => vi.clearAllMocks());
+  
+  afterEach(async () => {
+    // Wait for any pending async operations to complete
+    await new Promise(resolve => setTimeout(resolve, 0));
+  });
 
   it('renders Edit Floor title', () => {
     renderEdit();
@@ -266,20 +283,28 @@ describe('FloorForm — Range Mode', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
+  
+  afterEach(async () => {
+    // Wait for any pending async operations to complete
+    await new Promise(resolve => setTimeout(resolve, 0));
+  });
 
-  it('switches to range mode and shows range fields', () => {
+  it('switches to range mode and shows range fields', async () => {
     renderAdd();
     // Switch to range mode
     fireEvent.click(screen.getByText('Floor Range'));
-    expect(screen.getByLabelText(/Start/)).toBeInTheDocument();
-    expect(screen.getByLabelText(/End/)).toBeInTheDocument();
-    expect(screen.getByLabelText('Prefix')).toBeInTheDocument();
-    expect(screen.getByLabelText('Suffix')).toBeInTheDocument();
+    // Wait for the mode change and re-render
+    expect(await screen.findByLabelText(/Start/)).toBeInTheDocument();
+    expect(await screen.findByLabelText(/End/)).toBeInTheDocument();
+    expect(await screen.findByLabelText('Prefix')).toBeInTheDocument();
+    expect(await screen.findByLabelText('Suffix')).toBeInTheDocument();
   });
 
   it('shows validation errors for invalid range input', async () => {
     renderAdd();
     fireEvent.click(screen.getByText('Floor Range'));
+    // Wait for range fields to appear
+    await screen.findByLabelText(/Start/);
     // Submit with empty fields
     submitForm(document.body);
     await waitFor(() => {
@@ -292,10 +317,11 @@ describe('FloorForm — Range Mode', () => {
     vi.mocked(createFloorRangeAction).mockResolvedValue({ success: true, floorsCreated: 3 });
     renderAdd();
     fireEvent.click(screen.getByText('Floor Range'));
-    fireEvent.change(screen.getByLabelText(/Start/), { target: { value: '1' } });
-    fireEvent.change(screen.getByLabelText(/End/), { target: { value: '3' } });
-    fireEvent.change(screen.getByLabelText('Prefix'), { target: { value: 'F' } });
-    fireEvent.change(screen.getByLabelText('Suffix'), { target: { value: 'A' } });
+    // Wait for range fields to appear
+    fireEvent.change(await screen.findByLabelText(/Start/), { target: { value: '1' } });
+    fireEvent.change(await screen.findByLabelText(/End/), { target: { value: '3' } });
+    fireEvent.change(await screen.findByLabelText('Prefix'), { target: { value: 'F' } });
+    fireEvent.change(await screen.findByLabelText('Suffix'), { target: { value: 'A' } });
     submitForm(document.body);
     await waitFor(() => {
       expect(createFloorRangeAction).toHaveBeenCalledWith(
@@ -313,8 +339,9 @@ describe('FloorForm — Range Mode', () => {
     vi.mocked(createFloorRangeAction).mockResolvedValue({ success: false, message: 'Server error' });
     renderAdd();
     fireEvent.click(screen.getByText('Floor Range'));
-    fireEvent.change(screen.getByLabelText(/Start/), { target: { value: '1' } });
-    fireEvent.change(screen.getByLabelText(/End/), { target: { value: '2' } });
+    // Wait for range fields to appear
+    fireEvent.change(await screen.findByLabelText(/Start/), { target: { value: '1' } });
+    fireEvent.change(await screen.findByLabelText(/End/), { target: { value: '2' } });
     submitForm(document.body);
     await waitFor(() => {
       expect(createFloorRangeAction).toHaveBeenCalled();

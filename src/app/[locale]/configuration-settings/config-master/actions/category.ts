@@ -1,15 +1,21 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { configMasterService } from '@/lib/api/configMaster.service';
+import { configMasterService } from '@/lib/api/configuration-settings/config-master/configMaster.service';
 import {
   CreateConfigCategorySchema,
   UpdateConfigCategorySchema,
 } from '@/lib/validations/config-master.schema';
-import type { UpdateConfigCategoryRequest } from '@/types/configMaster.types';
+import type { 
+  UpdateConfigCategoryRequest, 
+  BackendMutationResponse, 
+  ConfigCategoryMaster,
+  DeleteResponse
+} from '@/types/configMaster.types';
 import { verifySession, getLocaleFromHeaders, tConfigMessage } from './utils';
 import type { ActionResult } from '@/types/common.types';
 import { logError } from '@/lib/utils/logger';
+import { sanitizeTextInput } from '@/lib/utils/input-sanitization';
 
 
 /**
@@ -20,8 +26,8 @@ export async function createConfigCategoryAction(formData: FormData): Promise<Ac
     const userId = await verifySession();
 
     const rawData = {
-      categoryCode: formData.get('categoryCode'),
-      categoryName: formData.get('categoryName'),
+      categoryCode: sanitizeTextInput(formData.get('categoryCode') as string),
+      categoryName: sanitizeTextInput(formData.get('categoryName') as string),
       displayOrder: parseInt(formData.get('displayOrder') as string) || 0,
       isActive: formData.get('isActive') === 'true',
     };
@@ -43,7 +49,11 @@ export async function createConfigCategoryAction(formData: FormData): Promise<Ac
     if (result.success) {
       const locale = await getLocaleFromHeaders();
       revalidatePath(`/${locale}/configuration-settings/config-master`, 'page');
-      return { success: true, message: await tConfigMessage('categoryCreated', 'Category created successfully') };
+      const backendMessage = (result.data as BackendMutationResponse<ConfigCategoryMaster>)?.message;
+      return { 
+        success: true, 
+        message: (typeof backendMessage === 'string' ? backendMessage : undefined) || await tConfigMessage('categoryCreated', 'Category created successfully') 
+      };
     }
 
     return {
@@ -73,8 +83,8 @@ export async function updateConfigCategoryAction(
     const userId = await verifySession();
 
     const rawData = {
-      categoryCode: formData.get('categoryCode'),
-      categoryName: formData.get('categoryName'),
+      categoryCode: sanitizeTextInput(formData.get('categoryCode') as string),
+      categoryName: sanitizeTextInput(formData.get('categoryName') as string),
       displayOrder: parseInt(formData.get('displayOrder') as string) || 0,
       isActive: formData.get('isActive') === 'true',
     };
@@ -96,7 +106,11 @@ export async function updateConfigCategoryAction(
     if (result.success) {
       const locale = await getLocaleFromHeaders();
       revalidatePath(`/${locale}/configuration-settings/config-master`, 'page');
-      return { success: true, message: await tConfigMessage('categoryUpdated', 'Category updated successfully') };
+      const backendMessage = (result.data as BackendMutationResponse<ConfigCategoryMaster>)?.message;
+      return { 
+        success: true, 
+        message: (typeof backendMessage === 'string' ? backendMessage : undefined) || await tConfigMessage('categoryUpdated', 'Category updated successfully') 
+      };
     }
 
     return {
@@ -139,9 +153,10 @@ export async function updateConfigCategoryStatusAction(
     if (result.success) {
       const locale = await getLocaleFromHeaders();
       revalidatePath(`/${locale}/configuration-settings/config-master`, 'page');
+      const backendMessage = (result.data as BackendMutationResponse<ConfigCategoryMaster>)?.message;
       return {
         success: true,
-        message: await tConfigMessage(isActive ? 'categoryEnabled' : 'categoryDisabled', `Category ${isActive ? 'enabled' : 'disabled'} successfully`),
+        message: (typeof backendMessage === 'string' ? backendMessage : undefined) || await tConfigMessage(isActive ? 'categoryEnabled' : 'categoryDisabled', `Category ${isActive ? 'enabled' : 'disabled'} successfully`),
       };
     }
     return { success: false, error: result.error || await tConfigMessage('unexpectedError', 'Failed to update category status') };
@@ -169,10 +184,11 @@ export async function deleteConfigCategoryAction(id: number): Promise<ActionResu
       const locale = await getLocaleFromHeaders();
       revalidatePath(`/${locale}/configuration-settings/config-master`, 'page');
     }
+    const backendMessage = (res.data as DeleteResponse)?.message;
     return {
       success: res.success,
       error: res.error,
-      message: res.success ? await tConfigMessage('categoryDeleted', 'Category deleted successfully') : undefined,
+      message: res.success ? ((typeof backendMessage === 'string' ? backendMessage : undefined) || await tConfigMessage('categoryDeleted', 'Category deleted successfully')) : undefined,
     };
   } catch (err) {
     logError('deleteConfigCategoryAction failed', { error: err instanceof Error ? err : undefined, id });

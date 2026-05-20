@@ -4,6 +4,8 @@ import type {
   ConfigValueMaster,
   CreateConfigValueRequest,
   UpdateConfigValueRequest,
+  BackendMutationResponse,
+  DeleteResponse,
 } from '@/types/configMaster.types';
 import type { ApiResponse } from '@/types/common.types';
 import { ConfigValueResponseSchema } from '@/lib/validations/config-master.schema';
@@ -74,19 +76,19 @@ export const getConfigValueById = cache(async (id: number): Promise<ApiResponse<
  * Create config value
  */
 export async function createConfigValue(payload: CreateConfigValueRequest) {
-  return apiClient.post<unknown>(ENDPOINT, payload);
+  return apiClient.post<BackendMutationResponse<ConfigValueMaster>>(ENDPOINT, payload);
 }
 
 /**
  * Update config value
  */
 export async function updateConfigValue(id: number, payload: UpdateConfigValueRequest) {
-  return apiClient.put<unknown>(`${ENDPOINT}/${id}`, payload);
+  return apiClient.put<BackendMutationResponse<ConfigValueMaster>>(`${ENDPOINT}/${id}`, payload);
 }
 
 /**
  * Delete config value (Hard delete via /purge)
  */
 export async function deleteConfigValue(id: number) {
-  return apiClient.delete<unknown>(`${ENDPOINT}/${id}/purge`);
+  return apiClient.delete<DeleteResponse>(`${ENDPOINT}/${id}/purge`);
 }
