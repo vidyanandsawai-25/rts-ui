@@ -90,7 +90,9 @@
       "validation": {
         "connectionNoRequired": "जोडणी क्रमांक आवश्यक आहे",
         "connectionNoFormat": "फक्त अक्षरे, संख्या आणि हायफन परवानगी आहे",
+        "connectionNoInvalidChars": "@#$%^&*()_ सारखे विशेष वर्ण परवानगी नाहीत",
         "meterNoRequired": "मीटर क्रमांक आवश्यक आहे",
+        "meterNoInvalidChars": "@#$%^&*()_ सारखे विशेष वर्ण परवानगी नाहीत",
         "typeRequired": "प्रकार आवश्यक आहे",
         "tapSizeRequired": "नळाचा आकार आवश्यक आहे",
         "statusRequired": "जोडणी स्थिती आवश्यक आहे",

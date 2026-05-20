@@ -18,6 +18,7 @@ import {
   createWaterConnection,
   updateWaterConnection,
   deleteWaterConnection,
+  getPropertyInfoById,
   ApiError,
 } from "@/lib/api/waterconnection.services";
 import { getPropertyBasicDetails } from "@/lib/api/property-basic-details.service";

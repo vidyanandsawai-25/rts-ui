@@ -62,7 +62,7 @@ export function PropertyStatsCards({ stats, labels }: PropertyStatsCardsProps) {
       />
       <StatCard
         label={labels.yearlyRevenue}
-        value={`₹${stats.yearlyRevenue.toLocaleString("en-IN")}`}
+        value={`₹${stats.yearlyRevenue.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
         gradient="bg-gradient-to-br from-purple-500 to-pink-500"
         icon={<DollarSign size={48} />}
       />

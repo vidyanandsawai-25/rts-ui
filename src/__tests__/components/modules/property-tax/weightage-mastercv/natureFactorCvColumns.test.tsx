@@ -155,8 +155,8 @@ describe('getNatureFactorCvColumns', () => {
     expect(col.render?.(2024, mockRow, 0)).toBe('2024-2025');
   });
 
-  it('isActive column renders pending badge for new records', () => {
-    const newRow = { ...mockRow, id: 0 };
+  it('isActive column renders active status badge for new records', () => {
+    const newRow = { ...mockRow, id: 0, isActive: true };
     
     const columns = getNatureFactorCvColumns({
       t: mockT,
@@ -172,7 +172,8 @@ describe('getNatureFactorCvColumns', () => {
     
     const badge = container.querySelector('span');
     expect(badge).toBeInTheDocument();
-    expect(badge?.className).toContain('bg-amber-50');
+    expect(badge?.className).toContain('bg-emerald-50');
+    expect(badge?.textContent).toContain('Active');
   });
 
   it('MatrixCellInput calls handleCellChange on value change', () => {

@@ -215,3 +215,41 @@ export async function getWaterRateMasters(
 
   return response.data.items ?? response.data.data ?? [];
 }
+
+/** GET property info by ID - used to display property details on water connection screen */
+export async function getPropertyInfoById(propertyId: number): Promise<{
+  id: number;
+  propertyNo: string;
+  displayProperty: string;
+  ownerName: string;
+  partType: string;
+  mobileNo: string;
+  emailId: string;
+  address: string;
+  taxZoneId: number;
+  wardId: number;
+  propertyTypeId: number;
+} | null> {
+  const response = await apiClient.get<{ items?: Array<Record<string, unknown>> }>(
+    `/Property?Id=${propertyId}`
+  );
+
+  if (!response.success || !response.data?.items?.length) {
+    return null;
+  }
+
+  const item = response.data.items[0];
+  return {
+    id: (item.id as number) ?? propertyId,
+    propertyNo: (item.propertyNo as string) ?? "",
+    displayProperty: (item.displayProperty as string) ?? "",
+    ownerName: (item.ownerName as string) ?? "",
+    partType: (item.partType as string) ?? "individual",
+    mobileNo: (item.mobileNo as string) ?? "",
+    emailId: (item.emailId as string) ?? "",
+    address: (item.address as string) ?? "",
+    taxZoneId: (item.taxZoneId as number) ?? 0,
+    wardId: (item.wardId as number) ?? 0,
+    propertyTypeId: (item.propertyTypeId as number) ?? 0,
+  };
+}

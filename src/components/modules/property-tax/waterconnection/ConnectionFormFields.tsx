@@ -155,7 +155,7 @@ export function ConnectionFormFields({
           <Input
             name="applicableRate"
             label={t("form.fields.applicableRate.label")}
-            value={applicableRate != null ? `₹${applicableRate.toLocaleString("en-IN")}` : ""}
+            value={applicableRate != null ? `₹${applicableRate.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ""}
             readOnly
             onChange={() => {}}
             helperText={applicableRate == null && !rateError ? t("form.fields.applicableRate.autoCalculated") : undefined}

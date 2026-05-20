@@ -228,7 +228,7 @@ export const AgeFactorCvHeaderExtra: React.FC<AgeFactorCvHeaderExtraProps> = ({
                     max="999.99"
                     value={factorValue}
                     onChange={(e) => {
-                        const sanitized = sanitizePositiveDecimal(e.target.value);
+                        const sanitized = sanitizePositiveDecimal(e.target.value, 2);
                         if (sanitized === '' || (parseFloat(sanitized) >= 0 && parseFloat(sanitized) <= 999.99)) {
                             setFactorValue(sanitized);
                         }

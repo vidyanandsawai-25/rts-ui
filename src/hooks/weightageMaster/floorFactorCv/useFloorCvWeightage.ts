@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { FloorFactorCVMaster } from "@/types/floor-cv-weightageMaster.types";
 import { useFloorCvRowOps } from "./useFloorCvRowOps";
 import { useFloorCvBulkOps } from "./useFloorCvBulkOps";
+import { useFloorCvToasts } from "./useFloorCvToasts";
+import { useFloorCvSessionTracking } from "./useFloorCvSessionTracking";
 
 export interface UseFloorCvWeightageProps {
     data: FloorFactorCVMaster[];
@@ -29,7 +31,16 @@ export function useFloorCvWeightage({
 
     const currentSelectedYear = searchParams.get("selectedYearRange") || "";
     const [selectedYear, setSelectedYear] = useState<string>(currentSelectedYear);
-    const [editableRows, setEditableRows] = useState<Record<string, FloorFactorCVMaster>>({});
+    const { toasts, addToast, removeToast } = useFloorCvToasts();
+    
+    const {
+        editableRows,
+        setEditableRows,
+        sessionCreatedUids,
+        setSessionCreatedUids,
+        getRowUid,
+        findRowByUid,
+    } = useFloorCvSessionTracking({ data });
 
     // Filter states
     const [fromFloor, setFromFloor] = useState<string>("");
@@ -37,55 +48,27 @@ export function useFloorCvWeightage({
     const [liftStatus, setLiftStatus] = useState<string>("both");
     const [factorValue, setFactorValue] = useState<string>("0.00");
 
-    // Toast state
-    const [toasts, setToasts] = useState<Array<{ id: string; type: "success" | "error" | "info" | "warning"; message: string }>>([]);
+    const newRecords = data.filter(row => row.id === 0 && !sessionCreatedUids.has(getRowUid(row)));
+    const hasNewRecords = newRecords.length > 0;
+    const newRecordsCount = newRecords.length;
 
     // Loading states
     const [isUpdating, setIsUpdating] = useState(false);
     const [isBulkUpdating, setIsBulkUpdating] = useState(false);
     const [isGeneratingAll, setIsGeneratingAll] = useState(false);
 
-    const newRecordsCount = data.filter((row) => row.id === 0).length;
-    const hasNewRecords = newRecordsCount > 0;
-
     const currentSearchTerm = searchParams.get("q") || "";
-
-    // Toast functions
-    const addToast = useCallback((type: "success" | "error" | "info" | "warning", message: string) => {
-        const id = Date.now().toString();
-        setToasts((prev) => [...prev, { id, type, message }]);
-    }, []);
-
-    const removeToast = (id: string) => {
-        setToasts((prev) => prev.filter((toast) => toast.id !== id));
-    };
 
     const hasShownWarningRef = useRef(false);
 
     useEffect(() => {
         if (hasNewRecords && !hasShownWarningRef.current) {
-            // Defer to avoid calling setState synchronously inside an effect body
-            const timer = setTimeout(() => {
-                addToast("warning", tW("common.messages.pendingRecordsWarning"));
-            }, 0);
+            addToast("warning", tW("common.messages.pendingRecordsWarning"));
             hasShownWarningRef.current = true;
-            return () => clearTimeout(timer);
         } else if (!hasNewRecords) {
             hasShownWarningRef.current = false;
         }
     }, [hasNewRecords, tW, addToast]);
-
-    // Helper function to generate unique row identifier
-    // Uses id-floorId-yearRangeCVID-fromYear-toYear combination to ensure uniqueness
-    // This is critical for rows with id === 0 (new records) and handles undefined yearRangeCVID
-    const getRowUid = (row: FloorFactorCVMaster): string => {
-        return `${row.id}-${row.floorId}-${row.yearRangeCVID || "noYear"}-${row.fromYear}-${row.toYear}`;
-    };
-
-    // Helper function to find row by UID
-    const findRowByUid = (uid: string): FloorFactorCVMaster | undefined => {
-        return data.find((row) => getRowUid(row) === uid);
-    };
 
     const refreshPage = () => router.refresh();
 
@@ -109,6 +92,7 @@ export function useFloorCvWeightage({
         data,
         editableRows,
         setEditableRows,
+        setSessionCreatedUids,
         setIsUpdating,
         getRowUid,
         findRowByUid,
@@ -122,6 +106,8 @@ export function useFloorCvWeightage({
         data,
         editableRows,
         setEditableRows,
+        sessionCreatedUids,
+        setSessionCreatedUids,
         setIsBulkUpdating,
         setIsGeneratingAll,
         selectedYear,

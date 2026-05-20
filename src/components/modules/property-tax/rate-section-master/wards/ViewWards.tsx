@@ -7,10 +7,10 @@ import { Label } from "@/components/common/label";
 import { ViewWardsProps } from "@/types/rateSectionMaster.types";
 
 const PAGE_SIZE_OPTIONS = [
-  { label: "5", value: "5" },
   { label: "10", value: "10" },
   { label: "20", value: "20" },
-  { label: "50", value: "50" }
+  { label: "50", value: "50" },
+  { label: "100", value: "100" },
 ];
 
 export default function ViewWards({
@@ -122,7 +122,7 @@ export default function ViewWards({
             value={String(viewWardPageSize)}
             onChange={(e) => onPageSizeChange(Number(e.target.value))}
             selectSize="sm"
-            className="w-18"
+            className="w-20"
           />
         </div>
         <div className="flex items-center gap-1">

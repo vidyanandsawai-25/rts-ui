@@ -101,7 +101,7 @@ export default function TypeOfUseMaster({
 
   // Use delete actions hook
   const { handleDeleteGroup, handleDeleteType, handleDeleteSubType } =
-    useTypeOfUseMasterActions(t, allTypes);
+    useTypeOfUseMasterActions(t);
 
   // Use type pagination handlers hook
   const { handleTypePageChange, handleTypePageSizeChange } =

@@ -90,7 +90,9 @@
       "validation": {
         "connectionNoRequired": "Connection No is required",
         "connectionNoFormat": "Only letters, numbers and hyphens allowed",
+        "connectionNoInvalidChars": "Special characters like @#$%^&*()_ are not allowed",
         "meterNoRequired": "Meter No is required",
+        "meterNoInvalidChars": "Special characters like @#$%^&*()_ are not allowed",
         "typeRequired": "Type is required",
         "tapSizeRequired": "Tap Size is required",
         "statusRequired": "Connection Status is required",

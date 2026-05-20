@@ -656,7 +656,7 @@ export async function linkWardsToRateSectionAction(
 /**
  * Fetches wards assigned to a specific rate section with count.
  * Used for SSR in the "Wards in Rate Section" panel of AddWard drawer.
- * API: GET /api/RateSectionDetails?RateSectionId={id}
+ * API: GET /api/RateSectionDetails?RateSectionId={id}&PageSize=-1
  * Returns only wardNo array and count - no IDs exposed to client.
  */
 export async function getSelectedWardsWithCountAction(rateSectionId: number): Promise<{
@@ -670,8 +670,7 @@ export async function getSelectedWardsWithCountAction(rateSectionId: number): Pr
       return { success: false, wardNos: [], totalCount: 0, error: "Rate section ID is required" };
     }
 
-    // Use getWardsByRateSectionId (proper pagination, 500/page) because
-    // /RateSectionDetails does NOT support PageSize=-1 unlike /Ward.
+    // Use getWardsByRateSectionId which fetches all wards with PageSize=-1
     const items = await getWardsByRateSectionId(rateSectionId);
 
     // Extract only wardNo values - don't expose IDs to client
@@ -692,7 +691,7 @@ export async function getSelectedWardsWithCountAction(rateSectionId: number): Pr
 /**
  * Refreshes selected wards for a rate section.
  * Used after batch operations to get the updated list.
- * API: GET /api/RateSectionDetails?RateSectionId={id} (paginated 500/page)
+ * API: GET /api/RateSectionDetails?RateSectionId={id}&PageSize=-1
  * Returns minimal data to client - only wardNo array and count.
  */
 export async function refreshSelectedWardsAction(rateSectionId: number): Promise<{
@@ -706,8 +705,7 @@ export async function refreshSelectedWardsAction(rateSectionId: number): Promise
       return { success: false, wardNos: [], totalCount: 0, error: "Rate section ID is required" };
     }
 
-    // Use getWardsByRateSectionId (proper pagination, 500/page) because
-    // /RateSectionDetails does NOT support PageSize=-1 unlike /Ward.
+    // Use getWardsByRateSectionId which fetches all wards with PageSize=-1
     const items = await getWardsByRateSectionId(rateSectionId);
 
     // Extract only wardNo values - don't expose IDs to client
