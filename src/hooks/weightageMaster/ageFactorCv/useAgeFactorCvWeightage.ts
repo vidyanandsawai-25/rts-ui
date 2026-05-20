@@ -8,6 +8,7 @@ import { useAgeFactorCvBulkOps } from "./useAgeFactorCvBulkOps";
 import { useAgeFactorCvToasts } from "./useAgeFactorCvToasts";
 import { useAgeFactorCvFilters } from "./useAgeFactorCvFilters";
 import { useAgeFactorCvSessionTracking } from "./useAgeFactorCvSessionTracking";
+import { checkAgeRangeOverlap } from "@/lib/utils/weightageMaster/ageFactorCv/ageFactorCvValidation";
 import type { Option } from "@/components/common/select";
 
 interface UseAgeFactorCvWeightageParams {
@@ -175,15 +176,35 @@ export const useAgeFactorCvWeightage = ({
             addToast('warning', t('messages.provideBothAges'));
             return;
         }
-        if (parseInt(ageFrom) > parseInt(ageTo)) {
+        
+        const fromValue = parseInt(ageFrom);
+        const toValue = parseInt(ageTo);
+        
+        if (fromValue > toValue) {
             addToast('error', t('messages.fromAgeGreaterError'));
             return;
         }
+        
         const newRange = `${ageFrom}-${ageTo}`;
+        
+        // Check if exact range already exists
         if (ageRangeOptions.find(opt => opt.value === newRange)) {
             addToast('info', t('messages.ageRangeExists'));
             return;
         }
+        
+        // Check for overlapping ranges
+        const existingRangeValues = ageRangeOptions.map(opt => opt.value);
+        const { hasOverlap, overlappingRange } = checkAgeRangeOverlap(fromValue, toValue, existingRangeValues);
+        
+        if (hasOverlap) {
+            addToast('error', t('messages.ageRangeOverlap', { 
+                newRange, 
+                existingRange: overlappingRange || '' 
+            }));
+            return;
+        }
+        
         setUserAddedAgeRanges(prev => [...prev, { label: newRange, value: newRange }]);
         setSelectedAgeRange(newRange);
         addToast('success', t('messages.ageRangeAdded', { from: ageFrom, to: ageTo }));

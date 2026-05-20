@@ -35,7 +35,7 @@
       "description": "Please wait while we fetch the records."
     },
     "error": {
-      "title": "Failed to connect to the server. Please try again later.",
+      "title": "Failed to connect server. Please try again later.",
       "description": "An error occurred while loading the use category factor weightage records.",
       "tryAgain": "Try again",
       "goHome": "Go back home",
