@@ -193,8 +193,14 @@ export const createMockFormModel = (
   installDate: new Date().toISOString().slice(0, 10),
   isActive: true,
   applicableRate: null,
+  waterConnectionStatusId: null,
   ...overrides,
-});
+  // Ensure waterConnectionStatusId is never undefined
+  waterConnectionStatusId:
+    overrides && Object.prototype.hasOwnProperty.call(overrides, 'waterConnectionStatusId')
+      ? overrides.waterConnectionStatusId ?? null
+      : null,
+} as WaterConnectionFormModel);
 
 /**
  * Creates mock WaterConnectionPageData with sensible defaults
