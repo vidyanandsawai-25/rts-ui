@@ -141,7 +141,7 @@ export default getRequestConfig(async ({ locale }) => {
       ptisMainTaxDetails: ptisMainTaxDetailsMessages,
       paymentModeMaster: paymentModeMasterMessages,
       modules: modulesMessages,
-      waterConnection: waterConnectionMessages,
+      waterConnection: waterConnectionMessages.waterConnection,
     },
   };
 });
