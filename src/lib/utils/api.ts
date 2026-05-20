@@ -16,7 +16,7 @@ export class ApiError extends Error {
     public error: string,
     public contextMessage: string
   ) {
-    super(`${contextMessage}: ${error} (${statusCode})`);
+    super(`${contextMessage}: ${error}`);
     this.name = "ApiError";
     this.responseText = error; // Keep compatibility with existing code that uses responseText
     
