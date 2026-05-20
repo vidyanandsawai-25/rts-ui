@@ -15,7 +15,7 @@ export interface TapStatus {
 
 export interface TapStatusFormModel {
   waterConnectionStatusId?: number;
-  statusCode: string;
+  statusCode?: string;
   statusName: string;
   isActive: boolean;
 }
@@ -46,13 +46,16 @@ export interface TapSize {
   waterConnectionSizeId: number;
   sizeCode: string;
   sizeName: string;
+  unit: string;
+  displayLabel: string;
   isActive: boolean;
 }
 
 export interface TapSizeFormModel {
   waterConnectionSizeId?: number;
-  sizeCode: string;
+  sizeCode?: string;
   sizeName: string;
+  unit: string;
   isActive: boolean;
 }
 

@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { Droplets } from "lucide-react";
 
 import {
   Drawer,
@@ -12,8 +13,10 @@ import {
   Input,
   Label,
   ValidationMessage,
-  ToggleSwitch,
+  StatusToggleField,
 } from "@/components/common";
+
+import { MandatoryFieldsNotice } from "@/components/modules/property-tax/Floormaster/MandatoryFieldsNotice";
 
 import type { TapType, TapTypeFormModel } from "@/types/water-connection.types";
 import {
@@ -108,7 +111,21 @@ export function TapTypeForm({ id, initialData }: Readonly<TapTypeFormProps>) {
     <Drawer
       open={open}
       onClose={handleClose}
-      title={isEdit ? t("editTitle") : t("addTitle")}
+      title={
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center bg-linear-to-br from-blue-500 to-blue-600 rounded-lg text-white">
+            <Droplets size={20} />
+          </div>
+          <div>
+            <div className="text-lg font-bold text-blue-900">
+              {isEdit ? t("editTitle") : t("addTitle")}
+            </div>
+            <div className="text-sm text-slate-500">
+              {isEdit ? t("editSubtitle") : t("addSubtitle")}
+            </div>
+          </div>
+        </div>
+      }
       footer={
         <>
           <CancelButton
@@ -128,20 +145,18 @@ export function TapTypeForm({ id, initialData }: Readonly<TapTypeFormProps>) {
       <form
         id="tap-type-form"
         onSubmit={handleSubmit}
-        className="space-y-5 p-5"
+        className="space-y-5 bg-[#F8FAFF] p-5"
         noValidate
       >
-        <div className="rounded-xl border border-gray-200 bg-slate-50 p-4">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="tap-type-isActive">
-              {t("form.isActive.label")}
-            </Label>
-            <ToggleSwitch
-              checked={formData.isActive}
-              onChange={() => handleChange("isActive", !formData.isActive)}
-            />
-          </div>
-        </div>
+        <StatusToggleField
+          isActive={formData.isActive}
+          onChange={() => handleChange("isActive", !formData.isActive)}
+          labels={{
+            title: t("form.activeStatusTitle"),
+            activeText: t("form.activeStatusOn"),
+            inactiveText: t("form.activeStatusOff"),
+          }}
+        />
 
         <div className="space-y-4">
           <div>
@@ -186,6 +201,8 @@ export function TapTypeForm({ id, initialData }: Readonly<TapTypeFormProps>) {
             />
           </div>
         </div>
+
+        <MandatoryFieldsNotice message={tCommon("note.mandatory")} />
       </form>
     </Drawer>
   );

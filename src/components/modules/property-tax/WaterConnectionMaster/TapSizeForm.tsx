@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { Droplets } from "lucide-react";
 
 import {
   Drawer,
@@ -12,8 +13,10 @@ import {
   Input,
   Label,
   ValidationMessage,
-  ToggleSwitch,
+  StatusToggleField,
 } from "@/components/common";
+
+import { MandatoryFieldsNotice } from "@/components/modules/property-tax/Floormaster/MandatoryFieldsNotice";
 
 import type { TapSize, TapSizeFormModel } from "@/types/water-connection.types";
 import {
@@ -40,8 +43,8 @@ export function TapSizeForm({ id, initialData }: Readonly<TapSizeFormProps>) {
   const [submittedOnce, setSubmittedOnce] = useState(false);
 
   const [formData, setFormData] = useState<TapSizeFormModel>({
-    sizeCode: initialData?.sizeCode ?? "",
     sizeName: initialData?.sizeName ?? "",
+    unit: initialData?.unit ?? "",
     isActive: initialData?.isActive ?? true,
   });
   const [touched, setTouched] = useState<Partial<Record<keyof TapSizeFormModel, boolean>>>({});
@@ -49,14 +52,14 @@ export function TapSizeForm({ id, initialData }: Readonly<TapSizeFormProps>) {
   const validate = useCallback(
     (data: TapSizeFormModel) => {
       const errs: Partial<Record<keyof TapSizeFormModel, string>> = {};
-      if (!data.sizeCode.trim())
-        errs.sizeCode = t("validation.sizeCodeRequired");
-      else if (data.sizeCode.length > MAX_CODE)
-        errs.sizeCode = t("validation.sizeCodeLength", { count: MAX_CODE });
       if (!data.sizeName.trim())
         errs.sizeName = t("validation.sizeNameRequired");
       else if (data.sizeName.length > MAX_NAME)
         errs.sizeName = t("validation.sizeNameLength", { count: MAX_NAME });
+      if (!data.unit.trim())
+        errs.unit = t("validation.unitRequired");
+      else if (data.unit.length > MAX_CODE)
+        errs.unit = t("validation.unitLength", { count: MAX_CODE });
       return errs;
     },
     [t]
@@ -108,7 +111,21 @@ export function TapSizeForm({ id, initialData }: Readonly<TapSizeFormProps>) {
     <Drawer
       open={open}
       onClose={handleClose}
-      title={isEdit ? t("editTitle") : t("addTitle")}
+      title={
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center bg-linear-to-br from-blue-500 to-blue-600 rounded-lg text-white">
+            <Droplets size={20} />
+          </div>
+          <div>
+            <div className="text-lg font-bold text-blue-900">
+              {isEdit ? t("editTitle") : t("addTitle")}
+            </div>
+            <div className="text-sm text-slate-500">
+              {isEdit ? t("editSubtitle") : t("addSubtitle")}
+            </div>
+          </div>
+        </div>
+      }
       footer={
         <>
           <CancelButton
@@ -128,43 +145,20 @@ export function TapSizeForm({ id, initialData }: Readonly<TapSizeFormProps>) {
       <form
         id="tap-size-form"
         onSubmit={handleSubmit}
-        className="space-y-5 p-5"
+        className="space-y-5 bg-[#F8FAFF] p-5"
         noValidate
       >
-        <div className="rounded-xl border border-gray-200 bg-slate-50 p-4">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="tap-size-isActive">
-              {t("form.isActive.label")}
-            </Label>
-            <ToggleSwitch
-              checked={formData.isActive}
-              onChange={() => handleChange("isActive", !formData.isActive)}
-            />
-          </div>
-        </div>
+        <StatusToggleField
+          isActive={formData.isActive}
+          onChange={() => handleChange("isActive", !formData.isActive)}
+          labels={{
+            title: t("form.activeStatusTitle"),
+            activeText: t("form.activeStatusOn"),
+            inactiveText: t("form.activeStatusOff"),
+          }}
+        />
 
         <div className="space-y-4">
-          <div>
-            <Label htmlFor="tap-size-code" required>
-              {t("form.sizeCode.label")}
-            </Label>
-            <Input
-              id="tap-size-code"
-              value={formData.sizeCode}
-              onChange={(e) => handleChange("sizeCode", e.target.value)}
-              onBlur={() => handleBlur("sizeCode")}
-              placeholder={t("form.sizeCode.placeholder")}
-              maxLength={MAX_CODE}
-              aria-invalid={showError("sizeCode") ? "true" : "false"}
-              aria-describedby={showError("sizeCode") ? "tap-size-code-error" : undefined}
-            />
-            <ValidationMessage
-              id="tap-size-code-error"
-              message={errors.sizeCode}
-              visible={showError("sizeCode")}
-            />
-          </div>
-
           <div>
             <Label htmlFor="tap-size-name" required>
               {t("form.sizeName.label")}
@@ -185,7 +179,30 @@ export function TapSizeForm({ id, initialData }: Readonly<TapSizeFormProps>) {
               visible={showError("sizeName")}
             />
           </div>
+
+          <div>
+            <Label htmlFor="tap-size-unit" required>
+              {t("form.unit.label")}
+            </Label>
+            <Input
+              id="tap-size-unit"
+              value={formData.unit}
+              onChange={(e) => handleChange("unit", e.target.value)}
+              onBlur={() => handleBlur("unit")}
+              placeholder={t("form.unit.placeholder")}
+              maxLength={MAX_CODE}
+              aria-invalid={showError("unit") ? "true" : "false"}
+              aria-describedby={showError("unit") ? "tap-size-unit-error" : undefined}
+            />
+            <ValidationMessage
+              id="tap-size-unit-error"
+              message={errors.unit}
+              visible={showError("unit")}
+            />
+          </div>
         </div>
+
+        <MandatoryFieldsNotice message={tCommon("note.mandatory")} />
       </form>
     </Drawer>
   );

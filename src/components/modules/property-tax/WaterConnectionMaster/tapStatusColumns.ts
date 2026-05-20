@@ -6,14 +6,6 @@ export function getTapStatusColumns(
 ): Column<TapStatus>[] {
   return [
     {
-      key: "statusCode",
-      label: t("table.statusCode"),
-      width: "20%",
-      align: "center",
-      headerClassName: "text-center",
-      cellClassName: "text-center",
-    },
-    {
       key: "statusName",
       label: t("table.statusName"),
       width: "40%",
@@ -24,7 +16,7 @@ export function getTapStatusColumns(
     {
       key: "isActive",
       label: t("table.status"),
-      width: "20%",
+      width: "30%",
       align: "center",
       headerClassName: "text-center",
       cellClassName: "text-center",

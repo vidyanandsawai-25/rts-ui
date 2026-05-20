@@ -8,8 +8,6 @@ import { toast } from "sonner";
 import { MasterTable } from "@/components/common/MasterTable";
 import { EditButton, DeleteButton } from "@/components/common/ActionButtons";
 import { useConfirm } from "@/components/common/ConfirmProvider";
-import { Select } from "@/components/common";
-
 import type { TapType, TapTypeMasterProps } from "@/types/water-connection.types";
 import { deleteTapTypeAction } from "@/app/[locale]/property-tax/water-connection-master/actions";
 import { getTapTypeColumns } from "./tapTypeColumns";
@@ -107,18 +105,17 @@ export function TapTypeMaster({ data }: Readonly<TapTypeMasterProps>) {
             {tCommon("table.showing")} {start} {tCommon("table.to")} {end}{" "}
             {tCommon("table.of")} {totalCount}
           </span>
-          <Select
+          <select
             value={String(pageSize)}
             onChange={(e) =>
               router.push(buildUrl(1, Number(e.target.value), currentSearchTerm))
             }
-            options={[10, 20, 30, 50].map((s) => ({
-              label: String(s),
-              value: String(s),
-            }))}
-            selectSize="sm"
-            className="w-20"
-          />
+            className="h-8 w-20 rounded-md border border-gray-300 bg-white px-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+          >
+            {[10, 20, 30, 50].map((s) => (
+              <option key={s} value={String(s)}>{s}</option>
+            ))}
+          </select>
         </div>
       }
       getRowKey={(row) => String(row.waterConnectionTypeId)}

@@ -6,16 +6,8 @@ export function getTapSizeColumns(
 ): Column<TapSize>[] {
   return [
     {
-      key: "sizeCode",
-      label: t("table.sizeCode"),
-      width: "20%",
-      align: "center",
-      headerClassName: "text-center",
-      cellClassName: "text-center",
-    },
-    {
-      key: "sizeName",
-      label: t("table.sizeName"),
+      key: "displayLabel",
+      label: t("table.displayLabel"),
       width: "40%",
       align: "center",
       headerClassName: "text-center",
@@ -24,7 +16,7 @@ export function getTapSizeColumns(
     {
       key: "isActive",
       label: t("table.status"),
-      width: "20%",
+      width: "30%",
       align: "center",
       headerClassName: "text-center",
       cellClassName: "text-center",

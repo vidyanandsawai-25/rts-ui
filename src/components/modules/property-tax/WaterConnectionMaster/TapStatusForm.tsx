@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { Droplets } from "lucide-react";
 
 import {
   Drawer,
@@ -12,8 +13,10 @@ import {
   Input,
   Label,
   ValidationMessage,
-  ToggleSwitch,
+  StatusToggleField,
 } from "@/components/common";
+
+import { MandatoryFieldsNotice } from "@/components/modules/property-tax/Floormaster/MandatoryFieldsNotice";
 
 import type { TapStatus, TapStatusFormModel } from "@/types/water-connection.types";
 import {
@@ -21,7 +24,6 @@ import {
   updateTapStatusAction,
 } from "@/app/[locale]/property-tax/water-connection-master/actions";
 
-const MAX_CODE = 10;
 const MAX_NAME = 50;
 
 export interface TapStatusFormProps {
@@ -39,20 +41,15 @@ export function TapStatusForm({ id, initialData }: Readonly<TapStatusFormProps>)
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedOnce, setSubmittedOnce] = useState(false);
 
-  const [formData, setFormData] = useState<TapStatusFormModel>({
-    statusCode: initialData?.statusCode ?? "",
+  const [formData, setFormData] = useState<Omit<TapStatusFormModel, "statusCode">>({
     statusName: initialData?.statusName ?? "",
     isActive: initialData?.isActive ?? true,
   });
-  const [touched, setTouched] = useState<Partial<Record<keyof TapStatusFormModel, boolean>>>({});
+  const [touched, setTouched] = useState<Partial<Record<"statusName", boolean>>>({});
 
   const validate = useCallback(
-    (data: TapStatusFormModel) => {
-      const errs: Partial<Record<keyof TapStatusFormModel, string>> = {};
-      if (!data.statusCode.trim())
-        errs.statusCode = t("validation.statusCodeRequired");
-      else if (data.statusCode.length > MAX_CODE)
-        errs.statusCode = t("validation.statusCodeLength", { count: MAX_CODE });
+    (data: typeof formData) => {
+      const errs: Partial<Record<"statusName", string>> = {};
       if (!data.statusName.trim())
         errs.statusName = t("validation.statusNameRequired");
       else if (data.statusName.length > MAX_NAME)
@@ -64,14 +61,14 @@ export function TapStatusForm({ id, initialData }: Readonly<TapStatusFormProps>)
 
   const errors = validate(formData);
 
-  const showError = (field: keyof TapStatusFormModel) =>
+  const showError = (field: "statusName") =>
     Boolean((submittedOnce || touched[field]) && errors[field]);
 
-  const handleChange = (field: keyof TapStatusFormModel, value: string | boolean) => {
+  const handleChange = (field: "statusName" | "isActive", value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleBlur = (field: keyof TapStatusFormModel) => {
+  const handleBlur = (field: "statusName") => {
     setTouched((prev) => ({ ...prev, [field]: true }));
   };
 
@@ -88,9 +85,10 @@ export function TapStatusForm({ id, initialData }: Readonly<TapStatusFormProps>)
 
     setIsSubmitting(true);
     try {
+      const payload: TapStatusFormModel = { statusCode: "", ...formData };
       const result = isEdit
-        ? await updateTapStatusAction(id!, formData)
-        : await createTapStatusAction(formData);
+        ? await updateTapStatusAction(id!, payload)
+        : await createTapStatusAction(payload);
 
       if (result.success) {
         toast.success(isEdit ? t("messages.updateSuccess") : t("messages.createSuccess"));
@@ -108,7 +106,21 @@ export function TapStatusForm({ id, initialData }: Readonly<TapStatusFormProps>)
     <Drawer
       open={open}
       onClose={handleClose}
-      title={isEdit ? t("editTitle") : t("addTitle")}
+      title={
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center bg-linear-to-br from-blue-500 to-blue-600 rounded-lg text-white">
+            <Droplets size={20} />
+          </div>
+          <div>
+            <div className="text-lg font-bold text-blue-900">
+              {isEdit ? t("editTitle") : t("addTitle")}
+            </div>
+            <div className="text-sm text-slate-500">
+              {isEdit ? t("editSubtitle") : t("addSubtitle")}
+            </div>
+          </div>
+        </div>
+      }
       footer={
         <>
           <CancelButton
@@ -128,64 +140,41 @@ export function TapStatusForm({ id, initialData }: Readonly<TapStatusFormProps>)
       <form
         id="tap-status-form"
         onSubmit={handleSubmit}
-        className="space-y-5 p-5"
+        className="space-y-5 bg-[#F8FAFF] p-5"
         noValidate
       >
-        <div className="rounded-xl border border-gray-200 bg-slate-50 p-4">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="tap-status-isActive">
-              {t("form.isActive.label")}
-            </Label>
-            <ToggleSwitch
-              checked={formData.isActive}
-              onChange={() => handleChange("isActive", !formData.isActive)}
-            />
-          </div>
+        <StatusToggleField
+          isActive={formData.isActive}
+          onChange={() => handleChange("isActive", !formData.isActive)}
+          labels={{
+            title: t("form.activeStatusTitle"),
+            activeText: t("form.activeStatusOn"),
+            inactiveText: t("form.activeStatusOff"),
+          }}
+        />
+
+        <div>
+          <Label htmlFor="tap-status-name" required>
+            {t("form.statusName.label")}
+          </Label>
+          <Input
+            id="tap-status-name"
+            value={formData.statusName}
+            onChange={(e) => handleChange("statusName", e.target.value)}
+            onBlur={() => handleBlur("statusName")}
+            placeholder={t("form.statusName.placeholder")}
+            maxLength={MAX_NAME}
+            aria-invalid={showError("statusName") ? "true" : "false"}
+            aria-describedby={showError("statusName") ? "tap-status-name-error" : undefined}
+          />
+          <ValidationMessage
+            id="tap-status-name-error"
+            message={errors.statusName}
+            visible={showError("statusName")}
+          />
         </div>
 
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="tap-status-code" required>
-              {t("form.statusCode.label")}
-            </Label>
-            <Input
-              id="tap-status-code"
-              value={formData.statusCode}
-              onChange={(e) => handleChange("statusCode", e.target.value)}
-              onBlur={() => handleBlur("statusCode")}
-              placeholder={t("form.statusCode.placeholder")}
-              maxLength={MAX_CODE}
-              aria-invalid={showError("statusCode") ? "true" : "false"}
-              aria-describedby={showError("statusCode") ? "tap-status-code-error" : undefined}
-            />
-            <ValidationMessage
-              id="tap-status-code-error"
-              message={errors.statusCode}
-              visible={showError("statusCode")}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="tap-status-name" required>
-              {t("form.statusName.label")}
-            </Label>
-            <Input
-              id="tap-status-name"
-              value={formData.statusName}
-              onChange={(e) => handleChange("statusName", e.target.value)}
-              onBlur={() => handleBlur("statusName")}
-              placeholder={t("form.statusName.placeholder")}
-              maxLength={MAX_NAME}
-              aria-invalid={showError("statusName") ? "true" : "false"}
-              aria-describedby={showError("statusName") ? "tap-status-name-error" : undefined}
-            />
-            <ValidationMessage
-              id="tap-status-name-error"
-              message={errors.statusName}
-              visible={showError("statusName")}
-            />
-          </div>
-        </div>
+        <MandatoryFieldsNotice message={tCommon("note.mandatory")} />
       </form>
     </Drawer>
   );

@@ -16,7 +16,7 @@ export function getTapTypeColumns(
     {
       key: "typeName",
       label: t("table.typeName"),
-      width: "40%",
+      width: "35%",
       align: "center",
       headerClassName: "text-center",
       cellClassName: "text-center",
@@ -24,7 +24,7 @@ export function getTapTypeColumns(
     {
       key: "isActive",
       label: t("table.status"),
-      width: "20%",
+      width: "25%",
       align: "center",
       headerClassName: "text-center",
       cellClassName: "text-center",

@@ -10,26 +10,23 @@
     "tapStatus": {
       "title": "Tap Status Master",
       "subtitle": "Manage water connection status codes",
-      "searchPlaceholder": "Search by status code or name...",
+      "searchPlaceholder": "Search by status name...",
       "addTitle": "Add Tap Status",
       "editTitle": "Edit Tap Status",
+      "addSubtitle": "Create a new water connection status",
+      "editSubtitle": "Update water connection status details",
       "table": {
-        "statusCode": "Status Code",
         "statusName": "Status Name",
         "status": "Status"
       },
       "form": {
-        "statusCode": {
-          "label": "Status Code",
-          "placeholder": "e.g., ACT"
-        },
         "statusName": {
           "label": "Status Name",
           "placeholder": "e.g., Active"
         },
-        "isActive": {
-          "label": "Active Status"
-        }
+        "activeStatusTitle": "Tap Status",
+        "activeStatusOn": "Active - Status is enabled",
+        "activeStatusOff": "Inactive - Status is disabled"
       },
       "validation": {
         "statusCodeRequired": "Status Code is required",
@@ -54,6 +51,8 @@
       "searchPlaceholder": "Search by type code or name...",
       "addTitle": "Add Tap Type",
       "editTitle": "Edit Tap Type",
+      "addSubtitle": "Create a new water connection type",
+      "editSubtitle": "Update water connection type details",
       "table": {
         "typeCode": "Type Code",
         "typeName": "Type Name",
@@ -68,9 +67,9 @@
           "label": "Type Name",
           "placeholder": "e.g., Domestic"
         },
-        "isActive": {
-          "label": "Active Status"
-        }
+        "activeStatusTitle": "Tap Type",
+        "activeStatusOn": "Active - Type is enabled",
+        "activeStatusOff": "Inactive - Type is disabled"
       },
       "validation": {
         "typeCodeRequired": "Type Code is required",
@@ -95,9 +94,10 @@
       "searchPlaceholder": "Search by size code or name...",
       "addTitle": "Add Tap Size",
       "editTitle": "Edit Tap Size",
+      "addSubtitle": "Create a new water connection size",
+      "editSubtitle": "Update water connection size details",
       "table": {
-        "sizeCode": "Size Code",
-        "sizeName": "Size Name",
+        "displayLabel": "Size",
         "status": "Status"
       },
       "form": {
@@ -106,18 +106,24 @@
           "placeholder": "e.g., 15MM"
         },
         "sizeName": {
-          "label": "Size Name",
-          "placeholder": "e.g., 15 MM"
+          "label": "Size",
+          "placeholder": "e.g., 15"
         },
-        "isActive": {
-          "label": "Active Status"
-        }
+        "unit": {
+          "label": "Unit",
+          "placeholder": "e.g., MM, Inch"
+        },
+        "activeStatusTitle": "Tap Size",
+        "activeStatusOn": "Active - Size is enabled",
+        "activeStatusOff": "Inactive - Size is disabled"
       },
       "validation": {
         "sizeCodeRequired": "Size Code is required",
         "sizeNameRequired": "Size Name is required",
+        "unitRequired": "Unit is required",
         "sizeCodeLength": "Size Code cannot exceed {count} characters",
-        "sizeNameLength": "Size Name cannot exceed {count} characters"
+        "sizeNameLength": "Size Name cannot exceed {count} characters",
+        "unitLength": "Unit cannot exceed {count} characters"
       },
       "messages": {
         "createSuccess": "Tap Size created successfully",

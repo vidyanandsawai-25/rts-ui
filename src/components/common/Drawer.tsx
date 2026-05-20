@@ -18,6 +18,7 @@ export  function Drawer({
   open,
   onClose,
   title,
+  description,
   width = "md",
   children,
   footer,
@@ -84,9 +85,14 @@ export  function Drawer({
           px-5 py-2.5 border-b-2 border-blue-200
           flex items-start justify-between
         ">
-          <div className="flex items-start gap-3">
-            {/* ICON SLOT (from title JSX) */}
-            {title}
+          <div className="flex flex-col gap-1">
+            <div className="flex items-start gap-3">
+              {/* ICON SLOT (from title JSX) */}
+              {title}
+            </div>
+            {description && (
+              <p className="text-sm text-gray-500">{description}</p>
+            )}
           </div>
  
          <button

@@ -73,17 +73,8 @@ export function WaterConnectionToolbar() {
 
   return (
     <div className="flex items-center gap-3">
-      <div className="flex w-full justify-end">
-        <SearchInput
-          value={search}
-          onChange={(value) => setSearch(sanitizeInput(value))}
-          placeholder={searchPlaceholder}
-          className="mb-0 w-80 text-gray-900"
-        />
-      </div>
-
       <Tabs
-        className="flex items-center gap-3 mt-0 flex-row"
+        className="flex items-center gap-2 mt-0 flex-row"
         value={activeTab}
         variant="pills"
         items={[
@@ -94,8 +85,14 @@ export function WaterConnectionToolbar() {
         onChange={(v) => router.push(`${base}/${v}`)}
       />
 
+      <SearchInput
+        value={search}
+        onChange={(value) => setSearch(sanitizeInput(value))}
+        placeholder={searchPlaceholder}
+        className="mb-0 w-105 text-gray-900"
+      />
+
       <AddButton
-        className="w-full"
         label={addLabel}
         onClick={() => router.push(`${base}/${activeTab}/add`)}
       />

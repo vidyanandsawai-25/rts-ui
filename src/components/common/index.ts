@@ -127,3 +127,5 @@ export type { RadioGroupProps, RadioGroupItemProps } from '@/types/common.types'
 
 export { FloorDetailsTable } from './FloorDetailsTable';
 export type { FloorDetailsTableColumn } from './FloorDetailsTable';
+
+export { StatusToggleField } from './StatusToggleField';
