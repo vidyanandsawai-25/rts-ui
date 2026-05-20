@@ -125,10 +125,10 @@ export function ConfigKeyForm({
           : await createConfigKeyAction(submitData);
 
         if (result.success) {
-          toastSuccess(isEdit ? t('messages.keyUpdated') : t('messages.keyCreated'));
+          toastSuccess(result.message || (isEdit ? t('messages.keyUpdated') : t('messages.keyCreated')));
           onSuccess?.();
         } else {
-          toastError(result.error || (isEdit ? t('messages.keyUpdateFailed') : t('messages.keyCreateFailed')));
+          toastError(result.message || result.error || (isEdit ? t('messages.keyUpdateFailed') : t('messages.keyCreateFailed')));
         }
       } catch {
         toastError(t('messages.unexpectedError'));

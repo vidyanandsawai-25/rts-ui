@@ -4,7 +4,6 @@ import { ConfigurationCards } from './ConfigurationCards';
 import { ConfigurationList } from './ConfigurationList';
 import { ConfigSearchBar } from './ConfigSearchBar';
 import type { ConfigCategory, ConfigItem } from '@/types/configMaster.types';
-import { UserRole } from '@/types/common.types';
 
 interface ConfigurationMasterContentProps {
   categories: ConfigCategory[];
@@ -13,7 +12,6 @@ interface ConfigurationMasterContentProps {
   displayItems: ConfigItem[];
   search?: string;
   locale: string;
-  role: UserRole | null;
   noSearchResultsLabel: string;
   noItemsFoundLabel: string;
   searchTipLabel: string;
@@ -26,7 +24,6 @@ export function ConfigurationMasterContent({
   displayItems,
   search,
   locale,
-  role,
   noSearchResultsLabel,
   noItemsFoundLabel,
   searchTipLabel,
@@ -54,7 +51,6 @@ export function ConfigurationMasterContent({
                   activeCategory={activeCategory}
                   searchTerm={search}
                   locale={locale}
-                  role={role}
                 />
               ) : (
                 <div className="flex flex-col items-center justify-center py-40 text-slate-400">

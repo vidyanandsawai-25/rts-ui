@@ -47,10 +47,10 @@ export function ConfigItemActions({ id, configKeyId, name, isEnabled }: ConfigIt
         startTransition(async () => {
           const res = await deleteConfigKeyAction(configKeyId);
           if (res.success) {
-            toastSuccess(t('messages.keyDeleted') || 'Key deleted');
+            toastSuccess(res.message || t('messages.keyDeleted') || 'Key deleted');
             router.refresh();
           } else {
-            toastError(res.error || t('messages.deleteFailed') || 'Delete failed');
+            toastError(res.message || res.error || t('messages.deleteFailed') || 'Delete failed');
           }
           setActiveAction(null);
         });

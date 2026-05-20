@@ -7,13 +7,10 @@ import { AddConfigValueModal } from './AddConfigValueModal';
 import DepartmentConfigModal from './DepartmentConfigModal';
 import type { ConfigCategory, ConfigItem, DepartmentApiResponse } from '@/types/configMaster.types';
 
-import { UserRole } from '@/types/common.types';
-
 interface ConfigModalsControllerProps {
   categories: ConfigCategory[];
   items: ConfigItem[];
   departmentData: DepartmentApiResponse[] | null;
-  role: UserRole | null;
   serverAction?: string;
   serverEditCategory?: string;
   serverEditKey?: string;
@@ -24,7 +21,6 @@ export function ConfigModalsController({
   categories,
   items,
   departmentData,
-  role,
   serverAction,
   serverEditCategory,
   serverEditKey,
@@ -34,8 +30,6 @@ export function ConfigModalsController({
   const router = useRouter();
   const pathname = usePathname();
 
-  const isAdmin = role === UserRole.ADMIN;
-  
   // Use server props for initial render to follow "Full SSR", fallback to client searchParams
   const action = serverAction || searchParams.get('action');
   const editCategory = serverEditCategory || searchParams.get('editCategory');
@@ -57,10 +51,10 @@ export function ConfigModalsController({
     }
   };
 
-  const isAddCategoryOpen = isAdmin && (action === 'addCategory' || !!editCategory);
-  const isAddKeyOpen = isAdmin && (action === 'addConfigKey' || !!editKey);
-  const isAddValueOpen = isAdmin && action === 'addValue';
-  const isDeptModalOpen = isAdmin && !!configKeyIdStr; // Restricting department config to admins too
+  const isAddCategoryOpen = action === 'addCategory' || !!editCategory;
+  const isAddKeyOpen = action === 'addConfigKey' || !!editKey;
+  const isAddValueOpen = action === 'addValue';
+  const isDeptModalOpen = !!configKeyIdStr;
 
   const activeCategoryForEdit = editCategory
     ? categories.find((c) => c.id === editCategory)
@@ -80,46 +74,42 @@ export function ConfigModalsController({
 
   return (
     <>
-      {isAdmin && (
-        <>
-          <AddCategoryModal
-            key={activeCategoryForEdit?.id ?? 'new-category'}
-            isOpen={isAddCategoryOpen}
-            onClose={closeModals}
-            onSuccess={closeModals}
-            initialData={activeCategoryForEdit}
-          />
-          <AddConfigKeyModal
-            isOpen={isAddKeyOpen}
-            onClose={closeModals}
-            onSuccess={closeModals}
-            categories={categories}
-            categoryId={selectedCategoryId}
-            initialData={activeKeyForEdit}
-          />
-          <AddConfigValueModal
-            isOpen={isAddValueOpen}
-            onClose={closeModals}
-            onSuccess={closeModals}
-            categories={categories}
-            configItems={items}
-          />
-          {configKeyItem && (
-            <DepartmentConfigModal
-              isOpen={isDeptModalOpen}
-              onClose={closeModals}
-              onSuccess={closeModals}
-              configKeyId={configKeyItem.configKeyId}
-              configKeyName={configKeyItem.name}
-              configKeyDescription={configKeyItem.description}
-              dataType={configKeyItem.dataType}
-              controlType={configKeyItem.controlType}
-              options={configKeyItem.options}
-              defaultValue={configKeyItem.defaultValue}
-              initialData={departmentData}
-            />
-          )}
-        </>
+      <AddCategoryModal
+        key={activeCategoryForEdit?.id ?? 'new-category'}
+        isOpen={isAddCategoryOpen}
+        onClose={closeModals}
+        onSuccess={closeModals}
+        initialData={activeCategoryForEdit}
+      />
+      <AddConfigKeyModal
+        isOpen={isAddKeyOpen}
+        onClose={closeModals}
+        onSuccess={closeModals}
+        categories={categories}
+        categoryId={selectedCategoryId}
+        initialData={activeKeyForEdit}
+      />
+      <AddConfigValueModal
+        isOpen={isAddValueOpen}
+        onClose={closeModals}
+        onSuccess={closeModals}
+        categories={categories}
+        configItems={items}
+      />
+      {configKeyItem && (
+        <DepartmentConfigModal
+          isOpen={isDeptModalOpen}
+          onClose={closeModals}
+          onSuccess={closeModals}
+          configKeyId={configKeyItem.configKeyId}
+          configKeyName={configKeyItem.name}
+          configKeyDescription={configKeyItem.description}
+          dataType={configKeyItem.dataType}
+          controlType={configKeyItem.controlType}
+          options={configKeyItem.options}
+          defaultValue={configKeyItem.defaultValue}
+          initialData={departmentData}
+        />
       )}
     </>
   );
