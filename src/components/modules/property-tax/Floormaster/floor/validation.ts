@@ -48,8 +48,10 @@ export function validateFloorForm(
     errors.description = t('form.validation.descriptionFormat');
   }
 
-  // Sequence number validation
-  if (!Number.isFinite(data.sequenceNo) || data.sequenceNo < 0) {
+  // Sequence number validation (0 is treated as "not provided" since empty input becomes 0)
+  if (data.sequenceNo === 0) {
+    errors.sequenceNo = t('form.validation.sequenceNoRequired');
+  } else if (!Number.isFinite(data.sequenceNo) || data.sequenceNo < 0) {
     errors.sequenceNo = t('validation.mustBeNumber');
   }
 

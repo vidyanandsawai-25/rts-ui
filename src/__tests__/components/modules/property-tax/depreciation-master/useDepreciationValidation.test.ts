@@ -136,7 +136,7 @@ describe("useDepreciationValidation", () => {
       expect(validation.maxError).toBeNull();
     });
 
-    it("should accept valid range that would overlap (since overlap validation is server-side)", () => {
+    it("should accept valid range format even when overlap check is pending", () => {
       const { result } = renderHook(() => useDepreciationValidation(mockT));
       const validation = result.current.validateMinMax("5", "10");
 
@@ -146,10 +146,64 @@ describe("useDepreciationValidation", () => {
     });
   });
 
-  describe("checkOverlap - Always returns false (server-side validation)", () => {
-    it("should always return false since overlap validation is server-side", () => {
+  describe("checkOverlap - Returns conflicting range or null", () => {
+    it("should return the conflicting range when fully contained", () => {
       const { result } = renderHook(() => useDepreciationValidation(mockT));
-      expect(result.current.checkOverlap()).toBe(false);
+      const existing = [{ min: 2, max: 6 }];
+      expect(result.current.checkOverlap(3, 5, existing)).toEqual({ min: 2, max: 6 });
+    });
+
+    it("should return the conflicting range on a left-side overlap", () => {
+      const { result } = renderHook(() => useDepreciationValidation(mockT));
+      const existing = [{ min: 2, max: 6 }];
+      expect(result.current.checkOverlap(1, 4, existing)).toEqual({ min: 2, max: 6 });
+    });
+
+    it("should return the conflicting range on a right-side overlap", () => {
+      const { result } = renderHook(() => useDepreciationValidation(mockT));
+      const existing = [{ min: 2, max: 6 }];
+      expect(result.current.checkOverlap(5, 8, existing)).toEqual({ min: 2, max: 6 });
+    });
+
+    it("should return the conflicting range when new range contains an existing range", () => {
+      const { result } = renderHook(() => useDepreciationValidation(mockT));
+      const existing = [{ min: 2, max: 6 }];
+      expect(result.current.checkOverlap(1, 9, existing)).toEqual({ min: 2, max: 6 });
+    });
+
+    it("should return the conflicting range for an exact duplicate", () => {
+      const { result } = renderHook(() => useDepreciationValidation(mockT));
+      const existing = [{ min: 2, max: 6 }];
+      expect(result.current.checkOverlap(2, 6, existing)).toEqual({ min: 2, max: 6 });
+    });
+
+    it("should return the conflicting range when boundary is shared (inclusive)", () => {
+      const { result } = renderHook(() => useDepreciationValidation(mockT));
+      const existing = [{ min: 2, max: 6 }];
+      expect(result.current.checkOverlap(6, 10, existing)).toEqual({ min: 2, max: 6 });
+    });
+
+    it("should return null for a range with no shared boundary", () => {
+      const { result } = renderHook(() => useDepreciationValidation(mockT));
+      const existing = [{ min: 2, max: 6 }];
+      expect(result.current.checkOverlap(7, 10, existing)).toBeNull();
+    });
+
+    it("should return null for a range entirely below existing range", () => {
+      const { result } = renderHook(() => useDepreciationValidation(mockT));
+      const existing = [{ min: 2, max: 6 }];
+      expect(result.current.checkOverlap(0, 1, existing)).toBeNull();
+    });
+
+    it("should return null when there are no existing ranges", () => {
+      const { result } = renderHook(() => useDepreciationValidation(mockT));
+      expect(result.current.checkOverlap(2, 6, [])).toBeNull();
+    });
+
+    it("should return the correct conflicting range from a list of multiple ranges", () => {
+      const { result } = renderHook(() => useDepreciationValidation(mockT));
+      const existing = [{ min: 0, max: 5 }, { min: 11, max: 20 }];
+      expect(result.current.checkOverlap(15, 25, existing)).toEqual({ min: 11, max: 20 });
     });
   });
 
