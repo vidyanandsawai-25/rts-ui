@@ -83,3 +83,37 @@ export const matchesFilterCriteria = (
 
     return matchesConstruction && matchesAge && matchesYear;
 };
+
+/**
+ * Checks if a new age range overlaps with any existing age ranges.
+ * Returns { hasOverlap: boolean, overlappingRange?: string }
+ * 
+ * Two ranges overlap if: (newFrom <= existingTo) AND (newTo >= existingFrom)
+ * Examples:
+ * - Existing: 0-5, New: 2-4 => Overlap (completely within)
+ * - Existing: 0-5, New: 3-10 => Overlap (partial)
+ * - Existing: 0-5, 11-15, New: 6-10 => No overlap (fits between)
+ */
+export const checkAgeRangeOverlap = (
+    newFrom: number,
+    newTo: number,
+    existingRanges: string[]
+): { hasOverlap: boolean; overlappingRange?: string } => {
+    for (const rangeStr of existingRanges) {
+        const parsed = parseRangeValue(rangeStr);
+        if (!parsed) continue;
+        
+        const { ageFrom: existingFrom, ageTo: existingTo } = parsed;
+        
+        // Check if ranges overlap
+        // Overlap occurs when: (newFrom <= existingTo) AND (newTo >= existingFrom)
+        if (newFrom <= existingTo && newTo >= existingFrom) {
+            return {
+                hasOverlap: true,
+                overlappingRange: rangeStr
+            };
+        }
+    }
+    
+    return { hasOverlap: false };
+};
