@@ -40,6 +40,47 @@ export const roomSchema = z.object({
     submissionType: z.string().default('Room'),
 });
 
+export const renterDetailItemSchema = z.object({
+    id: z.number().optional(),
+    agreementId: z.string().optional(),
+    incrementFrequency: z.string().default('Yearly'),
+    incrementType: z.string().default('Percentage'),
+    incrementValue: z.number().default(0),
+    incrementMethod: z.string().default('base'),
+    durationFrom: z.string().nullable().optional(),
+    durationTo: z.string().nullable().optional(),
+    rentAmount: z.number().default(0),
+    rentMonthly: z.number().default(0),
+    increment: z.number().default(0),
+    incrementStatus: z.boolean().default(true),
+    isActive: z.boolean().default(true),
+});
+
+export const renterMastItemSchema = z.object({
+    id: z.number().optional(),
+    finalRent: z.number().default(0),
+    financialYear: z.string().default(''),
+    durationFrom: z.string().nullable().optional(),
+    durationTo: z.string().nullable().optional(),
+    isActive: z.boolean().default(true),
+});
+
+export const renterSubmissionSchema = z.object({
+    propertyId: z.number().positive('floor.errors.propertyIdRequired'),
+    propertyDetailsId: z.number().optional(),
+    updatedBy: z.number().optional(),
+    renterYesNo: z.boolean().default(true),
+    renterName: z.string().optional(),
+    renterNameEnglish: z.string().optional(),
+    rentYearly: z.number().optional(),
+    rentMonthly: z.number().optional(),
+    agreementFromDate: z.string().optional().nullable(),
+    agreementToDate: z.string().optional().nullable(),
+    agreementDate: z.string().optional().nullable(),
+    renterDetails: z.array(renterDetailItemSchema).optional().default([]),
+    renterMast: z.array(renterMastItemSchema).optional().default([]),
+});
+
 export const floorSubmissionSchema = z.object({
     isActive: z.boolean().default(true),
     propertyId: z.number()
@@ -113,8 +154,8 @@ export const floorSubmissionSchema = z.object({
     occupancyNumber: z.string().default(''),
     nonCalculateRentMonthly: z.number()
         .nonnegative().default(0),
-    renterDetails: z.array(z.unknown()).optional().default([]),
-    renterMast: z.array(z.unknown()).optional().default([]),
+    renterDetails: z.array(renterDetailItemSchema).optional().default([]),
+    renterMast: z.array(renterMastItemSchema).optional().default([]),
     roomWiseSubmissionDetails: z.array(roomSchema).optional().default([]),
     createdBy: z.number().optional(),
     updatedBy: z.number().optional(),
@@ -126,7 +167,11 @@ export const floorSubmissionSchema = z.object({
 }, {
     message: 'floor.asstYrError',
     path: ['assessmentYear'],
-});
+}).transform(data => ({
+    ...data,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    propertyDetailsId: data.propertyDetailsId ?? (data as any).id
+}));
 
 export type FloorSubmissionSchemaType = z.infer<typeof floorSubmissionSchema>;
 
