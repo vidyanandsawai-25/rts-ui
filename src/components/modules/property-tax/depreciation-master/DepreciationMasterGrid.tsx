@@ -7,7 +7,7 @@ import { RightPanel } from "./RightPanel";
 import type { RangeRow } from "@/types/depreciation.types";
 
 interface DepreciationMasterGridProps {
-  t: (key: string, values?: Record<string, unknown>) => string;
+  t: (key: string, values?: Record<string, string | number | Date>) => string;
   minValue: string;
   maxValue: string;
   minError: string | null;
