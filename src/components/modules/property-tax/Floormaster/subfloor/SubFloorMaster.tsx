@@ -79,6 +79,30 @@ export default function SubFloorMaster({
   );
 
   /* ============================================================
+     SORTING
+  ============================================================ */
+
+  const handleSort = useCallback(
+    (columnKey: string) => {
+      let newSortOrder: string = "asc";
+
+      // Toggle sort order if clicking the same column
+      if (sortBy === columnKey) {
+        if (sortOrder === "asc") {
+          newSortOrder = "desc";
+        } else if (sortOrder === "desc") {
+          // Reset to no sorting
+          router.push(buildUrl(1, pageSize, currentSearchTerm));
+          return;
+        }
+      }
+
+      router.push(buildUrl(1, pageSize, currentSearchTerm, columnKey, newSortOrder));
+    },
+    [sortBy, sortOrder, router, buildUrl, pageSize, currentSearchTerm]
+  );
+
+  /* ============================================================
      PAGINATION
   ============================================================ */
 
@@ -141,7 +165,7 @@ export default function SubFloorMaster({
      TABLE COLUMNS
   ============================================================ */
 
-  const columns = subFloorColumns(t);
+  const columns = subFloorColumns(t, tCommon, sortBy, sortOrder, handleSort);
 
   /* ============================================================
      UI
