@@ -82,9 +82,12 @@ export async function getTapStatusPaged(
   if (!response.success) {
     throw new ApiError(response.statusCode ?? 500, response.error ?? "Failed to fetch tap status", "getTapStatusPaged");
   }
+  if (!response.data) {
+    throw new ApiError(500, "No data returned from server", "getTapStatusPaged");
+  }
   return {
-    ...response.data!,
-    items: response.data!.items.filter(isTapStatusShape).map(normalizeTapStatus),
+    ...response.data,
+    items: response.data.items.filter(isTapStatusShape).map(normalizeTapStatus),
   };
 }
 
@@ -163,9 +166,12 @@ export async function getTapTypePaged(
   if (!response.success) {
     throw new ApiError(response.statusCode ?? 500, response.error ?? "Failed to fetch tap type", "getTapTypePaged");
   }
+  if (!response.data) {
+    throw new ApiError(500, "No data returned from server", "getTapTypePaged");
+  }
   return {
-    ...response.data!,
-    items: response.data!.items.filter(isTapTypeShape).map(normalizeTapType),
+    ...response.data,
+    items: response.data.items.filter(isTapTypeShape).map(normalizeTapType),
   };
 }
 
@@ -251,9 +257,12 @@ export async function getTapSizePaged(
   if (!response.success) {
     throw new ApiError(response.statusCode ?? 500, response.error ?? "Failed to fetch tap size", "getTapSizePaged");
   }
+  if (!response.data) {
+    throw new ApiError(500, "No data returned from server", "getTapSizePaged");
+  }
   return {
-    ...response.data!,
-    items: response.data!.items.filter(isTapSizeShape).map(normalizeTapSize),
+    ...response.data,
+    items: response.data.items.filter(isTapSizeShape).map(normalizeTapSize),
   };
 }
 
@@ -272,6 +281,7 @@ export async function createTapSize(
   userId: number
 ): Promise<TapSize> {
   const response = await apiClient.post<TapSize>("/WaterConnectionSize", {
+    sizeCode: data.sizeCode ?? "",
     ConnectionSize: data.sizeName,
     ConnectionSizeUnit: data.unit,
     IsActive: data.isActive,
@@ -294,6 +304,7 @@ export async function updateTapSize(
   const response = await apiClient.put<TapSize>(
     `/WaterConnectionSize/${encodeURIComponent(String(id))}`,
     {
+      sizeCode: data.sizeCode ?? "",
       ConnectionSize: data.sizeName,
       ConnectionSizeUnit: data.unit,
       IsActive: data.isActive,

@@ -43,6 +43,7 @@ export function TapSizeForm({ id, initialData }: Readonly<TapSizeFormProps>) {
   const [submittedOnce, setSubmittedOnce] = useState(false);
 
   const [formData, setFormData] = useState<TapSizeFormModel>({
+    sizeCode: initialData?.sizeCode ?? "",
     sizeName: initialData?.sizeName ?? "",
     unit: initialData?.unit ?? "",
     isActive: initialData?.isActive ?? true,
@@ -159,6 +160,27 @@ export function TapSizeForm({ id, initialData }: Readonly<TapSizeFormProps>) {
         />
 
         <div className="space-y-4">
+          <div>
+            <Label htmlFor="tap-size-code">
+              {t("form.sizeCode.label")}
+            </Label>
+            <Input
+              id="tap-size-code"
+              value={formData.sizeCode ?? ""}
+              onChange={(e) => handleChange("sizeCode", e.target.value)}
+              onBlur={() => handleBlur("sizeCode")}
+              placeholder={t("form.sizeCode.placeholder")}
+              maxLength={MAX_CODE}
+              aria-invalid={showError("sizeCode") ? "true" : "false"}
+              aria-describedby={showError("sizeCode") ? "tap-size-code-error" : undefined}
+            />
+            <ValidationMessage
+              id="tap-size-code-error"
+              message={errors.sizeCode}
+              visible={showError("sizeCode")}
+            />
+          </div>
+
           <div>
             <Label htmlFor="tap-size-name" required>
               {t("form.sizeName.label")}

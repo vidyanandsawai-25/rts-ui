@@ -1,4 +1,4 @@
-import type { PagedResponse } from "./floor.types";
+import type { PagedResponse } from "./common.types";
 
 export type { PagedResponse };
 

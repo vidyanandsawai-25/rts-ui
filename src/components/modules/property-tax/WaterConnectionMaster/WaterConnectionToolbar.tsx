@@ -28,11 +28,9 @@ export function WaterConnectionToolbar() {
   const currentSearchTerm = searchParams.get("q") ?? "";
   const [search, setSearch] = useState<string>(currentSearchTerm);
 
-  const [prevSearchTerm, setPrevSearchTerm] = useState(currentSearchTerm);
-  if (currentSearchTerm !== prevSearchTerm) {
-    setPrevSearchTerm(currentSearchTerm);
+  useEffect(() => {
     setSearch(currentSearchTerm);
-  }
+  }, [currentSearchTerm]);
 
   const isFirstRender = useRef(true);
 

@@ -13,6 +13,8 @@
       "searchPlaceholder": "स्थिती कोड किंवा नावाने शोधा...",
       "addTitle": "नळ स्थिती जोडा",
       "editTitle": "नळ स्थिती संपादित करा",
+      "addSubtitle": "नवीन जल जोडणी स्थिती तयार करा",
+      "editSubtitle": "जल जोडणी स्थिती तपशील अद्यतनित करा",
       "table": {
         "statusCode": "स्थिती कोड",
         "statusName": "स्थिती नाव",
@@ -29,7 +31,10 @@
         },
         "isActive": {
           "label": "सक्रिय स्थिती"
-        }
+        },
+        "activeStatusTitle": "नळ स्थिती",
+        "activeStatusOn": "सक्रिय - स्थिती सक्षम आहे",
+        "activeStatusOff": "निष्क्रिय - स्थिती अक्षम आहे"
       },
       "validation": {
         "statusCodeRequired": "स्थिती कोड आवश्यक आहे",
@@ -54,6 +59,8 @@
       "searchPlaceholder": "प्रकार कोड किंवा नावाने शोधा...",
       "addTitle": "नळ प्रकार जोडा",
       "editTitle": "नळ प्रकार संपादित करा",
+      "addSubtitle": "नवीन जल जोडणी प्रकार तयार करा",
+      "editSubtitle": "जल जोडणी प्रकार तपशील अद्यतनित करा",
       "table": {
         "typeCode": "प्रकार कोड",
         "typeName": "प्रकार नाव",
@@ -70,7 +77,10 @@
         },
         "isActive": {
           "label": "सक्रिय स्थिती"
-        }
+        },
+        "activeStatusTitle": "नळ प्रकार",
+        "activeStatusOn": "सक्रिय - प्रकार सक्षम आहे",
+        "activeStatusOff": "निष्क्रिय - प्रकार अक्षम आहे"
       },
       "validation": {
         "typeCodeRequired": "प्रकार कोड आवश्यक आहे",
@@ -95,6 +105,8 @@
       "searchPlaceholder": "आकार कोड किंवा नावाने शोधा...",
       "addTitle": "नळ आकार जोडा",
       "editTitle": "नळ आकार संपादित करा",
+      "addSubtitle": "नवीन जल जोडणी आकार तयार करा",
+      "editSubtitle": "जल जोडणी आकार तपशील अद्यतनित करा",
       "table": {
         "sizeCode": "आकार कोड",
         "sizeName": "आकार नाव",
@@ -109,15 +121,24 @@
           "label": "आकार नाव",
           "placeholder": "उदा., 15 MM"
         },
+        "unit": {
+          "label": "एकक",
+          "placeholder": "उदा., MM, इंच"
+        },
         "isActive": {
           "label": "सक्रिय स्थिती"
-        }
+        },
+        "activeStatusTitle": "नळ आकार",
+        "activeStatusOn": "सक्रिय - आकार सक्षम आहे",
+        "activeStatusOff": "निष्क्रिय - आकार अक्षम आहे"
       },
       "validation": {
         "sizeCodeRequired": "आकार कोड आवश्यक आहे",
         "sizeNameRequired": "आकार नाव आवश्यक आहे",
         "sizeCodeLength": "आकार कोड {count} वर्णांपेक्षा जास्त असू शकत नाही",
-        "sizeNameLength": "आकार नाव {count} वर्णांपेक्षा जास्त असू शकत नाही"
+        "sizeNameLength": "आकार नाव {count} वर्णांपेक्षा जास्त असू शकत नाही",
+        "unitRequired": "एकक आवश्यक आहे",
+        "unitLength": "एकक {count} वर्णांपेक्षा जास्त असू शकत नाही"
       },
       "messages": {
         "createSuccess": "नळ आकार यशस्वीरित्या तयार केला",

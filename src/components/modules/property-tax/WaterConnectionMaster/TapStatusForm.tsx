@@ -85,7 +85,7 @@ export function TapStatusForm({ id, initialData }: Readonly<TapStatusFormProps>)
 
     setIsSubmitting(true);
     try {
-      const payload: TapStatusFormModel = { statusCode: "", ...formData };
+      const payload: TapStatusFormModel = { ...formData };
       const result = isEdit
         ? await updateTapStatusAction(id!, payload)
         : await createTapStatusAction(payload);

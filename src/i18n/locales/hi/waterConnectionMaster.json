@@ -13,6 +13,8 @@
       "searchPlaceholder": "स्थिति कोड या नाम से खोजें...",
       "addTitle": "नल स्थिति जोड़ें",
       "editTitle": "नल स्थिति संपादित करें",
+      "addSubtitle": "नई जल कनेक्शन स्थिति बनाएं",
+      "editSubtitle": "जल कनेक्शन स्थिति विवरण अपडेट करें",
       "table": {
         "statusCode": "स्थिति कोड",
         "statusName": "स्थिति नाम",
@@ -29,7 +31,10 @@
         },
         "isActive": {
           "label": "सक्रिय स्थिति"
-        }
+        },
+        "activeStatusTitle": "नल स्थिति",
+        "activeStatusOn": "सक्रिय - स्थिति सक्षम है",
+        "activeStatusOff": "निष्क्रिय - स्थिति अक्षम है"
       },
       "validation": {
         "statusCodeRequired": "स्थिति कोड आवश्यक है",
@@ -54,6 +59,8 @@
       "searchPlaceholder": "प्रकार कोड या नाम से खोजें...",
       "addTitle": "नल प्रकार जोड़ें",
       "editTitle": "नल प्रकार संपादित करें",
+      "addSubtitle": "नया जल कनेक्शन प्रकार बनाएं",
+      "editSubtitle": "जल कनेक्शन प्रकार विवरण अपडेट करें",
       "table": {
         "typeCode": "प्रकार कोड",
         "typeName": "प्रकार नाम",
@@ -70,7 +77,10 @@
         },
         "isActive": {
           "label": "सक्रिय स्थिति"
-        }
+        },
+        "activeStatusTitle": "नल प्रकार",
+        "activeStatusOn": "सक्रिय - प्रकार सक्षम है",
+        "activeStatusOff": "निष्क्रिय - प्रकार अक्षम है"
       },
       "validation": {
         "typeCodeRequired": "प्रकार कोड आवश्यक है",
@@ -95,6 +105,8 @@
       "searchPlaceholder": "आकार कोड या नाम से खोजें...",
       "addTitle": "नल आकार जोड़ें",
       "editTitle": "नल आकार संपादित करें",
+      "addSubtitle": "नया जल कनेक्शन आकार बनाएं",
+      "editSubtitle": "जल कनेक्शन आकार विवरण अपडेट करें",
       "table": {
         "sizeCode": "आकार कोड",
         "sizeName": "आकार नाम",
@@ -109,15 +121,24 @@
           "label": "आकार नाम",
           "placeholder": "उदा., 15 MM"
         },
+        "unit": {
+          "label": "इकाई",
+          "placeholder": "उदा., MM, इंच"
+        },
         "isActive": {
           "label": "सक्रिय स्थिति"
-        }
+        },
+        "activeStatusTitle": "नल आकार",
+        "activeStatusOn": "सक्रिय - आकार सक्षम है",
+        "activeStatusOff": "निष्क्रिय - आकार अक्षम है"
       },
       "validation": {
         "sizeCodeRequired": "आकार कोड आवश्यक है",
         "sizeNameRequired": "आकार नाम आवश्यक है",
         "sizeCodeLength": "आकार कोड {count} वर्णों से अधिक नहीं हो सकता",
-        "sizeNameLength": "आकार नाम {count} वर्णों से अधिक नहीं हो सकता"
+        "sizeNameLength": "आकार नाम {count} वर्णों से अधिक नहीं हो सकता",
+        "unitRequired": "इकाई आवश्यक है",
+        "unitLength": "इकाई {count} वर्णों से अधिक नहीं हो सकती"
       },
       "messages": {
         "createSuccess": "नल आकार सफलतापूर्वक बनाया गया",
