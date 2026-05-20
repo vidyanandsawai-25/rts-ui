@@ -39,6 +39,7 @@
       "provideBothAges": "Please provide both From and To age",
       "fromAgeGreaterError": "From age cannot be greater than To age",
       "ageRangeExists": "Age range already exists",
+      "ageRangeOverlap": "Age range {newRange} overlaps with existing range {existingRange}. Please choose a non-overlapping range.",
       "ageRangeAdded": "Added age range {from} to {to}",
       "invalidFactorValue": "Invalid factor value",
       "factorAppliedLocally": "Applied factor {factor} locally to {count} row(s). Click \"Update\" to save.",
