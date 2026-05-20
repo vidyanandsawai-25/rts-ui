@@ -759,6 +759,48 @@ export async function getAllWardsForLinkAction(searchTerm?: string): Promise<{
 }
 
 /**
+ * Get all wards for a specific zone (no pagination)
+ * Used for property dropdown to show all wards in selected zone
+ */
+export async function getAllWardsForZoneAction(zoneId: number): Promise<{
+  success: boolean;
+  data?: WardItem[];
+  totalCount?: number;
+  error?: string;
+}> {
+  try {
+    const params = new URLSearchParams();
+    params.set("PageSize", "-1");
+    params.set("ZoneId", zoneId.toString());
+    
+    const response = await apiClient.get<{ items?: WardItem[]; totalCount?: number }>(`/Ward?${params.toString()}`);
+
+    if (!response.success || !response.data) {
+      return { success: false, error: response.error || "Failed to fetch wards for zone" };
+    }
+
+    const items = response.data.items || [];
+
+    return {
+      success: true,
+      data: items,
+      totalCount: response.data.totalCount || items.length
+    };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return {
+        success: false,
+        error: error.responseText
+      };
+    }
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to fetch wards for zone" };
+  }
+}
+
+/**
  * Fetches wards with pagination and search for View All tab.
  * API: GET /api/Ward?PageNumber={page}&PageSize={size}&SearchTerm={term}
  */
@@ -940,5 +982,438 @@ export async function linkWardsToZoneAction(
       return { success: false, error: error.message };
     }
     return { success: false, error: "Failed to link wards to zone" };
+  }
+}
+
+/* ===================================================================================
+   PARTITION / WING ACTIONS
+   Used by PropertyPartitionForm for creating property partitions/wings
+   =================================================================================== */
+
+import { getAllActiveWings } from "@/lib/api/wing.service";
+import { getFloorPaged } from "@/lib/api/floor.service";
+import { 
+  getSocietyDetailsByProperty, 
+  getLatestSocietyDetailByProperty, 
+  createSocietyDetail, 
+  updateSocietyDetail 
+} from "@/lib/api/societyDetails.services";
+import { ZonePropertyItem, ZonePropertyListResponse } from "@/types/zoneProperty.types";
+import { WingItem } from "@/types/wing.types";
+import { Floor } from "@/types/floor.types";
+import { SocietyDetailsListResponse, CreateSocietyDetailPayload, SocietyDetailItem } from "@/types/societyDetails.types";
+import { BuildingStructureItem, GenerateBuildingStructurePayload, BuildingStructureResponse } from "@/types/building-structure.types";
+import { BulkPropertyItem, BulkPropertyCreateResponse } from "@/types/property-bulk.types";
+import { createBulkBuildingProperties } from "@/lib/api/zone-property.service";
+
+/**
+ * Fetches all properties for a specific ward.
+ * Used in partition form to select parent property.
+ */
+export async function getAllPropertiesForWardAction(wardId: number): Promise<{
+  success: boolean;
+  data?: ZonePropertyItem[];
+  error?: string;
+}> {
+  try {
+    if (!wardId || wardId <= 0) {
+      return { success: false, error: "Invalid ward ID" };
+    }
+
+    // Fetch all properties for the ward (use large page size)
+    const params = new URLSearchParams();
+    params.set("WardId", wardId.toString());
+    params.set("PageNumber", "1");
+    params.set("PageSize", "1000"); // Large number to get all
+
+    const response = await apiClient.get<ZonePropertyListResponse>(`/Property?${params.toString()}`);
+
+    if (!response.success || !response.data) {
+      return { success: false, error: response.error || "Failed to fetch properties" };
+    }
+
+    return { success: true, data: response.data.items || [] };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      logger.error("[getAllPropertiesForWardAction] API Error", {
+        error,
+        statusCode: error.statusCode,
+      });
+      return { success: false, error: error.responseText };
+    }
+    if (error instanceof Error) {
+      logger.error("[getAllPropertiesForWardAction] Error", {
+        error,
+        message: error.message,
+      });
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to fetch properties" };
+  }
+}
+
+/**
+ * Fetches all active wings for dropdown selection.
+ */
+export async function getAllActiveWingsAction(): Promise<{
+  success: boolean;
+  data?: WingItem[];
+  error?: string;
+}> {
+  try {
+    const wings = await getAllActiveWings();
+    return { success: true, data: wings };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      logger.error("[getAllActiveWingsAction] API Error", {
+        error,
+        statusCode: error.statusCode,
+      });
+      return { success: false, error: error.responseText };
+    }
+    if (error instanceof Error) {
+      logger.error("[getAllActiveWingsAction] Error", {
+        error,
+        message: error.message,
+      });
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to fetch wings" };
+  }
+}
+
+/**
+ * Fetches all active floors for dropdown selection.
+ */
+export async function fetchAllFloorsAction(): Promise<{
+  success: boolean;
+  data?: Floor[];
+  error?: string;
+}> {
+  try {
+    // Fetch all floors with large page size
+    const result = await getFloorPaged(1, 1000);
+    // Filter only active floors and sort by sequenceNo
+    const activeFloors = result.items
+      .filter((f) => f.isActive)
+      .sort((a, b) => a.sequenceNo - b.sequenceNo);
+    return { success: true, data: activeFloors };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      logger.error("[fetchAllFloorsAction] API Error", {
+        error,
+        statusCode: error.statusCode,
+      });
+      return { success: false, error: error.responseText };
+    }
+    if (error instanceof Error) {
+      logger.error("[fetchAllFloorsAction] Error", {
+        error,
+        message: error.message,
+      });
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to fetch floors" };
+  }
+}
+
+/**
+ * Fetches society details (wings) for a specific property.
+ */
+export async function fetchSocietyDetailsByPropertyAction(propertyId: number): Promise<{
+  success: boolean;
+  data?: SocietyDetailsListResponse;
+  error?: string;
+}> {
+  try {
+    if (!propertyId || propertyId <= 0) {
+      return { success: false, error: "Invalid property ID" };
+    }
+
+    const result = await getSocietyDetailsByProperty(propertyId);
+    return { success: true, data: result };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      logger.error("[fetchSocietyDetailsByPropertyAction] API Error", {
+        error,
+        statusCode: error.statusCode,
+      });
+      return { success: false, error: error.responseText };
+    }
+    if (error instanceof Error) {
+      logger.error("[fetchSocietyDetailsByPropertyAction] Error", {
+        error,
+        message: error.message,
+      });
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to fetch society details" };
+  }
+}
+
+/**
+ * Fetches the latest society detail for a property to determine next wing ID.
+ */
+export async function getLatestSocietyDetailByPropertyAction(propertyId: number): Promise<{
+  success: boolean;
+  data?: SocietyDetailsListResponse;
+  error?: string;
+}> {
+  try {
+    if (!propertyId || propertyId <= 0) {
+      return { success: false, error: "Invalid property ID" };
+    }
+
+    const result = await getLatestSocietyDetailByProperty(propertyId);
+    return { success: true, data: result };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      logger.error("[getLatestSocietyDetailByPropertyAction] API Error", {
+        error,
+        statusCode: error.statusCode,
+      });
+      return { success: false, error: error.responseText };
+    }
+    if (error instanceof Error) {
+      logger.error("[getLatestSocietyDetailByPropertyAction] Error", {
+        error,
+        message: error.message,
+      });
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to fetch latest society detail" };
+  }
+}
+
+/**
+ * Creates a new society detail (wing) for a property.
+ */
+export async function createSocietyDetailAction(payload: CreateSocietyDetailPayload): Promise<{
+  success: boolean;
+  data?: SocietyDetailItem;
+  error?: string;
+}> {
+  try {
+    const userId = await getCurrentUserId();
+    const fullPayload: CreateSocietyDetailPayload = {
+      ...payload,
+      createdBy: userId,
+    };
+
+    const result = await createSocietyDetail(fullPayload);
+    
+    if (!result.success) {
+      return { success: false, error: result.message || "Failed to create society detail" };
+    }
+
+    revalidatePath("/[locale]/property-tax/zone-master", "page");
+    return { success: true, data: result.items || undefined };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      logger.error("[createSocietyDetailAction] API Error", {
+        error,
+        statusCode: error.statusCode,
+      });
+      return { success: false, error: error.responseText };
+    }
+    if (error instanceof Error) {
+      logger.error("[createSocietyDetailAction] Error", {
+        error,
+        message: error.message,
+      });
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to create society detail" };
+  }
+}
+
+/**
+ * Updates an existing society detail (wing).
+ */
+export async function updateSocietyDetailAction(
+  id: number,
+  payload: Partial<CreateSocietyDetailPayload>
+): Promise<{
+  success: boolean;
+  data?: SocietyDetailItem;
+  error?: string;
+}> {
+  try {
+    const userId = await getCurrentUserId();
+    const fullPayload = {
+      ...payload,
+      updatedBy: userId,
+    };
+
+    const result = await updateSocietyDetail(id, fullPayload);
+    
+    if (!result.success) {
+      return { success: false, error: result.message || "Failed to update society detail" };
+    }
+
+    revalidatePath("/[locale]/property-tax/zone-master", "page");
+    return { success: true, data: result.items || undefined };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      logger.error("[updateSocietyDetailAction] API Error", {
+        error,
+        statusCode: error.statusCode,
+      });
+      return { success: false, error: error.responseText };
+    }
+    if (error instanceof Error) {
+      logger.error("[updateSocietyDetailAction] Error", {
+        error,
+        message: error.message,
+      });
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to update society detail" };
+  }
+}
+
+/**
+ * Generates building structure preview based on wing configuration.
+ * API: GET /api/Property/generate-buildingstructure
+ */
+export async function generateBuildingStructureAction(
+  payload: GenerateBuildingStructurePayload
+): Promise<{
+  success: boolean;
+  data?: BuildingStructureItem[];
+  message?: string;
+  error?: string;
+}> {
+  try {
+    // Validate required fields
+    if (!payload.wardId || !payload.propertyNo || !payload.wingId) {
+      return { success: false, error: "Missing required fields: wardId, propertyNo, or wingId" };
+    }
+
+    // Build query parameters with correct casing for API
+    const queryParams = new URLSearchParams({
+      WardId: String(payload.wardId),
+      PropertyNo: String(payload.propertyNo),
+      WingId: String(payload.wingId),
+      FromFloor: String(payload.fromFloor),
+      ToFloor: String(payload.toFloor),
+      NoOfFlatOnOneFloor: String(payload.noOfFlatOnOneFloor),
+      FlatStart: String(payload.flatStart),
+      IncrementedBy: String(payload.incrementedBy),
+      GenerationType: payload.generationType,
+    });
+
+    // Add optional prefix if provided
+    if (payload.prifix) {
+      queryParams.append("Prifix", payload.prifix);
+    }
+
+    const url = `/Property/generate-buildingstructure?${queryParams.toString()}`;
+    console.log("[generateBuildingStructureAction] URL:", url);
+
+    const response = await apiClient.get<BuildingStructureResponse>(url);
+
+    console.log("[generateBuildingStructureAction] Response:", response);
+
+    if (!response.success || !response.data) {
+      return { success: false, error: response.error || "Failed to generate building structure" };
+    }
+
+    // Check for errors in response
+    if (response.data.errors) {
+      const errorMsg = Array.isArray(response.data.errors) 
+        ? response.data.errors.join(", ") 
+        : response.data.errors;
+      return { success: false, error: errorMsg };
+    }
+
+    // API returns items array directly
+    const items = response.data.items || response.data;
+    
+    return { 
+      success: true, 
+      data: Array.isArray(items) ? items : [],
+      message: "Building structure generated successfully"
+    };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      logger.error("[generateBuildingStructureAction] API Error", {
+        error,
+        statusCode: error.statusCode,
+      });
+      return { success: false, error: error.responseText };
+    }
+    if (error instanceof Error) {
+      logger.error("[generateBuildingStructureAction] Error", {
+        error,
+        message: error.message,
+      });
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to generate building structure" };
+  }
+}
+
+/**
+ * Creates building structure properties in bulk.
+ * API: POST /api/Property/Bulk
+ * Used to generate properties from building structure preview.
+ */
+export async function createBulkBuildingPropertiesAction(
+  payload: BulkPropertyItem[]
+): Promise<{
+  success: boolean;
+  data?: BulkPropertyCreateResponse;
+  error?: string;
+}> {
+  try {
+    // Validate payload
+    if (!payload || payload.length === 0) {
+      return { success: false, error: "No properties to create" };
+    }
+
+    // Validate each item has required fields
+    for (const item of payload) {
+      if (!item.wardId || !item.propertyNo || !item.partitionNo) {
+        return { 
+          success: false, 
+          error: "Missing required fields in property payload" 
+        };
+      }
+    }
+
+    console.log("[createBulkBuildingPropertiesAction] Creating", payload.length, "properties");
+    console.log("[createBulkBuildingPropertiesAction] Payload:", JSON.stringify(payload, null, 2));
+
+    const result = await createBulkBuildingProperties(payload);
+
+    console.log("[createBulkBuildingPropertiesAction] Result:", result);
+
+    // Revalidate property list after creation
+    revalidatePath("/property-tax/zone-master");
+
+    return {
+      success: result.allSucceeded,
+      data: result,
+      error: result.hasFailures 
+        ? `${result.failedCount} properties failed to create` 
+        : undefined,
+    };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      logger.error("[createBulkBuildingPropertiesAction] API Error", {
+        error,
+        statusCode: error.statusCode,
+      });
+      return { success: false, error: error.responseText };
+    }
+    if (error instanceof Error) {
+      logger.error("[createBulkBuildingPropertiesAction] Error", {
+        error,
+        message: error.message,
+      });
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to create building properties" };
   }
 }

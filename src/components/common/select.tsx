@@ -172,7 +172,7 @@ export function Select({
   const SelectContent = (
     <div
       ref={selectRef}
-      className={cn('relative w-full', disabled && 'opacity-50 cursor-not-allowed', className)}
+      className={cn('relative w-full', disabled && 'cursor-not-allowed', className)}
     >
       <button
         ref={buttonRef}
@@ -182,7 +182,7 @@ export function Select({
           'flex items-center justify-between w-full border text-sm rounded-md bg-white focus:outline-none focus:ring-2 transition-all',
           sizeClasses[selectSize],
           error ? 'border-red-500 focus:ring-red-400' : 'border-gray-300 focus:ring-blue-300',
-          disabled && 'opacity-50 cursor-not-allowed'
+          disabled && 'bg-gray-100 border-gray-200 cursor-not-allowed'
         )}
         onClick={toggleOpen}
         onKeyDown={handleKeyDown}
@@ -222,7 +222,7 @@ export function Select({
         <span
           className={cn(
             'truncate text-left flex-1 text-sm',
-            !selectedLabel ? 'text-gray-400' : 'text-gray-800'
+            !selectedLabel ? 'text-gray-400' : (disabled ? 'text-gray-500' : 'text-gray-800')
           )}
         >
           {selectedLabel || placeholder}

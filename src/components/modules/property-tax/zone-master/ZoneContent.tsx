@@ -1,14 +1,17 @@
 "use client";
 
-import { Layers, Map } from "lucide-react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { Layers, Map as MapIcon } from "lucide-react";
 import TableHeader from "@/components/common/TableHeader";
 import { useTranslations } from "next-intl";
 import ZoneList from "./zones/ZoneList";
-import WardList from "./wards/WardList";
+import WardPropertyTabs from "./properties/WardPropertyTabs";
 import ZoneForm from "./zones/ZoneForm";
 import LinkWard from "./wards/LinkWard";
 import CreateNewWard from "./wards/CreateNewWard";
 import WardForm from "./wards/WardForm";
+import CreatePropertyDrawer from "./properties/CreatePropertyDrawer";
+import PropertyPartitionForm from "./properties/PropertyPartitionForm";
 import { DashboardCard } from "@/components/common/DashboardCard";
 import { useZoneContentState } from "@/hooks/zoneMaster/useZoneContentState";
 import {
@@ -18,6 +21,11 @@ import {
   SSRData,
   EditData,
   SelectionState,
+  PropertyPaginationData,
+  PropertyLookupMaps,
+  RightPanelTab,
+  CreatePropertyData,
+  CreatePartitionData,
 } from "@/types/zoneMaster.types";
 
 interface Props {
@@ -27,6 +35,11 @@ interface Props {
   selection: SelectionState;
   editData?: EditData;
   ssrData?: SSRData;
+  propertyPagination?: PropertyPaginationData;
+  propertyLookups?: PropertyLookupMaps;
+  activeRightTab?: RightPanelTab;
+  createPropertyData?: CreatePropertyData;
+  createPartitionData?: CreatePartitionData;
 }
 
 export default function ZoneContent({
@@ -36,7 +49,15 @@ export default function ZoneContent({
   selection,
   editData = {},
   ssrData = {},
+  propertyPagination,
+  propertyLookups,
+  activeRightTab = "wards",
+  createPropertyData,
+  createPartitionData,
 }: Props) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const t = useTranslations("zoneMaster");
 
   // Destructure for cleaner access
@@ -53,6 +74,24 @@ export default function ZoneContent({
     viewAllWardsTotalCount: ssrViewAllWardsTotalCount = 0,
     viewAllWardsTotalPages: ssrViewAllWardsTotalPages = 0,
   } = ssrData;
+
+  // Property data with defaults
+  const {
+    properties = [],
+    pageNumber: propertyPageNumber = 1,
+    pageSize: propertyPageSize = 10,
+    totalCount: propertyTotalCount = 0,
+    totalPages: propertyTotalPages = 0,
+    searchTerm: propertySearchTerm = "",
+    selectedWardId: selectedPropertyWardId = null,
+    allWardsForDropdown = [],
+  } = propertyPagination || {};
+
+  const { categoryMap = {}, propertyTypeMap = {} } = propertyLookups || {};
+
+  // Extract selected property ID from URL for SSR
+  const partitionPropertyId = searchParams.get("partitionPropertyId");
+  const selectedPartitionPropertyId = partitionPropertyId ? parseInt(partitionPropertyId, 10) : null;
 
   // Use passed selectedZone, or fallback to finding in zones array
   const currentZone = selectedZone || zones.find(z => z.id === selectedZoneId);
@@ -89,7 +128,7 @@ export default function ZoneContent({
               <DashboardCard
                 label={t("totalWards")}
                 value={dashboardTotalWards}
-                icon={<Map className="w-5 h-5 text-[#1A86E8]" />}
+                icon={<MapIcon className="w-5 h-5 text-[#1A86E8]" />}
                 className="min-w-[140px]"
               />
             </div>
@@ -113,16 +152,30 @@ export default function ZoneContent({
         </div>
 
         <div className="lg:col-span-7 bg-white/80 backdrop-blur-md rounded-lg shadow-lg border-2 border-[#1A86E8]/20 flex flex-col">
-          <WardList
+          <WardPropertyTabs
+            // Ward props
             wards={wards}
-            pageNumber={wardPageNumber}
-            pageSize={wardPageSize}
-            totalCount={wardTotalCount}
-            totalPages={wardTotalPages}
-            searchTerm={wardSearchTerm}
+            wardPageNumber={wardPageNumber}
+            wardPageSize={wardPageSize}
+            wardTotalCount={wardTotalCount}
+            wardTotalPages={wardTotalPages}
+            wardSearchTerm={wardSearchTerm}
             selectedZoneId={selectedZoneId}
             zones={zones}
             currentZone={currentZone}
+            // Property props
+            properties={properties}
+            propertyPageNumber={propertyPageNumber}
+            propertyPageSize={propertyPageSize}
+            propertyTotalCount={propertyTotalCount}
+            propertyTotalPages={propertyTotalPages}
+            propertySearchTerm={propertySearchTerm}
+            selectedPropertyWardId={selectedPropertyWardId}
+            allWardsForDropdown={allWardsForDropdown}
+            categoryMap={categoryMap}
+            propertyTypeMap={propertyTypeMap}
+            // Active tab
+            activeTab={activeRightTab}
           />
         </div>
       </div>
@@ -183,6 +236,49 @@ export default function ZoneContent({
           onClose={handleCloseDrawer}
           onUpdate={refreshAfterUpdate}
           initialData={initialEditZoneData}
+        />
+      )}
+
+      {/* Create Property Drawer */}
+      {createPropertyData?.isOpen && (
+        <CreatePropertyDrawer
+          isOpen={createPropertyData.isOpen}
+          selectedWard={allWardsForDropdown.find(w => w.id === selectedPropertyWardId) || null}
+          propertyTypes={createPropertyData.propertyTypes}
+          propertyCategories={createPropertyData.propertyCategories}
+          taxZones={createPropertyData.taxZones}
+          nextPropertyNumber={createPropertyData.nextPropertyNumber}
+          onClose={() => {
+            const params = new URLSearchParams(searchParams.toString());
+            params.delete("createProperty");
+            router.push(`${pathname}?${params.toString()}`);
+          }}
+          onSuccess={() => {
+            router.refresh();
+          }}
+        />
+      )}
+
+      {/* Create Partition Drawer */}
+      {createPartitionData?.isOpen && (
+        <PropertyPartitionForm
+          open={createPartitionData.isOpen}
+          selectedWard={allWardsForDropdown.find(w => w.id === selectedPropertyWardId) || null}
+          categoryMap={new Map(Object.entries(categoryMap).map(([k, v]) => [Number(k), v]))}
+          ssrProperties={createPartitionData.properties}
+          ssrWings={createPartitionData.wings}
+          ssrFloors={createPartitionData.floors}
+          selectedPropertyId={selectedPartitionPropertyId}
+          ssrSocietyDetails={createPartitionData.societyDetails}
+          onClose={() => {
+            const params = new URLSearchParams(searchParams.toString());
+            params.delete("createPartition");
+            params.delete("partitionPropertyId");
+            router.push(`${pathname}?${params.toString()}`);
+          }}
+          onSuccess={() => {
+            router.refresh();
+          }}
         />
       )}
     </>
