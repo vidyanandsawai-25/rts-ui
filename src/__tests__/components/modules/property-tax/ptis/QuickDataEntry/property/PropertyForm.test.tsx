@@ -38,7 +38,7 @@ vi.mock('next-intl', () => ({
       'property.updateConfirmTitle': 'Confirm Update',
       'property.updateConfirmText': 'Are you sure?',
       'property.updateConfirmButton': 'Yes, Update',
-      'common.UpdateChanges': 'Update Changes',
+      'commonbuttonmessages.UpdateChanges': 'Update Changes',
       'footer.saving': 'Saving...',
     };
     return translations[key] || key;
@@ -67,6 +67,10 @@ vi.mock('@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Property/a
 
 const mockWingMaster = [
   { id: 1, wingNo: 'Wing A', sequenceNo: 1, isActive: true, createdDate: '', updatedDate: null },
+];
+
+const mockMoujaMaster = [
+  { id: 1, moujaNo: '1', moujaName: 'Susgaon', isActive: true, createdDate: '', updatedDate: null },
 ];
 
 const mockPropertyCategories = [
@@ -147,6 +151,7 @@ describe('PropertyFormView', () => {
     render(
       <PropertyFormView
         WingMaster={mockWingMaster}
+        MoujaMaster={mockMoujaMaster}
         propertyCategories={mockPropertyCategories}
         propertyDescriptions={mockPropertyDescriptions}
         propertyData={mockPropertyData as never}
@@ -172,6 +177,7 @@ describe('PropertyFormView', () => {
     render(
       <PropertyFormView
         WingMaster={mockWingMaster}
+        MoujaMaster={mockMoujaMaster}
         propertyCategories={mockPropertyCategories}
         propertyDescriptions={mockPropertyDescriptions}
         propertyData={mockPropertyData as never}
@@ -188,6 +194,7 @@ describe('PropertyFormView', () => {
     render(
       <PropertyFormView
         WingMaster={mockWingMaster}
+        MoujaMaster={mockMoujaMaster}
         propertyCategories={mockPropertyCategories}
         propertyDescriptions={mockPropertyDescriptions}
         propertyData={mockPropertyData as never}
@@ -209,6 +216,7 @@ describe('PropertyFormView', () => {
     render(
       <PropertyFormView
         WingMaster={mockWingMaster}
+        MoujaMaster={mockMoujaMaster}
         propertyCategories={mockPropertyCategories}
         propertyDescriptions={mockPropertyDescriptions}
         propertyData={mockPropertyData as never}
@@ -241,6 +249,7 @@ describe('PropertyFormView', () => {
     render(
       <PropertyFormView
         WingMaster={mockWingMaster}
+        MoujaMaster={mockMoujaMaster}
         propertyCategories={mockPropertyCategories}
         propertyDescriptions={mockPropertyDescriptions}
         propertyData={mockPropertyData as never}
@@ -265,6 +274,7 @@ describe('PropertyFormView', () => {
     render(
       <PropertyFormView
         WingMaster={mockWingMaster}
+        MoujaMaster={mockMoujaMaster}
         propertyCategories={mockPropertyCategories}
         propertyDescriptions={mockPropertyDescriptions}
         propertyData={mockPropertyData as never}
@@ -291,6 +301,7 @@ describe('PropertyFormView', () => {
       render(
         <PropertyFormView
           WingMaster={mockWingMaster}
+          MoujaMaster={mockMoujaMaster}
           propertyCategories={mockPropertyCategories}
           propertyDescriptions={mockPropertyDescriptions}
           propertyData={mockPropertyData as never}
@@ -315,6 +326,7 @@ describe('PropertyFormView', () => {
       render(
         <PropertyFormView
           WingMaster={mockWingMaster}
+          MoujaMaster={mockMoujaMaster}
           propertyCategories={mockPropertyCategories}
           propertyDescriptions={mockPropertyDescriptions}
           propertyData={mockPropertyData as never}
@@ -346,6 +358,7 @@ describe('PropertyFormView', () => {
       render(
         <PropertyFormView
           WingMaster={mockWingMaster}
+          MoujaMaster={mockMoujaMaster}
           propertyCategories={mockPropertyCategories}
           propertyDescriptions={mockPropertyDescriptions}
           propertyData={mockPropertyData as never}
@@ -377,6 +390,7 @@ describe('PropertyFormView', () => {
       render(
         <PropertyFormView
           WingMaster={mockWingMaster}
+          MoujaMaster={mockMoujaMaster}
           propertyCategories={mockPropertyCategories}
           propertyDescriptions={mockPropertyDescriptions}
           propertyData={mockPropertyData as never}

@@ -360,10 +360,10 @@ export const societyValidations = {
       if (!strVal) return undefined; // optional field
       const digits = strVal.replace(/\D/g, '');
       if (!/^[6-9]/.test(digits)) {
-        return t('kyc.validation.invalidMobileStart');
+        return t('society.validation.invalidMobileStart');
       }
       if (digits.length !== 10) {
-        return t('kyc.validation.invalidMobile');
+        return t('society.validation.invalidMobile');
       }
       return undefined;
     },

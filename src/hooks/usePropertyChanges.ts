@@ -8,6 +8,7 @@ interface UsePropertyChangesProps {
     propertyTypeId: number | null;
     wingId: number | null;
     initialWingId: number | null;
+    moujaId: number | null;
     propertyData: PropertyBasicDetailsApiItem | null;
     setHasChanges: (value: boolean) => void;
 }
@@ -18,6 +19,7 @@ export const usePropertyChanges = ({
     propertyTypeId,
     wingId,
     initialWingId,
+    moujaId,
     propertyData,
     setHasChanges,
 }: UsePropertyChangesProps) => {
@@ -40,10 +42,11 @@ export const usePropertyChanges = ({
             plotArea !== (propertyData?.plotArea ?? null) ||
             categoryId !== (propertyData?.categoryId ?? null) ||
             propertyTypeId !== (propertyData?.propertyTypeId ?? null) ||
+            moujaId !== (propertyData?.moujaId ?? null) ||
             wingId !== initialWingId;
 
         setHasChanges(isChanged);
-    }, [categoryId, propertyTypeId, wingId, initialWingId, propertyData, formRef, setHasChanges]);
+    }, [categoryId, propertyTypeId, wingId, initialWingId, moujaId, propertyData, formRef, setHasChanges]);
 
     useEffect(() => {
         checkFormChanges();

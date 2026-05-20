@@ -317,7 +317,7 @@
   },
   "modules": {
     "PtisTaxDetails": {
-      "title": "Taxation Details",
+      "title": "Tax Details",
       "oldTotalRv": "[Old] Total RV",
       "oldTotalAlv": "[Old] Total ALV",
       "oldTotalCv": "[Old] Total CV",

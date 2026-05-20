@@ -81,7 +81,14 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
           }}
         />
         {ownerNameError && (
-          <span className="text-xs text-red-500">{t('kyc.validation.invalidName')}</span>
+          <span className="text-xs text-red-500">
+            {!(formData.ownerName ?? '').trim()
+              ? t('kyc.errors.ownerNameRequired')
+              : (formData.ownerName ?? '').trim().length < KYC_VALIDATION_RULES.NAME_MIN_LENGTH ||
+                (formData.ownerName ?? '').trim().length > KYC_VALIDATION_RULES.NAME_MAX_LENGTH
+              ? t('society.validation.invalidNameLength')
+              : t('kyc.validation.invalidName')}
+          </span>
         )}
       </div>
     </>

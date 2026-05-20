@@ -18,8 +18,8 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
   setFormData,
   showError,
 }) => {
-  
-  
+
+
   return (
     <>
       <div className="space-y-1.5">
@@ -31,11 +31,10 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
           id="kyc-occupier"
           placeholder={t('kyc.enterOccupierName')}
           value={formData.occupierName ?? ''}
-          className={`h-9 text-sm border-gray-300 focus:border-gray-600 focus:ring-2 focus:ring-gray-200 ${
-            showError('occupierName', enhancedKycValidators.isValidOccupierName(formData.occupierName ?? ''))
+          className={`h-9 text-sm border-gray-300 focus:border-gray-600 focus:ring-2 focus:ring-gray-200 ${showError('occupierName', enhancedKycValidators.isValidOccupierName(formData.occupierName ?? ''))
               ? 'border-red-300 focus:border-red-500'
               : ''
-          }`}
+            }`}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
             // Sanitize to remove invalid characters and numbers immediately
             const sanitized = sanitizeName(e.target.value);
@@ -59,11 +58,10 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
           placeholder={t('kyc.enterShopName')}
           value={formData.flatOrShopName ?? ''}
           maxLength={KYC_VALIDATION_RULES.SHOP_NAME_MAX_LENGTH}
-          className={`h-9 text-sm border-gray-300 focus:border-gray-600 focus:ring-2 focus:ring-gray-200 ${
-            showError('flatOrShopName', enhancedKycValidators.isValidShopName(formData.flatOrShopName ?? ''))
+          className={`h-9 text-sm border-gray-300 focus:border-gray-600 focus:ring-2 focus:ring-gray-200 ${showError('flatOrShopName', enhancedKycValidators.isValidShopName(formData.flatOrShopName ?? ''))
               ? 'border-red-300 focus:border-red-500'
               : ''
-          }`}
+            }`}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
             // Sanitize to remove invalid characters and numbers immediately
             const sanitized = sanitizeName(e.target.value);
@@ -89,11 +87,10 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
           placeholder={t('kyc.enterAddress')}
           value={formData.address ?? ''}
           maxLength={KYC_VALIDATION_RULES.ADDRESS_MAX_LENGTH}
-          className={`h-9 text-sm border-gray-300 focus:border-gray-600 focus:ring-2 focus:ring-gray-200 ${
-            showError('address', enhancedKycValidators.isValidAddress(formData.address ?? ''))
+          className={`h-9 text-sm border-gray-300 focus:border-gray-600 focus:ring-2 focus:ring-gray-200 ${showError('address', enhancedKycValidators.isValidAddress(formData.address ?? ''))
               ? 'border-red-300 focus:border-red-500'
               : ''
-          }`}
+            }`}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
             // Sanitize to remove invalid characters immediately
             const sanitized = sanitizeAddress(e.target.value);

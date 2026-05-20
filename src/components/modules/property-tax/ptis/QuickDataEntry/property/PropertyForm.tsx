@@ -15,13 +15,16 @@ const PropertyFormView = (props: PropertyFormViewProps) => {
         propertyTypeId,
         categoryId,
         wingId,
+        moujaId,
         checkFormChanges,
         handleSubmit,
         handlePropertyDescriptionChange,
         handleCategoryChange,
         handleWingChange,
+        handleMoujaChange,
         categoryOptions,
         wingOptions,
+        moujaOptions,
         propertyDescriptionOptions,
     } = usePropertyForm(props);
 
@@ -45,6 +48,9 @@ const PropertyFormView = (props: PropertyFormViewProps) => {
                             wingOptions={wingOptions}
                             wingId={wingId}
                             handleWingChange={handleWingChange}
+                            moujaOptions={moujaOptions}
+                            moujaId={moujaId}
+                            handleMoujaChange={handleMoujaChange}
                             propertyDescriptionOptions={propertyDescriptionOptions}
                             propertyTypeId={propertyTypeId}
                             handlePropertyDescriptionChange={handlePropertyDescriptionChange}

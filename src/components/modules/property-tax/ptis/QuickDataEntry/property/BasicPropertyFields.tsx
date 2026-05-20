@@ -14,6 +14,9 @@ interface BasicPropertyFieldsProps {
     wingOptions: { label: string; value: string }[];
     wingId: number | null;
     handleWingChange: (name: string | undefined, value: string) => void;
+    moujaOptions: { label: string; value: string }[];
+    moujaId: number | null;
+    handleMoujaChange: (name: string | undefined, value: string) => void;
     propertyDescriptionOptions: { label: string; value: string }[];
     propertyTypeId: number | null;
     handlePropertyDescriptionChange: (name: string | undefined, value: string) => void;
@@ -28,6 +31,9 @@ export const BasicPropertyFields = ({
     wingOptions,
     wingId,
     handleWingChange,
+    moujaOptions,
+    moujaId,
+    handleMoujaChange,
     propertyDescriptionOptions,
     propertyTypeId,
     handlePropertyDescriptionChange,
@@ -62,12 +68,12 @@ export const BasicPropertyFields = ({
                 <Label htmlFor="pd-mouja" className="text-xs font-semibold text-gray-700">
                     {t('property.mouja')}
                 </Label>
-                <Input
-                    readOnly
-                    id="pd-mouja"
-                    name="moujaName"
-                    placeholder={t('property.mouja')}
-                    defaultValue={propertyData?.moujaName ?? ''}
+                <SearchSelect
+                    name="mouja"
+                    options={moujaOptions}
+                    value={moujaId?.toString() ?? ''}
+                    placeholder={t('property.select')}
+                    onChange={handleMoujaChange}
                     className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                 />
             </div>

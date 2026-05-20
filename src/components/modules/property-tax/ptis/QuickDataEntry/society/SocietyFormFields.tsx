@@ -58,7 +58,6 @@ export const SocietyFormFields = ({
     return (
         <div className="grid grid-cols-3 gap-x-4 gap-y-3">
             <SocietyGeneralFields
-                t={t}
                 societyEmail={societyEmail}
                 setSocietyEmail={setSocietyEmail}
                 landOwnerName={landOwnerName}

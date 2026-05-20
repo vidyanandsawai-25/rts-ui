@@ -29,8 +29,7 @@ vi.mock('next-intl', () => ({
       'kyc.mobileNo': 'Mobile No',
       'kyc.select': 'Select',
       'kyc.enterFullName': 'Enter full name',
-      'common.saveChanges': 'Update Changes', // legacy, keep for test compatibility
-      'common.UpdateChanges': 'Update Changes',
+      'commonbuttonmessages.UpdateChanges': 'Update Changes',
       'footer.saving': 'Saving...',
     };
     return translations[key] || key;

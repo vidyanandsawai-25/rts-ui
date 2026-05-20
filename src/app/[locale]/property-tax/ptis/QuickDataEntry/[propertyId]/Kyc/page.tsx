@@ -1,5 +1,6 @@
 import { setRequestLocale, getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
+import { ApiError } from '@/lib/utils/api';
 import KycFormView from '@/components/modules/property-tax/ptis/QuickDataEntry/kyc/KycFormView';
 import { getOwnerTypes, getPropertyKycById } from '@/lib/api/property-kyc.service';
 import { KycDetails } from '@/types/property-kyc.types';
@@ -45,7 +46,22 @@ export default async function KycFormPage({ params }: PageProps): Promise<React.
       };
     }
   } catch (error: unknown) {
-    const t = await getTranslations('quickDataEntry');
+    const t = await getTranslations({ locale, namespace: 'quickDataEntry' });
+    
+    if (error instanceof ApiError) {
+      if (error.statusCode === 401) {
+        throw new Error(t('kyc.errors.unauthorized'));
+      } else if (error.statusCode === 403) {
+        throw new Error(t('kyc.errors.forbidden'));
+      } else if (error.statusCode === 404) {
+        throw new Error(t('kyc.errors.notFound'));
+      } else if (error.statusCode >= 500) {
+        throw new Error(t('kyc.errors.serverError'));
+      } else {
+        throw new Error(error.contextMessage || t('kyc.errors.defaultApiError', { message: error.message }));
+      }
+    }
+
     const msg = error instanceof Error ? error.message.toLowerCase() : "";
     if (msg.includes('fetch failed') || msg.includes('failed to fetch') || msg.includes('network error') || msg.includes('econnrefused')) {
       throw new Error(t('kyc.errors.failedToConnect.description'));
@@ -67,7 +83,7 @@ export default async function KycFormPage({ params }: PageProps): Promise<React.
   }
 
   if (!kycDetailsData) {
-    const t = await getTranslations("quickDataEntry");
+    const t = await getTranslations({ locale, namespace: 'quickDataEntry' });
     throw new Error(t('kyc.errors.kycNotFound'));
   }
 

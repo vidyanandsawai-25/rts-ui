@@ -1,4 +1,8 @@
 {
+    "commonbuttonmessages": {
+        "update": "Update",
+        "UpdateChanges": "Update Changes"
+    },
     "roomSubmission": {
         "quickDataEntry": "Property Quick Data Entry",
         "title": "ROOM WISE SUBMISSION IN SQUARE METER",
@@ -371,7 +375,12 @@
             "fetchPropertyCategories": "Failed to fetch property categories",
             "fetchWingMaster": "Failed to fetch wing master",
             "updatePropertyBasicDetails": "Failed to update property basic details",
-            "fetchCvTaxDetails": "Failed to fetch CV tax details"
+            "fetchCvTaxDetails": "Failed to fetch CV tax details",
+            "unauthorized": "Unauthorized: Token expired or invalid. Please log in again.",
+            "forbidden": "Forbidden: You do not have permission to access this resource.",
+            "notFound": "Not Found: The requested resource was not found.",
+            "serverError": "Server Error: An internal server error occurred. Please try again later.",
+            "defaultApiError": "An API error occurred: {message}"
         }
     },
     "kyc": {
@@ -428,7 +437,12 @@
             "invalidPropertyId": "Invalid property ID provided",
             "ownerNameRequired": "Owner name is required",
             "kycNotFound": "KYC details not found",
-            "fetchKycDetails": "Failed to fetch KYC details"
+            "fetchKycDetails": "Failed to fetch KYC details",
+            "unauthorized": "Unauthorized: Token expired or invalid. Please log in again.",
+            "forbidden": "Forbidden: You do not have permission to access this resource.",
+            "notFound": "Not Found: The requested resource was not found.",
+            "serverError": "Server Error: An internal server error occurred. Please try again later.",
+            "defaultApiError": "An API error occurred: {message}"
         },
         "propertyIdMissing": "Property ID is missing. Cannot update KYC.",
         "recordLabel": "KYC Record",
@@ -447,7 +461,12 @@
                 "goHome": "Go Home",
                 "tryAgain": "Try Again",
                 "errorId": "Error ID: {id}"
-            }
+            },
+            "unauthorized": "Unauthorized: Token expired or invalid. Please log in again.",
+            "forbidden": "Forbidden: You do not have permission to access this resource.",
+            "notFound": "Not Found: The requested resource was not found.",
+            "serverError": "Server Error: An internal server error occurred. Please try again later.",
+            "defaultApiError": "An API error occurred: {message}"
         },
         "landOwner": "Land Owner",
         "landOwnerPlaceholder": "Enter land owner name",
@@ -486,7 +505,13 @@
             "managerEmail": "Invalid Manager Email address format. Only letters (a-z), numbers (0-9), and period (.) are allowed. Email must contain @ and a valid domain extension.",
             "secretaryEmail": "Invalid Secretary Email address format. Only letters (a-z), numbers (0-9), and period (.) are allowed. Email must contain @ and a valid domain extension.",
             "managerMobile": "Manager Mobile Number must be exactly 10 digits and start with 6 to 9.",
-            "secretaryMobile": "Secretary Mobile Number must be exactly 10 digits and start with 6 to 9."
+            "secretaryMobile": "Secretary Mobile Number must be exactly 10 digits and start with 6 to 9.",
+            "societyName": "Invalid Building/Society Name. Only letters and basic punctuation (. , ' -) are allowed. Numbers (0-9) and special characters like *()_++_)(&&^%$#@!~}{}; are not permitted.",
+            "societyAddress": "Invalid Society Address. Only letters, numbers, and common punctuation (. , - / #) are allowed. Special characters like *()_++_)(&&^%$#@!~}{}; are not permitted.",
+            "invalidMobile": "Mobile number must be exactly 10 digits",
+            "invalidMobileStart": "Mobile number must start with 6 to 9.",
+            "invalidNameLength": "Name must be between 2 and 150 characters.",
+            "invalidName": "Invalid name. Only letters and basic punctuation are allowed."
         },
         "loading": {
             "message": "Loading society...",

@@ -2,9 +2,9 @@ import { Input } from "@/components/common";
 import { Label } from "@/components/common/label";
 import { societyValidators, SOCIETY_VALIDATION_RULES, propertyValidators } from '@/lib/utils/kyc-validation.constants';
 import { sanitizeEmailStrict, sanitizeName, sanitizeAddress } from '@/lib/utils/input-sanitization';
+import { useTranslations } from "next-intl";
 
 interface SocietyGeneralFieldsProps {
-    t: (key: string) => string;
     societyEmail: string;
     setSocietyEmail: (email: string) => void;
     landOwnerName: string;
@@ -17,13 +17,13 @@ interface SocietyGeneralFieldsProps {
     setSocietyAddress: (address: string) => void;
     showError: (
         field: 'managerMobile' | 'secretaryMobile' | 'managerEmail' | 'secretaryEmail' | 'societyEmail' |
-               'landOwnerName' | 'builderName' | 'societyName' | 'managerName' | 'secretaryName' | 'societyAddress',
+            'landOwnerName' | 'builderName' | 'societyName' | 'managerName' | 'secretaryName' | 'societyAddress',
         isValid: boolean
     ) => boolean;
 }
 
-export const SocietyGeneralFields = ({ 
-    t,
+export const SocietyGeneralFields = ({
+    // t,
     societyEmail,
     setSocietyEmail,
     landOwnerName,
@@ -36,6 +36,9 @@ export const SocietyGeneralFields = ({
     setSocietyAddress,
     showError,
 }: SocietyGeneralFieldsProps) => {
+
+    const t = useTranslations('quickDataEntry');
+
     return (
         <>
             {/* Row 1: Land Owner | Builder Name | Building/Society Name */}
@@ -48,11 +51,10 @@ export const SocietyGeneralFields = ({
                     value={landOwnerName}
                     placeholder={t('society.landOwnerPlaceholder')}
                     maxLength={SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH}
-                    className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${
-                        showError('landOwnerName', !landOwnerName || societyValidators.isValidPersonName(landOwnerName))
-                            ? 'border-red-300 focus:border-red-500'
-                            : ''
-                    }`}
+                    className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${showError('landOwnerName', !landOwnerName || societyValidators.isValidPersonName(landOwnerName))
+                        ? 'border-red-300 focus:border-red-500'
+                        : ''
+                        }`}
                     onChange={(e) => {
                         // Sanitize to remove invalid characters immediately
                         const sanitized = sanitizeName(e.target.value);
@@ -63,7 +65,9 @@ export const SocietyGeneralFields = ({
                 />
                 {showError('landOwnerName', !landOwnerName || societyValidators.isValidPersonName(landOwnerName)) && (
                     <span className="text-xs text-red-500">
-                        {t('kyc.validation.invalidName') || 'Invalid name. Cannot contain only special characters.'}
+                        {landOwnerName && (landOwnerName.trim().length < SOCIETY_VALIDATION_RULES.NAME_MIN_LENGTH || landOwnerName.trim().length > SOCIETY_VALIDATION_RULES.SOCIETY_NAME_MAX_LENGTH)
+                            ? t('society.validation.invalidNameLength')
+                            : t('kyc.validation.invalidName')}
                     </span>
                 )}
             </div>
@@ -77,11 +81,10 @@ export const SocietyGeneralFields = ({
                     value={builderName}
                     placeholder={t('society.builderNamePlaceholder')}
                     maxLength={SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH}
-                    className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${
-                        showError('builderName', !builderName || societyValidators.isValidPersonName(builderName))
-                            ? 'border-red-300 focus:border-red-500'
-                            : ''
-                    }`}
+                    className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${showError('builderName', !builderName || societyValidators.isValidPersonName(builderName))
+                        ? 'border-red-300 focus:border-red-500'
+                        : ''
+                        }`}
                     onChange={(e) => {
                         // Sanitize to remove invalid characters immediately
                         const sanitized = sanitizeName(e.target.value);
@@ -92,7 +95,9 @@ export const SocietyGeneralFields = ({
                 />
                 {showError('builderName', !builderName || societyValidators.isValidPersonName(builderName)) && (
                     <span className="text-xs text-red-500">
-                        {t('kyc.validation.invalidName') || 'Invalid name. Cannot contain only special characters.'}
+                        {builderName && (builderName.trim().length < SOCIETY_VALIDATION_RULES.NAME_MIN_LENGTH || builderName.trim().length > SOCIETY_VALIDATION_RULES.SOCIETY_NAME_MAX_LENGTH)
+                            ? t('society.validation.invalidNameLength')
+                            : t('kyc.validation.invalidName')}
                     </span>
                 )}
             </div>
@@ -106,11 +111,10 @@ export const SocietyGeneralFields = ({
                     value={societyName}
                     placeholder={t('society.buildingSocietyNamePlaceholder')}
                     maxLength={SOCIETY_VALIDATION_RULES.SOCIETY_NAME_MAX_LENGTH}
-                    className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${
-                        showError('societyName', !societyName || societyValidators.isValidSocietyName(societyName))
-                            ? 'border-red-300 focus:border-red-500'
-                            : ''
-                    }`}
+                    className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${showError('societyName', !societyName || societyValidators.isValidSocietyName(societyName))
+                        ? 'border-red-300 focus:border-red-500'
+                        : ''
+                        }`}
                     onChange={(e) => {
                         // Sanitize to remove invalid characters immediately
                         const sanitized = sanitizeName(e.target.value);
@@ -121,7 +125,9 @@ export const SocietyGeneralFields = ({
                 />
                 {showError('societyName', !societyName || societyValidators.isValidSocietyName(societyName)) && (
                     <span className="text-xs text-red-500">
-                        {t('kyc.validation.invalidName') || 'Invalid name. Cannot contain only special characters.'}
+                        {societyName && (societyName.trim().length < SOCIETY_VALIDATION_RULES.NAME_MIN_LENGTH || societyName.trim().length > SOCIETY_VALIDATION_RULES.SOCIETY_NAME_MAX_LENGTH)
+                            ? t('society.validation.invalidNameLength')
+                            : t('kyc.validation.invalidName')}
                     </span>
                 )}
             </div>
@@ -141,7 +147,7 @@ export const SocietyGeneralFields = ({
                         className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${showError('societyEmail', societyValidators.isValidEmail(societyEmail))
                             ? 'border-red-300 focus:border-red-500'
                             : ''
-                        }`}
+                            }`}
                         onChange={(e) => {
                             const sanitized = sanitizeEmailStrict(e.target.value);
                             if (sanitized.length <= SOCIETY_VALIDATION_RULES.EMAIL_MAX_LENGTH) {
@@ -150,7 +156,7 @@ export const SocietyGeneralFields = ({
                         }}
                     />
                     {showError('societyEmail', societyValidators.isValidEmail(societyEmail)) && (
-                        <span className="text-xs text-red-500">{t('kyc.validation.invalidEmail')}</span>
+                        <span className="text-xs text-red-500">{t('society.validation.societyEmail')}</span>
                     )}
                 </div>
 
@@ -164,11 +170,10 @@ export const SocietyGeneralFields = ({
                         value={societyAddress}
                         placeholder={t('society.societyAddressPlaceholder')}
                         maxLength={SOCIETY_VALIDATION_RULES.ADDRESS_MAX_LENGTH}
-                        className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${
-                            showError('societyAddress', !societyAddress || propertyValidators.isValidAddress(societyAddress))
-                                ? 'border-red-300 focus:border-red-500'
-                                : ''
-                        }`}
+                        className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${showError('societyAddress', !societyAddress || propertyValidators.isValidAddress(societyAddress))
+                            ? 'border-red-300 focus:border-red-500'
+                            : ''
+                            }`}
                         onChange={(e) => {
                             // Sanitize to remove invalid characters immediately
                             const sanitized = sanitizeAddress(e.target.value);
@@ -179,7 +184,7 @@ export const SocietyGeneralFields = ({
                     />
                     {showError('societyAddress', !societyAddress || propertyValidators.isValidAddress(societyAddress)) && (
                         <span className="text-xs text-red-500">
-                            {t('kyc.validation.invalidAddress')}
+                            {t('society.validation.societyAddress')}
                         </span>
                     )}
                 </div>

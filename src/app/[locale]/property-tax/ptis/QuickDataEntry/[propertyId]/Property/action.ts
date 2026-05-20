@@ -5,6 +5,7 @@ import {
     getPropertyCategories,
     getPropertyTypes,
     getWingMaster,
+    getMoujaMaster,
     updatePropertyBasicDetails
 } from "@/lib/api/property-basic-details.service";
 
@@ -13,7 +14,8 @@ import {
     PropertyCategoryApiItem,
     PropertyTypeApiItem,
     UpdatePropertyBasicDetailsDto,
-    WingItem
+    WingItem,
+    MoujaItem
 } from "@/types/property-basic-details.types";
 
 import { ActionResult } from "@/types/common.types";
@@ -78,6 +80,20 @@ export async function getWingMasterAction(
 ): Promise<ActionResult<WingItem[]>> {
     try {
         const data = await getWingMaster(pageNumber, pageSize, searchTerm);
+        return { success: true, data };
+    } catch (error) {
+        return { success: false, error: await getActionErrorMessage(error) };
+    }
+}
+
+// mouja master
+export async function getMoujaMasterAction(
+    pageNumber: number,
+    pageSize: number,
+    searchTerm?: string
+): Promise<ActionResult<MoujaItem[]>> {
+    try {
+        const data = await getMoujaMaster(pageNumber, pageSize, searchTerm);
         return { success: true, data };
     } catch (error) {
         return { success: false, error: await getActionErrorMessage(error) };

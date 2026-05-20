@@ -13,7 +13,9 @@ import {
   TaxDetailsApiResponse,
   UpdatePropertyBasicDetailsDto,
   WingItem,
-  WingResponse
+  WingResponse,
+  MoujaItem,
+  MoujaResponse
 } from "@/types/property-basic-details.types";
 import { ActionResult } from "@/types/common.types";
 
@@ -50,14 +52,16 @@ export async function getPropertyCategories(
   }
   params.append("PageNo", pageNumber.toString());
 
-  const response = await apiClient.get<PropertyCategoryApiResponse>(`/PropertyCategory?${params.toString()}`);
+  const response = await apiClient.get<PropertyCategoryApiResponse>(`/PropertyCategory?${params.toString()}`);  
+
   const t = await getTranslations("quickDataEntry");
   return handleApiResponse(response, t("property.errors.fetchPropertyCategories")).items ?? [];
 }
 
 /* ---------------- PROPERTY BASIC DETAILS ---------------- */
 export async function getPropertyBasicDetails(propertyId: number): Promise<PropertyBasicDetailsApiItem | null> {
-  const response = await apiClient.get<PropertyBasicDetailsResponse>(`/Property/${propertyId}/basic-details`);
+  const response = await apiClient.get<PropertyBasicDetailsResponse>(`/Property/${propertyId}/basic-details`);  
+
   const t = await getTranslations("quickDataEntry");
   return handleApiResponse(response, t("property.errors.fetchPropertyBasicDetails")).items;
 }
@@ -82,7 +86,25 @@ export async function getWingMaster(
   params.append("PageNo", pageNumber.toString());
   const response = await apiClient.get<WingResponse>(`/Wing?${params.toString()}`);
   const t = await getTranslations("quickDataEntry");
+
   return handleApiResponse(response, t("property.errors.fetchWingMaster")).items ?? [];
+}
+
+export async function getMoujaMaster(
+  pageNumber: number,
+  pageSize: number,
+  searchTerm?: string
+): Promise<MoujaItem[]> {
+  const params = new URLSearchParams();
+  params.append("PageSize", pageSize.toString());
+  if (searchTerm?.trim()) {
+    params.append("SearchTerm", searchTerm.trim());
+  }
+  params.append("PageNo", pageNumber.toString());
+  const response = await apiClient.get<MoujaResponse>(`/Mouja?${params.toString()}`);
+  const t = await getTranslations("quickDataEntry");
+
+  return handleApiResponse(response, t("property.errors.fetchMoujaMaster")).items ?? [];
 }
 
 /** Fetches CV tax details for a property. */

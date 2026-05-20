@@ -180,6 +180,25 @@ export interface WingResponse {
     hasNext: boolean;
 }
 
+export interface MoujaItem {
+    id: number;
+    moujaNo: string;
+    moujaName: string;
+    isActive: boolean;
+    createdDate: string;
+    updatedDate: string | null;
+}
+
+export interface MoujaResponse {
+    items: MoujaItem[];
+    totalCount: number;
+    pageNumber: number;
+    pageSize: number;
+    totalPages: number;
+    hasPrevious: boolean;
+    hasNext: boolean;
+}
+
 export interface TaxDetailsApiResponse {
     success: boolean;
     message: string;
@@ -192,6 +211,7 @@ export interface TaxDetailsApiResponse {
 
 export interface PropertyFormViewProps {
     WingMaster: WingItem[];
+    MoujaMaster: MoujaItem[];
     propertyCategories: PropertyCategoryApiItem[];
     propertyDescriptions: PropertyTypeApiItem[];
     propertyData: PropertyBasicDetailsApiItem | null;

@@ -16,10 +16,10 @@ const getMobileErrorMessage = (value: string, t: (key: string) => string): strin
     const digits = value.replace(/\D/g, '');
     if (digits.length === 0) return '';
     if (!/^[6-9]/.test(digits)) {
-        return t('kyc.validation.invalidMobileStart') || 'Mobile number must start with 6 to 9.';
+        return t('society.validation.invalidMobileStart') || 'Mobile number must start with 6 to 9.';
     }
     if (digits.length !== 10) {
-        return t('kyc.validation.invalidMobile') || 'Mobile number must be exactly 10 digits.';
+        return t('society.validation.invalidMobile') || 'Mobile number must be exactly 10 digits.';
     }
     return '';
 };
@@ -198,15 +198,15 @@ export const useSocietyForm = (props: SocietyFormProps) => {
 
         // Show specific error messages for invalid fields
         if (!isManagerEmailValid && managerEmail) {
-            toast.error(t('kyc.validation.invalidEmail'));
+            toast.error(t('society.validation.managerEmail'));
             return;
         }
         if (!isSecretaryEmailValid && secretaryEmail) {
-            toast.error(t('kyc.validation.invalidEmail'));
+            toast.error(t('society.validation.secretaryEmail'));
             return;
         }
         if (!isSocietyEmailValid && societyEmail) {
-            toast.error(t('kyc.validation.invalidEmail'));
+            toast.error(t('society.validation.societyEmail'));
             return;
         }
         if (!isManagerMobileValid && managerMobileStr) {
@@ -218,27 +218,27 @@ export const useSocietyForm = (props: SocietyFormProps) => {
             return;
         }
         if (!isLandOwnerNameValid) {
-            toast.error(t('kyc.validation.invalidName'));
+            toast.error(t('society.validation.landOwnerName'));
             return;
         }
         if (!isBuilderNameValid) {
-            toast.error(t('kyc.validation.invalidName'));
+            toast.error(t('society.validation.builderName'));
             return;
         }
         if (!isSocietyNameValid) {
-            toast.error(t('kyc.validation.invalidName'));
+            toast.error(t('society.validation.societyName'));
             return;
         }
         if (!isManagerNameValid) {
-            toast.error(t('kyc.validation.invalidName'));
+            toast.error(t('society.validation.managerName'));
             return;
         }
         if (!isSecretaryNameValid) {
-            toast.error(t('kyc.validation.invalidName'));
+            toast.error(t('society.validation.secretaryName'));
             return;
         }
         if (!isSocietyAddressValid) {
-            toast.error(t('kyc.validation.invalidAddress'));
+            toast.error(t('society.validation.societyAddress'));
             return;
         }
 

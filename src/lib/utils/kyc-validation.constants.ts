@@ -18,8 +18,8 @@ export const KYC_VALIDATION_RULES = {
   MOBILE_LENGTH: 10,
   /** Minimum length for names (2 characters) */
   NAME_MIN_LENGTH: 2,
-  /** Maximum length for names (100 characters) */
-  NAME_MAX_LENGTH: 100,
+  /** Maximum length for names (150 characters) */
+  NAME_MAX_LENGTH: 150,
   /** Email validation regex pattern */
   EMAIL_REGEX: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
   /** Maximum length for address fields (255 characters) */
@@ -39,10 +39,10 @@ export const SOCIETY_VALIDATION_RULES = {
   MOBILE_LENGTH: 10,
   /** Minimum length for names (2 characters) */
   NAME_MIN_LENGTH: 2,
-  /** Maximum length for person names - Manager, Secretary, LandOwner, Builder (200 characters) */
-  PERSON_NAME_MAX_LENGTH: 200,
-  /** Maximum length for society/building name (500 characters) */
-  SOCIETY_NAME_MAX_LENGTH: 500,
+  /** Maximum length for person names - Manager, Secretary, LandOwner, Builder (150 characters) */
+  PERSON_NAME_MAX_LENGTH: 150,
+  /** Maximum length for society/building name (150 characters) */
+  SOCIETY_NAME_MAX_LENGTH: 150,
   /** Maximum length for society address (200 characters) */
   ADDRESS_MAX_LENGTH: 200,
   /** Maximum length for email fields (100 characters) */
@@ -87,10 +87,10 @@ export const kycValidators = {
    */
   isValidName: (name: string): boolean => {
     const trimmed = name.trim();
-    
+
     // Check if name contains any numbers (0-9) - REJECT if found
     if (/\d/.test(trimmed)) return false;
-    
+
     return (
       trimmed.length >= KYC_VALIDATION_RULES.NAME_MIN_LENGTH &&
       trimmed.length <= KYC_VALIDATION_RULES.NAME_MAX_LENGTH
@@ -147,15 +147,15 @@ export const societyValidators = {
     if (!name) return true; // Empty is valid (optional field)
     const trimmed = name.trim();
     if (trimmed.length === 0) return true;
-    
+
     // Check if name contains any numbers (0-9) - REJECT if found
     if (/\d/.test(trimmed)) return false;
-    
+
     // Check for special-character-only values
     if (societyValidators.isOnlySpecialCharacters(trimmed)) return false;
     const length = trimmed.length;
-    return length >= SOCIETY_VALIDATION_RULES.NAME_MIN_LENGTH && 
-           length <= SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH;
+    return length >= SOCIETY_VALIDATION_RULES.NAME_MIN_LENGTH &&
+      length <= SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH;
   },
 
   /**
@@ -168,15 +168,15 @@ export const societyValidators = {
     if (!name) return true; // Empty is valid (optional field)
     const trimmed = name.trim();
     if (trimmed.length === 0) return true;
-    
+
     // Check if name contains any numbers (0-9) - REJECT if found
     if (/\d/.test(trimmed)) return false;
-    
+
     // Check for special-character-only values
     if (societyValidators.isOnlySpecialCharacters(trimmed)) return false;
     const length = trimmed.length;
-    return length >= SOCIETY_VALIDATION_RULES.NAME_MIN_LENGTH && 
-           length <= SOCIETY_VALIDATION_RULES.SOCIETY_NAME_MAX_LENGTH;
+    return length >= SOCIETY_VALIDATION_RULES.NAME_MIN_LENGTH &&
+      length <= SOCIETY_VALIDATION_RULES.SOCIETY_NAME_MAX_LENGTH;
   },
 
   /**
@@ -200,32 +200,32 @@ export const societyValidators = {
   isValidEmail: (email: string, isStrict = false): boolean => {
     const trimmedEmail = email.trim();
     if (!trimmedEmail) return true;
-    
+
     // Only allow letters, numbers, periods, and @
     if (/[^a-zA-Z0-9@.]/.test(trimmedEmail)) return false;
-    
+
     // Reject consecutive periods (..)
     if (/\.{2,}/.test(trimmedEmail)) return false;
-    
+
     // Reject emails starting with period
     if (/^\./.test(trimmedEmail)) return false;
-    
+
     // Reject period immediately before @
     if (/\.@/.test(trimmedEmail)) return false;
-    
+
     // Ensure there's exactly one @ symbol
     if ((trimmedEmail.match(/@/g) || []).length !== 1) return false;
-    
+
     // If email doesn't contain @, it's incomplete but not invalid yet
     if (!trimmedEmail.includes('@')) return !isStrict;
-    
+
     // Check for valid domain structure
     const atIndex = trimmedEmail.indexOf('@');
     const domain = trimmedEmail.substring(atIndex + 1);
-    
+
     // If domain is empty or too short, it's incomplete (allow while typing)
     if (!domain || domain.length < 2) return !isStrict;
-    
+
     // If domain has a dot, check for valid TLD format
     if (domain.includes('.')) {
       const domainParts = domain.split('.');
@@ -238,12 +238,12 @@ export const societyValidators = {
       // Domain has no dot yet - allow while typing (e.g., xyz@gmail)
       return !isStrict;
     }
-    
+
     // Strict email validation pattern for complete emails
     const validEmailPattern = /^[a-zA-Z0-9][a-zA-Z0-9.]*@[a-zA-Z0-9][a-zA-Z0-9.]*\.[a-zA-Z]{2,}$/;
-    
-    return trimmedEmail.length <= SOCIETY_VALIDATION_RULES.EMAIL_MAX_LENGTH && 
-           validEmailPattern.test(trimmedEmail);
+
+    return trimmedEmail.length <= SOCIETY_VALIDATION_RULES.EMAIL_MAX_LENGTH &&
+      validEmailPattern.test(trimmedEmail);
   },
 } as const;
 
@@ -294,10 +294,10 @@ export const propertyValidators = {
     if (!value) return true; // Empty is valid (optional field)
     const trimmed = value.trim();
     if (trimmed.length === 0) return true;
-    
+
     // Check for only invalid characters
     if (propertyValidators.isOnlyInvalidCharacters(trimmed)) return false;
-    
+
     // Allow alphanumeric and hyphen only
     // Hyphen must be between valid characters
     const validPattern = /^[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*$/;
@@ -314,10 +314,10 @@ export const propertyValidators = {
     if (!value) return true; // Empty is valid (optional field)
     const trimmed = value.trim();
     if (trimmed.length === 0) return true;
-    
+
     // Check for only invalid characters
     if (propertyValidators.isOnlyInvalidCharacters(trimmed)) return false;
-    
+
     // Allow alphanumeric only
     const validPattern = /^[a-zA-Z0-9]+$/;
     return validPattern.test(trimmed);
@@ -345,10 +345,10 @@ export const propertyValidators = {
     if (!value) return true; // Empty is valid (optional field)
     const trimmed = value.trim();
     if (trimmed.length === 0) return true;
-    
+
     // Check for only invalid characters
     if (propertyValidators.isOnlyInvalidCharacters(trimmed)) return false;
-    
+
     // Allow alphanumeric and / or - as separators
     const validPattern = /^[a-zA-Z0-9]+([-/][a-zA-Z0-9]+)*$/;
     return validPattern.test(trimmed);
@@ -364,10 +364,10 @@ export const propertyValidators = {
     if (!value) return true; // Empty is valid (optional field)
     const trimmed = value.trim();
     if (trimmed.length === 0) return true;
-    
+
     // Check for only invalid characters
     if (propertyValidators.isOnlyInvalidCharacters(trimmed)) return false;
-    
+
     // Allow alphanumeric and hyphen
     const validPattern = /^[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*$/;
     return validPattern.test(trimmed);
@@ -382,7 +382,7 @@ export const propertyValidators = {
     if (!value) return true; // Empty is valid (optional field)
     const trimmed = value.trim();
     if (trimmed.length === 0) return true;
-    
+
     // Check if address contains at least some valid characters
     const hasValidChars = /[\p{L}\p{N}]/u.test(trimmed);
     return hasValidChars;
@@ -403,32 +403,32 @@ export const enhancedKycValidators = {
   isValidEmail: (email: string, isStrict = false): boolean => {
     const trimmedEmail = email.trim();
     if (!trimmedEmail) return true;
-    
+
     // Only allow letters, numbers, periods, and @
     if (/[^a-zA-Z0-9@.]/.test(trimmedEmail)) return false;
-    
+
     // Reject consecutive periods (..)
     if (/\.{2,}/.test(trimmedEmail)) return false;
-    
+
     // Reject emails starting with period
     if (/^\./.test(trimmedEmail)) return false;
-    
+
     // Reject period immediately before @
     if (/\.@/.test(trimmedEmail)) return false;
-    
+
     // Ensure there's exactly one @ symbol
     if ((trimmedEmail.match(/@/g) || []).length !== 1) return false;
-    
+
     // If email doesn't contain @, it's incomplete but not invalid yet
     if (!trimmedEmail.includes('@')) return !isStrict;
-    
+
     // Check for valid domain structure - must have at least one dot after @
     const atIndex = trimmedEmail.indexOf('@');
     const domain = trimmedEmail.substring(atIndex + 1);
-    
+
     // If domain is empty or doesn't have content, it's incomplete (allow while typing)
     if (!domain || domain.length < 2) return !isStrict;
-    
+
     // If domain has a dot, check for valid TLD format
     if (domain.includes('.')) {
       const domainParts = domain.split('.');
@@ -441,10 +441,10 @@ export const enhancedKycValidators = {
       // Domain has no dot yet - allow while typing (e.g., xyz@gmail)
       return !isStrict;
     }
-    
+
     // Strict email validation pattern for complete emails
     const validEmailPattern = /^[a-zA-Z0-9][a-zA-Z0-9.]*@[a-zA-Z0-9][a-zA-Z0-9.]*\.[a-zA-Z]{2,}$/;
-    
+
     return validEmailPattern.test(trimmedEmail) && trimmedEmail.length <= KYC_VALIDATION_RULES.EMAIL_MAX_LENGTH;
   },
 
@@ -457,7 +457,7 @@ export const enhancedKycValidators = {
     if (!address) return true;
     const trimmed = address.trim();
     if (trimmed.length === 0) return true;
-    
+
     // Check if address contains at least some valid letters or numbers
     const hasValidChars = /[\p{L}\p{N}]/u.test(trimmed);
     return hasValidChars;
@@ -472,7 +472,7 @@ export const enhancedKycValidators = {
     if (!name) return true;
     const trimmed = name.trim();
     if (trimmed.length === 0) return true;
-    
+
     // Check if contains at least some valid letters or numbers
     const hasValidChars = /[\p{L}\p{N}]/u.test(trimmed);
     return hasValidChars;
@@ -487,13 +487,14 @@ export const enhancedKycValidators = {
     if (!name) return true;
     const trimmed = name.trim();
     if (trimmed.length === 0) return true;
-    
+
     // Check if name contains any numbers (0-9) - REJECT if found
     if (/\d/.test(trimmed)) return false;
-    
+
     // Check if contains at least some valid letters
     const hasValidChars = /[\p{L}]/u.test(trimmed);
     return hasValidChars;
   },
 } as const;
 
+export const MAX_PROPERTY_ID = 2147483647; // Maximum value for a signed 32-bit integer
