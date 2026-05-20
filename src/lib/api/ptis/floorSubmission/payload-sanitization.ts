@@ -4,33 +4,29 @@ import {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const sanitizeRoomBase = (room: Record<string, unknown>) => {
-    const id = Number(room.id || 0);
-    const propertyDetailsId = Number(room.propertyDetailsId || 0);
-    const base: Record<string, unknown> = {
-        isActive: true,
-        propertyId: Number(room.propertyId || 0),
-        lengthMtr: Number(room.lengthMtr || 0),
-        widthMtr: Number(room.widthMtr || 0),
-        heightMtr: Number(room.heightMtr || 0),
-        breadth: Number(room.breadth || 0),
-        areaSqMtr: Number(room.areaSqMtr || 0),
-        noOfRooms: Number(room.noOfRooms || 1),
-        totalAreaSqMtr: Number(room.totalAreaSqMtr || 0),
-        roomNo: String(room.roomNo || ''),
-        roomType: String(room.roomType || 'Room'),
-        shape: String(room.shape || 'Rectangle'),
-        outerYesNo: Boolean(room.outerYesNo),
-        minusYesNo: Boolean(room.minusYesNo),
-        submissionType: String(room.submissionType || 'Room'),
-        base1Mtr: Number(room.base1Mtr || room.baseMtr || 0),
-        base2Mtr: Number(room.base2Mtr || 0),
-    };
-    // Only include IDs when valid (> 0) — backend rejects 0 during creation
-    if (id > 0) base.id = id;
-    if (propertyDetailsId > 0) base.propertyDetailsId = propertyDetailsId;
-    return base;
-};
+const sanitizeRoomBase = (room: Record<string, unknown>) => ({
+    isActive: true,
+    // Only include id when it's a real persisted record (> 0); omit on create to avoid backend treating it as update
+    ...(Number(room.id) > 0 ? { id: Number(room.id) } : {}),
+    // Only include propertyDetailsId when valid
+    ...(Number(room.propertyDetailsId) > 0 ? { propertyDetailsId: Number(room.propertyDetailsId) } : {}),
+    propertyId: Number(room.propertyId || 0),
+    lengthMtr: Number(room.lengthMtr || 0),
+    widthMtr: Number(room.widthMtr || 0),
+    heightMtr: Number(room.heightMtr || 0),
+    breadth: Number(room.breadth || 0),
+    areaSqMtr: Number(room.areaSqMtr || 0),
+    noOfRooms: Number(room.noOfRooms || 1),
+    totalAreaSqMtr: Number(room.totalAreaSqMtr || 0),
+    roomNo: String(room.roomNo || ''),
+    roomType: String(room.roomType || 'Room'),
+    shape: String(room.shape || 'Rectangle'),
+    outerYesNo: Boolean(room.outerYesNo),
+    minusYesNo: Boolean(room.minusYesNo),
+    submissionType: String(room.submissionType || 'Room'),
+    base1Mtr: Number(room.base1Mtr || room.baseMtr || 0),
+    base2Mtr: Number(room.base2Mtr || 0),
+});
 
 const sanitizeMinusData = (minus: Record<string, unknown>, extra: Record<string, unknown> = {}) => ({
     isActive: true,
@@ -141,3 +137,47 @@ export function sanitizeFloorUpdatePayload(payload: FloorSubmissionPayload): Rec
         roomWiseSubmissionDetails: (((payload as unknown as Record<string, unknown>).roomWiseSubmissionDetails || (payload as unknown as Record<string, unknown>).propertyRooms || []) as Record<string, unknown>[]).map(sanitizeRoomUpdate),
     };
 }
+
+/**
+ * Sanitizes renter-specific payload
+ * 
+ * @param payload - Raw renter payload
+ * @returns Sanitized payload for API
+ */
+export function sanitizeRenterPayload(payload: unknown): Record<string, unknown> {
+    const data = payload as Record<string, unknown>; // Cast locally for access
+    const base = sanitizeFloorBase(data as unknown as FloorSubmissionPayload);
+    
+    return {
+        ...base,
+        updatedBy: 0,
+        // Ensure renter details and mast are properly mapped/sanitized if present
+        renterDetails: ((data.renterDetails as Record<string, unknown>[]) || []).map(rd => ({
+            isActive: true,
+            updatedBy: 0,
+            agreementId: String(rd.agreementId || ''),
+            incrementFrequency: String(rd.incrementFrequency || 'Yearly'),
+            incrementType: String(rd.incrementType || 'Percentage'),
+            incrementValue: Number(rd.incrementValue) || 0,
+            incrementMethod: String(rd.incrementMethod || 'base'),
+            durationFrom: rd.durationFrom || null,
+            durationTo: rd.durationTo || null,
+            rentAmount: Number(rd.rentAmount) || 0,
+            rentMonthly: Number(rd.rentMonthly) || 0,
+            increment: Number(rd.increament ?? rd.increment) || 0,
+            incrementStatus: Boolean(rd.incrementStatus ?? true),
+        })),
+        renterMast: ((data.renterMast as Record<string, unknown>[]) || []).map(rm => ({
+            isActive: true,
+            updatedBy: 0,
+            finalRent: Number(rm.finalRent) || 0,
+            financialYear: String(rm.financialYear || ''),
+            durationFrom: rm.durationFrom || null,
+            durationTo: rm.durationTo || null,
+        })),
+        ...(data.renterCustomIncrements ? { renterCustomIncrements: data.renterCustomIncrements } : {}),
+        ...(data.renterTableEntries ? { renterTableEntries: data.renterTableEntries } : {}),
+        ...(data.grandTotal !== undefined ? { grandTotal: Number(data.grandTotal) } : {}),
+    };
+}
+
