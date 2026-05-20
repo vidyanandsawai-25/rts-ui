@@ -32,7 +32,7 @@ export const MatrixCellInput = ({
     if (val === 0) {
       return readOnly ? "0" : "";
     }
-    return val.toFixed(2);
+    return String(Math.floor(val));
   }, [readOnly]);
 
   // Safely convert value to number to handle undefined, null, or string values
@@ -56,27 +56,24 @@ export const MatrixCellInput = ({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
 
-    // Limit to 2 decimal places — reject input if more digits typed after dot
-    const dotIndex = inputValue.indexOf(".");
-    if (dotIndex !== -1 && inputValue.length - dotIndex - 1 > 2) {
+    // Block decimal points - only allow integers
+    if (inputValue.includes(".")) {
       return;
     }
 
-    // Limit integer part to 4 digits max - reject input if exceeded
-    const integerPart = dotIndex !== -1 ? inputValue.substring(0, dotIndex) : inputValue;
-    if (integerPart.length > 4) {
+    // Limit to 2 digits max (0-99)
+    if (inputValue.length > 2) {
       return;
     }
 
     setLocalValue(inputValue);
     
     // Convert to number for onCellChange call
-    // Type of inputValue from event is always string
     const numValue = inputValue === "" ? 0 : Number(inputValue);
     
     // Ensure we send a valid number to onCellChange
-    // Max value is 9999 (4 digits)
-    const safeNumValue = Number.isNaN(numValue) || numValue < 0 ? 0 : Math.min(numValue, 9999);
+    // Max value is 99 (2 digits)
+    const safeNumValue = Number.isNaN(numValue) || numValue < 0 ? 0 : Math.min(numValue, 99);
     
     onCellChange?.(rowId, columnId, safeNumValue);
   };
@@ -95,15 +92,15 @@ export const MatrixCellInput = ({
     } else if (numValue === 0) {
       setLocalValue("");
     } else {
-      const clamped = Math.min(numValue, 9999);
-      setLocalValue(clamped.toFixed(2));
+      const clamped = Math.min(Math.floor(numValue), 99);
+      setLocalValue(String(clamped));
       if (clamped !== numValue) onCellChange?.(rowId, columnId, clamped);
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    // Block characters that create invalid numeric states: -, e, E, +
-    if (["-", "e", "E", "+"].includes(e.key)) {
+    // Block characters that create invalid numeric states: -, e, E, +, .
+    if (["-", "e", "E", "+", "."].includes(e.key)) {
       e.preventDefault();
     }
     // Call the parent's onKeyDown if provided
@@ -120,7 +117,8 @@ export const MatrixCellInput = ({
 <input
       type="number"
       min="0"
-      step="0.01"
+      max="99"
+      step="1"
       id={`cell-${rowId}-${columnId}`}
       name={`cell-${rowId}-${columnId}`}
       value={localValue}
@@ -129,7 +127,7 @@ export const MatrixCellInput = ({
       onKeyDown={handleKeyDown}
       onFocus={handleFocus}
       onBlur={handleBlur}
-      placeholder="0.00"
+      placeholder="0"
       readOnly={readOnly}
       disabled={readOnly}
       className={cn(

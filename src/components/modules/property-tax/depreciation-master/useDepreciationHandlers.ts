@@ -9,7 +9,7 @@ import {
   syncDepreciationRatesAction,
   deleteRangeAction,
 } from "@/app/[locale]/property-tax/depreciation-master/actions";
-import type { RangeRow, DepreciationRate } from "@/types/depreciation.types";
+import type { RangeRow, DepreciationRow } from "@/types/depreciation.types";
 import { useDepreciationValidation } from "@/hooks/useDepreciationValidation";
 
 interface UseDepreciationHandlersParams {
@@ -17,7 +17,7 @@ interface UseDepreciationHandlersParams {
   t: any;
   locale: string;
   pageSize: number;
-  dbRows: DepreciationRate[];
+  dbRows: DepreciationRow[];
   ranges: RangeRow[];
   effectiveSelectedRangeId: string | null;
   pendingChanges: Record<number, number>;
