@@ -28,7 +28,7 @@ export const ParameterInput: React.FC<ParameterInputProps & { areaUnit?: "sq.m" 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const val = e.target.value;
         if (val === "" || /^\d*\.?\d*$/.test(val)) {
-            onChange(val);
+            onChange(val.slice(0, 4));
         }
     };
 
@@ -41,9 +41,18 @@ export const ParameterInput: React.FC<ParameterInputProps & { areaUnit?: "sq.m" 
                         ref={inputRef}
                         type="text"
                         value={value}
+                        maxLength={4}
                         onFocus={(e) => e.target.select()}
                         onChange={handleChange}
                         onKeyDown={(e) => {
+                            if (e.key === "." && String(value).includes(".")) {
+                                e.preventDefault();
+                                return;
+                            }
+                            const controlKeys = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab", "Enter", "."];
+                            if (!/^[0-9]$/.test(e.key) && !controlKeys.includes(e.key)) {
+                                e.preventDefault();
+                            }
                             if (e.key === "Enter" && onEnter) {
                                 onEnter();
                             }

@@ -38,6 +38,7 @@ import { parsePtisSearchParams } from '@/lib/utils/params';
 import { getPtisUserSafeErrorMessage } from '@/components/modules/property-tax/ptis/shared/valuation-fetch';
 import { RateableTaxDetailsSection } from '@/components/modules/property-tax/ptis/rateable';
 import { CapitalTaxDetailsSection } from '@/components/modules/property-tax/ptis/capital';
+import { fetchTaxDetailsByTab } from './TaxDetails/fetchTaxDetails';
 
 const toValidTab = (value: unknown): PtisTabId => {
   return typeof value === 'string' && (PTIS_TABS as readonly string[]).includes(value)
@@ -160,9 +161,9 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
   const wardOptions: SearchSelectOption[] =
     wardListResult.success && wardListResult.data
       ? wardListResult.data.map((w: Ward) => ({
-          label: w.wardNo || '',
-          value: (w.wardId ?? w.wardID ?? '').toString(),
-        }))
+        label: w.wardNo || '',
+        value: (w.wardId ?? w.wardID ?? '').toString(),
+      }))
       : [];
 
   let resolvedWardId = wardIdParam;
@@ -210,10 +211,10 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
 
   // Fetch Apartment QC data and Valuations if property info is available
   const emptyPaged = { items: [], totalCount: 0, pageNumber: 1, pageSize: 10, totalPages: 1, hasPrevious: false, hasNext: false };
-  
+
   const [
-    apartmentData, 
-    rateableResult, 
+    apartmentData,
+    rateableResult,
     capitalResult,
     kycResult,
     societyResult,
@@ -302,11 +303,17 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
 
   const sanitizedInitialError = propertyDetailsResult.error
     ? getPtisUserSafeErrorMessage(
-        propertyDetailsResult.error,
-        undefined,
-        'Unable to load PTIS details. Please try again.'
-      )
+      propertyDetailsResult.error,
+      undefined,
+      'Unable to load PTIS details. Please try again.'
+    )
     : undefined;
+
+  // Fetch tax details based on valuation tab (ptisParams.tab), not property tab (activeTab)
+  const valuationTab = ptisParams.tab;
+  const { rateableTaxDetails, capitalTaxDetails, rateableTaxError, capitalTaxError } =
+    await fetchTaxDetailsByTab(resolvedPropertyId, valuationTab);
+
   return (
     <>
       <PropertyTabSection
@@ -333,6 +340,8 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
             oldDetails={initialData.oldDetails || defaultOldDetails}
             propertyId={resolvedPropertyId}
             searchParams={resolvedSearchParams as Record<string, string | string[] | undefined>}
+            initialTaxDetails={rateableTaxDetails}
+            taxDetailsError={rateableTaxError}
             locale={locale}
           />
         }
@@ -344,6 +353,8 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
             oldDetails={initialData.oldDetails || defaultOldDetails}
             propertyId={resolvedPropertyId}
             searchParams={resolvedSearchParams as Record<string, string | string[] | undefined>}
+            initialTaxDetails={capitalTaxDetails}
+            taxDetailsError={capitalTaxError}
             locale={locale}
           />
         }
@@ -356,6 +367,8 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
             propertyId={resolvedPropertyId}
             searchParams={resolvedSearchParams as Record<string, string | string[] | undefined>}
             locale={locale}
+            initialTaxDetails={rateableTaxDetails}
+            taxDetailsError={rateableTaxError}
             showInlineError={false}
           />
         }
@@ -368,6 +381,8 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
             propertyId={resolvedPropertyId}
             searchParams={resolvedSearchParams as Record<string, string | string[] | undefined>}
             locale={locale}
+            initialTaxDetails={capitalTaxDetails}
+            taxDetailsError={capitalTaxError}
             showInlineError={false}
           />
         }

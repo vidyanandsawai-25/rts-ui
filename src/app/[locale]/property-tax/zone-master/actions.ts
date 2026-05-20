@@ -759,8 +759,9 @@ export async function getAllWardsForLinkAction(searchTerm?: string): Promise<{
 }
 
 /**
- * Get all wards for a specific zone (no pagination)
- * Used for property dropdown to show all wards in selected zone
+ * Fetches ALL wards for a specific zone with PageSize=-1 in a single API call.
+ * Used for Link Ward drawer when zone is selected or after Select All + move.
+ * API: GET /api/Ward?ZoneId={zoneId}&PageSize=-1
  */
 export async function getAllWardsForZoneAction(zoneId: number): Promise<{
   success: boolean;
@@ -769,9 +770,13 @@ export async function getAllWardsForZoneAction(zoneId: number): Promise<{
   error?: string;
 }> {
   try {
+    if (!zoneId || zoneId <= 0) {
+      return { success: false, error: "Invalid zone ID" };
+    }
+    
     const params = new URLSearchParams();
-    params.set("PageSize", "-1");
     params.set("ZoneId", zoneId.toString());
+    params.set("PageSize", "-1");
     
     const response = await apiClient.get<{ items?: WardItem[]; totalCount?: number }>(`/Ward?${params.toString()}`);
 

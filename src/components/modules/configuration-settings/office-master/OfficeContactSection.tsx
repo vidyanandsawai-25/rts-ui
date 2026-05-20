@@ -20,7 +20,7 @@ export function OfficeContactSection({
   t 
 }: OfficeContactSectionProps) {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+    <div className="bg-white rounded-xl shadow-sm border border-slate-200">
       <div className="bg-slate-50 px-4 py-3 border-b border-slate-100 dark:bg-slate-800/10 dark:border-slate-800">
         <h3 className="font-semibold text-slate-800">{t("form.contactSection")}</h3>
       </div>
@@ -46,6 +46,7 @@ export function OfficeContactSection({
             onBlur={handleBlur}
             error={showError("phone") ? errors.phone : undefined}
             placeholder={t("form.fields.phone.placeholder")}
+            maxLength={10}
           />
           
           <Input
@@ -66,6 +67,7 @@ export function OfficeContactSection({
             onBlur={handleBlur}
             error={showError("pincode") ? errors.pincode : undefined}
             placeholder={t("form.fields.pincode.placeholder")}
+            maxLength={6}
           />
         </div>
 

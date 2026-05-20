@@ -7,6 +7,7 @@ import { FloorData } from '@/types/room-details.types';
 import { getSelectOptions } from '@/lib/utils/form-options.util';
 import { normalizeToStringArray } from '@/lib/utils/dropdown-helpers';
 import { FieldWrapper } from './SectionField';
+import { validateField } from '@/lib/validations/validateFloorSubmission';
 
 export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
   t,
@@ -127,7 +128,24 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
           onChange={(e) => {
             const value = e.target.value.replace(/\D/g, '');
             setEditingFloorForm({ ...editingFloorForm, conYr: value });
-            if (formErrors.conYr) setFormErrors((prev) => ({ ...prev, conYr: '' }));
+            
+            if (value.length === 4) {
+              const validation = validateField('conYr', value);
+              if (!validation.isValid) {
+                setFormErrors((prev) => ({ ...prev, conYr: validation.error || '' }));
+              } else {
+                setFormErrors((prev) => ({ ...prev, conYr: '' }));
+              }
+            } else {
+              if (formErrors.conYr) setFormErrors((prev) => ({ ...prev, conYr: '' }));
+            }
+          }}
+          onBlur={(e) => {
+            const value = e.target.value;
+            const validation = validateField('conYr', value);
+            if (!validation.isValid) {
+              setFormErrors((prev) => ({ ...prev, conYr: validation.error || '' }));
+            }
           }}
           className="h-9 text-sm"
         />
@@ -144,7 +162,24 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
           onChange={(e) => {
             const value = e.target.value.replace(/\D/g, '');
             setEditingFloorForm({ ...editingFloorForm, asstYr: value });
-            if (formErrors.asstYr) setFormErrors((prev) => ({ ...prev, asstYr: '' }));
+            
+            if (value.length === 4) {
+              const validation = validateField('asstYr', value);
+              if (!validation.isValid) {
+                setFormErrors((prev) => ({ ...prev, asstYr: validation.error || '' }));
+              } else {
+                setFormErrors((prev) => ({ ...prev, asstYr: '' }));
+              }
+            } else {
+              if (formErrors.asstYr) setFormErrors((prev) => ({ ...prev, asstYr: '' }));
+            }
+          }}
+          onBlur={(e) => {
+            const value = e.target.value;
+            const validation = validateField('asstYr', value);
+            if (!validation.isValid) {
+              setFormErrors((prev) => ({ ...prev, asstYr: validation.error || '' }));
+            }
           }}
           className="h-9 text-sm"
         />

@@ -270,7 +270,9 @@ describe("UseSubTypeForm", () => {
       });
     });
 
-    it("should reject sequence above maximum (1000)", async () => {
+    it("should reject sequence above maximum (1000) by input restriction", async () => {
+      mockCreateSubType.mockResolvedValue(undefined);
+      
       const { container } = renderWithIntl(
         <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} />
       );
@@ -278,14 +280,24 @@ describe("UseSubTypeForm", () => {
       const descInput = screen.getByPlaceholderText("Sub-Type Name");
       fireEvent.change(descInput, { target: { value: "Test Floor" } });
 
-      const seqInput = screen.getByPlaceholderText("0");
+      const seqInput = screen.getByPlaceholderText("0") as HTMLInputElement;
+      // Try to set value to 1000 (4 digits) - should be rejected by input restriction
       fireEvent.change(seqInput, { target: { value: "1000" } });
+      
+      // The input should reject values with more than 3 digits, keeping the original value (0)
+      expect(seqInput.value).toBe("0");
       
       const form = container.querySelector("#use-subtype-form");
       fireEvent.submit(form!);
 
+      // Since the value stayed at 0, form should submit successfully (no validation error)
       await waitFor(() => {
-        expect(screen.getByText((content) => content.includes("must be maximum 3 digits"))).toBeInTheDocument();
+        expect(mockCreateSubType).toHaveBeenCalledWith({
+          typeId: 1,
+          description: "Test Floor",
+          searchSequence: 0,
+          status: "Active",
+        });
       });
     });
 

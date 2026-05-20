@@ -1,32 +1,35 @@
 /**
  * Validation Schemas - Reusable validators for master forms
- * 
+ *
  * @module validation-schemas
- * 
+ *
  * ## Exports
- * 
+ *
  * ### Common Validators (commonValidations)
  * - `masterCode(t, maxLength, messageKeys)` - Generic code validation for all masters
  * - `masterDescription(t, maxLength, messageKeys)` - Generic description validation for all masters
  * - `masterSearchSequence(t, messageKey)` - Generic search sequence validation
  * - `masterActiveStatus(t, isEdit, messageKey)` - Generic active status validation
- * 
+ *
  * ### Schema Factory
  * - `createMasterValidationSchema(t, isEdit, config)` - Factory for master form validators
- * 
+ *
  * ### Backward Compatibility
  * - `constructionValidators` - Construction-specific validators
  */
-
 import {
   CODE_REGEX,
   DESCRIPTION_REGEX,
   PERSON_NAME_REGEX,
   EMAIL_REGEX,
+  EMAIL_LOWERCASE_RESTRICTED_REGEX,
   MOBILE_10_REGEX,
-  YEAR_REGEX
+  PINCODE_6_REGEX,
+  CITY_NAME_REGEX,
+  YEAR_REGEX,
 } from './validation-rules';
 import { validateForm } from './validation-helpers';
+import { DateUtils } from './date-helpers';
 import type { Validator } from './validation-helpers';
 import type { OfficeFormModel } from '@/types/office.types';
 import type {
@@ -35,7 +38,7 @@ import type {
   SaveOldFloorDetailPayload,
   OldTaxesDetails,
   OldTaxYear,
-  OldTaxItem
+  OldTaxItem,
 } from '@/types/property-old-details.types';
 
 /**
@@ -52,28 +55,30 @@ export const commonValidations = {
    * @param maxLength - Maximum allowed length
    * @param messageKeys - Custom translation keys for errors
    */
-  masterCode: (
-    t: (key: string, values?: Record<string, string | number | Date>) => string,
-    maxLength: number = 50,
-    messageKeys?: {
-      required?: string;
-      format?: string;
-      maxLength?: string;
-    }
-  ): Validator => (fieldValue: unknown) => {
-    const strVal = String(fieldValue ?? "").trim();
+  masterCode:
+    (
+      t: (key: string, values?: Record<string, string | number | Date>) => string,
+      maxLength: number = 50,
+      messageKeys?: {
+        required?: string;
+        format?: string;
+        maxLength?: string;
+      }
+    ): Validator =>
+    (fieldValue: unknown) => {
+      const strVal = String(fieldValue ?? '').trim();
 
-    const keys = {
-      required: messageKeys?.required || 'form.validation.codeRequired',
-      format: messageKeys?.format || 'form.validation.codeFormat',
-      maxLength: messageKeys?.maxLength || 'form.validation.codeMaxLength',
-    };
+      const keys = {
+        required: messageKeys?.required || 'form.validation.codeRequired',
+        format: messageKeys?.format || 'form.validation.codeFormat',
+        maxLength: messageKeys?.maxLength || 'form.validation.codeMaxLength',
+      };
 
-    if (!strVal) return t(keys.required);
-    if (strVal.length > maxLength) return t(keys.maxLength, { count: maxLength });
-    if (!CODE_REGEX.test(strVal)) return t(keys.format);
-    return undefined;
-  },
+      if (!strVal) return t(keys.required);
+      if (strVal.length > maxLength) return t(keys.maxLength, { count: maxLength });
+      if (!CODE_REGEX.test(strVal)) return t(keys.format);
+      return undefined;
+    },
 
   /**
    * Generic master description validation (multilingual support)
@@ -85,28 +90,30 @@ export const commonValidations = {
    * @param maxLength - Maximum allowed length
    * @param messageKeys - Custom translation keys for errors
    */
-  masterDescription: (
-    t: (key: string, values?: Record<string, string | number | Date>) => string,
-    maxLength: number = 100,
-    messageKeys?: {
-      required?: string;
-      format?: string;
-      maxLength?: string;
-    }
-  ): Validator => (fieldValue: unknown) => {
-    const strVal = String(fieldValue ?? "").trim();
+  masterDescription:
+    (
+      t: (key: string, values?: Record<string, string | number | Date>) => string,
+      maxLength: number = 100,
+      messageKeys?: {
+        required?: string;
+        format?: string;
+        maxLength?: string;
+      }
+    ): Validator =>
+    (fieldValue: unknown) => {
+      const strVal = String(fieldValue ?? '').trim();
 
-    const keys = {
-      required: messageKeys?.required || 'form.validation.descriptionRequired',
-      format: messageKeys?.format || 'form.validation.descriptionFormat',
-      maxLength: messageKeys?.maxLength || 'form.validation.descriptionMaxLength',
-    };
+      const keys = {
+        required: messageKeys?.required || 'form.validation.descriptionRequired',
+        format: messageKeys?.format || 'form.validation.descriptionFormat',
+        maxLength: messageKeys?.maxLength || 'form.validation.descriptionMaxLength',
+      };
 
-    if (!strVal) return t(keys.required);
-    if (strVal.length > maxLength) return t(keys.maxLength, { count: maxLength });
-    if (!DESCRIPTION_REGEX.test(strVal)) return t(keys.format);
-    return undefined;
-  },
+      if (!strVal) return t(keys.required);
+      if (strVal.length > maxLength) return t(keys.maxLength, { count: maxLength });
+      if (!DESCRIPTION_REGEX.test(strVal)) return t(keys.format);
+      return undefined;
+    },
 
   /**
    * Generic search sequence validation
@@ -115,18 +122,20 @@ export const commonValidations = {
    * @param t - Translation function
    * @param messageKey - Custom translation key for invalid sequence error
    */
-  masterSearchSequence: (
-    t: (key: string, values?: Record<string, string | number | Date>) => string,
-    messageKey?: string
-  ): Validator => (fieldValue: unknown) => {
-    const numVal = Number(fieldValue);
-    const key = messageKey || 'form.validation.sequenceInvalid';
+  masterSearchSequence:
+    (
+      t: (key: string, values?: Record<string, string | number | Date>) => string,
+      messageKey?: string
+    ): Validator =>
+    (fieldValue: unknown) => {
+      const numVal = Number(fieldValue);
+      const key = messageKey || 'form.validation.sequenceInvalid';
 
-    if (!Number.isFinite(numVal) || numVal < 0) {
-      return t(key);
-    }
-    return undefined;
-  },
+      if (!Number.isFinite(numVal) || numVal < 0) {
+        return t(key);
+      }
+      return undefined;
+    },
 
   /**
    * Generic active status validation
@@ -136,21 +145,67 @@ export const commonValidations = {
    * @param isEdit - Whether this is an edit operation
    * @param messageKey - Custom translation key for must be active error
    */
-  masterActiveStatus: (
-    t: (key: string, values?: Record<string, string | number | Date>) => string,
-    isEdit: boolean,
-    messageKey?: string
-  ): Validator => (fieldValue: unknown) => {
-    // ✅ Explicitly parse boolean values - handles both boolean and string types
-    // Common with HTML inputs/FormData which store booleans as strings
-    const isActive = fieldValue === true || fieldValue === "true";
-    const key = messageKey || 'form.validation.mustBeActive';
+  masterActiveStatus:
+    (
+      t: (key: string, values?: Record<string, string | number | Date>) => string,
+      isEdit: boolean,
+      messageKey?: string
+    ): Validator =>
+    (fieldValue: unknown) => {
+      // ✅ Explicitly parse boolean values - handles both boolean and string types
+      // Common with HTML inputs/FormData which store booleans as strings
+      const isActive = fieldValue === true || fieldValue === 'true';
+      const key = messageKey || 'form.validation.mustBeActive';
 
-    if (!isActive && !isEdit) {
-      return t(key);
-    }
-    return undefined;
-  }
+      if (!isActive && !isEdit) {
+        return t(key);
+      }
+      return undefined;
+    },
+
+  /**
+   * Generic email validation
+   *
+   * @param t - Translation function
+   * @param messageKey - Custom translation key for invalid email error
+   */
+  email:
+    (
+      t: (key: string, values?: Record<string, string | number | Date>) => string,
+      messageKey?: string
+    ): Validator =>
+    (fieldValue: unknown) => {
+      const strVal = String(fieldValue ?? '').trim();
+      if (!strVal) return undefined; // Optional field, use required check if needed
+
+      const key = messageKey || 'form.validation.invalidEmail';
+      if (!EMAIL_REGEX.test(strVal)) {
+        return t(key);
+      }
+      return undefined;
+    },
+
+  /**
+   * Generic mobile number validation (10 digits)
+   *
+   * @param t - Translation function
+   * @param messageKey - Custom translation key for invalid mobile error
+   */
+  mobile:
+    (
+      t: (key: string, values?: Record<string, string | number | Date>) => string,
+      messageKey?: string
+    ): Validator =>
+    (fieldValue: unknown) => {
+      const strVal = String(fieldValue ?? '').trim();
+      if (!strVal) return undefined; // Optional field
+
+      const key = messageKey || 'form.validation.invalidMobile';
+      if (!MOBILE_10_REGEX.test(strVal)) {
+        return t(key);
+      }
+      return undefined;
+    },
 };
 
 /**
@@ -203,11 +258,7 @@ export const createMasterValidationSchema = (
   const schema: Record<string, Validator> = {};
 
   if (config.code) {
-    schema.code = commonValidations.masterCode(
-      t,
-      config.code.maxLength,
-      config.code.messageKeys
-    );
+    schema.code = commonValidations.masterCode(t, config.code.maxLength, config.code.messageKeys);
   }
 
   if (config.description) {
@@ -219,16 +270,14 @@ export const createMasterValidationSchema = (
   }
 
   if (config.searchSequence) {
-    const messageKey = typeof config.searchSequence === 'object'
-      ? config.searchSequence.messageKey
-      : undefined;
+    const messageKey =
+      typeof config.searchSequence === 'object' ? config.searchSequence.messageKey : undefined;
     schema.searchSequence = commonValidations.masterSearchSequence(t, messageKey);
   }
 
   if (config.activeStatus) {
-    const messageKey = typeof config.activeStatus === 'object'
-      ? config.activeStatus.messageKey
-      : undefined;
+    const messageKey =
+      typeof config.activeStatus === 'object' ? config.activeStatus.messageKey : undefined;
     schema.isActive = commonValidations.masterActiveStatus(t, isEdit, messageKey);
   }
 
@@ -240,14 +289,20 @@ export const createMasterValidationSchema = (
  * These use the generic master validators with construction-specific message keys
  */
 export const constructionValidators = {
-  code: (t: (key: string, values?: Record<string, string | number | Date>) => string, maxLength: number = 7) =>
+  code: (
+    t: (key: string, values?: Record<string, string | number | Date>) => string,
+    maxLength: number = 7
+  ) =>
     commonValidations.masterCode(t, maxLength, {
       required: 'form.validation.constructionCodeRequired',
       format: 'form.validation.constructionCodeFormat',
       maxLength: 'form.validation.constructionCodeMaxLength',
     }),
 
-  description: (t: (key: string, values?: Record<string, string | number | Date>) => string, maxLength: number = 100) =>
+  description: (
+    t: (key: string, values?: Record<string, string | number | Date>) => string,
+    maxLength: number = 100
+  ) =>
     commonValidations.masterDescription(t, maxLength, {
       required: 'form.validation.descriptionRequired',
       format: 'form.validation.descriptionFormat',
@@ -257,8 +312,10 @@ export const constructionValidators = {
   searchSequence: (t: (key: string, values?: Record<string, string | number | Date>) => string) =>
     commonValidations.masterSearchSequence(t, 'form.validation.sequenceInvalid'),
 
-  activeStatus: (t: (key: string, values?: Record<string, string | number | Date>) => string, isEdit: boolean) =>
-    commonValidations.masterActiveStatus(t, isEdit, 'form.validation.mustBeActive'),
+  activeStatus: (
+    t: (key: string, values?: Record<string, string | number | Date>) => string,
+    isEdit: boolean
+  ) => commonValidations.masterActiveStatus(t, isEdit, 'form.validation.mustBeActive'),
 };
 
 /**
@@ -270,42 +327,42 @@ export const societyValidations = {
       label: string,
       t: (key: string, values?: Record<string, string | number | Date>) => string
     ): Validator =>
-      (value: unknown) => {
-        const strVal = String(value ?? "").trim();
-        if (!strVal) return undefined; // optional field
-        if (!PERSON_NAME_REGEX.test(strVal)) {
-          return t(`society.validation.${label}`);
-        }
-        return undefined;
-      },
+    (value: unknown) => {
+      const strVal = String(value ?? '').trim();
+      if (!strVal) return undefined; // optional field
+      if (!PERSON_NAME_REGEX.test(strVal)) {
+        return t(`society.validation.${label}`);
+      }
+      return undefined;
+    },
 
   email:
     (
       label: string,
       t: (key: string, values?: Record<string, string | number | Date>) => string
     ): Validator =>
-      (value: unknown) => {
-        const strVal = String(value ?? "").trim();
-        if (!strVal) return undefined; // optional field
-        if (!EMAIL_REGEX.test(strVal)) {
-          return t(`society.validation.${label}`);
-        }
-        return undefined;
-      },
+    (value: unknown) => {
+      const strVal = String(value ?? '').trim();
+      if (!strVal) return undefined; // optional field
+      if (!EMAIL_REGEX.test(strVal)) {
+        return t(`society.validation.${label}`);
+      }
+      return undefined;
+    },
 
   mobile10:
     (
       label: string,
       t: (key: string, values?: Record<string, string | number | Date>) => string
     ): Validator =>
-      (value: unknown) => {
-        const strVal = String(value ?? "").trim();
-        if (!strVal) return undefined; // optional field
-        if (!MOBILE_10_REGEX.test(strVal)) {
-          return t(`society.validation.${label}`);
-        }
-        return undefined;
-      },
+    (value: unknown) => {
+      const strVal = String(value ?? '').trim();
+      if (!strVal) return undefined; // optional field
+      if (!MOBILE_10_REGEX.test(strVal)) {
+        return t(`society.validation.${label}`);
+      }
+      return undefined;
+    },
 };
 
 /**
@@ -317,13 +374,13 @@ export const propertyValidations = {
       label: string,
       t: (key: string, values?: Record<string, string | number | Date>) => string
     ): Validator =>
-      (value: unknown) => {
-        const strVal = String(value ?? "").trim();
-        if (!strVal) {
-          return t(`property.validation.${label}Required`);
-        }
-        return undefined;
-      },
+    (value: unknown) => {
+      const strVal = String(value ?? '').trim();
+      if (!strVal) {
+        return t(`property.validation.${label}Required`);
+      }
+      return undefined;
+    },
 
   number:
     (
@@ -331,14 +388,14 @@ export const propertyValidations = {
       t: (key: string, values?: Record<string, string | number | Date>) => string,
       min: number = 0
     ): Validator =>
-      (value: unknown) => {
-        const numVal = Number(value);
-        if (value === null || value === undefined || value === "") return undefined; // optional
-        if (!Number.isFinite(numVal) || numVal < min) {
-          return t(`property.validation.${label}Invalid`, { min });
-        }
-        return undefined;
-      },
+    (value: unknown) => {
+      const numVal = Number(value);
+      if (value === null || value === undefined || value === '') return undefined; // optional
+      if (!Number.isFinite(numVal) || numVal < min) {
+        return t(`property.validation.${label}Invalid`, { min });
+      }
+      return undefined;
+    },
 
   pattern:
     (
@@ -346,14 +403,14 @@ export const propertyValidations = {
       pattern: RegExp,
       t: (key: string, values?: Record<string, string | number | Date>) => string
     ): Validator =>
-      (value: unknown) => {
-        const strVal = String(value ?? "").trim();
-        if (!strVal) return undefined; // optional
-        if (!pattern.test(strVal)) {
-          return t(`property.validation.${label}Invalid`);
-        }
-        return undefined;
-      },
+    (value: unknown) => {
+      const strVal = String(value ?? '').trim();
+      if (!strVal) return undefined; // optional
+      if (!pattern.test(strVal)) {
+        return t(`property.validation.${label}Invalid`);
+      }
+      return undefined;
+    },
 
   year:
     (
@@ -361,11 +418,11 @@ export const propertyValidations = {
       t: (key: string, values?: Record<string, string | number | Date>) => string,
       pattern: RegExp = YEAR_REGEX
     ): Validator =>
-      (value: unknown) => {
-        const requiredError = propertyValidations.required(label, t)(value);
-        if (requiredError) return requiredError;
-        return propertyValidations.pattern(label, pattern, t)(value);
-      },
+    (value: unknown) => {
+      const requiredError = propertyValidations.required(label, t)(value);
+      if (requiredError) return requiredError;
+      return propertyValidations.pattern(label, pattern, t)(value);
+    },
 };
 
 /**
@@ -397,18 +454,58 @@ export const officeValidations = {
       errors.officeName = t('form.validation.officeNameRequired');
     } else if (officeName.length > 200) {
       errors.officeName = tx('form.validation.nameMaxLength', { count: 200 });
+    } else if (/^\d+$/.test(officeName)) {
+      errors.officeName = t('form.validation.officeNameNumeric');
     }
 
     if (!data.type) {
       errors.type = tx('form.validation.typeRequired');
     }
 
-    if (data.emailId && !EMAIL_REGEX.test(data.emailId)) {
-      errors.emailId = tx('form.validation.invalidEmail');
+    if (data.emailId && !EMAIL_LOWERCASE_RESTRICTED_REGEX.test(data.emailId)) {
+      errors.emailId = tx('form.validation.invalidEmailRestricted');
     }
 
-    if (data.pincode && !/^\d{6}$/.test(data.pincode)) {
+    if (data.phone && !MOBILE_10_REGEX.test(data.phone)) {
+      errors.phone = tx('form.validation.invalidPhone');
+    }
+
+    if (data.city && !CITY_NAME_REGEX.test(data.city)) {
+      errors.city = tx('form.validation.invalidCity');
+    }
+
+    if (data.pincode && !PINCODE_6_REGEX.test(data.pincode)) {
       errors.pincode = tx('form.validation.invalidPincode');
+    }
+
+    if (
+      data.officeIncharge != null &&
+      String(data.officeIncharge).trim() !== '' &&
+      Number(data.officeIncharge) <= 0
+    ) {
+      errors.officeIncharge = tx('form.validation.invalidId');
+    }
+
+    if (
+      data.designationMasterId != null &&
+      String(data.designationMasterId).trim() !== '' &&
+      Number(data.designationMasterId) <= 0
+    ) {
+      errors.designationMasterId = tx('form.validation.invalidId');
+    }
+
+    if (data.establishedDate) {
+      const dateStr = String(data.establishedDate).trim();
+      const validation = DateUtils.validate(dateStr);
+      if (!validation.valid && validation.error) {
+        const errorKeyMap = {
+          invalidFormat: 'form.validation.invalidDateFormat',
+          invalidDate: 'form.validation.invalidDate',
+          futureDate: 'form.validation.futureDate',
+        };
+        const key = errorKeyMap[validation.error] || 'form.validation.invalidDate';
+        errors.establishedDate = t(key);
+      }
     }
 
     const isActiveError = commonValidations.masterActiveStatus(tx, isEdit)(data.isActive);
@@ -425,7 +522,7 @@ export const officeValidations = {
       sanitized = sanitized.substring(0, 20);
     }
     return sanitized;
-  }
+  },
 };
 
 /**
@@ -434,7 +531,7 @@ export const officeValidations = {
 export const oldDetailsValidations = {
   /**
    * Validates the floor information form data.
-   * 
+   *
    * @param formData - The floor form state
    * @param t - Translation function
    * @returns Object containing validation errors
@@ -451,16 +548,16 @@ export const oldDetailsValidations = {
     };
 
     return validateForm(validationData, {
-      oldFloorId: propertyValidations.required("floor", t),
-      oldConstructionYear: propertyValidations.year("constructionYear", t),
-      oldConstructionTypeId: propertyValidations.required("constructionType", t),
-      oldTypeOfUseId: propertyValidations.required("typeOfUse", t),
+      oldFloorId: propertyValidations.required('floor', t),
+      oldConstructionYear: propertyValidations.year('constructionYear', t),
+      oldConstructionTypeId: propertyValidations.required('constructionType', t),
+      oldTypeOfUseId: propertyValidations.required('typeOfUse', t),
     });
   },
 
   /**
    * Validates old property taxation details.
-   * 
+   *
    * @param data - The taxation details payload
    * @param t - Translation function
    * @returns Object containing validation errors
@@ -473,13 +570,19 @@ export const oldDetailsValidations = {
 
     // Numeric fields validation (must be non-negative numbers)
     const numericFields = [
-      'oldPlotArea', 'oldRV', 'oldALV', 'oldTotalTax',
-      'oldGeneralTax', 'oldConstructionArea',
-      'oldCarpetAreaSqFeet', 'oldCarpetAreaSqMeter',
-      'oldConstructionTypeId', 'oldTypeOfUseId'
+      'oldPlotArea',
+      'oldRV',
+      'oldALV',
+      'oldTotalTax',
+      'oldGeneralTax',
+      'oldConstructionArea',
+      'oldCarpetAreaSqFeet',
+      'oldCarpetAreaSqMeter',
+      'oldConstructionTypeId',
+      'oldTypeOfUseId',
     ] as const;
 
-    numericFields.forEach(field => {
+    numericFields.forEach((field) => {
       const val = data[field];
       if (val !== undefined && val !== null && String(val) !== '') {
         const numVal = Number(val);
@@ -502,7 +605,7 @@ export const oldDetailsValidations = {
   /**
    * Sanitizes old property taxation details.
    * Trims strings and ensures consistency.
-   * 
+   *
    * @param data - The taxation details payload
    * @returns Sanitized payload
    */
@@ -513,11 +616,16 @@ export const oldDetailsValidations = {
 
     // Trim string fields
     const stringFields = [
-      'oldWardNo', 'oldPropertyNo', 'oldPartitionNo',
-      'oldEgovNo', 'oldPlotNo', 'oldZoneNo', 'oldCSN'
+      'oldWardNo',
+      'oldPropertyNo',
+      'oldPartitionNo',
+      'oldEgovNo',
+      'oldPlotNo',
+      'oldZoneNo',
+      'oldCSN',
     ] as const;
 
-    stringFields.forEach(field => {
+    stringFields.forEach((field) => {
       const val = sanitized[field];
       if (typeof val === 'string') {
         sanitized[field] = val.trim() || null;
@@ -529,7 +637,7 @@ export const oldDetailsValidations = {
 
   /**
    * Validates old floor detail payload.
-   * 
+   *
    * @param data - The floor detail payload
    * @param t - Translation function
    * @returns Object containing validation errors
@@ -571,13 +679,11 @@ export const oldDetailsValidations = {
 
   /**
    * Sanitizes old floor detail payload.
-   * 
+   *
    * @param data - The floor detail payload
    * @returns Sanitized payload
    */
-  sanitizeOldFloorDetails: (
-    data: SaveOldFloorDetailPayload
-  ): SaveOldFloorDetailPayload => {
+  sanitizeOldFloorDetails: (data: SaveOldFloorDetailPayload): SaveOldFloorDetailPayload => {
     return {
       ...data,
       oldFloorId: Number(data.oldFloorId),
@@ -592,7 +698,7 @@ export const oldDetailsValidations = {
 
   /**
    * Validates old taxes details payload.
-   * 
+   *
    * @param data - The taxes details payload
    * @param t - Translation function
    * @returns Object containing validation errors
@@ -625,13 +731,11 @@ export const oldDetailsValidations = {
 
   /**
    * Sanitizes old taxes details payload.
-   * 
+   *
    * @param data - The taxes details payload
    * @returns Sanitized payload
    */
-  sanitizeOldTaxesDetails: (
-    data: OldTaxesDetails
-  ): OldTaxesDetails => {
+  sanitizeOldTaxesDetails: (data: OldTaxesDetails): OldTaxesDetails => {
     return {
       ...data,
       propertyId: Number(data.propertyId),
@@ -647,10 +751,9 @@ export const oldDetailsValidations = {
         taxes: (year.taxes || []).map((tax: OldTaxItem) => ({
           ...tax,
           taxId: Number(tax.taxId),
-          taxAmount: Number(tax.taxAmount || 0)
-        }))
-      }))
+          taxAmount: Number(tax.taxAmount || 0),
+        })),
+      })),
     };
-  }
+  },
 };
-

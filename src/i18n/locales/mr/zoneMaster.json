@@ -167,6 +167,7 @@
     "wardCannotBeDeleted": "प्रभाग {wardNo} हटविता येणार नाही कारण तो वापरात आहे.",
     "partialSuccess": "{success} प्रभाग यशस्वीरित्या लिंक झाले; {failed} प्रभाग लिंक करताना अयशस्वी.",
     "noWardsToLink": "या झोनमध्ये लिंक करण्यासाठी कोणतेही प्रभाग उपलब्ध नाहीत.",
+    "allWardsAlreadyInZone": "सर्व प्रभाग आधीच झोन {zoneLabel} मध्ये आहेत.",
     "fetchError": "प्रभाग आणताना अयशस्वी"
   },
   "createWardMessages": {

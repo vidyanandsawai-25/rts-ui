@@ -59,7 +59,7 @@
       "description": "Please wait while we fetch the age factor weightage data"
     },
     "error": {
-      "title": "Something went wrong",
+      "title": "Failed to connect server. Please try again later.",
       "description": "An unexpected error occurred while loading the Age Factor Master page.",
       "tryAgain": "Try Again",
       "goHome": "Go Home",
