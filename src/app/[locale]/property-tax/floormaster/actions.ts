@@ -388,9 +388,8 @@ export async function createFloorRangeAction(
             statusCode: 409,
           };
         }
-      } catch (preCheckError) {
+      } catch {
         // Non-blocking guard: if pre-check fails, let backend API decide
-        console.warn("[createFloorRangeAction] Pre-check failed:", preCheckError);
       }
     }
 
