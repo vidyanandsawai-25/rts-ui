@@ -12,6 +12,7 @@ export default async function Page({ searchParams }: PageProps) {
   if (!Number.isFinite(resolvedPropertyId) || resolvedPropertyId <= 0) {
     notFound();
   }
-  const data = await getWaterConnectionPageData(resolvedPropertyId);
+  // Provide default pageNumber and pageSize for initial load
+  const data = await getWaterConnectionPageData(resolvedPropertyId, 1, 10);
   return <WaterConnectionPage initialData={data} propertyId={resolvedPropertyId} />;
 }

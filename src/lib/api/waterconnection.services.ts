@@ -15,8 +15,8 @@ export { ApiError };
 /** GET all connections for a property (paged) */
 export async function getWaterConnectionsPaged(
   propertyId: number,
-  pageNumber = 1,
-  pageSize = 100
+  pageNumber: number,
+  pageSize: number
 ): Promise<WaterConnectionPagedResponse<WaterConnection>> {
   const params = new URLSearchParams({
     PropertyId: propertyId.toString(),

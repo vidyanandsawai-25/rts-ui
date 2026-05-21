@@ -1,4 +1,4 @@
-"use server";
+'use server';
 
 import type {
   WaterConnectionFormModel,
@@ -8,7 +8,7 @@ import type {
   WaterConnectionStatusLookup,
   WaterRateMasterLookup,
   PropertyInfo,
-} from "@/types/waterconnection.types";
+} from '@/types/waterconnection.types';
 import {
   getWaterConnectionsPaged,
   getWaterConnectionTypes,
@@ -19,58 +19,52 @@ import {
   updateWaterConnection,
   deleteWaterConnection,
   ApiError,
-} from "@/lib/api/waterconnection.services";
-import { getPropertyBasicDetails } from "@/lib/api/property-basic-details.service";
-import { getPropertyKycById } from "@/lib/api/property-kyc.service";
-
-
+} from '@/lib/api/waterconnection.services';
+import { getPropertyBasicDetails } from '@/lib/api/property-basic-details.service';
+import { getPropertyKycById } from '@/lib/api/property-kyc.service';
 
 export async function getWaterConnectionPageData(
   propertyId: number,
-  pageNumber = 1,
-  pageSize = 100
+  pageNumber: number,
+  pageSize: number
 ): Promise<WaterConnectionPageData> {
-  const [connectionsResponse, typeOptions, sizeOptions, statusOptions, rateMastersFromApi, basicDetails, kycResponse] = await Promise.all([
+  const [
+    connectionsResponse,
+    typeOptions,
+    sizeOptions,
+    statusOptions,
+    rateMastersFromApi,
+    basicDetails,
+    kycResponse,
+  ] = await Promise.all([
     getWaterConnectionsPaged(propertyId, pageNumber, pageSize),
-    getWaterConnectionTypes().catch((err) => {
-      console.error('[waterconnection] getWaterConnectionTypes failed:', err);
-      return [] as Awaited<ReturnType<typeof getWaterConnectionTypes>>;
-    }),
-    getWaterConnectionSizes().catch((err) => {
-      console.error('[waterconnection] getWaterConnectionSizes failed:', err);
-      return [] as Awaited<ReturnType<typeof getWaterConnectionSizes>>;
-    }),
-    getWaterConnectionStatuses().catch((err) => {
-      console.error('[waterconnection] getWaterConnectionStatuses failed:', err);
-      return [] as Awaited<ReturnType<typeof getWaterConnectionStatuses>>;
-    }),
-    getWaterRateMasters().catch((err) => {
-      console.error('[waterconnection] getWaterRateMasters failed:', err);
-      return [] as WaterRateMasterLookup[];
-    }),
-    getPropertyBasicDetails(propertyId).catch((err) => {
-      console.error('[waterconnection] getPropertyBasicDetails failed:', err);
-      return null;
-    }),
-    getPropertyKycById(propertyId).catch((err) => {
-      console.error('[waterconnection] getPropertyKycById failed:', err);
-      return null;
-    }),
+    getWaterConnectionTypes().catch(
+      () => [] as Awaited<ReturnType<typeof getWaterConnectionTypes>>
+    ),
+    getWaterConnectionSizes().catch(
+      () => [] as Awaited<ReturnType<typeof getWaterConnectionSizes>>
+    ),
+    getWaterConnectionStatuses().catch(
+      () => [] as Awaited<ReturnType<typeof getWaterConnectionStatuses>>
+    ),
+    getWaterRateMasters().catch(() => [] as WaterRateMasterLookup[]),
+    getPropertyBasicDetails(propertyId).catch(() => null),
+    getPropertyKycById(propertyId).catch(() => null),
   ]);
 
   const kyc = kycResponse?.items ?? null;
   const property: PropertyInfo = {
     id: propertyId,
     propertyNo: basicDetails?.propertyNo ?? `PROP-${propertyId}`,
-    ownerName: kyc?.ownerName ?? "—",
+    ownerName: kyc?.ownerName ?? '—',
     customerId: `CID-${propertyId}`,
-    customerType: "Individual",
-    contact: kyc?.mobileNo ?? "—",
-    email: kyc?.emailId ?? "—",
-    address: kyc?.address ?? "—",
-    zone: basicDetails?.taxZoneNo ?? "—",
-    ward: basicDetails?.wardNo ?? "—",
-    buildingType: basicDetails?.categoryName ?? "—",
+    customerType: 'Individual',
+    contact: kyc?.mobileNo ?? '—',
+    email: kyc?.emailId ?? '—',
+    address: kyc?.address ?? '—',
+    zone: basicDetails?.taxZoneNo ?? '—',
+    ward: basicDetails?.wardNo ?? '—',
+    buildingType: basicDetails?.categoryName ?? '—',
   };
 
   return {
@@ -94,22 +88,10 @@ export async function getConnectionLookupsAction(): Promise<{
   rateMasters: WaterRateMasterLookup[];
 }> {
   const [typeOptions, sizeOptions, statusOptions, rateMastersFromApi] = await Promise.all([
-    getWaterConnectionTypes().catch((err) => {
-      console.error('[waterconnection] getWaterConnectionTypes failed:', err);
-      return [] as WaterConnectionTypeLookup[];
-    }),
-    getWaterConnectionSizes().catch((err) => {
-      console.error('[waterconnection] getWaterConnectionSizes failed:', err);
-      return [] as WaterConnectionSizeLookup[];
-    }),
-    getWaterConnectionStatuses().catch((err) => {
-      console.error('[waterconnection] getWaterConnectionStatuses failed:', err);
-      return [] as WaterConnectionStatusLookup[];
-    }),
-    getWaterRateMasters().catch((err) => {
-      console.error('[waterconnection] getWaterRateMasters failed:', err);
-      return [] as WaterRateMasterLookup[];
-    }),
+    getWaterConnectionTypes().catch(() => [] as WaterConnectionTypeLookup[]),
+    getWaterConnectionSizes().catch(() => [] as WaterConnectionSizeLookup[]),
+    getWaterConnectionStatuses().catch(() => [] as WaterConnectionStatusLookup[]),
+    getWaterRateMasters().catch(() => [] as WaterRateMasterLookup[]),
   ]);
 
   return {
@@ -121,10 +103,7 @@ export async function getConnectionLookupsAction(): Promise<{
 }
 
 export async function getWaterRateMastersAction(): Promise<WaterRateMasterLookup[]> {
-  return getWaterRateMasters().catch((err) => {
-    console.error('[waterconnection] getWaterRateMasters failed:', err);
-    return [] as WaterRateMasterLookup[];
-  });
+  return getWaterRateMasters().catch(() => [] as WaterRateMasterLookup[]);
 }
 
 export async function saveWaterConnectionAction(
@@ -140,7 +119,7 @@ export async function saveWaterConnectionAction(
   } catch (e) {
     return {
       ok: false,
-      error: e instanceof ApiError ? e.message : "Save failed",
+      error: e instanceof ApiError ? e.message : 'Save failed',
     };
   }
 }
@@ -154,7 +133,7 @@ export async function deleteWaterConnectionAction(
   } catch (e) {
     return {
       ok: false,
-      error: e instanceof ApiError ? e.message : "Delete failed",
+      error: e instanceof ApiError ? e.message : 'Delete failed',
     };
   }
 }

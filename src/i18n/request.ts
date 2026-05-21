@@ -50,8 +50,8 @@ export default getRequestConfig(async ({ locale }) => {
     combinePropertyMessages,
     ptisMainTaxDetailsMessages,
     paymentModeMasterMessages,
+    waterConnectionMessages,
     modulesMessages,
-    waterConnectionMessages
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/dashboard.json`).then((m) => m.default),
@@ -103,10 +103,10 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/combineProperty.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/ptisMainTaxDetails.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/paymentModeMaster.json`).then((m) => m.default),
-    import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/waterconnection.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
   ]);
 
   return {
@@ -146,8 +146,8 @@ export default getRequestConfig(async ({ locale }) => {
       combineProperty: combinePropertyMessages,
       ptisMainTaxDetails: ptisMainTaxDetailsMessages,
       paymentModeMaster: paymentModeMasterMessages,
-      modules: modulesMessages,
       waterConnection: waterConnectionMessages?.waterConnection || waterConnectionMessages,
+      modules: modulesMessages,
     },
   };
 });
