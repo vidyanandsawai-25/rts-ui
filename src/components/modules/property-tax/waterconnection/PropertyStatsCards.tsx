@@ -9,12 +9,6 @@ interface StatsData {
   yearlyRevenue: number;
 }
 
-interface StatCardProps {
-  label: string;
-  value: string | number;
-  icon: React.ReactNode;
-  gradient: string;
-}
 
 function StatCard({ label, value, icon, gradient }: StatCardProps) {
   return (
