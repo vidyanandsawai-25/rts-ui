@@ -74,7 +74,7 @@ export function FloorFormFields({
 
       <Input
         name="sequenceNo"
-        label={labels.sequenceNo}
+        label={<span>{labels.sequenceNo} <span className="text-red-500">*</span></span>}
         type="number"
         placeholder={labels.sequenceNoPlaceholder}
         value={formData.sequenceNo === 0 ? '' : formData.sequenceNo}
