@@ -92,6 +92,11 @@ export interface SearchSelectProps {
    * Mobile input mode hint.
    */
   inputMode?: 'text' | 'search' | 'none' | 'tel' | 'url' | 'email' | 'numeric' | 'decimal';
+
+  /**
+   * Direction/placement of the menu dropdown. Defaults to 'bottom'.
+   */
+  menuPlacement?: 'top' | 'bottom';
 }
 
 export function SearchSelect({
@@ -113,6 +118,7 @@ export function SearchSelect({
   inputMode = 'text',
   loadingPlaceholder,
   noOptionsPlaceholder,
+  menuPlacement = 'bottom',
 }: SearchSelectProps): React.ReactElement {
   // Fallback id and name for backward compatibility
   const fallbackId = id || name || 'search-select';
@@ -193,7 +199,7 @@ export function SearchSelect({
     }
     setIsOpen(false);
     if (!hasOptions) return;
-    const matched = validOptions.find((opt) => opt.label === displayValue);
+    const matched = validOptions.find((opt) => opt.label === search);
     if (matched) {
       // If user typed an exact match and blurred, commit it
       if (hasTyped) {
@@ -201,14 +207,12 @@ export function SearchSelect({
         setHasTyped(false);
       }
     } else {
+      // Restore previous selected value in the input if search did not match
       setSearch('');
       setHasTyped(false);
-      // Only clear value if user actually typed something that doesn't match
-      if (hasTyped) {
-        onChange(fallbackName, '');
-      }
+      // Do NOT clear the value, just revert to previous selection
     }
-  }, [hasOptions, validOptions, displayValue, fallbackName, onChange, hasTyped]);
+  }, [hasOptions, validOptions, search, fallbackName, onChange, hasTyped]);
 
   /* ---------------- Select option ---------------- */
 
@@ -344,8 +348,10 @@ export function SearchSelect({
           ref={listRef}
           id={`${accessibleId}-listbox`}
           role="listbox"
-          className="absolute left-0 right-0 z-10000 mt-1 max-h-60 overflow-auto
-          rounded-lg border bg-white shadow-lg text-gray-900"
+          className={`absolute left-0 right-0 z-10000 max-h-60 overflow-auto
+          rounded-lg border bg-white shadow-lg text-gray-900 ${
+            menuPlacement === 'top' ? 'bottom-full mb-1' : 'top-full mt-1'
+          }`}
         >
           {filteredOptions.map((opt, index) => (
             <li
