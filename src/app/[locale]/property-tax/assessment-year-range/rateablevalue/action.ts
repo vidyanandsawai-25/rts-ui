@@ -21,13 +21,17 @@ const config = rateableValueConfig;
  */
 export async function fetchAssessmentYearRangeRVPagedAction(
   pageNumber: number,
-  pageSize: number
+  pageSize: number,
+  sortBy?: string,
+  sortOrder?: string
 ): Promise<PagedResponse<AssessmentYearRangeRV>> {
   try {
     const result = await getAssessmentYearRangePaged<AssessmentYearRangeRV>(
       config,
       pageNumber,
-      pageSize
+      pageSize,
+      sortBy,
+      sortOrder
     );
     return result;
   } catch (error: unknown) {

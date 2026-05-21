@@ -21,13 +21,17 @@ const config = capitalValueConfig;
  */
 export async function fetchAssessmentYearRangeCVPagedAction(
   pageNumber: number,
-  pageSize: number
+  pageSize: number,
+  sortBy?: string,
+  sortOrder?: string
 ): Promise<PagedResponse<AssessmentYearRangeCV>> {
   try {
     const result = await getAssessmentYearRangePaged<AssessmentYearRangeCV>(
       config,
       pageNumber,
-      pageSize
+      pageSize,
+      sortBy,
+      sortOrder
     );
     return result;
   } catch (error: unknown) {

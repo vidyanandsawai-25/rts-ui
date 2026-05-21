@@ -229,6 +229,43 @@ export function useAssessmentYearRangeForm({
         : await createAction(formData);
 
       if (!result.success) {
+        // Handle server-side validation errors
+        if (result.statusCode === 400 && result.message) {
+          try {
+            const parsedError = JSON.parse(result.message);
+            if (parsedError.errors && typeof parsedError.errors === 'object') {
+              const serverErrors: Partial<Record<keyof AssessmentYearRangeFormModel, string>> = {};
+              
+              // Map backend error keys to form field keys
+              // Backend might send "FromYear" or "fromYear"
+              Object.entries(parsedError.errors).forEach(([key, messages]) => {
+                const fieldKey = (key.charAt(0).toLowerCase() + key.slice(1)) as keyof AssessmentYearRangeFormModel;
+                if (Array.isArray(messages) && messages.length > 0) {
+                  // Get the first error message and localize it if possible
+                  const backendMsg = messages[0];
+                  // If the message is a known key like "FromYear_MustBeLessThanToYear", localize it
+                  if (backendMsg === "FromYear_MustBeLessThanToYear") {
+                    // Only show this specific validation error under fromYear field
+                    if (fieldKey === "fromYear") {
+                      serverErrors[fieldKey] = t("form.validation.fromYearMustBeLessThanToYear");
+                    }
+                  } else {
+                    serverErrors[fieldKey] = backendMsg;
+                  }
+                }
+              });
+
+              if (Object.keys(serverErrors).length > 0) {
+                setErrors((prev) => ({ ...prev, ...serverErrors }));
+                return;
+              }
+            }
+          } catch (e) {
+            // Not a JSON error, fall back to default toast
+            console.error("Failed to parse server error:", e);
+          }
+        }
+        
         toast.error(mapApiError(result));
         return;
       }

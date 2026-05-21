@@ -103,7 +103,8 @@ export async function createPropertyType(data: PropertyTypeFormModel, userId: nu
     const payload = {
       propertyDescription: data.propertyDescription.trim(),
       type: data.type.trim(),
-      propertyTypeGroup: data.propertyTypeGroup.trim(),
+      //propertyTypeGroup: data.propertyTypeGroup.trim(),
+      propertyTypeGroup: null, // Always send null as per requirement
       searchSequence: Number(data.searchSequence) || 0,
       propertyTypeCategoryId: data.propertyTypeCategoryId ?? null,
       isActive: data.isActive,
@@ -133,7 +134,7 @@ export async function updatePropertyType(data: PropertyTypeFormModel, userId: nu
       id: data.id,
       propertyDescription: data.propertyDescription.trim(),
       type: data.type.trim(),
-      propertyTypeGroup: data.propertyTypeGroup.trim(),
+      propertyTypeGroup: null, // Always send null as per requirement
       searchSequence: Number(data.searchSequence) || 0,
       propertyTypeCategoryId: data.propertyTypeCategoryId ?? null,
       isActive: data.isActive,
@@ -200,7 +201,7 @@ export async function searchPropertyTypes(query: string): Promise<PropertyType[]
     return allPropertyTypes.filter((pt) =>
       pt.propertyDescription.toLowerCase().includes(lowerQuery) ||
       pt.type.toLowerCase().includes(lowerQuery) ||
-      pt.propertyTypeGroup.toLowerCase().includes(lowerQuery)
+      (pt.propertyTypeGroup?.toLowerCase().includes(lowerQuery) ?? false)
     );
   } catch (error) {
     throw error;

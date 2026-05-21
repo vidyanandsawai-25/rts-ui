@@ -36,7 +36,7 @@ export function usePropertyTypeFormState({
     id: id ?? initialData?.id,
     propertyDescription: initialData?.propertyDescription ?? "",
     type: initialData?.type ?? "",
-    propertyTypeGroup: initialData?.propertyTypeGroup ?? "",
+    propertyTypeGroup: initialData?.propertyTypeGroup ?? null,
     searchSequence: initialData?.searchSequence ?? 0,
     propertyTypeCategoryId: isEdit
       ? (initialData?.propertyTypeCategoryId ?? 0)
