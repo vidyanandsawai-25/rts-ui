@@ -8,12 +8,18 @@ import type { Option } from "@/components/common/select";
 
 interface UseAgeFactorCvFiltersParams {
     initialAgeRangeOptions: Option[];
+    initialSortBy?: string;
+    initialSortOrder?: string;
 }
 
 /**
  * Hook for managing filter state and URL synchronization for the Age Factor CV module.
  */
-export const useAgeFactorCvFilters = ({ initialAgeRangeOptions }: UseAgeFactorCvFiltersParams) => {
+export const useAgeFactorCvFilters = ({
+    initialAgeRangeOptions,
+    initialSortBy,
+    initialSortOrder,
+}: UseAgeFactorCvFiltersParams) => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const locale = useLocale();
@@ -24,6 +30,9 @@ export const useAgeFactorCvFilters = ({ initialAgeRangeOptions }: UseAgeFactorCv
     const [selectedYear, setSelectedYear] = useState<string>(currentSelectedYear);
     const [constructionType, setConstructionType] = useState<string>(currentConstructionType);
     const [factorValue, setFactorValue] = useState<string>("0.00");
+
+    const [sortBy, setSortBy] = useState<string | undefined>(initialSortBy);
+    const [sortOrder, setSortOrder] = useState<string | undefined>(initialSortOrder);
 
     // Age Range States
     const [ageFrom, setAgeFrom] = useState<string>("");
@@ -82,6 +91,20 @@ export const useAgeFactorCvFilters = ({ initialAgeRangeOptions }: UseAgeFactorCv
         router.push(`/${locale}/property-tax/weightage-master/age-weightage?${params.toString()}`);
     };
 
+    const handleSort = (columnKey: string): void => {
+        let newOrder: "asc" | "desc" = "asc";
+        if (sortBy === columnKey) {
+            newOrder = sortOrder === "asc" ? "desc" : "asc";
+        }
+        setSortBy(columnKey);
+        setSortOrder(newOrder);
+        const params = new URLSearchParams(searchParams.toString());
+        params.set("page", "1");
+        params.set("sortBy", columnKey);
+        params.set("sortOrder", newOrder);
+        router.push(`/${locale}/property-tax/weightage-master/age-weightage?${params.toString()}`);
+    };
+
     const changePage = (page: number, pageSize: number): void => {
         const params = new URLSearchParams(searchParams.toString());
         params.set("page", String(page));
@@ -90,6 +113,8 @@ export const useAgeFactorCvFilters = ({ initialAgeRangeOptions }: UseAgeFactorCv
         if (q) params.set("q", q);
         if (selectedYear) params.set("selectedYearRange", selectedYear);
         if (constructionType) params.set("constructionType", constructionType);
+        if (sortBy) params.set("sortBy", sortBy);
+        if (sortOrder) params.set("sortOrder", sortOrder);
         router.push(`/${locale}/property-tax/weightage-master/age-weightage?${params.toString()}`);
     };
 
@@ -101,6 +126,8 @@ export const useAgeFactorCvFilters = ({ initialAgeRangeOptions }: UseAgeFactorCv
         if (q) params.set("q", q);
         if (selectedYear) params.set("selectedYearRange", selectedYear);
         if (constructionType) params.set("constructionType", constructionType);
+        if (sortBy) params.set("sortBy", sortBy);
+        if (sortOrder) params.set("sortOrder", sortOrder);
         router.push(`/${locale}/property-tax/weightage-master/age-weightage?${params.toString()}`);
     };
 
@@ -109,6 +136,8 @@ export const useAgeFactorCvFilters = ({ initialAgeRangeOptions }: UseAgeFactorCv
         tW: (key: string) => string
     ): void => {
         clearFilters();
+        setSortBy(undefined);
+        setSortOrder(undefined);
         router.push(`/${locale}/property-tax/weightage-master/age-weightage`);
         addToast('info', tW('common.messages.allClearedInfo'));
     };
@@ -170,5 +199,8 @@ export const useAgeFactorCvFilters = ({ initialAgeRangeOptions }: UseAgeFactorCv
         changePageSize,
         handleClearAll,
         getMissingRecordsCount,
+        sortBy,
+        sortOrder,
+        handleSort,
     };
 };

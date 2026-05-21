@@ -138,13 +138,19 @@ export interface FloorCvWeightageMasterProps {
     totalPages: number;
     floorOptions: Option[]; // Already added floorOptions prop
     assessmentYearOptions: Option[]; // Added assessmentYearOptions prop
+    sortBy?: string;
+    sortOrder?: string;
 }
 export interface ColumnConfig {
   t: (key: string) => string;
   tW: (key: string) => string;
+  tCommon: (key: string) => string;
   editableRows: Record<string, FloorFactorCVMaster>;
   handleCellChange: (rowId: string, columnId: string, value: string | number) => void;
   getRowUid: (row: FloorFactorCVMaster) => string;
+  sortBy?: string;
+  sortOrder?: string;
+  onSort?: (columnKey: string) => void;
 }
 export interface WeightageMasterHeaderProps {
   locale: string;

@@ -26,6 +26,8 @@ export const PROPERTY_TYPE_ERROR_CODES = {
   UPDATE_FAILED: 'UPDATE_FAILED',
   /** Failed to delete property type */
   DELETE_FAILED: 'DELETE_FAILED',
+  /** Failed to purge delete property type */
+  PURGE_DELETE_FAILED: 'PURGE_DELETE_FAILED',
 } as const;
 
 export type PropertyTypeErrorCode = typeof PROPERTY_TYPE_ERROR_CODES[keyof typeof PROPERTY_TYPE_ERROR_CODES];
@@ -43,6 +45,7 @@ export const ERROR_CODE_TO_I18N_KEY: Record<PropertyTypeErrorCode, string> = {
   [PROPERTY_TYPE_ERROR_CODES.CREATE_FAILED]: 'serverValidation.createFailed',
   [PROPERTY_TYPE_ERROR_CODES.UPDATE_FAILED]: 'serverValidation.updateFailed',
   [PROPERTY_TYPE_ERROR_CODES.DELETE_FAILED]: 'serverValidation.deleteFailed',
+  [PROPERTY_TYPE_ERROR_CODES.PURGE_DELETE_FAILED]: 'serverValidation.purgeDeleteFailed',
 };
 
 /**

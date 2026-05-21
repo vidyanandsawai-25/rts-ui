@@ -96,14 +96,18 @@ export async function fetchAgeFactorCVMasterPagedServerAction(
       ? constructionTypeId
       : undefined;
 
+    const allowedSortFields = ["ConstructionCode", "ConstructionDescription", "AgeFrom", "AgeTo", "FromYear"];
+    const normalizedSortBy = allowedSortFields.includes(sortBy?.trim() || "") ? sortBy?.trim() : undefined;
+    const normalizedSortOrder = ["asc", "desc"].includes(sortOrder?.trim().toLowerCase() || "") ? (sortOrder?.trim().toLowerCase() as "asc" | "desc") : undefined;
+
     const response = await getAgeFactorCVMasterWithParams({
       pageNumber: normalizedPageNumber,
       pageSize: normalizedPageSize,
       searchTerm,
       yearRangeCVId: yearRangeParam,
       constructionTypeId: normalizedConstructionTypeId,
-      sortBy: sortBy?.trim() || undefined,
-      sortOrder: sortOrder?.trim() || undefined,
+      sortBy: normalizedSortBy,
+      sortOrder: normalizedSortOrder,
     });
 
     if (!response.success || !response.data) {
