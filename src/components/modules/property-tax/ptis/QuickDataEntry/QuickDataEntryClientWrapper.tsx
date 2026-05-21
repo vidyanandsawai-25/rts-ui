@@ -65,11 +65,11 @@ function QuickDataEntryContent({
     return (
         <div className={DRAWER_CLASSNAME}>
             <Drawer open={true} onClose={handleClose} title={drawerTitle} width="xl">
-                <div className="flex h-full flex-col overflow-hidden border-slate-300 bg-white shadow-sm">
+                <div className="flex h-full flex-col border-slate-300 bg-white shadow-sm">
                     {!isRenterPage && (
                         <TabNavigation />
                     )}
-                    <div className="flex-1 overflow-y-auto">
+                    <div className="flex-1">
                         {children}
                     </div>
                 </div>

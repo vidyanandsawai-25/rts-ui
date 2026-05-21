@@ -55,8 +55,8 @@ export const useFloorFormState = () => {
   const areaInputRef = useRef<HTMLInputElement>(null);
 
   const validateForm = useCallback(
-    (formToValidate = editingFloorForm): boolean => {
-      const result = validateFloorForm(formToValidate);
+    (formToValidate = editingFloorForm, t?: (key: string) => string): boolean => {
+      const result = validateFloorForm(formToValidate, t);
       setFormErrors(result.errors);
       return result.isValid;
     },
