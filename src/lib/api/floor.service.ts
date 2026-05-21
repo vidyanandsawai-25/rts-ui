@@ -230,7 +230,6 @@ export async function deleteFloor(id: number, _userId: string): Promise<void> {
       'Delete floor failed'
     );
   } catch (err) {
-    console.error('Delete floor error:', err);
     throw err;
   }
 }

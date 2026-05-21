@@ -60,7 +60,6 @@ export default function WaterConnectionPage({ initialData, propertyId }: WaterCo
         const data = await getWaterConnectionPageData(propertyId, page, pageSize);
         setPageData(data);
       } catch (error) {
-        console.error("Failed to fetch water connections:", error);
         toast.error(t("error.description"));
       } finally {
         setLoading(false);
