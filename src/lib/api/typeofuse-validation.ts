@@ -50,7 +50,6 @@ export function getDeleteErrorStatusCode(errorMsg: string): number {
 
 /**
  * Creates appropriate ApiError based on response status and message
- * Maps backend reference errors to i18n keys
  */
 export function createApiError(
   statusCode?: number, 
@@ -63,13 +62,7 @@ export function createApiError(
   // Detect duplicate error from backend message
   const isDuplicate = lowerMsg.includes("already exists") || lowerMsg.includes("duplicate");
   
-  // Detect reference constraint errors and map to i18n keys
-  let finalErrorMessage = errorMessage || defaultMessage;
-  
-  if (lowerMsg.includes("referenced by other entities")) {
-    // Map to i18n key based on context - will be handled by forms
-    finalErrorMessage = errorMessage || defaultMessage;
-  }
+  const finalErrorMessage = errorMessage || defaultMessage;
   
   return new ApiError(
     statusCode ?? (isDuplicate ? 409 : 500),
