@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Droplets } from "lucide-react";
 
@@ -24,8 +24,8 @@ import {
   updateTapSizeAction,
 } from "@/app/[locale]/property-tax/water-connection-master/actions";
 
-const MAX_CODE = 10;
-const MAX_NAME = 50;
+const MAX_NAME = 5;
+const MAX_UNIT = 7;
 
 export interface TapSizeFormProps {
   id: number | null;
@@ -34,16 +34,18 @@ export interface TapSizeFormProps {
 
 export function TapSizeForm({ id, initialData }: Readonly<TapSizeFormProps>) {
   const router = useRouter();
+  const locale = useLocale();
   const t = useTranslations("waterConnectionMaster.tapSize");
   const tCommon = useTranslations("common");
   const isEdit = Boolean(id);
+
+  const listUrl = `/${locale}/property-tax/water-connection-master/tap-size`;
 
   const [open, setOpen] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedOnce, setSubmittedOnce] = useState(false);
 
   const [formData, setFormData] = useState<TapSizeFormModel>({
-    sizeCode: initialData?.sizeCode ?? "",
     sizeName: initialData?.sizeName ?? "",
     unit: initialData?.unit ?? "",
     isActive: initialData?.isActive ?? true,
@@ -59,8 +61,8 @@ export function TapSizeForm({ id, initialData }: Readonly<TapSizeFormProps>) {
         errs.sizeName = t("validation.sizeNameLength", { count: MAX_NAME });
       if (!data.unit.trim())
         errs.unit = t("validation.unitRequired");
-      else if (data.unit.length > MAX_CODE)
-        errs.unit = t("validation.unitLength", { count: MAX_CODE });
+      else if (data.unit.length > MAX_UNIT)
+        errs.unit = t("validation.unitLength", { count: MAX_UNIT });
       return errs;
     },
     [t]
@@ -81,8 +83,8 @@ export function TapSizeForm({ id, initialData }: Readonly<TapSizeFormProps>) {
 
   const handleClose = useCallback(() => {
     setOpen(false);
-    router.back();
-  }, [router]);
+    router.push(listUrl);
+  }, [router, listUrl]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,7 +101,7 @@ export function TapSizeForm({ id, initialData }: Readonly<TapSizeFormProps>) {
       if (result.success) {
         toast.success(isEdit ? t("messages.updateSuccess") : t("messages.createSuccess"));
         setOpen(false);
-        router.back();
+        router.push(listUrl);
       } else {
         toast.error(result.error ?? tCommon("errors.unexpectedError"));
       }
@@ -161,27 +163,6 @@ export function TapSizeForm({ id, initialData }: Readonly<TapSizeFormProps>) {
 
         <div className="space-y-4">
           <div>
-            <Label htmlFor="tap-size-code">
-              {t("form.sizeCode.label")}
-            </Label>
-            <Input
-              id="tap-size-code"
-              value={formData.sizeCode ?? ""}
-              onChange={(e) => handleChange("sizeCode", e.target.value)}
-              onBlur={() => handleBlur("sizeCode")}
-              placeholder={t("form.sizeCode.placeholder")}
-              maxLength={MAX_CODE}
-              aria-invalid={showError("sizeCode") ? "true" : "false"}
-              aria-describedby={showError("sizeCode") ? "tap-size-code-error" : undefined}
-            />
-            <ValidationMessage
-              id="tap-size-code-error"
-              message={errors.sizeCode}
-              visible={showError("sizeCode")}
-            />
-          </div>
-
-          <div>
             <Label htmlFor="tap-size-name" required>
               {t("form.sizeName.label")}
             </Label>
@@ -212,7 +193,7 @@ export function TapSizeForm({ id, initialData }: Readonly<TapSizeFormProps>) {
               onChange={(e) => handleChange("unit", e.target.value)}
               onBlur={() => handleBlur("unit")}
               placeholder={t("form.unit.placeholder")}
-              maxLength={MAX_CODE}
+              maxLength={MAX_UNIT}
               aria-invalid={showError("unit") ? "true" : "false"}
               aria-describedby={showError("unit") ? "tap-size-unit-error" : undefined}
             />

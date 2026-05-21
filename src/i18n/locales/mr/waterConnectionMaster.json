@@ -108,8 +108,7 @@
       "addSubtitle": "नवीन जल जोडणी आकार तयार करा",
       "editSubtitle": "जल जोडणी आकार तपशील अद्यतनित करा",
       "table": {
-        "sizeCode": "आकार कोड",
-        "sizeName": "आकार नाव",
+        "displayLabel": "आकार",
         "status": "स्थिती"
       },
       "form": {

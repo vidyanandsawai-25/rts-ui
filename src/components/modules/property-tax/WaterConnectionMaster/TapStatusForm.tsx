@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Droplets } from "lucide-react";
 
@@ -24,7 +24,7 @@ import {
   updateTapStatusAction,
 } from "@/app/[locale]/property-tax/water-connection-master/actions";
 
-const MAX_NAME = 50;
+const MAX_NAME = 10;
 
 export interface TapStatusFormProps {
   id: number | null;
@@ -33,9 +33,12 @@ export interface TapStatusFormProps {
 
 export function TapStatusForm({ id, initialData }: Readonly<TapStatusFormProps>) {
   const router = useRouter();
+  const locale = useLocale();
   const t = useTranslations("waterConnectionMaster.tapStatus");
   const tCommon = useTranslations("common");
   const isEdit = Boolean(id);
+
+  const listUrl = `/${locale}/property-tax/water-connection-master/tap-status`;
 
   const [open, setOpen] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -74,8 +77,8 @@ export function TapStatusForm({ id, initialData }: Readonly<TapStatusFormProps>)
 
   const handleClose = useCallback(() => {
     setOpen(false);
-    router.back();
-  }, [router]);
+    router.push(listUrl);
+  }, [router, listUrl]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,7 +96,7 @@ export function TapStatusForm({ id, initialData }: Readonly<TapStatusFormProps>)
       if (result.success) {
         toast.success(isEdit ? t("messages.updateSuccess") : t("messages.createSuccess"));
         setOpen(false);
-        router.back();
+        router.push(listUrl);
       } else {
         toast.error(result.error ?? tCommon("errors.unexpectedError"));
       }

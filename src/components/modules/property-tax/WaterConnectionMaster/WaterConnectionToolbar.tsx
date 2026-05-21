@@ -28,32 +28,40 @@ export function WaterConnectionToolbar() {
   const currentSearchTerm = searchParams.get("q") ?? "";
   const [search, setSearch] = useState<string>(currentSearchTerm);
 
+  // Keep refs updated every render so the timer callback always has latest values
+  const pathnameRef = useRef(pathname);
+  pathnameRef.current = pathname;
+
+  const searchParamsRef = useRef(searchParams);
+  searchParamsRef.current = searchParams;
+
+  const currentSearchTermRef = useRef(currentSearchTerm);
+  currentSearchTermRef.current = currentSearchTerm;
+
+  // Sync the input when the URL q param changes externally
+  // (tab switch, browser back/forward, direct URL change)
   useEffect(() => {
     setSearch(currentSearchTerm);
   }, [currentSearchTerm]);
 
-  const isFirstRender = useRef(true);
-
+  // Debounce: ONLY fires when the user actually types (search state changes)
+  // Refs are used for everything else so those changes don't reset the timer
   useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
-    if (search === currentSearchTerm) return;
+    if (search === currentSearchTermRef.current) return;
 
     const timer = setTimeout(() => {
-      const params = new URLSearchParams(searchParams);
+      const params = new URLSearchParams(searchParamsRef.current.toString());
       params.set("page", "1");
       if (search.trim()) {
         params.set("q", search.trim());
       } else {
         params.delete("q");
       }
-      router.push(`${pathname}?${params.toString()}`);
-    }, 500);
+      router.push(`${pathnameRef.current}?${params.toString()}`);
+    }, 400);
 
     return () => clearTimeout(timer);
-  }, [search, currentSearchTerm, pathname, router, searchParams]);
+  }, [search, router]);
 
   const addLabel =
     activeTab === "tap-type"
