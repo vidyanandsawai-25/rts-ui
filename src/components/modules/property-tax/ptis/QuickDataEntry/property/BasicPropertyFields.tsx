@@ -1,6 +1,9 @@
 import { Input, SearchSelect } from '@/components/common';
 import { Label } from '@/components/common/label';
 import { PropertyBasicDetailsApiItem } from '@/types/property-basic-details.types';
+import { sanitizeFlatShopNo, sanitizePlotNo, sanitizePlotArea } from '@/lib/utils/input-sanitization';
+import { propertyValidators, PROPERTY_VALIDATION_RULES } from '@/lib/utils/kyc-validation.constants';
+import { useState } from 'react';
 
 interface BasicPropertyFieldsProps {
     t: (key: string) => string;
@@ -8,9 +11,9 @@ interface BasicPropertyFieldsProps {
     categoryOptions: { label: string; value: string }[];
     categoryId: number | null;
     handleCategoryChange: (name: string | undefined, value: string) => void;
-    wingOptions: { label: string; value: string }[];
-    wingId: number | null;
-    handleWingChange: (name: string | undefined, value: string) => void;
+    moujaOptions: { label: string; value: string }[];
+    moujaId: number | null;
+    handleMoujaChange: (name: string | undefined, value: string) => void;
     propertyDescriptionOptions: { label: string; value: string }[];
     propertyTypeId: number | null;
     handlePropertyDescriptionChange: (name: string | undefined, value: string) => void;
@@ -22,13 +25,21 @@ export const BasicPropertyFields = ({
     categoryOptions,
     categoryId,
     handleCategoryChange,
-    wingOptions,
-    wingId,
-    handleWingChange,
+    moujaOptions,
+    moujaId,
+    handleMoujaChange,
     propertyDescriptionOptions,
     propertyTypeId,
     handlePropertyDescriptionChange,
 }: BasicPropertyFieldsProps) => {
+    const [flatShopNo, setFlatShopNo] = useState(propertyData?.flatOrShopNo ?? '');
+    const [plotNo, setPlotNo] = useState(propertyData?.plotNo ?? '');
+    const [plotArea, setPlotArea] = useState(propertyData?.plotArea?.toString() ?? '');
+    
+    const [showFlatShopError, setShowFlatShopError] = useState(false);
+    const [showPlotNoError, setShowPlotNoError] = useState(false);
+    const [showPlotAreaError, setShowPlotAreaError] = useState(false);
+
     return (
         <>
             {/* Division */}
@@ -42,7 +53,7 @@ export const BasicPropertyFields = ({
                     name="division"
                     placeholder={t('property.divisionPlaceholder')}
                     defaultValue={propertyData?.division?.toString() ?? ''}
-                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                    className="h-9 text-sm bg-gray-50 text-gray-600 cursor-not-allowed border-gray-300"
                 />
             </div>
 
@@ -51,12 +62,13 @@ export const BasicPropertyFields = ({
                 <Label htmlFor="pd-mouja" className="text-xs font-semibold text-gray-700">
                     {t('property.mouja')}
                 </Label>
-                <Input
-                    readOnly
+                <SearchSelect
                     id="pd-mouja"
-                    name="moujaName"
-                    placeholder={t('property.mouja')}
-                    defaultValue={propertyData?.moujaName ?? ''}
+                    name="mouja"
+                    options={moujaOptions}
+                    value={moujaId?.toString() ?? ''}
+                    placeholder={t('property.select')}
+                    onChange={handleMoujaChange}
                     className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                 />
             </div>
@@ -67,26 +79,12 @@ export const BasicPropertyFields = ({
                     {t('property.category')}
                 </Label>
                 <SearchSelect
+                    id="pd-category"
                     name="category"
                     options={categoryOptions}
                     value={categoryId?.toString() ?? ''}
                     placeholder={t('property.select')}
                     onChange={handleCategoryChange}
-                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                />
-            </div>
-
-            {/* Wing */}
-            <div className="space-y-1.5">
-                <Label htmlFor="pd-wing" className="text-xs font-semibold text-gray-700">
-                    {t('property.wing')}
-                </Label>
-                <SearchSelect
-                    name="wing"
-                    options={wingOptions}
-                    value={wingId?.toString() ?? ''}
-                    placeholder={t('property.select')}
-                    onChange={handleWingChange}
                     className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                 />
             </div>
@@ -100,9 +98,26 @@ export const BasicPropertyFields = ({
                     id="pd-flat-shop"
                     name="flatOrShopNo"
                     placeholder={t('property.flatShopNoPlaceholder')}
-                    defaultValue={propertyData?.flatOrShopNo ?? ''}
-                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                />
+                    value={flatShopNo}
+                    maxLength={PROPERTY_VALIDATION_RULES.FLAT_SHOP_NO_MAX_LENGTH}
+                    className={`h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${
+                        showFlatShopError && !propertyValidators.isValidFlatShopNo(flatShopNo)
+                            ? 'border-red-300 focus:border-red-500'
+                            : ''
+                    }`}
+                    onChange={(e) => {
+                        const sanitized = sanitizeFlatShopNo(e.target.value);
+                        const limited = sanitized.slice(0, PROPERTY_VALIDATION_RULES.FLAT_SHOP_NO_MAX_LENGTH);
+                        setFlatShopNo(limited);
+                        if (limited) setShowFlatShopError(true);
+                    }}
+                    onBlur={() => setShowFlatShopError(true)}
+                /> 
+                {showFlatShopError && !propertyValidators.isValidFlatShopNo(flatShopNo) && (
+                    <span className="text-xs text-red-500">
+                        {t('property.validation.invalidFlatShopNo') || 'Invalid flat/shop number. Only alphanumeric, -, and / allowed (max 10 characters).'}
+                    </span>
+                )}
             </div>
 
             {/* Plot No */}
@@ -114,9 +129,26 @@ export const BasicPropertyFields = ({
                     id="pd-plot"
                     name="plotNo"
                     placeholder={t('property.plotNoPlaceholder')}
-                    defaultValue={propertyData?.plotNo ?? ''}
-                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                    value={plotNo}
+                    maxLength={PROPERTY_VALIDATION_RULES.PLOT_NO_MAX_LENGTH}
+                    className={`h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${
+                        showPlotNoError && !propertyValidators.isValidPlotNo(plotNo)
+                            ? 'border-red-300 focus:border-red-500'
+                            : ''
+                    }`}
+                    onChange={(e) => {
+                        const sanitized = sanitizePlotNo(e.target.value);
+                        const limited = sanitized.slice(0, PROPERTY_VALIDATION_RULES.PLOT_NO_MAX_LENGTH);
+                        setPlotNo(limited);
+                        if (limited) setShowPlotNoError(true);
+                    }}
+                    onBlur={() => setShowPlotNoError(true)}
                 />
+                {showPlotNoError && !propertyValidators.isValidPlotNo(plotNo) && (
+                    <span className="text-xs text-red-500">
+                        {t('property.validation.invalidPlotNo') || 'Invalid plot number. Only alphanumeric, -, and / allowed (max 10 characters).'}
+                    </span>
+                )}
             </div>
 
             {/* Plot Area */}
@@ -128,10 +160,36 @@ export const BasicPropertyFields = ({
                     id="pd-plotarea"
                     name="plotArea"
                     type="number"
-                    defaultValue={propertyData?.plotArea ?? undefined}
-                    placeholder="1500"
-                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                    min="0"
+                    step="0.0001"
+                    value={plotArea}
+                    placeholder="1500.1234"
+                    className={`h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${
+                        showPlotAreaError && !propertyValidators.isValidPlotArea(plotArea)
+                            ? 'border-red-300 focus:border-red-500'
+                            : ''
+                    }`}
+                    onChange={(e) => {
+                        const value = e.target.value;
+                        // Prevent negative values
+                        if (value && parseFloat(value) < 0) return;
+                        const sanitized = sanitizePlotArea(value);
+                        setPlotArea(sanitized);
+                        if (sanitized) setShowPlotAreaError(true);
+                    }}
+                    onKeyDown={(e) => {
+                        // Prevent negative sign and 'e' character
+                        if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+') {
+                            e.preventDefault();
+                        }
+                    }}
+                    onBlur={() => setShowPlotAreaError(true)}
                 />
+                {showPlotAreaError && !propertyValidators.isValidPlotArea(plotArea) && (
+                    <span className="text-xs text-red-500">
+                        {t('property.validation.invalidPlotArea') || 'Invalid plot area. Max 15 digits total, 4 decimals allowed.'}
+                    </span>
+                )}
             </div>
 
             {/* Property Description */}

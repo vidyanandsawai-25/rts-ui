@@ -1,4 +1,4 @@
-import { PropertyBasicDetailsApiItem } from '@/types/property-basic-details.types';
+import { PropertyBasicDetailsApiItem, TaxZoneItem } from '@/types/property-basic-details.types';
 import { BasicPropertyFields } from './BasicPropertyFields';
 import { AdditionalPropertyFields } from './AdditionalPropertyFields';
 import { AreaDetailsFields } from './AreaDetailsFields';
@@ -9,12 +9,14 @@ interface PropertyFormFieldsProps {
     categoryOptions: { label: string; value: string }[];
     categoryId: number | null;
     handleCategoryChange: (name: string | undefined, value: string) => void;
-    wingOptions: { label: string; value: string }[];
-    wingId: number | null;
-    handleWingChange: (name: string | undefined, value: string) => void;
+    moujaOptions: { label: string; value: string }[];
+    moujaId: number | null;
+    handleMoujaChange: (name: string | undefined, value: string) => void;
     propertyDescriptionOptions: { label: string; value: string }[];
     propertyTypeId: number | null;
     handlePropertyDescriptionChange: (name: string | undefined, value: string) => void;
+    taxZones: TaxZoneItem[];
+    checkFormChanges: () => void;
 }
 
 export const PropertyFormFields = (props: PropertyFormFieldsProps) => {
@@ -24,12 +26,14 @@ export const PropertyFormFields = (props: PropertyFormFieldsProps) => {
         categoryOptions,
         categoryId,
         handleCategoryChange,
-        wingOptions,
-        wingId,
-        handleWingChange,
+        moujaOptions,
+        moujaId,
+        handleMoujaChange,
         propertyDescriptionOptions,
         propertyTypeId,
-        handlePropertyDescriptionChange
+        handlePropertyDescriptionChange,
+        taxZones,
+        checkFormChanges
     } = props;
     
     return (
@@ -40,9 +44,9 @@ export const PropertyFormFields = (props: PropertyFormFieldsProps) => {
                 categoryOptions={categoryOptions}
                 categoryId={categoryId}
                 handleCategoryChange={handleCategoryChange}
-                wingOptions={wingOptions}
-                wingId={wingId}
-                handleWingChange={handleWingChange}
+                moujaOptions={moujaOptions}
+                moujaId={moujaId}
+                handleMoujaChange={handleMoujaChange}
                 propertyDescriptionOptions={propertyDescriptionOptions}
                 propertyTypeId={propertyTypeId}
                 handlePropertyDescriptionChange={handlePropertyDescriptionChange}
@@ -50,6 +54,8 @@ export const PropertyFormFields = (props: PropertyFormFieldsProps) => {
             <AdditionalPropertyFields
                 t={t}
                 propertyData={propertyData}
+                taxZones={taxZones}
+                checkFormChanges={checkFormChanges}
             />
             <AreaDetailsFields
                 t={t}

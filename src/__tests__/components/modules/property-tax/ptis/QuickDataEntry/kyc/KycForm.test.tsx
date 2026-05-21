@@ -29,8 +29,7 @@ vi.mock('next-intl', () => ({
       'kyc.mobileNo': 'Mobile No',
       'kyc.select': 'Select',
       'kyc.enterFullName': 'Enter full name',
-      'common.saveChanges': 'Update Changes', // legacy, keep for test compatibility
-      'common.UpdateChanges': 'Update Changes',
+      'commonbuttonmessages.UpdateChanges': 'Update Changes',
       'footer.saving': 'Saving...',
     };
     return translations[key] || key;
@@ -70,7 +69,7 @@ const mockKycDetailsData = {
   propertyId: 550726,
   ownerTypeId: 1,
   ownerType: 'Self',
-  adharCardNo: '123456789012',
+  adharCardNo: '223456789012',
   ownerTitle: 'Mr',
   ownerName: 'John Doe',
   ownerTitleEnglish: 'Mr',
@@ -114,7 +113,7 @@ describe('KycFormView', () => {
     // Check Aadhar digits
     const aadharInputs = screen.getAllByLabelText(/Aadhar Card No/i);
     expect(aadharInputs).toHaveLength(12);
-    expect(aadharInputs[0]).toHaveValue('1');
+    expect(aadharInputs[0]).toHaveValue('2');
     expect(aadharInputs[11]).toHaveValue('2');
 
     // Check Mobile digits
@@ -180,7 +179,7 @@ describe('KycFormView', () => {
         expect.objectContaining({
           ownerName: 'John Smith',
           mobileNo: '9876543210',
-          adharCardNo: '123456789012',
+          adharCardNo: '223456789012',
         }),
         'en'
       );

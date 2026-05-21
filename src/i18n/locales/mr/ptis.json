@@ -330,7 +330,7 @@
   },
   "modules": {
     "PtisTaxDetails": {
-      "title": "कराधान माहिती",
+       "title": "कर तपशील",
       "oldTotalRv": "[जुने] एकूण आर.व्ही.",
       "oldTotalAlv": "[जुने] एकूण ए.एल.व्ही.",
       "oldTotalCv": "[जुने] एकूण सी.व्ही.",

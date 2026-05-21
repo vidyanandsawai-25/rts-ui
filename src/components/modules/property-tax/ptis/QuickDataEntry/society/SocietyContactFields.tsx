@@ -1,7 +1,7 @@
 import { Input } from "@/components/common";
 import { Label } from "@/components/common/label";
 import { SOCIETY_VALIDATION_RULES, societyValidators } from '@/lib/utils/kyc-validation.constants';
-import { sanitizeEmail, sanitizeName } from '@/lib/utils/input-sanitization';
+import { sanitizeEmailStrict, sanitizeName } from '@/lib/utils/input-sanitization';
 import { useDigitInputs } from '@/hooks/useDigitInputs';
 
 interface SocietyContactFieldsProps {
@@ -18,7 +18,7 @@ interface SocietyContactFieldsProps {
     setSecretaryName: (name: string) => void;
     showError: (
         field: 'managerMobile' | 'secretaryMobile' | 'managerEmail' | 'secretaryEmail' | 'societyEmail' |
-               'landOwnerName' | 'builderName' | 'societyName' | 'managerName' | 'secretaryName',
+            'landOwnerName' | 'builderName' | 'societyName' | 'managerName' | 'secretaryName',
         isValid: boolean
     ) => boolean;
 }
@@ -37,6 +37,18 @@ export const SocietyContactFields = ({
     setSecretaryName,
     showError,
 }: SocietyContactFieldsProps) => {
+    const getMobileErrorMessage = (value: string): string => {
+        const digits = value.replace(/\D/g, '');
+        if (digits.length === 0) return '';
+        if (!/^[6-9]/.test(digits)) {
+            return t('society.validation.invalidMobileStart') || 'Mobile number must start with 6 to 9.';
+        }
+        if (digits.length !== 10) {
+            return t('society.validation.invalidMobile') || 'Mobile number must be exactly 10 digits.';
+        }
+        return '';
+    };
+
     return (
         <>
             {/* Manager Details */}
@@ -47,20 +59,24 @@ export const SocietyContactFields = ({
                     value={managerName}
                     placeholder={t('society.managerNamePlaceholder')}
                     maxLength={SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH}
-                    className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${
-                        showError('managerName', !managerName || societyValidators.isValidPersonName(managerName))
+                    className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${showError('managerName', !managerName || societyValidators.isValidPersonName(managerName))
                             ? 'border-red-300 focus:border-red-500'
                             : ''
-                    }`}
+                        }`}
                     onChange={(e) => {
-                        const sanitized = sanitizeName(e.target.value.trimStart());
+                        // Sanitize to remove invalid characters immediately
+                        const sanitized = sanitizeName(e.target.value);
                         if (sanitized.length <= SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH) {
                             setManagerName(sanitized);
                         }
                     }}
                 />
                 {showError('managerName', !managerName || societyValidators.isValidPersonName(managerName)) && (
-                    <span className="text-xs text-red-500">{t('kyc.validation.invalidName')}</span>
+                    <span className="text-xs text-red-500">
+                        {managerName && (managerName.trim().length < SOCIETY_VALIDATION_RULES.NAME_MIN_LENGTH || managerName.trim().length > SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH)
+                            ? t('society.validation.invalidNameLength')
+                            : t('society.validation.managerName')}
+                    </span>
                 )}
             </div>
 
@@ -72,19 +88,19 @@ export const SocietyContactFields = ({
                     placeholder={t('society.managerEmailPlaceholder')}
                     value={managerEmail}
                     maxLength={SOCIETY_VALIDATION_RULES.EMAIL_MAX_LENGTH}
-                    className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${showError('managerEmail', societyValidators.isValidEmail(managerEmail))
+                    className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${showError('managerEmail', societyValidators.isValidEmail(managerEmail, true))
                         ? 'border-red-300 focus:border-red-500'
                         : ''
-                    }`}
+                        }`}
                     onChange={(e) => {
-                        const sanitized = sanitizeEmail(e.target.value);
+                        const sanitized = sanitizeEmailStrict(e.target.value);
                         if (sanitized.length <= SOCIETY_VALIDATION_RULES.EMAIL_MAX_LENGTH) {
                             setManagerEmail(sanitized);
                         }
                     }}
                 />
-                {showError('managerEmail', societyValidators.isValidEmail(managerEmail)) && (
-                    <span className="text-xs text-red-500">{t('kyc.validation.invalidEmail')}</span>
+                {showError('managerEmail', societyValidators.isValidEmail(managerEmail, true)) && (
+                    <span className="text-xs text-red-500">{t('society.validation.managerEmail')}</span>
                 )}
             </div>
 
@@ -95,7 +111,7 @@ export const SocietyContactFields = ({
                 <div className={`flex items-center gap-1 px-1 bg-white border rounded-md h-9 focus-within:ring-1 ${showError('managerMobile', societyValidators.isValidMobile(managerMobileInput.value))
                     ? 'border-red-300 focus-within:border-red-500 focus-within:ring-red-300'
                     : 'border-purple-200 focus-within:border-purple-500 focus-within:ring-purple-200'
-                }`}>
+                    }`}>
                     <span className="flex items-center justify-center px-1.5 text-[10px] text-gray-600 font-semibold bg-gray-100 border border-gray-200 rounded h-7 shrink-0">
                         +91
                     </span>
@@ -117,13 +133,13 @@ export const SocietyContactFields = ({
                                 className={`flex-1 min-w-0 w-full h-7 text-center text-xs font-semibold text-gray-900 border rounded bg-white outline-none focus:ring-1 ${showError('managerMobile', societyValidators.isValidMobile(managerMobileInput.value))
                                     ? 'border-red-300 focus:border-red-500 focus:ring-red-300'
                                     : 'border-gray-300 focus:border-purple-500 focus:ring-purple-300'
-                                }`}
+                                    }`}
                             />
                         ))}
                     </div>
                 </div>
                 {showError('managerMobile', societyValidators.isValidMobile(managerMobileInput.value)) && (
-                    <span className="text-xs text-red-500">{t('kyc.validation.invalidMobile')}</span>
+                    <span className="text-xs text-red-500">{getMobileErrorMessage(managerMobileInput.value)}</span>
                 )}
             </div>
 
@@ -135,20 +151,24 @@ export const SocietyContactFields = ({
                     value={secretaryName}
                     placeholder={t('society.secretaryNamePlaceholder')}
                     maxLength={SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH}
-                    className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${
-                        showError('secretaryName', !secretaryName || societyValidators.isValidPersonName(secretaryName))
+                    className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${showError('secretaryName', !secretaryName || societyValidators.isValidPersonName(secretaryName))
                             ? 'border-red-300 focus:border-red-500'
                             : ''
-                    }`}
+                        }`}
                     onChange={(e) => {
-                        const sanitized = sanitizeName(e.target.value.trimStart());
+                        // Sanitize to remove invalid characters immediately
+                        const sanitized = sanitizeName(e.target.value);
                         if (sanitized.length <= SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH) {
                             setSecretaryName(sanitized);
                         }
                     }}
                 />
                 {showError('secretaryName', !secretaryName || societyValidators.isValidPersonName(secretaryName)) && (
-                    <span className="text-xs text-red-500">{t('kyc.validation.invalidName')}</span>
+                    <span className="text-xs text-red-500">
+                        {secretaryName && (secretaryName.trim().length < SOCIETY_VALIDATION_RULES.NAME_MIN_LENGTH || secretaryName.trim().length > SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH)
+                            ? t('society.validation.invalidNameLength')
+                            : t('society.validation.secretaryName')}
+                    </span>
                 )}
             </div>
 
@@ -160,19 +180,19 @@ export const SocietyContactFields = ({
                     placeholder={t('society.secretaryEmailPlaceholder')}
                     value={secretaryEmail}
                     maxLength={SOCIETY_VALIDATION_RULES.EMAIL_MAX_LENGTH}
-                    className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${showError('secretaryEmail', societyValidators.isValidEmail(secretaryEmail))
+                    className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${showError('secretaryEmail', societyValidators.isValidEmail(secretaryEmail, true))
                         ? 'border-red-300 focus:border-red-500'
                         : ''
-                    }`}
+                        }`}
                     onChange={(e) => {
-                        const sanitized = sanitizeEmail(e.target.value);
+                        const sanitized = sanitizeEmailStrict(e.target.value);
                         if (sanitized.length <= SOCIETY_VALIDATION_RULES.EMAIL_MAX_LENGTH) {
                             setSecretaryEmail(sanitized);
                         }
                     }}
                 />
-                {showError('secretaryEmail', societyValidators.isValidEmail(secretaryEmail)) && (
-                    <span className="text-xs text-red-500">{t('kyc.validation.invalidEmail')}</span>
+                {showError('secretaryEmail', societyValidators.isValidEmail(secretaryEmail, true)) && (
+                    <span className="text-xs text-red-500">{t('society.validation.secretaryEmail')}</span>
                 )}
             </div>
 
@@ -183,7 +203,7 @@ export const SocietyContactFields = ({
                 <div className={`flex items-center gap-1 px-1 bg-white border rounded-md h-9 focus-within:ring-1 ${showError('secretaryMobile', societyValidators.isValidMobile(secretaryMobileInput.value))
                     ? 'border-red-300 focus-within:border-red-500 focus-within:ring-red-300'
                     : 'border-purple-200 focus-within:border-purple-500 focus-within:ring-purple-200'
-                }`}>
+                    }`}>
                     <span className="flex items-center justify-center px-1.5 text-[10px] text-gray-600 font-semibold bg-gray-100 border border-gray-200 rounded h-7 shrink-0">
                         +91
                     </span>
@@ -205,13 +225,13 @@ export const SocietyContactFields = ({
                                 className={`flex-1 min-w-0 w-full h-7 text-center text-xs font-semibold text-gray-900 border rounded bg-white outline-none focus:ring-1 ${showError('secretaryMobile', societyValidators.isValidMobile(secretaryMobileInput.value))
                                     ? 'border-red-300 focus:border-red-500 focus:ring-red-300'
                                     : 'border-gray-300 focus:border-purple-500 focus:ring-purple-300'
-                                }`}
+                                    }`}
                             />
                         ))}
                     </div>
                 </div>
                 {showError('secretaryMobile', societyValidators.isValidMobile(secretaryMobileInput.value)) && (
-                    <span className="text-xs text-red-500">{t('kyc.validation.invalidMobile')}</span>
+                    <span className="text-xs text-red-500">{getMobileErrorMessage(secretaryMobileInput.value)}</span>
                 )}
             </div>
         </>

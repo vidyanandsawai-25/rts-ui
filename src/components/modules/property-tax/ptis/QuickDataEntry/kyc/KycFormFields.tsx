@@ -51,6 +51,7 @@ export const KycFormFields: React.FC<KycFormFieldsProps> = ({
           t={t}
           formData={formData}
           setFormData={setFormData}
+          showError={showError}
         />
       </div>
 

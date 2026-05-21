@@ -17,15 +17,24 @@ function mapFloorFormToPayload(
   propertyId: number,
   formData: FloorInformationFormData
 ): SaveOldFloorDetailPayload {
+  const carpetAreaSqFeet = Number(formData.oldCarpetAreaSqFeet) || 0;
+  const carpetAreaSqMeter = carpetAreaSqFeet * 0.092903; // Convert sq ft to sq m
+  const builtupAreaSqFeet = Number(formData.oldBuiltupAreaSqFeet) || 0;
+  const builtupAreaSqMeter = builtupAreaSqFeet * 0.092903; // Convert sq ft to sq m
+
   return {
     propertyId: propertyId,
     oldFloorId: Number(formData.oldFloorId),
     oldSubFloorId: formData.oldSubFloorId ? Number(formData.oldSubFloorId) : null,
     oldConstructionYear: String(formData.oldConstructionYear),
+    oldAssessmentYear: formData.oldAssessmentYear ? String(formData.oldAssessmentYear) : undefined,
     oldConstructionTypeId: Number(formData.oldConstructionTypeId),
     oldTypeOfUseId: Number(formData.oldTypeOfUseId),
     oldSubTypeOfUseId: formData.oldSubTypeOfUseId ? Number(formData.oldSubTypeOfUseId) : null,
-    oldCarpetAreaSqFeet: Number(formData.oldCarpetAreaSqFeet) || 0,
+    oldCarpetAreaSqMeter: carpetAreaSqMeter,
+    oldCarpetAreaSqFeet: carpetAreaSqFeet,
+    oldBuiltupAreaSqMeter: builtupAreaSqMeter,
+    oldBuiltupAreaSqFeet: builtupAreaSqFeet,
   };
 }
 
