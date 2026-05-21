@@ -32,6 +32,20 @@ const Page = async ({ searchParams }: PageProps) => {
   const sortBy = params.sortBy || "";
   const sortOrder = params.sortOrder || "";
 
+  // If required params are missing, return empty state (server-side guard)
+  if (!wardId || !propertyNo) {
+    return (
+      <Amenities
+        initialData={[]}
+        initialTotalCount={0}
+        initialPageNumber={1}
+        initialPageSize={10}
+        initialTotalPages={0}
+        initialSearchTerm=""
+      />
+    );
+  }
+
   const result = await fetchApartmentQCDetailsPagedAction({
     partType: "utilsub",
     wardId,

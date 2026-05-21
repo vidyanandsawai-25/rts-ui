@@ -68,7 +68,7 @@ export interface ApartmentQCDetail {
   /** Construction type */
   constructionType: string | null;
   /** Old construction area */
-  oldConstArea: number | null;
+  oldConstructionArea: number | null;
   /** Old rateable value */
   oldRV: number | null;
   /** Old total tax */
@@ -109,21 +109,15 @@ export interface ApartmentQCDetail {
 
 /**
  * Complete apartment QC details response
+ * The API returns a nested structure: { success, message, items: { items: [], totalCount, ... } }
  */
 export interface ApartmentQCResponse {
   /** Success status */
   success: boolean;
   /** Response message */
   message: string;
-  /** List of apartment QC detail items */
-  items: ApartmentQCDetail[];
-  /** Pagination metadata */
-  totalCount?: number;
-  totalPages?: number;
-  pageNumber?: number;
-  pageSize?: number;
-  hasNext?: boolean;
-  hasPrevious?: boolean;
+  /** Nested paginated items object */
+  items: PagedResponse<ApartmentQCDetail>;
   /** List of errors if any */
   errors: string[] | null;
 }
