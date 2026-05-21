@@ -439,7 +439,14 @@
         "topFloor": "शीर्ष मंजिल",
         "flatUnit": "फ्लैट/इकाई",
         "partitionId": "विभाजन आईडी",
-        "generationSummary": "जनरेशन सारांश"
+        "generationSummary": "जनरेशन सारांश",
+        "groundLevel": "भूतल स्तर",
+        "moreResults": "...और {count} अधिक",
+        "legend": {
+          "window": "खिड़की",
+          "door": "दरवाजा",
+          "ground": "भूतल"
+        }
       },
       "generate": {
         "button": "संपत्ति उत्पन्न करें",
@@ -467,6 +474,9 @@
         "successCount": "सफल",
         "failedCount": "विफल",
         "details": "परिणाम"
+      },
+      "amenity": {
+        "notImplemented": "सुविधा सामग्री अभी लागू नहीं की गई"
       }
     }
   },

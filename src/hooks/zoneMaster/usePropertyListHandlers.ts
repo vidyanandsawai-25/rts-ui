@@ -14,7 +14,7 @@ export function usePropertyListHandlers({
   selectedWardId,
   selectedZoneId,
   searchTerm,
-  pageNumber,
+  pageNumber: _pageNumber,
   pageSize,
 }: UsePropertyListHandlersProps) {
   const router = useRouter();

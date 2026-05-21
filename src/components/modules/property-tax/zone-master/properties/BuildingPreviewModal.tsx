@@ -353,12 +353,12 @@ export function BuildingPreviewModal({
                   <div className="text-xs text-slate-500 mb-1">{t("partitionForm.wing.generate.details")}:</div>
                   {generateResult.results.slice(0, 5).map((result, idx) => (
                     <div key={idx} className={`text-xs py-0.5 ${result.success ? "text-emerald-700" : "text-red-700"}`}>
-                      {result.success ? "✓" : "✗"} Property #{result.propertyId}: {result.message}
+                      {result.success ? "✓" : "✗"} {t("partitionForm.wing.preview.propertyNo")} #{result.propertyId}: {result.message}
                     </div>
                   ))}
-                  {generateResult.results.length > 5 && (
+                  {generateResult.results && generateResult.results.length > 5 && (
                     <div className="text-xs text-slate-400 italic">
-                      ...and {generateResult.results.length - 5} more
+                      {t("partitionForm.wing.preview.moreResults", { count: generateResult.results.length - 5 })}
                     </div>
                   )}
                 </div>
@@ -497,7 +497,7 @@ export function BuildingPreviewModal({
                 <div className="flex items-center mt-0.5">
                   <div className="flex-1 h-px bg-slate-300" />
                   <span className="px-2 text-[8px] font-semibold text-slate-400 uppercase tracking-widest">
-                    Ground Level
+                    {t("partitionForm.wing.preview.groundLevel")}
                   </span>
                   <div className="flex-1 h-px bg-slate-300" />
                 </div>
@@ -511,11 +511,11 @@ export function BuildingPreviewModal({
             <div className="flex flex-wrap items-center gap-3 text-[10px] text-slate-500 mb-2 pb-2 border-b border-slate-200">
               <div className="flex items-center gap-1">
                 <div className="w-4 h-2 rounded-t-[2px] border border-sky-300 bg-sky-50" />
-                <span>Window</span>
+                <span>{t("partitionForm.wing.preview.legend.window")}</span>
               </div>
               <div className="flex items-center gap-1">
                 <div className="w-2.5 h-3 rounded-t-[2px] border border-amber-300 bg-amber-50" />
-                <span>Door</span>
+                <span>{t("partitionForm.wing.preview.legend.door")}</span>
               </div>
               <div className="flex items-center gap-1">
                 <div className="w-2.5 h-2.5 rounded-sm bg-amber-50 border border-amber-200" />
@@ -523,7 +523,7 @@ export function BuildingPreviewModal({
               </div>
               <div className="flex items-center gap-1">
                 <div className="w-2.5 h-2.5 rounded-sm bg-emerald-50 border border-emerald-200" />
-                <span>Ground</span>
+                <span>{t("partitionForm.wing.preview.legend.ground")}</span>
               </div>
               <div className="flex items-center gap-1">
                 <span className="px-1 py-px rounded bg-slate-100 border border-slate-200 text-[9px] text-slate-500 font-medium">

@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Grid3x3, Building2, Check, Eye, Info } from "lucide-react";
 import { toast } from "sonner";
 import { Drawer } from "@/components/common/Drawer";
 import { CancelButton, SaveButton, ToggleSwitch, Input, ValidationMessage, Select, Tabs, MasterTable, AddButton } from "@/components/common";
+import { Column } from "@/components/common/MasterTable";
 import { WardItem } from "@/types/wardMaster.types";
 import { ZonePropertyItem } from "@/types/zoneProperty.types";
 import { WingItem } from "@/types/wing.types";
@@ -131,7 +132,6 @@ export default function PropertyPartitionForm({
 
   // State for wings - initialized from SSR data
   const [wings] = useState<WingItem[]>(ssrWings);
-  const [loadingWings] = useState(false);
 
   // State for floors - initialized from SSR data
   const [floors] = useState<Floor[]>(ssrFloors);
@@ -378,7 +378,7 @@ export default function PropertyPartitionForm({
   };
 
   // Calculate max partition number for the selected property
-  const calculateMaxPartition = (): number => {
+  const calculateMaxPartition = useCallback((): number => {
     if (!selectedProperty) return 0;
     
     // Get all partitions for this property
@@ -392,7 +392,7 @@ export default function PropertyPartitionForm({
       .filter((n) => !isNaN(n));
 
     return numericPartitions.length > 0 ? Math.max(...numericPartitions) : 0;
-  };
+  }, [selectedProperty, allProperties]);
 
   // Check if partition has numeric partitions
   const hasNumericPartitions = (): boolean => {
@@ -411,7 +411,7 @@ export default function PropertyPartitionForm({
       return String(calculateMaxPartition());
     }
     return form.partitionNo;
-  }, [selectedProperty, form.alphanumericMode]);
+  }, [selectedProperty, form.alphanumericMode, calculateMaxPartition, form.partitionNo]);
 
   // Sync partition number when it changes
   if (form.partitionNo !== calculatedPartitionNo && !form.alphanumericMode && selectedProperty) {
@@ -970,8 +970,8 @@ export default function PropertyPartitionForm({
                 </div>
 
                 <MasterTable
-                  columns={wingColumns as any}
-                  data={wingSummaries as any}
+                  columns={wingColumns as unknown as Column<Record<string, unknown>>[]}
+                  data={wingSummaries as unknown as Record<string, unknown>[]}
                   emptyText={t("partitionForm.wing.table.noWingsFound")}
                   height="xs"
                   paginationConfig={{ enabled: false }}
@@ -1322,7 +1322,7 @@ export default function PropertyPartitionForm({
           <>
             {/* TODO: Amenity content implementation */}
             <div className="p-4 bg-gray-50 border border-gray-300 rounded-lg text-center text-gray-500">
-              <p>Amenity content not yet implemented</p>
+              <p>{t("partitionForm.amenity.notImplemented")}</p>
             </div>
           </>
         )

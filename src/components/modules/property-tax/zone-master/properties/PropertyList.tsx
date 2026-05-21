@@ -7,7 +7,7 @@ import { MasterTable } from "@/components/common/MasterTable";
 import { SearchInput, StatusBadge, AddButton, Select, Option } from "@/components/common";
 import { ZonePropertyItem } from "@/types/zoneProperty.types";
 import { WardItem } from "@/types/wardMaster.types";
-import { usePropertyListHandlers } from "./usePropertyListHandlers";
+import { usePropertyListHandlers } from "@/hooks/zoneMaster/usePropertyListHandlers";
 import { useCallback, useMemo } from "react";
 import { getPropertyColumns } from "./propertyColumns";
 

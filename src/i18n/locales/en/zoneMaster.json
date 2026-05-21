@@ -438,7 +438,14 @@
         "topFloor": "Top Floor",
         "flatUnit": "Flat/Unit",
         "partitionId": "Partition ID",
-        "generationSummary": "Generation Summary"
+        "generationSummary": "Generation Summary",
+        "groundLevel": "Ground Level",
+        "moreResults": "...and {count} more",
+        "legend": {
+          "window": "Window",
+          "door": "Door",
+          "ground": "Ground"
+        }
       },
       "generate": {
         "button": "Generate Properties",
@@ -466,6 +473,9 @@
         "successCount": "Success",
         "failedCount": "Failed",
         "details": "Results"
+      },
+      "amenity": {
+        "notImplemented": "Amenity content not yet implemented"
       }
     }
   },

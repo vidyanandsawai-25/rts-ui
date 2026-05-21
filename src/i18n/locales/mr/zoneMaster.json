@@ -432,7 +432,14 @@
         "topFloor": "वरचा मजला",
         "flatUnit": "फ्लॅट/युनिट",
         "partitionId": "विभाजन आयडी",
-        "generationSummary": "जनरेशन सारांश"
+        "generationSummary": "जनरेशन सारांश",
+        "groundLevel": "तळ मजला",
+        "moreResults": "...आणि {count} अधिक",
+        "legend": {
+          "window": "खिडकी",
+          "door": "दरवाजा",
+          "ground": "तळ मजला"
+        }
       },
       "generate": {
         "button": "मालमत्ता तयार करा",
@@ -459,8 +466,9 @@
         "partialSuccess": "काही मालमत्ता तयार करण्यात अयशस्वी",
         "successCount": "यशस्वी",
         "failedCount": "अयशस्वी",
-        "details": "परिणाम"
-      }
+        "details": "परिणाम"      },
+      "amenity": {
+        "notImplemented": "सुविधा सामग्री अद्याप लागू केली नाही"      }
     }
   },
   "partitionMessages": {

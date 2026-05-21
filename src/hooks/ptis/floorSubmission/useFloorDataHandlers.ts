@@ -129,7 +129,7 @@ export const useFloorDataHandlers = (params: {
         }
       },
     });
-  }, [isAddingNewFloor, editingFloorForm, selectedFloor, props.initialPropertyID, floorLookup, subFloorLookup, constructionLookup, useLookup, subTypeData, router, t, confirm, INITIAL_FORM_STATE, setIsAddingNewFloor, setSelectedFloor, setEditingFloorForm, startTransition, localFloors, setLocalFloors, locale, propertyId, setFormErrors]);
+  }, [isAddingNewFloor, editingFloorForm, selectedFloor, props.initialPropertyID, floorLookup, subFloorLookup, constructionLookup, useLookup, subTypeData, router, t, confirm, INITIAL_FORM_STATE, setIsAddingNewFloor, setSelectedFloor, setEditingFloorForm, startTransition, localFloors, setLocalFloors, locale, propertyId]);
 
   const handleOpenRenterManagement = useCallback(async (formToUse?: FloorData) => {
     const currentForm = formToUse || editingFloorForm;
@@ -150,7 +150,7 @@ export const useFloorDataHandlers = (params: {
 
     const renterManagementUrl = `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/RenterManagement?floorId=${encodeURIComponent(String(currentForm.id))}`;
     router.push(renterManagementUrl);
-  }, [editingFloorForm, t, setFormErrors, router, locale, propertyId]);
+  }, [editingFloorForm, t, router, locale, propertyId, setFormErrors]);
 
   return {
     handleSave,
