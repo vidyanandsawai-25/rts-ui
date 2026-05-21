@@ -7,7 +7,7 @@ import {
   getAssessmentYearRangeById,
   createAssessmentYearRange,
   updateAssessmentYearRange,
-  deleteAssessmentYearRange,
+  purgeDeleteAssessmentYearRange,
 } from "@/lib/api/assessment-year-range.service";
 import { capitalValueConfig } from "@/components/modules/property-tax/assessment-year-range/config";
 import { ApiError } from "@/lib/utils/api";
@@ -124,7 +124,7 @@ export async function deleteAssessmentYearRangeCVAction(
   }
 
   try {
-    await deleteAssessmentYearRange(config, id);
+    await purgeDeleteAssessmentYearRange(config, id);
     // Revalidate all locale variants
     for (const locale of locales) {
       revalidatePath(`/${locale}${config.routePath}`, "page");

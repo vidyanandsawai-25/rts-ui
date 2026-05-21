@@ -235,29 +235,34 @@ export function useAssessmentYearRangeForm({
             const parsedError = JSON.parse(result.message);
             if (parsedError.errors && typeof parsedError.errors === 'object') {
               const serverErrors: Partial<Record<keyof AssessmentYearRangeFormModel, string>> = {};
+              const whitelist: Array<keyof AssessmentYearRangeFormModel> = ['fromYear', 'toYear', 'isActive', 'id'];
+              let hasUnmappedErrors = false;
               
-              // Map backend error keys to form field keys
-              // Backend might send "FromYear" or "fromYear"
               Object.entries(parsedError.errors).forEach(([key, messages]) => {
                 const fieldKey = (key.charAt(0).toLowerCase() + key.slice(1)) as keyof AssessmentYearRangeFormModel;
+                
                 if (Array.isArray(messages) && messages.length > 0) {
-                  // Get the first error message and localize it if possible
                   const backendMsg = messages[0];
-                  // If the message is a known key like "FromYear_MustBeLessThanToYear", localize it
-                  if (backendMsg === "FromYear_MustBeLessThanToYear") {
-                    // Only show this specific validation error under fromYear field
-                    if (fieldKey === "fromYear") {
-                      serverErrors[fieldKey] = t("form.validation.fromYearMustBeLessThanToYear");
+                  
+                  // Whitelist check
+                  if (whitelist.includes(fieldKey)) {
+                    if (backendMsg === "FromYear_MustBeLessThanToYear") {
+                      // Only show this specific validation error under fromYear field
+                      if (fieldKey === "fromYear") {
+                        serverErrors[fieldKey] = t("form.validation.fromYearMustBeLessThanToYear");
+                      }
+                    } else {
+                      serverErrors[fieldKey] = backendMsg;
                     }
                   } else {
-                    serverErrors[fieldKey] = backendMsg;
+                    hasUnmappedErrors = true;
                   }
                 }
               });
 
               if (Object.keys(serverErrors).length > 0) {
                 setErrors((prev) => ({ ...prev, ...serverErrors }));
-                return;
+                if (!hasUnmappedErrors) return; // Only stop if all errors were mapped
               }
             }
           } catch (e) {

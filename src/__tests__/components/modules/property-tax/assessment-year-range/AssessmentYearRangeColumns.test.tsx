@@ -4,19 +4,33 @@ import type { AssessmentYearRangeRV } from "@/types/assessment-year-range.types"
 
 describe("getAssessmentYearRangeColumns", () => {
   const mockT = vi.fn((key: string) => key);
+  const mockTCommon = vi.fn((key: string) => key);
+  const mockOnSort = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it("returns the correct number of columns", () => {
-    const columns = getAssessmentYearRangeColumns<AssessmentYearRangeRV>(mockT);
+    const columns = getAssessmentYearRangeColumns<AssessmentYearRangeRV>(
+      mockT,
+      mockTCommon,
+      "fromYear",
+      "asc",
+      mockOnSort
+    );
     expect(columns).toHaveLength(3);
     expect(columns.map(c => c.key)).toEqual(["fromYear", "toYear", "isActive"]);
   });
 
   it("has correct labels for each column", () => {
-    getAssessmentYearRangeColumns<AssessmentYearRangeRV>(mockT);
+    getAssessmentYearRangeColumns<AssessmentYearRangeRV>(
+      mockT,
+      mockTCommon,
+      "fromYear",
+      "asc",
+      mockOnSort
+    );
     
     expect(mockT).toHaveBeenCalledWith("list.table.fromYear");
     expect(mockT).toHaveBeenCalledWith("list.table.toYear");
@@ -24,14 +38,26 @@ describe("getAssessmentYearRangeColumns", () => {
   });
 
   it("marks isActive column with isStatus flag", () => {
-    const columns = getAssessmentYearRangeColumns<AssessmentYearRangeRV>(mockT);
+    const columns = getAssessmentYearRangeColumns<AssessmentYearRangeRV>(
+      mockT,
+      mockTCommon,
+      "fromYear",
+      "asc",
+      mockOnSort
+    );
     
     const isActiveCol = columns.find(c => c.key === "isActive");
     expect(isActiveCol?.isStatus).toBe(true);
   });
 
   it("has correct widths for columns", () => {
-    const columns = getAssessmentYearRangeColumns<AssessmentYearRangeRV>(mockT);
+    const columns = getAssessmentYearRangeColumns<AssessmentYearRangeRV>(
+      mockT,
+      mockTCommon,
+      "fromYear",
+      "asc",
+      mockOnSort
+    );
     
     columns.forEach(col => {
       expect(col.width).toBe("25%");
@@ -39,7 +65,13 @@ describe("getAssessmentYearRangeColumns", () => {
   });
 
   it("renders fromYear correctly", () => {
-    const columns = getAssessmentYearRangeColumns<AssessmentYearRangeRV>(mockT);
+    const columns = getAssessmentYearRangeColumns<AssessmentYearRangeRV>(
+      mockT,
+      mockTCommon,
+      "fromYear",
+      "asc",
+      mockOnSort
+    );
     const fromYearCol = columns.find(c => c.key === "fromYear");
     
     const mockRow: AssessmentYearRangeRV = {
@@ -56,7 +88,13 @@ describe("getAssessmentYearRangeColumns", () => {
   });
 
   it("renders toYear correctly", () => {
-    const columns = getAssessmentYearRangeColumns<AssessmentYearRangeRV>(mockT);
+    const columns = getAssessmentYearRangeColumns<AssessmentYearRangeRV>(
+      mockT,
+      mockTCommon,
+      "fromYear",
+      "asc",
+      mockOnSort
+    );
     const toYearCol = columns.find(c => c.key === "toYear");
     
     const mockRow: AssessmentYearRangeRV = {

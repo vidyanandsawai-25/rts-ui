@@ -33,8 +33,8 @@ function sanitizeParams(raw: Awaited<PageProps["searchParams"]>) {
   const pageSize = Number.isFinite(rawPageSize)
     ? Math.min(Math.max(rawPageSize, MIN_PAGE_SIZE), MAX_PAGE_SIZE)
     : DEFAULT_PAGE_SIZE;
-
-  const allowedSortColumns = ["fromYear", "toYear", "isActive"];
+  
+  const allowedSortColumns = ["fromYear", "toYear"];
   const sortBy = raw.sortBy && allowedSortColumns.includes(raw.sortBy) ? raw.sortBy : undefined;
   const sortOrder = raw.sortOrder && ["asc", "desc"].includes(raw.sortOrder.toLowerCase()) 
     ? raw.sortOrder.toLowerCase() 

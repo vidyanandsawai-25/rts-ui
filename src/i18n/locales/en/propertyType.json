@@ -135,7 +135,8 @@
       "idRequiredForUpdate": "Property Type ID is required for update",
       "createFailed": "Failed to create property type",
       "updateFailed": "Failed to update property type",
-      "deleteFailed": "Failed to delete property type"
+      "deleteFailed": "Failed to delete property type",
+      "purgeDeleteFailed": "Failed to permanently delete property type"
     },
     "error": {
       "title": "Something Went Wrong",

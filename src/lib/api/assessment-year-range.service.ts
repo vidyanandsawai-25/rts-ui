@@ -297,9 +297,10 @@ export async function updateAssessmentYearRange(
 }
 
 /**
- * Deletes an Assessment Year Range by ID
+ * Purge deletes an Assessment Year Range by ID.
+ * This is a permanent delete operation.
  */
-export async function deleteAssessmentYearRange(
+export async function purgeDeleteAssessmentYearRange(
   config: AssessmentYearRangeConfig,
   id: number
 ): Promise<void> {
@@ -324,7 +325,12 @@ export async function deleteAssessmentYearRange(
       );
     }
   } catch (error) {
-    console.error(`Error deleting assessment year range ${id} (${config.type}):`, error);
     throw error;
   }
 }
+
+/**
+ * @deprecated Use purgeDeleteAssessmentYearRange instead.
+ * Normal delete is no longer supported for this entity.
+ */
+export const deleteAssessmentYearRange = purgeDeleteAssessmentYearRange;

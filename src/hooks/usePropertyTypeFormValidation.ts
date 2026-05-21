@@ -9,8 +9,7 @@ import {
 } from "@/lib/utils/validation";
 import {
   PROPERTY_DESCRIPTION_MAX,
-  TYPE_MAX,
-  PROPERTY_TYPE_GROUP_MAX
+  TYPE_MAX
 } from "@/components/modules/property-tax/property-type-master/constants";
 
 interface UsePropertyTypeFormValidationProps {

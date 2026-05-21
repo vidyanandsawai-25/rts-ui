@@ -47,9 +47,9 @@ describe("usePropertyTypeForm", () => {
       const { result } = renderHook(() => usePropertyTypeForm(mockProps));
 
       expect(result.current.isEdit).toBe(false);
-      expect(result.current.formData.propertyDescription).toBe("");
+      expect(result.current.formData.propertyDescription).toBe("");    
       expect(result.current.formData.type).toBe("");
-      expect(result.current.formData.propertyTypeGroup).toBe("");
+      expect(result.current.formData.propertyTypeGroup).toBe(null);      
       expect(result.current.formData.isActive).toBe(true);
       expect(result.current.formData.propertyTypeCategoryId).toBe(0);
     });

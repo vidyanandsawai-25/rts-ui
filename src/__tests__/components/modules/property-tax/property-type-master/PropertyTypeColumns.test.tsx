@@ -51,15 +51,14 @@ describe("PropertyTypeColumns", () => {
 
   it("returns correct column definitions", () => {
     const columns = getPropertyTypeColumns(mockT, mockTCommon);
-    
-    expect(columns.length).toBe(7);
+
+    expect(columns.length).toBe(6);
     expect(columns[0].key).toBe("propertyDescription");
     expect(columns[1].key).toBe("type");
-    expect(columns[2].key).toBe("propertyTypeGroup");
-    expect(columns[3].key).toBe("propertyTypeCategoryId");
-    expect(columns[4].key).toBe("searchSequence");
-    expect(columns[5].key).toBe("typeOfUseValidation");
-    expect(columns[6].key).toBe("isActive");
+    expect(columns[2].key).toBe("propertyTypeCategoryId");
+    expect(columns[3].key).toBe("searchSequence");
+    expect(columns[4].key).toBe("typeOfUseValidation");
+    expect(columns[5].key).toBe("isActive");
   });
 
   it("renders simple column values correctly", () => {

@@ -126,6 +126,18 @@
       "updated": "संपत्ति प्रकार सफलतापूर्वक अपडेट किया गया: {description}",
       "deleted": "संपत्ति प्रकार सफलतापूर्वक हटाया गया: {description}"
     },
+    "serverValidation": {
+      "invalidPropertyTypeId": "वैध संपत्ति प्रकार ID आवश्यक है",
+      "propertyDescriptionRequired": "संपत्ति विवरण आवश्यक है",
+      "typeRequired": "प्रकार आवश्यक है",
+      "propertyTypeGroupRequired": "संपत्ति प्रकार समूह आवश्यक है",
+      "categoryRequired": "संपत्ति प्रकार श्रेणी आवश्यक है",
+      "idRequiredForUpdate": "अपडेट के लिए संपत्ति प्रकार ID आवश्यक है",
+      "createFailed": "संपत्ति प्रकार बनाने में विफल",
+      "updateFailed": "संपत्ति प्रकार अपडेट करने में विफल",
+      "deleteFailed": "संपत्ति प्रकार हटाने में विफल",
+      "purgeDeleteFailed": "संपत्ति प्रकार को स्थायी रूप से हटाने में विफल"
+    },
     "error": {
       "title": "कुछ गलत हो गया",
       "description": "संपत्ति प्रकार पृष्ठ लोड करते समय हमें एक त्रुटि मिली। कृपया पुनः प्रयास करें।",
