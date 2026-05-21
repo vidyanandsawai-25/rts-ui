@@ -50,6 +50,10 @@ export function getDeleteErrorStatusCode(errorMsg: string): number {
 
 /**
  * Creates appropriate ApiError based on response status and message
+ * @deprecated Use ApiError directly instead for clearer code and to ensure backend messages are used
+ * @example
+ * // Instead of: throw createApiError(response.statusCode, response.error, defaultMsg);
+ * // Use: throw new ApiError(response.statusCode ?? 500, response.error ?? defaultMsg, defaultMsg);
  */
 export function createApiError(
   statusCode?: number, 
@@ -73,6 +77,8 @@ export function createApiError(
 
 /**
  * Maps reference errors to appropriate i18n keys for specific entity types
+ * Handles both DELETE and UPDATE (deactivate) operations
+ * @deprecated Not used anymore - backend error messages are displayed directly as they contain more details
  */
 export function mapReferenceErrorToI18nKey(
   errorMessage: string,
@@ -81,7 +87,13 @@ export function mapReferenceErrorToI18nKey(
 ): string {
   const lowerMsg = errorMessage.toLowerCase();
   
-  if (lowerMsg.includes("referenced by other entities") || lowerMsg.includes("referenced in:")) {
+  // Check if this is a reference constraint error
+  if (
+    lowerMsg.includes("referenced by other entities") || 
+    lowerMsg.includes("referenced in:") ||
+    lowerMsg.includes("cannot deactivate") ||
+    lowerMsg.includes("cannot delete")
+  ) {
     // Map to entity-specific referenced error i18n key
     switch (entityType) {
       case 'group':

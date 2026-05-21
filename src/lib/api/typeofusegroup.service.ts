@@ -5,7 +5,6 @@ import { ApiError } from "@/lib/utils/api";
 import { logger } from "@/lib/utils/logger";
 import { mapApiGroupToUi, iconKeyToApi } from "./typeofuse.mappers";
 import { TypeOfUseErrorMessages } from "./typeofuse.errors";
-import { createApiError, mapReferenceErrorToI18nKey } from "./typeofuse-validation";
 
 /* ====================================================================== */
 /* =============================== GROUP APIS ============================ */
@@ -39,7 +38,12 @@ export async function getUseGroupsPagedServer(params: {
     });
     
     if (!response.success) {
-      throw createApiError(response.statusCode, response.error, TypeOfUseErrorMessages.FETCH_GROUPS_FAILED);
+      const backendError = response.error;
+      throw new ApiError(
+        response.statusCode ?? 500,
+        backendError || TypeOfUseErrorMessages.FETCH_GROUPS_FAILED,
+        backendError ? "" : TypeOfUseErrorMessages.FETCH_GROUPS_FAILED
+      );
     }
 
     if (!response.data) {
@@ -100,7 +104,12 @@ export async function createUseGroupApi(input: {
     });
     
     if (!response.success) {
-      throw createApiError(response.statusCode, response.error, TypeOfUseErrorMessages.CREATE_GROUP_FAILED);
+      const backendError = response.error;
+      throw new ApiError(
+        response.statusCode ?? 500,
+        backendError || TypeOfUseErrorMessages.CREATE_GROUP_FAILED,
+        backendError ? "" : TypeOfUseErrorMessages.CREATE_GROUP_FAILED
+      );
     }
     
     if (!response.data) {
@@ -141,7 +150,12 @@ export async function updateUseGroupApi(input: {
     });
     
     if (!response.success) {
-      throw createApiError(response.statusCode, response.error, TypeOfUseErrorMessages.UPDATE_GROUP_FAILED);
+      const backendError = response.error;
+      throw new ApiError(
+        response.statusCode ?? 500,
+        backendError || TypeOfUseErrorMessages.UPDATE_GROUP_FAILED,
+        backendError ? "" : TypeOfUseErrorMessages.UPDATE_GROUP_FAILED
+      );
     }
     
     if (!response.data) {
@@ -166,11 +180,12 @@ export async function deleteUseGroupApi(id: string | number) {
     });
     
     if (!response.success) {
-      // Map backend reference error to the corresponding i18n key
-      const errorMessage = response.error ?? TypeOfUseErrorMessages.DELETE_GROUP_FAILED;
-      const mappedError = mapReferenceErrorToI18nKey(errorMessage, 'group', TypeOfUseErrorMessages.DELETE_GROUP_FAILED);
-      
-      throw createApiError(response.statusCode, mappedError, "Delete use group failed");
+      const backendError = response.error;
+      throw new ApiError(
+        response.statusCode ?? 500,
+        backendError || TypeOfUseErrorMessages.DELETE_GROUP_FAILED,
+        backendError ? "" : TypeOfUseErrorMessages.DELETE_GROUP_FAILED
+      );
     }
     
     return true;

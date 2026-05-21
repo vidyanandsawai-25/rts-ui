@@ -5,7 +5,6 @@ import { ApiError } from "@/lib/utils/api";
 import { logger } from "@/lib/utils/logger";
 import { mapApiTypeToUi } from "./typeofuse.mappers";
 import { TypeOfUseErrorMessages } from "./typeofuse.errors";
-import { createApiError, mapReferenceErrorToI18nKey } from "./typeofuse-validation";
 
 /* ====================================================================== */
 /* =============================== TYPE APIS ============================= */
@@ -43,7 +42,12 @@ export async function getUseTypesPagedServer(params: {
     });
     
     if (!response.success) {
-      throw createApiError(response.statusCode, response.error, TypeOfUseErrorMessages.FETCH_TYPES_FAILED);
+      const backendError = response.error;
+      throw new ApiError(
+        response.statusCode ?? 500,
+        backendError || TypeOfUseErrorMessages.FETCH_TYPES_FAILED,
+        backendError ? "" : TypeOfUseErrorMessages.FETCH_TYPES_FAILED
+      );
     }
 
     if (!response.data) {
@@ -108,7 +112,12 @@ export async function createUseTypeApi(input: {
     });
     
     if (!response.success) {
-      throw createApiError(response.statusCode, response.error, TypeOfUseErrorMessages.CREATE_TYPE_FAILED);
+      const backendError = response.error;
+      throw new ApiError(
+        response.statusCode ?? 500,
+        backendError || TypeOfUseErrorMessages.CREATE_TYPE_FAILED,
+        backendError ? "" : TypeOfUseErrorMessages.CREATE_TYPE_FAILED
+      );
     }
     
     if (!response.data) {
@@ -153,7 +162,12 @@ export async function updateUseTypeApi(input: {
     });
     
     if (!response.success) {
-      throw createApiError(response.statusCode, response.error, TypeOfUseErrorMessages.UPDATE_TYPE_FAILED);
+      const backendError = response.error;
+      throw new ApiError(
+        response.statusCode ?? 500,
+        backendError || TypeOfUseErrorMessages.UPDATE_TYPE_FAILED,
+        backendError ? "" : TypeOfUseErrorMessages.UPDATE_TYPE_FAILED
+      );
     }
     
     if (!response.data) {
@@ -178,11 +192,12 @@ export async function deleteUseTypeApi(id: string) {
     });
     
     if (!response.success) {
-      // Map backend reference error to the corresponding i18n key
-      const errorMessage = response.error ?? TypeOfUseErrorMessages.DELETE_TYPE_FAILED;
-      const mappedError = mapReferenceErrorToI18nKey(errorMessage, 'type', TypeOfUseErrorMessages.DELETE_TYPE_FAILED);
-      
-      throw createApiError(response.statusCode, mappedError, "Delete use type failed");
+      const backendError = response.error;
+      throw new ApiError(
+        response.statusCode ?? 500,
+        backendError || TypeOfUseErrorMessages.DELETE_TYPE_FAILED,
+        backendError ? "" : TypeOfUseErrorMessages.DELETE_TYPE_FAILED
+      );
     }
     
     return true;

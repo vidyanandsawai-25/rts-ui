@@ -5,7 +5,6 @@ import { ApiError } from "@/lib/utils/api";
 import { logger } from "@/lib/utils/logger";
 import { mapApiSubTypeToUi } from "./typeofuse.mappers";
 import { TypeOfUseErrorMessages } from "./typeofuse.errors";
-import { createApiError, mapReferenceErrorToI18nKey } from "./typeofuse-validation";
 
 /* ====================================================================== */
 /* ============================ SUBTYPE APIS ============================= */
@@ -39,7 +38,12 @@ export async function getSubTypesPagedServer(params: {
     });
     
     if (!response.success) {
-      throw createApiError(response.statusCode, response.error, TypeOfUseErrorMessages.FETCH_SUBTYPES_FAILED);
+      const backendError = response.error;
+      throw new ApiError(
+        response.statusCode ?? 500,
+        backendError || TypeOfUseErrorMessages.FETCH_SUBTYPES_FAILED,
+        backendError ? "" : TypeOfUseErrorMessages.FETCH_SUBTYPES_FAILED
+      );
     }
 
     if (!response.data) {
@@ -100,7 +104,12 @@ export async function createSubTypeApi(input: {
     });
     
     if (!response.success) {
-      throw createApiError(response.statusCode, response.error, TypeOfUseErrorMessages.CREATE_SUBTYPE_FAILED);
+      const backendError = response.error;
+      throw new ApiError(
+        response.statusCode ?? 500,
+        backendError || TypeOfUseErrorMessages.CREATE_SUBTYPE_FAILED,
+        backendError ? "" : TypeOfUseErrorMessages.CREATE_SUBTYPE_FAILED
+      );
     }
     
     if (!response.data) {
@@ -141,7 +150,12 @@ export async function updateSubTypeApi(input: {
     });
     
     if (!response.success) {
-      throw createApiError(response.statusCode, response.error, TypeOfUseErrorMessages.UPDATE_SUBTYPE_FAILED);
+      const backendError = response.error;
+      throw new ApiError(
+        response.statusCode ?? 500,
+        backendError || TypeOfUseErrorMessages.UPDATE_SUBTYPE_FAILED,
+        backendError ? "" : TypeOfUseErrorMessages.UPDATE_SUBTYPE_FAILED
+      );
     }
     
     if (!response.data) {
@@ -166,11 +180,12 @@ export async function deleteSubTypeApi(id: string) {
     });
     
     if (!response.success) {
-      // Map backend reference error to the corresponding i18n key
-      const errorMessage = response.error ?? TypeOfUseErrorMessages.DELETE_SUBTYPE_FAILED;
-      const mappedError = mapReferenceErrorToI18nKey(errorMessage, 'subtype', TypeOfUseErrorMessages.DELETE_SUBTYPE_FAILED);
-      
-      throw createApiError(response.statusCode, mappedError, "Delete use subtype failed");
+      const backendError = response.error;
+      throw new ApiError(
+        response.statusCode ?? 500,
+        backendError || TypeOfUseErrorMessages.DELETE_SUBTYPE_FAILED,
+        backendError ? "" : TypeOfUseErrorMessages.DELETE_SUBTYPE_FAILED
+      );
     }
     
     return true;
@@ -195,7 +210,12 @@ export async function getSubTypeCountByTypeIds(typeIds: string[]) {
     );
 
     if (!response.success) {
-      throw createApiError(response.statusCode, response.error, TypeOfUseErrorMessages.FETCH_SUBTYPE_COUNTS_FAILED);
+      const backendError = response.error;
+      throw new ApiError(
+        response.statusCode ?? 500,
+        backendError || TypeOfUseErrorMessages.FETCH_SUBTYPE_COUNTS_FAILED,
+        backendError ? "" : TypeOfUseErrorMessages.FETCH_SUBTYPE_COUNTS_FAILED
+      );
     }
 
     return response.data; // { [typeId]: number }
