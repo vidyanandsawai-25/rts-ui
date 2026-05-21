@@ -4,12 +4,18 @@ import { fetchFloorFactorCVMasterPagedServerAction } from "./action";
 import { getAssessmentYearsPagedServerCV, getFloorPaged } from "@/lib/api/floor-cv-weightageMaster.service";
 
 
+/** Allowed column names accepted by the API (PascalCase as required by backend) */
+const ALLOWED_SORT_COLUMNS = ["FloorCode", "FloorDescription", "FromYear"] as const;
+const ALLOWED_SORT_ORDERS = ["asc", "desc"] as const;
+
 interface PageProps {
   searchParams?: {
     page?: string;
     pageSize?: string;
     q?: string;
     selectedYearRange?: string;
+    sortBy?: string;
+    sortOrder?: string;
   };
 }
 
@@ -43,6 +49,17 @@ export default async function Page({ searchParams }: PageProps): Promise<React.R
   const searchTerm = params.q?.trim().slice(0, 200) || undefined;
   const selectedYearRange = params.selectedYearRange?.trim().slice(0, 50) || undefined;
 
+  // Whitelist-based sort validation
+  const sortByRaw = params.sortBy?.trim() ?? "";
+  const sortBy = (ALLOWED_SORT_COLUMNS as readonly string[]).includes(sortByRaw)
+    ? (sortByRaw as (typeof ALLOWED_SORT_COLUMNS)[number])
+    : undefined;
+
+  const sortOrderRaw = params.sortOrder?.trim().toLowerCase() ?? "";
+  const sortOrder = (ALLOWED_SORT_ORDERS as readonly string[]).includes(sortOrderRaw)
+    ? (sortOrderRaw as (typeof ALLOWED_SORT_ORDERS)[number])
+    : undefined;
+
   // Fetch assessment years for dropdowns
   const assessmentYearData = await getAssessmentYearsPagedServerCV(1, -1);
   const assessmentYearOptions = assessmentYearData.items.map((year) => ({
@@ -50,7 +67,7 @@ export default async function Page({ searchParams }: PageProps): Promise<React.R
     value: year.id.toString(),
   }));
 
-  const result = await fetchFloorFactorCVMasterPagedServerAction(pageNumber, pageSize, searchTerm, selectedYearRange);
+  const result = await fetchFloorFactorCVMasterPagedServerAction(pageNumber, pageSize, searchTerm, selectedYearRange, sortBy, sortOrder);
 
   // Fetch floor data for dropdowns
   const floorData = await getFloorPaged(1, -1); // Fetch all floors
@@ -69,6 +86,8 @@ export default async function Page({ searchParams }: PageProps): Promise<React.R
         totalPages={result.totalPages}
         floorOptions={floorOptions}
         assessmentYearOptions={assessmentYearOptions}
+        sortBy={sortBy}
+        sortOrder={sortOrder}
       />
     </div>
   );

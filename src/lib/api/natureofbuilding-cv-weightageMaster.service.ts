@@ -23,7 +23,9 @@ export async function getNatureFactorCVMasterWithPagination(
   pageSize: number,
   searchTerm?: string,
   yearRangeCVId?: string,
-  constructionTypeId?: string
+  constructionTypeId?: string,
+  sortBy?: string,
+  sortOrder?: string
 ): Promise<PagedResponse<NatureFactorCVMaster>> {
   try {
     const params = new URLSearchParams({
@@ -34,6 +36,8 @@ export async function getNatureFactorCVMasterWithPagination(
     if (searchTerm?.trim()) params.append("SearchTerm", searchTerm.trim());
     if (yearRangeCVId?.trim()) params.append("YearRangeCVId", yearRangeCVId.trim());
     if (constructionTypeId?.trim()) params.append("ConstructionTypeId", constructionTypeId.trim());
+    if (sortBy?.trim()) params.append("SortBy", sortBy.trim());
+    if (sortOrder?.trim()) params.append("SortOrder", sortOrder.trim());
 
     const response = await apiClient.get<PagedResponse<NatureFactorCVMaster>>(
       `/NatureFactorCVMaster?${params.toString()}`

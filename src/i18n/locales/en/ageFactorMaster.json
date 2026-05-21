@@ -3,6 +3,7 @@
     "title": "Age Factor Master",
     "columns": {
       "constructionType": "Construction Type",
+      "description": "Description",
       "ageFrom": "Age From",
       "ageTo": "Age To",
       "factor": "Factor",
