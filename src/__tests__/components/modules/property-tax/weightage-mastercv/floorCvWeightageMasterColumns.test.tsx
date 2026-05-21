@@ -27,6 +27,16 @@ describe('getFloorCvWeightageMasterColumns', () => {
     return translations[key] || key;
   });
 
+  const mockTCommon = vi.fn((key: string) => {
+    const translations: Record<string, string> = {
+      'table.sort.verb': 'Sort',
+      'table.sort.ascending': 'ascending',
+      'table.sort.descending': 'descending',
+      'table.sort.by': 'Sort by',
+    };
+    return translations[key] || key;
+  });
+
   const mockHandleCellChange = vi.fn();
   const mockGetRowUid = vi.fn((row: FloorFactorCVMaster) => `${row.id}-${row.floorId}`);
 
@@ -50,6 +60,7 @@ describe('getFloorCvWeightageMasterColumns', () => {
     const columns = getFloorCvWeightageMasterColumns({
       t: mockT,
       tW: mockTW,
+      tCommon: mockTCommon,
       editableRows: mockEditableRows,
       handleCellChange: mockHandleCellChange,
       getRowUid: mockGetRowUid,
@@ -62,6 +73,7 @@ describe('getFloorCvWeightageMasterColumns', () => {
     const columns = getFloorCvWeightageMasterColumns({
       t: mockT,
       tW: mockTW,
+      tCommon: mockTCommon,
       editableRows: mockEditableRows,
       handleCellChange: mockHandleCellChange,
       getRowUid: mockGetRowUid,
@@ -69,7 +81,6 @@ describe('getFloorCvWeightageMasterColumns', () => {
 
     const floorCodeColumn = columns[0];
     expect(floorCodeColumn.key).toBe('floorCode');
-    expect(floorCodeColumn.label).toBe('Floor Code');
     expect(floorCodeColumn.width).toBe('10%');
     expect(floorCodeColumn.render?.('F1', mockRow, 0)).toBe('F1');
   });
@@ -78,6 +89,7 @@ describe('getFloorCvWeightageMasterColumns', () => {
     const columns = getFloorCvWeightageMasterColumns({
       t: mockT,
       tW: mockTW,
+      tCommon: mockTCommon,
       editableRows: mockEditableRows,
       handleCellChange: mockHandleCellChange,
       getRowUid: mockGetRowUid,
@@ -91,6 +103,7 @@ describe('getFloorCvWeightageMasterColumns', () => {
     const columns = getFloorCvWeightageMasterColumns({
       t: mockT,
       tW: mockTW,
+      tCommon: mockTCommon,
       editableRows: mockEditableRows,
       handleCellChange: mockHandleCellChange,
       getRowUid: mockGetRowUid,
@@ -107,6 +120,7 @@ describe('getFloorCvWeightageMasterColumns', () => {
     const columns = getFloorCvWeightageMasterColumns({
       t: mockT,
       tW: mockTW,
+      tCommon: mockTCommon,
       editableRows: mockEditableRows,
       handleCellChange: mockHandleCellChange,
       getRowUid: mockGetRowUid,
@@ -136,6 +150,7 @@ describe('getFloorCvWeightageMasterColumns', () => {
     const columns = getFloorCvWeightageMasterColumns({
       t: mockT,
       tW: mockTW,
+      tCommon: mockTCommon,
       editableRows,
       handleCellChange: mockHandleCellChange,
       getRowUid: mockGetRowUid,
@@ -153,6 +168,7 @@ describe('getFloorCvWeightageMasterColumns', () => {
     const columns = getFloorCvWeightageMasterColumns({
       t: mockT,
       tW: mockTW,
+      tCommon: mockTCommon,
       editableRows: mockEditableRows,
       handleCellChange: mockHandleCellChange,
       getRowUid: mockGetRowUid,
@@ -170,10 +186,11 @@ describe('getFloorCvWeightageMasterColumns', () => {
     expect(input).toHaveDisplayValue('1.00');
   });
 
-  it('fromYear column renders assessment year range', () => {
+  it('fromYear column renders assessment year range (fromYear-toYear)', () => {
     const columns = getFloorCvWeightageMasterColumns({
       t: mockT,
       tW: mockTW,
+      tCommon: mockTCommon,
       editableRows: mockEditableRows,
       handleCellChange: mockHandleCellChange,
       getRowUid: mockGetRowUid,
@@ -181,7 +198,8 @@ describe('getFloorCvWeightageMasterColumns', () => {
 
     const fromYearColumn = columns[4];
     expect(fromYearColumn.key).toBe('fromYear');
-    expect(fromYearColumn.label).toBe('Assessment Year');
+    expect(fromYearColumn.label).toBeDefined();
+    // Displays as fromYear-toYear range (e.g. "2024-2025")
     expect(fromYearColumn.render?.(2024, mockRow, 0)).toBe('2024-2025');
   });
 
@@ -191,6 +209,7 @@ describe('getFloorCvWeightageMasterColumns', () => {
     const columns = getFloorCvWeightageMasterColumns({
       t: mockT,
       tW: mockTW,
+      tCommon: mockTCommon,
       editableRows: mockEditableRows,
       handleCellChange: mockHandleCellChange,
       getRowUid: mockGetRowUid,
@@ -215,6 +234,7 @@ describe('getFloorCvWeightageMasterColumns', () => {
     const columns = getFloorCvWeightageMasterColumns({
       t: mockT,
       tW: mockTW,
+      tCommon: mockTCommon,
       editableRows: mockEditableRows,
       handleCellChange: mockHandleCellChange,
       getRowUid: mockGetRowUid,
@@ -237,6 +257,7 @@ describe('getFloorCvWeightageMasterColumns', () => {
     const columns = getFloorCvWeightageMasterColumns({
       t: mockT,
       tW: mockTW,
+      tCommon: mockTCommon,
       editableRows: mockEditableRows,
       handleCellChange: mockHandleCellChange,
       getRowUid: mockGetRowUid,
@@ -257,6 +278,7 @@ describe('getFloorCvWeightageMasterColumns', () => {
     const columns = getFloorCvWeightageMasterColumns({
       t: mockT,
       tW: mockTW,
+      tCommon: mockTCommon,
       editableRows: mockEditableRows,
       handleCellChange: mockHandleCellChange,
       getRowUid: mockGetRowUid,
@@ -278,6 +300,7 @@ describe('getFloorCvWeightageMasterColumns', () => {
     const columns = getFloorCvWeightageMasterColumns({
       t: mockT,
       tW: mockTW,
+      tCommon: mockTCommon,
       editableRows: mockEditableRows,
       handleCellChange: mockHandleCellChange,
       getRowUid: mockGetRowUid,
@@ -293,6 +316,7 @@ describe('getFloorCvWeightageMasterColumns', () => {
     const columns = getFloorCvWeightageMasterColumns({
       t: mockT,
       tW: mockTW,
+      tCommon: mockTCommon,
       editableRows: mockEditableRows,
       handleCellChange: mockHandleCellChange,
       getRowUid: mockGetRowUid,
@@ -300,7 +324,8 @@ describe('getFloorCvWeightageMasterColumns', () => {
 
     columns.forEach(column => {
       expect(column.label).toBeTruthy();
-      expect(typeof column.label).toBe('string');
+      // Labels can be strings or React elements (sortable headers)
+      expect(column.label).toBeDefined();
     });
   });
 });

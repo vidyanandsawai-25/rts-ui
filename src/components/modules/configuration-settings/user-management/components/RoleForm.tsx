@@ -1,6 +1,6 @@
 'use client';
 
-import { Label, Input, Button, Drawer, ToggleSwitch } from '@/components/common';
+import { Label, Input, Button, Drawer, ToggleSwitch, ValidationMessage } from '@/components/common';
 import { useTranslations } from 'next-intl';
 import { RoleFormProps } from '@/types/user-management';
 
@@ -12,6 +12,7 @@ export function RoleForm({
   setFormData,
   onSubmit,
   isSubmitting,
+  errors,
 }: RoleFormProps) {
   const t = useTranslations('userManagement');
 
@@ -53,11 +54,18 @@ export function RoleForm({
           <Label>{t('table.role')} *</Label>
           <Input
             required
+            maxLength={25}
             value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            onChange={(e) => {
+              const val = e.target.value.replace(/[^a-zA-Z\u0900-\u097F\s]/g, '');
+              setFormData({ ...formData, name: val });
+            }}
             placeholder={t('table.role')}
             className="h-10"
           />
+          {errors?.name && (
+            <ValidationMessage message={errors.name} />
+          )}
         </div>
 
         {editingRole && (

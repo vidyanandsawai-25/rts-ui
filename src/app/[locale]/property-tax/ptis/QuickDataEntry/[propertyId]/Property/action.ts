@@ -5,7 +5,9 @@ import {
     getPropertyCategories,
     getPropertyTypes,
     getWingMaster,
-    updatePropertyBasicDetails
+    getMoujaMaster,
+    updatePropertyBasicDetails,
+    getTaxZones
 } from "@/lib/api/property-basic-details.service";
 
 import {
@@ -13,18 +15,25 @@ import {
     PropertyCategoryApiItem,
     PropertyTypeApiItem,
     UpdatePropertyBasicDetailsDto,
-    WingItem
+    WingItem,
+    MoujaItem,
+    TaxZoneItem
 } from "@/types/property-basic-details.types";
 
 import { ActionResult } from "@/types/common.types";
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 
-
-function getActionErrorMessage(error: unknown): string {
+async function getActionErrorMessage(error: unknown): Promise<string> {
+    const t = await getTranslations("quickDataEntry");
     if (error instanceof Error && error.message) {
+        const msg = error.message.toLowerCase();
+        if (msg.includes('fetch failed') || msg.includes('failed to fetch') || msg.includes('network error') || msg.includes('econnrefused')) {
+            return t('property.errors.failedToConnect.description');
+        }
         return error.message;
     }
-    return 'Something went wrong. Please try again.';
+    return t('property.errors.failedToConnect.description');
 }
 
 // Property Basic Details
@@ -33,7 +42,7 @@ export async function getPropertyBasicDetailsAction(propertyId: number): Promise
         const data = await getPropertyBasicDetails(propertyId);
         return { success: true, data };
     } catch (error) {
-        return { success: false, error: getActionErrorMessage(error) };
+        return { success: false, error: await getActionErrorMessage(error) };
     }
 }
 
@@ -47,7 +56,7 @@ export async function getPropertyCategoriesAction(
         const data = await getPropertyCategories(pageNumber, pageSize, searchTerm);
         return { success: true, data: data ?? [] };
     } catch (error) {
-        return { success: false, error: getActionErrorMessage(error) };
+        return { success: false, error: await getActionErrorMessage(error) };
     }
 }
 
@@ -61,8 +70,7 @@ export async function getPropertyTypesAction(
         const data = await getPropertyTypes(pageNumber, pageSize, searchTerm);
         return { success: true, data: data ?? [] };
     } catch (error) {
-        return { success: false, error: getActionErrorMessage(error) };
-
+        return { success: false, error: await getActionErrorMessage(error) };
     }
 }
 
@@ -76,7 +84,21 @@ export async function getWingMasterAction(
         const data = await getWingMaster(pageNumber, pageSize, searchTerm);
         return { success: true, data };
     } catch (error) {
-        return { success: false, error: getActionErrorMessage(error) };
+        return { success: false, error: await getActionErrorMessage(error) };
+    }
+}
+
+// mouja master
+export async function getMoujaMasterAction(
+    pageNumber: number,
+    pageSize: number,
+    searchTerm?: string
+): Promise<ActionResult<MoujaItem[]>> {
+    try {
+        const data = await getMoujaMaster(pageNumber, pageSize, searchTerm);
+        return { success: true, data };
+    } catch (error) {
+        return { success: false, error: await getActionErrorMessage(error) };
     }
 }
 
@@ -91,6 +113,20 @@ export const updatePropertyBasicDetailsAction = async (locale: string, propertyI
         revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Property`, "page");
         return result;
     } catch (error) {
-        return { success: false, error: getActionErrorMessage(error) };
+        return { success: false, error: await getActionErrorMessage(error) };
     }
-}; 
+};
+
+// tax zone master
+export async function getTaxZonesAction(
+    pageNumber: number = 1,
+    pageSize: number = 100,
+    searchTerm?: string
+): Promise<ActionResult<TaxZoneItem[]>> {
+    try {
+        const data = await getTaxZones(pageNumber, pageSize, searchTerm);
+        return { success: true, data };
+    } catch (error) {
+        return { success: false, error: await getActionErrorMessage(error) };
+    }
+}

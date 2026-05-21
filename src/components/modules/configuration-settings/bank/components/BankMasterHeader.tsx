@@ -6,31 +6,20 @@ import { BankFilters } from '../BankFilters';
 
 interface BankMasterHeaderProps {
   t: (key: string) => string;
-  onAdd: () => void;
+  onAdd?: () => void;
   search: string;
   onSearchChange: (value: string) => void;
 }
 
-export function BankMasterHeader({
-  t,
-  onAdd,
-  search,
-  onSearchChange,
-}: BankMasterHeaderProps) {
+export function BankMasterHeader({ t, onAdd, search, onSearchChange }: BankMasterHeaderProps) {
   return (
     <TableHeader
       title={t('title')}
       subtitle={t('subtitle')}
       icon={Landmark}
-      actionLabel={t('addBank')}
+      actionLabel={onAdd ? t('addBank') : undefined}
       onActionClick={onAdd}
-      rightContent={
-        <BankFilters
-          search={search}
-          onSearchChange={onSearchChange}
-          t={t}
-        />
-      }
+      rightContent={<BankFilters search={search} onSearchChange={onSearchChange} t={t} />}
     />
   );
 }

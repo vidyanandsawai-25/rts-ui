@@ -35,10 +35,11 @@ vi.mock('next-intl', () => ({
       'property.buildupArea': 'Buildup Area',
       'property.updateSuccess': 'Property basic details updated successfully',
       'property.updateError': 'An error occurred during update.',
+      'property.errors.updatePropertyBasicDetails': 'Failed to update property basic details',
       'property.updateConfirmTitle': 'Confirm Update',
       'property.updateConfirmText': 'Are you sure?',
       'property.updateConfirmButton': 'Yes, Update',
-      'common.UpdateChanges': 'Update Changes',
+      'commonbuttonmessages.UpdateChanges': 'Update Changes',
       'footer.saving': 'Saving...',
     };
     return translations[key] || key;
@@ -65,8 +66,8 @@ vi.mock('@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Property/a
   updatePropertyBasicDetailsAction: vi.fn(),
 }));
 
-const mockWingMaster = [
-  { id: 1, wingNo: 'Wing A', sequenceNo: 1, isActive: true, createdDate: '', updatedDate: null },
+const mockMoujaMaster = [
+  { id: 1, moujaNo: '1', moujaName: 'Susgaon', isActive: true, createdDate: '', updatedDate: null },
 ];
 
 const mockPropertyCategories = [
@@ -146,12 +147,13 @@ describe('PropertyFormView', () => {
   it('renders correctly with initial data', () => {
     render(
       <PropertyFormView
-        WingMaster={mockWingMaster}
+        MoujaMaster={mockMoujaMaster}
         propertyCategories={mockPropertyCategories}
         propertyDescriptions={mockPropertyDescriptions}
         propertyData={mockPropertyData as never}
         propertySocietyDetails={mockSocietyDetails as never}
         locale="en"
+        taxZones={[]}
       />
     );
 
@@ -171,12 +173,13 @@ describe('PropertyFormView', () => {
   it('disables save button initially', () => {
     render(
       <PropertyFormView
-        WingMaster={mockWingMaster}
+        MoujaMaster={mockMoujaMaster}
         propertyCategories={mockPropertyCategories}
         propertyDescriptions={mockPropertyDescriptions}
         propertyData={mockPropertyData as never}
         propertySocietyDetails={mockSocietyDetails as never}
         locale="en"
+        taxZones={[]}
       />
     );
 
@@ -187,12 +190,13 @@ describe('PropertyFormView', () => {
   it('enables save button when data is modified', async () => {
     render(
       <PropertyFormView
-        WingMaster={mockWingMaster}
+        MoujaMaster={mockMoujaMaster}
         propertyCategories={mockPropertyCategories}
         propertyDescriptions={mockPropertyDescriptions}
         propertyData={mockPropertyData as never}
         propertySocietyDetails={mockSocietyDetails as never}
         locale="en"
+        taxZones={[]}
       />
     );
 
@@ -208,12 +212,13 @@ describe('PropertyFormView', () => {
 
     render(
       <PropertyFormView
-        WingMaster={mockWingMaster}
+        MoujaMaster={mockMoujaMaster}
         propertyCategories={mockPropertyCategories}
         propertyDescriptions={mockPropertyDescriptions}
         propertyData={mockPropertyData as never}
         propertySocietyDetails={mockSocietyDetails as never}
         locale="en"
+        taxZones={[]}
       />
     );
 
@@ -240,12 +245,13 @@ describe('PropertyFormView', () => {
 
     render(
       <PropertyFormView
-        WingMaster={mockWingMaster}
+        MoujaMaster={mockMoujaMaster}
         propertyCategories={mockPropertyCategories}
         propertyDescriptions={mockPropertyDescriptions}
         propertyData={mockPropertyData as never}
         propertySocietyDetails={mockSocietyDetails as never}
         locale="en"
+        taxZones={[]}
       />
     );
 
@@ -257,19 +263,20 @@ describe('PropertyFormView', () => {
     fireEvent.click(submitBtn);
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith("Update failed");
+      expect(toast.error).toHaveBeenCalledWith("Failed to update property basic details");
     });
   });
 
   it('ensures readonly fields cannot be modified', () => {
     render(
       <PropertyFormView
-        WingMaster={mockWingMaster}
+        MoujaMaster={mockMoujaMaster}
         propertyCategories={mockPropertyCategories}
         propertyDescriptions={mockPropertyDescriptions}
         propertyData={mockPropertyData as never}
         propertySocietyDetails={mockSocietyDetails as never}
         locale="en"
+        taxZones={[]}
       />
     );
 
@@ -290,12 +297,13 @@ describe('PropertyFormView', () => {
     it('shows error for negative numbers in numeric fields', async () => {
       render(
         <PropertyFormView
-          WingMaster={mockWingMaster}
+          MoujaMaster={mockMoujaMaster}
           propertyCategories={mockPropertyCategories}
           propertyDescriptions={mockPropertyDescriptions}
           propertyData={mockPropertyData as never}
           propertySocietyDetails={mockSocietyDetails as never}
           locale="en"
+          taxZones={[]}
         />
       );
 
@@ -314,12 +322,13 @@ describe('PropertyFormView', () => {
       (updatePropertyBasicDetailsAction as Mock).mockResolvedValue({ success: true });
       render(
         <PropertyFormView
-          WingMaster={mockWingMaster}
+          MoujaMaster={mockMoujaMaster}
           propertyCategories={mockPropertyCategories}
           propertyDescriptions={mockPropertyDescriptions}
           propertyData={mockPropertyData as never}
           propertySocietyDetails={mockSocietyDetails as never}
           locale="en"
+          taxZones={[]}
         />
       );
 
@@ -335,7 +344,7 @@ describe('PropertyFormView', () => {
           'en',
           mockPropertyData.propertyId,
           expect.objectContaining({
-            flatOrShopNo: specialChars,
+            flatOrShopNo: 'Flat-123', // Expect the sanitized value
           })
         );
       });
@@ -345,12 +354,13 @@ describe('PropertyFormView', () => {
       (updatePropertyBasicDetailsAction as Mock).mockResolvedValue({ success: true });
       render(
         <PropertyFormView
-          WingMaster={mockWingMaster}
+          MoujaMaster={mockMoujaMaster}
           propertyCategories={mockPropertyCategories}
           propertyDescriptions={mockPropertyDescriptions}
           propertyData={mockPropertyData as never}
           propertySocietyDetails={mockSocietyDetails as never}
           locale="en"
+          taxZones={[]}
         />
       );
 
@@ -376,12 +386,13 @@ describe('PropertyFormView', () => {
       (updatePropertyBasicDetailsAction as Mock).mockResolvedValue({ success: true });
       render(
         <PropertyFormView
-          WingMaster={mockWingMaster}
+          MoujaMaster={mockMoujaMaster}
           propertyCategories={mockPropertyCategories}
           propertyDescriptions={mockPropertyDescriptions}
           propertyData={mockPropertyData as never}
           propertySocietyDetails={mockSocietyDetails as never}
           locale="en"
+          taxZones={[]}
         />
       );
 

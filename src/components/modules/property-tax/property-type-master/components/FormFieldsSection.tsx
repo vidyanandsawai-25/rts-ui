@@ -73,6 +73,7 @@ export const FormFieldsSection = ({
         />
       </div>
 
+      {/* 
       <Input
         name="propertyTypeGroup"
         label={t("form.fields.propertyTypeGroup.label")}
@@ -88,6 +89,7 @@ export const FormFieldsSection = ({
         message={errors.propertyTypeGroup}
         visible={showError("propertyTypeGroup")}
       />
+      */}
 
       <div>
         <Select

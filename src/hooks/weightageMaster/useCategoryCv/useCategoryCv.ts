@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { UseFactorCVMaster, UseType } from "@/types/useCategoryCvFactor.types";
@@ -15,6 +15,10 @@ export interface UseCategoryCvProps {
     pageNumber: number;
     typeOfUsePageSize: number;
     typeOfUsePageNumber: number;
+    sortBy?: string;
+    sortOrder?: string;
+    leftSortBy?: string;
+    leftSortOrder?: string;
 }
 
 /**
@@ -27,9 +31,14 @@ export function useCategoryCv({
     pageNumber,
     typeOfUsePageSize,
     typeOfUsePageNumber,
+    sortBy: initialSortBy,
+    sortOrder: initialSortOrder,
+    leftSortBy: initialLeftSortBy,
+    leftSortOrder: initialLeftSortOrder,
 }: UseCategoryCvProps) {
     const t = useTranslations("useCategoryFactorMaster");
     const tW = useTranslations("weightageMaster");
+    const tCommon = useTranslations("common");
     const router = useRouter();
     const searchParams = useSearchParams();
     const locale = useLocale();
@@ -52,8 +61,23 @@ export function useCategoryCv({
         hasShownWarningRef
     } = state;
 
+    // Sorting states
+    const [sortBy, setSortBy] = useState<string | undefined>(initialSortBy);
+    const [sortOrder, setSortOrder] = useState<string | undefined>(initialSortOrder);
+    const [leftSortBy, setLeftSortBy] = useState<string | undefined>(initialLeftSortBy);
+    const [leftSortOrder, setLeftSortOrder] = useState<string | undefined>(initialLeftSortOrder);
+
     // 2. Pagination and Navigation
-    const pagination = useCategoryCvPagination(pageNumber, pageSize, typeOfUsePageNumber, typeOfUsePageSize);
+    const pagination = useCategoryCvPagination(
+        pageNumber, 
+        pageSize, 
+        typeOfUsePageNumber, 
+        typeOfUsePageSize,
+        sortBy,
+        sortOrder,
+        leftSortBy,
+        leftSortOrder
+    );
     const { buildUrl, ...paginationHandlers } = pagination;
 
     const newRecordsCount = data.filter(row => row.id === 0).length;
@@ -98,12 +122,36 @@ export function useCategoryCv({
         router.push(buildUrl({ page: 1, typeOfUseId: String(row.id) }));
     };
 
+    const handleSort = (columnKey: string) => {
+        let newOrder: "asc" | "desc" = "asc";
+        if (sortBy === columnKey) {
+            newOrder = sortOrder === "asc" ? "desc" : "asc";
+        }
+        setSortBy(columnKey);
+        setSortOrder(newOrder);
+        router.push(buildUrl({ page: 1, sortBy: columnKey, sortOrder: newOrder }));
+    };
+
+    const handleLeftSort = (columnKey: string) => {
+        let newOrder: "asc" | "desc" = "asc";
+        if (leftSortBy === columnKey) {
+            newOrder = leftSortOrder === "asc" ? "desc" : "asc";
+        }
+        setLeftSortBy(columnKey);
+        setLeftSortOrder(newOrder);
+        router.push(buildUrl({ leftPage: 1, leftSortBy: columnKey, leftSortOrder: newOrder }));
+    };
+
     const handleClearAll = (): void => {
         setEditableRows({});
         setFactorValue("0.00");
         setTypeOfUseId("");
         setSelectedTypeId(null);
         setSelectedYear("");
+        setSortBy(undefined);
+        setSortOrder(undefined);
+        setLeftSortBy(undefined);
+        setLeftSortOrder(undefined);
         router.push(`/${locale}/property-tax/weightage-master/sub-type-weightage?page=1&pageSize=${pageSize}&leftPage=1&leftPageSize=${typeOfUsePageSize}`);
         addToast('info', tW('common.messages.allClearedInfo'));
     };
@@ -140,7 +188,7 @@ export function useCategoryCv({
     const isBulkUpdateDisabled = Object.keys(editableRows).length === 0 || isBulkUpdating;
 
     return {
-        t, tW,
+        t, tW, tCommon,
         selectedYear, typeOfUseId, factorValue, setFactorValue,
         editableRows, selectedTypeId,
         isUpdating, isBulkUpdating, isGeneratingAll,
@@ -151,6 +199,8 @@ export function useCategoryCv({
         getRowUid, ...rowOps,
         handleAssessmentYearChange, handleTypeOfUseChange, handleTypeRowClick,
         ...bulkOps, handleClearAll,
-        ...paginationHandlers
+        ...paginationHandlers,
+        sortBy, sortOrder, leftSortBy, leftSortOrder,
+        handleSort, handleLeftSort
     };
 }

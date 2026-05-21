@@ -12,10 +12,9 @@ import {
   useTranslations,
 } from "next-intl";
 import { toast } from "sonner";
-import { Select } from "@/components/common/select";
 import { MasterTable } from "@/components/common/MasterTable";
 import { useConfirm } from "@/components/common/ConfirmProvider";
-import { DeleteButton, EditButton } from "@/components/common";
+import { DeleteButton, EditButton, Select } from "@/components/common";
 
 import type {
   SubFloor,
@@ -31,8 +30,6 @@ import { subFloorColumns } from "./subFloorColumns";
 
 export default function SubFloorMaster({
   subFloorPaged,
-  sortBy,
-  sortOrder,
 }: Readonly<SubFloorMasterProps>) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -58,48 +55,14 @@ export default function SubFloorMaster({
   ============================================================ */
 
   const buildUrl = useCallback(
-    (
-      page: number,
-      size: number,
-      searchTerm?: string,
-      newSortBy?: string,
-      newSortOrder?: string
-    ) => {
+    (page: number, size: number, searchTerm?: string) => {
       const params = new URLSearchParams();
       params.set("page", String(page));
       params.set("pageSize", String(size));
-
       if (searchTerm) params.set("q", searchTerm);
-      if (newSortBy) params.set("sortBy", newSortBy);
-      if (newSortOrder) params.set("sortOrder", newSortOrder);
-
       return `/${locale}/property-tax/floormaster/subfloor?${params.toString()}`;
     },
     [locale]
-  );
-
-  /* ============================================================
-     SORTING
-  ============================================================ */
-
-  const handleSort = useCallback(
-    (columnKey: string) => {
-      let newSortOrder: string = "asc";
-
-      // Toggle sort order if clicking the same column
-      if (sortBy === columnKey) {
-        if (sortOrder === "asc") {
-          newSortOrder = "desc";
-        } else if (sortOrder === "desc") {
-          // Reset to no sorting
-          router.push(buildUrl(1, pageSize, currentSearchTerm));
-          return;
-        }
-      }
-
-      router.push(buildUrl(1, pageSize, currentSearchTerm, columnKey, newSortOrder));
-    },
-    [sortBy, sortOrder, router, buildUrl, pageSize, currentSearchTerm]
   );
 
   /* ============================================================
@@ -108,18 +71,15 @@ export default function SubFloorMaster({
 
   const changePage = useCallback(
     (page: number) => {
-      router.push(
-        buildUrl(page, pageSize, currentSearchTerm, sortBy, sortOrder)
-      );
+      router.push(buildUrl(page, pageSize, currentSearchTerm));
     },
-    [router, pageSize, currentSearchTerm, sortBy, sortOrder, buildUrl]
+    [router, pageSize, currentSearchTerm, buildUrl]
   );
 
   /* ============================================================
      FOOTER
   ============================================================ */
-  const start =
-    totalCount === 0 ? 0 : (pageNumber - 1) * pageSize + 1;
+  const start = totalCount === 0 ? 0 : (pageNumber - 1) * pageSize + 1;
   const end = Math.min(start + pageSize - 1, totalCount);
 
   /* ============================================================
@@ -130,14 +90,9 @@ export default function SubFloorMaster({
     (row: SubFloor) => {
       confirm({
         variant: "delete",
-        title: t("delete.confirmTitle", {
-          id: row.id,
-        }),
+        title: t("delete.confirmTitle", { id: row.id }),
         description: t("delete.confirmDescription"),
-        meta: {
-          id: row.id,
-          name: row.description
-        },
+        meta: { id: row.id, name: row.description },
         onConfirm: async () => {
           const result = await deleteSubFloorAction(row.id);
           if (result.success) {
@@ -145,14 +100,11 @@ export default function SubFloorMaster({
             router.refresh();
           } else {
             let msg = t("messages.deleteFailed");
-
-            // Check for i18n key first, then raw message
             if (result.messageKey) {
               msg = t(result.messageKey);
             } else if (result.message) {
               msg = result.message;
             }
-
             toast.error(msg);
           }
         },
@@ -165,7 +117,7 @@ export default function SubFloorMaster({
      TABLE COLUMNS
   ============================================================ */
 
-  const columns = subFloorColumns(t, tCommon, sortBy, sortOrder, handleSort);
+  const columns = subFloorColumns(t);
 
   /* ============================================================
      UI
@@ -193,9 +145,7 @@ export default function SubFloorMaster({
               )
             }
           />
-          <DeleteButton
-            onClick={() => handleDelete(row)}
-          />
+          <DeleteButton onClick={() => handleDelete(row)} />
         </>
       )}
 
@@ -206,23 +156,27 @@ export default function SubFloorMaster({
       footerLeftContent={
         <div className="flex items-center gap-4">
           <span className="text-sm text-gray-700">
-            {tCommon("table.showing")} {start} {tCommon("table.to")} {end} {tCommon("table.of")} {totalCount}
+            {tCommon("table.showing")} {start} {tCommon("table.to")} {end}{" "}
+            {tCommon("table.of")} {totalCount} {tCommon("table.entries")}
           </span>
-
-          <Select
-            value={String(pageSize)}
-            onChange={(e) =>
-              router.push(
-                buildUrl(1, Number(e.target.value), currentSearchTerm, sortBy, sortOrder)
-              )
-            }
-            options={[10, 20, 30, 50].map((s) => ({
-              label: String(s),
-              value: String(s),
-            }))}
-            selectSize="sm"
-            className="w-20"
-          />
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600">{tCommon("table.rowsPerPage")}:</span>
+            <Select
+              value={String(pageSize)}
+              onChange={(e) =>
+                router.push(
+                  buildUrl(1, Number(e.target.value), currentSearchTerm)
+                )
+              }
+              options={[10, 20, 30, 50].map((s) => ({
+                label: String(s),
+                value: String(s),
+              }))}
+              selectSize="sm"
+              className="w-20"
+              ariaLabel={tCommon("table.rowsPerPage") || "Rows per page"}
+            />
+          </div>
         </div>
       }
 

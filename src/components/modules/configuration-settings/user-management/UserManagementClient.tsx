@@ -5,6 +5,7 @@ import { Users, UserCheck, Filter, XCircle } from 'lucide-react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { Badge, Button } from '@/components/common';
 import { toast } from 'sonner';
+import { getCleanErrorMessage } from '@/lib/utils/backend-error-detection';
 import { useTranslations, useLocale } from 'next-intl';
 import { User, UserManagementProps, UserStatusFilter } from '@/types/user-management';
 import { deleteUserAction } from '@/app/[locale]/configuration-settings/user-management/actions.mutations';
@@ -116,8 +117,18 @@ export function UserManagementClient({
 
             toast.success(t('messages.deleteSuccess'));
           } else {
-            toast.error(res.message || t('messages.deleteError'));
+            let errorMsg = res.message || t('messages.deleteError');
+            if (res.message) {
+              if (res.message.startsWith('messages.') || res.message.startsWith('errors.')) {
+                errorMsg = t(res.message);
+              } else {
+                errorMsg = getCleanErrorMessage(res.message);
+              }
+            }
+            toast.error(errorMsg);
           }
+        } catch (error) {
+          toast.error(getCleanErrorMessage(error, t('messages.deleteError')));
         } finally {
           setDeletingId(null);
         }
@@ -151,8 +162,7 @@ export function UserManagementClient({
     }, 500);
 
     return () => clearTimeout(timeoutId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm, pathname, router, searchFromUrl]);
+  }, [searchTerm, pathname, router, searchFromUrl, searchParams]);
 
   const handleSearchChange = (newSearch: string) => {
     setSearchTerm(newSearch);

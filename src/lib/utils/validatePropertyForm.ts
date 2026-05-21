@@ -15,6 +15,7 @@ export const validatePropertyForm = (
 ) => {
     const validationData = {
         categoryId,
+        taxZoneId: formData.get("taxZoneId"),
         plotArea: formData.get("plotArea"),
         noOfResidentialToilets: formData.get("noOfResidentialToilets"),
         noOfCommercialToilets: formData.get("noOfCommercialToilets"),
@@ -22,6 +23,7 @@ export const validatePropertyForm = (
 
     return validateForm(validationData, {
         categoryId: propertyValidations.required("category", t),
+        taxZoneId: propertyValidations.required("taxZoneNo", t),
         plotArea: propertyValidations.number("plotArea", t),
         noOfResidentialToilets: propertyValidations.number("residentialToilets", t),
         noOfCommercialToilets: propertyValidations.number("commercialToilets", t),

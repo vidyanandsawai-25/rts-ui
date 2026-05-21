@@ -1,0 +1,136 @@
+{
+  "waterConnection": {
+    "page": {
+      "title": "Water Connection Management",
+      "subtitle": "Individual Property View"
+    },
+    "stats": {
+      "totalConnections": "Total Connections",
+      "activeConnections": "Active Connections",
+      "stoppedConnections": "Stopped Connections",
+      "yearlyRevenue": "Yearly Revenue"
+    },
+    "property": {
+      "owner": "Owner",
+      "contact": "Contact",
+      "email": "Email",
+      "address": "Address",
+      "propertyNo": "Property No",
+      "zone": "Zone",
+      "ward": "Ward",
+      "buildingType": "Building Type"
+    },
+    "list": {
+      "title": "Water Connections",
+      "subtitle": "Manage all connections for {propertyNo}",
+      "buttons": {
+        "add": "Add New"
+      },
+      "connections": "{count} Connections",
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive",
+        "stopped": "Stopped",
+        "activated": "Activated",
+        "stoppedOn": "Stopped"
+      },
+      "table": {
+        "connectionNo": "Connection No",
+        "type": "Type",
+        "tapSize": "Tap Size",
+        "applicableRate": "Applicable Rate",
+        "perMonth": "per month",
+        "perYear": "per year",
+        "category": "Category",
+        "applicableCharges": "Applicable Charges",
+        "installedOn": "Installed",
+        "status": "Status",
+        "actions": "Action"
+      }
+    },
+    "form": {
+      "addTitle": "Add New Connection",
+      "editTitle": "Edit Connection",
+      "subtitle": "Create a new water connection for this property.",
+      "editSubtitle": "Update water connection details.",
+      "fields": {
+        "connectionNo": {
+          "label": "Connection No",
+          "placeholder": "Enter connection number"
+        },
+        "meterNo": {
+          "label": "Meter No",
+          "placeholder": "Enter meter number"
+        },
+        "type": {
+          "label": "Type",
+          "placeholder": "Select type",
+          "domestic": "Domestic",
+          "commercial": "Commercial"
+        },
+        "installDate": {
+          "label": "Install Date"
+        },
+        "tapSize": {
+          "label": "Tap Size",
+          "placeholder": "Select tap size",
+          "15Inch": "15 Inch",
+          "20Inch": "20 Inch",
+          "25Inch": "25 Inch",
+          "32Inch": "32 Inch"
+        },
+        "status": {
+          "label": "Connection Status",
+          "placeholder": "Select status"
+        },
+        "applicableRate": {
+          "label": "Applicable Rate (₹)",
+          "autoCalculated": "Auto-calculated based on Tap Size"
+        }
+      },
+      "validation": {
+        "connectionNoRequired": "Connection No is required",
+        "connectionNoFormat": "Only letters, numbers and hyphens allowed",
+        "connectionNoInvalidChars": "Special characters like @#$%^&*()_ are not allowed",
+        "meterNoRequired": "Meter No is required",
+        "meterNoInvalidChars": "Special characters like @#$%^&*()_ are not allowed",
+        "typeRequired": "Type is required",
+        "tapSizeRequired": "Tap Size is required",
+        "statusRequired": "Connection Status is required",
+        "installDateRequired": "Install Date is required",
+        "fixErrors": "Please fix validation errors",
+        "rateNotFound": "No applicable rate found for the selected Type and Tap Size"
+      },
+      "status": {
+        "label": "Connection Status",
+        "active": "Connection is currently active",
+        "inactive": "Connection is currently stopped"
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "add": "Add Connection",
+        "update": "Update Connection"
+      },
+      "messages": {
+        "createSuccess": "Connection added successfully",
+        "updateSuccess": "Connection updated successfully",
+        "error": "Something went wrong"
+      }
+    },
+    "delete": {
+      "success": "Connection deleted successfully",
+      "error": "Cannot delete this connection"
+    },
+    "loading": {
+      "message": "Loading Water Connections...",
+      "description": "Please wait while we fetch the water connection data"
+    },
+    "error": {
+      "title": "Water Connection Error",
+      "description": "An error occurred while loading the water connection page. Please try again.",
+      "goHome": "Go Home",
+      "tryAgain": "Try Again",
+      "errorId": "Error ID: {id}"
+    }
+  }
+}

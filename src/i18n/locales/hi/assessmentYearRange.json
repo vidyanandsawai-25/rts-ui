@@ -46,6 +46,7 @@
         "yearFormat": "वर्ष 4 अंकों की संख्या होनी चाहिए",
         "yearRange": "वर्ष {min} और {max} के बीच होना चाहिए",
         "fromYearGreaterThanToYear": "वर्ष से, वर्ष तक से अधिक नहीं हो सकता",
+        "fromYearMustBeLessThanToYear": "वर्ष से, वर्ष तक से कम होना चाहिए",
         "mustBeActive": "सहेजने के लिए वर्ष सीमा सक्रिय होनी चाहिए"
       },
       "status": {
@@ -126,6 +127,7 @@
         "yearFormat": "वर्ष 4 अंकों की संख्या होनी चाहिए",
         "yearRange": "वर्ष {min} और {max} के बीच होना चाहिए",
         "fromYearGreaterThanToYear": "वर्ष से, वर्ष तक से अधिक नहीं हो सकता",
+        "fromYearMustBeLessThanToYear": "वर्ष से, वर्ष तक से कम होना चाहिए",
         "mustBeActive": "सहेजने के लिए वर्ष सीमा सक्रिय होनी चाहिए"
       },
       "status": {

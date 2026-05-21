@@ -40,7 +40,7 @@ export default function OldTaxationForm({
             <Input
               placeholder={t("oldDetails.zoneNamePlaceholder")}
               readOnly
-              className="h-11 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-gray-50/50"
+              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
               defaultValue={propertyOldDetails?.oldZoneNo || ""}
             />
           </div>
@@ -53,7 +53,7 @@ export default function OldTaxationForm({
             <Input
               placeholder={t("oldDetails.wardNoPlaceholder")}
               readOnly
-              className="h-11 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-gray-50/50"
+              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
               defaultValue={propertyOldDetails?.oldWardNo || ""}
             />
           </div>
@@ -66,7 +66,7 @@ export default function OldTaxationForm({
             <Input
               placeholder={t("oldDetails.propertyNoPlaceholder")}
               readOnly
-              className="h-11 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-gray-50/50"
+              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
               defaultValue={propertyOldDetails?.oldPropertyNo || ""}
             />
           </div>
@@ -79,7 +79,7 @@ export default function OldTaxationForm({
             <Input
               placeholder={t("oldDetails.partitionNoPlaceholder")}
               readOnly
-              className="h-11 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-gray-50/50"
+              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
               defaultValue={propertyOldDetails?.oldPartitionNo || ""}
             />
           </div>
@@ -92,7 +92,7 @@ export default function OldTaxationForm({
             <Input
               placeholder={t("oldDetails.eGovernanceNoPlaceholder")}
               readOnly
-              className="h-11 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-gray-50/50"
+              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
               defaultValue={propertyOldDetails?.oldEgovNo || ""}
             />
           </div>
@@ -104,9 +104,9 @@ export default function OldTaxationForm({
             </Label>
             <Input
               type="number"
-              readOnly
               placeholder={t("oldDetails.plotAreaPlaceholder")}
-              className="h-11 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-gray-50/50"
+              readOnly
+              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
               defaultValue={propertyOldDetails?.oldPlotArea || ""}
             />
           </div>
@@ -118,7 +118,7 @@ export default function OldTaxationForm({
             </Label>
             <Input
               placeholder={t("oldDetails.plotNoPlaceholder")}
-              className="h-11 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-gray-50/50"
+              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
               value={formData.oldPlotNo}
               onChange={(e) => handleInputChange('oldPlotNo', e.target.value)}
             />
@@ -132,7 +132,7 @@ export default function OldTaxationForm({
             <Input
               type="number"
               placeholder={t("oldDetails.constructionAreaPlaceholder")}
-              className="h-11 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-gray-50/50"
+              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
               value={formData.oldConstructionArea || ""}
               onChange={(e) => handleInputChange('oldConstructionArea', e.target.value)}
             />
@@ -146,7 +146,7 @@ export default function OldTaxationForm({
             <Input
               type="number"
               placeholder={t("oldDetails.rvPlaceholder")}
-              className="h-11 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-gray-50/50"
+              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
               value={formData.oldRV || ""}
               onChange={(e) => handleInputChange('oldRV', e.target.value)}
             />
@@ -160,7 +160,7 @@ export default function OldTaxationForm({
             <Input
               type="number"
               placeholder={t("oldDetails.alvPlaceholder")}
-              className="h-11 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-gray-50/50"
+              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
               value={formData.oldALV || ""}
               onChange={(e) => handleInputChange('oldALV', e.target.value)}
             />
@@ -174,7 +174,7 @@ export default function OldTaxationForm({
             <Input
               type="number"
               placeholder={t("oldDetails.propertyTaxPlaceholder")}
-              className="h-11 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-gray-50/50"
+              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
               value={formData.oldGeneralTax || ""}
               onChange={(e) => handleInputChange('oldGeneralTax', e.target.value)}
             />
@@ -188,7 +188,7 @@ export default function OldTaxationForm({
             <Input
               type="number"
               placeholder={t("oldDetails.totalTaxPlaceholder")}
-              className="h-11 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-gray-50/50"
+              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
               value={formData.oldTotalTax}
               onChange={(e) => handleInputChange('oldTotalTax', Number(e.target.value))}
             />
@@ -199,7 +199,7 @@ export default function OldTaxationForm({
           <Button
             onClick={handleUpdate}
             disabled={isSubmitting}
-            className="w-[17.5%] bg-[#2563eb] hover:bg-blue-700 text-white h-[46px] rounded-xl shadow-lg shadow-blue-900/10 font-bold text-sm flex items-center justify-center gap-2.5 transition-all active:scale-95"
+            className="w-[17.5%] bg-[#2563eb] hover:bg-blue-700 text-white h-11 rounded-xl shadow-lg shadow-blue-900/10 font-bold text-sm flex items-center justify-center gap-2.5 transition-all active:scale-95"
           >
             <div className="flex gap-2 text-2">
               <Save className="w-4 h-4" />

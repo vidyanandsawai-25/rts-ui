@@ -29,7 +29,8 @@
     "success": {
       "deleted": "Range deleted successfully.",
       "updated": "Rates updated successfully.",
-      "added": "Range added successfully."
+      "added": "Range added successfully.",
+      "come":"added"
         
     },
     "messages": {

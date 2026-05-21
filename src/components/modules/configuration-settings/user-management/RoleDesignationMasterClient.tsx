@@ -12,6 +12,7 @@ import {
 import { useConfirm } from '@/components/common/ConfirmProvider';
 import { useTranslations, useLocale } from 'next-intl';
 import { toast } from 'sonner';
+import { getCleanErrorMessage } from '@/lib/utils/backend-error-detection';
 import { useRoleTable } from '@/hooks/configuration-settings/user-management/useRoleTable';
 import { useDesignationTable } from '@/hooks/configuration-settings/user-management/useDesignationTable';
 import { RoleTable } from './components/RoleTable';
@@ -81,8 +82,18 @@ export function RoleDesignationMasterClient({
             );
             toast.success(t('messages.roleDeleteSuccess'));
           } else {
-            toast.error(res.message || t('messages.roleDeleteError'));
+            let errorMsg = res.message || t('messages.roleDeleteError');
+            if (res.message) {
+              if (res.message.startsWith('messages.') || res.message.startsWith('errors.')) {
+                errorMsg = t(res.message);
+              } else {
+                errorMsg = getCleanErrorMessage(res.message);
+              }
+            }
+            toast.error(errorMsg);
           }
+        } catch (error) {
+          toast.error(getCleanErrorMessage(error, t('messages.roleDeleteError')));
         } finally {
           setDeletingRoleId(null);
         }
@@ -109,8 +120,18 @@ export function RoleDesignationMasterClient({
             );
             toast.success(t('messages.designationDeleteSuccess'));
           } else {
-            toast.error(res.message || t('messages.designationDeleteError'));
+            let errorMsg = res.message || t('messages.designationDeleteError');
+            if (res.message) {
+              if (res.message.startsWith('messages.') || res.message.startsWith('errors.')) {
+                errorMsg = t(res.message);
+              } else {
+                errorMsg = getCleanErrorMessage(res.message);
+              }
+            }
+            toast.error(errorMsg);
           }
+        } catch (error) {
+          toast.error(getCleanErrorMessage(error, t('messages.designationDeleteError')));
         } finally {
           setDeletingDesignationId(null);
         }

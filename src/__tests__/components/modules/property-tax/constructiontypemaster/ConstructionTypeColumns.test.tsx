@@ -37,17 +37,20 @@ describe("getConstructionTypeColumns", () => {
     expect(screen.getByTestId("sort-default")).toBeInTheDocument();
   });
 
-  it("does not render sort icons for non-sortable columns (per API limitation)", () => {
-    const columns = getConstructionTypeColumns(mockT, mockTCommon, undefined, undefined, mockOnSort);
+  it("renders sortable headers for searchSequence column and not for isActive column", () => {
+    const columns = getConstructionTypeColumns(mockT, mockTCommon, "searchSequence", "desc", mockOnSort);
     
-    // searchSequence is not in sortableColumns list in Implementation
-    const colSequence = columns.find(c => c.key === "searchSequence");
-    if (typeof colSequence?.label !== "string") {
-        render(<div>{colSequence?.label}</div>);
-        expect(screen.queryByTestId("sort-default")).not.toBeInTheDocument();
-    } else {
-        expect(typeof colSequence.label).toBe("string");
-    }
+    const colSeq = columns.find(c => c.key === "searchSequence");
+    const { unmount } = render(<div>{colSeq?.label}</div>);
+    expect(screen.getByTestId("sort-desc")).toBeInTheDocument();
+    unmount();
+
+    // Check isActive column (should not be sortable)
+    const colActive = columns.find(c => c.key === "isActive");
+    render(<div>{colActive?.label}</div>);
+    expect(screen.queryByTestId("sort-default")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("sort-asc")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("sort-desc")).not.toBeInTheDocument();
   });
 
   it("correctly renders column values using the render function", () => {

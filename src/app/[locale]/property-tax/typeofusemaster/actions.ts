@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { locales } from "@/i18n/config";
 import { getUserIdFromCookies } from "@/lib/utils/cookie";
 import { fetchAllPaged } from "@/lib/utils/pagination-helpers";
+import { ApiError } from "@/lib/utils/api";
 import type { TypeOfUseMasterData, UseGroupIconKey, UseStatus, UseType, UseGroup, UseSubType } from "@/types/typeOfUse.types";
 
 import {
@@ -37,17 +38,40 @@ async function getCurrentUserId(): Promise<string> {
   return userId ? String(userId) : "1";
 }
 
-export async function getTypeOfUseMasterData(): Promise<TypeOfUseMasterData> {
-  const [groupsResp, typesResp] = await Promise.all([
-    getAllUseGroups(),
-    getAllUseTypes(),
-  ]);
+function extractErrorMessage(error: unknown, fallback: string): string {
+  if (error instanceof ApiError) {
+    // Use the backend error message from ApiError.error property
+    // This contains the actual error from the API response
+    return error.error || fallback;
+  }
+  
+  if (error instanceof Error) {
+    // Extract message and clean any leading/trailing artifacts
+    const msg = error.message.trim();
+    // Remove leading ": " if present (from empty contextMessage in ApiError)
+    return msg.startsWith(': ') ? msg.substring(2) : msg;
+  }
+  
+  // For non-Error types, use the fallback
+  return fallback;
+}
 
-  return {
-    groups: groupsResp.items,
-    types: typesResp.items,
-    subTypes: [], // 🔥 intentionally empty (loaded paged later)
-  };
+export async function getTypeOfUseMasterData(): Promise<TypeOfUseMasterData> {
+  try {
+    const [groupsResp, typesResp] = await Promise.all([
+      getAllUseGroups(),
+      getAllUseTypes(),
+    ]);
+
+    return {
+      groups: groupsResp.items,
+      types: typesResp.items,
+      subTypes: [], // 🔥 intentionally empty (loaded paged later)
+    };
+  } catch (error) {
+    const errorMessage = extractErrorMessage(error, "Failed to load Type of Use master data");
+    throw new Error(errorMessage, { cause: error });
+  }
 }
 
 
@@ -61,11 +85,21 @@ export async function getUseGroupsPaged(input: {
   filterLogic?: number;
   typeOfUseGroupId?: number;
 }) {
-  return await getUseGroupsPagedServer(input);
+  try {
+    return await getUseGroupsPagedServer(input);
+  } catch (error) {
+    const errorMessage = extractErrorMessage(error, "Failed to load groups");
+    throw new Error(errorMessage, { cause: error });
+  }
 }
 
 export async function getGroupById(id: string | number) {
-  return await getUseGroupById(id);
+  try {
+    return await getUseGroupById(id);
+  } catch (error) {
+    const errorMessage = extractErrorMessage(error, "Failed to load group");
+    throw new Error(errorMessage, { cause: error });
+  }
 }
 
 export async function createUseGroup(input: {
@@ -74,15 +108,20 @@ export async function createUseGroup(input: {
   icon: UseGroupIconKey;
   status?: UseStatus;
 }) {
-  await createUseGroupApi({
-    typeOfUseGroupCode: input.code,
-    groupName: input.name,
-    groupIcon: input.icon,
-    isActive: (input.status ?? "Active") === "Active",
-    createdBy: await getCurrentUserId(),
-  });
-  for (const locale of locales) {
-    revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+  try {
+    await createUseGroupApi({
+      typeOfUseGroupCode: input.code,
+      groupName: input.name,
+      groupIcon: input.icon,
+      isActive: (input.status ?? "Active") === "Active",
+      createdBy: await getCurrentUserId(),
+    });
+    for (const locale of locales) {
+      revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+    }
+  } catch (error) {
+    const errorMessage = extractErrorMessage(error, "Failed to create group");
+    throw new Error(errorMessage, { cause: error });
   }
 }
 
@@ -93,23 +132,34 @@ export async function updateUseGroup(input: {
   icon: UseGroupIconKey;
   status: UseStatus;
 }) {
-  await updateUseGroupApi({
-    typeOfUseGroupId: input.id,
-    typeOfUseGroupCode: input.code,
-    groupName: input.name,
-    groupIcon: input.icon,
-    isActive: input.status === "Active",
-    updatedBy: await getCurrentUserId(),
-  });
-  for (const locale of locales) {
-    revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+  try {
+    await updateUseGroupApi({
+      typeOfUseGroupId: input.id,
+      typeOfUseGroupCode: input.code,
+      groupName: input.name,
+      groupIcon: input.icon,
+      isActive: input.status === "Active",
+      updatedBy: await getCurrentUserId(),
+    });
+    
+    for (const locale of locales) {
+      revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+    }
+  } catch (error) {
+    const errorMessage = extractErrorMessage(error, "Failed to update group");
+    throw new Error(errorMessage, { cause: error });
   }
 }
 
 export async function deleteUseGroup(id: string | number) {
-  await deleteUseGroupApi(id);
-  for (const locale of locales) {
-    revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+  try {
+    await deleteUseGroupApi(id);
+    for (const locale of locales) {
+      revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+    }
+  } catch (error) {
+    const errorMessage = extractErrorMessage(error, "Failed to delete group");
+    throw new Error(errorMessage, { cause: error });
   }
 }
 
@@ -125,49 +175,70 @@ export async function getUseTypesPaged(input: {
   type?: string;
   typeOfUseGroupId?: number;
 }) {
-  return await getUseTypesPagedServer(input);
+  try {
+    return await getUseTypesPagedServer(input);
+  } catch (error) {
+    const errorMessage = extractErrorMessage(error, "Failed to load types");
+    throw new Error(errorMessage, { cause: error });
+  }
 }
 
-// ✅ NEW: Helper to fetch ALL types (handles backend page limits)
 export async function getAllUseTypes(searchTerm?: string) {
-  return await fetchAllPaged<UseType>(
-    getUseTypesPagedServer,
-    searchTerm ? { searchTerm } : {}
-  );
+  try {
+    return await fetchAllPaged<UseType>(
+      getUseTypesPagedServer,
+      searchTerm ? { searchTerm } : {}
+    );
+  } catch (error) {
+    const errorMessage = extractErrorMessage(error, "Failed to load all types");
+    throw new Error(errorMessage, { cause: error });
+  }
 }
 
-// ✅ NEW: Helper to fetch ALL groups
 export async function getAllUseGroups() {
-  return await fetchAllPaged<UseGroup>(getUseGroupsPagedServer);
+  try {
+    return await fetchAllPaged<UseGroup>(getUseGroupsPagedServer);
+  } catch (error) {
+    const errorMessage = extractErrorMessage(error, "Failed to load all groups");
+    throw new Error(errorMessage, { cause: error });
+  }
 }
 
-// ✅ NEW: Get paginated types by groupId (for server-side pagination)
 export async function getTypesByGroupPaged(input: {
   pageNumber: number;
   pageSize: number;
   typeOfUseGroupId?: number;
   searchTerm?: string;
 }) {
-  const res = await getUseTypesPagedServer({
-    pageNumber: input.pageNumber,
-    pageSize: input.pageSize,
-    typeOfUseGroupId: input.typeOfUseGroupId,
-    searchTerm: input.searchTerm,
-  });
+  try {
+    const res = await getUseTypesPagedServer({
+      pageNumber: input.pageNumber,
+      pageSize: input.pageSize,
+      typeOfUseGroupId: input.typeOfUseGroupId,
+      searchTerm: input.searchTerm,
+    });
 
-  return {
-    items: res.items || [],
-    totalCount: res.totalCount || 0,
-    totalPages: res.totalPages || 1,
-  };
+    return {
+      items: res.items || [],
+      totalCount: res.totalCount || 0,
+      totalPages: res.totalPages || 1,
+    };
+  } catch (error) {
+    const errorMessage = extractErrorMessage(error, "Failed to load types by group");
+    throw new Error(errorMessage, { cause: error });
+  }
 }
 
 
 export async function getTypeById(id: string | number) {
-  return await getUseTypeById(id);
+  try {
+    return await getUseTypeById(id);
+  } catch (error) {
+    const errorMessage = extractErrorMessage(error, "Failed to load type");
+    throw new Error(errorMessage, { cause: error });
+  }
 }
 
-// ✅ NEW: Lightweight lookup to resolve a type by ID or code without fetching all
 export async function resolveTypeId(typeIdOrCode: string): Promise<string> {
   if (!typeIdOrCode) return "";
   
@@ -199,17 +270,22 @@ export async function createUseType(input: {
   searchSequence: number;
   status?: UseStatus;
 }) {
-  await createUseTypeApi({
-    typeOfUseGroupId: input.groupId,
-    typeOfUseCode: input.code,
-    description: input.description,
-    type: input.type,
-    searchSequence: input.searchSequence,
-    isActive: (input.status ?? "Active") === "Active",
-    createdBy: await getCurrentUserId(),
-  });
-  for (const locale of locales) {
-    revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+  try {
+    await createUseTypeApi({
+      typeOfUseGroupId: input.groupId,
+      typeOfUseCode: input.code,
+      description: input.description,
+      type: input.type,
+      searchSequence: input.searchSequence,
+      isActive: (input.status ?? "Active") === "Active",
+      createdBy: await getCurrentUserId(),
+    });
+    for (const locale of locales) {
+      revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+    }
+  } catch (error) {
+    const errorMessage = extractErrorMessage(error, "Failed to create type");
+    throw new Error(errorMessage, { cause: error });
   }
 }
 
@@ -222,60 +298,74 @@ export async function updateUseType(input: {
   searchSequence: number;
   status: UseStatus;
 }) {
-  await updateUseTypeApi({
-    typeOfUseId: input.id,
-    typeOfUseGroupId: input.groupId,
-    typeOfUseCode: input.code,
-    description: input.description,
-    type: input.type,
-    searchSequence: input.searchSequence,
-    isActive: input.status === "Active",
-    updatedBy: await getCurrentUserId(),
-  });
-  for (const locale of locales) {
-    revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+  try {
+    await updateUseTypeApi({
+      typeOfUseId: input.id,
+      typeOfUseGroupId: input.groupId,
+      typeOfUseCode: input.code,
+      description: input.description,
+      type: input.type,
+      searchSequence: input.searchSequence,
+      isActive: input.status === "Active",
+      updatedBy: await getCurrentUserId(),
+    });
+    for (const locale of locales) {
+      revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+    }
+  } catch (error) {
+    const errorMessage = extractErrorMessage(error, "Failed to update type");
+    throw new Error(errorMessage, { cause: error });
   }
 }
 
 export async function deleteUseType(id: string | number) {
-  await deleteUseTypeApi(String(id));
-  for (const locale of locales) {
-    revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+  try {
+    await deleteUseTypeApi(String(id));
+    for (const locale of locales) {
+      revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+    }
+  } catch (error) {
+    const errorMessage = extractErrorMessage(error, "Failed to delete type");
+    throw new Error(errorMessage, { cause: error });
   }
 }
 
 /** ===================== DEPENDENCY CHECKING ===================== */
 
-/**
- * Check if a type has any sub-types
- */
 export async function checkTypeHasSubTypes(typeId: number): Promise<{ hasSubTypes: boolean; count: number }> {
-  const { totalCount } = await getSubTypesPagedServer({
-    pageNumber: 1,
-    pageSize: 1,
-    typeOfUseId: typeId,
-  });
-  
-  return {
-    hasSubTypes: totalCount > 0,
-    count: totalCount,
-  };
+  try {
+    const { totalCount } = await getSubTypesPagedServer({
+      pageNumber: 1,
+      pageSize: 1,
+      typeOfUseId: typeId,
+    });
+    
+    return {
+      hasSubTypes: totalCount > 0,
+      count: totalCount,
+    };
+  } catch (error) {
+    const errorMessage = extractErrorMessage(error, "Failed to check subtypes");
+    throw new Error(errorMessage, { cause: error });
+  }
 }
 
-/**
- * Check if a group has any types
- */
 export async function checkGroupHasTypes(groupId: number): Promise<{ hasTypes: boolean; count: number }> {
-  const { totalCount } = await getUseTypesPagedServer({
-    pageNumber: 1,
-    pageSize: 1,
-    typeOfUseGroupId: groupId,
-  });
-  
-  return {
-    hasTypes: totalCount > 0,
-    count: totalCount,
-  };
+  try {
+    const { totalCount } = await getUseTypesPagedServer({
+      pageNumber: 1,
+      pageSize: 1,
+      typeOfUseGroupId: groupId,
+    });
+    
+    return {
+      hasTypes: totalCount > 0,
+      count: totalCount,
+    };
+  } catch (error) {
+    const errorMessage = extractErrorMessage(error, "Failed to check group types");
+    throw new Error(errorMessage, { cause: error });
+  }
 }
 
 /** ===================== SUBTYPE ACTIONS ===================== */
@@ -285,20 +375,34 @@ export async function getSubTypesPaged(input: {
   typeOfUseId?: number;
   searchTerm?: string;
 }) {
-  return await getSubTypesPagedServer(input);
+  try {
+    return await getSubTypesPagedServer(input);
+  } catch (error) {
+    const errorMessage = extractErrorMessage(error, "Failed to load subtypes");
+    throw new Error(errorMessage, { cause: error });
+  }
 }
 
-// ✅ NEW: Helper to fetch ALL subtypes for a given typeId
 export async function getAllSubTypes(typeOfUseId?: number, searchTerm?: string) {
-  const params: Record<string, unknown> = {};
-  if (typeOfUseId) params.typeOfUseId = typeOfUseId;
-  if (searchTerm) params.searchTerm = searchTerm;
+  try {
+    const params: Record<string, unknown> = {};
+    if (typeOfUseId) params.typeOfUseId = typeOfUseId;
+    if (searchTerm) params.searchTerm = searchTerm;
 
-  return await fetchAllPaged<UseSubType>(getSubTypesPagedServer, params);
+    return await fetchAllPaged<UseSubType>(getSubTypesPagedServer, params);
+  } catch (error) {
+    const errorMessage = extractErrorMessage(error, "Failed to load all subtypes");
+    throw new Error(errorMessage, { cause: error });
+  }
 }
 
 export async function getSubTypeById(id: string | number) {
-  return await getSubTypeByIdApi(id);
+  try {
+    return await getSubTypeByIdApi(id);
+  } catch (error) {
+    const errorMessage = extractErrorMessage(error, "Failed to load subtype");
+    throw new Error(errorMessage, { cause: error });
+  }
 }
 
 export async function createSubType(input: {
@@ -307,16 +411,21 @@ export async function createSubType(input: {
   searchSequence: number;
   status?: UseStatus;
 }) {
-  await createSubTypeApi({
-    typeOfUseId: input.typeId,
-    description: input.description,
-    searchSequence: input.searchSequence,
-    isActive: (input.status ?? "Active") === "Active",
-    createdBy: await getCurrentUserId(),
-  });
+  try {
+    await createSubTypeApi({
+      typeOfUseId: input.typeId,
+      description: input.description,
+      searchSequence: input.searchSequence,
+      isActive: (input.status ?? "Active") === "Active",
+      createdBy: await getCurrentUserId(),
+    });
 
-  for (const locale of locales) {
-    revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+    for (const locale of locales) {
+      revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+    }
+  } catch (error) {
+    const errorMessage = extractErrorMessage(error, "Failed to create subtype");
+    throw new Error(errorMessage, { cause: error });
   }
 }
 
@@ -327,24 +436,34 @@ export async function updateSubType(input: {
   searchSequence: number;
   status: UseStatus;
 }) {
-  await updateSubTypeApi({
-    subTypeOfUseId: input.id,
-    typeOfUseId: input.typeId,
-    description: input.description,
-    searchSequence: input.searchSequence,
-    isActive: input.status === "Active",
-    updatedBy: await getCurrentUserId(),
-  });
+  try {
+    await updateSubTypeApi({
+      subTypeOfUseId: input.id,
+      typeOfUseId: input.typeId,
+      description: input.description,
+      searchSequence: input.searchSequence,
+      isActive: input.status === "Active",
+      updatedBy: await getCurrentUserId(),
+    });
 
-  for (const locale of locales) {
-    revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+    for (const locale of locales) {
+      revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+    }
+  } catch (error) {
+    const errorMessage = extractErrorMessage(error, "Failed to update subtype");
+    throw new Error(errorMessage, { cause: error });
   }
 }
 
 export async function deleteSubType(id: string | number) {
-  await deleteSubTypeApi(String(id));
-  for (const locale of locales) {
-    revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+  try {
+    await deleteSubTypeApi(String(id));
+    for (const locale of locales) {
+      revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+    }
+  } catch (error) {
+    const errorMessage = extractErrorMessage(error, "Failed to delete subtype");
+    throw new Error(errorMessage, { cause: error });
   }
 }
 

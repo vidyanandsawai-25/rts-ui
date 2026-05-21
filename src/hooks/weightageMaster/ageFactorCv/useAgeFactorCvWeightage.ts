@@ -24,6 +24,8 @@ interface UseAgeFactorCvWeightageParams {
         initialAgeRangeOptions: Option[];
     };
     allAgeFactors: AgeFactorCVMaster[];
+    sortBy?: string;
+    sortOrder?: string;
 }
 
 /**
@@ -34,12 +36,15 @@ export const useAgeFactorCvWeightage = ({
     paginationData,
     options,
     allAgeFactors,
+    sortBy,
+    sortOrder,
 }: UseAgeFactorCvWeightageParams) => {
     const { data, pageSize } = paginationData;
     const { constructionTypeOptions, initialAgeRangeOptions } = options;
 
     const t = useTranslations('ageFactorMaster');
     const tW = useTranslations('weightageMaster');
+    const tCommon = useTranslations('common');
 
     const [isAddYearRangeModalOpen, setIsAddYearRangeModalOpen] = useState(false);
 
@@ -77,7 +82,14 @@ export const useAgeFactorCvWeightage = ({
         changePageSize,
         handleClearAll,
         getMissingRecordsCount,
-    } = useAgeFactorCvFilters({ initialAgeRangeOptions });
+        sortBy: activeSortBy,
+        sortOrder: activeSortOrder,
+        handleSort,
+    } = useAgeFactorCvFilters({
+        initialAgeRangeOptions,
+        initialSortBy: sortBy,
+        initialSortOrder: sortOrder,
+    });
 
     const newRecords = data.filter(row => row.id === 0 && !sessionCreatedUids.has(getRowUid(row)));
     const hasNewRecords = newRecords.length > 0;
@@ -217,6 +229,7 @@ export const useAgeFactorCvWeightage = ({
     return {
         t,
         tW,
+        tCommon,
         selectedYear,
         editableRows,
         constructionType,
@@ -256,5 +269,8 @@ export const useAgeFactorCvWeightage = ({
         },
         changePage: (page: number) => changePage(page, pageSize),
         changePageSize,
+        sortBy: activeSortBy,
+        sortOrder: activeSortOrder,
+        handleSort,
     };
 };

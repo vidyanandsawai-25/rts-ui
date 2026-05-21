@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Role } from '@/types/user-management';
 
 export function useRoleTable(initialRoles: Role[]) {
@@ -8,6 +8,11 @@ export function useRoleTable(initialRoles: Role[]) {
   const [searchTerm, setSearchTerm] = useState('');
   const [pageNumber, setPageNumber] = useState(1);
   const pageSize = 10;
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setRoles(initialRoles);
+  }, [initialRoles]);
 
   const filteredRoles = useMemo(() => {
     const term = searchTerm.toLowerCase();

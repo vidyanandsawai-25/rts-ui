@@ -218,7 +218,7 @@ describe("Assessment Year Range Service", () => {
 
       await deleteAssessmentYearRange(mockConfig, 1);
 
-      expect(mockDelete).toHaveBeenCalledWith("/AssessmentYearRange/1");
+      expect(mockDelete).toHaveBeenCalledWith("/AssessmentYearRange/1/purge");
     });
 
     it("throws error for invalid ID", async () => {

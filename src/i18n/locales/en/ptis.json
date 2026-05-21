@@ -22,7 +22,16 @@
       "fetchWardsFailed": "Failed to load ward list. Please try again.",
       "fetchPropertiesFailed": "Failed to load property list for this ward.",
       "navigationFailed": "Navigation failed. Please refresh the page and try again.",
-      "generic": "An unexpected error occurred. Please try again."
+      "generic": "An unexpected error occurred. Please try again.",
+      "wardNoRequired": "Ward number is required",
+      "wardNoMax": "Ward number must be at most 15 characters",
+      "wardNoPattern": "Ward number must contain only letters and numbers",
+      "wardIdRequired": "Ward ID is required",
+      "propertyNoRequired": "Property number is required",
+      "propertyNoMax": "Property number must be at most 10 characters",
+      "propertyNoPattern": "Property number must contain only letters and numbers",
+      "partitionNoMax": "Partition number must be at most 10 characters",
+      "partitionNoPattern": "Partition number must contain only letters and numbers"
     }
   },
   "tabs": {
@@ -317,7 +326,7 @@
   },
   "modules": {
     "PtisTaxDetails": {
-      "title": "Taxation Details",
+      "title": "Tax Details",
       "oldTotalRv": "[Old] Total RV",
       "oldTotalAlv": "[Old] Total ALV",
       "oldTotalCv": "[Old] Total CV",

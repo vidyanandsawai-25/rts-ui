@@ -48,6 +48,7 @@ export interface DesignationFormProps {
   setFormData: React.Dispatch<React.SetStateAction<DesignationFormData>>;
   onSubmit: (e: React.FormEvent) => void;
   isSubmitting?: boolean;
+  errors?: Record<string, string>;
 }
 
 export interface DesignationTableProps {
@@ -79,6 +80,7 @@ export interface RoleFormProps {
   setFormData: React.Dispatch<React.SetStateAction<RoleFormData>>;
   onSubmit: (e: React.FormEvent) => void;
   isSubmitting?: boolean;
+  errors?: Record<string, string>;
 }
 
 export interface RoleTableProps {

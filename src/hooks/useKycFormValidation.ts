@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { KycDetails, KycFormData } from '@/types/property-kyc.types';
-import { kycValidators } from '@/lib/utils/kyc-validation.constants';
+import { kycValidators, enhancedKycValidators } from '@/lib/utils/kyc-validation.constants';
 import type { useDigitInputs } from './useDigitInputs';
 
 /**
@@ -46,13 +46,42 @@ export const useKycFormValidation = (
   /**
    * Validates all required form fields
    * Returns true if form can be submitted
+   * Checks for valid email, name, address, mobile, aadhar, shop name, and occupier name formats
    */
   const canSubmit = useCallback(() => {
+    const ownerName = formData.ownerName ?? '';
+    const email = formData.emailId ?? '';
+    const address = formData.address ?? '';
+    const shopName = formData.flatOrShopName ?? '';
+    const occupierName = formData.occupierName ?? '';
+    
+    // Check if owner name exists and is valid
+    const isOwnerNameValid = ownerName.trim().length > 0 && kycValidators.isValidName(ownerName);
+    
+    // Check if email is either empty (optional) or valid with enhanced validation (strict)
+    const isEmailValid = enhancedKycValidators.isValidEmail(email, true);
+    
+    // Check if address is valid (can be empty or valid)
+    const isAddressValid = enhancedKycValidators.isValidAddress(address);
+    
+    // Check if shop name is valid (can be empty or valid, must not contain numbers)
+    const isShopNameValid = enhancedKycValidators.isValidShopName(shopName);
+    
+    // Check if occupier name is valid (can be empty or valid, must not contain numbers)
+    const isOccupierNameValid = enhancedKycValidators.isValidOccupierName(occupierName);
+    
+    // Check mobile and aadhar validity
+    const isMobileValid = kycValidators.isValidMobile(mobileInput.value);
+    const isAadharValid = kycValidators.isValidAadhar(aadharInput.value);
+    
     return (
-      kycValidators.isValidName(formData.ownerName ?? '') &&
-      kycValidators.isValidEmail(formData.emailId ?? '') &&
-      kycValidators.isValidMobile(mobileInput.value) &&
-      kycValidators.isValidAadhar(aadharInput.value)
+      isOwnerNameValid &&
+      isEmailValid &&
+      isAddressValid &&
+      isShopNameValid &&
+      isOccupierNameValid &&
+      isMobileValid &&
+      isAadharValid
     );
   }, [formData, mobileInput.value, aadharInput.value]);
 

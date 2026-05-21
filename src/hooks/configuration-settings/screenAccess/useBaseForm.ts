@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { toast } from 'sonner';
 import { useLoading } from '@/hooks/useLoading';
+import { getCleanErrorMessage } from '@/lib/utils/backend-error-detection';
 
 interface ActionResponse<T> {
   success: boolean;
@@ -158,12 +159,19 @@ export function useBaseForm<T extends { isActive?: boolean }>({
         router.refresh();
         handleCancel();
       } else {
-        const errorMsg = response.message ? t(response.message) : tCommon('errors.saveFailed');
+        let errorMsg = response.message || tCommon('errors.saveFailed');
+        if (response.message) {
+          if (response.message.startsWith('messages.') || response.message.startsWith('errors.')) {
+            errorMsg = t(response.message);
+          } else {
+            errorMsg = getCleanErrorMessage(response.message);
+          }
+        }
         toast.error(errorMsg);
         if (response.validationErrors) setErrors(response.validationErrors);
       }
-    } catch {
-      toast.error(tCommon('errors.generic'));
+    } catch (error) {
+      toast.error(getCleanErrorMessage(error, tCommon('errors.generic')));
     } finally {
       stopLoading();
     }

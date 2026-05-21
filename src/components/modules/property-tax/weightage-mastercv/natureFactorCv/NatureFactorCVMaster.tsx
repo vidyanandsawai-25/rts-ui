@@ -19,6 +19,8 @@ interface NatureFactorCVMasterProps {
     totalPages: number;
     assessmentYearOptions: Option[];
     constructionTypeOptions: Option[];
+    sortBy?: string;
+    sortOrder?: string;
 }
 
 const NatureFactorCVMaster: React.FC<NatureFactorCVMasterProps> = ({
@@ -29,9 +31,11 @@ const NatureFactorCVMaster: React.FC<NatureFactorCVMasterProps> = ({
     totalPages,
     assessmentYearOptions,
     constructionTypeOptions,
+    sortBy,
+    sortOrder,
 }) => {
     const {
-        t, tW,
+        t, tW, tCommon,
         selectedYear, constructionType, factorValue,
         editableRows,
         isUpdating, isBulkUpdating, isGeneratingAll,
@@ -42,11 +46,13 @@ const NatureFactorCVMaster: React.FC<NatureFactorCVMasterProps> = ({
         getRowUid, handleCellChange, handleUpdate, handleCancel,
         handleAssessmentYearChange, handleConstructionTypeChange, setFactorValue,
         handleApplyFilter, handleBulkUpdate, handleGenerateAll, handleClearAll,
-        changePage, changePageSize
-    } = useNatureFactorCv({ data, pageSize });
+        changePage, changePageSize, handleSort,
+        sortBy: activeSortBy, sortOrder: activeSortOrder
+    } = useNatureFactorCv({ data, pageSize, sortBy, sortOrder });
 
     const columns = getNatureFactorCvColumns({
-        t, tW, editableRows, getRowUid, handleCellChange
+        t, tW, tCommon, editableRows, getRowUid, handleCellChange,
+        sortBy: activeSortBy, sortOrder: activeSortOrder, onSort: handleSort
     });
 
     const renderActions = (row: NatureFactorCVMasterType) => {

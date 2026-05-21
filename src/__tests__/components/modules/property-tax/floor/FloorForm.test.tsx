@@ -59,7 +59,6 @@ const messages = {
           start: 'Start',
           end: 'End',
           prefix: 'Prefix',
-          suffix: 'Suffix',
           startPlaceholder: 'Enter start value',
           endPlaceholder: 'Enter end value',
         },
@@ -69,8 +68,6 @@ const messages = {
           placeholder: 'Enter name',
           prefix: 'Prefix',
           prefixPlaceholder: 'Enter prefix',
-          suffix: 'Suffix',
-          suffixPlaceholder: 'Enter suffix',
         },
         validation: {
           codeRequired: 'Floor code is required',
@@ -297,7 +294,6 @@ describe('FloorForm — Range Mode', () => {
     expect(await screen.findByLabelText(/Start/)).toBeInTheDocument();
     expect(await screen.findByLabelText(/End/)).toBeInTheDocument();
     expect(await screen.findByLabelText('Prefix')).toBeInTheDocument();
-    expect(await screen.findByLabelText('Suffix')).toBeInTheDocument();
   });
 
   it('shows validation errors for invalid range input', async () => {
@@ -321,7 +317,6 @@ describe('FloorForm — Range Mode', () => {
     fireEvent.change(await screen.findByLabelText(/Start/), { target: { value: '1' } });
     fireEvent.change(await screen.findByLabelText(/End/), { target: { value: '3' } });
     fireEvent.change(await screen.findByLabelText('Prefix'), { target: { value: 'F' } });
-    fireEvent.change(await screen.findByLabelText('Suffix'), { target: { value: 'A' } });
     submitForm(document.body);
     await waitFor(() => {
       expect(createFloorRangeAction).toHaveBeenCalledWith(
@@ -329,7 +324,6 @@ describe('FloorForm — Range Mode', () => {
           rangeFrom: '1',
           rangeTo: '3',
           prefix: 'F',
-          suffix: 'A',
         })
       );
     });

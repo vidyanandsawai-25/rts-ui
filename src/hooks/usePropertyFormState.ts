@@ -16,6 +16,10 @@ export const usePropertyFormState = (propertyData: PropertyBasicDetailsApiItem |
 
     const [wingId, setWingId] = useState<number | null>(initialWingId);
     const [wingName, setWingName] = useState(initialWingName);
+    
+    const [moujaId, setMoujaId] = useState<number | null>(propertyData?.moujaId ?? null);
+    const [moujaName, setMoujaName] = useState<string>(propertyData?.moujaName ?? '');
+
     const [hasChanges, setHasChanges] = useState(false);
 
     return {
@@ -27,6 +31,10 @@ export const usePropertyFormState = (propertyData: PropertyBasicDetailsApiItem |
         setWingId,
         wingName,
         setWingName,
+        moujaId,
+        setMoujaId,
+        moujaName,
+        setMoujaName,
         hasChanges,
         setHasChanges,
         initialWingId,
