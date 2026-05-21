@@ -31,8 +31,7 @@ export async function fetchConstructionPagedServerAction(
     }
 
     // Validate sortBy against allowed columns to prevent injection
-    // Note: API only supports sorting by constructionCode and description
-    const allowedSortColumns = ["constructionCode", "description"];
+    const allowedSortColumns = ["constructionCode", "description", "searchSequence"];
     const validSortBy = sortBy && allowedSortColumns.includes(sortBy) ? sortBy : undefined;
     const validSortOrder = sortOrder && ["asc", "desc"].includes(sortOrder.toLowerCase()) ? sortOrder.toLowerCase() : undefined;
 

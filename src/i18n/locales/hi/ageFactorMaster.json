@@ -3,6 +3,7 @@
     "title": "आयु कारक मास्टर",
     "columns": {
       "constructionType": "निर्माण प्रकार",
+      "description": "विवरण",
       "ageFrom": "आयु से",
       "ageTo": "आयु तक",
       "factor": "कारक",

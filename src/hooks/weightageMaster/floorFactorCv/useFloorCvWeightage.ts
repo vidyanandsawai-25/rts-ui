@@ -8,12 +8,16 @@ import { useFloorCvRowOps } from "./useFloorCvRowOps";
 import { useFloorCvBulkOps } from "./useFloorCvBulkOps";
 import { useFloorCvToasts } from "./useFloorCvToasts";
 import { useFloorCvSessionTracking } from "./useFloorCvSessionTracking";
+import type { Option } from "@/components/common";
 
 export interface UseFloorCvWeightageProps {
     data: FloorFactorCVMaster[];
     pageNumber: number;
     pageSize: number;
     totalCount: number;
+    floorOptions: Option[];
+    sortBy?: string;
+    sortOrder?: string;
 }
 
 export function useFloorCvWeightage({
@@ -21,6 +25,9 @@ export function useFloorCvWeightage({
     pageNumber,
     pageSize,
     totalCount,
+    floorOptions,
+    sortBy: initialSortBy,
+    sortOrder: initialSortOrder,
 }: UseFloorCvWeightageProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -69,6 +76,20 @@ export function useFloorCvWeightage({
             hasShownWarningRef.current = false;
         }
     }, [hasNewRecords, tW, addToast]);
+
+    // Validate floor range immediately upon selection
+    useEffect(() => {
+        if (fromFloor && toFloor && floorOptions.length > 0) {
+            const fromIndex = floorOptions.findIndex(o => o.value === fromFloor);
+            const toIndex = floorOptions.findIndex(o => o.value === toFloor);
+            if (fromIndex > -1 && toIndex > -1 && fromIndex > toIndex) {
+                addToast("error", t("messages.fromFloorGreaterError"));
+                setTimeout(() => {
+                    setToFloor(""); // Reset toFloor to prevent invalid selections
+                }, 0);
+            }
+        }
+    }, [fromFloor, toFloor, floorOptions, addToast, t]);
 
     const refreshPage = () => router.refresh();
 
@@ -120,6 +141,7 @@ export function useFloorCvWeightage({
         addToast,
         refreshPage,
         clearFilters,
+        floorOptions,
     });
 
     const buildFloorUrl = (params: {
@@ -127,6 +149,8 @@ export function useFloorCvWeightage({
         pageSize?: number;
         year?: string;
         q?: string;
+        sortBy?: string;
+        sortOrder?: string;
     }): string => {
         const urlParams = new URLSearchParams();
         urlParams.set("page", String(params.page ?? 1));
@@ -137,6 +161,12 @@ export function useFloorCvWeightage({
         
         const year = params.year ?? selectedYear;
         if (year) urlParams.set("selectedYearRange", year);
+
+        // Preserve sort params across navigations
+        const sb = "sortBy" in params ? params.sortBy : initialSortBy;
+        const so = "sortOrder" in params ? params.sortOrder : initialSortOrder;
+        if (sb) urlParams.set("sortBy", sb);
+        if (so) urlParams.set("sortOrder", so);
         
         return `/${locale}/property-tax/weightage-master?${urlParams.toString()}`;
     };
@@ -163,6 +193,16 @@ export function useFloorCvWeightage({
     const handleAssessmentYearChange = (value: string) => {
         setSelectedYear(value);
         router.push(buildFloorUrl({ page: 1, year: value }));
+    };
+
+    /* ================= SORT ================= */
+    const handleSort = (columnKey: string): void => {
+        // Toggle order if same column, default to asc for new column
+        const newSortOrder =
+            initialSortBy === columnKey && initialSortOrder === "asc" ? "desc" : "asc";
+        router.push(
+            buildFloorUrl({ page: 1, sortBy: columnKey, sortOrder: newSortOrder })
+        );
     };
 
     // Derived states for button enable/disable logic
@@ -206,6 +246,10 @@ export function useFloorCvWeightage({
         totalCount,
         pageSize,
         pageNumber,
+        // Sort
+        sortBy: initialSortBy,
+        sortOrder: initialSortOrder,
+        handleSort,
         // Derived
         isApplyDisabled,
         isBulkUpdateDisabled,
