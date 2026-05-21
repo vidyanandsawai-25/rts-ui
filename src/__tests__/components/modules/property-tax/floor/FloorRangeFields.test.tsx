@@ -48,7 +48,6 @@ const defaultFormData: FloorRangeFormModel = {
   rangeFrom: 1,
   rangeTo: 10,
   prefix: '',
-  suffix: '',
   isActive: true,
   autoGenerateSubFloor: false,
 };
