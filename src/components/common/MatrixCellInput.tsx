@@ -148,7 +148,7 @@ export const MatrixCellInput = ({
     : "bg-gray-50 text-gray-500 border-gray-200";
 
   const stepValue = allowDecimals ? Math.pow(10, -decimalPlaces) : 1;
-  const placeholderValue = allowDecimals ? (0).toFixed(decimalPlaces) : "0";
+  const placeholderValue = "0";
  
   return (
 <input
