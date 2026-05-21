@@ -1,6 +1,7 @@
 import { BankMasterDto, BankMasterFormData } from '@/types/bank-master.types';
 import { ApiError } from '@/lib/utils/api';
 import { parseBoolean } from '@/lib/utils/type-guards';
+import { toTitleCase } from '@/lib/utils/format';
 import * as CONST from './bank-master.constants';
 
 export type BankMasterValidationCode =
@@ -49,7 +50,7 @@ export function validateBankMaster(data: BankMasterFormData): BankMasterErrors {
   else if (data.state.length > CONST.STATE_MAX) errors.state = 'stateLength';
 
   if (!data.pincode) errors.pincode = 'pincodeRequired';
-  else if (!new RegExp(`^\\d{${CONST.PINCODE_MAX}}$`).test(data.pincode))
+  else if (!new RegExp(`^[1-9]\\d{${CONST.PINCODE_MAX - 1}}$`).test(data.pincode))
     errors.pincode = 'pincodeFormat';
 
   return errors;
@@ -87,7 +88,7 @@ export function normalizeBankData(
     ifscCode: (data.ifscCode ?? '').trim().toUpperCase(),
     address: (data.address ?? '').trim(),
     city: (data.city ?? '').trim(),
-    state: (data.state ?? '').trim(),
+    state: toTitleCase(data.state ?? ''),
     pincode: (data.pincode ?? '').trim(),
     isActive: parseBoolean(data.isActive ?? true),
   };

@@ -64,7 +64,6 @@ export function useBankSearch({ locale, startTransition }: UseBankSearchProps) {
     setSearch(sanitized);
   };
 
-
   return {
     search,
     currentSearchTerm,

@@ -12,7 +12,7 @@ interface DesignationFormWrapperProps {
 
 export function DesignationFormWrapper({ initialData, isEdit }: DesignationFormWrapperProps) {
   const router = useRouter();
-  const { designationFormData, setDesignationFormData, handleDesignationSubmit, isSubmitting } =
+  const { designationFormData, setDesignationFormData, handleDesignationSubmit, isSubmitting, errors } =
     useDesignationForm(() => {
       router.back();
       router.refresh();
@@ -27,6 +27,7 @@ export function DesignationFormWrapper({ initialData, isEdit }: DesignationFormW
       setFormData={setDesignationFormData}
       onSubmit={handleDesignationSubmit}
       isSubmitting={isSubmitting}
+      errors={errors}
     />
   );
 }

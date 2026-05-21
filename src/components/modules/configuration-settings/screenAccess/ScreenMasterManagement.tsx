@@ -16,6 +16,7 @@ import {
 } from '@/app/[locale]/configuration-settings/screenAccess/action.mutations';
 
 import { toast } from 'sonner';
+import { getCleanErrorMessage } from '@/lib/utils/backend-error-detection';
 import { ManagementStats } from './components/ManagementStats';
 import { ScreenTableSection } from './components/ScreenTableSection';
 import { GroupTableSection } from './components/GroupTableSection';
@@ -26,6 +27,7 @@ import { useQueryTransition } from '@/hooks/useQueryTransition';
 interface ScreenMasterManagementProps {
   subTab?: string;
   initialScreens: ScreenMasterData[];
+  allScreens?: ScreenMasterData[];
   initialGroups: ScreenGroupMasterData[];
   screensPagination: PaginationData;
   groupsPagination: PaginationData;
@@ -34,6 +36,7 @@ interface ScreenMasterManagementProps {
 export const ScreenMasterManagement: React.FC<ScreenMasterManagementProps> = ({
   subTab = 'screens',
   initialScreens,
+  allScreens = [],
   initialGroups,
   screensPagination,
   groupsPagination,
@@ -76,6 +79,16 @@ export const ScreenMasterManagement: React.FC<ScreenMasterManagementProps> = ({
   });
 
   const stats = React.useMemo(() => {
+    if (allScreens && allScreens.length > 0) {
+      const total = allScreens.length;
+      const active = allScreens.filter((s) => s.isActive).length;
+      return {
+        total,
+        active,
+        inactive: Math.max(0, total - active),
+      };
+    }
+
     const total = screensPagination.totalCount || initialScreens.length;
     let active = screensPagination.activeCount || 0;
 
@@ -89,7 +102,7 @@ export const ScreenMasterManagement: React.FC<ScreenMasterManagementProps> = ({
       active,
       inactive: Math.max(0, total - active),
     };
-  }, [screensPagination, initialScreens]);
+  }, [screensPagination, initialScreens, allScreens]);
 
   const onTabChange = (value: string | number) => {
     updateQueries({ subTab: String(value) });
@@ -125,17 +138,39 @@ export const ScreenMasterManagement: React.FC<ScreenMasterManagementProps> = ({
               confirm({
                 variant: 'delete',
                 onConfirm: async () => {
-                  const res = await deleteScreenAction(id);
-                  if (res.success) {
-                    toast.success(t('screenManagement.screens.messages.deleteSuccess'));
-                    await new Promise<void>((resolve) => {
-                      startTransition(() => {
-                        router.refresh();
-                        resolve();
+                  try {
+                    const res = await deleteScreenAction(id);
+                    if (res.success) {
+                      toast.success(t('screenManagement.screens.messages.deleteSuccess'));
+                      await new Promise<void>((resolve) => {
+                        startTransition(() => {
+                          router.refresh();
+                          resolve();
+                        });
                       });
-                    });
-                  } else {
-                    toast.error(res.message || t('screenManagement.screens.messages.deleteError'));
+                    } else {
+                      let errorMsg =
+                        res.message || t('screenManagement.screens.messages.deleteError');
+                      if (res.message) {
+                        if (
+                          res.message.startsWith('messages.') ||
+                          res.message.startsWith('errors.') ||
+                          res.message.startsWith('screenManagement.')
+                        ) {
+                          errorMsg = t(res.message);
+                        } else {
+                          errorMsg = getCleanErrorMessage(res.message);
+                        }
+                      }
+                      toast.error(errorMsg);
+                    }
+                  } catch (error) {
+                    toast.error(
+                      getCleanErrorMessage(
+                        error,
+                        t('screenManagement.screens.messages.deleteError')
+                      )
+                    );
                   }
                 },
               });
@@ -166,17 +201,36 @@ export const ScreenMasterManagement: React.FC<ScreenMasterManagementProps> = ({
               confirm({
                 variant: 'delete',
                 onConfirm: async () => {
-                  const res = await deleteScreenGroupAction(id);
-                  if (res.success) {
-                    toast.success(t('screenManagement.groups.messages.deleteSuccess'));
-                    await new Promise<void>((resolve) => {
-                      startTransition(() => {
-                        router.refresh();
-                        resolve();
+                  try {
+                    const res = await deleteScreenGroupAction(id);
+                    if (res.success) {
+                      toast.success(t('screenManagement.groups.messages.deleteSuccess'));
+                      await new Promise<void>((resolve) => {
+                        startTransition(() => {
+                          router.refresh();
+                          resolve();
+                        });
                       });
-                    });
-                  } else {
-                    toast.error(res.message || t('screenManagement.groups.messages.deleteError'));
+                    } else {
+                      let errorMsg =
+                        res.message || t('screenManagement.groups.messages.deleteError');
+                      if (res.message) {
+                        if (
+                          res.message.startsWith('messages.') ||
+                          res.message.startsWith('errors.') ||
+                          res.message.startsWith('screenManagement.')
+                        ) {
+                          errorMsg = t(res.message);
+                        } else {
+                          errorMsg = getCleanErrorMessage(res.message);
+                        }
+                      }
+                      toast.error(errorMsg);
+                    }
+                  } catch (error) {
+                    toast.error(
+                      getCleanErrorMessage(error, t('screenManagement.groups.messages.deleteError'))
+                    );
                   }
                 },
               });

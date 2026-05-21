@@ -74,7 +74,7 @@ describe('useUserForm', () => {
   });
 
   it('should handle navigation steps correctly', () => {
-    const { result } = renderHook(() => useUserForm(onSuccess));
+    const { result } = renderHook(() => useUserForm(onSuccess, mockUser));
 
     expect(result.current.currentTab).toBe('basic');
     expect(result.current.isFirstStep).toBe(true);

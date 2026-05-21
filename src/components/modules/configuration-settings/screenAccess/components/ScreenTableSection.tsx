@@ -58,9 +58,14 @@ export const ScreenTableSection: React.FC<ScreenTableSectionProps> = (props) => 
         key: 'screenName',
         label: t('screenManagement.screens.table.screenName'),
         width: '20%',
-        render: (_, screen) => (
-          <span className="font-medium text-gray-900">{screen.screenName}</span>
-        ),
+        render: (_, screen) => {
+          // Fall back to screenNameLocal if screenName is garbled or empty
+          const nameToDisplay =
+            screen.screenNameLocal && screen.screenNameLocal !== '???????'
+              ? screen.screenNameLocal
+              : screen.screenName;
+          return <span className="font-medium text-gray-900">{nameToDisplay}</span>;
+        },
       },
       {
         key: 'screenCode',

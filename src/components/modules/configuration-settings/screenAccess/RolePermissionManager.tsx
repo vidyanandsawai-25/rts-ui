@@ -13,6 +13,7 @@ import {
   RoleMasterData,
   ScreenAccessPermissionData,
 } from '@/types/screen-access.types';
+import { getCleanErrorMessage } from '@/lib/utils/backend-error-detection';
 import { updateScreenAccessAction } from '@/app/[locale]/configuration-settings/screenAccess/action.mutations';
 
 import { toast } from 'sonner';
@@ -85,13 +86,25 @@ export function RolePermissionManager({
           router.refresh();
         });
       } else {
-        toast.error(res.message || t('accessControl.messages.updateError'));
+        let errorMsg = res.message || t('accessControl.messages.updateError');
+        if (res.message) {
+          if (
+            res.message.startsWith('messages.') ||
+            res.message.startsWith('errors.') ||
+            res.message.includes('updateError')
+          ) {
+            errorMsg = t(res.message);
+          } else {
+            errorMsg = getCleanErrorMessage(res.message);
+          }
+        }
+        toast.error(errorMsg);
         startTransition(() => {
           router.refresh();
         });
       }
     } catch (_error) {
-      toast.error(t('accessControl.messages.updateError'));
+      toast.error(getCleanErrorMessage(_error, t('accessControl.messages.updateError')));
       startTransition(() => {
         router.refresh();
       });
@@ -108,6 +121,7 @@ export function RolePermissionManager({
         pendingCount={pendingCount}
         isSaving={isSaving}
         onSave={handleSave}
+        onCancel={resetDeltas}
         onRoleChange={(val) => {
           const params = new URLSearchParams(searchParams.toString());
           params.set('roleId', val);
@@ -117,6 +131,7 @@ export function RolePermissionManager({
           selectRole: t('accessControl.filters.selectRole'),
           pendingChanges: t('accessControl.status.pendingChanges', { count: pendingCount }),
           saveChanges: t('accessControl.buttons.saveChanges'),
+          cancelChanges: t('accessControl.buttons.cancelChanges'),
         }}
       />
 

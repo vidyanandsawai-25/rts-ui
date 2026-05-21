@@ -2,13 +2,16 @@
 
 import { ptisService } from '@/lib/api/ptis/tab/ptis.service';
 import {
-  wardNoActionSchema,
-  wardIdActionSchema,
-  propertyDetailsSchema,
-  searchSuggestionsSchema,
+  createPtisSchemas,
   propertyIdActionSchema,
 } from '@/lib/validations/ptis.schema';
 import { retryWithBackoff } from '@/lib/utils/api';
+import { getTranslations } from 'next-intl/server';
+
+async function getPtisValidationSchemas() {
+  const t = await getTranslations('ptis');
+  return createPtisSchemas((key) => t(key));
+}
 
 async function createAction<T>(
   fn: () => Promise<{ success: boolean; data?: T; error?: string | { message?: string } }>
@@ -45,6 +48,7 @@ export async function getWardListAction() {
 }
 
 export async function fetchWardIdAction(wardNo: string) {
+  const { wardNoActionSchema } = await getPtisValidationSchemas();
   const validation = wardNoActionSchema.safeParse({ wardNo });
   if (!validation.success) {
     return { success: false, error: validation.error.issues[0].message };
@@ -62,6 +66,7 @@ export async function fetchWardIdAction(wardNo: string) {
 }
 
 export async function getPropertyListByWardAction(wardId: number) {
+  const { wardIdActionSchema } = await getPtisValidationSchemas();
   const validation = wardIdActionSchema.safeParse({ wardId });
   if (!validation.success) {
     return { success: false, error: validation.error.issues[0].message };
@@ -75,6 +80,7 @@ export async function getPropertySuggestionsAction(
   wardId?: number,
   searchText?: string
 ) {
+  const { searchSuggestionsSchema } = await getPtisValidationSchemas();
   const validation = searchSuggestionsSchema.safeParse({ wardNo, wardId, searchText });
   if (!validation.success) {
     return { success: false, error: validation.error.issues[0].message };
@@ -93,6 +99,7 @@ export async function getPartitionSuggestionsAction(
   propertyNo?: string,
   searchText?: string
 ) {
+  const { searchSuggestionsSchema } = await getPtisValidationSchemas();
   const validation = searchSuggestionsSchema.safeParse({ wardNo, wardId, propertyNo, searchText });
   if (!validation.success) {
     return { success: false, error: validation.error.issues[0].message };
@@ -110,6 +117,7 @@ export async function fetchPropertyDetailsOnlyAction(
   wardId?: number,
   propertyId?: number
 ) {
+  const { propertyDetailsSchema } = await getPtisValidationSchemas();
   const validation = propertyDetailsSchema.safeParse({
     wardNo,
     propertyNo,
@@ -127,6 +135,7 @@ export async function fetchPropertyDetailsOnlyAction(
 }
 
 export async function fetchKycDetailsOnlyAction(propertyId: number) {
+  const { wardIdActionSchema } = await getPtisValidationSchemas();
   const validation = wardIdActionSchema.safeParse({ wardId: propertyId });
   if (!validation.success) {
     return { success: false, error: validation.error.issues[0].message };
@@ -136,6 +145,7 @@ export async function fetchKycDetailsOnlyAction(propertyId: number) {
 }
 
 export async function fetchSocietyDetailsOnlyAction(propertyId: number) {
+  const { wardIdActionSchema } = await getPtisValidationSchemas();
   const validation = wardIdActionSchema.safeParse({ wardId: propertyId });
   if (!validation.success) {
     return { success: false, error: validation.error.issues[0].message };
@@ -145,6 +155,7 @@ export async function fetchSocietyDetailsOnlyAction(propertyId: number) {
 }
 
 export async function fetchOldDetailsOnlyAction(propertyId: number) {
+  const { wardIdActionSchema } = await getPtisValidationSchemas();
   const validation = wardIdActionSchema.safeParse({ wardId: propertyId });
   if (!validation.success) {
     return { success: false, error: validation.error.issues[0].message };
@@ -154,6 +165,7 @@ export async function fetchOldDetailsOnlyAction(propertyId: number) {
 }
 
 export async function fetchOldFloorDetailsAction(propertyId: number) {
+  const { wardIdActionSchema } = await getPtisValidationSchemas();
   const validation = wardIdActionSchema.safeParse({ wardId: propertyId });
   if (!validation.success) {
     return { success: false, error: validation.error.issues[0].message };
@@ -163,6 +175,7 @@ export async function fetchOldFloorDetailsAction(propertyId: number) {
 }
 
 export async function fetchOldTaxesDetailsAction(propertyId: number) {
+  const { wardIdActionSchema } = await getPtisValidationSchemas();
   const validation = wardIdActionSchema.safeParse({ wardId: propertyId });
   if (!validation.success) {
     return { success: false, error: validation.error.issues[0].message };

@@ -107,3 +107,14 @@ export function formatDateToDDMMYYYY(dateStr: string | null | undefined): string
 export function formatDDMMYYYYToISO(dateStr: string | null | undefined): string | null {
   return DateUtils.parseToISO(dateStr);
 }
+
+export function toTitleCase(str: string | null | undefined): string {
+  const trimmed = (str ?? '').trim();
+  if (!trimmed) return '';
+  return trimmed
+    .toLowerCase()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
