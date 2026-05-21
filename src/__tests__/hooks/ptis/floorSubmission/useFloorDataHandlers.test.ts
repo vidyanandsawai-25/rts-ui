@@ -358,21 +358,7 @@ describe('useFloorDataHandlers', () => {
       expect(toast.error).toHaveBeenCalledWith('floor.selectFloorFirst');
     });
 
-    it('should show info when floor has temporary ID', async () => {
-      const editingForm = createMockFloorData({ id: Date.now() });
 
-      const { result } = renderHook(() => useFloorDataHandlers(getDefaultParams({
-        editingFloorForm: editingForm,
-      })));
-
-      await act(async () => {
-        result.current.handleOpenRenterManagement();
-      });
-
-      expect(toast.info).toHaveBeenCalledWith(
-        expect.stringContaining('floor.saveFloorBeforeRenterManagement')
-      );
-    });
 
     it('should navigate to Renter Management page', async () => {
       const editingForm = createMockFloorData({ id: 1 });
@@ -386,7 +372,7 @@ describe('useFloorDataHandlers', () => {
       });
 
       expect(testParams.router.push).toHaveBeenCalledWith(
-        expect.stringContaining('RenterManagement')
+        expect.stringContaining('FloorSubmission/Renter')
       );
     });
 

@@ -31,7 +31,9 @@ export async function fetchNatureFactorCVMasterPagedServerAction(
   pageSize: number,
   searchTerm?: string,
   selectedYearRange?: string,
-  constructionTypeId?: string
+  constructionTypeId?: string,
+  sortBy?: string,
+  sortOrder?: string
 ): Promise<PagedResponse<NatureFactorCVMaster>> {
   try {
     const MAX_PAGE_SIZE = 100;
@@ -50,12 +52,22 @@ export async function fetchNatureFactorCVMasterPagedServerAction(
     const yearRangeParam =
       selectedYearRange && selectedYearRange.trim() !== "" ? selectedYearRange : undefined;
 
+    // Whitelist sort columns to prevent injection
+    const allowedSortColumns = ["ConstructionCode", "ConstructionDescription", "FromYear"];
+    const validSortBy = sortBy && allowedSortColumns.includes(sortBy) ? sortBy : undefined;
+    const validSortOrder =
+      sortOrder && ["asc", "desc"].includes(sortOrder.toLowerCase())
+        ? (sortOrder.toLowerCase() as "asc" | "desc")
+        : undefined;
+
     return await getNatureFactorCVMasterWithPagination(
       pageNumber,
       pageSize,
       searchTerm,
       yearRangeParam,
-      constructionTypeId
+      constructionTypeId,
+      validSortBy,
+      validSortOrder
     );
   } catch (error: unknown) {
     const logger = createLogger('fetchNatureFactorCVMasterPaged');

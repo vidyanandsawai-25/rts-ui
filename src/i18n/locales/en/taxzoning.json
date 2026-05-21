@@ -48,6 +48,7 @@
       "taxZoneRequired": "Tax Zone is required",
       "wardRequired": "At least one ward is required",
       "propertyRequired": "Property range is required for single ward selection",
+      "fromPropertyMustBeSmallerThanToProperty": "From Property must be smaller than To Property",
       "updateSuccess": "Tax zoning updated successfully",
       "updateFailed": "Failed to update tax zoning",
       "createSuccess": "Tax zoning created successfully",

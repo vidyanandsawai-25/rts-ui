@@ -1,7 +1,9 @@
 import type { Column } from "@/components/common/MasterTable";
 import type { SubFloor } from "@/types/floor.types";
 
-export const subFloorColumns = (t: (key: string) => string): Column<SubFloor>[] => [
+export const subFloorColumns = (
+  t: (key: string) => string
+): Column<SubFloor>[] => [
   {
     key: "subFloorCode",
     label: t("table.columns.subFloorCode"),

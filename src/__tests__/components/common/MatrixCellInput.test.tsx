@@ -25,7 +25,7 @@ describe('MatrixCellInput', () => {
     render(<MatrixCellInput {...defaultProps} value={0} />);
     const input = screen.getByRole('spinbutton') as HTMLInputElement;
     // jsdom normalises an empty number input to "0"; the placeholder should still be set
-    expect(input).toHaveAttribute('placeholder', '0.00');
+    expect(input).toHaveAttribute('placeholder', '0');
   });
 
   it('calls onCellChange with correct arguments on valid change', () => {

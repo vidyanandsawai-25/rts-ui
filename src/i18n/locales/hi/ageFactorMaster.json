@@ -3,6 +3,7 @@
     "title": "आयु कारक मास्टर",
     "columns": {
       "constructionType": "निर्माण प्रकार",
+      "description": "विवरण",
       "ageFrom": "आयु से",
       "ageTo": "आयु तक",
       "factor": "कारक",
@@ -39,6 +40,7 @@
       "provideBothAges": "कृपया आयु से और आयु तक दोनों प्रदान करें",
       "fromAgeGreaterError": "आयु से, आयु तक से अधिक नहीं हो सकती",
       "ageRangeExists": "आयु सीमा पहले से मौजूद है",
+      "ageRangeOverlap": "आयु सीमा {newRange} मौजूदा सीमा {existingRange} के साथ ओवरलैप करती है। कृपया गैर-ओवरलैपिंग सीमा चुनें।",
       "ageRangeAdded": "{from} से {to} तक आयु सीमा जोड़ी गई",
       "invalidFactorValue": "अमान्य कारक मान",
       "factorAppliedLocally": "{count} पंक्ति(यों) में कारक {factor} स्थानीय रूप से लागू किया गया। सहेजने के लिए \"अपडेट\" पर क्लिक करें।",

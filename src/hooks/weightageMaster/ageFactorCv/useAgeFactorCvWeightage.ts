@@ -8,6 +8,7 @@ import { useAgeFactorCvBulkOps } from "./useAgeFactorCvBulkOps";
 import { useAgeFactorCvToasts } from "./useAgeFactorCvToasts";
 import { useAgeFactorCvFilters } from "./useAgeFactorCvFilters";
 import { useAgeFactorCvSessionTracking } from "./useAgeFactorCvSessionTracking";
+import { checkAgeRangeOverlap } from "@/lib/utils/weightageMaster/ageFactorCv/ageFactorCvValidation";
 import type { Option } from "@/components/common/select";
 
 interface UseAgeFactorCvWeightageParams {
@@ -23,6 +24,8 @@ interface UseAgeFactorCvWeightageParams {
         initialAgeRangeOptions: Option[];
     };
     allAgeFactors: AgeFactorCVMaster[];
+    sortBy?: string;
+    sortOrder?: string;
 }
 
 /**
@@ -33,12 +36,15 @@ export const useAgeFactorCvWeightage = ({
     paginationData,
     options,
     allAgeFactors,
+    sortBy,
+    sortOrder,
 }: UseAgeFactorCvWeightageParams) => {
     const { data, pageSize } = paginationData;
     const { constructionTypeOptions, initialAgeRangeOptions } = options;
 
     const t = useTranslations('ageFactorMaster');
     const tW = useTranslations('weightageMaster');
+    const tCommon = useTranslations('common');
 
     const [isAddYearRangeModalOpen, setIsAddYearRangeModalOpen] = useState(false);
 
@@ -76,7 +82,14 @@ export const useAgeFactorCvWeightage = ({
         changePageSize,
         handleClearAll,
         getMissingRecordsCount,
-    } = useAgeFactorCvFilters({ initialAgeRangeOptions });
+        sortBy: activeSortBy,
+        sortOrder: activeSortOrder,
+        handleSort,
+    } = useAgeFactorCvFilters({
+        initialAgeRangeOptions,
+        initialSortBy: sortBy,
+        initialSortOrder: sortOrder,
+    });
 
     const newRecords = data.filter(row => row.id === 0 && !sessionCreatedUids.has(getRowUid(row)));
     const hasNewRecords = newRecords.length > 0;
@@ -175,15 +188,35 @@ export const useAgeFactorCvWeightage = ({
             addToast('warning', t('messages.provideBothAges'));
             return;
         }
-        if (parseInt(ageFrom) > parseInt(ageTo)) {
+        
+        const fromValue = parseInt(ageFrom);
+        const toValue = parseInt(ageTo);
+        
+        if (fromValue > toValue) {
             addToast('error', t('messages.fromAgeGreaterError'));
             return;
         }
+        
         const newRange = `${ageFrom}-${ageTo}`;
+        
+        // Check if exact range already exists
         if (ageRangeOptions.find(opt => opt.value === newRange)) {
             addToast('info', t('messages.ageRangeExists'));
             return;
         }
+        
+        // Check for overlapping ranges
+        const existingRangeValues = ageRangeOptions.map(opt => opt.value);
+        const { hasOverlap, overlappingRange } = checkAgeRangeOverlap(fromValue, toValue, existingRangeValues);
+        
+        if (hasOverlap) {
+            addToast('error', t('messages.ageRangeOverlap', { 
+                newRange, 
+                existingRange: overlappingRange || '' 
+            }));
+            return;
+        }
+        
         setUserAddedAgeRanges(prev => [...prev, { label: newRange, value: newRange }]);
         setSelectedAgeRange(newRange);
         addToast('success', t('messages.ageRangeAdded', { from: ageFrom, to: ageTo }));
@@ -196,6 +229,7 @@ export const useAgeFactorCvWeightage = ({
     return {
         t,
         tW,
+        tCommon,
         selectedYear,
         editableRows,
         constructionType,
@@ -235,5 +269,8 @@ export const useAgeFactorCvWeightage = ({
         },
         changePage: (page: number) => changePage(page, pageSize),
         changePageSize,
+        sortBy: activeSortBy,
+        sortOrder: activeSortOrder,
+        handleSort,
     };
 };

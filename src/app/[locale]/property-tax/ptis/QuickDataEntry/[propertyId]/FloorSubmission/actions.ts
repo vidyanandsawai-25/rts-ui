@@ -15,9 +15,12 @@ import {
     getSubFloorData,
     deleteRoomSubmission,
     deleteOffsetSubmission,
+    saveRenterDetails,
+    updateRenterDetails,
+    deleteRenterDetails,
 } from '@/lib/api/ptis/floorSubmission';
 
-import { validateFloorSubmissionPayload } from '@/lib/validations/validateFloorSubmission';
+import { validateFloorSubmissionPayload, validateRenterFormData } from '@/lib/validations/validateFloorSubmission';
 import { type ActionResult } from '@/types/common.types';
 import { FloorSubmissionPayload } from '@/types/floor-details.types';
 
@@ -158,7 +161,6 @@ export const getFloorSubmissionsByOwnerAction = async (ownerId: number | string)
     }
 };
 
-
 /**
  * Deletes a room submission without redirecting.
  */
@@ -180,5 +182,41 @@ export const deleteOffsetSubmissionNoRedirectAction = async (offsetId: number | 
         return { success: true, data: undefined };
     } catch (error) {
         return { success: false, error: error instanceof Error ? error.message : "Failed to delete offset" };
+    }
+};
+
+// ----------------------------------------------------------------------
+// RENTER ACTIONS
+// ----------------------------------------------------------------------
+
+export const saveFloorRenterDetailsAction = async (floorId: string | number, payload: unknown, locale: string = "en", propertyId?: string | number): Promise<ActionResult<unknown>> => {
+    const validation = validateRenterFormData(payload);
+    if (!validation.success) return validation;
+    try {
+        const data = await saveRenterDetails(floorId, payload);
+        revalidatePath(getRevalidatePath(locale, propertyId), "page");
+        return { success: true, data };
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : "Failed to save renter details" };
+    }
+};
+
+export const updateFloorRenterDetailsAction = async (renterId: string | number, payload: unknown, locale: string = "en", propertyId?: string | number): Promise<ActionResult<unknown>> => {
+    try {
+        const data = await updateRenterDetails(renterId, payload);
+        revalidatePath(getRevalidatePath(locale, propertyId), "page");
+        return { success: true, data };
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : "Failed to update renter details" };
+    }
+};
+
+export const deleteFloorRenterDetailsAction = async (renterId: string | number, locale: string = "en", propertyId?: string | number): Promise<ActionResult<void>> => {
+    try {
+        await deleteRenterDetails(renterId);
+        revalidatePath(getRevalidatePath(locale, propertyId), "page");
+        return { success: true, data: undefined };
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : "Failed to delete renter details" };
     }
 };

@@ -101,7 +101,7 @@ export default async function FloorSubmissionPage({
         shouldLoadSubType ? getSubTypeOfUseDataAction(effectiveUseIdForPrefetch) : Promise.resolve([]),
         hasPropertyKeys ? getQuickDataEntryAction(wardNo, propertyNo, partitionNo) : Promise.resolve(null),
         hasPropertyKeys ? getPropertyByDetailsAction(wardNo, propertyNo, partitionNo) : Promise.resolve(null),
-        floorId ? getFloorByIdAction(floorId) : Promise.resolve(null),
+        (floorId && floorId !== 'new') ? getFloorByIdAction(floorId) : Promise.resolve(null),
         (knownPropertyId && !hasPropertyKeys) ? getFloorSubmissionsByOwnerAction(knownPropertyId) : Promise.resolve([]),
     ]);
 
@@ -164,7 +164,7 @@ export default async function FloorSubmissionPage({
     let initialFloorDetails = normalizeWrappedResponse(floorDetailRaw, (m) => metadataErrors.push(m));
     const expectedPropertyId = initialPropertyID !== undefined && initialPropertyID !== null ? String(initialPropertyID) : null;
 
-    if (floorId && expectedPropertyId) {
+    if (floorId && floorId !== 'new' && expectedPropertyId) {
         let isBelonging = false;
 
         // Check 1: Via the floors list (if available)

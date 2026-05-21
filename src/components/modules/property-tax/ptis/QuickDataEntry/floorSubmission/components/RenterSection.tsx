@@ -20,15 +20,17 @@ export const RenterSection: React.FC<RenterSectionProps> = ({
           <SearchSelect
             id="floor-renter"
             name="renter"
+            menuPlacement="top"
             options={[
               { label: t('floor.no'), value: 'No' },
               { label: t('floor.yes'), value: 'Yes' },
             ]}
             value={(editingFloorForm.renter as string) || 'No'}
             onChange={(_name, value) => {
-              // Just update the renter flag - don't auto-trigger management UI
-              // Users can click the button to open renter details if needed
               setEditingFloorForm({ ...editingFloorForm, renter: value });
+              if (value === 'Yes') {
+                handleOpenRenterManagement({ ...editingFloorForm, renter: value });
+              }
             }}
             placeholder={t('floor.select')}
             className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"

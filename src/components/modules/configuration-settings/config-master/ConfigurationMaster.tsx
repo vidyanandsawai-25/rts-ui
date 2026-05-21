@@ -2,7 +2,6 @@ import { ConfigModalsController } from './ConfigModalsController';
 import { getTranslations } from 'next-intl/server';
 import { ConfigItem, ConfigCategory } from '@/types/configMaster.types';
 import type { DepartmentApiResponse } from '@/types/configMaster.types';
-import { UserRole } from '@/types/common.types';
 import { ConfigurationMasterHeader } from './ConfigurationMasterHeader';
 import { ConfigurationMasterContent } from './ConfigurationMasterContent';
 
@@ -17,7 +16,6 @@ export async function ConfigurationMaster({
   editKey,
   configKeyId,
   locale,
-  role,
 }: {
   categories: ConfigCategory[];
   initialItems: ConfigItem[];
@@ -29,10 +27,8 @@ export async function ConfigurationMaster({
   editKey?: string;
   configKeyId?: string;
   locale: string;
-  role: UserRole | null;
 }) {
   const t = await getTranslations('configMaster');
-  const isAdmin = role === UserRole.ADMIN;
 
   const activeCategoryId = categoryId || categories[0]?.id || 'all';
 
@@ -74,7 +70,6 @@ export async function ConfigurationMaster({
         addConfigKeyLabel={t('addConfigKey')}
         activeCategoryId={activeCategoryId}
         search={search}
-        isAdmin={isAdmin}
       />
 
       <ConfigurationMasterContent
@@ -84,7 +79,6 @@ export async function ConfigurationMaster({
         displayItems={displayItems}
         search={search}
         locale={locale}
-        role={role}
         noSearchResultsLabel={t('noSearchResults', { search: search || '' })}
         noItemsFoundLabel={t('noItemsFound', { category: activeCategory.name })}
         searchTipLabel={t('searchTip') || 'Try adjusting your search terms or category filter.'}
@@ -94,7 +88,6 @@ export async function ConfigurationMaster({
         categories={categories}
         items={displayItems}
         departmentData={departmentData as DepartmentApiResponse[] | null}
-        role={role}
         serverAction={action}
         serverEditCategory={editCategory}
         serverEditKey={editKey}

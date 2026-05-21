@@ -74,7 +74,9 @@ export async function getFloorFactorCVMasterWithPagination(
   pageNumber: number,
   pageSize: number,
   searchTerm?: string,
-  yearRangeCVId?: string
+  yearRangeCVId?: string,
+  sortBy?: string,
+  sortOrder?: string
 ): Promise<PagedResponse<FloorFactorCVMaster>> {
   try {
     const params = new URLSearchParams({
@@ -88,6 +90,14 @@ export async function getFloorFactorCVMasterWithPagination(
 
     if (yearRangeCVId?.trim()) {
       params.append("YearRangeCVId", yearRangeCVId.trim());
+    }
+
+    if (sortBy?.trim()) {
+      params.append("SortBy", sortBy.trim());
+    }
+
+    if (sortOrder?.trim()) {
+      params.append("SortOrder", sortOrder.trim());
     }
 
     const response = await apiClient.get<PagedResponse<FloorFactorCVMaster>>(

@@ -32,9 +32,11 @@ export function validateCreateFormData(data: PropertyTypeFormModel): void {
   if (!data.type?.trim()) {
     throw new ApiError(400, PROPERTY_TYPE_ERROR_CODES.TYPE_REQUIRED, "Validation failed");
   }
+  /*
   if (!data.propertyTypeGroup?.trim()) {
     throw new ApiError(400, PROPERTY_TYPE_ERROR_CODES.PROPERTY_TYPE_GROUP_REQUIRED, "Validation failed");
   }
+  */
   if (
     data.propertyTypeCategoryId === undefined ||
     data.propertyTypeCategoryId === null ||
@@ -58,9 +60,11 @@ export function validateUpdateFormData(data: PropertyTypeFormModel): void {
   if (!data.type?.trim()) {
     throw new ApiError(400, PROPERTY_TYPE_ERROR_CODES.TYPE_REQUIRED, "Validation failed");
   }
+  /*
   if (!data.propertyTypeGroup?.trim()) {
     throw new ApiError(400, PROPERTY_TYPE_ERROR_CODES.PROPERTY_TYPE_GROUP_REQUIRED, "Validation failed");
   }
+  */
   if (
     !data.propertyTypeCategoryId ||
     data.propertyTypeCategoryId === 0 ||

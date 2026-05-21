@@ -19,6 +19,21 @@ export default async function Page({ searchParams }: UseCategoryCvPageProps): Pr
     const selectedYearRange = sanitizeNumericParam(params.selectedYearRange)?.toString();
     const typeOfUseId = sanitizeNumericParam(params.typeOfUseId);
 
+    // Sanitization for sorting
+    const sortByRaw = params.sortBy?.trim() ?? "";
+    const allowedSortColumns = ["TypeOfUseCode", "TypeOfUseDescription", "SubTypeOfUseDescription", "FromYear"];
+    const sortBy = allowedSortColumns.includes(sortByRaw) ? sortByRaw : undefined;
+
+    const sortOrderRaw = params.sortOrder?.trim().toLowerCase() ?? "";
+    const sortOrder = ["asc", "desc"].includes(sortOrderRaw) ? (sortOrderRaw as "asc" | "desc") : undefined;
+
+    const leftSortByRaw = params.leftSortBy?.trim() ?? "";
+    const leftAllowedSortColumns = ["TypeOfUseCode", "Description"];
+    const leftSortBy = leftAllowedSortColumns.includes(leftSortByRaw) ? leftSortByRaw : undefined;
+
+    const leftSortOrderRaw = params.leftSortOrder?.trim().toLowerCase() ?? "";
+    const leftSortOrder = ["asc", "desc"].includes(leftSortOrderRaw) ? (leftSortOrderRaw as "asc" | "desc") : undefined;
+
     // Assessment years for dropdown
     const assessmentYearData = await getAssessmentYearsPagedServerCV(1, -1);
     const assessmentYearOptions = assessmentYearData.items.map((year) => ({
@@ -26,16 +41,19 @@ export default async function Page({ searchParams }: UseCategoryCvPageProps): Pr
         value: year.id.toString(),
     }));
 
-    // Use factor data with filters
+    // Use factor data with filters and sorting
     const tableResult = await fetchUseFactorCVMasterPagedServerAction(
         pageNumber,
         pageSize,
         searchTerm,
         selectedYearRange,
-        typeOfUseId
+        typeOfUseId,
+        undefined, // subTypeOfUseId
+        sortBy,
+        sortOrder
     );
 
-    // Fetch Type of Use master data with pagination and filters
+    // Fetch Type of Use master data with pagination, filters, and sorting
     const typeOfUseTableData = await fetchTypeOfUsePaged({
         pageNumber: leftPageNumber,
         pageSize: leftPageSize,
@@ -44,9 +62,11 @@ export default async function Page({ searchParams }: UseCategoryCvPageProps): Pr
         id: undefined, // Optional filter
         typeOfUseCode: undefined, // Optional filter
         typeOfUseGroupId: undefined, // Optional filter
+        sortBy: leftSortBy,
+        sortOrder: leftSortOrder,
     });
    
-   const typeOfUseDropdown = await fetchTypeOfUsePaged({ pageNumber: 1, pageSize: -1});
+    const typeOfUseDropdown = await fetchTypeOfUsePaged({ pageNumber: 1, pageSize: -1});
     const typeOfUseOptions = typeOfUseDropdown.items.map((type) => ({
         label: `${type.typeOfUseCode} - ${type.description}`,
         value: String(type.id),
@@ -70,6 +90,11 @@ export default async function Page({ searchParams }: UseCategoryCvPageProps): Pr
                 
                 assessmentYearOptions={assessmentYearOptions}
                 typeOfUseOptions={typeOfUseOptions}
+                
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                leftSortBy={leftSortBy}
+                leftSortOrder={leftSortOrder}
             />
         </div>
     );
