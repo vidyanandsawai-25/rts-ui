@@ -49,7 +49,6 @@ describe("createFloorRangeAction duplicate range", () => {
       rangeFrom: "11",
       rangeTo: "18",
       prefix: "A5FL",
-      suffix: "",
       startSequenceNo: 11,
       template: {
         isActive: true,
