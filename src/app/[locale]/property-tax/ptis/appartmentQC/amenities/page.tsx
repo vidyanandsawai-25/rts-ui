@@ -47,7 +47,7 @@ const Page = async ({ searchParams }: PageProps) => {
   }
 
   const result = await fetchApartmentQCDetailsPagedAction({
-    partType: "utilsub",
+    partType: "Aminity",
     wardId,
     propertyNo,
     pageNumber,
