@@ -356,10 +356,9 @@ export async function createFloorRangeAction(
     const rangeFrom = Number.parseInt(data.rangeFrom, 10);
     const rangeTo = Number.parseInt(data.rangeTo, 10);
     const normalizedPrefix = (data.prefix ?? "").trim().toLowerCase();
-    const normalizedSuffix = (data.suffix ?? "").trim().toLowerCase();
 
     // Pre-check: prevent known duplicate scenario before API call
-    // Check if existing floors overlap with the requested sequence range + prefix/suffix pattern
+    // Check if existing floors overlap with the requested sequence range + prefix pattern
     if (Number.isFinite(rangeFrom) && Number.isFinite(rangeTo)) {
       try {
         const existingFloors = await getFloorPaged(1, -1);
@@ -373,10 +372,8 @@ export async function createFloorRangeAction(
 
           // Check prefix match
           if (normalizedPrefix && !floorCode.startsWith(normalizedPrefix)) return false;
-          // Check suffix match
-          if (normalizedSuffix && !floorCode.endsWith(normalizedSuffix)) return false;
 
-          // Conflict found: same sequence + prefix/suffix pattern
+          // Conflict found: same sequence + prefix pattern
           return true;
         });
 
@@ -445,9 +442,7 @@ export async function createFloorRangeAction(
 export async function fetchSubFloorPagedServerAction(
   pageNumber: number,
   pageSize: number,
-  searchTerm?: string,
-  sortBy?: string,
-  sortOrder?: string
+  searchTerm?: string
 ): Promise<PagedResponse<SubFloor>> {
   try {
     const MAX_PAGE_SIZE = 100;
@@ -465,24 +460,10 @@ export async function fetchSubFloorPagedServerAction(
       throw new Error("Invalid pagination parameters");
     }
 
-    const allowedSortColumns = ["subFloorCode", "description", "isActive"];
-
-    const validSortBy =
-      sortBy && allowedSortColumns.includes(sortBy)
-        ? sortBy
-        : undefined;
-
-    const validSortOrder =
-      sortOrder && ["asc", "desc"].includes(sortOrder.toLowerCase())
-        ? sortOrder.toLowerCase()
-        : undefined;
-
     return await getSubFloorPaged(
       pageNumber,
       pageSize,
-      searchTerm,
-      validSortBy,
-      validSortOrder
+      searchTerm
     );
   } catch (error: unknown) {
     if (error instanceof ApiError) {

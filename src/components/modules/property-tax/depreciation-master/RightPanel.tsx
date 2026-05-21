@@ -37,6 +37,7 @@ export function RightPanel({
             mode="edit"
             editableColumns={editableColumnIds}
             onCellChange={onCellChange}
+            cellMaxValue={99}
             translations={{
               action: t("action"),
               currencySymbol: t("currencySymbol"),
