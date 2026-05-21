@@ -37,7 +37,7 @@ export const useFloorDataHandlers = (params: {
   const {
     props, editingFloorForm, selectedFloor, isAddingNewFloor,
     setIsAddingNewFloor, setSelectedFloor, setEditingFloorForm, localFloors, setLocalFloors, setFormErrors,
-    validateForm: _validateForm, startTransition,
+    startTransition,
     router, locale, propertyId, confirm, t, INITIAL_FORM_STATE
   } = params;
 

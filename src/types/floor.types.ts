@@ -129,8 +129,6 @@ export interface FloorMasterProps {
 ===================================================== */
 export interface SubFloorMasterProps {
   subFloorPaged: SubFloorPagedResponse;
-  sortBy?: string;
-  sortOrder?: string;
 }
 
 /* =====================================================
@@ -156,7 +154,6 @@ export interface FloorRangePayload {
   rangeFrom: string;
   rangeTo: string;
   prefix: string;
-  suffix: string;
   template: FloorRangeTemplate;
   startSequenceNo: number;
 }
@@ -168,7 +165,6 @@ export interface FloorRangeFormModel {
   rangeFrom: number;
   rangeTo: number;
   prefix: string;
-  suffix: string;
   isActive: boolean;
   autoGenerateSubFloor: boolean;
 }
@@ -182,7 +178,6 @@ export interface FloorRangeFieldsProps {
     rangeFrom?: string;
     rangeTo?: string;
     prefix?: string;
-    suffix?: string;
   };
   showError: (field: keyof FloorRangeFormModel) => boolean;
   onChange: (field: keyof FloorRangeFormModel, value: string | number | boolean) => void;

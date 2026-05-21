@@ -53,7 +53,7 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
     localFloors,
     setLocalFloors,
     setFormErrors,
-    validateForm,
+    validateForm: () => validateForm(editingFloorForm, t),
     startTransition,
     router,
     locale,

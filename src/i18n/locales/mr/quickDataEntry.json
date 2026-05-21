@@ -670,7 +670,7 @@
         "loading": "लोड होत आहे...",
         "yes": "होय",
         "no": "नाही",
-        "isTaxable": "करपात्र आहे का",
+        "taxable": "करपात्र",
         "selectTaxableStatus": "स्थिती निवडा",
         "openRoomSubmission": "खोली सबमिशन उघडा",
         "openRenterPage": "भाडेकरू व्यवस्थापन उघडा",
