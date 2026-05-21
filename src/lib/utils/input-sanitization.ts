@@ -28,7 +28,8 @@ export const sanitizeTextInput = (input: string): string => {
     // Block invalid special characters - only allow letters, numbers, spaces, and basic punctuation
     .replace(/[^a-zA-Z0-9\u00C0-\u024F\u0900-\u097F\u0D00-\u0D7F\s.,\'\-\/()&]/g, '')
     // Remove multiple consecutive spaces
-    .replace(/\s+/g, ' ');
+    .replace(/\s+/g, ' ')
+    .trim();
 };
 
 /**
@@ -103,7 +104,8 @@ export const sanitizeName = (name: string): string => {
     // Supports international characters (Unicode letters)
     .replace(/[^a-zA-Z\u00C0-\u024F\u0900-\u097F\u0D00-\u0D7F\s.,'\/\-]/g, '')
     // Remove multiple consecutive spaces
-    .replace(/\s+/g, ' ');
+    .replace(/\s+/g, ' ')
+    .trim();
 };
 
 /**
@@ -131,10 +133,11 @@ export const sanitizeAddress = (address: string): string => {
     // Remove multiple consecutive special characters (e.g., ----, ////)
     .replace(/([.,\-\/\#&])\1+/g, '$1')
     // Remove multiple consecutive spaces
-    .replace(/\s+/g, ' ');
+    .replace(/\s+/g, ' ')
+    .trim();
   
   // If result contains only special characters and no alphanumeric, return empty
-  if (sanitized.trim() && !/[a-zA-Z0-9\u00C0-\u024F\u0900-\u097F\u0D00-\u0D7F]/.test(sanitized)) {
+  if (sanitized && !/[a-zA-Z0-9\u00C0-\u024F\u0900-\u097F\u0D00-\u0D7F]/.test(sanitized)) {
     return '';
   }
   

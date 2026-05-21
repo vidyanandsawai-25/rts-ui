@@ -88,7 +88,7 @@ export const SocietyContactFields = ({
                     placeholder={t('society.managerEmailPlaceholder')}
                     value={managerEmail}
                     maxLength={SOCIETY_VALIDATION_RULES.EMAIL_MAX_LENGTH}
-                    className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${showError('managerEmail', societyValidators.isValidEmail(managerEmail))
+                    className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${showError('managerEmail', societyValidators.isValidEmail(managerEmail, true))
                         ? 'border-red-300 focus:border-red-500'
                         : ''
                         }`}
@@ -99,7 +99,7 @@ export const SocietyContactFields = ({
                         }
                     }}
                 />
-                {showError('managerEmail', societyValidators.isValidEmail(managerEmail)) && (
+                {showError('managerEmail', societyValidators.isValidEmail(managerEmail, true)) && (
                     <span className="text-xs text-red-500">{t('society.validation.managerEmail')}</span>
                 )}
             </div>
@@ -165,7 +165,7 @@ export const SocietyContactFields = ({
                 />
                 {showError('secretaryName', !secretaryName || societyValidators.isValidPersonName(secretaryName)) && (
                     <span className="text-xs text-red-500">
-                        {secretaryName && (secretaryName.trim().length < 2 || secretaryName.trim().length > 150)
+                        {secretaryName && (secretaryName.trim().length < SOCIETY_VALIDATION_RULES.NAME_MIN_LENGTH || secretaryName.trim().length > SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH)
                             ? t('society.validation.invalidNameLength')
                             : t('society.validation.secretaryName')}
                     </span>
@@ -180,7 +180,7 @@ export const SocietyContactFields = ({
                     placeholder={t('society.secretaryEmailPlaceholder')}
                     value={secretaryEmail}
                     maxLength={SOCIETY_VALIDATION_RULES.EMAIL_MAX_LENGTH}
-                    className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${showError('secretaryEmail', societyValidators.isValidEmail(secretaryEmail))
+                    className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${showError('secretaryEmail', societyValidators.isValidEmail(secretaryEmail, true))
                         ? 'border-red-300 focus:border-red-500'
                         : ''
                         }`}
@@ -191,7 +191,7 @@ export const SocietyContactFields = ({
                         }
                     }}
                 />
-                {showError('secretaryEmail', societyValidators.isValidEmail(secretaryEmail)) && (
+                {showError('secretaryEmail', societyValidators.isValidEmail(secretaryEmail, true)) && (
                     <span className="text-xs text-red-500">{t('society.validation.secretaryEmail')}</span>
                 )}
             </div>

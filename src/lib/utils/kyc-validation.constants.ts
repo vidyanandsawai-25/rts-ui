@@ -138,6 +138,7 @@ export const kycValidators = {
     const digits = mobile.replace(/\D/g, '');
     if (digits.length === 0) return true;
     if (digits.length !== KYC_VALIDATION_RULES.MOBILE_LENGTH) return false;
+    if (!/^[6-9]/.test(digits)) return false;
 
     // Check for repeated sequences
     return !kycValidators.hasRepeatedSequence(digits, 5);
@@ -154,6 +155,7 @@ export const kycValidators = {
     const digits = aadhar.replace(/\D/g, '');
     if (digits.length === 0) return true;
     if (digits.length !== KYC_VALIDATION_RULES.AADHAR_LENGTH) return false;
+    if (digits.startsWith('0') || digits.startsWith('1')) return false;
 
     // Check for repeated sequences
     return !kycValidators.hasRepeatedSequence(digits, 5);
@@ -613,9 +615,9 @@ export const enhancedKycValidators = {
   },
 
   /**
-   * Validate shop name - must NOT contain numbers (0-9)
-   * @param name - Shop name to validate
-   * @returns True if valid (no numbers, not only special characters)
+   * Validate flat/shop number - allows alphanumeric characters
+   * @param name - Flat/shop number to validate
+   * @returns True if valid
    */
   isValidShopName: (name: string): boolean => {
     if (!name) return true;

@@ -57,6 +57,15 @@ export default async function SocietyFormPage({ params }: PageProps) {
     }
 
     const msg = error instanceof Error ? error.message.toLowerCase() : "";
+    if (msg.includes('unauthorized') || msg.includes('token expired') || msg.includes('token is expired')) {
+      throw new Error(t('society.errors.unauthorized'));
+    }
+    if (msg.includes('forbidden')) {
+      throw new Error(t('society.errors.forbidden'));
+    }
+    if (msg.includes('not found')) {
+      throw new Error(t('society.errors.notFound'));
+    }
     if (msg.includes('fetch failed') || msg.includes('failed to fetch') || msg.includes('network error') || msg.includes('econnrefused')) {
       throw new Error(t('society.errors.failedToConnect.description'));
     }

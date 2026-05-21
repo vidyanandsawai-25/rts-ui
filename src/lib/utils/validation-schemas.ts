@@ -359,11 +359,11 @@ export const societyValidations = {
       const strVal = String(value ?? '').trim();
       if (!strVal) return undefined; // optional field
       const digits = strVal.replace(/\D/g, '');
-      if (!/^[6-9]/.test(digits)) {
-        return t('society.validation.invalidMobileStart');
-      }
       if (digits.length !== 10) {
         return t('society.validation.invalidMobile');
+      }
+      if (!/^[6-9]/.test(digits)) {
+        return t('society.validation.invalidMobileStart');
       }
       return undefined;
     },
