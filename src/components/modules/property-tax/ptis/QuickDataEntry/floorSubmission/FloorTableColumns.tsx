@@ -30,7 +30,7 @@ export const useFloorTableColumns = ({
   return React.useMemo(() => [
     {
       key: 'isTaxable',
-      label: t('floor.isTaxable'),
+      label: t('floor.taxable'),
       cellClassName: 'whitespace-nowrap',
       headerClassName: 'whitespace-nowrap',
       render: (value: unknown) => {

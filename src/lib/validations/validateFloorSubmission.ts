@@ -47,12 +47,12 @@ export function validateFloorForm(data: unknown, t?: (key: string) => string) {
         if (path === 'floor') {
           message = t('floor.errors.floorRequired') || 'Floor selection is required';
         } else if (path === 'conYr') {
-          message = t('floor.errors.constructionYearInvalid') || 'Construction year must be between 1900 and the current financial year';
+          message = t('floor.errors.constructionYearInvalid') || 'Construction year must be between 1700 and the current financial year';
         } else if (path === 'asstYr') {
           if (issue.message.toLowerCase().includes('less than') || issue.message.toLowerCase().includes('cannot be less')) {
             message = t('floor.asstYrError') || 'Assessment Year cannot be less than Construction Year';
           } else {
-            message = t('floor.errors.assessmentYearInvalid') || 'Assessment year must be between 1900 and the current financial year';
+            message = t('floor.errors.assessmentYearInvalid') || 'Assessment year must be between 1700 and the current financial year';
           }
         } else if (path === 'conTyp') {
           message = t('floor.errors.constructionTypeRequired') || 'Construction type is required';
