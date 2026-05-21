@@ -46,6 +46,7 @@
         "yearFormat": "Year must be a 4-digit number",
         "yearRange": "Year must be between {min} and {max}",
         "fromYearGreaterThanToYear": "From Year cannot be greater than To Year",
+        "fromYearMustBeLessThanToYear": "From Year must be less than To Year",
         "mustBeActive": "Year range must be active to save"
       },
       "status": {
@@ -126,6 +127,7 @@
         "yearFormat": "Year must be a 4-digit number",
         "yearRange": "Year must be between {min} and {max}",
         "fromYearGreaterThanToYear": "From Year cannot be greater than To Year",
+        "fromYearMustBeLessThanToYear": "From Year must be less than To Year",
         "mustBeActive": "Year range must be active to save"
       },
       "status": {

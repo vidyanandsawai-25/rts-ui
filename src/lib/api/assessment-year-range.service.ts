@@ -126,7 +126,9 @@ function getDeleteErrorStatusCode(errorMessage: string): number {
 export async function getAssessmentYearRangePaged<T extends AssessmentYearRange>(
   config: AssessmentYearRangeConfig,
   pageNumber: number,
-  pageSize: number
+  pageSize: number,
+  sortBy?: string,
+  sortOrder?: string
 ): Promise<PagedResponse<T>> {
   try {
     validatePaginationParams(pageNumber, pageSize);
@@ -134,6 +136,9 @@ export async function getAssessmentYearRangePaged<T extends AssessmentYearRange>
     const params = new URLSearchParams();
     params.append("PageNumber", pageNumber.toString());
     params.append("PageSize", pageSize.toString());
+
+    if (sortBy && sortBy.trim()) params.append("SortBy", sortBy.trim());
+    if (sortOrder && sortOrder.trim()) params.append("SortOrder", sortOrder.trim());
 
     const response = await apiClient.get<PagedResponse<T>>(
       `/${config.endpoint}?${params.toString()}`
@@ -292,9 +297,10 @@ export async function updateAssessmentYearRange(
 }
 
 /**
- * Deletes an Assessment Year Range by ID
+ * Purge deletes an Assessment Year Range by ID.
+ * This is a permanent delete operation.
  */
-export async function deleteAssessmentYearRange(
+export async function purgeDeleteAssessmentYearRange(
   config: AssessmentYearRangeConfig,
   id: number
 ): Promise<void> {
@@ -304,7 +310,7 @@ export async function deleteAssessmentYearRange(
     }
 
     const response = await apiClient.delete<void>(
-      `/${config.endpoint}/${encodeURIComponent(String(id))}`
+      `/${config.endpoint}/${encodeURIComponent(String(id))}/purge`
     );
 
     if (!response.success) {
@@ -314,12 +320,17 @@ export async function deleteAssessmentYearRange(
       }
       throw new ApiError(
         statusCode,
-        response.error || "Failed to delete assessment year range",
-        `Delete assessment year range ${id} failed`
+        response.error || "Failed to purge delete assessment year range",
+        `Purge delete assessment year range ${id} failed`
       );
     }
   } catch (error) {
-    console.error(`Error deleting assessment year range ${id} (${config.type}):`, error);
     throw error;
   }
 }
+
+/**
+ * @deprecated Use purgeDeleteAssessmentYearRange instead.
+ * Normal delete is no longer supported for this entity.
+ */
+export const deleteAssessmentYearRange = purgeDeleteAssessmentYearRange;

@@ -74,14 +74,8 @@ export function normalizePropertyType(data: Record<string, unknown>): PropertyTy
     );
   }
 
-  const propertyTypeGroup = String(data.propertyTypeGroup ?? "").trim();
-  if (!propertyTypeGroup) {
-    throw new ApiError(
-      500,
-      "Invalid data received from server",
-      "Missing required field: propertyTypeGroup"
-    );
-  }
+  // propertyTypeGroup is now optional/nullable
+  const propertyTypeGroup = data.propertyTypeGroup ? String(data.propertyTypeGroup).trim() : null;
 
   // Normalize optional fields with safe defaults
   const searchSequence = Number(data.searchSequence);
