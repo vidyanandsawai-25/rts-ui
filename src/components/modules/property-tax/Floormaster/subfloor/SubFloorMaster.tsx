@@ -12,10 +12,9 @@ import {
   useTranslations,
 } from "next-intl";
 import { toast } from "sonner";
-import { Select } from "@/components/common/select";
 import { MasterTable } from "@/components/common/MasterTable";
 import { useConfirm } from "@/components/common/ConfirmProvider";
-import { DeleteButton, EditButton } from "@/components/common";
+import { DeleteButton, EditButton, Select } from "@/components/common";
 
 import type {
   SubFloor,
@@ -158,23 +157,26 @@ export default function SubFloorMaster({
         <div className="flex items-center gap-4">
           <span className="text-sm text-gray-700">
             {tCommon("table.showing")} {start} {tCommon("table.to")} {end}{" "}
-            {tCommon("table.of")} {totalCount}
+            {tCommon("table.of")} {totalCount} {tCommon("table.entries")}
           </span>
-
-          <Select
-            value={String(pageSize)}
-            onChange={(e) =>
-              router.push(
-                buildUrl(1, Number(e.target.value), currentSearchTerm)
-              )
-            }
-            options={[10, 20, 30, 50].map((s) => ({
-              label: String(s),
-              value: String(s),
-            }))}
-            selectSize="sm"
-            className="w-20"
-          />
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600">{tCommon("table.rowsPerPage")}:</span>
+            <Select
+              value={String(pageSize)}
+              onChange={(e) =>
+                router.push(
+                  buildUrl(1, Number(e.target.value), currentSearchTerm)
+                )
+              }
+              options={[10, 20, 30, 50].map((s) => ({
+                label: String(s),
+                value: String(s),
+              }))}
+              selectSize="sm"
+              className="w-20"
+              ariaLabel={tCommon("table.rowsPerPage") || "Rows per page"}
+            />
+          </div>
         </div>
       }
 

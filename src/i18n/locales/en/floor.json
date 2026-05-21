@@ -32,7 +32,7 @@
     "form": {
       "title": "Floor Details",
       "addTitle": "Add Floor",
-      "addSubtitle": "Create new floor(s) with advanced configuration",
+      "addSubtitle": "Create new floor with custom details",
       "editTitle": "Edit Floor",
       "editSubtitle": "Update floor information",
       "entryMode": "Select Floor Creation Mode",
