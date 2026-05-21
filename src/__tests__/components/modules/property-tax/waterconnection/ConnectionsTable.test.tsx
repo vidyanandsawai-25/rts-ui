@@ -135,6 +135,7 @@ describe('ConnectionsTable', () => {
         <ConnectionsTable
           {...defaultProps}
           connections={[]}
+          totalCount={0}
           onAdd={handlers.onAdd}
           onEdit={handlers.onEdit}
           onDelete={handlers.onDelete}
@@ -287,6 +288,7 @@ describe('ConnectionsTable', () => {
         <ConnectionsTable
           {...defaultProps}
           connections={[inactiveConnection]}
+          totalCount={1}
           onAdd={handlers.onAdd}
           onEdit={handlers.onEdit}
           onDelete={handlers.onDelete}
@@ -305,13 +307,14 @@ describe('ConnectionsTable', () => {
         <ConnectionsTable
           {...defaultProps}
           connections={[singleConnection]}
+          totalCount={1}
           onAdd={handlers.onAdd}
           onEdit={handlers.onEdit}
           onDelete={handlers.onDelete}
         />
       );
 
-      expect(screen.getByText(/1 connection/i)).toBeInTheDocument();
+      expect(screen.getByText(/1 connections/i)).toBeInTheDocument();
     });
   });
 
@@ -328,6 +331,7 @@ describe('ConnectionsTable', () => {
         <ConnectionsTable
           {...defaultProps}
           connections={manyConnections}
+          totalCount={10}
           onAdd={handlers.onAdd}
           onEdit={handlers.onEdit}
           onDelete={handlers.onDelete}

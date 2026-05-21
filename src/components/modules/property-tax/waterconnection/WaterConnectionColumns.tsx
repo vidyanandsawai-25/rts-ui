@@ -113,7 +113,7 @@ export function getWaterConnectionColumns(
                 value ? "bg-green-500" : "bg-red-500"
               )}
             />
-            {value ? t("list.status.active") : t("list.status.stopped")}
+            {value ? t("list.status.active") : t("list.status.inactive")}
           </span>
           {Boolean(value) && row.activatedDate && (
             <span className="text-xs text-orange-500">

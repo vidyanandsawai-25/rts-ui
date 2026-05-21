@@ -28,11 +28,12 @@ vi.mock('@/components/common/ConfirmProvider', () => ({
 vi.mock('@/app/[locale]/property-tax/waterconnection/action', () => ({
   deleteWaterConnectionAction: vi.fn(),
   getConnectionLookupsAction: vi.fn(),
+  getWaterConnectionPageData: vi.fn(),
 }));
 
 import { toast } from 'sonner';
 import WaterConnectionPage from '@/components/modules/property-tax/waterconnection/WaterConnectionPage';
-import { deleteWaterConnectionAction, getConnectionLookupsAction } from '@/app/[locale]/property-tax/waterconnection/action';
+import { deleteWaterConnectionAction, getConnectionLookupsAction, getWaterConnectionPageData } from '@/app/[locale]/property-tax/waterconnection/action';
 import {
   createMockPageData,
   mockWaterConnections,
@@ -66,6 +67,9 @@ describe('WaterConnectionPage', () => {
       statusOptions: mockStatusOptions,
       rateMasters: mockRateMasters,
     });
+    (getWaterConnectionPageData as ReturnType<typeof vi.fn>).mockResolvedValue(
+      createMockPageData()
+    );
   });
 
   describe('rendering', () => {
@@ -213,7 +217,7 @@ describe('WaterConnectionPage', () => {
       });
     });
 
-    it('should refresh page on successful delete', async () => {
+    it('should re-fetch page data on successful delete', async () => {
       (deleteWaterConnectionAction as ReturnType<typeof vi.fn>).mockResolvedValue({ ok: true });
 
       renderWithIntl(<WaterConnectionPage {...defaultProps} />);
@@ -222,7 +226,7 @@ describe('WaterConnectionPage', () => {
       fireEvent.click(deleteButtons[0]);
 
       await waitFor(() => {
-        expect(refreshSpy).toHaveBeenCalled();
+        expect(getWaterConnectionPageData).toHaveBeenCalled();
       });
     });
 
@@ -268,7 +272,7 @@ describe('WaterConnectionPage', () => {
 
   describe('empty state', () => {
     it('should render correctly with no connections', () => {
-      const pageData = createMockPageData({ connections: [] });
+      const pageData = createMockPageData({ connections: [], totalCount: 0 });
 
       renderWithIntl(
         <WaterConnectionPage initialData={pageData} propertyId={123} />

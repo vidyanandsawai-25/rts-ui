@@ -29,6 +29,7 @@
       "connections": "{count} Connections",
       "status": {
         "active": "Active",
+        "inactive": "Inactive",
         "stopped": "Stopped",
         "activated": "Activated",
         "stoppedOn": "Stopped"

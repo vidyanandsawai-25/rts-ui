@@ -62,7 +62,22 @@ export function useConnectionForm({
   const [statusOptions, setStatusOptions] = useState(initialStatusOptions);
   const [rateMasters, setRateMasters] = useState(initialRateMasters);
 
-  const [formData, setFormData] = useState<WaterConnectionFormModel>(() => makeEmptyForm(propertyId));
+  const [formData, setFormData] = useState<WaterConnectionFormModel>(() => {
+    if (editingConnection) {
+      return {
+        id: editingConnection.id,
+        propertyId,
+        connectionNo: editingConnection.connectionNo,
+        meterNo: editingConnection.meterNo ?? "",
+        waterConnectionTypeId: editingConnection.waterConnectionTypeId,
+        waterConnectionSizeId: editingConnection.waterConnectionSizeId,
+        waterConnectionStatusId: editingConnection.waterConnectionStatusId ?? null,
+        installDate: editingConnection.installDate ?? editingConnection.connectionStartDate ?? "",
+        isActive: editingConnection.isActive,
+      };
+    }
+    return makeEmptyForm(propertyId);
+  });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
