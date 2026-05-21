@@ -1,4 +1,3 @@
-import React from "react";
 import { Activity, DollarSign, Droplets, StopCircle } from "lucide-react";
 import { Card } from "@/components/common/Card";
 
@@ -7,21 +6,6 @@ interface StatsData {
   activeConnections: number;
   stoppedConnections: number;
   yearlyRevenue: number;
-}
-
-
-function StatCard({ label, value, icon, gradient }: StatCardProps) {
-  return (
-    <div className={`${gradient} rounded-xl p-5 text-white flex items-center justify-between`}>
-      <div>
-        <div className="text-xs font-semibold uppercase tracking-wider opacity-90 mb-1">
-          {label}
-        </div>
-        <div className="text-3xl font-bold">{value}</div>
-      </div>
-      <div className="opacity-30 text-white">{icon}</div>
-    </div>
-  );
 }
 
 interface PropertyStatsCardsProps {
