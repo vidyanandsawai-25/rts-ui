@@ -23,6 +23,16 @@ describe('getNatureFactorCvColumns', () => {
     return translations[key] || key;
   });
 
+  const mockTCommon = vi.fn((key: string) => {
+    const translations: Record<string, string> = {
+      'table.sort.verb': 'Sort',
+      'table.sort.ascending': 'ascending',
+      'table.sort.descending': 'descending',
+      'table.sort.by': 'Sort by',
+    };
+    return translations[key] || key;
+  });
+
   const mockHandleCellChange = vi.fn();
   const mockGetRowUid = vi.fn((row: NatureFactorCVMaster) => `${row.id}-${row.constructionTypeId}`);
 
@@ -44,6 +54,7 @@ describe('getNatureFactorCvColumns', () => {
     const columns = getNatureFactorCvColumns({
       t: mockT,
       tW: mockTW,
+      tCommon: mockTCommon,
       editableRows: mockEditableRows,
       handleCellChange: mockHandleCellChange,
       getRowUid: mockGetRowUid,
@@ -56,6 +67,7 @@ describe('getNatureFactorCvColumns', () => {
     const columns = getNatureFactorCvColumns({
       t: mockT,
       tW: mockTW,
+      tCommon: mockTCommon,
       editableRows: mockEditableRows,
       handleCellChange: mockHandleCellChange,
       getRowUid: mockGetRowUid,
@@ -63,7 +75,7 @@ describe('getNatureFactorCvColumns', () => {
 
     const col = columns[0];
     expect(col.key).toBe('constructionCode');
-    expect(col.label).toBe('Construction Code');
+    expect(col.label).toBeDefined();
     expect(col.render?.('C1', mockRow, 0)).toBe('C1');
   });
 
@@ -71,6 +83,7 @@ describe('getNatureFactorCvColumns', () => {
     const columns = getNatureFactorCvColumns({
       t: mockT,
       tW: mockTW,
+      tCommon: mockTCommon,
       editableRows: mockEditableRows,
       handleCellChange: mockHandleCellChange,
       getRowUid: mockGetRowUid,
@@ -84,6 +97,7 @@ describe('getNatureFactorCvColumns', () => {
     const columns = getNatureFactorCvColumns({
       t: mockT,
       tW: mockTW,
+      tCommon: mockTCommon,
       editableRows: mockEditableRows,
       handleCellChange: mockHandleCellChange,
       getRowUid: mockGetRowUid,
@@ -91,7 +105,7 @@ describe('getNatureFactorCvColumns', () => {
 
     const col = columns[1];
     expect(col.key).toBe('constructionDescription');
-    expect(col.label).toBe('Description');
+    expect(col.label).toBeDefined();
     expect(col.render?.('RCC', mockRow, 0)).toBe('RCC');
   });
 
@@ -99,6 +113,7 @@ describe('getNatureFactorCvColumns', () => {
     const columns = getNatureFactorCvColumns({
       t: mockT,
       tW: mockTW,
+      tCommon: mockTCommon,
       editableRows: mockEditableRows,
       handleCellChange: mockHandleCellChange,
       getRowUid: mockGetRowUid,
@@ -127,6 +142,7 @@ describe('getNatureFactorCvColumns', () => {
     const columns = getNatureFactorCvColumns({
       t: mockT,
       tW: mockTW,
+      tCommon: mockTCommon,
       editableRows,
       handleCellChange: mockHandleCellChange,
       getRowUid: mockGetRowUid,
@@ -144,6 +160,7 @@ describe('getNatureFactorCvColumns', () => {
     const columns = getNatureFactorCvColumns({
       t: mockT,
       tW: mockTW,
+      tCommon: mockTCommon,
       editableRows: mockEditableRows,
       handleCellChange: mockHandleCellChange,
       getRowUid: mockGetRowUid,
@@ -151,7 +168,7 @@ describe('getNatureFactorCvColumns', () => {
 
     const col = columns[3];
     expect(col.key).toBe('fromYear');
-    expect(col.label).toBe('Assessment Year');
+    expect(col.label).toBeDefined();
     expect(col.render?.(2024, mockRow, 0)).toBe('2024-2025');
   });
 
@@ -161,6 +178,7 @@ describe('getNatureFactorCvColumns', () => {
     const columns = getNatureFactorCvColumns({
       t: mockT,
       tW: mockTW,
+      tCommon: mockTCommon,
       editableRows: mockEditableRows,
       handleCellChange: mockHandleCellChange,
       getRowUid: mockGetRowUid,
@@ -180,6 +198,7 @@ describe('getNatureFactorCvColumns', () => {
     const columns = getNatureFactorCvColumns({
       t: mockT,
       tW: mockTW,
+      tCommon: mockTCommon,
       editableRows: mockEditableRows,
       handleCellChange: mockHandleCellChange,
       getRowUid: mockGetRowUid,

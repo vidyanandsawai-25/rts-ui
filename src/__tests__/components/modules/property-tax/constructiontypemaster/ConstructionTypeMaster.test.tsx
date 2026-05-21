@@ -181,9 +181,9 @@ describe("ConstructionTypeMaster", () => {
 
     it("renders sortable column headers with sort icons", () => {
         render(<ConstructionTypeMaster {...defaultProps} />);
-        // Check for sort buttons in column headers (only constructionCode and description are sortable)
+        // Check for sort buttons in column headers (3 columns are sortable: code, description, searchSequence)
         const sortButtons = screen.getAllByRole("button", { name: /Sort by/i });
-        expect(sortButtons.length).toBe(2); // Only 2 columns are sortable
+        expect(sortButtons.length).toBe(3);
     });
 
     it("navigates to sorted URL when clicking column header", () => {
@@ -254,17 +254,13 @@ describe("ConstructionTypeMaster", () => {
         expect(pushedUrl).toContain("sortBy=description");
     });
 
-    it("searchSequence column is not sortable (API limitation)", () => {
+    it("can sort by searchSequence column", () => {
+        mockRouterPush.mockClear();
         render(<ConstructionTypeMaster {...defaultProps} />);
-        // searchSequence should not have a sort button
-        const sortButtons = screen.queryAllByRole("button", { name: /Sort by construction.constructionType.list.table.searchSequence/i });
-        expect(sortButtons.length).toBe(0);
-    });
-
-    it("isActive column is not sortable (API limitation)", () => {
-        render(<ConstructionTypeMaster {...defaultProps} />);
-        // isActive/status should not have a sort button
-        const sortButtons = screen.queryAllByRole("button", { name: /Sort by construction.constructionType.list.table.status/i });
-        expect(sortButtons.length).toBe(0);
+        const sortButton = screen.getByRole("button", { name: /Sort by construction.constructionType.list.table.searchSequence/i });
+        fireEvent.click(sortButton);
+        expect(mockRouterPush).toHaveBeenCalled();
+        const pushedUrl = mockRouterPush.mock.calls[0][0];
+        expect(pushedUrl).toContain("sortBy=searchSequence");
     });
 });

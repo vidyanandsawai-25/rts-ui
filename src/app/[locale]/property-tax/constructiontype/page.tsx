@@ -13,7 +13,7 @@ interface PageProps {
 }
 
 /** Allowed column names accepted by the server action / API */
-const ALLOWED_SORT_COLUMNS = ["constructionCode", "description"] as const;
+const ALLOWED_SORT_COLUMNS = ["constructionCode", "description", "searchSequence"] as const;
 const ALLOWED_SORT_ORDERS = ["asc", "desc"] as const;
 
 /** Pagination constraints – must stay in sync with the server action */

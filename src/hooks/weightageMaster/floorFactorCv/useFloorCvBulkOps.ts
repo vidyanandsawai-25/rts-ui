@@ -12,6 +12,7 @@ import {
     bulkCreateFloorFactorCVMasterAction,
     bulkUpdateFloorFactorCVMasterAction,
 } from "@/app/[locale]/property-tax/weightage-master/action";
+import type { Option } from "@/components/common";
 
 
 export interface UseFloorCvBulkOpsParams {
@@ -32,6 +33,7 @@ export interface UseFloorCvBulkOpsParams {
     addToast: (type: "success" | "error" | "info" | "warning", message: string) => void;
     refreshPage: () => void;
     clearFilters: () => void;
+    floorOptions: Option[];
 }
 
 export function useFloorCvBulkOps({
@@ -52,6 +54,7 @@ export function useFloorCvBulkOps({
     addToast,
     refreshPage,
     clearFilters,
+    floorOptions,
 }: UseFloorCvBulkOpsParams) {
     const t = useTranslations("floorFactorMaster");
     const tW = useTranslations("weightageMaster");
@@ -80,17 +83,23 @@ export function useFloorCvBulkOps({
         }
 
         // Validation for From/To floor selection
-        if (fromFloor && toFloor && parseInt(fromFloor) > parseInt(toFloor)) {
+        const fromIndex = floorOptions.findIndex(o => o.value === fromFloor);
+        const toIndex = floorOptions.findIndex(o => o.value === toFloor);
+
+        if (fromFloor && toFloor && fromIndex > -1 && toIndex > -1 && fromIndex > toIndex) {
             addToast("error", t("messages.fromFloorGreaterError"));
             return;
         }
+
         const updatedRows: Record<string, FloorFactorCVMaster> = {};
         let updatedCount = 0;
         data.forEach((row) => {
             const rowUid = getRowUid(row);
+            const rowFloorIndex = floorOptions.findIndex(o => o.value === String(row.floorId));
+            
             const isInRange =
-                (!fromFloor || row.floorId >= parseInt(fromFloor)) &&
-                (!toFloor || row.floorId <= parseInt(toFloor));
+                (!fromFloor || rowFloorIndex >= fromIndex) &&
+                (!toFloor || rowFloorIndex <= toIndex);
             if (isInRange) {
                 const existingEdit = editableRows[rowUid];
                 const baseRow = {

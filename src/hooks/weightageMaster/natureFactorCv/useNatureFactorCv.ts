@@ -10,11 +10,15 @@ import { useNatureFactorCvBulkOps } from "./useNatureFactorCvBulkOps";
 export interface UseNatureFactorCvProps {
     data: NatureFactorCVMaster[];
     pageSize: number;
+    sortBy?: string;
+    sortOrder?: string;
 }
 
 export function useNatureFactorCv({
     data,
     pageSize,
+    sortBy: initialSortBy,
+    sortOrder: initialSortOrder,
 }: UseNatureFactorCvProps) {
     const t = useTranslations("natureFactorCVMaster");
     const tW = useTranslations("weightageMaster");
@@ -34,6 +38,9 @@ export function useNatureFactorCv({
     const [isUpdating, setIsUpdating] = useState(false);
     const [isBulkUpdating, setIsBulkUpdating] = useState(false);
     const [isGeneratingAll, setIsGeneratingAll] = useState(false);
+
+    const [sortBy, setSortBy] = useState<string | undefined>(initialSortBy);
+    const [sortOrder, setSortOrder] = useState<string | undefined>(initialSortOrder);
 
     const newRecordsCount = data.filter(row => row.id === 0).length;
     const hasNewRecords = newRecordsCount > 0;
@@ -115,6 +122,8 @@ export function useNatureFactorCv({
         year?: string;
         type?: string;
         q?: string;
+        sortBy?: string;
+        sortOrder?: string;
     }): string => {
         const urlParams = new URLSearchParams();
         urlParams.set("page", String(params.page ?? 1));
@@ -128,6 +137,11 @@ export function useNatureFactorCv({
         
         const type = params.type ?? constructionType;
         if (type) urlParams.set("constructionType", type);
+        
+        const sb = params.sortBy !== undefined ? params.sortBy : sortBy;
+        const so = params.sortOrder !== undefined ? params.sortOrder : sortOrder;
+        if (sb) urlParams.set("sortBy", sb);
+        if (so) urlParams.set("sortOrder", so);
         
         return `/${locale}/property-tax/weightage-master/nature-weightage?${urlParams.toString()}`;
     };
@@ -150,11 +164,23 @@ export function useNatureFactorCv({
         router.push(buildNatureFactorUrl({ page: 1, type: value }));
     };
 
+    const handleSort = (columnKey: string) => {
+        let newOrder: "asc" | "desc" = "asc";
+        if (sortBy === columnKey) {
+            newOrder = sortOrder === "asc" ? "desc" : "asc";
+        }
+        setSortBy(columnKey);
+        setSortOrder(newOrder);
+        router.push(buildNatureFactorUrl({ page: 1, sortBy: columnKey, sortOrder: newOrder }));
+    };
+
     const handleClearAll = (): void => {
         setEditableRows({});
         clearFilters();
         setSelectedYear("");
-        router.push(buildNatureFactorUrl({ page: 1, year: "", type: "" }));
+        setSortBy(undefined);
+        setSortOrder(undefined);
+        router.push(buildNatureFactorUrl({ page: 1, year: "", type: "", sortBy: "", sortOrder: "" }));
         addToast('info', tW('common.messages.allClearedInfo'));
     };
 
@@ -169,10 +195,11 @@ export function useNatureFactorCv({
         newRecordsCount, hasNewRecords,
         toasts,
         isApplyDisabled, isBulkUpdateDisabled,
+        sortBy, sortOrder,
         addToast, removeToast,
         getRowUid, handleCellChange, handleUpdate, handleCancel,
         handleAssessmentYearChange, handleConstructionTypeChange, setFactorValue,
         handleApplyFilter, handleBulkUpdate, handleGenerateAll, handleClearAll,
-        changePage, changePageSize
+        changePage, changePageSize, handleSort
     };
 }
