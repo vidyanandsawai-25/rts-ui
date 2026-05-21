@@ -26,7 +26,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
   return (
     <>
       {/* Is Taxable Dropdown */}
-      <FieldWrapper label={t('floor.isTaxable')} htmlFor="floor-is-taxable" error={formErrors.isTaxable}>
+      <FieldWrapper label={t('floor.taxable')} htmlFor="floor-is-taxable" error={formErrors.isTaxable}>
         <SearchSelect
           id="floor-is-taxable"
           name="isTaxable"
@@ -70,7 +70,10 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
                 floor: desc || value,
                 floorDescription: desc || value 
               }));
-              if (formErrors.floorId || formErrors.floor) {
+              // Simple required validation: if value is empty, show error
+              if (!value) {
+                setFormErrors((prev) => ({ ...prev, floorId: t('floor.errors.floorRequired') || 'Floor selection is required' }));
+              } else {
                 setFormErrors((prev) => ({ ...prev, floorId: '', floor: '' }));
               }
             }}
@@ -86,7 +89,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
           <SearchSelect
             id="floor-sub-floor"
             name="subFloorId"
-            options={[
+            options={[ 
               { label: t('floor.selectSubFloor'), value: "" },
               ...getSelectOptions(
                 normalizeToStringArray(subFloorOptions),
@@ -103,13 +106,11 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
               const desc = getSubFloorDescription(value, subFloorLookup);
               setEditingFloorForm((prev: FloorData) => ({ 
                 ...prev, 
-                subFloorId: value,
-                subFloor: desc || value,
-                subFloorDescription: desc || value 
+                subFloorId: value === "" ? undefined : value,
+                subFloor: value === "" ? "" : (desc || value),
+                subFloorDescription: value === "" ? "" : (desc || value)
               }));
-              if (formErrors.subFloorId || formErrors.subFloor) {
-                setFormErrors((prev) => ({ ...prev, subFloorId: '', subFloor: '' }));
-              }
+              // // Simple required validation: if value is empty, show error
             }}
             placeholder={t('floor.selectSubFloor')}
             className="h-9 text-sm"
@@ -118,7 +119,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
       </FieldWrapper>
 
       {/* Con Yr (Construction Year) */}
-      <FieldWrapper label={t('floor.conYr')} htmlFor="floor-con-yr" required error={formErrors.conYr}>
+      <FieldWrapper label={t('roomSubmission.table.conYr')} htmlFor="floor-con-yr" required error={formErrors.conYr ? t('floor.errors.constructionYearInvalid') : undefined}>
         <Input
           id="floor-con-yr"
           type="text"
@@ -128,11 +129,10 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
           onChange={(e) => {
             const value = e.target.value.replace(/\D/g, '');
             setEditingFloorForm({ ...editingFloorForm, conYr: value });
-            
             if (value.length === 4) {
               const validation = validateField('conYr', value);
               if (!validation.isValid) {
-                setFormErrors((prev) => ({ ...prev, conYr: validation.error || '' }));
+                setFormErrors((prev) => ({ ...prev, conYr: validation.error || t('floor.errors.constructionYearInvalid') }));
               } else {
                 setFormErrors((prev) => ({ ...prev, conYr: '' }));
               }
@@ -144,7 +144,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
             const value = e.target.value;
             const validation = validateField('conYr', value);
             if (!validation.isValid) {
-              setFormErrors((prev) => ({ ...prev, conYr: validation.error || '' }));
+              setFormErrors((prev) => ({ ...prev, conYr: validation.error || t('floor.errors.constructionYearInvalid') }));
             }
           }}
           className="h-9 text-sm"
@@ -152,7 +152,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
       </FieldWrapper>
 
       {/* Asst Yr (Assessment Year) */}
-      <FieldWrapper label={t('floor.asstYr')} htmlFor="floor-asst-yr" required error={formErrors.asstYr}>
+      <FieldWrapper label={t('roomSubmission.table.asstYr')} htmlFor="floor-asst-yr" required error={formErrors.asstYr ? t('floor.errors.assessmentYearInvalid') : undefined}>
         <Input
           id="floor-asst-yr"
           type="text"
@@ -162,11 +162,10 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
           onChange={(e) => {
             const value = e.target.value.replace(/\D/g, '');
             setEditingFloorForm({ ...editingFloorForm, asstYr: value });
-            
             if (value.length === 4) {
               const validation = validateField('asstYr', value);
               if (!validation.isValid) {
-                setFormErrors((prev) => ({ ...prev, asstYr: validation.error || '' }));
+                setFormErrors((prev) => ({ ...prev, asstYr: validation.error || t('floor.errors.assessmentYearInvalid') }));
               } else {
                 setFormErrors((prev) => ({ ...prev, asstYr: '' }));
               }
@@ -178,7 +177,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
             const value = e.target.value;
             const validation = validateField('asstYr', value);
             if (!validation.isValid) {
-              setFormErrors((prev) => ({ ...prev, asstYr: validation.error || '' }));
+              setFormErrors((prev) => ({ ...prev, asstYr: validation.error || t('floor.errors.assessmentYearInvalid') }));
             }
           }}
           className="h-9 text-sm"

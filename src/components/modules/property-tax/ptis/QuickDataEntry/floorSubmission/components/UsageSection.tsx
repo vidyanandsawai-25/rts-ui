@@ -60,6 +60,12 @@ export const UsageSection: React.FC<UsageSectionProps> = ({
               if (formErrors.constructionTypeId || formErrors.conTyp) {
                 setFormErrors((prev) => ({ ...prev, constructionTypeId: '', conTyp: '' }));
               }
+
+               if (!value) {
+                setFormErrors((prev) => ({ ...prev, constructionTypeId: t('floor.errors.constructionTypeRequired') || 'Construction Type selection is required' }));
+              } else {
+                setFormErrors((prev) => ({ ...prev, constructionTypeId: '', conTyp: '' }));
+              }
             }}
             placeholder={t('floor.selectType')}
             className="h-9 text-sm"
@@ -83,6 +89,7 @@ export const UsageSection: React.FC<UsageSectionProps> = ({
           <SearchSelect
             id="floor-use"
             name="typeOfUseId"
+            menuPlacement="top"
             options={[
               { label: t('floor.selectUsage'), value: "" },
               ...getSelectOptions(
@@ -141,6 +148,7 @@ export const UsageSection: React.FC<UsageSectionProps> = ({
           <SearchSelect
             id="floor-sub-typ"
             name="subTypeOfUseId"
+            menuPlacement="top"
             options={[
               { label: t('floor.selectSubtype'), value: "" },
               ...getSelectOptions(
