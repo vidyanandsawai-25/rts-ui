@@ -40,3 +40,21 @@ export function sanitizeInput(input: string | undefined | null): string {
     .replace(/(^|\s)on\w+\s*=/gi, '$1')
     .slice(0, MAX_SANITIZED_INPUT_LENGTH);
 }
+
+/**
+ * Safely sanitizes longer text fields like descriptions, ensuring no HTML/JS injection.
+ * Truncates at the provided maximum length (defaults to 1000).
+ */
+export function sanitizeDescription(input: string | undefined | null, maxLength = 1000): string {
+  if (!input) return '';
+
+  return input
+    .trim()
+    .replace(/<[^>]*>/g, '') // Strip HTML tags
+    .replace(/javascript:/gi, '') // Remove javascript: protocol
+    .replace(/data:/gi, '') // Remove data: protocol
+    .replace(/vbscript:/gi, '') // Remove vbscript: protocol
+    .replace(/(^|\s)on\w+\s*=/gi, '$1') // Remove event handlers
+    .slice(0, maxLength);
+}
+

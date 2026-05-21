@@ -7,6 +7,7 @@ import {
   Drawer,
   Select,
   ValidationMessage,
+  RequiredFieldsNote,
 } from '@/components/common';
 import { Label } from '@/components/common/label';
 import { useTranslations } from 'next-intl';
@@ -73,6 +74,7 @@ export function AddConfigValueModal(props: AddConfigValueModalProps) {
       }
     >
       <form onSubmit={handleSubmit} className="p-6 space-y-5">
+        <RequiredFieldsNote text={t('modals.addValue.form.requiredFields')} />
         <div className="space-y-2">
           <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">
             {t('modals.addValue.form.filterCategory')}
@@ -115,6 +117,9 @@ export function AddConfigValueModal(props: AddConfigValueModalProps) {
               type="number"
               value={formData.departmentId}
               onChange={(e) => handleChange('departmentId', e.target.value)}
+              onKeyDown={(e) => {
+                if (/^[eE+\-.,]$/.test(e.key)) e.preventDefault();
+              }}
               disabled={isPending}
               placeholder={t('modals.addValue.form.placeholders.departmentId')}
             />
@@ -130,6 +135,9 @@ export function AddConfigValueModal(props: AddConfigValueModalProps) {
               type="number"
               value={formData.moduleId}
               onChange={(e) => handleChange('moduleId', e.target.value)}
+              onKeyDown={(e) => {
+                if (/^[eE+\-.,]$/.test(e.key)) e.preventDefault();
+              }}
               disabled={isPending}
               placeholder={t('modals.addValue.form.placeholders.moduleId')}
             />

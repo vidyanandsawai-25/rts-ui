@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { configMasterService } from '@/lib/api/configMaster.service';
+import { configMasterService } from '@/lib/api/configuration-settings/config-master/configMaster.service';
 import type { ConfigItem, UpdateConfigKeyRequest } from '@/types/configMaster.types';
 import {
   verifySession,
@@ -28,15 +28,21 @@ export async function updateAllConfigKeysStatusByCategoryIdAction(
 ): Promise<ActionResult> {
   try {
     const userId = await verifySession();
-    
+
     const validation = BulkUpdateStatusSchema.safeParse({ categoryId, isActive });
     if (!validation.success) {
-      return { success: false, error: await tConfigMessage('unexpectedError', 'Invalid input parameters') };
+      return {
+        success: false,
+        error: await tConfigMessage('unexpectedError', 'Invalid input parameters'),
+      };
     }
 
     const res = await configMasterService.getAllConfigKeys({ pageNumber: 1, pageSize: 1000 });
     if (!res.success || !res.data) {
-      return { success: false, error: await tConfigMessage('failedFetch', 'Failed to fetch configurations') };
+      return {
+        success: false,
+        error: await tConfigMessage('failedFetch', 'Failed to fetch configurations'),
+      };
     }
 
     const items: ConfigItem[] = Array.isArray(res.data)
@@ -47,12 +53,15 @@ export async function updateAllConfigKeysStatusByCategoryIdAction(
     if (targetKeys.length === 0) {
       return {
         success: true,
-        message: await tConfigMessage('noConfigurationsFound', 'No configurations found in this category'),
+        message: await tConfigMessage(
+          'noConfigurationsFound',
+          'No configurations found in this category'
+        ),
       };
     }
 
     const keysToUpdate = targetKeys.filter((key) => Boolean(key.isEnabled) !== isActive);
-    
+
     if (keysToUpdate.length === 0) {
       return {
         success: true,
@@ -82,19 +91,24 @@ export async function updateAllConfigKeysStatusByCategoryIdAction(
       MAX_CONCURRENT_UPDATES
     );
 
-    const failed = results.find(r => !r.success);
+    const failed = results.find((r) => !r.success);
     if (failed) {
-      return { success: false, error: failed.error || await tConfigMessage('keyUpdateFailed', 'Failed to update some configurations') };
+      return {
+        success: false,
+        error:
+          failed.error ||
+          (await tConfigMessage('keyUpdateFailed', 'Failed to update some configurations')),
+      };
     }
 
     const locale = await getLocaleFromHeaders();
     revalidatePath(`/${locale}/configuration-settings/config-master`, 'page');
-    
+
     const successMessage = await tConfigMessage(
       isActive ? 'configsEnabled' : 'configsDisabled',
       `Successfully ${isActive ? 'enabled' : 'disabled'} configurations`
     );
-    
+
     return {
       success: true,
       message: successMessage,
@@ -103,12 +117,15 @@ export async function updateAllConfigKeysStatusByCategoryIdAction(
     logError('updateAllConfigKeysStatusByCategoryIdAction failed', {
       error: err instanceof Error ? err : undefined,
       categoryId,
-      isActive
+      isActive,
     });
-    const errorMessage = process.env.NODE_ENV === 'production'
-      ? 'An unexpected error occurred during bulk update'
-      : (err instanceof Error ? err.message : 'An unexpected error occurred');
-      
+    const errorMessage =
+      process.env.NODE_ENV === 'production'
+        ? 'An unexpected error occurred during bulk update'
+        : err instanceof Error
+          ? err.message
+          : 'An unexpected error occurred';
+
     return {
       success: false,
       error: errorMessage,
