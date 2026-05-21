@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { locales } from "@/i18n/config";
 import { getUserIdFromCookies } from "@/lib/utils/cookie";
 import { fetchAllPaged } from "@/lib/utils/pagination-helpers";
+import { ApiError } from "@/lib/utils/api";
 import type { TypeOfUseMasterData, UseGroupIconKey, UseStatus, UseType, UseGroup, UseSubType } from "@/types/typeOfUse.types";
 
 import {
@@ -35,6 +36,38 @@ async function getCurrentUserId(): Promise<string> {
   const cookieStore = await cookies();
   const userId = getUserIdFromCookies(cookieStore);
   return userId ? String(userId) : "1";
+}
+
+/**
+ * Extract clean error message from any error type
+ * Ensures error messages are properly displayed in production
+ */
+function extractErrorMessage(error: unknown, fallback: string): string {
+  // Always log error details for server-side debugging
+  console.error('[Server Action Error]', {
+    error,
+    type: error?.constructor?.name,
+    message: error instanceof Error ? error.message : String(error),
+    isApiError: error instanceof ApiError,
+    apiErrorProp: error instanceof ApiError ? error.error : undefined,
+  });
+  
+  if (error instanceof ApiError) {
+    // Use the clean backend error message from ApiError.error property
+    const msg = error.error || fallback;
+    console.log('[Extracted from ApiError]', msg);
+    return msg;
+  }
+  if (error instanceof Error) {
+    // Extract message and clean any leading/trailing artifacts
+    const msg = error.message.trim();
+    // Remove leading ": " if present (from empty contextMessage)
+    const cleaned = msg.startsWith(': ') ? msg.substring(2) : msg;
+    console.log('[Extracted from Error]', cleaned);
+    return cleaned;
+  }
+  console.log('[Using fallback]', fallback);
+  return fallback;
 }
 
 export async function getTypeOfUseMasterData(): Promise<TypeOfUseMasterData> {
@@ -74,15 +107,20 @@ export async function createUseGroup(input: {
   icon: UseGroupIconKey;
   status?: UseStatus;
 }) {
-  await createUseGroupApi({
-    typeOfUseGroupCode: input.code,
-    groupName: input.name,
-    groupIcon: input.icon,
-    isActive: (input.status ?? "Active") === "Active",
-    createdBy: await getCurrentUserId(),
-  });
-  for (const locale of locales) {
-    revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+  try {
+    await createUseGroupApi({
+      typeOfUseGroupCode: input.code,
+      groupName: input.name,
+      groupIcon: input.icon,
+      isActive: (input.status ?? "Active") === "Active",
+      createdBy: await getCurrentUserId(),
+    });
+    for (const locale of locales) {
+      revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+    }
+  } catch (error) {
+    const errorMessage = extractErrorMessage(error, "Failed to create group");
+    throw new Error(errorMessage);
   }
 }
 
@@ -93,23 +131,40 @@ export async function updateUseGroup(input: {
   icon: UseGroupIconKey;
   status: UseStatus;
 }) {
-  await updateUseGroupApi({
-    typeOfUseGroupId: input.id,
-    typeOfUseGroupCode: input.code,
-    groupName: input.name,
-    groupIcon: input.icon,
-    isActive: input.status === "Active",
-    updatedBy: await getCurrentUserId(),
-  });
-  for (const locale of locales) {
-    revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+  try {
+    await updateUseGroupApi({
+      typeOfUseGroupId: input.id,
+      typeOfUseGroupCode: input.code,
+      groupName: input.name,
+      groupIcon: input.icon,
+      isActive: input.status === "Active",
+      updatedBy: await getCurrentUserId(),
+    });
+    
+    // Revalidate paths after successful update
+    try {
+      for (const locale of locales) {
+        revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+      }
+    } catch (revalidateError) {
+      // Log revalidation errors but don't fail the operation
+      console.error('[Revalidation Error]', revalidateError);
+    }
+  } catch (error) {
+    const errorMessage = extractErrorMessage(error, "Failed to update group");
+    throw new Error(errorMessage);
   }
 }
 
 export async function deleteUseGroup(id: string | number) {
-  await deleteUseGroupApi(id);
-  for (const locale of locales) {
-    revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+  try {
+    await deleteUseGroupApi(id);
+    for (const locale of locales) {
+      revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+    }
+  } catch (error) {
+    const errorMessage = extractErrorMessage(error, "Failed to delete group");
+    throw new Error(errorMessage);
   }
 }
 
@@ -199,17 +254,22 @@ export async function createUseType(input: {
   searchSequence: number;
   status?: UseStatus;
 }) {
-  await createUseTypeApi({
-    typeOfUseGroupId: input.groupId,
-    typeOfUseCode: input.code,
-    description: input.description,
-    type: input.type,
-    searchSequence: input.searchSequence,
-    isActive: (input.status ?? "Active") === "Active",
-    createdBy: await getCurrentUserId(),
-  });
-  for (const locale of locales) {
-    revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+  try {
+    await createUseTypeApi({
+      typeOfUseGroupId: input.groupId,
+      typeOfUseCode: input.code,
+      description: input.description,
+      type: input.type,
+      searchSequence: input.searchSequence,
+      isActive: (input.status ?? "Active") === "Active",
+      createdBy: await getCurrentUserId(),
+    });
+    for (const locale of locales) {
+      revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+    }
+  } catch (error) {
+    const errorMessage = extractErrorMessage(error, "Failed to create type");
+    throw new Error(errorMessage);
   }
 }
 
@@ -222,25 +282,35 @@ export async function updateUseType(input: {
   searchSequence: number;
   status: UseStatus;
 }) {
-  await updateUseTypeApi({
-    typeOfUseId: input.id,
-    typeOfUseGroupId: input.groupId,
-    typeOfUseCode: input.code,
-    description: input.description,
-    type: input.type,
-    searchSequence: input.searchSequence,
-    isActive: input.status === "Active",
-    updatedBy: await getCurrentUserId(),
-  });
-  for (const locale of locales) {
-    revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+  try {
+    await updateUseTypeApi({
+      typeOfUseId: input.id,
+      typeOfUseGroupId: input.groupId,
+      typeOfUseCode: input.code,
+      description: input.description,
+      type: input.type,
+      searchSequence: input.searchSequence,
+      isActive: input.status === "Active",
+      updatedBy: await getCurrentUserId(),
+    });
+    for (const locale of locales) {
+      revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+    }
+  } catch (error) {
+    const errorMessage = extractErrorMessage(error, "Failed to update type");
+    throw new Error(errorMessage);
   }
 }
 
 export async function deleteUseType(id: string | number) {
-  await deleteUseTypeApi(String(id));
-  for (const locale of locales) {
-    revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+  try {
+    await deleteUseTypeApi(String(id));
+    for (const locale of locales) {
+      revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+    }
+  } catch (error) {
+    const errorMessage = extractErrorMessage(error, "Failed to delete type");
+    throw new Error(errorMessage);
   }
 }
 
@@ -307,16 +377,21 @@ export async function createSubType(input: {
   searchSequence: number;
   status?: UseStatus;
 }) {
-  await createSubTypeApi({
-    typeOfUseId: input.typeId,
-    description: input.description,
-    searchSequence: input.searchSequence,
-    isActive: (input.status ?? "Active") === "Active",
-    createdBy: await getCurrentUserId(),
-  });
+  try {
+    await createSubTypeApi({
+      typeOfUseId: input.typeId,
+      description: input.description,
+      searchSequence: input.searchSequence,
+      isActive: (input.status ?? "Active") === "Active",
+      createdBy: await getCurrentUserId(),
+    });
 
-  for (const locale of locales) {
-    revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+    for (const locale of locales) {
+      revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+    }
+  } catch (error) {
+    const errorMessage = extractErrorMessage(error, "Failed to create subtype");
+    throw new Error(errorMessage);
   }
 }
 
@@ -327,24 +402,34 @@ export async function updateSubType(input: {
   searchSequence: number;
   status: UseStatus;
 }) {
-  await updateSubTypeApi({
-    subTypeOfUseId: input.id,
-    typeOfUseId: input.typeId,
-    description: input.description,
-    searchSequence: input.searchSequence,
-    isActive: input.status === "Active",
-    updatedBy: await getCurrentUserId(),
-  });
+  try {
+    await updateSubTypeApi({
+      subTypeOfUseId: input.id,
+      typeOfUseId: input.typeId,
+      description: input.description,
+      searchSequence: input.searchSequence,
+      isActive: input.status === "Active",
+      updatedBy: await getCurrentUserId(),
+    });
 
-  for (const locale of locales) {
-    revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+    for (const locale of locales) {
+      revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+    }
+  } catch (error) {
+    const errorMessage = extractErrorMessage(error, "Failed to update subtype");
+    throw new Error(errorMessage);
   }
 }
 
 export async function deleteSubType(id: string | number) {
-  await deleteSubTypeApi(String(id));
-  for (const locale of locales) {
-    revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+  try {
+    await deleteSubTypeApi(String(id));
+    for (const locale of locales) {
+      revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
+    }
+  } catch (error) {
+    const errorMessage = extractErrorMessage(error, "Failed to delete subtype");
+    throw new Error(errorMessage);
   }
 }
 
