@@ -40,10 +40,11 @@ export const RoomTypeShapeFields: React.FC<RoomTypeShapeFieldsProps> = ({
           type="text"
           fullWidth
           value={formData.roomNo}
+          maxLength={2}
           onFocus={(e) => e.target.select()}
           onChange={(e) => {
-            const value = e.target.value;
-            if (value && (value === '0' || parseFloat(value) < 1)) return;
+            let value = e.target.value.replace(/[^0-9]/g, '').slice(0, 2);
+            if (value && (value === '0' || parseFloat(value) < 1)) value = '';
             handleInputChange('roomNo', value);
           }}
           disabled={!isEditMode}
