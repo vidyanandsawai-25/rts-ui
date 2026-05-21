@@ -58,6 +58,8 @@ export interface MatrixGridProps {
     deleteRow: string;
   };
   pagination?: MatrixGridPaginationProps;
+  /** Maximum value allowed in editable cells (default: 9999) */
+  cellMaxValue?: number;
 }
  
 /* ================= HELPER FUNCTIONS ================= */
@@ -210,6 +212,7 @@ export const MatrixGrid = ({
   getCellClassName,
   translations,
   pagination,
+  cellMaxValue,
 }: MatrixGridProps): React.ReactElement => {
   const isEditable = mode === "edit";
  
@@ -385,6 +388,7 @@ export const MatrixGrid = ({
                         colorClass={colorClass}
                         className={customCellClass}
                         readOnly={false}
+                        maxValue={cellMaxValue}
                         onCellChange={onCellChange}
                         onKeyDown={onCellKeyDown}
                       />
