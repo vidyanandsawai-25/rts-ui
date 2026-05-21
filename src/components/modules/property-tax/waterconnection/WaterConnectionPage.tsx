@@ -59,7 +59,7 @@ export default function WaterConnectionPage({ initialData, propertyId }: WaterCo
       try {
         const data = await getWaterConnectionPageData(propertyId, page, pageSize);
         setPageData(data);
-      } catch (error) {
+      } catch (_error) {
         toast.error(t("error.description"));
       } finally {
         setLoading(false);
