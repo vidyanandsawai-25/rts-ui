@@ -1,11 +1,12 @@
 import { BankMaster } from '@/components/modules/configuration-settings/bank/BankMaster';
 import { getBanksAction, getBankMasterMetadata } from './actions';
+import { getCleanErrorMessage } from '@/lib/utils/backend-error-detection';
 
 export const dynamic = 'force-dynamic';
 
 const DEFAULT_PAGE_NUMBER = 1;
 const DEFAULT_PAGE_SIZE = 10;
-const DEFAULT_STATS_DATA = {
+const DEFAULT_STATS_DATA: { activeCount: number; uniqueStates: string[] } = {
   activeCount: 0,
   uniqueStates: [],
 };
@@ -35,17 +36,34 @@ export default async function BankMasterPage({ searchParams }: PageProps) {
   const pageNumber = parsePositiveInteger(sParams.page, DEFAULT_PAGE_NUMBER, MAX_PAGE_NUMBER);
   const pageSize = parsePositiveInteger(sParams.pageSize, DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE);
   const searchTerm = sParams.search?.trim().slice(0, MAX_SEARCH_TERM_LENGTH) || '';
-  const [banksRes, metaRes] = await Promise.all([
-    getBanksAction(pageNumber, pageSize, searchTerm, 'all'),
-    getBankMasterMetadata(),
-  ]);
 
-  if (!banksRes.success) {
-    throw new Error(banksRes.error || 'Failed to fetch bank data');
+  let errorMessage: string | undefined;
+  let banksData;
+  let statsData = DEFAULT_STATS_DATA;
+
+  try {
+    const [banksRes, metaRes] = await Promise.all([
+      getBanksAction(pageNumber, pageSize, searchTerm, 'all'),
+      getBankMasterMetadata(),
+    ]);
+
+    if (!banksRes.success) {
+      errorMessage = banksRes.error
+        ? getCleanErrorMessage(banksRes.error)
+        : 'Failed to fetch bank data.';
+    } else {
+      banksData = banksRes.data;
+    }
+
+    if (metaRes.success && metaRes.data) {
+      statsData = metaRes.data;
+    }
+  } catch (err) {
+    errorMessage = getCleanErrorMessage(
+      err,
+      'An unexpected error occurred while loading bank data.'
+    );
   }
-
-  const banksData = banksRes.data;
-  const statsData = metaRes.success && metaRes.data ? metaRes.data : DEFAULT_STATS_DATA;
 
   return (
     <BankMaster
@@ -55,6 +73,7 @@ export default async function BankMasterPage({ searchParams }: PageProps) {
       totalCount={banksData?.totalCount ?? 0}
       totalPages={banksData?.totalPages ?? 0}
       statsData={statsData}
+      errorMessage={errorMessage}
     />
   );
 }

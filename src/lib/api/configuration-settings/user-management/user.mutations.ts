@@ -123,79 +123,44 @@ export async function updateUser(id: number, user: Partial<User>, userId?: numbe
     mustChangePassword: false,
     language: user.language || 'en',
     remark: user.remark || '',
-    departments: [
-      ...rawDepartments.map((rd) => ({
-        id: rd.id,
-        isActive: userIsActive ? selectedDeptIds.includes(String(rd.departmentId)) : false,
-        departmentId: rd.departmentId,
+    departments: selectedDeptIds.map((deptId) => {
+      const rawDept = rawDepartments.find((rd) => String(rd.departmentId) === String(deptId));
+      return {
+        id: rawDept?.id,
+        isActive: userIsActive,
+        departmentId: Number(deptId),
         userId: id,
-      })),
-      ...selectedDeptIds
-        .filter(
-          (deptId) => !rawDepartments.some((rd) => String(rd.departmentId) === String(deptId))
-        )
-        .map((deptId) => ({ isActive: userIsActive, departmentId: Number(deptId), userId: id })),
-    ],
-    moduleAccess: [
-      ...rawModuleAccess.map((rma) => ({
-        id: rma.id,
-        isActive: userIsActive
-          ? selectedModPairs.some(
-              (sp) => sp.deptId === Number(rma.departmentId) && sp.modId === Number(rma.moduleId)
-            )
-          : false,
-        departmentId: Number(rma.departmentId),
-        moduleId: Number(rma.moduleId),
+      };
+    }),
+    moduleAccess: selectedModPairs.map((sp) => {
+      const rawMod = rawModuleAccess.find(
+        (rma) => Number(rma.departmentId) === sp.deptId && Number(rma.moduleId) === sp.modId
+      );
+      return {
+        id: rawMod?.id,
+        isActive: userIsActive,
+        departmentId: sp.deptId,
+        moduleId: sp.modId,
         userId: id,
-      })),
-      ...selectedModPairs
-        .filter(
-          (sp) =>
-            !rawModuleAccess.some(
-              (rma) => Number(rma.departmentId) === sp.deptId && Number(rma.moduleId) === sp.modId
-            )
-        )
-        .map((sp) => ({
+      };
+    }),
+    roleAllocations: Object.entries(user.roleAccess || {}).flatMap(([deptId, roleIds]) => {
+      const parsedDeptId = Number(deptId);
+      return (Array.isArray(roleIds) ? roleIds : []).map((roleId) => {
+        const rawRole = rawRoleAllocations.find(
+          (rra) =>
+            String(rra.departmentId) === String(deptId) &&
+            String(rra.userRoleId) === String(roleId)
+        );
+        return {
+          id: rawRole?.id,
           isActive: userIsActive,
-          departmentId: sp.deptId,
-          moduleId: sp.modId,
+          departmentId: parsedDeptId,
+          userRoleId: Number(roleId),
           userId: id,
-        })),
-    ],
-    roleAllocations: [
-      ...rawRoleAllocations.map((rra) => ({
-        id: rra.id,
-        isActive: userIsActive
-          ? Object.entries(user.roleAccess || {}).some(
-              ([deptId, roleIds]) =>
-                String(deptId) === String(rra.departmentId) &&
-                Array.isArray(roleIds) &&
-                roleIds.includes(Number(rra.userRoleId))
-            )
-          : false,
-        departmentId: rra.departmentId,
-        userRoleId: rra.userRoleId,
-        userId: id,
-      })),
-      ...Object.entries(user.roleAccess || {}).flatMap(([deptId, roleIds]) => {
-        const parsedDeptId = Number(deptId);
-        return (Array.isArray(roleIds) ? roleIds : [])
-          .filter(
-            (roleId) =>
-              !rawRoleAllocations.some(
-                (rra) =>
-                  String(rra.departmentId) === String(deptId) &&
-                  String(rra.userRoleId) === String(roleId)
-              )
-          )
-          .map((roleId) => ({
-            isActive: userIsActive,
-            departmentId: parsedDeptId,
-            userRoleId: roleId,
-            userId: id,
-          }));
-      }),
-    ],
+        };
+      });
+    }),
   };
   const response = await apiClient.put<void>(`/users/${id}`, backendUser);
   if (!response.success) {

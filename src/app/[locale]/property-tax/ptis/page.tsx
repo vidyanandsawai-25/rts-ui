@@ -21,6 +21,7 @@ import { getCapitalValue } from './CapitalValue.action';
 import { getRateableValue } from './RateableValue.action';
 import { assembleDualMethodSectionData } from '@/components/modules/property-tax/ptis/dualmethod/dual-method-data';
 import type { SearchSelectOption } from '@/components/common/SearchSelect';
+import type { ApartmentQCDetail } from '@/types/apartmentQC.types';
 import type {
   PropertyListItem,
   Ward,
@@ -33,6 +34,9 @@ import type {
 import { toPositiveInt, toSafeString } from '@/lib/utils/format';
 import { PTIS_TABS, PtisTabId } from '@/types/ptis.types';
 import { redirect } from 'next/navigation';
+import { AlertCircle } from 'lucide-react';
+import { getTranslations } from 'next-intl/server';
+import { getCleanErrorMessage } from '@/lib/utils/backend-error-detection';
 import PtisMainScreen from '@/components/modules/property-tax/ptis/PtisMainScreen';
 import { parsePtisSearchParams } from '@/lib/utils/params';
 import { getPtisUserSafeErrorMessage } from '@/components/modules/property-tax/ptis/shared/valuation-fetch';
@@ -127,6 +131,7 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
   const rawPartitionNo = toSafeString(resolvedSearchParams?.partitionNo);
   const partitionNo = rawPartitionNo === '0' ? '' : rawPartitionNo;
   const { locale } = resolvedParams;
+  const t = await getTranslations({ locale, namespace: 'ptis' });
   const activeTab = toValidTab(resolvedSearchParams?.tab);
   const ptisParams = parsePtisSearchParams(resolvedSearchParams);
   const wardIdParam = toPositiveInt(resolvedSearchParams?.wardId);
@@ -152,18 +157,24 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
   const initialWardIdResult =
     initialWardIdSettled.status === 'fulfilled' ? initialWardIdSettled.value : null;
 
-  // CRITICAL FAILURE: If ward list cannot be loaded at all, trigger error boundary
-  if (wardListSettled.status === 'rejected' || (!wardListResult.success && (!wardListResult.data || wardListResult.data.length === 0))) {
-    throw new Error(wardListResult.error || 'Failed to load critical module data (Ward List)');
+  let criticalError: string | undefined = undefined;
+
+  if (wardListSettled.status === 'rejected') {
+    criticalError = t('search.errors.fetchWardsFailed');
+  } else if (
+    !wardListResult.success &&
+    (!wardListResult.data || wardListResult.data.length === 0)
+  ) {
+    criticalError = getCleanErrorMessage(wardListResult.error, t('search.errors.fetchWardsFailed'));
   }
 
   // Process Ward List for initial options
   const wardOptions: SearchSelectOption[] =
     wardListResult.success && wardListResult.data
       ? wardListResult.data.map((w: Ward) => ({
-        label: w.wardNo || '',
-        value: (w.wardId ?? w.wardID ?? '').toString(),
-      }))
+          label: w.wardNo || '',
+          value: (w.wardId ?? w.wardID ?? '').toString(),
+        }))
       : [];
 
   let resolvedWardId = wardIdParam;
@@ -171,92 +182,150 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
     resolvedWardId = initialWardIdResult.data.wardId;
   }
 
-  const [propertyListResult, propertyDetailsResult] = await Promise.all([
-    resolvedWardId ? getPropertyListByWardAction(resolvedWardId) : Promise.resolve(null),
-    getInitialData(wardNo, propertyNo, partitionNo, resolvedWardId, propertyIdParam),
-  ]);
-
-  // Capture non-critical errors to be surfaced as toasts on the client
-  const initialError =
-    (!propertyDetailsResult.success && propertyDetailsResult.error) ||
-    (propertyListResult && !propertyListResult.success && propertyListResult.error) ||
-    undefined;
+  const emptyPaged = {
+    items: [] as ApartmentQCDetail[],
+    totalCount: 0,
+    pageNumber: 1,
+    pageSize: 10,
+    totalPages: 1,
+    hasPrevious: false,
+    hasNext: false,
+  };
 
   let propertyOptions: SearchSelectOption[] = [];
   let rawPropertyData: PropertyListItem[] = [];
-
-  if (resolvedWardId && propertyListResult?.success && propertyListResult.data) {
-    rawPropertyData = propertyListResult.data;
-    propertyOptions = propertyListResult.data.map((p) => {
-      const trimmedPartitionNo = (p.partitionNo ?? '').trim();
-      const normalizedPartitionNo = trimmedPartitionNo === '0' ? '' : trimmedPartitionNo;
-      return {
-        label: `${p.propertyNo}${normalizedPartitionNo ? ` - ${normalizedPartitionNo}` : ''}`,
-        value: JSON.stringify({
-          propertyNo: p.propertyNo,
-          partitionNo: normalizedPartitionNo,
-          propertyId: p.propertyId,
-        }),
-      };
-    });
-  }
-
   let kycDetails = defaultKycDetails;
   let societyDetails = defaultSocietyDetails;
   let oldDetails = defaultOldDetails;
   let oldFloorTableData: OldFloorDetailsData[] = [];
   let oldTaxesData: OldTaxesData | null = null;
+  let resolvedPropertyId: number | undefined = undefined;
 
-  const resolvedPropertyId = propertyIdParam ?? propertyDetailsResult.propertyId;
+  let apartmentData = {
+    amenities: emptyPaged,
+    commercial: emptyPaged,
+    residential: emptyPaged,
+  };
+  let rateableResult: Awaited<ReturnType<typeof getRateableValue>> | null = null;
+  let capitalResult: Awaited<ReturnType<typeof getCapitalValue>> | null = null;
+  let dualSectionData: Awaited<ReturnType<typeof assembleDualMethodSectionData>> | undefined =
+    undefined;
+  let initialError: string | undefined = undefined;
 
-  // Fetch Apartment QC data and Valuations if property info is available
-  const emptyPaged = { items: [], totalCount: 0, pageNumber: 1, pageSize: 10, totalPages: 1, hasPrevious: false, hasNext: false };
+  let propertyDetailsResult: {
+    success: boolean;
+    propertyId?: number;
+    propertyDetails: PropertyDetailsData;
+    error?: string;
+  } = {
+    success: true,
+    propertyId: undefined,
+    propertyDetails: defaultPropertyDetails,
+    error: undefined,
+  };
+  let propertyListResult: Awaited<ReturnType<typeof getPropertyListByWardAction>> | null = null;
 
-  const [
-    apartmentData,
-    rateableResult,
-    capitalResult,
-    kycResult,
-    societyResult,
-    oldDetailsResult,
-    oldFloorResult,
-    oldTaxesResult
-  ] = await Promise.all([
-    resolvedWardId && propertyNo
-      ? getApartmentQCDataAction(resolvedWardId, propertyNo, appartmentTab, pageNumber, pageSize, searchTerm, resolvedPropertyId)
-      : Promise.resolve({ amenities: emptyPaged, commercial: emptyPaged, residential: emptyPaged }),
-    resolvedPropertyId ? getRateableValue(resolvedPropertyId) : Promise.resolve(null),
-    resolvedPropertyId ? getCapitalValue(resolvedPropertyId) : Promise.resolve(null),
-    resolvedPropertyId ? fetchKycDetailsOnlyAction(resolvedPropertyId) : Promise.resolve(null),
-    resolvedPropertyId ? fetchSocietyDetailsOnlyAction(resolvedPropertyId) : Promise.resolve(null),
-    resolvedPropertyId ? fetchOldDetailsOnlyAction(resolvedPropertyId) : Promise.resolve(null),
-    resolvedPropertyId ? fetchOldFloorDetailsAction(resolvedPropertyId) : Promise.resolve(null),
-    resolvedPropertyId ? fetchOldTaxesDetailsAction(resolvedPropertyId) : Promise.resolve(null),
-  ]);
+  if (!criticalError) {
+    try {
+      const [propListRes, propDetailsRes] = await Promise.all([
+        resolvedWardId ? getPropertyListByWardAction(resolvedWardId) : Promise.resolve(null),
+        getInitialData(wardNo, propertyNo, partitionNo, resolvedWardId, propertyIdParam),
+      ]);
 
-  // Map results to data objects
-  if (kycResult?.success && kycResult.data) {
-    kycDetails = { ...defaultKycDetails, ...kycResult.data };
-  }
-  if (societyResult?.success && societyResult.data) {
-    societyDetails = { ...defaultSocietyDetails, ...societyResult.data };
-  }
-  if (oldDetailsResult?.success && oldDetailsResult.data) {
-    oldDetails = { ...defaultOldDetails, ...oldDetailsResult.data };
-  }
-  if (oldFloorResult?.success && Array.isArray(oldFloorResult.data)) {
-    oldFloorTableData = oldFloorResult.data;
-  }
-  if (oldTaxesResult?.success && oldTaxesResult.data) {
-    oldTaxesData = oldTaxesResult.data;
-  }
+      propertyListResult = propListRes;
+      propertyDetailsResult = propDetailsRes;
 
-  // Dual Method data triggers additional valuation fetches internally,
-  // so only load it when the dual-method UI is actually being rendered.
-  const dualSectionData =
-    ptisParams.tab === 'dual'
-      ? await assembleDualMethodSectionData(resolvedPropertyId, oldDetails)
-      : undefined;
+      // Capture non-critical errors to be surfaced as toasts on the client
+      initialError =
+        (!propertyDetailsResult.success && propertyDetailsResult.error) ||
+        (propertyListResult && !propertyListResult.success && propertyListResult.error) ||
+        undefined;
+
+      if (resolvedWardId && propertyListResult?.success && propertyListResult.data) {
+        rawPropertyData = propertyListResult.data;
+        propertyOptions = propertyListResult.data.map((p: PropertyListItem) => {
+          const trimmedPartitionNo = (p.partitionNo ?? '').trim();
+          const normalizedPartitionNo = trimmedPartitionNo === '0' ? '' : trimmedPartitionNo;
+          return {
+            label: `${p.propertyNo}${normalizedPartitionNo ? ` - ${normalizedPartitionNo}` : ''}`,
+            value: JSON.stringify({
+              propertyNo: p.propertyNo,
+              partitionNo: normalizedPartitionNo,
+              propertyId: p.propertyId,
+            }),
+          };
+        });
+      }
+
+      resolvedPropertyId = propertyIdParam ?? propertyDetailsResult.propertyId;
+
+      const [
+        aptData,
+        rateableRes,
+        capitalRes,
+        kycResult,
+        societyResult,
+        oldDetailsResult,
+        oldFloorResult,
+        oldTaxesResult,
+      ] = await Promise.all([
+        resolvedWardId && propertyNo
+          ? getApartmentQCDataAction(
+              resolvedWardId,
+              propertyNo,
+              appartmentTab,
+              pageNumber,
+              pageSize,
+              searchTerm,
+              resolvedPropertyId
+            )
+          : Promise.resolve({
+              amenities: emptyPaged,
+              commercial: emptyPaged,
+              residential: emptyPaged,
+            }),
+        resolvedPropertyId ? getRateableValue(resolvedPropertyId) : Promise.resolve(null),
+        resolvedPropertyId ? getCapitalValue(resolvedPropertyId) : Promise.resolve(null),
+        resolvedPropertyId ? fetchKycDetailsOnlyAction(resolvedPropertyId) : Promise.resolve(null),
+        resolvedPropertyId
+          ? fetchSocietyDetailsOnlyAction(resolvedPropertyId)
+          : Promise.resolve(null),
+        resolvedPropertyId ? fetchOldDetailsOnlyAction(resolvedPropertyId) : Promise.resolve(null),
+        resolvedPropertyId ? fetchOldFloorDetailsAction(resolvedPropertyId) : Promise.resolve(null),
+        resolvedPropertyId ? fetchOldTaxesDetailsAction(resolvedPropertyId) : Promise.resolve(null),
+      ]);
+
+      apartmentData = aptData;
+      rateableResult = rateableRes;
+      capitalResult = capitalRes;
+
+      // Map results to data objects
+      if (kycResult?.success && kycResult.data) {
+        kycDetails = { ...defaultKycDetails, ...kycResult.data };
+      }
+      if (societyResult?.success && societyResult.data) {
+        societyDetails = { ...defaultSocietyDetails, ...societyResult.data };
+      }
+      if (oldDetailsResult?.success && oldDetailsResult.data) {
+        oldDetails = { ...defaultOldDetails, ...oldDetailsResult.data };
+      }
+      if (oldFloorResult?.success && Array.isArray(oldFloorResult.data)) {
+        oldFloorTableData = oldFloorResult.data;
+      }
+      if (oldTaxesResult?.success && oldTaxesResult.data) {
+        oldTaxesData = oldTaxesResult.data;
+      }
+
+      // Dual Method data triggers additional valuation fetches internally,
+      // so only load it when the dual-method UI is actually being rendered.
+      dualSectionData =
+        ptisParams.tab === 'dual'
+          ? await assembleDualMethodSectionData(resolvedPropertyId, oldDetails)
+          : undefined;
+    } catch (err) {
+      criticalError = getCleanErrorMessage(err, t('search.errors.fetchPropertiesFailed'));
+    }
+  }
 
   const initialData: PtisInitialData = {
     propertyDetails: propertyDetailsResult.propertyDetails,
@@ -271,6 +340,7 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
     oldTaxesData,
     showOldTaxInfo: showOldTaxParam,
   };
+
   try {
     // URL Normalization (Redirect if ID resolved but not in URL)
     if (propertyDetailsResult.propertyId && !propertyIdParam) {
@@ -297,16 +367,12 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
       throw error;
     }
 
-    // For other errors, let the error boundary handle it
-    throw error;
+    // For other errors, set criticalError instead of throwing
+    criticalError = getCleanErrorMessage(error, t('error.generic'));
   }
 
   const sanitizedInitialError = propertyDetailsResult.error
-    ? getPtisUserSafeErrorMessage(
-      propertyDetailsResult.error,
-      undefined,
-      'Unable to load PTIS details. Please try again.'
-    )
+    ? getPtisUserSafeErrorMessage(propertyDetailsResult.error, undefined, t('error.generic'))
     : undefined;
 
   // Fetch tax details based on valuation tab (ptisParams.tab), not property tab (activeTab)
@@ -315,7 +381,16 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
     await fetchTaxDetailsByTab(resolvedPropertyId, valuationTab);
 
   return (
-    <>
+    <div className="flex flex-col gap-6">
+      {criticalError && (
+        <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+          <AlertCircle className="h-5 w-5 mt-0.5 shrink-0 text-red-500" />
+          <div>
+            <p className="text-sm font-semibold">{t('error.networkError.title')}</p>
+            <p className="text-sm mt-0.5">{criticalError}</p>
+          </div>
+        </div>
+      )}
       <PropertyTabSection
         initialData={initialData}
         initialWardId={resolvedWardId}
@@ -387,6 +462,6 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
           />
         }
       />
-    </>
+    </div>
   );
 }

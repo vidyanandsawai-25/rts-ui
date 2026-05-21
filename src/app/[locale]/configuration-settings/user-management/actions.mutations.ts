@@ -10,6 +10,7 @@ import {
   createDesignation,
   updateDesignation,
   deleteDesignation,
+  getUsers,
 } from '@/lib/api/configuration-settings/user-management/user-management.services';
 import { getUserId, performAction, type ActionResponse } from './action.utils';
 import { userManagementValidations } from '@/lib/utils/validation';
@@ -20,7 +21,14 @@ export const createUserAction = async (data: Partial<User>): Promise<ActionRespo
   const t = await getTranslations('userManagement');
   const tCommon = await getTranslations('common');
 
-  const errors = userManagementValidations.validateUser(data, t, tCommon, false);
+  const usersRes = await getUsers({ pageNumber: 1, pageSize: 2000 });
+  const errors = userManagementValidations.validateUser(
+    data,
+    t,
+    tCommon,
+    false,
+    usersRes.items ?? []
+  );
 
   if (Object.keys(errors).length > 0) {
     return { success: false, validationErrors: errors as Record<string, string> };
@@ -39,7 +47,15 @@ export const updateUserAction = async (
   const t = await getTranslations('userManagement');
   const tCommon = await getTranslations('common');
 
-  const errors = userManagementValidations.validateUser(data, t, tCommon, true);
+  const usersRes = await getUsers({ pageNumber: 1, pageSize: 2000 });
+  const errors = userManagementValidations.validateUser(
+    data,
+    t,
+    tCommon,
+    true,
+    usersRes.items ?? [],
+    id
+  );
 
   if (Object.keys(errors).length > 0) {
     return { success: false, validationErrors: errors as Record<string, string> };

@@ -88,7 +88,7 @@
     "cityRequired": "City is required",
     "stateRequired": "State is required",
     "pincodeRequired": "Pincode is required",
-    "pincodeFormat": "Pincode must be {count} digits",
+    "pincodeFormat": "Invalid pincode",
     "bankCodeLength": "Bank Code cannot exceed {count} characters",
     "bankNameLength": "Bank Name cannot exceed {count} characters",
     "branchNameLength": "Branch Name cannot exceed {count} characters",

@@ -1,7 +1,6 @@
 import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-
 import { BankMaster } from '@/components/modules/configuration-settings/bank/BankMaster';
 import type { BankMasterData } from '@/types/bank-master.types';
 import * as bankActions from '@/app/[locale]/configuration-settings/bank-master/actions';
@@ -17,6 +16,16 @@ vi.mock('sonner', () => ({
     success: vi.fn(),
     error: vi.fn(),
   },
+}));
+
+vi.mock('@/hooks/usePermissions', () => ({
+  usePermissions: () => ({
+    canView: true,
+    canEdit: true,
+    canDelete: true,
+    haveFullAccess: true,
+    hasAccess: true,
+  }),
 }));
 
 const mockPush = vi.fn();

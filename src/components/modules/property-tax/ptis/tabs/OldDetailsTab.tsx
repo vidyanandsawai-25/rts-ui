@@ -158,7 +158,7 @@ const OldDetailsTab: React.FC<OldDetailsTabProps> = ({
                   columns={oldFloorColumns}
                   emptyText={t('fields.noFloorDetails')}
                   paginationConfig={{ enabled: false }}
-                  maxBodyHeightClassName="max-h-[300px]"
+                  maxBodyHeightClassName="max-h-[150px]"
                 />
               </div>
             </div>
