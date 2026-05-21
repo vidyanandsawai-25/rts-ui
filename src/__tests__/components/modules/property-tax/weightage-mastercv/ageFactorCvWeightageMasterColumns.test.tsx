@@ -7,6 +7,7 @@ describe('getAgeFactorCvWeightageMasterColumns', () => {
   const mockT = vi.fn((key: string) => {
     const translations: Record<string, string> = {
       'columns.constructionType': 'Construction Type',
+      'columns.description': 'Description',
       'columns.ageFrom': 'Age From',
       'columns.ageTo': 'Age To',
       'columns.factor': 'Factor',
@@ -24,6 +25,16 @@ describe('getAgeFactorCvWeightageMasterColumns', () => {
     return translations[key] || key;
   });
 
+  const mockTCommon = vi.fn((key: string) => {
+    const translations: Record<string, string> = {
+      'table.sort.verb': 'Sort',
+      'table.sort.ascending': 'ascending',
+      'table.sort.descending': 'descending',
+      'table.sort.by': 'Sort by',
+    };
+    return translations[key] || key;
+  });
+
   const mockHandleCellChange = vi.fn();
   const mockGetRowUid = vi.fn((row: AgeFactorCVMaster) => `${row.id}-${row.constructionTypeId}`);
 
@@ -33,6 +44,7 @@ describe('getAgeFactorCvWeightageMasterColumns', () => {
     id: 1,
     constructionTypeId: 101,
     constructionCode: 'C1',
+    constructionDescription: 'Concrete Structure',
     ageFrom: 0,
     ageTo: 10,
     factor: 1.5,
@@ -46,18 +58,20 @@ describe('getAgeFactorCvWeightageMasterColumns', () => {
     const columns = getAgeFactorCvWeightageMasterColumns({
       t: mockT,
       tW: mockTW,
+      tCommon: mockTCommon,
       editableRows: mockEditableRows,
       handleCellChange: mockHandleCellChange,
       getRowUid: mockGetRowUid,
     });
 
-    expect(columns).toHaveLength(6);
+    expect(columns).toHaveLength(7);
   });
 
   it('constructionCode column renders correctly', () => {
     const columns = getAgeFactorCvWeightageMasterColumns({
       t: mockT,
       tW: mockTW,
+      tCommon: mockTCommon,
       editableRows: mockEditableRows,
       handleCellChange: mockHandleCellChange,
       getRowUid: mockGetRowUid,
@@ -73,6 +87,7 @@ describe('getAgeFactorCvWeightageMasterColumns', () => {
     const columns = getAgeFactorCvWeightageMasterColumns({
       t: mockT,
       tW: mockTW,
+      tCommon: mockTCommon,
       editableRows: mockEditableRows,
       handleCellChange: mockHandleCellChange,
       getRowUid: mockGetRowUid,
@@ -82,29 +97,61 @@ describe('getAgeFactorCvWeightageMasterColumns', () => {
     expect(column.render?.(undefined, mockRow, 0)).toBe('-');
   });
 
-  it('ageFrom and ageTo columns render correctly', () => {
+  it('constructionDescription column renders correctly', () => {
     const columns = getAgeFactorCvWeightageMasterColumns({
       t: mockT,
       tW: mockTW,
+      tCommon: mockTCommon,
       editableRows: mockEditableRows,
       handleCellChange: mockHandleCellChange,
       getRowUid: mockGetRowUid,
     });
 
-    expect(columns[1].render?.(0, mockRow, 0)).toBe(0);
-    expect(columns[2].render?.(10, mockRow, 0)).toBe(10);
+    const column = columns[1];
+    expect(column.key).toBe('constructionDescription');
+    expect(column.label).toBe('Description');
+    expect(column.render?.('Concrete Structure', mockRow, 0)).toBe('Concrete Structure');
+  });
+
+  it('constructionDescription column renders "-" for undefined value', () => {
+    const columns = getAgeFactorCvWeightageMasterColumns({
+      t: mockT,
+      tW: mockTW,
+      tCommon: mockTCommon,
+      editableRows: mockEditableRows,
+      handleCellChange: mockHandleCellChange,
+      getRowUid: mockGetRowUid,
+    });
+
+    const column = columns[1];
+    expect(column.render?.(undefined, mockRow, 0)).toBe('-');
+  });
+
+  it('ageFrom and ageTo columns render correctly', () => {
+    const columns = getAgeFactorCvWeightageMasterColumns({
+      t: mockT,
+      tW: mockTW,
+      tCommon: mockTCommon,
+      editableRows: mockEditableRows,
+      handleCellChange: mockHandleCellChange,
+      getRowUid: mockGetRowUid,
+    });
+
+    expect(columns[2].render?.(0, mockRow, 0)).toBe(0);
+    expect(columns[3].render?.(10, mockRow, 0)).toBe(10);
   });
 
   it('factor column renders MatrixCellInput', () => {
     const columns = getAgeFactorCvWeightageMasterColumns({
       t: mockT,
       tW: mockTW,
+      tCommon: mockTCommon,
       editableRows: mockEditableRows,
       handleCellChange: mockHandleCellChange,
       getRowUid: mockGetRowUid,
     });
 
-    const factorColumn = columns[3];
+    const factorColumn = columns[4];
     expect(factorColumn.key).toBe('factor');
     expect(factorColumn.label).toBe('Factor');
 
@@ -127,12 +174,13 @@ describe('getAgeFactorCvWeightageMasterColumns', () => {
     const columns = getAgeFactorCvWeightageMasterColumns({
       t: mockT,
       tW: mockTW,
+      tCommon: mockTCommon,
       editableRows,
       handleCellChange: mockHandleCellChange,
       getRowUid: mockGetRowUid,
     });
 
-    const factorColumn = columns[3];
+    const factorColumn = columns[4];
     const result = factorColumn.render?.(1.5, mockRow, 0);
     const { container } = render(<>{result}</>);
     
@@ -144,12 +192,13 @@ describe('getAgeFactorCvWeightageMasterColumns', () => {
     const columns = getAgeFactorCvWeightageMasterColumns({
       t: mockT,
       tW: mockTW,
+      tCommon: mockTCommon,
       editableRows: mockEditableRows,
       handleCellChange: mockHandleCellChange,
       getRowUid: mockGetRowUid,
     });
 
-    const column = columns[4];
+    const column = columns[5];
     expect(column.render?.(undefined, mockRow, 0)).toBe('2024-2025');
   });
 
@@ -159,12 +208,13 @@ describe('getAgeFactorCvWeightageMasterColumns', () => {
     const columns = getAgeFactorCvWeightageMasterColumns({
       t: mockT,
       tW: mockTW,
+      tCommon: mockTCommon,
       editableRows: mockEditableRows,
       handleCellChange: mockHandleCellChange,
       getRowUid: mockGetRowUid,
     });
 
-    const statusColumn = columns[5];
+    const statusColumn = columns[6];
     const result = statusColumn.render?.(true, newRow, 0);
     const { container } = render(<>{result}</>);
     
@@ -178,12 +228,13 @@ describe('getAgeFactorCvWeightageMasterColumns', () => {
     const columns = getAgeFactorCvWeightageMasterColumns({
       t: mockT,
       tW: mockTW,
+      tCommon: mockTCommon,
       editableRows: mockEditableRows,
       handleCellChange: mockHandleCellChange,
       getRowUid: mockGetRowUid,
     });
 
-    const statusColumn = columns[5];
+    const statusColumn = columns[6];
     const result = statusColumn.render?.(true, mockRow, 0);
     const { container } = render(<>{result}</>);
     

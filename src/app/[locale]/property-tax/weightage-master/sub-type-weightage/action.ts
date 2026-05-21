@@ -36,7 +36,9 @@ export async function fetchUseFactorCVMasterPagedServerAction(
   searchTerm?: string,
   selectedYearRange?: string,
   typeOfUseId?: number,
-  subTypeOfUseId?: number
+  subTypeOfUseId?: number,
+  sortBy?: string,
+  sortOrder?: string
 ): Promise<PagedResponse<UseFactorCVMaster>> {
   try {
     const MAX_PAGE_SIZE = 1000; // Increased limit
@@ -59,13 +61,20 @@ export async function fetchUseFactorCVMasterPagedServerAction(
 
     const yearRangeParam = sanitizeNumericParam(selectedYearRange);
 
+    // Validate sortBy against allowed columns to prevent injection
+    const allowedSortColumns = ["TypeOfUseCode", "TypeOfUseDescription", "SubTypeOfUseDescription", "FromYear"];
+    const validSortBy = sortBy && allowedSortColumns.includes(sortBy) ? sortBy : undefined;
+    const validSortOrder = sortOrder && ["asc", "desc"].includes(sortOrder.toLowerCase()) ? (sortOrder.toLowerCase() as "asc" | "desc") : undefined;
+
     const response = await getUseFactorCVMasterWithParams({
       pageNumber,
       pageSize,
       searchTerm,
       yearRangeCVId: yearRangeParam,
       typeOfUseId: safeTypeOfUseId,
-      subTypeOfUseId: safeSubTypeOfUseId
+      subTypeOfUseId: safeSubTypeOfUseId,
+      sortBy: validSortBy,
+      sortOrder: validSortOrder,
     });
 
     if (!response.success || !response.data) {
@@ -256,9 +265,16 @@ export async function fetchTypeOfUsePaged(
   params: TypeOfUseQueryParams
 ): Promise<PagedResponse<UseType>> {
   try {
-    // Params are passed directly to service
+    // Validate sortBy and sortOrder for TypeOfUse
+    const allowedSortColumns = ["TypeOfUseCode", "Description"];
+    const validSortBy = params.sortBy && allowedSortColumns.includes(params.sortBy) ? params.sortBy : undefined;
+    const validSortOrder = params.sortOrder && ["asc", "desc"].includes(params.sortOrder.toLowerCase()) ? (params.sortOrder.toLowerCase() as "asc" | "desc") : undefined;
 
-    const response = await getTypeOfUseWithParams(params);
+    const response = await getTypeOfUseWithParams({
+      ...params,
+      sortBy: validSortBy,
+      sortOrder: validSortOrder,
+    });
 
     if (!response.success || !response.data) {
       const { getTranslations } = await import('next-intl/server');
