@@ -12,7 +12,7 @@ import {
 import { SubFloorFormModel } from '@/types/floor.types';
 
 /* ================= CONSTANTS ================= */
-export const SUBFLOOR_CODE_MAX = 10;
+export const SUBFLOOR_CODE_MAX = 5;
 export const DESCRIPTION_MAX = 100;
 
 /* ================= TYPES ================= */

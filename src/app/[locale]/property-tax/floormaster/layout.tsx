@@ -5,21 +5,27 @@ import { PageContainer } from "@/components/common/PageContainer";
 import TableHeader from "@/components/common/TableHeader";
 import { FloorMasterToolbar } from "@/components/modules/property-tax/Floormaster/FloorMasterToolbar";
 
+interface FloorMasterLayoutProps {
+  children: React.ReactNode;
+  params: Promise<{ locale: string }>;
+}
+
 async function FloorMasterLayoutContent({
   children,
+  locale,
 }: Readonly<{
   children: React.ReactNode;
+  locale: string;
 }>) {
-  // Use floor translations as default for server-side rendering
-  // The client component will handle dynamic updates
-  const t = await getTranslations("floor.floor");
+  // Use floor translations with explicit locale for server-side rendering
+  const t = await getTranslations({ locale, namespace: "floor" });
 
   return (
     <PageContainer>
       <div className="">
         <TableHeader
-          title={t("title")}
-          subtitle={t("subtitle")}
+          title={t("floor.title")}
+          subtitle={t("floor.subtitle")}
           icon="layers"
           rightContent={<FloorMasterToolbar />}
         />
@@ -32,11 +38,12 @@ async function FloorMasterLayoutContent({
   );
 }
 
-export default function FloorMasterLayout({
+export default async function FloorMasterLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+  params,
+}: Readonly<FloorMasterLayoutProps>) {
+  const { locale } = await params;
+  
   return (
     <Suspense
       fallback={
@@ -49,7 +56,7 @@ export default function FloorMasterLayout({
         </div>
       }
     >
-      <FloorMasterLayoutContent>
+      <FloorMasterLayoutContent locale={locale}>
         {children}
       </FloorMasterLayoutContent>
     </Suspense>

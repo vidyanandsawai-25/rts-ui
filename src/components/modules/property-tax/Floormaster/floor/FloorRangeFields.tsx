@@ -10,7 +10,7 @@ import type { FloorRangeFieldsProps } from '@/types/floor.types';
 /* ================= COMPONENT ================= */
 /**
  * Range-specific form fields for FloorForm.
- * Handles: Range Start, Range End, Prefix, Suffix inputs + their validation messages.
+ * Handles: Range Start, Range End, Prefix inputs + their validation messages.
  * Parent (FloorForm) owns state, validation logic, and submit handler.
  */
 export function FloorRangeFields({
@@ -76,39 +76,45 @@ export function FloorRangeFields({
         </div>
       </div>
 
-      <Input
-        label={String(t('form.englishName.prefix'))}
-        placeholder={String(t('form.englishName.prefixPlaceholder'))}
-        value={formData.prefix}
-        onChange={(e) => {
-          if (e.target.value.length <= 2) onChange('prefix', e.target.value);
-        }}
-        onBlur={() => onBlur('prefix')}
-        fullWidth
-        maxLength={2}
-        className="text-gray-700"
-      />
-      <ValidationMessage
-        message={errors.prefix}
-        visible={showError('prefix')}
-      />
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Input
+            label={t('form.englishName.prefix')}
+            placeholder="FL"
+            value={formData.prefix}
+            onChange={(e) => {
+              // Allow only letters, numbers, /, -, _ (block @, #, (, ) etc)
+              const sanitized = e.target.value.replace(/[^A-Za-z0-9/_-]/g, '');
+              if (sanitized.length <= 2) onChange('prefix', sanitized);
+            }}
+            onBlur={() => onBlur('prefix')}
+            fullWidth
+            maxLength={2}
+            className="text-gray-700"
+          />
+          <ValidationMessage
+            message={errors.prefix}
+            visible={showError('prefix')}
+          />
+        </div>
 
-      <Input
-        label={String(t('form.englishName.suffix'))}
-        placeholder={String(t('form.englishName.suffixPlaceholder'))}
-        value={formData.suffix}
-        onChange={(e) => {
-          if (e.target.value.length <= 2) onChange('suffix', e.target.value);
-        }}
-        onBlur={() => onBlur('suffix')}
-        fullWidth
-        maxLength={2}
-        className="text-gray-700"
-      />
-      <ValidationMessage
-        message={errors.suffix}
-        visible={showError('suffix')}
-      />
+        <div>
+          <Input
+            label={t('form.englishName.suffix')}
+            placeholder="F"
+            value={formData.suffix}
+            onChange={(e) => {
+              // Allow only letters, numbers, /, -, _ (block @, #, (, ) etc)
+              const sanitized = e.target.value.replace(/[^A-Za-z0-9/_-]/g, '');
+              if (sanitized.length <= 2) onChange('suffix', sanitized);
+            }}
+            onBlur={() => onBlur('suffix')}
+            fullWidth
+            maxLength={2}
+            className="text-gray-700"
+          />
+        </div>
+      </div>
 
       <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg border border-blue-100">
         {t('form.rangeExample')}

@@ -8,21 +8,21 @@ type RangeValidationResult = {
 
 type TranslationFn = (key: string) => string;
 
-/**
- * Custom hook for depreciation range validation
- * Note: Overlap validation is handled server-side only
- */
+type ExistingRange = { min: number; max: number };
+
 export function useDepreciationValidation(t: TranslationFn) {
   /**
-   * NOTE: Overlap validation is handled server-side only.
-   * Client-side validation was removed because it only checks the current
-   * paginated page and can miss overlaps with ranges on other pages.
-   * The server has full visibility and will reject overlapping ranges.
+   * Returns the first existing range that [newMin, newMax] overlaps with, or null if none.
+   * Uses inclusive boundary comparison: ranges sharing an endpoint are considered overlapping.
+   * NOTE: Only checks ranges visible on the current page. The server is the
+   * authoritative guard for ranges on other pages (returns 409 on conflict).
    */
-  const checkOverlap = useCallback((): boolean => {
-    // Always return false - defer to server-side validation
-    return false;
-  }, []);
+  const checkOverlap = useCallback(
+    (newMin: number, newMax: number, existingRanges: ExistingRange[]): ExistingRange | null => {
+      return existingRanges.find((r) => newMin <= r.max && newMax >= r.min) ?? null;
+    },
+    []
+  );
 
   /**
    * Validate basic rules for min and max values

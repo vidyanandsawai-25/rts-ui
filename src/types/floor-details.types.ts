@@ -596,3 +596,21 @@ export interface SubmissionResponse {
     message?: string;
     [key: string]: unknown;
 }
+// Renter Custom Increment Row - used for Renter Agreement sub-data
+export interface RenterCustomIncrementPostRow {
+    Customfromdate: string;
+    Customtodate: string;
+    CustomIncrementtype: string;
+    CustomIncrementValue: number;
+    CustomMethod: string;
+}
+
+export interface RenterTableEntryPostRow {
+    TablePeriod: number;
+    TableDurationFrom: string;
+    TableDurationTo: string;
+    TableRentMonthly: number;
+    TableIncrementApplied: number;
+    TableSegmentType: string;
+    TableStatusLabel: string;
+}

@@ -21,17 +21,25 @@
                 "code": "Category Code",
                 "name": "Category Name",
                 "displayOrder": "Display Order",
+                "requiredFields": "Indicates required fields",
                 "status": "Active Status",
                 "statusDesc": "Enable or disable this category",
                 "active": "Active",
                 "inactive": "Inactive",
+                "activeDescription": "This category will be visible and its keys can be configured",
+                "inactiveDescription": "This category and its keys will be hidden from configuration views",
                 "placeholders": {
                     "code": "e.g., SYS, SEC, PAY",
                     "name": "e.g., System Settings, Security Settings"
                 },
                 "validation": {
                     "codeRequired": "Category code is required",
+                    "codeAlphanumeric": "Code must be alphanumeric (underscores allowed)",
+                    "codeInvalid": "Code cannot be all zeros",
+                    "codeMaxLength": "Code cannot exceed 50 characters",
                     "nameRequired": "Category name is required",
+                    "nameAlphanumeric": "Name contains unauthorized characters",
+                    "nameMaxLength": "Name cannot exceed 100 characters",
                     "orderRequired": "Valid display order is required"
                 }
             },
@@ -60,9 +68,13 @@
                 "dataType": "Data Type",
                 "defaultValue": "Default Value",
                 "controlType": "Control Type",
-                "status": "Active",
+                "requiredFields": "indicates required fields",
+                "status": "Active Status",
+                "statusDesc": "Control the visibility and accessibility of this configuration key",
                 "active": "Active",
                 "inactive": "Inactive",
+                "activeDescription": "This key will be available for configuration and overrides",
+                "inactiveDescription": "This key will be hidden from configuration views",
                 "placeholders": {
                     "category": "Select a category",
                     "code": "e.g., PAYMENT_MODE",
@@ -75,7 +87,12 @@
                 "validation": {
                     "categoryRequired": "Category is required",
                     "codeRequired": "Config code is required",
+                    "codeAlphanumeric": "Code must be alphanumeric (underscores allowed)",
+                    "codeInvalid": "Code cannot be all zeros",
+                    "codeMaxLength": "Code cannot exceed 50 characters",
                     "nameRequired": "Config name is required",
+                    "nameAlphanumeric": "Name contains unauthorized characters",
+                    "nameMaxLength": "Name cannot exceed 100 characters",
                     "dataTypeRequired": "Data type is required"
                 }
             },
@@ -98,6 +115,7 @@
             "subtitle": "Create a new configuration value",
             "form": {
                 "filterCategory": "Filter by Category",
+                "requiredFields": "Indicates required fields",
                 "filterCategoryDesc": "Optional: Filter config keys by category",
                 "configKey": "Config Key",
                 "departmentId": "Department ID",
@@ -165,8 +183,11 @@
                 "name": "Submodule Name",
                 "description": "Description",
                 "status": "Active Status",
+                "requiredFields": "Indicates required fields",
                 "active": "Active",
                 "inactive": "Inactive",
+                "activeDescription": "This submodule will be enabled and visible in the configuration list",
+                "inactiveDescription": "This submodule will be disabled and hidden from configuration views",
                 "placeholders": {
                     "code": "e.g. USER_MGMT",
                     "name": "e.g. User Management",

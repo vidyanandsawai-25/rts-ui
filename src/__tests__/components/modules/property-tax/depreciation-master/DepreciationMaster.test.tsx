@@ -370,27 +370,22 @@ describe("DepreciationMaster", () => {
       expect(addRangeAction).not.toHaveBeenCalled();
     });
 
-    it("should call addRangeAction even when range overlaps (server-side validation)", async () => {
+    it("should NOT call addRangeAction when range overlaps (client-side validation)", async () => {
       const user = userEvent.setup();
       render(<DepreciationMaster {...defaultProps} />);
-      
+
       const minInput = screen.getByPlaceholderText("Enter min");
       const maxInput = screen.getByPlaceholderText("Enter max");
       const addButton = screen.getByRole("button", { name: /Add Range/i });
 
       // Existing range is 0-10, trying to add 5-15 which overlaps
-      // Client-side no longer validates overlap - server handles it
       await user.type(minInput, "5");
       await user.type(maxInput, "15");
       await user.click(addButton);
 
-      // Server-side validation will handle overlap detection
-      await waitFor(() => {
-        expect(addRangeAction).toHaveBeenCalledWith("en", {
-          minYear: 5,
-          maxYear: 15,
-        });
-      });
+      // Client-side overlap validation blocks the action before reaching the server
+      expect(addRangeAction).not.toHaveBeenCalled();
+      expect(screen.getByText(/Range overlaps with existing range/i)).toBeInTheDocument();
     });
 
     it("should clear inputs after successful add", async () => {

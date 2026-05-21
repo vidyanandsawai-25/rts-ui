@@ -81,10 +81,10 @@ export default function AddCategoryModal({
           : await createConfigCategoryAction(form);
 
         if (result.success) {
-          toastSuccess(isEdit ? t('messages.categoryUpdated') : t('messages.categoryCreated'));
+          toastSuccess(result.message || (isEdit ? t('messages.categoryUpdated') : t('messages.categoryCreated')));
           onSuccess();
         } else {
-          toastError(result.error || t('messages.unexpectedError'));
+          toastError(result.message || result.error || t('messages.unexpectedError'));
         }
       } catch {
         toastError(t('messages.unexpectedError'));

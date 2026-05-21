@@ -9,7 +9,6 @@ interface ConfigurationMasterHeaderProps {
   addConfigKeyLabel: string;
   activeCategoryId: string;
   search?: string;
-  isAdmin: boolean;
 }
 
 export function ConfigurationMasterHeader({
@@ -20,7 +19,6 @@ export function ConfigurationMasterHeader({
   addConfigKeyLabel,
   activeCategoryId,
   search,
-  isAdmin,
 }: ConfigurationMasterHeaderProps) {
   const buildActionHref = (action: 'addCategory' | 'addConfigKey') => {
     const params = new URLSearchParams();
@@ -53,27 +51,23 @@ export function ConfigurationMasterHeader({
         </div>
 
         <div className="flex items-center gap-3">
-          {isAdmin && (
-            <>
-              <Link
-                href={buildActionHref('addCategory')}
-                scroll={false}
-                className="h-10 px-4 bg-white dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 hover:border-indigo-200 text-slate-600 dark:text-slate-300 font-black transition-all shadow-sm rounded-xl inline-flex items-center justify-center gap-2 text-[11px] uppercase tracking-widest hover:bg-slate-50"
-              >
-                <FolderPlus className="w-4 h-4 text-indigo-500" />
-                {addCategoryLabel}
-              </Link>
+          <Link
+            href={buildActionHref('addCategory')}
+            scroll={false}
+            className="h-10 px-4 bg-white dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 hover:border-indigo-200 text-slate-600 dark:text-slate-300 font-black transition-all shadow-sm rounded-xl inline-flex items-center justify-center gap-2 text-[11px] uppercase tracking-widest hover:bg-slate-50"
+          >
+            <FolderPlus className="w-4 h-4 text-indigo-500" />
+            {addCategoryLabel}
+          </Link>
 
-              <Link
-                href={buildActionHref('addConfigKey')}
-                scroll={false}
-                className="h-10 px-4 bg-white dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 hover:border-indigo-200 text-slate-600 dark:text-slate-300 font-black transition-all shadow-sm rounded-xl inline-flex items-center justify-center gap-2 text-[11px] uppercase tracking-widest hover:bg-slate-50"
-              >
-                <Key className="w-4 h-4 text-indigo-500" />
-                {addConfigKeyLabel}
-              </Link>
-            </>
-          )}
+          <Link
+            href={buildActionHref('addConfigKey')}
+            scroll={false}
+            className="h-10 px-4 bg-white dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 hover:border-indigo-200 text-slate-600 dark:text-slate-300 font-black transition-all shadow-sm rounded-xl inline-flex items-center justify-center gap-2 text-[11px] uppercase tracking-widest hover:bg-slate-50"
+          >
+            <Key className="w-4 h-4 text-indigo-500" />
+            {addConfigKeyLabel}
+          </Link>
         </div>
       </div>
     </div>

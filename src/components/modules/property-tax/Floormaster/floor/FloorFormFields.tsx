@@ -81,7 +81,6 @@ export function FloorFormFields({
         onChange={onChange}
         onBlur={onBlur}
         fullWidth
-        required
         className="text-gray-700"
       />
       <ValidationMessage

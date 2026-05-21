@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { configMasterService } from '@/lib/api/configMaster.service';
+import { configMasterService } from '@/lib/api/configuration-settings/config-master/configMaster.service';
 import {
   CreateConfigKeySchema,
   UpdateConfigKeySchema,
@@ -9,10 +9,14 @@ import {
 import type {
   ConfigItem,
   UpdateConfigKeyRequest,
+  BackendMutationResponse,
+  ConfigKeyMaster,
+  DeleteResponse
 } from '@/types/configMaster.types';
 import type { ActionResult } from '@/types/common.types';
 import { verifySession, getLocaleFromHeaders, tConfigMessage } from './utils';
 import { logError } from '@/lib/utils/logger';
+import { sanitizeTextInput } from '@/lib/utils/input-sanitization';
 
 /**
  * Fetch config items by category
@@ -71,12 +75,12 @@ export async function createConfigKeyAction(formData: FormData): Promise<ActionR
 
     const rawData = {
       categoryId: parseInt(formData.get('categoryId') as string),
-      configCode: formData.get('configCode'),
-      configName: formData.get('configName'),
-      description: formData.get('description'),
+      configCode: sanitizeTextInput(formData.get('configCode') as string),
+      configName: sanitizeTextInput(formData.get('configName') as string),
+      description: sanitizeTextInput(formData.get('description') as string),
       dataType: formData.get('dataType'),
       controlType: formData.get('controlType'),
-      defaultValue: formData.get('defaultValue'),
+      defaultValue: sanitizeTextInput(formData.get('defaultValue') as string),
       isActive: formData.get('isActive') === 'true',
     };
 
@@ -99,7 +103,11 @@ export async function createConfigKeyAction(formData: FormData): Promise<ActionR
     if (result.success) {
       const locale = await getLocaleFromHeaders();
       revalidatePath(`/${locale}/configuration-settings/config-master`, 'page');
-      return { success: true, message: await tConfigMessage('keyCreated', 'Config Key created successfully') };
+      const backendMessage = (result.data as BackendMutationResponse<ConfigKeyMaster>)?.message;
+      return { 
+        success: true, 
+        message: (typeof backendMessage === 'string' ? backendMessage : undefined) || await tConfigMessage('keyCreated', 'Config Key created successfully') 
+      };
     }
 
     return {
@@ -130,6 +138,10 @@ export async function updateConfigKeyAction(
 
     const validation = UpdateConfigKeySchema.safeParse({
       ...data,
+      configCode: data.configCode ? sanitizeTextInput(data.configCode) : undefined,
+      configName: data.configName ? sanitizeTextInput(data.configName) : undefined,
+      description: data.description ? sanitizeTextInput(data.description) : undefined,
+      defaultValue: data.defaultValue !== undefined ? sanitizeTextInput(String(data.defaultValue)) : undefined,
       updatedBy: userId,
     });
 
@@ -150,7 +162,11 @@ export async function updateConfigKeyAction(
     if (res.success) {
       const locale = await getLocaleFromHeaders();
       revalidatePath(`/${locale}/configuration-settings/config-master`, 'page');
-      return { success: true, message: await tConfigMessage('keyUpdated', 'Configuration key updated successfully') };
+      const backendMessage = (res.data as BackendMutationResponse<ConfigKeyMaster>)?.message;
+      return { 
+        success: true, 
+        message: (typeof backendMessage === 'string' ? backendMessage : undefined) || await tConfigMessage('keyUpdated', 'Configuration key updated successfully') 
+      };
     }
 
     return { success: false, error: res.error || await tConfigMessage('keyUpdateFailed', 'Failed to update config key') };
@@ -178,10 +194,11 @@ export async function deleteConfigKeyAction(id: number): Promise<ActionResult> {
       const locale = await getLocaleFromHeaders();
       revalidatePath(`/${locale}/configuration-settings/config-master`, 'page');
     }
+    const backendMessage = (res.data as DeleteResponse)?.message;
     return {
       success: res.success,
       error: res.error,
-      message: res.success ? await tConfigMessage('keyDeleted', 'Configuration key deleted successfully') : undefined,
+      message: res.success ? ((typeof backendMessage === 'string' ? backendMessage : undefined) || await tConfigMessage('keyDeleted', 'Configuration key deleted successfully')) : undefined,
     };
   } catch (err) {
     logError('deleteConfigKeyAction failed', { error: err instanceof Error ? err : undefined, id });

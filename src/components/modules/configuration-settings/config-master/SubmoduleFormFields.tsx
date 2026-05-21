@@ -1,7 +1,7 @@
 'use client';
 
 import { Label } from '@/components/common/label';
-import { Input, ValidationMessage, ToggleSwitch } from '@/components/common';
+import { Input, ValidationMessage, RequiredFieldsNote, StatusToggleCard } from '@/components/common';
 import { TextArea } from '@/components/common/Textarea';
 import { useTranslations } from 'next-intl';
 
@@ -31,6 +31,8 @@ export function SubmoduleFormFields({
 
   return (
     <div className="p-6 space-y-4">
+      <RequiredFieldsNote text={t('modals.addSubmodule.form.requiredFields')} />
+      
       {/* Module Code */}
       <div className="space-y-2">
         <Label htmlFor="moduleCode" required>
@@ -78,17 +80,15 @@ export function SubmoduleFormFields({
 
       {/* Status Toggle - Only show in Edit mode */}
       {isEdit && (
-        <div className="space-y-2">
-          <Label htmlFor="isActive">{t('modals.addSubmodule.form.status')}</Label>
-          <ToggleSwitch
-            checked={formData.isActive}
-            onChange={(checked) => onChange('isActive', checked)}
-            activeLabel={t('modals.addSubmodule.form.active')}
-            inactiveLabel={t('modals.addSubmodule.form.inactive')}
-            disabled={isPending}
-            showPopup={false}
-          />
-        </div>
+        <StatusToggleCard
+          isActive={formData.isActive}
+          onToggle={(checked) => onChange('isActive', checked)}
+          statusLabel={t('modals.addSubmodule.form.status')}
+          description={formData.isActive ? t('modals.addSubmodule.form.activeDescription') : t('modals.addSubmodule.form.inactiveDescription')}
+          activeLabel={t('modals.addSubmodule.form.active')}
+          inactiveLabel={t('modals.addSubmodule.form.inactive')}
+          disabled={isPending}
+        />
       )}
     </div>
   );

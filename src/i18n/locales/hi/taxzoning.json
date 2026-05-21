@@ -48,6 +48,7 @@
       "taxZoneRequired": "कर क्षेत्र आवश्यक है",
       "wardRequired": "कम से कम एक वार्ड आवश्यक है",
       "propertyRequired": "एकल वार्ड चयन के लिए संपत्ति श्रेणी आवश्यक है",
+      "fromPropertyMustBeSmallerThanToProperty": "संपत्ति से संपत्ति तक से छोटी होनी चाहिए",
       "updateSuccess": "कर ज़ोनिंग सफलतापूर्वक अपडेट किया गया",
       "updateFailed": "कर ज़ोनिंग अपडेट करने में विफल",
       "createSuccess": "कर ज़ोनिंग सफलतापूर्वक बनाया गया",
