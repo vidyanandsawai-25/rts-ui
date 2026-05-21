@@ -15,6 +15,7 @@ interface PropertyStatsCardsProps {
     activeConnections: string;
     stoppedConnections: string;
     yearlyRevenue: string;
+    currency: string;
   };
 }
 
@@ -51,7 +52,7 @@ export function PropertyStatsCards({ stats, labels }: PropertyStatsCardsProps) {
       <Card className="flex items-center gap-4 p-4">
         <div className="flex-1 min-w-0">
           <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">{labels.yearlyRevenue}</div>
-          <div className="text-3xl font-bold text-purple-700">₹{stats.yearlyRevenue.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+          <div className="text-3xl font-bold text-purple-700">{labels.currency}{stats.yearlyRevenue.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
         </div>
         <div className="h-10 w-10 flex items-center justify-center bg-purple-100 text-purple-700 rounded-full">
           <DollarSign size={28} />
