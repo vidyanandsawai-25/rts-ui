@@ -55,6 +55,9 @@ export const useSocietyForm = (props: SocietyFormProps) => {
         setSecretaryName,
         societyAddress,
         setSocietyAddress,
+        wingId,
+        setWingId,
+        setWingNo,
         isSubmitted,
         setIsSubmitted,
         hasChanges,
@@ -129,9 +132,22 @@ export const useSocietyForm = (props: SocietyFormProps) => {
         secretaryEmail,
         societyEmail,
         societyAddress,
+        wingId,
         societyData,
         setHasChanges
     });
+
+    const wingOptions = (props.WingMaster || []).map((wing) => ({
+        label: wing.wingNo,
+        value: String(wing.id),
+    }));
+
+    const handleWingChange = (_name: string | undefined, value: string) => {
+        const id = Number(value) || null;
+        setWingId(id);
+        const selectedWing = (props.WingMaster || []).find((w) => w.id === id);
+        setWingNo(selectedWing?.wingNo || null);
+    };
 
     // 3. Validation check for submit button
     // Returns true if all filled fields have valid values
@@ -271,12 +287,14 @@ export const useSocietyForm = (props: SocietyFormProps) => {
             return;
         }
 
+        const selectedWing = (props.WingMaster || []).find((wing) => wing.id === wingId);
+
         const payload: UpdatePropertySocietyDetailsDto = {
             propertyId: pid,
             societyDetailId: societyData?.societyDetailId ?? null,
-            wingId: societyData?.wingId ?? null,
-            wingNo: societyData?.wingNo ?? null,
-            wingName: societyData?.wingName ?? null,
+            wingId: selectedWing?.id ?? null,
+            wingNo: selectedWing?.wingNo ?? null,
+            wingName: selectedWing?.wingNo ?? null,
             societyName: societyName.trim() || null,
             societyAddress: societyAddress.trim() || null,
             societyEmailId: data.societyEmailId || null,
@@ -344,6 +362,9 @@ export const useSocietyForm = (props: SocietyFormProps) => {
         setSecretaryName,
         societyAddress,
         setSocietyAddress,
+        wingId,
+        wingOptions,
+        handleWingChange,
         showError,
         canSubmit,
         handleSubmit,

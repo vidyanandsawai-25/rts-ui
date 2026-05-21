@@ -19,7 +19,6 @@ import { validatePropertyForm } from '@/lib/utils/validatePropertyForm';
 
 export const usePropertyForm = (props: PropertyFormViewProps) => {
     const {
-        WingMaster: wingList,
         MoujaMaster: moujaList,
         propertyData,
         propertySocietyDetails,
@@ -33,26 +32,21 @@ export const usePropertyForm = (props: PropertyFormViewProps) => {
     const { isLoading: isUpdating, startLoading, stopLoading } = useLoading(false);
 
     // 1. Options Hook
-    const { categoryOptions, wingOptions, moujaOptions, propertyDescriptionOptions } = usePropertyOptions(props);
+    const { categoryOptions, moujaOptions, propertyDescriptionOptions } = usePropertyOptions(props);
 
     // 2. State Hook
     const {
         propertyTypeId, setPropertyTypeId,
         categoryId, setCategoryId,
-        wingId, setWingId,
-        wingName, setWingName,
         moujaId, setMoujaId,
         moujaName, setMoujaName,
         hasChanges, setHasChanges,
-        initialWingId
     } = usePropertyFormState(propertyData, propertySocietyDetails);
 
     const { checkFormChanges } = usePropertyChanges({
         formRef,
         categoryId,
         propertyTypeId,
-        wingId,
-        initialWingId,
         moujaId,
         propertyData,
         setHasChanges
@@ -61,13 +55,6 @@ export const usePropertyForm = (props: PropertyFormViewProps) => {
     // Handlers
     const handlePropertyDescriptionChange = (_name: string | undefined, value: string) => setPropertyTypeId(Number(value) || null);
     const handleCategoryChange = (_name: string | undefined, value: string) => setCategoryId(Number(value) || null);
-    const handleWingChange = (_name: string | undefined, value: string) => {
-        const id = Number(value) || null;
-        setWingId(id);
-        const selectedWing = wingList.find((w) => w.id === id);
-        setWingName(selectedWing?.wingNo || '');
-    };
-    
     const handleMoujaChange = (_name: string | undefined, value: string) => {
         const id = Number(value) || null;
         setMoujaId(id);
@@ -92,16 +79,12 @@ export const usePropertyForm = (props: PropertyFormViewProps) => {
         }
 
         const pId = propertyData.propertyId;
-        const selectedWing = wingList.find((wing) => wing.id === wingId);
 
         const payload: UpdatePropertyBasicDetailsDto = {
             wardId: propertyData.wardId,
-            taxZoneId: propertyData.taxZoneId,
+            taxZoneId: Number(formData.get("taxZoneId") ?? propertyData.taxZoneId),
             categoryId,
-            propertyTypeId: propertyTypeId || null,
-            wingId: selectedWing?.id ?? null,
-            wingNo: selectedWing?.wingNo ?? null,
-            wingName: wingName || null,
+            propertyTypeId: propertyTypeId || null,            
             moujaId: moujaId,
             moujaName: moujaName || null,
             partitionNo: propertyData?.partitionNo ?? null,
@@ -133,7 +116,7 @@ export const usePropertyForm = (props: PropertyFormViewProps) => {
                 try {
                     const result = await updatePropertyBasicDetailsAction(locale, pId, payload);
                     if (!result?.success) {
-                        toast.error(result?.error || t('property.updateError'));
+                        toast.error(t('property.errors.updatePropertyBasicDetails'));
                         return;
                     }
                     toast.success(t('property.updateSuccess'));
@@ -153,16 +136,13 @@ export const usePropertyForm = (props: PropertyFormViewProps) => {
         isUpdating,
         propertyTypeId,
         categoryId,
-        wingId,
         moujaId,
         checkFormChanges,
         handleSubmit,
         handlePropertyDescriptionChange,
         handleCategoryChange,
-        handleWingChange,
         handleMoujaChange,
         categoryOptions,
-        wingOptions,
         moujaOptions,
         propertyDescriptionOptions,
     };

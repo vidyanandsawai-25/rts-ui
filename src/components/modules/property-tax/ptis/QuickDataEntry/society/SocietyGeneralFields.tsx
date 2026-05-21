@@ -1,9 +1,8 @@
-import { Input } from "@/components/common";
+import { Input, SearchSelect } from "@/components/common";
 import { Label } from "@/components/common/label";
 import { societyValidators, SOCIETY_VALIDATION_RULES, propertyValidators } from '@/lib/utils/kyc-validation.constants';
 import { sanitizeEmailStrict, sanitizeName, sanitizeAddress } from '@/lib/utils/input-sanitization';
 import { useTranslations } from "next-intl";
-import { useState } from "react";
 
 interface SocietyGeneralFieldsProps {
     societyEmail: string;
@@ -16,6 +15,9 @@ interface SocietyGeneralFieldsProps {
     setSocietyName: (name: string) => void;
     societyAddress: string;
     setSocietyAddress: (address: string) => void;
+    wingId: number | null;
+    wingOptions: { label: string; value: string }[];
+    handleWingChange: (name: string | undefined, value: string) => void;
     showError: (
         field: 'managerMobile' | 'secretaryMobile' | 'managerEmail' | 'secretaryEmail' | 'societyEmail' |
             'landOwnerName' | 'builderName' | 'societyName' | 'managerName' | 'secretaryName' | 'societyAddress',
@@ -35,11 +37,13 @@ export const SocietyGeneralFields = ({
     setSocietyName,
     societyAddress,
     setSocietyAddress,
+    wingId,
+    wingOptions,
+    handleWingChange,
     showError,
 }: SocietyGeneralFieldsProps) => {
 
     const t = useTranslations('quickDataEntry');
-    const [wing, setWing] = useState('');
 
     return (
         <>
@@ -139,16 +143,13 @@ export const SocietyGeneralFields = ({
                 <Label htmlFor="society-wing" className="text-xs font-semibold text-gray-700">
                     {t('society.wing')}
                 </Label>
-                <Input
-                    id="society-wing"
+                <SearchSelect
                     name="wing"
-                    value={wing}
-                    placeholder={t('society.enterWing')}
-                    maxLength={50}
+                    options={wingOptions}
+                    value={wingId?.toString() ?? ''}
+                    placeholder={t('society.select') || 'Select Wing'}
+                    onChange={handleWingChange}
                     className="h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
-                    onChange={(e) => {
-                        setWing(e.target.value);
-                    }}
                 />
             </div>
 

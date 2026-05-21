@@ -14,6 +14,7 @@ export const useSocietyChanges = ({
     secretaryEmail,
     societyEmail,
     societyAddress,
+    wingId,
     societyData,
     setHasChanges,
 }: {
@@ -29,6 +30,7 @@ export const useSocietyChanges = ({
     secretaryEmail: string;
     societyEmail: string;
     societyAddress: string;
+    wingId: number | null;
     societyData: PropertySocietyDetailsApiItem | null;
     setHasChanges: (value: boolean) => void;
 }) => {
@@ -49,7 +51,8 @@ export const useSocietyChanges = ({
             managerMobileStr !== (societyData?.managerMobileNo ?? "") ||
             secretaryName.trim() !== (societyData?.secretaryName ?? "") ||
             secretaryEmail.trim() !== (societyData?.secretaryEmailId ?? "") ||
-            secretaryMobileStr !== (societyData?.secretaryMobileNo ?? "");
+            secretaryMobileStr !== (societyData?.secretaryMobileNo ?? "") ||
+            (wingId ?? null) !== (societyData?.wingId ?? null);
 
         setHasChanges(isChanged);
     }, [
@@ -64,6 +67,7 @@ export const useSocietyChanges = ({
         secretaryEmail,
         societyEmail,
         societyAddress,
+        wingId,
         societyData, 
         formRef, 
         setHasChanges

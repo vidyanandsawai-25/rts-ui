@@ -1,19 +1,22 @@
-import { Input } from '@/components/common';
+import { Input, SearchSelect } from '@/components/common';
 import { Label } from '@/components/common/label';
-import { PropertyBasicDetailsApiItem } from '@/types/property-basic-details.types';
-import { sanitizeSurveyNo, sanitizeSubZoneNo, sanitizePositiveInteger, sanitizeTaxZoneNo } from '@/lib/utils/input-sanitization';
+import { PropertyBasicDetailsApiItem, TaxZoneItem } from '@/types/property-basic-details.types';
+import { sanitizeSurveyNo, sanitizeSubZoneNo, sanitizePositiveInteger } from '@/lib/utils/input-sanitization';
 import { propertyValidators, PROPERTY_VALIDATION_RULES } from '@/lib/utils/kyc-validation.constants';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 
 interface AdditionalPropertyFieldsProps {
     t: (key: string) => string;
     propertyData: PropertyBasicDetailsApiItem | null;
+    taxZones: TaxZoneItem[];
 }
 
 export const AdditionalPropertyFields = ({
     t,
     propertyData,
+    taxZones,
 }: AdditionalPropertyFieldsProps) => {
+    const [taxZoneId, setTaxZoneId] = useState(propertyData?.taxZoneId ? String(propertyData.taxZoneId) : '');
     const [taxZoneNo, setTaxZoneNo] = useState(propertyData?.taxZoneNo?.toString() ?? '');
     const [surveyNo, setSurveyNo] = useState(propertyData?.surveyNo ?? '');
     const [subZoneNo, setSubZoneNo] = useState(propertyData?.subZoneNo ?? '');
@@ -26,35 +29,50 @@ export const AdditionalPropertyFields = ({
     const [showResidentialToiletsError, setShowResidentialToiletsError] = useState(false);
     const [showCommercialToiletsError, setShowCommercialToiletsError] = useState(false);
 
+    const taxZoneOptions = useMemo(() => {
+        return (taxZones ?? [])
+            .filter((z) => z.isActive)
+            .map((z) => ({
+                label: z.taxZoneNo,
+                value: String(z.id)
+            }));
+    }, [taxZones]);
+
+    const handleTaxZoneChange = (_name: string | undefined, value: string) => {
+        setTaxZoneId(value);
+        const selected = taxZones.find(z => String(z.id) === value);
+        if (selected) {
+            setTaxZoneNo(selected.taxZoneNo);
+        } else {
+            setTaxZoneNo('');
+        }
+        setShowTaxZoneNoError(true);
+    };
+
     return (
         <>
             {/* Tax Zone No */}
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 relative focus-within:z-50">
                 <Label htmlFor="pd-taxzone" className="text-xs font-semibold text-gray-700">
                     {t('property.taxZoneNo')}
                 </Label>
-                <Input
+                <SearchSelect
                     id="pd-taxzone"
-                    name="taxZoneNo"
-                    placeholder="Z-03"
-                    title={t('property.taxZoneNo')}
-                    value={taxZoneNo}
-                    maxLength={PROPERTY_VALIDATION_RULES.TAX_ZONE_NO_MAX_LENGTH}
-                    className={`h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${
-                        showTaxZoneNoError && !propertyValidators.isValidTaxZoneNo(taxZoneNo)
+                    options={taxZoneOptions}
+                    placeholder={t('property.selectTaxZonePlaceholder') || 'Select Tax Zone'}
+                    value={taxZoneId}
+                    onChange={handleTaxZoneChange}
+                    className={`h-9 border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${
+                        showTaxZoneNoError && !taxZoneId
                             ? 'border-red-300 focus:border-red-500'
                             : ''
                     }`}
-                    onChange={(e) => {
-                        const sanitized = sanitizeTaxZoneNo(e.target.value);
-                        setTaxZoneNo(sanitized);
-                        if (sanitized) setShowTaxZoneNoError(true);
-                    }}
-                    onBlur={() => setShowTaxZoneNoError(true)}
                 />
-                {showTaxZoneNoError && !propertyValidators.isValidTaxZoneNo(taxZoneNo) && (
+                <input type="hidden" name="taxZoneId" value={taxZoneId} />
+                <input type="hidden" name="taxZoneNo" value={taxZoneNo} />
+                {showTaxZoneNoError && !taxZoneId && (
                     <span className="text-xs text-red-500">
-                        {t('property.validation.invalidTaxZoneNo') || 'Invalid tax zone number. Only alphanumeric, -, and / allowed.'}
+                        {t('property.validation.taxZoneNoRequired')}
                     </span>
                 )}
             </div>
@@ -84,7 +102,7 @@ export const AdditionalPropertyFields = ({
                 />
                 {showSurveyNoError && !propertyValidators.isValidSurveyNo(surveyNo) && (
                     <span className="text-xs text-red-500">
-                        {t('property.validation.invalidSurveyNo') || 'Invalid survey number. Only alphanumeric, -, and / allowed.'}
+                    {t('property.validation.invalidSurveyNo') }
                     </span>
                 )}
             </div>
@@ -114,7 +132,7 @@ export const AdditionalPropertyFields = ({
                 />
                 {showSubZoneNoError && !propertyValidators.isValidSubZoneNo(subZoneNo) && (
                     <span className="text-xs text-red-500">
-                        {t('property.validation.invalidSubZoneNo') || 'Invalid sub zone number. Only alphanumeric, -, and / allowed.'}
+                        {t('property.validation.invalidSubZoneNo')}
                     </span>
                 )}
             </div>
@@ -177,7 +195,7 @@ export const AdditionalPropertyFields = ({
                 />
                 {showResidentialToiletsError && !propertyValidators.isValidPositiveNumber(residentialToilets) && (
                     <span className="text-xs text-red-500">
-                        {t('property.validation.invalidResidentialToilets') || 'Invalid value. Only positive whole numbers (max 99) allowed.'}
+                        {t('property.validation.invalidResidentialToilets')}
                     </span>
                 )}
             </div>
@@ -224,7 +242,7 @@ export const AdditionalPropertyFields = ({
                 />
                 {showCommercialToiletsError && !propertyValidators.isValidPositiveNumber(commercialToilets) && (
                     <span className="text-xs text-red-500">
-                        {t('property.validation.invalidCommercialToilets') || 'Invalid value. Only positive whole numbers (max 99) allowed.'}
+                        {t('property.validation.invalidCommercialToilets')}
                     </span>
                 )}
             </div>

@@ -31,6 +31,9 @@ const SocietyForm = (props: SocietyFormProps) => {
         setSecretaryName,
         societyAddress,
         setSocietyAddress,
+        wingId,
+        wingOptions,
+        handleWingChange,
         showError,
         canSubmit,
         handleSubmit,
@@ -70,6 +73,9 @@ const SocietyForm = (props: SocietyFormProps) => {
                             setSecretaryName={setSecretaryName}
                             societyAddress={societyAddress}
                             setSocietyAddress={setSocietyAddress}
+                            wingId={wingId}
+                            wingOptions={wingOptions}
+                            handleWingChange={handleWingChange}
                             showError={showError}
                         />
 

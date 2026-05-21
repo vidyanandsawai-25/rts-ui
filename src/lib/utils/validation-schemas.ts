@@ -546,23 +546,39 @@ export const oldDetailsValidations = {
   ) => {
     const validationData = {
       oldFloorId: formData.oldFloorId,
+      oldSubFloorId: formData.oldSubFloorId,
       oldConstructionYear: formData.oldConstructionYear,
+      oldAssessmentYear: formData.oldAssessmentYear,
       oldConstructionTypeId: formData.oldConstructionTypeId,
       oldTypeOfUseId: formData.oldTypeOfUseId,
+      oldSubTypeOfUseId: formData.oldSubTypeOfUseId,
+      oldCarpetAreaSqFeet: formData.oldCarpetAreaSqFeet,
     };
 
     const errors = validateForm(validationData, {
       oldFloorId: propertyValidations.required('floor', t),
+      oldSubFloorId: propertyValidations.required('subFloor', t),
       oldConstructionYear: propertyValidations.year('constructionYear', t),
+      oldAssessmentYear: propertyValidations.year('assessmentYear', t),
       oldConstructionTypeId: propertyValidations.required('constructionType', t),
       oldTypeOfUseId: propertyValidations.required('typeOfUse', t),
+      oldSubTypeOfUseId: propertyValidations.required('subTypeOfUse', t),
+      oldCarpetAreaSqFeet: propertyValidations.required('carpetArea', t),
     });
 
     // Additional validation for construction year range (1700-2026)
     if (formData.oldConstructionYear) {
       const year = parseInt(formData.oldConstructionYear, 10);
       if (!isNaN(year) && (year < 1700 || year > 2026)) {
-        errors.oldConstructionYear = t('property.validation.constructionYearRange');
+        errors.oldConstructionYear = t('property.validation.constructionYearRange') || 'Construction year must be between 1700 and 2026';
+      }
+    }
+
+    // Additional validation for assessment year range (1700-2026)
+    if (formData.oldAssessmentYear) {
+      const year = parseInt(formData.oldAssessmentYear, 10);
+      if (!isNaN(year) && (year < 1700 || year > 2026)) {
+        errors.oldAssessmentYear = t('property.validation.assessmentYearRange') || 'Assessment year must be between 1700 and 2026';
       }
     }
 

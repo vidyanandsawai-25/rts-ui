@@ -24,6 +24,9 @@ interface SocietyFormFieldsProps {
     setSecretaryName: (name: string) => void;
     societyAddress: string;
     setSocietyAddress: (address: string) => void;
+    wingId: number | null;
+    wingOptions: { label: string; value: string }[];
+    handleWingChange: (name: string | undefined, value: string) => void;
     showError: (
         field: 'managerMobile' | 'secretaryMobile' | 'managerEmail' | 'secretaryEmail' | 'societyEmail' |
                'landOwnerName' | 'builderName' | 'societyName' | 'managerName' | 'secretaryName' | 'societyAddress',
@@ -53,6 +56,9 @@ export const SocietyFormFields = ({
     setSecretaryName,
     societyAddress,
     setSocietyAddress,
+    wingId,
+    wingOptions,
+    handleWingChange,
     showError,
 }: SocietyFormFieldsProps) => {
     return (
@@ -68,6 +74,9 @@ export const SocietyFormFields = ({
                 setSocietyName={setSocietyName}
                 societyAddress={societyAddress}
                 setSocietyAddress={setSocietyAddress}
+                wingId={wingId}
+                wingOptions={wingOptions}
+                handleWingChange={handleWingChange}
                 showError={showError}
             />
             <SocietyContactFields

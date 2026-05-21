@@ -6,7 +6,8 @@ import {
     getPropertyTypes,
     getWingMaster,
     getMoujaMaster,
-    updatePropertyBasicDetails
+    updatePropertyBasicDetails,
+    getTaxZones
 } from "@/lib/api/property-basic-details.service";
 
 import {
@@ -15,7 +16,8 @@ import {
     PropertyTypeApiItem,
     UpdatePropertyBasicDetailsDto,
     WingItem,
-    MoujaItem
+    MoujaItem,
+    TaxZoneItem
 } from "@/types/property-basic-details.types";
 
 import { ActionResult } from "@/types/common.types";
@@ -114,3 +116,17 @@ export const updatePropertyBasicDetailsAction = async (locale: string, propertyI
         return { success: false, error: await getActionErrorMessage(error) };
     }
 };
+
+// tax zone master
+export async function getTaxZonesAction(
+    pageNumber: number = 1,
+    pageSize: number = 100,
+    searchTerm?: string
+): Promise<ActionResult<TaxZoneItem[]>> {
+    try {
+        const data = await getTaxZones(pageNumber, pageSize, searchTerm);
+        return { success: true, data };
+    } catch (error) {
+        return { success: false, error: await getActionErrorMessage(error) };
+    }
+}

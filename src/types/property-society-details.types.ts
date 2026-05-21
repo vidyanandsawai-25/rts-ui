@@ -1,3 +1,5 @@
+import { WingItem } from "./property-basic-details.types";
+
 export interface PropertySocietyDetailsApiItem {
   propertyId: number;
   societyDetailId: number | null;
@@ -59,4 +61,5 @@ export interface SocietyFormProps {
     societyData: PropertySocietyDetailsApiItem | null;
     propertyIdSearch: number;
     locale: string;
+    WingMaster?: WingItem[];
 }

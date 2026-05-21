@@ -1,7 +1,9 @@
 import { ApiError } from '@/lib/utils/api';
 import { setRequestLocale, getTranslations } from 'next-intl/server';
 import SocietyForm from '@/components/modules/property-tax/ptis/QuickDataEntry/society/SocietyForm';
-import { getPropertySocietyDetails } from '@/lib/api/property-society.service';
+import { getPropertySocietyDetailsAction } from './action';
+import { WingItem } from '@/types/property-basic-details.types';
+import { getWingMasterAction } from '../Property/action';
 
 interface PageProps {
   params: Promise<{
@@ -22,9 +24,21 @@ export default async function SocietyFormPage({ params }: PageProps) {
   }
 
   let propertySocietyDetails = null;
+  let wingMasterList: WingItem[] = [];
 
   try {
-    propertySocietyDetails = await getPropertySocietyDetails(pid);
+    const [propertySocietyRes, wingMasterRes] = await Promise.all([
+      getPropertySocietyDetailsAction(pid),
+      getWingMasterAction(1, -1),
+    ]);
+    if (!propertySocietyRes.success) {
+      throw new Error(propertySocietyRes.error || 'Failed to fetch society details');
+    }
+    if (!wingMasterRes.success) {
+      throw new Error(wingMasterRes.error || 'Failed to fetch wing master');
+    }
+    propertySocietyDetails = propertySocietyRes.data ?? null;
+    wingMasterList = wingMasterRes.data || [];
   } catch (error: unknown) {
     const t = await getTranslations({ locale, namespace: 'quickDataEntry' });
 
@@ -54,6 +68,7 @@ export default async function SocietyFormPage({ params }: PageProps) {
       societyData={propertySocietyDetails}
       propertyIdSearch={Number(propertyId)}
       locale={locale}
+      WingMaster={wingMasterList}
     />
   );
 }

@@ -110,7 +110,7 @@ export const BasicPropertyFields = ({
                         if (limited) setShowFlatShopError(true);
                     }}
                     onBlur={() => setShowFlatShopError(true)}
-                />
+                /> 
                 {showFlatShopError && !propertyValidators.isValidFlatShopNo(flatShopNo) && (
                     <span className="text-xs text-red-500">
                         {t('property.validation.invalidFlatShopNo') || 'Invalid flat/shop number. Only alphanumeric, -, and / allowed (max 10 characters).'}

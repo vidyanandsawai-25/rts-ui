@@ -50,9 +50,10 @@ export default function FloorInformationForm({
   });
 
   // Transformation helpers for SearchSelect
-  const initialFloorOptions = useMemo(() => floorOptions.map(opt => ({ label: opt.description, value: String(opt.id) })), [floorOptions]);
-  const initialSubFloorOptions = useMemo(() => subFloorOptions.map(opt => ({ label: opt.description, value: String(opt.id) })), [subFloorOptions]);
-  const initialConstructionTypeOptions = useMemo(() => constructionTypeOptions.map(opt => ({ label: opt.description, value: String(opt.id) })), [constructionTypeOptions]);
+  // Transformation helpers for SearchSelect
+  const initialFloorOptions = useMemo(() => floorOptions.map(opt => ({ label: `${opt.floorCode} - ${opt.description}`, value: String(opt.id) })), [floorOptions]);
+  const initialSubFloorOptions = useMemo(() => subFloorOptions.map(opt => ({ label: `${opt.subFloorCode} - ${opt.description}`, value: String(opt.id) })), [subFloorOptions]);
+  const initialConstructionTypeOptions = useMemo(() => constructionTypeOptions.map(opt => ({ label: `${opt.constructionCode} - ${opt.description}`, value: String(opt.id) })), [constructionTypeOptions]);
   const initialUseOptions = useMemo(() => useOptions.map(opt => ({ label: `${opt.typeOfUseCode} - ${opt.description}`, value: String(opt.id) })), [useOptions]);
   const currentSubUseTypeOptions = useMemo(() => subUseTypeOptions.map(opt => ({ label: opt.description, value: String(opt.id) })), [subUseTypeOptions]);
 
@@ -64,152 +65,142 @@ export default function FloorInformationForm({
           {formData.id ? t("oldDetails.updateFloorDetailsTitle") : t("oldDetails.floorDetailsTitle")}
         </h3>
 
-        {/* Floor Entry Form Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 border border-blue-100 rounded-xl bg-gray-50/30 p-5">
-          {/* Floor */}
-          <div className="space-y-2 relative focus-within:z-100">
-            <Label className="text-sm font-bold text-blue-900 flex items-center gap-1">
-              {t('floor.floorLabel')} <span className="text-red-500">*</span>
-            </Label>
-            <SearchSelect
-              options={initialFloorOptions}
-              placeholder={t('oldDetails.floordtails.selectPlaceholder')}
-              className="h-9 border-blue-100 focus:ring-blue-400"
-              name="floor"
-              onChange={(_, val) => setFormData(prev => ({ ...prev, oldFloorId: val }))}
-              value={String(formData.oldFloorId)}
-            />
-            <ValidationMessage message={errors.oldFloorId} visible={showError("oldFloorId")} />
-          </div>
+        <div className="border border-blue-100 rounded-xl bg-gray-50/30 mb-8">
+          {/* Floor Entry Form Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
+            {/* Floor */}
+            <div className="space-y-2 relative focus-within:z-100">
+              <Label className="text-sm font-bold text-blue-900 flex items-center gap-1">
+                {t('floor.floorLabel')} <span className="text-red-500">*</span>
+              </Label>
+              <SearchSelect
+                options={initialFloorOptions}
+                placeholder={t('oldDetails.floordtails.selectPlaceholder')}
+                className="h-9 border-blue-100 focus:ring-blue-400"
+                name="floor"
+                onChange={(_, val) => setFormData(prev => ({ ...prev, oldFloorId: val }))}
+                value={String(formData.oldFloorId)}
+              />
+              <ValidationMessage message={errors.oldFloorId} visible={showError("oldFloorId")} />
+            </div>
 
-          {/* Sub Floor */}
-          <div className="space-y-2 relative focus-within:z-100">
-            <Label className="text-sm font-bold text-blue-900">
-              {t('floor.subFloor')}
-            </Label>
-            <SearchSelect
-              options={initialSubFloorOptions}
-              placeholder={t('oldDetails.floordtails.selectPlaceholder')}
-              className="h-9 border-blue-100 focus:ring-blue-400"
-              name="subFloor"
-              onChange={(_, val) => setFormData(prev => ({ ...prev, oldSubFloorId: val }))}
-              value={String(formData.oldSubFloorId)}
-            />
-          </div>
+            {/* Sub Floor */}
+            <div className="space-y-2 relative focus-within:z-100">
+              <Label className="text-sm font-bold text-blue-900 flex items-center gap-1">
+                {t('floor.subFloor')} <span className="text-red-500">*</span>
+              </Label>
+              <SearchSelect
+                options={initialSubFloorOptions}
+                placeholder={t('oldDetails.floordtails.selectPlaceholder')}
+                className="h-9 border-blue-100 focus:ring-blue-400"
+                name="subFloor"
+                onChange={(_, val) => setFormData(prev => ({ ...prev, oldSubFloorId: val }))}
+                value={String(formData.oldSubFloorId)}
+              />
+              <ValidationMessage message={errors.oldSubFloorId} visible={showError("oldSubFloorId")} />
+            </div>
 
-          {/* Year */}
-          <div className="space-y-2">
-            <Label className="text-sm font-bold text-blue-900 flex items-center gap-1">
-              {t('oldDetails.year')} <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              className="h-9 border-blue-100 focus:ring-blue-400"
-              placeholder="YYYY"
-              maxLength={4}
-              value={formData.oldConstructionYear}
-              onChange={(e) => {
-                const val = e.target.value.replace(/\D/g, '').slice(0, 4);
-                setFormData(prev => ({ ...prev, oldConstructionYear: val }));
-              }}
-            />
-            <ValidationMessage message={errors.oldConstructionYear} visible={showError("oldConstructionYear")} />
-          </div>
+            {/* Year */}
+            <div className="space-y-2">
+              <Label className="text-sm font-bold text-blue-900 flex items-center gap-1">
+                {t('oldDetails.year')} <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                className="h-9 border-blue-100 focus:ring-blue-400"
+                placeholder="YYYY"
+                maxLength={4}
+                value={formData.oldConstructionYear}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, '').slice(0, 4);
+                  setFormData(prev => ({ ...prev, oldConstructionYear: val }));
+                }}
+              />
+              <ValidationMessage message={errors.oldConstructionYear} visible={showError("oldConstructionYear")} />
+            </div>
 
-          {/* Assessment Year */}
-          <div className="space-y-2">
-            <Label className="text-sm font-bold text-blue-900">
-              {t('oldDetails.assessmentYear')}
-            </Label>
-            <Input
-              className="h-9 border-blue-100 focus:ring-blue-400"
-              placeholder="YYYY"
-              maxLength={4}
-              value={formData.oldAssessmentYear || ''}
-              onChange={(e) => {
-                const val = e.target.value.replace(/\D/g, '').slice(0, 4);
-                setFormData(prev => ({ ...prev, oldAssessmentYear: val }));
-              }}
-            />
-          </div>
+            {/* Assessment Year */}
+            <div className="space-y-2">
+              <Label className="text-sm font-bold text-blue-900 flex items-center gap-1">
+                {t('oldDetails.assessmentYear')} <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                className="h-9 border-blue-100 focus:ring-blue-400"
+                placeholder="YYYY"
+                maxLength={4}
+                value={formData.oldAssessmentYear || ''}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, '').slice(0, 4);
+                  setFormData(prev => ({ ...prev, oldAssessmentYear: val }));
+                }}
+              />
+              <ValidationMessage message={errors.oldAssessmentYear} visible={showError("oldAssessmentYear")} />
+            </div>
 
-          {/* Construction Type */}
-          <div className="space-y-2 relative focus-within:z-100">
-            <Label className="text-sm font-bold text-blue-900 flex items-center gap-1">
-              {t('floor.conTyp')} <span className="text-red-500">*</span>
-            </Label>
-            <SearchSelect
-              options={initialConstructionTypeOptions}
-              placeholder={t('oldDetails.floordtails.selectPlaceholder')}
-              className="h-9 border-blue-100 focus:ring-blue-400"
-              name="conTyp"
-              onChange={(_, val) => setFormData(prev => ({ ...prev, oldConstructionTypeId: val }))}
-              value={String(formData.oldConstructionTypeId)}
-            />
-            <ValidationMessage message={errors.oldConstructionTypeId} visible={showError("oldConstructionTypeId")} />
-          </div>
+            {/* Construction Type */}
+            <div className="space-y-2 relative focus-within:z-100">
+              <Label className="text-sm font-bold text-blue-900 flex items-center gap-1">
+                {t('floor.conTyp')} <span className="text-red-500">*</span>
+              </Label>
+              <SearchSelect
+                options={initialConstructionTypeOptions}
+                placeholder={t('oldDetails.floordtails.selectPlaceholder')}
+                className="h-9 border-blue-100 focus:ring-blue-400"
+                name="conTyp"
+                onChange={(_, val) => setFormData(prev => ({ ...prev, oldConstructionTypeId: val }))}
+                value={String(formData.oldConstructionTypeId)}
+              />
+              <ValidationMessage message={errors.oldConstructionTypeId} visible={showError("oldConstructionTypeId")} />
+            </div>
 
-          {/* Type of Use */}
-          <div className="space-y-2 relative focus-within:z-100">
-            <Label className="text-sm font-bold text-blue-900 flex items-center gap-1">
-              {t('oldDetails.floordtails.use')} <span className="text-red-500">*</span>
-            </Label>
-            <SearchSelect
-              options={initialUseOptions}
-              placeholder={t('oldDetails.floordtails.selectPlaceholder')}
-              className="h-9 border-blue-100 focus:ring-blue-400"
-              name="use"
-              onChange={(_, val) => handleUseTypeChange(val)}
-              value={String(formData.oldTypeOfUseId)}
-            />
-            <ValidationMessage message={errors.oldTypeOfUseId} visible={showError("oldTypeOfUseId")} />
-          </div>
+            {/* Type of Use */}
+            <div className="space-y-2 relative focus-within:z-100">
+              <Label className="text-sm font-bold text-blue-900 flex items-center gap-1">
+                {t('oldDetails.floordtails.use')} <span className="text-red-500">*</span>
+              </Label>
+              <SearchSelect
+                options={initialUseOptions}
+                placeholder={t('oldDetails.floordtails.selectPlaceholder')}
+                className="h-9 border-blue-100 focus:ring-blue-400"
+                name="use"
+                onChange={(_, val) => handleUseTypeChange(val)}
+                value={String(formData.oldTypeOfUseId)}
+              />
+              <ValidationMessage message={errors.oldTypeOfUseId} visible={showError("oldTypeOfUseId")} />
+            </div>
 
-          {/* Sub Type */}
-          <div className="space-y-2 relative focus-within:z-100">
-            <Label className="text-sm font-bold text-blue-900">
-              {t('floor.subTyp')}
-            </Label>
-            <SearchSelect
-              options={currentSubUseTypeOptions}
-              placeholder={t('oldDetails.floordtails.selectPlaceholder')}
-              className="h-9 border-blue-100 focus:ring-blue-400"
-              name="subUseType"
-              onChange={(_, val) => setFormData(prev => ({ ...prev, oldSubTypeOfUseId: val }))}
-              value={String(formData.oldSubTypeOfUseId)}
-            />
-          </div>
+            {/* Sub Type */}
+            <div className="space-y-2 relative focus-within:z-100">
+              <Label className="text-sm font-bold text-blue-900 flex items-center gap-1">
+                {t('floor.subTyp')} <span className="text-red-500">*</span>
+              </Label>
+              <SearchSelect
+                options={currentSubUseTypeOptions}
+                placeholder={t('oldDetails.floordtails.selectPlaceholder')}
+                className="h-9 border-blue-100 focus:ring-blue-400"
+                name="subUseType"
+                onChange={(_, val) => setFormData(prev => ({ ...prev, oldSubTypeOfUseId: val }))}
+                value={String(formData.oldSubTypeOfUseId)}
+              />
+              <ValidationMessage message={errors.oldSubTypeOfUseId} visible={showError("oldSubTypeOfUseId")} />
+            </div>
 
-          {/* Carpet Area */}
-          <div className="space-y-2">
-            <Label className="text-sm font-bold text-blue-900">
-              {t('oldDetails.carpetArea')}
-            </Label>
-            <Input
-              type="number"
-              className="h-9 border-blue-100 focus:ring-blue-400"
-              placeholder={t('oldDetails.floordtails.carpetAreaPlaceholder')}
-              value={formData.oldCarpetAreaSqFeet}
-              onChange={(e) => setFormData(prev => ({ ...prev, oldCarpetAreaSqFeet: e.target.value }))}
-            />
+            {/* Carpet Area */}
+            <div className="space-y-2">
+              <Label className="text-sm font-bold text-blue-900 flex items-center gap-1">
+                {t('oldDetails.carpetArea')} <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                type="number"
+                className="h-9 border-blue-100 focus:ring-blue-400"
+                placeholder={t('oldDetails.floordtails.carpetAreaPlaceholder')}
+                value={formData.oldCarpetAreaSqFeet}
+                onChange={(e) => setFormData(prev => ({ ...prev, oldCarpetAreaSqFeet: e.target.value }))}
+              />
+              <ValidationMessage message={errors.oldCarpetAreaSqFeet} visible={showError("oldCarpetAreaSqFeet")} />
+            </div>
           </div>
-
-          {/* Built-up Area */}
-          <div className="space-y-2">
-            <Label className="text-sm font-bold text-blue-900">
-              {t('oldDetails.builtupArea')}
-            </Label>
-            <Input
-              type="number"
-              className="h-9 border-blue-100 focus:ring-blue-400"
-              placeholder={t('oldDetails.floordtails.builtupAreaPlaceholder')}
-              value={formData.oldBuiltupAreaSqFeet || ''}
-              onChange={(e) => setFormData(prev => ({ ...prev, oldBuiltupAreaSqFeet: e.target.value }))}
-            />
-          </div>
-        
-        </div>
           {/* Buttons Group */}
-          <div className="flex justify-end items-end mb-5">
+          <div className="flex justify-end mb-5 gap-5 mr-4">
             {!formData.id ? (
               <Button
                 onClick={handleSave}
@@ -239,7 +230,9 @@ export default function FloorInformationForm({
                 {tCommon('buttons.clear')}
               </Button>
             )}
+
           </div>
+        </div>
 
         {/* MasterTable Section */}
         <div className="border border-blue-100 rounded-xl overflow-hidden bg-gray-50/30 mb-10">

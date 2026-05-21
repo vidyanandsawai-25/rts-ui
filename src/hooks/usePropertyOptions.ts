@@ -3,7 +3,6 @@ import { PropertyFormViewProps } from '@/types/property-basic-details.types';
 
 export const usePropertyOptions = (props: PropertyFormViewProps) => {
     const {
-        WingMaster: wingList,
         MoujaMaster: moujaList,
         propertyCategories: propertyCategoryList,
         propertyDescriptions: propertyDescriptionList,
@@ -12,10 +11,6 @@ export const usePropertyOptions = (props: PropertyFormViewProps) => {
     const categoryOptions = useMemo(() => 
         propertyCategoryList.map((item) => ({ label: item.propertyCategoryName, value: String(item.id) })),
     [propertyCategoryList]);
-
-    const wingOptions = useMemo(() => 
-        wingList.map((item) => ({ label: item.wingNo, value: String(item.id) })),
-    [wingList]);
 
     const propertyDescriptionOptions = useMemo(() => 
         propertyDescriptionList.map((item) => ({ label: item.propertyDescription, value: String(item.id) })),
@@ -27,7 +22,6 @@ export const usePropertyOptions = (props: PropertyFormViewProps) => {
 
     return {
         categoryOptions,
-        wingOptions,
         moujaOptions,
         propertyDescriptionOptions,
     };

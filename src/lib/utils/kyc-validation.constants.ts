@@ -106,7 +106,7 @@ export const kycValidators = {
    */
   hasRepeatedSequence: (digits: string, minLength: number = 5): boolean => {
     if (!digits || digits.length < minLength) return false;
-    
+
     // Check for consecutive repeated digits (e.g., 00000, 11111, 22222)
     for (let i = 0; i <= digits.length - minLength; i++) {
       const char = digits[i];
@@ -138,7 +138,7 @@ export const kycValidators = {
     const digits = mobile.replace(/\D/g, '');
     if (digits.length === 0) return true;
     if (digits.length !== KYC_VALIDATION_RULES.MOBILE_LENGTH) return false;
-    
+
     // Check for repeated sequences
     return !kycValidators.hasRepeatedSequence(digits, 5);
   },
@@ -154,7 +154,7 @@ export const kycValidators = {
     const digits = aadhar.replace(/\D/g, '');
     if (digits.length === 0) return true;
     if (digits.length !== KYC_VALIDATION_RULES.AADHAR_LENGTH) return false;
-    
+
     // Check for repeated sequences
     return !kycValidators.hasRepeatedSequence(digits, 5);
   },
@@ -229,7 +229,7 @@ export const societyValidators = {
     const digits = mobile.replace(/\D/g, '');
     if (digits.length === 0) return true;
     if (digits.length !== SOCIETY_VALIDATION_RULES.MOBILE_LENGTH || !/^[6-9]/.test(digits)) return false;
-    
+
     // Check for repeated sequences using kycValidators helper
     return !kycValidators.hasRepeatedSequence(digits, 5);
   },
@@ -342,6 +342,7 @@ export const propertyValidators = {
    * @param value - Flat/shop number to validate
    * @returns True if valid format
    */
+
   isValidFlatShopNo: (value: string): boolean => {
     if (!value) return true; // Empty is valid (optional field)
     const trimmed = value.trim();
@@ -352,10 +353,39 @@ export const propertyValidators = {
     if (propertyValidators.isOnlyInvalidCharacters(trimmed)) return false;
 
     // Allow alphanumeric, hyphen, and forward slash
-    // Special characters must be between valid characters
-    const validPattern = /^[a-zA-Z0-9]+([-/][a-zA-Z0-9]+)*$/;
+    // Value must start and end with alphanumeric, containing allowed separators in between
+    const validPattern = /^[a-zA-Z0-9]+([a-zA-Z0-9/-]*[a-zA-Z0-9]+)?$/;
     return validPattern.test(trimmed);
   },
+
+  /**
+   * Validate flat/shop number format
+   * Allows letters, numbers, hyphen (-), and forward slash (/)
+   * Hyphen and slash must be between letters/numbers.
+   */
+  // isValidFlatShopNo: (value: string): boolean => {
+  //   if (!value) return true; // Optional field
+
+  //   const trimmed = value.trim();
+
+  //   if (trimmed.length === 0) return true;
+
+  //   if (trimmed.length > PROPERTY_VALIDATION_RULES.FLAT_SHOP_NO_MAX_LENGTH) {
+  //     return false;
+  //   }
+
+  //   // Must contain at least one letter or number
+  //   if (!/[a-zA-Z0-9]/.test(trimmed)) {
+  //     return false;
+  //   }
+
+    // Valid examples: A101, A-101, A/101, A-101/B
+    // Invalid examples: -A101, A101-, A--101, A//101
+  //   const validPattern = /^[a-zA-Z0-9]+([-/][a-zA-Z0-9]+)*$/;
+
+  //   return validPattern.test(trimmed);
+  // },
+
 
   /**
    * Validate plot number format
@@ -373,7 +403,7 @@ export const propertyValidators = {
     if (propertyValidators.isOnlyInvalidCharacters(trimmed)) return false;
 
     // Allow alphanumeric, hyphen, and forward slash
-    const validPattern = /^[a-zA-Z0-9]+([-/][a-zA-Z0-9]+)*$/;
+    const validPattern = /^[a-zA-Z0-9]+([a-zA-Z0-9/-]*[a-zA-Z0-9]+)?$/;
     return validPattern.test(trimmed);
   },
 
@@ -387,21 +417,21 @@ export const propertyValidators = {
     if (value === null || value === undefined || value === '') return true;
     const str = String(value);
     const num = Number(str);
-    
+
     // Must be a valid positive number
     if (isNaN(num) || num < 0 || !isFinite(num)) return false;
-    
+
     // Check decimal places
     const parts = str.split('.');
     if (parts.length > 2) return false; // More than one decimal point
-    
+
     // Check integer part (max 15 digits total, accounting for decimals)
     const integerPart = parts[0];
     const decimalPart = parts[1] || '';
-    
+
     // Max 4 decimal places
     if (decimalPart.length > PROPERTY_VALIDATION_RULES.PLOT_AREA_MAX_DECIMALS) return false;
-    
+
     // Total digits (integer + decimal) should not exceed 15
     const totalDigits = integerPart.replace(/^0+/, '').length + decimalPart.length;
     return totalDigits <= PROPERTY_VALIDATION_RULES.PLOT_AREA_MAX_DIGITS;
@@ -434,7 +464,7 @@ export const propertyValidators = {
     if (propertyValidators.isOnlyInvalidCharacters(trimmed)) return false;
 
     // Allow alphanumeric and / or - as separators
-    const validPattern = /^[a-zA-Z0-9]+([-/][a-zA-Z0-9]+)*$/;
+    const validPattern = /^[a-zA-Z0-9]+([a-zA-Z0-9/-]*[a-zA-Z0-9]+)?$/;
     return validPattern.test(trimmed);
   },
 
@@ -453,7 +483,7 @@ export const propertyValidators = {
     if (propertyValidators.isOnlyInvalidCharacters(trimmed)) return false;
 
     // Allow alphanumeric, hyphen, and forward slash
-    const validPattern = /^[a-zA-Z0-9]+([-/][a-zA-Z0-9]+)*$/;
+    const validPattern = /^[a-zA-Z0-9]+([a-zA-Z0-9/-]*[a-zA-Z0-9]+)?$/;
     return validPattern.test(trimmed);
   },
 
@@ -472,7 +502,7 @@ export const propertyValidators = {
     if (propertyValidators.isOnlyInvalidCharacters(trimmed)) return false;
 
     // Allow alphanumeric, hyphen, and forward slash only
-    const validPattern = /^[a-zA-Z0-9]+([-/][a-zA-Z0-9]+)*$/;
+    const validPattern = /^[a-zA-Z0-9]+([a-zA-Z0-9/-]*[a-zA-Z0-9]+)?$/;
     return validPattern.test(trimmed);
   },
 

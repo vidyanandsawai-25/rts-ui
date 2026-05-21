@@ -1,4 +1,4 @@
-import { PropertyBasicDetailsApiItem } from '@/types/property-basic-details.types';
+import { PropertyBasicDetailsApiItem, TaxZoneItem } from '@/types/property-basic-details.types';
 import { BasicPropertyFields } from './BasicPropertyFields';
 import { AdditionalPropertyFields } from './AdditionalPropertyFields';
 import { AreaDetailsFields } from './AreaDetailsFields';
@@ -15,6 +15,7 @@ interface PropertyFormFieldsProps {
     propertyDescriptionOptions: { label: string; value: string }[];
     propertyTypeId: number | null;
     handlePropertyDescriptionChange: (name: string | undefined, value: string) => void;
+    taxZones: TaxZoneItem[];
 }
 
 export const PropertyFormFields = (props: PropertyFormFieldsProps) => {
@@ -29,7 +30,8 @@ export const PropertyFormFields = (props: PropertyFormFieldsProps) => {
         handleMoujaChange,
         propertyDescriptionOptions,
         propertyTypeId,
-        handlePropertyDescriptionChange
+        handlePropertyDescriptionChange,
+        taxZones
     } = props;
     
     return (
@@ -50,6 +52,7 @@ export const PropertyFormFields = (props: PropertyFormFieldsProps) => {
             <AdditionalPropertyFields
                 t={t}
                 propertyData={propertyData}
+                taxZones={taxZones}
             />
             <AreaDetailsFields
                 t={t}

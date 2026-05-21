@@ -149,30 +149,25 @@ export const sanitizeAddress = (address: string): string => {
  * @param input - Raw flat/shop number input
  * @returns Sanitized flat/shop number
  */
+
+
+
 export const sanitizeFlatShopNo = (input: string): string => {
   if (!input || typeof input !== 'string') return '';
   
-  const sanitized = input
+  return input
     // Allow only alphanumeric, hyphen, and forward slash
-    .replace(/[^a-zA-Z0-9\-/]/g, '')
-    // Block consecutive special characters
+    .replace(/[^a-zA-Z0-9/-]/g, '')
+    // Block consecutive same special characters
     .replace(/([-/])\1+/g, '$1')
-    // Remove leading/trailing special characters
-    .replace(/^[-/]+|[-/]+$/g, '')
+    // Remove leading special characters only so user can type trailing ones
+    .replace(/^[-/]+/g, '')
     .trim();
-  
-  // If only special characters, return empty
-  if (sanitized && !/[a-zA-Z0-9]/.test(sanitized)) {
-    return '';
-  }
-  
-  return sanitized;
 };
 
 /**
  * Sanitize plot number input
  * Allows alphanumeric, hyphen, and forward slash
- * Blocks consecutive special characters like ----- or /////
  * 
  * @param input - Raw plot number input
  * @returns Sanitized plot number
@@ -180,27 +175,19 @@ export const sanitizeFlatShopNo = (input: string): string => {
 export const sanitizePlotNo = (input: string): string => {
   if (!input || typeof input !== 'string') return '';
   
-  const sanitized = input
-    // Allow alphanumeric, hyphen, and forward slash
-    .replace(/[^a-zA-Z0-9\-/]/g, '')
-    // Block consecutive special characters
+  return input
+    // Allow only alphanumeric, hyphen, and forward slash
+    .replace(/[^a-zA-Z0-9/-]/g, '')
+    // Block consecutive same special characters
     .replace(/([-/])\1+/g, '$1')
-    // Remove leading/trailing special characters
-    .replace(/^[-/]+|[-/]+$/g, '')
+    // Remove leading special characters only so user can type trailing ones
+    .replace(/^[-/]+/g, '')
     .trim();
-  
-  // If only special characters, return empty
-  if (sanitized && !/[a-zA-Z0-9]/.test(sanitized)) {
-    return '';
-  }
-  
-  return sanitized;
 };
 
 /**
  * Sanitize survey number input
- * Allows alphanumeric and common separators (/, -)
- * Blocks consecutive separators like ///// or -----
+ * Allows alphanumeric, hyphen, and forward slash
  * 
  * @param input - Raw survey number input
  * @returns Sanitized survey number
@@ -208,27 +195,19 @@ export const sanitizePlotNo = (input: string): string => {
 export const sanitizeSurveyNo = (input: string): string => {
   if (!input || typeof input !== 'string') return '';
   
-  const sanitized = input
-    // Allow alphanumeric and / or - separators
+  return input
+    // Allow only alphanumeric, hyphen, and forward slash
     .replace(/[^a-zA-Z0-9/-]/g, '')
-    // Block consecutive separators
-    .replace(/([/-])\1+/g, '$1')
-    // Remove leading/trailing separators
-    .replace(/^[/-]+|[/-]+$/g, '')
+    // Block consecutive same special characters
+    .replace(/([-/])\1+/g, '$1')
+    // Remove leading special characters only so user can type trailing ones
+    .replace(/^[-/]+/g, '')
     .trim();
-  
-  // If only special characters, return empty
-  if (sanitized && !/[a-zA-Z0-9]/.test(sanitized)) {
-    return '';
-  }
-  
-  return sanitized;
 };
 
 /**
  * Sanitize sub zone number input
  * Allows alphanumeric, hyphen, and forward slash
- * Blocks consecutive special characters like ----- or /////
  * 
  * @param input - Raw sub zone number input
  * @returns Sanitized sub zone number
@@ -236,21 +215,14 @@ export const sanitizeSurveyNo = (input: string): string => {
 export const sanitizeSubZoneNo = (input: string): string => {
   if (!input || typeof input !== 'string') return '';
   
-  const sanitized = input
-    // Allow alphanumeric, hyphen, and forward slash
-    .replace(/[^a-zA-Z0-9\-/]/g, '')
-    // Block consecutive special characters
+  return input
+    // Allow only alphanumeric, hyphen, and forward slash
+    .replace(/[^a-zA-Z0-9/-]/g, '')
+    // Block consecutive same special characters
     .replace(/([-/])\1+/g, '$1')
-    // Remove leading/trailing special characters
-    .replace(/^[-/]+|[-/]+$/g, '')
+    // Remove leading special characters only so user can type trailing ones
+    .replace(/^[-/]+/g, '')
     .trim();
-  
-  // If only special characters, return empty
-  if (sanitized && !/[a-zA-Z0-9]/.test(sanitized)) {
-    return '';
-  }
-  
-  return sanitized;
 };
 
 /**

@@ -15,7 +15,9 @@ import {
   WingItem,
   WingResponse,
   MoujaItem,
-  MoujaResponse
+  MoujaResponse,
+  TaxZoneItem,
+  TaxZoneResponse
 } from "@/types/property-basic-details.types";
 import { ActionResult } from "@/types/common.types";
 
@@ -112,4 +114,21 @@ export async function getTaxDetailsCvByPropertyId(propertyId: number): Promise<{
   const response = await apiClient.get<TaxDetailsApiResponse>(`/Property/${propertyId}/tax-details-cv`);
   const t = await getTranslations("quickDataEntry");
   return handleApiResponse(response, t("property.errors.fetchCvTaxDetails")).items;
+}
+
+export async function getTaxZones(
+  pageNumber: number = 1,
+  pageSize: number = 100,
+  searchTerm?: string
+): Promise<TaxZoneItem[]> {
+  const params = new URLSearchParams();
+  params.append("PageSize", pageSize.toString());
+  if (searchTerm?.trim()) {
+    params.append("SearchTerm", searchTerm.trim());
+  }
+  params.append("PageNo", pageNumber.toString());
+  const response = await apiClient.get<TaxZoneResponse>(`/TaxZone?${params.toString()}`);
+  const t = await getTranslations("quickDataEntry");
+
+  return handleApiResponse(response, t("property.errors.fetchTaxZones")).items ?? [];
 }
