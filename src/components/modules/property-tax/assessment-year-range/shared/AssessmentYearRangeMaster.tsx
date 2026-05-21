@@ -30,6 +30,8 @@ export function AssessmentYearRangeMaster<T extends AssessmentYearRange>({
   pageSize,
   totalCount,
   totalPages,
+  sortBy,
+  sortOrder,
   deleteAction,
 }: AssessmentYearRangeMasterComponentProps<T>): React.ReactElement {
   const router = useRouter();
@@ -40,16 +42,24 @@ export function AssessmentYearRangeMaster<T extends AssessmentYearRange>({
   const { confirm } = useConfirm();
   const [isPending, startTransition] = React.useTransition();
 
-  const { changePage, handlePageSizeChange, paginationInfo } = useAssessmentYearRangePagination({
+  const { changePage, handlePageSizeChange, handleSort, paginationInfo } = useAssessmentYearRangePagination({
     config,
     pageNumber,
     pageSize,
     totalCount,
+    sortBy,
+    sortOrder,
     locale,
     startTransition,
   });
 
-  const columns = getAssessmentYearRangeColumns<T>(t);
+  const columns = getAssessmentYearRangeColumns<T>(
+    t,
+    tCommon,
+    sortBy,
+    sortOrder,
+    handleSort
+  );
 
   const handleEdit = useCallback(
     (row: T) => {

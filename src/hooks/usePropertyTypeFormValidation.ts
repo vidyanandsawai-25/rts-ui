@@ -9,8 +9,7 @@ import {
 } from "@/lib/utils/validation";
 import {
   PROPERTY_DESCRIPTION_MAX,
-  TYPE_MAX,
-  PROPERTY_TYPE_GROUP_MAX
+  TYPE_MAX
 } from "@/components/modules/property-tax/property-type-master/constants";
 
 interface UsePropertyTypeFormValidationProps {
@@ -75,6 +74,7 @@ export function usePropertyTypeFormValidation({
           }
           return undefined;
         },
+        /*
         propertyTypeGroup: (value: unknown) => {
           // First run standard master description validation
           const standardError = commonValidations.masterDescription(t, PROPERTY_TYPE_GROUP_MAX, {
@@ -93,6 +93,7 @@ export function usePropertyTypeFormValidation({
           
           return undefined;
         },
+        */
         searchSequence: commonValidations.masterSearchSequence(t, 'form.validation.sequenceInvalid'),
         propertyTypeCategoryId: (value: unknown) => {
           const numValue = Number(value);
