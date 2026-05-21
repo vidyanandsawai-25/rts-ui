@@ -142,14 +142,8 @@ export async function updateUseGroup(input: {
       updatedBy: await getCurrentUserId(),
     });
     
-    // Revalidate paths after successful update
-    try {
-      for (const locale of locales) {
-        revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
-      }
-    } catch (revalidateError) {
-      // Log revalidation errors but don't fail the operation
-      console.error('[Revalidation Error]', revalidateError);
+    for (const locale of locales) {
+      revalidatePath(`/${locale}/property-tax/typeofusemaster`, "page");
     }
   } catch (error) {
     const errorMessage = extractErrorMessage(error, "Failed to update group");
