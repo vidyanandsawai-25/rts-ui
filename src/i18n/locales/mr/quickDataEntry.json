@@ -304,7 +304,7 @@
         "commercialToilet": "व्यापारी शौचालय",
         "upicId": "UPIC आयडी",
         "taxZoneNo": "कर विभाग क्र.",
-        "selectTaxZonePlaceholder": "कर क्षेत्र चुनें",
+        "selectTaxZonePlaceholder": "कर क्षेत्र निवडा",
         "subZoneNo": "उप विभाग क्र.",
         "surveyNo": "सर्वेक्षण क्र.",
         "totalCarpetArea": "एकूण कार्पेट क्षेत्रफळ (चौ.फू.)",
@@ -365,6 +365,7 @@
             "subFloorRequired": "कृपया उप मजला निवडा",
             "constructionYearRequired": "कृपया बांधकाम वर्ष प्रविष्ट करा",
             "constructionYearInvalid": "कृपया वैध ४ अंकी वर्ष प्रविष्ट करा",
+            "constructionYearRange": "बांधकाम वर्ष १७०० ते २०२६ दरम्यान असावे",
             "constructionTypeRequired": "कृपया बांधकामाचा प्रकार निवडा",
             "typeOfUseRequired": "कृपया वापराचा प्रकार निवडा",
             "subTypeOfUseRequired": "कृपया उप प्रकार निवडा",
@@ -372,7 +373,8 @@
             "builtupAreaSqFtRequired": "कृपया बांधकाम क्षेत्रफळ (चौ.फू.) प्रविष्ट करा",
             "builtupAreaSqMRequired": "कृपया बांधकाम क्षेत्रफळ (चौ.मी.) प्रविष्ट करा",
             "assessmentYearRequired": "कृपया मूल्यांकन वर्ष प्रविष्ट करा",
-            "assessmentYearInvalid": "कृपया वैध ४ अंकी मूल्यांकन वर्ष प्रविष्ट करा"
+            "assessmentYearInvalid": "कृपया वैध ४ अंकी मूल्यांकन वर्ष प्रविष्ट करा",
+            "assessmentYearRange": "मूल्यांकन वर्ष १७०० ते २०२६ दरम्यान असावे"
         },
         "errors": {
             "failedToConnect": {

@@ -144,6 +144,7 @@ export const SocietyGeneralFields = ({
                     {t('society.wing')}
                 </Label>
                 <SearchSelect
+                    id="society-wing"
                     name="wing"
                     options={wingOptions}
                     value={wingId?.toString() ?? ''}

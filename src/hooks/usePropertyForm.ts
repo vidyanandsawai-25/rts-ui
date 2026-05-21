@@ -80,9 +80,12 @@ export const usePropertyForm = (props: PropertyFormViewProps) => {
 
         const pId = propertyData.propertyId;
 
+        const rawTaxZoneId = formData.get("taxZoneId");
+        const taxZoneId = rawTaxZoneId && !isNaN(Number(rawTaxZoneId)) ? Number(rawTaxZoneId) : propertyData.taxZoneId;
+
         const payload: UpdatePropertyBasicDetailsDto = {
             wardId: propertyData.wardId,
-            taxZoneId: Number(formData.get("taxZoneId") ?? propertyData.taxZoneId),
+            taxZoneId,
             categoryId,
             propertyTypeId: propertyTypeId || null,            
             moujaId: moujaId,

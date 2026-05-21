@@ -63,6 +63,7 @@ export const BasicPropertyFields = ({
                     {t('property.mouja')}
                 </Label>
                 <SearchSelect
+                    id="pd-mouja"
                     name="mouja"
                     options={moujaOptions}
                     value={moujaId?.toString() ?? ''}
@@ -78,6 +79,7 @@ export const BasicPropertyFields = ({
                     {t('property.category')}
                 </Label>
                 <SearchSelect
+                    id="pd-category"
                     name="category"
                     options={categoryOptions}
                     value={categoryId?.toString() ?? ''}

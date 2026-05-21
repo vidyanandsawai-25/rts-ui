@@ -358,6 +358,7 @@
             "subFloorRequired": "Please select a sub floor",
             "constructionYearRequired": "Please enter construction year",
             "constructionYearInvalid": "Please enter a valid 4-digit year",
+            "constructionYearRange": "Construction year must be between 1700 and 2026",
             "constructionTypeRequired": "Please select construction type",
             "typeOfUseRequired": "Please select type of use",
             "subTypeOfUseRequired": "Please select a sub type",
@@ -365,7 +366,8 @@
             "builtupAreaSqFtRequired": "Please enter built-up area (Sq Ft)",
             "builtupAreaSqMRequired": "Please enter built-up area (Sq M)",
             "assessmentYearRequired": "Please enter assessment year",
-            "assessmentYearInvalid": "Please enter a valid 4-digit assessment year"
+            "assessmentYearInvalid": "Please enter a valid 4-digit assessment year",
+            "assessmentYearRange": "Assessment year must be between 1700 and 2026"
         },
         "errors": {
             "failedToConnect": {

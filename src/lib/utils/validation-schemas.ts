@@ -30,6 +30,7 @@ import {
 } from './validation-rules';
 import { validateForm } from './validation-helpers';
 import { DateUtils } from './date-helpers';
+import { PROPERTY_VALIDATION_RULES } from './kyc-validation.constants';
 import type { Validator } from './validation-helpers';
 import type { OfficeFormModel } from '@/types/office.types';
 import type {
@@ -569,7 +570,7 @@ export const oldDetailsValidations = {
     // Additional validation for construction year range (1700-2026)
     if (formData.oldConstructionYear) {
       const year = parseInt(formData.oldConstructionYear, 10);
-      if (!isNaN(year) && (year < 1700 || year > 2026)) {
+      if (!isNaN(year) && (year < PROPERTY_VALIDATION_RULES.MIN_CONSTRUCTION_YEAR || year > PROPERTY_VALIDATION_RULES.MAX_CONSTRUCTION_YEAR)) {
         errors.oldConstructionYear = t('property.validation.constructionYearRange') || 'Construction year must be between 1700 and 2026';
       }
     }
@@ -577,7 +578,7 @@ export const oldDetailsValidations = {
     // Additional validation for assessment year range (1700-2026)
     if (formData.oldAssessmentYear) {
       const year = parseInt(formData.oldAssessmentYear, 10);
-      if (!isNaN(year) && (year < 1700 || year > 2026)) {
+      if (!isNaN(year) && (year < PROPERTY_VALIDATION_RULES.MIN_CONSTRUCTION_YEAR || year > PROPERTY_VALIDATION_RULES.MAX_CONSTRUCTION_YEAR)) {
         errors.oldAssessmentYear = t('property.validation.assessmentYearRange') || 'Assessment year must be between 1700 and 2026';
       }
     }

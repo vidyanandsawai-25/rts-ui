@@ -16,6 +16,7 @@ interface PropertyFormFieldsProps {
     propertyTypeId: number | null;
     handlePropertyDescriptionChange: (name: string | undefined, value: string) => void;
     taxZones: TaxZoneItem[];
+    checkFormChanges: () => void;
 }
 
 export const PropertyFormFields = (props: PropertyFormFieldsProps) => {
@@ -31,7 +32,8 @@ export const PropertyFormFields = (props: PropertyFormFieldsProps) => {
         propertyDescriptionOptions,
         propertyTypeId,
         handlePropertyDescriptionChange,
-        taxZones
+        taxZones,
+        checkFormChanges
     } = props;
     
     return (
@@ -53,6 +55,7 @@ export const PropertyFormFields = (props: PropertyFormFieldsProps) => {
                 t={t}
                 propertyData={propertyData}
                 taxZones={taxZones}
+                checkFormChanges={checkFormChanges}
             />
             <AreaDetailsFields
                 t={t}

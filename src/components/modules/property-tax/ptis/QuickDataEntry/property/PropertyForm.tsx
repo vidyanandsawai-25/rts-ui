@@ -49,6 +49,7 @@ const PropertyFormView = (props: PropertyFormViewProps) => {
                             propertyTypeId={propertyTypeId}
                             handlePropertyDescriptionChange={handlePropertyDescriptionChange}
                             taxZones={props.taxZones}
+                            checkFormChanges={checkFormChanges}
                         />
 
                         <PropertyFormActions

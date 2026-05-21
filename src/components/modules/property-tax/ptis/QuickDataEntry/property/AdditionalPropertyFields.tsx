@@ -9,12 +9,14 @@ interface AdditionalPropertyFieldsProps {
     t: (key: string) => string;
     propertyData: PropertyBasicDetailsApiItem | null;
     taxZones: TaxZoneItem[];
+    checkFormChanges: () => void;
 }
 
 export const AdditionalPropertyFields = ({
     t,
     propertyData,
     taxZones,
+    checkFormChanges,
 }: AdditionalPropertyFieldsProps) => {
     const [taxZoneId, setTaxZoneId] = useState(propertyData?.taxZoneId ? String(propertyData.taxZoneId) : '');
     const [taxZoneNo, setTaxZoneNo] = useState(propertyData?.taxZoneNo?.toString() ?? '');
@@ -47,6 +49,8 @@ export const AdditionalPropertyFields = ({
             setTaxZoneNo('');
         }
         setShowTaxZoneNoError(true);
+        // Manually trigger change detection since hidden inputs don't fire onChange
+        setTimeout(() => checkFormChanges(), 0);
     };
 
     return (

@@ -39,7 +39,8 @@ export default function OldTaxationForm({
             </Label>
             <Input
               placeholder={t("oldDetails.zoneNamePlaceholder")}
-              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
+              readOnly
+              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
               defaultValue={propertyOldDetails?.oldZoneNo || ""}
             />
           </div>
@@ -51,7 +52,8 @@ export default function OldTaxationForm({
             </Label>
             <Input
               placeholder={t("oldDetails.wardNoPlaceholder")}
-              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
+              readOnly
+              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
               defaultValue={propertyOldDetails?.oldWardNo || ""}
             />
           </div>
@@ -63,7 +65,8 @@ export default function OldTaxationForm({
             </Label>
             <Input
               placeholder={t("oldDetails.propertyNoPlaceholder")}
-              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
+              readOnly
+              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
               defaultValue={propertyOldDetails?.oldPropertyNo || ""}
             />
           </div>
@@ -75,7 +78,8 @@ export default function OldTaxationForm({
             </Label>
             <Input
               placeholder={t("oldDetails.partitionNoPlaceholder")}
-              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
+              readOnly
+              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
               defaultValue={propertyOldDetails?.oldPartitionNo || ""}
             />
           </div>
@@ -87,7 +91,8 @@ export default function OldTaxationForm({
             </Label>
             <Input
               placeholder={t("oldDetails.eGovernanceNoPlaceholder")}
-              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
+              readOnly
+              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
               defaultValue={propertyOldDetails?.oldEgovNo || ""}
             />
           </div>
@@ -100,7 +105,8 @@ export default function OldTaxationForm({
             <Input
               type="number"
               placeholder={t("oldDetails.plotAreaPlaceholder")}
-              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
+              readOnly
+              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
               defaultValue={propertyOldDetails?.oldPlotArea || ""}
             />
           </div>

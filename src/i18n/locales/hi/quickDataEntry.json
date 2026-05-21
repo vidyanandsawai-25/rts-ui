@@ -304,7 +304,7 @@
         "commercialToilet": "व्यावसायिक शौचालय",
         "upicId": "UPIC आईडी",
         "taxZoneNo": "कर क्षेत्र नं.",
-        "selectTaxZonePlaceholder": "कर क्षेत्र निवडा",
+        "selectTaxZonePlaceholder": "कर क्षेत्र चुनें",
         "subZoneNo": "उप क्षेत्र नं.",
         "surveyNo": "सर्वेक्षण नं.",
         "totalCarpetArea": "कुल कार्पेट क्षेत्रफल (वर्ग फुट)",
@@ -365,6 +365,7 @@
             "subFloorRequired": "कृपया उप मंज़िल चुनें",
             "constructionYearRequired": "कृपया निर्माण वर्ष दर्ज करें",
             "constructionYearInvalid": "कृपया मान्य 4 अंकों का वर्ष दर्ज करें",
+            "constructionYearRange": "निर्माण वर्ष 1700 और 2026 के बीच होना चाहिए",
             "constructionTypeRequired": "कृपया निर्माण प्रकार चुनें",
             "typeOfUseRequired": "कृपया उपयोग का प्रकार चुनें",
             "subTypeOfUseRequired": "कृपया उप प्रकार चुनें",
@@ -372,7 +373,8 @@
             "builtupAreaSqFtRequired": "कृपया बिल्टअप क्षेत्रफल (वर्ग फुट) दर्ज करें",
             "builtupAreaSqMRequired": "कृपया बिल्टअप क्षेत्रफल (वर्ग मीटर) दर्ज करें",
             "assessmentYearRequired": "कृपया मूल्यांकन वर्ष दर्ज करें",
-            "assessmentYearInvalid": "कृपया मान्य 4 अंकों का मूल्यांकन वर्ष दर्ज करें"
+            "assessmentYearInvalid": "कृपया मान्य 4 अंकों का मूल्यांकन वर्ष दर्ज करें",
+            "assessmentYearRange": "मूल्यांकन वर्ष 1700 और 2026 के बीच होना चाहिए"
         },
         "errors": {
             "failedToConnect": {

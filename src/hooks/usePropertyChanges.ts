@@ -36,9 +36,10 @@ export const usePropertyChanges = ({
         const residentialToilets = parseOptionalNumber(formData.get("noOfResidentialToilets"));
         const commercialToilets = parseOptionalNumber(formData.get("noOfCommercialToilets"));
         const plotArea = parseOptionalNumber(formData.get("plotArea"));
+        const taxZoneIdFromForm = parseOptionalNumber(formData.get("taxZoneId"));
 
         const isChanged =
-            String(formData.get("taxZoneNo") ?? "").trim() !== (propertyData?.taxZoneNo ?? "") ||
+            taxZoneIdFromForm !== (propertyData?.taxZoneId ?? null) ||
             String(formData.get("plotNo") ?? "").trim() !== (propertyData?.plotNo ?? "") ||
             String(formData.get("flatOrShopNo") ?? "").trim() !== (propertyData?.flatOrShopNo ?? "") ||
             String(formData.get("surveyNo") ?? "").trim() !== (propertyData?.surveyNo ?? "") ||
