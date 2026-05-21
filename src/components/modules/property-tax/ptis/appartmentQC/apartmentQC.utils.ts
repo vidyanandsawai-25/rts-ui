@@ -47,7 +47,7 @@ export const transformApartmentData = (items: ApartmentQCDetail[], _activeMainTa
       carpetASqMtr: item.carpetASqMtr || 0,
       builtupASqFt: item.builtupASqFt || 0,
       builtupASqMtr: item.builtupASqMtr || 0,
-      oldConstArea: item.oldConstArea ?? '-',
+      oldConstArea: item.oldConstructionArea ?? '-',
       oldRV: item.oldRV ?? '-',
       oldTotalTax: item.oldTotalTax ?? '-',
       rateableValue: item.rateableValue ?? '-',
@@ -57,7 +57,7 @@ export const transformApartmentData = (items: ApartmentQCDetail[], _activeMainTa
       newTaxTotalCV: item.newTaxTotalCV || 0,
       mobileNo: item.mobileNo || '-',
       emailId: item.emailId || '-',
-      ocDate: item.ocDate ? formatNumericDate(item.ocDate) : '-',
+      ocDate: formatNumericDate(item.ocDate),
     }));
   }
 
@@ -70,12 +70,12 @@ export const transformApartmentData = (items: ApartmentQCDetail[], _activeMainTa
     typeOfUse: item.typeOfUse || '-',
     carpetArea: `${item.carpetASqFt || 0} / ${item.carpetASqMtr || 0}`,
     builtupArea: `${item.builtupASqFt || 0} / ${item.builtupASqMtr || 0}`,
-    oldConstArea: item.oldConstArea || '-',
+    oldConstArea: item.oldConstructionArea || '-',
     oldRV: item.oldRV || '-',
     newRV: item.newTaxTotalRV || '-',
     cv: item.newTaxTotalCV || '-',
     totalTax: item.newTaxTotal || 0,
-    ocDate: item.ocDate ? formatNumericDate(item.ocDate) : '-',
+    ocDate: formatNumericDate(item.ocDate),
   }));
 };
 
