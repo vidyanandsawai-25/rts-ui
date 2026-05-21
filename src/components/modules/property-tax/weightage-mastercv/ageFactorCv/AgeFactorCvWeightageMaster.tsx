@@ -20,6 +20,8 @@ interface AgeFactorCvWeightageMasterProps {
     constructionTypeOptions: Option[];
     ageRangeOptions: Option[];
     allAgeFactors: AgeFactorCVMaster[];
+    sortBy?: string;
+    sortOrder?: string;
 }
 
 const AgeFactorCvWeightageMaster: React.FC<AgeFactorCvWeightageMasterProps> = ({
@@ -32,10 +34,13 @@ const AgeFactorCvWeightageMaster: React.FC<AgeFactorCvWeightageMasterProps> = ({
     constructionTypeOptions,
     ageRangeOptions: initialAgeRangeOptions,
     allAgeFactors,
+    sortBy,
+    sortOrder,
 }) => {
     const {
         t,
         tW,
+        tCommon,
         selectedYear,
         editableRows,
         constructionType,
@@ -71,6 +76,9 @@ const AgeFactorCvWeightageMaster: React.FC<AgeFactorCvWeightageMasterProps> = ({
         handleClearAll,
         changePage,
         changePageSize,
+        sortBy: activeSortBy,
+        sortOrder: activeSortOrder,
+        handleSort,
     } = useAgeFactorCvWeightage({
         paginationData: {
             data,
@@ -84,14 +92,20 @@ const AgeFactorCvWeightageMaster: React.FC<AgeFactorCvWeightageMasterProps> = ({
             initialAgeRangeOptions,
         },
         allAgeFactors,
+        sortBy,
+        sortOrder,
     });
 
     const columns = getAgeFactorCvWeightageMasterColumns({
         t,
         tW,
+        tCommon,
         editableRows,
         handleCellChange,
         getRowUid,
+        sortBy: activeSortBy,
+        sortOrder: activeSortOrder,
+        onSort: handleSort,
     });
 
     const renderActions = (row: AgeFactorCVMaster) => {

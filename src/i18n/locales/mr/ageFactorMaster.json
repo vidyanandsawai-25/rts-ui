@@ -3,6 +3,7 @@
     "title": "वय घटक मास्टर",
     "columns": {
       "constructionType": "बांधकाम प्रकार",
+      "description": "वर्णन",
       "ageFrom": "वय पासून",
       "ageTo": "वय पर्यंत",
       "factor": "घटक",

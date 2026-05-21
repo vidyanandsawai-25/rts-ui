@@ -77,8 +77,8 @@ export function getConstructionTypeColumns(
   sortOrder?: string,
   onSort?: (key: string) => void
 ): Column<ConstructionType>[] {
-  // Only constructionCode and description are sortable (API limitation)
-  const sortableColumns = ["constructionCode", "description"];
+  // Whitelisted sortable columns
+  const sortableColumns = ["constructionCode", "description", "searchSequence"];
  
   const createSortableLabel = (label: string, key: string) => {
     if (onSort && sortableColumns.includes(key)) {

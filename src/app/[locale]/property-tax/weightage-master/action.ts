@@ -30,7 +30,9 @@ export async function fetchFloorFactorCVMasterPagedServerAction(
   pageNumber: number,
   pageSize: number,
   searchTerm?: string,
-  selectedYearRange?: string
+  selectedYearRange?: string,
+  sortBy?: string,
+  sortOrder?: string
 ): Promise<PagedResponse<FloorFactorCVMaster>> {
   try {
     const MAX_PAGE_SIZE = 100;
@@ -48,11 +50,21 @@ export async function fetchFloorFactorCVMasterPagedServerAction(
     const yearRangeParam =
       selectedYearRange && selectedYearRange.trim() !== "" ? selectedYearRange : undefined;
 
+    // Whitelist sort columns to prevent injection (API requires PascalCase field names)
+    const allowedSortColumns = ["FloorCode", "FloorDescription", "FromYear"];
+    const validSortBy = sortBy && allowedSortColumns.includes(sortBy) ? sortBy : undefined;
+    const validSortOrder =
+      sortOrder && ["asc", "desc"].includes(sortOrder.toLowerCase())
+        ? sortOrder.toLowerCase()
+        : undefined;
+
     return await getFloorFactorCVMasterWithPagination(
       pageNumber,
       pageSize,
       searchTerm,
-      yearRangeParam
+      yearRangeParam,
+      validSortBy,
+      validSortOrder
     );
   } catch (error: unknown) {
     const logger = createLogger('fetchFloorFactorCVMasterPaged');

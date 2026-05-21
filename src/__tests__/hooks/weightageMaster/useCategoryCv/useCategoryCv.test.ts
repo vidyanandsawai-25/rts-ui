@@ -116,8 +116,14 @@ describe('useCategoryCv Orchestration', () => {
       expect(mockPush).toHaveBeenCalled();
     });
 
-    it('handleClearAll should reset state and navigate', () => {
-      const { result } = renderHook(() => useCategoryCv(defaultProps));
+    it('handleClearAll should reset state, sorting, and navigate', () => {
+      const { result } = renderHook(() => useCategoryCv({
+        ...defaultProps,
+        sortBy: 'FromYear',
+        sortOrder: 'asc',
+        leftSortBy: 'TypeOfUseCode',
+        leftSortOrder: 'desc',
+      }));
 
       act(() => {
         result.current.handleClearAll();
@@ -125,7 +131,45 @@ describe('useCategoryCv Orchestration', () => {
 
       expect(result.current.selectedYear).toBe('');
       expect(result.current.factorValue).toBe('0.00');
+      expect(result.current.sortBy).toBeUndefined();
+      expect(result.current.sortOrder).toBeUndefined();
+      expect(result.current.leftSortBy).toBeUndefined();
+      expect(result.current.leftSortOrder).toBeUndefined();
       expect(mockPush).toHaveBeenCalled();
+    });
+
+    it('handleSort should toggle order and navigate', () => {
+      const { result } = renderHook(() => useCategoryCv({
+        ...defaultProps,
+        sortBy: 'FromYear',
+        sortOrder: 'asc',
+      }));
+
+      act(() => {
+        result.current.handleSort('FromYear');
+      });
+
+      expect(result.current.sortBy).toBe('FromYear');
+      expect(result.current.sortOrder).toBe('desc');
+      expect(mockPush).toHaveBeenCalledWith(expect.stringContaining('sortBy=FromYear'));
+      expect(mockPush).toHaveBeenCalledWith(expect.stringContaining('sortOrder=desc'));
+    });
+
+    it('handleLeftSort should toggle left order and navigate', () => {
+      const { result } = renderHook(() => useCategoryCv({
+        ...defaultProps,
+        leftSortBy: 'TypeOfUseCode',
+        leftSortOrder: 'asc',
+      }));
+
+      act(() => {
+        result.current.handleLeftSort('TypeOfUseCode');
+      });
+
+      expect(result.current.leftSortBy).toBe('TypeOfUseCode');
+      expect(result.current.leftSortOrder).toBe('desc');
+      expect(mockPush).toHaveBeenCalledWith(expect.stringContaining('leftSortBy=TypeOfUseCode'));
+      expect(mockPush).toHaveBeenCalledWith(expect.stringContaining('leftSortOrder=desc'));
     });
   });
 
@@ -139,7 +183,8 @@ describe('useCategoryCv Orchestration', () => {
       'isApplyDisabled', 'isBulkUpdateDisabled', 'addToast', 'removeToast',
       'getRowUid', 'handleAssessmentYearChange', 'handleTypeOfUseChange',
       'handleTypeRowClick', 'handleClearAll', 'changePage', 'changePageSize',
-      'changeLeftPage', 'changeLeftPageSize'
+      'changeLeftPage', 'changeLeftPageSize', 'sortBy', 'sortOrder',
+      'leftSortBy', 'leftSortOrder', 'handleSort', 'handleLeftSort'
     ];
 
     expectedKeys.forEach(key => {
