@@ -57,7 +57,7 @@ export const transformApartmentData = (items: ApartmentQCDetail[], _activeMainTa
       newTaxTotalCV: item.newTaxTotalCV || 0,
       mobileNo: item.mobileNo || '-',
       emailId: item.emailId || '-',
-      ocDate: item.ocDate ? formatNumericDate(item.ocDate) : '-',
+      ocDate: formatNumericDate(item.ocDate),
     }));
   }
 
@@ -75,7 +75,7 @@ export const transformApartmentData = (items: ApartmentQCDetail[], _activeMainTa
     newRV: item.newTaxTotalRV || '-',
     cv: item.newTaxTotalCV || '-',
     totalTax: item.newTaxTotal || 0,
-    ocDate: item.ocDate ? formatNumericDate(item.ocDate) : '-',
+    ocDate: formatNumericDate(item.ocDate),
   }));
 };
 

@@ -86,6 +86,11 @@ export function formatNumericDate(value: string | null | undefined): string {
     return '-';
   }
 
+  const cleanVal = String(value).trim().toLowerCase();
+  if (cleanVal === 'null' || cleanVal === 'undefined' || cleanVal === '' || cleanVal.startsWith('0001-01-01')) {
+    return '-';
+  }
+
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
     return value;

@@ -10,9 +10,9 @@ export interface ApartmentQCDetail {
   /** Unique identifier */
   id: number;
   /** Property details identifier */
-  pdnId: number;
+  pdnId: number | null;
   /** Tax zone identifier */
-  taxZoneId: number;
+  taxZoneId: number | null;
   /** Zone number */
   zoneNo: string | null;
   /** Property number */
@@ -43,10 +43,12 @@ export interface ApartmentQCDetail {
   occupierName: string | null;
   /** Occupier name in English */
   occupierNameEnglish: string | null;
+  /** Property type id (new field) */
+  propertyType?: number | null;
   /** Yearly rent amount */
-  rentYearly: number;
+  rentYearly: number | null;
   /** Monthly rent amount */
-  rentMonthly: number;
+  rentMonthly: number | null;
   /** Renter name */
   renterName: string | null;
   /** Renter name in English */
@@ -57,10 +59,14 @@ export interface ApartmentQCDetail {
   type: string | null;
   /** Part type */
   partType: string | null;
+  /** Wing name from the API (new field) */
+  wing?: string | null;
   /** Floor */
   floor: string | null;
   /** Sub floor */
   subFloor: string | null;
+  /** Sub type of use (new field) */
+  subTypeOfUse?: string | null;
   /** Construction year */
   constructionYear: string | null;
   /** Assessment year */
@@ -74,25 +80,57 @@ export interface ApartmentQCDetail {
   /** Old total tax */
   oldTotalTax: number | null;
   /** RV or CV value */
-  rVorCVValue: number;
+  rVorCVValue: number | null;
   /** Capital value */
-  capitalValue: number;
+  capitalValue: number | null;
   /** Rateable value */
-  rateableValue: number;
+  rateableValue: number | null;
   /** New tax total */
-  newTaxTotal: number;
+  newTaxTotal: number | null;
   /** New tax total CV */
-  newTaxTotalCV: number;
+  newTaxTotalCV: number | null;
   /** New tax total RV */
-  newTaxTotalRV: number;
+  newTaxTotalRV: number | null;
+  /** Yearly rent from API (new field) */
+  yearlyRent?: number | null;
+  /** Monthly rate (new field) */
+  monthlyRate?: number | null;
+  /** Yearly rate (new field) */
+  yearlyRate?: number | null;
+  /** Depreciation (new field) */
+  depreciation?: number | null;
+  /** Annual rental value (new field) */
+  annualRentalValue?: number | null;
+  /** Maintenance (new field) */
+  maintenance?: number | null;
+  /** SDRR (new field) */
+  sdrr?: number | null;
+  /** Base value (new field) */
+  baseValue?: number | null;
+  /** Floor factor (new field) */
+  floorFactor?: string | number | null;
+  /** Age factor (new field) */
+  ageFactor?: string | number | null;
+  /** Nature factor (new field) */
+  natureFactor?: string | number | null;
+  /** Use factor (new field) */
+  useFactor?: string | number | null;
+  /** Floor factor identifier (new field) */
+  floorFactorId?: number | null;
+  /** Age factor identifier (new field) */
+  ageFactorId?: number | null;
+  /** Nature factor identifier (new field) */
+  natureFactorId?: number | null;
+  /** Use factor identifier (new field) */
+  useFactorId?: number | null;
   /** Carpet area in square meters */
-  carpetASqMtr: number;
+  carpetASqMtr: number | null;
   /** Carpet area in square feet */
-  carpetASqFt: number;
+  carpetASqFt: number | null;
   /** Built-up area in square meters */
-  builtupASqMtr: number;
+  builtupASqMtr: number | null;
   /** Built-up area in square feet */
-  builtupASqFt: number;
+  builtupASqFt: number | null;
   /** Building number */
   buildingNo?: string | null;
   /** Society name */
