@@ -25,6 +25,11 @@ interface UseCategoryCvFactorMasterProps {
 
     assessmentYearOptions: Option[];
     typeOfUseOptions: Option[];
+
+    sortBy?: string;
+    sortOrder?: string;
+    leftSortBy?: string;
+    leftSortOrder?: string;
 }
 
 const UseCategoryCvFactorMaster: React.FC<UseCategoryCvFactorMasterProps> = ({
@@ -42,9 +47,14 @@ const UseCategoryCvFactorMaster: React.FC<UseCategoryCvFactorMasterProps> = ({
 
     assessmentYearOptions,
     typeOfUseOptions,
+
+    sortBy,
+    sortOrder,
+    leftSortBy,
+    leftSortOrder,
 }) => {
     const {
-        t, tW,
+        t, tW, tCommon,
         selectedYear, typeOfUseId, factorValue, setFactorValue,
         editableRows, selectedTypeId,
         isUpdating, isBulkUpdating, isGeneratingAll,
@@ -55,17 +65,45 @@ const UseCategoryCvFactorMaster: React.FC<UseCategoryCvFactorMasterProps> = ({
         getRowUid, handleCellChange, handleUpdate, handleCancel,
         handleAssessmentYearChange, handleTypeOfUseChange, handleTypeRowClick,
         handleApplyFilter, handleBulkUpdate, handleGenerateAll, handleClearAll,
-        changePage, changePageSize, changeLeftPage, changeLeftPageSize
+        changePage, changePageSize, changeLeftPage, changeLeftPageSize,
+        sortBy: activeSortBy,
+        sortOrder: activeSortOrder,
+        leftSortBy: activeLeftSortBy,
+        leftSortOrder: activeLeftSortOrder,
+        handleSort,
+        handleLeftSort,
     } = useCategoryCv({
         data,
         pageSize,
         pageNumber,
         typeOfUsePageSize,
         typeOfUsePageNumber,
+        sortBy,
+        sortOrder,
+        leftSortBy,
+        leftSortOrder,
     });
 
-    const typeOfUseColumns = getTypeOfUseColumns(t, tW, handleTypeRowClick);
-    const columns = getUseFactorColumns(t, tW, editableRows, handleCellChange, getRowUid);
+    const typeOfUseColumns = getTypeOfUseColumns(
+        t,
+        tW,
+        handleTypeRowClick,
+        tCommon,
+        activeLeftSortBy,
+        activeLeftSortOrder,
+        handleLeftSort
+    );
+    const columns = getUseFactorColumns(
+        t,
+        tW,
+        editableRows,
+        handleCellChange,
+        getRowUid,
+        tCommon,
+        activeSortBy,
+        activeSortOrder,
+        handleSort
+    );
 
     const renderActions = (row: UseFactorCVMaster) => {
         const rowUid = getRowUid(row);

@@ -85,6 +85,8 @@ export interface NatureFactorCVMasterSearchParams {
   q?: string;
   selectedYearRange?: string;
   constructionType?: string;
+  sortBy?: string;
+  sortOrder?: string;
 }
 
 export interface NatureFactorCvPageProps {
