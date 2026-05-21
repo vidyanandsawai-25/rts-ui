@@ -54,9 +54,16 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
       ) as unknown as string,
       cellClassName: "px-1 py-1 whitespace-nowrap",
       headerClassName: "!px-1.5 !py-1 border-l !border-gray-400/50",
-      render: (value: unknown, row: T) => {
-        const displayValue = value === null || value === undefined || value === "" ? "-" : String(value);
+      render: (value: unknown, row: T, rowIndex: number) => {
         const colorClass = getCellColorClass(String(row.type || ''));
+        if (col.render) {
+          return (
+            <div className={`group relative ${colorClass} rounded border px-1 py-0.5 text-xs text-center transition`}>
+              {col.render(value as any, row, rowIndex)}
+            </div>
+          );
+        }
+        const displayValue = value === null || value === undefined || value === "" ? "-" : String(value);
         return (
           <div className={`group relative ${colorClass} rounded border px-1 py-0.5 text-xs text-center transition`}>
             <span>{displayValue}</span>
