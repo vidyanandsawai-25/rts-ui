@@ -32,9 +32,9 @@ export const floorFormSchema = z.object({
     .refine(val => val.length === 4, 'Construction year must be exactly 4 digits')
     .refine((val) => {
       const year = parseInt(val, 10);
-      return year >= 1900 && year <= currentFinancialStartYear;
+      return year >= 1700 && year <= currentFinancialStartYear;
     }, {
-      message: `Construction year must be between 1900 and the current financial year (${currentFinancialStartYear})`
+      message: `Construction year must be between 1700 and the current financial year (${currentFinancialStartYear})`
     }),
 
   asstYr: z.union([z.string(), z.number(), z.null(), z.undefined()])
@@ -44,9 +44,9 @@ export const floorFormSchema = z.object({
     .refine(val => val.length === 4, 'Assessment year must be exactly 4 digits')
     .refine((val) => {
       const year = parseInt(val, 10);
-      return year >= 1900 && year <= currentFinancialStartYear;
+      return year >= 1700 && year <= currentFinancialStartYear;
     }, {
-      message: `Assessment year must be between 1900 and the current financial year (${currentFinancialStartYear})`
+      message: `Assessment year must be between 1700 and the current financial year (${currentFinancialStartYear})`
     }),
 
   // Construction and usage - required
