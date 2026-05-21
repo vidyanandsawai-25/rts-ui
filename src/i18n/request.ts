@@ -104,6 +104,9 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/ptisMainTaxDetails.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/paymentModeMaster.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/waterconnection.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
   ]);
 
   return {
