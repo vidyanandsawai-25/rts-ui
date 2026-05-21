@@ -81,6 +81,7 @@ export const DimensionAreaFields: React.FC<DimensionAreaFieldsProps> = ({
           id="room-count-input"
           type="text"
           value={formData.roomCount}
+          maxLength={2}
           onFocus={(e) => e.target.select()}
           onChange={(e) => handleInputChange('roomCount', e.target.value)}
           disabled={!isEditMode}

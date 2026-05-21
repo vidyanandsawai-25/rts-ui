@@ -102,7 +102,7 @@ export const floorSubmissionSchema = z.object({
             const year = parseInt(val, 10);
             const today = new Date();
             const currentFinancialStartYear = today.getMonth() >= 3 ? today.getFullYear() : today.getFullYear() - 1;
-            return year >= 1900 && year <= currentFinancialStartYear;
+            return year >= 1700 && year <= currentFinancialStartYear;
         }, { message: 'floor.errors.constructionYearInvalid' }),
     assessmentYear: z.string()
         .length(4, 'floor.errors.assessmentYearInvalid')
@@ -111,7 +111,7 @@ export const floorSubmissionSchema = z.object({
             const year = parseInt(val, 10);
             const today = new Date();
             const currentFinancialStartYear = today.getMonth() >= 3 ? today.getFullYear() : today.getFullYear() - 1;
-            return year >= 1900 && year <= currentFinancialStartYear;
+            return year >= 1700 && year <= currentFinancialStartYear;
         }, { message: 'floor.errors.assessmentYearInvalid' }),
     constructionTypeId: z.number()
         .positive('floor.errors.constructionTypeRequired'),
