@@ -194,6 +194,31 @@ export async function deleteValidationsByPropertyTypeId(propertyTypeId: number, 
   }
 }
 
+/** 
+ * Purge deletes multiple validation mappings by their IDs.
+ * This is a permanent delete operation.
+ */
+export async function purgeDeletePropertyTypeValidationBulk(ids: number[]): Promise<void> {
+  try {
+    if (!ids || ids.length === 0) return;
+    
+    const response = await apiClient.delete<void>(
+      "/PropertyDescriptionAndTypeOfUseValidation/Bulk/purge",
+      { body: JSON.stringify(ids) }
+    );
+    
+    if (!response.success) {
+      throw new ApiError(
+        response.statusCode ?? 500,
+        response.error || "Failed to purge delete validation mappings",
+        "Purge delete validation failed"
+      );
+    }
+  } catch (error) {
+    throw error;
+  }
+}
+
 /** Updates validation mappings for a property type (replaces all existing with new set) */
 export async function updatePropertyTypeValidations(
   propertyTypeId: number,
