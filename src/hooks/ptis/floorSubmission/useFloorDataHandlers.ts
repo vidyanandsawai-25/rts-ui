@@ -11,10 +11,8 @@ import { mapFormToPayload } from '@/lib/utils/floorSubmission/floor-mappers';
 import { createOptimisticFloor, getOptimisticFloorsList, parseServerError } from '@/lib/utils/floorSubmission/floor-optimistic.utils';
 import { submitFloorSubmissionNoRedirectAction, updateFloorSubmissionNoRedirectAction, } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/FloorSubmission/actions';
 import { useFloorDeletion } from './useFloorDeletion';
-// import { validateFloorForm } from '@/lib/validations/validateFloorSubmission';
 
-// Threshold for distinguishing temporary IDs (Date.now()) from persistent database IDs
-const TEMP_ID_THRESHOLD = 1_000_000_000_000;
+// Use deletion hook
 
 export const useFloorDataHandlers = (params: {
   props: EditSidebarProps;
@@ -66,16 +64,6 @@ export const useFloorDataHandlers = (params: {
 
   const handleSave = useCallback(async () => {
     if (isSavingRef.current) return;
-
-    // const validationResult = validateFloorForm(editingFloorForm);
-    // if (!validationResult.isValid) {
-    //   const errors = validationResult.errors as Record<string, string>;
-    //   setFormErrors(errors);
-    //   const firstErrorKey = Object.keys(errors)[0];
-    //   const firstErrorMessage = errors[firstErrorKey];
-    //   toast.error(firstErrorMessage || t('floor.errors.invalidData') || 'Please fix the highlighted validation errors before saving.');
-    //   return;
-    // }
 
     confirm({
       variant: isAddingNewFloor ? 'add' : 'update',
@@ -139,16 +127,14 @@ export const useFloorDataHandlers = (params: {
       return;
     }
 
-    const hasPersistentFloorId = currentForm.id !== undefined
-      && currentForm.id !== null
-      && Number(currentForm.id) < TEMP_ID_THRESHOLD;
-
-    if (!hasPersistentFloorId) {
-      toast.info(t('floor.saveFloorBeforeRenterManagement') || 'Please save the floor before managing renter details');
-      return;
+    try {
+      sessionStorage.setItem('editingFloorForm', JSON.stringify(currentForm));
+    } catch (e) {
+      console.warn("Failed to save floor state", e);
     }
 
-    const renterManagementUrl = `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/RenterManagement?floorId=${encodeURIComponent(String(currentForm.id))}`;
+    const floorIdParam = currentForm.id ? String(currentForm.id) : 'new';
+    const renterManagementUrl = `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/FloorSubmission/Renter?floorId=${encodeURIComponent(floorIdParam)}`;
     router.push(renterManagementUrl);
   }, [editingFloorForm, t, setFormErrors, router, locale, propertyId]);
 
@@ -160,3 +146,4 @@ export const useFloorDataHandlers = (params: {
     isDeleting,
   };
 };
+

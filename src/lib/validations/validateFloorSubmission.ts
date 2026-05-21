@@ -13,6 +13,7 @@ import { FloorSubmissionPayload } from '@/types/floor-details.types';
 import {
   validateFloorSubmissionPayload as zodValidate,
   FloorSubmissionSchemaType,
+  renterSubmissionSchema
 } from './floor-submission.schema';
 import {
   floorFormSchema,
@@ -124,3 +125,25 @@ export function validateFloorSubmissionPayload(payload: FloorSubmissionPayload):
  */
 export { floorSubmissionSchema } from './floor-submission.schema';
 export type { FloorSubmissionSchemaType } from './floor-submission.schema';
+
+/**
+ * Validates renter form data
+ * 
+ * @param data - Renter data to validate
+ * @returns ActionResult with success flag and optional error message
+ */
+export function validateRenterFormData(data: unknown): ActionResult<unknown> {
+  const result = renterSubmissionSchema.safeParse(data);
+
+  if (result.success) {
+    return { success: true, data: result.data };
+  }
+
+  // Return first error message as translation key if it looks like one, else generic
+  const firstIssueMessage = result.error.issues[0]?.message;
+  const isTranslationKey = firstIssueMessage && firstIssueMessage.includes('.') && !firstIssueMessage.includes(' ');
+  const errorKey = isTranslationKey ? firstIssueMessage : 'floor.errors.invalidData';
+  
+  // Let's make it return ActionResult to match submitFloorSubmissionNoRedirectAction pattern.
+  return { success: false, error: errorKey };
+}
