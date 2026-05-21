@@ -13,6 +13,10 @@ const MIN_PAGE_SIZE = 1;
 const DEFAULT_PAGE_SIZE = 10;
 const MAX_PAGE_SIZE = 100;
 
+/** Allowed column names accepted by the API (PascalCase as required by backend) */
+const ALLOWED_SORT_COLUMNS = ["ConstructionCode", "ConstructionDescription", "FromYear"] as const;
+const ALLOWED_SORT_ORDERS = ["asc", "desc"] as const;
+
 /**
  * Sanitizes and clamps query-string parameters before they reach the server action.
  * Malformed values (e.g. ?page=-1) are normalized to safe defaults.
@@ -32,12 +36,22 @@ function sanitizeParams(raw: NatureFactorCVMasterSearchParams) {
     const selectedYearRange = raw.selectedYearRange?.trim() || undefined;
     const constructionType = raw.constructionType?.trim() || undefined;
 
-    return { pageNumber, pageSize, searchTerm, selectedYearRange, constructionType };
+    const sortByRaw = raw.sortBy?.trim() ?? "";
+    const sortBy = (ALLOWED_SORT_COLUMNS as readonly string[]).includes(sortByRaw)
+        ? (sortByRaw as (typeof ALLOWED_SORT_COLUMNS)[number])
+        : undefined;
+
+    const sortOrderRaw = raw.sortOrder?.trim().toLowerCase() ?? "";
+    const sortOrder = (ALLOWED_SORT_ORDERS as readonly string[]).includes(sortOrderRaw)
+        ? (sortOrderRaw as (typeof ALLOWED_SORT_ORDERS)[number])
+        : undefined;
+
+    return { pageNumber, pageSize, searchTerm, selectedYearRange, constructionType, sortBy, sortOrder };
 }
 
 export default async function Page({ searchParams }: NatureFactorCvPageProps): Promise<React.ReactElement> {
     const params = await searchParams;
-    const { pageNumber, pageSize, searchTerm, selectedYearRange, constructionType } = sanitizeParams(params);
+    const { pageNumber, pageSize, searchTerm, selectedYearRange, constructionType, sortBy, sortOrder } = sanitizeParams(params);
 
     // Assessment years for dropdown
     const assessmentYearData = await getAssessmentYearsPagedServerCV(1, -1);
@@ -52,7 +66,9 @@ export default async function Page({ searchParams }: NatureFactorCvPageProps): P
         pageSize,
         searchTerm,
         selectedYearRange, // Only use if explicitly selected by user
-        constructionType
+        constructionType,
+        sortBy,
+        sortOrder
     );
 
     // Construction type dropdown
@@ -72,6 +88,8 @@ export default async function Page({ searchParams }: NatureFactorCvPageProps): P
                 totalPages={natureResult.totalPages}
                 assessmentYearOptions={assessmentYearOptions}
                 constructionTypeOptions={constructionTypeOptions}
+                sortBy={sortBy}
+                sortOrder={sortOrder}
             />
         </div>
     );

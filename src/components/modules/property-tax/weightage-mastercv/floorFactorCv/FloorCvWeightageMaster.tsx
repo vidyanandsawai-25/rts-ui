@@ -24,6 +24,8 @@ const FloorCvWeightageMaster: React.FC<FloorCvWeightageMasterProps> = ({
     totalPages,
     floorOptions,
     assessmentYearOptions,
+    sortBy,
+    sortOrder,
 }) => {
     const {
         t,
@@ -61,14 +63,21 @@ const FloorCvWeightageMaster: React.FC<FloorCvWeightageMasterProps> = ({
         changePage,
         changePageSize,
         handleAssessmentYearChange,
-    } = useFloorCvWeightage({ data, pageNumber, pageSize, totalCount });
+        handleSort,
+        sortBy: activeSortBy,
+        sortOrder: activeSortOrder,
+    } = useFloorCvWeightage({ data, pageNumber, pageSize, totalCount, floorOptions, sortBy, sortOrder });
 
     const columns: Column<FloorFactorCVMasterWithIndex>[] = getFloorCvWeightageMasterColumns({
         t,
         tW,
+        tCommon,
         editableRows,
         handleCellChange,
         getRowUid,
+        sortBy: activeSortBy,
+        sortOrder: activeSortOrder,
+        onSort: handleSort,
     });
 
     const renderActions = (row: FloorFactorCVMaster) => {
