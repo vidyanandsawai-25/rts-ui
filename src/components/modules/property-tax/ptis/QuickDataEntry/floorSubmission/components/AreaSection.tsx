@@ -41,10 +41,10 @@ export const AreaSection: React.FC<AreaSectionProps> = ({
           id="floor-rooms"
           type="text"
           placeholder="0"
-          maxLength={3}
+          maxLength={2}
           value={editingFloorForm.rooms || ''}
           onChange={(e) => {
-            const cleaned = e.target.value.replace(/[^0-9]/g, '').slice(0, 4);
+            const cleaned = e.target.value.replace(/[^0-9]/g, '').slice(0, 2);
             setEditingFloorForm({ ...editingFloorForm, rooms: cleaned });
             if (formErrors.rooms) setFormErrors((prev) => ({ ...prev, rooms: '' }));
           }}
