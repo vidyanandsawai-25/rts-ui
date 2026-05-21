@@ -46,6 +46,8 @@ export default getRequestConfig(async ({ locale }) => {
     homeMessages,
     aliasMasterMessages,
     userManagementMessages,
+    grievanceCategoryMessages,
+    combinePropertyMessages,
     ptisMainTaxDetailsMessages,
     paymentModeMasterMessages,
     modulesMessages,
@@ -97,12 +99,11 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/user-management.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/grievance-category.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/combineProperty.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/ptisMainTaxDetails.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/paymentModeMaster.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
-    import(`./locales/${validatedLocale}/waterconnection.json`)
-      .catch(() => ({}))
-      .then((m) => m.default || m),
   ]);
 
   return {
@@ -138,6 +139,8 @@ export default getRequestConfig(async ({ locale }) => {
       home: homeMessages,
       aliasMaster: aliasMasterMessages,
       userManagement: userManagementMessages,
+      grievanceCategory: grievanceCategoryMessages,
+      combineProperty: combinePropertyMessages,
       ptisMainTaxDetails: ptisMainTaxDetailsMessages,
       paymentModeMaster: paymentModeMasterMessages,
       modules: modulesMessages,

@@ -4,6 +4,8 @@ import type {
   ConfigKeyMaster,
   CreateConfigKeyRequest,
   UpdateConfigKeyRequest,
+  BackendMutationResponse,
+  DeleteResponse,
 } from '@/types/configMaster.types';
 import type { ApiResponse } from '@/types/common.types';
 import { ConfigKeyResponseSchema } from '@/lib/validations/config-master.schema';
@@ -195,18 +197,18 @@ export const getItemsByCategory = cache(async (categoryId: string) => {
  * Create config key
  */
 export async function createConfigKey(payload: CreateConfigKeyRequest) {
-  return apiClient.post<unknown>(ENDPOINT, payload);
+  return apiClient.post<BackendMutationResponse<ConfigKeyMaster>>(ENDPOINT, payload);
 }
 /**
  * Update config key
  */
 export async function updateConfigKey(id: number, payload: UpdateConfigKeyRequest) {
-  return apiClient.put<unknown>(`${ENDPOINT}/${id}`, payload);
+  return apiClient.put<BackendMutationResponse<ConfigKeyMaster>>(`${ENDPOINT}/${id}`, payload);
 }
 
 /**
  * Delete config key (Hard delete via /purge)
  */
 export async function deleteConfigKey(id: number) {
-  return apiClient.delete<unknown>(`${ENDPOINT}/${id}/purge`);
+  return apiClient.delete<DeleteResponse>(`${ENDPOINT}/${id}/purge`);
 }

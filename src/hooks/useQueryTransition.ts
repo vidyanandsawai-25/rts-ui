@@ -42,6 +42,13 @@ export function useQueryTransition() {
         }
 
         const queryString = params.toString();
+        const currentQueryString = searchParams.toString();
+
+        // Avoid redundant navigation if nothing changed
+        if (queryString === currentQueryString) {
+          return;
+        }
+
         const nextUrl = queryString ? `${pathname}?${queryString}` : pathname;
         router.push(nextUrl, { scroll });
       });

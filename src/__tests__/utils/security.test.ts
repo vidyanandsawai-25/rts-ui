@@ -1,4 +1,4 @@
-import { sanitizeInput, MAX_SANITIZED_INPUT_LENGTH } from '@/lib/utils/security';
+import { sanitizeInput, sanitizeDescription, MAX_SANITIZED_INPUT_LENGTH } from '@/lib/utils/security';
 
 /**
  * NOTE: sanitizeInput is designed for basic sanitization only.
@@ -70,5 +70,35 @@ describe('sanitizeInput', () => {
     expect(sanitizeInput('JaVaScRiPt:alert(1)')).toBe('alert(1)');
     expect(sanitizeInput('DaTa:text/html')).toBe('text/html');
     expect(sanitizeInput('VbScRiPt:msgbox')).toBe('msgbox');
+  });
+});
+
+describe('sanitizeDescription', () => {
+  it('should return empty string for null or undefined', () => {
+    expect(sanitizeDescription(null)).toBe('');
+    expect(sanitizeDescription(undefined)).toBe('');
+  });
+
+  it('should strip HTML tags', () => {
+    expect(sanitizeDescription('Hello <b>World</b>')).toBe('Hello World');
+    expect(sanitizeDescription('<script>alert("xss")</script>')).toBe('alert("xss")');
+  });
+
+  it('should remove javascript/data/vbscript protocols', () => {
+    expect(sanitizeDescription('javascript:alert(1)')).toBe('alert(1)');
+    expect(sanitizeDescription('data:text/html,<script>')).toBe('text/html,');
+    expect(sanitizeDescription('vbscript:msgbox')).toBe('msgbox');
+  });
+
+  it('should remove event handlers', () => {
+    expect(sanitizeDescription('div onclick="alert(1)"')).toBe('div "alert(1)"');
+  });
+
+  it('should allow up to 1000 characters (does not truncate at 100)', () => {
+    const longInput = 'a'.repeat(500);
+    expect(sanitizeDescription(longInput).length).toBe(500);
+    
+    const tooLongInput = 'a'.repeat(1010);
+    expect(sanitizeDescription(tooLongInput).length).toBe(1000);
   });
 });

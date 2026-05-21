@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { CODE_REGEX, TEXT_ALLOWED, isAllZeros } from '../utils/validation-rules';
 
 /**
  * Shared audit fields
@@ -12,32 +13,46 @@ export const AuditSchema = z.object({
  * Config Category Schemas
  */
 export const CreateConfigCategorySchema = z.object({
-  categoryCode: z.string().trim().min(1, 'Category code is required'),
-  categoryName: z.string().trim().min(1, 'Category name is required'),
+  categoryCode: z.string()
+    .trim()
+    .min(1, 'Category code is required')
+    .max(20, 'Category code is too long')
+    .regex(CODE_REGEX, 'Category code can only contain alphanumeric characters and underscores')
+    .refine(val => !isAllZeros(val), 'Category code cannot be all zeros'),
+  categoryName: z.string()
+    .trim()
+    .min(1, 'Category name is required')
+    .max(100, 'Category name is too long')
+    .regex(TEXT_ALLOWED, 'Category name contains invalid characters'),
   displayOrder: z.number().int().min(0).default(0),
   isActive: z.boolean().default(true),
   createdBy: z.number().optional(),
 });
 
-export const UpdateConfigCategorySchema = z.object({
-  categoryCode: z.string().trim().min(1, 'Category code is required'),
-  categoryName: z.string().trim().min(1, 'Category name is required'),
-  displayOrder: z.number().int().min(0).default(0),
-  isActive: z.boolean().default(true),
+export const UpdateConfigCategorySchema = CreateConfigCategorySchema.extend({
   updatedBy: z.number().optional(),
-});
+}).omit({ createdBy: true });
 
 /**
  * Config Key Schemas
  */
 export const CreateConfigKeySchema = z.object({
   categoryId: z.number().int().positive('Category is required'),
-  configCode: z.string().trim().min(1, 'Config code is required'),
-  configName: z.string().trim().min(1, 'Config name is required'),
-  description: z.string().nullish().transform(val => val?.trim() || ''),
+  configCode: z.string()
+    .trim()
+    .min(1, 'Config code is required')
+    .max(50, 'Config code is too long')
+    .regex(CODE_REGEX, 'Config code can only contain alphanumeric characters and underscores')
+    .refine(val => !isAllZeros(val), 'Config code cannot be all zeros'),
+  configName: z.string()
+    .trim()
+    .min(1, 'Config name is required')
+    .max(100, 'Config name is too long')
+    .regex(TEXT_ALLOWED, 'Config name contains invalid characters'),
+  description: z.string().nullish().transform(val => val?.trim() || '').pipe(z.string().max(255, 'Description is too long')),
   dataType: z.string().trim().min(1, 'Data type is required'),
   controlType: z.string().trim().min(1, 'Control type is required'),
-  defaultValue: z.string().nullish().transform(val => val?.trim() || ''),
+  defaultValue: z.string().nullish().transform(val => val?.trim() || '').pipe(z.string().max(100, 'Default value is too long')),
   isActive: z.boolean().default(true),
   createdBy: z.number().optional(),
 });

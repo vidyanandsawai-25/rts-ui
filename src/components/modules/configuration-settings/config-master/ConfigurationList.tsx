@@ -5,14 +5,12 @@ import { type ConfigItem, CATEGORY_COLORS, CATEGORY_ICONS, ConfigCategory } from
 import { getTranslations } from 'next-intl/server';
 import { cn } from '@/lib/utils/cn';
 import { Card } from '@/components/common';
-import { UserRole } from '@/types/common.types';
 
 export interface ConfigurationListProps {
   items: ConfigItem[];
   activeCategory: ConfigCategory;
   searchTerm?: string;
   locale: string;
-  role: UserRole | null;
 }
 
 /**
@@ -24,10 +22,8 @@ export async function ConfigurationList({
   activeCategory,
   searchTerm = '',
   locale,
-  role,
 }: ConfigurationListProps) {
   const t = await getTranslations('configMaster');
-  const isAdmin = role === UserRole.ADMIN;
   const colors = CATEGORY_COLORS[activeCategory.color] || CATEGORY_COLORS['rose'];
   const Icon = CATEGORY_ICONS[activeCategory.icon] || Shield;
 
@@ -70,10 +66,10 @@ export async function ConfigurationList({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100 tracking-tight leading-none">
+              <h2 className="text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100 tracking-tight leading-tight">
                 {activeCategory.name}
               </h2>
-              {isAdmin && <CategoryEditDeleteActions categoryId={activeCategory.id} categoryName={activeCategory.name} />}
+              <CategoryEditDeleteActions categoryId={activeCategory.id} categoryName={activeCategory.name} />
             </div>
             <p className="text-[10px] sm:text-xs font-semibold text-slate-400 dark:text-slate-500 mt-1 uppercase tracking-wider">
               {items.filter(i => i.isEnabled).length} {t('list.configurationsActive')}
@@ -81,7 +77,7 @@ export async function ConfigurationList({
           </div>
         </div>
 
-        {isAdmin && <CategoryBulkActions categoryId={activeCategory.id} categoryName={activeCategory.name} />}
+        <CategoryBulkActions categoryId={activeCategory.id} categoryName={activeCategory.name} />
       </Card>
 
       {/* Config Items List */}
@@ -92,7 +88,6 @@ export async function ConfigurationList({
             item={item}
             searchTerm={searchTerm}
             locale={locale}
-            role={role}
           />
         ))}
       </div>
