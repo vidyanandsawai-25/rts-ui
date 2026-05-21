@@ -51,6 +51,8 @@ export interface AssessmentYearRangeFormModel {
 export interface AssessmentYearRangeMasterProps<T extends AssessmentYearRange>
   extends Omit<PagedResponse<T>, "items" | "hasPrevious" | "hasNext"> {
   data: T[];
+  sortBy?: string;
+  sortOrder?: string;
 }
 
 /**

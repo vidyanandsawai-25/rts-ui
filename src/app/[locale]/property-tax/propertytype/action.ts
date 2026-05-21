@@ -5,8 +5,13 @@ import type { UseType } from "@/types/typeOfUse.types";
 
 import { revalidatePath } from "next/cache";
 import { locales } from "@/i18n/config";
-import { createPropertyType, deletePropertyType, getPropertyTypesPaged, getPropertyTypeById, updatePropertyType } from "@/lib/api/property-type-crud.service";
-import { getPropertyTypeAndTypeOfUseValidation, updatePropertyTypeValidations } from "@/lib/api/property-type-validation-mapping.service";
+import { createPropertyType, getPropertyTypesPaged, getPropertyTypeById, updatePropertyType, purgeDeletePropertyType } from "@/lib/api/property-type-crud.service";
+import { 
+  getPropertyTypeAndTypeOfUseValidation, 
+  updatePropertyTypeValidations,
+  getValidationByPropertyTypeId,
+  purgeDeletePropertyTypeValidationBulk 
+} from "@/lib/api/property-type-validation-mapping.service";
 import { getPropertyTypeCategories } from "@/lib/api/property-type-category.service";
 import { ApiError } from "@/lib/utils/api";
 import { PropertyType, PropertyTypeFormModel, PropertyTypeAndTypeOfUseValidation } from "@/types/property-type.types";
@@ -180,7 +185,16 @@ export async function deletePropertyTypeAction(
   }
 
   try {
-    await deletePropertyType(id);
+    // 1. First, fetch and purge all validation mappings for this property type
+    // This is necessary because PropertyTypeId is a foreign key in the validation table
+    const validations = await getValidationByPropertyTypeId(id);
+    if (validations && validations.length > 0) {
+      const validationIds = validations.map((v) => v.id);
+      await purgeDeletePropertyTypeValidationBulk(validationIds);
+    }
+
+    // 2. Then, purge the property type master record
+    await purgeDeletePropertyType(id);
 
     // Revalidate all locale variants of the property type page
     for (const locale of locales) {
@@ -200,7 +214,7 @@ export async function deletePropertyTypeAction(
 
     return {
       success: false,
-      message: PROPERTY_TYPE_ERROR_CODES.DELETE_FAILED,
+      message: PROPERTY_TYPE_ERROR_CODES.PURGE_DELETE_FAILED,
     };
   }
 }
