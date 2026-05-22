@@ -83,4 +83,53 @@ describe('combinePropertyColumns', () => {
       expect(container.textContent).toBe('-');
     }
   });
+
+  it('should render the checkbox column and wire toggle callbacks', () => {
+    const mockOnToggleAll = vi.fn();
+    const mockOnToggleCheck = vi.fn();
+    const mockCheckedIds = new Set([1, 2]); // Only first two rows are checked
+
+    const columns = getCombinePropertyColumns(
+      mockT,
+      mockReviewData,
+      mockCheckedIds,
+      mockOnToggleCheck,
+      mockOnToggleAll
+    );
+
+    const checkboxCol = columns.find(c => c.key === '_checkbox');
+    expect(checkboxCol).toBeDefined();
+
+    // Test header (Select All) rendering & callback
+    if (checkboxCol?.label) {
+      const { container } = render(checkboxCol.label as React.ReactElement);
+      const button = container.querySelector('button[role="checkbox"]');
+      expect(button).toBeDefined();
+      
+      // Click header checkbox
+      button?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      expect(mockOnToggleAll).toHaveBeenCalled();
+    }
+
+    // Test row rendering & callback
+    if (checkboxCol?.render) {
+      // Row 1 (Checked ID)
+      const { container: container1 } = render(
+        checkboxCol.render(null, mockReviewData[0], 0) as React.ReactElement
+      );
+      const btn1 = container1.querySelector('button[role="checkbox"]');
+      expect(btn1?.getAttribute('data-state')).toBe('checked');
+      btn1?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      expect(mockOnToggleCheck).toHaveBeenCalledWith(1);
+
+      // Row 3 (Unchecked ID)
+      const { container: container3 } = render(
+        checkboxCol.render(null, mockReviewData[2], 2) as React.ReactElement
+      );
+      const btn3 = container3.querySelector('button[role="checkbox"]');
+      expect(btn3?.getAttribute('data-state')).toBe('unchecked');
+      btn3?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      expect(mockOnToggleCheck).toHaveBeenCalledWith(3);
+    }
+  });
 });
