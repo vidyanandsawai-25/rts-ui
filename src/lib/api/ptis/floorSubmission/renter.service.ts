@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { apiClient } from "@/services/api.service";
 import { ApiError } from "@/lib/utils/api";
-import { normalizeApiFloorData } from "./floor-types-guard";
+import { normalizeApiFloorData, normalizeRenterDetailItem, normalizeRenterMastItem } from "./floor-types-guard";
 import { sanitizeRenterPayload } from "./payload-sanitization";
 import { validateRenterFormData } from "./payload-validation";
 import { createApiError } from "./error-helpers";
@@ -30,6 +30,8 @@ const API_ENDPOINTS = {
     DATA_ENTRY: '/DataEntry',
     DATA_ENTRY_BY_ID: (id: string | number) => `/DataEntry/${encodeURIComponent(String(id))}`,
 };
+
+const TEMP_ID_THRESHOLD = 1_000_000_000_000;
 
 /**
  * Helper function to run smart differential sync (DELETE, PUT, POST) on renter sub-tables.
@@ -73,11 +75,10 @@ async function syncRenterTables(
     };
 
     const formDetails = (payload as any).renterDetails || [];
-    const TEMP_ID_THRESHOLD = 1_000_000_000_000;
 
     // Align existing database IDs to formDetails by index to ensure updates instead of recreate
     formDetails.forEach((item: any, idx: number) => {
-        if (!item.id && dbDetails[idx]) {
+        if ((!item.id || Number(item.id) >= TEMP_ID_THRESHOLD) && dbDetails[idx]) {
             item.id = dbDetails[idx].id;
         }
     });
@@ -104,19 +105,21 @@ async function syncRenterTables(
 
     const mapMastPayload = (item: any) => {
         const financialYearClean = String(item.financialYear || '').substring(0, 4);
-        const finalRentVal = Number(item.finalRent || item.rentMonthly || 0);
+        const rentMonthlyVal = Number(item.rentMonthly || (item.finalRent ? Number(item.finalRent) / 12 : 0) || 0);
+        const finalYearlyRentVal = Number(item.finalYearlyRent || item.finalRent || (rentMonthlyVal * 12) || 0);
         
         return {
             isActive: item.isActive !== false,
             createdBy: Number(item.createdBy || 0),
             propertyDetailsId: realPropertyDetailsId,
-            rentMonthly: finalRentVal,
-            finalYearlyRent: Number(item.finalYearlyRent || (finalRentVal * 12) || 0),
+            rentMonthly: rentMonthlyVal,
+            finalRent: Number(item.finalRent || finalYearlyRentVal || 0),
+            finalYearlyRent: finalYearlyRentVal,
             financialYear: financialYearClean,
             durationFrom: item.durationFrom ? new Date(item.durationFrom).toISOString() : null,
             durationTo: item.durationTo ? new Date(item.durationTo).toISOString() : null,
             taxLiability: String((payload as any).taxLiability || 'Taxable'),
-            nonCalculateRentMonthly: Number(item.nonCalculateRentMonthly || finalRentVal || 0),
+            nonCalculateRentMonthly: Number(item.nonCalculateRentMonthly || rentMonthlyVal || 0),
             renterNameEnglish: String((payload as any).renterNameEnglish || (payload as any).renterName || ''),
             renterName: String((payload as any).renterName || (payload as any).renterNameEnglish || ''),
             agreementDate: (payload as any).agreementDate ? new Date((payload as any).agreementDate).toISOString() : null,
@@ -129,7 +132,7 @@ async function syncRenterTables(
 
     // Align existing database IDs to formMasts by financialYear to ensure updates instead of recreate
     formMasts.forEach((item: any) => {
-        if (!item.id) {
+        if (!item.id || Number(item.id) >= TEMP_ID_THRESHOLD) {
             const matchedDb = dbMasts.find((dbItem: any) => 
                 String(dbItem.financialYear).substring(0, 4) === String(item.financialYear).substring(0, 4)
             );
@@ -195,20 +198,20 @@ export async function saveRenterDetails(floorId: string | number, payload: unkno
         if (isUpdate) {
             try {
                 const [existingDetailsRes, existingMastRes] = await Promise.all([
-                    apiClient.get<any>('/RenterDetails'),
-                    apiClient.get<any>('/RenterMast')
+                    apiClient.get<any>(`/RenterDetails?PageSize=100000&PropertyDetailsId=${propertyDetailsId}`),
+                    apiClient.get<any>(`/RenterMast?PageSize=100000&PropertyDetailsId=${propertyDetailsId}`)
                 ]);
 
-                const existingDetailsData = existingDetailsRes.success ? extractArray(existingDetailsRes.data) : [];
+                const existingDetailsData = existingDetailsRes.success ? extractArray(existingDetailsRes.data).map(normalizeRenterDetailItem) : [];
                 dbDetails = existingDetailsData.filter((item: any) => item && Number(item.propertyDetailsId) === propertyDetailsId);
 
-                const existingMastData = existingMastRes.success ? extractArray(existingMastRes.data) : [];
+                const existingMastData = existingMastRes.success ? extractArray(existingMastRes.data).map(normalizeRenterMastItem) : [];
                 dbMasts = existingMastData.filter((item: any) => item && Number(item.propertyDetailsId) === propertyDetailsId);
 
                 // Align existing database IDs to payload.renterDetails
                 const formDetails = (payload as any).renterDetails || [];
                 formDetails.forEach((item: any, idx: number) => {
-                    if (!item.id && dbDetails[idx]) {
+                    if ((!item.id || Number(item.id) >= TEMP_ID_THRESHOLD) && dbDetails[idx]) {
                         item.id = dbDetails[idx].id;
                     }
                 });
@@ -216,7 +219,7 @@ export async function saveRenterDetails(floorId: string | number, payload: unkno
                 // Align existing database IDs to payload.renterMast
                 const formMasts = (payload as any).renterMast || [];
                 formMasts.forEach((item: any) => {
-                    if (!item.id) {
+                    if (!item.id || Number(item.id) >= TEMP_ID_THRESHOLD) {
                         const matchedDb = dbMasts.find((dbItem: any) => 
                             String(dbItem.financialYear).substring(0, 4) === String(item.financialYear).substring(0, 4)
                         );
@@ -235,7 +238,15 @@ export async function saveRenterDetails(floorId: string | number, payload: unkno
             await syncRenterTables(propertyDetailsId, payload, dbDetails, dbMasts);
         }
 
-        const sanitizedPayload = sanitizeRenterPayload(payload);
+        const resolvedId = propertyDetailsId > 0 ? propertyDetailsId : undefined;
+        const payloadWithIds = {
+            ...(payload as any),
+            ...(resolvedId ? {
+                id: resolvedId,
+                propertyDetailsId: resolvedId,
+            } : {}),
+        };
+        const sanitizedPayload = sanitizeRenterPayload(payloadWithIds);
         const { renterDetails: _renterDetails, renterMast: _renterMast, renters: _renters, ...floorAttributesPayload } = sanitizedPayload;
 
         let response;
@@ -293,14 +304,14 @@ export async function saveRenterDetails(floorId: string | number, payload: unkno
         if (!isUpdate && realPropertyDetailsId > 0) {
             try {
                 const [existingDetailsRes, existingMastRes] = await Promise.all([
-                    apiClient.get<any>('/RenterDetails'),
-                    apiClient.get<any>('/RenterMast')
+                    apiClient.get<any>(`/RenterDetails?PageSize=100000&PropertyDetailsId=${realPropertyDetailsId}`),
+                    apiClient.get<any>(`/RenterMast?PageSize=100000&PropertyDetailsId=${realPropertyDetailsId}`)
                 ]);
 
-                const existingDetailsData = existingDetailsRes.success ? extractArray(existingDetailsRes.data) : [];
+                const existingDetailsData = existingDetailsRes.success ? extractArray(existingDetailsRes.data).map(normalizeRenterDetailItem) : [];
                 dbDetails = existingDetailsData.filter((item: any) => item && Number(item.propertyDetailsId) === realPropertyDetailsId);
 
-                const existingMastData = existingMastRes.success ? extractArray(existingMastRes.data) : [];
+                const existingMastData = existingMastRes.success ? extractArray(existingMastRes.data).map(normalizeRenterMastItem) : [];
                 dbMasts = existingMastData.filter((item: any) => item && Number(item.propertyDetailsId) === realPropertyDetailsId);
             } catch (err) {
                 console.warn("Failed to fetch existing records after save", err);
@@ -329,20 +340,20 @@ export async function updateRenterDetails(renterId: string | number, payload: un
             try {
                 // Fetch existing records from /RenterDetails and /RenterMast concurrently
                 const [existingDetailsRes, existingMastRes] = await Promise.all([
-                    apiClient.get<any>('/RenterDetails'),
-                    apiClient.get<any>('/RenterMast')
+                    apiClient.get<any>(`/RenterDetails?PageSize=100000&PropertyDetailsId=${floorIdNum}`),
+                    apiClient.get<any>(`/RenterMast?PageSize=100000&PropertyDetailsId=${floorIdNum}`)
                 ]);
 
-                const existingDetailsData = existingDetailsRes.success ? extractArray(existingDetailsRes.data) : [];
+                const existingDetailsData = existingDetailsRes.success ? extractArray(existingDetailsRes.data).map(normalizeRenterDetailItem) : [];
                 dbDetails = existingDetailsData.filter((item: any) => item && Number(item.propertyDetailsId) === floorIdNum);
 
-                const existingMastData = existingMastRes.success ? extractArray(existingMastRes.data) : [];
+                const existingMastData = existingMastRes.success ? extractArray(existingMastRes.data).map(normalizeRenterMastItem) : [];
                 dbMasts = existingMastData.filter((item: any) => item && Number(item.propertyDetailsId) === floorIdNum);
 
                 // Align existing database IDs to payload.renterDetails
                 const formDetails = (payload as any).renterDetails || [];
                 formDetails.forEach((item: any, idx: number) => {
-                    if (!item.id && dbDetails[idx]) {
+                    if ((!item.id || Number(item.id) >= TEMP_ID_THRESHOLD) && dbDetails[idx]) {
                         item.id = dbDetails[idx].id;
                     }
                 });
@@ -350,7 +361,7 @@ export async function updateRenterDetails(renterId: string | number, payload: un
                 // Align existing database IDs to payload.renterMast
                 const formMasts = (payload as any).renterMast || [];
                 formMasts.forEach((item: any) => {
-                    if (!item.id) {
+                    if (!item.id || Number(item.id) >= TEMP_ID_THRESHOLD) {
                         const matchedDb = dbMasts.find((dbItem: any) => 
                             String(dbItem.financialYear).substring(0, 4) === String(item.financialYear).substring(0, 4)
                         );
@@ -367,7 +378,15 @@ export async function updateRenterDetails(renterId: string | number, payload: un
             await syncRenterTables(floorIdNum, payload, dbDetails, dbMasts);
         }
 
-        const sanitizedPayload = sanitizeRenterPayload(payload);
+        const resolvedId = floorIdNum > 0 ? floorIdNum : undefined;
+        const payloadWithIds = {
+            ...(payload as any),
+            ...(resolvedId ? {
+                id: resolvedId,
+                propertyDetailsId: resolvedId,
+            } : {}),
+        };
+        const sanitizedPayload = sanitizeRenterPayload(payloadWithIds);
         const { renterDetails: _renterDetails, renterMast: _renterMast, renters: _renters, ...floorAttributesPayload } = sanitizedPayload;
         const response = await apiClient.put<SubmissionResponse>(API_ENDPOINTS.DATA_ENTRY_BY_ID(renterId), floorAttributesPayload);
         
@@ -384,14 +403,14 @@ export async function updateRenterDetails(renterId: string | number, payload: un
 
         // Concurrently fetch existing details and mast records to ensure proper hydration
         const [existingDetailsRes, existingMastRes] = await Promise.all([
-            apiClient.get<any>('/RenterDetails'),
-            apiClient.get<any>('/RenterMast')
+            apiClient.get<any>(`/RenterDetails?PageSize=100000&PropertyDetailsId=${resolvedFloorIdNum}`),
+            apiClient.get<any>(`/RenterMast?PageSize=100000&PropertyDetailsId=${resolvedFloorIdNum}`)
         ]);
 
-        const detailsData = existingDetailsRes.success ? extractArray(existingDetailsRes.data) : [];
+        const detailsData = existingDetailsRes.success ? extractArray(existingDetailsRes.data).map(normalizeRenterDetailItem) : [];
         const floorDetails = detailsData.filter((item: any) => item && Number(item.propertyDetailsId) === resolvedFloorIdNum);
 
-        const mastData = existingMastRes.success ? extractArray(existingMastRes.data) : [];
+        const mastData = existingMastRes.success ? extractArray(existingMastRes.data).map(normalizeRenterMastItem) : [];
         const floorMast = mastData.filter((item: any) => item && Number(item.propertyDetailsId) === resolvedFloorIdNum);
 
         const mergedRawFloor = {
@@ -420,14 +439,14 @@ export async function deleteRenterDetails(renterId: string | number): Promise<vo
         
         // 1. Fetch sub-records
         const [existingDetailsRes, existingMastRes] = await Promise.all([
-            apiClient.get<any>('/RenterDetails'),
-            apiClient.get<any>('/RenterMast')
+            apiClient.get<any>(`/RenterDetails?PageSize=100000&PropertyDetailsId=${realRenterId}`),
+            apiClient.get<any>(`/RenterMast?PageSize=100000&PropertyDetailsId=${realRenterId}`)
         ]);
         
-        const existingDetailsData = existingDetailsRes.success ? extractArray(existingDetailsRes.data) : [];
+        const existingDetailsData = existingDetailsRes.success ? extractArray(existingDetailsRes.data).map(normalizeRenterDetailItem) : [];
         const dbDetails = existingDetailsData.filter((item: any) => item && Number(item.propertyDetailsId) === realRenterId);
 
-        const existingMastData = existingMastRes.success ? extractArray(existingMastRes.data) : [];
+        const existingMastData = existingMastRes.success ? extractArray(existingMastRes.data).map(normalizeRenterMastItem) : [];
         const dbMasts = existingMastData.filter((item: any) => item && Number(item.propertyDetailsId) === realRenterId);
             
         // 2. Delete all related details/masters in the database
@@ -441,9 +460,10 @@ export async function deleteRenterDetails(renterId: string | number): Promise<vo
         
         await Promise.all([...detailDeletePromises, ...mastDeletePromises]);
 
-        // 3. Following the pattern of sending a PUT with renterYesNo: false to clear renter data
+        // 3. Following the pattern of sending a PUT with renterYesNo: 0 to clear renter data
         const response = await apiClient.put<SubmissionResponse>(API_ENDPOINTS.DATA_ENTRY_BY_ID(realRenterId), { 
             renterYesNo: false,
+            isRenter: false,
             updatedBy: 0 
         });
         

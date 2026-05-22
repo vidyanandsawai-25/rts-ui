@@ -153,6 +153,11 @@ export const floorFormSchema = z.object({
     .transform(val => val ?? [])
     .default([]),
 }).refine((data) => {
+  // If it's an update, skip validation to allow existing database values
+  const hasValidId = data.id !== undefined && data.id !== null && data.id !== '' && data.id !== 'new' && Number(data.id) > 0;
+  const hasValidFloorId = data.floorId !== undefined && data.floorId !== null && data.floorId !== 'new' && Number(data.floorId) > 0;
+  if (hasValidId || hasValidFloorId) return true;
+
   if (!data.conYr || !data.asstYr) return true;
   const conYear = parseInt(data.conYr, 10);
   const asstYear = parseInt(data.asstYr, 10);

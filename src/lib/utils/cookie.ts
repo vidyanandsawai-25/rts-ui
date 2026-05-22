@@ -1,9 +1,9 @@
 import type { UlbMaster } from '@/types/master.types';
-import { sanitizeInput } from '@/lib/utils/security';
 
 /** Cookie fallbacks; keep in sync with `common.app.defaultUlbCode` / `defaultUlbName` in locale JSON. */
 const DEFAULT_ULB_CODE = 'TMC';
 const DEFAULT_ULB_NAME = 'Sthapatya Consultant (I) Pvt.Ltd';
+import { sanitizeInput } from '@/lib/utils/security';
 
 /** Decode a raw cookie value (shared by client readers and Server Component cookie store). */
 export function decodeCookieValue(raw: string | undefined): string | undefined {
@@ -130,16 +130,6 @@ export function getUserIdFromCookies(cookieStore: CookieStoreLike): number | nul
   if (!Number.isFinite(id) || id <= 0) return null;
   return id;
 }
-
-/** Reads authenticated user role id from httpOnly `user_role_id` cookie. */
-export function getUserRoleIdFromCookies(cookieStore: CookieStoreLike): number | null {
-  const raw = cookieStore.get('user_role_id')?.value;
-  if (!raw) return null;
-  const id = parseInt(raw, 10);
-  if (!Number.isFinite(id) || id <= 0) return null;
-  return id;
-}
-
 /** Client-side: Reads authenticated user id from `user_id` cookie. */
 export function getUserIdFromCookie(): number | null {
   const raw = getCookieValue('user_id');
