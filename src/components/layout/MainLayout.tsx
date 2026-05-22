@@ -139,10 +139,6 @@ function FooterSkeleton() {
 export async function MainLayout({ children, locale: localeProp }: MainLayoutProps) {
   const locale = localeProp ?? (await getLocale());
 
-  const headerList = await headers();
-  const pathname = headerList.get('x-pathname') || '';
-  const isPtisRoute = pathname.includes('/property-tax/ptis');
-
   const { rawScreens } = await getLayoutChromeData();
 
   return (
@@ -160,13 +156,11 @@ export async function MainLayout({ children, locale: localeProp }: MainLayoutPro
           <div className="flex-1 w-full px-3 py-3 md:px-4">{children}</div>
         </main>
 
-        {!isPtisRoute && (
-          <Suspense fallback={<FooterSkeleton />}>
-            <div className="layout-content-shifted">
-              <FooterWithUlb />
-            </div>
-          </Suspense>
-        )}
+        <Suspense fallback={<FooterSkeleton />}>
+          <div className="layout-content-shifted">
+            <FooterWithUlb />
+          </div>
+        </Suspense>
       </div>
     </PermissionsProvider>
   );

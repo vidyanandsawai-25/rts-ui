@@ -154,7 +154,11 @@ export default async function FloorSubmissionPage({
 
     // ── Floor List (already fetched in Phase 1 if propertyId was known) ─────
     let finalFloorsRaw = initialFloorsRaw;
-    if (initialPropertyID && (!knownPropertyId || (hasPropertyKeys && String(knownPropertyId) !== String(initialPropertyID)))) {
+    if (initialPropertyID && (
+        !knownPropertyId || 
+        hasPropertyKeys || 
+        String(knownPropertyId) !== String(initialPropertyID)
+    )) {
         finalFloorsRaw = await getFloorSubmissionsByOwnerAction(initialPropertyID);
     }
 

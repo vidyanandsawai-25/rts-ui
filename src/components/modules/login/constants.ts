@@ -1,9 +1,9 @@
 /**
  * Login Module Constants
- * 
+ *
  * Centralized configuration for the login module following the pattern
  * from construction-type-master/constants.ts.
- * 
+ *
  * @module login/constants
  */
 
@@ -68,8 +68,6 @@ export const AUTH_COOKIES = {
   USER_NAME: 'user_name',
   /** User ID */
   USER_ID: 'user_id',
-  /** User Role ID */
-  USER_ROLE_ID: 'user_role_id',
   /** Pending auth state (for multi-step flows) */
   PENDING_AUTH: 'pending_auth',
 } as const;
@@ -100,7 +98,6 @@ export const LOGOUT_CLEAR_COOKIES = [
   AUTH_COOKIES.IS_LOGGED_IN,
   AUTH_COOKIES.USER_NAME,
   AUTH_COOKIES.USER_ID,
-  AUTH_COOKIES.USER_ROLE_ID,
   ULB_COOKIES.ULB_NAME,
   ULB_COOKIES.ULB_NAME_LOCAL,
   ULB_COOKIES.ULB_LOGO,
@@ -154,23 +151,23 @@ export const AUTH_ERROR_CODES = {
   USERNAME_TOO_SHORT: 'USERNAME_TOO_SHORT',
   USERNAME_TOO_LONG: 'USERNAME_TOO_LONG',
   PASSWORD_TOO_LONG: 'PASSWORD_TOO_LONG',
-  
+
   // Account status errors
   ACCOUNT_LOCKED: 'ACCOUNT_LOCKED',
   ACCOUNT_INACTIVE: 'ACCOUNT_INACTIVE',
   USER_NOT_FOUND: 'USER_NOT_FOUND',
   SESSION_EXPIRED: 'SESSION_EXPIRED',
   PASSWORD_CHANGE_REQUIRED: 'PASSWORD_CHANGE_REQUIRED',
-  
+
   // Rate limiting
   TOO_MANY_ATTEMPTS: 'TOO_MANY_ATTEMPTS',
-  
+
   // Service errors
   SERVICE_UNAVAILABLE: 'SERVICE_UNAVAILABLE',
   REQUEST_TIMEOUT: 'REQUEST_TIMEOUT',
   INVALID_REQUEST: 'INVALID_REQUEST',
   LOGIN_FAILED: 'LOGIN_FAILED',
-  
+
   // Verification errors (for OTP/2FA flows)
   INVALID_OTP_FORMAT: 'INVALID_OTP_FORMAT',
   VERIFICATION_FAILED: 'VERIFICATION_FAILED',
@@ -178,7 +175,7 @@ export const AUTH_ERROR_CODES = {
   RESET_FAILED: 'RESET_FAILED',
 } as const;
 
-export type AuthErrorCode = typeof AUTH_ERROR_CODES[keyof typeof AUTH_ERROR_CODES];
+export type AuthErrorCode = (typeof AUTH_ERROR_CODES)[keyof typeof AUTH_ERROR_CODES];
 
 // ---------------------------------------------------------------------------
 // UI Constants
