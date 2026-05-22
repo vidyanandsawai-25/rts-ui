@@ -14,12 +14,17 @@ async function getPtisValidationSchemas() {
 }
 
 async function createAction<T>(
-  fn: () => Promise<{ success: boolean; data?: T; error?: string | { message?: string } }>
-): Promise<{ success: boolean; data?: T; error?: string }> {
+  fn: () => Promise<{
+    success: boolean;
+    data?: T;
+    message?: string;
+    error?: string | { message?: string };
+  }>
+): Promise<{ success: boolean; data?: T; message?: string; error?: string }> {
   try {
     const result = await fn();
     if (result.success) {
-      return { success: true, data: result.data };
+      return { success: true, data: result.data, message: result.message };
     }
     const errorMsg =
       typeof result.error === 'string' ? result.error : result.error?.message || 'Action failed';
