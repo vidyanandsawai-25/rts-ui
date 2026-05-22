@@ -67,9 +67,9 @@ export default function FloorInformationForm({
 
         <div className="border border-blue-100 rounded-xl bg-gray-50/30 mb-8">
           {/* Floor Entry Form Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 p-3">
             {/* Floor */}
-            <div className="space-y-2 relative focus-within:z-100">
+            <div className="space-y-1.5 relative focus-within:z-100">
               <Label className="text-sm font-bold text-blue-900 flex items-center gap-1">
                 {t('floor.floorLabel')} <span className="text-red-500">*</span>
               </Label>
@@ -85,7 +85,7 @@ export default function FloorInformationForm({
             </div>
 
             {/* Sub Floor */}
-            <div className="space-y-2 relative focus-within:z-100">
+            <div className="space-y-1.5 relative focus-within:z-100">
               <Label className="text-sm font-bold text-blue-900 flex items-center gap-1">
                 {t('floor.subFloor')} <span className="text-red-500">*</span>
               </Label>
@@ -101,7 +101,7 @@ export default function FloorInformationForm({
             </div>
 
             {/* Year */}
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label className="text-sm font-bold text-blue-900 flex items-center gap-1">
                 {t('oldDetails.year')} <span className="text-red-500">*</span>
               </Label>
@@ -119,7 +119,7 @@ export default function FloorInformationForm({
             </div>
 
             {/* Assessment Year */}
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label className="text-sm font-bold text-blue-900 flex items-center gap-1">
                 {t('oldDetails.assessmentYear')} <span className="text-red-500">*</span>
               </Label>
@@ -137,7 +137,7 @@ export default function FloorInformationForm({
             </div>
 
             {/* Construction Type */}
-            <div className="space-y-2 relative focus-within:z-100">
+            <div className="space-y-1.5 relative focus-within:z-100">
               <Label className="text-sm font-bold text-blue-900 flex items-center gap-1">
                 {t('floor.conTyp')} <span className="text-red-500">*</span>
               </Label>
@@ -153,7 +153,7 @@ export default function FloorInformationForm({
             </div>
 
             {/* Type of Use */}
-            <div className="space-y-2 relative focus-within:z-100">
+            <div className="space-y-1.5 relative focus-within:z-100">
               <Label className="text-sm font-bold text-blue-900 flex items-center gap-1">
                 {t('oldDetails.floordtails.use')} <span className="text-red-500">*</span>
               </Label>
@@ -169,7 +169,7 @@ export default function FloorInformationForm({
             </div>
 
             {/* Sub Type */}
-            <div className="space-y-2 relative focus-within:z-100">
+            <div className="space-y-1.5 relative focus-within:z-100">
               <Label className="text-sm font-bold text-blue-900 flex items-center gap-1">
                 {t('floor.subTyp')} <span className="text-red-500">*</span>
               </Label>
@@ -184,10 +184,10 @@ export default function FloorInformationForm({
               <ValidationMessage message={errors.oldSubTypeOfUseId} visible={showError("oldSubTypeOfUseId")} />
             </div>
 
-            {/* Carpet Area */}
-            <div className="space-y-2">
+            {/* Carpet Area (Sq Ft) - Editable */}
+            <div className="space-y-1.5">
               <Label className="text-sm font-bold text-blue-900 flex items-center gap-1">
-                {t('oldDetails.carpetArea')} <span className="text-red-500">*</span>
+                {t('oldDetails.carpetAreaSqFt')} <span className="text-red-500">*</span>
               </Label>
               <Input
                 type="number"
@@ -197,6 +197,62 @@ export default function FloorInformationForm({
                 onChange={(e) => setFormData(prev => ({ ...prev, oldCarpetAreaSqFeet: e.target.value }))}
               />
               <ValidationMessage message={errors.oldCarpetAreaSqFeet} visible={showError("oldCarpetAreaSqFeet")} />
+            </div>
+
+            {/* Area (Sq Ft) - Read Only
+            <div className="space-y-1.5">
+              <Label className="text-sm font-bold text-blue-900">
+                {t('oldDetails.areaSqFt')}
+              </Label>
+              <Input
+                type="number"
+                className="h-9 border-slate-200 bg-slate-50 text-slate-500 cursor-not-allowed"
+                placeholder="0"
+                value={formData.oldAreaSqFeet || ''}
+                readOnly
+              />
+            </div> */}
+
+            {/* Area (Sq M) - Read Only */}
+            <div className="space-y-1.5">
+              <Label className="text-sm font-bold text-blue-900">
+                {t('oldDetails.areaSqM')}
+              </Label>
+              <Input
+                type="number"
+                className="h-9 border-slate-200 bg-slate-50 text-slate-500 cursor-not-allowed"
+                placeholder="0"
+                value={formData.oldAreaSqMeter || ''}
+                readOnly
+              />
+            </div>
+
+            {/* Builtup Area (Sq Ft) - Read Only */}
+            <div className="space-y-1.5">
+              <Label className="text-sm font-bold text-blue-900">
+                {t('oldDetails.builtupAreaSqFt')}
+              </Label>
+              <Input
+                type="number"
+                className="h-9 border-slate-200 bg-slate-50 text-slate-500 cursor-not-allowed"
+                placeholder="0"
+                value={formData.oldBuiltupAreaSqFeet || ''}
+                readOnly
+              />
+            </div>
+
+            {/* Builtup Area (Sq M) - Read Only */}
+            <div className="space-y-1.5">
+              <Label className="text-sm font-bold text-blue-900">
+                {t('oldDetails.builtupAreaSqMeter')}
+              </Label>
+              <Input
+                type="number"
+                className="h-9 border-slate-200 bg-slate-50 text-slate-500 cursor-not-allowed"
+                placeholder="0"
+                value={formData.oldBuiltupAreaSqMeter || ''}
+                readOnly
+              />
             </div>
           </div>
           {/* Buttons Group */}

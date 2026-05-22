@@ -4,7 +4,7 @@ import { PropertySocietyDetailsApiItem } from "./property-society-details.types"
 
 // Represents an owner type item from OwnerType API. Endpoint: GET /api/OwnerType
 export interface OwnerTypeApiItem {
-    ownerTypeId: number;
+    id: number;
     ownerType: string;
     isActive: boolean;
     createdDate: string;

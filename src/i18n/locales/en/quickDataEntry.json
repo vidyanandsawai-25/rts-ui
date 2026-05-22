@@ -301,7 +301,9 @@
         "subZoneNo": "Sub Zone No",
         "surveyNo": "Survey No",
         "totalCarpetArea": "Total Carpet Area (sq.ft)",
+        "totalCarpetAreafmtr": "Total Carpet Area (sq.m)",
         "buildupArea": "Buildup Area (sq.ft)",
+        "builtupAreaSqMeter": "Buildup Area (sq.m)",
         "selectType": "Select type",
         "select": "Select",
         "residential": "Residential",
@@ -367,7 +369,12 @@
             "builtupAreaSqMRequired": "Please enter built-up area (Sq M)",
             "assessmentYearRequired": "Please enter assessment year",
             "assessmentYearInvalid": "Please enter a valid 4-digit assessment year",
-            "assessmentYearRange": "Assessment year must be between 1700 and 2026"
+            "assessmentYearRange": "Assessment year must be between 1700 and 2026",
+            "propertyIdRequired": "Property ID is required",
+            "taxYearsRequired": "Tax years data is required",
+            "financeYearRequired": "Finance year is required",
+            "taxTotalInvalid": "Tax total cannot be negative",
+            "toiletCountZero": "You cannot enter only 0"
         },
         "errors": {
             "failedToConnect": {
@@ -377,6 +384,7 @@
                 "tryAgain": "Try Again",
                 "errorId": "Error ID: {id}"
             },
+
             "fetchMoujaMaster": "Failed to fetch Mouja master.",
             "fetchPropertyBasicDetails": "Failed to fetch property basic details",
             "fetchPropertyTypes": "Failed to fetch property types",
@@ -703,7 +711,7 @@
         "sqFtSqM": "(Sq Ft / Sq M)",
         "areaSqFt": "Area (Sq Ft)",
         "areaSqM": "Area (Sq M)",
-        "builtupAreaSqFt": "Builtup Area (Sq Ft)",
+        "builtupAreaSqFt": "Buildup Area (sq.ft)",
         "builtupAreaSqM": "Builtup Area (Sq M)",
         "autoOpensRooms": "Auto-opens Rooms",
         "autoCalculated": "Auto-calculated",
@@ -903,7 +911,12 @@
         "partitionNo": "Partition No",
         "eGovernanceNo": "E-Governance No",
         "carpetArea": "Carpet Area (Sqft/SqMtr)",
+        "carpetAreaSqFt": "Carpet Area (sq.ft)",
+        "areaSqFt": "Area (Sq Ft)",
+        "areaSqM": "Area (sq.m)",
         "builtupArea": "Built-up Area (Sq Ft / Sq M)",
+        "builtupAreaSqFt": "Builtup Area (sq.ft)",
+        "builtupAreaSqMeter": "Builtup Area (sq.m)",
         "assessmentYear": "Assessment Year",
         "plotArea": "Plot Area",
         "plotNo": "Plot No",
@@ -958,7 +971,7 @@
         "floordtails": {
             "selectPlaceholder": "Select",
             "yearPlaceholder": "YYYY",
-            "carpetAreaPlaceholder": "Sqft / SqM",
+            "carpetAreaPlaceholder": "Sqft",
             "builtupAreaPlaceholder": "Sqft / SqM",
             "autoCalculate": "Auto Calculate",
             "use": "Type Of Use"
@@ -969,7 +982,11 @@
                 "description": "There was a problem loading the taxation breakdown.",
                 "goHome": "Go Home",
                 "tryAgain": "Try Again",
-                "errorId": "Error ID: {id}"
+                "errorId": "Error ID: {id}",
+                "financeYearRequired": "Finance year is required.",
+                "taxTotalInvalid": "Tax total cannot be negative.",
+                "validationError": "Please fix the validation errors and try again.",
+               "unexpectedError": "An unexpected error occurred"
             },
             "loading": {
                 "message": "Loading Breakdown...",
