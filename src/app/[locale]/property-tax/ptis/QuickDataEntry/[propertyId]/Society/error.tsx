@@ -12,7 +12,7 @@ export default function SocietyError({ error, reset }: ErrorProps) {
     <ErrorPage
       error={error}
       reset={reset}
-      translationNamespace="common.error"
+      translationNamespace="quickDataEntry.society.errors.failedToConnect"
     />
   );
 }

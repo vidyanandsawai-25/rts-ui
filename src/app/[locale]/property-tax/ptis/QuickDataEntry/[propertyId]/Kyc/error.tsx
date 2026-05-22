@@ -12,7 +12,7 @@ export default function KycError({ error, reset }: ErrorProps) {
     <ErrorPage
       error={error}
       reset={reset}
-      translationNamespace='common.error'
+      translationNamespace="quickDataEntry.kyc.errors.failedToConnect"
     />
   );
 }

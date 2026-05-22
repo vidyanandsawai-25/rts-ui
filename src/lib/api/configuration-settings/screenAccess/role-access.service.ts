@@ -82,7 +82,7 @@ export async function getPermissionsByRole(roleId: number): Promise<ScreenAccess
   if (!response.success) {
     throw new ApiError(
       response.statusCode ?? 500,
-      response.error || 'Failed to fetch permissions',
+      'accessControl.messages.updateError',
       'Get permissions failed'
     );
   }
@@ -149,19 +149,17 @@ export async function updateScreenAccess(
 
             const url = `${baseUrl}/${item.id}`;
             const res = await apiClient.put(url, payload);
-            if (!res.success) throw new Error(res.error || 'Failed to update permission');
+            if (!res.success) throw new Error('accessControl.messages.updateError');
           } else {
             if (updatedBy !== undefined && updatedBy !== null) payload.createdBy = updatedBy;
             const res = await apiClient.post(baseUrl, payload);
-            if (!res.success) throw new Error(res.error || 'Failed to create permission');
+            if (!res.success) throw new Error('accessControl.messages.updateError');
           }
         })
       );
     }
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    throw new Error(
-      `Partial failure during permission update: ${message}. Some permissions may have been saved. Please refresh and verify.`
-    );
+    const message = error instanceof Error ? error.message : 'accessControl.messages.updateError';
+    throw new Error(message);
   }
 }

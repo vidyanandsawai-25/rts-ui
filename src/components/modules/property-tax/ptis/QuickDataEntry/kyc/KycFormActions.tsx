@@ -17,7 +17,7 @@ export const KycFormActions: React.FC<KycFormActionsProps> = ({
   return (
     <div className="flex justify-end space-x-2 mt-4">
       <AddButton
-        label={isUpdating ? t('footer.saving') : t('common.UpdateChanges')}
+        label={isUpdating ? t('footer.saving') : t('commonbuttonmessages.UpdateChanges')}
         type="submit"
         isLoading={isUpdating}
         disabled={isUpdating || !hasChanges || !canSubmit}

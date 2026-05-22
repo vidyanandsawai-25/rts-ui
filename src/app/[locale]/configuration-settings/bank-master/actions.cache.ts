@@ -2,6 +2,7 @@ import { unstable_cache } from 'next/cache';
 import type { BankMasterData } from '@/types/bank-master.types';
 import { getBanksSummary } from '@/lib/api/configuration-settings/bank/bank-master.services';
 import { BANK_MASTER_METADATA_TAG } from './actions.utils';
+import { toTitleCase } from '@/lib/utils/format';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -45,7 +46,10 @@ export function buildBankMasterMetadata(summary: BankMasterData[]): BankMasterMe
     new Set(
       summary
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .map((bank: any) => (bank.state ?? bank.State)?.trim())
+        .map((bank: any) => {
+          const rawState = bank.state ?? bank.State;
+          return typeof rawState === 'string' ? toTitleCase(rawState) : '';
+        })
         .filter((state): state is string => Boolean(state) && state !== '—')
     )
   ).sort((a, b) => a.localeCompare(b));

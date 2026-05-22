@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useTranslations } from 'next-intl';
 import { Label } from '@/components/common/label';
 import { ValidationMessage } from '@/components/common/ValidationMessage';
 import { ToggleSwitch } from '@/components/common/ToggleSwitch';
@@ -61,9 +62,26 @@ export const ToggleField: React.FC<{
   label: string;
   value: boolean;
   onChange: (v: boolean) => void;
-}> = ({ label, value, onChange }) => (
-  <div className="flex flex-col gap-2 p-3 bg-gray-50 rounded-lg border border-gray-100">
-    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{label}</span>
-    <ToggleSwitch checked={value} onChange={onChange} />
-  </div>
-);
+}> = ({ label, value, onChange }) => {
+  const t = useTranslations('common');
+
+  return (
+    <div className="flex flex-col gap-2 p-3 bg-gray-50 rounded-lg border border-gray-100">
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{label}</span>
+        <span
+          className={`text-[10px] font-bold uppercase tracking-wider ${
+            value ? 'text-blue-600' : 'text-gray-400'
+          }`}
+        >
+          {value ? t('status.active') : t('status.inactive')}
+        </span>
+      </div>
+      <ToggleSwitch
+        checked={value}
+        onChange={onChange}
+        showPopup={false}
+      />
+    </div>
+  );
+};

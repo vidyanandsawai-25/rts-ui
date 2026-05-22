@@ -54,9 +54,16 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
       ) as unknown as string,
       cellClassName: "px-1 py-1 whitespace-nowrap",
       headerClassName: "!px-1.5 !py-1 border-l !border-gray-400/50",
-      render: (value: unknown, row: T) => {
-        const displayValue = value === null || value === undefined || value === "" ? "-" : String(value);
+      render: (value: unknown, row: T, rowIndex: number) => {
         const colorClass = getCellColorClass(String(row.type || ''));
+        if (col.render) {
+          return (
+            <div className={`group relative ${colorClass} rounded border px-1 py-0.5 text-xs text-center transition`}>
+              {col.render(value as T[keyof T] | undefined, row, rowIndex)}
+            </div>
+          );
+        }
+        const displayValue = value === null || value === undefined || value === "" ? "-" : String(value);
         return (
           <div className={`group relative ${colorClass} rounded border px-1 py-0.5 text-xs text-center transition`}>
             <span>{displayValue}</span>
@@ -88,13 +95,13 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
             </div>
             <div className="flex items-center gap-2">
               <SearchInput value={searchQuery} onChange={onSearchChange} placeholder={tCommon("searchPlaceholder")} className="w-80 mb-0" />
-              <Button
+              <button
                 onClick={onToggleAutoScroll} type="button"
-                className={`p-2 rounded-md border transition-all duration-200 flex items-center justify-center min-w-[36px] h-[36px] ${isAutoScrolling ? 'bg-[#1E3A8A] text-white border-[#1E3A8A] shadow-md animate-pulse' : 'bg-white text-[#6B7280] border-[#D1D5DB] hover:border-[#1E3A8A] hover:text-[#1E3A8A] hover:bg-gray-50'}`}
+                className={`p-2 rounded-md border transition-all duration-200 flex items-center justify-center min-w-[36px] h-[36px] ${isAutoScrolling ? 'bg-[#1E3A8A] text-white border-[#1E3A8A] shadow-md animate-pulse' : 'bg-white text-gray-500 border-gray-300 hover:border-[#1E3A8A] hover:text-[#1E3A8A] hover:bg-gray-50'}`}
                 title={isAutoScrolling ? t("actions.stopAutoScroll") : t("actions.startAutoScroll")}
               >
                 {isAutoScrolling ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </Button>
+              </button>
             </div>
           </div>
         }

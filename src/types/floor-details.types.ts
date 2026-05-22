@@ -165,6 +165,8 @@ export interface FloorAPIResponse {
     agreementDate?: string;
     renterDetails?: RenterDetailItem[];
     renterMast?: RenterMastItem[];
+    renters?: RenterMastItem[];
+    isRenter?: boolean;
     propertyRooms?: RoomAPIResponse[];
     roomWiseSubmissionDetails?: RoomAPIResponse[];
 }
@@ -583,6 +585,8 @@ export interface FloorSubmissionPayload {
     nonCalculateRentMonthly?: number;
     renterDetails?: unknown[];
     renterMast?: unknown[];
+    renters?: unknown[];
+    isRenter?: boolean;
     roomWiseSubmissionDetails?: unknown[];
 }
 

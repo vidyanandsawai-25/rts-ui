@@ -143,10 +143,12 @@ export function ModuleAccessStep({
                       </span>
                     </div>
                     <MultiSelectDropdown
-                      options={roles.map((role) => ({
-                        label: role.name,
-                        value: role.name,
-                      }))}
+                      options={roles
+                        .filter((role) => role.isActive)
+                        .map((role) => ({
+                          label: role.name,
+                          value: role.name,
+                        }))}
                       value={(formData.roleAccess[deptId] || []).map(
                         (id) =>
                           roles.find((r) => Number(r.userRoleId) === Number(id))?.name || String(id)

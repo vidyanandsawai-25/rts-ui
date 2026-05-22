@@ -142,7 +142,8 @@ export function validateRenterFormData(data: unknown): ActionResult<unknown> {
   // Return first error message as translation key if it looks like one, else generic
   const firstIssueMessage = result.error.issues[0]?.message;
   const isTranslationKey = firstIssueMessage && firstIssueMessage.includes('.') && !firstIssueMessage.includes(' ');
-  const errorKey = isTranslationKey ? firstIssueMessage : 'floor.errors.invalidData';
+  const issuesSummary = result.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join(', ');
+  const errorKey = isTranslationKey ? firstIssueMessage : `floor.errors.invalidData (${issuesSummary})`;
   
   // Let's make it return ActionResult to match submitFloorSubmissionNoRedirectAction pattern.
   return { success: false, error: errorKey };

@@ -65,11 +65,11 @@ export const ShowTaxOnExpand: React.FC<ShowTaxOnExpandProps> = ({
   return (
     <div className="w-full">
       <div className="overflow-x-auto">
-        <div className="flex flex-nowrap items-center gap-1" data-testid="expanded-tax-row">
+        <div className="flex flex-nowrap items-center gap-1" data-testid="expanded-tax-row p-0">
           {entries.map((tax, index) => (
             <div
               key={`${tax.taxId}-${tax.taxName}-${index}`}
-              className="flex min-w-max items-center gap-1.5 whitespace-nowrap rounded border px-2 py-1 text-[11px]"
+              className="flex min-w-max items-center gap-1 whitespace-nowrap rounded border px-1 py-0.5 text-[11px] p-0"
               style={{
                 borderColor: tax.borderColor,
                 color: tax.color,

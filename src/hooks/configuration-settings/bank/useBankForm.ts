@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useTransition, type FormEvent 
 import { useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { toast } from 'sonner';
+import { getCleanErrorMessage } from '@/lib/utils/backend-error-detection';
 import {
   createBankAction,
   updateBankAction,
@@ -112,13 +113,34 @@ export function useBankForm({ id, initialData }: UseBankFormProps) {
         }
 
         if (!response.success) {
-          const errorKey = response.error || 'messages.errorOccurred';
+          let errorMsg = response.error;
+          if (errorMsg) {
+            if (errorMsg.startsWith('validation.') || errorMsg.startsWith('messages.')) {
+              errorMsg = t(errorMsg, {
+                count: getValidationCount(errorMsg),
+              });
+            } else {
+              errorMsg = getCleanErrorMessage(errorMsg);
+            }
+          } else {
+            errorMsg = t('messages.errorOccurred');
+          }
 
-          toast.error(
-            t(errorKey, {
-              count: response.error ? getValidationCount(response.error) : 0,
-            })
-          );
+          toast.error(errorMsg);
+
+          if (response.error) {
+            const err = response.error.toLowerCase();
+            const rawErrorCode = response.error.split('.').pop() as never;
+            if (err.includes('bankcode')) {
+              setErrors((prev) => ({ ...prev, bankCode: rawErrorCode }));
+            } else if (err.includes('bankname')) {
+              setErrors((prev) => ({ ...prev, bankName: rawErrorCode }));
+            } else if (err.includes('ifsc')) {
+              setErrors((prev) => ({ ...prev, ifscCode: rawErrorCode }));
+            } else if (err.includes('pincode')) {
+              setErrors((prev) => ({ ...prev, pincode: rawErrorCode }));
+            }
+          }
 
           return;
         }
@@ -129,9 +151,9 @@ export function useBankForm({ id, initialData }: UseBankFormProps) {
           router.refresh();
           closeAndRoute();
         });
-      } catch {
+      } catch (error) {
         if (isMountedRef.current) {
-          toast.error(t('messages.errorOccurred'));
+          toast.error(getCleanErrorMessage(error, t('messages.errorOccurred')));
         }
       } finally {
         isSubmittingRef.current = false;

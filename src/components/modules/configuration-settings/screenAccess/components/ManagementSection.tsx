@@ -62,7 +62,7 @@ export function ManagementSection<T>({
           placeholder={searchPlaceholder}
           value={searchTerm}
           onChange={onSearch}
-          className="flex-1 max-w-sm text-gray-700 bg-white"
+          className="mb-0 flex-1 max-w-sm text-gray-700 bg-white"
         />
 
         {filters.map((filter, index) => (
@@ -94,6 +94,7 @@ export function ManagementSection<T>({
           onPageChange={onPageChange}
           onPageSizeChange={onPageSizeChange}
           isPagination={true}
+          isPageSize={true}
           loading={isPending}
           renderActions={renderActions}
         />

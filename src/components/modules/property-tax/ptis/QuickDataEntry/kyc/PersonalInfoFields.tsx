@@ -73,14 +73,22 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
           maxLength={KYC_VALIDATION_RULES.NAME_MAX_LENGTH}
           hasError={ownerNameError}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-            const sanitized = sanitizeName(e.target.value.trimStart());
+            // Sanitize input to remove invalid characters immediately
+            const sanitized = sanitizeName(e.target.value);
             if (sanitized.length <= KYC_VALIDATION_RULES.NAME_MAX_LENGTH) {
               setFormData((prev) => ({ ...prev, ownerName: sanitized }));
             }
           }}
         />
         {ownerNameError && (
-          <span className="text-xs text-red-500">{t('kyc.validation.invalidName')}</span>
+          <span className="text-xs text-red-500">
+            {!(formData.ownerName ?? '').trim()
+              ? t('kyc.errors.ownerNameRequired')
+              : (formData.ownerName ?? '').trim().length < KYC_VALIDATION_RULES.NAME_MIN_LENGTH ||
+                (formData.ownerName ?? '').trim().length > KYC_VALIDATION_RULES.NAME_MAX_LENGTH
+              ? t('society.validation.invalidNameLength')
+              : t('kyc.validation.invalidName')}
+          </span>
         )}
       </div>
     </>

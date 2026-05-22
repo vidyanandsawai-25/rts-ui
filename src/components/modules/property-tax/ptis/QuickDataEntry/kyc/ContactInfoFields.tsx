@@ -1,8 +1,8 @@
 import React from 'react';
 import { Input } from '@/components/common';
 import { Label } from '@/components/common/label';
-import { KYC_VALIDATION_RULES, kycValidators } from '@/lib/utils/kyc-validation.constants';
-import { sanitizeEmail } from '@/lib/utils/input-sanitization';
+import { KYC_VALIDATION_RULES, kycValidators, enhancedKycValidators } from '@/lib/utils/kyc-validation.constants';
+import { sanitizeEmailStrict } from '@/lib/utils/input-sanitization';
 import { KycFormData } from '@/types/property-kyc.types';
 import { useDigitInputs } from '@/hooks/useDigitInputs';
 
@@ -35,16 +35,17 @@ export const ContactInfoFields: React.FC<ContactInfoFieldsProps> = ({
           type="email"
           placeholder={t('kyc.enterEmailId')}
           value={formData.emailId ?? ''}
-          className={`h-9 text-sm border-gray-300 focus:border-gray-600 focus:ring-2 focus:ring-gray-200 ${showError('emailId', kycValidators.isValidEmail(formData.emailId ?? ''))
+          maxLength={KYC_VALIDATION_RULES.EMAIL_MAX_LENGTH}
+          className={`h-9 text-sm border-gray-300 focus:border-gray-600 focus:ring-2 focus:ring-gray-200 ${showError('emailId', enhancedKycValidators.isValidEmail(formData.emailId ?? '', true))
             ? 'border-red-300 focus:border-red-500'
             : ''
             }`}
           onChange={(e) => {
-            const sanitized = sanitizeEmail(e.target.value);
+            const sanitized = sanitizeEmailStrict(e.target.value);
             setFormData((prev) => ({ ...prev, emailId: sanitized }));
           }}
         />
-        {showError('emailId', kycValidators.isValidEmail(formData.emailId ?? '')) && (
+        {showError('emailId', enhancedKycValidators.isValidEmail(formData.emailId ?? '', true)) && (
           <span className="text-xs text-red-500">{t('kyc.validation.invalidEmail')}</span>
         )}
       </div>
@@ -91,7 +92,13 @@ export const ContactInfoFields: React.FC<ContactInfoFieldsProps> = ({
           ))}
         </div>
         {showError('aadhar', kycValidators.isValidAadhar(aadharInput.value)) && (
-          <span className="text-xs text-red-500">{t('kyc.validation.invalidAadhar')}</span>
+          <span className="text-xs text-red-500">
+            {aadharInput.value && kycValidators.hasRepeatedSequence(aadharInput.value.replace(/\D/g, ''), 5)
+              ? t('kyc.validation.invalidRepeatedSequence')
+              : (aadharInput.value && (aadharInput.value.replace(/\D/g, '').startsWith('0') || aadharInput.value.replace(/\D/g, '').startsWith('1')))
+                ? t('kyc.validation.invalidAadharStart')
+                : t('kyc.validation.invalidAadhar')}
+          </span>
         )}
       </div>
 
@@ -124,15 +131,21 @@ export const ContactInfoFields: React.FC<ContactInfoFieldsProps> = ({
                 naked
                 error={showError('mobile', kycValidators.isValidMobile(mobileInput.value)) ? 'error' : undefined}
                 className={`flex-1 min-w-0 w-full h-7 text-center text-xs font-semibold text-gray-900 border rounded bg-white outline-none focus:ring-1 ${showError('mobile', kycValidators.isValidMobile(mobileInput.value))
-                  ? 'border-red-300 focus:border-red-500 focus:ring-red-300'
-                  : 'border-gray-300 focus:border-blue-500 focus:ring-blue-300'
+                  ? 'border-red-300 focus:border-red-500'
+                  : 'border-gray-300 focus:border-blue-500'
                   }`}
               />
             ))}
           </div>
         </div>
         {showError('mobile', kycValidators.isValidMobile(mobileInput.value)) && (
-          <span className="text-xs text-red-500">{t('kyc.validation.invalidMobile')}</span>
+          <span className="text-xs text-red-500">
+            {mobileInput.value && kycValidators.hasRepeatedSequence(mobileInput.value.replace(/\D/g, ''), 5)
+              ? t('kyc.validation.invalidRepeatedSequence')
+              : (mobileInput.value && !/^[6-9]/.test(mobileInput.value.replace(/\D/g, '')))
+                ? t('kyc.validation.invalidMobileStart')
+                : t('kyc.validation.invalidMobile')}
+          </span>
         )}
       </div>
     </>

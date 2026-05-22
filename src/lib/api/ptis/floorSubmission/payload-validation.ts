@@ -28,8 +28,9 @@ export function validateRenterFormData(data: unknown): void {
     const result = renterSubmissionSchema.safeParse(data);
     
     if (!result.success) {
+        const issuesSummary = result.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join(', ');
         const errorKey = result.error.issues[0].message || 'floor.errors.invalidData';
-        throw new ApiError(400, errorKey, "Renter data validation failed");
+        throw new ApiError(400, `${errorKey} (${issuesSummary})`, "Renter data validation failed");
     }
 }
 

@@ -14,7 +14,7 @@ export const PropertyFormActions = ({
     return (
         <div className="flex justify-end space-x-2 mt-4">
             <UploadButton
-                label={isUpdating ? t('footer.saving') : t('common.UpdateChanges')}
+                label={isUpdating ? t('footer.saving') : t('commonbuttonmessages.UpdateChanges')}
                 type="submit"
                 isLoading={isUpdating}
                 disabled={isUpdating || !hasChanges}

@@ -29,7 +29,13 @@ const SocietyForm = (props: SocietyFormProps) => {
         setManagerName,
         secretaryName,
         setSecretaryName,
+        societyAddress,
+        setSocietyAddress,
+        wingId,
+        wingOptions,
+        handleWingChange,
         showError,
+        canSubmit,
         handleSubmit,
         checkFormChanges,
     } = useSocietyForm(props);
@@ -47,7 +53,6 @@ const SocietyForm = (props: SocietyFormProps) => {
 
                         <SocietyFormFields
                             t={t}
-                            societyData={props.societyData}
                             managerMobileInput={managerMobileInput}
                             secretaryMobileInput={secretaryMobileInput}
                             managerEmail={managerEmail}
@@ -66,6 +71,11 @@ const SocietyForm = (props: SocietyFormProps) => {
                             setManagerName={setManagerName}
                             secretaryName={secretaryName}
                             setSecretaryName={setSecretaryName}
+                            societyAddress={societyAddress}
+                            setSocietyAddress={setSocietyAddress}
+                            wingId={wingId}
+                            wingOptions={wingOptions}
+                            handleWingChange={handleWingChange}
                             showError={showError}
                         />
 
@@ -73,6 +83,7 @@ const SocietyForm = (props: SocietyFormProps) => {
                             t={t}
                             isUpdating={isUpdating}
                             hasChanges={hasChanges}
+                            canSubmit={canSubmit()}
                         />
                     </div>
                 </Tabs.TabPanel>

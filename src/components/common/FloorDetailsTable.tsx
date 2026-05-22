@@ -291,7 +291,7 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
                   {isExpanded && renderExpanded && (
                     <tr className={cn('border-b border-gray-100', bgClass, expandedRowClassName)}>
                       <td colSpan={columns.length + (showExpandColumn ? 1 : 0)} className="p-0">
-                        <div className="w-full bg-blue-50/30 p-4 transition-all animate-in fade-in slide-in-from-top-1 duration-200">
+                        <div className="w-full bg-blue-50/30 p-2 transition-all animate-in fade-in slide-in-from-top-1 duration-200">
                           {renderExpanded(row)}
                         </div>
                       </td>

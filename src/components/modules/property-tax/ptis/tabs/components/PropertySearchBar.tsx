@@ -75,6 +75,18 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
 }) => {
   const t = useTranslations('ptis');
 
+  const sanitizeWardNo = useCallback((val: string) => {
+    return val.replace(/[^a-zA-Z0-9]/g, '').slice(0, 10);
+  }, []);
+
+  const sanitizePropertyNo = useCallback((val: string) => {
+    return val.replace(/[^a-zA-Z0-9]/g, '').slice(0, 10);
+  }, []);
+
+  const sanitizePartitionNo = useCallback((val: string) => {
+    return val.replace(/[^a-zA-Z0-9]/g, '').slice(0, 10);
+  }, []);
+
   const handleWardChange = useCallback(
     (_name: string | undefined, value: string) => {
       if (!value) {
@@ -179,13 +191,14 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
           >
             {t('search.wardNo')}:
           </Label>
-          <div className="w-32 relative">
+          <div className="w-32 relative [&_ul]:top-full [&_ul]:!z-30">
             <SearchSelect
               id="wardNo"
               options={wardOptions}
               value={wardValue}
               onChange={handleWardChange}
               forceSearchText={wardNo || undefined}
+              sanitizeInput={sanitizeWardNo}
               className="h-7 text-base"
               isLoading={isFetchingWardOptions}
               loadingPlaceholder={t('search.loading')}
@@ -205,13 +218,14 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
           >
             {t('search.propertyNo')}:
           </Label>
-          <div className="w-32 relative">
+          <div className="w-32 relative [&_ul]:top-full [&_ul]:!z-30">
             <SearchSelect
               id="propertyNo"
               options={propertyOptions}
               value={propertySelectValue}
               onChange={handlePropertyChange}
               forceSearchText={propertyNo || undefined}
+              sanitizeInput={sanitizePropertyNo}
               className="h-7 text-base"
               disabled={!wardId}
               isLoading={false}
@@ -230,13 +244,14 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
           >
             {t('search.partitionNo')}:
           </Label>
-          <div className="w-20 relative">
+          <div className="w-20 relative [&_ul]:top-full [&_ul]:!z-30">
             <SearchSelect
               id="partitionNo"
               options={partitionOptions}
               value={partitionSelectValue}
               onChange={handlePartitionChange}
               forceSearchText={partitionNo || undefined}
+              sanitizeInput={sanitizePartitionNo}
               className="h-7 text-base"
               disabled={!wardId || !propertyNo}
               isLoading={false}
