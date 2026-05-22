@@ -7,31 +7,23 @@ import { Select } from '@/components/common/select';
 import { Monitor, Save, Layout, FolderTree, Settings } from 'lucide-react';
 import {
   ScreenGroupMasterData,
-  DepartmentMasterData,
-  ModuleMasterData,
   ScreenMasterData,
+  ModuleMasterData,
 } from '@/types/screen-access.types';
 import { useScreenForm } from '@/hooks/configuration-settings/screenAccess/useScreenForm';
 
 import { SCREEN_CODE_MAX, SCREEN_NAME_MAX } from '@/lib/constants/screen-access.constants';
 import { FormSection, FieldLabel, ErrorMsg, ToggleField } from './FormHelpers';
-import { normalizeId } from '@/lib/utils/type-guards';
+import { TEXT_SANITIZE, DESCRIPTION_SANITIZE } from '@/lib/utils/validation-rules';
 
 interface ScreenFormProps {
   initialData?: Partial<ScreenMasterData>;
   isEdit?: boolean;
   groups: ScreenGroupMasterData[];
-  departments: DepartmentMasterData[];
   modules: ModuleMasterData[];
 }
 
-export function ScreenForm({
-  initialData,
-  isEdit: isEditProp,
-  groups,
-  departments,
-  modules,
-}: ScreenFormProps) {
+export function ScreenForm({ initialData, isEdit: isEditProp, groups, modules }: ScreenFormProps) {
   const {
     formData,
     errors,
@@ -45,18 +37,6 @@ export function ScreenForm({
     isEdit,
     t,
   } = useScreenForm({ initialData, isEdit: isEditProp });
-
-  const moduleOptions = modules
-    .filter((m) => {
-      const deptId = normalizeId(
-        m.departmentMasterId ?? (m as unknown as { departmentId?: string | number }).departmentId
-      );
-      return deptId === formData.departmentMasterId;
-    })
-    .flatMap((m) => {
-      const moduleId = normalizeId(m.moduleMasterId ?? m.moduleId);
-      return moduleId ? [{ value: String(moduleId), label: m.moduleName }] : [];
-    });
 
   return (
     <Drawer
@@ -93,7 +73,7 @@ export function ScreenForm({
         </div>
       }
     >
-      <div className="p-6 space-y-6 overflow-y-auto max-h-[calc(100vh-140px)]">
+      <div className="p-6 space-y-6 pb-40">
         {/* Section 1: Identity */}
         <FormSection
           title={t('screenManagement.screens.form.sectionIdentity')}
@@ -110,7 +90,13 @@ export function ScreenForm({
               <Input
                 id="screenCode"
                 value={formData.screenCode || ''}
-                onChange={(e) => handleChange('screenCode', e.target.value.toUpperCase())}
+                onChange={(e) => {
+                  const val = e.target.value
+                    .toUpperCase()
+                    .replace(/[^A-Z0-9_-]/g, '')
+                    .slice(0, 20);
+                  handleChange('screenCode', val);
+                }}
                 onBlur={() => handleBlur('screenCode')}
                 maxLength={SCREEN_CODE_MAX}
                 placeholder={t('screenManagement.screens.form.screenCodePlaceholder')}
@@ -127,7 +113,10 @@ export function ScreenForm({
               <Input
                 id="screenName"
                 value={formData.screenName || ''}
-                onChange={(e) => handleChange('screenName', e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value.replace(DESCRIPTION_SANITIZE, '');
+                  handleChange('screenName', val);
+                }}
                 onBlur={() => handleBlur('screenName')}
                 maxLength={SCREEN_NAME_MAX}
                 placeholder={t('screenManagement.screens.form.screenNamePlaceholder')}
@@ -143,8 +132,12 @@ export function ScreenForm({
               <Input
                 id="routePath"
                 value={formData.routePath || ''}
-                onChange={(e) => handleChange('routePath', e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value.replace(TEXT_SANITIZE, '').slice(0, 50);
+                  handleChange('routePath', val);
+                }}
                 onBlur={() => handleBlur('routePath')}
+                maxLength={50}
                 placeholder={t('screenManagement.screens.form.routePlaceholder')}
                 className="font-mono"
               />
@@ -159,7 +152,7 @@ export function ScreenForm({
           icon={<FolderTree className="w-4 h-4" />}
           color="violet"
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             <div>
               <FieldLabel label={t('screenManagement.screens.form.screenGroup')} required />
               <Select
@@ -177,33 +170,38 @@ export function ScreenForm({
               {showError('screenGroupId') && <ErrorMsg error={errors.screenGroupId} />}
             </div>
             <div>
-              <FieldLabel label={t('screenManagement.screens.form.department')} />
-              <Select
-                value={String(formData.departmentMasterId || '')}
-                onChange={(_, val) => {
-                  handleChange('departmentMasterId', val ? parseInt(val, 10) : undefined);
-                  handleChange('moduleId', undefined);
-                  handleBlur('departmentMasterId');
-                }}
-                options={departments.map((d) => ({
-                  value: String(d.departmentMasterId),
-                  label: d.departmentName,
-                }))}
-                placeholder={t('screenManagement.screens.form.selectDepartment')}
+              <FieldLabel
+                label={t('screenManagement.screens.form.module', {
+                  defaultValue: 'Module',
+                })}
+                required
               />
-            </div>
-            <div>
-              <FieldLabel label={t('screenManagement.screens.form.module')} />
               <Select
                 value={String(formData.moduleId || '')}
                 onChange={(_, val) => {
-                  handleChange('moduleId', val ? parseInt(val, 10) : undefined);
+                  const numVal = val ? parseInt(val, 10) : undefined;
+                  handleChange('moduleId', numVal);
+
+                  if (numVal) {
+                    const selectedModule = modules.find((m) => m.moduleId === numVal);
+                    if (selectedModule) {
+                      handleChange('departmentMasterId', selectedModule.departmentMasterId);
+                    }
+                  } else {
+                    handleChange('departmentMasterId', undefined);
+                  }
+
                   handleBlur('moduleId');
                 }}
-                options={moduleOptions}
-                disabled={!formData.departmentMasterId}
-                placeholder={t('screenManagement.screens.form.selectModule')}
+                options={modules.map((m) => ({
+                  value: String(m.moduleId),
+                  label: m.moduleName,
+                }))}
+                placeholder={t('screenManagement.screens.form.selectModule', {
+                  defaultValue: 'Select Module',
+                })}
               />
+              {showError('moduleId') && <ErrorMsg error={errors.moduleId as string} />}
             </div>
           </div>
         </FormSection>
@@ -215,11 +213,16 @@ export function ScreenForm({
             icon={<Settings className="w-4 h-4" />}
             color="amber"
           >
-            <div className="grid grid-cols-1 gap-6">
+            <div className="grid grid-cols-2 gap-6">
               <ToggleField
-                label={t('screenManagement.screens.form.isActive')}
+                label={t('screenManagement.screens.form.status')}
                 value={!!formData.isActive}
                 onChange={(val) => handleChange('isActive', val)}
+              />
+              <ToggleField
+                label="Show in Menu"
+                value={!!formData.isMenu}
+                onChange={(val) => handleChange('isMenu', val)}
               />
             </div>
           </FormSection>

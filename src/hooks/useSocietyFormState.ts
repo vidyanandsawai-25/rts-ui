@@ -27,6 +27,13 @@ export const useSocietyFormState = (societyData: PropertySocietyDetailsApiItem |
     const [managerName, setManagerName] = useState(societyData?.managerName ?? '');
     const [secretaryName, setSecretaryName] = useState(societyData?.secretaryName ?? '');
 
+    // Address state management
+    const [societyAddress, setSocietyAddress] = useState(societyData?.societyAddress ?? '');
+
+    // Wing state management
+    const [wingId, setWingId] = useState<number | null>(societyData?.wingId ?? null);
+    const [wingNo, setWingNo] = useState<string | null>(societyData?.wingNo ?? null);
+
     // Submission state
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [hasChanges, setHasChanges] = useState(false);
@@ -50,6 +57,12 @@ export const useSocietyFormState = (societyData: PropertySocietyDetailsApiItem |
         setManagerName,
         secretaryName,
         setSecretaryName,
+        societyAddress,
+        setSocietyAddress,
+        wingId,
+        setWingId,
+        wingNo,
+        setWingNo,
         isSubmitted,
         setIsSubmitted,
         hasChanges,

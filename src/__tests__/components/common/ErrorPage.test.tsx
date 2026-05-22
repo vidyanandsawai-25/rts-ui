@@ -37,13 +37,21 @@ describe('ErrorPage', () => {
     vi.restoreAllMocks();
   });
 
-  it('renders translated title and description', () => {
+  it('renders translated title and description fallback when message is empty', () => {
+    const emptyError = new Error('');
     render(
-      <ErrorPage error={error} reset={reset} translationNamespace="common.error" />
+      <ErrorPage error={emptyError} reset={reset} translationNamespace="common.error" />
     );
     // These keys should be present in the translation mock or config
     expect(screen.getByText(/title/i)).toBeInTheDocument();
     expect(screen.getByText(/description/i)).toBeInTheDocument();
+  });
+
+  it('renders error message when provided', () => {
+    render(
+      <ErrorPage error={error} reset={reset} translationNamespace="common.error" />
+    );
+    expect(screen.getByText('Test error message')).toBeInTheDocument();
   });
 
   it('calls reset when Try Again is clicked', () => {

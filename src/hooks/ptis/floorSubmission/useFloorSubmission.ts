@@ -85,6 +85,8 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
   useFloorSync({
     props,
     isAddingNewFloor,
+    setIsAddingNewFloor,
+    editingFloorForm,
     setEditingFloorForm,
     localFloors,
     setLocalFloors,

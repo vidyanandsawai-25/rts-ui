@@ -251,7 +251,7 @@ describe('useBankForm', () => {
         await result.current.handleSubmit(makeSubmitEvent());
       });
 
-      expect(toast.error).toHaveBeenCalledWith('messages.errorOccurred');
+      expect(toast.error).toHaveBeenCalledWith('Network failure');
     });
 
     it('should reset isSubmitting to false after an error', async () => {

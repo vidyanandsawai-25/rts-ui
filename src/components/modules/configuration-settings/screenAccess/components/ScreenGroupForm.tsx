@@ -65,7 +65,7 @@ export function ScreenGroupForm({ initialData, isEdit: isEditProp }: ScreenGroup
         </div>
       }
     >
-      <div className="p-6 space-y-6">
+      <div className="p-6 space-y-6 pb-40">
         {/* Identity & Content */}
         <FormSection
           title={t('screenManagement.groups.form.sectionIdentity')}
@@ -139,7 +139,7 @@ export function ScreenGroupForm({ initialData, isEdit: isEditProp }: ScreenGroup
           >
             <div className="grid grid-cols-1 gap-6">
               <ToggleField
-                label={t('screenManagement.groups.form.isActive')}
+                label={t('screenManagement.groups.form.status')}
                 value={!!formData.isActive}
                 onChange={(val) => handleChange('isActive', val)}
               />

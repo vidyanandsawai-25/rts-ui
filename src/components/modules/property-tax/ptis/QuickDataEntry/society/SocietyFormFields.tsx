@@ -1,11 +1,9 @@
-import { PropertySocietyDetailsApiItem } from "@/types/property-society-details.types";
 import { SocietyGeneralFields } from './SocietyGeneralFields';
 import { SocietyContactFields } from './SocietyContactFields';
 import { useDigitInputs } from '@/hooks/useDigitInputs';
 
 interface SocietyFormFieldsProps {
     t: (key: string) => string;
-    societyData: PropertySocietyDetailsApiItem | null;
     managerMobileInput: ReturnType<typeof useDigitInputs>;
     secretaryMobileInput: ReturnType<typeof useDigitInputs>;
     managerEmail: string;
@@ -24,16 +22,20 @@ interface SocietyFormFieldsProps {
     setManagerName: (name: string) => void;
     secretaryName: string;
     setSecretaryName: (name: string) => void;
+    societyAddress: string;
+    setSocietyAddress: (address: string) => void;
+    wingId: number | null;
+    wingOptions: { label: string; value: string }[];
+    handleWingChange: (name: string | undefined, value: string) => void;
     showError: (
         field: 'managerMobile' | 'secretaryMobile' | 'managerEmail' | 'secretaryEmail' | 'societyEmail' |
-               'landOwnerName' | 'builderName' | 'societyName' | 'managerName' | 'secretaryName',
+               'landOwnerName' | 'builderName' | 'societyName' | 'managerName' | 'secretaryName' | 'societyAddress',
         isValid: boolean
     ) => boolean;
 }
 
 export const SocietyFormFields = ({
     t,
-    societyData,
     managerMobileInput,
     secretaryMobileInput,
     managerEmail,
@@ -52,13 +54,16 @@ export const SocietyFormFields = ({
     setManagerName,
     secretaryName,
     setSecretaryName,
+    societyAddress,
+    setSocietyAddress,
+    wingId,
+    wingOptions,
+    handleWingChange,
     showError,
 }: SocietyFormFieldsProps) => {
     return (
         <div className="grid grid-cols-3 gap-x-4 gap-y-3">
             <SocietyGeneralFields
-                t={t}
-                societyData={societyData}
                 societyEmail={societyEmail}
                 setSocietyEmail={setSocietyEmail}
                 landOwnerName={landOwnerName}
@@ -67,6 +72,11 @@ export const SocietyFormFields = ({
                 setBuilderName={setBuilderName}
                 societyName={societyName}
                 setSocietyName={setSocietyName}
+                societyAddress={societyAddress}
+                setSocietyAddress={setSocietyAddress}
+                wingId={wingId}
+                wingOptions={wingOptions}
+                handleWingChange={handleWingChange}
                 showError={showError}
             />
             <SocietyContactFields

@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { getCleanErrorMessage } from '@/lib/utils/backend-error-detection';
 import { useConfirm } from '@/components/common/ConfirmProvider';
 import { deleteBankAction } from '@/app/[locale]/configuration-settings/bank-master/actions';
 import type { BankMasterData } from '@/types/bank-master.types';
@@ -39,9 +40,19 @@ export function useBankDelete({ t, startTransition }: UseBankDeleteProps) {
               return;
             }
 
-            toast.error(t(response.error || 'messages.deleteFailed'));
-          } catch {
-            toast.error(t('messages.deleteFailed'));
+            let errorMsg = response.error;
+            if (errorMsg) {
+              if (errorMsg.startsWith('validation.') || errorMsg.startsWith('messages.')) {
+                errorMsg = t(errorMsg);
+              } else {
+                errorMsg = getCleanErrorMessage(errorMsg);
+              }
+            } else {
+              errorMsg = t('messages.deleteFailed');
+            }
+            toast.error(errorMsg);
+          } catch (error) {
+            toast.error(getCleanErrorMessage(error, t('messages.deleteFailed')));
           } finally {
             setIsDeleting(false);
           }

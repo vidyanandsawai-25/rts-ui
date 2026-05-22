@@ -1,7 +1,7 @@
 'use client';
 
 import { Building2, Mail, Phone } from 'lucide-react';
-import { Label, Input, ToggleSwitch } from '@/components/common';
+import { Label, Input, ToggleSwitch, ValidationMessage } from '@/components/common';
 import { BasicInfoStepProps } from '@/types/user-management';
 
 export function BasicInfoStep({
@@ -24,6 +24,7 @@ export function BasicInfoStep({
               <Label>{t('form.username')} *</Label>
               <Input
                 required
+                maxLength={20}
                 disabled={!!editingUser}
                 value={formData.userName}
                 onChange={(e) => setFormData({ ...formData, userName: e.target.value })}
@@ -31,51 +32,67 @@ export function BasicInfoStep({
                 placeholder={t('form.usernamePlaceholder')}
               />
               {errors.userName && (
-                <p className="text-red-500 text-[10px] mt-1">{errors.userName}</p>
+                <ValidationMessage message={errors.userName} />
               )}
             </div>
             <div className="space-y-2">
               <Label>{t('form.userCode')}</Label>
               <Input
+                maxLength={15}
                 value={formData.userCode}
                 onChange={(e) => setFormData({ ...formData, userCode: e.target.value })}
                 className="border-2 text-slate-700"
                 placeholder={t('form.userCodePlaceholder')}
               />
               {errors.userCode && (
-                <p className="text-red-500 text-[10px] mt-1">{errors.userCode}</p>
+                <ValidationMessage message={errors.userCode} />
               )}
             </div>
             <div className="space-y-2">
               <Label>{t('form.firstName')} *</Label>
               <Input
                 required
+                maxLength={40}
                 value={formData.firstName}
-                onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/[^a-zA-Z\u0900-\u097F\s]/g, '');
+                  setFormData({ ...formData, firstName: val });
+                }}
                 className="border-2"
               />
               {errors.firstName && (
-                <p className="text-red-500 text-[10px] mt-1">{errors.firstName}</p>
+                <ValidationMessage message={errors.firstName} />
               )}
             </div>
             <div className="space-y-2">
               <Label>{t('form.middleName')}</Label>
               <Input
+                maxLength={40}
                 value={formData.middleName}
-                onChange={(e) => setFormData({ ...formData, middleName: e.target.value })}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/[^a-zA-Z\u0900-\u097F\s]/g, '');
+                  setFormData({ ...formData, middleName: val });
+                }}
                 className="border-2"
               />
+              {errors.middleName && (
+                <ValidationMessage message={errors.middleName} />
+              )}
             </div>
             <div className="space-y-2">
               <Label>{t('form.lastName')} *</Label>
               <Input
                 required
+                maxLength={40}
                 value={formData.lastName}
-                onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/[^a-zA-Z\u0900-\u097F\s]/g, '');
+                  setFormData({ ...formData, lastName: val });
+                }}
                 className="border-2"
               />
               {errors.lastName && (
-                <p className="text-red-500 text-[10px] mt-1">{errors.lastName}</p>
+                <ValidationMessage message={errors.lastName} />
               )}
             </div>
             <div className="space-y-2">
@@ -90,7 +107,9 @@ export function BasicInfoStep({
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 className="border-2"
               />
-              {errors.email && <p className="text-red-500 text-[10px] mt-1">{errors.email}</p>}
+              {errors.email && (
+                <ValidationMessage message={errors.email} />
+              )}
             </div>
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
@@ -99,12 +118,16 @@ export function BasicInfoStep({
               </Label>
               <Input
                 required
+                maxLength={10}
                 value={formData.mobileNo}
-                onChange={(e) => setFormData({ ...formData, mobileNo: e.target.value })}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                  setFormData({ ...formData, mobileNo: val });
+                }}
                 className="border-2"
               />
               {errors.mobileNo && (
-                <p className="text-red-500 text-[10px] mt-1">{errors.mobileNo}</p>
+                <ValidationMessage message={errors.mobileNo} />
               )}
             </div>
             <div className="col-span-2 space-y-2">

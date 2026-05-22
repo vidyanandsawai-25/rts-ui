@@ -88,7 +88,7 @@
     "cityRequired": "शहर आवश्यक आहे",
     "stateRequired": "राज्य आवश्यक आहे",
     "pincodeRequired": "पिनकोड आवश्यक आहे",
-    "pincodeFormat": "पिनकोड {count} अंकी असावा",
+    "pincodeFormat": "अवैध पिनकोड",
     "bankCodeLength": "बँक कोड {count} अक्षरांपेक्षा जास्त नसावा",
     "bankNameLength": "बँकेचे नाव {count} अक्षरांपेक्षा जास्त नसावे",
     "branchNameLength": "शाखेचे नाव {count} अक्षरांपेक्षा जास्त नसावे",

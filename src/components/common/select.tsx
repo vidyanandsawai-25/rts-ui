@@ -58,9 +58,47 @@ export function Select({
   const listboxId = useId();
   const optionIdPrefix = useId();
 
+  /**
+   * Find the nearest scrollable ancestor so that dropdown open-direction
+   * is calculated against the container's visible boundary, not just the
+   * raw viewport height.  This is important when the Select lives inside an
+   * element that has `overflow-y: auto/scroll` (e.g. PageContainer).
+   */
+  const getScrollableContainer = (el: HTMLElement): HTMLElement => {
+    let parent = el.parentElement;
+    while (parent && parent !== document.documentElement) {
+      const { overflow, overflowY } = window.getComputedStyle(parent);
+      if (/auto|scroll/.test(overflow) || /auto|scroll/.test(overflowY)) {
+        return parent;
+      }
+      parent = parent.parentElement;
+    }
+    return document.documentElement;
+  };
+
   const toggleOpen = () => {
     if (disabled) return;
     const nextOpen = !open;
+
+    // ── Calculate open direction SYNCHRONOUSLY before the render ──────────
+    // Doing this here (instead of useEffect) removes the one-frame flicker
+    // where the dropdown briefly shows downward then flips upward.
+    if (nextOpen && buttonRef.current) {
+      const buttonRect = buttonRef.current.getBoundingClientRect();
+      const dropdownHeight = 240; // max-h-60 = 240px
+
+      // Measure against the nearest scrollable container, not the raw viewport,
+      // so that overflow-y:auto parents clip the dropdown correctly.
+      const container = getScrollableContainer(buttonRef.current);
+      const containerRect = container.getBoundingClientRect();
+      const spaceBelow = containerRect.bottom - buttonRect.bottom;
+      const spaceAbove = buttonRect.top - containerRect.top;
+
+      setOpenUpward(spaceBelow < dropdownHeight && spaceAbove > spaceBelow);
+    } else {
+      setOpenUpward(false);
+    }
+
     setOpen(nextOpen);
 
     if (nextOpen) {
@@ -83,20 +121,6 @@ export function Select({
       }
     }
   }, [highlightedIndex, open]);
-
-  // Calculate if dropdown should open upward based on viewport space
-  React.useEffect(() => {
-    if (open && buttonRef.current) {
-      const buttonRect = buttonRef.current.getBoundingClientRect();
-      const dropdownHeight = 240; // max-h-60 = 240px
-      const viewportHeight = window.innerHeight;
-      const spaceBelow = viewportHeight - buttonRect.bottom;
-      const spaceAbove = buttonRect.top;
-
-      // Open upward if not enough space below and more space above
-      setOpenUpward(spaceBelow < dropdownHeight && spaceAbove > spaceBelow);
-    }
-  }, [open]);
 
   const handleSelect = (val: string) => {
     if (value === undefined) {

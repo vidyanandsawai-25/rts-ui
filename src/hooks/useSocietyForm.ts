@@ -7,10 +7,22 @@ import { useLoading } from '@/hooks/useLoading';
 import { societyValidations, validateForm, hasErrors } from "@/lib/utils/validation";
 import { updatePropertySocietyDetailsAction } from "@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Society/action";
 import { SocietyFormProps, UpdatePropertySocietyDetailsDto } from "@/types/property-society-details.types";
-import { societyValidators } from '@/lib/utils/kyc-validation.constants';
+import { societyValidators, propertyValidators } from '@/lib/utils/kyc-validation.constants';
 
 import { useSocietyChanges } from '@/hooks/useSocietyChanges';
 import { useSocietyFormState } from '@/hooks/useSocietyFormState'; 
+
+const getMobileErrorMessage = (value: string, t: (key: string) => string): string => {
+    const digits = value.replace(/\D/g, '');
+    if (digits.length === 0) return '';
+    if (!/^[6-9]/.test(digits)) {
+        return t('society.validation.invalidMobileStart') || 'Mobile number must start with 6 to 9.';
+    }
+    if (digits.length !== 10) {
+        return t('society.validation.invalidMobile') || 'Mobile number must be exactly 10 digits.';
+    }
+    return '';
+};
 
 export const useSocietyForm = (props: SocietyFormProps) => {
     const { societyData, propertyIdSearch, locale } = props;
@@ -41,6 +53,11 @@ export const useSocietyForm = (props: SocietyFormProps) => {
         setManagerName,
         secretaryName,
         setSecretaryName,
+        societyAddress,
+        setSocietyAddress,
+        wingId,
+        setWingId,
+        setWingNo,
         isSubmitted,
         setIsSubmitted,
         hasChanges,
@@ -53,7 +70,7 @@ export const useSocietyForm = (props: SocietyFormProps) => {
     // 2. Field has been touched (has a value) AND is invalid
     const showError = (
         field: 'managerMobile' | 'secretaryMobile' | 'managerEmail' | 'secretaryEmail' | 'societyEmail' | 
-               'landOwnerName' | 'builderName' | 'societyName' | 'managerName' | 'secretaryName', 
+               'landOwnerName' | 'builderName' | 'societyName' | 'managerName' | 'secretaryName' | 'societyAddress', 
         isValid: boolean
     ): boolean => {
         // If form is submitted, show all validation errors
@@ -94,6 +111,9 @@ export const useSocietyForm = (props: SocietyFormProps) => {
         if (field === 'secretaryName') {
             return !!secretaryName && !isValid;
         }
+        if (field === 'societyAddress') {
+            return !!societyAddress && !isValid;
+        }
 
         return false;
     };
@@ -111,23 +131,76 @@ export const useSocietyForm = (props: SocietyFormProps) => {
         managerEmail,
         secretaryEmail,
         societyEmail,
+        societyAddress,
+        wingId,
         societyData,
         setHasChanges
     });
+
+    const wingOptions = (props.WingMaster || []).map((wing) => ({
+        label: wing.wingNo,
+        value: String(wing.id),
+    }));
+
+    const handleWingChange = (_name: string | undefined, value: string) => {
+        const id = Number(value) || null;
+        setWingId(id);
+        const selectedWing = (props.WingMaster || []).find((w) => w.id === id);
+        setWingNo(selectedWing?.wingNo || null);
+    };
+
+    // 3. Validation check for submit button
+    // Returns true if all filled fields have valid values
+    const canSubmit = (): boolean => {
+        const managerMobileStr = managerMobileInput.value;
+        const secretaryMobileStr = secretaryMobileInput.value;
+
+        // Check emails - if filled, must be valid (strict)
+        const isManagerEmailValid = !managerEmail || societyValidators.isValidEmail(managerEmail, true);
+        const isSecretaryEmailValid = !secretaryEmail || societyValidators.isValidEmail(secretaryEmail, true);
+        const isSocietyEmailValid = !societyEmail || societyValidators.isValidEmail(societyEmail, true);
+        
+        // Check mobile numbers - if filled, must be valid
+        const isManagerMobileValid = !managerMobileStr || societyValidators.isValidMobile(managerMobileStr);
+        const isSecretaryMobileValid = !secretaryMobileStr || societyValidators.isValidMobile(secretaryMobileStr);
+
+        // Check names - if filled, must be valid
+        const isLandOwnerNameValid = !landOwnerName || societyValidators.isValidPersonName(landOwnerName);
+        const isBuilderNameValid = !builderName || societyValidators.isValidPersonName(builderName);
+        const isSocietyNameValid = !societyName || societyValidators.isValidSocietyName(societyName);
+        const isManagerNameValid = !managerName || societyValidators.isValidPersonName(managerName);
+        const isSecretaryNameValid = !secretaryName || societyValidators.isValidPersonName(secretaryName);
+        
+        // Check address - if filled, must be valid
+        const isSocietyAddressValid = !societyAddress || propertyValidators.isValidAddress(societyAddress);
+
+        return (
+            isManagerEmailValid &&
+            isSecretaryEmailValid &&
+            isSocietyEmailValid &&
+            isManagerMobileValid &&
+            isSecretaryMobileValid &&
+            isLandOwnerNameValid &&
+            isBuilderNameValid &&
+            isSocietyNameValid &&
+            isManagerNameValid &&
+            isSecretaryNameValid &&
+            isSocietyAddressValid
+        );
+    };
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsSubmitted(true);
 
-        const formData = new FormData(e.currentTarget);
         const pid = societyData?.propertyId || propertyIdSearch;
         const managerMobileStr = managerMobileInput.value;
         const secretaryMobileStr = secretaryMobileInput.value;
 
-        // Validate emails before proceeding
-        const isManagerEmailValid = societyValidators.isValidEmail(managerEmail);
-        const isSecretaryEmailValid = societyValidators.isValidEmail(secretaryEmail);
-        const isSocietyEmailValid = societyValidators.isValidEmail(societyEmail);
+        // Validate emails before proceeding (strict)
+        const isManagerEmailValid = societyValidators.isValidEmail(managerEmail, true);
+        const isSecretaryEmailValid = societyValidators.isValidEmail(secretaryEmail, true);
+        const isSocietyEmailValid = societyValidators.isValidEmail(societyEmail, true);
         const isManagerMobileValid = societyValidators.isValidMobile(managerMobileStr);
         const isSecretaryMobileValid = societyValidators.isValidMobile(secretaryMobileStr);
 
@@ -137,46 +210,51 @@ export const useSocietyForm = (props: SocietyFormProps) => {
         const isSocietyNameValid = !societyName || societyValidators.isValidSocietyName(societyName);
         const isManagerNameValid = !managerName || societyValidators.isValidPersonName(managerName);
         const isSecretaryNameValid = !secretaryName || societyValidators.isValidPersonName(secretaryName);
+        const isSocietyAddressValid = !societyAddress || propertyValidators.isValidAddress(societyAddress);
 
         // Show specific error messages for invalid fields
         if (!isManagerEmailValid && managerEmail) {
-            toast.error(t('kyc.validation.invalidEmail'));
+            toast.error(t('society.validation.managerEmail'));
             return;
         }
         if (!isSecretaryEmailValid && secretaryEmail) {
-            toast.error(t('kyc.validation.invalidEmail'));
+            toast.error(t('society.validation.secretaryEmail'));
             return;
         }
         if (!isSocietyEmailValid && societyEmail) {
-            toast.error(t('kyc.validation.invalidEmail'));
+            toast.error(t('society.validation.societyEmail'));
             return;
         }
         if (!isManagerMobileValid && managerMobileStr) {
-            toast.error(t('kyc.validation.invalidMobile'));
+            toast.error(getMobileErrorMessage(managerMobileStr, t));
             return;
         }
         if (!isSecretaryMobileValid && secretaryMobileStr) {
-            toast.error(t('kyc.validation.invalidMobile'));
+            toast.error(getMobileErrorMessage(secretaryMobileStr, t));
             return;
         }
         if (!isLandOwnerNameValid) {
-            toast.error(t('kyc.validation.invalidName'));
+            toast.error(t('society.validation.landOwnerName'));
             return;
         }
         if (!isBuilderNameValid) {
-            toast.error(t('kyc.validation.invalidName'));
+            toast.error(t('society.validation.builderName'));
             return;
         }
         if (!isSocietyNameValid) {
-            toast.error(t('kyc.validation.invalidName'));
+            toast.error(t('society.validation.societyName'));
             return;
         }
         if (!isManagerNameValid) {
-            toast.error(t('kyc.validation.invalidName'));
+            toast.error(t('society.validation.managerName'));
             return;
         }
         if (!isSecretaryNameValid) {
-            toast.error(t('kyc.validation.invalidName'));
+            toast.error(t('society.validation.secretaryName'));
+            return;
+        }
+        if (!isSocietyAddressValid) {
+            toast.error(t('society.validation.societyAddress'));
             return;
         }
 
@@ -209,14 +287,16 @@ export const useSocietyForm = (props: SocietyFormProps) => {
             return;
         }
 
+        const selectedWing = (props.WingMaster || []).find((wing) => wing.id === wingId);
+
         const payload: UpdatePropertySocietyDetailsDto = {
             propertyId: pid,
             societyDetailId: societyData?.societyDetailId ?? null,
-            wingId: societyData?.wingId ?? null,
-            wingNo: societyData?.wingNo ?? null,
-            wingName: societyData?.wingName ?? null,
+            wingId: selectedWing?.id ?? null,
+            wingNo: selectedWing?.wingNo ?? null,
+            wingName: selectedWing?.wingNo ?? null,
             societyName: societyName.trim() || null,
-            societyAddress: String(formData.get("societyAddress") ?? "").trim() || null,
+            societyAddress: societyAddress.trim() || null,
             societyEmailId: data.societyEmailId || null,
             managerName: data.managerName || null,
             managerEmailId: data.managerEmailId || null,
@@ -227,7 +307,7 @@ export const useSocietyForm = (props: SocietyFormProps) => {
             landOwnerName: data.landOwnerName || null,
             builderName: data.builderName || null,
             societyNameEnglish: societyName.trim() || null,
-            societyAddressEnglish: String(formData.get("societyAddress") ?? "").trim() || null,
+            societyAddressEnglish: societyAddress.trim() || null,
             secretaryNameEnglish: data.secretaryName || null,
             managerNameEnglish: data.managerName || null,
             landOwnerNameEnglish: data.landOwnerName || null,
@@ -280,7 +360,13 @@ export const useSocietyForm = (props: SocietyFormProps) => {
         setManagerName,
         secretaryName,
         setSecretaryName,
+        societyAddress,
+        setSocietyAddress,
+        wingId,
+        wingOptions,
+        handleWingChange,
         showError,
+        canSubmit,
         handleSubmit,
         checkFormChanges,
     };
