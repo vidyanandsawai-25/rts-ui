@@ -164,6 +164,10 @@ export const floorSubmissionSchema = z.object({
     createdBy: z.number().optional(),
     updatedBy: z.number().optional(),
 }).refine((data) => {
+    // If it's an update, skip validation to allow existing database values
+    const rawDetailsId = Number(data.propertyDetailsId || (data as Record<string, unknown>).id || 0);
+    if (rawDetailsId > 0) return true;
+
     const conYear = parseInt(data.constructionYear, 10);
     const asstYear = parseInt(data.assessmentYear, 10);
     if (isNaN(conYear) || isNaN(asstYear)) return true;
@@ -173,8 +177,7 @@ export const floorSubmissionSchema = z.object({
     path: ['assessmentYear'],
 }).transform(data => ({
     ...data,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    propertyDetailsId: data.propertyDetailsId ?? (data as any).id
+    propertyDetailsId: data.propertyDetailsId ?? (data as Record<string, unknown>).id
 }));
 
 export type FloorSubmissionSchemaType = z.infer<typeof floorSubmissionSchema>;

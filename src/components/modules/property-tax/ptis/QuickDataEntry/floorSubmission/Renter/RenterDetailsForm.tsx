@@ -30,7 +30,7 @@ export interface RenterDetailsFormProps {
   propertyId?: string;
   floorId?: string;
   onSaveRenter?: (data: any) => void;
-  saveAction?: (id: string | number, data: any) => Promise<ActionResult<any>>;
+  saveAction?: (id: string | number, data: any, locale?: string, propertyId?: string | number) => Promise<ActionResult<any>>;
   floorLookup?: any[];
   constructionLookup?: any[];
   useLookup?: any[];
@@ -65,6 +65,7 @@ export const RenterDetailsForm = memo(
         initialData,
         floorId: floorId || 'new',
         propertyId,
+        locale,
         saveAction,
         onSaveSuccess: (data) => {
           if (onSaveRenter) onSaveRenter(data);
@@ -90,6 +91,7 @@ export const RenterDetailsForm = memo(
             router.push(
               `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/FloorSubmission?${redirectParams.toString()}`
             );
+            router.refresh();
           }, 1500);
         },
       });
