@@ -376,7 +376,11 @@
             "builtupAreaSqMRequired": "कृपया बिल्टअप क्षेत्रफल (वर्ग मीटर) दर्ज करें",
             "assessmentYearRequired": "कृपया मूल्यांकन वर्ष दर्ज करें",
             "assessmentYearInvalid": "कृपया मान्य 4 अंकों का मूल्यांकन वर्ष दर्ज करें",
-            "assessmentYearRange": "मूल्यांकन वर्ष 1700 और 2026 के बीच होना चाहिए"
+            "assessmentYearRange": "मूल्यांकन वर्ष 1700 और 2026 के बीच होना चाहिए",
+            "propertyIdRequired": "संपत्ति आईडी आवश्यक है",
+            "taxYearsRequired": "कर वर्ष डेटा आवश्यक है",
+            "financeYearRequired": "वित्तीय वर्ष आवश्यक है",
+            "taxTotalInvalid": "कर कुल ऋणात्मक नहीं हो सकता"
         },
         "errors": {
             "failedToConnect": {

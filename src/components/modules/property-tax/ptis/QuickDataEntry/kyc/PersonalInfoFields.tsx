@@ -1,5 +1,5 @@
 import React from 'react';
-import { FormFieldGroup } from '@/components/common';
+import { FormFieldGroup, Label, SearchSelect } from '@/components/common';
 import {
   KYC_VALIDATION_RULES,
   KYC_TITLE_OPTIONS,
@@ -31,7 +31,8 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
 
   return (
     <>
-      <FormFieldGroup
+
+      {/* <FormFieldGroup
         type="select"
         id="kyc-ownertype"
         label={t('kyc.ownerType')}
@@ -47,7 +48,27 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
           }));
         }}
         selectSize="sm"
-      />
+      /> */}
+
+      <div className="space-y-1.5">
+        <Label htmlFor="kyc-ownertype" className="text-xs font-semibold text-gray-700">
+          {t('kyc.ownerType')}
+        </Label>
+        <SearchSelect
+          id="kyc-ownertype"
+          name="ownerType"
+          options={ownerTypeOptions}
+          value={formData.ownerTypeId?.toString() ?? ''}
+          placeholder={t('kyc.select')}
+          onChange={(_name: string, value: string) => {
+            setFormData((prev) => ({
+              ...prev,
+              ownerTypeId: value ? Number(value) : null,            
+            }));
+          }}
+          className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+        />
+      </div>
 
       <FormFieldGroup
         type="select"
@@ -86,8 +107,8 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
               ? t('kyc.errors.ownerNameRequired')
               : (formData.ownerName ?? '').trim().length < KYC_VALIDATION_RULES.NAME_MIN_LENGTH ||
                 (formData.ownerName ?? '').trim().length > KYC_VALIDATION_RULES.NAME_MAX_LENGTH
-              ? t('society.validation.invalidNameLength')
-              : t('kyc.validation.invalidName')}
+                ? t('society.validation.invalidNameLength')
+                : t('kyc.validation.invalidName')}
           </span>
         )}
       </div>

@@ -376,7 +376,11 @@
             "builtupAreaSqMRequired": "कृपया बांधकाम क्षेत्रफळ (चौ.मी.) प्रविष्ट करा",
             "assessmentYearRequired": "कृपया मूल्यांकन वर्ष प्रविष्ट करा",
             "assessmentYearInvalid": "कृपया वैध ४ अंकी मूल्यांकन वर्ष प्रविष्ट करा",
-            "assessmentYearRange": "मूल्यांकन वर्ष १७०० ते २०२६ दरम्यान असावे"
+            "assessmentYearRange": "मूल्यांकन वर्ष १७०० ते २०२६ दरम्यान असावे",
+            "propertyIdRequired": "मालमत्ता आयडी आवश्यक आहे",
+            "taxYearsRequired": "कर वर्षांचा डेटा आवश्यक आहे",
+            "financeYearRequired": "आर्थिक वर्ष आवश्यक आहे",
+            "taxTotalInvalid": "एकूण कर ऋणात्मक असू शकत नाही"
         },
         "errors": {
             "failedToConnect": {

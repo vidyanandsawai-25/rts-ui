@@ -369,7 +369,11 @@
             "builtupAreaSqMRequired": "Please enter built-up area (Sq M)",
             "assessmentYearRequired": "Please enter assessment year",
             "assessmentYearInvalid": "Please enter a valid 4-digit assessment year",
-            "assessmentYearRange": "Assessment year must be between 1700 and 2026"
+            "assessmentYearRange": "Assessment year must be between 1700 and 2026",
+            "propertyIdRequired": "Property ID is required",
+            "taxYearsRequired": "Tax years data is required",
+            "financeYearRequired": "Finance year is required",
+            "taxTotalInvalid": "Tax total cannot be negative"
         },
         "errors": {
             "failedToConnect": {
@@ -379,6 +383,7 @@
                 "tryAgain": "Try Again",
                 "errorId": "Error ID: {id}"
             },
+
             "fetchMoujaMaster": "Failed to fetch Mouja master.",
             "fetchPropertyBasicDetails": "Failed to fetch property basic details",
             "fetchPropertyTypes": "Failed to fetch property types",
@@ -976,7 +981,11 @@
                 "description": "There was a problem loading the taxation breakdown.",
                 "goHome": "Go Home",
                 "tryAgain": "Try Again",
-                "errorId": "Error ID: {id}"
+                "errorId": "Error ID: {id}",
+                "financeYearRequired": "Finance year is required.",
+                "taxTotalInvalid": "Tax total cannot be negative.",
+                "validationError": "Please fix the validation errors and try again.",
+               "unexpectedError": "An unexpected error occurred"
             },
             "loading": {
                 "message": "Loading Breakdown...",
