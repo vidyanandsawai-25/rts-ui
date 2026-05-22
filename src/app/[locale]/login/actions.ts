@@ -5,7 +5,6 @@ import { cookies } from 'next/headers';
 import { getTranslations } from 'next-intl/server';
 
 import { authService } from '@/lib/api/auth.service';
-// import { userProfileService } from '@/lib/api/user-profile.service';
 import { locales, defaultLocale } from '@/i18n/config';
 import type { AuthLoginApiBody } from '@/types/login.types';
 import type { UlbMaster } from '@/types/master.types';
@@ -128,20 +127,6 @@ async function completeLoginSession(
   const uid = auth.userId;
   if (typeof uid === 'number' && Number.isFinite(uid) && uid > 0) {
     cookieStore.set(AUTH_COOKIES.USER_ID, String(uid), SECURE_COOKIE_OPTIONS);
-    // try {
-    //   const profileRes = await userProfileService.getUserProfile(uid, accessToken);
-    //   if (profileRes.success && profileRes.data) {
-    //     const roleAllocations = profileRes.data.roleAllocations;
-    //     if (roleAllocations && roleAllocations.length > 0) {
-    //       const userRoleId = roleAllocations[0].userRoleId;
-    //       if (userRoleId) {
-    //         cookieStore.set(AUTH_COOKIES.USER_ROLE_ID, String(userRoleId), SECURE_COOKIE_OPTIONS);
-    //       }
-    //     }
-    //   }
-    // } catch {
-    //   // Best-effort user role cookie setting on login
-    // }
   }
 
   // Clean up pending auth state
