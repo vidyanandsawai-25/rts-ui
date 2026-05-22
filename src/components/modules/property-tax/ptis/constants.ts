@@ -1,3 +1,38 @@
+import { FooterAction } from '@/lib/api/footer.service';
+
+export const DEFAULT_PTIS_FOOTER_ACTIONS: FooterAction[] = [
+  {
+    id: 10001,
+    actionCommand: 'PTIS_REFRESH',
+    buttonName: 'Refresh',
+    lucideIcon: 'RefreshCw',
+    displayOrder: 1,
+    isEnabled: false,
+    canView: false,
+    canEdit: false,
+    canDelete: false,
+    haveFullAccess: false,
+    haveNoAccess: true,
+    routePath: '/property-tax/ptis',
+    style: { iconName: 'RefreshCw', variant: 'blue', alignment: 'middle' },
+  },
+  {
+    id: 10003,
+    actionCommand: 'PTIS_SAVE',
+    buttonName: 'Save',
+    lucideIcon: 'Save',
+    displayOrder: 3,
+    isEnabled: false,
+    canView: false,
+    canEdit: false,
+    canDelete: false,
+    haveFullAccess: false,
+    haveNoAccess: true,
+    routePath: '/property-tax/ptis',
+    style: { iconName: 'Save', variant: 'success', alignment: 'right' },
+  },
+];
+
 /**
  * Shared Tailwind CSS class combinations for PTIS components
  */

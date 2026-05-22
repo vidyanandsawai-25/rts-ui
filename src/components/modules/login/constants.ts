@@ -68,6 +68,8 @@ export const AUTH_COOKIES = {
   USER_NAME: 'user_name',
   /** User ID */
   USER_ID: 'user_id',
+  /** User Role ID */
+  USER_ROLE_ID: 'user_role_id',
   /** Pending auth state (for multi-step flows) */
   PENDING_AUTH: 'pending_auth',
 } as const;
@@ -98,6 +100,7 @@ export const LOGOUT_CLEAR_COOKIES = [
   AUTH_COOKIES.IS_LOGGED_IN,
   AUTH_COOKIES.USER_NAME,
   AUTH_COOKIES.USER_ID,
+  AUTH_COOKIES.USER_ROLE_ID,
   ULB_COOKIES.ULB_NAME,
   ULB_COOKIES.ULB_NAME_LOCAL,
   ULB_COOKIES.ULB_LOGO,
