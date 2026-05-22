@@ -200,7 +200,7 @@ export const AdditionalPropertyFields = ({
                 {showResidentialToiletsError && (!propertyValidators.isValidPositiveNumber(residentialToilets) || residentialToilets === '0') && (
                     <span className="text-xs text-red-500">
                         {residentialToilets === '0' 
-                            ? 'You cannot enter only 0.' 
+                            ? t('property.validation.toiletCountZero') 
                             : t('property.validation.invalidResidentialToilets')}
                     </span>
                 )}
@@ -249,7 +249,7 @@ export const AdditionalPropertyFields = ({
                 {showCommercialToiletsError && (!propertyValidators.isValidPositiveNumber(commercialToilets) || commercialToilets === '0') && (
                     <span className="text-xs text-red-500">
                         {commercialToilets === '0'
-                            ? 'You cannot enter only 0.'
+                            ? t('property.validation.toiletCountZero')
                             : t('property.validation.invalidCommercialToilets')}
                     </span>
                 )}

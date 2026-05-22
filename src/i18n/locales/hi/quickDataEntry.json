@@ -380,7 +380,8 @@
             "propertyIdRequired": "संपत्ति आईडी आवश्यक है",
             "taxYearsRequired": "कर वर्ष डेटा आवश्यक है",
             "financeYearRequired": "वित्तीय वर्ष आवश्यक है",
-            "taxTotalInvalid": "कर कुल ऋणात्मक नहीं हो सकता"
+            "taxTotalInvalid": "कर कुल ऋणात्मक नहीं हो सकता",
+            "toiletCountZero": "आप केवल 0 दर्ज नहीं कर सकते"
         },
         "errors": {
             "failedToConnect": {

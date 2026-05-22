@@ -301,7 +301,7 @@
         "subZoneNo": "Sub Zone No",
         "surveyNo": "Survey No",
         "totalCarpetArea": "Total Carpet Area (sq.ft)",
-        "totalCarpetAreafmtr": "Total Carpet Area (sq.m)",        
+        "totalCarpetAreafmtr": "Total Carpet Area (sq.m)",
         "buildupArea": "Buildup Area (sq.ft)",
         "builtupAreaSqMeter": "Buildup Area (sq.m)",
         "selectType": "Select type",
@@ -373,7 +373,8 @@
             "propertyIdRequired": "Property ID is required",
             "taxYearsRequired": "Tax years data is required",
             "financeYearRequired": "Finance year is required",
-            "taxTotalInvalid": "Tax total cannot be negative"
+            "taxTotalInvalid": "Tax total cannot be negative",
+            "toiletCountZero": "You cannot enter only 0"
         },
         "errors": {
             "failedToConnect": {
@@ -912,7 +913,7 @@
         "carpetArea": "Carpet Area (Sqft/SqMtr)",
         "carpetAreaSqFt": "Carpet Area (sq.ft)",
         "areaSqFt": "Area (Sq Ft)",
-        "areaSqM": "Carpet Area (sq.m)",
+        "areaSqM": "Area (sq.m)",
         "builtupArea": "Built-up Area (Sq Ft / Sq M)",
         "builtupAreaSqFt": "Builtup Area (sq.ft)",
         "builtupAreaSqMeter": "Builtup Area (sq.m)",

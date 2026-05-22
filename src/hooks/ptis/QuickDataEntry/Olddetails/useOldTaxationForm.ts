@@ -88,8 +88,8 @@ export function useOldTaxationForm(propertyOldDetails: PropertyOldDetailsApiItem
       } else if (key === 'oldPlotNo') {
         sanitizedValue = sanitizePlotNo(value);
       } else if (key === 'oldConstructionArea' || key === 'oldRV' || key === 'oldALV' || key === 'oldGeneralTax') {
-        // Remove negative signs for numeric fields
-        sanitizedValue = value.replace(/[^0-9.]/g, '');
+        // Integer-only fields - remove all non-digits
+        sanitizedValue = value.replace(/[^0-9]/g, '');
       }
     }
     

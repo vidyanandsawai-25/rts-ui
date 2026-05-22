@@ -171,10 +171,7 @@ export const SocietyGeneralFields = ({
                             }`}
                         onChange={(e) => {
                             const value = e.target.value;
-                            // Check for spaces before sanitization
-                            if (value.includes(' ')) {
-                                return; // Don't update if space is detected
-                            }
+                            // Sanitize email input - removes spaces and invalid characters
                             const sanitized = sanitizeEmailStrict(value);
                             if (sanitized.length <= SOCIETY_VALIDATION_RULES.EMAIL_MAX_LENGTH) {
                                 setSocietyEmail(sanitized);
