@@ -316,7 +316,8 @@
       "ntbFactor": "NTB Factor",
       "useFactor": "Use Factor",
       "capitalValue": "Capital Value",
-      "taxAmount": "Tax Amount"
+      "taxAmount": "Tax Amount",
+      "appliedOn": "AppliedON"
     },
     "placeholders": {
       "oc": "OC/YYYY/###",
@@ -383,6 +384,73 @@
       }
     }
   },
+  "footerControls": {
+    "policy": {
+      "label": "Policy",
+      "placeholder": "Select Policy",
+      "options": {
+        "old": "As Per Old",
+        "min_rv": "Minimum RV",
+        "mix": "Mix Assessment"
+      }
+    },
+    "action": {
+      "label": "Action",
+      "placeholder": "Select Action",
+      "options": {
+        "apply": "Apply",
+        "remove_retention": "Remove Retention",
+        "remove_hearing": "Remove Hearing",
+        "remove_appeal_committee": "Remove Appeal Committee",
+        "remove_remission": "Remove Remission",
+        "remove_all_appeals": "Remove All Appeals"
+      }
+    }
+  },
+  "footerActions": {
+    "R_SAVE": "Save",
+    "R_SUBMIT": "Submit",
+    "R_UPDATE": "Update",
+    "R_RESET": "Reset",
+    "R_ADD": "Add",
+    "L_BACK": "Back",
+    "L_CLOSE": "Close",
+    "L_CANCEL": "Cancel",
+    "M_PRINT": "Print",
+    "M_REPORT": "Report",
+    "M_CALCULATE": "Calculate",
+    "M_SEARCH": "Search",
+    "M_DELETE": "Delete",
+    "PTIS_QC": "QC",
+    "PTIS_QC_REVERT": "QC Revert",
+    "PTIS_COMBINE": "Combine Property",
+    "PTIS_PARTITION": "Partition",
+    "PTIS_SPLIT": "Split",
+    "PTIS_TRANSFER": "Transfer",
+    "PTIS_AMALGAMATION": "Amalgamation",
+    "PTIS_OBJECTION": "Objection",
+    "PTIS_PREVIEW": "Preview",
+    "PTIS_TAX_CALC": "Calculate",
+    "PTIS_SUBMIT": "Submit",
+    "PTIS_APPLY": "Apply Taxes",
+    "PTIS_ADD": "Add",
+    "PTIS_NEW_PROPERTY": "New Property",
+    "PTIS_CANCEL": "Cancel",
+    "PTIS_REFRESH": "Refresh Taxes",
+    "PTIS_SAVE": "Save",
+    "PTIS_CLOSE": "Close",
+    "PTIS_VALUATION": "Valuation",
+    "PTIS_REPORT": "Report",
+    "PTIS_EDIT_ENTRY": "Edit Entry",
+    "PTIS_DOC": "DOC",
+    "PTIS_DISCOUNT": "Discount",
+    "PTIS_HISTORY": "History",
+    "PTIS_MERGE": "Merge",
+    "PTIS_REVERSE": "Reverse",
+    "PTIS_RECONCILE": "Reconcile",
+    "PTIS_CALC": "Calculate",
+    "PTIS_RESET": "Reset"
+  },
   "error": {
     "title": "Something went wrong",
     "description": "We encountered an unexpected error. Please try again or return to the home page.",
@@ -412,5 +480,18 @@
       "errorDetails": "Technical Details (Development Only)",
       "errorId": "Error ID:"
     }
+  },
+  "pagination": {
+    "label": "Property table pagination",
+    "controls": "Pagination controls"
+  },
+  "buttons": {
+    "firstPage": "First Page",
+    "previousPage": "Previous Page",
+    "nextPage": "Next Page",
+    "lastPage": "Last Page"
+  },
+  "table": {
+    "page": "Page {current} of {total}"
   }
 }
