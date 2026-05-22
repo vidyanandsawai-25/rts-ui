@@ -8,7 +8,6 @@ interface DrawerProps {
   onClose: () => void;
   title?: React.ReactNode;
   className?: string;
-  description?: string;
   width?: "sm" | "md" | "lg" | "xl";
   children: React.ReactNode;
   footer?: React.ReactNode;
@@ -19,7 +18,6 @@ export  function Drawer({
   open,
   onClose,
   title,
-  description,
   width = "md",
   children,
   footer,
