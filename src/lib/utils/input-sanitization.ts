@@ -103,17 +103,19 @@ export const sanitizeName = (name: string): string => {
     // Block all invalid special characters - only allow letters, spaces, and . , ' - /
     // Supports international characters (Unicode letters)
     .replace(/[^a-zA-Z\u00C0-\u024F\u0900-\u097F\u0D00-\u0D7F\s.,'\/\-]/g, '')
-    // Remove multiple consecutive spaces
-    .replace(/\s+/g, ' ')
-    .trim();
+    // Remove multiple consecutive spaces (replace with single space)
+    .replace(/\s+/g, ' ');
+    // Note: Removed .trim() to allow trailing spaces during typing
+    // Validation should handle trimming when checking if the field is valid
 };
 
 /**
  * Sanitize address input
  * More permissive than name sanitization but still blocks invalid special characters
- * Allows letters, numbers, spaces, and common address punctuation (.,/-#&,)
+ * Allows letters, numbers, multiple spaces, and common address punctuation (.,/-#&,)
  * Blocks: *()_++_)(&&^%$@!~!!@#$%}{};', etc.
  * Also blocks consecutive special characters and address with only special characters
+ * Preserves multiple consecutive spaces to allow formatting like "SANGHAVI HILLS .D MART  ANAND"
  * 
  * @param address - Raw address input
  * @returns Sanitized address
@@ -131,10 +133,9 @@ export const sanitizeAddress = (address: string): string => {
     // Block invalid special characters - allow letters, numbers, spaces, and address-safe punctuation including &
     .replace(/[^a-zA-Z0-9\u00C0-\u024F\u0900-\u097F\u0D00-\u0D7F\s.,\-\/\#&]/g, '')
     // Remove multiple consecutive special characters (e.g., ----, ////)
-    .replace(/([.,\-\/\#&])\1+/g, '$1')
-    // Remove multiple consecutive spaces
-    .replace(/\s+/g, ' ')
-    .trim();
+    .replace(/([.,\-\/\#&])\1+/g, '$1');
+    // Note: Removed .replace(/\s+/g, ' ') to allow multiple consecutive spaces
+    // Note: Removed .trim() to allow leading/trailing spaces during typing
   
   // If result contains only special characters and no alphanumeric, return empty
   if (sanitized && !/[a-zA-Z0-9\u00C0-\u024F\u0900-\u097F\u0D00-\u0D7F]/.test(sanitized)) {
@@ -170,7 +171,8 @@ export const sanitizeFlatShopNo = (input: string): string => {
 
 /**
  * Sanitize plot number input
- * Allows alphanumeric, hyphen, and forward slash
+ * Allows alphanumeric, spaces, hyphen, and forward slash
+ * Blocks special characters like: !!@@##$$%%^^&&**(())__++{{}}||\"::\"??>><< 
  * 
  * @param input - Raw plot number input
  * @returns Sanitized plot number
@@ -179,13 +181,12 @@ export const sanitizePlotNo = (input: string): string => {
   if (!input || typeof input !== 'string') return '';
   
   return input
-    // Allow only alphanumeric, hyphen, and forward slash
-    .replace(/[^a-zA-Z0-9/-]/g, '')
+    // Allow only alphanumeric, spaces, hyphen, and forward slash
+    .replace(/[^a-zA-Z0-9\s\-\/]/g, '')
+    // Remove multiple consecutive spaces
+    .replace(/\s+/g, ' ')
     // Block consecutive same special characters
-    .replace(/([-/])\1+/g, '$1')
-    // Remove leading special characters only so user can type trailing ones
-    .replace(/^[-/]+/g, '')
-    .trim();
+    .replace(/([\-\/])\1+/g, '$1');
 };
 
 /**
@@ -289,6 +290,86 @@ export const sanitizePlotArea = (input: string): string => {
   }
   
   return sanitized;
+};
+
+/**
+ * Sanitize property number or partition number input
+ * Allows alphanumeric characters, spaces, hyphens, and forward slashes
+ * Examples: "RR / 44", "44 - 55", "44 / GG"
+ * 
+ * @param input - Raw property/partition number input
+ * @returns Sanitized property/partition number
+ */
+export const sanitizePropertyPartitionNo = (input: string): string => {
+  if (!input || typeof input !== 'string') return '';
+  
+  return input
+    // Allow only alphanumeric, spaces, hyphens, and forward slashes
+    .replace(/[^a-zA-Z0-9\s\-\/]/g, '')
+    // Remove multiple consecutive spaces
+    .replace(/\s+/g, ' ')
+    // Remove consecutive special characters like --- or ///
+    .replace(/([\-\/])\1+/g, '$1');
+};
+
+/**
+ * Sanitize zone name input
+ * Allows alphanumeric characters, spaces, hyphens, and forward slashes only
+ * Blocks special characters like: !!@@##$$%%^^&&**(())__++{{}}||"::"??>><< 
+ * 
+ * @param input - Raw zone name input
+ * @returns Sanitized zone name
+ */
+export const sanitizeZoneName = (input: string): string => {
+  if (!input || typeof input !== 'string') return '';
+  
+  return input
+    // Allow only alphanumeric, spaces, hyphens, and forward slashes
+    .replace(/[^a-zA-Z0-9\s\-\/]/g, '')
+    // Remove multiple consecutive spaces
+    .replace(/\s+/g, ' ')
+    // Remove consecutive special characters
+    .replace(/([\-\/])\1+/g, '$1');
+};
+
+/**
+ * Sanitize ward number input
+ * Allows alphanumeric characters, spaces, hyphens, and forward slashes only
+ * Blocks special characters like: !!@@##$$%%^^&&**(())__++{{}}||"::"??>><< 
+ * 
+ * @param input - Raw ward number input
+ * @returns Sanitized ward number
+ */
+export const sanitizeWardNo = (input: string): string => {
+  if (!input || typeof input !== 'string') return '';
+  
+  return input
+    // Allow only alphanumeric, spaces, hyphens, and forward slashes
+    .replace(/[^a-zA-Z0-9\s\-\/]/g, '')
+    // Remove multiple consecutive spaces
+    .replace(/\s+/g, ' ')
+    // Remove consecutive special characters
+    .replace(/([\-\/])\1+/g, '$1');
+};
+
+/**
+ * Sanitize e-governance number input
+ * Allows alphanumeric characters, spaces, hyphens, and forward slashes only
+ * Blocks special characters like: !!@@##$$%%^^&&**(())__++{{}}||"::"??>><< 
+ * 
+ * @param input - Raw e-governance number input
+ * @returns Sanitized e-governance number
+ */
+export const sanitizeEgovNo = (input: string): string => {
+  if (!input || typeof input !== 'string') return '';
+  
+  return input
+    // Allow only alphanumeric, spaces, hyphens, and forward slashes
+    .replace(/[^a-zA-Z0-9\s\-\/]/g, '')
+    // Remove multiple consecutive spaces
+    .replace(/\s+/g, ' ')
+    // Remove consecutive special characters
+    .replace(/([\-\/])\1+/g, '$1');
 };
 
 /**

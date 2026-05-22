@@ -175,7 +175,7 @@ export const AdditionalPropertyFields = ({
                     placeholder="0"
                     maxLength={PROPERTY_VALIDATION_RULES.RESIDENTIAL_TOILET_MAX_LENGTH}
                     className={`h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${
-                        showResidentialToiletsError && !propertyValidators.isValidPositiveNumber(residentialToilets)
+                        showResidentialToiletsError && (!propertyValidators.isValidPositiveNumber(residentialToilets) || residentialToilets === '0')
                             ? 'border-red-300 focus:border-red-500'
                             : ''
                     }`}
@@ -197,9 +197,11 @@ export const AdditionalPropertyFields = ({
                     }}
                     onBlur={() => setShowResidentialToiletsError(true)}
                 />
-                {showResidentialToiletsError && !propertyValidators.isValidPositiveNumber(residentialToilets) && (
+                {showResidentialToiletsError && (!propertyValidators.isValidPositiveNumber(residentialToilets) || residentialToilets === '0') && (
                     <span className="text-xs text-red-500">
-                        {t('property.validation.invalidResidentialToilets')}
+                        {residentialToilets === '0' 
+                            ? 'You cannot enter only 0.' 
+                            : t('property.validation.invalidResidentialToilets')}
                     </span>
                 )}
             </div>
@@ -222,7 +224,7 @@ export const AdditionalPropertyFields = ({
                     placeholder="0"
                     maxLength={PROPERTY_VALIDATION_RULES.COMMERCIAL_TOILET_MAX_LENGTH}
                     className={`h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${
-                        showCommercialToiletsError && !propertyValidators.isValidPositiveNumber(commercialToilets)
+                        showCommercialToiletsError && (!propertyValidators.isValidPositiveNumber(commercialToilets) || commercialToilets === '0')
                             ? 'border-red-300 focus:border-red-500'
                             : ''
                     }`}
@@ -244,9 +246,11 @@ export const AdditionalPropertyFields = ({
                     }}
                     onBlur={() => setShowCommercialToiletsError(true)}
                 />
-                {showCommercialToiletsError && !propertyValidators.isValidPositiveNumber(commercialToilets) && (
+                {showCommercialToiletsError && (!propertyValidators.isValidPositiveNumber(commercialToilets) || commercialToilets === '0') && (
                     <span className="text-xs text-red-500">
-                        {t('property.validation.invalidCommercialToilets')}
+                        {commercialToilets === '0'
+                            ? 'You cannot enter only 0.'
+                            : t('property.validation.invalidCommercialToilets')}
                     </span>
                 )}
             </div>
