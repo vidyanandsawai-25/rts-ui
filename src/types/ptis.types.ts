@@ -281,6 +281,8 @@ export interface PropertyBasicDetailsApiResponse {
   propertyDescription: string;
   upicId: string;
   subZoneNo: string;
+  moujaId: number;
+  moujaName: string;
   wingNo: string;
   noOfResidentialToilets: number;
   noOfCommercialToilets: number;
@@ -300,23 +302,29 @@ export interface PropertyBasicDetailsApiResponse {
 }
 
 export interface SocietyDetailsApiResponse {
-  buildingSocietyName?: string;
-  buildingSocietyNameMarathi?: string;
+  propertyId?: number;
+  societyDetailId?: number;
+  wingId?: number;
+  wingNo?: string;
+  wingName?: string;
+  societyName?: string;
+  societyNameEnglish?: string;
   builderName?: string;
-  builderNameMarathi?: string;
-  landOwner?: string;
+  builderNameEnglish?: string;
+  landOwnerName?: string;
+  landOwnerNameEnglish?: string;
   secretaryName?: string;
-  secretaryNameMarathi?: string;
+  secretaryNameEnglish?: string;
   secretaryMobileNo?: string;
-  secretaryEmail?: string;
-  societyEmail?: string;
-  societyEmailMain?: string;
+  secretaryEmailId?: string;
+  societyEmailId?: string;
   ocDate?: string;
   ocNumber?: string;
   societyAddress?: string;
-  societyAddressMarathi?: string;
+  societyAddressEnglish?: string;
   managerName?: string;
-  managerEmail?: string;
+  managerNameEnglish?: string;
+  managerEmailId?: string;
   managerMobileNo?: string;
 }
 

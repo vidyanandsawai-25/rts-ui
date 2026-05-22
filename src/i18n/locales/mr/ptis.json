@@ -387,6 +387,73 @@
       }
     }
   },
+  "footerControls": {
+    "policy": {
+      "label": "धोरण",
+      "placeholder": "धोरण निवडा",
+      "options": {
+        "old": "जुन्या प्रमाणे",
+        "min_rv": "किमान आर.व्ही.",
+        "mix": "मिश्रित मूल्यांकन"
+      }
+    },
+    "action": {
+      "label": "कृती",
+      "placeholder": "कृती निवडा",
+      "options": {
+        "apply": "लागू करा",
+        "remove_retention": "रिटेन्शन काढा",
+        "remove_hearing": "सुनावणी काढा",
+        "remove_appeal_committee": "अपील समिती काढा",
+        "remove_remission": "सवलत काढा",
+        "remove_all_appeals": "सर्व अपीले काढा"
+      }
+    }
+  },
+  "footerActions": {
+    "R_SAVE": "जतन करा",
+    "R_SUBMIT": "सादर करा",
+    "R_UPDATE": "अपडेट करा",
+    "R_RESET": "रीसेट",
+    "R_ADD": "जोडा",
+    "L_BACK": "मागे",
+    "L_CLOSE": "बंद करा",
+    "L_CANCEL": "रद्द करा",
+    "M_PRINT": "मुद्रित करा",
+    "M_REPORT": "अहवाल",
+    "M_CALCULATE": "गणना करा",
+    "M_SEARCH": "शोधा",
+    "M_DELETE": "हटवा",
+    "PTIS_QC": "क्यूसी",
+    "PTIS_QC_REVERT": "क्यूसी रिव्हर्स",
+    "PTIS_COMBINE": "मालमत्ता एकत्र करा",
+    "PTIS_PARTITION": "विभाजन",
+    "PTIS_SPLIT": "विभाजित करा",
+    "PTIS_TRANSFER": "हस्तांतरण",
+    "PTIS_AMALGAMATION": "एकीकरण",
+    "PTIS_OBJECTION": "हरकत",
+    "PTIS_PREVIEW": "पूर्वावलोकन",
+    "PTIS_TAX_CALC": "गणना करा",
+    "PTIS_SUBMIT": "सादर करा",
+    "PTIS_APPLY": "कर लागू करा",
+    "PTIS_ADD": "जोडा",
+    "PTIS_NEW_PROPERTY": "नवीन मालमत्ता",
+    "PTIS_CANCEL": "रद्द करा",
+    "PTIS_REFRESH": "टैक्स रिफ्रेश करा",
+    "PTIS_SAVE": "जतन करा",
+    "PTIS_CLOSE": "बंद करा",
+    "PTIS_VALUATION": "मूल्यांकन",
+    "PTIS_REPORT": "अहवाल",
+    "PTIS_EDIT_ENTRY": "नोंद संपादित करा",
+    "PTIS_DOC": "दस्तऐवज",
+    "PTIS_DISCOUNT": "सूट",
+    "PTIS_HISTORY": "इतिहास",
+    "PTIS_MERGE": "विलय",
+    "PTIS_REVERSE": "रिव्हर्स",
+    "PTIS_RECONCILE": "मिळवणी करा",
+    "PTIS_CALC": "गणना करा",
+    "PTIS_RESET": "रीसेट"
+  },
   "error": {
     "title": "काहीतरी चूक झाली",
     "description": "आम्हाला अनपेक्षित त्रुटी आली. कृपया पुन्हा प्रयत्न करा किंवा मुख्यपृष्ठावर परत जा.",
@@ -420,5 +487,18 @@
     "invalidConstructionYear": "एक किंवा अधिक मजल्यांच्या नोंदींसाठी बांधकाम वर्ष अवैध किंवा गहाळ आहे.",
     "invalidPropertyAge": "अवैध मालमत्ता वय आढळले. बांधकाम वर्ष मूल्यांकन वर्षाच्या नंतर असू शकत नाही.",
     "typeNotFound": "मालमत्ता वापर प्रकार कोड सापडला नाही किंवा अवैध आहे."
+  },
+  "pagination": {
+    "label": "मालमत्ता सारणी पृष्ठांकन",
+    "controls": "पृष्ठांकन नियंत्रणे"
+  },
+  "buttons": {
+    "firstPage": "पहिले पृष्ठ",
+    "previousPage": "मागील पृष्ठ",
+    "nextPage": "पुढील पृष्ठ",
+    "lastPage": "शेवटचे पृष्ठ"
+  },
+  "table": {
+    "page": "पृष्ठ {current} चे {total}"
   }
 }
