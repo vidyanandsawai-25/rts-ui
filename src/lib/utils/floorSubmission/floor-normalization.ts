@@ -104,6 +104,9 @@ export function normalizeFloorData(
   const useDesc = getString(raw.typeOfUseDescription) || getUseDescription(typeOfUseId, lookups.use || []) || (raw.use && isNaN(Number(raw.use)) ? getString(raw.use) : '');
   const subTypeDesc = getString(raw.subTypeOfUseDescription) || getSubTypeDescription(Number(subTypeOfUseId), lookups.subType || []) || (raw.subTyp && isNaN(Number(raw.subTyp)) ? getString(raw.subTyp) : '');
 
+  const rentersList = (raw.renterMast || raw.renters || raw.renterMasts || []) as RenterMastItem[];
+  const firstRenter = Array.isArray(rentersList) && rentersList.length > 0 ? rentersList[0] : null;
+
   // 3. Return a clean, normalized object
   return {
     ...raw, // Preserve original fields for safety
@@ -115,7 +118,7 @@ export function normalizeFloorData(
     conTyp: conTypDesc || constructionTypeId,
     use: useDesc || typeOfUseId,
     subTyp: subTypeDesc || subTypeOfUseId,
-    renter: (raw.renter === 'Yes' || raw.renterYesNo === true || raw.renterYesNO === true) ? 'Yes' : 'No',
+    renter: (raw.renter === 'Yes' || raw.renter === true || raw.isRenter === true || raw.renterYesNo === true || raw.renterYesNO === true) ? 'Yes' : 'No',
     rooms: getString(raw.rooms) || getString(raw.noOfRooms) || '',
     areaSqFt: getString(raw.areaSqFt) || getString(raw.carpetAreaSqFeet) || '',
     areaSqM: getString(raw.areaSqM) || getString(raw.carpetAreaSqMeter) || '',
@@ -123,6 +126,14 @@ export function normalizeFloorData(
     builtupAreaSqM: getString(raw.builtupAreaSqM) || getString(raw.builtupAreaSqMeter) || '0.00',
     isTaxable: (raw.isTaxable === 'Yes' || raw.isTaxable === true) ? 'Yes' : 'No',
     
+    // Renter details root level mappings for forms/UI state
+    renterName: getString(raw.renterName) || getString(raw.renterNameEnglish) || getString(firstRenter?.renterName) || getString(firstRenter?.renterNameEnglish) || '',
+    agreementFromDate: getString(raw.agreementFromDate) || getString(firstRenter?.agreementFromDate) || getString(firstRenter?.durationFrom) || null,
+    agreementToDate: getString(raw.agreementToDate) || getString(firstRenter?.agreementToDate) || getString(firstRenter?.durationTo) || null,
+    agreementDate: getString(raw.agreementDate) || getString(firstRenter?.agreementDate) || null,
+    rentMonthly: getNumber(raw.rentMonthly) || getNumber(firstRenter?.rentMonthly) || 0,
+    rentYearly: getNumber(raw.rentYearly) || getNumber(firstRenter?.finalYearlyRent) || (getNumber(raw.rentMonthly) || getNumber(firstRenter?.rentMonthly) || 0) * 12,
+
     // Consistent Internal IDs for Form Mapping
     floorId,
     subFloorId,
@@ -140,6 +151,6 @@ export function normalizeFloorData(
     // Nested Data - Normalize rooms to ensure shapeParameters are present
     roomWiseSubmissionDetails: ((raw.roomWiseSubmissionDetails || raw.roomData || raw.propertyRooms || []) as unknown[]).map(r => normalizeRoomData(r as Record<string, unknown>)),
     renterDetails: (raw.renterDetails || []) as RenterDetailItem[],
-    renterMast: (raw.renterMast || raw.renterMasts || []) as RenterMastItem[],
+    renterMast: rentersList,
   };
 }

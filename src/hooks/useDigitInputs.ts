@@ -25,9 +25,9 @@ export const useDigitInputs = (length: number, initialValue: string = '') => {
   // Sync with initialValue or length changes in render phase
   const sanitizedInitialValue = initialValue.replace(/\D/g, '');
   const prevSanitized = prevInitialValue.replace(/\D/g, '');
-  
+
   if (
-    sanitizedInitialValue !== prevSanitized || 
+    sanitizedInitialValue !== prevSanitized ||
     length !== prevLength ||
     digits.length !== length
   ) {

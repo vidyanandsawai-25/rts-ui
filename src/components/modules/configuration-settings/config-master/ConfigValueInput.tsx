@@ -101,6 +101,14 @@ export function ConfigValueInput({
           ? 'number'
           : 'text'
       }
+      onKeyDown={(e) => {
+        if ((controlType === 'number' || dataType === 'int' || dataType === 'number') && /^[eE+\-.,]$/.test(e.key)) {
+          e.preventDefault();
+        }
+        if (dataType === 'decimal' && /^[eE+\-]$/.test(e.key)) {
+          e.preventDefault();
+        }
+      }}
       className={cn(error ? 'border-red-500' : '', className)}
       disabled={disabled}
     />

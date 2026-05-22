@@ -165,6 +165,8 @@ export interface FloorAPIResponse {
     agreementDate?: string;
     renterDetails?: RenterDetailItem[];
     renterMast?: RenterMastItem[];
+    renters?: RenterMastItem[];
+    isRenter?: boolean;
     propertyRooms?: RoomAPIResponse[];
     roomWiseSubmissionDetails?: RoomAPIResponse[];
 }
@@ -583,6 +585,8 @@ export interface FloorSubmissionPayload {
     nonCalculateRentMonthly?: number;
     renterDetails?: unknown[];
     renterMast?: unknown[];
+    renters?: unknown[];
+    isRenter?: boolean;
     roomWiseSubmissionDetails?: unknown[];
 }
 
@@ -595,4 +599,22 @@ export interface SubmissionResponse {
     success?: boolean;
     message?: string;
     [key: string]: unknown;
+}
+// Renter Custom Increment Row - used for Renter Agreement sub-data
+export interface RenterCustomIncrementPostRow {
+    Customfromdate: string;
+    Customtodate: string;
+    CustomIncrementtype: string;
+    CustomIncrementValue: number;
+    CustomMethod: string;
+}
+
+export interface RenterTableEntryPostRow {
+    TablePeriod: number;
+    TableDurationFrom: string;
+    TableDurationTo: string;
+    TableRentMonthly: number;
+    TableIncrementApplied: number;
+    TableSegmentType: string;
+    TableStatusLabel: string;
 }

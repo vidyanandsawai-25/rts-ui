@@ -60,7 +60,8 @@ export async function getTypeOfUses(pageNumber: number, pageSize: number, search
 
     if (searchTerm?.trim()) params.append("SearchTerm", searchTerm.trim());
 
-    const response = await apiClient.get<PagedResponse<TypeOfUse>>(`/TypeOfUse?${params.toString()}`,{cache: 'no-store'});
+    const response = await apiClient.get<PagedResponse<TypeOfUse>>(`/TypeOfUse?${params.toString()}`,{cache: 'no-store'});    
+    
     return handleApiResponse(response, "Failed to fetch type of uses (server-paged)");
 }
 

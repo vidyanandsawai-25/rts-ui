@@ -12,7 +12,7 @@ interface RoleFormWrapperProps {
 
 export function RoleFormWrapper({ initialData, isEdit }: RoleFormWrapperProps) {
   const router = useRouter();
-  const { roleFormData, setRoleFormData, handleRoleSubmit } = useRoleForm(() => {
+  const { roleFormData, setRoleFormData, handleRoleSubmit, isSubmitting, errors } = useRoleForm(() => {
     router.back();
     router.refresh();
   }, initialData);
@@ -25,6 +25,8 @@ export function RoleFormWrapper({ initialData, isEdit }: RoleFormWrapperProps) {
       formData={roleFormData}
       setFormData={setRoleFormData}
       onSubmit={handleRoleSubmit}
+      isSubmitting={isSubmitting}
+      errors={errors}
     />
   );
 }

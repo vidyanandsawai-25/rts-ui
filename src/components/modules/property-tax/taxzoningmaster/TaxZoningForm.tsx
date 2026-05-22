@@ -109,9 +109,16 @@ export const TaxZoningForm = ({
             </div>
           </div>
 
-          {ward.length === 1 && (
+          {ward.length === 1 && fromProps && toProps && parseInt(fromProps, 10) >= parseInt(toProps, 10) && (
             <ValidationMessage
-              visible={submitted && !isPropertyValid}
+              visible={true}
+              message={t('messages.fromPropertyMustBeSmallerThanToProperty')}
+            />
+          )}
+
+          {ward.length === 1 && submitted && !isPropertyValid && !(fromProps && toProps && parseInt(fromProps, 10) >= parseInt(toProps, 10)) && (
+            <ValidationMessage
+              visible={true}
               message={t('messages.propertyRequired')}
             />
           )}

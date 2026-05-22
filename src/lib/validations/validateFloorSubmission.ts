@@ -13,6 +13,7 @@ import { FloorSubmissionPayload } from '@/types/floor-details.types';
 import {
   validateFloorSubmissionPayload as zodValidate,
   FloorSubmissionSchemaType,
+  renterSubmissionSchema
 } from './floor-submission.schema';
 import {
   floorFormSchema,
@@ -46,12 +47,12 @@ export function validateFloorForm(data: unknown, t?: (key: string) => string) {
         if (path === 'floor') {
           message = t('floor.errors.floorRequired') || 'Floor selection is required';
         } else if (path === 'conYr') {
-          message = t('floor.errors.constructionYearInvalid') || 'Construction year must be between 1900 and the current financial year';
+          message = t('floor.errors.constructionYearInvalid') || 'Construction year must be between 1700 and the current financial year';
         } else if (path === 'asstYr') {
           if (issue.message.toLowerCase().includes('less than') || issue.message.toLowerCase().includes('cannot be less')) {
             message = t('floor.asstYrError') || 'Assessment Year cannot be less than Construction Year';
           } else {
-            message = t('floor.errors.assessmentYearInvalid') || 'Assessment year must be between 1900 and the current financial year';
+            message = t('floor.errors.assessmentYearInvalid') || 'Assessment year must be between 1700 and the current financial year';
           }
         } else if (path === 'conTyp') {
           message = t('floor.errors.constructionTypeRequired') || 'Construction type is required';
@@ -124,3 +125,26 @@ export function validateFloorSubmissionPayload(payload: FloorSubmissionPayload):
  */
 export { floorSubmissionSchema } from './floor-submission.schema';
 export type { FloorSubmissionSchemaType } from './floor-submission.schema';
+
+/**
+ * Validates renter form data
+ * 
+ * @param data - Renter data to validate
+ * @returns ActionResult with success flag and optional error message
+ */
+export function validateRenterFormData(data: unknown): ActionResult<unknown> {
+  const result = renterSubmissionSchema.safeParse(data);
+
+  if (result.success) {
+    return { success: true, data: result.data };
+  }
+
+  // Return first error message as translation key if it looks like one, else generic
+  const firstIssueMessage = result.error.issues[0]?.message;
+  const isTranslationKey = firstIssueMessage && firstIssueMessage.includes('.') && !firstIssueMessage.includes(' ');
+  const issuesSummary = result.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join(', ');
+  const errorKey = isTranslationKey ? firstIssueMessage : `floor.errors.invalidData (${issuesSummary})`;
+  
+  // Let's make it return ActionResult to match submitFloorSubmissionNoRedirectAction pattern.
+  return { success: false, error: errorKey };
+}

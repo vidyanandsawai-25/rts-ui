@@ -201,13 +201,15 @@ export async function updateFloor(data: FloorFormModel, userId: string): Promise
 
 export async function deleteFloor(id: number, _userId: string): Promise<void> {
   try {
-    if (id <= 0) throw new Error('Valid Floor ID required');
+    if (id <= 0) {
+      throw new Error('Valid Floor ID required');
+    }
 
     // Note: _userId is available for backend auditing/authentication
-    // Use shared apiClient for consistent timeout/abort handling
-    const response = await apiClient.delete(`/Floor/${id}`);
+    // Use shared apiClient for consistent timeout and error handling
+    const response = await apiClient.delete(`/Floor/${id}/purge`);
 
-    // Delete endpoints may return 204 No Content with an empty body.
+    // Purge endpoints may return 204 No Content with an empty body.
     // If the shared client marks that response as unsuccessful because it
     // attempts JSON parsing first, still treat HTTP 204 or JSON parse errors as success.
     if (response.success) {
@@ -215,7 +217,10 @@ export async function deleteFloor(id: number, _userId: string): Promise<void> {
     }
 
     // Handle 204 No Content or JSON parsing error on empty response
-    if (response.statusCode === 204 || response.error?.includes('Unexpected end of JSON input')) {
+    if (
+      response.statusCode === 204 ||
+      response.error?.includes('Unexpected end of JSON input')
+    ) {
       return;
     }
 
@@ -275,7 +280,6 @@ export async function createFloorRange(data: FloorRangePayload, userId: string):
       rangeFrom: data.rangeFrom.trim(),
       rangeTo: data.rangeTo.trim(),
       prefix: data.prefix?.trim() ?? '',
-      suffix: data.suffix?.trim() ?? '',
       template: {
         isActive: data.template.isActive,
         createdBy: Number(userId),

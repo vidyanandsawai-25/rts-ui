@@ -2,8 +2,7 @@ import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { appConfig } from '@/config/app.config';
 import { locales } from '@/i18n/config';
-
-const USER_ID_KEY = 'user_id';
+import { getUserIdFromCookies } from '@/lib/utils/cookie';
 
 export type ActionResponse<T> = {
   success: boolean;
@@ -20,10 +19,7 @@ export async function getAuthToken(): Promise<string | undefined> {
 
 export async function getUserId(): Promise<number | undefined> {
   const cookieStore = await cookies();
-  const userId = cookieStore.get(USER_ID_KEY)?.value;
-  if (!userId) return undefined;
-  const num = parseInt(userId, 10);
-  return isNaN(num) ? undefined : num;
+  return getUserIdFromCookies(cookieStore) ?? undefined;
 }
 
 export async function performAction<T>(
@@ -39,7 +35,24 @@ export async function performAction<T>(
     }
     return { success: true, data };
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'messages.errorOccurred';
+    let message = 'messages.errorOccurred';
+
+    // Attempt to extract translation key from ApiError
+    if (error && typeof error === 'object' && 'name' in error && error.name === 'ApiError') {
+      const apiError = error as { responseText?: string; message?: string };
+      if (
+        apiError.responseText &&
+        (apiError.responseText.startsWith('errors.') ||
+          apiError.responseText.startsWith('messages.'))
+      ) {
+        message = apiError.responseText;
+      } else {
+        message = apiError.responseText || apiError.message || message;
+      }
+    } else if (error instanceof Error) {
+      message = error.message;
+    }
+
     return { success: false, message };
   }
 }

@@ -75,13 +75,13 @@ export function FloorFormFields({
       <Input
         name="sequenceNo"
         label={labels.sequenceNo}
+        required
         type="number"
         placeholder={labels.sequenceNoPlaceholder}
         value={formData.sequenceNo === 0 ? '' : formData.sequenceNo}
         onChange={onChange}
         onBlur={onBlur}
         fullWidth
-        required
         className="text-gray-700"
       />
       <ValidationMessage

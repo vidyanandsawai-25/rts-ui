@@ -7,11 +7,20 @@ export interface RenterDetailItem {
     renterId?: number | string;
     renterName?: string;
     renterNameEnglish?: string;
+    rentAmount?: number;
     rentMonthly?: number;
     rentYearly?: number;
     agreementFromDate?: string;
     agreementToDate?: string;
     agreementDate?: string;
+    durationFrom?: string;
+    durationTo?: string;
+    incrementFrequency?: string;
+    incrementType?: string;
+    incrementValue?: number;
+    incrementMethod?: string;
+    incrementStatus?: boolean;
+    isActive?: boolean;
     [key: string]: unknown;
 }
 
@@ -20,6 +29,14 @@ export interface RenterMastItem {
     renterMastId?: number | string;
     renterType?: string;
     renterCategory?: string;
+    financialYear?: string;
+    finalRent?: number;
+    durationFrom?: string;
+    durationTo?: string;
+    incrementCount?: number;
+    totalRentCollected?: number;
+    monthCount?: number;
+    isActive?: boolean;
     [key: string]: unknown;
 }
 

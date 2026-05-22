@@ -1,15 +1,11 @@
 'use server';
 
 import { getPtisMainTaxDetailsByPropertyId, getPtisMainTaxDetailsCvByPropertyId } from '@/lib/api/ptis/ptisMain-taxdetails/taxDetails.service';
+import { MAX_PROPERTY_ID } from '@/lib/utils/kyc-validation.constants';
 import { validatePropertyId } from '@/lib/utils/ptis-normalization';
 import { handleServerError } from '@/lib/utils/server-action-error-handler';
 import type { ActionResult } from '@/types/common.types';
 import type { TaxDetailsData } from '@/types/ptisMain-taxdetails.types';
-
-/**
- * Maximum allowed property ID value to prevent integer overflow
- */
-const MAX_PROPERTY_ID = 2147483647; // Max 32-bit signed integer
 
 /**
  * Validates property ID input with comprehensive checks
@@ -48,7 +44,6 @@ function validatePropertyIdInput(
     };
   }
 
-  // Check maximum value to prevent overflow
   if (propertyIdNum > MAX_PROPERTY_ID) {
     return {
       valid: false,

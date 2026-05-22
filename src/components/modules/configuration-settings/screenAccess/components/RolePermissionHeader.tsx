@@ -1,6 +1,6 @@
 'use client';
 
-import { Info, Save } from 'lucide-react';
+import { Info, Save, RotateCcw } from 'lucide-react';
 import { Label } from '@/components/common/label';
 import { Select } from '@/components/common/select';
 import { Card } from '@/components/common/Card';
@@ -13,10 +13,12 @@ interface RolePermissionHeaderProps {
   isSaving: boolean;
   onRoleChange: (val: string) => void;
   onSave: () => void;
+  onCancel: () => void;
   translations: {
     selectRole: string;
     pendingChanges: string;
     saveChanges: string;
+    cancelChanges: string;
   };
 }
 
@@ -27,6 +29,7 @@ export function RolePermissionHeader({
   isSaving,
   onRoleChange,
   onSave,
+  onCancel,
   translations,
 }: RolePermissionHeaderProps) {
   return (
@@ -51,6 +54,16 @@ export function RolePermissionHeader({
             <Info className="w-4 h-4" />
             {translations.pendingChanges}
           </div>
+        )}
+        {pendingCount > 0 && (
+          <button
+            onClick={onCancel}
+            disabled={isSaving}
+            className="h-10 px-6 border border-gray-200 hover:bg-gray-50 text-gray-700 font-medium rounded-md flex items-center justify-center transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <RotateCcw className="w-4 h-4 mr-2" />
+            {translations.cancelChanges}
+          </button>
         )}
         <button
           onClick={onSave}

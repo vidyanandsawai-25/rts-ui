@@ -7,29 +7,33 @@ import { createConfigCategoryAction } from '@/app/[locale]/configuration-setting
 import { createConfigKeyAction } from '@/app/[locale]/configuration-settings/config-master/actions/key';
 import { createConfigValueAction } from '@/app/[locale]/configuration-settings/config-master/actions/value';
 import { ConfigurationMaster } from '@/components/modules/configuration-settings/config-master/ConfigurationMaster';
-import { configMasterService } from '@/lib/api/configMaster.service';
+import { configMasterService } from '@/lib/api/configuration-settings/config-master/configMaster.service';
 import { moduleMasterService } from '@/lib/api/moduleMaster.service';
 import { departmentMasterService } from '@/lib/api/departmentMaster.service';
 import { mockVerifySession } from './test-setup';
 import type { ConfigCategory, ConfigItem } from '@/types/configMaster.types';
 
-vi.mock('@/components/modules/configuration-settings/config-master/ConfigurationMasterHeader', () => ({
-  ConfigurationMasterHeader: ({ title }: { title: string }) => <div>{title}</div>,
-}));
+vi.mock(
+  '@/components/modules/configuration-settings/config-master/ConfigurationMasterHeader',
+  () => ({
+    ConfigurationMasterHeader: ({ title }: { title: string }) => <div>{title}</div>,
+  })
+);
 
-vi.mock('@/components/modules/configuration-settings/config-master/ConfigurationMasterContent', () => ({
-  ConfigurationMasterContent: ({
-    displayItems,
-  }: {
-    displayItems: ConfigItem[];
-  }) => <div>{`items:${displayItems.length}`}</div>,
-}));
+vi.mock(
+  '@/components/modules/configuration-settings/config-master/ConfigurationMasterContent',
+  () => ({
+    ConfigurationMasterContent: ({ displayItems }: { displayItems: ConfigItem[] }) => (
+      <div>{`items:${displayItems.length}`}</div>
+    ),
+  })
+);
 
 vi.mock('@/components/modules/configuration-settings/config-master/ConfigModalsController', () => ({
   ConfigModalsController: () => null,
 }));
 
-vi.mock('@/lib/api/configMaster.service', () => ({
+vi.mock('@/lib/api/configuration-settings/config-master/configMaster.service', () => ({
   configMasterService: {
     createConfigCategory: vi.fn(),
     createConfigKey: vi.fn(),
@@ -37,15 +41,15 @@ vi.mock('@/lib/api/configMaster.service', () => ({
     getAllConfigValuesFull: vi.fn(),
     getAllCategories: vi.fn(),
     getItemsByCategory: vi.fn(),
-  }
+  },
 }));
 
 vi.mock('@/lib/api/moduleMaster.service', () => ({
-  moduleMasterService: { getModuleMasters: vi.fn() }
+  moduleMasterService: { getModuleMasters: vi.fn() },
 }));
 
 vi.mock('@/lib/api/departmentMaster.service', () => ({
-  departmentMasterService: { getAllDepartmentMasters: vi.fn() }
+  departmentMasterService: { getAllDepartmentMasters: vi.fn() },
 }));
 
 describe('Configuration Master PR Smoke Tests', () => {
@@ -95,35 +99,39 @@ describe('Configuration Master PR Smoke Tests', () => {
   });
 
   it('renders ConfigurationMaster server component', async () => {
-    const categories: ConfigCategory[] = [{
-      id: '1',
-      code: 'SYS',
-      name: 'System',
-      displayOrder: 1,
-      isActive: true,
-      color: 'rose',
-      icon: 'Shield',
-      count: 1,
-      total: 1,
-    }];
-    const items: ConfigItem[] = [{
-      id: '1',
-      configKeyId: 1,
-      configValueId: 0,
-      categoryId: 1,
-      name: 'A',
-      configCode: 'A',
-      description: '',
-      value: '',
-      defaultValue: '',
-      isEnabled: true,
-      category: '1',
-      type: 'text',
-      controlType: 'text',
-      dataType: 'string',
-      stats: { deptOverrides: 0, userOverrides: 0, totalDepts: 0, totalUsers: 0 },
-      hasTag: false,
-    }];
+    const categories: ConfigCategory[] = [
+      {
+        id: '1',
+        code: 'SYS',
+        name: 'System',
+        displayOrder: 1,
+        isActive: true,
+        color: 'rose',
+        icon: 'Shield',
+        count: 1,
+        total: 1,
+      },
+    ];
+    const items: ConfigItem[] = [
+      {
+        id: '1',
+        configKeyId: 1,
+        configValueId: 0,
+        categoryId: 1,
+        name: 'A',
+        configCode: 'A',
+        description: '',
+        value: '',
+        defaultValue: '',
+        isEnabled: true,
+        category: '1',
+        type: 'text',
+        controlType: 'text',
+        dataType: 'string',
+        stats: { deptOverrides: 0, userOverrides: 0, totalDepts: 0, totalUsers: 0 },
+        hasTag: false,
+      },
+    ];
 
     const ui = await ConfigurationMaster({
       categories,
@@ -132,7 +140,6 @@ describe('Configuration Master PR Smoke Tests', () => {
       categoryId: '1',
       search: '',
       locale: 'en',
-      role: null,
     });
     render(ui);
     expect(screen.getByText('title')).toBeInTheDocument();
@@ -141,7 +148,10 @@ describe('Configuration Master PR Smoke Tests', () => {
 
   it('service mocks are callable', async () => {
     vi.mocked(moduleMasterService.getModuleMasters).mockResolvedValue({ success: true, data: [] });
-    vi.mocked(departmentMasterService.getAllDepartmentMasters).mockResolvedValue({ success: true, data: [] });
+    vi.mocked(departmentMasterService.getAllDepartmentMasters).mockResolvedValue({
+      success: true,
+      data: [],
+    });
     expect((await moduleMasterService.getModuleMasters()).success).toBe(true);
     expect((await departmentMasterService.getAllDepartmentMasters()).success).toBe(true);
   });

@@ -20,7 +20,7 @@ vi.mock('next-intl', () => ({
             'society.managerEmailPlaceholder': 'Manager Email',
             'society.secretaryNamePlaceholder': 'Secretary Name',
             'society.secretaryEmailPlaceholder': 'Secretary Email',
-            'common.UpdateChanges': 'Update Changes',
+            'commonbuttonmessages.UpdateChanges': 'Update Changes',
             'footer.saving': 'Saving...',
             'society.updateSuccess': 'Society details updated successfully',
             'society.updateError': 'An error occurred during update.',

@@ -126,9 +126,23 @@ export const mapFormToPayload = (params: {
     builtupAreaSqFeet: parseFloat(String(formData.builtupAreaSqFt || 0)),
     noOfRooms: parseInt(String(formData.rooms)) || 0,
     renterYesNo: formData.renter === 'Yes' || formData.renter === true,
+    isRenter: formData.renter === 'Yes' || formData.renter === true,
     isTaxable: formData.isTaxable === 'Yes' || formData.isTaxable === true,
     renterDetails: formData.renter === 'Yes' && Array.isArray(formData.renterDetails) ? formData.renterDetails : [],
     renterMast: formData.renter === 'Yes' && Array.isArray(formData.renterMast) ? formData.renterMast : [],
+    renters: formData.renter === 'Yes' && Array.isArray(formData.renterMast) ? formData.renterMast : [],
+    renterName: formData.renter === 'Yes' || formData.renter === true ? String(formData.renterName || '') : '',
+    renterNameEnglish: formData.renter === 'Yes' || formData.renter === true ? String(formData.renterNameEnglish || formData.renterName || '') : '',
+    rentMonthly: formData.renter === 'Yes' || formData.renter === true ? Number(formData.rentMonthly || formData.renterMonthly || 0) : 0,
+    rentYearly: formData.renter === 'Yes' || formData.renter === true ? (Number(formData.rentMonthly || formData.renterMonthly || 0) * 12) : 0,
+    agreementFromDate: formData.renter === 'Yes' || formData.renter === true ? (formData.agreementFromDate ? String(formData.agreementFromDate) : undefined) : undefined,
+    agreementToDate: formData.renter === 'Yes' || formData.renter === true ? (formData.agreementToDate ? String(formData.agreementToDate) : undefined) : undefined,
+    agreementDate: formData.renter === 'Yes' || formData.renter === true ? (formData.agreementDate ? String(formData.agreementDate) : undefined) : undefined,
+    taxLiability: String(formData.taxLiability || ''),
+    nonCalculateRentMonthly: formData.renter === 'Yes' || formData.renter === true ? Number(formData.nonCalculateRentMonthly || formData.rentMonthly || formData.renterMonthly || 0) : 0,
+    occupancyDate: formData.occupancyDate || null,
+    occupancyApplyOrNot: formData.occupancyApplyOrNot === 'Yes' || formData.occupancyApplyOrNot === true,
+    occupancyNumber: String(formData.occupancyNumber || ''),
     roomWiseSubmissionDetails: ([...((formData.roomWiseSubmissionDetails as unknown[]) || []), ...((formData.roomData as unknown[]) || [])] as import("@/types/room-details.types").RoomData[])
       .filter((r, index, self) => {
         // Calculate effective area from any possible field

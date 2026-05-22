@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers';
-import { revalidateTag } from 'next/cache';
+import { revalidateTag, revalidatePath } from 'next/cache';
 import { appConfig } from '@/config/app.config';
 import { getUserIdFromCookies } from '@/lib/utils/cookie';
 
@@ -29,6 +29,7 @@ export async function performAction<T>(
     const data = await action();
     if (shouldRevalidate) {
       revalidateTag('user-management', 'default');
+      revalidatePath('/[locale]/configuration-settings/user-management', 'layout');
     }
     return { success: true, data };
   } catch (error: unknown) {

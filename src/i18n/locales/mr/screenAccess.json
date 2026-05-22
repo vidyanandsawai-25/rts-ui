@@ -77,6 +77,7 @@
         "orderPlaceholder": "उदा. 3",
         "description": "वर्णन",
         "descriptionPlaceholder": "वर्णन प्रविष्ट करा",
+        "status": "स्थिती",
         "isActive": "सक्रिय",
         "isMenu": "मेनूमध्ये दाखवा",
         "authRequired": "प्रमाणीकरण आवश्यक",
@@ -89,7 +90,14 @@
         "cancelButton": "रद्द करा",
         "errors": {
           "groupRequired": "स्क्रीन गट अनिवार्य आहे",
-          "routeRequired": "रूट मार्ग अनिवार्य आहे"
+          "departmentRequired": "विभाग अनिवार्य आहे",
+          "routeRequired": "रूट मार्ग अनिवार्य आहे",
+          "duplicateName": "या नावाने असलेली एक स्क्रीन आधीपासून अस्तित्वात आहे",
+          "duplicateCode": "या कोडने असलेली एक स्क्रीन आधीपासून अस्तित्वात आहे",
+          "duplicateRoute": "या मार्गाने असलेली एक स्क्रीन आधीपासून अस्तित्वात आहे",
+          "nameRequired": "स्क्रीन नाव आवश्यक आहे",
+          "codeRequired": "स्क्रीन कोड आवश्यक आहे",
+          "moduleRequired": "मॉड्यूल आवश्यक आहे"
         }
       },
 
@@ -100,6 +108,7 @@
         "createError": "स्क्रीन तयार करण्यात अयशस्वी",
         "updateError": "स्क्रीन अपडेट करण्यात अयशस्वी",
         "deleteError": "स्क्रीन हटविण्यात अयशस्वी",
+        "fetchModulesError": "ऑटो-असाइनमेंटसाठी मॉड्यूल आणण्यात अयशस्वी",
         "deleteConfirmTitle": "स्क्रीन हटवा",
         "deleteConfirmMessage": "तुम्हाला खात्री आहे की तुम्ही ही स्क्रीन हटवू इच्छिता?"
       }
@@ -148,7 +157,13 @@
         "sectionIdentity": "गट ओळख",
         "sectionConfig": "गट कॉन्फ़िगरेशन",
         "saveButton": "गट जतन करा",
-        "cancelButton": "रद्द करा"
+        "cancelButton": "रद्द करा",
+        "errors": {
+          "duplicateName": "या नावाने असलेला एक स्क्रीन गट आधीपासून अस्तित्वात आहे",
+          "duplicateCode": "या कोडने असलेला एक स्क्रीन गट आधीपासून अस्तित्वात आहे",
+          "nameRequired": "स्क्रीन गटाचे नाव आवश्यक आहे",
+          "codeRequired": "स्क्रीन गट कोड आवश्यक आहे"
+        }
       },
 
       "messages": {
@@ -229,7 +244,8 @@
     },
 
     "buttons": {
-      "saveChanges": "बदल जतन करा"
+      "saveChanges": "बदल जतन करा",
+      "cancelChanges": "रद्द करा"
     },
 
     "messages": {

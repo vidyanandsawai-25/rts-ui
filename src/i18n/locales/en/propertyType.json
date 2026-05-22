@@ -89,7 +89,7 @@
         "selected": "{count} selected",
         "search": "Search",
         "searchPlaceholder": "Search by code or description...",
-        "typeLabel": "Type",
+        "typeLabel": "Type Of Use",
         "allTypes": "All Types",
         "selectAll": "Select All",
         "clear": "Clear All",
@@ -135,7 +135,8 @@
       "idRequiredForUpdate": "Property Type ID is required for update",
       "createFailed": "Failed to create property type",
       "updateFailed": "Failed to update property type",
-      "deleteFailed": "Failed to delete property type"
+      "deleteFailed": "Failed to delete property type",
+      "purgeDeleteFailed": "Failed to permanently delete property type"
     },
     "error": {
       "title": "Something Went Wrong",

@@ -1,10 +1,9 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
-
 import { MasterTable } from "@/components/common/MasterTable";
 import { EditButton, DeleteButton } from "@/components/common/ActionButtons";
 import { useConfirm } from "@/components/common/ConfirmProvider";
@@ -29,6 +28,7 @@ export default function FloorMaster({
   const tCommon = useTranslations("common");
 
   const { confirm } = useConfirm();
+  const [isPending, startTransition] = useTransition();
 
   const {
     items: data,
@@ -62,11 +62,27 @@ export default function FloorMaster({
     [locale]
   );
 
-  const columns = floorColumns(t);
+  /* ================= SORTING ================= */
+  const handleSort = useCallback(
+    (columnKey: string) => {
+      const newSortOrder =
+        sortBy === columnKey && sortOrder === "asc" ? "desc" : "asc";
+      router.push(buildUrl(pageNumber, pageSize, currentSearchTerm, columnKey, newSortOrder));
+    },
+    [sortBy, sortOrder, router, buildUrl, pageNumber, pageSize, currentSearchTerm]
+  );
+
+  const columns = floorColumns(t, tCommon, sortBy, sortOrder, handleSort);
 
   /* ================= PAGINATION ================= */
-  const changePage = (p: number) => {
-    router.push(buildUrl(p, pageSize, currentSearchTerm, sortBy, sortOrder));
+  const changePage = (
+    page: number,
+    size: number = pageSize,
+    searchTerm: string = currentSearchTerm,
+    newSortBy: string = sortBy ?? "",
+    newSortOrder: string = sortOrder ?? ""
+  ) => {
+    router.push(buildUrl(page, size, searchTerm, newSortBy, newSortOrder));
   };
 
   /* ================= EDIT ================= */
@@ -95,7 +111,10 @@ export default function FloorMaster({
           } else {
             let msg = tCommon("errors.deleteError");
 
-            if (result.statusCode === 409) {
+            if (result.statusCode === 409 && result.message) {
+              // Show backend message if present
+              msg = result.message;
+            } else if (result.statusCode === 409) {
               msg = t("messages.deleteInUse");
             } else if (result.statusCode === 404) {
               msg = tCommon("errors.notFound");
@@ -122,24 +141,23 @@ export default function FloorMaster({
 
   /* ================= UI ================= */
   return (
-    <MasterTable<Floor>
-          columns={columns}
-          data={data}
-          loading={false}
-          height="lg"
-        
-          pageNumber={pageNumber}
-          pageSize={pageSize}
-          totalCount={totalCount}
-          totalPages={totalPages}
-          onPageChange={changePage}
-
-          renderActions={(row) => (
-            <>
-              <EditButton onClick={() => handleEdit(row)} />
-              <DeleteButton onClick={() => handleDelete(row)} />
-            </>
-          )}
+    <div className="space-y-4">
+      <MasterTable<Floor>
+        columns={columns}
+        data={data}
+        loading={isPending}
+        height="lg"
+        pageNumber={pageNumber}
+        pageSize={pageSize}
+        totalCount={totalCount}
+        totalPages={totalPages}
+        onPageChange={changePage}
+        renderActions={(row) => (
+          <>
+            <EditButton onClick={() => handleEdit(row)} />
+            <DeleteButton onClick={() => handleDelete(row)} />
+          </>
+        )}
 
           actionLabel={tCommon("table.columns.actions")}
 
@@ -148,27 +166,34 @@ export default function FloorMaster({
           footerLeftContent={
             <div className="flex items-center gap-4">
               <span className="text-sm text-gray-700">
-                {tCommon("table.showing")} {start} {tCommon("table.to")} {end} {tCommon("table.of")} {totalCount}
+                {tCommon("table.showing")} {start} {tCommon("table.to")} {end} {tCommon("table.of")} {totalCount} {tCommon("table.entries")}
               </span>
-
-              <Select
-                value={String(pageSize)}
-                onChange={(e) =>
-                  router.push(
-                    buildUrl(1, Number(e.target.value), currentSearchTerm, sortBy, sortOrder)
-                  )
-                }
-                options={[10, 20, 30, 50].map((s) => ({
-                  label: String(s),
-                  value: String(s),
-                }))}
-                selectSize="sm"
-                className="w-20"
-              />
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">{tCommon("table.rowsPerPage")}:</span>
+                <Select
+                  value={String(pageSize)}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                    startTransition(() => {
+                      router.push(
+                        buildUrl(1, Number(e.target.value), currentSearchTerm, sortBy, sortOrder)
+                      );
+                    });
+                  }}
+                  options={[10, 20, 30, 50].map((s) => ({
+                    label: String(s),
+                    value: String(s),
+                  }))}
+                  selectSize="sm"
+                  className="w-20"
+                  ariaLabel={tCommon("table.rowsPerPage") || "Rows per page"}
+                />
+              </div>
             </div>
           }
 
-      getRowKey={(row) => String(row.id)}
-    />
+          getRowKey={(row) => String(row.id)}
+        />
+      </div>
+    
   );
 }

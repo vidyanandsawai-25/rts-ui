@@ -35,7 +35,6 @@ const DEFAULT_RANGE_DATA: FloorRangeFormModel = {
   rangeFrom: 0,
   rangeTo: 0,
   prefix: '',
-  suffix: '',
   isActive: true,
   autoGenerateSubFloor: false,
 };
@@ -205,7 +204,6 @@ export default function FloorForm({ id, initialData }: Readonly<FloorFormProps>)
           rangeFrom: rangeData.rangeFrom.toString(),
           rangeTo: rangeData.rangeTo.toString(),
           prefix: rangeData.prefix,
-          suffix: rangeData.suffix,
           template: {
             isActive: rangeData.isActive,
             floorCode: '',

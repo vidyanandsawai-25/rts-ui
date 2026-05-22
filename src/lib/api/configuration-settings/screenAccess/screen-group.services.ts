@@ -106,7 +106,7 @@ export async function createScreenGroup(
   if (!response.success) {
     throw new ApiError(
       response.statusCode ?? 500,
-      response.error || 'Failed to create screen group',
+      'screenManagement.groups.messages.createError',
       'Create screen group failed'
     );
   }
@@ -134,7 +134,7 @@ export async function updateScreenGroup(
   if (!response.success) {
     throw new ApiError(
       response.statusCode ?? 500,
-      response.error || 'Failed to update screen group',
+      'screenManagement.groups.messages.updateError',
       'Update screen group failed'
     );
   }
@@ -147,7 +147,7 @@ export async function deleteScreenGroup(id: number): Promise<string> {
   if (!response.success) {
     throw new ApiError(
       response.statusCode ?? 500,
-      response.error || 'Failed to delete screen group',
+      'screenManagement.groups.messages.deleteError',
       'Delete screen group failed'
     );
   }

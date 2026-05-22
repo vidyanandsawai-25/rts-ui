@@ -22,7 +22,7 @@ export interface PropertyTypeFormModel {
   id?: number; // Optional for create, required for update
   propertyDescription: string;
   type: string;
-  propertyTypeGroup: string;
+  propertyTypeGroup: string | null;
   searchSequence: number;
   propertyTypeCategoryId: number;
   isActive: boolean;
@@ -39,7 +39,7 @@ export interface PropertyType {
   id: number;
   propertyDescription: string;
   type: string;
-  propertyTypeGroup: string;
+  propertyTypeGroup: string | null;
   searchSequence: number;
   propertyTypeCategoryId: number;
   isActive: boolean;
@@ -53,7 +53,7 @@ export interface PropertyType {
 export interface PropertyTypeCreatePayload {
   propertyDescription: string;
   type: string;
-  propertyTypeGroup: string;
+  propertyTypeGroup: string | null;
   searchSequence: number;
   propertyTypeCategoryId: number;
   isActive: boolean;

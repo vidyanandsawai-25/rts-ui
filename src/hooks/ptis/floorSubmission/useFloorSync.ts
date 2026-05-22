@@ -1,6 +1,7 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useMemo, useEffect, useRef } from 'react';
+import { useMemo, useEffect, useRef, Dispatch, SetStateAction } from 'react';
 import { FloorData } from '@/types/room-details.types';
 import { EditSidebarProps } from '@/types/floor-details.types';
 import { LookupData } from '@/types/common-details.types';
@@ -11,7 +12,9 @@ import { ReadonlyURLSearchParams } from 'next/navigation';
 export const useFloorSync = (params: {
   props: EditSidebarProps;
   isAddingNewFloor: boolean;
-  setEditingFloorForm: (val: FloorData | ((prev: FloorData) => FloorData)) => void;
+  setIsAddingNewFloor: (val: boolean) => void;
+  editingFloorForm: FloorData;
+  setEditingFloorForm: Dispatch<SetStateAction<FloorData>>;
   localFloors: FloorData[];
   setLocalFloors: (val: FloorData[]) => void;
   setSelectedFloor: (val: FloorData | null) => void;
@@ -23,6 +26,8 @@ export const useFloorSync = (params: {
   const {
     props,
     isAddingNewFloor,
+    setIsAddingNewFloor,
+    editingFloorForm,
     setEditingFloorForm,
     setLocalFloors,
     setSelectedFloor,
@@ -60,30 +65,69 @@ export const useFloorSync = (params: {
   useEffect(() => {
     if (initialFloorDetails) {
       if (hasSyncedRef.current !== currentDetailsId) {
-      const floorDataMapped = normalizeFloorData(initialFloorDetails as Record<string, unknown>, {
-        floor: props.floorData as LookupData[],
-        subFloor: props.subFloorData as LookupData[],
-        construction: props.constructionTypeData as LookupData[],
-        use: props.useData as LookupData[],
-        subType: props.subTypeData as LookupData[],
-      });
+        const floorDataMapped = normalizeFloorData(initialFloorDetails as Record<string, unknown>, {
+          floor: props.floorData as LookupData[],
+          subFloor: props.subFloorData as LookupData[],
+          construction: props.constructionTypeData as LookupData[],
+          use: props.useData as LookupData[],
+          subType: props.subTypeData as LookupData[],
+        });
 
-      // Check for renter cookie during sync
-      const renterCookie = getCookieValue('renter_data');
-      if (renterCookie) {
+        // Check for renter sessionStorage or cookie during sync
+        let renterData: any = null;
         try {
-          const renterData = JSON.parse(renterCookie);
-          if (String(renterData.propertyId) === String(initialPropertyID) && String(renterData.floorId) === String(floorDataMapped.id)) {
-            floorDataMapped.renter = 'Yes';
-            floorDataMapped.renterMast = renterData.renterMast || [];
+          const sessionRenter = sessionStorage.getItem(`renter_data_${floorDataMapped.id}`);
+          if (sessionRenter) {
+            renterData = JSON.parse(sessionRenter);
           }
-        } catch (_e) {
-          // Cookie parsing failed - silently continue with default values
-        }
-      }
+        } catch (_e) {}
 
-        setEditingFloorForm(floorDataMapped);
-        setSelectedFloor(floorDataMapped);
+        if (!renterData) {
+          const renterCookie = getCookieValue('renter_data');
+          if (renterCookie) {
+            try {
+              const parsed = JSON.parse(renterCookie);
+              if (String(parsed.propertyId) === String(initialPropertyID) && String(parsed.floorId) === String(floorDataMapped.id)) {
+                renterData = parsed;
+              }
+            } catch (_e) {}
+          }
+        }
+
+        // Check if there is an in-progress saved form in sessionStorage for this floor
+        let savedForm: any = null;
+        try {
+          const sessionForm = sessionStorage.getItem('editingFloorForm');
+          if (sessionForm) {
+            const parsed = JSON.parse(sessionForm);
+            if (String(parsed.id) === String(floorDataMapped.id)) {
+              savedForm = parsed;
+            }
+          }
+        } catch (_e) {}
+
+        let finalForm = savedForm ? { ...savedForm } : { ...floorDataMapped };
+
+        if (renterData) {
+          const mergedRenterFields = {
+            renter: 'Yes',
+            renterName: renterData.renterName || renterData.renterNameEnglish || finalForm.renterName || '',
+            agreementFromDate: renterData.agreementDateFrom || renterData.agreementFromDate || finalForm.agreementFromDate || null,
+            agreementToDate: renterData.agreementDateTo || renterData.agreementToDate || finalForm.agreementToDate || null,
+            agreementDate: renterData.agreementDate || finalForm.agreementDate || null,
+            rentMonthly: renterData.rentAmount || renterData.rentMonthly || finalForm.rentMonthly || 0,
+            rentYearly: (Number(renterData.rentAmount || renterData.rentMonthly) || 0) * 12,
+            renterDetails: renterData.renterDetails || finalForm.renterDetails || [],
+            renterMast: renterData.renterMast || finalForm.renterMast || [],
+          };
+          finalForm = {
+            ...finalForm,
+            ...mergedRenterFields,
+          };
+        }
+
+        setEditingFloorForm(finalForm);
+        setSelectedFloor(finalForm);
         hasSyncedRef.current = currentDetailsId ?? null;
       }
     } else if (!hasSyncedRef.current) {
@@ -94,48 +138,168 @@ export const useFloorSync = (params: {
       }
     }
   }, [
-    currentDetailsId, 
-    initialFloorDetails, 
-    isAddingNewFloor, 
-    initialPropertyID, 
-    props.floorData, 
-    props.subFloorData, 
-    props.constructionTypeData, 
-    props.useData, 
-    props.subTypeData, 
-    setEditingFloorForm, 
-    setSelectedFloor, 
-    INITIAL_FORM_STATE
+    currentDetailsId,
+    initialFloorDetails,
+    isAddingNewFloor,
+    initialPropertyID,
+    props.floorData,
+    props.subFloorData,
+    props.constructionTypeData,
+    props.useData,
+    props.subTypeData,
+    setEditingFloorForm,
+    setSelectedFloor,
+    INITIAL_FORM_STATE,
   ]);
+
+  // 3b. Real-time Autosave Effect
+  useEffect(() => {
+    if (typeof window !== 'undefined' && editingFloorForm) {
+      // Avoid saving empty form state to prevent overwriting valid session data during clear/reset operations
+      const hasContent = 
+        editingFloorForm.floor || 
+        editingFloorForm.conYr || 
+        editingFloorForm.renter === 'Yes' || 
+        (Array.isArray(editingFloorForm.roomWiseSubmissionDetails) && (editingFloorForm.roomWiseSubmissionDetails as any[]).length > 0);
+      
+      if (hasContent) {
+        sessionStorage.setItem('editingFloorForm', JSON.stringify(editingFloorForm));
+      }
+    }
+  }, [editingFloorForm]);
 
   // 4. Sync URL Param Renter Cookie (useEffect Sync)
   const currentFloorIdUrl = searchParams.get('floorId');
+  const currentDrawerUrl = searchParams.get('drawer');
 
   useEffect(() => {
-    if (currentFloorIdUrl) {
-      const cookieKey = `renter_${currentFloorIdUrl}`;
-      const renterCookie = getCookieValue(cookieKey);
-      if (renterCookie) {
-        try {
-          const renterData = JSON.parse(renterCookie);
-          setEditingFloorForm((prev) => ({
-            ...prev,
-            renter: 'Yes',
-            renterName: renterData.renterName || '',
-            agreementFromDate: renterData.agreementDateFrom || null,
-            agreementToDate: renterData.agreementDateTo || null,
-            agreementDate: renterData.agreementDate || null,
-            rentMonthly: renterData.rentAmount || 0,
-            rentYearly: (Number(renterData.rentAmount) || 0) * 12,
-            renterDetails: renterData.renterDetails || [],
-            renterMast: renterData.renterMast || [],
-          }));
-        } catch (_e) {
-          // Cookie parsing failed - silently continue with default values
+    if (currentFloorIdUrl === 'new' || currentDrawerUrl === 'add') {
+      setIsAddingNewFloor(true);
+      setSelectedFloor(null);
+
+      let savedForm: any = null;
+      try {
+        const sessionForm = sessionStorage.getItem('editingFloorForm');
+        if (sessionForm) {
+          const parsed = JSON.parse(sessionForm);
+          if (!parsed.id || parsed.id === 'new') {
+            savedForm = parsed;
+          }
+        }
+      } catch (_e) {}
+
+      let renterData: any = null;
+      try {
+        const sessionRenter = sessionStorage.getItem('renter_data_new');
+        if (sessionRenter) {
+          renterData = JSON.parse(sessionRenter);
+        }
+      } catch (_e) {}
+
+      let finalForm = savedForm ? { ...savedForm } : null;
+
+      if (renterData) {
+        const mergedRenterFields = {
+          renter: 'Yes',
+          renterName: renterData.renterName || renterData.renterNameEnglish || (finalForm?.renterName || ''),
+          agreementFromDate: renterData.agreementDateFrom || renterData.agreementFromDate || (finalForm?.agreementFromDate || null),
+          agreementToDate: renterData.agreementDateTo || renterData.agreementToDate || (finalForm?.agreementToDate || null),
+          agreementDate: renterData.agreementDate || (finalForm?.agreementDate || null),
+          rentMonthly: renterData.rentAmount || renterData.rentMonthly || (finalForm?.rentMonthly || 0),
+          rentYearly: (Number(renterData.rentAmount || renterData.rentMonthly) || 0) * 12,
+          renterDetails: renterData.renterDetails || (finalForm?.renterDetails || []),
+          renterMast: renterData.renterMast || (finalForm?.renterMast || []),
+        };
+
+        if (finalForm) {
+          finalForm = {
+            ...finalForm,
+            ...mergedRenterFields,
+          };
+        } else {
+          finalForm = {
+            ...renterData,
+            ...mergedRenterFields,
+          };
         }
       }
+
+      if (finalForm) {
+        setEditingFloorForm((prev) => ({
+          ...prev,
+          ...finalForm,
+          id: undefined, // It's a new floor, keep id undefined
+        }));
+      }
+    } else if (currentFloorIdUrl && currentFloorIdUrl !== 'new') {
+      let renterData: any = null;
+      try {
+        const sessionRenter = sessionStorage.getItem(`renter_data_${currentFloorIdUrl}`);
+        if (sessionRenter) {
+          renterData = JSON.parse(sessionRenter);
+        }
+      } catch (_e) {}
+
+      if (!renterData) {
+        const cookieKey = `renter_${currentFloorIdUrl}`;
+        const renterCookie = getCookieValue(cookieKey);
+        if (renterCookie) {
+          try {
+            renterData = JSON.parse(renterCookie);
+          } catch (_e) {}
+        }
+      }
+
+      // Check if there is an in-progress saved form in sessionStorage for this floor
+      let savedForm: any = null;
+      try {
+        const sessionForm = sessionStorage.getItem('editingFloorForm');
+        if (sessionForm) {
+          const parsed = JSON.parse(sessionForm);
+          if (String(parsed.id) === String(currentFloorIdUrl)) {
+            savedForm = parsed;
+          }
+        }
+      } catch (_e) {}
+
+      let finalForm = savedForm ? { ...savedForm } : null;
+
+      if (renterData) {
+        const mergedRenterFields = {
+          renter: 'Yes',
+          renterName: renterData.renterName || renterData.renterNameEnglish || (finalForm?.renterName || ''),
+          agreementFromDate: renterData.agreementDateFrom || renterData.agreementFromDate || (finalForm?.agreementFromDate || null),
+          agreementToDate: renterData.agreementDateTo || renterData.agreementToDate || (finalForm?.agreementToDate || null),
+          agreementDate: renterData.agreementDate || (finalForm?.agreementDate || null),
+          rentMonthly: renterData.rentAmount || renterData.rentMonthly || (finalForm?.rentMonthly || 0),
+          rentYearly: (Number(renterData.rentAmount || renterData.rentMonthly) || 0) * 12,
+          renterDetails: renterData.renterDetails || (finalForm?.renterDetails || []),
+          renterMast: renterData.renterMast || (finalForm?.renterMast || []),
+        };
+
+        if (finalForm) {
+          finalForm = {
+            ...finalForm,
+            ...mergedRenterFields,
+          };
+        } else {
+          finalForm = {
+            ...renterData,
+            ...mergedRenterFields,
+            id: renterData.id || renterData.propertyDetailsId || currentFloorIdUrl,
+          };
+        }
+      }
+
+      if (finalForm) {
+        setEditingFloorForm((prev) => ({
+          ...prev,
+          ...finalForm,
+        }));
+        setSelectedFloor(finalForm);
+      }
     }
-  }, [currentFloorIdUrl, setEditingFloorForm]);
+  }, [currentFloorIdUrl, currentDrawerUrl, setEditingFloorForm, setSelectedFloor, setIsAddingNewFloor]);
 
   return { mappedInitialFloors };
 };

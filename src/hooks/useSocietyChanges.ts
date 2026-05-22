@@ -13,6 +13,8 @@ export const useSocietyChanges = ({
     managerEmail,
     secretaryEmail,
     societyEmail,
+    societyAddress,
+    wingId,
     societyData,
     setHasChanges,
 }: {
@@ -27,13 +29,14 @@ export const useSocietyChanges = ({
     managerEmail: string;
     secretaryEmail: string;
     societyEmail: string;
+    societyAddress: string;
+    wingId: number | null;
     societyData: PropertySocietyDetailsApiItem | null;
     setHasChanges: (value: boolean) => void;
 }) => {
     
     const checkFormChanges = useCallback(() => {
         if (!formRef.current) return;
-        const formData = new FormData(formRef.current);
         const managerMobileStr = managerMobileDigits.join("");
         const secretaryMobileStr = secretaryMobileDigits.join("");
 
@@ -41,14 +44,15 @@ export const useSocietyChanges = ({
             landOwnerName.trim() !== (societyData?.landOwnerName ?? "") ||
             builderName.trim() !== (societyData?.builderName ?? "") ||
             societyName.trim() !== (societyData?.societyName ?? "") ||
-            String(formData.get("societyAddress") ?? "").trim() !== (societyData?.societyAddress ?? "") ||
+            societyAddress.trim() !== (societyData?.societyAddress ?? "") ||
             societyEmail.trim() !== (societyData?.societyEmailId ?? "") ||
             managerName.trim() !== (societyData?.managerName ?? "") ||
             managerEmail.trim() !== (societyData?.managerEmailId ?? "") ||
             managerMobileStr !== (societyData?.managerMobileNo ?? "") ||
             secretaryName.trim() !== (societyData?.secretaryName ?? "") ||
             secretaryEmail.trim() !== (societyData?.secretaryEmailId ?? "") ||
-            secretaryMobileStr !== (societyData?.secretaryMobileNo ?? "");
+            secretaryMobileStr !== (societyData?.secretaryMobileNo ?? "") ||
+            (wingId ?? null) !== (societyData?.wingId ?? null);
 
         setHasChanges(isChanged);
     }, [
@@ -62,6 +66,8 @@ export const useSocietyChanges = ({
         managerEmail,
         secretaryEmail,
         societyEmail,
+        societyAddress,
+        wingId,
         societyData, 
         formRef, 
         setHasChanges

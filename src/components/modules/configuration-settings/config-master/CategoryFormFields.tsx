@@ -1,7 +1,7 @@
 'use client';
 
 import { Label } from '@/components/common/label';
-import { Input, ValidationMessage, ToggleSwitch } from '@/components/common';
+import { Input, ValidationMessage, TextArea, RequiredFieldsNote, StatusToggleCard } from '@/components/common';
 import { useTranslations } from 'next-intl';
 
 interface CategoryFormFieldsProps {
@@ -27,7 +27,9 @@ export function CategoryFormFields({
   const t = useTranslations('configMaster');
 
   return (
-    <div className="space-y-5 p-6">
+    <div className="space-y-6 p-6">
+      <RequiredFieldsNote text={t('modals.addCategory.form.requiredFields')} />
+
       {/* Category Code */}
       <div className="space-y-2">
         <Label htmlFor="categoryCode" required className="text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -40,6 +42,7 @@ export function CategoryFormFields({
           onChange={(e) => onChange('categoryCode', e.target.value)}
           className={errors.categoryCode ? 'border-red-500' : ''}
           disabled={isPending}
+          maxLength={20}
         />
         <ValidationMessage message={errors.categoryCode} visible={!!errors.categoryCode} />
       </div>
@@ -49,13 +52,15 @@ export function CategoryFormFields({
         <Label htmlFor="categoryName" required className="text-sm font-medium text-slate-700 dark:text-slate-300">
           {t('modals.addCategory.form.name')}
         </Label>
-        <Input
+        <TextArea
           id="categoryName"
           placeholder={t('modals.addCategory.form.placeholders.name')}
-          value={formData.categoryName}
+          defaultValue={formData.categoryName}
           onChange={(e) => onChange('categoryName', e.target.value)}
           className={errors.categoryName ? 'border-red-500' : ''}
           disabled={isPending}
+          maxLength={100}
+          rows={2}
         />
         <ValidationMessage message={errors.categoryName} visible={!!errors.categoryName} />
       </div>
@@ -72,28 +77,29 @@ export function CategoryFormFields({
           placeholder="0"
           value={formData.displayOrder}
           onChange={(e) => onChange('displayOrder', e.target.value)}
+          onKeyDown={(e) => {
+            if (/^[eE+\-]$/.test(e.key)) e.preventDefault();
+          }}
           className={errors.displayOrder ? 'border-red-500' : ''}
           disabled={isPending}
+          maxLength={5}
         />
         <ValidationMessage message={errors.displayOrder} visible={!!errors.displayOrder} />
       </div>
 
       {/* Status Toggle - Only show in Edit mode */}
       {isEdit && (
-        <div className="space-y-2">
-          <Label htmlFor="isActive" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-            {t('modals.addCategory.form.status')}
-          </Label>
-          <ToggleSwitch
-            checked={formData.isActive}
-            onChange={(checked) => onChange('isActive', checked)}
-            activeLabel={t('modals.addCategory.form.active')}
-            inactiveLabel={t('modals.addCategory.form.inactive')}
-            disabled={isPending}
-            showPopup={false}
-          />
-        </div>
+        <StatusToggleCard
+          isActive={formData.isActive}
+          onToggle={(checked) => onChange('isActive', checked)}
+          activeLabel={t('modals.addCategory.form.active')}
+          inactiveLabel={t('modals.addCategory.form.inactive')}
+          statusLabel={t('modals.addCategory.form.status')}
+          description={formData.isActive ? t('modals.addCategory.form.activeDescription') : t('modals.addCategory.form.inactiveDescription')}
+          disabled={isPending}
+        />
       )}
     </div>
   );
 }
+

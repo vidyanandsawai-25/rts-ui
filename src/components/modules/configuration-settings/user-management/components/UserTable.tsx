@@ -51,6 +51,17 @@ export function UserTable({
       ),
     },
     {
+      label: t('form.userCode'),
+      key: 'userCode' as const,
+      render: (value: unknown) => (
+        <div className="flex items-center">
+          <span className="font-mono text-slate-700 font-semibold text-xs bg-gradient-to-r from-indigo-50 to-purple-50 px-2.5 py-1 rounded-md border border-indigo-100 shadow-xs">
+            {(value as string) || '-'}
+          </span>
+        </div>
+      ),
+    },
+    {
       label: t('table.contact'),
       key: 'mobileNo' as const,
       render: (value: unknown, row: User) => (

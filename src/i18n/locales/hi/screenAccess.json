@@ -77,6 +77,7 @@
         "orderPlaceholder": "उदाहरण: 3",
         "description": "विवरण",
         "descriptionPlaceholder": "विवरण दर्ज करें",
+        "status": "स्थिति",
         "isActive": "सक्रिय",
         "isMenu": "मेनू में दिखाएं",
         "authRequired": "प्रमाणीकरण आवश्यक",
@@ -89,7 +90,14 @@
         "cancelButton": "रद्द करें",
         "errors": {
           "groupRequired": "स्क्रीन समूह अनिवार्य है",
-          "routeRequired": "रूट पथ अनिवार्य है"
+          "departmentRequired": "विभाग अनिवार्य है",
+          "routeRequired": "रूट पथ अनिवार्य है",
+          "duplicateName": "इस नाम वाली एक स्क्रीन पहले से मौजूद है",
+          "duplicateCode": "इस कोड वाली एक स्क्रीन पहले से मौजूद है",
+          "duplicateRoute": "इस रूट वाला एक स्क्रीन पहले से मौजूद है",
+          "nameRequired": "स्क्रीन नाम आवश्यक है",
+          "codeRequired": "स्क्रीन कोड आवश्यक है",
+          "moduleRequired": "मॉड्यूल आवश्यक है"
         }
       },
 
@@ -100,6 +108,7 @@
         "createError": "स्क्रीन बनाने में विफल",
         "updateError": "स्क्रीन अपडेट करने में विफल",
         "deleteError": "स्क्रीन हटाने में विफल",
+        "fetchModulesError": "ऑटो-असाइनमेंट के लिए मॉड्यूल लाने में विफल",
         "deleteConfirmTitle": "स्क्रीन हटाएं",
         "deleteConfirmMessage": "क्या आप वाकई इस स्क्रीन को हटाना चाहते हैं?"
       }
@@ -148,7 +157,13 @@
         "sectionIdentity": "समूह पहचान",
         "sectionConfig": "समूह कॉन्फ़िगरेशन",
         "saveButton": "समूह सहेजें",
-        "cancelButton": "रद्द करें"
+        "cancelButton": "रद्द करें",
+        "errors": {
+          "duplicateName": "इस नाम वाला एक स्क्रीन समूह पहले से मौजूद है",
+          "duplicateCode": "इस कोड वाला एक स्क्रीन समूह पहले से मौजूद है",
+          "nameRequired": "स्क्रीन समूह का नाम आवश्यक है",
+          "codeRequired": "स्क्रीन समूह कोड आवश्यक है"
+        }
       },
 
       "messages": {
@@ -229,7 +244,8 @@
     },
 
     "buttons": {
-      "saveChanges": "परिवर्तन सहेजें"
+      "saveChanges": "परिवर्तन सहेजें",
+      "cancelChanges": "रद्द करें"
     },
 
     "messages": {

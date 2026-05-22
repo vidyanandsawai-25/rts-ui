@@ -14,8 +14,25 @@ import {
 import { ApiError } from "@/lib/utils/api";
 import { 
     validateSubmissionId as zodValidateSubmissionId,
-    floorSubmissionSchema
+    floorSubmissionSchema,
+    renterSubmissionSchema
 } from '@/lib/validations/floor-submission.schema';
+
+/**
+ * Validates renter form data for API calls
+ * 
+ * @param data - Renter data to validate
+ * @throws ApiError with status 400 if validation fails
+ */
+export function validateRenterFormData(data: unknown): void {
+    const result = renterSubmissionSchema.safeParse(data);
+    
+    if (!result.success) {
+        const issuesSummary = result.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join(', ');
+        const errorKey = result.error.issues[0].message || 'floor.errors.invalidData';
+        throw new ApiError(400, `${errorKey} (${issuesSummary})`, "Renter data validation failed");
+    }
+}
 
 /**
  * Validates floor submission ID for update operations
