@@ -146,10 +146,12 @@ export interface RateableRow {
   depreciation: string;
   /** Formatted maintenance */
   maintenance: string;
-  /** Formatted annual rental value (ALV) */
-  alv: string;
-  /** Formatted rateable value */
-  rv: string;
-  /** Tax breakdown for this row */
-  taxes: RateableTax[];
+    /** Formatted annual rental value (ALV) */
+    alv: string;
+    /** Formatted rateable value */
+    rv: string;
+    /** Applied On date */
+    appliedOn: string;
+    /** Tax breakdown for this row */
+    taxes: RateableTax[];
 }

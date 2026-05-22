@@ -316,7 +316,8 @@
       "ntbFactor": "NTB Factor",
       "useFactor": "Use Factor",
       "capitalValue": "Capital Value",
-      "taxAmount": "Tax Amount"
+      "taxAmount": "Tax Amount",
+      "appliedOn": "AppliedON"
     },
     "placeholders": {
       "oc": "OC/YYYY/###",

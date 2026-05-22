@@ -45,8 +45,9 @@ export function mapRateableRow(item: RateableValueDetail): RateableRow {
     ocDate: formatNumericDate(item.occupancyDate),
     renterName: item.renterName || '-',
     annualRent: formatNumberPair(item.rentMonthly, item.rentYearly, 0, 0),
+    appliedOn: formatNumericDate(item.occupancyDate),
     rate: formatNumberPair(item.monthlyRate, item.yearlyRate, 0, 0),
-    yearlyRentalValue: formatIndianNumber(item.annualRentalValue, 0, 0),
+    yearlyRentalValue: formatIndianNumber(item.yearlyRent, 0, 0),
     depreciation: formatIndianNumber(item.depreciation, 0, 2),
     maintenance: formatIndianNumber(item.maintenance, 0, 0),
     alv: formatIndianNumber(item.annualRentalValue, 0, 0),
@@ -87,6 +88,7 @@ export function getRateableColumns(
       render: (row) => renderCellBoxWithTooltip(row.renterName, cn(CELL_CLASS, VALUE_CLASS)),
     },
     column('annualRent', 'rentMY', CELL_CLASS),
+    column('appliedOn', 'appliedOn', CELL_CLASS),
     column('rate', 'rateMY', CELL_CLASS),
     {
       key: 'yearlyRentalValue',
