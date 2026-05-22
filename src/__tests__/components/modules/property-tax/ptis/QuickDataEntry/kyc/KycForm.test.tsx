@@ -61,8 +61,8 @@ vi.mock('@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Kyc/action
 }));
 
 const mockOwnerTypeMasterList = [
-  { ownerTypeId: 1, ownerType: 'Self', isActive: true, createdDate: '', updatedDate: null },
-  { ownerTypeId: 2, ownerType: 'Soldier', isActive: true, createdDate: '', updatedDate: null },
+  { id: 1, ownerType: 'Self', isActive: true, createdDate: '', updatedDate: null },
+  { id: 2, ownerType: 'Soldier', isActive: true, createdDate: '', updatedDate: null },
 ];
 
 const mockKycDetailsData = {
