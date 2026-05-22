@@ -45,8 +45,8 @@ describe('useKycForm', () => {
   };
 
   const mockOwnerTypes: OwnerTypeApiItem[] = [
-    { ownerTypeId: 1, ownerType: 'Individual', isActive: true, createdDate: '2024-01-01', updatedDate: '2024-01-01' },
-    { ownerTypeId: 2, ownerType: 'Company', isActive: true, createdDate: '2024-01-01', updatedDate: '2024-01-01' },
+    { id: 1, ownerType: 'Individual', isActive: true, createdDate: '2024-01-01', updatedDate: '2024-01-01' },
+    { id: 2, ownerType: 'Company', isActive: true, createdDate: '2024-01-01', updatedDate: '2024-01-01' },
   ];
 
   const mockT = (key: string) => key;
