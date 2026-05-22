@@ -80,7 +80,7 @@ export const useFloorSync = (params: {
           if (sessionRenter) {
             renterData = JSON.parse(sessionRenter);
           }
-        } catch (_e) {}
+        } catch (_e) { }
 
         if (!renterData) {
           const renterCookie = getCookieValue('renter_data');
@@ -90,7 +90,7 @@ export const useFloorSync = (params: {
               if (String(parsed.propertyId) === String(initialPropertyID) && String(parsed.floorId) === String(floorDataMapped.id)) {
                 renterData = parsed;
               }
-            } catch (_e) {}
+            } catch (_e) { }
           }
         }
 
@@ -104,7 +104,7 @@ export const useFloorSync = (params: {
               savedForm = parsed;
             }
           }
-        } catch (_e) {}
+        } catch (_e) { }
 
         let finalForm = savedForm ? { ...savedForm } : { ...floorDataMapped };
 
@@ -156,12 +156,12 @@ export const useFloorSync = (params: {
   useEffect(() => {
     if (typeof window !== 'undefined' && editingFloorForm) {
       // Avoid saving empty form state to prevent overwriting valid session data during clear/reset operations
-      const hasContent = 
-        editingFloorForm.floor || 
-        editingFloorForm.conYr || 
-        editingFloorForm.renter === 'Yes' || 
+      const hasContent =
+        editingFloorForm.floor ||
+        editingFloorForm.conYr ||
+        editingFloorForm.renter === 'Yes' ||
         (Array.isArray(editingFloorForm.roomWiseSubmissionDetails) && (editingFloorForm.roomWiseSubmissionDetails as any[]).length > 0);
-      
+
       if (hasContent) {
         sessionStorage.setItem('editingFloorForm', JSON.stringify(editingFloorForm));
       }
@@ -186,7 +186,7 @@ export const useFloorSync = (params: {
             savedForm = parsed;
           }
         }
-      } catch (_e) {}
+      } catch (_e) { }
 
       let renterData: any = null;
       try {
@@ -194,7 +194,7 @@ export const useFloorSync = (params: {
         if (sessionRenter) {
           renterData = JSON.parse(sessionRenter);
         }
-      } catch (_e) {}
+      } catch (_e) { }
 
       let finalForm = savedForm ? { ...savedForm } : null;
 
@@ -238,7 +238,7 @@ export const useFloorSync = (params: {
         if (sessionRenter) {
           renterData = JSON.parse(sessionRenter);
         }
-      } catch (_e) {}
+      } catch (_e) { }
 
       if (!renterData) {
         const cookieKey = `renter_${currentFloorIdUrl}`;
@@ -246,7 +246,7 @@ export const useFloorSync = (params: {
         if (renterCookie) {
           try {
             renterData = JSON.parse(renterCookie);
-          } catch (_e) {}
+          } catch (_e) { }
         }
       }
 
@@ -260,7 +260,7 @@ export const useFloorSync = (params: {
             savedForm = parsed;
           }
         }
-      } catch (_e) {}
+      } catch (_e) { }
 
       let finalForm = savedForm ? { ...savedForm } : null;
 
@@ -299,7 +299,7 @@ export const useFloorSync = (params: {
         setSelectedFloor(finalForm);
       }
     }
-  }, [currentFloorIdUrl, currentDrawerUrl, setEditingFloorForm, setSelectedFloor, setIsAddingNewFloor]);
+  }, [currentFloorIdUrl, currentDrawerUrl, isAddingNewFloor, setEditingFloorForm, setSelectedFloor, setIsAddingNewFloor]);
 
   return { mappedInitialFloors };
 };

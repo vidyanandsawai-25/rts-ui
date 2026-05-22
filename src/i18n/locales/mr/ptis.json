@@ -316,7 +316,8 @@
       "ntbFactor": "एनटीबी घटक",
       "useFactor": "वापर घटक",
       "capitalValue": "भांडवली मूल्य",
-      "taxAmount": "कर रक्कम"
+      "taxAmount": "कर रक्कम",
+      "appliedOn": "अप्लाइड ऑन"
     },
     "placeholders": {
       "oc": "ओसी/वर्ष/###",

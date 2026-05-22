@@ -530,16 +530,16 @@ export interface ReadOnlyFieldProps {
 
 // Re-export common entities for backward compatibility where possible
 export * from "./common-details.types";
-export { 
-  type FloorData, 
-  type RoomData, 
-  type RoomAPIResponse, 
-  type RoomWiseSubmissionProps, 
-  type RoomActions, 
-  type OffsetActions, 
-  type RoomSubmissionSidebarProps, 
-  type RoomSubmissionItem, 
-  type ParameterInputProps 
+export {
+    type FloorData,
+    type RoomData,
+    type RoomAPIResponse,
+    type RoomWiseSubmissionProps,
+    type RoomActions,
+    type OffsetActions,
+    type RoomSubmissionSidebarProps,
+    type RoomSubmissionItem,
+    type ParameterInputProps
 } from "./room-details.types";
 export * from "./offset-details.types";
 export * from "./renter-details.types";

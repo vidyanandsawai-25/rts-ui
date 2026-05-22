@@ -316,7 +316,8 @@
       "ntbFactor": "एनटीबी कारक",
       "useFactor": "उपयोग कारक",
       "capitalValue": "पूंजीगत मूल्य",
-      "taxAmount": "कर राशि"
+      "taxAmount": "कर राशि",
+      "appliedOn": "अप्लाइड ऑन"
     },
     "placeholders": {
       "oc": "ओसी/वर्ष/###",

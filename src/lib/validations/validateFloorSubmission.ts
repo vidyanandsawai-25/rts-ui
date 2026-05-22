@@ -32,8 +32,9 @@ import {
  *   setFormErrors(result.errors);
  * }
  */
-export function validateFloorForm(data: unknown, t?: (key: string) => string) {
-  const result = floorFormSchema.safeParse(data);
+export function validateFloorForm(data: unknown, t?: (key: string) => string, isAddingNewFloor?: boolean) {
+  const parseData = typeof data === 'object' && data !== null ? { ...data, isAddingNewFloor } : data;
+  const result = floorFormSchema.safeParse(parseData);
 
   if (!result.success) {
     // Validation failed - this is expected during initial/partial form states.

@@ -61,9 +61,7 @@ export const DimensionAreaFields: React.FC<DimensionAreaFieldsProps> = ({
             id="calculated-area-input"
             type="text"
             value={adjustedArea.toFixed(2)}
-            onFocus={(e) => e.target.select()}
-            onChange={(e) => { if (!formData.shape || formData.shape === '-Select-') handleInputChange('length', e.target.value); }}
-            disabled={!isEditMode || (!!formData.shape && formData.shape !== '-Select-')}
+            readOnly
             className={cn(
               'text-center h-[40px] font-semibold',
               formData.outer === 'Yes' ? 'bg-amber-50 border-amber-300 text-amber-900' :

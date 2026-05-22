@@ -32,4 +32,13 @@ export const normalizeFloorFormData = (floor: FloorData): Partial<FloorData> => 
   conTyp: String(floor.conTyp || ''),
   use: String(floor.use || ''),
   subTyp: String(floor.subTyp || ''),
+  conYr: String(floor.conYr !== undefined && floor.conYr !== null ? floor.conYr : floor.constructionYear || ''),
+  asstYr: String(floor.asstYr !== undefined && floor.asstYr !== null ? floor.asstYr : floor.assessmentYear || ''),
+  rooms: String(floor.rooms !== undefined && floor.rooms !== null ? floor.rooms : floor.noOfRooms || ''),
+  areaSqFt: String(floor.areaSqFt !== undefined && floor.areaSqFt !== null ? floor.areaSqFt : floor.carpetAreaSqFeet || ''),
+  areaSqM: String(floor.areaSqM !== undefined && floor.areaSqM !== null ? floor.areaSqM : floor.carpetAreaSqMeter || ''),
+  builtupAreaSqFt: String(floor.builtupAreaSqFt !== undefined && floor.builtupAreaSqFt !== null ? floor.builtupAreaSqFt : floor.builtupAreaSqFeet || floor.builtUpAreaSqFeet || '0.00'),
+  builtupAreaSqM: String(floor.builtupAreaSqM !== undefined && floor.builtupAreaSqM !== null ? floor.builtupAreaSqM : floor.builtupAreaSqMeter || floor.builtUpAreaSqMeter || '0.00'),
+  renter: (floor.renter === 'Yes' || floor.renter === true || floor.isRenter === true || floor.renterYesNo === true || floor.renterYesNO === true) ? 'Yes' : 'No',
+  isTaxable: (floor.isTaxable === 'Yes' || floor.isTaxable === true) ? 'Yes' : 'No',
 });

@@ -106,7 +106,7 @@ export const useFloorDataHandlers = (params: {
             sessionStorage.removeItem(`renter_data_${savedFloorId}`);
             sessionStorage.removeItem('renter_data_new');
             sessionStorage.removeItem('editingFloorForm');
-          } catch (_e) {}
+          } catch (_e) { }
 
           if (isAddingNewFloor) {
             setIsAddingNewFloor(false);
