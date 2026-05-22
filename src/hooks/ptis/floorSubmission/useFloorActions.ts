@@ -59,6 +59,14 @@ export const useFloorActions = (params: {
         loadUsage: null,
         loadSubType: null,
       });
+
+      // Clear session storage
+      try {
+        const floorIdToClear = searchParams.get('floorId') || 'new';
+        sessionStorage.removeItem(`renter_data_${floorIdToClear}`);
+        sessionStorage.removeItem('renter_data_new');
+        sessionStorage.removeItem('editingFloorForm');
+      } catch (_e) {}
     });
   }, [
     setEditingFloorForm,
@@ -69,6 +77,7 @@ export const useFloorActions = (params: {
     updateUrlParams,
     INITIAL_FORM_STATE,
     startTransition,
+    searchParams,
   ]);
 
   const handleAddFloor = useCallback(() => {

@@ -100,6 +100,14 @@ export const useFloorDataHandlers = (params: {
             throw new Error(parseServerError(response.error, t));
           }
 
+          // Clear session storage for saved floor
+          try {
+            const savedFloorId = selectedFloor?.id || 'new';
+            sessionStorage.removeItem(`renter_data_${savedFloorId}`);
+            sessionStorage.removeItem('renter_data_new');
+            sessionStorage.removeItem('editingFloorForm');
+          } catch (_e) {}
+
           if (isAddingNewFloor) {
             setIsAddingNewFloor(false);
             setSelectedFloor(null);
@@ -134,7 +142,9 @@ export const useFloorDataHandlers = (params: {
     }
 
     const floorIdParam = currentForm.id ? String(currentForm.id) : 'new';
-    const renterManagementUrl = `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/FloorSubmission/Renter?floorId=${encodeURIComponent(floorIdParam)}`;
+    const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
+    params.set('floorId', floorIdParam);
+    const renterManagementUrl = `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/FloorSubmission/Renter?${params.toString()}`;
     router.push(renterManagementUrl);
   }, [editingFloorForm, t, setFormErrors, router, locale, propertyId]);
 

@@ -55,7 +55,7 @@ export const ProgressionTable = memo(({
         onClick={() => setIsMonthlyProgressionOpen(!isMonthlyProgressionOpen)}
       >
         <h4 className="text-[10px] font-black text-slate-700 flex items-center gap-1.5 uppercase tracking-[0.15em]">
-          📅 {incrementFrequency} {t('floor.renterSection.rentProgression')}
+          📅 {incrementFrequency} {t('floor.table.rentProgression')}
         </h4>
         <div className="flex items-center gap-2">
           <span className="text-[10px] text-slate-500 bg-slate-200/50 px-2 py-0.5 rounded font-medium">
