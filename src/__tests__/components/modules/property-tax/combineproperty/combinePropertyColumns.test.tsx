@@ -13,7 +13,7 @@ describe('combinePropertyColumns', () => {
 
   it('should return correct number of columns', () => {
     const columns = getCombinePropertyColumns(mockT, mockReviewData);
-    expect(columns.length).toBe(9);
+    expect(columns.length).toBe(10);
   });
 
   it('should render serial number correctly', () => {
