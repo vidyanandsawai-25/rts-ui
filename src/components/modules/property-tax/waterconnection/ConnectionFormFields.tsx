@@ -64,6 +64,7 @@ export function ConnectionFormFields({
             onChange={onChange}
             onBlur={onBlur}
             placeholder={t("form.fields.connectionNo.placeholder")}
+            maxLength={20}
             fullWidth
           />
           <ValidationMessage
@@ -80,6 +81,7 @@ export function ConnectionFormFields({
             onChange={onChange}
             onBlur={onBlur}
             placeholder={t("form.fields.meterNo.placeholder")}
+            maxLength={20}
             fullWidth
           />
           <ValidationMessage
