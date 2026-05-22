@@ -39,9 +39,9 @@ export default function OldTaxationForm({
             </Label>
             <Input
               placeholder={t("oldDetails.zoneNamePlaceholder")}
-              readOnly
-              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
-              defaultValue={propertyOldDetails?.oldZoneNo || ""}
+              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
+              value={formData.oldZoneNo}
+              onChange={(e) => handleInputChange('oldZoneNo', e.target.value)}
             />
           </div>
 
@@ -52,9 +52,9 @@ export default function OldTaxationForm({
             </Label>
             <Input
               placeholder={t("oldDetails.wardNoPlaceholder")}
-              readOnly
-              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
-              defaultValue={propertyOldDetails?.oldWardNo || ""}
+              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
+              value={formData.oldWardNo}
+              onChange={(e) => handleInputChange('oldWardNo', e.target.value)}
             />
           </div>
 
@@ -65,9 +65,9 @@ export default function OldTaxationForm({
             </Label>
             <Input
               placeholder={t("oldDetails.propertyNoPlaceholder")}
-              readOnly
-              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
-              defaultValue={propertyOldDetails?.oldPropertyNo || ""}
+              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
+              value={formData.oldPropertyNo}
+              onChange={(e) => handleInputChange('oldPropertyNo', e.target.value)}
             />
           </div>
 
@@ -78,9 +78,9 @@ export default function OldTaxationForm({
             </Label>
             <Input
               placeholder={t("oldDetails.partitionNoPlaceholder")}
-              readOnly
-              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
-              defaultValue={propertyOldDetails?.oldPartitionNo || ""}
+              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
+              value={formData.oldPartitionNo}
+              onChange={(e) => handleInputChange('oldPartitionNo', e.target.value)}
             />
           </div>
 
@@ -91,9 +91,9 @@ export default function OldTaxationForm({
             </Label>
             <Input
               placeholder={t("oldDetails.eGovernanceNoPlaceholder")}
-              readOnly
-              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
-              defaultValue={propertyOldDetails?.oldEgovNo || ""}
+              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
+              value={formData.oldEgovNo}
+              onChange={(e) => handleInputChange('oldEgovNo', e.target.value)}
             />
           </div>
 
@@ -103,11 +103,17 @@ export default function OldTaxationForm({
               {t("oldDetails.plotArea")}
             </Label>
             <Input
-              type="number"
+              type="text"
               placeholder={t("oldDetails.plotAreaPlaceholder")}
-              readOnly
-              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
-              defaultValue={propertyOldDetails?.oldPlotArea || ""}
+              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
+              value={formData.oldPlotArea}
+              onChange={(e) => handleInputChange('oldPlotArea', e.target.value)}
+              onKeyDown={(e) => {
+                // Prevent negative sign and 'e' character
+                if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+') {
+                  e.preventDefault();
+                }
+              }}
             />
           </div>
 
@@ -135,6 +141,12 @@ export default function OldTaxationForm({
               className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
               value={formData.oldConstructionArea || ""}
               onChange={(e) => handleInputChange('oldConstructionArea', e.target.value)}
+              onKeyDown={(e) => {
+                // Prevent negative sign, decimal point, and 'e' character
+                if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+' || e.key === '.') {
+                  e.preventDefault();
+                }
+              }}
             />
           </div>
 
@@ -149,6 +161,12 @@ export default function OldTaxationForm({
               className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
               value={formData.oldRV || ""}
               onChange={(e) => handleInputChange('oldRV', e.target.value)}
+              onKeyDown={(e) => {
+                // Prevent negative sign, decimal point, and 'e' character
+                if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+' || e.key === '.') {
+                  e.preventDefault();
+                }
+              }}
             />
           </div>
 
@@ -163,6 +181,12 @@ export default function OldTaxationForm({
               className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
               value={formData.oldALV || ""}
               onChange={(e) => handleInputChange('oldALV', e.target.value)}
+              onKeyDown={(e) => {
+                // Prevent negative sign, decimal point, and 'e' character
+                if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+' || e.key === '.') {
+                  e.preventDefault();
+                }
+              }}
             />
           </div>
 
@@ -177,6 +201,12 @@ export default function OldTaxationForm({
               className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
               value={formData.oldGeneralTax || ""}
               onChange={(e) => handleInputChange('oldGeneralTax', e.target.value)}
+              onKeyDown={(e) => {
+                // Prevent negative sign, decimal point, and 'e' character
+                if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+' || e.key === '.') {
+                  e.preventDefault();
+                }
+              }}
             />
           </div>
 
@@ -191,6 +221,12 @@ export default function OldTaxationForm({
               className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
               value={formData.oldTotalTax}
               onChange={(e) => handleInputChange('oldTotalTax', Number(e.target.value))}
+              onKeyDown={(e) => {
+                // Prevent negative sign, decimal point, and 'e' character
+                if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+' || e.key === '.') {
+                  e.preventDefault();
+                }
+              }}
             />
           </div>
         </div>

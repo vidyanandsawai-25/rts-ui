@@ -53,8 +53,8 @@ export const useKycFormState = (
   const ownerTypeOptions = useMemo(() =>
     OwnerTypeMasterList.map((item) => ({
       label: item.ownerType,
-      value: item.ownerTypeId != null && item.ownerTypeId !== undefined 
-        ? String(item.ownerTypeId) 
+      value: item.id != null && item.id !== undefined 
+        ? String(item.id) 
         : '',
     })),
     [OwnerTypeMasterList]

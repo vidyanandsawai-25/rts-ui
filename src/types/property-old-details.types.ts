@@ -212,8 +212,14 @@ export interface FloorInformationFormData {
   oldSubTypeOfUseId: string | number;
   /** Carpet area in square feet */
   oldCarpetAreaSqFeet: string;
+  /** Area in square feet */
+  oldAreaSqFeet?: string;
+  /** Area in square meters */
+  oldAreaSqMeter?: string;
   /** Built-up area in square feet */
   oldBuiltupAreaSqFeet?: string;
+  /** Built-up area in square meters */
+  oldBuiltupAreaSqMeter?: string;
 }
 
 export interface FloorTableRow {
