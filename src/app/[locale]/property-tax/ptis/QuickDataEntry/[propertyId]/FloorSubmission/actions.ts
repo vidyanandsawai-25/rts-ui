@@ -194,7 +194,9 @@ export const saveFloorRenterDetailsAction = async (floorId: string | number, pay
     if (!validation.success) return validation;
     try {
         const data = await saveRenterDetails(floorId, payload);
-        revalidatePath(getRevalidatePath(locale, propertyId), "page");
+        const basePath = getRevalidatePath(locale, propertyId);
+        revalidatePath(basePath, "page");
+        revalidatePath(`${basePath}/Renter`, "page");
         return { success: true, data };
     } catch (error) {
         return { success: false, error: error instanceof Error ? error.message : "Failed to save renter details" };
@@ -204,7 +206,9 @@ export const saveFloorRenterDetailsAction = async (floorId: string | number, pay
 export const updateFloorRenterDetailsAction = async (renterId: string | number, payload: unknown, locale: string = "en", propertyId?: string | number): Promise<ActionResult<unknown>> => {
     try {
         const data = await updateRenterDetails(renterId, payload);
-        revalidatePath(getRevalidatePath(locale, propertyId), "page");
+        const basePath = getRevalidatePath(locale, propertyId);
+        revalidatePath(basePath, "page");
+        revalidatePath(`${basePath}/Renter`, "page");
         return { success: true, data };
     } catch (error) {
         return { success: false, error: error instanceof Error ? error.message : "Failed to update renter details" };
@@ -214,7 +218,9 @@ export const updateFloorRenterDetailsAction = async (renterId: string | number, 
 export const deleteFloorRenterDetailsAction = async (renterId: string | number, locale: string = "en", propertyId?: string | number): Promise<ActionResult<void>> => {
     try {
         await deleteRenterDetails(renterId);
-        revalidatePath(getRevalidatePath(locale, propertyId), "page");
+        const basePath = getRevalidatePath(locale, propertyId);
+        revalidatePath(basePath, "page");
+        revalidatePath(`${basePath}/Renter`, "page");
         return { success: true, data: undefined };
     } catch (error) {
         return { success: false, error: error instanceof Error ? error.message : "Failed to delete renter details" };
