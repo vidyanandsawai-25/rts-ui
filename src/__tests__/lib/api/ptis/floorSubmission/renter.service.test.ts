@@ -87,8 +87,8 @@ describe('Renter Service Integration & Hydration Tests', () => {
       expect(apiClient.put).toHaveBeenCalledWith('/DataEntry/100', expect.any(Object));
 
       // Verify existing records were fetched
-      expect(apiClient.get).toHaveBeenCalledWith('/RenterDetails');
-      expect(apiClient.get).toHaveBeenCalledWith('/RenterMast');
+      expect(apiClient.get).toHaveBeenCalledWith('/RenterDetails?PageSize=100000&PropertyDetailsId=100');
+      expect(apiClient.get).toHaveBeenCalledWith('/RenterMast?PageSize=100000&PropertyDetailsId=100');
 
       // Verifysmart differential operations:
       // RenterDetails:
@@ -224,6 +224,8 @@ describe('Renter Service Integration & Hydration Tests', () => {
       // Verify floor renter flag cleared
       expect(apiClient.put).toHaveBeenCalledWith('/DataEntry/100', expect.objectContaining({
         renterYesNo: false,
+        isRenter: false,
+        updatedBy: 0,
       }));
     });
   });
@@ -268,8 +270,8 @@ describe('Renter Service Integration & Hydration Tests', () => {
       const result = await getFloorById(100);
 
       expect(apiClient.get).toHaveBeenCalledWith('/DataEntry/100', { cache: 'no-store' });
-      expect(apiClient.get).toHaveBeenCalledWith('/RenterDetails');
-      expect(apiClient.get).toHaveBeenCalledWith('/RenterMast');
+      expect(apiClient.get).toHaveBeenCalledWith('/RenterDetails?PageSize=100000&PropertyDetailsId=100');
+      expect(apiClient.get).toHaveBeenCalledWith('/RenterMast?PageSize=100000&PropertyDetailsId=100');
 
       // Verify hydration:
       // renterDetails should only contain ID 201 (since 202 belongs to floor 200)
@@ -289,6 +291,42 @@ describe('Renter Service Integration & Hydration Tests', () => {
       expect((result!.renterDetails as any[])[0].id).toBe(201);
       expect(result!.renterMast).toHaveLength(1);
       expect((result!.renterMast as any[])[0].id).toBe(301);
+    });
+
+    it('should correctly filter and map PascalCase database response keys (regression test for database casing mismatch)', async () => {
+      const mockDetailsResponsePascal = {
+        success: true,
+        data: {
+          items: [
+            { Id: 401, PropertyDetailsId: 100, AgreementId: 'AGR-PASCAL-100' },
+            { Id: 402, PropertyDetailsId: 200, AgreementId: 'AGR-PASCAL-200' },
+          ],
+        },
+      };
+
+      const mockMastResponsePascal = {
+        success: true,
+        data: [
+          { Id: 501, PropertyDetailsId: 100, FinancialYear: '2026' },
+        ],
+      };
+
+      vi.mocked(apiClient.get).mockImplementation(async (url) => {
+        if (url.includes('/DataEntry/100')) return mockFloorApiResponse;
+        if (url.includes('/RenterDetails')) return mockDetailsResponsePascal;
+        if (url.includes('/RenterMast')) return mockMastResponsePascal;
+        return { success: false };
+      });
+
+      const result = await getFloorById(100);
+
+      expect(result.renterDetails).toHaveLength(1);
+      expect((result.renterDetails as any[])[0].id).toBe(401);
+      expect((result.renterDetails as any[])[0].propertyDetailsId).toBe(100);
+
+      expect(result.renterMast).toHaveLength(1);
+      expect((result.renterMast as any[])[0].id).toBe(501);
+      expect((result.renterMast as any[])[0].propertyDetailsId).toBe(100);
     });
 
     it('should return empty/null safely and not trigger API requests when queried with invalid IDs (NaN or <= 0)', async () => {
@@ -348,8 +386,8 @@ describe('Renter Service Integration & Hydration Tests', () => {
       const result = await updateRenterDetails(228338, payload) as Record<string, any>;
 
       expect(apiClient.put).toHaveBeenCalledWith('/DataEntry/228338', expect.any(Object));
-      expect(apiClient.get).toHaveBeenCalledWith('/RenterDetails');
-      expect(apiClient.get).toHaveBeenCalledWith('/RenterMast');
+      expect(apiClient.get).toHaveBeenCalledWith('/RenterDetails?PageSize=100000&PropertyDetailsId=228338');
+      expect(apiClient.get).toHaveBeenCalledWith('/RenterMast?PageSize=100000&PropertyDetailsId=228338');
 
       expect(result).toBeDefined();
       expect(result.id).toBe(228338);
@@ -367,6 +405,112 @@ describe('Renter Service Integration & Hydration Tests', () => {
       });
 
       await expect(updateRenterDetails(228338, {})).rejects.toThrow("Invalid payload details");
+    });
+
+    it('should align temporary client-side IDs to existing database IDs in updateRenterDetails', async () => {
+      const mockPutResponse = {
+        success: true,
+        data: {
+          items: {
+            id: 228338,
+            propertyDetailsId: 228338,
+            floorId: '2',
+            renterYesNo: true,
+          }
+        }
+      };
+
+      vi.mocked(apiClient.put).mockResolvedValue(mockPutResponse);
+      vi.mocked(apiClient.get).mockImplementation(async (url) => {
+        if (url.includes('/RenterDetails')) return mockDetailsGetResponse;
+        if (url.includes('/RenterMast')) return mockMastGetResponse;
+        return { success: false };
+      });
+
+      const payloadWithTempIds = {
+        floorId: '2',
+        renterYesNo: true,
+        renterDetails: [
+          { id: 1779361095325, agreementId: 'AGR-NEW-TEMP' }
+        ],
+        renterMast: [
+          { id: 1779361095326, financialYear: '2026-27', finalRent: 6000 }
+        ]
+      };
+
+      await updateRenterDetails(228338, payloadWithTempIds);
+
+      // Verify that RenterDetails put was called with aligned database ID 201 (from mockDetailsGetResponse)
+      // and RenterMast put was called with aligned database ID 301 (from mockMastGetResponse)
+      expect(apiClient.put).toHaveBeenCalledWith('/RenterDetails/201', expect.objectContaining({
+        id: 201,
+        agreementId: 'AGR-NEW-TEMP',
+      }));
+
+      expect(apiClient.put).toHaveBeenCalledWith('/RenterMast/301', expect.objectContaining({
+        id: 301,
+        financialYear: '2026',
+      }));
+    });
+
+    it('should correctly align temporary IDs to existing PascalCase database records to prevent duplicate recreation', async () => {
+      const mockPutResponse = {
+        success: true,
+        data: {
+          items: {
+            Id: 228338,
+            PropertyDetailsId: 228338,
+            FloorId: '2',
+            RenterYesNo: true,
+          }
+        }
+      };
+
+      const mockDetailsGetResponsePascal = {
+        success: true,
+        data: [
+          { Id: 601, PropertyDetailsId: 228338, AgreementId: 'AGR-601' },
+        ],
+      };
+
+      const mockMastGetResponsePascal = {
+        success: true,
+        data: [
+          { Id: 701, PropertyDetailsId: 228338, FinancialYear: '2026' },
+        ],
+      };
+
+      vi.mocked(apiClient.put).mockResolvedValue(mockPutResponse);
+      vi.mocked(apiClient.get).mockImplementation(async (url) => {
+        if (url.includes('/RenterDetails')) return mockDetailsGetResponsePascal;
+        if (url.includes('/RenterMast')) return mockMastGetResponsePascal;
+        return { success: false };
+      });
+
+      const payloadWithTempIds = {
+        floorId: '2',
+        renterYesNo: true,
+        renterDetails: [
+          { id: 1779361095325, agreementId: 'AGR-NEW-TEMP' }
+        ],
+        renterMast: [
+          { id: 1779361095326, financialYear: '2026-27', finalRent: 6000 }
+        ]
+      };
+
+      await updateRenterDetails(228338, payloadWithTempIds);
+
+      // Verify that RenterDetails put was called with aligned database ID 601 (from mockDetailsGetResponsePascal)
+      // and RenterMast put was called with aligned database ID 701 (from mockMastGetResponsePascal)
+      expect(apiClient.put).toHaveBeenCalledWith('/RenterDetails/601', expect.objectContaining({
+        id: 601,
+        agreementId: 'AGR-NEW-TEMP',
+      }));
+
+      expect(apiClient.put).toHaveBeenCalledWith('/RenterMast/701', expect.objectContaining({
+        id: 701,
+        financialYear: '2026',
+      }));
     });
   });
 });

@@ -86,6 +86,9 @@ export default async function KycFormPage({ params }: PageProps): Promise<React.
     const t = await getTranslations({ locale, namespace: 'quickDataEntry' });
     throw new Error(t('kyc.errors.kycNotFound'));
   }
-
-  return <KycFormView KycDetailsData={kycDetailsData as KycDetails} OwnerTypeMasterList={ownerTypeList} locale={locale} />;
+  
+  return <KycFormView 
+  KycDetailsData={kycDetailsData as KycDetails} 
+  OwnerTypeMasterList={ownerTypeList} locale={locale} 
+  />;
 }

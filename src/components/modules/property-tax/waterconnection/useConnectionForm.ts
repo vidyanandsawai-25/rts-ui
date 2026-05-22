@@ -131,10 +131,14 @@ export function useConnectionForm({
         e.connectionNo = t("form.validation.connectionNoRequired");
       else if (/[@#$%^&*()_]/.test(data.connectionNo))
         e.connectionNo = t("form.validation.connectionNoInvalidChars");
+      else if (data.connectionNo.trim().length > 20)
+        e.connectionNo = t("form.validation.connectionNoMaxLength");
       if (!data.meterNo.trim())
         e.meterNo = t("form.validation.meterNoRequired");
       else if (/[@#$%^&*()_]/.test(data.meterNo))
         e.meterNo = t("form.validation.meterNoInvalidChars");
+      else if (data.meterNo.trim().length > 20)
+        e.meterNo = t("form.validation.meterNoMaxLength");
       if (!data.waterConnectionTypeId)
         e.waterConnectionTypeId = t("form.validation.typeRequired");
       if (!data.waterConnectionSizeId)

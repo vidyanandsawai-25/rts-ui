@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { apiClient } from "@/services/api.service";
-import { normalizeApiFloorData } from "./floor-types-guard";
+import { normalizeApiFloorData, normalizeRenterDetailItem, normalizeRenterMastItem } from "./floor-types-guard";
 import { createApiError } from "./error-helpers";
 import { 
     type FloorAPIResponse, 
@@ -65,17 +65,17 @@ export async function getSubmissionDetails(submissionId: number | string): Promi
         }
         const [floorRes, detailsRes, mastRes] = await Promise.all([
             apiClient.get<FloorAPIResponse>(`/DataEntry/${encodeURIComponent(String(submissionId))}`, { cache: 'no-store' }),
-            apiClient.get<any>('/RenterDetails'),
-            apiClient.get<any>('/RenterMast')
+            apiClient.get<any>(`/RenterDetails?PageSize=100000&PropertyDetailsId=${floorIdNum}`),
+            apiClient.get<any>(`/RenterMast?PageSize=100000&PropertyDetailsId=${floorIdNum}`)
         ]);
 
         if (floorRes.success && floorRes.data) {
             const rawFloor = floorRes.data as any;
             
-            const detailsData = detailsRes.success ? extractArray(detailsRes.data) : [];
+            const detailsData = detailsRes.success ? extractArray(detailsRes.data).map(normalizeRenterDetailItem) : [];
             const floorDetails = detailsData.filter((item: any) => item && Number(item.propertyDetailsId) === floorIdNum);
 
-            const mastData = mastRes.success ? extractArray(mastRes.data) : [];
+            const mastData = mastRes.success ? extractArray(mastRes.data).map(normalizeRenterMastItem) : [];
             const floorMast = mastData.filter((item: any) => item && Number(item.propertyDetailsId) === floorIdNum);
 
             const mergedRawFloor = {
@@ -137,8 +137,8 @@ export async function getFloorById(floorId: number | string): Promise<Record<str
         }
         const [floorRes, detailsRes, mastRes] = await Promise.all([
             apiClient.get<FloorAPIResponse>(`/DataEntry/${encodeURIComponent(String(floorId))}`, { cache: 'no-store' }),
-            apiClient.get<any>('/RenterDetails'),
-            apiClient.get<any>('/RenterMast')
+            apiClient.get<any>(`/RenterDetails?PageSize=100000&PropertyDetailsId=${floorIdNum}`),
+            apiClient.get<any>(`/RenterMast?PageSize=100000&PropertyDetailsId=${floorIdNum}`)
         ]);
 
         if (!floorRes.success || !floorRes.data) {
@@ -147,10 +147,10 @@ export async function getFloorById(floorId: number | string): Promise<Record<str
 
         const rawFloor = floorRes.data as any;
 
-        const detailsData = detailsRes.success ? extractArray(detailsRes.data) : [];
+        const detailsData = detailsRes.success ? extractArray(detailsRes.data).map(normalizeRenterDetailItem) : [];
         const floorDetails = detailsData.filter((item: any) => item && Number(item.propertyDetailsId) === floorIdNum);
 
-        const mastData = mastRes.success ? extractArray(mastRes.data) : [];
+        const mastData = mastRes.success ? extractArray(mastRes.data).map(normalizeRenterMastItem) : [];
         const floorMast = mastData.filter((item: any) => item && Number(item.propertyDetailsId) === floorIdNum);
 
         const mergedRawFloor = {

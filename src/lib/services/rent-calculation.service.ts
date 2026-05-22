@@ -258,6 +258,7 @@ export const calculateRentProgression = (details: any): RentCalculationResult | 
         const progression: RentPeriod[] = [];
         const fyTotals: { [key: string]: number } = {};
         const fyDateRanges: { [key: string]: { start: Date; end: Date } } = {};
+        const fyMonthlyRents: { [key: string]: number } = {};
 
         const currentDate = new Date(startDate.getTime());
         let periodCounter = 0;
@@ -307,6 +308,7 @@ export const calculateRentProgression = (details: any): RentCalculationResult | 
             while (tempDate <= actualEnd && tempDate <= endDate) {
                 const fy = getFY(tempDate);
                 fyTotals[fy] = (fyTotals[fy] || 0) + currentRent;
+                if (!fyMonthlyRents[fy]) fyMonthlyRents[fy] = currentRent;
                 if (!fyDateRanges[fy]) fyDateRanges[fy] = { start: new Date(tempDate), end: new Date(tempDate) };
                 fyDateRanges[fy].end = new Date(tempDate);
                 tempDate.setMonth(tempDate.getMonth() + 1);
@@ -354,6 +356,7 @@ export const calculateRentProgression = (details: any): RentCalculationResult | 
         const fyBreakdown: RenterMastItem[] = Object.entries(fyTotals).map(([fy, total]) => ({
             financialYear: fy,
             finalRent: total,
+            rentMonthly: fyMonthlyRents[fy] || 0,
             durationFrom: fyDateRanges[fy].start.toISOString(),
             durationTo: fyDateRanges[fy].end.toISOString(),
             isActive: true,
@@ -439,6 +442,7 @@ export const calculateRentProgression = (details: any): RentCalculationResult | 
     let periodCounter = 0;
     const fyTotals: { [key: string]: number } = {};
     const fyDateRanges: { [key: string]: { start: Date; end: Date } } = {};
+    const fyMonthlyRents: { [key: string]: number } = {};
 
     while (currentDate <= endDate) {
         let incrementApplied = 0;
@@ -474,6 +478,7 @@ export const calculateRentProgression = (details: any): RentCalculationResult | 
         while (tempDate <= actualEnd && tempDate <= endDate) {
             const fy = getFY(tempDate);
             fyTotals[fy] = (fyTotals[fy] || 0) + currentRent;
+            if (!fyMonthlyRents[fy]) fyMonthlyRents[fy] = currentRent;
             if (!fyDateRanges[fy]) fyDateRanges[fy] = { start: new Date(tempDate), end: new Date(tempDate) };
             fyDateRanges[fy].end = new Date(tempDate);
             tempDate.setMonth(tempDate.getMonth() + 1);
@@ -487,6 +492,7 @@ export const calculateRentProgression = (details: any): RentCalculationResult | 
     const fyBreakdown: RenterMastItem[] = Object.entries(fyTotals).map(([fy, total]) => ({
         financialYear: fy,
         finalRent: total,
+        rentMonthly: fyMonthlyRents[fy] || 0,
         durationFrom: fyDateRanges[fy].start.toISOString(),
         durationTo: fyDateRanges[fy].end.toISOString(),
         isActive: true,

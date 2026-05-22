@@ -184,5 +184,44 @@ describe('Payload Sanitization Tests', () => {
       expect(ids).toContain(1);
       expect(ids).toContain(2);
     });
+
+    it('should map room update identifiers and updatedBy when processing an update payload', () => {
+      const updatePayload = {
+        propertyDetailsId: 206094,
+        roomWiseSubmissionDetails: [
+          {
+            id: 801,
+            lengthMtr: 5,
+            widthMtr: 4,
+            roomWiseMinusData: [
+              {
+                id: 901,
+                lengthMtr: 1,
+                widthMtr: 1,
+              }
+            ]
+          }
+        ]
+      };
+
+      const result = sanitizeRenterPayload(updatePayload);
+      expect(result.updatedBy).toBe(0);
+      expect(result.createdBy).toBeUndefined();
+
+      expect(result.roomWiseSubmissionDetails).toHaveLength(1);
+      const room = (result.roomWiseSubmissionDetails as any[])[0];
+      expect(room.id).toBe(801);
+      expect(room.updatedBy).toBe(0);
+      expect(room.createdBy).toBeUndefined();
+      expect(room.roomWiseSubmissionId).toBe(801);
+
+      expect(room.roomWiseMinusData).toHaveLength(1);
+      const minus = room.roomWiseMinusData[0];
+      expect(minus.id).toBe(901);
+      expect(minus.updatedBy).toBe(0);
+      expect(minus.createdBy).toBeUndefined();
+      expect(minus.roomWiseMinusId).toBe(901);
+      expect(minus.roomWiseSubmissionId).toBe(801);
+    });
   });
 });

@@ -5,15 +5,108 @@ import {
   defaultSocietyDetails,
   defaultOldDetails,
 } from '@/lib/constants/ptis.constants';
+import {
+  fetchPropertyDetailsOnlyAction,
+  getWardListAction,
+  getPropertyListByWardAction,
+  fetchWardIdAction,
+  fetchKycDetailsOnlyAction,
+  fetchSocietyDetailsOnlyAction,
+  fetchOldDetailsOnlyAction,
+  fetchOldFloorDetailsAction,
+  fetchOldTaxesDetailsAction,
+} from './actions';
+import { getApartmentQCDataAction } from './apartmentQC.action';
+import { getCapitalValue } from './CapitalValue.action';
+import { getRateableValue } from './RateableValue.action';
+import { assembleDualMethodSectionData } from '@/components/modules/property-tax/ptis/dualmethod/dual-method-data';
+import type { SearchSelectOption } from '@/components/common/SearchSelect';
+import type { ApartmentQCDetail } from '@/types/apartmentQC.types';
+import { BottomActionBar } from '@/components/layout/BottomActionBar';
+import { PtisFooterControls } from '@/components/modules/property-tax/ptis/PtisFooterControls';
+import { FALLBACK_FOOTER_ACTIONS } from '@/config/footer-fallback';
+import { FOOTER_REGISTRY, DEFAULT_ACTION_STYLE } from '@/config/footer-registry';
+import { FooterAction } from '@/lib/api/footer.service';
+import type {
+  PropertyListItem,
+  Ward,
+  OldFloorDetailsData,
+  OldTaxesData,
+  PtisInitialData,
+  PropertyDetailsData,
+} from '@/types/ptis.types';
+
+import { toPositiveInt, toSafeString } from '@/lib/utils/format';
+import { PTIS_TABS, PtisTabId } from '@/types/ptis.types';
+import { redirect } from 'next/navigation';
 import { AlertCircle } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
+import { getCleanErrorMessage } from '@/lib/utils/backend-error-detection';
 import PtisMainScreen from '@/components/modules/property-tax/ptis/PtisMainScreen';
+import { parsePtisSearchParams } from '@/lib/utils/params';
 import { getPtisUserSafeErrorMessage } from '@/components/modules/property-tax/ptis/shared/valuation-fetch';
 import { RateableTaxDetailsSection } from '@/components/modules/property-tax/ptis/rateable';
 import { CapitalTaxDetailsSection } from '@/components/modules/property-tax/ptis/capital';
-import { BottomActionBar } from '@/components/layout/BottomActionBar';
-import { PtisFooterControls } from '@/components/modules/property-tax/ptis/PtisFooterControls';
-import { loadPtisPageData } from './loader';
+import { fetchTaxDetailsByTab } from './TaxDetails/fetchTaxDetails';
+
+const toValidTab = (value: unknown): PtisTabId => {
+  return typeof value === 'string' && (PTIS_TABS as readonly string[]).includes(value)
+    ? (value as PtisTabId)
+    : 'propertydetails';
+};
+
+async function getInitialData(
+  wardNo?: string,
+  propertyNo?: string,
+  partitionNo?: string,
+  wardId?: number,
+  propertyId?: number
+): Promise<{
+  success: boolean;
+  propertyId?: number;
+  propertyDetails: PropertyDetailsData;
+  error?: string;
+}> {
+  try {
+    if (propertyId || (wardNo && propertyNo)) {
+      const result = await fetchPropertyDetailsOnlyAction(
+        wardNo || '',
+        propertyNo || '',
+        partitionNo || '',
+        wardId,
+        propertyId
+      );
+
+      if (result.success && result.data) {
+        return {
+          success: true,
+          propertyId: result.data.propertyId,
+          propertyDetails: {
+            ...defaultPropertyDetails,
+            ...result.data.details,
+          },
+        };
+      }
+      return {
+        success: false,
+        error: result.error,
+        propertyDetails: defaultPropertyDetails,
+      };
+    }
+
+    return {
+      success: true,
+      propertyId: undefined,
+      propertyDetails: defaultPropertyDetails,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to load initial property data',
+      propertyDetails: defaultPropertyDetails,
+    };
+  }
+}
 
 interface PtisPageProps {
   params: Promise<{ locale: string }>;
@@ -31,18 +124,244 @@ interface PtisPageProps {
   >;
 }
 
+/**
+ * PTIS Page Component (Server Component)
+ * Handles data pre-fetching and URL normalization.
+ */
 export default async function PtisPage({ params, searchParams }: PtisPageProps) {
   const resolvedParams = await params;
   const resolvedSearchParams = await searchParams;
+  const wardNo = toSafeString(resolvedSearchParams?.wardNo);
+  const propertyNo = toSafeString(resolvedSearchParams?.propertyNo);
+  const rawPartitionNo = toSafeString(resolvedSearchParams?.partitionNo);
+  const partitionNo = rawPartitionNo === '0' ? '' : rawPartitionNo;
   const { locale } = resolvedParams;
   const t = await getTranslations({ locale, namespace: 'ptis' });
+  const activeTab = toValidTab(resolvedSearchParams?.tab);
+  const ptisParams = parsePtisSearchParams(resolvedSearchParams);
+  const wardIdParam = toPositiveInt(resolvedSearchParams?.wardId);
+  const propertyIdParam = toPositiveInt(resolvedSearchParams?.propertyId);
+  const showFloorParam = resolvedSearchParams?.showFloor === 'true';
+  const showOldTaxParam = resolvedSearchParams?.showOldTax === 'true';
+
+  const pageNumber = toPositiveInt(resolvedSearchParams?.pageNumber) || 1;
+  const pageSize = toPositiveInt(resolvedSearchParams?.pageSize) || 10;
+  const searchTerm = toSafeString(resolvedSearchParams?.searchTerm);
+  const appartmentTab = toSafeString(resolvedSearchParams?.appartmentTab) || 'amenities';
+
+  const [wardListSettled, initialWardIdSettled] = await Promise.allSettled([
+    getWardListAction(),
+    !wardIdParam && wardNo ? fetchWardIdAction(wardNo) : Promise.resolve(null),
+  ]);
+
+  const wardListResult =
+    wardListSettled.status === 'fulfilled'
+      ? wardListSettled.value
+      : { success: false, error: 'Failed to fetch wards', data: [] };
+
+  const initialWardIdResult =
+    initialWardIdSettled.status === 'fulfilled' ? initialWardIdSettled.value : null;
 
   let criticalError: string | undefined = undefined;
-  let data: Awaited<ReturnType<typeof loadPtisPageData>> | null = null;
+
+  if (wardListSettled.status === 'rejected') {
+    criticalError = t('search.errors.fetchWardsFailed');
+  } else if (
+    !wardListResult.success &&
+    (!wardListResult.data || wardListResult.data.length === 0)
+  ) {
+    criticalError = getCleanErrorMessage(wardListResult.error, t('search.errors.fetchWardsFailed'));
+  }
+
+  // Process Ward List for initial options
+  const wardOptions: SearchSelectOption[] =
+    wardListResult.success && wardListResult.data
+      ? wardListResult.data.map((w: Ward) => ({
+          label: w.wardNo || '',
+          value: (w.wardId ?? w.wardID ?? '').toString(),
+        }))
+      : [];
+
+  let resolvedWardId = wardIdParam;
+  if (!resolvedWardId && initialWardIdResult?.success && initialWardIdResult.data?.wardId) {
+    resolvedWardId = initialWardIdResult.data.wardId;
+  }
+
+  const emptyPaged = {
+    items: [] as ApartmentQCDetail[],
+    totalCount: 0,
+    pageNumber: 1,
+    pageSize: 10,
+    totalPages: 1,
+    hasPrevious: false,
+    hasNext: false,
+  };
+
+  let propertyOptions: SearchSelectOption[] = [];
+  let rawPropertyData: PropertyListItem[] = [];
+  let kycDetails = defaultKycDetails;
+  let societyDetails = defaultSocietyDetails;
+  let oldDetails = defaultOldDetails;
+  let oldFloorTableData: OldFloorDetailsData[] = [];
+  let oldTaxesData: OldTaxesData | null = null;
+  let resolvedPropertyId: number | undefined = undefined;
+
+  let apartmentData = {
+    amenities: emptyPaged,
+    commercial: emptyPaged,
+    residential: emptyPaged,
+  };
+  let rateableResult: Awaited<ReturnType<typeof getRateableValue>> | null = null;
+  let capitalResult: Awaited<ReturnType<typeof getCapitalValue>> | null = null;
+  let dualSectionData: Awaited<ReturnType<typeof assembleDualMethodSectionData>> | undefined =
+    undefined;
+  let initialError: string | undefined = undefined;
+
+  let propertyDetailsResult: {
+    success: boolean;
+    propertyId?: number;
+    propertyDetails: PropertyDetailsData;
+    error?: string;
+  } = {
+    success: true,
+    propertyId: undefined,
+    propertyDetails: defaultPropertyDetails,
+    error: undefined,
+  };
+  let propertyListResult: Awaited<ReturnType<typeof getPropertyListByWardAction>> | null = null;
+
+  if (!criticalError) {
+    try {
+      const [propListRes, propDetailsRes] = await Promise.all([
+        resolvedWardId ? getPropertyListByWardAction(resolvedWardId) : Promise.resolve(null),
+        getInitialData(wardNo, propertyNo, partitionNo, resolvedWardId, propertyIdParam),
+      ]);
+
+      propertyListResult = propListRes;
+      propertyDetailsResult = propDetailsRes;
+
+      // Capture non-critical errors to be surfaced as toasts on the client
+      initialError =
+        (!propertyDetailsResult.success && propertyDetailsResult.error) ||
+        (propertyListResult && !propertyListResult.success && propertyListResult.error) ||
+        undefined;
+
+      if (resolvedWardId && propertyListResult?.success && propertyListResult.data) {
+        rawPropertyData = propertyListResult.data;
+        propertyOptions = propertyListResult.data.map((p: PropertyListItem) => {
+          const trimmedPartitionNo = (p.partitionNo ?? '').trim();
+          const normalizedPartitionNo = trimmedPartitionNo === '0' ? '' : trimmedPartitionNo;
+          return {
+            label: `${p.propertyNo}${normalizedPartitionNo ? ` - ${normalizedPartitionNo}` : ''}`,
+            value: JSON.stringify({
+              propertyNo: p.propertyNo,
+              partitionNo: normalizedPartitionNo,
+              propertyId: p.propertyId,
+            }),
+          };
+        });
+      }
+
+      resolvedPropertyId = propertyIdParam ?? propertyDetailsResult.propertyId;
+
+      const [
+        aptData,
+        rateableRes,
+        capitalRes,
+        kycResult,
+        societyResult,
+        oldDetailsResult,
+        oldFloorResult,
+        oldTaxesResult,
+      ] = await Promise.all([
+        resolvedWardId && propertyNo
+          ? getApartmentQCDataAction(
+              resolvedWardId,
+              propertyNo,
+              appartmentTab,
+              pageNumber,
+              pageSize,
+              searchTerm,
+              resolvedPropertyId
+            )
+          : Promise.resolve({
+              amenities: emptyPaged,
+              commercial: emptyPaged,
+              residential: emptyPaged,
+            }),
+        resolvedPropertyId ? getRateableValue(resolvedPropertyId) : Promise.resolve(null),
+        resolvedPropertyId ? getCapitalValue(resolvedPropertyId) : Promise.resolve(null),
+        resolvedPropertyId ? fetchKycDetailsOnlyAction(resolvedPropertyId) : Promise.resolve(null),
+        resolvedPropertyId
+          ? fetchSocietyDetailsOnlyAction(resolvedPropertyId)
+          : Promise.resolve(null),
+        resolvedPropertyId ? fetchOldDetailsOnlyAction(resolvedPropertyId) : Promise.resolve(null),
+        resolvedPropertyId ? fetchOldFloorDetailsAction(resolvedPropertyId) : Promise.resolve(null),
+        resolvedPropertyId ? fetchOldTaxesDetailsAction(resolvedPropertyId) : Promise.resolve(null),
+      ]);
+
+      apartmentData = aptData;
+      rateableResult = rateableRes;
+      capitalResult = capitalRes;
+
+      // Map results to data objects
+      if (kycResult?.success && kycResult.data) {
+        kycDetails = { ...defaultKycDetails, ...kycResult.data };
+      }
+      if (societyResult?.success && societyResult.data) {
+        societyDetails = { ...defaultSocietyDetails, ...societyResult.data };
+      }
+      if (oldDetailsResult?.success && oldDetailsResult.data) {
+        oldDetails = { ...defaultOldDetails, ...oldDetailsResult.data };
+      }
+      if (oldFloorResult?.success && Array.isArray(oldFloorResult.data)) {
+        oldFloorTableData = oldFloorResult.data;
+      }
+      if (oldTaxesResult?.success && oldTaxesResult.data) {
+        oldTaxesData = oldTaxesResult.data;
+      }
+
+      // Dual Method data triggers additional valuation fetches internally,
+      // so only load it when the dual-method UI is actually being rendered.
+      dualSectionData =
+        ptisParams.tab === 'dual'
+          ? await assembleDualMethodSectionData(resolvedPropertyId, oldDetails)
+          : undefined;
+    } catch (err) {
+      criticalError = getCleanErrorMessage(err, t('search.errors.fetchPropertiesFailed'));
+    }
+  }
+
+  const initialData: PtisInitialData = {
+    propertyDetails: propertyDetailsResult.propertyDetails,
+    kycDetails,
+    societyDetails,
+    wardOptions,
+    propertyOptions,
+    rawPropertyData,
+    oldDetails,
+    oldFloorTableData,
+    showOldFloorInfo: showFloorParam,
+    oldTaxesData,
+    showOldTaxInfo: showOldTaxParam,
+  };
 
   try {
-    data = await loadPtisPageData(resolvedParams, resolvedSearchParams);
+    // URL Normalization (Redirect if ID resolved but not in URL)
+    if (propertyDetailsResult.propertyId && !propertyIdParam) {
+      const newParams = new URLSearchParams();
+      for (const [key, value] of Object.entries(resolvedSearchParams)) {
+        if (value == null) continue;
+        const values = Array.isArray(value) ? value : [value];
+        values.forEach((v) => {
+          if (v != null) newParams.append(key, v);
+        });
+      }
+      newParams.set('propertyId', propertyDetailsResult.propertyId.toString());
+      redirect(`/${locale}/property-tax/ptis?${newParams.toString()}`);
+    }
   } catch (error: unknown) {
+    // Re-throw redirect errors so Next.js can handle them
     if (
       typeof error === 'object' &&
       error !== null &&
@@ -52,56 +371,31 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
     ) {
       throw error;
     }
-    criticalError = error instanceof Error ? error.message : 'An unexpected error occurred.';
+
+    // For other errors, set criticalError instead of throwing
+    criticalError = getCleanErrorMessage(error, t('error.generic'));
   }
 
-  const pageData = data || {
-    locale,
-    resolvedPropertyId: undefined,
-    ptisParams: { tab: 'rateable' as const },
-    resolvedSearchParams,
-    sanitizedInitialError: criticalError,
-    apartmentData: {
-      amenities: { items: [], totalCount: 0, pageNumber: 1, pageSize: 10, totalPages: 1, hasPrevious: false, hasNext: false },
-      commercial: { items: [], totalCount: 0, pageNumber: 1, pageSize: 10, totalPages: 1, hasPrevious: false, hasNext: false },
-      residential: { items: [], totalCount: 0, pageNumber: 1, pageSize: 10, totalPages: 1, hasPrevious: false, hasNext: false },
-    },
-    dualSectionData: undefined,
-    resolvedWardId: undefined,
-    propertyNo: '',
-    rateableResult: null,
-    capitalResult: null,
-    rateableTaxDetails: undefined,
-    rateableTaxError: undefined,
-    capitalTaxDetails: undefined,
-    capitalTaxError: undefined,
-    activeTab: 'propertydetails' as const,
-    initialError: undefined,
-    initialData: {
-      propertyDetails: defaultPropertyDetails,
-      kycDetails: defaultKycDetails,
-      societyDetails: defaultSocietyDetails,
-      wardOptions: [],
-      propertyOptions: [],
-      rawPropertyData: [],
-      oldDetails: defaultOldDetails,
-      oldFloorTableData: [],
-      showOldFloorInfo: false,
-      oldTaxesData: null,
-      showOldTaxInfo: false,
-    },
-    footerActions: [],
-    pageNumber: 1,
-    appartmentTab: 'amenities',
-  };
-
-  const sanitizedInitialError = pageData.sanitizedInitialError
-    ? getPtisUserSafeErrorMessage(
-        pageData.sanitizedInitialError,
-        undefined,
-        t('error.generic')
-      )
+  const sanitizedInitialError = propertyDetailsResult.error
+    ? getPtisUserSafeErrorMessage(propertyDetailsResult.error, undefined, t('error.generic'))
     : undefined;
+
+  // Fetch tax details based on valuation tab (ptisParams.tab), not property tab (activeTab)
+  const valuationTab = ptisParams.tab;
+  const { rateableTaxDetails, capitalTaxDetails, rateableTaxError, capitalTaxError } =
+    await fetchTaxDetailsByTab(resolvedPropertyId, valuationTab);
+
+  const footerActions: FooterAction[] = FALLBACK_FOOTER_ACTIONS.map((action, index) => {
+    const baseStyle = FOOTER_REGISTRY[action.actionCommand] || DEFAULT_ACTION_STYLE;
+    return {
+      id: index + 1000,
+      ...action,
+      style: {
+        ...baseStyle,
+        iconName: action.lucideIcon || baseStyle.iconName,
+      },
+    };
+  });
 
   return (
     <div className="flex flex-col gap-6 pb-24">
@@ -115,85 +409,85 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
         </div>
       )}
       <PropertyTabSection
-        initialData={pageData.initialData}
-        initialWardId={pageData.resolvedWardId}
-        initialTab={pageData.activeTab}
-        initialError={pageData.initialError}
+        initialData={initialData}
+        initialWardId={resolvedWardId}
+        initialTab={activeTab}
+        initialError={initialError}
       />
       <PtisMainScreen
-        locale={pageData.locale}
-        propertyId={pageData.resolvedPropertyId}
-        ptisParams={pageData.ptisParams}
-        resolvedSearchParams={pageData.resolvedSearchParams}
+        locale={locale}
+        propertyId={resolvedPropertyId}
+        ptisParams={ptisParams}
+        resolvedSearchParams={resolvedSearchParams}
         error={sanitizedInitialError}
-        initialApartmentData={pageData.apartmentData}
-        initialDualSectionData={pageData.dualSectionData}
-        wardId={pageData.resolvedWardId}
-        propertyNo={pageData.propertyNo}
+        initialApartmentData={apartmentData}
+        initialDualSectionData={dualSectionData}
+        wardId={resolvedWardId}
+        propertyNo={propertyNo}
         rateableSection={
           <RateableTaxDetailsSection
-            rateableData={pageData.rateableResult?.success ? pageData.rateableResult.data : null}
-            error={!pageData.rateableResult?.success ? pageData.rateableResult?.error : undefined}
-            hasFetchedData={pageData.rateableResult != null}
-            oldDetails={pageData.initialData.oldDetails || defaultOldDetails}
-            propertyId={pageData.resolvedPropertyId}
-            searchParams={pageData.resolvedSearchParams as Record<string, string | string[] | undefined>}
-            initialTaxDetails={pageData.rateableTaxDetails}
-            taxDetailsError={pageData.rateableTaxError}
-            locale={pageData.locale}
+            rateableData={rateableResult?.success ? rateableResult.data : null}
+            error={!rateableResult?.success ? rateableResult?.error : undefined}
+            hasFetchedData={rateableResult != null}
+            oldDetails={initialData.oldDetails || defaultOldDetails}
+            propertyId={resolvedPropertyId}
+            searchParams={resolvedSearchParams as Record<string, string | string[] | undefined>}
+            initialTaxDetails={rateableTaxDetails}
+            taxDetailsError={rateableTaxError}
+            locale={locale}
           />
         }
         capitalSection={
           <CapitalTaxDetailsSection
-            capitalData={pageData.capitalResult?.success ? pageData.capitalResult.data : null}
-            error={!pageData.capitalResult?.success ? pageData.capitalResult?.error : undefined}
-            hasFetchedData={pageData.capitalResult != null}
-            oldDetails={pageData.initialData.oldDetails || defaultOldDetails}
-            propertyId={pageData.resolvedPropertyId}
-            searchParams={pageData.resolvedSearchParams as Record<string, string | string[] | undefined>}
-            initialTaxDetails={pageData.capitalTaxDetails}
-            taxDetailsError={pageData.capitalTaxError}
-            locale={pageData.locale}
+            capitalData={capitalResult?.success ? capitalResult.data : null}
+            error={!capitalResult?.success ? capitalResult?.error : undefined}
+            hasFetchedData={capitalResult != null}
+            oldDetails={initialData.oldDetails || defaultOldDetails}
+            propertyId={resolvedPropertyId}
+            searchParams={resolvedSearchParams as Record<string, string | string[] | undefined>}
+            initialTaxDetails={capitalTaxDetails}
+            taxDetailsError={capitalTaxError}
+            locale={locale}
           />
         }
         dualRateableSection={
           <RateableTaxDetailsSection
-            rateableData={pageData.dualSectionData?.initialRateableData || null}
-            error={pageData.dualSectionData?.rateableError}
-            hasFetchedData={pageData.dualSectionData != null}
-            oldDetails={pageData.initialData.oldDetails || defaultOldDetails}
-            propertyId={pageData.resolvedPropertyId}
-            searchParams={pageData.resolvedSearchParams as Record<string, string | string[] | undefined>}
-            locale={pageData.locale}
-            initialTaxDetails={pageData.rateableTaxDetails}
-            taxDetailsError={pageData.rateableTaxError}
+            rateableData={dualSectionData?.initialRateableData || null}
+            error={dualSectionData?.rateableError}
+            hasFetchedData={dualSectionData != null}
+            oldDetails={initialData.oldDetails || defaultOldDetails}
+            propertyId={resolvedPropertyId}
+            searchParams={resolvedSearchParams as Record<string, string | string[] | undefined>}
+            locale={locale}
+            initialTaxDetails={rateableTaxDetails}
+            taxDetailsError={rateableTaxError}
             showInlineError={false}
           />
         }
         dualCapitalSection={
           <CapitalTaxDetailsSection
-            capitalData={pageData.dualSectionData?.initialCapitalData || null}
-            error={pageData.dualSectionData?.capitalError}
-            hasFetchedData={pageData.dualSectionData != null}
-            oldDetails={pageData.initialData.oldDetails || defaultOldDetails}
-            propertyId={pageData.resolvedPropertyId}
-            searchParams={pageData.resolvedSearchParams as Record<string, string | string[] | undefined>}
-            locale={pageData.locale}
-            initialTaxDetails={pageData.capitalTaxDetails}
-            taxDetailsError={pageData.capitalTaxError}
+            capitalData={dualSectionData?.initialCapitalData || null}
+            error={dualSectionData?.capitalError}
+            hasFetchedData={dualSectionData != null}
+            oldDetails={initialData.oldDetails || defaultOldDetails}
+            propertyId={resolvedPropertyId}
+            searchParams={resolvedSearchParams as Record<string, string | string[] | undefined>}
+            locale={locale}
+            initialTaxDetails={capitalTaxDetails}
+            taxDetailsError={capitalTaxError}
             showInlineError={false}
           />
         }
       />
       <BottomActionBar
-        actions={pageData.footerActions}
-        currentPage={pageData.pageNumber}
+        actions={footerActions}
+        currentPage={pageNumber}
         totalPages={
-          (pageData.appartmentTab === 'commercial'
-            ? pageData.apartmentData?.commercial?.totalPages
-            : pageData.appartmentTab === 'residential'
-            ? pageData.apartmentData?.residential?.totalPages
-            : pageData.apartmentData?.amenities?.totalPages) ?? 1
+          (appartmentTab === 'commercial'
+            ? apartmentData?.commercial?.totalPages
+            : appartmentTab === 'residential'
+            ? apartmentData?.residential?.totalPages
+            : apartmentData?.amenities?.totalPages) ?? 1
         }
         leftContent={<PtisFooterControls />}
       />

@@ -91,7 +91,7 @@ export const useKycFormSubmission = (
               formData.ownerTypeId === null
                 ? null
                 : OwnerTypeMasterList.find(
-                    (item) => item.ownerTypeId === formData.ownerTypeId
+                    (item) => item.id === formData.ownerTypeId
                   )?.ownerType ?? null;
 
             // Build API payload

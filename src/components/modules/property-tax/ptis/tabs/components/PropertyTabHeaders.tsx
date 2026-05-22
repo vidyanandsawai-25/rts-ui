@@ -18,37 +18,37 @@ export const PropertyTabHeaders: React.FC<PropertyTabHeadersProps> = ({ activeTa
       <Tabs.TabList className="h-auto w-full justify-between border-0 bg-transparent overflow-y-hidden">
         <Tabs.Tab
           value="propertydetails"
-          className="rounded-b-none rounded-t-lg border-0 py-3 text-base text-white data-[state=active]:bg-white data-[state=active]:text-blue-900 data-[state=active]:shadow-none hover:text-white justify-center"
+          className="rounded-b-none rounded-t-lg border-0 py-1.5 text-sm text-white data-[state=active]:bg-white data-[state=active]:text-blue-900 data-[state=active]:shadow-none hover:text-white justify-center"
         >
           <span className="inline-flex items-center">
-            <Building2 className="h-5 w-5" />
+            <Building2 className="h-4 w-4" />
             <span className="ml-2">{t('tabs.propertyDetails')}</span>
           </span>
         </Tabs.Tab>
         <Tabs.Tab
           value="kycdetails"
-          className="rounded-b-none rounded-t-lg border-0 py-3 text-base text-white data-[state=active]:bg-white data-[state=active]:text-blue-900 data-[state=active]:shadow-none hover:text-white justify-center"
+          className="rounded-b-none rounded-t-lg border-0 py-1.5 text-sm text-white data-[state=active]:bg-white data-[state=active]:text-blue-900 data-[state=active]:shadow-none hover:text-white justify-center"
         >
           <span className="inline-flex items-center">
-            <UserCheck className="h-5 w-5" />
+            <UserCheck className="h-4 w-4" />
             <span className="ml-2">{t('tabs.kycDetails')}</span>
           </span>
         </Tabs.Tab>
         <Tabs.Tab
           value="societydetails"
-          className="rounded-b-none rounded-t-lg border-0 py-3 text-base text-white data-[state=active]:bg-white data-[state=active]:text-blue-900 data-[state=active]:shadow-none hover:text-white justify-center"
+          className="rounded-b-none rounded-t-lg border-0 py-1.5 text-sm text-white data-[state=active]:bg-white data-[state=active]:text-blue-900 data-[state=active]:shadow-none hover:text-white justify-center"
         >
           <span className="inline-flex items-center">
-            <Users className="h-5 w-5" />
+            <Users className="h-4 w-4" />
             <span className="ml-2">{t('tabs.societyDetails')}</span>
           </span>
         </Tabs.Tab>
         <Tabs.Tab
           value="olddetails"
-          className="rounded-b-none rounded-t-lg border-0 py-3 text-base text-white data-[state=active]:bg-white data-[state=active]:text-blue-900 data-[state=active]:shadow-none hover:text-white justify-center"
+          className="rounded-b-none rounded-t-lg border-0 py-1.5 text-sm text-white data-[state=active]:bg-white data-[state=active]:text-blue-900 data-[state=active]:shadow-none hover:text-white justify-center"
         >
           <span className="inline-flex items-center">
-            <History className="h-5 w-5" />
+            <History className="h-4 w-4" />
             <span className="ml-2">{t('tabs.oldDetails')}</span>
           </span>
         </Tabs.Tab>

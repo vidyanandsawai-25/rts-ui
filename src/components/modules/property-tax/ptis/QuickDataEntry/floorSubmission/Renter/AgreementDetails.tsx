@@ -384,19 +384,6 @@ const AgreementDetails = memo(({ formData, setFormData }: AgreementDetailsProps)
             });
           }} className="h-10 w-full font-medium text-xs text-slate-700" />
         </div>
-
-        {/* Self Declaration(Monthly) */}
-        <div className="lg:col-span-2 flex flex-col gap-1.5">
-          <Label className={fieldLabelClassName}>{t('floor.renterSection.selfDeclarationMonthly')}</Label>
-          <Input type="number" min="0" value={formData?.renterDetails?.selfDeclarationAmount || ""} onChange={e => {
-            const val = e.target.value;
-            if (val && Number(val) < 0) return; // Block negative
-            setFormData(prev => {
-              if (!prev) return null;
-              return { ...prev, renterDetails: { ...prev.renterDetails, selfDeclarationAmount: val } };
-            });
-          }} className="h-10 w-full font-medium text-xs text-slate-700" />
-        </div>
       </div>
 
       <AgreementDocumentViewer open={showDocumentPreview} onClose={() => setShowDocumentPreview(false)} documentUrl={documentPreviewUrl} fileName={uploadedDocument?.name} />
