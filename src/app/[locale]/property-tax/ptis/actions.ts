@@ -1,10 +1,7 @@
 'use server';
 
 import { ptisService } from '@/lib/api/ptis/tab/ptis.service';
-import {
-  createPtisSchemas,
-  propertyIdActionSchema,
-} from '@/lib/validations/ptis.schema';
+import { createPtisSchemas, propertyIdActionSchema } from '@/lib/validations/ptis.schema';
 import { retryWithBackoff } from '@/lib/utils/api';
 import { getTranslations } from 'next-intl/server';
 
@@ -14,17 +11,12 @@ async function getPtisValidationSchemas() {
 }
 
 async function createAction<T>(
-  fn: () => Promise<{
-    success: boolean;
-    data?: T;
-    message?: string;
-    error?: string | { message?: string };
-  }>
-): Promise<{ success: boolean; data?: T; message?: string; error?: string }> {
+  fn: () => Promise<{ success: boolean; data?: T; error?: string | { message?: string } }>
+): Promise<{ success: boolean; data?: T; error?: string }> {
   try {
     const result = await fn();
     if (result.success) {
-      return { success: true, data: result.data, message: result.message };
+      return { success: true, data: result.data };
     }
     const errorMsg =
       typeof result.error === 'string' ? result.error : result.error?.message || 'Action failed';
@@ -40,15 +32,12 @@ async function createAction<T>(
 export async function getWardListAction() {
   return createAction(async () => {
     // Retry ward list fetch with shorter delays since this is critical data
-    return retryWithBackoff(
-      () => ptisService.getWardList(),
-      { 
-        maxRetries: 2, 
-        initialDelay: 500, 
-        maxDelay: 2000,
-        backoffMultiplier: 2
-      }
-    );
+    return retryWithBackoff(() => ptisService.getWardList(), {
+      maxRetries: 2,
+      initialDelay: 500,
+      maxDelay: 2000,
+      backoffMultiplier: 2,
+    });
   });
 }
 
