@@ -103,7 +103,8 @@ export async function createPropertyType(data: PropertyTypeFormModel, userId: nu
     const payload = {
       propertyDescription: data.propertyDescription.trim(),
       type: data.type.trim(),
-      propertyTypeGroup: data.propertyTypeGroup.trim(),
+      //propertyTypeGroup: data.propertyTypeGroup.trim(),
+      propertyTypeGroup: null, // Always send null as per requirement
       searchSequence: Number(data.searchSequence) || 0,
       propertyTypeCategoryId: data.propertyTypeCategoryId ?? null,
       isActive: data.isActive,
@@ -133,7 +134,7 @@ export async function updatePropertyType(data: PropertyTypeFormModel, userId: nu
       id: data.id,
       propertyDescription: data.propertyDescription.trim(),
       type: data.type.trim(),
-      propertyTypeGroup: data.propertyTypeGroup.trim(),
+      propertyTypeGroup: null, // Always send null as per requirement
       searchSequence: Number(data.searchSequence) || 0,
       propertyTypeCategoryId: data.propertyTypeCategoryId ?? null,
       isActive: data.isActive,
@@ -167,6 +168,28 @@ export async function deletePropertyType(id: number): Promise<void> {
   }
 }
 
+/** 
+ * Purge deletes a property type by ID.
+ * This will permanently delete the record and all its dependencies.
+ */
+export async function purgeDeletePropertyType(id: number): Promise<void> {
+  try {
+    if (!validatePropertyTypeId(id)) {
+      throw new ApiError(400, "Valid Property Type ID is required", "Validation failed");
+    }
+    const response = await apiClient.delete<void>(`/PropertyTypeMaster/${encodeURIComponent(String(id))}/purge`);
+    if (!response.success) {
+      let statusCode = response.statusCode;
+      if (!statusCode) {
+        statusCode = getDeleteErrorStatusCode(response.error || "");
+      }
+      throw new ApiError(statusCode, response.error || "Failed to purge delete property type", `Purge delete property type ${id} failed`);
+    }
+  } catch (error) {
+    throw error;
+  }
+}
+
 /** Searches property types by description or type (client-side) */
 export async function searchPropertyTypes(query: string): Promise<PropertyType[]> {
   try {
@@ -178,7 +201,7 @@ export async function searchPropertyTypes(query: string): Promise<PropertyType[]
     return allPropertyTypes.filter((pt) =>
       pt.propertyDescription.toLowerCase().includes(lowerQuery) ||
       pt.type.toLowerCase().includes(lowerQuery) ||
-      pt.propertyTypeGroup.toLowerCase().includes(lowerQuery)
+      (pt.propertyTypeGroup?.toLowerCase().includes(lowerQuery) ?? false)
     );
   } catch (error) {
     throw error;

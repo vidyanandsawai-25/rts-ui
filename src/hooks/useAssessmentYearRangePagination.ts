@@ -9,6 +9,8 @@ interface UseAssessmentYearRangePaginationProps {
   pageNumber: number;
   pageSize: number;
   totalCount: number;
+  sortBy?: string;
+  sortOrder?: string;
   locale: string;
   startTransition: (callback: () => void) => void;
 }
@@ -18,16 +20,20 @@ export function useAssessmentYearRangePagination({
   pageNumber,
   pageSize,
   totalCount,
+  sortBy,
+  sortOrder,
   locale,
   startTransition,
 }: UseAssessmentYearRangePaginationProps) {
   const router = useRouter();
 
   const buildUrl = useCallback(
-    (page: number, size: number) => {
+    (page: number, size: number, sort?: string, order?: string) => {
       const params = new URLSearchParams();
       params.set("page", String(page));
       params.set("pageSize", String(size));
+      if (sort) params.set("sortBy", sort);
+      if (order) params.set("sortOrder", order);
       return `/${locale}${config.routePath}?${params.toString()}`;
     },
     [locale, config.routePath]
@@ -36,19 +42,31 @@ export function useAssessmentYearRangePagination({
   const changePage = useCallback(
     (p: number): void => {
       startTransition(() => {
-        router.push(buildUrl(p, pageSize));
+        router.push(buildUrl(p, pageSize, sortBy, sortOrder));
       });
     },
-    [pageSize, router, startTransition, buildUrl]
+    [pageSize, sortBy, sortOrder, router, startTransition, buildUrl]
   );
 
   const handlePageSizeChange = useCallback(
     (value: string) => {
       startTransition(() => {
-        router.push(buildUrl(1, Number(value)));
+        router.push(buildUrl(1, Number(value), sortBy, sortOrder));
       });
     },
-    [router, buildUrl, startTransition]
+    [sortBy, sortOrder, router, buildUrl, startTransition]
+  );
+
+  const handleSort = useCallback(
+    (key: string) => {
+      const isSameField = sortBy === key;
+      const nextOrder = isSameField && sortOrder === "asc" ? "desc" : "asc";
+      
+      startTransition(() => {
+        router.push(buildUrl(1, pageSize, key, nextOrder));
+      });
+    },
+    [sortBy, sortOrder, pageSize, router, buildUrl, startTransition]
   );
 
   // Footer pagination calculations
@@ -60,6 +78,7 @@ export function useAssessmentYearRangePagination({
     buildUrl,
     changePage,
     handlePageSizeChange,
+    handleSort,
     paginationInfo: {
       start,
       end,

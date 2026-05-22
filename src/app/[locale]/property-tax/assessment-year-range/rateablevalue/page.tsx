@@ -8,6 +8,8 @@ interface PageProps {
   searchParams: Promise<{
     page?: string;
     pageSize?: string;
+    sortBy?: string;
+    sortOrder?: string;
   }>;
 }
 
@@ -32,13 +34,19 @@ function sanitizeParams(raw: Awaited<PageProps["searchParams"]>) {
     ? Math.min(Math.max(rawPageSize, MIN_PAGE_SIZE), MAX_PAGE_SIZE)
     : DEFAULT_PAGE_SIZE;
 
-  return { pageNumber, pageSize };
+  const allowedSortColumns = ["fromYear", "toYear"];
+  const sortBy = raw.sortBy && allowedSortColumns.includes(raw.sortBy) ? raw.sortBy : undefined;
+  const sortOrder = raw.sortOrder && ["asc", "desc"].includes(raw.sortOrder.toLowerCase()) 
+    ? raw.sortOrder.toLowerCase() 
+    : undefined;
+
+  return { pageNumber, pageSize, sortBy, sortOrder };
 }
 
 export default async function Page({ searchParams }: PageProps): Promise<React.ReactElement> {
   const params = await searchParams;
-  const { pageNumber, pageSize } = sanitizeParams(params);
-  const result = await fetchAssessmentYearRangeRVPagedAction(pageNumber, pageSize);
+  const { pageNumber, pageSize, sortBy, sortOrder } = sanitizeParams(params);
+  const result = await fetchAssessmentYearRangeRVPagedAction(pageNumber, pageSize, sortBy, sortOrder);
 
   return (
     <AssessmentYearRangeMaster<AssessmentYearRangeRV>
@@ -48,6 +56,8 @@ export default async function Page({ searchParams }: PageProps): Promise<React.R
       pageSize={result.pageSize}
       totalCount={result.totalCount}
       totalPages={result.totalPages}
+      sortBy={sortBy}
+      sortOrder={sortOrder}
       deleteAction={deleteAssessmentYearRangeRVAction}
     />
   );
