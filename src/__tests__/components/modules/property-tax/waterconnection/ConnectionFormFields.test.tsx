@@ -187,6 +187,32 @@ describe('ConnectionFormFields', () => {
     });
   });
 
+  describe('maxLength constraint', () => {
+    it('should have maxLength of 20 on connectionNo input', () => {
+      renderWithIntl(
+        <ConnectionFormFields
+          {...defaultProps}
+          {...handlers}
+        />
+      );
+
+      const connectionInput = screen.getByPlaceholderText('Enter connection number');
+      expect(connectionInput).toHaveAttribute('maxLength', '20');
+    });
+
+    it('should have maxLength of 20 on meterNo input', () => {
+      renderWithIntl(
+        <ConnectionFormFields
+          {...defaultProps}
+          {...handlers}
+        />
+      );
+
+      const meterInput = screen.getByPlaceholderText('Enter meter number');
+      expect(meterInput).toHaveAttribute('maxLength', '20');
+    });
+  });
+
   describe('applicable rate display', () => {
     it('should display applicable rate when provided', () => {
       renderWithIntl(

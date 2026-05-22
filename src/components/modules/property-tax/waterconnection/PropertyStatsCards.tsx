@@ -1,4 +1,4 @@
-import { Activity, DollarSign, Droplets, StopCircle } from "lucide-react";
+import { Activity, IndianRupee, Droplets, StopCircle } from "lucide-react";
 import { Card } from "@/components/common/Card";
 
 interface StatsData {
@@ -56,7 +56,7 @@ export function PropertyStatsCards({ stats, labels }: PropertyStatsCardsProps) {
           <div className="text-3xl font-bold text-purple-700">{currency}{stats.yearlyRevenue.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
         </div>
         <div className="h-10 w-10 flex items-center justify-center bg-purple-100 text-purple-700 rounded-full">
-          <DollarSign size={28} />
+          <IndianRupee size={28} />
         </div>
       </Card>
     </div>
