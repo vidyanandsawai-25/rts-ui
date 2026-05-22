@@ -15,8 +15,6 @@ export interface OfficeFormModel {
   pincode: string;
   phone: string;
   emailId: string;
-  officeIncharge?: number | null;
-  designationMasterId?: number | null;
   establishedDate?: string | null;
   isActive: boolean;
   updatedBy?: number;
@@ -37,8 +35,6 @@ export interface Office {
   pincode: string;
   phone: string;
   emailId: string;
-  officeIncharge: number | null;
-  designationMasterId: number | null;
   establishedDate: string | null;
   isActive: boolean;
   createdDate: string;

@@ -11,7 +11,6 @@ import { useOfficeForm } from "@/hooks/useOfficeForm";
 import { OfficeStatusToggle } from "./OfficeStatusToggle";
 import { OfficeDetailsSection } from "./OfficeDetailsSection";
 import { OfficeContactSection } from "./OfficeContactSection";
-import { OfficeAdditionalSection } from "./OfficeAdditionalSection";
 
 export interface OfficeFormProps {
   officeId: number | null;
@@ -43,6 +42,8 @@ export default function OfficeForm({
     onSuccess: () => {},
     onCancel: () => {},
   });
+
+  const isSaveDisabled = Object.keys(errors).length > 0;
 
   return (
     <Drawer
@@ -76,6 +77,7 @@ export default function OfficeForm({
             type="submit"
             form="form"
             isLoading={isSubmitting}
+            disabled={isSaveDisabled}
           />
         </>
       }
@@ -106,14 +108,6 @@ export default function OfficeForm({
           handleChange={handleChange} 
           handleBlur={handleBlur} 
           showError={showError} 
-          t={t} 
-        />
-
-        <OfficeAdditionalSection 
-          formData={formData} 
-          errors={errors}
-          handleChange={handleChange} 
-          showError={showError}
           t={t} 
         />
 

@@ -35,6 +35,7 @@ export function OfficeContactSection({
             onBlur={handleBlur}
             error={showError("emailId") ? errors.emailId : undefined}
             placeholder={t("form.fields.emailId.placeholder")}
+            maxLength={100}
           />
 
           <Input
@@ -57,6 +58,7 @@ export function OfficeContactSection({
             onBlur={handleBlur}
             error={showError("city") ? errors.city : undefined}
             placeholder={t("form.fields.city.placeholder")}
+            maxLength={50}
           />
 
           <Input
@@ -76,8 +78,12 @@ export function OfficeContactSection({
           name="address"
           value={formData.address || ""}
           onChange={handleChange}
+          onBlur={handleBlur}
+          error={Boolean(showError("address") && errors.address)}
+          errorMessage={showError("address") ? errors.address : undefined}
           placeholder={t("form.fields.address.placeholder")}
           rows={3}
+          maxLength={250}
         />
       </div>
     </div>

@@ -34,7 +34,7 @@ export function useOfficeForm({
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedOnce, setSubmittedOnce] = useState(false);
-  const [formData, setFormData] = useState<OfficeFormModel>({
+  const initialFormData: OfficeFormModel = {
     officeId: officeId ?? initialData?.officeId,
     officeCode: initialData?.officeCode ?? "",
     officeName: initialData?.officeName ?? "",
@@ -44,25 +44,21 @@ export function useOfficeForm({
     pincode: initialData?.pincode ?? "",
     phone: initialData?.phone ?? "",
     emailId: initialData?.emailId ?? "",
-    officeIncharge: initialData?.officeIncharge ?? null,
-    designationMasterId: initialData?.designationMasterId ?? null,
     establishedDate: initialData?.establishedDate 
       ? formatDateToDDMMYYYY(initialData.establishedDate) 
       : "",
     isActive: initialData?.isActive ?? true,
     updatedBy: undefined,
-  });
+  };
 
-  const [errors, setErrors] = useState<Partial<Record<keyof OfficeFormModel, string>>>({});
+  const [formData, setFormData] = useState<OfficeFormModel>(initialFormData);
+
+  const [errors, setErrors] = useState<Partial<Record<keyof OfficeFormModel, string>>>(() => {
+    return officeValidations.validate(initialFormData, t, isEdit, tCommon);
+  });
   const [touched, setTouched] = useState<Partial<Record<keyof OfficeFormModel, boolean>>>({});
   const [open, setOpen] = useState(true);
   const isMounted = useRef(true);
-
-  useEffect(() => {
-    return () => {
-      isMounted.current = false;
-    };
-  }, []);
 
   const validate = useCallback(
     (data: OfficeFormModel) => {
@@ -73,21 +69,41 @@ export function useOfficeForm({
     [t, isEdit, tCommon]
   );
 
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value, type } = e.target;
-    let processedValue: string | number | boolean | null = value;
+    const { name, value } = e.target;
+    let processedValue = value;
     
-    if (type === 'number' || ['officeIncharge', 'designationMasterId'].includes(name)) {
-      processedValue = value === '' ? null : Number(value);
+    // Apply input restrictions during typing/paste
+    if (name === 'officeCode') {
+      processedValue = value.replace(/[^0-9]/g, '').slice(0, 6);
+    } else if (name === 'officeName') {
+      processedValue = value.replace(/[^A-Za-z0-9\s&-]/g, '').replace(/\s+/g, ' ').slice(0, 100);
+    } else if (name === 'phone') {
+      processedValue = value.replace(/[^0-9]/g, '').slice(0, 10);
+    } else if (name === 'pincode') {
+      processedValue = value.replace(/[^0-9]/g, '').slice(0, 6);
+    } else if (name === 'city') {
+      processedValue = value.replace(/[^A-Za-z\s]/g, '').replace(/\s+/g, ' ').slice(0, 50);
+    } else if (name === 'address') {
+      processedValue = value.replace(/[^A-Za-z0-9,\-.\/\s]/g, '').replace(/\s+/g, ' ').slice(0, 250);
+    } else if (name === 'establishedDate') {
+      processedValue = value.replace(/[^0-9-]/g, '').slice(0, 10);
+    } else if (name === 'emailId') {
+      processedValue = value.slice(0, 100);
     }
 
     setFormData((prev) => {
       const updated = { ...prev, [name]: processedValue };
-      if (submittedOnce) validate(updated);
+      validate(updated);
       return updated;
     });
-  }, [submittedOnce, validate]);
+  }, [validate]);
 
   const handleBlur = useCallback((e: React.FocusEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name } = e.target;

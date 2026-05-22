@@ -36,6 +36,7 @@ export function OfficeDetailsSection({
             onBlur={handleBlur}
             error={showError("officeCode") ? errors.officeCode : undefined}
             placeholder={t("form.fields.officeCode.placeholder")}
+            maxLength={6}
           />
 
           <Input
@@ -47,6 +48,7 @@ export function OfficeDetailsSection({
             onBlur={handleBlur}
             error={showError("officeName") ? errors.officeName : undefined}
             placeholder={t("form.fields.officeName.placeholder")}
+            maxLength={100}
           />
 
           <Select
@@ -69,6 +71,7 @@ export function OfficeDetailsSection({
             onBlur={handleBlur}
             error={showError("establishedDate") ? errors.establishedDate : undefined}
             placeholder="DD-MM-YYYY"
+            maxLength={10}
           />
         </div>
       </div>
