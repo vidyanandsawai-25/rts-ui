@@ -130,8 +130,8 @@ export const useFloorSync = (params: {
         setSelectedFloor(finalForm);
         hasSyncedRef.current = currentDetailsId ?? null;
       }
-    } else if (!hasSyncedRef.current) {
-      // Only reset if we haven't synced any details yet
+    } else {
+      hasSyncedRef.current = null;
       if (!isAddingNewFloor) {
         setEditingFloorForm(INITIAL_FORM_STATE);
         setSelectedFloor(null);
@@ -231,7 +231,7 @@ export const useFloorSync = (params: {
           id: undefined, // It's a new floor, keep id undefined
         }));
       }
-    } else if (currentFloorIdUrl && currentFloorIdUrl !== 'new') {
+    } else if (currentFloorIdUrl && currentFloorIdUrl !== 'new' && !isAddingNewFloor) {
       let renterData: any = null;
       try {
         const sessionRenter = sessionStorage.getItem(`renter_data_${currentFloorIdUrl}`);
