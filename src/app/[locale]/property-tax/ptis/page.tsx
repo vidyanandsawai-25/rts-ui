@@ -22,6 +22,11 @@ import { getRateableValue } from './RateableValue.action';
 import { assembleDualMethodSectionData } from '@/components/modules/property-tax/ptis/dualmethod/dual-method-data';
 import type { SearchSelectOption } from '@/components/common/SearchSelect';
 import type { ApartmentQCDetail } from '@/types/apartmentQC.types';
+import { BottomActionBar } from '@/components/layout/BottomActionBar';
+import { PtisFooterControls } from '@/components/modules/property-tax/ptis/PtisFooterControls';
+import { FALLBACK_FOOTER_ACTIONS } from '@/config/footer-fallback';
+import { FOOTER_REGISTRY, DEFAULT_ACTION_STYLE } from '@/config/footer-registry';
+import { FooterAction } from '@/lib/api/footer.service';
 import type {
   PropertyListItem,
   Ward,
@@ -380,8 +385,20 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
   const { rateableTaxDetails, capitalTaxDetails, rateableTaxError, capitalTaxError } =
     await fetchTaxDetailsByTab(resolvedPropertyId, valuationTab);
 
+  const footerActions: FooterAction[] = FALLBACK_FOOTER_ACTIONS.map((action, index) => {
+    const baseStyle = FOOTER_REGISTRY[action.actionCommand] || DEFAULT_ACTION_STYLE;
+    return {
+      id: index + 1000,
+      ...action,
+      style: {
+        ...baseStyle,
+        iconName: action.lucideIcon || baseStyle.iconName,
+      },
+    };
+  });
+
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 pb-24">
       {criticalError && (
         <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
           <AlertCircle className="h-5 w-5 mt-0.5 shrink-0 text-red-500" />
@@ -461,6 +478,18 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
             showInlineError={false}
           />
         }
+      />
+      <BottomActionBar
+        actions={footerActions}
+        currentPage={pageNumber}
+        totalPages={
+          (appartmentTab === 'commercial'
+            ? apartmentData?.commercial?.totalPages
+            : appartmentTab === 'residential'
+            ? apartmentData?.residential?.totalPages
+            : apartmentData?.amenities?.totalPages) ?? 1
+        }
+        leftContent={<PtisFooterControls />}
       />
     </div>
   );
