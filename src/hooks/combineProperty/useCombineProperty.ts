@@ -100,6 +100,16 @@ export function useCombinePropertyForm({
     // Clear review state when selection changes
     setReviewData([]);
     setIsReviewing(false);
+
+    // Validate range: if "To" is already selected and comes before the new "From", show error
+    if (rangeTo) {
+      const fromIdx = subPropertyList.findIndex((i) => String(i.id) === value);
+      const toIdx = subPropertyList.findIndex((i) => String(i.id) === rangeTo);
+      if (fromIdx !== -1 && toIdx !== -1 && toIdx < fromIdx) {
+        toast.error(t('rangeInvalidError'));
+      }
+    }
+
     const pNo = calculatePartitionNo('range', value, rangeTo, []);
     router.replace(buildUrl({ from: value, partitionNo: pNo }), { scroll: false });
   };
@@ -108,6 +118,16 @@ export function useCombinePropertyForm({
     // Clear review state when selection changes
     setReviewData([]);
     setIsReviewing(false);
+
+    // Validate range: "To" must not come before "From"
+    if (rangeFrom) {
+      const fromIdx = subPropertyList.findIndex((i) => String(i.id) === rangeFrom);
+      const toIdx = subPropertyList.findIndex((i) => String(i.id) === value);
+      if (fromIdx !== -1 && toIdx !== -1 && toIdx < fromIdx) {
+        toast.error(t('rangeInvalidError'));
+      }
+    }
+
     const pNo = calculatePartitionNo('range', rangeFrom, value, []);
     router.replace(buildUrl({ to: value, partitionNo: pNo }), { scroll: false });
   };
@@ -214,9 +234,17 @@ export function useCombinePropertyForm({
     return 0;
   }, [selectionMethod, selectedProperties, rangeFrom, rangeTo, subPropertyList]);
 
+  // Check if the range is invalid ("To" comes before "From" in the subPropertyList)
+  const isRangeInvalid = useMemo(() => {
+    if (selectionMethod !== 'range' || !rangeFrom || !rangeTo) return false;
+    const fromIdx = subPropertyList.findIndex((i) => String(i.id) === rangeFrom);
+    const toIdx = subPropertyList.findIndex((i) => String(i.id) === rangeTo);
+    return fromIdx !== -1 && toIdx !== -1 && toIdx < fromIdx;
+  }, [selectionMethod, rangeFrom, rangeTo, subPropertyList]);
+
   const canProceed =
     !!selectedBasePropertyId &&
-    (selectionMethod === 'range' ? !!(rangeFrom && rangeTo) : selectedProperties.length > 0);
+    (selectionMethod === 'range' ? !!(rangeFrom && rangeTo) && !isRangeInvalid : selectedProperties.length > 0);
 
   const uniqueOwners = [...new Set(reviewData.map((r) => r.ownerName).filter(Boolean))];
   const hasDifferentOwners = uniqueOwners.length > 1;
@@ -236,6 +264,7 @@ export function useCombinePropertyForm({
     selectionMethod,
     selectedCount,
     canProceed,
+    isRangeInvalid,
     hasDifferentOwners,
     differentOwnerProps,
     handleBasePropertyChange,
