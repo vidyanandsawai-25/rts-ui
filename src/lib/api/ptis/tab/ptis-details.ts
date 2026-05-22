@@ -47,7 +47,7 @@ export const ptisDetailsService = {
     error?: string;
   }> {
     try {
-      const response = await fetchWithCertSupport<SocietyDetailsApiResponse>(
+      const response = await fetchWithCertSupport<unknown>(
         `/Property/${propertyId}/society-details`
       );
 
@@ -58,9 +58,10 @@ export const ptisDetailsService = {
         };
       }
 
-      return response.data
-        ? { success: true, data: ptisMapper.mapSocietyDetails(response.data) }
-        : { success: false, error: 'Society details not found' };
+      const rawData = extractData<SocietyDetailsApiResponse>(response.data);
+      if (!rawData) return { success: false, error: 'Society details not found' };
+
+      return { success: true, data: ptisMapper.mapSocietyDetails(rawData) };
     } catch (error: unknown) {
       return {
         success: false,
