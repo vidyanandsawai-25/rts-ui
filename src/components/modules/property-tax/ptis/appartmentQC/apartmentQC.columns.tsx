@@ -1,4 +1,54 @@
+import React from "react";
 import { Column } from "@/components/common/MasterTable";
+import { Tooltip } from "@/components/common/Tooltip";
+
+// Helper function to render comma-separated values with count & tooltip
+const renderMultiRecord = (value: unknown): React.ReactNode => {
+  if (value === null || typeof value === 'undefined') return '-';
+  const str = String(value).trim();
+  if (!str) return '-';
+
+  const parts = str.split(',').map(p => p.trim()).filter(Boolean);
+  if (parts.length <= 1) {
+    return <span>{str}</span>;
+  }
+
+  const firstRecord = parts[0];
+  const count = parts.length - 1;
+  const displayText = `${firstRecord} +${count}`;
+
+  return (
+    <Tooltip content={<div className="text-xs max-w-sm whitespace-normal break-words leading-relaxed">{str}</div>} placement="top">
+      <span className="cursor-help font-semibold text-blue-600 hover:text-blue-800 transition-colors">
+        {displayText}
+      </span>
+    </Tooltip>
+  );
+};
+
+// Helper function to render comma-separated values with count & tooltip if length > 2
+const renderMultiRecordMax2 = (value: unknown): React.ReactNode => {
+  if (value === null || typeof value === 'undefined') return '-';
+  const str = String(value).trim();
+  if (!str) return '-';
+
+  const parts = str.split(',').map(p => p.trim()).filter(Boolean);
+  if (parts.length <= 2) {
+    return <span>{str}</span>;
+  }
+
+  const firstTwo = parts.slice(0, 2).join(', ');
+  const count = parts.length - 2;
+  const displayText = `${firstTwo} +${count}`;
+
+  return (
+    <Tooltip content={<div className="text-xs max-w-sm whitespace-normal break-words leading-relaxed">{str}</div>} placement="top">
+      <span className="cursor-help font-semibold text-blue-600 hover:text-blue-800 transition-colors">
+        {displayText}
+      </span>
+    </Tooltip>
+  );
+};
 
 /**
  * Returns column definitions for Apartment QC tables based on active tabs.
@@ -21,18 +71,19 @@ export const getApartmentQCColumns = (activeMainTab: string, activeSubTab: strin
         { key: "flatOrShopName", label: t("columns.shopName") },
         { key: "rentMonthly", label: t("columns.rent") },
         { key: "renterName", label: t("columns.renterName") },
-        { key: "typeOfUse", label: t("columns.description") },
-        { key: "type", label: t("columns.type") },
-        { key: "floor", label: t("columns.floor") },
-        { key: "assessmentYear", label: t("columns.assessmentYear") },
-        { key: "constructionYear", label: t("columns.surveyConstructionYear") },
-        { key: "constructionType", label: t("columns.constructionType") },
+        { key: "typeOfUse", label: t("columns.description"), render: renderMultiRecord },
+        { key: "type", label: t("columns.type"), render: renderMultiRecordMax2 },
+        { key: "floor", label: t("columns.floor"), render: renderMultiRecord },
+        { key: "assessmentYear", label: t("columns.assessmentYear"), render: renderMultiRecord },
+        { key: "constructionYear", label: t("columns.surveyConstructionYear"), render: renderMultiRecord },
+        { key: "constructionType", label: t("columns.constructionType"), render: renderMultiRecordMax2 },
         { key: "toiletCount", label: t("columns.toiletCount") },
         { key: "carpetASqFt", label: t("columns.carpetAreaSqFt") },
         { key: "carpetASqMtr", label: t("columns.carpetAreaSqMtr") },
         { key: "builtupASqFt", label: t("columns.builtupAreaSqFt") },
         { key: "builtupASqMtr", label: t("columns.builtupAreaSqMtr") },
         { key: "oldConstArea", label: t("columns.oldConstArea") },
+        { key: "oldRV", label: t("columns.oldTax") }, // Wait, in original it was label: t("columns.oldTax") or t("columns.oldRV")? Let's check original. Oh, original line 37: { key: "oldTotalTax", label: t("columns.oldTax") }, and line 36: { key: "oldRV", label: t("columns.oldRV") }. Let's preserve that exactly!
         { key: "oldRV", label: t("columns.oldRV") },
         { key: "oldTotalTax", label: t("columns.oldTax") },
         { key: "rateableValue", label: t("columns.newRV") },
@@ -54,12 +105,12 @@ export const getApartmentQCColumns = (activeMainTab: string, activeSubTab: strin
         { key: "flatOrShopName", label: t("columns.shopName") },
         { key: "rentMonthly", label: t("columns.rent") },
         { key: "renterName", label: t("columns.renterName") },
-        { key: "typeOfUse", label: t("columns.description") },
-        { key: "type", label: t("columns.type") },
-        { key: "floor", label: t("columns.floor") },
-        { key: "assessmentYear", label: t("columns.asstYear") },
-        { key: "constructionYear", label: t("columns.conYear") },
-        { key: "constructionType", label: t("columns.conType") },
+        { key: "typeOfUse", label: t("columns.description"), render: renderMultiRecord },
+        { key: "type", label: t("columns.type"), render: renderMultiRecordMax2 },
+        { key: "floor", label: t("columns.floor"), render: renderMultiRecord },
+        { key: "assessmentYear", label: t("columns.asstYear"), render: renderMultiRecord },
+        { key: "constructionYear", label: t("columns.conYear"), render: renderMultiRecord },
+        { key: "constructionType", label: t("columns.conType"), render: renderMultiRecordMax2 },
         { key: "toiletCount", label: t("columns.toiletCount") },
         { key: "carpetASqFt", label: t("columns.carpetASqFt") },
         { key: "carpetASqMtr", label: t("columns.carpetASqMtr") },
@@ -85,12 +136,12 @@ export const getApartmentQCColumns = (activeMainTab: string, activeSubTab: strin
         { key: "flatOrShopName", label: t("columns.shopName") },
         { key: "rentMonthly", label: t("columns.rent") },
         { key: "renterName", label: t("columns.renterName") },
-        { key: "typeOfUse", label: t("columns.description") },
-        { key: "type", label: t("columns.type") },
-        { key: "floor", label: t("columns.floor") },
-        { key: "assessmentYear", label: t("columns.asstYear") },
-        { key: "constructionYear", label: t("columns.conYear") },
-        { key: "constructionType", label: t("columns.conType") },
+        { key: "typeOfUse", label: t("columns.description"), render: renderMultiRecord },
+        { key: "type", label: t("columns.type"), render: renderMultiRecordMax2 },
+        { key: "floor", label: t("columns.floor"), render: renderMultiRecord },
+        { key: "assessmentYear", label: t("columns.asstYear"), render: renderMultiRecord },
+        { key: "constructionYear", label: t("columns.conYear"), render: renderMultiRecord },
+        { key: "constructionType", label: t("columns.conType"), render: renderMultiRecordMax2 },
         { key: "toiletCount", label: t("columns.toiletCount") },
         { key: "carpetASqFt", label: t("columns.carpetASqFt") },
         { key: "carpetASqMtr", label: t("columns.carpetASqMtr") },
@@ -119,12 +170,12 @@ export const getApartmentQCColumns = (activeMainTab: string, activeSubTab: strin
         { key: "occupierName", label: t("columns.occupierName") },
         { key: "rentMonthly", label: t("columns.rent") },
         { key: "renterName", label: t("columns.renterName") },
-        { key: "typeOfUse", label: t("columns.description") },
-        { key: "type", label: t("columns.type") },
-        { key: "floor", label: t("columns.floor") },
-        { key: "assessmentYear", label: t("columns.assessmentYear") },
-        { key: "constructionYear", label: t("columns.surveyConstructionYear") },
-        { key: "constructionType", label: t("columns.constructionType") },
+        { key: "typeOfUse", label: t("columns.description"), render: renderMultiRecord },
+        { key: "type", label: t("columns.type"), render: renderMultiRecordMax2 },
+        { key: "floor", label: t("columns.floor"), render: renderMultiRecord },
+        { key: "assessmentYear", label: t("columns.assessmentYear"), render: renderMultiRecord },
+        { key: "constructionYear", label: t("columns.surveyConstructionYear"), render: renderMultiRecord },
+        { key: "constructionType", label: t("columns.constructionType"), render: renderMultiRecordMax2 },
         { key: "bhk", label: t("columns.bhk") },
         { key: "toiletCount", label: t("columns.toiletCount") },
         { key: "carpetASqFt", label: t("columns.carpetAreaSqFt") },
@@ -152,12 +203,12 @@ export const getApartmentQCColumns = (activeMainTab: string, activeSubTab: strin
         { key: "occupierName", label: t("columns.occupierName") },
         { key: "rentMonthly", label: t("columns.rent") },
         { key: "renterName", label: t("columns.renterName") },
-        { key: "typeOfUse", label: t("columns.description") },
-        { key: "type", label: t("columns.type") },
-        { key: "floor", label: t("columns.floor") },
-        { key: "assessmentYear", label: t("columns.asstYear") },
-        { key: "constructionYear", label: t("columns.conYear") },
-        { key: "constructionType", label: t("columns.conType") },
+        { key: "typeOfUse", label: t("columns.description"), render: renderMultiRecord },
+        { key: "type", label: t("columns.type"), render: renderMultiRecordMax2 },
+        { key: "floor", label: t("columns.floor"), render: renderMultiRecord },
+        { key: "assessmentYear", label: t("columns.asstYear"), render: renderMultiRecord },
+        { key: "constructionYear", label: t("columns.conYear"), render: renderMultiRecord },
+        { key: "constructionType", label: t("columns.conType"), render: renderMultiRecordMax2 },
         { key: "bhk", label: t("columns.bhk") },
         { key: "toiletCount", label: t("columns.toiletCount") },
         { key: "carpetASqFt", label: t("columns.carpetASqFt") },
@@ -183,12 +234,12 @@ export const getApartmentQCColumns = (activeMainTab: string, activeSubTab: strin
         { key: "occupierName", label: t("columns.occupierName") },
         { key: "rentMonthly", label: t("columns.rent") },
         { key: "renterName", label: t("columns.renterName") },
-        { key: "typeOfUse", label: t("columns.description") },
-        { key: "type", label: t("columns.type") },
-        { key: "floor", label: t("columns.floor") },
-        { key: "assessmentYear", label: t("columns.asstYear") },
-        { key: "constructionYear", label: t("columns.conYear") },
-        { key: "constructionType", label: t("columns.conType") },
+        { key: "typeOfUse", label: t("columns.description"), render: renderMultiRecord },
+        { key: "type", label: t("columns.type"), render: renderMultiRecordMax2 },
+        { key: "floor", label: t("columns.floor"), render: renderMultiRecord },
+        { key: "assessmentYear", label: t("columns.asstYear"), render: renderMultiRecord },
+        { key: "constructionYear", label: t("columns.conYear"), render: renderMultiRecord },
+        { key: "constructionType", label: t("columns.conType"), render: renderMultiRecordMax2 },
         { key: "bhk", label: t("columns.bhk") },
         { key: "toiletCount", label: t("columns.toiletCount") },
         { key: "carpetASqFt", label: t("columns.carpetASqFt") },
@@ -210,10 +261,10 @@ export const getApartmentQCColumns = (activeMainTab: string, activeSubTab: strin
   // Fallback / Amenities columns
   const baseColumns = [
     { key: 'propertyNo', label: t("columns.propertyNo") },
-    { key: 'floor', label: t("columns.floor") },
-    { key: 'assessmentYear', label: t("columns.asstYear") },
-    { key: 'constructionYear', label: t("columns.conYear") },
-    { key: 'typeOfUse', label: t("columns.use") },
+    { key: 'floor', label: t("columns.floor"), render: renderMultiRecord },
+    { key: 'assessmentYear', label: t("columns.asstYear"), render: renderMultiRecord },
+    { key: 'constructionYear', label: t("columns.conYear"), render: renderMultiRecord },
+    { key: 'typeOfUse', label: t("columns.use"), render: renderMultiRecord },
     { key: 'carpetArea', label: t("columns.carpetAreaSqFtMtr") },
     { key: 'builtupArea', label: t("columns.builtupAreaSqFtMtr") },
     { key: 'oldConstArea', label: t("columns.oldConA") },

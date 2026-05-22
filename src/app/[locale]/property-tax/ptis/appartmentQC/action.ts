@@ -78,9 +78,10 @@ export async function fetchApartmentQCDetailsAction(
 ): Promise<ActionResult<ApartmentQCDetail[]>> {
   try {
     const data = await getApartmentQCDetailsLocalized(params);
+    // data.items is PagedResponse<ApartmentQCDetail>; extract the flat items array
     return {
       success: true,
-      data: data.items ?? [],
+      data: data.items?.items ?? [],
       message: data.message,
     };
   } catch (error: unknown) {
@@ -104,16 +105,18 @@ export async function fetchApartmentQCDetailsPagedAction(
 }>> {
   try {
     const data = await getApartmentQCDetailsLocalized(params);
+    // data.items is PagedResponse<ApartmentQCDetail> (the nested object from the API)
+    const pagedItems = data.items;
     return {
       success: true,
       data: {
-        items: data.items ?? [],
-        totalCount: data.totalCount ?? data.items?.length ?? 0,
-        totalPages: data.totalPages ?? 1,
-        pageNumber: data.pageNumber ?? 1,
-        pageSize: data.pageSize ?? (data.items?.length || 10),
-        hasNext: !!data.hasNext,
-        hasPrevious: !!data.hasPrevious
+        items: pagedItems?.items ?? [],
+        totalCount: pagedItems?.totalCount ?? pagedItems?.items?.length ?? 0,
+        totalPages: pagedItems?.totalPages ?? 1,
+        pageNumber: pagedItems?.pageNumber ?? 1,
+        pageSize: pagedItems?.pageSize ?? (pagedItems?.items?.length || 10),
+        hasNext: !!pagedItems?.hasNext,
+        hasPrevious: !!pagedItems?.hasPrevious,
       },
       message: data.message,
     };

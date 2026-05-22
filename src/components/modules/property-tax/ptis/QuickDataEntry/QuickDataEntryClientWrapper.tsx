@@ -8,15 +8,6 @@ import { TabNavigation } from "./TabNavigation";
 import { cn } from '@/lib/utils/cn';
 import { ReactNode } from 'react';
 
-const DRAWER_CLASSNAME = cn(
-    "[&_div.fixed.right-0]:!w-[97vw]",
-    "md:[&_div.fixed.right-0]:!w-[1000px]",
-    "lg:[&_div.fixed.right-0]:!w-[1100px]",
-    "xl:[&_div.fixed.right-0]:!w-[1200px]",
-    "[&_div.fixed.right-0>div:first-child]:!bg-blue-600",
-    "[&_div.fixed.right-0>div:first-child_h2]:!text-white"
-);
-
 function QuickDataEntryContent({
     children,
 }: { children: ReactNode }) {
@@ -44,7 +35,16 @@ function QuickDataEntryContent({
         router.push(`/${locale}/property-tax/ptis?${params}`);
     };
 
-    const isRenterPage = pathname.includes("/Renter");
+    const isRenterPage = pathname ? pathname.toLowerCase().includes("/renter") : false;
+
+    const drawerClassName = cn(
+        "[&_div.fixed.right-0]:!w-[97vw]",
+        "md:[&_div.fixed.right-0]:!w-[1000px]",
+        "lg:[&_div.fixed.right-0]:!w-[1100px]",
+        "xl:[&_div.fixed.right-0]:!w-[1200px]",
+        !isRenterPage && "[&_div.fixed.right-0>div:first-child]:!bg-blue-600",
+        !isRenterPage && "[&_div.fixed.right-0>div:first-child_h2]:!text-white"
+    );
 
     const drawerTitle = (
         <div className="flex flex-col">
@@ -63,9 +63,9 @@ function QuickDataEntryContent({
     );
 
     return (
-        <div className={DRAWER_CLASSNAME}>
-            <Drawer open={true} onClose={handleClose} title={drawerTitle} width="xl">
-                <div className="flex h-full flex-col border-slate-300 bg-white shadow-sm">
+        <div className={drawerClassName}>
+            <Drawer open={true} onClose={handleClose} title={drawerTitle} width="xl" hideHeader={isRenterPage}>
+                <div className="flex h-full flex-col overflow-hidden border-slate-300 bg-white shadow-sm">
                     {!isRenterPage && (
                         <TabNavigation />
                     )}

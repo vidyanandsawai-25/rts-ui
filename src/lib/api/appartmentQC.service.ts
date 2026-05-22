@@ -101,7 +101,8 @@ export async function getApartmentQCDetailsSafe(
 ): Promise<ApartmentQCDetail[]> {
   try {
     const data = await getApartmentQCDetailsLocalized(params);
-    return data.items ?? [];
+    // data.items is PagedResponse<ApartmentQCDetail>, so access .items for the flat array
+    return data.items?.items ?? [];
   } catch (err) {
     logger.error('[appartmentQC.service] Failed to fetch apartment QC details', {
       error: err instanceof Error ? err : new Error(String(err)),

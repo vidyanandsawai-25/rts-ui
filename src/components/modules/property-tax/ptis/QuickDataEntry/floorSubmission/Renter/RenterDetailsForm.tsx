@@ -9,7 +9,7 @@ import { PropertyDetailsOnRenter } from './PropertyDetailsOnRenter';
 import AgreementDetails from './AgreementDetails';
 import { RentManagementCard } from './RentManagementCard';
 import { SelectedFloorDetails } from './SelectedFloorDetails';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { Loader2 } from 'lucide-react';
 import { ActionResult } from '@/types/common.types';
@@ -56,7 +56,7 @@ export const RenterDetailsForm = memo(
     subFloorLookup,
   }: RenterDetailsFormProps) => {
     const router = useRouter();
-    const pathname = usePathname();
+    const searchParams = useSearchParams();
     const locale = useLocale();
     const t = useTranslations('quickDataEntry');
 
@@ -64,13 +64,31 @@ export const RenterDetailsForm = memo(
       useRenterForm({
         initialData,
         floorId: floorId || 'new',
+        propertyId,
         saveAction,
         onSaveSuccess: (data) => {
           if (onSaveRenter) onSaveRenter(data);
+
+          // Robustly resolve the saved floor ID with numeric validation
+          const rawId = data?.propertyDetailsId ?? data?.id;
+          const numericId = Number(rawId);
+          const savedFloorId = (!isNaN(numericId) && numericId > 0) ? String(numericId) : (floorId || 'new');
+
+          // Resolve params: use props first, then current URL searchParams as fallback
+          const resolvedWardNo = wardNo || searchParams.get('wardNo') || '';
+          const resolvedPropertyNo = propertyNo || searchParams.get('propertyNo') || '';
+          const resolvedPartitionNo = partitionNo || searchParams.get('partitionNo') || '';
+
           setTimeout(() => {
             setShowSuccessPopup(false);
+            const redirectParams = new URLSearchParams();
+            if (resolvedWardNo) redirectParams.set('wardNo', resolvedWardNo);
+            if (resolvedPropertyNo) redirectParams.set('propertyNo', resolvedPropertyNo);
+            if (resolvedPartitionNo) redirectParams.set('partitionNo', resolvedPartitionNo);
+            redirectParams.set('floorId', savedFloorId);
+            redirectParams.set('drawer', savedFloorId === 'new' ? 'add' : 'edit');
             router.push(
-              `/${pathname.split('/')[1]}/property-tax/ptis/QuickDataEntry/${propertyId}/FloorSubmission?wardNo=${wardNo}&propertyNo=${propertyNo}&partitionNo=${partitionNo}&floorId=${floorId}&drawer=edit`
+              `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/FloorSubmission?${redirectParams.toString()}`
             );
           }, 1500);
         },

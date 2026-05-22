@@ -1,9 +1,27 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { apiClient } from "@/services/api.service";
 import { normalizeApiFloorData } from "./floor-types-guard";
 import { createApiError } from "./error-helpers";
 import { 
     type FloorAPIResponse, 
 } from '@/types/floor-details.types';
+
+/**
+ * Helper to robustly extract arrays from api responses that might be wrapped in envelopes
+ */
+const extractArray = (resData: any): any[] => {
+    if (!resData) return [];
+    if (Array.isArray(resData)) return resData;
+    if (Array.isArray(resData.items)) return resData.items;
+    if (Array.isArray(resData.data)) return resData.data;
+    if (resData.data) {
+        if (Array.isArray(resData.data.items)) return resData.data.items;
+        if (Array.isArray(resData.data.data)) return resData.data.data;
+        if (Array.isArray(resData.data)) return resData.data;
+    }
+    return [];
+};
+
 
 /**
  * Internal helper to fetch PDN details
@@ -41,9 +59,34 @@ export async function getPropertyByDetails(wardNo: string, propertyNo: string, p
  */
 export async function getSubmissionDetails(submissionId: number | string): Promise<Record<string, unknown> | null> {
     try {
-        const response = await apiClient.get<FloorAPIResponse>(`/DataEntry/${encodeURIComponent(String(submissionId))}`, { cache: 'no-store' });
-        if (response.success && response.data) {
-            return normalizeApiFloorData(response.data as unknown as Record<string, unknown>);
+        const floorIdNum = Number(submissionId);
+        if (isNaN(floorIdNum) || floorIdNum <= 0) {
+            return null;
+        }
+        const [floorRes, detailsRes, mastRes] = await Promise.all([
+            apiClient.get<FloorAPIResponse>(`/DataEntry/${encodeURIComponent(String(submissionId))}`, { cache: 'no-store' }),
+            apiClient.get<any>('/RenterDetails'),
+            apiClient.get<any>('/RenterMast')
+        ]);
+
+        if (floorRes.success && floorRes.data) {
+            const rawFloor = floorRes.data as any;
+            
+            const detailsData = detailsRes.success ? extractArray(detailsRes.data) : [];
+            const floorDetails = detailsData.filter((item: any) => item && Number(item.propertyDetailsId) === floorIdNum);
+
+            const mastData = mastRes.success ? extractArray(mastRes.data) : [];
+            const floorMast = mastData.filter((item: any) => item && Number(item.propertyDetailsId) === floorIdNum);
+
+            const mergedRawFloor = {
+                ...rawFloor,
+                renterDetails: (rawFloor.renterDetails && rawFloor.renterDetails.length > 0) ? rawFloor.renterDetails : floorDetails,
+                renterMast: (rawFloor.renterMast && rawFloor.renterMast.length > 0) ? rawFloor.renterMast : floorMast,
+                renters: (rawFloor.renters && rawFloor.renters.length > 0) ? rawFloor.renters : floorMast
+            };
+
+            const normalized = normalizeApiFloorData(mergedRawFloor);
+            return normalized;
         }
         return null;
     } catch (_error) {
@@ -88,11 +131,37 @@ export async function getFloorSubmissionsByOwner(ownerId: number | string): Prom
  */
 export async function getFloorById(floorId: number | string): Promise<Record<string, unknown>> {
     try {
-        const response = await apiClient.get<FloorAPIResponse>(`/DataEntry/${encodeURIComponent(String(floorId))}`, { cache: 'no-store' });
-        if (!response.success || !response.data) {
-            throw createApiError(response.statusCode, response.error, `Failed to fetch floor data ${floorId}`);
+        const floorIdNum = Number(floorId);
+        if (isNaN(floorIdNum) || floorIdNum <= 0) {
+            return {};
         }
-        return normalizeApiFloorData(response.data as unknown as Record<string, unknown>);
+        const [floorRes, detailsRes, mastRes] = await Promise.all([
+            apiClient.get<FloorAPIResponse>(`/DataEntry/${encodeURIComponent(String(floorId))}`, { cache: 'no-store' }),
+            apiClient.get<any>('/RenterDetails'),
+            apiClient.get<any>('/RenterMast')
+        ]);
+
+        if (!floorRes.success || !floorRes.data) {
+            throw createApiError(floorRes.statusCode, floorRes.error, `Failed to fetch floor data ${floorId}`);
+        }
+
+        const rawFloor = floorRes.data as any;
+
+        const detailsData = detailsRes.success ? extractArray(detailsRes.data) : [];
+        const floorDetails = detailsData.filter((item: any) => item && Number(item.propertyDetailsId) === floorIdNum);
+
+        const mastData = mastRes.success ? extractArray(mastRes.data) : [];
+        const floorMast = mastData.filter((item: any) => item && Number(item.propertyDetailsId) === floorIdNum);
+
+        const mergedRawFloor = {
+            ...rawFloor,
+            renterDetails: (rawFloor.renterDetails && rawFloor.renterDetails.length > 0) ? rawFloor.renterDetails : floorDetails,
+            renterMast: (rawFloor.renterMast && rawFloor.renterMast.length > 0) ? rawFloor.renterMast : floorMast,
+            renters: (rawFloor.renters && rawFloor.renters.length > 0) ? rawFloor.renters : floorMast
+        };
+
+        const normalized = normalizeApiFloorData(mergedRawFloor);
+        return normalized;
     } catch (error) {
         throw error;
     }

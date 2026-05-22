@@ -11,8 +11,12 @@ class UserProfileService {
    * Fetches user profile by user ID
    * GET /api/users/{userId}
    */
-  async getUserProfile(userId: number): Promise<ApiResponse<UserProfile>> {
-    return apiClient.get<UserProfile>(`/users/${userId}`);
+  async getUserProfile(userId: number, token?: string): Promise<ApiResponse<UserProfile>> {
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+    return apiClient.get<UserProfile>(`/users/${userId}`, { headers });
   }
 }
 
