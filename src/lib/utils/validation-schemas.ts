@@ -440,6 +440,30 @@ export const officeValidations = {
     const errors: Record<string, string> = {};
     const tx = tCommon || t;
 
+    const isGibberish = (val: string): boolean => {
+      const lower = val.toLowerCase();
+      const keyboardPatterns = ["qwerty", "asdfgh", "zxcvbn"];
+      const hasKeyboard = keyboardPatterns.some((pat) => lower.includes(pat));
+      const hasRepeatedChar = /([a-z0-9])\1{3,}/i.test(lower);
+      const hasRepeatedSeq =
+        /([a-z0-9]{2})\1{2,}/i.test(lower) || /([a-z0-9]{3,})\1+/i.test(lower);
+
+      const words = lower.split(/[^a-z]+/);
+      let hasGibberishWord = false;
+      for (const word of words) {
+        if (word.length >= 4 && !/[aeiouy]/.test(word)) {
+          hasGibberishWord = true;
+          break;
+        }
+        if (/[bcdfghjklmnpqrstvwxz]{6,}/.test(word)) {
+          hasGibberishWord = true;
+          break;
+        }
+      }
+
+      return hasKeyboard || hasRepeatedChar || hasRepeatedSeq || hasGibberishWord;
+    };
+
     // 1. Office Code
     const rawOfficeCode = data.officeCode;
     if (rawOfficeCode === undefined || rawOfficeCode === null || String(rawOfficeCode).trim() === "") {
@@ -528,6 +552,8 @@ export const officeValidations = {
         !/^[A-Za-z]+(?:\s[A-Za-z]+)*$/.test(cityStr)
       ) {
         errors.city = "City should contain only alphabets and spaces.";
+      } else if (isGibberish(cityStr)) {
+        errors.city = "Random or repeated characters are not allowed.";
       }
     }
 
@@ -553,6 +579,8 @@ export const officeValidations = {
         /\s{2,}/.test(addressStr)
       ) {
         errors.address = "Please enter a valid Address.";
+      } else if (isGibberish(addressStr)) {
+        errors.address = "Random or repeated characters are not allowed.";
       }
     }
 

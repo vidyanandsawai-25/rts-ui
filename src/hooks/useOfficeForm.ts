@@ -93,7 +93,12 @@ export function useOfficeForm({
     } else if (name === 'address') {
       processedValue = value.replace(/[^A-Za-z0-9,\-.\/\s]/g, '').replace(/\s+/g, ' ').slice(0, 250);
     } else if (name === 'establishedDate') {
-      processedValue = value.replace(/[^0-9-]/g, '').slice(0, 10);
+      const digits = value.replace(/\D/g, '').slice(0, 8);
+      let formatted = "";
+      if (digits.length > 0) formatted += digits.slice(0, 2);
+      if (digits.length > 2) formatted += "-" + digits.slice(2, 4);
+      if (digits.length > 4) formatted += "-" + digits.slice(4, 8);
+      processedValue = formatted;
     } else if (name === 'emailId') {
       processedValue = value.slice(0, 100);
     }
