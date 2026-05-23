@@ -5,7 +5,6 @@ import type {
   PagedResult,
   Ward,
 } from '@/types/ptis.types';
-import { MAX_PROPERTY_FETCH } from '@/types/ptis.types';
 import { fetchWithCertSupport, getErrorFormattedMessage } from './base-api';
 
 export const ptisSearchService = {
@@ -102,9 +101,8 @@ export const ptisSearchService = {
     data?: Array<{ wardId: number; wardNo: string; zoneId: number; description: string }>;
     error?: string;
   }> {
-    const response = await fetchWithCertSupport<PagedResult<Record<string, unknown>>>(
-      '/Ward?PageSize=1000&PageNumber=1'
-    );
+    const response =
+      await fetchWithCertSupport<PagedResult<Record<string, unknown>>>('/Ward?PageSize=-1');
 
     if (!response.success || !response.data?.items) {
       return {
@@ -135,7 +133,7 @@ export const ptisSearchService = {
     error?: string;
   }> {
     const response = await fetchWithCertSupport<PagedResult<Record<string, unknown>>>(
-      `/Property?WardId=${wardId}&PageSize=${MAX_PROPERTY_FETCH}&PageNumber=1`
+      `/Property?WardId=${wardId}&PageSize=-1&PageNumber=1`
     );
 
     if (!response.success || !response.data?.items) {
@@ -175,9 +173,7 @@ export const ptisSearchService = {
     data?: Array<{ wardNo: string; wardId: string }>;
     error?: string;
   }> {
-    const response = await fetchWithCertSupport<PagedResult<Ward>>(
-      '/Ward?PageSize=100&PageNumber=1'
-    );
+    const response = await fetchWithCertSupport<PagedResult<Ward>>('/Ward?PageSize=-1');
 
     if (!response.success || !response.data?.items) {
       return { success: false, error: getErrorFormattedMessage(response.error, 'Wards not found') };

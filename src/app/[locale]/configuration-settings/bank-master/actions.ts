@@ -54,6 +54,17 @@ export async function createBankAction(data: BankMasterDto): Promise<ApiResponse
       return { success: false, error: `validation.${validationResult.validationCode}` };
     }
 
+    // Validate uniqueness of bank code
+    const banks = await getBanksSummary();
+    const normalizedCode = (validationResult.normalizedData.bankCode ?? '').trim().toUpperCase();
+    const bankCodeExists = banks.some(
+      (bank) => (bank.bankCode ?? '').trim().toUpperCase() === normalizedCode
+    );
+
+    if (bankCodeExists) {
+      return { success: false, error: 'validation.bankCodeExists' };
+    }
+
     const userId = await resolveUserId();
 
     if (!userId) {
@@ -82,6 +93,17 @@ export async function updateBankAction(
 
     if (!validationResult.isValid) {
       return { success: false, error: `validation.${validationResult.validationCode}` };
+    }
+
+    // Validate uniqueness of bank code (excluding current bank record)
+    const banks = await getBanksSummary();
+    const normalizedCode = (validationResult.normalizedData.bankCode ?? '').trim().toUpperCase();
+    const bankCodeExists = banks.some(
+      (bank) => bank.id !== id && (bank.bankCode ?? '').trim().toUpperCase() === normalizedCode
+    );
+
+    if (bankCodeExists) {
+      return { success: false, error: 'validation.bankCodeExists' };
     }
 
     const userId = await resolveUserId();

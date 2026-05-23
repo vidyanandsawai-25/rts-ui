@@ -13,8 +13,8 @@ const KycDetailsTab = ({ data }: KycDetailsTabProps) => {
 
   return (
     <div className="p-0.5">
-      <div className="grid grid-cols-12 gap-0.5">
-        {/* Row 1: Owner Type (2), Title (1), Property Holder Name (3), Occupier Name (2), Shop Name (2), Building Name (2) */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-12 gap-0.5">
+        {/* Row 1: Owner Type, Title, Property Holder Name, Occupier Name, Shop Name, Building Name */}
         <FieldShell id="ownerType" label={t('fields.ownerType')} icon={User} className="col-span-1">
           <ValueDisplay value={data.ownerType} />
         </FieldShell>
@@ -26,7 +26,7 @@ const KycDetailsTab = ({ data }: KycDetailsTabProps) => {
         <FieldShell
           id="propertyHolderName"
           icon={UserCheck}
-          className="col-span-4"
+          className="col-span-2 sm:col-span-2 lg:col-span-4"
           label={t('fields.propertyHolderName')}
         >
           <ValueDisplay value={data.propertyHolderName} />
@@ -35,7 +35,7 @@ const KycDetailsTab = ({ data }: KycDetailsTabProps) => {
         <FieldShell
           id="occupierName"
           icon={UserCheck}
-          className="col-span-4"
+          className="col-span-2 sm:col-span-2 lg:col-span-4"
           label={t('fields.occupierName')}
         >
           <ValueDisplay value={data.occupierName} />
@@ -45,17 +45,17 @@ const KycDetailsTab = ({ data }: KycDetailsTabProps) => {
           id="shopName"
           label={t('fields.shopName')}
           icon={Building2}
-          className="col-span-2"
+          className="col-span-1 sm:col-span-2 lg:col-span-2"
         >
           <ValueDisplay value={data.shopName} />
         </FieldShell>
 
-        {/* Row 2: Aadhar Card No (3), Mobile No (2), Email ID (2), Address (5) */}
+        {/* Row 2: Building Name, Aadhar, Mobile, Email, Address */}
         <FieldShell
           id="buildingName"
           label={t('fields.buildingName')}
           icon={Building2}
-          className="col-span-2"
+          className="col-span-1 sm:col-span-2 lg:col-span-2"
         >
           <ValueDisplay value={data.buildingName} />
         </FieldShell>
@@ -77,7 +77,12 @@ const KycDetailsTab = ({ data }: KycDetailsTabProps) => {
           <ValueDisplay value={data.mobileNumber} />
         </FieldShell>
 
-        <FieldShell id="emailId" label={t('fields.emailId')} icon={Mail} className="col-span-2">
+        <FieldShell
+          id="emailId"
+          label={t('fields.emailId')}
+          icon={Mail}
+          className="col-span-1 sm:col-span-2 lg:col-span-2"
+        >
           <ValueDisplay value={data.email} />
         </FieldShell>
 
@@ -85,7 +90,7 @@ const KycDetailsTab = ({ data }: KycDetailsTabProps) => {
           id="address"
           label={t('fields.address')}
           icon={Building2}
-          className="col-span-6"
+          className="col-span-2 sm:col-span-4 md:grid-cols-6 lg:col-span-6"
         >
           <ValueDisplay value={data.address} />
         </FieldShell>
