@@ -46,7 +46,8 @@ export interface TypeOfUseApiItem {
 }
 
 export interface SubTypeOfUseResponse {
-    subTypeOfUseId: number;
+    id?: number;
+    subTypeOfUseId?: number;
     description: string;
     typeOfUseId: number;
     searchKey: string | null;

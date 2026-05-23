@@ -110,7 +110,7 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
   }, [localFloors, floorSearch]);
 
   const subTypeOptionsFromData = useMemo(() =>
-    (props.subTypeData || []).map(st => st.description),
+    (props.subTypeData || []).map(st => st.searchKey ? `${st.searchKey} - ${st.description}` : st.description),
     [props.subTypeData]
   );
 

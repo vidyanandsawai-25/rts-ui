@@ -260,6 +260,7 @@ describe('FloorTable', () => {
       fireEvent.click(firstRow);
       
       expect(mockProps.updateUrlParams).toHaveBeenCalledWith({
+        drawer: null,
         floorId: '1',
         typeOfUseId: 'Residential',
       });
