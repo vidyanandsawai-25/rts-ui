@@ -65,12 +65,27 @@ export const useFloorDataHandlers = (params: {
   const handleSave = useCallback(async () => {
     if (isSavingRef.current) return;
 
+    const enteredRooms = parseInt(String(editingFloorForm.rooms || editingFloorForm.noOfRooms || 0), 10);
+    const roomDetailsCount = Array.isArray(editingFloorForm.roomWiseSubmissionDetails)
+      ? editingFloorForm.roomWiseSubmissionDetails.length
+      : 0;
+
+    if (enteredRooms > 0 && roomDetailsCount > 0 && enteredRooms !== roomDetailsCount) {
+      setFormErrors((prev) => ({
+        ...prev,
+        rooms: t('floor.errors.roomCountMismatch') || `Expected details for ${enteredRooms} rooms, but found ${roomDetailsCount}. Please update room details.`
+      }));
+      toast.error(t('floor.errors.roomCountMismatch') || `Expected details for ${enteredRooms} rooms, but found ${roomDetailsCount}. Please update room details.`);
+      return;
+    }
+
     confirm({
       variant: isAddingNewFloor ? 'add' : 'update',
       title: isAddingNewFloor ? t('floor.addConfirmTitle') : t('floor.updateConfirmTitle'),
       description: isAddingNewFloor ? t('floor.addConfirmText') : t('floor.updateConfirmText'),
       confirmText: isAddingNewFloor ? t('floor.addConfirmButton') : t('floor.updateConfirmButton'),
       onConfirm: async () => {
+
         isSavingRef.current = true;
         setIsSaving(true);
         const previousFloors = [...localFloors];
@@ -125,7 +140,7 @@ export const useFloorDataHandlers = (params: {
         }
       },
     });
-  }, [isAddingNewFloor, editingFloorForm, selectedFloor, props.initialPropertyID, floorLookup, subFloorLookup, constructionLookup, useLookup, subTypeData, router, t, confirm, INITIAL_FORM_STATE, setIsAddingNewFloor, setSelectedFloor, setEditingFloorForm, startTransition, localFloors, setLocalFloors, locale, propertyId]);
+  }, [isAddingNewFloor, editingFloorForm, selectedFloor, props.initialPropertyID, floorLookup, subFloorLookup, constructionLookup, useLookup, subTypeData, router, t, confirm, INITIAL_FORM_STATE, setIsAddingNewFloor, setSelectedFloor, setEditingFloorForm, startTransition, localFloors, setLocalFloors, locale, propertyId, setFormErrors]);
 
   const handleOpenRenterManagement = useCallback(async (formToUse?: FloorData) => {
     const currentForm = formToUse || editingFloorForm;

@@ -740,7 +740,8 @@
             "submissionIdRequired": "Submission ID is required",
             "invalidData": "Invalid data submitted",
             "roomsRequiredForDetails": "Number of rooms must be greater than zero before entering room details.",
-            "roomGuidance": "Guidance: To enter room-wise breakdown, please first enter the total number of rooms (1 to 9999) for this floor."
+            "roomGuidance": "Guidance: To enter room-wise breakdown, please first enter the total number of rooms (1 to 9999) for this floor.",
+            "roomCountMismatch": "Room details count does not match the entered number of rooms. Please update room details."
         },
         "deleteConfirmTitle": "Are you sure?",
         "deleteConfirmText": "You want to delete this floor?",
