@@ -19,8 +19,10 @@ export default function OldTaxationForm({
   const {
     formData,
     isSubmitting,
+    showError,
     handleUpdate,
     handleInputChange,
+    isChanged,
     t
   } = useOldTaxationForm(propertyOldDetails);
 
@@ -35,40 +37,70 @@ export default function OldTaxationForm({
           {/* Old Zone Name */}
           <div className="space-y-2">
             <Label className="text-sm font-semibold text-gray-700 ml-1">
-              {t("oldDetails.zoneName")}
+              {t("oldDetails.zoneName")}<span className="text-red-500 ml-1">*</span>
             </Label>
             <Input
+              required
               placeholder={t("oldDetails.zoneNamePlaceholder")}
               className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
               value={formData.oldZoneNo}
-              onChange={(e) => handleInputChange('oldZoneNo', e.target.value)}
+              maxLength={100}
+              onChange={(e) => {
+                const value = e.target.value.replace(/[^A-Za-z0-9\s\-\/]/g, '');
+                if (value.trim() || value === '') {
+                  handleInputChange('oldZoneNo', value);
+                }
+              }}
             />
+            {showError('oldZoneNo', formData.oldZoneNo.trim().length > 0) && (
+              <span className="text-xs text-red-500">{t('oldDetails.validation.zoneNameRequired')}</span>
+            )}
           </div>
 
           {/* Old Ward No */}
           <div className="space-y-2">
             <Label className="text-sm font-semibold text-gray-700 ml-1">
-              {t("oldDetails.wardNo")}
+              {t("oldDetails.wardNo")}<span className="text-red-500 ml-1">*</span>
             </Label>
             <Input
+              required
               placeholder={t("oldDetails.wardNoPlaceholder")}
               className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
               value={formData.oldWardNo}
-              onChange={(e) => handleInputChange('oldWardNo', e.target.value)}
+              maxLength={50}
+              onChange={(e) => {
+                const value = e.target.value.replace(/[^A-Za-z0-9\s\-\/]/g, '');
+                if (value.trim() || value === '') {
+                  handleInputChange('oldWardNo', value);
+                }
+              }}
             />
+            {showError('oldWardNo', formData.oldWardNo.trim().length > 0) && (
+              <span className="text-xs text-red-500">{t('oldDetails.validation.wardNoRequired')}</span>
+            )}
           </div>
 
           {/* Old Property No */}
           <div className="space-y-2">
             <Label className="text-sm font-semibold text-gray-700 ml-1">
-              {t("oldDetails.propertyNo")}
+              {t("oldDetails.propertyNo")}<span className="text-red-500 ml-1">*</span>
             </Label>
             <Input
+              required
               placeholder={t("oldDetails.propertyNoPlaceholder")}
               className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
               value={formData.oldPropertyNo}
-              onChange={(e) => handleInputChange('oldPropertyNo', e.target.value)}
+              maxLength={50}
+              onChange={(e) => {
+                const value = e.target.value.replace(/[^A-Za-z0-9\s\-\/]/g, '');
+                if (value.trim() || value === '') {
+                  handleInputChange('oldPropertyNo', value);
+                }
+              }}
             />
+            {showError('oldPropertyNo', formData.oldPropertyNo.trim().length > 0) && (
+              <span className="text-xs text-red-500">{t('oldDetails.validation.propertyNoRequired')}</span>
+            )}
           </div>
 
           {/* Old Partition No */}
@@ -80,7 +112,13 @@ export default function OldTaxationForm({
               placeholder={t("oldDetails.partitionNoPlaceholder")}
               className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
               value={formData.oldPartitionNo}
-              onChange={(e) => handleInputChange('oldPartitionNo', e.target.value)}
+              maxLength={50}
+              onChange={(e) => {
+                const value = e.target.value.replace(/[^A-Za-z0-9\s\-\/]/g, '');
+                if (value.trim() || value === '') {
+                  handleInputChange('oldPartitionNo', value);
+                }
+              }}
             />
           </div>
 
@@ -93,7 +131,11 @@ export default function OldTaxationForm({
               placeholder={t("oldDetails.eGovernanceNoPlaceholder")}
               className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
               value={formData.oldEgovNo}
-              onChange={(e) => handleInputChange('oldEgovNo', e.target.value)}
+              maxLength={50}
+              onChange={(e) => {
+                const value = e.target.value.replace(/[^A-Za-z0-9\-\/]/g, '');
+                handleInputChange('oldEgovNo', value);
+              }}
             />
           </div>
 
@@ -104,12 +146,18 @@ export default function OldTaxationForm({
             </Label>
             <Input
               type="text"
+              inputMode="decimal"
               placeholder={t("oldDetails.plotAreaPlaceholder")}
               className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
               value={formData.oldPlotArea}
-              onChange={(e) => handleInputChange('oldPlotArea', e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                // Allow only positive decimals with up to 4 decimal places and max 15 total digits
+                if (value === '' || /^\d{0,15}(\.\d{0,4})?$/.test(value)) {
+                  handleInputChange('oldPlotArea', value);
+                }
+              }}
               onKeyDown={(e) => {
-                // Prevent negative sign and 'e' character
                 if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+') {
                   e.preventDefault();
                 }
@@ -126,7 +174,13 @@ export default function OldTaxationForm({
               placeholder={t("oldDetails.plotNoPlaceholder")}
               className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
               value={formData.oldPlotNo}
-              onChange={(e) => handleInputChange('oldPlotNo', e.target.value)}
+              maxLength={50}
+              onChange={(e) => {
+                const value = e.target.value.replace(/[^A-Za-z0-9\s\-\/]/g, '');
+                if (value.trim() || value === '') {
+                  handleInputChange('oldPlotNo', value);
+                }
+              }}
             />
           </div>
 
@@ -135,35 +189,47 @@ export default function OldTaxationForm({
             <Label className="text-sm font-semibold text-gray-700 ml-1">
               {t("oldDetails.constructionArea")}
             </Label>
+
             <Input
-              type="number"
+              type="text"
+              inputMode="decimal"
               placeholder={t("oldDetails.constructionAreaPlaceholder")}
               className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
-              value={formData.oldConstructionArea || ""}
-              onChange={(e) => handleInputChange('oldConstructionArea', e.target.value)}
+              value={formData.oldConstructionArea ?? ""}
+              onChange={(e) => {
+                const value = e.target.value;
+
+                if (value === "" || /^\d{0,15}(\.\d{0,4})?$/.test(value)) {
+                  handleInputChange("oldConstructionArea", value);
+                }
+              }}
               onKeyDown={(e) => {
-                // Prevent negative sign, decimal point, and 'e' character
-                if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+' || e.key === '.') {
+                if (["-", "e", "E", "+"].includes(e.key)) {
                   e.preventDefault();
                 }
               }}
             />
           </div>
-
           {/* Old RV */}
           <div className="space-y-2">
             <Label className="text-sm font-semibold text-gray-700 ml-1">
               {t("oldDetails.rv")}
             </Label>
             <Input
-              type="number"
+              type="text"
+              inputMode="decimal"
               placeholder={t("oldDetails.rvPlaceholder")}
               className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
               value={formData.oldRV || ""}
-              onChange={(e) => handleInputChange('oldRV', e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                // Allow only positive decimals with up to 4 decimal places and max 15 total digits
+                if (value === '' || /^\d{0,15}(\.\d{0,4})?$/.test(value)) {
+                  handleInputChange('oldRV', value);
+                }
+              }}
               onKeyDown={(e) => {
-                // Prevent negative sign, decimal point, and 'e' character
-                if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+' || e.key === '.') {
+                if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+') {
                   e.preventDefault();
                 }
               }}
@@ -176,14 +242,20 @@ export default function OldTaxationForm({
               {t("oldDetails.alv")}
             </Label>
             <Input
-              type="number"
+              type="text"
+              inputMode="decimal"
               placeholder={t("oldDetails.alvPlaceholder")}
               className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
               value={formData.oldALV || ""}
-              onChange={(e) => handleInputChange('oldALV', e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                // Allow only positive decimals with up to 4 decimal places and max 15 total digits
+                if (value === '' || /^\d{0,15}(\.\d{0,4})?$/.test(value)) {
+                  handleInputChange('oldALV', value);
+                }
+              }}
               onKeyDown={(e) => {
-                // Prevent negative sign, decimal point, and 'e' character
-                if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+' || e.key === '.') {
+                if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+') {
                   e.preventDefault();
                 }
               }}
@@ -196,14 +268,20 @@ export default function OldTaxationForm({
               {t("oldDetails.propertyTax")}
             </Label>
             <Input
-              type="number"
+              type="text"
+              inputMode="decimal"
               placeholder={t("oldDetails.propertyTaxPlaceholder")}
               className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
               value={formData.oldGeneralTax || ""}
-              onChange={(e) => handleInputChange('oldGeneralTax', e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                // Allow only positive decimals with up to 4 decimal places and max 15 total digits
+                if (value === '' || /^\d{0,15}(\.\d{0,4})?$/.test(value)) {
+                  handleInputChange('oldGeneralTax', value);
+                }
+              }}
               onKeyDown={(e) => {
-                // Prevent negative sign, decimal point, and 'e' character
-                if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+' || e.key === '.') {
+                if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+') {
                   e.preventDefault();
                 }
               }}
@@ -216,14 +294,21 @@ export default function OldTaxationForm({
               {t("oldDetails.totalTax")}
             </Label>
             <Input
-              type="number"
+              readOnly
+              type="text"
+              inputMode="decimal"
               placeholder={t("oldDetails.totalTaxPlaceholder")}
-              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
+              className="h-9 text-sm border-blue-200 bg-gray-50 cursor-not-allowed focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
               value={formData.oldTotalTax}
-              onChange={(e) => handleInputChange('oldTotalTax', Number(e.target.value))}
+              onChange={(e) => {
+                const value = e.target.value;
+                // Allow only positive decimals with up to 2 decimal places and max 15 total digits
+                if (value === '' || /^\d{0,15}(\.\d{0,2})?$/.test(value)) {
+                  handleInputChange('oldTotalTax', value);
+                }
+              }}
               onKeyDown={(e) => {
-                // Prevent negative sign, decimal point, and 'e' character
-                if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+' || e.key === '.') {
+                if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+') {
                   e.preventDefault();
                 }
               }}
@@ -234,7 +319,7 @@ export default function OldTaxationForm({
         <div className="mt-10 flex justify-end border-t border-gray-100 pt-3">
           <Button
             onClick={handleUpdate}
-            disabled={isSubmitting}
+            disabled={isSubmitting || !isChanged}
             className="w-[17.5%] bg-[#2563eb] hover:bg-blue-700 text-white h-11 rounded-xl shadow-lg shadow-blue-900/10 font-bold text-sm flex items-center justify-center gap-2.5 transition-all active:scale-95"
           >
             <div className="flex gap-2 text-2">

@@ -766,6 +766,12 @@
     },
     "oldDetails": {
         "title": "जुने कर",
+         "validation": {
+            "zoneNameRequired": "झोन नाव आवश्यक आहे.",
+            "wardNoRequired": "वार्ड क्रमांक आवश्यक आहे.",
+            "propertyNoRequired": "मालमत्ता क्रमांक आवश्यक आहे.",
+            "fillRequiredFields": "कृपया सर्व आवश्यक फील्ड भरा."
+        },
         "error": {
             "title": "जुने तपशील लोड करताना त्रुटी",
             "description": "ऐतिहासिक मालमत्ता डेटा मिळवताना आम्हाला त्रुटी आली.",
@@ -832,6 +838,7 @@
         "areaSqM": "क्षेत्रफळ (चौ.मी.)",
         "builtupAreaSqFt": "बांधकाम क्षेत्रफळ (चौ.फू.)",
         "builtupAreaSqMeter": "बांधकाम क्षेत्रफळ (चौ.मी.)",
+         "assessmentYear": "मूल्यांकन वर्ष",
         "plotArea": "भूखंड क्षेत्रफळ",
         "plotNo": "भूखंड क्र.",
         "oldCsn": "जुना CSN",

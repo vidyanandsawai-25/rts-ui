@@ -82,6 +82,10 @@ describe('OldTaxationForm Component', () => {
   it('calls confirm dialog when update button is clicked', () => {
     render(<OldTaxationForm propertyOldDetails={mockPropertyData as unknown as PropertyOldDetailsApiItem} />);
     
+    // Modify a field to enable the update button
+    const plotNoInput = screen.getByPlaceholderText('quickDataEntry.oldDetails.plotNoPlaceholder');
+    fireEvent.change(plotNoInput, { target: { value: 'Plot 2' } });
+
     const updateButton = screen.getByRole('button', { name: /quickDataEntry.property.updateButton/i });
     fireEvent.click(updateButton);
     
@@ -99,6 +103,10 @@ describe('OldTaxationForm Component', () => {
     
     render(<OldTaxationForm propertyOldDetails={mockPropertyData as unknown as PropertyOldDetailsApiItem} />);
     
+    // Modify a field to enable the update button
+    const plotNoInput = screen.getByPlaceholderText('quickDataEntry.oldDetails.plotNoPlaceholder');
+    fireEvent.change(plotNoInput, { target: { value: 'Plot 2' } });
+
     const updateButton = screen.getByRole('button', { name: /quickDataEntry.property.updateButton/i });
     fireEvent.click(updateButton);
     

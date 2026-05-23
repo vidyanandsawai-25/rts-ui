@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useCallback } from "react";
-import { Button, DeleteButton, EditButton, Input, MasterTable, SearchSelect, useConfirm, ValidationMessage } from "@/components/common";
+import { Button, DeleteButton, EditButton, Input, MasterTable, SearchSelect, useConfirm } from "@/components/common";
 import { Label } from "@/components/common/label";
 import { Layers, Plus, RotateCcw, Save } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -42,7 +42,8 @@ export default function FloorInformationForm({
     handleEdit,
     handleReset,
     handleSave,
-    handleDelete
+    handleDelete,
+    isChanged
   } = useFloorInformationForm({
     propertyId,
     locale,
@@ -81,7 +82,9 @@ export default function FloorInformationForm({
                 onChange={(_, val) => setFormData(prev => ({ ...prev, oldFloorId: val }))}
                 value={String(formData.oldFloorId)}
               />
-              <ValidationMessage message={errors.oldFloorId} visible={showError("oldFloorId")} />
+              {showError("oldFloorId") && (
+                <span className="text-xs text-red-500">{errors.oldFloorId}</span>
+              )}
             </div>
 
             {/* Sub Floor */}
@@ -97,7 +100,9 @@ export default function FloorInformationForm({
                 onChange={(_, val) => setFormData(prev => ({ ...prev, oldSubFloorId: val }))}
                 value={String(formData.oldSubFloorId)}
               />
-              <ValidationMessage message={errors.oldSubFloorId} visible={showError("oldSubFloorId")} />
+              {showError("oldSubFloorId") && (
+                <span className="text-xs text-red-500">{errors.oldSubFloorId}</span>
+              )}
             </div>
 
             {/* Year */}
@@ -115,7 +120,9 @@ export default function FloorInformationForm({
                   setFormData(prev => ({ ...prev, oldConstructionYear: val }));
                 }}
               />
-              <ValidationMessage message={errors.oldConstructionYear} visible={showError("oldConstructionYear")} />
+              {showError("oldConstructionYear") && (
+                <span className="text-xs text-red-500">{errors.oldConstructionYear}</span>
+              )}
             </div>
 
             {/* Assessment Year */}
@@ -133,7 +140,9 @@ export default function FloorInformationForm({
                   setFormData(prev => ({ ...prev, oldAssessmentYear: val }));
                 }}
               />
-              <ValidationMessage message={errors.oldAssessmentYear} visible={showError("oldAssessmentYear")} />
+              {showError("oldAssessmentYear") && (
+                <span className="text-xs text-red-500">{errors.oldAssessmentYear}</span>
+              )}
             </div>
 
             {/* Construction Type */}
@@ -149,7 +158,9 @@ export default function FloorInformationForm({
                 onChange={(_, val) => setFormData(prev => ({ ...prev, oldConstructionTypeId: val }))}
                 value={String(formData.oldConstructionTypeId)}
               />
-              <ValidationMessage message={errors.oldConstructionTypeId} visible={showError("oldConstructionTypeId")} />
+              {showError("oldConstructionTypeId") && (
+                <span className="text-xs text-red-500">{errors.oldConstructionTypeId}</span>
+              )}
             </div>
 
             {/* Type of Use */}
@@ -165,7 +176,9 @@ export default function FloorInformationForm({
                 onChange={(_, val) => handleUseTypeChange(val)}
                 value={String(formData.oldTypeOfUseId)}
               />
-              <ValidationMessage message={errors.oldTypeOfUseId} visible={showError("oldTypeOfUseId")} />
+              {showError("oldTypeOfUseId") && (
+                <span className="text-xs text-red-500">{errors.oldTypeOfUseId}</span>
+              )}
             </div>
 
             {/* Sub Type */}
@@ -181,7 +194,9 @@ export default function FloorInformationForm({
                 onChange={(_, val) => setFormData(prev => ({ ...prev, oldSubTypeOfUseId: val }))}
                 value={String(formData.oldSubTypeOfUseId)}
               />
-              <ValidationMessage message={errors.oldSubTypeOfUseId} visible={showError("oldSubTypeOfUseId")} />
+              {showError("oldSubTypeOfUseId") && (
+                <span className="text-xs text-red-500">{errors.oldSubTypeOfUseId}</span>
+              )}
             </div>
 
             {/* Carpet Area (Sq Ft) - Editable */}
@@ -196,7 +211,9 @@ export default function FloorInformationForm({
                 value={formData.oldCarpetAreaSqFeet}
                 onChange={(e) => setFormData(prev => ({ ...prev, oldCarpetAreaSqFeet: e.target.value }))}
               />
-              <ValidationMessage message={errors.oldCarpetAreaSqFeet} visible={showError("oldCarpetAreaSqFeet")} />
+              {showError("oldCarpetAreaSqFeet") && (
+                <span className="text-xs text-red-500">{errors.oldCarpetAreaSqFeet}</span>
+              )}
             </div>
 
             {/* Area (Sq Ft) - Read Only
@@ -269,7 +286,7 @@ export default function FloorInformationForm({
             ) : (
               <Button
                 onClick={handleSave}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !isChanged}
                 icon={Save}
                 className="h-11 w-40 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-blue-200 transition-all duration-200 flex flex-row items-center justify-center gap-2 active:scale-[0.98]"
               >

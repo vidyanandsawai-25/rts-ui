@@ -23,7 +23,7 @@ export const getFloorInformationColumns = (t: (key: string) => string): Column<F
   },
   {
     key: 'assessmentYr',
-    label: t('floor.assessmentYr')
+    label: t('floor.asstYr')
   },
   {
     key: 'conTyp',

@@ -20,6 +20,7 @@ export default function TaxationBreakdownForm({
     handleTaxChange,
     handleMetaChange,
     handleSave,
+    isChanged,
     t
   } = useTaxationBreakdownForm(initialData);
 
@@ -111,7 +112,7 @@ export default function TaxationBreakdownForm({
       <div className="pt-2 mt-5 flex justify-end items-center">
         <Button
           onClick={handleSave}
-          disabled={isSubmitting}
+          disabled={isSubmitting || !isChanged}
           className="w-[17.5%] bg-[#2563eb] hover:bg-blue-700 text-white h-11.5 rounded-xl shadow-lg shadow-blue-900/10 font-bold text-sm flex items-center justify-center gap-2.5 transition-all active:scale-95"
         >
           <div className="flex gap-2 text-2">

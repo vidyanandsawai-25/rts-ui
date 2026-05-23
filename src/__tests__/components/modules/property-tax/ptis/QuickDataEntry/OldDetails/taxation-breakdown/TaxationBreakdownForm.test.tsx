@@ -92,6 +92,10 @@ describe('TaxationBreakdownForm Component', () => {
   it('calls confirm dialog when update button is clicked', () => {
     render(<TaxationBreakdownForm initialData={mockInitialData as unknown as OldTaxesDetails} />);
     
+    // Modify a field to enable the update button
+    const interestInput = screen.getByDisplayValue('100');
+    fireEvent.change(interestInput, { target: { value: '200' } });
+
     const updateButton = screen.getByRole('button', { name: /quickDataEntry.oldDetails.taxationBreakdown.update/i });
     fireEvent.click(updateButton);
     
@@ -106,6 +110,10 @@ describe('TaxationBreakdownForm Component', () => {
     
     render(<TaxationBreakdownForm initialData={mockInitialData as unknown as OldTaxesDetails} />);
     
+    // Modify a field to enable the update button
+    const interestInput = screen.getByDisplayValue('100');
+    fireEvent.change(interestInput, { target: { value: '200' } });
+
     const updateButton = screen.getByRole('button', { name: /quickDataEntry.oldDetails.taxationBreakdown.update/i });
     fireEvent.click(updateButton);
     

@@ -765,7 +765,13 @@
         "documentUploaded": "दस्तावेज़ अपलोड हो चुका है।"
     },
     "oldDetails": {
-        "title": "पुराना कर",       
+        "title": "पुराना कर", 
+         "validation": {
+            "zoneNameRequired": "झोन नाव आवश्यक आहे.",
+            "wardNoRequired": "वार्ड क्रमांक आवश्यक आहे.",
+            "propertyNoRequired": "मालमत्ता क्रमांक आवश्यक आहे.",
+            "fillRequiredFields": "कृपया सर्व आवश्यक फील्ड भरा."   
+        },      
         "error": {
             "title": "पुराने विवरण लोड करने में त्रुटि",
             "description": "ऐतिहासिक संपत्ति डेटा प्राप्त करते समय हमें एक त्रुटि का सामना करना पड़ा।",
@@ -832,6 +838,7 @@
         "areaSqM": "क्षेत्रफल (वर्ग मीटर)",
         "builtupAreaSqFt": "बिल्टअप क्षेत्रफल (वर्ग फुट)",
         "builtupAreaSqMeter": "बिल्टअप क्षेत्रफल (वर्ग मीटर)",
+        "assessmentYear": "मूल्यांकन वर्ष",
         "plotArea": "प्लॉट क्षेत्रफल",
         "plotNo": "प्लॉट नं.",
         "oldCsn": "पुराना CSN",

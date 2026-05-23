@@ -851,6 +851,12 @@
     },
     "oldDetails": {
         "title": "Old Taxation",
+          "validation": {
+                "zoneNameRequired": "Zone Name is required.",
+                "wardNoRequired": "Ward No is required.",
+                "propertyNoRequired": "Property No is required.",
+                "fillRequiredFields": "Please fill all required fields."
+             },
         "loading": {
             "message": "Loading Old Details...",
             "description": "Please wait while we fetch the historical information",
@@ -914,7 +920,7 @@
         "carpetArea": "Carpet Area (Sqft/SqMtr)",
         "carpetAreaSqFt": "Carpet Area (sq.ft)",
         "areaSqFt": "Area (Sq Ft)",
-        "areaSqM": "Area (sq.m)",
+        "areaSqM": "Carpet Area (sq.m)",
         "builtupArea": "Built-up Area (Sq Ft / Sq M)",
         "builtupAreaSqFt": "Builtup Area (sq.ft)",
         "builtupAreaSqMeter": "Builtup Area (sq.m)",

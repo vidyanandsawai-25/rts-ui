@@ -69,6 +69,14 @@ export function useTaxationBreakdownForm(initialData: OldTaxesDetails | null) {
       toast.error(yearError);
       return false;
     }
+
+    // Check range (1700-2026)
+    const yearNum = Number(formData.year);
+    if (isNaN(yearNum) || yearNum < 1700 || yearNum > 2026) {
+      toast.error(tValidation('property.validation.assessmentYearRange') || 'Assessment year must be between 1700 and 2026');
+      return false;
+    }
+
     return true;
   };
 
@@ -131,6 +139,19 @@ export function useTaxationBreakdownForm(initialData: OldTaxesDetails | null) {
     });
   };
 
+  const isTaxesChanged = taxes.some(t => {
+    const orig = (yearData?.taxes || []).find(ot => ot.taxId === t.taxId);
+    return (orig?.taxAmount || 0) !== (t.taxAmount || 0);
+  });
+
+  const isChanged = 
+    formData.year !== (yearData ? String(yearData.year || "") : "") ||
+    formData.interest !== (yearData?.interest || 0) ||
+    formData.remark !== (yearData?.remark || "") ||
+    formData.rVorCV !== (yearData?.rVorCV || "") ||
+    formData.rVorCVValue !== (yearData?.rVorCVValue || 0) ||
+    isTaxesChanged;
+
   return {
     formData,
     taxes,
@@ -138,6 +159,7 @@ export function useTaxationBreakdownForm(initialData: OldTaxesDetails | null) {
     handleTaxChange,
     handleMetaChange,
     handleSave,
+    isChanged,
     t
   };
 }

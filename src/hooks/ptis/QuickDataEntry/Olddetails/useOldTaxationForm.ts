@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
@@ -38,8 +38,28 @@ export function useOldTaxationForm(propertyOldDetails: PropertyOldDetailsApiItem
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
+
+  /**
+   * Helper to determine if an error should be shown for a specific field
+   */
+  const showError = useCallback((_field: string, isValid: boolean) => {
+    return attemptedSubmit && !isValid;
+  }, [attemptedSubmit]);
 
   const handleUpdate = () => {
+    // Validate required fields
+    const isZoneValid = formData.oldZoneNo.trim().length > 0;
+    const isWardValid = formData.oldWardNo.trim().length > 0;
+    const isPropertyValid = formData.oldPropertyNo.trim().length > 0;
+
+    setAttemptedSubmit(true);
+
+    if (!isZoneValid || !isWardValid || !isPropertyValid) {
+      toast.error(t("oldDetails.validation.fillRequiredFields"));
+      return;
+    }
+
     confirm({
       title: t("property.updateConfirmTitle"),
       description: t("property.updateConfirmText"),
@@ -87,20 +107,36 @@ export function useOldTaxationForm(propertyOldDetails: PropertyOldDetailsApiItem
         sanitizedValue = sanitizeEgovNo(value);
       } else if (key === 'oldPlotNo') {
         sanitizedValue = sanitizePlotNo(value);
-      } else if (key === 'oldConstructionArea' || key === 'oldRV' || key === 'oldALV' || key === 'oldGeneralTax') {
-        // Integer-only fields - remove all non-digits
-        sanitizedValue = value.replace(/[^0-9]/g, '');
+      } else if (key === 'oldConstructionArea' || key === 'oldRV' || key === 'oldALV' || key === 'oldGeneralTax') {        
+         sanitizedValue = sanitizePlotArea(value);
       }
-    }
-    
+    }    
     setFormData(prev => ({ ...prev, [key]: sanitizedValue }));
   };
+
+  const isChanged = 
+    formData.oldZoneNo !== (propertyOldDetails?.oldZoneNo ?? "") ||
+    formData.oldWardNo !== (propertyOldDetails?.oldWardNo ?? "") ||
+    formData.oldPropertyNo !== (propertyOldDetails?.oldPropertyNo ?? "") ||
+    formData.oldPartitionNo !== (propertyOldDetails?.oldPartitionNo ?? "") ||
+    formData.oldEgovNo !== (propertyOldDetails?.oldEgovNo ?? "") ||
+    formData.oldPlotArea !== (propertyOldDetails?.oldPlotArea?.toString() ?? "0") ||
+    formData.oldPlotNo !== (propertyOldDetails?.oldPlotNo ?? "") ||
+    formData.oldCarpetAreaSqFeet !== (propertyOldDetails?.oldCarpetAreaSqFeet ?? 0) ||
+    formData.oldConstructionArea !== (propertyOldDetails?.oldConstructionArea?.toString() ?? "0") ||
+    formData.oldRV !== (propertyOldDetails?.oldRV?.toString() ?? "0") ||
+    formData.oldALV !== (propertyOldDetails?.oldALV?.toString() ?? "0") ||
+    formData.oldGeneralTax !== (propertyOldDetails?.oldGeneralTax?.toString() ?? "0") ||
+    formData.oldTotalTax !== (propertyOldDetails?.oldTotalTax ?? 0);
 
   return {
     formData,
     isSubmitting,
+    attemptedSubmit,
+    showError,
     handleUpdate,
     handleInputChange,
+    isChanged,
     t
   };
 }

@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { UseFloorInformationFormProps } from "@/types/property-old-details.types";
@@ -22,6 +22,7 @@ export function useFloorInformationForm({
   const {
     formData,
     setFormData,
+    initialEditValues,
     handleUseTypeChange,
     handleEdit,
     handleReset: stateReset
@@ -32,7 +33,8 @@ export function useFloorInformationForm({
     errors,
     validate,
     resetValidation,
-    showError
+    showError,
+    clearError
   } = useFloorFormValidation();
 
   // 3. Manage API Calls
@@ -41,6 +43,29 @@ export function useFloorInformationForm({
     handleSave: apiSave,
     handleDelete
   } = useFloorFormApi(propertyId, locale);
+
+  // Clear errors for modified fields dynamically
+  const lastFormDataRef = useRef(formData);
+  useEffect(() => {
+    Object.keys(formData).forEach((key) => {
+      const k = key as keyof typeof formData;
+      if (formData[k] !== lastFormDataRef.current[k]) {
+        clearError(k);
+      }
+    });
+    lastFormDataRef.current = formData;
+  }, [formData, clearError]);
+
+  const isChanged = initialEditValues ? (
+    formData.oldFloorId !== initialEditValues.oldFloorId ||
+    formData.oldSubFloorId !== initialEditValues.oldSubFloorId ||
+    formData.oldConstructionYear !== initialEditValues.oldConstructionYear ||
+    formData.oldAssessmentYear !== initialEditValues.oldAssessmentYear ||
+    formData.oldConstructionTypeId !== initialEditValues.oldConstructionTypeId ||
+    formData.oldTypeOfUseId !== initialEditValues.oldTypeOfUseId ||
+    formData.oldSubTypeOfUseId !== initialEditValues.oldSubTypeOfUseId ||
+    formData.oldCarpetAreaSqFeet !== initialEditValues.oldCarpetAreaSqFeet
+  ) : false;
 
   /**
    * Combined reset for state and validation.
@@ -75,6 +100,7 @@ export function useFloorInformationForm({
     handleEdit,
     handleReset,
     handleSave,
-    handleDelete
+    handleDelete,
+    isChanged
   };
 }

@@ -33,6 +33,20 @@ export function useFloorFormValidation() {
   }, []);
 
   /**
+   * Clears error for a specific field.
+   */
+  const clearError = useCallback((field: string) => {
+    setErrors(prev => {
+      if (prev[field]) {
+        const copy = { ...prev };
+        delete copy[field];
+        return copy;
+      }
+      return prev;
+    });
+  }, []);
+
+  /**
    * Helper to determine if an error should be shown for a specific field.
    */
   const showError = useCallback((field: string) => showErrors && !!errors[field], [errors, showErrors]);
@@ -42,6 +56,7 @@ export function useFloorFormValidation() {
     showErrors,
     validate,
     resetValidation,
-    showError
+    showError,
+    clearError
   };
 }
