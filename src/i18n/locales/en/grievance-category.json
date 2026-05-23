@@ -115,6 +115,7 @@
     },
     "errors": {
       "codeReq": "Category code is required",
+      "codeMinLength": "Code must be at least 2 characters",
       "codeAlphanumeric": "Code can only contain letters, numbers, and hyphens",
       "codeMaxLength": "Code cannot exceed 20 characters",
       "codeInvalid": "Category code cannot be all zeros",
@@ -124,6 +125,7 @@
       "descReq": "Description is required",
       "descMinLength": "Description must be at least 3 characters",
       "descMaxLength": "Description cannot exceed 1000 characters",
+      "descNoHtml": "Description cannot contain HTML tags or angle brackets",
       "descMaxWords": "Description cannot exceed 1000 words",
       "slaMaxLength": "Resolution SLA cannot exceed 3 digits",
       "missingRequired": "Category code and name are required",

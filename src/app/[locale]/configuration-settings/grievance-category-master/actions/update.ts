@@ -72,7 +72,7 @@ export async function updateGrievanceCategoryAction(
     priority: priority as Priority | null,
     resolutionSla: resolutionSla,
     escalationLevel: escalationLevel as EscalationLevel | null,
-    description: description,
+    description: sanitizeDescription(description),
     isActive: isActiveRaw === 'true',
   };
 
@@ -133,9 +133,12 @@ export async function updateGrievanceCategoryAction(
       id,
       locale,
     });
+    const errorMessage = process.env.NODE_ENV === 'production'
+      ? 'An unexpected error occurred while updating grievance category'
+      : (error instanceof Error ? error.message : 'Failed to update');
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to update',
+      error: errorMessage,
     };
   }
 }
