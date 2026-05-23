@@ -4,6 +4,7 @@ import { MatrixCellInput } from "@/components/common/MatrixCellInput";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { SortAscButton, SortDescButton, SortDefaultButton } from "@/components/common/ActionButtons";
 import { AgeFactorCVMaster } from "@/types/ageFactorCv.types";
+import { toast } from "sonner";
 
 /**
  * Renders a sortable column header with sort icon.
@@ -61,119 +62,121 @@ function SortableHeader({
 }
 
 interface GetAgeFactorCvColumnsProps {
-    t: (key: string) => string;
-    tW: (key: string) => string;
-    tCommon: (key: string) => string;
-    editableRows: Record<string, AgeFactorCVMaster>;
-    handleCellChange: (rowId: string, columnId: string, value: number) => void;
-    getRowUid: (row: AgeFactorCVMaster) => string;
-    sortBy?: string;
-    sortOrder?: string;
-    onSort?: (key: string) => void;
+  t: (key: string) => string;
+  tW: (key: string) => string;
+  tCommon: (key: string) => string;
+  editableRows: Record<string, AgeFactorCVMaster>;
+  handleCellChange: (rowId: string, columnId: string, value: number) => void;
+  getRowUid: (row: AgeFactorCVMaster) => string;
+  sortBy?: string;
+  sortOrder?: string;
+  onSort?: (key: string) => void;
 }
 
 export const getAgeFactorCvWeightageMasterColumns = ({
-    t,
-    tW,
-    tCommon,
-    editableRows,
-    handleCellChange,
-    getRowUid,
-    sortBy,
-    sortOrder,
-    onSort,
+  t,
+  tW,
+  tCommon,
+  editableRows,
+  handleCellChange,
+  getRowUid,
+  sortBy,
+  sortOrder,
+  onSort,
 }: GetAgeFactorCvColumnsProps): Column<AgeFactorCVMaster>[] => {
-    const sortableColumns: Record<string, string> = {
-        constructionCode: "ConstructionCode",
-        constructionDescription: "ConstructionDescription",
-        ageFrom: "AgeFrom",
-        ageTo: "AgeTo",
-        fromYear: "FromYear",
-    };
+  const sortableColumns: Record<string, string> = {
+    constructionCode: "ConstructionCode",
+    constructionDescription: "ConstructionDescription",
+    ageFrom: "AgeFrom",
+    ageTo: "AgeTo",
+    fromYear: "FromYear",
+  };
 
-    const createSortableLabel = (label: string, dataKey: string) => {
-        const apiSortKey = sortableColumns[dataKey];
-        if (onSort && apiSortKey) {
-            return (
-                <SortableHeader
-                    label={label}
-                    columnKey={apiSortKey}
-                    sortBy={sortBy}
-                    sortOrder={sortOrder}
-                    onSort={onSort}
-                    tCommon={tCommon}
-                />
-            );
-        }
-        return label;
-    };
+  const createSortableLabel = (label: string, dataKey: string) => {
+    const apiSortKey = sortableColumns[dataKey];
+    if (onSort && apiSortKey) {
+      return (
+        <SortableHeader
+          label={label}
+          columnKey={apiSortKey}
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+          onSort={onSort}
+          tCommon={tCommon}
+        />
+      );
+    }
+    return label;
+  };
 
-    return [
-        {
-            key: "constructionCode",
-            label: createSortableLabel(t('columns.constructionType'), "constructionCode"),
-            width: "12%",
-            render: (value) => (value as string) || "-",
-        },
-        {
-            key: "constructionDescription",
-            label: createSortableLabel(t('columns.description'), "constructionDescription"),
-            width: "18%",
-            render: (value) => (value as string) || "-",
-        },
-        {
-            key: "ageFrom",
-            label: createSortableLabel(t('columns.ageFrom'), "ageFrom"),
-            width: "10%",
-            render: (value) => value as number,
-        },
-        {
-            key: "ageTo",
-            label: createSortableLabel(t('columns.ageTo'), "ageTo"),
-            width: "10%",
-            render: (value) => value as number,
-        },
-        {
-            key: "factor",
-            label: t('columns.factor'),
-            width: "12%",
-            render: (value, row) => {
-                const rowUid = getRowUid(row);
-                const editableValue = editableRows[rowUid]?.factor ?? (value as number);
-                return (
-                    <MatrixCellInput
-                        className="lg:w-26"
-                        value={editableValue}
-                        rowId={rowUid}
-                        columnId="factor"
-                        onCellChange={handleCellChange}
-                    />
-                );
-            },
-        },
-        {
-            key: "fromYear",
-            label: createSortableLabel(t('columns.assessmentYear'), "fromYear"),
-            width: "16%",
-            render: (_value, row) => 
-                row.fromYear != null && row.toYear != null 
-                    ? `${row.fromYear}-${row.toYear}` 
-                    : "-",
-        },
-        {
-            key: "isActive",
-            label: t('columns.status'),
-            width: "12%",
-            render: (value) => {
-                return (
-                    <StatusBadge
-                        variant="status"
-                        value={value as boolean}
-                        activeLabel={tW('common.labels.active')}
-                        inactiveLabel={tW('common.labels.inactive')}
-                    />
-                );
-            },
-        },
-    ];
+  return [
+    {
+      key: "constructionCode",
+      label: createSortableLabel(t('columns.constructionType'), "constructionCode"),
+      width: "12%",
+      render: (value) => (value as string) || "-",
+    },
+    {
+      key: "constructionDescription",
+      label: createSortableLabel(t('columns.description'), "constructionDescription"),
+      width: "18%",
+      render: (value) => (value as string) || "-",
+    },
+    {
+      key: "ageFrom",
+      label: createSortableLabel(t('columns.ageFrom'), "ageFrom"),
+      width: "10%",
+      render: (value) => value as number,
+    },
+    {
+      key: "ageTo",
+      label: createSortableLabel(t('columns.ageTo'), "ageTo"),
+      width: "10%",
+      render: (value) => value as number,
+    },
+    {
+      key: "factor",
+      label: t('columns.factor'),
+      width: "12%",
+      render: (value, row) => {
+        const rowUid = getRowUid(row);
+        const editableValue = editableRows[rowUid]?.factor ?? (value as number);
+        return (
+          <MatrixCellInput
+            className="lg:w-26"
+            value={editableValue}
+            rowId={rowUid}
+            columnId="factor"
+            maxValue={999.99}
+            onCellChange={handleCellChange}
+            onMaxExceeded={() => toast.error(tW('common.messages.valueExceedsMax'))}
+          />
+        );
+      },
+    },
+    {
+      key: "fromYear",
+      label: createSortableLabel(t('columns.assessmentYear'), "fromYear"),
+      width: "16%",
+      render: (_value, row) =>
+        row.fromYear != null && row.toYear != null
+          ? `${row.fromYear}-${row.toYear}`
+          : "-",
+    },
+    {
+      key: "isActive",
+      label: t('columns.status'),
+      width: "12%",
+      render: (value) => {
+        return (
+          <StatusBadge
+            variant="status"
+            value={value as boolean}
+            activeLabel={tW('common.labels.active')}
+            inactiveLabel={tW('common.labels.inactive')}
+          />
+        );
+      },
+    },
+  ];
 };

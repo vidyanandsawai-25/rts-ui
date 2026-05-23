@@ -4,6 +4,7 @@ import { Label } from '@/components/common/label';
 import { Input, ValidationMessage, RequiredFieldsNote, StatusToggleCard } from '@/components/common';
 import { TextArea } from '@/components/common/Textarea';
 import { useTranslations } from 'next-intl';
+import { CODE_SANITIZE, TEXT_SANITIZE, DESCRIPTION_SANITIZE } from '@/lib/utils/validation-rules';
 
 interface FormState {
   moduleCode: string;
@@ -41,12 +42,21 @@ export function SubmoduleFormFields({
         <Input
           id="moduleCode"
           value={formData.moduleCode || ''}
-          onChange={(e) => onChange('moduleCode', e.target.value)}
+          onChange={(e) => {
+            const val = e.target.value
+              .replace(CODE_SANITIZE, '')
+              .replace(/_+/g, '_')
+              .replace(/^_+/g, '');
+            onChange('moduleCode', val);
+          }}
           placeholder={t('modals.addSubmodule.form.placeholders.code')}
           className={errors.moduleCode ? 'border-red-500' : ''}
           disabled={isPending}
+          maxLength={50}
+          aria-invalid={errors.moduleCode ? 'true' : 'false'}
+          aria-describedby={errors.moduleCode ? 'moduleCode-error' : undefined}
         />
-        <ValidationMessage message={errors.moduleCode} visible={!!errors.moduleCode} />
+        <ValidationMessage id="moduleCode-error" message={errors.moduleCode} visible={!!errors.moduleCode} />
       </div>
 
       {/* Module Name */}
@@ -57,12 +67,22 @@ export function SubmoduleFormFields({
         <Input
           id="moduleName"
           value={formData.moduleName || ''}
-          onChange={(e) => onChange('moduleName', e.target.value)}
+          onChange={(e) => {
+            const val = e.target.value
+              .replace(TEXT_SANITIZE, '')
+              .replace(/[,.\-\/&]{2,}/g, (match) => match[0])
+              .trimStart()
+              .replace(/^[,.\-\/&]+/g, '');
+            onChange('moduleName', val);
+          }}
           placeholder={t('modals.addSubmodule.form.placeholders.name')}
           className={errors.moduleName ? 'border-red-500' : ''}
           disabled={isPending}
+          maxLength={100}
+          aria-invalid={errors.moduleName ? 'true' : 'false'}
+          aria-describedby={errors.moduleName ? 'moduleName-error' : undefined}
         />
-        <ValidationMessage message={errors.moduleName} visible={!!errors.moduleName} />
+        <ValidationMessage id="moduleName-error" message={errors.moduleName} visible={!!errors.moduleName} />
       </div>
 
       {/* Description */}
@@ -71,11 +91,21 @@ export function SubmoduleFormFields({
         <TextArea
           id="moduleDescription"
           value={formData.moduleDescription || ''}
-          onChange={(e) => onChange('moduleDescription', e.target.value)}
+          onChange={(e) => {
+            const val = e.target.value
+              .replace(DESCRIPTION_SANITIZE, '')
+              .replace(/[\/,.\-()&]{2,}/g, (match) => match[0]);
+            onChange('moduleDescription', val);
+          }}
           placeholder={t('modals.addSubmodule.form.placeholders.description')}
+          className={errors.moduleDescription ? 'border-red-500' : ''}
           rows={3}
           disabled={isPending}
+          maxLength={255}
+          aria-invalid={errors.moduleDescription ? 'true' : 'false'}
+          aria-describedby={errors.moduleDescription ? 'moduleDescription-error' : undefined}
         />
+        <ValidationMessage id="moduleDescription-error" message={errors.moduleDescription} visible={!!errors.moduleDescription} />
       </div>
 
       {/* Status Toggle - Only show in Edit mode */}

@@ -6,6 +6,7 @@ import { UseFactorCVMaster, UseType } from "@/types/useCategoryCvFactor.types";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { MatrixCellInput } from "@/components/common/MatrixCellInput";
 import { SortAscButton, SortDescButton, SortDefaultButton } from "@/components/common/ActionButtons";
+import { toast } from "sonner";
 
 /**
  * Renders a sortable column header with sort icon.
@@ -213,8 +214,10 @@ export const getUseFactorColumns = (
                         value={editableValue}
                         rowId={rowUid}
                         columnId="factor"
+                        maxValue={999.99}
                         metaLabel={t('columns.factor')}
                         onCellChange={handleCellChange}
+                        onMaxExceeded={() => toast.error(tW('common.messages.valueExceedsMax'))}
                     />
                 );
             },

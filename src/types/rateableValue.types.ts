@@ -35,6 +35,8 @@ export interface RateableValueDetail {
     propertyDetailsId: number;
     /** Floor number or description */
     floor: string;
+    /** Sub Floor description */
+    subFloor?: string;
     /** Year when construction was completed */
     constructionYear: string;
     /** Assessment year for tax calculation */
@@ -114,6 +116,8 @@ export interface RateableRow {
   id: number;
   /** Floor number/description */
   floor: string;
+  /** Sub Floor */
+  subFloor: string;
   /** Construction year */
   constructionYear: string;
   /** Assessment year */

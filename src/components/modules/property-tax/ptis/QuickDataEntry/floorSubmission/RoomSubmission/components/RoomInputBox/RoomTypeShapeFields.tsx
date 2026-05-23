@@ -47,8 +47,8 @@ export const RoomTypeShapeFields: React.FC<RoomTypeShapeFieldsProps> = ({
             if (value && (value === '0' || parseFloat(value) < 1)) value = '';
             handleInputChange('roomNo', value);
           }}
-          disabled={!isEditMode}
-          className="text-center h-[40px]"
+          readOnly={true}
+          className="text-center h-[40px] bg-gray-100 text-gray-900 font-bold cursor-not-allowed outline-none select-none"
           placeholder={t('roomSubmission.input.placeholders.auto')}
           error={isEditMode && validationErrors.roomNo ? t(validationErrors.roomNo) : undefined}
         />

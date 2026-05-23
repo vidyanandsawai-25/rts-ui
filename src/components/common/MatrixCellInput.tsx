@@ -20,6 +20,8 @@ export interface MatrixCellInputProps {
   decimalPlaces?: number;
   onCellChange?: (rowId: string, columnId: string, value: number) => void;
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  /** Optional callback when user tries to type a value exceeding max digits */
+  onMaxExceeded?: () => void;
 }
  
 export const MatrixCellInput = ({
@@ -35,6 +37,7 @@ export const MatrixCellInput = ({
   decimalPlaces = 2,
   onCellChange,
   onKeyDown,
+  onMaxExceeded,
 }: MatrixCellInputProps): React.ReactElement => {
   // Helper to format value for display
   const formatValue = React.useCallback((val: number): string => {
@@ -73,11 +76,14 @@ export const MatrixCellInput = ({
     if (!allowDecimals) {
       // Block decimal points - only allow integers
       if (inputValue.includes(".")) {
+        e.target.value = localValue;
         return;
       }
       // Calculate max digits based on maxValue
       const maxDigits = String(maxValue).length;
       if (inputValue.length > maxDigits) {
+        onMaxExceeded?.();
+        e.target.value = localValue;
         return;
       }
     } else {
@@ -86,6 +92,7 @@ export const MatrixCellInput = ({
       if (inputValue.includes(".")) {
         const parts = inputValue.split(".");
         if (parts[1] && parts[1].length > decimalPlaces) {
+          e.target.value = localValue;
           return;
         }
       }
@@ -93,6 +100,8 @@ export const MatrixCellInput = ({
       const intPart = inputValue.split(".")[0];
       const maxDigits = String(Math.floor(maxValue)).length;
       if (intPart.length > maxDigits) {
+        onMaxExceeded?.();
+        e.target.value = localValue;
         return;
       }
     }

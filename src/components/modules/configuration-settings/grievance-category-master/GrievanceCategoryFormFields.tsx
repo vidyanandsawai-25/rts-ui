@@ -6,27 +6,7 @@ import type {
   GrievanceCategory,
 } from '@/types/grievance-category-master/grievanceCategory.types';
 import { useTranslations } from 'next-intl';
-
-function limitToMaxWords(text: string, maxWords: number): string {
-  if (!text) return '';
-  const words = text.trim().split(/\s+/);
-  if (words.length <= maxWords) return text;
-
-  let wordCount = 0;
-  let index = 0;
-  const regex = /\S+/g;
-  let match;
-
-  while ((match = regex.exec(text)) !== null) {
-    wordCount++;
-    if (wordCount === maxWords) {
-      index = match.index + match[0].length;
-      break;
-    }
-  }
-
-  return text.slice(0, index);
-}
+import { CODE_SANITIZE, TEXT_SANITIZE, DESCRIPTION_SANITIZE } from '@/lib/utils/validation-rules';
 
 export function GrievanceCategoryFormFields({
   formData,
@@ -53,30 +33,49 @@ export function GrievanceCategoryFormFields({
         {/* Category Code */}
         <div>
           <Input
+            id="categoryCode"
             label={t.fields.code}
             required
             placeholder={t.fields.codePlaceholder}
             value={formData.categoryCode}
-            onChange={(e) => onFieldChange('categoryCode', e.target.value)}
+            onChange={(e) => {
+              const val = e.target.value
+                .replace(CODE_SANITIZE, '')
+                .replace(/_+/g, '_')
+                .replace(/^_+/g, '');
+              onFieldChange('categoryCode', val);
+            }}
             error={fieldErrors.categoryCode}
             disabled={isSubmitting}
             maxLength={20}
             className="h-11 rounded-xl"
+            aria-invalid={fieldErrors.categoryCode ? 'true' : 'false'}
+            aria-describedby={fieldErrors.categoryCode ? 'categoryCode-error' : undefined}
           />
         </div>
 
         {/* Category Name */}
         <div>
           <Input
+            id="categoryName"
             label={t.fields.name}
             required
             placeholder={t.fields.namePlaceholder}
             value={formData.categoryName}
-            onChange={(e) => onFieldChange('categoryName', e.target.value)}
+            onChange={(e) => {
+              const val = e.target.value
+                .replace(TEXT_SANITIZE, '')
+                .replace(/[,.\-\/&]{2,}/g, (match) => match[0])
+                .trimStart()
+                .replace(/^[,.\-\/&]+/g, '');
+              onFieldChange('categoryName', val);
+            }}
             error={fieldErrors.categoryName}
             disabled={isSubmitting}
             maxLength={100}
             className="h-11 rounded-xl"
+            aria-invalid={fieldErrors.categoryName ? 'true' : 'false'}
+            aria-describedby={fieldErrors.categoryName ? 'categoryName-error' : undefined}
           />
         </div>
 
@@ -113,6 +112,7 @@ export function GrievanceCategoryFormFields({
         {/* SLA */}
         <div>
           <Input
+            id="resolutionSla"
             type="number"
             min={0}
             max={365}
@@ -127,12 +127,14 @@ export function GrievanceCategoryFormFields({
               }
             }}
             onKeyDown={(e) => {
-              if (/^[eE+\-]$/.test(e.key)) e.preventDefault();
+              if (/^[eE+\-.,]$/.test(e.key)) e.preventDefault();
             }}
             error={fieldErrors.resolutionSla}
             disabled={isSubmitting}
             maxLength={3}
             className="h-11 rounded-xl"
+            aria-invalid={fieldErrors.resolutionSla ? 'true' : 'false'}
+            aria-describedby={fieldErrors.resolutionSla ? 'resolutionSla-error' : undefined}
           />
         </div>
 
@@ -157,12 +159,15 @@ export function GrievanceCategoryFormFields({
       {/* Description */}
       <div>
         <TextArea
+          id="description"
           label={t.fields.description}
           placeholder={t.fields.descPlaceholder}
           value={formData.description}
           onChange={(e) => {
-            const truncated = limitToMaxWords(e.target.value, 1000);
-            onFieldChange('description', truncated);
+            const val = e.target.value
+              .replace(DESCRIPTION_SANITIZE, '')
+              .replace(/[\/,.\-()&]{2,}/g, (match) => match[0]);
+            onFieldChange('description', val);
           }}
           disabled={isSubmitting}
           error={!!fieldErrors.description}

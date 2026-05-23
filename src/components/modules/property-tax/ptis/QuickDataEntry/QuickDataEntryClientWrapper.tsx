@@ -43,7 +43,9 @@ function QuickDataEntryContent({
         "lg:[&_div.fixed.right-0]:!w-[1100px]",
         "xl:[&_div.fixed.right-0]:!w-[1200px]",
         !isRenterPage && "[&_div.fixed.right-0>div:first-child]:!bg-blue-600",
-        !isRenterPage && "[&_div.fixed.right-0>div:first-child_h2]:!text-white"
+        !isRenterPage && "[&_div.fixed.right-0>div:first-child_h2]:!text-white",
+        !isRenterPage && "[&_div.fixed.right-0>div:first-child_button_svg]:!text-white",
+        !isRenterPage && "[&_div.fixed.right-0>div:first-child_button]:hover:!bg-blue-700"
     );
 
     const drawerTitle = (
