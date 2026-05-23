@@ -46,6 +46,22 @@ export async function getWards(
     );
   }
   
+  const data = response.data as unknown as Record<string, unknown>;
+  
+  // Handle wrapped response format: {success, message, items: PagedResponse, errors, correlationId}
+  if (data.items && typeof data.items === 'object' && !Array.isArray(data.items)) {
+    const nestedResponse = data.items as WardListResponse;
+    if (nestedResponse.items && Array.isArray(nestedResponse.items)) {
+      return nestedResponse;
+    }
+  }
+  
+  // Handle standard PagedResponse format: {items: [], totalCount, ...}
+  if (data.items && Array.isArray(data.items)) {
+    return data as unknown as WardListResponse;
+  }
+  
+  // Fallback: return the data as-is
   return response.data;
 }
 
