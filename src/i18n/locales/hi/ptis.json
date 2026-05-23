@@ -22,7 +22,16 @@
       "fetchWardsFailed": "वार्ड सूची लोड करने में विफल। कृपया पुन: प्रयास करें।",
       "fetchPropertiesFailed": "इस वार्ड के लिए संपत्ति सूची लोड करने में विफल।",
       "navigationFailed": "नेविगेशन विफल रहा। कृपया पेज रीफ्रेश करें और पुन: प्रयास करें।",
-      "generic": "एक अप्रत्याशित त्रुटि हुई। कृपया पुन: प्रयास करें।"
+      "generic": "एक अप्रत्याशित त्रुटि हुई। कृपया पुन: प्रयास करें।",
+      "wardNoRequired": "वार्ड नंबर आवश्यक है",
+      "wardNoMax": "वार्ड नंबर अधिकतम 15 अक्षर का होना चाहिए",
+      "wardNoPattern": "वार्ड नंबर में केवल अक्षर और अंक होने चाहिए",
+      "wardIdRequired": "वार्ड आईडी आवश्यक है",
+      "propertyNoRequired": "संपत्ति नंबर आवश्यक है",
+      "propertyNoMax": "संपत्ति नंबर अधिकतम 10 अक्षर का होना चाहिए",
+      "propertyNoPattern": "संपत्ति नंबर में केवल अक्षर और अंक होने चाहिए",
+      "partitionNoMax": "विभाजन नंबर अधिकतम 10 अक्षर का होना चाहिए",
+      "partitionNoPattern": "विभाजन नंबर में केवल अक्षर और अंक होने चाहिए"
     }
   },
   "tabs": {
@@ -121,7 +130,7 @@
     "title": "शीर्षक",
     "propertyHolderName": "संपत्ति धारक का नाम",
     "occupierName": "अधिभोगी का नाम",
-    "aadharCardNo": "आधार कार्ड नं",
+    "aadharCardNo": "आधार नं",
     "mobileNumber": "मोबाइल नं",
     "emailId": "ईमेल आईडी",
     "shopName": "दुकान का नाम",
@@ -284,10 +293,10 @@
       "use": "उपयोग",
       "subType": "उप-प्रकार",
       "noOfRooms": "कमरों की संख्या",
-      "carpetArea": "कार्पेट क्षेत्रफल",
+      "carpetArea": "कार्पेट क्षेत्रफल (ft/mtr)",
       "carpetSqFt": "कार्पेट (Sq.Ft)",
       "carpetSqM": "कार्पेट (Sq.M)",
-      "builtupArea": "निर्मित एरिया",
+      "builtupArea": "निर्मित एरिया (ft/mtr)",
       "builtupSqFt": "निर्मित (Sq.Ft)",
       "builtupSqM": "निर्मित (Sq.M)",
       "ocNumber": "ओसी नंबर",
@@ -307,7 +316,8 @@
       "ntbFactor": "एनटीबी कारक",
       "useFactor": "उपयोग कारक",
       "capitalValue": "पूंजीगत मूल्य",
-      "taxAmount": "कर राशि"
+      "taxAmount": "कर राशि",
+      "appliedOn": "अप्लाइड ऑन"
     },
     "placeholders": {
       "oc": "ओसी/वर्ष/###",
@@ -321,7 +331,7 @@
   },
   "modules": {
     "PtisTaxDetails": {
-      "title": "कराधान विवरण",
+      "title": "कर विवरण",
       "oldTotalRv": "[पुराना] कुल आर.वी.",
       "oldTotalAlv": "[पुराना] कुल ए.एल.वी.",
       "oldTotalCv": "[पुराना] कुल सी.वी.",
@@ -378,6 +388,73 @@
       }
     }
   },
+  "footerControls": {
+    "policy": {
+      "label": "नीति",
+      "placeholder": "नीति चुनें",
+      "options": {
+        "old": "पुराने के अनुसार",
+        "min_rv": "न्यूनतम आर.वी.",
+        "mix": "मिश्रित मूल्यांकन"
+      }
+    },
+    "action": {
+      "label": "कार्रवाई",
+      "placeholder": "कार्रवाई चुनें",
+      "options": {
+        "apply": "लागू करें",
+        "remove_retention": "रख-रखाव हटाएं",
+        "remove_hearing": "सुनवाई हटाएँ",
+        "remove_appeal_committee": "अपील समिति हटाएँ",
+        "remove_remission": "छूट हटाएँ",
+        "remove_all_appeals": "सभी अपीलें हटाएँ"
+      }
+    }
+  },
+  "footerActions": {
+    "R_SAVE": "सहेजें",
+    "R_SUBMIT": "प्रस्तुत करें",
+    "R_UPDATE": "अपडेट करें",
+    "R_RESET": "रीसेट",
+    "R_ADD": "जोड़ें",
+    "L_BACK": "पीछे",
+    "L_CLOSE": "बंद करें",
+    "L_CANCEL": "रद्द करें",
+    "M_PRINT": "प्रिंट करें",
+    "M_REPORT": "रिपोर्ट",
+    "M_CALCULATE": "गणना करें",
+    "M_SEARCH": "खोजें",
+    "M_DELETE": "हटाएं",
+    "PTIS_QC": "क्यूसी",
+    "PTIS_QC_REVERT": "क्यूसी रिवर्ट",
+    "PTIS_COMBINE": "संपत्ति का विलय",
+    "PTIS_PARTITION": "विभाजन",
+    "PTIS_SPLIT": "विभाजित करें",
+    "PTIS_TRANSFER": "हस्तांतरण",
+    "PTIS_AMALGAMATION": "एकीकरण",
+    "PTIS_OBJECTION": "आपत्ति",
+    "PTIS_PREVIEW": "पूर्वावलोकन",
+    "PTIS_TAX_CALC": "गणना करें",
+    "PTIS_SUBMIT": "प्रस्तुत करें",
+    "PTIS_APPLY": "कर लागू करें",
+    "PTIS_ADD": "जोड़ें",
+    "PTIS_NEW_PROPERTY": "नई संपत्ति",
+    "PTIS_CANCEL": "रद्द करें",
+    "PTIS_REFRESH": "टैक्स रिफ्रेश करें",
+    "PTIS_SAVE": "सहेजें",
+    "PTIS_CLOSE": "बंद करें",
+    "PTIS_VALUATION": "मूल्यांकन",
+    "PTIS_REPORT": "रिपोर्ट",
+    "PTIS_EDIT_ENTRY": "एंट्री संपादित करें",
+    "PTIS_DOC": "दस्तावेज़",
+    "PTIS_DISCOUNT": "छूट",
+    "PTIS_HISTORY": "इतिहास",
+    "PTIS_MERGE": "विलय",
+    "PTIS_REVERSE": "रिवर्स",
+    "PTIS_RECONCILE": "मिलान करें",
+    "PTIS_CALC": "गणना करें",
+    "PTIS_RESET": "रीसेट"
+  },
   "error": {
     "title": "कुछ गलत हो गया",
     "description": "हमें एक अप्रत्याशित त्रुटि का सामना करना पड़ा। कृपया पुनः प्रयास करें या होम पेज पर वापस जाएं।",
@@ -411,5 +488,18 @@
     "invalidConstructionYear": "एक या अधिक मंजिल अभिलेखों के लिए निर्माण वर्ष अमान्य या गायब है।",
     "invalidPropertyAge": "अमान्य संपत्ति आयु का पता चला। निर्माण वर्ष मूल्यांकन वर्ष के बाद नहीं हो सकता।",
     "typeNotFound": "संपत्ति उपयोग प्रकार कोड नहीं मिला या अमान्य है।"
+  },
+  "pagination": {
+    "label": "संपत्ति तालिका पृष्ठांकन",
+    "controls": "पृष्ठांकन नियंत्रण"
+  },
+  "buttons": {
+    "firstPage": "पहला पृष्ठ",
+    "previousPage": "पिछला पृष्ठ",
+    "nextPage": "अगला पृष्ठ",
+    "lastPage": "अंतिम पृष्ठ"
+  },
+  "table": {
+    "page": "पृष्ठ {current} का {total}"
   }
 }

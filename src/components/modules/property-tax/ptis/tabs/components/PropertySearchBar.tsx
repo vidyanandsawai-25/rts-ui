@@ -75,6 +75,18 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
 }) => {
   const t = useTranslations('ptis');
 
+  const sanitizeWardNo = useCallback((val: string) => {
+    return val.replace(/[^a-zA-Z0-9]/g, '').slice(0, 10);
+  }, []);
+
+  const sanitizePropertyNo = useCallback((val: string) => {
+    return val.replace(/[^a-zA-Z0-9]/g, '').slice(0, 10);
+  }, []);
+
+  const sanitizePartitionNo = useCallback((val: string) => {
+    return val.replace(/[^a-zA-Z0-9]/g, '').slice(0, 10);
+  }, []);
+
   const handleWardChange = useCallback(
     (_name: string | undefined, value: string) => {
       if (!value) {
@@ -165,28 +177,29 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
   const partitionSelectValue = partitionValueMap.has(partitionOptionKey) ? partitionOptionKey : '';
 
   return (
-    <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 px-[8px] py-2">
+    <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 px-2 py-2">
       <form
         onSubmit={handleFormSubmit}
-        className="flex items-center gap-4 text-xs text-blue-700 font-bold"
+        className="flex flex-wrap items-center gap-2 lg:gap-4 text-xs text-blue-700 font-bold"
         method="GET"
       >
         {/* Ward No */}
         <div className="flex items-center gap-1 relative">
           <Label
             htmlFor="wardNo"
-            className="font-semibold text-blue-900 whitespace-nowrap text-base"
+            className="font-semibold text-blue-900 whitespace-nowrap text-xs lg:text-sm"
           >
             {t('search.wardNo')}:
           </Label>
-          <div className="w-32 relative">
+          <div className="w-24 sm:w-28 lg:w-32 relative [&_ul]:top-full [&_ul]:!z-30">
             <SearchSelect
               id="wardNo"
               options={wardOptions}
               value={wardValue}
               onChange={handleWardChange}
               forceSearchText={wardNo || undefined}
-              className="h-7 text-base"
+              sanitizeInput={sanitizeWardNo}
+              className="h-7 text-xs lg:text-sm"
               isLoading={isFetchingWardOptions}
               loadingPlaceholder={t('search.loading')}
               noOptionsPlaceholder={t('search.noOptionsAvailable')}
@@ -201,18 +214,19 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
         <div className="flex items-center gap-1 relative">
           <Label
             htmlFor="propertyNo"
-            className="font-semibold text-blue-900 whitespace-nowrap text-base"
+            className="font-semibold text-blue-900 whitespace-nowrap text-xs lg:text-sm"
           >
             {t('search.propertyNo')}:
           </Label>
-          <div className="w-32 relative">
+          <div className="w-24 sm:w-28 lg:w-32 relative [&_ul]:top-full [&_ul]:!z-30">
             <SearchSelect
               id="propertyNo"
               options={propertyOptions}
               value={propertySelectValue}
               onChange={handlePropertyChange}
               forceSearchText={propertyNo || undefined}
-              className="h-7 text-base"
+              sanitizeInput={sanitizePropertyNo}
+              className="h-7 text-xs lg:text-sm"
               disabled={!wardId}
               isLoading={false}
               loadingPlaceholder={t('search.loading')}
@@ -226,18 +240,19 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
         <div className="flex items-center gap-1 relative">
           <Label
             htmlFor="partitionNo"
-            className="font-semibold text-blue-900 whitespace-nowrap text-base"
+            className="font-semibold text-blue-900 whitespace-nowrap text-xs lg:text-sm"
           >
             {t('search.partitionNo')}:
           </Label>
-          <div className="w-20 relative">
+          <div className="w-16 sm:w-20 relative [&_ul]:top-full [&_ul]:!z-30">
             <SearchSelect
               id="partitionNo"
               options={partitionOptions}
               value={partitionSelectValue}
               onChange={handlePartitionChange}
               forceSearchText={partitionNo || undefined}
-              className="h-7 text-base"
+              sanitizeInput={sanitizePartitionNo}
+              className="h-7 text-xs lg:text-sm"
               disabled={!wardId || !propertyNo}
               isLoading={false}
               loadingPlaceholder={t('search.loading')}
@@ -264,23 +279,33 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
         </Button>
 
         {/* Summary Info */}
-        <div className="flex items-center gap-1">
-          <span className="font-medium text-blue-900 text-[13px]">{t('fields.upicId')}:</span>
-          <span className="font-bold text-slate-700 text-sm">{upicId || '-'}</span>
-        </div>
-        <div className="h-4 w-px bg-slate-400" />
-        <div className="flex items-center gap-1">
-          <span className="font-medium text-blue-900 text-[13px]">
-            {t('fields.propertyHolder')}:
-          </span>
-          <span className="font-bold text-slate-700 text-sm">{ownerName || '-'}</span>
-        </div>
-        <div className="h-4 w-px bg-slate-400" />
-        <div className="flex items-center gap-1">
-          <span className="font-medium text-blue-900 text-[13px]">
-            {t('fields.propertyDescription')}:
-          </span>
-          <span className="font-bold text-red-700 text-sm">{propertyDescription || '-'}</span>
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 min-w-0">
+          <div className="flex items-center gap-1 min-w-0">
+            <span className="font-medium text-blue-900 text-[11px] lg:text-[13px] whitespace-nowrap">
+              {t('fields.upicId')}:
+            </span>
+            <span className="font-bold text-slate-700 text-xs lg:text-sm truncate max-w-[100px] lg:max-w-none">
+              {upicId || '-'}
+            </span>
+          </div>
+          <div className="hidden sm:block h-4 w-px bg-slate-400" />
+          <div className="flex items-center gap-1 min-w-0">
+            <span className="font-medium text-blue-900 text-[11px] lg:text-[13px] whitespace-nowrap">
+              {t('fields.propertyHolder')}:
+            </span>
+            <span className="font-bold text-slate-700 text-xs lg:text-sm truncate max-w-[100px] lg:max-w-none">
+              {ownerName || '-'}
+            </span>
+          </div>
+          <div className="hidden sm:block h-4 w-px bg-slate-400" />
+          <div className="flex items-center gap-1 min-w-0">
+            <span className="font-medium text-blue-900 text-[11px] lg:text-[13px] whitespace-nowrap">
+              {t('fields.propertyDescription')}:
+            </span>
+            <span className="font-bold text-red-700 text-xs lg:text-sm truncate max-w-[80px] lg:max-w-none">
+              {propertyDescription || '-'}
+            </span>
+          </div>
         </div>
       </form>
     </div>

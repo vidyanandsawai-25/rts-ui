@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { type FloorAPIResponse } from '@/types/floor-details.types';
 import {
     type RoomData,
@@ -74,6 +75,61 @@ export const mapRoomDataToUi = (room: RoomAPIResponse, index: number): RoomData 
     };
 };
 
+export function normalizeRenterDetailItem(item: any): any {
+    if (!item) return item;
+    return {
+        id: item.id ?? item.Id,
+        propertyDetailsId: item.propertyDetailsId ?? item.PropertyDetailsId,
+        agreementId: item.agreementId ?? item.AgreementId,
+        incrementFrequency: item.incrementFrequency ?? item.IncrementFrequency,
+        incrementType: item.incrementType ?? item.IncrementType,
+        incrementValue: item.incrementValue ?? item.IncrementValue,
+        incrementMethod: item.incrementMethod ?? item.IncrementMethod,
+        durationFrom: item.durationFrom ?? item.DurationFrom,
+        durationTo: item.durationTo ?? item.DurationTo,
+        rentAmount: item.rentAmount ?? item.RentAmount,
+        rentMonthly: item.rentMonthly ?? item.RentMonthly,
+        increment: item.increment ?? item.increament ?? item.Increment ?? item.Increament,
+        incrementStatus: item.incrementStatus ?? item.IncrementStatus,
+        isActive: item.isActive ?? item.IsActive,
+        customFromDate: item.customFromDate ?? item.CustomFromDate,
+        customToDate: item.customToDate ?? item.CustomToDate,
+        customIncrementType: item.customIncrementType ?? item.CustomIncrementType,
+        customIncrementValue: item.customIncrementValue ?? item.CustomIncrementValue,
+        customMethod: item.customMethod ?? item.CustomMethod,
+        createdBy: item.createdBy ?? item.CreatedBy,
+        createdDate: item.createdDate ?? item.CreatedDate,
+        updatedBy: item.updatedBy ?? item.UpdatedBy,
+        updatedDate: item.updatedDate ?? item.UpdatedDate,
+    };
+}
+
+export function normalizeRenterMastItem(item: any): any {
+    if (!item) return item;
+    return {
+        id: item.id ?? item.Id,
+        propertyDetailsId: item.propertyDetailsId ?? item.PropertyDetailsId,
+        rentMonthly: item.rentMonthly ?? item.RentMonthly,
+        finalRent: item.finalRent ?? item.FinalRent,
+        finalYearlyRent: item.finalYearlyRent ?? item.FinalYearlyRent,
+        financialYear: item.financialYear ?? item.FinancialYear,
+        durationFrom: item.durationFrom ?? item.DurationFrom,
+        durationTo: item.durationTo ?? item.DurationTo,
+        taxLiability: item.taxLiability ?? item.TaxLiability,
+        nonCalculateRentMonthly: item.nonCalculateRentMonthly ?? item.NonCalculateRentMonthly,
+        renterNameEnglish: item.renterNameEnglish ?? item.RenterNameEnglish,
+        renterName: item.renterName ?? item.RenterName,
+        agreementDate: item.agreementDate ?? item.AgreementDate,
+        agreementFromDate: item.agreementFromDate ?? item.AgreementFromDate,
+        agreementToDate: item.agreementToDate ?? item.AgreementToDate,
+        isActive: item.isActive ?? item.IsActive,
+        createdBy: item.createdBy ?? item.CreatedBy,
+        createdDate: item.createdDate ?? item.CreatedDate,
+        updatedBy: item.updatedBy ?? item.UpdatedBy,
+        updatedDate: item.updatedDate ?? item.UpdatedDate,
+    };
+}
+
 export function normalizeApiFloorData(apiData: Record<string, unknown>) {
     // Basic shape check to ensure we have an object with an ID
     if (!apiData || typeof apiData !== 'object' || !('id' in apiData || 'propertyDetailsId' in apiData || 'propertyId' in apiData)) {
@@ -109,21 +165,55 @@ export function normalizeApiFloorData(apiData: Record<string, unknown>) {
         subTypId: isValid(data.subTypeOfUseId) ? s(data.subTypeOfUseId) : '',
         subTypeOfUseId: Number(data.subTypeOfUseId || 0),
         subTypeOfUseDescription: isValid(data.subTypeOfUseDescription) ? s(data.subTypeOfUseDescription) : '',
-        renter: parseBoolean(data.renterYesNO ?? data.renterYesNo) ? ('Yes' as const) : ('No' as const),
+        renter: parseBoolean(data.isRenter ?? data.renterYesNO ?? data.renterYesNo) ? ('Yes' as const) : ('No' as const),
         rooms: String(data.noOfRooms || 0),
         areaSqFt: String(carpetAreaSqFtVal),
         areaSqM: String(carpetAreaSqMVal),
         builtupAreaSqFt: String(builtupAreaSqFtVal),
         builtupAreaSqM: String(builtupAreaSqMVal),
         isTaxable: parseBoolean(data.isTaxable) ? ('Yes' as const) : ('No' as const),
-        renterDetails: data.renterDetails || [],
-        renterMast: data.renterMast || [],
-        renterName: s(data.renterName || data.renterNameEnglish),
-        rentMonthly: Number(data.rentMonthly || 0),
-        rentYearly: Number(data.rentYearly || 0),
-        agreementFromDate: s(data.agreementFromDate),
-        agreementToDate: s(data.agreementToDate),
-        agreementDate: s(data.agreementDate),
+        renterDetails: (data.renterDetails || []).map(normalizeRenterDetailItem),
+        renterMast: (data.renterMast || data.renters || []).map(normalizeRenterMastItem),
+        renterName: s(
+            data.renterName || 
+            data.renterNameEnglish || 
+            (data.renters && (data.renters as any[])[0]?.renterName) || 
+            (data.renters && (data.renters as any[])[0]?.renterNameEnglish) || 
+            (data.renterMast && (data.renterMast as any[])[0]?.renterName) || 
+            (data.renterMast && (data.renterMast as any[])[0]?.renterNameEnglish)
+        ),
+        rentMonthly: Number(
+            data.rentMonthly || 
+            (data.renters && (data.renters as any[])[0]?.rentMonthly) || 
+            (data.renterMast && (data.renterMast as any[])[0]?.rentMonthly) || 
+            0
+        ),
+        rentYearly: Number(
+            data.rentYearly || 
+            (data.renters && (data.renters as any[])[0]?.finalYearlyRent) || 
+            (data.renterMast && (data.renterMast as any[])[0]?.finalYearlyRent) || 
+            0
+        ) || (Number(
+            data.rentMonthly || 
+            (data.renters && (data.renters as any[])[0]?.rentMonthly) || 
+            (data.renterMast && (data.renterMast as any[])[0]?.rentMonthly) || 
+            0
+        ) * 12),
+        agreementFromDate: s(
+            data.agreementFromDate || 
+            (data.renters && ((data.renters as any[])[0]?.agreementFromDate || (data.renters as any[])[0]?.durationFrom)) || 
+            (data.renterMast && ((data.renterMast as any[])[0]?.agreementFromDate || (data.renterMast as any[])[0]?.durationFrom))
+        ),
+        agreementToDate: s(
+            data.agreementToDate || 
+            (data.renters && ((data.renters as any[])[0]?.agreementToDate || (data.renters as any[])[0]?.durationTo)) || 
+            (data.renterMast && ((data.renterMast as any[])[0]?.agreementToDate || (data.renterMast as any[])[0]?.durationTo))
+        ),
+        agreementDate: s(
+            data.agreementDate || 
+            (data.renters && (data.renters as any[])[0]?.agreementDate) || 
+            (data.renterMast && (data.renterMast as any[])[0]?.agreementDate)
+        ),
         roomData: (data.roomWiseSubmissionDetails || data.propertyRooms || []).map((r, i) => mapRoomDataToUi(r, i)),
     };
 }

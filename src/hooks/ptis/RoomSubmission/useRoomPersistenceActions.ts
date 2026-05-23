@@ -2,9 +2,9 @@ import { useTranslations } from "next-intl";
 import { useConfirm } from "@/components/common";
 import { RoomWiseSubmissionProps, FloorData } from "@/types/room-details.types";
 import { convertAreaUnit } from "@/lib/utils/RoomSubmission/room-calculation.util";
-import { 
-  deleteRoomSubmissionNoRedirectAction, 
-  deleteOffsetSubmissionNoRedirectAction 
+import {
+  deleteRoomSubmissionNoRedirectAction,
+  deleteOffsetSubmissionNoRedirectAction
 } from "@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/FloorSubmission/actions";
 import { RoomSubmissionState } from "./useRoomSubmissionState";
 
@@ -38,7 +38,7 @@ export const useRoomPersistenceActions = (state: RoomSubmissionState, props: Roo
     try {
       // 1. Execute Pending Deletions
       const { pendingDeletions, setPendingDeletions } = state;
-      
+
       // Parallel execution of deletions
       const roomResults = await Promise.all(
         pendingDeletions.rooms.map(async (roomId) => ({
@@ -46,7 +46,7 @@ export const useRoomPersistenceActions = (state: RoomSubmissionState, props: Roo
           success: (await deleteRoomSubmissionNoRedirectAction(roomId))?.success
         }))
       );
-      
+
       const offsetResults = await Promise.all(
         pendingDeletions.offsets.map(async (offsetId) => ({
           id: offsetId,

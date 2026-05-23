@@ -1,10 +1,10 @@
 /**
  * Runtime Configuration
- * 
+ *
  * This module provides runtime configuration that is injected by the server
  * into the HTML and read by the client. This allows the same build artifact
  * to be deployed to different environments with different configurations.
- * 
+ *
  * Server-side: reads from process.env
  * Client-side: reads from window.__RUNTIME_CONFIG__
  */
@@ -32,7 +32,7 @@ export interface RuntimeConfig {
  * Default configuration values
  */
 const defaultConfig: RuntimeConfig = {
-  apiBaseUrl: 'https://ptisapiqa.scipl.info.in/api',
+  apiBaseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || '',
   appEnv: 'development',
   authEnabled: false,
   featureAnalytics: false,
@@ -67,7 +67,7 @@ export function getRuntimeConfig(): RuntimeConfig {
   if (isServer) {
     return getServerRuntimeConfig();
   }
-  
+
   // Client-side: read from window object (injected by server in layout.tsx)
   return window.__RUNTIME_CONFIG__ || defaultConfig;
 }
@@ -77,17 +77,17 @@ export function getRuntimeConfig(): RuntimeConfig {
  */
 export function validateRuntimeConfig(config: RuntimeConfig): void {
   const warnings: string[] = [];
-  
+
   if (!config.apiBaseUrl || config.apiBaseUrl === defaultConfig.apiBaseUrl) {
     warnings.push('RUNTIME_API_BASE_URL is not set, using default');
   }
-  
+
   if (!config.appEnv || config.appEnv === defaultConfig.appEnv) {
     warnings.push('RUNTIME_APP_ENV is not set, using default');
   }
-  
+
   if (warnings.length > 0 && config.appEnv !== 'development') {
     console.warn('⚠️  Runtime Configuration Warnings:');
-    warnings.forEach(w => console.warn(`   - ${w}`));
+    warnings.forEach((w) => console.warn(`   - ${w}`));
   }
 }

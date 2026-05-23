@@ -8,6 +8,7 @@ import {
 } from '@/app/[locale]/configuration-settings/user-management/actions.mutations';
 import { userManagementValidations } from '@/lib/utils/user-management-validation';
 import { toast } from 'sonner';
+import { getCleanErrorMessage } from '@/lib/utils/backend-error-detection';
 import { useTranslations } from 'next-intl';
 
 export function useDesignationForm(
@@ -80,7 +81,15 @@ export function useDesignationForm(
           resetDesignationForm();
         } else {
           setErrors(res.validationErrors || {});
-          toast.error(res.message || t('messages.designationUpdateError'));
+          let errorMsg = res.message || t('messages.designationUpdateError');
+          if (res.message) {
+            if (res.message.startsWith('messages.') || res.message.startsWith('errors.')) {
+              errorMsg = t(res.message);
+            } else {
+              errorMsg = getCleanErrorMessage(res.message);
+            }
+          }
+          toast.error(errorMsg);
         }
       } else {
         const res = await createDesignationAction(designationFormData);
@@ -90,12 +99,20 @@ export function useDesignationForm(
           resetDesignationForm();
         } else {
           setErrors(res.validationErrors || {});
-          toast.error(res.message || t('messages.designationCreateError'));
+          let errorMsg = res.message || t('messages.designationCreateError');
+          if (res.message) {
+            if (res.message.startsWith('messages.') || res.message.startsWith('errors.')) {
+              errorMsg = t(res.message);
+            } else {
+              errorMsg = getCleanErrorMessage(res.message);
+            }
+          }
+          toast.error(errorMsg);
         }
       }
     } catch (error) {
       console.error('Error during designation submission:', error);
-      toast.error(t('messages.unknownError'));
+      toast.error(getCleanErrorMessage(error, t('messages.unknownError')));
     } finally {
       setIsSubmitting(false);
     }

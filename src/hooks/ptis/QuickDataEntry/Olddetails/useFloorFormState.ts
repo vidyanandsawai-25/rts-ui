@@ -16,10 +16,15 @@ export function useFloorFormState() {
     oldFloorId: "",
     oldSubFloorId: "",
     oldConstructionYear: "",
+    oldAssessmentYear: "",
     oldConstructionTypeId: "",
     oldTypeOfUseId: "",
     oldSubTypeOfUseId: "",
-    oldCarpetAreaSqFeet: ""
+    oldCarpetAreaSqFeet: "",
+    oldAreaSqFeet: "",
+    oldAreaSqMeter: "",
+    oldBuiltupAreaSqFeet: "",
+    oldBuiltupAreaSqMeter: ""
   });
 
   /**
@@ -57,10 +62,15 @@ export function useFloorFormState() {
       oldFloorId: String(row.oldFloorId),
       oldSubFloorId: row.oldSubFloorId ? String(row.oldSubFloorId) : "",
       oldConstructionYear: row.oldConstructionYear,
+      oldAssessmentYear: row.oldAssessmentYear || "",
       oldConstructionTypeId: String(row.oldConstructionTypeId),
       oldTypeOfUseId: row.oldTypeOfUseId ? String(row.oldTypeOfUseId) : "",
       oldSubTypeOfUseId: row.oldSubTypeOfUseId ? String(row.oldSubTypeOfUseId) : "",
-      oldCarpetAreaSqFeet: String(row.oldCarpetAreaSqFeet)
+      oldCarpetAreaSqFeet: String(row.oldCarpetAreaSqFeet),
+      oldAreaSqFeet: String(row.oldCarpetAreaSqFeet || ""),
+      oldAreaSqMeter: String(row.oldCarpetAreaSqMeter || ""),
+      oldBuiltupAreaSqFeet: String(row.oldBuiltupAreaSqFeet || ""),
+      oldBuiltupAreaSqMeter: String(row.oldBuiltupAreaSqMeter || "")
     });
 
     if (row.oldTypeOfUseId !== undefined && row.oldTypeOfUseId !== null) {
@@ -80,10 +90,15 @@ export function useFloorFormState() {
       oldFloorId: "",
       oldSubFloorId: "",
       oldConstructionYear: "",
+      oldAssessmentYear: "",
       oldConstructionTypeId: "",
       oldTypeOfUseId: "",
       oldSubTypeOfUseId: "",
-      oldCarpetAreaSqFeet: ""
+      oldCarpetAreaSqFeet: "",
+      oldAreaSqFeet: "",
+      oldAreaSqMeter: "",
+      oldBuiltupAreaSqFeet: "",
+      oldBuiltupAreaSqMeter: ""
     });
 
     const currentParam = searchParams.get('typeOfUseId');

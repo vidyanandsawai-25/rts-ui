@@ -202,6 +202,8 @@ export interface FloorInformationFormData {
   oldSubFloorId: string | number;
   /** Year of construction (YYYY) */
   oldConstructionYear: string;
+  /** Assessment Year (YYYY) */
+  oldAssessmentYear?: string;
   /** ID of the selected construction type */
   oldConstructionTypeId: string | number;
   /** ID of the selected type of use */
@@ -210,6 +212,14 @@ export interface FloorInformationFormData {
   oldSubTypeOfUseId: string | number;
   /** Carpet area in square feet */
   oldCarpetAreaSqFeet: string;
+  /** Area in square feet */
+  oldAreaSqFeet?: string;
+  /** Area in square meters */
+  oldAreaSqMeter?: string;
+  /** Built-up area in square feet */
+  oldBuiltupAreaSqFeet?: string;
+  /** Built-up area in square meters */
+  oldBuiltupAreaSqMeter?: string;
 }
 
 export interface FloorTableRow {
@@ -219,10 +229,12 @@ export interface FloorTableRow {
   floor: string;
   subFloor: string | null;
   conYr: string;
+  assessmentYr?: string;
   conTyp: string;
   use: string;
   subUse: string | null;
-  areaSqFt: number;
+  carpetAreaSqFt: number | string;
+  builtupAreaSqFt?: number | string;
 }
 
 /**
@@ -237,14 +249,22 @@ export interface SaveOldFloorDetailPayload {
   oldSubFloorId: number | null;
   /** Construction year as a string (YYYY) */
   oldConstructionYear: string;
+  /** Assessment year as a string (YYYY) (optional) */
+  oldAssessmentYear?: string;
   /** Identifier for construction type master */
   oldConstructionTypeId: number;
   /** Identifier for type of use master */
   oldTypeOfUseId: number;
   /** Identifier for sub-type of use master (optional) */
   oldSubTypeOfUseId: number | null;
+  /** Carpet area in square meters */
+  oldCarpetAreaSqMeter: number;
   /** Carpet area in square feet */
   oldCarpetAreaSqFeet: number;
+  /** Built-up area in square meters */
+  oldBuiltupAreaSqMeter: number;
+  /** Built-up area in square feet */
+  oldBuiltupAreaSqFeet: number;
 }
 /* =====================================================
    OLD TAXES DETAILS - API RESPONSE MODELS

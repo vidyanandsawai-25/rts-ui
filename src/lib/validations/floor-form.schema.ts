@@ -9,14 +9,48 @@ import { z } from 'zod';
 
 const currentFinancialStartYear = new Date().getMonth() >= 3 ? new Date().getFullYear() : new Date().getFullYear() - 1;
 
+/**
+ * Validates that a dropdown value is not empty and is not a placeholder string
+ * across English, Hindi, and Marathi locales.
+ */
+export const isValidDropdownValue = (val: unknown): boolean => {
+  if (val === null || val === undefined) return false;
+  const trimmed = String(val).trim();
+  if (trimmed.length === 0) return false;
+
+  const lower = trimmed.toLowerCase();
+
+  // Reject strings containing common select/placeholder keywords in English
+  if (
+    lower.includes('select') ||
+    lower.includes('choose') ||
+    lower.includes('first')
+  ) {
+    return false;
+  }
+
+  // Reject Marathi placeholders (containing "निवडा")
+  if (trimmed.includes('निवडा')) {
+    return false;
+  }
+
+  // Reject Hindi placeholders (containing "चुनें")
+  if (trimmed.includes('चुनें')) {
+    return false;
+  }
+
+  return true;
+};
+
 export const floorFormSchema = z.object({
   // Identity fields
   id: z.union([z.string(), z.number(), z.null(), z.undefined()]).optional(),
+  isAddingNewFloor: z.boolean().optional(),
 
   // Basic info - required fields
   floor: z.union([z.string(), z.null(), z.undefined()])
     .transform(val => String(val ?? '').trim())
-    .refine(val => val.length > 0, 'Floor is required'),
+    .refine(val => val.length > 0 && isValidDropdownValue(val), 'Floor is required'),
   floorId: z.union([z.string(), z.number(), z.null(), z.undefined()]).optional(),
 
   subFloor: z.union([z.string(), z.null(), z.undefined()])
@@ -32,9 +66,9 @@ export const floorFormSchema = z.object({
     .refine(val => val.length === 4, 'Construction year must be exactly 4 digits')
     .refine((val) => {
       const year = parseInt(val, 10);
-      return year >= 1900 && year <= currentFinancialStartYear;
+      return year >= 1700 && year <= currentFinancialStartYear;
     }, {
-      message: `Construction year must be between 1900 and the current financial year (${currentFinancialStartYear})`
+      message: `Construction year must be between 1700 and the current financial year (${currentFinancialStartYear})`
     }),
 
   asstYr: z.union([z.string(), z.number(), z.null(), z.undefined()])
@@ -44,20 +78,20 @@ export const floorFormSchema = z.object({
     .refine(val => val.length === 4, 'Assessment year must be exactly 4 digits')
     .refine((val) => {
       const year = parseInt(val, 10);
-      return year >= 1900 && year <= currentFinancialStartYear;
+      return year >= 1700 && year <= currentFinancialStartYear;
     }, {
-      message: `Assessment year must be between 1900 and the current financial year (${currentFinancialStartYear})`
+      message: `Assessment year must be between 1700 and the current financial year (${currentFinancialStartYear})`
     }),
 
   // Construction and usage - required
   conTyp: z.union([z.string(), z.null(), z.undefined()])
     .transform(val => String(val ?? '').trim())
-    .refine(val => val.length > 0, 'Construction type is required'),
+    .refine(val => val.length > 0 && isValidDropdownValue(val), 'Construction type is required'),
   constructionTypeId: z.union([z.string(), z.number(), z.null(), z.undefined()]).optional(),
 
   use: z.union([z.string(), z.null(), z.undefined()])
     .transform(val => String(val ?? '').trim())
-    .refine(val => val.length > 0, 'Type of use is required'),
+    .refine(val => val.length > 0 && isValidDropdownValue(val), 'Type of use is required'),
   typeOfUseId: z.union([z.string(), z.number(), z.null(), z.undefined()]).optional(),
 
   subTyp: z.union([z.string(), z.null(), z.undefined()])
@@ -110,10 +144,10 @@ export const floorFormSchema = z.object({
   renterNameEnglish: z.union([z.string(), z.null(), z.undefined()])
     .transform(val => String(val ?? '').trim())
     .default(''),
-  rentMonthly: z.union([z.string(), z.null(), z.undefined()])
+  rentMonthly: z.union([z.string(), z.number(), z.null(), z.undefined()])
     .transform(val => String(val ?? '').trim())
     .default(''),
-  rentYearly: z.union([z.string(), z.null(), z.undefined()])
+  rentYearly: z.union([z.string(), z.number(), z.null(), z.undefined()])
     .transform(val => String(val ?? '').trim())
     .default(''),
 
@@ -127,7 +161,7 @@ export const floorFormSchema = z.object({
     .transform(val => val === 'Yes' || val === true ? 'Yes' : 'No')
     .default('Yes'),
 
-  taxLiability: z.union([z.string(), z.null(), z.undefined()])
+  taxLiability: z.union([z.string(), z.number(), z.null(), z.undefined()])
     .transform(val => String(val ?? '').trim())
     .default(''),
 
@@ -136,10 +170,10 @@ export const floorFormSchema = z.object({
   occupancyApplyOrNot: z.union([z.string(), z.boolean(), z.null(), z.undefined()])
     .transform(val => val === 'Yes' || val === true ? 'Yes' : 'No')
     .default('No'),
-  occupancyNumber: z.union([z.string(), z.null(), z.undefined()])
+  occupancyNumber: z.union([z.string(), z.number(), z.null(), z.undefined()])
     .transform(val => String(val ?? '').trim())
     .default(''),
-  nonCalculateRentMonthly: z.union([z.number(), z.null(), z.undefined()])
+  nonCalculateRentMonthly: z.union([z.string(), z.number(), z.null(), z.undefined()])
     .transform(val => Number(val ?? 0))
     .default(0),
 
@@ -153,6 +187,12 @@ export const floorFormSchema = z.object({
     .transform(val => val ?? [])
     .default([]),
 }).refine((data) => {
+  // If it's an update, skip validation to allow existing database values
+  if (data.isAddingNewFloor === false) return true;
+
+  const hasValidId = data.id !== undefined && data.id !== null && data.id !== '' && data.id !== 'new' && Number(data.id) > 0;
+  if (hasValidId) return true;
+
   if (!data.conYr || !data.asstYr) return true;
   const conYear = parseInt(data.conYr, 10);
   const asstYear = parseInt(data.asstYr, 10);

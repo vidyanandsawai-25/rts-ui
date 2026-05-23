@@ -37,7 +37,7 @@ export const mapOffsetToApi = (offset: OffsetData, roomSubmissionId: number = 0)
   return {
     isActive: true,
     updatedBy: 0,
-    id: resolvedId,
+    id: resolvedId > 0 ? resolvedId : null,
     roomWiseSubmissionId: roomSubmissionId,
     lengthMtr: toApiNumber([offset.length, params.length], 0),
     widthMtr: toApiNumber([offset.width, params.width], 0),

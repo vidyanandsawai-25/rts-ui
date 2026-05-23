@@ -12,8 +12,8 @@ export default function PropertyError({ error, reset }: ErrorProps) {
     <ErrorPage
       error={error}
       reset={reset}
-      translationNamespace="common.error"
+      translationNamespace="quickDataEntry.property.errors.failedToConnect"
     />
   );
-}
+}   
 

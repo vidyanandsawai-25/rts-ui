@@ -24,16 +24,33 @@ export function useBankFormHandlers({
       const { name } = e.target;
       let { value } = e.target;
 
+      // Real-time character filtering based on field type
       if (name === 'bankCode' || name === 'ifscCode') {
-        value = value.toUpperCase();
+        value = value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+      } else if (name === 'bankName' || name === 'branchName') {
+        // Allows letters, spaces, hyphens, and parentheses
+        value = value.replace(/[^a-zA-Z\s\-()]/g, '');
+      } else if (name === 'city' || name === 'state') {
+        // Allows only letters and spaces (no symbols or numbers)
+        value = value.replace(/[^a-zA-Z\s]/g, '');
+      } else if (name === 'pincode') {
+        // Allows only numbers
+        value = value.replace(/[^0-9]/g, '');
       }
 
       setFormData((p) => ({
         ...p,
         [name]: value,
       }));
+
+      setErrors((prev) => {
+        if (!prev[name as keyof BankMasterErrors]) return prev;
+        const next = { ...prev };
+        delete next[name as keyof BankMasterErrors];
+        return next;
+      });
     },
-    [setFormData]
+    [setFormData, setErrors]
   );
 
   const handleBlur = useCallback(

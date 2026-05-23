@@ -73,13 +73,17 @@ async function applyUlbCookiesFromApi(
 ): Promise<void> {
   const ulbRes = await authService.getUlbConfig();
   if (!ulbRes.success || !ulbRes.data) return;
-  
+
   const ulb = ulbRes.data;
   const logo = (ulb.ulbLogo ?? '').trim();
-  
+
   // Use centralized cookie names
   cookieStore.set(ULB_COOKIES.ULB_NAME, ulb.ulbName || '', CLIENT_COOKIE_OPTIONS);
-  cookieStore.set(ULB_COOKIES.ULB_NAME_LOCAL, (ulb.ulbNameLocal ?? '').trim(), CLIENT_COOKIE_OPTIONS);
+  cookieStore.set(
+    ULB_COOKIES.ULB_NAME_LOCAL,
+    (ulb.ulbNameLocal ?? '').trim(),
+    CLIENT_COOKIE_OPTIONS
+  );
   cookieStore.set(ULB_COOKIES.ULB_LOGO, logo, CLIENT_COOKIE_OPTIONS);
   cookieStore.set(ULB_COOKIES.ULB_CODE, ulb.ulbCode || '', CLIENT_COOKIE_OPTIONS);
 }
@@ -91,7 +95,7 @@ async function applyUlbCookiesFromApi(
 /**
  * Persists auth + ULB cookies and redirects to dashboard after successful `/Auth/login`.
  * Uses centralized cookie names and validated auth data.
- * 
+ *
  * @param locale - User's locale for redirect
  * @param auth - Normalized auth response
  * @param sessionId - Generated session ID
@@ -104,7 +108,7 @@ async function completeLoginSession(
   formUsername: string
 ): Promise<never> {
   const cookieStore = await cookies();
-  
+
   // Extract tokens (already validated by caller)
   const accessToken = (auth.token ?? '').trim();
   const refreshToken = (auth.refreshToken ?? '').trim();
@@ -146,7 +150,7 @@ async function completeLoginSession(
  * Validates user credentials and establishes a session on success.
  * Uses server-side validation utilities for input sanitization and
  * type guards for API response validation.
- * 
+ *
  * @param formData - Form data containing username, password, and locale
  * @returns Result object with success status and error details if failed
  */
@@ -161,7 +165,7 @@ export async function validateCredentialsAction(formData: FormData) {
   // ---------------------------------------------------------------------------
   let validatedUsername: string;
   let validatedPassword: string;
-  
+
   try {
     const validated = validateCredentialsInput(usernameEntry, passwordEntry);
     validatedUsername = validated.username;
@@ -273,13 +277,13 @@ export async function validateCredentialsAction(formData: FormData) {
 /**
  * Logs out the user by clearing all auth cookies and calling the logout API.
  * Uses centralized cookie list for consistency.
- * 
+ *
  * @param locale - User's locale for redirect
  */
 export async function logoutAction(locale: string = 'en') {
   const safeLocale = sanitizeLocale(locale);
   const cookieStore = await cookies();
-  
+
   // Get token using centralized cookie name
   const token = cookieStore.get(AUTH_COOKIES.AUTH_TOKEN)?.value;
   const sessionId = cookieStore.get(AUTH_COOKIES.SESSION_ID)?.value;
@@ -327,4 +331,3 @@ export async function loginCredentialsFormAction(
   }
   return { message: 'LOGIN_FAILED', resetKey: crypto.randomUUID() };
 }
-

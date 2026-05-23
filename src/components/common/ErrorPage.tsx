@@ -71,7 +71,7 @@ export function ErrorPage({
 
               {/* Error Description */}
               <p className="text-gray-600">
-                {t('description')}
+                {error.message || t('description')}
               </p>
 
               {/* Error Details (development only) */}

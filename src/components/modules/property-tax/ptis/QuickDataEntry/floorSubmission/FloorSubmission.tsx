@@ -139,6 +139,7 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
       </div>
 
       <RoomSubmissionModal
+        key={`${editingFloorForm.floorId || editingFloorForm.id || ''}-${editingFloorForm.noOfRooms || editingFloorForm.rooms || 0}`}
         isOpen={showRoomSubmission}
         onClose={() => setShowRoomSubmission(false)}
         t={t}
@@ -167,6 +168,13 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
             rooms: data.rooms.length,
             noOfRooms: data.rooms.length
           }));
+
+          setFormErrors(prev => {
+            if (prev.rooms) {
+              return { ...prev, rooms: '' };
+            }
+            return prev;
+          });
         }}
       />
     </>

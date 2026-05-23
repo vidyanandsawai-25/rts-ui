@@ -34,14 +34,25 @@ export function handleApiResponse<T>(response: ApiResponse<T>, defaultMessage: s
 export function mapBackendUserToUser(bu: BackendUser): User {
   const isUserActive = bu.isActive === true || String(bu.isActive).toLowerCase() === 'true';
   const userIdStr = String(bu.id || '0');
+
+  const safeDepts = Array.isArray(bu.departments) ? bu.departments : [];
+  const safeModules = Array.isArray(bu.moduleAccess) ? bu.moduleAccess : [];
+  const safeRoles = Array.isArray(bu.roleAllocations) ? bu.roleAllocations : [];
+
+  // Filter active departments first
+  const activeDepts = safeDepts.filter((d) => d && (d.isActive || !isUserActive));
+  const activeDeptIds = new Set(activeDepts.map((d) => String(d.departmentId)));
+
   const moduleAccess: ModuleAccess = {};
   if (Array.isArray(bu.moduleAccess)) {
     bu.moduleAccess.forEach((ma) => {
-      // Include active module access, or all allocations if the user is inactive
+      // Include active module access under active departments (or all allocations if the user is inactive)
       if (ma && (ma.isActive || !isUserActive)) {
         const deptId = String(ma.departmentId);
-        if (!moduleAccess[deptId]) moduleAccess[deptId] = [];
-        moduleAccess[deptId].push(String(ma.moduleId));
+        if (activeDeptIds.has(deptId)) {
+          if (!moduleAccess[deptId]) moduleAccess[deptId] = [];
+          moduleAccess[deptId].push(String(ma.moduleId));
+        }
       }
     });
   }
@@ -49,22 +60,22 @@ export function mapBackendUserToUser(bu: BackendUser): User {
   const roleAccess: Record<string, number[]> = {};
   if (Array.isArray(bu.roleAllocations)) {
     bu.roleAllocations.forEach((ra) => {
+      // Include active role allocations under active departments (or all allocations if the user is inactive)
       if (ra && (ra.isActive || !isUserActive)) {
         const deptId = String(ra.departmentId);
-        if (!roleAccess[deptId]) roleAccess[deptId] = [];
-        roleAccess[deptId].push(ra.userRoleId);
+        if (activeDeptIds.has(deptId)) {
+          if (!roleAccess[deptId]) roleAccess[deptId] = [];
+          roleAccess[deptId].push(ra.userRoleId);
+        }
       }
     });
   }
-
-  const safeDepts = Array.isArray(bu.departments) ? bu.departments : [];
-  const safeModules = Array.isArray(bu.moduleAccess) ? bu.moduleAccess : [];
-  const safeRoles = Array.isArray(bu.roleAllocations) ? bu.roleAllocations : [];
 
   return {
     id: userIdStr,
     userId: bu.id || 0,
     userName: bu.userName || '',
+    userCode: bu.userCode || '',
     firstName: bu.firstName || '',
     middleName: bu.middleName || '',
     lastName: bu.lastName || '',
@@ -74,29 +85,23 @@ export function mapBackendUserToUser(bu: BackendUser): User {
     address: bu.address || '',
     isActive: isUserActive,
     status: isUserActive ? 'Active' : 'Inactive',
-    departmentNames:
-      safeDepts
-        .filter((d) => d && (d.isActive || !isUserActive))
-        .map((d) => d.departmentName || String(d.departmentId)) || [],
-    departmentIds:
-      safeDepts
-        .filter((d) => d && (d.isActive || !isUserActive))
-        .map((d) => String(d.departmentId)) || [],
+    departmentNames: activeDepts.map((d) => d.departmentName || String(d.departmentId)) || [],
+    departmentIds: activeDepts.map((d) => String(d.departmentId)) || [],
     moduleNames:
       safeModules
-        .filter((ma) => ma && (ma.isActive || !isUserActive))
+        .filter((ma) => ma && (ma.isActive || !isUserActive) && activeDeptIds.has(String(ma.departmentId)))
         .map((ma) => ma.moduleName || String(ma.moduleId)) || [],
     moduleIds:
       safeModules
-        .filter((ma) => ma && (ma.isActive || !isUserActive))
+        .filter((ma) => ma && (ma.isActive || !isUserActive) && activeDeptIds.has(String(ma.departmentId)))
         .map((ma) => String(ma.moduleId)) || [],
     roles:
       safeRoles
-        .filter((ra) => ra && (ra.isActive || !isUserActive))
+        .filter((ra) => ra && (ra.isActive || !isUserActive) && activeDeptIds.has(String(ra.departmentId)))
         .map((ra) => ra.userRoleName || '') || [],
     userRoleIds:
       safeRoles
-        .filter((ra) => ra && (ra.isActive || !isUserActive))
+        .filter((ra) => ra && (ra.isActive || !isUserActive) && activeDeptIds.has(String(ra.departmentId)))
         .map((ra) => ra.userRoleId || 0) || [],
     moduleAccess,
     roleAccess,

@@ -9,13 +9,15 @@ import { PropertyDetailsOnRenter } from './PropertyDetailsOnRenter';
 import AgreementDetails from './AgreementDetails';
 import { RentManagementCard } from './RentManagementCard';
 import { SelectedFloorDetails } from './SelectedFloorDetails';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { Loader2 } from 'lucide-react';
 import { ActionResult } from '@/types/common.types';
 import { useRenterForm } from '@/hooks/ptis/floorSubmission/useRenterForm';
 import { RentBreakdownDialog } from './RentBreakdownDialog';
 import { calculateRentProgression } from '@/lib/utils/renter-calculations';
+import { validateRenterForm } from '@/lib/utils/renter-validation';
+import { useMemo } from 'react';
 
 export interface RenterDetailsFormProps {
   initialData?: any;
@@ -30,12 +32,13 @@ export interface RenterDetailsFormProps {
   propertyId?: string;
   floorId?: string;
   onSaveRenter?: (data: any) => void;
-  saveAction?: (id: string | number, data: any) => Promise<ActionResult<any>>;
+  saveAction?: (id: string | number, data: any, locale?: string, propertyId?: string | number) => Promise<ActionResult<any>>;
   floorLookup?: any[];
   constructionLookup?: any[];
   useLookup?: any[];
   subTypeLookup?: any[];
   subFloorLookup?: any[];
+  existingFloors?: any[];
 }
 
 export const RenterDetailsForm = memo(
@@ -54,9 +57,10 @@ export const RenterDetailsForm = memo(
     useLookup,
     subTypeLookup,
     subFloorLookup,
+    existingFloors = [],
   }: RenterDetailsFormProps) => {
     const router = useRouter();
-    const pathname = usePathname();
+    const searchParams = useSearchParams();
     const locale = useLocale();
     const t = useTranslations('quickDataEntry');
 
@@ -64,17 +68,42 @@ export const RenterDetailsForm = memo(
       useRenterForm({
         initialData,
         floorId: floorId || 'new',
+        propertyId,
+        locale,
         saveAction,
         onSaveSuccess: (data) => {
           if (onSaveRenter) onSaveRenter(data);
+
+          // Robustly resolve the saved floor ID with numeric validation
+          const rawId = data?.propertyDetailsId ?? data?.id;
+          const numericId = Number(rawId);
+          const savedFloorId = (!isNaN(numericId) && numericId > 0) ? String(numericId) : (floorId || 'new');
+
+          // Resolve params: use props first, then current URL searchParams as fallback
+          const resolvedWardNo = wardNo || searchParams.get('wardNo') || '';
+          const resolvedPropertyNo = propertyNo || searchParams.get('propertyNo') || '';
+          const resolvedPartitionNo = partitionNo || searchParams.get('partitionNo') || '';
+
           setTimeout(() => {
             setShowSuccessPopup(false);
+            const redirectParams = new URLSearchParams();
+            if (resolvedWardNo) redirectParams.set('wardNo', resolvedWardNo);
+            if (resolvedPropertyNo) redirectParams.set('propertyNo', resolvedPropertyNo);
+            if (resolvedPartitionNo) redirectParams.set('partitionNo', resolvedPartitionNo);
+            redirectParams.set('floorId', savedFloorId);
+            redirectParams.set('drawer', savedFloorId === 'new' ? 'add' : 'edit');
             router.push(
-              `/${pathname.split('/')[1]}/property-tax/ptis/QuickDataEntry/${propertyId}/FloorSubmission?wardNo=${wardNo}&propertyNo=${propertyNo}&partitionNo=${partitionNo}&floorId=${floorId}&drawer=edit`
+              `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/FloorSubmission?${redirectParams.toString()}`
             );
+            router.refresh();
           }, 1500);
         },
       });
+
+    const isFormValid = useMemo(() => {
+      if (!formData?.renterDetails) return false;
+      return validateRenterForm(formData.renterDetails, floorId || 'new', existingFloors).length === 0;
+    }, [formData?.renterDetails, floorId, existingFloors]);
 
     const [popupFY, setPopupFY] = useState<string | null>(null);
     const [toasts, setToasts] = useState<ToastProps[]>([]);
@@ -164,7 +193,7 @@ export const RenterDetailsForm = memo(
           <div className="space-y-4 flex-1">
             {sectionsVisible >= 2 && (
               <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <AgreementDetails formData={formData} setFormData={setFormData} />
+                <AgreementDetails formData={formData} setFormData={setFormData} existingFloors={existingFloors} floorId={floorId} />
               </div>
             )}
             {sectionsVisible >= 3 ? (
@@ -194,8 +223,8 @@ export const RenterDetailsForm = memo(
             </Button>
             <Button
               onClick={handleSave}
-              disabled={isSaving}
-              className="px-8 bg-blue-600 hover:bg-blue-700 text-white h-9 rounded-md shadow-md shadow-blue-100 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest transition-all active:scale-95"
+              disabled={isSaving || !isFormValid}
+              className="px-8 bg-blue-600 hover:bg-blue-700 text-white h-9 rounded-md shadow-md shadow-blue-100 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none"
             >
               {isSaving ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />

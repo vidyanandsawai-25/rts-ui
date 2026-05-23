@@ -111,7 +111,10 @@ export default function FloorMaster({
           } else {
             let msg = tCommon("errors.deleteError");
 
-            if (result.statusCode === 409) {
+            if (result.statusCode === 409 && result.message) {
+              // Show backend message if present
+              msg = result.message;
+            } else if (result.statusCode === 409) {
               msg = t("messages.deleteInUse");
             } else if (result.statusCode === 404) {
               msg = tCommon("errors.notFound");

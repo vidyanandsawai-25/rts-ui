@@ -1,12 +1,39 @@
 import { Column } from '@/components/common/MasterTable';
 import { PropertyCombineDetails } from '@/types/combine-property.types';
+import { Checkbox } from '@/components/common/checkbox';
 
 export type PropertyRow = PropertyCombineDetails & Record<string, unknown>;
 
 export const getCombinePropertyColumns = (
   t: (key: string) => string,
-  reviewData: PropertyCombineDetails[]
+  reviewData: PropertyCombineDetails[],
+  checkedPropertyIds?: Set<number>,
+  onToggleCheck?: (propertyId: number) => void,
+  onToggleAll?: () => void,
 ): Column<PropertyRow>[] => [
+  // Checkbox column — uses '_checkbox' key to avoid duplicate with 'propertyId' SR.NO. column
+  {
+    key: '_checkbox' as keyof PropertyRow,
+    label: (
+      <Checkbox
+        checked={!!checkedPropertyIds && checkedPropertyIds.size === reviewData.length && reviewData.length > 0}
+        onCheckedChange={() => onToggleAll?.()}
+        aria-label="Select all properties"
+      />
+    ),
+    align: 'center',
+    width: '45px',
+    render: (_val, row) => {
+      const propertyId = row.propertyId as number;
+      return (
+        <Checkbox
+          checked={checkedPropertyIds?.has(propertyId) ?? false}
+          onCheckedChange={() => onToggleCheck?.(propertyId)}
+          aria-label={`Select property ${propertyId}`}
+        />
+      );
+    },
+  },
   {
     key: 'propertyId',
     label: t('srNo'),
@@ -103,3 +130,4 @@ export const getCombinePropertyColumns = (
     ),
   },
 ];
+

@@ -229,6 +229,48 @@ export function useAssessmentYearRangeForm({
         : await createAction(formData);
 
       if (!result.success) {
+        // Handle server-side validation errors
+        if (result.statusCode === 400 && result.message) {
+          try {
+            const parsedError = JSON.parse(result.message);
+            if (parsedError.errors && typeof parsedError.errors === 'object') {
+              const serverErrors: Partial<Record<keyof AssessmentYearRangeFormModel, string>> = {};
+              const whitelist: Array<keyof AssessmentYearRangeFormModel> = ['fromYear', 'toYear', 'isActive', 'id'];
+              let hasUnmappedErrors = false;
+              
+              Object.entries(parsedError.errors).forEach(([key, messages]) => {
+                const fieldKey = (key.charAt(0).toLowerCase() + key.slice(1)) as keyof AssessmentYearRangeFormModel;
+                
+                if (Array.isArray(messages) && messages.length > 0) {
+                  const backendMsg = messages[0];
+                  
+                  // Whitelist check
+                  if (whitelist.includes(fieldKey)) {
+                    if (backendMsg === "FromYear_MustBeLessThanToYear") {
+                      // Only show this specific validation error under fromYear field
+                      if (fieldKey === "fromYear") {
+                        serverErrors[fieldKey] = t("form.validation.fromYearMustBeLessThanToYear");
+                      }
+                    } else {
+                      serverErrors[fieldKey] = backendMsg;
+                    }
+                  } else {
+                    hasUnmappedErrors = true;
+                  }
+                }
+              });
+
+              if (Object.keys(serverErrors).length > 0) {
+                setErrors((prev) => ({ ...prev, ...serverErrors }));
+                if (!hasUnmappedErrors) return; // Only stop if all errors were mapped
+              }
+            }
+          } catch (e) {
+            // Not a JSON error, fall back to default toast
+            console.error("Failed to parse server error:", e);
+          }
+        }
+        
         toast.error(mapApiError(result));
         return;
       }

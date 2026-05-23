@@ -143,19 +143,19 @@ export function getPropertyTypeColumns(
     {
       key: "type",
       label: createSortableLabel(t("list.table.type"), "type"),
-      width: "6%",
-      render: (value) => (typeof value === "string" ? value : ""),
-    },
-    {
-      key: "propertyTypeGroup",
-      label: t("list.table.propertyTypeGroup"),
       width: "14%",
       render: (value) => (typeof value === "string" ? value : ""),
     },
+    // {
+    //   key: "propertyTypeGroup",
+    //   label: t("list.table.propertyTypeGroup"),
+    //   width: "14%",
+    //   render: (value) => (typeof value === "string" ? value : ""),
+    // },
     {
       key: "propertyTypeCategoryId",
       label: createSortableLabel(t("list.table.category"), "propertyTypeCategoryId"),
-      width: "12%",
+      width: "14%",
       render: (value) => {
         if (value === null || value === undefined) return "-";
         const categoryId = typeof value === "number" ? value : Number(value);
@@ -165,7 +165,7 @@ export function getPropertyTypeColumns(
     {
       key: "searchSequence",
       label: createSortableLabel(t("list.table.searchSequence"), "searchSequence"),
-      width: "8%",
+      width: "10%",
       render: (value) => (typeof value === "number" ? value : ""),
     },
     {

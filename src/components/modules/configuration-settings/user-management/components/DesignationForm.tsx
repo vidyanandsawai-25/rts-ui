@@ -1,6 +1,6 @@
 'use client';
 
-import { Label, Input, TextArea, Button, Drawer, ToggleSwitch } from '@/components/common';
+import { Label, Input, TextArea, Button, Drawer, ToggleSwitch, ValidationMessage } from '@/components/common';
 import { useTranslations } from 'next-intl';
 import { DesignationFormProps } from '@/types/user-management';
 
@@ -12,6 +12,7 @@ export function DesignationForm({
   setFormData,
   onSubmit,
   isSubmitting,
+  errors,
 }: DesignationFormProps) {
   const t = useTranslations('userManagement');
 
@@ -54,38 +55,52 @@ export function DesignationForm({
             <Label>{t('form.code')} *</Label>
             <Input
               required
+              maxLength={10}
               value={formData.code}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setFormData({ ...formData, code: e.target.value })
-              }
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                const val = e.target.value.replace(/[^a-zA-Z\u0900-\u097F0-9]/g, '');
+                setFormData({ ...formData, code: val });
+              }}
               placeholder={t('form.code')}
             />
+            {errors?.code && (
+              <ValidationMessage message={errors.code} />
+            )}
           </div>
           <div className="space-y-2">
             <Label>{t('roles.designationsTab')} *</Label>
             <Input
               required
+              maxLength={20}
               value={formData.name}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                const val = e.target.value.replace(/[^a-zA-Z\u0900-\u097F\s]/g, '');
+                setFormData({ ...formData, name: val });
+              }}
               placeholder={t('roles.designationsTab')}
             />
+            {errors?.name && (
+              <ValidationMessage message={errors.name} />
+            )}
           </div>
         </div>
 
         <div className="space-y-2">
           <Label>{t('form.description')}</Label>
           <TextArea
-            key={editingDesignation?.id || 'new'}
-            defaultValue={formData.description}
-            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-              setFormData({ ...formData, description: e.target.value })
-            }
+            maxLength={50}
+            value={formData.description}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+              const val = e.target.value.replace(/[^a-zA-Z\u0900-\u097F\s]/g, '');
+              setFormData({ ...formData, description: val });
+            }}
             rows={3}
             placeholder={t('form.description')}
             className="text-black"
           />
+          {errors?.description && (
+            <ValidationMessage message={errors.description} />
+          )}
         </div>
 
         {editingDesignation && (

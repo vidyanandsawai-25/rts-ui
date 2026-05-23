@@ -4,7 +4,7 @@ import { PropertySocietyDetailsApiItem } from "./property-society-details.types"
 
 // Represents an owner type item from OwnerType API. Endpoint: GET /api/OwnerType
 export interface OwnerTypeApiItem {
-    ownerTypeId: number;
+    id: number;
     ownerType: string;
     isActive: boolean;
     createdDate: string;
@@ -137,7 +137,6 @@ export interface UpdatePropertyBasicDetailsDto {
     subZoneNo: string | null;
     moujaId: number | null;
     moujaName: string | null;
-    wingNo: string | null;
     noOfResidentialToilets: number | null;
     noOfCommercialToilets: number | null;
     totalBuiltupAreaSqFeet: number | null;
@@ -149,8 +148,6 @@ export interface UpdatePropertyBasicDetailsDto {
     plotAreaFtWidth: number | null;
     plotAreaMtrLength: number | null;
     plotAreaMtrWidth: number | null;
-    wingId: number | null;
-    wingName: string | null;
 }
 
 //  Response wrapper for Property Basic Details API.
@@ -180,6 +177,25 @@ export interface WingResponse {
     hasNext: boolean;
 }
 
+export interface MoujaItem {
+    id: number;
+    moujaNo: string;
+    moujaName: string;
+    isActive: boolean;
+    createdDate: string;
+    updatedDate: string | null;
+}
+
+export interface MoujaResponse {
+    items: MoujaItem[];
+    totalCount: number;
+    pageNumber: number;
+    pageSize: number;
+    totalPages: number;
+    hasPrevious: boolean;
+    hasNext: boolean;
+}
+
 export interface TaxDetailsApiResponse {
     success: boolean;
     message: string;
@@ -191,12 +207,13 @@ export interface TaxDetailsApiResponse {
 }
 
 export interface PropertyFormViewProps {
-    WingMaster: WingItem[];
+    MoujaMaster: MoujaItem[];
     propertyCategories: PropertyCategoryApiItem[];
     propertyDescriptions: PropertyTypeApiItem[];
     propertyData: PropertyBasicDetailsApiItem | null;
     propertySocietyDetails: PropertySocietyDetailsApiItem | null;
     locale: string;
+    taxZones: TaxZoneItem[];
 }
 
 export interface Tab {
@@ -213,3 +230,23 @@ export interface DrawerShellProps {
 
 //  Represents a collection of tax amounts by tax name.
 export type TaxAmounts = Record<string, number | undefined>;
+
+export interface TaxZoneItem {
+    id: number;
+    taxZoneNo: string;
+    taxZoneType: string;
+    remark: string;
+    isActive: boolean;
+    createdDate: string;
+    updatedDate: string | null;
+}
+
+export interface TaxZoneResponse {
+    items: TaxZoneItem[];
+    totalCount: number;
+    pageNumber: number;
+    pageSize: number;
+    totalPages: number;
+    hasPrevious: boolean;
+    hasNext: boolean;
+}

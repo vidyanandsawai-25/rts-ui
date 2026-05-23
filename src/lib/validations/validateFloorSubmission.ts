@@ -32,8 +32,9 @@ import {
  *   setFormErrors(result.errors);
  * }
  */
-export function validateFloorForm(data: unknown, t?: (key: string) => string) {
-  const result = floorFormSchema.safeParse(data);
+export function validateFloorForm(data: unknown, t?: (key: string) => string, isAddingNewFloor?: boolean) {
+  const parseData = typeof data === 'object' && data !== null ? { ...data, isAddingNewFloor } : data;
+  const result = floorFormSchema.safeParse(parseData);
 
   if (!result.success) {
     // Validation failed - this is expected during initial/partial form states.
@@ -47,12 +48,12 @@ export function validateFloorForm(data: unknown, t?: (key: string) => string) {
         if (path === 'floor') {
           message = t('floor.errors.floorRequired') || 'Floor selection is required';
         } else if (path === 'conYr') {
-          message = t('floor.errors.constructionYearInvalid') || 'Construction year must be between 1900 and the current financial year';
+          message = t('floor.errors.constructionYearInvalid') || 'Construction year must be between 1700 and the current financial year';
         } else if (path === 'asstYr') {
           if (issue.message.toLowerCase().includes('less than') || issue.message.toLowerCase().includes('cannot be less')) {
             message = t('floor.asstYrError') || 'Assessment Year cannot be less than Construction Year';
           } else {
-            message = t('floor.errors.assessmentYearInvalid') || 'Assessment year must be between 1900 and the current financial year';
+            message = t('floor.errors.assessmentYearInvalid') || 'Assessment year must be between 1700 and the current financial year';
           }
         } else if (path === 'conTyp') {
           message = t('floor.errors.constructionTypeRequired') || 'Construction type is required';
@@ -142,7 +143,8 @@ export function validateRenterFormData(data: unknown): ActionResult<unknown> {
   // Return first error message as translation key if it looks like one, else generic
   const firstIssueMessage = result.error.issues[0]?.message;
   const isTranslationKey = firstIssueMessage && firstIssueMessage.includes('.') && !firstIssueMessage.includes(' ');
-  const errorKey = isTranslationKey ? firstIssueMessage : 'floor.errors.invalidData';
+  const issuesSummary = result.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join(', ');
+  const errorKey = isTranslationKey ? firstIssueMessage : `floor.errors.invalidData (${issuesSummary})`;
   
   // Let's make it return ActionResult to match submitFloorSubmissionNoRedirectAction pattern.
   return { success: false, error: errorKey };

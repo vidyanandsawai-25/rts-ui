@@ -30,8 +30,8 @@ describe('useKycForm', () => {
     address: '123 Main St',
     location: 'Downtown',
     mobileNo: '9876543210',
-    adharCardNo: '123456789012',
-    aadharCardNo: '123456789012',
+    adharCardNo: '223456789012',
+    aadharCardNo: '223456789012',
     ownerTitleEnglish: null,
     ownerNameEnglish: null,
     occupierTitle: null,
@@ -45,8 +45,8 @@ describe('useKycForm', () => {
   };
 
   const mockOwnerTypes: OwnerTypeApiItem[] = [
-    { ownerTypeId: 1, ownerType: 'Individual', isActive: true, createdDate: '2024-01-01', updatedDate: '2024-01-01' },
-    { ownerTypeId: 2, ownerType: 'Company', isActive: true, createdDate: '2024-01-01', updatedDate: '2024-01-01' },
+    { id: 1, ownerType: 'Individual', isActive: true, createdDate: '2024-01-01', updatedDate: '2024-01-01' },
+    { id: 2, ownerType: 'Company', isActive: true, createdDate: '2024-01-01', updatedDate: '2024-01-01' },
   ];
 
   const mockT = (key: string) => key;
@@ -104,7 +104,7 @@ describe('useKycForm', () => {
         useKycForm(defaultProps, mockT, mockConfirm, mockRouter)
       );
 
-      expect(result.current.aadharInput.value).toBe('123456789012');
+      expect(result.current.aadharInput.value).toBe('223456789012');
     });
 
     it('should initialize ownerTypeOptions from OwnerTypeMasterList', () => {
@@ -336,7 +336,7 @@ describe('useKycForm', () => {
           ownerName: 'John Doe',
           emailId: 'john@example.com',
           mobileNo: '9876543210',
-          adharCardNo: '123456789012',
+          adharCardNo: '223456789012',
         }),
         'en'
       );

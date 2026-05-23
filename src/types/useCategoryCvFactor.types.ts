@@ -127,5 +127,9 @@ export interface UseCategoryCvPageProps {
         q?: string;
         selectedYearRange?: string;
         typeOfUseId?: string;
+        sortBy?: string;
+        sortOrder?: string;
+        leftSortBy?: string;
+        leftSortOrder?: string;
     }>;
 }

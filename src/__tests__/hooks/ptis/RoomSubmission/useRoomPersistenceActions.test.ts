@@ -231,7 +231,7 @@ describe('useRoomPersistenceActions', () => {
 
       // Should NOT proceed with update due to failures
       expect(mockProps.onUpdate).not.toHaveBeenCalled();
-      
+
       // Should reset loading state
       expect(mockState.setIsUpdating).toHaveBeenCalledWith(false);
     });

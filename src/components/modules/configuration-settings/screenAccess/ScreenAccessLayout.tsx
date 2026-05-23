@@ -106,6 +106,7 @@ export function ScreenAccessLayout({
             <ScreenMasterManagement
               subTab={subTab}
               initialScreens={screens}
+              allScreens={allScreens}
               initialGroups={groups}
               screensPagination={screensPagination}
               groupsPagination={groupsPagination}

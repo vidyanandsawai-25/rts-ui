@@ -16,6 +16,13 @@ vi.mock('next/navigation', () => ({
     push: vi.fn(),
   })),
   usePathname: vi.fn(() => '/en/property-tax/ptis/QuickDataEntry/123/FloorSubmission/Renter'),
+  useSearchParams: vi.fn(() => new URLSearchParams('')),
+}));
+
+// Mock the validation utility
+vi.mock('@/lib/utils/renter-validation', () => ({
+  validateRenterForm: vi.fn(() => []),
+  areDatesOverlapping: vi.fn(() => false),
 }));
 
 // Mock the custom hook

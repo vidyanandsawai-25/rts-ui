@@ -16,6 +16,8 @@ import {
   getSubTypeDescription,
 } from '@/lib/utils/floorSubmission/floor-mappers';
 
+import { floorFormSchema } from '@/lib/validations/floor-form.schema';
+
 import {
   BasicInfoSection,
   UsageSection,
@@ -51,8 +53,16 @@ const FloorForm: React.FC<FloorFormProps> = ({
   setShowRoomSubmission,
   onSave,
 }) => {
+  const isFormValid = React.useMemo(() => {
+    const result = floorFormSchema.safeParse({
+      ...editingFloorForm,
+      isAddingNewFloor,
+    });
+    return result.success;
+  }, [editingFloorForm, isAddingNewFloor]);
+
   return (
-    <div className="bg-white rounded-xl shadow-lg border-2 border-blue-100 p-4 transition-all duration-500 animate-in fade-in slide-in-from-bottom-4">
+    <div className="bg-white rounded-xl shadow-lg border-2 border-blue-100 m-0 p-4 transition-all duration-500 animate-in fade-in slide-in-from-bottom-4">
       <div className="flex items-center justify-between mb-3 pb-2 border-b-2 border-blue-200">
         <h3 className="text-sm font-bold text-blue-800 flex items-center gap-2">
           <Edit2 className="w-4 h-4" />
@@ -67,7 +77,7 @@ const FloorForm: React.FC<FloorFormProps> = ({
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 ">
         <BasicInfoSection
           t={t}
           editingFloorForm={editingFloorForm}
@@ -78,8 +88,8 @@ const FloorForm: React.FC<FloorFormProps> = ({
           floorLookup={floorLookup}
           subFloorOptions={subFloorOptions}
           subFloorLookup={subFloorLookup}
-          getFloorDescription={(val: string, lookup: LookupData[]): string => getFloorDescription(val, lookup) || String(editingFloorForm.floorDescription || '')}
-          getSubFloorDescription={(val: string, lookup: LookupData[]): string => getSubFloorDescription(val, lookup) || String(editingFloorForm.subFloorDescription || '')}
+          getFloorDescription={(val: string, lookup: LookupData[]): string => val ? (getFloorDescription(val, lookup) || String(editingFloorForm.floorDescription || '')) : ''}
+          getSubFloorDescription={(val: string, lookup: LookupData[]): string => val ? (getSubFloorDescription(val, lookup) || String(editingFloorForm.subFloorDescription || '')) : ''}
           handleOpenDropdown={handleOpenDropdown}
         />
 
@@ -97,9 +107,9 @@ const FloorForm: React.FC<FloorFormProps> = ({
           subTypeData={subTypeData}
           startTransition={startTransition}
           updateUrlParams={updateUrlParams}
-          getConstructionDescription={(val: string, lookup: LookupData[]): string => getConstructionDescription(val, lookup) || String(editingFloorForm.constructionTypeDescription || '')}
-          getUseDescription={(val: string, lookup: LookupData[]): string => getUseDescription(val, lookup) || String(editingFloorForm.typeOfUseDescription || '')}
-          getSubTypeDescription={(val: string, lookup: LookupData[]): string => getSubTypeDescription(val, lookup) || String(editingFloorForm.subTypeOfUseDescription || '')}
+          getConstructionDescription={(val: string, lookup: LookupData[]): string => val ? (getConstructionDescription(val, lookup) || String(editingFloorForm.constructionTypeDescription || '')) : ''}
+          getUseDescription={(val: string, lookup: LookupData[]): string => val ? (getUseDescription(val, lookup) || String(editingFloorForm.typeOfUseDescription || '')) : ''}
+          getSubTypeDescription={(val: string, lookup: LookupData[]): string => val ? (getSubTypeDescription(val, lookup) || String(editingFloorForm.subTypeOfUseDescription || '')) : ''}
           handleOpenDropdown={handleOpenDropdown}
         />
 
@@ -128,8 +138,8 @@ const FloorForm: React.FC<FloorFormProps> = ({
           <Button
             onClick={onSave}
             isLoading={isOperationLoading}
-            disabled={isOperationLoading}
-            className="px-6 h-9 text-xs font-bold shadow-md rounded-lg transition-all duration-300 flex items-center gap-2 bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg active:scale-95"
+            disabled={isOperationLoading || !isFormValid}
+            className="px-6 h-9 text-xs font-bold shadow-md rounded-lg transition-all duration-300 flex items-center gap-2 bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg active:scale-95 disabled:bg-blue-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:pointer-events-none"
           >
             {isAddingNewFloor ? t('floor.add') : t('floor.updateFloor')}
           </Button>

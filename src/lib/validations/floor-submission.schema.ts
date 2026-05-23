@@ -27,6 +27,8 @@ export const offsetSchema = z.object({
 
 export const roomSchema = z.object({
     isActive: z.boolean().default(true),
+    propertyDetailsId: z.number().optional(),
+    propertyId: z.number().optional(),
     roomNo: z.string().min(1, { message: 'roomSubmission.validation.roomNoRequired' }),
     roomType: z.string().min(1, { message: 'roomSubmission.validation.roomTypeRequired' }),
     lengthMtr: z.number().nonnegative({ message: 'roomSubmission.validation.nonnegative' }).default(0),
@@ -63,6 +65,7 @@ export const renterMastItemSchema = z.object({
     durationFrom: z.string().nullable().optional(),
     durationTo: z.string().nullable().optional(),
     isActive: z.boolean().default(true),
+    nonCalculateRentMonthly: z.number().optional().nullable(),
 });
 
 export const renterSubmissionSchema = z.object({
@@ -77,6 +80,7 @@ export const renterSubmissionSchema = z.object({
     agreementFromDate: z.string().optional().nullable(),
     agreementToDate: z.string().optional().nullable(),
     agreementDate: z.string().optional().nullable(),
+    nonCalculateRentMonthly: z.number().optional().nullable(),
     renterDetails: z.array(renterDetailItemSchema).optional().default([]),
     renterMast: z.array(renterMastItemSchema).optional().default([]),
 });
@@ -102,7 +106,7 @@ export const floorSubmissionSchema = z.object({
             const year = parseInt(val, 10);
             const today = new Date();
             const currentFinancialStartYear = today.getMonth() >= 3 ? today.getFullYear() : today.getFullYear() - 1;
-            return year >= 1900 && year <= currentFinancialStartYear;
+            return year >= 1700 && year <= currentFinancialStartYear;
         }, { message: 'floor.errors.constructionYearInvalid' }),
     assessmentYear: z.string()
         .length(4, 'floor.errors.assessmentYearInvalid')
@@ -111,7 +115,7 @@ export const floorSubmissionSchema = z.object({
             const year = parseInt(val, 10);
             const today = new Date();
             const currentFinancialStartYear = today.getMonth() >= 3 ? today.getFullYear() : today.getFullYear() - 1;
-            return year >= 1900 && year <= currentFinancialStartYear;
+            return year >= 1700 && year <= currentFinancialStartYear;
         }, { message: 'floor.errors.assessmentYearInvalid' }),
     constructionTypeId: z.number()
         .positive('floor.errors.constructionTypeRequired'),
@@ -160,6 +164,10 @@ export const floorSubmissionSchema = z.object({
     createdBy: z.number().optional(),
     updatedBy: z.number().optional(),
 }).refine((data) => {
+    // If it's an update, skip validation to allow existing database values
+    const rawDetailsId = Number(data.propertyDetailsId || (data as Record<string, unknown>).id || 0);
+    if (rawDetailsId > 0) return true;
+
     const conYear = parseInt(data.constructionYear, 10);
     const asstYear = parseInt(data.assessmentYear, 10);
     if (isNaN(conYear) || isNaN(asstYear)) return true;
@@ -169,8 +177,7 @@ export const floorSubmissionSchema = z.object({
     path: ['assessmentYear'],
 }).transform(data => ({
     ...data,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    propertyDetailsId: data.propertyDetailsId ?? (data as any).id
+    propertyDetailsId: data.propertyDetailsId ?? (data as Record<string, unknown>).id
 }));
 
 export type FloorSubmissionSchemaType = z.infer<typeof floorSubmissionSchema>;

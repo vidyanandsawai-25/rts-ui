@@ -46,7 +46,8 @@ export interface TypeOfUseApiItem {
 }
 
 export interface SubTypeOfUseResponse {
-    subTypeOfUseId: number;
+    id?: number;
+    subTypeOfUseId?: number;
     description: string;
     typeOfUseId: number;
     searchKey: string | null;
@@ -165,6 +166,8 @@ export interface FloorAPIResponse {
     agreementDate?: string;
     renterDetails?: RenterDetailItem[];
     renterMast?: RenterMastItem[];
+    renters?: RenterMastItem[];
+    isRenter?: boolean;
     propertyRooms?: RoomAPIResponse[];
     roomWiseSubmissionDetails?: RoomAPIResponse[];
 }
@@ -528,16 +531,16 @@ export interface ReadOnlyFieldProps {
 
 // Re-export common entities for backward compatibility where possible
 export * from "./common-details.types";
-export { 
-  type FloorData, 
-  type RoomData, 
-  type RoomAPIResponse, 
-  type RoomWiseSubmissionProps, 
-  type RoomActions, 
-  type OffsetActions, 
-  type RoomSubmissionSidebarProps, 
-  type RoomSubmissionItem, 
-  type ParameterInputProps 
+export {
+    type FloorData,
+    type RoomData,
+    type RoomAPIResponse,
+    type RoomWiseSubmissionProps,
+    type RoomActions,
+    type OffsetActions,
+    type RoomSubmissionSidebarProps,
+    type RoomSubmissionItem,
+    type ParameterInputProps
 } from "./room-details.types";
 export * from "./offset-details.types";
 export * from "./renter-details.types";
@@ -583,6 +586,8 @@ export interface FloorSubmissionPayload {
     nonCalculateRentMonthly?: number;
     renterDetails?: unknown[];
     renterMast?: unknown[];
+    renters?: unknown[];
+    isRenter?: boolean;
     roomWiseSubmissionDetails?: unknown[];
 }
 

@@ -25,6 +25,7 @@ interface AddRangeFormProps {
     agreementEnd: string;
     errors: Record<string, string>;
     hasValidationError: boolean;
+    markRangeTouched: (field: string) => void;
 }
 
 export const AddRangeForm = ({ 
@@ -34,7 +35,8 @@ export const AddRangeForm = ({
     agreementStart, 
     agreementEnd, 
     errors,
-    hasValidationError: _hasValidationError
+    hasValidationError: _hasValidationError,
+    markRangeTouched
 }: AddRangeFormProps) => {
     const t = useTranslations('quickDataEntry');
     
@@ -53,7 +55,11 @@ export const AddRangeForm = ({
                     <Input
                         type="date"
                         value={newRangeData.fromDate}
-                        onChange={(e) => setNewRangeData({ ...newRangeData, fromDate: e.target.value })}
+                        onChange={(e) => {
+                            setNewRangeData({ ...newRangeData, fromDate: e.target.value });
+                            markRangeTouched('fromDate');
+                        }}
+                        onBlur={() => markRangeTouched('fromDate')}
                         min={agreementStart}
                         max={agreementEnd}
                         error={errors.fromDate}
@@ -66,7 +72,11 @@ export const AddRangeForm = ({
                     <Input
                         type="date"
                         value={newRangeData.toDate}
-                        onChange={(e) => setNewRangeData({ ...newRangeData, toDate: e.target.value })}
+                        onChange={(e) => {
+                            setNewRangeData({ ...newRangeData, toDate: e.target.value });
+                            markRangeTouched('toDate');
+                        }}
+                        onBlur={() => markRangeTouched('toDate')}
                         min={newRangeData.fromDate || agreementStart}
                         max={agreementEnd}
                         error={errors.toDate}
@@ -90,9 +100,23 @@ export const AddRangeForm = ({
                 <div className="flex-1 min-w-[100px] space-y-1.5">
                     <Label className={fieldLabelClassName}>{newRangeData.incrementType === 'Percentage' ? `${t('floor.renterSection.value')} (%)` : `${t('floor.renterSection.amount')} (₹)`} *</Label>
                     <Input
-                        type="number"
+                        type="text"
+                        inputMode={newRangeData.incrementType === 'Percentage' ? 'numeric' : 'decimal'}
+                        maxLength={newRangeData.incrementType === 'Percentage' ? 3 : 8}
                         value={newRangeData.incrementValue}
-                        onChange={(e) => setNewRangeData({ ...newRangeData, incrementValue: e.target.value })}
+                        onChange={(e) => {
+                            let val = e.target.value;
+                            if (newRangeData.incrementType === 'Percentage') {
+                                val = val.replace(/[^0-9]/g, '').slice(0, 3);
+                            } else {
+                                if (val !== "" && !/^\d*(\.\d{0,2})?$/.test(val)) return; // Block negative, positive, more than 2 decimal places, and non-numeric
+                                const integerPart = val.split('.')[0];
+                                if (integerPart.length > 5) return; // Prevent typing more than 5 digits before decimal
+                            }
+                            setNewRangeData({ ...newRangeData, incrementValue: val });
+                            markRangeTouched('incrementValue');
+                        }}
+                        onBlur={() => markRangeTouched('incrementValue')}
                         placeholder={newRangeData.incrementType === 'Percentage' ? '10' : '500'}
                         error={errors.incrementValue}
                         className="h-8 text-xs font-bold"

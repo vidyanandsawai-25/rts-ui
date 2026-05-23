@@ -53,7 +53,7 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
     localFloors,
     setLocalFloors,
     setFormErrors,
-    validateForm,
+    validateForm: () => validateForm(editingFloorForm, t),
     startTransition,
     router,
     locale,
@@ -85,6 +85,8 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
   useFloorSync({
     props,
     isAddingNewFloor,
+    setIsAddingNewFloor,
+    editingFloorForm,
     setEditingFloorForm,
     localFloors,
     setLocalFloors,
@@ -108,7 +110,7 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
   }, [localFloors, floorSearch]);
 
   const subTypeOptionsFromData = useMemo(() =>
-    (props.subTypeData || []).map(st => st.description),
+    (props.subTypeData || []).map(st => st.searchKey ? `${st.searchKey} - ${st.description}` : st.description),
     [props.subTypeData]
   );
 

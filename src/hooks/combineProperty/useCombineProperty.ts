@@ -32,6 +32,9 @@ export function useCombinePropertyForm({
   const [isPending, startTransition] = useTransition();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Checkbox selection for review table rows
+  const [checkedPropertyIds, setCheckedPropertyIds] = useState<Set<number>>(new Set());
+
   // Derive state directly from searchParams instead of syncing with useEffect
   const rangeFrom = searchParams.get('from') ?? '';
   const rangeTo = searchParams.get('to') ?? '';
@@ -100,6 +103,16 @@ export function useCombinePropertyForm({
     // Clear review state when selection changes
     setReviewData([]);
     setIsReviewing(false);
+
+    // Validate range: if "To" is already selected and comes before the new "From", show error
+    if (rangeTo) {
+      const fromIdx = subPropertyList.findIndex((i) => String(i.id) === value);
+      const toIdx = subPropertyList.findIndex((i) => String(i.id) === rangeTo);
+      if (fromIdx !== -1 && toIdx !== -1 && toIdx < fromIdx) {
+        toast.error(t('rangeInvalidError'));
+      }
+    }
+
     const pNo = calculatePartitionNo('range', value, rangeTo, []);
     router.replace(buildUrl({ from: value, partitionNo: pNo }), { scroll: false });
   };
@@ -108,6 +121,16 @@ export function useCombinePropertyForm({
     // Clear review state when selection changes
     setReviewData([]);
     setIsReviewing(false);
+
+    // Validate range: "To" must not come before "From"
+    if (rangeFrom) {
+      const fromIdx = subPropertyList.findIndex((i) => String(i.id) === rangeFrom);
+      const toIdx = subPropertyList.findIndex((i) => String(i.id) === value);
+      if (fromIdx !== -1 && toIdx !== -1 && toIdx < fromIdx) {
+        toast.error(t('rangeInvalidError'));
+      }
+    }
+
     const pNo = calculatePartitionNo('range', rangeFrom, value, []);
     router.replace(buildUrl({ to: value, partitionNo: pNo }), { scroll: false });
   };
@@ -159,18 +182,50 @@ export function useCombinePropertyForm({
           partitionNo,
         });
         setReviewData(data);
+        // Auto-check all properties by default
+        setCheckedPropertyIds(new Set(data.map((d) => d.propertyId)));
       } catch {
         setReviewData([]);
       }
     });
   };
 
+  const togglePropertyCheck = useCallback((propertyId: number) => {
+    setCheckedPropertyIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(propertyId)) {
+        next.delete(propertyId);
+      } else {
+        next.add(propertyId);
+      }
+      return next;
+    });
+  }, []);
+
+  const toggleAllProperties = useCallback(() => {
+    setCheckedPropertyIds((prev) => {
+      if (prev.size === reviewData.length) {
+        // All are checked → uncheck all
+        return new Set();
+      }
+      // Check all
+      return new Set(reviewData.map((d) => d.propertyId));
+    });
+  }, [reviewData]);
+
   const handleCombine = async () => {
     // Race-condition guard
     if (isSubmitting || isPending) return;
     if (!selectedBasePropertyId || reviewData.length === 0) return;
 
-    const uniqueOwners = [...new Set(reviewData.map((r) => r.ownerName).filter(Boolean))];
+    // Only combine checked properties
+    const checkedProperties = reviewData.filter((r) => checkedPropertyIds.has(r.propertyId));
+    if (checkedProperties.length === 0) {
+      toast.error(t('selectAtLeastOneToMerge'));
+      return;
+    }
+
+    const uniqueOwners = [...new Set(checkedProperties.map((r) => r.ownerName).filter(Boolean))];
     const hasDifferentOwners = uniqueOwners.length > 1;
 
     if (hasDifferentOwners) {
@@ -180,7 +235,7 @@ export function useCombinePropertyForm({
 
     setIsSubmitting(true);
     try {
-      const combinePropertyIds = reviewData.map((r) => r.propertyId).join(',');
+      const combinePropertyIds = checkedProperties.map((r) => r.propertyId).join(',');
       const response = await createCombinePropertyAction({
         mainPropertyId: Number(selectedBasePropertyId),
         combinePropertyIds,
@@ -214,11 +269,23 @@ export function useCombinePropertyForm({
     return 0;
   }, [selectionMethod, selectedProperties, rangeFrom, rangeTo, subPropertyList]);
 
+  // Check if the range is invalid ("To" comes before "From" in the subPropertyList)
+  const isRangeInvalid = useMemo(() => {
+    if (selectionMethod !== 'range' || !rangeFrom || !rangeTo) return false;
+    const fromIdx = subPropertyList.findIndex((i) => String(i.id) === rangeFrom);
+    const toIdx = subPropertyList.findIndex((i) => String(i.id) === rangeTo);
+    return fromIdx !== -1 && toIdx !== -1 && toIdx < fromIdx;
+  }, [selectionMethod, rangeFrom, rangeTo, subPropertyList]);
+
   const canProceed =
     !!selectedBasePropertyId &&
-    (selectionMethod === 'range' ? !!(rangeFrom && rangeTo) : selectedProperties.length > 0);
+    (selectionMethod === 'range' ? !!(rangeFrom && rangeTo) && !isRangeInvalid : selectedProperties.length > 0);
 
-  const uniqueOwners = [...new Set(reviewData.map((r) => r.ownerName).filter(Boolean))];
+  const checkedReviewData = useMemo(
+    () => reviewData.filter((r) => checkedPropertyIds.has(r.propertyId)),
+    [reviewData, checkedPropertyIds]
+  );
+  const uniqueOwners = [...new Set(checkedReviewData.map((r) => r.ownerName).filter(Boolean))];
   const hasDifferentOwners = uniqueOwners.length > 1;
   const differentOwnerProps = reviewData
     .filter((r, i) => i > 0 && r.ownerName !== reviewData[0]?.ownerName)
@@ -236,8 +303,13 @@ export function useCombinePropertyForm({
     selectionMethod,
     selectedCount,
     canProceed,
+    isRangeInvalid,
+    checkedPropertyIds,
+    checkedCount: checkedPropertyIds.size,
     hasDifferentOwners,
     differentOwnerProps,
+    togglePropertyCheck,
+    toggleAllProperties,
     handleBasePropertyChange,
     handleMethodChange,
     handleRangeFromChange,

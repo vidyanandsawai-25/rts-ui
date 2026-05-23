@@ -6,7 +6,7 @@ import type {
 } from '@/types/screen-access.types';
 import type { PagedResponse } from '@/types/common.types';
 import { ApiError } from '@/lib/utils/api';
-import { getMasterDataPageSize } from './screen-access.services';
+import { getMasterDataPageSize } from './screen-access.services'; // still used by getPermissionsByRole
 
 function normalizePermission(item: Record<string, unknown>): ScreenAccessPermissionData {
   let accessLevel: 'no-access' | 'view' | 'edit' | 'delete' | 'full' = 'no-access';
@@ -37,7 +37,10 @@ function normalizePermission(item: Record<string, unknown>): ScreenAccessPermiss
 }
 
 export async function getRoles(): Promise<RoleMasterData[]> {
-  const url = `/RoleWiseScreenAccessMaster?PageSize=${getMasterDataPageSize()}`;
+  // Fetch from /UserRole which contains userRoleName (e.g. "Admin", "sudo").
+  // /RoleWiseScreenAccessMaster only has userRoleId with no name field,
+  // causing the dropdown to show "Role 1" instead of the actual role name.
+  const url = `/UserRole?PageSize=1000&IsActive=true`;
   const response = await apiClient.get<PagedResponse<unknown>>(url);
 
   if (!response.success) {
@@ -49,30 +52,30 @@ export async function getRoles(): Promise<RoleMasterData[]> {
   }
 
   const items = (response.data?.items ?? []) as Record<string, unknown>[];
-  const roleMap = new Map<number, RoleMasterData>();
 
-  items.forEach((item) => {
-    const userRoleId = Number(
-      item.userRoleId ?? item.UserRoleId ?? item.roleId ?? item.RoleId ?? item.id ?? item.Id
-    );
-    const isActive =
-      item.isActive !== undefined
-        ? Boolean(item.isActive)
-        : item.IsActive !== undefined
-          ? Boolean(item.IsActive)
-          : true;
-
-    if (isActive && userRoleId && !roleMap.has(userRoleId)) {
-      roleMap.set(userRoleId, {
-        roleMasterId: userRoleId,
-        roleCode: String(item.roleCode || item.RoleCode || `ROLE_${userRoleId}`),
-        roleName: String(item.roleName || item.RoleName || `Role ${userRoleId}`),
+  return items
+    .filter((item) => {
+      const isActive =
+        item.isActive !== undefined
+          ? Boolean(item.isActive)
+          : item.IsActive !== undefined
+            ? Boolean(item.IsActive)
+            : true;
+      return isActive;
+    })
+    .map((item) => {
+      const id = Number(item.id ?? item.Id ?? item.userRoleId ?? item.UserRoleId);
+      const name = String(
+        item.userRoleName ?? item.UserRoleName ?? item.roleName ?? item.RoleName ?? `Role ${id}`
+      );
+      return {
+        roleMasterId: id,
+        roleCode: String(item.roleCode ?? item.RoleCode ?? `ROLE_${id}`),
+        roleName: name,
         isActive: true,
-      });
-    }
-  });
-
-  return Array.from(roleMap.values());
+      } satisfies RoleMasterData;
+    })
+    .filter((r) => r.roleMasterId > 0);
 }
 
 export async function getPermissionsByRole(roleId: number): Promise<ScreenAccessPermissionData[]> {
@@ -82,7 +85,7 @@ export async function getPermissionsByRole(roleId: number): Promise<ScreenAccess
   if (!response.success) {
     throw new ApiError(
       response.statusCode ?? 500,
-      response.error || 'Failed to fetch permissions',
+      'accessControl.messages.updateError',
       'Get permissions failed'
     );
   }
@@ -149,19 +152,18 @@ export async function updateScreenAccess(
 
             const url = `${baseUrl}/${item.id}`;
             const res = await apiClient.put(url, payload);
-            if (!res.success) throw new Error(res.error || 'Failed to update permission');
+            if (!res.success) throw new Error('accessControl.messages.updateError');
           } else {
             if (updatedBy !== undefined && updatedBy !== null) payload.createdBy = updatedBy;
             const res = await apiClient.post(baseUrl, payload);
-            if (!res.success) throw new Error(res.error || 'Failed to create permission');
+            if (!res.success) throw new Error('accessControl.messages.updateError');
           }
         })
       );
     }
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    throw new Error(
-      `Partial failure during permission update: ${message}. Some permissions may have been saved. Please refresh and verify.`
-    );
+    const message = error instanceof Error ? error.message : 'accessControl.messages.updateError';
+    throw new Error(message);
   }
 }
+

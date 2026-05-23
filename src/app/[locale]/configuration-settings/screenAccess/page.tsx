@@ -83,7 +83,7 @@ export default async function ScreenAccessPage({ params, searchParams }: ScreenA
       errorMessage: 'errors.apiConnection.fetchScreensFailed',
     },
     allScreens: {
-      condition: isAccessControl,
+      condition: true,
       fetcher: () => getAllScreensAction(),
       fallback: [],
       errorMessage: 'errors.apiConnection.fetchScreensFailed',

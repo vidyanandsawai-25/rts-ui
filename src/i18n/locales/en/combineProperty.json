@@ -36,6 +36,8 @@
   "emptyTableText": "No property details found.",
   "basePropertyIncomplete": "Base property selection incomplete",
   "selectAtLeastOne": "Please select at least one property to combine",
+  "rangeInvalidError": "'To' property must not be before 'From' property. Please select a valid range.",
+  "selectAtLeastOneToMerge": "Please select at least one property to combine using the checkboxes.",
   "differentOwnersError": "Cannot combine properties with different owner names",
   "combineSuccess": "Properties combined successfully!",
   "combineFailed": "Combination failed",

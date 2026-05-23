@@ -2,7 +2,10 @@ import { apiClient } from '@/services/api.service';
 import type { ScreenMasterData } from '@/types/screen-access.types';
 import type { PagedResponse } from '@/types/common.types';
 import { ApiError } from '@/lib/utils/api';
+import { logError } from '@/lib/utils/logger';
 import { DEFAULT_SCREEN_ICON } from '@/lib/constants/screen-access.constants';
+import { getModules } from './master-data.service';
+import { getTranslations } from 'next-intl/server';
 
 export function normalizeScreen(data: Record<string, unknown>): ScreenMasterData {
   const screenMasterId = Number(
@@ -116,16 +119,30 @@ export async function createScreen(
   data: Partial<ScreenMasterData>,
   userId?: number
 ): Promise<void> {
+  let validModuleId = data.moduleId;
+  if (!validModuleId && data.departmentMasterId) {
+    try {
+      const allModules = await getModules();
+      const firstMod = allModules.find((m) => m.departmentMasterId === data.departmentMasterId);
+      if (firstMod) validModuleId = firstMod.moduleId;
+    } catch (e) {
+      const t = await getTranslations('screenAccess');
+      logError(t('screenManagement.screens.messages.fetchModulesError'), {
+        error: e instanceof Error ? e : undefined,
+      });
+    }
+  }
+
   const payload = {
-    isMenu: false,
+    isMenu: true,
     isAuthenticationRequired: true,
     isActive: true,
     screenIcon: DEFAULT_SCREEN_ICON,
     ...data,
-    moduleId: data.moduleId ?? null,
-    moduleMasterId: data.moduleId ?? null,
-    departmentMasterId: data.departmentMasterId ?? null,
-    departmentId: data.departmentMasterId ?? null,
+    moduleId: validModuleId ?? 0,
+    moduleMasterId: validModuleId ?? 0,
+    departmentMasterId: data.departmentMasterId ?? 0,
+    departmentId: data.departmentMasterId ?? 0,
     displayOrder: Number(data.displayOrder ?? 0),
     screenNameLocal: data.screenNameLocal || data.screenName,
     createdBy: userId,
@@ -135,7 +152,7 @@ export async function createScreen(
   if (!response.success) {
     throw new ApiError(
       response.statusCode ?? 500,
-      response.error || 'errors.apiConnection.createScreenFailed',
+      'screenManagement.screens.messages.createError',
       'Create screen failed'
     );
   }
@@ -146,17 +163,38 @@ export async function updateScreen(
   data: Partial<ScreenMasterData>,
   userId?: number
 ): Promise<void> {
+  let validModuleId = data.moduleId;
+  if (!validModuleId && data.departmentMasterId) {
+    try {
+      const allModules = await getModules();
+      const firstMod = allModules.find((m) => m.departmentMasterId === data.departmentMasterId);
+      if (firstMod) validModuleId = firstMod.moduleId;
+    } catch (e) {
+      const t = await getTranslations('screenAccess');
+      logError(t('screenManagement.screens.messages.fetchModulesError'), {
+        error: e instanceof Error ? e : undefined,
+      });
+    }
+  }
+
   const payload = {
     ...data,
     screenMasterId: id,
     screenId: id,
     id: id,
-    moduleId: data.moduleId ?? null,
-    moduleMasterId: data.moduleId ?? null,
-    departmentMasterId: data.departmentMasterId ?? null,
-    departmentId: data.departmentMasterId ?? null,
+    moduleId: validModuleId ?? 0,
+    moduleMasterId: validModuleId ?? 0,
+    departmentMasterId: data.departmentMasterId ?? 0,
+    departmentId: data.departmentMasterId ?? 0,
     displayOrder: Number(data.displayOrder ?? 0),
     screenNameLocal: data.screenNameLocal || data.screenName,
+    isActive: data.isActive,
+    IsActive: data.isActive,
+    isStatus: data.isActive,
+    status: data.isActive ? 'Active' : 'Inactive',
+    Status: data.isActive ? 'Active' : 'Inactive',
+    isMenu: data.isMenu,
+    IsMenu: data.isMenu,
     updatedBy: userId,
   };
 
@@ -167,7 +205,7 @@ export async function updateScreen(
   if (!response.success) {
     throw new ApiError(
       response.statusCode ?? 500,
-      response.error || 'errors.apiConnection.updateScreenFailed',
+      'screenManagement.screens.messages.updateError',
       'Update screen failed'
     );
   }
@@ -180,7 +218,7 @@ export async function deleteScreen(id: number): Promise<string> {
   if (!response.success) {
     throw new ApiError(
       response.statusCode ?? 500,
-      response.error || 'errors.apiConnection.deleteScreenFailed',
+      'screenManagement.screens.messages.deleteError',
       'Delete screen failed'
     );
   }

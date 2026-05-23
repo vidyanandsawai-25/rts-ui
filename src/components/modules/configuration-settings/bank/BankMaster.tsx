@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useCallback, useTransition } from 'react';
+import { AlertCircle } from 'lucide-react';
 
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
@@ -11,6 +12,7 @@ import type { BankMasterData } from '@/types/bank-master.types';
 import { useBankPagination } from '@/hooks/configuration-settings/bank/useBankPagination';
 import { useBankSearch } from '@/hooks/configuration-settings/bank/useBankSearch';
 import { useBankDelete } from '@/hooks/configuration-settings/bank/useBankDelete';
+import { usePermissions } from '@/hooks/usePermissions';
 
 import { getBankColumns, type BankMasterTableRow } from './BankColumns';
 import { BankMasterHeader } from './components/BankMasterHeader';
@@ -27,6 +29,8 @@ interface BankMasterProps {
     activeCount: number;
     uniqueStates: string[];
   };
+  /** Specific error message from server — shown inline instead of triggering the error boundary */
+  errorMessage?: string;
 }
 
 export function BankMaster({
@@ -36,6 +40,7 @@ export function BankMaster({
   totalCount,
   totalPages,
   statsData,
+  errorMessage,
 }: BankMasterProps) {
   const t = useTranslations('bankMaster');
   const tCommon = useTranslations('common');
@@ -44,11 +49,10 @@ export function BankMaster({
 
   const [isPending, startTransition] = useTransition();
 
-    const { search, currentSearchTerm, handleSearchChange } =
-    useBankSearch({
-      locale,
-      startTransition,
-    });
+  const { search, currentSearchTerm, handleSearchChange } = useBankSearch({
+    locale,
+    startTransition,
+  });
 
   const { changePage, handlePageSizeChange } = useBankPagination({
     pageNumber,
@@ -61,7 +65,6 @@ export function BankMaster({
   });
 
   const columns = useMemo(() => getBankColumns(t, tCommon), [t, tCommon]);
-
 
   const handleAdd = useCallback(() => {
     startTransition(() => {
@@ -83,22 +86,35 @@ export function BankMaster({
     [locale, router, startTransition]
   );
 
+  const { canEdit, canDelete, haveFullAccess } = usePermissions('BANK_MASTER');
+
   const renderActions = useCallback(
     (row: BankMasterTableRow) => (
       <div className="flex items-center gap-1">
-        <EditButton onClick={() => handleEdit(row)} />
-        <DeleteButton onClick={() => handleDelete(row)} />
+        {(canEdit || haveFullAccess) && <EditButton onClick={() => handleEdit(row)} />}
+        {(canDelete || haveFullAccess) && <DeleteButton onClick={() => handleDelete(row)} />}
       </div>
     ),
-    [handleEdit, handleDelete]
+    [handleEdit, handleDelete, canEdit, canDelete, haveFullAccess]
   );
 
   return (
     <PageContainer>
       <div className="space-y-4">
+        {errorMessage && (
+          <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+            <AlertCircle className="h-5 w-5 mt-0.5 shrink-0 text-red-500" />
+            <div>
+              <p className="text-sm font-semibold">
+                {t('error.title')}
+              </p>
+              <p className="text-sm mt-0.5">{errorMessage}</p>
+            </div>
+          </div>
+        )}
         <BankMasterHeader
           t={t}
-          onAdd={handleAdd}
+          onAdd={haveFullAccess ? handleAdd : undefined}
           search={search}
           onSearchChange={handleSearchChange}
         />

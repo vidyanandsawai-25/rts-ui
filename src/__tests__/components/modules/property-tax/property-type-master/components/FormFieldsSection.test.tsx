@@ -39,15 +39,13 @@ describe("FormFieldsSection", () => {
     expect(screen.getByText("form.fields.propertyDescription.label")).toBeInTheDocument();
     expect(screen.getByPlaceholderText("form.fields.propertyDescription.placeholder")).toBeInTheDocument();
 
-    expect(screen.getByText("form.fields.type.label")).toBeInTheDocument();
-    expect(screen.getByRole("combobox", { name: "form.fields.type.label" })).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: /form\.fields\.type\.label/i })).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: /form\.fields\.category\.label/i })).toBeInTheDocument();
 
-    expect(screen.getByText("form.fields.propertyTypeGroup.label")).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("form.fields.propertyTypeGroup.placeholder")).toBeInTheDocument();
+    expect(screen.queryByText("form.fields.propertyTypeGroup.label")).not.toBeInTheDocument();
+    expect(screen.queryByPlaceholderText("form.fields.propertyTypeGroup.placeholder")).not.toBeInTheDocument();
 
-    expect(screen.getByText("form.fields.category.label")).toBeInTheDocument();
-    
-    expect(screen.getByText("form.fields.searchSequence.label")).toBeInTheDocument();
+    expect(screen.getByLabelText("form.fields.searchSequence.label")).toBeInTheDocument();
   });
 
   it("calls handleChange when input values change", () => {

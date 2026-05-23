@@ -148,7 +148,7 @@ describe('useFloorDataHandlers', () => {
 
     it('should prevent double-click race condition', async () => {
       vi.useFakeTimers();
-      
+
       vi.mocked(submitFloorSubmissionNoRedirectAction).mockImplementation(
         () => new Promise((resolve) => setTimeout(() => resolve({ success: true, data: {} }), 100))
       );
@@ -174,7 +174,7 @@ describe('useFloorDataHandlers', () => {
 
       // Should only be called once
       expect(vi.mocked(submitFloorSubmissionNoRedirectAction)).toHaveBeenCalledTimes(1);
-      
+
       vi.useRealTimers();
     });
 
@@ -306,7 +306,7 @@ describe('useFloorDataHandlers', () => {
 
     it('should prevent deleting the same floor twice', async () => {
       vi.useFakeTimers();
-      
+
       vi.mocked(deleteFloorSubmissionNoRedirectAction).mockImplementation(
         () => new Promise((resolve) => setTimeout(() => resolve({ success: true }), 100))
       );
@@ -335,7 +335,7 @@ describe('useFloorDataHandlers', () => {
 
       // Should only be called once
       expect(vi.mocked(deleteFloorSubmissionNoRedirectAction)).toHaveBeenCalledTimes(1);
-      
+
       vi.useRealTimers();
     });
   });
@@ -392,7 +392,7 @@ describe('useFloorDataHandlers', () => {
   describe('isSaving state', () => {
     it('should track saving state correctly', async () => {
       vi.useFakeTimers();
-      
+
       vi.mocked(submitFloorSubmissionNoRedirectAction).mockImplementation(
         () => new Promise((resolve) => setTimeout(() => resolve({ success: true, data: {} }), 50))
       );
@@ -415,7 +415,7 @@ describe('useFloorDataHandlers', () => {
       // After completion, isSaving should be false
       expect(result.current.isSaving).toBe(false);
       expect(testParams.setIsAddingNewFloor).toHaveBeenCalledWith(false);
-      
+
       vi.useRealTimers();
     });
   });

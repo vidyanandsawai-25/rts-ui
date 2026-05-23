@@ -20,6 +20,7 @@ export const RenterSection: React.FC<RenterSectionProps> = ({
           <SearchSelect
             id="floor-renter"
             name="renter"
+            menuPlacement="top"
             options={[
               { label: t('floor.no'), value: 'No' },
               { label: t('floor.yes'), value: 'Yes' },
