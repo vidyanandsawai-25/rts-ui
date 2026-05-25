@@ -28,15 +28,17 @@ export function WaterConnectionToolbar() {
   const currentSearchTerm = searchParams.get("q") ?? "";
   const [search, setSearch] = useState<string>(currentSearchTerm);
 
-  // Keep refs updated every render so the timer callback always has latest values
+
+  // Keep refs updated after render so the timer callback always has latest values
   const pathnameRef = useRef(pathname);
-  pathnameRef.current = pathname;
-
   const searchParamsRef = useRef(searchParams);
-  searchParamsRef.current = searchParams;
-
   const currentSearchTermRef = useRef(currentSearchTerm);
-  currentSearchTermRef.current = currentSearchTerm;
+
+  useEffect(() => {
+    pathnameRef.current = pathname;
+    searchParamsRef.current = searchParams;
+    currentSearchTermRef.current = currentSearchTerm;
+  }, [pathname, searchParams, currentSearchTerm]);
 
   // Sync the input when the URL q param changes externally
   // (tab switch, browser back/forward, direct URL change)
