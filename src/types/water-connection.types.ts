@@ -44,7 +44,6 @@ export interface TapTypeFormModel {
 export interface TapSize {
   [key: string]: unknown;
   waterConnectionSizeId: number;
-  sizeCode: string;
   sizeName: string;
   unit: string;
   displayLabel: string;
@@ -53,7 +52,6 @@ export interface TapSize {
 
 export interface TapSizeFormModel {
   waterConnectionSizeId?: number;
-  sizeCode?: string;
   sizeName: string;
   unit: string;
   isActive: boolean;

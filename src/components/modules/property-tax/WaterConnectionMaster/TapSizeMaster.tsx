@@ -105,7 +105,12 @@ export function TapSizeMaster({ data }: Readonly<TapSizeMasterProps>) {
             {tCommon("table.showing")} {start} {tCommon("table.to")} {end}{" "}
             {tCommon("table.of")} {totalCount}
           </span>
+          <label htmlFor="tap-size-page-size" className="text-sm text-gray-700 mr-2">
+            {tCommon("table.rowsPerPage")}
+          </label>
           <select
+            id="tap-size-page-size"
+            aria-label={tCommon("table.rowsPerPage")}
             value={String(pageSize)}
             onChange={(e) =>
               router.push(buildUrl(1, Number(e.target.value), currentSearchTerm))

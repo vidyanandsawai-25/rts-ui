@@ -16,8 +16,12 @@ import type {
 ============================================================ */
 
 function isTapStatusShape(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && "id" in value && "statusName" in value;
+  if (typeof value !== "object" || value === null) return false;
+  const obj = value as Record<string, unknown>;
+  const hasId = "id" in obj || "waterConnectionStatusId" in obj || "statusId" in obj;
+  return hasId && "statusName" in obj;
 }
+
 
 function normalizeTapStatus(data: Record<string, unknown>): TapStatus {
   const id = Number(data.id ?? data.waterConnectionStatusId ?? data.statusId ?? 0);
@@ -53,7 +57,7 @@ function normalizeTapSize(data: Record<string, unknown>): TapSize {
   const unit = String(data.connectionSizeUnit ?? data.unit ?? "").trim();
   return {
     waterConnectionSizeId: Number.isFinite(id) ? id : 0,
-    sizeCode: String(data.sizeCode ?? "").trim(),
+    // sizeCode removed
     sizeName,
     unit,
     displayLabel: String(data.displayLabel ?? (sizeName && unit ? `${sizeName} ${unit}` : sizeName)).trim(),
@@ -281,7 +285,7 @@ export async function createTapSize(
   userId: number
 ): Promise<TapSize> {
   const response = await apiClient.post<TapSize>("/WaterConnectionSize", {
-    sizeCode: data.sizeCode ?? "",
+    // sizeCode removed
     ConnectionSize: data.sizeName,
     ConnectionSizeUnit: data.unit,
     IsActive: data.isActive,
@@ -291,7 +295,7 @@ export async function createTapSize(
     throw new ApiError(response.statusCode ?? 500, response.error ?? "Failed to create", "createTapSize");
   }
   if (!response.data) {
-    return { waterConnectionSizeId: 0, sizeCode: data.sizeCode ?? "", sizeName: data.sizeName, unit: data.unit, displayLabel: `${data.sizeName} ${data.unit}`.trim(), isActive: data.isActive };
+    return { waterConnectionSizeId: 0, sizeName: data.sizeName, unit: data.unit, displayLabel: `${data.sizeName} ${data.unit}`.trim(), isActive: data.isActive };
   }
   return normalizeTapSize(response.data as unknown as Record<string, unknown>);
 }
@@ -304,7 +308,7 @@ export async function updateTapSize(
   const response = await apiClient.put<TapSize>(
     `/WaterConnectionSize/${encodeURIComponent(String(id))}`,
     {
-      sizeCode: data.sizeCode ?? "",
+      // sizeCode removed
       ConnectionSize: data.sizeName,
       ConnectionSizeUnit: data.unit,
       IsActive: data.isActive,
@@ -315,7 +319,7 @@ export async function updateTapSize(
     throw new ApiError(response.statusCode ?? 500, response.error ?? "Failed to update", "updateTapSize");
   }
   if (!response.data) {
-    return { waterConnectionSizeId: id, sizeCode: data.sizeCode ?? "", sizeName: data.sizeName, unit: data.unit, displayLabel: `${data.sizeName} ${data.unit}`.trim(), isActive: data.isActive };
+    return { waterConnectionSizeId: id, sizeName: data.sizeName, unit: data.unit, displayLabel: `${data.sizeName} ${data.unit}`.trim(), isActive: data.isActive };
   }
   return normalizeTapSize(response.data as unknown as Record<string, unknown>);
 }
