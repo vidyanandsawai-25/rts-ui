@@ -52,10 +52,11 @@ export default getRequestConfig(async ({ locale }) => {
     paymentModeMasterMessages,
     waterConnectionMessages,
     waterConnectionMasterMessages,
+    commonDetailsUpdateMessages,
     modulesMessages,
    
-    commonDetailsUpdateMessages,
-    modulesMessages,  
+    
+     
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/dashboard.json`).then((m) => m.default),
@@ -110,10 +111,10 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/waterconnection.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),    
-    import(`./locales/${validatedLocale}/commonDetailsUpdate.json`)
+      import(`./locales/${validatedLocale}/waterConnectionMaster.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
-      import(`./locales/${validatedLocale}/waterConnectionMaster.json`)
+       import(`./locales/${validatedLocale}/commonDetailsUpdate.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
@@ -159,10 +160,10 @@ export default getRequestConfig(async ({ locale }) => {
       paymentModeMaster: paymentModeMasterMessages,
       waterConnection: waterConnectionMessages?.waterConnection || waterConnectionMessages,
       waterConnectionMaster: waterConnectionMasterMessages.waterConnectionMaster,
+      commonDetailsUpdate: commonDetailsUpdateMessages?.commonDetailsUpdate || commonDetailsUpdateMessages,
       modules: modulesMessages,
       
-      commonDetailsUpdate: commonDetailsUpdateMessages?.commonDetailsUpdate || commonDetailsUpdateMessages,
-      modules: modulesMessages,    
+         
     },
   };
 });
