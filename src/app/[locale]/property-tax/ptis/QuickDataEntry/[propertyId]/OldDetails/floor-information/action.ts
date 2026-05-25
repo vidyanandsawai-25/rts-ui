@@ -21,7 +21,7 @@ import {
     OldFloorDetail,
     OldFloorDetailsResponse,
     SaveOldFloorDetailPayload
-} from "@/types/property-old-details.types";
+} from "@/types/OldDetails/property-old-details.types";
 import { revalidatePath } from "next/cache";
 
 import { getTranslations } from "next-intl/server";

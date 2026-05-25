@@ -7,7 +7,7 @@ import { useLoading } from '@/hooks/useLoading';
 import { societyValidations, validateForm, hasErrors } from "@/lib/utils/validation";
 import { updatePropertySocietyDetailsAction } from "@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Society/action";
 import { SocietyFormProps, UpdatePropertySocietyDetailsDto } from "@/types/property-society-details.types";
-import { societyValidators, propertyValidators } from '@/lib/utils/kyc-validation.constants';
+import { societyValidators, propertyValidators, kycValidators } from '@/lib/utils/kyc-validation.constants';
 
 import { useSocietyChanges } from '@/hooks/useSocietyChanges';
 import { useSocietyFormState } from '@/hooks/useSocietyFormState'; 
@@ -15,6 +15,9 @@ import { useSocietyFormState } from '@/hooks/useSocietyFormState';
 const getMobileErrorMessage = (value: string, t: (key: string) => string): string => {
     const digits = value.replace(/\D/g, '');
     if (digits.length === 0) return '';
+    if (kycValidators.hasRepeatedSequence(digits, 5)) {
+        return t('society.validation.invalidRepeatedSequence') || 'Repeated number sequences are not allowed.';
+    }
     if (!/^[6-9]/.test(digits)) {
         return t('society.validation.invalidMobileStart') || 'Mobile number must start with 6 to 9.';
     }
