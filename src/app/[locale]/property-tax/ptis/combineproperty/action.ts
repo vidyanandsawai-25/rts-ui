@@ -131,7 +131,7 @@ export async function createCombinePropertyAction(
 
     // Revalidate all locale variants of the combine property page
     for (const locale of locales) {
-      revalidatePath(`/${locale}/property-tax/combineproperty`, "page");
+      revalidatePath(`/${locale}/property-tax/ptis/combineproperty`, "page");
     }
 
     const resultData = result as { message?: string; items?: { message?: string } };

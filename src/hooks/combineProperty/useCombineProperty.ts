@@ -2,7 +2,7 @@ import { useCallback, useState, useTransition, useMemo } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { CombinePropertyItem, PropertyCombineDetails } from '@/types/combine-property.types';
-import { createCombinePropertyAction, fetchPropertyCombineDetailsAction } from '@/app/[locale]/property-tax/combineproperty/action';
+import { createCombinePropertyAction, fetchPropertyCombineDetailsAction } from '@/app/[locale]/property-tax/ptis/combineproperty/action';
 
 export type SelectionMethod = 'range' | 'individual';
 
@@ -85,6 +85,7 @@ export function useCombinePropertyForm({
       buildUrl({
         basePropertyId: String(selected.id),
         wardId: String(selected.wardId),
+        wardNo: selected.wardNo,
         propertyNo: selected.propertyNo,
         from: undefined,
         to: undefined,
@@ -150,6 +151,7 @@ export function useCombinePropertyForm({
       buildUrl({
         basePropertyId: undefined,
         wardId: undefined,
+        wardNo: undefined,
         propertyNo: undefined,
         from: undefined,
         to: undefined,

@@ -23,6 +23,7 @@ interface CombinePropertyFormProps {
   subPropertyList: CombinePropertyItem[];
   selectedBasePropertyId?: string;
   selectedWardId?: string;
+  selectedWardNo?: string;
   selectedPropertyNo?: string;
 }
 
@@ -44,6 +45,7 @@ export default function CombinePropertyForm({
   subPropertyList,
   selectedBasePropertyId,
   selectedWardId,
+  selectedWardNo,
   selectedPropertyNo,
 }: CombinePropertyFormProps) {
   const t = useTranslations('combineProperty');
@@ -78,6 +80,7 @@ export default function CombinePropertyForm({
     subPropertyList,
     selectedBasePropertyId,
     selectedWardId,
+    selectedWardNo,
     selectedPropertyNo,
     t,
   });
@@ -114,9 +117,16 @@ export default function CombinePropertyForm({
           <h2 id="drawer-title" className="text-sm font-bold text-gray-900 leading-tight">
             {t('title')}
           </h2>
-          {selectedPropertyNo && (
+          {selectedWardNo && (
+            // eslint-disable-next-line i18next/no-literal-string
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 border border-blue-200 text-[10px] font-semibold text-blue-700">
-              {selectedPropertyNo}
+              Ward: {selectedWardNo}
+            </span>
+          )}
+          {selectedPropertyNo && (
+            // eslint-disable-next-line i18next/no-literal-string
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 border border-blue-200 text-[10px] font-semibold text-blue-700">
+              Property: {selectedPropertyNo}
             </span>
           )}
         </div>
