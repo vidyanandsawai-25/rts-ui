@@ -10,6 +10,7 @@ export interface WingSummary {
   wingId: number;
   wingNo?: string;
   societyDetailId: number;
+  [key: string]: unknown;
 }
 
 interface GetWingColumnsParams {

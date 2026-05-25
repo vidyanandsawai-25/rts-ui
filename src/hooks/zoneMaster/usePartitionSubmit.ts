@@ -1,0 +1,192 @@
+import { useCallback } from "react";
+import { useTranslations } from "next-intl";
+import { toast } from "sonner";
+import { PartitionFormState, PartitionFormErrors } from "@/types/partition-form.types";
+import { WardItem } from "@/types/wardMaster.types";
+import { ZonePropertyItem } from "@/types/zoneProperty.types";
+import { WingItem } from "@/types/wing.types";
+import { Floor } from "@/types/floor.types";
+import { BulkPropertyItem } from "@/types/property-bulk.types";
+import { generateBuildingStructureAction, createBulkBuildingPropertiesAction } from "@/app/[locale]/property-tax/zone-master/actions";
+
+interface UsePartitionSubmitProps {
+  form: PartitionFormState;
+  selectedWard: WardItem | null;
+  selectedProperty: ZonePropertyItem | null;
+  wings: WingItem[];
+  floors: Floor[];
+  validate: (data: PartitionFormState) => { valid: boolean; errors: PartitionFormErrors };
+  setLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  onSuccess?: () => void;
+  onClose: () => void;
+  showAddWingForm: boolean;
+  newWingId: number | null;
+  newWingName: string;
+  handleSaveWing: (errors: PartitionFormErrors, setErrors: React.Dispatch<React.SetStateAction<PartitionFormErrors>>) => Promise<void>;
+}
+
+export function usePartitionSubmit({
+  form,
+  selectedWard,
+  selectedProperty,
+  wings,
+  floors,
+  validate,
+  setLoading,
+  onSuccess,
+  onClose,
+  showAddWingForm,
+  newWingId,
+  newWingName,
+  handleSaveWing,
+}: UsePartitionSubmitProps) {
+  const t = useTranslations("zoneMaster");
+
+  const handleSubmit = useCallback(async (errors: PartitionFormErrors, setErrors: React.Dispatch<React.SetStateAction<PartitionFormErrors>>) => {
+    // If Add Wing form is open, use that logic instead
+    if (showAddWingForm) {
+      if (!newWingId || !newWingName) {
+        toast.warning(t("partitionForm.wing.placeholders.wingLetter"));
+        return;
+      }
+      await handleSaveWing(errors, setErrors);
+      return;
+    }
+
+    const validationResult = validate(form);
+    if (!validationResult.valid) {
+      setErrors(validationResult.errors);
+      toast.error(t("error.fixValidation"));
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Handle wing partition creation
+      if (form.partitionType === "wing" && form.createNewWing) {
+        if (!selectedWard?.id || !selectedProperty?.propertyNo) {
+          toast.error("Ward ID and Property No are required");
+          setLoading(false);
+          return;
+        }
+
+        const selectedWing = wings.find(w => w.wingNo === form.wingLetter);
+        if (!selectedWing) {
+          toast.error("Invalid wing selection");
+          setLoading(false);
+          return;
+        }
+
+        const fromFloorData = floors.find(f => f.floorCode === form.fromFloor);
+        const toFloorData = floors.find(f => f.floorCode === form.toFloor);
+        
+        if (!fromFloorData || !toFloorData) {
+          toast.error("Invalid floor selection");
+          setLoading(false);
+          return;
+        }
+
+        const noOfFlatOnOneFloor = parseInt(form.noOfFlatOnOneFloor, 10);
+        const flatStart = parseInt(form.flatStart, 10);
+        const incrementedBy = parseInt(form.incrementedBy, 10);
+
+        if (isNaN(noOfFlatOnOneFloor) || isNaN(flatStart) || isNaN(incrementedBy)) {
+          toast.error("Invalid numeric values in form fields");
+          setLoading(false);
+          return;
+        }
+
+        const payload = {
+          wardId: selectedWard.id,
+          propertyNo: selectedProperty.propertyNo,
+          wingId: selectedWing.id,
+          fromFloor: form.fromFloor.trim(),
+          toFloor: form.toFloor.trim(),
+          noOfFlatOnOneFloor,
+          flatStart,
+          incrementedBy,
+          prifix: form.prefix?.trim() || undefined,
+          generationType: form.generationType.trim(),
+        };
+
+        console.log("[Submit] Payload:", payload);
+
+        const result = await generateBuildingStructureAction(payload);
+        
+        if (result.success) {
+          toast.success(result.message || t("partitionMessages.createSuccess"));
+          onSuccess?.();
+          onClose();
+        } else {
+          toast.error(result.error || t("partitionMessages.createError"));
+        }
+      } else {
+        // Handle bulk partition creation for Non-Apartment Categories
+        if (!selectedWard?.id || !selectedProperty) {
+          toast.error("Ward and Property are required");
+          setLoading(false);
+          return;
+        }
+
+        if (!selectedProperty.taxZoneId || !selectedProperty.propertyTypeId || !selectedProperty.categoryId) {
+          toast.error("Missing required property configuration: taxZoneId, propertyTypeId, or categoryId");
+          setLoading(false);
+          return;
+        }
+
+        const fromPartition = parseInt(form.fromPartition, 10);
+        const toPartition = parseInt(form.toPartition, 10);
+
+        if (isNaN(fromPartition) || isNaN(toPartition)) {
+          toast.error("Invalid partition range");
+          setLoading(false);
+          return;
+        }
+
+        const currentDate = new Date().toISOString();
+        const bulkPayload: BulkPropertyItem[] = [];
+
+        for (let i = fromPartition; i <= toPartition; i++) {
+          bulkPayload.push({
+            taxZoneId: selectedProperty.taxZoneId,
+            wardId: selectedWard.id,
+            propertyNo: selectedProperty.propertyNo,
+            propertyTypeId: selectedProperty.propertyTypeId,
+            categoryId: selectedProperty.categoryId,
+            partitionNo: String(i),
+            flatOrShopNo: "",
+            flatOrShopNoEnglish: "",
+            address: selectedProperty.address || "",
+            addressEnglish: selectedProperty.addressEnglish || "",
+            location: selectedProperty.location || "",
+            locationEnglish: selectedProperty.locationEnglish || "",
+            createdBy: 1,
+            createdDate: currentDate,
+          });
+        }
+
+        console.log("[Submit] Bulk Partition Payload:", bulkPayload);
+
+        const result = await createBulkBuildingPropertiesAction(bulkPayload);
+        
+        if (result.success) {
+          const successCount = result.data?.successCount ?? bulkPayload.length;
+          toast.success(t("partitionMessages.bulkCreateSuccess", { count: successCount }));
+          onSuccess?.();
+          onClose();
+        } else {
+          toast.error(result.error || t("partitionMessages.createError"));
+        }
+      }
+    } catch (error) {
+      console.error("Failed to create partition:", error);
+      toast.error(t("partitionMessages.createError"));
+    } finally {
+      setLoading(false);
+    }
+  }, [form, selectedWard, selectedProperty, wings, floors, validate, setLoading, onSuccess, onClose, showAddWingForm, newWingId, newWingName, handleSaveWing, t]);
+
+  return {
+    handleSubmit,
+  };
+}
