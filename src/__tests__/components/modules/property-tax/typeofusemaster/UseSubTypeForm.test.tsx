@@ -244,7 +244,7 @@ describe("UseSubTypeForm", () => {
     });
 
     it("should accept sequence at maximum value (999)", async () => {
-      mockCreateSubType.mockResolvedValue(undefined);
+      mockCreateSubType.mockResolvedValue({ success: true });
 
       const { container } = renderWithIntl(
         <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} />
@@ -271,7 +271,7 @@ describe("UseSubTypeForm", () => {
     });
 
     it("should reject sequence above maximum (1000) by input restriction", async () => {
-      mockCreateSubType.mockResolvedValue(undefined);
+      mockCreateSubType.mockResolvedValue({ success: true });
       
       const { container } = renderWithIntl(
         <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} />
@@ -302,7 +302,7 @@ describe("UseSubTypeForm", () => {
     });
 
     it("should create sub-type successfully with valid data", async () => {
-      mockCreateSubType.mockResolvedValue(undefined);
+      mockCreateSubType.mockResolvedValue({ success: true });
 
       const { container } = renderWithIntl(
         <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} />
@@ -330,7 +330,7 @@ describe("UseSubTypeForm", () => {
     });
 
     it("should handle create error", async () => {
-      mockCreateSubType.mockRejectedValue(new Error("Create failed"));
+      mockCreateSubType.mockResolvedValue({ success: false, message: "Create failed" });
 
       const { container } = renderWithIntl(
         <UseSubTypeForm id={null} typeInfo={typeInfo} allSubTypes={allSubTypes} />
@@ -386,7 +386,7 @@ describe("UseSubTypeForm", () => {
     });
 
     it("should update sub-type successfully", async () => {
-      mockUpdateSubType.mockResolvedValue(undefined);
+      mockUpdateSubType.mockResolvedValue({ success: true });
 
       const { container } = renderWithIntl(
         <UseSubTypeForm

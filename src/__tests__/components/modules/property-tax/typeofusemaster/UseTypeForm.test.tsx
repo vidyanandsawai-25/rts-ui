@@ -302,7 +302,7 @@ describe("UseTypeForm", () => {
     });
 
     it("should accept sequence at maximum value (999)", async () => {
-      mockCreateUseType.mockResolvedValue(undefined);
+      mockCreateUseType.mockResolvedValue({ success: true });
 
       const { container } = renderWithIntl(
         <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} />
@@ -335,7 +335,7 @@ describe("UseTypeForm", () => {
     });
 
     it("should reject sequence above maximum (1000) by input restriction", async () => {
-      mockCreateUseType.mockResolvedValue(undefined);
+      mockCreateUseType.mockResolvedValue({ success: true });
       
       const { container } = renderWithIntl(
         <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} />
@@ -371,7 +371,7 @@ describe("UseTypeForm", () => {
     });
 
     it("should create type successfully with valid data", async () => {
-      mockCreateUseType.mockResolvedValue(undefined);
+      mockCreateUseType.mockResolvedValue({ success: true });
 
       const { container } = renderWithIntl(
         <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} />
@@ -415,7 +415,7 @@ describe("UseTypeForm", () => {
     });
 
     it("should handle create error", async () => {
-      mockCreateUseType.mockRejectedValue(new Error("Create failed"));
+      mockCreateUseType.mockResolvedValue({ success: false, message: "Create failed" });
 
       const { container } = renderWithIntl(
         <UseTypeForm id={null} allGroups={allGroups} allTypes={allTypes} />
@@ -482,7 +482,7 @@ describe("UseTypeForm", () => {
     });
 
     it("should update type successfully", async () => {
-      mockUpdateUseType.mockResolvedValue(undefined);
+      mockUpdateUseType.mockResolvedValue({ success: true });
 
       const { container } = renderWithIntl(
         <UseTypeForm
