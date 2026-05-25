@@ -86,7 +86,7 @@ describe('OldTaxationForm Component', () => {
     const plotNoInput = screen.getByPlaceholderText('quickDataEntry.oldDetails.plotNoPlaceholder');
     fireEvent.change(plotNoInput, { target: { value: 'Plot 2' } });
 
-    const updateButton = screen.getByRole('button', { name: /quickDataEntry.property.updateButton/i });
+    const updateButton = screen.getByRole('button', { name: /quickDataEntry.commonbuttonmessages.UpdateChanges/i });
     fireEvent.click(updateButton);
     
     expect(mockConfirm).toHaveBeenCalledTimes(1);
@@ -107,7 +107,7 @@ describe('OldTaxationForm Component', () => {
     const plotNoInput = screen.getByPlaceholderText('quickDataEntry.oldDetails.plotNoPlaceholder');
     fireEvent.change(plotNoInput, { target: { value: 'Plot 2' } });
 
-    const updateButton = screen.getByRole('button', { name: /quickDataEntry.property.updateButton/i });
+    const updateButton = screen.getByRole('button', { name: /quickDataEntry.commonbuttonmessages.UpdateChanges/i });
     fireEvent.click(updateButton);
     
     await waitFor(() => {

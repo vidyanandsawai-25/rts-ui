@@ -96,7 +96,7 @@ describe('TaxationBreakdownForm Component', () => {
     const interestInput = screen.getByDisplayValue('100');
     fireEvent.change(interestInput, { target: { value: '200' } });
 
-    const updateButton = screen.getByRole('button', { name: /quickDataEntry.oldDetails.taxationBreakdown.update/i });
+    const updateButton = screen.getByRole('button', { name: /quickDataEntry.commonbuttonmessages.UpdateChanges/i });
     fireEvent.click(updateButton);
     
     expect(mockConfirm).toHaveBeenCalledTimes(1);
@@ -114,7 +114,7 @@ describe('TaxationBreakdownForm Component', () => {
     const interestInput = screen.getByDisplayValue('100');
     fireEvent.change(interestInput, { target: { value: '200' } });
 
-    const updateButton = screen.getByRole('button', { name: /quickDataEntry.oldDetails.taxationBreakdown.update/i });
+    const updateButton = screen.getByRole('button', { name: /quickDataEntry.commonbuttonmessages.UpdateChanges/i });
     fireEvent.click(updateButton);
     
     await waitFor(() => {
