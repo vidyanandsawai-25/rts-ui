@@ -51,7 +51,6 @@ export default function FloorInformationForm({
   });
 
   // Transformation helpers for SearchSelect
-  // Transformation helpers for SearchSelect
   const initialFloorOptions = useMemo(() => floorOptions.map(opt => ({ label: `${opt.floorCode} - ${opt.description}`, value: String(opt.id) })), [floorOptions]);
   const initialSubFloorOptions = useMemo(() => subFloorOptions.map(opt => ({ label: `${opt.subFloorCode} - ${opt.description}`, value: String(opt.id) })), [subFloorOptions]);
   const initialConstructionTypeOptions = useMemo(() => constructionTypeOptions.map(opt => ({ label: `${opt.constructionCode} - ${opt.description}`, value: String(opt.id) })), [constructionTypeOptions]);
@@ -215,20 +214,6 @@ export default function FloorInformationForm({
                 <span className="text-xs text-red-500">{errors.oldCarpetAreaSqFeet}</span>
               )}
             </div>
-
-            {/* Area (Sq Ft) - Read Only
-            <div className="space-y-1.5">
-              <Label className="text-sm font-bold text-blue-900">
-                {t('oldDetails.areaSqFt')}
-              </Label>
-              <Input
-                type="number"
-                className="h-9 border-slate-200 bg-slate-50 text-slate-500 cursor-not-allowed"
-                placeholder="0"
-                value={formData.oldAreaSqFeet || ''}
-                readOnly
-              />
-            </div> */}
 
             {/* Area (Sq M) - Read Only */}
             <div className="space-y-1.5">

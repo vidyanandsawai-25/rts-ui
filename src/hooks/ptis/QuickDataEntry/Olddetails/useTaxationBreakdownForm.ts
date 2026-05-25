@@ -24,7 +24,6 @@ export function useTaxationBreakdownForm(initialData: OldTaxesDetails | null) {
     interest: yearData?.interest || 0,
     taxTotal: yearData?.taxTotal || 0,
     netTotal: yearData?.netTotal || 0,
-    remark: yearData?.remark || "",
     financeYearId: yearData?.financeYearId || 0,
     yearCode: yearData?.yearCode || null,
     rVorCV: yearData?.rVorCV || "",
@@ -99,7 +98,6 @@ export function useTaxationBreakdownForm(initialData: OldTaxesDetails | null) {
             taxTotal: Number(formData.taxTotal) || 0,
             interest: Number(formData.interest) || 0,
             netTotal: Number(formData.netTotal) || 0,
-            remark: formData.remark,
             taxes: taxes.map(t => ({
               taxId: t.taxId,
               taxName: t.taxName,
@@ -144,10 +142,9 @@ export function useTaxationBreakdownForm(initialData: OldTaxesDetails | null) {
     return (orig?.taxAmount || 0) !== (t.taxAmount || 0);
   });
 
-  const isChanged = 
+  const isChanged =
     formData.year !== (yearData ? String(yearData.year || "") : "") ||
     Number(formData.interest || 0) !== (yearData?.interest || 0) ||
-    formData.remark !== (yearData?.remark || "") ||
     formData.rVorCV !== (yearData?.rVorCV || "") ||
     Number(formData.rVorCVValue || 0) !== (yearData?.rVorCVValue || 0) ||
     isTaxesChanged;

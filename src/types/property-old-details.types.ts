@@ -285,7 +285,6 @@ export interface OldTaxYear {
   taxTotal: number;
   interest: number;
   netTotal: number;
-  remark?: string;
 }
 
 export interface OldTaxesDetails {

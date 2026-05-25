@@ -97,17 +97,6 @@ export default function TaxationBreakdownForm({
           />
         </div>
 
-        {/* Remarks */}
-        <div className="space-y-2">
-          <Label className="text-sm font-semibold text-gray-700 ml-1">{t("remarks")}</Label>
-          <Input
-            type="text"
-            value={formData.remark}
-            onChange={(e) => handleMetaChange('remark', e.target.value)}
-            placeholder={t("remarks")}
-            className="h-11.5 border-[#cbd5e1] hover:border-blue-300 focus:border-blue-400 focus:ring-4 focus:ring-blue-50 rounded-lg transition-all font-medium text-gray-900 px-4"
-          />
-        </div>
       </div>
       <div className="pt-2 mt-5 flex justify-end items-center">
         <Button
