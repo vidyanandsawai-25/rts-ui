@@ -6,7 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 
 import { AddButton, Tabs } from "@/components/common";
 import { SearchInput } from "@/components/common/SearchInput";
-import { sanitizeInput } from "@/lib/utils/security";
+
 
 type TabKey = "tap-status" | "tap-type" | "tap-size";
 
