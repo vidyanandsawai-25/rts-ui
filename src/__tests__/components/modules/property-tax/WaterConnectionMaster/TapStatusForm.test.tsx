@@ -1,13 +1,13 @@
 import { render, screen } from "@testing-library/react";
-import { NextIntlProvider } from "next-intl";
+import { IntlProvider } from "next-intl";
 import { TapStatusForm } from "@/components/modules/property-tax/WaterConnectionMaster/TapStatusForm";
 
 describe("TapStatusForm", () => {
   it("renders without crashing", () => {
     render(
-      <NextIntlProvider locale="en" messages={{}}>
+      <IntlProvider locale="en" messages={{}}>
         <TapStatusForm id={null} />
-      </NextIntlProvider>
+      </IntlProvider>
     );
     expect(screen.getByRole("form")).toBeInTheDocument();
   });
