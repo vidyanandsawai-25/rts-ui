@@ -31,9 +31,9 @@ export const OldTaxDetailsTable: React.FC<OldTaxDetailsTableProps> = ({
           key={yearIdx}
           className="bg-gradient-to-br from-blue-50 via-blue-50 to-blue-50 rounded p-1 shadow-sm border border-blue-200"
         >
-          <div className="flex flex-wrap gap-1">
+          <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-1">
             {/* Year Field */}
-            <div className="w-[8%] relative">
+            <div className="relative">
               <div
                 id={`tax-year-${yearIdx}-label`}
                 className="absolute -top-1.5 left-1 px-0.5 text-sm text-blue-800 bg-blue-50 z-10 leading-none"
@@ -51,7 +51,7 @@ export const OldTaxDetailsTable: React.FC<OldTaxDetailsTableProps> = ({
 
             {/* Dynamic Taxes */}
             {yearData.taxes.map((tax) => (
-              <div key={tax.taxId} className="w-[8%] relative">
+              <div key={tax.taxId} className="relative">
                 <div
                   id={`tax-${yearIdx}-${tax.taxId}-label`}
                   title={tax.taxName}
@@ -69,7 +69,7 @@ export const OldTaxDetailsTable: React.FC<OldTaxDetailsTableProps> = ({
             ))}
 
             {/* Tax Total */}
-            <div className="w-[8%] relative">
+            <div className="relative">
               <div
                 id={`tax-total-${yearIdx}-label`}
                 className="absolute -top-1.5 left-1 px-0.5 text-sm text-blue-800 bg-blue-50 z-10 leading-none"
@@ -85,7 +85,7 @@ export const OldTaxDetailsTable: React.FC<OldTaxDetailsTableProps> = ({
             </div>
 
             {/* Interest */}
-            <div className="w-[8%] relative">
+            <div className="relative">
               <div
                 id={`tax-interest-${yearIdx}-label`}
                 className="absolute -top-1.5 left-1 px-0.5 text-sm text-blue-800 bg-blue-50 z-10 leading-none"
@@ -101,7 +101,7 @@ export const OldTaxDetailsTable: React.FC<OldTaxDetailsTableProps> = ({
             </div>
 
             {/* Net Total */}
-            <div className="w-[8%] relative">
+            <div className="relative">
               <div
                 id={`tax-net-total-${yearIdx}-label`}
                 className="absolute -top-1.5 left-1 px-0.5 text-sm text-blue-800 bg-blue-50 z-10 leading-none"

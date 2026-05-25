@@ -36,3 +36,26 @@ export const validateRoomDetails = (
     errors
   };
 };
+
+/**
+ * Checks if a room's mandatory fields (Room Type, Shape, Area, and Total) are fully filled out.
+ * Returns true if valid/complete, and false if blank, default, or partially configured.
+ */
+export const isRoomComplete = (room: RoomData): boolean => {
+  const roomTypeVal = room.utilities || room.roomType || room.remark;
+  const shapeVal = room.shape;
+  const areaVal = Number(room.area || 0);
+  const totalVal = Number(room.total || 0);
+
+  return !!(
+    roomTypeVal &&
+    roomTypeVal !== "-Select-" &&
+    roomTypeVal.trim() !== "" &&
+    shapeVal &&
+    shapeVal !== "-Select-" &&
+    shapeVal.trim() !== "" &&
+    areaVal > 0 &&
+    totalVal > 0
+  );
+};
+

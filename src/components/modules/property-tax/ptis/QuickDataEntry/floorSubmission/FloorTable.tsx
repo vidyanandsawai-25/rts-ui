@@ -96,6 +96,7 @@ const FloorTable: React.FC<FloorTableProps> = ({
       updateUrlParams({
         floorId: String(floor.id),
         typeOfUseId: getTypeOfUseId(floor) || null,
+        drawer: null,
       });
     });
 

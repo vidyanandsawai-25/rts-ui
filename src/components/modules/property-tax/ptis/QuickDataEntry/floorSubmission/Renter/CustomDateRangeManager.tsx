@@ -49,11 +49,57 @@ export const CustomDateRangeManager = memo(({ formData, setFormData }: CustomDat
     const [hasValidationError, setHasValidationError] = useState(false);
     const [deleteConfirmRangeId, setDeleteConfirmRangeId] = useState<string | null>(null);
 
+    // ─── Touch and Real-time Validation States for Range Form ───────────────
+    const [rangeTouched, setRangeTouched] = useState<Record<string, boolean>>({});
+
+    const markRangeTouched = React.useCallback((field: string) => {
+        setRangeTouched(prev => ({ ...prev, [field]: true }));
+    }, []);
+
     useEffect(() => {
         if (customDateRanges.length === 0 && AGREEMENT_FROM_DATE) {
             setNewRangeData(prev => ({ ...prev, fromDate: AGREEMENT_FROM_DATE }));
         }
     }, [AGREEMENT_FROM_DATE, customDateRanges.length]);
+
+    // Centralized reactive hook for custom date range form inputs
+    useEffect(() => {
+        const isFromEmpty = !newRangeData.fromDate;
+        const isToEmpty = !newRangeData.toDate;
+        const isIncEmpty = !newRangeData.incrementValue;
+
+        // If everything is untouched and empty, hide validation errors
+        if (isFromEmpty && isToEmpty && isIncEmpty && Object.keys(rangeTouched).length === 0) {
+            setDateRangeErrors({ fromDate: '', toDate: '', incrementValue: '', general: '' });
+            setHasValidationError(false);
+            return;
+        }
+
+        const validation = validateDateRange({
+            newRangeData,
+            agreementStart: new Date(AGREEMENT_FROM_DATE),
+            agreementEnd: new Date(AGREEMENT_TO_DATE),
+            existingRanges: customDateRanges
+        });
+
+        const nextErrors: Record<string, string> = { fromDate: '', toDate: '', incrementValue: '', general: '' };
+
+        if (validation.errors.fromDate && rangeTouched.fromDate) {
+            nextErrors.fromDate = validation.errors.fromDate;
+        }
+        if (validation.errors.toDate && rangeTouched.toDate) {
+            nextErrors.toDate = validation.errors.toDate;
+        }
+        if (validation.errors.incrementValue && rangeTouched.incrementValue) {
+            nextErrors.incrementValue = validation.errors.incrementValue;
+        }
+        if (validation.errors.general) {
+            nextErrors.general = validation.errors.general;
+        }
+
+        setDateRangeErrors(nextErrors);
+        setHasValidationError(!!(nextErrors.fromDate || nextErrors.toDate || nextErrors.incrementValue || nextErrors.general));
+    }, [newRangeData, rangeTouched, AGREEMENT_FROM_DATE, AGREEMENT_TO_DATE, customDateRanges]);
 
     const activeRangesTableData = useMemo(() => customDateRanges.map((range: CustomDateRange, index: number) => {
         const { durationMonths, durationTotal } = calculateRangeTotal(range, index, customDateRanges, originalBaseRent);
@@ -70,10 +116,21 @@ export const CustomDateRangeManager = memo(({ formData, setFormData }: CustomDat
     }, [activeRangesTableData, originalBaseRent]);
 
     const handleAddRange = () => {
-        const validation = validateDateRange({ newRangeData, agreementStart: new Date(AGREEMENT_FROM_DATE), agreementEnd: new Date(AGREEMENT_TO_DATE), existingRanges: customDateRanges });
-        setDateRangeErrors(validation.errors as unknown as Record<string, string>);
-        setHasValidationError(!validation.isValid);
-        if (!validation.isValid) return;
+        // Mark all fields as touched to reveal any validation errors immediately
+        setRangeTouched({ fromDate: true, toDate: true, incrementValue: true });
+
+        const validation = validateDateRange({
+            newRangeData,
+            agreementStart: new Date(AGREEMENT_FROM_DATE),
+            agreementEnd: new Date(AGREEMENT_TO_DATE),
+            existingRanges: customDateRanges
+        });
+
+        if (!validation.isValid) {
+            setDateRangeErrors(validation.errors as unknown as Record<string, string>);
+            setHasValidationError(true);
+            return;
+        }
 
         const newRange: CustomDateRange = {
             ...newRangeData,
@@ -88,6 +145,9 @@ export const CustomDateRangeManager = memo(({ formData, setFormData }: CustomDat
             return { ...prev, renterDetails: { ...prev.renterDetails, customDateRanges: updatedRanges } };
         });
         setNewRangeData(EMPTY_RANGE);
+        setRangeTouched({});
+        setDateRangeErrors({ fromDate: '', toDate: '', incrementValue: '', general: '' });
+        setHasValidationError(false);
         toast.success(t('floor.renterSection.add'));
     };
 
@@ -100,7 +160,7 @@ export const CustomDateRangeManager = memo(({ formData, setFormData }: CustomDat
                 </h4>
             </div>
             {dateRangeErrors.general && <div className="bg-red-100 border-2 border-red-500 rounded-lg px-4 py-2 flex items-center gap-3"><AlertTriangle className="w-5 h-5 text-red-600" /><span className="text-xs text-red-800 font-bold">{dateRangeErrors.general}</span></div>}
-            <AddRangeForm newRangeData={newRangeData} setNewRangeData={setNewRangeData} onAdd={handleAddRange} agreementStart={AGREEMENT_FROM_DATE} agreementEnd={AGREEMENT_TO_DATE} errors={dateRangeErrors} hasValidationError={hasValidationError} />
+            <AddRangeForm newRangeData={newRangeData} setNewRangeData={setNewRangeData} onAdd={handleAddRange} agreementStart={AGREEMENT_FROM_DATE} agreementEnd={AGREEMENT_TO_DATE} errors={dateRangeErrors} hasValidationError={hasValidationError} markRangeTouched={markRangeTouched} />
             {customDateRanges.length > 0 && (
                 <div className="space-y-3">
                     <CustomRangesTable data={activeRangesTableData} onDelete={setDeleteConfirmRangeId} />

@@ -1,0 +1,100 @@
+{
+  "commonDetailsUpdate": {
+    "title": "सामान्य विवरण अपडेट करें",
+    "subtitle": "एक साथ हजारों संपत्तियों को सुरक्षित रूप से अपडेट करें",
+    "menu": {
+      "title": "अपडेट के लिए फ़ील्ड चुनें",
+      "searchPlaceholder": "अपडेट प्रकार खोजें..."
+    },
+    "filter": {
+      "title": "संपत्ति फ़िल्टर",
+      "wardNumber": "वार्ड नंबर",
+      "selectWard": "वार्ड चुनें",
+      "fromPropertyNo": "संपत्ति क्र. से",
+      "selectFromPropertyNo": "संपत्ति क्र. से चुनें",
+      "toPropertyNo": "संपत्ति क्र. तक",
+      "selectToPropertyNo": "संपत्ति क्र. तक चुनें",
+      "wing": "विंग",
+      "selectWing": "विंग चुनें",
+      "show": "दिखाएं",
+      "back": "वापस",
+      "clear": "साफ करें"
+    },
+    "preview": {
+      "title": "पूर्वावलोकन सूची",
+      "propertiesLoaded": "संपत्तियां लोड हुईं",
+      "noProperties": "कोई संपत्ति नहीं मिली",
+      "selectFilters": "संपत्तियां लोड करने के लिए फ़िल्टर लागू करें",
+      "loading": "संपत्तियां लोड हो रही हैं...",
+      "selectAll": "सभी चुनें",
+      "property": "संपत्ति",
+      "properties": "संपत्तियां",
+      "selected": "चयनित",
+      "showing": "दिखा रहे हैं",
+      "of": "में से",
+      "entries": "प्रविष्टियां",
+      "searchPlaceholder": "संपत्तियां खोजें..."
+    },
+    "columns": {
+      "wardNo": "वार्ड क्र.",
+      "propertyNo": "संपत्ति क्र.",
+      "partitionNo": "विभाजन क्र.",
+      "currentValueEn": "वर्तमान मूल्य (अंग्रेज़ी)",
+      "currentValueMr": "वर्तमान मूल्य (मराठी)",
+      "currentValuePrefix": "वर्तमान"
+    },
+    "form": {
+      "title": "बल्क अपडेट फॉर्म",
+      "update": "अपडेट करें",
+      "clear": "साफ करें",
+      "updating": "अपडेट हो रहा है...",
+      "selectMenuPrompt": "बाएं पैनल से अपडेट करने के लिए फ़ील्ड चुनें",
+      "noFields": "इस अपडेट प्रकार के लिए कोई फ़ील्ड कॉन्फ़िगर नहीं की गई"
+    },
+    "buttons": {
+      "import": "आयात करें",
+      "export": "निर्यात करें"
+    },
+    "messages": {
+      "fetchMenuFailed": "अपडेट विकल्प लोड करने में विफल",
+      "fetchFieldConfigFailed": "फ़ील्ड कॉन्फ़िगरेशन लोड करने में विफल",
+      "fetchPropertiesFailed": "संपत्तियां लोड करने में विफल",
+      "fetchWardsFailed": "वार्ड लोड करने में विफल",
+      "fetchWingsFailed": "विंग लोड करने में विफल",
+      "wardRequired": "वार्ड आवश्यक है",
+      "fromPropertyRequired": "संपत्ति क्र. से आवश्यक है",
+      "toPropertyRequired": "संपत्ति क्र. तक आवश्यक है",
+      "wingRequired": "विंग आवश्यक है",
+      "updateCodeRequired": "अपडेट प्रकार आवश्यक है",
+      "propertiesRequired": "कृपया कम से कम एक संपत्ति चुनें",
+      "updateSuccess": "संपत्तियां सफलतापूर्वक अपडेट की गईं",
+      "updateFailed": "संपत्तियां अपडेट करने में विफल",
+      "selectProperties": "अपडेट करने के लिए कम से कम एक संपत्ति चुनें",
+      "selectUpdateType": "कृपया अपडेट प्रकार चुनें",
+      "fillRequired": "कृपया सभी आवश्यक फ़ील्ड भरें",
+      "invalidRange": "संपत्ति क्र. से, संपत्ति क्र. तक से कम या बराबर होना चाहिए",
+      "noPropertiesToExport": "निर्यात करने के लिए कोई संपत्ति नहीं",
+      "exportSuccess": "सफलतापूर्वक निर्यात किया गया",
+      "somethingWrong": "कुछ गलत हो गया। कृपया पुनः प्रयास करें।",
+      "configLoadFailed": "कॉन्फ़िगरेशन लोड करने में विफल",
+      "propertiesLoaded": "{count} संपत्तियां सफलतापूर्वक लोड हुईं",
+      "partialUpdate": "{success} संपत्तियां अपडेट हुईं, {failed} विफल",
+      "noPropertiesFound": "चुने गए फ़िल्टर के लिए कोई संपत्ति नहीं मिली"
+    },
+    "status": {
+      "active": "सक्रिय",
+      "inactive": "निष्क्रिय"
+    },
+    "loading": {
+      "message": "लोड हो रहा है...",
+      "description": "कृपया प्रतीक्षा करें"
+    },
+    "error": {
+      "title": "त्रुटि",
+      "description": "पृष्ठ लोड करते समय त्रुटि हुई। कृपया रिफ्रेश करें या सहायता से संपर्क करें।",
+      "errorId": "त्रुटि ID: {id}",
+      "goHome": "होम पर जाएं",
+      "tryAgain": "पुनः प्रयास करें"
+    }
+  }
+}

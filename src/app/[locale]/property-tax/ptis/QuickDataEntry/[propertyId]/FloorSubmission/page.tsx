@@ -155,8 +155,8 @@ export default async function FloorSubmissionPage({
     // ── Floor List (already fetched in Phase 1 if propertyId was known) ─────
     let finalFloorsRaw = initialFloorsRaw;
     if (initialPropertyID && (
-        !knownPropertyId || 
-        hasPropertyKeys || 
+        !knownPropertyId ||
+        hasPropertyKeys ||
         String(knownPropertyId) !== String(initialPropertyID)
     )) {
         finalFloorsRaw = await getFloorSubmissionsByOwnerAction(initialPropertyID);
@@ -192,17 +192,23 @@ export default async function FloorSubmissionPage({
     let effectiveUseId = (typeOfUseId && typeOfUseId !== 'undefined' && typeOfUseId !== 'null') ? typeOfUseId : undefined;
 
     // Ensure subtype list matches the floor's actual usage if editing
+    // BUT prefer the URL typeOfUseId if the user has changed the 'Use' dropdown
     if (initialFloorDetails && typeof initialFloorDetails === 'object') {
-        const floorUseId = (initialFloorDetails as Record<string, unknown>).typeOfUseId;
+        const rawFloor = initialFloorDetails as Record<string, unknown>;
+        const floorUseId = rawFloor.typeOfUseId ?? rawFloor.TypeOfUseId ?? rawFloor.useId;
         if (floorUseId) {
             const floorUseIdStr = String(floorUseId);
-            // Only refetch if different from what we already loaded
-            if (floorUseIdStr !== effectiveUseIdForPrefetch) {
-                effectiveUseId = floorUseIdStr;
-                const refetchedSubTypeResult = await getSubTypeOfUseDataAction(effectiveUseId);
-                subTypeData = checkResult<SubTypeOfUseResponse>(refetchedSubTypeResult, 'Sub-usage types');
-            } else {
-                effectiveUseId = floorUseIdStr;
+
+            // Only fallback to the floor's original Use ID if the URL didn't specify one
+            // (e.g., initial load of the edit form without user interaction)
+            if (!typeOfUseId || typeOfUseId === 'undefined' || typeOfUseId === 'null') {
+                if (floorUseIdStr !== effectiveUseIdForPrefetch) {
+                    effectiveUseId = floorUseIdStr;
+                    const refetchedSubTypeResult = await getSubTypeOfUseDataAction(effectiveUseId);
+                    subTypeData = checkResult<SubTypeOfUseResponse>(refetchedSubTypeResult, 'Sub-usage types');
+                } else {
+                    effectiveUseId = floorUseIdStr;
+                }
             }
         }
     }

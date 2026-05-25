@@ -31,6 +31,7 @@
   },
   "validation": {
     "required": "This field is required",
+    "fieldRequired": "{field} is required",
     "invalidEmail": "Invalid email address",
     "minLength": "Minimum {count} characters required",
     "maxLength": "Maximum {count} characters allowed",
@@ -240,6 +241,8 @@
     "paginationFooter": "Showing {start} <selector/> of {total} entries",
     "showingStart": "Showing {start}",
     "ofTotalEntries": "of {total} entries",
+    "selectAll": "Select all rows",
+    "selectRow": "Select property {id}",
     "actions": {
       "edit": "Edit",
       "delete": "Delete"

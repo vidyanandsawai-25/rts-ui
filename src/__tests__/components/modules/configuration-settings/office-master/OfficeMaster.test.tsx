@@ -34,8 +34,6 @@ const mockData: Office[] = [
     pincode: "123456",
     phone: "1234567890",
     emailId: "test@test.com",
-    officeIncharge: 1,
-    designationMasterId: 1,
     establishedDate: "2024-01-01",
     createdDate: "2024-01-01",
     updatedDate: "2024-01-01",

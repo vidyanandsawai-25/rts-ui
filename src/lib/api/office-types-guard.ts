@@ -81,8 +81,6 @@ export function normalizeOffice(data: Record<string, unknown>): Office {
     pincode: data.pincode != null ? String(data.pincode).trim() : "",
     phone: data.phone != null ? String(data.phone).trim() : "",
     emailId: data.emailId != null ? String(data.emailId).trim() : "",
-    officeIncharge: data.officeIncharge != null ? Number(data.officeIncharge) : null,
-    designationMasterId: data.designationMasterId != null ? Number(data.designationMasterId) : null,
     establishedDate: data.establishedDate != null ? String(data.establishedDate) : null,
     isActive: parseBoolean(data.isActive ?? data.isStatus),
     createdDate: String(data.createdDate ?? "").trim(),

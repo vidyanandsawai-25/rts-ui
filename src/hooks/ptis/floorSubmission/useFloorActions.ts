@@ -66,7 +66,7 @@ export const useFloorActions = (params: {
         sessionStorage.removeItem(`renter_data_${floorIdToClear}`);
         sessionStorage.removeItem('renter_data_new');
         sessionStorage.removeItem('editingFloorForm');
-      } catch (_e) {}
+      } catch (_e) { }
     });
   }, [
     setEditingFloorForm,

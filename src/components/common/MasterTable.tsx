@@ -477,7 +477,7 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
         {hasHeader && (
           <div className="px-4 py-3 border-b rounded-t-xl border-blue-200 bg-[#F8FAFF] flex flex-col md:flex-row md:items-center justify-end gap-4">
             {(headerTitle || headerSubtitle) && (
-              <div>
+              <div className="w-full">
                 {headerTitle && (
                   <h3 className="text-sm font-semibold text-[#1E3A8A]">{headerTitle}</h3>
                 )}

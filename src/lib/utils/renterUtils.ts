@@ -179,6 +179,7 @@ export interface DateRangeValidationInput {
         fromDate: string;
         toDate: string;
         incrementValue: string | number;
+        incrementType?: string;
     };
     agreementStart: Date;
     agreementEnd: Date;
@@ -203,7 +204,7 @@ export const validateDateRange = (input: DateRangeValidationInput): { isValid: b
     let isValid = true;
     let overlapInfo = null;
 
-    const { fromDate, toDate, incrementValue } = input.newRangeData;
+    const { fromDate, toDate, incrementValue, incrementType } = input.newRangeData;
     const fromDateObj = fromDate ? new Date(fromDate) : null;
     const toDateObj = toDate ? new Date(toDate) : null;
 
@@ -218,6 +219,12 @@ export const validateDateRange = (input: DateRangeValidationInput): { isValid: b
         } else if (fromDateObj > input.agreementEnd) {
             errors.fromDate = `Must be on or before Agreement End Date (${input.agreementEnd.toLocaleDateString("en-IN", { day: '2-digit', month: 'short', year: 'numeric' })})`;
             isValid = false;
+        } else {
+            const currentYear = new Date().getFullYear();
+            if (fromDateObj.getFullYear() !== currentYear) {
+                errors.fromDate = `From date must be in the current year (${currentYear})`;
+                isValid = false;
+            }
         }
     }
 
@@ -246,9 +253,29 @@ export const validateDateRange = (input: DateRangeValidationInput): { isValid: b
 
     // Validate Increment Value
     const parsedIncrement = Number(incrementValue);
-    if (!incrementValue || isNaN(parsedIncrement) || !Number.isFinite(parsedIncrement) || parsedIncrement < 1) {
-        errors.incrementValue = 'Value must be at least 1';
+    if (incrementValue === undefined || incrementValue === null || String(incrementValue).trim() === "") {
+        errors.incrementValue = 'Value is required';
         isValid = false;
+    } else if (incrementType === 'Percentage') {
+        const incStr = String(incrementValue).trim();
+        if (/[^0-9]/.test(incStr)) {
+            errors.incrementValue = 'Only numeric values are allowed.';
+            isValid = false;
+        } else if (incStr.length > 3) {
+            errors.incrementValue = 'Maximum 3 digits allowed.';
+            isValid = false;
+        } else {
+            const incVal = Number(incStr);
+            if (incVal < 0 || incVal > 100) {
+                errors.incrementValue = 'Percentage cannot exceed 100.';
+                isValid = false;
+            }
+        }
+    } else {
+        if (!/^\d+(\.\d{1,2})?$/.test(String(incrementValue)) || parsedIncrement <= 0) {
+            errors.incrementValue = 'Must be a positive number with up to 2 decimal places and no positive/negative signs';
+            isValid = false;
+        }
     }
 
     // Check for overlaps

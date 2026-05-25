@@ -59,8 +59,12 @@ export default function CombinePropertyForm({
     selectionMethod,
     selectedCount,
     canProceed,
+    checkedPropertyIds,
+    checkedCount,
     hasDifferentOwners,
     differentOwnerProps,
+    togglePropertyCheck,
+    toggleAllProperties,
     handleBasePropertyChange,
     handleMethodChange,
     handleRangeFromChange,
@@ -79,7 +83,10 @@ export default function CombinePropertyForm({
   });
 
   /* ---- Table Columns (Memoized) ---- */
-  const columns = useMemo(() => getCombinePropertyColumns(t, reviewData), [reviewData, t]);
+  const columns = useMemo(
+    () => getCombinePropertyColumns(t, reviewData, checkedPropertyIds, togglePropertyCheck, toggleAllProperties),
+    [reviewData, t, checkedPropertyIds, togglePropertyCheck, toggleAllProperties]
+  );
 
   /* ---- Options ---- */
   const BASE_PROPERTY_OPTIONS = useMemo<SearchSelectOption[]>(() => {
@@ -134,7 +141,7 @@ export default function CombinePropertyForm({
           <AddButton
             label={isSubmitting ? t('combining') : t('combine')}
             size="sm"
-            disabled={hasDifferentOwners || isSubmitting}
+            disabled={hasDifferentOwners || isSubmitting || checkedCount === 0}
             onClick={handleCombine}
           />
         )}
@@ -308,7 +315,7 @@ export default function CombinePropertyForm({
                 <p className="text-[12px] text-blue-600 mt-0.5">
                   {t('primaryProperty')}{' '}
                   <span className="font-bold">{selectedPropertyNo}</span> {t('willBeCombinedWith')}{' '}
-                  <span className="font-bold text-blue-700">{reviewData.length} {t('properties')}</span>
+                  <span className="font-bold text-blue-700">{checkedCount}/{reviewData.length} {t('properties')}</span>
                 </p>
               </div>
             </div>
