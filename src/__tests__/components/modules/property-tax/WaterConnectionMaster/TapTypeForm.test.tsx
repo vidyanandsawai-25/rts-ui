@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import { IntlProvider } from "next-intl";
 import { TapTypeForm } from "@/components/modules/property-tax/WaterConnectionMaster/TapTypeForm";
 import { ConfirmProvider } from "@/components/common/ConfirmProvider";
