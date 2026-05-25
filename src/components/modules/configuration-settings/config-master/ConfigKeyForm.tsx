@@ -104,7 +104,7 @@ export function ConfigKeyForm({
       const newErrors: Partial<Record<keyof FormState, string>> = {};
       Object.entries(fieldErrors).forEach(([key, msgs]) => {
         if (Array.isArray(msgs) && msgs.length > 0) {
-          newErrors[key as keyof FormState] = msgs[0];
+          newErrors[key as keyof FormState] = msgs[0].includes('.') ? t(msgs[0] as never) : msgs[0];
         }
       });
       setErrors(newErrors);
@@ -140,19 +140,19 @@ export function ConfigKeyForm({
           : await createConfigKeyAction(submitData);
 
         if (result.success) {
-          toastSuccess(result.message || (isEdit ? t('messages.keyUpdated') : t('messages.keyCreated')));
+          toastSuccess(isEdit ? t('messages.keyUpdated') : t('messages.keyCreated'));
           onSuccess?.();
         } else {
           if (result.validationErrors) {
             const mappedErrors: Partial<Record<keyof FormState, string>> = {};
             Object.entries(result.validationErrors).forEach(([key, msgs]) => {
               if (Array.isArray(msgs) && msgs.length > 0) {
-                mappedErrors[key as keyof FormState] = msgs[0];
+                mappedErrors[key as keyof FormState] = msgs[0].includes('.') ? t(msgs[0] as never) : msgs[0];
               }
             });
             setErrors(mappedErrors);
           }
-          toastError(result.message || result.error || (isEdit ? t('messages.keyUpdateFailed') : t('messages.keyCreateFailed')));
+          toastError(result.error || result.message || (isEdit ? t('messages.keyUpdateFailed') : t('messages.keyCreateFailed')));
         }
       } catch {
         toastError(t('messages.unexpectedError'));
@@ -161,7 +161,7 @@ export function ConfigKeyForm({
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full light">
       <div className="flex-1 overflow-y-auto px-6 py-4">
         <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
           <ConfigKeyFormFields

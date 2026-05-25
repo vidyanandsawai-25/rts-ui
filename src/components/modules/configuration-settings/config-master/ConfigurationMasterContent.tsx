@@ -43,7 +43,7 @@ export function ConfigurationMasterContent({
         </section>
 
         <main className="min-h-150">
-          <Card className="border-0 shadow-sm bg-white dark:bg-slate-950 overflow-visible">
+          <Card className="border-0 shadow-sm bg-white overflow-visible">
             <CardContent className="p-0 sm:p-1 overflow-visible">
               {displayItems.length > 0 ? (
                 <ConfigurationList
@@ -54,7 +54,7 @@ export function ConfigurationMasterContent({
                 />
               ) : (
                 <div className="flex flex-col items-center justify-center py-40 text-slate-400">
-                  <div className="w-16 h-16 rounded-2xl bg-slate-50 dark:bg-slate-900 flex items-center justify-center mb-4">
+                  <div className="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center mb-4">
                     <Settings className="w-8 h-8 opacity-20" />
                   </div>
                   <p className="text-sm font-semibold">

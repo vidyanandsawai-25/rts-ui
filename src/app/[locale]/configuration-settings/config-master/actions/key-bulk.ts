@@ -9,6 +9,8 @@ import {
   processBatch,
   tConfigMessage,
   MAX_CONCURRENT_UPDATES,
+  localizeConfigError,
+  localizeBackendMessage,
 } from './utils';
 import type { ActionResult } from '@/types/common.types';
 import { z } from 'zod';
@@ -95,9 +97,7 @@ export async function updateAllConfigKeysStatusByCategoryIdAction(
     if (failed) {
       return {
         success: false,
-        error:
-          failed.error ||
-          (await tConfigMessage('keyUpdateFailed', 'Failed to update some configurations')),
+        error: await localizeBackendMessage(failed.error, 'keyUpdateFailed', 'Failed to update some configurations'),
       };
     }
 
@@ -119,12 +119,7 @@ export async function updateAllConfigKeysStatusByCategoryIdAction(
       categoryId,
       isActive,
     });
-    const errorMessage =
-      process.env.NODE_ENV === 'production'
-        ? 'An unexpected error occurred during bulk update'
-        : err instanceof Error
-          ? err.message
-          : 'An unexpected error occurred';
+    const errorMessage = await localizeConfigError(err, 'unexpectedError', 'An unexpected error occurred during bulk update');
 
     return {
       success: false,

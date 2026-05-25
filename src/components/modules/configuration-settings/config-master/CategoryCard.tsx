@@ -1,5 +1,6 @@
 'use client';
 
+import { useRef, useEffect } from 'react';
 import { Card } from '@/components/common/Card';
 import NextLink from 'next/link';
 import { useTranslations } from 'next-intl';
@@ -22,6 +23,17 @@ export function CategoryCard({ category, isActive, search }: CategoryCardProps) 
   params.set('categoryId', category.id);
   if (search) params.set('search', search);
   const progress = category.total > 0 ? (category.count / category.total) * 100 : 0;
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isActive) {
+      cardRef.current?.scrollIntoView?.({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'nearest',
+      });
+    }
+  }, [isActive]);
 
   return (
     <NextLink
@@ -29,19 +41,20 @@ export function CategoryCard({ category, isActive, search }: CategoryCardProps) 
       scroll={false}
       className="w-full block"
     >
-      <Card
+      <div ref={cardRef} className="h-full">
+        <Card
         className={cn(
           'cursor-pointer h-full border transition-all duration-300 relative overflow-hidden p-2.5 sm:p-3',
           'hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98]',
           isActive
-            ? `bg-white dark:bg-slate-800 shadow-sm border-indigo-200 dark:border-indigo-900/50`
-            : 'bg-white/80 dark:bg-slate-900 border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700'
+            ? `bg-white shadow-sm border-indigo-200`
+            : 'bg-white/80 border-slate-100 hover:border-slate-200'
         )}
       >
         {/* Check Icon (Active Only) - Matching the purple checkmark in screenshot */}
         {isActive && (
           <div className="absolute top-2 right-2 text-indigo-500 animate-in fade-in zoom-in duration-300">
-            <CheckCircle2 className="w-3.5 h-3.5 fill-indigo-50 dark:fill-indigo-900/20" />
+            <CheckCircle2 className="w-3.5 h-3.5 fill-indigo-50" />
           </div>
         )}
 
@@ -57,7 +70,7 @@ export function CategoryCard({ category, isActive, search }: CategoryCardProps) 
           <div className="flex-1 min-w-0 flex flex-col justify-center">
             <h3 className={cn(
               "text-xs sm:text-sm font-semibold leading-tight mb-1 line-clamp-2",
-              isActive ? "text-slate-900 dark:text-white" : "text-slate-600 dark:text-slate-300"
+              isActive ? "text-slate-900" : "text-slate-600"
             )}>
               {category.name}
             </h3>
@@ -66,12 +79,12 @@ export function CategoryCard({ category, isActive, search }: CategoryCardProps) 
             <div className="mt-4 sm:mt-5 space-y-1.5">
               <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
                 <span className="text-slate-400">{t('card.active')}</span>
-                <span className={cn("transition-colors", isActive ? "text-indigo-600 dark:text-indigo-400" : "text-slate-500")}>
+                <span className={cn("transition-colors", isActive ? "text-indigo-600" : "text-slate-500")}>
                   {Math.round(progress)}%
                 </span>
               </div>
               <div 
-                className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden shadow-inner relative"
+                className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden shadow-inner relative"
                 role="progressbar"
                 aria-valuenow={Math.round(progress)}
                 aria-valuemin={0}
@@ -98,6 +111,7 @@ export function CategoryCard({ category, isActive, search }: CategoryCardProps) 
           </div>
         </div>
       </Card>
+      </div>
     </NextLink>
   );
 }

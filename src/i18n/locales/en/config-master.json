@@ -7,6 +7,7 @@
     "addConfigKey": "Add Config Key",
     "addConfigValue": "Add Config Value Master",
     "noItemsFound": "No configuration items found for {category}.",
+    "noCategoriesFound": "No categories found.",
     "loading": "Loading configurations...",
     "card": {
         "active": "Active",
@@ -280,7 +281,13 @@
         "configsEnabled": "Configurations enabled successfully",
         "configsDisabled": "Configurations disabled successfully",
         "noConfigurationsFound": "No configurations found in this category",
-        "configAlreadyInDesiredState": "All configurations are already in the desired state"
+        "configAlreadyInDesiredState": "All configurations are already in the desired state",
+        "unauthorized": "Unauthorized. Please log in.",
+        "duplicateCode": "Code already exists. Please use a unique code.",
+        "duplicateName": "Name already exists. Please use a unique name.",
+        "duplicateRecord": "Record already exists.",
+        "recordNotFound": "Requested record was not found.",
+        "dependencyExists": "Operation failed because this record is associated with other active data."
     },
     "confirm": {
         "discard": {
@@ -289,5 +296,7 @@
             "confirm": "Discard",
             "cancel": "Cancel"
         }
-    }
+    },
+    "categoriesLabel": "Categories",
+    "filterCategories": "Filter categories..."
 }

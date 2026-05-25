@@ -41,14 +41,14 @@ export function AddConfigValueModal(props: AddConfigValueModalProps) {
       width="md"
       title={
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg shadow-sm shadow-violet-200 dark:shadow-none shrink-0">
+          <div className="p-2.5 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg shadow-sm shadow-violet-200 shrink-0">
             <Database className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 tracking-tight">
+            <h2 className="text-lg font-semibold text-slate-800 tracking-tight">
               {t('modals.addValue.title')}
             </h2>
-            <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5">
+            <p className="text-slate-500 text-sm mt-0.5">
               {t('modals.addValue.subtitle')}
             </p>
           </div>
@@ -73,10 +73,10 @@ export function AddConfigValueModal(props: AddConfigValueModalProps) {
         </div>
       }
     >
-      <form onSubmit={handleSubmit} className="p-6 space-y-5">
+      <form onSubmit={handleSubmit} className="p-6 space-y-5 light">
         <RequiredFieldsNote text={t('modals.addValue.form.requiredFields')} />
         <div className="space-y-2">
-          <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+          <Label className="text-sm font-medium text-slate-700">
             {t('modals.addValue.form.filterCategory')}
           </Label>
           <Select
@@ -84,12 +84,13 @@ export function AddConfigValueModal(props: AddConfigValueModalProps) {
             value={selectedCategory}
             onChange={(_, value) => handleCategoryChange(value)}
             disabled={isPending}
+            className="cursor-pointer [&_button]:cursor-pointer"
           />
           <p className="text-xs text-slate-500">{t('modals.addValue.form.filterCategoryDesc')}</p>
         </div>
 
         <div className="space-y-2">
-          <Label required className="text-sm font-medium text-slate-700 dark:text-slate-300">
+          <Label required className="text-sm font-medium text-slate-700">
             {t('modals.addValue.form.configKey')}
           </Label>
           <Select            options={configKeyOptions}
@@ -98,6 +99,7 @@ export function AddConfigValueModal(props: AddConfigValueModalProps) {
             disabled={isPending}
             placeholder={t('modals.addValue.form.placeholders.configKey')}
             error={errors.configKeyId}
+            className="cursor-pointer [&_button]:cursor-pointer"
           />
           {selectedConfigKey && (
             <p className="text-xs text-slate-500">
@@ -109,7 +111,7 @@ export function AddConfigValueModal(props: AddConfigValueModalProps) {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            <Label className="text-sm font-medium text-slate-700">
               {t('modals.addValue.form.departmentId')}
             </Label>
             <Input
@@ -127,7 +129,7 @@ export function AddConfigValueModal(props: AddConfigValueModalProps) {
           </div>
 
           <div className="space-y-2">
-            <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            <Label className="text-sm font-medium text-slate-700">
               {t('modals.addValue.form.moduleId')}
             </Label>
             <Input
@@ -146,7 +148,7 @@ export function AddConfigValueModal(props: AddConfigValueModalProps) {
         </div>
 
         <div className="space-y-2">
-          <Label required className="text-sm font-medium text-slate-700 dark:text-slate-300">
+          <Label required className="text-sm font-medium text-slate-700">
             {t('modals.addValue.form.value')}
           </Label>
           <ConfigValueInput

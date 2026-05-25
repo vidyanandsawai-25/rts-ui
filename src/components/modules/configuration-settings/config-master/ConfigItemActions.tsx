@@ -47,10 +47,10 @@ export function ConfigItemActions({ id, configKeyId, name, isEnabled }: ConfigIt
         startTransition(async () => {
           const res = await deleteConfigKeyAction(configKeyId);
           if (res.success) {
-            toastSuccess(res.message || t('messages.keyDeleted') || 'Key deleted');
+            toastSuccess(t('messages.keyDeleted') || res.message || 'Key deleted');
             router.refresh();
           } else {
-            toastError(res.message || res.error || t('messages.deleteFailed') || 'Delete failed');
+            toastError(res.error || res.message || t('messages.deleteFailed') || 'Delete failed');
           }
           setActiveAction(null);
         });
@@ -71,7 +71,7 @@ export function ConfigItemActions({ id, configKeyId, name, isEnabled }: ConfigIt
   };
 
   return (
-    <div className="flex flex-row items-center gap-2 sm:gap-4 md:gap-5 justify-between md:justify-end w-full md:w-auto mt-1 sm:mt-2 md:mt-0 pt-2 sm:pt-3 md:pt-0 border-t md:border-t-0 border-slate-100 dark:border-slate-800/50">
+    <div className="flex flex-row items-center gap-2 sm:gap-4 md:gap-5 justify-between md:justify-end w-full md:w-auto mt-1 sm:mt-2 md:mt-0 pt-2 sm:pt-3 md:pt-0 border-t md:border-t-0 border-slate-100">
       <div className="flex items-center gap-0.5 sm:gap-1">
         <Button
           variant="ghost"
@@ -106,8 +106,8 @@ export function ConfigItemActions({ id, configKeyId, name, isEnabled }: ConfigIt
           className={cn(
             'h-8 sm:h-9 min-w-0 sm:min-w-[90px] text-[10px] sm:text-xs font-semibold gap-1.5 sm:gap-2 px-2 sm:px-4 shadow-sm transition-all cursor-pointer',
             isEnabled
-              ? 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
-              : 'bg-slate-50 dark:bg-slate-900/50 text-slate-400 dark:text-slate-600 border-slate-100 dark:border-slate-800'
+              ? 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+              : 'bg-slate-50 text-slate-400 border-slate-100'
           )}
         >
           <span className="hidden min-[450px]:inline">{t('list.config')}</span>
