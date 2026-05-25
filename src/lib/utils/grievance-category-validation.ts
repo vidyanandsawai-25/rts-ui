@@ -96,12 +96,12 @@ export const validateGrievanceCategoryField = (
     case 'description':
       if (value && String(value).length > 0 && String(value).length < 3)
         return translate('errors.descMinLength');
-      if (value && String(value).length > 1000) return translate('errors.descMaxLength');
+      if (value && String(value).length > 500) return translate('errors.descMaxLength');
       if (value && /[<>]/.test(String(value)))
         return translate('errors.descNoHtml');
       if (value) {
         const words = String(value).trim().split(/\s+/).filter(Boolean);
-        if (words.length > 1000) {
+        if (words.length > 500) {
           return translate('errors.descMaxWords');
         }
       }

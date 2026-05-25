@@ -14,6 +14,7 @@ import {
   processBatch,
   MAX_CONCURRENT_UPDATES,
   tConfigMessage,
+  localizeBackendMessage,
 } from './utils';
 import type { ActionResult } from '@/types/common.types';
 import { logError } from '@/lib/utils/logger';
@@ -194,12 +195,11 @@ export async function saveDepartmentConfigurationAction(rawData: unknown): Promi
         failedCount: failedResults.length,
         totalCount: results.length,
       });
+      const representativeError = failedResults.find((r) => r.error)?.error;
+      const defaultMsg = `Failed to save ${failedResults.length} of ${results.length} configuration updates`;
       return {
         success: false,
-        error: await tConfigMessage(
-          'saveFailed',
-          `Failed to save ${failedResults.length} of ${results.length} configuration updates`
-        ),
+        error: await localizeBackendMessage(representativeError, 'saveFailed', defaultMsg),
       };
     }
 
@@ -210,6 +210,7 @@ export async function saveDepartmentConfigurationAction(rawData: unknown): Promi
     logError('saveDepartmentConfigurationAction failed', {
       error: err instanceof Error ? err : undefined,
     });
-    return { success: false, error: err instanceof Error ? err.message : 'Failed to save' };
+    const errMsg = err instanceof Error ? err.message : String(err);
+    return { success: false, error: await localizeBackendMessage(errMsg, 'saveFailed', 'Failed to save') };
   }
 }

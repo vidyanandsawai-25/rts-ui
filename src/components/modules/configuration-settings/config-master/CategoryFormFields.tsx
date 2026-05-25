@@ -3,7 +3,7 @@
 import { Label } from '@/components/common/label';
 import { Input, ValidationMessage, TextArea, RequiredFieldsNote, StatusToggleCard } from '@/components/common';
 import { useTranslations } from 'next-intl';
-import { CODE_SANITIZE, TEXT_SANITIZE } from '@/lib/utils/validation-rules';
+
 
 interface CategoryFormFieldsProps {
   formData: {
@@ -33,7 +33,7 @@ export function CategoryFormFields({
 
       {/* Category Code */}
       <div className="space-y-2">
-        <Label htmlFor="categoryCode" required className="text-sm font-medium text-slate-700 dark:text-slate-300">
+        <Label htmlFor="categoryCode" required className="text-sm font-medium text-slate-700">
           {t('modals.addCategory.form.code')}
         </Label>
         <Input
@@ -41,15 +41,12 @@ export function CategoryFormFields({
           placeholder={t('modals.addCategory.form.placeholders.code')}
           value={formData.categoryCode}
           onChange={(e) => {
-            const val = e.target.value
-              .replace(CODE_SANITIZE, '')
-              .replace(/_+/g, '_')
-              .replace(/^_+/g, '');
-            onChange('categoryCode', val);
+            const sanitized = e.target.value.replace(/[^A-Za-z0-9]/g, '');
+            onChange('categoryCode', sanitized);
           }}
           className={errors.categoryCode ? 'border-red-500' : ''}
           disabled={isPending}
-          maxLength={20}
+          maxLength={50}
           aria-invalid={errors.categoryCode ? 'true' : 'false'}
           aria-describedby={errors.categoryCode ? 'categoryCode-error' : undefined}
         />
@@ -58,7 +55,7 @@ export function CategoryFormFields({
 
       {/* Category Name */}
       <div className="space-y-2">
-        <Label htmlFor="categoryName" required className="text-sm font-medium text-slate-700 dark:text-slate-300">
+        <Label htmlFor="categoryName" required className="text-sm font-medium text-slate-700">
           {t('modals.addCategory.form.name')}
         </Label>
         <TextArea
@@ -66,12 +63,8 @@ export function CategoryFormFields({
           placeholder={t('modals.addCategory.form.placeholders.name')}
           value={formData.categoryName}
           onChange={(e) => {
-            const val = e.target.value
-              .replace(TEXT_SANITIZE, '')
-              .replace(/[,.\-\/&]{2,}/g, (match) => match[0])
-              .trimStart()
-              .replace(/^[,.\-\/&]+/g, '');
-            onChange('categoryName', val);
+            const sanitized = e.target.value.replace(/[^\p{L}\p{M}\p{N}\s]/gu, '');
+            onChange('categoryName', sanitized);
           }}
           className={errors.categoryName ? 'border-red-500' : ''}
           disabled={isPending}
@@ -85,7 +78,7 @@ export function CategoryFormFields({
 
       {/* Display Order */}
       <div className="space-y-2">
-        <Label htmlFor="displayOrder" required className="text-sm font-medium text-slate-700 dark:text-slate-300">
+        <Label htmlFor="displayOrder" required className="text-sm font-medium text-slate-700">
           {t('modals.addCategory.form.displayOrder')}
         </Label>
         <Input
@@ -110,15 +103,25 @@ export function CategoryFormFields({
 
       {/* Status Toggle - Only show in Edit mode */}
       {isEdit && (
-        <StatusToggleCard
-          isActive={formData.isActive}
-          onToggle={(checked) => onChange('isActive', checked)}
-          activeLabel={t('modals.addCategory.form.active')}
-          inactiveLabel={t('modals.addCategory.form.inactive')}
-          statusLabel={t('modals.addCategory.form.status')}
-          description={formData.isActive ? t('modals.addCategory.form.activeDescription') : t('modals.addCategory.form.inactiveDescription')}
-          disabled={isPending}
-        />
+        <div
+          onClick={(e) => {
+            if (isPending) return;
+            const target = e.target as HTMLElement;
+            if (target.closest('button')) return;
+            onChange('isActive', !formData.isActive);
+          }}
+          className="cursor-pointer"
+        >
+          <StatusToggleCard
+            isActive={formData.isActive}
+            onToggle={(checked) => onChange('isActive', checked)}
+            activeLabel={t('modals.addCategory.form.active')}
+            inactiveLabel={t('modals.addCategory.form.inactive')}
+            statusLabel={t('modals.addCategory.form.status')}
+            description={formData.isActive ? t('modals.addCategory.form.activeDescription') : t('modals.addCategory.form.inactiveDescription')}
+            disabled={isPending}
+          />
+        </div>
       )}
     </div>
   );

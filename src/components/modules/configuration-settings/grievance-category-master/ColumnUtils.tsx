@@ -20,15 +20,15 @@ export const ESCALATION_TRANSLATION_KEYS: Record<EscalationLevel, string> = {
 export function getPriorityStyles(priority: string): string {
   switch (priority) {
     case 'Critical':
-      return 'bg-rose-50 text-rose-700 border-rose-200/50 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20 shadow-xs shadow-rose-500/5';
+      return 'bg-rose-50 text-rose-700 border-rose-200/50 shadow-xs shadow-rose-500/5';
     case 'High':
-      return 'bg-orange-50 text-orange-700 border-orange-200/50 dark:bg-orange-500/10 dark:text-orange-400 dark:border-orange-500/20 shadow-xs shadow-orange-500/5';
+      return 'bg-orange-50 text-orange-700 border-orange-200/50 shadow-xs shadow-orange-500/5';
     case 'Medium':
-      return 'bg-indigo-50 text-indigo-700 border-indigo-200/50 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/20 shadow-xs shadow-indigo-500/5';
+      return 'bg-indigo-50 text-indigo-700 border-indigo-200/50 shadow-xs shadow-indigo-500/5';
     case 'Low':
-      return 'bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-800/50 dark:text-slate-400 dark:border-slate-700 shadow-xs';
+      return 'bg-slate-50 text-slate-600 border-slate-200 shadow-xs';
     default:
-      return 'bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-800/50 dark:text-slate-400 dark:border-slate-700';
+      return 'bg-slate-50 text-slate-600 border-slate-200';
   }
 }
 

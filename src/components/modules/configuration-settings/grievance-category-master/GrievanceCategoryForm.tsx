@@ -53,6 +53,7 @@ export function GrievanceCategoryFormClient({
     handleSubmit,
   } = useGrievanceCategoryForm({
     editingCategory,
+    departments,
     locale,
     isEdit,
     returnPath: providedReturnPath,

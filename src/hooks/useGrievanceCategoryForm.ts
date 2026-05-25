@@ -17,6 +17,7 @@ import type {
 
 interface UseGrievanceCategoryFormProps {
   editingCategory: GrievanceCategory | null;
+  departments: { departmentId: number; departmentName?: string; isActive?: boolean }[];
   locale: string;
   isEdit: boolean;
   returnPath?: string;
@@ -38,6 +39,7 @@ interface UseGrievanceCategoryFormProps {
 
 export function useGrievanceCategoryForm({
   editingCategory,
+  departments,
   locale,
   isEdit,
   returnPath: providedReturnPath,
@@ -80,7 +82,17 @@ export function useGrievanceCategoryForm({
     value: GrievanceCategoryFormModel[keyof GrievanceCategoryFormModel]
   ): void => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    const fieldError = validateGrievanceCategoryField(formData, field, value, translateValidation);
+    let fieldError = validateGrievanceCategoryField(formData, field, value, translateValidation);
+    
+    if (field === 'departmentId') {
+      const validDeptIds = departments
+        .filter((d) => d && d.departmentId)
+        .map((d) => d.departmentId);
+      if (value && !validDeptIds.includes(Number(value))) {
+        fieldError = translateValidation('errors.departmentReq');
+      }
+    }
+    
     setFieldErrors((prev) => ({ ...prev, [field]: fieldError || undefined }));
   };
 
@@ -109,6 +121,16 @@ export function useGrievanceCategoryForm({
     });
 
     const newFieldErrors = validateGrievanceCategory(sanitizedData, translateValidation);
+    
+    // Validate department selection exists in the active lookup options
+    const validDeptIds = departments
+      .filter((d) => d && d.departmentId)
+      .map((d) => d.departmentId);
+    
+    if (sanitizedData.departmentId && !validDeptIds.includes(Number(sanitizedData.departmentId))) {
+      newFieldErrors.departmentId = translateValidation('errors.departmentReq');
+    }
+
     if (Object.keys(newFieldErrors).length > 0) {
       setFieldErrors(newFieldErrors);
       return;
@@ -129,18 +151,16 @@ export function useGrievanceCategoryForm({
 
       const result = await serverAction(fd);
       if (result.success) {
-        toast.success(result.message || (isEdit ? t.toast.updateSuccess : t.toast.createSuccess));
+        toast.success(isEdit ? t.toast.updateSuccess : t.toast.createSuccess);
         router.replace(returnPath);
       } else {
         if (result.fieldErrors)
           setFieldErrors(
             result.fieldErrors as Partial<Record<keyof GrievanceCategoryFormModel, string>>
           );
-        const translatedError = resolveGrievanceCategoryServerError(result.error, t.errors, {
-          message: result.message,
-        });
+        const translatedError = resolveGrievanceCategoryServerError(result.error, t.errors);
         setError(translatedError);
-        toast.error(result.message || translatedError);
+        toast.error(translatedError);
       }
     } catch (_err) {
       setError(t.errors.unexpected);

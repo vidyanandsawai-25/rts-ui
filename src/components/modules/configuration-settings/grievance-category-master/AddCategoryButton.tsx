@@ -25,7 +25,7 @@ export function AddCategoryButton({ addPath, label }: AddCategoryButtonProps) {
       onClick={handleClick}
       isLoading={isPending}
       label={label}
-      className="cursor !bg-slate-900 dark:!bg-white !text-white dark:!text-slate-900 !rounded-xl h-10 sm:h-10.5 md:h-11 px-4 sm:px-5 md:px-7 font-bold shadow-sm hover:shadow-md active:scale-95 transition-all duration-200 shrink-0 border-none hover:!bg-slate-800 dark:hover:!bg-slate-100"
+      className="cursor-pointer !bg-slate-900 !text-white !rounded-xl h-10 sm:h-10.5 md:h-11 px-4 sm:px-5 md:px-7 font-bold shadow-sm hover:shadow-md active:scale-95 transition-all duration-200 shrink-0 border-none hover:!bg-slate-800"
     />
   );
 }
