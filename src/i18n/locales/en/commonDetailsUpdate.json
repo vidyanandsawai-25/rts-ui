@@ -1,0 +1,100 @@
+{
+  "commonDetailsUpdate": {
+    "title": "Update Common Details",
+    "subtitle": "Update thousands of properties safely in one action",
+    "menu": {
+      "title": "Choose Field to Update",
+      "searchPlaceholder": "Search update type..."
+    },
+    "filter": {
+      "title": "Property Filter",
+      "wardNumber": "Ward Number",
+      "selectWard": "Select Ward",
+      "fromPropertyNo": "From Property No",
+      "selectFromPropertyNo": "Select From Property No",
+      "toPropertyNo": "To Property No",
+      "selectToPropertyNo": "Select To Property No",
+      "wing": "Wing",
+      "selectWing": "Select wing",
+      "show": "Show",
+      "back": "Back",
+      "clear": "Clear"
+    },
+    "preview": {
+      "title": "Preview List",
+      "propertiesLoaded": "properties loaded",
+      "noProperties": "No properties found",
+      "selectFilters": "Apply filters to load properties",
+      "loading": "Loading properties...",
+      "selectAll": "Select All",
+      "property": "property",
+      "properties": "properties",
+      "selected": "selected",
+      "showing": "Showing",
+      "of": "of",
+      "entries": "entries",
+      "searchPlaceholder": "Search properties..."
+    },
+    "columns": {
+      "wardNo": "Ward No.",
+      "propertyNo": "Property No.",
+      "partitionNo": "Partition No.",
+      "currentValueEn": "Current Value (English)",
+      "currentValueMr": "Current Value (Marathi)",
+      "currentValuePrefix": "Current"
+    },
+    "form": {
+      "title": "Bulk Update Form",
+      "update": "Update",
+      "clear": "Clear",
+      "updating": "Updating...",
+      "selectMenuPrompt": "Select a field to update from the left panel",
+      "noFields": "No fields configured for this update type"
+    },
+    "buttons": {
+      "import": "Import",
+      "export": "Export"
+    },
+    "messages": {
+      "fetchMenuFailed": "Failed to load update options",
+      "fetchFieldConfigFailed": "Failed to load field configuration",
+      "fetchPropertiesFailed": "Failed to load properties",
+      "fetchWardsFailed": "Failed to load wards",
+      "fetchWingsFailed": "Failed to load wings",
+      "wardRequired": "Ward is required",
+      "fromPropertyRequired": "From Property No. is required",
+      "toPropertyRequired": "To Property No. is required",
+      "wingRequired": "Wing is required",
+      "updateCodeRequired": "Update type is required",
+      "propertiesRequired": "Please select at least one property",
+      "updateSuccess": "Properties updated successfully",
+      "updateFailed": "Failed to update properties",
+      "selectProperties": "Please select at least one property to update",
+      "selectUpdateType": "Please select an update type",
+      "fillRequired": "Please fill all required fields",
+      "invalidRange": "From Property No. must be less than or equal to To Property No.",
+      "noPropertiesToExport": "No properties to export",
+      "exportSuccess": "Exported successfully",
+      "somethingWrong": "Something went wrong. Please try again.",
+      "configLoadFailed": "Failed to load configuration",
+      "propertiesLoaded": "{count} properties loaded successfully",
+      "partialUpdate": "{success} properties updated, {failed} failed",
+      "noPropertiesFound": "No properties found for the selected filters"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "loading": {
+      "message": "Loading...",
+      "description": "Please wait while we load the data"
+    },
+    "error": {
+      "title": "Error",
+      "description": "An error occurred while loading the page. Please try refreshing or contact support.",
+      "errorId": "Error ID: {id}",
+      "goHome": "Go Home",
+      "tryAgain": "Try Again"
+    }
+  }
+}

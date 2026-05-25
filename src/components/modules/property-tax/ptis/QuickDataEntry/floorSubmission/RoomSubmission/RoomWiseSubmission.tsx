@@ -20,6 +20,7 @@ import { InlineError } from "./components/InlineError";
 
 // Utils
 import { calculateRoomArea, calculateRoomTotal, getDimensionsString, isOffsetValid } from "@/lib/utils/RoomSubmission/room-submission.utils";
+import { isRoomComplete } from "@/lib/utils/RoomSubmission/room-validation.utils";
 
 export const RoomWiseSubmission: React.FC<RoomWiseSubmissionProps & {
   externalAreaUnit?: "sq.m" | "sq.ft";
@@ -124,7 +125,7 @@ export const RoomWiseSubmission: React.FC<RoomWiseSubmissionProps & {
             onSave={roomActions.handleUpdate}
             onClose={handleClose}
             isSaving={state.isUpdating}
-            canSave={state.grandTotal > 0}
+            canSave={state.grandTotal > 0 && state.rooms.length > 0 && state.rooms.every(isRoomComplete)}
           />
 
         </div>

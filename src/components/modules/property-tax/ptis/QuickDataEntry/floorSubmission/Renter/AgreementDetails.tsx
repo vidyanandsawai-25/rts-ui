@@ -9,12 +9,15 @@ import { useTranslations } from "next-intl";
 import { Swal } from "@/lib/utils/alerts";
 import { extractAgreementData } from '@/lib/utils/renterUtils';
 import { AgreementDocumentViewer } from "./AgreementDocumentViewer";
-import { RenterFormData } from '@/types/renter.types';
+import { RenterFormData, RenterFormDataDetails } from '@/types/renter.types';
 import { toast } from 'sonner';
+import { validateRenterForm, ExistingFloorData } from '@/lib/utils/renter-validation';
 
 interface AgreementDetailsProps {
   formData: RenterFormData | null;
   setFormData: React.Dispatch<React.SetStateAction<RenterFormData | null>>;
+  existingFloors?: ExistingFloorData[];
+  floorId?: string;
 }
 
 const toDisplayDate = (val: string) => {
@@ -22,6 +25,10 @@ const toDisplayDate = (val: string) => {
   // If it's already in yyyy-mm-dd format, convert to dd-mm-yyyy
   const ymdMatch = val.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (ymdMatch) return `${ymdMatch[3]}-${ymdMatch[2]}-${ymdMatch[1]}`;
+  const parts = val.split('-');
+  if (parts.length === 3 && parts[0].length === 4) {
+    return `${parts[2]}-${parts[1]}-${parts[0]}`;
+  }
   return val;
 };
 
@@ -46,37 +53,26 @@ const formatManualDate = (val: string) => {
 
 // ─── Validation Helpers ───────────────────────────────────────────────────────
 
-/** Agreement ID: allow only letters and digits */
-const isValidAgreementId = (val: string) => /^[a-zA-Z0-9]*$/.test(val);
-
-/** Renter Name: allow only letters, spaces, and dots (for abbreviations like "Mr.") */
-const isValidRenterName = (val: string) => /^[a-zA-Z\s.]*$/.test(val);
-
-/** Check if a DD-MM-YYYY string is a real calendar date */
-const isValidDate = (ddmmyyyy: string): boolean => {
-  const match = ddmmyyyy.match(/^(\d{2})-(\d{2})-(\d{4})$/);
-  if (!match) return false;
-  const [, dd, mm, yyyy] = match;
-  const day = parseInt(dd, 10);
-  const month = parseInt(mm, 10);
-  const year = parseInt(yyyy, 10);
-  if (month < 1 || month > 12 || day < 1 || year < 1900) return false;
-  const dateObj = new Date(year, month - 1, day);
-  return dateObj.getFullYear() === year && dateObj.getMonth() === month - 1 && dateObj.getDate() === day;
-};
+/** Agreement ID: allow letters, digits, dashes, and underscores */
+const isValidAgreementId = (val: string) => /^[A-Za-z0-9_-]*$/.test(val);
 
 const fieldLabelClassName = 'text-xs leading-snug tracking-normal !font-semibold text-slate-700';
 const errorClassName = 'text-[10px] text-red-500 font-medium mt-0.5 animate-in fade-in duration-200';
 const errorBorderClassName = 'border-red-400 focus:ring-red-100';
 
-const AgreementDetails = memo(({ formData, setFormData }: AgreementDetailsProps) => {
+const AgreementDetails = memo(({ formData, setFormData, existingFloors = [], floorId }: AgreementDetailsProps) => {
   const t = useTranslations('quickDataEntry');
   const [uploadedDocument, setUploadedDocument] = useState<File | null>(null);
   const [showDocumentPreview, setShowDocumentPreview] = useState(false);
   const [isProcessingOCR, setIsProcessingOCR] = useState(false);
 
-  // ─── Field-Level Validation Errors ────────────────────────────────────────
+  // ─── Field-Level Validation Errors (Reactive & Touched-Driven) ─────────────
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
+
+  const markTouched = useCallback((field: string) => {
+    setTouchedFields(prev => ({ ...prev, [field]: true }));
+  }, []);
 
   const agreementDateRef = useRef<HTMLInputElement>(null);
   const fromDateRef = useRef<HTMLInputElement>(null);
@@ -103,59 +99,50 @@ const AgreementDetails = memo(({ formData, setFormData }: AgreementDetailsProps)
     }
   };
 
-  // ─── Validation Logic ──────────────────────────────────────────────────────
-
-  const setError = useCallback((field: string, msg: string) => {
-    setFieldErrors(prev => ({ ...prev, [field]: msg }));
-  }, []);
-
-  const clearError = useCallback((field: string) => {
-    setFieldErrors(prev => {
-      const next = { ...prev };
-      delete next[field];
-      return next;
-    });
-  }, []);
-
-  /** Validate a complete DD-MM-YYYY date field on blur */
-  const validateDateField = useCallback((fieldName: string, displayVal: string) => {
-    if (!displayVal) {
-      clearError(fieldName);
-      return;
-    }
-    // Must be exactly DD-MM-YYYY (10 chars)
-    if (displayVal.length < 10) {
-      setError(fieldName, 'Please enter a complete date in DD-MM-YYYY format');
-      return;
-    }
-    if (!isValidDate(displayVal)) {
-      setError(fieldName, 'Invalid date. Please enter a valid date in DD-MM-YYYY format');
-      return;
-    }
-    clearError(fieldName);
-  }, [setError, clearError]);
-
-  /** Cross-validate From < To whenever either changes */
-  const validateDateRange = useCallback(() => {
-    const fromDisplay = toDisplayDate(formData?.renterDetails?.agreementDateFrom || "");
-    const toDisplay = toDisplayDate(formData?.renterDetails?.agreementDateTo || "");
-
-    // Only cross-validate when both are complete dates
-    if (fromDisplay.length === 10 && toDisplay.length === 10 && isValidDate(fromDisplay) && isValidDate(toDisplay)) {
-      const fromVal = formData?.renterDetails?.agreementDateFrom;
-      const toVal = formData?.renterDetails?.agreementDateTo;
-      if (fromVal && toVal && new Date(fromVal) >= new Date(toVal)) {
-        setError('agreementDateTo', 'To date must be after From date');
-        return;
-      }
-      clearError('agreementDateTo');
-    }
-  }, [formData?.renterDetails?.agreementDateFrom, formData?.renterDetails?.agreementDateTo, setError, clearError]);
-
-  // Re-validate date range whenever from/to changes
+  // Centralized, reactive form validation triggered on-the-fly as user enters data
   useEffect(() => {
-    validateDateRange();
-  }, [validateDateRange]);
+    if (!formData?.renterDetails) return;
+
+    const validationErrors = validateRenterForm(formData.renterDetails, floorId || 'new', existingFloors);
+    const nextErrors: Record<string, string> = {};
+    const relevantFields = ['agreementId', 'agreementDate', 'renterName', 'agreementDateFrom', 'agreementDateTo', 'rentAmount'];
+
+    relevantFields.forEach(field => {
+      const err = validationErrors.find(e => e.field === field);
+      if (err) {
+        const val = formData.renterDetails?.[field as keyof RenterFormDataDetails];
+        const isEmpty = !val || (typeof val === 'string' && !val.trim());
+
+        // For date fields, hide invalid-format errors while manually typing partial inputs (length < 10)
+        if (field === 'agreementDate' || field === 'agreementDateFrom' || field === 'agreementDateTo') {
+          const displayVal = (() => {
+            if (field === 'agreementDate') return toDisplayDate(formData.renterDetails?.agreementDate || "");
+            if (field === 'agreementDateFrom') return toDisplayDate(formData.renterDetails?.agreementDateFrom || "");
+            if (field === 'agreementDateTo') return toDisplayDate(formData.renterDetails?.agreementDateTo || "");
+            return "";
+          })();
+
+          if (displayVal.length > 0 && displayVal.length < 10) {
+            return; // Silence partial typing errors
+          }
+
+          if (isEmpty) {
+            if (touchedFields[field]) nextErrors[field] = err.message;
+          } else {
+            nextErrors[field] = err.message;
+          }
+        } else {
+          if (isEmpty) {
+            if (touchedFields[field]) nextErrors[field] = err.message;
+          } else {
+            nextErrors[field] = err.message;
+          }
+        }
+      }
+    });
+
+    setFieldErrors(nextErrors);
+  }, [formData?.renterDetails, touchedFields, floorId, existingFloors]);
 
   const processOCR = async (file: File) => {
     setIsProcessingOCR(true);
@@ -213,7 +200,34 @@ const AgreementDetails = memo(({ formData, setFormData }: AgreementDetailsProps)
           <div className="flex items-center gap-1">
             <Input id="doc-upload" type="file" naked className="hidden" tabIndex={-1} onChange={e => {
               const file = e.target.files?.[0];
-              if (file) { setUploadedDocument(file); if (file.type.startsWith("image/")) processOCR(file); }
+              if (file) {
+                const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+                const fileExt = file.name.split('.').pop()?.toLowerCase();
+                const isAllowedType = allowedTypes.includes(file.type) || ['pdf', 'jpg', 'jpeg', 'png'].includes(fileExt || '');
+                
+                if (!isAllowedType) {
+                  toast.error("Only PDF, JPG, JPEG, or PNG files are allowed.");
+                  e.target.value = '';
+                  return;
+                }
+                
+                if (file.name.length > 100) {
+                  toast.error("File name is too long.");
+                  e.target.value = '';
+                  return;
+                }
+                
+                if (file.size > 5 * 1024 * 1024) {
+                  toast.error("File size should not exceed 5 MB.");
+                  e.target.value = '';
+                  return;
+                }
+                
+                setUploadedDocument(file);
+                if (file.type.startsWith("image/")) {
+                  processOCR(file);
+                }
+              }
             }} />
             <Button type="button" onClick={() => document.getElementById('doc-upload')?.click()} className="w-10 h-10 p-0 bg-blue-500 rounded-md shrink-0">
               {isProcessingOCR ? <Loader2 className="w-5 h-5 animate-spin text-white" /> : <Upload className="w-5 h-5 text-white" />}
@@ -247,21 +261,23 @@ const AgreementDetails = memo(({ formData, setFormData }: AgreementDetailsProps)
 
         {/* Agreement ID — Alphanumeric only */}
         <div className="lg:col-span-2 flex flex-col gap-1.5">
-          <Label className={fieldLabelClassName}>{t('floor.renterSection.agreementId')}</Label>
+          <Label className={fieldLabelClassName}>{t('floor.renterSection.agreementId')} <span className="text-red-500">*</span></Label>
           <Input 
+            maxLength={15}
             value={formData?.renterDetails?.agreementId || ""} 
             onChange={e => {
-              const val = e.target.value;
+              const val = e.target.value.toUpperCase().slice(0, 15);
               if (!isValidAgreementId(val)) {
-                setError('agreementId', 'Only letters and numbers are allowed');
+                markTouched('agreementId');
                 return; // Block the input
               }
-              clearError('agreementId');
               setFormData(prev => {
                 if (!prev) return null;
                 return { ...prev, renterDetails: { ...prev.renterDetails, agreementId: val } };
               });
+              markTouched('agreementId');
             }}
+            onBlur={() => markTouched('agreementId')}
             className={`h-10 text-xs font-medium w-full text-slate-700 ${fieldErrors.agreementId ? errorBorderClassName : ''}`} 
           />
           {fieldErrors.agreementId && <p className={errorClassName}>{fieldErrors.agreementId}</p>}
@@ -269,28 +285,31 @@ const AgreementDetails = memo(({ formData, setFormData }: AgreementDetailsProps)
 
         {/* Agreement Date — DD-MM-YYYY */}
         <div className="lg:col-span-2 flex flex-col gap-1.5">
-          <Label className={fieldLabelClassName}>{t('floor.renterSection.agreementDate')}</Label>
+          <Label className={fieldLabelClassName}>{t('floor.renterSection.agreementDate')} <span className="text-red-500">*</span></Label>
           <div className="relative">
             <Input type="date" ref={agreementDateRef} naked tabIndex={-1} className="absolute inset-0 opacity-0 pointer-events-none" value={formData?.renterDetails?.agreementDate || ""} onChange={e => {
               setFormData(prev => {
                 if (!prev) return null;
                 return { ...prev, renterDetails: { ...prev.renterDetails, agreementDate: e.target.value } };
               });
-              clearError('agreementDate');
+              markTouched('agreementDate');
             }} />
             <Input 
               type="text" 
               placeholder="dd-mm-yyyy" 
+              maxLength={10}
               value={toDisplayDate(formData?.renterDetails?.agreementDate || "")} 
               onChange={e => {
-                const formatted = formatManualDate(e.target.value);
+                const formatted = formatManualDate(e.target.value).slice(0, 10);
                 setFormData(prev => {
                   if (!prev) return null;
                   return { ...prev, renterDetails: { ...prev.renterDetails, agreementDate: toValueDate(formatted) } };
                 });
-                if (formatted.length < 10) clearError('agreementDate');
+                if (formatted.length === 10) {
+                  markTouched('agreementDate');
+                }
               }}
-              onBlur={() => validateDateField('agreementDate', toDisplayDate(formData?.renterDetails?.agreementDate || ""))}
+              onBlur={() => markTouched('agreementDate')}
               className={`h-10 text-xs font-medium pr-8 w-full text-slate-700 ${fieldErrors.agreementDate ? errorBorderClassName : ''}`} 
             />
             <Calendar className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 cursor-pointer" tabIndex={-1} onClick={() => triggerDatePicker(agreementDateRef)} />
@@ -302,19 +321,34 @@ const AgreementDetails = memo(({ formData, setFormData }: AgreementDetailsProps)
         <div className="lg:col-span-3 flex flex-col gap-1.5">
           <Label className={fieldLabelClassName}>{t('floor.renterSection.renterName')} <span className="text-red-500">*</span></Label>
           <Input 
+            maxLength={100}
             value={formData?.renterDetails?.renterName || ""} 
             onChange={e => {
-              const val = e.target.value;
-              if (!isValidRenterName(val)) {
-                setError('renterName', 'Only alphabets are allowed (no numbers or symbols)');
-                return; // Block the input
-              }
-              clearError('renterName');
+              const rawVal = e.target.value;
+              // Prevent non-alphabetic, non-space characters in real time (typing and paste)
+              const filtered = rawVal.replace(/[^A-Za-z ]/g, '');
+              // Trim leading spaces, collapse multiple spaces, slice to 100 max chars
+              const val = filtered.replace(/^\s+/, '').replace(/\s{2,}/g, ' ').slice(0, 100);
+              
               setFormData(prev => {
                 if (!prev) return null;
                 return { ...prev, renterDetails: { ...prev.renterDetails, renterName: val } };
               });
+              markTouched('renterName');
             }} 
+            onBlur={() => {
+              markTouched('renterName');
+              setFormData(prev => {
+                if (!prev || !prev.renterDetails?.renterName) return prev;
+                return {
+                  ...prev,
+                  renterDetails: {
+                    ...prev.renterDetails,
+                    renterName: prev.renterDetails.renterName.trim()
+                  }
+                };
+              });
+            }}
             className={`h-10 text-xs font-medium w-full text-slate-700 ${fieldErrors.renterName ? errorBorderClassName : ''}`} 
           />
           {fieldErrors.renterName && <p className={errorClassName}>{fieldErrors.renterName}</p>}
@@ -325,31 +359,33 @@ const AgreementDetails = memo(({ formData, setFormData }: AgreementDetailsProps)
           <Label className={fieldLabelClassName}>{t('floor.renterSection.durationFromTo')} <span className="text-red-500">*</span></Label>
           <div className="flex items-center gap-2 h-10 relative">
             <div className={`flex items-center bg-white border rounded-md px-2 h-full flex-1 min-w-0 ${fieldErrors.agreementDateFrom ? 'border-red-400' : 'border-gray-200'}`}>
-              <Input type="text" placeholder="dd-mm-yyyy" naked value={toDisplayDate(formData?.renterDetails?.agreementDateFrom || "")} onChange={e => {
-                const formatted = formatManualDate(e.target.value);
+              <Input type="text" placeholder="dd-mm-yyyy" naked maxLength={10} value={toDisplayDate(formData?.renterDetails?.agreementDateFrom || "")} onChange={e => {
+                const formatted = formatManualDate(e.target.value).slice(0, 10);
                 setFormData(prev => {
                   if (!prev) return null;
                   return { ...prev, renterDetails: { ...prev.renterDetails, agreementDateFrom: toValueDate(formatted) } };
                 });
-                if (formatted.length < 10) clearError('agreementDateFrom');
+                if (formatted.length === 10) {
+                  markTouched('agreementDateFrom');
+                }
               }} 
-              onBlur={() => validateDateField('agreementDateFrom', toDisplayDate(formData?.renterDetails?.agreementDateFrom || ""))}
+              onBlur={() => markTouched('agreementDateFrom')}
               className="border-none bg-transparent h-8 p-0 text-xs font-medium flex-1 outline-none min-w-0 text-slate-700" />
               <Calendar className="w-4 h-4 text-gray-400 cursor-pointer shrink-0" tabIndex={-1} onClick={() => triggerDatePicker(fromDateRef)} />
             </div>
             <span className="text-xs font-medium text-slate-500 shrink-0">{t('floor.renterSection.to')}</span>
             <div className={`flex items-center bg-white border rounded-md px-2 h-full flex-1 min-w-0 ${fieldErrors.agreementDateTo ? 'border-red-400' : 'border-gray-200'}`}>
-              <Input type="text" placeholder="dd-mm-yyyy" naked value={toDisplayDate(formData?.renterDetails?.agreementDateTo || "")} onChange={e => {
-                const formatted = formatManualDate(e.target.value);
+              <Input type="text" placeholder="dd-mm-yyyy" naked maxLength={10} value={toDisplayDate(formData?.renterDetails?.agreementDateTo || "")} onChange={e => {
+                const formatted = formatManualDate(e.target.value).slice(0, 10);
                 setFormData(prev => {
                   if (!prev) return null;
                   return { ...prev, renterDetails: { ...prev.renterDetails, agreementDateTo: toValueDate(formatted) } };
                 });
-                if (formatted.length < 10) clearError('agreementDateTo');
+                if (formatted.length === 10) {
+                  markTouched('agreementDateTo');
+                }
               }} 
-              onBlur={() => {
-                validateDateField('agreementDateTo', toDisplayDate(formData?.renterDetails?.agreementDateTo || ""));
-              }}
+              onBlur={() => markTouched('agreementDateTo')}
               className="border-none bg-transparent h-8 p-0 text-xs font-medium flex-1 outline-none min-w-0 text-slate-700" />
               <Calendar className="w-4 h-4 text-gray-400 cursor-pointer shrink-0" tabIndex={-1} onClick={() => triggerDatePicker(toDateRef)} />
             </div>
@@ -358,14 +394,14 @@ const AgreementDetails = memo(({ formData, setFormData }: AgreementDetailsProps)
                 if (!prev) return null;
                 return { ...prev, renterDetails: { ...prev.renterDetails, agreementDateFrom: e.target.value } };
               });
-              clearError('agreementDateFrom');
+              markTouched('agreementDateFrom');
             }} />
             <Input type="date" ref={toDateRef} naked tabIndex={-1} className="absolute inset-0 opacity-0 pointer-events-none" value={formData?.renterDetails?.agreementDateTo || ""} onChange={e => {
               setFormData(prev => {
                 if (!prev) return null;
                 return { ...prev, renterDetails: { ...prev.renterDetails, agreementDateTo: e.target.value } };
               });
-              clearError('agreementDateTo');
+              markTouched('agreementDateTo');
             }} />
           </div>
           {fieldErrors.agreementDateFrom && <p className={errorClassName}>{fieldErrors.agreementDateFrom}</p>}
@@ -375,14 +411,26 @@ const AgreementDetails = memo(({ formData, setFormData }: AgreementDetailsProps)
         {/* Rent Agreement(Monthly) */}
         <div className="lg:col-span-2 flex flex-col gap-1.5">
           <Label className={fieldLabelClassName}>{t('floor.renterSection.rentAgreementMonthly')} <span className="text-red-500">*</span></Label>
-          <Input type="number" min="0" value={formData?.renterDetails?.rentAmount || ""} onChange={e => {
-            const val = e.target.value;
-            if (val && Number(val) < 0) return; // Block negative
-            setFormData(prev => {
-              if (!prev) return null;
-              return { ...prev, renterDetails: { ...prev.renterDetails, rentAmount: val } };
-            });
-          }} className="h-10 w-full font-medium text-xs text-slate-700" />
+          <Input 
+            type="text" 
+            inputMode="decimal"
+            maxLength={13}
+            value={formData?.renterDetails?.rentAmount || ""} 
+            onChange={e => {
+              const val = e.target.value;
+              if (val !== "" && !/^\d*(\.\d{0,2})?$/.test(val)) return; // Block negative, positive, more than 2 decimal places, and non-numeric
+              const integerPart = val.split('.')[0];
+              if (integerPart.length > 10) return; // Prevent typing more than 10 digits before decimal
+              setFormData(prev => {
+                if (!prev) return null;
+                return { ...prev, renterDetails: { ...prev.renterDetails, rentAmount: val } };
+              });
+              markTouched('rentAmount');
+            }} 
+            onBlur={() => markTouched('rentAmount')}
+            className={`h-10 w-full font-medium text-xs text-slate-700 ${fieldErrors.rentAmount ? errorBorderClassName : ''}`} 
+          />
+          {fieldErrors.rentAmount && <p className={errorClassName}>{fieldErrors.rentAmount}</p>}
         </div>
       </div>
 

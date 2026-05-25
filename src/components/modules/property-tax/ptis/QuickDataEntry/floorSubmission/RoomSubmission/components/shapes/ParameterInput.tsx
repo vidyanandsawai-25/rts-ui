@@ -29,12 +29,14 @@ export const ParameterInput: React.FC<ParameterInputProps & { areaUnit?: "sq.m" 
         let val = e.target.value;
         // Allow only numbers and one decimal point
         if (val === "" || /^\d*\.?\d*$/.test(val)) {
-            // Limit to 4 digits after decimal
+            // Limit integer part to 4 digits
             if (val.includes(".")) {
                 const [intPart, decPart] = val.split(".");
-                val = intPart + "." + (decPart.slice(0, 4));
+                val = intPart.slice(0, 4) + "." + (decPart.slice(0, 4));
+            } else {
+                val = val.slice(0, 4);
             }
-            onChange(val.slice(0, 10));
+            onChange(val);
         }
     };
 
@@ -47,7 +49,7 @@ export const ParameterInput: React.FC<ParameterInputProps & { areaUnit?: "sq.m" 
                         ref={inputRef}
                         type="text"
                         value={value}
-                        maxLength={10}
+                        maxLength={5}
                         onFocus={(e) => e.target.select()}
                         onChange={handleChange}
                         onKeyDown={(e) => {

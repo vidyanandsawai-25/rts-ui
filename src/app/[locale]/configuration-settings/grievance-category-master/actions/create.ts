@@ -66,7 +66,7 @@ export async function createGrievanceCategoryAction(
     priority: priority as Priority | null,
     resolutionSla: resolutionSla,
     escalationLevel: escalationLevel as EscalationLevel | null,
-    description: description,
+    description: sanitizeDescription(description),
     isActive: isActiveRaw === 'true',
   };
 
@@ -140,9 +140,12 @@ export async function createGrievanceCategoryAction(
       errorMessage: error instanceof Error ? error.message : String(error),
       locale,
     });
+    const errorMessage = process.env.NODE_ENV === 'production'
+      ? 'An unexpected error occurred while creating grievance category'
+      : (error instanceof Error ? error.message : 'Failed to create');
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to create',
+      error: errorMessage,
     };
   }
 }

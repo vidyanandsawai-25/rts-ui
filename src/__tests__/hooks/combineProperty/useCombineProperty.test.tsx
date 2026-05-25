@@ -241,5 +241,93 @@ describe("useCombinePropertyForm hook", () => {
       expect(toast.warning).toHaveBeenCalledWith("differentOwnersError");
       expect(actions.createCombinePropertyAction).not.toHaveBeenCalled();
     });
+
+    it("should prevent combine if no properties are checked", async () => {
+      const mockDetails: PropertyCombineDetails[] = [
+        { propertyId: 3, wardId: 1, wardNo: "W1", propertyNo: "P3", partitionNo: "P3", oldPropertyNo: "", ownerName: "Owner 1", occupierName: "", taxAmount: 100, pendingAmount: 0 },
+      ];
+      
+      vi.mocked(actions.fetchPropertyCombineDetailsAction).mockResolvedValue(mockDetails);
+      mockSearchParams.mockReturnValue(new URLSearchParams("partitionNo=P3"));
+
+      const { result } = renderHook(() => useCombinePropertyForm(mockProps));
+
+      await act(async () => {
+        result.current.handleProceed();
+      });
+
+      // Uncheck the property
+      act(() => {
+        result.current.togglePropertyCheck(3);
+      });
+
+      expect(result.current.checkedCount).toBe(0);
+
+      // Attempt to combine
+      await act(async () => {
+        await result.current.handleCombine();
+      });
+
+      expect(toast.error).toHaveBeenCalledWith("selectAtLeastOneToMerge");
+      expect(actions.createCombinePropertyAction).not.toHaveBeenCalled();
+    });
+
+    it("should clear hasDifferentOwners if the mismatched property is unchecked", async () => {
+      const mockDetails: PropertyCombineDetails[] = [
+        { propertyId: 3, wardId: 1, wardNo: "W1", propertyNo: "P3", partitionNo: "P3", oldPropertyNo: "", ownerName: "Owner 1", occupierName: "", taxAmount: 100, pendingAmount: 0 },
+        { propertyId: 4, wardId: 1, wardNo: "W1", propertyNo: "P4", partitionNo: "P4", oldPropertyNo: "", ownerName: "Owner 2", occupierName: "", taxAmount: 100, pendingAmount: 0 },
+      ];
+      
+      vi.mocked(actions.fetchPropertyCombineDetailsAction).mockResolvedValue(mockDetails);
+      mockSearchParams.mockReturnValue(new URLSearchParams("partitionNo=P3,P4"));
+
+      const { result } = renderHook(() => useCombinePropertyForm(mockProps));
+
+      await act(async () => {
+        result.current.handleProceed();
+      });
+
+      // Initially has different owners
+      expect(result.current.hasDifferentOwners).toBe(true);
+
+      // Uncheck the mismatched property
+      act(() => {
+        result.current.togglePropertyCheck(4);
+      });
+
+      // Now it shouldn't have different owners because the checked properties only contain 'Owner 1'
+      expect(result.current.hasDifferentOwners).toBe(false);
+    });
+
+    it("should toggle all properties correctly", async () => {
+      const mockDetails: PropertyCombineDetails[] = [
+        { propertyId: 3, wardId: 1, wardNo: "W1", propertyNo: "P3", partitionNo: "P3", oldPropertyNo: "", ownerName: "Owner 1", occupierName: "", taxAmount: 100, pendingAmount: 0 },
+        { propertyId: 4, wardId: 1, wardNo: "W1", propertyNo: "P4", partitionNo: "P4", oldPropertyNo: "", ownerName: "Owner 1", occupierName: "", taxAmount: 100, pendingAmount: 0 },
+      ];
+      
+      vi.mocked(actions.fetchPropertyCombineDetailsAction).mockResolvedValue(mockDetails);
+      mockSearchParams.mockReturnValue(new URLSearchParams("partitionNo=P3,P4"));
+
+      const { result } = renderHook(() => useCombinePropertyForm(mockProps));
+
+      await act(async () => {
+        result.current.handleProceed();
+      });
+
+      // Initially all are checked by default
+      expect(result.current.checkedCount).toBe(2);
+
+      // Toggle all should uncheck all
+      act(() => {
+        result.current.toggleAllProperties();
+      });
+      expect(result.current.checkedCount).toBe(0);
+
+      // Toggle all again should check all
+      act(() => {
+        result.current.toggleAllProperties();
+      });
+      expect(result.current.checkedCount).toBe(2);
+    });
   });
 });

@@ -10,9 +10,13 @@ import { RentIncrementCalculator } from "./RentIncrementCalculator";
 import { DurationWiseRentDetails } from "./DurationWiseRentDetails";
 import { CustomDateRangeManager } from "./CustomDateRangeManager";
 import { RenterFormData, RenterFormDataDetails } from "@/types/renter.types";
+import { validateRenterForm } from "@/lib/utils/renter-validation";
 
 const fieldLabelClassName =
     'text-xs leading-snug tracking-normal !font-semibold text-slate-700';
+
+const errorClassName = 'text-[10px] text-red-500 font-medium mt-0.5 animate-in fade-in duration-200';
+const errorBorderClassName = 'border-red-400 focus:ring-red-100';
 
 const SummaryItem = ({ label, value, highlight = false, highlightColor = "text-orange-600" }: { label: string, value: string, highlight?: boolean, highlightColor?: string }) => (
     <div className="flex flex-col gap-0.5 min-w-[90px]">
@@ -34,6 +38,44 @@ export const RentManagementCard = React.memo(({
     const [selectedFYFilter, setSelectedFYFilter] = useState<string | null>(null);
     const rentCalculatorRef = useRef<HTMLDivElement>(null);
     const renterDetails = formData?.renterDetails;
+
+    // ─── Local Touched & Validation Logic ────────────────────────────────────
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+    const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
+
+    const markTouched = React.useCallback((field: string) => {
+        setTouchedFields(prev => ({ ...prev, [field]: true }));
+    }, []);
+
+    React.useEffect(() => {
+        if (!renterDetails) return;
+
+        const validationErrors = validateRenterForm(renterDetails);
+        const nextErrors: Record<string, string> = {};
+        const fields = ['incrementFrequency', 'incrementType', 'incrementValue'];
+
+        fields.forEach(field => {
+            const err = validationErrors.find(e => e.field === field);
+            if (err) {
+                const val = renterDetails[field as keyof RenterFormDataDetails];
+                const isEmpty = val === undefined || val === null || String(val).trim() === "" || val === 'No Increment';
+                if (isEmpty) {
+                    if (touchedFields[field]) nextErrors[field] = err.message;
+                } else {
+                    nextErrors[field] = err.message;
+                }
+            }
+        });
+
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setFieldErrors(nextErrors);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [
+        renterDetails?.incrementFrequency, 
+        renterDetails?.incrementType, 
+        renterDetails?.incrementValue, 
+        touchedFields
+    ]);
 
     React.useEffect(() => {
         if (renterDetails?.incrementFrequency !== "Half-Yearly") return;
@@ -62,18 +104,22 @@ export const RentManagementCard = React.memo(({
                     <Label className={fieldLabelClassName}>{t('floor.renterSection.incrementFrequency')}</Label>
                     <Select 
                         value={renterDetails?.incrementFrequency || "No Increment"}
-                        onChange={(_, val) => setFormData((prev) => {
-                            if (!prev) return null;
-                            const frequency = val as RenterFormDataDetails['incrementFrequency'];
-                            return {
-                                ...prev, 
-                                renterDetails: {
-                                    ...prev.renterDetails, 
-                                    incrementFrequency: frequency, 
-                                    customDateRanges: frequency === "Custom Date" ? (prev.renterDetails?.customDateRanges || []) : []
-                                }
-                            };
-                        })}
+                        onChange={(_, val) => {
+                            markTouched('incrementFrequency');
+                            setFormData((prev) => {
+                                if (!prev) return null;
+                                const frequency = val as RenterFormDataDetails['incrementFrequency'];
+                                return {
+                                    ...prev, 
+                                    renterDetails: {
+                                        ...prev.renterDetails, 
+                                        incrementFrequency: frequency, 
+                                        customDateRanges: frequency === "Custom Date" ? (prev.renterDetails?.customDateRanges || []) : []
+                                    }
+                                };
+                            });
+                        }}
+                        onBlur={() => markTouched('incrementFrequency')}
                         options={[
                             { label: t('floor.renterSection.noIncrement'), value: "No Increment" },
                             { label: t('floor.renterSection.monthly'), value: "Monthly" },
@@ -81,8 +127,10 @@ export const RentManagementCard = React.memo(({
                             { label: t('floor.renterSection.yearly'), value: "Yearly" },
                             { label: t('floor.renterSection.customDates'), value: "Custom Date" }
                         ]}
+                        error={fieldErrors.incrementFrequency ? " " : undefined}
                         className="h-10 font-medium text-slate-950 text-xs rounded-md w-full"
                     />
+                    {fieldErrors.incrementFrequency && <p className={errorClassName}>{fieldErrors.incrementFrequency}</p>}
                 </div>
 
                 {/* Increment Type Selection */}
@@ -90,16 +138,22 @@ export const RentManagementCard = React.memo(({
                     <Label className={fieldLabelClassName}>{t('floor.renterSection.incrementType')}</Label>
                     <Select 
                         value={renterDetails?.incrementType || "Percentage"}
-                        onChange={(_, val) => setFormData((prev) => {
-                            if (!prev) return null;
-                            return {...prev, renterDetails: {...prev.renterDetails, incrementType: val as RenterFormDataDetails['incrementType']}};
-                        })}
+                        onChange={(_, val) => {
+                            markTouched('incrementType');
+                            setFormData((prev) => {
+                                if (!prev) return null;
+                                return {...prev, renterDetails: {...prev.renterDetails, incrementType: val as RenterFormDataDetails['incrementType']}};
+                            });
+                        }}
+                        onBlur={() => markTouched('incrementType')}
                         options={[
                             { label: "Percentage (%)", value: "Percentage" },
                             { label: t('floor.renterSection.fixedAmount'), value: "Fixed" }
                         ]}
+                        error={fieldErrors.incrementType ? " " : undefined}
                         className="h-10 font-medium text-slate-950 text-xs rounded-md w-full"
                     />
+                    {fieldErrors.incrementType && <p className={errorClassName}>{fieldErrors.incrementType}</p>}
                 </div>
 
                 {/* Increment Value Input */}
@@ -107,30 +161,34 @@ export const RentManagementCard = React.memo(({
                     <Label className={fieldLabelClassName}>{t('floor.renterSection.incrementValue')}</Label>
                     <div className="relative">
                         <Input 
-                            type="number" 
-                            step="0.01"
-                            min="0"
+                            type="text" 
+                            inputMode={renterDetails?.incrementType === "Percentage" ? "numeric" : "decimal"}
+                            maxLength={renterDetails?.incrementType === "Percentage" ? 3 : 8}
                             value={renterDetails?.incrementValue || ""} 
                             onChange={e => {
-                                const val = e.target.value;
-                                // Block negative numbers
-                                if (val && Number(val) < 0) return;
+                                let val = e.target.value;
+                                if (renterDetails?.incrementType === "Percentage") {
+                                    val = val.replace(/[^0-9]/g, '').slice(0, 3);
+                                } else {
+                                    if (val !== "" && !/^\d*(\.\d{0,2})?$/.test(val)) return; // Block negative, positive, more than 2 decimal places, and non-numeric
+                                    const integerPart = val.split('.')[0];
+                                    if (integerPart.length > 5) return; // Prevent typing more than 5 digits before decimal
+                                }
                                 setFormData((prev) => {
                                     if (!prev) return null;
                                     return {...prev, renterDetails: {...prev.renterDetails, incrementValue: val}};
                                 });
+                                markTouched('incrementValue');
                             }}
-                            onKeyDown={e => {
-                                // Prevent typing minus sign
-                                if (e.key === '-' || e.key === 'e') e.preventDefault();
-                            }}
+                            onBlur={() => markTouched('incrementValue')}
                             placeholder="e.g. 5"
-                            className="h-10 bg-white border-gray-200 rounded-md font-medium text-slate-950 focus:ring-4 focus:ring-blue-50/50 transition-all pr-8 text-xs w-full"
+                            className={`h-10 bg-white rounded-md font-medium text-slate-950 focus:ring-4 focus:ring-blue-50/50 transition-all pr-8 text-xs w-full ${fieldErrors.incrementValue ? errorBorderClassName : 'border-gray-200'}`}
                         />
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-500">
                             {renterDetails?.incrementType?.toLowerCase()?.includes("percent") ? "%" : "₹"}
                         </span>
                     </div>
+                    {fieldErrors.incrementValue && <p className={errorClassName}>{fieldErrors.incrementValue}</p>}
                 </div>
             </div>
 

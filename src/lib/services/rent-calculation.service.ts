@@ -221,10 +221,35 @@ export const calculateRentProgression = (details: any): RentCalculationResult | 
         return null;
     }
 
+    const isIncValInvalid = (valStr: any) => {
+        if (valStr === undefined || valStr === null || String(valStr).trim() === "") return true;
+        const s = String(valStr).trim();
+        if (!/^[0-9]{1,3}$/.test(s)) return true;
+        const num = Number(s);
+        if (num < 0 || num > 100) return true;
+        return false;
+    };
+
+    const incrementFrequency = details.incrementFrequency || "Yearly";
+    const incrementType = details.incrementType || "Percentage";
+
+    if (incrementFrequency === "Custom Date") {
+        const customRanges = details?.customDateRanges || [];
+        const hasInvalidCustomRange = customRanges.some((r: any) => {
+            if (r.incrementType === "Percentage") {
+                return isIncValInvalid(r.incrementValue);
+            }
+            return false;
+        });
+        if (hasInvalidCustomRange) return null;
+    } else if (incrementFrequency !== "No Increment") {
+        if (incrementType === "Percentage" && isIncValInvalid(details.incrementValue)) {
+            return null;
+        }
+    }
+
     const baseRent = parseFloat(details.rentAmount || "0");
     const incrementValue = parseFloat(details.incrementValue || "0");
-    const incrementType = details.incrementType || "Percentage";
-    const incrementFrequency = details.incrementFrequency || "Yearly";
     const isCompounding = details.isCompounding || false;
     const startDate = new Date(details.agreementDateFrom);
     const endDate = new Date(details.agreementDateTo);

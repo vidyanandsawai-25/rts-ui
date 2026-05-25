@@ -3,6 +3,7 @@ import { Column } from '@/components/common/MasterTable';
 import { MatrixCellInput, StatusBadge } from '@/components/common';
 import { SortAscButton, SortDescButton, SortDefaultButton } from '@/components/common/ActionButtons';
 import { ColumnConfig, FloorFactorCVMaster } from '@/types/floor-cv-weightageMaster.types';
+import { toast } from "sonner";
 
 // Extend FloorFactorCVMaster to add index signature
 type FloorFactorCVMasterWithIndex = FloorFactorCVMaster & Record<string, unknown>;
@@ -131,7 +132,9 @@ export const getFloorCvWeightageMasterColumns = ({
             rowId={rowUid}
             columnId="factorWithLift"
             metaLabel={t('columns.factorWithLift')}
+            maxValue={999.99}
             onCellChange={handleCellChange}
+            onMaxExceeded={() => toast.error(tW('common.messages.valueExceedsMax'))}
           />
         );
       },
@@ -150,7 +153,9 @@ export const getFloorCvWeightageMasterColumns = ({
             rowId={rowUid}
             columnId="factorWithoutLift"
             metaLabel={t('columns.factorWithoutLift')}
+            maxValue={999.99}
             onCellChange={handleCellChange}
+            onMaxExceeded={() => toast.error(tW('common.messages.valueExceedsMax'))}
           />
         );
       },

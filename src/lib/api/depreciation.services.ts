@@ -5,7 +5,7 @@ import type {
   DepreciationRow,
   DepreciationPagedResponse,
 } from '@/types/depreciation.types';
-import { getConstruction } from './constructiontypemaster/construction-crud.service';
+import { getConstructionPaged } from './constructiontypemaster/construction-crud.service';
 import { ConstructionType } from '@/types/construction.types';
 
 /**
@@ -45,12 +45,20 @@ export async function getDepreciationPaged(
 /**
  * Get construction types from construction-crud service
  */
+/**
+ * Get construction types
+ */
 export async function getConstructionTypes(): Promise<DepreciationConstructionType[]> {
-  const constructionTypes = await getConstruction();
-  return constructionTypes.map((ct: ConstructionType) => ({
-    constructionId: ct.id,
-    constructionCode: ct.constructionCode,
-  }));
+  const response = await getConstructionPaged(1, -1);
+
+  const items = response.items || [];
+
+  return items
+    .filter((ct: ConstructionType) => ct.isActive === true)
+    .map((ct: ConstructionType) => ({
+      constructionId: ct.id,
+      constructionCode: ct.constructionCode,
+    }));
 }
 
 /**
@@ -228,6 +236,9 @@ export async function bulkCreateDepreciation(payload: {
 /**
  * Add depreciation range for all construction types
  */
+/**
+ * Add depreciation range for all construction types
+ */
 export async function addDepreciationRangeBulk(
   payload: {
     minYear: number;
@@ -239,14 +250,14 @@ export async function addDepreciationRangeBulk(
   const constructionTypes = await getConstructionTypes();
 
   const rates = constructionTypes.map((type) => ({
-    constructionTypeId: type.constructionId,
-    rate: payload.defaultRate || 0,
+    constructionTypeId: Number(type.constructionId),
+    rate: payload.defaultRate ?? 0,
   }));
 
   await bulkCreateDepreciation({
     minYear: payload.minYear,
     maxYear: payload.maxYear,
-    rates: rates,
+    rates,
     createdBy: Number(userId),
   });
 }

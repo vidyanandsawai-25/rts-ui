@@ -13,6 +13,7 @@ import type {
 import { verifySession, getLocaleFromHeaders, tConfigMessage } from './utils';
 import type { ActionResult } from '@/types/common.types';
 import { logError } from '@/lib/utils/logger';
+import { sanitizeTextInput } from '@/lib/utils/input-sanitization';
 
 /**
  * Fetch submodules (ModuleMaster) for a specific department
@@ -46,7 +47,12 @@ export async function createModuleAction(data: Omit<CreateModuleMasterRequest, '
   try {
     const userId = await verifySession();
 
-    const validation = CreateModuleMasterSchema.safeParse(data);
+    const validation = CreateModuleMasterSchema.safeParse({
+      ...data,
+      moduleCode: sanitizeTextInput(data.moduleCode),
+      moduleName: sanitizeTextInput(data.moduleName),
+      moduleDescription: data.moduleDescription ? sanitizeTextInput(data.moduleDescription) : data.moduleDescription,
+    });
     if (!validation.success) {
       return {
         success: false,
@@ -93,7 +99,12 @@ export async function updateModuleAction(
   try {
     const userId = await verifySession();
 
-    const validation = UpdateModuleMasterSchema.safeParse(data);
+    const validation = UpdateModuleMasterSchema.safeParse({
+      ...data,
+      moduleCode: data.moduleCode ? sanitizeTextInput(data.moduleCode) : data.moduleCode,
+      moduleName: data.moduleName ? sanitizeTextInput(data.moduleName) : data.moduleName,
+      moduleDescription: data.moduleDescription ? sanitizeTextInput(data.moduleDescription) : data.moduleDescription,
+    });
     if (!validation.success) {
       return {
         success: false,

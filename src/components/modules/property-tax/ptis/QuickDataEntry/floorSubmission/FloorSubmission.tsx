@@ -168,6 +168,13 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
             rooms: data.rooms.length,
             noOfRooms: data.rooms.length
           }));
+
+          setFormErrors(prev => {
+            if (prev.rooms) {
+              return { ...prev, rooms: '' };
+            }
+            return prev;
+          });
         }}
       />
     </>

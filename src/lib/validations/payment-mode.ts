@@ -1,8 +1,8 @@
 import type { PaymentModeFormData } from "@/types/paymentMode.types";
 
 export const PAYMENT_MODE_CODE_REGEX = /^[A-Za-z0-9]+$/;
-export const PAYMENT_MODE_CODE_MAX = 20;
-export const PAYMENT_MODE_NAME_MAX = 50;
+export const PAYMENT_MODE_CODE_MAX = 10;
+export const PAYMENT_MODE_NAME_MAX = 30;
 export const PAYMENT_MODE_DESCRIPTION_MAX = 200;
 
 export const validatePaymentMode = (

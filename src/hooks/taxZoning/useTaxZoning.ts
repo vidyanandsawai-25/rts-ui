@@ -108,7 +108,7 @@ export const useTaxZoning = (props: TaxZoningPageProps) => {
       const from = parseInt(val, 10);
       const to = parseInt(toProps, 10);
       
-      if (!isNaN(from) && !isNaN(to) && from >= to) {
+      if (!isNaN(from) && !isNaN(to) && from > to) {
         toast.error(t('messages.fromPropertyMustBeSmallerThanToProperty'));
       }
     }
@@ -122,7 +122,7 @@ export const useTaxZoning = (props: TaxZoningPageProps) => {
       const from = parseInt(fromProps, 10);
       const to = parseInt(val, 10);
       
-      if (!isNaN(from) && !isNaN(to) && from >= to) {
+      if (!isNaN(from) && !isNaN(to) && from > to) {
         toast.error(t('messages.fromPropertyMustBeSmallerThanToProperty'));
       }
     }

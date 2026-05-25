@@ -9,6 +9,7 @@ import {
 import type { AddConfigKeyModalProps, FormState } from '@/types/configMaster.types';
 import { useTranslations } from 'next-intl';
 import { ConfigKeyFormFields } from './ConfigKeyFormFields';
+import { CreateConfigKeySchema, UpdateConfigKeySchema } from '@/lib/validations/config-master.schema';
 
 const initialFormState: FormState = {
   categoryId: '',
@@ -91,12 +92,26 @@ export function ConfigKeyForm({
   };
 
   const validateForm = (): boolean => {
-    const newErrors: Partial<Record<keyof FormState, string>> = {};
-    if (!formData.categoryId) newErrors.categoryId = t('modals.addKey.form.validation.categoryRequired');
-    if (!formData.configCode.trim()) newErrors.configCode = t('modals.addKey.form.validation.codeRequired');
-    if (!formData.configName.trim()) newErrors.configName = t('modals.addKey.form.validation.nameRequired');
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const parsedCategoryId = parseInt(formData.categoryId, 10);
+    const validationData = {
+      ...formData,
+      categoryId: isNaN(parsedCategoryId) ? 0 : parsedCategoryId,
+    };
+    const schema = isEdit ? UpdateConfigKeySchema : CreateConfigKeySchema;
+    const validation = schema.safeParse(validationData);
+    if (!validation.success) {
+      const fieldErrors = validation.error.flatten().fieldErrors;
+      const newErrors: Partial<Record<keyof FormState, string>> = {};
+      Object.entries(fieldErrors).forEach(([key, msgs]) => {
+        if (Array.isArray(msgs) && msgs.length > 0) {
+          newErrors[key as keyof FormState] = msgs[0];
+        }
+      });
+      setErrors(newErrors);
+      return false;
+    }
+    setErrors({});
+    return true;
   };
 
   const handleSubmit = async (): Promise<void> => {
@@ -128,6 +143,15 @@ export function ConfigKeyForm({
           toastSuccess(result.message || (isEdit ? t('messages.keyUpdated') : t('messages.keyCreated')));
           onSuccess?.();
         } else {
+          if (result.validationErrors) {
+            const mappedErrors: Partial<Record<keyof FormState, string>> = {};
+            Object.entries(result.validationErrors).forEach(([key, msgs]) => {
+              if (Array.isArray(msgs) && msgs.length > 0) {
+                mappedErrors[key as keyof FormState] = msgs[0];
+              }
+            });
+            setErrors(mappedErrors);
+          }
           toastError(result.message || result.error || (isEdit ? t('messages.keyUpdateFailed') : t('messages.keyCreateFailed')));
         }
       } catch {

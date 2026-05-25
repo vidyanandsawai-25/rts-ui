@@ -30,6 +30,7 @@
   },
   "validation": {
     "required": "हे फील्ड आवश्यक आहे",
+    "fieldRequired": "{field} आवश्यक आहे",
     "invalidEmail": "अवैध ईमेल पत्ता",
     "minLength": "किमान {count} वर्ण आवश्यक आहेत",
     "maxLength": "कमाल {count} वर्णांची परवानगी आहे",
@@ -137,6 +138,8 @@
     "paginationFooter": "दाखवत आहे {start} <selector/> पैकी {total} नोंदी",
     "showingStart": "दाखवत आहे {start}",
     "ofTotalEntries": "पैकी {total} नोंदी",
+    "selectAll": "सर्व ओळी निवडा",
+    "selectRow": "मालमत्ता {id} निवडा",
     "actions": {
       "edit": "संपादित करा",
       "delete": "हटवा"

@@ -106,7 +106,7 @@ export function BankMaster({
             <AlertCircle className="h-5 w-5 mt-0.5 shrink-0 text-red-500" />
             <div>
               <p className="text-sm font-semibold">
-                {t('errorTitle', { defaultValue: 'Failed to load bank data' })}
+                {t('error.title')}
               </p>
               <p className="text-sm mt-0.5">{errorMessage}</p>
             </div>

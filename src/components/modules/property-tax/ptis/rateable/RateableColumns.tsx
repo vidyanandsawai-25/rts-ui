@@ -33,6 +33,7 @@ export function mapRateableRow(item: RateableValueDetail): RateableRow {
   return {
     id: item.propertyDetailsId,
     floor: item.floor || '-',
+    subFloor: item.subFloor || '-',
     constructionYear: item.constructionYear || '-',
     assessmentYear: item.assessmentYear || '-',
     constructionType: item.constructionType || '-',
@@ -72,6 +73,7 @@ export function getRateableColumns(
 
   const columns: FloorDetailsTableColumn<RateableRow>[] = [
     column('floor', 'floor', CELL_CLASS),
+    column('subFloor', 'subFloor', CELL_CLASS),
     column('constructionYear', 'constYear', CELL_CLASS),
     column('assessmentYear', 'asstYear', CELL_CLASS),
     column('constructionType', 'constType', CELL_CLASS),
