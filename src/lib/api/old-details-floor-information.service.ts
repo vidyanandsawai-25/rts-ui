@@ -10,7 +10,7 @@ import {
     SubTypeOfUse,
     OldFloorDetailsResponse,
     SaveOldFloorDetailPayload,
-} from "@/types/property-old-details.types";
+} from "@/types/OldDetails/property-old-details.types";
 import { PagedResponse } from "@/types/common.types";
 import { handleApiResponse } from "@/lib/utils/api";
 

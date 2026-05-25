@@ -37,7 +37,7 @@ import type {
   OldTaxesDetails,
   OldTaxYear,
   OldTaxItem,
-} from '@/types/property-old-details.types';
+} from '@/types/OldDetails/property-old-details.types';
 
 /**
  * Common validation rules for Master Forms
@@ -852,7 +852,6 @@ export const oldDetailsValidations = {
         taxTotal: Number(year.taxTotal || 0),
         interest: Number(year.interest || 0),
         netTotal: Number(year.netTotal || 0),
-        remark: year.remark?.trim(),
         taxes: (year.taxes || []).map((tax: OldTaxItem) => ({
           ...tax,
           taxId: Number(tax.taxId),

@@ -3,7 +3,7 @@ import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useLocale, useTranslations } from "next-intl";
 import { useConfirm } from "@/components/common";
-import { OldTaxesDetails, OldTaxItem, OldTaxYear } from "@/types/property-old-details.types";
+import { OldTaxesDetails, OldTaxItem, OldTaxYear } from "@/types/OldDetails/property-old-details.types";
 import { saveOldTaxesDetailsAction } from "@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/OldDetails/taxation-breakdown/action";
 import { propertyValidations } from "@/lib/utils/validation-schemas";
 
@@ -157,6 +157,7 @@ export function useTaxationBreakdownForm(initialData: OldTaxesDetails | null) {
     handleMetaChange,
     handleSave,
     isChanged,
-    t
+    t,
+    tValidation
   };
 }

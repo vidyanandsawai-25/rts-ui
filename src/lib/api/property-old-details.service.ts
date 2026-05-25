@@ -4,7 +4,7 @@ import {
   PropertyOldDetailsApiItem,
   PropertyOldDetailsResponse,
   OldTaxesDetails
-} from "@/types/property-old-details.types";
+} from "@/types/OldDetails/property-old-details.types";
    
 import { handleApiResponse } from "@/lib/utils/api";
 

@@ -3,7 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import FloorInformationForm from '@/components/modules/property-tax/ptis/QuickDataEntry/old-details/FloorInformation/FloorInformationForm';
 import { useConfirm } from '@/components/common/ConfirmProvider';
 
-import { OldFloorDetail } from '@/types/property-old-details.types';
+import { OldFloorDetail } from '@/types/OldDetails/property-old-details.types';
 import { useFloorInformationForm } from '@/hooks/ptis/QuickDataEntry/Olddetails/useFloorInformationForm';
 
 // Mock dependencies

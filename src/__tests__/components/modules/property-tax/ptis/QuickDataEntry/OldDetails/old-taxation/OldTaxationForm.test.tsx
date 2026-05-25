@@ -4,7 +4,7 @@ import OldTaxationForm from '@/components/modules/property-tax/ptis/QuickDataEnt
 import { useConfirm } from '@/components/common/ConfirmProvider';
 import { updatePropertyOldDetailsAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/OldDetails/old-taxation/action';
 
-import { PropertyOldDetailsApiItem } from '@/types/property-old-details.types';
+import { PropertyOldDetailsApiItem } from '@/types/OldDetails/property-old-details.types';
 
 // Mock dependencies
 vi.mock('next-intl', () => ({

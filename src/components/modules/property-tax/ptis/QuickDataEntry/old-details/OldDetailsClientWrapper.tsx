@@ -1,7 +1,7 @@
 'use client';
 
 import { ReactNode } from 'react';
-import { OldDetailsTabNav } from './OldDetilasTabNav';
+import { OldDetailsTabNav } from './OldDetailsTabNav';
 
 export default function OldDetailsClientWrapper({
     children,

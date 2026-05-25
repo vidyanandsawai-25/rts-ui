@@ -4,7 +4,7 @@ import TaxationBreakdownForm from '@/components/modules/property-tax/ptis/QuickD
 import { useConfirm } from '@/components/common/ConfirmProvider';
 import { saveOldTaxesDetailsAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/OldDetails/taxation-breakdown/action';
 
-import { OldTaxesDetails } from '@/types/property-old-details.types';
+import { OldTaxesDetails } from '@/types/OldDetails/property-old-details.types';
 
 // Mock dependencies
 vi.mock('next-intl', () => ({

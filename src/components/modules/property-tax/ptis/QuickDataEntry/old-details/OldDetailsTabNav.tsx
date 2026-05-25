@@ -1,19 +1,11 @@
 'use client';
 
-import React from 'react';
 import Link from 'next/link';
 import { usePathname, useParams, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 import { ReceiptText, Layers3, Calculator } from 'lucide-react';
-
-interface Section {
-    id: string;
-    label: string;
-    href: string;
-    icon: React.ComponentType<{ className?: string }>;
-    activeClass: string;
-}
+import { Section } from '@/types/OldDetails/property-old-floor-info.types';
 
 export function OldDetailsTabNav() {
     const pathname = usePathname();

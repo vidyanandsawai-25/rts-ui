@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import OldDetailsClientWrapper from "@/components/modules/property-tax/ptis/QuickDataEntry/old-details/OldDetilasClientWrapper";
+import OldDetailsClientWrapper from "@/components/modules/property-tax/ptis/QuickDataEntry/old-details/OldDetailsClientWrapper";
 
 interface Props {
     children: ReactNode;

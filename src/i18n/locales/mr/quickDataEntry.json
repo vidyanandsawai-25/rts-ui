@@ -1,7 +1,8 @@
 {
     "commonbuttonmessages": {
         "update": "अद्यतनित करा",
-        "UpdateChanges": "बदल अद्यतनित करा"
+        "UpdateChanges": "बदल अद्यतनित करा",
+        "clear": "साफ करा"
     },
     "roomSubmission": {
         "quickDataEntry": "मालमत्ता जलद डेटा नोंद",

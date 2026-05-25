@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { UseFloorInformationFormProps } from "@/types/property-old-details.types";
+import { UseFloorInformationFormProps } from "@/types/OldDetails/property-old-details.types";
 import { hasErrors } from "@/lib/utils/validation";
 import { useFloorFormState } from "./useFloorFormState";
 import { useFloorFormValidation } from "./useFloorFormValidation";
@@ -32,6 +32,7 @@ export function useFloorInformationForm({
   const {
     errors,
     validate,
+    validateYearField,
     resetValidation,
     showError,
     clearError
@@ -45,11 +46,13 @@ export function useFloorInformationForm({
   } = useFloorFormApi(propertyId, locale);
 
   // Clear errors for modified fields dynamically
+  // Skip auto-clear for year fields as they have real-time validation
   const lastFormDataRef = useRef(formData);
   useEffect(() => {
     Object.keys(formData).forEach((key) => {
       const k = key as keyof typeof formData;
-      if (formData[k] !== lastFormDataRef.current[k]) {
+      // Don't auto-clear year field errors - let validateYearField handle them
+      if (k !== 'oldConstructionYear' && k !== 'oldAssessmentYear' && formData[k] !== lastFormDataRef.current[k]) {
         clearError(k);
       }
     });
@@ -96,6 +99,7 @@ export function useFloorInformationForm({
     isSubmitting,
     errors,
     showError,
+    validateYearField,
     handleUseTypeChange,
     handleEdit,
     handleReset,

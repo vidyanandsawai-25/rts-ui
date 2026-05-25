@@ -1,5 +1,5 @@
 
-import { FloorTableRow } from "@/types/property-old-details.types";
+import { FloorTableRow } from "@/types/OldDetails/property-old-details.types";
 import { Column } from "@/components/common/MasterTable";
 
 /**

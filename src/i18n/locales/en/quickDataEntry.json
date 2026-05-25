@@ -1,7 +1,8 @@
 {
     "commonbuttonmessages": {
         "update": "Update",
-        "UpdateChanges": "Update Changes"
+        "UpdateChanges": "Update Changes",
+        "clear": "Clear"
     },
     "roomSubmission": {
         "quickDataEntry": "Property Quick Data Entry",

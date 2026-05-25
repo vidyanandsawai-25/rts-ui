@@ -3,7 +3,7 @@ import { useParams } from "next/navigation";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { useConfirm } from "@/components/common";
-import { PropertyOldDetailsApiItem } from "@/types/property-old-details.types";
+import { PropertyOldDetailsApiItem } from "@/types/OldDetails/property-old-details.types";
 import { updatePropertyOldDetailsAction } from "@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/OldDetails/old-taxation/action";
 import { 
   sanitizePlotArea, 

@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { FloorInformationFormData, OldFloorDetail } from "@/types/property-old-details.types";
+import { FloorInformationFormData, OldFloorDetail } from "@/types/OldDetails/property-old-details.types";
 
 /**
  * Hook to manage the state of the Floor Information Form.
