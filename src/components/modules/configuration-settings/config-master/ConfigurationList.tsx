@@ -30,22 +30,22 @@ export async function ConfigurationList({
   if (items.length === 0) {
     return (
       <div className="space-y-4">
-        <Card variant="default" padding="none" className="p-4 sm:p-5 bg-slate-50/50 dark:bg-slate-900/50 border-slate-200/60 dark:border-slate-800/60">
+        <Card variant="default" padding="none" className="p-4 sm:p-5 bg-slate-50/50 border-slate-200/60">
           <div className="flex items-center gap-3">
             <div className={cn("p-2 rounded-xl shadow-sm border border-white/20", colors.badge)}>
               <Icon className="w-5 h-5 text-white" />
             </div>
-            <h2 className="text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100">{activeCategory.name}</h2>
+            <h2 className="text-base sm:text-lg font-bold text-slate-800">{activeCategory.name}</h2>
           </div>
         </Card>
-        <div className="flex flex-col items-center justify-center py-12 px-4 text-center bg-slate-50/50 dark:bg-slate-900/30 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800">
-          <div className="flex items-center justify-center w-16 h-16 mb-4 rounded-2xl bg-white dark:bg-slate-900 shadow-sm border border-slate-100 dark:border-slate-800">
-            <Search className="w-8 h-8 text-slate-400 dark:text-slate-500" />
+        <div className="flex flex-col items-center justify-center py-12 px-4 text-center bg-slate-50/50 rounded-3xl border border-dashed border-slate-200">
+          <div className="flex items-center justify-center w-16 h-16 mb-4 rounded-2xl bg-white shadow-sm border border-slate-100">
+            <Search className="w-8 h-8 text-slate-400" />
           </div>
-          <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-1 tracking-tight">
+          <h3 className="text-base font-bold text-slate-800 mb-1 tracking-tight">
             {t('noItemsFound', { category: activeCategory.name })}
           </h3>
-          <p className="text-sm font-medium text-slate-500 dark:text-slate-400 max-w-[280px] leading-relaxed">
+          <p className="text-sm font-medium text-slate-500 max-w-[280px] leading-relaxed">
             {t('searchTip')}
           </p>
         </div>
@@ -56,7 +56,7 @@ export async function ConfigurationList({
   return (
     <div className="space-y-4">
       {/* List Header */}
-      <Card variant="default" padding="none" className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 bg-slate-50/50 dark:bg-slate-900/50 border-slate-200/60 dark:border-slate-800/60">
+      <Card variant="default" padding="none" className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 bg-slate-50/50 border-slate-200/60">
         <div className="flex items-center gap-3">
           <div className={cn(
             "p-2 rounded-xl shadow-sm border border-white/20 transition-transform group-hover:scale-105",
@@ -66,12 +66,12 @@ export async function ConfigurationList({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100 tracking-tight leading-tight">
+              <h2 className="text-base sm:text-lg font-bold text-slate-800 tracking-tight leading-tight">
                 {activeCategory.name}
               </h2>
               <CategoryEditDeleteActions categoryId={activeCategory.id} categoryName={activeCategory.name} />
             </div>
-            <p className="text-[10px] sm:text-xs font-semibold text-slate-400 dark:text-slate-500 mt-1 uppercase tracking-wider">
+            <p className="text-[10px] sm:text-xs font-semibold text-slate-400 mt-1 uppercase tracking-wider">
               {items.filter(i => i.isEnabled).length} {t('list.configurationsActive')}
             </p>
           </div>

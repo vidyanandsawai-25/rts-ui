@@ -10,7 +10,7 @@ export const highlightText = (text: string, highlight: string) => {
     <>
       {parts.map((part, i) =>
         part.toLowerCase() === highlight.toLowerCase() ? (
-          <mark key={i} className="bg-amber-200 dark:bg-amber-500/30 text-amber-900 dark:text-amber-100 rounded-sm px-0.5">
+          <mark key={i} className="bg-amber-200 text-amber-900 rounded-sm px-0.5">
             {part}
           </mark>
         ) : (

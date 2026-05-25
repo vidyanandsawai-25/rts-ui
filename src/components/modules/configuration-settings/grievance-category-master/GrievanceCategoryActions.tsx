@@ -16,12 +16,14 @@ export function GrievanceCategoryActions({
         onClick={() => onEdit(categoryId)}
         disabled={isDeleting || isEditing}
         isLoading={isEditing}
+        className="cursor-pointer"
         data-testid={`edit-button-${categoryId}`}
       />
       <DeleteButton
         onClick={() => onDelete(categoryId)}
         disabled={isDeleting || isEditing}
         isLoading={isDeleting}
+        className="cursor-pointer"
         data-testid={`delete-button-${categoryId}`}
       />
     </div>

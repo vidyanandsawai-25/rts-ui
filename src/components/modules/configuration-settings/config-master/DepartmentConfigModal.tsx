@@ -79,18 +79,18 @@ export default function DepartmentConfigModal({
       width="lg"
       title={
         <div className="flex items-center gap-4">
-          <div className="p-3 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-2xl shadow-lg shadow-violet-200 dark:shadow-none shrink-0">
+          <div className="p-3 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-2xl shadow-lg shadow-violet-200 shrink-0">
             <Settings2 className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 tracking-tight leading-tight">
+            <h2 className="text-xl font-bold text-slate-800 tracking-tight leading-tight">
               {configKeyName}
             </h2>
             <div className="flex items-center gap-2 mt-1">
-              <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+              <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg bg-slate-100 text-slate-500 border border-slate-200">
                 {t('modals.departmentConfig.idLabel', { id: configKeyId })}
               </span>
-              <p className="text-slate-500 dark:text-slate-400 text-xs font-medium line-clamp-1">
+              <p className="text-slate-500 text-xs font-medium line-clamp-1">
                 {configKeyDescription || t('modals.departmentConfig.subtitle')}
               </p>
             </div>
@@ -98,7 +98,7 @@ export default function DepartmentConfigModal({
         </div>
       }
       footer={
-        <div className="flex items-center justify-between gap-4 w-full border-t border-slate-100 dark:border-slate-800 p-5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md">
+        <div className="flex items-center justify-between gap-4 w-full border-t border-slate-100 p-5 bg-white/80 backdrop-blur-md">
           <Button
             variant="secondary"
             onClick={handleClose}
@@ -113,7 +113,7 @@ export default function DepartmentConfigModal({
             onClick={handleSaveAll}
             disabled={isPending || !isDirty}
             isLoading={isPending}
-            className="flex-1 sm:flex-none px-10 h-12 rounded-xl font-bold bg-violet-600 hover:bg-violet-700 shadow-lg shadow-violet-200 dark:shadow-none transition-all cursor-pointer"
+            className="flex-1 sm:flex-none px-10 h-12 rounded-xl font-bold bg-violet-600 hover:bg-violet-700 shadow-lg shadow-violet-200 transition-all cursor-pointer"
             icon={isPending ? undefined : Save}
           >
             {isPending
@@ -123,12 +123,12 @@ export default function DepartmentConfigModal({
         </div>
       }
     >
-      <div className="flex flex-col h-full overflow-hidden bg-slate-50/50 dark:bg-slate-950/50">
+      <div className="flex flex-col h-full overflow-hidden bg-slate-50/50">
         <div className="p-5 space-y-4 overflow-y-auto custom-scrollbar flex-1 pb-10">
           {/* Info Banner */}
-          <div className="p-4 bg-blue-50/50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/50 rounded-2xl flex gap-3">
+          <div className="p-4 bg-blue-50/50 border border-blue-100 rounded-2xl flex gap-3">
             <Info className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
-            <p className="text-xs font-medium text-blue-700 dark:text-blue-300 leading-relaxed">
+            <p className="text-xs font-medium text-blue-700 leading-relaxed">
               {t('modals.departmentConfig.infoBanner') ||
                 'Configure visibility and override values for this key across all departments and their submodules.'}
             </p>
@@ -136,12 +136,12 @@ export default function DepartmentConfigModal({
 
           <div className="space-y-4">
             {departments.length === 0 ? (
-              <div className="text-center py-20 bg-white dark:bg-slate-900 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 flex flex-col items-center gap-4">
-                <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-full">
-                  <Settings2 className="w-10 h-10 text-slate-300 dark:text-slate-700" />
+              <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-200 flex flex-col items-center gap-4">
+                <div className="p-4 bg-slate-50 rounded-full">
+                  <Settings2 className="w-10 h-10 text-slate-300" />
                 </div>
                 <div className="space-y-1">
-                  <p className="text-slate-500 dark:text-slate-400 font-bold">
+                  <p className="text-slate-500 font-bold">
                     {t('modals.departmentConfig.noDepartments') || 'No departments found'}
                   </p>
                   <p className="text-xs text-slate-400">

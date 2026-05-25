@@ -36,9 +36,10 @@ export default async function ConfigMasterPage({
   const [categoriesRes] = await Promise.all([configMasterService.getAllCategories()]);
 
   if (!categoriesRes.success) {
-    throw new Error(categoriesRes.error || 'Failed to fetch configuration categories');
+    // Graceful fallback instead of throwing to prevent Next.js Server Component fatal crashes when API is down
+    console.error('[ConfigMasterPage] Failed to fetch configuration categories:', categoriesRes.error);
   }
-  const categories: ConfigCategory[] = categoriesRes.data || [];
+  const categories: ConfigCategory[] = categoriesRes.success && categoriesRes.data ? categoriesRes.data : [];
 
   const activeCategoryId = categoryId || categories[0]?.id || 'all';
   const isGlobalSearch = !!search && search.length >= 2;

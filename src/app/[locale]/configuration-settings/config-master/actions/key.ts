@@ -9,12 +9,9 @@ import {
 import type {
   ConfigItem,
   UpdateConfigKeyRequest,
-  BackendMutationResponse,
-  ConfigKeyMaster,
-  DeleteResponse
 } from '@/types/configMaster.types';
 import type { ActionResult } from '@/types/common.types';
-import { verifySession, getLocaleFromHeaders, tConfigMessage } from './utils';
+import { verifySession, getLocaleFromHeaders, tConfigMessage, localizeConfigError, localizeBackendMessage } from './utils';
 import { logError } from '@/lib/utils/logger';
 import { sanitizeTextInput } from '@/lib/utils/input-sanitization';
 
@@ -33,9 +30,7 @@ export async function getConfigItemsByCategoryAction(
     return { success: false, error: response.error };
   } catch (err) {
     logError('getConfigItemsByCategoryAction failed', { error: err instanceof Error ? err : undefined, categoryId });
-    const errorMessage = process.env.NODE_ENV === 'production'
-      ? 'An unexpected error occurred while fetching items'
-      : (err instanceof Error ? err.message : 'Failed to fetch items');
+    const errorMessage = await localizeConfigError(err, 'failedFetch', 'Failed to fetch items');
     return { success: false, error: errorMessage };
   }
 }
@@ -55,9 +50,7 @@ export async function getAllConfigItemsAction(): Promise<ActionResult<ConfigItem
     return { success: false, error: response.error };
   } catch (error) {
     logError('getAllConfigItemsAction failed', { error: error instanceof Error ? error : undefined });
-    const errorMessage = process.env.NODE_ENV === 'production'
-      ? 'An unexpected error occurred while searching items'
-      : (error instanceof Error ? error.message : 'Failed to search all items');
+    const errorMessage = await localizeConfigError(error, 'failedFetch', 'Failed to search all items');
     return {
       success: false,
       error: errorMessage,
@@ -103,22 +96,19 @@ export async function createConfigKeyAction(formData: FormData): Promise<ActionR
     if (result.success) {
       const locale = await getLocaleFromHeaders();
       revalidatePath(`/${locale}/configuration-settings/config-master`, 'page');
-      const backendMessage = (result.data as BackendMutationResponse<ConfigKeyMaster>)?.message;
       return { 
         success: true, 
-        message: (typeof backendMessage === 'string' ? backendMessage : undefined) || await tConfigMessage('keyCreated', 'Config Key created successfully') 
+        message: await tConfigMessage('keyCreated', 'Config Key created successfully') 
       };
     }
 
     return {
       success: false,
-      error: result.error || await tConfigMessage('keyCreateFailed', 'Failed to create config key'),
+      error: await localizeBackendMessage(result.error, 'keyCreateFailed', 'Failed to create config key'),
     };
   } catch (err) {
     logError('createConfigKeyAction failed', { error: err instanceof Error ? err : undefined });
-    const errorMessage = process.env.NODE_ENV === 'production'
-      ? 'An unexpected error occurred while creating config key'
-      : (err instanceof Error ? err.message : 'An unexpected error occurred');
+    const errorMessage = await localizeConfigError(err, 'keyCreateFailed', 'Failed to create config key');
     return {
       success: false,
       error: errorMessage,
@@ -162,19 +152,16 @@ export async function updateConfigKeyAction(
     if (res.success) {
       const locale = await getLocaleFromHeaders();
       revalidatePath(`/${locale}/configuration-settings/config-master`, 'page');
-      const backendMessage = (res.data as BackendMutationResponse<ConfigKeyMaster>)?.message;
       return { 
         success: true, 
-        message: (typeof backendMessage === 'string' ? backendMessage : undefined) || await tConfigMessage('keyUpdated', 'Configuration key updated successfully') 
+        message: await tConfigMessage('keyUpdated', 'Configuration key updated successfully') 
       };
     }
 
-    return { success: false, error: res.error || await tConfigMessage('keyUpdateFailed', 'Failed to update config key') };
+    return { success: false, error: await localizeBackendMessage(res.error, 'keyUpdateFailed', 'Failed to update config key') };
   } catch (err) {
     logError('updateConfigKeyAction failed', { error: err instanceof Error ? err : undefined, keyId });
-    const errorMessage = process.env.NODE_ENV === 'production'
-      ? 'An unexpected error occurred while updating config key'
-      : (err instanceof Error ? err.message : 'An unexpected error occurred');
+    const errorMessage = await localizeConfigError(err, 'keyUpdateFailed', 'Failed to update config key');
     return {
       success: false,
       error: errorMessage,
@@ -194,17 +181,14 @@ export async function deleteConfigKeyAction(id: number): Promise<ActionResult> {
       const locale = await getLocaleFromHeaders();
       revalidatePath(`/${locale}/configuration-settings/config-master`, 'page');
     }
-    const backendMessage = (res.data as DeleteResponse)?.message;
     return {
       success: res.success,
-      error: res.error,
-      message: res.success ? ((typeof backendMessage === 'string' ? backendMessage : undefined) || await tConfigMessage('keyDeleted', 'Configuration key deleted successfully')) : undefined,
+      error: res.success ? undefined : await localizeBackendMessage(res.error, 'deleteFailed', 'Failed to delete config key'),
+      message: res.success ? await tConfigMessage('keyDeleted', 'Configuration key deleted successfully') : undefined,
     };
   } catch (err) {
     logError('deleteConfigKeyAction failed', { error: err instanceof Error ? err : undefined, id });
-    const errorMessage = process.env.NODE_ENV === 'production'
-      ? 'An unexpected error occurred while deleting config key'
-      : (err instanceof Error ? err.message : 'An unexpected error occurred');
+    const errorMessage = await localizeConfigError(err, 'deleteFailed', 'Failed to delete config key');
     return {
       success: false,
       error: errorMessage,

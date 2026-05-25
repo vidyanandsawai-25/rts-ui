@@ -43,14 +43,14 @@ export function ConfigValueInput({
   ) {
     const isChecked = value === 'true';
     return (
-      <div className={cn("flex items-center gap-3 h-11 px-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800", className)}>
+      <div className={cn("flex items-center gap-3 h-11 px-4 bg-slate-50 rounded-xl border border-slate-200", className)}>
         <ToggleSwitch
           checked={isChecked}
           onChange={(checked) => onChange(checked ? 'true' : 'false')}
           disabled={disabled}
           showPopup={false}
         />
-        <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
+        <span className="text-sm font-medium text-slate-600">
           {isChecked
             ? t('modals.departmentConfig.enabled')
             : t('modals.departmentConfig.disabled')}
@@ -72,7 +72,7 @@ export function ConfigValueInput({
         onChange={(_, val) => onChange(val)}
         options={selectOptions}
         disabled={disabled}
-        className={cn("h-11 text-sm rounded-xl w-full", className)}
+        className={cn("h-11 text-sm rounded-xl w-full cursor-pointer [&_button]:cursor-pointer", className)}
       />
     );
   }
@@ -91,21 +91,29 @@ export function ConfigValueInput({
   }
 
   // 4. Default: Text/Number
+  const isNumericType = controlType === 'number' || dataType === 'int' || dataType === 'number';
+  const isDecimalType = dataType === 'decimal';
   return (
     <Input
       placeholder={t('modals.addValue.form.placeholders.value')}
       value={value}
-      onChange={(e) => onChange(e.target.value)}
-      type={
-        controlType === 'number' || dataType === 'int' || dataType === 'number'
-          ? 'number'
-          : 'text'
-      }
+      onChange={(e) => {
+        let val = e.target.value;
+        if (isNumericType) {
+          val = val.replace(/[^0-9]/g, '');
+        } else if (isDecimalType) {
+          val = val.replace(/[^0-9.]/g, '').replace(/(\.[^.]*)\./g, '$1');
+        }
+        onChange(val);
+      }}
+      type={isNumericType ? 'number' : isDecimalType ? 'number' : 'text'}
+      min={isNumericType ? 1 : isDecimalType ? 0.01 : undefined}
+      step={isDecimalType ? 'any' : isNumericType ? 1 : undefined}
       onKeyDown={(e) => {
-        if ((controlType === 'number' || dataType === 'int' || dataType === 'number') && /^[eE+\-.,]$/.test(e.key)) {
+        if (isNumericType && /^[eE+\-.,]$/.test(e.key)) {
           e.preventDefault();
         }
-        if (dataType === 'decimal' && /^[eE+\-]$/.test(e.key)) {
+        if (isDecimalType && /^[eE+\-]$/.test(e.key)) {
           e.preventDefault();
         }
       }}
