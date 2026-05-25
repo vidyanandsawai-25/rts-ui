@@ -4,23 +4,23 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useLocale } from "next-intl";
 
 
-jest.mock("next/navigation", () => ({
-  useRouter: jest.fn(),
-  usePathname: jest.fn(),
-  useSearchParams: jest.fn(),
+vi.mock("next/navigation", () => ({
+  useRouter: vi.fn(),
+  usePathname: vi.fn(),
+  useSearchParams: vi.fn(),
 }));
-jest.mock("next-intl", () => ({
-  useLocale: jest.fn(),
+vi.mock("next-intl", () => ({
+  useLocale: vi.fn(),
   useTranslations: () => (key: string) => key,
 }));
 
 describe("WaterConnectionToolbar", () => {
 
   beforeEach(() => {
-    (useRouter as jest.MockedFunction<typeof useRouter>).mockReturnValue({ push: jest.fn() });
-    (usePathname as jest.MockedFunction<typeof usePathname>).mockReturnValue("/en/property-tax/water-connection-master/tap-type");
-    (useSearchParams as jest.MockedFunction<typeof useSearchParams>).mockReturnValue({ get: () => "" });
-    (useLocale as jest.MockedFunction<typeof useLocale>).mockReturnValue("en");
+    (useRouter as unknown as vi.Mock).mockReturnValue({ push: vi.fn() });
+    (usePathname as unknown as vi.Mock).mockReturnValue("/en/property-tax/water-connection-master/tap-type");
+    (useSearchParams as unknown as vi.Mock).mockReturnValue({ get: () => "" });
+    (useLocale as unknown as vi.Mock).mockReturnValue("en");
   });
 
   it("renders tabs and search input", () => {
@@ -32,8 +32,8 @@ describe("WaterConnectionToolbar", () => {
   });
 
   it("calls router.push when tab is changed", () => {
-    const push = jest.fn();
-    (useRouter as jest.MockedFunction<typeof useRouter>).mockReturnValue({ push });
+    const push = vi.fn();
+    (useRouter as unknown as vi.Mock).mockReturnValue({ push });
     render(<WaterConnectionToolbar />);
     fireEvent.click(screen.getByText("tabs.tapStatus"));
     expect(push).toHaveBeenCalled();
@@ -47,8 +47,8 @@ describe("WaterConnectionToolbar", () => {
   });
 
   it("calls router.push when Add button is clicked", () => {
-    const push = jest.fn();
-    (useRouter as jest.MockedFunction<typeof useRouter>).mockReturnValue({ push });
+    const push = vi.fn();
+    (useRouter as unknown as vi.Mock).mockReturnValue({ push });
     render(<WaterConnectionToolbar />);
     fireEvent.click(screen.getByText("tapType.addTitle"));
     expect(push).toHaveBeenCalled();
