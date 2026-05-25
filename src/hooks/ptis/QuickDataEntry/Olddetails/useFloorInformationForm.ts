@@ -28,6 +28,9 @@ export function useFloorInformationForm({
     handleReset: stateReset
   } = useFloorFormState();
 
+  // Check if subUseOptions are available
+  const hasSubUseOptions = initialSubUseTypeOptions && initialSubUseTypeOptions.length > 0;
+
   // 2. Manage Validation
   const {
     errors,
@@ -36,7 +39,7 @@ export function useFloorInformationForm({
     resetValidation,
     showError,
     clearError
-  } = useFloorFormValidation();
+  } = useFloorFormValidation(hasSubUseOptions);
 
   // 3. Manage API Calls
   const {
@@ -96,6 +99,7 @@ export function useFloorInformationForm({
     formData,
     setFormData,
     subUseTypeOptions: initialSubUseTypeOptions,
+    hasSubUseOptions,
     isSubmitting,
     errors,
     showError,

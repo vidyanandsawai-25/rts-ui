@@ -10,7 +10,7 @@ const MAX_YEAR = 2026;
  * Hook to manage Floor Information Form validation.
  * Handles validation logic, error state, and visibility.
  */
-export function useFloorFormValidation() {
+export function useFloorFormValidation(hasSubUseOptions = true) {
   const t = useTranslations('quickDataEntry');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showErrors, setShowErrors] = useState(false);
@@ -63,11 +63,11 @@ export function useFloorFormValidation() {
    * @returns Record of errors found.
    */
   const validate = useCallback((formData: FloorInformationFormData) => {
-    const newErrors = oldDetailsValidations.validateFloorInformation(formData, t);
+    const newErrors = oldDetailsValidations.validateFloorInformation(formData, t, hasSubUseOptions);
     setErrors(newErrors);
     setShowErrors(true);
     return newErrors;
-  }, [t]);
+  }, [t, hasSubUseOptions]);
 
   /**
    * Resets validation state.

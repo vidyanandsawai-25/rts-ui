@@ -613,11 +613,13 @@ export const oldDetailsValidations = {
    *
    * @param formData - The floor form state
    * @param t - Translation function
+   * @param hasSubUseOptions - Whether sub-use options are available (optional)
    * @returns Object containing validation errors
    */
   validateFloorInformation: (
     formData: FloorInformationFormData,
-    t: (key: string, values?: Record<string, string | number | Date>) => string
+    t: (key: string, values?: Record<string, string | number | Date>) => string,
+    hasSubUseOptions = true
   ) => {
     const validationData = {
       oldFloorId: formData.oldFloorId,
@@ -630,16 +632,22 @@ export const oldDetailsValidations = {
       oldCarpetAreaSqFeet: formData.oldCarpetAreaSqFeet,
     };
 
-    const errors = validateForm(validationData, {
+    const validationRules: Record<string, Validator> = {
       oldFloorId: propertyValidations.required('floor', t),
       oldSubFloorId: propertyValidations.required('subFloor', t),
       oldConstructionYear: propertyValidations.year('constructionYear', t),
       oldAssessmentYear: propertyValidations.year('assessmentYear', t),
       oldConstructionTypeId: propertyValidations.required('constructionType', t),
       oldTypeOfUseId: propertyValidations.required('typeOfUse', t),
-      oldSubTypeOfUseId: propertyValidations.required('subTypeOfUse', t),
       oldCarpetAreaSqFeet: propertyValidations.required('carpetArea', t),
-    });
+    };
+
+    // Only require Sub Type if options are available
+    if (hasSubUseOptions) {
+      validationRules.oldSubTypeOfUseId = propertyValidations.required('subTypeOfUse', t);
+    }
+
+    const errors = validateForm(validationData, validationRules);
 
     // Additional validation for construction year range (1700-2026)
     if (formData.oldConstructionYear) {

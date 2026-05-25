@@ -79,11 +79,4 @@ export {
   OLD_TAXATION_ERROR_MESSAGES,
 } from './OldDetails/old-taxation-validation.constants';
 
-// Re-export Floor Information validation constants and utilities
-// export {
-//   FLOOR_INFORMATION_VALIDATION_RULES,
-//   ROOM_SUBMISSION_VALIDATION_RULES,
-//   RENTER_VALIDATION_RULES,
-//   floorInformationValidators,
-//   FLOOR_INFORMATION_ERROR_MESSAGES,
-// } from './OldDetails/floor-information-validation.constants';
+

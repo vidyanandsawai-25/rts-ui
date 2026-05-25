@@ -76,7 +76,7 @@ export function useFloorFormState() {
     };
 
     setFormData(editData);
-    setInitialEditValues(editData);
+    setInitialEditValues({ ...editData });
 
     if (row.oldTypeOfUseId !== undefined && row.oldTypeOfUseId !== null) {
       handleUseTypeChange(row.oldTypeOfUseId, true);

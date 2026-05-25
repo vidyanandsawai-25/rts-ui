@@ -21,6 +21,7 @@ export interface FloorFormFieldsProps {
   constructionTypeOptions: SearchSelectOption[];
   useOptions: SearchSelectOption[];
   subUseOptions: SearchSelectOption[];
+  hasSubUseOptions: boolean;
   formData: {
     id?: number;
     oldFloorId: string | number;

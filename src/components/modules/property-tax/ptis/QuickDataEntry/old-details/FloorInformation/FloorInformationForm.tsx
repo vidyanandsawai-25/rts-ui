@@ -43,6 +43,7 @@ export default function FloorInformationForm({
     formData,
     setFormData,
     subUseTypeOptions,
+    hasSubUseOptions,
     isSubmitting,
     errors,
     showError,
@@ -88,6 +89,7 @@ export default function FloorInformationForm({
             constructionTypeOptions={transformedConstructionTypeOptions}
             useOptions={transformedUseOptions}
             subUseOptions={transformedSubUseOptions}
+            hasSubUseOptions={hasSubUseOptions}
             formData={formData}
             errors={errors}
             showError={showError}

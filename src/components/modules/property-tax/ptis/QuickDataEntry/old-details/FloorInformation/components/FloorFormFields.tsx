@@ -18,6 +18,7 @@ export function FloorFormFields({
     constructionTypeOptions,
     useOptions,
     subUseOptions,
+    hasSubUseOptions,
     formData,
     errors,
     showError,
@@ -150,7 +151,7 @@ export function FloorFormFields({
             {/* Sub Type */}
             <div className="space-y-1.5 relative focus-within:z-100">
                 <Label className="text-sm font-bold text-blue-900 flex items-center gap-1">
-                    {t('floor.subTyp')} <span className="text-red-500">*</span>
+                    {t('floor.subTyp')} {hasSubUseOptions && <span className="text-red-500">*</span>}
                 </Label>
                 <SearchSelect
                     options={subUseOptions}
@@ -159,6 +160,7 @@ export function FloorFormFields({
                     name="subUseType"
                     onChange={(_, val) => onFieldChange('oldSubTypeOfUseId', val)}
                     value={String(formData.oldSubTypeOfUseId)}
+                    disabled={!hasSubUseOptions}
                 />
                 {showError("oldSubTypeOfUseId") && (
                     <span className="text-xs text-red-500">{errors.oldSubTypeOfUseId}</span>
