@@ -9,6 +9,6 @@ describe("TapSizeForm", () => {
         <TapSizeForm id={null} />
       </IntlProvider>
     );
-    expect(screen.getByRole("form")).toBeInTheDocument();
+    expect(document.getElementById("tap-size-form")).toBeInTheDocument();
   });
 });

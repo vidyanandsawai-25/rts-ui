@@ -9,6 +9,6 @@ describe("TapStatusForm", () => {
         <TapStatusForm id={null} />
       </IntlProvider>
     );
-    expect(screen.getByRole("form")).toBeInTheDocument();
+    expect(document.getElementById("tap-status-form")).toBeInTheDocument();
   });
 });
