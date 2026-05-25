@@ -9,6 +9,7 @@ import {
   checkGroupHasTypes,
 } from "@/app/[locale]/property-tax/typeofusemaster/actions";
 import type { UseGroup, UseType, UseSubType } from "@/types/typeOfUse.types";
+import { ApiError } from "@/lib/utils/api";
 
 type TranslatorFunction = (key: string, values?: Record<string, string | number>) => string;
 
@@ -21,7 +22,7 @@ interface DeleteConfig {
   description?: string;
   meta: { name: string };
   confirmText?: string;
-  deleteAction: () => Promise<void>;
+  deleteAction: () => Promise<{ success: boolean; message?: string; statusCode?: number }>;
   successMessage: string;
   errorMessage: string;
   ignoreNextRedirect?: boolean;
@@ -44,18 +45,26 @@ export function useTypeOfUseMasterActions(t: TranslatorFunction) {
       confirmText: config.confirmText,
       onConfirm: async () => {
         try {
-          await config.deleteAction();
-          toast.success(config.successMessage);
-          router.refresh();
-        } catch (e: unknown) {
-          const errorMsg = e instanceof Error ? e.message : '';
+          const result = await config.deleteAction();
           
-          // Ignore Next.js redirect "error" if specified
-          if (config.ignoreNextRedirect && errorMsg.includes("NEXT_REDIRECT")) {
+          if (!result.success) {
+            toast.error(result.message || config.errorMessage);
             return;
           }
           
-          toast.error(errorMsg || config.errorMessage);
+          toast.success(config.successMessage);
+          if (!config.ignoreNextRedirect) {
+            router.refresh();
+          }
+        } catch (error) {
+          // Handle unexpected runtime errors that aren't caught by the action itself
+          if (error instanceof ApiError) {
+            toast.error(error.responseText || config.errorMessage);
+          } else if (error instanceof Error) {
+            toast.error(error.message || config.errorMessage);
+          } else {
+            toast.error(config.errorMessage);
+          }
         }
       },
     });
@@ -69,28 +78,34 @@ export function useTypeOfUseMasterActions(t: TranslatorFunction) {
       return;
     }
 
+    // Check if group has types
     try {
-      // Check if group has types
       const { hasTypes } = await checkGroupHasTypes(groupId);
       
       if (hasTypes) {
         toast.error(t('messages.groupHasTypes'));
         return;
       }
-
-      // If no types, proceed with delete
-      executeDelete({
-        variant: "delete",
-        title: t("messages.deleteConfirmation"),
-        meta: { name: g.groupName },
-        deleteAction: () => deleteUseGroup(groupId),
-        successMessage: t('messages.groupDeletedSuccess', { name: g.groupName }),
-        errorMessage: t('messages.groupDeleteFailed'),
-      });
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : 'Failed to check group dependencies';
-      toast.error(errorMsg);
+      if (error instanceof ApiError) {
+        toast.error(error.responseText || t('messages.checkDependenciesFailed'));
+      } else if (error instanceof Error) {
+        toast.error(error.message || t('messages.checkDependenciesFailed'));
+      } else {
+        toast.error(t('messages.checkDependenciesFailed'));
+      }
+      return;
     }
+
+    // If no types, proceed with delete
+    executeDelete({
+      variant: "delete",
+      title: t("messages.deleteConfirmation"),
+      meta: { name: g.groupName },
+      deleteAction: () => deleteUseGroup(groupId),
+      successMessage: t('messages.groupDeletedSuccess', { name: g.groupName }),
+      errorMessage: t('messages.groupDeleteFailed'),
+    });
   };
 
   const handleDeleteType = async (useType: UseType) => {
@@ -101,28 +116,34 @@ export function useTypeOfUseMasterActions(t: TranslatorFunction) {
       return;
     }
 
+    // Check if type has sub-types
     try {
-      // Check if type has sub-types
       const { hasSubTypes } = await checkTypeHasSubTypes(typeId);
       
       if (hasSubTypes) {
         toast.error(t('messages.typeHasSubTypes'));
         return;
       }
-
-      // If no sub-types, proceed with delete
-      executeDelete({
-        variant: "delete",
-        title: t("messages.deleteConfirmation"),
-        meta: { name: useType.description },
-        deleteAction: () => deleteUseType(typeId),
-        successMessage: t('messages.typeDeletedSuccess', { name: useType.description }),
-        errorMessage: t('messages.typeDeleteFailed'),
-      });
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : 'Failed to check type dependencies';
-      toast.error(errorMsg);
+      if (error instanceof ApiError) {
+        toast.error(error.responseText || t('messages.checkDependenciesFailed'));
+      } else if (error instanceof Error) {
+        toast.error(error.message || t('messages.checkDependenciesFailed'));
+      } else {
+        toast.error(t('messages.checkDependenciesFailed'));
+      }
+      return;
     }
+
+    // If no sub-types, proceed with delete
+    executeDelete({
+      variant: "delete",
+      title: t("messages.deleteConfirmation"),
+      meta: { name: useType.description },
+      deleteAction: () => deleteUseType(typeId),
+      successMessage: t('messages.typeDeletedSuccess', { name: useType.description }),
+      errorMessage: t('messages.typeDeleteFailed'),
+    });
   };
 
   const handleDeleteSubType = (s: UseSubType) => {
