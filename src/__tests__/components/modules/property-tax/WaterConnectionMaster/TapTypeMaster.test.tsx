@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import { IntlProvider } from "next-intl";
 import { TapTypeMaster } from "@/components/modules/property-tax/WaterConnectionMaster/TapTypeMaster";
 import { ConfirmProvider } from "@/components/common/ConfirmProvider";
@@ -13,6 +13,6 @@ describe("TapTypeMaster", () => {
         </ConfirmProvider>
       </IntlProvider>
     );
-    expect(screen.getByText(/tap type/i)).toBeInTheDocument();
+    expect(document.getElementById("tap-type-page-size")).toBeInTheDocument();
   });
 });
