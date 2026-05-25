@@ -1,9 +1,10 @@
 import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { BankMaster } from '@/components/modules/configuration-settings/bank/BankMaster';
-import type { BankMasterData } from '@/types/bank-master.types';
-import * as bankActions from '@/app/[locale]/configuration-settings/bank-master/actions';
+
+import { ModuleMaster } from '@/components/modules/configuration-settings/module-master/ModuleMaster';
+import type { ModuleMaster as ModuleMasterType } from '@/types/moduleMaster.types';
+import * as moduleActions from '@/app/[locale]/configuration-settings/module-master/actions';
 import { toast } from 'sonner';
 
 vi.mock('next-intl', () => ({
@@ -38,7 +39,7 @@ vi.mock('next/navigation', () => ({
     push: mockPush,
     refresh: mockRefresh,
   }),
-  usePathname: () => '/en/configuration-settings/bank-master',
+  usePathname: () => '/en/configuration-settings/module-master',
   useSearchParams: () => new URLSearchParams(''),
 }));
 
@@ -48,41 +49,40 @@ vi.mock('@/components/common/ConfirmProvider', () => ({
       if (options.onConfirm) {
         await options.onConfirm();
       }
-
       return true;
     }),
   }),
 }));
 
-vi.mock('@/app/[locale]/configuration-settings/bank-master/actions', () => ({
-  createBankAction: vi.fn(),
-  updateBankAction: vi.fn(),
-  deleteBankAction: vi.fn(),
+vi.mock('@/app/[locale]/configuration-settings/module-master/actions', () => ({
+  createModuleMasterAction: vi.fn(),
+  updateModuleMasterAction: vi.fn(),
+  deleteModuleMasterAction: vi.fn(),
 }));
 
-const mockBanks: BankMasterData[] = [
+const mockModules: ModuleMasterType[] = [
   {
-    id: '1',
-    bankCode: 'SBI001',
-    bankName: 'State Bank of India',
-    branchName: 'Main Branch',
-    ifscCode: 'SBIN0000001',
-    city: 'Mumbai',
-    state: 'Maharashtra',
-    pincode: '400001',
-    address: 'MG Road, Mumbai',
+    moduleId: 1,
+    departmentId: 10,
+    moduleCode: 'MOD001',
+    moduleName: 'Admin Settings',
+    moduleNameLocal: 'एडमिन सेटिंग्स',
+    moduleIcon: 'settings',
+    moduleLabel: 'Admin',
+    moduleDescription: 'Admin configuration settings',
+    departmentName: 'IT Department',
     isActive: true,
   },
 ];
 
-describe('BankMaster', () => {
+describe('ModuleMaster', () => {
   let user: ReturnType<typeof userEvent.setup>;
 
   const renderComponent = () =>
     render(
-      <BankMaster
-        data={mockBanks}
-        statsData={{ activeCount: 1, uniqueStates: ['Maharashtra'] }}
+      <ModuleMaster
+        data={mockModules}
+        statsData={{ totalCount: 1, activeCount: 1, inactiveCount: 0 }}
         pageNumber={1}
         pageSize={10}
         totalCount={1}
@@ -92,7 +92,6 @@ describe('BankMaster', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-
     user = userEvent.setup();
 
     mockPermissions.canView = true;
@@ -101,13 +100,13 @@ describe('BankMaster', () => {
     mockPermissions.haveFullAccess = true;
     mockPermissions.hasAccess = true;
 
-    vi.mocked(bankActions.createBankAction).mockReset();
-    vi.mocked(bankActions.updateBankAction).mockReset();
-    vi.mocked(bankActions.deleteBankAction).mockReset();
+    vi.mocked(moduleActions.createModuleMasterAction).mockReset();
+    vi.mocked(moduleActions.updateModuleMasterAction).mockReset();
+    vi.mocked(moduleActions.deleteModuleMasterAction).mockReset();
 
-    vi.mocked(bankActions.createBankAction).mockResolvedValue({ success: true });
-    vi.mocked(bankActions.updateBankAction).mockResolvedValue({ success: true });
-    vi.mocked(bankActions.deleteBankAction).mockResolvedValue({ success: true });
+    vi.mocked(moduleActions.createModuleMasterAction).mockResolvedValue({ success: true });
+    vi.mocked(moduleActions.updateModuleMasterAction).mockResolvedValue({ success: true });
+    vi.mocked(moduleActions.deleteModuleMasterAction).mockResolvedValue({ success: true });
 
     mockPush.mockReset();
     mockRefresh.mockReset();
@@ -124,67 +123,77 @@ describe('BankMaster', () => {
     renderComponent();
 
     expect(screen.getByText('title')).toBeInTheDocument();
-    expect(screen.getByText('stats.totalBanks')).toBeInTheDocument();
-    expect(screen.getByTestId('stat-value-total-banks')).toHaveTextContent('1');
+    expect(screen.getByText('stats.totalModules')).toBeInTheDocument();
+    expect(screen.getByTestId('stat-value-total-modules')).toHaveTextContent('1');
     expect(screen.getByText('stats.active')).toBeInTheDocument();
-    expect(screen.getByTestId('stat-value-active-banks')).toHaveTextContent('1');
-    expect(screen.getByText('stats.states')).toBeInTheDocument();
-    expect(screen.getByTestId('stat-value-states-count')).toHaveTextContent('1');
+    expect(screen.getByTestId('stat-value-active-modules')).toHaveTextContent('1');
+    expect(screen.getByText('stats.inactive')).toBeInTheDocument();
+    expect(screen.getByTestId('stat-value-inactive-modules')).toHaveTextContent('0');
   });
 
-  it('renders the bank table with data', () => {
+  it('renders the module table with data', () => {
     renderComponent();
 
-    expect(screen.getByText('State Bank of India')).toBeInTheDocument();
-    expect(screen.getByText('SBI001')).toBeInTheDocument();
-    expect(screen.getByText('SBIN0000001')).toBeInTheDocument();
+    expect(screen.getByText('Admin Settings')).toBeInTheDocument();
+    expect(screen.getByText('MOD001')).toBeInTheDocument();
+    expect(screen.getByText('IT Department')).toBeInTheDocument();
   });
 
-  it('navigates to add page when Add Bank is clicked', async () => {
+  it('navigates to add page when Add Module is clicked', async () => {
     renderComponent();
 
-    const addButton = screen.getByText('addBank').closest('button');
-
+    const addButton = screen.getByText('addLabel').closest('button');
     expect(addButton).toBeInTheDocument();
 
     await user.click(addButton!);
-
     expect(mockPush).toHaveBeenCalledWith(expect.stringContaining('/add'));
   });
 
   it('updates the URL when search term changes', () => {
     vi.useFakeTimers();
-
     renderComponent();
 
     const searchInput = screen.getByPlaceholderText('filters.searchPlaceholder');
-
     fireEvent.change(searchInput, {
-      target: {
-        value: 'HDFC',
-      },
+      target: { value: 'Billing' },
     });
 
-    expect(mockPush).not.toHaveBeenCalledWith(expect.stringContaining('search=HDFC'));
+    expect(mockPush).not.toHaveBeenCalledWith(expect.stringContaining('search=Billing'));
 
     act(() => {
       vi.advanceTimersByTime(500);
     });
 
-    expect(mockPush).toHaveBeenCalledWith(expect.stringContaining('search=HDFC'));
+    expect(mockPush).toHaveBeenCalledWith(expect.stringContaining('search=Billing'));
   });
 
-  it('handles delete bank success', async () => {
+  it('handles delete module success', async () => {
     renderComponent();
 
     const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
-
     await user.click(deleteButtons[0]);
 
     await waitFor(() => {
-      expect(bankActions.deleteBankAction).toHaveBeenCalledWith('1');
+      expect(moduleActions.deleteModuleMasterAction).toHaveBeenCalledWith(1);
       expect(toast.success).toHaveBeenCalledWith('messages.deleteSuccess');
     });
+  });
+
+  it('renders fetchError alert when fetchError is provided', () => {
+    render(
+      <ModuleMaster
+        data={[]}
+        statsData={{ totalCount: 0, activeCount: 0, inactiveCount: 0 }}
+        pageNumber={1}
+        pageSize={10}
+        totalCount={0}
+        totalPages={0}
+        fetchError="Database connection refused"
+      />
+    );
+
+    expect(screen.getByText('messages.fetchFailed')).toBeInTheDocument();
+    expect(screen.getByText('Database connection refused')).toBeInTheDocument();
   });
 
   it('renders errors.noAccess when user has no access permission and token is valid', () => {
@@ -192,9 +201,9 @@ describe('BankMaster', () => {
     mockPermissions.haveFullAccess = false;
 
     render(
-      <BankMaster
+      <ModuleMaster
         data={[]}
-        statsData={{ activeCount: 0, uniqueStates: [] }}
+        statsData={{ totalCount: 0, activeCount: 0, inactiveCount: 0 }}
         pageNumber={1}
         pageSize={10}
         totalCount={0}
@@ -211,9 +220,9 @@ describe('BankMaster', () => {
     mockPermissions.haveFullAccess = false;
 
     render(
-      <BankMaster
+      <ModuleMaster
         data={[]}
-        statsData={{ activeCount: 0, uniqueStates: [] }}
+        statsData={{ totalCount: 0, activeCount: 0, inactiveCount: 0 }}
         pageNumber={1}
         pageSize={10}
         totalCount={0}
@@ -226,19 +235,19 @@ describe('BankMaster', () => {
     expect(screen.queryByText('errors.noAccess')).not.toBeInTheDocument();
   });
 
-  it('renders errors.unauthorized when user has no access permission and token is expired (errorMessage contains unauthorized)', () => {
+  it('renders errors.unauthorized when user has no access permission and token is expired (fetchError messages.unauthorizedToken)', () => {
     mockPermissions.canView = false;
     mockPermissions.haveFullAccess = false;
 
     render(
-      <BankMaster
+      <ModuleMaster
         data={[]}
-        statsData={{ activeCount: 0, uniqueStates: [] }}
+        statsData={{ totalCount: 0, activeCount: 0, inactiveCount: 0 }}
         pageNumber={1}
         pageSize={10}
         totalCount={0}
         totalPages={0}
-        errorMessage="Unauthorized: Token expired or invalid"
+        fetchError="messages.unauthorizedToken"
       />
     );
 
