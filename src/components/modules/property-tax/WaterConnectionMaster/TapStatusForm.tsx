@@ -146,15 +146,17 @@ export function TapStatusForm({ id, initialData }: Readonly<TapStatusFormProps>)
         className="space-y-5 bg-[#F8FAFF] p-5"
         noValidate
       >
-        <StatusToggleField
-          isActive={formData.isActive}
-          onChange={() => handleChange("isActive", !formData.isActive)}
-          labels={{
-            title: t("form.activeStatusTitle"),
-            activeText: t("form.activeStatusOn"),
-            inactiveText: t("form.activeStatusOff"),
-          }}
-        />
+        {isEdit && (
+          <StatusToggleField
+            isActive={formData.isActive}
+            onChange={() => handleChange("isActive", !formData.isActive)}
+            labels={{
+              title: t("form.activeStatusTitle"),
+              activeText: t("form.activeStatusOn"),
+              inactiveText: t("form.activeStatusOff"),
+            }}
+          />
+        )}
 
         <div>
           <Label htmlFor="tap-status-name" required>

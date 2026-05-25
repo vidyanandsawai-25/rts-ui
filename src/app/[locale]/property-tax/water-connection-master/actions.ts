@@ -59,13 +59,24 @@ async function getAuthUserId(): Promise<number> {
 
 function parseWaterConnectionError(error: unknown): ApiResponse<never> {
   if (error instanceof ApiError) {
+    // Show a user-friendly message if backend is unreachable or fetch fails
+    if (
+      error.statusCode === 500 &&
+      (error.error?.toLowerCase().includes('fetch failed') || error.error?.toLowerCase().includes('failed to fetch'))
+    ) {
+      return {
+        success: false,
+        statusCode: error.statusCode,
+        error: "Server is unavailable. Please try again later.",
+      };
+    }
     return {
       success: false,
       statusCode: error.statusCode,
       error: error.message,
     };
   }
-  return { success: false, error: "An unexpected error occurred" };
+  return { success: false, error: "An unexpected error occurred. Please check your connection or try again later." };
 }
 
 /* ============================================================

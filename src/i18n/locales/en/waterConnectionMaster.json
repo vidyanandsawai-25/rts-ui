@@ -2,6 +2,17 @@
   "waterConnectionMaster": {
     "title": "Water Connection Master",
     "subtitle": "Manage water connection status, type, and size",
+    "error": {
+      "title": "Failed to load Water Connection Master. Please try again later.",
+      "description": "We encountered an error while loading the water connection master page. Please try again.",
+      "tryAgain": "Try Again",
+      "goHome": "Go to Home",
+      "errorId": "Error ID: {id}"
+    },
+    "loading": {
+      "message": "Loading Water Connection Master...",
+      "description": "Please wait while we fetch the water connection master data"
+    },
     "tabs": {
       "tapStatus": "Tap Status",
       "tapType": "Tap Type",

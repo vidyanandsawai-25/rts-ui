@@ -93,7 +93,11 @@ export function WaterConnectionToolbar() {
 
       <SearchInput
         value={search}
-        onChange={(value) => setSearch(sanitizeInput(value))}
+        onChange={(value) => {
+          // Remove all special characters except alphanumerics and spaces
+          const sanitized = value.replace(/[^a-zA-Z0-9 ]/g, "");
+          setSearch(sanitized);
+        }}
         placeholder={searchPlaceholder}
         className="mb-0 w-105 text-gray-900"
       />
