@@ -225,7 +225,7 @@ describe("UseGroupForm", () => {
     });
 
     it("should create group successfully with valid data", async () => {
-      mockCreateUseGroup.mockResolvedValue(undefined);
+      mockCreateUseGroup.mockResolvedValue({ success: true });
 
       const { container } = renderWithIntl(<UseGroupForm id={null} allGroups={existingGroups} />);
 
@@ -251,7 +251,7 @@ describe("UseGroupForm", () => {
     });
 
     it("should handle create error", async () => {
-      mockCreateUseGroup.mockRejectedValue(new Error("Create failed"));
+      mockCreateUseGroup.mockResolvedValue({ success: false, message: "Create failed" });
 
       const { container } = renderWithIntl(<UseGroupForm id={null} allGroups={existingGroups} />);
 
@@ -300,7 +300,7 @@ describe("UseGroupForm", () => {
     });
 
     it("should update group successfully", async () => {
-      mockUpdateUseGroup.mockResolvedValue(undefined);
+      mockUpdateUseGroup.mockResolvedValue({ success: true });
 
       const { container } = renderWithIntl(
         <UseGroupForm id="1" initialData={initialData} allGroups={existingGroups} />

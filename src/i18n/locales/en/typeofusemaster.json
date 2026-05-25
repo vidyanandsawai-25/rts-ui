@@ -198,7 +198,8 @@
         "typeHasSubTypes": "This type cannot be deleted because it has sub-types. Please delete all sub-types for this type first.",
         "groupHasTypes": "This group cannot be deleted because it has types. Please delete all types within this group first.",
         "cannotDeactivateGroup": "This group cannot be deactivated because it has active types. Please deactivate or delete all types within this group first.",
-        "cannotDeactivateType": "This type cannot be deactivated because it has active sub-types. Please deactivate or delete all sub-types for this type first."
+        "cannotDeactivateType": "This type cannot be deactivated because it has active sub-types. Please deactivate or delete all sub-types for this type first.",
+        "checkDependenciesFailed": "Unable to verify if this record can be safely deleted. Please try again."
     },
     "error": {
       "title": "Type of Use Master error",

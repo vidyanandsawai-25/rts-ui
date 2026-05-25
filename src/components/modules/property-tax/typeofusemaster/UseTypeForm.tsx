@@ -115,44 +115,42 @@ export default function UseTypeForm({ id, initialData, allGroups: allGroupsProp 
 
     if (Object.keys(validationErrors).length > 0) return;
 
-    try {
-      if (isEdit) {
-        await updateUseType({
-          id: Number(formData.typeOfUseId),
-          groupId: Number(formData.typeOfUseGroupId),
-          code: formData.typeOfUseCode,
-          description: formData.description,
-          type: typeValue,
-          searchSequence: Number(formData.searchSequence ?? 0),
-          status: formData.isActive ? "Active" : "Inactive",
-        });
-        toast.success(t('messages.typeUpdated'));
-      } else {
-        await createUseType({
-          groupId: Number(formData.typeOfUseGroupId),
-          code: formData.typeOfUseCode,
-          description: formData.description,
-          type: typeValue,
-          searchSequence: Number(formData.searchSequence ?? 0),
-          status: formData.isActive ? "Active" : "Inactive",
-        });
-        toast.success(t('messages.typeCreated'));
+    if (isEdit) {
+      const result = await updateUseType({
+        id: Number(formData.typeOfUseId),
+        groupId: Number(formData.typeOfUseGroupId),
+        code: formData.typeOfUseCode,
+        description: formData.description,
+        type: typeValue,
+        searchSequence: Number(formData.searchSequence ?? 0),
+        status: formData.isActive ? "Active" : "Inactive",
+      });
+
+      if (!result.success) {
+        toast.error(result.message || t('messages.updateTypeFailed'));
+        return;
       }
-      router.back();
-    } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : '';
-      
-      // Detect backend reference errors and map to i18n keys
-      if (errorMessage.includes('referenced in:') || errorMessage.includes('referenced by')) {
-        toast.error(t('messages.cannotDeactivateType'));
-      } else {
-        // Check if it's an i18n key or raw message
-        const displayMessage = errorMessage.startsWith('messages.') 
-          ? t(errorMessage) 
-          : errorMessage || t('messages.saveFailed');
-        toast.error(displayMessage);
+
+      toast.success(t('messages.typeUpdated'));
+    } else {
+      const result = await createUseType({
+        groupId: Number(formData.typeOfUseGroupId),
+        code: formData.typeOfUseCode,
+        description: formData.description,
+        type: typeValue,
+        searchSequence: Number(formData.searchSequence ?? 0),
+        status: formData.isActive ? "Active" : "Inactive",
+      });
+
+      if (!result.success) {
+        toast.error(result.message || t('messages.createTypeFailed'));
+        return;
       }
+
+      toast.success(t('messages.typeCreated'));
     }
+
+    router.back();
   };
 
   return (

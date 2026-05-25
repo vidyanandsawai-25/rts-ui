@@ -92,66 +92,80 @@ export default function UseGroupForm({ id, initialData, allGroups: allGroupsProp
 
     if (Object.keys(validationErrors).length > 0) return;
 
-    try {
-      if (isEdit) {
-        await updateUseGroup({
-          id: formData.typeOfUseGroupId,
-          code: formData.typeOfUseGroupCode,
-          name: formData.groupName,
-          icon: getIconKey(formData.groupIcon),
-          status: formData.isActive ? "Active" : "Inactive",
-        });
-        toast.success(t('messages.groupUpdated'));
-      } else {
-        await createUseGroup({
-          code: formData.typeOfUseGroupCode,
-          name: formData.groupName,
-          icon: getIconKey(formData.groupIcon),
-          status: formData.isActive ? "Active" : "Inactive",
-        });
-        toast.success(t('messages.groupCreated'));
-      }
+    if (isEdit) {
+      const result = await updateUseGroup({
+        id: formData.typeOfUseGroupId,
+        code: formData.typeOfUseGroupCode,
+        name: formData.groupName,
+        icon: getIconKey(formData.groupIcon),
+        status: formData.isActive ? "Active" : "Inactive",
+      });
 
-      router.back();
-    } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : '';
-      const msg = errorMessage.toLowerCase();
+      if (!result.success) {
+        const errorMessage = result.message || '';
+        const msg = errorMessage.toLowerCase();
 
-      const isDup =
-        msg.includes("duplicate") ||
-        msg.includes("already exists") ||
-        msg.includes("unique");
+        const isDup =
+          msg.includes("duplicate") ||
+          msg.includes("already exists") ||
+          msg.includes("unique");
 
-      if (isDup) {
-        setErrors((p) => ({
-          ...p,
-          name: t('messages.duplicateGroupName'),
-        }));
+        if (isDup) {
+          setErrors((p) => ({
+            ...p,
+            name: t('messages.duplicateGroupName'),
+          }));
+          setTouched((p) => ({
+            ...p,
+            name: true,
+          }));
+          return;
+        }
 
-        setTouched((p) => ({
-          ...p,
-          name: true,
-        }));
-
+        // Show backend error message
+        toast.error(errorMessage || t('messages.updateGroupFailed'));
         return;
       }
 
-      // Detect backend reference errors and map to i18n keys
-      if (errorMessage.includes('referenced in:') || errorMessage.includes('referenced by')) {
-        toast.error(t('messages.cannotDeactivateGroup'));
-      } else {
-        // Show actual backend error message or fallback to generic message
-        const fallbackMessage = isEdit
-          ? t('messages.updateGroupFailed')
-          : t('messages.createGroupFailed');
-        
-        const displayMessage = errorMessage
-          ? (errorMessage.startsWith('messages.') ? t(errorMessage) : errorMessage)
-          : fallbackMessage;
-        
-        toast.error(displayMessage);
+      toast.success(t('messages.groupUpdated'));
+    } else {
+      const result = await createUseGroup({
+        code: formData.typeOfUseGroupCode,
+        name: formData.groupName,
+        icon: getIconKey(formData.groupIcon),
+        status: formData.isActive ? "Active" : "Inactive",
+      });
+
+      if (!result.success) {
+        const errorMessage = result.message || '';
+        const msg = errorMessage.toLowerCase();
+
+        const isDup =
+          msg.includes("duplicate") ||
+          msg.includes("already exists") ||
+          msg.includes("unique");
+
+        if (isDup) {
+          setErrors((p) => ({
+            ...p,
+            name: t('messages.duplicateGroupName'),
+          }));
+          setTouched((p) => ({
+            ...p,
+            name: true,
+          }));
+          return;
+        }
+
+        // Show backend error message
+        toast.error(errorMessage || t('messages.createGroupFailed'));
+        return;
       }
+
+      toast.success(t('messages.groupCreated'));
     }
+
+    router.back();
   };
 
   return (
