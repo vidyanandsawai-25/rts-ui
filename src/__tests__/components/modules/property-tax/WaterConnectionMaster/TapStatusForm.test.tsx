@@ -3,7 +3,7 @@ import { TapStatusForm } from "@/components/modules/property-tax/WaterConnection
 
 describe("TapStatusForm", () => {
   it("renders without crashing", () => {
-    render(<TapStatusForm />);
+    render(<TapStatusForm id={null} />);
     expect(screen.getByRole("form")).toBeInTheDocument();
   });
 });

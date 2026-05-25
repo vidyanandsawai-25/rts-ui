@@ -3,7 +3,7 @@ import { TapTypeForm } from "@/components/modules/property-tax/WaterConnectionMa
 
 describe("TapTypeForm", () => {
   it("renders without crashing", () => {
-    render(<TapTypeForm />);
+    render(<TapTypeForm id={null} />);
     expect(screen.getByRole("form")).toBeInTheDocument();
   });
 });

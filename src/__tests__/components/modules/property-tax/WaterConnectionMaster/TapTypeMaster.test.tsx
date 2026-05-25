@@ -3,7 +3,8 @@ import { TapTypeMaster } from "@/components/modules/property-tax/WaterConnection
 
 describe("TapTypeMaster", () => {
   it("renders without crashing", () => {
-    render(<TapTypeMaster />);
+    const data = { items: [], totalCount: 0, pageNumber: 1, pageSize: 10, totalPages: 1, hasPrevious: false, hasNext: false };
+    render(<TapTypeMaster data={data} />);
     expect(screen.getByText(/tap type/i)).toBeInTheDocument();
   });
 });
