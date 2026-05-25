@@ -1,4 +1,5 @@
 import { render, screen, fireEvent } from "@testing-library/react";
+import { vi, Mock } from "vitest";
 import { WaterConnectionToolbar } from "@/components/modules/property-tax/WaterConnectionMaster/WaterConnectionToolbar";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useLocale } from "next-intl";
@@ -17,10 +18,10 @@ vi.mock("next-intl", () => ({
 describe("WaterConnectionToolbar", () => {
 
   beforeEach(() => {
-    (useRouter as unknown as vi.Mock).mockReturnValue({ push: vi.fn() });
-    (usePathname as unknown as vi.Mock).mockReturnValue("/en/property-tax/water-connection-master/tap-type");
-    (useSearchParams as unknown as vi.Mock).mockReturnValue({ get: () => "" });
-    (useLocale as unknown as vi.Mock).mockReturnValue("en");
+    (useRouter as unknown as Mock).mockReturnValue({ push: vi.fn() });
+    (usePathname as unknown as Mock).mockReturnValue("/en/property-tax/water-connection-master/tap-type");
+    (useSearchParams as unknown as Mock).mockReturnValue({ get: () => "" });
+    (useLocale as unknown as Mock).mockReturnValue("en");
   });
 
   it("renders tabs and search input", () => {
@@ -33,7 +34,7 @@ describe("WaterConnectionToolbar", () => {
 
   it("calls router.push when tab is changed", () => {
     const push = vi.fn();
-    (useRouter as unknown as vi.Mock).mockReturnValue({ push });
+    (useRouter as unknown as Mock).mockReturnValue({ push });
     render(<WaterConnectionToolbar />);
     fireEvent.click(screen.getByText("tabs.tapStatus"));
     expect(push).toHaveBeenCalled();
@@ -48,7 +49,7 @@ describe("WaterConnectionToolbar", () => {
 
   it("calls router.push when Add button is clicked", () => {
     const push = vi.fn();
-    (useRouter as unknown as vi.Mock).mockReturnValue({ push });
+    (useRouter as unknown as Mock).mockReturnValue({ push });
     render(<WaterConnectionToolbar />);
     fireEvent.click(screen.getByText("tapType.addTitle"));
     expect(push).toHaveBeenCalled();
