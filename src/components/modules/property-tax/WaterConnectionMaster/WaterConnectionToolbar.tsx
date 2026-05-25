@@ -43,8 +43,10 @@ export function WaterConnectionToolbar() {
   // Sync the input when the URL q param changes externally
   // (tab switch, browser back/forward, direct URL change)
   useEffect(() => {
-    setSearch(currentSearchTerm);
-  }, [currentSearchTerm]);
+    if (search !== currentSearchTerm) {
+      setSearch(currentSearchTerm);
+    }
+  }, [currentSearchTerm, search]);
 
   // Debounce: ONLY fires when the user actually types (search state changes)
   // Refs are used for everything else so those changes don't reset the timer
