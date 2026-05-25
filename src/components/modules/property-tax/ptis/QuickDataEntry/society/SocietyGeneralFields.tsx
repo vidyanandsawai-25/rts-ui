@@ -138,24 +138,23 @@ export const SocietyGeneralFields = ({
                 )}
             </div>
 
-            {/* Wing Field */}
-            <div className="space-y-1.5">
-                <Label htmlFor="society-wing" className="text-xs font-semibold text-gray-700">
-                    {t('society.wing')}
-                </Label>
-                <SearchSelect
-                    id="society-wing"
-                    name="wing"
-                    options={wingOptions}
-                    value={wingId?.toString() ?? ''}
-                    placeholder={t('society.select') || 'Select Wing'}
-                    onChange={handleWingChange}
-                    className="h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
-                />
-            </div>
+            {/* Row 2: Wing, Society Email & Society Address */}
+            <div className="col-span-3 grid grid-cols-3 gap-4">
+                <div className="space-y-1.5">
+                    <Label htmlFor="society-wing" className="text-xs font-semibold text-gray-700">
+                        {t('society.wing')}
+                    </Label>
+                    <SearchSelect
+                        id="society-wing"
+                        name="wing"
+                        options={wingOptions}
+                        value={wingId?.toString() ?? ''}
+                        placeholder={t('society.select') || 'Select'}
+                        onChange={handleWingChange}
+                        className="h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
+                    />
+                </div>
 
-            {/* Row 2: Society Email & Society Address (side by side) */}
-            <div className="col-span-3 grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                     <Label htmlFor="society-email" className="text-xs font-semibold text-gray-700">
                         {t('society.societyEmail')}
@@ -171,7 +170,9 @@ export const SocietyGeneralFields = ({
                             : ''
                             }`}
                         onChange={(e) => {
-                            const sanitized = sanitizeEmailStrict(e.target.value);
+                            const value = e.target.value;
+                            // Sanitize email input - removes spaces and invalid characters
+                            const sanitized = sanitizeEmailStrict(value);
                             if (sanitized.length <= SOCIETY_VALIDATION_RULES.EMAIL_MAX_LENGTH) {
                                 setSocietyEmail(sanitized);
                             }

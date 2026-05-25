@@ -48,7 +48,7 @@ export const AreaDetailsFields = ({
             {/* Total Carpet Area SqMeter */}
             <div className="space-y-1.5">
                 <Label htmlFor="pd-carpetarea-mtr" className="text-xs font-semibold text-gray-700">
-                    {t('property.totalCarpetArea')}
+                    {t('property.totalCarpetAreafmtr')}
                 </Label>
                 <Input
                     readOnly
@@ -64,7 +64,7 @@ export const AreaDetailsFields = ({
             {/* Buildup Area SqMeter */}
             <div className="space-y-1.5">
                 <Label htmlFor="pd-builduparea-mtr" className="text-xs font-semibold text-gray-700">
-                    {t('property.buildupArea')}
+                    {t('property.builtupAreaSqMeter')}
                 </Label>
                 <Input
                     readOnly
