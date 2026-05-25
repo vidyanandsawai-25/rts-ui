@@ -12,6 +12,9 @@ import {
   createTapStatus,
   updateTapStatus,
   deleteTapStatus,
+} from "@/lib/api/water-connection-master/water-connection-status.service";
+
+import {
   getTapTypePaged,
   getTapTypeById,
   createTapType,
@@ -22,7 +25,7 @@ import {
   createTapSize,
   updateTapSize,
   deleteTapSize,
-} from "@/lib/api/water-connection.service";
+} from "@/lib/api/water-connection-master/water-connection-type-size.service";
 
 import type {
   TapStatus,
