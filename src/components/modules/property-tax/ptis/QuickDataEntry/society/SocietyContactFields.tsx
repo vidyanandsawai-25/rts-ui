@@ -1,6 +1,6 @@
 import { Input } from "@/components/common";
 import { Label } from "@/components/common/label";
-import { SOCIETY_VALIDATION_RULES, societyValidators } from '@/lib/utils/kyc-validation.constants';
+import { SOCIETY_VALIDATION_RULES, societyValidators, kycValidators } from '@/lib/utils/kyc-validation.constants';
 import { sanitizeEmailStrict, sanitizeName } from '@/lib/utils/input-sanitization';
 import { useDigitInputs } from '@/hooks/useDigitInputs';
 
@@ -40,6 +40,9 @@ export const SocietyContactFields = ({
     const getMobileErrorMessage = (value: string): string => {
         const digits = value.replace(/\D/g, '');
         if (digits.length === 0) return '';
+        if (kycValidators.hasRepeatedSequence(digits, 5)) {
+            return t('society.validation.invalidRepeatedSequence') || 'Repeated number sequences are not allowed.';
+        }
         if (!/^[6-9]/.test(digits)) {
             return t('society.validation.invalidMobileStart') || 'Mobile number must start with 6 to 9.';
         }
@@ -129,7 +132,7 @@ export const SocietyContactFields = ({
                                 onChange={(e) => managerMobileInput.handleChange(i, e.target.value)}
                                 onKeyDown={(e) => managerMobileInput.handleKeyDown(i, e)}
                                 ref={managerMobileInput.setRef(i)}
-                                naked
+                                naked                                
                                 className={`flex-1 min-w-0 w-full h-7 text-center text-xs font-semibold text-gray-900 border rounded bg-white outline-none focus:ring-1 ${showError('managerMobile', societyValidators.isValidMobile(managerMobileInput.value))
                                     ? 'border-red-300 focus:border-red-500 focus:ring-red-300'
                                     : 'border-gray-300 focus:border-purple-500 focus:ring-purple-300'

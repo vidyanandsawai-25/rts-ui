@@ -11,6 +11,7 @@
 // OLD TAXATION VALIDATION EXAMPLES
 // ============================================================================
 
+import { useState } from 'react';
 import {
   oldTaxationValidators,
   OLD_TAXATION_ERROR_MESSAGES,
@@ -70,8 +71,6 @@ function OldTaxationInputExample() {
     handleTaxChange,
   };
 }
-
-import { useState } from 'react';
 
 interface OldTaxationExampleFormData {
   oldZoneNo: string;

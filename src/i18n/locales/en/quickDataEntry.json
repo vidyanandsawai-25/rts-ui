@@ -532,6 +532,7 @@
             "societyAddress": "Invalid Society Address. Only letters, numbers, and common punctuation (. , - / #) are allowed. Special characters like *()_++_)(&&^%$#@!~}{}; are not permitted.",
             "invalidMobile": "Mobile number must be exactly 10 digits",
             "invalidMobileStart": "Mobile number must start with 6 to 9.",
+            "invalidRepeatedSequence": "Repeated number sequences are not allowed",
             "invalidNameLength": "Name must be between 2 and 150 characters.",
             "invalidName": "Invalid name. Only letters and basic punctuation are allowed."
         },
@@ -920,7 +921,7 @@
         "carpetArea": "Carpet Area (Sqft/SqMtr)",
         "carpetAreaSqFt": "Carpet Area (sq.ft)",
         "areaSqFt": "Area (Sq Ft)",
-        "areaSqM": "Carpet Area (sq.m)",
+        "areaSqM": "Area (sq.m)",
         "builtupArea": "Built-up Area (Sq Ft / Sq M)",
         "builtupAreaSqFt": "Builtup Area (sq.ft)",
         "builtupAreaSqMeter": "Builtup Area (sq.m)",

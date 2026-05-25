@@ -146,10 +146,10 @@ export function useTaxationBreakdownForm(initialData: OldTaxesDetails | null) {
 
   const isChanged = 
     formData.year !== (yearData ? String(yearData.year || "") : "") ||
-    formData.interest !== (yearData?.interest || 0) ||
+    Number(formData.interest || 0) !== (yearData?.interest || 0) ||
     formData.remark !== (yearData?.remark || "") ||
     formData.rVorCV !== (yearData?.rVorCV || "") ||
-    formData.rVorCVValue !== (yearData?.rVorCVValue || 0) ||
+    Number(formData.rVorCVValue || 0) !== (yearData?.rVorCVValue || 0) ||
     isTaxesChanged;
 
   return {

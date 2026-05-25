@@ -300,18 +300,6 @@ export default function OldTaxationForm({
               placeholder={t("oldDetails.totalTaxPlaceholder")}
               className="h-9 text-sm border-blue-200 bg-gray-50 cursor-not-allowed focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
               value={formData.oldTotalTax}
-              onChange={(e) => {
-                const value = e.target.value;
-                // Allow only positive decimals with up to 2 decimal places and max 15 total digits
-                if (value === '' || /^\d{0,15}(\.\d{0,2})?$/.test(value)) {
-                  handleInputChange('oldTotalTax', value);
-                }
-              }}
-              onKeyDown={(e) => {
-                if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+') {
-                  e.preventDefault();
-                }
-              }}
             />
           </div>
         </div>

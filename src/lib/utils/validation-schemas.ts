@@ -27,7 +27,7 @@ import {
 } from './validation-rules';
 import { validateForm } from './validation-helpers';
 import { DateUtils } from './date-helpers';
-import { PROPERTY_VALIDATION_RULES } from './kyc-validation.constants';
+import { PROPERTY_VALIDATION_RULES, kycValidators } from './kyc-validation.constants';
 import type { Validator } from './validation-helpers';
 import type { OfficeFormModel } from '@/types/office.types';
 import type {
@@ -362,6 +362,9 @@ export const societyValidations = {
       }
       if (!/^[6-9]/.test(digits)) {
         return t('society.validation.invalidMobileStart');
+      }
+      if (kycValidators.hasRepeatedSequence(digits, 5)) {
+        return t('society.validation.invalidRepeatedSequence');
       }
       return undefined;
     },
