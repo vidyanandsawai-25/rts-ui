@@ -18,10 +18,10 @@ vi.mock("next-intl", () => ({
 describe("WaterConnectionToolbar", () => {
 
   beforeEach(() => {
-    (useRouter as unknown as Mock).mockReturnValue({ push: vi.fn() });
-    (usePathname as unknown as Mock).mockReturnValue("/en/property-tax/water-connection-master/tap-type");
-    (useSearchParams as unknown as Mock).mockReturnValue({ get: () => "" });
-    (useLocale as unknown as Mock).mockReturnValue("en");
+    (useRouter as Mock).mockReturnValue({ push: vi.fn() });
+    (usePathname as Mock).mockReturnValue("/en/property-tax/water-connection-master/tap-type");
+    (useSearchParams as Mock).mockReturnValue({ get: () => "" });
+    (useLocale as Mock).mockReturnValue("en");
   });
 
   it("renders tabs and search input", () => {
@@ -34,7 +34,7 @@ describe("WaterConnectionToolbar", () => {
 
   it("calls router.push when tab is changed", () => {
     const push = vi.fn();
-    (useRouter as unknown as Mock).mockReturnValue({ push });
+    (useRouter as Mock).mockReturnValue({ push });
     render(<WaterConnectionToolbar />);
     fireEvent.click(screen.getByText("tabs.tapStatus"));
     expect(push).toHaveBeenCalled();
@@ -49,7 +49,7 @@ describe("WaterConnectionToolbar", () => {
 
   it("calls router.push when Add button is clicked", () => {
     const push = vi.fn();
-    (useRouter as unknown as Mock).mockReturnValue({ push });
+    (useRouter as Mock).mockReturnValue({ push });
     render(<WaterConnectionToolbar />);
     fireEvent.click(screen.getByText("tapType.addTitle"));
     expect(push).toHaveBeenCalled();
