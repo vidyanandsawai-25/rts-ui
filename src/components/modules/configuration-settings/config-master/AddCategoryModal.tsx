@@ -10,6 +10,7 @@ import {
 import { useTranslations } from 'next-intl';
 import type { ConfigCategory } from '@/types/configMaster.types';
 import { CategoryFormFields } from './CategoryFormFields';
+import { CreateConfigCategorySchema, UpdateConfigCategorySchema } from '@/lib/validations/config-master.schema';
 
 interface AddCategoryModalProps {
   isOpen: boolean;
@@ -53,12 +54,26 @@ export default function AddCategoryModal({
   };
 
   const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {};
-    if (!formData.categoryCode.trim()) newErrors.categoryCode = t('modals.addCategory.form.validation.codeRequired');
-    if (!formData.categoryName.trim()) newErrors.categoryName = t('modals.addCategory.form.validation.nameRequired');
-    if (!formData.displayOrder || isNaN(parseInt(formData.displayOrder))) newErrors.displayOrder = t('modals.addCategory.form.validation.orderRequired');
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const parsedDisplayOrder = parseInt(formData.displayOrder, 10);
+    const validationData = {
+      ...formData,
+      displayOrder: isNaN(parsedDisplayOrder) ? 0 : parsedDisplayOrder,
+    };
+    const schema = isEdit ? UpdateConfigCategorySchema : CreateConfigCategorySchema;
+    const validation = schema.safeParse(validationData);
+    if (!validation.success) {
+      const fieldErrors = validation.error.flatten().fieldErrors;
+      const newErrors: Record<string, string> = {};
+      Object.entries(fieldErrors).forEach(([key, msgs]) => {
+        if (Array.isArray(msgs) && msgs.length > 0) {
+          newErrors[key] = msgs[0];
+        }
+      });
+      setErrors(newErrors);
+      return false;
+    }
+    setErrors({});
+    return true;
   };
 
   const handleSubmit = async (e?: React.FormEvent): Promise<void> => {
@@ -84,6 +99,15 @@ export default function AddCategoryModal({
           toastSuccess(result.message || (isEdit ? t('messages.categoryUpdated') : t('messages.categoryCreated')));
           onSuccess();
         } else {
+          if (result.validationErrors) {
+            const mappedErrors: Record<string, string> = {};
+            Object.entries(result.validationErrors).forEach(([key, msgs]) => {
+              if (Array.isArray(msgs) && msgs.length > 0) {
+                mappedErrors[key] = msgs[0];
+              }
+            });
+            setErrors(mappedErrors);
+          }
           toastError(result.message || result.error || t('messages.unexpectedError'));
         }
       } catch {

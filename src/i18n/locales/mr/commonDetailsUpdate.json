@@ -1,0 +1,100 @@
+{
+  "commonDetailsUpdate": {
+    "title": "सामान्य तपशील अपडेट करा",
+    "subtitle": "हजारो मालमत्ता एकाच वेळी सुरक्षितपणे अपडेट करा",
+    "menu": {
+      "title": "अपडेट करण्यासाठी फील्ड निवडा",
+      "searchPlaceholder": "अपडेट प्रकार शोधा..."
+    },
+    "filter": {
+      "title": "मालमत्ता फिल्टर",
+      "wardNumber": "वॉर्ड क्रमांक",
+      "selectWard": "वॉर्ड निवडा",
+      "fromPropertyNo": "मालमत्ता क्र. पासून",
+      "selectFromPropertyNo": "मालमत्ता क्र. पासून निवडा",
+      "toPropertyNo": "मालमत्ता क्र. पर्यंत",
+      "selectToPropertyNo": "मालमत्ता क्र. पर्यंत निवडा",
+      "wing": "विंग",
+      "selectWing": "विंग निवडा",
+      "show": "दाखवा",
+      "back": "मागे",
+      "clear": "साफ करा"
+    },
+    "preview": {
+      "title": "पूर्वावलोकन यादी",
+      "propertiesLoaded": "मालमत्ता लोड झाल्या",
+      "noProperties": "कोणतीही मालमत्ता सापडली नाही",
+      "selectFilters": "मालमत्ता लोड करण्यासाठी फिल्टर लागू करा",
+      "loading": "मालमत्ता लोड होत आहे...",
+      "selectAll": "सर्व निवडा",
+      "property": "मालमत्ता",
+      "properties": "मालमत्ता",
+      "selected": "निवडली",
+      "showing": "दाखवत आहे",
+      "of": "च्या",
+      "entries": "नोंदी",
+      "searchPlaceholder": "मालमत्ता शोधा..."
+    },
+    "columns": {
+      "wardNo": "वॉर्ड क्र.",
+      "propertyNo": "मालमत्ता क्र.",
+      "partitionNo": "विभाजन क्र.",
+      "currentValueEn": "सध्याचे मूल्य (इंग्रजी)",
+      "currentValueMr": "सध्याचे मूल्य (मराठी)",
+      "currentValuePrefix": "सध्याचे"
+    },
+    "form": {
+      "title": "बल्क अपडेट फॉर्म",
+      "update": "अपडेट करा",
+      "clear": "साफ करा",
+      "updating": "अपडेट होत आहे...",
+      "selectMenuPrompt": "डाव्या पॅनेलमधून अपडेट करण्यासाठी फील्ड निवडा",
+      "noFields": "या अपडेट प्रकारासाठी कोणतेही फील्ड कॉन्फिगर केलेले नाही"
+    },
+    "buttons": {
+      "import": "आयात करा",
+      "export": "निर्यात करा"
+    },
+    "messages": {
+      "fetchMenuFailed": "अपडेट पर्याय लोड करण्यात अयशस्वी",
+      "fetchFieldConfigFailed": "फील्ड कॉन्फिगरेशन लोड करण्यात अयशस्वी",
+      "fetchPropertiesFailed": "मालमत्ता लोड करण्यात अयशस्वी",
+      "fetchWardsFailed": "वॉर्ड लोड करण्यात अयशस्वी",
+      "fetchWingsFailed": "विंग लोड करण्यात अयशस्वी",
+      "wardRequired": "वॉर्ड आवश्यक आहे",
+      "fromPropertyRequired": "मालमत्ता क्र. पासून आवश्यक आहे",
+      "toPropertyRequired": "मालमत्ता क्र. पर्यंत आवश्यक आहे",
+      "wingRequired": "विंग आवश्यक आहे",
+      "updateCodeRequired": "अपडेट प्रकार आवश्यक आहे",
+      "propertiesRequired": "कृपया किमान एक मालमत्ता निवडा",
+      "updateSuccess": "मालमत्ता यशस्वीरित्या अपडेट केल्या",
+      "updateFailed": "मालमत्ता अपडेट करण्यात अयशस्वी",
+      "selectProperties": "अपडेट करण्यासाठी किमान एक मालमत्ता निवडा",
+      "selectUpdateType": "कृपया अपडेट प्रकार निवडा",
+      "fillRequired": "कृपया सर्व आवश्यक फील्ड भरा",
+      "invalidRange": "मालमत्ता क्र. पासून, मालमत्ता क्र. पर्यंत पेक्षा कमी किंवा समान असणे आवश्यक आहे",
+      "noPropertiesToExport": "निर्यात करण्यासाठी कोणतीही मालमत्ता नाही",
+      "exportSuccess": "यशस्वीरित्या निर्यात केले",
+      "somethingWrong": "काहीतरी चुकले. कृपया पुन्हा प्रयत्न करा.",
+      "configLoadFailed": "कॉन्फिगरेशन लोड करण्यात अयशस्वी",
+      "propertiesLoaded": "{count} मालमत्ता यशस्वीरित्या लोड झाल्या",
+      "partialUpdate": "{success} मालमत्ता अपडेट झाल्या, {failed} अयशस्वी",
+      "noPropertiesFound": "निवडलेल्या फिल्टरसाठी कोणतीही मालमत्ता आढळली नाही"
+    },
+    "status": {
+      "active": "सक्रिय",
+      "inactive": "निष्क्रिय"
+    },
+    "loading": {
+      "message": "लोड होत आहे...",
+      "description": "कृपया प्रतीक्षा करा"
+    },
+    "error": {
+      "title": "त्रुटी",
+      "description": "पृष्ठ लोड करताना त्रुटी आली. कृपया रिफ्रेश करा किंवा समर्थनाशी संपर्क साधा.",
+      "errorId": "त्रुटी ID: {id}",
+      "goHome": "मुख्यपृष्ठावर जा",
+      "tryAgain": "पुन्हा प्रयत्न करा"
+    }
+  }
+}

@@ -72,83 +72,111 @@ function parseAddRangeError(error: unknown): string {
  */
 export async function fetchRangesPagedServerAction(
   pageNumber: number,
-  rangePageSize: number // User wants this many RANGES per page
+  rangePageSize: number
 ): Promise<{
   success: boolean;
   data?: {
     rows: DepreciationRow[];
     constructionTypes: DepreciationConstructionType[];
-    // Range-based pagination info
     pageNumber: number;
-    pageSize: number; // Ranges per page (what user selected)
+    pageSize: number;
     totalRanges: number;
     totalPages: number;
-    // For backwards compatibility
     totalRecords: number;
   };
   error?: string;
 }> {
   try {
-    // Validate pagination parameters (allow -1 to fetch all records like construction type)
+    // Validation
     if (pageNumber <= 0 || (rangePageSize !== -1 && rangePageSize <= 0)) {
-      return { success: false, error: 'Invalid pagination parameters' };
+      return {
+        success: false,
+        error: "Invalid pagination parameters",
+      };
     }
 
-    // Get construction types first to calculate record multiplier
-    const constructionTypes = await getConstructionTypes();
-    const constructionTypeCount = constructionTypes.length || 10;
-    
-    // Convert range-based pagination to record-based for API
-    // If rangePageSize is -1, pass -1 directly to fetch all records
-    // Otherwise, each range has N construction types, so multiply
-    const recordPageSize = rangePageSize === -1 ? -1 : rangePageSize * constructionTypeCount;
-    
-    // Fetch records using calculated record page size
-    const paginatedResponse = await getDepreciationPaged(pageNumber, recordPageSize);
+    // Fetch all data
+    const [constructionTypes, paginatedResponse] = await Promise.all([
+      getConstructionTypes(),
+      getDepreciationPaged(1, -1),
+    ]);
 
-    const { items: rows, totalCount } = paginatedResponse;
+    const allRows = paginatedResponse.items || [];
 
-    // Calculate total ranges (total records / construction types)
-    const totalRanges = Math.ceil(totalCount / constructionTypeCount);
-    // When rangePageSize is -1 (fetch all), totalPages should be 1
-    const totalPages = rangePageSize === -1 ? 1 : (Math.ceil(totalRanges / rangePageSize) || 1);
+    // Group rows by range
+    const groupedRanges = new Map<string, DepreciationRow[]>();
 
-    // Clamp pageNumber to valid range (fix for delete-induced page overflow)
-    const clampedPageNumber = Math.min(pageNumber, totalPages);
-    
-    // If we clamped the page number, refetch with correct page
-    let finalRows = rows;
-    let finalTotalCount = totalCount;
-    
-    if (clampedPageNumber !== pageNumber && clampedPageNumber > 0) {
-      const clampedResponse = await getDepreciationPaged(clampedPageNumber, recordPageSize);
-      finalRows = clampedResponse.items;
-      finalTotalCount = clampedResponse.totalCount;
-    }
+    allRows.forEach((row) => {
+      const key = `${row.minYear}-${row.maxYear}`;
 
-    // Count unique ranges in current page
-    const uniqueRanges = new Set<string>();
-    (finalRows || []).forEach(row => {
-      uniqueRanges.add(`${row.minYear}-${row.maxYear}`);
+      if (!groupedRanges.has(key)) {
+        groupedRanges.set(key, []);
+      }
+
+      groupedRanges.get(key)?.push(row);
     });
+
+    // Convert map to array
+    const allRangeGroups = Array.from(groupedRanges.values());
+
+    // Sort ranges properly
+    allRangeGroups.sort((a, b) => {
+      const firstA = a[0];
+      const firstB = b[0];
+
+      return firstA.minYear - firstB.minYear;
+    });
+
+    // Total ranges
+    const totalRanges = allRangeGroups.length;
+
+    // Total pages
+    const totalPages =
+      rangePageSize === -1
+        ? 1
+        : Math.max(1, Math.ceil(totalRanges / rangePageSize));
+
+    // Clamp page number
+    const clampedPageNumber = Math.min(pageNumber, totalPages);
+
+    // Paginate grouped ranges
+    let paginatedGroups: DepreciationRow[][];
+
+    if (rangePageSize === -1) {
+      paginatedGroups = allRangeGroups;
+    } else {
+      const startIndex = (clampedPageNumber - 1) * rangePageSize;
+
+      paginatedGroups = allRangeGroups.slice(
+        startIndex,
+        startIndex + rangePageSize
+      );
+    }
+
+    // Flatten groups back into rows
+    const rows = paginatedGroups.flat();
 
     return {
       success: true,
       data: {
-        rows: finalRows || [],
+        rows,
         constructionTypes,
-        pageNumber: clampedPageNumber || 1,
-        pageSize: rangePageSize, // Return range page size (what user selected)
+        pageNumber: clampedPageNumber,
+        pageSize: rangePageSize,
         totalRanges,
         totalPages,
-        totalRecords: finalTotalCount || 0,
+        totalRecords: allRows.length,
       },
     };
   } catch (error: unknown) {
-    console.error('[fetchRangesPagedServerAction] Error:', error);
+    console.error("[fetchRangesPagedServerAction] Error:", error);
+
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to load depreciation data',
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to load depreciation data",
     };
   }
 }

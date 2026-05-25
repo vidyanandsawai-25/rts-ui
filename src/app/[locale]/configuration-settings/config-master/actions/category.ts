@@ -141,8 +141,8 @@ export async function updateConfigCategoryStatusAction(
     const userId = await verifySession();
 
     const payload: UpdateConfigCategoryRequest = {
-      categoryCode: currentData.code,
-      categoryName: currentData.name,
+      categoryCode: sanitizeTextInput(currentData.code),
+      categoryName: sanitizeTextInput(currentData.name),
       displayOrder: currentData.displayOrder,
       isActive: isActive,
       updatedBy: userId,

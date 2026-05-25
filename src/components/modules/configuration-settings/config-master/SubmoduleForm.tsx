@@ -9,6 +9,7 @@ import {
 } from '@/app/[locale]/configuration-settings/config-master/actions';
 import { useTranslations } from 'next-intl';
 import { SubmoduleFormFields } from './SubmoduleFormFields';
+import { CreateModuleMasterSchema, UpdateModuleMasterSchema } from '@/lib/validations/config-master.schema';
 
 interface FormState {
   moduleCode: string;
@@ -91,11 +92,28 @@ export function SubmoduleForm({
   };
 
   const validateForm = (): boolean => {
-    const newErrors: Partial<Record<keyof FormState, string>> = {};
-    if (!formData.moduleCode.trim()) newErrors.moduleCode = t('modals.addSubmodule.form.validation.codeRequired');
-    if (!formData.moduleName.trim()) newErrors.moduleName = t('modals.addSubmodule.form.validation.nameRequired');
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const validationData = {
+      ...formData,
+      departmentId,
+      moduleNameLocal: null,
+      moduleIcon: null,
+      moduleLabel: null,
+    };
+    const schema = isEdit ? UpdateModuleMasterSchema : CreateModuleMasterSchema;
+    const validation = schema.safeParse(validationData);
+    if (!validation.success) {
+      const fieldErrors = validation.error.flatten().fieldErrors;
+      const newErrors: Partial<Record<keyof FormState, string>> = {};
+      Object.entries(fieldErrors).forEach(([key, msgs]) => {
+        if (Array.isArray(msgs) && msgs.length > 0) {
+          newErrors[key as keyof FormState] = msgs[0];
+        }
+      });
+      setErrors(newErrors);
+      return false;
+    }
+    setErrors({});
+    return true;
   };
 
   const handleSubmit = async (): Promise<void> => {
@@ -125,6 +143,15 @@ export function SubmoduleForm({
           onSuccess?.();
           onClose();
         } else {
+          if (result.validationErrors) {
+            const mappedErrors: Partial<Record<keyof FormState, string>> = {};
+            Object.entries(result.validationErrors).forEach(([key, msgs]) => {
+              if (Array.isArray(msgs) && msgs.length > 0) {
+                mappedErrors[key as keyof FormState] = msgs[0];
+              }
+            });
+            setErrors(mappedErrors);
+          }
           toastError(result.error || (isEdit ? t('messages.submoduleUpdateFailed') : t('messages.submoduleCreateFailed')));
         }
       } catch {
