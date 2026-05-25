@@ -65,12 +65,12 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
 
     return (
       <div className="w-full">
-            {label && (
-              <label htmlFor={id || internalId} className="mb-1.5 inline-block text-sm font-medium text-gray-700 dark:text-gray-200">
-                {label}
-                {required && <span className="text-red-500"> *</span>}
-              </label>
-            )}
+        {label && (
+          <label htmlFor={id || internalId} className="mb-1.5 inline-block text-sm font-medium text-gray-700 dark:text-gray-200">
+            {label}
+            {required && <span className="text-red-500"> *</span>}
+          </label>
+        )}
         <textarea
           ref={ref}
           id={id || internalId} // Ensure id is passed to the textarea
@@ -88,13 +88,13 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
           }
           className={cn(
             // text / placeholder / selection
-            "placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground",
+            "placeholder:text-gray-500 selection:bg-primary selection:text-primary-foreground",
             // size & layout
-            "flex w-full min-w-0 rounded-md px-3 py-2 text-base md:text-sm",
+            "flex w-full min-w-0 rounded-md px-3 py-2 text-gray-700 md:text-sm",
             // background & transition
             "bg-input-background outline-none transition-all duration-200",
             // default border
-            "border border-gray-400",
+            "border border-gray-300",
             // FOCUS STYLES (BLUE RING)
             "focus-visible:border-blue-300",
             "focus-visible:ring-2 focus-visible:ring-blue-400/40",
@@ -117,7 +117,7 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
           }}
           {...props}
         />
-        
+
         <div className="flex items-center justify-between mt-1">
           {errorMessage && (
             <p
@@ -128,7 +128,7 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
               {errorMessage}
             </p>
           )}
-          
+
           {showCharCount && (
             <p className="text-xs text-gray-500 ml-auto">
               {maxLength ? `${currentLength}/${maxLength}` : currentLength}

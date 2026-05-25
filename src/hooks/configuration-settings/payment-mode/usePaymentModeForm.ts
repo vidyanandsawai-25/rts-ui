@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import type { PaymentModeFormData, PaymentModeFormProps } from "@/types/paymentMode.types";
-import { validatePaymentMode, PAYMENT_MODE_CODE_MAX as CODE_MAX } from "@/lib/validations/payment-mode";
+import { validatePaymentMode, PAYMENT_MODE_CODE_MAX as CODE_MAX, PAYMENT_MODE_NAME_MAX as NAME_MAX } from "@/lib/validations/payment-mode";
 import { savePaymentModeMasterAction } from "@/app/[locale]/configuration-settings/payment-mode-master/actions";
 import { formatPaymentModeCode } from "@/lib/utils/payment-mode";
 
@@ -52,6 +52,11 @@ export function usePaymentModeForm({
         if (name === "code") {
             newValue = formatPaymentModeCode(newValue);
             if (newValue.length > CODE_MAX) return;
+        }
+
+        if (name === "paymentModeName") {
+            newValue = newValue.replace(/[^a-zA-Z\s]/g, "");
+            if (newValue.length > NAME_MAX) return;
         }
 
         setFormData((p) => ({ ...p, [name]: newValue }));

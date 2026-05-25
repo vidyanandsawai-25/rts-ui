@@ -22,10 +22,7 @@ import {
   DESCRIPTION_REGEX,
   PERSON_NAME_REGEX,
   EMAIL_REGEX,
-  EMAIL_LOWERCASE_RESTRICTED_REGEX,
   MOBILE_10_REGEX,
-  PINCODE_6_REGEX,
-  CITY_NAME_REGEX,
   YEAR_REGEX,
 } from './validation-rules';
 import { validateForm } from './validation-helpers';
@@ -441,75 +438,149 @@ export const officeValidations = {
     tCommon?: (key: string, params?: Record<string, string | number | Date>) => string
   ) => {
     const errors: Record<string, string> = {};
-    const officeCode = data.officeCode?.trim();
-    const officeName = data.officeName?.trim();
-
-    // Use tCommon for shared messages if available, fallback to t
     const tx = tCommon || t;
 
-    if (!officeCode) {
-      errors.officeCode = t('form.validation.officeCodeRequired');
-    } else if (officeCode.length > 20) {
-      errors.officeCode = tx('form.validation.codeMaxLength', { count: 20 });
-    } else if (!CODE_REGEX.test(officeCode)) {
-      errors.officeCode = tx('form.validation.codeFormat');
+    const isGibberish = (val: string): boolean => {
+      const lower = val.toLowerCase();
+      const keyboardPatterns = ["qwerty", "asdfgh", "zxcvbn"];
+      const hasKeyboard = keyboardPatterns.some((pat) => lower.includes(pat));
+      const hasRepeatedChar = /([a-z0-9])\1{3,}/i.test(lower);
+      const hasRepeatedSeq =
+        /([a-z0-9]{2})\1{2,}/i.test(lower) || /([a-z0-9]{3,})\1+/i.test(lower);
+
+      const words = lower.split(/[^a-z]+/);
+      let hasGibberishWord = false;
+      for (const word of words) {
+        if (word.length >= 4 && !/[aeiouy]/.test(word)) {
+          hasGibberishWord = true;
+          break;
+        }
+        if (/[bcdfghjklmnpqrstvwxz]{6,}/.test(word)) {
+          hasGibberishWord = true;
+          break;
+        }
+      }
+
+      return hasKeyboard || hasRepeatedChar || hasRepeatedSeq || hasGibberishWord;
+    };
+
+    // 1. Office Code
+    const rawOfficeCode = data.officeCode;
+    if (rawOfficeCode === undefined || rawOfficeCode === null || String(rawOfficeCode).trim() === "") {
+      errors.officeCode = "Office Code is required.";
+    } else {
+      const codeStr = String(rawOfficeCode);
+      if (codeStr.length !== 6) {
+        errors.officeCode = "Office Code must be exactly 6 digits.";
+      } else if (!/^[0-9]+$/.test(codeStr)) {
+        errors.officeCode = "Only numeric values are allowed.";
+      }
     }
 
-    if (!officeName) {
-      errors.officeName = t('form.validation.officeNameRequired');
-    } else if (officeName.length > 200) {
-      errors.officeName = tx('form.validation.nameMaxLength', { count: 200 });
-    } else if (/^\d+$/.test(officeName)) {
-      errors.officeName = t('form.validation.officeNameNumeric');
+    // 2. Office Name
+    const rawOfficeName = data.officeName;
+    if (rawOfficeName === undefined || rawOfficeName === null || String(rawOfficeName).trim() === "") {
+      errors.officeName = "Office Name is required.";
+    } else {
+      const nameStr = String(rawOfficeName);
+      if (nameStr.length < 3 || nameStr.length > 100) {
+        errors.officeName = "Office Name must be between 3 and 100 characters.";
+      } else if (!/^[A-Za-z0-9&-]+(?:\s[A-Za-z0-9&-]+)*$/.test(nameStr)) {
+        errors.officeName = "Please enter a valid Office Name.";
+      } else {
+        // Smart Keyboard Pattern and Meaningless Repeats Validation
+        const lowerName = nameStr.toLowerCase();
+        const keyboardPatterns = ["qwerty", "asdfgh", "zxcvbn"];
+        const hasKeyboard = keyboardPatterns.some((pat) => lowerName.includes(pat));
+        const hasRepeatedChar = /([A-Za-z0-9&-])\1{3,}/i.test(lowerName);
+        const hasRepeatedSeq =
+          /([A-Za-z0-9&-]{2})\1{2,}/i.test(lowerName) || /([A-Za-z0-9&-]{3,})\1+/i.test(lowerName);
+
+        if (hasKeyboard || hasRepeatedChar || hasRepeatedSeq) {
+          errors.officeName = "Random or repeated characters are not allowed.";
+        }
+      }
     }
 
-    if (!data.type) {
-      errors.type = tx('form.validation.typeRequired');
+    // 3. Type
+    if (!data.type || String(data.type).trim() === "") {
+      errors.type = "Please select Office Type.";
     }
 
-    if (data.emailId && !EMAIL_LOWERCASE_RESTRICTED_REGEX.test(data.emailId)) {
-      errors.emailId = tx('form.validation.invalidEmailRestricted');
-    }
-
-    if (data.phone && !MOBILE_10_REGEX.test(data.phone)) {
-      errors.phone = tx('form.validation.invalidPhone');
-    }
-
-    if (data.city && !CITY_NAME_REGEX.test(data.city)) {
-      errors.city = tx('form.validation.invalidCity');
-    }
-
-    if (data.pincode && !PINCODE_6_REGEX.test(data.pincode)) {
-      errors.pincode = tx('form.validation.invalidPincode');
-    }
-
-    if (
-      data.officeIncharge != null &&
-      String(data.officeIncharge).trim() !== '' &&
-      Number(data.officeIncharge) <= 0
-    ) {
-      errors.officeIncharge = tx('form.validation.invalidId');
-    }
-
-    if (
-      data.designationMasterId != null &&
-      String(data.designationMasterId).trim() !== '' &&
-      Number(data.designationMasterId) <= 0
-    ) {
-      errors.designationMasterId = tx('form.validation.invalidId');
-    }
-
+    // 4. Established Date
     if (data.establishedDate) {
       const dateStr = String(data.establishedDate).trim();
       const validation = DateUtils.validate(dateStr);
-      if (!validation.valid && validation.error) {
-        const errorKeyMap = {
-          invalidFormat: 'form.validation.invalidDateFormat',
-          invalidDate: 'form.validation.invalidDate',
-          futureDate: 'form.validation.futureDate',
-        };
-        const key = errorKeyMap[validation.error] || 'form.validation.invalidDate';
-        errors.establishedDate = t(key);
+      if (!validation.valid) {
+        if (validation.error === "futureDate") {
+          errors.establishedDate = "Established Date cannot be a future date.";
+        } else {
+          errors.establishedDate = "Invalid date format.";
+        }
+      }
+    }
+
+    // 5. Email ID
+    if (data.emailId) {
+      const emailStr = String(data.emailId);
+      if (emailStr.length > 100) {
+        errors.emailId = "Email ID cannot exceed 100 characters.";
+      } else if (
+        !/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(emailStr)
+      ) {
+        errors.emailId = "Please enter a valid Email ID.";
+      }
+    }
+
+    // 6. Phone
+    if (data.phone) {
+      const phoneStr = String(data.phone);
+      if (phoneStr.length !== 10) {
+        errors.phone = "Phone number must be 10 digits.";
+      } else if (!/^[6-9]\d{9}$/.test(phoneStr)) {
+        errors.phone = "Please enter a valid mobile number.";
+      }
+    }
+
+    // 7. City
+    if (data.city) {
+      const cityStr = String(data.city);
+      if (cityStr.length > 50) {
+        errors.city = "City cannot exceed 50 characters.";
+      } else if (
+        cityStr.length < 2 ||
+        !/^[A-Za-z]+(?:\s[A-Za-z]+)*$/.test(cityStr)
+      ) {
+        errors.city = "City should contain only alphabets and spaces.";
+      } else if (isGibberish(cityStr)) {
+        errors.city = "Random or repeated characters are not allowed.";
+      }
+    }
+
+    // 8. Pincode
+    if (data.pincode) {
+      const pincodeStr = String(data.pincode);
+      if (pincodeStr.length !== 6) {
+        errors.pincode = "Pincode must be 6 digits.";
+      } else if (!/^[1-9][0-9]{5}$/.test(pincodeStr)) {
+        errors.pincode = "Please enter a valid Pincode.";
+      }
+    }
+
+    // 9. Address
+    if (data.address) {
+      const addressStr = String(data.address);
+      const trimmed = addressStr.trim();
+      if (addressStr.length > 250) {
+        errors.address = "Address cannot exceed 250 characters.";
+      } else if (
+        trimmed.length < 5 ||
+        !/^[A-Za-z0-9,\-.\/\s]+$/.test(addressStr) ||
+        /\s{2,}/.test(addressStr)
+      ) {
+        errors.address = "Please enter a valid Address.";
+      } else if (isGibberish(addressStr)) {
+        errors.address = "Random or repeated characters are not allowed.";
       }
     }
 

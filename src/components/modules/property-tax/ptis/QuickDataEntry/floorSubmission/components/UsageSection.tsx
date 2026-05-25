@@ -51,17 +51,17 @@ export const UsageSection: React.FC<UsageSectionProps> = ({
             value={String(editingFloorForm.constructionTypeId ?? '')}
             onChange={(_name, value) => {
               const desc = getConstructionDescription(value, constructionLookup);
-              setEditingFloorForm((prev: FloorData) => ({ 
-                ...prev, 
+              setEditingFloorForm((prev: FloorData) => ({
+                ...prev,
                 constructionTypeId: value,
                 conTyp: desc || value,
-                constructionTypeDescription: desc || value 
+                constructionTypeDescription: desc || value
               }));
               if (formErrors.constructionTypeId || formErrors.conTyp) {
                 setFormErrors((prev) => ({ ...prev, constructionTypeId: '', conTyp: '' }));
               }
 
-               if (!value) {
+              if (!value) {
                 setFormErrors((prev) => ({ ...prev, constructionTypeId: t('floor.errors.constructionTypeRequired') || 'Construction Type selection is required' }));
               } else {
                 setFormErrors((prev) => ({ ...prev, constructionTypeId: '', conTyp: '' }));
@@ -105,14 +105,14 @@ export const UsageSection: React.FC<UsageSectionProps> = ({
             value={String(editingFloorForm.typeOfUseId ?? '')}
             onChange={(_name, value) => {
               const desc = getUseDescription(value, useLookup);
-              setEditingFloorForm((prev: FloorData) => ({ 
-                ...prev, 
+              setEditingFloorForm((prev: FloorData) => ({
+                ...prev,
                 typeOfUseId: value,
                 use: desc || value,
                 typeOfUseDescription: desc || value,
                 subTypeOfUseId: '',
                 subTyp: '',
-                subTypeOfUseDescription: '' 
+                subTypeOfUseDescription: ''
               }));
               if (formErrors.typeOfUseId || formErrors.use) {
                 setFormErrors((prev) => ({ ...prev, typeOfUseId: '', use: '' }));
@@ -166,11 +166,11 @@ export const UsageSection: React.FC<UsageSectionProps> = ({
             value={String(editingFloorForm.subTypeOfUseId ?? '')}
             onChange={(_name, value) => {
               const desc = getSubTypeDescription(value, subTypeData);
-              setEditingFloorForm((prev: FloorData) => ({ 
-                ...prev, 
+              setEditingFloorForm((prev: FloorData) => ({
+                ...prev,
                 subTypeOfUseId: value,
                 subTyp: desc || value,
-                subTypeOfUseDescription: desc || value 
+                subTypeOfUseDescription: desc || value
               }));
               if (formErrors.subTypeOfUseId || formErrors.subTyp) {
                 setFormErrors((prev) => ({ ...prev, subTypeOfUseId: '', subTyp: '' }));

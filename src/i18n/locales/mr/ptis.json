@@ -130,7 +130,7 @@
     "title": "शीर्षक",
     "propertyHolderName": "मालमत्ता धारकाचे नाव",
     "occupierName": "भोगवटादाराचे नाव",
-    "aadharCardNo": "आधार कार्ड क्र",
+    "aadharCardNo": "आधार क्र",
     "mobileNumber": "मोबाईल क्र",
     "emailId": "ईमेल आयडी",
     "shopName": "दुकानाचे नाव",
@@ -293,10 +293,10 @@
       "use": "वापर",
       "subType": "उप-प्रकार",
       "noOfRooms": "खोल्यांची संख्या",
-      "carpetArea": "कार्पेट क्षेत्रफळ",
+      "carpetArea": "कार्पेट क्षेत्रफळ (ft/mtr)",
       "carpetSqFt": "कार्पेट (चौ. फूट)",
       "carpetSqM": "कार्पेट (चौ. मीटर)",
-      "builtupArea": "निर्मित क्षेत्रफळ",
+      "builtupArea": "निर्मित क्षेत्रफळ (ft/mtr)",
       "builtupSqFt": "निर्मित (चौ. फूट)",
       "builtupSqM": "निर्मित (चौ. मीटर)",
       "ocNumber": "ओसी क्र.",
@@ -316,7 +316,8 @@
       "ntbFactor": "एनटीबी घटक",
       "useFactor": "वापर घटक",
       "capitalValue": "भांडवली मूल्य",
-      "taxAmount": "कर रक्कम"
+      "taxAmount": "कर रक्कम",
+      "appliedOn": "अप्लाइड ऑन"
     },
     "placeholders": {
       "oc": "ओसी/वर्ष/###",

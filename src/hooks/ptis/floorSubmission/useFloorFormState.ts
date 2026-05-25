@@ -56,11 +56,11 @@ export const useFloorFormState = () => {
 
   const validateForm = useCallback(
     (formToValidate = editingFloorForm, t?: (key: string) => string): boolean => {
-      const result = validateFloorForm(formToValidate, t);
+      const result = validateFloorForm(formToValidate, t, isAddingNewFloor);
       setFormErrors(result.errors);
       return result.isValid;
     },
-    [editingFloorForm]
+    [editingFloorForm, isAddingNewFloor]
   );
 
   return {

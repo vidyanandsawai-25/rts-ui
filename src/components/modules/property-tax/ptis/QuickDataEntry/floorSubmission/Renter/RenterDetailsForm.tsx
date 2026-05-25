@@ -16,6 +16,8 @@ import { ActionResult } from '@/types/common.types';
 import { useRenterForm } from '@/hooks/ptis/floorSubmission/useRenterForm';
 import { RentBreakdownDialog } from './RentBreakdownDialog';
 import { calculateRentProgression } from '@/lib/utils/renter-calculations';
+import { validateRenterForm } from '@/lib/utils/renter-validation';
+import { useMemo } from 'react';
 
 export interface RenterDetailsFormProps {
   initialData?: any;
@@ -36,6 +38,7 @@ export interface RenterDetailsFormProps {
   useLookup?: any[];
   subTypeLookup?: any[];
   subFloorLookup?: any[];
+  existingFloors?: any[];
 }
 
 export const RenterDetailsForm = memo(
@@ -54,6 +57,7 @@ export const RenterDetailsForm = memo(
     useLookup,
     subTypeLookup,
     subFloorLookup,
+    existingFloors = [],
   }: RenterDetailsFormProps) => {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -95,6 +99,11 @@ export const RenterDetailsForm = memo(
           }, 1500);
         },
       });
+
+    const isFormValid = useMemo(() => {
+      if (!formData?.renterDetails) return false;
+      return validateRenterForm(formData.renterDetails, floorId || 'new', existingFloors).length === 0;
+    }, [formData?.renterDetails, floorId, existingFloors]);
 
     const [popupFY, setPopupFY] = useState<string | null>(null);
     const [toasts, setToasts] = useState<ToastProps[]>([]);
@@ -184,7 +193,7 @@ export const RenterDetailsForm = memo(
           <div className="space-y-4 flex-1">
             {sectionsVisible >= 2 && (
               <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <AgreementDetails formData={formData} setFormData={setFormData} />
+                <AgreementDetails formData={formData} setFormData={setFormData} existingFloors={existingFloors} floorId={floorId} />
               </div>
             )}
             {sectionsVisible >= 3 ? (
@@ -214,8 +223,8 @@ export const RenterDetailsForm = memo(
             </Button>
             <Button
               onClick={handleSave}
-              disabled={isSaving}
-              className="px-8 bg-blue-600 hover:bg-blue-700 text-white h-9 rounded-md shadow-md shadow-blue-100 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest transition-all active:scale-95"
+              disabled={isSaving || !isFormValid}
+              className="px-8 bg-blue-600 hover:bg-blue-700 text-white h-9 rounded-md shadow-md shadow-blue-100 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none"
             >
               {isSaving ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />

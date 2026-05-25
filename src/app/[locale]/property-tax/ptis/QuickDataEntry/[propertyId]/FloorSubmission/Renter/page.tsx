@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { setRequestLocale } from 'next-intl/server';
 import RenterDetailsForm from '@/components/modules/property-tax/ptis/QuickDataEntry/floorSubmission/Renter/RenterDetailsForm';
+import { ExistingFloorData } from '@/lib/utils/renter-validation';
 import { 
     getFloorByIdAction, 
     getPropertyByDetailsAction, 
@@ -9,7 +10,8 @@ import {
     getConstructionTypeDataAction,
     getTypeOfUseDataAction,
     getSubTypeOfUseDataAction,
-    getSubFloorDataAction
+    getSubFloorDataAction,
+    getFloorSubmissionsByOwnerAction
 } from '../actions';
 import { PageContainer } from '@/components/common/PageContainer';
 
@@ -46,7 +48,8 @@ export default async function RenterDetailsPage({ params, searchParams }: Renter
         getCachedConstructionData(),
         getCachedTypeOfUseData(),
         getCachedSubTypeOfUseData(),
-        getCachedSubFloorData()
+        getCachedSubFloorData(),
+        propertyId ? getFloorSubmissionsByOwnerAction(propertyId) : Promise.resolve([])
     ]);
 
     const rawFloorResponse = settledResults[0].status === 'fulfilled' ? settledResults[0].value : null;
@@ -56,6 +59,7 @@ export default async function RenterDetailsPage({ params, searchParams }: Renter
     const useLookupRes = settledResults[4].status === 'fulfilled' ? settledResults[4].value : null;
     const subTypeLookupRes = settledResults[5].status === 'fulfilled' ? settledResults[5].value : null;
     const subFloorLookupRes = settledResults[6].status === 'fulfilled' ? settledResults[6].value : null;
+    const existingFloorsRes = settledResults[7].status === 'fulfilled' ? settledResults[7].value : [];
 
     let initialFloorData: Record<string, unknown> | null = null;
     if (rawFloorResponse && typeof rawFloorResponse === 'object' && 'data' in rawFloorResponse) {
@@ -84,6 +88,15 @@ export default async function RenterDetailsPage({ params, searchParams }: Renter
         subFloorLookup: ((subFloorLookupRes as Record<string, unknown>)?.data as unknown[]) || []
     };
 
+    let existingFloors: ExistingFloorData[] = [];
+    if (Array.isArray(existingFloorsRes)) {
+        existingFloors = existingFloorsRes as ExistingFloorData[];
+    } else if (existingFloorsRes && typeof existingFloorsRes === 'object' && 'success' in existingFloorsRes && (existingFloorsRes as Record<string, unknown>).success && Array.isArray((existingFloorsRes as Record<string, unknown>).data)) {
+        existingFloors = (existingFloorsRes as Record<string, unknown>).data as ExistingFloorData[];
+    } else if (existingFloorsRes && typeof existingFloorsRes === 'object' && Array.isArray((existingFloorsRes as Record<string, unknown>).items)) {
+        existingFloors = (existingFloorsRes as Record<string, unknown>).items as ExistingFloorData[];
+    }
+
     return (
         <PageContainer>
             <Suspense fallback={<div className="p-8 flex items-center justify-center">Loading Renter Screen...</div>}>
@@ -97,6 +110,7 @@ export default async function RenterDetailsPage({ params, searchParams }: Renter
                         propertyId={propertyId}
                         floorId={floorId}
                         saveAction={saveFloorRenterDetailsAction}
+                        existingFloors={existingFloors}
                         {...lookups}
                     />
                 </div>
@@ -104,3 +118,4 @@ export default async function RenterDetailsPage({ params, searchParams }: Renter
         </PageContainer>
     );
 }
+

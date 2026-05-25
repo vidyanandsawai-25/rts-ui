@@ -88,16 +88,22 @@ describe("useOfficeForm", () => {
     expect(result.current.formData.officeName).toBe("New Office Name");
   });
 
-  it("should handle numeric inputs correctly", () => {
+  it("should enforce input restrictions and lengths in handleChange", () => {
     const { result } = renderHook(() => useOfficeForm(mockProps));
 
     act(() => {
       result.current.handleChange({
-        target: { name: "officeIncharge", value: "123", type: "number" },
+        target: { name: "officeCode", value: "123abc456def" },
       } as ChangeEvent<HTMLInputElement>);
     });
+    expect(result.current.formData.officeCode).toBe("123456");
 
-    expect(result.current.formData.officeIncharge).toBe(123);
+    act(() => {
+      result.current.handleChange({
+        target: { name: "officeName", value: "Test  Office!! @@Name" },
+      } as ChangeEvent<HTMLInputElement>);
+    });
+    expect(result.current.formData.officeName).toBe("Test Office Name");
   });
 
   it("should toggle status", () => {

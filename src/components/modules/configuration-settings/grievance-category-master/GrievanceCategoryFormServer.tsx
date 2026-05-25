@@ -57,6 +57,7 @@ export async function GrievanceCategoryFormServer({
     },
     errors: {
       codeReq: t('errors.codeReq'),
+      codeMinLength: t('errors.codeMinLength'),
       codeAlphanumeric: t('errors.codeAlphanumeric'),
       codeMaxLength: t('errors.codeMaxLength'),
       nameReq: t('errors.nameReq'),
