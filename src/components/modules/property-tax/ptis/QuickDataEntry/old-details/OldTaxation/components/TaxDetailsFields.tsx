@@ -30,7 +30,7 @@ export function TaxDetailsFields({
           value={formData.oldRV || ""}
           onChange={(e) => {
             const value = sanitizeDecimal(e.target.value);
-            if (value !== '') {
+            if (value !== '' || e.target.value === '') {
               onFieldChange('oldRV', value);
             }
           }}
@@ -51,7 +51,7 @@ export function TaxDetailsFields({
           value={formData.oldALV || ""}
           onChange={(e) => {
             const value = sanitizeDecimal(e.target.value);
-            if (value !== '') {
+            if (value !== '' || e.target.value === '') {
               onFieldChange('oldALV', value);
             }
           }}
@@ -72,7 +72,7 @@ export function TaxDetailsFields({
           value={formData.oldGeneralTax || ""}
           onChange={(e) => {
             const value = sanitizeDecimal(e.target.value);
-            if (value !== '') {
+            if (value !== '' || e.target.value === '') {
               onFieldChange('oldGeneralTax', value);
             }
           }}

@@ -41,7 +41,7 @@ export function FloorFormActions({
                     <ClearButton
                         label={t('commonbuttonmessages.clear')}
                         onClick={onReset}
-                        className="h-11 w-40 border border-blue-100 text-blue-600 bg-blue-600 hover:bg-blue-50 text-sm font-bold rounded-xl transition-all duration-200 flex flex-row items-center justify-center gap-2 active:scale-[0.98]"
+                        className="h-11 w-40 border border-blue-100 text-blue-600 hover:bg-blue-50 text-sm font-bold rounded-xl transition-all duration-200 flex flex-row items-center justify-center gap-2 active:scale-[0.98]"
                     >
                     </ClearButton>
                 </>

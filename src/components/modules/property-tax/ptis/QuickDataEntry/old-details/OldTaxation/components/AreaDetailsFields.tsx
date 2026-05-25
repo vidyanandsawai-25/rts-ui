@@ -30,7 +30,7 @@ export function AreaDetailsFields({
           value={formData.oldPlotArea}
           onChange={(e) => {
             const value = sanitizeDecimal(e.target.value);
-            if (value !== '') {
+            if (value !== '' || e.target.value === '') {
               onFieldChange('oldPlotArea', value);
             }
           }}
@@ -70,7 +70,7 @@ export function AreaDetailsFields({
           value={formData.oldConstructionArea ?? ""}
           onChange={(e) => {
             const value = sanitizeDecimal(e.target.value);
-            if (value !== '') {
+            if (value !== '' || e.target.value === '') {
               onFieldChange("oldConstructionArea", value);
             }
           }}
