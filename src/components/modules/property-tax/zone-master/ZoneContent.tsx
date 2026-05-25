@@ -270,6 +270,7 @@ export default function ZoneContent({
           ssrFloors={createPartitionData.floors}
           selectedPropertyId={selectedPartitionPropertyId}
           ssrSocietyDetails={createPartitionData.societyDetails}
+          ssrNextPartitionNumber={createPartitionData.nextPartitionNumber}
           onClose={() => {
             const params = new URLSearchParams(searchParams.toString());
             params.delete("createPartition");

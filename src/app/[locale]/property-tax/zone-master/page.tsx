@@ -1,6 +1,6 @@
 import { unstable_noStore as noStore } from "next/cache";
 import ZoneMaster from "@/components/modules/property-tax/zone-master/ZoneMaster";
-import { fetchZonesPagedAction, fetchWardsPagedAction, getZoneByIdAction, getAllWardsForLinkAction, getAllZonesForLinkAction, getWardByIdAction, getWardsPagedWithSearchAction, getAllPropertiesForWardAction, getAllActiveWingsAction, fetchAllFloorsAction, getAllWardsForZoneAction, fetchSocietyDetailsByPropertyAction } from "./actions";
+import { fetchZonesPagedAction, fetchWardsPagedAction, getZoneByIdAction, getAllWardsForLinkAction, getAllZonesForLinkAction, getWardByIdAction, getWardsPagedWithSearchAction, getAllPropertiesForWardAction, getAllActiveWingsAction, fetchAllFloorsAction, getAllWardsForZoneAction, fetchSocietyDetailsByPropertyAction, getNextPartitionNumberAction } from "./actions";
 import { fetchPropertiesPagedAction, fetchPropertyCategoriesAction, fetchPropertyTypesAction, fetchPropertyCategoryListAction, fetchTaxZonesAction, getNextPropertyNumberAction } from "./property.actions";
 import { ZoneItem, RightPanelTab } from "@/types/zoneMaster.types";
 import { WardItem } from "@/types/wardMaster.types";
@@ -416,6 +416,7 @@ const parsedZoneId = sanitized.zoneId ? Number(sanitized.zoneId) : NaN;
   let ssrPartitionWings: WingItem[] = [];
   let ssrPartitionFloors: Floor[] = [];
   let ssrPartitionSocietyDetails: SocietyDetailItem[] = [];
+  let ssrNextPartitionNumber: number | null = null;
 
   if (isCreatePartitionOpen && selectedPropWardId !== null) {
     const [partitionPropertiesResult, partitionWingsResult, partitionFloorsResult] = await Promise.all([
@@ -436,14 +437,27 @@ const parsedZoneId = sanitized.zoneId ? Number(sanitized.zoneId) : NaN;
       ssrPartitionFloors = partitionFloorsResult.data;
     }
 
-    // Fetch society details if a property is selected
+    // Fetch society details and next partition number if a property is selected
     const partitionPropertyId = params.partitionPropertyId;
     if (partitionPropertyId) {
       const propertyId = parseInt(String(partitionPropertyId), 10);
       if (!isNaN(propertyId) && propertyId > 0) {
+        // Fetch society details
         const societyDetailsResult = await fetchSocietyDetailsByPropertyAction(propertyId);
         if (societyDetailsResult.success && societyDetailsResult.data) {
           ssrPartitionSocietyDetails = societyDetailsResult.data.items || [];
+        }
+
+        // Fetch next partition number
+        const selectedProperty = ssrPartitionProperties.find(p => p.id === propertyId);
+        if (selectedProperty && selectedPropWardId) {
+          const nextPartitionResult = await getNextPartitionNumberAction(
+            selectedPropWardId,
+            selectedProperty.propertyNo
+          );
+          if (nextPartitionResult.success && nextPartitionResult.data !== undefined) {
+            ssrNextPartitionNumber = nextPartitionResult.data;
+          }
         }
       }
     }
@@ -516,6 +530,7 @@ const parsedZoneId = sanitized.zoneId ? Number(sanitized.zoneId) : NaN;
           wings: ssrPartitionWings,
           floors: ssrPartitionFloors,
           societyDetails: ssrPartitionSocietyDetails,
+          nextPartitionNumber: ssrNextPartitionNumber,
         }}
       />
   );

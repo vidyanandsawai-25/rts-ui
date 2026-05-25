@@ -20,7 +20,7 @@ export interface BulkPropertyItem {
   addressEnglish: string;
   location: string;
   locationEnglish: string;
-  societyDetailId: number;
+  societyDetailId?: number; // Optional - only needed for apartment categories
   createdBy: number;
   createdDate: string;
 }

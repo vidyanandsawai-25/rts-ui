@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { Grid3x3, Building2, Check, Eye, Info } from "lucide-react";
 import { toast } from "sonner";
 import { Drawer } from "@/components/common/Drawer";
-import { CancelButton, SaveButton, ToggleSwitch, Input, ValidationMessage, Select, Tabs, MasterTable, AddButton } from "@/components/common";
+import { CancelButton, SaveButton, Input, ValidationMessage, Select, Tabs, MasterTable, AddButton } from "@/components/common";
 import { Column } from "@/components/common/MasterTable";
 import { WardItem } from "@/types/wardMaster.types";
 import { ZonePropertyItem } from "@/types/zoneProperty.types";
@@ -17,8 +17,10 @@ import { SocietyDetailItem, CreateSocietyDetailPayload } from "@/types/societyDe
 import { 
   generateBuildingStructureAction, 
   createSocietyDetailAction,
-  updateSocietyDetailAction
+  updateSocietyDetailAction,
+  createBulkBuildingPropertiesAction
 } from "@/app/[locale]/property-tax/zone-master/actions";
+import { BulkPropertyItem } from "@/types/property-bulk.types";
 import { BuildingPreviewModal } from "./BuildingPreviewModal";
 import { getWingColumns, WingSummary } from "./wingColumns";
 
@@ -39,6 +41,9 @@ interface PartitionFormState {
   incrementedBy: string;
   prefix: string;
   generationType: string;
+  // Non-Apartment partition fields
+  fromPartition: string;
+  toPartition: string;
 }
 
 interface PartitionFormErrors {
@@ -52,6 +57,8 @@ interface PartitionFormErrors {
   flatStart?: string;
   incrementedBy?: string;
   generationType?: string;
+  fromPartition?: string;
+  toPartition?: string;
 }
 
 interface Props {
@@ -66,6 +73,7 @@ interface Props {
   ssrFloors?: Floor[];
   selectedPropertyId?: number | null;
   ssrSocietyDetails?: SocietyDetailItem[];
+  ssrNextPartitionNumber?: number | null;
 }
 
 const INITIAL: PartitionFormState = {
@@ -84,6 +92,8 @@ const INITIAL: PartitionFormState = {
   incrementedBy: "",
   prefix: "",
   generationType: "",
+  fromPartition: "",
+  toPartition: "",
 };
 
 
@@ -98,6 +108,7 @@ export default function PropertyPartitionForm({
   ssrFloors = [],
   selectedPropertyId = null,
   ssrSocietyDetails = [],
+  ssrNextPartitionNumber = null,
 }: Props) {
   const router = useRouter();
   const pathname = usePathname();
@@ -109,7 +120,8 @@ export default function PropertyPartitionForm({
   const initialFormState = useMemo(() => ({
     ...INITIAL,
     mainPropertyId: selectedPropertyId,
-  }), [selectedPropertyId]);
+    fromPartition: ssrNextPartitionNumber !== null ? String(ssrNextPartitionNumber) : "",
+  }), [selectedPropertyId, ssrNextPartitionNumber]);
 
   const [form, setForm] = useState(initialFormState);
   const [loading, setLoading] = useState(false);
@@ -123,7 +135,17 @@ export default function PropertyPartitionForm({
 
   // Sync form state when prop changes (for navigation) - render-time state update
   if (form.mainPropertyId !== selectedPropertyId) {
-    setForm(prev => ({ ...prev, mainPropertyId: selectedPropertyId }));
+    setForm(prev => ({ 
+      ...prev, 
+      mainPropertyId: selectedPropertyId,
+      fromPartition: ssrNextPartitionNumber !== null ? String(ssrNextPartitionNumber) : "",
+    }));
+  }
+
+  // Sync fromPartition when SSR value changes
+  const expectedFromPartition = ssrNextPartitionNumber !== null ? String(ssrNextPartitionNumber) : "";
+  if (form.fromPartition !== expectedFromPartition && selectedPropertyId) {
+    setForm(prev => ({ ...prev, fromPartition: expectedFromPartition }));
   }
   
   // State for all properties - initialized from SSR data
@@ -394,17 +416,6 @@ export default function PropertyPartitionForm({
     return numericPartitions.length > 0 ? Math.max(...numericPartitions) : 0;
   }, [selectedProperty, allProperties]);
 
-  // Check if partition has numeric partitions
-  const hasNumericPartitions = (): boolean => {
-    if (!selectedProperty) return false;
-    
-    const existingPartitions = allProperties.filter(
-      (p) => p.propertyNo === selectedProperty.propertyNo && p.partitionNo && p.partitionNo !== "0"
-    );
-
-    return existingPartitions.some((p) => !isNaN(parseInt(p.partitionNo || "0", 10)));
-  };
-
   // Calculate partition number during render - proper SSR without useEffect
   const calculatedPartitionNo = useMemo(() => {
     if (selectedProperty && !form.alphanumericMode) {
@@ -473,20 +484,42 @@ export default function PropertyPartitionForm({
         }
       });
     } else {
-      // Validate partition fields
-      if (!data.partitionNo?.trim()) {
-        newErrors.partitionNo = t("partitionForm.validation.partitionNoRequired");
+      // Validate partition fields for Non-Apartment Categories
+      if (!data.fromPartition?.trim()) {
+        newErrors.fromPartition = t("partitionForm.validation.fromPartitionRequired");
+      }
+      if (!data.toPartition?.trim()) {
+        newErrors.toPartition = t("partitionForm.validation.toPartitionRequired");
       }
 
-      // Check for duplicate partition
-      if (selectedProperty && data.partitionNo) {
-        const duplicate = allProperties.find(
-          (p) => 
-            p.propertyNo === selectedProperty.propertyNo && 
-            p.partitionNo === data.partitionNo
-        );
-        if (duplicate) {
-          newErrors.partitionNo = t("partitionForm.validation.duplicatePartition");
+      // Validate numeric values
+      const fromPartition = parseInt(data.fromPartition, 10);
+      const toPartition = parseInt(data.toPartition, 10);
+      
+      if (data.fromPartition && isNaN(fromPartition)) {
+        newErrors.fromPartition = t("partitionForm.validation.mustBeNumber");
+      }
+      if (data.toPartition && isNaN(toPartition)) {
+        newErrors.toPartition = t("partitionForm.validation.mustBeNumber");
+      }
+      
+      // Validate from <= to
+      if (!isNaN(fromPartition) && !isNaN(toPartition) && fromPartition > toPartition) {
+        newErrors.toPartition = t("partitionForm.validation.toMustBeGreater");
+      }
+
+      // Check for duplicate partitions in the range
+      if (selectedProperty && !isNaN(fromPartition) && !isNaN(toPartition)) {
+        for (let i = fromPartition; i <= toPartition; i++) {
+          const duplicate = allProperties.find(
+            (p) => 
+              p.propertyNo === selectedProperty.propertyNo && 
+              p.partitionNo === String(i)
+          );
+          if (duplicate) {
+            newErrors.fromPartition = t("partitionForm.validation.duplicatePartitionInRange", { partition: i });
+            break;
+          }
         }
       }
     }
@@ -708,8 +741,64 @@ export default function PropertyPartitionForm({
           toast.error(result.error || t("partitionMessages.createError"));
         }
       } else {
-        // TODO: Handle partition/amenity creation
-        toast.info("Partition/Amenity creation not yet implemented");
+        // Handle bulk partition creation for Non-Apartment Categories
+        if (!selectedWard?.id || !selectedProperty) {
+          toast.error("Ward and Property are required");
+          setLoading(false);
+          return;
+        }
+
+        // Validate required fields from parent property (similar to BuildingPreviewModal)
+        if (!selectedProperty.taxZoneId || !selectedProperty.propertyTypeId || !selectedProperty.categoryId) {
+          toast.error("Missing required property configuration: taxZoneId, propertyTypeId, or categoryId");
+          setLoading(false);
+          return;
+        }
+
+        const fromPartition = parseInt(form.fromPartition, 10);
+        const toPartition = parseInt(form.toPartition, 10);
+
+        if (isNaN(fromPartition) || isNaN(toPartition)) {
+          toast.error("Invalid partition range");
+          setLoading(false);
+          return;
+        }
+
+        // Build bulk payload for all partitions in range
+        const currentDate = new Date().toISOString();
+        const bulkPayload: BulkPropertyItem[] = [];
+
+        for (let i = fromPartition; i <= toPartition; i++) {
+          bulkPayload.push({
+            taxZoneId: selectedProperty.taxZoneId,
+            wardId: selectedWard.id,
+            propertyNo: selectedProperty.propertyNo,
+            propertyTypeId: selectedProperty.propertyTypeId,
+            categoryId: selectedProperty.categoryId,
+            partitionNo: String(i),
+            flatOrShopNo: "",
+            flatOrShopNoEnglish: "",
+            address: selectedProperty.address || "",
+            addressEnglish: selectedProperty.addressEnglish || "",
+            location: selectedProperty.location || "",
+            locationEnglish: selectedProperty.locationEnglish || "",
+            createdBy: 1, // TODO: Get from user context
+            createdDate: currentDate,
+          });
+        }
+
+        console.log("[Submit] Bulk Partition Payload:", bulkPayload);
+
+        const result = await createBulkBuildingPropertiesAction(bulkPayload);
+        
+        if (result.success) {
+          const successCount = result.data?.successCount ?? bulkPayload.length;
+          toast.success(t("partitionMessages.bulkCreateSuccess", { count: successCount }));
+          onSuccess?.();
+          handleClose();
+        } else {
+          toast.error(result.error || t("partitionMessages.createError"));
+        }
       }
     } catch (error) {
       console.error("Failed to create partition:", error);
@@ -1329,112 +1418,103 @@ export default function PropertyPartitionForm({
       ) : (
         /* Non-Apartment Categories: Show Partition Content */
         <>
-          {/* Existing Numeric Partitions Info */}
-          <div className="p-3 bg-gray-50 border border-gray-300 rounded-lg">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-700">
-                {t("partitionForm.existingNumericPartitions")}
-              </span>
-              <span className={`text-sm px-2 py-1 rounded ${
-                hasNumericPartitions() 
-                  ? "bg-blue-100 text-blue-700" 
-                  : "bg-gray-200 text-gray-600"
-              }`}>
-                {hasNumericPartitions() 
-                  ? t("partitionForm.hasNumeric")
-                  : t("partitionForm.noNumeric")
-                }
-              </span>
-            </div>
-            {selectedProperty && (
-              <p className="text-xs text-gray-500 mt-1">
-                {t("partitionForm.selectPropertyInfo", { propertyNo: selectedProperty.propertyNo })}
+          {/* Partition Range Info Box */}
+          <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-300 rounded-lg">
+            <Info className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-blue-800">
+                {t("partitionForm.bulkPartitionInfo")}
               </p>
-            )}
-          </div>
-
-          {/* Bulk Create Mode */}
-          <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-800">
-                  {t("partitionForm.bulkCreateMode")}
-                </p>
-                <p className="text-xs text-gray-600 mt-1">
-                  {t("partitionForm.bulkCreateModeDesc")}
-                </p>
-              </div>
-              <ToggleSwitch
-                checked={form.bulkCreateMode}
-                onChange={(checked) => setForm({ ...form, bulkCreateMode: checked })}
-                disabled={loading || !form.mainPropertyId}
-                showPopup={false}
-              />
+              <p className="text-xs text-blue-600 mt-1">
+                {t("partitionForm.bulkPartitionDesc")}
+              </p>
             </div>
           </div>
 
-          {/* Alphanumeric Partition */}
-          <div className="p-4 bg-cyan-50 border border-cyan-200 rounded-lg">
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-800">
-                  {t("partitionForm.alphanumericPartition")}
-                </p>
-                <p className="text-xs text-gray-600 mt-1">
-                  {t("partitionForm.alphanumericPartitionDesc")}
-                </p>
-              </div>
-              <ToggleSwitch
-                checked={form.alphanumericMode}
-                onChange={(checked) => {
-                  setForm({ ...form, alphanumericMode: checked });
-                  if (!checked && selectedProperty) {
-                    // Reset to numeric max when disabling alphanumeric
-                    const maxPartition = calculateMaxPartition();
-                    setForm((prev) => ({ ...prev, partitionNo: String(maxPartition) }));
-                  } else if (checked) {
-                    setForm((prev) => ({ ...prev, partitionNo: "" }));
-                  }
+          {/* From Partition and To Partition Inputs */}
+          <div className="grid grid-cols-2 gap-4">
+            {/* From Partition */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {t("partitionForm.fromPartition")} <span className="text-red-500">*</span>
+              </label>
+              <Input
+                type="number"
+                value={form.fromPartition}
+                onChange={(e) => {
+                  setForm({ ...form, fromPartition: e.target.value });
+                  setErrors({ ...errors, fromPartition: undefined });
                 }}
+                placeholder={t("partitionForm.placeholders.fromPartition")}
+                disabled={true}
+                min="1"
+                className="bg-gray-50 text-blue-700 font-bold cursor-not-allowed"
+              />
+              <ValidationMessage 
+                message={errors.fromPartition} 
+                visible={!!errors.fromPartition}
+                type="error"
+              />
+              <ValidationMessage
+                message={t("partitionForm.helpText.fromPartitionAutoCalculated")}
+                visible={!!form.fromPartition && !errors.fromPartition}
+                type="info"
+              />
+            </div>
+
+            {/* To Partition */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {t("partitionForm.toPartition")} <span className="text-red-500">*</span>
+              </label>
+              <Input
+                type="number"
+                value={form.toPartition}
+                onChange={(e) => {
+                  setForm({ ...form, toPartition: e.target.value });
+                  setErrors({ ...errors, toPartition: undefined });
+                }}
+                placeholder={t("partitionForm.placeholders.toPartition")}
                 disabled={loading || !form.mainPropertyId}
-                showPopup={false}
+                min="1"
+              />
+              <ValidationMessage 
+                message={errors.toPartition} 
+                visible={!!errors.toPartition}
+                type="error"
               />
             </div>
           </div>
 
-          {/* Partition No Input */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t("partitionForm.partitionNo")} <span className="text-red-500">*</span>
-            </label>
-            <Input
-              type={form.alphanumericMode ? "text" : "number"}
-              value={form.partitionNo}
-              onChange={(e) => {
-                setForm({ ...form, partitionNo: e.target.value });
-                setErrors({ ...errors, partitionNo: undefined });
-              }}
-              placeholder={t("partitionForm.placeholders.partitionNo")}
-              disabled={loading || !form.mainPropertyId}
-            />
-            <ValidationMessage 
-              message={errors.partitionNo} 
-              visible={!!errors.partitionNo}
-              type="error"
-            />
-            <ValidationMessage
-              message={t("partitionForm.helpText.partitionNoAutoGenerated", { 
-                maxPartition: calculateMaxPartition() 
-              })}
-              visible={!!selectedProperty && !form.alphanumericMode}
-              type="info"
-            />
-            <ValidationMessage
-              message={t("partitionForm.helpText.partitionCannotDuplicate")}
-              visible={!!selectedProperty}
-              type="warning"
-            />
-          </div>
+          {/* Preview: Number of partitions to be created */}
+          {form.fromPartition && form.toPartition && (
+            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-700">
+                  {t("partitionForm.partitionsToCreate")}
+                </span>
+                <span className="text-sm px-2 py-1 rounded bg-green-100 text-green-700 font-medium">
+                  {Math.max(0, parseInt(form.toPartition, 10) - parseInt(form.fromPartition, 10) + 1) || 0}
+                </span>
+              </div>
+              {selectedProperty && (
+                <p className="text-xs text-gray-500 mt-1">
+                  {t("partitionForm.willCreatePartitions", { 
+                    from: form.fromPartition,
+                    to: form.toPartition,
+                    propertyNo: selectedProperty.propertyNo 
+                  })}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Warning about duplicate partitions */}
+          <ValidationMessage
+            message={t("partitionForm.helpText.partitionCannotDuplicate")}
+            visible={!!selectedProperty}
+            type="warning"
+          />
         </>
       )}
     </>

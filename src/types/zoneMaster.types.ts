@@ -164,4 +164,6 @@ export interface CreatePartitionData {
   wings: WingItem[];
   floors: Floor[];
   societyDetails: SocietyDetailItem[];
+  /** Next partition number for auto-population (SSR fetched) */
+  nextPartitionNumber: number | null;
 }

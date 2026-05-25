@@ -1422,3 +1422,87 @@ export async function createBulkBuildingPropertiesAction(
     return { success: false, error: "Failed to create building properties" };
   }
 }
+
+/**
+ * Fetches the next partition number for a given ward and property.
+ * API: GET /api/Property?WardId={wardId}&PropertyNo={propertyNo}&PageNumber=1&PageSize=1&SortBy=Id&SortOrder=desc
+ * Used for SSR to auto-calculate the next partition number.
+ */
+export async function getNextPartitionNumberAction(
+  wardId: number,
+  propertyNo: string
+): Promise<{
+  success: boolean;
+  data?: number;
+  error?: string;
+}> {
+  try {
+    if (!wardId || wardId <= 0) {
+      return { success: false, error: "Invalid ward ID" };
+    }
+
+    if (!propertyNo || !propertyNo.trim()) {
+      return { success: false, error: "Invalid property number" };
+    }
+
+    // Build query parameters to get the latest property for this ward and propertyNo
+    // Filter by PropertyNo to get partitions for this specific property only
+    const queryParams = new URLSearchParams({
+      WardId: String(wardId),
+      PropertyNo: propertyNo.trim(),
+      PageNumber: "1",
+      PageSize: "1",
+      SortBy: "Id",
+      SortOrder: "desc",
+    });
+
+    const url = `/Property?${queryParams.toString()}`;
+    console.log("[getNextPartitionNumberAction] URL:", url);
+
+    const response = await apiClient.get<ZonePropertyListResponse>(url);
+
+    console.log("[getNextPartitionNumberAction] Response:", response);
+
+    if (!response.success || !response.data) {
+      return { success: false, error: response.error || "Failed to fetch properties" };
+    }
+
+    const items = response.data.items || [];
+    
+    // If no items found, this is the first partition for this property
+    if (items.length === 0) {
+      console.log("[getNextPartitionNumberAction] No existing partitions, starting at 1");
+      return { success: true, data: 1 };
+    }
+
+    // Get the latest item (sorted by Id desc, so first item is the latest)
+    const latestItem = items[0];
+    const latestPartition = parseInt(latestItem.partitionNo || "0", 10);
+    
+    // Next partition number is latest + 1
+    const nextPartition = isNaN(latestPartition) ? 1 : latestPartition + 1;
+
+    console.log("[getNextPartitionNumberAction] Latest partition:", latestPartition, "Next partition:", nextPartition);
+
+    return { 
+      success: true, 
+      data: nextPartition,
+    };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      logger.error("[getNextPartitionNumberAction] API Error", {
+        error,
+        statusCode: error.statusCode,
+      });
+      return { success: false, error: error.responseText };
+    }
+    if (error instanceof Error) {
+      logger.error("[getNextPartitionNumberAction] Error", {
+        error,
+        message: error.message,
+      });
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to get next partition number" };
+  }
+}
