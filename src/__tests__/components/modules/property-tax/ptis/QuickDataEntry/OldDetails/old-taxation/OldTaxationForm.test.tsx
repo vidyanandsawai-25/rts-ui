@@ -4,7 +4,7 @@ import OldTaxationForm from '@/components/modules/property-tax/ptis/QuickDataEnt
 import { useConfirm } from '@/components/common/ConfirmProvider';
 import { updatePropertyOldDetailsAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/OldDetails/old-taxation/action';
 
-import { PropertyOldDetailsApiItem } from '@/types/property-old-details.types';
+import { PropertyOldDetailsApiItem } from '@/types/OldDetails/property-old-details.types';
 
 // Mock dependencies
 vi.mock('next-intl', () => ({
@@ -82,7 +82,11 @@ describe('OldTaxationForm Component', () => {
   it('calls confirm dialog when update button is clicked', () => {
     render(<OldTaxationForm propertyOldDetails={mockPropertyData as unknown as PropertyOldDetailsApiItem} />);
     
-    const updateButton = screen.getByRole('button', { name: /quickDataEntry.property.updateButton/i });
+    // Modify a field to enable the update button
+    const plotNoInput = screen.getByPlaceholderText('quickDataEntry.oldDetails.plotNoPlaceholder');
+    fireEvent.change(plotNoInput, { target: { value: 'Plot 2' } });
+
+    const updateButton = screen.getByRole('button', { name: /quickDataEntry.commonbuttonmessages.UpdateChanges/i });
     fireEvent.click(updateButton);
     
     expect(mockConfirm).toHaveBeenCalledTimes(1);
@@ -99,7 +103,11 @@ describe('OldTaxationForm Component', () => {
     
     render(<OldTaxationForm propertyOldDetails={mockPropertyData as unknown as PropertyOldDetailsApiItem} />);
     
-    const updateButton = screen.getByRole('button', { name: /quickDataEntry.property.updateButton/i });
+    // Modify a field to enable the update button
+    const plotNoInput = screen.getByPlaceholderText('quickDataEntry.oldDetails.plotNoPlaceholder');
+    fireEvent.change(plotNoInput, { target: { value: 'Plot 2' } });
+
+    const updateButton = screen.getByRole('button', { name: /quickDataEntry.commonbuttonmessages.UpdateChanges/i });
     fireEvent.click(updateButton);
     
     await waitFor(() => {
