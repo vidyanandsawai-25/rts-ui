@@ -137,7 +137,7 @@ export function TapTypeForm({ id, initialData }: Readonly<TapTypeFormProps>) {
             disabled={isSubmitting}
           />
           <SaveButton
-            label={isEdit ? tCommon("buttons.update") : tCommon("buttons.save")}
+            label={isEdit ? tCommon("buttons.edit") : tCommon("buttons.save")}
             type="submit"
             form="tap-type-form"
             isLoading={isSubmitting}

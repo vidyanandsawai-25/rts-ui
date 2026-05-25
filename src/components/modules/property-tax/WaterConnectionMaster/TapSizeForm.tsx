@@ -137,7 +137,7 @@ export function TapSizeForm({ id, initialData }: Readonly<TapSizeFormProps>) {
             disabled={isSubmitting}
           />
           <SaveButton
-            label={isEdit ? tCommon("buttons.update") : tCommon("buttons.save")}
+            label={isEdit ? tCommon("buttons.edit") : tCommon("buttons.save")}
             type="submit"
             form="tap-size-form"
             isLoading={isSubmitting}
