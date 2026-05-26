@@ -1,6 +1,5 @@
 "use client"
 
-import { AddButton } from "@/components/common";
 import type { TaxationBreakdownFormProps } from "@/types/OldDetails/property-old-details.types";
 import { useTaxationBreakdownForm } from "@/hooks/ptis/QuickDataEntry/Olddetails/useTaxationBreakdownForm";
 
@@ -8,6 +7,7 @@ import { useTaxationBreakdownForm } from "@/hooks/ptis/QuickDataEntry/Olddetails
 import { TaxationMetaFields } from "./components/TaxationMetaFields";
 import { DynamicTaxFields } from "./components/DynamicTaxFields";
 import { TaxationSummaryFields } from "./components/TaxationSummaryFields";
+import { UpdateButton } from "@/components/common/ActionButtons";
 
 /**
  * TaxationBreakdownForm - Main Component
@@ -61,7 +61,7 @@ export default function TaxationBreakdownForm({
       </div>
 
       <div className="pt-2 mt-5 flex justify-end items-center">
-        <AddButton
+        <UpdateButton
           label={isSubmitting ? tValidation('footer.saving') : tValidation('commonbuttonmessages.UpdateChanges')}
           type="submit"
           onClick={handleSave}
