@@ -249,6 +249,7 @@ export default function DeletePropertyDrawer({
                 {t("form.propertiesLabel")} <span className="text-red-500">*</span>
               </label>
               <SearchSelect
+              className="h-9"
                 id="propertySelect"
                 name="propertySelect"
                 options={properties}
@@ -289,7 +290,7 @@ export default function DeletePropertyDrawer({
             )}
 
             {/* Confirmation Checkbox */}
-            <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
+            <div className="p-3 text-gray-700">
               <Checkbox
                 checked={confirmed}
                 onCheckedChange={(v) => setConfirmed(v as boolean)}
