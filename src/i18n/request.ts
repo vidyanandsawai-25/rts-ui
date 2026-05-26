@@ -53,10 +53,6 @@ export default getRequestConfig(async ({ locale }) => {
     waterConnectionMessages,
     waterConnectionMasterMessages,
     commonDetailsUpdateMessages,
-    modulesMessages,
-   
-    
-     
     moduleMasterMessages,
     modulesMessages,
   ] = await Promise.all([
@@ -168,11 +164,6 @@ export default getRequestConfig(async ({ locale }) => {
       waterConnection: waterConnectionMessages?.waterConnection || waterConnectionMessages,
       waterConnectionMaster: waterConnectionMasterMessages.waterConnectionMaster,
       commonDetailsUpdate: commonDetailsUpdateMessages?.commonDetailsUpdate || commonDetailsUpdateMessages,
-      modules: modulesMessages,
-      
-         
-      commonDetailsUpdate:
-        commonDetailsUpdateMessages?.commonDetailsUpdate || commonDetailsUpdateMessages,
       moduleMaster: moduleMasterMessages,
       modules: modulesMessages,
     },
