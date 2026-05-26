@@ -13,8 +13,8 @@ import {
   Input,
   Label,
   ValidationMessage,
-  StatusToggleField,
 } from "@/components/common";
+import { StatusToggleField } from "./StatusToggleField";
 
 import { MandatoryFieldsNotice } from "@/components/modules/property-tax/Floormaster/MandatoryFieldsNotice";
 

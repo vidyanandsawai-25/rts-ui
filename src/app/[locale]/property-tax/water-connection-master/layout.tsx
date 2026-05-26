@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+// Suspense removed as per requirement
 import { getTranslations } from "next-intl/server";
 
 import { PageContainer } from "@/components/common/PageContainer";
@@ -25,22 +25,8 @@ async function WaterConnectionLayoutContent({
   );
 }
 
-export default function WaterConnectionMasterLayout({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
-  return (
-    <Suspense
-      fallback={
-        <div
-          className="flex items-center justify-center p-6"
-          aria-busy="true"
-          aria-live="polite"
-        >
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-gray-900" />
-        </div>
-      }
-    >
-      <WaterConnectionLayoutContent>{children}</WaterConnectionLayoutContent>
-    </Suspense>
-  );
+type LayoutProps = { children: React.ReactNode };
+
+export default function WaterConnectionMasterLayout(props: LayoutProps) {
+  return <WaterConnectionLayoutContent>{props.children}</WaterConnectionLayoutContent>;
 }

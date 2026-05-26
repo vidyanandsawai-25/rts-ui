@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+
 import { fetchTapSizePagedAction } from "@/app/[locale]/property-tax/water-connection-master/actions";
 import { TapSizeMaster } from "@/components/modules/property-tax/WaterConnectionMaster";
 
@@ -21,8 +21,8 @@ export default async function TapSizePage({ searchParams }: PageProps) {
   const result = await fetchTapSizePagedAction(pageNumber, pageSize, searchTerm);
 
   return (
-    <Suspense fallback={null}>
+    
       <TapSizeMaster data={result} />
-    </Suspense>
+    
   );
 }

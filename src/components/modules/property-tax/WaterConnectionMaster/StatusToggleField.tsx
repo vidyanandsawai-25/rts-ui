@@ -2,8 +2,8 @@
 
 import { CheckCircle2, X } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
-import { ToggleSwitch } from "./ToggleSwitch";
-import { ValidationMessage } from "./ValidationMessage";
+import { ToggleSwitch } from "../../../common/ToggleSwitch";
+import { ValidationMessage } from "../../../common/ValidationMessage";
 
 interface StatusToggleFieldProps {
   isActive: boolean;

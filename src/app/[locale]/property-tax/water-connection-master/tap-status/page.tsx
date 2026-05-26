@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+
 import { fetchTapStatusPagedAction } from "@/app/[locale]/property-tax/water-connection-master/actions";
 import { TapStatusMaster } from "@/components/modules/property-tax/WaterConnectionMaster";
 
@@ -21,8 +21,8 @@ export default async function TapStatusPage({ searchParams }: PageProps) {
   const result = await fetchTapStatusPagedAction(pageNumber, pageSize, searchTerm);
 
   return (
-    <Suspense fallback={null}>
+    
       <TapStatusMaster data={result} />
-    </Suspense>
+    
   );
 }
