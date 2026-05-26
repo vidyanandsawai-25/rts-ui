@@ -3,41 +3,32 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import FloorTable from '@/components/modules/property-tax/ptis/QuickDataEntry/floorSubmission/FloorTable';
 import { FloorData } from '@/types/room-details.types';
 
-interface MockColumn {
-  key: string;
-  label?: string;
-  render?: (val: unknown) => React.ReactNode;
-}
 
-interface MockMasterTableProps {
-  data: FloorData[];
-  columns: MockColumn[];
-  renderActions?: (row: FloorData) => React.ReactNode;
-  getRowKey: (row: FloorData) => string | number;
-  rowClassName?: string | ((row: FloorData) => string);
-  emptyText?: string;
-}
-
-// Mock all dependencies
 vi.mock('@/components/common', () => ({
   AddButton: ({ label, onClick }: { label: string; onClick: () => void }) => (
     <button onClick={onClick} data-testid="add-floor-button">{label}</button>
   ),
-  MasterTable: ({ data, columns, renderActions, getRowKey, rowClassName, emptyText }: MockMasterTableProps) => (
+  FloorDetailsTable: ({ data, columns, emptyMessage, rowClassName }: { data: FloorData[]; columns: { key: string; render?: (row: FloorData, idx: number) => React.ReactNode }[]; emptyMessage?: React.ReactNode; rowClassName?: string | ((row: FloorData, idx: number) => string) }) => (
     <div data-testid="master-table">
-      {data.length === 0 ? (
-        <div data-testid="empty-text">{emptyText}</div>
+      {!data || data.length === 0 ? (
+        <div data-testid="empty-text">{emptyMessage}</div>
       ) : (
         <table>
           <tbody>
-            {data.map((row: FloorData, _index: number) => (
-              <tr key={getRowKey(row)} className={typeof rowClassName === 'function' ? rowClassName(row) : rowClassName}>
-                {columns.map((col: MockColumn) => (
-                  <td key={col.key}>{col.render ? col.render(row[col.key as keyof FloorData]) : String(row[col.key as keyof FloorData] ?? '')}</td>
-                ))}
-                {renderActions && <td>{renderActions(row)}</td>}
-              </tr>
-            ))}
+            {data.map((row: FloorData, index: number) => {
+              return (
+                <tr key={row.id || index} className={typeof rowClassName === 'function' ? rowClassName(row, index) : rowClassName}>
+                  <td>
+                    <a aria-label="Expand row" href={`#floor-${row.id}`}>Expand</a>
+                  </td>
+                  {columns.map((col: { key: string; render?: (row: FloorData, idx: number) => React.ReactNode }) => (
+                    <td key={col.key}>
+                      {col.render ? col.render(row, index) : String(row[col.key as keyof FloorData] ?? '')}
+                    </td>
+                  ))}
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       )}

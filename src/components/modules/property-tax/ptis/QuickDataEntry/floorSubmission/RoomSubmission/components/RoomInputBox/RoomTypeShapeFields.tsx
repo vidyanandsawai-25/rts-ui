@@ -58,8 +58,13 @@ export const RoomTypeShapeFields: React.FC<RoomTypeShapeFieldsProps> = ({
       <div className="flex flex-col justify-center flex-shrink-0 px-1" style={{ width: COLUMN_WIDTHS.roomType }}>
         <RoomTypeSelect
           value={formData.utilities}
-          onChange={(value) => {
+          onChange={(value, id) => {
             handleInputChange('utilities', value);
+            if (id) {
+              handleInputChange('roomTypeId', String(id));
+            } else {
+              handleInputChange('roomTypeId', '');
+            }
             setTimeout(() => { focusRefs?.current['shape']?.focus(); (focusRefs?.current['shape'] as HTMLElement)?.click(); }, 100);
           }}
           disabled={!isEditMode}

@@ -119,13 +119,15 @@ export const useOffsetActions = (state: RoomSubmissionState, handleEdit: (idx: n
         // Use calculateRoomAreas for consistent total (outer, offset, etc)
         const mainArea = Number(room.area || 0);
         const offsetArea = currentList.reduce((sum, o) => sum + (o.operation === 'subtract' ? Number(o.area || 0) : 0), 0);
-        const { carpetArea } = calculateRoomAreas(
+        const { carpetArea, builtUpArea } = calculateRoomAreas(
           mainArea,
           currentList.length > 0 ? 'Yes' : 'No',
           offsetArea,
           room.outer
         );
         room.total = carpetArea;
+        room.carpetArea = carpetArea;
+        room.builtUpArea = builtUpArea;
         updated[editingIndex] = room;
         return updated;
       });
@@ -166,13 +168,15 @@ export const useOffsetActions = (state: RoomSubmissionState, handleEdit: (idx: n
             // Use calculateRoomAreas for consistent total (outer, offset, etc)
             const mainArea = Number(room.area || 0);
             const offsetArea = updated.reduce((sum, o) => sum + (o.operation === 'subtract' ? Number(o.area || 0) : 0), 0);
-            const { carpetArea } = calculateRoomAreas(
+            const { carpetArea, builtUpArea } = calculateRoomAreas(
               mainArea,
               updated.length > 0 ? 'Yes' : 'No',
               offsetArea,
               room.outer
             );
             room.total = carpetArea;
+            room.carpetArea = carpetArea;
+            room.builtUpArea = builtUpArea;
             updatedRooms[editingIndex] = room;
             return updatedRooms;
           });

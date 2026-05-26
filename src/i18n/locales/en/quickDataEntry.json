@@ -22,6 +22,7 @@
         "success": {
             "title": "Success!",
             "message": "Floor details added successfully",
+            "deleted": "Room deleted successfully",
             "ok": "OK"
         },
         "validation": {

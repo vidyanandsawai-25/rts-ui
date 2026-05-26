@@ -188,8 +188,8 @@ export const renderFloorActions = (t: (key: string) => string, handleDeleteFloor
       />
     );
   };
-  
+
   FloorActionsCell.displayName = 'FloorActionsCell';
-  
+
   return FloorActionsCell;
 };

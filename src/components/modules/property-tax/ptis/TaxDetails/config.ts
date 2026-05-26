@@ -39,12 +39,12 @@ export const TAX_ROW_LABELS = {
 /**
  * Base styling classes for tax labels (badges)
  */
-export const TAX_LABEL_CLASSES = 'px-1.5 py-0.5 rounded-md shadow-sm border text-center text-[9px] font-bold';
+export const TAX_LABEL_CLASSES = 'px-2 py-1 rounded-md shadow-sm border text-center text-[12px] font-black tracking-wide';
 
 /**
  * Header text styling for table columns
  */
-export const HEADER_TEXT_CLASSES = 'text-white text-[9.5px] font-bold uppercase tracking-tighter py-1.5';
+export const HEADER_TEXT_CLASSES = 'text-white text-[11px] font-bold uppercase tracking-tight py-2';
 
 /**
  * Center alignment class for cells
@@ -54,12 +54,12 @@ export const CELL_CENTER_CLASS = 'text-center';
 /**
  * Styling for number cells (tax amount columns)
  */
-export const NUMBER_CELL_CLASSES = 'border border-blue-200 rounded px-1 py-0.5 text-center bg-white text-[10px] min-w-[55px] shadow-sm';
+export const NUMBER_CELL_CLASSES = 'border border-blue-300 rounded px-1.5 py-1 text-center bg-white text-[12px] min-w-[70px] shadow-sm font-bold text-slate-800';
 
 /**
  * Styling for total column cells
  */
-export const TOTAL_CELL_CLASSES = 'border border-indigo-300 rounded px-1 py-0.5 text-center bg-white text-[10px] min-w-[55px] font-bold';
+export const TOTAL_CELL_CLASSES = 'border border-indigo-400 rounded px-1.5 py-1 text-center bg-white text-[12px] min-w-[70px] font-black text-indigo-900 shadow-sm';
 
 /**
  * Default fallback styling for unknown tax types
