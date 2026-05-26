@@ -167,3 +167,11 @@ export interface CreatePartitionData {
   /** Next partition number for auto-population (SSR fetched) */
   nextPartitionNumber: number | null;
 }
+
+/**
+ * SSR data for Delete Property drawer
+ */
+export interface DeletePropertyData {
+  isOpen: boolean;
+  properties: ZonePropertyItem[];
+}

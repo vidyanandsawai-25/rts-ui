@@ -266,6 +266,9 @@
     "noPropertiesFound": "कोई संपत्ति नहीं मिली",
     "dependencyFlow": "निर्भरता पदानुक्रम प्रवाह",
     "dependencyPath": "ज़ोन → वार्ड → संपत्ति → विभाजन",
+    "deleteSuccess": "संपत्ति सफलतापूर्वक हटाई गई",
+    "deleteBulkSuccess": "{count} संपत्तियां सफलतापूर्वक हटाई गईं",
+    "deleteError": "संपत्ति हटाने में विफल",
     "columns": {
       "srNo": "क्र.सं.",
       "wardNo": "वार्ड नंबर",
@@ -498,5 +501,72 @@
     "createSuccess": "विभाजन सफलतापूर्वक बनाया गया!",
     "createError": "विभाजन बनाने में विफल",
     "bulkCreateSuccess": "{count} विभाजन सफलतापूर्वक बनाए गए!"
+  },
+  "deleteProperty": {
+    "pageTitle": "संपत्ति हटाएं",
+    "pageSubtitle": "चयनित वार्ड से संपत्ति चुनें और हटाएं",
+    "warning": {
+      "title": "यह क्रिया अपरिवर्तनीय है",
+      "description": "हटाई गई संपत्तियों को पुनर्प्राप्त नहीं किया जा सकता। कृपया आगे बढ़ने से पहले सत्यापित करें।"
+    },
+    "tabs": {
+      "single": "एकल संपत्ति",
+      "bulk": "एकाधिक संपत्तियां"
+    },
+    "form": {
+      "wardLabel": "वार्ड चुनें",
+      "wardPlaceholder": "एक वार्ड चुनें...",
+      "propertiesLabel": "संपत्ति चुनें",
+      "searchPlaceholder": "संपत्ति संख्या खोजें...",
+      "bulkHelp": "कई संपत्तियों को चुनें और हटाएं",
+      "fromPropertyNo": "संपत्ति नं. से",
+      "toPropertyNo": "संपत्ति नं. तक",
+      "fromPropertyPlaceholder": "उदा., 1",
+      "toPropertyPlaceholder": "उदा., 10",
+      "bulkRangePreview": "{from} से {to} तक की संपत्तियां हटाई जाएंगी ({count} संपत्तियां)",
+      "bulkRangeWarning": "कृपया सुनिश्चित करें कि इस सीमा में सभी संपत्तियां मौजूद हैं और हटाने के योग्य हैं",
+      "bulkHelp": "हटाने के लिए कई संपत्तियों को खोजें और चुनें",
+      "noPropertiesSelected": "कोई संपत्ति चयनित नहीं",
+      "propertiesSelected": "{count} संपत्ति चयनित",
+      "selectedForDeletion": "हटाने के लिए चयनित",
+      "confirmSingle": "मैं पुष्टि करता हूं कि मैं इस संपत्ति को स्थायी रूप से हटाना चाहता हूं।",
+      "confirmBulk": "मैं पुष्टि करता हूं कि मैं {count} संपत्तियों को स्थायी रूप से हटाना चाहता हूं।"
+    },
+    "buttons": {
+      "selectAll": "सभी चुनें",
+      "deselectAll": "सभी का चयन रद्द करें",
+      "cancel": "रद्द करें",
+      "delete": "संपत्ति हटाएं",
+      "deleteWithCount": "हटाएं ({count})"
+    },
+    "messages": {
+      "loadingProperties": "संपत्तियां लोड हो रही हैं...",
+      "noPropertiesInWard": "कोई संपत्ति नहीं मिली",
+      "noPropertiesMatch": "आपकी खोज से मेल खाने वाली कोई संपत्ति नहीं",
+      "selectAtLeastOne": "कृपया हटाने के लिए कम से कम एक संपत्ति चुनें",
+      "deleteSuccess": "संपत्ति सफलतापूर्वक हटाई गई",
+      "deleteSuccessBulk": "{count} संपत्तियां सफलतापूर्वक हटाई गईं",
+      "deletePartialSuccess": "{total} में से {success} संपत्तियां हटाई गईं। {failed} विफल रहीं।",
+      "deleteFailed": "संपत्ति हटाने में विफल",
+      "deleteFailedBulk": "सभी {count} संपत्तियां हटाने में विफल"
+    },
+    "confirm": {
+      "title": "संपत्ति हटाएं?",
+      "titleBulk": "{count} संपत्तियां हटाएं?",
+      "description": "क्या आप वाकई इस संपत्ति को हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती।",
+      "descriptionBulk": "क्या आप वाकई {count} संपत्तियों को हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती।"
+    },
+    "errors": {
+      "loadFailed": "संपत्तियां लाने में विफल",
+      "unexpectedError": "एक अप्रत्याशित त्रुटि हुई",
+      "wardRequired": "वार्ड चयन आवश्यक है",
+      "propertyRequired": "संपत्ति चयन आवश्यक है",
+      "propertiesRequired": "कम से कम एक संपत्ति चुनें",
+      "fromPropertyRequired": "संपत्ति नं. से आवश्यक है",
+      "toPropertyRequired": "संपत्ति नं. तक आवश्यक है",
+      "invalidPropertyNumber": "कृपया वैध संपत्ति संख्या दर्ज करें",
+      "fromGreaterThanTo": "संपत्ति नं. से, संपत्ति नं. तक के बराबर या उससे कम होना चाहिए",
+      "propertiesRequired": "कम से कम एक संपत्ति चुनें"
+    }
   }
 }

@@ -12,6 +12,7 @@ import CreateNewWard from "./wards/CreateNewWard";
 import WardForm from "./wards/WardForm";
 import CreatePropertyDrawer from "./properties/CreatePropertyDrawer";
 import PropertyPartitionForm from "./properties/PropertyPartitionForm";
+import DeletePropertyDrawer from "./properties/DeletePropertyDrawer";
 import { DashboardCard } from "@/components/common/DashboardCard";
 import { useZoneContentState } from "@/hooks/zoneMaster/useZoneContentState";
 import {
@@ -26,6 +27,7 @@ import {
   RightPanelTab,
   CreatePropertyData,
   CreatePartitionData,
+  DeletePropertyData,
 } from "@/types/zoneMaster.types";
 
 interface Props {
@@ -40,6 +42,7 @@ interface Props {
   activeRightTab?: RightPanelTab;
   createPropertyData?: CreatePropertyData;
   createPartitionData?: CreatePartitionData;
+  deletePropertyData?: DeletePropertyData;
 }
 
 export default function ZoneContent({
@@ -54,6 +57,7 @@ export default function ZoneContent({
   activeRightTab = "wards",
   createPropertyData,
   createPartitionData,
+  deletePropertyData,
 }: Props) {
   const router = useRouter();
   const pathname = usePathname();
@@ -176,6 +180,8 @@ export default function ZoneContent({
             propertyTypeMap={propertyTypeMap}
             // Active tab
             activeTab={activeRightTab}
+            // Delete property drawer
+            deletePropertyData={deletePropertyData}
           />
         </div>
       </div>
@@ -279,6 +285,36 @@ export default function ZoneContent({
           }}
           onSuccess={() => {
             router.refresh();
+          }}
+        />
+      )}
+
+      {/* Delete Property Drawer */}
+      {deletePropertyData?.isOpen && (
+        <DeletePropertyDrawer
+          isOpen={deletePropertyData.isOpen}
+          wards={wards.map((w) => ({
+            value: String(w.id),
+            label: `${w.wardNo}${w.description ? ` - ${w.description}` : ""}`,
+          }))}
+          properties={deletePropertyData.properties.map((p) => ({
+            value: String(p.id),
+            label: p.propertyNo,
+          }))}
+          onDeleteSingle={async (propertyId) => {
+            // This will be handled by PropertyList callbacks
+            console.log("Delete single:", propertyId);
+          }}
+          onDeleteBulk={async (propertyIds) => {
+            // This will be handled by PropertyList callbacks
+            console.log("Delete bulk:", propertyIds);
+          }}
+          loading={false}
+          selectedWardId={selectedPropertyWardId}
+          onClose={() => {
+            const params = new URLSearchParams(searchParams.toString());
+            params.delete("deleteProperty");
+            router.push(`${pathname}?${params.toString()}`);
           }}
         />
       )}

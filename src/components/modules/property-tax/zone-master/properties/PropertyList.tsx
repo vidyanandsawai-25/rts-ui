@@ -8,8 +8,13 @@ import { SearchInput, StatusBadge, AddButton, Select, Option } from "@/component
 import { ZonePropertyItem } from "@/types/zoneProperty.types";
 import { WardItem } from "@/types/wardMaster.types";
 import { usePropertyListHandlers } from "@/hooks/zoneMaster/usePropertyListHandlers";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useTransition } from "react";
 import { getPropertyColumns } from "./propertyColumns";
+import { DeleteLabelButton } from "@/components/common/ActionButtons";
+import DeletePropertyDrawer from "./DeletePropertyDrawer";
+import { deleteProperty, deleteBulkProperties } from "@/lib/api/property.service";
+import { toast } from "sonner";
+import type { DeletePropertyData } from "@/types/zoneMaster.types";
 
 interface PropertyCategoryMap {
     [key: number]: string;
@@ -32,6 +37,7 @@ interface Props {
     selectedZoneId: number | null;
     categoryMap?: PropertyCategoryMap;
     propertyTypeMap?: PropertyTypeMap;
+    deletePropertyData?: DeletePropertyData;
 }
 
 export default function PropertyList({
@@ -46,6 +52,7 @@ export default function PropertyList({
     selectedZoneId,
     categoryMap = {},
     propertyTypeMap = {},
+    deletePropertyData,
 }: Props) {
     const router = useRouter();
     const pathname = usePathname();
@@ -105,6 +112,75 @@ export default function PropertyList({
         params.set("createPartition", "");
         router.push(`${pathname}?${params.toString()}`);
     }, [router, pathname, searchParams, selectedWardId]);
+
+    const [isDeleting, startDeleteTransition] = useTransition();
+
+    const handleOpenDeleteDrawer = useCallback(() => {
+        const params = new URLSearchParams(searchParams.toString());
+        if (selectedWardId !== null) {
+            params.set("propWardId", String(selectedWardId));
+        }
+        params.set("deleteProperty", "");
+        router.push(`${pathname}?${params.toString()}`);
+    }, [router, pathname, searchParams, selectedWardId]);
+
+    const handleCloseDeleteDrawer = useCallback(() => {
+        const params = new URLSearchParams(searchParams.toString());
+        params.delete("deleteProperty");
+        router.push(`${pathname}?${params.toString()}`);
+    }, [router, pathname, searchParams]);
+
+    const handleDeleteSingle = useCallback(
+        async (propertyId: string) => {
+            startDeleteTransition(async () => {
+                try {
+                    const result = await deleteProperty(propertyId);
+                    
+                    if (result.success) {
+                        toast.success(t("propertyList.deleteSuccess"));
+                        handleCloseDeleteDrawer();
+                        router.refresh();
+                    } else {
+                        toast.error(result.error || t("propertyList.deleteError"));
+                    }
+                } catch (error) {
+                    toast.error(
+                        error instanceof Error 
+                            ? error.message 
+                            : t("propertyList.deleteError")
+                    );
+                }
+            });
+        },
+        [router, t]
+    );
+
+    const handleDeleteBulk = useCallback(
+        async (propertyIds: string[]) => {
+            startDeleteTransition(async () => {
+                try {
+                    const result = await deleteBulkProperties(propertyIds);
+                    
+                    if (result.success) {
+                        toast.success(
+                            t("propertyList.deleteBulkSuccess", { count: propertyIds.length })
+                        );
+                        handleCloseDeleteDrawer();
+                        router.refresh();
+                    } else {
+                        toast.error(result.error || t("propertyList.deleteError"));
+                    }
+                } catch (error) {
+                    toast.error(
+                        error instanceof Error 
+                            ? error.message 
+                            : t("propertyList.deleteError")
+                    );
+                }
+            });
+        },
+        [router, t]
+    );
 
     return (
         <div className="flex flex-col h-full">
@@ -188,6 +264,11 @@ export default function PropertyList({
                             onClick={handleCreatePartition}
                             disabled={selectedWardId === null}
                         />
+                        <DeleteLabelButton
+                            label="Delete Property"
+                            onClick={handleOpenDeleteDrawer}
+                            disabled={selectedWardId === null}
+                        />
                     </div>
                 </div>
             </div>
@@ -236,6 +317,23 @@ export default function PropertyList({
                     />
                 )}
             </div>
+
+            {/* DELETE PROPERTY DRAWER */}
+            {deletePropertyData?.isOpen && (
+                <DeletePropertyDrawer
+                    isOpen={deletePropertyData.isOpen}
+                    onClose={handleCloseDeleteDrawer}
+                    wards={wardOptions}
+                    properties={deletePropertyData.properties.map((p) => ({
+                        value: String(p.id),
+                        label: p.propertyNo,
+                    }))}
+                    onDeleteSingle={handleDeleteSingle}
+                    onDeleteBulk={handleDeleteBulk}
+                    loading={isDeleting}
+                    selectedWardId={selectedWardId}
+                />
+            )}
         </div>
     );
 }

@@ -41,6 +41,8 @@ interface PageProps {
     // Create Partition drawer
     createPartition?: string;
     partitionPropertyId?: string;
+    // Delete Property drawer
+    deleteProperty?: string;
   }>;
 }
 
@@ -99,6 +101,8 @@ function sanitizeParams(raw: Awaited<PageProps["searchParams"]>) {
     createProperty: raw.createProperty !== undefined,
     // Create Partition drawer
     createPartition: raw.createPartition !== undefined,
+    // Delete Property drawer
+    deleteProperty: raw.deleteProperty !== undefined,
   };
 }
 
@@ -136,6 +140,7 @@ const parsedZoneId = sanitized.zoneId ? Number(sanitized.zoneId) : NaN;
   const isEditWardOpen = editWardId !== null && editWardId > 0;
   const isCreatePropertyOpen = sanitized.createProperty;
   const isCreatePartitionOpen = sanitized.createPartition;
+  const isDeletePropertyOpen = sanitized.deleteProperty;
 
   // Link Ward Search & Pagination params
   const availableWardSearchTerm = sanitized.availableWardSearchTerm;
@@ -463,6 +468,17 @@ const parsedZoneId = sanitized.zoneId ? Number(sanitized.zoneId) : NaN;
     }
   }
 
+  // SSR data for Delete Property drawer
+  let ssrDeleteProperties: ZonePropertyItem[] = [];
+
+  if (isDeletePropertyOpen && selectedPropWardId !== null) {
+    const deletePropertiesResult = await getAllPropertiesForWardAction(selectedPropWardId);
+
+    if (deletePropertiesResult.success && deletePropertiesResult.data) {
+      ssrDeleteProperties = deletePropertiesResult.data;
+    }
+  }
+
   return (
       <ZoneMaster
         zonePagination={{
@@ -531,6 +547,10 @@ const parsedZoneId = sanitized.zoneId ? Number(sanitized.zoneId) : NaN;
           floors: ssrPartitionFloors,
           societyDetails: ssrPartitionSocietyDetails,
           nextPartitionNumber: ssrNextPartitionNumber,
+        }}
+        deletePropertyData={{
+          isOpen: isDeletePropertyOpen,
+          properties: ssrDeleteProperties,
         }}
       />
   );
