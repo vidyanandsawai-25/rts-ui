@@ -3,7 +3,7 @@
 import { Building2 } from "lucide-react";
 import { Drawer } from "@/components/common/Drawer";
 import { CancelButton, SaveButton } from "@/components/common";
-import { CreatePropertyDrawerProps } from "@/types/create-property-drawer.types";
+import { CreatePropertyDrawerProps } from "@/types/zone-master/properties/create-property-drawer.types";
 import { useCreatePropertyForm } from "@/hooks/zoneMaster/useCreatePropertyForm";
 import { useCreatePropertySubmit } from "@/hooks/zoneMaster/useCreatePropertySubmit";
 import { PropertyFormFields } from "./components/PropertyFormFields";

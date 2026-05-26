@@ -1,7 +1,7 @@
 "use client";
 
 import { Select, ValidationMessage } from "@/components/common";
-import { ZonePropertyItem } from "@/types/zoneProperty.types";
+import { ZonePropertyItem } from "@/types/zone-master/properties/zoneProperty.types";
 import { Option } from "@/components/common";
 
 interface PropertySelectionSectionProps {

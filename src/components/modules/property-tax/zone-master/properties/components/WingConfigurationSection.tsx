@@ -1,7 +1,7 @@
 "use client";
 
 import { Input, ValidationMessage, Select } from "@/components/common";
-import { PartitionFormState, PartitionFormErrors } from "@/types/partition-form.types";
+import { PartitionFormState, PartitionFormErrors } from "@/types/zone-master/properties/partition-form.types";
 import { Option } from "@/components/common";
 
 interface WingConfigurationSectionProps {

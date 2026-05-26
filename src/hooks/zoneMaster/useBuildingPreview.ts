@@ -1,12 +1,12 @@
 import { useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { PartitionFormState } from "@/types/partition-form.types";
+import { PartitionFormState } from "@/types/zone-master/properties/partition-form.types";
 import { WardItem } from "@/types/wardMaster.types";
-import { ZonePropertyItem } from "@/types/zoneProperty.types";
-import { WingItem } from "@/types/wing.types";
+import { ZonePropertyItem } from "@/types/zone-master/properties/zoneProperty.types";
+import { WingItem } from "@/types/zone-master/properties/wing.types";
 import { Floor } from "@/types/floor.types";
-import { BuildingStructureItem } from "@/types/building-structure.types";
+import { BuildingStructureItem } from "@/types/zone-master/properties/building-structure.types";
 import { generateBuildingStructureAction } from "@/app/[locale]/property-tax/zone-master/actions";
 
 interface UseBuildingPreviewProps {
@@ -120,11 +120,8 @@ export function useBuildingPreview({
         generationType: form.generationType.trim(),
       };
 
-      console.log("[Preview] Building Structure Payload:", JSON.stringify(payload, null, 2));
-
       const result = await generateBuildingStructureAction(payload);
       
-      console.log("[Preview] API Result:", result);
       
       if (result.success && result.data) {
         setPreviewData(result.data);
@@ -134,7 +131,6 @@ export function useBuildingPreview({
         setPreviewData([]);
       }
     } catch (error) {
-      console.error("[Preview] Exception:", error);
       const errorMessage = error instanceof Error ? error.message : "Failed to generate preview";
       toast.error(errorMessage);
       setPreviewData([]);

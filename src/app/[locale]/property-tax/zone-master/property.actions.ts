@@ -4,9 +4,9 @@ import { getPropertiesByWard, getPropertyCountByWard, createProperty, createBulk
 import { getPropertyCategories } from "@/lib/api/property-category.service";
 import { getPropertyTypesPaged } from "@/lib/api/property-type-crud.service";
 import { getTaxZonePagedServer } from "@/lib/api/taxZoning/taxzoning.service";
-import { ZonePropertyListResponse } from "@/types/zoneProperty.types";
+import { ZonePropertyListResponse } from "@/types/zone-master/properties/zoneProperty.types";
 import { PropertyCategory, CreatePropertyPayload, BulkCreatePropertyPayload } from "@/types/property-category.types";
-import { PropertyRangeCreatePayload, PropertyRangeCreateResponse } from "@/types/property-range.types";
+import { PropertyRangeCreatePayload, PropertyRangeCreateResponse } from "@/types/zone-master/properties/property-range.types";
 import { PropertyType } from "@/types/property-type.types";
 import { TaxZone } from "@/types/taxzoning.types";
 import { ApiError } from "@/lib/utils/api";

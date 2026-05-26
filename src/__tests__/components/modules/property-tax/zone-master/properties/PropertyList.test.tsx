@@ -56,6 +56,9 @@ vi.mock("@/components/common", () => ({
       {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
     </select>
   ),
+  Label: ({ children, className }: { children: React.ReactNode; className?: string }) => (
+    <label className={className}>{children}</label>
+  ),
 }));
 
 describe("PropertyList", () => {

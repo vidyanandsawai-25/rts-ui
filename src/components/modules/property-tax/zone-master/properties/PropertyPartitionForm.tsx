@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { Drawer } from "@/components/common/Drawer";
 import { CancelButton, SaveButton, Select, Tabs, ValidationMessage } from "@/components/common";
 import { Column } from "@/components/common/MasterTable";
-import { PropertyPartitionFormProps } from "@/types/partition-form.types";
+import { PropertyPartitionFormProps } from "@/types/zone-master/properties/partition-form.types";
 import { BuildingPreviewModal } from "./BuildingPreviewModal";
 import { getWingColumns, WingSummary } from "./wingColumns";
 import {

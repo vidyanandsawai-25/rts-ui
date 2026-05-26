@@ -3,8 +3,8 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
 import { WardItem } from "@/types/wardMaster.types";
-import { CreatePropertyFormData } from "@/types/create-property-drawer.types";
-import { PropertyRangeCreatePayload } from "@/types/property-range.types";
+import { CreatePropertyFormData } from "@/types/zone-master/properties/create-property-drawer.types";
+import { PropertyRangeCreatePayload } from "@/types/zone-master/properties/property-range.types";
 import { createPropertyRangeAction } from "@/app/[locale]/property-tax/zone-master/property.actions";
 
 interface UseCreatePropertySubmitProps {

@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { useTranslations } from "next-intl";
-import { PartitionFormState, PartitionFormErrors } from "@/types/partition-form.types";
-import { ZonePropertyItem } from "@/types/zoneProperty.types";
+import { PartitionFormState, PartitionFormErrors } from "@/types/zone-master/properties/partition-form.types";
+import { ZonePropertyItem } from "@/types/zone-master/properties/zoneProperty.types";
 import { Floor } from "@/types/floor.types";
 
 interface UsePartitionFormValidationProps {

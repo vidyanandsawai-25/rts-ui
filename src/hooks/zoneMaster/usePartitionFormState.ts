@@ -1,10 +1,10 @@
 import { useState, useMemo } from "react";
-import { PartitionFormState, PartitionFormErrors } from "@/types/partition-form.types";
-import { ZonePropertyItem } from "@/types/zoneProperty.types";
-import { WingItem } from "@/types/wing.types";
+import { PartitionFormState, PartitionFormErrors } from "@/types/zone-master/properties/partition-form.types";
+import { ZonePropertyItem } from "@/types/zone-master/properties/zoneProperty.types";
+import { WingItem } from "@/types/zone-master/properties/wing.types";
 import { Floor } from "@/types/floor.types";
-import { SocietyDetailItem } from "@/types/societyDetails.types";
-import { BuildingStructureItem } from "@/types/building-structure.types";
+import { SocietyDetailItem } from "@/types/zone-master/properties/societyDetails.types";
+import { BuildingStructureItem } from "@/types/zone-master/properties/building-structure.types";
 
 const INITIAL: PartitionFormState = {
   mainPropertyId: null,

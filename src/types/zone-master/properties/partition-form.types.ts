@@ -1,7 +1,7 @@
-import { WardItem } from "./wardMaster.types";
+import { WardItem } from "@/types/wardMaster.types";
 import { ZonePropertyItem } from "./zoneProperty.types";
 import { WingItem } from "./wing.types";
-import { Floor } from "./floor.types";
+import { Floor } from "@/types/floor.types";
 import { SocietyDetailItem } from "./societyDetails.types";
 
 /**

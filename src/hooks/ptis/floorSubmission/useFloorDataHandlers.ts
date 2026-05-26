@@ -161,7 +161,7 @@ export const useFloorDataHandlers = (params: {
     params.set('floorId', floorIdParam);
     const renterManagementUrl = `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/FloorSubmission/Renter?${params.toString()}`;
     router.push(renterManagementUrl);
-  }, [editingFloorForm, t, router, locale, propertyId, setFormErrors]);
+  }, [editingFloorForm, t, setFormErrors, router, locale, propertyId]);
 
   return {
     handleSave,

@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, fireEvent, waitFor } from "@testing-library/react";
 import PropertyPartitionForm from "@/components/modules/property-tax/zone-master/properties/PropertyPartitionForm";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { ZonePropertyItem } from "@/types/zoneProperty.types";
+import { ZonePropertyItem } from "@/types/zone-master/properties/zoneProperty.types";
 
 // Mock next-intl
 vi.mock("next-intl", () => ({

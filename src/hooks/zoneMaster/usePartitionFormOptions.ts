@@ -1,9 +1,9 @@
 import { useMemo } from "react";
-import { ZonePropertyItem } from "@/types/zoneProperty.types";
-import { SocietyDetailItem } from "@/types/societyDetails.types";
-import { WingItem } from "@/types/wing.types";
+import { ZonePropertyItem } from "@/types/zone-master/properties/zoneProperty.types";
+import { SocietyDetailItem } from "@/types/zone-master/properties/societyDetails.types";
+import { WingItem } from "@/types/zone-master/properties/wing.types";
 import { Floor } from "@/types/floor.types";
-import { PartitionFormState } from "@/types/partition-form.types";
+import { PartitionFormState } from "@/types/zone-master/properties/partition-form.types";
 
 interface UsePartitionFormOptionsProps {
   allProperties: ZonePropertyItem[];

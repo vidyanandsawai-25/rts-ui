@@ -1,6 +1,6 @@
 import { apiClient } from "@/services/api.service";
 import { handleApiResponse } from "@/lib/utils/api";
-import { SocietyDetailsListResponse, CreateSocietyDetailPayload, SocietyDetailItem } from "@/types/societyDetails.types";
+import { SocietyDetailsListResponse, CreateSocietyDetailPayload, SocietyDetailItem } from "@/types/zone-master/properties/societyDetails.types";
 
 /**
  * Fetches society details for a specific property

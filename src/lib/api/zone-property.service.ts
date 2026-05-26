@@ -1,8 +1,8 @@
 import { apiClient } from "@/services/api.service";
-import { ZonePropertyItem, ZonePropertyListResponse } from "@/types/zoneProperty.types";
+import { ZonePropertyItem, ZonePropertyListResponse } from "@/types/zone-master/properties/zoneProperty.types";
 import { CreatePropertyPayload, BulkCreatePropertyPayload } from "@/types/property-category.types";
-import { PropertyRangeCreatePayload, PropertyRangeCreateResponse } from "@/types/property-range.types";
-import { BulkPropertyItem, BulkPropertyCreateResponse } from "@/types/property-bulk.types";
+import { PropertyRangeCreatePayload, PropertyRangeCreateResponse } from "@/types/zone-master/properties/property-range.types";
+import { BulkPropertyItem, BulkPropertyCreateResponse } from "@/types/zone-master/properties/property-bulk.types";
 import { ApiError } from "@/lib/utils/api";
 
 /**

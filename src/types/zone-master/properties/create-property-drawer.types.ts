@@ -1,7 +1,7 @@
-import { WardItem } from "./wardMaster.types";
-import { PropertyType } from "./property-type.types";
-import { PropertyCategory } from "./property-category.types";
-import { TaxZone } from "./taxzoning.types";
+import { WardItem } from "@/types/wardMaster.types";
+import { PropertyType } from "@/types/property-type.types";
+import { PropertyCategory } from "@/types/property-category.types";
+import { TaxZone } from "@/types/taxzoning.types";
 
 /**
  * Props for the CreatePropertyDrawer component

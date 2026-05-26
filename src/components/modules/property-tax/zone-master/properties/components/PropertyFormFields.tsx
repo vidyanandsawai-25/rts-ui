@@ -1,7 +1,7 @@
 "use client";
 
 import { Input, Select, ValidationMessage } from "@/components/common";
-import { CreatePropertyFormData, CreatePropertyFormErrors } from "@/types/create-property-drawer.types";
+import { CreatePropertyFormData, CreatePropertyFormErrors } from "@/types/zone-master/properties/create-property-drawer.types";
 import { WardItem } from "@/types/wardMaster.types";
 import { Option } from "@/components/common";
 import { useTranslations } from "next-intl";

@@ -2,7 +2,7 @@
 
 import { Input, Select, ValidationMessage, CancelButton } from "@/components/common";
 import { Info, AlertCircle } from "lucide-react";
-import { PartitionFormState, PartitionFormErrors } from "@/types/partition-form.types";
+import { PartitionFormState, PartitionFormErrors } from "@/types/zone-master/properties/partition-form.types";
 import { Option } from "@/components/common";
 import { PreviewButton } from "@/components/common/ActionButtons";
 

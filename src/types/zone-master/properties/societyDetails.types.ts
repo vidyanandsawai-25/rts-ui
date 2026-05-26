@@ -1,4 +1,4 @@
-import { PagedResponse } from "./common.types";
+import { PagedResponse } from "@/types/common.types";
 
 export interface SocietyDetailItem {
   propertyId: number;

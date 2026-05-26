@@ -2,7 +2,8 @@
 
 import { Info } from "lucide-react";
 import { WardItem } from "@/types/wardMaster.types";
-import { ZonePropertyItem } from "@/types/zoneProperty.types";
+import { ZonePropertyItem } from "@/types/zone-master/properties/zoneProperty.types";
+import { Label } from "@/components/common";
 
 interface PropertyInfoSectionProps {
   selectedWard: WardItem | null;
@@ -33,9 +34,9 @@ export function PropertyInfoSection({
         <div className={`grid gap-3 mb-2 ${selectedProperty ? 'grid-cols-2' : 'grid-cols-1'}`}>
           {/* Ward Pill */}
           <div>
-            <label className="block text-[10px] font-medium text-gray-500 uppercase mb-1.5 tracking-wide">
+            <Label className="block text-[10px] font-medium text-gray-500 uppercase mb-1.5 tracking-wide">
               {t("partitionForm.ward")}
-            </label>
+            </Label>
             <div className={`flex items-center gap-2 px-3 py-2.5 rounded-lg ${selectedWard?.id ? 'bg-green-50 border border-green-200' : 'bg-gray-50 border border-gray-200'}`}>
               <div className={`w-2 h-2 rounded-full ${selectedWard?.id ? 'bg-green-500' : 'bg-gray-400'}`} />
               <span className={`text-sm font-semibold ${selectedWard?.id ? 'text-green-800' : 'text-gray-600'}`}>
@@ -50,9 +51,9 @@ export function PropertyInfoSection({
           {/* Property Category Pill */}
           {selectedProperty && categoryName && (
             <div>
-              <label className="block text-[10px] font-medium text-gray-500 uppercase mb-1.5 tracking-wide">
+              <Label className="block text-[10px] font-medium text-gray-500 uppercase mb-1.5 tracking-wide">
                 {t("partitionForm.propertyCategory")}
-              </label>
+              </Label>
               <div className={`flex items-center gap-2 px-3 py-2.5 rounded-lg ${isApartmentCategory ? 'bg-blue-50 border border-blue-200' : 'bg-purple-50 border border-purple-200'}`}>
                 <div className={`w-2 h-2 rounded-full ${isApartmentCategory ? 'bg-blue-500' : 'bg-purple-500'}`} />
                 <span className={`text-sm font-semibold ${isApartmentCategory ? 'text-blue-800' : 'text-purple-800'}`}>

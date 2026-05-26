@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { PartitionFormState, PartitionFormErrors } from "@/types/partition-form.types";
+import { PartitionFormState, PartitionFormErrors } from "@/types/zone-master/properties/partition-form.types";
 import { Floor } from "@/types/floor.types";
 
 interface UsePartitionFormHandlersProps {
@@ -52,7 +52,6 @@ export function usePartitionFormHandlers({
         
         if (fromFloorIndex !== -1 && toFloorIndex !== -1 && toFloorIndex < fromFloorIndex) {
           newForm.toFloor = "";
-          console.log("[PropertyPartitionForm] Reset To Floor as it became invalid");
         }
       }
       

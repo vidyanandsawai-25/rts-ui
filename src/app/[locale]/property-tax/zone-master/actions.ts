@@ -1003,12 +1003,12 @@ import {
   createSocietyDetail, 
   updateSocietyDetail 
 } from "@/lib/api/societyDetails.services";
-import { ZonePropertyItem, ZonePropertyListResponse } from "@/types/zoneProperty.types";
-import { WingItem } from "@/types/wing.types";
+import { ZonePropertyItem, ZonePropertyListResponse } from "@/types/zone-master/properties/zoneProperty.types";
+import { WingItem } from "@/types/zone-master/properties/wing.types";
 import { Floor } from "@/types/floor.types";
-import { SocietyDetailsListResponse, CreateSocietyDetailPayload, SocietyDetailItem } from "@/types/societyDetails.types";
-import { BuildingStructureItem, GenerateBuildingStructurePayload, BuildingStructureResponse } from "@/types/building-structure.types";
-import { BulkPropertyItem, BulkPropertyCreateResponse } from "@/types/property-bulk.types";
+import { SocietyDetailsListResponse, CreateSocietyDetailPayload, SocietyDetailItem } from "@/types/zone-master/properties/societyDetails.types";
+import { BuildingStructureItem, GenerateBuildingStructurePayload, BuildingStructureResponse } from "@/types/zone-master/properties/building-structure.types";
+import { BulkPropertyItem, BulkPropertyCreateResponse } from "@/types/zone-master/properties/property-bulk.types";
 import { createBulkBuildingProperties } from "@/lib/api/zone-property.service";
 
 /**
@@ -1394,12 +1394,7 @@ export async function createBulkBuildingPropertiesAction(
       createdBy: userId
     }));
 
-    console.log("[createBulkBuildingPropertiesAction] Creating", payloadWithUser.length, "properties");
-    console.log("[createBulkBuildingPropertiesAction] Payload:", JSON.stringify(payloadWithUser, null, 2));
-
     const result = await createBulkBuildingProperties(payloadWithUser);
-
-    console.log("[createBulkBuildingPropertiesAction] Result:", result);
 
     // Revalidate property list after creation
     revalidatePath("/[locale]/property-tax/zone-master", "page");
@@ -1464,11 +1459,8 @@ export async function getNextPartitionNumberAction(
     });
 
     const url = `/Property?${queryParams.toString()}`;
-    console.log("[getNextPartitionNumberAction] URL:", url);
 
     const response = await apiClient.get<ZonePropertyListResponse>(url);
-
-    console.log("[getNextPartitionNumberAction] Response:", response);
 
     if (!response.success || !response.data) {
       return { success: false, error: response.error || "Failed to fetch properties" };
@@ -1478,7 +1470,6 @@ export async function getNextPartitionNumberAction(
     
     // If no items found, this is the first partition for this property
     if (items.length === 0) {
-      console.log("[getNextPartitionNumberAction] No existing partitions, starting at 1");
       return { success: true, data: 1 };
     }
 
@@ -1488,8 +1479,6 @@ export async function getNextPartitionNumberAction(
     
     // Next partition number is latest + 1
     const nextPartition = isNaN(latestPartition) ? 1 : latestPartition + 1;
-
-    console.log("[getNextPartitionNumberAction] Latest partition:", latestPartition, "Next partition:", nextPartition);
 
     return { 
       success: true, 
