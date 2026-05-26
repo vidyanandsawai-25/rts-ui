@@ -1,7 +1,7 @@
 "use client";
 
-import { SaveButton, Input, Select, ValidationMessage, CancelButton } from "@/components/common";
-import { Info, AlertCircle, Eye } from "lucide-react";
+import { Input, Select, ValidationMessage, CancelButton } from "@/components/common";
+import { Info, AlertCircle } from "lucide-react";
 import { PartitionFormState, PartitionFormErrors } from "@/types/partition-form.types";
 import { Option } from "@/components/common";
 import { PreviewButton } from "@/components/common/ActionButtons";

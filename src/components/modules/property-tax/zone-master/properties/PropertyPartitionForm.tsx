@@ -169,11 +169,18 @@ export default function PropertyPartitionForm({
   });
 
   // Check if selected property category is Apartment or Multi Commercial Apartment
+  // Note: categoryMap values are in English from database, so we compare against English literals
   const isApartmentCategory = useMemo(() => {
     if (!selectedProperty?.categoryId || !categoryMap) return false;
     const categoryName = categoryMap.get(selectedProperty.categoryId);
-    return categoryName === t("partitionForm.apartment") || categoryName === t("partitionForm.multiCommercialApartment");
-  }, [selectedProperty, categoryMap, t]);
+    return categoryName === "Apartment" || categoryName === "Multi Commercial Apartment";
+  }, [selectedProperty, categoryMap]);
+
+  // Get actual category name from categoryMap
+  const categoryName = useMemo(() => {
+    if (!selectedProperty?.categoryId || !categoryMap) return null;
+    return categoryMap.get(selectedProperty.categoryId) || null;
+  }, [selectedProperty, categoryMap]);
 
   // Define columns for the wing summary table
   const wingColumns = useMemo(() => getWingColumns({
@@ -269,6 +276,7 @@ export default function PropertyPartitionForm({
           selectedWard={ward}
           selectedProperty={selectedProperty}
           isApartmentCategory={isApartmentCategory}
+          categoryName={categoryName}
           t={t}
         />
 

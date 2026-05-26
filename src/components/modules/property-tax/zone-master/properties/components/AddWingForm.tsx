@@ -2,6 +2,8 @@
 
 import { Input, ValidationMessage, CancelButton } from "@/components/common";
 import { PartitionFormErrors } from "@/types/partition-form.types";
+import { sanitizeTextInput } from "@/lib/utils/input-sanitization";
+import { KYC_VALIDATION_RULES } from "@/lib/utils/kyc-validation.constants";
 
 interface AddWingFormProps {
   newWingId: number | null;
@@ -58,10 +60,14 @@ export function AddWingForm({
           <Input
             value={newWingName}
             onChange={(e) => {
-              setNewWingName(e.target.value);
-              setErrors({ ...errors, wingName: undefined });
+              const sanitized = sanitizeTextInput(e.target.value);
+              if (sanitized.length <= KYC_VALIDATION_RULES.NAME_MAX_LENGTH) {
+                setNewWingName(sanitized);
+                setErrors({ ...errors, wingName: undefined });
+              }
             }}
             placeholder={t("partitionForm.wing.placeholders.wingLetter")}
+            maxLength={KYC_VALIDATION_RULES.NAME_MAX_LENGTH}
             className="bg-white"
             disabled={addingWing}
           />

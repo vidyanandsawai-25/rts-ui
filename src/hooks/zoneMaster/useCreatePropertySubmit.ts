@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
 import { WardItem } from "@/types/wardMaster.types";
 import { CreatePropertyFormData } from "@/types/create-property-drawer.types";
@@ -31,6 +31,7 @@ export function useCreatePropertySubmit({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const locale = useLocale();
 
   const handleSubmit = useCallback(async () => {
     if (!validateForm() || !selectedWard) return;
@@ -52,7 +53,7 @@ export function useCreatePropertySubmit({
           startSequenceNo: 0,
         };
 
-        const result = await createPropertyRangeAction(payload);
+        const result = await createPropertyRangeAction(locale, payload);
 
         if (result.success) {
           // Show success toast
@@ -98,7 +99,7 @@ export function useCreatePropertySubmit({
         }
       }
     });
-  }, [formData, selectedWard, validateForm, resetForm, onSuccess, onClose, startTransition, t]);
+  }, [formData, selectedWard, validateForm, resetForm, onSuccess, onClose, startTransition, t, locale]);
 
   const handleClose = useCallback(() => {
     resetForm();

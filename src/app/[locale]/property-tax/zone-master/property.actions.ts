@@ -14,6 +14,7 @@ import { isBackendErrorMessage, getErrorStatusCode } from "@/lib/utils/backend-e
 import { createLogger } from "@/lib/utils/server-logger";
 import { cookies } from "next/headers";
 import { getUserIdFromCookies } from "@/lib/utils/cookie";
+import { getTranslations } from "next-intl/server";
 
 const logger = createLogger("property-tax/zone-master/property.actions");
 
@@ -379,19 +380,24 @@ export async function createBulkPropertiesAction(payload: BulkCreatePropertyPayl
  * For single property: rangeFrom === rangeTo (same value)
  * For bulk properties: rangeFrom < rangeTo (creates multiple)
  */
-export async function createPropertyRangeAction(payload: PropertyRangeCreatePayload): Promise<{
+export async function createPropertyRangeAction(
+  locale: string,
+  payload: PropertyRangeCreatePayload
+): Promise<{
   success: boolean;
   data?: PropertyRangeCreateResponse;
   error?: string;
 }> {
+  const t = await getTranslations({ locale, namespace: "zoneMaster.createProperty.errors" });
+  
   try {
     // Validate required fields
     if (!payload.rangeFrom || !payload.rangeTo) {
-      return { success: false, error: "Range from and to are required" };
+      return { success: false, error: t("rangeFromToRequired") };
     }
 
     if (!payload.template.wardId || !payload.template.propertyTypeId || !payload.template.categoryId) {
-      return { success: false, error: "Ward, property type, and category are required" };
+      return { success: false, error: t("wardPropertyTypeCategoryRequired") };
     }
 
     // Validate range for bulk creation
@@ -399,16 +405,16 @@ export async function createPropertyRangeAction(payload: PropertyRangeCreatePayl
     const toNo = parseInt(payload.rangeTo, 10);
 
     if (isNaN(fromNo) || isNaN(toNo)) {
-      return { success: false, error: "Range values must be valid numbers" };
+      return { success: false, error: t("invalidRangeValues") };
     }
 
     if (fromNo > toNo) {
-      return { success: false, error: "Range from must be less than or equal to range to" };
+      return { success: false, error: t("rangeFromMustBeLessOrEqual") };
     }
 
     // Limit bulk creation to prevent excessive load (inclusive count is toNo - fromNo + 1)
     if (toNo - fromNo >= 1000) {
-      return { success: false, error: "Cannot create more than 1000 properties at once" };
+      return { success: false, error: t("cannotCreateMoreThan1000") };
     }
 
     // Get authenticated user ID and inject into template
@@ -421,7 +427,7 @@ export async function createPropertyRangeAction(payload: PropertyRangeCreatePayl
     if (result.failedCount > 0 && result.successCount === 0) {
       return {
         success: false,
-        error: `All ${result.failedCount} properties failed to create`,
+        error: t("allPropertiesFailed", { count: result.failedCount }),
         data: result,
       };
     }
@@ -446,7 +452,7 @@ export async function createPropertyRangeAction(payload: PropertyRangeCreatePayl
       });
       return { success: false, error: error.message };
     }
-    return { success: false, error: "Failed to create properties via range" };
+    return { success: false, error: t("createPropertyRangeFailed") };
   }
 }
 
