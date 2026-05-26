@@ -36,7 +36,7 @@ export function FloorFormActions({
                         type="submit"
                         isLoading={isSubmitting}
                         disabled={isSubmitting || !isChanged}
-                    />               
+                    />
 
                     <ClearButton
                         label={t('commonbuttonmessages.clear')}

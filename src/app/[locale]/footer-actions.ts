@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation';
 import { footerService, FooterAction } from '@/lib/api/footer.service';
 import { z } from 'zod';
+import { PTIS_TABS } from '@/types/ptis.types';
 
 export type ActionResult<T> =
   | { success: true; data: T; message?: string }
@@ -25,7 +26,7 @@ const ptisEditRedirectSchema = z.object({
   wardId: z.coerce.number().positive().optional(),
   propertyNo: z.string().regex(/^[a-zA-Z0-9_-]+$/).optional(),
   partitionNo: z.string().regex(/^[a-zA-Z0-9_-]*$/).optional(),
-  tab: z.string().optional(),
+  tab: z.enum(PTIS_TABS).optional(),
 });
 
 /**
