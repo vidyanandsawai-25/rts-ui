@@ -1,9 +1,10 @@
 "use client";
 
 import { SaveButton, Input, Select, ValidationMessage, CancelButton } from "@/components/common";
-import { Info, AlertCircle } from "lucide-react";
+import { Info, AlertCircle, Eye } from "lucide-react";
 import { PartitionFormState, PartitionFormErrors } from "@/types/partition-form.types";
 import { Option } from "@/components/common";
+import { PreviewButton } from "@/components/common/ActionButtons";
 
 interface WingDetailConfigSectionProps {
   form: PartitionFormState;
@@ -45,7 +46,7 @@ export function WingDetailConfigSection({
       <div className="flex items-center justify-between mb-3">
         <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
           <Info className="w-4 h-4 text-blue-600" />
-          {t("partitionForm.wing.configureStructure")}
+          {t("partitionForm.wing.newWingDetails")}
         </h4>
         <CancelButton
           size="xs"
@@ -58,8 +59,8 @@ export function WingDetailConfigSection({
       <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-300 rounded-lg">
         <Info className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
         <div className="text-xs text-blue-800">
-          <p className="font-semibold mb-1">{t("partitionForm.wing.requiredFields")}</p>
-          <p>{t("partitionForm.wing.fillAllFields")}</p>
+          <p className="font-semibold mb-1">{t("partitionForm.wing.requiredFieldsTitle")}</p>
+          <p>{t("partitionForm.wing.requiredFieldsDesc")}</p>
         </div>
       </div>
 
@@ -233,16 +234,16 @@ export function WingDetailConfigSection({
       <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-300 rounded-lg">
         <AlertCircle className="w-4 h-4 text-red-600 mt-0.5 flex-shrink-0" />
         <p className="text-xs text-red-800">
-          {t("partitionForm.wing.previewWarning")}
+          {t("partitionForm.wing.wingBuildingsDuplicate")}
         </p>
       </div>
 
       {/* Preview Building Button */}
-      <SaveButton
+      <PreviewButton
         onClick={handlePreviewBuilding}
         isLoading={loading}
         disabled={loading}
-        label={t("partitionForm.wing.previewBuilding")}
+        label={t("partitionForm.wing.preview.previewButton")}
         className="w-full"
       />
     </div>

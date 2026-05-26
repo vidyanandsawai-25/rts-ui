@@ -29,7 +29,7 @@ export function NonApartmentPartitionSection({
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Input
-            label={t("partitionForm.nonApartment.fromPartition")}
+            label={t("partitionForm.fromPartition")}
             type="number"
             value={form.fromPartition}
             onChange={(e) => {
@@ -50,7 +50,7 @@ export function NonApartmentPartitionSection({
 
         <div>
           <Input
-            label={t("partitionForm.nonApartment.toPartition")}
+            label={t("partitionForm.toPartition")}
             type="number"
             value={form.toPartition}
             onChange={(e) => {

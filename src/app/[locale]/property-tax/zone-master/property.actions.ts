@@ -12,8 +12,19 @@ import { TaxZone } from "@/types/taxzoning.types";
 import { ApiError } from "@/lib/utils/api";
 import { isBackendErrorMessage, getErrorStatusCode } from "@/lib/utils/backend-error-detection";
 import { createLogger } from "@/lib/utils/server-logger";
+import { cookies } from "next/headers";
+import { getUserIdFromCookies } from "@/lib/utils/cookie";
 
 const logger = createLogger("property-tax/zone-master/property.actions");
+
+/* ===================================================================================
+   HELPER FUNCTIONS
+   =================================================================================== */
+
+async function getCurrentUserId(): Promise<number> {
+  const cookieStore = await cookies();
+  return getUserIdFromCookies(cookieStore) ?? 0;
+}
 
 /* ===================================================================================
    PROPERTY ACTIONS
@@ -333,7 +344,8 @@ export async function createBulkPropertiesAction(payload: BulkCreatePropertyPayl
       return { success: false, error: "From property number must be less than To property number" };
     }
     
-    if (toNo - fromNo > 1000) {
+    // Limit bulk creation (inclusive count is toNo - fromNo + 1)
+    if (toNo - fromNo >= 1000) {
       return { success: false, error: "Cannot create more than 1000 properties at once" };
     }
 
@@ -394,10 +406,14 @@ export async function createPropertyRangeAction(payload: PropertyRangeCreatePayl
       return { success: false, error: "Range from must be less than or equal to range to" };
     }
 
-    // Limit bulk creation to prevent excessive load
-    if (toNo - fromNo > 1000) {
+    // Limit bulk creation to prevent excessive load (inclusive count is toNo - fromNo + 1)
+    if (toNo - fromNo >= 1000) {
       return { success: false, error: "Cannot create more than 1000 properties at once" };
     }
+
+    // Get authenticated user ID and inject into template
+    const userId = await getCurrentUserId();
+    payload.template.createdBy = userId;
 
     const result = await createPropertyRange(payload);
     

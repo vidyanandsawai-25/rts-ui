@@ -20,6 +20,7 @@ import {
   ArrowUp,
   ArrowDown,
   CheckSquare,
+  Eye, // Added Eye icon for preview
 } from "lucide-react";
 import { Button, type ButtonProps } from "./ActionButton";
 import { cn } from "@/lib/utils/cn";
@@ -200,6 +201,22 @@ export function DeleteLabelButton({
     </Button>
   );
 }
+
+/* ----------------------------------------------------------
+   PREVIEW BUTTON
+---------------------------------------------------------- */
+
+export function PreviewButton({
+  label = "Preview",
+  ...props
+}: LabeledActionButtonProps): React.ReactElement {
+  return (
+    <Button variant="primary" icon={Eye} {...props}>
+      {label}
+    </Button>
+  );
+}
+
 /* ----------------------------------------------------------
    ICON-ONLY CRUD BUTTONS
 ---------------------------------------------------------- */

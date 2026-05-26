@@ -250,6 +250,7 @@
   },
   "propertyList": {
     "title": "मालमत्ता",
+    "ward": "प्रभाग",
     "selectWard": "प्रभाग निवडा",
     "selectWardPlaceholder": "प्रभाग निवडा",
     "selectWardHint": "मालमत्ता पाहण्यासाठी प्रभाग निवडा",
@@ -314,7 +315,13 @@
     "title": "विभाजन / विंग तयार करा",
     "subtitle": "मालमत्तेत विभाजन किंवा विंग जोडा",    "propertyInformation": "मालमत्ता माहिती",    "ward": "प्रभाग",
     "propertyCategory": "मालमत्ता श्रेणी",
+    "categoryType": "श्रेणी प्रकार",
     "apartment": "अपार्टमेंट",
+    "nonApartment": {
+      "label": "नॉन-अपार्टमेंट",
+      "description": "नॉन-अपार्टमेंट मालमत्तांची साधी विभाजन रचना असते"
+    },
+    "multiCommercialApartment": "बहु व्यावसायिक अपार्टमेंट",
     "mainPropertyNo": "मुख्य मालमत्ता क्र.",
     "noWardSelected": "कोणताही प्रभाग निवडलेला नाही",
     "selectWardFirst": "कृपया प्रथम मालमत्ता टॅबवरून प्रभाग निवडा.",
@@ -343,7 +350,15 @@
       "toPartitionRequired": "विभाजन पर्यंत आवश्यक आहे",
       "mustBeNumber": "मूल्य वैध संख्या असणे आवश्यक आहे",
       "toMustBeGreater": "विभाजन पर्यंत, विभाजन पासून पेक्षा जास्त किंवा समान असणे आवश्यक आहे",
-      "duplicatePartitionInRange": "विभाजन {partition} या मालमत्तेसाठी आधीच अस्तित्वात आहे"
+      "duplicatePartitionInRange": "विभाजन {partition} या मालमत्तेसाठी आधीच अस्तित्वात आहे",
+      "wingLetterRequired": "विंग नाव आवश्यक आहे",
+      "fromFloorRequired": "मजल्याच्या पासून आवश्यक आहे",
+      "toFloorRequired": "मजल्याच्या पर्यंत आवश्यक आहे",
+      "toFloorMustBeGreaterOrEqual": "मजल्याच्या पर्यंत, मजल्याच्या पासून पेक्षा जास्त किंवा समान असणे आवश्यक आहे",
+      "noOfFlatOnOneFloorRequired": "प्रति मजल्या फ्लॅट्सची संख्या आवश्यक आहे",
+      "flatStartRequired": "फ्लॅट प्रारंभ आवश्यक आहे",
+      "incrementedByRequired": "वाढवून आवश्यक आहे",
+      "generationTypeRequired": "जनरेशन प्रकार आवश्यक आहे"
     },
     "placeholders": {
       "selectMainProperty": "मुख्य मालमत्ता निवडा",
@@ -362,6 +377,9 @@
       "wing": "विंग",
       "partition": "विभाजन",
       "amenity": "सुविधा"
+    },
+    "preview": {
+      "success": "पूर्वावलोकन यशस्वीरित्या लोड झाले"
     },
     "wing": {
       "addWing": "विंग जोडा",
@@ -420,6 +438,7 @@
       "messages": {
         "addWingSuccess": "विंग यशस्वीरित्या जोडला!",
         "addWingError": "विंग जोडण्यात अयशस्वी",
+        "createWingSuccess": "विंग यशस्वीरित्या तयार झाला!",
         "updateWingSuccess": "विंग रचना यशस्वीरित्या तयार झाली!",
         "updateWingError": "विंग रचना तयार करण्यात अयशस्वी",
         "saveWingError": "विंग जतन करण्यात अयशस्वी"
@@ -444,6 +463,9 @@
         "prefix": "उपसर्ग",
         "wingLabel": "विंग",
         "topFloor": "वरचा मजला",
+        "topLabel": "वर",
+        "groundFloorLabel": "तळ",
+        "floorLabel": "मज",
         "flatUnit": "फ्लॅट/युनिट",
         "partitionId": "विभाजन आयडी",
         "generationSummary": "जनरेशन सारांश",

@@ -160,7 +160,7 @@ export function usePartitionSubmit({
             addressEnglish: selectedProperty.addressEnglish || "",
             location: selectedProperty.location || "",
             locationEnglish: selectedProperty.locationEnglish || "",
-            createdBy: 1,
+            createdBy: 0, // Will be set by server action from authenticated user
             createdDate: currentDate,
           });
         }

@@ -254,6 +254,7 @@
   },
   "propertyList": {
     "title": "Properties",
+    "ward": "Ward",
     "selectWard": "Select Ward",
     "selectWardPlaceholder": "Select a ward",
     "selectWardHint": "Select a ward to view properties",
@@ -320,7 +321,13 @@
     "propertyInformation": "Property Information",
     "ward": "Ward",
     "propertyCategory": "Property Category",
+    "categoryType": "Category Type",
     "apartment": "Apartment",
+    "nonApartment": {
+      "label": "Non-Apartment",
+      "description": "Non-apartment properties have simple partition structure"
+    },
+    "multiCommercialApartment": "Multi Commercial Apartment",
     "mainPropertyNo": "Main Property No",
     "noWardSelected": "No ward selected",
     "selectWardFirst": "Please select a ward from the Properties tab first.",
@@ -349,7 +356,15 @@
       "toPartitionRequired": "To Partition is required",
       "mustBeNumber": "Value must be a valid number",
       "toMustBeGreater": "To Partition must be greater than or equal to From Partition",
-      "duplicatePartitionInRange": "Partition {partition} already exists for this property"
+      "duplicatePartitionInRange": "Partition {partition} already exists for this property",
+      "wingLetterRequired": "Wing Name is required",
+      "fromFloorRequired": "From Floor is required",
+      "toFloorRequired": "To Floor is required",
+      "toFloorMustBeGreaterOrEqual": "To Floor must be greater than or equal to From Floor",
+      "noOfFlatOnOneFloorRequired": "No. of Flats per Floor is required",
+      "flatStartRequired": "Flat Start is required",
+      "incrementedByRequired": "Incremented By is required",
+      "generationTypeRequired": "Generation Type is required"
     },
     "placeholders": {
       "selectMainProperty": "Select a main property",
@@ -369,12 +384,18 @@
       "partition": "Partition",
       "amenity": "Amenity"
     },
+    "preview": {
+      "success": "Preview loaded successfully"
+    },
     "wing": {
       "addWing": "Add Wing",
       "editWing": "Edit Wing",
       "wingNo": "Wing No",
       "wingLetter": "Wing Name",
       "newWingDetails": "Wing Configuration",
+      "configureStructure": "Configure Wing Structure",
+      "requiredFields": "Required Fields",
+      "fillAllFields": "Please fill all required fields",
       "requiredFieldsTitle": "Required Fields",
       "requiredFieldsDesc": "Please fill all required fields to configure the wing structure.",
       "floorRange": "Floor Range",
@@ -426,6 +447,7 @@
       "messages": {
         "addWingSuccess": "Wing added successfully!",
         "addWingError": "Failed to add wing",
+        "createWingSuccess": "Wing created successfully!",
         "updateWingSuccess": "Wing structure generated successfully!",
         "updateWingError": "Failed to generate wing structure",
         "saveWingError": "Failed to save wing"
@@ -450,6 +472,9 @@
         "prefix": "Prefix",
         "wingLabel": "Wing",
         "topFloor": "Top Floor",
+        "topLabel": "TOP",
+        "groundFloorLabel": "GF",
+        "floorLabel": "F",
         "flatUnit": "Flat/Unit",
         "partitionId": "Partition ID",
         "generationSummary": "Generation Summary",

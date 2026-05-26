@@ -49,12 +49,12 @@ export function PropertyInfoSection({
           {selectedProperty && (
             <div>
               <label className="block text-[10px] font-medium text-gray-500 uppercase mb-1.5 tracking-wide">
-                {t("partitionForm.categoryType")}
+                {t("partitionForm.propertyCategory")}
               </label>
               <div className={`flex items-center gap-2 px-3 py-2.5 rounded-lg ${isApartmentCategory ? 'bg-blue-50 border border-blue-200' : 'bg-purple-50 border border-purple-200'}`}>
                 <div className={`w-2 h-2 rounded-full ${isApartmentCategory ? 'bg-blue-500' : 'bg-purple-500'}`} />
                 <span className={`text-sm font-semibold ${isApartmentCategory ? 'text-blue-800' : 'text-purple-800'}`}>
-                  {isApartmentCategory ? t("partitionForm.apartment") : t("partitionForm.nonApartment")}
+                  {isApartmentCategory ? t("partitionForm.apartment") : t("partitionForm.nonApartment.label")}
                 </span>
               </div>
             </div>

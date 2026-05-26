@@ -172,8 +172,8 @@ export default function PropertyPartitionForm({
   const isApartmentCategory = useMemo(() => {
     if (!selectedProperty?.categoryId || !categoryMap) return false;
     const categoryName = categoryMap.get(selectedProperty.categoryId);
-    return categoryName === "Apartment" || categoryName === "Multi Commercial Apartment";
-  }, [selectedProperty, categoryMap]);
+    return categoryName === t("partitionForm.apartment") || categoryName === t("partitionForm.multiCommercialApartment");
+  }, [selectedProperty, categoryMap, t]);
 
   // Define columns for the wing summary table
   const wingColumns = useMemo(() => getWingColumns({
@@ -376,7 +376,7 @@ export default function PropertyPartitionForm({
                 </>
               ) : (
                 <div className="p-4 bg-gray-50 border border-gray-300 rounded-lg text-center text-gray-500">
-                  {t("partitionForm.amenityComingSoon")}
+                  {t("partitionForm.wing.amenity.notImplemented")}
                 </div>
               )
             ) : (

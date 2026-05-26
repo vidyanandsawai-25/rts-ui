@@ -1387,15 +1387,22 @@ export async function createBulkBuildingPropertiesAction(
       }
     }
 
-    console.log("[createBulkBuildingPropertiesAction] Creating", payload.length, "properties");
-    console.log("[createBulkBuildingPropertiesAction] Payload:", JSON.stringify(payload, null, 2));
+    // Get authenticated user ID and inject into all items
+    const userId = await getCurrentUserId();
+    const payloadWithUser = payload.map(item => ({
+      ...item,
+      createdBy: userId
+    }));
 
-    const result = await createBulkBuildingProperties(payload);
+    console.log("[createBulkBuildingPropertiesAction] Creating", payloadWithUser.length, "properties");
+    console.log("[createBulkBuildingPropertiesAction] Payload:", JSON.stringify(payloadWithUser, null, 2));
+
+    const result = await createBulkBuildingProperties(payloadWithUser);
 
     console.log("[createBulkBuildingPropertiesAction] Result:", result);
 
     // Revalidate property list after creation
-    revalidatePath("/property-tax/zone-master");
+    revalidatePath("/[locale]/property-tax/zone-master", "page");
 
     return {
       success: result.allSucceeded,

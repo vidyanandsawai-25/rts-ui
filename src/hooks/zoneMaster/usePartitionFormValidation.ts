@@ -85,8 +85,13 @@ export function usePartitionFormValidation({
       ];
       
       numericFields.forEach(({ value, key }) => {
-        if (value && isNaN(parseInt(value, 10))) {
-          newErrors[key as keyof PartitionFormErrors] = t("partitionForm.validation.mustBeNumber");
+        if (value) {
+          const numValue = parseInt(value, 10);
+          if (isNaN(numValue)) {
+            newErrors[key as keyof PartitionFormErrors] = t("partitionForm.validation.mustBeNumber");
+          } else if (numValue <= 0) {
+            newErrors[key as keyof PartitionFormErrors] = t("partitionForm.wing.validation.invalidValue");
+          }
         }
       });
     } else {

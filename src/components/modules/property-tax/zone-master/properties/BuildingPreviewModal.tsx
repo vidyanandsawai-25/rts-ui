@@ -158,7 +158,7 @@ export function BuildingPreviewModal({
       location: item.flatNo,
       locationEnglish: item.flatNo,
       societyDetailId,
-      createdBy: 0,
+      createdBy: 0, // Will be set by server action from authenticated user
       createdDate: new Date().toISOString(),
     }));
 
@@ -425,11 +425,11 @@ export function BuildingPreviewModal({
                             }`}
                           >
                             <span>
-                              {isGround ? `GF (F${floor.floorNo})` : `F${floor.floorNo}`}
+                              {isGround ? `${t("partitionForm.wing.preview.groundFloorLabel")} (${t("partitionForm.wing.preview.floorLabel")}${floor.floorNo})` : `${t("partitionForm.wing.preview.floorLabel")}${floor.floorNo}`}
                             </span>
                             {isTop && (
                               <span className="text-[8px] bg-amber-200 text-amber-800 rounded px-1 py-px">
-                                TOP
+                                {t("partitionForm.wing.preview.topLabel")}
                               </span>
                             )}
                           </div>

@@ -47,7 +47,7 @@ export function useCreatePropertySubmit({
             taxZoneId: parseInt(formData.taxZoneId, 10),
             wardId: selectedWard.id,
             ownerName: formData.ownerName || undefined,
-            createdBy: 1, // TODO: Get from auth context
+            // createdBy will be set by server action from authenticated user
           },
           startSequenceNo: 0,
         };

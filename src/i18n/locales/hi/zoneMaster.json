@@ -255,6 +255,7 @@
   },
   "propertyList": {
     "title": "संपत्ति",
+    "ward": "वार्ड",
     "selectWard": "वार्ड चुनें",
     "selectWardPlaceholder": "वार्ड चुनें",
     "selectWardHint": "संपत्ति देखने के लिए वार्ड चुनें",
@@ -321,7 +322,13 @@
     "propertyInformation": "संपत्ति जानकारी",
     "ward": "वार्ड",
     "propertyCategory": "संपत्ति श्रेणी",
+    "categoryType": "श्रेणी प्रकार",
     "apartment": "अपार्टमेंट",
+    "nonApartment": {
+      "label": "गैर-अपार्टमेंट",
+      "description": "गैर-अपार्टमेंट संपत्तियों में सरल विभाजन संरचना होती है"
+    },
+    "multiCommercialApartment": "बहु व्यावसायिक अपार्टमेंट",
     "mainPropertyNo": "मुख्य संपत्ति नं.",
     "noWardSelected": "कोई वार्ड चयनित नहीं",
     "selectWardFirst": "कृपया पहले संपत्ति टैब से एक वार्ड चुनें।",
@@ -350,7 +357,15 @@
       "toPartitionRequired": "विभाजन तक आवश्यक है",
       "mustBeNumber": "मान एक वैध संख्या होना चाहिए",
       "toMustBeGreater": "विभाजन तक, विभाजन से के बराबर या उससे अधिक होना चाहिए",
-      "duplicatePartitionInRange": "विभाजन {partition} इस संपत्ति के लिए पहले से मौजूद है"
+      "duplicatePartitionInRange": "विभाजन {partition} इस संपत्ति के लिए पहले से मौजूद है",
+      "wingLetterRequired": "विंग नाम आवश्यक है",
+      "fromFloorRequired": "फ्लोर से आवश्यक है",
+      "toFloorRequired": "फ्लोर तक आवश्यक है",
+      "toFloorMustBeGreaterOrEqual": "फ्लोर तक, फ्लोर से के बराबर या उससे अधिक होना चाहिए",
+      "noOfFlatOnOneFloorRequired": "प्रति मंजिल फ्लैटों की संख्या आवश्यक है",
+      "flatStartRequired": "फ्लैट प्रारंभ आवश्यक है",
+      "incrementedByRequired": "वृद्धि द्वारा आवश्यक है",
+      "generationTypeRequired": "जेनरेशन प्रकार आवश्यक है"
     },
     "placeholders": {
       "selectMainProperty": "मुख्य संपत्ति चुनें",
@@ -369,6 +384,9 @@
       "wing": "विंग",
       "partition": "विभाजन",
       "amenity": "सुविधा"
+    },
+    "preview": {
+      "success": "पूर्वावलोकन सफलतापूर्वक लोड हुआ"
     },
     "wing": {
       "addWing": "विंग जोड़ें",
@@ -427,6 +445,7 @@
       "messages": {
         "addWingSuccess": "विंग सफलतापूर्वक जोड़ा गया!",
         "addWingError": "विंग जोड़ने में विफल",
+        "createWingSuccess": "विंग सफलतापूर्वक बनाया गया!",
         "updateWingSuccess": "विंग संरचना सफलतापूर्वक उत्पन्न हुई!",
         "updateWingError": "विंग संरचना उत्पन्न करने में विफल",
         "saveWingError": "विंग सहेजने में विफल"
@@ -451,6 +470,9 @@
         "prefix": "उपसर्ग",
         "wingLabel": "विंग",
         "topFloor": "शीर्ष मंजिल",
+        "topLabel": "शीर्ष",
+        "groundFloorLabel": "भूतल",
+        "floorLabel": "मं",
         "flatUnit": "फ्लैट/इकाई",
         "partitionId": "विभाजन आईडी",
         "generationSummary": "जनरेशन सारांश",

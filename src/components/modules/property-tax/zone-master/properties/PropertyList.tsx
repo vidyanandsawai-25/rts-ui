@@ -126,7 +126,7 @@ export default function PropertyList({
                     </div>
                     {selectedWardId && (
                         <StatusBadge
-                            label={wardOptions.find(w => w.value === String(selectedWardId))?.label || `Ward ${selectedWardId}`}
+                            label={wardOptions.find(w => w.value === String(selectedWardId))?.label || `${t("propertyList.ward")} ${selectedWardId}`}
                             variant="info"
                         />
                     )}

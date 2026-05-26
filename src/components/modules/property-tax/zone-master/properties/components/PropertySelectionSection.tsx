@@ -48,7 +48,7 @@ export function PropertySelectionSection({
             <div>
               <span className="text-gray-600">{t("partitionForm.category")}:</span>
               <span className="ml-2 font-semibold text-blue-900">
-                {isApartmentCategory ? "Apartment" : "Non-Apartment"}
+                {isApartmentCategory ? t("partitionForm.apartment") : t("partitionForm.nonApartment")}
               </span>
             </div>
           </div>
