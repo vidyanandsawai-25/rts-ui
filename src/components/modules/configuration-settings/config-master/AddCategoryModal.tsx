@@ -39,6 +39,16 @@ export default function AddCategoryModal({
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const resetForm = (): void => {
+    setFormData({
+      categoryCode: initialData?.code || '',
+      categoryName: initialData?.name || '',
+      displayOrder: initialData?.displayOrder?.toString() || '1',
+      isActive: initialData?.isActive ?? true,
+    });
+    setErrors({});
+  };
+
   const isDirty = useMemo(() => {
     return (
       formData.categoryCode !== (initialData?.code || '') ||
@@ -97,6 +107,7 @@ export default function AddCategoryModal({
 
         if (result.success) {
           toastSuccess(isEdit ? t('messages.categoryUpdated') : t('messages.categoryCreated'));
+          resetForm();
           onSuccess();
         } else {
           if (result.validationErrors) {
@@ -125,10 +136,14 @@ export default function AddCategoryModal({
         description: t('confirm.discard.description'),
         confirmText: t('confirm.discard.confirm'),
         cancelText: t('confirm.discard.cancel'),
-        onConfirm: onClose,
+        onConfirm: () => {
+          resetForm();
+          onClose();
+        },
       });
       return;
     }
+    resetForm();
     onClose();
   };
 
