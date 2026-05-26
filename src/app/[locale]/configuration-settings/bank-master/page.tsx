@@ -38,6 +38,7 @@ export default async function BankMasterPage({ searchParams }: PageProps) {
   const searchTerm = sParams.search?.trim().slice(0, MAX_SEARCH_TERM_LENGTH) || '';
 
   let errorMessage: string | undefined;
+  let statusCode: number | undefined;
   let banksData;
   let statsData = DEFAULT_STATS_DATA;
 
@@ -51,12 +52,17 @@ export default async function BankMasterPage({ searchParams }: PageProps) {
       errorMessage = banksRes.error
         ? getCleanErrorMessage(banksRes.error)
         : 'Failed to fetch bank data.';
+      statusCode = banksRes.statusCode;
     } else {
       banksData = banksRes.data;
     }
 
     if (metaRes.success && metaRes.data) {
       statsData = metaRes.data;
+    } else if (!metaRes.success) {
+      if (!errorMessage) {
+        statusCode = metaRes.statusCode;
+      }
     }
   } catch (err) {
     errorMessage = getCleanErrorMessage(
@@ -74,6 +80,7 @@ export default async function BankMasterPage({ searchParams }: PageProps) {
       totalPages={banksData?.totalPages ?? 0}
       statsData={statsData}
       errorMessage={errorMessage}
+      statusCode={statusCode}
     />
   );
 }

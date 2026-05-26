@@ -14,19 +14,12 @@ import {
 import {
   handleActionError,
   validateAndNormalize,
- revalidateBankMaster,
+  revalidateBankMaster,
   resolveUserId,
   parseApiError,
 } from './actions.utils';
-import { buildBankMasterMetadata, type BankMasterMetadata } from './actions.cache';
+import { getCachedBankMasterMetadata, type BankMasterMetadata } from './actions.cache';
 
-// ---------------------------------------------------------------------------
-// Server Actions
-// ---------------------------------------------------------------------------
-
-/**
- * Fetches paged bank data with optional search and filtering.
- */
 export async function getBanksAction(
   pageNumber: number = 1,
   pageSize: number = 10,
@@ -99,7 +92,9 @@ export async function updateBankAction(
     const banks = await getBanksSummary();
     const normalizedCode = (validationResult.normalizedData.bankCode ?? '').trim().toUpperCase();
     const bankCodeExists = banks.some(
-      (bank) => bank.id !== id && (bank.bankCode ?? '').trim().toUpperCase() === normalizedCode
+      (bank) =>
+        String(bank.id) !== String(id) &&
+        (bank.bankCode ?? '').trim().toUpperCase() === normalizedCode
     );
 
     if (bankCodeExists) {
@@ -154,8 +149,7 @@ export async function getBanksSummaryAction(): Promise<ApiResponse<BankMasterDat
  */
 export async function getBankMasterMetadata(): Promise<ApiResponse<BankMasterMetadata>> {
   try {
-    const summary = await getBanksSummary();
-    const data = buildBankMasterMetadata(summary);
+    const data = await getCachedBankMasterMetadata();
     return { success: true, data };
   } catch (error: unknown) {
     const fallback: BankMasterMetadata = { activeCount: 0, uniqueStates: [] };

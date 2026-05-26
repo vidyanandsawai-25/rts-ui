@@ -125,8 +125,8 @@ export async function deleteBank(id: string): Promise<void> {
 }
 
 /** Fetches all banks (summary — iterates pages). Safe up to MAX_SUMMARY_PAGES. */
-const SUMMARY_PAGE_SIZE = 10;
-const MAX_SUMMARY_PAGES = 100;
+const SUMMARY_PAGE_SIZE = 200;
+const MAX_SUMMARY_PAGES = 10;
 
 export async function getBanksSummary(): Promise<BankMasterData[]> {
   const firstPage = await getBanksPaged(1, SUMMARY_PAGE_SIZE);
