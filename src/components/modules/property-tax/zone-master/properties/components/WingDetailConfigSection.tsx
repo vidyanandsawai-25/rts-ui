@@ -66,10 +66,9 @@ export function WingDetailConfigSection({
 
       {/* Wing Letter */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          {t("partitionForm.wing.wingLetter")} <span className="text-red-500">*</span>
-        </label>
         <Select
+          label={t("partitionForm.wing.wingLetter")}
+          required
           value={form.wingLetter}
           disabled
           onChange={(_e, value) => {
@@ -89,12 +88,11 @@ export function WingDetailConfigSection({
 
       {/* Floor Range */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          {t("partitionForm.wing.floorRange")} <span className="text-red-500">*</span>
-        </label>
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Select
+              label={t("partitionForm.wing.fromFloor")}
+              required
               value={form.fromFloor}
               onChange={handleFromFloorChange}
               options={fromFloorOptions}
@@ -109,6 +107,8 @@ export function WingDetailConfigSection({
           </div>
           <div>
             <Select
+              label={t("partitionForm.wing.toFloor")}
+              required
               value={form.toFloor}
               onChange={handleToFloorChange}
               options={toFloorOptions}
@@ -126,10 +126,9 @@ export function WingDetailConfigSection({
 
       {/* No Of Flat On One Floor */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          {t("partitionForm.wing.noOfFlatOnOneFloor")} <span className="text-red-500">*</span>
-        </label>
         <Input
+          label={t("partitionForm.wing.noOfFlatOnOneFloor")}
+          required
           type="number"
           value={form.noOfFlatOnOneFloor}
           onChange={(e) => {
@@ -150,10 +149,9 @@ export function WingDetailConfigSection({
       {/* Flat Start and Incremented By */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            {t("partitionForm.wing.flatStart")} <span className="text-red-500">*</span>
-          </label>
           <Input
+            label={t("partitionForm.wing.flatStart")}
+            required
             type="number"
             value={form.flatStart}
             onChange={(e) => {
@@ -172,10 +170,9 @@ export function WingDetailConfigSection({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            {t("partitionForm.wing.incrementedBy")} <span className="text-red-500">*</span>
-          </label>
           <Input
+            label={t("partitionForm.wing.incrementedBy")}
+            required
             type="number"
             value={form.incrementedBy}
             onChange={(e) => {
@@ -197,10 +194,8 @@ export function WingDetailConfigSection({
       {/* Prefix and Generation Type */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            {t("partitionForm.wing.prefix")}
-          </label>
           <Input
+            label={t("partitionForm.wing.prefix")}
             value={form.prefix}
             onChange={(e) => setForm({ ...form, prefix: e.target.value })}
             placeholder={t("partitionForm.wing.placeholders.prefix")}
@@ -209,10 +204,9 @@ export function WingDetailConfigSection({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            {t("partitionForm.wing.generationType")} <span className="text-red-500">*</span>
-          </label>
           <Select
+            label={t("partitionForm.wing.generationType")}
+            required
             value={form.generationType}
             onChange={(_e, value) => {
               setForm({ ...form, generationType: value });

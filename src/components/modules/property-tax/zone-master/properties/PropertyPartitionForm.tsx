@@ -282,15 +282,14 @@ export default function PropertyPartitionForm({
 
         {/* Main Property Selection */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            {t("partitionForm.mainPropertyNo")} <span className="text-red-500">*</span>
-          </label>
           <Select
+            label={t("partitionForm.mainPropertyNo")}
             value={form.mainPropertyId ? String(form.mainPropertyId) : ""}
             onChange={handlePropertySelect}
             options={propertyOptions}
             placeholder={t("partitionForm.placeholders.selectMainProperty")}
             disabled={loading}
+            required
           />
           <ValidationMessage
             message={errors.mainPropertyId}

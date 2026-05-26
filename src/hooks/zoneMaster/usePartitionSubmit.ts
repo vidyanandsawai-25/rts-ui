@@ -77,8 +77,18 @@ export function usePartitionSubmit({
           return;
         }
 
-        const fromFloorData = floors.find(f => f.floorCode === form.fromFloor);
-        const toFloorData = floors.find(f => f.floorCode === form.toFloor);
+        // Convert floor IDs to floor codes for API submission
+        const fromFloorId = parseInt(form.fromFloor, 10);
+        const toFloorId = parseInt(form.toFloor, 10);
+        
+        if (isNaN(fromFloorId) || isNaN(toFloorId)) {
+          toast.error("Invalid floor selection");
+          setLoading(false);
+          return;
+        }
+        
+        const fromFloorData = floors.find(f => f.id === fromFloorId);
+        const toFloorData = floors.find(f => f.id === toFloorId);
         
         if (!fromFloorData || !toFloorData) {
           toast.error("Invalid floor selection");
@@ -100,8 +110,8 @@ export function usePartitionSubmit({
           wardId: selectedWard.id,
           propertyNo: selectedProperty.propertyNo,
           wingId: selectedWing.id,
-          fromFloor: form.fromFloor.trim(),
-          toFloor: form.toFloor.trim(),
+          fromFloor: fromFloorData.floorCode,
+          toFloor: toFloorData.floorCode,
           noOfFlatOnOneFloor,
           flatStart,
           incrementedBy,

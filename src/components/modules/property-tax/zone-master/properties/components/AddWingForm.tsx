@@ -44,20 +44,16 @@ export function AddWingForm({
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">
-            {t("partitionForm.wing.wingId")}
-          </label>
           <Input
+            label={t("partitionForm.wing.wingId")}
             value={String(newWingId || "")}
             disabled
             className="bg-gray-100 text-gray-600"
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">
-            {t("partitionForm.wing.wingName")} <span className="text-red-500">*</span>
-          </label>
           <Input
+            label={t("partitionForm.wing.wingName")}
             value={newWingName}
             onChange={(e) => {
               const sanitized = sanitizeTextInput(e.target.value);
