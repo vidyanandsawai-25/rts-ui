@@ -66,7 +66,7 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
     return (
       <div className="w-full">
         {label && (
-          <label htmlFor={id || internalId} className="mb-1.5 inline-block text-sm font-medium text-gray-700 dark:text-gray-200">
+          <label htmlFor={id || internalId} className="mb-1.5 inline-block text-sm font-medium text-gray-700 dark:text-gray-9 00">
             {label}
             {required && <span className="text-red-500"> *</span>}
           </label>

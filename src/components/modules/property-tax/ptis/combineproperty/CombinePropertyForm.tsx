@@ -9,6 +9,8 @@ import { MultiSelectDropdown } from '@/components/common/Dropdown';
 import { Tabs, TabList, Tab } from '@/components/common/Tabs';
 import { CancelButton, AddButton } from '@/components/common/ActionButtons';
 import { MasterTable } from '@/components/common/MasterTable';
+import { TextArea } from '@/components/common/Textarea';
+import { ValidationMessage } from '@/components/common/ValidationMessage';
 import { CombinePropertyItem } from '@/types/combine-property.types';
 import { useCombinePropertyForm, SelectionMethod } from '@/hooks/combineProperty/useCombineProperty';
 import { getCombinePropertyColumns, PropertyRow } from './combinePropertyColumns';
@@ -65,6 +67,9 @@ export default function CombinePropertyForm({
     checkedCount,
     hasDifferentOwners,
     differentOwnerProps,
+    remark,
+    remarkError,
+    setRemark,
     togglePropertyCheck,
     toggleAllProperties,
     handleBasePropertyChange,
@@ -356,6 +361,25 @@ export default function CombinePropertyForm({
             getRowKey={(row, i) => `row-${row.propertyId || 0}-${i}`}
             emptyText={t('emptyTableText')}
           />
+        )}
+
+        {/* Remark Input */}
+        {isReviewing && reviewData.length > 0 && (
+          <div className="w-full mt-2">
+            <TextArea
+              id="remark"
+              label={t('remarkLabel')}
+              value={remark}
+              onChange={(e) => setRemark(e.target.value)}
+              placeholder={t('remarkPlaceholder')}
+              disabled={isSubmitting || isPending || hasDifferentOwners || checkedCount === 0}
+              rows={2}
+              className='text-black'
+              required
+              error={remarkError}
+            />
+            <ValidationMessage visible={remarkError} message={t('remarkRequiredError') || 'Please enter remark'} />
+          </div>
         )}
       </div>
     </Drawer>

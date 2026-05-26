@@ -3,6 +3,7 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { CombinePropertyItem, PropertyCombineDetails } from '@/types/combine-property.types';
 import { createCombinePropertyAction, fetchPropertyCombineDetailsAction } from '@/app/[locale]/property-tax/ptis/combineproperty/action';
+import { useConfirm } from '@/components/common/ConfirmProvider';
 
 export type SelectionMethod = 'range' | 'individual';
 
@@ -26,11 +27,14 @@ export function useCombinePropertyForm({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { confirm } = useConfirm();
 
   const [reviewData, setReviewData] = useState<PropertyCombineDetails[]>([]);
   const [isReviewing, setIsReviewing] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [remark, setRemark] = useState('');
+  const [remarkError, setRemarkError] = useState(false);
 
   // Checkbox selection for review table rows
   const [checkedPropertyIds, setCheckedPropertyIds] = useState<Set<number>>(new Set());
@@ -147,6 +151,8 @@ export function useCombinePropertyForm({
   const handleClear = () => {
     setReviewData([]);
     setIsReviewing(false);
+    setRemark('');
+    setRemarkError(false);
     router.push(
       buildUrl({
         basePropertyId: undefined,
@@ -227,6 +233,13 @@ export function useCombinePropertyForm({
       return;
     }
 
+    // Check for missing owner name
+    const missingOwnerProps = checkedProperties.filter(r => !r.ownerName || r.ownerName.trim() === '');
+    if (missingOwnerProps.length > 0) {
+      toast.warning(t('missingOwnerError'));
+      return;
+    }
+
     const uniqueOwners = [...new Set(checkedProperties.map((r) => r.ownerName).filter(Boolean))];
     const hasDifferentOwners = uniqueOwners.length > 1;
 
@@ -235,29 +248,42 @@ export function useCombinePropertyForm({
       return;
     }
 
-    setIsSubmitting(true);
-    try {
-      const combinePropertyIds = checkedProperties.map((r) => r.propertyId).join(',');
-      const response = await createCombinePropertyAction({
-        mainPropertyId: Number(selectedBasePropertyId),
-        combinePropertyIds,
-        remark: t('defaultRemark'),
-      });
-
-      if (response.success) {
-        toast.success(response.message || t('combineSuccess'));
-        setTimeout(() => {
-          handleClear();
-          router.refresh();
-        }, 2000);
-      } else {
-        toast.error(response.message || t('combineFailed'));
-      }
-    } catch {
-      toast.error(t('unexpectedError'));
-    } finally {
-      setIsSubmitting(false);
+    if (!remark.trim()) {
+      setRemarkError(true);
+      return;
     }
+
+    confirm({
+      variant: 'warning',
+      title: t('confirmCombineTitle'),
+      description: t('confirmCombineDesc'),
+      confirmText: t('combine'),
+      onConfirm: async () => {
+        setIsSubmitting(true);
+        try {
+          const combinePropertyIds = checkedProperties.map((r) => r.propertyId).join(',');
+          const response = await createCombinePropertyAction({
+            mainPropertyId: Number(selectedBasePropertyId),
+            combinePropertyIds,
+            remark: remark.trim() || t('defaultRemark'),
+          });
+
+          if (response.success) {
+            toast.success(response.message || t('combineSuccess'));
+            setTimeout(() => {
+              handleClear();
+              router.refresh();
+            }, 2000);
+          } else {
+            toast.error(response.message || t('combineFailed'));
+          }
+        } catch {
+          toast.error(t('unexpectedError'));
+        } finally {
+          setIsSubmitting(false);
+        }
+      }
+    });
   };
 
   const selectedCount = useMemo(() => {
@@ -310,6 +336,12 @@ export function useCombinePropertyForm({
     checkedCount: checkedPropertyIds.size,
     hasDifferentOwners,
     differentOwnerProps,
+    remark,
+    remarkError,
+    setRemark: (val: string) => {
+      setRemark(val);
+      if (val.trim()) setRemarkError(false);
+    },
     togglePropertyCheck,
     toggleAllProperties,
     handleBasePropertyChange,

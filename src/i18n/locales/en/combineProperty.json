@@ -43,6 +43,12 @@
   "combineFailed": "Combination failed",
   "unexpectedError": "An unexpected error occurred",
   "defaultRemark": "Combined from UI",
+  "missingOwnerError": "Owner name is not present, only occupier name is available. Cannot combine property.",
+  "confirmCombineTitle": "Confirm Combine",
+  "confirmCombineDesc": "Are you sure you want to combine the selected properties?",
+  "remarkLabel": "Remark",
+  "remarkPlaceholder": "Enter remark for combining properties",
+  "remarkRequiredError": "Please enter a remark",
   "error": {
     "title": "Failed to connect server. Please try again later.",
     "description": "An error occurred while loading the combine property page. Please try again.",
