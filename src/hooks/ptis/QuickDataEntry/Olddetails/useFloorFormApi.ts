@@ -8,7 +8,7 @@ import {
   saveOldFloorDetailsAction,
   updateOldFloorDetailsAction,
 } from "@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/OldDetails/floor-information/action";
-import { SaveOldFloorDetailPayload, FloorInformationFormData } from "@/types/property-old-details.types";
+import { SaveOldFloorDetailPayload, FloorInformationFormData } from "@/types/OldDetails/property-old-details.types";
 /**
  * Maps FloorInformationFormData to SaveOldFloorDetailPayload for API calls.
  * Ensures numeric fields are correctly parsed and optional fields are handled.

@@ -27,7 +27,7 @@ export const getAllCategories = cache(async (): Promise<ConfigCategory[]> => {
     if (!response.success) {
       const errorMsg = response.error || 'Failed to fetch categories';
       logError('getAllCategories: API request failed', { error: new Error(errorMsg) });
-      throw new Error(errorMsg);
+      return [];
     }
     
     // Use shared normalization utility (Medium Priority 1 Fix)

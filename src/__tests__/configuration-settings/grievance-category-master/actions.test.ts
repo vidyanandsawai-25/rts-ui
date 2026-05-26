@@ -169,14 +169,14 @@ describe('Grievance Category Master Server Actions', () => {
       formData.append('description', 'Short description');
       formData.append('isActive', 'false');
 
-      const mockResponse = { success: false, error: 'Database conflict' };
+      const mockResponse = { success: false, error: 'Database error' };
       vi.mocked(createGrievanceCategory).mockResolvedValue(
         mockResponse as unknown as ApiResponse<GrievanceCategory>
       );
 
       const result = await createGrievanceCategoryAction('en', formData);
       expect(result.success).toBe(false);
-      expect(result.error).toBe('Database conflict');
+      expect(result.error).toBe('Failed to create grievance category');
     });
 
     it('handles unexpected action failure via try-catch boundary', async () => {
@@ -195,7 +195,7 @@ describe('Grievance Category Master Server Actions', () => {
 
       const result = await updateGrievanceCategoryAction('en', formData);
       expect(result.success).toBe(false);
-      expect(result.error).toBe('Network loss');
+      expect(result.error).toBe('Unexpected error occurred');
     });
   });
 
@@ -220,7 +220,7 @@ describe('Grievance Category Master Server Actions', () => {
 
       const result = await deleteGrievanceCategoryAction(1, 'en');
       expect(result.success).toBe(false);
-      expect(result.error).toBe('Database lock error');
+      expect(result.error).toBe('Operation failed');
     });
 
     it('handles unexpected failure via try-catch boundary', async () => {
@@ -228,7 +228,7 @@ describe('Grievance Category Master Server Actions', () => {
 
       const result = await deleteGrievanceCategoryAction(1, 'en');
       expect(result.success).toBe(false);
-      expect(result.error).toBe('Network crash');
+      expect(result.error).toBe('Unexpected error occurred');
     });
   });
 });

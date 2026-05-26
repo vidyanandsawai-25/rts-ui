@@ -22,13 +22,13 @@ import type { GrievanceCategoryMasterViewProps } from '@/types/grievance-categor
 function ListLoadingFallback(): ReactElement {
   return (
     <div className="space-y-4">
-      <div className="h-10 bg-slate-200 dark:bg-slate-800 rounded-xl animate-pulse" />
-      <div className="border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
-        <div className="h-12 bg-slate-100 dark:bg-slate-800/50" />
+      <div className="h-10 bg-slate-200 rounded-xl animate-pulse" />
+      <div className="border border-slate-200 rounded-2xl overflow-hidden">
+        <div className="h-12 bg-slate-100" />
         {[1, 2, 3, 4, 5].map((i) => (
           <div
             key={i}
-            className="h-16 border-t border-slate-200 dark:border-slate-800 animate-pulse"
+            className="h-16 border-t border-slate-200 animate-pulse"
           />
         ))}
       </div>
@@ -73,23 +73,24 @@ export async function GrievanceCategoryMaster({
     addParams.set('status', String(initialStatus));
   }
 
-  const addPath = `/${locale}/configuration-settings/grievance-category-master/add?${addParams.toString()}`;
+  addParams.set('drawer', 'add');
+  const addPath = `/${locale}/configuration-settings/grievance-category-master?${addParams.toString()}`;
 
   return (
-    <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950 transition-colors duration-500">
+    <div className="min-h-screen bg-slate-50/50 transition-colors duration-500 light">
       <PageContainer className="px-1 sm:px-3 md:px-4 lg:px-6 py-2 md:py-4 w-full">
         {/* Header Section */}
-        <header className="mb-6 md:mb-8 relative overflow-hidden rounded-2xl md:rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm p-4 sm:p-5 md:p-6">
+        <header className="mb-6 md:mb-8 relative overflow-hidden rounded-2xl md:rounded-3xl bg-white border border-slate-200 shadow-sm p-4 sm:p-5 md:p-6">
           <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 md:gap-6">
             <div className="flex items-center gap-4 sm:gap-5 md:gap-6">
               <div className="shrink-0 w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-blue-600 rounded-xl sm:rounded-2xl md:rounded-3xl flex items-center justify-center shadow-lg shadow-blue-500/20">
                 <MessageSquare className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-white" />
               </div>
               <div className="min-w-0">
-                <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-900 dark:text-white tracking-tight leading-tight">
+                <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-900 tracking-tight leading-tight">
                   {tMaster('title')}
                 </h1>
-                <p className="text-slate-500 dark:text-slate-400 mt-0.5 text-[10px] sm:text-xs md:text-sm line-clamp-1 opacity-90">
+                <p className="text-slate-500 mt-0.5 text-[10px] sm:text-xs md:text-sm line-clamp-1 opacity-90">
                   {tMaster('description') || ''}
                 </p>
               </div>
@@ -157,6 +158,27 @@ export async function GrievanceCategoryMaster({
 
         {children}
       </PageContainer>
+      <style dangerouslySetInnerHTML={{ __html: LIGHT_MODE_OVERRIDES }} />
     </div>
   );
 }
+
+const LIGHT_MODE_OVERRIDES = `
+  .light .dark\\:text-slate-500 { color: #94a3b8 !important; }
+  .light .dark\\:text-gray-200 { color: #374151 !important; }
+  .light .dark\\:border-slate-700\\/30 { border-color: rgba(226, 232, 240, 0.6) !important; }
+  .light .dark\\:bg-slate-800\\/20 { background-color: rgba(248, 250, 252, 0.5) !important; }
+  .light .dark\\:bg-blue-900\\/10 { background-color: rgba(239, 246, 255, 0.3) !important; }
+  .light .dark\\:bg-slate-800\\/50 { background-color: rgba(241, 245, 249, 0.5) !important; }
+  .light .dark\\:border-slate-700 { border-color: rgb(226, 232, 240) !important; }
+  .light .dark\\:bg-emerald-900\\/20 { background-color: rgb(240, 253, 244) !important; }
+  .light .dark\\:text-emerald-400 { color: rgb(5, 150, 105) !important; }
+  .light .dark\\:border-emerald-900\\/30 { border-color: rgb(220, 252, 231) !important; }
+  .light .dark\\:bg-slate-700 { background-color: rgb(226, 232, 240) !important; }
+  .light .dark\\:text-slate-400 { color: rgb(100, 116, 139) !important; }
+  .light .dark\\:border-slate-600 { border-color: rgb(203, 213, 225) !important; }
+  .light .dark\\:text-white { color: rgb(15, 23, 42) !important; }
+  .light .dark\\:text-slate-300 { color: rgb(51, 65, 85) !important; }
+  .light .dark\\:text-slate-400 { color: rgb(100, 116, 139) !important; }
+  .light .dark\\:text-slate-500 { color: rgb(148, 163, 184) !important; }
+`;

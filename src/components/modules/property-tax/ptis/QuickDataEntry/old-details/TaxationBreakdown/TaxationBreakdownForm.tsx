@@ -1,14 +1,19 @@
 "use client"
 
-import {
-  Button,
-  Input,
-} from "@/components/common"
-import { Label } from "@/components/common/label";
-import { Save } from "lucide-react";
-import { TaxationBreakdownFormProps } from "@/types/property-old-details.types";
+import { AddButton } from "@/components/common";
+import type { TaxationBreakdownFormProps } from "@/types/OldDetails/property-old-details.types";
 import { useTaxationBreakdownForm } from "@/hooks/ptis/QuickDataEntry/Olddetails/useTaxationBreakdownForm";
 
+// Import refactored components
+import { TaxationMetaFields } from "./components/TaxationMetaFields";
+import { DynamicTaxFields } from "./components/DynamicTaxFields";
+import { TaxationSummaryFields } from "./components/TaxationSummaryFields";
+
+/**
+ * TaxationBreakdownForm - Main Component
+ * Orchestrates taxation breakdown data entry and management
+ * Delegates field groups to focused sub-components for better organization
+ */
 export default function TaxationBreakdownForm({
   initialData = null,
 }: TaxationBreakdownFormProps) {
@@ -20,7 +25,9 @@ export default function TaxationBreakdownForm({
     handleTaxChange,
     handleMetaChange,
     handleSave,
-    t
+    isChanged,
+    t,
+    tValidation
   } = useTaxationBreakdownForm(initialData);
 
   return (
@@ -30,95 +37,37 @@ export default function TaxationBreakdownForm({
       </h3>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-x-5 gap-y-5 items-end">
-        {/* Assessment Year */}
-        <div className="space-y-2">
-          <Label className="text-sm font-semibold text-gray-700 ml-1">{t("assessmentYear")}</Label>
-          <Input
-            type="text"
-            inputMode="numeric"
-            pattern="[0-9]{4}"
-            maxLength={4}
-            title="Enter a 4-digit year"
-            value={formData.year}
-            onChange={(e) => handleMetaChange('year', e.target.value.replace(/\D/g, "").slice(0, 4))}
-            placeholder={t("assessmentYear")}
-            className="h-11.5 border-[#cbd5e1] hover:border-blue-300 focus:border-blue-400 focus:ring-4 focus:ring-blue-50 rounded-lg transition-all font-medium text-gray-900 px-4"
-          />
-        </div>
+        {/* Meta Fields (Year & Interest) */}
+        <TaxationMetaFields
+          t={t}
+          year={formData.year}
+          interest={formData.interest}
+          onYearChange={(value) => handleMetaChange('year', value)}
+          onInterestChange={(value) => handleMetaChange('interest', value)}
+        />
 
-        {/* Dynamic Taxes */}
-        {taxes.map((tax) => (
-          <div key={tax.taxId} className="space-y-2">
-            <Label className="text-sm font-semibold text-gray-700 ml-1">{tax.taxName}</Label>
-            <Input
-              type="number"
-              value={tax.taxAmount === 0 ? "" : tax.taxAmount}
-              onChange={(e) => handleTaxChange(tax.taxId, e.target.value)}
-              placeholder={tax.taxName}
-              className="h-11.5 border-[#cbd5e1] hover:border-blue-300 focus:border-blue-400 focus:ring-4 focus:ring-blue-50 rounded-lg transition-all font-medium text-gray-900 px-4"
-            />
-          </div>
-        ))}
+        {/* Dynamic Tax Fields */}
+        <DynamicTaxFields
+          taxes={taxes}
+          onTaxChange={handleTaxChange}
+        />
 
-        {/* Aggregate Tax Sum */}
-        <div className="space-y-2">
-          <Label className="text-sm font-semibold text-gray-700 ml-1">{t("aggregateTaxSum")}</Label>
-          <Input
-            readOnly
-            type="number"
-            value={formData.taxTotal === 0 ? "" : formData.taxTotal}
-            placeholder={t("aggregateTaxSum")}
-            className="h-11.5 border-[#cbd5e1] bg-gray-50 cursor-not-allowed hover:border-blue-300 focus:border-blue-400 focus:ring-4 focus:ring-blue-50 rounded-lg transition-all font-medium text-gray-900 px-4"
-          />
-        </div>
-
-        {/* Interest Amount */}
-        <div className="space-y-2">
-          <Label className="text-sm font-semibold text-gray-700 ml-1">{t("interestAmount")}</Label>
-          <Input
-            type="number"
-            value={formData.interest === 0 ? "" : formData.interest}
-            onChange={(e) => handleMetaChange('interest', e.target.value)}
-            placeholder={t("interestAmount")}
-            className="h-11.5 border-[#cbd5e1] hover:border-blue-300 focus:border-blue-400 focus:ring-4 focus:ring-blue-50 rounded-lg transition-all font-medium text-gray-900 px-4"
-          />
-        </div>
-
-        {/* Net Payable Total */}
-        <div className="space-y-2">
-          <Label className="text-sm font-semibold text-gray-700 ml-1">{t("netPayableTotal")}</Label>
-          <Input
-            readOnly
-            type="number"
-            value={formData.netTotal === 0 ? "" : formData.netTotal}
-            placeholder={t("netPayableTotal")}
-            className="h-11.5 border-[#cbd5e1] bg-gray-50 cursor-not-allowed hover:border-blue-300 focus:border-blue-400 focus:ring-4 focus:ring-blue-50 rounded-lg transition-all font-medium text-gray-900 px-4"
-          />
-        </div>
-
-        {/* Remarks */}
-        <div className="space-y-2">
-          <Label className="text-sm font-semibold text-gray-700 ml-1">{t("remarks")}</Label>
-          <Input
-            type="text"
-            value={formData.remark}
-            onChange={(e) => handleMetaChange('remark', e.target.value)}
-            placeholder={t("remarks")}
-            className="h-11.5 border-[#cbd5e1] hover:border-blue-300 focus:border-blue-400 focus:ring-4 focus:ring-blue-50 rounded-lg transition-all font-medium text-gray-900 px-4"
-          />
-        </div>
+        {/* Summary Fields (Tax Total & Net Total) */}
+        <TaxationSummaryFields
+          t={t}
+          taxTotal={formData.taxTotal}
+          netTotal={formData.netTotal}
+        />
       </div>
+
       <div className="pt-2 mt-5 flex justify-end items-center">
-        <Button
+        <AddButton
+          label={isSubmitting ? tValidation('footer.saving') : tValidation('commonbuttonmessages.UpdateChanges')}
+          type="submit"
           onClick={handleSave}
-          disabled={isSubmitting}
-          className="w-[17.5%] bg-[#2563eb] hover:bg-blue-700 text-white h-11.5 rounded-xl shadow-lg shadow-blue-900/10 font-bold text-sm flex items-center justify-center gap-2.5 transition-all active:scale-95"
-        >
-          <div className="flex gap-2 text-2">
-            <Save className="w-4 h-4" />
-            {isSubmitting ? t("saving") : t("update")}
-          </div>
-        </Button>
+          isLoading={isSubmitting}
+          disabled={isSubmitting || !isChanged}
+        />
       </div>
     </div>
   );

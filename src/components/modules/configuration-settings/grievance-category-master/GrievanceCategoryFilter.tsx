@@ -32,14 +32,14 @@ export function GrievanceCategoryFilter({
     }
 
     const timer = setTimeout(() => {
-      updateQueries({ search: searchValue }, { resetPage: true });
+      updateQueries({ search: searchValue, page: 1 });
     }, 500);
 
     return () => clearTimeout(timer);
   }, [searchValue, initialSearch, updateQueries]);
 
   const handleFilterUpdate = (updates: Record<string, string | number | boolean | null>) => {
-    updateQueries(updates, { resetPage: true });
+    updateQueries({ ...updates, page: 1 });
   };
 
   const departmentOptions = [
@@ -63,7 +63,7 @@ export function GrievanceCategoryFilter({
       {/* Search Section - Expands to fill available space */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-grow min-w-0">
         {/* Filter Indicator - Visible on Tablet+ */}
-        <div className="hidden md:flex items-center gap-2 px-3 py-2 bg-slate-100/80 dark:bg-slate-800/80 rounded-xl text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider shrink-0 border border-slate-200/60 dark:border-slate-700/60 shadow-sm">
+        <div className="hidden md:flex items-center gap-2 px-3 py-2 bg-slate-100/80 rounded-xl text-slate-500 text-[10px] font-bold uppercase tracking-wider shrink-0 border border-slate-200/60 shadow-sm">
           <Filter className="w-3.5 h-3.5 text-slate-400" />
           <span className="whitespace-nowrap">{t('filterBy')}</span>
         </div>
@@ -74,7 +74,7 @@ export function GrievanceCategoryFilter({
             value={searchValue}
             onChange={(val) => setSearchValue(val)}
             placeholder={t('searchPlaceholder')}
-            className="!w-full mb-0 h-10 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 rounded-xl transition-all duration-300 focus-within:ring-2 focus-within:ring-blue-500/10 focus-within:border-blue-500/50 shadow-sm"
+            className="!w-full mb-0 h-10 border-slate-200 bg-white rounded-xl transition-all duration-300 focus-within:ring-2 focus-within:ring-blue-500/10 focus-within:border-blue-500/50 shadow-sm"
           />
         </div>
       </div>
@@ -86,7 +86,7 @@ export function GrievanceCategoryFilter({
             options={departmentOptions}
             value={String(initialDepartment ?? 'all')}
             onChange={(_, val) => handleFilterUpdate({ department: val === 'all' ? null : val })}
-            className="h-10 bg-white dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 rounded-xl text-xs sm:text-sm font-semibold shadow-sm hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-200 cursor-pointer"
+            className="h-10 bg-white border-slate-200 rounded-xl text-xs sm:text-sm font-semibold shadow-sm hover:border-slate-300 transition-all duration-200 cursor-pointer [&_button]:cursor-pointer"
           />
         </div>
         <div className="w-full lg:w-36 xl:w-44 min-w-0">
@@ -94,7 +94,7 @@ export function GrievanceCategoryFilter({
             options={statusOptions}
             value={String(initialStatus ?? 'all')}
             onChange={(_, val) => handleFilterUpdate({ status: val === 'all' ? null : val })}
-            className="h-10 bg-white dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 rounded-xl text-xs sm:text-sm font-semibold shadow-sm hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-200 cursor-pointer"
+            className="h-10 bg-white border-slate-200 rounded-xl text-xs sm:text-sm font-semibold shadow-sm hover:border-slate-300 transition-all duration-200 cursor-pointer [&_button]:cursor-pointer"
           />
         </div>
       </div>

@@ -1,7 +1,8 @@
 {
     "commonbuttonmessages": {
         "update": "Update",
-        "UpdateChanges": "Update Changes"
+        "UpdateChanges": "Update Changes",
+        "clear": "Clear"
     },
     "roomSubmission": {
         "quickDataEntry": "Property Quick Data Entry",
@@ -532,6 +533,7 @@
             "societyAddress": "Invalid Society Address. Only letters, numbers, and common punctuation (. , - / #) are allowed. Special characters like *()_++_)(&&^%$#@!~}{}; are not permitted.",
             "invalidMobile": "Mobile number must be exactly 10 digits",
             "invalidMobileStart": "Mobile number must start with 6 to 9.",
+            "invalidRepeatedSequence": "Repeated number sequences are not allowed",
             "invalidNameLength": "Name must be between 2 and 150 characters.",
             "invalidName": "Invalid name. Only letters and basic punctuation are allowed."
         },
@@ -851,6 +853,12 @@
     },
     "oldDetails": {
         "title": "Old Taxation",
+          "validation": {
+                "zoneNameRequired": "Zone Name is required.",
+                "wardNoRequired": "Ward No is required.",
+                "propertyNoRequired": "Property No is required.",
+                "fillRequiredFields": "Please fill all required fields."
+             },
         "loading": {
             "message": "Loading Old Details...",
             "description": "Please wait while we fetch the historical information",

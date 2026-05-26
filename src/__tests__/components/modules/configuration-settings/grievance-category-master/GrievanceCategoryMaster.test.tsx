@@ -490,11 +490,11 @@ describe('Grievance Category Master - Comprehensive Test Suite', () => {
           validateGrievanceCategoryField({}, 'description', 'Valid description', mockTranslator)
         ).toBeNull();
         expect(
-          validateGrievanceCategoryField({}, 'description', 'A'.repeat(1001), mockTranslator)
+          validateGrievanceCategoryField({}, 'description', 'A'.repeat(501), mockTranslator)
         ).toBe('errors.descMaxLength');
 
-        // 1000 words limit validation
-        const validWords = Array(150).fill('word').join(' '); // 150 words fits well within 1000 chars and 1000 words
+        // 500 words limit validation
+        const validWords = Array(80).fill('word').join(' '); // 80 words fits well within 500 chars and 500 words
         expect(
           validateGrievanceCategoryField({}, 'description', validWords, mockTranslator)
         ).toBeNull();
@@ -531,7 +531,7 @@ describe('Grievance Category Master - Comprehensive Test Suite', () => {
           priority: 'High',
           resolutionSla: '',
           escalationLevel: 'Level 1',
-          description: 'A'.repeat(1001),
+          description: 'A'.repeat(501),
           isActive: true,
         };
 

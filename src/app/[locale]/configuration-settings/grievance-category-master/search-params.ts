@@ -8,6 +8,8 @@ export type NormalizedMasterSearchParams = {
   search?: string;
   department?: string;
   status?: string;
+  drawer?: string;
+  id?: string;
 };
 
 function getFirstStringValue(value: string | string[] | undefined): string | undefined {
@@ -27,6 +29,8 @@ export function normalizeMasterSearchParams(
     search: getFirstStringValue(searchParams.search),
     department: getFirstStringValue(searchParams.department),
     status: getFirstStringValue(searchParams.status),
+    drawer: getFirstStringValue(searchParams.drawer),
+    id: getFirstStringValue(searchParams.id),
   };
 }
 
@@ -48,6 +52,10 @@ export function buildMasterUrl(
   if (searchParams.status && searchParams.status !== 'all') {
     params.set('status', searchParams.status);
   }
+
+  // Optional drawer state
+  if (searchParams.drawer) params.set('drawer', searchParams.drawer);
+  if (searchParams.id) params.set('id', searchParams.id);
 
   const basePath = `/${locale}/configuration-settings/grievance-category-master`;
   const query = params.toString();

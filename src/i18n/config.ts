@@ -68,8 +68,9 @@ export function switchLocale(locale: Locale, pathname: string, router: MinimalRo
   const localePattern = new RegExp(`^/(${locales.join('|')})`);
   const pathWithoutLocale = pathname.replace(localePattern, '') || '/';
 
-  // Construct new path
-  const newPath = `/${locale}${pathWithoutLocale === '/' ? '' : pathWithoutLocale}`;
+  // Construct new path with search params preserved
+  const search = typeof window !== 'undefined' ? window.location.search : '';
+  const newPath = `/${locale}${pathWithoutLocale === '/' ? '' : pathWithoutLocale}${search}`;
 
   // Use simple push; Next.js middleware and layouts will handle the rest
   router.push(newPath);

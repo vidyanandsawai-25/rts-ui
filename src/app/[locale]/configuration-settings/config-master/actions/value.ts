@@ -9,9 +9,8 @@ import type {
   BackendMutationResponse,
   ConfigValueMaster,
   ConfigKeyMaster,
-  DeleteResponse,
 } from '@/types/configMaster.types';
-import { verifySession, getLocaleFromHeaders, tConfigMessage } from './utils';
+import { verifySession, getLocaleFromHeaders, tConfigMessage, localizeConfigError, localizeBackendMessage } from './utils';
 import type { ActionResult } from '@/types/common.types';
 import { CreateConfigValueSchema } from '@/lib/validations/config-master.schema';
 import { logError } from '@/lib/utils/logger';
@@ -53,29 +52,23 @@ export async function createConfigValueAction(formData: FormData): Promise<Actio
     if (result.success) {
       const locale = await getLocaleFromHeaders();
       revalidatePath(`/${locale}/configuration-settings/config-master`, 'page');
-      const backendMessage = (result.data as BackendMutationResponse<ConfigValueMaster>)?.message;
       return {
         success: true,
-        message:
-          (typeof backendMessage === 'string' ? backendMessage : undefined) ||
-          (await tConfigMessage('valueSaved', 'Config Value saved successfully')),
+        message: await tConfigMessage('valueSaved', 'Config Value saved successfully'),
       };
     }
 
     return {
       success: false,
-      error:
-        result.error ||
-        (await tConfigMessage('configValueCreateFailed', 'Failed to save config value')),
+      error: await localizeBackendMessage(
+        result.error || (result.data as BackendMutationResponse<ConfigValueMaster>)?.message,
+        'configValueCreateFailed',
+        'Failed to save config value'
+      ),
     };
   } catch (err) {
     logError('createConfigValueAction failed', { error: err instanceof Error ? err : undefined });
-    const errorMessage =
-      process.env.NODE_ENV === 'production'
-        ? 'An unexpected error occurred while creating value'
-        : err instanceof Error
-          ? err.message
-          : 'An unexpected error occurred';
+    const errorMessage = await localizeConfigError(err, 'configValueCreateFailed', 'Failed to create config value');
     return {
       success: false,
       error: errorMessage,
@@ -121,17 +114,18 @@ export async function updateConfigItemAction(data: {
       if (result.success) {
         const locale = await getLocaleFromHeaders();
         revalidatePath(`/${locale}/configuration-settings/config-master`, 'page');
-        const backendMessage = (result.data as BackendMutationResponse<ConfigValueMaster>)?.message;
         return {
           success: true,
-          message:
-            (typeof backendMessage === 'string' ? backendMessage : undefined) ||
-            (await tConfigMessage('valueSaved', 'Updated')),
+          message: await tConfigMessage('valueSaved', 'Updated'),
         };
       }
       return {
         success: false,
-        error: result.error || (result.data as BackendMutationResponse<ConfigValueMaster>)?.message,
+        error: await localizeBackendMessage(
+          result.error || (result.data as BackendMutationResponse<ConfigValueMaster>)?.message,
+          'saveFailed',
+          'Failed to update configuration value'
+        ),
       };
     } else {
       const keyId = data.configKeyId;
@@ -157,17 +151,18 @@ export async function updateConfigItemAction(data: {
       if (result.success) {
         const locale = await getLocaleFromHeaders();
         revalidatePath(`/${locale}/configuration-settings/config-master`, 'page');
-        const backendMessage = (result.data as BackendMutationResponse<ConfigKeyMaster>)?.message;
         return {
           success: true,
-          message:
-            (typeof backendMessage === 'string' ? backendMessage : undefined) ||
-            (await tConfigMessage('keyUpdated', 'Key updated')),
+          message: await tConfigMessage('keyUpdated', 'Key updated'),
         };
       }
       return {
         success: false,
-        error: result.error || (result.data as BackendMutationResponse<ConfigKeyMaster>)?.message,
+        error: await localizeBackendMessage(
+          result.error || (result.data as BackendMutationResponse<ConfigKeyMaster>)?.message,
+          'keyUpdateFailed',
+          'Failed to update config key'
+        ),
       };
     }
   } catch (err) {
@@ -175,12 +170,7 @@ export async function updateConfigItemAction(data: {
       error: err instanceof Error ? err : undefined,
       data,
     });
-    const errorMessage =
-      process.env.NODE_ENV === 'production'
-        ? 'An unexpected error occurred while updating configuration'
-        : err instanceof Error
-          ? err.message
-          : 'An unexpected error occurred';
+    const errorMessage = await localizeConfigError(err, 'saveFailed', 'Failed to save configuration');
     return {
       success: false,
       error: errorMessage,
@@ -200,13 +190,13 @@ export async function deleteConfigValueAction(id: number): Promise<ActionResult>
       const locale = await getLocaleFromHeaders();
       revalidatePath(`/${locale}/configuration-settings/config-master`, 'page');
     }
-    const backendMessage = (res.data as DeleteResponse)?.message;
     return {
       success: res.success,
-      error: res.error,
+      error: res.success
+        ? undefined
+        : await localizeBackendMessage(res.error, 'deleteFailed', 'Failed to delete configuration value'),
       message: res.success
-        ? (typeof backendMessage === 'string' ? backendMessage : undefined) ||
-          (await tConfigMessage('valueDeleted', 'Configuration value deleted successfully'))
+        ? await tConfigMessage('valueDeleted', 'Configuration value deleted successfully')
         : undefined,
     };
   } catch (err) {
@@ -214,12 +204,7 @@ export async function deleteConfigValueAction(id: number): Promise<ActionResult>
       error: err instanceof Error ? err : undefined,
       id,
     });
-    const errorMessage =
-      process.env.NODE_ENV === 'production'
-        ? 'An unexpected error occurred while deleting value'
-        : err instanceof Error
-          ? err.message
-          : 'An unexpected error occurred';
+    const errorMessage = await localizeConfigError(err, 'deleteFailed', 'Failed to delete config value');
     return {
       success: false,
       error: errorMessage,

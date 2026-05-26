@@ -9,7 +9,7 @@ import {
     getOldFloorDetailsAction
 } from './action';
 
-import { Floor, SubFloor, ConstructionType, TypeOfUse, SubTypeOfUse, OldFloorDetail } from '@/types/property-old-details.types';
+import { Floor, SubFloor, ConstructionType, TypeOfUse, SubTypeOfUse, OldFloorDetail } from '@/types/OldDetails/property-old-details.types';
 
 import { ActionResult } from '@/types/common.types';
 

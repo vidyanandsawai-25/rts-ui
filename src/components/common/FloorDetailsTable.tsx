@@ -1,6 +1,8 @@
-import React, { type ReactNode } from 'react';
+'use client';
+
+import React, { type ReactNode, useState, useMemo } from 'react';
 import Link from 'next/link';
-import { ChevronRight, ChevronDown, ArrowUpDown, Home, type LucideIcon } from 'lucide-react';
+import { ChevronRight, ChevronDown, ArrowUpDown, ArrowUp, ArrowDown, Home, type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 
 /**
@@ -150,6 +152,71 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
 }: FloorDetailsTableProps<Row>) {
   const expandedRowIdSet = new Set(expandedRowIds.map(String));
 
+  const [sortConfig, setSortConfig] = useState<{
+    key: string;
+    direction: 'asc' | 'desc' | null;
+  }>({ key: '', direction: null });
+
+  const handleSort = (key: string) => {
+    setSortConfig((prev) => {
+      if (prev.key === key) {
+        if (prev.direction === 'asc') {
+          return { key, direction: 'desc' };
+        } else if (prev.direction === 'desc') {
+          return { key: '', direction: null };
+        }
+      }
+      return { key, direction: 'asc' };
+    });
+  };
+
+  const sortedData = useMemo(() => {
+    if (!data) return [];
+    if (!sortConfig.key || !sortConfig.direction) return data;
+
+    return [...data].sort((a, b) => {
+      const aVal = a[sortConfig.key as keyof Row];
+      const bVal = b[sortConfig.key as keyof Row];
+
+      const parseVal = (val: unknown): number | string => {
+        if (val === undefined || val === null || val === '-') return -Infinity;
+        if (typeof val === 'number') return val;
+
+        const str = String(val).trim();
+
+        // Check if it matches a date pattern like DD/MM/YYYY
+        const dateMatch = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+        if (dateMatch) {
+          const [_, d, m, y] = dateMatch;
+          return new Date(Number(y), Number(m) - 1, Number(d)).getTime();
+        }
+
+        // Check if it's a number pair/fraction/formatted number:
+        // Try extracting first number: "21,527.82 / 2,000.00" -> "21527.82"
+        const cleaned = str.replace(/,/g, '');
+        const firstNumMatch = cleaned.match(/^-?\d+(\.\d+)?/);
+        if (firstNumMatch) {
+          return parseFloat(firstNumMatch[0]);
+        }
+
+        return str;
+      };
+
+      const parsedA = parseVal(aVal);
+      const parsedB = parseVal(bVal);
+
+      if (typeof parsedA === 'number' && typeof parsedB === 'number') {
+        return sortConfig.direction === 'asc' ? parsedA - parsedB : parsedB - parsedA;
+      }
+
+      const strA = String(parsedA);
+      const strB = String(parsedB);
+      return sortConfig.direction === 'asc'
+        ? strA.localeCompare(strB, undefined, { numeric: true, sensitivity: 'base' })
+        : strB.localeCompare(strA, undefined, { numeric: true, sensitivity: 'base' });
+    });
+  }, [data, sortConfig]);
+
   return (
     <div
       className={cn(
@@ -192,8 +259,10 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
                   col.headerRender(col)
                 ) : (
                   <div
+                    onClick={() => col.sortable !== false && handleSort(col.key)}
                     className={cn(
                       'inline-flex h-8 w-full items-center justify-center gap-1 rounded-md border border-blue-400/10 bg-black/5 px-3 text-xs font-bold text-inherit shadow-sm transition-colors duration-200 select-none whitespace-nowrap',
+                      col.sortable !== false && 'cursor-pointer hover:bg-black/15 active:bg-black/25',
                       headerBadgeClassName,
                       col.headerBadgeClassName
                     )}
@@ -206,7 +275,17 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
                       col.label
                     )}
                     {col.sortable !== false && (
-                      <ArrowUpDown className="h-2.5 w-2.5 text-white opacity-60" />
+                      <span className="inline-flex flex-shrink-0 items-center ml-1">
+                        {sortConfig.key === col.key ? (
+                          sortConfig.direction === 'asc' ? (
+                            <ArrowUp className="h-2.5 w-2.5 text-white opacity-100" />
+                          ) : (
+                            <ArrowDown className="h-2.5 w-2.5 text-white opacity-100" />
+                          )
+                        ) : (
+                          <ArrowUpDown className="h-2.5 w-2.5 text-white opacity-60 hover:opacity-100 transition-opacity" />
+                        )}
+                      </span>
                     )}
                   </div>
                 )}
@@ -228,7 +307,7 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
               </td>
             </tr>
           ) : (
-            data.map((row, index) => {
+            sortedData.map((row, index) => {
               const isExpanded = expandedRowIdSet.has(String(row.id));
               const bgClass = striped ? getRowBackgroundClass(index, colorGroups) : '';
               const baseRowClass = rowClassName

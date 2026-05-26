@@ -52,8 +52,8 @@ export function ConfigItemRow({
       className={cn(
         "group relative flex flex-col md:flex-row md:items-center justify-between p-4 sm:p-5 transition-all duration-300 gap-4 overflow-visible",
         item.isEnabled
-          ? 'bg-emerald-50/10 dark:bg-emerald-900/5 border-emerald-100/50 dark:border-emerald-900/20'
-          : 'bg-white dark:bg-slate-950 border-slate-100 dark:border-slate-900 shadow-sm'
+          ? 'bg-emerald-50/10 border-emerald-100/50'
+          : 'bg-white border-slate-100 shadow-sm'
       )}
     >
       <div className="flex items-start gap-4 min-w-0">
@@ -71,7 +71,7 @@ export function ConfigItemRow({
             <span 
               className={cn(
                 "font-bold text-sm sm:text-base tracking-tight transition-colors line-clamp-2 flex-1",
-                item.isEnabled ? "text-slate-900 dark:text-slate-100" : "text-slate-500"
+                item.isEnabled ? "text-slate-900" : "text-slate-500"
               )}
               title={item.name}
             >
@@ -90,18 +90,18 @@ export function ConfigItemRow({
           </div>
 
           {item.description && (
-            <div className="text-[11px] sm:text-xs font-medium text-slate-500 dark:text-slate-400/80 line-clamp-1 mb-2">
+            <div className="text-[11px] sm:text-xs font-medium text-slate-500 line-clamp-1 mb-2">
               {highlightText(item.description, searchTerm)}
             </div>
           )}
 
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 mt-1">
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900 px-2 py-1 rounded-lg border border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2 bg-slate-50 px-2 py-1 rounded-lg border border-slate-100">
                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
                   {t('list.currentValue') || 'Value'}
                 </span>
-                <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                <span className="text-xs font-bold text-indigo-600">
                   {(() => {
                     const val = item.value || item.defaultValue || '';
                     const control = (item.controlType || '').toLowerCase();
@@ -162,9 +162,9 @@ export function ConfigItemRow({
         {/* Row-level Loader - centered in the action area */}
         {isPending && (
           <div className="absolute inset-0 flex items-center justify-center z-10">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-50/50 dark:bg-indigo-900/20 border border-indigo-100/50 dark:border-indigo-800/50">
-              <Loader2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400 animate-spin" />
-              <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest animate-pulse">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-50/50 border border-indigo-100/50">
+              <Loader2 className="w-4 h-4 text-indigo-600 animate-spin" />
+              <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest animate-pulse">
                 {t('messages.savingConfig') || 'Saving...'}
               </span>
             </div>

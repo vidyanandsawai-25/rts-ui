@@ -28,7 +28,7 @@ export async function ConfigurationMaster({
   configKeyId?: string;
   locale: string;
 }) {
-  const t = await getTranslations('configMaster');
+  const t = await getTranslations({ locale, namespace: 'configMaster' });
 
   const activeCategoryId = categoryId || categories[0]?.id || 'all';
 
@@ -61,7 +61,7 @@ export async function ConfigurationMaster({
   const activeCategory = categories.find((c) => c.id === activeCategoryId) || categories[0] || fallbackCategory;
 
   return (
-    <div className="min-h-full flex flex-col bg-slate-50/50 dark:bg-slate-950/20">
+    <div className="min-h-full flex flex-col bg-slate-50/50 light">
       <ConfigurationMasterHeader
         title={t('title')}
         subtitle={t('subtitle')}
@@ -93,6 +93,27 @@ export async function ConfigurationMaster({
         serverEditKey={editKey}
         serverConfigKeyId={configKeyId}
       />
+      <style dangerouslySetInnerHTML={{ __html: LIGHT_MODE_OVERRIDES }} />
     </div>
   );
 }
+
+const LIGHT_MODE_OVERRIDES = `
+  .light .dark\\:text-slate-500 { color: #94a3b8 !important; }
+  .light .dark\\:text-gray-200 { color: #374151 !important; }
+  .light .dark\\:border-slate-700\\/30 { border-color: rgba(226, 232, 240, 0.6) !important; }
+  .light .dark\\:bg-slate-800\\/20 { background-color: rgba(248, 250, 252, 0.5) !important; }
+  .light .dark\\:bg-blue-900\\/10 { background-color: rgba(239, 246, 255, 0.3) !important; }
+  .light .dark\\:bg-slate-800\\/50 { background-color: rgba(241, 245, 249, 0.5) !important; }
+  .light .dark\\:border-slate-700 { border-color: rgb(226, 232, 240) !important; }
+  .light .dark\\:bg-emerald-900\\/20 { background-color: rgb(240, 253, 244) !important; }
+  .light .dark\\:text-emerald-400 { color: rgb(5, 150, 105) !important; }
+  .light .dark\\:border-emerald-900\\/30 { border-color: rgb(220, 252, 231) !important; }
+  .light .dark\\:bg-slate-700 { background-color: rgb(226, 232, 240) !important; }
+  .light .dark\\:text-slate-400 { color: rgb(100, 116, 139) !important; }
+  .light .dark\\:border-slate-600 { border-color: rgb(203, 213, 225) !important; }
+  .light .dark\\:text-white { color: rgb(15, 23, 42) !important; }
+  .light .dark\\:text-slate-300 { color: rgb(51, 65, 85) !important; }
+  .light .dark\\:text-slate-400 { color: rgb(100, 116, 139) !important; }
+  .light .dark\\:text-slate-500 { color: rgb(148, 163, 184) !important; }
+`;
