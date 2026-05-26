@@ -1,0 +1,54 @@
+"use client"
+
+import { Input } from "@/components/common";
+import { Label } from "@/components/common/label";
+import { TaxationMetaFieldsProps } from "@/types/OldDetails/property-old-floor-info.types";
+
+/**
+ * TaxationMetaFields Component
+ * Renders assessment year and interest amount fields
+ * Handles numeric validation for year input
+ */
+export function TaxationMetaFields({
+  t,
+  year,
+  interest,
+  onYearChange,
+  onInterestChange
+}: TaxationMetaFieldsProps) {
+  return (
+    <>
+      {/* Assessment Year */}
+      <div className="space-y-2">
+        <Label className="text-sm font-semibold text-gray-700 ml-1">
+          {t("assessmentYear")}
+        </Label>
+        <Input
+          type="text"
+          inputMode="numeric"
+          pattern="[0-9]{4}"
+          maxLength={4}
+          title="Enter a 4-digit year"
+          value={year}
+          onChange={(e) => onYearChange(e.target.value.replace(/\D/g, "").slice(0, 4))}
+          placeholder={t("assessmentYear")}
+          className="h-11.5 border-[#cbd5e1] hover:border-blue-300 focus:border-blue-400 focus:ring-4 focus:ring-blue-50 rounded-lg transition-all font-medium text-gray-900 px-4"
+        />
+      </div>
+
+      {/* Interest Amount */}
+      <div className="space-y-2">
+        <Label className="text-sm font-semibold text-gray-700 ml-1">
+          {t("interestAmount")}
+        </Label>
+        <Input
+          type="number"
+          value={interest === 0 ? "" : interest}
+          onChange={(e) => onInterestChange(e.target.value)}
+          placeholder={t("interestAmount")}
+          className="h-11.5 border-[#cbd5e1] hover:border-blue-300 focus:border-blue-400 focus:ring-4 focus:ring-blue-50 rounded-lg transition-all font-medium text-gray-900 px-4"
+        />
+      </div>
+    </>
+  );
+}

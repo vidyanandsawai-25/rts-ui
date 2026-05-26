@@ -10,7 +10,7 @@ import type {
   CreateModuleMasterRequest, 
   UpdateModuleMasterRequest 
 } from '@/types/moduleMaster.types';
-import { verifySession, getLocaleFromHeaders, tConfigMessage } from './utils';
+import { verifySession, getLocaleFromHeaders, tConfigMessage, localizeConfigError, localizeBackendMessage } from './utils';
 import type { ActionResult } from '@/types/common.types';
 import { logError } from '@/lib/utils/logger';
 import { sanitizeTextInput } from '@/lib/utils/input-sanitization';
@@ -28,9 +28,7 @@ export async function getModulesByDepartmentAction(departmentId: number) {
     return { success: true, data: modules };
   } catch (err) {
     logError('getModulesByDepartmentAction failed', { error: err instanceof Error ? err : undefined, departmentId });
-    const errorMessage = process.env.NODE_ENV === 'production'
-      ? 'An unexpected error occurred while fetching submodules'
-      : (err instanceof Error ? err.message : 'Failed to fetch submodules');
+    const errorMessage = await localizeConfigError(err, 'failedFetch', 'Failed to fetch submodules');
     return {
       success: false,
       error: errorMessage,
@@ -75,12 +73,10 @@ export async function createModuleAction(data: Omit<CreateModuleMasterRequest, '
       revalidatePath(`/${locale}/configuration-settings/config-master`, 'page');
       return { success: true, message: await tConfigMessage('submoduleCreated', 'Submodule created successfully') };
     }
-    return { success: false, error: result.message || await tConfigMessage('submoduleCreateFailed', 'Failed to create submodule') };
+    return { success: false, error: await localizeBackendMessage(result.message || result.error, 'submoduleCreateFailed', 'Failed to create submodule') };
   } catch (err) {
     logError('createModuleAction failed', { error: err instanceof Error ? err : undefined });
-    const errorMessage = process.env.NODE_ENV === 'production'
-      ? 'An unexpected error occurred while creating submodule'
-      : (err instanceof Error ? err.message : 'An unexpected error occurred');
+    const errorMessage = await localizeConfigError(err, 'submoduleCreateFailed', 'Failed to create submodule');
     return {
       success: false,
       error: errorMessage,
@@ -128,12 +124,10 @@ export async function updateModuleAction(
       revalidatePath(`/${locale}/configuration-settings/config-master`, 'page');
       return { success: true, message: await tConfigMessage('submoduleUpdated', 'Submodule updated successfully') };
     }
-    return { success: false, error: result.message || await tConfigMessage('submoduleUpdateFailed', 'Failed to update submodule') };
+    return { success: false, error: await localizeBackendMessage(result.message || result.error, 'submoduleUpdateFailed', 'Failed to update submodule') };
   } catch (err) {
     logError('updateModuleAction failed', { error: err instanceof Error ? err : undefined, id });
-    const errorMessage = process.env.NODE_ENV === 'production'
-      ? 'An unexpected error occurred while updating submodule'
-      : (err instanceof Error ? err.message : 'An unexpected error occurred');
+    const errorMessage = await localizeConfigError(err, 'submoduleUpdateFailed', 'Failed to update submodule');
     return {
       success: false,
       error: errorMessage,
@@ -154,12 +148,10 @@ export async function deleteModuleAction(id: number): Promise<ActionResult> {
       revalidatePath(`/${locale}/configuration-settings/config-master`, 'page');
       return { success: true, message: await tConfigMessage('submoduleDeleted', 'Submodule deleted') };
     }
-    return { success: false, error: result.error || await tConfigMessage('deleteFailed', 'Failed to delete submodule') };
+    return { success: false, error: await localizeBackendMessage(result.error, 'deleteFailed', 'Failed to delete submodule') };
   } catch (err) {
     logError('deleteModuleAction failed', { error: err instanceof Error ? err : undefined, id });
-    const errorMessage = process.env.NODE_ENV === 'production'
-      ? 'An unexpected error occurred while deleting submodule'
-      : (err instanceof Error ? err.message : 'An unexpected error occurred');
+    const errorMessage = await localizeConfigError(err, 'deleteFailed', 'Failed to delete submodule');
     return {
       success: false,
       error: errorMessage,

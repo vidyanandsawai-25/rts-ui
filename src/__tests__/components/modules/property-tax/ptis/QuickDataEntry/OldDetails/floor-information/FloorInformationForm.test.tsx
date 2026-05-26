@@ -3,7 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import FloorInformationForm from '@/components/modules/property-tax/ptis/QuickDataEntry/old-details/FloorInformation/FloorInformationForm';
 import { useConfirm } from '@/components/common/ConfirmProvider';
 
-import { OldFloorDetail } from '@/types/property-old-details.types';
+import { OldFloorDetail } from '@/types/OldDetails/property-old-details.types';
 import { useFloorInformationForm } from '@/hooks/ptis/QuickDataEntry/Olddetails/useFloorInformationForm';
 
 // Mock dependencies
@@ -80,7 +80,7 @@ describe('FloorInformationForm Component', () => {
 
     render(<FloorInformationForm />);
     expect(screen.getByText('quickDataEntry.oldDetails.updateFloorDetailsTitle')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /quickDataEntry.property.updateButton/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /quickDataEntry.commonbuttonmessages.UpdateChanges/i })).toBeInTheDocument();
   });
 
   it('calls handleSave when add button is clicked', async () => {
@@ -100,7 +100,7 @@ describe('FloorInformationForm Component', () => {
 
     render(<FloorInformationForm />);
     
-    const clearButton = screen.getByRole('button', { name: /common.buttons.clear/i });
+    const clearButton = screen.getByRole('button', { name: /quickDataEntry.commonbuttonmessages.clear/i });
     fireEvent.click(clearButton);
     
     expect(mockHandleReset).toHaveBeenCalledTimes(1);

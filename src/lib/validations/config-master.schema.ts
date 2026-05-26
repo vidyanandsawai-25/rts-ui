@@ -10,21 +10,48 @@ export const AuditSchema = z.object({
 });
 
 /**
+ * Safe Catastrophic-Backtracking-Resistant Description Validation
+ */
+const isValidDescription = (val: string): boolean => {
+  if (val === '') return true;
+  const firstChar = val.charAt(0);
+  const lastChar = val.charAt(val.length - 1);
+  const letterOrNumberRegex = /^[\p{L}\p{M}\p{N}]$/u;
+  if (!letterOrNumberRegex.test(firstChar) || !letterOrNumberRegex.test(lastChar)) {
+    return false;
+  }
+  const allowedCharsRegex = /^[\p{L}\p{M}\p{N}\s\/,.\-()&]*$/u;
+  if (!allowedCharsRegex.test(val)) {
+    return false;
+  }
+  if (/\s{2,}/.test(val)) {
+    return false;
+  }
+  return true;
+};
+
+/**
  * Config Category Schemas
  */
 export const CreateConfigCategorySchema = z.object({
   categoryCode: z.string()
     .trim()
+    .min(1, 'modals.addCategory.form.validation.codeRequired')
     .min(3, 'Category code must be at least 3 characters')
-    .max(20, 'Category code is too long')
-    .regex(CODE_REGEX, 'Category code can only contain alphanumeric characters and underscores')
-    .refine(val => !isAllZeros(val), 'Category code cannot be all zeros'),
+    .max(50, 'modals.addCategory.form.validation.codeMaxLength')
+    .regex(CODE_REGEX, 'modals.addCategory.form.validation.codeAlphanumeric')
+    .refine(val => !isAllZeros(val), 'modals.addCategory.form.validation.codeInvalid'),
   categoryName: z.string()
     .trim()
+    .min(1, 'modals.addCategory.form.validation.nameRequired')
     .min(3, 'Category name must be at least 3 characters')
-    .max(100, 'Category name is too long')
-    .regex(TEXT_ALLOWED, 'Category name contains invalid characters'),
-  displayOrder: z.number().int('Display order must be an integer').min(0, 'Display order cannot be negative').max(99999, 'Display order cannot exceed 99999').default(0),
+    .max(100, 'modals.addCategory.form.validation.nameMaxLength')
+    .regex(TEXT_ALLOWED, 'modals.addCategory.form.validation.nameAlphanumeric'),
+  displayOrder: z.number()
+    .int('modals.addCategory.form.validation.orderRequired')
+    .min(0, 'Display order cannot be negative')
+    .max(99999, 'Display order cannot exceed 99999')
+    .default(0),
   isActive: z.boolean().default(true),
   createdBy: z.number().optional(),
 });
@@ -37,24 +64,28 @@ export const UpdateConfigCategorySchema = CreateConfigCategorySchema.extend({
  * Config Key Schemas
  */
 export const ConfigKeyBaseSchema = z.object({
-  categoryId: z.number().int().positive('Category is required'),
+  categoryId: z.number().int().positive('modals.addKey.form.validation.categoryRequired'),
   configCode: z.string()
     .trim()
-    .min(3, 'Config code must be at least 3 characters')
-    .max(50, 'Config code is too long')
-    .regex(CODE_REGEX, 'Config code can only contain alphanumeric characters and underscores')
-    .refine(val => !isAllZeros(val), 'Config code cannot be all zeros'),
+    .min(1, 'modals.addKey.form.validation.codeRequired')
+    .max(50, 'modals.addKey.form.validation.codeMaxLength')
+    .regex(CODE_REGEX, 'modals.addKey.form.validation.codeAlphanumeric')
+    .refine(val => !isAllZeros(val), 'modals.addKey.form.validation.codeInvalid'),
   configName: z.string()
     .trim()
-    .min(3, 'Config name must be at least 3 characters')
-    .max(100, 'Config name is too long')
-    .regex(TEXT_ALLOWED, 'Config name contains invalid characters'),
-  description: z.string().nullish().transform(val => val?.trim() || '').pipe(
-    z.string()
-      .max(255, 'Description is too long')
-      .refine(val => !/[<>]/.test(val), 'Description cannot contain HTML tags or angle brackets')
-  ),
-  dataType: z.string().trim().min(1, 'Data type is required'),
+    .min(1, 'modals.addKey.form.validation.nameRequired')
+    .max(100, 'modals.addKey.form.validation.nameMaxLength')
+    .regex(TEXT_ALLOWED, 'modals.addKey.form.validation.nameAlphanumeric'),
+  description: z.string()
+    .trim()
+    .max(500, 'Description cannot exceed 500 characters')
+    .refine(val => !/[<>]/.test(val), 'Description cannot contain HTML tags or angle brackets')
+    .refine(val => isValidDescription(val), 'Description contains unauthorized characters')
+    .optional()
+    .or(z.literal('')),
+  dataType: z.enum(['string', 'int', 'decimal', 'boolean', 'datetime'], {
+    message: 'modals.addKey.form.validation.dataTypeRequired'
+  }),
   controlType: z.string().trim().min(1, 'Control type is required'),
   defaultValue: z.string().nullish().transform(val => val?.trim() || '').pipe(
     z.string()
@@ -69,27 +100,44 @@ const validateDefaultValueRefinement = (data: { dataType: string; defaultValue?:
   if (!defaultValue) return;
 
   if (dataType === 'int') {
-    if (!/^-?\d+$/.test(defaultValue)) {
+    if (!/^\d+$/.test(defaultValue)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'Default value must be a valid integer',
+        message: 'Default value must be a valid positive integer (no negative values or special characters)',
         path: ['defaultValue'],
       });
       return;
     }
     const parsed = parseInt(defaultValue, 10);
-    if (parsed < -2147483648 || parsed > 2147483647) {
+    if (parsed <= 0) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'Default value must be a 32-bit signed integer (-2147483648 to 2147483647)',
+        message: 'Default value must be greater than 0',
+        path: ['defaultValue'],
+      });
+      return;
+    }
+    if (parsed > 2147483647) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Default value must not exceed 2147483647',
         path: ['defaultValue'],
       });
     }
   } else if (dataType === 'decimal') {
-    if (!/^-?\d+(\.\d+)?$/.test(defaultValue)) {
+    if (!/^\d+(\.\d+)?$/.test(defaultValue)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'Default value must be a valid decimal number',
+        message: 'Default value must be a valid positive decimal number (no negative values or special characters)',
+        path: ['defaultValue'],
+      });
+      return;
+    }
+    const parsed = parseFloat(defaultValue);
+    if (parsed <= 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Default value must be greater than 0',
         path: ['defaultValue'],
       });
     }

@@ -105,4 +105,16 @@ describe('useOldTaxationForm', () => {
 
     expect(toast.error).toHaveBeenCalled();
   });
+
+  it('should compute isChanged correctly when fields are modified', () => {
+    const { result } = renderHook(() => useOldTaxationForm(mockPropertyOldDetails));
+
+    expect(result.current.isChanged).toBe(false);
+
+    act(() => {
+      result.current.handleInputChange('oldPlotNo', 'P2');
+    });
+
+    expect(result.current.isChanged).toBe(true);
+  });
 });

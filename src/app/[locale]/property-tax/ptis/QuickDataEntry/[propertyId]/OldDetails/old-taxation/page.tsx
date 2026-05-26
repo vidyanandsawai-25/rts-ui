@@ -1,7 +1,7 @@
 import { setRequestLocale, getTranslations } from 'next-intl/server';
 import OldTaxationForm from '@/components/modules/property-tax/ptis/QuickDataEntry/old-details/OldTaxation/OldTaxationForm';
 import { getPropertyOldDetailsAction } from './action';
-import { PropertyOldDetailsApiItem } from '@/types/property-old-details.types';
+import { PropertyOldDetailsApiItem } from '@/types/OldDetails/property-old-details.types';
 
 interface PageProps {
     params: Promise<{
