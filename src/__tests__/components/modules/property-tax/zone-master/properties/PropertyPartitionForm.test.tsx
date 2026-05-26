@@ -199,8 +199,8 @@ describe("PropertyPartitionForm", () => {
 
   it("should handle tab switching between wing and amenity", async () => {
     const categoryMap = new Map();
-    // Use the mocked translation format that matches the component's comparison
-    categoryMap.set(1, "zoneMaster.partitionForm.apartment");
+    // Use actual English category name (component compares against English literals)
+    categoryMap.set(1, "Apartment");
     
     const props = {
       ...defaultProps,
