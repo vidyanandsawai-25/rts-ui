@@ -50,13 +50,13 @@ export function TaxBadge({ label, value, color = 'outline', className }: TaxBadg
     <Badge
       variant="outline"
       className={cn(
-        'rounded border px-2 py-0.5 text-[12px] font-medium shadow-sm transition-all duration-200 hover:shadow-md',
+        'rounded border px-2 py-0.5 text-[13px] font-extrabold shadow-sm transition-all duration-200 hover:shadow-md',
         styles.container,
         className
       )}
     >
-      <span className="opacity-90">{label} :-</span>
-      <span className={cn('text-[12px] font-bold ml-1', styles.value)}>
+      <span className="opacity-95">{label} :-</span>
+      <span className={cn('text-[13px] font-black ml-1', styles.value)}>
         {formatValue(value)}
       </span>
     </Badge>

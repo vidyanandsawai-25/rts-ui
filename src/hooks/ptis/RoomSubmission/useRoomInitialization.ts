@@ -27,9 +27,18 @@ export const useRoomInitialization = (state: RoomSubmissionState, props: RoomWis
       return;
     }
 
-    // Always re-initialize if maxRooms changes (even if modal is open)
+    // Always re-initialize if maxRooms changes, floor changes, or database IDs mismatch
     const safeMaxRooms = Math.min(maxRooms || 0, 100);
-    if (rooms.length !== safeMaxRooms) {
+    const floorChanged = lastInitializedFloorRef.current !== (floorNumber || null);
+    const idsMismatch = existingRooms && existingRooms.some((r, i) => {
+      const currentRoom = rooms[i];
+      if (!currentRoom) return true;
+      const apiId = r.roomWiseSubmissionId ?? r.id;
+      const stateId = currentRoom.roomWiseSubmissionId ?? currentRoom.id;
+      return apiId !== stateId;
+    });
+
+    if (rooms.length !== safeMaxRooms || floorChanged || idsMismatch || rooms.length === 0) {
       const initializedRooms = Array.from({ length: safeMaxRooms }, (_, i) => {
         if (existingRooms && existingRooms[i]) {
           const r = existingRooms[i];
@@ -82,7 +91,7 @@ export const useRoomInitialization = (state: RoomSubmissionState, props: RoomWis
 
     // If already initialized and count matches, do nothing
     lastInitializedFloorRef.current = floorNumber || null;
-  }, [isOpen, maxRooms, existingRooms, floorNumber, setRooms, actions, rooms.length, lastInitializedFloorRef]);
+  }, [isOpen, maxRooms, existingRooms, floorNumber, setRooms, actions, rooms, lastInitializedFloorRef]);
 
   // 3. Area Unit Conversion Sync
   useEffect(() => {
