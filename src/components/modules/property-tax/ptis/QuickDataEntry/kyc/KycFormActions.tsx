@@ -1,5 +1,5 @@
 import React from 'react';
-import { AddButton } from '@/components/common';
+import { UpdateButton } from '@/components/common/ActionButtons';
 
 interface KycFormActionsProps {
   t: (key: string) => string;
@@ -16,7 +16,7 @@ export const KycFormActions: React.FC<KycFormActionsProps> = ({
 }) => {
   return (
     <div className="flex justify-end space-x-2 mt-4">
-      <AddButton
+      <UpdateButton
         label={isUpdating ? t('footer.saving') : t('commonbuttonmessages.UpdateChanges')}
         type="submit"
         isLoading={isUpdating}

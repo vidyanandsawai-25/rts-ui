@@ -68,6 +68,7 @@ export function getRateableColumns(
   ) => ({
     key,
     label: t(`floorTable.columns.${labelKey}`),
+    tooltip: t(`floorTable.tooltips.${labelKey}`),
     render: (row: RateableRow) => renderCellBox(String(row[key]), renderClass, fallback),
   });
 
@@ -87,6 +88,7 @@ export function getRateableColumns(
     {
       key: 'renterName',
       label: t('floorTable.columns.renterName'),
+      tooltip: t('floorTable.tooltips.renterName'),
       render: (row) => renderCellBoxWithTooltip(row.renterName, cn(CELL_CLASS, VALUE_CLASS)),
     },
     column('annualRent', 'rentMY', CELL_CLASS),
@@ -95,18 +97,21 @@ export function getRateableColumns(
     {
       key: 'yearlyRentalValue',
       label: t('floorTable.columns.rentalValue'),
+      tooltip: t('floorTable.tooltips.rentalValue'),
       render: (row) => renderCellBox(row.yearlyRentalValue, EMERALD_CELL_CLASS),
     },
     column('depreciation', 'depreciation', CELL_CLASS),
     {
       key: 'alv',
       label: t('floorTable.columns.alv'),
+      tooltip: t('floorTable.tooltips.alv'),
       render: (row) => renderCellBox(row.alv, EMERALD_CELL_CLASS),
     },
     column('maintenance', 'mr', CELL_CLASS),
     {
       key: 'rv',
       label: t('floorTable.columns.rv'),
+      tooltip: t('floorTable.tooltips.rv'),
       render: (row) => renderCellBox(row.rv, AMBER_CELL_CLASS),
     },
   ];

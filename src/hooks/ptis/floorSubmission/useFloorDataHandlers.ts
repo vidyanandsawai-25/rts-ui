@@ -127,9 +127,29 @@ export const useFloorDataHandlers = (params: {
             setIsAddingNewFloor(false);
             setSelectedFloor(null);
             setEditingFloorForm(INITIAL_FORM_STATE);
+          } else {
+            setSelectedFloor(null);
+            setEditingFloorForm(INITIAL_FORM_STATE);
           }
           toast.success(t(isAddingNewFloor ? 'floor.floorAddedSuccess' : 'floor.floorUpdatedSuccess'));
-          startTransition(() => { router.refresh(); });
+          
+          startTransition(() => {
+            router.refresh();
+            if (typeof window !== 'undefined') {
+              try {
+                const url = new URL(window.location.href);
+                url.searchParams.delete('floorId');
+                url.searchParams.delete('drawer');
+                router.replace(url.pathname + url.search);
+                setTimeout(() => {
+                  window.location.reload();
+                }, 300);
+              } catch (_e) {
+                // Safe fallback for mock test environments (like JSDOM/Vitest)
+                router.replace(window.location.pathname || '/');
+              }
+            }
+          });
         } catch (error: unknown) {
           if (error instanceof Error && error.message === 'NEXT_REDIRECT') throw error;
           setLocalFloors(previousFloors);

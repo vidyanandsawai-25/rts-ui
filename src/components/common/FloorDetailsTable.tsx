@@ -4,11 +4,65 @@ import React, { type ReactNode, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { ChevronRight, ChevronDown, ArrowUpDown, ArrowUp, ArrowDown, Home, type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
+import { Tooltip } from './Tooltip';
 
 /**
  * Common color groupings for floor detail table rows
  */
 const DEFAULT_ROW_COLOR_GROUPS = ['bg-white', 'bg-[#EEF6FF]', 'bg-[#F5F3FF]'] as const;
+
+export const COLUMN_FULL_NAMES: Record<string, string> = {
+  floor: 'Floor',
+  subFloor: 'Sub Floor',
+  constructionYear: 'Construction Year',
+  constYear: 'Construction Year',
+  conYr: 'Construction Year',
+  assessmentYear: 'Assessment Year',
+  asstYear: 'Assessment Year',
+  assmtYear: 'Assessment Year',
+  constructionType: 'Construction Type',
+  constType: 'Construction Type',
+  conTyp: 'Construction Type',
+  natureTypeBuilding: 'Nature of Building / Type of Use',
+  use: 'Nature of Building / Type of Use',
+  subType: 'Sub Type of Use',
+  subTyp: 'Sub Type of Use',
+  noOfRooms: 'Number of Rooms',
+  rooms: 'Number of Rooms',
+  carpetArea: 'Carpet Area (Square Feet / Square Meter)',
+  carpetSqFt: 'Carpet Area (Square Feet)',
+  carpetSqM: 'Carpet Area (Square Meter)',
+  builtUpArea: 'Built-Up Area (Square Feet / Square Meter)',
+  builtupAreaSqFt: 'Built-Up Area (Square Feet)',
+  builtupAreaSqM: 'Built-Up Area (Square Meter)',
+  ocNumber: 'Occupancy Certificate Number',
+  ocDate: 'Occupancy Certificate Date',
+  renterName: 'Renter Name',
+  rentMY: 'Rent (Monthly / Yearly)',
+  annualRent: 'Rent (Monthly / Yearly)',
+  appliedOn: 'Applied On Date',
+  rateMY: 'Rate (Monthly / Yearly)',
+  rate: 'Rate (Monthly / Yearly)',
+  yearlyRentalValue: 'Yearly Rental Value',
+  rentalValue: 'Yearly Rental Value',
+  depreciation: 'Depreciation',
+  maintenance: 'Maintenance & Repair',
+  mr: 'Maintenance & Repair',
+  alv: 'Annual Letting Value',
+  rv: 'Rateable Value',
+  sdrrRate: 'Stamp Duty Ready Reckoner Rate',
+  sdrr: 'Stamp Duty Ready Reckoner Rate',
+  baseValue: 'Base Value',
+  floorFactor: 'Floor Factor',
+  ageFactor: 'Age Factor',
+  ntbFactor: 'Nature of Building / Type of Use Factor',
+  useFactor: 'Use Factor',
+  finalCapitalValue: 'Capital Value',
+  capitalValue: 'Capital Value',
+  isTaxable: 'Is Taxable',
+  taxable: 'Is Taxable',
+  actions: 'Actions',
+};
 
 /**
  * Calculates the background class for a row based on its group index
@@ -30,6 +84,7 @@ export interface FloorDetailsTableColumn<Row> {
   render: (row: Row, index: number) => ReactNode;
   headerRender?: (col: FloorDetailsTableColumn<Row>) => ReactNode;
   sortable?: boolean;
+  tooltip?: ReactNode;
 }
 
 interface FloorDetailsTableProps<Row extends { id: number | string }> {
@@ -258,36 +313,48 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
                 {col.headerRender ? (
                   col.headerRender(col)
                 ) : (
-                  <div
-                    onClick={() => col.sortable !== false && handleSort(col.key)}
-                    className={cn(
-                      'inline-flex h-8 w-full items-center justify-center gap-1 rounded-md border border-blue-400/10 bg-black/5 px-3 text-xs font-bold text-inherit shadow-sm transition-colors duration-200 select-none whitespace-nowrap',
-                      col.sortable !== false && 'cursor-pointer hover:bg-black/15 active:bg-black/25',
-                      headerBadgeClassName,
-                      col.headerBadgeClassName
-                    )}
+                  <Tooltip
+                    content={
+                      col.tooltip &&
+                      typeof col.tooltip === 'string' &&
+                      !col.tooltip.startsWith('ptis.floorTable.tooltips') &&
+                      !col.tooltip.includes('.tooltips.')
+                        ? col.tooltip
+                        : (COLUMN_FULL_NAMES[col.key] || col.label)
+                    }
+                    placement="bottom"
                   >
-                    {typeof col.label === 'string' ? (
-                      <span className="truncate font-bold uppercase tracking-wider">
-                        {col.label}
-                      </span>
-                    ) : (
-                      col.label
-                    )}
-                    {col.sortable !== false && (
-                      <span className="inline-flex flex-shrink-0 items-center ml-1">
-                        {sortConfig.key === col.key ? (
-                          sortConfig.direction === 'asc' ? (
-                            <ArrowUp className="h-2.5 w-2.5 text-white opacity-100" />
+                    <div
+                      onClick={() => col.sortable !== false && handleSort(col.key)}
+                      className={cn(
+                        'inline-flex h-8 w-full items-center justify-center gap-1 rounded-md border border-blue-400/10 bg-black/5 px-3 text-xs font-bold text-inherit shadow-sm transition-colors duration-200 select-none whitespace-nowrap',
+                        col.sortable !== false && 'cursor-pointer hover:bg-black/15 active:bg-black/25',
+                        headerBadgeClassName,
+                        col.headerBadgeClassName
+                      )}
+                    >
+                      {typeof col.label === 'string' ? (
+                        <span className="truncate font-bold uppercase tracking-wider">
+                          {col.label}
+                        </span>
+                      ) : (
+                        col.label
+                      )}
+                      {col.sortable !== false && (
+                        <span className="inline-flex flex-shrink-0 items-center ml-1">
+                          {sortConfig.key === col.key ? (
+                            sortConfig.direction === 'asc' ? (
+                              <ArrowUp className="h-2.5 w-2.5 text-white opacity-100" />
+                            ) : (
+                              <ArrowDown className="h-2.5 w-2.5 text-white opacity-100" />
+                            )
                           ) : (
-                            <ArrowDown className="h-2.5 w-2.5 text-white opacity-100" />
-                          )
-                        ) : (
-                          <ArrowUpDown className="h-2.5 w-2.5 text-white opacity-60 hover:opacity-100 transition-opacity" />
-                        )}
-                      </span>
-                    )}
-                  </div>
+                            <ArrowUpDown className="h-2.5 w-2.5 text-white opacity-60 hover:opacity-100 transition-opacity" />
+                          )}
+                        </span>
+                      )}
+                    </div>
+                  </Tooltip>
                 )}
               </th>
             ))}

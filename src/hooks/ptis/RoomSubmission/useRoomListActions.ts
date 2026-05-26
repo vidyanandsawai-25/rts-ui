@@ -77,6 +77,7 @@ export const useRoomListActions = (state: RoomSubmissionState, props: RoomWiseSu
             remark: formData.remark === "-Select-" ? "" : formData.remark,
             utilities: formData.utilities === "-Select-" ? "" : formData.utilities,
             roomType: formData.utilities === "-Select-" ? "" : formData.utilities,
+            roomTypeId: formData.roomTypeId ? Number(formData.roomTypeId) : undefined,
             shape: formData.shape === "-Select-" ? "" : formData.shape,
             shapeParams: { ...shapeParameters },
             shapeParameters: { ...shapeParameters },
@@ -169,6 +170,7 @@ export const useRoomListActions = (state: RoomSubmissionState, props: RoomWiseSu
           remark: formData.remark === "-Select-" ? "" : formData.remark,
           utilities: formData.utilities === "-Select-" ? "" : formData.utilities,
           roomType: formData.utilities === "-Select-" ? "" : formData.utilities,
+          roomTypeId: formData.roomTypeId ? Number(formData.roomTypeId) : undefined,
           shape: formData.shape === "-Select-" ? "" : formData.shape,
           shapeParams: { ...shapeParameters },
           shapeParameters: { ...shapeParameters },
@@ -213,28 +215,33 @@ export const useRoomListActions = (state: RoomSubmissionState, props: RoomWiseSu
       onConfirm: async () => {
         // ...existing code...
         if (hasDbId) {
-          state.setPendingDeletions(prev => ({
-            ...prev,
-            rooms: [...prev.rooms, roomDbId]
-          }));
+          try {
+            const response = await deleteRoomSubmissionNoRedirectAction(roomDbId);
+            if (!response.success) {
+              toast.error(response.error || "Failed to delete room from database");
+              return;
+            }
+            toast.success(t("roomSubmission.success.deleted") || "Room deleted successfully");
+          } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Failed to delete room");
+            return;
+          }
         }
 
-        setRooms(prev => {
-          const updated = prev.filter((_, i) => i !== index);
+        const updated = rooms.filter((_, i) => i !== index);
+        setRooms(updated);
 
-          if (props.onUpdate) {
-            const sumTotal = updated.reduce((sum, r) => sum + ((r.total || 0) * (parseInt(String(r.roomCount || 1)) || 1)), 0);
-            const sumBuiltUp = updated.reduce((sum, r) => sum + ((r.builtUpArea || 0) * (parseInt(String(r.roomCount || 1)) || 1)), 0);
-            props.onUpdate({
-              floorNumber: props.floorNumber || "0", 
-              rooms: updated,
-              totalAreaSqM: parseFloat(convertAreaUnit(sumTotal, areaUnit || "sq.m", "sq.m").toFixed(2)),
-              builtUpAreaSqM: parseFloat(convertAreaUnit(sumBuiltUp, areaUnit || "sq.m", "sq.m").toFixed(2)),
-              roomCount: updated.filter(r => Number(r.area || 0) > 0).length
-            });
-          }
-          return updated;
-        });
+        if (props.onUpdate) {
+          const sumTotal = updated.reduce((sum, r) => sum + ((r.total || 0) * (parseInt(String(r.roomCount || 1)) || 1)), 0);
+          const sumBuiltUp = updated.reduce((sum, r) => sum + ((r.builtUpArea || 0) * (parseInt(String(r.roomCount || 1)) || 1)), 0);
+          props.onUpdate({
+            floorNumber: props.floorNumber || "0", 
+            rooms: updated,
+            totalAreaSqM: parseFloat(convertAreaUnit(sumTotal, areaUnit || "sq.m", "sq.m").toFixed(2)),
+            builtUpAreaSqM: parseFloat(convertAreaUnit(sumBuiltUp, areaUnit || "sq.m", "sq.m").toFixed(2)),
+            roomCount: updated.filter(r => Number(r.area || 0) > 0).length
+          });
+        }
 
         if (editingIndex === index) {
           handleCancelEdit();
