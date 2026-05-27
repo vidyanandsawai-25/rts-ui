@@ -329,7 +329,7 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
       // so only load it when the dual-method UI is actually being rendered.
       dualSectionData =
         ptisParams.tab === 'dual'
-          ? await assembleDualMethodSectionData(resolvedPropertyId, oldDetails)
+          ? await assembleDualMethodSectionData(resolvedPropertyId, oldDetails, rateableRes, capitalRes)
           : undefined;
     } catch (err) {
       criticalError = getCleanErrorMessage(err, t('search.errors.fetchPropertiesFailed'));
