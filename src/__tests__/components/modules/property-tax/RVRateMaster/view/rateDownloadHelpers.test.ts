@@ -64,9 +64,9 @@ describe("rateDownloadHelpers", () => {
       style: { visibility: "" },
     };
 
-    createElementSpy = vi.spyOn(document, "createElement").mockReturnValue(mockLink as any);
-    appendChildSpy = vi.spyOn(document.body, "appendChild").mockImplementation(() => mockLink as any);
-    removeChildSpy = vi.spyOn(document.body, "removeChild").mockImplementation(() => mockLink as any);
+    createElementSpy = vi.spyOn(document, "createElement").mockReturnValue(mockLink as unknown as HTMLAnchorElement);
+    appendChildSpy = vi.spyOn(document.body, "appendChild").mockImplementation(() => mockLink as unknown as Node);
+    removeChildSpy = vi.spyOn(document.body, "removeChild").mockImplementation(() => mockLink as unknown as Node);
 
     global.URL.createObjectURL = vi.fn(() => "blob:mock-url");
     global.URL.revokeObjectURL = vi.fn();
@@ -80,14 +80,14 @@ describe("rateDownloadHelpers", () => {
 
   describe("downloadDetailedRates", () => {
     it("should show error when no zone is selected", async () => {
-      await downloadDetailedRates("", mockZones, mockT as any, mockRateCategories);
+      await downloadDetailedRates("", mockZones, mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>, mockRateCategories);
 
       expect(toast.error).toHaveBeenCalledWith("Please select a rate section");
       expect(getDetailedRatesAction).not.toHaveBeenCalled();
     });
 
     it("should show error when zone is ALL", async () => {
-      await downloadDetailedRates("ALL", mockZones, mockT as any, mockRateCategories);
+      await downloadDetailedRates("ALL", mockZones, mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>, mockRateCategories);
 
       expect(toast.error).toHaveBeenCalledWith("Please select a rate section");
       expect(getDetailedRatesAction).not.toHaveBeenCalled();
@@ -96,7 +96,7 @@ describe("rateDownloadHelpers", () => {
     it("should show loading toast before fetching data", async () => {
       vi.mocked(getDetailedRatesAction).mockResolvedValue({ items: [] });
 
-      await downloadDetailedRates("UTHALSAR", mockZones, mockT as any, mockRateCategories);
+      await downloadDetailedRates("UTHALSAR", mockZones, mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>, mockRateCategories);
 
       expect(toast.loading).toHaveBeenCalledWith("Downloading rates...");
     });
@@ -115,7 +115,7 @@ describe("rateDownloadHelpers", () => {
 
       vi.mocked(getDetailedRatesAction).mockResolvedValue({ items: mockRates });
 
-      await downloadDetailedRates("UTHALSAR", mockZones, mockT as any, mockRateCategories);
+      await downloadDetailedRates("UTHALSAR", mockZones, mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>, mockRateCategories);
 
       expect(getDetailedRatesAction).toHaveBeenCalledWith("UTHALSAR", undefined, undefined, 1, -1);
     });
@@ -123,7 +123,7 @@ describe("rateDownloadHelpers", () => {
     it("should show error when no rates are available", async () => {
       vi.mocked(getDetailedRatesAction).mockResolvedValue({ items: [] });
 
-      await downloadDetailedRates("UTHALSAR", mockZones, mockT as any, mockRateCategories);
+      await downloadDetailedRates("UTHALSAR", mockZones, mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>, mockRateCategories);
 
       expect(toast.dismiss).toHaveBeenCalled();
       expect(toast.error).toHaveBeenCalledWith("No rates available");
@@ -151,7 +151,7 @@ describe("rateDownloadHelpers", () => {
 
       vi.mocked(getDetailedRatesAction).mockResolvedValue({ items: mockRates });
 
-      await downloadDetailedRates("UTHALSAR", mockZones, mockT as any, mockRateCategories);
+      await downloadDetailedRates("UTHALSAR", mockZones, mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>, mockRateCategories);
 
       expect(toast.success).toHaveBeenCalledWith("Rates downloaded successfully");
       expect(createElementSpy).toHaveBeenCalledWith("a");
@@ -181,7 +181,7 @@ describe("rateDownloadHelpers", () => {
 
       vi.mocked(getDetailedRatesAction).mockResolvedValue({ items: mockRates });
 
-      await downloadDetailedRates("UTHALSAR", mockZones, mockT as any, mockRateCategories);
+      await downloadDetailedRates("UTHALSAR", mockZones, mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>, mockRateCategories);
 
       expect(toast.success).toHaveBeenCalledWith("Rates downloaded successfully");
     });
@@ -200,7 +200,7 @@ describe("rateDownloadHelpers", () => {
 
       vi.mocked(getDetailedRatesAction).mockResolvedValue({ items: mockRates });
 
-      await downloadDetailedRates("UTHALSAR", mockZones, mockT as any, mockRateCategories);
+      await downloadDetailedRates("UTHALSAR", mockZones, mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>, mockRateCategories);
 
       // Verify that the download was triggered
       const linkElement = createElementSpy.mock.results[0]?.value;
@@ -210,7 +210,7 @@ describe("rateDownloadHelpers", () => {
     it("should handle download failure gracefully", async () => {
       vi.mocked(getDetailedRatesAction).mockRejectedValue(new Error("Network error"));
 
-      await downloadDetailedRates("UTHALSAR", mockZones, mockT as any, mockRateCategories);
+      await downloadDetailedRates("UTHALSAR", mockZones, mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>, mockRateCategories);
 
       expect(toast.dismiss).toHaveBeenCalled();
       expect(toast.error).toHaveBeenCalledWith("Failed to download rates");
@@ -232,12 +232,12 @@ describe("rateDownloadHelpers", () => {
 
       let blobContent: string | undefined;
       global.Blob = class MockBlob {
-        constructor(content: any[]) {
+        constructor(content: string[]) {
           blobContent = content[0];
         }
-      } as any;
+      } as unknown as typeof Blob;
 
-      await downloadDetailedRates("UTHALSAR", mockZones, mockT as any, mockRateCategories);
+      await downloadDetailedRates("UTHALSAR", mockZones, mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>, mockRateCategories);
 
       expect(blobContent).toBeDefined();
       expect(typeof blobContent).toBe('string');
@@ -274,7 +274,7 @@ describe("rateDownloadHelpers", () => {
 
       vi.mocked(getDetailedRatesAction).mockResolvedValue({ items: mockRates });
 
-      await downloadDetailedRates("UTHALSAR", mockZones, mockT as any, mockRateCategories);
+      await downloadDetailedRates("UTHALSAR", mockZones, mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>, mockRateCategories);
 
       expect(toast.success).toHaveBeenCalledWith("Rates downloaded successfully");
     });
@@ -301,7 +301,7 @@ describe("rateDownloadHelpers", () => {
 
       vi.mocked(getDetailedRatesAction).mockResolvedValue({ items: mockRates });
 
-      await downloadDetailedRates("UTHALSAR", mockZones, mockT as any, mockRateCategories);
+      await downloadDetailedRates("UTHALSAR", mockZones, mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>, mockRateCategories);
 
       expect(toast.success).toHaveBeenCalledWith("Rates downloaded successfully");
     });

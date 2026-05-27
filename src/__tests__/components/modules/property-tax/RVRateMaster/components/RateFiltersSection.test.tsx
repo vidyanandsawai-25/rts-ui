@@ -5,7 +5,15 @@ import type { ISelectOption } from "@/types/RVRateMaster";
 
 // Mock SearchSelect component
 vi.mock("@/components/common/SearchSelect", () => ({
-  SearchSelect: ({ id, value, onChange, placeholder, options, className, onInputFocus }: any) => (
+  SearchSelect: ({ id, value, onChange, placeholder, options, className, onInputFocus }: {
+    id: string;
+    value: string;
+    onChange: (name: string, value: string) => void;
+    placeholder: string;
+    options: ISelectOption[];
+    className: string;
+    onInputFocus?: () => void;
+  }) => (
     <div data-testid={`search-select-${id}`}>
       <input
         data-testid={`${id}-input`}
@@ -29,13 +37,13 @@ vi.mock("@/components/common/SearchSelect", () => ({
 
 // Mock ValidationMessage component
 vi.mock("@/components/common/ValidationMessage", () => ({
-  ValidationMessage: ({ message, visible }: any) =>
+  ValidationMessage: ({ message, visible }: { message: string; visible: boolean }) =>
     visible ? <div data-testid="validation-message">{message}</div> : null,
 }));
 
 // Mock Label component
 vi.mock("@/components/common/label", () => ({
-  Label: ({ children, className, required }: any) => (
+  Label: ({ children, className, required }: { children: React.ReactNode; className?: string; required?: boolean }) => (
     <label className={className} data-required={required}>
       {children}
     </label>
@@ -44,7 +52,13 @@ vi.mock("@/components/common/label", () => ({
 
 // Mock IconButton component
 vi.mock("@/components/common/ActionButtons", () => ({
-  IconButton: ({ icon: Icon, onClick, disabled, title, variant }: any) => (
+  IconButton: ({ icon: Icon, onClick, disabled, title, variant }: {
+    icon: React.ComponentType<{ 'data-testid'?: string }>;
+    onClick: () => void;
+    disabled?: boolean;
+    title: string;
+    variant: string;
+  }) => (
     <button
       onClick={onClick}
       disabled={disabled}
@@ -106,7 +120,7 @@ describe("RateFiltersSection", () => {
     onGenerateMatrix: vi.fn(),
     onToggleMultipliers: vi.fn(),
     onToggleCopyRates: vi.fn(),
-    t: mockT as any,
+    t: mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>,
   };
 
   beforeEach(() => {
