@@ -53,6 +53,7 @@ export function getCapitalColumns(
   const column = (key: keyof CapitalRow, labelKey: string, className: string) => ({
     key,
     label: t(`floorTable.columns.${labelKey}`),
+    tooltip: t(`floorTable.tooltips.${labelKey}`),
     render: (row: CapitalRow) => renderCellBox(String(row[key]), className),
   });
 
@@ -71,31 +72,37 @@ export function getCapitalColumns(
     {
       key: 'baseValue',
       label: t('floorTable.columns.baseValue'),
+      tooltip: t('floorTable.tooltips.baseValue'),
       render: (row) => renderCellBox(row.baseValue, FACTOR_CELL_CLASS),
     },
     {
       key: 'floorFactor',
       label: t('floorTable.columns.floorFactor'),
+      tooltip: t('floorTable.tooltips.floorFactor'),
       render: (row) => renderCellBox(row.floorFactor, FACTOR_CELL_CLASS),
     },
     {
       key: 'ageFactor',
       label: t('floorTable.columns.ageFactor'),
+      tooltip: t('floorTable.tooltips.ageFactor'),
       render: (row) => renderCellBox(row.ageFactor, FACTOR_CELL_CLASS),
     },
     {
       key: 'ntbFactor',
       label: t('floorTable.columns.ntbFactor'),
+      tooltip: t('floorTable.tooltips.ntbFactor'),
       render: (row) => renderCellBox(row.ntbFactor, FACTOR_CELL_CLASS),
     },
     {
       key: 'useFactor',
       label: t('floorTable.columns.useFactor'),
+      tooltip: t('floorTable.tooltips.useFactor'),
       render: (row) => renderCellBox(row.useFactor, FACTOR_CELL_CLASS),
     },
     {
       key: 'finalCapitalValue',
       label: t('floorTable.columns.capitalValue'),
+      tooltip: t('floorTable.tooltips.capitalValue'),
       render: (row) => renderCellBox(row.finalCapitalValue, TOTAL_CELL_CLASS),
     },
   ];

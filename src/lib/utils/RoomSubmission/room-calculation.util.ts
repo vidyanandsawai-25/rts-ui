@@ -134,8 +134,14 @@ export const calculateRoomWiseTotals = (rooms: RoomData[], excludeIndex?: number
         const isExcluded = excludeIndex !== undefined && excludeIndex !== null && idx === excludeIndex;
 
         const carpet = parseFloat(String(room.carpetArea || room.total || 0)) || 0;
-        const builtup = parseFloat(String(room.builtUpArea || 0)) || 0;
+        let builtup = parseFloat(String(room.builtUpArea || 0)) || 0;
         const count = parseInt(String(room.roomCount || 1)) || 1;
+
+        // If builtUpArea is not set but carpet area exists, calculate it
+        if (builtup === 0 && carpet > 0) {
+            const isOuter = room.outer === 'Yes';
+            builtup = isOuter ? carpet : carpet * 1.20;
+        }
 
         // Sum totals for ALL rooms
         grandTotal += (carpet * count);

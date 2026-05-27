@@ -9,6 +9,11 @@ import {
   SSRData,
   EditData,
   SelectionState,
+  PropertyPaginationData,
+  PropertyLookupMaps,
+  RightPanelTab,
+  CreatePropertyData,
+  CreatePartitionData,
 } from "@/types/zoneMaster.types";
 
 export interface ZoneMasterProps {
@@ -18,6 +23,11 @@ export interface ZoneMasterProps {
   selection: SelectionState;
   editData?: EditData;
   ssrData?: SSRData;
+  propertyPagination?: PropertyPaginationData;
+  propertyLookups?: PropertyLookupMaps;
+  activeRightTab?: RightPanelTab;
+  createPropertyData?: CreatePropertyData;
+  createPartitionData?: CreatePartitionData;
 }
 
 export default function ZoneMaster({
@@ -27,6 +37,11 @@ export default function ZoneMaster({
   selection,
   editData,
   ssrData,
+  propertyPagination,
+  propertyLookups,
+  activeRightTab = "wards",
+  createPropertyData,
+  createPartitionData,
 }: ZoneMasterProps) {
   return (
     <PageContainer>
@@ -37,6 +52,11 @@ export default function ZoneMaster({
         selection={selection}
         editData={editData}
         ssrData={ssrData}
+        propertyPagination={propertyPagination}
+        propertyLookups={propertyLookups}
+        activeRightTab={activeRightTab}
+        createPropertyData={createPropertyData}
+        createPartitionData={createPartitionData}
       />
     </PageContainer>
   );

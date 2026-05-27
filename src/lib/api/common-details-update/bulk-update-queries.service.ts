@@ -360,7 +360,7 @@ export async function getPropertiesByWardServer(
 }
 
 // Import shared WingItem type to avoid duplication
-import type { WingItem } from "@/types/wing.types";
+import type { WingItem } from "@/types/zone-master/properties/wing.types";
 
 // Re-export for convenience
 export type { WingItem };

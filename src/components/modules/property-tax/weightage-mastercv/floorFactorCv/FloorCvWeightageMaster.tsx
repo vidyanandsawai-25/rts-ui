@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Select } from "@/components/common/select";
+
 import { MasterTable, Column } from "@/components/common/MasterTable";
 import { FloorCvWeightageMasterProps, FloorFactorCVMaster } from "@/types/floor-cv-weightageMaster.types";
 import { UpdateButton, ClearButton, SaveButton } from "@/components/common/ActionButtons";
@@ -128,23 +128,8 @@ const FloorCvWeightageMaster: React.FC<FloorCvWeightageMasterProps> = ({
                 renderActions={renderActions as unknown as (row: Record<string, unknown>) => React.ReactNode}
                 actionLabel={t("columns.action")}
                 getRowKey={(row) => getRowUid(row as unknown as FloorFactorCVMaster)}
-                paginationConfig={{ enabled: true, showPageSizeSelector: false }}
-
-                footerLeftContent={
-                    <div className="flex items-center gap-1 text-sm">
-                        {tCommon("table.showing")} {totalCount === 0 ? 0 : ((pageNumber || 1) - 1) * (pageSize || 10) + 1} {tCommon("table.to")}
-                        <Select
-                            options={Array.from(new Set([10, 20, 30, 40, 50, Math.min(totalCount, 100)])).filter(s => s > 0).map(s => ({
-                                label: String(s),
-                                value: String(s)
-                            }))}
-                            value={String(pageSize)}
-                            onChange={(e) => changePageSize(Number(e.target.value))}
-                            selectSize="sm"
-                        />
-                        <span>{totalCount || 0} {tCommon("table.entries")}</span>
-                    </div>
-                }
+                paginationConfig={{ enabled: true, showPageSizeSelector: true }}
+                pageSizeOptions={[10, 20, 30, 40, 50]}
 
                 headerExtra={
                     <FloorCvHeaderExtra

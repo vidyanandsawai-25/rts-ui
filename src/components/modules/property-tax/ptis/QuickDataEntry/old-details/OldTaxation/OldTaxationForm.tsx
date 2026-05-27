@@ -1,6 +1,4 @@
 "use client"
-
-import { AddButton } from "@/components/common";
 import { useOldTaxationForm } from "@/hooks/ptis/QuickDataEntry/Olddetails/useOldTaxationForm";
 
 // Import refactored components
@@ -8,6 +6,7 @@ import { PropertyDetailsFields } from "./components/PropertyDetailsFields";
 import { AreaDetailsFields } from "./components/AreaDetailsFields";
 import { TaxDetailsFields } from "./components/TaxDetailsFields";
 import { OldTaxationFormProps } from "@/types/OldDetails/property-old-floor-info.types";
+import { UpdateButton } from "@/components/common/ActionButtons";
 
 /**
  * OldTaxationForm - Main Component
@@ -80,7 +79,7 @@ export default function OldTaxationForm({
         </div>
 
         <div className="mt-10 flex justify-end border-t border-gray-100 pt-3">
-          <AddButton
+          <UpdateButton
             label={isSubmitting ? t('footer.saving') : t('commonbuttonmessages.UpdateChanges')}
             type="submit"
             onClick={handleUpdate}
