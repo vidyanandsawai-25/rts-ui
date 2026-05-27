@@ -454,3 +454,31 @@ export const sanitizeEmailStrict = (email: string): string => {
   
   return sanitized;
 };
+
+/**
+ * Sanitize wing name input
+ * Allows alphanumeric characters, spaces, and basic punctuation for wing/building names
+ * Supports international characters (Devanagari, Malayalam, etc.)
+ * Blocks dangerous characters and XSS attempts while preserving spaces and structure
+ * Examples: "Wing A", "Tower B", "Building 1", "Wing A-1", "Tower (North)"
+ * 
+ * @param input - Raw wing name input
+ * @returns Sanitized wing name
+ */
+export const sanitizeWingName = (input: string): string => {
+  if (!input || typeof input !== 'string') return '';
+  
+  return input
+    // Remove HTML tags
+    .replace(/<[^>]*>/g, '')
+    // Remove script content
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    // Remove javascript: protocol
+    .replace(/javascript:/gi, '')
+    // Remove on* event handlers
+    .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
+    // Allow letters, numbers, spaces, and basic punctuation (.,'-/()&)
+    // Supports international characters (Unicode: Latin Extended, Devanagari, Malayalam)
+    .replace(/[^a-zA-Z0-9\u00C0-\u024F\u0900-\u097F\u0D00-\u0D7F\s.,\'\-\/()&]/g, '');
+    // Note: No trim() or space reduction to allow natural typing with spaces
+};
