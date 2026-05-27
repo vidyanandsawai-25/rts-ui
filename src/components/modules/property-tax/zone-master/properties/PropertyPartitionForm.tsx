@@ -26,6 +26,7 @@ import {
   useWingManagement,
   useBuildingPreview,
   usePartitionSubmit,
+  useBuildingList,
 } from "@/hooks/zoneMaster";
 
 export default function PropertyPartitionForm({
@@ -49,6 +50,13 @@ export default function PropertyPartitionForm({
 
   // Normalize selectedWard to prevent undefined
   const ward = selectedWard ?? null;
+  // Fetch building list using wardId from selectedWard
+  const {
+    buildingList,
+    loadingBuildingList,
+  } = useBuildingList({
+    wardId: ward?.id,
+  });
 
   // Use custom hooks for state management
   const {
@@ -95,6 +103,7 @@ export default function PropertyPartitionForm({
     floors,
     form,
     categoryMap,
+    buildingList,
   });
 
   // Use hooks for handlers
@@ -287,9 +296,9 @@ export default function PropertyPartitionForm({
             value={form.mainPropertyId ? String(form.mainPropertyId) : ""}
             onChange={handlePropertySelect}
             options={propertyOptions}
-            placeholder={t("partitionForm.placeholders.selectMainProperty")}
-            disabled={loading}
-            required
+  placeholder={loadingBuildingList ? tCommon("actions.loading") : t("partitionForm.placeholders.selectMainProperty")}
+            disabled={loading || loadingBuildingList}      
+                  required
           />
           <ValidationMessage
             message={errors.mainPropertyId}

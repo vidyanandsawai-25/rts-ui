@@ -11,7 +11,7 @@ export { usePartitionFormValidation } from "./usePartitionFormValidation";
 export { useWingManagement } from "./useWingManagement";
 export { useBuildingPreview } from "./useBuildingPreview";
 export { usePartitionSubmit } from "./usePartitionSubmit";
-
+export { useBuildingList } from "./useBuildingList";
 // Create Property Drawer Hooks
 export { useCreatePropertyForm } from "./useCreatePropertyForm";
 export { useCreatePropertySubmit } from "./useCreatePropertySubmit";

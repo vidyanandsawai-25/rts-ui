@@ -12,7 +12,7 @@ import { useCallback, useMemo, useTransition } from "react";
 import { getPropertyColumns } from "./propertyColumns";
 import { DeleteLabelButton } from "@/components/common/ActionButtons";
 import DeletePropertyDrawer from "./DeletePropertyDrawer";
-import { deleteProperty, deleteBulkProperties } from "@/lib/api/property.service";
+import { deleteProperty } from "@/lib/api/property.service";
 import { toast } from "sonner";
 import type { DeletePropertyData } from "@/types/zoneMaster.types";
 
@@ -81,6 +81,27 @@ export default function PropertyList({
             label: `${ward.wardNo}${ward.description ? ` - ${ward.description}` : ""}`,
         }));
     }, [wards]);
+
+    // Current selected ward object
+  const currentWard = useMemo(() => {
+    if (
+        selectedWardId === null ||
+        selectedWardId === undefined
+    ) {
+        return null;
+    }
+
+    return (
+        wards.find(
+            (w) =>
+                Number(w.id) ===
+                Number(selectedWardId)
+        ) ?? null
+    );
+}, [selectedWardId, wards]);
+console.log("selectedWardId => ", selectedWardId);
+console.log("wards => ", wards);
+console.log("currentWard => ", currentWard);
 
     // Table columns
     const columns = useMemo(
@@ -152,34 +173,7 @@ export default function PropertyList({
                 }
             });
         },
-        [router, t]
-    );
-
-    const handleDeleteBulk = useCallback(
-        async (propertyIds: string[]) => {
-            startDeleteTransition(async () => {
-                try {
-                    const result = await deleteBulkProperties(propertyIds);
-                    
-                    if (result.success) {
-                        toast.success(
-                            t("propertyList.deleteBulkSuccess", { count: propertyIds.length })
-                        );
-                        handleCloseDeleteDrawer();
-                        router.refresh();
-                    } else {
-                        toast.error(result.error || t("propertyList.deleteError"));
-                    }
-                } catch (error) {
-                    toast.error(
-                        error instanceof Error 
-                            ? error.message 
-                            : t("propertyList.deleteError")
-                    );
-                }
-            });
-        },
-        [router, t]
+        [router, t, handleCloseDeleteDrawer]
     );
 
     return (
@@ -317,19 +311,33 @@ export default function PropertyList({
             </div>
 
             {/* DELETE PROPERTY DRAWER */}
-            {deletePropertyData?.isOpen && (
+            {deletePropertyData && (
                 <DeletePropertyDrawer
                     isOpen={deletePropertyData.isOpen}
                     onClose={handleCloseDeleteDrawer}
-                    wards={wardOptions}
-                    properties={deletePropertyData.properties.map((p) => ({
-                        value: String(p.id),
-                        label: p.propertyNo,
-                    }))}
+                    properties={deletePropertyData.properties
+                        .filter((p) => {
+                            // Debug: Log partition values
+                            if (p.propertyNo === '85') {
+                                console.log('Property 85 - partitionNo:', p.partitionNo, 'type:', typeof p.partitionNo);
+                            }
+                            // Filter out partitions - same logic as PropertyPartitionForm
+                            const partition = p.partitionNo;
+                            return !partition || partition === '' || partition === '0' || partition === '-' || partition === 'null';
+                        })
+                        .map((p) => ({
+                            value: String(p.id),
+                            label: p.propertyNo,
+                            propertyNo: p.propertyNo,
+                            ownerName: p.ownerName,
+                            address: p.address,
+                            categoryId: p.categoryId,
+                            wardId: p.wardId,
+                        }))}
                     onDeleteSingle={handleDeleteSingle}
-                    onDeleteBulk={handleDeleteBulk}
                     loading={isDeleting}
-                    selectedWardId={selectedWardId}
+  selectedWard={currentWard}
+                    categoryMap={new Map(Object.entries(categoryMap).map(([k, v]) => [Number(k), v]))}
                 />
             )}
         </div>

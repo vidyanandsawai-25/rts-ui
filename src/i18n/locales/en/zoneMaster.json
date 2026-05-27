@@ -547,8 +547,8 @@
     "bulkCreateSuccess": "{count} partitions created successfully!"
   },
   "deleteProperty": {
-    "pageTitle": "Delete Property",
-    "pageSubtitle": "Select and delete properties from the selected ward",
+    "pageTitle": "Delete Partition / Wing",
+    "pageSubtitle": "Delete partitions or wings from a property",
     "warning": {
       "title": "This action is irreversible",
       "description": "Deleted properties cannot be recovered. Please verify before proceeding."

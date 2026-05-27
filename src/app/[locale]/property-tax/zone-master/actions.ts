@@ -1010,7 +1010,7 @@ import { SocietyDetailsListResponse, CreateSocietyDetailPayload, SocietyDetailIt
 import { BuildingStructureItem, GenerateBuildingStructurePayload, BuildingStructureResponse } from "@/types/zone-master/properties/building-structure.types";
 import { BulkPropertyItem, BulkPropertyCreateResponse } from "@/types/zone-master/properties/property-bulk.types";
 import { createBulkBuildingProperties } from "@/lib/api/zone-property.service";
-
+import { BuildingListItem } from "@/types/zone-master/properties/building-list. Types";
 /**
  * Fetches all properties for a specific ward.
  * Used in partition form to select parent property.
@@ -1156,6 +1156,37 @@ export async function fetchSocietyDetailsByPropertyAction(propertyId: number): P
   }
 }
 
+
+export async function getBuildingListByWardAction(wardId: number): Promise<{
+  success: boolean;
+  data?: BuildingListItem[];
+  error?: string;
+}> {
+  try {
+    if (!wardId || wardId <= 0) {
+      return { success: false, error: "Invalid ward ID" };
+    }
+ 
+    const buildingList = await getBuildingListByWard(wardId);
+    return { success: true, data: buildingList };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      logger.error("[getBuildingListByWardAction] API Error", {
+        error,
+        statusCode: error.statusCode,
+      });
+      return { success: false, error: error.responseText };
+    }
+    if (error instanceof Error) {
+      logger.error("[getBuildingListByWardAction] Error", {
+        error,
+        message: error.message,
+      });
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to fetch building list" };
+  }
+}
 /**
  * Fetches the latest society detail for a property to determine next wing ID.
  */

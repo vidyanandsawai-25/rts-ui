@@ -180,8 +180,6 @@ export default function ZoneContent({
             propertyTypeMap={propertyTypeMap}
             // Active tab
             activeTab={activeRightTab}
-            // Delete property drawer
-            deletePropertyData={deletePropertyData}
           />
         </div>
       </div>
@@ -238,7 +236,7 @@ export default function ZoneContent({
           open={isEditZoneOpen}
           zoneId={editZoneId}
           zones={zones}
-          existingZones={zones} 
+          existingZones={zones}
           onClose={handleCloseDrawer}
           onUpdate={refreshAfterUpdate}
           initialData={initialEditZoneData}
@@ -293,29 +291,25 @@ export default function ZoneContent({
       {deletePropertyData?.isOpen && (
         <DeletePropertyDrawer
           isOpen={deletePropertyData.isOpen}
-          wards={wards.map((w) => ({
-            value: String(w.id),
-            label: `${w.wardNo}${w.description ? ` - ${w.description}` : ""}`,
-          }))}
-          properties={deletePropertyData.properties.map((p) => ({
-            value: String(p.id),
-            label: p.propertyNo,
-          }))}
-          onDeleteSingle={async (propertyId) => {
-            // This will be handled by PropertyList callbacks
-            console.log("Delete single:", propertyId);
-          }}
-          onDeleteBulk={async (propertyIds) => {
-            // This will be handled by PropertyList callbacks
-            console.log("Delete bulk:", propertyIds);
-          }}
-          loading={false}
-          selectedWardId={selectedPropertyWardId}
           onClose={() => {
             const params = new URLSearchParams(searchParams.toString());
             params.delete("deleteProperty");
             router.push(`${pathname}?${params.toString()}`);
           }}
+          properties={deletePropertyData.properties.map((p) => ({
+            value: String(p.id),
+            label: p.propertyNo,
+            propertyNo: p.propertyNo,
+            ownerName: p.ownerName,
+            address: p.address,
+            categoryId: p.categoryId,
+            wardId: p.wardId,
+          }))}
+          onDeleteSingle={(propertyId) => {
+            // Handle delete - will be handled by parent through refresh
+          }}
+          selectedWard={allWardsForDropdown.find(w => w.id === selectedPropertyWardId) || null}
+          categoryMap={new Map(Object.entries(categoryMap).map(([k, v]) => [Number(k), v]))}
         />
       )}
     </>

@@ -4,7 +4,7 @@ import { CreatePropertyPayload, BulkCreatePropertyPayload } from "@/types/proper
 import { PropertyRangeCreatePayload, PropertyRangeCreateResponse } from "@/types/zone-master/properties/property-range.types";
 import { BulkPropertyItem, BulkPropertyCreateResponse } from "@/types/zone-master/properties/property-bulk.types";
 import { ApiError } from "@/lib/utils/api";
-
+import { BuildingListItem } from "@/types/zone-master/properties/building-list. Types";
 /**
  * Fetches paginated properties for a specific ward.
  * Used by zone-master to list properties under a ward.
@@ -206,3 +206,24 @@ export async function createBulkBuildingProperties(
     allSucceeded: false 
   };
 }
+/**
+ * Fetches building list for a ward.
+ * Returns properties with propertyNo and category name for dropdown display.
+ * Used in PropertyPartitionForm for Main Property No selection.
+ * @param wardId - Ward ID to get building list for
+ * @returns Array of BuildingListItem with propertyId, wardNo, propertyNo, catPropertyCategoryName, partitionNo
+ */
+export async function getBuildingListByWard(wardId: number): Promise<BuildingListItem[]> {
+  const response = await apiClient.get<BuildingListItem[]>(`/Property/${wardId}/Building-list`);
+ 
+  if (!response.success || !response.data) {
+    throw new ApiError(
+      response.statusCode ?? 500,
+      response.error || "Failed to fetch building list",
+      "Get building list failed"
+    );
+  }
+ 
+  return response.data;
+}
+ 
