@@ -52,6 +52,11 @@ export function useZoneContentState() {
     params.set("zoneId", String(zoneId));
     params.delete("wardQ");
     params.delete("wardPage");
+    // Clear property ward selection when zone changes
+    // SSR will auto-select first ward of the new zone
+    params.delete("propWardId");
+    params.delete("propPage");
+    params.delete("propQ");
     router.push(`${pathname}?${params.toString()}`);
   };
 

@@ -11,7 +11,7 @@ import {
   PropertyFilterParams,
 } from "@/types/common-details-update/common-details-update.types";
 import { createLogger } from "@/lib/utils/server-logger";
-import type { WingItem } from "@/types/wing.types";
+import type { WingItem } from "@/types/zone-master/properties/wing.types";
 
 export type { WingItem };
 

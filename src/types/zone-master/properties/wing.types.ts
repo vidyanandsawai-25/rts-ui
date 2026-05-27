@@ -1,6 +1,6 @@
 // Re-export WingItem from property-basic-details.types to avoid duplication
-export type { WingItem } from "./property-basic-details.types";
-import type { WingItem } from "./property-basic-details.types";
+export type { WingItem } from "@/types/property-basic-details.types";
+import type { WingItem } from "@/types/property-basic-details.types";
  
 export interface WingListResponse {
   items: WingItem[];
