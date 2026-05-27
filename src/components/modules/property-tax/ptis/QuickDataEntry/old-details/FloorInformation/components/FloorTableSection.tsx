@@ -46,18 +46,20 @@ export function FloorTableSection({
   }));
 
   return (
-    <div className="border border-blue-100 rounded-xl overflow-hidden bg-gray-50/30 mb-10">
+    <div className="rounded-lg overflow-x-auto bg-white shadow-sm mb-6 border border-blue-200 [&_thead]:bg-none! [&_thead]:bg-[#2D3E8A]! [&_th]:text-white! [&_th]:whitespace-nowrap! [&_th]:font-semibold!">
       <MasterTable
         columns={getFloorInformationColumns(t)}
         data={transformedData}
         totalCount={existingFloorDetails.length}
         getRowKey={(row: FloorTableRow) => String(row.id || "")}
-        maxBodyHeightClassName="max-h-[400px]"
-        theadClassName="bg-blue-50 text-blue-900 border-b border-blue-100"
+        maxBodyHeightClassName="max-h-[350px]"
+        theadClassName="sticky top-0 z-20 bg-[#2D3E8A] text-white"
         rowClassName={() => "hover:bg-blue-50/50 transition-colors"}
+        tableClassName="min-w-max"
+        
         actionLabel={t('floor.actions')}
         renderActions={useCallback((row: FloorTableRow) => (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 whitespace-nowrap">
             <EditButton onClick={() => onEdit(row.originalRow)} />
             <DeleteButton onClick={() => handleDeleteClick(row)} />
           </div>

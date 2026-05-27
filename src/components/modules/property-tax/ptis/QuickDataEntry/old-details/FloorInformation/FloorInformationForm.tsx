@@ -74,13 +74,13 @@ export default function FloorInformationForm({
 
   return (
     <div className="space-y-4">
-      <div className="bg-white p-4 rounded-xl shadow-sm border border-blue-50 mb-10">
-        <h3 className="text-base font-bold text-blue-800 mb-6 flex items-center gap-2 pb-3 border-b border-blue-100">
+      <div className="bg-white rounded-xl shadow-sm mb-10">
+        <h3 className="text-base font-bold text-blue-800 px-4 py-3 flex items-center gap-2 border-b border-blue-100">
           <Layers className="w-5 h-5" />
           {formData.id ? t("oldDetails.updateFloorDetailsTitle") : t("oldDetails.floorDetailsTitle")}
         </h3>
 
-        <div className="border border-blue-100 rounded-xl bg-gray-50/30 mb-8">
+        <div className="mb-6 p-2">
           {/* Floor Entry Form Fields */}
           <FloorFormFields
             t={t}
@@ -101,16 +101,17 @@ export default function FloorInformationForm({
             onSave={handleSave}
             onReset={handleReset}
           />
+
+          {/* Floor Details Table */}
+          <FloorTableSection
+            t={t}
+            tCommon={tCommon}
+            existingFloorDetails={existingFloorDetails}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
         </div>
 
-        {/* Floor Details Table */}
-        <FloorTableSection
-          t={t}
-          tCommon={tCommon}
-          existingFloorDetails={existingFloorDetails}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-        />
       </div>
     </div>
   );
