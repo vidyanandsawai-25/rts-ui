@@ -64,8 +64,9 @@ class ApiClient {
     skipAuth: boolean
   ): Promise<Record<string, string>> {
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
+      'Content-Type': 'application/json; charset=utf-8',
       Accept: 'application/json, text/plain, */*',
+      'Accept-Charset': 'utf-8',
       ...(options.headers as Record<string, string>),
     };
     if (skipAuth) return headers;

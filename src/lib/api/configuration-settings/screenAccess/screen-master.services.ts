@@ -29,6 +29,10 @@ export function normalizeScreen(data: Record<string, unknown>): ScreenMasterData
       0
   );
 
+  const isGarbled = (str: string) => !str || /\?{2,}/.test(str);
+  const screenNameStr = String(data.screenName ?? '');
+  const screenNameLocalStr = String(data.screenNameLocal ?? data.screenName ?? '');
+
   return {
     screenMasterId: screenMasterId > 0 ? screenMasterId : undefined,
     screenGroupId: Number(
@@ -38,8 +42,12 @@ export function normalizeScreen(data: Record<string, unknown>): ScreenMasterData
     moduleId: moduleId > 0 ? moduleId : null,
     moduleName: data.moduleName != null ? String(data.moduleName) : null,
     screenCode: String(data.screenCode ?? ''),
-    screenName: String(data.screenName ?? ''),
-    screenNameLocal: String(data.screenNameLocal ?? data.screenName ?? ''),
+    screenName: !isGarbled(screenNameStr)
+      ? screenNameStr
+      : !isGarbled(screenNameLocalStr)
+        ? screenNameLocalStr
+        : screenNameStr,
+    screenNameLocal: screenNameLocalStr,
     screenIcon: String(data.screenIcon ?? ''),
     routePath: String(data.routePath ?? ''),
     isMenu: Boolean(data.isMenu),
@@ -187,7 +195,7 @@ export async function updateScreen(
     departmentMasterId: data.departmentMasterId ?? 0,
     departmentId: data.departmentMasterId ?? 0,
     displayOrder: Number(data.displayOrder ?? 0),
-    screenNameLocal: data.screenNameLocal || data.screenName,
+    screenNameLocal: data.screenName || data.screenNameLocal,
     isActive: data.isActive,
     IsActive: data.isActive,
     isStatus: data.isActive,
