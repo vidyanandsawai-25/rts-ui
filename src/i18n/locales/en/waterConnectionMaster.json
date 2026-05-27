@@ -59,7 +59,7 @@
     "tapType": {
       "title": "Tap Type Master",
       "subtitle": "Manage water connection type codes",
-      "searchPlaceholder": "Search by type code or name...",
+      "searchPlaceholder": "Search by type code",
       "addTitle": "Add Tap Type",
       "editTitle": "Edit Tap Type",
       "addSubtitle": "Create a new water connection type",
@@ -102,7 +102,7 @@
     "tapSize": {
       "title": "Tap Size Master",
       "subtitle": "Manage water connection size codes",
-      "searchPlaceholder": "Search by size code or name...",
+      "searchPlaceholder": "Search by size code",
       "addTitle": "Add Tap Size",
       "editTitle": "Edit Tap Size",
       "addSubtitle": "Create a new water connection size",
