@@ -30,21 +30,28 @@ const sanitizeRoomBase = (room: Record<string, unknown>) => ({
     base2Mtr: Number(room.base2Mtr || 0),
 });
 
-const sanitizeMinusData = (minus: Record<string, unknown>, extra: Record<string, unknown> = {}) => ({
-    isActive: true,
-    id: Number(minus.id || 0),
-    lengthMtr: Number(minus.lengthMtr || 0),
-    widthMtr: Number(minus.widthMtr || 0),
-    heightMtr: Number(minus.heightMtr || 0),
-    breadth: Number(minus.breadth || 0),
-    areaSqMtr: Number(minus.areaSqMtr || 0),
-    shape: String(minus.shape || 'Rectangle'),
-    base1Mtr: Number(minus.base1Mtr || minus.baseMtr || 0),
-    base2Mtr: Number(minus.base2Mtr || 0),
-    offsetValue: Number(minus.offsetValue || 0),
-    offsetArea: Number(minus.offsetArea || 0),
-    ...extra
-});
+const sanitizeMinusData = (minus: Record<string, unknown>, extra: Record<string, unknown> = {}) => {
+    const isOffsetVal = minus.isOffset !== undefined 
+        ? Boolean(minus.isOffset) 
+        : (minus.operation === 'add' || minus.operation === 'Add' || minus.operation === true);
+
+    return {
+        isActive: true,
+        id: Number(minus.id || 0),
+        lengthMtr: Number(minus.lengthMtr || 0),
+        widthMtr: Number(minus.widthMtr || 0),
+        heightMtr: Number(minus.heightMtr || 0),
+        breadth: Number(minus.breadth || 0),
+        areaSqMtr: Number(minus.areaSqMtr || 0),
+        shape: String(minus.shape || 'Rectangle'),
+        base1Mtr: Number(minus.base1Mtr || minus.baseMtr || 0),
+        base2Mtr: Number(minus.base2Mtr || 0),
+        offsetValue: Number(minus.offsetValue || 0),
+        offsetArea: Number(minus.offsetArea || 0),
+        isOffset: isOffsetVal,
+        ...extra
+    };
+};
 
 const parseSafeInt = (value: any): number => {
     if (value === undefined || value === null) return 0;
@@ -63,13 +70,23 @@ const sanitizeFloorBase = (payload: any) => {
     
     // Check both raw API keys and UI normalized keys
     const floorIdVal = parseSafeInt(payload.floorId !== undefined ? payload.floorId : payload.floorID);
-    const subFloorIdVal = parseSafeInt(payload.subFloorId !== undefined ? payload.subFloorId : payload.subFloorID);
+    
+    const rawSubFloorId = payload.subFloorId !== undefined ? payload.subFloorId : payload.subFloorID;
+    const subFloorIdVal = (rawSubFloorId === undefined || rawSubFloorId === null || rawSubFloorId === "" || rawSubFloorId === 0 || rawSubFloorId === "0" || String(rawSubFloorId).toLowerCase() === "select sub floor" || String(rawSubFloorId).toLowerCase() === "select subfloor" || String(rawSubFloorId) === "-Select-")
+        ? null 
+        : parseSafeInt(rawSubFloorId);
+
     const constructionTypeIdVal = parseSafeInt(payload.constructionTypeId !== undefined ? payload.constructionTypeId : (payload.constructionId ?? payload.ConstructionTypeId));
     const typeOfUseIdVal = parseSafeInt(payload.typeOfUseId !== undefined ? payload.typeOfUseId : payload.useId);
     const subTypeOfUseIdVal = parseSafeInt(payload.subTypeOfUseId !== undefined ? payload.subTypeOfUseId : payload.subTypId);
 
     const floorDescriptionVal = String(payload.floorDescription || payload.floor || '');
-    const subFloorDescriptionVal = String(payload.subFloorDescription || payload.subFloor || '');
+    
+    const rawSubFloorDesc = payload.subFloorDescription || payload.subFloor || '';
+    const subFloorDescriptionVal = (subFloorIdVal === null || !rawSubFloorDesc || String(rawSubFloorDesc).toLowerCase() === "select sub floor" || String(rawSubFloorDesc).toLowerCase() === "select subfloor" || String(rawSubFloorDesc) === "-Select-")
+        ? null
+        : String(rawSubFloorDesc);
+
     const constructionTypeDescriptionVal = String(payload.constructionTypeDescription || payload.conTyp || '');
     const typeOfUseDescriptionVal = String(payload.typeOfUseDescription || payload.use || '');
     const subTypeOfUseDescriptionVal = String(payload.subTypeOfUseDescription || payload.subTyp || '');
@@ -307,6 +324,9 @@ export function sanitizeRenterPayload(payload: unknown): Record<string, unknown>
             roomWiseMinusData: (((room.roomWiseMinusData || room.minusRooms || room.offsets || []) as Record<string, unknown>[]) || []).map(m => {
                 const minusId = Number(m.id || m.roomWiseMinusId || 0);
                 const hasRealMinusId = minusId > 0 && minusId < 1_000_000_000_000;
+                const isOffsetVal = m.isOffset !== undefined 
+                    ? Boolean(m.isOffset) 
+                    : (m.operation === 'add' || m.operation === 'Add' || m.operation === true);
                 
                 return {
                     isActive: true,
@@ -322,6 +342,7 @@ export function sanitizeRenterPayload(payload: unknown): Record<string, unknown>
                     offsetValue: Number(m.offsetValue || 0),
                     offsetArea: Number(m.offsetArea || 0),
                     roomWiseSubmissionId: Number(m.roomWiseSubmissionId || roomId || 0),
+                    isOffset: isOffsetVal,
                     ...(isUpdate ? {
                         updatedBy: 0,
                         roomWiseMinusId: minusId,

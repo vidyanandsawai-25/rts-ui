@@ -52,7 +52,7 @@ export const mapRoomDataToUi = (room: RoomAPIResponse, index: number): RoomData 
             width: offWidthVal,
             height: offHeightVal,
             area: Number(offset.areaSqMtr || offset.area) || 0,
-            operation: String(offset.operation || 'subtract'),
+            operation: offset.isOffset === true ? 'add' : (offset.isOffset === false ? 'subtract' : String(offset.operation || 'subtract')),
             remark: String(offset.remark || ''),
             shapeType: String(offShape),
             shapeParams: offShapeParams,

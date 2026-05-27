@@ -47,6 +47,7 @@ export const mapOffsetToApi = (offset: OffsetData, roomSubmissionId: number = 0)
     base1Mtr: toApiNumber([offset.base1, offset.base, offset.radius, params.base1, params.base, params.radius], 0),
     base2Mtr: toApiNumber([offset.base2, params.base2], 0),
     operation: offset.operation || OFFSET_OPERATIONS.SUBTRACT,
+    isOffset: offset.operation === OFFSET_OPERATIONS.ADD,
   };
 };
 
