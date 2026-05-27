@@ -78,7 +78,7 @@ export default function OldTaxationForm({
           />
         </div>
 
-        <div className="mt-10 flex justify-end border-t border-gray-100 pt-3">
+        <div className="mt-10 flex justify-end border-t border-gray-100 pt-3 ">
           <UpdateButton
             label={isSubmitting ? t('footer.saving') : t('commonbuttonmessages.UpdateChanges')}
             type="submit"

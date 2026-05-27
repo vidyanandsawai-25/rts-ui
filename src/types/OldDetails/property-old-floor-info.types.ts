@@ -102,6 +102,7 @@ export interface TaxItem {
 export interface DynamicTaxFieldsProps {
   taxes: TaxItem[];
   onTaxChange: (taxId: number, value: string) => void;
+  validationErrors: Record<string, string>;
 }
 
 export interface TaxationMetaFieldsProps {
@@ -110,12 +111,14 @@ export interface TaxationMetaFieldsProps {
   interest: number;
   onYearChange: (value: string) => void;
   onInterestChange: (value: string) => void;
+  validationErrors: Record<string, string>;
 }
 
 export interface TaxationSummaryFieldsProps {
   t: (key: string) => string;
   taxTotal: number;
   netTotal: number;
+  validationErrors: Record<string, string>;
 }
 
 export interface Section {
