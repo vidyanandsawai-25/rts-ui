@@ -53,9 +53,13 @@ export const GroupTableSection: React.FC<GroupTableSectionProps> = (props) => {
         key: 'screenGroupName',
         label: t('screenManagement.groups.table.groupName'),
         width: '40%',
-        render: (_, group) => (
-          <span className="font-medium text-gray-900">{group.screenGroupName}</span>
-        ),
+        render: (_, group) => {
+          const nameToDisplay =
+            group.screenGroupName && !/\?{2,}/.test(group.screenGroupName)
+              ? group.screenGroupName
+              : group.screenGroupLocalName || group.screenGroupName;
+          return <span className="font-medium text-gray-900">{nameToDisplay}</span>;
+        },
       },
       {
         key: 'screenGroupCode',

@@ -10,7 +10,7 @@
   "filters": {
     "allStates": "All States",
     "statePlaceholder": "Filter by State",
-    "searchPlaceholder": "Search by bank, branch..."
+    "searchPlaceholder": "Search by bank name..."
   },
   "table": {
     "code": "Code",
@@ -72,7 +72,8 @@
     "errorOccurred": "An unexpected error occurred",
     "networkError": "Network error — please check your connection and try again",
     "searchResult": "Found {count} records matching \"{term}\"",
-    "validationError": "Please fix the errors in the form"
+    "validationError": "Please fix the errors in the form",
+    "unauthorizedToken": "Unauthorized: Token expired or invalid"
   },
   "confirm": {
     "deleteTitle": "Delete Bank ({bankName})?",
@@ -96,7 +97,8 @@
     "cityLength": "City Name cannot exceed {count} characters",
     "stateLength": "State Name cannot exceed {count} characters",
     "bankCodeExists": "Bank Code already exists",
-    "bankNameExists": "Bank Name already exists"
+    "bankNameExists": "Bank Name already exists",
+    "ifscCodeExists": "IFSC Code already exists"
   },
   "error": {
     "title": "Something Went Wrong",

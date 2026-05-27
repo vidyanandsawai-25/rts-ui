@@ -22,7 +22,7 @@ export default async function EditScreenPage({ params }: { params: { screenId: s
   // Fetch in parallel for better performance
   const [screenRes, groupsRes, modulesRes] = await Promise.all([
     getScreenByIdAction(id),
-    getScreenGroupsAction(1, getMasterDataPageSize(), undefined, undefined),
+    getScreenGroupsAction(1, getMasterDataPageSize(), undefined, true),
     getModulesAction(),
   ]);
 

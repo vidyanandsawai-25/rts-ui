@@ -142,7 +142,6 @@ export function useBaseForm<T extends { isActive?: boolean }>({
     setErrors(v);
 
     if (Object.keys(v).length) {
-      toast.error(tCommon('errors.fixValidation'));
       return;
     }
 

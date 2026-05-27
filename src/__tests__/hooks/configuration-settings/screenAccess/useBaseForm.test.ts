@@ -116,6 +116,6 @@ describe('useBaseForm', () => {
 
     expect(result.current.errors.name).toBe('Required');
     expect(mockSaveAction).not.toHaveBeenCalled();
-    expect(mockToast.error).toHaveBeenCalledWith('errors.fixValidation');
+    expect(mockToast.error).not.toHaveBeenCalled();
   });
 });

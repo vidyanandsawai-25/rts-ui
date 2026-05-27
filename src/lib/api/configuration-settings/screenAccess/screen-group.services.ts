@@ -14,9 +14,37 @@ export function normalizeScreenGroup(data: Record<string, unknown>): ScreenGroup
       data.Id ??
       0
   );
+
+  const groupName = String(
+    data.screenGroupName ??
+      data.ScreenGroupName ??
+      data.groupName ??
+      data.GroupName ??
+      data.name ??
+      ''
+  );
+  const groupLocalName = String(
+    data.screenGroupLocalName ??
+      data.ScreenGroupLocalName ??
+      data.screenGroupNameLocal ??
+      data.ScreenGroupNameLocal ??
+      data.groupLocalName ??
+      data.GroupLocalName ??
+      data.localName ??
+      data.LocalName ??
+      ''
+  );
+
+  const isGarbled = (str: string) => !str || /\?{2,}/.test(str);
+
   return {
     screenGroupId: id,
-    screenGroupName: String(data.screenGroupName ?? data.groupName ?? data.name ?? ''),
+    screenGroupName: !isGarbled(groupName)
+      ? groupName
+      : !isGarbled(groupLocalName)
+        ? groupLocalName
+        : groupName,
+    screenGroupLocalName: groupLocalName || undefined,
     screenGroupCode: String(data.screenGroupCode ?? data.groupCode ?? data.code ?? ''),
     screenGroupIcon: String(data.screenGroupIcon ?? data.icon ?? ''),
     displayOrder: Number(data.displayOrder ?? data.DisplayOrder ?? 0),
@@ -98,6 +126,11 @@ export async function createScreenGroup(
     isActive: true,
     screenGroupIcon: DEFAULT_GROUP_ICON,
     ...data,
+    screenGroupLocalName: data.screenGroupName || data.screenGroupLocalName,
+    ScreenGroupLocalName: data.screenGroupName || data.screenGroupLocalName,
+    screenGroupNameLocal: data.screenGroupName || data.screenGroupLocalName,
+    ScreenGroupNameLocal: data.screenGroupName || data.screenGroupLocalName,
+    groupLocalName: data.screenGroupName || data.screenGroupLocalName,
     displayOrder: Number(data.displayOrder ?? 0),
     createdBy: userId,
   };
@@ -117,9 +150,14 @@ export async function updateScreenGroup(
   data: Partial<ScreenGroupMasterData>,
   userId?: number
 ): Promise<void> {
-  const payload: Partial<ScreenGroupMasterData> = {
+  const payload: Record<string, unknown> = {
     ...data,
     screenGroupId: id,
+    screenGroupLocalName: data.screenGroupName || data.screenGroupLocalName,
+    ScreenGroupLocalName: data.screenGroupName || data.screenGroupLocalName,
+    screenGroupNameLocal: data.screenGroupName || data.screenGroupLocalName,
+    ScreenGroupNameLocal: data.screenGroupName || data.screenGroupLocalName,
+    groupLocalName: data.screenGroupName || data.screenGroupLocalName,
     updatedBy: userId,
   };
 

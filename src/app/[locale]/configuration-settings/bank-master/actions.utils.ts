@@ -27,6 +27,10 @@ const BANK_API_ERROR_MAP: Record<string, string> = {
   IFSCCode_Invalid_Format: 'validation.ifscFormat',
   BankCode_Already_Exists: 'validation.bankCodeExists',
   BankName_Already_Exists: 'validation.bankNameExists',
+  IFSCCode_Already_Exists: 'validation.ifscCodeExists',
+  IFSC_Already_Exists: 'validation.ifscCodeExists',
+  IFSCCode_Exists: 'validation.ifscCodeExists',
+  IFSC_Exists: 'validation.ifscCodeExists',
   Pincode_Invalid_Format: 'validation.pincodeFormat',
 };
 

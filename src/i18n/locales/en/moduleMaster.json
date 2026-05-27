@@ -8,7 +8,7 @@
     "inactive": "Inactive"
   },
   "filters": {
-    "searchPlaceholder": "Search by module name, code..."
+    "searchPlaceholder": "Search by module name..."
   },
   "table": {
     "code": "Module Code",

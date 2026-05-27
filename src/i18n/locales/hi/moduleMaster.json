@@ -8,7 +8,7 @@
     "inactive": "निष्क्रिय"
   },
   "filters": {
-    "searchPlaceholder": "मॉड्यूल का नाम, कोड द्वारा खोजें..."
+    "searchPlaceholder": "मॉड्यूल के नाम से खोजें..."
   },
   "table": {
     "code": "मॉड्यूल कोड",

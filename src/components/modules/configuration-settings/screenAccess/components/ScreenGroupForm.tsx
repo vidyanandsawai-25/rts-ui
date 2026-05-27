@@ -8,6 +8,7 @@ import { ScreenGroupMasterData } from '@/types/screen-access.types';
 import { useScreenGroupForm } from '@/hooks/configuration-settings/screenAccess/useScreenGroupForm';
 
 import { GROUP_CODE_MAX, GROUP_NAME_MAX } from '@/lib/constants/screen-access.constants';
+import { CODE_SANITIZE, DESCRIPTION_SANITIZE } from '@/lib/utils/validation-rules';
 import { FormSection, FieldLabel, ErrorMsg, ToggleField } from './FormHelpers';
 
 interface ScreenGroupFormProps {
@@ -82,7 +83,12 @@ export function ScreenGroupForm({ initialData, isEdit: isEditProp }: ScreenGroup
               <Input
                 id="screenGroupCode"
                 value={formData.screenGroupCode || ''}
-                onChange={(e) => handleChange('screenGroupCode', e.target.value.toUpperCase())}
+                onChange={(e) =>
+                  handleChange(
+                    'screenGroupCode',
+                    e.target.value.toUpperCase().replace(CODE_SANITIZE, '')
+                  )
+                }
                 onBlur={() => handleBlur('screenGroupCode')}
                 maxLength={GROUP_CODE_MAX}
                 placeholder={t('screenManagement.groups.form.groupCodePlaceholder')}
@@ -99,33 +105,17 @@ export function ScreenGroupForm({ initialData, isEdit: isEditProp }: ScreenGroup
               <Input
                 id="screenGroupName"
                 value={formData.screenGroupName || ''}
-                onChange={(e) => handleChange('screenGroupName', e.target.value)}
+                onChange={(e) =>
+                  handleChange(
+                    'screenGroupName',
+                    e.target.value.replace(DESCRIPTION_SANITIZE, '').replace(/[&()]/g, '')
+                  )
+                }
                 onBlur={() => handleBlur('screenGroupName')}
                 maxLength={GROUP_NAME_MAX}
                 placeholder={t('screenManagement.groups.form.groupNamePlaceholder')}
               />
               {showError('screenGroupName') && <ErrorMsg error={errors.screenGroupName} />}
-            </div>
-            <div>
-              <FieldLabel
-                htmlFor="displayOrder"
-                label={t('screenManagement.groups.form.displayOrder')}
-                required
-              />
-              <Input
-                id="displayOrder"
-                type="number"
-                value={formData.displayOrder ?? ''}
-                onChange={(e) =>
-                  handleChange(
-                    'displayOrder',
-                    e.target.value === '' ? undefined : parseInt(e.target.value, 10)
-                  )
-                }
-                onBlur={() => handleBlur('displayOrder')}
-                placeholder={t('screenManagement.groups.form.orderPlaceholder')}
-              />
-              {showError('displayOrder') && <ErrorMsg error={errors.displayOrder} />}
             </div>
           </div>
         </FormSection>
