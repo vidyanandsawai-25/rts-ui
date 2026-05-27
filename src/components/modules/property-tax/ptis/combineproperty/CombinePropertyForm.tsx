@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Merge, FileText, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Drawer } from '@/components/common/Drawer';
@@ -15,6 +15,7 @@ import { CombinePropertyItem } from '@/types/combine-property.types';
 import { useCombinePropertyForm, SelectionMethod } from '@/hooks/combineProperty/useCombineProperty';
 import { getCombinePropertyColumns, PropertyRow } from './combinePropertyColumns';
 import { redirect } from 'next/navigation';
+import { PropertyType } from '@/types/property-type.types';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                               */
@@ -23,6 +24,7 @@ import { redirect } from 'next/navigation';
 interface CombinePropertyFormProps {
   basePropertyList: CombinePropertyItem[];
   subPropertyList: CombinePropertyItem[];
+  propertyTypeList: PropertyType[];
   selectedBasePropertyId?: string;
   selectedWardId?: string;
   selectedWardNo?: string;
@@ -45,6 +47,7 @@ function toSelectOption(item: CombinePropertyItem): SearchSelectOption {
 export default function CombinePropertyForm({
   basePropertyList,
   subPropertyList,
+  propertyTypeList,
   selectedBasePropertyId,
   selectedWardId,
   selectedWardNo,
@@ -69,6 +72,9 @@ export default function CombinePropertyForm({
     differentOwnerProps,
     remark,
     remarkError,
+    selectedPropertyType,
+    showPropertyTypeDropdown,
+    setSelectedPropertyType,
     setRemark,
     togglePropertyCheck,
     toggleAllProperties,
@@ -99,7 +105,7 @@ export default function CombinePropertyForm({
   /* ---- Options ---- */
   const BASE_PROPERTY_OPTIONS = useMemo<SearchSelectOption[]>(() => {
     return (basePropertyList || []).map((item) => ({
-      label: `${item.wardNo ||  ''} / ${item.propertyNo || ''}/ ${item.fromProperty || ''}`,
+      label: `${item.wardNo || ''} / ${item.propertyNo || ''}/ ${item.fromProperty || ''}`,
       value: String(item.id || ''),
       meta: { wardId: item.wardId, wardNo: item.wardNo, propertyNo: item.propertyNo },
     }));
@@ -108,6 +114,13 @@ export default function CombinePropertyForm({
   const SUB_PROPERTY_OPTIONS = useMemo<SearchSelectOption[]>(() => {
     return (subPropertyList || []).map(toSelectOption);
   }, [subPropertyList]);
+
+  const PROPERTY_TYPE_OPTIONS = useMemo<SearchSelectOption[]>(() => {
+    return (propertyTypeList || []).map((item) => ({
+      label: item.propertyDescription,
+      value: String(item.id),
+    }));
+  }, [propertyTypeList]);
 
   /* ============================================================
      DRAWER HEADER
@@ -156,7 +169,7 @@ export default function CombinePropertyForm({
           <AddButton
             label={isSubmitting ? t('combining') : t('combine')}
             size="sm"
-            disabled={hasDifferentOwners || isSubmitting || checkedCount === 0}
+            disabled={isSubmitting || checkedCount === 0}
             onClick={handleCombine}
           />
         )}
@@ -189,7 +202,7 @@ export default function CombinePropertyForm({
       open={true}
       onClose={() => redirect('/property-tax/ptis')}
       title={DrawerTitle}
-      width="lg"
+      width="xl"
       footer={DrawerFooter}
     >
       {/* ===================================================
@@ -297,6 +310,25 @@ export default function CombinePropertyForm({
           </div>
         )}
 
+        {/* ---- Property Type (Conditionally Visible) ---- */}
+        {showPropertyTypeDropdown && (
+          <div className="flex flex-col gap-0.5 w-[140px] shrink-0">
+            <label htmlFor="propertyType" className="text-[10px] font-semibold text-gray-600">
+              {t('propertyType')} <span className="text-red-500">*</span>
+            </label>
+            <SearchSelect
+              id="propertyType"
+              name="propertyType"
+              options={PROPERTY_TYPE_OPTIONS}
+              value={selectedPropertyType}
+              onChange={(_name, val) => setSelectedPropertyType(val)}
+              placeholder={t('select')}
+              className="text-[11px] h-[28px]"
+              required
+            />
+          </div>
+        )}
+
         {/* ---- Action buttons ---- */}
         <div className="flex items-end gap-2 shrink-0 ml-auto">
           <CancelButton label={t('clear')} onClick={handleClear} size="sm" />
@@ -372,7 +404,7 @@ export default function CombinePropertyForm({
               value={remark}
               onChange={(e) => setRemark(e.target.value)}
               placeholder={t('remarkPlaceholder')}
-              disabled={isSubmitting || isPending || hasDifferentOwners || checkedCount === 0}
+              disabled={isSubmitting || isPending || checkedCount === 0}
               rows={2}
               className='text-black'
               required

@@ -35,6 +35,8 @@ export function useCombinePropertyForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [remark, setRemark] = useState('');
   const [remarkError, setRemarkError] = useState(false);
+  const [selectedPropertyType, setSelectedPropertyType] = useState('');
+  const [showPropertyTypeDropdown, setShowPropertyTypeDropdown] = useState(false);
 
   // Checkbox selection for review table rows
   const [checkedPropertyIds, setCheckedPropertyIds] = useState<Set<number>>(new Set());
@@ -153,6 +155,8 @@ export function useCombinePropertyForm({
     setIsReviewing(false);
     setRemark('');
     setRemarkError(false);
+    setSelectedPropertyType('');
+    setShowPropertyTypeDropdown(false);
     router.push(
       buildUrl({
         basePropertyId: undefined,
@@ -240,32 +244,49 @@ export function useCombinePropertyForm({
       return;
     }
 
-    const uniqueOwners = [...new Set(checkedProperties.map((r) => r.ownerName).filter(Boolean))];
-    const hasDifferentOwners = uniqueOwners.length > 1;
+    // Check Property Type Mismatch
+    const uniquePropertyTypeIds = [...new Set(checkedProperties.map((r) => r.propertyTypeId).filter(id => id > 0))];
+    const hasPropertyTypeMismatch = uniquePropertyTypeIds.length > 1;
 
-    if (hasDifferentOwners) {
-      toast.warning(t('differentOwnersError'));
+    if (hasPropertyTypeMismatch && !selectedPropertyType) {
+      toast.warning(t('propertyTypeMismatchAlert') || 'Selected properties have different property types. Please select a property type from the dropdown to proceed.');
+      setShowPropertyTypeDropdown(true);
       return;
     }
+
+    const finalPropertyTypeId = hasPropertyTypeMismatch ? Number(selectedPropertyType) : (uniquePropertyTypeIds[0] || 0);
+
+    const uniqueOwners = [...new Set(checkedProperties.map((r) => r.ownerName).filter(Boolean))];
+    const hasDifferentOwnersLocal = uniqueOwners.length > 1;
 
     if (!remark.trim()) {
       setRemarkError(true);
       return;
     }
 
+    const confirmTitle = hasDifferentOwnersLocal 
+      ? (t('confirmCombineDiffOwnerTitle') || 'Owner Names are Different') 
+      : t('confirmCombineTitle');
+      
+    const confirmDesc = hasDifferentOwnersLocal
+      ? (t('confirmCombineDiffOwnerDesc') || 'Owner names are different for the selected properties. Do you want to combine? Click Combine to proceed or Cancel to abort.')
+      : t('confirmCombineDesc');
+
     confirm({
-      variant: 'warning',
-      title: t('confirmCombineTitle'),
-      description: t('confirmCombineDesc'),
+      variant: hasDifferentOwnersLocal ? 'destructive' : 'warning',
+      title: confirmTitle,
+      description: confirmDesc,
       confirmText: t('combine'),
       onConfirm: async () => {
         setIsSubmitting(true);
         try {
           const combinePropertyIds = checkedProperties.map((r) => r.propertyId).join(',');
           const response = await createCombinePropertyAction({
-            mainPropertyId: Number(selectedBasePropertyId),
-            combinePropertyIds,
-            remark: remark.trim() || t('defaultRemark'),
+            sourcePropertyId: Number(selectedBasePropertyId),
+            combinedPropertyIds: combinePropertyIds,
+            combineReason: remark.trim() || t('defaultRemark'),
+            overrideOwnerNameMismatch: hasDifferentOwnersLocal,
+            propertyTypeId: finalPropertyTypeId,
           });
 
           if (response.success) {
@@ -338,6 +359,9 @@ export function useCombinePropertyForm({
     differentOwnerProps,
     remark,
     remarkError,
+    selectedPropertyType,
+    showPropertyTypeDropdown,
+    setSelectedPropertyType,
     setRemark: (val: string) => {
       setRemark(val);
       if (val.trim()) setRemarkError(false);

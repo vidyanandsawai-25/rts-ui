@@ -94,6 +94,7 @@ export function normalizePropertyCombineDetails(data: Record<string, unknown>): 
   const wardId = Number(data.wardId ?? 0);
   const taxAmount = Number(data.taxAmount ?? 0);
   const pendingAmount = Number(data.pendingAmount ?? 0);
+  const propertyTypeId = Number(data.propertyTypeId ?? 0);
 
   return {
     propertyId,
@@ -106,5 +107,7 @@ export function normalizePropertyCombineDetails(data: Record<string, unknown>): 
     occupierName: String(data.occupierName ?? "").trim(),
     taxAmount: Number.isFinite(taxAmount) ? taxAmount : 0,
     pendingAmount: Number.isFinite(pendingAmount) ? pendingAmount : 0,
+    propertyDescription: String(data.propertyDescription ?? "").trim(),
+    propertyTypeId: Number.isFinite(propertyTypeId) ? propertyTypeId : 0,
   };
 }

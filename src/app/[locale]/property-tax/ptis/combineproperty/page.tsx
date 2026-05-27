@@ -1,6 +1,8 @@
 import CombinePropertyForm from "@/components/modules/property-tax/ptis/combineproperty/CombinePropertyForm";
 import { fetchCombinePropertiesPagedAction } from "./action";
+import { fetchPropertyTypePagedServerAction } from "../../propertytype/action";
 import { CombinePropertyItem } from "@/types/combine-property.types";
+import { PropertyType } from "@/types/property-type.types";
 
 /** Use pageSize = -1 to fetch all records (supported by the action) */
 const ALL_RECORDS_PAGE_SIZE = -1;
@@ -38,10 +40,15 @@ export default async function Page({ searchParams }: PageProps) {
     subPropertyList = subResult.items ?? [];
   }
 
+  // ── 3. Fetch property types for the dropdown ─────────
+  const propertyTypeResult = await fetchPropertyTypePagedServerAction(1, ALL_RECORDS_PAGE_SIZE);
+  const propertyTypeList: PropertyType[] = propertyTypeResult.items ?? [];
+
   return (
     <CombinePropertyForm
       basePropertyList={basePropertyList}
       subPropertyList={subPropertyList}
+      propertyTypeList={propertyTypeList}
       selectedBasePropertyId={basePropertyId}
       selectedWardId={wardId}
       selectedWardNo={wardNo}

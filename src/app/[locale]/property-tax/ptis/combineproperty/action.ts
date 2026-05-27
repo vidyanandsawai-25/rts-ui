@@ -109,11 +109,11 @@ export async function createCombinePropertyAction(
     }
 
     // Validate required fields
-    if (!Number.isFinite(payload.mainPropertyId) || payload.mainPropertyId <= 0) {
-      return { success: false, message: "Valid Main Property ID is required", statusCode: 400 };
+    if (!Number.isFinite(payload.sourcePropertyId) || payload.sourcePropertyId <= 0) {
+      return { success: false, message: "Valid Source Property ID is required", statusCode: 400 };
     }
-    if (!payload.combinePropertyIds?.trim()) {
-      return { success: false, message: "Combine Property IDs are required", statusCode: 400 };
+    if (!payload.combinedPropertyIds?.trim()) {
+      return { success: false, message: "Combined Property IDs are required", statusCode: 400 };
     }
 
     const fullPayload: CombinePropertyPayload = {
