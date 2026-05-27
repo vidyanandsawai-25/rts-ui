@@ -43,7 +43,7 @@ export function usePartitionFormValidation({
     }
 
     // Validate based on partition type
-    if (data.partitionType === "wing" && data.createNewWing) {
+    if (data.partitionType === "wing") {
       // Validate wing-specific fields
       if (!data.wingLetter?.trim()) {
         newErrors.wingLetter = t("partitionForm.validation.wingLetterRequired");
@@ -67,10 +67,12 @@ export function usePartitionFormValidation({
         newErrors.generationType = t("partitionForm.validation.generationTypeRequired");
       }
       
-      // Check if toFloor is greater than or equal to fromFloor using floor indices
+      // Check if toFloor is greater than or equal to fromFloor using floor IDs
       if (data.fromFloor && data.toFloor && floors.length > 0) {
-        const fromFloorIndex = floors.findIndex(f => f.floorCode === data.fromFloor);
-        const toFloorIndex = floors.findIndex(f => f.floorCode === data.toFloor);
+        const fromFloorId = parseInt(data.fromFloor, 10);
+        const toFloorId = parseInt(data.toFloor, 10);
+        const fromFloorIndex = floors.findIndex(f => f.id === fromFloorId);
+        const toFloorIndex = floors.findIndex(f => f.id === toFloorId);
         
         if (fromFloorIndex !== -1 && toFloorIndex !== -1 && toFloorIndex < fromFloorIndex) {
           newErrors.toFloor = t("partitionForm.validation.toFloorMustBeGreaterOrEqual");

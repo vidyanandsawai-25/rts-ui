@@ -81,8 +81,8 @@ describe("usePartitionFormValidation", () => {
     alphanumericMode: false,
     createNewWing: true,
     wingLetter: "A",
-    fromFloor: "G",
-    toFloor: "2",
+    fromFloor: "1", // Ground Floor ID
+    toFloor: "3",   // Second Floor ID
     noOfFlatOnOneFloor: "4",
     flatStart: "101",
     incrementedBy: "1",
@@ -213,8 +213,8 @@ describe("usePartitionFormValidation", () => {
   it("should fail validation when toFloor is less than fromFloor", () => {
     const invalidForm: PartitionFormState = {
       ...validWingForm,
-      fromFloor: "2",
-      toFloor: "G",
+      fromFloor: "3", // Second Floor (ID 3)
+      toFloor: "1",   // Ground Floor (ID 1) - invalid because it's less than fromFloor
     };
 
     const { result } = renderHook(() =>

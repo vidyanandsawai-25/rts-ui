@@ -1314,11 +1314,14 @@ export async function generateBuildingStructureAction(
     }
 
     const url = `/Property/generate-buildingstructure?${queryParams.toString()}`;
-    console.log("[generateBuildingStructureAction] URL:", url);
+    logger.debug("Generating building structure preview");
 
     const response = await apiClient.get<BuildingStructureResponse>(url);
 
-    console.log("[generateBuildingStructureAction] Response:", response);
+    logger.debug("Generated building structure preview response", {
+      success: response.success,
+      hasData: !!response.data,
+    });
 
     if (!response.success || !response.data) {
       return { success: false, error: response.error || "Failed to generate building structure" };

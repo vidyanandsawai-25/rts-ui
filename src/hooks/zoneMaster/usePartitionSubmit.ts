@@ -63,7 +63,7 @@ export function usePartitionSubmit({
     setLoading(true);
     try {
       // Handle wing partition creation
-      if (form.partitionType === "wing" && form.createNewWing) {
+      if (form.partitionType === "wing") {
         if (!selectedWard?.id || !selectedProperty?.propertyNo) {
           toast.error("Ward ID and Property No are required");
           setLoading(false);
