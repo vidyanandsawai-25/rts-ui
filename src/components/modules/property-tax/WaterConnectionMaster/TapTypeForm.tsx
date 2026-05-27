@@ -11,7 +11,6 @@ import {
   CancelButton,
   SaveButton,
   Input,
-  Label,
   ValidationMessage,
 } from "@/components/common";
 import { StatusToggleField } from "./StatusToggleField";
@@ -165,10 +164,10 @@ export function TapTypeForm({ id, initialData }: Readonly<TapTypeFormProps>) {
 
         <div className="space-y-4">
           <div>
-            <Label htmlFor="tap-type-code" required>
-              {t("form.typeCode.label")}
-            </Label>
+           
             <Input
+            label={t("form.typeCode.label")}
+            required
               id="tap-type-code"
               value={formData.typeCode}
               onChange={(e) => handleChange("typeCode", e.target.value)}
@@ -186,10 +185,9 @@ export function TapTypeForm({ id, initialData }: Readonly<TapTypeFormProps>) {
           </div>
 
           <div>
-            <Label htmlFor="tap-type-name" required>
-              {t("form.typeName.label")}
-            </Label>
             <Input
+            label={t("form.typeName.label")}
+            required
               id="tap-type-name"
               value={formData.typeName}
               onChange={(e) => handleChange("typeName", e.target.value)}

@@ -11,6 +11,7 @@ import { useConfirm } from "@/components/common/ConfirmProvider";
 import type { TapSize, TapSizeMasterProps } from "@/types/water-connection.types";
 import { deleteTapSizeAction } from "@/app/[locale]/property-tax/water-connection-master/actions";
 import { getTapSizeColumns } from "./tapSizeColumns";
+import { Select } from "@/components/common/select";
 
 export function TapSizeMaster({ data }: Readonly<TapSizeMasterProps>) {
   const router = useRouter();
@@ -41,6 +42,10 @@ export function TapSizeMaster({ data }: Readonly<TapSizeMasterProps>) {
 
   const changePage = (p: number) => {
     router.push(buildUrl(p, pageSize, currentSearchTerm));
+  };
+
+  const handlePageSizeChange = (size: string) => {
+    router.push(buildUrl(1, Number(size), currentSearchTerm));
   };
 
   const handleEdit = useCallback(
@@ -105,22 +110,14 @@ export function TapSizeMaster({ data }: Readonly<TapSizeMasterProps>) {
             {tCommon("table.showing")} {start} {tCommon("table.to")} {end}{" "}
             {tCommon("table.of")} {totalCount}
           </span>
-          <label htmlFor="tap-size-page-size" className="text-sm text-gray-700 mr-2">
-            {tCommon("table.rowsPerPage")}
-          </label>
-          <select
-            id="tap-size-page-size"
-            aria-label={tCommon("table.rowsPerPage")}
+          <span className="text-sm text-gray-600">{tCommon("table.rowsPerPage")}:</span>
+          <Select
             value={String(pageSize)}
-            onChange={(e) =>
-              router.push(buildUrl(1, Number(e.target.value), currentSearchTerm))
-            }
-            className="h-8 w-20 rounded-md border border-gray-300 bg-white px-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
-          >
-            {[10, 20, 30, 50].map((s) => (
-              <option key={s} value={String(s)}>{s}</option>
-            ))}
-          </select>
+            onChange={(e) => handlePageSizeChange(e.target.value)}
+            options={[10, 20, 30, 40, 50].map((s) => ({ label: String(s), value: String(s) }))}
+            selectSize="sm"
+            className="w-20"
+          />
         </div>
       }
       getRowKey={(row) => String(row.waterConnectionSizeId)}

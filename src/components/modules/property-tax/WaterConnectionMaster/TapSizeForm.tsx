@@ -11,7 +11,6 @@ import {
   CancelButton,
   SaveButton,
   Input,
-  Label,
   ValidationMessage,
   
 } from "@/components/common";
@@ -166,10 +165,10 @@ export function TapSizeForm({ id, initialData }: Readonly<TapSizeFormProps>) {
 
         <div className="space-y-4">
           <div>
-            <Label htmlFor="tap-size-name" required>
-              {t("form.sizeName.label")}
-            </Label>
+            
             <Input
+              label={t("form.sizeName.label")}
+              required
               id="tap-size-name"
               value={formData.sizeName}
               onChange={(e) => handleChange("sizeName", e.target.value)}
@@ -187,10 +186,10 @@ export function TapSizeForm({ id, initialData }: Readonly<TapSizeFormProps>) {
           </div>
 
           <div>
-            <Label htmlFor="tap-size-unit" required>
-              {t("form.unit.label")}
-            </Label>
+            
             <Input
+              label={t("form.unit.label")}
+              required
               id="tap-size-unit"
               value={formData.unit}
               onChange={(e) => handleChange("unit", e.target.value)}

@@ -11,7 +11,6 @@ import {
   CancelButton,
   SaveButton,
   Input,
-  Label,
   ValidationMessage,
 } from "@/components/common";
 import { StatusToggleField } from "./StatusToggleField";
@@ -159,10 +158,10 @@ export function TapStatusForm({ id, initialData }: Readonly<TapStatusFormProps>)
         )}
 
         <div>
-          <Label htmlFor="tap-status-name" required>
-            {t("form.statusName.label")}
-          </Label>
+         
           <Input
+            label={t("form.statusName.label")}
+            required
             id="tap-status-name"
             value={formData.statusName}
             onChange={(e) => handleChange("statusName", e.target.value)}
