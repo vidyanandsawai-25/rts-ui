@@ -1,9 +1,9 @@
 import { useMemo } from "react";
-import { ZonePropertyItem } from "@/types/zoneProperty.types";
-import { SocietyDetailItem } from "@/types/societyDetails.types";
-import { WingItem } from "@/types/wing.types";
+import { ZonePropertyItem } from "@/types/zone-master/properties/zoneProperty.types";
+import { SocietyDetailItem } from "@/types/zone-master/properties/societyDetails.types";
+import { WingItem } from "@/types/zone-master/properties/wing.types";
 import { Floor } from "@/types/floor.types";
-import { PartitionFormState } from "@/types/partition-form.types";
+import { PartitionFormState } from "@/types/zone-master/properties/partition-form.types";
 
 interface UsePartitionFormOptionsProps {
   allProperties: ZonePropertyItem[];
@@ -73,30 +73,37 @@ export function usePartitionFormOptions({
     { value: "HC", label: "HC - Horizontal Custom" },
   ];
 
-  // From Floor options (all active floors)
+  // From Floor options (all active floors, sorted by ID)
   const fromFloorOptions = useMemo(() => {
-    return floors.map((floor) => ({
-      value: floor.floorCode,
+    // Sort floors by ID to ensure proper ordering
+    const sortedFloors = [...floors].sort((a, b) => a.id - b.id);
+    
+    return sortedFloors.map((floor) => ({
+      value: String(floor.id),
       label: `${floor.floorCode} - ${floor.description}`,
     }));
   }, [floors]);
 
-  // To Floor options (filtered based on From Floor selection)
+  // To Floor options (filtered based on From Floor selection, sorted by ID)
   const toFloorOptions = useMemo(() => {
     if (!form.fromFloor || floors.length === 0) {
       return [];
     }
 
-    const fromFloorIndex = floors.findIndex((floor) => floor.floorCode === form.fromFloor);
-    
-    if (fromFloorIndex === -1) {
+    // Parse the selected floor ID
+    const selectedFromFloorId = parseInt(form.fromFloor, 10);
+    if (isNaN(selectedFromFloorId)) {
       return [];
     }
 
-    return floors
-      .slice(fromFloorIndex)
+    // Sort floors by ID
+    const sortedFloors = [...floors].sort((a, b) => a.id - b.id);
+    
+    // Filter floors: only show floors with ID >= selected fromFloor ID
+    return sortedFloors
+      .filter((floor) => floor.id >= selectedFromFloorId)
       .map((floor) => ({
-        value: floor.floorCode,
+        value: String(floor.id),
         label: `${floor.floorCode} - ${floor.description}`,
       }));
   }, [floors, form.fromFloor]);

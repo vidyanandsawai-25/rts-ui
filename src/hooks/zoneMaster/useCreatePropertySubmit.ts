@@ -1,10 +1,10 @@
 import { useCallback } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
 import { WardItem } from "@/types/wardMaster.types";
-import { CreatePropertyFormData } from "@/types/create-property-drawer.types";
-import { PropertyRangeCreatePayload } from "@/types/property-range.types";
+import { CreatePropertyFormData } from "@/types/zone-master/properties/create-property-drawer.types";
+import { PropertyRangeCreatePayload } from "@/types/zone-master/properties/property-range.types";
 import { createPropertyRangeAction } from "@/app/[locale]/property-tax/zone-master/property.actions";
 
 interface UseCreatePropertySubmitProps {
@@ -31,6 +31,7 @@ export function useCreatePropertySubmit({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const locale = useLocale();
 
   const handleSubmit = useCallback(async () => {
     if (!validateForm() || !selectedWard) return;
@@ -47,12 +48,12 @@ export function useCreatePropertySubmit({
             taxZoneId: parseInt(formData.taxZoneId, 10),
             wardId: selectedWard.id,
             ownerName: formData.ownerName || undefined,
-            createdBy: 1, // TODO: Get from auth context
+            // createdBy will be set by server action from authenticated user
           },
           startSequenceNo: 0,
         };
 
-        const result = await createPropertyRangeAction(payload);
+        const result = await createPropertyRangeAction(locale, payload);
 
         if (result.success) {
           // Show success toast
@@ -98,7 +99,7 @@ export function useCreatePropertySubmit({
         }
       }
     });
-  }, [formData, selectedWard, validateForm, resetForm, onSuccess, onClose, startTransition, t]);
+  }, [formData, selectedWard, validateForm, resetForm, onSuccess, onClose, startTransition, t, locale]);
 
   const handleClose = useCallback(() => {
     resetForm();

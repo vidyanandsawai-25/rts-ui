@@ -64,6 +64,7 @@
     "generic": "Failed to connect to the server. Please try again later.",
     "network": "Network error. Please try again",
     "unauthorized": "You are not authorized",
+    "noAccess": "You have no access",
     "notFound": "Resource not found",
     "serverError": "Server error. Please try again later",
     "deleteError": "Failed to delete",

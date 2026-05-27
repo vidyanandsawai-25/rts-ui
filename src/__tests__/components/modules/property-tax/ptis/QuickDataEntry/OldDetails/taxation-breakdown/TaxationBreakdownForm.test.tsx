@@ -4,7 +4,7 @@ import TaxationBreakdownForm from '@/components/modules/property-tax/ptis/QuickD
 import { useConfirm } from '@/components/common/ConfirmProvider';
 import { saveOldTaxesDetailsAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/OldDetails/taxation-breakdown/action';
 
-import { OldTaxesDetails } from '@/types/property-old-details.types';
+import { OldTaxesDetails } from '@/types/OldDetails/property-old-details.types';
 
 // Mock dependencies
 vi.mock('next-intl', () => ({
@@ -92,7 +92,11 @@ describe('TaxationBreakdownForm Component', () => {
   it('calls confirm dialog when update button is clicked', () => {
     render(<TaxationBreakdownForm initialData={mockInitialData as unknown as OldTaxesDetails} />);
     
-    const updateButton = screen.getByRole('button', { name: /quickDataEntry.oldDetails.taxationBreakdown.update/i });
+    // Modify a field to enable the update button
+    const interestInput = screen.getByDisplayValue('100');
+    fireEvent.change(interestInput, { target: { value: '200' } });
+
+    const updateButton = screen.getByRole('button', { name: /quickDataEntry.commonbuttonmessages.UpdateChanges/i });
     fireEvent.click(updateButton);
     
     expect(mockConfirm).toHaveBeenCalledTimes(1);
@@ -106,7 +110,11 @@ describe('TaxationBreakdownForm Component', () => {
     
     render(<TaxationBreakdownForm initialData={mockInitialData as unknown as OldTaxesDetails} />);
     
-    const updateButton = screen.getByRole('button', { name: /quickDataEntry.oldDetails.taxationBreakdown.update/i });
+    // Modify a field to enable the update button
+    const interestInput = screen.getByDisplayValue('100');
+    fireEvent.change(interestInput, { target: { value: '200' } });
+
+    const updateButton = screen.getByRole('button', { name: /quickDataEntry.commonbuttonmessages.UpdateChanges/i });
     fireEvent.click(updateButton);
     
     await waitFor(() => {

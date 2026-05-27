@@ -254,6 +254,7 @@
   },
   "propertyList": {
     "title": "Properties",
+    "ward": "Ward",
     "selectWard": "Select Ward",
     "selectWardPlaceholder": "Select a ward",
     "selectWardHint": "Select a ward to view properties",
@@ -310,7 +311,22 @@
       "fromPropertyNoRequired": "From Property No is required",
       "toPropertyNoRequired": "To Property No is required",
       "invalidRange": "To Property No must be greater than From Property No",
-      "createFailed": "Failed to create property. Please try again."
+      "createFailed": "Failed to create property. Please try again.",
+      "invalidPagination": "Invalid pagination parameters",
+      "invalidWardId": "Invalid ward ID",
+      "fetchFailed": "Failed to fetch properties.",
+      "fetchCategoriesFailed": "Failed to fetch categories",
+      "fetchPropertyTypesFailed": "Failed to fetch property types",
+      "fetchTaxZonesFailed": "Failed to fetch tax zones",
+      "missingRequired": "Missing required fields",
+      "invalidNumbers": "Property numbers must be valid numbers",
+      "rangeFromToRequired": "Range from and to are required",
+      "wardPropertyTypeCategoryRequired": "Ward, property type, and category are required",
+      "invalidRangeValues": "Range values must be valid numbers",
+      "rangeFromMustBeLessOrEqual": "Range from must be less than or equal to range to",
+      "cannotCreateMoreThan1000": "Cannot create more than 1000 properties at once",
+      "allPropertiesFailed": "All {count} properties failed to create",
+      "createPropertyRangeFailed": "Failed to create properties via range"
     },
     "success": {
       "singlePropertyCreated": "Property {propertyNo} created successfully!",
@@ -323,7 +339,13 @@
     "propertyInformation": "Property Information",
     "ward": "Ward",
     "propertyCategory": "Property Category",
+    "categoryType": "Category Type",
     "apartment": "Apartment",
+    "nonApartment": {
+      "label": "Non-Apartment",
+      "description": "Non-apartment properties have simple partition structure"
+    },
+    "multiCommercialApartment": "Multi Commercial Apartment",
     "mainPropertyNo": "Main Property No",
     "noWardSelected": "No ward selected",
     "selectWardFirst": "Please select a ward from the Properties tab first.",
@@ -340,6 +362,9 @@
     "partitionNo": "Partition No",
     "fromPartition": "From Partition",
     "toPartition": "To Partition",
+    "partitionRangePrefix": "Creating partitions:",
+    "to": "to",
+    "partitions": "partitions",
     "bulkPartitionInfo": "Bulk Partition Creation",
     "bulkPartitionDesc": "Enter the partition range to create multiple partitions at once for the selected property.",
     "partitionsToCreate": "Partitions to Create",
@@ -352,7 +377,15 @@
       "toPartitionRequired": "To Partition is required",
       "mustBeNumber": "Value must be a valid number",
       "toMustBeGreater": "To Partition must be greater than or equal to From Partition",
-      "duplicatePartitionInRange": "Partition {partition} already exists for this property"
+      "duplicatePartitionInRange": "Partition {partition} already exists for this property",
+      "wingLetterRequired": "Wing Name is required",
+      "fromFloorRequired": "From Floor is required",
+      "toFloorRequired": "To Floor is required",
+      "toFloorMustBeGreaterOrEqual": "To Floor must be greater than or equal to From Floor",
+      "noOfFlatOnOneFloorRequired": "No. of Flats per Floor is required",
+      "flatStartRequired": "Flat Start is required",
+      "incrementedByRequired": "Incremented By is required",
+      "generationTypeRequired": "Generation Type is required"
     },
     "placeholders": {
       "selectMainProperty": "Select a main property",
@@ -372,12 +405,20 @@
       "partition": "Partition",
       "amenity": "Amenity"
     },
+    "preview": {
+      "success": "Preview loaded successfully"
+    },
     "wing": {
       "addWing": "Add Wing",
       "editWing": "Edit Wing",
+      "wingId": "Wing ID",
       "wingNo": "Wing No",
+      "wingName": "Wing Name",
       "wingLetter": "Wing Name",
       "newWingDetails": "Wing Configuration",
+      "configureStructure": "Configure Wing Structure",
+      "requiredFields": "Required Fields",
+      "fillAllFields": "Please fill all required fields",
       "requiredFieldsTitle": "Required Fields",
       "requiredFieldsDesc": "Please fill all required fields to configure the wing structure.",
       "floorRange": "Floor Range",
@@ -429,6 +470,7 @@
       "messages": {
         "addWingSuccess": "Wing added successfully!",
         "addWingError": "Failed to add wing",
+        "createWingSuccess": "Wing created successfully!",
         "updateWingSuccess": "Wing structure generated successfully!",
         "updateWingError": "Failed to generate wing structure",
         "saveWingError": "Failed to save wing"
@@ -453,6 +495,9 @@
         "prefix": "Prefix",
         "wingLabel": "Wing",
         "topFloor": "Top Floor",
+        "topLabel": "TOP",
+        "groundFloorLabel": "GF",
+        "floorLabel": "F",
         "flatUnit": "Flat/Unit",
         "partitionId": "Partition ID",
         "generationSummary": "Generation Summary",

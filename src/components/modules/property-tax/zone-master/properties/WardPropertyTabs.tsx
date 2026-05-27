@@ -10,6 +10,7 @@ import { ZoneItem } from "@/types/zoneMaster.types";
 import { WardItem } from "@/types/wardMaster.types";
 import { ZonePropertyItem } from "@/types/zoneProperty.types";
 import type { DeletePropertyData } from "@/types/zoneMaster.types";
+import { ZonePropertyItem } from "@/types/zone-master/properties/zoneProperty.types";
 
 interface PropertyCategoryMap {
   [key: number]: string;

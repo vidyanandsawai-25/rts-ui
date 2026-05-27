@@ -1,7 +1,7 @@
 import TaxationBreakdownForm from '@/components/modules/property-tax/ptis/QuickDataEntry/old-details/TaxationBreakdown/TaxationBreakdownForm';
 import { setRequestLocale, getTranslations } from 'next-intl/server';
 import { getOldTaxesDetailsAction } from './action';
-import { OldTaxesDetails } from '@/types/property-old-details.types';
+import { OldTaxesDetails } from '@/types/OldDetails/property-old-details.types';
 
 interface PageProps {
     params: Promise<{

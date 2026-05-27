@@ -2,7 +2,7 @@
 //  Action to fetch property old details
 
 import { getPropertyOldDetails, updatePropertyOldDetails } from "@/lib/api/property-old-details.service";
-import { PropertyOldDetailsApiItem } from "@/types/property-old-details.types";
+import { PropertyOldDetailsApiItem } from "@/types/OldDetails/property-old-details.types";
 import { revalidatePath } from "next/cache";
 import { ActionResult } from "@/types/common.types";
 import { getTranslations } from "next-intl/server";

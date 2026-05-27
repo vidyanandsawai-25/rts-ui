@@ -2,8 +2,10 @@
 
 import { Input, ValidationMessage, ToggleSwitch } from "@/components/common";
 import { AlertCircle } from "lucide-react";
-import { CreatePropertyFormData, CreatePropertyFormErrors } from "@/types/create-property-drawer.types";
+import { CreatePropertyFormData, CreatePropertyFormErrors } from "@/types/zone-master/properties/create-property-drawer.types";
 import { useTranslations } from "next-intl";
+import { sanitizeName } from "@/lib/utils/input-sanitization";
+import { KYC_VALIDATION_RULES } from "@/lib/utils/kyc-validation.constants";
 
 interface BulkCreateSectionProps {
   formData: CreatePropertyFormData;
@@ -66,9 +68,15 @@ export function BulkCreateSection({
             <Input
               label={t("createProperty.ownerName")}
               value={formData.ownerName}
-              onChange={(e) => handleFieldChange("ownerName", e.target.value)}
+              onChange={(e) => {
+                const sanitized = sanitizeName(e.target.value);
+                if (sanitized.length <= KYC_VALIDATION_RULES.NAME_MAX_LENGTH) {
+                  handleFieldChange("ownerName", sanitized);
+                }
+              }}
               placeholder={t("createProperty.ownerNamePlaceholder")}
               required
+              maxLength={KYC_VALIDATION_RULES.NAME_MAX_LENGTH}
               className="bg-white"
             />
             <ValidationMessage
@@ -123,9 +131,15 @@ export function BulkCreateSection({
             <Input
               label={t("createProperty.ownerName")}
               value={formData.ownerName}
-              onChange={(e) => handleFieldChange("ownerName", e.target.value)}
+              onChange={(e) => {
+                const sanitized = sanitizeName(e.target.value);
+                if (sanitized.length <= KYC_VALIDATION_RULES.NAME_MAX_LENGTH) {
+                  handleFieldChange("ownerName", sanitized);
+                }
+              }}
               placeholder={t("createProperty.ownerNamePlaceholder")}
               required
+              maxLength={KYC_VALIDATION_RULES.NAME_MAX_LENGTH}
               className="bg-white"
             />
             <ValidationMessage

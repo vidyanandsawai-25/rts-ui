@@ -45,7 +45,7 @@ export function CategoryEditDeleteActions({ categoryId, categoryName }: Category
         startTransition(async () => {
           const res = await deleteConfigCategoryAction(parseInt(categoryId));
           if (res.success) {
-            success(res.message || t('messages.categoryDeleted') || 'Category deleted');
+            success(t('messages.categoryDeleted') || res.message || 'Category deleted');
             // Clear active category so it defaults to next available
             const params = new URLSearchParams(searchParams.toString());
             if (params.get('categoryId') === categoryId) {
@@ -53,7 +53,7 @@ export function CategoryEditDeleteActions({ categoryId, categoryName }: Category
             }
             router.push(`${pathname}?${params.toString()}`, { scroll: false });
           } else {
-            toastError(res.message || res.error || t('messages.deleteFailed') || 'Delete failed');
+            toastError(res.error || res.message || t('messages.deleteFailed') || 'Delete failed');
           }
           setActiveAction(null);
         });
@@ -62,14 +62,14 @@ export function CategoryEditDeleteActions({ categoryId, categoryName }: Category
   };
 
   return (
-    <div className="flex items-center gap-0.5 sm:gap-1 pl-1.5 sm:pl-2 ml-1.5 sm:ml-2 border-l border-slate-200 dark:border-slate-800">
+    <div className="flex items-center gap-0.5 sm:gap-1 pl-1.5 sm:pl-2 ml-1.5 sm:ml-2 border-l border-slate-200">
       <Button
         variant="ghost"
         size="xs"
         icon={isPending && activeAction === 'edit' ? undefined : Pencil}
         disabled={isPending}
         isLoading={isPending && activeAction === 'edit'}
-        className="h-8 w-8 sm:h-9 sm:w-9 p-0 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer"
+        className="h-8 w-8 sm:h-9 sm:w-9 p-0 text-slate-400 hover:text-blue-600 hover:bg-blue-50 cursor-pointer"
         onClick={handleEditCategory}
         title="Edit Category"
       />
@@ -79,7 +79,7 @@ export function CategoryEditDeleteActions({ categoryId, categoryName }: Category
         icon={isPending && activeAction === 'delete' ? undefined : Trash2}
         disabled={isPending}
         isLoading={isPending && activeAction === 'delete'}
-        className="h-8 w-8 sm:h-9 sm:w-9 p-0 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 cursor-pointer"
+        className="h-8 w-8 sm:h-9 sm:w-9 p-0 text-slate-400 hover:text-rose-600 hover:bg-rose-50 cursor-pointer"
         onClick={handleDeleteCategory}
         title="Delete Category"
       />
@@ -119,7 +119,10 @@ export function CategoryBulkActions({ categoryId, categoryName }: CategoryContex
           );
 
           if (result.success) {
-            success(result.message || '');
+            success(
+              result.message ||
+                (enable ? t('messages.configsEnabled') : t('messages.configsDisabled'))
+            );
             router.refresh();
           } else {
             toastError(result.error || t('messages.saveFailed'));
@@ -138,7 +141,7 @@ export function CategoryBulkActions({ categoryId, categoryName }: CategoryContex
         icon={isPending && activeAction === 'enable' ? undefined : CheckCircle2}
         disabled={isPending}
         isLoading={isPending && activeAction === 'enable'}
-        className="h-8 text-[10px] sm:text-xs gap-1.5 text-emerald-600 border-emerald-500/30 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 bg-white dark:bg-slate-900 font-black uppercase tracking-widest px-3 rounded-lg border-2 shadow-sm shadow-emerald-100/50 cursor-pointer"
+        className="h-8 text-[10px] sm:text-xs gap-1.5 text-emerald-600 border-emerald-500/30 hover:bg-emerald-50 bg-white font-black uppercase tracking-widest px-3 rounded-lg border-2 shadow-sm shadow-emerald-100/50 cursor-pointer"
         onClick={() => handleBulkToggle(true)}
       >
         {t('list.enableAll') || 'Enable'}
@@ -149,7 +152,7 @@ export function CategoryBulkActions({ categoryId, categoryName }: CategoryContex
         icon={isPending && activeAction === 'disable' ? undefined : XCircle}
         disabled={isPending}
         isLoading={isPending && activeAction === 'disable'}
-        className="h-8 text-[10px] sm:text-xs gap-1.5 text-rose-600 border-rose-500/30 hover:bg-rose-50 dark:hover:bg-rose-900/20 bg-white dark:bg-slate-900 font-black uppercase tracking-widest px-3 rounded-lg border-2 shadow-sm shadow-rose-100/50 cursor-pointer"
+        className="h-8 text-[10px] sm:text-xs gap-1.5 text-rose-600 border-rose-500/30 hover:bg-rose-50 bg-white font-black uppercase tracking-widest px-3 rounded-lg border-2 shadow-sm shadow-rose-100/50 cursor-pointer"
         onClick={() => handleBulkToggle(false)}
       >
         {t('list.disableAll') || 'Disable'}

@@ -20,6 +20,7 @@ import {
   ArrowUp,
   ArrowDown,
   CheckSquare,
+  Eye, // Added Eye icon for preview
 } from "lucide-react";
 import { Button, type ButtonProps } from "./ActionButton";
 import { cn } from "@/lib/utils/cn";
@@ -55,6 +56,13 @@ export interface TabButtonProps extends React.ButtonHTMLAttributes<HTMLButtonEle
   label: string;
   active?: boolean;
 }
+
+// IconOnlyActionButton: Fully customizable icon-only button
+export interface IconOnlyActionButtonProps extends Omit<ButtonProps, "children"> {
+  icon: React.ElementType;
+  "aria-label": string;
+}
+
 /* ----------------------------------------------------------
    LABELED ACTION BUTTONS
 ---------------------------------------------------------- */
@@ -200,6 +208,83 @@ export function DeleteLabelButton({
     </Button>
   );
 }
+
+/* ----------------------------------------------------------
+   PREVIEW BUTTON
+---------------------------------------------------------- */
+
+export function PreviewButton({
+  label = "Preview",
+  ...props
+}: LabeledActionButtonProps): React.ReactElement {
+  return (
+    <Button variant="primary" icon={Eye} {...props}>
+      {label}
+    </Button>
+  );
+}
+
+/* ----------------------------------------------------------
+   ICON-ONLY ACTION BUTTON (FULLY CUSTOMIZABLE)
+---------------------------------------------------------- */
+
+/**
+ * A fully customizable icon-only button component
+ * 
+ * @example
+ * // Basic usage
+ * <IconOnlyActionButton 
+ *   icon={Pencil} 
+ *   aria-label="Edit item" 
+ *   onClick={() => console.log('Edit')}
+ * />
+ * 
+ * @example
+ * // With custom variant and size
+ * <IconOnlyActionButton 
+ *   icon={Trash2} 
+ *   variant="delete"
+ *   size="lg"
+ *   aria-label="Delete item"
+ * />
+ * 
+ * @example
+ * // With custom className
+ * <IconOnlyActionButton 
+ *   icon={Save} 
+ *   variant="success"
+ *   size="md"
+ *   className="rounded-full shadow-lg"
+ *   aria-label="Save changes"
+ * />
+ */
+export function IconOnlyActionButton({
+  icon: Icon,
+  variant = "secondary",
+  size = "sm",
+  "aria-label": ariaLabel,
+  className = "",
+  disabled = false,
+  onClick,
+  ...props
+}: IconOnlyActionButtonProps): React.ReactElement {
+  return (
+    <Button
+      variant={variant}
+      icon={Icon}
+      size={size}
+      aria-label={ariaLabel}
+      disabled={disabled}
+      onClick={onClick}
+      className={cn(
+        "flex items-center justify-center",
+        className
+      )}
+      {...props}
+    />
+  );
+}
+
 /* ----------------------------------------------------------
    ICON-ONLY CRUD BUTTONS
 ---------------------------------------------------------- */

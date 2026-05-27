@@ -1,9 +1,10 @@
 "use client";
 
-import { SaveButton, Input, Select, ValidationMessage, CancelButton } from "@/components/common";
+import { Input, Select, ValidationMessage, CancelButton } from "@/components/common";
 import { Info, AlertCircle } from "lucide-react";
-import { PartitionFormState, PartitionFormErrors } from "@/types/partition-form.types";
+import { PartitionFormState, PartitionFormErrors } from "@/types/zone-master/properties/partition-form.types";
 import { Option } from "@/components/common";
+import { PreviewButton } from "@/components/common/ActionButtons";
 
 interface WingDetailConfigSectionProps {
   form: PartitionFormState;
@@ -45,7 +46,7 @@ export function WingDetailConfigSection({
       <div className="flex items-center justify-between mb-3">
         <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
           <Info className="w-4 h-4 text-blue-600" />
-          {t("partitionForm.wing.configureStructure")}
+          {t("partitionForm.wing.newWingDetails")}
         </h4>
         <CancelButton
           size="xs"
@@ -58,17 +59,16 @@ export function WingDetailConfigSection({
       <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-300 rounded-lg">
         <Info className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
         <div className="text-xs text-blue-800">
-          <p className="font-semibold mb-1">{t("partitionForm.wing.requiredFields")}</p>
-          <p>{t("partitionForm.wing.fillAllFields")}</p>
+          <p className="font-semibold mb-1">{t("partitionForm.wing.requiredFieldsTitle")}</p>
+          <p>{t("partitionForm.wing.requiredFieldsDesc")}</p>
         </div>
       </div>
 
       {/* Wing Letter */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          {t("partitionForm.wing.wingLetter")} <span className="text-red-500">*</span>
-        </label>
         <Select
+          label={t("partitionForm.wing.wingLetter")}
+          required
           value={form.wingLetter}
           disabled
           onChange={(_e, value) => {
@@ -88,12 +88,11 @@ export function WingDetailConfigSection({
 
       {/* Floor Range */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          {t("partitionForm.wing.floorRange")} <span className="text-red-500">*</span>
-        </label>
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Select
+              label={t("partitionForm.wing.fromFloor")}
+              required
               value={form.fromFloor}
               onChange={handleFromFloorChange}
               options={fromFloorOptions}
@@ -108,6 +107,8 @@ export function WingDetailConfigSection({
           </div>
           <div>
             <Select
+              label={t("partitionForm.wing.toFloor")}
+              required
               value={form.toFloor}
               onChange={handleToFloorChange}
               options={toFloorOptions}
@@ -125,10 +126,9 @@ export function WingDetailConfigSection({
 
       {/* No Of Flat On One Floor */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          {t("partitionForm.wing.noOfFlatOnOneFloor")} <span className="text-red-500">*</span>
-        </label>
         <Input
+          label={t("partitionForm.wing.noOfFlatOnOneFloor")}
+          required
           type="number"
           value={form.noOfFlatOnOneFloor}
           onChange={(e) => {
@@ -149,10 +149,9 @@ export function WingDetailConfigSection({
       {/* Flat Start and Incremented By */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            {t("partitionForm.wing.flatStart")} <span className="text-red-500">*</span>
-          </label>
           <Input
+            label={t("partitionForm.wing.flatStart")}
+            required
             type="number"
             value={form.flatStart}
             onChange={(e) => {
@@ -171,10 +170,9 @@ export function WingDetailConfigSection({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            {t("partitionForm.wing.incrementedBy")} <span className="text-red-500">*</span>
-          </label>
           <Input
+            label={t("partitionForm.wing.incrementedBy")}
+            required
             type="number"
             value={form.incrementedBy}
             onChange={(e) => {
@@ -196,10 +194,8 @@ export function WingDetailConfigSection({
       {/* Prefix and Generation Type */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            {t("partitionForm.wing.prefix")}
-          </label>
           <Input
+            label={t("partitionForm.wing.prefix")}
             value={form.prefix}
             onChange={(e) => setForm({ ...form, prefix: e.target.value })}
             placeholder={t("partitionForm.wing.placeholders.prefix")}
@@ -208,10 +204,9 @@ export function WingDetailConfigSection({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            {t("partitionForm.wing.generationType")} <span className="text-red-500">*</span>
-          </label>
           <Select
+            label={t("partitionForm.wing.generationType")}
+            required
             value={form.generationType}
             onChange={(_e, value) => {
               setForm({ ...form, generationType: value });
@@ -233,16 +228,16 @@ export function WingDetailConfigSection({
       <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-300 rounded-lg">
         <AlertCircle className="w-4 h-4 text-red-600 mt-0.5 flex-shrink-0" />
         <p className="text-xs text-red-800">
-          {t("partitionForm.wing.previewWarning")}
+          {t("partitionForm.wing.wingBuildingsDuplicate")}
         </p>
       </div>
 
       {/* Preview Building Button */}
-      <SaveButton
+      <PreviewButton
         onClick={handlePreviewBuilding}
         isLoading={loading}
         disabled={loading}
-        label={t("partitionForm.wing.previewBuilding")}
+        label={t("partitionForm.wing.preview.previewButton")}
         className="w-full"
       />
     </div>

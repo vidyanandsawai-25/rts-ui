@@ -1,6 +1,6 @@
 import { useState, useCallback, useTransition, useMemo, useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
-import { CreatePropertyFormData, CreatePropertyFormErrors } from "@/types/create-property-drawer.types";
+import { CreatePropertyFormData, CreatePropertyFormErrors } from "@/types/zone-master/properties/create-property-drawer.types";
 import { PropertyType } from "@/types/property-type.types";
 import { PropertyCategory } from "@/types/property-category.types";
 import { TaxZone } from "@/types/taxzoning.types";

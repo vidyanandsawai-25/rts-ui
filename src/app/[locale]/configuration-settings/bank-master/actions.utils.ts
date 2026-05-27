@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers';
-import { revalidatePath, revalidateTag } from 'next/cache';
+import { revalidatePath } from 'next/cache';
 import { locales } from '@/i18n/config';
 import { ApiError } from '@/lib/utils/api';
 import { getUserIdFromCookies } from '@/lib/utils/auth-session';
@@ -12,7 +12,6 @@ import {
 } from '@/lib/api/configuration-settings/bank/bank-master.validator';
 
 export const BANK_MASTER_PATH = '/configuration-settings/bank-master';
-export const BANK_MASTER_METADATA_TAG = 'bank-master-metadata';
 
 export type ValidationResult =
   | {
@@ -102,8 +101,6 @@ export function revalidateBankMaster(): void {
   for (const locale of locales) {
     revalidatePath(`/${locale}${BANK_MASTER_PATH}`, 'page');
   }
-
-  revalidateTag(BANK_MASTER_METADATA_TAG, 'max');
 }
 
 export async function resolveUserId(): Promise<number | null> {

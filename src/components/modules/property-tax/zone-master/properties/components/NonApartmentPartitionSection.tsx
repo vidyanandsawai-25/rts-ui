@@ -1,7 +1,7 @@
 "use client";
 
 import { Input, ValidationMessage } from "@/components/common";
-import { PartitionFormState, PartitionFormErrors } from "@/types/partition-form.types";
+import { PartitionFormState, PartitionFormErrors } from "@/types/zone-master/properties/partition-form.types";
 
 interface NonApartmentPartitionSectionProps {
   form: PartitionFormState;
@@ -29,7 +29,7 @@ export function NonApartmentPartitionSection({
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Input
-            label={t("partitionForm.nonApartment.fromPartition")}
+            label={t("partitionForm.fromPartition")}
             type="number"
             value={form.fromPartition}
             onChange={(e) => {
@@ -50,7 +50,7 @@ export function NonApartmentPartitionSection({
 
         <div>
           <Input
-            label={t("partitionForm.nonApartment.toPartition")}
+            label={t("partitionForm.toPartition")}
             type="number"
             value={form.toPartition}
             onChange={(e) => {

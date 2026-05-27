@@ -1,9 +1,9 @@
 import { useState, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { PartitionFormErrors } from "@/types/partition-form.types";
-import { SocietyDetailItem } from "@/types/societyDetails.types";
-import { WingItem } from "@/types/wing.types";
+import { PartitionFormErrors } from "@/types/zone-master/properties/partition-form.types";
+import { SocietyDetailItem } from "@/types/zone-master/properties/societyDetails.types";
+import { WingItem } from "@/types/zone-master/properties/wing.types";
 import { WingSummary } from "@/components/modules/property-tax/zone-master/properties/wingColumns";
 import { createSocietyDetailAction, updateSocietyDetailAction } from "@/app/[locale]/property-tax/zone-master/actions";
 
@@ -115,8 +115,7 @@ export function useWingManagement({
       setNewWingName("");
       setEditingSocietyDetailId(null);
       setShowAddWingForm(false);
-    } catch (error) {
-      console.error("Error saving wing:", error);
+    } catch (_error) {
       toast.error(t("partitionForm.wing.messages.saveWingError"));
     } finally {
       setAddingWing(false);

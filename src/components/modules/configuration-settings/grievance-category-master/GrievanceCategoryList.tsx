@@ -1,7 +1,6 @@
 'use client';
 
 import { useTransition, useCallback, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { MasterTable, useConfirm } from '@/components/common';
@@ -23,12 +22,24 @@ export function GrievanceCategoryList({
   headerExtra,
 }: GrievanceCategoryListProps) {
   const { updateQueries, isPending: isQueryPending, searchParams } = useQueryTransition();
-  const router = useRouter();
   const [isActionPending, startTransition] = useTransition();
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
   const { confirm } = useConfirm();
   const tCommon = useTranslations('common');
+  const tGrievanceToast = useTranslations('grievanceCategory.master.toast');
+
+  const activeDrawer = searchParams.get('drawer');
+  const activeId = searchParams.get('id');
+
+  const [prevActiveDrawer, setPrevActiveDrawer] = useState(activeDrawer);
+  const [prevActiveId, setPrevActiveId] = useState(activeId);
+
+  if (activeDrawer !== prevActiveDrawer || activeId !== prevActiveId) {
+    setPrevActiveDrawer(activeDrawer);
+    setPrevActiveId(activeId);
+    setEditingId(null);
+  }
 
   const isPending = isQueryPending || isActionPending;
 
@@ -43,14 +54,14 @@ export function GrievanceCategoryList({
   const handleEdit = useCallback(
     (id: number) => {
       setEditingId(id);
-      const params = new URLSearchParams(searchParams.toString());
-      params.set('page', String(page));
-      params.set('pageSize', String(pageSize));
-      router.push(
-        `/${locale}/configuration-settings/grievance-category-master/edit/${id}?${params.toString()}`
-      );
+      updateQueries({
+        page: page,
+        pageSize: pageSize,
+        drawer: 'edit',
+        id: String(id),
+      });
     },
-    [locale, page, pageSize, router, searchParams]
+    [page, pageSize, updateQueries]
   );
 
   const handleDelete = useCallback(
@@ -67,12 +78,12 @@ export function GrievanceCategoryList({
             try {
               const result = await deleteGrievanceCategoryAction(id, locale);
               if (result.success) {
-                toast.success(result.message || tCommon('messages.deleteSuccess'));
+                toast.success(tGrievanceToast('deleteSuccess'));
               } else {
-                toast.error(result.error || tCommon('errors.deleteError'));
+                toast.error(result.error || tGrievanceToast('deleteError'));
               }
             } catch {
-              toast.error(tCommon('errors.deleteError'));
+              toast.error(tGrievanceToast('deleteError'));
             } finally {
               setDeletingId(null);
             }
@@ -80,7 +91,7 @@ export function GrievanceCategoryList({
         },
       });
     },
-    [confirm, locale, tCommon, startTransition, deletingId]
+    [confirm, locale, tCommon, tGrievanceToast, startTransition, deletingId]
   );
 
   const columns = useGrievanceCategoryColumns({

@@ -4,8 +4,8 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Building2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { MasterTable } from "@/components/common/MasterTable";
-import { SearchInput, StatusBadge, AddButton, Select, Option } from "@/components/common";
-import { ZonePropertyItem } from "@/types/zoneProperty.types";
+import { SearchInput, StatusBadge, AddButton, Select, Option, Label } from "@/components/common";
+import { ZonePropertyItem } from "@/types/zone-master/properties/zoneProperty.types";
 import { WardItem } from "@/types/wardMaster.types";
 import { usePropertyListHandlers } from "@/hooks/zoneMaster/usePropertyListHandlers";
 import { useCallback, useMemo, useTransition } from "react";
@@ -202,7 +202,7 @@ export default function PropertyList({
                     </div>
                     {selectedWardId && (
                         <StatusBadge
-                            label={wardOptions.find(w => w.value === String(selectedWardId))?.label || `Ward ${selectedWardId}`}
+                            label={wardOptions.find(w => w.value === String(selectedWardId))?.label || `${t("propertyList.ward")} ${selectedWardId}`}
                             variant="info"
                         />
                     )}
@@ -211,10 +211,8 @@ export default function PropertyList({
                 {/* Ward Dropdown and Search Row */}
                 <div className="grid grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                            {t("propertyList.selectWard")} *
-                        </label>
                         <Select
+                            label={t("propertyList.selectWard")}
                             options={wardOptions}
                             value={selectedWardId ? String(selectedWardId) : ""}
                             onChange={(_, value) => handleWardChange(value)}
@@ -225,9 +223,9 @@ export default function PropertyList({
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <Label className="block text-sm font-medium text-gray-700 mb-1">
                             {t("propertyList.search")}
-                        </label>
+                        </Label>
                         <SearchInput
                             className="w-full"
                             placeholder={t("propertyList.searchPlaceholder")}

@@ -29,13 +29,13 @@ export function SubmoduleConfigList({
   const t = useTranslations('configMaster');
 
   return (
-    <div className="bg-slate-50/80 dark:bg-slate-900/50 p-4 sm:p-6 border-t border-slate-100 dark:border-slate-800 space-y-6">
+    <div className="bg-slate-50/80 p-4 sm:p-6 border-t border-slate-100 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-violet-100 dark:bg-violet-900/30 rounded-lg">
-            <Layers className="w-4 h-4 text-violet-600 dark:text-violet-400" />
+          <div className="p-2 bg-violet-100 rounded-lg">
+            <Layers className="w-4 h-4 text-violet-600" />
           </div>
-          <span className="text-sm font-bold text-slate-700 dark:text-slate-200 tracking-tight">
+          <span className="text-sm font-bold text-slate-700 tracking-tight">
             {t('modals.departmentConfig.submoduleTitle') || 'Submodules Configuration'}
           </span>
 
@@ -72,8 +72,8 @@ export function SubmoduleConfigList({
 
       <div className="space-y-3">
         {dept.submodules.length === 0 ? (
-          <div className="text-center py-10 bg-white/50 dark:bg-slate-900/30 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 flex flex-col items-center gap-2">
-            <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-full">
+          <div className="text-center py-10 bg-white/50 rounded-2xl border border-dashed border-slate-200 flex flex-col items-center gap-2">
+            <div className="p-2 bg-slate-100 rounded-full">
               <Layers className="w-5 h-5 text-slate-400" />
             </div>
             <span className="text-sm font-medium text-slate-400 italic">

@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { useTranslations } from "next-intl";
-import { PartitionFormState, PartitionFormErrors } from "@/types/partition-form.types";
-import { ZonePropertyItem } from "@/types/zoneProperty.types";
+import { PartitionFormState, PartitionFormErrors } from "@/types/zone-master/properties/partition-form.types";
+import { ZonePropertyItem } from "@/types/zone-master/properties/zoneProperty.types";
 import { Floor } from "@/types/floor.types";
 
 interface UsePartitionFormValidationProps {
@@ -43,7 +43,7 @@ export function usePartitionFormValidation({
     }
 
     // Validate based on partition type
-    if (data.partitionType === "wing" && data.createNewWing) {
+    if (data.partitionType === "wing") {
       // Validate wing-specific fields
       if (!data.wingLetter?.trim()) {
         newErrors.wingLetter = t("partitionForm.validation.wingLetterRequired");
@@ -67,10 +67,12 @@ export function usePartitionFormValidation({
         newErrors.generationType = t("partitionForm.validation.generationTypeRequired");
       }
       
-      // Check if toFloor is greater than or equal to fromFloor using floor indices
+      // Check if toFloor is greater than or equal to fromFloor using floor IDs
       if (data.fromFloor && data.toFloor && floors.length > 0) {
-        const fromFloorIndex = floors.findIndex(f => f.floorCode === data.fromFloor);
-        const toFloorIndex = floors.findIndex(f => f.floorCode === data.toFloor);
+        const fromFloorId = parseInt(data.fromFloor, 10);
+        const toFloorId = parseInt(data.toFloor, 10);
+        const fromFloorIndex = floors.findIndex(f => f.id === fromFloorId);
+        const toFloorIndex = floors.findIndex(f => f.id === toFloorId);
         
         if (fromFloorIndex !== -1 && toFloorIndex !== -1 && toFloorIndex < fromFloorIndex) {
           newErrors.toFloor = t("partitionForm.validation.toFloorMustBeGreaterOrEqual");
@@ -85,8 +87,13 @@ export function usePartitionFormValidation({
       ];
       
       numericFields.forEach(({ value, key }) => {
-        if (value && isNaN(parseInt(value, 10))) {
-          newErrors[key as keyof PartitionFormErrors] = t("partitionForm.validation.mustBeNumber");
+        if (value) {
+          const numValue = parseInt(value, 10);
+          if (isNaN(numValue)) {
+            newErrors[key as keyof PartitionFormErrors] = t("partitionForm.validation.mustBeNumber");
+          } else if (numValue <= 0) {
+            newErrors[key as keyof PartitionFormErrors] = t("partitionForm.wing.validation.invalidValue");
+          }
         }
       });
     } else {

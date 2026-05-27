@@ -3,6 +3,7 @@
 import { Column } from "@/components/common/MasterTable";
 import { Badge } from "@/components/common";
 import { PenLine, Building2 } from "lucide-react";
+import { IconOnlyActionButton } from "@/components/common/ActionButtons";
 
 export interface WingSummary {
   wingName: string;
@@ -57,22 +58,24 @@ export function getWingColumns({
       render: (_value, row) => (
         <div className="flex items-center justify-center gap-1">
           {/* Edit Wing Name Button */}
-          <button
+          <IconOnlyActionButton
+            icon={PenLine}
             onClick={() => onEditWing(row)}
-            className="p-1.5 hover:bg-green-50 text-green-600 rounded-lg transition-colors group"
-            title={t("partitionForm.wing.table.editWingName")}
-          >
-            <PenLine size={16} className="group-hover:scale-110 transition-transform" />
-          </button>
+            aria-label={t("partitionForm.wing.table.editWingName")}
+            variant="ghost"
+            size="sm"
+            className="text-green-600 hover:scale-110 transition-transform p-1.5 hover:bg-transparent"
+          />
 
           {/* Update Wing Structure Button */}
-          <button
+          <IconOnlyActionButton
+            icon={Building2}
             onClick={() => onUpdateStructure(row)}
-            className="p-1.5 hover:bg-blue-50 text-blue-600 rounded-lg transition-colors group"
-            title={t("partitionForm.wing.table.updateWing")}
-          >
-            <Building2 size={16} className="group-hover:scale-110 transition-transform" />
-          </button>
+            aria-label={t("partitionForm.wing.table.updateWing")}
+            variant="ghost"
+            size="sm"
+            className="text-blue-600 hover:scale-110 transition-transform p-1.5 hover:bg-transparent"
+          />
         </div>
       ),
     },

@@ -1,11 +1,11 @@
 import { WardItem } from "@/types/wardMaster.types";
-import { ZonePropertyItem } from "@/types/zoneProperty.types";
+import { ZonePropertyItem } from "@/types/zone-master/properties/zoneProperty.types";
 import { PropertyType } from "@/types/property-type.types";
 import { PropertyCategory } from "@/types/property-category.types";
 import { TaxZone } from "@/types/taxzoning.types";
-import { WingItem } from "@/types/wing.types";
+import { WingItem } from "@/types/zone-master/properties/wing.types";
 import { Floor } from "@/types/floor.types";
-import { SocietyDetailItem } from "@/types/societyDetails.types";
+import { SocietyDetailItem } from "@/types/zone-master/properties/societyDetails.types";
 
 export interface ZoneItem {
   id: number;

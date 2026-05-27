@@ -5,7 +5,7 @@ import { Input, Select, ValidationMessage, TextArea, RequiredFieldsNote, StatusT
 import type { Option } from '@/components/common';
 import { useTranslations } from 'next-intl';
 import type { FormState } from '@/types/configMaster.types';
-import { CODE_SANITIZE, TEXT_SANITIZE, DESCRIPTION_SANITIZE } from '@/lib/utils/validation-rules';
+
 
 interface ConfigKeyFormFieldsProps {
   formData: FormState;
@@ -59,6 +59,7 @@ export function ConfigKeyFormFields({
           placeholder={t('modals.addKey.form.placeholders.category')}
           error={errors.categoryId}
           disabled={isPending}
+          className="cursor-pointer [&_button]:cursor-pointer"
         />
       </div>
 
@@ -71,11 +72,8 @@ export function ConfigKeyFormFields({
           id="configCode"
           value={formData.configCode || ''}
           onChange={(e) => {
-            const val = e.target.value
-              .replace(CODE_SANITIZE, '')
-              .replace(/_+/g, '_')
-              .replace(/^_+/g, '');
-            onFieldChange('configCode', val);
+            const sanitized = e.target.value.replace(/[^A-Za-z0-9]/g, '');
+            onFieldChange('configCode', sanitized);
           }}
           placeholder={t('modals.addKey.form.placeholders.code')}
           className={errors.configCode ? 'border-red-500' : ''}
@@ -96,12 +94,8 @@ export function ConfigKeyFormFields({
           id="configName"
           value={formData.configName || ''}
           onChange={(e) => {
-            const val = e.target.value
-              .replace(TEXT_SANITIZE, '')
-              .replace(/[,.\-\/&]{2,}/g, (match) => match[0])
-              .trimStart()
-              .replace(/^[,.\-\/&]+/g, '');
-            onFieldChange('configName', val);
+            const sanitized = e.target.value.replace(/[^\p{L}\p{M}\p{N}\s]/gu, '');
+            onFieldChange('configName', sanitized);
           }}
           placeholder={t('modals.addKey.form.placeholders.name')}
           className={errors.configName ? 'border-red-500' : ''}
@@ -121,10 +115,8 @@ export function ConfigKeyFormFields({
           id="description"
           value={formData.description || ''}
           onChange={(e) => {
-            const val = e.target.value
-              .replace(DESCRIPTION_SANITIZE, '')
-              .replace(/[\/,.\-()&]{2,}/g, (match) => match[0]);
-            onFieldChange('description', val);
+            const sanitized = e.target.value.replace(/[^\p{L}\p{M}\p{N}\s]/gu, '');
+            onFieldChange('description', sanitized);
           }}
           placeholder={t('modals.addKey.form.placeholders.description')}
           className={errors.description ? 'border-red-500' : ''}
@@ -148,6 +140,7 @@ export function ConfigKeyFormFields({
           placeholder={t('modals.addKey.form.placeholders.dataType')}
           disabled={isPending}
           error={errors.dataType}
+          className="cursor-pointer [&_button]:cursor-pointer"
         />
       </div>
 
@@ -162,6 +155,7 @@ export function ConfigKeyFormFields({
               placeholder={t('modals.addKey.form.placeholders.defaultValue')}
               disabled={isPending}
               error={errors.defaultValue}
+              className="cursor-pointer [&_button]:cursor-pointer"
             />
             <ValidationMessage id="defaultValue-error" message={errors.defaultValue} visible={!!errors.defaultValue} />
           </>
@@ -176,18 +170,18 @@ export function ConfigKeyFormFields({
                     ? 'datetime-local'
                     : 'text'
               }
-              step={formData.dataType === 'decimal' ? 'any' : undefined}
+              min={formData.dataType === 'int' ? 1 : formData.dataType === 'decimal' ? 0.01 : undefined}
+              step={formData.dataType === 'decimal' ? 'any' : formData.dataType === 'int' ? 1 : undefined}
               value={formData.defaultValue || ''}
               onChange={(e) => {
-                let val = e.target.value;
-                if (formData.dataType === 'string') {
-                  val = val.replace(/[<>]/g, '');
-                }
-                onFieldChange('defaultValue', val);
+                const sanitized = formData.dataType === 'string'
+                  ? e.target.value.replace(/[^\p{L}\p{M}\p{N}\s]/gu, '')
+                  : e.target.value;
+                onFieldChange('defaultValue', sanitized);
               }}
               onKeyDown={(e) => {
-                if (formData.dataType === 'int' && /^[eE+\.,]$/.test(e.key)) e.preventDefault();
-                if (formData.dataType === 'decimal' && /^[eE+]$/.test(e.key)) e.preventDefault();
+                if (formData.dataType === 'int' && /^[eE+\-.,]$/.test(e.key)) e.preventDefault();
+                if (formData.dataType === 'decimal' && /^[eE+\-]$/.test(e.key)) e.preventDefault();
               }}
               placeholder={t('modals.addKey.form.placeholders.defaultValue')}
               className={errors.defaultValue ? 'border-red-500' : ''}
@@ -210,20 +204,32 @@ export function ConfigKeyFormFields({
           placeholder={t('modals.addKey.form.placeholders.controlType')}
           disabled={isPending}
           error={errors.controlType}
+          className="cursor-pointer [&_button]:cursor-pointer"
         />
       </div>
 
       {/* Status Toggle - Only show in Edit mode */}
       {isEdit && (
-        <StatusToggleCard
-          isActive={formData.isActive}
-          onToggle={(checked) => onFieldChange('isActive', checked)}
-          activeLabel={t('modals.addKey.form.active')}
-          inactiveLabel={t('modals.addKey.form.inactive')}
-          statusLabel={t('modals.addKey.form.status')}
-          description={formData.isActive ? t('modals.addKey.form.activeDescription') : t('modals.addKey.form.inactiveDescription')}
-          disabled={isPending}
-        />
+        <div
+          onClick={(e) => {
+            if (isPending) return;
+            const target = e.target as HTMLElement;
+            if (target.closest('button')) return;
+            onFieldChange('isActive', !formData.isActive);
+          }}
+          className="cursor-pointer"
+        >
+          <StatusToggleCard
+            isActive={formData.isActive}
+            onToggle={(checked) => onFieldChange('isActive', checked)}
+            activeLabel={t('modals.addKey.form.active')}
+            inactiveLabel={t('modals.addKey.form.inactive')}
+            statusLabel={t('modals.addKey.form.status')}
+            description={formData.isActive ? t('modals.addKey.form.activeDescription') : t('modals.addKey.form.inactiveDescription')}
+            disabled={isPending}
+            className="cursor-pointer [&_button]:cursor-pointer"
+          />
+        </div>
       )}
     </div>
   );

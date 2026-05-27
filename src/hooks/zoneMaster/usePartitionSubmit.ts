@@ -1,12 +1,12 @@
 import { useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { PartitionFormState, PartitionFormErrors } from "@/types/partition-form.types";
+import { PartitionFormState, PartitionFormErrors } from "@/types/zone-master/properties/partition-form.types";
 import { WardItem } from "@/types/wardMaster.types";
-import { ZonePropertyItem } from "@/types/zoneProperty.types";
-import { WingItem } from "@/types/wing.types";
+import { ZonePropertyItem } from "@/types/zone-master/properties/zoneProperty.types";
+import { WingItem } from "@/types/zone-master/properties/wing.types";
 import { Floor } from "@/types/floor.types";
-import { BulkPropertyItem } from "@/types/property-bulk.types";
+import { BulkPropertyItem } from "@/types/zone-master/properties/property-bulk.types";
 import { generateBuildingStructureAction, createBulkBuildingPropertiesAction } from "@/app/[locale]/property-tax/zone-master/actions";
 
 interface UsePartitionSubmitProps {
@@ -63,7 +63,7 @@ export function usePartitionSubmit({
     setLoading(true);
     try {
       // Handle wing partition creation
-      if (form.partitionType === "wing" && form.createNewWing) {
+      if (form.partitionType === "wing") {
         if (!selectedWard?.id || !selectedProperty?.propertyNo) {
           toast.error("Ward ID and Property No are required");
           setLoading(false);
@@ -77,8 +77,18 @@ export function usePartitionSubmit({
           return;
         }
 
-        const fromFloorData = floors.find(f => f.floorCode === form.fromFloor);
-        const toFloorData = floors.find(f => f.floorCode === form.toFloor);
+        // Convert floor IDs to floor codes for API submission
+        const fromFloorId = parseInt(form.fromFloor, 10);
+        const toFloorId = parseInt(form.toFloor, 10);
+        
+        if (isNaN(fromFloorId) || isNaN(toFloorId)) {
+          toast.error("Invalid floor selection");
+          setLoading(false);
+          return;
+        }
+        
+        const fromFloorData = floors.find(f => f.id === fromFloorId);
+        const toFloorData = floors.find(f => f.id === toFloorId);
         
         if (!fromFloorData || !toFloorData) {
           toast.error("Invalid floor selection");
@@ -100,16 +110,14 @@ export function usePartitionSubmit({
           wardId: selectedWard.id,
           propertyNo: selectedProperty.propertyNo,
           wingId: selectedWing.id,
-          fromFloor: form.fromFloor.trim(),
-          toFloor: form.toFloor.trim(),
+          fromFloor: fromFloorData.floorCode,
+          toFloor: toFloorData.floorCode,
           noOfFlatOnOneFloor,
           flatStart,
           incrementedBy,
           prifix: form.prefix?.trim() || undefined,
           generationType: form.generationType.trim(),
         };
-
-        console.log("[Submit] Payload:", payload);
 
         const result = await generateBuildingStructureAction(payload);
         
@@ -160,12 +168,10 @@ export function usePartitionSubmit({
             addressEnglish: selectedProperty.addressEnglish || "",
             location: selectedProperty.location || "",
             locationEnglish: selectedProperty.locationEnglish || "",
-            createdBy: 1,
+            createdBy: 0, // Will be set by server action from authenticated user
             createdDate: currentDate,
           });
         }
-
-        console.log("[Submit] Bulk Partition Payload:", bulkPayload);
 
         const result = await createBulkBuildingPropertiesAction(bulkPayload);
         
@@ -178,8 +184,7 @@ export function usePartitionSubmit({
           toast.error(result.error || t("partitionMessages.createError"));
         }
       }
-    } catch (error) {
-      console.error("Failed to create partition:", error);
+    } catch (_error) {
       toast.error(t("partitionMessages.createError"));
     } finally {
       setLoading(false);

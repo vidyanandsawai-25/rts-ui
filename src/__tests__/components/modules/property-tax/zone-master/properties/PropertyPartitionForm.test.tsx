@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, fireEvent, waitFor } from "@testing-library/react";
 import PropertyPartitionForm from "@/components/modules/property-tax/zone-master/properties/PropertyPartitionForm";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { ZonePropertyItem } from "@/types/zoneProperty.types";
+import { ZonePropertyItem } from "@/types/zone-master/properties/zoneProperty.types";
 
 // Mock next-intl
 vi.mock("next-intl", () => ({
@@ -197,8 +197,9 @@ describe("PropertyPartitionForm", () => {
     // (Logic in component calculates max partition + 1)
   });
 
-  it("should handle tab switching between wing and amenity", () => {
+  it("should handle tab switching between wing and amenity", async () => {
     const categoryMap = new Map();
+    // Use actual English category name (component compares against English literals)
     categoryMap.set(1, "Apartment");
     
     const props = {
@@ -207,12 +208,25 @@ describe("PropertyPartitionForm", () => {
       categoryMap
     };
     
-    const { getByTestId } = render(<PropertyPartitionForm {...props} />);
-    const amenityTab = getByTestId("tab-amenity");
+    const { getByTestId, getByRole } = render(<PropertyPartitionForm {...props} />);
     
+    // First select the property to populate form.mainPropertyId
+    const select = getByRole("combobox");
+    fireEvent.change(select, { target: { value: "10" } });
+    
+    // Wait for the tabs to render after property selection
+    await waitFor(() => {
+      const amenityTab = getByTestId("tab-amenity");
+      expect(amenityTab).toBeDefined();
+    });
+    
+    const amenityTab = getByTestId("tab-amenity");
     fireEvent.click(amenityTab);
+    
     // Check if amenity tab is active (in the mock, value is updated)
-    expect(getByTestId("tabs")).toHaveAttribute("data-value", "amenity");
+    await waitFor(() => {
+      expect(getByTestId("tabs")).toHaveAttribute("data-value", "amenity");
+    });
   });
 
   it("should handle building structure generation", async () => {

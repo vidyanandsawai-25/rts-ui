@@ -4,13 +4,13 @@ import { fetchZonesPagedAction, fetchWardsPagedAction, getZoneByIdAction, getAll
 import { fetchPropertiesPagedAction, fetchPropertyCategoriesAction, fetchPropertyTypesAction, fetchPropertyCategoryListAction, fetchTaxZonesAction, getNextPropertyNumberAction } from "./property.actions";
 import { ZoneItem, RightPanelTab } from "@/types/zoneMaster.types";
 import { WardItem } from "@/types/wardMaster.types";
-import { ZonePropertyItem } from "@/types/zoneProperty.types";
+import { ZonePropertyItem } from "@/types/zone-master/properties/zoneProperty.types";
 import { PropertyType } from "@/types/property-type.types";
 import { PropertyCategory } from "@/types/property-category.types";
 import { TaxZone } from "@/types/taxzoning.types";
-import { WingItem } from "@/types/wing.types";
+import { WingItem } from "@/types/zone-master/properties/wing.types";
 import { Floor } from "@/types/floor.types";
-import { SocietyDetailItem } from "@/types/societyDetails.types";
+import { SocietyDetailItem } from "@/types/zone-master/properties/societyDetails.types";
 
 export const dynamic = "force-dynamic";
 
@@ -226,8 +226,7 @@ const parsedZoneId = sanitized.zoneId ? Number(sanitized.zoneId) : NaN;
       if (allWardsResult.success && allWardsResult.data) {
         allWardsForPropertyDropdown = allWardsResult.data;
       }
-    } catch (error) {
-      console.error("[ZoneMasterPage] Failed to fetch all wards for zone:", error);
+    } catch (_error) {
     }
   }
 
@@ -270,9 +269,8 @@ const parsedZoneId = sanitized.zoneId ? Number(sanitized.zoneId) : NaN;
       propertyTotalPages =
         propertiesResult.totalPages ||
         Math.ceil(propertyTotalCount / propPageSize);
-    } catch (error) {
+    } catch (_error) {
       // Log error but don't fail the page
-      console.error("[ZoneMasterPage] Failed to fetch properties:", error);
     }
   }
 
@@ -290,8 +288,7 @@ const parsedZoneId = sanitized.zoneId ? Number(sanitized.zoneId) : NaN;
           return acc;
         }, {} as Record<number, string>);
       }
-    } catch (error) {
-      console.error("[ZoneMasterPage] Failed to fetch categories:", error);
+    } catch (_error) {
     }
 
     // Fetch property types for BuildingPreviewModal dropdown
@@ -303,8 +300,7 @@ const parsedZoneId = sanitized.zoneId ? Number(sanitized.zoneId) : NaN;
           return acc;
         }, {} as Record<number, string>);
       }
-    } catch (error) {
-      console.error("[ZoneMasterPage] Failed to fetch property types:", error);
+    } catch (_error) {
     }
   }
 

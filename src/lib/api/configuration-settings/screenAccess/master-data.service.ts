@@ -3,6 +3,7 @@ import type { DepartmentMasterData, ModuleMasterData } from '@/types/screen-acce
 import type { PagedResponse } from '@/types/common.types';
 import { ApiError } from '@/lib/utils/api';
 import { getMasterDataPageSize } from './screen-access.services';
+import { parseBoolean } from '@/lib/utils/type-guards';
 
 export async function getDepartments(): Promise<DepartmentMasterData[]> {
   const url = `/DepartmentMaster?PageSize=${getMasterDataPageSize()}`;
@@ -72,6 +73,7 @@ export async function getModules(): Promise<ModuleMasterData[]> {
         moduleName: String(module.moduleName ?? module.ModuleName ?? ''),
         departmentMasterId: deptId,
         departmentId: deptId,
+        isActive: parseBoolean(module.isActive ?? module.IsActive ?? true),
       };
     })
     .filter((module) => module.moduleMasterId > 0 && module.departmentMasterId > 0);

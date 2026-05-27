@@ -79,4 +79,5 @@ export interface MasterModule {
   departmentId?: number;
   departmentID?: number;
   departmentMasterID?: number;
+  isActive?: boolean;
 }

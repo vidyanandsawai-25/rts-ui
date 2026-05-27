@@ -2,12 +2,13 @@
 
 import { useState, useMemo } from "react";
 import { useTranslations } from "next-intl";
-import { Building2, Layers, Home, Grid3x3, Loader2, Info, Rocket, CheckCircle2, XCircle } from "lucide-react";
+import { Building2, Layers, Home, Grid3x3, Loader2, Info, Zap, CheckCircle2, XCircle, X } from "lucide-react";
 import { toast } from "sonner";
 import { Modal } from "@/components/common/Modal";
-import { BuildingStructureItem } from "@/types/building-structure.types";
-import { BulkPropertyItem, BulkPropertyCreateResponse } from "@/types/property-bulk.types";
+import { BuildingStructureItem } from "@/types/zone-master/properties/building-structure.types";
+import { BulkPropertyItem, BulkPropertyCreateResponse } from "@/types/zone-master/properties/property-bulk.types";
 import { createBulkBuildingPropertiesAction } from "@/app/[locale]/property-tax/zone-master/actions";
+import { Button } from "@/components/common";
 
 interface BuildingPreviewProps {
   open: boolean;
@@ -158,7 +159,7 @@ export function BuildingPreviewModal({
       location: item.flatNo,
       locationEnglish: item.flatNo,
       societyDetailId,
-      createdBy: 0,
+      createdBy: 0, // Will be set by server action from authenticated user
       createdDate: new Date().toISOString(),
     }));
 
@@ -182,8 +183,7 @@ export function BuildingPreviewModal({
       } else {
         toast.error(result.error || t("partitionForm.wing.generate.error"));
       }
-    } catch (error) {
-      console.error("Generate properties error:", error);
+    } catch (_error) {
       toast.error(t("partitionForm.wing.generate.error"));
     } finally {
       setGenerating(false);
@@ -211,31 +211,34 @@ export function BuildingPreviewModal({
       count={organizedData.totalUnits}
       maxWidth="xl"
       footer={
-        <div className="flex items-center gap-2">
-          <button
+        <div className="flex items-center justify-end gap-3">
+          <Button
             onClick={handleClose}
-            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md font-medium transition-colors text-sm border border-slate-300"
-          >
+            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 !text-slate-600 rounded-md font-medium transition-colors text-sm border border-slate-300"
+          > 
+            <div className="flex items-center justify-end gap-2">
+            <X className="w-4 h-4 text-slate-600 mr-1" />
             {t("partitionForm.wing.preview.close")}
-          </button>
+            </div>
+          </Button>
           {organizedData.totalUnits > 0 && !generateResult?.allSucceeded && (
-            <button
+            <Button
               onClick={handleGenerate}
               disabled={generating || !canGenerate}
               className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-md font-medium transition-colors text-sm flex items-center gap-2"
             >
               {generating ? (
-                <>
+                <div className="flex items-center justify-end gap-2">
                   <Loader2 className="w-4 h-4 animate-spin" />
                   {t("partitionForm.wing.generate.generating")}
-                </>
+                </div>
               ) : (
-                <>
-                  <Rocket className="w-4 h-4" />
+                <div className="flex items-center justify-end gap-2">
+                  <Zap className="w-4 h-4" />
                   {t("partitionForm.wing.generate.button")}
-                </>
+                </div>
               )}
-            </button>
+            </Button>
           )}
         </div>
       }
@@ -425,11 +428,11 @@ export function BuildingPreviewModal({
                             }`}
                           >
                             <span>
-                              {isGround ? `GF (F${floor.floorNo})` : `F${floor.floorNo}`}
+                              {isGround ? `${t("partitionForm.wing.preview.groundFloorLabel")} (${t("partitionForm.wing.preview.floorLabel")}${floor.floorNo})` : `${t("partitionForm.wing.preview.floorLabel")}${floor.floorNo}`}
                             </span>
                             {isTop && (
                               <span className="text-[8px] bg-amber-200 text-amber-800 rounded px-1 py-px">
-                                TOP
+                                {t("partitionForm.wing.preview.topLabel")}
                               </span>
                             )}
                           </div>

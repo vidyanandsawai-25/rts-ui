@@ -1,7 +1,7 @@
 "use server"
 
 import { getOldTaxesDetails, saveOldTaxesDetails } from "@/lib/api/property-old-details.service";
-import { OldTaxesDetails } from "@/types/property-old-details.types";
+import { OldTaxesDetails } from "@/types/OldDetails/property-old-details.types";
 import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 import { oldDetailsValidations } from "@/lib/utils/validation-schemas";

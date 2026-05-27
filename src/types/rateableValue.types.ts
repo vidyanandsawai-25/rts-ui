@@ -112,44 +112,44 @@ export interface RateableValueResponse {
  * Contains formatted string values for UI rendering
  */
 export interface RateableRow {
-  /** Property detail identifier */
-  id: number;
-  /** Floor number/description */
-  floor: string;
-  /** Sub Floor */
-  subFloor: string;
-  /** Construction year */
-  constructionYear: string;
-  /** Assessment year */
-  assessmentYear: string;
-  /** Construction type */
-  constructionType: string;
-  /** Nature/type of building use */
-  natureTypeBuilding: string;
-  /** Sub-type of use */
-  subType: string;
-  /** Number of rooms */
-  noOfRooms: string;
-  /** Formatted carpet area (sq ft & sq m) */
-  carpetArea: string;
-  /** Formatted built-up area (sq ft & sq m) */
-  builtUpArea: string;
-  /** Occupancy certificate number */
-  ocNumber: string;
-  /** Formatted occupancy date */
-  ocDate: string;
-  /** Renter name */
-  renterName: string;
-  /** Formatted annual rent (monthly & yearly) */
-  annualRent: string;
-  /** Formatted rate (monthly & yearly) */
-  rate: string;
-  /** Formatted yearly rental value */
-  yearlyRentalValue: string;
-  /** Formatted depreciation */
-  depreciation: string;
-  /** Formatted maintenance */
-  maintenance: string;
+    /** Property detail identifier */
+    id: number;
+    /** Floor number/description */
+    floor: string;
+    /** Sub Floor */
+    subFloor: string;
+    /** Construction year */
+    constructionYear: string;
+    /** Assessment year */
+    assessmentYear: string;
+    /** Construction type */
+    constructionType: string;
+    /** Nature/type of building use */
+    natureTypeBuilding: string;
+    /** Sub-type of use */
+    subType: string;
+    /** Number of rooms */
+    noOfRooms: string;
+    /** Formatted carpet area (sq ft & sq m) */
+    carpetArea: string;
+    /** Formatted built-up area (sq ft & sq m) */
+    builtUpArea: string;
+    /** Occupancy certificate number */
+    ocNumber: string;
+    /** Formatted occupancy date */
+    ocDate: string;
+    /** Renter name */
+    renterName: string;
+    /** Formatted annual rent (monthly & yearly) */
+    annualRent: string;
+    /** Formatted rate (monthly & yearly) */
+    rate: string;
+    /** Formatted yearly rental value */
+    yearlyRentalValue: string;
+    /** Formatted depreciation */
+    depreciation: string;
+    /** Formatted maintenance */
+    maintenance: string;
     /** Formatted annual rental value (ALV) */
     alv: string;
     /** Formatted rateable value */

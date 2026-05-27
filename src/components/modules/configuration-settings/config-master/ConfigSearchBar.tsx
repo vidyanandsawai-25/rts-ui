@@ -67,7 +67,7 @@ export function ConfigSearchBar() {
         {isPending ? (
           <Loader2 className="w-4 h-4 text-indigo-600 animate-spin" />
         ) : (
-          <Search className="w-4 h-4 text-slate-500 dark:text-slate-400 group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-all group-focus-within:scale-110" />
+          <Search className="w-4 h-4 text-slate-500 group-focus-within:text-indigo-600 transition-all group-focus-within:scale-110" />
         )}
       </div>
       <Input
@@ -76,7 +76,7 @@ export function ConfigSearchBar() {
         defaultValue={currentSearch}
         onChange={(e) => handleSearch(e.target.value)}
         className={cn(
-          "pl-11 pr-10 h-11 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 shadow-sm hover:shadow-md rounded-xl w-full text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 transition-all text-sm font-medium",
+          "pl-11 pr-10 h-11 bg-white border-2 border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 shadow-sm hover:shadow-md rounded-xl w-full text-slate-900 placeholder:text-slate-500 transition-all text-sm font-medium",
           isPending && "opacity-70"
         )}
       />

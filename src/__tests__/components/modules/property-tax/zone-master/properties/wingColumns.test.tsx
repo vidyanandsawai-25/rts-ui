@@ -67,10 +67,10 @@ describe("wingColumns", () => {
     const actionsColumn = columns.find((c) => c.key === "wingId");
     
     const result = actionsColumn?.render?.(101, mockRow as WingSummary & Record<string, unknown>, 0);
-    const { getByTitle } = render(<>{result}</>);
+    const { getByLabelText } = render(<>{result}</>);
     
-    const editButton = getByTitle("partitionForm.wing.table.editWingName");
-    const updateButton = getByTitle("partitionForm.wing.table.updateWing");
+    const editButton = getByLabelText("partitionForm.wing.table.editWingName");
+    const updateButton = getByLabelText("partitionForm.wing.table.updateWing");
     
     fireEvent.click(editButton);
     expect(mockOnEditWing).toHaveBeenCalledWith(mockRow);

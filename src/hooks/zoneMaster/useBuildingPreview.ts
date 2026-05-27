@@ -1,12 +1,12 @@
 import { useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { PartitionFormState } from "@/types/partition-form.types";
+import { PartitionFormState } from "@/types/zone-master/properties/partition-form.types";
 import { WardItem } from "@/types/wardMaster.types";
-import { ZonePropertyItem } from "@/types/zoneProperty.types";
-import { WingItem } from "@/types/wing.types";
+import { ZonePropertyItem } from "@/types/zone-master/properties/zoneProperty.types";
+import { WingItem } from "@/types/zone-master/properties/wing.types";
 import { Floor } from "@/types/floor.types";
-import { BuildingStructureItem } from "@/types/building-structure.types";
+import { BuildingStructureItem } from "@/types/zone-master/properties/building-structure.types";
 import { generateBuildingStructureAction } from "@/app/[locale]/property-tax/zone-master/actions";
 
 interface UseBuildingPreviewProps {
@@ -50,8 +50,18 @@ export function useBuildingPreview({
       return;
     }
 
-    const fromFloorData = floors.find(f => f.floorCode === form.fromFloor);
-    const toFloorData = floors.find(f => f.floorCode === form.toFloor);
+    // Convert floor IDs to floor data
+    const fromFloorId = parseInt(form.fromFloor, 10);
+    const toFloorId = parseInt(form.toFloor, 10);
+    
+    if (isNaN(fromFloorId) || isNaN(toFloorId)) {
+      toast.error("Invalid floor selection");
+      setLoadingPreview(false);
+      return;
+    }
+    
+    const fromFloorData = floors.find(f => f.id === fromFloorId);
+    const toFloorData = floors.find(f => f.id === toFloorId);
 
     if (!fromFloorData) {
       toast.error("Invalid From Floor selection. Please select a valid floor.");
@@ -62,8 +72,8 @@ export function useBuildingPreview({
       return;
     }
     
-    const fromFloorIndex = floors.findIndex(f => f.floorCode === form.fromFloor);
-    const toFloorIndex = floors.findIndex(f => f.floorCode === form.toFloor);
+    const fromFloorIndex = floors.findIndex(f => f.id === fromFloorId);
+    const toFloorIndex = floors.findIndex(f => f.id === toFloorId);
     
     if (toFloorIndex < fromFloorIndex) {
       toast.error("To Floor must be greater than or equal to From Floor");
@@ -101,8 +111,8 @@ export function useBuildingPreview({
         wardId: selectedWard!.id,
         propertyNo: selectedProperty!.propertyNo,
         wingId: selectedWing.id,
-        fromFloor: form.fromFloor.trim(),
-        toFloor: form.toFloor.trim(),
+        fromFloor: fromFloorData.floorCode,
+        toFloor: toFloorData.floorCode,
         noOfFlatOnOneFloor,
         flatStart,
         incrementedBy,
@@ -110,11 +120,8 @@ export function useBuildingPreview({
         generationType: form.generationType.trim(),
       };
 
-      console.log("[Preview] Building Structure Payload:", JSON.stringify(payload, null, 2));
-
       const result = await generateBuildingStructureAction(payload);
       
-      console.log("[Preview] API Result:", result);
       
       if (result.success && result.data) {
         setPreviewData(result.data);
@@ -124,7 +131,6 @@ export function useBuildingPreview({
         setPreviewData([]);
       }
     } catch (error) {
-      console.error("[Preview] Exception:", error);
       const errorMessage = error instanceof Error ? error.message : "Failed to generate preview";
       toast.error(errorMessage);
       setPreviewData([]);

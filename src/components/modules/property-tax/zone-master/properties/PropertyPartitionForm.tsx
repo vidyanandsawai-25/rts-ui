@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { Drawer } from "@/components/common/Drawer";
 import { CancelButton, SaveButton, Select, Tabs, ValidationMessage } from "@/components/common";
 import { Column } from "@/components/common/MasterTable";
-import { PropertyPartitionFormProps } from "@/types/partition-form.types";
+import { PropertyPartitionFormProps } from "@/types/zone-master/properties/partition-form.types";
 import { BuildingPreviewModal } from "./BuildingPreviewModal";
 import { getWingColumns, WingSummary } from "./wingColumns";
 import {
@@ -169,10 +169,17 @@ export default function PropertyPartitionForm({
   });
 
   // Check if selected property category is Apartment or Multi Commercial Apartment
+  // Note: categoryMap values are in English from database, so we compare against English literals
   const isApartmentCategory = useMemo(() => {
     if (!selectedProperty?.categoryId || !categoryMap) return false;
     const categoryName = categoryMap.get(selectedProperty.categoryId);
     return categoryName === "Apartment" || categoryName === "Multi Commercial Apartment";
+  }, [selectedProperty, categoryMap]);
+
+  // Get actual category name from categoryMap
+  const categoryName = useMemo(() => {
+    if (!selectedProperty?.categoryId || !categoryMap) return null;
+    return categoryMap.get(selectedProperty.categoryId) || null;
   }, [selectedProperty, categoryMap]);
 
   // Define columns for the wing summary table
@@ -269,20 +276,20 @@ export default function PropertyPartitionForm({
           selectedWard={ward}
           selectedProperty={selectedProperty}
           isApartmentCategory={isApartmentCategory}
+          categoryName={categoryName}
           t={t}
         />
 
         {/* Main Property Selection */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            {t("partitionForm.mainPropertyNo")} <span className="text-red-500">*</span>
-          </label>
           <Select
+            label={t("partitionForm.mainPropertyNo")}
             value={form.mainPropertyId ? String(form.mainPropertyId) : ""}
             onChange={handlePropertySelect}
             options={propertyOptions}
             placeholder={t("partitionForm.placeholders.selectMainProperty")}
             disabled={loading}
+            required
           />
           <ValidationMessage
             message={errors.mainPropertyId}
@@ -376,7 +383,7 @@ export default function PropertyPartitionForm({
                 </>
               ) : (
                 <div className="p-4 bg-gray-50 border border-gray-300 rounded-lg text-center text-gray-500">
-                  {t("partitionForm.amenityComingSoon")}
+                  {t("partitionForm.wing.amenity.notImplemented")}
                 </div>
               )
             ) : (

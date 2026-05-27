@@ -28,11 +28,11 @@ export function useBankFormHandlers({
       if (name === 'bankCode' || name === 'ifscCode') {
         value = value.toUpperCase().replace(/[^A-Z0-9]/g, '');
       } else if (name === 'bankName' || name === 'branchName') {
-        // Allows letters, spaces, hyphens, and parentheses
-        value = value.replace(/[^a-zA-Z\s\-()]/g, '');
+        // Allows letters (any language), spaces, hyphens, and parentheses
+        value = value.replace(/[^\p{L}\p{M}\s\-()]/gu, '');
       } else if (name === 'city' || name === 'state') {
-        // Allows only letters and spaces (no symbols or numbers)
-        value = value.replace(/[^a-zA-Z\s]/g, '');
+        // Allows only letters (any language) and spaces
+        value = value.replace(/[^\p{L}\p{M}\s]/gu, '');
       } else if (name === 'pincode') {
         // Allows only numbers
         value = value.replace(/[^0-9]/g, '');
