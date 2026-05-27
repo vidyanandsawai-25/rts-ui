@@ -12,48 +12,48 @@ export const getFloorInformationColumns = (t: (key: string) => string): Column<F
   {
     key: 'floor',
     label: t('floor.floorLabel'),
-    // width: '120px'
+    headerClassName: 'text-xs uppercase border-r border-white/30 font-semibold text-white text-center',
   },
   {
     key: 'subFloor',
     label: t('floor.subFloor'),
-    // width: '120px'
+    headerClassName: 'text-xs uppercase border-r border-white/30 font-semibold text-white text-center',
   },
   {
     key: 'conYr',
     label: t('floor.conYr'),
-    // width: '120px'
+    headerClassName: 'text-xs uppercase border-r border-white/30 font-semibold text-white text-center',
   },
   {
     key: 'assessmentYr',
     label: t('floor.asstYr'),
-    // width: '120px'
+    headerClassName: 'text-xs uppercase border-r border-white/30 font-semibold text-white text-center',
   },
   {
     key: 'conTyp',
     label: t('floor.conTyp'),
-    // width: '220px'
+    headerClassName: 'text-xs uppercase border-r border-white/30 font-semibold text-white text-center',
   },
   {
     key: 'use',
     label: t('floor.use'),
-    // width: '280px'
+    headerClassName: 'text-xs uppercase border-r border-white/30 font-semibold text-white text-center',
   },
   {
     key: 'subUse',
     label: t('floor.subTyp'),
-    // width: '180px'
+    headerClassName: 'text-xs uppercase border-r border-white/30 font-semibold text-white text-center',
   },
   {
-    key: 'carpetAreaSqFt',
-    label: t('floor.carpetArea'),
-    // width: '140px',
-    render: (value: unknown) => <span className="font-bold text-blue-700">{String(value)}</span>
+    key: 'carpetAreaCombined',
+    label: t('oldDetails.carpetformheaderArea'),
+    headerClassName: 'text-xs uppercase border-r border-white/30 font-semibold text-white text-center',
+    render: (value: unknown) => <span className="font-bold text-blue-800 flex w-full justify-center items-center">{String(value)}</span>
   },
   {
-    key: 'builtupAreaSqFt',
-    label: t('floor.builtupArea'),
-    // width: '140px',
-    render: (value: unknown) => <span className="font-bold text-blue-700">{String(value)}</span>
+    key: 'builtupAreaCombined',
+    label: t('oldDetails.builtupformheaderArea'),
+    headerClassName: 'text-xs uppercase border-r border-white/30 font-semibold text-white text-center',
+    render: (value: unknown) => <span className="font-bold text-blue-800 flex w-full justify-center items-center">{String(value)}</span>
   },
 ];

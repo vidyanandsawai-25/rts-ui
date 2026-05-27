@@ -846,6 +846,8 @@
         "areaSqM": "क्षेत्रफळ (चौ.मी.)",
         "builtupAreaSqFt": "बांधकाम क्षेत्रफळ (चौ.फू.)",
         "builtupAreaSqMeter": "बांधकाम क्षेत्रफळ (चौ.मी.)",
+        "carpetformheaderArea": "कार्पेट क्षेत्रफळ (चौ. फूट/चौ. मी.)",
+        "builtupformheaderArea": "बांधकाम क्षेत्रफळ (चौ. फूट/चौ. मी.)",
          "assessmentYear": "मूल्यांकन वर्ष",
         "plotArea": "भूखंड क्षेत्रफळ",
         "plotNo": "भूखंड क्र.",

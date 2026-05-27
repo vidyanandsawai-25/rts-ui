@@ -110,6 +110,7 @@ export default function FloorInformationForm({
             onEdit={handleEdit}
             onDelete={handleDelete}
           />
+       
         </div>
 
       </div>

@@ -926,6 +926,8 @@
         "partitionNo": "Partition No",
         "eGovernanceNo": "E-Governance No",
         "carpetArea": "Carpet Area (Sqft/SqMtr)",
+        "carpetformheaderArea": "Carpet Area (ft/mtr)",
+        "builtupformheaderArea": "Builtup Area (ft/mtr)",
         "carpetAreaSqFt": "Carpet Area (sq.ft)",
         "areaSqFt": "Area (Sq Ft)",
         "areaSqM": "Area (sq.m)",

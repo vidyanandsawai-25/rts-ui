@@ -42,24 +42,28 @@ export function FloorTableSection({
     use: f.typeOfUseDescription,
     subUse: f.subTypeOfUseDescription,
     carpetAreaSqFt: f.oldCarpetAreaSqFeet,
-    builtupAreaSqFt: f.oldBuiltupAreaSqFeet || '',
+    carpetAreaSqM: f.oldCarpetAreaSqMeter,
+    carpetAreaCombined: `${f.oldCarpetAreaSqFeet ? Number(f.oldCarpetAreaSqFeet).toFixed(2) : 0}/${f.oldCarpetAreaSqMeter ? Number(f.oldCarpetAreaSqMeter).toFixed(2) : 0}`,    
+    builtupAreaCombined: `${f.oldBuiltupAreaSqFeet ? Number(f.oldBuiltupAreaSqFeet).toFixed(2) : 0}/${f.oldBuiltupAreaSqMeter ? Number(f.oldBuiltupAreaSqMeter).toFixed(2) : 0}`,
   }));
 
+
+
   return (
-    <div className="rounded-lg overflow-x-auto bg-white shadow-sm mb-6 border border-blue-200 [&_thead]:bg-none! [&_thead]:bg-[#2D3E8A]! [&_th]:text-white! [&_th]:whitespace-nowrap! [&_th]:font-semibold!">
+    // <div className="rounded-lg overflow-x-auto bg-white shadow-sm mb-6 border border-blue-200 text-white">
+    <div className="rounded-lg overflow-x-auto bg-white shadow-sm mb-6 border border-blue-200 [&_th:last-child]:text-white! [&_th:last-child]:text-xs [&_th:last-child]:border-l [&_th:last-child]:border-white/30">
       <MasterTable
         columns={getFloorInformationColumns(t)}
         data={transformedData}
         totalCount={existingFloorDetails.length}
         getRowKey={(row: FloorTableRow) => String(row.id || "")}
         maxBodyHeightClassName="max-h-[350px]"
-        theadClassName="sticky top-0 z-20 bg-[#2D3E8A] text-white"
+        theadClassName="sticky top-0 z-20 bg-[#2D3E8A] text-white border-b border-blue-300"
         rowClassName={() => "hover:bg-blue-50/50 transition-colors"}
         tableClassName="min-w-max"
-        
-        actionLabel={t('floor.actions')}
+        actionLabel={t('floor.actions').toUpperCase()}
         renderActions={useCallback((row: FloorTableRow) => (
-          <div className="flex items-center gap-2 whitespace-nowrap">
+          <div className="flex items-center gap-2 whitespace-nowrap ">
             <EditButton onClick={() => onEdit(row.originalRow)} />
             <DeleteButton onClick={() => handleDeleteClick(row)} />
           </div>

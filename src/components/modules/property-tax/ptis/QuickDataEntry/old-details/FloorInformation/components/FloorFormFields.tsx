@@ -176,7 +176,11 @@ export function FloorFormFields({
                     type="number"
                     className="h-9 border-blue-100 focus:ring-blue-400"
                     placeholder={t('oldDetails.floordtails.carpetAreaPlaceholder')}
-                    value={formData.oldCarpetAreaSqFeet}
+                    value={
+                        formData.oldCarpetAreaSqFeet
+                            ? Number(formData.oldCarpetAreaSqFeet).toFixed(2)
+                            : ''
+                    }
                     onChange={(e) => onFieldChange('oldCarpetAreaSqFeet', e.target.value)}
                 />
                 {showError("oldCarpetAreaSqFeet") && (
@@ -193,7 +197,11 @@ export function FloorFormFields({
                     type="number"
                     className="h-9 border-slate-200 bg-slate-50 text-slate-500 cursor-not-allowed"
                     placeholder="0"
-                    value={formData.oldAreaSqMeter || ''}
+                    value={
+                        formData.oldAreaSqMeter
+                            ? Number(formData.oldAreaSqMeter).toFixed(2)
+                            : ''
+                    }
                     readOnly
                 />
             </div>
@@ -207,7 +215,11 @@ export function FloorFormFields({
                     type="number"
                     className="h-9 border-slate-200 bg-slate-50 text-slate-500 cursor-not-allowed"
                     placeholder="0"
-                    value={formData.oldBuiltupAreaSqFeet || ''}
+                     value={
+                        formData.oldBuiltupAreaSqFeet
+                            ? Number(formData.oldBuiltupAreaSqFeet).toFixed(2)
+                            : ''
+                    }
                     readOnly
                 />
             </div>
@@ -221,7 +233,11 @@ export function FloorFormFields({
                     type="number"
                     className="h-9 border-slate-200 bg-slate-50 text-slate-500 cursor-not-allowed"
                     placeholder="0"
-                    value={formData.oldBuiltupAreaSqMeter || ''}
+                    value={
+                        formData.oldBuiltupAreaSqMeter
+                            ? Number(formData.oldBuiltupAreaSqMeter).toFixed(2)
+                            : ''
+                    }
                     readOnly
                 />
             </div>

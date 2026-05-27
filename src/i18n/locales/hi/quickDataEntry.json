@@ -846,6 +846,8 @@
         "areaSqM": "क्षेत्रफल (वर्ग मीटर)",
         "builtupAreaSqFt": "बिल्टअप क्षेत्रफल (वर्ग फुट)",
         "builtupAreaSqMeter": "बिल्टअप क्षेत्रफल (वर्ग मीटर)",
+        "carpetformheaderArea": "कारपेट क्षेत्रफल (वर्ग फुट/वर्ग मीटर)",
+        "builtupformheaderArea": "निर्मित क्षेत्रफल (वर्ग फुट/वर्ग मीटर)",
         "assessmentYear": "मूल्यांकन वर्ष",
         "plotArea": "प्लॉट क्षेत्रफल",
         "plotNo": "प्लॉट नं.",

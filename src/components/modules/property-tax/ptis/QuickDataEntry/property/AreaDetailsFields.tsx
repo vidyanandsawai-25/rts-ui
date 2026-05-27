@@ -24,7 +24,7 @@ export const AreaDetailsFields = ({
                     name="totalCarpetAreaSqFeet"
                     type="number"
                     placeholder="1200"
-                    defaultValue={propertyData?.totalCarpetAreaSqFeet ?? ''}
+                    defaultValue={Number(propertyData?.totalCarpetAreaSqFeet).toFixed(2) ?? ''}
                     className="h-9 text-sm bg-gray-50 text-gray-600 cursor-not-allowed border-gray-300"
                 />
             </div>
@@ -40,7 +40,7 @@ export const AreaDetailsFields = ({
                     name="totalBuiltupAreaSqFeet"
                     type="number"
                     placeholder="1350"
-                    defaultValue={propertyData?.totalBuiltupAreaSqFeet ?? ''}
+                    defaultValue={Number(propertyData?.totalBuiltupAreaSqFeet).toFixed(2) ?? ''}
                     className="h-9 text-sm bg-gray-50 text-gray-600 cursor-not-allowed border-gray-300"
                 />
             </div>
@@ -56,7 +56,7 @@ export const AreaDetailsFields = ({
                     name="totalCarpetAreaSqMeter"
                     type="number"
                     placeholder="22.66"
-                    defaultValue={propertyData?.totalCarpetAreaSqMeter ?? ''}
+                    defaultValue={Number(propertyData?.totalCarpetAreaSqMeter).toFixed(2) ?? ''}
                     className="h-9 text-sm bg-gray-50 text-gray-600 cursor-not-allowed border-gray-300"
                 />
             </div>
@@ -72,7 +72,7 @@ export const AreaDetailsFields = ({
                     name="totalBuiltupAreaSqMeter"
                     type="number"
                     placeholder="27.19"
-                    defaultValue={propertyData?.totalBuiltupAreaSqMeter ?? ''}
+                    defaultValue={Number(propertyData?.totalBuiltupAreaSqMeter).toFixed(2) ?? ''}
                     className="h-9 text-sm bg-gray-50 text-gray-600 cursor-not-allowed border-gray-300"
                 />
             </div>
