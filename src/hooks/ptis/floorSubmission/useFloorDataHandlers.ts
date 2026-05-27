@@ -178,8 +178,8 @@ export const useFloorDataHandlers = (params: {
 
     try {
       sessionStorage.setItem('editingFloorForm', JSON.stringify(currentForm));
-    } catch (e) {
-      console.warn("Failed to save floor state", e);
+    } catch {
+      // Session staging is best-effort before navigating to renter screen.
     }
 
     const floorIdParam = currentForm.id ? String(currentForm.id) : 'new';

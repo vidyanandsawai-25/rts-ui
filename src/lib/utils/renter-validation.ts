@@ -1,4 +1,5 @@
 import { RenterFormDataDetails } from "@/types/renter.types";
+import { validateCustomDateRangesCollection } from "@/lib/utils/renterUtils";
 
 /**
  * Enterprise Validation Logic for Renter Module
@@ -11,6 +12,8 @@ export interface ValidationError {
 
 export interface ExistingFloorRenterDetails {
     agreementId?: string;
+    agreementFromDate?: string;
+    agreementToDate?: string;
     durationFrom?: string;
     durationTo?: string;
     [key: string]: unknown;
@@ -18,9 +21,34 @@ export interface ExistingFloorRenterDetails {
 
 export interface ExistingFloorData {
     id?: string | number;
+    propertyDetailsId?: string | number;
+    floorId?: string | number;
+    subFloorId?: string | number;
+    agreementFromDate?: string;
+    agreementToDate?: string;
+    agreementDateFrom?: string;
+    agreementDateTo?: string;
     renter?: string;
     renterDetails?: ExistingFloorRenterDetails[];
+    renterMast?: ExistingFloorRenterDetails[];
+    renters?: ExistingFloorRenterDetails[];
     [key: string]: unknown;
+}
+
+/**
+ * Identity of the floor currently being edited. Used to exclude its own renter
+ * records (and any stray DB duplicates of the same logical floor) from
+ * agreement-id-duplicate and duration-overlap checks.
+ *
+ * `id`          -> propertyDetailsId of the row being edited (deep-link source).
+ * `floorId`     -> floor master id (e.g. 1 = Ground, 2 = First).
+ * `subFloorId`  -> sub-floor master id.
+ */
+export interface CurrentFloorContext {
+    id?: string | number;
+    floorId?: string | number;
+    subFloorId?: string | number;
+    agreementId?: string;
 }
 
 /** Validate calendar date */
@@ -42,9 +70,52 @@ export const areDatesOverlapping = (start1: string, end1: string, start2: string
     return s1 <= e2 && e1 >= s2;
 };
 
+/**
+ * Returns true if the given existing floor record is the same logical floor
+ * as the one currently being edited. We treat two floors as the same logical
+ * floor when either:
+ *   1. their propertyDetailsId (`id`) matches, or
+ *   2. they share the same (floor master id, sub-floor master id) pair.
+ *
+ * Case 2 protects against legacy DB duplicates where the same physical floor
+ * was inserted multiple times — those rows must not trigger a "self-overlap"
+ * or "self-duplicate-agreementId" error against the user.
+ */
+const isSameLogicalFloor = (
+    existing: ExistingFloorData,
+    ctx: CurrentFloorContext | string | number | undefined
+): boolean => {
+    if (ctx === undefined || ctx === null) return false;
+
+    const existingRecordId = existing.id ?? (existing as Record<string, unknown>).propertyDetailsId;
+
+    // Backward-compat path: caller passed just an id.
+    if (typeof ctx === 'string' || typeof ctx === 'number') {
+        return String(existingRecordId ?? '') === String(ctx);
+    }
+
+    if (ctx.id !== undefined && ctx.id !== null && ctx.id !== '' && ctx.id !== 'new' &&
+        String(existingRecordId ?? '') === String(ctx.id)) {
+        return true;
+    }
+
+    const ctxFloor = ctx.floorId !== undefined && ctx.floorId !== null ? String(ctx.floorId).trim() : '';
+    const ctxSubFloor = ctx.subFloorId !== undefined && ctx.subFloorId !== null ? String(ctx.subFloorId).trim() : '';
+    const existingFloor = existing.floorId !== undefined && existing.floorId !== null ? String(existing.floorId).trim() : '';
+    const existingSubFloor = existing.subFloorId !== undefined && existing.subFloorId !== null ? String(existing.subFloorId).trim() : '';
+
+    if (ctxFloor && existingFloor && ctxFloor === existingFloor) {
+        // Both sides have no sub-floor (common for ground / single sub-floor rows).
+        if (!ctxSubFloor && !existingSubFloor) return true;
+        if (ctxSubFloor && existingSubFloor && ctxSubFloor === existingSubFloor) return true;
+    }
+
+    return false;
+};
+
 export const validateRenterForm = (
     details: RenterFormDataDetails,
-    currentFloorId?: string | number,
+    currentFloor?: CurrentFloorContext | string | number,
     existingFloors?: ExistingFloorData[]
 ): ValidationError[] => {
     const errors: ValidationError[] = [];
@@ -58,69 +129,29 @@ export const validateRenterForm = (
     } else {
         const agreementIdVal = details.agreementId.trim();
 
-        // 1. Allowed characters check
-        const allowedCharsRegex = /^[A-Za-z0-9_-]+$/;
-        if (!allowedCharsRegex.test(agreementIdVal)) {
+        if (!/^\d+$/.test(agreementIdVal)) {
             errors.push({
                 field: 'agreementId',
-                message: 'Only letters, numbers, underscore (_) and hyphen (-) are allowed.'
+                message: 'Agreement ID must contain numbers only.'
             });
-        }
-        // 2. Length check
-        else if (agreementIdVal.length < 3 || agreementIdVal.length > 15) {
+        } else if (agreementIdVal.length > 8) {
             errors.push({
                 field: 'agreementId',
-                message: 'Agreement ID must be between 3 and 15 characters.'
+                message: 'Agreement ID must be at most 8 digits.'
             });
-        }
-        // 3. Mandatory Rule: must contain at least one numeric value
-        else if (!/\d/.test(agreementIdVal)) {
-            errors.push({
-                field: 'agreementId',
-                message: 'Agreement ID should contain at least one numeric value.'
+        } else if (existingFloors) {
+            const hasDuplicate = existingFloors.some(f => {
+                if (isSameLogicalFloor(f, currentFloor)) return false;
+                if (f.renter !== 'Yes') return false;
+                return Array.isArray(f.renterDetails) && f.renterDetails.some(rd =>
+                    rd.agreementId && String(rd.agreementId).trim() === agreementIdVal
+                );
             });
-        }
-        // 4. Additional Smart Validation (Spam / Random / Repeated)
-        else {
-            // Repeated characters check: Reject same character repeated continuously > 3 times
-            const hasRepeatedChar = /(.)\1{3,}/i.test(agreementIdVal);
-
-            // Repeated sequence check (e.g. abcabc, ag101ag101)
-            const hasRepeatedSeq = /([A-Za-z0-9_-]{2})\1{2,}/i.test(agreementIdVal) || /([A-Za-z0-9_-]{3,})\1+/i.test(agreementIdVal);
-
-            // Keyboard pattern check (asdfgh, qwerty, zxcvbn)
-            const idLower = agreementIdVal.toLowerCase();
-            const keyboardPatterns = ['asdfgh', 'qwerty', 'zxcvbn'];
-            const hasKeyboardPattern = keyboardPatterns.some(pat => idLower.includes(pat));
-
-            if (hasRepeatedChar || hasRepeatedSeq || hasKeyboardPattern) {
+            if (hasDuplicate) {
                 errors.push({
                     field: 'agreementId',
-                    message: 'Random or repeated characters are not allowed.'
+                    message: 'Agreement ID already exists for this property.'
                 });
-            }
-            // 5. General regex match safeguard
-            else if (!/^(?=.*\d)[A-Za-z\d_-]{3,15}$/.test(agreementIdVal)) {
-                errors.push({
-                    field: 'agreementId',
-                    message: 'Please enter a valid Agreement ID.'
-                });
-            }
-            // 6. Duplicate check against existing floors
-            else if (existingFloors) {
-                const hasDuplicate = existingFloors.some(f => {
-                    if (currentFloorId !== undefined && String(f.id) === String(currentFloorId)) return false;
-                    if (f.renter !== 'Yes') return false;
-                    return Array.isArray(f.renterDetails) && f.renterDetails.some(rd => 
-                        rd.agreementId && String(rd.agreementId).trim().toUpperCase() === agreementIdVal.toUpperCase()
-                    );
-                });
-                if (hasDuplicate) {
-                    errors.push({
-                        field: 'agreementId',
-                        message: 'Agreement ID already exists for this property.'
-                    });
-                }
             }
         }
     }
@@ -205,31 +236,10 @@ export const validateRenterForm = (
                 errors.push({ field: 'agreementDateTo', message: 'To Date must be greater than From Date.' });
             }
 
-            const currentYear = new Date().getFullYear();
-            if (fromDateObj.getFullYear() !== currentYear) {
-                errors.push({ field: 'agreementDateFrom', message: 'From Date must be in current year.' });
-            }
-
             if (details.agreementDate) {
                 const agreementDateObj = new Date(details.agreementDate);
                 if (!isNaN(agreementDateObj.getTime()) && fromDateObj < agreementDateObj) {
                     errors.push({ field: 'agreementDateFrom', message: 'From Date should not be before Agreement Date.' });
-                }
-            }
-
-            // Duration overlap checks
-            if (existingFloors) {
-                const hasOverlap = existingFloors.some(f => {
-                    if (currentFloorId !== undefined && String(f.id) === String(currentFloorId)) return false;
-                    if (f.renter !== 'Yes') return false;
-                    return Array.isArray(f.renterDetails) && f.renterDetails.some(rd => {
-                        if (!rd.durationFrom || !rd.durationTo) return false;
-                        return areDatesOverlapping(details.agreementDateFrom, details.agreementDateTo, rd.durationFrom, rd.durationTo);
-                    });
-                });
-                if (hasOverlap) {
-                    errors.push({ field: 'agreementDateFrom', message: 'Selected duration overlaps with existing renter agreement.' });
-                    errors.push({ field: 'agreementDateTo', message: 'Selected duration overlaps with existing renter agreement.' });
                 }
             }
         }
@@ -300,22 +310,16 @@ export const validateRenterForm = (
 
     // ─── Custom Date Ranges ──────────────────────────────────────────────────
     if (details.incrementFrequency === 'Custom Date' && Array.isArray(details.customDateRanges)) {
-        details.customDateRanges.forEach((range, idx) => {
-            if (range.fromDate) {
-                const fromDateObj = new Date(range.fromDate);
-                const currentYear = new Date().getFullYear();
-                if (!isNaN(fromDateObj.getTime()) && fromDateObj.getFullYear() !== currentYear) {
-                    errors.push({ field: 'customDateRanges', message: `Custom range #${idx + 1} From Date must be in current year.` });
-                }
+        const collectionResult = validateCustomDateRangesCollection(
+            details.customDateRanges,
+            details.agreementDateFrom,
+            details.agreementDateTo
+        );
+        if (!collectionResult.isValid && collectionResult.message) {
+            errors.push({ field: 'customDateRanges', message: collectionResult.message });
+        }
 
-                if (details.agreementDate) {
-                    const agreementDateObj = new Date(details.agreementDate);
-                    if (!isNaN(fromDateObj.getTime()) && !isNaN(agreementDateObj.getTime()) && fromDateObj < agreementDateObj) {
-                        errors.push({ field: 'customDateRanges', message: `Custom range #${idx + 1} From Date should not be before Agreement Date.` });
-                    }
-                }
-            }
-            
+        details.customDateRanges.forEach((range, idx) => {
             const incStr = String(range.incrementValue).trim();
             if (range.incrementType === 'Percentage') {
                 if (/[^0-9]/.test(incStr)) {

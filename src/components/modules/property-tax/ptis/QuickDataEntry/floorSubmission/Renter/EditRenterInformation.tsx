@@ -10,7 +10,7 @@ import { RenterFormData } from "@/types/renter.types";
 
 interface EditRenterInformationProps {
     renterDetails: RenterFormDataDetails | undefined;
-    setFormData: React.Dispatch<React.SetStateAction<RenterFormData | null>>;
+    setFormData: React.Dispatch<React.SetStateAction<RenterFormData>>;
 }
 
 export const EditRenterInformation = memo(({ renterDetails, setFormData }: EditRenterInformationProps) => {
@@ -18,7 +18,6 @@ export const EditRenterInformation = memo(({ renterDetails, setFormData }: EditR
     
     const handleChange = (field: keyof RenterFormDataDetails, value: string) => {
         setFormData(prev => {
-            if (!prev) return null;
             return {
                 ...prev,
                 renterDetails: {
