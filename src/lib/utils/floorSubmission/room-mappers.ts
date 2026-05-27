@@ -126,6 +126,7 @@ export const mapRoomDataToApi = (room: RoomData, propertyId: number = 0, propert
     totalAreaSqMtr: toApiNumber([room.totalAreaSqMtr, room.total, room.area], 0),
     roomNo: (room.roomNo as string) || '',
     roomType: (room.roomType || room.utilities as string) || 'Residential',
+    roomTypeId: Number(room.roomTypeId || 0),
     shape,
     outerYesNo: room.outerYesNo === true || room.outer === 'Yes',
     minusYesNo: (finalOffsets as unknown[]).length > 0,

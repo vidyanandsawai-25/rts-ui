@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import { FloorDetailsTable, type FloorDetailsTableColumn } from '@/components/common/FloorDetailsTable';
 import { ChevronRight, type LucideIcon } from 'lucide-react';
@@ -295,5 +295,86 @@ describe('FloorDetailsTable', () => {
     expect(screen.getByTestId('expanded-no-col-1')).toBeInTheDocument();
     const td = screen.getByTestId('expanded-no-col-1').closest('td');
     expect(td).toHaveAttribute('colSpan', '2'); // 2 columns + 0 expansion col
+  });
+
+  it('supports interactive client-side sorting', () => {
+    interface SortTestRow {
+      id: number;
+      name: string;
+      area: string;
+      date: string;
+    }
+
+    const sortData: SortTestRow[] = [
+      { id: 1, name: 'Charlie', area: '10,000.00 / 1,000.00', date: '25/05/2026' },
+      { id: 2, name: 'Alpha', area: '1,000.00 / 100.00', date: '10/01/2022' },
+      { id: 3, name: 'Bravo', area: '50,000.00 / 5,000.00', date: '15/08/2024' },
+    ];
+
+    const sortColumns: FloorDetailsTableColumn<SortTestRow>[] = [
+      { key: 'name', label: 'Name', render: (row) => row.name },
+      { key: 'area', label: 'Area', render: (row) => row.area },
+      { key: 'date', label: 'Date', render: (row) => row.date },
+    ];
+
+    render(<FloorDetailsTable data={sortData} columns={sortColumns} showExpandColumn={false} />);
+
+    // 1. Text Sorting Test (Name)
+    const nameHeader = screen.getByText('Name');
+    
+    // First click: Ascending (Alpha, Bravo, Charlie)
+    fireEvent.click(nameHeader);
+    let cells = screen.getAllByRole('cell');
+    expect(cells[0]).toHaveTextContent('Alpha');
+    expect(cells[3]).toHaveTextContent('Bravo');
+    expect(cells[6]).toHaveTextContent('Charlie');
+
+    // Second click: Descending (Charlie, Bravo, Alpha)
+    fireEvent.click(nameHeader);
+    cells = screen.getAllByRole('cell');
+    expect(cells[0]).toHaveTextContent('Charlie');
+    expect(cells[3]).toHaveTextContent('Bravo');
+    expect(cells[6]).toHaveTextContent('Alpha');
+
+    // Third click: Reset to original order (Charlie, Alpha, Bravo)
+    fireEvent.click(nameHeader);
+    cells = screen.getAllByRole('cell');
+    expect(cells[0]).toHaveTextContent('Charlie');
+    expect(cells[3]).toHaveTextContent('Alpha');
+    expect(cells[6]).toHaveTextContent('Bravo');
+
+    // 2. Numeric Pair Sorting Test (Area)
+    const areaHeader = screen.getByText('Area');
+
+    // First click: Ascending (Alpha: 1000, Charlie: 10000, Bravo: 50000)
+    fireEvent.click(areaHeader);
+    cells = screen.getAllByRole('cell');
+    expect(cells[0]).toHaveTextContent('Alpha');
+    expect(cells[3]).toHaveTextContent('Charlie');
+    expect(cells[6]).toHaveTextContent('Bravo');
+
+    // Second click: Descending (Bravo: 50000, Charlie: 10000, Alpha: 1000)
+    fireEvent.click(areaHeader);
+    cells = screen.getAllByRole('cell');
+    expect(cells[0]).toHaveTextContent('Bravo');
+    expect(cells[3]).toHaveTextContent('Charlie');
+    expect(cells[6]).toHaveTextContent('Alpha');
+
+    // 3. Date Sorting Test (Date)
+    const dateHeader = screen.getByText('Date');
+
+    // First click: Ascending (Alpha: 2022, Bravo: 2024, Charlie: 2026)
+    fireEvent.click(dateHeader);
+    cells = screen.getAllByRole('cell');
+    expect(cells[0]).toHaveTextContent('Alpha');
+    expect(cells[3]).toHaveTextContent('Bravo');
+    expect(cells[6]).toHaveTextContent('Charlie');
+
+    // Second click: Descending (Charlie: 2026, Bravo: 2024, Alpha: 2022)
+    fireEvent.click(dateHeader);
+    cells = screen.getAllByRole('cell');
+    expect(cells[0]).toHaveTextContent('Charlie');
+    expect(cells[3]).toHaveTextContent('Bravo');
+    expect(cells[6]).toHaveTextContent('Alpha');
   });
 });

@@ -58,6 +58,7 @@ export function BottomActionBar({
       const wardId = searchParams.get('wardId') || undefined;
       const propertyNo = searchParams.get('propertyNo') || undefined;
       const partitionNo = searchParams.get('partitionNo') || undefined;
+      const tab = searchParams.get('tab') || undefined;
       const pathnameSegments = pathname.split('/').filter(Boolean);
       const locale = pathnameSegments[0] || 'en';
 
@@ -68,6 +69,7 @@ export function BottomActionBar({
         wardId,
         propertyNo,
         partitionNo,
+        tab,
       });
       if (result.success) {
         toast.success(result.message || 'Action executed.');

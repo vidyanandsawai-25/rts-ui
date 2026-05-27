@@ -89,6 +89,8 @@ export interface RoomData {
     shape?: string;
     roomCount?: string | number;
     total?: number;
+    carpetArea?: number;
+    mainArea?: number;
     builtUpArea?: number;
     outer?: string;
     offsetMinus?: string;

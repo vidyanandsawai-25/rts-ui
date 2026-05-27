@@ -329,6 +329,40 @@ describe('SocietyForm', () => {
 
             expect(updatePropertySocietyDetailsAction).not.toHaveBeenCalled();
         });
+
+        it('should validate manager mobile number for repeated digit sequences', async () => {
+            (updatePropertySocietyDetailsAction as Mock).mockClear();
+
+            render(
+                <SocietyForm
+                    societyData={null}
+                    propertyIdSearch={123}
+                    locale="en"
+                />
+            );
+
+            const managerContainer = document.getElementById('manager-mobile-container');
+            const inputs = managerContainer?.querySelectorAll('input') as NodeListOf<HTMLInputElement>;
+
+            // Enter a repeated sequence: 9999912345
+            for (let i = 0; i < 5; i++) {
+                fireEvent.change(inputs[i], { target: { value: '9' } });
+            }
+            fireEvent.change(inputs[5], { target: { value: '1' } });
+            fireEvent.change(inputs[6], { target: { value: '2' } });
+            fireEvent.change(inputs[7], { target: { value: '3' } });
+            fireEvent.change(inputs[8], { target: { value: '4' } });
+            fireEvent.change(inputs[9], { target: { value: '5' } });
+
+            const submitButton = screen.getByRole('button', { name: /Update Changes/i });
+            fireEvent.click(submitButton);
+
+            await waitFor(() => {
+                expect(toast.error).toHaveBeenCalled();
+            });
+
+            expect(updatePropertySocietyDetailsAction).not.toHaveBeenCalled();
+        });
     });
 
     describe('Form Submission', () => {

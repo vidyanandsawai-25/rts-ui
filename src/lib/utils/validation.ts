@@ -71,3 +71,12 @@ export {
   oldDetailsValidations,
 } from './validation-schemas';
 export { userManagementValidations } from './user-management-validation';
+
+// Re-export Old Taxation validation constants and utilities
+export {
+  OLD_TAXATION_VALIDATION_RULES,
+  oldTaxationValidators,
+  OLD_TAXATION_ERROR_MESSAGES,
+} from './OldDetails/old-taxation-validation.constants';
+
+

@@ -1,7 +1,7 @@
-import { useCallback } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { UseFloorInformationFormProps } from "@/types/property-old-details.types";
+import { UseFloorInformationFormProps } from "@/types/OldDetails/property-old-details.types";
 import { hasErrors } from "@/lib/utils/validation";
 import { useFloorFormState } from "./useFloorFormState";
 import { useFloorFormValidation } from "./useFloorFormValidation";
@@ -22,18 +22,24 @@ export function useFloorInformationForm({
   const {
     formData,
     setFormData,
+    initialEditValues,
     handleUseTypeChange,
     handleEdit,
     handleReset: stateReset
   } = useFloorFormState();
 
+  // Check if subUseOptions are available
+  const hasSubUseOptions = initialSubUseTypeOptions && initialSubUseTypeOptions.length > 0;
+
   // 2. Manage Validation
   const {
     errors,
     validate,
+    validateYearField,
     resetValidation,
-    showError
-  } = useFloorFormValidation();
+    showError,
+    clearError
+  } = useFloorFormValidation(hasSubUseOptions);
 
   // 3. Manage API Calls
   const {
@@ -41,6 +47,31 @@ export function useFloorInformationForm({
     handleSave: apiSave,
     handleDelete
   } = useFloorFormApi(propertyId, locale);
+
+  // Clear errors for modified fields dynamically
+  // Skip auto-clear for year fields as they have real-time validation
+  const lastFormDataRef = useRef(formData);
+  useEffect(() => {
+    Object.keys(formData).forEach((key) => {
+      const k = key as keyof typeof formData;
+      // Don't auto-clear year field errors - let validateYearField handle them
+      if (k !== 'oldConstructionYear' && k !== 'oldAssessmentYear' && formData[k] !== lastFormDataRef.current[k]) {
+        clearError(k);
+      }
+    });
+    lastFormDataRef.current = formData;
+  }, [formData, clearError]);
+
+  const isChanged = initialEditValues ? (
+    formData.oldFloorId !== initialEditValues.oldFloorId ||
+    formData.oldSubFloorId !== initialEditValues.oldSubFloorId ||
+    formData.oldConstructionYear !== initialEditValues.oldConstructionYear ||
+    formData.oldAssessmentYear !== initialEditValues.oldAssessmentYear ||
+    formData.oldConstructionTypeId !== initialEditValues.oldConstructionTypeId ||
+    formData.oldTypeOfUseId !== initialEditValues.oldTypeOfUseId ||
+    formData.oldSubTypeOfUseId !== initialEditValues.oldSubTypeOfUseId ||
+    formData.oldCarpetAreaSqFeet !== initialEditValues.oldCarpetAreaSqFeet
+  ) : false;
 
   /**
    * Combined reset for state and validation.
@@ -68,13 +99,16 @@ export function useFloorInformationForm({
     formData,
     setFormData,
     subUseTypeOptions: initialSubUseTypeOptions,
+    hasSubUseOptions,
     isSubmitting,
     errors,
     showError,
+    validateYearField,
     handleUseTypeChange,
     handleEdit,
     handleReset,
     handleSave,
-    handleDelete
+    handleDelete,
+    isChanged
   };
 }

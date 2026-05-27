@@ -193,10 +193,18 @@ export function ScreenForm({ initialData, isEdit: isEditProp, groups, modules }:
 
                   handleBlur('moduleId');
                 }}
-                options={modules.map((m) => ({
-                  value: String(m.moduleId),
-                  label: m.moduleName,
-                }))}
+                options={modules
+                  .filter(
+                    (m) => m.isActive !== false || String(m.moduleId) === String(formData.moduleId)
+                  )
+                  .map((m) => ({
+                    value: String(m.moduleId),
+                    label:
+                      m.moduleName +
+                      (m.isActive === false
+                        ? ` (${t('filters.inactive', { defaultValue: 'Inactive' })})`
+                        : ''),
+                  }))}
                 placeholder={t('screenManagement.screens.form.selectModule', {
                   defaultValue: 'Select Module',
                 })}

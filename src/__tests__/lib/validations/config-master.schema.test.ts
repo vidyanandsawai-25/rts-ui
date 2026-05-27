@@ -77,12 +77,16 @@ describe('CreateConfigKeySchema Validations', () => {
     expect(result.success).toBe(true);
   });
 
-  it('allows negative integer as default value', () => {
+  it('rejects negative integer as default value', () => {
     const result = CreateConfigKeySchema.safeParse({
       ...baseData,
       defaultValue: '-5',
     });
-    expect(result.success).toBe(true);
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const errors = result.error.flatten().fieldErrors;
+      expect(errors.defaultValue?.[0]).toContain('must be a valid positive integer');
+    }
   });
 
   it('rejects integer default value exceeding 32-bit bounds', () => {
@@ -93,7 +97,7 @@ describe('CreateConfigKeySchema Validations', () => {
     expect(result.success).toBe(false);
     if (!result.success) {
       const errors = result.error.flatten().fieldErrors;
-      expect(errors.defaultValue?.[0]).toContain('32-bit signed integer');
+      expect(errors.defaultValue?.[0]).toContain('must not exceed 2147483647');
     }
   });
 
@@ -105,7 +109,7 @@ describe('CreateConfigKeySchema Validations', () => {
     expect(result.success).toBe(false);
     if (!result.success) {
       const errors = result.error.flatten().fieldErrors;
-      expect(errors.defaultValue?.[0]).toContain('must be a valid integer');
+      expect(errors.defaultValue?.[0]).toContain('must be a valid positive integer');
     }
   });
 
@@ -119,14 +123,18 @@ describe('CreateConfigKeySchema Validations', () => {
     expect(result.success).toBe(true);
   });
 
-  it('allows negative decimal value', () => {
+  it('rejects negative decimal value', () => {
     const result = CreateConfigKeySchema.safeParse({
       ...baseData,
       dataType: 'decimal',
       controlType: 'number',
       defaultValue: '-0.45',
     });
-    expect(result.success).toBe(true);
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const errors = result.error.flatten().fieldErrors;
+      expect(errors.defaultValue?.[0]).toContain('must be a valid positive decimal number');
+    }
   });
 
   it('rejects non-numeric default value for decimal datatype', () => {
@@ -139,7 +147,7 @@ describe('CreateConfigKeySchema Validations', () => {
     expect(result.success).toBe(false);
     if (!result.success) {
       const errors = result.error.flatten().fieldErrors;
-      expect(errors.defaultValue?.[0]).toContain('must be a valid decimal number');
+      expect(errors.defaultValue?.[0]).toContain('must be a valid positive decimal number');
     }
   });
 

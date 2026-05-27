@@ -34,7 +34,8 @@ export interface TaxDetailsResult {
  */
 export async function fetchTaxDetailsByTab(
   propertyId: number | undefined,
-  valuationTab?: ValuationTabId
+  valuationTab?: ValuationTabId,
+  showDetails?: boolean
 ): Promise<TaxDetailsResult> {
   const result: TaxDetailsResult = {};
 
@@ -66,22 +67,32 @@ export async function fetchTaxDetailsByTab(
       }
 
       case 'dual': {
-        // Fetch both in parallel for dual view
-        const [capitalResult, rateableResult] = await Promise.all([
-          getCapitalTaxDetails(propertyId),
-          getRateableTaxDetails(propertyId),
-        ]);
+        if (showDetails) {
+          // Fetch both in parallel for dual view when details are expanded
+          const [capitalResult, rateableResult] = await Promise.all([
+            getCapitalTaxDetails(propertyId),
+            getRateableTaxDetails(propertyId),
+          ]);
 
-        if (capitalResult.success && capitalResult.data) {
-          result.capitalTaxDetails = capitalResult.data;
-        } else {
-          result.capitalTaxError = capitalResult.error;
-        }
+          if (capitalResult.success && capitalResult.data) {
+            result.capitalTaxDetails = capitalResult.data;
+          } else {
+            result.capitalTaxError = capitalResult.error;
+          }
 
-        if (rateableResult.success && rateableResult.data) {
-          result.rateableTaxDetails = rateableResult.data;
+          if (rateableResult.success && rateableResult.data) {
+            result.rateableTaxDetails = rateableResult.data;
+          } else {
+            result.rateableTaxError = rateableResult.error;
+          }
         } else {
-          result.rateableTaxError = rateableResult.error;
+          // If floor details are not shown, only fetch rateable tax details to save a roundtrip
+          const rateableResult = await getRateableTaxDetails(propertyId);
+          if (rateableResult.success && rateableResult.data) {
+            result.rateableTaxDetails = rateableResult.data;
+          } else {
+            result.rateableTaxError = rateableResult.error;
+          }
         }
         break;
       }
