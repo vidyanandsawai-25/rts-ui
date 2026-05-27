@@ -262,6 +262,7 @@
         "TaxationBreakdown": "Taxation Breakdown"
     },
     "floorSubmission": {
+        "updating": "UPDATING...",
         "loading": {
             "message": "Loading floor details...",
             "description": "Please wait while we fetch the floor data"

@@ -2,6 +2,13 @@
 import {
     type FloorSubmissionPayload,
 } from '@/types/floor-details.types';
+import {
+    sanitizeRenterDetailsForCreate,
+    sanitizeRenterDetailsForUpdate,
+    sanitizeRenterMastForCreate,
+    sanitizeRenterMastForUpdate,
+    sanitizeRenterRowsFromData,
+} from './renter-payload-sanitization';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -62,6 +69,23 @@ const parseSafeInt = (value: any): number => {
         if (!isNaN(parsed)) return parsed;
     }
     return 0;
+};
+
+/**
+ * Normalize any date-ish value into a backend-friendly ISO 8601 datetime string.
+ * Accepts ISO strings, "YYYY-MM-DD" strings, Date objects, or numeric timestamps.
+ * Returns null when the input cannot be parsed — the backend treats explicit
+ * null as "no date" rather than barfing on garbled strings like "Invalid Date".
+ */
+const toIsoOrNull = (value: any): string | null => {
+    if (value === undefined || value === null || value === '') return null;
+    try {
+        const d = new Date(value);
+        if (isNaN(d.getTime())) return null;
+        return d.toISOString();
+    } catch {
+        return null;
+    }
 };
 
 const sanitizeFloorBase = (payload: any) => {
@@ -134,13 +158,17 @@ const sanitizeFloorBase = (payload: any) => {
         renterName: String(payload.renterName || payload.renterNameEnglish || ''),
         renterNameEnglish: String(payload.renterNameEnglish || payload.renterName || ''),
         rentYearly: Number(payload.rentYearly) || 0,
-        agreementFromDate: payload.agreementFromDate || payload.agreementDateFrom || null,
-        agreementToDate: payload.agreementToDate || payload.agreementDateTo || null,
-        agreementDate: payload.agreementDate || null,
+        agreementFromDate: toIsoOrNull(payload.agreementFromDate || payload.agreementDateFrom),
+        agreementToDate: toIsoOrNull(payload.agreementToDate || payload.agreementDateTo),
+        agreementDate: toIsoOrNull(payload.agreementDate),
         rentMonthly: Number(payload.rentMonthly) || 0,
         isTaxable: isTaxableVal,
-        taxLiability: String(payload.taxLiability || ''),
-        occupancyDate: payload.occupancyDate || null,
+        // Floor-level taxLiability must be one of the backend's enum values
+        // (typically "Taxable" or "NonTaxable"). An empty string trips the
+        // model validator and bounces with a generic 500 — default to a
+        // sensible value derived from `isTaxable`.
+        taxLiability: String(payload.taxLiability || (isTaxableVal ? 'Taxable' : 'NonTaxable')),
+        occupancyDate: toIsoOrNull(payload.occupancyDate),
         occupancyApplyOrNot: Boolean(payload.occupancyApplyOrNot),
         occupancyNumber: String(payload.occupancyNumber || ''),
         nonCalculateRentMonthly: Number(payload.nonCalculateRentMonthly) || 0,
@@ -158,47 +186,8 @@ export function sanitizeFloorPayload(payload: FloorSubmissionPayload): FloorSubm
         roomWiseMinusData: ((room.roomWiseMinusData || room.minusRooms || []) as Record<string, unknown>[]).map(m => sanitizeMinusData(m, { createdBy: 0, roomWiseSubmissionId: Number(m.roomWiseSubmissionId || 0) }))
     });
 
-    const sanitizedRenterDetails = ((payload.renterDetails as Record<string, unknown>[]) || []).map(rd => ({
-        isActive: true,
-        createdBy: 0,
-        propertyDetailsId: parentPropertyDetailsId,
-        ...(Number(rd.id) > 0 && Number(rd.id) < 1_000_000_000_000 ? { id: Number(rd.id) } : {}),
-        agreementId: String(rd.agreementId || ''),
-        incrementFrequency: String(rd.incrementFrequency || 'Yearly'),
-        incrementType: String(rd.incrementType || 'Percentage'),
-        incrementValue: Number(rd.incrementValue) || 0,
-        incrementMethod: String(rd.incrementMethod || 'base'),
-        durationFrom: rd.durationFrom || null,
-        durationTo: rd.durationTo || null,
-        rentAmount: Number(rd.rentAmount) || 0,
-        rentMonthly: Number(rd.rentMonthly) || 0,
-        increment: Number(rd.increament ?? rd.increment) || 0,
-        incrementStatus: Boolean(rd.incrementStatus ?? true),
-    }));
-
-    const sanitizedRenterMast = ((payload.renterMast as Record<string, unknown>[]) || []).map(rm => {
-        const rentMonthlyVal = Number(rm.rentMonthly || payload.rentMonthly || (rm.finalRent ? Number(rm.finalRent) / 12 : 0) || 0);
-        const finalYearlyRentVal = Number(rm.finalYearlyRent || rm.finalRent || (rentMonthlyVal * 12) || 0);
-        return {
-            isActive: rm.isActive !== false,
-            createdBy: 0,
-            propertyDetailsId: parentPropertyDetailsId,
-            ...(Number(rm.id) > 0 && Number(rm.id) < 1_000_000_000_000 ? { id: Number(rm.id) } : {}),
-            rentMonthly: rentMonthlyVal,
-            finalRent: Number(rm.finalRent || finalYearlyRentVal || 0),
-            finalYearlyRent: finalYearlyRentVal,
-            financialYear: String(rm.financialYear || '').substring(0, 4),
-            durationFrom: rm.durationFrom ? new Date(rm.durationFrom as string).toISOString() : (payload.agreementFromDate ? new Date(payload.agreementFromDate as string).toISOString() : null),
-            durationTo: rm.durationTo ? new Date(rm.durationTo as string).toISOString() : (payload.agreementToDate ? new Date(payload.agreementToDate as string).toISOString() : null),
-            taxLiability: String(payload.taxLiability || 'Taxable'),
-            nonCalculateRentMonthly: Number(rm.nonCalculateRentMonthly || rentMonthlyVal || 0),
-            renterNameEnglish: String(payload.renterNameEnglish || payload.renterName || ''),
-            renterName: String(payload.renterName || payload.renterNameEnglish || ''),
-            agreementDate: payload.agreementDate ? new Date(payload.agreementDate as string).toISOString() : null,
-            agreementFromDate: payload.agreementFromDate ? new Date(payload.agreementFromDate as string).toISOString() : null,
-            agreementToDate: payload.agreementToDate ? new Date(payload.agreementToDate as string).toISOString() : null,
-        };
-    });
+    const sanitizedRenterDetails = sanitizeRenterDetailsForCreate(payload, parentPropertyDetailsId);
+    const sanitizedRenterMast = sanitizeRenterMastForCreate(payload, parentPropertyDetailsId);
 
     return {
         ...sanitizeFloorBase(payload),
@@ -220,54 +209,21 @@ export function sanitizeFloorUpdatePayload(payload: FloorSubmissionPayload): Rec
         roomWiseMinusData: ((room.roomWiseMinusData || room.minusRooms || []) as Record<string, unknown>[]).map(m => sanitizeMinusData(m, { updatedBy: 0, roomWiseMinusId: Number(m.id || m.roomWiseMinusId || 0), roomWiseSubmissionId: Number(m.roomWiseSubmissionId || room.id || room.roomWiseSubmissionId || 0) })),
     });
 
-    const sanitizedRenterDetails = ((payload.renterDetails as Record<string, unknown>[]) || []).map(rd => ({
-        isActive: true,
-        updatedBy: 0,
-        propertyDetailsId: parentPropertyDetailsId,
-        ...(Number(rd.id) > 0 && Number(rd.id) < 1_000_000_000_000 ? { id: Number(rd.id) } : {}),
-        agreementId: String(rd.agreementId || ''),
-        incrementFrequency: String(rd.incrementFrequency || 'Yearly'),
-        incrementType: String(rd.incrementType || 'Percentage'),
-        incrementValue: Number(rd.incrementValue) || 0,
-        incrementMethod: String(rd.incrementMethod || 'base'),
-        durationFrom: rd.durationFrom || null,
-        durationTo: rd.durationTo || null,
-        rentAmount: Number(rd.rentAmount) || 0,
-        rentMonthly: Number(rd.rentMonthly) || 0,
-        increment: Number(rd.increament ?? rd.increment) || 0,
-        incrementStatus: Boolean(rd.incrementStatus ?? true),
-    }));
-
-    const sanitizedRenterMast = ((payload.renterMast as Record<string, unknown>[]) || []).map(rm => {
-        const rentMonthlyVal = Number(rm.rentMonthly || payload.rentMonthly || (rm.finalRent ? Number(rm.finalRent) / 12 : 0) || 0);
-        const finalYearlyRentVal = Number(rm.finalYearlyRent || rm.finalRent || (rentMonthlyVal * 12) || 0);
-        return {
-            isActive: rm.isActive !== false,
-            updatedBy: 0,
-            propertyDetailsId: parentPropertyDetailsId,
-            ...(Number(rm.id) > 0 && Number(rm.id) < 1_000_000_000_000 ? { id: Number(rm.id) } : {}),
-            rentMonthly: rentMonthlyVal,
-            finalRent: Number(rm.finalRent || finalYearlyRentVal || 0),
-            finalYearlyRent: finalYearlyRentVal,
-            financialYear: String(rm.financialYear || '').substring(0, 4),
-            durationFrom: rm.durationFrom ? new Date(rm.durationFrom as string).toISOString() : (payload.agreementFromDate ? new Date(payload.agreementFromDate as string).toISOString() : null),
-            durationTo: rm.durationTo ? new Date(rm.durationTo as string).toISOString() : (payload.agreementToDate ? new Date(payload.agreementToDate as string).toISOString() : null),
-            taxLiability: String(payload.taxLiability || 'Taxable'),
-            nonCalculateRentMonthly: Number(rm.nonCalculateRentMonthly || rentMonthlyVal || 0),
-            renterNameEnglish: String(payload.renterNameEnglish || payload.renterName || ''),
-            renterName: String(payload.renterName || payload.renterNameEnglish || ''),
-            agreementDate: payload.agreementDate ? new Date(payload.agreementDate as string).toISOString() : null,
-            agreementFromDate: payload.agreementFromDate ? new Date(payload.agreementFromDate as string).toISOString() : null,
-            agreementToDate: payload.agreementToDate ? new Date(payload.agreementToDate as string).toISOString() : null,
-        };
-    });
+    const sanitizedRenterDetails = sanitizeRenterDetailsForUpdate(payload, parentPropertyDetailsId);
+    const sanitizedRenterMast = sanitizeRenterMastForUpdate(payload, parentPropertyDetailsId);
 
     return {
         ...sanitizeFloorBase(payload),
         updatedBy: 0,
         renterDetails: sanitizedRenterDetails,
-        renterMast: sanitizedRenterMast,
+        // Mirror the GET projection by writing the renter-mast collection
+        // under BOTH keys the backend exposes (`renters` is what comes back
+        // from `GET /DataEntry/{id}`, `renterMast` is the entity table name).
+        // Both arrays carry the SAME id-aligned rows so EF can match by id
+        // and update in place — no risk of double-insert because both reference
+        // the same primary keys.
         renters: sanitizedRenterMast,
+        renterMast: sanitizedRenterMast,
         roomWiseSubmissionDetails: (((payload as unknown as Record<string, unknown>).roomWiseSubmissionDetails || (payload as unknown as Record<string, unknown>).propertyRooms || []) as Record<string, unknown>[]).map(sanitizeRoomUpdate),
     };
 }
@@ -380,69 +336,7 @@ export function sanitizeRenterPayload(payload: unknown): Record<string, unknown>
             isRenter: base.isRenter,
             renterYesNo: base.renterYesNo,
         }),
-        renterDetails: ((data.renterDetails as Record<string, unknown>[]) || []).map(rd => ({
-            isActive: true,
-            ...(isUpdate ? { updatedBy: 0 } : { createdBy: 0 }),
-            propertyDetailsId: parentPropertyDetailsId,
-            ...(Number(rd.id) > 0 && Number(rd.id) < 1_000_000_000_000 ? { id: Number(rd.id) } : {}),
-            agreementId: String(rd.agreementId || ''),
-            incrementFrequency: String(rd.incrementFrequency || 'Yearly'),
-            incrementType: String(rd.incrementType || 'Percentage'),
-            incrementValue: Number(rd.incrementValue) || 0,
-            incrementMethod: String(rd.incrementMethod || 'base'),
-            durationFrom: rd.durationFrom || null,
-            durationTo: rd.durationTo || null,
-            rentAmount: Number(rd.rentAmount) || 0,
-            rentMonthly: Number(rd.rentMonthly) || 0,
-            increment: Number(rd.increament ?? rd.increment) || 0,
-            incrementStatus: Boolean(rd.incrementStatus ?? true),
-        })),
-        renterMast: ((data.renterMast as Record<string, unknown>[]) || []).map(rm => {
-            const rentMonthlyVal = Number(rm.rentMonthly || data.rentMonthly || (rm.finalRent ? Number(rm.finalRent) / 12 : 0) || 0);
-            const finalYearlyRentVal = Number(rm.finalYearlyRent || rm.finalRent || (rentMonthlyVal * 12) || 0);
-            return {
-                isActive: rm.isActive !== false,
-                ...(isUpdate ? { updatedBy: 0 } : { createdBy: 0 }),
-                propertyDetailsId: parentPropertyDetailsId,
-                ...(Number(rm.id) > 0 && Number(rm.id) < 1_000_000_000_000 ? { id: Number(rm.id) } : {}),
-                rentMonthly: rentMonthlyVal,
-                finalRent: Number(rm.finalRent || finalYearlyRentVal || 0),
-                finalYearlyRent: finalYearlyRentVal,
-                financialYear: String(rm.financialYear || '').substring(0, 4),
-                durationFrom: rm.durationFrom ? new Date(rm.durationFrom as string).toISOString() : (data.agreementFromDate ? new Date(data.agreementFromDate as string).toISOString() : null),
-                durationTo: rm.durationTo ? new Date(rm.durationTo as string).toISOString() : (data.agreementToDate ? new Date(data.agreementToDate as string).toISOString() : null),
-                taxLiability: String(data.taxLiability || 'Taxable'),
-                nonCalculateRentMonthly: Number(rm.nonCalculateRentMonthly || rentMonthlyVal || 0),
-                renterNameEnglish: String(data.renterNameEnglish || data.renterName || ''),
-                renterName: String(data.renterName || data.renterNameEnglish || ''),
-                agreementDate: data.agreementDate ? new Date(data.agreementDate as string).toISOString() : null,
-                agreementFromDate: data.agreementFromDate ? new Date(data.agreementFromDate as string).toISOString() : null,
-                agreementToDate: data.agreementToDate ? new Date(data.agreementToDate as string).toISOString() : null,
-            };
-        }),
-        renters: ((data.renterMast as Record<string, unknown>[]) || []).map(rm => {
-            const rentMonthlyVal = Number(rm.rentMonthly || data.rentMonthly || (rm.finalRent ? Number(rm.finalRent) / 12 : 0) || 0);
-            const finalYearlyRentVal = Number(rm.finalYearlyRent || rm.finalRent || (rentMonthlyVal * 12) || 0);
-            return {
-                isActive: rm.isActive !== false,
-                ...(isUpdate ? { updatedBy: 0 } : { createdBy: 0 }),
-                propertyDetailsId: parentPropertyDetailsId,
-                ...(Number(rm.id) > 0 && Number(rm.id) < 1_000_000_000_000 ? { id: Number(rm.id) } : {}),
-                rentMonthly: rentMonthlyVal,
-                finalRent: Number(rm.finalRent || finalYearlyRentVal || 0),
-                finalYearlyRent: finalYearlyRentVal,
-                financialYear: String(rm.financialYear || '').substring(0, 4),
-                durationFrom: rm.durationFrom ? new Date(rm.durationFrom as string).toISOString() : (data.agreementFromDate ? new Date(data.agreementFromDate as string).toISOString() : null),
-                durationTo: rm.durationTo ? new Date(rm.durationTo as string).toISOString() : (data.agreementToDate ? new Date(data.agreementToDate as string).toISOString() : null),
-                taxLiability: String(data.taxLiability || 'Taxable'),
-                nonCalculateRentMonthly: Number(rm.nonCalculateRentMonthly || rentMonthlyVal || 0),
-                renterNameEnglish: String(data.renterNameEnglish || data.renterName || ''),
-                renterName: String(data.renterName || data.renterNameEnglish || ''),
-                agreementDate: data.agreementDate ? new Date(data.agreementDate as string).toISOString() : null,
-                agreementFromDate: data.agreementFromDate ? new Date(data.agreementFromDate as string).toISOString() : null,
-                agreementToDate: data.agreementToDate ? new Date(data.agreementToDate as string).toISOString() : null,
-            };
-        }),
+        ...sanitizeRenterRowsFromData(data, parentPropertyDetailsId, isUpdate),
         roomWiseSubmissionDetails: uniqueRooms.map(sanitizeRoom),
         ...(data.renterCustomIncrements ? { renterCustomIncrements: data.renterCustomIncrements } : {}),
         ...(data.renterTableEntries ? { renterTableEntries: data.renterTableEntries } : {}),

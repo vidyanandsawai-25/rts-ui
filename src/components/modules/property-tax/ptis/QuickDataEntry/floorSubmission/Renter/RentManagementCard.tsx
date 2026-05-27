@@ -26,8 +26,8 @@ const SummaryItem = ({ label, value, highlight = false, highlightColor = "text-o
 );
 
 interface RentManagementCardProps {
-    formData: RenterFormData | null;
-    setFormData: React.Dispatch<React.SetStateAction<RenterFormData | null>>;
+    formData: RenterFormData;
+    setFormData: React.Dispatch<React.SetStateAction<RenterFormData>>;
 }
 
 export const RentManagementCard = React.memo(({
@@ -80,7 +80,6 @@ export const RentManagementCard = React.memo(({
     React.useEffect(() => {
         if (renterDetails?.incrementFrequency !== "Half-Yearly") return;
         setFormData((prev) => {
-            if (!prev) return null;
             return {
                 ...prev,
                 renterDetails: { ...prev.renterDetails, incrementFrequency: "Yearly" },
@@ -107,7 +106,6 @@ export const RentManagementCard = React.memo(({
                         onChange={(_, val) => {
                             markTouched('incrementFrequency');
                             setFormData((prev) => {
-                                if (!prev) return null;
                                 const frequency = val as RenterFormDataDetails['incrementFrequency'];
                                 return {
                                     ...prev, 
@@ -141,7 +139,6 @@ export const RentManagementCard = React.memo(({
                         onChange={(_, val) => {
                             markTouched('incrementType');
                             setFormData((prev) => {
-                                if (!prev) return null;
                                 return {...prev, renterDetails: {...prev.renterDetails, incrementType: val as RenterFormDataDetails['incrementType']}};
                             });
                         }}
@@ -175,7 +172,6 @@ export const RentManagementCard = React.memo(({
                                     if (integerPart.length > 5) return; // Prevent typing more than 5 digits before decimal
                                 }
                                 setFormData((prev) => {
-                                    if (!prev) return null;
                                     return {...prev, renterDetails: {...prev.renterDetails, incrementValue: val}};
                                 });
                                 markTouched('incrementValue');

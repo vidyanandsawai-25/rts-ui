@@ -56,6 +56,13 @@ export const renterDetailItemSchema = z.object({
     increment: z.number().default(0),
     incrementStatus: z.boolean().default(true),
     isActive: z.boolean().default(true),
+    // Custom-range marker fields (optional) — used to round-trip
+    // multi-range custom date entries through the backend.
+    customFromDate: z.string().nullable().optional(),
+    customToDate: z.string().nullable().optional(),
+    customIncrementType: z.string().nullable().optional(),
+    customIncrementValue: z.number().nullable().optional(),
+    customMethod: z.string().nullable().optional(),
 });
 
 export const renterMastItemSchema = z.object({

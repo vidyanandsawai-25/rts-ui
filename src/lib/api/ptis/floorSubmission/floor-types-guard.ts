@@ -7,6 +7,7 @@ import {
 } from '@/types/room-details.types';
 import { type OffsetAPIResponse } from '@/types/offset-details.types';
 import { parseBoolean } from "@/lib/utils/type-guards";
+import { resolveAgreementBaseMonthlyRent } from "@/lib/utils/renterUtils";
 
 
 export const mapRoomDataToUi = (room: RoomAPIResponse, index: number): RoomData => {
@@ -201,23 +202,20 @@ export function normalizeApiFloorData(apiData: Record<string, unknown>) {
             (data.renterMast && (data.renterMast as any[])[0]?.renterName) ||
             (data.renterMast && (data.renterMast as any[])[0]?.renterNameEnglish)
         ),
-        rentMonthly: Number(
-            data.rentMonthly ||
-            (data.renters && (data.renters as any[])[0]?.rentMonthly) ||
-            (data.renterMast && (data.renterMast as any[])[0]?.rentMonthly) ||
+        nonCalculateRentMonthly: Number(
+            data.nonCalculateRentMonthly ??
+            (apiData as Record<string, unknown>).NonCalculateRentMonthly ??
+            (data.renters && (data.renters as any[])[0]?.nonCalculateRentMonthly) ??
+            (data.renterMast && (data.renterMast as any[])[0]?.nonCalculateRentMonthly) ??
             0
         ),
+        rentMonthly: Number(resolveAgreementBaseMonthlyRent(data as unknown as Record<string, unknown>) || 0),
         rentYearly: Number(
             data.rentYearly ||
             (data.renters && (data.renters as any[])[0]?.finalYearlyRent) ||
             (data.renterMast && (data.renterMast as any[])[0]?.finalYearlyRent) ||
             0
-        ) || (Number(
-            data.rentMonthly ||
-            (data.renters && (data.renters as any[])[0]?.rentMonthly) ||
-            (data.renterMast && (data.renterMast as any[])[0]?.rentMonthly) ||
-            0
-        ) * 12),
+        ) || (Number(resolveAgreementBaseMonthlyRent(data as unknown as Record<string, unknown>) || 0) * 12),
         agreementFromDate: s(
             data.agreementFromDate ||
             (data.renters && ((data.renters as any[])[0]?.agreementFromDate || (data.renters as any[])[0]?.durationFrom)) ||
