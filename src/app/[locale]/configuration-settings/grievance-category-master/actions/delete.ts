@@ -1,10 +1,11 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { getTranslations } from 'next-intl/server';
 import { deleteGrievanceCategory } from '@/lib/api/configuration-settings/grievance-category-master/grievanceCategory.service';
 import { locales } from '@/i18n/config';
 import { logger } from '@/lib/utils/logger';
-import { getCurrentUserId } from './utils';
+import { getCurrentUserId, localizeBackendMessage } from './utils';
 
 /**
  * Delete Grievance Category Action
@@ -19,11 +20,13 @@ export async function deleteGrievanceCategoryAction(
   }
 
   if (!locales.includes(locale as (typeof locales)[number])) {
-    return { success: false, error: 'Invalid locale' };
+    return { success: false, error: 'invalidLocale' };
   }
 
+  const t = await getTranslations({ locale, namespace: 'grievanceCategory' });
+
   if (!id || !Number.isInteger(id) || id <= 0) {
-    return { success: false, error: 'Invalid record ID' };
+    return { success: false, error: 'invalidId' };
   }
 
   try {
@@ -39,19 +42,14 @@ export async function deleteGrievanceCategoryAction(
 
       return {
         success: true,
-        message: response.message || 'Deleted successfully',
-      };
-    } else {
-      logger.warn('Failed to delete grievance category', {
-        id,
-        userId,
-        errorMessage: response.error,
-      });
-      return {
-        success: false,
-        error: response.error || response.message || 'Failed to delete',
+        message: t('master.toast.deleteSuccess'),
       };
     }
+    const errorMsg = await localizeBackendMessage(response.error || response.message, locale, 'operationFailed', 'Operation failed');
+    return {
+      success: false,
+      error: errorMsg,
+    };
   } catch (error) {
     logger.error('Failed to delete grievance category:', {
       error: error instanceof Error ? error : undefined,
@@ -60,9 +58,12 @@ export async function deleteGrievanceCategoryAction(
       userId,
       locale,
     });
+    const errMsg = error instanceof Error ? error.message : String(error);
+    const errorMsg = await localizeBackendMessage(errMsg, locale, 'unexpected', 'Unexpected error occurred');
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to delete',
+      error: errorMsg,
     };
   }
 }
+

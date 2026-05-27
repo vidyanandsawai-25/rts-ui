@@ -7,6 +7,7 @@
         "totalModes": "एकूण मोड",
         "online": "ऑनलाइन मोड",
         "offline": "ऑफलाइन मोड",
+        "both": "दोन्ही मोड",
         "active": "सक्रिय मोड"
     },
     "pagination": {

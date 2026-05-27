@@ -5,24 +5,29 @@
 
 import type { ReactElement } from 'react';
 import { Suspense } from 'react';
-import { GrievanceCategoryMaster } from '@/components/modules/configuration-settings/grievance-category-master';
+import {
+  GrievanceCategoryMaster,
+  GrievanceCategoryFormServer,
+  GrievanceCategoryDrawerClient,
+} from '@/components/modules/configuration-settings/grievance-category-master';
 import { locales } from '@/i18n/config';
 import { notFound, redirect } from 'next/navigation';
+import { getGrievanceCategoryById } from '@/lib/api/configuration-settings/grievance-category-master/grievanceCategory.service';
 
 import { getGrievanceCategoryMasterData } from './data-fetcher';
 import { buildMasterUrl, normalizeMasterSearchParams } from './search-params';
 
 function MasterPageLoadingFallback(): ReactElement {
   return (
-    <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950">
+    <div className="min-h-screen bg-slate-50/50">
       <div className="px-1 sm:px-3 md:px-4 lg:px-6 py-2 md:py-4 w-full space-y-6">
-        <div className="h-24 bg-white dark:bg-slate-900 rounded-2xl animate-pulse" />
+        <div className="h-24 bg-white rounded-2xl animate-pulse" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-24 bg-white dark:bg-slate-900 rounded-2xl animate-pulse" />
+            <div key={i} className="h-24 bg-white rounded-2xl animate-pulse" />
           ))}
         </div>
-        <div className="h-64 bg-white dark:bg-slate-900 rounded-2xl animate-pulse" />
+        <div className="h-64 bg-white rounded-2xl animate-pulse" />
       </div>
     </div>
   );
@@ -104,6 +109,50 @@ export default async function GrievanceCategoryMasterPage({
     );
   }
 
+  // Clean path to return to when closing drawer
+  const returnPath = buildMasterUrl(locale, {
+    ...normalizedSearchParams,
+    page: String(page),
+    pageSize: String(pageSize),
+    drawer: undefined,
+    id: undefined,
+  });
+
+  // Handle drawer server-side rendering
+  let drawerElement = null;
+  const activeDrawer = normalizedSearchParams.drawer;
+
+  if (activeDrawer === 'add') {
+    drawerElement = (
+      <GrievanceCategoryDrawerClient returnPath={returnPath}>
+        <GrievanceCategoryFormServer
+          editingCategory={null}
+          departments={departments}
+          locale={locale}
+          returnPath={returnPath}
+        />
+      </GrievanceCategoryDrawerClient>
+    );
+  } else if (activeDrawer === 'edit') {
+    const rawId = normalizedSearchParams.id;
+    const editId = rawId ? parseInt(rawId, 10) : NaN;
+    if (!Number.isNaN(editId) && editId > 0) {
+      const categoryRes = await getGrievanceCategoryById(editId);
+      if (categoryRes && categoryRes.success && categoryRes.data) {
+        drawerElement = (
+          <GrievanceCategoryDrawerClient isEdit returnPath={returnPath}>
+            <GrievanceCategoryFormServer
+              editingCategory={categoryRes.data}
+              departments={departments}
+              locale={locale}
+              returnPath={returnPath}
+            />
+          </GrievanceCategoryDrawerClient>
+        );
+      }
+    }
+  }
+
   return (
     <Suspense fallback={<MasterPageLoadingFallback />}>
       <div className="h-full">
@@ -118,7 +167,9 @@ export default async function GrievanceCategoryMasterPage({
           initialSearch={search ?? ''}
           initialDepartment={normalizedSearchParams.department ?? 'all'}
           initialStatus={normalizedSearchParams.status ?? 'all'}
-        />
+        >
+          {drawerElement}
+        </GrievanceCategoryMaster>
       </div>
     </Suspense>
   );

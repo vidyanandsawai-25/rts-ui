@@ -22,7 +22,7 @@ import {
   type GrievanceCategoryValidationInput,
 } from '@/lib/utils/grievance-category-validation';
 import { logger } from '@/lib/utils/logger';
-import { getCurrentUserId, parsePositiveInteger } from './utils';
+import { getCurrentUserId, parsePositiveInteger, localizeBackendMessage, tGrievanceMessage } from './utils';
 
 /**
  * Update Grievance Category Action
@@ -72,7 +72,7 @@ export async function updateGrievanceCategoryAction(
     priority: priority as Priority | null,
     resolutionSla: resolutionSla,
     escalationLevel: escalationLevel as EscalationLevel | null,
-    description: description,
+    description: sanitizeDescription(description),
     isActive: isActiveRaw === 'true',
   };
 
@@ -112,20 +112,17 @@ export async function updateGrievanceCategoryAction(
     const response = await updateGrievanceCategory(sanitizedData);
     if (response.success) {
       revalidatePath(`/[locale]/configuration-settings/grievance-category-master`, 'page');
-      return { success: true, message: response.message };
-    } else {
-      logger.error('API failed to update grievance category:', {
-        errorDetail: response.error,
-        message: response.message,
-        id,
-        locale,
-      });
       return {
-        success: false,
-        error: response.error || response.message || 'Failed to update',
-        message: response.message,
+        success: true,
+        message: await tGrievanceMessage(locale, 'master.toast.updateSuccess', 'Category updated successfully')
       };
     }
+    const errorMsg = await localizeBackendMessage(response.error || response.message, locale, 'updateError', 'Failed to update grievance category');
+    return {
+      success: false,
+      error: errorMsg,
+      message: response.message,
+    };
   } catch (error) {
     logger.error('Failed to update grievance category:', {
       error: error instanceof Error ? error : undefined,
@@ -133,9 +130,11 @@ export async function updateGrievanceCategoryAction(
       id,
       locale,
     });
+    const errMsg = error instanceof Error ? error.message : String(error);
+    const errorMsg = await localizeBackendMessage(errMsg, locale, 'unexpected', 'Unexpected error occurred');
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to update',
+      error: errorMsg,
     };
   }
 }

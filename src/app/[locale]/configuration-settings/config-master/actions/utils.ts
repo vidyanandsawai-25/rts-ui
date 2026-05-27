@@ -87,6 +87,71 @@ export async function tConfigMessage(key: string, fallback: string): Promise<str
 }
 
 /**
+ * Localizes backend error messages dynamically.
+ */
+export async function localizeConfigError(
+  err: unknown,
+  actionFallbackKey: string = 'unexpectedError',
+  actionFallbackDefault: string = 'An unexpected error occurred'
+): Promise<string> {
+  const errMsg = err instanceof Error ? err.message : String(err);
+  return await localizeBackendMessage(errMsg, actionFallbackKey, actionFallbackDefault);
+}
+
+/**
+ * Intercepts raw backend API messages and error responses, mapping them to localized translation keys
+ */
+export async function localizeBackendMessage(
+  messageOrError: string | null | undefined,
+  fallbackKey: string = 'unexpectedError',
+  fallbackDefault: string = 'An unexpected error occurred'
+): Promise<string> {
+  if (!messageOrError) {
+    return await tConfigMessage(fallbackKey, fallbackDefault);
+  }
+
+  const msg = messageOrError.toLowerCase();
+
+  // 1. Duplicate / Unique Constraints
+  if (msg.includes('already exists') || msg.includes('duplicate') || msg.includes('unique constraint')) {
+    if (msg.includes('code')) {
+      return await tConfigMessage('duplicateCode', 'Code already exists. Please use a unique code.');
+    }
+    if (msg.includes('name')) {
+      return await tConfigMessage('duplicateName', 'Name already exists. Please use a unique name.');
+    }
+    return await tConfigMessage('duplicateRecord', 'Record already exists.');
+  }
+
+  // 2. Not Found
+  if (msg.includes('not found') || msg.includes('does not exist')) {
+    return await tConfigMessage('recordNotFound', 'Requested record was not found.');
+  }
+
+  // 3. Foreign Key / Association Constraints / Dependencies
+  if (
+    msg.includes('conflict') || 
+    msg.includes('association') || 
+    msg.includes('associated') || 
+    msg.includes('dependency') || 
+    msg.includes('dependent') ||
+    msg.includes('foreign key') ||
+    msg.includes('cannot delete') ||
+    msg.includes('referenced')
+  ) {
+    return await tConfigMessage('dependencyExists', 'Operation failed because this record is associated with other active data.');
+  }
+
+  // 4. Unauthorized / Session Expired
+  if (msg.includes('unauthorized') || msg.includes('forbidden') || msg.includes('invalid token') || msg.includes('expired')) {
+    return await tConfigMessage('unauthorized', 'Unauthorized. Please log in.');
+  }
+
+  return await tConfigMessage(fallbackKey, fallbackDefault);
+}
+
+
+/**
  * Verifies if the user has a valid session and optional role permissions.
  * For Configuration Master, any logged-in user can access and modify settings.
  * @param allowedRoles - Optional array of roles (not enforced for config master by default)

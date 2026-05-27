@@ -29,48 +29,66 @@ export function useSubTypeFormSubmit({
   const router = useRouter();
 
   const handleSubmit = async () => {
-    try {
-      if (isEdit) {
-        await updateSubType({
-          id: Number(formData.subTypeOfUseId),
-          typeId: Number(formData.typeOfUseId),
-          description: formData.description,
-          searchSequence: Number(formData.searchSequence ?? 0),
-          status: formData.isActive ? 'Active' : 'Inactive',
-        });
-        toast.success(t('messages.subTypeUpdated'));
-      } else {
-        await createSubType({
-          typeId: Number(formData.typeOfUseId),
-          description: formData.description,
-          searchSequence: Number(formData.searchSequence ?? 0),
-          status: formData.isActive ? 'Active' : 'Inactive',
-        });
-        toast.success(t('messages.subTypeCreated'));
+    if (isEdit) {
+      const result = await updateSubType({
+        id: Number(formData.subTypeOfUseId),
+        typeId: Number(formData.typeOfUseId),
+        description: formData.description,
+        searchSequence: Number(formData.searchSequence ?? 0),
+        status: formData.isActive ? 'Active' : 'Inactive',
+      });
+
+      if (!result.success) {
+        const errorMsg = result.message || '';
+        
+        if (
+          errorMsg.includes('409') ||
+          errorMsg.toLowerCase().includes('duplicate') ||
+          errorMsg.includes('same details already')
+        ) {
+          setErrors((prev) => ({
+            ...prev,
+            description: t('messages.duplicateSubTypeName'),
+          }));
+          setTouched((prev) => ({ ...prev, description: true }));
+        } else {
+          toast.error(errorMsg || t('messages.updateSubTypeFailed'));
+        }
+        return;
       }
 
-      router.back();
-    } catch (err: unknown) {
-      const errorMsg = err instanceof Error ? err.message : '';
+      toast.success(t('messages.subTypeUpdated'));
+    } else {
+      const result = await createSubType({
+        typeId: Number(formData.typeOfUseId),
+        description: formData.description,
+        searchSequence: Number(formData.searchSequence ?? 0),
+        status: formData.isActive ? 'Active' : 'Inactive',
+      });
 
-      if (
-        errorMsg.includes('409') ||
-        errorMsg.toLowerCase().includes('duplicate') ||
-        errorMsg.includes('same details already')
-      ) {
-        setErrors((prev) => ({
-          ...prev,
-          description: t('messages.duplicateSubTypeName'),
-        }));
-        setTouched((prev) => ({ ...prev, description: true }));
-      } else {
-        // Check if it's an i18n key or raw message
-        const displayMessage = errorMsg.startsWith('messages.') 
-          ? t(errorMsg) 
-          : errorMsg || t('messages.saveFailed');
-        toast.error(displayMessage);
+      if (!result.success) {
+        const errorMsg = result.message || '';
+        
+        if (
+          errorMsg.includes('409') ||
+          errorMsg.toLowerCase().includes('duplicate') ||
+          errorMsg.includes('same details already')
+        ) {
+          setErrors((prev) => ({
+            ...prev,
+            description: t('messages.duplicateSubTypeName'),
+          }));
+          setTouched((prev) => ({ ...prev, description: true }));
+        } else {
+          toast.error(errorMsg || t('messages.createSubTypeFailed'));
+        }
+        return;
       }
+
+      toast.success(t('messages.subTypeCreated'));
     }
+
+    router.back();
   };
 
   return { handleSubmit };

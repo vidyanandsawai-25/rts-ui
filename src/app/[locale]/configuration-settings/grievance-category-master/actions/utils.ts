@@ -17,6 +17,7 @@
  */
 import { cookies } from 'next/headers';
 import { createHmac, timingSafeEqual } from 'crypto';
+import { getTranslations } from 'next-intl/server';
 
 const DIRECT_USER_ID_COOKIE_KEYS = [
   'user_id',
@@ -181,5 +182,75 @@ export function getAuditTimestamp(): string {
  */
 export function resolveAuditUserId(currentUserId: number): number {
   return currentUserId;
+}
+
+export async function tGrievanceMessage(
+  locale: string,
+  key: string,
+  fallback: string
+): Promise<string> {
+  try {
+    const isToast = key.startsWith('master.toast.');
+    const namespace = isToast ? 'grievanceCategory' : 'grievanceCategory.form.errors';
+
+    const t = await getTranslations({ locale, namespace });
+    const translated = t(key as never);
+    if (!translated || translated === key || translated === `${namespace}.${key}`) {
+      return fallback;
+    }
+    return translated;
+  } catch {
+    return fallback;
+  }
+}
+
+export async function localizeBackendMessage(
+  messageOrError: string | null | undefined,
+  locale: string,
+  fallbackKey: string,
+  fallbackDefault: string
+): Promise<string> {
+  if (!messageOrError) {
+    return await tGrievanceMessage(locale, fallbackKey, fallbackDefault);
+  }
+
+  const msg = messageOrError.toLowerCase();
+
+  // 1. Duplicate
+  if (msg.includes('already exists') || msg.includes('duplicate') || msg.includes('unique constraint')) {
+    if (msg.includes('code')) {
+      return await tGrievanceMessage(locale, 'duplicateCode', 'Category code already exists. Please use a unique code.');
+    }
+    if (msg.includes('name')) {
+      return await tGrievanceMessage(locale, 'duplicateName', 'Category name already exists. Please use a unique name.');
+    }
+    return await tGrievanceMessage(locale, 'duplicateRecord', 'Grievance category already exists.');
+  }
+
+  // 2. Not Found
+  if (msg.includes('not found') || msg.includes('does not exist')) {
+    return await tGrievanceMessage(locale, 'recordNotFound', 'Grievance category not found.');
+  }
+
+  // 3. Dependency Conflict
+  if (
+    msg.includes('conflict') || 
+    msg.includes('association') || 
+    msg.includes('associated') || 
+    msg.includes('dependency') || 
+    msg.includes('dependent') ||
+    msg.includes('foreign key') ||
+    msg.includes('cannot delete') ||
+    msg.includes('referenced')
+  ) {
+    return await tGrievanceMessage(locale, 'dependencyExists', 'Cannot delete/modify because associated grievances or records exist.');
+  }
+
+  // 4. Unauthorized
+  if (msg.includes('unauthorized') || msg.includes('forbidden') || msg.includes('invalid token') || msg.includes('expired')) {
+    return await tGrievanceMessage(locale, 'unauthorized', 'Unauthorized. Please log in.');
+  }
+
+  return await tGrievanceMessage(locale, fallbackKey, fallbackDefault);
 }
 

@@ -115,6 +115,7 @@
     },
     "errors": {
       "codeReq": "Category code is required",
+      "codeMinLength": "Code must be at least 2 characters",
       "codeAlphanumeric": "Code can only contain letters, numbers, and hyphens",
       "codeMaxLength": "Code cannot exceed 20 characters",
       "codeInvalid": "Category code cannot be all zeros",
@@ -123,8 +124,9 @@
       "nameMaxLength": "Name cannot exceed 100 characters",
       "descReq": "Description is required",
       "descMinLength": "Description must be at least 3 characters",
-      "descMaxLength": "Description cannot exceed 1000 characters",
-      "descMaxWords": "Description cannot exceed 1000 words",
+      "descMaxLength": "Description cannot exceed 500 characters",
+      "descNoHtml": "Description cannot contain HTML tags or angle brackets",
+      "descMaxWords": "Description cannot exceed 500 words",
       "slaMaxLength": "Resolution SLA cannot exceed 3 digits",
       "missingRequired": "Category code and name are required",
       "slaReq": "Resolution SLA is required",
@@ -141,7 +143,13 @@
       "invalidDept": "Invalid department ID",
       "invalidId": "Invalid record ID",
       "createError": "Failed to create grievance category",
-      "updateError": "Failed to update grievance category"
+      "updateError": "Failed to update grievance category",
+      "unauthorized": "Unauthorized. Please log in.",
+      "duplicateCode": "Category code already exists. Please use a unique code.",
+      "duplicateName": "Category name already exists. Please use a unique name.",
+      "duplicateRecord": "Grievance category already exists.",
+      "recordNotFound": "Grievance category not found.",
+      "dependencyExists": "Cannot delete/modify because associated grievances or records exist."
     }
   },
   "error": {

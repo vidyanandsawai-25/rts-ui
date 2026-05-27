@@ -28,6 +28,16 @@ export interface DualMethodResponse {
   cvTaxesTotal?: number;
   /** Total retained tax */
   retainTaxesTotal?: number;
+  oldRv?: number;
+  oldRV?: number;
+  oldTaxTotal?: number;
+  totalRv?: number;
+  totalRV?: number;
+  totalCv?: number;
+  totalCV?: number;
+  rvTaxTotal?: number;
+  cvTaxTotal?: number;
+  retainTaxTotal?: number;
 }
 
 /**

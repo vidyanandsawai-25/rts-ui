@@ -44,6 +44,7 @@ export const useRoomEditActions = (state: RoomSubmissionState) => {
       remark: room.remark || "-Select-",
       utilities: (room.utilities || room.roomType || "-Select-") as string,
       shape: (room.shape || "-Select-") as string,
+      roomTypeId: room.roomTypeId ? String(room.roomTypeId) : "",
     });
 
     // Prefer normalized offsets (room.offsets) over legacy roomWiseMinusData

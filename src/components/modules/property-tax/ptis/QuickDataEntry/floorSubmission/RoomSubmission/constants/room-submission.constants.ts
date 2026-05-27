@@ -22,6 +22,7 @@ export const INITIAL_ROOM_FORM_STATE: RoomFormData = {
   remark: "-Select-",
   utilities: "-Select-",
   shape: "-Select-",
+  roomTypeId: "",
 };
 
 export const INITIAL_OFFSET_DATA: OffsetData = {

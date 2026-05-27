@@ -1,14 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getRoomTypeOptionsAction } from "@/lib/api/ptis/floorSubmission/room-master.action";
+import { getRoomTypesAction } from "@/lib/api/ptis/floorSubmission/room-master.action";
+import { RoomTypeResponse } from "@/types/floor-details.types";
 
 /**
  * Custom hook to fetch and manage room type master data
- * @returns {Object} { roomTypes, isLoading, error }
+ * @returns {Object} { roomTypes, roomTypeDetails, isLoading, error }
  */
 export const useRoomTypeMaster = () => {
   const [roomTypes, setRoomTypes] = useState<string[]>([]);
+  const [roomTypeDetails, setRoomTypeDetails] = useState<RoomTypeResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -18,11 +20,17 @@ export const useRoomTypeMaster = () => {
     const fetchRoomTypes = async () => {
       try {
         setIsLoading(true);
-        const result = await getRoomTypeOptionsAction();
+        const result = await getRoomTypesAction();
         
         if (isMounted) {
           if (result.success && result.data) {
-            setRoomTypes(result.data);
+            setRoomTypeDetails(result.data);
+            const options = result.data.map(item => {
+              const name = item.roomTypeName || item.description || '';
+              const code = item.roomTypeCode || String(item.roomTypeId || '');
+              return name || code;
+            });
+            setRoomTypes(options);
           } else {
             setError(result.error || "Failed to load room types");
           }
@@ -45,5 +53,5 @@ export const useRoomTypeMaster = () => {
     };
   }, []);
 
-  return { roomTypes, isLoading, error };
+  return { roomTypes, roomTypeDetails, isLoading, error };
 };

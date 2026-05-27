@@ -117,6 +117,22 @@ export function usePaymentModeForm({
 
             if (result.success) {
                 toast.success(t(result.messageKey || 'toast.createSuccess'));
+                if (!isEdit) {
+                    setFormData({
+                        code: "",
+                        paymentModeName: "",
+                        type: "Online",
+                        category: "Cash",
+                        description: "",
+                        chargeType: "None",
+                        transactionCharge: 0,
+                        isActive: true,
+                    });
+                    setErrors({});
+                    setTouched({});
+                    setSubmittedOnce(false);
+                    setIsActive(true);
+                }
                 onSuccess();
                 onClose();
             } else {

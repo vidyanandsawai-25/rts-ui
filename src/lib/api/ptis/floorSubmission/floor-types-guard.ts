@@ -46,30 +46,49 @@ export const mapRoomDataToUi = (room: RoomAPIResponse, index: number): RoomData 
 
         return {
             id: Number(offset.roomWiseMinusId ?? offset.id) || undefined,
-            offsetNo: `O${offIndex + 1}`, 
+            offsetNo: `O${offIndex + 1}`,
             shape: String(offShape),
-            length: offLengthVal, 
-            width: offWidthVal, 
+            length: offLengthVal,
+            width: offWidthVal,
             height: offHeightVal,
             area: Number(offset.areaSqMtr || offset.area) || 0,
             operation: String(offset.operation || 'subtract'),
             remark: String(offset.remark || ''),
-            shapeType: String(offShape), 
+            shapeType: String(offShape),
             shapeParams: offShapeParams,
         };
     });
 
+    const isOff = (room.minusYesNo === true || room.MinusYesNo === true || room.offsetMinus === 'Yes');
+    const isOut = (room.outerYesNo === true || room.OuterYesNo === true || room.outer === 'Yes');
+    const mainArea = Number(room.areaSqMtr || room.area) || 0;
+
+    const offsetArea = offsets.reduce((sum, off) => {
+        const op = off.operation;
+        return op === 'subtract' ? sum + off.area : sum - off.area;
+    }, 0);
+
+    const actualOffset = isOff ? Math.min(offsetArea, mainArea) : 0;
+    const calculatedBaseArea = mainArea - actualOffset;
+
+    const computedCarpetArea = isOut ? calculatedBaseArea * 0.80 : calculatedBaseArea;
+    const computedBuiltUpArea = isOut ? calculatedBaseArea : calculatedBaseArea * 1.20;
+
     return {
         id: Number(room.roomWiseSubmissionId ?? room.id) || undefined,
         roomNo: String(room.roomNo || `R${index + 1}`),
-        utilities: room.roomType || room.utilities || 'Room',
+        utilities: String(room.roomTypeDescription || room.roomType || room.utilities || 'Room'),
+        roomTypeId: room.roomTypeId,
         shape: shape,
         length: lengthVal, width: widthVal, height: heightVal,
         area: Number(room.areaSqMtr || room.area) || 0,
+        mainArea: Number(room.mainArea || mainArea) || 0,
+        carpetArea: Number(room.carpetArea || room.totalAreaSqMtr || room.total || computedCarpetArea) || 0,
+        builtUpArea: Number(room.builtUpArea || room.builtupArea || room.builtUpAreaSqMtr || room.builtupAreaSqMtr || computedBuiltUpArea) || 0,
         roomCount: String(room.noOfRooms || room.roomCount || 1),
         total: Number(room.totalAreaSqMtr || room.total || room.areaSqMtr) || 0,
-        outer: (room.outerYesNo === true || room.OuterYesNo === true || room.outer === 'Yes') ? 'Yes' : 'No',
-        offsetMinus: (room.minusYesNo === true || room.MinusYesNo === true || room.offsetMinus === 'Yes') ? 'Yes' : 'No',
+        outer: isOut ? 'Yes' : 'No',
+        offsetMinus: isOff ? 'Yes' : 'No',
         remark: room.remark || '',
         shapeParams, offsets,
     };
@@ -175,43 +194,43 @@ export function normalizeApiFloorData(apiData: Record<string, unknown>) {
         renterDetails: (data.renterDetails || []).map(normalizeRenterDetailItem),
         renterMast: (data.renterMast || data.renters || []).map(normalizeRenterMastItem),
         renterName: s(
-            data.renterName || 
-            data.renterNameEnglish || 
-            (data.renters && (data.renters as any[])[0]?.renterName) || 
-            (data.renters && (data.renters as any[])[0]?.renterNameEnglish) || 
-            (data.renterMast && (data.renterMast as any[])[0]?.renterName) || 
+            data.renterName ||
+            data.renterNameEnglish ||
+            (data.renters && (data.renters as any[])[0]?.renterName) ||
+            (data.renters && (data.renters as any[])[0]?.renterNameEnglish) ||
+            (data.renterMast && (data.renterMast as any[])[0]?.renterName) ||
             (data.renterMast && (data.renterMast as any[])[0]?.renterNameEnglish)
         ),
         rentMonthly: Number(
-            data.rentMonthly || 
-            (data.renters && (data.renters as any[])[0]?.rentMonthly) || 
-            (data.renterMast && (data.renterMast as any[])[0]?.rentMonthly) || 
+            data.rentMonthly ||
+            (data.renters && (data.renters as any[])[0]?.rentMonthly) ||
+            (data.renterMast && (data.renterMast as any[])[0]?.rentMonthly) ||
             0
         ),
         rentYearly: Number(
-            data.rentYearly || 
-            (data.renters && (data.renters as any[])[0]?.finalYearlyRent) || 
-            (data.renterMast && (data.renterMast as any[])[0]?.finalYearlyRent) || 
+            data.rentYearly ||
+            (data.renters && (data.renters as any[])[0]?.finalYearlyRent) ||
+            (data.renterMast && (data.renterMast as any[])[0]?.finalYearlyRent) ||
             0
         ) || (Number(
-            data.rentMonthly || 
-            (data.renters && (data.renters as any[])[0]?.rentMonthly) || 
-            (data.renterMast && (data.renterMast as any[])[0]?.rentMonthly) || 
+            data.rentMonthly ||
+            (data.renters && (data.renters as any[])[0]?.rentMonthly) ||
+            (data.renterMast && (data.renterMast as any[])[0]?.rentMonthly) ||
             0
         ) * 12),
         agreementFromDate: s(
-            data.agreementFromDate || 
-            (data.renters && ((data.renters as any[])[0]?.agreementFromDate || (data.renters as any[])[0]?.durationFrom)) || 
+            data.agreementFromDate ||
+            (data.renters && ((data.renters as any[])[0]?.agreementFromDate || (data.renters as any[])[0]?.durationFrom)) ||
             (data.renterMast && ((data.renterMast as any[])[0]?.agreementFromDate || (data.renterMast as any[])[0]?.durationFrom))
         ),
         agreementToDate: s(
-            data.agreementToDate || 
-            (data.renters && ((data.renters as any[])[0]?.agreementToDate || (data.renters as any[])[0]?.durationTo)) || 
+            data.agreementToDate ||
+            (data.renters && ((data.renters as any[])[0]?.agreementToDate || (data.renters as any[])[0]?.durationTo)) ||
             (data.renterMast && ((data.renterMast as any[])[0]?.agreementToDate || (data.renterMast as any[])[0]?.durationTo))
         ),
         agreementDate: s(
-            data.agreementDate || 
-            (data.renters && (data.renters as any[])[0]?.agreementDate) || 
+            data.agreementDate ||
+            (data.renters && (data.renters as any[])[0]?.agreementDate) ||
             (data.renterMast && (data.renterMast as any[])[0]?.agreementDate)
         ),
         roomData: (data.roomWiseSubmissionDetails || data.propertyRooms || []).map((r, i) => mapRoomDataToUi(r, i)),

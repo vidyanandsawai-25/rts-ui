@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation';
 import { footerService, FooterAction } from '@/lib/api/footer.service';
 import { z } from 'zod';
+import { PTIS_TABS } from '@/types/ptis.types';
 
 export type ActionResult<T> =
   | { success: true; data: T; message?: string }
@@ -15,6 +16,7 @@ export interface FooterActionPayload {
   wardId?: string;
   propertyNo?: string;
   partitionNo?: string;
+  tab?: string;
 }
 
 const ptisEditRedirectSchema = z.object({
@@ -24,6 +26,7 @@ const ptisEditRedirectSchema = z.object({
   wardId: z.coerce.number().positive().optional(),
   propertyNo: z.string().regex(/^[a-zA-Z0-9_-]+$/).optional(),
   partitionNo: z.string().regex(/^[a-zA-Z0-9_-]*$/).optional(),
+  tab: z.enum(PTIS_TABS).optional(),
 });
 
 /**
@@ -81,7 +84,7 @@ export async function handleFooterAction(
           return { success: false, error: 'Invalid or insecure redirect payload.' };
         }
 
-        const { propertyId, locale, wardNo, wardId, propertyNo, partitionNo } = validationResult.data;
+        const { propertyId, locale, wardNo, wardId, propertyNo, partitionNo, tab } = validationResult.data;
 
         const params = new URLSearchParams();
         if (wardNo) params.set('wardNo', wardNo);
@@ -89,12 +92,24 @@ export async function handleFooterAction(
         if (propertyNo) params.set('propertyNo', propertyNo);
         if (partitionNo && partitionNo !== '0') params.set('partitionNo', partitionNo);
 
+        let targetPath = '';
+        if (tab === 'kycdetails') {
+          params.set('propertyId', String(propertyId));
+          targetPath = `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Kyc`;
+        } else if (tab === 'societydetails') {
+          params.set('propertyId', String(propertyId));
+          targetPath = `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Society`;
+        } else if (tab === 'olddetails') {
+          params.set('propertyId', String(propertyId));
+          targetPath = `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/OldDetails/old-taxation`;
+        } else {
+          targetPath = `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Property`;
+        }
+
         const queryString = params.toString();
         const suffix = queryString ? `?${queryString}` : '';
 
-        redirect(
-          `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Property${suffix}`
-        );
+        redirect(`${targetPath}${suffix}`);
       }
       default:
         return { success: false, error: `Command ${command} is not yet implemented.` };

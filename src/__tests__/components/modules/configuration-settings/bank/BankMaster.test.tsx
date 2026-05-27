@@ -18,14 +18,16 @@ vi.mock('sonner', () => ({
   },
 }));
 
+const mockPermissions = {
+  canView: true,
+  canEdit: true,
+  canDelete: true,
+  haveFullAccess: true,
+  hasAccess: true,
+};
+
 vi.mock('@/hooks/usePermissions', () => ({
-  usePermissions: () => ({
-    canView: true,
-    canEdit: true,
-    canDelete: true,
-    haveFullAccess: true,
-    hasAccess: true,
-  }),
+  usePermissions: () => mockPermissions,
 }));
 
 const mockPush = vi.fn();
@@ -92,6 +94,12 @@ describe('BankMaster', () => {
     vi.clearAllMocks();
 
     user = userEvent.setup();
+
+    mockPermissions.canView = true;
+    mockPermissions.canEdit = true;
+    mockPermissions.canDelete = true;
+    mockPermissions.haveFullAccess = true;
+    mockPermissions.hasAccess = true;
 
     vi.mocked(bankActions.createBankAction).mockReset();
     vi.mocked(bankActions.updateBankAction).mockReset();
@@ -177,5 +185,64 @@ describe('BankMaster', () => {
       expect(bankActions.deleteBankAction).toHaveBeenCalledWith('1');
       expect(toast.success).toHaveBeenCalledWith('messages.deleteSuccess');
     });
+  });
+
+  it('renders errors.noAccess when user has no access permission and token is valid', () => {
+    mockPermissions.canView = false;
+    mockPermissions.haveFullAccess = false;
+
+    render(
+      <BankMaster
+        data={[]}
+        statsData={{ activeCount: 0, uniqueStates: [] }}
+        pageNumber={1}
+        pageSize={10}
+        totalCount={0}
+        totalPages={0}
+      />
+    );
+
+    expect(screen.getByText('errors.noAccess')).toBeInTheDocument();
+    expect(screen.queryByText('errors.unauthorized')).not.toBeInTheDocument();
+  });
+
+  it('renders errors.unauthorized when user has no access permission and token is expired (statusCode 401)', () => {
+    mockPermissions.canView = false;
+    mockPermissions.haveFullAccess = false;
+
+    render(
+      <BankMaster
+        data={[]}
+        statsData={{ activeCount: 0, uniqueStates: [] }}
+        pageNumber={1}
+        pageSize={10}
+        totalCount={0}
+        totalPages={0}
+        statusCode={401}
+      />
+    );
+
+    expect(screen.getByText('errors.unauthorized')).toBeInTheDocument();
+    expect(screen.queryByText('errors.noAccess')).not.toBeInTheDocument();
+  });
+
+  it('renders errors.unauthorized when user has no access permission and token is expired (errorMessage contains unauthorized)', () => {
+    mockPermissions.canView = false;
+    mockPermissions.haveFullAccess = false;
+
+    render(
+      <BankMaster
+        data={[]}
+        statsData={{ activeCount: 0, uniqueStates: [] }}
+        pageNumber={1}
+        pageSize={10}
+        totalCount={0}
+        totalPages={0}
+        errorMessage="Unauthorized: Token expired or invalid"
+      />
+    );
+
+    expect(screen.getByText('errors.unauthorized')).toBeInTheDocument();
+    expect(screen.queryByText('errors.noAccess')).not.toBeInTheDocument();
   });
 });

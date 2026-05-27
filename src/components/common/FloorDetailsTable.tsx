@@ -1,12 +1,68 @@
-import React, { type ReactNode } from 'react';
+'use client';
+
+import React, { type ReactNode, useState, useMemo } from 'react';
 import Link from 'next/link';
-import { ChevronRight, ChevronDown, ArrowUpDown, Home, type LucideIcon } from 'lucide-react';
+import { ChevronRight, ChevronDown, ArrowUpDown, ArrowUp, ArrowDown, Home, type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
+import { Tooltip } from './Tooltip';
 
 /**
  * Common color groupings for floor detail table rows
  */
 const DEFAULT_ROW_COLOR_GROUPS = ['bg-white', 'bg-[#EEF6FF]', 'bg-[#F5F3FF]'] as const;
+
+export const COLUMN_FULL_NAMES: Record<string, string> = {
+  floor: 'Floor',
+  subFloor: 'Sub Floor',
+  constructionYear: 'Construction Year',
+  constYear: 'Construction Year',
+  conYr: 'Construction Year',
+  assessmentYear: 'Assessment Year',
+  asstYear: 'Assessment Year',
+  assmtYear: 'Assessment Year',
+  constructionType: 'Construction Type',
+  constType: 'Construction Type',
+  conTyp: 'Construction Type',
+  natureTypeBuilding: 'Nature of Building / Type of Use',
+  use: 'Nature of Building / Type of Use',
+  subType: 'Sub Type of Use',
+  subTyp: 'Sub Type of Use',
+  noOfRooms: 'Number of Rooms',
+  rooms: 'Number of Rooms',
+  carpetArea: 'Carpet Area (Square Feet / Square Meter)',
+  carpetSqFt: 'Carpet Area (Square Feet)',
+  carpetSqM: 'Carpet Area (Square Meter)',
+  builtUpArea: 'Built-Up Area (Square Feet / Square Meter)',
+  builtupAreaSqFt: 'Built-Up Area (Square Feet)',
+  builtupAreaSqM: 'Built-Up Area (Square Meter)',
+  ocNumber: 'Occupancy Certificate Number',
+  ocDate: 'Occupancy Certificate Date',
+  renterName: 'Renter Name',
+  rentMY: 'Rent (Monthly / Yearly)',
+  annualRent: 'Rent (Monthly / Yearly)',
+  appliedOn: 'Applied On Date',
+  rateMY: 'Rate (Monthly / Yearly)',
+  rate: 'Rate (Monthly / Yearly)',
+  yearlyRentalValue: 'Yearly Rental Value',
+  rentalValue: 'Yearly Rental Value',
+  depreciation: 'Depreciation',
+  maintenance: 'Maintenance & Repair',
+  mr: 'Maintenance & Repair',
+  alv: 'Annual Letting Value',
+  rv: 'Rateable Value',
+  sdrrRate: 'Stamp Duty Ready Reckoner Rate',
+  sdrr: 'Stamp Duty Ready Reckoner Rate',
+  baseValue: 'Base Value',
+  floorFactor: 'Floor Factor',
+  ageFactor: 'Age Factor',
+  ntbFactor: 'Nature of Building / Type of Use Factor',
+  useFactor: 'Use Factor',
+  finalCapitalValue: 'Capital Value',
+  capitalValue: 'Capital Value',
+  isTaxable: 'Is Taxable',
+  taxable: 'Is Taxable',
+  actions: 'Actions',
+};
 
 /**
  * Calculates the background class for a row based on its group index
@@ -28,6 +84,7 @@ export interface FloorDetailsTableColumn<Row> {
   render: (row: Row, index: number) => ReactNode;
   headerRender?: (col: FloorDetailsTableColumn<Row>) => ReactNode;
   sortable?: boolean;
+  tooltip?: ReactNode;
 }
 
 interface FloorDetailsTableProps<Row extends { id: number | string }> {
@@ -150,6 +207,71 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
 }: FloorDetailsTableProps<Row>) {
   const expandedRowIdSet = new Set(expandedRowIds.map(String));
 
+  const [sortConfig, setSortConfig] = useState<{
+    key: string;
+    direction: 'asc' | 'desc' | null;
+  }>({ key: '', direction: null });
+
+  const handleSort = (key: string) => {
+    setSortConfig((prev) => {
+      if (prev.key === key) {
+        if (prev.direction === 'asc') {
+          return { key, direction: 'desc' };
+        } else if (prev.direction === 'desc') {
+          return { key: '', direction: null };
+        }
+      }
+      return { key, direction: 'asc' };
+    });
+  };
+
+  const sortedData = useMemo(() => {
+    if (!data) return [];
+    if (!sortConfig.key || !sortConfig.direction) return data;
+
+    return [...data].sort((a, b) => {
+      const aVal = a[sortConfig.key as keyof Row];
+      const bVal = b[sortConfig.key as keyof Row];
+
+      const parseVal = (val: unknown): number | string => {
+        if (val === undefined || val === null || val === '-') return -Infinity;
+        if (typeof val === 'number') return val;
+
+        const str = String(val).trim();
+
+        // Check if it matches a date pattern like DD/MM/YYYY
+        const dateMatch = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+        if (dateMatch) {
+          const [_, d, m, y] = dateMatch;
+          return new Date(Number(y), Number(m) - 1, Number(d)).getTime();
+        }
+
+        // Check if it's a number pair/fraction/formatted number:
+        // Try extracting first number: "21,527.82 / 2,000.00" -> "21527.82"
+        const cleaned = str.replace(/,/g, '');
+        const firstNumMatch = cleaned.match(/^-?\d+(\.\d+)?/);
+        if (firstNumMatch) {
+          return parseFloat(firstNumMatch[0]);
+        }
+
+        return str;
+      };
+
+      const parsedA = parseVal(aVal);
+      const parsedB = parseVal(bVal);
+
+      if (typeof parsedA === 'number' && typeof parsedB === 'number') {
+        return sortConfig.direction === 'asc' ? parsedA - parsedB : parsedB - parsedA;
+      }
+
+      const strA = String(parsedA);
+      const strB = String(parsedB);
+      return sortConfig.direction === 'asc'
+        ? strA.localeCompare(strB, undefined, { numeric: true, sensitivity: 'base' })
+        : strB.localeCompare(strA, undefined, { numeric: true, sensitivity: 'base' });
+    });
+  }, [data, sortConfig]);
+
   return (
     <div
       className={cn(
@@ -191,24 +313,48 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
                 {col.headerRender ? (
                   col.headerRender(col)
                 ) : (
-                  <div
-                    className={cn(
-                      'inline-flex h-8 w-full items-center justify-center gap-1 rounded-md border border-blue-400/10 bg-black/5 px-3 text-xs font-bold text-inherit shadow-sm transition-colors duration-200 select-none whitespace-nowrap',
-                      headerBadgeClassName,
-                      col.headerBadgeClassName
-                    )}
+                  <Tooltip
+                    content={
+                      col.tooltip &&
+                      typeof col.tooltip === 'string' &&
+                      !col.tooltip.startsWith('ptis.floorTable.tooltips') &&
+                      !col.tooltip.includes('.tooltips.')
+                        ? col.tooltip
+                        : (COLUMN_FULL_NAMES[col.key] || col.label)
+                    }
+                    placement="bottom"
                   >
-                    {typeof col.label === 'string' ? (
-                      <span className="truncate font-bold uppercase tracking-wider">
-                        {col.label}
-                      </span>
-                    ) : (
-                      col.label
-                    )}
-                    {col.sortable !== false && (
-                      <ArrowUpDown className="h-2.5 w-2.5 text-white opacity-60" />
-                    )}
-                  </div>
+                    <div
+                      onClick={() => col.sortable !== false && handleSort(col.key)}
+                      className={cn(
+                        'inline-flex h-8 w-full items-center justify-center gap-1 rounded-md border border-blue-400/10 bg-black/5 px-3 text-xs font-bold text-inherit shadow-sm transition-colors duration-200 select-none whitespace-nowrap',
+                        col.sortable !== false && 'cursor-pointer hover:bg-black/15 active:bg-black/25',
+                        headerBadgeClassName,
+                        col.headerBadgeClassName
+                      )}
+                    >
+                      {typeof col.label === 'string' ? (
+                        <span className="truncate font-bold uppercase tracking-wider">
+                          {col.label}
+                        </span>
+                      ) : (
+                        col.label
+                      )}
+                      {col.sortable !== false && (
+                        <span className="inline-flex flex-shrink-0 items-center ml-1">
+                          {sortConfig.key === col.key ? (
+                            sortConfig.direction === 'asc' ? (
+                              <ArrowUp className="h-2.5 w-2.5 text-white opacity-100" />
+                            ) : (
+                              <ArrowDown className="h-2.5 w-2.5 text-white opacity-100" />
+                            )
+                          ) : (
+                            <ArrowUpDown className="h-2.5 w-2.5 text-white opacity-60 hover:opacity-100 transition-opacity" />
+                          )}
+                        </span>
+                      )}
+                    </div>
+                  </Tooltip>
                 )}
               </th>
             ))}
@@ -228,7 +374,7 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
               </td>
             </tr>
           ) : (
-            data.map((row, index) => {
+            sortedData.map((row, index) => {
               const isExpanded = expandedRowIdSet.has(String(row.id));
               const bgClass = striped ? getRowBackgroundClass(index, colorGroups) : '';
               const baseRowClass = rowClassName

@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { FloorInformationFormData, OldFloorDetail } from "@/types/property-old-details.types";
+import { FloorInformationFormData, OldFloorDetail } from "@/types/OldDetails/property-old-details.types";
 
 /**
  * Hook to manage the state of the Floor Information Form.
@@ -26,6 +26,8 @@ export function useFloorFormState() {
     oldBuiltupAreaSqFeet: "",
     oldBuiltupAreaSqMeter: ""
   });
+
+  const [initialEditValues, setInitialEditValues] = useState<FloorInformationFormData | null>(null);
 
   /**
    * Handles Type of Use change and updates sub-type options via URL query params.
@@ -57,7 +59,7 @@ export function useFloorFormState() {
    * Pre-fills form data for editing an existing record.
    */
   const handleEdit = useCallback((row: OldFloorDetail) => {
-    setFormData({
+    const editData = {
       id: row.id,
       oldFloorId: String(row.oldFloorId),
       oldSubFloorId: row.oldSubFloorId ? String(row.oldSubFloorId) : "",
@@ -71,7 +73,10 @@ export function useFloorFormState() {
       oldAreaSqMeter: String(row.oldCarpetAreaSqMeter || ""),
       oldBuiltupAreaSqFeet: String(row.oldBuiltupAreaSqFeet || ""),
       oldBuiltupAreaSqMeter: String(row.oldBuiltupAreaSqMeter || "")
-    });
+    };
+
+    setFormData(editData);
+    setInitialEditValues({ ...editData });
 
     if (row.oldTypeOfUseId !== undefined && row.oldTypeOfUseId !== null) {
       handleUseTypeChange(row.oldTypeOfUseId, true);
@@ -100,6 +105,7 @@ export function useFloorFormState() {
       oldBuiltupAreaSqFeet: "",
       oldBuiltupAreaSqMeter: ""
     });
+    setInitialEditValues(null);
 
     const currentParam = searchParams.get('typeOfUseId');
     if (currentParam) {
@@ -113,6 +119,7 @@ export function useFloorFormState() {
   return {
     formData,
     setFormData,
+    initialEditValues,
     handleUseTypeChange,
     handleEdit,
     handleReset

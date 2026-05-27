@@ -10,6 +10,7 @@ import {
 import { useTranslations } from 'next-intl';
 import type { ConfigCategory } from '@/types/configMaster.types';
 import { CategoryFormFields } from './CategoryFormFields';
+import { CreateConfigCategorySchema, UpdateConfigCategorySchema } from '@/lib/validations/config-master.schema';
 
 interface AddCategoryModalProps {
   isOpen: boolean;
@@ -38,6 +39,16 @@ export default function AddCategoryModal({
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const resetForm = (): void => {
+    setFormData({
+      categoryCode: initialData?.code || '',
+      categoryName: initialData?.name || '',
+      displayOrder: initialData?.displayOrder?.toString() || '1',
+      isActive: initialData?.isActive ?? true,
+    });
+    setErrors({});
+  };
+
   const isDirty = useMemo(() => {
     return (
       formData.categoryCode !== (initialData?.code || '') ||
@@ -53,12 +64,26 @@ export default function AddCategoryModal({
   };
 
   const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {};
-    if (!formData.categoryCode.trim()) newErrors.categoryCode = t('modals.addCategory.form.validation.codeRequired');
-    if (!formData.categoryName.trim()) newErrors.categoryName = t('modals.addCategory.form.validation.nameRequired');
-    if (!formData.displayOrder || isNaN(parseInt(formData.displayOrder))) newErrors.displayOrder = t('modals.addCategory.form.validation.orderRequired');
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const parsedDisplayOrder = parseInt(formData.displayOrder, 10);
+    const validationData = {
+      ...formData,
+      displayOrder: isNaN(parsedDisplayOrder) ? 0 : parsedDisplayOrder,
+    };
+    const schema = isEdit ? UpdateConfigCategorySchema : CreateConfigCategorySchema;
+    const validation = schema.safeParse(validationData);
+    if (!validation.success) {
+      const fieldErrors = validation.error.flatten().fieldErrors;
+      const newErrors: Record<string, string> = {};
+      Object.entries(fieldErrors).forEach(([key, msgs]) => {
+        if (Array.isArray(msgs) && msgs.length > 0) {
+          newErrors[key] = msgs[0].includes('.') ? t(msgs[0] as never) : msgs[0];
+        }
+      });
+      setErrors(newErrors);
+      return false;
+    }
+    setErrors({});
+    return true;
   };
 
   const handleSubmit = async (e?: React.FormEvent): Promise<void> => {
@@ -81,10 +106,20 @@ export default function AddCategoryModal({
           : await createConfigCategoryAction(form);
 
         if (result.success) {
-          toastSuccess(result.message || (isEdit ? t('messages.categoryUpdated') : t('messages.categoryCreated')));
+          toastSuccess(isEdit ? t('messages.categoryUpdated') : t('messages.categoryCreated'));
+          resetForm();
           onSuccess();
         } else {
-          toastError(result.message || result.error || t('messages.unexpectedError'));
+          if (result.validationErrors) {
+            const mappedErrors: Record<string, string> = {};
+            Object.entries(result.validationErrors).forEach(([key, msgs]) => {
+              if (Array.isArray(msgs) && msgs.length > 0) {
+                mappedErrors[key] = msgs[0].includes('.') ? t(msgs[0] as never) : msgs[0];
+              }
+            });
+            setErrors(mappedErrors);
+          }
+          toastError(result.error || result.message || t('messages.unexpectedError'));
         }
       } catch {
         toastError(t('messages.unexpectedError'));
@@ -101,10 +136,14 @@ export default function AddCategoryModal({
         description: t('confirm.discard.description'),
         confirmText: t('confirm.discard.confirm'),
         cancelText: t('confirm.discard.cancel'),
-        onConfirm: onClose,
+        onConfirm: () => {
+          resetForm();
+          onClose();
+        },
       });
       return;
     }
+    resetForm();
     onClose();
   };
 
@@ -119,17 +158,17 @@ export default function AddCategoryModal({
             <FolderPlus className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 tracking-tight">
+            <h2 className="text-lg font-semibold text-slate-800 tracking-tight">
               {isEdit ? t('modals.editCategory.title') : t('modals.addCategory.title')}
             </h2>
-            <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5">
+            <p className="text-slate-500 text-sm mt-0.5">
               {isEdit ? t('modals.editCategory.subtitle') : t('modals.addCategory.subtitle')}
             </p>
           </div>
         </div>
       }
       footer={
-        <div className="flex flex-row items-center justify-end gap-3 w-full border-t border-slate-100 dark:border-slate-800 p-4">
+        <div className="flex flex-row items-center justify-end gap-3 w-full border-t border-slate-100 p-4">
           <Button variant="secondary" onClick={handleClose} disabled={isPending} className="flex-1 sm:flex-none sm:px-6 cursor-pointer">
             {t('modals.addCategory.buttons.cancel')}
           </Button>
@@ -139,7 +178,7 @@ export default function AddCategoryModal({
         </div>
       }
     >
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="light">
         <CategoryFormFields formData={formData} errors={errors} isPending={isPending} isEdit={isEdit} onChange={handleChange} />
       </form>
     </Drawer>

@@ -27,9 +27,9 @@ export async function GrievanceCategoryFormServer({
   locale,
   returnPath,
 }: GrievanceCategoryFormServerProps): Promise<ReactElement> {
-  const t = await getTranslations('grievanceCategory.form');
-  const tMaster = await getTranslations('grievanceCategory.master');
-  const tCommonButtons = await getTranslations('common.buttons');
+  const t = await getTranslations({ locale, namespace: 'grievanceCategory.form' });
+  const tMaster = await getTranslations({ locale, namespace: 'grievanceCategory.master' });
+  const tCommonButtons = await getTranslations({ locale, namespace: 'common.buttons' });
 
   const isEdit = editingCategory !== null;
 
@@ -57,6 +57,7 @@ export async function GrievanceCategoryFormServer({
     },
     errors: {
       codeReq: t('errors.codeReq'),
+      codeMinLength: t('errors.codeMinLength'),
       codeAlphanumeric: t('errors.codeAlphanumeric'),
       codeMaxLength: t('errors.codeMaxLength'),
       nameReq: t('errors.nameReq'),

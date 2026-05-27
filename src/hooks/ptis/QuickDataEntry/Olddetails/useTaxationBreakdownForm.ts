@@ -3,7 +3,7 @@ import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useLocale, useTranslations } from "next-intl";
 import { useConfirm } from "@/components/common";
-import { OldTaxesDetails, OldTaxItem, OldTaxYear } from "@/types/property-old-details.types";
+import { OldTaxesDetails, OldTaxItem, OldTaxYear } from "@/types/OldDetails/property-old-details.types";
 import { saveOldTaxesDetailsAction } from "@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/OldDetails/taxation-breakdown/action";
 import { propertyValidations } from "@/lib/utils/validation-schemas";
 
@@ -24,7 +24,6 @@ export function useTaxationBreakdownForm(initialData: OldTaxesDetails | null) {
     interest: yearData?.interest || 0,
     taxTotal: yearData?.taxTotal || 0,
     netTotal: yearData?.netTotal || 0,
-    remark: yearData?.remark || "",
     financeYearId: yearData?.financeYearId || 0,
     yearCode: yearData?.yearCode || null,
     rVorCV: yearData?.rVorCV || "",
@@ -69,6 +68,14 @@ export function useTaxationBreakdownForm(initialData: OldTaxesDetails | null) {
       toast.error(yearError);
       return false;
     }
+
+    // Check range (1700-2026)
+    const yearNum = Number(formData.year);
+    if (isNaN(yearNum) || yearNum < 1700 || yearNum > 2026) {
+      toast.error(tValidation('property.validation.assessmentYearRange') || 'Assessment year must be between 1700 and 2026');
+      return false;
+    }
+
     return true;
   };
 
@@ -91,7 +98,6 @@ export function useTaxationBreakdownForm(initialData: OldTaxesDetails | null) {
             taxTotal: Number(formData.taxTotal) || 0,
             interest: Number(formData.interest) || 0,
             netTotal: Number(formData.netTotal) || 0,
-            remark: formData.remark,
             taxes: taxes.map(t => ({
               taxId: t.taxId,
               taxName: t.taxName,
@@ -131,6 +137,18 @@ export function useTaxationBreakdownForm(initialData: OldTaxesDetails | null) {
     });
   };
 
+  const isTaxesChanged = taxes.some(t => {
+    const orig = (yearData?.taxes || []).find(ot => ot.taxId === t.taxId);
+    return (orig?.taxAmount || 0) !== (t.taxAmount || 0);
+  });
+
+  const isChanged =
+    formData.year !== (yearData ? String(yearData.year || "") : "") ||
+    Number(formData.interest || 0) !== (yearData?.interest || 0) ||
+    formData.rVorCV !== (yearData?.rVorCV || "") ||
+    Number(formData.rVorCVValue || 0) !== (yearData?.rVorCVValue || 0) ||
+    isTaxesChanged;
+
   return {
     formData,
     taxes,
@@ -138,6 +156,8 @@ export function useTaxationBreakdownForm(initialData: OldTaxesDetails | null) {
     handleTaxChange,
     handleMetaChange,
     handleSave,
-    t
+    isChanged,
+    t,
+    tValidation
   };
 }

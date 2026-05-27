@@ -7,6 +7,7 @@
         "totalModes": "Total Modes",
         "online": "Online Modes",
         "offline": "Offline Modes",
+        "both": "Both Modes",
         "active": "Active Modes"
     },
     "pagination": {
@@ -60,7 +61,7 @@
             "transactionCharge": "Transaction Charge",
             "transactionChargePlaceholder": "0.00",
             "chargeType": "Charge Type",
-            "isActive": "Is Active",
+            "isActive": "Active",
             "statusText": "Mode is currently {status}",
             "paymentTypes": {
                 "online": "Online",

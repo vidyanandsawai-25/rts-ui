@@ -7,26 +7,6 @@ import type {
 } from '@/types/grievance-category-master/grievanceCategory.types';
 import { useTranslations } from 'next-intl';
 
-function limitToMaxWords(text: string, maxWords: number): string {
-  if (!text) return '';
-  const words = text.trim().split(/\s+/);
-  if (words.length <= maxWords) return text;
-
-  let wordCount = 0;
-  let index = 0;
-  const regex = /\S+/g;
-  let match;
-
-  while ((match = regex.exec(text)) !== null) {
-    wordCount++;
-    if (wordCount === maxWords) {
-      index = match.index + match[0].length;
-      break;
-    }
-  }
-
-  return text.slice(0, index);
-}
 
 export function GrievanceCategoryFormFields({
   formData,
@@ -45,7 +25,7 @@ export function GrievanceCategoryFormFields({
   return (
     <div className="p-6 space-y-8 max-h-[calc(100vh-180px)] overflow-y-auto custom-scrollbar">
       {/* Form Header Section */}
-      <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+      <div className="flex items-center justify-between border-b border-slate-100 pb-4">
         <RequiredFieldsNote text={tCommonNote('mandatory')} />
       </div>
 
@@ -53,30 +33,42 @@ export function GrievanceCategoryFormFields({
         {/* Category Code */}
         <div>
           <Input
+            id="categoryCode"
             label={t.fields.code}
             required
             placeholder={t.fields.codePlaceholder}
             value={formData.categoryCode}
-            onChange={(e) => onFieldChange('categoryCode', e.target.value)}
+            onChange={(e) => {
+              const sanitized = e.target.value.replace(/[^A-Za-z0-9]/g, '');
+              onFieldChange('categoryCode', sanitized);
+            }}
             error={fieldErrors.categoryCode}
             disabled={isSubmitting}
             maxLength={20}
             className="h-11 rounded-xl"
+            aria-invalid={fieldErrors.categoryCode ? 'true' : 'false'}
+            aria-describedby={fieldErrors.categoryCode ? 'categoryCode-error' : undefined}
           />
         </div>
 
         {/* Category Name */}
         <div>
           <Input
+            id="categoryName"
             label={t.fields.name}
             required
             placeholder={t.fields.namePlaceholder}
             value={formData.categoryName}
-            onChange={(e) => onFieldChange('categoryName', e.target.value)}
+            onChange={(e) => {
+              const sanitized = e.target.value.replace(/[^\p{L}\p{M}\p{N}\s]/gu, '');
+              onFieldChange('categoryName', sanitized);
+            }}
             error={fieldErrors.categoryName}
             disabled={isSubmitting}
             maxLength={100}
             className="h-11 rounded-xl"
+            aria-invalid={fieldErrors.categoryName ? 'true' : 'false'}
+            aria-describedby={fieldErrors.categoryName ? 'categoryName-error' : undefined}
           />
         </div>
 
@@ -91,7 +83,7 @@ export function GrievanceCategoryFormFields({
             onChange={(_, val) => onFieldChange('departmentId', val ? Number(val) : null)}
             error={fieldErrors.departmentId}
             disabled={isSubmitting}
-            className="h-11 rounded-xl cursor-pointer"
+            className="h-11 rounded-xl cursor-pointer [&_button]:cursor-pointer"
           />
         </div>
 
@@ -106,13 +98,14 @@ export function GrievanceCategoryFormFields({
             onChange={(_, val) => onFieldChange('priority', val as GrievanceCategory['priority'])}
             error={fieldErrors.priority}
             disabled={isSubmitting}
-            className="h-11 rounded-xl cursor-pointer"
+            className="h-11 rounded-xl cursor-pointer [&_button]:cursor-pointer"
           />
         </div>
 
         {/* SLA */}
         <div>
           <Input
+            id="resolutionSla"
             type="number"
             min={0}
             max={365}
@@ -127,12 +120,14 @@ export function GrievanceCategoryFormFields({
               }
             }}
             onKeyDown={(e) => {
-              if (/^[eE+\-]$/.test(e.key)) e.preventDefault();
+              if (/^[eE+\-.,]$/.test(e.key)) e.preventDefault();
             }}
             error={fieldErrors.resolutionSla}
             disabled={isSubmitting}
             maxLength={3}
             className="h-11 rounded-xl"
+            aria-invalid={fieldErrors.resolutionSla ? 'true' : 'false'}
+            aria-describedby={fieldErrors.resolutionSla ? 'resolutionSla-error' : undefined}
           />
         </div>
 
@@ -149,7 +144,7 @@ export function GrievanceCategoryFormFields({
             }
             error={fieldErrors.escalationLevel}
             disabled={isSubmitting}
-            className="h-11 rounded-xl cursor-pointer"
+            className="h-11 rounded-xl cursor-pointer [&_button]:cursor-pointer"
           />
         </div>
       </div>
@@ -157,17 +152,18 @@ export function GrievanceCategoryFormFields({
       {/* Description */}
       <div>
         <TextArea
+          id="description"
           label={t.fields.description}
           placeholder={t.fields.descPlaceholder}
           value={formData.description}
           onChange={(e) => {
-            const truncated = limitToMaxWords(e.target.value, 1000);
-            onFieldChange('description', truncated);
+            const sanitized = e.target.value.replace(/[^\p{L}\p{M}\p{N}\s]/gu, '');
+            onFieldChange('description', sanitized);
           }}
           disabled={isSubmitting}
           error={!!fieldErrors.description}
           errorMessage={fieldErrors.description}
-          maxLength={1000}
+          maxLength={500}
           rows={4}
           showCharCount={true}
           className="rounded-2xl resize-none p-4"
@@ -176,15 +172,26 @@ export function GrievanceCategoryFormFields({
 
       {/* Status Toggle Card - Only show on edit */}
       {isEdit && formData.isActive !== undefined && (
-        <StatusToggleCard
-          isActive={formData.isActive}
-          onToggle={(checked) => onFieldChange('isActive', checked)}
-          statusLabel={t.fields.active}
-          description={t.fields.activeDesc}
-          activeLabel={tCommonStatus('active')}
-          inactiveLabel={tCommonStatus('inactive')}
-          disabled={isSubmitting}
-        />
+        <div
+          onClick={(e) => {
+            if (isSubmitting) return;
+            const target = e.target as HTMLElement;
+            if (target.closest('button')) return;
+            onFieldChange('isActive', !formData.isActive);
+          }}
+          className="cursor-pointer"
+        >
+          <StatusToggleCard
+            isActive={formData.isActive}
+            onToggle={(checked) => onFieldChange('isActive', checked)}
+            statusLabel={t.fields.active}
+            description={t.fields.activeDesc}
+            activeLabel={tCommonStatus('active')}
+            inactiveLabel={tCommonStatus('inactive')}
+            disabled={isSubmitting}
+            className="cursor-pointer [&_button]:cursor-pointer"
+          />
+        </div>
       )}
     </div>
   );

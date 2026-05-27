@@ -22,7 +22,7 @@ import {
   type GrievanceCategoryValidationInput,
 } from '@/lib/utils/grievance-category-validation';
 import { logger } from '@/lib/utils/logger';
-import { getCurrentUserId, parsePositiveInteger } from './utils';
+import { getCurrentUserId, parsePositiveInteger, localizeBackendMessage, tGrievanceMessage } from './utils';
 
 /**
  * Create Grievance Category Action
@@ -66,7 +66,7 @@ export async function createGrievanceCategoryAction(
     priority: priority as Priority | null,
     resolutionSla: resolutionSla,
     escalationLevel: escalationLevel as EscalationLevel | null,
-    description: description,
+    description: sanitizeDescription(description),
     isActive: isActiveRaw === 'true',
   };
 
@@ -121,16 +121,20 @@ export async function createGrievanceCategoryAction(
 
     if (response.success) {
       revalidatePath(`/[locale]/configuration-settings/grievance-category-master`, 'page');
-      return { success: true, message: response.message };
+      return {
+        success: true,
+        message: await tGrievanceMessage(locale, 'master.toast.createSuccess', 'Category created successfully')
+      };
     } else {
       logger.error('API failed to create grievance category:', {
         errorDetail: response.error,
         message: response.message,
         locale,
       });
+      const errorMsg = await localizeBackendMessage(response.error || response.message, locale, 'createError', 'Failed to create grievance category');
       return {
         success: false,
-        error: response.error || response.message || 'Failed to create',
+        error: errorMsg,
         message: response.message,
       };
     }
@@ -140,9 +144,11 @@ export async function createGrievanceCategoryAction(
       errorMessage: error instanceof Error ? error.message : String(error),
       locale,
     });
+    const errMsg = error instanceof Error ? error.message : String(error);
+    const errorMsg = await localizeBackendMessage(errMsg, locale, 'unexpected', 'Unexpected error occurred');
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to create',
+      error: errorMsg,
     };
   }
 }
