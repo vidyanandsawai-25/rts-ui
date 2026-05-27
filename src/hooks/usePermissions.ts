@@ -33,17 +33,27 @@ export function usePermissions(screenCode: string): ScreenPermissions {
       return DEFAULT_NO_ACCESS;
     }
 
+    console.log("DEBUG [usePermissions] matching screenCode:", screenCode, "Screens List:", screens.map(s => ({
+      code: s.screenCode,
+      name: s.screenName,
+      path: s.routePath,
+      canView: s.canView,
+      haveFullAccess: s.haveFullAccess,
+      haveNoAccess: s.haveNoAccess
+    })));
+
     const screenAccess = screens.find((s) => {
       const query = screenCode.toUpperCase();
       return (
         s.screenCode?.toUpperCase() === query ||
         s.screenName?.toUpperCase() === query ||
         s.routePath?.toUpperCase().includes(query) ||
-        s.routePath?.toUpperCase().includes(query.replace('_', '-'))
+        s.routePath?.toUpperCase().includes(query.replace(/_/g, '-'))
       );
     });
 
     if (!screenAccess || screenAccess.haveNoAccess) {
+      console.log("DEBUG [usePermissions] match not found or haveNoAccess true for:", screenCode);
       return DEFAULT_NO_ACCESS;
     }
 

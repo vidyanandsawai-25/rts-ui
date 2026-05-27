@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { apiClient } from "@/services/api.service";
 import { normalizeApiFloorData } from "./floor-types-guard";
 import { mergeRenterRowsIntoFloor } from "./renter-helpers";
