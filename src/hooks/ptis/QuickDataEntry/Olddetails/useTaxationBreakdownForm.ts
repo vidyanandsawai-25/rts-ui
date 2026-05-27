@@ -13,7 +13,6 @@ export function useTaxationBreakdownForm(initialData: OldTaxesDetails | null) {
   const router = useRouter();
   const locale = useLocale();
   const t = useTranslations("quickDataEntry.oldDetails.taxationBreakdown");
-  // oldDetails.taxationBreakdown.error.unexpectedError
   const tValidation = useTranslations("quickDataEntry");
   const propertyId = Number(params.propertyId);
 
@@ -64,65 +63,58 @@ export function useTaxationBreakdownForm(initialData: OldTaxesDetails | null) {
   };
 
   const handleTaxChange = (taxId: number, value: string) => {
-    // Validate individual tax amount
-    const error = validateAmountField(value);
+    const numValue = Number(value) || 0;
+    const updatedTaxes = taxes.map(t => t.taxId === taxId ? { ...t, taxAmount: numValue } : t);
+    const newTaxTotal = updatedTaxes.reduce((acc, t) => acc + (t.taxAmount || 0), 0);
+    const newNetTotal = newTaxTotal + (Number(formData.interest) || 0);
+
+    const taxError = validateAmountField(value);
+
     setValidationErrors(prev => {
       const updated = { ...prev };
-      if (error) {
-        updated[`tax_${taxId}`] = error;
+      
+      if (taxError) {
+        updated[`tax_${taxId}`] = taxError;
       } else {
         delete updated[`tax_${taxId}`];
       }
-      return updated;
-    });
 
-    const numValue = Number(value) || 0;
-    setTaxes(prev => {
-      const updated = prev.map(t => t.taxId === taxId ? { ...t, taxAmount: numValue } : t);
-
-      // Calculate totals
-      const newTaxTotal = updated.reduce((acc, t) => acc + (t.taxAmount || 0), 0);
-      
-      // Validate aggregate tax sum
       if (newTaxTotal < 0) {
-        setValidationErrors(prev => ({ ...prev, taxTotal: tValidation('property.validation.negativeNotAllowed') || 'Negative values are not allowed' }));
+        updated.taxTotal = tValidation('property.validation.negativeNotAllowed') || 'Negative values are not allowed';
       } else {
-        setValidationErrors(prev => {
-          const updated = { ...prev };
-          delete updated.taxTotal;
-          return updated;
-        });
+        delete updated.taxTotal;
       }
 
-      setFormData(prevForm => {
-        const newNetTotal = newTaxTotal + (Number(prevForm.interest) || 0);
-        
-        // Validate net payable total
-        if (newNetTotal < 0) {
-          setValidationErrors(prev => ({ ...prev, netTotal: tValidation('property.validation.negativeNotAllowed') || 'Negative values are not allowed' }));
-        } else {
-          setValidationErrors(prev => {
-            const updated = { ...prev };
-            delete updated.netTotal;
-            return updated;
-          });
-        }
-
-        return {
-          ...prevForm,
-          taxTotal: newTaxTotal,
-          netTotal: newNetTotal
-        };
-      });
+      if (newNetTotal < 0) {
+        updated.netTotal = tValidation('property.validation.negativeNotAllowed') || 'Negative values are not allowed';
+      } else {
+        delete updated.netTotal;
+      }
 
       return updated;
     });
+
+    setTaxes(updatedTaxes);
+    setFormData(prev => ({
+      ...prev,
+      taxTotal: newTaxTotal,
+      netTotal: newNetTotal
+    }));
   };
 
   const handleMetaChange = (key: string, value: string | number) => {
-    // Validate interest amount
+    setFormData(prev => {
+      const updated = { ...prev, [key]: value };
+      if (key === 'interest') {
+        updated.netTotal = (Number(updated.taxTotal) || 0) + (Number(value) || 0);
+      }
+      return updated;
+    });
+
     if (key === 'interest') {
       const error = validateAmountField(String(value));
+      const newNetTotal = (Number(formData.taxTotal) || 0) + (Number(value) || 0);
+
       setValidationErrors(prev => {
         const updated = { ...prev };
         if (error) {
@@ -130,29 +122,16 @@ export function useTaxationBreakdownForm(initialData: OldTaxesDetails | null) {
         } else {
           delete updated.interest;
         }
+
+        if (newNetTotal < 0) {
+          updated.netTotal = tValidation('property.validation.negativeNotAllowed') || 'Negative values are not allowed';
+        } else {
+          delete updated.netTotal;
+        }
+
         return updated;
       });
     }
-
-    setFormData(prev => {
-      const updated = { ...prev, [key]: value };
-      if (key === 'interest') {
-        const newNetTotal = (Number(updated.taxTotal) || 0) + (Number(value) || 0);
-        updated.netTotal = newNetTotal;
-        
-        // Validate net payable total after interest change
-        if (newNetTotal < 0) {
-          setValidationErrors(prevErrors => ({ ...prevErrors, netTotal: tValidation('property.validation.negativeNotAllowed') || 'Negative values are not allowed' }));
-        } else {
-          setValidationErrors(prevErrors => {
-            const updated = { ...prevErrors };
-            delete updated.netTotal;
-            return updated;
-          });
-        }
-      }
-      return updated;
-    });
   };
 
   const validate = () => {
@@ -172,7 +151,7 @@ export function useTaxationBreakdownForm(initialData: OldTaxesDetails | null) {
 
     // Check if taxes data is available
     if (!taxes || taxes.length === 0) {
-      toast.error(t('error.noTaxDataAvailable') || 'No tax data available');
+      toast.error(t('noTaxDataAvailable') || 'No tax data available');
       return false;
     }
 

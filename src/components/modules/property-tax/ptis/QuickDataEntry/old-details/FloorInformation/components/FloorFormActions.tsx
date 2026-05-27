@@ -24,6 +24,7 @@ export function FloorFormActions({
                     label={t('oldDetails.button.add')}
                     onClick={onSave}
                     type="submit"
+                    isLoading={isSubmitting}
                     disabled={isSubmitting}
                     className="h-11 w-40 bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-200 transition-all duration-200 flex flex-row items-center justify-center gap-2 active:scale-[0.98]"
                 />

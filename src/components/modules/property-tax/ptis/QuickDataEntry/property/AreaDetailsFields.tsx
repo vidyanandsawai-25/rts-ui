@@ -24,7 +24,7 @@ export const AreaDetailsFields = ({
                     name="totalCarpetAreaSqFeet"
                     type="number"
                     placeholder="1200"
-                    defaultValue={Number(propertyData?.totalCarpetAreaSqFeet).toFixed(2) ?? ''}
+                    defaultValue={propertyData?.totalCarpetAreaSqFeet != null ? Number(propertyData.totalCarpetAreaSqFeet).toFixed(2) : ''}
                     className="h-9 text-sm bg-gray-50 text-gray-600 cursor-not-allowed border-gray-300"
                 />
             </div>
@@ -40,7 +40,7 @@ export const AreaDetailsFields = ({
                     name="totalBuiltupAreaSqFeet"
                     type="number"
                     placeholder="1350"
-                    defaultValue={Number(propertyData?.totalBuiltupAreaSqFeet).toFixed(2) ?? ''}
+                    defaultValue={propertyData?.totalBuiltupAreaSqFeet != null ? Number(propertyData.totalBuiltupAreaSqFeet).toFixed(2) : ''}
                     className="h-9 text-sm bg-gray-50 text-gray-600 cursor-not-allowed border-gray-300"
                 />
             </div>
@@ -56,7 +56,7 @@ export const AreaDetailsFields = ({
                     name="totalCarpetAreaSqMeter"
                     type="number"
                     placeholder="22.66"
-                    defaultValue={Number(propertyData?.totalCarpetAreaSqMeter).toFixed(2) ?? ''}
+                    defaultValue={propertyData?.totalCarpetAreaSqMeter != null ? Number(propertyData.totalCarpetAreaSqMeter).toFixed(2) : ''}
                     className="h-9 text-sm bg-gray-50 text-gray-600 cursor-not-allowed border-gray-300"
                 />
             </div>
@@ -72,7 +72,7 @@ export const AreaDetailsFields = ({
                     name="totalBuiltupAreaSqMeter"
                     type="number"
                     placeholder="27.19"
-                    defaultValue={Number(propertyData?.totalBuiltupAreaSqMeter).toFixed(2) ?? ''}
+                    defaultValue={propertyData?.totalBuiltupAreaSqMeter != null ? Number(propertyData.totalBuiltupAreaSqMeter).toFixed(2) : ''}
                     className="h-9 text-sm bg-gray-50 text-gray-600 cursor-not-allowed border-gray-300"
                 />
             </div>

@@ -38,27 +38,6 @@ export function TaxationMetaFields({
         />
       </div>
 
-       {/* Assessment Year
-            <div className="space-y-1.5">
-                <Label className="text-sm font-bold text-blue-900 flex items-center gap-1">
-                       {t("assessmentYear")} <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                    className="h-9 border-blue-100 focus:ring-blue-400"
-                    placeholder="YYYY"
-                    maxLength={4}
-                    value={year || ''}
-                    onChange={(e) => {
-                        const val = e.target.value.replace(/\D/g, '').slice(0, 4);
-                        onFieldChange('oldAssessmentYear', val);
-                        // Validate year in real-time
-                        validateYearFieid('oldAssessmentYear', val);
-                    }}
-                />
-                {showError("oldAssessmentYear") && (
-                    <span className="text-xs text-red-500">{errors.oldAssessmentYear}</span>
-                )}
-            </div> */}
 
       {/* Interest Amount */}
       <div className="space-y-2">

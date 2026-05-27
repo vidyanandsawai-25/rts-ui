@@ -5,6 +5,7 @@ import { DeleteButton, EditButton, MasterTable, useConfirm } from "@/components/
 import type { FloorTableRow } from "@/types/OldDetails/property-old-details.types";
 import { getFloorInformationColumns } from "../FloorInformationColumns";
 import { FloorTableSectionProps } from "@/types/OldDetails/property-old-floor-info.types";
+import { formatNumberPair } from "@/lib/utils/format";
 
 /**
  * FloorTableSection Component
@@ -43,14 +44,19 @@ export function FloorTableSection({
     subUse: f.subTypeOfUseDescription,
     carpetAreaSqFt: f.oldCarpetAreaSqFeet,
     carpetAreaSqM: f.oldCarpetAreaSqMeter,
-    carpetAreaCombined: `${f.oldCarpetAreaSqFeet ? Number(f.oldCarpetAreaSqFeet).toFixed(2) : 0}/${f.oldCarpetAreaSqMeter ? Number(f.oldCarpetAreaSqMeter).toFixed(2) : 0}`,    
-    builtupAreaCombined: `${f.oldBuiltupAreaSqFeet ? Number(f.oldBuiltupAreaSqFeet).toFixed(2) : 0}/${f.oldBuiltupAreaSqMeter ? Number(f.oldBuiltupAreaSqMeter).toFixed(2) : 0}`,
+    carpetAreaCombined: formatNumberPair(
+      f.oldCarpetAreaSqFeet != null ? Number(f.oldCarpetAreaSqFeet) : null,
+      f.oldCarpetAreaSqMeter != null ? Number(f.oldCarpetAreaSqMeter) : null
+    ),
+    builtupAreaCombined: formatNumberPair(
+      f.oldBuiltupAreaSqFeet != null ? Number(f.oldBuiltupAreaSqFeet) : null,
+      f.oldBuiltupAreaSqMeter != null ? Number(f.oldBuiltupAreaSqMeter) : null
+    ),
   }));
 
 
 
   return (
-    // <div className="rounded-lg overflow-x-auto bg-white shadow-sm mb-6 border border-blue-200 text-white">
     <div className="rounded-lg overflow-x-auto bg-white shadow-sm mb-6 border border-blue-200 [&_th:last-child]:text-white! [&_th:last-child]:text-xs [&_th:last-child]:border-l [&_th:last-child]:border-white/30">
       <MasterTable
         columns={getFloorInformationColumns(t)}

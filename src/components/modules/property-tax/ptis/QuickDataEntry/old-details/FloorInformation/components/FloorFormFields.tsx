@@ -33,7 +33,7 @@ export function FloorFormFields({
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 p-4">
             {/* Floor */}
-            <div className="space-y-1.5 relative focus-within:z-60">
+            <div className="space-y-1.5 relative focus-within:z-[60]">
                 <Label className="text-sm font-bold text-blue-900 flex items-center gap-1">
                     {t('floor.floorLabel')} <span className="text-red-500">*</span>
                 </Label>
@@ -51,7 +51,7 @@ export function FloorFormFields({
             </div>
 
             {/* Sub Floor */}
-            <div className="space-y-1.5 relative focus-within:z-59">
+            <div className="space-y-1.5 relative focus-within:z-[59]">
                 <Label className="text-sm font-bold text-blue-900 flex items-center gap-1">
                     {t('floor.subFloor')} <span className="text-red-500">*</span>
                 </Label>
@@ -113,7 +113,7 @@ export function FloorFormFields({
             </div>
 
             {/* Construction Type */}
-            <div className="space-y-1.5 relative focus-within:z-58">
+            <div className="space-y-1.5 relative focus-within:z-[58]">
                 <Label className="text-sm font-bold text-blue-900 flex items-center gap-1">
                     {t('floor.conTyp')} <span className="text-red-500">*</span>
                 </Label>
@@ -131,7 +131,7 @@ export function FloorFormFields({
             </div>
 
             {/* Type of Use */}
-            <div className="space-y-1.5 relative focus-within:z-57">
+            <div className="space-y-1.5 relative focus-within:z-[57]">
                 <Label className="text-sm font-bold text-blue-900 flex items-center gap-1">
                     {t('oldDetails.floordtails.use')} <span className="text-red-500">*</span>
                 </Label>
@@ -149,7 +149,7 @@ export function FloorFormFields({
             </div>
 
             {/* Sub Type */}
-            <div className="space-y-1.5 relative focus-within:z-56">
+            <div className="space-y-1.5 relative focus-within:z-[56]">
                 <Label className="text-sm font-bold text-blue-900 flex items-center gap-1">
                     {t('floor.subTyp')} {hasSubUseOptions && <span className="text-red-500">*</span>}
                 </Label>
@@ -176,11 +176,7 @@ export function FloorFormFields({
                     type="number"
                     className="h-9 border-blue-100 focus:ring-blue-400"
                     placeholder={t('oldDetails.floordtails.carpetAreaPlaceholder')}
-                    value={
-                        formData.oldCarpetAreaSqFeet
-                            ? Number(formData.oldCarpetAreaSqFeet).toFixed(2)
-                            : ''
-                    }
+                    value={formData.oldCarpetAreaSqFeet ?? ''}
                     onChange={(e) => onFieldChange('oldCarpetAreaSqFeet', e.target.value)}
                 />
                 {showError("oldCarpetAreaSqFeet") && (
