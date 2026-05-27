@@ -20,7 +20,7 @@
     "subtitle": "Add, edit, and manage floor information",
     "tableTitle": "Floor List",
     "search": {
-      "placeholder": "Search by code or description..."
+      "placeholder": "Search by  code or description..."
     },
     "buttons": {
       "add": "Add Floor"
@@ -56,7 +56,7 @@
       "sequenceNoPlaceholder": "Enter sequence number",
       "description": "Description",
       "descriptionPlaceholder": "Enter floor description or additional details",
-      "searchPlaceholder": "Search by ID or floor name...",
+      "searchPlaceholder": "Search by code or description...",
       "status": "Status",
       "isActive": "Active",
       "activeStatusTitle": "Floor Status",
@@ -190,7 +190,7 @@
       "descriptionEnglishPlaceholder": "Enter description in English",
       "descriptionRegional": "Description (Regional)",
       "descriptionRegionalPlaceholder": "Enter description in regional language",
-      "searchPlaceholder": "Search by ID or description...",
+      "searchPlaceholder": "Search by code or description...",
       "activeStatusTitle": "Active Status",
       "activeStatusOn": "Currently enabled",
       "activeStatusOff": "Currently disabled",

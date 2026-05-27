@@ -1,6 +1,7 @@
 import { FloorData, RoomData } from "@/types/room-details.types";
 import { RenterDetailItem, RenterMastItem } from "@/types/renter-details.types";
 import { LookupData } from "@/types/common-details.types";
+import { resolveAgreementBaseMonthlyRent } from "@/lib/utils/renterUtils";
 import {
   getFloorDescription,
   getSubFloorDescription,
@@ -131,8 +132,8 @@ export function normalizeFloorData(
     agreementFromDate: getString(raw.agreementFromDate) || getString(firstRenter?.agreementFromDate) || getString(firstRenter?.durationFrom) || null,
     agreementToDate: getString(raw.agreementToDate) || getString(firstRenter?.agreementToDate) || getString(firstRenter?.durationTo) || null,
     agreementDate: getString(raw.agreementDate) || getString(firstRenter?.agreementDate) || null,
-    rentMonthly: getNumber(raw.rentMonthly) || getNumber(firstRenter?.rentMonthly) || 0,
-    rentYearly: getNumber(raw.rentYearly) || getNumber(firstRenter?.finalYearlyRent) || (getNumber(raw.rentMonthly) || getNumber(firstRenter?.rentMonthly) || 0) * 12,
+    rentMonthly: Number(resolveAgreementBaseMonthlyRent(raw as Record<string, unknown>) || 0),
+    rentYearly: getNumber(raw.rentYearly) || getNumber(firstRenter?.finalYearlyRent) || (Number(resolveAgreementBaseMonthlyRent(raw as Record<string, unknown>) || 0) * 12),
 
     // Consistent Internal IDs for Form Mapping
     floorId,

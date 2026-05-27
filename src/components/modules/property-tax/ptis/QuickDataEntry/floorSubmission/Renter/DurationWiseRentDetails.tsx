@@ -9,7 +9,7 @@ import { RenterMastItem } from "@/types/renter-details.types";
 import { RenterFormData } from "@/types/renter.types";
 
 interface DurationWiseRentDetailsProps {
-    formData: RenterFormData | null;
+    formData: RenterFormData;
     onViewDetails: (fy: string) => void;
 }
 

@@ -19,28 +19,31 @@ describe('Renter Service Integration & Hydration Tests', () => {
     vi.clearAllMocks();
   });
 
-  describe('saveRenterDetails - Smart Differential Sync', () => {
-    const mockFloorResponse = {
+  describe('saveRenterDetails - Single PUT with id-aligned nested arrays', () => {
+    // The backend exposes existing renter rows ONLY through the nested
+    // `renterDetails` / `renters` arrays of `GET /DataEntry/{id}` — the
+    // standalone `/RenterDetails` / `/RenterMast` list endpoints return 405.
+    const mockFloorGetResponse = {
+      success: true,
+      data: {
+        propertyDetailsId: 100,
+        floorId: '1',
+        renterYesNo: true,
+        renterDetails: [
+          { id: 201, propertyDetailsId: 100, agreementId: 'AGR-OLD', incrementFrequency: 'Yearly', durationFrom: '2026-01-01T00:00:00' },
+        ],
+        renters: [
+          { id: 301, propertyDetailsId: 100, financialYear: '2026', finalRent: 5000 },
+        ],
+      },
+    };
+    const mockFloorPutResponse = {
       success: true,
       data: {
         propertyDetailsId: 100,
         floorId: '1',
         renterYesNo: true,
       },
-    };
-
-    const mockDetailsGetResponse = {
-      success: true,
-      data: [
-        { id: 201, propertyDetailsId: 100, agreementId: 'AGR-OLD', incrementFrequency: 'Yearly' },
-      ],
-    };
-
-    const mockMastGetResponse = {
-      success: true,
-      data: [
-        { id: 301, propertyDetailsId: 100, financialYear: '2025', finalRent: 5000 },
-      ],
     };
 
     const incomingPayload = {
@@ -50,74 +53,67 @@ describe('Renter Service Integration & Hydration Tests', () => {
       taxLiability: 'Taxable',
       renterName: 'John Doe',
       renterDetails: [
-        // Update existing item 201
-        { id: 201, agreementId: 'AGR-NEW', incrementFrequency: 'Monthly', incrementType: 'Percentage', incrementValue: 10, durationFrom: '2026-01-01', durationTo: '2026-12-31' },
-        // Create new item (temp id / no id)
-        { id: 9999999999999, agreementId: 'AGR-TEMP', incrementFrequency: 'Yearly' },
+        // Update existing item 201 (will be id-aligned by date match)
+        { agreementId: 'AGR-NEW', incrementFrequency: 'Monthly', incrementType: 'Percentage', incrementValue: 10, durationFrom: '2026-01-01', durationTo: '2026-12-31' },
+        // Create new item
+        { agreementId: 'AGR-TEMP', incrementFrequency: 'Yearly', durationFrom: '2027-01-01', durationTo: '2027-12-31' },
       ],
       renterMast: [
-        // Update existing item 301
-        { id: 301, financialYear: '2026-27', finalRent: 6000 },
+        // Update existing item 301 (will be id-aligned by FY match)
+        { financialYear: '2026-27', finalRent: 6000 },
         // Create new item
         { financialYear: '2027-28', finalRent: 7000 },
       ],
     };
 
-    it('should perform PUT on the floor, then perform differential sync (POST/PUT/DELETE) for details and masters', async () => {
-      // Setup mocked resolutions
-      vi.mocked(apiClient.put).mockImplementation(async (url) => {
-        if (url.includes('/DataEntry/100')) {
-          return mockFloorResponse;
-        }
-        return { success: true };
-      });
+    it('should send a single PUT to /DataEntry/{id} with id-aligned nested renter arrays', async () => {
+      vi.mocked(apiClient.put).mockResolvedValue(mockFloorPutResponse);
       vi.mocked(apiClient.get).mockImplementation(async (url) => {
-        if (url.includes('/RenterDetails')) return mockDetailsGetResponse;
-        if (url.includes('/RenterMast')) return mockMastGetResponse;
-        if (url.includes('/DataEntry/100')) return mockFloorResponse;
+        if (url.includes('/DataEntry/100')) return mockFloorGetResponse;
         return { success: false };
       });
-      vi.mocked(apiClient.post).mockResolvedValue({ success: true, data: { id: 500 } });
+      vi.mocked(apiClient.post).mockResolvedValue({ success: true });
       vi.mocked(apiClient.delete).mockResolvedValue({ success: true });
 
-      // Run
       const result = await saveRenterDetails(100, incomingPayload);
 
-      // Verify Floor PUT was executed
-      expect(apiClient.put).toHaveBeenCalledWith('/DataEntry/100', expect.any(Object));
+      // Existing rows are sourced from the nested GET on the floor itself.
+      expect(apiClient.get).toHaveBeenCalledWith('/DataEntry/100');
 
-      // Verify existing records were fetched
-      expect(apiClient.get).toHaveBeenCalledWith('/RenterDetails?PageSize=100000&PropertyDetailsId=100');
-      expect(apiClient.get).toHaveBeenCalledWith('/RenterMast?PageSize=100000&PropertyDetailsId=100');
+      // A single PUT to /DataEntry/{id} carries the full nested body.
+      expect(apiClient.put).toHaveBeenCalledWith(
+        '/DataEntry/100',
+        expect.objectContaining({
+          renterDetails: expect.arrayContaining([
+            expect.objectContaining({ id: 201, agreementId: 'AGR-NEW' }),
+            expect.objectContaining({ agreementId: 'AGR-TEMP' }),
+          ]),
+          renterMast: expect.arrayContaining([
+            expect.objectContaining({ id: 301, financialYear: '2026' }),
+            expect.objectContaining({ financialYear: '2027' }),
+          ]),
+        })
+      );
 
-      // Verifysmart differential operations:
-      // RenterDetails:
-      // - 201 updated (PUT)
-      // - 9999999999999 created (POST)
-      expect(apiClient.put).toHaveBeenCalledWith('/RenterDetails/201', expect.objectContaining({
-        id: 201,
-        agreementId: 'AGR-NEW',
-      }));
-      expect(apiClient.post).toHaveBeenCalledWith('/RenterDetails', expect.objectContaining({
-        agreementId: 'AGR-TEMP',
-      }));
+      // The new form row (AGR-TEMP) must NOT carry the existing id 201.
+      const putCall = vi.mocked(apiClient.put).mock.calls.find(([url]) => url === '/DataEntry/100');
+      expect(putCall).toBeDefined();
+      const putBody = putCall![1] as Record<string, any>;
+      const newDetail = (putBody.renterDetails as any[]).find((d) => d.agreementId === 'AGR-TEMP');
+      expect(newDetail.id).toBeUndefined();
+      const newMast = (putBody.renterMast as any[]).find((m) => m.financialYear === '2027');
+      expect(newMast.id).toBeUndefined();
 
-      // RenterMast:
-      // - 301 updated (PUT) and financialYear truncated to 4 characters
-      // - Null id created (POST) and financialYear truncated
-      expect(apiClient.put).toHaveBeenCalledWith('/RenterMast/301', expect.objectContaining({
-        id: 301,
-        financialYear: '2026', // strictly truncated to 4 characters
-      }));
-      expect(apiClient.post).toHaveBeenCalledWith('/RenterMast', expect.objectContaining({
-        financialYear: '2027', // strictly truncated
-      }));
+      // No separate PUT/POST to /RenterDetails or /RenterMast — the floor PUT handles it.
+      expect(apiClient.put).not.toHaveBeenCalledWith(expect.stringMatching(/^\/RenterDetails\//), expect.any(Object));
+      expect(apiClient.put).not.toHaveBeenCalledWith(expect.stringMatching(/^\/RenterMast\//), expect.any(Object));
+      expect(apiClient.post).not.toHaveBeenCalledWith('/RenterDetails', expect.any(Object));
+      expect(apiClient.post).not.toHaveBeenCalledWith('/RenterMast', expect.any(Object));
 
       expect(result).toBeDefined();
     });
 
-    it('should delete existing sub-records when they are omitted in the payload (Smart Sync Delete)', async () => {
-      // Setup payload with zero details/masts, which means we should delete the existing 201 and 301
+    it('should soft-delete stale db rows by sending them with isActive:false inside the PUT body', async () => {
       const emptyRenterPayload = {
         propertyId: 100,
         propertyDetailsId: 100,
@@ -126,34 +122,42 @@ describe('Renter Service Integration & Hydration Tests', () => {
         renterMast: [],
       };
 
-      vi.mocked(apiClient.put).mockResolvedValue(mockFloorResponse);
+      vi.mocked(apiClient.put).mockResolvedValue(mockFloorPutResponse);
       vi.mocked(apiClient.get).mockImplementation(async (url) => {
-        if (url.includes('/RenterDetails')) return mockDetailsGetResponse;
-        if (url.includes('/RenterMast')) return mockMastGetResponse;
-        if (url.includes('/DataEntry/100')) return mockFloorResponse;
+        if (url.includes('/DataEntry/100')) return mockFloorGetResponse;
         return { success: false };
       });
       vi.mocked(apiClient.delete).mockResolvedValue({ success: true });
 
       await saveRenterDetails(100, emptyRenterPayload);
 
-      // Assert deletions were triggered
-      expect(apiClient.delete).toHaveBeenCalledWith('/RenterDetails/201');
-      expect(apiClient.delete).toHaveBeenCalledWith('/RenterMast/301');
+      // Stale rows are merged back into the PUT body with isActive:false
+      // (separate /RenterDetails/{id} / /RenterMast/{id} DELETE endpoints
+      // return 405 on this backend).
+      expect(apiClient.put).toHaveBeenCalledWith(
+        '/DataEntry/100',
+        expect.objectContaining({
+          renterDetails: expect.arrayContaining([
+            expect.objectContaining({ id: 201, isActive: false }),
+          ]),
+          renterMast: expect.arrayContaining([
+            expect.objectContaining({ id: 301, isActive: false }),
+          ]),
+        })
+      );
     });
 
-    it('should ignore duplicate record errors from floor attributes PUT/POST and proceed to save renter details successfully', async () => {
-      const incomingPayload = {
+    it('should ignore duplicate record errors from the floor PUT and still complete', async () => {
+      const dupPayload = {
         propertyId: 100,
         propertyDetailsId: 100,
         renterYesNo: true,
         renterDetails: [
-          { id: 201, agreementId: 'AGR-NEW-DUP' }
+          { agreementId: 'AGR-NEW-DUP', durationFrom: '2026-01-01' }
         ],
         renterMast: []
       };
 
-      // Mock floor update to return success: false with "A record with the same details already exists."
       vi.mocked(apiClient.put).mockImplementation(async (url) => {
         if (url.includes('/DataEntry/100')) {
           return {
@@ -166,23 +170,22 @@ describe('Renter Service Integration & Hydration Tests', () => {
       });
 
       vi.mocked(apiClient.get).mockImplementation(async (url) => {
-        if (url.includes('/RenterDetails')) return mockDetailsGetResponse;
-        if (url.includes('/RenterMast')) return mockMastGetResponse;
-        if (url.includes('/DataEntry/100')) return mockFloorResponse;
+        if (url.includes('/DataEntry/100')) return mockFloorGetResponse;
         return { success: false };
       });
       vi.mocked(apiClient.delete).mockResolvedValue({ success: true });
 
-      const result = await saveRenterDetails(100, incomingPayload);
+      const result = await saveRenterDetails(100, dupPayload);
 
-      // Verify Floor PUT was executed (even though it returned 409 duplicate)
-      expect(apiClient.put).toHaveBeenCalledWith('/DataEntry/100', expect.any(Object));
-
-      // Verify that Smart Sync still proceeded to update Renter Details
-      expect(apiClient.put).toHaveBeenCalledWith('/RenterDetails/201', expect.objectContaining({
-        id: 201,
-        agreementId: 'AGR-NEW-DUP',
-      }));
+      // PUT was attempted with id stamped onto the matching detail row.
+      expect(apiClient.put).toHaveBeenCalledWith(
+        '/DataEntry/100',
+        expect.objectContaining({
+          renterDetails: expect.arrayContaining([
+            expect.objectContaining({ id: 201, agreementId: 'AGR-NEW-DUP' }),
+          ]),
+        })
+      );
 
       expect(result).toBeDefined();
     });
@@ -190,25 +193,25 @@ describe('Renter Service Integration & Hydration Tests', () => {
 
 
   describe('deleteRenterDetails', () => {
-    const mockDetailsGetResponse = {
+    // The dedicated `/RenterDetails` / `/RenterMast` endpoints are unavailable
+    // (405). Existing rows are read back from the floor envelope and then
+    // soft-deleted by sending them inside the floor PUT with isActive:false.
+    const mockFloorGetResponse = {
       success: true,
-      data: [
-        { id: 201, propertyDetailsId: 100 },
-        { id: 202, propertyDetailsId: 200 }, // other floor, do not delete
-      ],
+      data: {
+        propertyDetailsId: 100,
+        renterDetails: [
+          { id: 201, propertyDetailsId: 100 },
+        ],
+        renters: [
+          { id: 301, propertyDetailsId: 100 },
+        ],
+      },
     };
 
-    const mockMastGetResponse = {
-      success: true,
-      data: [
-        { id: 301, propertyDetailsId: 100 },
-      ],
-    };
-
-    it('should fetch associated records, delete only matching ones, and then set renterYesNo: false on the floor', async () => {
+    it('should fetch existing rows from the floor envelope and soft-delete them via the floor PUT', async () => {
       vi.mocked(apiClient.get).mockImplementation(async (url) => {
-        if (url.includes('/RenterDetails')) return mockDetailsGetResponse;
-        if (url.includes('/RenterMast')) return mockMastGetResponse;
+        if (url.includes('/DataEntry/100')) return mockFloorGetResponse;
         return { success: false };
       });
       vi.mocked(apiClient.delete).mockResolvedValue({ success: true });
@@ -216,74 +219,67 @@ describe('Renter Service Integration & Hydration Tests', () => {
 
       await deleteRenterDetails(100);
 
-      // Verify deletions
-      expect(apiClient.delete).toHaveBeenCalledWith('/RenterDetails/201');
-      expect(apiClient.delete).not.toHaveBeenCalledWith('/RenterDetails/202');
-      expect(apiClient.delete).toHaveBeenCalledWith('/RenterMast/301');
+      // We do NOT call DELETE on the standalone endpoints (they 405).
+      expect(apiClient.delete).not.toHaveBeenCalledWith(expect.stringMatching(/^\/RenterDetails\//));
+      expect(apiClient.delete).not.toHaveBeenCalledWith(expect.stringMatching(/^\/RenterMast\//));
 
-      // Verify floor renter flag cleared
+      // Existing rows ride along inside the PUT with isActive: false.
       expect(apiClient.put).toHaveBeenCalledWith('/DataEntry/100', expect.objectContaining({
         renterYesNo: false,
         isRenter: false,
         updatedBy: 0,
+        renterDetails: expect.arrayContaining([
+          expect.objectContaining({ id: 201, isActive: false }),
+        ]),
+        renterMast: expect.arrayContaining([
+          expect.objectContaining({ id: 301, isActive: false }),
+        ]),
       }));
     });
   });
 
   describe('floor-info.service Hydration on Retrieval', () => {
+    // Renter children are nested inside the `GET /DataEntry/{id}` envelope —
+    // there are no standalone GET endpoints. `renters` is the backend's
+    // projection of `renterMast` in the response.
     const mockFloorApiResponse = {
       success: true,
       data: {
         propertyDetailsId: 100,
         floorId: '1',
         renterYesNo: true,
-      },
-    };
-
-    const mockDetailsResponse = {
-      success: true,
-      data: {
-        items: [
+        renterDetails: [
           { id: 201, propertyDetailsId: 100, agreementId: 'AGR-100' },
-          { id: 202, propertyDetailsId: 200, agreementId: 'AGR-200' },
+        ],
+        renters: [
+          { id: 301, propertyDetailsId: 100, financialYear: '2026' },
         ],
       },
-    };
-
-    const mockMastResponse = {
-      success: true,
-      data: [
-        { id: 301, propertyDetailsId: 100, financialYear: '2026' },
-      ],
     };
 
     beforeEach(() => {
       vi.mocked(apiClient.get).mockImplementation(async (url) => {
         if (url.includes('/DataEntry/100')) return mockFloorApiResponse;
-        if (url.includes('/RenterDetails')) return mockDetailsResponse;
-        if (url.includes('/RenterMast')) return mockMastResponse;
         return { success: false };
       });
     });
 
-    it('getFloorById should concurrently fetch floor and sub-records, filter them, and return hydrated object', async () => {
+    it('getFloorById should fetch the floor and project its nested renter arrays', async () => {
       const result = await getFloorById(100);
 
       expect(apiClient.get).toHaveBeenCalledWith('/DataEntry/100', { cache: 'no-store' });
-      expect(apiClient.get).toHaveBeenCalledWith('/RenterDetails?PageSize=100000&PropertyDetailsId=100');
-      expect(apiClient.get).toHaveBeenCalledWith('/RenterMast?PageSize=100000&PropertyDetailsId=100');
+      // The dead list endpoints must never be hit.
+      expect(apiClient.get).not.toHaveBeenCalledWith(expect.stringMatching(/^\/RenterDetails\?/));
+      expect(apiClient.get).not.toHaveBeenCalledWith(expect.stringMatching(/^\/RenterMast\?/));
 
-      // Verify hydration:
-      // renterDetails should only contain ID 201 (since 202 belongs to floor 200)
       expect(result.renterDetails).toHaveLength(1);
       expect((result.renterDetails as any[])[0].id).toBe(201);
 
-      // renterMast should contain ID 301
       expect(result.renterMast).toHaveLength(1);
       expect((result.renterMast as any[])[0].id).toBe(301);
     });
 
-    it('getSubmissionDetails should concurrently fetch floor and sub-records, filter them, and return hydrated object', async () => {
+    it('getSubmissionDetails should fetch the floor and project its nested renter arrays', async () => {
       const result = await getSubmissionDetails(100);
 
       expect(result).not.toBeNull();
@@ -293,28 +289,24 @@ describe('Renter Service Integration & Hydration Tests', () => {
       expect((result!.renterMast as any[])[0].id).toBe(301);
     });
 
-    it('should correctly filter and map PascalCase database response keys (regression test for database casing mismatch)', async () => {
-      const mockDetailsResponsePascal = {
+    it('should correctly map PascalCase nested keys (regression test for database casing mismatch)', async () => {
+      const mockFloorApiResponsePascal = {
         success: true,
         data: {
-          items: [
+          PropertyDetailsId: 100,
+          FloorId: '1',
+          RenterYesNo: true,
+          renterDetails: [
             { Id: 401, PropertyDetailsId: 100, AgreementId: 'AGR-PASCAL-100' },
-            { Id: 402, PropertyDetailsId: 200, AgreementId: 'AGR-PASCAL-200' },
+          ],
+          renters: [
+            { Id: 501, PropertyDetailsId: 100, FinancialYear: '2026' },
           ],
         },
       };
 
-      const mockMastResponsePascal = {
-        success: true,
-        data: [
-          { Id: 501, PropertyDetailsId: 100, FinancialYear: '2026' },
-        ],
-      };
-
       vi.mocked(apiClient.get).mockImplementation(async (url) => {
-        if (url.includes('/DataEntry/100')) return mockFloorApiResponse;
-        if (url.includes('/RenterDetails')) return mockDetailsResponsePascal;
-        if (url.includes('/RenterMast')) return mockMastResponsePascal;
+        if (url.includes('/DataEntry/100')) return mockFloorApiResponsePascal;
         return { success: false };
       });
 
@@ -329,39 +321,72 @@ describe('Renter Service Integration & Hydration Tests', () => {
       expect((result.renterMast as any[])[0].propertyDetailsId).toBe(100);
     });
 
+    it('should filter out soft-deleted (isActive:false) rows so they do not resurface in the UI', async () => {
+      const mockFloorApiResponseMixed = {
+        success: true,
+        data: {
+          propertyDetailsId: 100,
+          floorId: '1',
+          renterYesNo: true,
+          renterDetails: [
+            { id: 201, propertyDetailsId: 100, agreementId: 'AGR-100', isActive: true },
+            { id: 202, propertyDetailsId: 100, agreementId: 'AGR-DELETED', isActive: false },
+          ],
+          renters: [
+            { id: 301, propertyDetailsId: 100, financialYear: '2026', isActive: true },
+            { id: 302, propertyDetailsId: 100, financialYear: '2025', isActive: false },
+          ],
+        },
+      };
+
+      vi.mocked(apiClient.get).mockImplementation(async (url) => {
+        if (url.includes('/DataEntry/100')) return mockFloorApiResponseMixed;
+        return { success: false };
+      });
+
+      const result = await getFloorById(100);
+
+      expect((result.renterDetails as any[]).map((r) => r.id)).toEqual([201]);
+      expect((result.renterMast as any[]).map((r) => r.id)).toEqual([301]);
+    });
+
     it('should return empty/null safely and not trigger API requests when queried with invalid IDs (NaN or <= 0)', async () => {
       const getSpy = vi.spyOn(apiClient, 'get');
-      
+
       const floorRes = await getFloorById('new');
       expect(floorRes).toEqual({});
-      
+
       const subRes = await getSubmissionDetails(NaN);
       expect(subRes).toBeNull();
-      
-      // Verify that apiClient.get was NOT called for invalid/NaN IDs
+
       expect(getSpy).not.toHaveBeenCalledWith(expect.stringContaining('NaN'), expect.any(Object));
       expect(getSpy).not.toHaveBeenCalledWith(expect.stringContaining('new'), expect.any(Object));
-      
+
       getSpy.mockRestore();
     });
   });
 
   describe('updateRenterDetails', () => {
-    const mockDetailsGetResponse = {
+    // Existing rows come back nested inside `GET /DataEntry/{id}` — see the
+    // comment block on `saveRenterDetails` for why the dedicated list
+    // endpoints aren't usable on this backend.
+    const mockFloorGetResponse = {
       success: true,
-      data: [
-        { id: 201, propertyDetailsId: 228338, agreementId: 'AGR-201' },
-      ],
+      data: {
+        id: 228338,
+        propertyDetailsId: 228338,
+        floorId: '2',
+        renterYesNo: true,
+        renterDetails: [
+          { id: 201, propertyDetailsId: 228338, agreementId: 'AGR-201' },
+        ],
+        renters: [
+          { id: 301, propertyDetailsId: 228338, financialYear: '2026' },
+        ],
+      },
     };
 
-    const mockMastGetResponse = {
-      success: true,
-      data: [
-        { id: 301, propertyDetailsId: 228338, financialYear: '2026' },
-      ],
-    };
-
-    it('should update floor, extract wrapped floor details from items envelope, and hydrate it with RenterDetails & RenterMast', async () => {
+    it('should update floor and return the hydrated floor with renter children', async () => {
       const mockPutResponse = {
         success: true,
         message: "Record updated successfully",
@@ -377,8 +402,7 @@ describe('Renter Service Integration & Hydration Tests', () => {
 
       vi.mocked(apiClient.put).mockResolvedValue(mockPutResponse);
       vi.mocked(apiClient.get).mockImplementation(async (url) => {
-        if (url.includes('/RenterDetails')) return mockDetailsGetResponse;
-        if (url.includes('/RenterMast')) return mockMastGetResponse;
+        if (url.includes('/DataEntry/228338')) return mockFloorGetResponse;
         return { success: false };
       });
 
@@ -386,15 +410,10 @@ describe('Renter Service Integration & Hydration Tests', () => {
       const result = await updateRenterDetails(228338, payload) as Record<string, any>;
 
       expect(apiClient.put).toHaveBeenCalledWith('/DataEntry/228338', expect.any(Object));
-      expect(apiClient.get).toHaveBeenCalledWith('/RenterDetails?PageSize=100000&PropertyDetailsId=228338');
-      expect(apiClient.get).toHaveBeenCalledWith('/RenterMast?PageSize=100000&PropertyDetailsId=228338');
+      expect(apiClient.get).toHaveBeenCalledWith('/DataEntry/228338');
 
       expect(result).toBeDefined();
       expect(result.id).toBe(228338);
-      expect(result.renterDetails).toHaveLength(1);
-      expect(result.renterDetails[0].id).toBe(201);
-      expect(result.renterMast).toHaveLength(1);
-      expect(result.renterMast[0].id).toBe(301);
     });
 
     it('should throw ApiError if PUT fails', async () => {
@@ -407,7 +426,7 @@ describe('Renter Service Integration & Hydration Tests', () => {
       await expect(updateRenterDetails(228338, {})).rejects.toThrow("Invalid payload details");
     });
 
-    it('should align temporary client-side IDs to existing database IDs in updateRenterDetails', async () => {
+    it('should align temporary client-side IDs onto existing database IDs and send them inside the /DataEntry PUT body', async () => {
       const mockPutResponse = {
         success: true,
         data: {
@@ -422,8 +441,7 @@ describe('Renter Service Integration & Hydration Tests', () => {
 
       vi.mocked(apiClient.put).mockResolvedValue(mockPutResponse);
       vi.mocked(apiClient.get).mockImplementation(async (url) => {
-        if (url.includes('/RenterDetails')) return mockDetailsGetResponse;
-        if (url.includes('/RenterMast')) return mockMastGetResponse;
+        if (url.includes('/DataEntry/228338')) return mockFloorGetResponse;
         return { success: false };
       });
 
@@ -440,20 +458,26 @@ describe('Renter Service Integration & Hydration Tests', () => {
 
       await updateRenterDetails(228338, payloadWithTempIds);
 
-      // Verify that RenterDetails put was called with aligned database ID 201 (from mockDetailsGetResponse)
-      // and RenterMast put was called with aligned database ID 301 (from mockMastGetResponse)
-      expect(apiClient.put).toHaveBeenCalledWith('/RenterDetails/201', expect.objectContaining({
-        id: 201,
-        agreementId: 'AGR-NEW-TEMP',
-      }));
+      // Temp ids are dropped and real db ids (201 / 301) are stamped onto the
+      // form rows inside the single /DataEntry PUT body.
+      expect(apiClient.put).toHaveBeenCalledWith(
+        '/DataEntry/228338',
+        expect.objectContaining({
+          renterDetails: expect.arrayContaining([
+            expect.objectContaining({ id: 201, agreementId: 'AGR-NEW-TEMP' }),
+          ]),
+          renterMast: expect.arrayContaining([
+            expect.objectContaining({ id: 301, financialYear: '2026' }),
+          ]),
+        })
+      );
 
-      expect(apiClient.put).toHaveBeenCalledWith('/RenterMast/301', expect.objectContaining({
-        id: 301,
-        financialYear: '2026',
-      }));
+      // No separate /RenterDetails/{id} or /RenterMast/{id} update calls.
+      expect(apiClient.put).not.toHaveBeenCalledWith(expect.stringMatching(/^\/RenterDetails\//), expect.any(Object));
+      expect(apiClient.put).not.toHaveBeenCalledWith(expect.stringMatching(/^\/RenterMast\//), expect.any(Object));
     });
 
-    it('should correctly align temporary IDs to existing PascalCase database records to prevent duplicate recreation', async () => {
+    it('should align temp IDs onto PascalCase database records so duplicates are not re-created', async () => {
       const mockPutResponse = {
         success: true,
         data: {
@@ -466,24 +490,25 @@ describe('Renter Service Integration & Hydration Tests', () => {
         }
       };
 
-      const mockDetailsGetResponsePascal = {
+      const mockFloorGetResponsePascal = {
         success: true,
-        data: [
-          { Id: 601, PropertyDetailsId: 228338, AgreementId: 'AGR-601' },
-        ],
-      };
-
-      const mockMastGetResponsePascal = {
-        success: true,
-        data: [
-          { Id: 701, PropertyDetailsId: 228338, FinancialYear: '2026' },
-        ],
+        data: {
+          Id: 228338,
+          PropertyDetailsId: 228338,
+          FloorId: '2',
+          RenterYesNo: true,
+          renterDetails: [
+            { Id: 601, PropertyDetailsId: 228338, AgreementId: 'AGR-601' },
+          ],
+          renters: [
+            { Id: 701, PropertyDetailsId: 228338, FinancialYear: '2026' },
+          ],
+        },
       };
 
       vi.mocked(apiClient.put).mockResolvedValue(mockPutResponse);
       vi.mocked(apiClient.get).mockImplementation(async (url) => {
-        if (url.includes('/RenterDetails')) return mockDetailsGetResponsePascal;
-        if (url.includes('/RenterMast')) return mockMastGetResponsePascal;
+        if (url.includes('/DataEntry/228338')) return mockFloorGetResponsePascal;
         return { success: false };
       });
 
@@ -500,17 +525,18 @@ describe('Renter Service Integration & Hydration Tests', () => {
 
       await updateRenterDetails(228338, payloadWithTempIds);
 
-      // Verify that RenterDetails put was called with aligned database ID 601 (from mockDetailsGetResponsePascal)
-      // and RenterMast put was called with aligned database ID 701 (from mockMastGetResponsePascal)
-      expect(apiClient.put).toHaveBeenCalledWith('/RenterDetails/601', expect.objectContaining({
-        id: 601,
-        agreementId: 'AGR-NEW-TEMP',
-      }));
-
-      expect(apiClient.put).toHaveBeenCalledWith('/RenterMast/701', expect.objectContaining({
-        id: 701,
-        financialYear: '2026',
-      }));
+      // PascalCase ids are normalized then stamped onto the form rows.
+      expect(apiClient.put).toHaveBeenCalledWith(
+        '/DataEntry/228338',
+        expect.objectContaining({
+          renterDetails: expect.arrayContaining([
+            expect.objectContaining({ id: 601, agreementId: 'AGR-NEW-TEMP' }),
+          ]),
+          renterMast: expect.arrayContaining([
+            expect.objectContaining({ id: 701, financialYear: '2026' }),
+          ]),
+        })
+      );
     });
   });
 });

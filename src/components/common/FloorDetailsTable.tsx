@@ -316,25 +316,25 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
                   <Tooltip
                     content={
                       col.tooltip &&
-                      typeof col.tooltip === 'string' &&
-                      !col.tooltip.startsWith('ptis.floorTable.tooltips') &&
-                      !col.tooltip.includes('.tooltips.')
+                        typeof col.tooltip === 'string' &&
+                        !col.tooltip.startsWith('ptis.floorTable.tooltips') &&
+                        !col.tooltip.includes('.tooltips.')
                         ? col.tooltip
                         : (COLUMN_FULL_NAMES[col.key] || col.label)
                     }
-                    placement="bottom"
+                    placement="top"
                   >
                     <div
                       onClick={() => col.sortable !== false && handleSort(col.key)}
                       className={cn(
-                        'inline-flex h-8 w-full items-center justify-center gap-1 rounded-md border border-blue-400/10 bg-black/5 px-3 text-xs font-bold text-inherit shadow-sm transition-colors duration-200 select-none whitespace-nowrap',
+                        'inline-flex h-6 w-full items-center justify-center gap-0.5 rounded border border-blue-400/10 bg-black/5 px-1.5 text-[10px] font-bold text-inherit shadow-sm transition-colors duration-200 select-none whitespace-nowrap',
                         col.sortable !== false && 'cursor-pointer hover:bg-black/15 active:bg-black/25',
                         headerBadgeClassName,
                         col.headerBadgeClassName
                       )}
                     >
                       {typeof col.label === 'string' ? (
-                        <span className="truncate font-bold uppercase tracking-wider">
+                        <span className="truncate font-bold uppercase tracking-normal">
                           {col.label}
                         </span>
                       ) : (
@@ -380,10 +380,10 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
               const baseRowClass = rowClassName
                 ? rowClassName(row, index)
                 : cn(
-                    'group h-[36px] border-b border-gray-100 transition-colors',
-                    hoverable && 'hover:bg-blue-50/50',
-                    bgClass
-                  );
+                  'group h-[36px] border-b border-gray-100 transition-colors',
+                  hoverable && 'hover:bg-blue-50/50',
+                  bgClass
+                );
 
               return (
                 <React.Fragment key={row.id}>

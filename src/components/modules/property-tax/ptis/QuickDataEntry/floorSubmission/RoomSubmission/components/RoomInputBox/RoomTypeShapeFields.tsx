@@ -98,7 +98,7 @@ export const RoomTypeShapeFields: React.FC<RoomTypeShapeFieldsProps> = ({
           }}
           disabled={!isEditMode}
           required={isEditMode}
-          error={isEditMode && validationErrors.shape ? t(validationErrors.shape) : undefined}
+          error={undefined}
           className="w-full h-[40px]"
         />
       </div>

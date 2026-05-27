@@ -1,8 +1,8 @@
 "use client";
 
 import { memo } from "react";
-import { TrendingUp, ChevronDown } from "lucide-react";
-import { MasterTable, Button } from "@/components/common";
+import { TrendingUp, ChevronDown, X } from "lucide-react";
+import { MasterTable } from "@/components/common";
 import { useTranslations } from "next-intl";
 
 interface TableRow {
@@ -73,7 +73,14 @@ export const ProgressionTable = memo(({
               <span className="px-2 py-0.5 bg-orange-200 text-orange-800 rounded font-semibold text-[11px]">{selectedFYFilter}</span>
             </div>
             {onClearFilter && (
-              <Button onClick={onClearFilter} className="px-2 py-0.5 bg-white border border-orange-300 text-orange-700 rounded text-[10px] font-semibold hover:bg-orange-50 transition-colors">{t('floor.table.clearFilter')} {`✕`}</Button>
+              <button
+                type="button"
+                onClick={onClearFilter}
+                className="inline-flex items-center gap-1 px-2 py-0.5 bg-white border border-orange-300 text-orange-700 rounded text-[10px] font-semibold hover:bg-orange-50 transition-colors focus:outline-none focus:ring-2 focus:ring-orange-200"
+              >
+                {t('floor.table.clearFilter')}
+                <X className="w-3 h-3" />
+              </button>
             )}
           </div>
         )}
