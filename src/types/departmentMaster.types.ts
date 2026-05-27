@@ -3,7 +3,6 @@ export interface DepartmentMaster {
   departmentCode: string;
   departmentName: string;
   departmentNameLocal?: string;
-  departmentIcon?: string;
   departmentDescription?: string;
   isActive: boolean;
   createdBy?: number;
@@ -18,7 +17,6 @@ export interface DepartmentMasterFormModel {
   departmentCode: string;
   departmentName: string;
   departmentNameLocal: string;
-  departmentIcon: string;
   departmentDescription: string;
   isActive: boolean;
 }
@@ -27,7 +25,6 @@ export interface DepartmentMasterFormData {
   departmentCode: string;
   departmentName: string;
   departmentNameLocal: string;
-  departmentIcon: string;
   departmentDescription: string;
   isActive: boolean;
 }
@@ -55,6 +52,8 @@ export interface DepartmentMasterProps {
   initialTotalCount: number;
   initialTotalPages: number;
   initialSearchTerm?: string;
+  fetchError?: string;
+  statusCode?: number;
 }
 
 export type { PagedResponse } from './common.types';
