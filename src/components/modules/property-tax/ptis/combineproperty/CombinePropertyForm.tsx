@@ -1,21 +1,18 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { Merge, FileText, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { useMemo } from 'react';
+import { Merge } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Drawer } from '@/components/common/Drawer';
-import { SearchSelect, type SearchSelectOption } from '@/components/common/SearchSelect';
-import { MultiSelectDropdown } from '@/components/common/Dropdown';
-import { Tabs, TabList, Tab } from '@/components/common/Tabs';
+import { type SearchSelectOption } from '@/components/common/SearchSelect';
 import { CancelButton, AddButton } from '@/components/common/ActionButtons';
-import { MasterTable } from '@/components/common/MasterTable';
-import { TextArea } from '@/components/common/Textarea';
-import { ValidationMessage } from '@/components/common/ValidationMessage';
 import { CombinePropertyItem } from '@/types/combine-property.types';
-import { useCombinePropertyForm, SelectionMethod } from '@/hooks/combineProperty/useCombineProperty';
+import { useCombinePropertyForm } from '@/hooks/combineProperty/useCombineProperty';
 import { getCombinePropertyColumns, PropertyRow } from './combinePropertyColumns';
 import { redirect } from 'next/navigation';
 import { PropertyType } from '@/types/property-type.types';
+import { CombinePropertyFilterBar } from './CombinePropertyFilterBar';
+import { CombinePropertyReviewSection } from './CombinePropertyReviewSection';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                               */
@@ -91,7 +88,6 @@ export default function CombinePropertyForm({
     subPropertyList,
     selectedBasePropertyId,
     selectedWardId,
-    selectedWardNo,
     selectedPropertyNo,
     t,
   });
@@ -178,23 +174,6 @@ export default function CombinePropertyForm({
   );
 
   /* ============================================================
-     EMPTY STATE
-  ============================================================ */
-  const emptyStateContent = (
-    <div className="flex flex-col items-center justify-center min-h-[380px] text-center gap-4 select-none">
-      <div className="w-[72px] h-[72px] rounded-full bg-blue-50 flex items-center justify-center">
-        <FileText className="w-9 h-9 text-blue-200" strokeWidth={1.5} />
-      </div>
-      <div>
-        <p className="text-[15px] font-semibold text-gray-700">{t('noPropertiesSelected')}</p>
-        <p className="text-sm text-gray-400 mt-1.5 max-w-[320px] leading-relaxed">
-          {t('emptyStateSubtitle')}
-        </p>
-      </div>
-    </div>
-  );
-
-  /* ============================================================
      RENDER
   ============================================================ */
   return (
@@ -205,215 +184,48 @@ export default function CombinePropertyForm({
       width="xl"
       footer={DrawerFooter}
     >
-      {/* ===================================================
-          FILTER BAR
-      =================================================== */}
-      <div className="flex items-end gap-2 px-3 py-2 bg-[#EFF4FF] border-b border-blue-100">
+      <CombinePropertyFilterBar
+        t={t as any}
+        basePropertyOptions={BASE_PROPERTY_OPTIONS}
+        subPropertyOptions={SUB_PROPERTY_OPTIONS}
+        propertyTypeOptions={PROPERTY_TYPE_OPTIONS}
+        selectedBasePropertyId={selectedBasePropertyId}
+        selectionMethod={selectionMethod}
+        rangeFrom={rangeFrom}
+        rangeTo={rangeTo}
+        selectedProperties={selectedProperties}
+        selectedPropertyType={selectedPropertyType}
+        showPropertyTypeDropdown={showPropertyTypeDropdown}
+        selectedCount={selectedCount}
+        canProceed={canProceed}
+        isPending={isPending}
+        handleBasePropertyChange={handleBasePropertyChange}
+        handleMethodChange={handleMethodChange}
+        handleRangeFromChange={handleRangeFromChange}
+        handleRangeToChange={handleRangeToChange}
+        handleIndividualChange={handleIndividualChange}
+        setSelectedPropertyType={setSelectedPropertyType}
+        handleClear={handleClear}
+        handleProceed={handleProceed}
+      />
 
-        {/* ---- Base Property ---- */}
-        <div className="flex flex-col gap-0.5 w-[160px] shrink-0">
-          <label htmlFor="baseProperty" className="text-[10px] font-semibold text-gray-600 flex items-center gap-1">
-            <span className="inline-flex items-center justify-center w-3.5 h-3.5 bg-blue-600 text-white text-[8px] font-bold rounded-[3px]">B</span>
-            {t('baseProperty')} <span className="text-red-500">*</span>
-          </label>
-          <SearchSelect
-            id="baseProperty"
-            name="baseProperty"
-            options={BASE_PROPERTY_OPTIONS}
-            value={selectedBasePropertyId ?? ''}
-            onChange={handleBasePropertyChange}
-            placeholder={t('select')}
-            required
-            className="text-[11px] h-[28px]"
-          />
-        </div>
-
-        {/* ---- Divider ---- */}
-        <div className="h-5 w-px bg-blue-200 self-center shrink-0" />
-
-        {/* ---- Selection Method pill toggle ---- */}
-        <div className="flex flex-col gap-0.5 shrink-0">
-          <label className="text-[10px] font-semibold text-gray-600">{t('selectionMethod')}</label>
-          <Tabs
-            value={selectionMethod}
-            onChange={(value) => handleMethodChange(value as SelectionMethod)}
-            variant="pills"
-            size="sm"
-          >
-            <TabList className="h-[28px] p-0.5 bg-gray-100 rounded-md" scrollable={false}>
-              <Tab value="range" className="text-[11px] px-2.5 py-0">
-                {t('range')}
-              </Tab>
-              <Tab value="individual" className="text-[11px] px-2.5 py-0">
-                {t('individual')}
-              </Tab>
-            </TabList>
-          </Tabs>
-        </div>
-
-        {/* ---- Conditional: Range fields ---- */}
-        {selectionMethod === 'range' && (
-          <>
-            <div className="flex flex-col gap-0.5 w-[120px] shrink-0">
-              <label htmlFor="rangeFrom" className="text-[10px] font-semibold text-gray-600">
-                {t('from')} <span className="text-red-500">*</span>
-              </label>
-              <SearchSelect
-                id="rangeFrom"
-                name="rangeFrom"
-                options={SUB_PROPERTY_OPTIONS}
-                value={rangeFrom}
-                onChange={handleRangeFromChange}
-                placeholder={t('selectStart')}
-                required
-                className="text-[11px] h-[28px]"
-              />
-            </div>
-            <div className="flex flex-col gap-0.5 w-[120px] shrink-0">
-              <label htmlFor="rangeTo" className="text-[10px] font-semibold text-gray-600">
-                {t('to')} <span className="text-red-500">*</span>
-              </label>
-              <SearchSelect
-                id="rangeTo"
-                name="rangeTo"
-                options={SUB_PROPERTY_OPTIONS}
-                value={rangeTo}
-                onChange={handleRangeToChange}
-                placeholder={t('selectEnd')}
-                required
-                className="text-[11px] h-[28px]"
-              />
-            </div>
-          </>
-        )}
-
-        {/* ---- Conditional: Individual multi-select ---- */}
-        {selectionMethod === 'individual' && (
-          <div className="flex flex-col gap-0.5 w-[200px] shrink-0">
-            <label
-              id="selectedPropertiesLabel"
-              htmlFor="selectedProperties"
-              className="text-[10px] font-semibold text-gray-600"
-            >
-              {t('selectProperties')} <span className="text-red-500">*</span>
-            </label>
-            <MultiSelectDropdown
-              id="selectedProperties"
-              aria-labelledby="selectedPropertiesLabel"
-              options={SUB_PROPERTY_OPTIONS}
-              value={selectedProperties}
-              onChange={handleIndividualChange}
-              placeholder={t('selectPropertiesPlaceholder')}
-              className="text-[11px] text-gray-500"
-              styles={{ trigger: 'h-[28px] py-0 px-2 rounded-md border-blue-200 shadow-none' }}
-            />
-          </div>
-        )}
-
-        {/* ---- Property Type (Conditionally Visible) ---- */}
-        {showPropertyTypeDropdown && (
-          <div className="flex flex-col gap-0.5 w-[140px] shrink-0">
-            <label htmlFor="propertyType" className="text-[10px] font-semibold text-gray-600">
-              {t('propertyType')} <span className="text-red-500">*</span>
-            </label>
-            <SearchSelect
-              id="propertyType"
-              name="propertyType"
-              options={PROPERTY_TYPE_OPTIONS}
-              value={selectedPropertyType}
-              onChange={(_name, val) => setSelectedPropertyType(val)}
-              placeholder={t('select')}
-              className="text-[11px] h-[28px]"
-              required
-            />
-          </div>
-        )}
-
-        {/* ---- Action buttons ---- */}
-        <div className="flex items-end gap-2 shrink-0 ml-auto">
-          <CancelButton label={t('clear')} onClick={handleClear} size="sm" />
-          <AddButton
-            label={isPending ? t('loadingButton') : t('proceed', { count: selectedCount })}
-            size="sm"
-            disabled={!canProceed || isPending}
-            onClick={handleProceed}
-          />
-        </div>
-      </div>
-
-      {/* ===================================================
-          BODY
-      =================================================== */}
-      <div className="px-4 py-4 flex flex-col gap-4">
-
-        {/* Empty state */}
-        {!isReviewing && !selectedBasePropertyId && emptyStateContent}
-
-        {/* Review header + warning */}
-        {isReviewing && reviewData.length > 0 && (
-          <>
-            {/* Review combination banner */}
-            <div className="flex items-start gap-3 px-4 py-3 rounded-xl bg-blue-50 border border-blue-200">
-              <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center shrink-0">
-                <CheckCircle2 className="w-4 h-4 text-white" />
-              </div>
-              <div>
-                <p className="text-sm font-bold text-blue-800">{t('reviewCombination')}</p>
-                <p className="text-[12px] text-blue-600 mt-0.5">
-                  {t('primaryProperty')}{' '}
-                  <span className="font-bold">{selectedPropertyNo}</span> {t('willBeCombinedWith')}{' '}
-                  <span className="font-bold text-blue-700">{checkedCount}/{reviewData.length} {t('properties')}</span>
-                </p>
-              </div>
-            </div>
-
-            {/* Owner mismatch warning */}
-            {hasDifferentOwners && (
-              <div className="flex items-start gap-3 px-4 py-3 rounded-xl bg-red-50 border-l-4 border-red-400">
-                <AlertTriangle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
-                <div>
-                  <p className="text-[12px] font-bold text-red-700">{t('warningDifferentOwners')}</p>
-                  {differentOwnerProps && (
-                    <p className="text-[11px] text-red-600 mt-0.5">• {differentOwnerProps}</p>
-                  )}
-                </div>
-              </div>
-            )}
-          </>
-        )}
-
-        {/* Review table */}
-        {isReviewing && (
-          <MasterTable<PropertyRow>
-            columns={columns}
-            data={reviewData as PropertyRow[]}
-            loading={isPending}
-            paginationConfig={{ enabled: false }}
-            height="md"
-            getRowKey={(row, i) => `row-${row.propertyId || 0}-${i}`}
-            emptyText={t('emptyTableText')}
-          />
-        )}
-
-        {/* Remark Input */}
-        {isReviewing && reviewData.length > 0 && (
-          <div className="w-full mt-2">
-            <TextArea
-              id="remark"
-              label={t('remarkLabel')}
-              value={remark}
-              onChange={(e) => setRemark(e.target.value)}
-              placeholder={t('remarkPlaceholder')}
-              disabled={isSubmitting || isPending || checkedCount === 0}
-              rows={2}
-              className='text-black'
-              required
-              error={remarkError}
-            />
-            <ValidationMessage visible={remarkError} message={t('remarkRequiredError') || 'Please enter remark'} />
-          </div>
-        )}
-      </div>
+      <CombinePropertyReviewSection
+        t={t as any}
+        isReviewing={isReviewing}
+        isPending={isPending}
+        isSubmitting={isSubmitting}
+        selectedBasePropertyId={selectedBasePropertyId}
+        selectedPropertyNo={selectedPropertyNo}
+        reviewDataLength={reviewData.length}
+        checkedCount={checkedCount}
+        hasDifferentOwners={hasDifferentOwners}
+        differentOwnerProps={differentOwnerProps}
+        columns={columns}
+        reviewData={reviewData as PropertyRow[]}
+        remark={remark}
+        remarkError={remarkError}
+        setRemark={setRemark}
+      />
     </Drawer>
   );
 }
