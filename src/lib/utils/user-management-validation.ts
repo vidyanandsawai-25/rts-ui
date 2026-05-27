@@ -30,7 +30,8 @@ export const userManagementValidations = {
             (u) =>
               u.userName.trim().toLowerCase() === usernameVal &&
               (excludeUserId === undefined ||
-                (String(u.id) !== String(excludeUserId) && Number(u.userId) !== Number(excludeUserId)))
+                (String(u.id) !== String(excludeUserId) &&
+                  Number(u.userId) !== Number(excludeUserId)))
           );
           if (isDuplicate) return t('form.errors.duplicateUsername');
         }
@@ -67,7 +68,8 @@ export const userManagementValidations = {
               u.email &&
               u.email.trim().toLowerCase() === emailVal &&
               (excludeUserId === undefined ||
-                (String(u.id) !== String(excludeUserId) && Number(u.userId) !== Number(excludeUserId)))
+                (String(u.id) !== String(excludeUserId) &&
+                  Number(u.userId) !== Number(excludeUserId)))
           );
           if (isDuplicate) return t('form.errors.duplicateEmail');
         }
@@ -93,7 +95,8 @@ export const userManagementValidations = {
               u.mobileNo &&
               u.mobileNo.trim().toLowerCase() === mobileVal &&
               (excludeUserId === undefined ||
-                (String(u.id) !== String(excludeUserId) && Number(u.userId) !== Number(excludeUserId)))
+                (String(u.id) !== String(excludeUserId) &&
+                  Number(u.userId) !== Number(excludeUserId)))
           );
           if (isDuplicate) return t('form.errors.duplicateMobile');
         }
@@ -108,7 +111,8 @@ export const userManagementValidations = {
                 u.address &&
                 u.address.trim().toLowerCase() === addressVal &&
                 (excludeUserId === undefined ||
-                  (String(u.id) !== String(excludeUserId) && Number(u.userId) !== Number(excludeUserId)))
+                  (String(u.id) !== String(excludeUserId) &&
+                    Number(u.userId) !== Number(excludeUserId)))
             );
             if (isDuplicate) return t('form.errors.duplicateAddress');
           }
@@ -125,7 +129,8 @@ export const userManagementValidations = {
                 u.userCode &&
                 u.userCode.trim().toLowerCase() === codeVal &&
                 (excludeUserId === undefined ||
-                  (String(u.id) !== String(excludeUserId) && Number(u.userId) !== Number(excludeUserId)))
+                  (String(u.id) !== String(excludeUserId) &&
+                    Number(u.userId) !== Number(excludeUserId)))
             );
             if (isDuplicate) return t('form.errors.duplicateUserCode');
           }
@@ -138,13 +143,16 @@ export const userManagementValidations = {
     return validateForm(data, {
       name: (val) => {
         if (!val) return t('form.errors.roleNameRequired');
-        if (String(val).length > 25) return t('form.errors.roleNameTooLong');
+        if (String(val).length > 30) return t('form.errors.roleNameTooLong');
         if (!NAME_REGEX.test(String(val))) return t('form.errors.roleNameInvalid');
         return undefined;
       },
     });
   },
-  validateDesignation: (data: { name: string; code: string; description?: string }, t: (key: string) => string) => {
+  validateDesignation: (
+    data: { name: string; code: string; description?: string },
+    t: (key: string) => string
+  ) => {
     return validateForm(data, {
       name: (val) => {
         if (!val) return t('form.errors.designationNameRequired');
@@ -155,7 +163,8 @@ export const userManagementValidations = {
       code: (val) => {
         if (!val) return t('form.errors.designationCodeRequired');
         if (String(val).length > 10) return t('form.errors.designationCodeTooLong');
-        if (!/^[a-zA-Z\u0900-\u097F0-9]+$/.test(String(val))) return t('form.errors.designationCodeInvalid');
+        if (!/^[a-zA-Z\u0900-\u097F0-9]+$/.test(String(val)))
+          return t('form.errors.designationCodeInvalid');
         return undefined;
       },
       description: (val) => {

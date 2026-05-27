@@ -10,7 +10,7 @@
   "filters": {
     "allStates": "सभी राज्य",
     "statePlaceholder": "राज्य द्वारा फ़िल्टर करें",
-    "searchPlaceholder": "बैंक, शाखा द्वारा खोजें..."
+    "searchPlaceholder": "बैंक के नाम से खोजें..."
   },
   "table": {
     "code": "कोड",
@@ -72,7 +72,8 @@
     "errorOccurred": "एक अप्रत्याशित त्रुटि हुई",
     "networkError": "नेटवर्क त्रुटि — कृपया अपना कनेक्शन जांचें और पुनः प्रयास करें",
     "searchResult": "{count} रिकॉर्ड \"{term}\" से मिलान करते हुए मिले",
-    "validationError": "कृपया फॉर्म में त्रुटियों को ठीक करें"
+    "validationError": "कृपया फॉर्म में त्रुटियों को ठीक करें",
+    "unauthorizedToken": "अनधिकृत: टोकन समाप्त हो गया है या अमान्य है"
   },
   "confirm": {
     "deleteTitle": "बैंक हटाएं ({bankName})?",
@@ -96,7 +97,8 @@
     "cityLength": "शहर {count} वर्णों से अधिक नहीं हो सकता",
     "stateLength": "राज्य {count} वर्णों से अधिक नहीं हो सकता",
     "bankCodeExists": "बैंक कोड पहले से मौजूद है",
-    "bankNameExists": "बैंक का नाम पहले से मौजूद है"
+    "bankNameExists": "बैंक का नाम पहले से मौजूद है",
+    "ifscCodeExists": "IFSC कोड पहले से मौजूद है"
   },
   "error": {
     "title": "कुछ गलत हो गया",

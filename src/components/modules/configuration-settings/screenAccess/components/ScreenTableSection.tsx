@@ -59,11 +59,10 @@ export const ScreenTableSection: React.FC<ScreenTableSectionProps> = (props) => 
         label: t('screenManagement.screens.table.screenName'),
         width: '20%',
         render: (_, screen) => {
-          // Fall back to screenNameLocal if screenName is garbled or empty
           const nameToDisplay =
-            screen.screenNameLocal && screen.screenNameLocal !== '???????'
-              ? screen.screenNameLocal
-              : screen.screenName;
+            screen.screenName && !/\?{2,}/.test(screen.screenName)
+              ? screen.screenName
+              : screen.screenNameLocal;
           return <span className="font-medium text-gray-900">{nameToDisplay}</span>;
         },
       },
@@ -126,7 +125,13 @@ export const ScreenTableSection: React.FC<ScreenTableSectionProps> = (props) => 
           onChange: onFilterGroupChange,
           options: [
             { value: 'all', label: t('filters.allGroups') },
-            ...groups.map((g) => ({ value: String(g.screenGroupId), label: g.screenGroupName })),
+            ...groups.map((g) => ({
+              value: String(g.screenGroupId),
+              label:
+                g.screenGroupName && !/\?{2,}/.test(g.screenGroupName)
+                  ? g.screenGroupName
+                  : g.screenGroupLocalName || g.screenGroupName,
+            })),
           ],
           className: 'w-48',
         },

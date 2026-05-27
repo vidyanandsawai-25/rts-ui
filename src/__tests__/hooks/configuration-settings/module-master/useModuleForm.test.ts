@@ -100,7 +100,8 @@ describe('useModuleForm', () => {
     });
 
     expect(actions.createModuleMasterAction).not.toHaveBeenCalled();
-    expect(toast.error).toHaveBeenCalledWith('messages.validationError');
+    expect(result.current.errors.moduleCode).toBe('moduleCodeRequired');
+    expect(toast.error).not.toHaveBeenCalled();
   });
 
   it('triggers router push when canceled', () => {

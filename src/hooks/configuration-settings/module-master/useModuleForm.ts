@@ -147,7 +147,6 @@ export function useModuleForm({ id, initialData, initialExistingModules }: UseMo
       setErrors(validationErrors);
 
       if (Object.keys(validationErrors).length > 0) {
-        toast.error(t('messages.validationError'));
         return;
       }
 

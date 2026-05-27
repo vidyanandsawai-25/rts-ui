@@ -103,6 +103,16 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
         const newWardId = parseInt(value, 10);
         // Special case: we pass both to trigger the immediate URL/RSC sync in the parent
         setWardId(newWardId, selectedWard.label);
+
+        // Auto-focus propertyNo to prompt selection
+        setTimeout(() => {
+          const propertyInput = document.getElementById('propertyNo');
+          if (propertyInput && !propertyInput.hasAttribute('disabled')) {
+            propertyInput.focus();
+            // Additionally click to ensure dropdown opens if focus isn't enough on some browsers
+            propertyInput.click();
+          }
+        }, 100);
       }
     },
     [wardOptions, setWardNo, setWardId, setPropertyNo, setPartitionNo, setPropertyId]

@@ -158,7 +158,13 @@ export const createScreenGroupAction = async (data: Partial<ScreenGroupMasterDat
     }
 
     const userId = await getUserId();
-    return createScreenGroup(data, userId);
+    const nextDisplayOrder =
+      (groupsRes.items ?? []).reduce((maxOrder, group) => {
+        const order = Number(group.displayOrder ?? 0);
+        return Number.isFinite(order) ? Math.max(maxOrder, order) : maxOrder;
+      }, 0) + 1;
+
+    return createScreenGroup({ ...data, displayOrder: nextDisplayOrder }, userId);
   }, true);
 
 export const updateScreenGroupAction = async (id: number, data: Partial<ScreenGroupMasterData>) =>

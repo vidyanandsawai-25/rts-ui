@@ -265,7 +265,9 @@
       "noScreensFound": "No screens found"
     },
     "labels": {
-      "screenCount": "{count, plural, =1 {# screen} other {# screens}}"
+      "screenCount": "{count, plural, =1 {# screen} other {# screens}}",
+      "noneCount": "None: {count}",
+      "fullCount": "Full: {count}"
     }
   },
 

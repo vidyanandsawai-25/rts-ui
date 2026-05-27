@@ -265,7 +265,9 @@
       "noScreensFound": "कोणत्याही स्क्रीन सापडल्या नाहीत"
     },
     "labels": {
-      "screenCount": "{count, plural, =1 {# स्क्रीन} other {# स्क्रीन}}"
+      "screenCount": "{count, plural, =1 {# स्क्रीन} other {# स्क्रीन}}",
+      "noneCount": "काहीही नाही: {count}",
+      "fullCount": "पूर्ण: {count}"
     }
   },
 
