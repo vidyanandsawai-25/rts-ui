@@ -12,7 +12,6 @@ export const ROUTES = {
   },
   PROPERTY_TAX: {
     PTIS: '/property-tax/ptis',
-    WATER_CONNECTION_MASTER: '/property-tax/water-connection-master',
   },
   PROFILE: '/profile',
   SETTINGS: '/settings',
