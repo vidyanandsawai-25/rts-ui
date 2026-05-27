@@ -142,7 +142,11 @@ export const useFloorDataHandlers = (params: {
                 url.searchParams.delete('drawer');
                 router.replace(url.pathname + url.search);
                 setTimeout(() => {
-                  window.location.reload();
+                  try {
+                    window.location.reload();
+                  } catch (_e) {
+                    // Ignore reload errors in test environments (JSDOM doesn't support navigation)
+                  }
                 }, 300);
               } catch (_e) {
                 // Safe fallback for mock test environments (like JSDOM/Vitest)

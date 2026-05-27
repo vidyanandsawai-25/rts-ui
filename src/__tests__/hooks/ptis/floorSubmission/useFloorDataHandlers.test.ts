@@ -44,6 +44,15 @@ describe('useFloorDataHandlers', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     testParams = createDefaultFloorDataHandlersParams();
+    
+    // Mock window.location.reload to prevent JSDOM errors
+    Object.defineProperty(window, 'location', {
+      writable: true,
+      value: {
+        ...window.location,
+        reload: vi.fn(),
+      },
+    });
   });
 
   afterEach(() => {
