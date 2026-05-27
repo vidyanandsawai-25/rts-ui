@@ -3,6 +3,7 @@ import type { OldDetailsData } from '@/types/ptis.types';
 import type { DualMethodResponse } from '@/types/dualMethod.types';
 import type { RateableValueResponse } from '@/types/rateableValue.types';
 import type { CapitalValueResponse } from '@/types/capitalValue.types';
+import type { ActionResult } from '@/types/common.types';
 import { getPtisUserSafeErrorMessage } from '@/components/modules/property-tax/ptis/shared/valuation-fetch';
 
 const DUAL_METHOD_ERROR_MESSAGES = {
@@ -31,7 +32,9 @@ export interface DualMethodSectionData {
 
 export async function assembleDualMethodSectionData(
   propertyId: number | undefined,
-  initialOldDetails: OldDetailsData
+  initialOldDetails: OldDetailsData,
+  rateableRes?: ActionResult<RateableValueResponse> | null,
+  capitalRes?: ActionResult<CapitalValueResponse> | null
 ): Promise<DualMethodSectionData> {
   const shouldFetch = propertyId != null;
 
@@ -48,6 +51,27 @@ export async function assembleDualMethodSectionData(
           DUAL_METHOD_ERROR_MESSAGES.dualMethod
         );
 
+  const initialRateableData = rateableRes?.success === true ? (rateableRes.data ?? null) : null;
+  const initialCapitalData = capitalRes?.success === true ? (capitalRes.data ?? null) : null;
+
+  const rateableError =
+    !shouldFetch || !rateableRes || rateableRes?.success === true
+      ? undefined
+      : getPtisUserSafeErrorMessage(
+          rateableRes?.error,
+          rateableRes?.statusCode,
+          DUAL_METHOD_ERROR_MESSAGES.rateable
+        );
+
+  const capitalError =
+    !shouldFetch || !capitalRes || capitalRes?.success === true
+      ? undefined
+      : getPtisUserSafeErrorMessage(
+          capitalRes?.error,
+          capitalRes?.statusCode,
+          DUAL_METHOD_ERROR_MESSAGES.capital
+        );
+
   const oldRv = initialDualMethodData?.oldRv ?? initialDualMethodData?.oldRV ?? Number(initialOldDetails?.oldRV || 0);
   const oldTax = initialDualMethodData?.oldTaxesTotal ?? initialDualMethodData?.oldTaxTotal ?? Number(initialOldDetails?.oldTotalTax || 0);
 
@@ -62,12 +86,12 @@ export async function assembleDualMethodSectionData(
 
   return {
     initialDualMethodData,
-    initialRateableData: null,
-    initialCapitalData: null,
-    hasFetchedRateableData: false,
-    hasFetchedCapitalData: false,
-    rateableError: undefined,
-    capitalError: undefined,
+    initialRateableData,
+    initialCapitalData,
+    hasFetchedRateableData: rateableRes != null,
+    hasFetchedCapitalData: capitalRes != null,
+    rateableError,
+    capitalError,
     finalErrorMessage,
     oldRv,
     oldTax,

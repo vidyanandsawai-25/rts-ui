@@ -143,9 +143,11 @@ export const useFloorDataHandlers = (params: {
                 router.replace(url.pathname + url.search);
                 setTimeout(() => {
                   try {
-                    window.location.reload();
+                    if (typeof window.location.reload === 'function') {
+                      window.location.reload();
+                    }
                   } catch (_e) {
-                    // Ignore reload errors in test environments (JSDOM doesn't support navigation)
+                    // Safe fallback for mock test environments
                   }
                 }, 300);
               } catch (_e) {
