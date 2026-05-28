@@ -50,7 +50,7 @@ export const getDimensionsString = (offset: OffsetData, areaUnit: string = "sq.m
   const type = rawType.toLowerCase();
 
   const getParam = (key: string) => {
-    const p = (offset.parameters as Record<string, unknown>) || {};
+    const p = (offset.shapeParams || (offset as unknown as Record<string, unknown>).shapeParameters || offset.parameters || {}) as Record<string, unknown>;
     const val = p[key] || (offset as unknown as Record<string, unknown>)[key];
     return val || 0;
   };
