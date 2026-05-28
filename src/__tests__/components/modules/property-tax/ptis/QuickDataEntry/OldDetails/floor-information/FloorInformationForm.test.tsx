@@ -123,6 +123,6 @@ describe('FloorInformationForm Component', () => {
     // Check if table cells contain the data
     expect(screen.getByText('Ground Floor')).toBeInTheDocument();
     expect(screen.getByText('2020')).toBeInTheDocument();
-    expect(screen.getByText('1000')).toBeInTheDocument();
+    expect(screen.getByText('1,000.00 / 0.00')).toBeInTheDocument();
   });
 });

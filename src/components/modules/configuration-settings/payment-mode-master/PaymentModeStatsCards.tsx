@@ -1,6 +1,6 @@
 import type { PaymentMode } from "@/types/paymentMode.types";
 import { Wallet, Smartphone, Building2, Activity, Layers } from "lucide-react";
-import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 import { Card } from "@/components/common/Card";
 import { cn } from "@/lib/utils/cn";
 
@@ -10,8 +10,8 @@ interface PaymentModeStatsCardsProps {
     locale: string;
 }
 
-export async function PaymentModeStatsCards({ totalCount, allData, locale }: PaymentModeStatsCardsProps) {
-    const t = await getTranslations({ locale, namespace: "paymentModeMaster" });
+export function PaymentModeStatsCards({ totalCount, allData }: PaymentModeStatsCardsProps) {
+    const t = useTranslations("paymentModeMaster");
 
     const onlineCount = allData.filter(
         (m) => m.type?.toLowerCase() === "online"

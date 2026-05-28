@@ -21,7 +21,6 @@ export const DimensionAreaFields: React.FC<DimensionAreaFieldsProps> = ({
   formData,
   handleInputChange,
   isEditMode,
-  validationErrors,
   focusRefs,
   t,
   areaUnit,
@@ -85,7 +84,7 @@ export const DimensionAreaFields: React.FC<DimensionAreaFieldsProps> = ({
           disabled={!isEditMode}
           className="text-center h-[40px]"
           placeholder={t('roomSubmission.input.placeholders.roomCount')}
-          error={isEditMode && validationErrors.roomCount ? t(validationErrors.roomCount) : undefined}
+          error={undefined}
         />
       </div>
     </>

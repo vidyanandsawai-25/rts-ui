@@ -34,16 +34,14 @@ export const useTaxDetailsTable = (initialTaxDetails?: TaxDetailsData) => {
       // Find policy by policyCode directly (locale-independent)
       const policy = policies.find((p) => p.policyCode === rowDef.policyCode);
 
-      let total = 0;
       if (policy) {
         policy.taxAmounts.forEach((item) => {
           // Safe to assign taxName as key since row has null prototype
           row[item.taxName] = String(item.taxAmount || 0);
-          total += Number(item.taxAmount || 0);
         });
+        // Use API-provided taxTotal instead of manual calculation
+        row.totalTax = String(policy.taxTotal || 0);
       }
-
-      row.totalTax = total.toFixed(2);
       return row;
     });
   }, [initialTaxDetails, t]);

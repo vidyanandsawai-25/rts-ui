@@ -25,7 +25,6 @@ describe('DepartmentMasterForm', () => {
       departmentCode: 'IT01',
       departmentName: 'Information Technology',
       departmentNameLocal: 'आईटी',
-      departmentIcon: 'it-icon',
       departmentDescription: 'IT Dept',
       isActive: true,
     };
