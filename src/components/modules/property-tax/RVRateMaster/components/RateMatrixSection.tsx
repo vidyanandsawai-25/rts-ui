@@ -145,6 +145,7 @@ export function RateMatrixSection({
             colorMap={categoryColorMap}
             mode={mode === 'edit' || mode === 'add' ? 'edit' : 'view'}
             editableColumns={filteredCategories.map(cat => cat.constructionCode || cat.constructionId)}
+            cellMaxValue={MAX_RATE_VALUE}
             onCellChange={(rowId, colId, value) => {
               // Sanitize and validate value
               const sanitized = sanitizePositiveDecimal(String(value));
