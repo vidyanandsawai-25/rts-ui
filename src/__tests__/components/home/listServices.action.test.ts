@@ -117,7 +117,7 @@ describe('listServices Server Action', () => {
             const result = await listServices('en');
 
             const ptService = result.services.find(s => s.name === 'Property Tax');
-            expect(ptService?.link).toBe('/en/property-tax/ptis');
+            expect(ptService?.link).toBe('/en/property-tax/search-property');
 
             const tlService = result.services.find(s => s.name === 'Trade License');
             expect(tlService?.link).toBe('/en/bajar-parwana');
@@ -126,11 +126,11 @@ describe('listServices Server Action', () => {
         it('returns localized routes based on locale parameter', async () => {
             const resultHi = await listServices('hi');
             const ptServiceHi = resultHi.services.find(s => s.name === 'Property Tax');
-            expect(ptServiceHi?.link).toBe('/hi/property-tax/ptis');
+            expect(ptServiceHi?.link).toBe('/hi/property-tax/search-property');
 
             const resultMr = await listServices('mr');
             const ptServiceMr = resultMr.services.find(s => s.name === 'Property Tax');
-            expect(ptServiceMr?.link).toBe('/mr/property-tax/ptis');
+            expect(ptServiceMr?.link).toBe('/mr/property-tax/search-property');
         });
 
         it('filters out inactive departments', async () => {

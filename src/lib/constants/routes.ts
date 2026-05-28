@@ -11,6 +11,7 @@ export const ROUTES = {
     FORGOT_PASSWORD: '/auth/forgot-password',
   },
   PROPERTY_TAX: {
+    SEARCH_PROPERTY: '/property-tax/search-property',
     PTIS: '/property-tax/ptis',
   },
   PROFILE: '/profile',
