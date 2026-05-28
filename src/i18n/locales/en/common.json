@@ -27,7 +27,10 @@
     "update": "Update",
     "submit": "Submit",
     "pleaseWait": "Please wait...",
-    "logout": "Logout"
+    "logout": "Logout",
+    "search": "Search",
+    "reset": "Reset",
+    "exportExcel": "Export to Excel"
   },
   "validation": {
     "required": "This field is required",

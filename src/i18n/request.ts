@@ -50,6 +50,7 @@ export default getRequestConfig(async ({ locale }) => {
     combinePropertyMessages,
     ptisMainTaxDetailsMessages,
     paymentModeMasterMessages,
+    propertySearchMessages,
     moduleMasterMessages,
     waterConnectionMessages,
     waterConnectionMasterMessages,
@@ -106,6 +107,9 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/combineProperty.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/ptisMainTaxDetails.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/paymentModeMaster.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/propertySearch.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/moduleMaster.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
@@ -116,12 +120,9 @@ export default getRequestConfig(async ({ locale }) => {
       .catch(() => ({}))
       .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/commonDetailsUpdate.json`)
-      .then((m) => m.default || m),
-    import(`./locales/${validatedLocale}/commonDetailsUpdate.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
-
   ]);
 
   return {
@@ -161,6 +162,7 @@ export default getRequestConfig(async ({ locale }) => {
       combineProperty: combinePropertyMessages,
       ptisMainTaxDetails: ptisMainTaxDetailsMessages,
       paymentModeMaster: paymentModeMasterMessages,
+      propertySearch: propertySearchMessages,
       moduleMaster: moduleMasterMessages,
       waterConnection: waterConnectionMessages?.waterConnection || waterConnectionMessages,
       waterConnectionMaster: waterConnectionMasterMessages.waterConnectionMaster,
