@@ -8,12 +8,10 @@ import { SearchInput, StatusBadge, AddButton, Select, Option, Label } from "@/co
 import { ZonePropertyItem } from "@/types/zone-master/properties/zoneProperty.types";
 import { WardItem } from "@/types/wardMaster.types";
 import { usePropertyListHandlers } from "@/hooks/zoneMaster/usePropertyListHandlers";
-import { useCallback, useMemo, useTransition } from "react";
+import { useCallback, useMemo } from "react";
 import { getPropertyColumns } from "./propertyColumns";
 import { DeleteLabelButton } from "@/components/common/ActionButtons";
 import DeletePropertyDrawer from "./DeletePropertyDrawer";
-import { deleteProperty } from "@/lib/api/property.service";
-import { toast } from "sonner";
 import type { DeletePropertyData } from "@/types/zoneMaster.types";
 
 interface PropertyCategoryMap {
@@ -134,8 +132,6 @@ console.log("currentWard => ", currentWard);
         router.push(`${pathname}?${params.toString()}`);
     }, [router, pathname, searchParams, selectedWardId]);
 
-    const [isDeleting, startDeleteTransition] = useTransition();
-
     const handleOpenDeleteDrawer = useCallback(() => {
         const params = new URLSearchParams(searchParams.toString());
         if (selectedWardId !== null) {
@@ -150,31 +146,6 @@ console.log("currentWard => ", currentWard);
         params.delete("deleteProperty");
         router.push(`${pathname}?${params.toString()}`);
     }, [router, pathname, searchParams]);
-
-    const handleDeleteSingle = useCallback(
-        async (propertyId: string) => {
-            startDeleteTransition(async () => {
-                try {
-                    const result = await deleteProperty(propertyId);
-                    
-                    if (result.success) {
-                        toast.success(t("propertyList.deleteSuccess"));
-                        handleCloseDeleteDrawer();
-                        router.refresh();
-                    } else {
-                        toast.error(result.error || t("propertyList.deleteError"));
-                    }
-                } catch (error) {
-                    toast.error(
-                        error instanceof Error 
-                            ? error.message 
-                            : t("propertyList.deleteError")
-                    );
-                }
-            });
-        },
-        [router, t, handleCloseDeleteDrawer]
-    );
 
     return (
         <div className="flex flex-col h-full">
@@ -315,29 +286,7 @@ console.log("currentWard => ", currentWard);
                 <DeletePropertyDrawer
                     isOpen={deletePropertyData.isOpen}
                     onClose={handleCloseDeleteDrawer}
-                    properties={deletePropertyData.properties
-                        .filter((p) => {
-                            // Debug: Log partition values
-                            if (p.propertyNo === '85') {
-                                console.log('Property 85 - partitionNo:', p.partitionNo, 'type:', typeof p.partitionNo);
-                            }
-                            // Filter out partitions - same logic as PropertyPartitionForm
-                            const partition = p.partitionNo;
-                            return !partition || partition === '' || partition === '0' || partition === '-' || partition === 'null';
-                        })
-                        .map((p) => ({
-                            value: String(p.id),
-                            label: p.propertyNo,
-                            propertyNo: p.propertyNo,
-                            ownerName: p.ownerName,
-                            address: p.address,
-                            categoryId: p.categoryId,
-                            wardId: p.wardId,
-                        }))}
-                    onDeleteSingle={handleDeleteSingle}
-                    loading={isDeleting}
-  selectedWard={currentWard}
-                    categoryMap={new Map(Object.entries(categoryMap).map(([k, v]) => [Number(k), v]))}
+                    selectedWard={currentWard}
                 />
             )}
         </div>

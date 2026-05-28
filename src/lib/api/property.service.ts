@@ -17,6 +17,48 @@ export async function deleteProperty(propertyId: string): Promise<ApiResponse<De
 }
 
 /**
+ * Delete a single property or amenity by numeric ID
+ */
+export async function deletePropertyAmenity(propertyId: number): Promise<ApiResponse<DeletePropertyResponse>> {
+  return apiClient.delete<DeletePropertyResponse>(`/Property/${propertyId}`);
+}
+
+/**
+ * Bulk delete properties or amenities by numeric IDs
+ */
+export async function deleteMultiplePropertiesAmenities(
+  propertyIds: number[]
+): Promise<ApiResponse<DeletePropertyResponse>> {
+  try {
+    const results = await Promise.all(
+      propertyIds.map((id) => apiClient.delete<DeletePropertyResponse>(`/Property/Bulk/${id}`))
+    );
+
+    const allSuccessful = results.every((r) => r.success);
+
+    if (allSuccessful) {
+      return {
+        success: true,
+        statusCode: 200,
+        data: { message: `Successfully deleted ${propertyIds.length} items` },
+      };
+    }
+
+    const failedCount = results.filter((r) => !r.success).length;
+    return {
+      success: false,
+      statusCode: 207,
+      error: `Failed to delete ${failedCount} out of ${propertyIds.length} items`,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to delete items",
+    };
+  }
+}
+
+/**
  * Delete multiple properties in bulk
  * @param propertyIds - Array of property IDs to delete
  * @returns ApiResponse with deletion result

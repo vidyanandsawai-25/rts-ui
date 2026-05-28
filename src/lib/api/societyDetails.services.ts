@@ -1,6 +1,7 @@
 import { apiClient } from "@/services/api.service";
 import { handleApiResponse } from "@/lib/utils/api";
 import { SocietyDetailsListResponse, CreateSocietyDetailPayload, SocietyDetailItem } from "@/types/zone-master/properties/societyDetails.types";
+import { SocietyAmenityDetailsResponse } from "@/types/zone-master/properties/society-amenity-details.types";
 
 /**
  * Fetches society details for a specific property
@@ -71,4 +72,34 @@ export async function updateSocietyDetail(
   );
 
   return handleApiResponse(response, "Failed to update society detail");
+}
+
+/**
+ * Deletes a society detail record by ID
+ */
+export async function deleteSocietyDetail(
+  id: number
+): Promise<{ success: boolean; message: string }> {
+  const response = await apiClient.delete<{ success: boolean; message: string }>(
+    `/SocietyDetails/${id}`
+  );
+
+  return handleApiResponse(response, "Failed to delete society detail");
+}
+
+/**
+ * Fetches property or amenity records for a wing (society detail).
+ * API: GET /Property/{societyDetailId}/society-amenity-details?isAmenity={bool}
+ */
+export async function getSocietyAmenityDetails(
+  societyDetailId: number,
+  isAmenity: boolean
+): Promise<SocietyAmenityDetailsResponse> {
+  const params = new URLSearchParams({ isAmenity: String(isAmenity) });
+
+  const response = await apiClient.get<SocietyAmenityDetailsResponse>(
+    `/Property/${societyDetailId}/society-amenity-details?${params.toString()}`
+  );
+
+  return handleApiResponse(response, "Failed to fetch society amenity details");
 }
