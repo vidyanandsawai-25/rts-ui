@@ -1,6 +1,7 @@
 import { FloorData, RoomData } from "@/types/room-details.types";
 import { RenterDetailItem, RenterMastItem } from "@/types/renter-details.types";
 import { LookupData } from "@/types/common-details.types";
+import { OffsetData } from "@/types/offset-details.types";
 import { resolveAgreementBaseMonthlyRent } from "@/lib/utils/renterUtils";
 import {
   getFloorDescription,
@@ -10,6 +11,53 @@ import {
   getSubTypeDescription,
 } from "./floor-descriptions";
 import { INITIAL_SHAPE_PARAMETERS } from "@/components/modules/property-tax/ptis/QuickDataEntry/floorSubmission/RoomSubmission/constants/room-submission.constants";
+
+/**
+ * Normalizes offset/minus room data from API response back to UI-friendly structure.
+ */
+export function normalizeOffsetData(raw: Record<string, unknown>): OffsetData {
+  if (!raw) return {} as OffsetData;
+
+  const getProp = (obj: Record<string, unknown>, key: string) => {
+    if (!obj) return undefined;
+    const lowerKey = key.toLowerCase();
+    const actualKey = Object.keys(obj).find(k => k.toLowerCase() === lowerKey);
+    return actualKey ? obj[actualKey] : undefined;
+  };
+
+  const shape = String(raw.shape || "Rectangle");
+  const area = parseFloat(String(raw.areaSqMtr || raw.areaSqMeter || raw.area || 0));
+
+  // Extract dimensions as strings for form binding
+  const l = getProp(raw, 'lengthMtr') || getProp(raw, 'length');
+  const w = getProp(raw, 'widthMtr') || getProp(raw, 'width');
+  const h = getProp(raw, 'heightMtr') || getProp(raw, 'height');
+  const b1 = getProp(raw, 'base1Mtr') || getProp(raw, 'base1');
+  const b2 = getProp(raw, 'base2Mtr') || getProp(raw, 'base2');
+  const s = getProp(raw, 'side') || (shape === "Square" ? l : undefined);
+  const base = getProp(raw, 'base') || (shape === "Triangle" ? b1 : undefined);
+  const radius = getProp(raw, 'radius') || (["Circle", "Semi Circle", "Quarter Circle"].includes(shape) ? b1 : undefined);
+
+  // Map operation (add/subtract)
+  const isOffset = raw.isOffset === true || raw.isOffset === 'true';
+  const operation = raw.operation || (isOffset ? "add" : "subtract");
+
+  return {
+    ...raw,
+    shape,
+    area,
+    length: l !== undefined && l !== null ? String(l) : "",
+    width: w !== undefined && w !== null ? String(w) : "",
+    height: h !== undefined && h !== null ? String(h) : "",
+    base1: b1 !== undefined && b1 !== null ? String(b1) : "",
+    base2: b2 !== undefined && b2 !== null ? String(b2) : "",
+    side: s !== undefined && s !== null ? String(s) : "",
+    base: base !== undefined && base !== null ? String(base) : "",
+    radius: radius !== undefined && radius !== null ? String(radius) : "",
+    operation,
+    roomWiseMinusId: raw.id || raw.roomWiseMinusId || "",
+  } as OffsetData;
+}
 
 /**
  * Normalizes a polymorphic room object from API responses.
@@ -53,6 +101,9 @@ export function normalizeRoomData(raw: Record<string, unknown>): RoomData {
   const w = getProp(raw, 'widthMtr') || getProp(raw, 'width');
   if (w !== undefined && w !== null && !params.width) params.width = String(w);
 
+  const rawOffsets = (raw.roomWiseMinusData || raw.offsets || []) as Record<string, unknown>[];
+  const normalizedOffsets = Array.isArray(rawOffsets) ? rawOffsets.map(normalizeOffsetData) : [];
+
   return {
     ...raw,
     shape: String(shape || "Rectangle"),
@@ -63,6 +114,8 @@ export function normalizeRoomData(raw: Record<string, unknown>): RoomData {
     carpetArea: parseFloat(String(getProp(raw, 'areaSqMtr') || getProp(raw, 'carpetArea') || getProp(raw, 'area') || 0)),
     builtUpArea: parseFloat(String(getProp(raw, 'builtUpArea') || 0)),
     roomNo: String(getProp(raw, 'roomNo') || ""),
+    offsets: normalizedOffsets,
+    roomWiseMinusData: normalizedOffsets,
   };
 }
 

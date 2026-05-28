@@ -5,7 +5,7 @@ import {
     type RoomAPIResponse,
     type ShapeParameters,
 } from '@/types/room-details.types';
-import { type OffsetAPIResponse } from '@/types/offset-details.types';
+import { type OffsetAPIResponse, type OffsetData } from '@/types/offset-details.types';
 import { parseBoolean } from "@/lib/utils/type-guards";
 import { resolveAgreementBaseMonthlyRent } from "@/lib/utils/renterUtils";
 
@@ -52,12 +52,18 @@ export const mapRoomDataToUi = (room: RoomAPIResponse, index: number): RoomData 
             length: offLengthVal,
             width: offWidthVal,
             height: offHeightVal,
+            base1: offBase1Val,
+            base2: offBase2Val,
+            radius: String(offShapeParams.radius || ''),
+            side: String(offShapeParams.side || ''),
+            base: String(offShapeParams.base || ''),
             area: Number(offset.areaSqMtr || offset.area) || 0,
             operation: offset.isOffset === true ? 'add' : (offset.isOffset === false ? 'subtract' : String(offset.operation || 'subtract')),
             remark: String(offset.remark || ''),
             shapeType: String(offShape),
             shapeParams: offShapeParams,
-        };
+            parameters: offShapeParams as unknown as Record<string, unknown>,
+        } as OffsetData;
     });
 
     const isOff = (room.minusYesNo === true || room.MinusYesNo === true || room.offsetMinus === 'Yes');
