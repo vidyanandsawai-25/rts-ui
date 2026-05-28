@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { locales } from "@/i18n/config";
 import { departmentActivationService } from "@/lib/api/configuration-settings/department-activation/departmentActivation.service";
 import { DepartmentUpdateRequest, ModuleUpdateRequest } from "@/types/departmentActivation.types";
@@ -27,6 +27,8 @@ export async function updateDepartmentStatusAction(
 
     const result = await departmentActivationService.updateDepartmentStatus(data, userId);
     if (!result.success) return { success: false, error: result.error };
+
+    revalidateTag("user-management", "default");
 
     for (const locale of locales) {
       revalidatePath(`/${locale}/configuration-settings/department-activation`, "page");
@@ -59,6 +61,8 @@ export async function updateModuleStatusAction(
 
     const result = await departmentActivationService.updateModuleStatus(data, userId);
     if (!result.success) return { success: false, error: result.error };
+
+    revalidateTag("user-management", "default");
 
     for (const locale of locales) {
       revalidatePath(`/${locale}/configuration-settings/department-activation`, "page");

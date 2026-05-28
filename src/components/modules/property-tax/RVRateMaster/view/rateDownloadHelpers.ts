@@ -141,7 +141,7 @@ function groupRatesIntoGrids(
 }
 
 /**
- * Convert grids to CSV format with each grid stacked vertically
+ * Convert grids to CSV format with a single header row and all data rows below
  */
 function gridsToCSV(
   grids: GroupedGrid[], 
@@ -150,27 +150,28 @@ function gridsToCSV(
 ): string {
   const csvLines: string[] = [];
   
-  grids.forEach((grid, index) => {
-    // Add blank line separator between grids (except before first grid)
-    if (index > 0) {
-      csvLines.push('');
-      csvLines.push('');
-    }
-    
-    // Add column headers: Rate Section, Assessment Year Range, Use Group, Tax Zone No, then all construction types
-    const headerRow = [
-      escapeCsvValue(t('downloadHeaders.rateSection')),
-      escapeCsvValue(t('downloadHeaders.assessmentYearRange')),
-      escapeCsvValue(t('downloadHeaders.useGroup')),
-      escapeCsvValue(t('downloadHeaders.taxZoneNo')),
-      ...grid.constructionTypes.map(ct => {
-        const label = `${ct} (${t('downloadHeaders.rateSqMtr')})`;
-        return escapeCsvValue(label);
-      })
-    ];
-    csvLines.push(headerRow.join(','));
-    
-    // Add data rows for each tax zone
+  // Collect all unique construction types across all grids, maintaining order
+  const allConstructionTypesSet = new Set<string>();
+  grids.forEach(grid => {
+    grid.constructionTypes.forEach(ct => allConstructionTypesSet.add(ct));
+  });
+  const allConstructionTypes = Array.from(allConstructionTypesSet);
+  
+  // Add single header row at the top
+  const headerRow = [
+    escapeCsvValue(t('downloadHeaders.rateSection')),
+    escapeCsvValue(t('downloadHeaders.assessmentYearRange')),
+    escapeCsvValue(t('downloadHeaders.useGroup')),
+    escapeCsvValue(t('downloadHeaders.taxZoneNo')),
+    ...allConstructionTypes.map(ct => {
+      const label = `${ct} (${t('downloadHeaders.rateSqMtr')})`;
+      return escapeCsvValue(label);
+    })
+  ];
+  csvLines.push(headerRow.join(','));
+  
+  // Add data rows for all grids
+  grids.forEach(grid => {
     grid.taxZones.forEach(taxZone => {
       const row = [
         escapeCsvValue(rateSection),
@@ -179,8 +180,8 @@ function gridsToCSV(
         escapeCsvValue(taxZone)
       ];
       
-      // Add rate for each construction type
-      grid.constructionTypes.forEach(constructionType => {
+      // Add rate for each construction type (use 0 if not present in this grid)
+      allConstructionTypes.forEach(constructionType => {
         const rate = grid.rateData.get(taxZone)?.get(constructionType) || 0;
         row.push(escapeCsvValue(rate));
       });

@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { EditButton, DeleteButton } from "@/components/common/ActionButtons";
 import { Tooltip } from "@/components/common/Tooltip";
 import type { PaymentMode } from "@/types/paymentMode.types";
+import { usePermissions } from "@/hooks/usePermissions";
 
 interface PaymentModeRowActionsProps {
     mode: PaymentMode;
@@ -14,15 +15,20 @@ interface PaymentModeRowActionsProps {
 
 export function PaymentModeRowActions({ mode, onEdit, onDelete, isDeleting }: PaymentModeRowActionsProps) {
     const t = useTranslations("paymentModeMaster");
+    const { canEdit, canDelete, haveFullAccess } = usePermissions("PAYMENT_MODE_MASTER");
 
     return (
         <>
-            <Tooltip content={t("actionsTooltip.edit")} placement="top">
-                <EditButton aria-label={`${t("actionsTooltip.edit")} - ${mode.paymentModeName}`} onClick={onEdit} disabled={isDeleting} />
-            </Tooltip>
-            <Tooltip content={t("actionsTooltip.delete")} placement="top">
-                <DeleteButton aria-label={`${t("actionsTooltip.delete")} - ${mode.paymentModeName}`} onClick={onDelete} disabled={isDeleting} />
-            </Tooltip>
+            {(canEdit || haveFullAccess) && (
+                <Tooltip content={t("actionsTooltip.edit")} placement="top">
+                    <EditButton aria-label={`${t("actionsTooltip.edit")} - ${mode.paymentModeName}`} onClick={onEdit} disabled={isDeleting} />
+                </Tooltip>
+            )}
+            {(canDelete || haveFullAccess) && (
+                <Tooltip content={t("actionsTooltip.delete")} placement="top">
+                    <DeleteButton aria-label={`${t("actionsTooltip.delete")} - ${mode.paymentModeName}`} onClick={onDelete} disabled={isDeleting} />
+                </Tooltip>
+            )}
         </>
     );
 }

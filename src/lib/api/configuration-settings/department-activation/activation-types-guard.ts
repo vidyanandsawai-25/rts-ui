@@ -12,7 +12,15 @@ const cleanString = (val: unknown) => {
 
 export function normalizeDepartment(data: Record<string, unknown>): Department {
     return {
-        departmentId: Number(data.departmentId ?? data.DepartmentId ?? 0),
+        departmentId: Number(
+            data.departmentId ??
+            data.DepartmentId ??
+            data.departmentMasterId ??
+            data.DepartmentMasterId ??
+            data.id ??
+            data.Id ??
+            0
+        ),
         departmentCode: cleanString(data.departmentCode ?? data.DepartmentCode),
         departmentName: cleanString(data.departmentName ?? data.DepartmentName),
         departmentNameLocal: cleanString(data.departmentNameLocal ?? data.DepartmentNameLocal),

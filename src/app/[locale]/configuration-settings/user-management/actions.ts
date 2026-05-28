@@ -35,7 +35,8 @@ export const getUserRolesAction = async () => performAction(() => getRoles(), fa
 
 export const getRoleByIdAction = async (id: string) => performAction(() => getRoleById(id), false);
 
-export const getDepartmentsAction = async () => performAction(() => getDepartments(), false);
+export const getDepartmentsAction = async () =>
+  performAction(() => getDepartments({ isActive: true }), false);
 
 export const getModulesAction = async () => performAction(() => getModules(), false);
 

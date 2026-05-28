@@ -12,10 +12,12 @@ import { Button } from "@/components/common/ActionButton";
 import { getDepartmentIcon } from "@/config/home-services.config";
 
 /**
- * Gets the icon component for a department name
+ * Gets the icon component for a department ID or name
  */
-const getIcon = (departmentName: string) => {
-    const { icon: IconComponent, className } = getDepartmentIcon(departmentName);
+const getIcon = (iconKey: string) => {
+    const parsedId = Number(iconKey);
+    const lookupKey = Number.isNaN(parsedId) ? iconKey : parsedId;
+    const { icon: IconComponent, className } = getDepartmentIcon(lookupKey);
     return <IconComponent className={className} aria-hidden="true" />;
 };
 

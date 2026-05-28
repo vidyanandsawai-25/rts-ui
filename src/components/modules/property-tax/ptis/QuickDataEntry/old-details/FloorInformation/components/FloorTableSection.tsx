@@ -5,6 +5,7 @@ import { DeleteButton, EditButton, MasterTable, useConfirm } from "@/components/
 import type { FloorTableRow } from "@/types/OldDetails/property-old-details.types";
 import { getFloorInformationColumns } from "../FloorInformationColumns";
 import { FloorTableSectionProps } from "@/types/OldDetails/property-old-floor-info.types";
+import { formatNumberPair } from "@/lib/utils/format";
 
 /**
  * FloorTableSection Component
@@ -42,22 +43,33 @@ export function FloorTableSection({
     use: f.typeOfUseDescription,
     subUse: f.subTypeOfUseDescription,
     carpetAreaSqFt: f.oldCarpetAreaSqFeet,
-    builtupAreaSqFt: f.oldBuiltupAreaSqFeet || '',
+    carpetAreaSqM: f.oldCarpetAreaSqMeter,
+    carpetAreaCombined: formatNumberPair(
+      f.oldCarpetAreaSqFeet != null ? Number(f.oldCarpetAreaSqFeet) : null,
+      f.oldCarpetAreaSqMeter != null ? Number(f.oldCarpetAreaSqMeter) : null
+    ),
+    builtupAreaCombined: formatNumberPair(
+      f.oldBuiltupAreaSqFeet != null ? Number(f.oldBuiltupAreaSqFeet) : null,
+      f.oldBuiltupAreaSqMeter != null ? Number(f.oldBuiltupAreaSqMeter) : null
+    ),
   }));
 
+
+
   return (
-    <div className="border border-blue-100 rounded-xl overflow-hidden bg-gray-50/30 mb-10">
+    <div className="rounded-lg overflow-x-auto bg-white shadow-sm mb-6 border border-blue-200 [&_th:last-child]:text-white! [&_th:last-child]:text-xs [&_th:last-child]:border-l [&_th:last-child]:border-white/30">
       <MasterTable
         columns={getFloorInformationColumns(t)}
         data={transformedData}
         totalCount={existingFloorDetails.length}
         getRowKey={(row: FloorTableRow) => String(row.id || "")}
-        maxBodyHeightClassName="max-h-[400px]"
-        theadClassName="bg-blue-50 text-blue-900 border-b border-blue-100"
+        maxBodyHeightClassName="max-h-[350px]"
+        theadClassName="sticky top-0 z-20 bg-[#2D3E8A] text-white border-b border-blue-300"
         rowClassName={() => "hover:bg-blue-50/50 transition-colors"}
-        actionLabel={t('floor.actions')}
+        tableClassName="min-w-max"
+        actionLabel={t('floor.actions').toUpperCase()}
         renderActions={useCallback((row: FloorTableRow) => (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 whitespace-nowrap ">
             <EditButton onClick={() => onEdit(row.originalRow)} />
             <DeleteButton onClick={() => handleDeleteClick(row)} />
           </div>

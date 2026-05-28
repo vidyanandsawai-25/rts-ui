@@ -55,7 +55,7 @@ export function usePaymentModeForm({
         }
 
         if (name === "paymentModeName") {
-            newValue = newValue.replace(/[^a-zA-Z\s]/g, "");
+            newValue = newValue.replace(/[^a-zA-Z\s\u0900-\u097F]/g, "");
             if (newValue.length > NAME_MAX) return;
         }
 

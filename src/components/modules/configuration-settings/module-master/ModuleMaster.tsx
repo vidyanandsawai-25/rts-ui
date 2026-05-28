@@ -105,14 +105,14 @@ export function ModuleMaster({
     [handleRowEdit, handleRowDelete, canEdit, canDelete, haveFullAccess]
   );
 
-  if (!canView && !haveFullAccess) {
-    const isUnauthorized =
-      statusCode === 401 ||
-      (fetchError &&
-        (fetchError.toLowerCase().includes('unauthorized') ||
-          fetchError.toLowerCase().includes('token') ||
-          fetchError === 'messages.unauthorizedToken'));
+  const isUnauthorized =
+    statusCode === 401 ||
+    (fetchError &&
+      (fetchError.toLowerCase().includes('unauthorized') ||
+        fetchError.toLowerCase().includes('token') ||
+        fetchError === 'messages.unauthorizedToken'));
 
+  if (isUnauthorized || (!canView && !haveFullAccess)) {
     const messageKey = isUnauthorized ? 'errors.unauthorized' : 'errors.noAccess';
 
     return (

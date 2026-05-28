@@ -69,7 +69,7 @@ describe('useTaxDetailsTable Hook', () => {
 
       expect(netTaxesRow['General Tax']).toBe('5000');
       expect(netTaxesRow['Water Tax']).toBe('1500');
-      expect(netTaxesRow.totalTax).toBe('6500.00');
+      expect(netTaxesRow.totalTax).toBe('6500');
     });
 
     it('should handle multiple policies and map them to their respective rows', () => {
@@ -91,12 +91,12 @@ describe('useTaxDetailsTable Hook', () => {
 
       const { result } = renderHook(() => useTaxDetailsTable(multiPolicyData));
 
-      expect(result.current.taxRows[0].totalTax).toBe('100.00'); // Row 1: Net Taxes
-      expect(result.current.taxRows[2].totalTax).toBe('200.00'); // Row 3: Hearing
+      expect(result.current.taxRows[0].totalTax).toBe('100'); // Row 1: Net Taxes
+      expect(result.current.taxRows[2].totalTax).toBe('200'); // Row 3: Hearing
       expect(result.current.taxRows[1].totalTax).toBe('0.00'); // Row 2: Retain (Empty)
     });
 
-    it('should calculate row total even if policy.taxTotal is different from sum of taxAmounts', () => {
+    it('should use the API-provided taxTotal directly instead of manual calculation', () => {
       const data: TaxDetailsData = {
         propertyId: 1,
         policies: [
@@ -106,13 +106,13 @@ describe('useTaxDetailsTable Hook', () => {
               { taxName: 'T1', taxAmount: 10.5 },
               { taxName: 'T2', taxAmount: 20.25 },
             ],
-            taxTotal: 100, // Should be ignored in favor of calculation
+            taxTotal: 100, // Should be used directly
           },
         ],
       };
 
       const { result } = renderHook(() => useTaxDetailsTable(data));
-      expect(result.current.taxRows[0].totalTax).toBe('30.75');
+      expect(result.current.taxRows[0].totalTax).toBe('100');
     });
   });
 
