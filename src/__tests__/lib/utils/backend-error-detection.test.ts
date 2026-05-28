@@ -3,6 +3,7 @@ import {
   isBackendErrorMessage,
   isDuplicateError,
   getErrorStatusCode,
+  translateBackendMessage,
 } from '@/lib/utils/backend-error-detection';
 
 describe('backend-error-detection', () => {
@@ -75,6 +76,55 @@ describe('backend-error-detection', () => {
       expect(getErrorStatusCode(null)).toBe(500);
       expect(getErrorStatusCode(undefined)).toBe(500);
       expect(getErrorStatusCode('')).toBe(500);
+    });
+  });
+
+  describe('translateBackendMessage', () => {
+    const mockTCommon = (key: string) => `translated.${key}`;
+
+    it('should translate unexpected response messages', () => {
+      expect(translateBackendMessage('An unexpected response was received from the server.', mockTCommon))
+        .toBe('translated.errors.generic');
+      expect(translateBackendMessage('Unexpected response', mockTCommon))
+        .toBe('translated.errors.generic');
+    });
+
+    it('should translate network and timeout messages', () => {
+      expect(translateBackendMessage('Network error occurred', mockTCommon))
+        .toBe('translated.errors.network');
+      expect(translateBackendMessage('Failed to fetch data', mockTCommon))
+        .toBe('translated.errors.network');
+    });
+
+    it('should translate auth errors', () => {
+      expect(translateBackendMessage('Unauthorized: Please login', mockTCommon))
+        .toBe('translated.errors.unauthorized');
+      expect(translateBackendMessage('Forbidden: Access denied', mockTCommon))
+        .toBe('translated.errors.noAccess');
+    });
+
+    it('should translate other generic server errors', () => {
+      expect(translateBackendMessage('Internal server error', mockTCommon))
+        .toBe('translated.errors.serverError');
+      expect(translateBackendMessage('Save failed', mockTCommon))
+        .toBe('translated.errors.saveFailed');
+      expect(translateBackendMessage('Operation failed', mockTCommon))
+        .toBe('translated.errors.operationFailed');
+    });
+
+    it('should translate success messages', () => {
+      expect(translateBackendMessage('Saved successfully', mockTCommon))
+        .toBe('translated.messages.success');
+      expect(translateBackendMessage('Operation successful', mockTCommon))
+        .toBe('translated.messages.success');
+    });
+
+    it('should return original message if no match found', () => {
+      expect(translateBackendMessage('Some custom business error message', mockTCommon))
+        .toBe('Some custom business error message');
+      expect(translateBackendMessage('', mockTCommon)).toBe('');
+      expect(translateBackendMessage(null, mockTCommon)).toBe('');
+      expect(translateBackendMessage(undefined, mockTCommon)).toBe('');
     });
   });
 });

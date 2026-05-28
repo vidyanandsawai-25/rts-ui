@@ -2,6 +2,7 @@ import { apiClient } from "@/services/api.service";
 import { PropertyTypeCategory } from "@/types/property-type-category.types";
 import { PagedResponse } from "@/types/common.types";
 import { ApiError } from "@/lib/utils/api";
+import { categoryCacheOptions } from "./property-search/cache-options";
 
 /**
  * Fetches all active property type categories from the API
@@ -13,7 +14,10 @@ export async function getPropertyTypeCategories(): Promise<PropertyTypeCategory[
     const qs = new URLSearchParams();
     qs.set("PageNumber", "1");
     qs.set("PageSize", "-1");
-    const response = await apiClient.get<PagedResponse<PropertyTypeCategory>>(`/PropertyTypeCategory?${qs.toString()}`);
+    const response = await apiClient.get<PagedResponse<PropertyTypeCategory>>(
+      `/PropertyTypeCategory?${qs.toString()}`,
+      categoryCacheOptions
+    );
 
     if (!response.success) {
       throw new ApiError(

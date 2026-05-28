@@ -1,2 +1,2 @@
-export { default as PropertySearch } from './PropertySearch';
+export { default as PropertySearch } from './search-property';
 export { default as PropertyDetails } from './PropertyDetails';

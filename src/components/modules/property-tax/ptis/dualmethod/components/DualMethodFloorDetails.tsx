@@ -22,9 +22,9 @@ export const DualMethodFloorDetails: React.FC<Props> = ({
   return (
     <div className="space-y-3 mt-2">
       <div className={PTIS_UI_CLASSES.sectionCard}>
-        <div className="bg-blue-100 p-3">
-          <h3 className={PTIS_UI_CLASSES.sectionHeader + ' text-blue-900'}>
-            <span className="w-1.5 h-1.5 bg-blue-900 rounded-full" />
+        <div className="bg-gradient-to-r from-indigo-500 to-purple-500 py-1 px-2 rounded-t-md">
+          <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-white py-1">
+            <span className="w-1.5 h-1.5 bg-white rounded-full" />
             {t('rateableMethod')}
           </h3>
         </div>
@@ -32,9 +32,9 @@ export const DualMethodFloorDetails: React.FC<Props> = ({
       </div>
 
       <div className={PTIS_UI_CLASSES.sectionCard}>
-        <div className="bg-pink-100 p-3">
-          <h3 className={PTIS_UI_CLASSES.sectionHeader + ' text-pink-900'}>
-            <span className="w-1.5 h-1.5 bg-pink-900 rounded-full" />
+        <div className="bg-gradient-to-r from-indigo-500 to-purple-500 py-1 px-2 rounded-t-md">
+          <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-white py-1">
+            <span className="w-1.5 h-1.5 bg-white rounded-full" />
             {t('capitalMethod')}
           </h3>
         </div>

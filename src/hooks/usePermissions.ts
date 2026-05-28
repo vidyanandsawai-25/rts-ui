@@ -33,15 +33,6 @@ export function usePermissions(screenCode: string): ScreenPermissions {
       return DEFAULT_NO_ACCESS;
     }
 
-    console.log("DEBUG [usePermissions] matching screenCode:", screenCode, "Screens List:", screens.map(s => ({
-      code: s.screenCode,
-      name: s.screenName,
-      path: s.routePath,
-      canView: s.canView,
-      haveFullAccess: s.haveFullAccess,
-      haveNoAccess: s.haveNoAccess
-    })));
-
     const screenAccess = screens.find((s) => {
       const query = screenCode.toUpperCase();
       return (
@@ -53,7 +44,6 @@ export function usePermissions(screenCode: string): ScreenPermissions {
     });
 
     if (!screenAccess || screenAccess.haveNoAccess) {
-      console.log("DEBUG [usePermissions] match not found or haveNoAccess true for:", screenCode);
       return DEFAULT_NO_ACCESS;
     }
 
