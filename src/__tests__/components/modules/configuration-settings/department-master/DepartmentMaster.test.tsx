@@ -6,6 +6,18 @@ import { DepartmentMaster } from '@/components/modules/configuration-settings/de
 import { nextNavMocks, mockConfirm, mockToastSuccess } from './test-setup';
 import * as deptActions from '@/app/[locale]/configuration-settings/department-master/action';
 
+const mockPermissions = {
+  canView: true,
+  canEdit: true,
+  canDelete: true,
+  haveFullAccess: true,
+  hasAccess: true,
+};
+
+vi.mock('@/hooks/usePermissions', () => ({
+  usePermissions: () => mockPermissions,
+}));
+
 const mockDepartments = [
   {
     departmentId: 1,
@@ -13,7 +25,6 @@ const mockDepartments = [
     departmentName: 'IT Department',
     departmentNameLocal: 'आईटी विभाग',
     departmentDescription: 'Information Technology',
-    departmentIcon: 'it-icon',
     isActive: true,
   },
   {
@@ -22,7 +33,6 @@ const mockDepartments = [
     departmentName: 'HR Department',
     departmentNameLocal: 'एचआर विभाग',
     departmentDescription: 'Human Resources',
-    departmentIcon: 'hr-icon',
     isActive: false,
   },
 ];

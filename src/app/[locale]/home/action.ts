@@ -6,6 +6,7 @@ import { Service } from "@/types/home/home.types";
 import { getDepartmentConfig, getDepartmentRoute } from "@/config/home-services.config";
 import { getUserIdFromCookies } from "@/lib/utils/cookie";
 import type { UserDepartment, UserProfileDisplayValues } from "@/types/home/user-profile.types";
+import { departmentActivationService } from "@/lib/api/configuration-settings/department-activation/departmentActivation.service";
 
 /**
  * Response type for listServices
@@ -22,19 +23,21 @@ function mapDepartmentToService(
     department: UserDepartment,
     locale: string
 ): Service | null {
-    const config = getDepartmentConfig(department.departmentName);
+    const config = getDepartmentConfig(department.departmentId) || getDepartmentConfig(department.departmentName);
     
     if (!config) {
         return null;
     }
+
+    const lookupKey = config.id ?? department.departmentName;
 
     return {
         id: department.departmentId,
         name: department.departmentName,
         title: department.departmentName,
         subtext: `Access ${department.departmentName} services`,
-        icon: department.departmentName,
-        link: getDepartmentRoute(department.departmentName, locale),
+        icon: lookupKey.toString(),
+        link: getDepartmentRoute(lookupKey, locale),
     };
 }
 
@@ -51,14 +54,35 @@ export async function listServices(locale: string): Promise<ListServicesResponse
             return { services: [], error: "User not authenticated" };
         }
         
-        const response = await getUserProfileCached(userId);
+        // Fetch both user profile and globally active departments list in parallel
+        const [profileResponse, departmentsResponse] = await Promise.all([
+            getUserProfileCached(userId),
+            departmentActivationService.getDepartments(1, 1000).catch(() => ({ success: false, data: [] }))
+        ]);
         
-        if (!response.success || !response.data) {
-            return { services: [], error: response.error || "Failed to load user profile" };
+        if (!profileResponse.success || !profileResponse.data) {
+            return { services: [], error: profileResponse.error || "Failed to load user profile" };
         }
         
-        // Get active departments only
-        const activeDepartments = response.data.departments?.filter(d => d.isActive) ?? [];
+        // Map globally active department IDs to a set for quick lookup
+        const activeDeptIds = new Set<number>();
+        let hasGlobalDepartments = false;
+        
+        if (departmentsResponse.success && departmentsResponse.data && departmentsResponse.data.length > 0) {
+            hasGlobalDepartments = true;
+            departmentsResponse.data.forEach(dept => {
+                if (dept.isActive) {
+                    activeDeptIds.add(dept.departmentId);
+                }
+            });
+        }
+        
+        // Get active departments only: active user allocation AND globally active department
+        const activeDepartments = profileResponse.data.departments?.filter(d => {
+            const isUserAllocationActive = d.isActive;
+            const isGlobalDeptActive = !hasGlobalDepartments || activeDeptIds.has(d.departmentId);
+            return isUserAllocationActive && isGlobalDeptActive;
+        }) ?? [];
         
         if (activeDepartments.length === 0) {
             return { services: [] };

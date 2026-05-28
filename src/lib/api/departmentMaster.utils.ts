@@ -15,7 +15,6 @@ export function normalizeDepartmentMaster(data: unknown): DepartmentMaster {
     departmentCode: String(item.departmentCode ?? item.DepartmentCode ?? ''),
     departmentName: String(item.departmentName ?? item.DepartmentName ?? ''),
     departmentNameLocal: String(item.departmentNameLocal ?? item.DepartmentNameLocal ?? ''),
-    departmentIcon: String(item.departmentIcon ?? item.DepartmentIcon ?? ''),
     departmentDescription: String(
       item.departmentDescription ?? item.DepartmentDescription ?? ''
     ),
@@ -45,7 +44,7 @@ export function buildDepartmentPayload(data: DepartmentMasterFormModel) {
     departmentCode: data.departmentCode,
     departmentName: data.departmentName,
     departmentNameLocal: data.departmentNameLocal,
-    departmentIcon: data.departmentIcon,
+    departmentIcon: "",
     departmentDescription: data.departmentDescription,
     isActive: data.isActive,
   };

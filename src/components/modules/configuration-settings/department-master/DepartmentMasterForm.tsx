@@ -123,20 +123,7 @@ export default function DepartmentMasterForm({
                         visible={showError("departmentNameLocal")}
                     />
 
-                    <Input
-                        name="departmentIcon"
-                        label={t('form.fields.departmentIcon')}
-                        placeholder={t('form.fields.departmentIconPlaceholder')}
-                        value={formData.departmentIcon}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        disabled={isSubmitting}
-                        fullWidth
-                    />
-                    <ValidationMessage
-                        message={errors.departmentIcon}
-                        visible={showError("departmentIcon")}
-                    />
+
 
                     <div className="w-full flex flex-col items-stretch">
                         <Label htmlFor="departmentDescription" className="mb-1.5 justify-start text-left">

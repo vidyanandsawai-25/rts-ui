@@ -29,7 +29,6 @@ export function useDepartmentForm({ initialOpen = true, editingDepartment, onSuc
     departmentCode: "",
     departmentName: "",
     departmentNameLocal: "",
-    departmentIcon: "",
     departmentDescription: "",
     isActive: true,
   });
@@ -44,7 +43,6 @@ export function useDepartmentForm({ initialOpen = true, editingDepartment, onSuc
         departmentCode: editingDepartment.departmentCode || "",
         departmentName: editingDepartment.departmentName || "",
         departmentNameLocal: editingDepartment.departmentNameLocal || "",
-        departmentIcon: editingDepartment.departmentIcon || "",
         departmentDescription: editingDepartment.departmentDescription || "",
         isActive: editingDepartment.isActive,
       });
@@ -53,7 +51,6 @@ export function useDepartmentForm({ initialOpen = true, editingDepartment, onSuc
         departmentCode: "",
         departmentName: "",
         departmentNameLocal: "",
-        departmentIcon: "",
         departmentDescription: "",
         isActive: true,
       });
@@ -111,15 +108,7 @@ export function useDepartmentForm({ initialOpen = true, editingDepartment, onSuc
       }
     }
 
-    // ---------------- Icon Class Validation ----------------
-    const icon = data.departmentIcon?.trim() || "";
-    if (icon) {
-      if (icon.length > 100) {
-        newErrors.departmentIcon = tCommon("validation.maxLength", { count: 100 });
-      } else if (!/^[a-zA-Z0-9\s_-]+$/.test(icon)) {
-        newErrors.departmentIcon = "Icon Class can only contain letters, numbers, spaces, hyphens, and underscores";
-      }
-    }
+
 
     // ---------------- Description Validation ----------------
     const desc = data.departmentDescription?.trim() || "";
@@ -183,7 +172,7 @@ export function useDepartmentForm({ initialOpen = true, editingDepartment, onSuc
       payload.append("departmentCode", formData.departmentCode);
       payload.append("departmentName", formData.departmentName);
       payload.append("departmentNameLocal", formData.departmentNameLocal || "");
-      payload.append("departmentIcon", formData.departmentIcon || "");
+      payload.append("departmentIcon", "");
       payload.append("departmentDescription", formData.departmentDescription || "");
       payload.append("isActive", String(formData.isActive));
 

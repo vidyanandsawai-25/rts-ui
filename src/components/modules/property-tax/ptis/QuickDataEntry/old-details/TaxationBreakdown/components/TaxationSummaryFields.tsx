@@ -12,7 +12,8 @@ import { TaxationSummaryFieldsProps } from "@/types/OldDetails/property-old-floo
 export function TaxationSummaryFields({
   t,
   taxTotal,
-  netTotal
+  netTotal,
+  validationErrors
 }: TaxationSummaryFieldsProps) {
   return (
     <>
@@ -26,8 +27,13 @@ export function TaxationSummaryFields({
           type="number"
           value={taxTotal === 0 ? "" : taxTotal}
           placeholder={t("aggregateTaxSum")}
-          className="h-11.5 border-[#cbd5e1] bg-gray-50 cursor-not-allowed hover:border-blue-300 focus:border-blue-400 focus:ring-4 focus:ring-blue-50 rounded-lg transition-all font-medium text-gray-900 px-4"
+          className={`h-11.5 bg-gray-50 cursor-not-allowed hover:border-blue-300 focus:border-blue-400 focus:ring-4 focus:ring-blue-50 rounded-lg transition-all font-medium text-gray-900 px-4 ${
+            validationErrors.taxTotal ? 'border-red-500' : 'border-[#cbd5e1]'
+          }`}
         />
+        {validationErrors.taxTotal && (
+          <span className="text-xs text-red-500 ml-1">{validationErrors.taxTotal}</span>
+        )}
       </div>
 
       {/* Net Payable Total */}
@@ -40,8 +46,13 @@ export function TaxationSummaryFields({
           type="number"
           value={netTotal === 0 ? "" : netTotal}
           placeholder={t("netPayableTotal")}
-          className="h-11.5 border-[#cbd5e1] bg-gray-50 cursor-not-allowed hover:border-blue-300 focus:border-blue-400 focus:ring-4 focus:ring-blue-50 rounded-lg transition-all font-medium text-gray-900 px-4"
+          className={`h-11.5 bg-gray-50 cursor-not-allowed hover:border-blue-300 focus:border-blue-400 focus:ring-4 focus:ring-blue-50 rounded-lg transition-all font-medium text-gray-900 px-4 ${
+            validationErrors.netTotal ? 'border-red-500' : 'border-[#cbd5e1]'
+          }`}
         />
+        {validationErrors.netTotal && (
+          <span className="text-xs text-red-500 ml-1">{validationErrors.netTotal}</span>
+        )}
       </div>
     </>
   );

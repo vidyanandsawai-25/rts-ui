@@ -59,7 +59,7 @@ export async function createDepartmentMaster(data: DepartmentMasterFormModel, us
         departmentCode: data.departmentCode,
         departmentName: data.departmentName,
         departmentNameLocal: data.departmentNameLocal,
-        departmentIcon: data.departmentIcon,
+        departmentIcon: "",
         departmentDescription: data.departmentDescription,
         isActive: data.isActive,
         createdBy: userId
@@ -80,7 +80,7 @@ export async function updateDepartmentMaster(data: DepartmentMasterFormModel, us
         departmentCode: data.departmentCode,
         departmentName: data.departmentName,
         departmentNameLocal: data.departmentNameLocal,
-        departmentIcon: data.departmentIcon,
+        departmentIcon: "",
         departmentDescription: data.departmentDescription,
         isActive: data.isActive,
         updatedBy: userId
