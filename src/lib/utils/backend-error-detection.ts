@@ -129,3 +129,56 @@ export function getCleanErrorMessage(
 
   return strErr;
 }
+
+/**
+ * Translates a backend error/success/warning message using standard common translation keys.
+ * If no translation mapping is found, it returns the original message.
+ */
+export function translateBackendMessage(
+  message: string | undefined | null,
+  tCommon: (key: string) => string
+): string {
+  if (!message) return '';
+
+  const lowerMsg = message.toLowerCase();
+
+  // Map common backend messages to common.json translations
+  if (lowerMsg.includes('unexpected response was received') || lowerMsg.includes('unexpected response')) {
+    return tCommon('errors.generic');
+  }
+  if (lowerMsg.includes('network error') || lowerMsg.includes('failed to fetch')) {
+    return tCommon('errors.network');
+  }
+  if (lowerMsg.includes('unauthorized') || lowerMsg.includes('unauthorized: please login')) {
+    return tCommon('errors.unauthorized');
+  }
+  if (lowerMsg.includes('forbidden') || lowerMsg.includes('access denied')) {
+    return tCommon('errors.noAccess');
+  }
+  if (lowerMsg.includes('not found')) {
+    return tCommon('errors.notFound');
+  }
+  if (lowerMsg.includes('server error') || lowerMsg.includes('internal server error')) {
+    return tCommon('errors.serverError');
+  }
+  if (lowerMsg.includes('validation failed') || lowerMsg.includes('validation error')) {
+    return tCommon('errors.validationError');
+  }
+  if (lowerMsg.includes('save failed') || lowerMsg.includes('failed to save')) {
+    return tCommon('errors.saveFailed');
+  }
+  if (lowerMsg.includes('failed to delete') || lowerMsg.includes('delete failed')) {
+    return tCommon('errors.deleteError');
+  }
+  if (lowerMsg.includes('failed to update') || lowerMsg.includes('update failed')) {
+    return tCommon('errors.updateError');
+  }
+  if (lowerMsg.includes('operation failed')) {
+    return tCommon('errors.operationFailed');
+  }
+  if (lowerMsg.includes('success') || lowerMsg.includes('saved successfully') || lowerMsg.includes('updated successfully') || lowerMsg.includes('deleted successfully')) {
+    return tCommon('messages.success');
+  }
+
+  return message;
+}
