@@ -2,7 +2,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { CombinePropertyReviewSection } from '@/components/modules/property-tax/ptis/combineproperty/CombinePropertyReviewSection';
 
-import { PropertyCombineDetails } from '@/types/combine-property.types';
+import { PropertyRow } from '@/components/modules/property-tax/ptis/combineproperty/combinePropertyColumns';
 
 vi.mock('@/components/common/MasterTable', () => ({
   MasterTable: ({ data }: { data?: unknown[] }) => (
@@ -41,7 +41,7 @@ describe('CombinePropertyReviewSection', () => {
       isReviewing={true} 
       selectedBasePropertyId="1"
       reviewDataLength={1} 
-      reviewData={[{ propertyId: 1 }] as unknown as PropertyCombineDetails[]} 
+      reviewData={[{ propertyId: 1 }] as unknown as PropertyRow[]} 
     />);
     expect(screen.getByTestId('master-table')).toBeDefined();
     expect(screen.getByText('reviewCombination')).toBeDefined();
