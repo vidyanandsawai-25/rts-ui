@@ -50,11 +50,13 @@ export interface ModuleMasterData {
   moduleName: string;
   departmentId?: number;
   departmentMasterId?: number;
+  isActive?: boolean;
 }
 
 export interface ScreenGroupMasterData {
   screenGroupId: number;
   screenGroupName: string;
+  screenGroupLocalName?: string;
   screenGroupCode: string;
   screenGroupIcon: string;
   displayOrder: number;

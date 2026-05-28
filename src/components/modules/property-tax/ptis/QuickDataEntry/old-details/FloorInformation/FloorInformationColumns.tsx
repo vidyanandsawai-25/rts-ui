@@ -1,5 +1,5 @@
 
-import { FloorTableRow } from "@/types/property-old-details.types";
+import { FloorTableRow } from "@/types/OldDetails/property-old-details.types";
 import { Column } from "@/components/common/MasterTable";
 
 /**
@@ -11,40 +11,49 @@ import { Column } from "@/components/common/MasterTable";
 export const getFloorInformationColumns = (t: (key: string) => string): Column<FloorTableRow>[] => [
   {
     key: 'floor',
-    label: t('floor.floorLabel')
+    label: t('floor.floorLabel'),
+    headerClassName: 'text-xs uppercase border-r border-white/30 font-semibold text-white text-center',
   },
   {
     key: 'subFloor',
-    label: t('floor.subFloor')
+    label: t('floor.subFloor'),
+    headerClassName: 'text-xs uppercase border-r border-white/30 font-semibold text-white text-center',
   },
   {
     key: 'conYr',
-    label: t('floor.conYr')
+    label: t('floor.conYr'),
+    headerClassName: 'text-xs uppercase border-r border-white/30 font-semibold text-white text-center',
   },
   {
     key: 'assessmentYr',
-    label: t('floor.assessmentYr')
+    label: t('floor.asstYr'),
+    headerClassName: 'text-xs uppercase border-r border-white/30 font-semibold text-white text-center',
   },
   {
     key: 'conTyp',
-    label: t('floor.conTyp')
+    label: t('floor.conTyp'),
+    headerClassName: 'text-xs uppercase border-r border-white/30 font-semibold text-white text-center',
   },
   {
     key: 'use',
-    label: t('floor.use')
+    label: t('floor.use'),
+    headerClassName: 'text-xs uppercase border-r border-white/30 font-semibold text-white text-center',
   },
   {
     key: 'subUse',
-    label: t('floor.subTyp')
+    label: t('floor.subTyp'),
+    headerClassName: 'text-xs uppercase border-r border-white/30 font-semibold text-white text-center',
   },
   {
-    key: 'carpetAreaSqFt',
-    label: t('floor.carpetArea'),
-    render: (value: unknown) => <span className="font-bold text-blue-700">{String(value)}</span>
+    key: 'carpetAreaCombined',
+    label: t('oldDetails.carpetformheaderArea'),
+    headerClassName: 'text-xs uppercase border-r border-white/30 font-semibold text-white text-center',
+    render: (value: unknown) => <span className="font-bold text-blue-800 flex w-full justify-center items-center">{String(value)}</span>
   },
   {
-    key: 'builtupAreaSqFt',
-    label: t('floor.builtupArea'),
-    render: (value: unknown) => <span className="font-bold text-blue-700">{String(value)}</span>
+    key: 'builtupAreaCombined',
+    label: t('oldDetails.builtupformheaderArea'),
+    headerClassName: 'text-xs uppercase border-r border-white/30 font-semibold text-white text-center',
+    render: (value: unknown) => <span className="font-bold text-blue-800 flex w-full justify-center items-center">{String(value)}</span>
   },
 ];

@@ -55,7 +55,7 @@ export function usePaymentModeForm({
         }
 
         if (name === "paymentModeName") {
-            newValue = newValue.replace(/[^a-zA-Z\s]/g, "");
+            newValue = newValue.replace(/[^a-zA-Z\s\u0900-\u097F]/g, "");
             if (newValue.length > NAME_MAX) return;
         }
 
@@ -117,6 +117,22 @@ export function usePaymentModeForm({
 
             if (result.success) {
                 toast.success(t(result.messageKey || 'toast.createSuccess'));
+                if (!isEdit) {
+                    setFormData({
+                        code: "",
+                        paymentModeName: "",
+                        type: "Online",
+                        category: "Cash",
+                        description: "",
+                        chargeType: "None",
+                        transactionCharge: 0,
+                        isActive: true,
+                    });
+                    setErrors({});
+                    setTouched({});
+                    setSubmittedOnce(false);
+                    setIsActive(true);
+                }
                 onSuccess();
                 onClose();
             } else {

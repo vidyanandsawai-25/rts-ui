@@ -112,4 +112,49 @@ describe('useTaxationBreakdownForm', () => {
     expect(toast.success).toHaveBeenCalled();
     expect(mockRefresh).toHaveBeenCalled();
   });
+
+  it('should block save when taxes data is empty', async () => {
+    const emptyTaxesData = {
+      propertyId: 123,
+      taxYears: [
+        {
+          financeYearId: 1,
+          year: 2024,
+          yearCode: '2024-25',
+          rVorCV: 'RV',
+          rVorCVValue: 1000,
+          taxes: [], // empty taxes
+          taxTotal: 0,
+          interest: 50,
+          netTotal: 50,
+        },
+      ],
+    };
+    const { result } = renderHook(() => useTaxationBreakdownForm(emptyTaxesData));
+
+    await act(async () => {
+      result.current.handleSave();
+    });
+
+    expect(toast.error).toHaveBeenCalledWith('noTaxDataAvailable');
+    expect(mockConfirm).not.toHaveBeenCalled();
+  });
+
+  it('should block save when there are validation errors', async () => {
+    const { result } = renderHook(() => useTaxationBreakdownForm(mockInitialData));
+
+    act(() => {
+      // Trigger a validation error, e.g., negative taxAmount
+      result.current.handleTaxChange(1, '-50');
+    });
+
+    expect(result.current.validationErrors[`tax_1`]).toBeDefined();
+
+    await act(async () => {
+      result.current.handleSave();
+    });
+
+    expect(toast.error).toHaveBeenCalledWith('property.validation.fixErrors');
+    expect(mockConfirm).not.toHaveBeenCalled();
+  });
 });

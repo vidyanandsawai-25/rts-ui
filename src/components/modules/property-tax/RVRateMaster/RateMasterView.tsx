@@ -93,7 +93,7 @@ export default function RateMasterView({
   };
 
   const handleDownloadRates = async () => {
-    await downloadDetailedRates(selectedZone, zones, t);
+    await downloadDetailedRates(selectedZone, zones, t, rateCategories);
   };
   const filteredData = useMemo(() =>
     filterTableData(rateMasterData, selectedZone, selectedYear, selectedUseGroup, isPaginationEnabled),

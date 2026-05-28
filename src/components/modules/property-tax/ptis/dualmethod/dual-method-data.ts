@@ -1,18 +1,9 @@
 import { getDualMethod } from '@/app/[locale]/property-tax/ptis/DualMethod.action';
-import { getRateableValue } from '@/app/[locale]/property-tax/ptis/RateableValue.action';
-import { getCapitalValue } from '@/app/[locale]/property-tax/ptis/CapitalValue.action';
-import { collectDualMethodErrors } from '@/lib/utils/ptis';
-import {
-  calculateCapitalTotal,
-  calculateRateableTotal,
-  getMethodTaxTotal,
-  getOldRvTotal,
-  getOldTaxTotal,
-} from '@/lib/utils/ptis-calculations';
 import type { OldDetailsData } from '@/types/ptis.types';
 import type { DualMethodResponse } from '@/types/dualMethod.types';
 import type { RateableValueResponse } from '@/types/rateableValue.types';
 import type { CapitalValueResponse } from '@/types/capitalValue.types';
+import type { ActionResult } from '@/types/common.types';
 import { getPtisUserSafeErrorMessage } from '@/components/modules/property-tax/ptis/shared/valuation-fetch';
 
 const DUAL_METHOD_ERROR_MESSAGES = {
@@ -20,12 +11,6 @@ const DUAL_METHOD_ERROR_MESSAGES = {
   rateable: 'Unable to load rateable valuation details.',
   capital: 'Unable to load capital valuation details.',
 } as const;
-
-function withMethodContext(method: 'Rateable' | 'Capital', error: string | undefined): string | undefined {
-  const message = error?.trim();
-  if (!message) return undefined;
-  return `${method}: ${message}`;
-}
 
 export interface DualMethodSectionData {
   initialDualMethodData: DualMethodResponse | null;
@@ -47,19 +32,14 @@ export interface DualMethodSectionData {
 
 export async function assembleDualMethodSectionData(
   propertyId: number | undefined,
-  initialOldDetails: OldDetailsData
+  initialOldDetails: OldDetailsData,
+  rateableRes?: ActionResult<RateableValueResponse> | null,
+  capitalRes?: ActionResult<CapitalValueResponse> | null
 ): Promise<DualMethodSectionData> {
   const shouldFetch = propertyId != null;
 
-  const [dualResult, rateableResult, capitalResult] = await Promise.all([
-    shouldFetch ? getDualMethod(propertyId as number) : Promise.resolve(null),
-    shouldFetch ? getRateableValue(propertyId as number) : Promise.resolve(null),
-    shouldFetch ? getCapitalValue(propertyId as number) : Promise.resolve(null),
-  ]);
-
+  const dualResult = shouldFetch ? await getDualMethod(propertyId as number) : null;
   const initialDualMethodData = dualResult?.success === true ? (dualResult.data ?? null) : null;
-  const initialRateableData = rateableResult?.success === true ? (rateableResult.data ?? null) : null;
-  const initialCapitalData = capitalResult?.success === true ? (capitalResult.data ?? null) : null;
 
   // SSR empty-state should not turn "no lookup attempted" into user-facing errors/toasts.
   const dualError =
@@ -71,59 +51,45 @@ export async function assembleDualMethodSectionData(
           DUAL_METHOD_ERROR_MESSAGES.dualMethod
         );
 
+  const initialRateableData = rateableRes?.success === true ? (rateableRes.data ?? null) : null;
+  const initialCapitalData = capitalRes?.success === true ? (capitalRes.data ?? null) : null;
+
   const rateableError =
-    !shouldFetch || rateableResult?.success === true
+    !shouldFetch || !rateableRes || rateableRes?.success === true
       ? undefined
-      : withMethodContext(
-          'Rateable',
-          getPtisUserSafeErrorMessage(
-            rateableResult?.error,
-            rateableResult?.statusCode,
-            DUAL_METHOD_ERROR_MESSAGES.rateable
-          )
+      : getPtisUserSafeErrorMessage(
+          rateableRes?.error,
+          rateableRes?.statusCode,
+          DUAL_METHOD_ERROR_MESSAGES.rateable
         );
 
   const capitalError =
-    !shouldFetch || capitalResult?.success === true
+    !shouldFetch || !capitalRes || capitalRes?.success === true
       ? undefined
-      : withMethodContext(
-          'Capital',
-          getPtisUserSafeErrorMessage(
-            capitalResult?.error,
-            capitalResult?.statusCode,
-            DUAL_METHOD_ERROR_MESSAGES.capital
-          )
+      : getPtisUserSafeErrorMessage(
+          capitalRes?.error,
+          capitalRes?.statusCode,
+          DUAL_METHOD_ERROR_MESSAGES.capital
         );
 
-  const oldRv = getOldRvTotal(initialOldDetails);
-  const oldTax = getOldTaxTotal(initialDualMethodData, initialOldDetails);
+  const oldRv = initialDualMethodData?.oldRv ?? initialDualMethodData?.oldRV ?? Number(initialOldDetails?.oldRV || 0);
+  const oldTax = initialDualMethodData?.oldTaxesTotal ?? initialDualMethodData?.oldTaxTotal ?? Number(initialOldDetails?.oldTotalTax || 0);
 
-  const { rv: aggregatedRv, tax: aggregatedRvTax } = calculateRateableTotal(initialRateableData);
-  const { cv: aggregatedCv, tax: aggregatedCvTax } = calculateCapitalTotal(initialCapitalData);
+  const aggregatedRv = initialDualMethodData?.totalRv ?? initialDualMethodData?.totalRV ?? 0;
+  const aggregatedCv = initialDualMethodData?.totalCv ?? initialDualMethodData?.totalCV ?? 0;
 
-  const rvTotalTax = getMethodTaxTotal(
-    initialDualMethodData?.rvTaxesTotal,
-    initialDualMethodData?.rvTaxes,
-    aggregatedRvTax
-  ) ?? 0;
-  const cvTotalTax = getMethodTaxTotal(
-    initialDualMethodData?.cvTaxesTotal,
-    initialDualMethodData?.cvTaxes,
-    aggregatedCvTax
-  ) ?? 0;
-  const retainTotalTax = getMethodTaxTotal(
-    initialDualMethodData?.retainTaxesTotal,
-    initialDualMethodData?.retainTaxes
-  ) ?? 0;
+  const rvTotalTax = initialDualMethodData?.rvTaxesTotal ?? initialDualMethodData?.rvTaxTotal ?? 0;
+  const cvTotalTax = initialDualMethodData?.cvTaxesTotal ?? initialDualMethodData?.cvTaxTotal ?? 0;
+  const retainTotalTax = initialDualMethodData?.retainTaxesTotal ?? initialDualMethodData?.retainTaxTotal ?? 0;
 
-  const finalErrorMessage = shouldFetch ? collectDualMethodErrors(dualError, rateableError, capitalError) : null;
+  const finalErrorMessage = shouldFetch ? dualError ?? null : null;
 
   return {
     initialDualMethodData,
     initialRateableData,
     initialCapitalData,
-    hasFetchedRateableData: shouldFetch,
-    hasFetchedCapitalData: shouldFetch,
+    hasFetchedRateableData: rateableRes != null,
+    hasFetchedCapitalData: capitalRes != null,
     rateableError,
     capitalError,
     finalErrorMessage,

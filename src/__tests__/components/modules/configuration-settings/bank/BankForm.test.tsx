@@ -75,29 +75,49 @@ describe('BankForm', () => {
     await user.click(submitButton);
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('messages.validationError');
+      expect(screen.getByText('validation.bankCodeRequired')).toBeInTheDocument();
+      expect(toast.error).not.toHaveBeenCalled();
     });
   });
 
   it('handles successful bank creation', async () => {
     render(<BankForm id={null} />);
 
-    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.bankCode'), { target: { value: 'HDFC01' } });
-    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.bankName'), { target: { value: 'HDFC Bank' } });
-    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.ifscCode'), { target: { value: 'HDFC0000001' } });
-    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.branchName'), { target: { value: 'Downtown' } });
-    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.streetAddress'), { target: { value: 'Street 1' } });
-    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.city'), { target: { value: 'Mumbai' } });
-    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.state'), { target: { value: 'Maharashtra' } });
-    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.pincode'), { target: { value: '400001' } });
+    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.bankCode'), {
+      target: { value: 'HDFC01' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.bankName'), {
+      target: { value: 'HDFC Bank' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.ifscCode'), {
+      target: { value: 'HDFC0000001' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.branchName'), {
+      target: { value: 'Downtown' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.streetAddress'), {
+      target: { value: 'Street 1' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.city'), {
+      target: { value: 'Mumbai' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.state'), {
+      target: { value: 'Maharashtra' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.pincode'), {
+      target: { value: '400001' },
+    });
 
     const submitButton = screen.getByText('drawer.buttons.save');
     await user.click(submitButton);
 
-    await waitFor(() => {
-      expect(bankActions.createBankAction).toHaveBeenCalled();
-      expect(toast.success).toHaveBeenCalledWith('messages.createSuccess');
-    }, { timeout: 10000 });
+    await waitFor(
+      () => {
+        expect(bankActions.createBankAction).toHaveBeenCalled();
+        expect(toast.success).toHaveBeenCalledWith('messages.createSuccess');
+      },
+      { timeout: 10000 }
+    );
   }, 15000);
 
   it('validates IFSC code format', async () => {
@@ -141,19 +161,79 @@ describe('BankForm', () => {
     render(<BankForm id={null} />);
 
     // Fill minimal required fields
-    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.bankCode'), { target: { value: 'FAIL01' } });
-    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.bankName'), { target: { value: 'Fail Bank' } });
-    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.ifscCode'), { target: { value: 'FAIL0000001' } });
-    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.branchName'), { target: { value: 'Branch' } });
-    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.streetAddress'), { target: { value: 'Address' } });
-    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.city'), { target: { value: 'City' } });
-    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.state'), { target: { value: 'State' } });
-    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.pincode'), { target: { value: '123456' } });
+    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.bankCode'), {
+      target: { value: 'FAIL01' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.bankName'), {
+      target: { value: 'Fail Bank' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.ifscCode'), {
+      target: { value: 'FAIL0000001' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.branchName'), {
+      target: { value: 'Branch' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.streetAddress'), {
+      target: { value: 'Address' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.city'), {
+      target: { value: 'City' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.state'), {
+      target: { value: 'State' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.pincode'), {
+      target: { value: '123456' },
+    });
+
+    await user.click(screen.getByText('drawer.buttons.save'));
+
+    await waitFor(
+      () => {
+        expect(toast.error).toHaveBeenCalledWith('messages.errorOccurred');
+      },
+      { timeout: 10000 }
+    );
+  }, 15000);
+
+  it('shows error if IFSC code already exists', async () => {
+    vi.mocked(bankActions.createBankAction).mockResolvedValue({
+      success: false,
+      error: 'validation.ifscCodeExists',
+    });
+
+    render(<BankForm id={null} />);
+
+    // Fill minimal required fields
+    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.bankCode'), {
+      target: { value: 'SBI01' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.bankName'), {
+      target: { value: 'SBI' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.ifscCode'), {
+      target: { value: 'SBIN0000001' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.branchName'), {
+      target: { value: 'Branch' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.streetAddress'), {
+      target: { value: 'Address' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.city'), {
+      target: { value: 'City' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.state'), {
+      target: { value: 'State' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('drawer.placeholders.pincode'), {
+      target: { value: '123456' },
+    });
 
     await user.click(screen.getByText('drawer.buttons.save'));
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('messages.errorOccurred');
-    }, { timeout: 10000 });
-  }, 15000);
+      expect(screen.getByText('validation.ifscCodeExists')).toBeInTheDocument();
+    });
+  });
 });

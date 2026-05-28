@@ -54,7 +54,7 @@ export function RoleForm({
           <Label>{t('table.role')} *</Label>
           <Input
             required
-            maxLength={25}
+            maxLength={30}
             value={formData.name}
             onChange={(e) => {
               const val = e.target.value.replace(/[^a-zA-Z\u0900-\u097F\s]/g, '');
@@ -63,9 +63,7 @@ export function RoleForm({
             placeholder={t('table.role')}
             className="h-10"
           />
-          {errors?.name && (
-            <ValidationMessage message={errors.name} />
-          )}
+          {errors?.name && <ValidationMessage message={errors.name} />}
         </div>
 
         {editingRole && (

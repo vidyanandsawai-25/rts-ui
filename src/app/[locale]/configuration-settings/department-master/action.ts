@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { locales } from "@/i18n/config";
 import { createDepartmentMaster, updateDepartmentMaster, deleteDepartmentMaster, getDepartmentMastersPaged, getDepartmentById } from "@/lib/api/configuration-settings/department-master/departmentMaster.service";
 import { DepartmentMasterFormModel, DepartmentMaster } from "@/types/departmentMaster.types";
@@ -46,7 +46,6 @@ export async function saveDepartmentMasterAction(
       departmentCode: formData.get("departmentCode") as string,
       departmentName: formData.get("departmentName") as string,
       departmentNameLocal: formData.get("departmentNameLocal") as string,
-      departmentIcon: formData.get("departmentIcon") as string,
       departmentDescription: formData.get("departmentDescription") as string,
       isActive: formData.get("isActive") === "true",
     };
@@ -55,7 +54,6 @@ export async function saveDepartmentMasterAction(
     const code = data.departmentCode?.trim() || "";
     const name = data.departmentName?.trim() || "";
     const nameLocal = data.departmentNameLocal?.trim() || "";
-    const icon = data.departmentIcon?.trim() || "";
     const desc = data.departmentDescription?.trim() || "";
 
     if (!code) return { success: false, error: "Department Code is required" };
@@ -75,11 +73,6 @@ export async function saveDepartmentMasterAction(
       if (!/[\p{L}]/u.test(nameLocal)) return { success: false, error: "Local Name must contain at least one letter" };
     }
 
-    if (icon) {
-      if (icon.length > 100) return { success: false, error: "Icon Class must be at most 100 characters" };
-      if (!/^[a-zA-Z0-9\s_-]+$/.test(icon)) return { success: false, error: "Icon Class can only contain letters, numbers, spaces, hyphens, and underscores" };
-    }
-
     if (desc) {
       if (desc.length > 500) return { success: false, error: "Description must be at most 500 characters" };
       if (!/[\p{L}\p{N}]/u.test(desc)) return { success: false, error: "Description must contain at least one letter or digit" };
@@ -90,6 +83,8 @@ export async function saveDepartmentMasterAction(
     } else {
       await createDepartmentMaster(data, userId);
     }
+
+    revalidateTag("user-management", "default");
 
     for (const locale of locales) {
       revalidatePath(`/${locale}/configuration-settings/department-master`, "page");
@@ -106,6 +101,7 @@ export async function deleteDepartmentAction(
 ): Promise<{ success: boolean; message?: string; error?: string }> {
   try {
     await deleteDepartmentMaster(departmentId);
+    revalidateTag("user-management", "default");
     for (const locale of locales) {
       revalidatePath(`/${locale}/configuration-settings/department-master`, "page");
     }

@@ -6,8 +6,9 @@
     "addCategory": "श्रेणी जोड़ें",
     "addConfigKey": "कॉन्फ़िगरेशन कुंजी जोड़ें",
     "addConfigValue": "मान मास्टर जोड़ें",
-    "noItemsFound": "{category} के लिए कोई आइटम नहीं मिला।",
-    "loading": "जानकारी लोड हो रही है...",
+    "noItemsFound": "{category} के लिए कोई कॉन्फ़िगरेशन आइटम नहीं मिला।",
+    "noCategoriesFound": "कोई श्रेणी नहीं मिली।",
+    "loading": "कॉन्फ़िगरेशन लोड हो रहा है...",
     "card": {
         "active": "सक्रिय",
         "total": "कुल",
@@ -280,7 +281,13 @@
         "configsEnabled": "कॉन्फ़िगरेशन सफलतापूर्वक सक्षम किया गया",
         "configsDisabled": "कॉन्फ़िगरेशन सफलतापूर्वक अक्षम किया गया",
         "noConfigurationsFound": "इस श्रेणी में कोई कॉन्फ़िगरेशन नहीं मिला",
-        "configAlreadyInDesiredState": "सभी कॉन्फ़िगरेशन पहले से ही वांछित स्थिति में हैं"
+        "configAlreadyInDesiredState": "सभी कॉन्फ़िगरेशन पहले से ही वांछित स्थिति में हैं",
+        "unauthorized": "अनधिकृत: कृपया लॉग इन करें",
+        "duplicateCode": "कोड पहले से मौजूद है। कृपया एक अद्वितीय कोड का उपयोग करें।",
+        "duplicateName": "नाम पहले से मौजूद है। कृपया एक अद्वितीय नाम का उपयोग करें।",
+        "duplicateRecord": "रिकॉर्ड पहले से मौजूद है।",
+        "recordNotFound": "अनुरोधित रिकॉर्ड नहीं मिला।",
+        "dependencyExists": "ऑपरेशन विफल रहा क्योंकि यह रिकॉर्ड अन्य सक्रिय डेटा से जुड़ा हुआ है।"
     },
     "confirm": {
         "discard": {
@@ -289,5 +296,7 @@
             "confirm": "त्यागें",
             "cancel": "रद्द करें"
         }
-    }
+    },
+    "categoriesLabel": "श्रेणियां",
+    "filterCategories": "श्रेणियां फ़िल्टर करें..."
 }

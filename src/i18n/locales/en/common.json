@@ -1,6 +1,7 @@
 {
   "buttons": {
     "save": "Save",
+    "update": "Update",
     "cancel": "Cancel",
     "delete": "Delete",
     "edit": "Edit",
@@ -26,7 +27,10 @@
     "update": "Update",
     "submit": "Submit",
     "pleaseWait": "Please wait...",
-    "logout": "Logout"
+    "logout": "Logout",
+    "search": "Search",
+    "reset": "Reset",
+    "exportExcel": "Export to Excel"
   },
   "validation": {
     "required": "This field is required",
@@ -64,6 +68,7 @@
     "generic": "Failed to connect to the server. Please try again later.",
     "network": "Network error. Please try again",
     "unauthorized": "You are not authorized",
+    "noAccess": "You have no access",
     "notFound": "Resource not found",
     "serverError": "Server error. Please try again later",
     "deleteError": "Failed to delete",

@@ -1,6 +1,6 @@
 import type { PaymentMode } from "@/types/paymentMode.types";
-import { Wallet, Smartphone, Building2, Activity } from "lucide-react";
-import { getTranslations } from "next-intl/server";
+import { Wallet, Smartphone, Building2, Activity, Layers } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Card } from "@/components/common/Card";
 import { cn } from "@/lib/utils/cn";
 
@@ -10,14 +10,17 @@ interface PaymentModeStatsCardsProps {
     locale: string;
 }
 
-export async function PaymentModeStatsCards({ totalCount, allData, locale }: PaymentModeStatsCardsProps) {
-    const t = await getTranslations({ locale, namespace: "paymentModeMaster" });
+export function PaymentModeStatsCards({ totalCount, allData }: PaymentModeStatsCardsProps) {
+    const t = useTranslations("paymentModeMaster");
 
-    const onlineCount = allData.filter((m) =>
-        ["online", "both"].includes(m.type?.toLowerCase())
+    const onlineCount = allData.filter(
+        (m) => m.type?.toLowerCase() === "online"
     ).length;
     const offlineCount = allData.filter(
         (m) => m.type?.toLowerCase() === "offline"
+    ).length;
+    const bothCount = allData.filter(
+        (m) => m.type?.toLowerCase() === "both"
     ).length;
     const activeCount = allData.filter((m) => m.isActive).length;
 
@@ -44,6 +47,13 @@ export async function PaymentModeStatsCards({ totalCount, allData, locale }: Pay
             valueColor: "text-slate-700",
         },
         {
+            label: t("stats.both"),
+            value: bothCount,
+            icon: Layers,
+            iconBg: "bg-amber-100 text-amber-600",
+            valueColor: "text-amber-700",
+        },
+        {
             label: t("stats.active"),
             value: activeCount,
             icon: Activity,
@@ -53,7 +63,7 @@ export async function PaymentModeStatsCards({ totalCount, allData, locale }: Pay
     ];
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-2 mb-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2 mb-2">
             {stats.map((stat) => (
                 <Card key={stat.label} className="border-l-4 border-l-blue-500 shadow-sm" padding="sm">
                     <div className="flex items-center justify-between pointer-events-none">

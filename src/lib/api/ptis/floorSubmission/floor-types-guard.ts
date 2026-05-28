@@ -5,8 +5,9 @@ import {
     type RoomAPIResponse,
     type ShapeParameters,
 } from '@/types/room-details.types';
-import { type OffsetAPIResponse } from '@/types/offset-details.types';
+import { type OffsetAPIResponse, type OffsetData } from '@/types/offset-details.types';
 import { parseBoolean } from "@/lib/utils/type-guards";
+import { resolveAgreementBaseMonthlyRent } from "@/lib/utils/renterUtils";
 
 
 export const mapRoomDataToUi = (room: RoomAPIResponse, index: number): RoomData => {
@@ -46,30 +47,55 @@ export const mapRoomDataToUi = (room: RoomAPIResponse, index: number): RoomData 
 
         return {
             id: Number(offset.roomWiseMinusId ?? offset.id) || undefined,
-            offsetNo: `O${offIndex + 1}`, 
+            offsetNo: `O${offIndex + 1}`,
             shape: String(offShape),
-            length: offLengthVal, 
-            width: offWidthVal, 
+            length: offLengthVal,
+            width: offWidthVal,
             height: offHeightVal,
+            base1: offBase1Val,
+            base2: offBase2Val,
+            radius: String(offShapeParams.radius || ''),
+            side: String(offShapeParams.side || ''),
+            base: String(offShapeParams.base || ''),
             area: Number(offset.areaSqMtr || offset.area) || 0,
-            operation: String(offset.operation || 'subtract'),
+            operation: offset.isOffset === true ? 'add' : (offset.isOffset === false ? 'subtract' : String(offset.operation || 'subtract')),
             remark: String(offset.remark || ''),
-            shapeType: String(offShape), 
+            shapeType: String(offShape),
             shapeParams: offShapeParams,
-        };
+            parameters: offShapeParams as unknown as Record<string, unknown>,
+        } as OffsetData;
     });
+
+    const isOff = (room.minusYesNo === true || room.MinusYesNo === true || room.offsetMinus === 'Yes');
+    const isOut = (room.outerYesNo === true || room.OuterYesNo === true || room.outer === 'Yes');
+    const mainArea = Number(room.areaSqMtr || room.area) || 0;
+
+    const offsetArea = offsets.reduce((sum, off) => {
+        const op = off.operation;
+        return op === 'subtract' ? sum + off.area : sum - off.area;
+    }, 0);
+
+    const actualOffset = isOff ? Math.min(offsetArea, mainArea) : 0;
+    const calculatedBaseArea = mainArea - actualOffset;
+
+    const computedCarpetArea = isOut ? calculatedBaseArea * 0.80 : calculatedBaseArea;
+    const computedBuiltUpArea = isOut ? calculatedBaseArea : calculatedBaseArea * 1.20;
 
     return {
         id: Number(room.roomWiseSubmissionId ?? room.id) || undefined,
         roomNo: String(room.roomNo || `R${index + 1}`),
-        utilities: room.roomType || room.utilities || 'Room',
+        utilities: String(room.roomTypeDescription || room.roomType || room.utilities || 'Room'),
+        roomTypeId: room.roomTypeId,
         shape: shape,
         length: lengthVal, width: widthVal, height: heightVal,
         area: Number(room.areaSqMtr || room.area) || 0,
+        mainArea: Number(room.mainArea || mainArea) || 0,
+        carpetArea: Number(room.carpetArea || room.totalAreaSqMtr || room.total || computedCarpetArea) || 0,
+        builtUpArea: Number(room.builtUpArea || room.builtupArea || room.builtUpAreaSqMtr || room.builtupAreaSqMtr || computedBuiltUpArea) || 0,
         roomCount: String(room.noOfRooms || room.roomCount || 1),
         total: Number(room.totalAreaSqMtr || room.total || room.areaSqMtr) || 0,
-        outer: (room.outerYesNo === true || room.OuterYesNo === true || room.outer === 'Yes') ? 'Yes' : 'No',
-        offsetMinus: (room.minusYesNo === true || room.MinusYesNo === true || room.offsetMinus === 'Yes') ? 'Yes' : 'No',
+        outer: isOut ? 'Yes' : 'No',
+        offsetMinus: isOff ? 'Yes' : 'No',
         remark: room.remark || '',
         shapeParams, offsets,
     };
@@ -175,43 +201,40 @@ export function normalizeApiFloorData(apiData: Record<string, unknown>) {
         renterDetails: (data.renterDetails || []).map(normalizeRenterDetailItem),
         renterMast: (data.renterMast || data.renters || []).map(normalizeRenterMastItem),
         renterName: s(
-            data.renterName || 
-            data.renterNameEnglish || 
-            (data.renters && (data.renters as any[])[0]?.renterName) || 
-            (data.renters && (data.renters as any[])[0]?.renterNameEnglish) || 
-            (data.renterMast && (data.renterMast as any[])[0]?.renterName) || 
+            data.renterName ||
+            data.renterNameEnglish ||
+            (data.renters && (data.renters as any[])[0]?.renterName) ||
+            (data.renters && (data.renters as any[])[0]?.renterNameEnglish) ||
+            (data.renterMast && (data.renterMast as any[])[0]?.renterName) ||
             (data.renterMast && (data.renterMast as any[])[0]?.renterNameEnglish)
         ),
-        rentMonthly: Number(
-            data.rentMonthly || 
-            (data.renters && (data.renters as any[])[0]?.rentMonthly) || 
-            (data.renterMast && (data.renterMast as any[])[0]?.rentMonthly) || 
+        nonCalculateRentMonthly: Number(
+            data.nonCalculateRentMonthly ??
+            (apiData as Record<string, unknown>).NonCalculateRentMonthly ??
+            (data.renters && (data.renters as any[])[0]?.nonCalculateRentMonthly) ??
+            (data.renterMast && (data.renterMast as any[])[0]?.nonCalculateRentMonthly) ??
             0
         ),
+        rentMonthly: Number(resolveAgreementBaseMonthlyRent(data as unknown as Record<string, unknown>) || 0),
         rentYearly: Number(
-            data.rentYearly || 
-            (data.renters && (data.renters as any[])[0]?.finalYearlyRent) || 
-            (data.renterMast && (data.renterMast as any[])[0]?.finalYearlyRent) || 
+            data.rentYearly ||
+            (data.renters && (data.renters as any[])[0]?.finalYearlyRent) ||
+            (data.renterMast && (data.renterMast as any[])[0]?.finalYearlyRent) ||
             0
-        ) || (Number(
-            data.rentMonthly || 
-            (data.renters && (data.renters as any[])[0]?.rentMonthly) || 
-            (data.renterMast && (data.renterMast as any[])[0]?.rentMonthly) || 
-            0
-        ) * 12),
+        ) || (Number(resolveAgreementBaseMonthlyRent(data as unknown as Record<string, unknown>) || 0) * 12),
         agreementFromDate: s(
-            data.agreementFromDate || 
-            (data.renters && ((data.renters as any[])[0]?.agreementFromDate || (data.renters as any[])[0]?.durationFrom)) || 
+            data.agreementFromDate ||
+            (data.renters && ((data.renters as any[])[0]?.agreementFromDate || (data.renters as any[])[0]?.durationFrom)) ||
             (data.renterMast && ((data.renterMast as any[])[0]?.agreementFromDate || (data.renterMast as any[])[0]?.durationFrom))
         ),
         agreementToDate: s(
-            data.agreementToDate || 
-            (data.renters && ((data.renters as any[])[0]?.agreementToDate || (data.renters as any[])[0]?.durationTo)) || 
+            data.agreementToDate ||
+            (data.renters && ((data.renters as any[])[0]?.agreementToDate || (data.renters as any[])[0]?.durationTo)) ||
             (data.renterMast && ((data.renterMast as any[])[0]?.agreementToDate || (data.renterMast as any[])[0]?.durationTo))
         ),
         agreementDate: s(
-            data.agreementDate || 
-            (data.renters && (data.renters as any[])[0]?.agreementDate) || 
+            data.agreementDate ||
+            (data.renters && (data.renters as any[])[0]?.agreementDate) ||
             (data.renterMast && (data.renterMast as any[])[0]?.agreementDate)
         ),
         roomData: (data.roomWiseSubmissionDetails || data.propertyRooms || []).map((r, i) => mapRoomDataToUi(r, i)),

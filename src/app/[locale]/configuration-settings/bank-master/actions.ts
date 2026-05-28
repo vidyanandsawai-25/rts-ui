@@ -14,19 +14,12 @@ import {
 import {
   handleActionError,
   validateAndNormalize,
- revalidateBankMaster,
+  revalidateBankMaster,
   resolveUserId,
   parseApiError,
 } from './actions.utils';
-import { buildBankMasterMetadata, type BankMasterMetadata } from './actions.cache';
+import { getCachedBankMasterMetadata, type BankMasterMetadata } from './actions.cache';
 
-// ---------------------------------------------------------------------------
-// Server Actions
-// ---------------------------------------------------------------------------
-
-/**
- * Fetches paged bank data with optional search and filtering.
- */
 export async function getBanksAction(
   pageNumber: number = 1,
   pageSize: number = 10,
@@ -54,7 +47,7 @@ export async function createBankAction(data: BankMasterDto): Promise<ApiResponse
       return { success: false, error: `validation.${validationResult.validationCode}` };
     }
 
-    // Validate uniqueness of bank code
+    // Validate uniqueness of bank code and IFSC Code
     const banks = await getBanksSummary();
     const normalizedCode = (validationResult.normalizedData.bankCode ?? '').trim().toUpperCase();
     const bankCodeExists = banks.some(
@@ -63,6 +56,15 @@ export async function createBankAction(data: BankMasterDto): Promise<ApiResponse
 
     if (bankCodeExists) {
       return { success: false, error: 'validation.bankCodeExists' };
+    }
+
+    const normalizedIfsc = (validationResult.normalizedData.ifscCode ?? '').trim().toUpperCase();
+    const ifscCodeExists = banks.some(
+      (bank) => (bank.ifscCode ?? '').trim().toUpperCase() === normalizedIfsc
+    );
+
+    if (ifscCodeExists) {
+      return { success: false, error: 'validation.ifscCodeExists' };
     }
 
     const userId = await resolveUserId();
@@ -95,15 +97,28 @@ export async function updateBankAction(
       return { success: false, error: `validation.${validationResult.validationCode}` };
     }
 
-    // Validate uniqueness of bank code (excluding current bank record)
+    // Validate uniqueness of bank code and IFSC Code (excluding current bank record)
     const banks = await getBanksSummary();
     const normalizedCode = (validationResult.normalizedData.bankCode ?? '').trim().toUpperCase();
     const bankCodeExists = banks.some(
-      (bank) => bank.id !== id && (bank.bankCode ?? '').trim().toUpperCase() === normalizedCode
+      (bank) =>
+        String(bank.id) !== String(id) &&
+        (bank.bankCode ?? '').trim().toUpperCase() === normalizedCode
     );
 
     if (bankCodeExists) {
       return { success: false, error: 'validation.bankCodeExists' };
+    }
+
+    const normalizedIfsc = (validationResult.normalizedData.ifscCode ?? '').trim().toUpperCase();
+    const ifscCodeExists = banks.some(
+      (bank) =>
+        String(bank.id) !== String(id) &&
+        (bank.ifscCode ?? '').trim().toUpperCase() === normalizedIfsc
+    );
+
+    if (ifscCodeExists) {
+      return { success: false, error: 'validation.ifscCodeExists' };
     }
 
     const userId = await resolveUserId();
@@ -154,8 +169,7 @@ export async function getBanksSummaryAction(): Promise<ApiResponse<BankMasterDat
  */
 export async function getBankMasterMetadata(): Promise<ApiResponse<BankMasterMetadata>> {
   try {
-    const summary = await getBanksSummary();
-    const data = buildBankMasterMetadata(summary);
+    const data = await getCachedBankMasterMetadata();
     return { success: true, data };
   } catch (error: unknown) {
     const fallback: BankMasterMetadata = { activeCount: 0, uniqueStates: [] };

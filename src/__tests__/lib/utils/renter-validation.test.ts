@@ -7,7 +7,7 @@ describe('validateRenterForm', () => {
     
     const validBaseForm: RenterFormDataDetails = {
         renterName: 'John Doe',
-        agreementId: 'ASD-210',
+        agreementId: '123456',
         agreementDate: `${currentYear}-01-15`,
         agreementDateFrom: `${currentYear}-01-15`,
         agreementDateTo: `${currentYear + 1}-01-14`,
@@ -26,8 +26,8 @@ describe('validateRenterForm', () => {
     });
 
     describe('Agreement ID Validation', () => {
-        it('should allow valid agreement IDs', () => {
-            const allowed = ['AGR123', 'RENT2026', 'AG_101', 'AG-2025', '131425', '1000'];
+        it('should allow valid numeric agreement IDs up to 8 digits', () => {
+            const allowed = ['1', '123', '131425', '12345678'];
             allowed.forEach(id => {
                 const errors = validateRenterForm({ ...validBaseForm, agreementId: id });
                 expect(errors.filter(e => e.field === 'agreementId')).toHaveLength(0);
@@ -41,48 +41,21 @@ describe('validateRenterForm', () => {
             expect(matched[0].message).toBe('Agreement ID is required.');
         });
 
-        it('should reject invalid characters with correct error message', () => {
-            const rejected = ['@ABC123', 'ABC#123', 'ABC 123', '12/05/2026'];
+        it('should reject non-numeric agreement IDs', () => {
+            const rejected = ['SS4235', 'AGR123', 'AG-2025', 'ABC 123', '12/05/2026'];
             rejected.forEach(id => {
                 const errors = validateRenterForm({ ...validBaseForm, agreementId: id });
                 const matched = errors.filter(e => e.field === 'agreementId');
                 expect(matched).not.toHaveLength(0);
-                expect(matched[0].message).toBe('Only letters, numbers, underscore (_) and hyphen (-) are allowed.');
+                expect(matched[0].message).toBe('Agreement ID must contain numbers only.');
             });
         });
 
-        it('should reject lengths outside of 3 to 15 characters', () => {
-            // Shorter than 3
-            const shortErrors = validateRenterForm({ ...validBaseForm, agreementId: 'A1' });
-            const shortMatched = shortErrors.filter(e => e.field === 'agreementId');
-            expect(shortMatched).not.toHaveLength(0);
-            expect(shortMatched[0].message).toBe('Agreement ID must be between 3 and 15 characters.');
-
-            // Longer than 15
-            const longErrors = validateRenterForm({ ...validBaseForm, agreementId: 'SDHGJFGKJGHKGHKGH' });
-            const longMatched = longErrors.filter(e => e.field === 'agreementId');
-            expect(longMatched).not.toHaveLength(0);
-            expect(longMatched[0].message).toBe('Agreement ID must be between 3 and 15 characters.');
-        });
-
-        it('should reject values missing numeric values', () => {
-            const rejected = ['qwerty', 'ABCDEF', '----', '___'];
-            rejected.forEach(id => {
-                const errors = validateRenterForm({ ...validBaseForm, agreementId: id });
-                const matched = errors.filter(e => e.field === 'agreementId');
-                expect(matched).not.toHaveLength(0);
-                expect(matched[0].message).toBe('Agreement ID should contain at least one numeric value.');
-            });
-        });
-
-        it('should reject repeated characters or keyboard patterns', () => {
-            const rejected = ['aaaaaa1', '111111a', 'asdfgh1', 'qwerty2', 'zxcvbn3', 'abababa1', '111111', '----1'];
-            rejected.forEach(id => {
-                const errors = validateRenterForm({ ...validBaseForm, agreementId: id });
-                const matched = errors.filter(e => e.field === 'agreementId');
-                expect(matched).not.toHaveLength(0);
-                expect(matched[0].message).toBe('Random or repeated characters are not allowed.');
-            });
+        it('should reject agreement IDs longer than 8 digits', () => {
+            const errors = validateRenterForm({ ...validBaseForm, agreementId: '123456789' });
+            const matched = errors.filter(e => e.field === 'agreementId');
+            expect(matched).not.toHaveLength(0);
+            expect(matched[0].message).toBe('Agreement ID must be at most 8 digits.');
         });
     });
 
@@ -189,18 +162,24 @@ describe('validateRenterForm', () => {
         });
     });
 
-    describe('Duration From Date Validation (Current Year)', () => {
-        it('should allow from dates in the current year', () => {
-            const errors = validateRenterForm({ ...validBaseForm, agreementDateFrom: `${currentYear}-06-01` });
+    describe('Duration From Date Validation', () => {
+        it('should allow from dates within agreement duration', () => {
+            const errors = validateRenterForm({
+                ...validBaseForm,
+                agreementDateFrom: `${currentYear}-06-01`,
+                agreementDateTo: `${currentYear + 3}-06-01`,
+            });
             expect(errors.filter(e => e.field === 'agreementDateFrom')).toHaveLength(0);
         });
 
-        it('should reject from dates outside the current year', () => {
-            const errorsPast = validateRenterForm({ ...validBaseForm, agreementDateFrom: `${currentYear - 1}-12-31` });
-            expect(errorsPast.filter(e => e.field === 'agreementDateFrom')).not.toHaveLength(0);
-
-            const errorsFuture = validateRenterForm({ ...validBaseForm, agreementDateFrom: `${currentYear + 1}-01-01` });
-            expect(errorsFuture.filter(e => e.field === 'agreementDateFrom')).not.toHaveLength(0);
+        it('should reject from dates before agreement date', () => {
+            const errors = validateRenterForm({
+                ...validBaseForm,
+                agreementDate: `${currentYear}-06-15`,
+                agreementDateFrom: `${currentYear}-06-01`,
+                agreementDateTo: `${currentYear + 1}-06-14`,
+            });
+            expect(errors.filter(e => e.field === 'agreementDateFrom')).not.toHaveLength(0);
         });
     });
 
@@ -341,18 +320,49 @@ describe('validateRenterForm', () => {
             expect(errors.filter(e => e.field === 'customDateRanges')).toHaveLength(0);
         });
 
-        it('should reject custom fromDate outside of current year', () => {
+        it('should reject overlapping custom date ranges on save', () => {
             const invalidForm = {
                 ...formWithCustom,
+                agreementDateFrom: '2026-05-24',
+                agreementDateTo: '2029-02-24',
+                customDateRanges: [
+                    {
+                        id: '1',
+                        fromDate: '2026-05-24',
+                        toDate: '2027-02-27',
+                        incrementType: 'Percentage' as const,
+                        incrementValue: 10,
+                        calculationMethod: 'Base Value' as const,
+                    },
+                    {
+                        id: '2',
+                        fromDate: '2027-01-01',
+                        toDate: '2027-03-15',
+                        incrementType: 'Percentage' as const,
+                        incrementValue: 5,
+                        calculationMethod: 'Base Value' as const,
+                    },
+                ],
+            };
+            const errors = validateRenterForm(invalidForm);
+            expect(errors.some(e => e.field === 'customDateRanges' && e.message.includes('overlaps'))).toBe(true);
+        });
+
+        it('should reject custom ranges outside agreement duration', () => {
+            const invalidForm = {
+                ...formWithCustom,
+                agreementDateFrom: '2026-05-24',
+                agreementDateTo: '2029-02-24',
                 customDateRanges: [
                     {
                         ...formWithCustom.customDateRanges[0],
-                        fromDate: `${currentYear - 1}-12-31`
-                    }
-                ]
+                        fromDate: '2026-05-24',
+                        toDate: '2029-03-01',
+                    },
+                ],
             };
             const errors = validateRenterForm(invalidForm);
-            expect(errors.filter(e => e.field === 'customDateRanges')).not.toHaveLength(0);
+            expect(errors.some(e => e.field === 'customDateRanges' && e.message.includes('within agreement duration'))).toBe(true);
         });
 
         it('should reject custom percentage with non-numeric, negative, or letters with specific message', () => {

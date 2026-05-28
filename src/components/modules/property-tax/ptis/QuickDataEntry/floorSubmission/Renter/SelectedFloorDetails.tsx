@@ -152,9 +152,6 @@ export const SelectedFloorDetails = ({
                 columns={columns}
                 data={data}
                 headerTitle={t('floor.selectedFloorDetails')}
-                headerExtra={
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
-                }
                 containerClassName="rounded-xl overflow-hidden shadow-sm pt-0"
                 tableClassName="text-xs"
             />

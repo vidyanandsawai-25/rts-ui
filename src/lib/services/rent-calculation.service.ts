@@ -406,14 +406,26 @@ export const calculateRentProgression = (details: any): RentCalculationResult | 
                 };
             }
             const r = seg.range as Record<string, unknown>;
+            const customMethodVal = r.calculationMethod === "Incremented Value" ? "compounding" : "base";
+            const customIncrementValueVal = parseFloat(String(r.incrementValue ?? "0"));
+            const customIncrementTypeVal = String(r.incrementType ?? "Percentage");
             return {
                 agreementId: details.agreementId || "",
                 incrementFrequency: "Custom Date",
-                incrementType: r.incrementType as string,
-                incrementValue: parseFloat(String(r.incrementValue ?? "0")),
-                incrementMethod: r.calculationMethod === "Incremented Value" ? "compounding" : "base",
+                incrementType: customIncrementTypeVal,
+                incrementValue: customIncrementValueVal,
+                incrementMethod: customMethodVal,
                 durationFrom: toDateInputString(seg.from),
                 durationTo: toDateInputString(seg.to),
+                // Stamp the original custom range bounds on the row so the
+                // backend can echo them back on `GET /DataEntry/{id}` and the
+                // UI can reconstruct `customDateRanges` from these fields when
+                // reopening the renter screen.
+                customFromDate: toDateInputString(seg.from),
+                customToDate: toDateInputString(seg.to),
+                customIncrementType: customIncrementTypeVal,
+                customIncrementValue: customIncrementValueVal,
+                customMethod: customMethodVal,
                 rentAmount: baseRent,
                 rentMonthly: segmentRents[idx],
                 incrementStatus: true,

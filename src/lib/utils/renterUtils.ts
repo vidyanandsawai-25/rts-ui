@@ -34,6 +34,48 @@ export const convertToISODate = (dateStr: string): string => {
 };
 
 /**
+ * Resolves the user-entered agreement base monthly rent from floor/renter payload data.
+ * Calculated segment/FY rents (`renterMast.rentMonthly`, `renterDetail.rentMonthly`) are
+ * intentionally excluded — those reflect increment-adjusted values, not the agreement base.
+ */
+export function resolveAgreementBaseMonthlyRent(
+    details: Record<string, unknown> | null | undefined
+): number | string {
+    if (!details || typeof details !== "object") return "";
+
+    const pickPositive = (...candidates: unknown[]): number | undefined => {
+        for (const c of candidates) {
+            if (c === undefined || c === null || c === "") continue;
+            const n = Number(c);
+            if (!isNaN(n) && n > 0) return n;
+        }
+        return undefined;
+    };
+
+    const renterDetails = details.renterDetails;
+    const renterMast = details.renterMast ?? details.renters;
+    const firstDetail = Array.isArray(renterDetails)
+        ? (renterDetails[0] as Record<string, unknown>)
+        : null;
+    const firstMast = Array.isArray(renterMast)
+        ? (renterMast[0] as Record<string, unknown>)
+        : null;
+
+    const resolved = pickPositive(
+        details.nonCalculateRentMonthly,
+        details.NonCalculateRentMonthly,
+        firstMast?.nonCalculateRentMonthly,
+        firstMast?.NonCalculateRentMonthly,
+        firstDetail?.rentAmount,
+        firstDetail?.RentAmount,
+        details.rentMonthly,
+        details.RentMonthly
+    );
+
+    return resolved ?? "";
+}
+
+/**
  * Calculates the next rent amount based on the current rent, increment percentage, and agreement type.
  */
 export const calculateNextRent = (
@@ -149,28 +191,120 @@ export const extractAgreementData = (text: string) => {
     return extractedData;
 };
 
-// Helper function to check if date ranges overlap
-export const checkDateOverlap = (newFrom: string, newTo: string, existingRanges: any[]) => {
-    const newStart = new Date(newFrom);
-    const newEnd = new Date(newTo);
+// ─── Custom Date Range Helpers ────────────────────────────────────────────────
+
+/** Parse YYYY-MM-DD without UTC timezone shift. */
+export const parseDateOnly = (dateStr: string): Date | null => {
+    if (!dateStr) return null;
+    const match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!match) {
+        const d = new Date(dateStr);
+        return isNaN(d.getTime()) ? null : d;
+    }
+    return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+};
+
+export const formatIsoDate = (date: Date): string => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+};
+
+export const addDays = (dateStr: string, days: number): string => {
+    const d = parseDateOnly(dateStr);
+    if (!d) return dateStr;
+    d.setDate(d.getDate() + days);
+    return formatIsoDate(d);
+};
+
+export const normalizeCalculationMethod = (
+    method: string | undefined | null
+): 'Base Value' | 'Incremented Value' => {
+    const m = String(method ?? '').toLowerCase().trim();
+    if (
+        m === 'incremented value' ||
+        m === 'compounding' ||
+        m === 'compounded' ||
+        m === 'incremented'
+    ) {
+        return 'Incremented Value';
+    }
+    return 'Base Value';
+};
+
+/** Next valid From Date = max(existing To Dates) + 1 day, or agreement start when empty. */
+export const getNextCustomRangeFromDate = (
+    existingRanges: { fromDate?: string; toDate?: string }[],
+    agreementStart: string
+): string => {
+    if (!existingRanges.length) return agreementStart;
+    const latestTo = existingRanges.reduce<string | null>((latest, range) => {
+        if (!range.toDate) return latest;
+        if (!latest) return range.toDate;
+        const latestDate = parseDateOnly(latest);
+        const rangeTo = parseDateOnly(range.toDate);
+        if (!latestDate || !rangeTo) return latest;
+        return rangeTo > latestDate ? range.toDate : latest;
+    }, null);
+    return latestTo ? addDays(latestTo, 1) : agreementStart;
+};
+
+export const CUSTOM_RANGE_MESSAGES = {
+    overlap: 'Selected custom date range overlaps with an existing range.',
+    boundary: 'Custom date range must be within agreement duration.',
+    toAfterFrom: 'To Date must be greater than From Date.',
+    sequentialFrom: 'From Date must start after the previous range ends.',
+} as const;
+
+interface CustomRangeLike {
+    id?: string;
+    fromDate?: string;
+    toDate?: string;
+}
+
+/** Full / partial / nested / duplicate overlap detection. */
+export const checkDateOverlap = (
+    newFrom: string,
+    newTo: string,
+    existingRanges: CustomRangeLike[],
+    excludeRangeId?: string
+) => {
+    const newStart = parseDateOnly(newFrom);
+    const newEnd = parseDateOnly(newTo);
+    if (!newStart || !newEnd) return { overlaps: false as const };
 
     for (let i = 0; i < existingRanges.length; i++) {
         const range = existingRanges[i];
-        const existingStart = new Date(range.fromDate);
-        const existingEnd = new Date(range.toDate);
+        if (excludeRangeId && range.id === excludeRangeId) continue;
+        if (!range.fromDate || !range.toDate) continue;
 
-        // Check if ranges overlap
+        const existingStart = parseDateOnly(range.fromDate);
+        const existingEnd = parseDateOnly(range.toDate);
+        if (!existingStart || !existingEnd) continue;
+
         if (newStart <= existingEnd && newEnd >= existingStart) {
-            // Return detailed overlap info
             return {
-                overlaps: true,
+                overlaps: true as const,
                 rangeNumber: i + 1,
                 fromDate: range.fromDate,
-                toDate: range.toDate
+                toDate: range.toDate,
             };
         }
     }
-    return { overlaps: false };
+    return { overlaps: false as const };
+};
+
+const isWithinAgreementDuration = (
+    fromDate: string,
+    toDate: string,
+    agreementStart: Date,
+    agreementEnd: Date
+): boolean => {
+    const from = parseDateOnly(fromDate);
+    const to = parseDateOnly(toDate);
+    if (!from || !to) return false;
+    return from >= agreementStart && from <= agreementEnd && to >= agreementStart && to <= agreementEnd;
 };
 
 // Interface for validation input
@@ -180,10 +314,12 @@ export interface DateRangeValidationInput {
         toDate: string;
         incrementValue: string | number;
         incrementType?: string;
+        id?: string;
     };
     agreementStart: Date;
     agreementEnd: Date;
-    existingRanges: any[];
+    existingRanges: CustomRangeLike[];
+    excludeRangeId?: string;
 }
 
 export interface ValidationErrors {
@@ -193,103 +329,180 @@ export interface ValidationErrors {
     general: string;
 }
 
-// Generalized validation function
-export const validateDateRange = (input: DateRangeValidationInput): { isValid: boolean; errors: ValidationErrors; overlapInfo?: any } => {
-    const errors = {
-        fromDate: '',
-        toDate: '',
-        incrementValue: '',
-        general: ''
-    };
-    let isValid = true;
-    let overlapInfo = null;
-
-    const { fromDate, toDate, incrementValue, incrementType } = input.newRangeData;
-    const fromDateObj = fromDate ? new Date(fromDate) : null;
-    const toDateObj = toDate ? new Date(toDate) : null;
-
-    // Validate From Date
-    if (!fromDate) {
-        errors.fromDate = 'From Date is required';
-        isValid = false;
-    } else if (fromDateObj) {
-        if (fromDateObj < input.agreementStart) {
-            errors.fromDate = `Must be on or after Agreement Start Date (${input.agreementStart.toLocaleDateString("en-IN", { day: '2-digit', month: 'short', year: 'numeric' })})`;
-            isValid = false;
-        } else if (fromDateObj > input.agreementEnd) {
-            errors.fromDate = `Must be on or before Agreement End Date (${input.agreementEnd.toLocaleDateString("en-IN", { day: '2-digit', month: 'short', year: 'numeric' })})`;
-            isValid = false;
-        } else {
-            const currentYear = new Date().getFullYear();
-            if (fromDateObj.getFullYear() !== currentYear) {
-                errors.fromDate = `From date must be in the current year (${currentYear})`;
-                isValid = false;
-            }
-        }
-    }
-
-    // Validate To Date
-    if (!toDate) {
-        errors.toDate = 'To Date is required';
-        isValid = false;
-    } else if (toDateObj) {
-        if (toDateObj < input.agreementStart) {
-            errors.toDate = `Must be on or after Agreement Start Date (${input.agreementStart.toLocaleDateString("en-IN", { day: '2-digit', month: 'short', year: 'numeric' })})`;
-            isValid = false;
-        } else if (toDateObj > input.agreementEnd) {
-            errors.toDate = `Must be on or before Agreement End Date (${input.agreementEnd.toLocaleDateString("en-IN", { day: '2-digit', month: 'short', year: 'numeric' })})`;
-            isValid = false;
-        }
-
-        // Check if To Date is less than From Date
-        if (fromDateObj && toDateObj < fromDateObj) {
-            errors.toDate = 'To Date must be on or after From Date';
-            isValid = false;
-        } else if (fromDateObj && toDateObj.getTime() === fromDateObj.getTime()) {
-            errors.toDate = 'To Date must be after From Date (same day not allowed)';
-            isValid = false;
-        }
-    }
-
-    // Validate Increment Value
+const validateIncrementValue = (
+    incrementValue: string | number,
+    incrementType: string | undefined,
+    errors: ValidationErrors
+): boolean => {
     const parsedIncrement = Number(incrementValue);
     if (incrementValue === undefined || incrementValue === null || String(incrementValue).trim() === "") {
         errors.incrementValue = 'Value is required';
-        isValid = false;
-    } else if (incrementType === 'Percentage') {
+        return false;
+    }
+    if (incrementType === 'Percentage') {
         const incStr = String(incrementValue).trim();
         if (/[^0-9]/.test(incStr)) {
             errors.incrementValue = 'Only numeric values are allowed.';
-            isValid = false;
-        } else if (incStr.length > 3) {
+            return false;
+        }
+        if (incStr.length > 3) {
             errors.incrementValue = 'Maximum 3 digits allowed.';
+            return false;
+        }
+        const incVal = Number(incStr);
+        if (incVal < 0 || incVal > 100) {
+            errors.incrementValue = 'Percentage cannot exceed 100.';
+            return false;
+        }
+        return true;
+    }
+    if (!/^\d+(\.\d{1,2})?$/.test(String(incrementValue)) || parsedIncrement <= 0) {
+        errors.incrementValue = 'Must be a positive number with up to 2 decimal places and no positive/negative signs';
+        return false;
+    }
+    return true;
+};
+
+/** Validates a single custom range being added or edited in the form. */
+export const validateDateRange = (
+    input: DateRangeValidationInput
+): { isValid: boolean; errors: ValidationErrors; overlapInfo?: ReturnType<typeof checkDateOverlap> } => {
+    const errors: ValidationErrors = {
+        fromDate: '',
+        toDate: '',
+        incrementValue: '',
+        general: '',
+    };
+    let isValid = true;
+
+    const { fromDate, toDate, incrementValue, incrementType } = input.newRangeData;
+    const excludeRangeId = input.excludeRangeId ?? input.newRangeData.id;
+    const otherRanges = input.existingRanges.filter((r) => !excludeRangeId || r.id !== excludeRangeId);
+
+    const agreementStart = parseDateOnly(formatIsoDate(input.agreementStart)) ?? input.agreementStart;
+    const agreementEnd = parseDateOnly(formatIsoDate(input.agreementEnd)) ?? input.agreementEnd;
+    const minFromDate = getNextCustomRangeFromDate(otherRanges, formatIsoDate(agreementStart));
+
+    if (!fromDate) {
+        errors.fromDate = 'From Date is required';
+        isValid = false;
+    } else {
+        const fromDateObj = parseDateOnly(fromDate);
+        if (!fromDateObj) {
+            errors.fromDate = 'From Date is required';
+            isValid = false;
+        } else if (!isWithinAgreementDuration(fromDate, fromDate, agreementStart, agreementEnd)) {
+            errors.fromDate = CUSTOM_RANGE_MESSAGES.boundary;
             isValid = false;
         } else {
-            const incVal = Number(incStr);
-            if (incVal < 0 || incVal > 100) {
-                errors.incrementValue = 'Percentage cannot exceed 100.';
+            const minFromObj = parseDateOnly(minFromDate);
+            if (minFromObj && fromDateObj < minFromObj) {
+                errors.fromDate = CUSTOM_RANGE_MESSAGES.sequentialFrom;
                 isValid = false;
             }
         }
+    }
+
+    if (!toDate) {
+        errors.toDate = 'To Date is required';
+        isValid = false;
     } else {
-        if (!/^\d+(\.\d{1,2})?$/.test(String(incrementValue)) || parsedIncrement <= 0) {
-            errors.incrementValue = 'Must be a positive number with up to 2 decimal places and no positive/negative signs';
+        const toDateObj = parseDateOnly(toDate);
+        if (!toDateObj) {
+            errors.toDate = 'To Date is required';
             isValid = false;
+        } else if (!isWithinAgreementDuration(toDate, toDate, agreementStart, agreementEnd)) {
+            errors.toDate = CUSTOM_RANGE_MESSAGES.boundary;
+            isValid = false;
+        }
+
+        if (fromDate) {
+            const fromDateObj = parseDateOnly(fromDate);
+            if (fromDateObj && toDateObj && toDateObj <= fromDateObj) {
+                errors.toDate = CUSTOM_RANGE_MESSAGES.toAfterFrom;
+                isValid = false;
+            }
         }
     }
 
-    // Check for overlaps
+    if (fromDate && toDate && !isWithinAgreementDuration(fromDate, toDate, agreementStart, agreementEnd)) {
+        errors.general = CUSTOM_RANGE_MESSAGES.boundary;
+        isValid = false;
+    }
+
+    if (!validateIncrementValue(incrementValue, incrementType, errors)) {
+        isValid = false;
+    }
+
     if (fromDate && toDate && isValid) {
-        overlapInfo = checkDateOverlap(fromDate, toDate, input.existingRanges);
+        const overlapInfo = checkDateOverlap(fromDate, toDate, otherRanges, excludeRangeId);
         if (overlapInfo.overlaps) {
-            const overlapFrom = new Date(overlapInfo.fromDate).toLocaleDateString("en-IN", { day: '2-digit', month: 'short', year: 'numeric' });
-            const overlapTo = new Date(overlapInfo.toDate).toLocaleDateString("en-IN", { day: '2-digit', month: 'short', year: 'numeric' });
-            errors.general = `Date range overlaps with Range #${overlapInfo.rangeNumber} (${overlapFrom} - ${overlapTo})`;
+            errors.general = CUSTOM_RANGE_MESSAGES.overlap;
             isValid = false;
+            return { isValid, errors, overlapInfo };
         }
     }
 
-    return { isValid, errors, overlapInfo };
+    return { isValid, errors };
+};
+
+/** Validates the full custom-date-range collection before save. */
+export const validateCustomDateRangesCollection = (
+    ranges: CustomRangeLike[],
+    agreementFrom: string,
+    agreementTo: string
+): { isValid: boolean; message?: string } => {
+    if (!ranges.length) return { isValid: true };
+
+    const agreementStart = parseDateOnly(agreementFrom);
+    const agreementEnd = parseDateOnly(agreementTo);
+    if (!agreementStart || !agreementEnd) return { isValid: true };
+
+    const sorted = [...ranges].sort((a, b) => {
+        const aFrom = parseDateOnly(a.fromDate || '')?.getTime() ?? 0;
+        const bFrom = parseDateOnly(b.fromDate || '')?.getTime() ?? 0;
+        return aFrom - bFrom;
+    });
+
+    for (let idx = 0; idx < sorted.length; idx++) {
+        const range = sorted[idx];
+        if (!range.fromDate || !range.toDate) {
+            return { isValid: false, message: `Custom range #${idx + 1} requires both From and To dates.` };
+        }
+
+        const fromObj = parseDateOnly(range.fromDate);
+        const toObj = parseDateOnly(range.toDate);
+        if (!fromObj || !toObj) {
+            return { isValid: false, message: `Custom range #${idx + 1} has invalid dates.` };
+        }
+
+        if (toObj <= fromObj) {
+            return { isValid: false, message: `Custom range #${idx + 1}: ${CUSTOM_RANGE_MESSAGES.toAfterFrom}` };
+        }
+
+        if (!isWithinAgreementDuration(range.fromDate, range.toDate, agreementStart, agreementEnd)) {
+            return { isValid: false, message: `Custom range #${idx + 1}: ${CUSTOM_RANGE_MESSAGES.boundary}` };
+        }
+
+        if (idx > 0) {
+            const prev = sorted[idx - 1];
+            const minFrom = parseDateOnly(addDays(prev.toDate!, 1));
+            if (minFrom && fromObj < minFrom) {
+                return { isValid: false, message: `Custom range #${idx + 1}: ${CUSTOM_RANGE_MESSAGES.sequentialFrom}` };
+            }
+        }
+
+        for (let j = idx + 1; j < sorted.length; j++) {
+            const other = sorted[j];
+            if (!other.fromDate || !other.toDate) continue;
+            const overlap = checkDateOverlap(range.fromDate, range.toDate, [other]);
+            if (overlap.overlaps) {
+                return { isValid: false, message: CUSTOM_RANGE_MESSAGES.overlap };
+            }
+        }
+    }
+
+    return { isValid: true };
 };
 
 /**
@@ -305,7 +518,7 @@ export function mapCustomDateRangesToPostPayload(
         Customtodate: String(r.toDate ?? ""),
         CustomIncrementtype: String(r.incrementType ?? ""),
         CustomIncrementValue: Number(r.incrementValue ?? 0),
-        CustomMethod: String(r.calculationMethod ?? ""),
+        CustomMethod: normalizeCalculationMethod(r.calculationMethod) === "Incremented Value" ? "compounding" : "base",
     }));
 }
 

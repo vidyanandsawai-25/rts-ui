@@ -78,7 +78,7 @@ export function RateFiltersSection({
     <div className="flex flex-col md:flex-row md:flex-wrap gap-2 md:gap-2 items-stretch md:items-end mb-2">
       {/* Rate Section */}
       <div className="w-full md:flex-1 md:min-w-37.5 md:max-w-50">
-        <Label htmlFor="zone-select" className="text-sm font-medium text-black mb-1 flex items-center gap-1" required>
+        <Label className="text-sm font-medium text-black mb-1 flex items-center gap-1" required>
           <MapPin size={18} className="text-black" />
           {t('filters.rateSection')}
         </Label>
@@ -102,7 +102,7 @@ export function RateFiltersSection({
 
       {/* Use Group */}
       <div className="w-full md:flex-1 md:min-w-37.5 md:max-w-50">
-        <Label htmlFor="useGroup-select" className="text-sm font-medium text-black mb-1 flex items-center gap-1" required>
+        <Label className="text-sm font-medium text-black mb-1 flex items-center gap-1" required>
           <Users size={18} className="text-black" />
           {t('filters.typeOfUseGroup')}
         </Label>
@@ -126,7 +126,7 @@ export function RateFiltersSection({
 
       {/* Assessment Year */}
       <div className="w-full md:flex-1 md:min-w-37.5 md:max-w-50">
-        <Label htmlFor="assessment-year-select" className="text-sm font-medium text-black mb-1 flex items-center gap-1" required>
+        <Label className="text-sm font-medium text-black mb-1 flex items-center gap-1" required>
           <Calendar size={18} className="text-black" />
           {t('filters.assessmentYearRange')}
         </Label>

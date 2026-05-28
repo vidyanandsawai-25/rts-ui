@@ -84,11 +84,12 @@ export function useBankForm({ id, initialData }: UseBankFormProps) {
 
   const handleSubmit = useCallback(
     async (e: FormEvent): Promise<void> => {
-      e.preventDefault();
-
       if (isSubmitting || isSubmittingRef.current) {
+        e.preventDefault();
         return;
       }
+
+      e.preventDefault();
 
       const normalizedData = normalizeBankData(formData);
       const validationErrors = validateBankMaster(normalizedData);
@@ -96,7 +97,6 @@ export function useBankForm({ id, initialData }: UseBankFormProps) {
       setErrors(validationErrors);
 
       if (Object.keys(validationErrors).length > 0) {
-        toast.error(t('messages.validationError'));
         return;
       }
 

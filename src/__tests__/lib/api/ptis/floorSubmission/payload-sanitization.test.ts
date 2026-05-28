@@ -112,6 +112,18 @@ describe('Payload Sanitization Tests', () => {
       expect(room.minusYesNo).toBe(false);
     });
 
+    it('should map subFloorId and subFloorDescription to null if not selected', () => {
+      const payload = {
+        propertyDetailsId: 206094,
+        subFloorId: "",
+        subFloorDescription: "Select sub floor"
+      };
+
+      const result = sanitizeRenterPayload(payload);
+      expect(result.subFloorId).toBeNull();
+      expect(result.subFloorDescription).toBeNull();
+    });
+
     it('should fall back to raw API keys if UI keys are not present', () => {
       const rawPayload = {
         propertyDetailsId: 206094,
@@ -222,6 +234,38 @@ describe('Payload Sanitization Tests', () => {
       expect(minus.createdBy).toBeUndefined();
       expect(minus.roomWiseMinusId).toBe(901);
       expect(minus.roomWiseSubmissionId).toBe(801);
+    });
+
+    it('should map isOffset to true for addition operation and false for subtraction operation', () => {
+      const payload = {
+        propertyDetailsId: 206094,
+        roomWiseSubmissionDetails: [
+          {
+            id: 801,
+            roomWiseMinusData: [
+              {
+                id: 901,
+                operation: 'add',
+              },
+              {
+                id: 902,
+                operation: 'subtract',
+              }
+            ]
+          }
+        ]
+      };
+
+      const result = sanitizeRenterPayload(payload);
+      expect(result.roomWiseSubmissionDetails).toHaveLength(1);
+      const room = (result.roomWiseSubmissionDetails as any[])[0];
+      expect(room.roomWiseMinusData).toHaveLength(2);
+      
+      const firstMinus = room.roomWiseMinusData[0];
+      expect(firstMinus.isOffset).toBe(true);
+
+      const secondMinus = room.roomWiseMinusData[1];
+      expect(secondMinus.isOffset).toBe(false);
     });
   });
 });

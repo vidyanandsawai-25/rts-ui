@@ -12,17 +12,153 @@ import { LucideIcon, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { useTranslations } from 'next-intl';
 
+type AccessLevelConfigItem = {
+  label: string;
+  shortLabel: string;
+  icon: LucideIcon;
+  badgeClass: string;
+};
+
+type AccessLevelConfigMap = Record<string, AccessLevelConfigItem>;
+
+type TranslateFn = (
+  key: string,
+  values?: Record<string, string | number | Date>
+) => string;
+
 interface PermissionAccordionProps {
   hierarchy: DisplayDepartment[];
   roleAccess: Record<string, AccessLevel>;
-  accessLevelConfig: Record<
-    string,
-    { label: string; shortLabel: string; icon: LucideIcon; badgeClass: string }
-  >;
+  accessLevelConfig: AccessLevelConfigMap;
   onUpdate: (screenId: string, level: AccessLevel) => void;
   onBulkDomain: (screens: DisplayScreen[], level: AccessLevel) => void;
   onBulkDept: (dept: DisplayDepartment, level: AccessLevel) => void;
 }
+
+const ModuleAccordionItem = ({
+  domain,
+  roleAccess,
+  accessLevelConfig,
+  t,
+  onUpdate,
+  onBulkDomain,
+}: {
+  domain: DisplayDomain;
+  roleAccess: Record<string, AccessLevel>;
+  accessLevelConfig: AccessLevelConfigMap;
+  t: TranslateFn;
+  onUpdate: (screenId: string, level: AccessLevel) => void;
+  onBulkDomain: (screens: DisplayScreen[], level: AccessLevel) => void;
+}) => {
+  const [isExpanded, setIsExpanded] = React.useState(true);
+  const accessLevelEntries = Object.entries(accessLevelConfig) as [string, AccessLevelConfigItem][];
+
+  return (
+    <div className="border border-gray-200 rounded-xl bg-white overflow-hidden shadow-sm mx-2">
+      {/* Module Header */}
+      <div
+        className="flex items-center justify-between px-4 py-3 bg-gray-50/50 border-b border-gray-100 cursor-pointer hover:bg-gray-100/50 transition-colors"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <div className="flex items-center gap-3">
+          <ChevronRight
+            className={cn('w-4 h-4 text-gray-400 transition-transform', isExpanded && 'rotate-90')}
+          />
+          <span className="font-bold text-sm text-gray-800">{domain.name}</span>
+          <span className="px-2 py-0.5 text-[11px] font-medium bg-gray-100 text-gray-600 rounded border border-gray-200">
+            {t('accessControl.labels.screenCount', { count: domain.screens.length })}
+          </span>
+        </div>
+        <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+          {accessLevelEntries.map(([level, cfg]) => (
+            <button
+              type="button"
+              key={level}
+              onClick={() => onBulkDomain(domain.screens, level as AccessLevel)}
+              className={cn(
+                'flex items-center justify-center w-6 h-6 rounded border opacity-60 hover:opacity-100 transition-all bg-white',
+                level === 'no-access'
+                  ? 'text-red-500 border-red-200'
+                  : level === 'view'
+                    ? 'text-blue-500 border-blue-200'
+                    : level === 'edit'
+                      ? 'text-amber-500 border-amber-200'
+                      : level === 'delete'
+                        ? 'text-purple-500 border-purple-200'
+                        : 'text-emerald-500 border-emerald-200'
+              )}
+              title={t('accessControl.actions.applyToAll', { level: cfg.label })}
+              aria-label={t('accessControl.actions.applyToAll', { level: cfg.label })}
+            >
+              <cfg.icon className="w-3 h-3" />
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Screens List */}
+      <div className={cn('p-3 space-y-2', !isExpanded && 'hidden')}>
+        {domain.screens.map((screen: DisplayScreen) => {
+          const currentLevel = roleAccess[screen.id] || 'no-access';
+
+          return (
+            <div
+              key={screen.id}
+              className="flex items-center justify-between px-4 py-2 bg-emerald-50/30 border border-emerald-200/60 rounded-lg hover:border-emerald-300 transition-colors"
+            >
+              <span className="text-sm font-medium text-gray-700">{screen.name}</span>
+
+              <div className="flex items-center gap-1.5">
+                {accessLevelEntries.map(([level, levelCfg]) => {
+                  const isActive = currentLevel === level;
+                  return (
+                    <button
+                      type="button"
+                      key={level}
+                      onClick={() => onUpdate(screen.id, level as AccessLevel)}
+                      className={cn(
+                        'flex items-center justify-center w-7 h-7 rounded-md border transition-all',
+                        isActive
+                          ? cn(
+                              'border-transparent shadow-sm ring-2 ring-offset-1 text-white',
+                              level === 'no-access'
+                                ? 'bg-red-500 ring-red-200'
+                                : level === 'view'
+                                  ? 'bg-blue-500 ring-blue-200'
+                                  : level === 'edit'
+                                    ? 'bg-amber-500 ring-amber-200'
+                                    : level === 'delete'
+                                      ? 'bg-purple-500 ring-purple-200'
+                                      : 'bg-emerald-500 ring-emerald-200'
+                            )
+                          : cn(
+                              'bg-white hover:bg-gray-50',
+                              level === 'no-access'
+                                ? 'text-red-500 border-red-200'
+                                : level === 'view'
+                                  ? 'text-blue-500 border-blue-200'
+                                  : level === 'edit'
+                                    ? 'text-amber-500 border-amber-200'
+                                    : level === 'delete'
+                                      ? 'text-purple-500 border-purple-200'
+                                      : 'text-emerald-500 border-emerald-200'
+                            )
+                      )}
+                      title={levelCfg.label}
+                      aria-label={levelCfg.label}
+                    >
+                      <levelCfg.icon className="w-3.5 h-3.5" />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
 
 export const PermissionAccordion: React.FC<PermissionAccordionProps> = ({
   hierarchy,
@@ -35,107 +171,86 @@ export const PermissionAccordion: React.FC<PermissionAccordionProps> = ({
   const t = useTranslations('screenAccess');
 
   const accordionItems: AccordionItemType[] = hierarchy.map((dept) => {
+    // Calculate total screens in dept
+    const totalScreens = dept.domains.reduce((acc, dom) => acc + dom.screens.length, 0);
+
+    // Calculate full and none counts
+    let fullCount = 0;
+    let noneCount = 0;
+    dept.domains.forEach((domain) => {
+      domain.screens.forEach((screen) => {
+        const level = roleAccess[screen.id] || 'no-access';
+        if (level === 'no-access') noneCount++;
+        else if (level === 'full') fullCount++;
+      });
+    });
+
     return {
       title: (
-        <div className="flex items-center justify-between w-full pr-4 group">
+        <div className="flex items-center justify-between w-full pr-4 group py-1">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg group-hover:bg-indigo-100 transition-colors">
+            <div className="p-2 bg-slate-600 text-white rounded-lg transition-colors">
               <dept.icon className="w-4 h-4" />
             </div>
-            <span className="font-semibold text-gray-800">{dept.name}</span>
+            <span className="font-bold text-gray-800">{dept.name}</span>
+            <span className="px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-600 rounded-md border border-gray-200">
+              {t('accessControl.labels.screenCount', { count: totalScreens })}
+            </span>
           </div>
-          <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-            {Object.entries(accessLevelConfig).map(([level, cfg]) => (
-              <button
-                type="button"
-                key={level}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onBulkDept(dept, level as AccessLevel);
-                }}
-                className={cn(
-                  'px-2 py-0.5 text-[10px] font-bold rounded border transition-all cursor-pointer hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-indigo-500',
-                  cfg.badgeClass
-                )}
-                title={t('accessControl.actions.applyToAll', { level: cfg.label })}
-                aria-label={t('accessControl.actions.applyToAll', { level: cfg.label })}
-              >
-                {cfg.shortLabel}
-              </button>
-            ))}
+
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-0.5 text-xs font-medium bg-red-100 text-red-700 rounded border border-red-200">
+                {t('accessControl.labels.noneCount', { count: noneCount > 0 ? noneCount : '' })}
+              </span>
+              <span className="px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded border border-green-200">
+                {t('accessControl.labels.fullCount', { count: fullCount > 0 ? fullCount : '' })}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-1.5 opacity-60 group-hover:opacity-100 transition-opacity">
+              {Object.entries(accessLevelConfig).map(([level, cfg]) => (
+                <button
+                  type="button"
+                  key={level}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onBulkDept(dept, level as AccessLevel);
+                  }}
+                  className={cn(
+                    'flex items-center justify-center w-7 h-7 rounded border transition-all cursor-pointer hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-indigo-500 bg-white',
+                    level === 'no-access'
+                      ? 'text-red-500 border-red-200 hover:border-red-300'
+                      : level === 'view'
+                        ? 'text-blue-500 border-blue-200 hover:border-blue-300'
+                        : level === 'edit'
+                          ? 'text-amber-500 border-amber-200 hover:border-amber-300'
+                          : level === 'delete'
+                            ? 'text-purple-500 border-purple-200 hover:border-purple-300'
+                            : 'text-emerald-500 border-emerald-200 hover:border-emerald-300'
+                  )}
+                  title={t('accessControl.actions.applyToAll', { level: cfg.label })}
+                  aria-label={t('accessControl.actions.applyToAll', { level: cfg.label })}
+                >
+                  <cfg.icon className="w-3.5 h-3.5" />
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       ),
       content: (
-        <div className="space-y-6 pt-2 pb-4">
+        <div className="space-y-4 pt-4 pb-4">
           {dept.domains.map((domain: DisplayDomain) => (
-            <div key={domain.id} className="space-y-3">
-              <div className="flex items-center justify-between px-2">
-                <div className="flex items-center gap-2 text-gray-500">
-                  <ChevronRight className="w-3 h-3" />
-                  <span className="text-xs font-bold uppercase tracking-wider">{domain.name}</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  {Object.entries(accessLevelConfig).map(([level, cfg]) => (
-                    <button
-                      type="button"
-                      key={level}
-                      onClick={() => onBulkDomain(domain.screens, level as AccessLevel)}
-                      className={cn(
-                        'px-1.5 py-0.5 text-[9px] font-bold rounded border opacity-60 hover:opacity-100 transition-all',
-                        cfg.badgeClass
-                      )}
-                      title={t('accessControl.actions.applyToAll', { level: cfg.label })}
-                      aria-label={t('accessControl.actions.applyToAll', { level: cfg.label })}
-                    >
-                      {cfg.shortLabel}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                {domain.screens.map((screen: DisplayScreen) => {
-                  const currentLevel = roleAccess[screen.id] || 'no-access';
-
-                  return (
-                    <div
-                      key={screen.id}
-                      className="flex flex-col gap-3 p-3 bg-white rounded-xl border border-gray-100 shadow-sm hover:border-indigo-200 transition-all group/card"
-                    >
-                      <span className="text-xs font-medium text-gray-700">{screen.name}</span>
-                      <div className="flex flex-wrap gap-1.5">
-                        {Object.entries(accessLevelConfig).map(([level, levelCfg]) => {
-                          const isActive = currentLevel === level;
-                          return (
-                            <button
-                              type="button"
-                              key={level}
-                              onClick={() => onUpdate(screen.id, level as AccessLevel)}
-                              className={cn(
-                                'flex-1 flex flex-col items-center justify-center p-2 rounded-lg border transition-all gap-1',
-                                isActive
-                                  ? cn(
-                                      'border-transparent ring-2 ring-offset-1',
-                                      levelCfg.badgeClass,
-                                      level === 'no-access' ? 'ring-red-500' : 'ring-indigo-500'
-                                    )
-                                  : 'border-gray-100 bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-gray-600'
-                              )}
-                              title={levelCfg.label}
-                              aria-label={levelCfg.label}
-                            >
-                              <levelCfg.icon className="w-3.5 h-3.5" />
-                              <span className="text-[10px] font-bold">{levelCfg.shortLabel}</span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+            <ModuleAccordionItem
+              key={domain.id}
+              domain={domain}
+              roleAccess={roleAccess}
+              accessLevelConfig={accessLevelConfig}
+              t={t}
+              onUpdate={onUpdate}
+              onBulkDomain={onBulkDomain}
+            />
           ))}
         </div>
       ),
@@ -143,12 +258,12 @@ export const PermissionAccordion: React.FC<PermissionAccordionProps> = ({
   });
 
   return (
-    <div className="space-y-4 pr-1">
+    <div className="space-y-4 pr-1 pb-10">
       <Accordion
         items={accordionItems}
         multiple
         defaultOpen={[0]}
-        className="border-none divide-y-0 space-y-4"
+        className="space-y-4 border-none divide-none"
       />
     </div>
   );

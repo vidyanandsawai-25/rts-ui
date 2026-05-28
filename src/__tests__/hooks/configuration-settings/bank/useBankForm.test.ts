@@ -148,7 +148,7 @@ describe('useBankForm', () => {
       });
 
       expect(mockCreateBankAction).not.toHaveBeenCalled();
-      expect(toast.error).toHaveBeenCalled();
+      expect(toast.error).not.toHaveBeenCalled();
     });
 
     it('should set errors state when validation fails', async () => {

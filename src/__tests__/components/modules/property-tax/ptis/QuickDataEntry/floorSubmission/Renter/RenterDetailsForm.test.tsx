@@ -25,10 +25,17 @@ vi.mock('@/lib/utils/renter-validation', () => ({
   areDatesOverlapping: vi.fn(() => false),
 }));
 
+// Mock sonner toast
+vi.mock('sonner', () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+  },
+}));
+
 // Mock the custom hook
 const mockSetFormData = vi.fn();
 const mockHandleSave = vi.fn();
-const mockSetShowSuccessPopup = vi.fn();
 
 vi.mock('@/hooks/ptis/floorSubmission/useRenterForm', () => ({
   useRenterForm: vi.fn(() => ({
@@ -39,8 +46,6 @@ vi.mock('@/hooks/ptis/floorSubmission/useRenterForm', () => ({
     },
     setFormData: mockSetFormData,
     isSaving: false,
-    showSuccessPopup: false,
-    setShowSuccessPopup: mockSetShowSuccessPopup,
     handleSave: mockHandleSave,
   })),
 }));

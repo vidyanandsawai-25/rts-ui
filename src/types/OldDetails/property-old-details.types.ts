@@ -234,7 +234,11 @@ export interface FloorTableRow {
   use: string;
   subUse: string | null;
   carpetAreaSqFt: number | string;
+  carpetAreaSqM: number | string;
   builtupAreaSqFt?: number | string;
+  builtupAreaSqM?: number | string;
+  carpetAreaCombined?: string;
+  builtupAreaCombined?: string;
 }
 
 /**
@@ -285,7 +289,6 @@ export interface OldTaxYear {
   taxTotal: number;
   interest: number;
   netTotal: number;
-  remark?: string;
 }
 
 export interface OldTaxesDetails {

@@ -11,13 +11,13 @@ import { extractAgreementData } from '@/lib/utils/renterUtils';
 import { AgreementDocumentViewer } from "./AgreementDocumentViewer";
 import { RenterFormData, RenterFormDataDetails } from '@/types/renter.types';
 import { toast } from 'sonner';
-import { validateRenterForm, ExistingFloorData } from '@/lib/utils/renter-validation';
+import { validateRenterForm, ExistingFloorData, type CurrentFloorContext } from '@/lib/utils/renter-validation';
 
 interface AgreementDetailsProps {
-  formData: RenterFormData | null;
-  setFormData: React.Dispatch<React.SetStateAction<RenterFormData | null>>;
+  formData: RenterFormData;
+  setFormData: React.Dispatch<React.SetStateAction<RenterFormData>>;
   existingFloors?: ExistingFloorData[];
-  floorId?: string;
+  currentFloorContext?: CurrentFloorContext;
 }
 
 const toDisplayDate = (val: string) => {
@@ -53,14 +53,14 @@ const formatManualDate = (val: string) => {
 
 // ─── Validation Helpers ───────────────────────────────────────────────────────
 
-/** Agreement ID: allow letters, digits, dashes, and underscores */
-const isValidAgreementId = (val: string) => /^[A-Za-z0-9_-]*$/.test(val);
+/** Agreement ID: digits only, up to 8 characters */
+const isValidAgreementId = (val: string) => /^\d*$/.test(val);
 
 const fieldLabelClassName = 'text-xs leading-snug tracking-normal !font-semibold text-slate-700';
 const errorClassName = 'text-[10px] text-red-500 font-medium mt-0.5 animate-in fade-in duration-200';
 const errorBorderClassName = 'border-red-400 focus:ring-red-100';
 
-const AgreementDetails = memo(({ formData, setFormData, existingFloors = [], floorId }: AgreementDetailsProps) => {
+const AgreementDetails = memo(({ formData, setFormData, existingFloors = [], currentFloorContext }: AgreementDetailsProps) => {
   const t = useTranslations('quickDataEntry');
   const [uploadedDocument, setUploadedDocument] = useState<File | null>(null);
   const [showDocumentPreview, setShowDocumentPreview] = useState(false);
@@ -103,7 +103,7 @@ const AgreementDetails = memo(({ formData, setFormData, existingFloors = [], flo
   useEffect(() => {
     if (!formData?.renterDetails) return;
 
-    const validationErrors = validateRenterForm(formData.renterDetails, floorId || 'new', existingFloors);
+    const validationErrors = validateRenterForm(formData.renterDetails, currentFloorContext, existingFloors);
     const nextErrors: Record<string, string> = {};
     const relevantFields = ['agreementId', 'agreementDate', 'renterName', 'agreementDateFrom', 'agreementDateTo', 'rentAmount'];
 
@@ -142,7 +142,7 @@ const AgreementDetails = memo(({ formData, setFormData, existingFloors = [], flo
     });
 
     setFieldErrors(nextErrors);
-  }, [formData?.renterDetails, touchedFields, floorId, existingFloors]);
+  }, [formData?.renterDetails, touchedFields, currentFloorContext, existingFloors]);
 
   const processOCR = async (file: File) => {
     setIsProcessingOCR(true);
@@ -170,7 +170,6 @@ const AgreementDetails = memo(({ formData, setFormData, existingFloors = [], flo
       const extractedData = extractAgreementData(result?.data?.text || "");
       if (Object.keys(extractedData).length > 0) {
         setFormData(prev => {
-          if (!prev) return null;
           return {
             ...prev,
             renterDetails: {
@@ -262,17 +261,18 @@ const AgreementDetails = memo(({ formData, setFormData, existingFloors = [], flo
         {/* Agreement ID — Alphanumeric only */}
         <div className="lg:col-span-2 flex flex-col gap-1.5">
           <Label className={fieldLabelClassName}>{t('floor.renterSection.agreementId')} <span className="text-red-500">*</span></Label>
-          <Input 
-            maxLength={15}
-            value={formData?.renterDetails?.agreementId || ""} 
+          <Input
+            type="text"
+            inputMode="numeric"
+            maxLength={8}
+            value={formData?.renterDetails?.agreementId || ""}
             onChange={e => {
-              const val = e.target.value.toUpperCase().slice(0, 15);
+              const val = e.target.value.replace(/\D/g, '').slice(0, 8);
               if (!isValidAgreementId(val)) {
                 markTouched('agreementId');
-                return; // Block the input
+                return;
               }
               setFormData(prev => {
-                if (!prev) return null;
                 return { ...prev, renterDetails: { ...prev.renterDetails, agreementId: val } };
               });
               markTouched('agreementId');
@@ -289,7 +289,6 @@ const AgreementDetails = memo(({ formData, setFormData, existingFloors = [], flo
           <div className="relative">
             <Input type="date" ref={agreementDateRef} naked tabIndex={-1} className="absolute inset-0 opacity-0 pointer-events-none" value={formData?.renterDetails?.agreementDate || ""} onChange={e => {
               setFormData(prev => {
-                if (!prev) return null;
                 return { ...prev, renterDetails: { ...prev.renterDetails, agreementDate: e.target.value } };
               });
               markTouched('agreementDate');
@@ -302,7 +301,6 @@ const AgreementDetails = memo(({ formData, setFormData, existingFloors = [], flo
               onChange={e => {
                 const formatted = formatManualDate(e.target.value).slice(0, 10);
                 setFormData(prev => {
-                  if (!prev) return null;
                   return { ...prev, renterDetails: { ...prev.renterDetails, agreementDate: toValueDate(formatted) } };
                 });
                 if (formatted.length === 10) {
@@ -331,7 +329,6 @@ const AgreementDetails = memo(({ formData, setFormData, existingFloors = [], flo
               const val = filtered.replace(/^\s+/, '').replace(/\s{2,}/g, ' ').slice(0, 100);
               
               setFormData(prev => {
-                if (!prev) return null;
                 return { ...prev, renterDetails: { ...prev.renterDetails, renterName: val } };
               });
               markTouched('renterName');
@@ -362,7 +359,6 @@ const AgreementDetails = memo(({ formData, setFormData, existingFloors = [], flo
               <Input type="text" placeholder="dd-mm-yyyy" naked maxLength={10} value={toDisplayDate(formData?.renterDetails?.agreementDateFrom || "")} onChange={e => {
                 const formatted = formatManualDate(e.target.value).slice(0, 10);
                 setFormData(prev => {
-                  if (!prev) return null;
                   return { ...prev, renterDetails: { ...prev.renterDetails, agreementDateFrom: toValueDate(formatted) } };
                 });
                 if (formatted.length === 10) {
@@ -378,7 +374,6 @@ const AgreementDetails = memo(({ formData, setFormData, existingFloors = [], flo
               <Input type="text" placeholder="dd-mm-yyyy" naked maxLength={10} value={toDisplayDate(formData?.renterDetails?.agreementDateTo || "")} onChange={e => {
                 const formatted = formatManualDate(e.target.value).slice(0, 10);
                 setFormData(prev => {
-                  if (!prev) return null;
                   return { ...prev, renterDetails: { ...prev.renterDetails, agreementDateTo: toValueDate(formatted) } };
                 });
                 if (formatted.length === 10) {
@@ -391,14 +386,12 @@ const AgreementDetails = memo(({ formData, setFormData, existingFloors = [], flo
             </div>
             <Input type="date" ref={fromDateRef} naked tabIndex={-1} className="absolute inset-0 opacity-0 pointer-events-none" value={formData?.renterDetails?.agreementDateFrom || ""} onChange={e => {
               setFormData(prev => {
-                if (!prev) return null;
                 return { ...prev, renterDetails: { ...prev.renterDetails, agreementDateFrom: e.target.value } };
               });
               markTouched('agreementDateFrom');
             }} />
             <Input type="date" ref={toDateRef} naked tabIndex={-1} className="absolute inset-0 opacity-0 pointer-events-none" value={formData?.renterDetails?.agreementDateTo || ""} onChange={e => {
               setFormData(prev => {
-                if (!prev) return null;
                 return { ...prev, renterDetails: { ...prev.renterDetails, agreementDateTo: e.target.value } };
               });
               markTouched('agreementDateTo');
@@ -422,7 +415,6 @@ const AgreementDetails = memo(({ formData, setFormData, existingFloors = [], flo
               const integerPart = val.split('.')[0];
               if (integerPart.length > 10) return; // Prevent typing more than 10 digits before decimal
               setFormData(prev => {
-                if (!prev) return null;
                 return { ...prev, renterDetails: { ...prev.renterDetails, rentAmount: val } };
               });
               markTouched('rentAmount');

@@ -47,9 +47,14 @@ export const RoomDataTable: React.FC<RoomDataTableProps> = (props) => {
                     {inlineEditingCell?.rowIndex === idx && inlineEditingCell?.field === 'utilities' ? (
                         <RoomTypeSelect
                             value={row.utilities}
-                            onChange={(newVal) => {
+                            onChange={(newVal, id) => {
                                 const updatedRooms = [...rooms];
-                                updatedRooms[idx] = { ...updatedRooms[idx], utilities: newVal };
+                                updatedRooms[idx] = { 
+                                    ...updatedRooms[idx], 
+                                    utilities: newVal,
+                                    roomType: newVal,
+                                    roomTypeId: id
+                                };
                                 setRooms(updatedRooms);
                                 setInlineEditingCell(null);
                             }}

@@ -31,6 +31,7 @@ export const useFloorTableColumns = ({
     {
       key: 'isTaxable',
       label: t('floor.taxable'),
+      tooltip: t('floor.taxable'),
       cellClassName: 'whitespace-nowrap',
       headerClassName: 'whitespace-nowrap',
       render: (value: unknown) => {
@@ -47,6 +48,7 @@ export const useFloorTableColumns = ({
     {
       key: 'floor',
       label: t('floor.floorLabel'),
+      tooltip: t('floor.floorLabel'),
       cellClassName: 'max-w-[100px]',
       headerClassName: 'whitespace-nowrap',
       render: (val: unknown) => {
@@ -61,6 +63,7 @@ export const useFloorTableColumns = ({
     {
       key: 'subFloor',
       label: t('floor.subFloor'),
+      tooltip: t('floor.subFloor'),
       cellClassName: 'max-w-[150px]',
       headerClassName: 'whitespace-nowrap',
       render: (val: unknown) => {
@@ -75,18 +78,21 @@ export const useFloorTableColumns = ({
     {
       key: 'conYr',
       label: t('floor.conYr'),
+      tooltip: t('floor.conYr'),
       cellClassName: 'whitespace-nowrap',
       headerClassName: 'whitespace-nowrap',
     },
     {
       key: 'asstYr',
       label: t('floor.asstYr'),
+      tooltip: t('floor.asstYr'),
       cellClassName: 'whitespace-nowrap',
       headerClassName: 'whitespace-nowrap',
     },
     {
       key: 'conTyp',
       label: t('floor.conTyp'),
+      tooltip: t('floor.conTyp'),
       cellClassName: 'max-w-[150px]',
       headerClassName: 'whitespace-nowrap',
       render: (val: unknown) => {
@@ -101,6 +107,7 @@ export const useFloorTableColumns = ({
     {
       key: 'use',
       label: t('floor.use'),
+      tooltip: t('floor.use'),
       cellClassName: 'max-w-[100px]',
       headerClassName: 'whitespace-nowrap',
       render: (val: unknown) => {
@@ -115,6 +122,7 @@ export const useFloorTableColumns = ({
     {
       key: 'subTyp',
       label: t('floor.subTyp'),
+      tooltip: t('floor.subTyp'),
       cellClassName: 'max-w-[100px]',
       headerClassName: 'whitespace-nowrap',
       render: (val: unknown) => {
@@ -129,6 +137,7 @@ export const useFloorTableColumns = ({
     {
       key: 'renter',
       label: t('floor.renter'),
+      tooltip: t('floor.renter'),
       cellClassName: 'whitespace-nowrap',
       headerClassName: 'whitespace-nowrap',
       render: (value: unknown) => (
@@ -142,12 +151,14 @@ export const useFloorTableColumns = ({
     {
       key: 'rooms',
       label: t('floor.rooms'),
+      tooltip: t('floor.rooms'),
       cellClassName: 'whitespace-nowrap',
       headerClassName: 'whitespace-nowrap',
     },
     {
       key: 'areaSqFt',
       label: `${t('floor.carpetArea')} ${t('floor.sqFtSqM')}`,
+      tooltip: t('floor.carpetArea'),
       cellClassName: 'whitespace-nowrap font-medium',
       headerClassName: 'whitespace-normal min-w-[120px] max-w-[150px] leading-tight',
       render: (_value: unknown, row: FloorData) => (
@@ -162,6 +173,7 @@ export const useFloorTableColumns = ({
     {
       key: 'builtupAreaSqFt',
       label: `${t('floor.builtupArea')} ${t('floor.sqFtSqM')}`,
+      tooltip: t('floor.builtupArea'),
       cellClassName: 'whitespace-nowrap font-medium',
       headerClassName: 'whitespace-normal min-w-[120px] max-w-[150px] leading-tight',
       render: (_value: unknown, row: FloorData) => (
@@ -188,8 +200,8 @@ export const renderFloorActions = (t: (key: string) => string, handleDeleteFloor
       />
     );
   };
-  
+
   FloorActionsCell.displayName = 'FloorActionsCell';
-  
+
   return FloorActionsCell;
 };

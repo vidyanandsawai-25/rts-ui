@@ -17,7 +17,6 @@ export const RoomTypeShapeFields: React.FC<RoomTypeShapeFieldsProps> = ({
   formData,
   handleInputChange,
   isEditMode,
-  validationErrors,
   focusRefs,
   t,
 }) => {
@@ -34,7 +33,7 @@ export const RoomTypeShapeFields: React.FC<RoomTypeShapeFieldsProps> = ({
     <>
       {/* Room No */}
       <div className="flex flex-col justify-center flex-shrink-0 px-1" style={{ width: COLUMN_WIDTHS.roomNo }}>
-         <Input
+        <Input
           ref={setRoomNoRef}
           id="room-no-input"
           type="text"
@@ -50,7 +49,7 @@ export const RoomTypeShapeFields: React.FC<RoomTypeShapeFieldsProps> = ({
           readOnly={true}
           className="text-center h-[40px] bg-gray-100 text-gray-900 font-bold cursor-not-allowed outline-none select-none"
           placeholder={t('roomSubmission.input.placeholders.auto')}
-          error={isEditMode && validationErrors.roomNo ? t(validationErrors.roomNo) : undefined}
+          error={undefined}
         />
       </div>
 
@@ -58,16 +57,18 @@ export const RoomTypeShapeFields: React.FC<RoomTypeShapeFieldsProps> = ({
       <div className="flex flex-col justify-center flex-shrink-0 px-1" style={{ width: COLUMN_WIDTHS.roomType }}>
         <RoomTypeSelect
           value={formData.utilities}
-          onChange={(value) => {
+          onChange={(value, id) => {
             handleInputChange('utilities', value);
+            if (id) {
+              handleInputChange('roomTypeId', String(id));
+            } else {
+              handleInputChange('roomTypeId', '');
+            }
             setTimeout(() => { focusRefs?.current['shape']?.focus(); (focusRefs?.current['shape'] as HTMLElement)?.click(); }, 100);
           }}
           disabled={!isEditMode}
           className="w-full h-[40px]"
         />
-        {isEditMode && validationErrors.utilities && (
-          <span className="text-[10px] text-red-500 mt-0.5">{t(validationErrors.utilities)}</span>
-        )}
       </div>
 
       <div className="flex flex-col justify-center flex-shrink-0 px-1" style={{ width: COLUMN_WIDTHS.shape }}>
@@ -93,7 +94,7 @@ export const RoomTypeShapeFields: React.FC<RoomTypeShapeFieldsProps> = ({
           }}
           disabled={!isEditMode}
           required={isEditMode}
-          error={isEditMode && validationErrors.shape ? t(validationErrors.shape) : undefined}
+          error={undefined}
           className="w-full h-[40px]"
         />
       </div>

@@ -21,7 +21,6 @@ export const DimensionAreaFields: React.FC<DimensionAreaFieldsProps> = ({
   formData,
   handleInputChange,
   isEditMode,
-  validationErrors,
   focusRefs,
   t,
   areaUnit,
@@ -60,7 +59,7 @@ export const DimensionAreaFields: React.FC<DimensionAreaFieldsProps> = ({
           <Input
             id="calculated-area-input"
             type="text"
-            value={adjustedArea.toFixed(2)}
+            value={calculatedArea.toFixed(2)}
             readOnly
             className={cn(
               'text-center h-[40px] font-semibold',
@@ -85,7 +84,7 @@ export const DimensionAreaFields: React.FC<DimensionAreaFieldsProps> = ({
           disabled={!isEditMode}
           className="text-center h-[40px]"
           placeholder={t('roomSubmission.input.placeholders.roomCount')}
-          error={isEditMode && validationErrors.roomCount ? t(validationErrors.roomCount) : undefined}
+          error={undefined}
         />
       </div>
     </>

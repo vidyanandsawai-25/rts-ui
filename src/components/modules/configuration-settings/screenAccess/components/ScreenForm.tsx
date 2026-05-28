@@ -114,7 +114,9 @@ export function ScreenForm({ initialData, isEdit: isEditProp, groups, modules }:
                 id="screenName"
                 value={formData.screenName || ''}
                 onChange={(e) => {
-                  const val = e.target.value.replace(DESCRIPTION_SANITIZE, '');
+                  const val = e.target.value
+                    .replace(DESCRIPTION_SANITIZE, '')
+                    .replace(/[&()\/-]/g, '');
                   handleChange('screenName', val);
                 }}
                 onBlur={() => handleBlur('screenName')}
@@ -133,7 +135,10 @@ export function ScreenForm({ initialData, isEdit: isEditProp, groups, modules }:
                 id="routePath"
                 value={formData.routePath || ''}
                 onChange={(e) => {
-                  const val = e.target.value.replace(TEXT_SANITIZE, '').slice(0, 50);
+                  const val = e.target.value
+                    .replace(TEXT_SANITIZE, '')
+                    .replace(/[&()]/g, '')
+                    .slice(0, 50);
                   handleChange('routePath', val);
                 }}
                 onBlur={() => handleBlur('routePath')}
@@ -161,10 +166,15 @@ export function ScreenForm({ initialData, isEdit: isEditProp, groups, modules }:
                   handleChange('screenGroupId', val ? parseInt(val, 10) : undefined);
                   handleBlur('screenGroupId');
                 }}
-                options={groups.map((g) => ({
-                  value: String(g.screenGroupId),
-                  label: g.screenGroupName,
-                }))}
+                options={groups
+                  .filter((g) => g.isActive)
+                  .map((g) => ({
+                    value: String(g.screenGroupId),
+                    label:
+                      g.screenGroupName && !/\?{2,}/.test(g.screenGroupName)
+                        ? g.screenGroupName
+                        : g.screenGroupLocalName || g.screenGroupName,
+                  }))}
                 placeholder={t('screenManagement.screens.form.selectGroup')}
               />
               {showError('screenGroupId') && <ErrorMsg error={errors.screenGroupId} />}
@@ -193,10 +203,18 @@ export function ScreenForm({ initialData, isEdit: isEditProp, groups, modules }:
 
                   handleBlur('moduleId');
                 }}
-                options={modules.map((m) => ({
-                  value: String(m.moduleId),
-                  label: m.moduleName,
-                }))}
+                options={modules
+                  .filter(
+                    (m) => m.isActive !== false || String(m.moduleId) === String(formData.moduleId)
+                  )
+                  .map((m) => ({
+                    value: String(m.moduleId),
+                    label:
+                      m.moduleName +
+                      (m.isActive === false
+                        ? ` (${t('filters.inactive', { defaultValue: 'Inactive' })})`
+                        : ''),
+                  }))}
                 placeholder={t('screenManagement.screens.form.selectModule', {
                   defaultValue: 'Select Module',
                 })}

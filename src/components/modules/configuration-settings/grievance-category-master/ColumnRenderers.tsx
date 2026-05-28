@@ -9,7 +9,7 @@ import {
 } from './ColumnUtils';
 
 export const renderCategoryCode = (value: unknown): ReactNode => (
-  <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-200 rounded-lg text-[10px] font-black border border-slate-200 dark:border-slate-700 tracking-wider">
+  <code className="px-2 py-1 bg-slate-100 text-slate-900 rounded-lg text-[10px] font-black border border-slate-200 tracking-wider">
     {String(value)}
   </code>
 );
@@ -17,7 +17,7 @@ export const renderCategoryCode = (value: unknown): ReactNode => (
 export const renderCategoryName = (value: unknown): ReactNode => (
   <div className="flex flex-col max-w-[300px]">
     <span
-      className="font-bold text-slate-900 dark:text-white leading-tight line-clamp-3"
+      className="font-bold text-slate-900 leading-tight line-clamp-3"
       title={String(value)}
     >
       {String(value)}
@@ -43,7 +43,7 @@ export const renderDepartment = (
   }
 
   return (
-    <span className="text-sm font-medium text-slate-600 dark:text-slate-400">{displayName}</span>
+    <span className="text-sm font-medium text-slate-600">{displayName}</span>
   );
 };
 
@@ -60,10 +60,10 @@ export const renderPriority = (
 
 export const renderSla = (row: GrievanceCategory, t: (key: string) => string): ReactNode => (
   <div className="flex items-center gap-1.5">
-    <span className="text-slate-900 dark:text-white font-black text-sm tabular-nums">
+    <span className="text-slate-900 font-black text-sm tabular-nums">
       {row.resolutionSla || '0'}
     </span>
-    <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wide">
+    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wide">
       {t('days')}
     </span>
   </div>
@@ -75,7 +75,7 @@ export const renderEscalation = (
 ): ReactNode => (
   <Badge
     variant="secondary"
-    className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-none text-[10px] font-bold px-2 py-0.5 rounded-md"
+    className="bg-slate-100 text-slate-600 border-none text-[10px] font-bold px-2 py-0.5 rounded-md"
   >
     {row.escalationLevel
       ? getLocalizedEscalationLabel(row.escalationLevel, tEscalationOptions)
@@ -114,7 +114,7 @@ export const renderActions = (
 export const renderDescription = (value: unknown): ReactNode => (
   <div className="max-w-[200px]">
     <span
-      className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed italic"
+      className="text-xs text-slate-500 line-clamp-2 leading-relaxed italic"
       title={value ? String(value) : ''}
     >
       {value ? String(value) : '-'}

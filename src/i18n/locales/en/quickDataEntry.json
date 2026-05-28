@@ -1,7 +1,8 @@
 {
     "commonbuttonmessages": {
         "update": "Update",
-        "UpdateChanges": "Update Changes"
+        "UpdateChanges": "Update Changes",
+        "clear": "Clear"
     },
     "roomSubmission": {
         "quickDataEntry": "Property Quick Data Entry",
@@ -21,6 +22,7 @@
         "success": {
             "title": "Success!",
             "message": "Floor details added successfully",
+            "deleted": "Room deleted successfully",
             "ok": "OK"
         },
         "validation": {
@@ -260,6 +262,7 @@
         "TaxationBreakdown": "Taxation Breakdown"
     },
     "floorSubmission": {
+        "updating": "UPDATING...",
         "loading": {
             "message": "Loading floor details...",
             "description": "Please wait while we fetch the floor data"
@@ -374,7 +377,12 @@
             "taxYearsRequired": "Tax years data is required",
             "financeYearRequired": "Finance year is required",
             "taxTotalInvalid": "Tax total cannot be negative",
-            "toiletCountZero": "You cannot enter only 0"
+            "toiletCountZero": "You cannot enter only 0",
+            "required": "This field is required",
+            "invalidNumber": "Please enter a valid number",
+            "negativeNotAllowed": "Negative values are not allowed",
+            "maxTwoDecimals": "Maximum 2 decimal places allowed",
+            "fixErrors": "Please fix validation errors before saving"
         },
         "errors": {
             "failedToConnect": {
@@ -532,6 +540,7 @@
             "societyAddress": "Invalid Society Address. Only letters, numbers, and common punctuation (. , - / #) are allowed. Special characters like *()_++_)(&&^%$#@!~}{}; are not permitted.",
             "invalidMobile": "Mobile number must be exactly 10 digits",
             "invalidMobileStart": "Mobile number must start with 6 to 9.",
+            "invalidRepeatedSequence": "Repeated number sequences are not allowed",
             "invalidNameLength": "Name must be between 2 and 150 characters.",
             "invalidName": "Invalid name. Only letters and basic punctuation are allowed."
         },
@@ -851,6 +860,12 @@
     },
     "oldDetails": {
         "title": "Old Taxation",
+          "validation": {
+                "zoneNameRequired": "Zone Name is required.",
+                "wardNoRequired": "Ward No is required.",
+                "propertyNoRequired": "Property No is required.",
+                "fillRequiredFields": "Please fill all required fields."
+             },
         "loading": {
             "message": "Loading Old Details...",
             "description": "Please wait while we fetch the historical information",
@@ -912,6 +927,8 @@
         "partitionNo": "Partition No",
         "eGovernanceNo": "E-Governance No",
         "carpetArea": "Carpet Area (Sqft/SqMtr)",
+        "carpetformheaderArea": "Carpet Area (ft/mtr)",
+        "builtupformheaderArea": "Builtup Area (ft/mtr)",
         "carpetAreaSqFt": "Carpet Area (sq.ft)",
         "areaSqFt": "Area (Sq Ft)",
         "areaSqM": "Area (sq.m)",
@@ -1006,7 +1023,8 @@
             "unexpectedError": "An unexpected error occurred",
             "saving": "Saving...",
             "update": "Update",
-            "invalidYear": "Please enter a valid 4-digit assessment year."
+            "invalidYear": "Please enter a valid 4-digit assessment year.",
+            "noTaxDataAvailable": "No tax data available. Please configure tax types first."
         }
     },
     "footer": {

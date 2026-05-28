@@ -34,7 +34,7 @@ export function ValuationSummaryFooter({ title, badges, initialTaxDetails }: Val
   return (
     <div className="overflow-hidden rounded-lg border border-gray-200 bg-white p-1 shadow-sm">
       <div className="flex w-full items-center justify-between gap-3 border-b border-indigo-100 bg-[#FAF8FF] p-2">
-        <h3 className="shrink-0 whitespace-nowrap text-xs font-semibold text-[#9C31C5]">
+        <h3 className="shrink-0 whitespace-nowrap text-sm font-black uppercase tracking-wider text-[#9C31C5]">
           {title}
         </h3>
         <div className="flex flex-wrap items-center justify-end gap-2">

@@ -39,7 +39,7 @@ export function usePermissions(screenCode: string): ScreenPermissions {
         s.screenCode?.toUpperCase() === query ||
         s.screenName?.toUpperCase() === query ||
         s.routePath?.toUpperCase().includes(query) ||
-        s.routePath?.toUpperCase().includes(query.replace('_', '-'))
+        s.routePath?.toUpperCase().includes(query.replace(/_/g, '-'))
       );
     });
 

@@ -139,10 +139,12 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
   const t = await getTranslations({ locale, namespace: 'ptis' });
   const activeTab = toValidTab(resolvedSearchParams?.tab);
   const ptisParams = parsePtisSearchParams(resolvedSearchParams);
+  const valuationTab = ptisParams.tab;
   const wardIdParam = toPositiveInt(resolvedSearchParams?.wardId);
   const propertyIdParam = toPositiveInt(resolvedSearchParams?.propertyId);
   const showFloorParam = resolvedSearchParams?.showFloor === 'true';
   const showOldTaxParam = resolvedSearchParams?.showOldTax === 'true';
+  const showDetailsParam = resolvedSearchParams?.showDetails === 'true';
 
   const pageNumber = toPositiveInt(resolvedSearchParams?.pageNumber) || 1;
   const pageSize = toPositiveInt(resolvedSearchParams?.pageSize) || 10;
@@ -290,7 +292,9 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
               residential: emptyPaged,
             }),
         resolvedPropertyId ? getRateableValue(resolvedPropertyId) : Promise.resolve(null),
-        resolvedPropertyId ? getCapitalValue(resolvedPropertyId) : Promise.resolve(null),
+        resolvedPropertyId && (valuationTab === 'capital' || (valuationTab === 'dual' && showDetailsParam))
+          ? getCapitalValue(resolvedPropertyId)
+          : Promise.resolve(null),
         resolvedPropertyId ? fetchKycDetailsOnlyAction(resolvedPropertyId) : Promise.resolve(null),
         resolvedPropertyId
           ? fetchSocietyDetailsOnlyAction(resolvedPropertyId)
@@ -325,7 +329,7 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
       // so only load it when the dual-method UI is actually being rendered.
       dualSectionData =
         ptisParams.tab === 'dual'
-          ? await assembleDualMethodSectionData(resolvedPropertyId, oldDetails)
+          ? await assembleDualMethodSectionData(resolvedPropertyId, oldDetails, rateableRes, capitalRes)
           : undefined;
     } catch (err) {
       criticalError = getCleanErrorMessage(err, t('search.errors.fetchPropertiesFailed'));
@@ -381,9 +385,8 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
     : undefined;
 
   // Fetch tax details based on valuation tab (ptisParams.tab), not property tab (activeTab)
-  const valuationTab = ptisParams.tab;
   const { rateableTaxDetails, capitalTaxDetails, rateableTaxError, capitalTaxError } =
-    await fetchTaxDetailsByTab(resolvedPropertyId, valuationTab);
+    await fetchTaxDetailsByTab(resolvedPropertyId, valuationTab, showDetailsParam);
 
   const footerActions: FooterAction[] = FALLBACK_FOOTER_ACTIONS.map((action, index) => {
     const baseStyle = FOOTER_REGISTRY[action.actionCommand] || DEFAULT_ACTION_STYLE;
@@ -438,45 +441,51 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
           />
         }
         capitalSection={
-          <CapitalTaxDetailsSection
-            capitalData={capitalResult?.success ? capitalResult.data : null}
-            error={!capitalResult?.success ? capitalResult?.error : undefined}
-            hasFetchedData={capitalResult != null}
-            oldDetails={initialData.oldDetails || defaultOldDetails}
-            propertyId={resolvedPropertyId}
-            searchParams={resolvedSearchParams as Record<string, string | string[] | undefined>}
-            initialTaxDetails={capitalTaxDetails}
-            taxDetailsError={capitalTaxError}
-            locale={locale}
-          />
+          valuationTab === 'capital' ? (
+            <CapitalTaxDetailsSection
+              capitalData={capitalResult?.success ? capitalResult.data : null}
+              error={!capitalResult?.success ? capitalResult?.error : undefined}
+              hasFetchedData={capitalResult != null}
+              oldDetails={initialData.oldDetails || defaultOldDetails}
+              propertyId={resolvedPropertyId}
+              searchParams={resolvedSearchParams as Record<string, string | string[] | undefined>}
+              initialTaxDetails={capitalTaxDetails}
+              taxDetailsError={capitalTaxError}
+              locale={locale}
+            />
+          ) : null
         }
         dualRateableSection={
-          <RateableTaxDetailsSection
-            rateableData={dualSectionData?.initialRateableData || null}
-            error={dualSectionData?.rateableError}
-            hasFetchedData={dualSectionData != null}
-            oldDetails={initialData.oldDetails || defaultOldDetails}
-            propertyId={resolvedPropertyId}
-            searchParams={resolvedSearchParams as Record<string, string | string[] | undefined>}
-            locale={locale}
-            initialTaxDetails={rateableTaxDetails}
-            taxDetailsError={rateableTaxError}
-            showInlineError={false}
-          />
+          valuationTab === 'dual' && showDetailsParam ? (
+            <RateableTaxDetailsSection
+              rateableData={dualSectionData?.initialRateableData || null}
+              error={dualSectionData?.rateableError}
+              hasFetchedData={dualSectionData != null}
+              oldDetails={initialData.oldDetails || defaultOldDetails}
+              propertyId={resolvedPropertyId}
+              searchParams={resolvedSearchParams as Record<string, string | string[] | undefined>}
+              locale={locale}
+              initialTaxDetails={rateableTaxDetails}
+              taxDetailsError={rateableTaxError}
+              showInlineError={false}
+            />
+          ) : null
         }
         dualCapitalSection={
-          <CapitalTaxDetailsSection
-            capitalData={dualSectionData?.initialCapitalData || null}
-            error={dualSectionData?.capitalError}
-            hasFetchedData={dualSectionData != null}
-            oldDetails={initialData.oldDetails || defaultOldDetails}
-            propertyId={resolvedPropertyId}
-            searchParams={resolvedSearchParams as Record<string, string | string[] | undefined>}
-            locale={locale}
-            initialTaxDetails={capitalTaxDetails}
-            taxDetailsError={capitalTaxError}
-            showInlineError={false}
-          />
+          valuationTab === 'dual' && showDetailsParam ? (
+            <CapitalTaxDetailsSection
+              capitalData={dualSectionData?.initialCapitalData || null}
+              error={dualSectionData?.capitalError}
+              hasFetchedData={dualSectionData != null}
+              oldDetails={initialData.oldDetails || defaultOldDetails}
+              propertyId={resolvedPropertyId}
+              searchParams={resolvedSearchParams as Record<string, string | string[] | undefined>}
+              locale={locale}
+              initialTaxDetails={capitalTaxDetails}
+              taxDetailsError={capitalTaxError}
+              showInlineError={false}
+            />
+          ) : null
         }
       />
       <BottomActionBar

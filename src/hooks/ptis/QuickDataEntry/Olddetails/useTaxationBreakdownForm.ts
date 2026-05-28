@@ -3,7 +3,7 @@ import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useLocale, useTranslations } from "next-intl";
 import { useConfirm } from "@/components/common";
-import { OldTaxesDetails, OldTaxItem, OldTaxYear } from "@/types/property-old-details.types";
+import { OldTaxesDetails, OldTaxItem, OldTaxYear } from "@/types/OldDetails/property-old-details.types";
 import { saveOldTaxesDetailsAction } from "@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/OldDetails/taxation-breakdown/action";
 import { propertyValidations } from "@/lib/utils/validation-schemas";
 
@@ -24,7 +24,6 @@ export function useTaxationBreakdownForm(initialData: OldTaxesDetails | null) {
     interest: yearData?.interest || 0,
     taxTotal: yearData?.taxTotal || 0,
     netTotal: yearData?.netTotal || 0,
-    remark: yearData?.remark || "",
     financeYearId: yearData?.financeYearId || 0,
     yearCode: yearData?.yearCode || null,
     rVorCV: yearData?.rVorCV || "",
@@ -35,21 +34,72 @@ export function useTaxationBreakdownForm(initialData: OldTaxesDetails | null) {
   const [taxes, setTaxes] = useState<OldTaxItem[]>(yearData?.taxes || []);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Validation State
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+
+  // Validate amount field (numeric, non-negative, max 2 decimals)
+  const validateAmountField = (value: string): string | null => {
+    if (!value || value.trim() === '') {
+      return tValidation('property.validation.required') || 'This field is required';
+    }
+
+    const numValue = Number(value);
+    
+    if (isNaN(numValue)) {
+      return tValidation('property.validation.invalidNumber') || 'Please enter a valid number';
+    }
+
+    if (numValue < 0) {
+      return tValidation('property.validation.negativeNotAllowed') || 'Negative values are not allowed';
+    }
+
+    // Check decimal places (max 2)
+    const decimalPart = value.split('.')[1];
+    if (decimalPart && decimalPart.length > 2) {
+      return tValidation('property.validation.maxTwoDecimals') || 'Maximum 2 decimal places allowed';
+    }
+
+    return null;
+  };
+
   const handleTaxChange = (taxId: number, value: string) => {
     const numValue = Number(value) || 0;
-    setTaxes(prev => {
-      const updated = prev.map(t => t.taxId === taxId ? { ...t, taxAmount: numValue } : t);
+    const updatedTaxes = taxes.map(t => t.taxId === taxId ? { ...t, taxAmount: numValue } : t);
+    const newTaxTotal = updatedTaxes.reduce((acc, t) => acc + (t.taxAmount || 0), 0);
+    const newNetTotal = newTaxTotal + (Number(formData.interest) || 0);
 
-      // Calculate totals
-      const newTaxTotal = updated.reduce((acc, t) => acc + (t.taxAmount || 0), 0);
-      setFormData(prevForm => ({
-        ...prevForm,
-        taxTotal: newTaxTotal,
-        netTotal: newTaxTotal + (Number(prevForm.interest) || 0)
-      }));
+    const taxError = validateAmountField(value);
+
+    setValidationErrors(prev => {
+      const updated = { ...prev };
+      
+      if (taxError) {
+        updated[`tax_${taxId}`] = taxError;
+      } else {
+        delete updated[`tax_${taxId}`];
+      }
+
+      if (newTaxTotal < 0) {
+        updated.taxTotal = tValidation('property.validation.negativeNotAllowed') || 'Negative values are not allowed';
+      } else {
+        delete updated.taxTotal;
+      }
+
+      if (newNetTotal < 0) {
+        updated.netTotal = tValidation('property.validation.negativeNotAllowed') || 'Negative values are not allowed';
+      } else {
+        delete updated.netTotal;
+      }
 
       return updated;
     });
+
+    setTaxes(updatedTaxes);
+    setFormData(prev => ({
+      ...prev,
+      taxTotal: newTaxTotal,
+      netTotal: newNetTotal
+    }));
   };
 
   const handleMetaChange = (key: string, value: string | number) => {
@@ -60,6 +110,28 @@ export function useTaxationBreakdownForm(initialData: OldTaxesDetails | null) {
       }
       return updated;
     });
+
+    if (key === 'interest') {
+      const error = validateAmountField(String(value));
+      const newNetTotal = (Number(formData.taxTotal) || 0) + (Number(value) || 0);
+
+      setValidationErrors(prev => {
+        const updated = { ...prev };
+        if (error) {
+          updated.interest = error;
+        } else {
+          delete updated.interest;
+        }
+
+        if (newNetTotal < 0) {
+          updated.netTotal = tValidation('property.validation.negativeNotAllowed') || 'Negative values are not allowed';
+        } else {
+          delete updated.netTotal;
+        }
+
+        return updated;
+      });
+    }
   };
 
   const validate = () => {
@@ -69,6 +141,26 @@ export function useTaxationBreakdownForm(initialData: OldTaxesDetails | null) {
       toast.error(yearError);
       return false;
     }
+
+    // Check range (1700-2026)
+    const yearNum = Number(formData.year);
+    if (isNaN(yearNum) || yearNum < 1700 || yearNum > 2026) {
+      toast.error(tValidation('property.validation.assessmentYearRange'));
+      return false;
+    }
+
+    // Check if taxes data is available
+    if (!taxes || taxes.length === 0) {
+      toast.error(t('noTaxDataAvailable') || 'No tax data available');
+      return false;
+    }
+
+    // Check for validation errors
+    if (Object.keys(validationErrors).length > 0) {
+      toast.error(tValidation('property.validation.fixErrors') || 'Please fix validation errors before saving');
+      return false;
+    }
+
     return true;
   };
 
@@ -91,7 +183,6 @@ export function useTaxationBreakdownForm(initialData: OldTaxesDetails | null) {
             taxTotal: Number(formData.taxTotal) || 0,
             interest: Number(formData.interest) || 0,
             netTotal: Number(formData.netTotal) || 0,
-            remark: formData.remark,
             taxes: taxes.map(t => ({
               taxId: t.taxId,
               taxName: t.taxName,
@@ -131,6 +222,20 @@ export function useTaxationBreakdownForm(initialData: OldTaxesDetails | null) {
     });
   };
 
+  const isTaxesChanged = taxes.some(t => {
+    const orig = (yearData?.taxes || []).find(ot => ot.taxId === t.taxId);
+    return (orig?.taxAmount || 0) !== (t.taxAmount || 0);
+  });
+
+  const isChanged =
+    formData.year !== (yearData ? String(yearData.year || "") : "") ||
+    Number(formData.interest || 0) !== (yearData?.interest || 0) ||
+    formData.rVorCV !== (yearData?.rVorCV || "") ||
+    Number(formData.rVorCVValue || 0) !== (yearData?.rVorCVValue || 0) ||
+    isTaxesChanged;
+
+  const hasTaxData = taxes && taxes.length > 0;
+
   return {
     formData,
     taxes,
@@ -138,6 +243,10 @@ export function useTaxationBreakdownForm(initialData: OldTaxesDetails | null) {
     handleTaxChange,
     handleMetaChange,
     handleSave,
-    t
+    isChanged,
+    hasTaxData,
+    validationErrors,
+    t,
+    tValidation
   };
 }

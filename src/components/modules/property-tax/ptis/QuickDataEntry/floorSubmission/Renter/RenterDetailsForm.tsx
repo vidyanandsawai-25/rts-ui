@@ -1,23 +1,57 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import { useState, useEffect, memo } from 'react';
+import { useState, useEffect, memo, useMemo, useTransition, useCallback } from 'react';
+import { toast } from 'sonner';
+import dynamic from 'next/dynamic';
 import { Button, ToastContainer } from '@/components/common';
 import type { ToastProps } from '@/components/common';
-import { X, CheckCircle, ArrowLeft } from 'lucide-react';
+import { X, CheckCircle, ArrowLeft, Loader2 } from 'lucide-react';
 import { PropertyDetailsOnRenter } from './PropertyDetailsOnRenter';
 import AgreementDetails from './AgreementDetails';
-import { RentManagementCard } from './RentManagementCard';
 import { SelectedFloorDetails } from './SelectedFloorDetails';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { Loader2 } from 'lucide-react';
 import { ActionResult } from '@/types/common.types';
 import { useRenterForm } from '@/hooks/ptis/floorSubmission/useRenterForm';
 import { RentBreakdownDialog } from './RentBreakdownDialog';
 import { calculateRentProgression } from '@/lib/utils/renter-calculations';
-import { validateRenterForm } from '@/lib/utils/renter-validation';
-import { useMemo } from 'react';
+import { validateRenterForm, type CurrentFloorContext, type ExistingFloorData } from '@/lib/utils/renter-validation';
+import { getFloorSubmissionsByOwnerAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/FloorSubmission/actions';
+
+const RentManagementCard = dynamic(
+  () => import('./RentManagementCard').then((mod) => ({ default: mod.RentManagementCard })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-32 w-full items-center justify-center rounded-xl border-2 border-dashed border-gray-100 bg-white/50">
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="h-5 w-5 animate-spin text-indigo-500" />
+          <span className="text-[10px] font-medium uppercase tracking-widest text-gray-400">
+            Loading rent engine...
+          </span>
+        </div>
+      </div>
+    ),
+  }
+);
+
+const parseExistingFloors = (res: unknown): ExistingFloorData[] => {
+  if (Array.isArray(res)) return res as ExistingFloorData[];
+  if (
+    res &&
+    typeof res === 'object' &&
+    'success' in res &&
+    (res as Record<string, unknown>).success &&
+    Array.isArray((res as Record<string, unknown>).data)
+  ) {
+    return (res as Record<string, unknown>).data as ExistingFloorData[];
+  }
+  if (res && typeof res === 'object' && Array.isArray((res as Record<string, unknown>).items)) {
+    return (res as Record<string, unknown>).items as ExistingFloorData[];
+  }
+  return [];
+};
 
 export interface RenterDetailsFormProps {
   initialData?: any;
@@ -57,75 +91,123 @@ export const RenterDetailsForm = memo(
     useLookup,
     subTypeLookup,
     subFloorLookup,
-    existingFloors = [],
+    existingFloors: initialExistingFloors = [],
   }: RenterDetailsFormProps) => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const locale = useLocale();
     const t = useTranslations('quickDataEntry');
+    const [existingFloors, setExistingFloors] = useState<ExistingFloorData[]>(initialExistingFloors);
+    const [, startExistingFloorsTransition] = useTransition();
 
-    const { formData, setFormData, isSaving, showSuccessPopup, setShowSuccessPopup, handleSave } =
-      useRenterForm({
-        initialData,
-        floorId: floorId || 'new',
-        propertyId,
-        locale,
-        saveAction,
-        onSaveSuccess: (data) => {
-          if (onSaveRenter) onSaveRenter(data);
+    const handleSaveSuccess = useCallback((data: Parameters<NonNullable<RenterDetailsFormProps['onSaveRenter']>>[0]) => {
+      if (onSaveRenter) onSaveRenter(data);
 
-          // Robustly resolve the saved floor ID with numeric validation
-          const rawId = data?.propertyDetailsId ?? data?.id;
-          const numericId = Number(rawId);
-          const savedFloorId = (!isNaN(numericId) && numericId > 0) ? String(numericId) : (floorId || 'new');
+      const rawId = data?.propertyDetailsId ?? data?.id;
+      const numericId = Number(rawId);
+      const savedFloorId = (!isNaN(numericId) && numericId > 0) ? String(numericId) : (floorId || 'new');
 
-          // Resolve params: use props first, then current URL searchParams as fallback
-          const resolvedWardNo = wardNo || searchParams.get('wardNo') || '';
-          const resolvedPropertyNo = propertyNo || searchParams.get('propertyNo') || '';
-          const resolvedPartitionNo = partitionNo || searchParams.get('partitionNo') || '';
+      const resolvedWardNo = wardNo || searchParams.get('wardNo') || '';
+      const resolvedPropertyNo = propertyNo || searchParams.get('propertyNo') || '';
+      const resolvedPartitionNo = partitionNo || searchParams.get('partitionNo') || '';
 
-          setTimeout(() => {
-            setShowSuccessPopup(false);
-            const redirectParams = new URLSearchParams();
-            if (resolvedWardNo) redirectParams.set('wardNo', resolvedWardNo);
-            if (resolvedPropertyNo) redirectParams.set('propertyNo', resolvedPropertyNo);
-            if (resolvedPartitionNo) redirectParams.set('partitionNo', resolvedPartitionNo);
-            redirectParams.set('floorId', savedFloorId);
-            redirectParams.set('drawer', savedFloorId === 'new' ? 'add' : 'edit');
-            router.push(
-              `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/FloorSubmission?${redirectParams.toString()}`
-            );
-            router.refresh();
-          }, 1500);
-        },
-      });
+      toast.success(t('floor.renterSection.successfullySaved'));
+
+      const redirectParams = new URLSearchParams();
+      if (resolvedWardNo) redirectParams.set('wardNo', resolvedWardNo);
+      if (resolvedPropertyNo) redirectParams.set('propertyNo', resolvedPropertyNo);
+      if (resolvedPartitionNo) redirectParams.set('partitionNo', resolvedPartitionNo);
+      redirectParams.set('floorId', savedFloorId);
+      redirectParams.set('drawer', savedFloorId === 'new' ? 'add' : 'edit');
+
+      router.push(
+        `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/FloorSubmission?${redirectParams.toString()}`
+      );
+    }, [
+      floorId,
+      locale,
+      onSaveRenter,
+      partitionNo,
+      propertyId,
+      propertyNo,
+      router,
+      searchParams,
+      t,
+      wardNo,
+    ]);
+
+    const { formData, setFormData, isSaving, handleSave } = useRenterForm({
+      initialData,
+      floorId: floorId || 'new',
+      propertyId,
+      locale,
+      saveAction,
+      onSaveSuccess: handleSaveSuccess,
+    });
+
+    useEffect(() => {
+      if (!propertyId || initialExistingFloors.length > 0) return;
+
+      let cancelled = false;
+      const loadExistingFloors = () => {
+        startExistingFloorsTransition(async () => {
+          try {
+            const res = await getFloorSubmissionsByOwnerAction(propertyId);
+            if (!cancelled) setExistingFloors(parseExistingFloors(res));
+          } catch {
+            // Validation can proceed without cross-floor checks if this fetch fails.
+          }
+        });
+      };
+
+      let idleId: number | undefined;
+      let timerId: ReturnType<typeof setTimeout> | undefined;
+
+      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+        idleId = window.requestIdleCallback(loadExistingFloors, { timeout: 2000 });
+      } else {
+        timerId = setTimeout(loadExistingFloors, 0);
+      }
+
+      return () => {
+        cancelled = true;
+        if (idleId !== undefined && typeof window !== 'undefined' && 'cancelIdleCallback' in window) {
+          window.cancelIdleCallback(idleId);
+        }
+        if (timerId !== undefined) {
+          clearTimeout(timerId);
+        }
+      };
+    }, [propertyId, initialExistingFloors.length]);
+
+    // Build the current floor's logical identity from props + initialData so the
+    // validator can exclude its own row AND any stray DB duplicates (same
+    // floor master + sub-floor master) from agreement-id / overlap checks.
+    const currentFloorContext = useMemo<CurrentFloorContext>(() => {
+      const raw = (initialData ?? {}) as Record<string, unknown>;
+      const formRaw = (formData ?? {}) as Record<string, unknown>;
+      const firstDefined = (...vals: unknown[]): string | number | undefined => {
+        for (const v of vals) {
+          if (v === undefined || v === null || v === '') continue;
+          if (typeof v === 'string' || typeof v === 'number') return v;
+        }
+        return undefined;
+      };
+      return {
+        id: firstDefined(floorId, formRaw.id, formRaw.propertyDetailsId, raw.id, raw.propertyDetailsId),
+        floorId: firstDefined(formRaw.floorId, raw.floorId, raw.floorID),
+        subFloorId: firstDefined(formRaw.subFloorId, raw.subFloorId, raw.subFloorID),
+        agreementId: formData?.renterDetails?.agreementId,
+      };
+    }, [floorId, initialData, formData]);
 
     const isFormValid = useMemo(() => {
       if (!formData?.renterDetails) return false;
-      return validateRenterForm(formData.renterDetails, floorId || 'new', existingFloors).length === 0;
-    }, [formData?.renterDetails, floorId, existingFloors]);
+      return validateRenterForm(formData.renterDetails, currentFloorContext, existingFloors).length === 0;
+    }, [formData?.renterDetails, currentFloorContext, existingFloors]);
 
     const [popupFY, setPopupFY] = useState<string | null>(null);
     const [toasts, setToasts] = useState<ToastProps[]>([]);
-
-    // Staggered components
-    const [sectionsVisible, setSectionsVisible] = useState(0);
-    useEffect(() => {
-      setSectionsVisible(1);
-      const t1 = setTimeout(() => setSectionsVisible(2), 50);
-      const t2 = setTimeout(() => setSectionsVisible(3), 150);
-      return () => {
-        clearTimeout(t1);
-        clearTimeout(t2);
-      };
-    }, []);
-
-    if (!formData)
-      return (
-        <div className="p-8 flex items-center justify-center">
-          <Loader2 className="animate-spin h-8 w-8 text-blue-600" />
-        </div>
-      );
 
     return (
       <div className="w-full h-full flex flex-col bg-white relative animate-in fade-in duration-300">
@@ -191,25 +273,17 @@ export const RenterDetailsForm = memo(
           />
 
           <div className="space-y-4 flex-1">
-            {sectionsVisible >= 2 && (
-              <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <AgreementDetails formData={formData} setFormData={setFormData} existingFloors={existingFloors} floorId={floorId} />
-              </div>
-            )}
-            {sectionsVisible >= 3 ? (
-              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <RentManagementCard formData={formData} setFormData={setFormData} />
-              </div>
-            ) : (
-              <div className="h-32 w-full bg-white/50 rounded-xl border-2 border-dashed border-gray-100 flex items-center justify-center">
-                <div className="flex flex-col items-center gap-2">
-                  <div className="w-5 h-5 border-2 border-indigo-200 border-t-indigo-500 rounded-full animate-spin"></div>
-                  <span className="text-[10px] font-medium text-gray-400 uppercase tracking-widest">
-                    {t('floor.renterSection.optimizingRentEngine')}
-                  </span>
-                </div>
-              </div>
-            )}
+            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <AgreementDetails
+                formData={formData}
+                setFormData={setFormData}
+                existingFloors={existingFloors}
+                currentFloorContext={currentFloorContext}
+              />
+            </div>
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <RentManagementCard formData={formData} setFormData={setFormData} />
+            </div>
           </div>
 
           {/* Footer Buttons */}
@@ -235,18 +309,6 @@ export const RenterDetailsForm = memo(
             </Button>
           </div>
         </div>
-
-        {showSuccessPopup && (
-          <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/20 backdrop-blur-sm">
-            <div className="bg-white rounded-xl p-8 flex flex-col items-center gap-4 shadow-2xl animate-in zoom-in-95 duration-200">
-              <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center shadow-inner">
-                <CheckCircle className="w-10 h-10" />
-              </div>
-              <h2 className="text-xl font-bold text-gray-900">{t('floor.renterSection.successfullySaved')}</h2>
-              <p className="text-sm text-gray-500">{t('floor.renterSection.renterDetailsUpdated')}</p>
-            </div>
-          </div>
-        )}
 
         {popupFY && (
           <RentBreakdownDialog 

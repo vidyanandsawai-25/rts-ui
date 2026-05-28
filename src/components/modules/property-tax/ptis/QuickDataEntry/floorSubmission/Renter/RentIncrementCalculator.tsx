@@ -13,8 +13,8 @@ import { ProgressionTable } from "./ProgressionTable";
 import { SummaryCards } from "./SummaryCards";
 
 interface RentIncrementCalculatorProps {
-  formData: RenterFormData | null;
-  setFormData: React.Dispatch<React.SetStateAction<RenterFormData | null>>;
+  formData: RenterFormData;
+  setFormData: React.Dispatch<React.SetStateAction<RenterFormData>>;
   selectedFYFilter?: string | null;
   onClearFilter?: () => void;
 }
@@ -101,7 +101,6 @@ const RentIncrementCalculatorInner = React.memo(({
 
   const handleModeChange = useCallback((newMode: boolean) => {
     setFormData(prev => {
-      if (!prev) return null;
       return {
         ...prev,
         renterDetails: {

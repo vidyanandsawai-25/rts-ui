@@ -75,4 +75,5 @@ export interface RoomFormData {
     shape: string;
     id?: number | string;
     shapeParams?: ShapeParameters;
+    roomTypeId?: string;
 }

@@ -4,7 +4,7 @@ import { Label } from '@/components/common/label';
 import { Input, ValidationMessage, RequiredFieldsNote, StatusToggleCard } from '@/components/common';
 import { TextArea } from '@/components/common/Textarea';
 import { useTranslations } from 'next-intl';
-import { CODE_SANITIZE, TEXT_SANITIZE, DESCRIPTION_SANITIZE } from '@/lib/utils/validation-rules';
+
 
 interface FormState {
   moduleCode: string;
@@ -43,10 +43,7 @@ export function SubmoduleFormFields({
           id="moduleCode"
           value={formData.moduleCode || ''}
           onChange={(e) => {
-            const val = e.target.value
-              .replace(CODE_SANITIZE, '')
-              .replace(/_+/g, '_')
-              .replace(/^_+/g, '');
+            const val = e.target.value.replace(/[^A-Za-z0-9]/g, '');
             onChange('moduleCode', val);
           }}
           placeholder={t('modals.addSubmodule.form.placeholders.code')}
@@ -68,11 +65,7 @@ export function SubmoduleFormFields({
           id="moduleName"
           value={formData.moduleName || ''}
           onChange={(e) => {
-            const val = e.target.value
-              .replace(TEXT_SANITIZE, '')
-              .replace(/[,.\-\/&]{2,}/g, (match) => match[0])
-              .trimStart()
-              .replace(/^[,.\-\/&]+/g, '');
+            const val = e.target.value.replace(/[^\p{L}\p{M}\p{N}\s]/gu, '');
             onChange('moduleName', val);
           }}
           placeholder={t('modals.addSubmodule.form.placeholders.name')}
@@ -92,9 +85,7 @@ export function SubmoduleFormFields({
           id="moduleDescription"
           value={formData.moduleDescription || ''}
           onChange={(e) => {
-            const val = e.target.value
-              .replace(DESCRIPTION_SANITIZE, '')
-              .replace(/[\/,.\-()&]{2,}/g, (match) => match[0]);
+            const val = e.target.value.replace(/[^\p{L}\p{M}\p{N}\s]/gu, '');
             onChange('moduleDescription', val);
           }}
           placeholder={t('modals.addSubmodule.form.placeholders.description')}
@@ -110,15 +101,25 @@ export function SubmoduleFormFields({
 
       {/* Status Toggle - Only show in Edit mode */}
       {isEdit && (
-        <StatusToggleCard
-          isActive={formData.isActive}
-          onToggle={(checked) => onChange('isActive', checked)}
-          statusLabel={t('modals.addSubmodule.form.status')}
-          description={formData.isActive ? t('modals.addSubmodule.form.activeDescription') : t('modals.addSubmodule.form.inactiveDescription')}
-          activeLabel={t('modals.addSubmodule.form.active')}
-          inactiveLabel={t('modals.addSubmodule.form.inactive')}
-          disabled={isPending}
-        />
+        <div
+          onClick={(e) => {
+            if (isPending) return;
+            const target = e.target as HTMLElement;
+            if (target.closest('button')) return;
+            onChange('isActive', !formData.isActive);
+          }}
+          className="cursor-pointer"
+        >
+          <StatusToggleCard
+            isActive={formData.isActive}
+            onToggle={(checked) => onChange('isActive', checked)}
+            statusLabel={t('modals.addSubmodule.form.status')}
+            description={formData.isActive ? t('modals.addSubmodule.form.activeDescription') : t('modals.addSubmodule.form.inactiveDescription')}
+            activeLabel={t('modals.addSubmodule.form.active')}
+            inactiveLabel={t('modals.addSubmodule.form.inactive')}
+            disabled={isPending}
+          />
+        </div>
       )}
     </div>
   );
