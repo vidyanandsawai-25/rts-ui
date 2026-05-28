@@ -6,6 +6,7 @@ import { Label } from "@/components/common/label";
 import { Input, Select, Button } from "@/components/common";
 import { Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { addDays } from "@/lib/utils/renterUtils";
 
 const fieldLabelClassName = "text-xs leading-snug tracking-normal !font-semibold text-slate-700";
 
@@ -23,6 +24,7 @@ interface AddRangeFormProps {
     onAdd: () => void;
     agreementStart: string;
     agreementEnd: string;
+    minFromDate: string;
     errors: Record<string, string>;
     hasValidationError: boolean;
     markRangeTouched: (field: string) => void;
@@ -33,12 +35,15 @@ export const AddRangeForm = ({
     setNewRangeData, 
     onAdd, 
     agreementStart, 
-    agreementEnd, 
+    agreementEnd,
+    minFromDate,
     errors,
     hasValidationError: _hasValidationError,
     markRangeTouched
 }: AddRangeFormProps) => {
     const t = useTranslations('quickDataEntry');
+    const effectiveMinFrom = minFromDate || agreementStart;
+    const minToDate = newRangeData.fromDate ? addDays(newRangeData.fromDate, 1) : effectiveMinFrom;
     
     return (
         <div className="bg-white border border-dashed border-gray-200 rounded-lg p-4 space-y-3">
@@ -60,7 +65,7 @@ export const AddRangeForm = ({
                             markRangeTouched('fromDate');
                         }}
                         onBlur={() => markRangeTouched('fromDate')}
-                        min={agreementStart}
+                        min={effectiveMinFrom}
                         max={agreementEnd}
                         error={errors.fromDate}
                         className="h-8 text-xs font-bold"
@@ -77,7 +82,7 @@ export const AddRangeForm = ({
                             markRangeTouched('toDate');
                         }}
                         onBlur={() => markRangeTouched('toDate')}
-                        min={newRangeData.fromDate || agreementStart}
+                        min={minToDate}
                         max={agreementEnd}
                         error={errors.toDate}
                         className="h-8 text-xs font-bold"

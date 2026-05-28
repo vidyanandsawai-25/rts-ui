@@ -87,6 +87,10 @@ export function useScreenGroupForm({
             return t('screenManagement.groups.form.errors.nameRequired');
           }
 
+          if (/[&()]/.test(String(val))) {
+            return tCommon('form.validation.descriptionFormat');
+          }
+
           const basicError = commonValidations.masterDescription(tCommon, GROUP_NAME_MAX, {
             required: 'form.validation.descriptionRequired',
             format: 'form.validation.descriptionFormat',
@@ -106,11 +110,6 @@ export function useScreenGroupForm({
           }
           return undefined;
         },
-        displayOrder: (val, _data, _t, tCommon) =>
-          commonValidations.masterSearchSequence(
-            tCommon,
-            'form.validation.sequenceInvalid'
-          )(val as number | undefined),
         isActive: (val, _data, _t, tCommon) =>
           commonValidations.masterActiveStatus(
             tCommon,

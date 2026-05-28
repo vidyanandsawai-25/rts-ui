@@ -26,6 +26,8 @@ export default function TaxationBreakdownForm({
     handleMetaChange,
     handleSave,
     isChanged,
+    hasTaxData,
+    validationErrors,
     t,
     tValidation
   } = useTaxationBreakdownForm(initialData);
@@ -36,6 +38,15 @@ export default function TaxationBreakdownForm({
         {t("title")}
       </h3>
 
+      {/* Warning when no tax data is available */}
+      {!hasTaxData && (
+        <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+          <p className="text-sm text-amber-800 font-medium">
+            {t("noTaxDataAvailable")}
+          </p>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-x-5 gap-y-5 items-end">
         {/* Meta Fields (Year & Interest) */}
         <TaxationMetaFields
@@ -44,12 +55,14 @@ export default function TaxationBreakdownForm({
           interest={formData.interest}
           onYearChange={(value) => handleMetaChange('year', value)}
           onInterestChange={(value) => handleMetaChange('interest', value)}
+          validationErrors={validationErrors}
         />
 
         {/* Dynamic Tax Fields */}
         <DynamicTaxFields
           taxes={taxes}
           onTaxChange={handleTaxChange}
+          validationErrors={validationErrors}
         />
 
         {/* Summary Fields (Tax Total & Net Total) */}
@@ -57,6 +70,7 @@ export default function TaxationBreakdownForm({
           t={t}
           taxTotal={formData.taxTotal}
           netTotal={formData.netTotal}
+          validationErrors={validationErrors}
         />
       </div>
 
@@ -66,7 +80,7 @@ export default function TaxationBreakdownForm({
           type="submit"
           onClick={handleSave}
           isLoading={isSubmitting}
-          disabled={isSubmitting || !isChanged}
+          disabled={isSubmitting || !hasTaxData || !isChanged}
         />
       </div>
     </div>

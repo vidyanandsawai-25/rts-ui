@@ -3,7 +3,7 @@
 import React, { useState, useEffect, memo, useMemo } from "react";
 import { Calendar, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
-import { validateDateRange } from "@/lib/utils/renterUtils";
+import { validateDateRange, getNextCustomRangeFromDate, parseDateOnly } from "@/lib/utils/renterUtils";
 import { calculateRangeTotal } from "./CustomDateRangeUtils";
 import { AddRangeForm } from "./AddRangeForm";
 import { CustomRangesTable } from "./CustomRangesTable";
@@ -13,8 +13,8 @@ import { useTranslations } from "next-intl";
 import { RenterFormData, CustomDateRange } from "@/types/renter.types";
 
 interface CustomDateRangeManagerProps {
-    formData: RenterFormData | null;
-    setFormData: React.Dispatch<React.SetStateAction<RenterFormData | null>>;
+    formData: RenterFormData;
+    setFormData: React.Dispatch<React.SetStateAction<RenterFormData>>;
     showToast?: (type: 'success' | 'error' | 'info', message: string) => void;
 }
 
@@ -56,11 +56,24 @@ export const CustomDateRangeManager = memo(({ formData, setFormData }: CustomDat
         setRangeTouched(prev => ({ ...prev, [field]: true }));
     }, []);
 
+    const agreementStartDate = useMemo(
+        () => parseDateOnly(AGREEMENT_FROM_DATE) ?? new Date(AGREEMENT_FROM_DATE),
+        [AGREEMENT_FROM_DATE]
+    );
+    const agreementEndDate = useMemo(
+        () => parseDateOnly(AGREEMENT_TO_DATE) ?? new Date(AGREEMENT_TO_DATE),
+        [AGREEMENT_TO_DATE]
+    );
+    const minFromDate = useMemo(
+        () => getNextCustomRangeFromDate(customDateRanges, AGREEMENT_FROM_DATE),
+        [customDateRanges, AGREEMENT_FROM_DATE]
+    );
+
     useEffect(() => {
-        if (customDateRanges.length === 0 && AGREEMENT_FROM_DATE) {
-            setNewRangeData(prev => ({ ...prev, fromDate: AGREEMENT_FROM_DATE }));
-        }
-    }, [AGREEMENT_FROM_DATE, customDateRanges.length]);
+        if (!AGREEMENT_FROM_DATE) return;
+        const nextFrom = getNextCustomRangeFromDate(customDateRanges, AGREEMENT_FROM_DATE);
+        setNewRangeData(prev => ({ ...prev, fromDate: nextFrom }));
+    }, [AGREEMENT_FROM_DATE, customDateRanges]);
 
     // Centralized reactive hook for custom date range form inputs
     useEffect(() => {
@@ -77,8 +90,8 @@ export const CustomDateRangeManager = memo(({ formData, setFormData }: CustomDat
 
         const validation = validateDateRange({
             newRangeData,
-            agreementStart: new Date(AGREEMENT_FROM_DATE),
-            agreementEnd: new Date(AGREEMENT_TO_DATE),
+            agreementStart: agreementStartDate,
+            agreementEnd: agreementEndDate,
             existingRanges: customDateRanges
         });
 
@@ -99,7 +112,7 @@ export const CustomDateRangeManager = memo(({ formData, setFormData }: CustomDat
 
         setDateRangeErrors(nextErrors);
         setHasValidationError(!!(nextErrors.fromDate || nextErrors.toDate || nextErrors.incrementValue || nextErrors.general));
-    }, [newRangeData, rangeTouched, AGREEMENT_FROM_DATE, AGREEMENT_TO_DATE, customDateRanges]);
+    }, [newRangeData, rangeTouched, agreementStartDate, agreementEndDate, customDateRanges]);
 
     const activeRangesTableData = useMemo(() => customDateRanges.map((range: CustomDateRange, index: number) => {
         const { durationMonths, durationTotal } = calculateRangeTotal(range, index, customDateRanges, originalBaseRent);
@@ -121,8 +134,8 @@ export const CustomDateRangeManager = memo(({ formData, setFormData }: CustomDat
 
         const validation = validateDateRange({
             newRangeData,
-            agreementStart: new Date(AGREEMENT_FROM_DATE),
-            agreementEnd: new Date(AGREEMENT_TO_DATE),
+            agreementStart: agreementStartDate,
+            agreementEnd: agreementEndDate,
             existingRanges: customDateRanges
         });
 
@@ -141,10 +154,10 @@ export const CustomDateRangeManager = memo(({ formData, setFormData }: CustomDat
             (a, b) => new Date(a.fromDate).getTime() - new Date(b.fromDate).getTime()
         );
         setFormData(prev => {
-            if (!prev) return null;
             return { ...prev, renterDetails: { ...prev.renterDetails, customDateRanges: updatedRanges } };
         });
-        setNewRangeData(EMPTY_RANGE);
+        const nextFrom = getNextCustomRangeFromDate(updatedRanges, AGREEMENT_FROM_DATE);
+        setNewRangeData({ ...EMPTY_RANGE, fromDate: nextFrom });
         setRangeTouched({});
         setDateRangeErrors({ fromDate: '', toDate: '', incrementValue: '', general: '' });
         setHasValidationError(false);
@@ -160,7 +173,7 @@ export const CustomDateRangeManager = memo(({ formData, setFormData }: CustomDat
                 </h4>
             </div>
             {dateRangeErrors.general && <div className="bg-red-100 border-2 border-red-500 rounded-lg px-4 py-2 flex items-center gap-3"><AlertTriangle className="w-5 h-5 text-red-600" /><span className="text-xs text-red-800 font-bold">{dateRangeErrors.general}</span></div>}
-            <AddRangeForm newRangeData={newRangeData} setNewRangeData={setNewRangeData} onAdd={handleAddRange} agreementStart={AGREEMENT_FROM_DATE} agreementEnd={AGREEMENT_TO_DATE} errors={dateRangeErrors} hasValidationError={hasValidationError} markRangeTouched={markRangeTouched} />
+            <AddRangeForm newRangeData={newRangeData} setNewRangeData={setNewRangeData} onAdd={handleAddRange} agreementStart={AGREEMENT_FROM_DATE} agreementEnd={AGREEMENT_TO_DATE} minFromDate={minFromDate} errors={dateRangeErrors} hasValidationError={hasValidationError} markRangeTouched={markRangeTouched} />
             {customDateRanges.length > 0 && (
                 <div className="space-y-3">
                     <CustomRangesTable data={activeRangesTableData} onDelete={setDeleteConfirmRangeId} />
@@ -178,7 +191,6 @@ export const CustomDateRangeManager = memo(({ formData, setFormData }: CustomDat
                             </Button>
                             <Button className="flex-1 bg-red-600 text-white" onClick={() => { 
                                 setFormData(prev => {
-                                    if (!prev) return null;
                                     return {
                                         ...prev, 
                                         renterDetails: { 

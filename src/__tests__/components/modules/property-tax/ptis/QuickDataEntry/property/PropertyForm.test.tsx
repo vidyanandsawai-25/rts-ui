@@ -166,8 +166,8 @@ describe('PropertyFormView', () => {
     expect(screen.getByDisplayValue('SZ1')).toBeInTheDocument(); // Sub Zone No
     expect(screen.getByDisplayValue('UPIC123')).toBeInTheDocument(); // UPIC ID
     expect(screen.getAllByDisplayValue('2')[0]).toBeInTheDocument(); // Residential Toilets
-    expect(screen.getByDisplayValue('1000')).toBeInTheDocument(); // Total Carpet Area
-    expect(screen.getByDisplayValue('1500')).toBeInTheDocument(); // Buildup Area
+    expect(screen.getByDisplayValue('1000.00')).toBeInTheDocument(); // Total Carpet Area
+    expect(screen.getByDisplayValue('1500.00')).toBeInTheDocument(); // Buildup Area
   });
 
   it('disables save button initially', () => {

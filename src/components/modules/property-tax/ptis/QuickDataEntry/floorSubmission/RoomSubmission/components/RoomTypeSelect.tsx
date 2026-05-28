@@ -23,7 +23,7 @@ export const RoomTypeSelect: React.FC<RoomTypeSelectProps> = ({ value, onChange,
             const itemId = item.roomTypeId || item.id || item.ID || '';
             const code = item.roomTypeCode || String(itemId);
             return {
-                label: name && code ? `${code} - ${name}` : (name || code),
+                label: name || code,
                 value: code || String(itemId)
             };
         }) || []),

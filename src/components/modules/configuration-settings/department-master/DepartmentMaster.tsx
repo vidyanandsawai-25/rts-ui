@@ -22,13 +22,18 @@ import { useDepartmentPagination } from "@/hooks/configuration-settings/departme
 import { DepartmentStatsCards } from "./DepartmentStatsCards";
 
 
+import { usePermissions } from "@/hooks/usePermissions";
+import { AlertCircle } from "lucide-react";
+
 export function DepartmentMaster({
   initialData, 
   initialPageNumber: pageNumber, 
   initialPageSize: pageSize, 
   initialTotalCount: totalCount, 
   initialTotalPages: totalPages, 
-  allData = []
+  allData = [],
+  fetchError,
+  statusCode,
 }: DepartmentMasterProps): React.ReactElement {
   const router = useRouter();
   const t = useTranslations("departmentMaster");
@@ -36,6 +41,8 @@ export function DepartmentMaster({
   const locale = useLocale();
   const { confirm } = useConfirm();
   const [isPending, startTransition] = useTransition();
+
+  const { canView, canEdit, canDelete, haveFullAccess } = usePermissions('DEPARTMENT_MASTER');
 
   const {
     search,
@@ -84,19 +91,51 @@ export function DepartmentMaster({
 
   const columns = getDepartmentColumns(t, tCommon);
 
+  const isUnauthorized =
+    statusCode === 401 ||
+    (fetchError &&
+      (fetchError.toLowerCase().includes('unauthorized') ||
+        fetchError.toLowerCase().includes('token') ||
+        fetchError === 'messages.unauthorizedToken'));
+
+  if (isUnauthorized || (!canView && !haveFullAccess)) {
+    const messageKey = isUnauthorized ? 'errors.unauthorized' : 'errors.noAccess';
+
+    return (
+      <PageContainer>
+        <div className="flex flex-col items-center justify-center min-h-[400px] p-6 bg-white rounded-xl border border-gray-200/80 shadow-sm animate-in fade-in duration-300">
+          <AlertCircle className="w-12 h-12 text-red-500 mb-4 animate-bounce" />
+          <h3 className="text-lg font-semibold text-gray-900">{tCommon(messageKey)}</h3>
+        </div>
+      </PageContainer>
+    );
+  }
+
   return (
     <PageContainer
       title={t("title")}
       subtitle={t("subtitle")}
       actions={
-        <AddButton 
-          label={t("form.buttons.add")}
-          onClick={() => router.push(`/${locale}/configuration-settings/department-master/add`)} 
-        />
+        haveFullAccess ? (
+          <AddButton 
+            label={t("form.buttons.add")}
+            onClick={() => router.push(`/${locale}/configuration-settings/department-master/add`)} 
+          />
+        ) : undefined
       }
     >
       <div className="space-y-6">
         <DepartmentStatsCards allData={allData} totalCount={totalCount} locale={locale} />
+
+        {fetchError && (
+          <div className="p-4 bg-red-50 border-l-4 border-red-500 rounded-r-xl shadow-sm flex items-start gap-3 animate-in fade-in duration-300">
+            <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+            <div>
+              <h3 className="text-sm font-semibold text-red-800">{tCommon('errors.fetchFailed')}</h3>
+              <p className="text-xs text-red-700 mt-1 font-mono">{fetchError}</p>
+            </div>
+          </div>
+        )}
 
         <MasterTable<DeptType>
           columns={columns}
@@ -135,10 +174,10 @@ export function DepartmentMaster({
             </div>
           }
           renderActions={(row) => (
-            <>
-              <EditButton onClick={() => handleEdit(row)} />
-              <DeleteButton onClick={() => handleDelete(row)} />
-            </>
+            <div className="flex items-center gap-1">
+              {(canEdit || haveFullAccess) && <EditButton onClick={() => handleEdit(row)} />}
+              {(canDelete || haveFullAccess) && <DeleteButton onClick={() => handleDelete(row)} />}
+            </div>
           )}
           getRowKey={(row) => String(row.departmentId)}
         />

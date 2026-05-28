@@ -97,7 +97,6 @@ export function useBankForm({ id, initialData }: UseBankFormProps) {
       setErrors(validationErrors);
 
       if (Object.keys(validationErrors).length > 0) {
-        toast.error(t('messages.validationError'));
         return;
       }
 
