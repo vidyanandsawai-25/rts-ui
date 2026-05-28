@@ -2,7 +2,7 @@
 
 import { Input } from "@/components/common";
 import { Label } from "@/components/common/label";
-import { sanitizeAlphanumeric, sanitizeDecimal, preventInvalidNumericKeys } from "../utils/inputValidation";
+import { sanitizeAlphanumeric, sanitizeAreaDecimal, preventInvalidNumericKeys, isValidDecimalField } from "../utils/inputValidation";
 import { AreaDetailsFieldsProps } from "@/types/OldDetails/property-old-floor-info.types";
 
 /**
@@ -13,6 +13,7 @@ import { AreaDetailsFieldsProps } from "@/types/OldDetails/property-old-floor-in
 export function AreaDetailsFields({
   t,
   formData,
+  showError,
   onFieldChange
 }: AreaDetailsFieldsProps) {
   return (
@@ -20,22 +21,26 @@ export function AreaDetailsFields({
       {/* Old Plot Area */}
       <div className="space-y-2">
         <Label className="text-sm font-semibold text-gray-700 ml-1">
-          {t("oldDetails.plotArea")}
+          {t("oldDetails.plotArea")}<span className="text-red-500 ml-1">*</span>
         </Label>
         <Input
+          required
           type="text"
           inputMode="decimal"
           placeholder={t("oldDetails.plotAreaPlaceholder")}
           className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
           value={formData.oldPlotArea}
           onChange={(e) => {
-            const value = sanitizeDecimal(e.target.value);
+            const value = sanitizeAreaDecimal(e.target.value);
             if (value !== '' || e.target.value === '') {
               onFieldChange('oldPlotArea', value);
             }
           }}
           onKeyDown={preventInvalidNumericKeys}
         />
+        {showError('oldPlotArea', isValidDecimalField(formData.oldPlotArea)) && (
+          <span className="text-xs text-red-500">{t('oldDetails.validation.plotAreaRequired')}</span>
+        )}
       </div>
 
       {/* Old Plot No */}
@@ -47,7 +52,7 @@ export function AreaDetailsFields({
           placeholder={t("oldDetails.plotNoPlaceholder")}
           className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
           value={formData.oldPlotNo}
-          maxLength={50}
+          maxLength={20}
           onChange={(e) => {
             const value = sanitizeAlphanumeric(e.target.value);
             if (value.trim() || value === '') {
@@ -60,22 +65,26 @@ export function AreaDetailsFields({
       {/* Old Construction Area */}
       <div className="space-y-2">
         <Label className="text-sm font-semibold text-gray-700 ml-1">
-          {t("oldDetails.constructionArea")}
+          {t("oldDetails.constructionArea")}<span className="text-red-500 ml-1">*</span>
         </Label>
         <Input
+          required
           type="text"
           inputMode="decimal"
           placeholder={t("oldDetails.constructionAreaPlaceholder")}
           className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
           value={formData.oldConstructionArea ?? ""}
           onChange={(e) => {
-            const value = sanitizeDecimal(e.target.value);
+            const value = sanitizeAreaDecimal(e.target.value);
             if (value !== '' || e.target.value === '') {
               onFieldChange("oldConstructionArea", value);
             }
           }}
           onKeyDown={preventInvalidNumericKeys}
         />
+        {showError('oldConstructionArea', isValidDecimalField(formData.oldConstructionArea)) && (
+          <span className="text-xs text-red-500">{t('oldDetails.validation.constructionAreaRequired')}</span>
+        )}
       </div>
     </>
   );

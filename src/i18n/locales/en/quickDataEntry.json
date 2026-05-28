@@ -35,6 +35,8 @@
             "selectShapeOrEnterArea": "Please select a shape or enter area",
             "enterValidDimensions": "Please enter valid dimensions for the selected shape",
             "insufficientEmptySlots": "Insufficient Empty Slots. Please reduce room count or clear some rooms.",
+            "nonnegative": "Please enter zero or positive value",
+            "shapeRequired": "Please select shape",
             "deleteFailed": "Failed to delete one or more rooms or offsets. Please try again.",
             "someDeletionsFailed": "Some deletions failed. Please try again.",
             "failedPendingDeletions": "Failed to execute pending deletions. Please try again.",
@@ -137,6 +139,11 @@
         }
     },
     "offset": {
+        "validation": {
+            "nonnegative": "Please enter zero or positive value",
+            "shapeRequired": "Please select shape",
+            "operationRequired": "Operation is required."
+        },
         "title": "Offset Details",
         "roomNo": "Room No:",
         "netAdjustment": "Net Adjustment:",
@@ -629,6 +636,7 @@
             "customDates": "Custom Dates",
             "fixedAmount": "Fixed Amount",
             "document": "Document",
+            "ocrError": "Failed to process document. Please try again.",
             "agreementId": "Agreement ID",
             "agreementDate": "Agreement Date",
             "renterName": "Renter Name",
@@ -859,6 +867,12 @@
                 "zoneNameRequired": "Zone Name is required.",
                 "wardNoRequired": "Ward No is required.",
                 "propertyNoRequired": "Property No is required.",
+                "plotAreaRequired": "Plot Area is required.",
+                "constructionAreaRequired": "Construction Area is required.",
+                "rvRequired": "RV is required.",
+                "alvRequired": "ALV is required.",
+                "propertyTaxRequired": "Property Tax is required.",
+                "totalTaxRequired": "Total Tax is required.",
                 "fillRequiredFields": "Please fill all required fields."
              },
         "loading": {
@@ -1056,7 +1070,10 @@
         "errorDetails": "Error Details (Development Only)"
     },
     "offsetValidation": {
-        "negative": "Resulting area cannot be negative."
+        "negative": "Resulting area cannot be negative.",
+        "nonnegative": "Area cannot be zero or negative.",
+        "shapeRequired": "Please select a shape.",
+        "operationRequired": "Please select an operation."
     },
     "offsetTooltip": "Offset Details: {details}",
     "offsetTooltipEmpty": "Click to edit offsets"

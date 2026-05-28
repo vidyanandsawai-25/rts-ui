@@ -62,6 +62,7 @@ export default function OldTaxationForm({
               oldPlotNo: formData.oldPlotNo,
               oldConstructionArea: formData.oldConstructionArea
             }}
+            showError={showError}
             onFieldChange={handleFieldChange}
           />
 
@@ -74,6 +75,7 @@ export default function OldTaxationForm({
               oldGeneralTax: formData.oldGeneralTax,
               oldTotalTax: String(formData.oldTotalTax)
             }}
+            showError={showError}
             onFieldChange={handleFieldChange}
           />
         </div>

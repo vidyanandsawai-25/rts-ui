@@ -52,10 +52,19 @@ export function useOldTaxationForm(propertyOldDetails: PropertyOldDetailsApiItem
     const isZoneValid = formData.oldZoneNo.trim().length > 0;
     const isWardValid = formData.oldWardNo.trim().length > 0;
     const isPropertyValid = formData.oldPropertyNo.trim().length > 0;
+    
+    // Validate decimal fields (must be > 0)
+    const isPlotAreaValid = Number(formData.oldPlotArea) > 0;
+    const isConstructionAreaValid = Number(formData.oldConstructionArea) > 0;
+    const isRVValid = Number(formData.oldRV) > 0;
+    const isALVValid = Number(formData.oldALV) > 0;
+    const isPropertyTaxValid = Number(formData.oldGeneralTax) > 0;
 
     setAttemptedSubmit(true);
 
-    if (!isZoneValid || !isWardValid || !isPropertyValid) {
+    if (!isZoneValid || !isWardValid || !isPropertyValid || 
+        !isPlotAreaValid || !isConstructionAreaValid || 
+        !isRVValid || !isALVValid || !isPropertyTaxValid) {
       toast.error(t("oldDetails.validation.fillRequiredFields"));
       return;
     }

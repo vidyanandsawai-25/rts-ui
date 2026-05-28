@@ -62,6 +62,7 @@ export interface AreaDetailsFieldsProps {
     oldPlotNo: string;
     oldConstructionArea: string;
   };
+  showError: (field: string, hasValue: boolean) => boolean;
   onFieldChange: (field: string, value: string | number) => void;
 }
 
@@ -86,6 +87,7 @@ export interface TaxDetailsFieldsProps {
     oldGeneralTax: string;
     oldTotalTax: string;
   };
+  showError: (field: string, hasValue: boolean) => boolean;
   onFieldChange: (field: string, value: string | number) => void;
 }
 
