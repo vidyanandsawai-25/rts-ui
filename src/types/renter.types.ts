@@ -27,8 +27,11 @@ export interface RenterFormDataDetails {
 }
 
 export interface RenterFormData {
-    id?: string;
-    floorId: string;
+    // Allow both string and number: the URL/route segment delivers a string,
+    // but the resolved propertyDetailsId from the server is numeric.
+    id?: string | number;
+    propertyDetailsId?: string | number;
+    floorId: string | number;
     renterDetails: RenterFormDataDetails;
     renterMast?: unknown[];
     renterTableEntries?: unknown[];

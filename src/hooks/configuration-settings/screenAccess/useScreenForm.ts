@@ -137,6 +137,10 @@ export function useScreenForm({
             return t('screenManagement.screens.form.errors.nameRequired');
           }
 
+          if (/[&()\/-]/.test(String(val))) {
+            return tCommon('form.validation.descriptionFormat');
+          }
+
           const basicError = commonValidations.masterDescription(tCommon, SCREEN_NAME_MAX, {
             required: 'form.validation.descriptionRequired',
             format: 'form.validation.descriptionFormat',
@@ -199,9 +203,13 @@ export function useScreenForm({
           !val ? t('screenManagement.screens.form.errors.groupRequired') : undefined,
         moduleId: (val, _data, t) =>
           !val ? t('screenManagement.screens.form.errors.moduleRequired') : undefined,
-        routePath: (val, _data, t) => {
+        routePath: (val, _data, t, tCommon) => {
           if (!val || (typeof val === 'string' && !val.trim())) {
             return t('screenManagement.screens.form.errors.routeRequired');
+          }
+
+          if (/[&()]/.test(String(val))) {
+            return tCommon('form.validation.descriptionFormat');
           }
 
           if (isEdit && String(val || '') === String(initialData?.routePath || ''))

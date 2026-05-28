@@ -16,7 +16,6 @@ export function normalizeDepartmentMaster(data: Record<string, unknown>): Depart
         departmentCode: cleanString(data.departmentCode ?? data.DepartmentCode),
         departmentName: cleanString(data.departmentName ?? data.DepartmentName),
         departmentNameLocal: cleanString(data.departmentNameLocal ?? data.DepartmentNameLocal),
-        departmentIcon: cleanString(data.departmentIcon ?? data.DepartmentIcon),
         departmentDescription: cleanString(data.departmentDescription ?? data.DepartmentDescription),
         isActive: parseBoolean(data.isActive ?? data.IsActive ?? data.isStatus),
         createdAt: String(data.createdAt ?? data.CreatedAt ?? ""),

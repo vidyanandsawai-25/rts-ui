@@ -16,6 +16,14 @@ vi.mock('@/lib/api/user-profile.service', () => ({
     },
 }));
 
+// Mock departmentActivationService
+const mockGetDepartments = vi.fn();
+vi.mock('@/lib/api/configuration-settings/department-activation/departmentActivation.service', () => ({
+    departmentActivationService: {
+        getDepartments: () => mockGetDepartments(),
+    },
+}));
+
 // Import after mocks
 import { listServices, ListServicesResponse } from '@/app/[locale]/home/action';
 
@@ -66,6 +74,14 @@ describe('listServices Server Action', () => {
         mockCookieStore.get.mockImplementation((name: string) => {
             if (name === 'user_id') return { value: '2' };
             return undefined;
+        });
+        mockGetDepartments.mockResolvedValue({
+            success: true,
+            data: [
+                { departmentId: 1, isActive: true },
+                { departmentId: 2, isActive: true },
+                { departmentId: 3, isActive: true },
+            ],
         });
     });
 

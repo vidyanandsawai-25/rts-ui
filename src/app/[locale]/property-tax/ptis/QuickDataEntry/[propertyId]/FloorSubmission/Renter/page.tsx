@@ -1,19 +1,17 @@
 import { Suspense } from 'react';
 import { setRequestLocale } from 'next-intl/server';
 import RenterDetailsForm from '@/components/modules/property-tax/ptis/QuickDataEntry/floorSubmission/Renter/RenterDetailsForm';
-import { ExistingFloorData } from '@/lib/utils/renter-validation';
 import { 
     getFloorByIdAction, 
     getPropertyByDetailsAction, 
-    saveFloorRenterDetailsAction,
     getFloorDataAction,
     getConstructionTypeDataAction,
     getTypeOfUseDataAction,
     getSubTypeOfUseDataAction,
     getSubFloorDataAction,
-    getFloorSubmissionsByOwnerAction
 } from '../actions';
 import { PageContainer } from '@/components/common/PageContainer';
+import { floorNeedsLookupLabels } from '@/lib/utils/renter-form-mapper';
 
 import { cache } from 'react';
 
@@ -30,6 +28,14 @@ interface RenterDetailsPageProps {
 
 export const dynamic = 'force-dynamic';
 
+function parseFloorResponse(rawFloorResponse: unknown): Record<string, unknown> | null {
+    if (!rawFloorResponse) return null;
+    if (typeof rawFloorResponse === 'object' && rawFloorResponse !== null && 'data' in rawFloorResponse) {
+        return (rawFloorResponse as Record<string, unknown>).data as Record<string, unknown>;
+    }
+    return rawFloorResponse as Record<string, unknown>;
+}
+
 export default async function RenterDetailsPage({ params, searchParams }: RenterDetailsPageProps) {
     const { locale, propertyId } = await params;
     setRequestLocale(locale);
@@ -40,33 +46,43 @@ export default async function RenterDetailsPage({ params, searchParams }: Renter
     const propertyNo = resolvedParams.propertyNo || '';
     const partitionNo = resolvedParams.partitionNo || '';
 
-    // Parallel fetching for performance with defensive error boundaries using Promise.allSettled
-    const settledResults = await Promise.allSettled([
-        floorId ? getFloorByIdAction(floorId) : Promise.resolve(null),
-        (wardNo && propertyNo && partitionNo) ? getPropertyByDetailsAction(wardNo, propertyNo, partitionNo) : Promise.resolve(null),
-        getCachedFloorData(),
-        getCachedConstructionData(),
-        getCachedTypeOfUseData(),
-        getCachedSubTypeOfUseData(),
-        getCachedSubFloorData(),
-        propertyId ? getFloorSubmissionsByOwnerAction(propertyId) : Promise.resolve([])
+    // Critical path: fetch the floor record first so we can skip expensive secondary calls.
+    const rawFloorResponse = floorId ? await getFloorByIdAction(floorId) : null;
+    const initialFloorData = parseFloorResponse(rawFloorResponse);
+
+    const needsLookups = floorNeedsLookupLabels(initialFloorData);
+    const needsPropertyFetch =
+        Boolean(wardNo && propertyNo && partitionNo) &&
+        !String(initialFloorData?.propertyName || '').trim();
+
+    const secondaryResults = await Promise.allSettled([
+        needsPropertyFetch
+            ? getPropertyByDetailsAction(wardNo, propertyNo, partitionNo)
+            : Promise.resolve(null),
+        ...(needsLookups
+            ? [
+                getCachedFloorData(),
+                getCachedConstructionData(),
+                getCachedTypeOfUseData(),
+                getCachedSubTypeOfUseData(),
+                getCachedSubFloorData(),
+            ]
+            : []),
     ]);
 
-    const rawFloorResponse = settledResults[0].status === 'fulfilled' ? settledResults[0].value : null;
-    const propertyRaw = settledResults[1].status === 'fulfilled' ? settledResults[1].value : null;
-    const floorLookupRes = settledResults[2].status === 'fulfilled' ? settledResults[2].value : null;
-    const constructionLookupRes = settledResults[3].status === 'fulfilled' ? settledResults[3].value : null;
-    const useLookupRes = settledResults[4].status === 'fulfilled' ? settledResults[4].value : null;
-    const subTypeLookupRes = settledResults[5].status === 'fulfilled' ? settledResults[5].value : null;
-    const subFloorLookupRes = settledResults[6].status === 'fulfilled' ? settledResults[6].value : null;
-    const existingFloorsRes = settledResults[7].status === 'fulfilled' ? settledResults[7].value : [];
+    const propertyRaw =
+        needsPropertyFetch && secondaryResults[0]?.status === 'fulfilled'
+            ? secondaryResults[0].value
+            : null;
 
-    let initialFloorData: Record<string, unknown> | null = null;
-    if (rawFloorResponse && typeof rawFloorResponse === 'object' && 'data' in rawFloorResponse) {
-        initialFloorData = (rawFloorResponse as Record<string, unknown>).data as Record<string, unknown>;
-    } else {
-        initialFloorData = rawFloorResponse as Record<string, unknown>;
-    }
+    const lookupOffset = needsPropertyFetch ? 1 : 0;
+    const lookupResults = needsLookups ? secondaryResults.slice(lookupOffset) : [];
+
+    const pickLookupData = (index: number) => {
+        const res = lookupResults[index];
+        if (!res || res.status !== 'fulfilled') return [];
+        return ((res.value as Record<string, unknown>)?.data as unknown[]) || [];
+    };
 
     const fallbackPropertyInfo = {
         propertyName: String((propertyRaw as Record<string, unknown>)?.ownerName || "New Renter Registration"),
@@ -81,21 +97,12 @@ export default async function RenterDetailsPage({ params, searchParams }: Renter
     };
 
     const lookups = {
-        floorLookup: ((floorLookupRes as Record<string, unknown>)?.data as unknown[]) || [],
-        constructionLookup: ((constructionLookupRes as Record<string, unknown>)?.data as unknown[]) || [],
-        useLookup: ((useLookupRes as Record<string, unknown>)?.data as unknown[]) || [],
-        subTypeLookup: ((subTypeLookupRes as Record<string, unknown>)?.data as unknown[]) || [],
-        subFloorLookup: ((subFloorLookupRes as Record<string, unknown>)?.data as unknown[]) || []
+        floorLookup: needsLookups ? pickLookupData(0) : [],
+        constructionLookup: needsLookups ? pickLookupData(1) : [],
+        useLookup: needsLookups ? pickLookupData(2) : [],
+        subTypeLookup: needsLookups ? pickLookupData(3) : [],
+        subFloorLookup: needsLookups ? pickLookupData(4) : [],
     };
-
-    let existingFloors: ExistingFloorData[] = [];
-    if (Array.isArray(existingFloorsRes)) {
-        existingFloors = existingFloorsRes as ExistingFloorData[];
-    } else if (existingFloorsRes && typeof existingFloorsRes === 'object' && 'success' in existingFloorsRes && (existingFloorsRes as Record<string, unknown>).success && Array.isArray((existingFloorsRes as Record<string, unknown>).data)) {
-        existingFloors = (existingFloorsRes as Record<string, unknown>).data as ExistingFloorData[];
-    } else if (existingFloorsRes && typeof existingFloorsRes === 'object' && Array.isArray((existingFloorsRes as Record<string, unknown>).items)) {
-        existingFloors = (existingFloorsRes as Record<string, unknown>).items as ExistingFloorData[];
-    }
 
     return (
         <PageContainer>
@@ -109,8 +116,6 @@ export default async function RenterDetailsPage({ params, searchParams }: Renter
                         partitionNo={partitionNo}
                         propertyId={propertyId}
                         floorId={floorId}
-                        saveAction={saveFloorRenterDetailsAction}
-                        existingFloors={existingFloors}
                         {...lookups}
                     />
                 </div>
@@ -118,4 +123,3 @@ export default async function RenterDetailsPage({ params, searchParams }: Renter
         </PageContainer>
     );
 }
-

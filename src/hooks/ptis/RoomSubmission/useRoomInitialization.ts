@@ -54,7 +54,7 @@ export const useRoomInitialization = (state: RoomSubmissionState, props: RoomWis
             .map(o => ({
               ...o,
               id: o.roomWiseMinusId ?? o.id,
-              operation: o.type || o.operation || 'subtract',
+              operation: o.isOffset === true ? 'add' : (o.isOffset === false ? 'subtract' : (o.type || o.operation || 'subtract')),
               // Prefer o.area, fallback to o.areaSqMtr, then 0
               area: o.area ?? o.areaSqMtr ?? 0,
               shape: o.shapeType || o.shape || 'Rectangle'

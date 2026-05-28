@@ -4,6 +4,7 @@ import { MasterTable, Button } from "@/components/common";
 import { X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { CustomDateRange } from "@/types/renter.types";
+import { normalizeCalculationMethod } from "@/lib/utils/renterUtils";
 
 interface CustomRangeTableRow {
     id: string;
@@ -84,11 +85,15 @@ export const CustomRangesTable = (props: CustomRangesTableProps) => {
             label: t('floor.renterSection.method'),
             width: "12%",
             headerClassName: "text-[10px] uppercase tracking-wider text-slate-500 font-bold",
-            render: (_v: unknown, row: CustomRangeTableRow) => (
-                <span className={`px-2 py-0.5 rounded-md font-bold text-[10px] ${row.range.calculationMethod === "Incremented Value" ? "bg-amber-50 text-amber-800 border border-amber-100" : "bg-slate-50 text-slate-700 border border-gray-200"}`}>
-                    {row.range.calculationMethod === "Incremented Value" ? t('floor.renterSection.compounding') : t('floor.renterSection.linear')}
+            render: (_v: unknown, row: CustomRangeTableRow) => {
+                const method = normalizeCalculationMethod(row.range.calculationMethod);
+                const isCompounding = method === "Incremented Value";
+                return (
+                <span className={`px-2 py-0.5 rounded-md font-bold text-[10px] ${isCompounding ? "bg-amber-50 text-amber-800 border border-amber-100" : "bg-slate-50 text-slate-700 border border-gray-200"}`}>
+                    {isCompounding ? t('floor.renterSection.incrementedCompounding') : t('floor.renterSection.baseValueLinear')}
                 </span>
-            ),
+                );
+            },
         },
         {
             key: "durationTotal",

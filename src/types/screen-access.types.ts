@@ -56,6 +56,7 @@ export interface ModuleMasterData {
 export interface ScreenGroupMasterData {
   screenGroupId: number;
   screenGroupName: string;
+  screenGroupLocalName?: string;
   screenGroupCode: string;
   screenGroupIcon: string;
   displayOrder: number;

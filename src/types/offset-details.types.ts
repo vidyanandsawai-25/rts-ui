@@ -35,6 +35,7 @@ export interface OffsetAPIResponse {
     shape: string;
     base1Mtr: number;
     base2Mtr: number;
+    isOffset?: boolean;
     // Alternative/Legacy names
     length?: number | string;
     width?: number | string;
