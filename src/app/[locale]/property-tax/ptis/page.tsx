@@ -64,6 +64,8 @@ async function getInitialData(
 ): Promise<{
   success: boolean;
   propertyId?: number;
+  wardId?: number;
+  wardNo?: string;
   propertyDetails: PropertyDetailsData;
   error?: string;
 }> {
@@ -81,6 +83,8 @@ async function getInitialData(
         return {
           success: true,
           propertyId: result.data.propertyId,
+          wardId: result.data.wardId,
+          wardNo: result.data.wardNo,
           propertyDetails: {
             ...defaultPropertyDetails,
             ...result.data.details,
@@ -222,11 +226,15 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
   let propertyDetailsResult: {
     success: boolean;
     propertyId?: number;
+    wardId?: number;
+    wardNo?: string;
     propertyDetails: PropertyDetailsData;
     error?: string;
   } = {
     success: true,
     propertyId: undefined,
+    wardId: undefined,
+    wardNo: undefined,
     propertyDetails: defaultPropertyDetails,
     error: undefined,
   };
@@ -234,13 +242,15 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
 
   if (!criticalError) {
     try {
-      const [propListRes, propDetailsRes] = await Promise.all([
-        resolvedWardId ? getPropertyListByWardAction(resolvedWardId) : Promise.resolve(null),
-        getInitialData(wardNo, propertyNo, partitionNo, resolvedWardId, propertyIdParam),
-      ]);
-
-      propertyListResult = propListRes;
+      const propDetailsRes = await getInitialData(wardNo, propertyNo, partitionNo, resolvedWardId, propertyIdParam);
       propertyDetailsResult = propDetailsRes;
+
+      if (!resolvedWardId && propertyDetailsResult.success && propertyDetailsResult.wardId) {
+        resolvedWardId = propertyDetailsResult.wardId;
+      }
+
+      const propListRes = resolvedWardId ? await getPropertyListByWardAction(resolvedWardId) : null;
+      propertyListResult = propListRes;
 
       // Capture non-critical errors to be surfaced as toasts on the client
       initialError =
@@ -351,8 +361,18 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
   };
 
   try {
-    // URL Normalization (Redirect if ID resolved but not in URL)
-    if (propertyDetailsResult.propertyId && !propertyIdParam) {
+    // URL Normalization (Redirect if we have property details but missing wardNo, propertyNo, partitionNo, wardId, or propertyId in the URL)
+    const hasFullParams =
+      resolvedSearchParams.wardNo &&
+      resolvedSearchParams.propertyNo &&
+      resolvedSearchParams.wardId &&
+      resolvedSearchParams.propertyId;
+
+    if (
+      propertyDetailsResult.success &&
+      propertyDetailsResult.propertyId &&
+      (!hasFullParams || !propertyIdParam)
+    ) {
       const newParams = new URLSearchParams();
       for (const [key, value] of Object.entries(resolvedSearchParams)) {
         if (value == null) continue;
@@ -362,6 +382,18 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
         });
       }
       newParams.set('propertyId', propertyDetailsResult.propertyId.toString());
+      if (propertyDetailsResult.wardId) {
+        newParams.set('wardId', propertyDetailsResult.wardId.toString());
+      }
+      if (propertyDetailsResult.wardNo) {
+        newParams.set('wardNo', propertyDetailsResult.wardNo);
+      }
+      if (propertyDetailsResult.propertyDetails.propertyNo) {
+        newParams.set('propertyNo', propertyDetailsResult.propertyDetails.propertyNo);
+      }
+      const rawPart = propertyDetailsResult.propertyDetails.partitionNo;
+      newParams.set('partitionNo', rawPart && rawPart.trim() !== '' ? rawPart : '0');
+
       redirect(`/${locale}/property-tax/ptis?${newParams.toString()}`);
     }
   } catch (error: unknown) {
