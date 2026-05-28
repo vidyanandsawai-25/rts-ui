@@ -2,7 +2,7 @@
 
 import { Input } from "@/components/common";
 import { Label } from "@/components/common/label";
-import { sanitizeTaxDecimal, preventInvalidNumericKeys, isValidDecimalField } from "../utils/inputValidation";
+import { sanitizeTaxDecimal, preventInvalidNumericKeys } from "../utils/inputValidation";
 import { TaxDetailsFieldsProps } from "@/types/OldDetails/property-old-floor-info.types";
 
 /**
@@ -13,18 +13,16 @@ import { TaxDetailsFieldsProps } from "@/types/OldDetails/property-old-floor-inf
 export function TaxDetailsFields({
   t,
   formData,
-  showError,
   onFieldChange
 }: TaxDetailsFieldsProps) {
   return (
     <>
       {/* Old RV */}
-      <div className="space-y-2">
-        <Label className="text-sm font-semibold text-gray-700 ml-1">
-          {t("oldDetails.rv")}<span className="text-red-500 ml-1">*</span>
+      <div className="space-y-1.5">
+        <Label className="text-xs font-semibold text-gray-700">
+          {t("oldDetails.rv")}
         </Label>
         <Input
-          required
           type="text"
           inputMode="decimal"
           placeholder={t("oldDetails.rvPlaceholder")}
@@ -38,18 +36,14 @@ export function TaxDetailsFields({
           }}
           onKeyDown={preventInvalidNumericKeys}
         />
-        {showError('oldRV', isValidDecimalField(formData.oldRV)) && (
-          <span className="text-xs text-red-500">{t('oldDetails.validation.rvRequired')}</span>
-        )}
       </div>
 
       {/* Old ALV */}
-      <div className="space-y-2">
-        <Label className="text-sm font-semibold text-gray-700 ml-1">
-          {t("oldDetails.alv")}<span className="text-red-500 ml-1">*</span>
+      <div className="space-y-1.5">
+        <Label className="text-xs font-semibold text-gray-700">
+          {t("oldDetails.alv")}
         </Label>
         <Input
-          required
           type="text"
           inputMode="decimal"
           placeholder={t("oldDetails.alvPlaceholder")}
@@ -63,18 +57,14 @@ export function TaxDetailsFields({
           }}
           onKeyDown={preventInvalidNumericKeys}
         />
-        {showError('oldALV', isValidDecimalField(formData.oldALV)) && (
-          <span className="text-xs text-red-500">{t('oldDetails.validation.alvRequired')}</span>
-        )}
       </div>
 
       {/* Old Property Tax */}
-      <div className="space-y-2">
-        <Label className="text-sm font-semibold text-gray-700 ml-1">
-          {t("oldDetails.propertyTax")}<span className="text-red-500 ml-1">*</span>
+      <div className="space-y-1.5">
+        <Label className="text-xs font-semibold text-gray-700">
+          {t("oldDetails.propertyTax")}
         </Label>
         <Input
-          required
           type="text"
           inputMode="decimal"
           placeholder={t("oldDetails.propertyTaxPlaceholder")}
@@ -88,14 +78,11 @@ export function TaxDetailsFields({
           }}
           onKeyDown={preventInvalidNumericKeys}
         />
-        {showError('oldGeneralTax', isValidDecimalField(formData.oldGeneralTax)) && (
-          <span className="text-xs text-red-500">{t('oldDetails.validation.propertyTaxRequired')}</span>
-        )}
       </div>
 
       {/* Old Total Tax - Read Only */}
-      <div className="space-y-2">
-        <Label className="text-sm font-semibold text-gray-700 ml-1">
+      <div className="space-y-1.5">
+        <Label className="text-xs font-semibold text-gray-700">
           {t("oldDetails.totalTax")}
         </Label>
         <Input

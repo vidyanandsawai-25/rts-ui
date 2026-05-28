@@ -19,8 +19,8 @@ export function PropertyDetailsFields({
   return (
     <>
       {/* Old Zone Name */}
-      <div className="space-y-2">
-        <Label className="text-sm font-semibold text-gray-700 ml-1">
+      <div className="space-y-1.5">
+        <Label className="text-xs font-semibold text-gray-700">
           {t("oldDetails.zoneName")}<span className="text-red-500 ml-1">*</span>
         </Label>
         <Input
@@ -42,8 +42,8 @@ export function PropertyDetailsFields({
       </div>
 
       {/* Old Ward No */}
-      <div className="space-y-2">
-        <Label className="text-sm font-semibold text-gray-700 ml-1">
+      <div className="space-y-1.5">
+        <Label className="text-xs font-semibold text-gray-700">
           {t("oldDetails.wardNo")}<span className="text-red-500 ml-1">*</span>
         </Label>
         <Input
@@ -65,8 +65,8 @@ export function PropertyDetailsFields({
       </div>
 
       {/* Old Property No */}
-      <div className="space-y-2">
-        <Label className="text-sm font-semibold text-gray-700 ml-1">
+      <div className="space-y-1.5">
+        <Label className="text-xs font-semibold text-gray-700">
           {t("oldDetails.propertyNo")}<span className="text-red-500 ml-1">*</span>
         </Label>
         <Input
@@ -88,8 +88,8 @@ export function PropertyDetailsFields({
       </div>
 
       {/* Old Partition No */}
-      <div className="space-y-2">
-        <Label className="text-sm font-semibold text-gray-700 ml-1">
+      <div className="space-y-1.5">
+        <Label className="text-xs font-semibold text-gray-700">
           {t("oldDetails.partitionNo")}
         </Label>
         <Input
@@ -107,8 +107,8 @@ export function PropertyDetailsFields({
       </div>
 
       {/* Old E-Governance No */}
-      <div className="space-y-2">
-        <Label className="text-sm font-semibold text-gray-700 ml-1">
+      <div className="space-y-1.5">
+        <Label className="text-xs font-semibold text-gray-700">
           {t("oldDetails.eGovernanceNo")}
         </Label>
         <Input

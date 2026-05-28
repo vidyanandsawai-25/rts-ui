@@ -2,7 +2,7 @@
 
 import { Input } from "@/components/common";
 import { Label } from "@/components/common/label";
-import { sanitizeAlphanumeric, sanitizeAreaDecimal, preventInvalidNumericKeys, isValidDecimalField } from "../utils/inputValidation";
+import { sanitizeAlphanumeric, sanitizeAreaDecimal, preventInvalidNumericKeys } from "../utils/inputValidation";
 import { AreaDetailsFieldsProps } from "@/types/OldDetails/property-old-floor-info.types";
 
 /**
@@ -13,18 +13,16 @@ import { AreaDetailsFieldsProps } from "@/types/OldDetails/property-old-floor-in
 export function AreaDetailsFields({
   t,
   formData,
-  showError,
   onFieldChange
 }: AreaDetailsFieldsProps) {
   return (
     <>
       {/* Old Plot Area */}
-      <div className="space-y-2">
-        <Label className="text-sm font-semibold text-gray-700 ml-1">
-          {t("oldDetails.plotArea")}<span className="text-red-500 ml-1">*</span>
+      <div className="space-y-1.5">
+        <Label className="text-xs font-semibold text-gray-700">
+          {t("oldDetails.plotArea")}
         </Label>
         <Input
-          required
           type="text"
           inputMode="decimal"
           placeholder={t("oldDetails.plotAreaPlaceholder")}
@@ -38,14 +36,11 @@ export function AreaDetailsFields({
           }}
           onKeyDown={preventInvalidNumericKeys}
         />
-        {showError('oldPlotArea', isValidDecimalField(formData.oldPlotArea)) && (
-          <span className="text-xs text-red-500">{t('oldDetails.validation.plotAreaRequired')}</span>
-        )}
       </div>
 
       {/* Old Plot No */}
-      <div className="space-y-2">
-        <Label className="text-sm font-semibold text-gray-700 ml-1">
+      <div className="space-y-1.5">
+        <Label className="text-xs font-semibold text-gray-700">
           {t("oldDetails.plotNo")}
         </Label>
         <Input
@@ -63,12 +58,11 @@ export function AreaDetailsFields({
       </div>
 
       {/* Old Construction Area */}
-      <div className="space-y-2">
-        <Label className="text-sm font-semibold text-gray-700 ml-1">
-          {t("oldDetails.constructionArea")}<span className="text-red-500 ml-1">*</span>
+      <div className="space-y-1.5">
+        <Label className="text-xs font-semibold text-gray-700">
+          {t("oldDetails.constructionArea")}
         </Label>
         <Input
-          required
           type="text"
           inputMode="decimal"
           placeholder={t("oldDetails.constructionAreaPlaceholder")}
@@ -82,9 +76,6 @@ export function AreaDetailsFields({
           }}
           onKeyDown={preventInvalidNumericKeys}
         />
-        {showError('oldConstructionArea', isValidDecimalField(formData.oldConstructionArea)) && (
-          <span className="text-xs text-red-500">{t('oldDetails.validation.constructionAreaRequired')}</span>
-        )}
       </div>
     </>
   );

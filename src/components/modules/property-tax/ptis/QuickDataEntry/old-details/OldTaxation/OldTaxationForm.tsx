@@ -33,13 +33,13 @@ export default function OldTaxationForm({
   };
 
   return (
-    <div className="p-3 space-y-6">
-      <div className="bg-white rounded-2xl shadow-lg border border-blue-100 p-5">
-        <h3 className="text-lg font-bold text-blue-800 mb-6 pb-3 border-b-2 border-blue-100 flex items-center gap-2">
+    <div className="p-4 space-y-3">
+      <div className="bg-white rounded-xl shadow-md border-2 border-blue-100 p-4">
+        <h3 className="text-sm font-bold text-blue-800 mb-3 pb-2 border-b-2 border-blue-200">
           {t("oldDetails.title")}
         </h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6">
+        <div className="grid grid-cols-3 gap-x-4 gap-y-3">
           {/* Property Identification Fields */}
           <PropertyDetailsFields
             t={t}
@@ -80,7 +80,7 @@ export default function OldTaxationForm({
           />
         </div>
 
-        <div className="mt-10 flex justify-end border-t border-gray-100 pt-3 ">
+        <div className="mt-6 flex justify-end border-t border-gray-100 pt-4">
           <UpdateButton
             label={isSubmitting ? t('footer.saving') : t('commonbuttonmessages.UpdateChanges')}
             type="submit"

@@ -29,8 +29,8 @@ export function DynamicTaxFields({
     <>
       {taxes.map((tax) => {
         return (
-          <div key={tax.taxId} className="space-y-2">
-            <Label className="text-sm font-semibold text-gray-700 ml-1">
+          <div key={tax.taxId} className="space-y-1.5">
+            <Label className="text-xs font-semibold text-gray-700">
               {tax.taxName}
             </Label>
             <Input
@@ -47,7 +47,7 @@ export function DynamicTaxFields({
                 onTaxChange(tax.taxId, sanitized);
               }}
               placeholder={tax.taxName}
-              className="h-11.5 hover:border-blue-300 focus:border-blue-400 focus:ring-4 focus:ring-blue-50 rounded-lg transition-all font-medium text-gray-900 px-4 border-[#cbd5e1]"
+              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
             />
           </div>
         );

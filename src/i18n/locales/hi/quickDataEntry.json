@@ -2,7 +2,8 @@
     "commonbuttonmessages": {
         "update": "अपडेट",
         "UpdateChanges": "अपडेट करें",
-         "clear": "साफ़ करें"
+        "clear": "साफ़ करें",
+        "actions": "कार्रवाई"
     },
     "roomSubmission": {
         "quickDataEntry": "संपत्ति त्वरित डेटा प्रविष्टि",

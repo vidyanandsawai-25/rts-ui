@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback } from "react";
-import { DeleteButton, EditButton, MasterTable, useConfirm } from "@/components/common";
+import { DeleteButton, EditButton, FloorDetailsTable, useConfirm } from "@/components/common";
 import type { FloorTableRow } from "@/types/OldDetails/property-old-details.types";
 import { getFloorInformationColumns } from "../FloorInformationColumns";
 import { FloorTableSectionProps } from "@/types/OldDetails/property-old-floor-info.types";
@@ -54,26 +54,35 @@ export function FloorTableSection({
     ),
   }));
 
-
-
-  return (
-    <div className="rounded-lg overflow-x-auto bg-white shadow-sm mb-6 border border-blue-200 [&_th:last-child]:text-white! [&_th:last-child]:text-xs [&_th:last-child]:border-l [&_th:last-child]:border-white/30">
-      <MasterTable
-        columns={getFloorInformationColumns(t)}
-        data={transformedData}
-        totalCount={existingFloorDetails.length}
-        getRowKey={(row: FloorTableRow) => String(row.id || "")}
-        maxBodyHeightClassName="max-h-[350px]"
-        theadClassName="sticky top-0 z-20 bg-[#2D3E8A] text-white border-b border-blue-300"
-        rowClassName={() => "hover:bg-blue-50/50 transition-colors"}
-        tableClassName="min-w-max"
-        actionLabel={t('floor.actions').toUpperCase()}
-        renderActions={useCallback((row: FloorTableRow) => (
-          <div className="flex items-center gap-2 whitespace-nowrap ">
+  const columns = getFloorInformationColumns(t);
+  
+  // Update the actions column render function
+  const columnsWithActions = columns.map(col => {
+    if (col.key === 'actions') {
+      return {
+        ...col,
+        render: (row: FloorTableRow) => (
+          <div className="flex items-center justify-center gap-2 whitespace-nowrap">
             <EditButton onClick={() => onEdit(row.originalRow)} />
             <DeleteButton onClick={() => handleDeleteClick(row)} />
           </div>
-        ), [onEdit, handleDeleteClick])}
+        ),
+      };
+    }
+    return col;
+  });
+
+  return (
+    <div className="mt-6">
+      <FloorDetailsTable
+        data={transformedData}
+        columns={columnsWithActions}
+        emptyMessage={t('floor.noFloorData')}
+        showExpandColumn={false}
+        showBorder={true}
+        striped={true}
+        hoverable={true}
+        containerClassName="max-h-[400px] overflow-y-auto"
       />
     </div>
   );
