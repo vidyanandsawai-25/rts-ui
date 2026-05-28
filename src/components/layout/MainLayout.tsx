@@ -13,6 +13,11 @@ import { buildSidebarTree } from '@/lib/utils/sidebar-tree';
 import { buildSidebarTreeFromUserScreens } from '@/lib/utils/sidebar-tree-user';
 import { PermissionsProvider } from '@/lib/providers/PermissionsProvider';
 import type { UserScreenAccess } from '@/types/user-screen-access.types';
+import { getModules } from '@/lib/api/configuration-settings/screenAccess/master-data.service';
+import {
+  applyModuleActivationGate,
+  buildActiveModuleIdSet,
+} from '@/lib/utils/module-access-guard';
 
 export interface MainLayoutProps {
   children: React.ReactNode;
@@ -54,17 +59,37 @@ const fetchGlobalMenuItems = cache(async () => {
 });
 
 /**
+ * Loads active module ids for ULB-level activation gating.
+ */
+const fetchActiveModuleIds = cache(async () => {
+  try {
+    const modules = await getModules();
+    return buildActiveModuleIdSet(modules);
+  } catch {
+    return null;
+  }
+});
+
+/**
  * Fetches menu entries for a specific user (deduped per request).
  * Falls back to global screens if user-specific screens are unavailable.
  */
 const fetchUserMenuItems = cache(async (userId: number, token?: string) => {
   try {
-    // Fetch user-specific screens
-    const screensRes = await userScreenAccessService.getScreensForUser(userId, token);
+    const [screensRes, activeModuleIds] = await Promise.all([
+      userScreenAccessService.getScreensForUser(userId, token),
+      fetchActiveModuleIds(),
+    ]);
+
     if (screensRes.success && Array.isArray(screensRes.data) && screensRes.data.length > 0) {
-      const userMenuItems = buildSidebarTreeFromUserScreens(screensRes.data);
+      const effectiveScreens =
+        activeModuleIds != null
+          ? applyModuleActivationGate(screensRes.data, activeModuleIds)
+          : screensRes.data;
+
+      const userMenuItems = buildSidebarTreeFromUserScreens(effectiveScreens);
       if (userMenuItems.length > 0) {
-        return { menuItems: userMenuItems, rawScreens: screensRes.data };
+        return { menuItems: userMenuItems, rawScreens: effectiveScreens };
       }
     }
   } catch (_error) {

@@ -12,6 +12,7 @@ import {
 } from '@/lib/api/configuration-settings/module-master/module-master.validator';
 
 export const MODULE_MASTER_PATH = '/configuration-settings/module-master';
+export const DEPARTMENT_ACTIVATION_PATH = '/configuration-settings/department-activation';
 
 export type ValidationResult =
   | {
@@ -131,6 +132,7 @@ export function validateAndNormalize(data: Partial<ModuleMasterFormData>): Valid
 export function revalidateModuleMaster(): void {
   for (const locale of locales) {
     revalidatePath(`/${locale}${MODULE_MASTER_PATH}`, 'page');
+    revalidatePath(`/${locale}${DEPARTMENT_ACTIVATION_PATH}`, 'page');
   }
 }
 
