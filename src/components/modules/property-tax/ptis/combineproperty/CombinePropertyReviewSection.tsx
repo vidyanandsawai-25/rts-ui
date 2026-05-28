@@ -1,5 +1,5 @@
 import { AlertTriangle, CheckCircle2, FileText } from 'lucide-react';
-import { MasterTable } from '@/components/common/MasterTable';
+import { MasterTable, Column } from '@/components/common/MasterTable';
 import { TextArea } from '@/components/common/Textarea';
 import { ValidationMessage } from '@/components/common/ValidationMessage';
 import { PropertyRow } from './combinePropertyColumns';
@@ -15,7 +15,7 @@ export interface CombinePropertyReviewSectionProps {
   checkedCount: number;
   hasDifferentOwners: boolean;
   differentOwnerProps: string;
-  columns: any[];
+  columns: Column<PropertyRow>[];
   reviewData: PropertyRow[];
   remark: string;
   remarkError: boolean;

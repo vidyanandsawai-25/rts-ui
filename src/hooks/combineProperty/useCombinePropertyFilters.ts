@@ -35,21 +35,23 @@ export function useCombinePropertyFilters(
     [pathname, searchParams]
   );
 
-  const calculatePartitionNo = useCallback(
+  const calculatePropertyParams = useCallback(
     (method: SelectionMethod, from: string, to: string, individual: string[]) => {
+      let slice: CombinePropertyItem[] = [];
       if (method === 'range' && from && to) {
         const fromIdx = subPropertyList.findIndex((i) => String(i.id) === from);
         const toIdx = subPropertyList.findIndex((i) => String(i.id) === to);
-        if (fromIdx === -1 || toIdx === -1) return '';
-        const start = Math.min(fromIdx, toIdx);
-        const end = Math.max(fromIdx, toIdx);
-        const slice = subPropertyList.slice(start, end + 1);
-        return slice.map((i) => i.fromProperty).join(',');
+        if (fromIdx !== -1 && toIdx !== -1) {
+          const start = Math.min(fromIdx, toIdx);
+          const end = Math.max(fromIdx, toIdx);
+          slice = subPropertyList.slice(start, end + 1);
+        }
       } else if (method === 'individual' && individual.length > 0) {
-        const items = subPropertyList.filter((i) => individual.includes(String(i.id)));
-        return items.map((i) => i.fromProperty).join(',');
+        slice = subPropertyList.filter((i) => individual.includes(String(i.id)));
       }
-      return '';
+      const partitionNos = Array.from(new Set(slice.map((i) => i.fromProperty || '0'))).join(',');
+      const propertyNos = Array.from(new Set(slice.map((i) => i.propertyNo).filter(Boolean))).join(',');
+      return { partitionNos, propertyNos };
     },
     [subPropertyList]
   );
@@ -85,8 +87,8 @@ export function useCombinePropertyFilters(
         toast.error(t('rangeInvalidError'));
       }
     }
-    const pNo = calculatePartitionNo('range', value, rangeTo, []);
-    router.replace(buildUrl({ from: value, partitionNo: pNo }), { scroll: false });
+    const params = calculatePropertyParams('range', value, rangeTo, []);
+    router.replace(buildUrl({ from: value, partitionNo: params.partitionNos, propertyNos: params.propertyNos }), { scroll: false });
   };
 
   const handleRangeToChange = (_name: string, value: string) => {
@@ -98,14 +100,14 @@ export function useCombinePropertyFilters(
         toast.error(t('rangeInvalidError'));
       }
     }
-    const pNo = calculatePartitionNo('range', rangeFrom, value, []);
-    router.replace(buildUrl({ to: value, partitionNo: pNo }), { scroll: false });
+    const params = calculatePropertyParams('range', rangeFrom, value, []);
+    router.replace(buildUrl({ to: value, partitionNo: params.partitionNos, propertyNos: params.propertyNos }), { scroll: false });
   };
 
   const handleIndividualChange = (values: string[]) => {
     onClearReview();
-    const pNo = calculatePartitionNo('individual', '', '', values);
-    router.replace(buildUrl({ individual: values.join(','), partitionNo: pNo }), { scroll: false });
+    const params = calculatePropertyParams('individual', '', '', values);
+    router.replace(buildUrl({ individual: values.join(','), partitionNo: params.partitionNos, propertyNos: params.propertyNos }), { scroll: false });
   };
 
   const clearFilters = () => {
@@ -120,6 +122,8 @@ export function useCombinePropertyFilters(
         individual: undefined,
         rangeFromPartition: undefined,
         rangeToPartition: undefined,
+        partitionNo: undefined,
+        propertyNos: undefined,
       })
     );
   };

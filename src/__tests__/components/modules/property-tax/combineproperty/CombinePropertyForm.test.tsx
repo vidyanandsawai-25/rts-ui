@@ -71,6 +71,9 @@ describe('CombinePropertyForm', () => {
     subPropertyList: [
       { id: 2, wardId: 1, wardNo: 'W1', propertyNo: 'P2', fromProperty: 'P2', toProperty: 'P2', isActive: true, createdDate: '2024-01-01', updatedDate: null }
     ],
+    propertyTypeList: [
+      { id: 1, propertyDescription: 'Residential', type: 'R', propertyTypeGroup: 'Res', searchSequence: 1, propertyTypeCategoryId: 1, isActive: true, createdBy: 1, createdDate: '2024-01-01', updatedDate: null }
+    ],
   };
 
   const mockHookReturnValue = {

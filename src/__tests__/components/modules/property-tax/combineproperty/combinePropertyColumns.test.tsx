@@ -6,14 +6,14 @@ describe('combinePropertyColumns', () => {
   const mockT = vi.fn((key) => key);
 
   const mockReviewData: PropertyRow[] = [
-    { propertyId: 1, wardId: 1, wardNo: 'W1', propertyNo: 'P1', partitionNo: '1', oldPropertyNo: 'O1', ownerName: 'John Doe', occupierName: 'Jane Doe', taxAmount: 1000, pendingAmount: 500 },
-    { propertyId: 2, wardId: 1, wardNo: 'W1', propertyNo: 'P2', partitionNo: '2', oldPropertyNo: 'O2', ownerName: 'John Doe', occupierName: '', taxAmount: 2000, pendingAmount: 1000 },
-    { propertyId: 3, wardId: 1, wardNo: 'W1', propertyNo: 'P3', partitionNo: '3', oldPropertyNo: 'O3', ownerName: 'Mismatch Owner', occupierName: null as unknown as string, taxAmount: 3000, pendingAmount: 0 },
+    { propertyId: 1, wardId: 1, wardNo: 'W1', propertyNo: 'P1', partitionNo: '1', oldPropertyNo: 'O1', ownerName: 'John Doe', occupierName: 'Jane Doe', taxAmount: 1000, pendingAmount: 500, propertyDescription: '', propertyTypeId: 1 },
+    { propertyId: 2, wardId: 1, wardNo: 'W1', propertyNo: 'P2', partitionNo: '2', oldPropertyNo: 'O2', ownerName: 'John Doe', occupierName: '', taxAmount: 2000, pendingAmount: 1000, propertyDescription: '', propertyTypeId: 1 },
+    { propertyId: 3, wardId: 1, wardNo: 'W1', propertyNo: 'P3', partitionNo: '3', oldPropertyNo: 'O3', ownerName: 'Mismatch Owner', occupierName: null as unknown as string, taxAmount: 3000, pendingAmount: 0, propertyDescription: '', propertyTypeId: 1 },
   ];
 
   it('should return correct number of columns', () => {
     const columns = getCombinePropertyColumns(mockT, mockReviewData);
-    expect(columns.length).toBe(10);
+    expect(columns.length).toBe(11);
   });
 
   it('should render serial number correctly', () => {

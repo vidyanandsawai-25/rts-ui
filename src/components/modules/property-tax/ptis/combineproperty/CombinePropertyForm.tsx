@@ -33,7 +33,15 @@ interface CombinePropertyFormProps {
 /* ------------------------------------------------------------------ */
 
 function toSelectOption(item: CombinePropertyItem): SearchSelectOption {
-  const label = `${item.fromProperty}${item.toProperty && item.toProperty !== item.fromProperty ? ' – ' + item.toProperty : ''}`;
+  let label = item.propertyNo;
+  if (item.fromProperty) {
+    label += `-${item.fromProperty}`;
+    if (item.toProperty && item.toProperty !== item.fromProperty) {
+      label += ` – ${item.toProperty}`;
+    }
+  } else if (item.toProperty) {
+    label += `-${item.toProperty}`;
+  }
   return { label, value: String(item.id) };
 }
 
@@ -101,7 +109,8 @@ export default function CombinePropertyForm({
   /* ---- Options ---- */
   const BASE_PROPERTY_OPTIONS = useMemo<SearchSelectOption[]>(() => {
     return (basePropertyList || []).map((item) => ({
-      label: `${item.wardNo || ''} / ${item.propertyNo || ''}/ ${item.fromProperty || ''}`,
+      // label: `${item.wardNo || ''}`,
+      label: `${item.wardNo || ''} - ${item.propertyNo || ''}${item.fromProperty ? ' - ' + item.fromProperty : ''}`,
       value: String(item.id || ''),
       meta: { wardId: item.wardId, wardNo: item.wardNo, propertyNo: item.propertyNo },
     }));
@@ -185,7 +194,7 @@ export default function CombinePropertyForm({
       footer={DrawerFooter}
     >
       <CombinePropertyFilterBar
-        t={t as any}
+        t={t as unknown as (key: string, values?: Record<string, string | number>) => string}
         basePropertyOptions={BASE_PROPERTY_OPTIONS}
         subPropertyOptions={SUB_PROPERTY_OPTIONS}
         propertyTypeOptions={PROPERTY_TYPE_OPTIONS}
@@ -210,7 +219,7 @@ export default function CombinePropertyForm({
       />
 
       <CombinePropertyReviewSection
-        t={t as any}
+        t={t as unknown as (key: string, values?: Record<string, string | number>) => string}
         isReviewing={isReviewing}
         isPending={isPending}
         isSubmitting={isSubmitting}

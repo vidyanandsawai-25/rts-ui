@@ -5,7 +5,7 @@ import { CancelButton, AddButton } from '@/components/common/ActionButtons';
 import { SelectionMethod } from '@/hooks/combineProperty/useCombinePropertyFilters';
 
 export interface CombinePropertyFilterBarProps {
-  t: (key: string, values?: any) => string;
+  t: (key: string, values?: Record<string, string | number>) => string;
   basePropertyOptions: SearchSelectOption[];
   subPropertyOptions: SearchSelectOption[];
   propertyTypeOptions: SearchSelectOption[];

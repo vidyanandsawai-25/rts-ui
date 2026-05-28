@@ -70,12 +70,8 @@ export async function fetchPropertyCombineDetailsAction(
       logger.warn("Invalid Ward ID", { wardId: params.wardId });
       return [];
     }
-    if (!params.propertyNo?.trim()) {
-      logger.warn("Property No is required");
-      return [];
-    }
-    if (!params.partitionNo?.trim()) {
-      logger.warn("Partition No is required");
+    if (!params.propertyNo?.trim() && !params.partitionNo?.trim()) {
+      logger.warn("At least Property No or Partition No is required");
       return [];
     }
 
@@ -137,14 +133,19 @@ export async function createCombinePropertyAction(
     const resultData = result as { message?: string; items?: { message?: string } };
     return { success: true, message: resultData?.message || resultData?.items?.message, data: result };
   } catch (error: unknown) {
-    logger.error("Error combining properties", undefined, error);
     if (error instanceof ApiError) {
+      if (error.statusCode >= 400 && error.statusCode < 500) {
+        logger.warn(`Validation failed combining properties: ${error.responseText}`);
+      } else {
+        logger.error("Error combining properties", undefined, error);
+      }
       return {
         success: false,
         message: error.responseText,
         statusCode: error.statusCode,
       };
     }
+    logger.error("Unexpected error combining properties", undefined, error);
     if (error instanceof Error) {
       return { success: false, message: error.message };
     }

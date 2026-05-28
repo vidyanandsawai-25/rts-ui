@@ -35,7 +35,7 @@ export default async function Page({ searchParams }: PageProps) {
       pageNumber: 1,
       pageSize: ALL_RECORDS_PAGE_SIZE,
       wardId: Number(wardId),
-      propertyNo: propertyNo,
+      // propertyNo: propertyNo,
     });
     subPropertyList = subResult.items ?? [];
   }

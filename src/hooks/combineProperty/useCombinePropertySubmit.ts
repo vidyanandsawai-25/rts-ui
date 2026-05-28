@@ -1,12 +1,16 @@
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 import { PropertyCombineDetails } from '@/types/combine-property.types';
 import { fetchPropertyCombineDetailsAction, createCombinePropertyAction } from '@/app/[locale]/property-tax/ptis/combineproperty/action';
+import { ConfirmContextType } from '@/components/common/ConfirmProvider';
 
 interface SubmitHookParams {
   selectedWardId?: string;
   selectedPropertyNo?: string;
+  submitPropertyNos?: string;
   selectedBasePropertyId?: string;
+  basePartitionNo?: string;
   partitionNo: string;
   checkedProperties: PropertyCombineDetails[];
   selectedPropertyType: string;
@@ -18,14 +22,16 @@ interface SubmitHookParams {
   setShowPropertyTypeDropdown: (val: boolean) => void;
   setRemarkError: (val: boolean) => void;
   handleClear: () => void;
-  router: any;
-  confirm: any;
+  router: ReturnType<typeof useRouter>;
+  confirm: ConfirmContextType['confirm'];
 }
 
 export function useCombinePropertySubmit({
   selectedWardId,
   selectedPropertyNo,
+  submitPropertyNos,
   selectedBasePropertyId,
+  basePartitionNo,
   partitionNo,
   checkedProperties,
   selectedPropertyType,
@@ -49,7 +55,7 @@ export function useCombinePropertySubmit({
       toast.error(t('basePropertyIncomplete'));
       return;
     }
-    if (!partitionNo) {
+    if (!partitionNo && !submitPropertyNos) {
       toast.error(t('selectAtLeastOne'));
       return;
     }
@@ -57,11 +63,32 @@ export function useCombinePropertySubmit({
     startTransition(async () => {
       setIsReviewing(true);
       try {
+        const allPartitions = new Set(
+          [...partitionNo.split(','), basePartitionNo || '0']
+            .map(p => p.trim())
+            .filter(Boolean)
+        );
+        let finalPartitionNo = Array.from(allPartitions).join(',');
+        
+        // If the only partition number collected is '0', it means NO properties have a real partition.
+        // In that case, send an empty string so the API just uses PropertyNo.
+        if (finalPartitionNo === '0') {
+          finalPartitionNo = '';
+        }
+        
+        const allPropertyNos = new Set(
+          [...(submitPropertyNos ? submitPropertyNos.split(',') : []), selectedPropertyNo || '']
+            .map(p => p.trim())
+            .filter(Boolean)
+        );
+        const finalPropertyNo = Array.from(allPropertyNos).join(',');
+
         const data = await fetchPropertyCombineDetailsAction({
           wardId: Number(selectedWardId),
-          propertyNo: selectedPropertyNo,
-          partitionNo,
+          propertyNo: finalPropertyNo,
+          partitionNo: finalPartitionNo,
         });
+        
         setReviewData(data);
         setCheckedPropertyIds(new Set(data.map((d) => d.propertyId)));
       } catch {
@@ -72,7 +99,7 @@ export function useCombinePropertySubmit({
 
   const handleCombine = async () => {
     if (isSubmitting || isPending) return;
-    if (!selectedBasePropertyId || checkedProperties.length === 0) return;
+    if (!selectedBasePropertyId) return;
 
     if (checkedProperties.length === 0) {
       toast.error(t('selectAtLeastOneToMerge'));
@@ -113,14 +140,17 @@ export function useCombinePropertySubmit({
       : t('confirmCombineDesc');
 
     confirm({
-      variant: hasDifferentOwnersLocal ? 'destructive' : 'warning',
+      variant: 'warning',
       title: confirmTitle,
       description: confirmDesc,
       confirmText: t('combine'),
       onConfirm: async () => {
         setIsSubmitting(true);
         try {
-          const combinePropertyIds = checkedProperties.map((r) => r.propertyId).join(',');
+          const combinePropertyIds = checkedProperties
+            .filter((r) => String(r.propertyId) !== selectedBasePropertyId)
+            .map((r) => r.propertyId)
+            .join(',');
           const response = await createCombinePropertyAction({
             sourcePropertyId: Number(selectedBasePropertyId),
             combinedPropertyIds: combinePropertyIds,

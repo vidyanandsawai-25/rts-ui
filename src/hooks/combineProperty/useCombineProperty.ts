@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useConfirm } from '@/components/common/ConfirmProvider';
 import { CombinePropertyItem } from '@/types/combine-property.types';
 import { useCombinePropertyFilters } from './useCombinePropertyFilters';
@@ -36,11 +37,19 @@ export function useCombinePropertyForm({
     state.clearState
   );
 
+  const basePartitionNo = useMemo(() => {
+    if (!selectedBasePropertyId) return '';
+    const prop = basePropertyList.find(p => String(p.id) === selectedBasePropertyId);
+    return prop?.fromProperty || '';
+  }, [basePropertyList, selectedBasePropertyId]);
+
   // 3. Submit Hook
   const submit = useCombinePropertySubmit({
     selectedWardId,
     selectedPropertyNo,
     selectedBasePropertyId,
+    basePartitionNo,
+    submitPropertyNos: filters.searchParams.get('propertyNos') || undefined,
     partitionNo: filters.searchParams.get('partitionNo') || '',
     checkedProperties: state.checkedReviewData,
     selectedPropertyType: state.selectedPropertyType,
