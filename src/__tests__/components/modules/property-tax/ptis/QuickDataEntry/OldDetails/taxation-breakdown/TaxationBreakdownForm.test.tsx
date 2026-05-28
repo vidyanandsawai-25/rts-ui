@@ -65,7 +65,7 @@ describe('TaxationBreakdownForm Component', () => {
     
     expect(screen.getByText('quickDataEntry.oldDetails.taxationBreakdown.title')).toBeInTheDocument();
     expect(screen.getByDisplayValue('2023')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('Property Tax')).toHaveValue(1000);
+    expect(screen.getByPlaceholderText('Property Tax')).toHaveValue('1000');
     expect(screen.getByText('Property Tax')).toBeInTheDocument();
   });
 

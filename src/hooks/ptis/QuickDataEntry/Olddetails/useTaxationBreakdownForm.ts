@@ -37,62 +37,11 @@ export function useTaxationBreakdownForm(initialData: OldTaxesDetails | null) {
   // Validation State
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
-  // Validate amount field (numeric, non-negative, max 2 decimals)
-  const validateAmountField = (value: string): string | null => {
-    if (!value || value.trim() === '') {
-      return tValidation('property.validation.required') || 'This field is required';
-    }
-
-    const numValue = Number(value);
-    
-    if (isNaN(numValue)) {
-      return tValidation('property.validation.invalidNumber') || 'Please enter a valid number';
-    }
-
-    if (numValue < 0) {
-      return tValidation('property.validation.negativeNotAllowed') || 'Negative values are not allowed';
-    }
-
-    // Check decimal places (max 2)
-    const decimalPart = value.split('.')[1];
-    if (decimalPart && decimalPart.length > 2) {
-      return tValidation('property.validation.maxTwoDecimals') || 'Maximum 2 decimal places allowed';
-    }
-
-    return null;
-  };
-
   const handleTaxChange = (taxId: number, value: string) => {
     const numValue = Number(value) || 0;
     const updatedTaxes = taxes.map(t => t.taxId === taxId ? { ...t, taxAmount: numValue } : t);
     const newTaxTotal = updatedTaxes.reduce((acc, t) => acc + (t.taxAmount || 0), 0);
     const newNetTotal = newTaxTotal + (Number(formData.interest) || 0);
-
-    const taxError = validateAmountField(value);
-
-    setValidationErrors(prev => {
-      const updated = { ...prev };
-      
-      if (taxError) {
-        updated[`tax_${taxId}`] = taxError;
-      } else {
-        delete updated[`tax_${taxId}`];
-      }
-
-      if (newTaxTotal < 0) {
-        updated.taxTotal = tValidation('property.validation.negativeNotAllowed') || 'Negative values are not allowed';
-      } else {
-        delete updated.taxTotal;
-      }
-
-      if (newNetTotal < 0) {
-        updated.netTotal = tValidation('property.validation.negativeNotAllowed') || 'Negative values are not allowed';
-      } else {
-        delete updated.netTotal;
-      }
-
-      return updated;
-    });
 
     setTaxes(updatedTaxes);
     setFormData(prev => ({
@@ -100,6 +49,19 @@ export function useTaxationBreakdownForm(initialData: OldTaxesDetails | null) {
       taxTotal: newTaxTotal,
       netTotal: newNetTotal
     }));
+
+    if (numValue < 0) {
+      setValidationErrors(prev => ({
+        ...prev,
+        [`tax_${taxId}`]: "Tax amount cannot be negative"
+      }));
+    } else {
+      setValidationErrors(prev => {
+        const copy = { ...prev };
+        delete copy[`tax_${taxId}`];
+        return copy;
+      });
+    }
   };
 
   const handleMetaChange = (key: string, value: string | number) => {
@@ -110,31 +72,15 @@ export function useTaxationBreakdownForm(initialData: OldTaxesDetails | null) {
       }
       return updated;
     });
-
-    if (key === 'interest') {
-      const error = validateAmountField(String(value));
-      const newNetTotal = (Number(formData.taxTotal) || 0) + (Number(value) || 0);
-
-      setValidationErrors(prev => {
-        const updated = { ...prev };
-        if (error) {
-          updated.interest = error;
-        } else {
-          delete updated.interest;
-        }
-
-        if (newNetTotal < 0) {
-          updated.netTotal = tValidation('property.validation.negativeNotAllowed') || 'Negative values are not allowed';
-        } else {
-          delete updated.netTotal;
-        }
-
-        return updated;
-      });
-    }
   };
 
   const validate = () => {
+    // Check validationErrors object
+    if (Object.keys(validationErrors).length > 0) {
+      toast.error(tValidation('property.validation.fixErrors'));
+      return false;
+    }
+
     // Use unified validation utility
     const yearError = propertyValidations.year("assessmentYear", tValidation)(formData.year);
     if (yearError) {
@@ -152,12 +98,6 @@ export function useTaxationBreakdownForm(initialData: OldTaxesDetails | null) {
     // Check if taxes data is available
     if (!taxes || taxes.length === 0) {
       toast.error(t('noTaxDataAvailable') || 'No tax data available');
-      return false;
-    }
-
-    // Check for validation errors
-    if (Object.keys(validationErrors).length > 0) {
-      toast.error(tValidation('property.validation.fixErrors') || 'Please fix validation errors before saving');
       return false;
     }
 
