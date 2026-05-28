@@ -21,7 +21,8 @@ interface PropertySelectionSectionProps {
   label?: string;
   placeholder?: string;
   disabled?: boolean;
-  value?: string; // Explicit value prop for flexibility
+  value?: string;
+  hidePropertyInfo?: boolean;
 }
 
 export function PropertySelectionSection({
@@ -35,6 +36,7 @@ export function PropertySelectionSection({
   placeholder,
   disabled,
   value,
+  hidePropertyInfo = false,
 }: PropertySelectionSectionProps) {
   // Use explicit value prop if provided, otherwise try to get from selectedProperty
   const selectValue = value ?? (selectedProperty ? String(selectedProperty.id || selectedProperty.propertyId || "") : "");
@@ -60,7 +62,7 @@ export function PropertySelectionSection({
         type="error"
       />
 
-      {selectedProperty && (
+      {selectedProperty && !hidePropertyInfo && (
         <div className="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-100">
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div>

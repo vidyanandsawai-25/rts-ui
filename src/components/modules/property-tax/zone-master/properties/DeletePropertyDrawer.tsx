@@ -1,15 +1,14 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
+import { useBuildingList } from "@/hooks/zoneMaster/useBuildingList";
 import { Trash2, AlertTriangle } from "lucide-react";
 import { PropertySelectionSection } from "./components";
 import { Drawer } from "@/components/common/Drawer";
 
 import {
   Checkbox,
-  ValidationMessage,
   CancelButton,
-  Select,
 } from "@/components/common";
 
 import { Button } from "@/components/common/ActionButton";
@@ -48,11 +47,9 @@ interface DeletePropertyDrawerProps {
 export default function DeletePropertyDrawer({
   isOpen,
   onClose,
-  properties,
   onDeleteSingle,
   loading = false,
   selectedWard = null,
-  categoryMap,
 }: DeletePropertyDrawerProps) {
   const t = useTranslations("zoneMaster.deleteProperty");
   const tZone = useTranslations("zoneMaster");
@@ -76,60 +73,39 @@ export default function DeletePropertyDrawer({
   // NORMALIZED WARD
   const ward = selectedWard ?? null;
 
+  // BUILDING LIST
+  const { buildingList, loadingBuildingList, buildingListError } = useBuildingList({
+    wardId: ward?.id ?? null,
+  });
+
   // SELECTED PROPERTY
   const selectedProperty = useMemo(() => {
-    return properties.find(
-      (p) => String(p.value) === String(selectedPropertyId)
+    return buildingList.find(
+      (b) => String(b.propertyId) === String(selectedPropertyId)
     );
-  }, [properties, selectedPropertyId]);
+  }, [buildingList, selectedPropertyId]);
 
   // CATEGORY CHECK
   const isApartmentCategory = useMemo(() => {
-    if (!selectedProperty?.categoryId || !categoryMap)
-      return false;
-
-    const category = categoryMap.get(
-      selectedProperty.categoryId
-    );
-
-    return (
-      category === "Apartment" ||
-      category === "Multi Commercial Apartment"
-    );
-  }, [selectedProperty, categoryMap]);
+    if (!selectedProperty) return false;
+    const cat = selectedProperty.catPropertyCategoryName;
+    return cat === "Apartment" || cat === "Multi Commercial Apartment";
+  }, [selectedProperty]);
 
   // CATEGORY NAME
   const categoryName = useMemo(() => {
-    if (!selectedProperty?.categoryId || !categoryMap)
-      return null;
-
-    return (
-      categoryMap.get(selectedProperty.categoryId) ||
-      null
-    );
-  }, [selectedProperty, categoryMap]);
+    return selectedProperty?.catPropertyCategoryName ?? null;
+  }, [selectedProperty]);
 
   // PROPERTY OPTIONS
   const propertyOptions = useMemo(() => {
-    const filtered = ward?.id
-      ? properties.filter(
-          (p) => Number(p.wardId) === Number(ward.id)
-        )
-      : properties;
-
-    return filtered.map((p) => {
-      const category = p.categoryId && categoryMap
-        ? categoryMap.get(p.categoryId)
-        : null;
-      
-      return {
-        value: p.value,
-        label: category
-          ? `${p.propertyNo || p.value} - ${category}`
-          : p.propertyNo || p.value,
-      };
-    });
-  }, [ward?.id, properties, categoryMap]);
+    return buildingList.map((item) => ({
+      value: String(item.propertyId),
+      label: item.catPropertyCategoryName
+        ? `${item.propertyNo} - ${item.catPropertyCategoryName}`
+        : item.propertyNo,
+    }));
+  }, [buildingList]);
 
   // CLOSE
   const handleClose = () => {
@@ -235,20 +211,31 @@ export default function DeletePropertyDrawer({
         {/* PROPERTY SELECT */}
         <div className="space-y-2">
           <PropertySelectionSection
-  selectedProperty={selectedProperty as any}
-  propertyOptions={propertyOptions}
-  onPropertyChange={(_e, value) => {
-    setSelectedPropertyId(value);
-    setErrors({});
-  }}
-  error={errors.property}
-  t={tZone}
-  isApartmentCategory={isApartmentCategory}
-  label="Main Property No"
-  placeholder="Select a main property"
-  disabled={loading}
-  value={selectedPropertyId}
-/>
+            selectedProperty={selectedProperty as any}
+            propertyOptions={propertyOptions}
+            onPropertyChange={(_e, value) => {
+              setSelectedPropertyId(value);
+              setErrors({});
+            }}
+            error={errors.property}
+            t={tZone}
+            isApartmentCategory={isApartmentCategory}
+            label="Main Property No"
+            placeholder={
+              loadingBuildingList
+                ? "Loading properties..."
+                : propertyOptions.length === 0 && ward?.id
+                ? "No properties found for this ward"
+                : "Select a main property"
+            }
+            disabled={loading || loadingBuildingList}
+            value={selectedPropertyId}
+            hidePropertyInfo
+          />
+
+          {/* {buildingListError && (
+            <p className="text-xs text-red-600">{buildingListError}</p>
+          )} */}
         </div>
 
         {/* CONFIRMATION */}

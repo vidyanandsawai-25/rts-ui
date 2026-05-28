@@ -12,7 +12,7 @@ import { WingItem } from "@/types/zone-master/properties/wing.types";
 import { Floor } from "@/types/floor.types";
 import { SocietyDetailItem } from "@/types/zone-master/properties/societyDetails.types";
 
-export const dynamic = "force-dynamic";
+export const dynamic = "force-dynamic"; 
 
 interface PageProps {
   searchParams: Promise<{

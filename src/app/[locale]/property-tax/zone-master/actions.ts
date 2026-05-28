@@ -1009,8 +1009,8 @@ import { Floor } from "@/types/floor.types";
 import { SocietyDetailsListResponse, CreateSocietyDetailPayload, SocietyDetailItem } from "@/types/zone-master/properties/societyDetails.types";
 import { BuildingStructureItem, GenerateBuildingStructurePayload, BuildingStructureResponse } from "@/types/zone-master/properties/building-structure.types";
 import { BulkPropertyItem, BulkPropertyCreateResponse } from "@/types/zone-master/properties/property-bulk.types";
-import { createBulkBuildingProperties } from "@/lib/api/zone-property.service";
-import { BuildingListItem } from "@/types/zone-master/properties/building-list. Types";
+import { createBulkBuildingProperties, getBuildingListByWard } from "@/lib/api/zone-property.service";
+import { BuildingListItem } from "@/types/zone-master/properties/building-list.Types";
 /**
  * Fetches all properties for a specific ward.
  * Used in partition form to select parent property.

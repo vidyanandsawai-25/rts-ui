@@ -214,8 +214,8 @@ export async function createBulkBuildingProperties(
  * @returns Array of BuildingListItem with propertyId, wardNo, propertyNo, catPropertyCategoryName, partitionNo
  */
 export async function getBuildingListByWard(wardId: number): Promise<BuildingListItem[]> {
-  const response = await apiClient.get<BuildingListItem[]>(`/Property/${wardId}/Building-list`);
- 
+  const response = await apiClient.get<unknown>(`/Property/${wardId}/Building-list`);
+
   if (!response.success || !response.data) {
     throw new ApiError(
       response.statusCode ?? 500,
@@ -223,7 +223,12 @@ export async function getBuildingListByWard(wardId: number): Promise<BuildingLis
       "Get building list failed"
     );
   }
- 
-  return response.data;
+
+  const raw = response.data;
+  if (Array.isArray(raw)) return raw as BuildingListItem[];
+  const wrapped = raw as Record<string, unknown>;
+  if (Array.isArray(wrapped.$values)) return wrapped.$values as BuildingListItem[];
+  if (Array.isArray(wrapped.items)) return wrapped.items as BuildingListItem[];
+  return [];
 }
  
