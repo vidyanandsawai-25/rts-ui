@@ -70,12 +70,8 @@ export async function fetchPropertyCombineDetailsAction(
       logger.warn("Invalid Ward ID", { wardId: params.wardId });
       return [];
     }
-    if (!params.propertyNo?.trim()) {
-      logger.warn("Property No is required");
-      return [];
-    }
-    if (!params.partitionNo?.trim()) {
-      logger.warn("Partition No is required");
+    if (!params.propertyNo?.trim() && !params.partitionNo?.trim()) {
+      logger.warn("At least Property No or Partition No is required");
       return [];
     }
 
@@ -109,11 +105,11 @@ export async function createCombinePropertyAction(
     }
 
     // Validate required fields
-    if (!Number.isFinite(payload.mainPropertyId) || payload.mainPropertyId <= 0) {
-      return { success: false, message: "Valid Main Property ID is required", statusCode: 400 };
+    if (!Number.isFinite(payload.sourcePropertyId) || payload.sourcePropertyId <= 0) {
+      return { success: false, message: "Valid Source Property ID is required", statusCode: 400 };
     }
-    if (!payload.combinePropertyIds?.trim()) {
-      return { success: false, message: "Combine Property IDs are required", statusCode: 400 };
+    if (!payload.combinedPropertyIds?.trim()) {
+      return { success: false, message: "Combined Property IDs are required", statusCode: 400 };
     }
 
     const fullPayload: CombinePropertyPayload = {
@@ -131,20 +127,25 @@ export async function createCombinePropertyAction(
 
     // Revalidate all locale variants of the combine property page
     for (const locale of locales) {
-      revalidatePath(`/${locale}/property-tax/combineproperty`, "page");
+      revalidatePath(`/${locale}/property-tax/ptis/combineproperty`, "page");
     }
 
     const resultData = result as { message?: string; items?: { message?: string } };
     return { success: true, message: resultData?.message || resultData?.items?.message, data: result };
   } catch (error: unknown) {
-    logger.error("Error combining properties", undefined, error);
     if (error instanceof ApiError) {
+      if (error.statusCode >= 400 && error.statusCode < 500) {
+        logger.warn(`Validation failed combining properties: ${error.responseText}`);
+      } else {
+        logger.error("Error combining properties", undefined, error);
+      }
       return {
         success: false,
         message: error.responseText,
         statusCode: error.statusCode,
       };
     }
+    logger.error("Unexpected error combining properties", undefined, error);
     if (error instanceof Error) {
       return { success: false, message: error.message };
     }
