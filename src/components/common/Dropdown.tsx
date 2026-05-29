@@ -131,7 +131,12 @@ export function MultiSelectDropdown({
       >
         <span className="truncate text-left">
           {value.length > 0
-            ? value.join(", ")
+            ? value
+                .map((v) => {
+                  const opt = options.find((o) => o.value === v);
+                  return opt ? opt.label : v;
+                })
+                .join(", ")
             : placeholder || tCommon("multiSelect.placeholder")}
         </span>
         <ChevronDown className="w-4 h-4 text-gray-500" />
