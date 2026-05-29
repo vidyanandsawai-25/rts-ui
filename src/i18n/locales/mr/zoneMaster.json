@@ -374,7 +374,10 @@
       "noOfFlatOnOneFloorRequired": "प्रति मजल्या फ्लॅट्सची संख्या आवश्यक आहे",
       "flatStartRequired": "फ्लॅट प्रारंभ आवश्यक आहे",
       "incrementedByRequired": "वाढवून आवश्यक आहे",
-      "generationTypeRequired": "जनरेशन प्रकार आवश्यक आहे"
+      "generationTypeRequired": "जनरेशन प्रकार आवश्यक आहे",
+      "toAmenityRequired": "सुविधा पर्यंत आवश्यक आहे",
+      "toAmenityMustBeGreater": "सुविधा पर्यंत, सुविधा पासून च्या बरोबरीचे किंवा त्यापेक्षा जास्त असणे आवश्यक आहे",
+      "duplicateAmenityInRange": "सुविधा {amenity} या मालमत्तेसाठी आधीच अस्तित्वात आहे"
     },
     "placeholders": {
       "selectMainProperty": "मुख्य मालमत्ता निवडा",
@@ -448,6 +451,7 @@
         "wingName": "विंग नाव",
         "totalProperties": "एकूण मालमत्ता",
         "properties": "मालमत्ता",
+        "amenities": "सुविधा",
         "actions": "कृती",
         "editWingName": "विंग नाव संपादित करा",
         "updateWing": "विंग रचना तयार करा",
@@ -523,11 +527,25 @@
         "details": "परिणाम"      },
       "amenity": {
         "notImplemented": "सुविधा सामग्री अद्याप लागू केली नाही"      }
+    },
+    "amenity": {
+      "description": "निवडलेल्या मालमत्तेसाठी सुविधा तयार करा. सुविधा एका विंगला (पर्यायी) नियुक्त केल्या जातील आणि क्रमवार क्रमांकित केल्या जातील.",
+      "selectWing": "विंग निवडा (पर्यायी)",
+      "noWing": "विंग नाही (डीफॉल्ट सुविधा)",
+      "fromAmenity": "सुविधा पासून",
+      "toAmenity": "सुविधा पर्यंत",
+      "amenities": "सुविधा",
+      "amenitiesWillBeCreated": "सुविधा तयार केल्या जातील:",
+      "placeholders": {
+        "selectWing": "एक विंग निवडा किंवा रिकामे सोडा"
+      }
     }
   },
   "partitionMessages": {
     "createSuccess": "विभाजन यशस्वीरित्या तयार झाले!",
     "createError": "विभाजन तयार करण्यात अयशस्वी",
-    "bulkCreateSuccess": "{count} विभाजन यशस्वीरित्या तयार झाले!"
+    "bulkCreateSuccess": "{count} विभाजन यशस्वीरित्या तयार झाले!",
+    "amenityCreateSuccess": "{count} सुविधा यशस्वीरित्या तयार झाल्या!",
+    "amenityCreateError": "सुविधा तयार करण्यात अयशस्वी"
   }
 }
