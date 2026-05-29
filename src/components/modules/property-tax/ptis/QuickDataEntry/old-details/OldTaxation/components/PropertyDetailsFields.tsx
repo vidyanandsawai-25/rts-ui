@@ -25,6 +25,7 @@ export function PropertyDetailsFields({
         </Label>
         <Input
           required
+          type="text"
           placeholder={t("oldDetails.zoneNamePlaceholder")}
           className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
           value={formData.oldZoneNo}

@@ -17,11 +17,9 @@ export default function TaxationBreakdownForm({
 }: TaxationBreakdownFormProps) {
 
   const {
-    // formData,
     taxes,
     isSubmitting,
     handleTaxChange,
-    // handleMetaChange,
     handleSave,
     isChanged,
     hasTaxData,
@@ -30,8 +28,6 @@ export default function TaxationBreakdownForm({
     tValidation
   } = useTaxationBreakdownForm(initialData);
 
-
-  console.log("Form Data:", hasTaxData);
   return (
     <div className="p-2 space-y-3">
       <div className="bg-white rounded-xl shadow-md border-2 border-blue-100 p-4">
@@ -49,29 +45,12 @@ export default function TaxationBreakdownForm({
         )}
 
         <div className="grid grid-cols-4 gap-x-4 gap-y-3">
-          {/* Meta Fields (Year & Interest) */}
-          {/* <TaxationMetaFields
-          t={t}
-          year={formData.year}
-          interest={formData.interest}
-          onYearChange={(value) => handleMetaChange('year', value)}
-          onInterestChange={(value) => handleMetaChange('interest', value)}
-          validationErrors={validationErrors}
-        /> */}
-
           {/* Dynamic Tax Fields */}
           <DynamicTaxFields
             taxes={taxes}
             onTaxChange={handleTaxChange}
             validationErrors={validationErrors}
           />
-          {/* Summary Fields (Tax Total & Net Total) */}
-          {/* <TaxationSummaryFields
-          t={t}
-          taxTotal={formData.taxTotal}
-          netTotal={formData.netTotal}
-          validationErrors={validationErrors}
-        /> */}
         </div>
 
         <div className="flex justify-end border-t border-gray-100 pt-4">

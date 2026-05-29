@@ -64,37 +64,25 @@ describe('TaxationBreakdownForm Component', () => {
     render(<TaxationBreakdownForm initialData={mockInitialData as unknown as OldTaxesDetails} />);
     
     expect(screen.getByText('quickDataEntry.oldDetails.taxationBreakdown.title')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('2023')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Property Tax')).toHaveValue('1000');
     expect(screen.getByText('Property Tax')).toBeInTheDocument();
   });
 
-  it('calculates totals correctly when tax amount changes', () => {
+  it('allows changing tax amount', () => {
     render(<TaxationBreakdownForm initialData={mockInitialData as unknown as OldTaxesDetails} />);
     
     const taxInput = screen.getByPlaceholderText('Property Tax');
     fireEvent.change(taxInput, { target: { value: '2000' } });
     
-    // Check total and net total
-    expect(screen.getByPlaceholderText('quickDataEntry.oldDetails.taxationBreakdown.aggregateTaxSum')).toHaveValue(2000);
-    expect(screen.getByPlaceholderText('quickDataEntry.oldDetails.taxationBreakdown.netPayableTotal')).toHaveValue(2100);
-  });
-
-  it('calculates net total correctly when interest changes', () => {
-    render(<TaxationBreakdownForm initialData={mockInitialData as unknown as OldTaxesDetails} />);
-    
-    const interestInput = screen.getByDisplayValue('100');
-    fireEvent.change(interestInput, { target: { value: '200' } });
-    
-    expect(screen.getByPlaceholderText('quickDataEntry.oldDetails.taxationBreakdown.netPayableTotal')).toHaveValue(1200);
+    expect(taxInput).toHaveValue('2000');
   });
 
   it('calls confirm dialog when update button is clicked', () => {
     render(<TaxationBreakdownForm initialData={mockInitialData as unknown as OldTaxesDetails} />);
     
     // Modify a field to enable the update button
-    const interestInput = screen.getByDisplayValue('100');
-    fireEvent.change(interestInput, { target: { value: '200' } });
+    const taxInput = screen.getByPlaceholderText('Property Tax');
+    fireEvent.change(taxInput, { target: { value: '2000' } });
 
     const updateButton = screen.getByRole('button', { name: /quickDataEntry.commonbuttonmessages.UpdateChanges/i });
     fireEvent.click(updateButton);
@@ -111,8 +99,8 @@ describe('TaxationBreakdownForm Component', () => {
     render(<TaxationBreakdownForm initialData={mockInitialData as unknown as OldTaxesDetails} />);
     
     // Modify a field to enable the update button
-    const interestInput = screen.getByDisplayValue('100');
-    fireEvent.change(interestInput, { target: { value: '200' } });
+    const taxInput = screen.getByPlaceholderText('Property Tax');
+    fireEvent.change(taxInput, { target: { value: '2000' } });
 
     const updateButton = screen.getByRole('button', { name: /quickDataEntry.commonbuttonmessages.UpdateChanges/i });
     fireEvent.click(updateButton);

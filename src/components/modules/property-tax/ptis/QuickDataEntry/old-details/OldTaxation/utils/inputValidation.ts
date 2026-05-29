@@ -5,10 +5,10 @@
 
 /**
  * Sanitizes alphanumeric input with allowed special characters
- * Allows: letters, numbers, spaces, hyphens, forward slashes
+ * Allows: letters, numbers, spaces, hyphens, forward slashes, and Devanagari (Marathi/Hindi) characters
  */
 export const sanitizeAlphanumeric = (value: string): string => {
-  return value.replace(/[^A-Za-z0-9\s\-\/]/g, '');
+  return value.replace(/[^A-Za-z0-9\s\-\/ऀ-ॿ]/g, '');
 };
 
 /**
@@ -16,7 +16,7 @@ export const sanitizeAlphanumeric = (value: string): string => {
  * Allows: letters, numbers, hyphens, forward slashes only
  */
 export const sanitizeAlphanumericNoSpaces = (value: string): string => {
-  return value.replace(/[^A-Za-z0-9\-\/]/g, '');
+  return value.replace(/[^A-Za-z0-9\-\/ऀ-ॿ]/g, '');
 };
 
 /**
