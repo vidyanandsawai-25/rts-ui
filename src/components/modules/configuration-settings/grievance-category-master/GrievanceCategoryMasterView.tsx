@@ -1,15 +1,16 @@
+'use client';
+
 /**
- * Grievance Category Master Component (Server Component)
+ * Grievance Category Master Component
  *
- * Pure SSR container component that renders the Grievance Category page.
- * All data is received as props from the page component.
- * No client-side state management.
+ * Client container component that renders the Grievance Category page.
+ * Restricts viewing/adding depending on screen access permissions.
  *
  * @module GrievanceCategoryMaster
  */
 import type { ReactElement } from 'react';
 import { Suspense } from 'react';
-import { getTranslations } from 'next-intl/server';
+import { useTranslations } from 'next-intl';
 import { AlertCircle, Clock, MessageSquare, TrendingUp } from 'lucide-react';
 import { PageContainer } from '@/components/common';
 
@@ -18,6 +19,7 @@ import { GrievanceCategoryFilter } from './GrievanceCategoryFilter';
 import { StatCard } from './StatCard';
 import { AddCategoryButton } from './AddCategoryButton';
 import type { GrievanceCategoryMasterViewProps } from '@/types/grievance-category-master/grievance-category-props.types';
+import { usePermissions } from '@/hooks/usePermissions';
 
 function ListLoadingFallback(): ReactElement {
   return (
@@ -26,10 +28,7 @@ function ListLoadingFallback(): ReactElement {
       <div className="border border-slate-200 rounded-2xl overflow-hidden">
         <div className="h-12 bg-slate-100" />
         {[1, 2, 3, 4, 5].map((i) => (
-          <div
-            key={i}
-            className="h-16 border-t border-slate-200 animate-pulse"
-          />
+          <div key={i} className="h-16 border-t border-slate-200 animate-pulse" />
         ))}
       </div>
     </div>
@@ -37,9 +36,9 @@ function ListLoadingFallback(): ReactElement {
 }
 
 /**
- * GrievanceCategoryMaster Component (Server Component)
+ * GrievanceCategoryMaster Component
  */
-export async function GrievanceCategoryMaster({
+export function GrievanceCategoryMaster({
   locale,
   data = [],
   departments = [],
@@ -51,11 +50,15 @@ export async function GrievanceCategoryMaster({
   initialDepartment = 'all',
   initialStatus = 'all',
   children,
-}: GrievanceCategoryMasterViewProps): Promise<ReactElement> {
-  // Use the root namespace to be more robust
-  const t = await getTranslations({ locale, namespace: 'grievanceCategory' });
+  fetchError,
+  statusCode,
+}: GrievanceCategoryMasterViewProps): ReactElement {
+  const t = useTranslations('grievanceCategory');
+  const tCommon = useTranslations('common');
   const tMaster = (key: string) => t(`master.${key}`);
   const tList = (key: string) => t(`list.${key}`);
+
+  const { canView, haveFullAccess } = usePermissions('GRIEVANCE_CATEGORY_MASTER');
 
   const currentPage = initialPage;
   const currentPageSize = initialPageSize;
@@ -75,6 +78,26 @@ export async function GrievanceCategoryMaster({
 
   addParams.set('drawer', 'add');
   const addPath = `/${locale}/configuration-settings/grievance-category-master?${addParams.toString()}`;
+
+  const isUnauthorized =
+    statusCode === 401 ||
+    (fetchError &&
+      (fetchError.toLowerCase().includes('unauthorized') ||
+        fetchError.toLowerCase().includes('token') ||
+        fetchError === 'messages.unauthorizedToken'));
+
+  if (isUnauthorized || (!canView && !haveFullAccess)) {
+    const messageKey = isUnauthorized ? 'errors.unauthorized' : 'errors.noAccess';
+
+    return (
+      <PageContainer className="px-1 sm:px-3 md:px-4 lg:px-6 py-2 md:py-4 w-full">
+        <div className="flex flex-col items-center justify-center min-h-[400px] p-6 bg-white rounded-xl border border-gray-200/80 shadow-sm animate-in fade-in duration-300">
+          <AlertCircle className="w-12 h-12 text-red-500 mb-4 animate-bounce" />
+          <h3 className="text-lg font-semibold text-gray-900">{tCommon(messageKey)}</h3>
+        </div>
+      </PageContainer>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50/50 transition-colors duration-500 light">
@@ -96,9 +119,21 @@ export async function GrievanceCategoryMaster({
               </div>
             </div>
 
-            <AddCategoryButton addPath={addPath} label={tMaster('add')} />
+            {haveFullAccess && <AddCategoryButton addPath={addPath} label={tMaster('add')} />}
           </div>
         </header>
+
+        {fetchError && (
+          <div className="p-4 mb-6 bg-red-50 border-l-4 border-red-500 rounded-r-xl shadow-sm flex items-start gap-3 animate-in fade-in duration-300">
+            <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+            <div>
+              <h3 className="text-sm font-semibold text-red-800">
+                {tCommon('errors.fetchFailed')}
+              </h3>
+              <p className="text-xs text-red-700 mt-1 font-mono">{fetchError}</p>
+            </div>
+          </div>
+        )}
 
         {/* Stats Section */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-6 md:mb-8">

@@ -2,6 +2,7 @@ import { ConfigurationMaster } from '@/components/modules/configuration-settings
 import { configMasterService } from '@/lib/api/configuration-settings/config-master/configMaster.service';
 import { getDepartmentConfigurationAction } from '@/app/[locale]/configuration-settings/config-master/actions';
 import type { ConfigCategory, ConfigItem, DepartmentApiResponse } from '@/types/configMaster.types';
+import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -32,35 +33,63 @@ export default async function ConfigMasterPage({
     typeof rawSearchParams.editCategory === 'string' ? rawSearchParams.editCategory : undefined;
   const editKey = typeof rawSearchParams.editKey === 'string' ? rawSearchParams.editKey : undefined;
 
-  // Server-side data fetching & Session check
-  const [categoriesRes] = await Promise.all([configMasterService.getAllCategories()]);
+  let fetchError: string | undefined;
+  let statusCode: number | undefined;
 
-  if (!categoriesRes.success) {
-    // Graceful fallback instead of throwing to prevent Next.js Server Component fatal crashes when API is down
-    console.error('[ConfigMasterPage] Failed to fetch configuration categories:', categoriesRes.error);
+  let categories: ConfigCategory[] = [];
+  let items: ConfigItem[] = [];
+  let departmentData: DepartmentApiResponse[] | null = null;
+
+  try {
+    const categoriesRes = await configMasterService.getAllCategories();
+    if (!categoriesRes.success) {
+      fetchError = categoriesRes.error;
+    } else {
+      categories = categoriesRes.data || [];
+    }
+
+    const activeCategoryId = categoryId || categories[0]?.id || 'all';
+    const isGlobalSearch = !!search && search.length >= 2;
+    const itemsCategoryToFetch = isGlobalSearch ? 'all' : activeCategoryId;
+
+    const parsedConfigKeyId =
+      configKeyId && !isNaN(parseInt(configKeyId)) ? parseInt(configKeyId) : null;
+    const shouldLoadDepartmentData = parsedConfigKeyId !== null;
+
+    const [itemsRes, departmentDataRes] = await Promise.all([
+      configMasterService.getItemsByCategory(itemsCategoryToFetch),
+      shouldLoadDepartmentData
+        ? getDepartmentConfigurationAction(parsedConfigKeyId)
+        : Promise.resolve(null),
+    ]);
+
+    if (!itemsRes.success) {
+      fetchError = fetchError || itemsRes.error;
+    } else {
+      items = itemsRes.data || [];
+    }
+
+    if (shouldLoadDepartmentData) {
+      if (departmentDataRes?.success) {
+        departmentData = departmentDataRes.data || null;
+      } else {
+        fetchError = fetchError || departmentDataRes?.error;
+      }
+    }
+  } catch (error) {
+    const { ApiError } = await import('@/lib/utils/api');
+    if (error instanceof ApiError) {
+      statusCode = error.statusCode;
+      if (error.statusCode === 401) {
+        redirect(`/${locale}/login`);
+      }
+      fetchError = error.responseText || error.message;
+    } else {
+      fetchError = error instanceof Error ? error.message : String(error);
+    }
   }
-  const categories: ConfigCategory[] = categoriesRes.success && categoriesRes.data ? categoriesRes.data : [];
 
   const activeCategoryId = categoryId || categories[0]?.id || 'all';
-  const isGlobalSearch = !!search && search.length >= 2;
-  const itemsCategoryToFetch = isGlobalSearch ? 'all' : activeCategoryId;
-
-  const parsedConfigKeyId =
-    configKeyId && !isNaN(parseInt(configKeyId)) ? parseInt(configKeyId) : null;
-  const shouldLoadDepartmentData = parsedConfigKeyId !== null;
-
-  const [itemsRes, departmentDataRes] = await Promise.all([
-    configMasterService.getItemsByCategory(itemsCategoryToFetch),
-    shouldLoadDepartmentData
-      ? getDepartmentConfigurationAction(parsedConfigKeyId)
-      : Promise.resolve(null),
-  ]);
-
-  // Handle items fetch gracefully - don't throw, let component show error state
-  const items: ConfigItem[] = itemsRes.success ? itemsRes.data || [] : [];
-
-  const departmentData: DepartmentApiResponse[] | null =
-    departmentDataRes?.success && departmentDataRes.data ? departmentDataRes.data : null;
 
   return (
     <ConfigurationMaster
@@ -74,6 +103,8 @@ export default async function ConfigMasterPage({
       editKey={editKey}
       configKeyId={configKeyId}
       locale={locale}
+      fetchError={fetchError}
+      statusCode={statusCode}
     />
   );
 }

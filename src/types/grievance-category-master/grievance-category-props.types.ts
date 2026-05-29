@@ -106,6 +106,8 @@ export interface GrievanceCategoryMasterViewProps {
   initialStatus: boolean | null | string;
   stats: { total: number; avgSla: number; active: number; critical: number };
   children?: ReactNode;
+  fetchError?: string;
+  statusCode?: number;
 }
 
 export interface GrievanceCategoryDrawerProps {
