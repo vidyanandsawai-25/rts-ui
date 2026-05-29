@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
 import { ToastNotifier } from '@/components/common';
 import { useTranslations } from 'next-intl';
 import { DualMethodComparisonTable } from './components/ComparisonTable';
@@ -31,11 +31,24 @@ export const DualMethodSection: React.FC<DualMethodSectionProps> = ({
   capitalSection,
 }) => {
   const t = useTranslations('ptis.modules.DualMethod');
+  const errT = useTranslations('ptis.error');
 
-  if (!initialData) {
+  if (initialData?.finalErrorMessage) {
+    return (
+      <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 m-2">
+        <AlertCircle className="h-5 w-5 mt-0.5 shrink-0 text-red-500" />
+        <div>
+          <p className="text-sm font-semibold">{errT('title')}</p>
+          <p className="text-sm mt-0.5">{initialData.finalErrorMessage}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!initialData || !initialData.initialDualMethodData) {
     return (
       <div className="p-10 text-center text-gray-500 italic">
-        {t('messages.noData')}
+        {t('comparisonTable.emptyMessage')}
       </div>
     );
   }

@@ -76,7 +76,7 @@ export function getUniqueTaxNames(dualMethodData: DualMethodResponse | null): st
   extractKeys(dualMethodData.cvTaxes);
   extractKeys(dualMethodData.retainTaxes);
 
-  return Array.from(allKeys).sort((left, right) => left.localeCompare(right));
+  return Array.from(allKeys);
 }
 
 /**

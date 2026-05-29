@@ -83,6 +83,12 @@ export const getCombinePropertyColumns = (
     width: '110px',
   },
   {
+    key: 'propertyDescription',
+    label: t('propertyType'),
+    align: 'left',
+    width: '120px',
+  },
+  {
     key: 'ownerName',
     label: t('ownerName'),
     align: 'left',
