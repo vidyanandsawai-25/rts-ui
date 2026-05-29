@@ -1,0 +1,150 @@
+import { apiClient } from '@/services/api.service';
+import { RuleItem, RuleListResponse } from '@/types/rule-engine.types';
+
+/**
+ * Maps a backend RuleEngineDto to the frontend's visual RuleItem structure.
+ * Reads conditionsJson/effectJson/targetFiltersJson directly from separate backend columns.
+ */
+function mapBackendDtoToRuleItem(dto: any): RuleItem {
+  return {
+    id: dto.id,
+    ruleCode: dto.ruleCode,
+    ruleName: dto.ruleName,
+    ruleScopeId: dto.ruleScopeId,
+    isActive: dto.isEnabled,
+    conditionsJson: dto.conditionsJson ?? '',
+    effectJson: dto.effectJson ?? '',
+    targetFiltersJson: dto.targetFiltersJson ?? '',
+    description: dto.description || '',
+    ruleCategory: dto.ruleCategory || '',
+    createdDate: dto.createdDate,
+    updatedDate: dto.updatedDate,
+  };
+}
+
+
+/**
+ * Maps a frontend visual RuleItem to the backend Create/Update DTO.
+ */
+function mapRuleItemToBackendPayload(item: RuleItem, userId: number = 1) {
+  return {
+    ruleCode:          item.ruleCode || '',
+    ruleName:          item.ruleName,
+    description:       item.description || '',
+    ruleScopeId:       item.ruleScopeId,
+    ruleCategory:      item.ruleCategory,
+    conditionsJson:    item.conditionsJson,
+    effectJson:        item.effectJson,
+    targetFiltersJson: item.targetFiltersJson,
+    isEnabled:         item.isActive,
+    changeReason:      item.changeReason,
+    isActive:          true,
+    createdBy:         userId,
+    updatedBy:         userId,
+  };
+}
+
+
+/**
+ * Fetches paginated rules from /api/RuleEngine endpoint.
+ */
+export async function getRules(
+  pageNumber: number,
+  pageSize: number,
+  searchTerm?: string,
+  _policyTypeId?: number,
+  ruleScopeId?: number
+): Promise<RuleListResponse> {
+  const params = new URLSearchParams();
+  params.set('PageNumber', pageNumber.toString());
+  params.set('PageSize', pageSize.toString());
+
+  if (searchTerm) params.set('SearchTerm', searchTerm);
+  if (ruleScopeId) params.set('RuleScopeId', ruleScopeId.toString());
+
+  const response = await apiClient.get<any>(`/RuleEngine?${params.toString()}`);
+  if (!response.success || !response.data) {
+    return {
+      items: [],
+      totalCount: 0,
+      pageNumber,
+      pageSize,
+      totalPages: 0,
+      hasPrevious: false,
+      hasNext: false,
+    };
+  }
+
+  const normalizedItems = (response.data.items || []).map((item: any) => mapBackendDtoToRuleItem(item));
+
+  return {
+    items: normalizedItems,
+    totalCount: response.data.totalCount || 0,
+    pageNumber: response.data.pageNumber || pageNumber,
+    pageSize: response.data.pageSize || pageSize,
+    totalPages: response.data.totalPages || 0,
+    hasPrevious: response.data.hasPreviousPage ?? response.data.hasPrevious ?? false,
+    hasNext: response.data.hasNextPage ?? response.data.hasNext ?? false,
+  };
+}
+
+/**
+ * Fetches a single rule config by ID from /api/RuleEngine/{id}.
+ */
+export async function getRuleById(id: number | string): Promise<RuleItem | null> {
+  const response = await apiClient.get<any>(`/RuleEngine/${id}`);
+  if (!response.success || !response.data) return null;
+  
+  return mapBackendDtoToRuleItem(response.data);
+}
+
+/**
+ * Creates a new policy rule under /api/RuleEngine.
+ */
+export async function createRule(
+  payload: RuleItem,
+  userId: number = 1
+): Promise<{ success: boolean; message: string; data?: RuleItem }> {
+  const backendPayload = mapRuleItemToBackendPayload(payload, userId);
+  const response = await apiClient.post<any>('/RuleEngine', backendPayload);
+  if (!response.success) {
+    return { success: false, message: response.error || 'Failed to create rule' };
+  }
+  return {
+    success: true,
+    message: 'Rule created successfully',
+    data: mapBackendDtoToRuleItem(response.data.data || response.data),
+  };
+}
+
+/**
+ * Updates an existing rule configuration under /api/RuleEngine/{id}.
+ */
+export async function updateRule(
+  id: number | string,
+  payload: RuleItem,
+  userId: number = 1
+): Promise<{ success: boolean; message: string; data?: RuleItem }> {
+  const backendPayload = mapRuleItemToBackendPayload(payload, userId);
+  const response = await apiClient.put<any>(`/RuleEngine/${id}`, backendPayload);
+  if (!response.success) {
+    return { success: false, message: response.error || 'Failed to update rule' };
+  }
+  return {
+    success: true,
+    message: 'Rule updated successfully',
+    data: mapBackendDtoToRuleItem(response.data.data || response.data),
+  };
+}
+
+/**
+ * Purges/deletes a rule by ID under /api/RuleEngine/{id}.
+ */
+export async function deleteRule(id: number | string): Promise<{ success: boolean; message: string }> {
+  const response = await apiClient.delete<null>(`/RuleEngine/${id}`);
+  if (!response.success) {
+    return { success: false, message: response.error || 'Failed to delete rule' };
+  }
+  return { success: true, message: 'Rule deleted successfully' };
+}
+

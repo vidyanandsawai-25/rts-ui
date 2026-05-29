@@ -17,6 +17,7 @@ export {
   DeleteButton,
   SaveButton,
   CancelButton,
+  ApplyButton,
   UploadButton,
   ExportButton,
   ImportButton,
@@ -29,6 +30,8 @@ export {
   SortAscButton,
   SortDescButton,
   SortDefaultButton,
+  EditLabelButton,
+  DeleteLabelButton,
 } from './ActionButtons';
 export { IconButton } from './ActionButtons';
 export { Card, CardHeader, CardTitle, CardContent } from './Card';

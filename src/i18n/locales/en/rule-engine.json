@@ -1,0 +1,54 @@
+{
+  "header": {
+    "title": "Rule Engine",
+    "subtitle": "Configure conditions and effects for property tax calculation",
+    "totalRules": "Total Rules",
+    "activeRules": "Active Rules",
+    "autoSave": "All changes are automatically saved to your browser • {count} rules saved",
+    "configTitle": "Rule Engine Configuration",
+    "configSubtitle": "Manage complex dynamic taxation policies",
+    "configureNew": "Configure New Rule"
+  },
+  "targetFilter": {
+    "ruleId": "Rule ID",
+    "ruleIdValue": "Auto-generated",
+    "ruleName": "Rule Name",
+    "ruleNamePlaceholder": "Enter rule name",
+    "corp": "Corp",
+    "category": "Category",
+    "ruleScope": "Rule Scope",
+    "description": "Description",
+    "descriptionPlaceholder": "Enter rule description"
+  },
+  "conditionRow": {
+    "selectField": "Select Field",
+    "selectOperator": "Select Operator",
+    "chooseField": "Choose a field to specify values",
+    "done": "Done",
+    "deleteCondition": "Delete condition"
+  },
+  "effectPanel": {
+    "effectType": "Effect Type",
+    "referenceCategory": "Reference Category",
+    "parameter": "Parameter",
+    "value": "Value",
+    "enterValue": "Enter value",
+    "exemptionRatio": "Exemption Ratio",
+    "percentageValue": "Percentage Value (%)",
+    "rateValue": "Rate Value",
+    "performAction": "Perform the following action"
+  },
+  "saveReasonModal": {
+    "title": "Confirm Rule Configuration Save",
+    "description": "Please enter a change description for audit history and version logs. This helps other administrators understand why this tax policy was created or updated.",
+    "changeReason": "Change Reason",
+    "placeholder": "e.g. Updated tax rate formula for property zone modifiers",
+    "confirmSave": "Confirm & Save"
+  },
+  "library": {
+    "title": "Rule Library",
+    "searchPlaceholder": "Search rules...",
+    "noRules": "No rules found",
+    "addRule": "Add Rule"
+  }
+}

@@ -52,6 +52,9 @@ export function Modal({
   const modalRef = useRef<HTMLDivElement>(null);
   const lastActiveElement = useRef<HTMLElement | null>(null);
 
+  const onCloseRef = useRef(onClose);
+  useEffect(() => { onCloseRef.current = onClose; });
+
   useEffect(() => {
     if (!open) return;
 
@@ -77,7 +80,7 @@ export function Modal({
 
     const handleKeyDown = (e: KeyboardEvent): void => {
       if (e.key === "Escape") {
-        onClose();
+        onCloseRef.current();
       }
 
       if (e.key === "Tab" && focusableElements.length > 0) {
@@ -98,7 +101,8 @@ export function Modal({
       document.removeEventListener("keydown", handleKeyDown);
       lastActiveElement.current?.focus();
     };
-  }, [open, onClose]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   if (!open) return null;
 

@@ -1,0 +1,54 @@
+{
+  "header": {
+    "title": "नियम इंजन",
+    "subtitle": "संपत्ति कर गणना के लिए शर्तें और प्रभाव कॉन्फ़िगर करें",
+    "totalRules": "कुल नियम",
+    "activeRules": "सक्रिय नियम",
+    "autoSave": "सभी परिवर्तन स्वचालित रूप से आपके ब्राउज़र में सहेजे जाते हैं • {count} नियम सहेजे गए",
+    "configTitle": "नियम इंजन कॉन्फ़िगरेशन",
+    "configSubtitle": "जटिल गतिशील कराधान नीतियाँ प्रबंधित करें",
+    "configureNew": "नया नियम कॉन्फ़िगर करें"
+  },
+  "targetFilter": {
+    "ruleId": "नियम आईडी",
+    "ruleIdValue": "स्वत: उत्पन्न",
+    "ruleName": "नियम नाम",
+    "ruleNamePlaceholder": "नियम नाम दर्ज करें",
+    "corp": "निगम",
+    "category": "श्रेणी",
+    "ruleScope": "नियम क्षेत्र",
+    "description": "विवरण",
+    "descriptionPlaceholder": "नियम विवरण दर्ज करें"
+  },
+  "conditionRow": {
+    "selectField": "फ़ील्ड चुनें",
+    "selectOperator": "ऑपरेटर चुनें",
+    "chooseField": "मान निर्दिष्ट करने के लिए फ़ील्ड चुनें",
+    "done": "पूर्ण",
+    "deleteCondition": "शर्त हटाएं"
+  },
+  "effectPanel": {
+    "effectType": "प्रभाव प्रकार",
+    "referenceCategory": "संदर्भ श्रेणी",
+    "parameter": "पैरामीटर",
+    "value": "मान",
+    "enterValue": "मान दर्ज करें",
+    "exemptionRatio": "छूट अनुपात",
+    "percentageValue": "प्रतिशत मान (%)",
+    "rateValue": "दर मान",
+    "performAction": "निम्नलिखित क्रिया करें"
+  },
+  "saveReasonModal": {
+    "title": "नियम कॉन्फ़िगरेशन सहेजने की पुष्टि करें",
+    "description": "ऑडिट इतिहास और संस्करण लॉग के लिए एक परिवर्तन विवरण दर्ज करें।",
+    "changeReason": "परिवर्तन का कारण",
+    "placeholder": "उदा. संपत्ति क्षेत्र संशोधक के लिए कर दर सूत्र अपडेट किया",
+    "confirmSave": "पुष्टि करें और सहेजें"
+  },
+  "library": {
+    "title": "नियम पुस्तकालय",
+    "searchPlaceholder": "नियम खोजें...",
+    "noRules": "कोई नियम नहीं मिला",
+    "addRule": "नियम जोड़ें"
+  }
+}
