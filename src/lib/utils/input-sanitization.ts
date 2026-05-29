@@ -15,7 +15,7 @@
  */
 export const sanitizeTextInput = (input: string): string => {
   if (!input || typeof input !== 'string') return '';
-  
+
   return input
     // Remove HTML tags
     .replace(/<[^>]*>/g, '')
@@ -40,7 +40,7 @@ export const sanitizeTextInput = (input: string): string => {
  */
 export const sanitizeEmail = (email: string): string => {
   if (!email || typeof email !== 'string') return '';
-  
+
   return email
     .toLowerCase()
     .trim()
@@ -58,7 +58,7 @@ export const sanitizeEmail = (email: string): string => {
  */
 export const sanitizeNumericInput = (input: string): string => {
   if (!input || typeof input !== 'string') return '';
-  
+
   return input.replace(/\D/g, '');
 };
 
@@ -71,7 +71,7 @@ export const sanitizeNumericInput = (input: string): string => {
  */
 export const escapeHtml = (text: string): string => {
   if (!text || typeof text !== 'string') return '';
-  
+
   const map: Record<string, string> = {
     '&': '&amp;',
     '<': '&lt;',
@@ -80,7 +80,7 @@ export const escapeHtml = (text: string): string => {
     "'": '&#x27;',
     '/': '&#x2F;',
   };
-  
+
   return text.replace(/[&<>"'/]/g, char => map[char] || char);
 };
 
@@ -94,7 +94,7 @@ export const escapeHtml = (text: string): string => {
  */
 export const sanitizeName = (name: string): string => {
   if (!name || typeof name !== 'string') return '';
-  
+
   return name
     // Remove HTML tags
     .replace(/<[^>]*>/g, '')
@@ -105,8 +105,8 @@ export const sanitizeName = (name: string): string => {
     .replace(/[^a-zA-Z\u00C0-\u024F\u0900-\u097F\u0D00-\u0D7F\s.,'\/\-]/g, '')
     // Remove multiple consecutive spaces (replace with single space)
     .replace(/\s+/g, ' ');
-    // Note: Removed .trim() to allow trailing spaces during typing
-    // Validation should handle trimming when checking if the field is valid
+  // Note: Removed .trim() to allow trailing spaces during typing
+  // Validation should handle trimming when checking if the field is valid
 };
 
 /**
@@ -122,7 +122,7 @@ export const sanitizeName = (name: string): string => {
  */
 export const sanitizeAddress = (address: string): string => {
   if (!address || typeof address !== 'string') return '';
-  
+
   const sanitized = address
     // Remove HTML tags
     .replace(/<[^>]*>/g, '')
@@ -134,14 +134,14 @@ export const sanitizeAddress = (address: string): string => {
     .replace(/[^a-zA-Z0-9\u00C0-\u024F\u0900-\u097F\u0D00-\u0D7F\s.,\-\/\#&]/g, '')
     // Remove multiple consecutive special characters (e.g., ----, ////)
     .replace(/([.,\-\/\#&])\1+/g, '$1');
-    // Note: Removed .replace(/\s+/g, ' ') to allow multiple consecutive spaces
-    // Note: Removed .trim() to allow leading/trailing spaces during typing
-  
+  // Note: Removed .replace(/\s+/g, ' ') to allow multiple consecutive spaces
+  // Note: Removed .trim() to allow leading/trailing spaces during typing
+
   // If result contains only special characters and no alphanumeric, return empty
   if (sanitized && !/[a-zA-Z0-9\u00C0-\u024F\u0900-\u097F\u0D00-\u0D7F]/.test(sanitized)) {
     return '';
   }
-  
+
   return sanitized;
 };
 
@@ -158,7 +158,7 @@ export const sanitizeAddress = (address: string): string => {
 
 export const sanitizeFlatShopNo = (input: string): string => {
   if (!input || typeof input !== 'string') return '';
-  
+
   return input
     // Allow only alphanumeric, hyphen, and forward slash
     .replace(/[^a-zA-Z0-9/-]/g, '')
@@ -179,7 +179,7 @@ export const sanitizeFlatShopNo = (input: string): string => {
  */
 export const sanitizePlotNo = (input: string): string => {
   if (!input || typeof input !== 'string') return '';
-  
+
   return input
     // Allow only alphanumeric, spaces, hyphen, and forward slash (including Devanagari range)
     .replace(/[^a-zA-Z0-9\u0900-\u097F\s\-\/]/g, '')
@@ -198,7 +198,7 @@ export const sanitizePlotNo = (input: string): string => {
  */
 export const sanitizeSurveyNo = (input: string): string => {
   if (!input || typeof input !== 'string') return '';
-  
+
   return input
     // Allow only alphanumeric, hyphen, and forward slash
     .replace(/[^a-zA-Z0-9/-]/g, '')
@@ -218,7 +218,7 @@ export const sanitizeSurveyNo = (input: string): string => {
  */
 export const sanitizeSubZoneNo = (input: string): string => {
   if (!input || typeof input !== 'string') return '';
-  
+
   return input
     // Allow only alphanumeric, hyphen, and forward slash
     .replace(/[^a-zA-Z0-9/-]/g, '')
@@ -238,16 +238,16 @@ export const sanitizeSubZoneNo = (input: string): string => {
  */
 export const sanitizePositiveNumber = (input: string): string => {
   if (!input || typeof input !== 'string') return '';
-  
+
   // Remove negative signs and allow only digits and one decimal point
   let sanitized = input.replace(/[^0-9.]/g, '');
-  
+
   // Ensure only one decimal point
   const parts = sanitized.split('.');
   if (parts.length > 2) {
     sanitized = parts[0] + '.' + parts.slice(1).join('');
   }
-  
+
   return sanitized;
 };
 
@@ -260,25 +260,25 @@ export const sanitizePositiveNumber = (input: string): string => {
  */
 export const sanitizePlotArea = (input: string): string => {
   if (!input || typeof input !== 'string') return '';
-  
+
   // Remove negative signs and allow only digits and one decimal point
   let sanitized = input.replace(/[^0-9.]/g, '');
-  
+
   // Ensure only one decimal point
   const parts = sanitized.split('.');
   if (parts.length > 2) {
     sanitized = parts[0] + '.' + parts.slice(1).join('');
   }
-  
+
   // Limit to 4 decimal places
   if (parts.length === 2 && parts[1].length > 4) {
     sanitized = parts[0] + '.' + parts[1].substring(0, 4);
   }
-  
+
   // Limit total digits to 15 (excluding decimal point)
   const [intPart, decPart] = sanitized.split('.');
   const totalDigits = (intPart || '').length + (decPart || '').length;
-  
+
   if (totalDigits > 15) {
     // Truncate from the integer part if needed
     const maxIntDigits = 15 - (decPart || '').length;
@@ -288,7 +288,7 @@ export const sanitizePlotArea = (input: string): string => {
       sanitized = intPart.substring(0, 15);
     }
   }
-  
+
   return sanitized;
 };
 
@@ -302,7 +302,7 @@ export const sanitizePlotArea = (input: string): string => {
  */
 // export const sanitizePropertyPartitionNo = (input: string): string => {
 //   if (!input || typeof input !== 'string') return '';
-  
+
 //   return input
 //     // Allow only alphanumeric, spaces, hyphens, and forward slashes
 //     .replace(/[^a-zA-Z0-9\s\-\/]/g, '')
@@ -328,7 +328,7 @@ export const sanitizePropertyPartitionNo = (input: string): string => {
  */
 export const sanitizeZoneName = (input: string): string => {
   if (!input || typeof input !== 'string') return '';
-  
+
   return input
     // Allow only alphanumeric, spaces, hyphens, and forward slashes (including Devanagari range)
     .replace(/[^a-zA-Z0-9\u0900-\u097F\s\-\/]/g, '')
@@ -348,7 +348,7 @@ export const sanitizeZoneName = (input: string): string => {
  */
 export const sanitizeWardNo = (input: string): string => {
   if (!input || typeof input !== 'string') return '';
-  
+
   return input
     // Allow only alphanumeric, spaces, hyphens, and forward slashes (including Devanagari range)
     .replace(/[^a-zA-Z0-9\u0900-\u097F\s\-\/]/g, '')
@@ -368,7 +368,7 @@ export const sanitizeWardNo = (input: string): string => {
  */
 export const sanitizeEgovNo = (input: string): string => {
   if (!input || typeof input !== 'string') return '';
-  
+
   return input
     // Allow only alphanumeric, spaces, hyphens, and forward slashes (including Devanagari range)
     .replace(/[^a-zA-Z0-9\u0900-\u097F\s\-\/]/g, '')
@@ -387,7 +387,7 @@ export const sanitizeEgovNo = (input: string): string => {
  */
 export const sanitizePositiveInteger = (input: string): string => {
   if (!input || typeof input !== 'string') return '';
-  
+
   // Allow only digits
   return input.replace(/[^0-9]/g, '');
 };
@@ -402,7 +402,7 @@ export const sanitizePositiveInteger = (input: string): string => {
  */
 export const sanitizeTaxZoneNo = (input: string): string => {
   if (!input || typeof input !== 'string') return '';
-  
+
   const sanitized = input
     // Allow only alphanumeric, hyphen, and forward slash
     .replace(/[^a-zA-Z0-9\-/]/g, '')
@@ -411,12 +411,12 @@ export const sanitizeTaxZoneNo = (input: string): string => {
     // Remove leading/trailing special characters
     .replace(/^[-/]+|[-/]+$/g, '')
     .trim();
-  
+
   // If only special characters, return empty
   if (sanitized && !/[a-zA-Z0-9]/.test(sanitized)) {
     return '';
   }
-  
+
   return sanitized;
 };
 
@@ -431,20 +431,20 @@ export const sanitizeTaxZoneNo = (input: string): string => {
  */
 export const sanitizeEmailStrict = (email: string): string => {
   if (!email || typeof email !== 'string') return '';
-  
+
   let sanitized = email
     .toLowerCase()
     .trim()
     // Only keep letters, numbers, @ and period - remove everything else
     // This allows valid email characters while blocking ###, _++, ()()-----, etc.
     .replace(/[^a-z0-9@.]/g, '');
-  
+
   // DO NOT modify consecutive periods - let user type freely
   // Validation will catch patterns like pra.jed.......e@gmail.com as invalid
-  
+
   // Block leading period only
   sanitized = sanitized.replace(/^\./, '');
-  
+
   // Ensure only one @ symbol - if multiple, keep only first occurrence
   const atIndex = sanitized.indexOf('@');
   if (atIndex !== -1) {
@@ -452,12 +452,12 @@ export const sanitizeEmailStrict = (email: string): string => {
     const afterAt = sanitized.substring(atIndex + 1).replace(/@/g, '');
     sanitized = beforeAt + afterAt;
   }
-  
+
   // If result is only special characters (no alphanumeric), return empty
   if (sanitized && !/[a-z0-9]/.test(sanitized)) {
     return '';
   }
-  
+
   return sanitized;
 };
 
@@ -473,7 +473,7 @@ export const sanitizeEmailStrict = (email: string): string => {
  */
 export const sanitizeWingName = (input: string): string => {
   if (!input || typeof input !== 'string') return '';
-  
+
   return input
     // Remove HTML tags
     .replace(/<[^>]*>/g, '')
@@ -486,5 +486,5 @@ export const sanitizeWingName = (input: string): string => {
     // Allow letters, numbers, spaces, and basic punctuation (.,'-/()&)
     // Supports international characters (Unicode: Latin Extended, Devanagari, Malayalam)
     .replace(/[^a-zA-Z0-9\u00C0-\u024F\u0900-\u097F\u0D00-\u0D7F\s.,\'\-\/()&]/g, '');
-    // Note: No trim() or space reduction to allow natural typing with spaces
+  // Note: No trim() or space reduction to allow natural typing with spaces
 };

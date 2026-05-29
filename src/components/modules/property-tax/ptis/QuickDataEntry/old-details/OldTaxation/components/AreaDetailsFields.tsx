@@ -2,7 +2,7 @@
 
 import { Input } from "@/components/common";
 import { Label } from "@/components/common/label";
-import { sanitizeAlphanumeric, sanitizeAreaDecimal, preventInvalidNumericKeys } from "../utils/inputValidation";
+import { sanitizeAlphanumeric, sanitizeAreaDecimal, preventInvalidNumericKeys, isValidDecimalField } from "../utils/inputValidation";
 import { AreaDetailsFieldsProps } from "@/types/OldDetails/property-old-floor-info.types";
 
 /**
@@ -13,6 +13,7 @@ import { AreaDetailsFieldsProps } from "@/types/OldDetails/property-old-floor-in
 export function AreaDetailsFields({
   t,
   formData,
+  showError,
   onFieldChange
 }: AreaDetailsFieldsProps) {
   return (
@@ -20,7 +21,7 @@ export function AreaDetailsFields({
       {/* Old Plot Area */}
       <div className="space-y-1.5">
         <Label className="text-xs font-semibold text-gray-700">
-          {t("oldDetails.plotArea")}
+          {t("oldDetails.plotArea")}<span className="text-red-500 ml-1">*</span>
         </Label>
         <Input
           type="text"
@@ -36,6 +37,9 @@ export function AreaDetailsFields({
           }}
           onKeyDown={preventInvalidNumericKeys}
         />
+        {showError('oldPlotArea', isValidDecimalField(formData.oldPlotArea)) && (
+          <span className="text-xs text-red-500">{t('oldDetails.validation.plotAreaRequired')}</span>
+        )}
       </div>
 
       {/* Old Plot No */}
@@ -60,7 +64,7 @@ export function AreaDetailsFields({
       {/* Old Construction Area */}
       <div className="space-y-1.5">
         <Label className="text-xs font-semibold text-gray-700">
-          {t("oldDetails.constructionArea")}
+          {t("oldDetails.constructionArea")}<span className="text-red-500 ml-1">*</span>
         </Label>
         <Input
           type="text"
@@ -76,6 +80,9 @@ export function AreaDetailsFields({
           }}
           onKeyDown={preventInvalidNumericKeys}
         />
+        {showError('oldConstructionArea', isValidDecimalField(formData.oldConstructionArea)) && (
+          <span className="text-xs text-red-500">{t('oldDetails.validation.constructionAreaRequired')}</span>
+        )}
       </div>
     </>
   );

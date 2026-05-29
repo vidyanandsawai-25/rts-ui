@@ -3,13 +3,7 @@
 import { Input } from "@/components/common";
 import { Label } from "@/components/common/label";
 import { DynamicTaxFieldsProps } from "@/types/OldDetails/property-old-floor-info.types";
-
-// Only numbers allowed, decimal not allowed
-const ONLY_NUMBER_SANITIZE = /[^0-9]/g;
-
-const handleNumberChange = (value: string) => {
-  return value.replace(ONLY_NUMBER_SANITIZE, "");
-};
+import { sanitizeTaxDecimal, preventInvalidNumericKeys } from "../../OldTaxation/utils/inputValidation";
 
 /**
  * DynamicTaxFields Component
@@ -35,17 +29,15 @@ export function DynamicTaxFields({
             </Label>
             <Input
               type="text"
-              value={tax.taxAmount === 0 ? "" : tax.taxAmount}
+              inputMode="decimal"
+              value={tax.taxAmount === 0 || !tax.taxAmount ? "" : String(tax.taxAmount)}
               onChange={(e) => {
-                const value = e.target.value;
-                // Sanitize to only numbers (no decimals, no negative)
-                const sanitized = handleNumberChange(value);
-                
-                // Validate max 15 digits
-                if (sanitized.length > 10) return;
-                
-                onTaxChange(tax.taxId, sanitized);
+                const value = sanitizeTaxDecimal(e.target.value);
+                if (value !== '' || e.target.value === '') {
+                  onTaxChange(tax.taxId, value);
+                }
               }}
+              onKeyDown={preventInvalidNumericKeys}
               placeholder={tax.taxName}
               className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
             />

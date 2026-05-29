@@ -15,13 +15,12 @@ export function useFloorSearch({
   const searchParams = useSearchParams();
   const currentSearchTerm = searchParams.get('search') || '';
   const [search, setSearch] = useState(currentSearchTerm);
-  const [prevSearch, setPrevSearch] = useState(currentSearchTerm);
   
   // Sync with URL changes
-  if (currentSearchTerm !== prevSearch) {
-    setPrevSearch(currentSearchTerm);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSearch(currentSearchTerm);
-  }
+  }, [currentSearchTerm]);
 
   // Debounced search value
   const debouncedSearch = useDebounce(search, 500);

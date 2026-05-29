@@ -40,7 +40,8 @@ function sanitizeParams(raw: { [key: string]: string | string[] | undefined }) {
     const searchTerm = (Array.isArray(raw.search) ? raw.search[0] : raw.search)?.trim() || undefined;
 
     const typeOfUseIdParam = Array.isArray(raw.typeOfUseId) ? raw.typeOfUseId[0] : raw.typeOfUseId;
-    const typeOfUseId = typeOfUseIdParam ? Number(typeOfUseIdParam) : 0;
+    const rawTypeOfUseId = typeOfUseIdParam ? Number(typeOfUseIdParam) : 0;
+    const typeOfUseId = Number.isFinite(rawTypeOfUseId) ? rawTypeOfUseId : 0;
 
     return { pageNumber, pageSize, searchTerm, typeOfUseId };
 }

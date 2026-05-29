@@ -166,8 +166,8 @@ export async function getOldFloorDetailsAction(
                 data: {
                     items: [],
                     totalCount: 0,
-                    pageNumber: 1,
-                    pageSize: 10,
+                    pageNumber,
+                    pageSize,
                     totalPages: 0,
                     hasPrevious: false,
                     hasNext: false,
