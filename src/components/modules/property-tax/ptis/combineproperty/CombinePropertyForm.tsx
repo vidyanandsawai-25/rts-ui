@@ -105,8 +105,8 @@ export default function CombinePropertyForm(props: CombinePropertyFormProps) {
 
   /* ---- Table Columns (Memoized) ---- */
   const columns = useMemo(
-    () => getCombinePropertyColumns(t, reviewData, checkedPropertyIds, togglePropertyCheck, toggleAllProperties),
-    [reviewData, t, checkedPropertyIds, togglePropertyCheck, toggleAllProperties]
+    () => getCombinePropertyColumns(t, reviewData, checkedPropertyIds, togglePropertyCheck, toggleAllProperties, selectedBasePropertyId),
+    [reviewData, t, checkedPropertyIds, togglePropertyCheck, toggleAllProperties, selectedBasePropertyId]
   );
 
   /* ---- Options ---- */
@@ -171,7 +171,7 @@ export default function CombinePropertyForm(props: CombinePropertyFormProps) {
           <AddButton
             label={isSubmitting ? t('combining') : t('combine')}
             size="sm"
-            disabled={isSubmitting || checkedCount === 0}
+            disabled={isSubmitting || checkedCount <= 1}
             onClick={handleCombine}
           />
         )}
@@ -228,6 +228,7 @@ export default function CombinePropertyForm(props: CombinePropertyFormProps) {
         differentOwnerProps={differentOwnerProps}
         columns={columns}
         reviewData={reviewData as PropertyRow[]}
+        checkedPropertyIds={checkedPropertyIds}
         remark={remark}
         remarkError={remarkError}
         setRemark={setRemark}

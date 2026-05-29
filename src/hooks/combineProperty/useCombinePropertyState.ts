@@ -1,7 +1,14 @@
 import { useState, useCallback, useMemo } from 'react';
 import { PropertyCombineDetails } from '@/types/combine-property.types';
+import { toast } from 'sonner';
 
-export function useCombinePropertyState() {
+export interface UseCombinePropertyStateParams {
+  selectedBasePropertyId?: string;
+  t?: (key: string, values?: Record<string, string | number>) => string;
+}
+
+export function useCombinePropertyState(params?: UseCombinePropertyStateParams) {
+  const { selectedBasePropertyId, t } = params || {};
   const [reviewData, setReviewData] = useState<PropertyCombineDetails[]>([]);
   const [isReviewing, setIsReviewing] = useState(false);
   const [remark, setRemark] = useState('');
@@ -26,6 +33,13 @@ export function useCombinePropertyState() {
   }, []);
 
   const togglePropertyCheck = useCallback((propertyId: number) => {
+    if (selectedBasePropertyId && String(propertyId) === selectedBasePropertyId) {
+      const isChecked = checkedPropertyIds.has(propertyId);
+      if (isChecked) {
+        toast.error(t ? t('cannotUncheckBaseProperty') : 'Cannot uncheck the primary property');
+        return;
+      }
+    }
     setCheckedPropertyIds((prev) => {
       const next = new Set(prev);
       if (next.has(propertyId)) {
@@ -35,16 +49,20 @@ export function useCombinePropertyState() {
       }
       return next;
     });
-  }, []);
+  }, [selectedBasePropertyId, checkedPropertyIds, t]);
 
   const toggleAllProperties = useCallback(() => {
     setCheckedPropertyIds((prev) => {
       if (prev.size === reviewData.length) {
+        if (selectedBasePropertyId) {
+          toast.error(t ? t('cannotUncheckBaseProperty') : 'Cannot uncheck the primary property');
+          return new Set([Number(selectedBasePropertyId)]);
+        }
         return new Set();
       }
       return new Set(reviewData.map((d) => d.propertyId));
     });
-  }, [reviewData]);
+  }, [reviewData, selectedBasePropertyId, t]);
 
   const checkedReviewData = useMemo(
     () => reviewData.filter((r) => checkedPropertyIds.has(r.propertyId)),

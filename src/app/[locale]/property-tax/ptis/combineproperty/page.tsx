@@ -13,12 +13,13 @@ interface PageProps {
     wardId?: string;
     wardNo?: string;
     propertyNo?: string;
+    basePartitionNo?: string;
   }>;
 }
 
 export default async function Page({ searchParams }: PageProps) {
   const params = await searchParams;
-  const { basePropertyId, wardId, wardNo, propertyNo } = params;
+  const { basePropertyId, wardId, wardNo, propertyNo, basePartitionNo } = params;
 
   // ── 1. Fetch base property list (filtered by ward if available) ─────────
   const baseResult = await fetchCombinePropertiesPagedAction({
@@ -30,12 +31,21 @@ export default async function Page({ searchParams }: PageProps) {
 
   // ── 2. If a base property is selected, fetch its sub-properties ───────────
   let subPropertyList: CombinePropertyItem[] = [];
-  if (propertyNo && wardId) {
+  if (basePropertyId && propertyNo && wardId) {
+    let partitionChar = basePartitionNo;
+    if (!partitionChar) {
+      const selected = basePropertyList.find((item) => String(item.id) === basePropertyId);
+      if (selected && selected.fromProperty) {
+        partitionChar = selected.fromProperty.replace(/[^A-Za-z]/g, '');
+      }
+    }
+
     const subResult = await fetchCombinePropertiesPagedAction({
       pageNumber: 1,
       pageSize: ALL_RECORDS_PAGE_SIZE,
       wardId: Number(wardId),
-      // propertyNo: propertyNo,
+      propertyNo: propertyNo,
+      ...(partitionChar ? { partitionNo: partitionChar } : {}),
     });
     subPropertyList = subResult.items ?? [];
   }

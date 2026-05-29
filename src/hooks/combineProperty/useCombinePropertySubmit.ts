@@ -63,18 +63,14 @@ export function useCombinePropertySubmit({
     startTransition(async () => {
       setIsReviewing(true);
       try {
-        const allPartitions = new Set(
-          [...partitionNo.split(','), basePartitionNo || '0']
-            .map(p => p.trim())
-            .filter(Boolean)
-        );
-        let finalPartitionNo = Array.from(allPartitions).join(',');
-
-        // If the only partition number collected is '0', it means NO properties have a real partition.
-        // In that case, send an empty string so the API just uses PropertyNo.
-        if (finalPartitionNo === '0') {
-          finalPartitionNo = '';
+        const partitionsArr = partitionNo ? partitionNo.split(',').map(p => p.trim()) : [];
+        if (basePartitionNo !== undefined && basePartitionNo !== null) {
+          partitionsArr.push(basePartitionNo.trim() || '0');
+        } else {
+          partitionsArr.push('0');
         }
+        const allPartitions = new Set(partitionsArr);
+        const finalPartitionNo = Array.from(allPartitions).join(',');
 
         const allPropertyNos = new Set(
           [...(submitPropertyNos ? submitPropertyNos.split(',') : []), selectedPropertyNo || '']
@@ -89,8 +85,16 @@ export function useCombinePropertySubmit({
           partitionNo: finalPartitionNo,
         });
 
-        setReviewData(data);
-        setCheckedPropertyIds(new Set(data.map((d) => d.propertyId)));
+        const sortedData = [...data].sort((a, b) => {
+          const isABase = String(a.propertyId) === selectedBasePropertyId;
+          const isBBase = String(b.propertyId) === selectedBasePropertyId;
+          if (isABase && !isBBase) return -1;
+          if (!isABase && isBBase) return 1;
+          return 0;
+        });
+
+        setReviewData(sortedData);
+        setCheckedPropertyIds(new Set([Number(selectedBasePropertyId)]));
       } catch {
         setReviewData([]);
       }

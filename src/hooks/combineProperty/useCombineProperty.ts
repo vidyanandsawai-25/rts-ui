@@ -27,7 +27,7 @@ export function useCombinePropertyForm({
   const { confirm } = useConfirm();
 
   // 1. State Hook
-  const state = useCombinePropertyState();
+  const state = useCombinePropertyState({ selectedBasePropertyId, t });
 
   // 2. Filters Hook
   const filters = useCombinePropertyFilters(

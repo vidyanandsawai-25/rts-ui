@@ -59,6 +59,10 @@ export function useCombinePropertyFilters(
   const handleBasePropertyChange = (_name: string, value: string) => {
     const selected = basePropertyList.find((item) => String(item.id) === value);
     if (!selected) return;
+
+    // Extract alphabetical prefix from partition number (e.g. "A1" -> "A", "B2" -> "B")
+    const partitionChar = selected.fromProperty ? selected.fromProperty.replace(/[^A-Za-z]/g, '') : undefined;
+
     onClearReview();
     router.push(
       buildUrl({
@@ -66,6 +70,7 @@ export function useCombinePropertyFilters(
         wardId: String(selected.wardId),
         wardNo: selected.wardNo,
         propertyNo: selected.propertyNo,
+        basePartitionNo: partitionChar,
         from: undefined,
         to: undefined,
         individual: undefined,
@@ -117,6 +122,7 @@ export function useCombinePropertyFilters(
         wardId: undefined,
         wardNo: undefined,
         propertyNo: undefined,
+        basePartitionNo: undefined,
         from: undefined,
         to: undefined,
         individual: undefined,
