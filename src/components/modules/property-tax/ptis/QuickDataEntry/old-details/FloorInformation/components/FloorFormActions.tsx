@@ -18,7 +18,7 @@ export function FloorFormActions({
     onReset
 }: FloorFormActionsProps) {
     return (
-        <div className="flex justify-end gap-5">
+        <div className="flex justify-end md:gap-5">
             {!isEditMode ? (
                 <AddButton
                     label={t('oldDetails.button.add')}

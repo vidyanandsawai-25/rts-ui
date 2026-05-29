@@ -79,6 +79,15 @@ describe('OldTaxationForm Component', () => {
     expect(plotNoInput).toHaveValue('Plot 2');
   });
 
+  it('allows entering Marathi/Devanagari characters in alphanumeric fields', () => {
+    render(<OldTaxationForm propertyOldDetails={mockPropertyData as unknown as PropertyOldDetailsApiItem} />);
+    
+    const zoneNameInput = screen.getByPlaceholderText('quickDataEntry.oldDetails.zoneNamePlaceholder');
+    fireEvent.change(zoneNameInput, { target: { value: 'औंध - बाणेर' } });
+    
+    expect(zoneNameInput).toHaveValue('औंध - बाणेर');
+  });
+
   it('calls confirm dialog when update button is clicked', () => {
     render(<OldTaxationForm propertyOldDetails={mockPropertyData as unknown as PropertyOldDetailsApiItem} />);
     

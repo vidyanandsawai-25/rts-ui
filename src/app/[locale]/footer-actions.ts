@@ -95,14 +95,18 @@ export async function handleFooterAction(
         let targetPath = '';
         if (tab === 'kycdetails') {
           params.set('propertyId', String(propertyId));
+          params.set('returnTab', 'kycdetails');
           targetPath = `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Kyc`;
         } else if (tab === 'societydetails') {
           params.set('propertyId', String(propertyId));
+           params.set('returnTab', 'societydetails');
           targetPath = `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Society`;
         } else if (tab === 'olddetails') {
           params.set('propertyId', String(propertyId));
+            params.set('returnTab', 'olddetails');
           targetPath = `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/OldDetails/old-taxation`;
         } else {
+           params.set('returnTab', 'propertydetails');
           targetPath = `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Property`;
         }
 

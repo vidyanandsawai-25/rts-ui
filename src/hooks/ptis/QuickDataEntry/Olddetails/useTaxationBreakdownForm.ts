@@ -5,7 +5,6 @@ import { useLocale, useTranslations } from "next-intl";
 import { useConfirm } from "@/components/common";
 import { OldTaxesDetails, OldTaxItem, OldTaxYear } from "@/types/OldDetails/property-old-details.types";
 import { saveOldTaxesDetailsAction } from "@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/OldDetails/taxation-breakdown/action";
-import { propertyValidations } from "@/lib/utils/validation-schemas";
 
 export function useTaxationBreakdownForm(initialData: OldTaxesDetails | null) {
   const { confirm } = useConfirm();
@@ -18,18 +17,6 @@ export function useTaxationBreakdownForm(initialData: OldTaxesDetails | null) {
 
   const yearData = initialData?.taxYears?.[0];
 
-  // Metadata State
-  const [formData, setFormData] = useState({
-    year: yearData ? String(yearData.year || "") : "",
-    interest: yearData?.interest || 0,
-    taxTotal: yearData?.taxTotal || 0,
-    netTotal: yearData?.netTotal || 0,
-    financeYearId: yearData?.financeYearId || 0,
-    yearCode: yearData?.yearCode || null,
-    rVorCV: yearData?.rVorCV || "",
-    rVorCVValue: yearData?.rVorCVValue || 0
-  });
-
   // Dynamic Taxes State
   const [taxes, setTaxes] = useState<OldTaxItem[]>(yearData?.taxes || []);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -37,127 +24,36 @@ export function useTaxationBreakdownForm(initialData: OldTaxesDetails | null) {
   // Validation State
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
-  // Validate amount field (numeric, non-negative, max 2 decimals)
-  const validateAmountField = (value: string): string | null => {
-    if (!value || value.trim() === '') {
-      return tValidation('property.validation.required') || 'This field is required';
-    }
-
-    const numValue = Number(value);
-    
-    if (isNaN(numValue)) {
-      return tValidation('property.validation.invalidNumber') || 'Please enter a valid number';
-    }
-
-    if (numValue < 0) {
-      return tValidation('property.validation.negativeNotAllowed') || 'Negative values are not allowed';
-    }
-
-    // Check decimal places (max 2)
-    const decimalPart = value.split('.')[1];
-    if (decimalPart && decimalPart.length > 2) {
-      return tValidation('property.validation.maxTwoDecimals') || 'Maximum 2 decimal places allowed';
-    }
-
-    return null;
-  };
-
   const handleTaxChange = (taxId: number, value: string) => {
     const numValue = Number(value) || 0;
     const updatedTaxes = taxes.map(t => t.taxId === taxId ? { ...t, taxAmount: numValue } : t);
-    const newTaxTotal = updatedTaxes.reduce((acc, t) => acc + (t.taxAmount || 0), 0);
-    const newNetTotal = newTaxTotal + (Number(formData.interest) || 0);
-
-    const taxError = validateAmountField(value);
-
-    setValidationErrors(prev => {
-      const updated = { ...prev };
-      
-      if (taxError) {
-        updated[`tax_${taxId}`] = taxError;
-      } else {
-        delete updated[`tax_${taxId}`];
-      }
-
-      if (newTaxTotal < 0) {
-        updated.taxTotal = tValidation('property.validation.negativeNotAllowed') || 'Negative values are not allowed';
-      } else {
-        delete updated.taxTotal;
-      }
-
-      if (newNetTotal < 0) {
-        updated.netTotal = tValidation('property.validation.negativeNotAllowed') || 'Negative values are not allowed';
-      } else {
-        delete updated.netTotal;
-      }
-
-      return updated;
-    });
 
     setTaxes(updatedTaxes);
-    setFormData(prev => ({
-      ...prev,
-      taxTotal: newTaxTotal,
-      netTotal: newNetTotal
-    }));
-  };
 
-  const handleMetaChange = (key: string, value: string | number) => {
-    setFormData(prev => {
-      const updated = { ...prev, [key]: value };
-      if (key === 'interest') {
-        updated.netTotal = (Number(updated.taxTotal) || 0) + (Number(value) || 0);
-      }
-      return updated;
-    });
-
-    if (key === 'interest') {
-      const error = validateAmountField(String(value));
-      const newNetTotal = (Number(formData.taxTotal) || 0) + (Number(value) || 0);
-
+    if (numValue < 0) {
+      setValidationErrors(prev => ({
+        ...prev,
+        [`tax_${taxId}`]: tValidation('property.validation.negativeNotAllowed')
+      }));
+    } else {
       setValidationErrors(prev => {
-        const updated = { ...prev };
-        if (error) {
-          updated.interest = error;
-        } else {
-          delete updated.interest;
-        }
-
-        if (newNetTotal < 0) {
-          updated.netTotal = tValidation('property.validation.negativeNotAllowed') || 'Negative values are not allowed';
-        } else {
-          delete updated.netTotal;
-        }
-
-        return updated;
+        const copy = { ...prev };
+        delete copy[`tax_${taxId}`];
+        return copy;
       });
     }
   };
 
   const validate = () => {
-    // Use unified validation utility
-    const yearError = propertyValidations.year("assessmentYear", tValidation)(formData.year);
-    if (yearError) {
-      toast.error(yearError);
-      return false;
-    }
-
-    // Check range (1700-2026)
-    const yearNum = Number(formData.year);
-    if (isNaN(yearNum) || yearNum < 1700 || yearNum > 2026) {
-      toast.error(tValidation('property.validation.assessmentYearRange'));
+    // Check validationErrors object
+    if (Object.keys(validationErrors).length > 0) {
+      toast.error(tValidation('property.validation.fixErrors'));
       return false;
     }
 
     // Check if taxes data is available
     if (!taxes || taxes.length === 0) {
       toast.error(t('noTaxDataAvailable') || 'No tax data available');
-      return false;
-    }
-
-    // Check for validation errors
-    if (Object.keys(validationErrors).length > 0) {
-      toast.error(tValidation('property.validation.fixErrors') || 'Please fix validation errors before saving');
       return false;
     }
 
@@ -174,15 +70,18 @@ export function useTaxationBreakdownForm(initialData: OldTaxesDetails | null) {
         setIsSubmitting(true);
         try {
           const updatedTaxYears = [...(initialData?.taxYears || [])];
+          const newTaxTotal = taxes.reduce((acc, t) => acc + (t.taxAmount || 0), 0);
+          const newNetTotal = newTaxTotal + (Number(yearData?.interest) || 0);
+
           const currentYearData: OldTaxYear = {
-            financeYearId: formData.financeYearId,
-            year: Number(formData.year),
-            yearCode: formData.yearCode,
-            rVorCV: formData.rVorCV,
-            rVorCVValue: Number(formData.rVorCVValue) || 0,
-            taxTotal: Number(formData.taxTotal) || 0,
-            interest: Number(formData.interest) || 0,
-            netTotal: Number(formData.netTotal) || 0,
+            financeYearId: yearData?.financeYearId || 0,
+            year: Number(yearData?.year || 0),
+            yearCode: yearData?.yearCode || null,
+            rVorCV: yearData?.rVorCV || "",
+            rVorCVValue: Number(yearData?.rVorCVValue) || 0,
+            taxTotal: newTaxTotal,
+            interest: Number(yearData?.interest) || 0,
+            netTotal: newNetTotal,
             taxes: taxes.map(t => ({
               taxId: t.taxId,
               taxName: t.taxName,
@@ -192,8 +91,8 @@ export function useTaxationBreakdownForm(initialData: OldTaxesDetails | null) {
 
           // Update existing year or add new one
           const existingIndex = updatedTaxYears.findIndex(y =>
-            (y.financeYearId > 0 && y.financeYearId === formData.financeYearId) ||
-            (y.year > 0 && y.year === Number(formData.year))
+            (y.financeYearId > 0 && y.financeYearId === (yearData?.financeYearId || 0)) ||
+            (y.year > 0 && y.year === Number(yearData?.year || 0))
           );
 
           if (existingIndex > -1) {
@@ -227,21 +126,14 @@ export function useTaxationBreakdownForm(initialData: OldTaxesDetails | null) {
     return (orig?.taxAmount || 0) !== (t.taxAmount || 0);
   });
 
-  const isChanged =
-    formData.year !== (yearData ? String(yearData.year || "") : "") ||
-    Number(formData.interest || 0) !== (yearData?.interest || 0) ||
-    formData.rVorCV !== (yearData?.rVorCV || "") ||
-    Number(formData.rVorCVValue || 0) !== (yearData?.rVorCVValue || 0) ||
-    isTaxesChanged;
+  const isChanged = isTaxesChanged;
 
   const hasTaxData = taxes && taxes.length > 0;
 
   return {
-    formData,
     taxes,
     isSubmitting,
     handleTaxChange,
-    handleMetaChange,
     handleSave,
     isChanged,
     hasTaxData,
