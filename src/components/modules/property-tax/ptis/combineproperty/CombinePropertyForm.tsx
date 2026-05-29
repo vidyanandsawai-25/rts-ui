@@ -144,11 +144,9 @@ export default function CombinePropertyForm(props: CombinePropertyFormProps) {
             {t('title')}
           </h2>
           {selectedWardNo && (
-            // eslint-disable-next-line i18next/no-literal-string
             <StatusBadge variant="info" label={`Ward: ${selectedWardNo}`} className="px-2 py-0.5 text-[10px] rounded-full shadow-none" />
           )}
           {selectedPropertyNo && (
-            // eslint-disable-next-line i18next/no-literal-string
             <StatusBadge variant="info" label={`Property: ${selectedPropertyNo}`} className="px-2 py-0.5 text-[10px] rounded-full shadow-none" />
           )}
         </div>
