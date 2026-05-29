@@ -17,6 +17,7 @@ import {
   renderSla,
   renderStatus,
 } from './ColumnRenderers';
+import { usePermissions } from '@/hooks/usePermissions';
 
 type UseGrievanceCategoryColumnsParams = {
   locale: string;
@@ -40,6 +41,8 @@ export function useGrievanceCategoryColumns({
   const tCommonStatus = useTranslations('common.status');
   const tCommonTable = useTranslations('common.table');
 
+  const { canEdit, canDelete, haveFullAccess } = usePermissions('GRIEVANCE_CATEGORY_MASTER');
+
   const departmentMap = useMemo(() => {
     const map = new Map<number, string>();
     departments.forEach((dept) => {
@@ -50,8 +53,8 @@ export function useGrievanceCategoryColumns({
     return map;
   }, [departments]);
 
-  return useMemo(
-    () => [
+  return useMemo(() => {
+    const cols: Column<GrievanceCategory>[] = [
       {
         key: 'categoryCode',
         label: t('headers.code'),
@@ -102,24 +105,31 @@ export function useGrievanceCategoryColumns({
         label: tCommonTable('columns.status'),
         render: (_, row) => renderStatus(row, tCommonStatus),
       },
-      {
+    ];
+
+    if (canEdit || canDelete || haveFullAccess) {
+      cols.push({
         key: 'id' as keyof GrievanceCategory,
         label: tCommonTable('columns.actions'),
         align: 'right',
         render: (_, row) => renderActions(row, onEdit, onDelete, deletingId, editingId),
-      },
-    ],
-    [
-      departmentMap,
-      t,
-      tCommonStatus,
-      tCommonTable,
-      tEscalationOptions,
-      tPriorityOptions,
-      onEdit,
-      onDelete,
-      deletingId,
-      editingId,
-    ]
-  );
+      });
+    }
+
+    return cols;
+  }, [
+    departmentMap,
+    t,
+    tCommonStatus,
+    tCommonTable,
+    tEscalationOptions,
+    tPriorityOptions,
+    onEdit,
+    onDelete,
+    deletingId,
+    editingId,
+    canEdit,
+    canDelete,
+    haveFullAccess,
+  ]);
 }

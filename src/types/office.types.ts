@@ -1,6 +1,6 @@
-import { PagedResponse } from "./common.types";
+import { PagedResponse } from './common.types';
 
-/** 
+/**
  * Form model for creating and editing offices
  * Used in UI forms to capture user input
  */
@@ -19,7 +19,6 @@ export interface OfficeFormModel {
   isActive: boolean;
   updatedBy?: number;
 }
-
 
 /**
  * Server response model for office data
@@ -44,7 +43,10 @@ export interface Office {
 /**
  * Props for Office list component
  */
-export interface OfficeProps extends Omit<PagedResponse<Office>, 'items' | 'hasPrevious' | 'hasNext'> {
+export interface OfficeProps extends Omit<
+  PagedResponse<Office>,
+  'items' | 'hasPrevious' | 'hasNext'
+> {
   data: Office[];
   sortBy?: string;
   sortOrder?: string;
@@ -54,4 +56,6 @@ export interface OfficeProps extends Omit<PagedResponse<Office>, 'items' | 'hasP
   activeOfficesCount: number;
   inactiveOfficesCount: number;
   showStatsError?: boolean;
+  fetchError?: string;
+  statusCode?: number;
 }

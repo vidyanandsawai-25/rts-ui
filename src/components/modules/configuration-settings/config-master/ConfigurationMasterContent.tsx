@@ -1,9 +1,10 @@
-import { Settings } from 'lucide-react';
+import { Settings, AlertCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/common/Card';
 import { ConfigurationCards } from './ConfigurationCards';
 import { ConfigurationList } from './ConfigurationList';
 import { ConfigSearchBar } from './ConfigSearchBar';
 import type { ConfigCategory, ConfigItem } from '@/types/configMaster.types';
+import { useTranslations } from 'next-intl';
 
 interface ConfigurationMasterContentProps {
   categories: ConfigCategory[];
@@ -15,6 +16,7 @@ interface ConfigurationMasterContentProps {
   noSearchResultsLabel: string;
   noItemsFoundLabel: string;
   searchTipLabel: string;
+  fetchError?: string;
 }
 
 export function ConfigurationMasterContent({
@@ -27,10 +29,25 @@ export function ConfigurationMasterContent({
   noSearchResultsLabel,
   noItemsFoundLabel,
   searchTipLabel,
+  fetchError,
 }: ConfigurationMasterContentProps) {
+  const tCommon = useTranslations('common');
+
   return (
     <div className="flex-1 px-4 sm:px-6 py-6 overflow-x-hidden">
       <div className="max-w-500 mx-auto space-y-8">
+        {fetchError && (
+          <div className="p-4 bg-red-50 border-l-4 border-red-500 rounded-r-xl shadow-sm flex items-start gap-3 animate-in fade-in duration-300">
+            <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+            <div>
+              <h3 className="text-sm font-semibold text-red-800">
+                {tCommon('errors.fetchFailed')}
+              </h3>
+              <p className="text-xs text-red-700 mt-1 font-mono">{fetchError}</p>
+            </div>
+          </div>
+        )}
+
         <section className="space-y-6">
           <ConfigurationCards
             categories={categories}
@@ -60,11 +77,7 @@ export function ConfigurationMasterContent({
                   <p className="text-sm font-semibold">
                     {search ? noSearchResultsLabel : noItemsFoundLabel}
                   </p>
-                  {search && (
-                    <p className="text-xs mt-2 opacity-60">
-                      {searchTipLabel}
-                    </p>
-                  )}
+                  {search && <p className="text-xs mt-2 opacity-60">{searchTipLabel}</p>}
                 </div>
               )}
             </CardContent>

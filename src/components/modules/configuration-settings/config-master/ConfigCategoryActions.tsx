@@ -9,6 +9,7 @@ import {
   deleteConfigCategoryAction,
   updateAllConfigKeysStatusByCategoryIdAction,
 } from '@/app/[locale]/configuration-settings/config-master/actions';
+import { usePermissions } from '@/hooks/usePermissions';
 
 interface CategoryContextProps {
   categoryId: string;
@@ -24,6 +25,13 @@ export function CategoryEditDeleteActions({ categoryId, categoryName }: Category
   const { success, error: toastError } = useToast();
   const [isPending, startTransition] = useTransition();
   const [activeAction, setActiveAction] = useState<'edit' | 'delete' | null>(null);
+
+  const { canEdit, canDelete, haveFullAccess } = usePermissions('CONFIG_MASTER');
+
+  const showEdit = canEdit || canDelete || haveFullAccess;
+  const showDelete = canDelete || haveFullAccess;
+
+  if (!showEdit && !showDelete) return null;
 
   const handleEditCategory = () => {
     setActiveAction('edit');
@@ -63,26 +71,30 @@ export function CategoryEditDeleteActions({ categoryId, categoryName }: Category
 
   return (
     <div className="flex items-center gap-0.5 sm:gap-1 pl-1.5 sm:pl-2 ml-1.5 sm:ml-2 border-l border-slate-200">
-      <Button
-        variant="ghost"
-        size="xs"
-        icon={isPending && activeAction === 'edit' ? undefined : Pencil}
-        disabled={isPending}
-        isLoading={isPending && activeAction === 'edit'}
-        className="h-8 w-8 sm:h-9 sm:w-9 p-0 text-slate-400 hover:text-blue-600 hover:bg-blue-50 cursor-pointer"
-        onClick={handleEditCategory}
-        title="Edit Category"
-      />
-      <Button
-        variant="ghost"
-        size="xs"
-        icon={isPending && activeAction === 'delete' ? undefined : Trash2}
-        disabled={isPending}
-        isLoading={isPending && activeAction === 'delete'}
-        className="h-8 w-8 sm:h-9 sm:w-9 p-0 text-slate-400 hover:text-rose-600 hover:bg-rose-50 cursor-pointer"
-        onClick={handleDeleteCategory}
-        title="Delete Category"
-      />
+      {showEdit && (
+        <Button
+          variant="ghost"
+          size="xs"
+          icon={isPending && activeAction === 'edit' ? undefined : Pencil}
+          disabled={isPending}
+          isLoading={isPending && activeAction === 'edit'}
+          className="h-8 w-8 sm:h-9 sm:w-9 p-0 text-slate-400 hover:text-blue-600 hover:bg-blue-50 cursor-pointer"
+          onClick={handleEditCategory}
+          title="Edit Category"
+        />
+      )}
+      {showDelete && (
+        <Button
+          variant="ghost"
+          size="xs"
+          icon={isPending && activeAction === 'delete' ? undefined : Trash2}
+          disabled={isPending}
+          isLoading={isPending && activeAction === 'delete'}
+          className="h-8 w-8 sm:h-9 sm:w-9 p-0 text-slate-400 hover:text-rose-600 hover:bg-rose-50 cursor-pointer"
+          onClick={handleDeleteCategory}
+          title="Delete Category"
+        />
+      )}
     </div>
   );
 }
@@ -94,6 +106,10 @@ export function CategoryBulkActions({ categoryId, categoryName }: CategoryContex
   const { success, error: toastError, info: toastInfo } = useToast();
   const [isPending, startTransition] = useTransition();
   const [activeAction, setActiveAction] = useState<'enable' | 'disable' | null>(null);
+
+  const { haveFullAccess } = usePermissions('CONFIG_MASTER');
+
+  if (!haveFullAccess) return null;
 
   const handleBulkToggle = (enable: boolean): void => {
     confirmAction({
