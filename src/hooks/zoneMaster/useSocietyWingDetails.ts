@@ -51,6 +51,7 @@ export function useSocietyWingDetails({ propertyId }: UseSocietyWingDetailsProps
 
   // Fetch wing details when propertyId changes
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchWingDetails();
   }, [fetchWingDetails]);
 

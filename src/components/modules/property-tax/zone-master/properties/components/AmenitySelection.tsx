@@ -84,7 +84,7 @@ export function AmenitySelection({
         <Select
           label={t("partitionForm.amenity.selectWing")}
           value={form.selectedWingForAmenity}
-          onChange={(e, value) => {
+          onChange={(_, value) => {
             setForm({ ...form, selectedWingForAmenity: value, toAmenity: "" });
             setErrors({ ...errors, selectedWingForAmenity: undefined, toAmenity: undefined });
           }}

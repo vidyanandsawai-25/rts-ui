@@ -81,6 +81,7 @@ export function usePartitionFormState({
 
   // Sync form state when prop changes (for navigation)
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setForm(prev => {
       if (prev.mainPropertyId === selectedPropertyId) {
         return prev; // No change needed

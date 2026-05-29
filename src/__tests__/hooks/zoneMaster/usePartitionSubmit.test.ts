@@ -108,6 +108,30 @@ describe("usePartitionSubmit", () => {
     { id: 3, floorCode: "2", description: "Second Floor", sequenceNo: 3, isActive: true, createdDate: "2024-01-01", updatedDate: null },
   ];
 
+  const mockWingDetails: Array<{
+    propertyId: number;
+    societyDetailId: number;
+    wingId: number;
+    wingNo: string;
+    wardNo: string;
+    propertyNo: string;
+    wingName: string;
+    propertyCount: number;
+    aminityCount: number;
+  }> = [
+    {
+      propertyId: 1,
+      societyDetailId: 101,
+      wingId: 1,
+      wingNo: "A",
+      wardNo: "W1",
+      propertyNo: "P001",
+      wingName: "Wing A",
+      propertyCount: 10,
+      aminityCount: 5,
+    },
+  ];
+
   const wingForm: PartitionFormState = {
     mainPropertyId: 1,
     partitionNo: "0",
@@ -126,6 +150,9 @@ describe("usePartitionSubmit", () => {
     generationType: "V",
     fromPartition: "",
     toPartition: "",
+    selectedWingForAmenity: "",
+    fromAmenity: "",
+    toAmenity: "",
   };
 
   const partitionForm: PartitionFormState = {
@@ -146,6 +173,9 @@ describe("usePartitionSubmit", () => {
     generationType: "",
     fromPartition: "1",
     toPartition: "3",
+    selectedWingForAmenity: "",
+    fromAmenity: "",
+    toAmenity: "",
   };
 
   beforeEach(() => {
@@ -161,6 +191,7 @@ describe("usePartitionSubmit", () => {
         selectedWard: mockWard,
         selectedProperty: mockProperty,
         wings: mockWings,
+        wingDetails: mockWingDetails,
         floors: mockFloors,
         validate: mockValidate,
         setLoading: mockSetLoading,
@@ -197,6 +228,7 @@ describe("usePartitionSubmit", () => {
         selectedWard: mockWard,
         selectedProperty: mockProperty,
         wings: mockWings,
+        wingDetails: mockWingDetails,
         floors: mockFloors,
         validate: mockValidate,
         setLoading: mockSetLoading,
@@ -255,6 +287,7 @@ describe("usePartitionSubmit", () => {
         selectedWard: mockWard,
         selectedProperty: mockProperty,
         wings: mockWings,
+        wingDetails: mockWingDetails,
         floors: mockFloors,
         validate: mockValidate,
         setLoading: mockSetLoading,
@@ -294,6 +327,7 @@ describe("usePartitionSubmit", () => {
         selectedWard: mockWard,
         selectedProperty: mockProperty,
         wings: mockWings,
+        wingDetails: mockWingDetails,
         floors: mockFloors,
         validate: mockValidate,
         setLoading: mockSetLoading,
@@ -324,6 +358,7 @@ describe("usePartitionSubmit", () => {
         selectedWard: mockWard,
         selectedProperty: mockProperty,
         wings: mockWings,
+        wingDetails: mockWingDetails,
         floors: mockFloors,
         validate: mockValidate,
         setLoading: mockSetLoading,
@@ -353,6 +388,7 @@ describe("usePartitionSubmit", () => {
         selectedWard: mockWard,
         selectedProperty: mockProperty,
         wings: mockWings,
+        wingDetails: mockWingDetails,
         floors: mockFloors,
         validate: mockValidate,
         setLoading: mockSetLoading,
@@ -389,6 +425,7 @@ describe("usePartitionSubmit", () => {
         selectedWard: mockWard,
         selectedProperty: mockProperty,
         wings: mockWings,
+        wingDetails: mockWingDetails,
         floors: mockFloors,
         validate: mockValidate,
         setLoading: mockSetLoading,

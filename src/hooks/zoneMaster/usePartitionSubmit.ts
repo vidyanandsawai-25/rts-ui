@@ -261,7 +261,7 @@ export function usePartitionSubmit({
     } finally {
       setLoading(false);
     }
-  }, [form, selectedWard, selectedProperty, wings, floors, validate, setLoading, onSuccess, onClose, showAddWingForm, newWingId, newWingName, handleSaveWing, t]);
+  }, [form, selectedWard, selectedProperty, wings, wingDetails, floors, validate, setLoading, onSuccess, onClose, showAddWingForm, newWingId, newWingName, handleSaveWing, t]);
 
   return {
     handleSubmit,

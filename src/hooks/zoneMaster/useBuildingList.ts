@@ -51,6 +51,7 @@ export function useBuildingList({ wardId }: UseBuildingListProps): UseBuildingLi
 
   // Fetch building list when wardId changes
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchBuildingList();
   }, [fetchBuildingList]);
 

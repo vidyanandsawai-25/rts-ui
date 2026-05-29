@@ -190,8 +190,9 @@ describe("usePartitionFormOptions", () => {
     prefix: "",
     generationType: "",
     fromPartition: "",
-    toPartition: "",
-  };
+    toPartition: "",    selectedWingForAmenity: "",
+    fromAmenity: "",
+    toAmenity: "",  };
 
   beforeEach(() => {
     vi.clearAllMocks();
