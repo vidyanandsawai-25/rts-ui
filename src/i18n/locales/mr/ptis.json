@@ -528,7 +528,8 @@
     "firstPage": "पहिले पृष्ठ",
     "previousPage": "मागील पृष्ठ",
     "nextPage": "पुढील पृष्ठ",
-    "lastPage": "शेवटचे पृष्ठ"
+    "lastPage": "शेवटचे पृष्ठ",
+    "backToSearch": "शोध मालमत्तेवर परत जा"
   },
   "table": {
     "page": "पृष्ठ {current} चे {total}"

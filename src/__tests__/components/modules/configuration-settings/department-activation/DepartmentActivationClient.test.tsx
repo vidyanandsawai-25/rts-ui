@@ -108,5 +108,6 @@ describe('DepartmentActivationClient', () => {
       expect(screen.getByRole('dialog')).toBeInTheDocument();
     });
     expect(screen.getByText('Module 1')).toBeInTheDocument();
+    expect(screen.getByText('modal.saveChanges')).toBeInTheDocument();
   });
 });

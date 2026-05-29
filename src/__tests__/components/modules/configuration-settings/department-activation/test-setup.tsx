@@ -28,12 +28,20 @@ vi.mock('next-intl', () => ({
 // Mock sonner toast
 export const mockToastSuccess = vi.fn();
 export const mockToastError = vi.fn();
+export const mockToastWarning = vi.fn();
 
 vi.mock('sonner', () => ({
   toast: {
     success: (msg: string) => mockToastSuccess(msg),
     error: (msg: string) => mockToastError(msg),
+    warning: (msg: string) => mockToastWarning(msg),
   },
+}));
+
+vi.mock('@/components/common/ConfirmProvider', () => ({
+  useConfirm: vi.fn(() => ({
+    confirm: vi.fn(({ onConfirm }: { onConfirm?: () => void }) => onConfirm?.()),
+  })),
 }));
 
 // Mock actions

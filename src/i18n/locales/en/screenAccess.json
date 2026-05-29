@@ -267,7 +267,11 @@
     "labels": {
       "screenCount": "{count, plural, =1 {# screen} other {# screens}}",
       "noneCount": "None: {count}",
-      "fullCount": "Full: {count}"
+      "fullCount": "Full: {count}",
+      "moduleInactive": "Module Inactive",
+      "moduleInactiveHint": "This module is deactivated in Department Activation. Users have no effective access to these screens, but assigned permissions are preserved and will apply again when the module is reactivated.",
+      "assignedAccessPreserved": "Assigned: {level} (suspended while module is inactive)",
+      "storedPermissionHint": "Stored permission: {level}. Effective access is suspended until module is active."
     }
   },
 

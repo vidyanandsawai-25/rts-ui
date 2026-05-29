@@ -32,6 +32,8 @@ export async function updateDepartmentStatusAction(
 
     for (const locale of locales) {
       revalidatePath(`/${locale}/configuration-settings/department-activation`, "page");
+      revalidatePath(`/${locale}/configuration-settings/module-master`, "page");
+      revalidatePath(`/${locale}/configuration-settings/screenAccess`, "page");
     }
     return { success: true };
   } catch (error: unknown) {
@@ -66,6 +68,8 @@ export async function updateModuleStatusAction(
 
     for (const locale of locales) {
       revalidatePath(`/${locale}/configuration-settings/department-activation`, "page");
+      revalidatePath(`/${locale}/configuration-settings/module-master`, "page");
+      revalidatePath(`/${locale}/configuration-settings/screenAccess`, "page");
     }
     return { success: true };
   } catch (error: unknown) {
