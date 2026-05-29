@@ -52,6 +52,7 @@ export default getRequestConfig(async ({ locale }) => {
     paymentModeMasterMessages,
     propertySearchMessages,
     moduleMasterMessages,
+    ulbConfigMessages,
     waterConnectionMessages,
     waterConnectionMasterMessages,
     commonDetailsUpdateMessages,
@@ -114,6 +115,9 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/moduleMaster.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/ulb_configuration.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/waterconnection.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
@@ -168,9 +172,11 @@ export default getRequestConfig(async ({ locale }) => {
       paymentModeMaster: paymentModeMasterMessages,
       propertySearch: propertySearchMessages,
       moduleMaster: moduleMasterMessages,
+      ulb_configuration: ulbConfigMessages,
       waterConnection: waterConnectionMessages?.waterConnection || waterConnectionMessages,
       waterConnectionMaster: waterConnectionMasterMessages.waterConnectionMaster,
-      commonDetailsUpdate: commonDetailsUpdateMessages?.commonDetailsUpdate || commonDetailsUpdateMessages,
+      commonDetailsUpdate:
+        commonDetailsUpdateMessages?.commonDetailsUpdate || commonDetailsUpdateMessages,
       financialYear: financialYearMessages,
       modules: modulesMessages,
     },
