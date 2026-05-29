@@ -53,8 +53,8 @@ export function useCombinePropertyState() {
   
   const uniqueOwners = [...new Set(checkedReviewData.map((r) => r.ownerName).filter(Boolean))];
   const hasDifferentOwners = uniqueOwners.length > 1;
-  const differentOwnerProps = reviewData
-    .filter((r, i) => i > 0 && r.ownerName !== reviewData[0]?.ownerName)
+  const differentOwnerProps = checkedReviewData
+    .filter((r, i) => i > 0 && r.ownerName !== checkedReviewData[0]?.ownerName)
     .map((r) => `Ward No.: ${r.wardNo} Property No.: ${r.propertyNo}`)
     .join(', ');
 

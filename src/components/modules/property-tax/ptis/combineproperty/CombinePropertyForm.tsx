@@ -9,7 +9,7 @@ import { CancelButton, AddButton } from '@/components/common/ActionButtons';
 import { CombinePropertyItem } from '@/types/combine-property.types';
 import { useCombinePropertyForm } from '@/hooks/combineProperty/useCombineProperty';
 import { getCombinePropertyColumns, PropertyRow } from './combinePropertyColumns';
-import { redirect } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { PropertyType } from '@/types/property-type.types';
 import { CombinePropertyFilterBar } from './CombinePropertyFilterBar';
 import { CombinePropertyReviewSection } from './CombinePropertyReviewSection';
@@ -49,15 +49,17 @@ function toSelectOption(item: CombinePropertyItem): SearchSelectOption {
 /*  Component                                                           */
 /* ------------------------------------------------------------------ */
 
-export default function CombinePropertyForm({
-  basePropertyList,
-  subPropertyList,
-  propertyTypeList,
-  selectedBasePropertyId,
-  selectedWardId,
-  selectedWardNo,
-  selectedPropertyNo,
-}: CombinePropertyFormProps) {
+export default function CombinePropertyForm(props: CombinePropertyFormProps) {
+  const {
+    basePropertyList,
+    subPropertyList,
+    propertyTypeList,
+    selectedBasePropertyId,
+    selectedWardId,
+    selectedWardNo,
+    selectedPropertyNo,
+  } = props;
+  const router = useRouter();
   const t = useTranslations('combineProperty');
 
   const {
@@ -188,7 +190,7 @@ export default function CombinePropertyForm({
   return (
     <Drawer
       open={true}
-      onClose={() => redirect('/property-tax/ptis')}
+      onClose={() => router.push('/property-tax/ptis')}
       title={DrawerTitle}
       width="xl"
       footer={DrawerFooter}

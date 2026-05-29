@@ -69,13 +69,13 @@ export function useCombinePropertySubmit({
             .filter(Boolean)
         );
         let finalPartitionNo = Array.from(allPartitions).join(',');
-        
+
         // If the only partition number collected is '0', it means NO properties have a real partition.
         // In that case, send an empty string so the API just uses PropertyNo.
         if (finalPartitionNo === '0') {
           finalPartitionNo = '';
         }
-        
+
         const allPropertyNos = new Set(
           [...(submitPropertyNos ? submitPropertyNos.split(',') : []), selectedPropertyNo || '']
             .map(p => p.trim())
@@ -88,7 +88,7 @@ export function useCombinePropertySubmit({
           propertyNo: finalPropertyNo,
           partitionNo: finalPartitionNo,
         });
-        
+
         setReviewData(data);
         setCheckedPropertyIds(new Set(data.map((d) => d.propertyId)));
       } catch {
@@ -121,7 +121,16 @@ export function useCombinePropertySubmit({
       return;
     }
 
-    const finalPropertyTypeId = hasPropertyTypeMismatch ? Number(selectedPropertyType) : (uniquePropertyTypeIds[0] || 0);
+    let finalPropertyTypeId = uniquePropertyTypeIds[0] || 0;
+    if (hasPropertyTypeMismatch) {
+      const parsedSelectedPropertyTypeId = Number(selectedPropertyType);
+      if (!Number.isFinite(parsedSelectedPropertyTypeId) || parsedSelectedPropertyTypeId <= 0) {
+        toast.warning(t('propertyTypeMismatchAlert') || 'Selected properties have different property types. Please select a property type from the dropdown to proceed.');
+        setShowPropertyTypeDropdown(true);
+        return;
+      }
+      finalPropertyTypeId = parsedSelectedPropertyTypeId;
+    }
 
     const uniqueOwners = [...new Set(checkedProperties.map((r) => r.ownerName).filter(Boolean))];
     const hasDifferentOwnersLocal = uniqueOwners.length > 1;
@@ -131,10 +140,20 @@ export function useCombinePropertySubmit({
       return;
     }
 
-    const confirmTitle = hasDifferentOwnersLocal 
-      ? (t('confirmCombineDiffOwnerTitle') || 'Owner Names are Different') 
+    const combinePropertyIds = checkedProperties
+      .filter((r) => String(r.propertyId) !== selectedBasePropertyId)
+      .map((r) => r.propertyId)
+      .join(',');
+
+    if (!combinePropertyIds) {
+      toast.warning(t('selectAtLeastOneToMerge') || 'Please select at least one additional property to merge.');
+      return;
+    }
+
+    const confirmTitle = hasDifferentOwnersLocal
+      ? (t('confirmCombineDiffOwnerTitle') || 'Owner Names are Different')
       : t('confirmCombineTitle');
-      
+
     const confirmDesc = hasDifferentOwnersLocal
       ? (t('confirmCombineDiffOwnerDesc') || 'Owner names are different for the selected properties. Do you want to combine? Click Combine to proceed or Cancel to abort.')
       : t('confirmCombineDesc');
@@ -147,10 +166,6 @@ export function useCombinePropertySubmit({
       onConfirm: async () => {
         setIsSubmitting(true);
         try {
-          const combinePropertyIds = checkedProperties
-            .filter((r) => String(r.propertyId) !== selectedBasePropertyId)
-            .map((r) => r.propertyId)
-            .join(',');
           const response = await createCombinePropertyAction({
             sourcePropertyId: Number(selectedBasePropertyId),
             combinedPropertyIds: combinePropertyIds,
