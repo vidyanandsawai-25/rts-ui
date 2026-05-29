@@ -382,7 +382,10 @@
       "noOfFlatOnOneFloorRequired": "No. of Flats per Floor is required",
       "flatStartRequired": "Flat Start is required",
       "incrementedByRequired": "Incremented By is required",
-      "generationTypeRequired": "Generation Type is required"
+      "generationTypeRequired": "Generation Type is required",
+      "toAmenityRequired": "To Amenity is required",
+      "toAmenityMustBeGreater": "To Amenity must be greater than or equal to From Amenity",
+      "duplicateAmenityInRange": "Amenity {amenity} already exists for this property"
     },
     "placeholders": {
       "selectMainProperty": "Select a main property",
@@ -459,6 +462,7 @@
         "wingName": "Wing Name",
         "totalProperties": "Total Properties",
         "properties": "properties",
+        "amenities": "Amenities",
         "actions": "Actions",
         "editWingName": "Edit Wing Name",
         "updateWing": "Generate Wing Structure",
@@ -536,11 +540,25 @@
       "amenity": {
         "notImplemented": "Amenity content not yet implemented"
       }
+    },
+    "amenity": {
+      "description": "Create amenities for selected property. Amenities will be assigned to a wing (optional) and numbered sequentially.",
+      "selectWing": "Select Wing (Optional)",
+      "noWing": "No Wing (Default Amenity)",
+      "fromAmenity": "From Amenity",
+      "toAmenity": "To Amenity",
+      "amenities": "amenities",
+      "amenitiesWillBeCreated": "Amenities will be created:",
+      "placeholders": {
+        "selectWing": "Select a wing or leave empty"
+      }
     }
   },
   "partitionMessages": {
     "createSuccess": "Partition created successfully!",
     "createError": "Failed to create partition",
-    "bulkCreateSuccess": "{count} partitions created successfully!"
+    "bulkCreateSuccess": "{count} partitions created successfully!",
+    "amenityCreateSuccess": "{count} amenities created successfully!",
+    "amenityCreateError": "Failed to create amenities"
   }
 }

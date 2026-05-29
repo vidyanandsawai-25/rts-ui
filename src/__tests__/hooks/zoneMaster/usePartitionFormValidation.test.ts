@@ -90,6 +90,9 @@ describe("usePartitionFormValidation", () => {
     generationType: "V",
     fromPartition: "",
     toPartition: "",
+    selectedWingForAmenity: "",
+    fromAmenity: "",
+    toAmenity: "",
   };
 
   const validPartitionForm: PartitionFormState = {
@@ -109,8 +112,9 @@ describe("usePartitionFormValidation", () => {
     prefix: "",
     generationType: "",
     fromPartition: "3",
-    toPartition: "5",
-  };
+    toPartition: "5",    selectedWingForAmenity: "",
+    fromAmenity: "",
+    toAmenity: "",  };
 
   beforeEach(() => {
     vi.clearAllMocks();

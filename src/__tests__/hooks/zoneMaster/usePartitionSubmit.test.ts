@@ -8,6 +8,7 @@ import { WardItem } from "@/types/wardMaster.types";
 import { ZonePropertyItem } from "@/types/zone-master/properties/zoneProperty.types";
 import { WingItem } from "@/types/zone-master/properties/wing.types";
 import { Floor } from "@/types/floor.types";
+import { SocietyWingDetailItem } from "@/types/zone-master/properties/society-wing-details.types";
 
 // Mock dependencies
 vi.mock("next-intl", () => ({
@@ -108,6 +109,37 @@ describe("usePartitionSubmit", () => {
     { id: 3, floorCode: "2", description: "Second Floor", sequenceNo: 3, isActive: true, createdDate: "2024-01-01", updatedDate: null },
   ];
 
+  const mockWingDetails: SocietyWingDetailItem[] = [
+    {
+      propertyId: 1,
+      societyDetailId: 101,
+      wingId: 1,
+      wingNo: "A",
+      wardNo: "W1",
+      propertyNo: "P001",
+      wingName: "Wing A",
+      societyName: "Test Society",
+      societyAddress: "123 Society St",
+      secretaryName: "John Doe",
+      managerName: "Jane Smith",
+      landOwnerName: "Land Owner",
+      builderName: "Builder Name",
+      societyNameEnglish: "Test Society",
+      societyAddressEnglish: "123 Society St",
+      secretaryNameEnglish: "John Doe",
+      managerNameEnglish: "Jane Smith",
+      landOwnerNameEnglish: "Land Owner",
+      builderNameEnglish: "Builder Name",
+      managerMobileNo: "1234567890",
+      secretaryMobileNo: "0987654321",
+      societyEmailId: "society@test.com",
+      secretaryEmailId: "secretary@test.com",
+      managerEmailId: "manager@test.com",
+      propertyCount: 10,
+      aminityCount: 5,
+    },
+  ];
+
   const wingForm: PartitionFormState = {
     mainPropertyId: 1,
     partitionNo: "0",
@@ -126,6 +158,9 @@ describe("usePartitionSubmit", () => {
     generationType: "V",
     fromPartition: "",
     toPartition: "",
+    selectedWingForAmenity: "",
+    fromAmenity: "",
+    toAmenity: "",
   };
 
   const partitionForm: PartitionFormState = {
@@ -146,6 +181,9 @@ describe("usePartitionSubmit", () => {
     generationType: "",
     fromPartition: "1",
     toPartition: "3",
+    selectedWingForAmenity: "",
+    fromAmenity: "",
+    toAmenity: "",
   };
 
   beforeEach(() => {
@@ -161,6 +199,7 @@ describe("usePartitionSubmit", () => {
         selectedWard: mockWard,
         selectedProperty: mockProperty,
         wings: mockWings,
+        wingDetails: mockWingDetails,
         floors: mockFloors,
         validate: mockValidate,
         setLoading: mockSetLoading,
@@ -197,6 +236,7 @@ describe("usePartitionSubmit", () => {
         selectedWard: mockWard,
         selectedProperty: mockProperty,
         wings: mockWings,
+        wingDetails: mockWingDetails,
         floors: mockFloors,
         validate: mockValidate,
         setLoading: mockSetLoading,
@@ -255,6 +295,7 @@ describe("usePartitionSubmit", () => {
         selectedWard: mockWard,
         selectedProperty: mockProperty,
         wings: mockWings,
+        wingDetails: mockWingDetails,
         floors: mockFloors,
         validate: mockValidate,
         setLoading: mockSetLoading,
@@ -294,6 +335,7 @@ describe("usePartitionSubmit", () => {
         selectedWard: mockWard,
         selectedProperty: mockProperty,
         wings: mockWings,
+        wingDetails: mockWingDetails,
         floors: mockFloors,
         validate: mockValidate,
         setLoading: mockSetLoading,
@@ -324,6 +366,7 @@ describe("usePartitionSubmit", () => {
         selectedWard: mockWard,
         selectedProperty: mockProperty,
         wings: mockWings,
+        wingDetails: mockWingDetails,
         floors: mockFloors,
         validate: mockValidate,
         setLoading: mockSetLoading,
@@ -353,6 +396,7 @@ describe("usePartitionSubmit", () => {
         selectedWard: mockWard,
         selectedProperty: mockProperty,
         wings: mockWings,
+        wingDetails: mockWingDetails,
         floors: mockFloors,
         validate: mockValidate,
         setLoading: mockSetLoading,
@@ -389,6 +433,7 @@ describe("usePartitionSubmit", () => {
         selectedWard: mockWard,
         selectedProperty: mockProperty,
         wings: mockWings,
+        wingDetails: mockWingDetails,
         floors: mockFloors,
         validate: mockValidate,
         setLoading: mockSetLoading,

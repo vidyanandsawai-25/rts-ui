@@ -118,6 +118,9 @@ describe("useBuildingPreview", () => {
     generationType: "V",
     fromPartition: "",
     toPartition: "",
+    selectedWingForAmenity: "",
+    fromAmenity: "",
+    toAmenity: "",
   };
 
   beforeEach(() => {
