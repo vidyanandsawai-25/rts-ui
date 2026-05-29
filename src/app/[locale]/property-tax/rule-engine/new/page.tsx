@@ -21,9 +21,11 @@ interface PageProps {
 export default async function NewRulePage(props: PageProps) {
   const { locale } = await props.params;
 
-  const [scopes, initialFields, corporations, effectTypes, effectTypeConfigs, rateSections, ruleCategoryOptions] = await Promise.all([
-    fetchScopesAction(),
-    fetchFieldsForScopeAction(1),
+  const scopes = await fetchScopesAction();
+  const initialScopeId = scopes[0]?.id ?? 0;
+
+  const [initialFields, corporations, effectTypes, effectTypeConfigs, rateSections, ruleCategoryOptions] = await Promise.all([
+    initialScopeId > 0 ? fetchFieldsForScopeAction(initialScopeId) : Promise.resolve([]),
     fetchCorporationsAction(),
     fetchEffectTypesAction(),
     fetchEffectTypeConfigsAction(),

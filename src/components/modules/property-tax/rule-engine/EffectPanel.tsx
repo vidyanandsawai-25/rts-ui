@@ -144,7 +144,7 @@ export default function EffectPanel({
               </label>
               <Input
                 type="text"
-                value={effect.value === undefined || effect.value === null || effect.value === 0 || effect.value === '' ? '' : effect.value.toString()}
+                value={effect.value === undefined || effect.value === null || effect.value === '' ? '' : effect.value.toString()}
                 onChange={(e) => handleValueChange(e.target.value)}
                 placeholder={t('effectPanel.enterValue')}
               />
@@ -160,7 +160,7 @@ export default function EffectPanel({
               </label>
               <ValueInput
                 config={fieldConfig}
-                value={effect.value === undefined || effect.value === null || effect.value === 0 || effect.value === '' ? '' : effect.value.toString()}
+                value={effect.value === undefined || effect.value === null || effect.value === '' ? '' : effect.value.toString()}
                 onChange={handleValueChange}
               />
             </div>

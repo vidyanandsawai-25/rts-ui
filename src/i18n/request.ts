@@ -57,8 +57,8 @@ export default getRequestConfig(async ({ locale }) => {
     waterConnectionMasterMessages,
     commonDetailsUpdateMessages,
     financialYearMessages,
-    modulesMessages,
     ruleEngineMessages,
+    modulesMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/dashboard.json`).then((m) => m.default),
@@ -131,11 +131,12 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/financialYear.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
-    import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/rule-engine.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
   ]);
+
 
   return {
     locale: validatedLocale,
@@ -182,8 +183,8 @@ export default getRequestConfig(async ({ locale }) => {
       commonDetailsUpdate:
         commonDetailsUpdateMessages?.commonDetailsUpdate || commonDetailsUpdateMessages,
       financialYear: financialYearMessages,
-      modules: modulesMessages,
       ruleEngine: ruleEngineMessages,
+      modules: modulesMessages,
     },
   };
 });

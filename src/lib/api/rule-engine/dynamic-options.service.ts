@@ -1,3 +1,4 @@
+import { cookies } from 'next/headers';
 import { apiClient } from '@/services/api.service';
 import { mapApiResponseWithMapping, mapApiResponseToOptions } from './mappers';
 
@@ -27,8 +28,14 @@ export async function getDynamicFieldOptions(
   mapping?: string
 ): Promise<{ label: string; value: string }[]> {
   try {
+    let authContext = '';
+    try {
+      const store = await cookies();
+      authContext = store.get('auth_token')?.value || store.get('user_id')?.value || '';
+    } catch {}
+
     const cleanEndpoint = endpoint.replace(/^\/?(?:api\/)?/i, '').replace(/\/$/, '');
-    const cacheKey = makeCacheKey(cleanEndpoint, method, params, mapping);
+    const cacheKey = `${authContext}:${makeCacheKey(cleanEndpoint, method, params, mapping)}`;
 
     if (optionsCache.has(cacheKey)) {
       return optionsCache.get(cacheKey)!;

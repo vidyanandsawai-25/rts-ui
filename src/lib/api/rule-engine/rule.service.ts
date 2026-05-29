@@ -81,7 +81,7 @@ function mapRuleItemToBackendPayload(item: RuleItem, userId: number = 1) {
     targetFiltersJson: item.targetFiltersJson,
     isEnabled:         item.isActive,
     changeReason:      item.changeReason,
-    isActive:          true,
+    isActive:          item.isActive,
     createdBy:         userId,
     updatedBy:         userId,
   };

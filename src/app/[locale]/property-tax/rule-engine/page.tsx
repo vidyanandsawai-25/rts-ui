@@ -33,6 +33,11 @@ export default async function RuleEnginePage(props: PageProps) {
       scopes={scopes}
       locale={locale}
       onDeleteRule={deleteRuleAction}
+      pageNumber={rulesResult.pageNumber || pageNumber}
+      pageSize={rulesResult.pageSize || pageSize}
+      totalCount={rulesResult.totalCount || 0}
+      totalPages={rulesResult.totalPages || 0}
+      initialSearchTerm={searchTerm}
     />
   );
 }

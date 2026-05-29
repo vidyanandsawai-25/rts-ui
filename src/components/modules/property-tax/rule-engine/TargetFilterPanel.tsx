@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { RuleScope } from '@/types/rule-engine.types';
 import { Select } from '@/components/common/select';
 import { Input } from '@/components/common/Input';
@@ -32,6 +33,14 @@ export default function TargetFilterPanel({
   const t = useTranslations('ruleEngine');
   const scopeOptions  = scopes.map((s) => ({ label: s.scopeName, value: s.id.toString() }));
   const displayedCorp = corporations[0]?.label ?? '';
+
+  // Synchronize underlying state if ruleCategory is stale/absent in dynamic options
+  React.useEffect(() => {
+    const firstOption = ruleCategoryOptions[0]?.value ?? '';
+    if (firstOption && !ruleCategoryOptions.some((o) => o.value === ruleCategory)) {
+      setRuleCategory(firstOption);
+    }
+  }, [ruleCategoryOptions, ruleCategory, setRuleCategory]);
 
   // Ensure the current ruleCategory value exists in the options; default to first item
   const safeCategory =

@@ -1,6 +1,7 @@
 'use server';
 
 import { cookies } from 'next/headers';
+import { revalidatePath } from 'next/cache';
 import { getRules, createRule, updateRule, deleteRule } from '@/lib/api/rule-engine/rule.service';
 import {
   getFieldConfigurations, getScopes, getCorporations,
@@ -57,12 +58,23 @@ export async function saveRuleAction(payload: RuleItem) {
   try {
     const cookieStore = await cookies();
     const userIdVal = cookieStore.get('user_id')?.value;
-    const userId = userIdVal ? parseInt(userIdVal, 10) : 1;
+    const userId = userIdVal ? parseInt(userIdVal, 10) : NaN;
 
-    if (payload.id && payload.id > 0) {
-      return await updateRule(payload.id, payload, userId);
+    if (!Number.isFinite(userId) || userId <= 0) {
+      return { success: false, message: 'Unable to determine authenticated user.' };
     }
-    return await createRule(payload, userId);
+
+    let result;
+    if (payload.id && payload.id > 0) {
+      result = await updateRule(payload.id, payload, userId);
+    } else {
+      result = await createRule(payload, userId);
+    }
+
+    if (result.success) {
+      revalidatePath('/[locale]/property-tax/rule-engine', 'page');
+    }
+    return result;
   } catch (error) {
     logger.error('saveRuleAction failed', { operation: 'saveRuleAction', ruleId: payload.id }, error);
     return {
@@ -75,7 +87,11 @@ export async function saveRuleAction(payload: RuleItem) {
 /** Server Action: Deletes a rule by ID. */
 export async function deleteRuleAction(id: number) {
   try {
-    return await deleteRule(id);
+    const result = await deleteRule(id);
+    if (result.success) {
+      revalidatePath('/[locale]/property-tax/rule-engine', 'page');
+    }
+    return result;
   } catch (error) {
     logger.error('deleteRuleAction failed', { operation: 'deleteRuleAction', id }, error);
     return { success: false, message: error instanceof Error ? error.message : 'Server Action failed to delete rule' };

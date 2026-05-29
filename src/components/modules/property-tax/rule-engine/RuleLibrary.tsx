@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { RuleItem, RuleScope } from '@/types/rule-engine.types';
 import TableHeader from '@/components/common/TableHeader';
 import { MasterTable, Column } from '@/components/common/MasterTable';
@@ -16,6 +17,11 @@ interface RuleLibraryProps {
   scopes: RuleScope[];
   locale: string;
   onDeleteRule: (id: number) => Promise<{ success: boolean; message: string }>;
+  pageNumber: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+  initialSearchTerm?: string;
 }
 
 
@@ -23,14 +29,46 @@ export default function RuleLibrary({
   initialRules,
   locale,
   onDeleteRule,
+  pageNumber,
+  pageSize,
+  totalCount,
+  totalPages,
+  initialSearchTerm = '',
 }: RuleLibraryProps) {
   const router = useRouter();
   const confirmCtx = useConfirm();
   const toast = useToast();
+  const tCommon = useTranslations('common');
 
   const [rules, setRules] = React.useState<RuleItem[]>(initialRules);
   const [filterCategory, setFilterCategory] = React.useState<string>('ALL');
-  const [searchTerm, setSearchTerm] = React.useState<string>('');
+  const [searchTerm, setSearchTerm] = React.useState<string>(initialSearchTerm);
+
+  React.useEffect(() => {
+    Promise.resolve().then(() => {
+      setRules(initialRules);
+    });
+  }, [initialRules]);
+
+  // Debounced search navigation
+  React.useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      const q = searchTerm.trim();
+      router.push(`/${locale}/property-tax/rule-engine?page=1&pageSize=${pageSize}${q ? `&q=${encodeURIComponent(q)}` : ''}`);
+    }, 400);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm, pageSize, locale, router]);
+
+  const handlePageChange = (page: number) => {
+    const q = searchTerm.trim();
+    router.push(`/${locale}/property-tax/rule-engine?page=${page}&pageSize=${pageSize}${q ? `&q=${encodeURIComponent(q)}` : ''}`);
+  };
+
+  const handlePageSizeChange = (size: string) => {
+    const q = searchTerm.trim();
+    router.push(`/${locale}/property-tax/rule-engine?page=1&pageSize=${size}${q ? `&q=${encodeURIComponent(q)}` : ''}`);
+  };
 
   const handleDelete = (id: number) => {
     confirmCtx.confirm({
@@ -114,10 +152,11 @@ export default function RuleLibrary({
         columns={columns}
         data={filteredRules as RuleItemRecord[]}
         isPagination={true}
-        pageSize={10}
-        totalCount={filteredRules.length}
-        pageNumber={1}
-        totalPages={1}
+        pageSize={pageSize}
+        totalCount={totalCount}
+        pageNumber={pageNumber}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
         actionLabel="Actions"
         renderActions={(row) => (
           <div className="flex items-center gap-1.5 justify-center">
@@ -125,6 +164,31 @@ export default function RuleLibrary({
             <DeleteButton onClick={() => { if (row.id !== undefined) handleDelete(row.id); }} />
           </div>
         )}
+        footerLeftContent={
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-gray-700">
+              {tCommon("table.showingEntries", {
+                start: totalCount > 0 ? (pageNumber - 1) * pageSize + 1 : 0,
+                end: Math.min(pageNumber * pageSize, totalCount),
+                total: totalCount
+              })}
+            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">{tCommon("table.rowsPerPage")}:</span>
+              <Select
+                value={String(pageSize)}
+                onChange={(e) => handlePageSizeChange(e.target.value)}
+                options={[10, 20, 30, 40, 50].map((s) => ({
+                  label: String(s),
+                  value: String(s),
+                }))}
+                selectSize="sm"
+                className="w-20"
+                ariaLabel={tCommon("table.rowsPerPage") || "Rows per page"}
+              />
+            </div>
+          </div>
+        }
       />
     </div>
   );

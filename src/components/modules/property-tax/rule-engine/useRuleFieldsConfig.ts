@@ -14,6 +14,9 @@ export function useRuleFieldsConfig({
 }: UseRuleFieldsConfigProps) {
   const [fields, setFields] = React.useState<FieldConfig[]>(initialFields);
 
+  const initialScopeIdRef = React.useRef(ruleScopeId);
+  const isFirstMountRef = React.useRef(true);
+
   // Use a ref so the effect only re-runs when ruleScopeId changes,
   // not when the parent re-creates the onFetchFields callback reference.
   const fetchRef = React.useRef(onFetchFields);
@@ -23,6 +26,14 @@ export function useRuleFieldsConfig({
   });
 
   React.useEffect(() => {
+    if (isFirstMountRef.current) {
+      isFirstMountRef.current = false;
+      // If the current ruleScopeId is the same as initial, we already have initialFields from the server!
+      if (ruleScopeId === initialScopeIdRef.current) {
+        return;
+      }
+    }
+
     let active = true;
     fetchRef.current(ruleScopeId).then((list) => {
       if (active) setFields(list);
