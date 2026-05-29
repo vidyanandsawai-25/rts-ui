@@ -35,10 +35,9 @@ export function usePartitionFormHandlers({
     }
     router.push(`${pathname}?${params.toString()}`);
     
-    // Also update local form state for immediate UI feedback
-    setForm({ ...form, mainPropertyId: propertyId });
+    // Clear error for mainPropertyId
     setErrors({ ...errors, mainPropertyId: undefined });
-  }, [form, errors, router, pathname, searchParams, setForm, setErrors]);
+  }, [errors, router, pathname, searchParams, setErrors]);
 
   // Handle From Floor selection
   const handleFromFloorChange = useCallback((_e: React.ChangeEvent<HTMLSelectElement>, value: string) => {

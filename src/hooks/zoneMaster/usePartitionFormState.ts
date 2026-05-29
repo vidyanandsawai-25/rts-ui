@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { PartitionFormState, PartitionFormErrors } from "@/types/zone-master/properties/partition-form.types";
 import { ZonePropertyItem } from "@/types/zone-master/properties/zoneProperty.types";
 import { WingItem } from "@/types/zone-master/properties/wing.types";
@@ -24,6 +24,9 @@ const INITIAL: PartitionFormState = {
   generationType: "",
   fromPartition: "",
   toPartition: "",
+  selectedWingForAmenity: "",
+  fromAmenity: "",
+  toAmenity: "",
 };
 
 interface UsePartitionFormStateProps {
@@ -67,6 +70,9 @@ export function usePartitionFormState({
 
   // Society details from SSR - with state for client-side updates after mutations
   const [societyDetails, setSocietyDetails] = useState<SocietyDetailItem[]>(ssrSocietyDetails);
+  
+  // Track previous ssrSocietyDetails to avoid unnecessary updates
+  const prevSsrSocietyDetailsRef = useRef<SocietyDetailItem[]>(ssrSocietyDetails);
 
   // State for building preview modal
   const [showPreview, setShowPreview] = useState(false);
@@ -74,24 +80,30 @@ export function usePartitionFormState({
   const [loadingPreview, setLoadingPreview] = useState(false);
 
   // Sync form state when prop changes (for navigation)
-  if (form.mainPropertyId !== selectedPropertyId) {
-    setForm(prev => ({ 
-      ...prev, 
-      mainPropertyId: selectedPropertyId,
-      fromPartition: ssrNextPartitionNumber !== null ? String(ssrNextPartitionNumber) : "",
-    }));
-  }
-
-  // Sync fromPartition when SSR value changes
-  const expectedFromPartition = ssrNextPartitionNumber !== null ? String(ssrNextPartitionNumber) : "";
-  if (form.fromPartition !== expectedFromPartition && selectedPropertyId) {
-    setForm(prev => ({ ...prev, fromPartition: expectedFromPartition }));
-  }
+  useEffect(() => {
+    setForm(prev => {
+      if (prev.mainPropertyId === selectedPropertyId) {
+        return prev; // No change needed
+      }
+      return {
+        ...prev,
+        mainPropertyId: selectedPropertyId,
+        fromPartition: ssrNextPartitionNumber !== null ? String(ssrNextPartitionNumber) : "",
+      };
+    });
+  }, [selectedPropertyId, ssrNextPartitionNumber]);
 
   // Sync society details when SSR prop changes
-  if (societyDetails !== ssrSocietyDetails && JSON.stringify(societyDetails) !== JSON.stringify(ssrSocietyDetails)) {
-    setSocietyDetails(ssrSocietyDetails);
-  }
+  useEffect(() => {
+    if (prevSsrSocietyDetailsRef.current !== ssrSocietyDetails) {
+      const societyDetailsString = JSON.stringify(ssrSocietyDetails);
+      const prevSocietyDetailsString = JSON.stringify(prevSsrSocietyDetailsRef.current);
+      if (societyDetailsString !== prevSocietyDetailsString) {
+        setSocietyDetails(ssrSocietyDetails);
+      }
+      prevSsrSocietyDetailsRef.current = ssrSocietyDetails;
+    }
+  }, [ssrSocietyDetails]);
 
   // Derive selected property from SSR data and prop
   const selectedProperty = useMemo(() => {

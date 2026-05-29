@@ -34,6 +34,33 @@ export function usePartitionFormValidation({
     return numericPartitions.length > 0 ? Math.max(...numericPartitions) : 0;
   }, [selectedProperty, allProperties]);
 
+  // Calculate max amenity number for the selected property (with optional wing filter)
+  const calculateMaxAmenity = useCallback((wingName?: string | null): number => {
+    if (!selectedProperty) return 0;
+    
+    // Get all amenities for this property (partitions containing AM)
+    const existingAmenities = allProperties.filter(
+      (p) => p.propertyNo === selectedProperty.propertyNo && 
+             p.partitionNo && 
+             p.partitionNo.includes("AM")
+    );
+
+    // If wing is specified, filter by wing prefix
+    const filteredAmenities = wingName 
+      ? existingAmenities.filter(a => a.partitionNo?.startsWith(`${wingName}-AM`))
+      : existingAmenities.filter(a => a.partitionNo?.startsWith("AM") && !a.partitionNo?.includes("-"));
+
+    // Extract numeric part from amenity partition numbers
+    const numericAmenities = filteredAmenities
+      .map((p) => {
+        const match = p.partitionNo?.match(/AM(\d+)$/);
+        return match ? parseInt(match[1], 10) : NaN;
+      })
+      .filter((n) => !isNaN(n));
+
+    return numericAmenities.length > 0 ? Math.max(...numericAmenities) : 0;
+  }, [selectedProperty, allProperties]);
+
   // Validate form
   const validate = useCallback((data: PartitionFormState): { valid: boolean; errors: PartitionFormErrors } => {
     const newErrors: PartitionFormErrors = {};
@@ -96,6 +123,49 @@ export function usePartitionFormValidation({
           }
         }
       });
+    } else if (data.partitionType === "amenity") {
+      // Validate amenity fields for Apartment Categories
+      if (!data.toAmenity?.trim()) {
+        newErrors.toAmenity = t("partitionForm.validation.toAmenityRequired");
+      }
+
+      // Validate numeric values
+      const fromAmenity = parseInt(data.fromAmenity, 10);
+      const toAmenity = parseInt(data.toAmenity, 10);
+      
+      if (data.toAmenity && isNaN(toAmenity)) {
+        newErrors.toAmenity = t("partitionForm.validation.mustBeNumber");
+      }
+      
+      // Validate from <= to
+      if (!isNaN(fromAmenity) && !isNaN(toAmenity) && fromAmenity > toAmenity) {
+        newErrors.toAmenity = t("partitionForm.validation.toAmenityMustBeGreater");
+      }
+
+      // Check for duplicate amenities in the range
+      if (selectedProperty && !isNaN(fromAmenity) && !isNaN(toAmenity)) {
+        // Get existing amenities (partitions starting with AM or wing-AM)
+        const existingAmenities = allProperties.filter(
+          (p) => p.propertyNo === selectedProperty.propertyNo && 
+                 p.partitionNo && 
+                 p.partitionNo.includes("AM")
+        );
+        
+        // Extract numeric part from amenity partition numbers
+        const existingAmenityNums = existingAmenities
+          .map(p => {
+            const match = p.partitionNo?.match(/AM(\d+)$/);
+            return match ? parseInt(match[1], 10) : NaN;
+          })
+          .filter(n => !isNaN(n));
+        
+        for (let i = fromAmenity; i <= toAmenity; i++) {
+          if (existingAmenityNums.includes(i)) {
+            newErrors.toAmenity = t("partitionForm.validation.duplicateAmenityInRange", { amenity: i });
+            break;
+          }
+        }
+      }
     } else {
       // Validate partition fields for Non-Apartment Categories
       if (!data.fromPartition?.trim()) {
@@ -118,7 +188,7 @@ export function usePartitionFormValidation({
       
       // Validate from <= to
       if (!isNaN(fromPartition) && !isNaN(toPartition) && fromPartition > toPartition) {
-        newErrors.toPartition = t("partitionForm.validation.toPartitionMustBeGreaterOrEqual");
+        newErrors.toPartition = t("partitionForm.validation.toMustBeGreater");
       }
 
       // Check for duplicate partitions in the range
@@ -130,7 +200,7 @@ export function usePartitionFormValidation({
         
         for (let i = fromPartition; i <= toPartition; i++) {
           if (existingPartitionNums.includes(i)) {
-            newErrors.fromPartition = t("partitionForm.validation.duplicatePartition", { partition: i });
+            newErrors.fromPartition = t("partitionForm.validation.duplicatePartitionInRange", { partition: i });
             break;
           }
         }
@@ -145,6 +215,7 @@ export function usePartitionFormValidation({
 
   return {
     calculateMaxPartition,
+    calculateMaxAmenity,
     validate,
   };
 }

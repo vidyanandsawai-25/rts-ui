@@ -1010,7 +1010,8 @@ import { SocietyDetailsListResponse, CreateSocietyDetailPayload, SocietyDetailIt
 import { BuildingStructureItem, GenerateBuildingStructurePayload, BuildingStructureResponse } from "@/types/zone-master/properties/building-structure.types";
 import { BulkPropertyItem, BulkPropertyCreateResponse } from "@/types/zone-master/properties/property-bulk.types";
 import { BuildingListItem } from "@/types/zone-master/properties/building-list.types";
-import { createBulkBuildingProperties, getBuildingListByWard } from "@/lib/api/zone-property.service";
+import { SocietyWingDetailItem } from "@/types/zone-master/properties/society-wing-details.types";
+import { createBulkBuildingProperties, getBuildingListByWard, getSocietyWingDetails } from "@/lib/api/zone-property.service";
 
 /**
  * Fetches all properties for a specific ward.
@@ -1091,6 +1092,41 @@ export async function getBuildingListByWardAction(wardId: number): Promise<{
       return { success: false, error: error.message };
     }
     return { success: false, error: "Failed to fetch building list" };
+  }
+}
+
+/**
+ * Fetches society wing details for a property.
+ * Returns wing information including property counts and amenity counts.
+ */
+export async function getSocietyWingDetailsAction(propertyId: number): Promise<{
+  success: boolean;
+  data?: SocietyWingDetailItem[];
+  error?: string;
+}> {
+  try {
+    if (!propertyId || propertyId <= 0) {
+      return { success: false, error: "Invalid property ID" };
+    }
+
+    const wingDetails = await getSocietyWingDetails(propertyId);
+    return { success: true, data: wingDetails };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      logger.error("[getSocietyWingDetailsAction] API Error", {
+        error,
+        statusCode: error.statusCode,
+      });
+      return { success: false, error: error.responseText };
+    }
+    if (error instanceof Error) {
+      logger.error("[getSocietyWingDetailsAction] Error", {
+        error,
+        message: error.message,
+      });
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to fetch society wing details" };
   }
 }
 

@@ -4,6 +4,7 @@ import { CreatePropertyPayload, BulkCreatePropertyPayload } from "@/types/proper
 import { PropertyRangeCreatePayload, PropertyRangeCreateResponse } from "@/types/zone-master/properties/property-range.types";
 import { BulkPropertyItem, BulkPropertyCreateResponse } from "@/types/zone-master/properties/property-bulk.types";
 import { BuildingListItem } from "@/types/zone-master/properties/building-list.types";
+import { SocietyWingDetailsResponse, SocietyWingDetailItem } from "@/types/zone-master/properties/society-wing-details.types";
 import { ApiError } from "@/lib/utils/api";
 
 /**
@@ -227,4 +228,25 @@ export async function getBuildingListByWard(wardId: number): Promise<BuildingLis
   }
 
   return response.data;
+}
+
+/**
+ * Fetches society wing details for a property.
+ * Returns wing information including property counts and amenity counts.
+ * Used in PropertyPartitionForm to show wing summary with amenity counts.
+ * @param propertyId - Property ID to get wing details for
+ * @returns Array of SocietyWingDetailItem with wing and amenity information
+ */
+export async function getSocietyWingDetails(propertyId: number): Promise<SocietyWingDetailItem[]> {
+  const response = await apiClient.get<SocietyWingDetailsResponse>(`/Property/${propertyId}/society-wing-details`);
+
+  if (!response.success || !response.data) {
+    throw new ApiError(
+      response.statusCode ?? 500,
+      response.error || "Failed to fetch society wing details",
+      "Get society wing details failed"
+    );
+  }
+
+  return response.data.items || [];
 }
