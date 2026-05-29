@@ -36,7 +36,7 @@ describe("wingColumns", () => {
 
   it("should return the correct number of columns", () => {
     const columns = getWingColumns(params);
-    expect(columns).toHaveLength(3);
+    expect(columns).toHaveLength(4); // wingName, count, aminityCount, actions
   });
 
   it("should correctly render wing name with badge", () => {

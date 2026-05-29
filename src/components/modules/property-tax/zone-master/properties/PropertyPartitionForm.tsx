@@ -14,6 +14,7 @@ import { getWingColumns, WingSummary } from "./wingColumns";
 import {
   PropertyInfoSection,
   NonApartmentPartitionSection,
+  AmenitySelection,
   WingSummaryTable,
   AddWingForm,
   WingDetailConfigSection,
@@ -26,6 +27,8 @@ import {
   useWingManagement,
   useBuildingPreview,
   usePartitionSubmit,
+  useBuildingList,
+  useSocietyWingDetails,
 } from "@/hooks/zoneMaster";
 
 export default function PropertyPartitionForm({
@@ -49,6 +52,14 @@ export default function PropertyPartitionForm({
 
   // Normalize selectedWard to prevent undefined
   const ward = selectedWard ?? null;
+
+  // Fetch building list using wardId from selectedWard
+  const {
+    buildingList,
+    loadingBuildingList,
+  } = useBuildingList({
+    wardId: ward?.id,
+  });
 
   // Use custom hooks for state management
   const {
@@ -81,6 +92,13 @@ export default function PropertyPartitionForm({
     ssrSocietyDetails,
   });
 
+  // Fetch society wing details using main propertyId
+  const {
+    wingDetails,
+  } = useSocietyWingDetails({
+    propertyId: form.mainPropertyId,
+  });
+
   // Use hooks for options
   const {
     propertyOptions,
@@ -95,6 +113,7 @@ export default function PropertyPartitionForm({
     floors,
     form,
     categoryMap,
+    buildingList,
   });
 
   // Use hooks for handlers
@@ -111,7 +130,7 @@ export default function PropertyPartitionForm({
   });
 
   // Use hooks for validation
-  const { validate } = usePartitionFormValidation({
+  const { validate, calculateMaxAmenity } = usePartitionFormValidation({
     selectedProperty,
     allProperties,
     floors,
@@ -139,6 +158,19 @@ export default function PropertyPartitionForm({
     selectedPropertyId,
   });
 
+  // Enhance wing summaries with amenity counts and property counts from API
+  const enhancedWingSummaries = useMemo(() => {
+    return wingSummaries.map(summary => {
+      // Find matching wing detail by societyDetailId
+      const wingDetail = wingDetails.find(detail => detail.societyDetailId === summary.societyDetailId);
+      return {
+        ...summary,
+        aminityCount: wingDetail?.aminityCount ?? 0,
+        propertyCount: wingDetail?.propertyCount,
+      };
+    });
+  }, [wingSummaries, wingDetails]);
+
   // Use hooks for building preview
   const { handlePreviewBuilding } = useBuildingPreview({
     form,
@@ -157,6 +189,7 @@ export default function PropertyPartitionForm({
     selectedWard: ward,
     selectedProperty,
     wings,
+    wingDetails,
     floors,
     validate,
     setLoading,
@@ -287,8 +320,8 @@ export default function PropertyPartitionForm({
             value={form.mainPropertyId ? String(form.mainPropertyId) : ""}
             onChange={handlePropertySelect}
             options={propertyOptions}
-            placeholder={t("partitionForm.placeholders.selectMainProperty")}
-            disabled={loading}
+            placeholder={loadingBuildingList ? tCommon("actions.loading") : t("partitionForm.placeholders.selectMainProperty")}
+            disabled={loading || loadingBuildingList}
             required
           />
           <ValidationMessage
@@ -326,7 +359,7 @@ export default function PropertyPartitionForm({
           <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
             {!showAddWingForm && !showWingConfig && (
               <WingSummaryTable
-                wingSummaries={wingSummaries}
+                wingSummaries={enhancedWingSummaries}
                 wingColumns={wingColumns as unknown as Column<WingSummary>[]}
                 onAddWingClick={() => setShowAddWingForm(true)}
                 t={t}
@@ -382,9 +415,15 @@ export default function PropertyPartitionForm({
                   )}
                 </>
               ) : (
-                <div className="p-4 bg-gray-50 border border-gray-300 rounded-lg text-center text-gray-500">
-                  {t("partitionForm.wing.amenity.notImplemented")}
-                </div>
+                <AmenitySelection
+                  form={form}
+                  setForm={setForm}
+                  errors={errors}
+                  setErrors={setErrors}
+                  wingDetails={wingDetails}
+                  calculateMaxAmenity={calculateMaxAmenity}
+                  t={t}
+                />
               )
             ) : (
               <NonApartmentPartitionSection

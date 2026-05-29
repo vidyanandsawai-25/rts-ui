@@ -4,6 +4,7 @@ import { SocietyDetailItem } from "@/types/zone-master/properties/societyDetails
 import { WingItem } from "@/types/zone-master/properties/wing.types";
 import { Floor } from "@/types/floor.types";
 import { PartitionFormState } from "@/types/zone-master/properties/partition-form.types";
+import { BuildingListItem } from "@/types/zone-master/properties/building-list.types";
 
 interface UsePartitionFormOptionsProps {
   allProperties: ZonePropertyItem[];
@@ -12,6 +13,8 @@ interface UsePartitionFormOptionsProps {
   floors: Floor[];
   form: PartitionFormState;
   categoryMap?: Map<number, string>;
+  /** Building list from Building-list API - used for Main Property dropdown */
+  buildingList?: BuildingListItem[];
 }
 
 export function usePartitionFormOptions({
@@ -21,9 +24,21 @@ export function usePartitionFormOptions({
   floors,
   form,
   categoryMap,
+  buildingList,
 }: UsePartitionFormOptionsProps) {
-  // Show only properties without partition number
+  // Property options - prefer building list if available
   const propertyOptions = useMemo(() => {
+    // Use building list if available (from Building-list API)
+    if (buildingList && buildingList.length > 0) {
+      return buildingList
+        .filter((property) => !property.partitionNo || property.partitionNo === "" || property.partitionNo === "0")
+        .map((property) => ({
+          value: String(property.propertyId),
+          label: `${property.propertyNo} - ${property.catPropertyCategoryName}`,
+        }));
+    }
+
+    // Fallback to allProperties with categoryMap lookup
     return allProperties
       .filter((property) => !property.partitionNo || property.partitionNo === "0")
       .map((property) => {
@@ -39,7 +54,7 @@ export function usePartitionFormOptions({
           label,
         };
       });
-  }, [allProperties, categoryMap]);
+  }, [allProperties, categoryMap, buildingList]);
 
   // Wing options for Select dropdown
   const wingOptions = useMemo(() => {
