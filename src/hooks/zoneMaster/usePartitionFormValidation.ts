@@ -144,20 +144,30 @@ export function usePartitionFormValidation({
 
       // Check for duplicate amenities in the range
       if (selectedProperty && !isNaN(fromAmenity) && !isNaN(toAmenity)) {
-        // Get existing amenities (partitions starting with AM or wing-AM)
-        const existingAmenities = allProperties.filter(
-          (p) => p.propertyNo === selectedProperty.propertyNo && 
-                 p.partitionNo && 
-                 p.partitionNo.includes("AM")
-        );
+        const selectedWing = data.selectedWingForAmenity?.trim();
+        
+        // Get existing amenities for this property, scoped to selected wing (or no-wing)
+        const existingAmenities = allProperties.filter((p) => {
+          if (p.propertyNo !== selectedProperty.propertyNo || !p.partitionNo) return false;
+          const partitionNo = p.partitionNo;
+          if (!partitionNo.includes("AM")) return false;
+          
+          // If wing is selected, filter by wing prefix
+          if (selectedWing) {
+            return partitionNo.startsWith(`${selectedWing}-AM`);
+          }
+          
+          // No wing selected - only match amenities without wing prefix
+          return partitionNo.startsWith("AM") && !partitionNo.includes("-");
+        });
         
         // Extract numeric part from amenity partition numbers
         const existingAmenityNums = existingAmenities
-          .map(p => {
+          .map((p) => {
             const match = p.partitionNo?.match(/AM(\d+)$/);
             return match ? parseInt(match[1], 10) : NaN;
           })
-          .filter(n => !isNaN(n));
+          .filter((n) => !isNaN(n));
         
         for (let i = fromAmenity; i <= toAmenity; i++) {
           if (existingAmenityNums.includes(i)) {

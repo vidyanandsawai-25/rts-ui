@@ -31,7 +31,7 @@ export function usePartitionFormOptions({
     // Use building list if available (from Building-list API)
     if (buildingList && buildingList.length > 0) {
       return buildingList
-        .filter((property) => !property.partitionNo || property.partitionNo === "")
+        .filter((property) => !property.partitionNo || property.partitionNo === "" || property.partitionNo === "0")
         .map((property) => ({
           value: String(property.propertyId),
           label: `${property.propertyNo} - ${property.catPropertyCategoryName}`,

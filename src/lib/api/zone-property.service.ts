@@ -248,5 +248,13 @@ export async function getSocietyWingDetails(propertyId: number): Promise<Society
     );
   }
 
+  if (response.data.success === false) {
+    throw new ApiError(
+      response.statusCode ?? 500,
+      response.data.message || "Failed to fetch society wing details",
+      "Get society wing details failed"
+    );
+  }
+
   return response.data.items || [];
 }

@@ -32,7 +32,7 @@ export function AmenitySelection({
     
     wingDetails.forEach((detail) => {
       options.push({
-        value: detail.wingNo || detail.wingName,
+        value: detail.wingNo,
         label: `${detail.wingNo} - ${detail.wingName}`
       });
     });
