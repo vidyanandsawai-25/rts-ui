@@ -59,11 +59,8 @@ export function CombinePropertyFilterBar({
     <div className="flex items-end gap-2 px-3 py-2 bg-[#EFF4FF] border-b border-blue-100">
       {/* ---- Base Property ---- */}
       <div className="flex flex-col gap-0.5 w-[160px] shrink-0">
-        <label htmlFor="baseProperty" className="text-[10px] font-semibold text-gray-600 flex items-center gap-1">
-          <span className="inline-flex items-center justify-center w-3.5 h-3.5 bg-blue-600 text-white text-[8px] font-bold rounded-[3px]">B</span>
-          {t('baseProperty')} <span className="text-red-500">*</span>
-        </label>
         <SearchSelect
+          label={t('baseProperty')}
           id="baseProperty"
           name="baseProperty"
           options={basePropertyOptions}
@@ -102,10 +99,8 @@ export function CombinePropertyFilterBar({
       {selectionMethod === 'range' && (
         <>
           <div className="flex flex-col gap-0.5 w-[120px] shrink-0">
-            <label htmlFor="rangeFrom" className="text-[10px] font-semibold text-gray-600">
-              {t('from')} <span className="text-red-500">*</span>
-            </label>
             <SearchSelect
+              label={t('from')}
               id="rangeFrom"
               name="rangeFrom"
               options={subPropertyOptions}
@@ -117,10 +112,8 @@ export function CombinePropertyFilterBar({
             />
           </div>
           <div className="flex flex-col gap-0.5 w-[120px] shrink-0">
-            <label htmlFor="rangeTo" className="text-[10px] font-semibold text-gray-600">
-              {t('to')} <span className="text-red-500">*</span>
-            </label>
             <SearchSelect
+              label={t('to')}
               id="rangeTo"
               name="rangeTo"
               options={subPropertyOptions}
@@ -137,14 +130,8 @@ export function CombinePropertyFilterBar({
       {/* ---- Conditional: Individual multi-select ---- */}
       {selectionMethod === 'individual' && (
         <div className="flex flex-col gap-0.5 w-[200px] shrink-0">
-          <label
-            id="selectedPropertiesLabel"
-            htmlFor="selectedProperties"
-            className="text-[10px] font-semibold text-gray-600"
-          >
-            {t('selectProperties')} <span className="text-red-500">*</span>
-          </label>
           <MultiSelectDropdown
+            label={`${t('selectProperties')} *`}
             id="selectedProperties"
             aria-labelledby="selectedPropertiesLabel"
             options={subPropertyOptions}
@@ -160,10 +147,8 @@ export function CombinePropertyFilterBar({
       {/* ---- Property Type (Conditionally Visible) ---- */}
       {showPropertyTypeDropdown && (
         <div className="flex flex-col gap-0.5 w-[140px] shrink-0">
-          <label htmlFor="propertyType" className="text-[10px] font-semibold text-gray-600">
-            {t('propertyType')} <span className="text-red-500">*</span>
-          </label>
           <SearchSelect
+            label={t('propertyType')}
             id="propertyType"
             name="propertyType"
             options={propertyTypeOptions}

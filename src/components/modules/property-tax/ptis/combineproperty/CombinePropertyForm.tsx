@@ -13,6 +13,7 @@ import { useRouter } from 'next/navigation';
 import { PropertyType } from '@/types/property-type.types';
 import { CombinePropertyFilterBar } from './CombinePropertyFilterBar';
 import { CombinePropertyReviewSection } from './CombinePropertyReviewSection';
+import { StatusBadge } from '@/components/common/StatusBadge';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                               */
@@ -144,15 +145,11 @@ export default function CombinePropertyForm(props: CombinePropertyFormProps) {
           </h2>
           {selectedWardNo && (
             // eslint-disable-next-line i18next/no-literal-string
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 border border-blue-200 text-[10px] font-semibold text-blue-700">
-              Ward: {selectedWardNo}
-            </span>
+            <StatusBadge variant="info" label={`Ward: ${selectedWardNo}`} className="px-2 py-0.5 text-[10px] rounded-full shadow-none" />
           )}
           {selectedPropertyNo && (
             // eslint-disable-next-line i18next/no-literal-string
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 border border-blue-200 text-[10px] font-semibold text-blue-700">
-              Property: {selectedPropertyNo}
-            </span>
+            <StatusBadge variant="info" label={`Property: ${selectedPropertyNo}`} className="px-2 py-0.5 text-[10px] rounded-full shadow-none" />
           )}
         </div>
         <p className="text-[11px] text-gray-500 leading-tight">
