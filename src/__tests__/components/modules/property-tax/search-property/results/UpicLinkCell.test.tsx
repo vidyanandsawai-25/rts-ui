@@ -31,7 +31,7 @@ describe("UpicLinkCell", () => {
     const link = screen.getByRole("link");
     expect(link).toHaveAttribute(
       "href",
-      "/en/property-tax/ptis?propertyId=4242"
+      "/en/property-tax/ptis?propertyId=4242&searchState=clear"
     );
     expect(link).toHaveAttribute("title", "Open in PTIS");
     expect(link.getAttribute("href")).not.toContain("wardNo=");
@@ -52,7 +52,7 @@ describe("UpicLinkCell", () => {
     expect(screen.getByText("-")).toBeInTheDocument();
     expect(screen.getByRole("link")).toHaveAttribute(
       "href",
-      "/en/property-tax/ptis?propertyId=4242"
+      "/en/property-tax/ptis?propertyId=4242&searchState=clear"
     );
   });
 

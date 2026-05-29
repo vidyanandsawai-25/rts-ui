@@ -16,13 +16,12 @@ export function DepartmentActivationClient({ initialDepartments, initialModules,
     isPending,
     selectedDepartment,
     isSubmoduleDialogOpen,
-    localModules,
     toggleDepartment,
     handleToggleAll,
-    toggleModule,
     setSubmoduleDialogOpen,
     filteredDepartments,
     optimisticDepartments,
+    submoduleConfig,
     t,
   } = useDepartmentActivation({ initialDepartments, initialModules, initialSearchTerm });
 
@@ -56,10 +55,17 @@ export function DepartmentActivationClient({ initialDepartments, initialModules,
 
       <SubmoduleConfigDialog
         isOpen={isSubmoduleDialogOpen}
-        onOpenChange={(open) => setSubmoduleDialogOpen(open, selectedDepartment!)}
+        onOpenChange={(open) => setSubmoduleDialogOpen(open, selectedDepartment ?? undefined)}
         department={selectedDepartment}
-        modules={localModules}
-        onToggleModule={toggleModule}
+        modules={submoduleConfig.draftModules}
+        savedModules={submoduleConfig.savedModules}
+        hasUnsavedChanges={submoduleConfig.hasUnsavedChanges}
+        changedModuleCount={submoduleConfig.changedModuleCount}
+        isSaving={submoduleConfig.isSaving}
+        onToggleModule={submoduleConfig.toggleModuleDraft}
+        onToggleAllModules={submoduleConfig.toggleAllModulesDraft}
+        onResetDraft={submoduleConfig.resetDraft}
+        onSaveChanges={submoduleConfig.saveChanges}
       />
     </div>
   );

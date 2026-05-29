@@ -69,6 +69,7 @@ export interface DisplayDomain {
   id: string;
   name: string;
   screens: DisplayScreen[];
+  isModuleActive: boolean;
 }
 
 export interface DisplayDepartment {
@@ -121,6 +122,7 @@ export function usePermissionHierarchy({
             return {
               id: String(canonicalModId),
               name: mod.moduleName,
+              isModuleActive: mod.isActive !== false,
               screens: modScreens.map((s) => ({
                 id: String(s.screenMasterId),
                 name: s.screenName,
@@ -136,6 +138,7 @@ export function usePermissionHierarchy({
           domains.push({
             id: `dept-${canonicalDeptId}-general`,
             name: t('accessControl.domains.general'),
+            isModuleActive: true,
             screens: directScreens.map((s) => ({
               id: String(s.screenMasterId),
               name: s.screenName,
@@ -166,6 +169,7 @@ export function usePermissionHierarchy({
           {
             id: 'system-general',
             name: t('accessControl.domains.general'),
+            isModuleActive: true,
             screens: orphanedScreens.map((s) => ({
               id: String(s.screenMasterId),
               name: s.screenName,
