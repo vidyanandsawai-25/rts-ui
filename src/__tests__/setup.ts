@@ -189,6 +189,7 @@ vi.mock('lucide-react', async (importOriginal) => {
     ArrowUp: createIcon('ArrowUp'),
     ArrowDown: createIcon('ArrowDown'),
     ArrowLeft: createIcon('ArrowLeft'),
+    CircleArrowLeft: createIcon('CircleArrowLeft'),
     
     // Other action icons
     Share: createIcon('Share'),

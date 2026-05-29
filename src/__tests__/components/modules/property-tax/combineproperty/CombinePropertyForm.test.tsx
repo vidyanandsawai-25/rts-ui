@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import CombinePropertyForm from '@/components/modules/property-tax/combineproperty/CombinePropertyForm';
+import CombinePropertyForm from '@/components/modules/property-tax/ptis/combineproperty/CombinePropertyForm';
 import { useCombinePropertyForm } from '@/hooks/combineProperty/useCombineProperty';
 import { PropertyCombineDetails } from '@/types/combine-property.types';
 
@@ -26,9 +26,9 @@ vi.mock('@/components/common/Drawer', () => ({
 
 vi.mock('@/components/common/SearchSelect', () => ({
   SearchSelect: ({ id, value, onChange, placeholder }: { id: string, value: string, onChange: (id: string, val: string) => void, placeholder: string }) => (
-    <select 
-      data-testid={`select-${id}`} 
-      value={value} 
+    <select
+      data-testid={`select-${id}`}
+      value={value}
       onChange={(e) => onChange(id, e.target.value)}
     >
       <option value="">{placeholder}</option>
@@ -71,6 +71,9 @@ describe('CombinePropertyForm', () => {
     subPropertyList: [
       { id: 2, wardId: 1, wardNo: 'W1', propertyNo: 'P2', fromProperty: 'P2', toProperty: 'P2', isActive: true, createdDate: '2024-01-01', updatedDate: null }
     ],
+    propertyTypeList: [
+      { id: 1, propertyDescription: 'Residential', type: 'R', propertyTypeGroup: 'Res', searchSequence: 1, propertyTypeCategoryId: 1, isActive: true, createdBy: 1, createdDate: '2024-01-01', updatedDate: null }
+    ],
   };
 
   const mockHookReturnValue = {
@@ -104,7 +107,7 @@ describe('CombinePropertyForm', () => {
 
   it('renders correctly with empty state', () => {
     render(<CombinePropertyForm {...mockProps} />);
-    
+
     expect(screen.getByTestId('mock-drawer')).toBeDefined();
     expect(screen.getByText('title')).toBeDefined();
     expect(screen.getByText('noPropertiesSelected')).toBeDefined();
@@ -112,19 +115,19 @@ describe('CombinePropertyForm', () => {
 
   it('calls handleBasePropertyChange when base property is selected', () => {
     render(<CombinePropertyForm {...mockProps} />);
-    
+
     const select = screen.getByTestId('select-baseProperty');
     fireEvent.change(select, { target: { value: '1' } });
-    
+
     expect(mockHookReturnValue.handleBasePropertyChange).toHaveBeenCalledWith('baseProperty', '1');
   });
 
   it('switches between range and individual selection methods', () => {
     render(<CombinePropertyForm {...mockProps} />);
-    
+
     const individualBtn = screen.getByText('individual');
     fireEvent.click(individualBtn);
-    
+
     expect(mockHookReturnValue.handleMethodChange).toHaveBeenCalledWith('individual');
   });
 
@@ -137,7 +140,7 @@ describe('CombinePropertyForm', () => {
     } as unknown as ReturnType<typeof useCombinePropertyForm>);
 
     render(<CombinePropertyForm {...mockProps} selectedBasePropertyId="1" />);
-    
+
     expect(screen.getByTestId('master-table')).toBeDefined();
     expect(screen.getByText('Rows: 1')).toBeDefined();
     expect(screen.getByText('reviewCombination')).toBeDefined();
@@ -154,7 +157,7 @@ describe('CombinePropertyForm', () => {
     } as unknown as ReturnType<typeof useCombinePropertyForm>);
 
     render(<CombinePropertyForm {...mockProps} selectedBasePropertyId="1" />);
-    
+
     expect(screen.getByText('warningDifferentOwners')).toBeDefined();
     expect(screen.getByText('• Ward No.: W1 Property No.: P3')).toBeDefined();
   });
@@ -166,19 +169,19 @@ describe('CombinePropertyForm', () => {
     } as unknown as ReturnType<typeof useCombinePropertyForm>);
 
     render(<CombinePropertyForm {...mockProps} />);
-    
+
     // There are usually two AddButtons (one in filter bar, one in footer).
     // The footer one is only rendered if isReviewing && reviewData.length > 0.
     // So here we get the one in the filter bar.
     const proceedBtn = screen.getByTestId('add-btn');
     fireEvent.click(proceedBtn);
-    
+
     expect(mockHookReturnValue.handleProceed).toHaveBeenCalled();
   });
 
   it('disables proceed button when canProceed is false', () => {
     render(<CombinePropertyForm {...mockProps} />);
-    
+
     const proceedBtn = screen.getByTestId('add-btn') as HTMLButtonElement;
     expect(proceedBtn.disabled).toBe(true);
   });

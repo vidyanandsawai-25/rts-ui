@@ -528,7 +528,8 @@
     "firstPage": "पहला पृष्ठ",
     "previousPage": "पिछला पृष्ठ",
     "nextPage": "अगला पृष्ठ",
-    "lastPage": "अंतिम पृष्ठ"
+    "lastPage": "अंतिम पृष्ठ",
+    "backToSearch": "खोज संपत्ति पर वापस जाएं"
   },
   "table": {
     "page": "पृष्ठ {current} का {total}"

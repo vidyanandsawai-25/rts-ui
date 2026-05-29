@@ -7,6 +7,52 @@ import { toast } from "sonner";
 import { Button } from "@/components/common";
 import type { UpicLinkCellProps } from "@/types/property-search.types";
 import { formatDisplayText } from "./result-styles";
+import { useSearchParams } from "next/navigation";
+
+const FILTER_KEYS = [
+  "propertyType",
+  "typeFilter",
+  "propertyDescription",
+  "zoneId",
+  "wardId",
+  "scanQR",
+  "propertyNoFrom",
+  "propertyNoTo",
+  "oldPropertyNo",
+  "upicId",
+  "citySurveyNo",
+  "subZoneNo",
+  "plotNo",
+  "holderName",
+  "occupierName",
+  "mobile",
+  "shopBuildingName",
+  "societyName",
+  "address",
+  "status",
+  "valuesZone",
+  "valuesWard",
+  "valuationMethod",
+  "rateableValueFilter",
+  "rateableValueFrom",
+  "rateableValueTo",
+  "capitalValueFilter",
+  "capitalValueFrom",
+  "capitalValueTo",
+  "taxDefaulter",
+  "taxDefaulterFromValue",
+  "taxDefaulterToValue",
+  "betweenValue",
+];
+
+function hasActiveFilters(queryString: string): boolean {
+  if (!queryString) return false;
+  const params = new URLSearchParams(queryString);
+  return FILTER_KEYS.some((key) => {
+    const val = params.get(key);
+    return val !== null && val.trim() !== "" && val.trim() !== "0";
+  });
+}
 
 /**
  * UPIC ID cell — clicking the link navigates to the PTIS screen using the
@@ -18,9 +64,14 @@ export function UpicLinkCell({
   locale,
   copyLabel,
 }: UpicLinkCellProps) {
+  const searchParams = useSearchParams();
+  const currentQuery = searchParams.toString();
   const displayText = formatDisplayText(upicId);
   const canOpenPtis = propertyId > 0;
-  const href = `/${locale}/property-tax/ptis?propertyId=${propertyId}`;
+  const activeFiltersExist = hasActiveFilters(currentQuery);
+  const href = `/${locale}/property-tax/ptis?propertyId=${propertyId}&searchState=${
+    activeFiltersExist ? encodeURIComponent(currentQuery) : "clear"
+  }`;
 
   const handleCopy = async (e: React.MouseEvent) => {
     e.preventDefault();

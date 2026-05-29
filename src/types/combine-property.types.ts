@@ -34,6 +34,8 @@ export interface PropertyCombineDetails {
   occupierName: string;
   taxAmount: number;
   pendingAmount: number;
+  propertyDescription: string;
+  propertyTypeId: number;
 }
 
 export interface PropertyCombineDetailsResponse {
@@ -51,8 +53,10 @@ export interface GetPropertyCombineDetailsParams {
 }
 
 export interface CombinePropertyPayload {
-  mainPropertyId: number;
-  combinePropertyIds: string; // Comma-separated IDs
-  remark: string;
+  sourcePropertyId: number;
+  combinedPropertyIds: string;
+  combineReason: string;
   createdBy: number;
+  overrideOwnerNameMismatch: boolean;
+  propertyTypeId: number;
 }
