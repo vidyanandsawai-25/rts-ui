@@ -21,7 +21,7 @@ export const sanitizeAlphanumericNoSpaces = (value: string): string => {
 
 /**
  * Validates and sanitizes decimal input with custom max length
- * Allows up to specified total digits (including decimal point) and 4 decimal places
+ * Allows up to the specified number of digits (excluding the decimal point) and up to 4 decimal places
  */
 export const sanitizeDecimalWithMaxLength = (value: string, maxLength: number): string => {
   if (value === '') return '';

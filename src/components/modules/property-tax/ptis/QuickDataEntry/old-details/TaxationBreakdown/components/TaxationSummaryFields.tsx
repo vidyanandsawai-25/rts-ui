@@ -13,7 +13,6 @@ export function TaxationSummaryFields({
   t,
   taxTotal,
   netTotal,
-  validationErrors
 }: TaxationSummaryFieldsProps) {
   return (
     <>

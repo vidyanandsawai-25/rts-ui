@@ -1,65 +1,58 @@
-
 import { FloorTableRow } from "@/types/OldDetails/property-old-details.types";
-import { FloorDetailsTableColumn } from "@/components/common/FloorDetailsTable";
+import { Column } from "@/components/common/MasterTable";
 
 /**
- * Defines the columns for the Floor Information FloorDetailsTable.
+ * Defines the columns for the Floor Information MasterTable.
  * 
  * @param t - Translation function from next-intl
  * @returns Array of column definitions
  */
-export const getFloorInformationColumns = (t: (key: string) => string): FloorDetailsTableColumn<FloorTableRow>[] => [
+export const getFloorInformationColumns = (t: (key: string) => string): Column<FloorTableRow>[] => [
   {
     key: 'floor',
     label: t('floor.floorLabel'),
-    render: (row) => <span className="text-xs text-gray-800">{row.floor}</span>,
+    headerClassName: 'text-xs uppercase border-r border-white/30 font-semibold text-white text-center whitespace-nowrap',
   },
   {
     key: 'subFloor',
     label: t('floor.subFloor'),
-    render: (row) => <span className="text-xs text-gray-800">{row.subFloor}</span>,
+    headerClassName: 'text-xs uppercase border-r border-white/30 font-semibold text-white text-center whitespace-nowrap',
   },
   {
     key: 'conYr',
     label: t('floor.conYr'),
-    render: (row) => <span className="text-xs text-gray-800">{row.conYr}</span>,
+    headerClassName: 'text-xs uppercase border-r border-white/30 font-semibold text-white text-center whitespace-nowrap',
   },
   {
     key: 'assessmentYr',
     label: t('floor.asstYr'),
-    render: (row) => <span className="text-xs text-gray-800">{row.assessmentYr}</span>,
+    headerClassName: 'text-xs uppercase border-r border-white/30 font-semibold text-white text-center whitespace-nowrap',
   },
   {
     key: 'conTyp',
     label: t('floor.conTyp'),
-    render: (row) => <span className="text-xs text-gray-800">{row.conTyp}</span>,
+    headerClassName: 'text-xs uppercase border-r border-white/30 font-semibold text-white text-center whitespace-nowrap',
   },
   {
     key: 'use',
     label: t('floor.use'),
-    render: (row) => <span className="text-xs text-gray-800">{row.use}</span>,
+    headerClassName: 'text-xs uppercase border-r border-white/30 font-semibold text-white text-center whitespace-nowrap',
   },
   {
     key: 'subUse',
     label: t('floor.subTyp'),
-    render: (row) => <span className="text-xs text-gray-800">{row.subUse}</span>,
+    headerClassName: 'text-xs uppercase border-r border-white/30 font-semibold text-white text-center whitespace-nowrap',
   },
   {
     key: 'carpetAreaCombined',
     label: t('oldDetails.carpetformheaderArea'),
-    render: (row) => <span className="text-xs font-bold text-blue-800">{row.carpetAreaCombined}</span>,
+    headerClassName: 'text-xs uppercase border-r border-white/30 font-semibold text-white text-center whitespace-nowrap',
+    render: (value: unknown) => <span className="font-bold text-blue-800 flex w-full justify-center items-center">{String(value)}</span>
   },
   {
     key: 'builtupAreaCombined',
     label: t('oldDetails.builtupformheaderArea'),
-    render: (row) => <span className="text-xs font-bold text-blue-800">{row.builtupAreaCombined}</span>,
-  },
-  {
-    key: 'actions',
-    // label: 'ACTIONS',
-     label: t('commonbuttonmessages.actions'),
-    sortable: false,
-    render: () => <></>,
-    headerClassName: 'bg-[#1e3a8a] text-white border-l border-white/30',
+    headerClassName: 'text-xs uppercase border-r border-white/30 font-semibold text-white text-center whitespace-nowrap',
+    render: (value: unknown) => <span className="font-bold text-blue-800 flex w-full justify-center items-center">{String(value)}</span>
   },
 ];

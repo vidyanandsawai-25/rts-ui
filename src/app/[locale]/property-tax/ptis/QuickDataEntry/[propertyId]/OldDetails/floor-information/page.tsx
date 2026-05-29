@@ -9,10 +9,6 @@ import {
     getOldFloorDetailsAction
 } from './action';
 
-import { Floor, SubFloor, ConstructionType, TypeOfUse, SubTypeOfUse, OldFloorDetail } from '@/types/OldDetails/property-old-details.types';
-
-import { ActionResult } from '@/types/common.types';
-
 interface PageProps {
     params: Promise<{
         propertyId: string;
@@ -21,23 +17,45 @@ interface PageProps {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
+const MIN_PAGE = 1;
+const MAX_PAGE = 10_000;
+const MIN_PAGE_SIZE = 1;
+const DEFAULT_PAGE_SIZE = 5;
+const MAX_PAGE_SIZE = 100;
+
+/**
+ * Sanitizes and validates query parameters
+ */
+function sanitizeParams(raw: { [key: string]: string | string[] | undefined }) {
+    const rawPage = parseInt((Array.isArray(raw.page) ? raw.page[0] : raw.page) ?? "", 10);
+    const pageNumber = Number.isFinite(rawPage)
+        ? Math.min(Math.max(rawPage, MIN_PAGE), MAX_PAGE)
+        : MIN_PAGE;
+
+    const rawPageSize = parseInt((Array.isArray(raw.pageSize) ? raw.pageSize[0] : raw.pageSize) ?? "", 10);
+    const pageSize = Number.isFinite(rawPageSize)
+        ? Math.min(Math.max(rawPageSize, MIN_PAGE_SIZE), MAX_PAGE_SIZE)
+        : DEFAULT_PAGE_SIZE;
+
+    const searchTerm = (Array.isArray(raw.search) ? raw.search[0] : raw.search)?.trim() || undefined;
+
+    const typeOfUseIdParam = Array.isArray(raw.typeOfUseId) ? raw.typeOfUseId[0] : raw.typeOfUseId;
+    const typeOfUseId = typeOfUseIdParam ? Number(typeOfUseIdParam) : 0;
+
+    return { pageNumber, pageSize, searchTerm, typeOfUseId };
+}
+
 export default async function FloorInformationPage({ params, searchParams }: PageProps) {
     const { locale, propertyId } = await params;
-    const { typeOfUseId } = await searchParams;
+    const searchParamsResolved = await searchParams;
     setRequestLocale(locale);
 
-    const typeOfUseIdParam = Array.isArray(typeOfUseId) ? typeOfUseId[0] : typeOfUseId;
-    const numericTypeOfUseId = typeOfUseIdParam ? Number(typeOfUseIdParam) : 0;
+    const { pageNumber, pageSize, searchTerm, typeOfUseId } = sanitizeParams(searchParamsResolved);
 
-    let floors: Floor[] = [];
-    let subFloors: SubFloor[] = [];
-    let constructionTypes: ConstructionType[] = [];
-    let useTypes: TypeOfUse[] = [];
-    let subUseTypeList: SubTypeOfUse[] = [];
-    let existingFloors: OldFloorDetail[] = [];
+    let floors, subFloors, constructionTypes, useTypes, subUseTypeList, floorPaginationData;
 
     try {
-        // ✅ Parallel API calls with individual actions for better granularity
+        // Fetch all required data in parallel
         const [
             floorsRes,
             subFloorsRes,
@@ -50,31 +68,32 @@ export default async function FloorInformationPage({ params, searchParams }: Pag
             getSubFloorsAction(1, -1),
             getConstructionTypesAction(1, -1),
             getTypeOfUsesAction(1, -1),
-            // Fetch sub-use types only if a valid typeOfUseId is provided
-            numericTypeOfUseId > 0
-                ? getSubTypeOfUsesAction(numericTypeOfUseId, 1, -1)
-                : Promise.resolve({ success: true, data: [] as SubTypeOfUse[] } as ActionResult<SubTypeOfUse[]>),
-            getOldFloorDetailsAction(Number(propertyId))
+            typeOfUseId > 0 ? getSubTypeOfUsesAction(typeOfUseId, 1, -1) : Promise.resolve({ success: true, data: [] }),
+            getOldFloorDetailsAction(Number(propertyId), pageNumber, pageSize, searchTerm)
         ]);
 
-        // ✅ Consolidated error handling (for master data and existing floor details)
-        const masterDataResponses = [floorsRes, subFloorsRes, constructionTypesRes, typeOfUseRes, oldFloorDetailsRes, subUseTypesRes];
-        const failedMasterResponse = masterDataResponses.find(res => !res.success);
+        // Extract data with defaults
+        floors = floorsRes?.success ? (floorsRes?.data ?? []) : [];
+        subFloors = subFloorsRes?.success ? (subFloorsRes?.data ?? []) : [];
+        constructionTypes = constructionTypesRes?.success ? (constructionTypesRes?.data ?? []) : [];
+        useTypes = typeOfUseRes?.success ? (typeOfUseRes?.data ?? []) : [];
+        subUseTypeList = subUseTypesRes?.success ? (subUseTypesRes?.data ?? []) : [];
 
-        if (failedMasterResponse && !failedMasterResponse.success) {
-            throw new Error(failedMasterResponse.error || 'Failed to load floor data');
-        }
-
-        // ✅ Extract data from successful responses
-        floors = floorsRes.success ? (floorsRes.data ?? []) : [];
-        subFloors = subFloorsRes.success ? (subFloorsRes.data ?? []) : [];
-        constructionTypes = constructionTypesRes.success ? (constructionTypesRes.data ?? []) : [];
-        useTypes = typeOfUseRes.success ? (typeOfUseRes.data ?? []) : [];
-        subUseTypeList = subUseTypesRes.success ? (subUseTypesRes.data ?? []) : [];
-        existingFloors = oldFloorDetailsRes.success ? (oldFloorDetailsRes.data ?? []) : [];
+        floorPaginationData = oldFloorDetailsRes?.success && oldFloorDetailsRes?.data
+            ? oldFloorDetailsRes?.data
+            : {
+                items: [],
+                totalCount: 0,
+                pageNumber: 1,
+                pageSize: 5,
+                totalPages: 0,
+                hasPrevious: false,
+                hasNext: false,
+            };
     } catch (error: unknown) {
         const t = await getTranslations({ locale, namespace: 'quickDataEntry' });
-        const msg = error instanceof Error ? error.message.toLowerCase() : "";
+        const msg = error instanceof Error ? error?.message.toLowerCase() : "";
+
         if (msg.includes('unauthorized') || msg.includes('token expired') || msg.includes('token is expired')) {
             throw new Error(t('oldDetails.error.unauthorized'));
         }
@@ -87,6 +106,7 @@ export default async function FloorInformationPage({ params, searchParams }: Pag
         if (msg.includes('fetch failed') || msg.includes('failed to fetch') || msg.includes('network error') || msg.includes('econnrefused')) {
             throw new Error(t('oldDetails.error.failedToConnect'));
         }
+
         throw error;
     }
 
@@ -97,7 +117,12 @@ export default async function FloorInformationPage({ params, searchParams }: Pag
             constructionTypeOptions={constructionTypes}
             useOptions={useTypes}
             initialSubUseTypeOptions={subUseTypeList}
-            existingFloorDetails={existingFloors}
+            existingFloorDetails={floorPaginationData?.items}
+            totalCount={floorPaginationData?.totalCount}
+            pageNumber={floorPaginationData?.pageNumber}
+            pageSize={floorPaginationData?.pageSize}
+            totalPages={floorPaginationData?.totalPages}
+            searchTerm={searchTerm}
         />
     );
 }

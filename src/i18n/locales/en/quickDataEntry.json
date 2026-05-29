@@ -400,7 +400,6 @@
                 "tryAgain": "Try Again",
                 "errorId": "Error ID: {id}"
             },
-
             "fetchMoujaMaster": "Failed to fetch Mouja master.",
             "fetchPropertyBasicDetails": "Failed to fetch property basic details",
             "fetchPropertyTypes": "Failed to fetch property types",
@@ -832,7 +831,9 @@
             "feature2": "• Automatic area calculation based on room measurements",
             "feature3": "• Support for various shapes (rectangle, triangle, trapezoid, etc.)",
             "continueButton": "Got it, Continue with Floor Entry"
-        }
+        },
+        "floorInformation": "Floor Information",
+        "noFloorData": "No floor data found"
     },
     "discount": {
         "title": "Discount Information",
@@ -869,18 +870,18 @@
     },
     "oldDetails": {
         "title": "Old Taxation",
-          "validation": {
-                "zoneNameRequired": "Zone Name is required.",
-                "wardNoRequired": "Ward No is required.",
-                "propertyNoRequired": "Property No is required.",
-                "plotAreaRequired": "Plot Area is required.",
-                "constructionAreaRequired": "Construction Area is required.",
-                "rvRequired": "RV is required.",
-                "alvRequired": "ALV is required.",
-                "propertyTaxRequired": "Property Tax is required.",
-                "totalTaxRequired": "Total Tax is required.",
-                "fillRequiredFields": "Please fill all required fields."
-             },
+        "validation": {
+            "zoneNameRequired": "Zone Name is required.",
+            "wardNoRequired": "Ward No is required.",
+            "propertyNoRequired": "Property No is required.",
+            "plotAreaRequired": "Plot Area is required.",
+            "constructionAreaRequired": "Construction Area is required.",
+            "rvRequired": "RV is required.",
+            "alvRequired": "ALV is required.",
+            "propertyTaxRequired": "Property Tax is required.",
+            "totalTaxRequired": "Total Tax is required.",
+            "fillRequiredFields": "Please fill all required fields."
+        },
         "loading": {
             "message": "Loading Old Details...",
             "description": "Please wait while we fetch the historical information",
@@ -932,6 +933,7 @@
             "deleteError": "Failed to delete floor details",
             "unexpectedError": "An unexpected error occurred"
         },
+        "existingFloorDetails": "Existing Floor Details",
         "zoneName": "Zone Name",
         "wardNo": "Ward No",
         "showFloorDetails": "Show Floor Details",
@@ -1019,7 +1021,7 @@
                 "financeYearRequired": "Finance year is required.",
                 "taxTotalInvalid": "Tax total cannot be negative.",
                 "validationError": "Please fix the validation errors and try again.",
-               "unexpectedError": "An unexpected error occurred"
+                "unexpectedError": "An unexpected error occurred"
             },
             "loading": {
                 "message": "Loading Breakdown...",
@@ -1040,6 +1042,16 @@
             "update": "Update",
             "invalidYear": "Please enter a valid 4-digit assessment year.",
             "noTaxDataAvailable": "No tax data available. Please configure tax types first."
+        },
+        "common": {
+            "showing": "Showing",
+            "to": "to",
+            "of": "of",
+            "results": "results",
+            "itemsPerPage": "Items per page",
+            "previous": "Previous",
+            "page": "Page",
+            "next": "Next"
         }
     },
     "footer": {

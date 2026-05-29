@@ -15,7 +15,6 @@ export function TaxationMetaFields({
   interest,
   onYearChange,
   onInterestChange,
-  validationErrors
 }: TaxationMetaFieldsProps) {
   return (
     <>

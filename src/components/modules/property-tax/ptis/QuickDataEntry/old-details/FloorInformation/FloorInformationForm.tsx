@@ -1,12 +1,15 @@
 "use client"
 
-import { useMemo } from "react";
+import { useMemo, useTransition } from "react";
 import { Layers } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useParams } from 'next/navigation';
 
 import type { FloorInformationFormProps } from "@/types/OldDetails/property-old-details.types";
 import { useFloorInformationForm } from "@/hooks/ptis/QuickDataEntry/Olddetails/useFloorInformationForm";
+import { useFloorPagination } from "@/hooks/ptis/QuickDataEntry/Olddetails/useFloorPagination";
+import { useFloorSearch } from "@/hooks/ptis/QuickDataEntry/Olddetails/useFloorSearch";
+import { SearchInput } from "@/components/common";
 
 // Import refactored components
 import { FloorFormFields } from "./components/FloorFormFields";
@@ -31,6 +34,11 @@ export default function FloorInformationForm({
   useOptions = [],
   initialSubUseTypeOptions = [],
   existingFloorDetails = [],
+  totalCount = 0,
+  pageNumber = 1,
+  pageSize = 5,
+  totalPages = 0,
+  searchTerm = '',
 }: FloorInformationFormProps) {
 
   const t = useTranslations('quickDataEntry');
@@ -38,6 +46,7 @@ export default function FloorInformationForm({
   const params = useParams();
   const propertyId = Number(params.propertyId);
   const locale = params.locale as string;
+  const [, startTransition] = useTransition();
 
   const {
     formData,
@@ -72,6 +81,22 @@ export default function FloorInformationForm({
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  // Pagination hook
+  const { changePage, handlePageSizeChange, handleSearchChange } = useFloorPagination({
+    pageNumber,
+    pageSize,
+    totalCount,
+    locale,
+    propertyId,
+    startTransition,
+  });
+
+  // Search hook
+  const { search, handleSearchChange: handleSearchInput } = useFloorSearch({
+    onSearchChange: handleSearchChange,
+    startTransition,
+  });
+
   return (
     <div className="space-y-4">
       <div className="bg-white rounded-xl shadow-sm mb-10">
@@ -103,16 +128,37 @@ export default function FloorInformationForm({
           />
 
           {/* Floor Details Table */}
-          <FloorTableSection
-            t={t}
-            tCommon={tCommon}
-            existingFloorDetails={existingFloorDetails}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
-       
+          <div className="mt-5">
+            <div className="flex items-center justify-between mb-3 md:pr-3">
+              <h4 className="text-sm font-semibold text-blue-800">
+                {t('oldDetails.existingFloorDetails') || 'Existing Floor Details'}
+              </h4>
+              <div className="w-72">
+                <SearchInput
+                  value={search}
+                  onChange={handleSearchInput}
+                  placeholder={tCommon('actions.search') || 'Search floor details...'}
+                  className="mb-0"
+                />
+              </div>
+            </div>
+            <FloorTableSection
+              t={t}
+              tCommon={tCommon}
+              existingFloorDetails={existingFloorDetails}
+              totalCount={totalCount}
+              pageNumber={pageNumber}
+              pageSize={pageSize}
+              totalPages={totalPages}
+              searchTerm={searchTerm}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onPageChange={changePage}
+              onPageSizeChange={handlePageSizeChange}
+              onSearchChange={handleSearchChange}
+            />
+          </div>
         </div>
-
       </div>
     </div>
   );

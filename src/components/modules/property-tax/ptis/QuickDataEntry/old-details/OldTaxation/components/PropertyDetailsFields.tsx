@@ -51,7 +51,7 @@ export function PropertyDetailsFields({
           placeholder={t("oldDetails.wardNoPlaceholder")}
           className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
           value={formData.oldWardNo}
-          maxLength={20}
+          maxLength={50}
           onChange={(e) => {
             const value = sanitizeAlphanumeric(e.target.value);
             if (value.trim() || value === '') {
@@ -115,7 +115,7 @@ export function PropertyDetailsFields({
           placeholder={t("oldDetails.eGovernanceNoPlaceholder")}
           className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
           value={formData.oldEgovNo}
-          maxLength={30}
+          maxLength={50}
           onChange={(e) => {
             const value = e.target.value.replace(/[^A-Za-z0-9\-\/]/g, '');
             onFieldChange('oldEgovNo', value);
