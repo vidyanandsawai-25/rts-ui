@@ -16,6 +16,8 @@ import {
   trimFieldValue,
 } from "@/lib/validations/property-search-field-rules";
 
+import { usePropertySearchNavigation } from "./usePropertySearchNavigation";
+
 type FormDraft = {
   criteriaKey: string;
   formState: SearchCriteria;
@@ -66,6 +68,19 @@ export function usePropertySearchForm({
     touchedFields: new Set(),
   });
   const validationRef = React.useRef<HTMLDivElement | null>(null);
+
+  const [, startTransition] = React.useTransition();
+  const { updateDraftCriteria } = usePropertySearchNavigation({ startTransition });
+
+  React.useEffect(() => {
+    setDraft({
+      criteriaKey,
+      formState: initialCriteria,
+      validationError: null,
+      submitAttempted: false,
+      touchedFields: new Set(),
+    });
+  }, [criteriaKey, initialCriteria]);
 
   const isDraftSynced = draft.criteriaKey === criteriaKey;
   const formState = isDraftSynced ? draft.formState : initialCriteria;
@@ -139,19 +154,19 @@ export function usePropertySearchForm({
       (e: React.FocusEvent<HTMLInputElement>) => {
         markFieldTouched(field);
         const trimmed = trimFieldValue(e.target.value);
-        if (trimmed !== e.target.value) {
-          setField(field, trimmed);
-        }
+        setField(field, trimmed);
+        updateDraftCriteria(field, trimmed);
       },
-    [markFieldTouched, setField]
+    [markFieldTouched, setField, updateDraftCriteria]
   );
 
   const handleSelectChange = React.useCallback(
     (field: keyof SearchCriteria) =>
       (_: React.ChangeEvent<HTMLSelectElement>, value: string) => {
         setField(field, value);
+        updateDraftCriteria(field, value);
       },
-    [setField]
+    [setField, updateDraftCriteria]
   );
 
   const handleZoneChange = React.useCallback(
@@ -164,8 +179,9 @@ export function usePropertySearchForm({
         submitAttempted: false,
         touchedFields: new Set(),
       }));
+      updateDraftCriteria("zoneId", zoneId);
     },
-    [criteriaKey, getBaseFormState]
+    [criteriaKey, getBaseFormState, updateDraftCriteria]
   );
 
   const handleWardChange = React.useCallback(
@@ -173,8 +189,9 @@ export function usePropertySearchForm({
       const wardId = Number(value) || 0;
       setField("wardId", wardId);
       markFieldTouched("wardId");
+      updateDraftCriteria("wardId", wardId);
     },
-    [markFieldTouched, setField]
+    [markFieldTouched, setField, updateDraftCriteria]
   );
 
   const handleSubmit = React.useCallback(

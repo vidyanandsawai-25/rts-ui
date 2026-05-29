@@ -182,6 +182,26 @@ export function usePropertySearchNavigation({
   );
 
   /**
+   * Update a draft search parameter in the URL immediately
+   */
+  const updateDraftCriteria = useCallback(
+    (field: keyof SearchCriteria, value: string | number) => {
+      const url = buildUrl((params) => {
+        if (value !== undefined && String(value).trim() !== "") {
+          params.set(field, String(value));
+        } else {
+          params.delete(field);
+        }
+        if (field === "zoneId") {
+          params.delete("wardId");
+        }
+      });
+      navigateTo(url);
+    },
+    [buildUrl, navigateTo]
+  );
+
+  /**
    * Update status filter
    */
   const updateStatus = useCallback(
@@ -208,5 +228,6 @@ export function usePropertySearchNavigation({
     updateZone,
     updateWard,
     updateStatus,
+    updateDraftCriteria,
   };
 }

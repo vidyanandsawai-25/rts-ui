@@ -3,9 +3,10 @@
 import { useState, useTransition, useEffect, useRef, useOptimistic } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
-import { updateDepartmentStatusAction, updateModuleStatusAction } from '@/app/[locale]/configuration-settings/department-activation/action';
+import { updateDepartmentStatusAction } from '@/app/[locale]/configuration-settings/department-activation/action';
 import type { Department, Module } from '@/types/departmentActivation.types';
 import { useTranslations } from 'next-intl';
+import { useSubmoduleConfig } from './useSubmoduleConfig';
 
 interface UseDepartmentActivationProps {
   initialDepartments: Department[];
@@ -55,6 +56,12 @@ export function useDepartmentActivation({
     );
 
   const [localModules, setLocalModules] = useState<Module[]>(initialModules);
+
+  const submoduleConfig = useSubmoduleConfig({
+    initialModules: localModules,
+    selectedDepartment,
+    isOpen: isSubmoduleDialogOpen,
+  });
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -147,40 +154,6 @@ export function useDepartmentActivation({
     });
   };
 
-  const toggleModule = (module: Module) => {
-    if (!selectedDepartment) return;
-    const newIsActive = !module.isActive;
-    
-    setLocalModules(prev =>
-        prev.map(m => m.moduleId === module.moduleId ? { ...m, isActive: newIsActive } : m)
-    );
-
-    startTransition(() => {
-        void (async () => {
-            const formData = new FormData();
-            formData.append('moduleId', String(module.moduleId));
-            formData.append('departmentId', String(selectedDepartment.departmentId));
-            formData.append('moduleCode', module.moduleCode);
-            formData.append('moduleName', module.moduleName);
-            formData.append('moduleNameLocal', module.moduleNameLocal || '');
-            formData.append('moduleIcon', module.moduleIcon || '');
-            formData.append('moduleLabel', module.moduleLabel || '');
-            formData.append('moduleDescription', module.moduleDescription || '');
-            formData.append('isActive', String(newIsActive));
-
-            const result = await updateModuleStatusAction(formData);
-            if (result.success) {
-                toast.success(`${module.moduleName} ${t('messages.moduleUpdateSuccess')}`);
-            } else {
-                setLocalModules(prev =>
-                    prev.map(m => m.moduleId === module.moduleId ? { ...m, isActive: module.isActive } : m)
-                );
-                toast.error(result.error || t("messages.moduleUpdateFailed"));
-            }
-        })();
-    });
-  };
-
   const setSubmoduleDialogOpen = (open: boolean, dept?: Department) => {
     setSelectedDepartment(open && dept ? dept : null);
     const params = new URLSearchParams(searchParams.toString());
@@ -200,9 +173,9 @@ export function useDepartmentActivation({
     localModules,
     toggleDepartment,
     handleToggleAll,
-    toggleModule,
     setSubmoduleDialogOpen,
     filteredDepartments,
+    submoduleConfig,
     t,
   };
 }

@@ -18,16 +18,26 @@
   "modal": {
     "title": "उप-मॉड्यूल कॉन्फ़िगर करें",
     "activateAll": "सभी सक्रिय करें",
-    "deactivateAll": "सभी निष्क्रिय करें"
+    "deactivateAll": "सभी निष्क्रिय करें",
+    "saveChanges": "परिवर्तन सहेजें",
+    "allSaved": "सभी परिवर्तन सहेजे गए",
+    "unsavedHint": "{count} unsaved changes",
+    "unsavedTitle": "Unsaved changes?",
+    "unsavedMessage": "You have unsaved module changes. Discard and close?",
+    "discardChanges": "Discard Changes",
+    "pending": "Pending",
+    "noModules": "No modules found for this department."
   },
   "messages": {
     "activateAllSuccess": "सभी चयनित विभाग सफलतापूर्वक सक्रिय किए गए",
     "deactivateAllSuccess": "सभी चयनित विभाग सफलतापूर्वक निष्क्रिय किए गए",
     "moduleUpdateSuccess": "मॉड्यूल कॉन्फ़िगरेशन सफलतापूर्वक अपडेट किया गया",
+    "modulesSaveSuccess": "{count} modules updated successfully",
     "activated": "सक्रिय",
     "deactivated": "निष्क्रिय",
     "departmentUpdateError": "विभाग अपडेट करने में विफल",
     "moduleUpdateFailed": "मॉड्यूल अपडेट करने में विफल",
-    "bulkUpdateResult": "{successCount} विभाग अपडेट किए गए, {failCount} विफल रहे"
+    "bulkUpdateResult": "{successCount} विभाग अपडेट किए गए, {failCount} विफल रहे",
+    "moduleBulkUpdateResult": "Updated {successCount} modules, {failCount} failed"
   }
 }
