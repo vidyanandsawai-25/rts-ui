@@ -383,7 +383,10 @@
       "noOfFlatOnOneFloorRequired": "प्रति मंजिल फ्लैटों की संख्या आवश्यक है",
       "flatStartRequired": "फ्लैट प्रारंभ आवश्यक है",
       "incrementedByRequired": "वृद्धि द्वारा आवश्यक है",
-      "generationTypeRequired": "जेनरेशन प्रकार आवश्यक है"
+      "generationTypeRequired": "जेनरेशन प्रकार आवश्यक है",
+      "toAmenityRequired": "सुविधा तक आवश्यक है",
+      "toAmenityMustBeGreater": "सुविधा तक, सुविधा से के बराबर या उससे अधिक होना चाहिए",
+      "duplicateAmenityInRange": "सुविधा {amenity} इस संपत्ति के लिए पहले से मौजूद है"
     },
     "placeholders": {
       "selectMainProperty": "मुख्य संपत्ति चुनें",
@@ -457,6 +460,7 @@
         "wingName": "विंग नाम",
         "totalProperties": "कुल संपत्तियां",
         "properties": "संपत्तियां",
+        "amenities": "सुविधाएं",
         "actions": "क्रियाएं",
         "editWingName": "विंग नाम संपादित करें",
         "updateWing": "विंग संरचना उत्पन्न करें",
@@ -534,11 +538,25 @@
       "amenity": {
         "notImplemented": "सुविधा सामग्री अभी लागू नहीं की गई"
       }
+    },
+    "amenity": {
+      "description": "चयनित संपत्ति के लिए सुविधाएं बनाएं। सुविधाओं को एक विंग (वैकल्पिक) को सौंपा जाएगा और क्रमिक रूप से क्रमांकित किया जाएगा।",
+      "selectWing": "विंग चुनें (वैकल्पिक)",
+      "noWing": "कोई विंग नहीं (डिफ़ॉल्ट सुविधा)",
+      "fromAmenity": "सुविधा से",
+      "toAmenity": "सुविधा तक",
+      "amenities": "सुविधाएं",
+      "amenitiesWillBeCreated": "सुविधाएं बनाई जाएंगी:",
+      "placeholders": {
+        "selectWing": "एक विंग चुनें या खाली छोड़ें"
+      }
     }
   },
   "partitionMessages": {
     "createSuccess": "विभाजन सफलतापूर्वक बनाया गया!",
     "createError": "विभाजन बनाने में विफल",
-    "bulkCreateSuccess": "{count} विभाजन सफलतापूर्वक बनाए गए!"
+    "bulkCreateSuccess": "{count} विभाजन सफलतापूर्वक बनाए गए!",
+    "amenityCreateSuccess": "{count} सुविधाएं सफलतापूर्वक बनाई गईं!",
+    "amenityCreateError": "सुविधाएं बनाने में विफल"
   }
 }
