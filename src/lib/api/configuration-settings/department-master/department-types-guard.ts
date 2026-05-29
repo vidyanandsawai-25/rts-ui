@@ -18,7 +18,11 @@ export function normalizeDepartmentMaster(data: Record<string, unknown>): Depart
         departmentNameLocal: cleanString(data.departmentNameLocal ?? data.DepartmentNameLocal),
         departmentDescription: cleanString(data.departmentDescription ?? data.DepartmentDescription),
         isActive: parseBoolean(data.isActive ?? data.IsActive ?? data.isStatus),
-        createdAt: String(data.createdAt ?? data.CreatedAt ?? ""),
-        updatedAt: String(data.updatedAt ?? data.UpdatedAt ?? ""),
+        createdAt: String(
+            data.createdAt ?? data.CreatedAt ?? data.createdDate ?? data.CreatedDate ?? ""
+        ),
+        updatedAt: String(
+            data.updatedAt ?? data.UpdatedAt ?? data.updatedDate ?? data.UpdatedDate ?? ""
+        ),
     };
 }
