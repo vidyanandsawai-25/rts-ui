@@ -70,13 +70,15 @@ export default function RuleLibrary({
 
 
 
-  const columns: Column<any>[] = [
+  type RuleItemRecord = RuleItem & Record<string, unknown>;
+
+  const columns: Column<RuleItemRecord>[] = [
     { key: 'ruleCode', label: 'Rule Code', width: '150px' },
     { key: 'ruleName', label: 'Rule Name', width: '130px' },
     {
       key: 'description',
       label: 'Description',
-      render: (val: string) => val
+      render: (val: unknown) => typeof val === 'string' && val
         ? <span title={val} className="text-xs text-gray-600 line-clamp-1 max-w-[180px] block">{val}</span>
         : <span className="text-gray-300 text-xs">—</span>,
     },
@@ -108,9 +110,9 @@ export default function RuleLibrary({
       </div>
 
       {/* 3. Rule list master table */}
-      <MasterTable<any>
+      <MasterTable<RuleItemRecord>
         columns={columns}
-        data={filteredRules}
+        data={filteredRules as RuleItemRecord[]}
         isPagination={true}
         pageSize={10}
         totalCount={filteredRules.length}

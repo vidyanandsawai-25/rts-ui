@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useTranslations } from 'next-intl';
 import { FieldConfig } from '@/types/rule-engine.types';
 import { Select, Input } from '@/components/common';
 
@@ -25,6 +26,7 @@ export default function DropdownValueInput({
   loadingPlaceholder,
   error,
 }: DropdownValueInputProps) {
+  const t = useTranslations('ruleEngine');
   const [isCustom, setIsCustom] = React.useState(false);
 
   React.useEffect(() => {
@@ -32,7 +34,9 @@ export default function DropdownValueInput({
     const hasOptions = effectiveOptions.length > 0;
     if (!hasOptions) return;
     if (value && !effectiveOptions.find((o) => String(o.value) === String(value))) {
-      setIsCustom(true);
+      Promise.resolve().then(() => {
+        setIsCustom(true);
+      });
     }
   }, [effectiveOptions, value, apiLoading, config.sourceType]);
 
@@ -58,7 +62,7 @@ export default function DropdownValueInput({
           }}
           className="self-start text-[11px] font-semibold text-blue-600 hover:text-blue-800 hover:underline transition-colors"
         >
-          ← Pick from list
+          {t('valueInput.pickFromList')}
         </button>
       </div>
     );
@@ -95,7 +99,7 @@ export default function DropdownValueInput({
           onClick={() => setIsCustom(true)}
           className="self-start text-[11px] font-semibold text-gray-400 hover:text-blue-600 hover:underline transition-colors"
         >
-          Enter custom value →
+          {t('valueInput.enterCustomValue')}
         </button>
       )}
     </div>

@@ -1,17 +1,60 @@
 import { apiClient } from '@/services/api.service';
 import { RuleItem, RuleListResponse } from '@/types/rule-engine.types';
 
+interface BackendRuleDto {
+  id?: number;
+  ruleCode?: string;
+  ruleName?: string;
+  ruleScopeId?: number;
+  isEnabled?: boolean;
+  conditionsJson?: string;
+  effectJson?: string;
+  targetFiltersJson?: string;
+  description?: string;
+  ruleCategory?: string;
+  createdDate?: string;
+  updatedDate?: string;
+}
+
+interface RuleEngineBackendResponse {
+  items?: BackendRuleDto[];
+  totalCount?: number;
+  pageNumber?: number;
+  pageSize?: number;
+  totalPages?: number;
+  hasPreviousPage?: boolean;
+  hasPrevious?: boolean;
+  hasNextPage?: boolean;
+  hasNext?: boolean;
+}
+
+interface RuleResponseData {
+  data?: BackendRuleDto;
+  id?: number;
+  ruleCode?: string;
+  ruleName?: string;
+  ruleScopeId?: number;
+  isEnabled?: boolean;
+  conditionsJson?: string;
+  effectJson?: string;
+  targetFiltersJson?: string;
+  description?: string;
+  ruleCategory?: string;
+  createdDate?: string;
+  updatedDate?: string;
+}
+
 /**
  * Maps a backend RuleEngineDto to the frontend's visual RuleItem structure.
  * Reads conditionsJson/effectJson/targetFiltersJson directly from separate backend columns.
  */
-function mapBackendDtoToRuleItem(dto: any): RuleItem {
+function mapBackendDtoToRuleItem(dto: BackendRuleDto): RuleItem {
   return {
     id: dto.id,
-    ruleCode: dto.ruleCode,
-    ruleName: dto.ruleName,
-    ruleScopeId: dto.ruleScopeId,
-    isActive: dto.isEnabled,
+    ruleCode: dto.ruleCode || '',
+    ruleName: dto.ruleName || '',
+    ruleScopeId: dto.ruleScopeId || 0,
+    isActive: !!dto.isEnabled,
     conditionsJson: dto.conditionsJson ?? '',
     effectJson: dto.effectJson ?? '',
     targetFiltersJson: dto.targetFiltersJson ?? '',
@@ -62,7 +105,7 @@ export async function getRules(
   if (searchTerm) params.set('SearchTerm', searchTerm);
   if (ruleScopeId) params.set('RuleScopeId', ruleScopeId.toString());
 
-  const response = await apiClient.get<any>(`/RuleEngine?${params.toString()}`);
+  const response = await apiClient.get<RuleEngineBackendResponse>(`/RuleEngine?${params.toString()}`);
   if (!response.success || !response.data) {
     return {
       items: [],
@@ -75,7 +118,7 @@ export async function getRules(
     };
   }
 
-  const normalizedItems = (response.data.items || []).map((item: any) => mapBackendDtoToRuleItem(item));
+  const normalizedItems = (response.data.items || []).map((item) => mapBackendDtoToRuleItem(item));
 
   return {
     items: normalizedItems,
@@ -92,7 +135,7 @@ export async function getRules(
  * Fetches a single rule config by ID from /api/RuleEngine/{id}.
  */
 export async function getRuleById(id: number | string): Promise<RuleItem | null> {
-  const response = await apiClient.get<any>(`/RuleEngine/${id}`);
+  const response = await apiClient.get<BackendRuleDto>(`/RuleEngine/${id}`);
   if (!response.success || !response.data) return null;
   
   return mapBackendDtoToRuleItem(response.data);
@@ -106,8 +149,8 @@ export async function createRule(
   userId: number = 1
 ): Promise<{ success: boolean; message: string; data?: RuleItem }> {
   const backendPayload = mapRuleItemToBackendPayload(payload, userId);
-  const response = await apiClient.post<any>('/RuleEngine', backendPayload);
-  if (!response.success) {
+  const response = await apiClient.post<RuleResponseData>('/RuleEngine', backendPayload);
+  if (!response.success || !response.data) {
     return { success: false, message: response.error || 'Failed to create rule' };
   }
   return {
@@ -126,8 +169,8 @@ export async function updateRule(
   userId: number = 1
 ): Promise<{ success: boolean; message: string; data?: RuleItem }> {
   const backendPayload = mapRuleItemToBackendPayload(payload, userId);
-  const response = await apiClient.put<any>(`/RuleEngine/${id}`, backendPayload);
-  if (!response.success) {
+  const response = await apiClient.put<RuleResponseData>(`/RuleEngine/${id}`, backendPayload);
+  if (!response.success || !response.data) {
     return { success: false, message: response.error || 'Failed to update rule' };
   }
   return {
@@ -147,4 +190,3 @@ export async function deleteRule(id: number | string): Promise<{ success: boolea
   }
   return { success: true, message: 'Rule deleted successfully' };
 }
-

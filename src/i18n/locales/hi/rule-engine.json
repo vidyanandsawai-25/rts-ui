@@ -50,5 +50,25 @@
     "searchPlaceholder": "नियम खोजें...",
     "noRules": "कोई नियम नहीं मिला",
     "addRule": "नियम जोड़ें"
+  },
+  "conditionGroup": {
+    "if": "यदि",
+    "all": "सभी",
+    "any": "कोई भी",
+    "conditionsMet": "निम्नलिखित शर्तों को पूरा किया जाता है",
+    "removeGroup": "समूह हटाएं",
+    "addCondition": "शर्त जोड़ें",
+    "addSubGroup": "उप-समूह जोड़ें"
+  },
+  "valueInput": {
+    "pickFromList": "← सूची से चुनें",
+    "enterCustomValue": "कस्टम मान दर्ज करें →",
+    "loadingOptions": "विकल्प लोड हो रहे हैं…"
+  },
+  "builder": {
+    "title": "{scopeName} नियम बिल्डर",
+    "saving": "सहेज रहा है…",
+    "saveChanges": "परिवर्तन सहेजें",
+    "add": "जोड़ें"
   }
 }

@@ -73,8 +73,8 @@ export async function getFieldConfigurations(scopeId: number): Promise<FieldConf
 /**
  * Creates a new RuleField with configuration.
  */
-export async function createRuleField(payload: any): Promise<{ success: boolean; message: string; data?: any }> {
-  const response = await apiClient.post<any>('/RuleFields', payload);
+export async function createRuleField(payload: unknown): Promise<{ success: boolean; message: string; data?: unknown }> {
+  const response = await apiClient.post<unknown>('/RuleFields', payload);
   return {
     success: response.success,
     message: response.message || '',
@@ -85,8 +85,8 @@ export async function createRuleField(payload: any): Promise<{ success: boolean;
 /**
  * Updates an existing RuleField and configuration.
  */
-export async function updateRuleField(id: number, payload: any): Promise<{ success: boolean; message: string; data?: any }> {
-  const response = await apiClient.put<any>(`/RuleFields/${id}`, payload);
+export async function updateRuleField(id: number, payload: unknown): Promise<{ success: boolean; message: string; data?: unknown }> {
+  const response = await apiClient.put<unknown>(`/RuleFields/${id}`, payload);
   return {
     success: response.success,
     message: response.message || '',
@@ -98,7 +98,7 @@ export async function updateRuleField(id: number, payload: any): Promise<{ succe
  * Deletes a RuleField by ID.
  */
 export async function deleteRuleField(id: number): Promise<{ success: boolean; message: string }> {
-  const response = await apiClient.delete<any>(`/RuleFields/${id}`);
+  const response = await apiClient.delete<unknown>(`/RuleFields/${id}`);
   return {
     success: response.success,
     message: response.message || '',

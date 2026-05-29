@@ -5,8 +5,8 @@ export function adaptEffectConfigToFieldConfig(config: EffectTypeConfig): FieldC
   return {
     id: config.effectTypeId,
     fieldId: config.effectType,
-    dataType: config.dataType as any,
-    inputType: (isStaticApi ? config.staticApiInputType?.toUpperCase() : config.inputType?.toUpperCase()) as any,
+    dataType: config.dataType as DataType,
+    inputType: (isStaticApi ? config.staticApiInputType?.toUpperCase() : config.inputType?.toUpperCase()) as InputType,
     sourceType: isStaticApi ? 'API' : (config.hasApiSource ? 'API' : (config.hasStaticValues ? 'STATIC' : 'NONE')),
     staticValuesJson: config.staticValuesJson ?? undefined,
     apiEndpoint: (isStaticApi ? config.staticApiEndpoint : config.apiEndpoint) ?? undefined,
@@ -72,7 +72,7 @@ export function mapSourceType(
  * Falls back to heuristic mapper if mappingJson is malformed.
  */
 export function mapApiResponseWithMapping(
-  data: any,
+  data: unknown,
   mappingJson: string
 ): { label: string; value: string }[] {
   let mapping: ApiResponseMapping;
@@ -82,28 +82,30 @@ export function mapApiResponseWithMapping(
     return mapApiResponseToOptions(data);
   }
 
-  let items: any[] = [];
+  let items: Record<string, unknown>[] = [];
   if (mapping.responsePath) {
-    let current: any = data;
-    for (const key of mapping.responsePath.split('.')) { current = current?.[key]; }
+    let current: unknown = data;
+    for (const key of mapping.responsePath.split('.')) { current = (current as Record<string, unknown>)?.[key]; }
     if (Array.isArray(current)) {
-      items = current;
+      items = current as Record<string, unknown>[];
     } else if (data && typeof data === 'object') {
-      if (Array.isArray(data.items)) items = data.items;
-      else if (Array.isArray(data.data)) items = data.data;
-      else if (Array.isArray(data)) items = data;
+      const d = data as Record<string, unknown>;
+      if (Array.isArray(d.items)) items = d.items as Record<string, unknown>[];
+      else if (Array.isArray(d.data)) items = d.data as Record<string, unknown>[];
+      else if (Array.isArray(data)) items = data as Record<string, unknown>[];
     }
   } else if (Array.isArray(data)) {
-    items = data;
+    items = data as Record<string, unknown>[];
   } else if (data && typeof data === 'object') {
-    if (Array.isArray(data.items)) items = data.items;
-    else if (Array.isArray(data.data)) items = data.data;
+    const d = data as Record<string, unknown>;
+    if (Array.isArray(d.items)) items = d.items as Record<string, unknown>[];
+    else if (Array.isArray(d.data)) items = d.data as Record<string, unknown>[];
   }
 
   if (items.length === 0) return [];
 
   return items
-    .filter((item) => item && typeof item === 'object')
+    .filter((item): item is Record<string, unknown> => item !== null && typeof item === 'object')
     .map((item) => {
       const value = String(item[mapping.valuePath] ?? '');
       if (!value) return null;
@@ -119,15 +121,19 @@ export function mapApiResponseWithMapping(
  * Generic heuristic mapper: converts any PTIS API response to { label, value }[].
  * Handles direct arrays and paginated { items: [] } / { data: [] } shapes.
  */
-export function mapApiResponseToOptions(data: any): { label: string; value: string }[] {
-  let items: any[] = [];
-  if (Array.isArray(data)) { items = data; }
-  else if (data?.items && Array.isArray(data.items)) { items = data.items; }
-  else if (data?.data && Array.isArray(data.data)) { items = data.data; }
-  else { return []; }
+export function mapApiResponseToOptions(data: unknown): { label: string; value: string }[] {
+  let items: Record<string, unknown>[] = [];
+  if (Array.isArray(data)) { items = data as Record<string, unknown>[]; }
+  else if (data && typeof data === 'object') {
+    const d = data as Record<string, unknown>;
+    if (Array.isArray(d.items)) { items = d.items as Record<string, unknown>[]; }
+    else if (Array.isArray(d.data)) { items = d.data as Record<string, unknown>[]; }
+  }
+
+  if (items.length === 0) return [];
 
   return items
-    .filter((item) => item && typeof item === 'object')
+    .filter((item): item is Record<string, unknown> => item !== null && typeof item === 'object')
     .map((item) => {
       const keys = Object.keys(item);
       const valueKey =

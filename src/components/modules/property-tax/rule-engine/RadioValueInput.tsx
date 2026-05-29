@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useTranslations } from 'next-intl';
 import { FieldConfig } from '@/types/rule-engine.types';
 import { RadioGroup, RadioGroupItem, Input } from '@/components/common';
 
@@ -23,6 +24,7 @@ export default function RadioValueInput({
   effectiveOptions,
   error,
 }: RadioValueInputProps) {
+  const t = useTranslations('ruleEngine');
   const [isCustom, setIsCustom] = React.useState(false);
 
   React.useEffect(() => {
@@ -58,7 +60,7 @@ export default function RadioValueInput({
           }}
           className="self-start text-[11px] font-semibold text-blue-600 hover:text-blue-800 hover:underline transition-colors"
         >
-          ← Pick from list
+          {t('valueInput.pickFromList')}
         </button>
       </div>
     );
@@ -84,7 +86,7 @@ export default function RadioValueInput({
           </div>
         ))}
       </RadioGroup>
-      {apiLoading && <span className="text-xs text-blue-500 font-medium">Loading options…</span>}
+      {apiLoading && <span className="text-xs text-blue-500 font-medium">{t('valueInput.loadingOptions')}</span>}
       {error && <span className="text-xs text-red-500 font-medium">{error}</span>}
       {!apiLoading && config.sourceType !== 'API' && (
         <button
@@ -92,7 +94,7 @@ export default function RadioValueInput({
           onClick={() => setIsCustom(true)}
           className="self-start text-[11px] font-semibold text-gray-400 hover:text-blue-600 hover:underline transition-colors"
         >
-          Enter custom value →
+          {t('valueInput.enterCustomValue')}
         </button>
       )}
     </div>

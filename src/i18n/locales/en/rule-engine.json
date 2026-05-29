@@ -50,5 +50,25 @@
     "searchPlaceholder": "Search rules...",
     "noRules": "No rules found",
     "addRule": "Add Rule"
+  },
+  "conditionGroup": {
+    "if": "If",
+    "all": "All",
+    "any": "Any",
+    "conditionsMet": "of the following conditions are met",
+    "removeGroup": "Remove Group",
+    "addCondition": "Add Condition",
+    "addSubGroup": "Add Sub-Group"
+  },
+  "valueInput": {
+    "pickFromList": "← Pick from list",
+    "enterCustomValue": "Enter custom value →",
+    "loadingOptions": "Loading options…"
+  },
+  "builder": {
+    "title": "{scopeName} Rule Builder",
+    "saving": "Saving…",
+    "saveChanges": "Save Changes",
+    "add": "Add"
   }
 }

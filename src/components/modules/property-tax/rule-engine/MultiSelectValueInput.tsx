@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useTranslations } from 'next-intl';
 import { FieldConfig } from '@/types/rule-engine.types';
 import { MultiSelect } from '@/components/common/MultiSelect';
 import { Input } from '@/components/common';
@@ -26,6 +27,7 @@ export default function MultiSelectValueInput({
   loadingPlaceholder,
   error,
 }: MultiSelectValueInputProps) {
+  const t = useTranslations('ruleEngine');
   const [isCustom, setIsCustom] = React.useState(false);
 
   const activeList = Array.isArray(value) ? value : value ? [value] : [];
@@ -64,7 +66,7 @@ export default function MultiSelectValueInput({
           }}
           className="self-start text-[11px] font-semibold text-blue-600 hover:text-blue-800 hover:underline transition-colors"
         >
-          ← Pick from list
+          {t('valueInput.pickFromList')}
         </button>
       </div>
     );
@@ -86,7 +88,7 @@ export default function MultiSelectValueInput({
           onClick={() => setIsCustom(true)}
           className="self-start text-[11px] font-semibold text-gray-400 hover:text-blue-600 hover:underline transition-colors"
         >
-          Enter custom value →
+          {t('valueInput.enterCustomValue')}
         </button>
       )}
     </div>

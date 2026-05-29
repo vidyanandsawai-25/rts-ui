@@ -50,5 +50,25 @@
     "searchPlaceholder": "नियम शोधा...",
     "noRules": "कोणतेही नियम सापडले नाहीत",
     "addRule": "नियम जोडा"
+  },
+  "conditionGroup": {
+    "if": "जर",
+    "all": "सर्व",
+    "any": "कोणतेही",
+    "conditionsMet": "खालील अटी पूर्ण केल्यास",
+    "removeGroup": "गट हटवा",
+    "addCondition": "अट जोडा",
+    "addSubGroup": "उप-गट जोडा"
+  },
+  "valueInput": {
+    "pickFromList": "← यादीतून निवडा",
+    "enterCustomValue": "सानुकूल मूल्य प्रविष्ट करा →",
+    "loadingOptions": "पर्याय लोड होत आहेत…"
+  },
+  "builder": {
+    "title": "{scopeName} नियम बिल्डर",
+    "saving": "जतन करत आहे…",
+    "saveChanges": "बदल जतन करा",
+    "add": "जोडा"
   }
 }

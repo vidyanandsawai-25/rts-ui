@@ -1,6 +1,7 @@
 'use client';
 
 import { Plus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { FieldConfig, ConditionGroupState, ConditionState } from '@/types/rule-engine.types';
 import ConditionRow from './ConditionRow';
 
@@ -19,6 +20,8 @@ export default function ConditionGroup({
   onRemove,
   depth = 0,
 }: ConditionGroupProps) {
+  const t = useTranslations('ruleEngine');
+
   const handleOperatorChange = (op: 'AND' | 'OR') => {
     onChange({ ...group, logicalOperator: op });
   };
@@ -89,16 +92,16 @@ export default function ConditionGroup({
       {/* 1. Header controls: "If [All/Any] of the following conditions are met" */}
       <div className="flex flex-wrap items-center justify-between gap-3 pb-4 mb-4 border-b border-zinc-100">
         <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-          <span className="text-gray-500 font-medium">If</span>
+          <span className="text-gray-500 font-medium">{t('conditionGroup.if')}</span>
           <select
             value={group.logicalOperator}
             onChange={(e) => handleOperatorChange(e.target.value as 'AND' | 'OR')}
             className="bg-zinc-50 border border-zinc-300 rounded px-2.5 py-1 text-xs font-bold text-gray-800 focus:outline-none focus:border-blue-500 shadow-sm cursor-pointer"
           >
-            <option value="AND">All</option>
-            <option value="OR">Any</option>
+            <option value="AND">{t('conditionGroup.all')}</option>
+            <option value="OR">{t('conditionGroup.any')}</option>
           </select>
-          <span className="text-gray-500 font-medium">of the following conditions are met</span>
+          <span className="text-gray-500 font-medium">{t('conditionGroup.conditionsMet')}</span>
         </div>
 
         {onRemove && (
@@ -107,7 +110,7 @@ export default function ConditionGroup({
             onClick={onRemove}
             className="px-2 py-1 text-xs font-bold text-red-500 hover:text-red-700 transition-all border border-transparent hover:bg-red-50 rounded"
           >
-            Remove Group
+            {t('conditionGroup.removeGroup')}
           </button>
         )}
       </div>
@@ -145,14 +148,14 @@ export default function ConditionGroup({
             onClick={addCondition}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-blue-700 bg-white border border-blue-300 hover:border-blue-500 rounded-lg hover:bg-blue-50/50 shadow-sm transition-all cursor-pointer"
           >
-            <Plus className="w-3.5 h-3.5 text-blue-600" /> Add Condition
+            <Plus className="w-3.5 h-3.5 text-blue-600" /> {t('conditionGroup.addCondition')}
           </button>
           <button
             type="button"
             onClick={addSubGroup}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-zinc-700 bg-white border border-zinc-300 hover:border-zinc-500 rounded-lg hover:bg-zinc-50 shadow-sm transition-all cursor-pointer"
           >
-            <Plus className="w-3.5 h-3.5 text-zinc-600" /> Add Sub-Group
+            <Plus className="w-3.5 h-3.5 text-zinc-600" /> {t('conditionGroup.addSubGroup')}
           </button>
         </div>
       </div>

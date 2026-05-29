@@ -107,7 +107,7 @@ export function useConditionRow({
         valueLabel: resolved,
       });
     }
-  }, [apiOptions, currentField, condition.value, condition.valueLabel, resolveLabelForValue, onChange]);
+  }, [apiOptions, currentField, condition, resolveLabelForValue, onChange]);
 
   const formattedValueLabel = React.useMemo(() => {
     if (!condition.value) return 'Empty';

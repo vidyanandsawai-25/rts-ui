@@ -34,7 +34,7 @@ export async function getDynamicFieldOptions(
       return optionsCache.get(cacheKey)!;
     }
 
-    let paramObj: Record<string, any> = {};
+    let paramObj: Record<string, unknown> = {};
     if (params?.trim()) {
       try { paramObj = JSON.parse(params); } catch { /* malformed — ignore */ }
     }
@@ -48,13 +48,13 @@ export async function getDynamicFieldOptions(
     let response;
 
     if (upperMethod === 'POST') {
-      response = await apiClient.post<any>(`/${cleanEndpoint}`, paramObj);
+      response = await apiClient.post<unknown>(`/${cleanEndpoint}`, paramObj);
     } else {
       const stringifiedParams: Record<string, string> = {};
       Object.entries(paramObj).forEach(([k, v]) => { stringifiedParams[k] = String(v); });
       const qs = new URLSearchParams(stringifiedParams).toString();
       const url = qs ? `/${cleanEndpoint}?${qs}` : `/${cleanEndpoint}`;
-      response = await apiClient.get<any>(url);
+      response = await apiClient.get<unknown>(url);
     }
 
     if (!response.success || !response.data) return [];
