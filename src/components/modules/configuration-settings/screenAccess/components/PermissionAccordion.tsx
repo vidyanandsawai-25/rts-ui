@@ -21,10 +21,7 @@ type AccessLevelConfigItem = {
 
 type AccessLevelConfigMap = Record<string, AccessLevelConfigItem>;
 
-type TranslateFn = (
-  key: string,
-  values?: Record<string, string | number | Date>
-) => string;
+type TranslateFn = (key: string, values?: Record<string, string | number | Date>) => string;
 
 interface PermissionAccordionProps {
   hierarchy: DisplayDepartment[];
@@ -64,7 +61,7 @@ const ModuleAccordionItem = ({
       {/* Module Header */}
       <div
         className={cn(
-          'flex items-center justify-between px-4 py-3 border-b cursor-pointer transition-colors',
+          'flex items-center justify-between px-6 sm:px-8 md:px-16 py-3 border-b cursor-pointer transition-colors',
           moduleInactive
             ? 'bg-amber-50 border-amber-100 hover:bg-amber-100/60'
             : 'bg-gray-50/50 border-gray-100 hover:bg-gray-100/50'
@@ -113,7 +110,7 @@ const ModuleAccordionItem = ({
       </div>
 
       {moduleInactive && (
-        <div className="px-4 py-2 text-xs text-amber-800 bg-amber-50 border-b border-amber-100">
+        <div className="px-6 sm:px-8 md:px-16 py-2 text-xs text-amber-800 bg-amber-50 border-b border-amber-100">
           {t('accessControl.labels.moduleInactiveHint')}
         </div>
       )}
@@ -128,7 +125,7 @@ const ModuleAccordionItem = ({
             <div
               key={screen.id}
               className={cn(
-                'flex items-center justify-between px-4 py-2 border rounded-lg transition-colors',
+                'flex items-center justify-between px-6 sm:px-8 md:px-16 py-2.5 border rounded-lg transition-colors',
                 moduleInactive
                   ? 'bg-amber-50/50 border-amber-200/80'
                   : 'bg-emerald-50/30 border-emerald-200/60 hover:border-emerald-300'
@@ -138,7 +135,9 @@ const ModuleAccordionItem = ({
                 <span className="text-sm font-medium text-gray-700">{screen.name}</span>
                 {moduleInactive && currentLevel !== 'no-access' && (
                   <span className="text-[11px] text-amber-700">
-                    {t('accessControl.labels.assignedAccessPreserved', { level: accessLevelConfig[currentLevel]?.label ?? currentLevel })}
+                    {t('accessControl.labels.assignedAccessPreserved', {
+                      level: accessLevelConfig[currentLevel]?.label ?? currentLevel,
+                    })}
                   </span>
                 )}
               </div>
@@ -184,12 +183,19 @@ const ModuleAccordionItem = ({
                       )}
                       title={
                         moduleInactive && isActive
-                          ? t('accessControl.labels.storedPermissionHint', { level: levelCfg.label })
+                          ? t('accessControl.labels.storedPermissionHint', {
+                              level: levelCfg.label,
+                            })
                           : levelCfg.label
                       }
                       aria-label={levelCfg.label}
                     >
-                      <levelCfg.icon className={cn('w-3.5 h-3.5', moduleInactive && isEffective && level === 'no-access' && 'opacity-100')} />
+                      <levelCfg.icon
+                        className={cn(
+                          'w-3.5 h-3.5',
+                          moduleInactive && isEffective && level === 'no-access' && 'opacity-100'
+                        )}
+                      />
                     </button>
                   );
                 })}

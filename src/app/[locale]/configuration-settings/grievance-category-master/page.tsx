@@ -72,41 +72,57 @@ export default async function GrievanceCategoryMasterPage({
     );
   }
 
-  let data;
+  let data = null;
+  let fetchError: string | undefined;
+  let statusCode: number | undefined;
+
   try {
     data = await getGrievanceCategoryMasterData(normalizedSearchParams);
   } catch (error) {
     const { ApiError } = await import('@/lib/utils/api');
-    if (error instanceof ApiError && error.statusCode === 401) {
-      redirect(`/${locale}/login`);
+    if (error instanceof ApiError) {
+      statusCode = error.statusCode;
+      if (error.statusCode === 401) {
+        redirect(`/${locale}/login`);
+      }
+      fetchError = error.responseText || error.message;
+    } else {
+      fetchError = error instanceof Error ? error.message : String(error);
     }
-    throw error;
   }
 
-  const { pagedData, departments, stats, pageSize, page, totalCount, search } = data;
+  const pagedData = data?.pagedData ?? [];
+  const departments = data?.departments ?? [];
+  const stats = data?.stats ?? { total: 0, avgSla: 0, active: 0, critical: 0 };
+  const pageSize = data?.pageSize ?? 10;
+  const page = data?.page ?? 1;
+  const totalCount = data?.totalCount ?? 0;
+  const search = data?.search ?? '';
 
-  // Additional validation after fetch - page out of bounds check
-  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
-  const requestedPage = parseInt(normalizedSearchParams.page as string, 10);
-  const requestedPageSize = parseInt(normalizedSearchParams.pageSize as string, 10);
+  if (data) {
+    // Additional validation after fetch - page out of bounds check
+    const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+    const requestedPage = parseInt(normalizedSearchParams.page as string, 10);
+    const requestedPageSize = parseInt(normalizedSearchParams.pageSize as string, 10);
 
-  // Check if page is out of bounds or pageSize mismatch
-  const pageOutOfBounds = requestedPage < 1 || (totalCount > 0 && requestedPage > totalPages);
-  const pageSizeMismatch = requestedPageSize !== pageSize;
+    // Check if page is out of bounds or pageSize mismatch
+    const pageOutOfBounds = requestedPage < 1 || (totalCount > 0 && requestedPage > totalPages);
+    const pageSizeMismatch = requestedPageSize !== pageSize;
 
-  if (pageOutOfBounds || pageSizeMismatch) {
-    // Determine the correct page number
-    const validPage = pageOutOfBounds
-      ? Math.max(1, Math.min(requestedPage, totalPages))
-      : requestedPage;
+    if (pageOutOfBounds || pageSizeMismatch) {
+      // Determine the correct page number
+      const validPage = pageOutOfBounds
+        ? Math.max(1, Math.min(requestedPage, totalPages))
+        : requestedPage;
 
-    redirect(
-      buildMasterUrl(locale, {
-        ...normalizedSearchParams,
-        page: String(validPage),
-        pageSize: String(pageSize),
-      })
-    );
+      redirect(
+        buildMasterUrl(locale, {
+          ...normalizedSearchParams,
+          page: String(validPage),
+          pageSize: String(pageSize),
+        })
+      );
+    }
   }
 
   // Clean path to return to when closing drawer
@@ -167,6 +183,8 @@ export default async function GrievanceCategoryMasterPage({
           initialSearch={search ?? ''}
           initialDepartment={normalizedSearchParams.department ?? 'all'}
           initialStatus={normalizedSearchParams.status ?? 'all'}
+          fetchError={fetchError}
+          statusCode={statusCode}
         >
           {drawerElement}
         </GrievanceCategoryMaster>
