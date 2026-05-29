@@ -85,9 +85,9 @@ describe("MultiSelectDropdown", () => {
     expect(onChange).toHaveBeenNthCalledWith(3, ["banana"]);
   });
 
-  it("shows selected values in trigger", () => {
+  it("shows selected labels in trigger", () => {
     setup({ value: ["apple", "banana"] });
-    expect(screen.getByText("apple, banana")).toBeInTheDocument();
+    expect(screen.getByText("Apple, Banana")).toBeInTheDocument();
   });
 
   it("filters options by search", () => {
