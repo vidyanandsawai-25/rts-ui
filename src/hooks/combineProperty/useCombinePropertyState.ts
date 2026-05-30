@@ -53,14 +53,18 @@ export function useCombinePropertyState(params?: UseCombinePropertyStateParams) 
 
   const toggleAllProperties = useCallback(() => {
     setCheckedPropertyIds((prev) => {
-      if (prev.size === reviewData.length) {
+      const allChecked = reviewData.every((d) => prev.has(d.propertyId));
+      if (allChecked && reviewData.length > 0) {
         if (selectedBasePropertyId) {
           toast.error(t ? t('cannotUncheckBaseProperty') : 'Cannot uncheck the primary property');
           return new Set([Number(selectedBasePropertyId)]);
         }
         return new Set();
       }
-      return new Set(reviewData.map((d) => d.propertyId));
+      return new Set([
+        ...(selectedBasePropertyId ? [Number(selectedBasePropertyId)] : []),
+        ...reviewData.map((d) => d.propertyId)
+      ]);
     });
   }, [reviewData, selectedBasePropertyId, t]);
 

@@ -18,10 +18,10 @@ describe('getTaxZoningColumns', () => {
 });
 
 describe('getPreviewColumns', () => {
-  it('should return 3 columns with correct keys', () => {
+  it('should return 4 columns with correct keys', () => {
     const cols = getPreviewColumns(t);
-    expect(cols).toHaveLength(3);
-    expect(cols.map(c => c.key)).toEqual(['taxZoneNo', 'wardNo', 'propertyNo']);
+    expect(cols).toHaveLength(4);
+    expect(cols.map(c => c.key)).toEqual(['oldTaxZoneNo', 'taxZoneNo', 'wardNo', 'propertyNo']);
   });
 
   it('should include headerClassName for styling', () => {

@@ -23,6 +23,8 @@
       "fromProperty": "From Property",
       "toProperty": "To Property",
       "taxZoneNo": "Tax Zone No",
+      "oldTaxZoneNo": "Old Tax Zone",
+      "newTaxZoneNo": "New TaxZoneNo",
       "propertyNo": "Property No",
       "status": "Status"
     },

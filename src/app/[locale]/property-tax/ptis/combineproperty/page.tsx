@@ -14,12 +14,14 @@ interface PageProps {
     wardNo?: string;
     propertyNo?: string;
     basePartitionNo?: string;
+    categoryId?: string;
+    societyDetailId?: string;
   }>;
 }
 
 export default async function Page({ searchParams }: PageProps) {
   const params = await searchParams;
-  const { basePropertyId, wardId, wardNo, propertyNo, basePartitionNo } = params;
+  const { basePropertyId, wardId, wardNo, propertyNo, basePartitionNo, categoryId, societyDetailId } = params;
 
   // ── 1. Fetch base property list (filtered by ward if available) ─────────
   const baseResult = await fetchCombinePropertiesPagedAction({
@@ -33,10 +35,19 @@ export default async function Page({ searchParams }: PageProps) {
   let subPropertyList: CombinePropertyItem[] = [];
   if (basePropertyId && propertyNo && wardId) {
     let partitionChar = basePartitionNo;
-    if (!partitionChar) {
-      const selected = basePropertyList.find((item) => String(item.id) === basePropertyId);
-      if (selected && selected.fromProperty) {
+    let effectiveCategoryId: number | undefined = categoryId ? Number(categoryId) : undefined;
+    let effectiveSocietyDetailId: number | undefined = societyDetailId ? Number(societyDetailId) : undefined;
+
+    const selected = basePropertyList.find((item) => String(item.id) === basePropertyId);
+    if (selected) {
+      if (!partitionChar && selected.fromProperty) {
         partitionChar = selected.fromProperty.replace(/[^A-Za-z]/g, '');
+      }
+      if (!effectiveCategoryId && selected.categoryId) {
+        effectiveCategoryId = selected.categoryId;
+      }
+      if (!effectiveSocietyDetailId && selected.societyDetailId) {
+        effectiveSocietyDetailId = selected.societyDetailId;
       }
     }
 
@@ -46,6 +57,8 @@ export default async function Page({ searchParams }: PageProps) {
       wardId: Number(wardId),
       propertyNo: propertyNo,
       ...(partitionChar ? { partitionNo: partitionChar } : {}),
+      ...(effectiveCategoryId ? { categoryId: effectiveCategoryId } : {}),
+      ...(effectiveSocietyDetailId ? { societyDetailId: effectiveSocietyDetailId } : {}),
     });
     subPropertyList = subResult.items ?? [];
   }

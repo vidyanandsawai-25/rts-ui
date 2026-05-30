@@ -56,6 +56,7 @@ export interface TaxZoningFormModel {
 
 export type PreviewRow = {
   taxZoneNo: string;
+  oldTaxZoneNo?: string;
   wardNo: string;
   propertyNo: string;
 };

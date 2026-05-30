@@ -17,7 +17,6 @@ export interface CombinePropertyReviewSectionProps {
   differentOwnerProps: string;
   columns: Column<PropertyRow>[];
   reviewData: PropertyRow[];
-  checkedPropertyIds: Set<number>;
   remark: string;
   remarkError: boolean;
   setRemark: (val: string) => void;
@@ -36,7 +35,6 @@ export function CombinePropertyReviewSection({
   differentOwnerProps,
   columns,
   reviewData,
-  checkedPropertyIds,
   remark,
   remarkError,
   setRemark,

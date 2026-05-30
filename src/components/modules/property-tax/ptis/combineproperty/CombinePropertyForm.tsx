@@ -182,10 +182,22 @@ export default function CombinePropertyForm(props: CombinePropertyFormProps) {
   /* ============================================================
      RENDER
   ============================================================ */
+  const handleClose = () => {
+    const params = new URLSearchParams();
+    if (selectedWardNo) params.set('wardNo', selectedWardNo);
+    if (selectedWardId) params.set('wardId', selectedWardId);
+    if (selectedPropertyNo) params.set('propertyNo', selectedPropertyNo);
+    if (selectedBasePropertyId) params.set('propertyId', selectedBasePropertyId);
+
+    const qs = params.toString();
+    const target = qs ? `/property-tax/ptis?${qs}` : '/property-tax/ptis';
+    router.push(target);
+  };
+
   return (
     <Drawer
       open={true}
-      onClose={() => router.push('/property-tax/ptis')}
+      onClose={handleClose}
       title={DrawerTitle}
       width="xl"
       footer={DrawerFooter}
@@ -228,7 +240,6 @@ export default function CombinePropertyForm(props: CombinePropertyFormProps) {
         differentOwnerProps={differentOwnerProps}
         columns={columns}
         reviewData={reviewData as PropertyRow[]}
-        checkedPropertyIds={checkedPropertyIds}
         remark={remark}
         remarkError={remarkError}
         setRemark={setRemark}
