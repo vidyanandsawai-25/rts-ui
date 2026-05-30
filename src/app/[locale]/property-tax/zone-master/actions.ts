@@ -4,6 +4,7 @@ import { getZones, createZone, updateZone, deleteZone, getZoneById } from "@/lib
 import { getWards, createWard, updateWard, deleteWard, getWardById, createWardBatch, createWardRange, bulkUpdateWards } from "@/lib/api/ward.services";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
+import { getAppConfig } from "@/config/app.config";
 import { getUserIdFromCookies } from "@/lib/utils/cookie";
 import { ZoneItem, ZoneListResponse, CreateZonePayload, UpdateZonePayload } from "@/types/zoneMaster.types";
 import { WardItem, WardListResponse, CreateWardPayload, UpdateWardPayload, BatchWardCreatePayload, BatchRangeWardCreatePayload, BulkWardUpdateItem } from "@/types/wardMaster.types";
@@ -1005,7 +1006,7 @@ import {
   deleteSocietyDetail,
   getSocietyAmenityDetails,
 } from "@/lib/api/societyDetails.services";
-import { deletePropertyAmenity, deleteMultiplePropertiesAmenities } from "@/lib/api/property.service";
+import { deletePropertyAmenity, deleteMultiplePropertiesAmenities, deleteProperty, deleteBulkProperties } from "@/lib/api/property.service";
 import { SocietyAmenityDetailItem } from "@/types/zone-master/properties/society-amenity-details.types";
 import { ZonePropertyItem, ZonePropertyListResponse } from "@/types/zone-master/properties/zoneProperty.types";
 import { WingItem } from "@/types/zone-master/properties/wing.types";
@@ -1726,5 +1727,134 @@ export async function deleteMultiplePropertiesAmenitiesAction(
       return { success: false, error: error.message };
     }
     return { success: false, error: "Failed to delete records" };
+  }
+}
+
+/* ===================================================================================
+   MAIN PROPERTY DELETE ACTIONS
+   APIs: DELETE /api/Property/{PropertyId}  |  DELETE /api/Property/Bulk
+   =================================================================================== */
+
+/**
+ * Deletes a single main property by its ID.
+ * API: DELETE /api/Property/{PropertyId}
+ */
+export async function deletePropertyAction(
+  propertyId: string
+): Promise<{ success: boolean; message?: string; error?: string }> {
+  try {
+    if (!propertyId) {
+      return { success: false, error: "Invalid property ID" };
+    }
+
+    const result = await deleteProperty(propertyId);
+
+    if (!result.success) {
+      return { success: false, error: result.error || "Failed to delete property" };
+    }
+
+    revalidatePath("/[locale]/property-tax/zone-master", "page");
+    return {
+      success: true,
+      message: result.data?.message || "Property deleted successfully",
+    };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      logger.error("[deletePropertyAction] API Error", {
+        error,
+        statusCode: error.statusCode,
+      });
+      return { success: false, error: error.responseText };
+    }
+    if (error instanceof Error) {
+      logger.error("[deletePropertyAction] Error", { error, message: error.message });
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to delete property" };
+  }
+}
+
+/**
+ * Bulk deletes multiple main properties in a single API call.
+ * API: DELETE /api/Property/Bulk  (body: string[] of property IDs)
+ */
+export async function deleteBulkPropertiesAction(
+  propertyIds: string[]
+): Promise<{ success: boolean; message?: string; error?: string }> {
+  try {
+    if (!propertyIds || propertyIds.length === 0) {
+      return { success: false, error: "No properties selected" };
+    }
+
+    const config = getAppConfig();
+    const cookieStore = await cookies();
+    const token = cookieStore.get("auth_token")?.value;
+    const csrf = cookieStore.get("csrf_token")?.value;
+
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json; charset=utf-8",
+      Accept: "application/json",
+    };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+    if (csrf) headers["X-CSRF-Token"] = csrf;
+    const cookieStr = cookieStore
+      .getAll()
+      .filter((c) => /auth_token|refresh_token|session_id|csrf_token|\.AspNetCore\.Antiforgery/.test(c.name))
+      .map((c) => `${c.name}=${c.value}`)
+      .join("; ");
+    if (cookieStr) headers["Cookie"] = cookieStr;
+
+    const url = `${config.api.baseUrl.replace(/\/$/, "")}/Property/Bulk`;
+    const response = await fetch(url, {
+      method: "DELETE",
+      headers,
+      body: JSON.stringify(propertyIds),
+      cache: "no-store",
+    });
+
+    let body: Record<string, unknown> | null = null;
+    const text = await response.text();
+    if (text?.trim()) {
+      try { body = JSON.parse(text); } catch { /* non-JSON body */ }
+    }
+
+    if (body) {
+      const errArray: string[] = [
+        ...((body.errors as string[] | undefined) ?? []),
+        ...(((body.items as Record<string, unknown> | undefined)?.errors as string[] | undefined) ?? []),
+      ].filter((e): e is string => typeof e === "string" && !!e.trim());
+
+      if (!response.ok || body.success === false) {
+        const errorMessage =
+          errArray.length > 0
+            ? errArray.join("\n")
+            : (body.message as string | undefined) ?? "Failed to delete properties";
+        logger.error("[deleteBulkPropertiesAction] Bulk delete failed", { errorMessage, errArray });
+        return { success: false, error: errorMessage };
+      }
+    }
+
+    if (!response.ok) {
+      return { success: false, error: "Failed to delete properties" };
+    }
+
+    revalidatePath("/[locale]/property-tax/zone-master", "page");
+    return {
+      success: true,
+      message: (body?.message as string | undefined) ?? `${propertyIds.length} properties deleted successfully`,
+    };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      logger.error("[deleteBulkPropertiesAction] API Error", {
+        error,
+        statusCode: error.statusCode,
+      });
+      return { success: false, error: error.responseText };
+    }
+    if (error instanceof Error) {
+      logger.error("[deleteBulkPropertiesAction] Error", { error, message: error.message });
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to delete properties" };
   }
 }

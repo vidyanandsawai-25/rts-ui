@@ -265,6 +265,8 @@
     "deleteSuccess": "मालमत्ता यशस्वीरित्या हटवली",
     "deleteBulkSuccess": "{count} मालमत्ता यशस्वीरित्या हटवल्या",
     "deleteError": "मालमत्ता हटविण्यात अयशस्वी",
+    "deleteButton": "मालमत्ता हटवा",
+    "loading": "लोड होत आहे...",
     "columns": {
       "srNo": "अनु. क्र.",
       "wardNo": "प्रभाग क्रमांक",
@@ -274,7 +276,38 @@
       "type": "प्रकार"
     }
   },
-  "createProperty": {
+    "createProperty": {
+      "wings": "विंग्स",
+      "wingsAssociated": "या मालमत्तेशी संबंधित विंग्स",
+      "selectAWing": "एक विंग निवडा",
+      "noWingsAvailable": "या मालमत्तेसाठी कोणतेही विंग उपलब्ध नाही.",
+      "property": "मालमत्ता",
+      "properties": "मालमत्ता",
+      "amenities": "सुविधा",
+      "wardName": "प्रभागाचे नाव",
+      "propertyNoLabel": "मालमत्ता क्र.",
+      "partitionNumber": "विभाजन क्रमांक",
+      "action": "क्रिया",
+      "noAmenitiesFound": "कोणतीही सुविधा आढळली नाही.",
+      "noPropertiesFound": "कोणतीही मालमत्ता आढळली नाही.",
+      "noPropertiesFoundInWing": "कोणतीही मालमत्ता आढळली नाही.",
+      "deleteSelectedCount": "निवडलेले हटवा ({count})",
+      "deletePropertyConfirm": "मालमत्ता हटवा",
+      "deleteAmenityConfirm": "सुविधा हटवा",
+      "deleteSinglePropertyDesc": "तुम्हाला खरोखर ही मालमत्ता हटवायची आहे? ही क्रिया पूर्ववत करता येणार नाही.",
+      "deleteSingleAmenityDesc": "तुम्हाला खरोखर ही सुविधा हटवायची आहे? ही क्रिया पूर्ववत करता येणार नाही.",
+      "propertyDeleteSuccess": "मालमत्ता यशस्वीरित्या हटवली",
+      "amenityDeleteSuccess": "सुविधा यशस्वीरित्या हटवली",
+      "failedToDeleteProperty": "मालमत्ता हटविण्यात अयशस्वी",
+      "failedToDeleteAmenity": "सुविधा हटविण्यात अयशस्वी",
+      "deleteSelectedPropertiesTitle": "निवडलेल्या मालमत्ता हटवा",
+      "deleteSelectedAmenitiesTitle": "निवडलेल्या सुविधा हटवा",
+      "deleteSelectedPropertiesDesc": "तुम्हाला खरोखर {count} निवडलेल्या मालमत्ता हटवायच्या आहेत? ही क्रिया पूर्ववत करता येणार नाही.",
+      "deleteSelectedAmenitiesDesc": "तुम्हाला खरोखर {count} निवडलेल्या सुविधा हटवायच्या आहेत? ही क्रिया पूर्ववत करता येणार नाही.",
+      "propertiesDeletedSuccess": "{count} मालमत्ता यशस्वीरित्या हटवल्या",
+      "amenitiesDeletedSuccess": "{count} सुविधा यशस्वीरित्या हटवल्या",
+      "failedToDeleteSelectedProperties": "निवडलेल्या मालमत्ता हटविण्यात अयशस्वी",
+      "failedToDeleteSelectedAmenities": "निवडलेल्या सुविधा हटविण्यात अयशस्वी",
     "title": "नवीन मालमत्ता तयार करा",
     "subtitle": "निवडलेल्या प्रभागाअंतर्गत नवीन मुख्य मालमत्ता तयार करा",
     "ward": "प्रभाग",
@@ -535,7 +568,7 @@
   },
   "deleteProperty": {
     "pageTitle": "मालमत्ता हटवा",
-    "pageSubtitle": "निवडलेल्या प्रभागातून मालमत्ता निवडा आणि हटवा",
+    "pageSubtitle": "निवडलेल्या प्रभागातून मालमत्ता  हटवा",
     "warning": {
       "title": "ही क्रिया अपरिवर्तनीय आहे",
       "description": "हटविलेल्या मालमत्ता पुनर्प्राप्त करता येत नाहीत. कृपया पुढे जाण्यापूर्वी सत्यापित करा।"

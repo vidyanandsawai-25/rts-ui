@@ -12,7 +12,6 @@ import CreateNewWard from "./wards/CreateNewWard";
 import WardForm from "./wards/WardForm";
 import CreatePropertyDrawer from "./properties/CreatePropertyDrawer";
 import PropertyPartitionForm from "./properties/PropertyPartitionForm";
-import DeletePropertyDrawer from "./properties/DeletePropertyDrawer";
 import { DashboardCard } from "@/components/common/DashboardCard";
 import { useZoneContentState } from "@/hooks/zoneMaster/useZoneContentState";
 import {
@@ -180,6 +179,8 @@ export default function ZoneContent({
             propertyTypeMap={propertyTypeMap}
             // Active tab
             activeTab={activeRightTab}
+            // Delete Property drawer
+            deletePropertyData={deletePropertyData}
           />
         </div>
       </div>
@@ -287,31 +288,6 @@ export default function ZoneContent({
         />
       )}
 
-      {/* Delete Property Drawer */}
-      {deletePropertyData?.isOpen && (
-        <DeletePropertyDrawer
-          isOpen={deletePropertyData.isOpen}
-          onClose={() => {
-            const params = new URLSearchParams(searchParams.toString());
-            params.delete("deleteProperty");
-            router.push(`${pathname}?${params.toString()}`);
-          }}
-          properties={deletePropertyData.properties.map((p) => ({
-            value: String(p.id),
-            label: p.propertyNo,
-            propertyNo: p.propertyNo,
-            ownerName: p.ownerName,
-            address: p.address,
-            categoryId: p.categoryId,
-            wardId: p.wardId,
-          }))}
-          onDeleteSingle={(propertyId) => {
-            // Handle delete - will be handled by parent through refresh
-          }}
-          selectedWard={allWardsForDropdown.find(w => w.id === selectedPropertyWardId) || null}
-          categoryMap={new Map(Object.entries(categoryMap).map(([k, v]) => [Number(k), v]))}
-        />
-      )}
     </>
   );
 }

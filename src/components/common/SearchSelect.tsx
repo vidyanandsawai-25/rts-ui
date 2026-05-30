@@ -3,7 +3,6 @@
 import { useTranslations } from 'next-intl';
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-
 export interface SearchSelectOption {
   label: string;
   value: string;

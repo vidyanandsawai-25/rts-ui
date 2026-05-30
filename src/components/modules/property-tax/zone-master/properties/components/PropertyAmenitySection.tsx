@@ -7,12 +7,14 @@ import { cn } from "@/lib/utils/cn";
 import {
   ConfirmProvider,
   MasterTable,
+  SearchSelect,
   ToggleSwitch,
   useConfirm,
 } from "@/components/common";
 import type { Column } from "@/components/common";
 import { Button } from "@/components/common/ActionButton";
 import { IconOnlyActionButton } from "@/components/common/ActionButtons";
+import { Checkbox } from "@/components/common/checkbox";
 import {
   getSocietyWingDetailsAction,
   getSocietyAmenityDetailsAction,
@@ -28,15 +30,16 @@ type TableRow = SocietyAmenityDetailItem & Record<string, unknown>;
    Inner component (needs ConfirmProvider above)
 ───────────────────────────────────────────── */
 
+import { useTranslations } from "next-intl";
+
 function PropertyAmenitySectionInner({ propertyId }: { propertyId: string }) {
   const { confirm } = useConfirm();
+  const t = useTranslations("zoneMaster");
 
   // ── Wings ──────────────────────────────────
   const [wings, setWings] = useState<SocietyWingDetailItem[]>([]);
   const [wingsLoading, setWingsLoading] = useState(false);
-  const [wingOpen, setWingOpen] = useState(false);
   const [selectedSocietyDetailId, setSelectedSocietyDetailId] = useState<number | null>(null);
-  const wingContainerRef = useRef<HTMLDivElement>(null);
 
   // ── Toggle ─────────────────────────────────
   const [isAmenity, setIsAmenity] = useState(false);
@@ -121,18 +124,18 @@ function PropertyAmenitySectionInner({ propertyId }: { propertyId: string }) {
 
   // ── Single delete ──────────────────────────
   const handleSingleDelete = (item: SocietyAmenityDetailItem) => {
-    const label = isAmenity ? "amenity" : "property";
+    const label = isAmenity ? t("createProperty.amenity") : t("createProperty.property");
     confirm({
       variant: "delete",
-      title: `Delete ${isAmenity ? "Amenity" : "Property"}`,
-      description: `Are you sure you want to delete this ${label}? This action cannot be undone.`,
+      title: isAmenity ? t("createProperty.deleteAmenityConfirm") : t("createProperty.deletePropertyConfirm"),
+      description: isAmenity ? t("createProperty.deleteSingleAmenityDesc") : t("createProperty.deleteSinglePropertyDesc"),
       onConfirm: async () => {
         const result = await deletePropertyAmenityAction(item.propertyId);
         if (result.success) {
-          toast.success(`${isAmenity ? "Amenity" : "Property"} deleted successfully`);
+          toast.success(isAmenity ? t("createProperty.amenityDeleteSuccess") : t("createProperty.propertyDeleteSuccess"));
           refreshTable();
         } else {
-          toast.error(result.error || `Failed to delete ${label}`);
+          toast.error(result.error || (isAmenity ? t("createProperty.failedToDeleteAmenity") : t("createProperty.failedToDeleteProperty")));
         }
       },
     });
@@ -141,18 +144,30 @@ function PropertyAmenitySectionInner({ propertyId }: { propertyId: string }) {
   // ── Bulk delete ────────────────────────────
   const handleBulkDelete = () => {
     const ids = Array.from(selectedRows);
-    const label = isAmenity ? "amenities" : "properties";
     confirm({
       variant: "delete",
-      title: `Delete Selected ${isAmenity ? "Amenities" : "Properties"}`,
-      description: `Are you sure you want to delete ${ids.length} selected ${label}? This action cannot be undone.`,
+      title: isAmenity
+        ? t("createProperty.deleteSelectedAmenitiesTitle")
+        : t("createProperty.deleteSelectedPropertiesTitle"),
+      description: isAmenity
+        ? t("createProperty.deleteSelectedAmenitiesDesc", { count: ids.length })
+        : t("createProperty.deleteSelectedPropertiesDesc", { count: ids.length }),
       onConfirm: async () => {
         const result = await deleteMultiplePropertiesAmenitiesAction(ids);
         if (result.success) {
-          toast.success(`${ids.length} ${label} deleted successfully`);
+          toast.success(
+            isAmenity
+              ? t("createProperty.amenitiesDeletedSuccess", { count: ids.length })
+              : t("createProperty.propertiesDeletedSuccess", { count: ids.length })
+          );
           refreshTable();
         } else {
-          toast.error(result.error || `Failed to delete selected ${label}`);
+          toast.error(
+            result.error ||
+              (isAmenity
+                ? t("createProperty.failedToDeleteSelectedAmenities")
+                : t("createProperty.failedToDeleteSelectedProperties"))
+          );
         }
       },
     });
@@ -170,47 +185,45 @@ function PropertyAmenitySectionInner({ propertyId }: { propertyId: string }) {
     {
       key: "propertyId",
       label: (
-        <input
+        <Checkbox
           ref={headerCheckboxRef}
-          type="checkbox"
           checked={allSelected}
-          onChange={toggleSelectAll}
+          onCheckedChange={toggleSelectAll}
           disabled={tableData.length === 0}
-          className="w-4 h-4 rounded border-gray-300 text-blue-600 cursor-pointer"
+          aria-label="Select all"
         />
       ),
       width: "48px",
       align: "center",
       render: (_value, row) => (
-        <input
-          type="checkbox"
+        <Checkbox
           checked={selectedRows.has((row as SocietyAmenityDetailItem).propertyId)}
-          onChange={() => toggleRow((row as SocietyAmenityDetailItem).propertyId)}
-          className="w-4 h-4 rounded border-gray-300 text-blue-600 cursor-pointer"
+          onCheckedChange={() => toggleRow((row as SocietyAmenityDetailItem).propertyId)}
+          aria-label="Select row"
         />
       ),
     },
     {
       key: "wardNo",
-      label: "Ward Name",
+      label: t("createProperty.wardName"),
     },
     {
       key: "propertyNo",
-      label: "Property No",
+      label: t("createProperty.propertyNoLabel"),
     },
     {
       key: "partitionNo",
-      label: "Partition Number",
+      label: t("createProperty.partitionNumber"),
     },
     {
       key: "partType",
-      label: "Action",
+      label: t("createProperty.action"),
       align: "center",
       render: (_value, row) => (
         <IconOnlyActionButton
           icon={Trash2}
           onClick={() => handleSingleDelete(row as unknown as SocietyAmenityDetailItem)}
-          aria-label="Delete row"
+          aria-label={t("createProperty.deleteAmenityConfirm")}
           variant="ghost"
           size="sm"
           disabled={selectedRows.size > 0 || tableLoading}
@@ -221,20 +234,24 @@ function PropertyAmenitySectionInner({ propertyId }: { propertyId: string }) {
   ];
 
   const selectedWing = wings.find((w) => w.societyDetailId === selectedSocietyDetailId);
+  const wingOptions = wings.map((wing) => ({
+  label: `${wing.wingNo} - ${wing.wingName}`,
+  value: wing.societyDetailId.toString(),
+}));
 
   return (
     <div className="space-y-2">
       {/* Section header */}
       <div className="flex items-center gap-2">
         <Building2 className="w-4 h-4 text-blue-600" />
-        <h4 className="text-sm font-semibold text-gray-700">Wings</h4>
+        <h4 className="text-sm font-semibold text-gray-700">{t("createProperty.wings")}</h4>
       </div>
 
       <div className="p-3 rounded-lg border border-blue-100 space-y-4">
         <div className="flex items-center gap-2">
           <Info className="w-4 h-4 text-blue-600" />
           <span className="text-sm font-semibold text-gray-700">
-            Wings associated with this property
+            {t("createProperty.wingsAssociated")}
           </span>
         </div>
 
@@ -242,67 +259,21 @@ function PropertyAmenitySectionInner({ propertyId }: { propertyId: string }) {
         {wingsLoading ? (
           <div className="h-10 rounded-md bg-gray-100 animate-pulse" />
         ) : wings.length === 0 ? (
-          <p className="text-sm text-gray-500">No wings available for this property.</p>
+          <p className="text-sm text-gray-500">{t("createProperty.noWingsAvailable")}</p>
         ) : (
-          <div ref={wingContainerRef} className="relative w-full">
-            <button
-              type="button"
-              className={cn(
-                "flex items-center justify-between w-full h-10 px-4",
-                "border border-gray-300 rounded-md bg-white text-sm",
-                "focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all"
-              )}
-              onClick={() => setWingOpen((prev) => !prev)}
-              onBlur={(e) => {
-                if (!wingContainerRef.current?.contains(e.relatedTarget as Node)) {
-                  setWingOpen(false);
-                }
-              }}
-            >
-              <span
-                className={cn(
-                  "truncate text-left flex-1 text-sm",
-                  !selectedWing ? "text-gray-400" : "text-gray-800"
-                )}
-              >
-                {selectedWing
-                  ? `${selectedWing.wingNo} - ${selectedWing.wingName}`
-                  : "Select a wing"}
-              </span>
-              <ChevronDown className="ml-2 w-4 h-4 text-gray-400 shrink-0" />
-            </button>
-
-            {wingOpen && (
-              <ul
-                className="absolute z-50 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto top-full mt-1"
-                onMouseDown={(e) => e.preventDefault()}
-              >
-                {wings.map((wing) => (
-                  <li
-                    key={wing.societyDetailId}
-                    className={cn(
-                      "flex items-center justify-between px-4 py-2 cursor-pointer transition-colors hover:bg-blue-50",
-                      selectedSocietyDetailId === wing.societyDetailId &&
-                        "bg-blue-50 text-blue-700 font-semibold"
-                    )}
-                    onClick={() => {
-                      setSelectedSocietyDetailId(wing.societyDetailId);
-                      setWingOpen(false);
-                      setIsAmenity(false);
-                    }}
-                  >
-                    <span className="text-sm text-gray-800 font-medium">
-                      {wing.wingNo} - {wing.wingName}
-                    </span>
-                    <span className="ml-4 shrink-0 text-xs font-semibold text-green-700 bg-green-50 border border-green-100 px-2.5 py-0.5 rounded-full">
-                      {wing.propertyCount}{" "}
-                      {wing.propertyCount === 1 ? "Property" : "Properties"}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+          <SearchSelect
+  id="wing-select"
+  name="wingSelect"
+  options={wingOptions}
+  value={selectedSocietyDetailId?.toString() || ""}
+  placeholder={t("createProperty.selectAWing")}
+  onChange={(_, value) => {
+    setSelectedSocietyDetailId(Number(value));
+    setIsAmenity(false);
+  }}
+  isLoading={wingsLoading}
+  noOptionsPlaceholder={t("createProperty.noWingsAvailable")}
+/>
         )}
 
         {/* Toggle + table (shown only after a wing is selected) */}
@@ -316,14 +287,14 @@ function PropertyAmenitySectionInner({ propertyId }: { propertyId: string }) {
                   !isAmenity ? "text-blue-700" : "text-gray-400"
                 )}
               >
-                Properties
+                {t("createProperty.properties")}
               </span>
               <ToggleSwitch
                 checked={isAmenity}
                 onChange={setIsAmenity}
                 showPopup={false}
-                activeLabel="Amenities"
-                inactiveLabel="Properties"
+                activeLabel={t("createProperty.amenities")}
+                inactiveLabel={t("createProperty.properties")}
               />
               <span
                 className={cn(
@@ -331,7 +302,7 @@ function PropertyAmenitySectionInner({ propertyId }: { propertyId: string }) {
                   isAmenity ? "text-blue-700" : "text-gray-400"
                 )}
               >
-                Amenities
+                {t("createProperty.amenities")}
               </span>
             </div>
 
@@ -340,7 +311,7 @@ function PropertyAmenitySectionInner({ propertyId }: { propertyId: string }) {
               columns={columns as unknown as Column<Record<string, unknown>>[]}
               data={tableData as unknown as Record<string, unknown>[]}
               loading={tableLoading}
-              emptyText={isAmenity ? "No amenities found." : "No properties found."}
+              emptyText={isAmenity ? t("createProperty.noAmenitiesFound") : t("createProperty.noPropertiesFound")}
               height="sm"
               paginationConfig={{ enabled: false }}
             />
@@ -354,7 +325,7 @@ function PropertyAmenitySectionInner({ propertyId }: { propertyId: string }) {
                   disabled={tableLoading}
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
-                  Delete Selected ({selectedRows.size})
+                  {t("createProperty.deleteSelectedCount", { count: selectedRows.size })}
                 </Button>
               </div>
             )}

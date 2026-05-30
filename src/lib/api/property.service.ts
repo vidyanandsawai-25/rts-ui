@@ -8,30 +8,32 @@ export interface DeletePropertyResponse {
 }
 
 /**
- * Delete a single property
- * @param propertyId - ID of the property to delete
- * @returns ApiResponse with deletion result
+ * Delete a single property by ID.
+ * API: DELETE /api/Property/{PropertyId}
  */
 export async function deleteProperty(propertyId: string): Promise<ApiResponse<DeletePropertyResponse>> {
-  return apiClient.delete<DeletePropertyResponse>(`/api/Property/${propertyId}`);
+  return apiClient.delete<DeletePropertyResponse>(`/Property/${encodeURIComponent(propertyId)}`);
 }
 
 /**
- * Delete a single property or amenity by numeric ID
+ * Delete a single property or amenity by numeric ID.
+ * API: DELETE /api/Property/{PropertyId}
  */
 export async function deletePropertyAmenity(propertyId: number): Promise<ApiResponse<DeletePropertyResponse>> {
   return apiClient.delete<DeletePropertyResponse>(`/Property/${propertyId}`);
 }
 
 /**
- * Bulk delete properties or amenities by numeric IDs
+ * Bulk delete multiple property or amenity records by numeric IDs.
+ * Calls each individually since the amenity bulk endpoint is per-item.
+ * API: DELETE /api/Property/{id} (for each)
  */
 export async function deleteMultiplePropertiesAmenities(
   propertyIds: number[]
 ): Promise<ApiResponse<DeletePropertyResponse>> {
   try {
     const results = await Promise.all(
-      propertyIds.map((id) => apiClient.delete<DeletePropertyResponse>(`/Property/Bulk/${id}`))
+      propertyIds.map((id) => apiClient.delete<DeletePropertyResponse>(`/Property/${id}`))
     );
 
     const allSuccessful = results.every((r) => r.success);
@@ -44,58 +46,41 @@ export async function deleteMultiplePropertiesAmenities(
       };
     }
 
-    const failedCount = results.filter((r) => !r.success).length;
+    // Collect all error messages from failed deletions
+    const failedResults = results.filter((r) => !r.success);
+    const failedCount = failedResults.length;
+    
+    // Extract detailed error messages from each failed deletion
+    const errorMessages = failedResults
+      .map((r) => r.error)
+      .filter((msg): msg is string => !!msg && msg.trim().length > 0);
+
+    // Return detailed error messages if available, otherwise generic count message
+    const detailedError = errorMessages.length > 0
+      ? errorMessages.join('\n\n')
+      : `Failed to delete ${failedCount} out of ${propertyIds.length} items`;
+
     return {
       success: false,
       statusCode: 207,
-      error: `Failed to delete ${failedCount} out of ${propertyIds.length} items`,
+      error: detailedError,
     };
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to delete items",
+      error: error instanceof Error ? error.message : 'Failed to delete items',
     };
   }
 }
 
 /**
- * Delete multiple properties in bulk
- * @param propertyIds - Array of property IDs to delete
- * @returns ApiResponse with deletion result
+ * Bulk delete multiple main properties in a single API call.
+ * API: DELETE /api/Property/Bulk  (body: array of property ID strings)
  */
-export async function deleteBulkProperties(propertyIds: string[]): Promise<ApiResponse<DeletePropertyResponse>> {
-  // According to user specification, bulk delete uses: /api/Property/Bulk/{id}
-  // However, for multiple IDs, we need to call the endpoint for each ID
-  // Or if there's a single bulk endpoint that accepts an array, we'd use that
-  // Based on the URL pattern provided, it seems we need to call for each ID individually
-  
-  try {
-    const results = await Promise.all(
-      propertyIds.map(id => apiClient.delete<DeletePropertyResponse>(`/api/Property/Bulk/${id}`))
-    );
-    
-    // Check if all deletions were successful
-    const allSuccessful = results.every(r => r.success);
-    
-    if (allSuccessful) {
-      return {
-        success: true,
-        statusCode: 200,
-        data: { message: `Successfully deleted ${propertyIds.length} properties` }
-      };
-    }
-    
-    // If some failed, return error with details
-    const failedCount = results.filter(r => !r.success).length;
-    return {
-      success: false,
-      statusCode: 207, // Multi-status
-      error: `Failed to delete ${failedCount} out of ${propertyIds.length} properties`
-    };
-  } catch (error) {
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to delete properties'
-    };
-  }
+export async function deleteBulkProperties(
+  propertyIds: string[]
+): Promise<ApiResponse<DeletePropertyResponse>> {
+  return apiClient.delete<DeletePropertyResponse>('/Property/Bulk', {
+    body: JSON.stringify(propertyIds),
+  });
 }

@@ -95,10 +95,8 @@ export async function getSocietyAmenityDetails(
   societyDetailId: number,
   isAmenity: boolean
 ): Promise<SocietyAmenityDetailsResponse> {
-  const params = new URLSearchParams({ isAmenity: String(isAmenity) });
-
   const response = await apiClient.get<SocietyAmenityDetailsResponse>(
-    `/Property/${societyDetailId}/society-amenity-details?${params.toString()}`
+    `/Property/${societyDetailId}/${isAmenity}/society-amenity-details`
   );
 
   return handleApiResponse(response, "Failed to fetch society amenity details");

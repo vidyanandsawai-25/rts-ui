@@ -1,18 +1,21 @@
 "use client";
 
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { Building2 } from "lucide-react";
+import { Building2, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { MasterTable } from "@/components/common/MasterTable";
 import { SearchInput, StatusBadge, AddButton, Select, Option, Label } from "@/components/common";
+import { useConfirm } from "@/components/common/ConfirmProvider";
 import { ZonePropertyItem } from "@/types/zone-master/properties/zoneProperty.types";
 import { WardItem } from "@/types/wardMaster.types";
 import { usePropertyListHandlers } from "@/hooks/zoneMaster/usePropertyListHandlers";
-import { useCallback, useMemo } from "react";
+import { usePropertyDelete } from "@/hooks/zoneMaster/usePropertyDelete";
 import { getPropertyColumns } from "./propertyColumns";
-import { DeleteLabelButton } from "@/components/common/ActionButtons";
+import { DeleteLabelButton, IconOnlyActionButton } from "@/components/common/ActionButtons";
 import DeletePropertyDrawer from "./DeletePropertyDrawer";
 import type { DeletePropertyData } from "@/types/zoneMaster.types";
+import type { Column } from "@/components/common/MasterTable";
 
 interface PropertyCategoryMap {
     [key: number]: string;
@@ -57,6 +60,53 @@ export default function PropertyList({
     const searchParams = useSearchParams();
     const t = useTranslations("zoneMaster");
     const tCommon = useTranslations("common");
+    const { confirm } = useConfirm();
+
+    // ── Selection state ──────────────────────────────────────────────────────
+    const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
+    const headerCheckboxRef = useRef<HTMLInputElement>(null);
+
+    // Reset selection when the property list changes (page/ward change)
+    useEffect(() => {
+        setSelectedRows(new Set());
+    }, [properties, selectedWardId]);
+
+    const allSelected =
+        properties.length > 0 && selectedRows.size === properties.length;
+    const someSelected = selectedRows.size > 0 && !allSelected;
+
+    useEffect(() => {
+        if (headerCheckboxRef.current) {
+            headerCheckboxRef.current.indeterminate = someSelected;
+        }
+    }, [someSelected]);
+
+    const toggleSelectAll = useCallback(() => {
+        setSelectedRows(
+            allSelected
+                ? new Set()
+                : new Set(properties.map((p) => String(p.id)))
+        );
+    }, [allSelected, properties]);
+
+    const toggleRow = useCallback((id: string) => {
+        setSelectedRows((prev) => {
+            const next = new Set(prev);
+            next.has(id) ? next.delete(id) : next.add(id);
+            return next;
+        });
+    }, []);
+
+    // ── Delete operations (extracted to custom hook) ────────────────────────
+    const { isDeleting, handleSingleDelete, handleBulkDelete: performBulkDelete } = usePropertyDelete({
+        onClearSelection: () => setSelectedRows(new Set()),
+    });
+
+    // Wrapper to pass selected IDs to the bulk delete handler
+    const handleBulkDelete = useCallback(() => {
+        const ids = Array.from(selectedRows);
+        performBulkDelete(ids);
+    }, [selectedRows, performBulkDelete]);
 
     const {
         localSearch,
@@ -80,63 +130,78 @@ export default function PropertyList({
         }));
     }, [wards]);
 
-    // Current selected ward object
-  const currentWard = useMemo(() => {
-    if (
-        selectedWardId === null ||
-        selectedWardId === undefined
-    ) {
-        return null;
-    }
+    const currentWard = useMemo(() => {
+        if (selectedWardId === null || selectedWardId === undefined) return null;
+        return wards.find((w) => Number(w.id) === Number(selectedWardId)) ?? null;
+    }, [selectedWardId, wards]);
 
-    return (
-        wards.find(
-            (w) =>
-                Number(w.id) ===
-                Number(selectedWardId)
-        ) ?? null
-    );
-}, [selectedWardId, wards]);
-console.log("selectedWardId => ", selectedWardId);
-console.log("wards => ", wards);
-console.log("currentWard => ", currentWard);
-
-    // Table columns
-    const columns = useMemo(
-        () => getPropertyColumns({
-            t,
-            pageNumber,
-            pageSize,
-            wards,
-            categoryMap,
-            propertyTypeMap,
+    // ── Columns (checkbox + data columns) ───────────────────────────────────
+    const checkboxColumn: Column<Record<string, unknown>> = useMemo(
+        () => ({
+            key: "select",
+            label: (
+                <input
+                    ref={headerCheckboxRef}
+                    type="checkbox"
+                    checked={allSelected}
+                    onChange={toggleSelectAll}
+                    disabled={properties.length === 0 || isDeleting}
+                    className="w-4 h-4 rounded border-gray-300 text-blue-600 cursor-pointer"
+                    aria-label="Select all"
+                />
+            ),
+            width: "48px",
+            align: "center" as const,
+            render: (_: unknown, row: Record<string, unknown>) => (
+                <input
+                    type="checkbox"
+                    checked={selectedRows.has(String((row as ZonePropertyItem).id))}
+                    onChange={() => toggleRow(String((row as ZonePropertyItem).id))}
+                    disabled={isDeleting}
+                    className="w-4 h-4 rounded border-gray-300 text-blue-600 cursor-pointer"
+                    aria-label={`Select property ${(row as ZonePropertyItem).propertyNo}`}
+                />
+            ),
         }),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [allSelected, toggleSelectAll, toggleRow, selectedRows, properties.length, isDeleting]
+    );
+
+    const dataColumns = useMemo(
+        () =>
+            getPropertyColumns({
+                t,
+                pageNumber,
+                pageSize,
+                wards,
+                categoryMap,
+                propertyTypeMap,
+            }),
         [t, pageNumber, pageSize, wards, categoryMap, propertyTypeMap]
+    );
+
+    const columns = useMemo(
+        () => [checkboxColumn, ...dataColumns],
+        [checkboxColumn, dataColumns]
     );
 
     const handleCreateProperty = useCallback(() => {
         const params = new URLSearchParams(searchParams.toString());
-        if (selectedWardId !== null) {
-            params.set("propWardId", String(selectedWardId));
-        }
+        if (selectedWardId !== null) params.set("propWardId", String(selectedWardId));
         params.set("createProperty", "");
         router.push(`${pathname}?${params.toString()}`);
     }, [router, pathname, searchParams, selectedWardId]);
 
     const handleCreatePartition = useCallback(() => {
         const params = new URLSearchParams(searchParams.toString());
-        if (selectedWardId !== null) {
-            params.set("propWardId", String(selectedWardId));
-        }
+        if (selectedWardId !== null) params.set("propWardId", String(selectedWardId));
         params.set("createPartition", "");
         router.push(`${pathname}?${params.toString()}`);
     }, [router, pathname, searchParams, selectedWardId]);
 
     const handleOpenDeleteDrawer = useCallback(() => {
         const params = new URLSearchParams(searchParams.toString());
-        if (selectedWardId !== null) {
-            params.set("propWardId", String(selectedWardId));
-        }
+        if (selectedWardId !== null) params.set("propWardId", String(selectedWardId));
         params.set("deleteProperty", "");
         router.push(`${pathname}?${params.toString()}`);
     }, [router, pathname, searchParams, selectedWardId]);
@@ -186,7 +251,6 @@ console.log("currentWard => ", currentWard);
                             selectSize="md"
                         />
                     </div>
-
                     <div>
                         <Label className="block text-sm font-medium text-gray-700 mb-1">
                             {t("propertyList.search")}
@@ -227,8 +291,20 @@ console.log("currentWard => ", currentWard);
                             onClick={handleCreatePartition}
                             disabled={selectedWardId === null}
                         />
+                        {/* Bulk delete — shown only when rows are selected */}
+                        {selectedRows.size > 0 && (
+                            <button
+                                type="button"
+                                onClick={handleBulkDelete}
+                                disabled={isDeleting}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-semibold bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition-colors"
+                            >
+                                <Trash2 className="w-4 h-4" />
+                                Delete Selected ({selectedRows.size})
+                            </button>
+                        )}
                         <DeleteLabelButton
-                            label="Delete Property"
+                            label={t("propertyList.deleteButton")}
                             onClick={handleOpenDeleteDrawer}
                             disabled={selectedWardId === null}
                         />
@@ -254,6 +330,20 @@ console.log("currentWard => ", currentWard);
                         totalCount={totalCount}
                         totalPages={totalPages}
                         onPageChange={handlePageChange}
+                        renderActions={(row) => (
+                            <IconOnlyActionButton
+                                icon={Trash2}
+                                onClick={() =>
+                                    handleSingleDelete(row as unknown as ZonePropertyItem)
+                                }
+                                aria-label={`Delete property ${(row as unknown as ZonePropertyItem).propertyNo}`}
+                                variant="ghost"
+                                size="sm"
+                                disabled={isDeleting || selectedRows.size > 0}
+                                className="text-red-500 hover:scale-110 transition-transform p-1.5 hover:bg-transparent"
+                            />
+                        )}
+                        actionLabel={tCommon("table.columns.actions")}
                         footerLeftContent={
                             <div className="flex items-center gap-1 text-sm text-gray-600">
                                 {tCommon("table.showing")}{" "}
@@ -281,14 +371,18 @@ console.log("currentWard => ", currentWard);
                 )}
             </div>
 
-            {/* DELETE PROPERTY DRAWER */}
+            {/* DELETE PROPERTY DRAWER (existing amenity/wing delete flow) */}
             {deletePropertyData && (
                 <DeletePropertyDrawer
                     isOpen={deletePropertyData.isOpen}
                     onClose={handleCloseDeleteDrawer}
+                    wardId={selectedWardId}
                     selectedWard={currentWard}
+                    ssrProperties={deletePropertyData.properties}
+                    categoryMap={categoryMap}
                 />
             )}
         </div>
     );
 }
+

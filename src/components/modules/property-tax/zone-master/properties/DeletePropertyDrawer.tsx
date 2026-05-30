@@ -1,5 +1,4 @@
-"use client";
-
+  "use client";
 import { useEffect, useMemo, useState } from "react";
 import { Trash2 } from "lucide-react";
 import { useBuildingList } from "@/hooks/zoneMaster/useBuildingList";
@@ -9,37 +8,48 @@ import { useTranslations } from "next-intl";
 import { PropertyInfoSection, PropertySelectionSection } from "./components";
 import { PropertyAmenitySection } from "./components/PropertyAmenitySection";
 import { WardItem } from "@/types/wardMaster.types";
+import { ZonePropertyItem } from "@/types/zone-master/properties/zoneProperty.types";
 
 interface DeletePropertyDrawerProps {
   isOpen: boolean;
   onClose: () => void;
+  wardId?: number | null;
   selectedWard?: WardItem | null;
+  ssrProperties?: ZonePropertyItem[];
+  categoryMap?: Record<number, string>;
 }
 
 export default function DeletePropertyDrawer({
   isOpen,
   onClose,
+  wardId = null,
   selectedWard = null,
+  ssrProperties = [],
+  categoryMap = {},
 }: DeletePropertyDrawerProps) {
   const t = useTranslations("zoneMaster.deleteProperty");
   const tZone = useTranslations("zoneMaster");
 
   const [selectedPropertyId, setSelectedPropertyId] = useState("");
 
+  const effectiveWardId = wardId ?? selectedWard?.id ?? null;
+
   // Reset on ward change
   useEffect(() => {
     setSelectedPropertyId("");
-  }, [selectedWard?.id]);
+  }, [effectiveWardId]);
 
   const ward = selectedWard ?? null;
 
   const { buildingList, loadingBuildingList } = useBuildingList({
-    wardId: ward?.id ?? null,
+    wardId: effectiveWardId,
   });
 
   const selectedProperty = useMemo(
-    () => buildingList.find((b) => String(b.propertyId) === selectedPropertyId),
-    [buildingList, selectedPropertyId]
+    () =>
+      buildingList.find((b) => String(b.propertyId) === selectedPropertyId) ??
+      (ssrProperties.find((b) => String(b.id) === selectedPropertyId) as any),
+    [buildingList, ssrProperties, selectedPropertyId]
   );
 
   const isApartmentCategory = useMemo(() => {
@@ -52,16 +62,27 @@ export default function DeletePropertyDrawer({
     [selectedProperty]
   );
 
-  const propertyOptions = useMemo(
-    () =>
-      buildingList.map((item) => ({
-        value: String(item.propertyId),
-        label: item.catPropertyCategoryName
-          ? `${item.propertyNo} - ${item.catPropertyCategoryName}`
-          : item.propertyNo,
-      })),
-    [buildingList]
-  );
+  const propertyOptions = useMemo(() => {
+    if (buildingList.length > 0) {
+      return buildingList
+        .filter((item) => !item.partitionNo || item.partitionNo === "")
+        .map((item) => ({
+          value: String(item.propertyId),
+          label: item.catPropertyCategoryName
+            ? `${item.propertyNo} - ${item.catPropertyCategoryName}`
+            : item.propertyNo,
+        }));
+    }
+    return ssrProperties
+      .filter((item) => !item.partitionNo || item.partitionNo === "0")
+      .map((item) => {
+        const catName = item.categoryId ? categoryMap[item.categoryId] : null;
+        return {
+          value: String(item.id),
+          label: catName ? `${item.propertyNo} - ${catName}` : item.propertyNo,
+        };
+      });
+  }, [buildingList, ssrProperties, categoryMap]);
 
   const handleClose = () => {
     setSelectedPropertyId("");
@@ -103,15 +124,15 @@ export default function DeletePropertyDrawer({
           onPropertyChange={(_e, value) => setSelectedPropertyId(value)}
           t={tZone}
           isApartmentCategory={isApartmentCategory}
-          label="Main Property No"
+          label={tZone("partitionForm.mainPropertyNo")}
           placeholder={
-            loadingBuildingList
-              ? "Loading properties..."
+            loadingBuildingList && propertyOptions.length === 0
+              ? tZone("propertyList.loading")
               : propertyOptions.length === 0 && ward?.id
-              ? "No properties found for this ward"
-              : "Select a main property"
+              ? tZone("partitionForm.helpText.noMainPropertiesFound")
+              : tZone("partitionForm.placeholders.selectMainProperty")
           }
-          disabled={loadingBuildingList}
+          disabled={loadingBuildingList && propertyOptions.length === 0}
           value={selectedPropertyId}
           hidePropertyInfo
         />
@@ -123,4 +144,4 @@ export default function DeletePropertyDrawer({
       </div>
     </Drawer>
   );
-}
+}  
