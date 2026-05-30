@@ -117,7 +117,7 @@ export async function handleFooterAction(
       case 'PTIS_COMBINE': {
         const payloadLocale = payload.locale || 'en';
         const params = new URLSearchParams();
-        
+
         if (payload.propertyId) params.set('basePropertyId', payload.propertyId);
         if (payload.wardId) params.set('wardId', String(payload.wardId));
         if (payload.wardNo) params.set('wardNo', payload.wardNo);
@@ -127,6 +127,13 @@ export async function handleFooterAction(
         const suffix = queryString ? `?${queryString}` : '';
 
         redirect(`/${payloadLocale}/property-tax/ptis/combineproperty${suffix}`);
+      }
+      case 'PTIS_TAP_WATER': {
+        if (!payload.propertyId) {
+          return { success: false, error: 'Property ID is missing.' };
+        }
+        const payloadLocale = payload.locale || 'en';
+        redirect(`/${payloadLocale}/property-tax/waterconnection?propertyId=${payload.propertyId}`);
       }
       default:
         return { success: false, error: `Command ${command} is not yet implemented.` };

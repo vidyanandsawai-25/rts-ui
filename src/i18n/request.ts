@@ -120,6 +120,9 @@ export default getRequestConfig(async ({ locale }) => {
       .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/waterconnection.json`)
       .catch(() => ({}))
+      .then((m) => m.default || m),    
+    import(`./locales/${validatedLocale}/commonDetailsUpdate.json`)
+      .catch(() => ({}))
       .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/waterConnectionMaster.json`)
       .catch(() => ({}))
