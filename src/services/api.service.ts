@@ -223,6 +223,9 @@ class ApiClient {
   async put<T>(url: string, body?: unknown, opt?: RequestInit, auth = true) {
     return this.request<T>(url, { ...opt, method: 'PUT', body: JSON.stringify(body) }, auth);
   }
+  async patch<T>(url: string, body?: unknown, opt?: RequestInit, auth = true) {
+    return this.request<T>(url, { ...opt, method: 'PATCH', body: JSON.stringify(body) }, auth);
+  }
   async delete<T>(url: string, opt?: RequestInit, auth = true) {
     return this.request<T>(url, { ...opt, method: 'DELETE' }, auth);
   }

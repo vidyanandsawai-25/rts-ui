@@ -68,6 +68,7 @@ export interface FullOffSetFormProps {
     formData: RoomFormData;
     calculateAdjustedRoomTotal: () => number;
     handleSubtractClick: () => void;
+    handleAddClick?: () => void;
     selectedOperation: "add" | "subtract" | null;
     isShakingSubtract: boolean;
     offsetData: OffsetData;
