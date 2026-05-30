@@ -91,7 +91,7 @@ export function UpicLinkCell({
         <Link
           href={href}
           prefetch={false}
-          className="text-blue-600 font-medium hover:underline inline-flex items-center gap-1 break-words whitespace-normal"
+          className="text-blue-600 font-medium hover:underline inline-flex items-center gap-1 break-words whitespace-normal cursor-pointer"
           title="Open in PTIS"
         >
           {displayText}
@@ -109,7 +109,7 @@ export function UpicLinkCell({
           size="xs"
           icon={Copy}
           onClick={handleCopy}
-          className="!p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+          className="!p-0 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
           aria-label={`Copy ${copyLabel}`}
           title={`Copy ${copyLabel}`}
         />

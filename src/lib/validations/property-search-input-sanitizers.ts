@@ -14,12 +14,11 @@ import {
 type Sanitizer = (value: string) => string;
 
 const ALPHANUMERIC_WITH_SEPARATORS = /[^a-zA-Z0-9/\-]/g;
-const ALPHANUMERIC_WITH_HYPHEN = /[^a-zA-Z0-9\-]/g;
 const ALPHANUMERIC_ONLY = /[^a-zA-Z0-9]/g;
-const PERSON_NAME_ALLOWED = /[^\p{L}\s.]/gu;
-const SHOP_BUILDING_ALLOWED = /[^\p{L}\p{N}\s/\-.,]/gu;
-const SOCIETY_NAME_ALLOWED = /[^a-zA-Z0-9\s.\-]/g;
-const ADDRESS_ALLOWED = /[^\p{L}\p{N}\s,./\-]/gu;
+const PERSON_NAME_ALLOWED = /[^\p{L}\p{M}\s.:\-]/gu;
+const SHOP_BUILDING_ALLOWED = /[^\p{L}\p{M}\p{N}\s/\-.,]/gu;
+const SOCIETY_NAME_ALLOWED = /[^\p{L}\p{M}\p{N}\s.\-]/gu;
+const ADDRESS_ALLOWED = /[^\p{L}\p{M}\p{N}\s,./\-]/gu;
 
 const onlyDigits = (max: number): Sanitizer => (value) =>
   value.replace(/\D/g, "").slice(0, max);
@@ -28,11 +27,6 @@ const alphanumericWithSeparators =
   (max: number): Sanitizer =>
   (value) =>
     value.replace(ALPHANUMERIC_WITH_SEPARATORS, "").slice(0, max);
-
-const alphanumericWithHyphen =
-  (max: number): Sanitizer =>
-  (value) =>
-    value.replace(ALPHANUMERIC_WITH_HYPHEN, "").slice(0, max);
 
 const alphanumericOnly =
   (max: number): Sanitizer =>
@@ -78,16 +72,12 @@ const addressField =
   };
 
 const SANITIZERS: Partial<Record<keyof SearchCriteria, Sanitizer>> = {
-  propertyNoFrom: alphanumericWithSeparators(
-    PROPERTY_SEARCH_FIELD_LIMITS.propertyNo
-  ),
-  propertyNoTo: alphanumericWithSeparators(
-    PROPERTY_SEARCH_FIELD_LIMITS.propertyNo
-  ),
-  oldPropertyNo: alphanumericWithSeparators(
+  propertyNoFrom: onlyDigits(PROPERTY_SEARCH_FIELD_LIMITS.propertyNo),
+  propertyNoTo: onlyDigits(PROPERTY_SEARCH_FIELD_LIMITS.propertyNo),
+  oldPropertyNo: alphanumericOnly(
     PROPERTY_SEARCH_FIELD_LIMITS.oldPropertyNo
   ),
-  upicId: alphanumericWithHyphen(PROPERTY_SEARCH_FIELD_LIMITS.upicId),
+  upicId: alphanumericOnly(PROPERTY_SEARCH_FIELD_LIMITS.upicId),
   citySurveyNo: alphanumericWithSeparators(
     PROPERTY_SEARCH_FIELD_LIMITS.citySurveyNo
   ),

@@ -3,7 +3,6 @@
 import { redirect } from 'next/navigation';
 import { footerService, FooterAction } from '@/lib/api/footer.service';
 import { z } from 'zod';
-import { PTIS_TABS } from '@/types/ptis.types';
 
 export type ActionResult<T> =
   | { success: true; data: T; message?: string }
@@ -26,7 +25,7 @@ const ptisEditRedirectSchema = z.object({
   wardId: z.coerce.number().positive().optional(),
   propertyNo: z.string().regex(/^[a-zA-Z0-9_-]+$/).optional(),
   partitionNo: z.string().regex(/^[a-zA-Z0-9_-]*$/).optional(),
-  tab: z.enum(PTIS_TABS).optional(),
+  tab: z.string().optional(),
 });
 
 /**
@@ -95,14 +94,18 @@ export async function handleFooterAction(
         let targetPath = '';
         if (tab === 'kycdetails') {
           params.set('propertyId', String(propertyId));
+          params.set('returnTab', 'kycdetails');
           targetPath = `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Kyc`;
         } else if (tab === 'societydetails') {
           params.set('propertyId', String(propertyId));
+           params.set('returnTab', 'societydetails');
           targetPath = `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Society`;
         } else if (tab === 'olddetails') {
           params.set('propertyId', String(propertyId));
+            params.set('returnTab', 'olddetails');
           targetPath = `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/OldDetails/old-taxation`;
         } else {
+           params.set('returnTab', 'propertydetails');
           targetPath = `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Property`;
         }
 

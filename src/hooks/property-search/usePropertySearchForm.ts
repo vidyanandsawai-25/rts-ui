@@ -262,6 +262,27 @@ export function usePropertySearchForm({
     onReset();
   }, [criteriaKey, onReset]);
 
+  const handleClearFilterTag = React.useCallback(
+    (field: keyof SearchCriteria) => {
+      if (field === "zoneId") {
+        setDraft((prev) => ({
+          criteriaKey,
+          formState: { ...getBaseFormState(prev), zoneId: 0, wardId: 0 },
+          validationError: null,
+          submitAttempted: prev.criteriaKey === criteriaKey ? prev.submitAttempted : false,
+          touchedFields:
+            prev.criteriaKey === criteriaKey ? prev.touchedFields : new Set(),
+        }));
+        updateDraftCriteria("zoneId", "");
+      } else {
+        const nextValue = field === "wardId" ? 0 : "";
+        setField(field, nextValue);
+        updateDraftCriteria(field, nextValue);
+      }
+    },
+    [criteriaKey, getBaseFormState, setField, updateDraftCriteria]
+  );
+
   return {
     formState,
     validationError,
@@ -276,5 +297,7 @@ export function usePropertySearchForm({
     handleWardChange,
     handleSubmit,
     handleReset,
+    handleClearFilterTag,
   };
 }
+

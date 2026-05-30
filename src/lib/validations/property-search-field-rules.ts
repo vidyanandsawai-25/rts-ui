@@ -29,30 +29,33 @@ export const PROPERTY_SEARCH_FIELD_LIMITS = {
   mobile: 10,
   shopBuildingName: 100,
   societyName: 100,
-  address: 250,
+  address: 300,
 } as const;
 
 /** Alphanumeric with hyphen (/) and slash (-), no leading/trailing separators. */
 export const ALPHANUMERIC_WITH_SEPARATORS_PATTERN =
   /^[a-zA-Z0-9]+([/-][a-zA-Z0-9]+)*$/;
 
-/** UPIC ID: alphanumeric and hyphen only. */
-export const UPIC_ID_PATTERN = /^[a-zA-Z0-9-]+$/;
+/** Alphanumeric only pattern. */
+export const ALPHANUMERIC_ONLY_PATTERN = /^[a-zA-Z0-9]+$/;
+
+/** Digits only pattern. */
+export const DIGITS_ONLY_PATTERN = /^\d+$/;
 
 /** Sub Zone No.: alphanumeric only. */
 export const SUB_ZONE_NO_PATTERN = /^[a-zA-Z0-9]+$/;
 
-/** Property Holder / Occupier Name: alphabets, spaces, and period. */
-export const PERSON_NAME_PATTERN = /^[\p{L}\s.]+$/u;
+/** Property Holder / Occupier Name: alphabets, spaces, combining vowel marks, periods, colons, hyphens. */
+export const PERSON_NAME_PATTERN = /^[\p{L}\p{M}\s.:\-]+$/u;
 
-/** Shop/Building Name: alphabets, numbers, spaces, /, -, and period. */
-export const SHOP_BUILDING_NAME_PATTERN = /^[\p{L}\p{N}\s/\-.,]+$/u;
+/** Shop/Building Name: alphabets, numbers, combining marks, spaces, /, -, and period. */
+export const SHOP_BUILDING_NAME_PATTERN = /^[\p{L}\p{M}\p{N}\s/\-.,]+$/u;
 
-/** Society Name: alphanumeric with spaces, period, and hyphen. */
-export const SOCIETY_NAME_PATTERN = /^[\p{L}\p{N}\s.\-]+$/u;
+/** Society Name: alphanumeric with combining marks, spaces, period, and hyphen. */
+export const SOCIETY_NAME_PATTERN = /^[\p{L}\p{M}\p{N}\s.\-]+$/u;
 
-/** Address: alphabets, numbers, spaces, comma, period, slash, hyphen. */
-export const ADDRESS_PATTERN = /^[\p{L}\p{N}\s,./\-]+$/u;
+/** Address: alphabets, numbers, combining marks, spaces, comma, period, slash, hyphen. */
+export const ADDRESS_PATTERN = /^[\p{L}\p{M}\p{N}\s,./\-]+$/u;
 
 /** Indian mobile: exactly 10 digits starting with 6–9. */
 export const MOBILE_PATTERN = /^[6-9]\d{9}$/;
@@ -126,13 +129,30 @@ function validateAddress(value: string, max: number): boolean {
   if (!trimmed) return true;
   if (containsHtmlOrScript(trimmed)) return false;
   if (hasMultipleSpaces(trimmed)) return false;
+
+  // Word count check: must not exceed 500 words
+  const words = trimmed.split(/\s+/).filter(Boolean);
+  if (words.length > 500) return false;
+
   return isWithinMaxLength(trimmed, max) && ADDRESS_PATTERN.test(trimmed);
 }
 
 function validateMobile(value: string): boolean {
-  const digits = value.replace(/\D/g, "");
-  if (!digits) return true;
-  return MOBILE_PATTERN.test(digits);
+  const trimmed = value.trim();
+  if (!trimmed) return true;
+  return MOBILE_PATTERN.test(trimmed);
+}
+
+function validateDigitsOnly(value: string, max: number): boolean {
+  const trimmed = trimFieldValue(value);
+  if (!trimmed) return true;
+  return isWithinMaxLength(trimmed, max) && DIGITS_ONLY_PATTERN.test(trimmed);
+}
+
+function validateAlphanumericOnly(value: string, max: number): boolean {
+  const trimmed = trimFieldValue(value);
+  if (!trimmed) return true;
+  return isWithinMaxLength(trimmed, max) && ALPHANUMERIC_ONLY_PATTERN.test(trimmed);
 }
 
 function validateUpicId(value: string): boolean {
@@ -140,7 +160,7 @@ function validateUpicId(value: string): boolean {
   if (!trimmed) return true;
   return (
     isWithinMaxLength(trimmed, PROPERTY_SEARCH_FIELD_LIMITS.upicId) &&
-    UPIC_ID_PATTERN.test(trimmed)
+    ALPHANUMERIC_ONLY_PATTERN.test(trimmed)
   );
 }
 
@@ -168,7 +188,7 @@ export function validateSearchFieldValue(
   switch (field) {
     case "propertyNoFrom":
     case "propertyNoTo":
-      return validateAlphanumericWithSeparators(
+      return validateDigitsOnly(
         value,
         PROPERTY_SEARCH_FIELD_LIMITS.propertyNo
       )
@@ -176,7 +196,7 @@ export function validateSearchFieldValue(
         : t("propertyNoInvalid");
 
     case "oldPropertyNo":
-      return validateAlphanumericWithSeparators(
+      return validateAlphanumericOnly(
         value,
         PROPERTY_SEARCH_FIELD_LIMITS.oldPropertyNo
       )
