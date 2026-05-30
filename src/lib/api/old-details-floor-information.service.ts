@@ -81,8 +81,23 @@ export async function getSubTypeOfUses(typeOfUseId: number, pageNumber: number, 
 }
 
 /* ---------------- GET OLD FLOOR DETAILS ---------------- */
-export async function getOldFloorDetailsForFloorInformation(propertyId: number): Promise<OldFloorDetailsResponse> {
-    const response = await apiClient.get<OldFloorDetailsResponse>(`/Property/${propertyId}/floor-details-old`,{cache: 'no-store'});
+export async function getOldFloorDetailsForFloorInformation(
+    propertyId: number,
+    pageNumber: number = 1,
+    pageSize: number = 10,
+    searchTerm?: string
+): Promise<OldFloorDetailsResponse> {
+    const params = new URLSearchParams({
+        PageNumber: pageNumber.toString(),
+        PageSize: pageSize.toString(),
+    });
+    if (searchTerm?.trim()) {
+        params.append("SearchTerm", searchTerm.trim());
+    }
+    const response = await apiClient.get<OldFloorDetailsResponse>(
+        `/Property/${propertyId}/floor-details-old/paged?${params.toString()}`,
+        {cache: 'no-store'}
+    );
     return handleApiResponse(response, `Failed to fetch old floor details for property ${propertyId}`);
 }
 

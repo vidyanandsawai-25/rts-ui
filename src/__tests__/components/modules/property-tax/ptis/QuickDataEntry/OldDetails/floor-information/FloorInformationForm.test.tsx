@@ -15,6 +15,14 @@ vi.mock('next/navigation', () => ({
   useParams: () => ({ propertyId: '123', locale: 'en' }),
   usePathname: () => '/test-path',
   useSearchParams: () => new URLSearchParams(),
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    prefetch: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+    refresh: vi.fn(),
+  }),
 }));
 
 vi.mock('@/hooks/ptis/QuickDataEntry/Olddetails/useFloorInformationForm', () => ({

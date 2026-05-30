@@ -6,6 +6,15 @@ import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
 import { saveDepartmentMasterAction } from "@/app/[locale]/configuration-settings/department-master/action";
 import { DepartmentMaster, DepartmentMasterFormData } from "@/types/departmentMaster.types";
+import { isAllZeros } from "@/lib/utils/validation-rules";
+import {
+  DEPARTMENT_CODE_REGEX,
+  DEPARTMENT_TEXT_REGEX,
+  DEPARTMENT_DESCRIPTION_REGEX,
+  sanitizeDepartmentCode,
+  sanitizeDepartmentText,
+  sanitizeDescription
+} from "@/lib/utils/department-validation";
 
 interface UseDepartmentFormProps {
   initialOpen?: boolean;
@@ -59,22 +68,18 @@ export function useDepartmentForm({ initialOpen = true, editingDepartment, onSuc
 
   const validate = useCallback((data: DepartmentMasterFormData) => {
     const newErrors: Record<string, string> = {};
-    
+
     // ---------------- Department Code Validation ----------------
     const code = data.departmentCode?.trim() || "";
     if (!code) {
       newErrors.departmentCode = tCommon("validation.required");
     } else {
-      if (code.length < 2) {
-        newErrors.departmentCode = tCommon("validation.minLength", { count: 2 });
-      } else if (code.length > 50) {
-        newErrors.departmentCode = tCommon("validation.maxLength", { count: 50 });
-      } else if (/^0+$/.test(code)) {
+      if (code.length > 6) {
+        newErrors.departmentCode = tCommon("validation.maxLength", { count: 6 });
+      } else if (isAllZeros(code)) {
         newErrors.departmentCode = "Department Code cannot consist only of zeros";
-      } else if (!/[a-zA-Z0-9]/.test(code)) {
-        newErrors.departmentCode = "Department Code must contain at least one letter or digit";
-      } else if (!/^[A-Za-z0-9]+([A-Za-z0-9\s_-]*[A-Za-z0-9]+)*$/.test(code)) {
-        newErrors.departmentCode = tCommon("validation.alphanumericUnderscore", { label: t("form.fields.departmentCode") });
+      } else if (!DEPARTMENT_CODE_REGEX.test(code)) {
+        newErrors.departmentCode = "Department Code must contain only alphanumeric characters, hyphens, and underscores (no spaces)";
       }
     }
 
@@ -83,45 +88,35 @@ export function useDepartmentForm({ initialOpen = true, editingDepartment, onSuc
     if (!name) {
       newErrors.departmentName = tCommon("validation.required");
     } else {
-      if (name.length < 3) {
-        newErrors.departmentName = tCommon("validation.minLength", { count: 3 });
-      } else if (name.length > 100) {
-        newErrors.departmentName = tCommon("validation.maxLength", { count: 100 });
-      } else if (!/[\p{L}]/u.test(name)) {
-        newErrors.departmentName = "Department Name must contain at least one letter";
-      } else if (/^[0-9\s,.\-\/()]+$/.test(name)) {
-        newErrors.departmentName = "Department Name cannot consist only of numbers or punctuation";
-      } else if (!/^[\p{L}\p{M}\p{N}]+(([\p{L}\p{M}\p{N}\/,.\-()&]|\s(?!\s))*[\p{L}\p{M}\p{N}]+)*$/u.test(name)) {
-        newErrors.departmentName = "Department Name contains invalid characters or consecutive spaces";
+      if (name.length > 50) {
+        newErrors.departmentName = tCommon("validation.maxLength", { count: 50 });
+      } else if (!DEPARTMENT_TEXT_REGEX.test(name)) {
+        newErrors.departmentName = "Department Name must contain only alphabets and spaces";
       }
     }
 
     // ---------------- Local Name Validation ----------------
     const nameLocal = data.departmentNameLocal?.trim() || "";
     if (nameLocal) {
-      if (nameLocal.length < 3) {
-        newErrors.departmentNameLocal = tCommon("validation.minLength", { count: 3 });
-      } else if (nameLocal.length > 100) {
-        newErrors.departmentNameLocal = tCommon("validation.maxLength", { count: 100 });
-      } else if (!/[\p{L}]/u.test(nameLocal)) {
-        newErrors.departmentNameLocal = "Local Name must contain at least one letter";
+      if (nameLocal.length > 50) {
+        newErrors.departmentNameLocal = tCommon("validation.maxLength", { count: 50 });
+      } else if (!DEPARTMENT_TEXT_REGEX.test(nameLocal)) {
+        newErrors.departmentNameLocal = "Local Name must contain only alphabets and spaces";
       }
     }
-
-
 
     // ---------------- Description Validation ----------------
     const desc = data.departmentDescription?.trim() || "";
     if (desc) {
-      if (desc.length > 500) {
-        newErrors.departmentDescription = tCommon("validation.maxLength", { count: 500 });
-      } else if (!/[\p{L}\p{N}]/u.test(desc)) {
-        newErrors.departmentDescription = "Description must contain at least one letter or digit";
+      if (desc.length > 100) {
+        newErrors.departmentDescription = tCommon("validation.maxLength", { count: 100 });
+      } else if (!DEPARTMENT_DESCRIPTION_REGEX.test(desc)) {
+        newErrors.departmentDescription = "Description must contain only alphabets and spaces";
       }
     }
 
     return newErrors;
-  }, [tCommon, t]);
+  }, [tCommon]);
 
   const closeAndRoute = useCallback(() => {
     setOpen(false);
@@ -133,7 +128,21 @@ export function useDepartmentForm({ initialOpen = true, editingDepartment, onSuc
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData((p) => ({ ...p, [name]: value }));
+    
+    let sanitizedValue = value;
+    if (name === "departmentCode") {
+      sanitizedValue = sanitizeDepartmentCode(value);
+    } else if (name === "departmentName" || name === "departmentNameLocal") {
+      sanitizedValue = sanitizeDepartmentText(value, 50);
+    } else if (name === "departmentDescription") {
+      sanitizedValue = sanitizeDescription(value);
+    }
+
+    const updatedData = { ...formData, [name]: sanitizedValue };
+    setFormData(updatedData);
+    setTouched((p) => ({ ...p, [name]: true }));
+    const v = validate(updatedData);
+    setErrors(v);
   };
 
   const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {

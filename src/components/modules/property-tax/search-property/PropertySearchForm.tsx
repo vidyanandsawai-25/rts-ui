@@ -14,7 +14,9 @@ import {
 import { TopFilterRow } from "./form/TopFilterRow";
 import { QuickSearchPanel } from "./form/QuickSearchPanel";
 import { KycSearchPanel } from "./form/KycSearchPanel";
+import { ValuesDuesPanel } from "./form/ValuesDuesPanel";
 import { SearchTabs } from "./form/SearchTabs";
+import { ActiveFiltersTags } from "./form/ActiveFiltersTags";
 
 /**
  * SSR-driven Property Search form.
@@ -62,6 +64,7 @@ export function PropertySearchForm({
     handleWardChange,
     handleSubmit,
     handleReset,
+    handleClearFilterTag,
   } = usePropertySearchForm({
     initialCriteria,
     activeTab,
@@ -83,6 +86,18 @@ export function PropertySearchForm({
     lookupOptions: liveLookupOptions,
     propertyNoFrom: formState.propertyNoFrom,
   });
+
+  const activeFiltersTags = (
+    <ActiveFiltersTags
+      formState={formState}
+      propertyTypeOptions={propertyTypeOptions}
+      zoneOptions={zoneOptions}
+      wardOptions={liveWardOptions}
+      propertyDescriptionOptions={propertyDescriptionOptions}
+      onClearField={handleClearFilterTag}
+    />
+  );
+
 
   return (
     <form onSubmit={handleSubmit} className="space-y-1.5">
@@ -108,6 +123,7 @@ export function PropertySearchForm({
         validationRef={validationRef}
         onTabChange={onTabChange}
         onReset={handleReset}
+        activeFiltersTags={activeFiltersTags}
         quickPanel={
           <div data-filter-field>
             <QuickSearchPanel
@@ -127,6 +143,18 @@ export function PropertySearchForm({
               formState={formState}
               fieldErrors={fieldErrors}
               disabled={disabled}
+              onInputChange={handleInputChange}
+              onInputBlur={handleInputBlur}
+            />
+          </div>
+        }
+        valuesDuesPanel={
+          <div data-filter-field>
+            <ValuesDuesPanel
+              formState={formState}
+              fieldErrors={fieldErrors}
+              disabled={disabled}
+              onSelectChange={handleSelectChange}
               onInputChange={handleInputChange}
               onInputBlur={handleInputBlur}
             />

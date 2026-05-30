@@ -23,6 +23,7 @@ function QuickDataEntryContent({
     const wardId = searchParams.get("wardId") || "";
     const propertyNo = searchParams.get("propertyNo") || "";
     const partitionNo = searchParams.get("partitionNo") || "";
+    const returnTab = searchParams.get("returnTab") || "";
 
     const handleClose = () => {
         const params = new URLSearchParams();
@@ -31,6 +32,7 @@ function QuickDataEntryContent({
         if (wardId) params.set('wardId', wardId);
         if (propertyNo) params.set('propertyNo', propertyNo);
         if (partitionNo) params.set('partitionNo', partitionNo);
+        if (returnTab) params.set('tab', returnTab);
 
         router.push(`/${locale}/property-tax/ptis?${params}`);
     };

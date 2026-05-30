@@ -1,16 +1,16 @@
 /** Shared compact field styles aligned with Select `selectSize="sm"` */
 export const COMPACT_LABEL_CLASS =
-  "text-xs font-medium text-gray-600 mb-0.5 truncate block";
+  "text-xs font-bold text-gray-900 mb-0.5 truncate block";
 
 export const COMPACT_INPUT_CLASS =
   "box-border !h-8 min-h-8 px-2 !py-0 text-xs leading-8 rounded-md";
 
 /** Brand palette aligned with app header (#004c8c) */
 export const SEARCH_BRAND_TAB_LIST =
-  "bg-slate-100 border-b border-slate-200";
+  "bg-transparent border-b border-slate-200";
 
 export const SEARCH_BRAND_TAB_INACTIVE =
-  "data-[state=inactive]:!bg-transparent data-[state=inactive]:!text-slate-600 data-[state=inactive]:shadow-none data-[state=inactive]:hover:!bg-slate-200/70 data-[state=inactive]:hover:!text-slate-800";
+  "data-[state=inactive]:!bg-slate-100 data-[state=inactive]:!text-slate-600 data-[state=inactive]:shadow-none data-[state=inactive]:hover:!bg-slate-200/70 data-[state=inactive]:hover:!text-slate-800";
 
 export const SEARCH_BRAND_TAB_ACTIVE =
   "data-[state=active]:!bg-[#004c8c] data-[state=active]:!text-white data-[state=active]:shadow-sm";

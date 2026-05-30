@@ -51,8 +51,16 @@ export interface FloorTableSectionProps {
   t: (key: string) => string;
   tCommon: (key: string) => string;
   existingFloorDetails: OldFloorDetail[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+  searchTerm?: string;
   onEdit: (floor: OldFloorDetail) => void;
   onDelete: (id: number) => Promise<void>;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (pageSize: string) => void;
+  onSearchChange: (search: string) => void;
 }
 
 export interface AreaDetailsFieldsProps {
@@ -62,6 +70,7 @@ export interface AreaDetailsFieldsProps {
     oldPlotNo: string;
     oldConstructionArea: string;
   };
+  showError: (field: string, isValid: boolean) => boolean;
   onFieldChange: (field: string, value: string | number) => void;
 }
 
@@ -74,7 +83,7 @@ export interface PropertyDetailsFieldsProps {
     oldPartitionNo: string;
     oldEgovNo: string;
   };
-  showError: (field: string, hasValue: boolean) => boolean;
+  showError: (field: string, isValid: boolean) => boolean;
   onFieldChange: (field: string, value: string | number) => void;
 }
 
@@ -86,6 +95,7 @@ export interface TaxDetailsFieldsProps {
     oldGeneralTax: string;
     oldTotalTax: string;
   };
+  showError: (field: string, isValid: boolean) => boolean;
   onFieldChange: (field: string, value: string | number) => void;
 }
 
@@ -111,14 +121,12 @@ export interface TaxationMetaFieldsProps {
   interest: number;
   onYearChange: (value: string) => void;
   onInterestChange: (value: string) => void;
-  validationErrors: Record<string, string>;
 }
 
 export interface TaxationSummaryFieldsProps {
   t: (key: string) => string;
   taxTotal: number;
   netTotal: number;
-  validationErrors: Record<string, string>;
 }
 
 export interface Section {

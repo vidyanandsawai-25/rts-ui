@@ -16,8 +16,14 @@ export function FloorTableSection({
   t,
   tCommon,
   existingFloorDetails,
+  totalCount,
+  pageNumber,
+  pageSize,
+  totalPages,
   onEdit,
-  onDelete
+  onDelete,
+  onPageChange,
+  onPageSizeChange,
 }: FloorTableSectionProps) {
   const { confirm } = useConfirm();
 
@@ -54,22 +60,28 @@ export function FloorTableSection({
     ),
   }));
 
-
-
   return (
-    <div className="rounded-lg overflow-x-auto bg-white shadow-sm mb-6 border border-blue-200 [&_th:last-child]:text-white! [&_th:last-child]:text-xs [&_th:last-child]:border-l [&_th:last-child]:border-white/30">
+    <div className="rounded-lg bg-white shadow-sm mb-6 border border-blue-200 [&_th]:whitespace-nowrap [&_th:last-child]:text-white! [&_th:last-child]:text-xs [&_th:last-child]:border-l [&_th:last-child]:border-white/30">
       <MasterTable
-        columns={getFloorInformationColumns(t)}
         data={transformedData}
-        totalCount={existingFloorDetails.length}
-        getRowKey={(row: FloorTableRow) => String(row.id || "")}
-        maxBodyHeightClassName="max-h-[350px]"
+        columns={getFloorInformationColumns(t)}
+        emptyText={t('floor.noFloorData')}
+        maxBodyHeightClassName="max-h-[400px]" //max-h-[400px]
         theadClassName="sticky top-0 z-20 bg-[#2D3E8A] text-white border-b border-blue-300"
-        rowClassName={() => "hover:bg-blue-50/50 transition-colors"}
-        tableClassName="min-w-max"
-        actionLabel={t('floor.actions').toUpperCase()}
+        rowClassName={() => "hover:bg-blue-50/50 transition-colors"}       
+        pageNumber={pageNumber}
+        pageSize={pageSize}
+        totalCount={totalCount}
+        totalPages={totalPages}
+        onPageChange={onPageChange}
+        onPageSizeChange={(size) => onPageSizeChange(String(size))}
+        paginationConfig={{
+          enabled: true,
+          showPageSizeSelector: true,
+        }}
+        getRowKey={(row) => row.id}
         renderActions={useCallback((row: FloorTableRow) => (
-          <div className="flex items-center gap-2 whitespace-nowrap ">
+          <div className="flex items-center gap-2 whitespace-nowrap">
             <EditButton onClick={() => onEdit(row.originalRow)} />
             <DeleteButton onClick={() => handleDeleteClick(row)} />
           </div>

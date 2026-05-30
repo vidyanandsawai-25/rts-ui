@@ -35,7 +35,7 @@ const KycFormView: React.FC<KycFormViewProps> = ({ KycDetailsData, OwnerTypeMast
 
   return (
     <form ref={formRef} onSubmit={handleSubmit} noValidate>
-      <div className="mt-0 p-4 space-y-3">
+      <div className="mt-0 p-4 space-y-3 min-h-100">
         <div className="bg-white rounded-xl shadow-md border-2 border-gray-200 p-4">
           <h3 className="text-sm font-bold text-gray-800 mb-3 pb-2 border-b-2 border-gray-300">
             {t('kyc.title')}

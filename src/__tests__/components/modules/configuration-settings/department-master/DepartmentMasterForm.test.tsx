@@ -69,7 +69,7 @@ describe('DepartmentMasterForm', () => {
     });
 
     render(<DepartmentMasterForm open={true} onClose={vi.fn()} editingDepartment={null} />);
-    
+
     // Fill required fields
     fireEvent.change(screen.getByPlaceholderText('form.fields.departmentCodePlaceholder'), { target: { value: 'ERR01' } });
     fireEvent.change(screen.getByPlaceholderText('form.fields.departmentNamePlaceholder'), { target: { value: 'Error Dept' } });
@@ -79,5 +79,76 @@ describe('DepartmentMasterForm', () => {
     await waitFor(() => {
       expect(mockToastError).toHaveBeenCalledWith('API Error');
     });
+  });
+
+  it('shows validation error immediately on change for invalid department code', async () => {
+    render(<DepartmentMasterForm open={true} onClose={vi.fn()} editingDepartment={null} />);
+    const codeInput = screen.getByPlaceholderText('form.fields.departmentCodePlaceholder');
+    
+    // Type an invalid code (consisting only of zeros)
+    fireEvent.change(codeInput, { target: { value: '00' } });
+    
+    // The validation message should be visible on change
+    expect(screen.getByText('Department Code cannot consist only of zeros')).toBeInTheDocument();
+  });
+
+  it('strips special characters and spaces from department code immediately on change', async () => {
+    render(<DepartmentMasterForm open={true} onClose={vi.fn()} editingDepartment={null} />);
+    const codeInput = screen.getByPlaceholderText('form.fields.departmentCodePlaceholder') as HTMLInputElement;
+    
+    // Type with special characters and space
+    fireEvent.change(codeInput, { target: { value: 'D E ! P @' } });
+    
+    // The value should be sanitized to DEP (spaces, exclamation marks, @ stripped)
+    expect(codeInput.value).toBe('DEP');
+  });
+
+  it('strips numbers and special characters from department name immediately on change', async () => {
+    render(<DepartmentMasterForm open={true} onClose={vi.fn()} editingDepartment={null} />);
+    const nameInput = screen.getByPlaceholderText('form.fields.departmentNamePlaceholder') as HTMLInputElement;
+    
+    // Type with numbers and special characters
+    fireEvent.change(nameInput, { target: { value: 'Dept 123!' } });
+    
+    // The value should be sanitized to "Dept "
+    expect(nameInput.value).toBe('Dept ');
+  });
+
+  it('truncates department name to 50 characters', async () => {
+    render(<DepartmentMasterForm open={true} onClose={vi.fn()} editingDepartment={null} />);
+    const nameInput = screen.getByPlaceholderText('form.fields.departmentNamePlaceholder') as HTMLInputElement;
+    
+    // Type 55 characters
+    const longName = 'A'.repeat(55);
+    fireEvent.change(nameInput, { target: { value: longName } });
+    
+    // The value should be truncated to 50
+    expect(nameInput.value).toHaveLength(50);
+  });
+
+  it('does not show required validation error on change when field is cleared', async () => {
+    render(<DepartmentMasterForm open={true} onClose={vi.fn()} editingDepartment={null} />);
+    const codeInput = screen.getByPlaceholderText('form.fields.departmentCodePlaceholder') as HTMLInputElement;
+
+    // Type a value first
+    fireEvent.change(codeInput, { target: { value: 'NEW' } });
+    expect(screen.queryByText('validation.required')).not.toBeInTheDocument();
+
+    // Clear the field
+    fireEvent.change(codeInput, { target: { value: '' } });
+    
+    // Required error should still not be shown
+    expect(screen.queryByText('validation.required')).not.toBeInTheDocument();
+  });
+
+  it('allows Marathi/Devanagari characters and spaces in department name', async () => {
+    render(<DepartmentMasterForm open={true} onClose={vi.fn()} editingDepartment={null} />);
+    const nameInput = screen.getByPlaceholderText('form.fields.departmentNamePlaceholder') as HTMLInputElement;
+
+    // Type Marathi characters
+    fireEvent.change(nameInput, { target: { value: 'मराठी विभाग' } });
+
+    // The value should be accepted completely without being stripped
+    expect(nameInput.value).toBe('मराठी विभाग');
   });
 });

@@ -1,8 +1,9 @@
 "use client";
 
 import React from "react";
-import { Button, Label, Select } from "@/components/common";
+import { Button, Label } from "@/components/common";
 import type { Option } from "@/components/common";
+import { SearchSelect } from "@/components/common/SearchSelect";
 import { COMPACT_LABEL_CLASS } from "../form-field-styles";
 
 interface FilterSelectProps {
@@ -31,6 +32,13 @@ export function FilterSelect({
     onChange(event, "");
   };
 
+  const handleSelectChange = (name: string, val: string) => {
+    const event = {
+      target: { name, value: val },
+    } as React.ChangeEvent<HTMLSelectElement>;
+    onChange(event, val);
+  };
+
   return (
     <div className="w-full">
       <div className="mb-1 flex items-center justify-between gap-1">
@@ -41,21 +49,24 @@ export function FilterSelect({
             variant="ghost"
             size="xs"
             onClick={handleClear}
-            className="!h-auto !min-h-0 !px-0 !py-0 text-xs text-[#004c8c] hover:!bg-transparent hover:underline"
+            className="!h-auto !min-h-0 !px-0 !py-0 text-xs text-[#004c8c] hover:!bg-transparent hover:underline cursor-pointer"
           >
             {clearLabel}
           </Button>
         )}
       </div>
-      <Select
+      <SearchSelect
+        key={`${label}-${value}`}
+        id={label}
+        name={label}
         options={options}
         placeholder={placeholder}
         value={value}
-        onChange={onChange}
+        onChange={handleSelectChange}
         disabled={disabled}
-        selectSize="sm"
-        ariaLabel={label}
+        className="!h-8 !min-h-8 !py-0 !px-2.5 !text-xs !rounded-md !leading-8"
       />
+
     </div>
   );
 }

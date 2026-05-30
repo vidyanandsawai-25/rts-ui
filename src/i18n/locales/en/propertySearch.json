@@ -29,6 +29,8 @@
       "ward": "Ward",
       "scanQR": "Scan QR",
       "propertyNo": "Property No.",
+      "propertyNoFrom": "Property No. (From)",
+      "propertyNoTo": "Property No. (To)",
       "oldPropertyNo": "Old Property No.",
       "upicId": "UPIC ID",
       "citySurveyNo": "City Survey No.",
@@ -43,8 +45,10 @@
     },
     "tooltips": {
       "propertyNo": "Letters, numbers, hyphen (-), and slash (/). Max 20 characters. Example: P-2023-001, 10/A",
-      "oldPropertyNo": "Letters, numbers, hyphen (-), and slash (/). Max 25 characters.",
-      "upicId": "Letters, numbers, and hyphen (-) only. Max 15 characters.",
+      "propertyNoFrom": "Numbers only. Max 20 digits. Example: 100",
+      "propertyNoTo": "Numbers only. Max 20 digits. Example: 200",
+      "oldPropertyNo": "Letters and numbers only. Max 25 characters.",
+      "upicId": "Letters and numbers only. Max 15 characters.",
       "citySurveyNo": "Letters, numbers, hyphen (-), and slash (/). Max 20 characters. Example: CSN005A, 12/3",
       "subZoneNo": "Letters and numbers only. Max 10 characters.",
       "plotNo": "Letters, numbers, hyphen (-), and slash (/). Max 15 characters.",
@@ -53,7 +57,7 @@
       "mobile": "10-digit number starting with 6, 7, 8, or 9.",
       "shopBuildingName": "Letters, numbers, spaces, /, -, and period (.). Max 100 characters.",
       "societyName": "Letters, numbers, spaces, period (.), and hyphen (-). Max 100 characters.",
-      "address": "Letters, numbers, spaces, comma, period, slash, and hyphen. Max 250 characters."
+      "address": "Letters, numbers, spaces, comma, period, slash, and hyphen. Max 300 characters."
     },
     "placeholders": {
       "propertyType": "Select Property Type",
@@ -64,8 +68,8 @@
       "wardSelectZoneFirst": "Select Zone First",
       "wardLoading": "Loading wards...",
       "scanQR": "Scan QR Code",
-      "propertyNoFrom": "From: P-2023-001",
-      "propertyNoTo": "To: 10/A",
+      "propertyNoFrom": "From Property No.",
+      "propertyNoTo": "To Property No.",
       "oldPropertyNo": "Old Property No.",
       "upicId": "UPIC ID",
       "citySurveyNo": "e.g. CSN005A or 12/3",
@@ -109,7 +113,8 @@
         "exact": "Exact Value",
         "moreThan": "More Than",
         "lessThan": "Less Than",
-        "between": "Between"
+        "between": "Between",
+        "top": "Top"
       },
       "taxDefaulter": {
         "top100": "TOP 100",
@@ -131,9 +136,9 @@
       "wardRequiresZone": "Please select a zone before selecting a ward.",
       "propertyNoFromRequired": "Enter a Property No. 'From' value when using Property No. 'To'.",
       "propertyNoRangeInvalid": "Property No. 'To' must be greater than or equal to 'From'.",
-      "propertyNoInvalid": "Invalid Property Number",
-      "oldPropertyNoInvalid": "Invalid Old Property Number",
-      "upicIdInvalid": "Invalid UPIC ID format",
+      "propertyNoInvalid": "Property No. must contain numbers only.",
+      "oldPropertyNoInvalid": "Old Property No. must contain letters and numbers only.",
+      "upicIdInvalid": "UPIC ID must contain letters and numbers only.",
       "citySurveyNoInvalid": "Invalid City Survey Number",
       "subZoneNoInvalid": "Invalid Sub Zone Number",
       "plotNoInvalid": "Invalid Plot Number",
@@ -142,7 +147,7 @@
       "mobileInvalid": "Enter valid 10-digit mobile number",
       "shopBuildingNameInvalid": "Invalid Shop/Building Name",
       "societyNameInvalid": "Invalid Society Name",
-      "addressInvalid": "Invalid Address",
+      "addressInvalid": "Address cannot exceed 500 words, and accepts only letters, numbers, spaces, and , . / - in English, Hindi, or Marathi.",
       "taxDefaulterRangeRequired": "Enter both From and To values for the customised tax defaulter filter.",
       "taxDefaulterRangeInvalid": "Tax defaulter 'To' value must be greater than or equal to 'From'.",
       "rateableValueBetweenRequired": "Enter both amount fields for the rateable value between filter.",
