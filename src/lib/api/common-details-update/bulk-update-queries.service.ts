@@ -11,6 +11,7 @@ import {
   PropertyFilterParams,
 } from "@/types/common-details-update/common-details-update.types";
 import { createLogger } from "@/lib/utils/server-logger";
+import type { WingItem } from "@/types/wing.types";
 
 const logger = createLogger("BulkUpdateService");
 
@@ -359,10 +360,7 @@ export async function getPropertiesByWardServer(
   }
 }
 
-// Import shared WingItem type to avoid duplication
-import type { WingItem } from "@/types/zone-master/properties/wing.types";
-
-// Re-export for convenience
+// Re-export WingItem for convenience
 export type { WingItem };
 
 /**

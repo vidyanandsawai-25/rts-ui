@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { resolveUlbConfigurationErrorMessage } from '@/lib/utils/ulb-configuration-error';
 import { Tabs } from '@/components/common/Tabs';
 import { useUlbConfigurationForm } from '@/hooks/configuration-settings/ulb-configuration/useUlbConfigurationForm';
 import { useUlbConfigurationSave } from '@/hooks/configuration-settings/ulb-configuration/useUlbConfigurationSave';
@@ -77,12 +76,8 @@ export default function ULBConfigurationClient({
       }
 
       if (!form.validateSection(section)) {
-        const validationKey = form.getSectionValidationError(section);
-        toast.error(
-          validationKey
-            ? resolveUlbConfigurationErrorMessage(validationKey, t, t('messages.validation'))
-            : t('messages.validation')
-        );
+        const validationMessage = form.getSectionValidationError(section);
+        toast.error(validationMessage ?? t('messages.validation'));
         return;
       }
 
@@ -110,12 +105,12 @@ export default function ULBConfigurationClient({
 
   const handleFinalSave = useCallback(async () => {
     if (!form.validateSection('ulb-info')) {
-      toast.error(t('messages.validation'));
+      toast.error(form.getSectionValidationError('ulb-info') ?? t('messages.validation'));
       setActiveTab('ulb-info');
       return;
     }
     if (!form.validateSection('project-license-info')) {
-      toast.error(t('messages.validation'));
+      toast.error(form.getSectionValidationError('project-license-info') ?? t('messages.validation'));
       setActiveTab('project-license-info');
       return;
     }
@@ -162,7 +157,9 @@ export default function ULBConfigurationClient({
             <ULBInfoTab
               formData={form.formData}
               t={t}
-              onFieldChange={form.setField}
+              onFieldChange={form.handleFieldChange}
+              onFieldBlur={form.handleFieldBlur}
+              getFieldError={form.getFieldError}
               onStateChange={form.handleStateChange}
               onSave={() => {
                 if (!isSaving) void handleSaveSection('ulb-info');
@@ -192,7 +189,9 @@ export default function ULBConfigurationClient({
               formData={form.formData}
               masterRenewalAlerts={form.masterRenewalAlerts}
               t={t}
-              onFieldChange={form.setField}
+              onFieldChange={form.handleFieldChange}
+              onFieldBlur={form.handleFieldBlur}
+              getFieldError={form.getFieldError}
               onLicenseFieldChange={form.handleLicenseChange}
               onGenerateLicenseKey={form.generateLicenseKey}
               onSave={() => {

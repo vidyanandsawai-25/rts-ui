@@ -213,6 +213,11 @@ describe("useCombinePropertyForm hook", () => {
         result.current.handleProceed();
       });
 
+      // Check the property to be combined
+      act(() => {
+        result.current.togglePropertyCheck(3);
+      });
+
       // Now combine
       await act(async () => {
         await result.current.handleCombine();
@@ -249,6 +254,12 @@ describe("useCombinePropertyForm hook", () => {
         result.current.handleProceed();
       });
 
+      // Check the properties to be combined
+      act(() => {
+        result.current.togglePropertyCheck(3);
+        result.current.togglePropertyCheck(4);
+      });
+
       expect(result.current.hasDifferentOwners).toBe(true);
 
       // Attempt to combine
@@ -275,12 +286,7 @@ describe("useCombinePropertyForm hook", () => {
         result.current.handleProceed();
       });
 
-      // Uncheck the property
-      act(() => {
-        result.current.togglePropertyCheck(3);
-      });
-
-      expect(result.current.checkedCount).toBe(0);
+      expect(result.current.checkedCount).toBe(1);
 
       // Attempt to combine
       await act(async () => {
@@ -304,6 +310,13 @@ describe("useCombinePropertyForm hook", () => {
 
       await act(async () => {
         result.current.handleProceed();
+      });
+
+      // Uncheck the mismatched property
+      // wait, they are not checked initially anymore! We must first check them!
+      act(() => {
+        result.current.togglePropertyCheck(3);
+        result.current.togglePropertyCheck(4);
       });
 
       // Initially has different owners
@@ -333,20 +346,20 @@ describe("useCombinePropertyForm hook", () => {
         result.current.handleProceed();
       });
 
-      // Initially all are checked by default
-      expect(result.current.checkedCount).toBe(2);
+      // Initially only base property is checked
+      expect(result.current.checkedCount).toBe(1);
 
-      // Toggle all should uncheck all
+      // Toggle all should check all
       act(() => {
         result.current.toggleAllProperties();
       });
-      expect(result.current.checkedCount).toBe(0);
+      expect(result.current.checkedCount).toBe(3); // base + 2 from details
 
-      // Toggle all again should check all
+      // Toggle all again should uncheck all except base
       act(() => {
         result.current.toggleAllProperties();
       });
-      expect(result.current.checkedCount).toBe(2);
+      expect(result.current.checkedCount).toBe(1);
     });
   });
 });

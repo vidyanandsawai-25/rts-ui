@@ -105,8 +105,8 @@ export default function CombinePropertyForm(props: CombinePropertyFormProps) {
 
   /* ---- Table Columns (Memoized) ---- */
   const columns = useMemo(
-    () => getCombinePropertyColumns(t, reviewData, checkedPropertyIds, togglePropertyCheck, toggleAllProperties),
-    [reviewData, t, checkedPropertyIds, togglePropertyCheck, toggleAllProperties]
+    () => getCombinePropertyColumns(t, reviewData, checkedPropertyIds, togglePropertyCheck, toggleAllProperties, selectedBasePropertyId),
+    [reviewData, t, checkedPropertyIds, togglePropertyCheck, toggleAllProperties, selectedBasePropertyId]
   );
 
   /* ---- Options ---- */
@@ -171,7 +171,7 @@ export default function CombinePropertyForm(props: CombinePropertyFormProps) {
           <AddButton
             label={isSubmitting ? t('combining') : t('combine')}
             size="sm"
-            disabled={isSubmitting || checkedCount === 0}
+            disabled={isSubmitting || checkedCount <= 1}
             onClick={handleCombine}
           />
         )}
@@ -182,10 +182,22 @@ export default function CombinePropertyForm(props: CombinePropertyFormProps) {
   /* ============================================================
      RENDER
   ============================================================ */
+  const handleClose = () => {
+    const params = new URLSearchParams();
+    if (selectedWardNo) params.set('wardNo', selectedWardNo);
+    if (selectedWardId) params.set('wardId', selectedWardId);
+    if (selectedPropertyNo) params.set('propertyNo', selectedPropertyNo);
+    if (selectedBasePropertyId) params.set('propertyId', selectedBasePropertyId);
+
+    const qs = params.toString();
+    const target = qs ? `/property-tax/ptis?${qs}` : '/property-tax/ptis';
+    router.push(target);
+  };
+
   return (
     <Drawer
       open={true}
-      onClose={() => router.push('/property-tax/ptis')}
+      onClose={handleClose}
       title={DrawerTitle}
       width="xl"
       footer={DrawerFooter}

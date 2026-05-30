@@ -168,6 +168,7 @@ describe('useTaxZoning', () => {
     expect(result.current.previewData).toHaveLength(3);
     expect(result.current.previewData[0]).toEqual({
       taxZoneNo: '1',
+      oldTaxZoneNo: '-',
       wardNo: 'MM11',
       propertyNo: '100',
     });

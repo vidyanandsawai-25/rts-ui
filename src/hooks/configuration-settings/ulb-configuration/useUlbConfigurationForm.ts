@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import {
   calculateLicenseEndDate,
@@ -10,6 +11,12 @@ import {
 import { ULB_TYPE_OPTIONS } from '@/config/ulb-configuration.config';
 import { parseLicenseDurationFromApi } from '@/lib/api/configuration-settings/ulb-configuration/ulb-master.mapper';
 import { getUlbConfigurationValidationError } from '@/lib/api/configuration-settings/ulb-configuration/ulb-master.validator';
+import {
+  getFirstUlbFieldError,
+  sanitizeUlbFieldValue,
+  validateUlbConfigurationFields,
+  type UlbConfigurationFieldErrors,
+} from '@/lib/api/configuration-settings/ulb-configuration/ulb-form-validation';
 import type {
   CompletionStatus,
   RenewalAlert,
@@ -142,7 +149,13 @@ const SECTION_TO_STATUS: Record<UlbSectionKey, keyof CompletionStatus> = {
 };
 
 export function useUlbConfigurationForm(initialUlb: UlbConfigurationMaster | null) {
+  const t = useTranslations('ulb_configuration');
+  const tCommon = useTranslations('common');
+
   const [formData, setFormData] = useState<ULBConfigurationFormData>(() => buildInitialForm(initialUlb));
+  const [errors, setErrors] = useState<UlbConfigurationFieldErrors>({});
+  const [touched, setTouched] = useState<Partial<Record<keyof ULBConfigurationFormData, boolean>>>({});
+  const [submittedOnce, setSubmittedOnce] = useState<Partial<Record<UlbSectionKey, boolean>>>({});
   const [masterRenewalAlerts, setMasterRenewalAlerts] = useState<RenewalAlert[]>(() =>
     buildInitialRenewalAlerts(initialUlb)
   );
@@ -150,8 +163,17 @@ export function useUlbConfigurationForm(initialUlb: UlbConfigurationMaster | nul
     buildCompletionStatus(initialUlb)
   );
 
+  const validateFields = useCallback(
+    (data: ULBConfigurationFormData, section: UlbSectionKey): UlbConfigurationFieldErrors =>
+      validateUlbConfigurationFields(data, section, tCommon, t),
+    [t, tCommon]
+  );
+
   const syncFromUlbMaster = useCallback((ulb: UlbConfigurationMaster | null) => {
     setFormData(buildInitialForm(ulb));
+    setErrors({});
+    setTouched({});
+    setSubmittedOnce({});
     setMasterRenewalAlerts(buildInitialRenewalAlerts(ulb));
     setCompletionStatus((prev) => ({
       ...buildCompletionStatus(ulb),
@@ -161,10 +183,97 @@ export function useUlbConfigurationForm(initialUlb: UlbConfigurationMaster | nul
 
   const setField = useCallback(<K extends keyof ULBConfigurationFormData>(field: K, value: ULBConfigurationFormData[K]) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    setErrors((prev) => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
   }, []);
+
+  const handleFieldChange = useCallback(
+    <K extends keyof ULBConfigurationFormData>(field: K, value: ULBConfigurationFormData[K]) => {
+      const sanitized =
+        typeof value === 'string'
+          ? (sanitizeUlbFieldValue(field, value) as ULBConfigurationFormData[K])
+          : value;
+      setField(field, sanitized);
+    },
+    [setField]
+  );
+
+  const handleFieldBlur = useCallback(
+    (field: keyof ULBConfigurationFormData) => {
+      setTouched((prev) => ({ ...prev, [field]: true }));
+
+      const projectLicenseFields: (keyof ULBConfigurationFormData)[] = [
+        'projectStartDate',
+        'financialYearStart',
+        'goLiveDate',
+        'implementationPartner',
+        'projectManager',
+        'projectManagerEmail',
+        'projectManagerPhone',
+        'licenseType',
+        'licenseKey',
+        'licenseStartDate',
+        'licenseDuration',
+        'licenseEndDate',
+        'supportType',
+      ];
+
+      const section: UlbSectionKey = projectLicenseFields.includes(field)
+        ? 'project-license-info'
+        : 'ulb-info';
+
+      const fieldErrors = validateFields(formData, section);
+      setErrors((prev) => ({
+        ...prev,
+        [field]: fieldErrors[field],
+      }));
+    },
+    [formData, validateFields]
+  );
+
+  const getFieldError = useCallback(
+    (field: keyof ULBConfigurationFormData): string | undefined => {
+      if (!errors[field]) return undefined;
+
+      const projectLicenseFields: (keyof ULBConfigurationFormData)[] = [
+        'projectStartDate',
+        'financialYearStart',
+        'goLiveDate',
+        'implementationPartner',
+        'projectManager',
+        'projectManagerEmail',
+        'projectManagerPhone',
+        'licenseType',
+        'licenseKey',
+        'licenseStartDate',
+        'licenseDuration',
+        'licenseEndDate',
+        'supportType',
+      ];
+      const section: UlbSectionKey = projectLicenseFields.includes(field)
+        ? 'project-license-info'
+        : 'ulb-info';
+
+      if (submittedOnce[section] || touched[field]) {
+        return errors[field];
+      }
+      return undefined;
+    },
+    [errors, submittedOnce, touched]
+  );
 
   const handleStateChange = useCallback((state: string) => {
     setFormData((prev) => ({ ...prev, state, district: '' }));
+    setErrors((prev) => {
+      const next = { ...prev };
+      delete next.state;
+      delete next.district;
+      return next;
+    });
   }, []);
 
   const handleLicenseChange = useCallback((field: 'licenseStartDate' | 'licenseDuration', value: string) => {
@@ -177,6 +286,12 @@ export function useUlbConfigurationForm(initialUlb: UlbConfigurationMaster | nul
       setMasterRenewalAlerts(alerts);
       return next;
     });
+    setErrors((prev) => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
   }, []);
 
   const generateLicenseKey = useCallback(() => {
@@ -186,17 +301,32 @@ export function useUlbConfigurationForm(initialUlb: UlbConfigurationMaster | nul
   }, [setField]);
 
   const validateSection = useCallback(
-    (section: UlbSectionKey): boolean =>
-      getUlbConfigurationValidationError(formData, section) === null,
-    [formData]
+    (section: UlbSectionKey): boolean => {
+      if (section === 'logo-images') {
+        return getUlbConfigurationValidationError(formData, section) === null;
+      }
+
+      setSubmittedOnce((prev) => ({ ...prev, [section]: true }));
+      const fieldErrors = validateFields(formData, section);
+      setErrors((prev) => ({ ...prev, ...fieldErrors }));
+
+      if (Object.keys(fieldErrors).length > 0) return false;
+
+      return getUlbConfigurationValidationError(formData, section) === null;
+    },
+    [formData, validateFields]
   );
 
   const getSectionValidationError = useCallback(
     (section: UlbSectionKey): string | null => {
+      const fieldErrors = validateFields(formData, section);
+      const firstFieldError = getFirstUlbFieldError(fieldErrors, section);
+      if (firstFieldError) return firstFieldError;
+
       const code = getUlbConfigurationValidationError(formData, section);
-      return code ? `validation.${code}` : null;
+      return code ? t(`validation.${code}`) : null;
     },
-    [formData]
+    [formData, t, validateFields]
   );
 
   const markSectionComplete = useCallback((section: UlbSectionKey, complete: boolean) => {
@@ -220,7 +350,11 @@ export function useUlbConfigurationForm(initialUlb: UlbConfigurationMaster | nul
 
   return {
     formData,
+    errors,
     setField,
+    handleFieldChange,
+    handleFieldBlur,
+    getFieldError,
     handleStateChange,
     handleLicenseChange,
     generateLicenseKey,

@@ -5,7 +5,7 @@ import {
   WingMutationResponse,
   CreateWingPayload,
   UpdateWingPayload
-} from "@/types/zone-master/properties/wing.types";
+} from "@/types/wing.types";
  
 /**
  * Fetches paginated wing master list from /Wing endpoint.
