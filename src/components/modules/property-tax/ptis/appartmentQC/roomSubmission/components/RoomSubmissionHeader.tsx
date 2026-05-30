@@ -13,7 +13,7 @@ interface RoomSubmissionHeaderProps {
 }
 
 export const RoomSubmissionHeader: React.FC<RoomSubmissionHeaderProps> = ({
-  _floorNumber, areaUnit, handleToggleUnit, maxRooms, availableRooms, displayMode = 'modal'
+  floorNumber: _floorNumber, areaUnit, handleToggleUnit, maxRooms, availableRooms, displayMode = 'modal'
 }) => {
   const t = useTranslations("quickDataEntry");
 

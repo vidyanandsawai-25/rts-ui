@@ -46,8 +46,8 @@ export const CompactSelect = ({
     <Select
       value={value}
       onChange={(_e, val) => onChange(val)}
-      onOpen={onOpen}
-      olaceholder={placeholder}
+      options={displayOptions}
+      placeholder={placeholder}
       disabled={disabled}
       selectSize="sm"
       className="min-w-[80px] text-[10px]"
@@ -179,9 +179,6 @@ interface ColumnBuilderConfig {
   getSubTypeOptions: (typeOfUseId: string) => DropdownOption[];
   updateFloorRow: (id: string, field: keyof FloorDataRow, value: string) => void;
   onOpenRoomSubmission: (row: FloorDataRow) => void;
-  onFloorDropdownOpen?: () => void; // Lazy load floors
-  onConTypeDropdownOpen?: () => void; // Lazy load construction types
-  onUseTypeDropdownOpen?: () => void; // Lazy load use types
   copy: FloorQCSectionCopy;
 }
 
@@ -196,9 +193,6 @@ export function buildCommonColumns(config: ColumnBuilderConfig): Column<FloorDat
     getSubTypeOptions,
     updateFloorRow,
     onOpenRoomSubmission,
-    onFloorDropdownOpen,
-    onConTypeDropdownOpen,
-    onUseTypeDropdownOpen,
     copy,
   } = config;
 
@@ -212,7 +206,6 @@ export function buildCommonColumns(config: ColumnBuilderConfig): Column<FloorDat
           value={row.floorId}
           onChange={(v) => updateFloorRow(row.id, "floorId", v)}
           options={floorOptions}
-          onOpen={onFloorDropdownOpen}
         />
       ),
     },
@@ -253,7 +246,6 @@ export function buildCommonColumns(config: ColumnBuilderConfig): Column<FloorDat
           value={row.constructionTypeId}
           onChange={(v) => updateFloorRow(row.id, "constructionTypeId", v)}
           options={conTypeOptions}
-          onOpen={onConTypeDropdownOpen}
         />
       ),
     },
@@ -266,7 +258,6 @@ export function buildCommonColumns(config: ColumnBuilderConfig): Column<FloorDat
           value={row.typeOfUseId}
           onChange={(v) => updateFloorRow(row.id, "typeOfUseId", v)}
           options={useTypeOptions}
-          onOpen={onUseTypeDropdownOpen}
         />
       ),
     },
