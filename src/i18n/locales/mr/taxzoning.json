@@ -23,6 +23,8 @@
       "fromProperty": "मालमत्ता पासून",
       "toProperty": "मालमत्ता पर्यंत",
       "taxZoneNo": "कर क्षेत्र क्रमांक",
+      "oldTaxZoneNo": "जुने कर क्षेत्र",
+      "newTaxZoneNo": "नवीन कर क्षेत्र क्रमांक",
       "propertyNo": "मालमत्ता क्रमांक",
       "status": "स्थिती"
     },
