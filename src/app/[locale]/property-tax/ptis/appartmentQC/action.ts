@@ -210,7 +210,7 @@ export async function fetchAllFloorsAction(): Promise<ActionResult<Array<{ value
     while (hasMore) {
       const res = await getFloorPaged(page, pageSize);
       const items = res.items ?? [];
-      all = [...all, ...items.map((f: any) => ({ value: String(f.id), label: f.description || f.floorCode }))];
+      all = [...all, ...items.map((f: { id: number | string; description?: string; floorCode?: string }) => ({ value: String(f.id), label: f.description || f.floorCode || '' }))];
       if (items.length === 0 || all.length >= res.totalCount) hasMore = false;
       else page++;
     }
@@ -235,7 +235,7 @@ export async function fetchAllConstructionTypesAction(): Promise<ActionResult<Ar
     while (hasMore) {
       const res = await getConstructionPaged(page, pageSize);
       const items = res.items ?? [];
-      all = [...all, ...items.map((c: any) => ({ value: String(c.id), label: c.description || c.constructionCode }))];
+      all = [...all, ...items.map((c: { id: number | string; description?: string; constructionCode?: string }) => ({ value: String(c.id), label: c.description || c.constructionCode || '' }))];
       if (items.length === 0 || all.length >= res.totalCount) hasMore = false;
       else page++;
     }
@@ -531,9 +531,9 @@ export async function fetchRoomTypesAction(): Promise<ActionResult<Array<{ id: n
     const data = await getRoomTypeData();
     return {
       success: true,
-      data: data.map((item: any) => ({
-        id: item.roomTypeId || item.id,
-        code: item.roomTypeCode || String(item.roomTypeId || item.id),
+      data: data.map((item: { roomTypeId?: number; id?: number; roomTypeCode?: string; roomTypeName?: string; description?: string }) => ({
+        id: item.roomTypeId || item.id || 0,
+        code: item.roomTypeCode || String(item.roomTypeId || item.id || 0),
         name: item.roomTypeName || '',
         description: item.description || ''
       }))

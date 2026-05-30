@@ -198,6 +198,7 @@ export default async function Page({ params, searchParams }: PageProps) {
         conType: t('floorQC.columns.conType'),
         use: t('floorQC.columns.use'),
         subTypeOfUse: t('floorQC.columns.subTypeOfUse'),
+        noOfRooms: t('floorQC.columns.noOfRooms'),
         area: t('floorQC.columns.area'),
         rentMY: t('floorQC.columns.rentMY'),
         rateMY: t('floorQC.columns.rateMY'),
@@ -229,18 +230,18 @@ export default async function Page({ params, searchParams }: PageProps) {
     },
   };
 
+  let propertyData;
+  let floorQCData;
+  let floors;
+  let constructionTypes;
+  let useTypes;
+  let allSubTypes;
+  let propertyTypes;
+  let roomTypes;
+
   try {
     // Fetch ALL data server-side in parallel for SSR
-    const [
-      propertyDataArray,
-      floorQCData,
-      floors,
-      constructionTypes,
-      useTypes,
-      allSubTypes,
-      propertyTypes,
-      roomTypes
-    ] = await Promise.all([
+    const results = await Promise.all([
       // Fetch property details
       getApartmentQCDetailsSafe({ propertyId }),
       // Fetch Floor QC data
@@ -254,31 +255,48 @@ export default async function Page({ params, searchParams }: PageProps) {
       fetchAllRoomTypes(),
     ]);
 
-    // Get the property data (should be a single record)
-    const propertyData = propertyDataArray.length > 0 ? propertyDataArray[0] : null;
+    [
+      propertyData,
+      floorQCData,
+      floors,
+      constructionTypes,
+      useTypes,
+      allSubTypes,
+      propertyTypes,
+      roomTypes
+    ] = [
+      results[0].length > 0 ? results[0][0] : null,
+      results[1],
+      results[2],
+      results[3],
+      results[4],
+      results[5],
+      results[6],
+      results[7]
+    ];
 
     // If no property data found, redirect to list
     if (!propertyData) {
       redirect('/property-tax/ptis/appartmentQC/residential');
     }
-
-    return (
-      <PropertyDetailsEditForm
-        propertyData={propertyData}
-        floorQCData={floorQCData}
-        floors={floors}
-        constructionTypes={constructionTypes}
-        useTypes={useTypes}
-        allSubTypes={allSubTypes}
-        propertyTypes={propertyTypes}
-        roomTypes={roomTypes}
-        subTab={subTab || 'rateable'}
-        copy={copy}
-      />
-    );
   } catch (error) {
     console.error('[SSR Edit Page] Error fetching data:', error);
     // Redirect to list on error
     redirect('/property-tax/ptis/appartmentQC/residential');
   }
+
+  return (
+    <PropertyDetailsEditForm
+      propertyData={propertyData}
+      floorQCData={floorQCData}
+      floors={floors}
+      constructionTypes={constructionTypes}
+      useTypes={useTypes}
+      allSubTypes={allSubTypes}
+      propertyTypes={propertyTypes}
+      roomTypes={roomTypes}
+      subTab={subTab || 'rateable'}
+      copy={copy}
+    />
+  );
 }

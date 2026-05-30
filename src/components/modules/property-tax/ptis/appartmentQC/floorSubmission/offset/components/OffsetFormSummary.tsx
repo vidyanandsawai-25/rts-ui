@@ -9,7 +9,7 @@ interface OffsetFormSummaryProps {
     calculateAdjustedRoomTotal: () => number;
     areaUnit: "sq.m" | "sq.ft";
     handleSubtractClick: () => void;
-    handleAddClick: () => void;
+    handleAddClick?: () => void;
     selectedOperation: "add" | "subtract" | null;
     isShakingSubtract: boolean;
     offsetData: OffsetData;

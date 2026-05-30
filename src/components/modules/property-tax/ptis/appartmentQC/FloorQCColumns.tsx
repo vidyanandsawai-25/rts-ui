@@ -18,7 +18,7 @@ interface CompactSelectProps {
   options: DropdownOption[];
   placeholder?: string;
   disabled?: boolean;
-  onOpen?: () => void; // Lazy load trigger
+  // Note: onOpen removed as Select component doesn't support lazy loading callback
 }
 
 /**
@@ -31,7 +31,6 @@ export const CompactSelect = ({
   options,
   placeholder = "Select",
   disabled = false,
-  onOpen,
 }: CompactSelectProps) => {
   // Ensure current value is always in options array (prevents "Select" placeholder when value exists)
   const displayOptions = React.useMemo(() => {
@@ -48,8 +47,7 @@ export const CompactSelect = ({
       value={value}
       onChange={(_e, val) => onChange(val)}
       onOpen={onOpen}
-      options={displayOptions}
-      placeholder={placeholder}
+      olaceholder={placeholder}
       disabled={disabled}
       selectSize="sm"
       className="min-w-[80px] text-[10px]"

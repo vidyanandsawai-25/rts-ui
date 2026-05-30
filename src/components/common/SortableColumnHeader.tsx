@@ -54,15 +54,6 @@ export function SortableColumnHeader({
     md: "w-4 h-4",
   };
 
-  const getSortIcon = (): LucideIcon => {
-    if (!sortable) return ArrowUpDown;
-    if (sortDirection === "asc") return ArrowUp;
-    if (sortDirection === "desc") return ArrowDown;
-    return ArrowUpDown;
-  };
-
-  const SortIcon = getSortIcon();
-
   if (!sortable) {
     return (
       <span
@@ -75,6 +66,16 @@ export function SortableColumnHeader({
         {label}
       </span>
     );
+  }
+
+  // Determine which icon to render based on sort direction
+  let IconComponent: LucideIcon;
+  if (sortDirection === "asc") {
+    IconComponent = ArrowUp;
+  } else if (sortDirection === "desc") {
+    IconComponent = ArrowDown;
+  } else {
+    IconComponent = ArrowUpDown;
   }
 
   return (
@@ -91,7 +92,7 @@ export function SortableColumnHeader({
       )}
     >
       {label}
-      <SortIcon className={cn(iconSizes[size], "text-gray-500")} />
+      <IconComponent className={cn(iconSizes[size], "text-gray-500")} />
     </button>
   );
 }
