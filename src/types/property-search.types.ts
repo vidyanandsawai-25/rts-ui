@@ -125,7 +125,7 @@ export interface PropertySearchColumn {
 
 /* ================= SEARCH TAB ================= */
 
-export type SearchTab = "quick-search" | "kyc";
+export type SearchTab = "quick-search" | "kyc" | "values-dues";
 
 /* ================= COMPONENT PROPS ================= */
 
@@ -232,25 +232,10 @@ export interface LookupInputProps {
   onChange: (value: string) => void;
   onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
   disabled?: boolean;
+  maxLength?: number;
 }
 
-export interface PropertyNoRangeInputProps {
-  label: string;
-  tooltip?: string;
-  fromPlaceholder: string;
-  toPlaceholder: string;
-  fromValue: string;
-  toValue: string;
-  fromOptions: string[];
-  toOptions: string[];
-  fromError?: string;
-  toError?: string;
-  onFromChange: (value: string) => void;
-  onToChange: (value: string) => void;
-  onFromBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
-  onToBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
-  disabled?: boolean;
-}
+
 
 export interface UpicLinkCellProps {
   upicId: string;

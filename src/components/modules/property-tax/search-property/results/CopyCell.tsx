@@ -21,7 +21,7 @@ export function CopyCell({ value, label }: CopyCellProps) {
       variant="ghost"
       size="xs"
       onClick={handleCopy}
-      className="group relative !h-auto !px-0 !py-0 font-normal"
+      className="group relative !h-auto !px-0 !py-0 font-normal cursor-pointer"
       aria-label={`Copy ${label}`}
     >
       <span className="text-blue-600 font-medium hover:underline break-words whitespace-normal text-left">

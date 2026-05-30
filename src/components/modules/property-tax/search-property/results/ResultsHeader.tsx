@@ -60,7 +60,7 @@ export function ResultsHeader({
         variant="success"
         size="sm"
         icon={FileSpreadsheet}
-        className="bg-emerald-600 hover:bg-emerald-700 border border-emerald-700 shadow-sm"
+        className="bg-emerald-600 hover:bg-emerald-700 border border-emerald-700 shadow-sm cursor-pointer disabled:cursor-not-allowed"
         onClick={onExport}
         disabled={exportDisabled}
       >
