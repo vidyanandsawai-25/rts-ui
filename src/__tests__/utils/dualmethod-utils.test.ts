@@ -230,14 +230,14 @@ describe('dual method utilities', () => {
   });
 
   describe('getUniqueTaxNames', () => {
-    it('extracts unique tax names and sorts them', () => {
+    it('extracts unique tax names in insertion/API order', () => {
       const dualMethodData: DualMethodResponse = {
         oldTaxes: [{ taxId: 1, taxName: 'B', percentage: 0, amount: 0 }],
         rvTaxes: [{ taxId: 2, taxName: 'A', percentage: 0, amount: 0 }],
         cvTaxes: [{ taxId: 3, taxName: 'C', percentage: 0, amount: 0 }],
         retainTaxes: [{ taxId: 4, taxName: 'A', percentage: 0, amount: 0 }],
       };
-      expect(getUniqueTaxNames(dualMethodData)).toEqual(['A', 'B', 'C']);
+      expect(getUniqueTaxNames(dualMethodData)).toEqual(['B', 'A', 'C']);
     });
 
     it('returns empty array if no data', () => {

@@ -8,7 +8,7 @@ import type {
   SearchFieldErrorMap,
 } from "@/types/property-search.types";
 import { LookupInput } from "./LookupInput";
-import { PropertyNoRangeInput } from "./PropertyNoRangeInput";
+import { PROPERTY_SEARCH_FIELD_LIMITS } from "@/lib/validations/property-search-field-rules";
 
 interface QuickSearchPanelProps {
   formState: SearchCriteria;
@@ -35,23 +35,32 @@ export function QuickSearchPanel({
 
   return (
     <div className="overflow-x-auto pb-1 pt-0.5">
-      <div className="grid min-w-[68rem] grid-cols-6 items-start gap-x-1.5 gap-y-1">
-        <PropertyNoRangeInput
-          label={t("fields.propertyNo")}
-          tooltip={t("tooltips.propertyNo")}
-          fromPlaceholder={t("placeholders.propertyNoFrom")}
-          toPlaceholder={t("placeholders.propertyNoTo")}
-          fromValue={formState.propertyNoFrom}
-          toValue={formState.propertyNoTo}
-          fromOptions={lookupOptions.propertyNos}
-          toOptions={propertyNoToOptions}
-          fromError={fieldErrors.propertyNoFrom}
-          toError={fieldErrors.propertyNoTo}
-          onFromChange={(v) => setField("propertyNoFrom", v)}
-          onToChange={(v) => setField("propertyNoTo", v)}
-          onFromBlur={onFieldBlur("propertyNoFrom")}
-          onToBlur={onFieldBlur("propertyNoTo")}
+      <div className="grid min-w-[78rem] grid-cols-7 items-start gap-x-1.5 gap-y-1">
+        <LookupInput
+          id="propertyNoFrom"
+          label={t("fields.propertyNoFrom")}
+          tooltip={t("tooltips.propertyNoFrom")}
+          placeholder={t("placeholders.propertyNoFrom")}
+          value={formState.propertyNoFrom}
+          options={lookupOptions.propertyNos}
+          error={fieldErrors.propertyNoFrom}
+          onChange={(v) => setField("propertyNoFrom", v)}
+          onBlur={onFieldBlur("propertyNoFrom")}
           disabled={disabled}
+          maxLength={PROPERTY_SEARCH_FIELD_LIMITS.propertyNo}
+        />
+        <LookupInput
+          id="propertyNoTo"
+          label={t("fields.propertyNoTo")}
+          tooltip={t("tooltips.propertyNoTo")}
+          placeholder={t("placeholders.propertyNoTo")}
+          value={formState.propertyNoTo}
+          options={propertyNoToOptions}
+          error={fieldErrors.propertyNoTo}
+          onChange={(v) => setField("propertyNoTo", v)}
+          onBlur={onFieldBlur("propertyNoTo")}
+          disabled={disabled}
+          maxLength={PROPERTY_SEARCH_FIELD_LIMITS.propertyNo}
         />
         <LookupInput
           id="oldPropertyNo"
@@ -64,6 +73,7 @@ export function QuickSearchPanel({
           onChange={(v) => setField("oldPropertyNo", v)}
           onBlur={onFieldBlur("oldPropertyNo")}
           disabled={disabled}
+          maxLength={PROPERTY_SEARCH_FIELD_LIMITS.oldPropertyNo}
         />
         <LookupInput
           id="upicId"
@@ -76,6 +86,7 @@ export function QuickSearchPanel({
           onChange={(v) => setField("upicId", v)}
           onBlur={onFieldBlur("upicId")}
           disabled={disabled}
+          maxLength={PROPERTY_SEARCH_FIELD_LIMITS.upicId}
         />
         <LookupInput
           id="citySurveyNo"
@@ -88,6 +99,7 @@ export function QuickSearchPanel({
           onChange={(v) => setField("citySurveyNo", v)}
           onBlur={onFieldBlur("citySurveyNo")}
           disabled={disabled}
+          maxLength={PROPERTY_SEARCH_FIELD_LIMITS.citySurveyNo}
         />
         <LookupInput
           id="subZoneNo"
@@ -100,6 +112,7 @@ export function QuickSearchPanel({
           onChange={(v) => setField("subZoneNo", v)}
           onBlur={onFieldBlur("subZoneNo")}
           disabled={disabled}
+          maxLength={PROPERTY_SEARCH_FIELD_LIMITS.subZoneNo}
         />
         <LookupInput
           id="plotNo"
@@ -112,6 +125,7 @@ export function QuickSearchPanel({
           onChange={(v) => setField("plotNo", v)}
           onBlur={onFieldBlur("plotNo")}
           disabled={disabled}
+          maxLength={PROPERTY_SEARCH_FIELD_LIMITS.plotNo}
         />
       </div>
     </div>

@@ -3,19 +3,18 @@ export const COLUMN_WIDTHS = {
   upicId: "120px",
   zone: "72px",
   ward: "64px",
-  propertyNo: "96px",
-  partitionNo: "96px",
-  oldPropertyNo: "108px",
-  citySurveyNo: "100px",
+  propertyNo: "115px",
+  partitionNo: "130px",
+  oldPropertyNo: "145px",
+  citySurveyNo: "135px",
   plotNo: "80px",
-  wingFlatNo: "88px",
-  propertyCount: "118px",
+  wingFlatNo: "110px",
   category: "148px",
-  description: "120px",
+  description: "185px",
   mobile: "96px",
-  holderName: "140px",
+  holderName: "185px",
   occupierName: "140px",
-  shopBuildingName: "130px",
+  shopBuildingName: "170px",
   societyName: "130px",
   address: "180px",
   rvCv: "180px",
@@ -28,7 +27,7 @@ export const TABLE_TOTAL_WIDTH = Object.values(COLUMN_WIDTHS).reduce(
 );
 
 export const WRAP_HEADER =
-  "whitespace-normal break-words align-top leading-tight";
+  "whitespace-nowrap align-middle leading-none !text-xs !font-bold !text-[#1E3A8A] tracking-wider uppercase";
 
 export const WRAP_CELL =
   "whitespace-normal break-words align-top leading-snug text-xs overflow-hidden box-border";

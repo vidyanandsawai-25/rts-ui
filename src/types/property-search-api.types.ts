@@ -98,6 +98,12 @@ export interface PropertySearchCriteriaPayload {
   societyName?: string;
   address?: string;
   dashboardFilter?: number;
+  valuationMethod?: string;
+  equals?: string;
+  greaterThan?: string;
+  lessThan?: string;
+  between?: string;
+  top?: string;
   pageNumber?: number;
   pageSize?: number;
 }

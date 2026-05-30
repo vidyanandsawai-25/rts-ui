@@ -111,16 +111,6 @@ export function buildPropertySearchColumns(
     ),
     withFixedWidth(
       {
-        key: "propertyCount",
-        label: t("columns.propertyCount"),
-        align: "right",
-        headerClassName: `${WRAP_HEADER} whitespace-nowrap pr-4`,
-        cellClassName: `${WRAP_CELL} whitespace-nowrap pr-4`,
-      },
-      COLUMN_WIDTHS.propertyCount
-    ),
-    withFixedWidth(
-      {
         key: "category",
         label: t("columns.category"),
         headerClassName: `${WRAP_HEADER} pl-3`,

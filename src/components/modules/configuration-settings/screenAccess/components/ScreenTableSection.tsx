@@ -57,7 +57,7 @@ export const ScreenTableSection: React.FC<ScreenTableSectionProps> = (props) => 
       {
         key: 'screenName',
         label: t('screenManagement.screens.table.screenName'),
-        width: '20%',
+        width: '25%',
         render: (_, screen) => {
           const nameToDisplay =
             screen.screenName && !/\?{2,}/.test(screen.screenName)
@@ -79,10 +79,10 @@ export const ScreenTableSection: React.FC<ScreenTableSectionProps> = (props) => 
       {
         key: 'routePath',
         label: t('screenManagement.screens.table.route'),
-        width: '18%',
+        width: '40%',
         render: (value) => (
           <span
-            className="font-mono text-xs text-gray-700 bg-gray-50 px-2 py-1 rounded border border-gray-200 truncate block max-w-[200px]"
+            className="font-mono text-xs text-gray-700 bg-gray-50 px-2 py-1 rounded border border-gray-200 truncate block max-w-[450px]"
             title={String(value)}
           >
             {String(value)}

@@ -1,4 +1,5 @@
 import { authService } from './auth.service';
+import { logger } from '@/lib/utils/logger';
 import type { UlbConfigApiBody } from '@/types/login.types';
 import type { UlbMaster } from '@/types/master.types';
 
@@ -30,20 +31,14 @@ export async function getUlbConfigForLogin(): Promise<UlbMaster | undefined> {
   try {
     const res = await authService.getUlbConfig();
     if (!res.success || !res.data) {
-      if (process.env.NODE_ENV === 'development') {
-        console.warn(
-          '[getUlbConfigForLogin] ULB config unavailable:',
-          res.error || 'no data',
-          '(dev: self-signed https is allowed for 127.0.0.1/localhost unless NTIS_STRICT_LOCAL_TLS=1; try SERVER_API_BASE_URL=http://…; verify GET …/UlbConfig)'
-        );
-      }
+      logger.debug('ULB config unavailable for login branding', { success: res.success });
       return undefined;
     }
     return mapUlbConfigApiToMaster(res.data);
-  } catch (e) {
-    if (process.env.NODE_ENV === 'development') {
-      console.warn('[getUlbConfigForLogin] ULB config threw:', e);
-    }
+  } catch (error) {
+    logger.warn('Failed to load ULB config for login branding', {
+      error: error instanceof Error ? error : new Error(String(error)),
+    });
     return undefined;
   }
 }

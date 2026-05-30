@@ -87,6 +87,34 @@ export function buildPropertySearchPayload(
     };
   }
 
+  if (activeTab === "values-dues") {
+    const valuationMethod = criteria.valuationMethod;
+    const isRV = valuationMethod === "Rateable Value (RV)";
+    const filterType = isRV ? criteria.rateableValueFilter : criteria.capitalValueFilter;
+    const amountFrom = isRV ? criteria.rateableValueFrom : criteria.capitalValueFrom;
+
+    const valuesPayload: PropertySearchCriteriaPayload = {
+      ...payload,
+      valuationMethod: valuationMethod || undefined,
+    };
+
+    if (filterType && amountFrom) {
+      if (filterType === "exact") {
+        valuesPayload.equals = amountFrom;
+      } else if (filterType === "moreThan") {
+        valuesPayload.greaterThan = amountFrom;
+      } else if (filterType === "lessThan") {
+        valuesPayload.lessThan = amountFrom;
+      } else if (filterType === "between") {
+        valuesPayload.between = amountFrom;
+      } else if (filterType === "top") {
+        valuesPayload.top = amountFrom;
+      }
+    }
+
+    return valuesPayload;
+  }
+
   return {
     ...payload,
     holderName: criteria.holderName || undefined,

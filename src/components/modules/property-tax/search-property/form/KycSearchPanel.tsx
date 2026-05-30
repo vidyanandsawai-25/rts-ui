@@ -13,6 +13,7 @@ import {
   KYC_WIDE_FIELDS,
 } from "../search-field-groups";
 import { cn } from "@/lib/utils/cn";
+import { PROPERTY_SEARCH_FIELD_LIMITS } from "@/lib/validations/property-search-field-rules";
 
 interface KycSearchPanelProps {
   formState: SearchCriteria;
@@ -36,6 +37,7 @@ function KycField({
   label,
   placeholder,
   tooltip,
+  maxLength,
 }: {
   field: keyof SearchCriteria;
   formState: SearchCriteria;
@@ -46,6 +48,7 @@ function KycField({
   label: string;
   placeholder: string;
   tooltip: string;
+  maxLength?: number;
 }) {
   const error = fieldErrors[field];
 
@@ -61,6 +64,7 @@ function KycField({
         onChange={onInputChange(field)}
         onBlur={onInputBlur(field)}
         disabled={disabled}
+        maxLength={maxLength}
         fullWidth
         className={cn(
           COMPACT_INPUT_CLASS,
@@ -100,6 +104,7 @@ export function KycSearchPanel({
       label={t(`fields.${field}`)}
       placeholder={t(`placeholders.${field}`)}
       tooltip={t(`tooltips.${field}`)}
+      maxLength={PROPERTY_SEARCH_FIELD_LIMITS[field as keyof typeof PROPERTY_SEARCH_FIELD_LIMITS]}
     />
   );
 

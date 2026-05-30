@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { FileSearch, RotateCcw, Search } from "lucide-react";
+import { FileSearch, IndianRupee, RotateCcw, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button, Tabs, TabList, Tab, TabPanel, ValidationMessage } from "@/components/common";
 import type { SearchTab } from "@/types/property-search.types";
@@ -18,27 +18,31 @@ interface SearchTabsProps {
   activeTab: SearchTab;
   quickPanel: React.ReactNode;
   kycPanel: React.ReactNode;
+  valuesDuesPanel: React.ReactNode;
   searchPending: boolean;
   isSubmitDisabled?: boolean;
   validationError?: string | null;
   validationRef?: React.RefObject<HTMLDivElement | null>;
   onTabChange: (tab: SearchTab) => void;
   onReset: () => void;
+  activeFiltersTags?: React.ReactNode;
 }
 
 const TAB_CLASS =
-  "flex-1 justify-center rounded-t rounded-b-none !h-7 !min-h-0 !px-2.5 !py-0 !text-[11px] !gap-1 font-semibold leading-none [&_svg]:!h-3 [&_svg]:!w-3 transition-all duration-200";
+  "flex-1 justify-center rounded-t rounded-b-none !h-7 !min-h-0 !px-2.5 !py-0 !text-[11px] !gap-1 font-semibold leading-none [&_svg]:!h-3 [&_svg]:!w-3 transition-all duration-200 cursor-pointer";
 
 export function SearchTabs({
   activeTab,
   quickPanel,
   kycPanel,
+  valuesDuesPanel,
   searchPending,
   isSubmitDisabled = false,
   validationError = null,
   validationRef,
   onTabChange,
   onReset,
+  activeFiltersTags,
 }: SearchTabsProps) {
   const t = useTranslations("propertySearch.form");
   const tCommon = useTranslations("common");
@@ -55,7 +59,7 @@ export function SearchTabs({
       >
         <TabList
           scrollable={false}
-          className={`!m-0 !rounded-none !border-0 !p-0.5 !gap-0.5 ${SEARCH_BRAND_TAB_LIST}`}
+          className={`!m-0 !rounded-none !border-0 !p-0.5 !gap-3 ${SEARCH_BRAND_TAB_LIST}`}
         >
           <Tab
             value="quick-search"
@@ -71,6 +75,13 @@ export function SearchTabs({
           >
             {t("tabs.kyc")}
           </Tab>
+          <Tab
+            value="values-dues"
+            icon={IndianRupee}
+            className={`${TAB_CLASS} ${SEARCH_BRAND_TAB_INACTIVE} ${SEARCH_BRAND_TAB_ACTIVE}`}
+          >
+            {t("tabs.valuesDues")}
+          </Tab>
         </TabList>
 
         <div className="border-t border-slate-200 bg-slate-50/30 px-1.5 pt-1.5 pb-2.5">
@@ -83,6 +94,11 @@ export function SearchTabs({
           <TabPanel value="kyc" className="mt-0 animate-in fade-in duration-200">
             {kycPanel}
           </TabPanel>
+          <TabPanel value="values-dues" className="mt-0 animate-in fade-in duration-200">
+            {valuesDuesPanel}
+          </TabPanel>
+
+          {activeFiltersTags}
 
           <div className="mt-2 space-y-2 border-t border-slate-200/80 bg-white/80 pt-2">
             <div ref={validationRef}>
@@ -101,7 +117,7 @@ export function SearchTabs({
               size="sm"
               icon={Search}
               disabled={searchPending || isSubmitDisabled}
-              className={SEARCH_BRAND_BUTTON}
+              className={`${SEARCH_BRAND_BUTTON} cursor-pointer disabled:cursor-not-allowed`}
             >
               {tCommon("actions.search")}
             </Button>
@@ -112,7 +128,7 @@ export function SearchTabs({
               icon={RotateCcw}
               onClick={onReset}
               disabled={searchPending}
-              className={SEARCH_RESET_BUTTON}
+              className={`${SEARCH_RESET_BUTTON} cursor-pointer disabled:cursor-not-allowed`}
             >
               {tCommon("actions.reset")}
             </Button>

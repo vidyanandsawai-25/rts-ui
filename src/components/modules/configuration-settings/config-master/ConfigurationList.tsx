@@ -1,8 +1,13 @@
 import { Shield, Search } from 'lucide-react';
 import { CategoryEditDeleteActions, CategoryBulkActions } from './ConfigCategoryActions';
 import { ConfigItemRow } from './ConfigItemRow';
-import { type ConfigItem, CATEGORY_COLORS, CATEGORY_ICONS, ConfigCategory } from '@/types/configMaster.types';
-import { getTranslations } from 'next-intl/server';
+import {
+  type ConfigItem,
+  CATEGORY_COLORS,
+  CATEGORY_ICONS,
+  ConfigCategory,
+} from '@/types/configMaster.types';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 import { Card } from '@/components/common';
 
@@ -17,22 +22,26 @@ export interface ConfigurationListProps {
  * ConfigurationList - Displays a list of configuration items.
  * Refactored to use ConfigItemRow and standard Card component.
  */
-export async function ConfigurationList({
+export function ConfigurationList({
   items,
   activeCategory,
   searchTerm = '',
   locale,
 }: ConfigurationListProps) {
-  const t = await getTranslations('configMaster');
+  const t = useTranslations('configMaster');
   const colors = CATEGORY_COLORS[activeCategory.color] || CATEGORY_COLORS['rose'];
   const Icon = CATEGORY_ICONS[activeCategory.icon] || Shield;
 
   if (items.length === 0) {
     return (
       <div className="space-y-4">
-        <Card variant="default" padding="none" className="p-4 sm:p-5 bg-slate-50/50 border-slate-200/60">
+        <Card
+          variant="default"
+          padding="none"
+          className="p-4 sm:p-5 bg-slate-50/50 border-slate-200/60"
+        >
           <div className="flex items-center gap-3">
-            <div className={cn("p-2 rounded-xl shadow-sm border border-white/20", colors.badge)}>
+            <div className={cn('p-2 rounded-xl shadow-sm border border-white/20', colors.badge)}>
               <Icon className="w-5 h-5 text-white" />
             </div>
             <h2 className="text-base sm:text-lg font-bold text-slate-800">{activeCategory.name}</h2>
@@ -56,12 +65,18 @@ export async function ConfigurationList({
   return (
     <div className="space-y-4">
       {/* List Header */}
-      <Card variant="default" padding="none" className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 bg-slate-50/50 border-slate-200/60">
+      <Card
+        variant="default"
+        padding="none"
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 bg-slate-50/50 border-slate-200/60"
+      >
         <div className="flex items-center gap-3">
-          <div className={cn(
-            "p-2 rounded-xl shadow-sm border border-white/20 transition-transform group-hover:scale-105",
-            colors.badge
-          )}>
+          <div
+            className={cn(
+              'p-2 rounded-xl shadow-sm border border-white/20 transition-transform group-hover:scale-105',
+              colors.badge
+            )}
+          >
             <Icon className="w-5 h-5 text-white" />
           </div>
           <div>
@@ -69,10 +84,13 @@ export async function ConfigurationList({
               <h2 className="text-base sm:text-lg font-bold text-slate-800 tracking-tight leading-tight">
                 {activeCategory.name}
               </h2>
-              <CategoryEditDeleteActions categoryId={activeCategory.id} categoryName={activeCategory.name} />
+              <CategoryEditDeleteActions
+                categoryId={activeCategory.id}
+                categoryName={activeCategory.name}
+              />
             </div>
             <p className="text-[10px] sm:text-xs font-semibold text-slate-400 mt-1 uppercase tracking-wider">
-              {items.filter(i => i.isEnabled).length} {t('list.configurationsActive')}
+              {items.filter((i) => i.isEnabled).length} {t('list.configurationsActive')}
             </p>
           </div>
         </div>
@@ -83,15 +101,9 @@ export async function ConfigurationList({
       {/* Config Items List */}
       <div className="grid grid-cols-1 gap-3 pb-24 overflow-visible">
         {items.map((item) => (
-          <ConfigItemRow
-            key={item.id}
-            item={item}
-            searchTerm={searchTerm}
-            locale={locale}
-          />
+          <ConfigItemRow key={item.id} item={item} searchTerm={searchTerm} locale={locale} />
         ))}
       </div>
     </div>
   );
 }
-
