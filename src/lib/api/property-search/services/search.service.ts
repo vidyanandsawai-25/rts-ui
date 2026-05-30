@@ -46,6 +46,12 @@ function buildSearchParams(criteria: PropertySearchCriteriaPayload): string {
   if (criteria.dashboardFilter != null && criteria.dashboardFilter > 0) {
     params.set("DashboardFilter", String(criteria.dashboardFilter));
   }
+  if (criteria.valuationMethod) params.set("ValuationMethod", criteria.valuationMethod);
+  if (criteria.equals) params.set("Equals", criteria.equals);
+  if (criteria.greaterThan) params.set("GreaterThan", criteria.greaterThan);
+  if (criteria.lessThan) params.set("LessThan", criteria.lessThan);
+  if (criteria.between) params.set("Between", criteria.between);
+  if (criteria.top) params.set("Top", criteria.top);
   if (criteria.pageNumber) params.set("PageNumber", String(criteria.pageNumber));
   if (criteria.pageSize != null)
     params.set("PageSize", String(criteria.pageSize));

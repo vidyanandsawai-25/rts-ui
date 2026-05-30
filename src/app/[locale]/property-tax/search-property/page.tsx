@@ -7,6 +7,7 @@ import {
   type PropertySearchRawParams,
   type PropertyStatus,
   type SearchCriteria,
+  type SearchTab,
   type WardOption,
   type ZoneOption,
   type PropertyDescriptionOption,
@@ -36,8 +37,7 @@ const EMPTY_LOOKUP = {
 
 /* ================= SANITIZATION ================= */
 
-const VALID_TABS = ["quick-search", "kyc"] as const;
-type SearchTab = (typeof VALID_TABS)[number];
+const VALID_TABS = ["quick-search", "kyc", "values-dues"] as const;
 
 const trim = (value: string | undefined): string => (value ?? "").trim();
 
@@ -196,10 +196,16 @@ export default async function PropertySearchPage({
       label: category.propertyTypeCategory,
     }));
 
-  const zoneOptions: ZoneOption[] = zones.map((z) => ({
-    id: z.zoneId,
-    label: z.description?.trim() ? z.description : z.zoneNo,
-  }));
+  const zoneOptions: ZoneOption[] = zones.map((z) => {
+    const zoneNo = z.zoneNo?.trim();
+    const desc = z.description?.trim();
+    const label =
+      zoneNo && desc ? `${zoneNo} - ${desc}` : desc || zoneNo || "";
+    return {
+      id: z.zoneId,
+      label,
+    };
+  });
 
   const wardOptions: WardOption[] = wards
     .filter((w) => w.zoneId === initialCriteria.zoneId)

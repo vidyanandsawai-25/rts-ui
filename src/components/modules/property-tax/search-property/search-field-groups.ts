@@ -48,8 +48,22 @@ export const KYC_SEARCH_FIELDS: ReadonlyArray<StringCriteriaField> = [
 
 export const KYC_UI_FIELDS: ReadonlyArray<StringCriteriaField> = KYC_SEARCH_FIELDS;
 
+/** Values & Dues tab fields. */
+export const VALUES_DUES_FIELDS: ReadonlyArray<StringCriteriaField> = [
+  "valuesZone",
+  "valuesWard",
+  "valuationMethod",
+  "rateableValueFilter",
+  "rateableValueFrom",
+  "rateableValueTo",
+  "capitalValueFilter",
+  "capitalValueFrom",
+  "capitalValueTo",
+];
+
 const QUICK_SEARCH_FIELD_SET = new Set<keyof SearchCriteria>(QUICK_SEARCH_FIELDS);
 const KYC_SEARCH_FIELD_SET = new Set<keyof SearchCriteria>(KYC_SEARCH_FIELDS);
+const VALUES_DUES_FIELD_SET = new Set<keyof SearchCriteria>(VALUES_DUES_FIELDS);
 
 function isNonEmptyCriteriaValue(
   key: keyof SearchCriteria,
@@ -62,7 +76,9 @@ function isNonEmptyCriteriaValue(
 }
 
 function fieldsForTab(tab: SearchTab): ReadonlyArray<keyof SearchCriteria> {
-  return tab === "quick-search" ? QUICK_SEARCH_FIELDS : KYC_SEARCH_FIELDS;
+  if (tab === "quick-search") return QUICK_SEARCH_FIELDS;
+  if (tab === "values-dues") return VALUES_DUES_FIELDS;
+  return KYC_SEARCH_FIELDS;
 }
 
 /** Fields that may be written to the URL / sent to the API for the active tab. */
@@ -92,16 +108,19 @@ export function applyTabSearchCriteria(
   tab: SearchTab
 ): SearchCriteria {
   const next: SearchCriteria = { ...criteria };
+  const allTabFields: ReadonlyArray<StringCriteriaField>[] = [
+    QUICK_SEARCH_FIELDS,
+    KYC_SEARCH_FIELDS,
+    VALUES_DUES_FIELDS,
+  ];
+  const activeFields = new Set<string>(fieldsForTab(tab));
 
-  if (tab === "quick-search") {
-    for (const field of KYC_SEARCH_FIELDS) {
-      clearStringCriteriaField(next, field);
+  for (const fieldGroup of allTabFields) {
+    for (const field of fieldGroup) {
+      if (!activeFields.has(field)) {
+        clearStringCriteriaField(next, field);
+      }
     }
-    return next;
-  }
-
-  for (const field of QUICK_SEARCH_FIELDS) {
-    clearStringCriteriaField(next, field);
   }
   return next;
 }
@@ -110,11 +129,19 @@ export function clearTabFieldsFromParams(
   params: URLSearchParams,
   tab: SearchTab
 ): void {
-  const fieldsToClear =
-    tab === "quick-search" ? KYC_SEARCH_FIELDS : QUICK_SEARCH_FIELDS;
+  const allTabFields: ReadonlyArray<StringCriteriaField>[] = [
+    QUICK_SEARCH_FIELDS,
+    KYC_SEARCH_FIELDS,
+    VALUES_DUES_FIELDS,
+  ];
+  const activeFields = new Set<string>(fieldsForTab(tab));
 
-  for (const field of fieldsToClear) {
-    params.delete(field);
+  for (const fieldGroup of allTabFields) {
+    for (const field of fieldGroup) {
+      if (!activeFields.has(field)) {
+        params.delete(field);
+      }
+    }
   }
 }
 
@@ -124,4 +151,8 @@ export function isQuickSearchField(field: keyof SearchCriteria): boolean {
 
 export function isKycSearchField(field: keyof SearchCriteria): boolean {
   return KYC_SEARCH_FIELD_SET.has(field);
+}
+
+export function isValuesDuesField(field: keyof SearchCriteria): boolean {
+  return VALUES_DUES_FIELD_SET.has(field);
 }

@@ -12,16 +12,18 @@ const t = (key: string) => key;
 
 describe("property-search-field-rules", () => {
   it("accepts valid property numbers", () => {
-    expect(validateSearchFieldValue("propertyNoFrom", "P-2023-001", t)).toBeNull();
     expect(validateSearchFieldValue("propertyNoFrom", "10", t)).toBeNull();
-    expect(validateSearchFieldValue("propertyNoFrom", "10/A", t)).toBeNull();
+    expect(validateSearchFieldValue("propertyNoFrom", "123456", t)).toBeNull();
   });
 
   it("rejects invalid property numbers", () => {
-    expect(validateSearchFieldValue("propertyNoFrom", "@123", t)).toBe(
+    expect(validateSearchFieldValue("propertyNoFrom", "P-2023-001", t)).toBe(
       "propertyNoInvalid"
     );
-    expect(validateSearchFieldValue("propertyNoFrom", "P#001", t)).toBe(
+    expect(validateSearchFieldValue("propertyNoFrom", "10/A", t)).toBe(
+      "propertyNoInvalid"
+    );
+    expect(validateSearchFieldValue("propertyNoFrom", "@123", t)).toBe(
       "propertyNoInvalid"
     );
   });
@@ -34,9 +36,22 @@ describe("property-search-field-rules", () => {
   });
 
   it("validates UPIC ID format", () => {
-    expect(validateSearchFieldValue("upicId", "ABC-123", t)).toBeNull();
+    expect(validateSearchFieldValue("upicId", "ABC123", t)).toBeNull();
+    expect(validateSearchFieldValue("upicId", "ABC-123", t)).toBe(
+      "upicIdInvalid"
+    );
     expect(validateSearchFieldValue("upicId", "ABC@123", t)).toBe(
       "upicIdInvalid"
+    );
+  });
+
+  it("validates Old Property No format", () => {
+    expect(validateSearchFieldValue("oldPropertyNo", "OLD123", t)).toBeNull();
+    expect(validateSearchFieldValue("oldPropertyNo", "OLD-123", t)).toBe(
+      "oldPropertyNoInvalid"
+    );
+    expect(validateSearchFieldValue("oldPropertyNo", "OLD/123", t)).toBe(
+      "oldPropertyNoInvalid"
     );
   });
 
@@ -49,6 +64,7 @@ describe("property-search-field-rules", () => {
 
   it("validates person names", () => {
     expect(validateSearchFieldValue("holderName", "John Doe", t)).toBeNull();
+    expect(validateSearchFieldValue("holderName", "राम प्रसाद", t)).toBeNull();
     expect(validateSearchFieldValue("holderName", "John123", t)).toBe(
       "holderNameInvalid"
     );
@@ -62,8 +78,16 @@ describe("property-search-field-rules", () => {
     );
   });
 
-  it("blocks HTML in address", () => {
+  it("blocks HTML and validates words in address", () => {
     expect(validateSearchFieldValue("address", "<script>alert(1)</script>", t)).toBe(
+      "addressInvalid"
+    );
+    expect(validateSearchFieldValue("address", "Lodha Amara Kolshet Road", t)).toBeNull();
+    expect(validateSearchFieldValue("address", "सनराइज को-ऑपरेटिव हाउसिंग सोसायटी", t)).toBeNull();
+
+    // Verify 500 words limit
+    const tooManyWords = Array(501).fill("word").join(" ");
+    expect(validateSearchFieldValue("address", tooManyWords, t)).toBe(
       "addressInvalid"
     );
   });
@@ -71,7 +95,8 @@ describe("property-search-field-rules", () => {
 
 describe("property-search-input-sanitizers", () => {
   it("strips invalid special characters from property no", () => {
-    expect(sanitizePropertySearchField("propertyNoFrom", "P#001")).toBe("P001");
+    expect(sanitizePropertySearchField("propertyNoFrom", "P#001")).toBe("001");
+    expect(sanitizePropertySearchField("propertyNoFrom", "12/34")).toBe("1234");
   });
 
   it("limits mobile to digits only", () => {
@@ -84,6 +109,13 @@ describe("property-search-input-sanitizers", () => {
     expect(sanitizePropertySearchField("holderName", "John   Doe")).toBe(
       "John Doe"
     );
+  });
+
+  it("preserves Devanagari characters in names, societies, and addresses", () => {
+    expect(sanitizePropertySearchField("holderName", "राम प्रसाद")).toBe("राम प्रसाद");
+    expect(sanitizePropertySearchField("societyName", "सनराइज को-ऑपरेटिव हाउसिंग सोसायटी")).toBe("सनराइज को-ऑपरेटिव हाउसिंग सोसायटी");
+    expect(sanitizePropertySearchField("address", "Lodha Amara, Kolshet Road - 400607")).toBe("Lodha Amara, Kolshet Road - 400607");
+    expect(sanitizePropertySearchField("address", " Lodha  Amara ")).toBe("Lodha Amara ");
   });
 });
 

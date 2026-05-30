@@ -16,6 +16,7 @@ export function LookupInput({
   onChange,
   onBlur,
   disabled,
+  maxLength,
 }: LookupInputProps) {
   const listId = `${id}-datalist`;
 
@@ -37,6 +38,7 @@ export function LookupInput({
         list={options.length > 0 ? listId : undefined}
         onChange={(e) => onChange(e.target.value)}
         onBlur={onBlur}
+        maxLength={maxLength}
         className={cn(
           COMPACT_INPUT_CLASS,
           error && "!border-red-500 focus:!ring-red-500"
