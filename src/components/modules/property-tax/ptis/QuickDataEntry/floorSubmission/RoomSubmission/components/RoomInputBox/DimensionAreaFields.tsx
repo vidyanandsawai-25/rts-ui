@@ -59,7 +59,7 @@ export const DimensionAreaFields: React.FC<DimensionAreaFieldsProps> = ({
           <Input
             id="calculated-area-input"
             type="text"
-            value={adjustedArea.toFixed(2)}
+            value={calculatedArea.toFixed(2)}
             readOnly
             className={cn(
               'text-center h-[40px] font-semibold',

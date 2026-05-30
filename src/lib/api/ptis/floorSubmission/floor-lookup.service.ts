@@ -17,7 +17,7 @@ import {
  * @returns Promise<FloorResponse[]>
  */
 export async function getFloorData(): Promise<FloorResponse[]> {
-    return fetchItems<FloorResponse>("/Floor?pageNumber=1&pageSize=1000", "Failed to fetch floors");
+    return fetchItems<FloorResponse>("/Floor?pageNumber=1&pageSize=-1", "Failed to fetch floors");
 }
 
 /**
@@ -41,7 +41,7 @@ export async function getFloorOptions(): Promise<string[]> {
  * @returns Promise<ConstructionTypeResponse[]>
  */
 export async function getConstructionTypeData(): Promise<ConstructionTypeResponse[]> {
-    return fetchItems<ConstructionTypeResponse>("/ConstructionType?pageNumber=1&pageSize=1000", "Failed to fetch construction types");
+    return fetchItems<ConstructionTypeResponse>("/ConstructionType?pageNumber=1&pageSize=-1", "Failed to fetch construction types");
 }
 
 /**
@@ -64,7 +64,7 @@ export async function getConstructionTypeOptions(): Promise<string[]> {
  * Fetches type of use data from API
  */
 export async function getTypeOfUseData(): Promise<TypeOfUseApiItem[]> {
-    return fetchItems<TypeOfUseApiItem>("/TypeOfUse?pageNumber=1&pageSize=1000", "Failed to fetch types of use");
+    return fetchItems<TypeOfUseApiItem>("/TypeOfUse?pageNumber=1&pageSize=-1", "Failed to fetch types of use");
 }
 
 /**
@@ -86,7 +86,7 @@ export async function getTypeOfUseOptions(): Promise<string[]> {
  * Fetches sub-type of use data, optionally filtered by typeOfUseId
  */
 export async function getSubTypeOfUseData(typeOfUseId?: string): Promise<SubTypeOfUseResponse[]> {
-    const params = new URLSearchParams({ pageNumber: "1", pageSize: "2000" });
+    const params = new URLSearchParams({ pageNumber: "1", pageSize: "-1" });
     if (typeOfUseId && typeOfUseId !== 'undefined' && typeOfUseId !== 'null') {
         const isLikelyDescription = /[\u0900-\u097F\s]/.test(typeOfUseId);
         if (!isLikelyDescription) params.append("typeOfUseId", typeOfUseId);
@@ -109,7 +109,7 @@ export async function getSubTypeOfUseOptions(typeOfUseID?: string): Promise<stri
  * Fetches sub-floor data
  */
 export async function getSubFloorData(): Promise<SubFloorResponse[]> {
-    return fetchItems<SubFloorResponse>("/SubFloor?pageNumber=1&pageSize=1000", "Failed to fetch sub-floors");
+    return fetchItems<SubFloorResponse>("/SubFloor?pageNumber=1&pageSize=-1", "Failed to fetch sub-floors");
 }
 
 /**
@@ -132,7 +132,7 @@ export async function getSubFloorOptions(): Promise<string[]> {
  * @returns Promise<RoomTypeResponse[]>
  */
 export async function getRoomTypeData(): Promise<RoomTypeResponse[]> {
-    return fetchItems<RoomTypeResponse>("/RoomTypeMaster?pageNumber=1&pageSize=1000", "Failed to fetch room types");
+    return fetchItems<RoomTypeResponse>("/RoomTypeMaster?pageNumber=1&pageSize=-1", "Failed to fetch room types");
 }
 
 /**

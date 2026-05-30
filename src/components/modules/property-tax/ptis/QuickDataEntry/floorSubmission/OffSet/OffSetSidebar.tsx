@@ -9,7 +9,10 @@ import { cn } from '@/lib/utils/cn';
 
 const OFFSET_DRAWER_CLASSNAME = cn(
     "[&>div.fixed.right-0]:!w-[98vw]",
-    "xl:[&>div.fixed.right-0]:!w-[600px]"
+    "xl:[&>div.fixed.right-0]:!w-[600px]",
+    "[&_div]:![scrollbar-width:none]",
+    "[&_div]:![-ms-overflow-style:none]",
+    "[&_div::-webkit-scrollbar]:!hidden"
 );
 
 export function OffSetSidebar(props: FullOffSetFormProps) {
@@ -43,7 +46,7 @@ export function OffSetSidebar(props: FullOffSetFormProps) {
                 width="md"
             >
                 <div className="flex flex-col h-full">
-                    <div className="flex-1 overflow-y-auto">
+                    <div className="flex-1">
                         <OffSetForm {...props} isInline={false} />
                     </div>
                 </div>

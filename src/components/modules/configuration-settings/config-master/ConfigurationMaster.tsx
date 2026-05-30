@@ -1,11 +1,15 @@
+'use client';
+
 import { ConfigModalsController } from './ConfigModalsController';
-import { getTranslations } from 'next-intl/server';
+import { useTranslations } from 'next-intl';
 import { ConfigItem, ConfigCategory } from '@/types/configMaster.types';
 import type { DepartmentApiResponse } from '@/types/configMaster.types';
 import { ConfigurationMasterHeader } from './ConfigurationMasterHeader';
 import { ConfigurationMasterContent } from './ConfigurationMasterContent';
+import { usePermissions } from '@/hooks/usePermissions';
+import { AlertCircle } from 'lucide-react';
 
-export async function ConfigurationMaster({
+export function ConfigurationMaster({
   categories,
   initialItems,
   departmentData,
@@ -16,6 +20,8 @@ export async function ConfigurationMaster({
   editKey,
   configKeyId,
   locale,
+  fetchError,
+  statusCode,
 }: {
   categories: ConfigCategory[];
   initialItems: ConfigItem[];
@@ -27,10 +33,35 @@ export async function ConfigurationMaster({
   editKey?: string;
   configKeyId?: string;
   locale: string;
+  fetchError?: string;
+  statusCode?: number;
 }) {
-  const t = await getTranslations({ locale, namespace: 'configMaster' });
+  const t = useTranslations('configMaster');
+  const tCommon = useTranslations('common');
+
+  const { canView, haveFullAccess } = usePermissions('CONFIG_MASTER');
+
+  const isUnauthorized =
+    statusCode === 401 ||
+    (fetchError &&
+      (fetchError.toLowerCase().includes('unauthorized') ||
+        fetchError.toLowerCase().includes('token') ||
+        fetchError === 'messages.unauthorizedToken'));
 
   const activeCategoryId = categoryId || categories[0]?.id || 'all';
+
+  if (isUnauthorized || (!canView && !haveFullAccess)) {
+    const messageKey = isUnauthorized ? 'errors.unauthorized' : 'errors.noAccess';
+
+    return (
+      <div className="min-h-full flex flex-col bg-slate-50/50 light">
+        <div className="flex-1 flex flex-col items-center justify-center min-h-[400px] p-6 bg-white m-6 rounded-xl border border-gray-200/80 shadow-sm animate-in fade-in duration-300">
+          <AlertCircle className="w-12 h-12 text-red-500 mb-4 animate-bounce" />
+          <h3 className="text-lg font-semibold text-gray-900">{tCommon(messageKey)}</h3>
+        </div>
+      </div>
+    );
+  }
 
   // Apply search filter locally on the server if needed (redundant if page.tsx does it, but safe)
   let displayItems = initialItems;
@@ -55,10 +86,11 @@ export async function ConfigurationMaster({
     color: 'rose',
     icon: 'Shield',
     count: 0,
-    total: 0
+    total: 0,
   };
 
-  const activeCategory = categories.find((c) => c.id === activeCategoryId) || categories[0] || fallbackCategory;
+  const activeCategory =
+    categories.find((c) => c.id === activeCategoryId) || categories[0] || fallbackCategory;
 
   return (
     <div className="min-h-full flex flex-col bg-slate-50/50 light">
@@ -70,6 +102,7 @@ export async function ConfigurationMaster({
         addConfigKeyLabel={t('addConfigKey')}
         activeCategoryId={activeCategoryId}
         search={search}
+        haveFullAccess={haveFullAccess}
       />
 
       <ConfigurationMasterContent
@@ -82,6 +115,7 @@ export async function ConfigurationMaster({
         noSearchResultsLabel={t('noSearchResults', { search: search || '' })}
         noItemsFoundLabel={t('noItemsFound', { category: activeCategory.name })}
         searchTipLabel={t('searchTip') || 'Try adjusting your search terms or category filter.'}
+        fetchError={fetchError}
       />
 
       <ConfigModalsController

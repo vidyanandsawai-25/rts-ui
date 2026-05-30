@@ -35,8 +35,16 @@ export default function DepartmentMasterForm({
         tCommon,
     } = useDepartmentForm({ initialOpen, editingDepartment, onSuccess, onClose });
 
-    const showError = (field: keyof typeof formData) =>
-        (submittedOnce || touched[field]) && !!errors[field];
+    const showError = (field: keyof typeof formData) => {
+        const hasError = !!errors[field];
+        if (!hasError) return false;
+
+        const isFieldEmpty = !formData[field]?.toString().trim();
+        if (isFieldEmpty) {
+            return submittedOnce;
+        }
+        return submittedOnce || touched[field];
+    };
 
     return (
         <Drawer

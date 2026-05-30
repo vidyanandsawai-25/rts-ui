@@ -55,7 +55,7 @@ export async function fetchPropertyTypePagedServerAction(
       !Number.isFinite(pageNumber) ||
       !Number.isFinite(pageSize) ||
       pageNumber <= 0 ||
-      pageSize <= 0 ||
+      (pageSize <= 0 && pageSize !== -1) ||
       pageSize > MAX_PAGE_SIZE ||
       pageNumber > MAX_PAGE_NUMBER
     ) {

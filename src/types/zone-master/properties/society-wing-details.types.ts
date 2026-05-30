@@ -2,7 +2,6 @@
  * Types for Society Wing Details API
  * Used to fetch wing and amenity counts for a property
  */
- 
 /**
  * Individual society wing detail item from the API
  */
@@ -34,7 +33,6 @@ export interface SocietyWingDetailItem {
   propertyCount: number;
   aminityCount: number;
 }
- 
 /**
  * Response from the Society Wing Details API
  */

@@ -16,27 +16,26 @@ export function DepartmentActivationClient({ initialDepartments, initialModules,
     isPending,
     selectedDepartment,
     isSubmoduleDialogOpen,
-    localModules,
     toggleDepartment,
     handleToggleAll,
-    toggleModule,
     setSubmoduleDialogOpen,
     filteredDepartments,
     optimisticDepartments,
+    submoduleConfig,
     t,
   } = useDepartmentActivation({ initialDepartments, initialModules, initialSearchTerm });
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 text-slate-900 dark:text-slate-900 [color-scheme:light]">
         <DepartmentActivationStatsCards departments={optimisticDepartments} />
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <SearchInput
                 value={searchTerm}
                 onChange={setSearchTerm}
                 placeholder={t('searchPlaceholder')}
-                className="w-full md:w-72"
+                className="mb-0 w-full md:w-72 [&_input]:text-gray-900 [&_input]:dark:text-gray-900 [&_input]:bg-white [&_input]:dark:bg-white [&_input]:placeholder:text-gray-400 [&_input]:dark:placeholder:text-gray-400 [&_input]:[color-scheme:light]"
             />
-            <div className="flex items-center gap-2 p-2 bg-blue-50 border border-blue-100 rounded-xl">
+            <div className="flex items-center gap-2 p-2 bg-blue-50 dark:bg-blue-50 border border-blue-100 dark:border-blue-100 rounded-xl">
                 <Button variant="success" size="sm" icon={Check} onClick={() => handleToggleAll(true)} disabled={isPending}>{t('quickActions.activateAll')}</Button>
                 <Button variant="danger" size="sm" icon={X} onClick={() => handleToggleAll(false)} disabled={isPending}>{t('quickActions.deactivateAll')}</Button>
             </div>
@@ -56,10 +55,17 @@ export function DepartmentActivationClient({ initialDepartments, initialModules,
 
       <SubmoduleConfigDialog
         isOpen={isSubmoduleDialogOpen}
-        onOpenChange={(open) => setSubmoduleDialogOpen(open, selectedDepartment!)}
+        onOpenChange={(open) => setSubmoduleDialogOpen(open, selectedDepartment ?? undefined)}
         department={selectedDepartment}
-        modules={localModules}
-        onToggleModule={toggleModule}
+        modules={submoduleConfig.draftModules}
+        savedModules={submoduleConfig.savedModules}
+        hasUnsavedChanges={submoduleConfig.hasUnsavedChanges}
+        changedModuleCount={submoduleConfig.changedModuleCount}
+        isSaving={submoduleConfig.isSaving}
+        onToggleModule={submoduleConfig.toggleModuleDraft}
+        onToggleAllModules={submoduleConfig.toggleAllModulesDraft}
+        onResetDraft={submoduleConfig.resetDraft}
+        onSaveChanges={submoduleConfig.saveChanges}
       />
     </div>
   );

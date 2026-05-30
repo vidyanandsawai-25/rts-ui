@@ -26,7 +26,10 @@
     "save": "जतन करा",
     "update": "अपडेट करा",
     "submit": "सबमिट करा",
-    "pleaseWait": "कृपया थांबा..."
+    "pleaseWait": "कृपया थांबा...",
+    "search": "शोधा",
+    "reset": "रीसेट",
+    "exportExcel": "एक्सेलमध्ये निर्यात करा"
   },
   "validation": {
     "required": "हे फील्ड आवश्यक आहे",

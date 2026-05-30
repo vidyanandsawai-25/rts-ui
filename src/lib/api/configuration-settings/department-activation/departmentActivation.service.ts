@@ -6,9 +6,25 @@ import type {
   Module,
   ModuleUpdateRequest,
   DepartmentListResponse,
-  ModuleListResponse,
 } from '@/types/departmentActivation.types';
-import { normalizeDepartment, normalizeModule } from './activation-types-guard';
+import type { ModuleMaster } from '@/types/moduleMaster.types';
+import { getModuleMastersSummary } from '@/lib/api/configuration-settings/module-master/module-master.services';
+import { normalizeDepartment } from './activation-types-guard';
+
+function toActivationModule(module: ModuleMaster): Module {
+  return {
+    moduleId: module.moduleId,
+    departmentId: module.departmentId ?? 0,
+    departmentName: module.departmentName ?? '',
+    moduleCode: module.moduleCode ?? '',
+    moduleName: module.moduleName ?? '',
+    moduleNameLocal: module.moduleNameLocal ?? null,
+    moduleIcon: module.moduleIcon ?? null,
+    moduleLabel: module.moduleLabel ?? null,
+    moduleDescription: module.moduleDescription ?? '',
+    isActive: module.isActive,
+  };
+}
 
 const API_ENDPOINTS = {
   departmentMaster: {
@@ -91,34 +107,15 @@ class DepartmentActivationService {
 
   async getModulesByDepartment(departmentId: number): Promise<ApiResponse<Module[]>> {
     try {
-      const baseUrl = `${API_ENDPOINTS.moduleMaster.getAll}?departmentId=${departmentId}&PageNumber=1&PageSize=1000`;
-      const [activeResponse, inactiveResponse] = await Promise.all([
-        apiClient.get<ModuleListResponse>(`${baseUrl}&isActive=true`),
-        apiClient.get<ModuleListResponse>(`${baseUrl}&isActive=false`),
-      ]);
+      // Fetch via the same paginated summary used by Module Master, then filter
+      // client-side. The filtered API query (departmentId + isActive) can miss
+      // newly created modules while still returning updates to existing ones.
+      const allModules = await getModuleMastersSummary();
+      const modules = allModules
+        .filter((module) => module.departmentId === departmentId)
+        .map(toActivationModule);
 
-      const mapModule = (mod: Record<string, unknown>): Module => normalizeModule(mod);
-
-      const allItems: Module[] = [];
-      const seenIds = new Set<number>();
-
-      const addItems = (response: ApiResponse<ModuleListResponse>) => {
-        if (response.success && response.data) {
-          const raw = response.data.items || [];
-          raw.forEach((mod: Record<string, unknown>) => {
-            const mapped = mapModule(mod);
-            if (!seenIds.has(mapped.moduleId)) {
-              seenIds.add(mapped.moduleId);
-              allItems.push(mapped);
-            }
-          });
-        }
-      };
-
-      addItems(activeResponse);
-      addItems(inactiveResponse);
-
-      return { success: true, data: allItems };
+      return { success: true, data: modules };
     } catch (error: unknown) {
       return {
         success: false,
@@ -133,7 +130,21 @@ class DepartmentActivationService {
     userId: number
   ): Promise<ApiResponse<Module>> {
     try {
-      const payload = { ...data, updatedBy: userId };
+      const payload = {
+        id: data.moduleId,
+        moduleId: data.moduleId,
+        departmentId: data.departmentId,
+        moduleCode: data.moduleCode,
+        moduleName: data.moduleName,
+        moduleNane: data.moduleName,
+        moduleNameLocal: data.moduleNameLocal,
+        moduleIcon: data.moduleIcon,
+        moduleLabel: data.moduleLabel,
+        moduleDescription: data.moduleDescription,
+        isActive: data.isActive,
+        IsActive: data.isActive,
+        updatedBy: userId,
+      };
       const response = await apiClient.put<Module>(
         API_ENDPOINTS.moduleMaster.update(data.moduleId),
         payload

@@ -4,10 +4,13 @@ import { usePartitionFormHandlers } from "@/hooks/zoneMaster/usePartitionFormHan
 import { PartitionFormState, PartitionFormErrors } from "@/types/zone-master/properties/partition-form.types";
 import { Floor } from "@/types/floor.types";
 
+// Mock router push
+const mockPush = vi.fn();
+
 // Mock dependencies
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
-    push: vi.fn(),
+    push: mockPush,
   }),
   usePathname: () => "/property-tax/zone-master",
   useSearchParams: () => ({
@@ -42,13 +45,15 @@ describe("usePartitionFormHandlers", () => {
     prefix: "",
     generationType: "",
     fromPartition: "",
-    toPartition: "",
-  };
+    toPartition: "",    selectedWingForAmenity: "",
+    fromAmenity: "",
+    toAmenity: "",  };
 
   const initialErrors: PartitionFormErrors = {};
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockPush.mockClear();
   });
 
   it("should handle property selection", () => {
@@ -68,10 +73,9 @@ describe("usePartitionFormHandlers", () => {
       result.current.handlePropertySelect(mockEvent, "1");
     });
 
-    expect(mockSetForm).toHaveBeenCalledWith({
-      ...initialForm,
-      mainPropertyId: 1,
-    });
+    // Check that router.push was called with the correct URL
+    expect(mockPush).toHaveBeenCalledWith("/property-tax/zone-master?partitionPropertyId=1");
+    // Check that errors were cleared
     expect(mockSetErrors).toHaveBeenCalledWith({
       ...initialErrors,
       mainPropertyId: undefined,
@@ -95,10 +99,8 @@ describe("usePartitionFormHandlers", () => {
       result.current.handlePropertySelect(mockEvent, "");
     });
 
-    expect(mockSetForm).toHaveBeenCalledWith({
-      ...initialForm,
-      mainPropertyId: null,
-    });
+    // Check that router.push was called without partitionPropertyId parameter
+    expect(mockPush).toHaveBeenCalledWith("/property-tax/zone-master?");
   });
 
   it("should handle from floor change", () => {

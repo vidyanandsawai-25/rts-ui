@@ -48,7 +48,7 @@ export const ptisService = {
     propertyId?: number
   ): Promise<{
     success: boolean;
-    data?: { propertyId: number; details: PropertyDetailsData };
+    data?: { propertyId: number; details: PropertyDetailsData; wardId: number; wardNo: string };
     error?: string;
   }> {
     try {
@@ -83,6 +83,8 @@ export const ptisService = {
           data: {
             propertyId: finalPropertyId,
             details: ptisMapper.mapBasicDetails(basicRes.data),
+            wardId: basicRes.data.wardId,
+            wardNo: basicRes.data.wardNo,
           },
         };
       }

@@ -27,6 +27,10 @@ export interface PartitionFormState {
   // Non-Apartment partition fields
   fromPartition: string;
   toPartition: string;
+  // Amenity fields
+  selectedWingForAmenity: string; // Wing letter/number for amenity (empty if no wing)
+  fromAmenity: string;
+  toAmenity: string;
 }
 
 /**
@@ -45,6 +49,10 @@ export interface PartitionFormErrors {
   generationType?: string;
   fromPartition?: string;
   toPartition?: string;
+  // Amenity errors
+  selectedWingForAmenity?: string;
+  fromAmenity?: string;
+  toAmenity?: string;
 }
 
 /**

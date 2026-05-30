@@ -3,6 +3,7 @@
 import { Input } from "@/components/common";
 import { Label } from "@/components/common/label";
 import { DynamicTaxFieldsProps } from "@/types/OldDetails/property-old-floor-info.types";
+import { sanitizeTaxDecimal, preventInvalidNumericKeys } from "../../OldTaxation/utils/inputValidation";
 
 /**
  * DynamicTaxFields Component
@@ -11,8 +12,7 @@ import { DynamicTaxFieldsProps } from "@/types/OldDetails/property-old-floor-inf
  */
 export function DynamicTaxFields({  
   taxes,
-  onTaxChange,
-  validationErrors
+  onTaxChange,  
 }: DynamicTaxFieldsProps) {
   // Return null when no tax data - warning is shown at the top of the form
   if (!taxes || taxes.length === 0) {
@@ -22,26 +22,25 @@ export function DynamicTaxFields({
   return (
     <>
       {taxes.map((tax) => {
-        const errorKey = `tax_${tax.taxId}`;
-        const hasError = !!validationErrors[errorKey];
         return (
-          <div key={tax.taxId} className="space-y-2">
-            <Label className="text-sm font-semibold text-gray-700 ml-1">
+          <div key={tax.taxId} className="space-y-1.5">
+            <Label className="text-xs font-semibold text-gray-700">
               {tax.taxName}
             </Label>
             <Input
-              type="number"
-              step="0.01"
-              value={tax.taxAmount === 0 ? "" : tax.taxAmount}
-              onChange={(e) => onTaxChange(tax.taxId, e.target.value)}
+              type="text"
+              inputMode="decimal"
+              value={tax.taxAmount === 0 || !tax.taxAmount ? "" : String(tax.taxAmount)}
+              onChange={(e) => {
+                const value = sanitizeTaxDecimal(e.target.value);
+                if (value !== '' || e.target.value === '') {
+                  onTaxChange(tax.taxId, value);
+                }
+              }}
+              onKeyDown={preventInvalidNumericKeys}
               placeholder={tax.taxName}
-              className={`h-11.5 hover:border-blue-300 focus:border-blue-400 focus:ring-4 focus:ring-blue-50 rounded-lg transition-all font-medium text-gray-900 px-4 ${
-                hasError ? 'border-red-500' : 'border-[#cbd5e1]'
-              }`}
+              className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
             />
-            {hasError && (
-              <span className="text-xs text-red-500 ml-1">{validationErrors[errorKey]}</span>
-            )}
           </div>
         );
       })}

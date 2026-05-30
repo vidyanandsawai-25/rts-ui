@@ -34,18 +34,67 @@ export const mapOffsetToApi = (offset: OffsetData, roomSubmissionId: number = 0)
 
   const resolvedId = extractValidId(offset.id, offset.roomWiseMinusId);
 
+  const shape = offset.shape || SHAPE_TYPES.RECTANGLE;
+  const areaSqMtr = toApiNumber([offset.area], 0);
+
+  let lengthMtr = 0;
+  let widthMtr = 0;
+  let base1Mtr = 0;
+  let base2Mtr = 0;
+  let heightMtr = 0;
+
+  switch (shape) {
+    case SHAPE_TYPES.RECTANGLE:
+      lengthMtr = toApiNumber([offset.length, params.length], 0);
+      widthMtr = toApiNumber([offset.width, params.width], 0);
+      base1Mtr = lengthMtr;
+      base2Mtr = widthMtr;
+      break;
+    case SHAPE_TYPES.SQUARE:
+      const s = toApiNumber([offset.side, params.side, offset.length, params.length], 0);
+      lengthMtr = s;
+      widthMtr = s;
+      base1Mtr = s;
+      break;
+    case SHAPE_TYPES.TRAPEZOID:
+      lengthMtr = 1;
+      widthMtr = areaSqMtr;
+      base1Mtr = toApiNumber([offset.base1, params.base1], 0);
+      base2Mtr = toApiNumber([offset.base2, params.base2], 0);
+      heightMtr = toApiNumber([offset.height, params.height], 0);
+      break;
+    case SHAPE_TYPES.TRIANGLE:
+      lengthMtr = 1;
+      widthMtr = areaSqMtr;
+      base1Mtr = toApiNumber([offset.base, params.base], 0);
+      heightMtr = toApiNumber([offset.height, params.height], 0);
+      break;
+    case SHAPE_TYPES.CIRCLE:
+    case SHAPE_TYPES.SEMI_CIRCLE:
+    case SHAPE_TYPES.QUARTER_CIRCLE:
+      lengthMtr = 1;
+      widthMtr = areaSqMtr;
+      base1Mtr = toApiNumber([offset.radius, params.radius], 0);
+      break;
+    default:
+      lengthMtr = toApiNumber([offset.length, params.length], 0);
+      widthMtr = toApiNumber([offset.width, params.width], 0);
+      base1Mtr = lengthMtr;
+      base2Mtr = widthMtr;
+  }
+
   return {
     isActive: true,
     updatedBy: 0,
     id: resolvedId > 0 ? resolvedId : null,
     roomWiseSubmissionId: roomSubmissionId,
-    lengthMtr: toApiNumber([offset.length, params.length], 0),
-    widthMtr: toApiNumber([offset.width, params.width], 0),
-    heightMtr: toApiNumber([offset.height, params.height], 0),
-    areaSqMtr: toApiNumber([offset.area], 0),
-    shape: offset.shape || SHAPE_TYPES.RECTANGLE,
-    base1Mtr: toApiNumber([offset.base1, offset.base, offset.radius, params.base1, params.base, params.radius], 0),
-    base2Mtr: toApiNumber([offset.base2, params.base2], 0),
+    lengthMtr,
+    widthMtr,
+    heightMtr,
+    areaSqMtr,
+    shape,
+    base1Mtr,
+    base2Mtr,
     operation: offset.operation || OFFSET_OPERATIONS.SUBTRACT,
     isOffset: offset.operation === OFFSET_OPERATIONS.ADD,
   };

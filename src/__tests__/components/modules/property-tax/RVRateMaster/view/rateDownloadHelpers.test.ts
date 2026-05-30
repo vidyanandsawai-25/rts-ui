@@ -279,7 +279,7 @@ describe("rateDownloadHelpers", () => {
       expect(toast.success).toHaveBeenCalledWith("Rates downloaded successfully");
     });
 
-    it("should handle multiple grids with blank line separators", async () => {
+    it("should handle multiple grids with different use groups", async () => {
       const mockRates = [
         {
           rateSection: "UTHALSAR",

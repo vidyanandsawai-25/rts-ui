@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Select } from "@/components/common";
+import { SearchSelect } from "@/components/common";
 import { useRoomTypeMaster } from "@/hooks/ptis/RoomSubmission/useRoomTypeMaster";
 import { useTranslations } from "next-intl";
 
@@ -52,7 +52,7 @@ export const RoomTypeSelect: React.FC<RoomTypeSelectProps> = ({ value, onChange,
     }, [value, roomTypeDetails]);
 
     return (
-        <Select
+        <SearchSelect
             options={options}
             value={resolvedValue}
             onChange={(_, newVal) => {
@@ -76,7 +76,7 @@ export const RoomTypeSelect: React.FC<RoomTypeSelectProps> = ({ value, onChange,
             }}
             disabled={disabled || isLoading}
             placeholder={isLoading ? t("floor.loading") : t("roomSubmission.input.roomTypes.select")}
-            selectSize="md"
+            isLoading={isLoading}
             className={className}
         />
     );

@@ -90,10 +90,10 @@
       "description": "Please wait while we load the data"
     },
     "error": {
-      "title": "Error",
-      "description": "An error occurred while loading the page. Please try refreshing or contact support.",
+      "title": "Failed to connect to the server. Please try again later.",
+      "description": "We encountered an error while loading the common details update page. Please try again.",
       "errorId": "Error ID: {id}",
-      "goHome": "Go Home",
+      "goHome": "Go to Home",
       "tryAgain": "Try Again"
     }
   }

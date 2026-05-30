@@ -1,0 +1,303 @@
+"use client";
+
+import React from "react";
+import { toast } from "sonner";
+import type {
+  SearchCriteria,
+  SearchFieldErrorMap,
+  UsePropertySearchFormProps,
+} from "@/types/property-search.types";
+import { validateSearchCriteria } from "@/components/modules/property-tax/search-property/validateSearchCriteria";
+import { INITIAL_SEARCH_CRITERIA } from "@/components/modules/property-tax/search-property/constants";
+import { sanitizePropertySearchField } from "@/lib/validations/property-search-input-sanitizers";
+import {
+  getPropertySearchFieldErrors,
+  hasPropertySearchFieldErrors,
+  trimFieldValue,
+} from "@/lib/validations/property-search-field-rules";
+
+import { usePropertySearchNavigation } from "./usePropertySearchNavigation";
+
+type FormDraft = {
+  criteriaKey: string;
+  formState: SearchCriteria;
+  validationError: string | null;
+  submitAttempted: boolean;
+  touchedFields: Set<keyof SearchCriteria>;
+};
+
+const EMPTY_TOUCHED_FIELDS = new Set<keyof SearchCriteria>();
+
+function getVisibleFieldErrors(
+  errors: SearchFieldErrorMap,
+  touchedFields: Set<keyof SearchCriteria>,
+  submitAttempted: boolean
+): SearchFieldErrorMap {
+  if (submitAttempted) return errors;
+
+  const visible: SearchFieldErrorMap = {};
+  for (const [field, message] of Object.entries(errors) as Array<
+    [keyof SearchCriteria, string]
+  >) {
+    if (touchedFields.has(field)) {
+      visible[field] = message;
+    }
+  }
+  return visible;
+}
+
+/**
+ * Owns the controlled form state for Property Search.
+ * SSR-driven: when `initialCriteria` changes (URL → server → props),
+ * the form re-syncs without any client-side API call.
+ */
+export function usePropertySearchForm({
+  initialCriteria,
+  activeTab,
+  selectedStatus = null,
+  onSearch,
+  onReset,
+  validationT,
+}: UsePropertySearchFormProps) {
+  const criteriaKey = JSON.stringify(initialCriteria);
+  const [draft, setDraft] = React.useState<FormDraft>({
+    criteriaKey,
+    formState: initialCriteria,
+    validationError: null,
+    submitAttempted: false,
+    touchedFields: new Set(),
+  });
+  const validationRef = React.useRef<HTMLDivElement | null>(null);
+
+  const [, startTransition] = React.useTransition();
+  const { updateDraftCriteria } = usePropertySearchNavigation({ startTransition });
+
+  React.useEffect(() => {
+    setDraft({
+      criteriaKey,
+      formState: initialCriteria,
+      validationError: null,
+      submitAttempted: false,
+      touchedFields: new Set(),
+    });
+  }, [criteriaKey, initialCriteria]);
+
+  const isDraftSynced = draft.criteriaKey === criteriaKey;
+  const formState = isDraftSynced ? draft.formState : initialCriteria;
+  const validationError = isDraftSynced ? draft.validationError : null;
+  const submitAttempted = isDraftSynced ? draft.submitAttempted : false;
+
+  const fieldErrors = React.useMemo(
+    () => getPropertySearchFieldErrors(formState, activeTab, validationT),
+    [activeTab, formState, validationT]
+  );
+
+  const visibleFieldErrors = React.useMemo(() => {
+    const touchedFields = isDraftSynced
+      ? draft.touchedFields
+      : EMPTY_TOUCHED_FIELDS;
+    return getVisibleFieldErrors(fieldErrors, touchedFields, submitAttempted);
+  }, [draft.touchedFields, fieldErrors, isDraftSynced, submitAttempted]);
+
+  const isSubmitDisabled = React.useMemo(() => {
+    const validation = validateSearchCriteria(
+      formState,
+      activeTab,
+      validationT,
+      selectedStatus
+    );
+    return !validation.valid || hasPropertySearchFieldErrors(fieldErrors);
+  }, [activeTab, selectedStatus, fieldErrors, formState, validationT]);
+
+  const getBaseFormState = React.useCallback(
+    (prev: FormDraft): SearchCriteria =>
+      prev.criteriaKey === criteriaKey ? prev.formState : initialCriteria,
+    [criteriaKey, initialCriteria]
+  );
+
+  const markFieldTouched = React.useCallback((field: keyof SearchCriteria) => {
+    setDraft((prev) => {
+      const nextTouched = new Set(prev.touchedFields);
+      nextTouched.add(field);
+      return { ...prev, touchedFields: nextTouched };
+    });
+  }, []);
+
+  const setField = React.useCallback(
+    (field: keyof SearchCriteria, value: string | number) => {
+      const nextValue =
+        typeof value === "string"
+          ? sanitizePropertySearchField(field, value)
+          : value;
+      setDraft((prev) => ({
+        criteriaKey,
+        formState: { ...getBaseFormState(prev), [field]: nextValue },
+        validationError: null,
+        submitAttempted: prev.criteriaKey === criteriaKey ? prev.submitAttempted : false,
+        touchedFields:
+          prev.criteriaKey === criteriaKey ? prev.touchedFields : new Set(),
+      }));
+    },
+    [criteriaKey, getBaseFormState]
+  );
+
+  const handleInputChange = React.useCallback(
+    (field: keyof SearchCriteria) =>
+      (e: React.ChangeEvent<HTMLInputElement>) => {
+        setField(field, e.target.value);
+      },
+    [setField]
+  );
+
+  const handleInputBlur = React.useCallback(
+    (field: keyof SearchCriteria) =>
+      (e: React.FocusEvent<HTMLInputElement>) => {
+        markFieldTouched(field);
+        const trimmed = trimFieldValue(e.target.value);
+        setField(field, trimmed);
+        updateDraftCriteria(field, trimmed);
+      },
+    [markFieldTouched, setField, updateDraftCriteria]
+  );
+
+  const handleSelectChange = React.useCallback(
+    (field: keyof SearchCriteria) =>
+      (_: React.ChangeEvent<HTMLSelectElement>, value: string) => {
+        setField(field, value);
+        updateDraftCriteria(field, value);
+      },
+    [setField, updateDraftCriteria]
+  );
+
+  const handleZoneChange = React.useCallback(
+    (_: React.ChangeEvent<HTMLSelectElement>, value: string) => {
+      const zoneId = Number(value) || 0;
+      setDraft((prev) => ({
+        criteriaKey,
+        formState: { ...getBaseFormState(prev), zoneId, wardId: 0 },
+        validationError: null,
+        submitAttempted: false,
+        touchedFields: new Set(),
+      }));
+      updateDraftCriteria("zoneId", zoneId);
+    },
+    [criteriaKey, getBaseFormState, updateDraftCriteria]
+  );
+
+  const handleWardChange = React.useCallback(
+    (_: React.ChangeEvent<HTMLSelectElement>, value: string) => {
+      const wardId = Number(value) || 0;
+      setField("wardId", wardId);
+      markFieldTouched("wardId");
+      updateDraftCriteria("wardId", wardId);
+    },
+    [markFieldTouched, setField, updateDraftCriteria]
+  );
+
+  const handleSubmit = React.useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+
+      const trimmedState = { ...formState };
+      for (const key of Object.keys(trimmedState) as Array<keyof SearchCriteria>) {
+        const value = trimmedState[key];
+        if (typeof value === "string") {
+          (trimmedState[key] as string) = trimFieldValue(value);
+        }
+      }
+
+      const validation = validateSearchCriteria(
+        trimmedState,
+        activeTab,
+        validationT,
+        selectedStatus
+      );
+
+      if (!validation.valid) {
+        setDraft({
+          criteriaKey,
+          formState: trimmedState,
+          validationError: validation.message,
+          submitAttempted: true,
+          touchedFields: new Set(
+            Object.keys(fieldErrors) as Array<keyof SearchCriteria>
+          ),
+        });
+        toast.error(validation.message);
+        validationRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+        });
+        return;
+      }
+
+      setDraft({
+        criteriaKey,
+        formState: trimmedState,
+        validationError: null,
+        submitAttempted: false,
+        touchedFields: new Set(),
+      });
+      onSearch(trimmedState, activeTab);
+    },
+    [
+      activeTab,
+      criteriaKey,
+      selectedStatus,
+      fieldErrors,
+      formState,
+      onSearch,
+      validationT,
+    ]
+  );
+
+  const handleReset = React.useCallback(() => {
+    setDraft({
+      criteriaKey,
+      formState: INITIAL_SEARCH_CRITERIA,
+      validationError: null,
+      submitAttempted: false,
+      touchedFields: new Set(),
+    });
+    onReset();
+  }, [criteriaKey, onReset]);
+
+  const handleClearFilterTag = React.useCallback(
+    (field: keyof SearchCriteria) => {
+      if (field === "zoneId") {
+        setDraft((prev) => ({
+          criteriaKey,
+          formState: { ...getBaseFormState(prev), zoneId: 0, wardId: 0 },
+          validationError: null,
+          submitAttempted: prev.criteriaKey === criteriaKey ? prev.submitAttempted : false,
+          touchedFields:
+            prev.criteriaKey === criteriaKey ? prev.touchedFields : new Set(),
+        }));
+        updateDraftCriteria("zoneId", "");
+      } else {
+        const nextValue = field === "wardId" ? 0 : "";
+        setField(field, nextValue);
+        updateDraftCriteria(field, nextValue);
+      }
+    },
+    [criteriaKey, getBaseFormState, setField, updateDraftCriteria]
+  );
+
+  return {
+    formState,
+    validationError,
+    validationRef,
+    fieldErrors: visibleFieldErrors,
+    isSubmitDisabled,
+    setField,
+    handleInputChange,
+    handleInputBlur,
+    handleSelectChange,
+    handleZoneChange,
+    handleWardChange,
+    handleSubmit,
+    handleReset,
+    handleClearFilterTag,
+  };
+}
+
