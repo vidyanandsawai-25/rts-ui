@@ -56,7 +56,7 @@ describe('executeBulkUpdateServer', () => {
 
     const result = await executeBulkUpdateServer('/api/CommonDetails/update', mockPayload);
 
-    expect(apiClient.put).toHaveBeenCalledWith('/api/CommonDetails/update', mockPayload);
+    expect(apiClient.put).toHaveBeenCalledWith('/CommonDetails/update', mockPayload);
     expect(result).toEqual({
       success: true,
       message: 'Updated 3 properties successfully',
@@ -144,7 +144,7 @@ describe('executeBulkUpdateServer', () => {
 
     await executeBulkUpdateServer('/api/custom/route', mockPayload);
 
-    expect(apiClient.put).toHaveBeenCalledWith('/api/custom/route', mockPayload);
+    expect(apiClient.put).toHaveBeenCalledWith('/custom/route', mockPayload);
   });
 
   it('should handle empty property IDs', async () => {
