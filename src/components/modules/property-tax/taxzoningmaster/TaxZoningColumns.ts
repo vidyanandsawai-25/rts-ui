@@ -19,7 +19,8 @@ export const getTaxZoningColumns = (
 export const getPreviewColumns = (
   t: (key: string) => string
 ): Column<PreviewRow>[] => [
-  { key: "taxZoneNo", label: t('columns.taxZoneNo'), headerClassName: "p-2 text-[12px]" },
+  { key: "oldTaxZoneNo", label: t('columns.oldTaxZoneNo') || 'Old Tax Zone', headerClassName: "p-2 text-[12px]" },
+  { key: "taxZoneNo", label: t('columns.newTaxZoneNo') || 'New TaxZoneNo', headerClassName: "p-2 text-[12px]" },
   { key: "wardNo", label: t('columns.wardNo'), headerClassName: "p-2 text-[12px]" },
   { key: "propertyNo", label: t('columns.propertyNo'), headerClassName: "p-2 text-[12px]" },
 ];

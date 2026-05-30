@@ -101,6 +101,11 @@ export function CombinePropertyReviewSection({
           height="md"
           getRowKey={(row, i) => `row-${row.propertyId || 0}-${i}`}
           emptyText={t('emptyTableText')}
+          rowClassName={(row) =>
+            String(row.propertyId) === selectedBasePropertyId
+              ? 'bg-green-100 hover:bg-green-200/60 transition-colors'
+              : ''
+          }
         />
       )}
 
@@ -113,7 +118,7 @@ export function CombinePropertyReviewSection({
             value={remark}
             onChange={(e) => setRemark(e.target.value)}
             placeholder={t('remarkPlaceholder')}
-            disabled={isSubmitting || isPending || checkedCount === 0}
+            disabled={isSubmitting || isPending || checkedCount <= 1}
             rows={2}
             className='text-black'
             required

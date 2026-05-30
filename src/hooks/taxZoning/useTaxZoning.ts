@@ -134,8 +134,25 @@ export const useTaxZoning = (props: TaxZoningPageProps) => {
     if (isNaN(from) || isNaN(to) || from > to) return [];
     const wardNo = wardsData.items.find(w => String(w.id) === ward[0])?.wardNo || ward[0];
     const taxZoneNo = taxZones.items.find(z => String(z.id) === zone)?.taxZoneNo || zone;
-    return Array.from({ length: to - from + 1 }, (_, i) => ({ taxZoneNo: taxZoneNo, wardNo, propertyNo: String(from + i) }));
-  }, [zone, ward, fromProps, toProps, wardsData, taxZones]);
+    
+    return Array.from({ length: to - from + 1 }, (_, i) => {
+      const propertyNo = String(from + i);
+      const property = allProperties?.success 
+        ? allProperties.data?.items?.find((p: TaxZoning) => p.propertyNo === propertyNo) 
+        : undefined;
+      
+      let oldTaxZoneNo = '-';
+      if (property) {
+        if (property.taxZoneId) {
+          oldTaxZoneNo = taxZones.items.find(z => z.id === property.taxZoneId)?.taxZoneNo || String(property.taxZoneId);
+        } else if (property.taxZone) {
+          oldTaxZoneNo = property.taxZone;
+        }
+      }
+      
+      return { taxZoneNo, oldTaxZoneNo, wardNo, propertyNo };
+    });
+  }, [zone, ward, fromProps, toProps, wardsData, taxZones, allProperties]);
 
   const onFormClear = () => {
     setZoneState(""); setWardState([]); setFromProps(""); setToProps(""); setSubmitted(false);

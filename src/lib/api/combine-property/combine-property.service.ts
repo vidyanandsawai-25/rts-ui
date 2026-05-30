@@ -40,6 +40,8 @@ export async function getCombinePropertiesPaged(
     if (params.wardId !== undefined) queryParams.append("WardId", params.wardId.toString());
     if (params.propertyNo?.trim()) queryParams.append("PropertyNo", params.propertyNo.trim());
     if (params.partitionNo?.trim()) queryParams.append("PartitionNo", params.partitionNo.trim());
+    if (params.categoryId !== undefined) queryParams.append("CategoryId", params.categoryId.toString());
+    if (params.societyDetailId !== undefined) queryParams.append("SocietyDetailId", params.societyDetailId.toString());
     if (params.searchTerm?.trim()) queryParams.append("SearchTerm", params.searchTerm.trim());
     if (params.sortBy?.trim()) queryParams.append("SortBy", params.sortBy.trim());
     if (params.sortOrder?.trim()) queryParams.append("SortOrder", params.sortOrder.trim());

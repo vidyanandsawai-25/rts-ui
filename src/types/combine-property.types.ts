@@ -6,6 +6,8 @@ export interface CombinePropertyItem {
   fromProperty: string;
   toProperty: string;
   isActive: boolean;
+  categoryId?: number;
+  societyDetailId?: number | null;
   createdDate: string | null;
   updatedDate: string | null;
 }
@@ -21,6 +23,8 @@ export interface CombinePropertyParams {
   sortBy?: string;
   sortOrder?: string;
   filterLogic?: number;
+  categoryId?: number;
+  societyDetailId?: number;
 }
 
 export interface PropertyCombineDetails {

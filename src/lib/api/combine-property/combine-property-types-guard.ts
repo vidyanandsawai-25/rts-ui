@@ -60,6 +60,8 @@ export function normalizeCombinePropertyItem(data: Record<string, unknown>): Com
     fromProperty: String(data.fromProperty ?? "").trim(),
     toProperty: String(data.toProperty ?? "").trim(),
     isActive: parseBoolean(data.isActive ?? data.isStatus ?? true),
+    categoryId: data.categoryId != null ? Number(data.categoryId) : undefined,
+    societyDetailId: data.societyDetailId != null ? Number(data.societyDetailId) : null,
     createdDate: data.createdDate != null ? String(data.createdDate) : null,
     updatedDate: data.updatedDate != null ? String(data.updatedDate) : null,
   };
