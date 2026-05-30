@@ -16,20 +16,26 @@ export function useRuleFieldsConfig({
 
   const initialScopeIdRef = React.useRef(ruleScopeId);
   const isFirstMountRef = React.useRef(true);
+  // Track fields length via ref so we can read it in the effect without
+  // adding `fields` as a reactive dependency (avoids exhaustive-deps warning).
+  const fieldsLengthRef = React.useRef(initialFields.length);
 
   // Use a ref so the effect only re-runs when ruleScopeId changes,
   // not when the parent re-creates the onFetchFields callback reference.
   const fetchRef = React.useRef(onFetchFields);
-  
+
   React.useLayoutEffect(() => {
     fetchRef.current = onFetchFields;
+    // Keep fieldsLengthRef in sync after every render (outside of render, so no lint issue).
+    fieldsLengthRef.current = fields.length;
   });
 
   React.useEffect(() => {
     if (isFirstMountRef.current) {
       isFirstMountRef.current = false;
-      // If the current ruleScopeId is the same as initial and we already have fields, we don't need to re-fetch!
-      if (ruleScopeId === initialScopeIdRef.current && fields && fields.length > 0) {
+      // If the current ruleScopeId is the same as initial and we already have
+      // fields, skip the fetch — server already provided them.
+      if (ruleScopeId === initialScopeIdRef.current && fieldsLengthRef.current > 0) {
         return;
       }
     }
@@ -43,7 +49,7 @@ export function useRuleFieldsConfig({
       // Scope fetch failed — keep existing fields
     });
     return () => { active = false; };
-  }, [ruleScopeId, fields.length]); // ✅ stable dep — ref handles function identity
+  }, [ruleScopeId]); // ✅ stable dep — refs handle function identity and fields length
 
   return { fields, setFields };
 }

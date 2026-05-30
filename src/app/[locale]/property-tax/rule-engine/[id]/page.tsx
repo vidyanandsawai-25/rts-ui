@@ -21,6 +21,20 @@ interface PageProps {
   }>;
 }
 
+interface ConditionGroup {
+  conditions?: { fieldId: string }[];
+  groups?: ConditionGroup[];
+}
+
+function findFirstFieldId(g: ConditionGroup): string {
+  if (g.conditions && g.conditions.length > 0) return g.conditions[0].fieldId;
+  for (const sub of g.groups ?? []) {
+    const f = findFirstFieldId(sub);
+    if (f) return f;
+  }
+  return '';
+}
+
 export default async function EditRulePage(props: PageProps) {
   const { locale, id } = await props.params;
 
@@ -42,20 +56,12 @@ export default async function EditRulePage(props: PageProps) {
   let scopeId = rule.ruleScopeId;
   if (!scopeId || scopeId === 0) {
     try {
-      const parsed = JSON.parse(rule.conditionsJson);
+      const parsed: ConditionGroup = JSON.parse(rule.conditionsJson);
       let firstFieldId = '';
       if (parsed.conditions && parsed.conditions.length > 0) {
         firstFieldId = parsed.conditions[0].fieldId;
       } else if (parsed.groups && parsed.groups.length > 0) {
-        const findFirstField = (g: any): string => {
-          if (g.conditions && g.conditions.length > 0) return g.conditions[0].fieldId;
-          for (const sub of (g.groups || [])) {
-            const f = findFirstField(sub);
-            if (f) return f;
-          }
-          return '';
-        };
-        firstFieldId = findFirstField(parsed);
+        firstFieldId = findFirstFieldId(parsed);
       }
 
       if (firstFieldId) {
