@@ -17,6 +17,9 @@
   },
   "modal": {
     "title": "Configure Submodules",
+    "drawerTitle": "{departmentName} - {title}",
+    "modulesLabel": "modules",
+    "modulesSummary": "{activeCount} / {totalCount} {modulesLabel}",
     "activateAll": "Activate All",
     "deactivateAll": "Deactivate All",
     "saveChanges": "Save Changes",
@@ -33,6 +36,7 @@
     "deactivateAllSuccess": "All selected departments deactivated successfully",
     "moduleUpdateSuccess": "Module configuration updated successfully",
     "modulesSaveSuccess": "{count, plural, one {# module updated successfully} other {# modules updated successfully}}",
+    "departmentStatusUpdated": "{departmentName} {status}",
     "activated": "activated",
     "deactivated": "deactivated",
     "departmentUpdateError": "Failed to update department",
