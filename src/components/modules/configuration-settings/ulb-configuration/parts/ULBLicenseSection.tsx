@@ -26,6 +26,8 @@ export function ULBLicenseSection({
   onFieldChange,
   onLicenseFieldChange,
   onGenerateLicenseKey,
+  onFieldBlur,
+  getFieldError,
 }: ULBLicenseSectionProps) {
   return (
     <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
@@ -59,14 +61,14 @@ export function ULBLicenseSection({
             <Shield className="h-4 w-4 text-blue-500" />
             <span className="text-xs font-bold uppercase tracking-wide text-slate-600">{t('sections.licenseDetails')}</span>
           </div>
-          <UlbSelectMd label={t('fields.licenseType')} required options={toOptions(LICENSE_TYPES)} value={formData.licenseType} onChange={(v) => onFieldChange('licenseType', v)} placeholder={t('placeholders.selectPeriod')} />
+          <UlbSelectMd label={t('fields.licenseType')} required options={toOptions(LICENSE_TYPES)} value={formData.licenseType} error={getFieldError('licenseType')} onChange={(v) => onFieldChange('licenseType', v)} onBlur={() => onFieldBlur('licenseType')} placeholder={t('placeholders.selectPeriod')} />
           <div className="flex items-end gap-2">
-            <UlbInput label={t('fields.licenseKey')} required placeholder={t('placeholders.licenseKey')} value={formData.licenseKey} readOnly fullWidth className="bg-slate-50 font-mono text-xs font-bold tracking-wider text-blue-600" />
+            <UlbInput label={t('fields.licenseKey')} required placeholder={t('placeholders.licenseKey')} value={formData.licenseKey} readOnly fullWidth error={getFieldError('licenseKey')} onBlur={() => onFieldBlur('licenseKey')} className="bg-slate-50 font-mono text-xs font-bold tracking-wider text-blue-600" />
             <Button size="sm" variant="secondary" onClick={onGenerateLicenseKey} aria-label="Generate license key" className="mb-0.5">
               <RefreshCw className="h-4 w-4" />
             </Button>
           </div>
-          <UlbSelectMd label={t('fields.supportType')} required options={toOptions(SUPPORT_TYPES)} value={formData.supportType} onChange={(v) => onFieldChange('supportType', v)} placeholder={t('placeholders.selectPeriod')} />
+          <UlbSelectMd label={t('fields.supportType')} required options={toOptions(SUPPORT_TYPES)} value={formData.supportType} error={getFieldError('supportType')} onChange={(v) => onFieldChange('supportType', v)} onBlur={() => onFieldBlur('supportType')} placeholder={t('placeholders.selectPeriod')} />
         </div>
 
         <div className="col-span-1 flex justify-center">
@@ -79,16 +81,16 @@ export function ULBLicenseSection({
             <span className="text-xs font-bold uppercase tracking-wide text-slate-600">{t('sections.durationLimits')}</span>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <UlbInputMd label={t('fields.licenseStartDate')} required type="date" value={formData.licenseStartDate} onChange={(e) => onLicenseFieldChange('licenseStartDate', e.target.value)} />
+            <UlbInputMd label={t('fields.licenseStartDate')} required type="date" value={formData.licenseStartDate} error={getFieldError('licenseStartDate')} onChange={(e) => onLicenseFieldChange('licenseStartDate', e.target.value)} onBlur={() => onFieldBlur('licenseStartDate')} />
             {isCustomDuration(formData.licenseDuration) ? (
               <div className="flex items-end gap-2">
-                <UlbInputMd label={t('fields.licenseDuration')} required type="number" min={1} max={120} placeholder={t('placeholders.months')} value={formData.licenseDuration === 'custom' ? '' : formData.licenseDuration} onChange={(e) => onLicenseFieldChange('licenseDuration', e.target.value)} fullWidth />
+                <UlbInputMd label={t('fields.licenseDuration')} required type="number" min={1} max={120} placeholder={t('placeholders.months')} value={formData.licenseDuration === 'custom' ? '' : formData.licenseDuration} error={getFieldError('licenseDuration')} onChange={(e) => onLicenseFieldChange('licenseDuration', e.target.value)} onBlur={() => onFieldBlur('licenseDuration')} fullWidth />
                 <Button variant="secondary" size="sm" onClick={() => onLicenseFieldChange('licenseDuration', '12')} className="mb-0.5">
                   <RefreshCw className="h-4 w-4" />
                 </Button>
               </div>
             ) : (
-              <UlbSelectMd label={t('fields.licenseDuration')} required options={LICENSE_DURATION_OPTIONS} value={formData.licenseDuration} onChange={(v) => onLicenseFieldChange('licenseDuration', v)} placeholder={t('placeholders.selectPeriod')} />
+              <UlbSelectMd label={t('fields.licenseDuration')} required options={LICENSE_DURATION_OPTIONS} value={formData.licenseDuration} error={getFieldError('licenseDuration')} onChange={(v) => onLicenseFieldChange('licenseDuration', v)} onBlur={() => onFieldBlur('licenseDuration')} placeholder={t('placeholders.selectPeriod')} />
             )}
           </div>
         </div>

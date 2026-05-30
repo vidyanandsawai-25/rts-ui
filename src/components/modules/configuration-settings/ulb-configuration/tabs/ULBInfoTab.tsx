@@ -10,6 +10,7 @@ import {
   getDistrictsForState,
   toOptions,
 } from '@/config/ulb-configuration.config';
+import * as ULB_VALIDATION from '@/lib/api/configuration-settings/ulb-configuration/ulb-form-validation.constants';
 import type { ULBInfoTabProps } from '@/types/ulbconfig-master.types';
 import { UlbInput, UlbSelect } from '../ULBFormField';
 import { ULBContactAddressCard } from '../parts/ULBContactAddressCard';
@@ -22,6 +23,8 @@ export function ULBInfoTab({
   formData,
   t,
   onFieldChange,
+  onFieldBlur,
+  getFieldError,
   onStateChange,
   onSave,
   onNext,
@@ -46,7 +49,10 @@ export function ULBInfoTab({
                 required
                 placeholder={t('placeholders.ulbName')}
                 value={formData.ulbName}
+                maxLength={ULB_VALIDATION.ULB_NAME_MAX}
+                error={getFieldError('ulbName')}
                 onChange={(e) => onFieldChange('ulbName', e.target.value)}
+                onBlur={() => onFieldBlur('ulbName')}
               />
               <div className="grid grid-cols-2 gap-4">
                 <UlbInput
@@ -54,14 +60,19 @@ export function ULBInfoTab({
                   required
                   placeholder={t('placeholders.ulbCode')}
                   value={formData.ulbCode}
+                  maxLength={ULB_VALIDATION.ULB_CODE_MAX}
+                  error={getFieldError('ulbCode')}
                   onChange={(e) => onFieldChange('ulbCode', e.target.value)}
+                  onBlur={() => onFieldBlur('ulbCode')}
                 />
                 <UlbSelect
                   label={t('fields.ulbType')}
                   required
                   options={toOptions(ULB_TYPES)}
                   value={formData.ulbType}
+                  error={getFieldError('ulbType')}
                   onChange={(v) => onFieldChange('ulbType', v)}
+                  onBlur={() => onFieldBlur('ulbType')}
                   placeholder={t('placeholders.selectType')}
                 />
               </div>
@@ -81,7 +92,9 @@ export function ULBInfoTab({
                 required
                 options={toOptions(INDIAN_STATES)}
                 value={formData.state}
+                error={getFieldError('state')}
                 onChange={onStateChange}
+                onBlur={() => onFieldBlur('state')}
                 placeholder={t('placeholders.selectState')}
               />
               <UlbSelect
@@ -89,7 +102,9 @@ export function ULBInfoTab({
                 required
                 options={districtOptions}
                 value={formData.district}
+                error={getFieldError('district')}
                 onChange={(v) => onFieldChange('district', v)}
+                onBlur={() => onFieldBlur('district')}
                 disabled={!formData.state}
                 placeholder={formData.state ? t('placeholders.district') : t('placeholders.selectState')}
               />
@@ -98,7 +113,11 @@ export function ULBInfoTab({
                 required
                 placeholder={t('placeholders.pincode')}
                 value={formData.pincode}
+                inputMode="numeric"
+                maxLength={ULB_VALIDATION.PINCODE_LENGTH}
+                error={getFieldError('pincode')}
                 onChange={(e) => onFieldChange('pincode', e.target.value)}
+                onBlur={() => onFieldBlur('pincode')}
                 className="max-w-[180px]"
               />
             </CardContent>
@@ -117,19 +136,31 @@ export function ULBInfoTab({
                 required
                 placeholder={t('placeholders.contactName')}
                 value={formData.contactPerson}
+                maxLength={ULB_VALIDATION.CONTACT_PERSON_MAX}
+                error={getFieldError('contactPerson')}
                 onChange={(e) => onFieldChange('contactPerson', e.target.value)}
+                onBlur={() => onFieldBlur('contactPerson')}
               />
               <UlbInput
                 label={t('fields.designation')}
                 required
                 placeholder={t('placeholders.designation')}
                 value={formData.designation}
+                maxLength={ULB_VALIDATION.DESIGNATION_MAX}
+                error={getFieldError('designation')}
                 onChange={(e) => onFieldChange('designation', e.target.value)}
+                onBlur={() => onFieldBlur('designation')}
               />
             </CardContent>
           </Card>
 
-          <ULBContactAddressCard formData={formData} t={t} onFieldChange={onFieldChange} />
+          <ULBContactAddressCard
+            formData={formData}
+            t={t}
+            onFieldChange={onFieldChange}
+            onFieldBlur={onFieldBlur}
+            getFieldError={getFieldError}
+          />
         </div>
       </div>
 
