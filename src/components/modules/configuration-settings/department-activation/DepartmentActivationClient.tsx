@@ -26,16 +26,16 @@ export function DepartmentActivationClient({ initialDepartments, initialModules,
   } = useDepartmentActivation({ initialDepartments, initialModules, initialSearchTerm });
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 text-slate-900 dark:text-slate-900 [color-scheme:light]">
         <DepartmentActivationStatsCards departments={optimisticDepartments} />
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <SearchInput
                 value={searchTerm}
                 onChange={setSearchTerm}
                 placeholder={t('searchPlaceholder')}
-                className="w-full md:w-72"
+                className="mb-0 w-full md:w-72 [&_input]:text-gray-900 [&_input]:dark:text-gray-900 [&_input]:bg-white [&_input]:dark:bg-white [&_input]:placeholder:text-gray-400 [&_input]:dark:placeholder:text-gray-400 [&_input]:[color-scheme:light]"
             />
-            <div className="flex items-center gap-2 p-2 bg-blue-50 border border-blue-100 rounded-xl">
+            <div className="flex items-center gap-2 p-2 bg-blue-50 dark:bg-blue-50 border border-blue-100 dark:border-blue-100 rounded-xl">
                 <Button variant="success" size="sm" icon={Check} onClick={() => handleToggleAll(true)} disabled={isPending}>{t('quickActions.activateAll')}</Button>
                 <Button variant="danger" size="sm" icon={X} onClick={() => handleToggleAll(false)} disabled={isPending}>{t('quickActions.deactivateAll')}</Button>
             </div>

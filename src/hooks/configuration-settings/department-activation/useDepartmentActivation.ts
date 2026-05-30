@@ -5,7 +5,7 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { updateDepartmentStatusAction } from '@/app/[locale]/configuration-settings/department-activation/action';
 import type { Department, Module } from '@/types/departmentActivation.types';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { useSubmoduleConfig } from './useSubmoduleConfig';
 
 interface UseDepartmentActivationProps {
@@ -23,6 +23,7 @@ export function useDepartmentActivation({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const t = useTranslations('departmentActivation');
+  const locale = useLocale();
 
   const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
   const [isPending, startTransition] = useTransition();
@@ -105,7 +106,16 @@ export function useDepartmentActivation({
 
         const result = await updateDepartmentStatusAction(formData);
         if (result.success) {
-          toast.success(`${currentDepartment.departmentName} ${t(`messages.${newIsActive ? 'activated' : 'deactivated'}`)}`);
+          const displayName =
+            locale === 'en' || !currentDepartment.departmentNameLocal?.trim()
+              ? currentDepartment.departmentName
+              : currentDepartment.departmentNameLocal.trim();
+          toast.success(
+            t('messages.departmentStatusUpdated', {
+              departmentName: displayName,
+              status: t(`messages.${newIsActive ? 'activated' : 'deactivated'}`),
+            })
+          );
         } else {
           // Rollback on failure
           addOptimisticDepartmentUpdate({ id, isActive: !newIsActive });
@@ -115,10 +125,20 @@ export function useDepartmentActivation({
     });
   };
 
-  const filteredDepartments = optimisticDepartments.filter(dept =>
-    dept.departmentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    dept.departmentCode.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredDepartments = optimisticDepartments.filter((dept) => {
+    const query = searchTerm.toLowerCase();
+    const displayName =
+      locale === 'en' || !dept.departmentNameLocal?.trim()
+        ? dept.departmentName
+        : dept.departmentNameLocal.trim();
+
+    return (
+      displayName.toLowerCase().includes(query) ||
+      dept.departmentName.toLowerCase().includes(query) ||
+      (dept.departmentNameLocal?.toLowerCase().includes(query) ?? false) ||
+      dept.departmentCode.toLowerCase().includes(query)
+    );
+  });
 
   const handleToggleAll = (activate: boolean) => {
     const targets = filteredDepartments.filter(d => d.isActive !== activate);

@@ -32,6 +32,7 @@ export default async function DepartmentActivationPage({ params, searchParams }:
         <PageContainer
             title={t('title')}
             subtitle={t('subtitle')}
+            className="text-slate-900 dark:text-slate-900 [color-scheme:light] [&_h1]:text-slate-900 [&_h1]:dark:text-slate-900 [&_p]:text-slate-500 [&_p]:dark:text-slate-500"
         >
             <DepartmentActivationClient 
                 initialDepartments={departments}
