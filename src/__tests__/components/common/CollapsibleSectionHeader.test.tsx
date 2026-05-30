@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { CollapsibleSectionHeader, type CollapsibleSectionHeaderProps } from "@/components/common/CollapsibleSectionHeader";
+import { CollapsibleSectionHeader } from "@/components/common/CollapsibleSectionHeader";
 import { User, Settings, FileText } from "lucide-react";
 
 describe("CollapsibleSectionHeader", () => {
@@ -245,7 +245,7 @@ describe("CollapsibleSectionHeader", () => {
 
   it("renders without icon when icon prop is not provided", () => {
     const handleToggle = vi.fn();
-    const { container } = render(
+    render(
       <CollapsibleSectionHeader
         title="No Icon"
         isOpen={false}

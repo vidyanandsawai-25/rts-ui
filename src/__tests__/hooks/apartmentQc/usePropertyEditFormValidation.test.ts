@@ -16,6 +16,7 @@ describe("usePropertyEditFormValidation", () => {
       wingName: { label: "Wing", placeholder: "" },
       oldPropertyNo: { label: "Old Property No", placeholder: "" },
       propertyType: { label: "Property Type", placeholder: "" },
+      propertyDescription: { label: "Property Description", placeholder: "" },
       bhk: { label: "BHK", placeholder: "" },
       flatOrShopName: { label: "Flat Name", placeholder: "" },
       remark: { label: "Remark" },
@@ -86,7 +87,8 @@ describe("usePropertyEditFormValidation", () => {
     ownerName: "",
     occupierName: "",
     renterName: "",
-    propertyType: "",
+    propertyDescription: "",
+    propertyTypeId: "",
     bhk: "",
     mobileNo: "",
     emailId: "",
@@ -94,6 +96,17 @@ describe("usePropertyEditFormValidation", () => {
     flatOrShopNo: "",
     flatOrShopName: "",
     oldPropertyNo: "",
+    remark: "",
+    oldRV: "",
+    newRV: "",
+    oldTax: "",
+    newTax: "",
+    oldArea: "",
+    newArea: "",
+    oldUseType: "",
+    oldConstructionType: "",
+    oldCSN: "",
+    oldConstructionYear: "",
   };
 
   const initialFloorData: FloorDataRow[] = [];
@@ -221,7 +234,8 @@ describe("usePropertyEditFormValidation", () => {
       ownerName: "John Doe",
       occupierName: "Jane Doe",
       renterName: "",
-      propertyType: "",
+      propertyDescription: "",
+      propertyTypeId: "1",
       bhk: "",
       mobileNo: "9876543210",
       emailId: "test@example.com",
@@ -229,6 +243,17 @@ describe("usePropertyEditFormValidation", () => {
       flatOrShopNo: "101",
       flatOrShopName: "",
       oldPropertyNo: "",
+      remark: "",
+      oldRV: "",
+      newRV: "",
+      oldTax: "",
+      newTax: "",
+      oldArea: "",
+      newArea: "",
+      oldUseType: "",
+      oldConstructionType: "",
+      oldCSN: "",
+      oldConstructionYear: "",
     };
     const { result } = renderHook(() =>
       usePropertyEditFormValidation({
@@ -334,7 +359,7 @@ describe("usePropertyEditFormValidation", () => {
       })
     );
 
-    const yearError = result.current.validateFloorYear("row-1", "conYear", "abc");
+    const yearError = result.current.validateYear("abc");
     expect(yearError).toBe("Invalid year");
   });
 });

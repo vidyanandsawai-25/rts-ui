@@ -395,7 +395,7 @@ describe("MasterTable", () => {
       const table = container.querySelector("table");
       const rows = table?.querySelectorAll("tbody tr");
       
-      expect(rows?.[0]).toHaveClass("hover:bg-gray-50");
+      expect(rows?.[0]).toHaveClass("hover:bg-blue-50/40");
     });
 
     it("works with custom rowClassName when onRowClick is provided", () => {

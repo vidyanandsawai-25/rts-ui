@@ -78,7 +78,7 @@ describe("SortableColumnHeader", () => {
 
   it("shows ArrowUpDown icon when sortDirection is null", () => {
     const handleSort = vi.fn();
-    const { container } = render(
+    render(
       <SortableColumnHeader
         label="Unsorted"
         sortDirection={null}
@@ -93,7 +93,7 @@ describe("SortableColumnHeader", () => {
 
   it("shows ArrowUp icon when sortDirection is asc", () => {
     const handleSort = vi.fn();
-    const { container } = render(
+    render(
       <SortableColumnHeader
         label="Ascending"
         sortDirection="asc"
@@ -108,7 +108,7 @@ describe("SortableColumnHeader", () => {
 
   it("shows ArrowDown icon when sortDirection is desc", () => {
     const handleSort = vi.fn();
-    const { container } = render(
+    render(
       <SortableColumnHeader
         label="Descending"
         sortDirection="desc"
@@ -266,7 +266,7 @@ describe("SortableColumnHeader", () => {
     
     sizes.forEach((size) => {
       cleanup();
-      const { container } = render(
+      render(
         <SortableColumnHeader
           label={`Size ${size}`}
           onSort={handleSort}
