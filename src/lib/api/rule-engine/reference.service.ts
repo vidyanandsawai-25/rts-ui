@@ -11,6 +11,7 @@ interface ApiRuleScopeResponse {
 export async function getScopes(): Promise<RuleScope[]> {
   const response = await apiClient.get<ApiRuleScopeResponse>('/RuleScope');
   if (!response.success || !response.data?.items) return [];
+
   return response.data.items.map((item) => ({
     id: item.id,
     scopeName: item.ruleScope,

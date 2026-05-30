@@ -28,11 +28,13 @@ export function useRuleFieldsConfig({
   React.useEffect(() => {
     if (isFirstMountRef.current) {
       isFirstMountRef.current = false;
-      // If the current ruleScopeId is the same as initial, we already have initialFields from the server!
-      if (ruleScopeId === initialScopeIdRef.current) {
+      // If the current ruleScopeId is the same as initial and we already have fields, we don't need to re-fetch!
+      if (ruleScopeId === initialScopeIdRef.current && fields && fields.length > 0) {
         return;
       }
     }
+
+    if (!ruleScopeId) return;
 
     let active = true;
     fetchRef.current(ruleScopeId).then((list) => {
@@ -41,7 +43,7 @@ export function useRuleFieldsConfig({
       // Scope fetch failed — keep existing fields
     });
     return () => { active = false; };
-  }, [ruleScopeId]); // ✅ stable dep — ref handles function identity
+  }, [ruleScopeId, fields.length]); // ✅ stable dep — ref handles function identity
 
   return { fields, setFields };
 }

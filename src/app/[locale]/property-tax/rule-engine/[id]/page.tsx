@@ -38,6 +38,46 @@ export default async function EditRulePage(props: PageProps) {
     notFound();
   }
 
+  // Auto-infer ruleScopeId if missing or 0 in backend response
+  let scopeId = rule.ruleScopeId;
+  if (!scopeId || scopeId === 0) {
+    try {
+      const parsed = JSON.parse(rule.conditionsJson);
+      let firstFieldId = '';
+      if (parsed.conditions && parsed.conditions.length > 0) {
+        firstFieldId = parsed.conditions[0].fieldId;
+      } else if (parsed.groups && parsed.groups.length > 0) {
+        const findFirstField = (g: any): string => {
+          if (g.conditions && g.conditions.length > 0) return g.conditions[0].fieldId;
+          for (const sub of (g.groups || [])) {
+            const f = findFirstField(sub);
+            if (f) return f;
+          }
+          return '';
+        };
+        firstFieldId = findFirstField(parsed);
+      }
+
+      if (firstFieldId) {
+        for (const s of scopes) {
+          const fields = await fetchFieldsForScopeAction(s.id);
+          if (fields.some((f) => f.fieldId === firstFieldId)) {
+            scopeId = s.id;
+            rule.ruleScopeId = s.id;
+            break;
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Failed to infer ruleScopeId:', e);
+    }
+  }
+
+  // Fallback to first scope if still 0/invalid
+  if (!rule.ruleScopeId || rule.ruleScopeId === 0) {
+    rule.ruleScopeId = scopes[0]?.id || 1;
+  }
+
   const initialFields = await fetchFieldsForScopeAction(rule.ruleScopeId);
 
   return (

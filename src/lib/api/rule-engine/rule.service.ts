@@ -135,10 +135,11 @@ export async function getRules(
  * Fetches a single rule config by ID from /api/RuleEngine/{id}.
  */
 export async function getRuleById(id: number | string): Promise<RuleItem | null> {
-  const response = await apiClient.get<BackendRuleDto>(`/RuleEngine/${id}`);
+  const response = await apiClient.get<RuleResponseData>(`/RuleEngine/${id}`);
   if (!response.success || !response.data) return null;
   
-  return mapBackendDtoToRuleItem(response.data);
+  const dto = response.data.data || response.data;
+  return mapBackendDtoToRuleItem(dto);
 }
 
 /**
