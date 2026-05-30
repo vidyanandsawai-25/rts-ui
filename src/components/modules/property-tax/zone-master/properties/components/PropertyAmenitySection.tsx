@@ -235,7 +235,7 @@ function PropertyAmenitySectionInner({ propertyId }: { propertyId: string }) {
 
   const selectedWing = wings.find((w) => w.societyDetailId === selectedSocietyDetailId);
   const wingOptions = wings.map((wing) => ({
-  label: `${wing.wingNo} - ${wing.wingName}`,
+  label: `${wing.wingId} - ${wing.wingName}`,
   value: wing.societyDetailId.toString(),
 }));
 
