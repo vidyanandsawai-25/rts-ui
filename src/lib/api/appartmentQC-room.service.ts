@@ -183,21 +183,40 @@ export async function getRoomWiseSubmissions(params: {
   pageNumber?: number;
   pageSize?: number;
 }): Promise<RoomWiseSubmissionData[]> {
-  const queryParams = new URLSearchParams();
-  if (params.propertyId) queryParams.set("PropertyId", String(params.propertyId));
-  if (params.propertyDetailsId) queryParams.set("PropertyDetailsId", String(params.propertyDetailsId));
-  if (params.pageNumber) queryParams.set("PageNumber", String(params.pageNumber));
-  if (params.pageSize) queryParams.set("PageSize", String(params.pageSize));
+  try {
+    const queryParams = new URLSearchParams();
+    if (params.propertyId) queryParams.set("PropertyId", String(params.propertyId));
+    if (params.propertyDetailsId) queryParams.set("PropertyDetailsId", String(params.propertyDetailsId));
+    if (params.pageNumber) queryParams.set("PageNumber", String(params.pageNumber));
+    if (params.pageSize) queryParams.set("PageSize", String(params.pageSize));
 
-  const url = `/RoomWiseSubmission?${queryParams.toString()}`;
-  const response = await apiClient.get<{ items?: RoomWiseSubmissionData[]; data?: RoomWiseSubmissionData[] } | RoomWiseSubmissionData[]>(url);
-  const data = handleApiResponse(response, "Failed to fetch room submissions");
-  
-  // Handle different response formats
-  if (Array.isArray(data)) {
-    return data;
+    const url = `/RoomWiseSubmission?${queryParams.toString()}`;
+    const response = await apiClient.get<{ items?: RoomWiseSubmissionData[]; data?: RoomWiseSubmissionData[] } | RoomWiseSubmissionData[]>(url);
+    
+    if (!response.success) {
+      throw new ApiError(
+        response.statusCode ?? 500,
+        response.error || "Failed to fetch room submissions",
+        "Get room submissions failed"
+      );
+    }
+    
+    const data = handleApiResponse(response, "Failed to fetch room submissions");
+    
+    // Handle different response formats
+    if (Array.isArray(data)) {
+      return data;
+    }
+    return data.items || data.data || [];
+  } catch (error) {
+    console.error('[appartmentQC-room.service] Error fetching room submissions:', error);
+    if (error instanceof ApiError) throw error;
+    throw new ApiError(
+      500,
+      error instanceof Error ? error.message : String(error),
+      "Failed to fetch room submissions"
+    );
   }
-  return data.items || data.data || [];
 }
 
 /**
@@ -223,8 +242,25 @@ export async function getRoomWiseSubmissionsSafe(params: {
 export async function createRoomWiseSubmission(
   payload: RoomWiseSubmissionCreatePayload
 ): Promise<RoomWiseSubmissionData> {
-  const response = await apiClient.post<RoomWiseSubmissionData>("/RoomWiseSubmission", payload);
-  return handleApiResponse(response, "Failed to create room submission");
+  try {
+    const response = await apiClient.post<RoomWiseSubmissionData>("/RoomWiseSubmission", payload);
+    if (!response.success) {
+      throw new ApiError(
+        response.statusCode ?? 500,
+        response.error || "Failed to create room submission",
+        "Create room submission failed"
+      );
+    }
+    return handleApiResponse(response, "Failed to create room submission");
+  } catch (error) {
+    console.error('[appartmentQC-room.service] Error creating room submission:', error);
+    if (error instanceof ApiError) throw error;
+    throw new ApiError(
+      500,
+      error instanceof Error ? error.message : String(error),
+      "Failed to create room submission"
+    );
+  }
 }
 
 /**
@@ -250,8 +286,25 @@ export async function updateRoomWiseSubmission(
   id: number,
   payload: RoomWiseSubmissionUpdatePayload
 ): Promise<RoomWiseSubmissionData> {
-  const response = await apiClient.put<RoomWiseSubmissionData>(`/RoomWiseSubmission/${id}`, payload);
-  return handleApiResponse(response, "Failed to update room submission");
+  try {
+    const response = await apiClient.put<RoomWiseSubmissionData>(`/RoomWiseSubmission/${id}`, payload);
+    if (!response.success) {
+      throw new ApiError(
+        response.statusCode ?? 500,
+        response.error || "Failed to update room submission",
+        "Update room submission failed"
+      );
+    }
+    return handleApiResponse(response, "Failed to update room submission");
+  } catch (error) {
+    console.error('[appartmentQC-room.service] Error updating room submission:', error);
+    if (error instanceof ApiError) throw error;
+    throw new ApiError(
+      500,
+      error instanceof Error ? error.message : String(error),
+      "Failed to update room submission"
+    );
+  }
 }
 
 /**
@@ -275,7 +328,17 @@ export async function updateRoomWiseSubmissionSafe(
  * DELETE - Delete a Room Wise Submission
  */
 export async function deleteRoomWiseSubmission(id: number): Promise<void> {
-  await apiClient.delete(`/RoomWiseSubmission/${id}`);
+  try {
+    await apiClient.delete(`/RoomWiseSubmission/${id}`);
+  } catch (error) {
+    console.error('[appartmentQC-room.service] Error deleting room submission:', error);
+    if (error instanceof ApiError) throw error;
+    throw new ApiError(
+      500,
+      error instanceof Error ? error.message : String(error),
+      "Failed to delete room submission"
+    );
+  }
 }
 
 /**
@@ -301,8 +364,25 @@ export async function updateRoomWiseMinus(
   id: number,
   payload: RoomWiseMinusUpdatePayload
 ): Promise<RoomWiseMinusData> {
-  const response = await apiClient.put<RoomWiseMinusData>(`/RoomWiseMinus/${id}`, payload);
-  return handleApiResponse(response, "Failed to update room offset");
+  try {
+    const response = await apiClient.put<RoomWiseMinusData>(`/RoomWiseMinus/${id}`, payload);
+    if (!response.success) {
+      throw new ApiError(
+        response.statusCode ?? 500,
+        response.error || "Failed to update room offset",
+        "Update room offset failed"
+      );
+    }
+    return handleApiResponse(response, "Failed to update room offset");
+  } catch (error) {
+    console.error('[appartmentQC-room.service] Error updating room offset:', error);
+    if (error instanceof ApiError) throw error;
+    throw new ApiError(
+      500,
+      error instanceof Error ? error.message : String(error),
+      "Failed to update room offset"
+    );
+  }
 }
 
 /**
@@ -343,8 +423,25 @@ export interface RoomWiseMinusCreatePayload {
 export async function createRoomWiseMinus(
   payload: RoomWiseMinusCreatePayload
 ): Promise<RoomWiseMinusData> {
-  const response = await apiClient.post<RoomWiseMinusData>(`/RoomWiseMinus`, payload);
-  return handleApiResponse(response, "Failed to create room offset");
+  try {
+    const response = await apiClient.post<RoomWiseMinusData>(`/RoomWiseMinus`, payload);
+    if (!response.success) {
+      throw new ApiError(
+        response.statusCode ?? 500,
+        response.error || "Failed to create room offset",
+        "Create room offset failed"
+      );
+    }
+    return handleApiResponse(response, "Failed to create room offset");
+  } catch (error) {
+    console.error('[appartmentQC-room.service] Error creating room offset:', error);
+    if (error instanceof ApiError) throw error;
+    throw new ApiError(
+      500,
+      error instanceof Error ? error.message : String(error),
+      "Failed to create room offset"
+    );
+  }
 }
 
 /**
@@ -367,7 +464,17 @@ export async function createRoomWiseMinusSafe(
  * DELETE - Delete a Room Wise Minus (Offset)
  */
 export async function deleteRoomWiseMinus(id: number): Promise<void> {
-  await apiClient.delete(`/RoomWiseMinus/${id}`);
+  try {
+    await apiClient.delete(`/RoomWiseMinus/${id}`);
+  } catch (error) {
+    console.error('[appartmentQC-room.service] Error deleting room offset:', error);
+    if (error instanceof ApiError) throw error;
+    throw new ApiError(
+      500,
+      error instanceof Error ? error.message : String(error),
+      "Failed to delete room offset"
+    );
+  }
 }
 
 /**

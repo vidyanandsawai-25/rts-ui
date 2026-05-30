@@ -70,12 +70,18 @@ function buildQueryParams(params: ApartmentQCSearchParams): URLSearchParams {
 export async function getApartmentQCDetails(
   params: ApartmentQCSearchParams = {}
 ): Promise<ApiResponse<ApartmentQCResponse>> {
-  const qs = buildQueryParams(params);
-  const endpoint = qs.toString()
-    ? `/ApartmentQC?${qs.toString()}`
-    : '/ApartmentQC';
+  try {
+    const qs = buildQueryParams(params);
+    const endpoint = qs.toString()
+      ? `/ApartmentQC?${qs.toString()}`
+      : '/ApartmentQC';
 
-  return apiClient.get<ApartmentQCResponse>(endpoint);
+    const response = apiClient.get<ApartmentQCResponse>(endpoint);
+    return response;
+  } catch (error) {
+    console.error('[appartmentQC.service] Error fetching apartment QC details:', error);
+    throw error;
+  }
 }
 
 /**
@@ -86,10 +92,25 @@ export async function getApartmentQCDetailsLocalized(
 ): Promise<ApartmentQCResponse> {
   try {
     const res = await getApartmentQCDetails(params);
+    if (!res.success) {
+      throw new ApiError(
+        res.statusCode ?? 500,
+        res.error || "Failed to fetch apartment QC details",
+        "Get apartment QC details failed"
+      );
+    }
+    if (!res.data) {
+      throw new ApiError(500, "No data received from server", "Invalid response format");
+    }
     return handleApiResponse(res, "Failed to fetch apartment QC details");
   } catch (error) {
+    console.error('[appartmentQC.service] Error fetching apartment QC details:', error);
     if (error instanceof ApiError) throw error;
-    throw new ApiError(500, (error as Error).message, "Failed to fetch apartment QC details");
+    throw new ApiError(
+      500,
+      error instanceof Error ? error.message : String(error),
+      "Failed to fetch apartment QC details"
+    );
   }
 }
 
@@ -120,8 +141,14 @@ export async function updateApartmentQCDetails(
   propertyDetailsId: number | string,
   payload: Partial<ApartmentQCDetail>
 ): Promise<ApiResponse<ApartmentQCDetail>> {
-  const endpoint = `/ApartmentQC/${propertyDetailsId}`;
-  return apiClient.put<ApartmentQCDetail>(endpoint, payload);
+  try {
+    const endpoint = `/ApartmentQC/${propertyDetailsId}`;
+    const response = await apiClient.put<ApartmentQCDetail>(endpoint, payload);
+    return response;
+  } catch (error) {
+    console.error('[appartmentQC.service] Error updating apartment QC details:', error);
+    throw error;
+  }
 }
 
 /**
@@ -133,10 +160,22 @@ export async function updateApartmentQCDetailsLocalized(
 ): Promise<ApartmentQCDetail> {
   try {
     const res = await updateApartmentQCDetails(propertyDetailsId, payload);
+    if (!res.success) {
+      throw new ApiError(
+        res.statusCode ?? 500,
+        res.error || "Failed to update apartment QC details",
+        "Update apartment QC details failed"
+      );
+    }
     return handleApiResponse(res, "Failed to update apartment QC details");
   } catch (error) {
+    console.error('[appartmentQC.service] Error updating apartment QC details:', error);
     if (error instanceof ApiError) throw error;
-    throw new ApiError(500, (error as Error).message, "Failed to update apartment QC details");
+    throw new ApiError(
+      500,
+      error instanceof Error ? error.message : String(error),
+      "Failed to update apartment QC details"
+    );
   }
 }
 
@@ -158,9 +197,15 @@ export async function getFloorQCByPropertyId(
   id: number | string,
   type: 'rateable' | 'capital' | 'dual' | string
 ): Promise<ApiResponse<ApartmentQCResponse>> {
-  const typeParam = type ? `?type=${encodeURIComponent(type)}` : '';
-  const endpoint = `/ApartmentQC/${id}${typeParam}`;
-  return apiClient.get<ApartmentQCResponse>(endpoint);
+  try {
+    const typeParam = type ? `?type=${encodeURIComponent(type)}` : '';
+    const endpoint = `/ApartmentQC/${id}${typeParam}`;
+    const response = await apiClient.get<ApartmentQCResponse>(endpoint);
+    return response;
+  } catch (error) {
+    console.error('[appartmentQC.service] Error fetching floor QC by property ID:', error);
+    throw error;
+  }
 }
 
 /**
@@ -176,10 +221,22 @@ export async function getFloorQCByPropertyIdLocalized(
 ): Promise<ApartmentQCResponse> {
   try {
     const res = await getFloorQCByPropertyId(propertyId, type);
+    if (!res.success) {
+      throw new ApiError(
+        res.statusCode ?? 500,
+        res.error || "Failed to fetch floor QC details",
+        "Get floor QC details failed"
+      );
+    }
     return handleApiResponse(res, "Failed to fetch floor QC details");
   } catch (error) {
+    console.error('[appartmentQC.service] Error fetching floor QC details:', error);
     if (error instanceof ApiError) throw error;
-    throw new ApiError(500, (error as Error).message, "Failed to fetch floor QC details");
+    throw new ApiError(
+      500,
+      error instanceof Error ? error.message : String(error),
+      "Failed to fetch floor QC details"
+    );
   }
 }
 
@@ -242,8 +299,14 @@ export async function updateFloorQCDetail(
   detailId: number | string,
   payload: FloorQCUpdatePayload
 ): Promise<ApiResponse<unknown>> {
-  const endpoint = `/Property/apartmentQC-details/${propertyId}/detail/${detailId}`;
-  return apiClient.patch<unknown>(endpoint, payload);
+  try {
+    const endpoint = `/Property/apartmentQC-details/${propertyId}/detail/${detailId}`;
+    const response = await apiClient.patch<unknown>(endpoint, payload);
+    return response;
+  } catch (error) {
+    console.error('[appartmentQC.service] Error updating floor QC detail:', error);
+    throw error;
+  }
 }
 
 /**
@@ -261,10 +324,22 @@ export async function updateFloorQCDetailLocalized(
 ): Promise<unknown> {
   try {
     const res = await updateFloorQCDetail(propertyId, detailId, payload);
+    if (!res.success) {
+      throw new ApiError(
+        res.statusCode ?? 500,
+        res.error || "Failed to update floor QC detail",
+        "Update floor QC detail failed"
+      );
+    }
     return handleApiResponse(res, "Failed to update floor QC detail");
   } catch (error) {
+    console.error('[appartmentQC.service] Error updating floor QC detail:', error);
     if (error instanceof ApiError) throw error;
-    throw new ApiError(500, (error as Error).message, "Failed to update floor QC detail");
+    throw new ApiError(
+      500,
+      error instanceof Error ? error.message : String(error),
+      "Failed to update floor QC detail"
+    );
   }
 }
 
@@ -293,8 +368,14 @@ export async function updateFloorQCDetailsBulk(
   propertyId: number | string,
   items: FloorQCBulkUpdateItem[]
 ): Promise<ApiResponse<unknown>> {
-  const endpoint = `/ApartmentQC/${propertyId}`;
-  return apiClient.patch<unknown>(endpoint, items);
+  try {
+    const endpoint = `/ApartmentQC/${propertyId}`;
+    const response = await apiClient.patch<unknown>(endpoint, items);
+    return response;
+  } catch (error) {
+    console.error('[appartmentQC.service] Error bulk updating floor QC details:', error);
+    throw error;
+  }
 }
 
 /**
@@ -310,10 +391,22 @@ export async function updateFloorQCDetailsBulkLocalized(
 ): Promise<unknown> {
   try {
     const res = await updateFloorQCDetailsBulk(propertyId, items);
+    if (!res.success) {
+      throw new ApiError(
+        res.statusCode ?? 500,
+        res.error || "Failed to update floor QC details",
+        "Bulk update floor QC details failed"
+      );
+    }
     return handleApiResponse(res, "Failed to update floor QC details");
   } catch (error) {
+    console.error('[appartmentQC.service] Error bulk updating floor QC details:', error);
     if (error instanceof ApiError) throw error;
-    throw new ApiError(500, (error as Error).message, "Failed to update floor QC details");
+    throw new ApiError(
+      500,
+      error instanceof Error ? error.message : String(error),
+      "Failed to update floor QC details"
+    );
   }
 }
 
@@ -353,8 +446,14 @@ export async function updateBasicDetails(
   propertyId: number | string,
   payload: BasicDetailsUpdatePayload
 ): Promise<ApiResponse<unknown>> {
-  const endpoint = `/ApartmentQC/${propertyId}/basic-details`;
-  return apiClient.patch<unknown>(endpoint, payload);
+  try {
+    const endpoint = `/ApartmentQC/${propertyId}/basic-details`;
+    const response = await apiClient.patch<unknown>(endpoint, payload);
+    return response;
+  } catch (error) {
+    console.error('[appartmentQC.service] Error updating basic details:', error);
+    throw error;
+  }
 }
 
 /**
@@ -370,10 +469,22 @@ export async function updateBasicDetailsLocalized(
 ): Promise<unknown> {
   try {
     const res = await updateBasicDetails(propertyId, payload);
+    if (!res.success) {
+      throw new ApiError(
+        res.statusCode ?? 500,
+        res.error || "Failed to update basic details",
+        "Update basic details failed"
+      );
+    }
     return handleApiResponse(res, "Failed to update basic details");
   } catch (error) {
+    console.error('[appartmentQC.service] Error updating basic details:', error);
     if (error instanceof ApiError) throw error;
-    throw new ApiError(500, (error as Error).message, "Failed to update basic details");
+    throw new ApiError(
+      500,
+      error instanceof Error ? error.message : String(error),
+      "Failed to update basic details"
+    );
   }
 }
 
@@ -414,8 +525,14 @@ export interface OldPropertyResponse {
 export async function getOldPropertyData(
   oldPropertyNo: string
 ): Promise<ApiResponse<OldPropertyResponse>> {
-  const endpoint = `/ApartmentQC/old-property?oldPropertyNo=${encodeURIComponent(oldPropertyNo)}`;
-  return apiClient.get<OldPropertyResponse>(endpoint);
+  try {
+    const endpoint = `/ApartmentQC/old-property?oldPropertyNo=${encodeURIComponent(oldPropertyNo)}`;
+    const response = await apiClient.get<OldPropertyResponse>(endpoint);
+    return response;
+  } catch (error) {
+    console.error('[appartmentQC.service] Error fetching old property data:', error);
+    throw error;
+  }
 }
 
 /**
@@ -430,11 +547,21 @@ export async function getOldPropertyDataLocalized(
   try {
     const response = await getOldPropertyData(oldPropertyNo);
     if (!response.success || !response.data) {
-      throw new Error(response.error || 'Failed to fetch old property data');
+      throw new ApiError(
+        response.statusCode ?? 500,
+        response.error || 'Failed to fetch old property data',
+        'Get old property data failed'
+      );
     }
     return response.data.items;
   } catch (error) {
-    throw error;
+    console.error('[appartmentQC.service] Error fetching old property data:', error);
+    if (error instanceof ApiError) throw error;
+    throw new ApiError(
+      500,
+      error instanceof Error ? error.message : String(error),
+      'Failed to fetch old property data'
+    );
   }
 }
 
@@ -447,8 +574,14 @@ export async function getOldPropertyDataLocalized(
 export async function syncRoomsForPropertyDetails(
   propertyDetailsId: number | string
 ): Promise<ApiResponse<unknown>> {
-  const endpoint = `/ApartmentQC/${propertyDetailsId}/sync-rooms`;
-  return apiClient.post<unknown>(endpoint);
+  try {
+    const endpoint = `/ApartmentQC/${propertyDetailsId}/sync-rooms`;
+    const response = await apiClient.post<unknown>(endpoint);
+    return response;
+  } catch (error) {
+    console.error('[appartmentQC.service] Error syncing rooms:', error);
+    throw error;
+  }
 }
 
 export async function syncRoomsForPropertyDetailsLocalized(
@@ -456,9 +589,21 @@ export async function syncRoomsForPropertyDetailsLocalized(
 ): Promise<unknown> {
   try {
     const res = await syncRoomsForPropertyDetails(propertyDetailsId);
+    if (!res.success) {
+      throw new ApiError(
+        res.statusCode ?? 500,
+        res.error || "Failed to sync rooms",
+        "Sync rooms failed"
+      );
+    }
     return handleApiResponse(res, "Failed to sync rooms");
   } catch (error) {
+    console.error('[appartmentQC.service] Error syncing rooms:', error);
     if (error instanceof ApiError) throw error;
-    throw new ApiError(500, (error as Error).message, "Failed to sync rooms");
+    throw new ApiError(
+      500,
+      error instanceof Error ? error.message : String(error),
+      "Failed to sync rooms"
+    );
   }
 }

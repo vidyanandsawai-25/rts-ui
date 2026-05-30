@@ -57,6 +57,7 @@ function toUserFacingErrorMessage(messageOrKey: string): string {
 }
 
 function handleActionError(error: unknown, defaultKey: string): { success: false; error: string } {
+  console.error(`[appartmentQC.action] ${defaultKey}:`, error);
   if (error instanceof ApiError) {
     return {
       success: false,
