@@ -284,6 +284,7 @@
   },
   "floorTable": {
     "columns": {
+      "taxable": "करपात्र",
       "serialNo": "क्र.",
       "floor": "मजला",
       "subFloor": "उप-मजला",
@@ -320,6 +321,7 @@
       "appliedOn": "अप्लाइड ऑन"
     },
     "tooltips": {
+      "taxable": "करपात्र मालमत्ता",
       "floor": "मजला",
       "subFloor": "उप-मजला",
       "constYear": "बांधकाम वर्ष",
