@@ -102,7 +102,20 @@ const baseProps: TaxZoningPageProps = {
   totalPages: 1,
   taxZones: mockTaxZones,
   wardsData: mockWardsData,
-  allProperties: { success: true, data: { items: [], totalCount: 0, pageNumber: 1, pageSize: 10, totalPages: 0, hasPrevious: false, hasNext: false } },
+  allProperties: { 
+    success: true, 
+    data: { 
+      items: [
+        { taxZoneId: 0, wardId: 89, taxZone: '', wardNo: 'MM11', propertyNo: '10', fromProperty: '', toProperty: '', isActive: true, createdDate: null, updatedDate: null },
+        { taxZoneId: 0, wardId: 89, taxZone: '', wardNo: 'MM11', propertyNo: '15', fromProperty: '', toProperty: '', isActive: true, createdDate: null, updatedDate: null },
+        { taxZoneId: 0, wardId: 89, taxZone: '', wardNo: 'MM11', propertyNo: '20', fromProperty: '', toProperty: '', isActive: true, createdDate: null, updatedDate: null },
+        { taxZoneId: 0, wardId: 89, taxZone: '', wardNo: 'MM11', propertyNo: '100', fromProperty: '', toProperty: '', isActive: true, createdDate: null, updatedDate: null },
+        { taxZoneId: 0, wardId: 89, taxZone: '', wardNo: 'MM11', propertyNo: '101', fromProperty: '', toProperty: '', isActive: true, createdDate: null, updatedDate: null },
+        { taxZoneId: 0, wardId: 89, taxZone: '', wardNo: 'MM11', propertyNo: '102', fromProperty: '', toProperty: '', isActive: true, createdDate: null, updatedDate: null },
+      ], 
+      totalCount: 6, pageNumber: 1, pageSize: 10, totalPages: 1, hasPrevious: false, hasNext: false 
+    } 
+  },
 };
 
 describe('useTaxZoning', () => {
