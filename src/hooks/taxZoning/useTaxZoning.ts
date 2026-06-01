@@ -100,15 +100,23 @@ export const useTaxZoning = (props: TaxZoningPageProps) => {
     updateUrl(zone, val);
   };
 
+  const comparePropertyNo = (a: string, b: string) => {
+    const numA = Number(a);
+    const numB = Number(b);
+    if (!isNaN(numA) && !isNaN(numB) && numA.toString() === a && numB.toString() === b) {
+      return numA - numB;
+    }
+    return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+  };
+
+  const isPropertyRangeValid = !fromProps || !toProps || comparePropertyNo(fromProps, toProps) <= 0;
+
   const handleSetFromProps = (val: string) => {
     setFromProps(val);
     
     // Validate if toProps is already selected
     if (toProps && val) {
-      const from = parseInt(val, 10);
-      const to = parseInt(toProps, 10);
-      
-      if (!isNaN(from) && !isNaN(to) && from > to) {
+      if (comparePropertyNo(val, toProps) > 0) {
         toast.error(t('messages.fromPropertyMustBeSmallerThanToProperty'));
       }
     }
@@ -119,10 +127,7 @@ export const useTaxZoning = (props: TaxZoningPageProps) => {
     
     // Validate if fromProps is already selected
     if (fromProps && val) {
-      const from = parseInt(fromProps, 10);
-      const to = parseInt(val, 10);
-      
-      if (!isNaN(from) && !isNaN(to) && from > to) {
+      if (comparePropertyNo(fromProps, val) > 0) {
         toast.error(t('messages.fromPropertyMustBeSmallerThanToProperty'));
       }
     }
@@ -130,12 +135,29 @@ export const useTaxZoning = (props: TaxZoningPageProps) => {
 
   const previewData = useMemo(() => {
     if (!zone || ward.length !== 1 || !fromProps || !toProps) return [];
-    const from = parseInt(fromProps, 10), to = parseInt(toProps, 10);
-    if (isNaN(from) || isNaN(to) || from > to) return [];
+    
+    if (comparePropertyNo(fromProps, toProps) > 0) return [];
+
     const wardNo = wardsData.items.find(w => String(w.id) === ward[0])?.wardNo || ward[0];
     const taxZoneNo = taxZones.items.find(z => String(z.id) === zone)?.taxZoneNo || zone;
-    return Array.from({ length: to - from + 1 }, (_, i) => ({ taxZoneNo: taxZoneNo, wardNo, propertyNo: String(from + i) }));
-  }, [zone, ward, fromProps, toProps, wardsData, taxZones]);
+    
+    const existingProps = allProperties?.success && allProperties.data?.items ? allProperties.data.items : [];
+    const sortedProps = [...existingProps].sort((a, b) => comparePropertyNo(a.propertyNo, b.propertyNo));
+    const inRangeProps = sortedProps.filter(p => 
+      comparePropertyNo(p.propertyNo, fromProps) >= 0 && 
+      comparePropertyNo(p.propertyNo, toProps) <= 0
+    );
+    
+    return inRangeProps.map(property => {
+      let oldTaxZoneNo = '-';
+      if (property.taxZoneId) {
+        oldTaxZoneNo = taxZones.items.find(z => z.id === property.taxZoneId)?.taxZoneNo || String(property.taxZoneId);
+      } else if (property.taxZone) {
+        oldTaxZoneNo = property.taxZone;
+      }
+      return { taxZoneNo, oldTaxZoneNo, wardNo, propertyNo: property.propertyNo };
+    });
+  }, [zone, ward, fromProps, toProps, wardsData, taxZones, allProperties]);
 
   const onFormClear = () => {
     setZoneState(""); setWardState([]); setFromProps(""); setToProps(""); setSubmitted(false);
@@ -155,8 +177,8 @@ export const useTaxZoning = (props: TaxZoningPageProps) => {
     columns: useMemo(() => getTaxZoningColumns(t), [t]),
     previewColumns: useMemo(() => getPreviewColumns(t), [t]),
     handleExportCSV: () => handleExportCSV(tableRecords),
-    handleImportFile, handleClearImported, isTaxZoneValid, isWardValid, isPropertyValid, onFormClear,
-    isFormValid: isTaxZoneValid && isWardValid && isPropertyValid,
+    handleImportFile, handleClearImported, isTaxZoneValid, isWardValid, isPropertyValid, isPropertyRangeValid, onFormClear,
+    isFormValid: isTaxZoneValid && isWardValid && isPropertyValid && isPropertyRangeValid,
     changePage: (p: number) => {
       setCurrentPage(p);
       const params = new URLSearchParams(searchParams.toString());

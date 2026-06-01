@@ -284,6 +284,7 @@
   },
   "floorTable": {
     "columns": {
+      "taxable": "करपात्र",
       "serialNo": "क्र.",
       "floor": "मजला",
       "subFloor": "उप-मजला",
@@ -320,6 +321,7 @@
       "appliedOn": "अप्लाइड ऑन"
     },
     "tooltips": {
+      "taxable": "करपात्र मालमत्ता",
       "floor": "मजला",
       "subFloor": "उप-मजला",
       "constYear": "बांधकाम वर्ष",
@@ -528,7 +530,8 @@
     "firstPage": "पहिले पृष्ठ",
     "previousPage": "मागील पृष्ठ",
     "nextPage": "पुढील पृष्ठ",
-    "lastPage": "शेवटचे पृष्ठ"
+    "lastPage": "शेवटचे पृष्ठ",
+    "backToSearch": "शोध मालमत्तेवर परत जा"
   },
   "table": {
     "page": "पृष्ठ {current} चे {total}"

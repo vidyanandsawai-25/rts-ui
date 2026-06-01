@@ -21,6 +21,7 @@ import type { DepartmentMaster } from '@/types/departmentMaster.types';
 import { type LucideIcon } from 'lucide-react';
 
 // Components
+import { GrievanceCategoryMaster } from '@/components/modules/configuration-settings/grievance-category-master/GrievanceCategoryMasterView';
 import { GrievanceCategoryList } from '@/components/modules/configuration-settings/grievance-category-master/GrievanceCategoryList';
 import { GrievanceCategoryFilter } from '@/components/modules/configuration-settings/grievance-category-master/GrievanceCategoryFilter';
 import { StatCard } from '@/components/modules/configuration-settings/grievance-category-master/StatCard';
@@ -113,12 +114,25 @@ vi.mock('@/components/common/ConfirmProvider', () => ({
   }),
 }));
 
+const mockPermissions = {
+  canView: true,
+  canEdit: true,
+  canDelete: true,
+  haveFullAccess: true,
+  hasAccess: true,
+};
+
+vi.mock('@/hooks/usePermissions', () => ({
+  usePermissions: () => mockPermissions,
+}));
+
 // Mock Lucide icons
 vi.mock('lucide-react', () => {
   const MockIcon = () => null;
   return {
     MessageSquare: MockIcon,
     AlertCircle: MockIcon,
+    CheckCircle: MockIcon,
     CheckCircle2: MockIcon,
     X: MockIcon,
     ChevronLeft: MockIcon,
@@ -207,7 +221,21 @@ const mockCategories: GrievanceCategory[] = [
 
 const messages = {
   grievanceCategory: {
+    master: {
+      title: 'Grievance Category Master',
+      description: 'Manage grievance categories',
+      add: 'Add Category',
+      tableTitle: 'Categories',
+      tableSubtitle: 'Manage categories',
+      stats: {
+        total: 'Total Categories',
+        critical: 'Critical Categories',
+        sla: 'Avg SLA',
+        active: 'Active Categories',
+      },
+    },
     list: {
+      empty: 'No categories found',
       categoryCode: 'Code',
       categoryName: 'Name',
       department: 'Department',
@@ -337,6 +365,11 @@ const renderWithIntl = (component: ReactElement) => {
 describe('Grievance Category Master - Comprehensive Test Suite', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockPermissions.canView = true;
+    mockPermissions.canEdit = true;
+    mockPermissions.canDelete = true;
+    mockPermissions.haveFullAccess = true;
+    mockPermissions.hasAccess = true;
   });
 
   afterEach(() => {
@@ -1064,6 +1097,135 @@ describe('Grievance Category Master - Comprehensive Test Suite', () => {
       }
       const duration = Date.now() - startTime;
       expect(duration).toBeLessThan(1000); // Should complete in under 1 second
+    });
+  });
+
+  // ============================================================================
+  // PERMISSIONS AND ACCESS CONTROL TESTS
+  // ============================================================================
+  describe('Permissions and Access Control', () => {
+    const mockStats = { total: 2, avgSla: 36, active: 2, critical: 1 };
+
+    it('renders the grievance category list title when permitted', () => {
+      renderWithIntl(
+        <GrievanceCategoryMaster
+          locale="en"
+          data={mockCategories}
+          departments={mockDepartments}
+          stats={mockStats}
+          pageSize={10}
+          page={1}
+          totalCount={2}
+          initialSearch=""
+          initialDepartment="all"
+          initialStatus="all"
+        />
+      );
+      expect(screen.getByText('Grievance Category Master')).toBeInTheDocument();
+    });
+
+    it('renders errors.noAccess when user has no access permission', () => {
+      mockPermissions.canView = false;
+      mockPermissions.haveFullAccess = false;
+
+      renderWithIntl(
+        <GrievanceCategoryMaster
+          locale="en"
+          data={mockCategories}
+          departments={mockDepartments}
+          stats={mockStats}
+          pageSize={10}
+          page={1}
+          totalCount={2}
+          initialSearch=""
+          initialDepartment="all"
+          initialStatus="all"
+        />
+      );
+      expect(screen.getByText('common.errors.noAccess')).toBeInTheDocument();
+    });
+
+    it('renders errors.unauthorized when user is unauthorized', () => {
+      mockPermissions.canView = false;
+      mockPermissions.haveFullAccess = false;
+
+      renderWithIntl(
+        <GrievanceCategoryMaster
+          locale="en"
+          data={[]}
+          departments={mockDepartments}
+          stats={mockStats}
+          pageSize={10}
+          page={1}
+          totalCount={0}
+          initialSearch=""
+          initialDepartment="all"
+          initialStatus="all"
+          statusCode={401}
+        />
+      );
+      expect(screen.getByText('common.errors.unauthorized')).toBeInTheDocument();
+    });
+
+    it('renders errors.fetchFailed when fetchError is provided', () => {
+      renderWithIntl(
+        <GrievanceCategoryMaster
+          locale="en"
+          data={[]}
+          departments={mockDepartments}
+          stats={mockStats}
+          pageSize={10}
+          page={1}
+          totalCount={0}
+          initialSearch=""
+          initialDepartment="all"
+          initialStatus="all"
+          fetchError="Network connection lost"
+        />
+      );
+      expect(screen.getByText('common.errors.fetchFailed')).toBeInTheDocument();
+      expect(screen.getByText('Network connection lost')).toBeInTheDocument();
+    });
+
+    it('gates add category button visibility based on permissions', () => {
+      const { rerender } = render(
+        <NextIntlClientProvider locale="en" messages={messages}>
+          <GrievanceCategoryMaster
+            locale="en"
+            data={mockCategories}
+            departments={mockDepartments}
+            stats={mockStats}
+            pageSize={10}
+            page={1}
+            totalCount={2}
+            initialSearch=""
+            initialDepartment="all"
+            initialStatus="all"
+          />
+        </NextIntlClientProvider>
+      );
+      expect(screen.getByText('Add Category')).toBeInTheDocument();
+
+      mockPermissions.haveFullAccess = false;
+      mockPermissions.canView = true;
+
+      rerender(
+        <NextIntlClientProvider locale="en" messages={messages}>
+          <GrievanceCategoryMaster
+            locale="en"
+            data={mockCategories}
+            departments={mockDepartments}
+            stats={mockStats}
+            pageSize={10}
+            page={1}
+            totalCount={2}
+            initialSearch=""
+            initialDepartment="all"
+            initialStatus="all"
+          />
+        </NextIntlClientProvider>
+      );
+      expect(screen.queryByText('Add Category')).not.toBeInTheDocument();
     });
   });
 });

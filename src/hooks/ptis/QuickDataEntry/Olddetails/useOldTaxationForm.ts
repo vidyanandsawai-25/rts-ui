@@ -27,13 +27,13 @@ export function useOldTaxationForm(propertyOldDetails: PropertyOldDetailsApiItem
     oldPropertyNo: propertyOldDetails?.oldPropertyNo ?? "",
     oldPartitionNo: propertyOldDetails?.oldPartitionNo ?? "",
     oldEgovNo: propertyOldDetails?.oldEgovNo ?? "",
-    oldPlotArea: propertyOldDetails?.oldPlotArea?.toString() ?? "0",
+    oldPlotArea: propertyOldDetails?.oldPlotArea?.toString() ?? "",
     oldPlotNo: propertyOldDetails?.oldPlotNo ?? "",
     oldCarpetAreaSqFeet: propertyOldDetails?.oldCarpetAreaSqFeet ?? 0,
-    oldConstructionArea: propertyOldDetails?.oldConstructionArea?.toString() ?? "0",
-    oldRV: propertyOldDetails?.oldRV?.toString() ?? "0",
-    oldALV: propertyOldDetails?.oldALV?.toString() ?? "0",
-    oldGeneralTax: propertyOldDetails?.oldGeneralTax?.toString() ?? "0",
+    oldConstructionArea: propertyOldDetails?.oldConstructionArea?.toString() ?? "",
+    oldRV: propertyOldDetails?.oldRV?.toString() ?? "",
+    oldALV: propertyOldDetails?.oldALV?.toString() ?? "",
+    oldGeneralTax: propertyOldDetails?.oldGeneralTax?.toString() ?? "",
     oldTotalTax: propertyOldDetails?.oldTotalTax ?? 0,
   });
 

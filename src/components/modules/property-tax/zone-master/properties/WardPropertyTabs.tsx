@@ -46,8 +46,6 @@ interface WardPropertyTabsProps {
   // Active tab
   activeTab?: "wards" | "properties";
 
-  // Delete Property drawer
-  deletePropertyData?: DeletePropertyData;
 }
 
 export default function WardPropertyTabs({
@@ -77,8 +75,6 @@ export default function WardPropertyTabs({
   // Active tab
   activeTab = "wards",
 
-  // Delete Property drawer
-  deletePropertyData,
 }: WardPropertyTabsProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -136,7 +132,6 @@ export default function WardPropertyTabs({
           selectedZoneId={selectedZoneId}
           categoryMap={categoryMap}
           propertyTypeMap={propertyTypeMap}
-          deletePropertyData={deletePropertyData}
         />
       ),
     },

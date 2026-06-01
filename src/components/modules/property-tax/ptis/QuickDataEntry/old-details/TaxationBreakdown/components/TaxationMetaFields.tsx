@@ -15,13 +15,12 @@ export function TaxationMetaFields({
   interest,
   onYearChange,
   onInterestChange,
-  validationErrors
 }: TaxationMetaFieldsProps) {
   return (
     <>
       {/* Assessment Year */}
-      <div className="space-y-2">
-        <Label className="text-sm font-semibold text-gray-700 ml-1">
+      <div className="space-y-1.5">
+        <Label className="text-xs font-semibold text-gray-700">
           {t("assessmentYear")}
         </Label>
        
@@ -34,14 +33,14 @@ export function TaxationMetaFields({
           value={year}
           onChange={(e) => onYearChange(e.target.value.replace(/\D/g, "").slice(0, 4))}
           placeholder={t("assessmentYear")}
-          className="h-11.5 border-[#cbd5e1] hover:border-blue-300 focus:border-blue-400 focus:ring-4 focus:ring-blue-50 rounded-lg transition-all font-medium text-gray-900 px-4"
+          className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
         />
       </div>
 
 
       {/* Interest Amount */}
-      <div className="space-y-2">
-        <Label className="text-sm font-semibold text-gray-700 ml-1">
+      <div className="space-y-1.5">
+        <Label className="text-xs font-semibold text-gray-700">
           {t("interestAmount")}
         </Label>
         <Input
@@ -50,13 +49,8 @@ export function TaxationMetaFields({
           value={interest === 0 ? "" : interest}
           onChange={(e) => onInterestChange(e.target.value)}
           placeholder={t("interestAmount")}
-          className={`h-11.5 hover:border-blue-300 focus:border-blue-400 focus:ring-4 focus:ring-blue-50 rounded-lg transition-all font-medium text-gray-900 px-4 ${
-            validationErrors.interest ? 'border-red-500' : 'border-[#cbd5e1]'
-          }`}
+          className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
         />
-        {validationErrors.interest && (
-          <span className="text-xs text-red-500 ml-1">{validationErrors.interest}</span>
-        )}
       </div>
     </>
   );

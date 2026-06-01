@@ -418,7 +418,10 @@
       "noOfFlatOnOneFloorRequired": "No. of Flats per Floor is required",
       "flatStartRequired": "Flat Start is required",
       "incrementedByRequired": "Incremented By is required",
-      "generationTypeRequired": "Generation Type is required"
+      "generationTypeRequired": "Generation Type is required",
+      "toAmenityRequired": "To Amenity is required",
+      "toAmenityMustBeGreater": "To Amenity must be greater than or equal to From Amenity",
+      "duplicateAmenityInRange": "Amenity {amenity} already exists for this property"
     },
     "placeholders": {
       "selectMainProperty": "Select a main property",
@@ -495,6 +498,7 @@
         "wingName": "Wing Name",
         "totalProperties": "Total Properties",
         "properties": "properties",
+        "amenities": "Amenities",
         "actions": "Actions",
         "editWingName": "Edit Wing Name",
         "updateWing": "Generate Wing Structure",
@@ -572,76 +576,29 @@
       "amenity": {
         "notImplemented": "Amenity content not yet implemented"
       }
+    },
+    "amenity": {
+      "description": "Create amenities for selected property. Amenities will be assigned to a wing (optional) and numbered sequentially.",
+      "selectWing": "Select Wing (Optional)",
+      "noWing": "No Wing (Default Amenity)",
+      "fromAmenity": "From Amenity",
+      "toAmenity": "To Amenity",
+      "amenities": "amenities",
+      "amenitiesWillBeCreated": "Amenities will be created:",
+      "placeholders": {
+        "selectWing": "Select a wing or leave empty"
+      }
     }
   },
   "partitionMessages": {
     "createSuccess": "Partition created successfully!",
     "createError": "Failed to create partition",
-    "bulkCreateSuccess": "{count} partitions created successfully!"
+    "bulkCreateSuccess": "{count} partitions created successfully!",
+    "amenityCreateSuccess": "{count} amenities created successfully!",
+    "amenityCreateError": "Failed to create amenities"
   },
   "deleteProperty": {
-    "pageTitle": "Delete Partition / Wing",
-    "pageSubtitle": "Delete partitions or wings from a property",
-    "warning": {
-      "title": "This action is irreversible",
-      "description": "Deleted properties cannot be recovered. Please verify before proceeding."
-    },
-    "tabs": {
-      "single": "Single Property",
-      "bulk": "Multiple Properties"
-    },
-    "form": {
-      "wardLabel": "Select Ward",
-      "wardPlaceholder": "Choose a ward...",
-      "propertiesLabel": "Select Property",
-      "searchPlaceholder": "Search property number...",
-      "bulkHelp": "Search and select multiple properties to delete",
-      "fromPropertyNo": "From Property No",
-      "toPropertyNo": "To Property No",
-      "fromPropertyPlaceholder": "e.g., 1",
-      "toPropertyPlaceholder": "e.g., 10",
-      "bulkRangePreview": "Will delete properties from {from} to {to} ({count} properties)",
-      "bulkRangeWarning": "Please ensure all properties in this range exist and are eligible for deletion",
-      "noPropertiesSelected": "No properties selected",
-      "propertiesSelected": "{count} property(ies) selected",
-      "selectedForDeletion": "Selected for deletion",
-      "confirmSingle": "I confirm that I want to permanently delete this property.",
-      "confirmBulk": "I confirm that I want to permanently delete {count} properties."
-    },
-    "buttons": {
-      "selectAll": "Select All",
-      "deselectAll": "Deselect All",
-      "cancel": "Cancel",
-      "delete": "Delete Property",
-      "deleteWithCount": "Delete ({count})"
-    },
-    "messages": {
-      "loadingProperties": "Loading properties...",
-      "noPropertiesInWard": "No properties found",
-      "noPropertiesMatch": "No properties match your search",
-      "selectAtLeastOne": "Please select at least one property to delete",
-      "deleteSuccess": "Property deleted successfully",
-      "deleteSuccessBulk": "Successfully deleted {count} properties",
-      "deletePartialSuccess": "Deleted {success} of {total} properties. {failed} failed.",
-      "deleteFailed": "Failed to delete property",
-      "deleteFailedBulk": "Failed to delete all {count} properties"
-    },
-    "confirm": {
-      "title": "Delete Property?",
-      "titleBulk": "Delete {count} Properties?",
-      "description": "Are you sure you want to delete this property? This action cannot be undone.",
-      "descriptionBulk": "Are you sure you want to delete {count} properties? This action cannot be undone."
-    },
-    "errors": {
-      "loadFailed": "Failed to fetch properties",
-      "unexpectedError": "An unexpected error occurred",
-      "wardRequired": "Please select a ward",
-      "propertyRequired": "Please select a property",
-      "propertiesRequired": "Please select at least one property",
-      "fromPropertyRequired": "From Property No is required",
-      "toPropertyRequired": "To Property No is required",
-      "invalidPropertyNumber": "Please enter valid property numbers",
-      "fromGreaterThanTo": "From Property No must be less than or equal to To Property No"
-    }
+    "pageTitle": "Delete Property",
+    "pageSubtitle": "Select a property to delete from the selected ward"
   }
 }

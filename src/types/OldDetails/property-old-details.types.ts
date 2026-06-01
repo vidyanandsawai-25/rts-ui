@@ -168,17 +168,37 @@ export interface OldFloorDetail {
   markedForDeletionDate: string | null;
 }
 
+/**
+ * Paginated response for old floor details
+ */
 export interface OldFloorDetails {
-  propertyId: number;
-  floorDetails: OldFloorDetail[];
+  /** Array of floor detail items */
+  items: OldFloorDetail[];
+  /** Total count of records */
+  totalCount: number;
+  /** Current page number */
+  pageNumber: number;
+  /** Number of items per page */
+  pageSize: number;
+  /** Total number of pages */
+  totalPages: number;
+  /** Whether there is a previous page */
+  hasPrevious: boolean;
+  /** Whether there is a next page */
+  hasNext: boolean;
 }
 
+/**
+ * API response wrapper for old floor details
+ */
 export interface OldFloorDetailsResponse {
   success: boolean;
   message: string;
   items: OldFloorDetails | null;
   errors: unknown | null;
+  correlationId?: string | null;
 }
+
 
 export interface FloorInformationFormProps {
   floorOptions?: Floor[];
@@ -187,6 +207,11 @@ export interface FloorInformationFormProps {
   useOptions?: TypeOfUse[];
   initialSubUseTypeOptions?: SubTypeOfUse[];
   existingFloorDetails?: OldFloorDetail[];
+  totalCount?: number;
+  pageNumber?: number;
+  pageSize?: number;
+  totalPages?: number;
+  searchTerm?: string;
 }
 
 /**

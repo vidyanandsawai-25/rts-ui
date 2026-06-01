@@ -12,7 +12,9 @@ import CreateNewWard from "./wards/CreateNewWard";
 import WardForm from "./wards/WardForm";
 import CreatePropertyDrawer from "./properties/CreatePropertyDrawer";
 import PropertyPartitionForm from "./properties/PropertyPartitionForm";
+import DeletePropertyDrawer from "./properties/DeletePropertyDrawer";
 import { DashboardCard } from "@/components/common/DashboardCard";
+import { ConfirmProvider } from "@/components/common/ConfirmProvider";
 import { useZoneContentState } from "@/hooks/zoneMaster/useZoneContentState";
 import {
   ZonePaginationData,
@@ -155,6 +157,7 @@ export default function ZoneContent({
         </div>
 
         <div className="lg:col-span-7 bg-white/80 backdrop-blur-md rounded-lg shadow-lg border-2 border-[#1A86E8]/20 flex flex-col">
+          <ConfirmProvider>
           <WardPropertyTabs
             // Ward props
             wards={wards}
@@ -179,9 +182,8 @@ export default function ZoneContent({
             propertyTypeMap={propertyTypeMap}
             // Active tab
             activeTab={activeRightTab}
-            // Delete Property drawer
-            deletePropertyData={deletePropertyData}
           />
+          </ConfirmProvider>
         </div>
       </div>
 
@@ -261,6 +263,22 @@ export default function ZoneContent({
           onSuccess={() => {
             router.refresh();
           }}
+        />
+      )}
+
+      {/* Delete Property Drawer */}
+      {deletePropertyData?.isOpen && (
+        <DeletePropertyDrawer
+          isOpen={deletePropertyData.isOpen}
+          onClose={() => {
+            const params = new URLSearchParams(searchParams.toString());
+            params.delete("deleteProperty");
+            router.push(`${pathname}?${params.toString()}`);
+          }}
+          wardId={selectedPropertyWardId}
+          selectedWard={allWardsForDropdown.find(w => w.id === selectedPropertyWardId) || null}
+          ssrProperties={deletePropertyData.properties}
+          categoryMap={categoryMap}
         />
       )}
 

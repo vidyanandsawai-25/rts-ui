@@ -1,5 +1,5 @@
   "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Trash2 } from "lucide-react";
 import { useBuildingList } from "@/hooks/zoneMaster/useBuildingList";
 import { Drawer } from "@/components/common/Drawer";
@@ -9,6 +9,9 @@ import { PropertyInfoSection, PropertySelectionSection } from "./components";
 import { PropertyAmenitySection } from "./components/PropertyAmenitySection";
 import { WardItem } from "@/types/wardMaster.types";
 import { ZonePropertyItem } from "@/types/zone-master/properties/zoneProperty.types";
+
+import { SelectedPropertyHeaderInfo } from "./components/PropertySelectionSection";
+import { BuildingListItem } from "@/types/zone-master/properties/building-list.types";
 
 interface DeletePropertyDrawerProps {
   isOpen: boolean;
@@ -31,13 +34,15 @@ export default function DeletePropertyDrawer({
   const tZone = useTranslations("zoneMaster");
 
   const [selectedPropertyId, setSelectedPropertyId] = useState("");
+  const [prevWardId, setPrevWardId] = useState<number | null>(null);
 
   const effectiveWardId = wardId ?? selectedWard?.id ?? null;
 
   // Reset on ward change
-  useEffect(() => {
+  if (effectiveWardId !== prevWardId) {
+    setPrevWardId(effectiveWardId);
     setSelectedPropertyId("");
-  }, [effectiveWardId]);
+  }
 
   const ward = selectedWard ?? null;
 
@@ -45,10 +50,15 @@ export default function DeletePropertyDrawer({
     wardId: effectiveWardId,
   });
 
-  const selectedProperty = useMemo(
+  const selectedProperty = useMemo<
+    | (BuildingListItem & { id?: number })
+    | (ZonePropertyItem & { propertyId?: number; catPropertyCategoryName?: string })
+    | null
+  >(
     () =>
       buildingList.find((b) => String(b.propertyId) === selectedPropertyId) ??
-      (ssrProperties.find((b) => String(b.id) === selectedPropertyId) as any),
+      ssrProperties.find((b) => String(b.id) === selectedPropertyId) ??
+      null,
     [buildingList, ssrProperties, selectedPropertyId]
   );
 
@@ -65,7 +75,7 @@ export default function DeletePropertyDrawer({
   const propertyOptions = useMemo(() => {
     if (buildingList.length > 0) {
       return buildingList
-        .filter((item) => !item.partitionNo || item.partitionNo === "")
+        .filter((item) => !item.partitionNo || item.partitionNo === "" || item.partitionNo === "0")
         .map((item) => ({
           value: String(item.propertyId),
           label: item.catPropertyCategoryName
@@ -111,7 +121,7 @@ export default function DeletePropertyDrawer({
         {/* Property info */}
         <PropertyInfoSection
           selectedWard={ward}
-          selectedProperty={selectedProperty as any}
+          selectedProperty={selectedProperty as unknown as ZonePropertyItem}
           isApartmentCategory={isApartmentCategory}
           categoryName={categoryName}
           t={tZone}
@@ -119,7 +129,7 @@ export default function DeletePropertyDrawer({
 
         {/* Main Property No dropdown */}
         <PropertySelectionSection
-          selectedProperty={selectedProperty as any}
+          selectedProperty={selectedProperty as unknown as SelectedPropertyHeaderInfo}
           propertyOptions={propertyOptions}
           onPropertyChange={(_e, value) => setSelectedPropertyId(value)}
           t={tZone}

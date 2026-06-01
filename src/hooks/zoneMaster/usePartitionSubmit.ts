@@ -7,6 +7,7 @@ import { ZonePropertyItem } from "@/types/zone-master/properties/zoneProperty.ty
 import { WingItem } from "@/types/zone-master/properties/wing.types";
 import { Floor } from "@/types/floor.types";
 import { BulkPropertyItem } from "@/types/zone-master/properties/property-bulk.types";
+import { SocietyWingDetailItem } from "@/types/zone-master/properties/society-wing-details.types";
 import { generateBuildingStructureAction, createBulkBuildingPropertiesAction } from "@/app/[locale]/property-tax/zone-master/actions";
 
 interface UsePartitionSubmitProps {
@@ -14,6 +15,7 @@ interface UsePartitionSubmitProps {
   selectedWard: WardItem | null;
   selectedProperty: ZonePropertyItem | null;
   wings: WingItem[];
+  wingDetails: SocietyWingDetailItem[];
   floors: Floor[];
   validate: (data: PartitionFormState) => { valid: boolean; errors: PartitionFormErrors };
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
@@ -30,6 +32,7 @@ export function usePartitionSubmit({
   selectedWard,
   selectedProperty,
   wings,
+  wingDetails,
   floors,
   validate,
   setLoading,
@@ -128,6 +131,75 @@ export function usePartitionSubmit({
         } else {
           toast.error(result.error || t("partitionMessages.createError"));
         }
+      } else if (form.partitionType === "amenity") {
+        // Handle bulk amenity creation for Apartment Categories
+        if (!selectedWard?.id || !selectedProperty) {
+          toast.error("Ward and Property are required");
+          setLoading(false);
+          return;
+        }
+
+        if (!selectedProperty.taxZoneId || !selectedProperty.propertyTypeId || !selectedProperty.categoryId) {
+          toast.error("Missing required property configuration: taxZoneId, propertyTypeId, or categoryId");
+          setLoading(false);
+          return;
+        }
+
+        const fromAmenity = parseInt(form.fromAmenity, 10);
+        const toAmenity = parseInt(form.toAmenity, 10);
+
+        if (isNaN(fromAmenity) || isNaN(toAmenity)) {
+          toast.error("Invalid amenity range");
+          setLoading(false);
+          return;
+        }
+
+        // Determine the prefix and societyDetailId based on selected wing
+        let amenityPrefix = "AM";
+        let societyDetailId: number | undefined;
+        
+        if (form.selectedWingForAmenity) {
+          // If a wing is selected, use wingNo-AM format and get societyDetailId
+          amenityPrefix = `${form.selectedWingForAmenity}-AM`;
+          const selectedWingDetail = wingDetails.find(
+            detail => detail.wingNo === form.selectedWingForAmenity
+          );
+          societyDetailId = selectedWingDetail?.societyDetailId;
+        }
+
+        const currentDate = new Date().toISOString();
+        const bulkPayload: BulkPropertyItem[] = [];
+
+        for (let i = fromAmenity; i <= toAmenity; i++) {
+          bulkPayload.push({
+            taxZoneId: selectedProperty.taxZoneId,
+            wardId: selectedWard.id,
+            propertyNo: selectedProperty.propertyNo,
+            propertyTypeId: selectedProperty.propertyTypeId,
+            categoryId: selectedProperty.categoryId,
+            partitionNo: `${amenityPrefix}${i}`,
+            flatOrShopNo: "",
+            flatOrShopNoEnglish: "",
+            address: selectedProperty.address || "",
+            addressEnglish: selectedProperty.addressEnglish || "",
+            location: selectedProperty.location || "",
+            locationEnglish: selectedProperty.locationEnglish || "",
+            societyDetailId,
+            createdBy: 0, // Will be set by server action from authenticated user
+            createdDate: currentDate,
+          });
+        }
+
+        const result = await createBulkBuildingPropertiesAction(bulkPayload);
+        
+        if (result.success) {
+          const successCount = result.data?.successCount ?? bulkPayload.length;
+          toast.success(t("partitionMessages.amenityCreateSuccess", { count: successCount }));
+          onSuccess?.();
+          onClose();
+        } else {
+          toast.error(result.error || t("partitionMessages.amenityCreateError"));
+        }
       } else {
         // Handle bulk partition creation for Non-Apartment Categories
         if (!selectedWard?.id || !selectedProperty) {
@@ -189,7 +261,7 @@ export function usePartitionSubmit({
     } finally {
       setLoading(false);
     }
-  }, [form, selectedWard, selectedProperty, wings, floors, validate, setLoading, onSuccess, onClose, showAddWingForm, newWingId, newWingName, handleSaveWing, t]);
+  }, [form, selectedWard, selectedProperty, wings, wingDetails, floors, validate, setLoading, onSuccess, onClose, showAddWingForm, newWingId, newWingName, handleSaveWing, t]);
 
   return {
     handleSubmit,

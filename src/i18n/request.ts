@@ -50,10 +50,13 @@ export default getRequestConfig(async ({ locale }) => {
     combinePropertyMessages,
     ptisMainTaxDetailsMessages,
     paymentModeMasterMessages,
+    propertySearchMessages,
     moduleMasterMessages,
+    ulbConfigMessages,
     waterConnectionMessages,
     waterConnectionMasterMessages,
     commonDetailsUpdateMessages,
+    financialYearMessages,
     modulesMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
@@ -106,7 +109,13 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/combineProperty.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/ptisMainTaxDetails.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/paymentModeMaster.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/propertySearch.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/moduleMaster.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/ulb_configuration.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/waterconnection.json`)
@@ -116,12 +125,12 @@ export default getRequestConfig(async ({ locale }) => {
       .catch(() => ({}))
       .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/commonDetailsUpdate.json`)
+      .catch(() => ({}))
       .then((m) => m.default || m),
-    import(`./locales/${validatedLocale}/commonDetailsUpdate.json`)
+    import(`./locales/${validatedLocale}/financialYear.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
-
   ]);
 
   return {
@@ -161,10 +170,14 @@ export default getRequestConfig(async ({ locale }) => {
       combineProperty: combinePropertyMessages,
       ptisMainTaxDetails: ptisMainTaxDetailsMessages,
       paymentModeMaster: paymentModeMasterMessages,
+      propertySearch: propertySearchMessages,
       moduleMaster: moduleMasterMessages,
+      ulb_configuration: ulbConfigMessages,
       waterConnection: waterConnectionMessages?.waterConnection || waterConnectionMessages,
       waterConnectionMaster: waterConnectionMasterMessages.waterConnectionMaster,
-      commonDetailsUpdate: commonDetailsUpdateMessages?.commonDetailsUpdate || commonDetailsUpdateMessages,
+      commonDetailsUpdate:
+        commonDetailsUpdateMessages?.commonDetailsUpdate || commonDetailsUpdateMessages,
+      financialYear: financialYearMessages,
       modules: modulesMessages,
     },
   };

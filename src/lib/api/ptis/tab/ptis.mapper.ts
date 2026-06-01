@@ -33,8 +33,14 @@ export const ptisMapper = {
       plotNo: data.plotNo || '',
       propertyDescription: data.propertyDescription || '',
       plotArea: data.plotArea?.toString() || '',
-      totalCarpetArea: data.totalCarpetAreaSqMeter?.toString() || '',
-      builtupArea: data.totalBuiltupAreaSqMeter?.toString() || '',
+      totalCarpetArea:
+        data.totalCarpetAreaSqFeet != null || data.totalCarpetAreaSqMeter != null
+          ? `${data.totalCarpetAreaSqFeet != null ? Number(data.totalCarpetAreaSqFeet).toFixed(2) : '0.00'} / ${data.totalCarpetAreaSqMeter != null ? Number(data.totalCarpetAreaSqMeter).toFixed(2) : '0.00'}`
+          : '',
+      builtupArea:
+        data.totalBuiltupAreaSqFeet != null || data.totalBuiltupAreaSqMeter != null
+          ? `${data.totalBuiltupAreaSqFeet != null ? Number(data.totalBuiltupAreaSqFeet).toFixed(2) : '0.00'} / ${data.totalBuiltupAreaSqMeter != null ? Number(data.totalBuiltupAreaSqMeter).toFixed(2) : '0.00'}`
+          : '',
       category: data.categoryName || '',
       wingNo: data.wingNo || '',
       wingName: data.wingName || '',
@@ -52,10 +58,8 @@ export const ptisMapper = {
       ownerType: data.ownerType || '',
       title: data.ownerTitle || '',
       propertyHolderName: data.ownerName || '',
-      // TODO: [API-CONTRACT] Marathi name not in KYC API response; using English as fallback.
       propertyHolderNameMarathi: data.ownerName || '',
       occupierName: data.occupierName || '',
-      // TODO: [API-CONTRACT] Marathi occupier name not in KYC API response; using English as fallback.
       occupierNameMarathi: data.occupierName || '',
       aadharCardNo: data.adharCardNo || '',
       mobileNumber: data.mobileNo || '',
@@ -63,7 +67,6 @@ export const ptisMapper = {
       shopName: data.flatOrShopName || '',
       shopNo: data.flatOrShopNo || '',
       address: data.address || '',
-      // TODO: [API-CONTRACT] buildingName not directly available; using flatOrShopName as fallback.
       buildingName: data.flatOrShopName || '',
       wingNo: data.wingNo || '',
       flatNo: data.flatOrShopNo || '',

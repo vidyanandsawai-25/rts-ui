@@ -34,7 +34,7 @@ const DEPARTMENT_CONFIG: Record<string, DepartmentConfig> = {
     'property tax': {
         id: 1,
         code: 'pt',
-        route: 'property-tax/ptis',
+        route: 'property-tax/search-property',
         icon: Home,
         iconClassName: 'w-8 h-8 text-gray-700',
     },

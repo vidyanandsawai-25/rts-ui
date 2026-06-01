@@ -32,8 +32,22 @@ export function normalizeDepartment(data: Record<string, unknown>): Department {
 
 export function normalizeModule(data: Record<string, unknown>): Module {
     return {
-        moduleId: Number(data.moduleId ?? data.ModuleId ?? 0),
-        departmentId: Number(data.departmentId ?? data.DepartmentId ?? 0),
+        moduleId: Number(
+            data.moduleId ??
+            data.ModuleId ??
+            data.moduleMasterId ??
+            data.ModuleMasterId ??
+            data.id ??
+            data.Id ??
+            0
+        ),
+        departmentId: Number(
+            data.departmentId ??
+            data.DepartmentId ??
+            data.departmentMasterId ??
+            data.DepartmentMasterId ??
+            0
+        ),
         departmentName: cleanString(data.departmentName ?? data.DepartmentName),
         moduleCode: cleanString(data.moduleCode ?? data.ModuleCode),
         moduleName: cleanString(data.moduleName ?? data.ModuleName),

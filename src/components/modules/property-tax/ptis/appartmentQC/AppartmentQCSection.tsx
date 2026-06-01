@@ -10,6 +10,12 @@ import { ApartmentQCDetail, PagedResponse } from '@/types/apartmentQC.types';
 import { LoadingPage } from '@/components/common/LoadingPage';
 import { getApartmentQCColumns } from './apartmentQC.columns';
 import { emptyPagedResponse, transformApartmentData, getTabTitle } from './apartmentQC.utils';
+import PropertyDetailsEditScreenNew from './PropertyDetailsEditScreen';
+import {
+  fetchApartmentQCDetailsSafeAction,
+  fetchFloorQCByPropertyIdSafeAction,
+  fetchAllPropertyTypesAction,
+} from '@/app/[locale]/property-tax/ptis/appartmentQC/action';
 
 interface AppartmentQCSectionProps {
   initialData?: {
@@ -19,6 +25,12 @@ interface AppartmentQCSectionProps {
   };
   wardId?: string;
   propertyNo?: string;
+}
+
+interface DrawerLocalData {
+  basicInfo: ApartmentQCDetail | null;
+  floorQCData: ApartmentQCDetail[];
+  propertyTypes: Array<{ value: string; label: string }>;
 }
 
 const AppartmentQCSection = ({
@@ -82,6 +94,60 @@ const AppartmentQCSection = ({
   const handleMainTabChange = (v: string | number) => updateUrl({ tab: 'apartment', appartmentTab: v.toString(), subTab: 'rateable', pageNumber: 1 });
   const handleSubTabChange = (v: string | number) => updateUrl({ tab: 'apartment', appartmentTab: activeMainTab, subTab: v.toString(), pageNumber: 1 });
 
+  const handleRowClick = useCallback((row: Record<string, unknown>) => {
+    const propertyId = String(row.id || row.propertyDetailsId || '');
+    if (!propertyId) return;
+    
+    // Open drawer by updating URL params instead of navigating
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('drawer', 'edit');
+    params.set('propertyId', propertyId);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  }, [searchParams, pathname, router]);
+
+  // Drawer state management - fetch data client-side when drawer opens
+  const drawerOpen = searchParams.get('drawer') === 'edit';
+  const selectedPropertyId = searchParams.get('propertyId');
+
+  const [drawerLocalData, setDrawerLocalData] = useState<DrawerLocalData | null>(null);
+
+  // Fetch drawer data client-side when the drawer opens. The reset to `null`
+  // lives in the cleanup return so React's set-state-in-effect rule is happy
+  // — cleanups are exempt and they still fire on dep changes / unmount.
+  useEffect(() => {
+    if (!drawerOpen || !selectedPropertyId) return;
+    let cancelled = false;
+    const type = activeSubTab === 'dual-method' ? 'dual' : activeSubTab;
+    Promise.all([
+      fetchApartmentQCDetailsSafeAction({ propertyId: selectedPropertyId, pageSize: 1 }),
+      fetchFloorQCByPropertyIdSafeAction(Number(selectedPropertyId), type),
+      fetchAllPropertyTypesAction(),
+    ]).then(([basicArr, floorArr, propTypesRes]) => {
+      if (cancelled) return;
+      setDrawerLocalData({
+        basicInfo: basicArr.length > 0 ? basicArr[0] : null,
+        floorQCData: floorArr,
+        propertyTypes: propTypesRes.success && propTypesRes.data ? propTypesRes.data : [],
+      });
+    }).catch(() => {
+      if (cancelled) return;
+      setDrawerLocalData({ basicInfo: null, floorQCData: [], propertyTypes: [] });
+    });
+    return () => {
+      cancelled = true;
+      setDrawerLocalData(null);
+    };
+  }, [drawerOpen, selectedPropertyId, activeSubTab]);
+
+  const selectedPropertyData = drawerLocalData?.basicInfo ?? null;
+
+  const handleCloseDrawer = useCallback(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('drawer');
+    params.delete('propertyId');
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  }, [searchParams, pathname, router]);
+
   return (
     <div className="flex flex-col h-full bg-white rounded-lg shadow-sm">
       <div className="flex flex-row gap-4 p-4 border-b border-gray-100 bg-gray-50/50">
@@ -115,6 +181,7 @@ const AppartmentQCSection = ({
           <CommonPropertyTable
             columns={columns} data={convertedData} title={getTabTitle(activeMainTab, tAqc)} activeTab={activeSubTab}
             searchQuery={searchQuery} onSearchChange={(q) => { isUpdatingFromUrl.current = true; setSearchQuery(q); updateUrl({ searchTerm: q, pageNumber: 1 }); setTimeout(() => { isUpdatingFromUrl.current = false; }, 0); }}
+            onRowClick={handleRowClick}
             loading={isPending} isAutoScrolling={isAutoScrolling} onToggleAutoScroll={() => setIsAutoScrolling(!isAutoScrolling)}
             pageNumber={activePagedData.pageNumber} pageSize={activePagedData.pageSize} totalCount={activePagedData.totalCount} totalPages={activePagedData.totalPages}
             onPageChange={(p) => updateUrl({ pageNumber: p })} onPageSizeChange={(s) => updateUrl({ pageSize: s, pageNumber: 1 })}
@@ -122,6 +189,20 @@ const AppartmentQCSection = ({
           />
         </div>
       </div>
+
+      {/* Property Details Edit Drawer */}
+      {drawerOpen && (
+        <PropertyDetailsEditScreenNew
+          key={`property-edit-${selectedPropertyId || 'new'}`}
+          open={drawerOpen}
+          onClose={handleCloseDrawer}
+          propertyData={selectedPropertyData}
+          subTab={activeSubTab}
+          returnTo={activeMainTab as 'amenities' | 'commercial' | 'residential'}
+          initialFloorQCData={drawerLocalData?.floorQCData}
+          initialPropertyTypes={drawerLocalData?.propertyTypes}
+        />
+      )}
     </div>
   );
 };

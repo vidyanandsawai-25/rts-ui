@@ -138,15 +138,46 @@ export async function getSubTypeOfUsesAction(
 }
 
 /**
- * Fetches existing Old Floor Details for a property.
+ * Fetches existing Old Floor Details for a property with pagination.
  * @param propertyId The ID of the property
+ * @param pageNumber Current page number (default: 1)
+ * @param pageSize Number of items per page (default: 10)
  */
-export async function getOldFloorDetailsAction(propertyId: number): Promise<ActionResult<OldFloorDetail[]>> {
+export async function getOldFloorDetailsAction(
+    propertyId: number,
+    pageNumber: number = 1,
+    pageSize: number = 10,
+    searchTerm?: string
+): Promise<ActionResult<{
+    items: OldFloorDetail[];
+    totalCount: number;
+    pageNumber: number;
+    pageSize: number;
+    totalPages: number;
+    hasPrevious: boolean;
+    hasNext: boolean;
+}>> {
     try {
-        const response = await getOldFloorDetailsForFloorInformation(propertyId);
+        const response = await getOldFloorDetailsForFloorInformation(propertyId, pageNumber, pageSize, searchTerm);
+        
+        if (!response.items) {
+            return {
+                success: true,
+                data: {
+                    items: [],
+                    totalCount: 0,
+                    pageNumber,
+                    pageSize,
+                    totalPages: 0,
+                    hasPrevious: false,
+                    hasNext: false,
+                }
+            };
+        }
+        
         return {
             success: true,
-            data: response.items?.floorDetails || []
+            data: response.items
         };
     } catch (error) {
         return {

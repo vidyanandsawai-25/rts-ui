@@ -11,6 +11,8 @@ export interface WingSummary {
   wingId: number;
   wingNo?: string;
   societyDetailId: number;
+  aminityCount?: number; // Amenity count from society wing details API
+  propertyCount?: number; // Property count from society wing details API
   [key: string]: unknown;
 }
 
@@ -43,10 +45,24 @@ export function getWingColumns({
     {
       label: t("partitionForm.wing.table.totalProperties"),
       key: "count",
+      render: (_value, row) => {
+        const displayCount = row.propertyCount ?? row.count;
+        return (
+          <div className="flex items-center gap-2">
+            <div className="px-2.5 py-0.5 rounded-full bg-green-50 text-green-700 text-xs font-semibold border border-green-100">
+              {displayCount} {t("partitionForm.wing.table.properties")}
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      label: t("partitionForm.wing.table.amenities"),
+      key: "aminityCount",
       render: (_value, row) => (
         <div className="flex items-center gap-2">
-          <div className="px-2.5 py-0.5 rounded-full bg-green-50 text-green-700 text-xs font-semibold border border-green-100">
-            {row.count} {t("partitionForm.wing.table.properties")}
+          <div className="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold border border-blue-100">
+            {row.aminityCount ?? 0} {t("partitionForm.wing.table.amenities")}
           </div>
         </div>
       ),

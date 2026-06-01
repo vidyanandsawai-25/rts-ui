@@ -11,12 +11,16 @@ export async function executeBulkUpdateServer(
   payload: BulkUpdatePayload
 ): Promise<BulkUpdateResponse> {
   // Use provided apiRoute or default to /CommonDetails/update
-  const endpoint = apiRoute || "/CommonDetails/update";
+  let endpoint = apiRoute || "/CommonDetails/update";
+  
+  // Remove /api prefix if present since baseUrl already includes it
+  endpoint = endpoint.replace(/^\/api\//, '/');
   
   logger.info("executeBulkUpdateServer: Starting bulk update", { 
     updateCode: payload.updateCode, 
     propertyCount: payload.propertyIds.length,
-    endpoint 
+    endpoint,
+    originalApiRoute: apiRoute
   });
 
   const response = await apiClient.put<BulkUpdateResponse>(endpoint, payload);

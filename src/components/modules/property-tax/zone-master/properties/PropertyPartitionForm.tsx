@@ -14,6 +14,7 @@ import { getWingColumns, WingSummary } from "./wingColumns";
 import {
   PropertyInfoSection,
   NonApartmentPartitionSection,
+  AmenitySelection,
   WingSummaryTable,
   AddWingForm,
   WingDetailConfigSection,
@@ -27,6 +28,7 @@ import {
   useBuildingPreview,
   usePartitionSubmit,
   useBuildingList,
+  useSocietyWingDetails,
 } from "@/hooks/zoneMaster";
 
 export default function PropertyPartitionForm({
@@ -89,6 +91,13 @@ export default function PropertyPartitionForm({
     ssrSocietyDetails,
   });
 
+  // Fetch society wing details using main propertyId
+  const {
+    wingDetails,
+  } = useSocietyWingDetails({
+    propertyId: form.mainPropertyId,
+  });
+
   // Use hooks for options
   const {
     propertyOptions,
@@ -120,7 +129,7 @@ export default function PropertyPartitionForm({
   });
 
   // Use hooks for validation
-  const { validate } = usePartitionFormValidation({
+  const { validate, calculateMaxAmenity } = usePartitionFormValidation({
     selectedProperty,
     allProperties,
     floors,
@@ -148,6 +157,19 @@ export default function PropertyPartitionForm({
     selectedPropertyId,
   });
 
+  // Enhance wing summaries with amenity counts and property counts from API
+  const enhancedWingSummaries = useMemo(() => {
+    return wingSummaries.map(summary => {
+      // Find matching wing detail by societyDetailId
+      const wingDetail = wingDetails.find(detail => detail.societyDetailId === summary.societyDetailId);
+      return {
+        ...summary,
+        aminityCount: wingDetail?.aminityCount ?? 0,
+        propertyCount: wingDetail?.propertyCount,
+      };
+    });
+  }, [wingSummaries, wingDetails]);
+
   // Use hooks for building preview
   const { handlePreviewBuilding } = useBuildingPreview({
     form,
@@ -166,6 +188,7 @@ export default function PropertyPartitionForm({
     selectedWard: ward,
     selectedProperty,
     wings,
+    wingDetails,
     floors,
     validate,
     setLoading,
@@ -177,19 +200,19 @@ export default function PropertyPartitionForm({
     handleSaveWing: handleSaveWingCore,
   });
 
-  // Check if selected property category is Apartment or Multi Commercial Apartment
-  // Note: categoryMap values are in English from database, so we compare against English literals
-  const isApartmentCategory = useMemo(() => {
-    if (!selectedProperty?.categoryId || !categoryMap) return false;
-    const categoryName = categoryMap.get(selectedProperty.categoryId);
-    return categoryName === "Apartment" || categoryName === "Multi Commercial Apartment";
-  }, [selectedProperty, categoryMap]);
-
-  // Get actual category name from categoryMap
+  // Resolve category name: prefer buildingList (has name directly) over ssrProperties + categoryMap lookup
   const categoryName = useMemo(() => {
+    if (!form.mainPropertyId) return null;
+    const buildingItem = buildingList.find(b => b.propertyId === form.mainPropertyId);
+    if (buildingItem?.catPropertyCategoryName) return buildingItem.catPropertyCategoryName;
     if (!selectedProperty?.categoryId || !categoryMap) return null;
     return categoryMap.get(selectedProperty.categoryId) || null;
-  }, [selectedProperty, categoryMap]);
+  }, [form.mainPropertyId, buildingList, selectedProperty, categoryMap]);
+
+  // Check if selected property category is Apartment or Multi Commercial Apartment
+  const isApartmentCategory = useMemo(() => {
+    return categoryName === "Apartment" || categoryName === "Multi Commercial Apartment";
+  }, [categoryName]);
 
   // Define columns for the wing summary table
   const wingColumns = useMemo(() => getWingColumns({
@@ -296,9 +319,9 @@ export default function PropertyPartitionForm({
             value={form.mainPropertyId ? String(form.mainPropertyId) : ""}
             onChange={handlePropertySelect}
             options={propertyOptions}
-  placeholder={loadingBuildingList ? tCommon("actions.loading") : t("partitionForm.placeholders.selectMainProperty")}
-            disabled={loading || loadingBuildingList}      
-                  required
+            placeholder={loadingBuildingList ? tCommon("actions.loading") : t("partitionForm.placeholders.selectMainProperty")}
+            disabled={loading || loadingBuildingList}
+            required
           />
           <ValidationMessage
             message={errors.mainPropertyId}
@@ -335,7 +358,7 @@ export default function PropertyPartitionForm({
           <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
             {!showAddWingForm && !showWingConfig && (
               <WingSummaryTable
-                wingSummaries={wingSummaries}
+                wingSummaries={enhancedWingSummaries}
                 wingColumns={wingColumns as unknown as Column<WingSummary>[]}
                 onAddWingClick={() => setShowAddWingForm(true)}
                 t={t}
@@ -391,9 +414,15 @@ export default function PropertyPartitionForm({
                   )}
                 </>
               ) : (
-                <div className="p-4 bg-gray-50 border border-gray-300 rounded-lg text-center text-gray-500">
-                  {t("partitionForm.wing.amenity.notImplemented")}
-                </div>
+                <AmenitySelection
+                  form={form}
+                  setForm={setForm}
+                  errors={errors}
+                  setErrors={setErrors}
+                  wingDetails={wingDetails}
+                  calculateMaxAmenity={calculateMaxAmenity}
+                  t={t}
+                />
               )
             ) : (
               <NonApartmentPartitionSection

@@ -3,9 +3,10 @@ import { ZonePropertyItem, ZonePropertyListResponse } from "@/types/zone-master/
 import { CreatePropertyPayload, BulkCreatePropertyPayload } from "@/types/property-category.types";
 import { PropertyRangeCreatePayload, PropertyRangeCreateResponse } from "@/types/zone-master/properties/property-range.types";
 import { BulkPropertyItem, BulkPropertyCreateResponse } from "@/types/zone-master/properties/property-bulk.types";
+import { BuildingListItem } from "@/types/zone-master/properties/building-list.types";
+import { SocietyWingDetailsResponse, SocietyWingDetailItem } from "@/types/zone-master/properties/society-wing-details.types";
 import { ApiError } from "@/lib/utils/api";
-import { SocietyWingDetailItem } from "@/types/zone-master/properties/society-wing-details.Types";
-import { BuildingListItem } from "@/types/zone-master/properties/building-list. Types";
+
 /**
  * Fetches paginated properties for a specific ward.
  * Used by zone-master to list properties under a ward.
@@ -215,7 +216,7 @@ export async function createBulkBuildingProperties(
  * @returns Array of BuildingListItem with propertyId, wardNo, propertyNo, catPropertyCategoryName, partitionNo
  */
 export async function getBuildingListByWard(wardId: number): Promise<BuildingListItem[]> {
-  const response = await apiClient.get<unknown>(`/Property/${wardId}/Building-list`);
+  const response = await apiClient.get<BuildingListItem[]>(`/Property/${wardId}/Building-list`);
 
   if (!response.success || !response.data) {
     throw new ApiError(
@@ -225,14 +226,9 @@ export async function getBuildingListByWard(wardId: number): Promise<BuildingLis
     );
   }
 
-  const raw = response.data;
-  if (Array.isArray(raw)) return raw as BuildingListItem[];
-  const wrapped = raw as Record<string, unknown>;
-  if (Array.isArray(wrapped.$values)) return wrapped.$values as BuildingListItem[];
-  if (Array.isArray(wrapped.items)) return wrapped.items as BuildingListItem[];
-  return [];
+  return response.data;
 }
- 
+
 /**
  * Fetches society wing details for a property.
  * Returns wing information including property counts and amenity counts.
@@ -242,7 +238,6 @@ export async function getBuildingListByWard(wardId: number): Promise<BuildingLis
  */
 export async function getSocietyWingDetails(propertyId: number): Promise<SocietyWingDetailItem[]> {
   const response = await apiClient.get<SocietyWingDetailsResponse>(`/Property/${propertyId}/society-wing-details`);
- 
   if (!response.success || !response.data) {
     throw new ApiError(
       response.statusCode ?? 500,
@@ -250,6 +245,14 @@ export async function getSocietyWingDetails(propertyId: number): Promise<Society
       "Get society wing details failed"
     );
   }
- 
+
+  if (response.data.success === false) {
+    throw new ApiError(
+      response.statusCode ?? 500,
+      response.data.message || "Failed to fetch society wing details",
+      "Get society wing details failed"
+    );
+  }
+
   return response.data.items || [];
 }

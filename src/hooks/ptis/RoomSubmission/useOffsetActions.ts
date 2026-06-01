@@ -67,6 +67,13 @@ export const useOffsetActions = (state: RoomSubmissionState, handleEdit: (idx: n
     setSelectedOperation(OFFSET_OPERATIONS.SUBTRACT);
   };
 
+  // Switches the active offset operation to "add" (positive area adjustment).
+  // No negative-balance check needed — adding area cannot underflow.
+  const handleAddClick = () => {
+    setOffsetValidationError("");
+    setSelectedOperation(OFFSET_OPERATIONS.ADD);
+  };
+
   const handleOffsetInputChange = (field: keyof OffsetData, value: string) => {
     setOffsetData((prev: OffsetData) => {
       const updated = { ...prev, [field]: value };
@@ -186,7 +193,7 @@ export const useOffsetActions = (state: RoomSubmissionState, handleEdit: (idx: n
   };
 
   return {
-    handleOpenOffset, handleSubtractClick, handleOffsetInputChange,
+    handleOpenOffset, handleSubtractClick, handleAddClick, handleOffsetInputChange,
     handleShapeChange, handleAddOffset, handleOffsetOk, handleDeleteOffset,
     calculateAdjustedRoomTotal
   };

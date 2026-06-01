@@ -30,27 +30,8 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
   );
 
   return (
-    <>
-
-      {/* <FormFieldGroup
-        type="select"
-        id="kyc-ownertype"
-        label={t('kyc.ownerType')}
-        options={ownerTypeOptions}
-        placeholder={t('kyc.select')}
-        value={formData.ownerTypeId?.toString() || ''}
-        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-          const value = e.target.value;
-
-          setFormData((prev) => ({
-            ...prev,
-            ownerTypeId: value ? Number(value) : null,
-          }));
-        }}
-        selectSize="sm"
-      /> */}
-
-      <div className="space-y-1.5">
+    <>     
+      <div className="space-y-1.5 relative focus-within:z-50">
         <Label htmlFor="kyc-ownertype" className="text-xs font-semibold text-gray-700">
           {t('kyc.ownerType')}
         </Label>
@@ -70,18 +51,22 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
         />
       </div>
 
-      <FormFieldGroup
-        type="select"
-        id="kyc-title"
-        label={t('kyc.titleLabel')}
-        options={titleOptions}
-        placeholder={t('kyc.select')}
-        value={formData.ownerTitle ?? ''}
-        onChange={(_e: React.ChangeEvent<HTMLSelectElement>, selectedValue: string) => {
-          setFormData((prev) => ({ ...prev, ownerTitle: selectedValue }));
-        }}
-        selectSize="sm"
-      />
+      <div className="space-y-1.5 relative focus-within:z-40">
+        <Label htmlFor="kyc-title" className="text-xs font-semibold text-gray-700">
+          {t('kyc.titleLabel')}
+        </Label>
+        <SearchSelect
+          id="kyc-title"
+          name="title"
+          options={titleOptions}
+          value={formData.ownerTitle ?? ''}
+          placeholder={t('kyc.select')}
+          onChange={(_name: string, value: string) => {
+            setFormData((prev) => ({ ...prev, ownerTitle: value }));
+          }}
+          className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+        />
+      </div>
 
       <div>
         <FormFieldGroup

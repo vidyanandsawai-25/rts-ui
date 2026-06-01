@@ -73,18 +73,21 @@ export function OfficeContactSection({
           />
         </div>
 
-        <TextArea
-          label={t("form.fields.address.label")}
-          name="address"
-          value={formData.address || ""}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          error={Boolean(showError("address") && errors.address)}
-          errorMessage={showError("address") ? errors.address : undefined}
-          placeholder={t("form.fields.address.placeholder")}
-          rows={3}
-          maxLength={250}
-        />
+        <div className="[&_label]:text-gray-700 [&_label]:dark:text-gray-700 [&_textarea]:text-gray-900 [&_textarea]:placeholder:text-gray-400">
+          <TextArea
+            label={t("form.fields.address.label")}
+            name="address"
+            value={formData.address || ""}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            error={Boolean(showError("address") && errors.address)}
+            errorMessage={showError("address") ? errors.address : undefined}
+            placeholder={t("form.fields.address.placeholder")}
+            rows={3}
+            maxLength={250}
+            className="text-gray-900 placeholder:text-gray-400 bg-white"
+          />
+        </div>
       </div>
     </div>
   );

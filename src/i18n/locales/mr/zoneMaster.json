@@ -410,7 +410,10 @@
       "noOfFlatOnOneFloorRequired": "प्रति मजल्या फ्लॅट्सची संख्या आवश्यक आहे",
       "flatStartRequired": "फ्लॅट प्रारंभ आवश्यक आहे",
       "incrementedByRequired": "वाढवून आवश्यक आहे",
-      "generationTypeRequired": "जनरेशन प्रकार आवश्यक आहे"
+      "generationTypeRequired": "जनरेशन प्रकार आवश्यक आहे",
+      "toAmenityRequired": "सुविधा पर्यंत आवश्यक आहे",
+      "toAmenityMustBeGreater": "सुविधा पर्यंत, सुविधा पासून च्या बरोबरीचे किंवा त्यापेक्षा जास्त असणे आवश्यक आहे",
+      "duplicateAmenityInRange": "सुविधा {amenity} या मालमत्तेसाठी आधीच अस्तित्वात आहे"
     },
     "placeholders": {
       "selectMainProperty": "मुख्य मालमत्ता निवडा",
@@ -484,6 +487,7 @@
         "wingName": "विंग नाव",
         "totalProperties": "एकूण मालमत्ता",
         "properties": "मालमत्ता",
+        "amenities": "सुविधा",
         "actions": "कृती",
         "editWingName": "विंग नाव संपादित करा",
         "updateWing": "विंग रचना तयार करा",
@@ -559,78 +563,29 @@
         "details": "परिणाम"      },
       "amenity": {
         "notImplemented": "सुविधा सामग्री अद्याप लागू केली नाही"      }
+    },
+    "amenity": {
+      "description": "निवडलेल्या मालमत्तेसाठी सुविधा तयार करा. सुविधा एका विंगला (पर्यायी) नियुक्त केल्या जातील आणि क्रमवार क्रमांकित केल्या जातील.",
+      "selectWing": "विंग निवडा (पर्यायी)",
+      "noWing": "विंग नाही (डीफॉल्ट सुविधा)",
+      "fromAmenity": "सुविधा पासून",
+      "toAmenity": "सुविधा पर्यंत",
+      "amenities": "सुविधा",
+      "amenitiesWillBeCreated": "सुविधा तयार केल्या जातील:",
+      "placeholders": {
+        "selectWing": "एक विंग निवडा किंवा रिकामे सोडा"
+      }
     }
   },
   "partitionMessages": {
     "createSuccess": "विभाजन यशस्वीरित्या तयार झाले!",
     "createError": "विभाजन तयार करण्यात अयशस्वी",
-    "bulkCreateSuccess": "{count} विभाजन यशस्वीरित्या तयार झाले!"
+    "bulkCreateSuccess": "{count} विभाजन यशस्वीरित्या तयार झाले!",
+    "amenityCreateSuccess": "{count} सुविधा यशस्वीरित्या तयार झाल्या!",
+    "amenityCreateError": "सुविधा तयार करण्यात अयशस्वी"
   },
   "deleteProperty": {
     "pageTitle": "मालमत्ता हटवा",
-    "pageSubtitle": "निवडलेल्या प्रभागातून मालमत्ता  हटवा",
-    "warning": {
-      "title": "ही क्रिया अपरिवर्तनीय आहे",
-      "description": "हटविलेल्या मालमत्ता पुनर्प्राप्त करता येत नाहीत. कृपया पुढे जाण्यापूर्वी सत्यापित करा।"
-    },
-    "tabs": {
-      "single": "एकल मालमत्ता",
-      "bulk": "एकाधिक मालमत्ता"
-    },
-    "form": {
-      "wardLabel": "प्रभाग निवडा",
-      "wardPlaceholder": "एक प्रभाग निवडा...",
-      "propertiesLabel": "मालमत्ता निवडा",
-      "searchPlaceholder": "मालमत्ता क्रमांक शोधा...",
-      "bulkHelp": "अनेक मालमत्ता निवडा आणि हटवा",
-      "fromPropertyNo": "मालमत्ता क्र. पासून",
-      "toPropertyNo": "मालमत्ता क्र. पर्यंत",
-      "fromPropertyPlaceholder": "उदा., 1",
-      "toPropertyPlaceholder": "उदा., 10",
-      "bulkRangePreview": "{from} पासून {to} पर्यंतच्या मालमत्ता हटवल्या जातील ({count} मालमत्ता)",
-      "bulkRangeWarning": "कृपया सुनिश्चित करा की या श्रेणीतील सर्व मालमत्ता अस्तित्वात आहेत आणि हटवण्यास पात्र आहेत",
-      "bulkHelp": "हटविण्यासाठी अनेक मालमत्ता शोधा आणि निवडा",
-      "noPropertiesSelected": "कोणतीही मालमत्ता निवडलेली नाही",
-      "propertiesSelected": "{count} मालमत्ता निवडल्या",
-      "selectedForDeletion": "हटविण्यासाठी निवडलेले",
-      "confirmSingle": "मी पुष्टी करतो की मला ही मालमत्ता कायमस्वरूपी हटवायची आहे.",
-      "confirmBulk": "मी पुष्टी करतो की मला {count} मालमत्ता कायमस्वरूपी हटवायच्या आहेत."
-    },
-    "buttons": {
-      "selectAll": "सर्व निवडा",
-      "deselectAll": "सर्व निवड रद्द करा",
-      "cancel": "रद्द करा",
-      "delete": "मालमत्ता हटवा",
-      "deleteWithCount": "हटवा ({count})"
-    },
-    "messages": {
-      "loadingProperties": "मालमत्ता लोड होत आहेत...",
-      "noPropertiesInWard": "कोणतीही मालमत्ता आढळली नाही",
-      "noPropertiesMatch": "तुमच्या शोधाशी जुळणारी कोणतीही मालमत्ता नाही",
-      "selectAtLeastOne": "कृपया हटविण्यासाठी किमान एक मालमत्ता निवडा",
-      "deleteSuccess": "मालमत्ता यशस्वीरित्या हटवली",
-      "deleteSuccessBulk": "{count} मालमत्ता यशस्वीरित्या हटवल्या",
-      "deletePartialSuccess": "{total} पैकी {success} मालमत्ता हटवल्या. {failed} अयशस्वी झाल्या.",
-      "deleteFailed": "मालमत्ता हटविण्यात अयशस्वी",
-      "deleteFailedBulk": "सर्व {count} मालमत्ता हटविण्यात अयशस्वी"
-    },
-    "confirm": {
-      "title": "मालमत्ता हटवा?",
-      "titleBulk": "{count} मालमत्ता हटवा?",
-      "description": "तुम्हाला खरोखर ही मालमत्ता हटवायची आहे का? ही क्रिया पूर्ववत करता येणार नाही.",
-      "descriptionBulk": "तुम्हाला खरोखर {count} मालमत्ता हटवायच्या आहेत का? ही क्रिया पूर्ववत करता येणार नाही."
-    },
-    "errors": {
-      "loadFailed": "मालमत्ता आणणे अयशस्वी",
-      "unexpectedError": "एक अनपेक्षित त्रुटी आली",
-      "wardRequired": "प्रभाग निवड आवश्यक आहे",
-      "propertyRequired": "मालमत्ता निवड आवश्यक आहे",
-      "propertiesRequired": "किमान एक मालमत्ता निवडा",
-      "fromPropertyRequired": "मालमत्ता क्र. पासून आवश्यक आहे",
-      "toPropertyRequired": "मालमत्ता क्र. पर्यंत आवश्यक आहे",
-      "invalidPropertyNumber": "कृपया वैध मालमत्ता क्रमांक टाका",
-      "fromGreaterThanTo": "मालमत्ता क्र. पासून, मालमत्ता क्र. पर्यंत पेक्षा कमी किंवा समान असणे आवश्यक आहे",
-      "propertiesRequired": "किमान एक मालमत्ता निवडा"
-    }
+    "pageSubtitle": "निवडलेल्या प्रभागातून हटवायची मालमत्ता निवडा"
   }
 }

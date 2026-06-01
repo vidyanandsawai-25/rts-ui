@@ -12,6 +12,8 @@ export { useWingManagement } from "./useWingManagement";
 export { useBuildingPreview } from "./useBuildingPreview";
 export { usePartitionSubmit } from "./usePartitionSubmit";
 export { useBuildingList } from "./useBuildingList";
+export { useSocietyWingDetails } from "./useSocietyWingDetails";
+
 // Create Property Drawer Hooks
 export { useCreatePropertyForm } from "./useCreatePropertyForm";
 export { useCreatePropertySubmit } from "./useCreatePropertySubmit";

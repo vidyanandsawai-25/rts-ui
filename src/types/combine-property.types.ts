@@ -6,6 +6,8 @@ export interface CombinePropertyItem {
   fromProperty: string;
   toProperty: string;
   isActive: boolean;
+  categoryId?: number;
+  societyDetailId?: number | null;
   createdDate: string | null;
   updatedDate: string | null;
 }
@@ -21,6 +23,8 @@ export interface CombinePropertyParams {
   sortBy?: string;
   sortOrder?: string;
   filterLogic?: number;
+  categoryId?: number;
+  societyDetailId?: number;
 }
 
 export interface PropertyCombineDetails {
@@ -34,6 +38,8 @@ export interface PropertyCombineDetails {
   occupierName: string;
   taxAmount: number;
   pendingAmount: number;
+  propertyDescription: string;
+  propertyTypeId: number;
 }
 
 export interface PropertyCombineDetailsResponse {
@@ -51,8 +57,10 @@ export interface GetPropertyCombineDetailsParams {
 }
 
 export interface CombinePropertyPayload {
-  mainPropertyId: number;
-  combinePropertyIds: string; // Comma-separated IDs
-  remark: string;
+  sourcePropertyId: number;
+  combinedPropertyIds: string;
+  combineReason: string;
   createdBy: number;
+  overrideOwnerNameMismatch: boolean;
+  propertyTypeId: number;
 }
