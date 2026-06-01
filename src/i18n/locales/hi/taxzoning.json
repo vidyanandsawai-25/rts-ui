@@ -23,6 +23,8 @@
       "fromProperty": "संपत्ति से",
       "toProperty": "संपत्ति तक",
       "taxZoneNo": "कर क्षेत्र नंबर",
+      "oldTaxZoneNo": "पुराना कर क्षेत्र",
+      "newTaxZoneNo": "नया कर क्षेत्र नंबर",
       "propertyNo": "संपत्ति नंबर",
       "status": "स्थिति"
     },

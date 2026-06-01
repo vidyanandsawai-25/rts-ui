@@ -56,6 +56,7 @@ export interface TaxZoningFormModel {
 
 export type PreviewRow = {
   taxZoneNo: string;
+  oldTaxZoneNo?: string;
   wardNo: string;
   propertyNo: string;
 };
@@ -102,6 +103,7 @@ export interface TaxZoningFormProps {
   setToProps: (val: string) => void;
   propertyOptionsByWard: SelectOption[];
   isPropertyValid: boolean;
+  isPropertyRangeValid: boolean;
   saving: boolean;
   isFormValid: boolean;
   handleSubmit: (e: React.FormEvent) => void;

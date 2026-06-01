@@ -313,4 +313,123 @@ describe("MasterTable", () => {
     // Should render "Showing 6 to 10 of 12"
     expect(screen.getByText(/Showing 6.*10.*12/)).toBeInTheDocument();
   });
+
+  // Tests for onRowClick callback
+  describe("onRowClick callback", () => {
+    it("calls onRowClick when a row is clicked", () => {
+      const onRowClick = vi.fn();
+      setup({ onRowClick });
+
+      const table = screen.getByRole("table");
+      const rows = table.querySelectorAll("tbody tr");
+      
+      fireEvent.click(rows[0]);
+      
+      expect(onRowClick).toHaveBeenCalledTimes(1);
+      expect(onRowClick).toHaveBeenCalledWith(data[0], 0);
+    });
+
+    it("calls onRowClick with correct row data and index", () => {
+      const onRowClick = vi.fn();
+      setup({ onRowClick });
+
+      const table = screen.getByRole("table");
+      const rows = table.querySelectorAll("tbody tr");
+      
+      // Click second row
+      fireEvent.click(rows[1]);
+      
+      expect(onRowClick).toHaveBeenCalledWith(data[1], 1);
+      expect(onRowClick).toHaveBeenCalledWith({ id: 2, name: "Bob", status: "inactive" }, 1);
+    });
+
+    it("does not call onRowClick when not provided", () => {
+      setup({ onRowClick: undefined });
+
+      const table = screen.getByRole("table");
+      const rows = table.querySelectorAll("tbody tr");
+      
+      // Should not throw error when clicking row
+      expect(() => fireEvent.click(rows[0])).not.toThrow();
+    });
+
+    it("calls onRowClick for each row independently", () => {
+      const onRowClick = vi.fn();
+      setup({ onRowClick });
+
+      const table = screen.getByRole("table");
+      const rows = table.querySelectorAll("tbody tr");
+      
+      fireEvent.click(rows[0]);
+      fireEvent.click(rows[1]);
+      
+      expect(onRowClick).toHaveBeenCalledTimes(2);
+      expect(onRowClick).toHaveBeenNthCalledWith(1, data[0], 0);
+      expect(onRowClick).toHaveBeenNthCalledWith(2, data[1], 1);
+    });
+
+    it("applies cursor-pointer class when onRowClick is provided", () => {
+      const onRowClick = vi.fn();
+      const { container } = setup({ onRowClick });
+
+      const table = container.querySelector("table");
+      const rows = table?.querySelectorAll("tbody tr");
+      
+      expect(rows?.[0]).toHaveClass("cursor-pointer");
+      expect(rows?.[1]).toHaveClass("cursor-pointer");
+    });
+
+    it("does not apply cursor-pointer class when onRowClick is not provided", () => {
+      const { container } = setup({ onRowClick: undefined });
+
+      const table = container.querySelector("table");
+      const rows = table?.querySelectorAll("tbody tr");
+      
+      expect(rows?.[0]).not.toHaveClass("cursor-pointer");
+    });
+
+    it("applies hover effect when onRowClick is provided", () => {
+      const onRowClick = vi.fn();
+      const { container } = setup({ onRowClick });
+
+      const table = container.querySelector("table");
+      const rows = table?.querySelectorAll("tbody tr");
+      
+      expect(rows?.[0]).toHaveClass("hover:bg-blue-50/40");
+    });
+
+    it("works with custom rowClassName when onRowClick is provided", () => {
+      const onRowClick = vi.fn();
+      const rowClassName = () => "custom-row-class";
+      const { container } = setup({ onRowClick, rowClassName });
+
+      const table = container.querySelector("table");
+      const rows = table?.querySelectorAll("tbody tr");
+      
+      expect(rows?.[0]).toHaveClass("custom-row-class");
+      expect(rows?.[0]).toHaveClass("cursor-pointer");
+    });
+
+    it("does not interfere with action button clicks", () => {
+      const onRowClick = vi.fn();
+      const actionSpy = vi.fn();
+      const renderActions = (row: Row) => (
+        <button onClick={(e) => {
+          e.stopPropagation();
+          actionSpy(row);
+        }}>
+          Action
+        </button>
+      );
+      
+      setup({ onRowClick, renderActions });
+
+      const actionButton = screen.getAllByText("Action")[0];
+      fireEvent.click(actionButton);
+      
+      // Action button should be called but not onRowClick
+      expect(actionSpy).toHaveBeenCalledTimes(1);
+      expect(onRowClick).not.toHaveBeenCalled();
+    });
+  });
 });

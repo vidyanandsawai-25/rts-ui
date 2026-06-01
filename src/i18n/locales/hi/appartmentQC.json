@@ -13,6 +13,7 @@
     "renterName": "किरायेदार का नाम",
     "description": "विवरण",
     "type": "प्रकार",
+    "apartmentType": "अपार्टमेंट प्रकार",
     "floor": "मंजिल",
     "assessmentYear": "मूल्यांकन वर्ष",
     "asstYear": "मू. वर्ष",
@@ -87,5 +88,203 @@
   "actions": {
     "startAutoScroll": "ऑटो-स्क्रॉल प्रारंभ करें",
     "stopAutoScroll": "ऑटो-स्क्रॉल रोकें"
+  },
+  "drawer": {
+    "title": "संपत्ति विवरण",
+    "noPropertyData": "कोई संपत्ति डेटा नहीं मिला।",
+    "goBack": "वापस जाएं",
+    "cancel": "रद्द करें",
+    "basicInformation": "मूल जानकारी",
+    "floorQC": "फ़्लोर QC",
+    "roomWiseSubmission": "कक्षवार प्रविष्टि",
+    "loadingRoomData": "कक्ष डेटा लोड हो रहा है...",
+    "tabs": {
+      "rateable": "करयोग्य मूल्य",
+      "capital": "पूंजी मूल्य"
+    }
+  },
+  "pageTitle": "संपत्ति विवरण संपादित करें",
+  "badges": {
+    "ward": "वार्ड",
+    "zone": "ज़ोन",
+    "prop": "प्रॉप",
+    "type": "प्रकार"
+  },
+  "buttons": {
+    "back": "वापस",
+    "save": "बदलाव सहेजें",
+    "saving": "सहेज रहा है..."
+  },
+  "messages": {
+    "propertyIdMissing": "संपत्ति आईडी गायब है",
+    "validationErrors": "कृपया सहेजने से पहले सत्यापन त्रुटियों को ठीक करें",
+    "floorQCValidationError": "फ्लोर QC सत्यापन त्रुटि",
+    "basicDetailsUpdateFailed": "मूल विवरण अपडेट करने में विफल",
+    "floorQCUpdateFailed": "फ्लोर QC विवरण अपडेट करने में विफल",
+    "allChangesSaved": "सभी परिवर्तन सफलतापूर्वक सहेजे गए",
+    "basicDetailsUpdated": "मूल विवरण सफलतापूर्वक अपडेट किए गए",
+    "roomDataUpdated": "कमरे का डेटा अपडेट किया गया - क्षेत्र ताज़ा किया गया",
+    "failedToLoadRooms": "मौजूदा कमरे लोड करने में विफल",
+    "cannotOpenRoomSubmission": "कमरा प्रस्तुति नहीं खोल सकते - कोई विवरण आईडी नहीं"
+  },
+  "basicInfo": {
+    "title": "मूल जानकारी",
+    "fields": {
+      "ownerName": {
+        "label": "मालिक का नाम",
+        "placeholder": "मालिक का नाम दर्ज करें"
+      },
+      "occupierName": {
+        "label": "रहने वाले का नाम",
+        "placeholder": "रहने वाले का नाम दर्ज करें"
+      },
+      "renterName": {
+        "label": "किराएदार का नाम",
+        "placeholder": "किराएदार का नाम दर्ज करें"
+      },
+      "propertyDescription": {
+        "label": "संपत्ति विवरण",
+        "placeholder": "संपत्ति प्रकार चुनें"
+      },
+      "bhk": {
+        "label": "BHK",
+        "placeholder": "BHK दर्ज करें"
+      },
+      "mobileNo": {
+        "label": "मोबाइल",
+        "placeholder": "मोबाइल नंबर दर्ज करें"
+      },
+      "emailId": {
+        "label": "ईमेल आईडी",
+        "placeholder": "ईमेल दर्ज करें"
+      },
+      "flatOrShopName": {
+        "label": "दुकान का नाम",
+        "placeholder": "दुकान का नाम दर्ज करें"
+      },
+      "wingName": {
+        "label": "विंग",
+        "placeholder": "विंग दर्ज करें"
+      },
+      "flatOrShopNo": {
+        "label": "फ्लैट/दुकान नं.",
+        "placeholder": "फ्लैट/दुकान नं. दर्ज करें"
+      },
+      "oldPropertyNo": {
+        "label": "पुराना संपत्ति नं.",
+        "placeholder": "पुराना संपत्ति नं. दर्ज करें"
+      },
+      "remark": {
+        "label": "टिप्पणी"
+      },
+      "oldRV": {
+        "label": "पुराना RV"
+      },
+      "newRV": {
+        "label": "नया RV"
+      },
+      "oldTax": {
+        "label": "पुराना कर"
+      },
+      "newTax": {
+        "label": "नया कर"
+      },
+      "oldArea": {
+        "label": "पुराना क्षेत्र"
+      },
+      "newArea": {
+        "label": "नया क्षेत्र"
+      },
+      "oldUseType": {
+        "label": "पुराना उपयोग प्रकार"
+      },
+      "oldConstructionType": {
+        "label": "पुराना निर्माण प्रकार"
+      },
+      "oldCSN": {
+        "label": "पुराना CSN"
+      },
+      "oldConstructionYear": {
+        "label": "पुराना निर्माण वर्ष"
+      }
+    },
+    "validation": {
+      "ownerNameRequired": "मालिक का नाम आवश्यक है",
+      "occupierNameRequired": "रहने वाले का नाम आवश्यक है",
+      "invalidNameFormat": "अमान्य नाम प्रारूप",
+      "invalidMobile": "वैध 10-अंकीय मोबाइल दर्ज करें",
+      "invalidEmail": "वैध ईमेल दर्ज करें",
+      "flatOrShopNoRequired": "फ्लैट/दुकान नं. आवश्यक है",
+      "invalidWingFormat": "अमान्य विंग प्रारूप",
+      "invalidPropertyNoFormat": "अमान्य संपत्ति नं. प्रारूप"
+    }
+  },
+  "floorQC": {
+    "title": "फ्लोर QC",
+    "columns": {
+      "floor": "फ्लोर",
+      "conYear": "निर्माण वर्ष",
+      "asstYear": "मूल्यांकन वर्ष",
+      "conType": "निर्माण प्रकार",
+      "use": "उपयोग",
+      "subTypeOfUse": "उप उपयोग प्रकार",
+      "area": "क्षेत्र",
+      "rentMY": "किराया म/व",
+      "rateMY": "दर म/व",
+      "rentalValue": "किराया मूल्य",
+      "depreciation": "मूल्यह्रास",
+      "alv": "ALV",
+      "mr": "M.R.",
+      "rv": "RV",
+      "sdrr": "SDRR",
+      "baseValue": "आधार मूल्य",
+      "floorFactor": "फ्लोर फैक्टर",
+      "ageFactor": "आयु फैक्टर",
+      "ntbFactor": "NTB फैक्टर",
+      "useFactor": "उपयोग फैक्टर",
+      "capitalValue": "पूंजी मूल्य"
+    },
+    "tabs": {
+      "rateable": "दर योग्य",
+      "capital": "पूंजी"
+    },
+    "validation": {
+      "invalidYear": "4-अंकीय वर्ष दर्ज करें",
+      "yearOutOfRange": "वर्ष सीमा से बाहर"
+    },
+    "tooltips": {
+      "viewRoomDetails": "कमरे का विवरण देखें/संपादित करें",
+      "noDetailId": "कोई विवरण आईडी उपलब्ध नहीं"
+    }
+  },
+  "list": {
+    "title": "अपार्टमेंट QC",
+    "tabs": {
+      "residential": "आवासीय",
+      "commercial": "वाणिज्यिक",
+      "amenities": "सुविधाएं"
+    },
+    "search": {
+      "placeholder": "संपत्ति नं., मालिक का नाम द्वारा खोजें...",
+      "noResults": "कोई संपत्ति नहीं मिली"
+    },
+    "table": {
+      "ward": "वार्ड",
+      "zone": "ज़ोन",
+      "propertyNo": "संपत्ति नं.",
+      "flatShopNo": "फ्लैट/दुकान नं.",
+      "ownerName": "मालिक का नाम",
+      "occupierName": "रहने वाले का नाम",
+      "type": "प्रकार",
+      "oldArea": "पुराना क्षेत्र",
+      "newArea": "नया क्षेत्र",
+      "oldRV": "पुराना RV",
+      "newRV": "नया RV",
+      "actions": "कार्रवाई"
+    },
+    "actions": {
+      "edit": "संपादित करें",
+      "view": "देखें"
+    }
   }
 }

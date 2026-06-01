@@ -21,6 +21,8 @@ export interface ApartmentQCDetail {
   oldPropertyNo: string | null;
   /** Ward identifier */
   wardId: number;
+  /** Ward number/code */
+  wardNo?: string | null;
   /** Mobile number */
   mobileNo: string | null;
   /** Email address */
@@ -61,6 +63,8 @@ export interface ApartmentQCDetail {
   partType: string | null;
   /** Wing name from the API (new field) */
   wing?: string | null;
+  /** Number of rooms */
+  noOfRooms?: number | null;
   /** Floor */
   floor: string | null;
   /** Sub floor */
@@ -75,6 +79,14 @@ export interface ApartmentQCDetail {
   constructionType: string | null;
   /** Old construction area */
   oldConstructionArea: number | null;
+  /** Old construction year */
+  oldConstructionYear: string | null;
+  /** Old use type */
+  oldUseType: string | null;
+  /** Old construction type */
+  oldConstructionType: string | null;
+  /** Old CSN */
+  oldCSN: string | null;
   /** Old rateable value */
   oldRV: number | null;
   /** Old total tax */
@@ -167,6 +179,7 @@ export interface ApartmentQCSearchParams {
   wardId?: number | string;
   propertyNo?: string;
   propertyDetailsId?: number | string;
+  propertyId?: number | string;
   partType?: string;
   type?: string;
   pageNumber?: number;
