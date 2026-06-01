@@ -284,6 +284,7 @@
   },
   "floorTable": {
     "columns": {
+      "taxable": "कर योग्य",
       "serialNo": "क्र.",
       "floor": "मंजिल",
       "subFloor": "उप-मंजिल",
@@ -320,6 +321,7 @@
       "appliedOn": "अप्लाइड ऑन"
     },
     "tooltips": {
+      "taxable": "कर योग्य संपत्ति",
       "floor": "मंजिल",
       "subFloor": "उप-मंजिल",
       "constYear": "निर्माण वर्ष",
