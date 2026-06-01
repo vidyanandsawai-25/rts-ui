@@ -7,13 +7,13 @@ import { useTranslations } from "next-intl";
 
 interface RoomTypeSelectProps {
     value: string | undefined;
-    onChange: (value: string) => void;
+    onChange: (value: string, roomTypeId?: number) => void;
     className?: string;
     disabled?: boolean;
 }
 
 export const RoomTypeSelect: React.FC<RoomTypeSelectProps> = ({ value, onChange, className, disabled }) => {
-    const { roomTypes, isLoading } = useRoomTypeMaster();
+    const { roomTypes, roomTypeDetails, isLoading } = useRoomTypeMaster();
     const t = useTranslations("quickDataEntry");
 
     const options = [
@@ -21,11 +21,20 @@ export const RoomTypeSelect: React.FC<RoomTypeSelectProps> = ({ value, onChange,
         ...(roomTypes?.map((type) => ({ label: type, value: type })) || []),
     ];
 
+    const handleChange = (_: React.ChangeEvent<HTMLSelectElement> | null, newVal: string) => {
+        // Find the roomTypeId from roomTypeDetails based on the selected name
+        const selectedDetail = roomTypeDetails?.find(
+            (detail) => (detail.roomTypeName || detail.description || detail.roomTypeCode) === newVal
+        );
+        const roomTypeId = selectedDetail?.roomTypeId;
+        onChange(newVal, roomTypeId);
+    };
+
     return (
         <Select
             options={options}
             value={value || "-Select-"}
-            onChange={(_, newVal) => onChange(newVal)}
+            onChange={handleChange}
             disabled={disabled || isLoading}
             placeholder={isLoading ? t("floor.loading") : t("roomSubmission.input.roomTypes.select")}
             selectSize="md"
