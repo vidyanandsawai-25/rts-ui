@@ -6,8 +6,7 @@ import { BulkPropertyItem, BulkPropertyCreateResponse } from "@/types/zone-maste
 import { BuildingListItem } from "@/types/zone-master/properties/building-list.types";
 import { SocietyWingDetailsResponse, SocietyWingDetailItem } from "@/types/zone-master/properties/society-wing-details.types";
 import { ApiError } from "@/lib/utils/api";
-import { SocietyWingDetailItem } from "@/types/zone-master/properties/society-wing-details.Types";
-import { BuildingListItem } from "@/types/zone-master/properties/building-list. Types";
+
 /**
  * Fetches paginated properties for a specific ward.
  * Used by zone-master to list properties under a ward.

@@ -89,7 +89,7 @@ export async function deleteSocietyDetail(
 
 /**
  * Fetches property or amenity records for a wing (society detail).
- * API: GET /Property/{societyDetailId}/society-amenity-details?isAmenity={bool}
+ * API: GET /Property/{societyDetailId}/{isAmenity}/society-amenity-details
  */
 export async function getSocietyAmenityDetails(
   societyDetailId: number,

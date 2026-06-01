@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import { Trash2 } from "lucide-react";
 import { MasterTable } from "@/components/common";
 import type { Column } from "@/components/common";
@@ -35,21 +34,13 @@ export function PropertyAmenityTable({
   onSingleDelete,
   t,
 }: PropertyAmenityTableProps) {
-  const headerCheckboxRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (headerCheckboxRef.current) {
-      headerCheckboxRef.current.indeterminate = someSelected;
-    }
-  }, [someSelected]);
-
   const columns: Column<TableRow>[] = [
     {
       key: "propertyId",
       label: (
         <Checkbox
-          ref={headerCheckboxRef}
           checked={allSelected}
+          indeterminate={someSelected}
           onCheckedChange={toggleSelectAll}
           disabled={tableData.length === 0}
           aria-label="Select all"

@@ -593,7 +593,9 @@
   "partitionMessages": {
     "createSuccess": "Partition created successfully!",
     "createError": "Failed to create partition",
-    "bulkCreateSuccess": "{count} partitions created successfully!"
+    "bulkCreateSuccess": "{count} partitions created successfully!",
+    "amenityCreateSuccess": "{count} amenities created successfully!",
+    "amenityCreateError": "Failed to create amenities"
   },
   "deleteProperty": {
     "pageTitle": "Delete Property",

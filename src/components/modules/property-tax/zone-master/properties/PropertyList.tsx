@@ -154,10 +154,7 @@ export default function PropertyList({
         }));
     }, [wards]);
 
-    const currentWard = useMemo(() => {
-        if (selectedWardId === null || selectedWardId === undefined) return null;
-        return wards.find((w) => Number(w.id) === Number(selectedWardId)) ?? null;
-    }, [selectedWardId, wards]);
+
 
     // ── Columns (checkbox + data columns) ───────────────────────────────────
     const checkboxColumn: Column<Record<string, unknown>> = useMemo(
@@ -179,11 +176,11 @@ export default function PropertyList({
             render: (_: unknown, row: Record<string, unknown>) => (
                 <input
                     type="checkbox"
-                    checked={selectedRows.has(String((row as ZonePropertyItem).id))}
-                    onChange={() => toggleRow(String((row as ZonePropertyItem).id))}
+                    checked={selectedRows.has(String((row as unknown as ZonePropertyItem).id))}
+                    onChange={() => toggleRow(String((row as unknown as ZonePropertyItem).id))}
                     disabled={isDeleting}
                     className="w-4 h-4 rounded border-gray-300 text-blue-600 cursor-pointer"
-                    aria-label={`Select property ${(row as ZonePropertyItem).propertyNo}`}
+                    aria-label={`Select property ${(row as unknown as ZonePropertyItem).propertyNo}`}
                 />
             ),
         }),
@@ -319,7 +316,7 @@ export default function PropertyList({
                                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-semibold bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition-colors"
                             >
                                 <Trash2 className="w-4 h-4" />
-                                Delete Selected ({selectedRows.size})
+                                {t("createProperty.deleteSelectedCount", { count: selectedRows.size })}
                             </button>
                         )}
                         <DeleteLabelButton

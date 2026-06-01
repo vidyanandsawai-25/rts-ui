@@ -2,6 +2,7 @@ import { renderHook, act } from "@testing-library/react";
 import { vi } from "vitest";
 import { usePropertyDelete } from "@/hooks/zoneMaster/usePropertyDelete";
 import type { ZonePropertyItem } from "@/types/zone-master/properties/zoneProperty.types";
+import type { ConfirmContextType } from "@/components/common/ConfirmProvider";
 
 // ── External dependencies ────────────────────────────────────────────────────
 vi.mock("next/navigation", () => ({
@@ -92,11 +93,11 @@ const makeProperty = (overrides?: Partial<ZonePropertyItem>): ZonePropertyItem =
 // ── Tests ────────────────────────────────────────────────────────────────────
 
 describe("usePropertyDelete", () => {
-  let onClearSelection: ReturnType<typeof vi.fn>;
+  let onClearSelection: () => void;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    onClearSelection = vi.fn();
+    onClearSelection = vi.fn<[], void>();
   });
 
   // ── Initial state ──────────────────────────────────────────────────────────
@@ -137,7 +138,7 @@ describe("usePropertyDelete", () => {
         confirm: (payload: { onConfirm?: () => Promise<void> }) => {
           capturedOnConfirm = payload.onConfirm;
         },
-      });
+      } as ConfirmContextType);
       vi.mocked(deletePropertyAction).mockResolvedValue({ success: true, message: "Deleted" });
 
       const { result } = renderHook(() => usePropertyDelete({ onClearSelection }));
@@ -154,7 +155,7 @@ describe("usePropertyDelete", () => {
         confirm: (payload: { onConfirm?: () => Promise<void> }) => {
           capturedOnConfirm = payload.onConfirm;
         },
-      });
+      } as ConfirmContextType);
       vi.mocked(deletePropertyAction).mockResolvedValue({
         success: true,
         message: "Property deleted successfully.",
@@ -175,7 +176,7 @@ describe("usePropertyDelete", () => {
         confirm: (payload: { onConfirm?: () => Promise<void> }) => {
           capturedOnConfirm = payload.onConfirm;
         },
-      });
+      } as ConfirmContextType);
       vi.mocked(deletePropertyAction).mockResolvedValue({
         success: false,
         error: "Cannot delete – property has linked records.",
@@ -195,7 +196,7 @@ describe("usePropertyDelete", () => {
         confirm: (payload: { onConfirm?: () => Promise<void> }) => {
           capturedOnConfirm = payload.onConfirm;
         },
-      });
+      } as ConfirmContextType);
       vi.mocked(deletePropertyAction).mockResolvedValue({ success: false });
 
       const { result } = renderHook(() => usePropertyDelete({ onClearSelection }));
@@ -211,7 +212,7 @@ describe("usePropertyDelete", () => {
         confirm: (payload: { onConfirm?: () => Promise<void> }) => {
           capturedOnConfirm = payload.onConfirm;
         },
-      });
+      } as ConfirmContextType);
       vi.mocked(deletePropertyAction).mockRejectedValue(new Error("Network error"));
 
       const { result } = renderHook(() => usePropertyDelete({ onClearSelection }));
@@ -227,7 +228,7 @@ describe("usePropertyDelete", () => {
         confirm: (payload: { onConfirm?: () => Promise<void> }) => {
           capturedOnConfirm = payload.onConfirm;
         },
-      });
+      } as ConfirmContextType);
       vi.mocked(deletePropertyAction).mockResolvedValue({ success: true });
 
       const { result } = renderHook(() => usePropertyDelete({ onClearSelection }));
@@ -243,7 +244,7 @@ describe("usePropertyDelete", () => {
         confirm: (payload: { onConfirm?: () => Promise<void> }) => {
           capturedOnConfirm = payload.onConfirm;
         },
-      });
+      } as ConfirmContextType);
       vi.mocked(deletePropertyAction).mockRejectedValue(new Error("boom"));
 
       const { result } = renderHook(() => usePropertyDelete({ onClearSelection }));
@@ -299,7 +300,7 @@ describe("usePropertyDelete", () => {
         confirm: (payload: { onConfirm?: () => Promise<void> }) => {
           capturedOnConfirm = payload.onConfirm;
         },
-      });
+      } as ConfirmContextType);
       vi.mocked(deleteBulkPropertiesAction).mockResolvedValue({
         success: true,
         message: "2 properties deleted successfully.",
@@ -319,7 +320,7 @@ describe("usePropertyDelete", () => {
         confirm: (payload: { onConfirm?: () => Promise<void> }) => {
           capturedOnConfirm = payload.onConfirm;
         },
-      });
+      } as ConfirmContextType);
       vi.mocked(deleteBulkPropertiesAction).mockResolvedValue({
         success: true,
         message: "2 properties deleted successfully.",
@@ -340,7 +341,7 @@ describe("usePropertyDelete", () => {
         confirm: (payload: { onConfirm?: () => Promise<void> }) => {
           capturedOnConfirm = payload.onConfirm;
         },
-      });
+      } as ConfirmContextType);
       vi.mocked(deleteBulkPropertiesAction).mockResolvedValue({ success: true });
 
       const { result } = renderHook(() => usePropertyDelete({ onClearSelection }));
@@ -356,7 +357,7 @@ describe("usePropertyDelete", () => {
         confirm: (payload: { onConfirm?: () => Promise<void> }) => {
           capturedOnConfirm = payload.onConfirm;
         },
-      });
+      } as ConfirmContextType);
       vi.mocked(deleteBulkPropertiesAction).mockResolvedValue({
         success: false,
         error: "Backend rejected the request.",
@@ -375,7 +376,7 @@ describe("usePropertyDelete", () => {
         confirm: (payload: { onConfirm?: () => Promise<void> }) => {
           capturedOnConfirm = payload.onConfirm;
         },
-      });
+      } as ConfirmContextType);
       vi.mocked(deleteBulkPropertiesAction).mockResolvedValue({ success: false });
 
       const { result } = renderHook(() => usePropertyDelete({ onClearSelection }));
@@ -391,7 +392,7 @@ describe("usePropertyDelete", () => {
         confirm: (payload: { onConfirm?: () => Promise<void> }) => {
           capturedOnConfirm = payload.onConfirm;
         },
-      });
+      } as ConfirmContextType);
       vi.mocked(deleteBulkPropertiesAction).mockRejectedValue(new Error("Network failure"));
 
       const { result } = renderHook(() => usePropertyDelete({ onClearSelection }));
@@ -407,7 +408,7 @@ describe("usePropertyDelete", () => {
         confirm: (payload: { onConfirm?: () => Promise<void> }) => {
           capturedOnConfirm = payload.onConfirm;
         },
-      });
+      } as ConfirmContextType);
       vi.mocked(deleteBulkPropertiesAction).mockResolvedValue({ success: true });
 
       const { result } = renderHook(() => usePropertyDelete({ onClearSelection }));

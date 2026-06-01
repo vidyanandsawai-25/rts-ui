@@ -39,7 +39,7 @@ export function PropertySelectionSection({
   hidePropertyInfo = false,
 }: PropertySelectionSectionProps) {
   // Use explicit value prop if provided, otherwise try to get from selectedProperty
-  const selectValue = value ?? (selectedProperty ? String(selectedProperty.id || selectedProperty.propertyId || "") : "");
+  const selectValue = value ?? (selectedProperty ? String(selectedProperty.id ?? selectedProperty.propertyId ?? "") : "");
 
   return (
     <div className="space-y-2">

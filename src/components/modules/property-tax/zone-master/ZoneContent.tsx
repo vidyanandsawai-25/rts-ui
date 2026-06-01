@@ -182,8 +182,6 @@ export default function ZoneContent({
             propertyTypeMap={propertyTypeMap}
             // Active tab
             activeTab={activeRightTab}
-            // Delete Property drawer
-            deletePropertyData={deletePropertyData}
           />
           </ConfirmProvider>
         </div>

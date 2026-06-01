@@ -95,19 +95,10 @@ export async function deleteMultiplePropertiesAmenities(
 export async function deleteBulkProperties(
   propertyIds: number[]
 ): Promise<ApiResponse<DeletePropertyResponse>> {
-  // Directly use the request method instead of the delete helper
-  // This gives us more control over how the body is handled
-  const response = await (apiClient as unknown as { request: <T>(url: string, opt: RequestInit, auth: boolean) => Promise<ApiResponse<T>> }).request<DeletePropertyResponse>(
+  return apiClient.delete<DeletePropertyResponse>(
     '/Property/Bulk',
     {
-      method: 'DELETE',
       body: JSON.stringify(propertyIds),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    },
-    true // requireAuth
+    }
   );
-  
-  return response;
 }

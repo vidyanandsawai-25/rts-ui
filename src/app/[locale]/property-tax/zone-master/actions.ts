@@ -1624,7 +1624,7 @@ export async function getNextPartitionNumberAction(
 
 /**
  * Fetches property or amenity records for a selected wing.
- * API: GET /Property/{societyDetailId}/society-amenity-details?isAmenity={bool}
+ * API: GET /Property/{societyDetailId}/{isAmenity}/society-amenity-details
  */
 export async function getSocietyAmenityDetailsAction(
   societyDetailId: number,
@@ -1813,11 +1813,32 @@ export async function deleteBulkPropertiesAction(
       return { success: false, error: errorMsg };
     }
 
+    // Backend can return HTTP 200 with success: false inside the data payload.
+    // Check the inner response body to catch this case (mirrors deleteMultiplePropertiesAmenities).
+    if (result.data) {
+      const responseData = result.data as {
+        success?: boolean;
+        message?: string;
+        errors?: string[];
+      };
+      if (responseData.success === false) {
+        const errorMsg =
+          (responseData.errors && responseData.errors.length > 0 && responseData.errors[0]) ||
+          responseData.message ||
+          "Failed to delete properties";
+        logger.error("[deleteBulkPropertiesAction] Backend reported failure", {
+          error: errorMsg,
+          propertyIds,
+        });
+        return { success: false, error: errorMsg };
+      }
+    }
+
     revalidatePath("/[locale]/property-tax/zone-master", "page");
 
     // Extract success message from response data
     const responseData = result.data as { message?: string } | undefined;
-    const successMessage = responseData?.message || 
+    const successMessage = responseData?.message ||
       `${propertyIds.length} ${propertyIds.length === 1 ? "property" : "properties"} deleted successfully`;
 
     return {
