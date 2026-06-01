@@ -34,7 +34,7 @@ const baseProps = {
   fromProps: '', setFromProps: vi.fn(),
   toProps: '', setToProps: vi.fn(),
   propertyOptionsByWard: [],
-  isPropertyValid: true, saving: false, isFormValid: true,
+  isPropertyValid: true, isPropertyRangeValid: true, saving: false, isFormValid: true,
   handleSubmit: vi.fn(), onClear: vi.fn(),
 };
 

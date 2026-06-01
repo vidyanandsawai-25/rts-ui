@@ -46,6 +46,7 @@ export default function TaxZoningPage(props: TaxZoningPageProps) {
     isTaxZoneValid,
     isWardValid,
     isPropertyValid,
+    isPropertyRangeValid,
     isFormValid,
     onFormClear
   } = useTaxZoning(props);
@@ -70,6 +71,7 @@ export default function TaxZoningPage(props: TaxZoningPageProps) {
           setToProps={setToProps}
           propertyOptionsByWard={propertyOptionsByWard}
           isPropertyValid={isPropertyValid}
+          isPropertyRangeValid={isPropertyRangeValid}
           saving={saving}
           isFormValid={isFormValid}
           handleSubmit={handleSubmit}
