@@ -32,6 +32,7 @@ export function mapRateableRow(item: RateableValueDetail): RateableRow {
   const taxes = (Array.isArray(item.taxes) ? item.taxes : []) as RateableValueTaxes;
   return {
     id: item.propertyDetailsId,
+    taxable: item.taxable === true ? 'Yes' : item.taxable === false ? 'No' : '-',
     floor: item.floor || '-',
     subFloor: item.subFloor || '-',
     constructionYear: item.constructionYear || '-',
@@ -45,14 +46,14 @@ export function mapRateableRow(item: RateableValueDetail): RateableRow {
     ocNumber: item.occupancyNumber || '-',
     ocDate: formatNumericDate(item.occupancyDate),
     renterName: item.renterName || '-',
-    annualRent: formatNumberPair(item.rentMonthly, item.rentYearly, 0, 0),
-    appliedOn: formatNumericDate(item.occupancyDate),
-    rate: formatNumberPair(item.monthlyRate, item.yearlyRate, 0, 0),
-    yearlyRentalValue: formatIndianNumber(item.yearlyRent, 0, 0),
-    depreciation: formatIndianNumber(item.depreciation, 0, 2),
-    maintenance: formatIndianNumber(item.maintenance, 0, 0),
-    alv: formatIndianNumber(item.annualRentalValue, 0, 0),
-    rv: formatIndianNumber(item.rateableValue, 0, 0),
+    annualRent: formatNumberPair(item.rentMonthly, item.rentYearly, 0, 2),
+    appliedOn: item.appliedOn || '-',
+    rate: formatNumberPair(item.monthlyRate, item.yearlyRate, 0, 2),
+    yearlyRentalValue: formatIndianNumber(item.yearlyRent, 0, 2),
+    depreciation: `${formatIndianNumber(item.depreciation, 0, 2)}(${(item.depreciationPer ?? 0).toFixed(2)})`,
+    maintenance: formatIndianNumber(item.maintenance, 0, 2),
+    alv: formatIndianNumber(item.annualRentalValue, 0, 2),
+    rv: formatIndianNumber(item.rateableValue, 0, 2),
     taxes,
   };
 }
@@ -73,6 +74,7 @@ export function getRateableColumns(
   });
 
   const columns: FloorDetailsTableColumn<RateableRow>[] = [
+    column('taxable', 'taxable', CELL_CLASS),
     column('floor', 'floor', CELL_CLASS),
     column('subFloor', 'subFloor', CELL_CLASS),
     column('constructionYear', 'constYear', CELL_CLASS),

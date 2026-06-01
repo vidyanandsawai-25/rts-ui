@@ -85,6 +85,12 @@ export interface RateableValueDetail {
     taxTotal: number;
     /** Tax breakdown by type */
     taxes: RateableValueTaxes;
+    /** Taxable status */
+    taxable?: boolean;
+    /** Depreciation percentage */
+    depreciationPer?: number;
+    /** Depreciation applied on (e.g. Area, Rent) */
+    appliedOn?: string;
 }
 
 /**
@@ -114,6 +120,8 @@ export interface RateableValueResponse {
 export interface RateableRow {
     /** Property detail identifier */
     id: number;
+    /** Taxable status */
+    taxable: string;
     /** Floor number/description */
     floor: string;
     /** Sub Floor */
