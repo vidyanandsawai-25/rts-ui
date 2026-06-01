@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface UsePropertyAmenitySelectionProps {
   tableData: { propertyId: number }[];
@@ -20,13 +20,13 @@ export function usePropertyAmenitySelection({
   tableData,
 }: UsePropertyAmenitySelectionProps): UsePropertyAmenitySelectionReturn {
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
-  const [prevTableData, setPrevTableData] = useState(tableData);
 
   // Reset selection when table data changes
-  if (tableData !== prevTableData) {
-    setPrevTableData(tableData);
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
     setSelectedRows(new Set());
-  }
+  }, [tableData]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const allSelected = tableData.length > 0 && selectedRows.size === tableData.length;
   const someSelected = selectedRows.size > 0 && !allSelected;

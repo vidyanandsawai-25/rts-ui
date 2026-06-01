@@ -48,36 +48,17 @@ export function usePropertyAmenityData({
   const [tableData, setTableData] = useState<SocietyAmenityDetailItem[]>([]);
   const [tableLoading, setTableLoading] = useState(false);
 
-  // Track prev props/state to reset on render
-  const [prevPropertyId, setPrevPropertyId] = useState("");
-  const [prevSelectedSocietyDetailId, setPrevSelectedSocietyDetailId] = useState<number | null>(null);
-  const [prevIsAmenity, setPrevIsAmenity] = useState(false);
-
-  if (propertyId !== prevPropertyId) {
-    setPrevPropertyId(propertyId);
+  // Load wings when property changes
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
     setWings([]);
     setSelectedSocietyDetailId(null);
     setTableData([]);
     setIsAmenity(false);
-  }
 
-  if (
-    selectedSocietyDetailId !== prevSelectedSocietyDetailId ||
-    isAmenity !== prevIsAmenity
-  ) {
-    setPrevSelectedSocietyDetailId(selectedSocietyDetailId);
-    setPrevIsAmenity(isAmenity);
-    if (!selectedSocietyDetailId) {
-      setTableData([]);
-    }
-  }
-
-  // Load wings when property changes
-  useEffect(() => {
     if (!propertyId) return;
 
     let cancelled = false;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setWingsLoading(true);
 
     fetchSocietyDetailsByPropertyAction(Number(propertyId))
@@ -96,6 +77,7 @@ export function usePropertyAmenityData({
       cancelled = true;
     };
   }, [propertyId]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // Load table when wing / toggle changes
   const loadTable = useCallback((sdId: number, amenity: boolean) => {
@@ -109,11 +91,15 @@ export function usePropertyAmenityData({
       .finally(() => setTableLoading(false));
   }, []);
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    if (!selectedSocietyDetailId) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (!selectedSocietyDetailId) {
+      setTableData([]);
+      return;
+    }
     loadTable(selectedSocietyDetailId, isAmenity);
   }, [selectedSocietyDetailId, isAmenity, loadTable]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const refreshTable = useCallback(() => {
     if (selectedSocietyDetailId) loadTable(selectedSocietyDetailId, isAmenity);

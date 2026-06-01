@@ -76,7 +76,7 @@ export function PropertyAmenityTable({
         <IconOnlyActionButton
           icon={Trash2}
           onClick={() => onSingleDelete(row as unknown as SocietyAmenityDetailItem)}
-          aria-label={t("createProperty.deleteAmenityConfirm")}
+          aria-label={isAmenity ? t("createProperty.deleteAmenityConfirm") : t("createProperty.deletePropertyConfirm")}
           variant="ghost"
           size="sm"
           disabled={selectedRows.size > 0 || tableLoading}

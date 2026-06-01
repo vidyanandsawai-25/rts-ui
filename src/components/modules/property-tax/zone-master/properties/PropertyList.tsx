@@ -60,15 +60,12 @@ export default function PropertyList({
     const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
     const headerCheckboxRef = useRef<HTMLInputElement>(null);
 
-    const [prevProperties, setPrevProperties] = useState<ZonePropertyItem[]>(properties);
-    const [prevWardId, setPrevWardId] = useState<number | null>(selectedWardId);
-
     // Reset selection when the property list changes (page/ward change)
-    if (properties !== prevProperties || selectedWardId !== prevWardId) {
-        setPrevProperties(properties);
-        setPrevWardId(selectedWardId);
+    /* eslint-disable react-hooks/set-state-in-effect */
+    useEffect(() => {
         setSelectedRows(new Set());
-    }
+    }, [properties, selectedWardId]);
+    /* eslint-enable react-hooks/set-state-in-effect */
 
     const allSelected =
         properties.length > 0 && selectedRows.size === properties.length;
