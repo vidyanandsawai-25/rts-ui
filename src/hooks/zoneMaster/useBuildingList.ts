@@ -34,7 +34,7 @@ export function useBuildingList({ wardId }: UseBuildingListProps): UseBuildingLi
     try {
       const result = await getBuildingListByWardAction(wardId);
       
-      if (result.success && result.data) {
+      if (result.success && Array.isArray(result.data)) {
         setBuildingList(result.data);
       } else {
         setBuildingListError(result.error || "Failed to fetch building list");

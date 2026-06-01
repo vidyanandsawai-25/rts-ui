@@ -6,15 +6,12 @@ import { Building2, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { MasterTable } from "@/components/common/MasterTable";
 import { SearchInput, StatusBadge, AddButton, Select, Option, Label } from "@/components/common";
-import { useConfirm } from "@/components/common/ConfirmProvider";
 import { ZonePropertyItem } from "@/types/zone-master/properties/zoneProperty.types";
 import { WardItem } from "@/types/wardMaster.types";
 import { usePropertyListHandlers } from "@/hooks/zoneMaster/usePropertyListHandlers";
 import { usePropertyDelete } from "@/hooks/zoneMaster/usePropertyDelete";
 import { getPropertyColumns } from "./propertyColumns";
-import { DeleteLabelButton, IconOnlyActionButton } from "@/components/common/ActionButtons";
-import DeletePropertyDrawer from "./DeletePropertyDrawer";
-import type { DeletePropertyData } from "@/types/zoneMaster.types";
+import { DeleteLabelButton } from "@/components/common/ActionButtons";
 import type { Column } from "@/components/common/MasterTable";
 
 interface PropertyCategoryMap {
@@ -38,7 +35,6 @@ interface Props {
     selectedZoneId: number | null;
     categoryMap?: PropertyCategoryMap;
     propertyTypeMap?: PropertyTypeMap;
-    deletePropertyData?: DeletePropertyData;
 }
 
 export default function PropertyList({
@@ -53,14 +49,12 @@ export default function PropertyList({
     selectedZoneId,
     categoryMap = {},
     propertyTypeMap = {},
-    deletePropertyData,
 }: Props) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const t = useTranslations("zoneMaster");
     const tCommon = useTranslations("common");
-    const { confirm } = useConfirm();
 
     // ── Selection state ──────────────────────────────────────────────────────
     const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
@@ -98,15 +92,45 @@ export default function PropertyList({
     }, []);
 
     // ── Delete operations (extracted to custom hook) ────────────────────────
-    const { isDeleting, handleSingleDelete, handleBulkDelete: performBulkDelete } = usePropertyDelete({
+    const { isDeleting, handleBulkDelete: performBulkDelete } = usePropertyDelete({
         onClearSelection: () => setSelectedRows(new Set()),
     });
 
-    // Wrapper to pass selected IDs to the bulk delete handler
+    // Wrapper to pass selected IDs sorted by partitionNo descending so the
+    // backend's "delete highest partition first" constraint is satisfied.
+    // When partition numbers are equal, sort by flatOrShopNo ascending (A before S).
     const handleBulkDelete = useCallback(() => {
-        const ids = Array.from(selectedRows);
-        performBulkDelete(ids);
-    }, [selectedRows, performBulkDelete]);
+        const sorted = Array.from(selectedRows).sort((a, b) => {
+            const propA = properties.find((p) => String(p.id) === a);
+            const propB = properties.find((p) => String(p.id) === b);
+            const partA = propA?.partitionNo ?? "";
+            const partB = propB?.partitionNo ?? "";
+            
+            // Main properties (no partition) handled separately
+            if (!partA && !partB) {
+                // Both are main properties - sort by flatOrShopNo ascending
+                const flatA = propA?.flatOrShopNo ?? "";
+                const flatB = propB?.flatOrShopNo ?? "";
+                return flatA.localeCompare(flatB, undefined, { numeric: true, sensitivity: "base" });
+            }
+            if (!partA) return 1;  // main property deleted last
+            if (!partB) return -1;
+            
+            // Compare partition numbers first (descending - highest first)
+            const partComparison = partB.localeCompare(partA, undefined, { numeric: true, sensitivity: "base" });
+            
+            // If partition numbers are equal, sort by flatOrShopNo ascending (A before S)
+            if (partComparison === 0) {
+                const flatA = propA?.flatOrShopNo ?? "";
+                const flatB = propB?.flatOrShopNo ?? "";
+                return flatA.localeCompare(flatB, undefined, { numeric: true, sensitivity: "base" });
+            }
+            
+            return partComparison;
+        });
+        
+        performBulkDelete(sorted);
+    }, [selectedRows, properties, performBulkDelete]);
 
     const {
         localSearch,
@@ -206,11 +230,6 @@ export default function PropertyList({
         router.push(`${pathname}?${params.toString()}`);
     }, [router, pathname, searchParams, selectedWardId]);
 
-    const handleCloseDeleteDrawer = useCallback(() => {
-        const params = new URLSearchParams(searchParams.toString());
-        params.delete("deleteProperty");
-        router.push(`${pathname}?${params.toString()}`);
-    }, [router, pathname, searchParams]);
 
     return (
         <div className="flex flex-col h-full">
@@ -330,20 +349,6 @@ export default function PropertyList({
                         totalCount={totalCount}
                         totalPages={totalPages}
                         onPageChange={handlePageChange}
-                        renderActions={(row) => (
-                            <IconOnlyActionButton
-                                icon={Trash2}
-                                onClick={() =>
-                                    handleSingleDelete(row as unknown as ZonePropertyItem)
-                                }
-                                aria-label={`Delete property ${(row as unknown as ZonePropertyItem).propertyNo}`}
-                                variant="ghost"
-                                size="sm"
-                                disabled={isDeleting || selectedRows.size > 0}
-                                className="text-red-500 hover:scale-110 transition-transform p-1.5 hover:bg-transparent"
-                            />
-                        )}
-                        actionLabel={tCommon("table.columns.actions")}
                         footerLeftContent={
                             <div className="flex items-center gap-1 text-sm text-gray-600">
                                 {tCommon("table.showing")}{" "}
@@ -371,17 +376,6 @@ export default function PropertyList({
                 )}
             </div>
 
-            {/* DELETE PROPERTY DRAWER (existing amenity/wing delete flow) */}
-            {deletePropertyData && (
-                <DeletePropertyDrawer
-                    isOpen={deletePropertyData.isOpen}
-                    onClose={handleCloseDeleteDrawer}
-                    wardId={selectedWardId}
-                    selectedWard={currentWard}
-                    ssrProperties={deletePropertyData.properties}
-                    categoryMap={categoryMap}
-                />
-            )}
         </div>
     );
 }

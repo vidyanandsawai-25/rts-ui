@@ -60,14 +60,6 @@ export default function PropertyPartitionForm({
     wardId: ward?.id,
   });
 
-  // Fetch building list using wardId from selectedWard
-  const {
-    buildingList,
-    loadingBuildingList,
-  } = useBuildingList({
-    wardId: ward?.id,
-  });
-
   // Use custom hooks for state management
   const {
     form,
@@ -208,19 +200,19 @@ export default function PropertyPartitionForm({
     handleSaveWing: handleSaveWingCore,
   });
 
-  // Check if selected property category is Apartment or Multi Commercial Apartment
-  // Note: categoryMap values are in English from database, so we compare against English literals
-  const isApartmentCategory = useMemo(() => {
-    if (!selectedProperty?.categoryId || !categoryMap) return false;
-    const categoryName = categoryMap.get(selectedProperty.categoryId);
-    return categoryName === "Apartment" || categoryName === "Multi Commercial Apartment";
-  }, [selectedProperty, categoryMap]);
-
-  // Get actual category name from categoryMap
+  // Resolve category name: prefer buildingList (has name directly) over ssrProperties + categoryMap lookup
   const categoryName = useMemo(() => {
+    if (!form.mainPropertyId) return null;
+    const buildingItem = buildingList.find(b => b.propertyId === form.mainPropertyId);
+    if (buildingItem?.catPropertyCategoryName) return buildingItem.catPropertyCategoryName;
     if (!selectedProperty?.categoryId || !categoryMap) return null;
     return categoryMap.get(selectedProperty.categoryId) || null;
-  }, [selectedProperty, categoryMap]);
+  }, [form.mainPropertyId, buildingList, selectedProperty, categoryMap]);
+
+  // Check if selected property category is Apartment or Multi Commercial Apartment
+  const isApartmentCategory = useMemo(() => {
+    return categoryName === "Apartment" || categoryName === "Multi Commercial Apartment";
+  }, [categoryName]);
 
   // Define columns for the wing summary table
   const wingColumns = useMemo(() => getWingColumns({

@@ -594,5 +594,9 @@
     "createSuccess": "Partition created successfully!",
     "createError": "Failed to create partition",
     "bulkCreateSuccess": "{count} partitions created successfully!"
+  },
+  "deleteProperty": {
+    "pageTitle": "Delete Property",
+    "pageSubtitle": "Select a property to delete from the selected ward"
   }
 }

@@ -4,7 +4,6 @@ import { getZones, createZone, updateZone, deleteZone, getZoneById } from "@/lib
 import { getWards, createWard, updateWard, deleteWard, getWardById, createWardBatch, createWardRange, bulkUpdateWards } from "@/lib/api/ward.services";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
-import { getAppConfig } from "@/config/app.config";
 import { getUserIdFromCookies } from "@/lib/utils/cookie";
 import { ZoneItem, ZoneListResponse, CreateZonePayload, UpdateZonePayload } from "@/types/zoneMaster.types";
 import { WardItem, WardListResponse, CreateWardPayload, UpdateWardPayload, BatchWardCreatePayload, BatchRangeWardCreatePayload, BulkWardUpdateItem } from "@/types/wardMaster.types";
@@ -1234,37 +1233,6 @@ export async function fetchSocietyDetailsByPropertyAction(propertyId: number): P
   }
 }
 
-
-export async function getBuildingListByWardAction(wardId: number): Promise<{
-  success: boolean;
-  data?: BuildingListItem[];
-  error?: string;
-}> {
-  try {
-    if (!wardId || wardId <= 0) {
-      return { success: false, error: "Invalid ward ID" };
-    }
- 
-    const buildingList = await getBuildingListByWard(wardId);
-    return { success: true, data: buildingList };
-  } catch (error) {
-    if (error instanceof ApiError) {
-      logger.error("[getBuildingListByWardAction] API Error", {
-        error,
-        statusCode: error.statusCode,
-      });
-      return { success: false, error: error.responseText };
-    }
-    if (error instanceof Error) {
-      logger.error("[getBuildingListByWardAction] Error", {
-        error,
-        message: error.message,
-      });
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: "Failed to fetch building list" };
-  }
-}
 /**
  * Fetches the latest society detail for a property to determine next wing ID.
  */
@@ -1655,41 +1623,6 @@ export async function getNextPartitionNumberAction(
 }
 
 /**
- * Fetches society wing details for a property.
- * Returns wing information including property counts and amenity counts.
- */
-export async function getSocietyWingDetailsAction(propertyId: number): Promise<{
-  success: boolean;
-  data?: SocietyWingDetailItem[];
-  error?: string;
-}> {
-  try {
-    if (!propertyId || propertyId <= 0) {
-      return { success: false, error: "Invalid property ID" };
-    }
- 
-    const wingDetails = await getSocietyWingDetails(propertyId);
-    return { success: true, data: wingDetails };
-  } catch (error) {
-    if (error instanceof ApiError) {
-      logger.error("[getSocietyWingDetailsAction] API Error", {
-        error,
-        statusCode: error.statusCode,
-      });
-      return { success: false, error: error.responseText };
-    }
-    if (error instanceof Error) {
-      logger.error("[getSocietyWingDetailsAction] Error", {
-        error,
-        message: error.message,
-      });
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: "Failed to fetch society wing details" };
-  }
-}
-
-/**
  * Fetches property or amenity records for a selected wing.
  * API: GET /Property/{societyDetailId}/society-amenity-details?isAmenity={bool}
  */
@@ -1849,7 +1782,8 @@ export async function deletePropertyAction(
 
 /**
  * Bulk deletes multiple main properties in a single API call.
- * API: DELETE /api/Property/Bulk  (body: string[] of property IDs)
+ * API: DELETE /api/Property/Bulk  (body: number[] of property IDs)
+ * Properties should be sorted in correct order by caller before passing to this function.
  */
 export async function deleteBulkPropertiesAction(
   propertyIds: string[]
@@ -1859,62 +1793,36 @@ export async function deleteBulkPropertiesAction(
       return { success: false, error: "No properties selected" };
     }
 
-    const config = getAppConfig();
-    const cookieStore = await cookies();
-    const token = cookieStore.get("auth_token")?.value;
-    const csrf = cookieStore.get("csrf_token")?.value;
-
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json; charset=utf-8",
-      Accept: "application/json",
-    };
-    if (token) headers["Authorization"] = `Bearer ${token}`;
-    if (csrf) headers["X-CSRF-Token"] = csrf;
-    const cookieStr = cookieStore
-      .getAll()
-      .filter((c) => /auth_token|refresh_token|session_id|csrf_token|\.AspNetCore\.Antiforgery/.test(c.name))
-      .map((c) => `${c.name}=${c.value}`)
-      .join("; ");
-    if (cookieStr) headers["Cookie"] = cookieStr;
-
-    const url = `${config.api.baseUrl.replace(/\/$/, "")}/Property/Bulk`;
-    const response = await fetch(url, {
-      method: "DELETE",
-      headers,
-      body: JSON.stringify(propertyIds),
-      cache: "no-store",
-    });
-
-    let body: Record<string, unknown> | null = null;
-    const text = await response.text();
-    if (text?.trim()) {
-      try { body = JSON.parse(text); } catch { /* non-JSON body */ }
+    // Convert string IDs to numbers for backend
+    const numericIds = propertyIds.map(id => parseInt(id, 10)).filter(id => !isNaN(id));
+    
+    if (numericIds.length === 0) {
+      return { success: false, error: "Invalid property IDs" };
     }
 
-    if (body) {
-      const errArray: string[] = [
-        ...((body.errors as string[] | undefined) ?? []),
-        ...(((body.items as Record<string, unknown> | undefined)?.errors as string[] | undefined) ?? []),
-      ].filter((e): e is string => typeof e === "string" && !!e.trim());
+    // Use bulk delete API - backend handles all deletions in one call
+    const result = await deleteBulkProperties(numericIds);
 
-      if (!response.ok || body.success === false) {
-        const errorMessage =
-          errArray.length > 0
-            ? errArray.join("\n")
-            : (body.message as string | undefined) ?? "Failed to delete properties";
-        logger.error("[deleteBulkPropertiesAction] Bulk delete failed", { errorMessage, errArray });
-        return { success: false, error: errorMessage };
-      }
-    }
-
-    if (!response.ok) {
-      return { success: false, error: "Failed to delete properties" };
+    if (!result.success) {
+      // Extract error message from response
+      const errorMsg = result.error || "Failed to delete properties";
+      logger.error("[deleteBulkPropertiesAction] Bulk delete failed", {
+        error: errorMsg,
+        propertyIds,
+      });
+      return { success: false, error: errorMsg };
     }
 
     revalidatePath("/[locale]/property-tax/zone-master", "page");
+
+    // Extract success message from response data
+    const responseData = result.data as { message?: string } | undefined;
+    const successMessage = responseData?.message || 
+      `${propertyIds.length} ${propertyIds.length === 1 ? "property" : "properties"} deleted successfully`;
+
     return {
       success: true,
-      message: (body?.message as string | undefined) ?? `${propertyIds.length} properties deleted successfully`,
+      message: successMessage,
     };
   } catch (error) {
     if (error instanceof ApiError) {

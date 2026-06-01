@@ -16,3 +16,7 @@ export { WingDetailConfigSection } from "./WingDetailConfigSection";
 // Create Property Drawer Component Sections
 export { PropertyFormFields } from "./PropertyFormFields";
 export { BulkCreateSection } from "./BulkCreateSection";
+
+// Delete Property Components
+export { PropertyAmenitySection } from "./PropertyAmenitySection";
+export { PropertyAmenityTable } from "./PropertyAmenityTable";

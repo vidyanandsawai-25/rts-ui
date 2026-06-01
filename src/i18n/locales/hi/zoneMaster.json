@@ -593,5 +593,9 @@
     "bulkCreateSuccess": "{count} विभाजन सफलतापूर्वक बनाए गए!",
     "amenityCreateSuccess": "{count} सुविधाएं सफलतापूर्वक बनाई गईं!",
     "amenityCreateError": "सुविधाएं बनाने में विफल"
+  },
+  "deleteProperty": {
+    "pageTitle": "संपत्ति हटाएं",
+    "pageSubtitle": "चयनित वार्ड से हटाने के लिए संपत्ति चुनें"
   }
 }

@@ -25,45 +25,60 @@ export async function deletePropertyAmenity(propertyId: number): Promise<ApiResp
 
 /**
  * Bulk delete multiple property or amenity records by numeric IDs.
- * Calls each individually since the amenity bulk endpoint is per-item.
- * API: DELETE /api/Property/{id} (for each)
+ * Uses the bulk endpoint for efficient deletion.
+ * API: DELETE /api/Property/Bulk (body: number[])
  */
 export async function deleteMultiplePropertiesAmenities(
   propertyIds: number[]
 ): Promise<ApiResponse<DeletePropertyResponse>> {
   try {
-    const results = await Promise.all(
-      propertyIds.map((id) => apiClient.delete<DeletePropertyResponse>(`/Property/${id}`))
-    );
-
-    const allSuccessful = results.every((r) => r.success);
-
-    if (allSuccessful) {
+    if (!propertyIds || propertyIds.length === 0) {
       return {
-        success: true,
-        statusCode: 200,
-        data: { message: `Successfully deleted ${propertyIds.length} items` },
+        success: false,
+        error: 'No property IDs provided',
       };
     }
 
-    // Collect all error messages from failed deletions
-    const failedResults = results.filter((r) => !r.success);
-    const failedCount = failedResults.length;
+    // Use the bulk delete function
+    const result = await deleteBulkProperties(propertyIds);
     
-    // Extract detailed error messages from each failed deletion
-    const errorMessages = failedResults
-      .map((r) => r.error)
-      .filter((msg): msg is string => !!msg && msg.trim().length > 0);
-
-    // Return detailed error messages if available, otherwise generic count message
-    const detailedError = errorMessages.length > 0
-      ? errorMessages.join('\n\n')
-      : `Failed to delete ${failedCount} out of ${propertyIds.length} items`;
+    // Check BOTH HTTP success AND data.success from backend
+    if (result.success && result.data) {
+      const responseData = result.data as {
+        success?: boolean;
+        message?: string;
+        errors?: string[];
+        items?: { successCount?: number; errors?: string[] };
+      };
+      
+      // Backend returns success: false inside data when deletion fails
+      if (responseData.success === false) {
+        // Extract error message from response
+        const errorMessage = 
+          (responseData.errors && responseData.errors.length > 0 && responseData.errors[0]) ||
+          (responseData.items?.errors && responseData.items.errors.length > 0 && responseData.items.errors[0]) ||
+          responseData.message ||
+          'Failed to delete records';
+        
+        return {
+          success: false,
+          statusCode: result.statusCode,
+          error: errorMessage,
+        };
+      }
+      
+      // Actual success
+      return {
+        success: true,
+        statusCode: 200,
+        data: { message: responseData.message || `Successfully deleted ${propertyIds.length} items` },
+      };
+    }
 
     return {
       success: false,
-      statusCode: 207,
-      error: detailedError,
+      statusCode: result.statusCode,
+      error: result.error || `Failed to delete ${propertyIds.length} items`,
     };
   } catch (error) {
     return {
@@ -75,12 +90,24 @@ export async function deleteMultiplePropertiesAmenities(
 
 /**
  * Bulk delete multiple main properties in a single API call.
- * API: DELETE /api/Property/Bulk  (body: array of property ID strings)
+ * API: DELETE /api/Property/Bulk  (body: array of property ID numbers)
  */
 export async function deleteBulkProperties(
-  propertyIds: string[]
+  propertyIds: number[]
 ): Promise<ApiResponse<DeletePropertyResponse>> {
-  return apiClient.delete<DeletePropertyResponse>('/Property/Bulk', {
-    body: JSON.stringify(propertyIds),
-  });
+  // Directly use the request method instead of the delete helper
+  // This gives us more control over how the body is handled
+  const response = await (apiClient as unknown as { request: <T>(url: string, opt: RequestInit, auth: boolean) => Promise<ApiResponse<T>> }).request<DeletePropertyResponse>(
+    '/Property/Bulk',
+    {
+      method: 'DELETE',
+      body: JSON.stringify(propertyIds),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    },
+    true // requireAuth
+  );
+  
+  return response;
 }

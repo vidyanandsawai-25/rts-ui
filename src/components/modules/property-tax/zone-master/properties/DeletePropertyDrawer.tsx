@@ -65,7 +65,7 @@ export default function DeletePropertyDrawer({
   const propertyOptions = useMemo(() => {
     if (buildingList.length > 0) {
       return buildingList
-        .filter((item) => !item.partitionNo || item.partitionNo === "")
+        .filter((item) => !item.partitionNo || item.partitionNo === "" || item.partitionNo === "0")
         .map((item) => ({
           value: String(item.propertyId),
           label: item.catPropertyCategoryName

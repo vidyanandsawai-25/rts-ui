@@ -583,5 +583,9 @@
     "bulkCreateSuccess": "{count} विभाजन यशस्वीरित्या तयार झाले!",
     "amenityCreateSuccess": "{count} सुविधा यशस्वीरित्या तयार झाल्या!",
     "amenityCreateError": "सुविधा तयार करण्यात अयशस्वी"
+  },
+  "deleteProperty": {
+    "pageTitle": "मालमत्ता हटवा",
+    "pageSubtitle": "निवडलेल्या प्रभागातून हटवायची मालमत्ता निवडा"
   }
 }

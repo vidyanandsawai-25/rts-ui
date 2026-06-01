@@ -69,6 +69,8 @@ export function usePropertyDelete({
 
   /**
    * Handles deletion of multiple properties in bulk.
+   * IDs must be pre-sorted highest partition first by the caller so the backend's
+   * partition-order constraint is satisfied.
    */
   const handleBulkDelete = useCallback(
     (selectedIds: string[]) => {
@@ -77,7 +79,7 @@ export function usePropertyDelete({
 
       confirm({
         variant: "delete",
-        title: "Delete Selected Propertiessss",
+        title: "Delete Selected Properties",
         description: `Are you sure you want to delete ${count} selected ${count === 1 ? "property" : "properties"}? This action cannot be undone.`,
         onConfirm: async () => {
           setIsDeleting(true);
@@ -85,7 +87,7 @@ export function usePropertyDelete({
             const result = await deleteBulkPropertiesAction(selectedIds);
             router.refresh();
             onClearSelection();
-            
+
             if (result.success) {
               toast.success(result.message ?? `${count} properties deleted successfully.`);
             } else {
