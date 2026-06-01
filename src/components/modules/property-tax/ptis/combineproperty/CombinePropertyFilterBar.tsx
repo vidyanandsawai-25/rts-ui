@@ -155,7 +155,7 @@ export function CombinePropertyFilterBar({
             value={selectedPropertyType}
             onChange={(_name, val) => setSelectedPropertyType(val)}
             placeholder={t('select')}
-            className="text-[11px] h-[28px]"
+            className="text-[11px] h-[28px] !border-green-800 !ring-2 !ring-green-400 shadow-sm animate-pulse transition-all"
             required
           />
         </div>
