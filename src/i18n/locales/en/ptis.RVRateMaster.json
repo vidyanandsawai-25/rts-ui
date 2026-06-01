@@ -4,8 +4,11 @@
     "rateableDescription": "Manage rateable value rates and related configurations for different zones, use groups, and assessment years",
     "capitalTitle": "Capital Value Rate Master",
     "capitalDescription": "Ready-Reckoner based Capital Value rates.",
+    "moujaTitle": "Mouja Master",
+    "moujaDescription": "Manage mouja records and their details",
     "rateableTab": "Rateable Value",
-    "capitalTab": "Capital Value"
+    "capitalTab": "Capital Value",
+    "moujaTab": "Mouja Master"
   },
   "filters": {
     "financeYear": "Finance Year",
