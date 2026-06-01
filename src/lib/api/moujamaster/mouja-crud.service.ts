@@ -48,7 +48,8 @@ export async function getMoujaPaged(
       throw new ApiError(500, "No data received from server", "Invalid response format");
     }
 
-    const validItems = response.data.items.filter(isMoujaShape);
+    const items = response.data.items ?? [];
+    const validItems = items.filter(isMoujaShape);
     const normalizedItems = validItems.map(normalizeMouja);
     return { ...response.data, items: normalizedItems };
   } catch (error) {

@@ -40,7 +40,7 @@ export function RateTabsNavigation() {
     // },
   ];
 
-  const activeValue = tabConfig.find(tab => pathname.endsWith(tab.value))?.value || "rvratemaster";
+  const activeValue = tabConfig.find(tab => pathname.includes(`/rate-master/${tab.value}`))?.value || "rvratemaster";
   const activeTab = tabConfig.find(tab => tab.value === activeValue) || tabConfig[0];
 
   return (

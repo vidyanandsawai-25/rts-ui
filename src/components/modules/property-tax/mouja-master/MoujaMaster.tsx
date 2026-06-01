@@ -64,7 +64,7 @@ export function MoujaMaster({
         router.push(buildUrl(1, pageSize, currentSearchTerm, columnKey, newSortOrder));
       });
     },
-    [sortBy, sortOrder, router, buildUrl, pageSize, currentSearchTerm]
+    [sortBy, sortOrder, router, buildUrl, pageSize, currentSearchTerm, startTransition]
   );
 
   const columns = getMoujaColumns(t, tCommon, sortBy, sortOrder, handleSort);

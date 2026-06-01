@@ -22,6 +22,8 @@ export function useMoujaSearch({
   const currentSearchTerm = searchParams.get('q') || '';
   const [search, setSearch] = useState(currentSearchTerm);
   const [prevSearch, setPrevSearch] = useState(currentSearchTerm);
+
+  // Sync search state with URL on mount/navigation (without useEffect)
   if (currentSearchTerm !== prevSearch) {
     setPrevSearch(currentSearchTerm);
     setSearch(currentSearchTerm);
