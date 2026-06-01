@@ -12,7 +12,7 @@ import {
 } from '@/types/screen-access.types';
 import { useScreenForm } from '@/hooks/configuration-settings/screenAccess/useScreenForm';
 
-import { SCREEN_CODE_MAX, SCREEN_NAME_MAX } from '@/lib/constants/screen-access.constants';
+import { SCREEN_CODE_MAX, SCREEN_NAME_MAX, ROUTE_PATH_MAX } from '@/lib/constants/screen-access.constants';
 import { FormSection, FieldLabel, ErrorMsg, ToggleField } from './FormHelpers';
 import { TEXT_SANITIZE, DESCRIPTION_SANITIZE } from '@/lib/utils/validation-rules';
 
@@ -138,11 +138,11 @@ export function ScreenForm({ initialData, isEdit: isEditProp, groups, modules }:
                   const val = e.target.value
                     .replace(TEXT_SANITIZE, '')
                     .replace(/[&()]/g, '')
-                    .slice(0, 50);
+                    .slice(0, ROUTE_PATH_MAX);
                   handleChange('routePath', val);
                 }}
                 onBlur={() => handleBlur('routePath')}
-                maxLength={50}
+                maxLength={ROUTE_PATH_MAX}
                 placeholder={t('screenManagement.screens.form.routePlaceholder')}
                 className="font-mono"
               />

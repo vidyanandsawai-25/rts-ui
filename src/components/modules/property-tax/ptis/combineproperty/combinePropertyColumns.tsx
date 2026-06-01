@@ -10,6 +10,7 @@ export const getCombinePropertyColumns = (
   checkedPropertyIds?: Set<number>,
   onToggleCheck?: (propertyId: number) => void,
   onToggleAll?: () => void,
+  selectedBasePropertyId?: string
 ): Column<PropertyRow>[] => [
   // Checkbox column — uses '_checkbox' key to avoid duplicate with 'propertyId' SR.NO. column
   {
@@ -24,6 +25,9 @@ export const getCombinePropertyColumns = (
     align: 'center',
     width: '45px',
     render: (_val, row) => {
+      if (String(row.propertyId) === selectedBasePropertyId) {
+        return null;
+      }
       const propertyId = row.propertyId as number;
       return (
         <Checkbox

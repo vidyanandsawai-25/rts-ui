@@ -1,10 +1,17 @@
 'use client';
 
 import { Briefcase, Calendar, Users } from 'lucide-react';
+import * as ULB_VALIDATION from '@/lib/api/configuration-settings/ulb-configuration/ulb-form-validation.constants';
 import type { ULBProjectInfoSectionProps } from '@/types/ulbconfig-master.types';
 import { UlbInputMd } from '../ULBFormField';
 
-export function ULBProjectInfoSection({ formData, t, onFieldChange }: ULBProjectInfoSectionProps) {
+export function ULBProjectInfoSection({
+  formData,
+  t,
+  onFieldChange,
+  onFieldBlur,
+  getFieldError,
+}: ULBProjectInfoSectionProps) {
   return (
     <section className="mb-5 overflow-hidden rounded-xl border border-slate-200 bg-white">
       <div className="h-1.5 bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-500" />
@@ -24,9 +31,31 @@ export function ULBProjectInfoSection({ formData, t, onFieldChange }: ULBProject
             <Calendar className="h-4 w-4 text-indigo-500" />
             <span className="text-xs font-bold uppercase tracking-wide text-slate-600">{t('sections.timeline')}</span>
           </div>
-          <UlbInputMd label={t('fields.projectStartDate')} required type="date" value={formData.projectStartDate} onChange={(e) => onFieldChange('projectStartDate', e.target.value)} />
-          <UlbInputMd label={t('fields.financialYearStart')} required type="date" value={formData.financialYearStart} onChange={(e) => onFieldChange('financialYearStart', e.target.value)} />
-          <UlbInputMd label={t('fields.goLiveDate')} type="date" value={formData.goLiveDate} onChange={(e) => onFieldChange('goLiveDate', e.target.value)} />
+          <UlbInputMd
+            label={t('fields.projectStartDate')}
+            required
+            type="date"
+            value={formData.projectStartDate}
+            error={getFieldError('projectStartDate')}
+            onChange={(e) => onFieldChange('projectStartDate', e.target.value)}
+            onBlur={() => onFieldBlur('projectStartDate')}
+          />
+          <UlbInputMd
+            label={t('fields.financialYearStart')}
+            required
+            type="date"
+            value={formData.financialYearStart}
+            error={getFieldError('financialYearStart')}
+            onChange={(e) => onFieldChange('financialYearStart', e.target.value)}
+            onBlur={() => onFieldBlur('financialYearStart')}
+          />
+          <UlbInputMd
+            label={t('fields.goLiveDate')}
+            type="date"
+            value={formData.goLiveDate}
+            onChange={(e) => onFieldChange('goLiveDate', e.target.value)}
+            onBlur={() => onFieldBlur('goLiveDate')}
+          />
         </div>
 
         <div className="col-span-1 flex justify-center">
@@ -39,10 +68,47 @@ export function ULBProjectInfoSection({ formData, t, onFieldChange }: ULBProject
             <span className="text-xs font-bold uppercase tracking-wide text-slate-600">{t('sections.teamContacts')}</span>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <UlbInputMd label={t('fields.implementationPartner')} placeholder={t('placeholders.partner')} value={formData.implementationPartner} onChange={(e) => onFieldChange('implementationPartner', e.target.value)} />
-            <UlbInputMd label={t('fields.projectManager')} required placeholder={t('placeholders.pmName')} value={formData.projectManager} onChange={(e) => onFieldChange('projectManager', e.target.value)} />
-            <UlbInputMd label={t('fields.pmEmail')} required type="email" placeholder={t('placeholders.email')} value={formData.projectManagerEmail} onChange={(e) => onFieldChange('projectManagerEmail', e.target.value)} />
-            <UlbInputMd label={t('fields.pmPhone')} type="tel" placeholder={t('placeholders.phone')} value={formData.projectManagerPhone} onChange={(e) => onFieldChange('projectManagerPhone', e.target.value)} />
+            <UlbInputMd
+              label={t('fields.implementationPartner')}
+              placeholder={t('placeholders.partner')}
+              value={formData.implementationPartner}
+              maxLength={ULB_VALIDATION.IMPLEMENTATION_PARTNER_MAX}
+              error={getFieldError('implementationPartner')}
+              onChange={(e) => onFieldChange('implementationPartner', e.target.value)}
+              onBlur={() => onFieldBlur('implementationPartner')}
+            />
+            <UlbInputMd
+              label={t('fields.projectManager')}
+              required
+              placeholder={t('placeholders.pmName')}
+              value={formData.projectManager}
+              maxLength={ULB_VALIDATION.PROJECT_MANAGER_MAX}
+              error={getFieldError('projectManager')}
+              onChange={(e) => onFieldChange('projectManager', e.target.value)}
+              onBlur={() => onFieldBlur('projectManager')}
+            />
+            <UlbInputMd
+              label={t('fields.pmEmail')}
+              required
+              type="email"
+              placeholder={t('placeholders.email')}
+              value={formData.projectManagerEmail}
+              maxLength={ULB_VALIDATION.EMAIL_MAX}
+              error={getFieldError('projectManagerEmail')}
+              onChange={(e) => onFieldChange('projectManagerEmail', e.target.value)}
+              onBlur={() => onFieldBlur('projectManagerEmail')}
+            />
+            <UlbInputMd
+              label={t('fields.pmPhone')}
+              type="tel"
+              inputMode="numeric"
+              placeholder={t('placeholders.phone')}
+              value={formData.projectManagerPhone}
+              maxLength={ULB_VALIDATION.PHONE_LENGTH}
+              error={getFieldError('projectManagerPhone')}
+              onChange={(e) => onFieldChange('projectManagerPhone', e.target.value)}
+              onBlur={() => onFieldBlur('projectManagerPhone')}
+            />
           </div>
         </div>
       </div>

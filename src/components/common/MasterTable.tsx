@@ -160,6 +160,9 @@ export interface MasterTableProps<T extends Record<string, unknown> = Record<str
   footerRightClassName?: string;
 
   paginationConfig?: PaginationConfig;
+
+  /** Callback when a row is clicked */
+  onRowClick?: (row: T, index: number) => void;
 }
 
 function PageSizeSelector({
@@ -287,6 +290,7 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
   footerRightClassName,
 
   paginationConfig,
+  onRowClick,
 }: MasterTableProps<T>): React.ReactElement {
   const t = useTranslations('common');
 
@@ -409,9 +413,10 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
             data.map((row, i) => (
               <tr
                 key={getRowKey ? getRowKey(row, i) : i}
+                onClick={() => onRowClick?.(row, i)}
                 className={cn(
                   'border-b border-blue-100 hover:bg-blue-50/40',
-
+                  onRowClick ? 'cursor-pointer' : '',
                   rowClassName?.(row, i)
                 )}
               >

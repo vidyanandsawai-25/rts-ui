@@ -12,6 +12,8 @@ export function ULBProjectLicenseTab({
   masterRenewalAlerts,
   t,
   onFieldChange,
+  onFieldBlur,
+  getFieldError,
   onLicenseFieldChange,
   onGenerateLicenseKey,
   onSave,
@@ -23,7 +25,13 @@ export function ULBProjectLicenseTab({
   return (
     <>
       <div className="min-h-0 flex-1 overflow-y-auto pr-1">
-        <ULBProjectInfoSection formData={formData} t={t} onFieldChange={onFieldChange} />
+        <ULBProjectInfoSection
+          formData={formData}
+          t={t}
+          onFieldChange={onFieldChange}
+          onFieldBlur={onFieldBlur}
+          getFieldError={getFieldError}
+        />
         <ULBLicenseSection
           formData={formData}
           masterRenewalAlerts={masterRenewalAlerts}
@@ -31,6 +39,8 @@ export function ULBProjectLicenseTab({
           onFieldChange={onFieldChange}
           onLicenseFieldChange={onLicenseFieldChange}
           onGenerateLicenseKey={onGenerateLicenseKey}
+          onFieldBlur={onFieldBlur}
+          getFieldError={getFieldError}
         />
       </div>
 

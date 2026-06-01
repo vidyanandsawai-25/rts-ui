@@ -16,6 +16,10 @@ export type UlbConfigurationValidationCode =
   | 'ulbTypeRequired'
   | 'stateRequired'
   | 'districtRequired'
+  | 'pincodeRequired'
+  | 'contactPersonRequired'
+  | 'designationRequired'
+  | 'addressRequired'
   | 'emailRequired'
   | 'phoneRequired'
   | 'ulbLogoRequired'
@@ -37,7 +41,19 @@ export type UlbConfigurationValidationCode =
   | 'pmPhoneFormat';
 
 const SECTION_REQUIRED: Record<UlbSectionKey, (keyof ULBConfigurationFormData)[]> = {
-  'ulb-info': ['ulbName', 'ulbCode', 'ulbType', 'state', 'district', 'email', 'phone'],
+  'ulb-info': [
+    'ulbName',
+    'ulbCode',
+    'ulbType',
+    'state',
+    'district',
+    'pincode',
+    'contactPerson',
+    'designation',
+    'address',
+    'email',
+    'phone',
+  ],
   'logo-images': ['ulbLogo'],
   'project-license-info': [
     'projectStartDate',
@@ -58,6 +74,10 @@ const FIELD_TO_CODE: Partial<Record<keyof ULBConfigurationFormData, UlbConfigura
   ulbType: 'ulbTypeRequired',
   state: 'stateRequired',
   district: 'districtRequired',
+  pincode: 'pincodeRequired',
+  contactPerson: 'contactPersonRequired',
+  designation: 'designationRequired',
+  address: 'addressRequired',
   email: 'emailRequired',
   phone: 'phoneRequired',
   ulbLogo: 'ulbLogoRequired',
