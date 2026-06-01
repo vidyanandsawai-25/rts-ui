@@ -141,46 +141,22 @@ export const useTaxZoning = (props: TaxZoningPageProps) => {
     const wardNo = wardsData.items.find(w => String(w.id) === ward[0])?.wardNo || ward[0];
     const taxZoneNo = taxZones.items.find(z => String(z.id) === zone)?.taxZoneNo || zone;
     
-    const fromNum = Number(fromProps);
-    const toNum = Number(toProps);
-    const isPurelyNumeric = !isNaN(fromNum) && !isNaN(toNum) && fromNum.toString() === fromProps && toNum.toString() === toProps;
+    const existingProps = allProperties?.success && allProperties.data?.items ? allProperties.data.items : [];
+    const sortedProps = [...existingProps].sort((a, b) => comparePropertyNo(a.propertyNo, b.propertyNo));
+    const inRangeProps = sortedProps.filter(p => 
+      comparePropertyNo(p.propertyNo, fromProps) >= 0 && 
+      comparePropertyNo(p.propertyNo, toProps) <= 0
+    );
     
-    if (isPurelyNumeric) {
-      return Array.from({ length: toNum - fromNum + 1 }, (_, i) => {
-        const propertyNo = String(fromNum + i);
-        const property = allProperties?.success 
-          ? allProperties.data?.items?.find((p: TaxZoning) => p.propertyNo === propertyNo) 
-          : undefined;
-        
-        let oldTaxZoneNo = '-';
-        if (property) {
-          if (property.taxZoneId) {
-            oldTaxZoneNo = taxZones.items.find(z => z.id === property.taxZoneId)?.taxZoneNo || String(property.taxZoneId);
-          } else if (property.taxZone) {
-            oldTaxZoneNo = property.taxZone;
-          }
-        }
-        
-        return { taxZoneNo, oldTaxZoneNo, wardNo, propertyNo };
-      });
-    } else {
-      const existingProps = allProperties?.success && allProperties.data?.items ? allProperties.data.items : [];
-      const sortedProps = [...existingProps].sort((a, b) => comparePropertyNo(a.propertyNo, b.propertyNo));
-      const inRangeProps = sortedProps.filter(p => 
-        comparePropertyNo(p.propertyNo, fromProps) >= 0 && 
-        comparePropertyNo(p.propertyNo, toProps) <= 0
-      );
-      
-      return inRangeProps.map(property => {
-        let oldTaxZoneNo = '-';
-        if (property.taxZoneId) {
-          oldTaxZoneNo = taxZones.items.find(z => z.id === property.taxZoneId)?.taxZoneNo || String(property.taxZoneId);
-        } else if (property.taxZone) {
-          oldTaxZoneNo = property.taxZone;
-        }
-        return { taxZoneNo, oldTaxZoneNo, wardNo, propertyNo: property.propertyNo };
-      });
-    }
+    return inRangeProps.map(property => {
+      let oldTaxZoneNo = '-';
+      if (property.taxZoneId) {
+        oldTaxZoneNo = taxZones.items.find(z => z.id === property.taxZoneId)?.taxZoneNo || String(property.taxZoneId);
+      } else if (property.taxZone) {
+        oldTaxZoneNo = property.taxZone;
+      }
+      return { taxZoneNo, oldTaxZoneNo, wardNo, propertyNo: property.propertyNo };
+    });
   }, [zone, ward, fromProps, toProps, wardsData, taxZones, allProperties]);
 
   const onFormClear = () => {
