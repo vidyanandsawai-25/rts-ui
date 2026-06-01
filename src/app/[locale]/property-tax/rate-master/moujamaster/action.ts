@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { locales } from "@/i18n/config";
 import { createMouja, deleteMouja, getMoujaPaged, getMoujaById, updateMouja } from "@/lib/api/moujamaster/mouja-crud.service";
 import { ApiError } from "@/lib/utils/api";
+import { logger } from "@/lib/utils/logger";
 import { Mouja, MoujaFormModel } from "@/types/mouja.types";
 import { PagedResponse } from "@/types/common.types";
 import { cookies } from "next/headers";
@@ -40,19 +41,19 @@ export async function fetchMoujaPagedServerAction(
   } catch (error: unknown) {
     // Log the error for debugging
     if (error instanceof ApiError) {
-      console.error(
-        `[fetchMoujaPagedServerAction] API Error ${error.statusCode}:`,
-        error.responseText
+      logger.error(
+        `[fetchMoujaPagedServerAction] API Error ${error.statusCode}`,
+        { error: error as Error, responseText: error.responseText }
       );
     } else if (error instanceof Error) {
-      console.error(
-        "[fetchMoujaPagedServerAction] Error:",
-        error.message
+      logger.error(
+        "[fetchMoujaPagedServerAction] Error",
+        { error, message: error.message }
       );
     } else {
-      console.error(
-        "[fetchMoujaPagedServerAction] Unknown error:",
-        error
+      logger.error(
+        "[fetchMoujaPagedServerAction] Unknown error",
+        { errorValue: error }
       );
     }
 
@@ -178,14 +179,14 @@ export async function getMoujaByIdAction(
     return result;
   } catch (error) {
     if (error instanceof ApiError) {
-      console.error(
-        `[getMoujaByIdAction] API Error ${error.statusCode}:`,
-        error.responseText
+      logger.error(
+        `[getMoujaByIdAction] API Error ${error.statusCode}`,
+        { error, responseText: error.responseText }
       );
     } else {
-      console.error(
-        "[getMoujaByIdAction] Error:",
-        error
+      logger.error(
+        "[getMoujaByIdAction] Error",
+        { error: error as Error }
       );
     }
     throw error; // rethrow so UI can handle it

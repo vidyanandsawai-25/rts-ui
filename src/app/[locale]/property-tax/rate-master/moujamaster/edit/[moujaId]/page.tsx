@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import React from "react";
 import type { Mouja } from "@/types/mouja.types";
 import { ApiError } from "@/lib/utils/api";
+import { logger } from "@/lib/utils/logger";
 
 interface PageProps {
   params: Promise<{
@@ -31,7 +32,7 @@ export default async function EditPage({ params }: PageProps): Promise<React.Rea
     if (error instanceof ApiError && error.statusCode === 404) {
       notFound();
     }
-    console.error("Failed to fetch mouja:", error);
+    logger.error("Failed to fetch mouja", { error: error as Error });
     // Rethrow — Next.js will catch this and render the nearest error.tsx
     throw error;
   }

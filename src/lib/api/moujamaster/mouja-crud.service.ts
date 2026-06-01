@@ -2,6 +2,7 @@ import { apiClient } from "@/services/api.service";
 import { Mouja, MoujaFormModel } from "@/types/mouja.types";
 import { PagedResponse } from "@/types/common.types";
 import { ApiError } from "@/lib/utils/api";
+import { logger } from "@/lib/utils/logger";
 import { isMoujaShape, normalizeMouja } from "./mouja-types-guard";
 import {
   validateId, validateAndPrepareSearchTerm, validateCreateFormData,
@@ -21,7 +22,7 @@ export async function getMouja(): Promise<Mouja[]> {
     const items = response.data.items ?? [];
     return items.filter(isMoujaShape).map(normalizeMouja);
   } catch (error) {
-    console.error("Error fetching mouja:", error);
+    logger.error("Error fetching mouja", { error: error as Error });
     throw error;
   }
 }
@@ -53,7 +54,7 @@ export async function getMoujaPaged(
     const normalizedItems = validItems.map(normalizeMouja);
     return { ...response.data, items: normalizedItems };
   } catch (error) {
-    console.error("Error fetching paged mouja:", error);
+    logger.error("Error fetching paged mouja", { error: error as Error });
     throw error;
   }
 }
@@ -77,7 +78,7 @@ export async function getMoujaById(moujaId: number): Promise<Mouja | null> {
     // Fallback for unexpected shape
     throw new ApiError(500, "Unexpected data format received from server", "Data validation failed");
   } catch (error) {
-    console.error(`Error fetching mouja ${moujaId}:`, error);
+    logger.error(`Error fetching mouja ${moujaId}`, { error: error as Error });
     throw error;
   }
 }
@@ -97,7 +98,7 @@ export async function createMouja(data: MoujaFormModel): Promise<void> {
       throw createApiError(response.statusCode, response.error, "Create mouja failed");
     }
   } catch (error) {
-    console.error("Error creating mouja:", error);
+    logger.error("Error creating mouja", { error: error as Error });
     throw error;
   }
 }
@@ -118,7 +119,7 @@ export async function updateMouja(data: MoujaFormModel): Promise<void> {
       throw createApiError(response.statusCode, response.error, "Update mouja failed");
     }
   } catch (error) {
-    console.error("Error updating mouja:", error);
+    logger.error("Error updating mouja", { error: error as Error });
     throw error;
   }
 }
@@ -138,7 +139,7 @@ export async function deleteMouja(id: number): Promise<void> {
       throw new ApiError(statusCode, response.error || "Failed to delete mouja", `Delete mouja ${id} failed`);
     }
   } catch (error) {
-    console.error(`Error deleting mouja ${id}:`, error);
+    logger.error(`Error deleting mouja ${id}`, { error: error as Error });
     throw error;
   }
 }
@@ -155,7 +156,7 @@ export async function searchMouja(query: string): Promise<Mouja[]> {
         mouja.moujaName.toLowerCase().includes(lowerQuery)
     );
   } catch (error) {
-    console.error("Error searching mouja:", error);
+    logger.error("Error searching mouja", { error: error as Error });
     throw error;
   }
 }
