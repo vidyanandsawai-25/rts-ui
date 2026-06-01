@@ -50,7 +50,7 @@ export function mapRateableRow(item: RateableValueDetail): RateableRow {
     appliedOn: item.appliedOn || '-',
     rate: formatNumberPair(item.monthlyRate, item.yearlyRate, 0, 2),
     yearlyRentalValue: formatIndianNumber(item.yearlyRent, 0, 2),
-    depreciation: `${formatIndianNumber(item.depreciation, 0, 2)}(${(item.depreciationPer ?? 0).toFixed(2)})`,
+    depreciation: `${formatIndianNumber(item.depreciation, 0, 2)}(${(item.depreciationPer ?? 0).toFixed(2)}%)`,
     maintenance: formatIndianNumber(item.maintenance, 0, 2),
     alv: formatIndianNumber(item.annualRentalValue, 0, 2),
     rv: formatIndianNumber(item.rateableValue, 0, 2),
