@@ -208,7 +208,6 @@ export async function createBulkBuildingProperties(
     allSucceeded: false 
   };
 }
-
 /**
  * Fetches building list for a ward.
  * Returns properties with propertyNo and category name for dropdown display.
@@ -239,7 +238,6 @@ export async function getBuildingListByWard(wardId: number): Promise<BuildingLis
  */
 export async function getSocietyWingDetails(propertyId: number): Promise<SocietyWingDetailItem[]> {
   const response = await apiClient.get<SocietyWingDetailsResponse>(`/Property/${propertyId}/society-wing-details`);
-
   if (!response.success || !response.data) {
     throw new ApiError(
       response.statusCode ?? 500,

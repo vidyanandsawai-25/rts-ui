@@ -58,6 +58,7 @@ export default getRequestConfig(async ({ locale }) => {
     commonDetailsUpdateMessages,
     financialYearMessages,
     modulesMessages,
+    moujaMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/dashboard.json`).then((m) => m.default),
@@ -131,6 +132,9 @@ export default getRequestConfig(async ({ locale }) => {
       .catch(() => ({}))
       .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/mouja.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
   ]);
 
   return {
@@ -179,6 +183,7 @@ export default getRequestConfig(async ({ locale }) => {
         commonDetailsUpdateMessages?.commonDetailsUpdate || commonDetailsUpdateMessages,
       financialYear: financialYearMessages,
       modules: modulesMessages,
+      mouja: moujaMessages,
     },
   };
 });
