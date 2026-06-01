@@ -1,0 +1,445 @@
+"use client";
+
+import { useMemo, useCallback, useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
+import { toast } from "sonner";
+import { Drawer } from "@/components/common/Drawer";
+import { Button, CancelButton, SaveButton } from "@/components/common";
+import { MasterTable } from "@/components/common/MasterTable";
+import { Tabs } from "@/components/common/Tabs";
+import { ChevronDown, ChevronUp, User, Building2 } from "lucide-react";
+import type { ApartmentQCDetail } from "@/types/apartmentQC.types";
+import type { Floor } from "@/types/floor.types";
+import type { ConstructionType } from "@/types/construction.types";
+import type { UseType, UseSubType } from "@/types/typeOfUse.types";
+import { usePropertyEditScreenDrawer } from "@/hooks/apartmentQc/usePropertyEditScreenDrawer";
+import {
+  useDrawerCommonColumns,
+  useDrawerRateableColumns,
+  useDrawerCapitalColumns,
+} from "./PropertyEditScreenColumns";
+import {
+  EditableInput,
+  EditableSelect,
+  ReadOnlyInput,
+  EditableInputWithRefresh,
+} from "./PropertyEditDrawerInputs";
+import type { RoomWiseSubmissionData } from "@/lib/api/appartmentQC-room.service";
+import { getRoomWiseSubmissionsAction } from "@/app/[locale]/property-tax/ptis/appartmentQC/action";
+import type { RoomAPIResponse } from "@/types/room-details.types";
+import { RoomWiseSubmission } from "./roomSubmission/RoomWiseSubmission";
+
+interface ResidentialEditScreenProps {
+  open: boolean;
+  onClose?: () => void;
+  propertyData?: ApartmentQCDetail | null;
+  subTab?: string;
+  floors?: Floor[];
+  constructionTypes?: ConstructionType[];
+  useTypes?: UseType[];
+  allSubTypes?: UseSubType[];
+  initialFloorQCData?: ApartmentQCDetail[];
+  initialPropertyTypes?: Array<{ value: string; label: string }>;
+  returnTo?: 'amenities' | 'commercial' | 'residential';
+}
+
+const ResidentialEditScreen = ({
+  open,
+  onClose,
+  propertyData,
+  subTab: subTabProp = "rateable",
+  floors = [],
+  constructionTypes = [],
+  useTypes = [],
+  allSubTypes = [],
+  initialFloorQCData,
+  initialPropertyTypes,
+}: ResidentialEditScreenProps) => {
+  const t = useTranslations("appartmentQC");
+  const hook = usePropertyEditScreenDrawer({
+    open,
+    onClose,
+    propertyData,
+    subTabProp,
+    initialFloorQCData,
+    initialPropertyTypes,
+    floors,
+    constructionTypes,
+    useTypes,
+    allSubTypes,
+  });
+
+  // Destructure the hook handles used inside callbacks so the dep arrays are
+  // primitive references rather than `hook.x.y` chains (react-hooks/exhaustive-deps).
+  const {
+    roomDrawerOpen,
+    roomPdnId,
+    roomPropertyId,
+    formData: hookFormData,
+    updateFormField: hookUpdateFormField,
+    floorData: hookFloorData,
+    updateFloorRowArea: hookUpdateFloorRowArea,
+    updateFloorRowCount: hookUpdateFloorRowCount,
+    refetchFloorQC: hookRefetchFloorQC,
+  } = hook;
+
+  // State for client-side fetched room data
+  const [clientRoomData, setClientRoomData] = useState<RoomWiseSubmissionData[]>([]);
+  const [isLoadingRoomData, setIsLoadingRoomData] = useState(false);
+
+  // Fetch room data when room drawer opens (client-side).
+  // Reset state in cleanup (the lint rule exempts cleanups) instead of setting
+  // it inside the effect body, which would trip react-hooks/set-state-in-effect.
+  useEffect(() => {
+    if (!roomDrawerOpen || !roomPdnId || !roomPropertyId) return;
+    let cancelled = false;
+    // Schedule the "loading=true" flag as a microtask so React doesn't see
+    // a synchronous setState inside this effect body (react-hooks/set-state-in-effect).
+    queueMicrotask(() => { if (!cancelled) setIsLoadingRoomData(true); });
+    getRoomWiseSubmissionsAction({
+      propertyId: Number(roomPropertyId),
+      propertyDetailsId: Number(roomPdnId),
+    })
+      .then((result) => {
+        if (cancelled) return;
+        setClientRoomData(result.success && result.data ? result.data : []);
+      })
+      .catch(() => {
+        if (!cancelled) setClientRoomData([]);
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoadingRoomData(false);
+      });
+    return () => {
+      cancelled = true;
+      setClientRoomData([]);
+      setIsLoadingRoomData(false);
+    };
+  }, [roomDrawerOpen, roomPdnId, roomPropertyId]);
+
+  // Handle old property data refresh
+  const handleOldPropertyRefresh = useCallback(async () => {
+    const oldPropNo = hookFormData.oldPropertyNo?.trim();
+    if (!oldPropNo) return;
+
+    try {
+      const { fetchOldPropertyDataAction } = await import("@/app/[locale]/property-tax/ptis/appartmentQC/action");
+      const result = await fetchOldPropertyDataAction(oldPropNo);
+
+      if (!result.success) {
+        toast.error(result.error || "Failed to fetch old property data");
+        return;
+      }
+      if (!result.data) {
+        toast.error("No old property data found");
+        return;
+      }
+
+      const d = result.data;
+      hookUpdateFormField("oldRV", d.oldRV != null ? String(d.oldRV) : "");
+      hookUpdateFormField("oldTax", d.oldTotalTax != null ? String(d.oldTotalTax) : "");
+      hookUpdateFormField("oldArea", d.oldConstructionArea != null ? String(d.oldConstructionArea) : "");
+      hookUpdateFormField("oldUseType", d.oldUseType || "");
+      hookUpdateFormField("oldConstructionType", d.oldConstructionType || "");
+      hookUpdateFormField("oldConstructionYear", d.oldConstructionYear || "");
+      hookUpdateFormField("oldCSN", d.oldCSN || "");
+      toast.success("Old property data refreshed");
+    } catch {
+      toast.error("Failed to fetch old property data");
+    }
+  }, [hookFormData.oldPropertyNo, hookUpdateFormField]);
+
+  // Map room data to expected format for RoomWiseSubmission component
+  const mappedRoomData: RoomAPIResponse[] = useMemo(() => {
+    return clientRoomData.map((r) => {
+      // Map roomWiseMinusData to offsets format
+      const offsets = (r.roomWiseMinusData || []).map((minus) => ({
+        id: minus.id || 0,
+        roomWiseSubmissionId: minus.roomWiseSubmissionId || 0,
+        lengthMtr: minus.lengthMtr || 0,
+        length: minus.lengthMtr || 0,
+        widthMtr: minus.widthMtr || 0,
+        breadth: minus.widthMtr || 0,
+        heightMtr: minus.heightMtr || 0,
+        height: minus.heightMtr || 0,
+        areaSqMtr: minus.areaSqMtr || 0,
+        area: minus.areaSqMtr || 0,
+        shape: minus.shape || 'Rectangle',
+        base1Mtr: minus.base1Mtr || 0,
+        base2Mtr: minus.base2Mtr || 0,
+        operation: minus.operation || 'subtract',
+        remark: minus.remark || 'SUB',
+      })) as RoomAPIResponse['offsets'];
+
+      const mapped: RoomAPIResponse = {
+        id: r.id || 0,
+        roomWiseSubmissionId: r.id || 0,
+        roomNo: String(r.roomNo || ''),
+        roomType: r.roomType || '',
+        utilities: r.roomType || '',
+        roomTypeId: r.roomTypeId || 0,
+        lengthMtr: r.lengthMtr || 0,
+        length: r.lengthMtr || 0,
+        widthMtr: r.widthMtr || 0,
+        breadth: r.widthMtr || 0,
+        width: r.widthMtr || 0,
+        heightMtr: r.heightMtr || 0,
+        height: r.heightMtr || 0,
+        areaSqMtr: r.areaSqMtr || 0,
+        area: r.areaSqMtr || 0,
+        noOfRooms: r.noOfRooms || 1,
+        roomCount: r.noOfRooms || 1,
+        totalAreaSqMtr: r.totalAreaSqMtr || 0,
+        total: r.totalAreaSqMtr || 0,
+        shape: r.shape || 'Rectangle',
+        shapeType: r.shape || 'Rectangle',
+        outerYesNo: r.outerYesNo || false,
+        OuterYesNo: r.outerYesNo || false,
+        outer: r.outerYesNo ? 'Yes' : 'No',
+        minusYesNo: r.minusYesNo || false,
+        MinusYesNo: r.minusYesNo || false,
+        offsetMinus: r.minusYesNo ? 'Yes' : 'No',
+        submissionType: r.submissionType || 'room',
+        base1Mtr: r.base1Mtr || 0,
+        base2Mtr: r.base2Mtr || 0,
+        offsets: offsets,
+        minusRooms: offsets,
+        roomWiseMinusData: r.roomWiseMinusData || [],
+        shapeParameters: {
+          length: String(r.lengthMtr || 0),
+          width: String(r.widthMtr || 0),
+          radius: '',
+          base: '',
+          height: String(r.heightMtr || 0),
+          side: '',
+          base1: String(r.base1Mtr || 0),
+          base2: String(r.base2Mtr || 0),
+        },
+      };
+      
+      return mapped;
+    });
+  }, [clientRoomData]);
+
+  // Handle room submission updates: optimistic local area update, then ask
+  // the backend to recompute room aggregates for this floor (sync-rooms), then
+  // refetch the Floor QC table so the new aggregates appear in the drawer.
+  const handleRoomUpdate = useCallback(async (data: { totalAreaSqM: number; roomCount?: number }) => {
+    if (!roomPdnId) return;
+
+    const floorRow = hookFloorData.find(row => row.pdnId === Number(roomPdnId));
+    if (floorRow) {
+      hookUpdateFloorRowArea(floorRow.id, data.totalAreaSqM.toFixed(2));
+      // Optimistically update noOfRooms so the count changes immediately
+      if (data.roomCount !== undefined) {
+        hookUpdateFloorRowCount(floorRow.id, String(data.roomCount));
+      }
+    }
+
+    try {
+      const { syncRoomsForPropertyDetailsAction } =
+        await import("@/app/[locale]/property-tax/ptis/appartmentQC/action");
+      const result = await syncRoomsForPropertyDetailsAction(Number(roomPdnId));
+      if (result.success) {
+        await hookRefetchFloorQC();
+      } else {
+        toast.error(result.error || "Failed to sync rooms");
+      }
+    } catch {
+      toast.error("Failed to sync rooms");
+    }
+  }, [roomPdnId, hookFloorData, hookUpdateFloorRowArea, hookUpdateFloorRowCount, hookRefetchFloorQC]);
+
+  // Column definitions
+  const commonColumns = useDrawerCommonColumns({
+    floorOptions: hook.floorOptions,
+    conTypeOptions: hook.conTypeOptions,
+    useTypeOptions: hook.useTypeOptions,
+    getSubTypeOptions: hook.getSubTypeOptionsForUseType,
+    isLoadingFloors: hook.isLoadingFloors,
+    isLoadingConTypes: hook.isLoadingConTypes,
+    isLoadingUseTypes: hook.isLoadingUseTypes,
+    handleFloorDropdownClick: hook.handleFloorDropdownClick,
+    handleConTypeDropdownClick: hook.handleConTypeDropdownClick,
+    handleUseTypeDropdownClick: hook.handleUseTypeDropdownClick,
+    updateRow: hook.updateFloorRow,
+    onOpenRoomSubmission: hook.handleOpenRoomSubmission,
+  });
+  const rateableColumns = useDrawerRateableColumns();
+  const capitalColumns = useDrawerCapitalColumns();
+
+  const floorColumns = useMemo(() => {
+    if (hook.subTab === "capital") return [...commonColumns, ...capitalColumns];
+    if (hook.subTab === "dual-method") {
+      return hook.dualMethodTab === "capital"
+        ? [...commonColumns, ...capitalColumns]
+        : [...commonColumns, ...rateableColumns];
+    }
+    return [...commonColumns, ...rateableColumns];
+  }, [commonColumns, rateableColumns, capitalColumns, hook.subTab, hook.dualMethodTab]);
+
+  if (!propertyData) {
+    return (
+      <Drawer open={open} onClose={hook.handleClose} width="xl" title={t("drawer.title")}>
+        <div className="p-8 text-center">
+          <p className="text-gray-600">{t("drawer.noPropertyData")}</p>
+          <Button onClick={hook.handleClose} variant="secondary" size="sm" className="mt-4">{t("drawer.goBack")}</Button>
+        </div>
+      </Drawer>
+    );
+  }
+
+  const tableStyle = (col: typeof floorColumns[0]) => ({
+    ...col,
+    cellClassName: `${col.cellClassName || ""} whitespace-nowrap`,
+    headerClassName: `${col.headerClassName || ""} !px-1 !py-0.5 border-l !border-gray-300`,
+  });
+
+  return (
+    <>
+    <Drawer
+      open={open}
+      onClose={hook.handleClose}
+      width="xl"
+      title={
+        <div className="flex items-center justify-between w-full">
+          <h2 className="text-base font-semibold text-gray-900">{t("drawer.title")}</h2>
+          <div className="flex items-center gap-1.5 text-[10px]">
+            <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded font-medium">{`Ward: ${propertyData?.wardNo || propertyData?.wardId || "-"}`}</span>
+            <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded font-medium">{`Zone: ${propertyData?.zoneNo || "-"}`}</span>
+            <span className="px-2 py-1 bg-green-100 text-green-800 rounded font-medium">{`Prop: ${propertyData?.propertyNo || "-"}`}</span>
+          </div>
+        </div>
+      }
+      footer={
+        <>
+          <CancelButton onClick={hook.handleClose} label={t("drawer.cancel")} />
+          <SaveButton onClick={hook.handleSave} isLoading={hook.isSavingFloorQC} disabled={hook.isSavingFloorQC} className="bg-blue-600 hover:bg-blue-700 text-white" />
+        </>
+      }
+    >
+      <div className="p-3 space-y-3">
+        {/* Basic Information Section */}
+        <div className="border border-blue-200 rounded-lg overflow-hidden shadow-sm">
+          <button type="button" onClick={() => hook.setIsBasicInfoOpen(!hook.isBasicInfoOpen)} className="w-full bg-blue-600 text-gray-100 px-3 py-2 flex items-center justify-between hover:bg-blue-500 transition">
+            <div className="flex items-center gap-2"><User className="w-4 h-4" /><span className="font-semibold text-sm">{t("drawer.basicInformation")}</span></div>
+            {hook.isBasicInfoOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </button>
+          {hook.isBasicInfoOpen && (
+            <div className="p-3 bg-white space-y-2">
+              <div className="grid grid-cols-4 gap-2">
+                <EditableInput label="Owner Name" value={hook.formData.ownerName} onChange={(v) => hook.updateFormField("ownerName", v)} required error={hook.formErrors.ownerName} onBlur={() => hook.handleFieldBlur("ownerName")} />
+                <EditableInput label="Occupier Name" value={hook.formData.occupierName} onChange={(v) => hook.updateFormField("occupierName", v)} required error={hook.formErrors.occupierName} onBlur={() => hook.handleFieldBlur("occupierName")} />
+                <EditableInput label="Renter Name" value={hook.formData.renterName} onChange={(v) => hook.updateFormField("renterName", v)} error={hook.formErrors.renterName} onBlur={() => hook.handleFieldBlur("renterName")} />
+                <EditableSelect label="Property Description" value={hook.formData.propertyTypeId} onChange={(v) => { hook.updateFormField("propertyTypeId", v); const s = hook.propertyTypeOptions.find(o => o.value === v); hook.updateFormField("propertyDescription", s?.label || ""); }} options={hook.propertyTypeOptions} isLoading={hook.isLoadingPropertyTypes} />
+              </div>
+              <div className="grid grid-cols-7 gap-2">
+                <EditableInput label="BHK" value={hook.formData.bhk} onChange={(v) => hook.updateFormField("bhk", v)} error={hook.formErrors.bhk} onBlur={() => hook.handleFieldBlur("bhk")} />
+                <EditableInput label="Mobile" value={hook.formData.mobileNo} onChange={(v) => hook.updateFormField("mobileNo", v)} error={hook.formErrors.mobileNo} onBlur={() => hook.handleFieldBlur("mobileNo")} />
+                <EditableInput label="Email ID" value={hook.formData.emailId} onChange={(v) => hook.updateFormField("emailId", v)} type="email" error={hook.formErrors.emailId} onBlur={() => hook.handleFieldBlur("emailId")} />
+                <EditableInput label="Shop Name" value={hook.formData.flatOrShopName} onChange={(v) => hook.updateFormField("flatOrShopName", v)} error={hook.formErrors.flatOrShopName} onBlur={() => hook.handleFieldBlur("flatOrShopName")} />
+                <EditableInput label="Wing" value={hook.formData.wingName} onChange={(v) => hook.updateFormField("wingName", v)} error={hook.formErrors.wingName} onBlur={() => hook.handleFieldBlur("wingName")} />
+                <EditableInput label="Flat/ShopNo." value={hook.formData.flatOrShopNo} onChange={(v) => hook.updateFormField("flatOrShopNo", v)} required error={hook.formErrors.flatOrShopNo} onBlur={() => hook.handleFieldBlur("flatOrShopNo")} />
+                <EditableInputWithRefresh 
+                  label="Old Prop No" 
+                  value={hook.formData.oldPropertyNo} 
+                  onChange={(v) => hook.updateFormField("oldPropertyNo", v)} 
+                  onRefresh={handleOldPropertyRefresh}
+                  error={hook.formErrors.oldPropertyNo} 
+                  onBlur={() => hook.handleFieldBlur("oldPropertyNo")} 
+                />
+              </div>
+              <div className="grid grid-cols-7 gap-2">
+                <ReadOnlyInput label="Remark" value={hook.formData.remark} />
+                <ReadOnlyInput label="Old RV" value={hook.formData.oldRV} />
+                <ReadOnlyInput label="New RV" value={hook.formData.newRV} />
+                <ReadOnlyInput label="Old Tax" value={hook.formData.oldTax} />
+                <ReadOnlyInput label="New Tax" value={hook.formData.newTax} />
+                <ReadOnlyInput label="Old Area" value={hook.formData.oldArea} />
+                <ReadOnlyInput label="New Area" value={hook.formData.newArea} />
+              </div>
+              <div className="grid grid-cols-4 gap-2">
+                <ReadOnlyInput label="Old Use Type" value={hook.formData.oldUseType} />
+                <ReadOnlyInput label="Old Construction Type" value={hook.formData.oldConstructionType} />
+                <ReadOnlyInput label="Old CSN" value={hook.formData.oldCSN} />
+                <ReadOnlyInput label="Old Construction Year" value={hook.formData.oldConstructionYear} />
+              </div>
+
+            </div>
+          )}
+        </div>
+
+        {/* Floor QC Section */}
+        <div className="border border-blue-200 rounded-lg overflow-hidden shadow-sm">
+          <button type="button" onClick={() => hook.setIsFloorQCOpen(!hook.isFloorQCOpen)} className="w-full bg-blue-600 px-3 py-2 flex items-center justify-between hover:bg-blue-500 transition">
+            <div className="flex items-center gap-2"><Building2 className="w-4 h-4 text-gray-100" /><span className="font-semibold text-sm text-gray-100">{t("drawer.floorQC")}</span><span className="text-[10px] px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded-full">{`${hook.floorData.length} floors`}</span></div>
+            {hook.isFloorQCOpen ? <ChevronUp className="w-4 h-4 text-white" /> : <ChevronDown className="w-4 h-4 text-white" />}
+          </button>
+          {hook.isFloorQCOpen && (
+            <div className="bg-white my-3">
+              {hook.subTab === "dual-method" ? (
+                <Tabs value={hook.dualMethodTab} onChange={(v) => hook.setDualMethodTab(v as "rateable" | "capital")} variant="pills" size="sm" className="p-2">
+                  <Tabs.TabList className="mb-0">
+                    <Tabs.Tab value="rateable">{t("drawer.tabs.rateable")}</Tabs.Tab>
+                    <Tabs.Tab value="capital">{t("drawer.tabs.capital")}</Tabs.Tab>
+                  </Tabs.TabList>
+                  <Tabs.TabPanel value="rateable">
+                    <MasterTable columns={floorColumns.map(tableStyle)} data={hook.floorData} loading={hook.isLoadingFloorQCData} tableClassName="text-[10px] w-max min-w-full" theadClassName="bg-[#e8eef4] text-black sticky top-0 z-20" height="sm" />
+                  </Tabs.TabPanel>
+                  <Tabs.TabPanel value="capital">
+                    <MasterTable columns={floorColumns.map(tableStyle)} data={hook.floorData} loading={hook.isLoadingFloorQCData} tableClassName="text-[10px] w-max min-w-full" theadClassName="bg-[#e8eef4] text-black sticky top-0 z-20" height="sm" />
+                  </Tabs.TabPanel>
+                </Tabs>
+              ) : (
+                <MasterTable columns={floorColumns.map(tableStyle)} data={hook.floorData} loading={hook.isLoadingFloorQCData} tableClassName="text-[10px] w-max min-w-full" theadClassName="bg-[#e8eef4] text-black sticky top-0 z-20" height="sm" />
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </Drawer>
+
+    {/* Room Submission Drawer */}
+    {hook.roomDrawerOpen && hook.roomPdnId && hook.roomPropertyId && (
+      <Drawer
+        open={hook.roomDrawerOpen}
+        onClose={hook.handleCloseRoomDrawer}
+        width="xl"
+        title={
+          <div className="flex items-center justify-between w-full">
+            <h2 className="text-base font-semibold text-gray-900">{t("drawer.roomWiseSubmission")}</h2>
+            <div className="flex items-center gap-1.5 text-[10px]">
+              <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded font-medium">{`Floor: ${hook.roomPdnId}`}</span>
+              <span className="px-2 py-1 bg-green-100 text-green-800 rounded font-medium">{`Property: ${hook.roomPropertyId}`}</span>
+            </div>
+          </div>
+        }
+      >
+        {isLoadingRoomData ? (
+          <div className="p-8 text-center">
+            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+            <p className="mt-4 text-gray-600">Loading room data...</p>
+          </div>
+        ) : (
+          <RoomWiseSubmission
+            key={`room-submission-${hook.roomPdnId}-${clientRoomData.length}`}
+            isOpen={true}
+            onClose={hook.handleCloseRoomDrawer}
+            onUpdate={handleRoomUpdate}
+            displayMode="inline"
+            initialPropertyID={Number(hook.roomPropertyId)}
+            initialFloorId={Number(hook.roomPdnId)}
+            floorNumber={String(hook.roomPdnId)}
+            initialRooms={mappedRoomData}
+            existingRooms={mappedRoomData}
+            externalAreaUnit="sq.m"
+            maxRooms={100}
+          />
+        )}
+      </Drawer>
+    )}
+    </>
+  );
+};
+
+export default ResidentialEditScreen;

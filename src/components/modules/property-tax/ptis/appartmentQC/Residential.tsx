@@ -51,6 +51,11 @@ const Residential = ({
     startTransition(() => router.push(`${pathname}?${params.toString()}`));
   }, [pathname, router, searchParams]);
 
+  const handleRowClick = useCallback((row: Record<string, unknown>) => {
+    const rowId = String(row.id || row.propertyId || 'new');
+    router.push(`${pathname}/edit/${rowId}`);
+  }, [pathname, router]);
+
   const tAqc = useTranslations("appartmentQC");
   const columns = useMemo(() => getApartmentQCColumns('residential', activeTab, tAqc), [activeTab, tAqc]);
   const transformedData = useMemo(() => transformApartmentData(initialData, 'residential'), [initialData]);
@@ -60,6 +65,7 @@ const Residential = ({
       <CommonPropertyTable
         columns={columns} data={transformedData} title={tAqc("apartmentTabs.residentialTitle")} activeTab={activeTab}
         searchQuery={searchQuery} onSearchChange={(q) => { setSearchQuery(q); updateQueryParams({ searchTerm: q, pageNumber: 1 }); }}
+        onRowClick={handleRowClick}
         loading={isPending} isAutoScrolling={isAutoScrolling} onToggleAutoScroll={() => setIsAutoScrolling(!isAutoScrolling)}
         pageNumber={initialPageNumber} pageSize={initialPageSize} totalCount={initialTotalCount} totalPages={initialTotalPages}
         onPageChange={(p) => updateQueryParams({ pageNumber: p })} onPageSizeChange={(s) => updateQueryParams({ pageSize: s, pageNumber: 1 })}

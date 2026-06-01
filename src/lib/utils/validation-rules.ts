@@ -58,6 +58,9 @@ export const MOBILE_10_REGEX = /^[6-9][0-9]{9}$/;
 export const PINCODE_6_REGEX = /^[0-9]{6}$/;
 export const CITY_NAME_REGEX = /^[a-zA-Z\s]+$/;
 export const YEAR_REGEX = /^\d{4}$/;
+// Positive integer (one or more digits, no decimal/sign). Generic — usable
+// for BHK, room counts, floor counts, etc.
+export const POSITIVE_INTEGER_REGEX = /^\d+$/;
 
 
 /* ================= POSITIVE DECIMAL VALIDATION ================= */
