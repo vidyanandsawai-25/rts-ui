@@ -1,15 +1,18 @@
 "use client";
 
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { Building2 } from "lucide-react";
+import { Building2, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { MasterTable } from "@/components/common/MasterTable";
 import { SearchInput, StatusBadge, AddButton, Select, Option, Label } from "@/components/common";
 import { ZonePropertyItem } from "@/types/zone-master/properties/zoneProperty.types";
 import { WardItem } from "@/types/wardMaster.types";
 import { usePropertyListHandlers } from "@/hooks/zoneMaster/usePropertyListHandlers";
-import { useCallback, useMemo } from "react";
+import { usePropertyDelete } from "@/hooks/zoneMaster/usePropertyDelete";
 import { getPropertyColumns } from "./propertyColumns";
+import { DeleteLabelButton } from "@/components/common/ActionButtons";
+import type { Column } from "@/components/common/MasterTable";
 
 interface PropertyCategoryMap {
     [key: number]: string;
@@ -53,6 +56,88 @@ export default function PropertyList({
     const t = useTranslations("zoneMaster");
     const tCommon = useTranslations("common");
 
+    // ── Selection state ──────────────────────────────────────────────────────
+    const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
+    const headerCheckboxRef = useRef<HTMLInputElement>(null);
+
+    // Reset selection when the property list changes (page/ward change)
+    /* eslint-disable react-hooks/set-state-in-effect */
+    useEffect(() => {
+        setSelectedRows(new Set());
+    }, [properties, selectedWardId]);
+    /* eslint-enable react-hooks/set-state-in-effect */
+
+    const allSelected =
+        properties.length > 0 && selectedRows.size === properties.length;
+    const someSelected = selectedRows.size > 0 && !allSelected;
+
+    useEffect(() => {
+        if (headerCheckboxRef.current) {
+            headerCheckboxRef.current.indeterminate = someSelected;
+        }
+    }, [someSelected]);
+
+    const toggleSelectAll = useCallback(() => {
+        setSelectedRows(
+            allSelected
+                ? new Set()
+                : new Set(properties.map((p) => String(p.id)))
+        );
+    }, [allSelected, properties]);
+
+    const toggleRow = useCallback((id: string) => {
+        setSelectedRows((prev) => {
+            const next = new Set(prev);
+            if (next.has(id)) {
+                next.delete(id);
+            } else {
+                next.add(id);
+            }
+            return next;
+        });
+    }, []);
+
+    // ── Delete operations (extracted to custom hook) ────────────────────────
+    const { isDeleting, handleBulkDelete: performBulkDelete } = usePropertyDelete({
+        onClearSelection: () => setSelectedRows(new Set()),
+    });
+
+    // Wrapper to pass selected IDs sorted by partitionNo descending so the
+    // backend's "delete highest partition first" constraint is satisfied.
+    // When partition numbers are equal, sort by flatOrShopNo ascending (A before S).
+    const handleBulkDelete = useCallback(() => {
+        const sorted = Array.from(selectedRows).sort((a, b) => {
+            const propA = properties.find((p) => String(p.id) === a);
+            const propB = properties.find((p) => String(p.id) === b);
+            const partA = propA?.partitionNo ?? "";
+            const partB = propB?.partitionNo ?? "";
+            
+            // Main properties (no partition) handled separately
+            if (!partA && !partB) {
+                // Both are main properties - sort by flatOrShopNo ascending
+                const flatA = propA?.flatOrShopNo ?? "";
+                const flatB = propB?.flatOrShopNo ?? "";
+                return flatA.localeCompare(flatB, undefined, { numeric: true, sensitivity: "base" });
+            }
+            if (!partA) return 1;  // main property deleted last
+            if (!partB) return -1;
+            
+            // Compare partition numbers first (descending - highest first)
+            const partComparison = partB.localeCompare(partA, undefined, { numeric: true, sensitivity: "base" });
+            
+            // If partition numbers are equal, sort by flatOrShopNo ascending (A before S)
+            if (partComparison === 0) {
+                const flatA = propA?.flatOrShopNo ?? "";
+                const flatB = propB?.flatOrShopNo ?? "";
+                return flatA.localeCompare(flatB, undefined, { numeric: true, sensitivity: "base" });
+            }
+            
+            return partComparison;
+        });
+        
+        performBulkDelete(sorted);
+    }, [selectedRows, properties, performBulkDelete]);
+
     const {
         localSearch,
         handleSearchChange,
@@ -75,36 +160,78 @@ export default function PropertyList({
         }));
     }, [wards]);
 
-    // Table columns
-    const columns = useMemo(
-        () => getPropertyColumns({
-            t,
-            pageNumber,
-            pageSize,
-            wards,
-            categoryMap,
-            propertyTypeMap,
+
+
+    // ── Columns (checkbox + data columns) ───────────────────────────────────
+    const checkboxColumn: Column<Record<string, unknown>> = useMemo(
+        () => ({
+            key: "select",
+            label: (
+                <input
+                    ref={headerCheckboxRef}
+                    type="checkbox"
+                    checked={allSelected}
+                    onChange={toggleSelectAll}
+                    disabled={properties.length === 0 || isDeleting}
+                    className="w-4 h-4 rounded border-gray-300 text-blue-600 cursor-pointer"
+                    aria-label="Select all"
+                />
+            ),
+            width: "48px",
+            align: "center" as const,
+            render: (_: unknown, row: Record<string, unknown>) => (
+                <input
+                    type="checkbox"
+                    checked={selectedRows.has(String((row as unknown as ZonePropertyItem).id))}
+                    onChange={() => toggleRow(String((row as unknown as ZonePropertyItem).id))}
+                    disabled={isDeleting}
+                    className="w-4 h-4 rounded border-gray-300 text-blue-600 cursor-pointer"
+                    aria-label={`Select property ${(row as unknown as ZonePropertyItem).propertyNo}`}
+                />
+            ),
         }),
+        [allSelected, toggleSelectAll, toggleRow, selectedRows, properties.length, isDeleting]
+    );
+
+    const dataColumns = useMemo(
+        () =>
+            getPropertyColumns({
+                t,
+                pageNumber,
+                pageSize,
+                wards,
+                categoryMap,
+                propertyTypeMap,
+            }),
         [t, pageNumber, pageSize, wards, categoryMap, propertyTypeMap]
+    );
+
+    const columns = useMemo(
+        () => [checkboxColumn, ...dataColumns],
+        [checkboxColumn, dataColumns]
     );
 
     const handleCreateProperty = useCallback(() => {
         const params = new URLSearchParams(searchParams.toString());
-        if (selectedWardId !== null) {
-            params.set("propWardId", String(selectedWardId));
-        }
+        if (selectedWardId !== null) params.set("propWardId", String(selectedWardId));
         params.set("createProperty", "");
         router.push(`${pathname}?${params.toString()}`);
     }, [router, pathname, searchParams, selectedWardId]);
 
     const handleCreatePartition = useCallback(() => {
         const params = new URLSearchParams(searchParams.toString());
-        if (selectedWardId !== null) {
-            params.set("propWardId", String(selectedWardId));
-        }
+        if (selectedWardId !== null) params.set("propWardId", String(selectedWardId));
         params.set("createPartition", "");
         router.push(`${pathname}?${params.toString()}`);
     }, [router, pathname, searchParams, selectedWardId]);
+
+    const handleOpenDeleteDrawer = useCallback(() => {
+        const params = new URLSearchParams(searchParams.toString());
+        if (selectedWardId !== null) params.set("propWardId", String(selectedWardId));
+        params.set("deleteProperty", "");
+        router.push(`${pathname}?${params.toString()}`);
+    }, [router, pathname, searchParams, selectedWardId]);
+
 
     return (
         <div className="flex flex-col h-full">
@@ -145,7 +272,6 @@ export default function PropertyList({
                             selectSize="md"
                         />
                     </div>
-
                     <div>
                         <Label className="block text-sm font-medium text-gray-700 mb-1">
                             {t("propertyList.search")}
@@ -184,6 +310,23 @@ export default function PropertyList({
                             size="sm"
                             label={t("propertyList.createPartition")}
                             onClick={handleCreatePartition}
+                            disabled={selectedWardId === null}
+                        />
+                        {/* Bulk delete — shown only when rows are selected */}
+                        {selectedRows.size > 0 && (
+                            <button
+                                type="button"
+                                onClick={handleBulkDelete}
+                                disabled={isDeleting}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-semibold bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition-colors"
+                            >
+                                <Trash2 className="w-4 h-4" />
+                                {t("createProperty.deleteSelectedCount", { count: selectedRows.size })}
+                            </button>
+                        )}
+                        <DeleteLabelButton
+                            label={t("propertyList.deleteButton")}
+                            onClick={handleOpenDeleteDrawer}
                             disabled={selectedWardId === null}
                         />
                     </div>
@@ -234,6 +377,8 @@ export default function PropertyList({
                     />
                 )}
             </div>
+
         </div>
     );
 }
+

@@ -284,6 +284,7 @@
   },
   "floorTable": {
     "columns": {
+      "taxable": "Taxable",
       "serialNo": "Sr. No.",
       "floor": "Floor",
       "subFloor": "Sub Floor",
@@ -320,6 +321,7 @@
       "appliedOn": "AppliedON"
     },
     "tooltips": {
+      "taxable": "Taxable",
       "floor": "Floor",
       "subFloor": "Sub Floor",
       "constYear": "Construction Year",

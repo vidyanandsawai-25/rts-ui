@@ -12,7 +12,6 @@ interface UseBuildingListReturn {
   buildingListError: string | null;
   refetchBuildingList: () => Promise<void>;
 }
-
 /**
  * Hook to fetch building list for a ward.
  * Returns properties with propertyNo and category name for dropdown display.
@@ -35,7 +34,7 @@ export function useBuildingList({ wardId }: UseBuildingListProps): UseBuildingLi
     try {
       const result = await getBuildingListByWardAction(wardId);
       
-      if (result.success && result.data) {
+      if (result.success && Array.isArray(result.data)) {
         setBuildingList(result.data);
       } else {
         setBuildingListError(result.error || "Failed to fetch building list");

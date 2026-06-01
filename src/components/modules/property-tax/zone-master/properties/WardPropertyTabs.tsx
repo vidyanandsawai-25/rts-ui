@@ -8,6 +8,7 @@ import WardList from "../wards/WardList";
 import PropertyList from "./PropertyList";
 import { ZoneItem } from "@/types/zoneMaster.types";
 import { WardItem } from "@/types/wardMaster.types";
+
 import { ZonePropertyItem } from "@/types/zone-master/properties/zoneProperty.types";
 
 interface PropertyCategoryMap {
@@ -44,6 +45,7 @@ interface WardPropertyTabsProps {
 
   // Active tab
   activeTab?: "wards" | "properties";
+
 }
 
 export default function WardPropertyTabs({
@@ -72,6 +74,7 @@ export default function WardPropertyTabs({
 
   // Active tab
   activeTab = "wards",
+
 }: WardPropertyTabsProps) {
   const router = useRouter();
   const pathname = usePathname();
