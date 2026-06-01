@@ -10,8 +10,8 @@ vi.mock("next-intl", () => ({
   useTranslations: vi.fn((ns?: string) => (key: string) => (ns ? `${ns}.${key}` : key)),
 }));
 
-const mockBuildingList: ReturnType<typeof vi.fn> = vi.fn(() => ({
-  buildingList: [],
+const mockBuildingList = vi.fn(() => ({
+  buildingList: [] as any[],
   loadingBuildingList: false,
 }));
 

@@ -97,7 +97,7 @@ describe("usePropertyDelete", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    onClearSelection = vi.fn<[], void>();
+    onClearSelection = vi.fn();
   });
 
   // ── Initial state ──────────────────────────────────────────────────────────
