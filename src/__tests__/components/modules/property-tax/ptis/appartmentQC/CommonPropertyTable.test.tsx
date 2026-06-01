@@ -22,6 +22,7 @@ describe('CommonPropertyTable', () => {
     activeTab: 'residential',
     searchQuery: '',
     onSearchChange: vi.fn(),
+    onRowClick: vi.fn(),
     isAutoScrolling: false,
     onToggleAutoScroll: vi.fn(),
   };
