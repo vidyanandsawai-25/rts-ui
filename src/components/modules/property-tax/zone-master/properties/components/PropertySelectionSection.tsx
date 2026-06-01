@@ -3,8 +3,14 @@
 import { Select, ValidationMessage } from "@/components/common";
 import { Option } from "@/components/common";
 
+export interface SelectedPropertyHeaderInfo {
+  id?: number;
+  propertyId?: number;
+  propertyNo?: string;
+}
+
 interface PropertySelectionSectionProps {
-  selectedProperty: any;
+  selectedProperty: SelectedPropertyHeaderInfo | null;
   propertyOptions: Option[];
 
   onPropertyChange: (

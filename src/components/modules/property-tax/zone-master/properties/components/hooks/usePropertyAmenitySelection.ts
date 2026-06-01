@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 
 interface UsePropertyAmenitySelectionProps {
   tableData: { propertyId: number }[];
@@ -20,11 +20,13 @@ export function usePropertyAmenitySelection({
   tableData,
 }: UsePropertyAmenitySelectionProps): UsePropertyAmenitySelectionReturn {
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
+  const [prevTableData, setPrevTableData] = useState(tableData);
 
   // Reset selection when table data changes
-  useEffect(() => {
+  if (tableData !== prevTableData) {
+    setPrevTableData(tableData);
     setSelectedRows(new Set());
-  }, [tableData]);
+  }
 
   const allSelected = tableData.length > 0 && selectedRows.size === tableData.length;
   const someSelected = selectedRows.size > 0 && !allSelected;
@@ -38,7 +40,11 @@ export function usePropertyAmenitySelection({
   const toggleRow = useCallback((id: number) => {
     setSelectedRows((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
       return next;
     });
   }, []);

@@ -48,19 +48,37 @@ export function usePropertyAmenityData({
   const [tableData, setTableData] = useState<SocietyAmenityDetailItem[]>([]);
   const [tableLoading, setTableLoading] = useState(false);
 
-  // Load wings when property changes
-  useEffect(() => {
-    if (!propertyId) {
-      setWings([]);
-      setSelectedSocietyDetailId(null);
-      return;
-    }
+  // Track prev props/state to reset on render
+  const [prevPropertyId, setPrevPropertyId] = useState("");
+  const [prevSelectedSocietyDetailId, setPrevSelectedSocietyDetailId] = useState<number | null>(null);
+  const [prevIsAmenity, setPrevIsAmenity] = useState(false);
 
-    let cancelled = false;
-    setWingsLoading(true);
+  if (propertyId !== prevPropertyId) {
+    setPrevPropertyId(propertyId);
+    setWings([]);
     setSelectedSocietyDetailId(null);
     setTableData([]);
     setIsAmenity(false);
+  }
+
+  if (
+    selectedSocietyDetailId !== prevSelectedSocietyDetailId ||
+    isAmenity !== prevIsAmenity
+  ) {
+    setPrevSelectedSocietyDetailId(selectedSocietyDetailId);
+    setPrevIsAmenity(isAmenity);
+    if (!selectedSocietyDetailId) {
+      setTableData([]);
+    }
+  }
+
+  // Load wings when property changes
+  useEffect(() => {
+    if (!propertyId) return;
+
+    let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setWingsLoading(true);
 
     fetchSocietyDetailsByPropertyAction(Number(propertyId))
       .then((result) => {
@@ -92,10 +110,8 @@ export function usePropertyAmenityData({
   }, []);
 
   useEffect(() => {
-    if (!selectedSocietyDetailId) {
-      setTableData([]);
-      return;
-    }
+    if (!selectedSocietyDetailId) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadTable(selectedSocietyDetailId, isAmenity);
   }, [selectedSocietyDetailId, isAmenity, loadTable]);
 

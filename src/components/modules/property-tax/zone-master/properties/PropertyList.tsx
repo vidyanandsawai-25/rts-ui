@@ -60,10 +60,15 @@ export default function PropertyList({
     const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
     const headerCheckboxRef = useRef<HTMLInputElement>(null);
 
+    const [prevProperties, setPrevProperties] = useState<ZonePropertyItem[]>(properties);
+    const [prevWardId, setPrevWardId] = useState<number | null>(selectedWardId);
+
     // Reset selection when the property list changes (page/ward change)
-    useEffect(() => {
+    if (properties !== prevProperties || selectedWardId !== prevWardId) {
+        setPrevProperties(properties);
+        setPrevWardId(selectedWardId);
         setSelectedRows(new Set());
-    }, [properties, selectedWardId]);
+    }
 
     const allSelected =
         properties.length > 0 && selectedRows.size === properties.length;
@@ -86,7 +91,11 @@ export default function PropertyList({
     const toggleRow = useCallback((id: string) => {
         setSelectedRows((prev) => {
             const next = new Set(prev);
-            next.has(id) ? next.delete(id) : next.add(id);
+            if (next.has(id)) {
+                next.delete(id);
+            } else {
+                next.add(id);
+            }
             return next;
         });
     }, []);
@@ -184,7 +193,6 @@ export default function PropertyList({
                 />
             ),
         }),
-        // eslint-disable-next-line react-hooks/exhaustive-deps
         [allSelected, toggleSelectAll, toggleRow, selectedRows, properties.length, isDeleting]
     );
 
