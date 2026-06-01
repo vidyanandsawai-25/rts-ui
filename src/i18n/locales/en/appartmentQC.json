@@ -3,7 +3,7 @@
     "propertyNo": "Property No",
     "partitionNo": "Partition No.",
     "oldPropertyNo": "Old Property No.",
-    "wingName": "Wing Name",
+    "wingName": "Wing",
     "shopNo": "Shop No.",
     "flatNo": "Flat No.",
     "ownerName": "Owner Name",
@@ -87,7 +87,21 @@
   },
   "actions": {
     "startAutoScroll": "Start auto-scroll",
-    "stopAutoScroll": "Stop auto-scroll"
+    "stopAutoScroll": "Stop auto-scroll",
+    "exportExcel": "Export to Excel"
+  },
+  "export": {
+    "downloading": "Downloading Excel file...",
+    "success": "Excel file downloaded successfully!",
+    "error": "Failed to download Excel file",
+    "missingParams": "Missing ward ID or property number"
+  },
+  "filter": {
+    "filterColumn": "Filter column",
+    "filterBy": "Filter by",
+    "noOptions": "No options available",
+    "clearAll": "Clear All",
+    "apply": "Apply"
   },
   "drawer": {
     "title": "Property Details",

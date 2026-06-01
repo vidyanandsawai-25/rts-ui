@@ -134,11 +134,11 @@ export function useRoomSubmissionSidebar({
     // property-details ID (= roomPdnId). The PUT save has already succeeded
     // by the time this callback runs; sync failure should not undo the area
     // update, so we surface its error via a separate toast.
-    if (selectedFloorRow.pdnId) {
+    if (selectedFloorRow.pdnId && propertyId) {
       try {
         const { syncRoomsForPropertyDetailsAction } =
           await import("@/app/[locale]/property-tax/ptis/appartmentQC/action");
-        const result = await syncRoomsForPropertyDetailsAction(selectedFloorRow.pdnId);
+        const result = await syncRoomsForPropertyDetailsAction(propertyId, selectedFloorRow.pdnId);
         if (!result.success) {
           toast.error(result.error || "Failed to sync rooms");
         }
@@ -146,7 +146,7 @@ export function useRoomSubmissionSidebar({
         toast.error("Failed to sync rooms");
       }
     }
-  }, [state, onAreaUpdate, copy.messages]);
+  }, [state, propertyId, onAreaUpdate, copy.messages]);
 
   /**
    * Toggles the area unit between sq.m and sq.ft

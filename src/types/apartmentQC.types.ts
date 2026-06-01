@@ -188,6 +188,11 @@ export interface ApartmentQCSearchParams {
   sortBy?: string;
   sortOrder?: string;
   filterLogic?: number;
+  // Column filter parameters
+  wing?: string;
+  flatOrShopNo?: string;
+  apartmentType?: string;
+  propertyType?: string;
 }
 
 /**

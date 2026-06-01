@@ -3,7 +3,7 @@
     "propertyNo": "संपत्ति नं",
     "partitionNo": "विभाजन नं",
     "oldPropertyNo": "पुराना संपत्ति नं",
-    "wingName": "विंग का नाम",
+    "wingName": "विंग",
     "shopNo": "दुकान नं",
     "flatNo": "फ्लैट नं",
     "ownerName": "संपत्ति धारक का नाम",
@@ -87,7 +87,21 @@
   },
   "actions": {
     "startAutoScroll": "ऑटो-स्क्रॉल प्रारंभ करें",
-    "stopAutoScroll": "ऑटो-स्क्रॉल रोकें"
+    "stopAutoScroll": "ऑटो-स्क्रॉल रोकें",
+    "exportExcel": "एक्सेल में निर्यात करें"
+  },
+  "export": {
+    "downloading": "एक्सेल फ़ाइल डाउनलोड हो रही है...",
+    "success": "एक्सेल फ़ाइल सफलतापूर्वक डाउनलोड हुई!",
+    "error": "एक्सेल फ़ाइल डाउनलोड करने में विफल",
+    "missingParams": "वार्ड ID या संपत्ति नंबर गायब है"
+  },
+  "filter": {
+    "filterColumn": "कॉलम फ़िल्टर करें",
+    "filterBy": "द्वारा फ़िल्टर करें",
+    "noOptions": "कोई विकल्प उपलब्ध नहीं",
+    "clearAll": "सभी हटाएं",
+    "apply": "लागू करें"
   },
   "drawer": {
     "title": "संपत्ति विवरण",

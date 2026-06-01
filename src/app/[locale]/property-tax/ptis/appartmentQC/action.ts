@@ -25,6 +25,7 @@ export type ActionResult<T = void> =
  * Convert translation keys or error messages to user-facing strings.
  * If the input looks like a translation key (e.g., "ptis.apartmentQC.errors.fetchFailed"),
  * convert it to a human-readable message as a fallback.
+ * Backend error messages (e.g., "Rate not found for...") are returned as-is.
  */
 function toUserFacingErrorMessage(messageOrKey: string): string {
   const value = messageOrKey.trim();
@@ -32,11 +33,11 @@ function toUserFacingErrorMessage(messageOrKey: string): string {
     return "An unexpected error occurred.";
   }
 
-  // Check if it looks like a translation key (dotted notation)
+  // Check if it looks like a translation key (dotted notation with only lowercase/numbers)
   const looksLikeTranslationKey = /^[a-z0-9]+(?:\.[a-z0-9]+)+$/i.test(value);
   
   if (!looksLikeTranslationKey) {
-    // Already a plain message, return as-is
+    // Already a plain message (including backend error messages), return as-is
     return value;
   }
 
@@ -61,7 +62,7 @@ function handleActionError(error: unknown, defaultKey: string): { success: false
   if (error instanceof ApiError) {
     return {
       success: false,
-      error: toUserFacingErrorMessage(error.contextMessage || defaultKey),
+      error: toUserFacingErrorMessage(error.error || error.contextMessage || defaultKey),
     };
   }
   return { success: false, error: toUserFacingErrorMessage(defaultKey) };
@@ -836,18 +837,86 @@ export async function fetchOldPropertyDataAction(
 
 /* ============================================================
    SYNC ROOMS ACTION
-   Fires POST /ApartmentQC/{propertyDetailsId}/sync-rooms after a
+   Fires POST /ApartmentQC/{propertyId}/{propertyDetailsId}/sync-rooms after a
    successful RoomWiseSubmission PUT to recompute aggregates.
  ============================================================ */
 
 export async function syncRoomsForPropertyDetailsAction(
+  propertyId: number | string,
   propertyDetailsId: number | string
 ): Promise<ActionResult<void>> {
   try {
     const { syncRoomsForPropertyDetailsLocalized } = await import("@/lib/api/appartmentQC.service");
-    await syncRoomsForPropertyDetailsLocalized(propertyDetailsId);
+    await syncRoomsForPropertyDetailsLocalized(propertyId, propertyDetailsId);
     return { success: true, message: "Rooms synced successfully" };
   } catch (error) {
     return handleActionError(error, "Failed to sync rooms");
+  }
+}
+
+/* ============================================================
+   FILTER OPTIONS ACTION
+   Fetches distinct filter options for column filters.
+ ============================================================ */
+
+export type FilterField = 'wing' | 'flatOrShopNo' | 'apartmentType' | 'propertyType';
+
+export interface FilterOptionsItems {
+  wings: string[];
+  apartmentTypes: string[];
+  flatOrShopNos: string[];
+  propertyTypes: number[];
+}
+
+export async function fetchFilterOptionsAction(
+  wardId: number | string,
+  propertyNo: string,
+  field: FilterField
+): Promise<ActionResult<FilterOptionsItems>> {
+  try {
+    const { getFilterOptionsLocalized } = await import("@/lib/api/appartmentQC.service");
+    const result = await getFilterOptionsLocalized(wardId, propertyNo, field);
+    return { success: true, data: result.items, message: result.message };
+  } catch (error) {
+    return handleActionError(error, "Failed to fetch filter options");
+  }
+}
+
+/* ============================================================
+   EXCEL EXPORT ACTION
+   Returns config for client-side Excel download.
+   Endpoint: GET /ApartmentQC/export-excel?WardId={wardId}&PropertyNo={propertyNo}
+ ============================================================ */
+
+export interface ExcelExportConfig {
+  baseUrl: string;
+  authToken: string;
+}
+
+/**
+ * Get the API configuration for client-side Excel export.
+ * This action returns the base URL and auth token so the client can
+ * directly download the Excel file via fetch.
+ * 
+ * @returns ActionResult with baseUrl and authToken
+ */
+export async function getExcelExportConfigAction(): Promise<ActionResult<ExcelExportConfig>> {
+  try {
+    const { cookies } = await import("next/headers");
+    const { getAppConfig } = await import("@/config/app.config");
+    
+    const store = await cookies();
+    const authToken = store.get('auth_token')?.value || '';
+    const config = getAppConfig();
+    
+    return {
+      success: true,
+      data: {
+        baseUrl: config.api.baseUrl,
+        authToken,
+      },
+    };
+  } catch (error) {
+    return handleActionError(error, "Failed to get export configuration");
   }
 }

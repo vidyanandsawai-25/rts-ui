@@ -32,6 +32,11 @@ const PARAM_MAPPINGS: ParamConfig[] = [
   { key: 'sortBy', queryParam: 'SortBy', shouldTrim: true },
   { key: 'sortOrder', queryParam: 'SortOrder', shouldTrim: true },
   { key: 'filterLogic', queryParam: 'FilterLogic', skipEmptyCheck: true },
+  // Column filter parameters
+  { key: 'wing', queryParam: 'Wing', shouldTrim: true },
+  { key: 'flatOrShopNo', queryParam: 'FlatOrShopNo', shouldTrim: true },
+  { key: 'apartmentType', queryParam: 'ApartmentType', shouldTrim: true },
+  { key: 'propertyType', queryParam: 'PropertyType', shouldTrim: true },
 ];
 
 /**
@@ -566,16 +571,17 @@ export async function getOldPropertyDataLocalized(
 }
 
 /* ============================================================
-   SYNC ROOMS — POST /ApartmentQC/{propertyDetailsId}/sync-rooms
+   SYNC ROOMS — POST /ApartmentQC/{propertyId}/{propertyDetailsId}/sync-rooms
    Recomputes/aggregates rooms after a RoomWiseSubmission PUT.
-   No request body; path param only.
+   No request body; path params only.
 ============================================================ */
 
 export async function syncRoomsForPropertyDetails(
+  propertyId: number | string,
   propertyDetailsId: number | string
 ): Promise<ApiResponse<unknown>> {
   try {
-    const endpoint = `/ApartmentQC/${propertyDetailsId}/sync-rooms`;
+    const endpoint = `/ApartmentQC/${propertyId}/${propertyDetailsId}/sync-rooms`;
     const response = await apiClient.post<unknown>(endpoint);
     return response;
   } catch (error) {
@@ -585,14 +591,15 @@ export async function syncRoomsForPropertyDetails(
 }
 
 export async function syncRoomsForPropertyDetailsLocalized(
+  propertyId: number | string,
   propertyDetailsId: number | string
 ): Promise<unknown> {
   try {
-    const res = await syncRoomsForPropertyDetails(propertyDetailsId);
+    const res = await syncRoomsForPropertyDetails(propertyId, propertyDetailsId);
     if (!res.success) {
       throw new ApiError(
         res.statusCode ?? 500,
-        res.error || "Failed to sync rooms",
+        res.message || res.error || "Failed to sync rooms",
         "Sync rooms failed"
       );
     }
@@ -606,4 +613,139 @@ export async function syncRoomsForPropertyDetailsLocalized(
       "Failed to sync rooms"
     );
   }
+}
+
+/* ============================================================
+   FILTER OPTIONS — GET /ApartmentQC/filter-options
+   Fetches distinct filter options for column filters.
+============================================================ */
+
+export type FilterField = 'wing' | 'flatOrShopNo' | 'apartmentType' | 'propertyType';
+
+export interface FilterOptionsResponse {
+  success: boolean;
+  message: string;
+  items: {
+    wings: string[];
+    apartmentTypes: string[];
+    flatOrShopNos: string[];
+    propertyTypes: number[];
+  };
+  errors: unknown;
+  correlationId: string | null;
+}
+
+/**
+ * Fetch filter options for a specific field.
+ * 
+ * @param wardId - The ward ID
+ * @param propertyNo - The property number
+ * @param field - The field to get filter options for: 'wing', 'flatOrShopNo', 'apartmentType', 'propertyType'
+ * @returns FilterOptionsResponse
+ */
+export async function getFilterOptions(
+  wardId: number | string,
+  propertyNo: string,
+  field: FilterField
+): Promise<ApiResponse<FilterOptionsResponse>> {
+  try {
+    const params = new URLSearchParams();
+    params.append('WardId', String(wardId));
+    params.append('PropertyNo', propertyNo);
+    params.append('field', field);
+    
+    const endpoint = `/ApartmentQC/filter-options?${params.toString()}`;
+    const response = await apiClient.get<FilterOptionsResponse>(endpoint);
+    return response;
+  } catch (error) {
+    console.error('[appartmentQC.service] Error fetching filter options:', error);
+    throw error;
+  }
+}
+
+/**
+ * Fetch filter options with error handling.
+ */
+export async function getFilterOptionsLocalized(
+  wardId: number | string,
+  propertyNo: string,
+  field: FilterField
+): Promise<FilterOptionsResponse> {
+  try {
+    const res = await getFilterOptions(wardId, propertyNo, field);
+    if (!res.success) {
+      throw new ApiError(
+        res.statusCode ?? 500,
+        res.error || "Failed to fetch filter options",
+        "Fetch filter options failed"
+      );
+    }
+    return handleApiResponse(res, "Failed to fetch filter options") as FilterOptionsResponse;
+  } catch (error) {
+    console.error('[appartmentQC.service] Error fetching filter options:', error);
+    if (error instanceof ApiError) throw error;
+    throw new ApiError(
+      500,
+      error instanceof Error ? error.message : String(error),
+      "Failed to fetch filter options"
+    );
+  }
+}
+
+/* ============================================================
+   EXCEL EXPORT (Client-side)
+   Endpoint: GET /ApartmentQC/export-excel?WardId={wardId}&PropertyNo={propertyNo}
+   Returns Excel file as blob
+   Note: This function runs client-side for direct file download
+============================================================ */
+
+/**
+ * Export apartment QC data to Excel (client-side).
+ * Downloads the Excel file directly in the browser.
+ * 
+ * @param baseUrl - The API base URL
+ * @param authToken - The auth token for authorization
+ * @param wardId - The ward ID
+ * @param propertyNo - The property number
+ * @param filename - Optional filename for the download (defaults to 'apartment-qc-export.xlsx')
+ */
+export async function exportApartmentQCToExcel(
+  baseUrl: string,
+  authToken: string,
+  wardId: number | string,
+  propertyNo: string,
+  filename: string = 'apartment-qc-export.xlsx'
+): Promise<void> {
+  const params = new URLSearchParams();
+  params.append('WardId', String(wardId));
+  params.append('PropertyNo', propertyNo);
+  
+  const endpoint = `${baseUrl}/ApartmentQC/export-excel?${params.toString()}`;
+  
+  const response = await fetch(endpoint, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${authToken}`,
+    },
+  });
+  
+  if (!response.ok) {
+    throw new ApiError(
+      response.status,
+      `Failed to export Excel: ${response.statusText}`,
+      "Export Excel failed"
+    );
+  }
+  
+  const blob = await response.blob();
+  
+  // Create download link and trigger download
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(url);
 }

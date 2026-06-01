@@ -13,6 +13,13 @@ const emptyPaged: PagedResponse<ApartmentQCDetail> = {
   hasNext: false,
 };
 
+interface FilterParams {
+  wing?: string;
+  flatOrShopNo?: string;
+  apartmentType?: string;
+  propertyType?: string;
+}
+
 export async function getApartmentQCDataAction(
   wardId: number,
   propertyNo: string,
@@ -20,7 +27,8 @@ export async function getApartmentQCDataAction(
   pageNumber: number = 1,
   pageSize: number = 10,
   searchTerm: string = '',
-  propertyId?: number
+  propertyId?: number,
+  filters?: FilterParams
 ) {
   try {
     // We only fetch the active tab data to keep it efficient, 
@@ -38,7 +46,12 @@ export async function getApartmentQCDataAction(
       pageSize,
       searchTerm,
       partType,
-      propertyDetailsId: propertyId // passing propertyId as propertyDetailsId
+      propertyDetailsId: propertyId, // passing propertyId as propertyDetailsId
+      // Column filter parameters
+      wing: filters?.wing,
+      flatOrShopNo: filters?.flatOrShopNo,
+      apartmentType: filters?.apartmentType,
+      propertyType: filters?.propertyType,
     };
 
     const result = await fetchApartmentQCDetailsPagedAction(params);

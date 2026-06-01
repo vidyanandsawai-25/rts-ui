@@ -17,6 +17,7 @@ import {
   createRoomWiseSubmissionAction,
   updateRoomWiseSubmissionAction,
   deleteRoomWiseSubmissionAction,
+  syncRoomsForPropertyDetailsAction,
 } from "@/app/[locale]/property-tax/ptis/appartmentQC/action";
 import { RoomSubmissionState } from "@/hooks/ptis/RoomSubmission/useRoomSubmissionState";
 
@@ -315,6 +316,28 @@ export const useApartmentQCRoomListActions = (
               (result as { error?: string }).error || "Failed to delete room"
             );
             return;
+          }
+
+          // Call sync-rooms after successful delete
+          if (propertyId > 0 && propertyDetailsId > 0) {
+            const syncResult = await syncRoomsForPropertyDetailsAction(propertyId, propertyDetailsId);
+            if (!syncResult.success) {
+              toast.error(
+                (syncResult as { error?: string }).error || "Failed to sync rooms"
+              );
+            } else {
+              // Trigger Floor QC table refresh via onUpdate callback
+              if (props.onUpdate) {
+                try {
+                  await (props.onUpdate as unknown as (...a: unknown[]) => Promise<void>)({
+                    totalAreaSqM: 0, // Will be recalculated by sync-rooms
+                    roomCount: rooms.length - 1, // One room deleted
+                  });
+                } catch {
+                  // onUpdate errors are non-critical
+                }
+              }
+            }
           }
         }
 
