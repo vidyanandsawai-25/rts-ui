@@ -333,6 +333,17 @@ export function getPropertySearchFieldErrors(
     }
   }
 
+  if (tab === "values-dues") {
+    if (criteria.rateableValueFilter === "between") {
+      if (!trimFieldValue(criteria.rateableValueFrom)) {
+        errors.rateableValueFrom = t("rateableValueBetweenRequired");
+      }
+      if (!trimFieldValue(criteria.rateableValueTo)) {
+        errors.rateableValueTo = t("rateableValueBetweenRequired");
+      }
+    }
+  }
+
   return errors;
 }
 

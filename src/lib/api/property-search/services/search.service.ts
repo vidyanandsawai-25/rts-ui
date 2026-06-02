@@ -46,15 +46,26 @@ function buildSearchParams(criteria: PropertySearchCriteriaPayload): string {
   if (criteria.dashboardFilter != null && criteria.dashboardFilter > 0) {
     params.set("DashboardFilter", String(criteria.dashboardFilter));
   }
-  if (criteria.valuationMethod) params.set("ValuationMethod", criteria.valuationMethod);
-  if (criteria.equals) params.set("Equals", criteria.equals);
-  if (criteria.greaterThan) params.set("GreaterThan", criteria.greaterThan);
-  if (criteria.lessThan) params.set("LessThan", criteria.lessThan);
-  if (criteria.between) params.set("Between", criteria.between);
-  if (criteria.top) params.set("Top", criteria.top);
-  if (criteria.pageNumber) params.set("PageNumber", String(criteria.pageNumber));
-  if (criteria.pageSize != null)
-    params.set("PageSize", String(criteria.pageSize));
+  if (criteria.rvOrCv) params.set("RVorCV", criteria.rvOrCv);
+  if (criteria.amountFilterOperator) {
+    params.set("AmountFilterOperator", criteria.amountFilterOperator);
+  }
+  if (criteria.amountValue != null) {
+    params.set("AmountValue", String(criteria.amountValue));
+  }
+  if (criteria.amountTo != null) {
+    params.set("AmountTo", String(criteria.amountTo));
+  }
+  if (criteria.topCount != null) {
+    params.set("TopCount", String(criteria.topCount));
+  }
+  // pageSize = -1 means "return all records" for client-side table pagination.
+  if (criteria.pageSize === -1) {
+    params.set("PageSize", "-1");
+    if (criteria.pageNumber) {
+      params.set("PageNumber", String(criteria.pageNumber));
+    }
+  }
   return params.toString();
 }
 

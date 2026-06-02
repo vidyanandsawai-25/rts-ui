@@ -41,7 +41,8 @@
       "mobile": "मोबाइल क्र.",
       "shopBuildingName": "दुकान/इमारत नाव",
       "societyName": "सोसायटीचे नाव",
-      "address": "पत्ता"
+      "address": "पत्ता",
+      "filters": "फिल्टर"
     },
     "tooltips": {
       "propertyNo": "अक्षरे, अंक, हायफन (-) आणि स्लॅश (/). कमाल 20 अक्षरे. उदा.: P-2023-001, 10/A",
@@ -84,6 +85,7 @@
       "valuationMethod": "मूल्यांकन पद्धत",
       "filterType": "फिल्टर प्रकार",
       "amount": "रक्कम प्रविष्ट करा",
+      "topCount": "शीर्ष संख्या (उदा. 1)",
       "toAmount": "कमाल रक्कम",
       "taxDefaulter": "कर थकबाकीदार",
       "fromValue": "पासून मूल्य",
