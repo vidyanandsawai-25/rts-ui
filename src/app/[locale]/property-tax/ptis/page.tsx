@@ -534,14 +534,7 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
       />
       <BottomActionBar
         actions={footerActions}
-        currentPage={pageNumber}
-        totalPages={
-          (appartmentTab === 'commercial'
-            ? apartmentData?.commercial?.totalPages
-            : appartmentTab === 'residential'
-            ? apartmentData?.residential?.totalPages
-            : apartmentData?.amenities?.totalPages) ?? 1
-        }
+        properties={rawPropertyData}
         leftContent={<PtisFooterControls />}
       />
     </div>
