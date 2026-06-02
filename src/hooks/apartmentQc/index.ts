@@ -14,3 +14,25 @@ export { useRoomSubmissionSidebar } from './useRoomSubmissionSidebar';
 // Table Hooks
 export { useTableAutoScroll } from './useTableAutoScroll';
 export { useColumnFilters } from './useColumnFilters';
+
+// Tax Details Table Hooks
+export {
+  useTaxColumns,
+  useTaxTableData,
+  useHasData,
+  useFooterContent,
+  // Utility functions
+  getTabTranslationKey,
+  getSubTabLabel,
+  formatCurrency,
+  createTaxMap,
+  calculateTotal,
+  getHeaderGradientClass,
+  getRowClassName,
+  // Types
+  type TaxRowData,
+  type TaxColumnDef,
+  type UseApartmentTaxDetailsTableProps,
+} from './useApartmentTaxDetailsTable';
+
+export { useTaxTableColumns } from './useTaxTableColumns';

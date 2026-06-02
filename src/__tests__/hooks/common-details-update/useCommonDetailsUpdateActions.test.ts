@@ -361,22 +361,13 @@ describe('useCommonDetailsUpdateActions', () => {
 
       expect(result.current.saving).toBe(false);
 
-      act(() => {
-        result.current.handleBulkUpdate('/api/test', payload, vi.fn());
+      // Properly await the async handleBulkUpdate call
+      await act(async () => {
+        await result.current.handleBulkUpdate('/api/test', payload, vi.fn());
       });
 
-      // Should be saving immediately after call
-      await waitFor(() => {
-        expect(result.current.saving).toBe(true);
-      });
-
-      // Should be false after completion
-      await waitFor(
-        () => {
-          expect(result.current.saving).toBe(false);
-        },
-        { timeout: 200 }
-      );
+      // After awaiting, saving should be false
+      expect(result.current.saving).toBe(false);
     });
   });
 

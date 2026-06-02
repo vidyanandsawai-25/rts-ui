@@ -53,6 +53,13 @@
     "ocDate": "OC Date"
   },
   "taxDetails": {
+    "title": "Property Tax Details Summary",
+    "subtitle": "Aggregated tax details by Method",
+    "propertyType": "Property Type",
+    "methodLabel": "Method",
+    "total": "Total",
+    "columnTotal": "Column Total",
+    "noData": "No tax details available",
     "taxes": "Taxes",
     "method": "Method",
     "generalTax": "General Tax",
@@ -77,7 +84,10 @@
     "oldPenaltyULB": "Old Penalty of ULB",
     "oldPenaltyULBShort": "Old Penalty ULB",
     "runTimePenalty": "Run Time Penalty",
-    "totalTax": "Total Tax"
+    "totalTax": "Total Tax",
+    "propertyCount": "Property Count",
+    "rvPropertyCount": "RV Property Count",
+    "cvPropertyCount": "CV Property Count"
   },
   "apartmentTabs": {
     "amenitiesTitle": "Property Tax Amenities",

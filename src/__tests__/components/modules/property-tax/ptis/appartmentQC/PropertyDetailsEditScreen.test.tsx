@@ -58,6 +58,15 @@ vi.mock('@/app/[locale]/property-tax/ptis/appartmentQC/action', () => ({
   updateFloorQCDetailsBulkAction: vi.fn(() =>
     Promise.resolve({ success: true })
   ),
+  fetchApartmentTaxDetailsByIdAction: vi.fn(() =>
+    Promise.resolve({ success: true, data: null })
+  ),
+  fetchApartmentTaxDetailsCvByIdAction: vi.fn(() =>
+    Promise.resolve({ success: true, data: null })
+  ),
+  fetchDualMethodTaxDetailsByIdAction: vi.fn(() =>
+    Promise.resolve({ success: true, data: null })
+  ),
 }));
 
 // Mock RoomWiseSubmission component
@@ -169,15 +178,16 @@ describe('PropertyDetailsEditScreen', () => {
       />
     );
 
-    // Floor QC defaults to open, so the table is visible initially.
-    expect(screen.getByRole('table')).toBeInTheDocument();
+    // Floor QC defaults to open, so there are 2 tables: Floor QC + Tax Details
+    expect(screen.getAllByRole('table')).toHaveLength(2);
 
-    // Clicking the toggle button collapses the section.
+    // Clicking the toggle button collapses the Floor QC section.
     const floorQCButton = screen.getByRole('button', { name: /drawer\.floorQC/i });
     await user.click(floorQCButton);
 
+    // After collapsing, only the Tax Details table remains visible
     await waitFor(() => {
-      expect(screen.queryByRole('table')).not.toBeInTheDocument();
+      expect(screen.getAllByRole('table')).toHaveLength(1);
     });
   });
 
