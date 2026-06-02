@@ -15,6 +15,7 @@
 
 import { apiClient } from "@/services/api.service";
 import { ApiError, handleApiResponse } from "@/lib/utils/api";
+import { logger } from "@/lib/utils/logger";
 
 /* ============================================================
    UTILITY FUNCTIONS
@@ -67,6 +68,7 @@ export interface RoomWiseSubmissionData {
   totalAreaSqMtr?: number;
   roomNo?: string;
   roomType?: string;
+  roomTypeDescription?: string;  // API returns this field for display
   roomTypeId?: number;  // API expects numeric ID for room type
   shape?: string;
   outerYesNo?: boolean;
@@ -209,7 +211,7 @@ export async function getRoomWiseSubmissions(params: {
     }
     return data.items || data.data || [];
   } catch (error) {
-    console.error('[appartmentQC-room.service] Error fetching room submissions:', error);
+    logger.error('[appartmentQC-room.service] Error fetching room submissions', { error: error as Error });
     if (error instanceof ApiError) throw error;
     throw new ApiError(
       500,
@@ -231,7 +233,7 @@ export async function getRoomWiseSubmissionsSafe(params: {
   try {
     return await getRoomWiseSubmissions(params);
   } catch (error) {
-    console.error("[getRoomWiseSubmissionsSafe] Error:", getErrorMessage(error));
+    logger.error('[getRoomWiseSubmissionsSafe] Error', { error: error as Error });
     return [];
   }
 }
@@ -253,7 +255,7 @@ export async function createRoomWiseSubmission(
     }
     return handleApiResponse(response, "Failed to create room submission");
   } catch (error) {
-    console.error('[appartmentQC-room.service] Error creating room submission:', error);
+    logger.error('[appartmentQC-room.service] Error creating room submission', { error: error as Error });
     if (error instanceof ApiError) throw error;
     throw new ApiError(
       500,
@@ -274,7 +276,7 @@ export async function createRoomWiseSubmissionSafe(
     return { success: true, data };
   } catch (error) {
     const message = getErrorMessage(error);
-    console.error("[createRoomWiseSubmissionSafe] Error:", message);
+    logger.error('[createRoomWiseSubmissionSafe] Error', { error: error as Error });
     return { success: false, error: message };
   }
 }
@@ -297,7 +299,7 @@ export async function updateRoomWiseSubmission(
     }
     return handleApiResponse(response, "Failed to update room submission");
   } catch (error) {
-    console.error('[appartmentQC-room.service] Error updating room submission:', error);
+    logger.error('[appartmentQC-room.service] Error updating room submission', { error: error as Error });
     if (error instanceof ApiError) throw error;
     throw new ApiError(
       500,
@@ -319,7 +321,7 @@ export async function updateRoomWiseSubmissionSafe(
     return { success: true, data };
   } catch (error) {
     const message = getErrorMessage(error);
-    console.error("[updateRoomWiseSubmissionSafe] Error:", message);
+    logger.error('[updateRoomWiseSubmissionSafe] Error', { error: error as Error });
     return { success: false, error: message };
   }
 }
@@ -331,7 +333,7 @@ export async function deleteRoomWiseSubmission(id: number): Promise<void> {
   try {
     await apiClient.delete(`/RoomWiseSubmission/${id}`);
   } catch (error) {
-    console.error('[appartmentQC-room.service] Error deleting room submission:', error);
+    logger.error('[appartmentQC-room.service] Error deleting room submission', { error: error as Error });
     if (error instanceof ApiError) throw error;
     throw new ApiError(
       500,
@@ -352,7 +354,7 @@ export async function deleteRoomWiseSubmissionSafe(
     return { success: true };
   } catch (error) {
     const message = getErrorMessage(error);
-    console.error("[deleteRoomWiseSubmissionSafe] Error:", message);
+    logger.error('[deleteRoomWiseSubmissionSafe] Error', { error: error as Error });
     return { success: false, error: message };
   }
 }
@@ -375,7 +377,7 @@ export async function updateRoomWiseMinus(
     }
     return handleApiResponse(response, "Failed to update room offset");
   } catch (error) {
-    console.error('[appartmentQC-room.service] Error updating room offset:', error);
+    logger.error('[appartmentQC-room.service] Error updating room offset', { error: error as Error });
     if (error instanceof ApiError) throw error;
     throw new ApiError(
       500,
@@ -397,7 +399,7 @@ export async function updateRoomWiseMinusSafe(
     return { success: true, data };
   } catch (error) {
     const message = getErrorMessage(error);
-    console.error("[updateRoomWiseMinusSafe] Error:", message);
+    logger.error('[updateRoomWiseMinusSafe] Error', { error: error as Error });
     return { success: false, error: message };
   }
 }
@@ -434,7 +436,7 @@ export async function createRoomWiseMinus(
     }
     return handleApiResponse(response, "Failed to create room offset");
   } catch (error) {
-    console.error('[appartmentQC-room.service] Error creating room offset:', error);
+    logger.error('[appartmentQC-room.service] Error creating room offset', { error: error as Error });
     if (error instanceof ApiError) throw error;
     throw new ApiError(
       500,
@@ -455,7 +457,7 @@ export async function createRoomWiseMinusSafe(
     return { success: true, data };
   } catch (error) {
     const message = getErrorMessage(error);
-    console.error("[createRoomWiseMinusSafe] Error:", message);
+    logger.error('[createRoomWiseMinusSafe] Error', { error: error as Error });
     return { success: false, error: message };
   }
 }
@@ -467,7 +469,7 @@ export async function deleteRoomWiseMinus(id: number): Promise<void> {
   try {
     await apiClient.delete(`/RoomWiseMinus/${id}`);
   } catch (error) {
-    console.error('[appartmentQC-room.service] Error deleting room offset:', error);
+    logger.error('[appartmentQC-room.service] Error deleting room offset', { error: error as Error });
     if (error instanceof ApiError) throw error;
     throw new ApiError(
       500,
@@ -488,7 +490,7 @@ export async function deleteRoomWiseMinusSafe(
     return { success: true };
   } catch (error) {
     const message = getErrorMessage(error);
-    console.error("[deleteRoomWiseMinusSafe] Error:", message);
+    logger.error('[deleteRoomWiseMinusSafe] Error', { error: error as Error });
     return { success: false, error: message };
   }
 }

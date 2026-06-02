@@ -23,10 +23,26 @@ export const RoomTypeSelect: React.FC<RoomTypeSelectProps> = ({ value, onChange,
 
     const handleChange = (_: React.ChangeEvent<HTMLSelectElement> | null, newVal: string) => {
         // Find the roomTypeId from roomTypeDetails based on the selected name
-        const selectedDetail = roomTypeDetails?.find(
-            (detail) => (detail.roomTypeName || detail.description || detail.roomTypeCode) === newVal
-        );
-        const roomTypeId = selectedDetail?.roomTypeId;
+        // Check all possible name fields with case-insensitive matching
+        const normalizedVal = newVal?.trim().toLowerCase();
+        const selectedDetail = roomTypeDetails?.find((detail) => {
+            // Check all possible name fields from the API response
+            const possibleNames = [
+                detail.roomTypeName,
+                detail.description,
+                (detail as Record<string, unknown>).roomTypeDescription as string | undefined,
+                detail.roomTypeCode,
+            ].filter(Boolean);
+            
+            return possibleNames.some(name => 
+                String(name).trim().toLowerCase() === normalizedVal
+            );
+        });
+        
+        // Get roomTypeId - check multiple possible field names
+        const roomTypeId = selectedDetail?.roomTypeId ?? 
+            (selectedDetail as Record<string, unknown> | undefined)?.id as number | undefined;
+        
         onChange(newVal, roomTypeId);
     };
 

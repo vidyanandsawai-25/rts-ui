@@ -9,6 +9,7 @@ import { ArrowUpDown, Eye, EyeOff, ExternalLink, FileSpreadsheet, Loader2 } from
 import { useTableAutoScroll } from "@/hooks/apartmentQc/useTableAutoScroll";
 import { ColumnFilterDropdown, type FilterField } from "./ColumnFilterDropdown";
 import { getExcelExportConfigAction } from "@/app/[locale]/property-tax/ptis/appartmentQC/action";
+import { logger } from "@/lib/utils/logger";
 
 // Map column keys to filter fields
 const FILTERABLE_COLUMNS: Record<string, FilterField> = {
@@ -70,7 +71,7 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
   // Excel export handler
   const handleExcelExport = useCallback(async () => {
     if (!wardId || !propertyNo) {
-      console.warn('[CommonPropertyTable] Cannot export: missing wardId or propertyNo');
+      logger.warn('[CommonPropertyTable] Cannot export: missing wardId or propertyNo');
       toast.error(t("export.missingParams") || "Missing ward ID or property number");
       return;
     }
@@ -125,7 +126,7 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
       toast.dismiss(loadingToastId);
       toast.success(t("export.success") || "Excel file downloaded successfully!");
     } catch (error) {
-      console.error('[CommonPropertyTable] Excel export failed:', error);
+      logger.error('[CommonPropertyTable] Excel export failed', { error: error as Error });
       // Dismiss loading toast and show error
       toast.dismiss(loadingToastId);
       toast.error(t("export.error") || "Failed to download Excel file");

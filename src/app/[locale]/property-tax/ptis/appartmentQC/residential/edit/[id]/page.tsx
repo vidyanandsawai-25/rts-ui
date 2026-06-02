@@ -17,6 +17,7 @@ import type { UseType, UseSubType } from "@/types/typeOfUse.types";
 import type { PropertyEditFormCopy } from "@/types/propertyEdit.types";
 import PropertyDetailsEditForm from "@/components/modules/property-tax/ptis/appartmentQC/PropertyDetailsEditForm";
 import { redirect } from "next/navigation";
+import { logger } from "@/lib/utils/logger";
 
 interface PageProps {
   params: Promise<{ id: string; locale: string }>;
@@ -280,7 +281,7 @@ export default async function Page({ params, searchParams }: PageProps) {
       redirect('/property-tax/ptis/appartmentQC/residential');
     }
   } catch (error) {
-    console.error('[SSR Edit Page] Error fetching data:', error);
+    logger.error('[SSR Edit Page] Error fetching data', { error: error as Error });
     // Redirect to list on error
     redirect('/property-tax/ptis/appartmentQC/residential');
   }

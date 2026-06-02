@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import type { ApartmentQCDetail, ApartmentQCSearchParams } from "@/types/apartmentQC.types";
 import {
   getApartmentQCDetailsLocalized,
@@ -8,6 +9,8 @@ import {
   updateApartmentQCDetailsLocalized,
 } from "@/lib/api/appartmentQC.service";
 import { ApiError } from "@/lib/utils/api";
+import { logger } from "@/lib/utils/logger";
+import { getUserIdFromCookies } from "@/lib/utils/cookie";
 
 /* ============================================================
    ACTION RESULT TYPE
@@ -58,7 +61,7 @@ function toUserFacingErrorMessage(messageOrKey: string): string {
 }
 
 function handleActionError(error: unknown, defaultKey: string): { success: false; error: string } {
-  console.error(`[appartmentQC.action] ${defaultKey}:`, error);
+  logger.error(`[appartmentQC.action] ${defaultKey}`, { error: error as Error });
   if (error instanceof ApiError) {
     return {
       success: false,
@@ -581,7 +584,7 @@ export async function getRoomWiseSubmissionsAction(params: {
       data,
     };
   } catch (error) {
-    console.error('[getRoomWiseSubmissionsAction] Error:', error);
+    logger.error('[getRoomWiseSubmissionsAction] Error', { error: error as Error });
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to fetch room submissions',
@@ -625,14 +628,16 @@ export async function createRoomWiseSubmissionAction(payload: {
   }>;
 }): Promise<ActionResult<unknown>> {
   try {
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore) || 1;
     const { createRoomWiseSubmissionSafe } = await import("@/lib/api/appartmentQC-room.service");
     const result = await createRoomWiseSubmissionSafe({
       isActive: true,
-      createdBy: 1, // TODO: Get from auth context
+      createdBy: userId,
       ...payload,
       roomWiseMinusData: payload.roomWiseMinusData?.map(offset => ({
         isActive: true,
-        createdBy: 1,
+        createdBy: userId,
         ...offset
       }))
     });
@@ -685,15 +690,17 @@ export async function updateRoomWiseSubmissionAction(
   }
 ): Promise<ActionResult<unknown>> {
   try {
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore) || 1;
     const { updateRoomWiseSubmissionSafe } = await import("@/lib/api/appartmentQC-room.service");
     const result = await updateRoomWiseSubmissionSafe(id, {
       isActive: true,
-      updatedBy: 1, // TODO: Get from auth context
+      updatedBy: userId,
       id,
       ...payload,
       roomWiseMinusData: payload.roomWiseMinusData?.map(offset => ({
         isActive: true,
-        updatedBy: 1,
+        updatedBy: userId,
         roomWiseSubmissionId: id,
         ...offset
       }))

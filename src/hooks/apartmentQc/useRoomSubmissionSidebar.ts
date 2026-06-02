@@ -8,6 +8,7 @@ import type {
   PropertyEditFormCopy,
 } from '@/types/propertyEdit.types';
 import { toast } from 'sonner';
+import { logger } from '@/lib/utils/logger';
 
 interface UseRoomSubmissionSidebarArgs {
   propertyId: number;
@@ -97,7 +98,7 @@ export function useRoomSubmissionSidebar({
         }));
       }
     } catch (error) {
-      console.error('[RoomSubmissionSidebar] Failed to fetch rooms:', error);
+      logger.error('[RoomSubmissionSidebar] Failed to fetch rooms', { error: error as Error });
       toast.error(copy.messages.failedToLoadRooms);
       setState(prev => ({
         ...prev,

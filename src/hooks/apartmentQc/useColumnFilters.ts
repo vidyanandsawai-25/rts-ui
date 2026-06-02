@@ -2,6 +2,7 @@ import { useCallback, useMemo } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { fetchFilterOptionsAction, type FilterField } from '@/app/[locale]/property-tax/ptis/appartmentQC/action';
 import { getPropertyTypeByIdAction } from '@/app/[locale]/property-tax/propertytype/action';
+import { logger } from '@/lib/utils/logger';
 
 interface FilterOption {
   value: string;
@@ -117,7 +118,7 @@ export function useColumnFilters({ wardId, propertyNo }: UseColumnFiltersProps) 
                 });
               }
             } catch (error) {
-              console.error(`[useColumnFilters] Failed to fetch property type ${id}:`, error);
+              logger.error(`[useColumnFilters] Failed to fetch property type ${id}`, { error: error as Error });
               // Fallback to showing the ID if description fetch fails
               options.push({ value: String(id), label: String(id) });
             }
@@ -130,7 +131,7 @@ export function useColumnFilters({ wardId, propertyNo }: UseColumnFiltersProps) 
           return [];
       }
     } catch (error) {
-      console.error(`[useColumnFilters] Failed to fetch filter options for ${field}:`, error);
+      logger.error(`[useColumnFilters] Failed to fetch filter options for ${field}`, { error: error as Error });
       return [];
     }
   }, [wardId, propertyNo]);
