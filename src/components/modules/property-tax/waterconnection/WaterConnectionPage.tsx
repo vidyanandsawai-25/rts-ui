@@ -46,6 +46,7 @@ export default function WaterConnectionPage({
   initialPageSize,
 }: WaterConnectionPageProps) {
   const t = useTranslations("waterConnection");
+  const tCommon = useTranslations("common");
   const locale = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -104,20 +105,28 @@ export default function WaterConnectionPage({
   );
 
   /* ================= FETCH ALL CONNECTIONS FOR STATS ================= */
-  const fetchAllConnections = useCallback(async () => {
+  // Fetch all connections on mount for accurate stats
+  useEffect(() => {
+    const fetchAllConnections = async () => {
+      try {
+        const connections = await getAllWaterConnectionsAction(propertyId);
+        setAllConnections(connections);
+      } catch {
+        // Silently fail for stats — table will still work
+        console.error("Failed to fetch all connections for stats");
+      }
+    };
+    fetchAllConnections();
+  }, [propertyId]);
+
+  const refreshAllConnections = useCallback(async () => {
     try {
       const connections = await getAllWaterConnectionsAction(propertyId);
       setAllConnections(connections);
     } catch {
-      // Silently fail for stats — table will still work
       console.error("Failed to fetch all connections for stats");
     }
   }, [propertyId]);
-
-  // Fetch all connections on mount for accurate stats
-  useEffect(() => {
-    fetchAllConnections();
-  }, [fetchAllConnections]);
 
   /* ================= PAGINATION ================= */
   const handlePageChange = useCallback(
@@ -159,8 +168,8 @@ export default function WaterConnectionPage({
     setPage(1);
     updateUrl(1, pageSize);
     fetchConnections(1, pageSize);
-    fetchAllConnections(); // Refresh stats after save
-  }, [updateUrl, fetchConnections, fetchAllConnections, pageSize]);
+    refreshAllConnections(); // Refresh stats after save
+  }, [updateUrl, fetchConnections, refreshAllConnections, pageSize]);
 
   /* ================= DELETE ================= */
   const handleDelete = useCallback(
@@ -179,14 +188,15 @@ export default function WaterConnectionPage({
               setPage(targetPage);
               updateUrl(targetPage, pageSize);
             }
-            fetchAllConnections(); // Refresh stats after delete
+            await fetchConnections(targetPage, pageSize);
+            refreshAllConnections(); // Refresh stats after delete
           } else {
             toast.error(result.error ?? t("delete.error"));
           }
         },
       });
     },
-    [confirm, propertyId, page, pageSize, pageData.connections.length, t, updateUrl, fetchConnections, fetchAllConnections]
+    [confirm, page, pageSize, pageData.connections.length, t, updateUrl, fetchConnections, refreshAllConnections]
   );
 
   const stats = useMemo(() => computeStats(allConnections), [allConnections]);
@@ -255,11 +265,14 @@ export default function WaterConnectionPage({
           footerLeft={
             <div className="flex items-center gap-4">
               <span className="text-sm text-gray-700">
-                Showing {pageData.totalCount === 0 ? 0 : (page - 1) * pageSize + 1} to{" "}
-                {Math.min(page * pageSize, pageData.totalCount)} of {pageData.totalCount} entries
+                {tCommon("table.showingEntries", {
+                  start: pageData.totalCount === 0 ? 0 : (page - 1) * pageSize + 1,
+                  end: Math.min(page * pageSize, pageData.totalCount),
+                  total: pageData.totalCount,
+                })}
               </span>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">Rows per page:</span>
+                <span className="text-sm text-gray-600">{tCommon("table.rowsPerPage")}:</span>
                 <Select
                   value={String(pageSize)}
                   onChange={(_e, value) => {
@@ -271,7 +284,7 @@ export default function WaterConnectionPage({
                   }))}
                   selectSize="sm"
                   className="w-20"
-                  ariaLabel="Rows per page"
+                  ariaLabel={tCommon("table.rowsPerPage")}
                 />
               </div>
             </div>

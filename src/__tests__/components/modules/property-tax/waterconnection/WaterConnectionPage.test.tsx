@@ -11,12 +11,27 @@ vi.mock('sonner', () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 
 // Hoisted spies
 const pushSpy = vi.hoisted(() => vi.fn());
+const replaceSpy = vi.hoisted(() => vi.fn());
 const refreshSpy = vi.hoisted(() => vi.fn());
 const confirmSpy = vi.hoisted(() => vi.fn());
 
 // Mock next/navigation
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: pushSpy, refresh: refreshSpy }),
+  useRouter: () => ({
+    push: pushSpy,
+    replace: replaceSpy,
+    refresh: refreshSpy,
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    getAll: vi.fn(),
+    has: vi.fn(),
+    forEach: vi.fn(),
+    entries: vi.fn(),
+    keys: vi.fn(),
+    values: vi.fn(),
+    toString: vi.fn(() => ''),
+  }),
 }));
 
 // Mock ConfirmProvider
