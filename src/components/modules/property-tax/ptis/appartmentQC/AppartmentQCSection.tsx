@@ -6,7 +6,8 @@ import { useTranslations } from 'next-intl';
 import { Tabs } from '@/components/common';
 import { Building, Home, Building2, Calculator, GitMerge, IndianRupee } from 'lucide-react';
 import CommonPropertyTable from './CommonPropertyTable';
-import { ApartmentQCDetail, PagedResponse } from '@/types/apartmentQC.types';
+import ApartmentTaxDetailsTable from './ApartmentTaxDetailsTable';
+import { ApartmentQCDetail, PagedResponse, ApartmentTaxDetailsItems, DualMethodTaxDetails } from '@/types/apartmentQC.types';
 import { LoadingPage } from '@/components/common/LoadingPage';
 import { getApartmentQCColumns } from './apartmentQC.columns';
 import { emptyPagedResponse, transformApartmentData, getTabTitle } from './apartmentQC.utils';
@@ -15,6 +16,9 @@ import {
   fetchApartmentQCDetailsSafeAction,
   fetchFloorQCByPropertyIdSafeAction,
   fetchAllPropertyTypesAction,
+  fetchApartmentPropertyTaxDetailsByTabAction,
+  fetchApartmentPropertyTaxDetailsCvByTabAction,
+  fetchDualMethodTaxDetailsByTabAction,
 } from '@/app/[locale]/property-tax/ptis/appartmentQC/action';
 import { useColumnFilters } from '@/hooks/apartmentQc/useColumnFilters';
 
@@ -61,12 +65,67 @@ const AppartmentQCSection = ({
     propertyNo,
   });
 
+  // Tax details state - supports rateable, capital, and dual method
+  const [taxDetails, setTaxDetails] = useState<ApartmentTaxDetailsItems | null>(null);
+  const [dualMethodDetails, setDualMethodDetails] = useState<DualMethodTaxDetails | null>(null);
+  const [taxDetailsLoading, setTaxDetailsLoading] = useState(false);
+
   useEffect(() => {
     const urlSearchTerm = searchParams.get('searchTerm') || '';
     if (urlSearchTerm !== searchQuery && !isUpdatingFromUrl.current) {
       queueMicrotask(() => setSearchQuery(urlSearchTerm));
     }
   }, [searchParams, searchQuery]);
+
+  // Fetch tax details based on selected sub-tab (rateable, capital, or dual-method)
+  useEffect(() => {
+    if (!wardId || !propertyNo) {
+      return;
+    }
+    
+    let cancelled = false;
+    
+    const fetchData = async () => {
+      try {
+        // Reset state when starting new fetch
+        setTaxDetails(null);
+        setDualMethodDetails(null);
+        setTaxDetailsLoading(true);
+        
+        if (activeSubTab === 'rateable') {
+          // Fetch Rateable Value data
+          const result = await fetchApartmentPropertyTaxDetailsByTabAction(wardId, propertyNo, activeMainTab);
+          if (!cancelled && result.success && result.data) {
+            setTaxDetails(result.data);
+          }
+        } else if (activeSubTab === 'capital') {
+          // Fetch Capital Value data
+          const result = await fetchApartmentPropertyTaxDetailsCvByTabAction(wardId, propertyNo, activeMainTab);
+          if (!cancelled && result.success && result.data) {
+            setTaxDetails(result.data);
+          }
+        } else if (activeSubTab === 'dual-method') {
+          // Fetch both RV and CV data for dual method
+          const result = await fetchDualMethodTaxDetailsByTabAction(wardId, propertyNo, activeMainTab);
+          if (!cancelled && result.success && result.data) {
+            setDualMethodDetails(result.data);
+          }
+        }
+      } catch {
+        // Error handled silently, state already null
+      } finally {
+        if (!cancelled) {
+          setTaxDetailsLoading(false);
+        }
+      }
+    };
+    
+    fetchData();
+    
+    return () => {
+      cancelled = true;
+    };
+  }, [activeSubTab, activeMainTab, wardId, propertyNo]);
 
   const tabs = useMemo(() => [
     { value: 'amenities', label: t("apartmentTabs.amenities"), icon: Building2, content: null },
@@ -200,6 +259,15 @@ const AppartmentQCSection = ({
             onFetchFilterOptions={fetchFilterOptions}
             wardId={wardId}
             propertyNo={propertyNo}
+          />
+          
+          {/* Tax Details Table - shown for all sub-tabs */}
+          <ApartmentTaxDetailsTable
+            taxDetails={taxDetails}
+            dualMethodDetails={dualMethodDetails}
+            loading={taxDetailsLoading}
+            activeMainTab={activeMainTab}
+            activeSubTab={activeSubTab}
           />
         </div>
       </div>

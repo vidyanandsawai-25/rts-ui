@@ -98,12 +98,13 @@ export interface PropertySearchCriteriaPayload {
   societyName?: string;
   address?: string;
   dashboardFilter?: number;
-  valuationMethod?: string;
-  equals?: string;
-  greaterThan?: string;
-  lessThan?: string;
-  between?: string;
-  top?: string;
+  /** Values & Dues: `RV` or `CV` */
+  rvOrCv?: "RV" | "CV";
+  /** Values & Dues: `Equals` | `GreaterThan` | `LessThan` | `top` (Between uses AmountValue + AmountTo with no operator). */
+  amountFilterOperator?: string;
+  amountValue?: number;
+  amountTo?: number;
+  topCount?: number;
   pageNumber?: number;
   pageSize?: number;
 }

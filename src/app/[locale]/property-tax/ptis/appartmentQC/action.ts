@@ -927,3 +927,218 @@ export async function getExcelExportConfigAction(): Promise<ActionResult<ExcelEx
     return handleActionError(error, "Failed to get export configuration");
   }
 }
+
+/* ============================================================
+   APARTMENT PROPERTY TAX DETAILS ACTION
+   Endpoint: GET /Property/apartment-property-tax-details-rv
+   Fetches tax details for apartment properties by PartType
+ ============================================================ */
+
+import type {
+  ApartmentTaxDetailsItems,
+  ApartmentPartType,
+  DualMethodTaxDetails,
+} from "@/types/apartmentQC.types";
+
+/**
+ * Fetch apartment property tax details for a specific PartType.
+ * 
+ * @param wardId - The ward ID
+ * @param propertyNo - The property number
+ * @param partType - The part type: 'Aminity' (Amenities), 'C' (Commercial), 'R' (Residential)
+ * @returns ActionResult with tax details
+ */
+export async function fetchApartmentPropertyTaxDetailsAction(
+  wardId: string | number,
+  propertyNo: string,
+  partType: ApartmentPartType
+): Promise<ActionResult<ApartmentTaxDetailsItems>> {
+  try {
+    const { getApartmentPropertyTaxDetailsLocalized } = await import("@/lib/api/appartmentQC.service");
+    const data = await getApartmentPropertyTaxDetailsLocalized({ wardId, propertyNo, partType });
+    return {
+      success: true,
+      data,
+      message: "Tax details fetched successfully",
+    };
+  } catch (error: unknown) {
+    return handleActionError(error, "Failed to fetch apartment property tax details");
+  }
+}
+
+/**
+ * Fetch apartment property tax details based on the selected main tab.
+ * Converts main tab value to PartType and fetches the data.
+ * 
+ * @param wardId - The ward ID
+ * @param propertyNo - The property number
+ * @param mainTab - The main tab: 'amenities', 'commercial', or 'residential'
+ * @returns ActionResult with tax details for the selected tab
+ */
+export async function fetchApartmentPropertyTaxDetailsByTabAction(
+  wardId: string | number,
+  propertyNo: string,
+  mainTab: string
+): Promise<ActionResult<ApartmentTaxDetailsItems>> {
+  try {
+    const { getApartmentPropertyTaxDetailsLocalized, getPartTypeFromMainTab } = await import("@/lib/api/appartmentQC.service");
+    const partType = getPartTypeFromMainTab(mainTab);
+    const data = await getApartmentPropertyTaxDetailsLocalized({ wardId, propertyNo, partType });
+    return {
+      success: true,
+      data,
+      message: "Tax details fetched successfully",
+    };
+  } catch (error: unknown) {
+    return handleActionError(error, "Failed to fetch apartment property tax details");
+  }
+}
+
+/* ============================================================
+   APARTMENT PROPERTY TAX DETAILS - CAPITAL VALUE (CV)
+   Endpoint: GET /Property/apartment-property-tax-details-cv
+   Fetches capital value tax details for apartment properties
+ ============================================================ */
+
+/**
+ * Fetch apartment property Capital Value (CV) tax details based on the selected main tab.
+ * 
+ * @param wardId - The ward ID
+ * @param propertyNo - The property number
+ * @param mainTab - The main tab: 'amenities', 'commercial', or 'residential'
+ * @returns ActionResult with CV tax details for the selected tab
+ */
+export async function fetchApartmentPropertyTaxDetailsCvByTabAction(
+  wardId: string | number,
+  propertyNo: string,
+  mainTab: string
+): Promise<ActionResult<ApartmentTaxDetailsItems>> {
+  try {
+    const { getApartmentPropertyTaxDetailsCvLocalized, getPartTypeFromMainTab } = await import("@/lib/api/appartmentQC.service");
+    const partType = getPartTypeFromMainTab(mainTab);
+    const data = await getApartmentPropertyTaxDetailsCvLocalized({ wardId, propertyNo, partType });
+    return {
+      success: true,
+      data,
+      message: "CV tax details fetched successfully",
+    };
+  } catch (error: unknown) {
+    return handleActionError(error, "Failed to fetch apartment property CV tax details");
+  }
+}
+
+/* ============================================================
+   APARTMENT PROPERTY TAX DETAILS - DUAL METHOD
+   Fetches both RV and CV tax details for dual method display
+ ============================================================ */
+
+/**
+ * Fetch both Rateable Value and Capital Value tax details for dual method display.
+ * 
+ * @param wardId - The ward ID
+ * @param propertyNo - The property number
+ * @param mainTab - The main tab: 'amenities', 'commercial', or 'residential'
+ * @returns ActionResult with both RV and CV tax details
+ */
+export async function fetchDualMethodTaxDetailsByTabAction(
+  wardId: string | number,
+  propertyNo: string,
+  mainTab: string
+): Promise<ActionResult<DualMethodTaxDetails>> {
+  try {
+    const { getDualMethodTaxDetails, getPartTypeFromMainTab } = await import("@/lib/api/appartmentQC.service");
+    const partType = getPartTypeFromMainTab(mainTab);
+    const data = await getDualMethodTaxDetails(wardId, propertyNo, partType);
+    return {
+      success: true,
+      data,
+      message: "Dual method tax details fetched successfully",
+    };
+  } catch (error: unknown) {
+    return handleActionError(error, "Failed to fetch dual method tax details");
+  }
+}
+
+/* ============================================================
+   APARTMENT PROPERTY TAX DETAILS BY PROPERTY ID
+   These actions use propertyId instead of WardId/PropertyNo
+   Used by PropertyDetailsEditScreen drawer
+ ============================================================ */
+
+/**
+ * Fetch apartment property Rateable Value (RV) tax details by property ID.
+ * Used by PropertyDetailsEditScreen drawer.
+ * 
+ * @param propertyId - The property ID
+ * @param mainTab - The main tab: 'amenities', 'commercial', or 'residential'
+ * @returns ActionResult with RV tax details
+ */
+export async function fetchApartmentTaxDetailsByIdAction(
+  propertyId: string | number,
+  mainTab: string
+): Promise<ActionResult<ApartmentTaxDetailsItems>> {
+  try {
+    const { getApartmentPropertyTaxDetailsByIdLocalized, getPartTypeFromMainTab } = await import("@/lib/api/appartmentQC.service");
+    const partType = getPartTypeFromMainTab(mainTab);
+    const data = await getApartmentPropertyTaxDetailsByIdLocalized({ propertyId, partType });
+    return {
+      success: true,
+      data,
+      message: "Tax details fetched successfully",
+    };
+  } catch (error: unknown) {
+    return handleActionError(error, "Failed to fetch apartment property tax details");
+  }
+}
+
+/**
+ * Fetch apartment property Capital Value (CV) tax details by property ID.
+ * Used by PropertyDetailsEditScreen drawer.
+ * 
+ * @param propertyId - The property ID
+ * @param mainTab - The main tab: 'amenities', 'commercial', or 'residential'
+ * @returns ActionResult with CV tax details
+ */
+export async function fetchApartmentTaxDetailsCvByIdAction(
+  propertyId: string | number,
+  mainTab: string
+): Promise<ActionResult<ApartmentTaxDetailsItems>> {
+  try {
+    const { getApartmentPropertyTaxDetailsCvByIdLocalized, getPartTypeFromMainTab } = await import("@/lib/api/appartmentQC.service");
+    const partType = getPartTypeFromMainTab(mainTab);
+    const data = await getApartmentPropertyTaxDetailsCvByIdLocalized({ propertyId, partType });
+    return {
+      success: true,
+      data,
+      message: "CV tax details fetched successfully",
+    };
+  } catch (error: unknown) {
+    return handleActionError(error, "Failed to fetch apartment property CV tax details");
+  }
+}
+
+/**
+ * Fetch both Rateable Value and Capital Value tax details for dual method by property ID.
+ * Used by PropertyDetailsEditScreen drawer.
+ * 
+ * @param propertyId - The property ID
+ * @param mainTab - The main tab: 'amenities', 'commercial', or 'residential'
+ * @returns ActionResult with both RV and CV tax details
+ */
+export async function fetchDualMethodTaxDetailsByIdAction(
+  propertyId: string | number,
+  mainTab: string
+): Promise<ActionResult<DualMethodTaxDetails>> {
+  try {
+    const { getDualMethodTaxDetailsById, getPartTypeFromMainTab } = await import("@/lib/api/appartmentQC.service");
+    const partType = getPartTypeFromMainTab(mainTab);
+    const data = await getDualMethodTaxDetailsById(propertyId, partType);
+    return {
+      success: true,
+      data,
+      message: "Dual method tax details fetched successfully",
+    };
+  } catch (error: unknown) {
+    return handleActionError(error, "Failed to fetch dual method tax details");
+  }
+}
