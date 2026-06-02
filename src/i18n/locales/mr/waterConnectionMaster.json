@@ -50,6 +50,7 @@
       "validation": {
         "statusCodeRequired": "स्थिती कोड आवश्यक आहे",
         "statusNameRequired": "स्थिती नाव आवश्यक आहे",
+        "statusNameInvalid": "स्थिती नावात फक्त अक्षरे असावीत, संख्या किंवा विशेष वर्ण नको",
         "statusCodeLength": "स्थिती कोड {count} वर्णांपेक्षा जास्त असू शकत नाही",
         "statusNameLength": "स्थिती नाव {count} वर्णांपेक्षा जास्त असू शकत नाही"
       },
@@ -96,6 +97,8 @@
       "validation": {
         "typeCodeRequired": "प्रकार कोड आवश्यक आहे",
         "typeNameRequired": "प्रकार नाव आवश्यक आहे",
+        "typeCodeInvalid": "प्रकार कोडमध्ये फक्त अक्षरे असावीत, संख्या किंवा विशेष वर्ण नको",
+        "typeNameInvalid": "प्रकार नावात फक्त अक्षरे असावीत, संख्या किंवा विशेष वर्ण नको",
         "typeCodeLength": "प्रकार कोड {count} वर्णांपेक्षा जास्त असू शकत नाही",
         "typeNameLength": "प्रकार नाव {count} वर्णांपेक्षा जास्त असू शकत नाही"
       },

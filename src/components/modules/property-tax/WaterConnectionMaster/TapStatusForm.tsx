@@ -22,6 +22,7 @@ import {
   createTapStatusAction,
   updateTapStatusAction,
 } from "@/app/[locale]/property-tax/water-connection-master/actions";
+import { NAME_ONLY_REGEX, NAME_ONLY_SANITIZE } from "@/lib/utils/validation-rules";
 
 const MAX_NAME = 10;
 
@@ -54,6 +55,8 @@ export function TapStatusForm({ id, initialData }: Readonly<TapStatusFormProps>)
       const errs: Partial<Record<"statusName", string>> = {};
       if (!data.statusName.trim())
         errs.statusName = t("validation.statusNameRequired");
+      else if (!NAME_ONLY_REGEX.test(data.statusName.trim()))
+        errs.statusName = t("validation.statusNameInvalid");
       else if (data.statusName.length > MAX_NAME)
         errs.statusName = t("validation.statusNameLength", { count: MAX_NAME });
       return errs;
@@ -67,6 +70,9 @@ export function TapStatusForm({ id, initialData }: Readonly<TapStatusFormProps>)
     Boolean((submittedOnce || touched[field]) && errors[field]);
 
   const handleChange = (field: "statusName" | "isActive", value: string | boolean) => {
+    if (field === "statusName" && typeof value === "string") {
+      value = value.replace(NAME_ONLY_SANITIZE, "");
+    }
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
