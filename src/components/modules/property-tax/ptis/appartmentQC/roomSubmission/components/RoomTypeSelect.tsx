@@ -27,10 +27,11 @@ export const RoomTypeSelect: React.FC<RoomTypeSelectProps> = ({ value, onChange,
         const normalizedVal = newVal?.trim().toLowerCase();
         const selectedDetail = roomTypeDetails?.find((detail) => {
             // Check all possible name fields from the API response
+            // roomTypeDescription is typed in RoomTypeResponse interface
             const possibleNames = [
                 detail.roomTypeName,
                 detail.description,
-                (detail as Record<string, unknown>).roomTypeDescription as string | undefined,
+                detail.roomTypeDescription,
                 detail.roomTypeCode,
             ].filter(Boolean);
             
@@ -39,9 +40,20 @@ export const RoomTypeSelect: React.FC<RoomTypeSelectProps> = ({ value, onChange,
             );
         });
         
-        // Get roomTypeId - check multiple possible field names
-        const roomTypeId = selectedDetail?.roomTypeId ?? 
-            (selectedDetail as Record<string, unknown> | undefined)?.id as number | undefined;
+        // Get roomTypeId - use typed field, with safe fallback for legacy 'id' field
+        let roomTypeId: number | undefined = selectedDetail?.roomTypeId;
+        if (roomTypeId === undefined && selectedDetail) {
+            // Safely parse legacy 'id' field if roomTypeId is not available
+            const legacyId = selectedDetail['id'];
+            if (typeof legacyId === 'number' && !Number.isNaN(legacyId)) {
+                roomTypeId = legacyId;
+            } else if (typeof legacyId === 'string') {
+                const parsed = Number(legacyId);
+                if (!Number.isNaN(parsed)) {
+                    roomTypeId = parsed;
+                }
+            }
+        }
         
         onChange(newVal, roomTypeId);
     };
