@@ -46,7 +46,7 @@ export async function getAllWaterConnections(
   const params = new URLSearchParams({
     PropertyId: propertyId.toString(),
     PageNumber: "1",
-    PageSize: "1000", // Fetch a large number to get all connections
+    PageSize: "-1", // Fetch all records
   });
 
   const response = await apiClient.get<WaterConnectionPagedResponse<WaterConnection>>(
