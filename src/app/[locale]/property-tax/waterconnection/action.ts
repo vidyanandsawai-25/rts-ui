@@ -11,6 +11,7 @@ import type {
 } from '@/types/waterconnection.types';
 import {
   getWaterConnectionsPaged,
+  getAllWaterConnections,
   getWaterConnectionTypes,
   getWaterConnectionSizes,
   getWaterConnectionStatuses,
@@ -22,6 +23,38 @@ import {
 } from '@/lib/api/waterconnection.services';
 import { getPropertyBasicDetails } from '@/lib/api/property-basic-details.service';
 import { getPropertyKycById } from '@/lib/api/property-kyc.service';
+
+/** Lightweight action — fetches ONLY the paged connections list.
+ *  Use this for client-side page/pageSize changes to avoid re-fetching
+ *  property details and lookup data on every pagination event.
+ */
+export async function getWaterConnectionsOnlyAction(
+  propertyId: number,
+  pageNumber: number,
+  pageSize: number
+): Promise<{
+  connections: import('@/types/waterconnection.types').WaterConnection[];
+  totalCount: number;
+  totalPages: number;
+  pageNumber: number;
+  pageSize: number;
+}> {
+  const response = await getWaterConnectionsPaged(propertyId, pageNumber, pageSize);
+  return {
+    connections: response.items ?? response.data ?? [],
+    totalCount: response.totalCount,
+    totalPages: response.totalPages,
+    pageNumber: response.pageNumber,
+    pageSize: response.pageSize,
+  };
+}
+
+/** Fetch ALL connections for a property (unpaged) for stats calculation */
+export async function getAllWaterConnectionsAction(
+  propertyId: number
+): Promise<import('@/types/waterconnection.types').WaterConnection[]> {
+  return getAllWaterConnections(propertyId);
+}
 
 export async function getWaterConnectionPageData(
   propertyId: number,
