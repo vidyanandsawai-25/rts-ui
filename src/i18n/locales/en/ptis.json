@@ -270,7 +270,8 @@
   },
   "loading": {
     "message": "Loading Property Details",
-    "description": "Please wait while we fetch the latest property tax information."
+    "description": "Please wait while we fetch the latest property tax information.",
+    "rendering": "Rendering..."
   },
   "assessmentMethods": {
     "rateable": "Rateable",
@@ -523,9 +524,14 @@
     "previousPage": "Previous Page",
     "nextPage": "Next Page",
     "lastPage": "Last Page",
+    "firstProperty": "First Property",
+    "previousProperty": "Previous Property",
+    "nextProperty": "Next Property",
+    "lastProperty": "Last Property",
     "backToSearch": "Back to Search Property"
   },
   "table": {
-    "page": "Page {current} of {total}"
+    "page": "Page {current} of {total}",
+    "property": "Property {current} of {total}"
   }
 }
