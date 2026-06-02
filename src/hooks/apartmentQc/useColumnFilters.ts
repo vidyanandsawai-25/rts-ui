@@ -104,26 +104,20 @@ export function useColumnFilters({ wardId, propertyNo }: UseColumnFiltersProps) 
             .map((a) => ({ value: a, label: a }));
         
         case 'propertyType': {
-          // Property types are IDs, need to resolve to descriptions
+          // Property types are IDs, resolve to descriptions in parallel (fallback to ID)
           const propertyTypeIds = items.propertyTypes;
-          const options: FilterOption[] = [];
-          
-          for (const id of propertyTypeIds) {
-            try {
-              const propertyType = await getPropertyTypeByIdAction(id);
-              if (propertyType?.propertyDescription) {
-                options.push({
-                  value: String(id),
-                  label: propertyType.propertyDescription,
-                });
+          const options = await Promise.all(
+            propertyTypeIds.map(async (id) => {
+              try {
+                const propertyType = await getPropertyTypeByIdAction(id);
+                const label = propertyType?.propertyDescription?.trim();
+                return { value: String(id), label: label || String(id) };
+              } catch (error) {
+                logger.error(`[useColumnFilters] Failed to fetch property type ${id}`, { error: error as Error });
+                return { value: String(id), label: String(id) };
               }
-            } catch (error) {
-              logger.error(`[useColumnFilters] Failed to fetch property type ${id}`, { error: error as Error });
-              // Fallback to showing the ID if description fetch fails
-              options.push({ value: String(id), label: String(id) });
-            }
-          }
-          
+            })
+          );
           return options;
         }
         
