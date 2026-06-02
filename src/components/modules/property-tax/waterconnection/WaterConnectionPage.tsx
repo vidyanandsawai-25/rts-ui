@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useCallback, useTransition, useEffect } from "react";
+import { useMemo, useState, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import { Droplets } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
@@ -50,7 +50,7 @@ export default function WaterConnectionPage({
   const router = useRouter();
   const searchParams = useSearchParams();
   const { confirm } = useConfirm();
-  const [isPending, startTransition] = useTransition();
+
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingConnection, setEditingConnection] = useState<WaterConnection | null>(null);
@@ -251,7 +251,7 @@ export default function WaterConnectionPage({
           onAdd={handleAdd}
           onEdit={handleEdit}
           onDelete={handleDelete}
-          loading={loading || isPending}
+          loading={loading}
           footerLeft={
             <div className="flex items-center gap-4">
               <span className="text-sm text-gray-700">

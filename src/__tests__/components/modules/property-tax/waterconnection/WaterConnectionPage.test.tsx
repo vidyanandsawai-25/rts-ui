@@ -56,6 +56,8 @@ describe('WaterConnectionPage', () => {
   const defaultProps = {
     initialData: createMockPageData(),
     propertyId: 123,
+    initialPage: 1,
+    initialPageSize: 10,
   };
 
   beforeEach(() => {
@@ -129,7 +131,7 @@ describe('WaterConnectionPage', () => {
       });
 
       renderWithIntl(
-        <WaterConnectionPage initialData={pageData} propertyId={123} />
+        <WaterConnectionPage initialData={pageData} propertyId={123} initialPage={1} initialPageSize={10} />
       );
 
       // 1 active connection - check the stats card
@@ -146,7 +148,7 @@ describe('WaterConnectionPage', () => {
       });
 
       renderWithIntl(
-        <WaterConnectionPage initialData={pageData} propertyId={123} />
+        <WaterConnectionPage initialData={pageData} propertyId={123} initialPage={1} initialPageSize={10} />
       );
 
       // Only active connections contribute to revenue
@@ -275,7 +277,7 @@ describe('WaterConnectionPage', () => {
       const pageData = createMockPageData({ connections: [], totalCount: 0 });
 
       renderWithIntl(
-        <WaterConnectionPage initialData={pageData} propertyId={123} />
+        <WaterConnectionPage initialData={pageData} propertyId={123} initialPage={1} initialPageSize={10} />
       );
 
       expect(screen.getByText(/0 connections/i)).toBeInTheDocument();
@@ -285,7 +287,7 @@ describe('WaterConnectionPage', () => {
       const pageData = createMockPageData({ connections: [] });
 
       renderWithIntl(
-        <WaterConnectionPage initialData={pageData} propertyId={123} />
+        <WaterConnectionPage initialData={pageData} propertyId={123} initialPage={1} initialPageSize={10} />
       );
 
       expect(screen.getByRole('button', { name: /add connection/i })).toBeInTheDocument();

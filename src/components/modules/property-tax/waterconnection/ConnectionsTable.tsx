@@ -18,7 +18,6 @@ interface ConnectionsTableProps {
   pageSize: number;
   totalPages: number;
   onPageChange: (page: number) => void;
-  onPageSizeChange: (size: number) => void;
   onAdd: () => void;
   onEdit: (connection: WaterConnection) => void;
   onDelete: (connection: WaterConnection) => void;
