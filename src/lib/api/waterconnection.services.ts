@@ -39,6 +39,31 @@ export async function getWaterConnectionsPaged(
   return response.data;
 }
 
+/** GET ALL connections for a property (unpaged) for stats calculation */
+export async function getAllWaterConnections(
+  propertyId: number
+): Promise<WaterConnection[]> {
+  const params = new URLSearchParams({
+    PropertyId: propertyId.toString(),
+    PageNumber: "1",
+    PageSize: "1000", // Fetch a large number to get all connections
+  });
+
+  const response = await apiClient.get<WaterConnectionPagedResponse<WaterConnection>>(
+    `/WaterConnection?${params.toString()}`
+  );
+
+  if (!response.success || !response.data) {
+    throw new ApiError(
+      response.statusCode || 500,
+      response.error || "",
+      "Fetch all water connections failed"
+    );
+  }
+
+  return response.data.items ?? response.data.data ?? [];
+}
+
 /** GET by id */
 export async function getWaterConnectionById(id: number): Promise<WaterConnection> {
   const response = await apiClient.get<WaterConnection>(`/WaterConnection/${id}`);
