@@ -4,8 +4,11 @@
     "rateableDescription": "प्रत्येक ज़ोन और निर्माण प्रकार के लिए दरें (₹/वर्ग मीटर) प्रबंधित करें",
     "capitalTitle": "पूंजी मूल्य दर मास्टर",
     "capitalDescription": "रेडी-रेकनर आधारित पूंजी मूल्य दरें।",
+    "moujaTitle": "मौजा मास्टर",
+    "moujaDescription": "मौजा रिकॉर्ड और उनके विवरण प्रबंधित करें",
     "rateableTab": "करयोग्य मूल्य",
-    "capitalTab": "पूंजी मूल्य"
+    "capitalTab": "पूंजी मूल्य",
+    "moujaTab": "मौजा मास्टर"
   },
   "filters": {
     "financeYear": "वित्तीय वर्ष",

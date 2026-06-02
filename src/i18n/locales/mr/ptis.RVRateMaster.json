@@ -4,8 +4,11 @@
     "rateableDescription": "प्रत्येक झोन आणि बांधकाम प्रकारासाठी दर (₹/चौ.मी.) व्यवस्थापित करा",
     "capitalTitle": "भांडवली मूल्य दर मास्टर",
     "capitalDescription": "रेडी-रेकनर आधारित भांडवली मूल्य दर.",
+    "moujaTitle": "मौजा मास्टर",
+    "moujaDescription": "मौजा नोंदी आणि त्यांचे तपशील व्यवस्थापित करा",
     "rateableTab": "करयोग्य मूल्य",
-    "capitalTab": "भांडवली मूल्य"
+    "capitalTab": "भांडवली मूल्य",
+    "moujaTab": "मौजा मास्टर"
   },
   "filters": {
     "financeYear": "आर्थिक वर्ष",
