@@ -50,6 +50,15 @@ export const TRANSLATION_TEXT_SANITIZE = /[^\p{L}\p{M}\p{N}\s,.\-\/_()]/gu;
 /* ================= SEARCH VALIDATION ================= */
 export const SEARCH_KEY_REGEX = /^[A-Za-z0-9+\-]+$/;
 
+/* ================= NAME ONLY VALIDATION ================= */
+// Name fields: Unicode letters and spaces only. No numbers, no special characters.
+export const NAME_ONLY_REGEX = /^[\p{L}\p{M}\s]+$/u;
+export const NAME_ONLY_SANITIZE = /[^\p{L}\p{M}\s]/gu;
+
+// Code fields (letters only, no spaces, no numbers, no special characters)
+export const LETTERS_ONLY_REGEX = /^[\p{L}\p{M}]+$/u;
+export const LETTERS_ONLY_SANITIZE = /[^\p{L}\p{M}]/gu;
+
 /* ================= SOCIETY VALIDATION ================= */
 export const PERSON_NAME_REGEX = /^[\p{L}\p{M}\s.,'-]+$/u;
 export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
