@@ -77,15 +77,21 @@ export function getSubTabLabel(subTab: string, t: (key: string) => string): stri
 }
 
 /**
+ * Cached currency formatter for performance
+ * Creating Intl.NumberFormat is relatively expensive, so we cache it at module scope
+ */
+const currencyFormatter = new Intl.NumberFormat('en-IN', {
+  style: 'currency',
+  currency: 'INR',
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 2,
+});
+
+/**
  * Format currency in Indian format
  */
 export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(amount);
+  return currencyFormatter.format(amount);
 }
 
 /**

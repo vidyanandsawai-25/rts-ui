@@ -134,7 +134,7 @@ export function useTaxTableColumns({
     // First column - Method/Property Type (only show when data exists)
     cols.push({
       key: 'methodLabel' as keyof TaxRowData,
-      label: activeSubTab === 'dual-method' ? t('taxDetails.method') : t('taxDetails.methodLabel'),
+      label: activeSubTab === 'dual-method' ? t('taxDetails.method') : t('taxDetails.propertyType'),
       width: '150px',
       headerClassName: 'sticky left-0 z-10 bg-[#d9e3ec] border-r border-gray-300',
       cellClassName: 'sticky left-0 z-10 bg-white border-r border-gray-300',

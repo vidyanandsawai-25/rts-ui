@@ -945,10 +945,9 @@ export async function getApartmentPropertyTaxDetailsCvSafe(
    Fetches both RV and CV tax details for dual method display
 ============================================================ */
 
-export interface DualMethodTaxDetails {
-  rateable: ApartmentTaxDetailsItems | null;
-  capital: ApartmentTaxDetailsItems | null;
-}
+// Re-export the shared type from types file to avoid duplication
+export type { DualMethodTaxDetails } from '@/types/apartmentQC.types';
+import type { DualMethodTaxDetails } from '@/types/apartmentQC.types';
 
 /**
  * Fetch both Rateable Value and Capital Value tax details for dual method.

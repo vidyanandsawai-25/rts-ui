@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import type * as React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ApartmentTaxDetailsTable } from '@/components/modules/property-tax/ptis/appartmentQC/ApartmentTaxDetailsTable';
 import type { ApartmentTaxDetailsItems, DualMethodTaxDetails } from '@/types/apartmentQC.types';
@@ -10,7 +11,7 @@ vi.mock('next-intl', () => ({
       'taxDetails.title': 'Tax Details',
       'taxDetails.subtitle': 'Summary of property taxes',
       'taxDetails.method': 'Method',
-      'taxDetails.methodLabel': 'Property Type',
+      'taxDetails.propertyType': 'Property Type',
       'taxDetails.total': 'Total',
       'taxDetails.columnTotal': 'Grand Total',
       'taxDetails.noData': 'No data available',
@@ -250,7 +251,7 @@ describe('ApartmentTaxDetailsTable', () => {
         />
       );
 
-      expect(screen.getByTestId('header-subtitle')).toHaveTextContent('Comparing Rateable Value and Capital Value');
+      expect(screen.getByTestId('header-subtitle')).toHaveTextContent('Rateable Value / Capital Value');
     });
 
     it('should display both RV and CV counts in footer', () => {

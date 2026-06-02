@@ -118,10 +118,10 @@ export function ApartmentTaxDetailsTable({
   const headerSubtitle = useMemo(() => {
     if (!hasData) return undefined;
     if (activeSubTab === 'dual-method') {
-      return `${t('taxDetails.subtitle')} - Comparing Rateable Value and Capital Value`;
+      return `${t('taxDetails.subtitle')} - ${tPtis('apartmentTabs.rateable')} / ${tPtis('apartmentTabs.capital')}`;
     }
     return t('taxDetails.subtitle');
-  }, [hasData, activeSubTab, t]);
+  }, [hasData, activeSubTab, t, tPtis]);
 
   return (
     <div className={cn('w-full', getHeaderGradientClass(activeSubTab), 'rounded-t-xl')}>
@@ -129,7 +129,7 @@ export function ApartmentTaxDetailsTable({
         columns={columns}
         data={tableData}
         loading={loading}
-        loadingText={t('taxDetails.noData')}
+        loadingText={tPtis('apartmentTabs.loading')}
         emptyText={t('taxDetails.noData')}
         headerTitle={headerTitle}
         headerSubtitle={headerSubtitle}

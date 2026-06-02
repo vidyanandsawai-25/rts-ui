@@ -8,7 +8,7 @@ vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => {
     const translations: Record<string, string> = {
       'taxDetails.method': 'Method',
-      'taxDetails.methodLabel': 'Property Type',
+      'taxDetails.propertyType': 'Property Type',
       'taxDetails.total': 'Total',
     };
     return translations[key] || key;
@@ -28,7 +28,7 @@ const mockTaxColumns: TaxColumnDef[] = [
 const mockT = (key: string) => {
   const translations: Record<string, string> = {
     'taxDetails.method': 'Method',
-    'taxDetails.methodLabel': 'Property Type',
+    'taxDetails.propertyType': 'Property Type',
     'taxDetails.total': 'Total',
   };
   return translations[key] || key;
