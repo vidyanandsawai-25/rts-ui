@@ -87,7 +87,7 @@ export  function Drawer({
             px-5 py-2.5 border-b-2 border-blue-200
             flex items-start justify-between
           ">
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-3 ">
               {/* ICON SLOT (from title JSX) */}
               {title}
             </div>

@@ -20,6 +20,7 @@ export interface CombinePropertyFilterBarProps {
   selectedCount: number;
   canProceed: boolean;
   isPending: boolean;
+  showHistory: boolean;
 
   handleBasePropertyChange: (_name: string, value: string) => void;
   handleMethodChange: (method: SelectionMethod) => void;
@@ -29,6 +30,7 @@ export interface CombinePropertyFilterBarProps {
   setSelectedPropertyType: (val: string) => void;
   handleClear: () => void;
   handleProceed: () => void;
+  onShowHistory?: () => void;
 }
 
 export function CombinePropertyFilterBar({
@@ -46,6 +48,7 @@ export function CombinePropertyFilterBar({
   selectedCount,
   canProceed,
   isPending,
+  showHistory,
   handleBasePropertyChange,
   handleMethodChange,
   handleRangeFromChange,
@@ -54,6 +57,7 @@ export function CombinePropertyFilterBar({
   setSelectedPropertyType,
   handleClear,
   handleProceed,
+  onShowHistory,
 }: CombinePropertyFilterBarProps) {
   return (
     <div className="flex items-end gap-2 px-3 py-2 bg-[#EFF4FF] border-b border-blue-100">
@@ -163,7 +167,11 @@ export function CombinePropertyFilterBar({
 
       {/* ---- Action buttons ---- */}
       <div className="flex items-end gap-2 shrink-0 ml-auto">
-        <ShowHistoryButton size="sm" />
+        <ShowHistoryButton 
+          size="sm" 
+          label={showHistory ? t('hideHistory') || 'Hide History' : t('showHistory') || 'Show History'} 
+          onClick={onShowHistory} 
+        />
         <CancelButton label={t('clear')} onClick={handleClear} size="sm" />
         <AddButton
           label={isPending ? t('loadingButton') : t('proceed', { count: selectedCount })}

@@ -1,6 +1,7 @@
 import { Column } from '@/components/common/MasterTable';
 import { PropertyCombineDetails } from '@/types/combine-property.types';
 import { Checkbox } from '@/components/common/checkbox';
+import { PreviewButton } from '@/components/common/ActionButtons';
 
 export type PropertyRow = PropertyCombineDetails & Record<string, unknown>;
 
@@ -140,4 +141,60 @@ export const getCombinePropertyColumns = (
     ),
   },
 ];
+
+export const getCombinePropertyHistoryColumns = (
+  t: (key: string) => string,
+  onPreviewClick?: (row: PropertyRow) => void
+): Column<PropertyRow>[] => {
+  const columns: Column<PropertyRow>[] = [
+    { key: 'propertyNo', label: t('propertyNo'), align: 'center', width: '100px' },
+    { key: 'wardNo', label: t('ward'), align: 'center', width: '100px' },
+    { key: 'oldPropertyNo', label: t('oldPropertyNo'), align: 'center', width: '100px' },
+    { key: 'propertyDescription', label: t('propertyType'), align: 'left' },
+    { key: 'ownerName', label: t('ownerName'), align: 'left' },
+    { key: 'occupierName', label: t('occupierName'), align: 'left' },
+    {
+      key: 'taxAmount',
+      label: t('currentTax') || 'Tax Amount',
+      align: 'right',
+      width: '110px',
+      render: (val) => (
+        <span className="font-semibold text-gray-800">
+          ₹{Number(val ?? 0).toLocaleString('en-IN')}
+        </span>
+      ),
+    },
+    {
+      key: 'pendingAmount',
+      label: t('pendingTax') || 'Pending Amount',
+      align: 'right',
+      width: '110px',
+      render: (val) => (
+        <span className="font-semibold text-gray-800">
+          ₹{Number(val ?? 0).toLocaleString('en-IN')}
+        </span>
+      ),
+    },
+    { key: 'combineReason', label: t('remarkLabel') || 'Reason', align: 'left' },
+  ];
+
+  if (onPreviewClick) {
+    columns.push({
+      key: '_action' as any,
+      label: t('action') || 'Action',
+      align: 'center',
+      width: '60px',
+      render: (_val, row) => (
+        <PreviewButton
+          size="sm"
+          aria-label="View Details"
+          label={t('viewDetails')}
+          onClick={() => onPreviewClick(row)}
+        />
+      ),
+    });
+  }
+
+  return columns;
+};
 
