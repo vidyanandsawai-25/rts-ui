@@ -83,20 +83,12 @@ export function FloorFormFields({
         onBlur={onBlur}
         fullWidth
         min={1}
+        max={999}
+        step={1}
         className="text-gray-700"
         onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-          // Block minus, plus, and e keys
-          if (e.key === '-' || e.key === '+' || e.key === 'e' || e.key === 'E') {
-            e.preventDefault();
-          }
-          // Block digit input if already 3 digits entered
-          const currentValue = (e.target as HTMLInputElement).value;
-          if (
-            currentValue.length >= 3 &&
-            /^\d$/.test(e.key) &&
-            !e.metaKey &&
-            !e.ctrlKey
-          ) {
+          // Block minus, plus, decimal point, and e keys (only allow integers)
+          if (e.key === '-' || e.key === '+' || e.key === 'e' || e.key === 'E' || e.key === '.') {
             e.preventDefault();
           }
         }}

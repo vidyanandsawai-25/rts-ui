@@ -53,6 +53,10 @@ export function validateFloorForm(
     errors.sequenceNo = t('form.validation.sequenceNoRequired');
   } else if (!Number.isFinite(data.sequenceNo) || data.sequenceNo < 1) {
     errors.sequenceNo = t('validation.mustBeNumber');
+  } else if (!Number.isInteger(data.sequenceNo)) {
+    errors.sequenceNo = t('validation.mustBeNumber');
+  } else if (data.sequenceNo > 999) {
+    errors.sequenceNo = t('form.validation.rangeMaxValue', { count: 999 });
   }
 
   // isActive validation
