@@ -270,7 +270,8 @@
   },
   "loading": {
     "message": "संपत्ति विवरण लोड हो रहा है",
-    "description": "कृपया प्रतीक्षा करें जब तक हम नवीनतम संपत्ति कर जानकारी प्राप्त करते हैं।"
+    "description": "कृपया प्रतीक्षा करें जब तक हम नवीनतम संपत्ति कर जानकारी प्राप्त करते हैं।",
+    "rendering": "रेंडरिंग..."
   },
   "assessmentMethods": {
     "rateable": "कर निर्धार्य मूल्य",
@@ -531,9 +532,14 @@
     "previousPage": "पिछला पृष्ठ",
     "nextPage": "अगला पृष्ठ",
     "lastPage": "अंतिम पृष्ठ",
+    "firstProperty": "पहली संपत्ति",
+    "previousProperty": "पिछली संपत्ति",
+    "nextProperty": "अगली संपत्ति",
+    "lastProperty": "अंतिम संपत्ति",
     "backToSearch": "खोज संपत्ति पर वापस जाएं"
   },
   "table": {
-    "page": "पृष्ठ {current} का {total}"
+    "page": "पृष्ठ {current} का {total}",
+    "property": "संपत्ति {current} की {total}"
   }
 }

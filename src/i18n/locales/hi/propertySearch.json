@@ -41,7 +41,8 @@
       "mobile": "मोबाइल नं.",
       "shopBuildingName": "दुकान/भवन का नाम",
       "societyName": "सोसायटी का नाम",
-      "address": "पता"
+      "address": "पता",
+      "filters": "फ़िल्टर"
     },
     "tooltips": {
       "propertyNo": "अक्षर, संख्या, हाइफ़न (-) और स्लैश (/). अधिकतम 20 अक्षर। उदा.: P-2023-001, 10/A",
@@ -84,6 +85,7 @@
       "valuationMethod": "मूल्यांकन विधि",
       "filterType": "फ़िल्टर प्रकार",
       "amount": "राशि दर्ज करें",
+      "topCount": "शीर्ष संख्या (उदा. 1)",
       "toAmount": "अधिकतम राशि",
       "taxDefaulter": "कर बकायादार",
       "fromValue": "से मान",

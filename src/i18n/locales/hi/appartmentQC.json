@@ -53,6 +53,13 @@
     "ocDate": "ओसी दिनांक"
   },
   "taxDetails": {
+    "title": "संपत्ति कर विवरण सारांश",
+    "subtitle": "संपत्ति प्रकार के अनुसार समेकित कर विवरण",
+    "propertyType": "संपत्ति का प्रकार",
+    "methodLabel": "विधि",
+    "total": "कुल",
+    "columnTotal": "कॉलम कुल",
+    "noData": "कोई कर विवरण उपलब्ध नहीं है",
     "taxes": "कर",
     "method": "विधि",
     "generalTax": "सामान्य कर",
@@ -77,7 +84,10 @@
     "oldPenaltyULB": "यूएलबी का पुराना जुर्माना",
     "oldPenaltyULBShort": "पुराना जुर्माना यूएलबी",
     "runTimePenalty": "रन टाइम जुर्माना",
-    "totalTax": "कुल कर"
+    "totalTax": "कुल कर",
+    "propertyCount": "संपत्ति की संख्या",
+    "rvPropertyCount": "आरवी संपत्ति की संख्या",
+    "cvPropertyCount": "सीवी संपत्ति की संख्या"
   },
   "apartmentTabs": {
     "amenitiesTitle": "संपत्ति कर सुविधाएं",

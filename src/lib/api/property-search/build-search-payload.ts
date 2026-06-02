@@ -17,6 +17,54 @@ function normalizeMobileForApi(value: string): string | undefined {
   return digits || undefined;
 }
 
+/** UI filter keys ΓåÆ .NET `AmountFilterOperator` query values. */
+const AMOUNT_FILTER_OPERATOR_BY_UI: Record<string, string> = {
+  exact: "Equals",
+  moreThan: "GreaterThan",
+  lessThan: "LessThan",
+  top: "top",
+};
+
+function resolveValuesDuesRvOrCv(
+  criteria: SearchCriteria
+): PropertySearchCriteriaPayload["rvOrCv"] | undefined {
+  if (criteria.rateableValueFilter.trim() !== "") {
+    return "RV";
+  }
+  return undefined;
+}
+
+function getValuesDuesAmountFields(criteria: SearchCriteria): {
+  filterType: string;
+  amountFrom: string;
+  amountTo: string;
+} {
+  return {
+    filterType: criteria.rateableValueFilter,
+    amountFrom: criteria.rateableValueFrom,
+    amountTo: criteria.rateableValueTo,
+  };
+}
+
+function parsePositiveNumber(value: string): number | undefined {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+}
+
+function parseAmount(value: string): number | undefined {
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+  const parsed = Number(trimmed);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+/** Client-side table pagination: request all rows from the API. */
+function withUnpagedResults(
+  payload: PropertySearchCriteriaPayload
+): PropertySearchCriteriaPayload {
+  return { ...payload, pageNumber: 1, pageSize: -1 };
+}
+
 function resolveDashboardFilter(
   selectedStatus: PropertyStatus | null,
   typeFilter: string,
@@ -55,8 +103,6 @@ export function buildPropertySearchPayload(
       searchCriteria.typeFilter,
       hasPropertyAssessmentStatus
     ),
-    pageNumber: 1,
-    pageSize: -1,
   };
 
   const categoryId = parseInt(searchCriteria.propertyDescription, 10);
@@ -69,13 +115,13 @@ export function buildPropertySearchPayload(
   }
 
   if (!isSearchActive) {
-    return payload;
+    return withUnpagedResults(payload);
   }
 
   const criteria = applyTabSearchCriteria(searchCriteria, activeTab);
 
   if (activeTab === "quick-search") {
-    return {
+    return withUnpagedResults({
       ...payload,
       propertyNoFrom: criteria.propertyNoFrom || undefined,
       propertyNoTo: criteria.propertyNoTo || undefined,
@@ -84,38 +130,68 @@ export function buildPropertySearchPayload(
       citySurveyNo: criteria.citySurveyNo || undefined,
       subZoneNo: criteria.subZoneNo || undefined,
       plotNo: criteria.plotNo || undefined,
-    };
+    });
   }
 
   if (activeTab === "values-dues") {
-    const valuationMethod = criteria.valuationMethod;
-    const isRV = valuationMethod === "Rateable Value (RV)";
-    const filterType = isRV ? criteria.rateableValueFilter : criteria.capitalValueFilter;
-    const amountFrom = isRV ? criteria.rateableValueFrom : criteria.capitalValueFrom;
+    const rvOrCv = resolveValuesDuesRvOrCv(criteria);
+    const { filterType, amountFrom, amountTo } = getValuesDuesAmountFields(criteria);
 
     const valuesPayload: PropertySearchCriteriaPayload = {
       ...payload,
-      valuationMethod: valuationMethod || undefined,
+      rvOrCv,
     };
 
-    if (filterType && amountFrom) {
-      if (filterType === "exact") {
-        valuesPayload.equals = amountFrom;
-      } else if (filterType === "moreThan") {
-        valuesPayload.greaterThan = amountFrom;
-      } else if (filterType === "lessThan") {
-        valuesPayload.lessThan = amountFrom;
-      } else if (filterType === "between") {
-        valuesPayload.between = amountFrom;
-      } else if (filterType === "top") {
-        valuesPayload.top = amountFrom;
-      }
+    if (!filterType) {
+      return withUnpagedResults(valuesPayload);
     }
 
-    return valuesPayload;
+    if (filterType === "between") {
+      const amountValue = parseAmount(amountFrom);
+      const amountToValue = parseAmount(amountTo);
+      if (amountValue == null || amountToValue == null) {
+        return withUnpagedResults(valuesPayload);
+      }
+      // Between: AmountValue + AmountTo (no AmountFilterOperator).
+      return withUnpagedResults({
+        ...valuesPayload,
+        amountValue,
+        amountTo: amountToValue,
+      });
+    }
+
+    if (filterType === "exact") {
+      const amountValue = parseAmount(amountFrom);
+      if (amountValue == null) {
+        return withUnpagedResults(valuesPayload);
+      }
+      // Exact Value (UI) ΓåÆ AmountFilterOperator=Equals + AmountValue.
+      return withUnpagedResults({
+        ...valuesPayload,
+        amountFilterOperator: "Equals",
+        amountValue,
+      });
+    }
+
+    const operator = AMOUNT_FILTER_OPERATOR_BY_UI[filterType];
+    if (operator) {
+      valuesPayload.amountFilterOperator = operator;
+    }
+
+    if (filterType === "top") {
+      valuesPayload.topCount = parsePositiveNumber(amountFrom) ?? 1;
+      return withUnpagedResults(valuesPayload);
+    }
+
+    const amountValue = parseAmount(amountFrom);
+    if (amountValue != null) {
+      valuesPayload.amountValue = amountValue;
+    }
+
+    return withUnpagedResults(valuesPayload);
   }
 
-  return {
+  return withUnpagedResults({
     ...payload,
     holderName: criteria.holderName || undefined,
     occupierName: criteria.occupierName || undefined,
@@ -123,5 +199,5 @@ export function buildPropertySearchPayload(
     shopBuildingName: criteria.shopBuildingName || undefined,
     societyName: criteria.societyName || undefined,
     address: criteria.address || undefined,
-  };
+  });
 }
