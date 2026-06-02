@@ -1,7 +1,7 @@
 import { SearchSelect, type SearchSelectOption } from '@/components/common/SearchSelect';
 import { MultiSelectDropdown } from '@/components/common/Dropdown';
 import { Tabs, TabList, Tab } from '@/components/common/Tabs';
-import { CancelButton, AddButton } from '@/components/common/ActionButtons';
+import { CancelButton, AddButton, ShowHistoryButton } from '@/components/common/ActionButtons';
 import { SelectionMethod } from '@/hooks/combineProperty/useCombinePropertyFilters';
 
 export interface CombinePropertyFilterBarProps {
@@ -163,6 +163,7 @@ export function CombinePropertyFilterBar({
 
       {/* ---- Action buttons ---- */}
       <div className="flex items-end gap-2 shrink-0 ml-auto">
+        <ShowHistoryButton size="sm" />
         <CancelButton label={t('clear')} onClick={handleClear} size="sm" />
         <AddButton
           label={isPending ? t('loadingButton') : t('proceed', { count: selectedCount })}

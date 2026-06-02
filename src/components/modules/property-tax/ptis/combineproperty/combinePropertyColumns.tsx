@@ -64,7 +64,7 @@ export const getCombinePropertyColumns = (
     align: 'center',
     width: '100px',
     render: (val) => (
-      <span className="inline-flex items-center justify-center w-9 h-9 rounded-full border-2 border-blue-400 text-blue-600 text-[11px] font-bold">
+      <span className="text-blue-600 font-semibold text-[12px]">
         {String(val ?? '-')}
       </span>
     ),
