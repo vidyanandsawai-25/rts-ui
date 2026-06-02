@@ -8,7 +8,7 @@ import { Button, CancelButton, SaveButton } from "@/components/common";
 import { MasterTable } from "@/components/common/MasterTable";
 import { Tabs } from "@/components/common/Tabs";
 import { ChevronDown, ChevronUp, User, Building2 } from "lucide-react";
-import type { ApartmentQCDetail } from "@/types/apartmentQC.types";
+import type { ApartmentQCDetail, ApartmentTaxDetailsItems, DualMethodTaxDetails } from "@/types/apartmentQC.types";
 import type { Floor } from "@/types/floor.types";
 import type { ConstructionType } from "@/types/construction.types";
 import type { UseType, UseSubType } from "@/types/typeOfUse.types";
@@ -25,9 +25,15 @@ import {
   EditableInputWithRefresh,
 } from "./PropertyEditDrawerInputs";
 import type { RoomWiseSubmissionData } from "@/lib/api/appartmentQC-room.service";
-import { getRoomWiseSubmissionsAction } from "@/app/[locale]/property-tax/ptis/appartmentQC/action";
+import { 
+  getRoomWiseSubmissionsAction,
+  fetchApartmentTaxDetailsByIdAction,
+  fetchApartmentTaxDetailsCvByIdAction,
+  fetchDualMethodTaxDetailsByIdAction,
+} from "@/app/[locale]/property-tax/ptis/appartmentQC/action";
 import type { RoomAPIResponse } from "@/types/room-details.types";
 import { RoomWiseSubmission } from "./roomSubmission/RoomWiseSubmission";
+import { ApartmentTaxDetailsTable } from "./ApartmentTaxDetailsTable";
 
 interface ResidentialEditScreenProps {
   open: boolean;
@@ -54,6 +60,7 @@ const ResidentialEditScreen = ({
   allSubTypes = [],
   initialFloorQCData,
   initialPropertyTypes,
+  returnTo = 'amenities',
 }: ResidentialEditScreenProps) => {
   const t = useTranslations("appartmentQC");
   const hook = usePropertyEditScreenDrawer({
@@ -87,6 +94,11 @@ const ResidentialEditScreen = ({
   const [clientRoomData, setClientRoomData] = useState<RoomWiseSubmissionData[]>([]);
   const [isLoadingRoomData, setIsLoadingRoomData] = useState(false);
 
+  // State for tax details
+  const [taxDetails, setTaxDetails] = useState<ApartmentTaxDetailsItems | null>(null);
+  const [dualMethodTaxDetails, setDualMethodTaxDetails] = useState<DualMethodTaxDetails | null>(null);
+  const [isLoadingTaxDetails, setIsLoadingTaxDetails] = useState(false);
+
   // Fetch room data when room drawer opens (client-side).
   // Reset state in cleanup (the lint rule exempts cleanups) instead of setting
   // it inside the effect body, which would trip react-hooks/set-state-in-effect.
@@ -116,6 +128,58 @@ const ResidentialEditScreen = ({
       setIsLoadingRoomData(false);
     };
   }, [roomDrawerOpen, roomPdnId, roomPropertyId]);
+
+  // Extract propertyId to a stable reference for useEffect
+  const propertyId = propertyData?.id ?? null;
+
+  // Fetch tax details when drawer opens using property ID
+  useEffect(() => {
+    if (!open || propertyId === null) return;
+
+    const mainTab = returnTo; // 'amenities', 'commercial', or 'residential'
+
+    let cancelled = false;
+
+    const fetchTaxData = async () => {
+      try {
+        setIsLoadingTaxDetails(true);
+        
+        if (subTabProp === 'dual-method') {
+          const result = await fetchDualMethodTaxDetailsByIdAction(propertyId, mainTab);
+          if (!cancelled && result.success) {
+            setDualMethodTaxDetails(result.data || null);
+            setTaxDetails(null);
+          }
+        } else if (subTabProp === 'capital') {
+          const result = await fetchApartmentTaxDetailsCvByIdAction(propertyId, mainTab);
+          if (!cancelled && result.success) {
+            setTaxDetails(result.data || null);
+            setDualMethodTaxDetails(null);
+          }
+        } else {
+          // rateable
+          const result = await fetchApartmentTaxDetailsByIdAction(propertyId, mainTab);
+          if (!cancelled && result.success) {
+            setTaxDetails(result.data || null);
+            setDualMethodTaxDetails(null);
+          }
+        }
+      } catch {
+        // Error handling - silent fail
+      } finally {
+        if (!cancelled) setIsLoadingTaxDetails(false);
+      }
+    };
+
+    fetchTaxData();
+
+    return () => {
+      cancelled = true;
+      setTaxDetails(null);
+      setDualMethodTaxDetails(null);
+      setIsLoadingTaxDetails(false);
+    };
+  }, [open, propertyId, returnTo, subTabProp]);
 
   // Handle old property data refresh
   const handleOldPropertyRefresh = useCallback(async () => {
@@ -396,6 +460,15 @@ const ResidentialEditScreen = ({
             </div>
           )}
         </div>
+
+        {/* Tax Details Section */}
+        <ApartmentTaxDetailsTable
+          taxDetails={taxDetails}
+          dualMethodDetails={dualMethodTaxDetails}
+          loading={isLoadingTaxDetails}
+          activeMainTab={returnTo}
+          activeSubTab={subTabProp}
+        />
       </div>
     </Drawer>
 
