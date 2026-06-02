@@ -53,6 +53,13 @@
     "ocDate": "ओसी दिनांक"
   },
   "taxDetails": {
+    "title": "मालमत्ता कर तपशील सारांश",
+    "subtitle": "मालमत्ता प्रकारानुसार एकत्रित कर तपशील",
+    "propertyType": "मालमत्तेचा प्रकार",
+    "methodLabel": "पद्धत",
+    "total": "एकूण",
+    "columnTotal": "कॉलम एकूण",
+    "noData": "कर तपशील उपलब्ध नाहीत",
     "taxes": "कर",
     "method": "पद्धत",
     "generalTax": "सामान्य कर",
@@ -77,7 +84,10 @@
     "oldPenaltyULB": "यूएलबीचा जुना दंड",
     "oldPenaltyULBShort": "जुना दंड यूएलबी",
     "runTimePenalty": "रन टाइम दंड",
-    "totalTax": "एकूण कर"
+    "totalTax": "एकूण कर",
+    "propertyCount": "मालमत्ता संख्या",
+    "rvPropertyCount": "आरव्ही मालमत्ता संख्या",
+    "cvPropertyCount": "सीव्ही मालमत्ता संख्या"
   },
   "apartmentTabs": {
     "amenitiesTitle": "मालमत्ता कर सुविधा",
