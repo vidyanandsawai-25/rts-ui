@@ -225,7 +225,7 @@ const ResidentialEditScreen = ({
   // the backend to recompute room aggregates for this floor (sync-rooms), then
   // refetch the Floor QC table so the new aggregates appear in the drawer.
   const handleRoomUpdate = useCallback(async (data: { totalAreaSqM: number; roomCount?: number }) => {
-    if (!roomPdnId) return;
+    if (!roomPdnId || !roomPropertyId) return;
 
     const floorRow = hookFloorData.find(row => row.pdnId === Number(roomPdnId));
     if (floorRow) {
@@ -239,7 +239,7 @@ const ResidentialEditScreen = ({
     try {
       const { syncRoomsForPropertyDetailsAction } =
         await import("@/app/[locale]/property-tax/ptis/appartmentQC/action");
-      const result = await syncRoomsForPropertyDetailsAction(Number(roomPdnId));
+      const result = await syncRoomsForPropertyDetailsAction(Number(roomPropertyId), Number(roomPdnId));
       if (result.success) {
         await hookRefetchFloorQC();
       } else {
@@ -248,7 +248,7 @@ const ResidentialEditScreen = ({
     } catch {
       toast.error("Failed to sync rooms");
     }
-  }, [roomPdnId, hookFloorData, hookUpdateFloorRowArea, hookUpdateFloorRowCount, hookRefetchFloorQC]);
+  }, [roomPdnId, roomPropertyId, hookFloorData, hookUpdateFloorRowArea, hookUpdateFloorRowCount, hookRefetchFloorQC]);
 
   // Column definitions
   const commonColumns = useDrawerCommonColumns({
@@ -408,10 +408,6 @@ const ResidentialEditScreen = ({
         title={
           <div className="flex items-center justify-between w-full">
             <h2 className="text-base font-semibold text-gray-900">{t("drawer.roomWiseSubmission")}</h2>
-            <div className="flex items-center gap-1.5 text-[10px]">
-              <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded font-medium">{`Floor: ${hook.roomPdnId}`}</span>
-              <span className="px-2 py-1 bg-green-100 text-green-800 rounded font-medium">{`Property: ${hook.roomPropertyId}`}</span>
-            </div>
           </div>
         }
       >

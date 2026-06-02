@@ -10,10 +10,11 @@ import { RoomSubmissionState } from "@/hooks/ptis/RoomSubmission/useRoomSubmissi
  * Apartment QC–specific persistence hook.
  *
  * ADD/UPDATE/DELETE have already been persisted individually. "SAVE DATA":
- *   1. Syncs room aggregates on the backend.
- *   2. Awaits onUpdate (which refetches Floor QC) so area + noOfRooms are
- *      updated in the main drawer BEFORE the room drawer closes.
- *   3. Shows a success toast and closes the drawer programmatically.
+ *   1. Calls onUpdate which syncs room aggregates on the backend and refetches Floor QC.
+ *   2. Shows a success toast and closes the drawer programmatically.
+ *
+ * Note: sync-rooms is called by onUpdate (handleRoomUpdate in PropertyDetailsEditScreen),
+ * so we don't call it here to avoid duplicate calls.
  */
 export const useApartmentQCRoomPersistenceActions = (
   state: RoomSubmissionState,
@@ -24,8 +25,6 @@ export const useApartmentQCRoomPersistenceActions = (
 
   const { rooms, grandTotal, builtupGrandTotal, areaUnit, setIsUpdating } = state;
   const { onClose, onUpdate, floorNumber } = props;
-
-  const propertyDetailsId = Number(props.initialFloorId || 0);
 
   const handleSaveData = async () => {
     if (grandTotal <= 0) {
@@ -44,19 +43,6 @@ export const useApartmentQCRoomPersistenceActions = (
     setIsUpdating(true);
 
     try {
-      // Sync room aggregates on the backend
-      if (propertyDetailsId > 0) {
-        const { syncRoomsForPropertyDetailsAction } = await import(
-          "@/app/[locale]/property-tax/ptis/appartmentQC/action"
-        );
-        const syncResult = await syncRoomsForPropertyDetailsAction(propertyDetailsId);
-        if (!syncResult.success) {
-          toast.error(
-            (syncResult as { error?: string }).error || "Failed to sync rooms"
-          );
-        }
-      }
-
       const areaSqM = convertAreaUnit(grandTotal, areaUnit || "sq.m", "sq.m");
       const builtUpSqM = convertAreaUnit(
         builtupGrandTotal,
@@ -65,8 +51,9 @@ export const useApartmentQCRoomPersistenceActions = (
       );
 
       // Await onUpdate so the Floor QC refetch completes (area + noOfRooms update)
-      // before we close the drawer. The prop is typed as void but the actual handler
-      // is async, so we cast through unknown to allow await.
+      // before we close the drawer. onUpdate calls sync-rooms internally.
+      // The prop is typed as void but the actual handler is async, so we cast
+      // through unknown to allow await.
       if (onUpdate) {
         await (onUpdate as unknown as (...a: unknown[]) => Promise<void>)({
           floorNumber: floorNumber || "0",
