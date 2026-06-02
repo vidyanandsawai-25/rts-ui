@@ -56,9 +56,6 @@ export const VALUES_DUES_FIELDS: ReadonlyArray<StringCriteriaField> = [
   "rateableValueFilter",
   "rateableValueFrom",
   "rateableValueTo",
-  "capitalValueFilter",
-  "capitalValueFrom",
-  "capitalValueTo",
 ];
 
 const QUICK_SEARCH_FIELD_SET = new Set<keyof SearchCriteria>(QUICK_SEARCH_FIELDS);
@@ -122,6 +119,14 @@ export function applyTabSearchCriteria(
       }
     }
   }
+
+  if (tab === "values-dues") {
+    next.valuationMethod = "";
+    next.capitalValueFilter = "";
+    next.capitalValueFrom = "";
+    next.capitalValueTo = "";
+  }
+
   return next;
 }
 
@@ -142,6 +147,13 @@ export function clearTabFieldsFromParams(
         params.delete(field);
       }
     }
+  }
+
+  if (tab === "values-dues") {
+    params.delete("valuationMethod");
+    params.delete("capitalValueFilter");
+    params.delete("capitalValueFrom");
+    params.delete("capitalValueTo");
   }
 }
 
