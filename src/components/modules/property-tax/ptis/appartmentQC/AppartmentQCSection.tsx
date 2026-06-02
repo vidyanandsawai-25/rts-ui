@@ -16,6 +16,7 @@ import {
   fetchFloorQCByPropertyIdSafeAction,
   fetchAllPropertyTypesAction,
 } from '@/app/[locale]/property-tax/ptis/appartmentQC/action';
+import { useColumnFilters } from '@/hooks/apartmentQc/useColumnFilters';
 
 interface AppartmentQCSectionProps {
   initialData?: {
@@ -39,6 +40,8 @@ const AppartmentQCSection = ({
     commercial: emptyPagedResponse,
     residential: emptyPagedResponse
   },
+  wardId = '',
+  propertyNo = '',
 }: AppartmentQCSectionProps) => {
   const router = useRouter();
   const t = useTranslations("ptis");
@@ -51,6 +54,12 @@ const AppartmentQCSection = ({
   const [searchQuery, setSearchQuery] = useState(searchParams.get('searchTerm') || '');
   const [isAutoScrolling, setIsAutoScrolling] = useState(false);
   const isUpdatingFromUrl = useRef(false);
+
+  // Column filters
+  const { activeFilters, handleFilterChange, fetchFilterOptions } = useColumnFilters({
+    wardId,
+    propertyNo,
+  });
 
   useEffect(() => {
     const urlSearchTerm = searchParams.get('searchTerm') || '';
@@ -186,6 +195,11 @@ const AppartmentQCSection = ({
             pageNumber={activePagedData.pageNumber} pageSize={activePagedData.pageSize} totalCount={activePagedData.totalCount} totalPages={activePagedData.totalPages}
             onPageChange={(p) => updateUrl({ pageNumber: p })} onPageSizeChange={(s) => updateUrl({ pageSize: s, pageNumber: 1 })}
             applyTypeColors={activeMainTab === 'commercial' || activeMainTab === 'residential'}
+            activeFilters={activeFilters}
+            onFilterChange={handleFilterChange}
+            onFetchFilterOptions={fetchFilterOptions}
+            wardId={wardId}
+            propertyNo={propertyNo}
           />
         </div>
       </div>

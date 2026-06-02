@@ -16,6 +16,10 @@ interface PageProps {
     q?: string;
     sortBy?: string;
     sortOrder?: string;
+    filterWing?: string;
+    filterFlatOrShopNo?: string;
+    filterApartmentType?: string;
+    filterPropertyType?: string;
   }>;
 }
 
@@ -42,6 +46,8 @@ const Page = async ({ searchParams }: PageProps) => {
         initialPageSize={10}
         initialTotalPages={0}
         initialSearchTerm=""
+        wardId=""
+        propertyNo=""
       />
     );
   }
@@ -69,6 +75,8 @@ const Page = async ({ searchParams }: PageProps) => {
       initialTotalCount={totalCount}
       initialTotalPages={totalPages}
       initialSearchTerm={searchTerm}
+      wardId={wardId}
+      propertyNo={propertyNo}
       error={result.success ? undefined : result.error}
     />
   );

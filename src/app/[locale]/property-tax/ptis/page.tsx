@@ -155,6 +155,12 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
   const searchTerm = toSafeString(resolvedSearchParams?.searchTerm);
   const appartmentTab = toSafeString(resolvedSearchParams?.appartmentTab) || 'amenities';
 
+  // Column filter parameters
+  const filterWing = toSafeString(resolvedSearchParams?.filterWing);
+  const filterFlatOrShopNo = toSafeString(resolvedSearchParams?.filterFlatOrShopNo);
+  const filterApartmentType = toSafeString(resolvedSearchParams?.filterApartmentType);
+  const filterPropertyType = toSafeString(resolvedSearchParams?.filterPropertyType);
+
   const [wardListSettled, initialWardIdSettled] = await Promise.allSettled([
     getWardListAction(),
     !wardIdParam && wardNo ? fetchWardIdAction(wardNo) : Promise.resolve(null),
@@ -294,7 +300,13 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
               pageNumber,
               pageSize,
               searchTerm,
-              resolvedPropertyId
+              resolvedPropertyId,
+              {
+                wing: filterWing || undefined,
+                flatOrShopNo: filterFlatOrShopNo || undefined,
+                apartmentType: filterApartmentType || undefined,
+                propertyType: filterPropertyType || undefined,
+              }
             )
           : Promise.resolve({
               amenities: emptyPaged,

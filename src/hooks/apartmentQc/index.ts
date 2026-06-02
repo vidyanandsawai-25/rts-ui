@@ -11,5 +11,6 @@ export { usePropertyEditFormValidation } from './usePropertyEditFormValidation';
 export { usePropertyEditFormSubmission } from './usePropertyEditFormSubmission';
 export { useRoomSubmissionSidebar } from './useRoomSubmissionSidebar';
 
-// Existing hooks
+// Table Hooks
 export { useTableAutoScroll } from './useTableAutoScroll';
+export { useColumnFilters } from './useColumnFilters';
