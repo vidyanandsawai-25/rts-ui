@@ -44,11 +44,13 @@ vi.mock('@/app/[locale]/property-tax/waterconnection/action', () => ({
   deleteWaterConnectionAction: vi.fn(),
   getConnectionLookupsAction: vi.fn(),
   getWaterConnectionPageData: vi.fn(),
+  getWaterConnectionsOnlyAction: vi.fn(),
+  getAllWaterConnectionsAction: vi.fn(() => Promise.resolve([])),
 }));
 
 import { toast } from 'sonner';
 import WaterConnectionPage from '@/components/modules/property-tax/waterconnection/WaterConnectionPage';
-import { deleteWaterConnectionAction, getConnectionLookupsAction, getWaterConnectionPageData } from '@/app/[locale]/property-tax/waterconnection/action';
+import { deleteWaterConnectionAction, getConnectionLookupsAction, getWaterConnectionPageData, getWaterConnectionsOnlyAction, getAllWaterConnectionsAction } from '@/app/[locale]/property-tax/waterconnection/action';
 import {
   createMockPageData,
   mockWaterConnections,
@@ -87,6 +89,14 @@ describe('WaterConnectionPage', () => {
     (getWaterConnectionPageData as ReturnType<typeof vi.fn>).mockResolvedValue(
       createMockPageData()
     );
+    (getAllWaterConnectionsAction as ReturnType<typeof vi.fn>).mockResolvedValue(mockWaterConnections);
+    (getWaterConnectionsOnlyAction as ReturnType<typeof vi.fn>).mockResolvedValue({
+      connections: mockWaterConnections,
+      totalCount: 2,
+      totalPages: 1,
+      pageNumber: 1,
+      pageSize: 10,
+    });
   });
 
   describe('rendering', () => {
@@ -243,7 +253,7 @@ describe('WaterConnectionPage', () => {
       fireEvent.click(deleteButtons[0]);
 
       await waitFor(() => {
-        expect(getWaterConnectionPageData).toHaveBeenCalled();
+        expect(getWaterConnectionsOnlyAction).toHaveBeenCalled();
       });
     });
 
