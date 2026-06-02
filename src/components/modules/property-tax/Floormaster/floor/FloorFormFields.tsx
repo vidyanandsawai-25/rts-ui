@@ -82,7 +82,24 @@ export function FloorFormFields({
         onChange={onChange}
         onBlur={onBlur}
         fullWidth
+        min={1}
         className="text-gray-700"
+        onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+          // Block minus, plus, and e keys
+          if (e.key === '-' || e.key === '+' || e.key === 'e' || e.key === 'E') {
+            e.preventDefault();
+          }
+          // Block digit input if already 3 digits entered
+          const currentValue = (e.target as HTMLInputElement).value;
+          if (
+            currentValue.length >= 3 &&
+            /^\d$/.test(e.key) &&
+            !e.metaKey &&
+            !e.ctrlKey
+          ) {
+            e.preventDefault();
+          }
+        }}
       />
       <ValidationMessage
         message={errors.sequenceNo}
