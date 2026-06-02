@@ -113,7 +113,6 @@ export default function WaterConnectionPage({
         setAllConnections(connections);
       } catch {
         // Silently fail for stats — table will still work
-        console.error("Failed to fetch all connections for stats");
       }
     };
     fetchAllConnections();
@@ -124,7 +123,7 @@ export default function WaterConnectionPage({
       const connections = await getAllWaterConnectionsAction(propertyId);
       setAllConnections(connections);
     } catch {
-      console.error("Failed to fetch all connections for stats");
+      // Silently fail for stats — table will still work
     }
   }, [propertyId]);
 

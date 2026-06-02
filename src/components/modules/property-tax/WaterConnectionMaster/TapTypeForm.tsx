@@ -70,7 +70,7 @@ export function TapTypeForm({ id, initialData }: Readonly<TapTypeFormProps>) {
         errs.typeName = t("validation.typeNameRequired");
       else if (!NAME_ONLY_REGEX.test(data.typeName.trim()))
         errs.typeName = t("validation.typeNameInvalid");
-      else if (data.typeName.length > MAX_NAME)
+      else if (data.typeName.trim().length > MAX_NAME)
         errs.typeName = t("validation.typeNameLength", { count: MAX_NAME });
       return errs;
     },
