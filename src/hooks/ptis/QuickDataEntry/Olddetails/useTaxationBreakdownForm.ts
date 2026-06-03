@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useLocale, useTranslations } from "next-intl";
@@ -57,16 +57,18 @@ export function useTaxationBreakdownForm(
 
   // Selected Year Master ID state
   const [selectedYearId, setSelectedYearIdState] = useState<string>(initialYearId);
+  const [prevInitialYearId, setPrevInitialYearId] = useState<string>(initialYearId);
 
-  // Sync selectedYearId when initialYearId changes
-  useEffect(() => {
+  // Sync selectedYearId when initialYearId changes (render-phase state adjustment)
+  if (initialYearId !== prevInitialYearId) {
+    setPrevInitialYearId(initialYearId);
     setSelectedYearIdState(initialYearId);
     setValidationErrors(prev => {
       const copy = { ...prev };
       delete copy.yearMaster;
       return copy;
     });
-  }, [initialYearId]);
+  }
 
   const setSelectedYearId = (val: string) => {
     setSelectedYearIdState(val);

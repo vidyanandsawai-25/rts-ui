@@ -92,9 +92,9 @@ export const useFloorActions = (params: {
         typeOfUseId: null,
         loadFloor: 'false',
         loadSubFloor: 'false',
-        loadConstruction: ' false',
+        loadConstruction: 'false',
         loadUsage: 'false',
-        loadSubType: null,
+        loadSubType: 'false',
       });
 
       const gFloor = (floorData as { floorCode?: string; floorId?: number; description?: string }[]).find(

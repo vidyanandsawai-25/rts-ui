@@ -401,6 +401,8 @@
             "oldConstructionAreaInvalid": "Construction Area must be a valid number",
             "oldCarpetAreaSqFeetInvalid": "Carpet Area must be a valid number",
             "oldCarpetAreaSqMeterInvalid": "Carpet Area in Sq. Meter must be a valid number",
+            "carpetAreaMax15Digits": "Carpet Area cannot exceed 15 digits before the decimal point",
+            "carpetAreaMax4Decimals": "Carpet Area cannot exceed 4 decimal places",
             "oldConstructionTypeIdInvalid": "Construction Type is invalid",
             "oldTypeOfUseIdInvalid": "Type of Use is invalid",
             "invalidIds": "Invalid IDs provided"

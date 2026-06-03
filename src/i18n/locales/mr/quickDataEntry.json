@@ -401,6 +401,8 @@
             "oldConstructionAreaInvalid": "बांधकाम क्षेत्र वैध संख्या असणे आवश्यक आहे",
             "oldCarpetAreaSqFeetInvalid": "कार्पेट क्षेत्र वैध संख्या असणे आवश्यक आहे",
             "oldCarpetAreaSqMeterInvalid": "चौ. मीटरमध्ये कार्पेट क्षेत्र वैध संख्या असणे आवश्यक आहे",
+            "carpetAreaMax15Digits": "कार्पेट क्षेत्र दशांश चिन्हापूर्वी १५ अंकांपेक्षा जास्त नसावे",
+            "carpetAreaMax4Decimals": "कार्पेट क्षेत्र दशांश चिन्हानंतर ४ अंकांपेक्षा जास्त नसावे",
             "oldConstructionTypeIdInvalid": "बांधकामाचा प्रकार अवैध आहे",
             "oldTypeOfUseIdInvalid": "वापराचा प्रकार अवैध आहे",
             "invalidIds": "अवैध आयडी प्रदान केले"

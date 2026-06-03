@@ -4,6 +4,7 @@ import { Input, SearchSelect } from "@/components/common";
 import { Label } from "@/components/common/label";
 import { FloorFormFieldsProps } from "@/types/OldDetails/property-old-floor-info.types";
 import { FloorFormActions } from "./FloorFormActions";
+import { preventInvalidNumericKeys, sanitizeTaxDecimal } from "../../OldTaxation";
 
 /**
  * FloorFormFields Component
@@ -172,11 +173,18 @@ export function FloorFormFields({
                     {t('oldDetails.carpetAreaSqFt')}<span className="text-red-500 ml-1">*</span>
                 </Label>
                 <Input
-                    type="number"
+                    type="text"
+                    inputMode="decimal"
                     className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
                     placeholder={t('oldDetails.floordtails.carpetAreaPlaceholder')}
                     value={formData.oldCarpetAreaSqFeet ?? ''}
-                    onChange={(e) => onFieldChange('oldCarpetAreaSqFeet', e.target.value)}
+                    onChange={(e) => {
+                        const value = sanitizeTaxDecimal(e.target.value);
+                        if (value !== '' || e.target.value === '') {
+                            onFieldChange('oldCarpetAreaSqFeet', value);
+                        }
+                    }}
+                    onKeyDown={preventInvalidNumericKeys}
                 />
                 {showError("oldCarpetAreaSqFeet") && (
                     <span className="text-xs text-red-500">{errors.oldCarpetAreaSqFeet}</span>

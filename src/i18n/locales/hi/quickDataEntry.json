@@ -401,6 +401,8 @@
             "oldConstructionAreaInvalid": "निर्माण क्षेत्र एक वैध संख्या होनी चाहिए",
             "oldCarpetAreaSqFeetInvalid": "कालीनों का क्षेत्रफल एक वैध संख्या होनी चाहिए",
             "oldCarpetAreaSqMeterInvalid": "वर्ग मीटर में कालीनों का क्षेत्रफल एक वैध संख्या होनी चाहिए",
+            "carpetAreaMax15Digits": "कार्पेट क्षेत्र दशमलव बिंदु से पहले 15 अंकों से अधिक नहीं होना चाहिए",
+            "carpetAreaMax4Decimals": "कार्पेट क्षेत्र दशमलव बिंदु के बाद 4 अंकों से अधिक नहीं होना चाहिए",
             "oldConstructionTypeIdInvalid": "निर्माण का प्रकार अमान्य है",
             "oldTypeOfUseIdInvalid": "उपयोग का प्रकार अमान्य है",
             "invalidIds": "अमान्य आईडी प्रदान की गई"
