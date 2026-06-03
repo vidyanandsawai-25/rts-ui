@@ -129,13 +129,13 @@ export function useConnectionForm({
       const e: Record<string, string> = {};
       if (!data.connectionNo.trim())
         e.connectionNo = t("form.validation.connectionNoRequired");
-      else if (/[@#$%^&*()_]/.test(data.connectionNo))
+      else if (!/^[a-zA-Z0-9\-]+$/.test(data.connectionNo))
         e.connectionNo = t("form.validation.connectionNoInvalidChars");
       else if (data.connectionNo.trim().length > 20)
         e.connectionNo = t("form.validation.connectionNoMaxLength");
       if (!data.meterNo.trim())
         e.meterNo = t("form.validation.meterNoRequired");
-      else if (/[@#$%^&*()_]/.test(data.meterNo))
+      else if (!/^[a-zA-Z0-9\-]+$/.test(data.meterNo))
         e.meterNo = t("form.validation.meterNoInvalidChars");
       else if (data.meterNo.trim().length > 20)
         e.meterNo = t("form.validation.meterNoMaxLength");
@@ -159,7 +159,8 @@ export function useConnectionForm({
     const { name, value } = e.target;
     let sanitizedValue = value;
     if (name === "connectionNo" || name === "meterNo") {
-      sanitizedValue = value.replace(/[@#$%^&*()_]/g, "");
+      // Allow only alphanumeric and dash
+      sanitizedValue = value.replace(/[^a-zA-Z0-9\-]/g, "");
     }
     setFormData((prev) => ({ ...prev, [name]: sanitizedValue }));
     setErrors((prev) => ({ ...prev, [name]: "" }));

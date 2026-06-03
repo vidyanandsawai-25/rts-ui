@@ -22,6 +22,12 @@ import {
   createTapTypeAction,
   updateTapTypeAction,
 } from "@/app/[locale]/property-tax/water-connection-master/actions";
+import {
+  LETTERS_ONLY_REGEX,
+  LETTERS_ONLY_SANITIZE,
+  NAME_ONLY_REGEX,
+  NAME_ONLY_SANITIZE,
+} from "@/lib/utils/validation-rules";
 
 const MAX_CODE = 10;
 const MAX_NAME = 12;
@@ -56,11 +62,15 @@ export function TapTypeForm({ id, initialData }: Readonly<TapTypeFormProps>) {
       const errs: Partial<Record<keyof TapTypeFormModel, string>> = {};
       if (!data.typeCode.trim())
         errs.typeCode = t("validation.typeCodeRequired");
+      else if (!LETTERS_ONLY_REGEX.test(data.typeCode.trim()))
+        errs.typeCode = t("validation.typeCodeInvalid");
       else if (data.typeCode.length > MAX_CODE)
         errs.typeCode = t("validation.typeCodeLength", { count: MAX_CODE });
       if (!data.typeName.trim())
         errs.typeName = t("validation.typeNameRequired");
-      else if (data.typeName.length > MAX_NAME)
+      else if (!NAME_ONLY_REGEX.test(data.typeName.trim()))
+        errs.typeName = t("validation.typeNameInvalid");
+      else if (data.typeName.trim().length > MAX_NAME)
         errs.typeName = t("validation.typeNameLength", { count: MAX_NAME });
       return errs;
     },
@@ -73,6 +83,11 @@ export function TapTypeForm({ id, initialData }: Readonly<TapTypeFormProps>) {
     Boolean((submittedOnce || touched[field]) && errors[field]);
 
   const handleChange = (field: keyof TapTypeFormModel, value: string | boolean) => {
+    if (field === "typeCode" && typeof value === "string") {
+      value = value.replace(LETTERS_ONLY_SANITIZE, "");
+    } else if (field === "typeName" && typeof value === "string") {
+      value = value.replace(NAME_ONLY_SANITIZE, "");
+    }
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 

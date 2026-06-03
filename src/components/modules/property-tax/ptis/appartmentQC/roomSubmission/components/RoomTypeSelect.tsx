@@ -7,13 +7,13 @@ import { useTranslations } from "next-intl";
 
 interface RoomTypeSelectProps {
     value: string | undefined;
-    onChange: (value: string) => void;
+    onChange: (value: string, roomTypeId?: number) => void;
     className?: string;
     disabled?: boolean;
 }
 
 export const RoomTypeSelect: React.FC<RoomTypeSelectProps> = ({ value, onChange, className, disabled }) => {
-    const { roomTypes, isLoading } = useRoomTypeMaster();
+    const { roomTypes, roomTypeDetails, isLoading } = useRoomTypeMaster();
     const t = useTranslations("quickDataEntry");
 
     const options = [
@@ -21,11 +21,48 @@ export const RoomTypeSelect: React.FC<RoomTypeSelectProps> = ({ value, onChange,
         ...(roomTypes?.map((type) => ({ label: type, value: type })) || []),
     ];
 
+    const handleChange = (_: React.ChangeEvent<HTMLSelectElement> | null, newVal: string) => {
+        // Find the roomTypeId from roomTypeDetails based on the selected name
+        // Check all possible name fields with case-insensitive matching
+        const normalizedVal = newVal?.trim().toLowerCase();
+        const selectedDetail = roomTypeDetails?.find((detail) => {
+            // Check all possible name fields from the API response
+            // roomTypeDescription is typed in RoomTypeResponse interface
+            const possibleNames = [
+                detail.roomTypeName,
+                detail.description,
+                detail.roomTypeDescription,
+                detail.roomTypeCode,
+            ].filter(Boolean);
+            
+            return possibleNames.some(name => 
+                String(name).trim().toLowerCase() === normalizedVal
+            );
+        });
+        
+        // Get roomTypeId - use typed field, with safe fallback for legacy 'id' field
+        let roomTypeId: number | undefined = selectedDetail?.roomTypeId;
+        if (roomTypeId === undefined && selectedDetail) {
+            // Safely parse legacy 'id' field if roomTypeId is not available
+            const legacyId = selectedDetail['id'];
+            if (typeof legacyId === 'number' && !Number.isNaN(legacyId)) {
+                roomTypeId = legacyId;
+            } else if (typeof legacyId === 'string') {
+                const parsed = Number(legacyId);
+                if (!Number.isNaN(parsed)) {
+                    roomTypeId = parsed;
+                }
+            }
+        }
+        
+        onChange(newVal, roomTypeId);
+    };
+
     return (
         <Select
             options={options}
             value={value || "-Select-"}
-            onChange={(_, newVal) => onChange(newVal)}
+            onChange={handleChange}
             disabled={disabled || isLoading}
             placeholder={isLoading ? t("floor.loading") : t("roomSubmission.input.roomTypes.select")}
             selectSize="md"

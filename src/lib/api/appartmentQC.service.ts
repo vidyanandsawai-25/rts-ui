@@ -32,6 +32,11 @@ const PARAM_MAPPINGS: ParamConfig[] = [
   { key: 'sortBy', queryParam: 'SortBy', shouldTrim: true },
   { key: 'sortOrder', queryParam: 'SortOrder', shouldTrim: true },
   { key: 'filterLogic', queryParam: 'FilterLogic', skipEmptyCheck: true },
+  // Column filter parameters
+  { key: 'wing', queryParam: 'Wing', shouldTrim: true },
+  { key: 'flatOrShopNo', queryParam: 'FlatOrShopNo', shouldTrim: true },
+  { key: 'apartmentType', queryParam: 'ApartmentType', shouldTrim: true },
+  { key: 'propertyType', queryParam: 'PropertyType', shouldTrim: true },
 ];
 
 /**
@@ -79,7 +84,7 @@ export async function getApartmentQCDetails(
     const response = apiClient.get<ApartmentQCResponse>(endpoint);
     return response;
   } catch (error) {
-    console.error('[appartmentQC.service] Error fetching apartment QC details:', error);
+    logger.error('[appartmentQC.service] Error fetching apartment QC details', { error: error as Error });
     throw error;
   }
 }
@@ -104,7 +109,7 @@ export async function getApartmentQCDetailsLocalized(
     }
     return handleApiResponse(res, "Failed to fetch apartment QC details");
   } catch (error) {
-    console.error('[appartmentQC.service] Error fetching apartment QC details:', error);
+    logger.error('[appartmentQC.service] Error fetching apartment QC details', { error: error as Error });
     if (error instanceof ApiError) throw error;
     throw new ApiError(
       500,
@@ -146,7 +151,7 @@ export async function updateApartmentQCDetails(
     const response = await apiClient.put<ApartmentQCDetail>(endpoint, payload);
     return response;
   } catch (error) {
-    console.error('[appartmentQC.service] Error updating apartment QC details:', error);
+    logger.error('[appartmentQC.service] Error updating apartment QC details', { error: error as Error });
     throw error;
   }
 }
@@ -169,7 +174,7 @@ export async function updateApartmentQCDetailsLocalized(
     }
     return handleApiResponse(res, "Failed to update apartment QC details");
   } catch (error) {
-    console.error('[appartmentQC.service] Error updating apartment QC details:', error);
+    logger.error('[appartmentQC.service] Error updating apartment QC details', { error: error as Error });
     if (error instanceof ApiError) throw error;
     throw new ApiError(
       500,
@@ -203,7 +208,7 @@ export async function getFloorQCByPropertyId(
     const response = await apiClient.get<ApartmentQCResponse>(endpoint);
     return response;
   } catch (error) {
-    console.error('[appartmentQC.service] Error fetching floor QC by property ID:', error);
+    logger.error('[appartmentQC.service] Error fetching floor QC by property ID', { error: error as Error });
     throw error;
   }
 }
@@ -230,7 +235,7 @@ export async function getFloorQCByPropertyIdLocalized(
     }
     return handleApiResponse(res, "Failed to fetch floor QC details");
   } catch (error) {
-    console.error('[appartmentQC.service] Error fetching floor QC details:', error);
+    logger.error('[appartmentQC.service] Error fetching floor QC details', { error: error as Error });
     if (error instanceof ApiError) throw error;
     throw new ApiError(
       500,
@@ -304,7 +309,7 @@ export async function updateFloorQCDetail(
     const response = await apiClient.patch<unknown>(endpoint, payload);
     return response;
   } catch (error) {
-    console.error('[appartmentQC.service] Error updating floor QC detail:', error);
+    logger.error('[appartmentQC.service] Error updating floor QC detail', { error: error as Error });
     throw error;
   }
 }
@@ -333,7 +338,7 @@ export async function updateFloorQCDetailLocalized(
     }
     return handleApiResponse(res, "Failed to update floor QC detail");
   } catch (error) {
-    console.error('[appartmentQC.service] Error updating floor QC detail:', error);
+    logger.error('[appartmentQC.service] Error updating floor QC detail', { error: error as Error });
     if (error instanceof ApiError) throw error;
     throw new ApiError(
       500,
@@ -373,7 +378,7 @@ export async function updateFloorQCDetailsBulk(
     const response = await apiClient.patch<unknown>(endpoint, items);
     return response;
   } catch (error) {
-    console.error('[appartmentQC.service] Error bulk updating floor QC details:', error);
+    logger.error('[appartmentQC.service] Error bulk updating floor QC details', { error: error as Error });
     throw error;
   }
 }
@@ -400,7 +405,7 @@ export async function updateFloorQCDetailsBulkLocalized(
     }
     return handleApiResponse(res, "Failed to update floor QC details");
   } catch (error) {
-    console.error('[appartmentQC.service] Error bulk updating floor QC details:', error);
+    logger.error('[appartmentQC.service] Error bulk updating floor QC details', { error: error as Error });
     if (error instanceof ApiError) throw error;
     throw new ApiError(
       500,
@@ -451,7 +456,7 @@ export async function updateBasicDetails(
     const response = await apiClient.patch<unknown>(endpoint, payload);
     return response;
   } catch (error) {
-    console.error('[appartmentQC.service] Error updating basic details:', error);
+    logger.error('[appartmentQC.service] Error updating basic details', { error: error as Error });
     throw error;
   }
 }
@@ -478,7 +483,7 @@ export async function updateBasicDetailsLocalized(
     }
     return handleApiResponse(res, "Failed to update basic details");
   } catch (error) {
-    console.error('[appartmentQC.service] Error updating basic details:', error);
+    logger.error('[appartmentQC.service] Error updating basic details', { error: error as Error });
     if (error instanceof ApiError) throw error;
     throw new ApiError(
       500,
@@ -530,7 +535,7 @@ export async function getOldPropertyData(
     const response = await apiClient.get<OldPropertyResponse>(endpoint);
     return response;
   } catch (error) {
-    console.error('[appartmentQC.service] Error fetching old property data:', error);
+    logger.error('[appartmentQC.service] Error fetching old property data', { error: error as Error });
     throw error;
   }
 }
@@ -555,7 +560,7 @@ export async function getOldPropertyDataLocalized(
     }
     return response.data.items;
   } catch (error) {
-    console.error('[appartmentQC.service] Error fetching old property data:', error);
+    logger.error('[appartmentQC.service] Error fetching old property data', { error: error as Error });
     if (error instanceof ApiError) throw error;
     throw new ApiError(
       500,
@@ -566,39 +571,41 @@ export async function getOldPropertyDataLocalized(
 }
 
 /* ============================================================
-   SYNC ROOMS — POST /ApartmentQC/{propertyDetailsId}/sync-rooms
+   SYNC ROOMS — POST /ApartmentQC/{propertyId}/{propertyDetailsId}/sync-rooms
    Recomputes/aggregates rooms after a RoomWiseSubmission PUT.
-   No request body; path param only.
+   No request body; path params only.
 ============================================================ */
 
 export async function syncRoomsForPropertyDetails(
+  propertyId: number | string,
   propertyDetailsId: number | string
 ): Promise<ApiResponse<unknown>> {
   try {
-    const endpoint = `/ApartmentQC/${propertyDetailsId}/sync-rooms`;
+    const endpoint = `/ApartmentQC/${propertyId}/${propertyDetailsId}/sync-rooms`;
     const response = await apiClient.post<unknown>(endpoint);
     return response;
   } catch (error) {
-    console.error('[appartmentQC.service] Error syncing rooms:', error);
+    logger.error('[appartmentQC.service] Error syncing rooms', { error: error as Error });
     throw error;
   }
 }
 
 export async function syncRoomsForPropertyDetailsLocalized(
+  propertyId: number | string,
   propertyDetailsId: number | string
 ): Promise<unknown> {
   try {
-    const res = await syncRoomsForPropertyDetails(propertyDetailsId);
+    const res = await syncRoomsForPropertyDetails(propertyId, propertyDetailsId);
     if (!res.success) {
       throw new ApiError(
         res.statusCode ?? 500,
-        res.error || "Failed to sync rooms",
+        res.message || res.error || "Failed to sync rooms",
         "Sync rooms failed"
       );
     }
     return handleApiResponse(res, "Failed to sync rooms");
   } catch (error) {
-    console.error('[appartmentQC.service] Error syncing rooms:', error);
+    logger.error('[appartmentQC.service] Error syncing rooms', { error: error as Error });
     if (error instanceof ApiError) throw error;
     throw new ApiError(
       500,
@@ -606,4 +613,537 @@ export async function syncRoomsForPropertyDetailsLocalized(
       "Failed to sync rooms"
     );
   }
+}
+
+/* ============================================================
+   FILTER OPTIONS — GET /ApartmentQC/filter-options
+   Fetches distinct filter options for column filters.
+============================================================ */
+
+export type FilterField = 'wing' | 'flatOrShopNo' | 'apartmentType' | 'propertyType';
+
+export interface FilterOptionsResponse {
+  success: boolean;
+  message: string;
+  items: {
+    wings: string[];
+    apartmentTypes: string[];
+    flatOrShopNos: string[];
+    propertyTypes: number[];
+  };
+  errors: unknown;
+  correlationId: string | null;
+}
+
+/**
+ * Fetch filter options for a specific field.
+ * 
+ * @param wardId - The ward ID
+ * @param propertyNo - The property number
+ * @param field - The field to get filter options for: 'wing', 'flatOrShopNo', 'apartmentType', 'propertyType'
+ * @returns FilterOptionsResponse
+ */
+export async function getFilterOptions(
+  wardId: number | string,
+  propertyNo: string,
+  field: FilterField
+): Promise<ApiResponse<FilterOptionsResponse>> {
+  try {
+    const params = new URLSearchParams();
+    params.append('WardId', String(wardId));
+    params.append('PropertyNo', propertyNo);
+    params.append('field', field);
+    
+    const endpoint = `/ApartmentQC/filter-options?${params.toString()}`;
+    const response = await apiClient.get<FilterOptionsResponse>(endpoint);
+    return response;
+  } catch (error) {
+    logger.error('[appartmentQC.service] Error fetching filter options', { error: error as Error });
+    throw error;
+  }
+}
+
+/**
+ * Fetch filter options with error handling.
+ */
+export async function getFilterOptionsLocalized(
+  wardId: number | string,
+  propertyNo: string,
+  field: FilterField
+): Promise<FilterOptionsResponse> {
+  try {
+    const res = await getFilterOptions(wardId, propertyNo, field);
+    if (!res.success) {
+      throw new ApiError(
+        res.statusCode ?? 500,
+        res.error || "Failed to fetch filter options",
+        "Fetch filter options failed"
+      );
+    }
+    return handleApiResponse(res, "Failed to fetch filter options") as FilterOptionsResponse;
+  } catch (error) {
+    logger.error('[appartmentQC.service] Error fetching filter options', { error: error as Error });
+    if (error instanceof ApiError) throw error;
+    throw new ApiError(
+      500,
+      error instanceof Error ? error.message : String(error),
+      "Failed to fetch filter options"
+    );
+  }
+}
+
+/* ============================================================
+   EXCEL EXPORT (Client-side)
+   Endpoint: GET /ApartmentQC/export-excel?WardId={wardId}&PropertyNo={propertyNo}
+   Returns Excel file as blob
+   Note: This function runs client-side for direct file download
+============================================================ */
+
+/**
+ * Export apartment QC data to Excel (client-side).
+ * Downloads the Excel file directly in the browser.
+ * 
+ * @param baseUrl - The API base URL
+ * @param authToken - The auth token for authorization
+ * @param wardId - The ward ID
+ * @param propertyNo - The property number
+ * @param filename - Optional filename for the download (defaults to 'apartment-qc-export.xlsx')
+ */
+export async function exportApartmentQCToExcel(
+  baseUrl: string,
+  authToken: string,
+  wardId: number | string,
+  propertyNo: string,
+  filename: string = 'apartment-qc-export.xlsx'
+): Promise<void> {
+  const params = new URLSearchParams();
+  params.append('WardId', String(wardId));
+  params.append('PropertyNo', propertyNo);
+  
+  const endpoint = `${baseUrl}/ApartmentQC/export-excel?${params.toString()}`;
+  
+  const response = await fetch(endpoint, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${authToken}`,
+    },
+  });
+  
+  if (!response.ok) {
+    throw new ApiError(
+      response.status,
+      `Failed to export Excel: ${response.statusText}`,
+      "Export Excel failed"
+    );
+  }
+  
+  const blob = await response.blob();
+  
+  // Create download link and trigger download
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(url);
+}
+
+/* ============================================================
+   APARTMENT PROPERTY TAX DETAILS — GET
+   Endpoint: GET /Property/apartment-property-tax-details-rv
+   Fetches aggregated tax details for apartment properties by type
+   ============================================================ */
+
+import type {
+  ApartmentPropertyTaxDetailsResponse,
+  ApartmentPropertyTaxDetailsParams,
+  ApartmentTaxDetailsItems,
+  ApartmentPartType,
+} from '@/types/apartmentQC.types';
+
+/**
+ * Fetch apartment property tax details for a specific part type.
+ * 
+ * @param params - WardId, PropertyNo, and PartType (Aminity=Amenities, C=Commercial, R=Residential)
+ * @returns API response with tax amounts
+ */
+export async function getApartmentPropertyTaxDetails(
+  params: ApartmentPropertyTaxDetailsParams
+): Promise<ApiResponse<ApartmentPropertyTaxDetailsResponse>> {
+  try {
+    const qs = new URLSearchParams();
+    qs.append('WardId', String(params.wardId));
+    qs.append('PropertyNo', params.propertyNo);
+    qs.append('PartType', params.partType);
+    
+    const endpoint = `/Property/apartment-property-tax-details-rv?${qs.toString()}`;
+    const response = await apiClient.get<ApartmentPropertyTaxDetailsResponse>(endpoint);
+    return response;
+  } catch (error) {
+    logger.error('[appartmentQC.service] Error fetching apartment property tax details', { error: error as Error });
+    throw error;
+  }
+}
+
+/**
+ * Fetch apartment property tax details with error handling.
+ * 
+ * @param params - WardId, PropertyNo, and Type
+ * @returns Tax details items or throws error
+ */
+export async function getApartmentPropertyTaxDetailsLocalized(
+  params: ApartmentPropertyTaxDetailsParams
+): Promise<ApartmentTaxDetailsItems> {
+  try {
+    const res = await getApartmentPropertyTaxDetails(params);
+    if (!res.success || !res.data) {
+      throw new ApiError(
+        res.statusCode ?? 500,
+        res.error || "Failed to fetch apartment property tax details",
+        "Get apartment property tax details failed"
+      );
+    }
+    if (!res.data.items) {
+      throw new ApiError(500, "No tax details data received", "Invalid response format");
+    }
+    return res.data.items;
+  } catch (error) {
+    logger.error('[appartmentQC.service] Error fetching apartment property tax details', { error: error as Error });
+    if (error instanceof ApiError) throw error;
+    throw new ApiError(
+      500,
+      error instanceof Error ? error.message : String(error),
+      "Failed to fetch apartment property tax details"
+    );
+  }
+}
+
+/**
+ * Fetch apartment property tax details with safe fallback (returns null on error).
+ * 
+ * @param params - WardId, PropertyNo, and PartType
+ * @returns Tax details items or null on failure
+ */
+export async function getApartmentPropertyTaxDetailsSafe(
+  params: ApartmentPropertyTaxDetailsParams
+): Promise<ApartmentTaxDetailsItems | null> {
+  try {
+    return await getApartmentPropertyTaxDetailsLocalized(params);
+  } catch (err) {
+    logger.error('[appartmentQC.service] Failed to fetch apartment property tax details', {
+      error: err instanceof Error ? err : new Error(String(err)),
+      params,
+    });
+    return null;
+  }
+}
+
+/**
+ * Convert main tab value to PartType for API call.
+ * @param mainTab - The main tab value: 'amenities', 'commercial', or 'residential'
+ * @returns The corresponding PartType value
+ */
+export function getPartTypeFromMainTab(mainTab: string): ApartmentPartType {
+  switch (mainTab) {
+    case 'commercial':
+      return 'C';
+    case 'residential':
+      return 'R';
+    case 'amenities':
+    default:
+      return 'Aminity';
+  }
+}
+
+/* ============================================================
+   APARTMENT PROPERTY TAX DETAILS — CAPITAL VALUE (CV)
+   Endpoint: GET /Property/apartment-property-tax-details-cv
+   Fetches capital value tax details for apartment properties by PartType
+
+/**
+ * Fetch apartment property tax details for Capital Value (CV).
+ * 
+ * @param params - WardId, PropertyNo, and PartType (Aminity=Amenities, C=Commercial, R=Residential)
+ * @returns API response with tax amounts
+ */
+export async function getApartmentPropertyTaxDetailsCv(
+  params: ApartmentPropertyTaxDetailsParams
+): Promise<ApiResponse<ApartmentPropertyTaxDetailsResponse>> {
+  try {
+    const qs = new URLSearchParams();
+    qs.append('WardId', String(params.wardId));
+    qs.append('PropertyNo', params.propertyNo);
+    qs.append('PartType', params.partType);
+    
+    const endpoint = `/Property/apartment-property-tax-details-cv?${qs.toString()}`;
+    const response = await apiClient.get<ApartmentPropertyTaxDetailsResponse>(endpoint);
+    return response;
+  } catch (error) {
+    logger.error('[appartmentQC.service] Error fetching apartment property CV tax details', { error: error as Error });
+    throw error;
+  }
+}
+
+/**
+ * Fetch apartment property CV tax details with error handling.
+ * 
+ * @param params - WardId, PropertyNo, and PartType
+ * @returns Tax details items or throws error
+ */
+export async function getApartmentPropertyTaxDetailsCvLocalized(
+  params: ApartmentPropertyTaxDetailsParams
+): Promise<ApartmentTaxDetailsItems> {
+  try {
+    const res = await getApartmentPropertyTaxDetailsCv(params);
+    if (!res.success || !res.data) {
+      throw new ApiError(
+        res.statusCode ?? 500,
+        res.error || "Failed to fetch apartment property CV tax details",
+        "Get apartment property CV tax details failed"
+      );
+    }
+    if (!res.data.items) {
+      throw new ApiError(500, "No CV tax details data received", "Invalid response format");
+    }
+    return res.data.items;
+  } catch (error) {
+    logger.error('[appartmentQC.service] Error fetching apartment property CV tax details', { error: error as Error });
+    if (error instanceof ApiError) throw error;
+    throw new ApiError(
+      500,
+      error instanceof Error ? error.message : String(error),
+      "Failed to fetch apartment property CV tax details"
+    );
+  }
+}
+
+/**
+ * Fetch apartment property CV tax details with safe fallback (returns null on error).
+ * 
+ * @param params - WardId, PropertyNo, and PartType
+ * @returns Tax details items or null on failure
+ */
+export async function getApartmentPropertyTaxDetailsCvSafe(
+  params: ApartmentPropertyTaxDetailsParams
+): Promise<ApartmentTaxDetailsItems | null> {
+  try {
+    return await getApartmentPropertyTaxDetailsCvLocalized(params);
+  } catch (err) {
+    logger.error('[appartmentQC.service] Failed to fetch apartment property CV tax details', {
+      error: err instanceof Error ? err : new Error(String(err)),
+      params,
+    });
+    return null;
+  }
+}
+
+/* ============================================================
+   DUAL METHOD TAX DETAILS
+   Fetches both RV and CV tax details for dual method display
+============================================================ */
+
+// Re-export the shared type from types file to avoid duplication
+export type { DualMethodTaxDetails } from '@/types/apartmentQC.types';
+import type { DualMethodTaxDetails } from '@/types/apartmentQC.types';
+
+/**
+ * Fetch both Rateable Value and Capital Value tax details for dual method.
+ * Makes parallel API calls for both methods.
+ * 
+ * @param wardId - The ward ID
+ * @param propertyNo - The property number
+ * @param partType - The part type (Aminity, C, or R)
+ * @returns Object containing both RV and CV tax details
+ */
+export async function getDualMethodTaxDetails(
+  wardId: string | number,
+  propertyNo: string,
+  partType: ApartmentPartType
+): Promise<DualMethodTaxDetails> {
+  const params = { wardId, propertyNo, partType };
+  
+  const [rateable, capital] = await Promise.all([
+    getApartmentPropertyTaxDetailsSafe(params),
+    getApartmentPropertyTaxDetailsCvSafe(params),
+  ]);
+  
+  return {
+    rateable,
+    capital,
+  };
+}
+
+/* ============================================================
+   APARTMENT PROPERTY TAX DETAILS BY PROPERTY ID
+   These functions use `Id` parameter instead of WardId/PropertyNo
+   Used by PropertyDetailsEditScreen drawer
+ ============================================================ */
+
+import type { ApartmentPropertyTaxDetailsByIdParams } from '@/types/apartmentQC.types';
+
+/**
+ * Fetch apartment property tax details (Rateable Value) by property ID.
+ * API: GET /Property/apartment-property-tax-details-rv?Id={propertyId}&PartType={partType}
+ * 
+ * @param params - propertyId and PartType
+ * @returns API response with tax amounts
+ */
+export async function getApartmentPropertyTaxDetailsById(
+  params: ApartmentPropertyTaxDetailsByIdParams
+): Promise<ApiResponse<ApartmentPropertyTaxDetailsResponse>> {
+  try {
+    const qs = new URLSearchParams();
+    qs.append('Id', String(params.propertyId));
+    qs.append('PartType', params.partType);
+    
+    const endpoint = `/Property/apartment-property-tax-details-rv?${qs.toString()}`;
+    const response = await apiClient.get<ApartmentPropertyTaxDetailsResponse>(endpoint);
+    return response;
+  } catch (error) {
+    logger.error('[appartmentQC.service] Error fetching apartment property tax details by ID', { error: error as Error });
+    throw error;
+  }
+}
+
+/**
+ * Fetch apartment property tax details by ID with error handling.
+ * 
+ * @param params - propertyId and PartType
+ * @returns Tax details items or throws error
+ */
+export async function getApartmentPropertyTaxDetailsByIdLocalized(
+  params: ApartmentPropertyTaxDetailsByIdParams
+): Promise<ApartmentTaxDetailsItems> {
+  try {
+    const res = await getApartmentPropertyTaxDetailsById(params);
+    if (!res.success || !res.data) {
+      throw new ApiError(
+        res.statusCode ?? 500,
+        res.error || "Failed to fetch apartment property tax details",
+        "Get apartment property tax details failed"
+      );
+    }
+    if (!res.data.items) {
+      throw new ApiError(500, "No tax details data received", "Invalid response format");
+    }
+    return res.data.items;
+  } catch (error) {
+    logger.error('[appartmentQC.service] Error fetching apartment property tax details by ID', { error: error as Error });
+    if (error instanceof ApiError) throw error;
+    throw new ApiError(
+      500,
+      error instanceof Error ? error.message : String(error),
+      "Failed to fetch apartment property tax details"
+    );
+  }
+}
+
+/**
+ * Safe wrapper that returns null instead of throwing.
+ */
+export async function getApartmentPropertyTaxDetailsByIdSafe(
+  params: ApartmentPropertyTaxDetailsByIdParams
+): Promise<ApartmentTaxDetailsItems | null> {
+  try {
+    return await getApartmentPropertyTaxDetailsByIdLocalized(params);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Fetch apartment property Capital Value (CV) tax details by property ID.
+ * API: GET /Property/apartment-property-tax-details-cv?Id={propertyId}&PartType={partType}
+ * 
+ * @param params - propertyId and PartType
+ * @returns API response with CV tax amounts
+ */
+export async function getApartmentPropertyTaxDetailsCvById(
+  params: ApartmentPropertyTaxDetailsByIdParams
+): Promise<ApiResponse<ApartmentPropertyTaxDetailsResponse>> {
+  try {
+    const qs = new URLSearchParams();
+    qs.append('Id', String(params.propertyId));
+    qs.append('PartType', params.partType);
+    
+    const endpoint = `/Property/apartment-property-tax-details-cv?${qs.toString()}`;
+    const response = await apiClient.get<ApartmentPropertyTaxDetailsResponse>(endpoint);
+    return response;
+  } catch (error) {
+    logger.error('[appartmentQC.service] Error fetching apartment property CV tax details by ID', { error: error as Error });
+    throw error;
+  }
+}
+
+/**
+ * Fetch apartment property CV tax details by ID with error handling.
+ * 
+ * @param params - propertyId and PartType
+ * @returns CV tax details items or throws error
+ */
+export async function getApartmentPropertyTaxDetailsCvByIdLocalized(
+  params: ApartmentPropertyTaxDetailsByIdParams
+): Promise<ApartmentTaxDetailsItems> {
+  try {
+    const res = await getApartmentPropertyTaxDetailsCvById(params);
+    if (!res.success || !res.data) {
+      throw new ApiError(
+        res.statusCode ?? 500,
+        res.error || "Failed to fetch apartment property CV tax details",
+        "Get apartment property CV tax details failed"
+      );
+    }
+    if (!res.data.items) {
+      throw new ApiError(500, "No CV tax details data received", "Invalid response format");
+    }
+    return res.data.items;
+  } catch (error) {
+    logger.error('[appartmentQC.service] Error fetching apartment property CV tax details by ID', { error: error as Error });
+    if (error instanceof ApiError) throw error;
+    throw new ApiError(
+      500,
+      error instanceof Error ? error.message : String(error),
+      "Failed to fetch apartment property CV tax details"
+    );
+  }
+}
+
+/**
+ * Safe wrapper for CV that returns null instead of throwing.
+ */
+export async function getApartmentPropertyTaxDetailsCvByIdSafe(
+  params: ApartmentPropertyTaxDetailsByIdParams
+): Promise<ApartmentTaxDetailsItems | null> {
+  try {
+    return await getApartmentPropertyTaxDetailsCvByIdLocalized(params);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Fetch both Rateable Value and Capital Value tax details for dual method by property ID.
+ * Makes parallel API calls for both methods.
+ * 
+ * @param propertyId - The property ID
+ * @param partType - The part type (Aminity, C, or R)
+ * @returns Object containing both RV and CV tax details
+ */
+export async function getDualMethodTaxDetailsById(
+  propertyId: string | number,
+  partType: ApartmentPartType
+): Promise<DualMethodTaxDetails> {
+  const params = { propertyId, partType };
+  
+  const [rateable, capital] = await Promise.all([
+    getApartmentPropertyTaxDetailsByIdSafe(params),
+    getApartmentPropertyTaxDetailsCvByIdSafe(params),
+  ]);
+  
+  return {
+    rateable,
+    capital,
+  };
 }

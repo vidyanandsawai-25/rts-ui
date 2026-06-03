@@ -8,7 +8,7 @@ import { Button, CancelButton, SaveButton } from "@/components/common";
 import { MasterTable } from "@/components/common/MasterTable";
 import { Tabs } from "@/components/common/Tabs";
 import { ChevronDown, ChevronUp, User, Building2 } from "lucide-react";
-import type { ApartmentQCDetail } from "@/types/apartmentQC.types";
+import type { ApartmentQCDetail, ApartmentTaxDetailsItems, DualMethodTaxDetails } from "@/types/apartmentQC.types";
 import type { Floor } from "@/types/floor.types";
 import type { ConstructionType } from "@/types/construction.types";
 import type { UseType, UseSubType } from "@/types/typeOfUse.types";
@@ -25,9 +25,15 @@ import {
   EditableInputWithRefresh,
 } from "./PropertyEditDrawerInputs";
 import type { RoomWiseSubmissionData } from "@/lib/api/appartmentQC-room.service";
-import { getRoomWiseSubmissionsAction } from "@/app/[locale]/property-tax/ptis/appartmentQC/action";
+import { 
+  getRoomWiseSubmissionsAction,
+  fetchApartmentTaxDetailsByIdAction,
+  fetchApartmentTaxDetailsCvByIdAction,
+  fetchDualMethodTaxDetailsByIdAction,
+} from "@/app/[locale]/property-tax/ptis/appartmentQC/action";
 import type { RoomAPIResponse } from "@/types/room-details.types";
 import { RoomWiseSubmission } from "./roomSubmission/RoomWiseSubmission";
+import { ApartmentTaxDetailsTable } from "./ApartmentTaxDetailsTable";
 
 interface ResidentialEditScreenProps {
   open: boolean;
@@ -54,6 +60,7 @@ const ResidentialEditScreen = ({
   allSubTypes = [],
   initialFloorQCData,
   initialPropertyTypes,
+  returnTo = 'amenities',
 }: ResidentialEditScreenProps) => {
   const t = useTranslations("appartmentQC");
   const hook = usePropertyEditScreenDrawer({
@@ -87,6 +94,11 @@ const ResidentialEditScreen = ({
   const [clientRoomData, setClientRoomData] = useState<RoomWiseSubmissionData[]>([]);
   const [isLoadingRoomData, setIsLoadingRoomData] = useState(false);
 
+  // State for tax details
+  const [taxDetails, setTaxDetails] = useState<ApartmentTaxDetailsItems | null>(null);
+  const [dualMethodTaxDetails, setDualMethodTaxDetails] = useState<DualMethodTaxDetails | null>(null);
+  const [isLoadingTaxDetails, setIsLoadingTaxDetails] = useState(false);
+
   // Fetch room data when room drawer opens (client-side).
   // Reset state in cleanup (the lint rule exempts cleanups) instead of setting
   // it inside the effect body, which would trip react-hooks/set-state-in-effect.
@@ -117,25 +129,111 @@ const ResidentialEditScreen = ({
     };
   }, [roomDrawerOpen, roomPdnId, roomPropertyId]);
 
+  // Extract propertyId to a stable reference for useEffect
+  const propertyId = propertyData?.id ?? null;
+
+  // Fetch tax details when drawer opens using property ID
+  useEffect(() => {
+    if (!open || propertyId === null) return;
+
+    const mainTab = returnTo; // 'amenities', 'commercial', or 'residential'
+
+    let cancelled = false;
+
+    const fetchTaxData = async () => {
+      try {
+        setIsLoadingTaxDetails(true);
+        
+        if (subTabProp === 'dual-method') {
+          const result = await fetchDualMethodTaxDetailsByIdAction(propertyId, mainTab);
+          if (!cancelled && result.success) {
+            setDualMethodTaxDetails(result.data || null);
+            setTaxDetails(null);
+          }
+        } else if (subTabProp === 'capital') {
+          const result = await fetchApartmentTaxDetailsCvByIdAction(propertyId, mainTab);
+          if (!cancelled && result.success) {
+            setTaxDetails(result.data || null);
+            setDualMethodTaxDetails(null);
+          }
+        } else {
+          // rateable
+          const result = await fetchApartmentTaxDetailsByIdAction(propertyId, mainTab);
+          if (!cancelled && result.success) {
+            setTaxDetails(result.data || null);
+            setDualMethodTaxDetails(null);
+          }
+        }
+      } catch {
+        // Error handling - silent fail
+      } finally {
+        if (!cancelled) setIsLoadingTaxDetails(false);
+      }
+    };
+
+    fetchTaxData();
+
+    return () => {
+      cancelled = true;
+      setTaxDetails(null);
+      setDualMethodTaxDetails(null);
+      setIsLoadingTaxDetails(false);
+    };
+  }, [open, propertyId, returnTo, subTabProp]);
+
   // Handle old property data refresh
   const handleOldPropertyRefresh = useCallback(async () => {
     const oldPropNo = hookFormData.oldPropertyNo?.trim();
     if (!oldPropNo) return;
+
+    // Helper to clear all old property fields
+    const clearOldPropertyFields = () => {
+      hookUpdateFormField("oldRV", "");
+      hookUpdateFormField("oldTax", "");
+      hookUpdateFormField("oldArea", "");
+      hookUpdateFormField("oldUseType", "");
+      hookUpdateFormField("oldConstructionType", "");
+      hookUpdateFormField("oldConstructionYear", "");
+      hookUpdateFormField("oldCSN", "");
+    };
 
     try {
       const { fetchOldPropertyDataAction } = await import("@/app/[locale]/property-tax/ptis/appartmentQC/action");
       const result = await fetchOldPropertyDataAction(oldPropNo);
 
       if (!result.success) {
+        // Clear all old property fields when fetch fails
+        clearOldPropertyFields();
         toast.error(result.error || "Failed to fetch old property data");
         return;
       }
       if (!result.data) {
+        // Clear all old property fields when no data found
+        clearOldPropertyFields();
         toast.error("No old property data found");
         return;
       }
 
       const d = result.data;
+      
+      // Check if all old property fields are null/empty
+      const hasOldRV = d.oldRV != null && d.oldRV !== 0;
+      const hasOldTax = d.oldTotalTax != null && d.oldTotalTax !== 0;
+      const hasOldArea = d.oldConstructionArea != null && d.oldConstructionArea !== 0;
+      const hasOldUseType = d.oldUseType && d.oldUseType.trim() !== "";
+      const hasOldConType = d.oldConstructionType && d.oldConstructionType.trim() !== "";
+      const hasOldConYear = d.oldConstructionYear && d.oldConstructionYear.trim() !== "";
+      const hasOldCSN = d.oldCSN && d.oldCSN.trim() !== "";
+      
+      const hasAnyData = hasOldRV || hasOldTax || hasOldArea || hasOldUseType || hasOldConType || hasOldConYear || hasOldCSN;
+
+      if (!hasAnyData) {
+        // Clear all old property fields when all values are null/empty
+        clearOldPropertyFields();
+        toast.error(`No old property data found for property no. "${oldPropNo}"`);
+        return;
+      }
+
       hookUpdateFormField("oldRV", d.oldRV != null ? String(d.oldRV) : "");
       hookUpdateFormField("oldTax", d.oldTotalTax != null ? String(d.oldTotalTax) : "");
       hookUpdateFormField("oldArea", d.oldConstructionArea != null ? String(d.oldConstructionArea) : "");
@@ -145,6 +243,8 @@ const ResidentialEditScreen = ({
       hookUpdateFormField("oldCSN", d.oldCSN || "");
       toast.success("Old property data refreshed");
     } catch {
+      // Clear all old property fields on error
+      clearOldPropertyFields();
       toast.error("Failed to fetch old property data");
     }
   }, [hookFormData.oldPropertyNo, hookUpdateFormField]);
@@ -175,8 +275,8 @@ const ResidentialEditScreen = ({
         id: r.id || 0,
         roomWiseSubmissionId: r.id || 0,
         roomNo: String(r.roomNo || ''),
-        roomType: r.roomType || '',
-        utilities: r.roomType || '',
+        roomType: r.roomTypeDescription || r.roomType || '',
+        utilities: r.roomTypeDescription || r.roomType || '',
         roomTypeId: r.roomTypeId || 0,
         lengthMtr: r.lengthMtr || 0,
         length: r.lengthMtr || 0,
@@ -224,8 +324,8 @@ const ResidentialEditScreen = ({
   // Handle room submission updates: optimistic local area update, then ask
   // the backend to recompute room aggregates for this floor (sync-rooms), then
   // refetch the Floor QC table so the new aggregates appear in the drawer.
-  const handleRoomUpdate = useCallback(async (data: { totalAreaSqM: number; roomCount?: number }) => {
-    if (!roomPdnId) return;
+  const handleRoomUpdate = useCallback(async (data: { floorNumber: string; rooms: import("@/types/room-details.types").RoomData[]; totalAreaSqM: number; builtUpAreaSqM: number; roomCount: number }) => {
+    if (!roomPdnId || !roomPropertyId) return;
 
     const floorRow = hookFloorData.find(row => row.pdnId === Number(roomPdnId));
     if (floorRow) {
@@ -239,7 +339,7 @@ const ResidentialEditScreen = ({
     try {
       const { syncRoomsForPropertyDetailsAction } =
         await import("@/app/[locale]/property-tax/ptis/appartmentQC/action");
-      const result = await syncRoomsForPropertyDetailsAction(Number(roomPdnId));
+      const result = await syncRoomsForPropertyDetailsAction(Number(roomPropertyId), Number(roomPdnId));
       if (result.success) {
         await hookRefetchFloorQC();
       } else {
@@ -248,7 +348,7 @@ const ResidentialEditScreen = ({
     } catch {
       toast.error("Failed to sync rooms");
     }
-  }, [roomPdnId, hookFloorData, hookUpdateFloorRowArea, hookUpdateFloorRowCount, hookRefetchFloorQC]);
+  }, [roomPdnId, roomPropertyId, hookFloorData, hookUpdateFloorRowArea, hookUpdateFloorRowCount, hookRefetchFloorQC]);
 
   // Column definitions
   const commonColumns = useDrawerCommonColumns({
@@ -396,6 +496,15 @@ const ResidentialEditScreen = ({
             </div>
           )}
         </div>
+
+        {/* Tax Details Section */}
+        <ApartmentTaxDetailsTable
+          taxDetails={taxDetails}
+          dualMethodDetails={dualMethodTaxDetails}
+          loading={isLoadingTaxDetails}
+          activeMainTab={returnTo}
+          activeSubTab={subTabProp}
+        />
       </div>
     </Drawer>
 
@@ -408,10 +517,6 @@ const ResidentialEditScreen = ({
         title={
           <div className="flex items-center justify-between w-full">
             <h2 className="text-base font-semibold text-gray-900">{t("drawer.roomWiseSubmission")}</h2>
-            <div className="flex items-center gap-1.5 text-[10px]">
-              <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded font-medium">{`Floor: ${hook.roomPdnId}`}</span>
-              <span className="px-2 py-1 bg-green-100 text-green-800 rounded font-medium">{`Property: ${hook.roomPropertyId}`}</span>
-            </div>
           </div>
         }
       >

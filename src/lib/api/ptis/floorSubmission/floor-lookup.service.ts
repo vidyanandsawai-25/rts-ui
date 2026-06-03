@@ -144,7 +144,8 @@ export async function getRoomTypeOptions(): Promise<string[]> {
         getRoomTypeData,
         () => 0,
         item => {
-            const name = item.roomTypeName || item.description || '';
+            // Check all possible name fields from API response
+            const name = item.roomTypeName || item.description || item.roomTypeDescription || '';
             const code = item.roomTypeCode || String(item.roomTypeId || getPropertySafely(item, ['id', 'ID']));
             return name || code;
         }

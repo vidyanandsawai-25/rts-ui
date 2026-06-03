@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import type { ApartmentQCDetail, ApartmentQCSearchParams } from "@/types/apartmentQC.types";
 import {
   getApartmentQCDetailsLocalized,
@@ -8,6 +9,8 @@ import {
   updateApartmentQCDetailsLocalized,
 } from "@/lib/api/appartmentQC.service";
 import { ApiError } from "@/lib/utils/api";
+import { logger } from "@/lib/utils/logger";
+import { getUserIdFromCookies } from "@/lib/utils/cookie";
 
 /* ============================================================
    ACTION RESULT TYPE
@@ -25,6 +28,7 @@ export type ActionResult<T = void> =
  * Convert translation keys or error messages to user-facing strings.
  * If the input looks like a translation key (e.g., "ptis.apartmentQC.errors.fetchFailed"),
  * convert it to a human-readable message as a fallback.
+ * Backend error messages (e.g., "Rate not found for...") are returned as-is.
  */
 function toUserFacingErrorMessage(messageOrKey: string): string {
   const value = messageOrKey.trim();
@@ -32,11 +36,11 @@ function toUserFacingErrorMessage(messageOrKey: string): string {
     return "An unexpected error occurred.";
   }
 
-  // Check if it looks like a translation key (dotted notation)
+  // Check if it looks like a translation key (dotted notation with only lowercase/numbers)
   const looksLikeTranslationKey = /^[a-z0-9]+(?:\.[a-z0-9]+)+$/i.test(value);
   
   if (!looksLikeTranslationKey) {
-    // Already a plain message, return as-is
+    // Already a plain message (including backend error messages), return as-is
     return value;
   }
 
@@ -57,11 +61,11 @@ function toUserFacingErrorMessage(messageOrKey: string): string {
 }
 
 function handleActionError(error: unknown, defaultKey: string): { success: false; error: string } {
-  console.error(`[appartmentQC.action] ${defaultKey}:`, error);
+  logger.error(`[appartmentQC.action] ${defaultKey}`, { error: error as Error });
   if (error instanceof ApiError) {
     return {
       success: false,
-      error: toUserFacingErrorMessage(error.contextMessage || defaultKey),
+      error: toUserFacingErrorMessage(error.error || error.contextMessage || defaultKey),
     };
   }
   return { success: false, error: toUserFacingErrorMessage(defaultKey) };
@@ -580,7 +584,7 @@ export async function getRoomWiseSubmissionsAction(params: {
       data,
     };
   } catch (error) {
-    console.error('[getRoomWiseSubmissionsAction] Error:', error);
+    logger.error('[getRoomWiseSubmissionsAction] Error', { error: error as Error });
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to fetch room submissions',
@@ -624,14 +628,16 @@ export async function createRoomWiseSubmissionAction(payload: {
   }>;
 }): Promise<ActionResult<unknown>> {
   try {
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore) || 1;
     const { createRoomWiseSubmissionSafe } = await import("@/lib/api/appartmentQC-room.service");
     const result = await createRoomWiseSubmissionSafe({
       isActive: true,
-      createdBy: 1, // TODO: Get from auth context
+      createdBy: userId,
       ...payload,
       roomWiseMinusData: payload.roomWiseMinusData?.map(offset => ({
         isActive: true,
-        createdBy: 1,
+        createdBy: userId,
         ...offset
       }))
     });
@@ -684,15 +690,17 @@ export async function updateRoomWiseSubmissionAction(
   }
 ): Promise<ActionResult<unknown>> {
   try {
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore) || 1;
     const { updateRoomWiseSubmissionSafe } = await import("@/lib/api/appartmentQC-room.service");
     const result = await updateRoomWiseSubmissionSafe(id, {
       isActive: true,
-      updatedBy: 1, // TODO: Get from auth context
+      updatedBy: userId,
       id,
       ...payload,
       roomWiseMinusData: payload.roomWiseMinusData?.map(offset => ({
         isActive: true,
-        updatedBy: 1,
+        updatedBy: userId,
         roomWiseSubmissionId: id,
         ...offset
       }))
@@ -836,18 +844,301 @@ export async function fetchOldPropertyDataAction(
 
 /* ============================================================
    SYNC ROOMS ACTION
-   Fires POST /ApartmentQC/{propertyDetailsId}/sync-rooms after a
+   Fires POST /ApartmentQC/{propertyId}/{propertyDetailsId}/sync-rooms after a
    successful RoomWiseSubmission PUT to recompute aggregates.
  ============================================================ */
 
 export async function syncRoomsForPropertyDetailsAction(
+  propertyId: number | string,
   propertyDetailsId: number | string
 ): Promise<ActionResult<void>> {
   try {
     const { syncRoomsForPropertyDetailsLocalized } = await import("@/lib/api/appartmentQC.service");
-    await syncRoomsForPropertyDetailsLocalized(propertyDetailsId);
+    await syncRoomsForPropertyDetailsLocalized(propertyId, propertyDetailsId);
     return { success: true, message: "Rooms synced successfully" };
   } catch (error) {
     return handleActionError(error, "Failed to sync rooms");
+  }
+}
+
+/* ============================================================
+   FILTER OPTIONS ACTION
+   Fetches distinct filter options for column filters.
+ ============================================================ */
+
+export type FilterField = 'wing' | 'flatOrShopNo' | 'apartmentType' | 'propertyType';
+
+export interface FilterOptionsItems {
+  wings: string[];
+  apartmentTypes: string[];
+  flatOrShopNos: string[];
+  propertyTypes: number[];
+}
+
+export async function fetchFilterOptionsAction(
+  wardId: number | string,
+  propertyNo: string,
+  field: FilterField
+): Promise<ActionResult<FilterOptionsItems>> {
+  try {
+    const { getFilterOptionsLocalized } = await import("@/lib/api/appartmentQC.service");
+    const result = await getFilterOptionsLocalized(wardId, propertyNo, field);
+    return { success: true, data: result.items, message: result.message };
+  } catch (error) {
+    return handleActionError(error, "Failed to fetch filter options");
+  }
+}
+
+/* ============================================================
+   EXCEL EXPORT ACTION
+   Returns config for client-side Excel download.
+   Endpoint: GET /ApartmentQC/export-excel?WardId={wardId}&PropertyNo={propertyNo}
+ ============================================================ */
+
+export interface ExcelExportConfig {
+  baseUrl: string;
+  authToken: string;
+}
+
+/**
+ * Get the API configuration for client-side Excel export.
+ * This action returns the base URL and auth token so the client can
+ * directly download the Excel file via fetch.
+ * 
+ * @returns ActionResult with baseUrl and authToken
+ */
+export async function getExcelExportConfigAction(): Promise<ActionResult<ExcelExportConfig>> {
+  try {
+    const { cookies } = await import("next/headers");
+    const { getAppConfig } = await import("@/config/app.config");
+    
+    const store = await cookies();
+    const authToken = store.get('auth_token')?.value || '';
+    const config = getAppConfig();
+    
+    return {
+      success: true,
+      data: {
+        baseUrl: config.api.baseUrl,
+        authToken,
+      },
+    };
+  } catch (error) {
+    return handleActionError(error, "Failed to get export configuration");
+  }
+}
+
+/* ============================================================
+   APARTMENT PROPERTY TAX DETAILS ACTION
+   Endpoint: GET /Property/apartment-property-tax-details-rv
+   Fetches tax details for apartment properties by PartType
+ ============================================================ */
+
+import type {
+  ApartmentTaxDetailsItems,
+  ApartmentPartType,
+  DualMethodTaxDetails,
+} from "@/types/apartmentQC.types";
+
+/**
+ * Fetch apartment property tax details for a specific PartType.
+ * 
+ * @param wardId - The ward ID
+ * @param propertyNo - The property number
+ * @param partType - The part type: 'Aminity' (Amenities), 'C' (Commercial), 'R' (Residential)
+ * @returns ActionResult with tax details
+ */
+export async function fetchApartmentPropertyTaxDetailsAction(
+  wardId: string | number,
+  propertyNo: string,
+  partType: ApartmentPartType
+): Promise<ActionResult<ApartmentTaxDetailsItems>> {
+  try {
+    const { getApartmentPropertyTaxDetailsLocalized } = await import("@/lib/api/appartmentQC.service");
+    const data = await getApartmentPropertyTaxDetailsLocalized({ wardId, propertyNo, partType });
+    return {
+      success: true,
+      data,
+      message: "Tax details fetched successfully",
+    };
+  } catch (error: unknown) {
+    return handleActionError(error, "Failed to fetch apartment property tax details");
+  }
+}
+
+/**
+ * Fetch apartment property tax details based on the selected main tab.
+ * Converts main tab value to PartType and fetches the data.
+ * 
+ * @param wardId - The ward ID
+ * @param propertyNo - The property number
+ * @param mainTab - The main tab: 'amenities', 'commercial', or 'residential'
+ * @returns ActionResult with tax details for the selected tab
+ */
+export async function fetchApartmentPropertyTaxDetailsByTabAction(
+  wardId: string | number,
+  propertyNo: string,
+  mainTab: string
+): Promise<ActionResult<ApartmentTaxDetailsItems>> {
+  try {
+    const { getApartmentPropertyTaxDetailsLocalized, getPartTypeFromMainTab } = await import("@/lib/api/appartmentQC.service");
+    const partType = getPartTypeFromMainTab(mainTab);
+    const data = await getApartmentPropertyTaxDetailsLocalized({ wardId, propertyNo, partType });
+    return {
+      success: true,
+      data,
+      message: "Tax details fetched successfully",
+    };
+  } catch (error: unknown) {
+    return handleActionError(error, "Failed to fetch apartment property tax details");
+  }
+}
+
+/* ============================================================
+   APARTMENT PROPERTY TAX DETAILS - CAPITAL VALUE (CV)
+   Endpoint: GET /Property/apartment-property-tax-details-cv
+   Fetches capital value tax details for apartment properties
+ ============================================================ */
+
+/**
+ * Fetch apartment property Capital Value (CV) tax details based on the selected main tab.
+ * 
+ * @param wardId - The ward ID
+ * @param propertyNo - The property number
+ * @param mainTab - The main tab: 'amenities', 'commercial', or 'residential'
+ * @returns ActionResult with CV tax details for the selected tab
+ */
+export async function fetchApartmentPropertyTaxDetailsCvByTabAction(
+  wardId: string | number,
+  propertyNo: string,
+  mainTab: string
+): Promise<ActionResult<ApartmentTaxDetailsItems>> {
+  try {
+    const { getApartmentPropertyTaxDetailsCvLocalized, getPartTypeFromMainTab } = await import("@/lib/api/appartmentQC.service");
+    const partType = getPartTypeFromMainTab(mainTab);
+    const data = await getApartmentPropertyTaxDetailsCvLocalized({ wardId, propertyNo, partType });
+    return {
+      success: true,
+      data,
+      message: "CV tax details fetched successfully",
+    };
+  } catch (error: unknown) {
+    return handleActionError(error, "Failed to fetch apartment property CV tax details");
+  }
+}
+
+/* ============================================================
+   APARTMENT PROPERTY TAX DETAILS - DUAL METHOD
+   Fetches both RV and CV tax details for dual method display
+ ============================================================ */
+
+/**
+ * Fetch both Rateable Value and Capital Value tax details for dual method display.
+ * 
+ * @param wardId - The ward ID
+ * @param propertyNo - The property number
+ * @param mainTab - The main tab: 'amenities', 'commercial', or 'residential'
+ * @returns ActionResult with both RV and CV tax details
+ */
+export async function fetchDualMethodTaxDetailsByTabAction(
+  wardId: string | number,
+  propertyNo: string,
+  mainTab: string
+): Promise<ActionResult<DualMethodTaxDetails>> {
+  try {
+    const { getDualMethodTaxDetails, getPartTypeFromMainTab } = await import("@/lib/api/appartmentQC.service");
+    const partType = getPartTypeFromMainTab(mainTab);
+    const data = await getDualMethodTaxDetails(wardId, propertyNo, partType);
+    return {
+      success: true,
+      data,
+      message: "Dual method tax details fetched successfully",
+    };
+  } catch (error: unknown) {
+    return handleActionError(error, "Failed to fetch dual method tax details");
+  }
+}
+
+/* ============================================================
+   APARTMENT PROPERTY TAX DETAILS BY PROPERTY ID
+   These actions use propertyId instead of WardId/PropertyNo
+   Used by PropertyDetailsEditScreen drawer
+ ============================================================ */
+
+/**
+ * Fetch apartment property Rateable Value (RV) tax details by property ID.
+ * Used by PropertyDetailsEditScreen drawer.
+ * 
+ * @param propertyId - The property ID
+ * @param mainTab - The main tab: 'amenities', 'commercial', or 'residential'
+ * @returns ActionResult with RV tax details
+ */
+export async function fetchApartmentTaxDetailsByIdAction(
+  propertyId: string | number,
+  mainTab: string
+): Promise<ActionResult<ApartmentTaxDetailsItems>> {
+  try {
+    const { getApartmentPropertyTaxDetailsByIdLocalized, getPartTypeFromMainTab } = await import("@/lib/api/appartmentQC.service");
+    const partType = getPartTypeFromMainTab(mainTab);
+    const data = await getApartmentPropertyTaxDetailsByIdLocalized({ propertyId, partType });
+    return {
+      success: true,
+      data,
+      message: "Tax details fetched successfully",
+    };
+  } catch (error: unknown) {
+    return handleActionError(error, "Failed to fetch apartment property tax details");
+  }
+}
+
+/**
+ * Fetch apartment property Capital Value (CV) tax details by property ID.
+ * Used by PropertyDetailsEditScreen drawer.
+ * 
+ * @param propertyId - The property ID
+ * @param mainTab - The main tab: 'amenities', 'commercial', or 'residential'
+ * @returns ActionResult with CV tax details
+ */
+export async function fetchApartmentTaxDetailsCvByIdAction(
+  propertyId: string | number,
+  mainTab: string
+): Promise<ActionResult<ApartmentTaxDetailsItems>> {
+  try {
+    const { getApartmentPropertyTaxDetailsCvByIdLocalized, getPartTypeFromMainTab } = await import("@/lib/api/appartmentQC.service");
+    const partType = getPartTypeFromMainTab(mainTab);
+    const data = await getApartmentPropertyTaxDetailsCvByIdLocalized({ propertyId, partType });
+    return {
+      success: true,
+      data,
+      message: "CV tax details fetched successfully",
+    };
+  } catch (error: unknown) {
+    return handleActionError(error, "Failed to fetch apartment property CV tax details");
+  }
+}
+
+/**
+ * Fetch both Rateable Value and Capital Value tax details for dual method by property ID.
+ * Used by PropertyDetailsEditScreen drawer.
+ * 
+ * @param propertyId - The property ID
+ * @param mainTab - The main tab: 'amenities', 'commercial', or 'residential'
+ * @returns ActionResult with both RV and CV tax details
+ */
+export async function fetchDualMethodTaxDetailsByIdAction(
+  propertyId: string | number,
+  mainTab: string
+): Promise<ActionResult<DualMethodTaxDetails>> {
+  try {
+    const { getDualMethodTaxDetailsById, getPartTypeFromMainTab } = await import("@/lib/api/appartmentQC.service");
+    const partType = getPartTypeFromMainTab(mainTab);
+    const data = await getDualMethodTaxDetailsById(propertyId, partType);
+    return {
+      success: true,
+      data,
+      message: "Dual method tax details fetched successfully",
+    };
+  } catch (error: unknown) {
+    return handleActionError(error, "Failed to fetch dual method tax details");
   }
 }

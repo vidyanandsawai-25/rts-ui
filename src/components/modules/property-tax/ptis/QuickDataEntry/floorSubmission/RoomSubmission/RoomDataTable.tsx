@@ -2,9 +2,9 @@
 
 import React, { useMemo } from "react";
 import { useTranslations } from "next-intl";
-import { Edit2, Trash2, Info, XCircle } from "lucide-react";
+import { Info, XCircle } from "lucide-react";
 import { MasterTable, Column } from "@/components/common/MasterTable";
-import { Tooltip, Button } from "@/components/common";
+import { Tooltip, Button, EditButton, DeleteButton } from "@/components/common";
 import { RoomDataTableProps, RoomData } from "@/types/room-details.types";
 import { OffsetData } from "@/types/offset-details.types";
 import { COLUMN_WIDTHS } from "./RoomTableConfig";
@@ -188,19 +188,15 @@ export const RoomDataTable: React.FC<RoomDataTableProps> = (props) => {
                                 </Tooltip>
                             )}
                             <Tooltip placement="top" content={t("roomSubmission.table.edit")}> 
-                                <Button
-                                    variant="edit"
+                                <EditButton
                                     size="xs"
-                                    icon={Edit2}
                                     onClick={(e) => { e.stopPropagation(); handleEdit(idx); }}
                                     className="shadow-sm hover:scale-110 active:scale-95"
                                 />
                             </Tooltip>
                             <Tooltip placement="top" content={t("roomSubmission.table.delete")}> 
-                                <Button
-                                    variant="delete"
+                                <DeleteButton
                                     size="xs"
-                                    icon={Trash2}
                                     onClick={(e) => { e.stopPropagation(); handleDelete(idx); }}
                                     className="shadow-sm hover:scale-110 active:scale-95"
                                 />

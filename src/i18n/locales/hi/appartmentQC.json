@@ -3,7 +3,7 @@
     "propertyNo": "संपत्ति नं",
     "partitionNo": "विभाजन नं",
     "oldPropertyNo": "पुराना संपत्ति नं",
-    "wingName": "विंग का नाम",
+    "wingName": "विंग",
     "shopNo": "दुकान नं",
     "flatNo": "फ्लैट नं",
     "ownerName": "संपत्ति धारक का नाम",
@@ -53,6 +53,13 @@
     "ocDate": "ओसी दिनांक"
   },
   "taxDetails": {
+    "title": "संपत्ति कर विवरण सारांश",
+    "subtitle": "संपत्ति प्रकार के अनुसार समेकित कर विवरण",
+    "propertyType": "संपत्ति का प्रकार",
+    "methodLabel": "विधि",
+    "total": "कुल",
+    "columnTotal": "कॉलम कुल",
+    "noData": "कोई कर विवरण उपलब्ध नहीं है",
     "taxes": "कर",
     "method": "विधि",
     "generalTax": "सामान्य कर",
@@ -77,7 +84,10 @@
     "oldPenaltyULB": "यूएलबी का पुराना जुर्माना",
     "oldPenaltyULBShort": "पुराना जुर्माना यूएलबी",
     "runTimePenalty": "रन टाइम जुर्माना",
-    "totalTax": "कुल कर"
+    "totalTax": "कुल कर",
+    "propertyCount": "संपत्ति की संख्या",
+    "rvPropertyCount": "आरवी संपत्ति की संख्या",
+    "cvPropertyCount": "सीवी संपत्ति की संख्या"
   },
   "apartmentTabs": {
     "amenitiesTitle": "संपत्ति कर सुविधाएं",
@@ -87,7 +97,21 @@
   },
   "actions": {
     "startAutoScroll": "ऑटो-स्क्रॉल प्रारंभ करें",
-    "stopAutoScroll": "ऑटो-स्क्रॉल रोकें"
+    "stopAutoScroll": "ऑटो-स्क्रॉल रोकें",
+    "exportExcel": "एक्सेल में निर्यात करें"
+  },
+  "export": {
+    "downloading": "एक्सेल फ़ाइल डाउनलोड हो रही है...",
+    "success": "एक्सेल फ़ाइल सफलतापूर्वक डाउनलोड हुई!",
+    "error": "एक्सेल फ़ाइल डाउनलोड करने में विफल",
+    "missingParams": "वार्ड ID या संपत्ति नंबर गायब है"
+  },
+  "filter": {
+    "filterColumn": "कॉलम फ़िल्टर करें",
+    "filterBy": "द्वारा फ़िल्टर करें",
+    "noOptions": "कोई विकल्प उपलब्ध नहीं",
+    "clearAll": "सभी हटाएं",
+    "apply": "लागू करें"
   },
   "drawer": {
     "title": "संपत्ति विवरण",

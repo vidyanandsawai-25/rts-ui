@@ -82,7 +82,16 @@ export function FloorFormFields({
         onChange={onChange}
         onBlur={onBlur}
         fullWidth
+        min={1}
+        max={999}
+        step={1}
         className="text-gray-700"
+        onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+          // Block minus, plus, decimal point, and e keys (only allow integers)
+          if (e.key === '-' || e.key === '+' || e.key === 'e' || e.key === 'E' || e.key === '.') {
+            e.preventDefault();
+          }
+        }}
       />
       <ValidationMessage
         message={errors.sequenceNo}

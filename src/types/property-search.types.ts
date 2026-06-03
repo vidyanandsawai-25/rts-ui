@@ -329,6 +329,8 @@ export type SearchValidationKey =
   | "shopBuildingNameInvalid"
   | "societyNameInvalid"
   | "addressInvalid"
+  | "rateableValueBetweenRequired"
+  | "capitalValueBetweenRequired"
   | "noSearchCriteria";
 
 export type SearchValidationResult =

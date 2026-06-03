@@ -9,6 +9,7 @@ import { ApartmentQCDetail } from "@/types/apartmentQC.types";
 import { getApartmentQCColumns } from "./apartmentQC.columns";
 import { transformApartmentData } from "./apartmentQC.utils";
 import { useRouter } from "next/navigation";
+import { useColumnFilters } from "@/hooks/apartmentQc/useColumnFilters";
 
 interface ResidentialProps {
   initialData: ApartmentQCDetail[];
@@ -17,6 +18,8 @@ interface ResidentialProps {
   initialPageSize: number;
   initialTotalPages: number;
   initialSearchTerm: string;
+  wardId?: number | string;
+  propertyNo?: string;
   error?: string;
 }
 
@@ -27,6 +30,8 @@ const Residential = ({
   initialPageSize,
   initialTotalPages,
   initialSearchTerm,
+  wardId = '',
+  propertyNo = '',
   error,
 }: ResidentialProps) => {
   const searchParams = useSearchParams();
@@ -34,6 +39,12 @@ const Residential = ({
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
   const activeTab = searchParams.get("subTab") || "rateable";
+
+  // Column filters
+  const { activeFilters, handleFilterChange, fetchFilterOptions } = useColumnFilters({
+    wardId,
+    propertyNo,
+  });
 
   useEffect(() => {
     if (error) toast.error(error);
@@ -69,6 +80,9 @@ const Residential = ({
         loading={isPending} isAutoScrolling={isAutoScrolling} onToggleAutoScroll={() => setIsAutoScrolling(!isAutoScrolling)}
         pageNumber={initialPageNumber} pageSize={initialPageSize} totalCount={initialTotalCount} totalPages={initialTotalPages}
         onPageChange={(p) => updateQueryParams({ pageNumber: p })} onPageSizeChange={(s) => updateQueryParams({ pageSize: s, pageNumber: 1 })}
+        activeFilters={activeFilters}
+        onFilterChange={handleFilterChange}
+        onFetchFilterOptions={fetchFilterOptions}
       />
     </div>
   );

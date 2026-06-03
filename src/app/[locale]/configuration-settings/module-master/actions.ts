@@ -3,6 +3,7 @@
 import type { ModuleMaster, ModuleMasterFormData } from '@/types/moduleMaster.types';
 import type { ApiResponse, PagedResponse } from '@/types/common.types';
 import { ApiError } from '@/lib/utils/api';
+import { verifyServerActionAccess } from '@/lib/utils/server-access-guard';
 import {
   getModuleMastersPaged,
   getModuleMasterById,
@@ -45,6 +46,11 @@ export async function createModuleMasterAction(
   data: ModuleMasterFormData
 ): Promise<ApiResponse<void>> {
   try {
+    const hasAccess = await verifyServerActionAccess('MODULE_MASTER', 'edit');
+    if (!hasAccess) {
+      return { success: false, error: 'messages.unauthorized' };
+    }
+
     const validationResult = validateAndNormalize(data);
 
     if (!validationResult.isValid) {
@@ -91,6 +97,11 @@ export async function updateModuleMasterAction(
   data: ModuleMasterFormData
 ): Promise<ApiResponse<void>> {
   try {
+    const hasAccess = await verifyServerActionAccess('MODULE_MASTER', 'edit');
+    if (!hasAccess) {
+      return { success: false, error: 'messages.unauthorized' };
+    }
+
     const validationResult = validateAndNormalize(data);
 
     if (!validationResult.isValid) {
@@ -138,6 +149,11 @@ export async function updateModuleMasterAction(
 
 export async function deleteModuleMasterAction(id: number): Promise<ApiResponse<void>> {
   try {
+    const hasAccess = await verifyServerActionAccess('MODULE_MASTER', 'delete');
+    if (!hasAccess) {
+      return { success: false, error: 'messages.unauthorized' };
+    }
+
     await deleteModuleMaster(id);
 
     revalidateModuleMaster();

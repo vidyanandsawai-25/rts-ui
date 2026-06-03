@@ -51,8 +51,12 @@ export function validateFloorForm(
   // Sequence number validation (0 is treated as "not provided" since empty input becomes 0)
   if (data.sequenceNo === 0) {
     errors.sequenceNo = t('form.validation.sequenceNoRequired');
-  } else if (!Number.isFinite(data.sequenceNo) || data.sequenceNo < 0) {
+  } else if (!Number.isFinite(data.sequenceNo) || data.sequenceNo < 1) {
     errors.sequenceNo = t('validation.mustBeNumber');
+  } else if (!Number.isInteger(data.sequenceNo)) {
+    errors.sequenceNo = t('validation.mustBeNumber');
+  } else if (data.sequenceNo > 999) {
+    errors.sequenceNo = t('form.validation.rangeMaxValue', { count: 999 });
   }
 
   // isActive validation
