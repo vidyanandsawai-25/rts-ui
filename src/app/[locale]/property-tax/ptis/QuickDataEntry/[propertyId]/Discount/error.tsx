@@ -16,4 +16,3 @@ export default function DiscountError({ error, reset }: ErrorProps) {
     />
   );
 }
-
