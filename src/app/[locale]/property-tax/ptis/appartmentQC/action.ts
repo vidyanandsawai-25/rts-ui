@@ -7,7 +7,7 @@ import {
   getApartmentQCDetailsLocalized,
   getApartmentQCDetailsSafe,
   updateApartmentQCDetailsLocalized,
-} from "@/lib/api/appartmentQC.service";
+} from "@/lib/api/ptis/appartmentQC/appartmentQC.service";
 import { ApiError } from "@/lib/utils/api";
 import { logger } from "@/lib/utils/logger";
 import { getUserIdFromCookies } from "@/lib/utils/cookie";
@@ -325,7 +325,7 @@ export async function fetchFloorQCByPropertyIdAction(
   type: 'rateable' | 'capital' | 'dual' | string
 ): Promise<ActionResult<ApartmentQCDetail[]>> {
   try {
-    const { getFloorQCByPropertyIdLocalized } = await import("@/lib/api/appartmentQC.service");
+    const { getFloorQCByPropertyIdLocalized } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     const data = await getFloorQCByPropertyIdLocalized(propertyId, type);
     // data.items is PagedResponse<ApartmentQCDetail>; extract the flat items array
     return {
@@ -351,7 +351,7 @@ export async function fetchFloorQCByPropertyIdSafeAction(
   type: 'rateable' | 'capital' | 'dual' | string
 ): Promise<ApartmentQCDetail[]> {
   try {
-    const { getFloorQCByPropertyIdSafe } = await import("@/lib/api/appartmentQC.service");
+    const { getFloorQCByPropertyIdSafe } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     return await getFloorQCByPropertyIdSafe(propertyId, type);
   } catch {
     return [];
@@ -392,7 +392,7 @@ export async function updateFloorQCDetailAction(
   payload: FloorQCUpdatePayload
 ): Promise<ActionResult> {
   try {
-    const { updateFloorQCDetailLocalized } = await import("@/lib/api/appartmentQC.service");
+    const { updateFloorQCDetailLocalized } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     await updateFloorQCDetailLocalized(propertyId, detailId, payload);
     // Revalidate the apartment QC pages to reflect changes
     revalidatePath("/[locale]/property-tax/ptis/appartmentQC", "page");
@@ -431,7 +431,7 @@ export async function updateFloorQCDetailsBulkAction(
   items: FloorQCBulkUpdateItem[]
 ): Promise<ActionResult> {
   try {
-    const { updateFloorQCDetailsBulkLocalized } = await import("@/lib/api/appartmentQC.service");
+    const { updateFloorQCDetailsBulkLocalized } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     await updateFloorQCDetailsBulkLocalized(propertyId, items);
     // Revalidate the apartment QC pages to reflect changes
     revalidatePath("/[locale]/property-tax/ptis/appartmentQC", "page");
@@ -481,7 +481,7 @@ export async function updateBasicDetailsAction(
   payload: BasicDetailsUpdatePayload
 ): Promise<ActionResult> {
   try {
-    const { updateBasicDetailsLocalized } = await import("@/lib/api/appartmentQC.service");
+    const { updateBasicDetailsLocalized } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     await updateBasicDetailsLocalized(propertyId, payload);
     // Revalidate the apartment QC pages to reflect changes
     revalidatePath("/[locale]/property-tax/ptis/appartmentQC", "page");
@@ -556,7 +556,7 @@ export async function fetchRoomWiseSubmissionsAction(params: {
   propertyDetailsId?: number;
 }): Promise<ActionResult<unknown[]>> {
   try {
-    const { getRoomWiseSubmissionsSafe } = await import("@/lib/api/appartmentQC-room.service");
+    const { getRoomWiseSubmissionsSafe } = await import("@/lib/api/ptis/appartmentQC/appartmentQC-room.service");
     const data = await getRoomWiseSubmissionsSafe(params);
     return { success: true, data };
   } catch (error: unknown) {
@@ -571,9 +571,9 @@ export async function fetchRoomWiseSubmissionsAction(params: {
 export async function getRoomWiseSubmissionsAction(params: {
   propertyId: number;
   propertyDetailsId: number;
-}): Promise<{ success: boolean; data?: import("@/lib/api/appartmentQC-room.service").RoomWiseSubmissionData[]; error?: string }> {
+}): Promise<{ success: boolean; data?: import("@/lib/api/ptis/appartmentQC/appartmentQC-room.service").RoomWiseSubmissionData[]; error?: string }> {
   try {
-    const { getRoomWiseSubmissionsSafe } = await import("@/lib/api/appartmentQC-room.service");
+    const { getRoomWiseSubmissionsSafe } = await import("@/lib/api/ptis/appartmentQC/appartmentQC-room.service");
     const data = await getRoomWiseSubmissionsSafe({
       propertyId: params.propertyId,
       propertyDetailsId: params.propertyDetailsId,
@@ -630,7 +630,7 @@ export async function createRoomWiseSubmissionAction(payload: {
   try {
     const cookieStore = await cookies();
     const userId = getUserIdFromCookies(cookieStore) || 1;
-    const { createRoomWiseSubmissionSafe } = await import("@/lib/api/appartmentQC-room.service");
+    const { createRoomWiseSubmissionSafe } = await import("@/lib/api/ptis/appartmentQC/appartmentQC-room.service");
     const result = await createRoomWiseSubmissionSafe({
       isActive: true,
       createdBy: userId,
@@ -692,18 +692,22 @@ export async function updateRoomWiseSubmissionAction(
   try {
     const cookieStore = await cookies();
     const userId = getUserIdFromCookies(cookieStore) || 1;
-    const { updateRoomWiseSubmissionSafe } = await import("@/lib/api/appartmentQC-room.service");
+    const { updateRoomWiseSubmissionSafe } = await import("@/lib/api/ptis/appartmentQC/appartmentQC-room.service");
     const result = await updateRoomWiseSubmissionSafe(id, {
       isActive: true,
       updatedBy: userId,
       id,
       ...payload,
-      roomWiseMinusData: payload.roomWiseMinusData?.map(offset => ({
-        isActive: true,
-        updatedBy: userId,
-        roomWiseSubmissionId: id,
-        ...offset
-      }))
+      roomWiseMinusData: payload.roomWiseMinusData?.map(offset => {
+        // If offset has an id, it's an existing record (update), otherwise it's new (create)
+        const isExisting = offset.id !== undefined && offset.id !== null && offset.id > 0;
+        return {
+          ...offset,
+          isActive: true,
+          ...(isExisting ? { updatedBy: userId } : { createdBy: userId }),
+          roomWiseSubmissionId: id,
+        };
+      })
     });
     if (!result.success) {
       return { success: false, error: result.error || "Failed to update room" };
@@ -720,7 +724,7 @@ export async function updateRoomWiseSubmissionAction(
  */
 export async function deleteRoomWiseSubmissionAction(id: number): Promise<ActionResult<void>> {
   try {
-    const { deleteRoomWiseSubmissionSafe } = await import("@/lib/api/appartmentQC-room.service");
+    const { deleteRoomWiseSubmissionSafe } = await import("@/lib/api/ptis/appartmentQC/appartmentQC-room.service");
     const result = await deleteRoomWiseSubmissionSafe(id);
     if (!result.success) {
       return { success: false, error: result.error || "Failed to delete room" };
@@ -737,7 +741,7 @@ export async function deleteRoomWiseSubmissionAction(id: number): Promise<Action
  */
 export async function deleteRoomWiseMinusAction(id: number): Promise<ActionResult<void>> {
   try {
-    const { deleteRoomWiseMinusSafe } = await import("@/lib/api/appartmentQC-room.service");
+    const { deleteRoomWiseMinusSafe } = await import("@/lib/api/ptis/appartmentQC/appartmentQC-room.service");
     const result = await deleteRoomWiseMinusSafe(id);
     if (!result.success) {
       return { success: false, error: result.error || "Failed to delete offset" };
@@ -767,7 +771,7 @@ export async function createRoomWiseMinusAction(payload: {
   base2Mtr?: number;
 }): Promise<ActionResult<{ id: number }>> {
   try {
-    const { createRoomWiseMinusSafe } = await import("@/lib/api/appartmentQC-room.service");
+    const { createRoomWiseMinusSafe } = await import("@/lib/api/ptis/appartmentQC/appartmentQC-room.service");
     const result = await createRoomWiseMinusSafe(payload);
     if (!result.success) {
       return { success: false, error: result.error || "Failed to create offset" };
@@ -783,7 +787,7 @@ export async function createRoomWiseMinusAction(payload: {
  */
 export async function deleteRoomSubmissionNoRedirectAction(roomId: number | string): Promise<ActionResult<void>> {
   try {
-    const { deleteRoomWiseSubmissionSafe } = await import("@/lib/api/appartmentQC-room.service");
+    const { deleteRoomWiseSubmissionSafe } = await import("@/lib/api/ptis/appartmentQC/appartmentQC-room.service");
     const result = await deleteRoomWiseSubmissionSafe(Number(roomId));
     if (!result.success) {
       return { success: false, error: result.error || "Failed to delete room" };
@@ -799,7 +803,7 @@ export async function deleteRoomSubmissionNoRedirectAction(roomId: number | stri
  */
 export async function deleteOffsetSubmissionNoRedirectAction(offsetId: number | string): Promise<ActionResult<void>> {
   try {
-    const { deleteRoomWiseMinusSafe } = await import("@/lib/api/appartmentQC-room.service");
+    const { deleteRoomWiseMinusSafe } = await import("@/lib/api/ptis/appartmentQC/appartmentQC-room.service");
     const result = await deleteRoomWiseMinusSafe(Number(offsetId));
     if (!result.success) {
       return { success: false, error: result.error || "Failed to delete offset" };
@@ -823,13 +827,13 @@ export async function deleteOffsetSubmissionNoRedirectAction(offsetId: number | 
  */
 export async function fetchOldPropertyDataAction(
   oldPropertyNo: string
-): Promise<ActionResult<import("@/lib/api/appartmentQC.service").OldPropertyData>> {
+): Promise<ActionResult<import("@/lib/api/ptis/appartmentQC/appartmentQC.service").OldPropertyData>> {
   try {
     if (!oldPropertyNo || oldPropertyNo.trim() === "") {
       return { success: false, error: "Old property number is required" };
     }
 
-    const { getOldPropertyDataLocalized } = await import("@/lib/api/appartmentQC.service");
+    const { getOldPropertyDataLocalized } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     const data = await getOldPropertyDataLocalized(oldPropertyNo.trim());
     
     return {
@@ -853,7 +857,7 @@ export async function syncRoomsForPropertyDetailsAction(
   propertyDetailsId: number | string
 ): Promise<ActionResult<void>> {
   try {
-    const { syncRoomsForPropertyDetailsLocalized } = await import("@/lib/api/appartmentQC.service");
+    const { syncRoomsForPropertyDetailsLocalized } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     await syncRoomsForPropertyDetailsLocalized(propertyId, propertyDetailsId);
     return { success: true, message: "Rooms synced successfully" };
   } catch (error) {
@@ -881,7 +885,7 @@ export async function fetchFilterOptionsAction(
   field: FilterField
 ): Promise<ActionResult<FilterOptionsItems>> {
   try {
-    const { getFilterOptionsLocalized } = await import("@/lib/api/appartmentQC.service");
+    const { getFilterOptionsLocalized } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     const result = await getFilterOptionsLocalized(wardId, propertyNo, field);
     return { success: true, data: result.items, message: result.message };
   } catch (error) {
@@ -954,7 +958,7 @@ export async function fetchApartmentPropertyTaxDetailsAction(
   partType: ApartmentPartType
 ): Promise<ActionResult<ApartmentTaxDetailsItems>> {
   try {
-    const { getApartmentPropertyTaxDetailsLocalized } = await import("@/lib/api/appartmentQC.service");
+    const { getApartmentPropertyTaxDetailsLocalized } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     const data = await getApartmentPropertyTaxDetailsLocalized({ wardId, propertyNo, partType });
     return {
       success: true,
@@ -981,7 +985,7 @@ export async function fetchApartmentPropertyTaxDetailsByTabAction(
   mainTab: string
 ): Promise<ActionResult<ApartmentTaxDetailsItems>> {
   try {
-    const { getApartmentPropertyTaxDetailsLocalized, getPartTypeFromMainTab } = await import("@/lib/api/appartmentQC.service");
+    const { getApartmentPropertyTaxDetailsLocalized, getPartTypeFromMainTab } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     const partType = getPartTypeFromMainTab(mainTab);
     const data = await getApartmentPropertyTaxDetailsLocalized({ wardId, propertyNo, partType });
     return {
@@ -1014,7 +1018,7 @@ export async function fetchApartmentPropertyTaxDetailsCvByTabAction(
   mainTab: string
 ): Promise<ActionResult<ApartmentTaxDetailsItems>> {
   try {
-    const { getApartmentPropertyTaxDetailsCvLocalized, getPartTypeFromMainTab } = await import("@/lib/api/appartmentQC.service");
+    const { getApartmentPropertyTaxDetailsCvLocalized, getPartTypeFromMainTab } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     const partType = getPartTypeFromMainTab(mainTab);
     const data = await getApartmentPropertyTaxDetailsCvLocalized({ wardId, propertyNo, partType });
     return {
@@ -1046,7 +1050,7 @@ export async function fetchDualMethodTaxDetailsByTabAction(
   mainTab: string
 ): Promise<ActionResult<DualMethodTaxDetails>> {
   try {
-    const { getDualMethodTaxDetails, getPartTypeFromMainTab } = await import("@/lib/api/appartmentQC.service");
+    const { getDualMethodTaxDetails, getPartTypeFromMainTab } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     const partType = getPartTypeFromMainTab(mainTab);
     const data = await getDualMethodTaxDetails(wardId, propertyNo, partType);
     return {
@@ -1078,7 +1082,7 @@ export async function fetchApartmentTaxDetailsByIdAction(
   mainTab: string
 ): Promise<ActionResult<ApartmentTaxDetailsItems>> {
   try {
-    const { getApartmentPropertyTaxDetailsByIdLocalized, getPartTypeFromMainTab } = await import("@/lib/api/appartmentQC.service");
+    const { getApartmentPropertyTaxDetailsByIdLocalized, getPartTypeFromMainTab } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     const partType = getPartTypeFromMainTab(mainTab);
     const data = await getApartmentPropertyTaxDetailsByIdLocalized({ propertyId, partType });
     return {
@@ -1104,7 +1108,7 @@ export async function fetchApartmentTaxDetailsCvByIdAction(
   mainTab: string
 ): Promise<ActionResult<ApartmentTaxDetailsItems>> {
   try {
-    const { getApartmentPropertyTaxDetailsCvByIdLocalized, getPartTypeFromMainTab } = await import("@/lib/api/appartmentQC.service");
+    const { getApartmentPropertyTaxDetailsCvByIdLocalized, getPartTypeFromMainTab } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     const partType = getPartTypeFromMainTab(mainTab);
     const data = await getApartmentPropertyTaxDetailsCvByIdLocalized({ propertyId, partType });
     return {
@@ -1130,7 +1134,7 @@ export async function fetchDualMethodTaxDetailsByIdAction(
   mainTab: string
 ): Promise<ActionResult<DualMethodTaxDetails>> {
   try {
-    const { getDualMethodTaxDetailsById, getPartTypeFromMainTab } = await import("@/lib/api/appartmentQC.service");
+    const { getDualMethodTaxDetailsById, getPartTypeFromMainTab } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
     const partType = getPartTypeFromMainTab(mainTab);
     const data = await getDualMethodTaxDetailsById(propertyId, partType);
     return {

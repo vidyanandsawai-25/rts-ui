@@ -24,7 +24,7 @@ import {
   ReadOnlyInput,
   EditableInputWithRefresh,
 } from "./PropertyEditDrawerInputs";
-import type { RoomWiseSubmissionData } from "@/lib/api/appartmentQC-room.service";
+import type { RoomWiseSubmissionData } from "@/lib/api/ptis/appartmentQC/appartmentQC-room.service";
 import { 
   getRoomWiseSubmissionsAction,
   fetchApartmentTaxDetailsByIdAction,
