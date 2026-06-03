@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { toast } from 'sonner';
 import { getCleanErrorMessage } from '@/lib/utils/backend-error-detection';
+import { useConfirm } from '@/components/common/ConfirmProvider';
 import {
   createBankAction,
   updateBankAction,
@@ -33,6 +34,7 @@ export function useBankForm({ id, initialData }: UseBankFormProps) {
 
   const t = useTranslations('bankMaster');
   const tCommon = useTranslations('common');
+  const { confirm } = useConfirm();
 
   const bankId = id?.trim() || null;
   const isEdit = Boolean(bankId);
@@ -78,9 +80,65 @@ export function useBankForm({ id, initialData }: UseBankFormProps) {
     };
   }, [clearNavigationTimeout]);
 
+  const hasChanges = useCallback(() => {
+    const base = initialData
+      ? {
+          bankCode: initialData.bankCode ?? '',
+          bankName: initialData.bankName ?? '',
+          branchName: initialData.branchName ?? '',
+          ifscCode: initialData.ifscCode ?? '',
+          address: initialData.address ?? '',
+          city: initialData.city ?? '',
+          state: initialData.state ?? '',
+          pincode: initialData.pincode ?? '',
+          isActive: initialData.isActive,
+        }
+      : {
+          bankCode: '',
+          bankName: '',
+          branchName: '',
+          ifscCode: '',
+          address: '',
+          city: '',
+          state: '',
+          pincode: '',
+          isActive: true,
+        };
+
+    return Object.keys(base).some((key) => {
+      const k = key as keyof typeof base;
+      const currentVal = formData[k];
+      const initialVal = base[k];
+
+      if (typeof currentVal === 'boolean' || typeof initialVal === 'boolean') {
+        return Boolean(currentVal) !== Boolean(initialVal);
+      }
+
+      const normCurrent =
+        currentVal === undefined || currentVal === null ? '' : String(currentVal).trim();
+      const normInitial =
+        initialVal === undefined || initialVal === null ? '' : String(initialVal).trim();
+
+      return normCurrent !== normInitial;
+    });
+  }, [formData, initialData]);
+
   const handleCancel = useCallback(() => {
-    closeAndRoute();
-  }, [closeAndRoute]);
+    if (hasChanges()) {
+      confirm({
+        variant: 'warning',
+        title: tCommon('confirm.warning.title') || 'Warning',
+        description: tCommon('messages.unsavedChanges') || 'You have unsaved changes',
+        confirmText: tCommon('confirm.warning.confirm') || 'Proceed',
+        cancelText: tCommon('confirm.cancel') || 'Cancel',
+        onConfirm: () => {
+          closeAndRoute();
+        },
+      });
+    } else {
+      closeAndRoute();
+    }
+  }, [hasChanges, confirm, closeAndRoute, tCommon]);
 
   const handleSubmit = useCallback(
     async (e: FormEvent): Promise<void> => {

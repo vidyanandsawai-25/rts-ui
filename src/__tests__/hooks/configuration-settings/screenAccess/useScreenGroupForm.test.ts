@@ -22,6 +22,12 @@ vi.mock('@/hooks/useLoading', () => ({
   useLoading: () => ({ isLoading: false, startLoading: vi.fn(), stopLoading: vi.fn() }),
 }));
 
+vi.mock('@/components/common/ConfirmProvider', () => ({
+  useConfirm: () => ({
+    confirm: vi.fn(),
+  }),
+}));
+
 vi.mock('@/app/[locale]/configuration-settings/screenAccess/action.mutations', () => ({
   createScreenGroupAction: vi.fn(),
   updateScreenGroupAction: vi.fn(),

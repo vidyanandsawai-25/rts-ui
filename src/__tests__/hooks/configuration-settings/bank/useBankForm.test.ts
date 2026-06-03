@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 
 const mockPush = vi.fn();
 const mockRefresh = vi.fn();
+const mockConfirm = vi.fn();
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: mockPush, refresh: mockRefresh }),
@@ -21,6 +22,12 @@ vi.mock('sonner', () => ({
     success: vi.fn(),
     error: vi.fn(),
   },
+}));
+
+vi.mock('@/components/common/ConfirmProvider', () => ({
+  useConfirm: () => ({
+    confirm: mockConfirm,
+  }),
 }));
 
 const mockCreateBankAction = vi.fn();
@@ -125,6 +132,37 @@ describe('useBankForm', () => {
       act(() => {
         result.current.handleCancel();
       });
+
+      await act(() => vi.runAllTimersAsync());
+
+      expect(mockPush).toHaveBeenCalledWith(
+        expect.stringContaining('/configuration-settings/bank-master')
+      );
+    });
+
+    it('should prompt confirmation if there are changes', async () => {
+      const { result } = renderHook(() => useBankForm({ id: null }));
+
+      act(() => {
+        result.current.handleChange({
+          target: { name: 'bankName', value: 'New Bank Name' },
+        } as unknown as React.ChangeEvent<HTMLInputElement>);
+      });
+
+      act(() => {
+        result.current.handleCancel();
+      });
+
+      expect(mockConfirm).toHaveBeenCalled();
+      const confirmArg = mockConfirm.mock.calls[0][0];
+      expect(confirmArg.variant).toBe('warning');
+
+      // Trigger confirm callback
+      act(() => {
+        confirmArg.onConfirm();
+      });
+
+      expect(result.current.open).toBe(false);
 
       await act(() => vi.runAllTimersAsync());
 

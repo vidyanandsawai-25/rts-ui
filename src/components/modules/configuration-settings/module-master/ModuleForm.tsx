@@ -1,6 +1,6 @@
 'use client';
 
-import { Briefcase } from 'lucide-react';
+import { Briefcase, AlertCircle } from 'lucide-react';
 import { Drawer } from '@/components/common/Drawer';
 import { ModuleMaster } from '@/types/moduleMaster.types';
 import { useModuleForm } from '@/hooks/configuration-settings/module-master/useModuleForm';
@@ -35,11 +35,41 @@ export function ModuleForm({
     t,
     tCommon,
     isEdit,
+    hasWriteAccess,
   } = useModuleForm({
     id,
     initialData,
     initialExistingModules: existingModules,
   });
+
+  if (!hasWriteAccess) {
+    return (
+      <Drawer
+        open={open}
+        onClose={handleCancel}
+        width="lg"
+        title={
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-red-600 text-white rounded-lg shadow-md">
+              <AlertCircle className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">
+                {tCommon('errors.unauthorized') || 'Access Denied'}
+              </h2>
+            </div>
+          </div>
+        }
+      >
+        <div className="flex flex-col items-center justify-center min-h-[300px] p-6 bg-white rounded-xl">
+          <AlertCircle className="w-12 h-12 text-red-500 mb-4 animate-bounce" />
+          <h3 className="text-lg font-semibold text-gray-900">
+            {tCommon('errors.unauthorized') || 'You do not have permission to perform this action.'}
+          </h3>
+        </div>
+      </Drawer>
+    );
+  }
 
   return (
     <Drawer
