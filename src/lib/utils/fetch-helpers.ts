@@ -2,28 +2,11 @@ import { ActionResponse } from '@/app/[locale]/configuration-settings/screenAcce
 import { logger } from './logger';
 
 export interface FetchConfig<T> {
-  /**
-   * When false, the fetcher is skipped and fallback is returned.
-   */
   condition: boolean;
-
-  /**
-   * Server/action fetcher.
-   */
   fetcher: () => Promise<ActionResponse<T>>;
-
-  /**
-   * Value returned when:
-   * 1. condition is false
-   * 2. fetcher returns success=false
-   * 3. fetcher throws an exception
-   */
   fallback: T;
-
-  /**
-   * Optional message used for logging failed fetches.
-   */
   errorMessage?: string;
+  onError?: (error: { message?: string; statusCode?: number }) => void;
 }
 
 export async function executeConditionalFetches<T extends Record<string, unknown>>(configs: {
@@ -60,6 +43,13 @@ export async function executeConditionalFetches<T extends Record<string, unknown
           message,
         });
 
+        if (config.onError) {
+          config.onError({
+            message: result.message || config.errorMessage,
+            statusCode: result.statusCode,
+          });
+        }
+
         return {
           key,
           value: config.fallback,
@@ -71,6 +61,12 @@ export async function executeConditionalFetches<T extends Record<string, unknown
           message,
           error: error instanceof Error ? error : new Error(String(error)),
         });
+
+        if (config.onError) {
+          config.onError({
+            message: error instanceof Error ? error.message : String(error),
+          });
+        }
 
         return {
           key,

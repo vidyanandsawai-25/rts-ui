@@ -6,6 +6,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { toast } from 'sonner';
 import { useLoading } from '@/hooks/useLoading';
 import { getCleanErrorMessage } from '@/lib/utils/backend-error-detection';
+import { useConfirm } from '@/components/common/ConfirmProvider';
 
 interface ActionResponse<T> {
   success: boolean;
@@ -49,6 +50,7 @@ export function useBaseForm<T extends { isActive?: boolean }>({
   const locale = useLocale();
   const t = useTranslations(translationNamespace);
   const tCommon = useTranslations('common');
+  const { confirm } = useConfirm();
 
   const { isLoading: isSubmitting, startLoading, stopLoading } = useLoading();
   const [submittedOnce, setSubmittedOnce] = useState(false);
@@ -129,11 +131,53 @@ export function useBaseForm<T extends { isActive?: boolean }>({
     [submittedOnce, touched, errors]
   );
 
-  const handleCancel = useCallback(() => {
+  const hasChanges = useCallback(() => {
+    return Object.keys(validationSchema).some((key) => {
+      const currentVal = formData[key as keyof T];
+      const initialVal = initialData?.[key as keyof T];
+
+      let normInitialVal = initialVal;
+      if (key === 'isActive' && initialVal === undefined) {
+        normInitialVal = true as unknown as T[keyof T];
+      }
+
+      if (typeof currentVal === 'boolean' || typeof normInitialVal === 'boolean') {
+        return Boolean(currentVal) !== Boolean(normInitialVal);
+      }
+
+      const normCurrent =
+        currentVal === undefined || currentVal === null ? '' : String(currentVal).trim();
+      const normInit =
+        normInitialVal === undefined || normInitialVal === null
+          ? ''
+          : String(normInitialVal).trim();
+
+      return normCurrent !== normInit;
+    });
+  }, [formData, initialData, validationSchema]);
+
+  const forceCancel = useCallback(() => {
     onCancel?.();
     setOpen(false);
     setTimeout(() => router.push(`/${locale}${redirectPath}`), UI_TRANSITION_DURATION);
   }, [onCancel, router, locale, redirectPath]);
+
+  const handleCancel = useCallback(() => {
+    if (hasChanges()) {
+      confirm({
+        variant: 'warning',
+        title: tCommon('confirm.warning.title') || 'Warning',
+        description: tCommon('messages.unsavedChanges') || 'You have unsaved changes',
+        confirmText: tCommon('confirm.warning.confirm') || 'Proceed',
+        cancelText: tCommon('confirm.cancel') || 'Cancel',
+        onConfirm: () => {
+          forceCancel();
+        },
+      });
+    } else {
+      forceCancel();
+    }
+  }, [hasChanges, confirm, forceCancel, tCommon]);
 
   const handleSubmit = async (e?: FormEvent) => {
     e?.preventDefault();
@@ -156,7 +200,7 @@ export function useBaseForm<T extends { isActive?: boolean }>({
         toast.success(t(successMessageKey, { name: String(name) }));
         onSuccess?.();
         router.refresh();
-        handleCancel();
+        forceCancel();
       } else {
         let errorMsg = response.message || tCommon('errors.saveFailed');
         if (response.message) {

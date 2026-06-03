@@ -9,6 +9,7 @@ export type ActionResponse<T> = {
   message?: string;
   data?: T;
   validationErrors?: Record<string, string>;
+  statusCode?: number;
 };
 
 export async function getAuthToken(): Promise<string | undefined> {
@@ -36,10 +37,12 @@ export async function performAction<T>(
     return { success: true, data };
   } catch (error: unknown) {
     let message = 'messages.errorOccurred';
+    let statusCode: number | undefined;
 
     // Attempt to extract translation key from ApiError
     if (error && typeof error === 'object' && 'name' in error && error.name === 'ApiError') {
-      const apiError = error as { responseText?: string; message?: string };
+      const apiError = error as { responseText?: string; message?: string; statusCode?: number };
+      statusCode = apiError.statusCode;
       if (
         apiError.responseText &&
         (apiError.responseText.startsWith('errors.') ||
@@ -53,6 +56,6 @@ export async function performAction<T>(
       message = error.message;
     }
 
-    return { success: false, message };
+    return { success: false, message, statusCode };
   }
 }

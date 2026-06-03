@@ -360,6 +360,10 @@ export interface OldFloorDetailApiResponse {
   carpetAreaSqMeter?: number;
   builtupAreaSqFeet?: number;
   builtupAreaSqMeter?: number;
+  oldCarpetAreaSqFeet?: number;
+  oldCarpetAreaSqMeter?: number;
+  oldBuiltupAreaSqFeet?: number;
+  oldBuiltupAreaSqMeter?: number;
 }
 
 export interface OldTaxDetailApiResponse {
