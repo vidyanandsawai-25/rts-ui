@@ -129,7 +129,7 @@ export default function CombinePropertyForm(props: CombinePropertyFormProps) {
   };
 
   const historyColumns = useMemo(() => getCombinePropertyHistoryColumns(
-    t as any, 
+    t as unknown as (key: string) => string, 
     (row) => router.push(`${pathname}/${row.propertyId}`)
   ), [t, router, pathname]);
 

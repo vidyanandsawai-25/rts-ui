@@ -159,6 +159,7 @@ export const getCombinePropertyHistoryColumns = (
       align: 'right',
       width: '110px',
       render: (val) => (
+        /* eslint-disable-next-line i18next/no-literal-string */
         <span className="font-semibold text-gray-800">
           ₹{Number(val ?? 0).toLocaleString('en-IN')}
         </span>
@@ -170,6 +171,7 @@ export const getCombinePropertyHistoryColumns = (
       align: 'right',
       width: '110px',
       render: (val) => (
+        /* eslint-disable-next-line i18next/no-literal-string */
         <span className="font-semibold text-gray-800">
           ₹{Number(val ?? 0).toLocaleString('en-IN')}
         </span>
@@ -180,7 +182,7 @@ export const getCombinePropertyHistoryColumns = (
 
   if (onPreviewClick) {
     columns.push({
-      key: '_action' as any,
+      key: '_action' as keyof PropertyRow,
       label: t('action') || 'Action',
       align: 'center',
       width: '60px',

@@ -19,7 +19,7 @@ export function CombinePropertyHistory({ historyDetails }: CombinePropertyHistor
   const router = useRouter();
   const t = useTranslations('combineProperty');
 
-  const historyColumns = useMemo(() => getCombinePropertyHistoryColumns(t as any), [t]);
+  const historyColumns = useMemo(() => getCombinePropertyHistoryColumns(t as unknown as (key: string) => string), [t]);
 
   const DrawerTitle = (
     <div className="flex items-center gap-3">
