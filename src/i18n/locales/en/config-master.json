@@ -39,7 +39,7 @@
                     "codeInvalid": "Code cannot be all zeros",
                     "codeMaxLength": "Code cannot exceed 50 characters",
                     "nameRequired": "Category name is required",
-                    "nameAlphanumeric": "Name contains unauthorized characters",
+                    "nameAlphanumeric": "Special characters are not allowed",
                     "nameMaxLength": "Name cannot exceed 100 characters",
                     "orderRequired": "Valid display order is required"
                 }
@@ -92,7 +92,7 @@
                     "codeInvalid": "Code cannot be all zeros",
                     "codeMaxLength": "Code cannot exceed 50 characters",
                     "nameRequired": "Config name is required",
-                    "nameAlphanumeric": "Name contains unauthorized characters",
+                    "nameAlphanumeric": "Special characters are not allowed",
                     "nameMaxLength": "Name cannot exceed 100 characters",
                     "dataTypeRequired": "Data type is required"
                 }
@@ -282,7 +282,7 @@
         "configsDisabled": "Configurations disabled successfully",
         "noConfigurationsFound": "No configurations found in this category",
         "configAlreadyInDesiredState": "All configurations are already in the desired state",
-        "unauthorized": "Unauthorized. Please log in.",
+        "unauthorized": "Session expired. Please log in.",
         "duplicateCode": "Code already exists. Please use a unique code.",
         "duplicateName": "Name already exists. Please use a unique name.",
         "duplicateRecord": "Record already exists.",

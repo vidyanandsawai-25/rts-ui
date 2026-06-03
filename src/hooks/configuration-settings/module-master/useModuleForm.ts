@@ -24,6 +24,8 @@ import {
   getValidationCount,
   checkModuleDuplicates,
 } from '@/lib/api/configuration-settings/module-master/module-master.validator';
+import { useConfirm } from '@/components/common/ConfirmProvider';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useModuleFormState } from './useModuleFormState';
 import { useModuleFormHandlers } from './useModuleFormHandlers';
 
@@ -43,6 +45,10 @@ export function useModuleForm({ id, initialData, initialExistingModules }: UseMo
 
   const t = useTranslations('moduleMaster');
   const tCommon = useTranslations('common');
+  const { confirm } = useConfirm();
+
+  const { canEdit, haveFullAccess } = usePermissions('MODULE_MASTER');
+  const hasWriteAccess = canEdit || haveFullAccess;
 
   const moduleId = id || null;
   const isEdit = Boolean(moduleId);
@@ -50,6 +56,15 @@ export function useModuleForm({ id, initialData, initialExistingModules }: UseMo
   const [existingModules, setExistingModules] = useState<ModuleMaster[]>(
     initialExistingModules || []
   );
+
+  useEffect(() => {
+    if (!hasWriteAccess) {
+      toast.error(
+        tCommon('errors.unauthorized') || 'You do not have permission to perform this action.'
+      );
+      router.push(`/${locale}/configuration-settings/module-master`);
+    }
+  }, [hasWriteAccess, router, locale, tCommon]);
 
   useEffect(() => {
     if (initialExistingModules !== undefined) {
@@ -112,18 +127,82 @@ export function useModuleForm({ id, initialData, initialExistingModules }: UseMo
     };
   }, [clearNavigationTimeout]);
 
+  const hasChanges = useCallback(() => {
+    const base = initialData
+      ? {
+          departmentId: initialData.departmentId ?? 0,
+          moduleCode: initialData.moduleCode ?? '',
+          moduleName: initialData.moduleName ?? '',
+          moduleNameLocal: initialData.moduleNameLocal ?? '',
+          moduleIcon: initialData.moduleIcon ?? '',
+          moduleLabel: initialData.moduleLabel ?? '',
+          moduleDescription: initialData.moduleDescription ?? '',
+          isActive: initialData.isActive,
+        }
+      : {
+          departmentId: 0,
+          moduleCode: '',
+          moduleName: '',
+          moduleNameLocal: '',
+          moduleIcon: '',
+          moduleLabel: '',
+          moduleDescription: '',
+          isActive: true,
+        };
+
+    return Object.keys(base).some((key) => {
+      const k = key as keyof typeof base;
+      const currentVal = formData[k];
+      const initialVal = base[k];
+
+      if (typeof currentVal === 'boolean' || typeof initialVal === 'boolean') {
+        return Boolean(currentVal) !== Boolean(initialVal);
+      }
+
+      if (typeof currentVal === 'number' || typeof initialVal === 'number') {
+        return Number(currentVal) !== Number(initialVal);
+      }
+
+      const normCurrent =
+        currentVal === undefined || currentVal === null ? '' : String(currentVal).trim();
+      const normInitial =
+        initialVal === undefined || initialVal === null ? '' : String(initialVal).trim();
+
+      return normCurrent !== normInitial;
+    });
+  }, [formData, initialData]);
+
   const handleCancel = useCallback(() => {
-    closeAndRoute();
-  }, [closeAndRoute]);
+    if (hasChanges()) {
+      confirm({
+        variant: 'warning',
+        title: tCommon('confirm.warning.title') || 'Warning',
+        description: tCommon('messages.unsavedChanges') || 'You have unsaved changes',
+        confirmText: tCommon('confirm.warning.confirm') || 'Proceed',
+        cancelText: tCommon('confirm.cancel') || 'Cancel',
+        onConfirm: () => {
+          closeAndRoute();
+        },
+      });
+    } else {
+      closeAndRoute();
+    }
+  }, [hasChanges, confirm, closeAndRoute, tCommon]);
 
   const handleSubmit = useCallback(
     async (e: FormEvent): Promise<void> => {
-      if (isSubmitting || isSubmittingRef.current) {
-        e.preventDefault();
+      e.preventDefault();
+
+      if (!hasWriteAccess) {
+        toast.error(
+          tCommon('errors.unauthorized') || 'You do not have permission to perform this action.'
+        );
         return;
       }
 
-      e.preventDefault();
+      if (isSubmitting || isSubmittingRef.current) {
+        return;
+      }
 
       const normalizedData = normalizeModuleData(formData);
       const validationErrors = validateModuleMaster(normalizedData);
@@ -209,6 +288,8 @@ export function useModuleForm({ id, initialData, initialExistingModules }: UseMo
       setIsSubmitting,
       t,
       existingModules,
+      hasWriteAccess,
+      tCommon,
     ]
   );
 
@@ -227,5 +308,6 @@ export function useModuleForm({ id, initialData, initialExistingModules }: UseMo
     t,
     tCommon,
     isEdit,
+    hasWriteAccess,
   };
 }
