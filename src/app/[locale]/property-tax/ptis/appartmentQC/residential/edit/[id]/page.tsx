@@ -6,7 +6,7 @@ import { getUseTypesPagedServer, getSubTypesPagedServer } from "@/lib/api/typeof
 import { 
   getApartmentQCDetailsSafe,
   getFloorQCByPropertyIdSafe
-} from "@/lib/api/appartmentQC.service";
+} from "@/lib/api/ptis/appartmentQC/appartmentQC.service";
 import {
   fetchRoomTypesAction,
   fetchAllPropertyTypesAction,
