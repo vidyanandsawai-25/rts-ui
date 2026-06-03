@@ -1,7 +1,7 @@
 import TaxationBreakdownForm from '@/components/modules/property-tax/ptis/QuickDataEntry/old-details/TaxationBreakdown/TaxationBreakdownForm';
 import { setRequestLocale, getTranslations } from 'next-intl/server';
-import { getOldTaxesDetailsAction } from './action';
-import { OldTaxesDetails } from '@/types/OldDetails/property-old-details.types';
+import { getOldTaxesDetailsAction, getYearMasterAction } from './action';
+import { OldTaxesDetails, YearMaster } from '@/types/OldDetails/property-old-details.types';
 
 interface PageProps {
     params: Promise<{
@@ -15,15 +15,21 @@ export default async function TaxationBreakdownPage({ params }: PageProps) {
     setRequestLocale(locale);
 
     let data: OldTaxesDetails | null = null;
+    let years: YearMaster[] = [];
 
     try {
-        const result = await getOldTaxesDetailsAction(Number(propertyId));
-        
-        if (!result.success) {
-            throw new Error(result.error || 'Failed to load old taxes details.');
+        const [taxesResult, yearsResult] = await Promise.all([
+            getOldTaxesDetailsAction(Number(propertyId)),
+            getYearMasterAction(1, -1)
+        ]);
+
+        if (!taxesResult.success) {
+            throw new Error(taxesResult.error || 'Failed to load old taxes details.');
         }
 
-        data = result.data ?? null;
+        data = taxesResult.data ?? null;
+        years = yearsResult.success ? (yearsResult.data ?? []) : [];
+
     } catch (error: unknown) {
         const t = await getTranslations({ locale, namespace: 'quickDataEntry' });
         const msg = error instanceof Error ? error.message.toLowerCase() : "";
@@ -40,9 +46,13 @@ export default async function TaxationBreakdownPage({ params }: PageProps) {
             throw new Error(t('oldDetails.error.failedToConnect'));
         }
         throw error;
-    }
+    }   
 
     return (
-        <TaxationBreakdownForm key={propertyId} initialData={data} />
+        <TaxationBreakdownForm
+            key={propertyId}
+            initialData={data}
+            yearOptions={years}
+        />
     );
 }

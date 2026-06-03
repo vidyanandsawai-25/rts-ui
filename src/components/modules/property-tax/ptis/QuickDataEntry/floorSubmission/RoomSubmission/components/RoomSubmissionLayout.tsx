@@ -67,6 +67,7 @@ export const RoomSubmissionLayout: React.FC<RoomSubmissionLayoutProps> = ({
             areaUnit={areaUnit}
             floorData={props.floorData}
             focusRefs={state.focusRefs}
+            roomTypeData={props.roomTypeData}
           />
 
           {rooms.length > 0 ? (
@@ -88,6 +89,7 @@ export const RoomSubmissionLayout: React.FC<RoomSubmissionLayoutProps> = ({
               selectedRoomForPlan={selectedRoomForPlan}
               onOpenOffset={offsetActions.handleOpenOffset}
               floorData={props.floorData}
+              roomTypeData={props.roomTypeData}
             />
           ) : (
             <div className="text-center py-16 text-gray-400">

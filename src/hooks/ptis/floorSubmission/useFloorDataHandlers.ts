@@ -132,7 +132,7 @@ export const useFloorDataHandlers = (params: {
             setEditingFloorForm(INITIAL_FORM_STATE);
           }
           toast.success(t(isAddingNewFloor ? 'floor.floorAddedSuccess' : 'floor.floorUpdatedSuccess'));
-          
+
           startTransition(() => {
             router.refresh();
             if (typeof window !== 'undefined') {
@@ -188,4 +188,3 @@ export const useFloorDataHandlers = (params: {
     isDeleting,
   };
 };
-

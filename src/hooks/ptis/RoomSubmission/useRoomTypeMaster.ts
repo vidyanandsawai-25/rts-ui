@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { getRoomTypesAction } from "@/lib/api/ptis/floorSubmission/room-master.action";
-import { RoomTypeResponse } from "@/types/floor-details.types";
+import { RoomTypeResponse } from "@/types/room-details.types";
 
 /**
  * Custom hook to fetch and manage room type master data

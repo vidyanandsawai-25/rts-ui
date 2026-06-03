@@ -2,18 +2,20 @@
 
 import React from "react";
 import { SearchSelect } from "@/components/common";
-import { useRoomTypeMaster } from "@/hooks/ptis/RoomSubmission/useRoomTypeMaster";
 import { useTranslations } from "next-intl";
+import { RoomTypeResponse } from "@/types/room-details.types";
 
 interface RoomTypeSelectProps {
     value: string | undefined;
     onChange: (value: string, id?: number) => void;
     className?: string;
     disabled?: boolean;
+    roomTypeData?: RoomTypeResponse[];
 }
 
-export const RoomTypeSelect: React.FC<RoomTypeSelectProps> = ({ value, onChange, className, disabled }) => {
-    const { roomTypeDetails, isLoading } = useRoomTypeMaster();
+export const RoomTypeSelect: React.FC<RoomTypeSelectProps> = ({ value, onChange, className, disabled, roomTypeData }) => {
+    const roomTypeDetails = roomTypeData || [];
+    const isLoading = false;
     const t = useTranslations("quickDataEntry");
 
     const options = [

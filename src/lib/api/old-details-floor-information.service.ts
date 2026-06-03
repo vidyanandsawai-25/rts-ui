@@ -85,7 +85,9 @@ export async function getOldFloorDetailsForFloorInformation(
     propertyId: number,
     pageNumber: number = 1,
     pageSize: number = 10,
-    searchTerm?: string
+    searchTerm?: string,
+    sortBy?: string,
+    sortOrder?: string
 ): Promise<OldFloorDetailsResponse> {
     const params = new URLSearchParams({
         PageNumber: pageNumber.toString(),
@@ -94,6 +96,13 @@ export async function getOldFloorDetailsForFloorInformation(
     if (searchTerm?.trim()) {
         params.append("SearchTerm", searchTerm.trim());
     }
+    if (sortBy?.trim()) {
+        params.append("SortBy", sortBy.trim());
+    }
+    if (sortOrder?.trim()) {
+        params.append("SortOrder", sortOrder.trim());
+    }
+
     const response = await apiClient.get<OldFloorDetailsResponse>(
         `/Property/${propertyId}/floor-details-old/paged?${params.toString()}`,
         {cache: 'no-store'}

@@ -1,6 +1,6 @@
 import type React from 'react';
 import { LookupData } from "./common-details.types";
-import { FloorData, RoomAPIResponse } from "./room-details.types";
+import { FloorData, RoomAPIResponse, RoomTypeResponse } from "./room-details.types";
 import { RenterDetailItem, RenterMastItem } from "./renter-details.types";
 
 /* -------------------------------------------------------------------------- */
@@ -69,17 +69,7 @@ export interface SubFloorResponse {
     [key: string]: unknown;
 }
 
-export interface RoomTypeResponse {
-    roomTypeId: number;
-    roomTypeCode: string;
-    roomTypeName?: string;
-    description: string;
-    roomTypeDescription?: string; // Some APIs return this instead of description
-    isActive: boolean;
-    createdDate: string;
-    updatedDate: string | null;
-    [key: string]: unknown;
-}
+
 
 /* -------------------------------------------------------------------------- */
 /*                                  LOOKUP TYPES                              */
@@ -249,6 +239,7 @@ export interface EditSidebarProps {
     useData: TypeOfUseApiItem[];
     subTypeData: SubTypeOfUseResponse[];
     subFloorData: SubFloorResponse[];
+    roomTypeData?: RoomTypeResponse[];
     floorOptions: string[] | FloorResponse[] | { success: boolean; error: string };
     constructionTypeOptions: string[] | ConstructionTypeResponse[] | { success: boolean; error: string };
     useOptions: string[] | TypeOfUseApiItem[] | { success: boolean; error: string };

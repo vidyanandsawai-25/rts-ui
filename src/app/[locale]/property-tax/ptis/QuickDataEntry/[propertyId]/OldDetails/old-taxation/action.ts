@@ -29,7 +29,7 @@ export async function updatePropertyOldDetailsAction(
   data: Partial<PropertyOldDetailsApiItem>, 
   locale: string
 ): Promise<ActionResult<PropertyOldDetailsApiItem | null>> {
-  const t = await getTranslations({ locale });
+  const t = await getTranslations({ locale, namespace: 'quickDataEntry' });
 
   try {
     // 1. Validate propertyId
@@ -45,7 +45,7 @@ export async function updatePropertyOldDetailsAction(
     if (hasErrors(validationErrors)) {
       return {
         success: false,
-        error: t('common.validationError')
+        error: t('oldDetails.common.validationError')
       };
     }
 
@@ -54,7 +54,6 @@ export async function updatePropertyOldDetailsAction(
 
     // 4. Update via service
     const result = await updatePropertyOldDetails(propertyId, sanitizedData);
-    
     revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/OldDetails/old-taxation`);
     
     return {

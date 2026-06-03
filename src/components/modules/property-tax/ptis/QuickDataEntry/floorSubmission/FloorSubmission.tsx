@@ -151,7 +151,8 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
         floorData={editingFloorForm}
         initialFloorId={editingFloorForm.floorId || editingFloorForm.id}
         initialPropertyID={props.initialPropertyID}
-        existingRooms={(editingFloorForm.roomWiseSubmissionDetails as RoomAPIResponse[]) || []}
+        existingRooms={(editingFloorForm?.roomWiseSubmissionDetails as RoomAPIResponse[]) || []}
+        roomTypeData={props?.roomTypeData}
         onUpdate={(data) => {
           const areaSqM = data.totalAreaSqM;
           const builtUpSqM = data.builtUpAreaSqM;
