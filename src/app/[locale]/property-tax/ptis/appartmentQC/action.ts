@@ -702,10 +702,10 @@ export async function updateRoomWiseSubmissionAction(
         // If offset has an id, it's an existing record (update), otherwise it's new (create)
         const isExisting = offset.id !== undefined && offset.id !== null && offset.id > 0;
         return {
+          ...offset,
           isActive: true,
           ...(isExisting ? { updatedBy: userId } : { createdBy: userId }),
           roomWiseSubmissionId: id,
-          ...offset
         };
       })
     });
