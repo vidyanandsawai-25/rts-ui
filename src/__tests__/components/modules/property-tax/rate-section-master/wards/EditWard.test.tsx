@@ -28,9 +28,9 @@ vi.mock("sonner", () => ({
 }));
 
 // Mock actions
-const mockUpdateRateSectionDetailAction = vi.fn();
+const mockUpdateWardMasterAction = vi.fn();
 vi.mock("@/app/[locale]/property-tax/rate-section-master/actions", () => ({
-  updateRateSectionDetailAction: (id: number, payload: unknown) => mockUpdateRateSectionDetailAction(id, payload),
+  updateWardMasterAction: (wardId: number, payload: unknown) => mockUpdateWardMasterAction(wardId, payload),
 }));
 
 // Mock common components
@@ -227,7 +227,7 @@ describe("EditWard", () => {
   });
 
   it("saves ward with updated active status", async () => {
-    mockUpdateRateSectionDetailAction.mockResolvedValue({ success: true });
+    mockUpdateWardMasterAction.mockResolvedValue({ success: true });
     
     render(<EditWard {...defaultProps} />);
     
@@ -239,17 +239,20 @@ describe("EditWard", () => {
     fireEvent.click(screen.getByTestId("save-button"));
     
     await waitFor(() => {
-      expect(mockUpdateRateSectionDetailAction).toHaveBeenCalledWith(
-        1,
+      expect(mockUpdateWardMasterAction).toHaveBeenCalledWith(
+        101, // ward master id (from initialWardData.id)
         expect.objectContaining({
           isActive: false,
+          wardNo: "W001",
+          description: "Ward One Description",
+          zoneId: 1,
         })
       );
     });
   });
 
   it("shows success toast on successful update", async () => {
-    mockUpdateRateSectionDetailAction.mockResolvedValue({ success: true });
+    mockUpdateWardMasterAction.mockResolvedValue({ success: true });
     const { toast } = await import("sonner");
     
     render(<EditWard {...defaultProps} />);
@@ -261,7 +264,7 @@ describe("EditWard", () => {
   });
 
   it("shows error toast on failed update", async () => {
-    mockUpdateRateSectionDetailAction.mockResolvedValue({ 
+    mockUpdateWardMasterAction.mockResolvedValue({ 
       success: false, 
       error: "Update failed" 
     });
@@ -276,7 +279,7 @@ describe("EditWard", () => {
   });
 
   it("closes drawer and refreshes on successful update", async () => {
-    mockUpdateRateSectionDetailAction.mockResolvedValue({ success: true });
+    mockUpdateWardMasterAction.mockResolvedValue({ success: true });
     
     render(<EditWard {...defaultProps} />);
     fireEvent.click(screen.getByTestId("save-button"));
@@ -310,7 +313,7 @@ describe("EditWard", () => {
     fireEvent.click(screen.getByTestId("save-button"));
     
     await waitFor(() => {
-      expect(mockUpdateRateSectionDetailAction).not.toHaveBeenCalled();
+      expect(mockUpdateWardMasterAction).not.toHaveBeenCalled();
     });
   });
 
