@@ -48,8 +48,8 @@ describe("useLinkWardActions", () => {
   ];
 
   const mockWardAssignments = {
-    W1: { rateSectionNo: "RS1", id: 1, description: "Rate Section One" },
-    W2: { rateSectionNo: "RS2", id: 2, description: "Rate Section Two" },
+    W1: { rateSectionNo: "1", id: 1, description: "Rate Section One" },
+    W2: { rateSectionNo: "2", id: 2, description: "Rate Section Two" },
   };
 
   const mockRouter = {
@@ -64,7 +64,7 @@ describe("useLinkWardActions", () => {
   const defaultParams = {
     rates: mockRates,
     allRateSections: mockRates,
-    selectedZoneNo: "RS1",
+    selectedZoneNo: "1",
     wardAssignments: mockWardAssignments,
     checkedAvailable: new Set<string>(),
     selectedWards: [],
@@ -130,8 +130,8 @@ describe("useLinkWardActions", () => {
       const { result } = renderHook(() =>
         useLinkWardActions({
           ...defaultParams,
-          selectedZoneNo: "RS1",
-          checkedAvailable: new Set(["W2"]), // W2 is in RS2
+          selectedZoneNo: "1",
+          checkedAvailable: new Set(["W2"]), // W2 is in rate section 2
         })
       );
 
@@ -158,7 +158,7 @@ describe("useLinkWardActions", () => {
       const { result } = renderHook(() =>
         useLinkWardActions({
           ...defaultParams,
-          selectedZoneNo: "RS1",
+          selectedZoneNo: "1",
           checkedAvailable: new Set(["W3"]), // New ward, not assigned
         })
       );
@@ -191,7 +191,7 @@ describe("useLinkWardActions", () => {
       const { result } = renderHook(() =>
         useLinkWardActions({
           ...defaultParams,
-          selectedZoneNo: "RS1",
+          selectedZoneNo: "1",
           checkedAvailable: new Set(["W3", "W4"]),
         })
       );
@@ -212,7 +212,7 @@ describe("useLinkWardActions", () => {
       const { result } = renderHook(() =>
         useLinkWardActions({
           ...defaultParams,
-          selectedZoneNo: "RS1",
+          selectedZoneNo: "1",
           checkedAvailable: new Set(["W3"]),
         })
       );
@@ -233,7 +233,7 @@ describe("useLinkWardActions", () => {
       const { result } = renderHook(() =>
         useLinkWardActions({
           ...defaultParams,
-          selectedZoneNo: "RS1",
+          selectedZoneNo: "1",
           checkedAvailable: new Set(["W3"]),
         })
       );
@@ -294,7 +294,7 @@ describe("useLinkWardActions", () => {
       const { result } = renderHook(() =>
         useLinkWardActions({
           ...defaultParams,
-          selectedZoneNo: "RS1",
+          selectedZoneNo: "1",
           checkedSelected: new Set(["W1"]),
         })
       );
@@ -322,7 +322,7 @@ describe("useLinkWardActions", () => {
       const { result } = renderHook(() =>
         useLinkWardActions({
           ...defaultParams,
-          selectedZoneNo: "RS1",
+          selectedZoneNo: "1",
           checkedSelected: new Set(["W1"]),
         })
       );
@@ -343,7 +343,7 @@ describe("useLinkWardActions", () => {
       const { result } = renderHook(() =>
         useLinkWardActions({
           ...defaultParams,
-          selectedZoneNo: "RS1",
+          selectedZoneNo: "1",
           checkedSelected: new Set(["W1"]),
         })
       );
@@ -376,7 +376,7 @@ describe("useLinkWardActions", () => {
       const { result } = renderHook(() =>
         useLinkWardActions({
           ...defaultParams,
-          selectedZoneNo: "RS1",
+          selectedZoneNo: "1",
           checkedAvailable: new Set(["W3"]),
           setSelectedWards,
           setSelectedWardsTotalCount,
@@ -410,7 +410,7 @@ describe("useLinkWardActions", () => {
       const { result } = renderHook(() =>
         useLinkWardActions({
           ...defaultParams,
-          selectedZoneNo: "RS1",
+          selectedZoneNo: "1",
           checkedSelected: new Set(["W1"]),
           selectedWards: ["W1"],
           setSelectedWards,

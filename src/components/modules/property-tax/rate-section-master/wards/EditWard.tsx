@@ -7,7 +7,7 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Drawer } from "@/components/common/Drawer";
 import { SaveButton, CancelButton, ToggleSwitch, Input, ValidationMessage } from "@/components/common";
-import { updateRateSectionDetailAction } from "@/app/[locale]/property-tax/rate-section-master/actions";
+import { updateRateSectionDetailAction, getWardByIdAction } from "@/app/[locale]/property-tax/rate-section-master/actions";
 import { cn } from "@/lib/utils/cn";
 import { EditWardData, EditWardProps, EditWardErrors } from "@/types/rateSectionMaster.types";
 
@@ -20,16 +20,42 @@ export default function EditWard({ open, onClose, id, wardId, sections, initialW
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    function loadWardData() {
-      if (open && id && wardId) {
+    async function loadWardData() {
+      if (open && id) {
         const ward = sections.find(s => String(s.id) === id);
         if (ward) {
-          // Use ward.description from RateSectionDetails first, fallback to Ward Master description
-          const wardDescription = (ward.description as string) || initialWardData?.description || '';
-          setEditData({ rateSectionId: ward.rateSectionId ?? 0, id: ward.wardId ?? 0, wardNo: ward.wardNo ?? '',
-            description: wardDescription, isActive: ward.isActive ?? false });
+          // Get wardId from ward object or URL param - handle case-insensitive property names
+          const rawWardId = ward.wardId ?? (ward as Record<string, unknown>)["WardId"];
+          const actualWardId = typeof rawWardId === 'number' ? rawWardId : (wardId ? Number(wardId) : 0);
+          
+          // Try to get description from initialWardData first
+          let wardDescription = initialWardData?.description || '';
+          
+          // If no description from initialWardData, try to fetch from Ward master
+          if (!wardDescription && actualWardId) {
+            try {
+              const wardResult = await getWardByIdAction(actualWardId);
+              if (wardResult.success && wardResult.data) {
+                wardDescription = wardResult.data.description || '';
+              }
+            } catch {
+              // Silent fail - use empty description
+            }
+          }
+          
+          setEditData({ 
+            rateSectionId: ward.rateSectionId ?? 0, 
+            id: Number(actualWardId) || 0, 
+            wardNo: ward.wardNo ?? '',
+            description: wardDescription, 
+            isActive: ward.isActive ?? false 
+          });
         }
-      } else if (!open) { setEditData(null); setErrors({}); setTouched({}); }
+      } else if (!open) { 
+        setEditData(null); 
+        setErrors({}); 
+        setTouched({}); 
+      }
     }
     loadWardData();
   }, [open, id, wardId, sections, initialWardData]);

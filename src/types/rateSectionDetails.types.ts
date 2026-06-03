@@ -378,7 +378,7 @@ export interface AvailableWardsProps {
  */
 export interface ViewWardsProps {
   viewAllWards: RateSectionWardItem[];
-  wardAssignments: Record<string, { rateSectionNo: string; description?: string }>;
+  wardAssignments: Record<string, { rateSectionNo: string; id: number; description?: string }>;
   selectedWards: string[];
   viewAllSearch: string;
   viewWardPage: number;
@@ -425,7 +425,7 @@ export interface LinkWardTabsProps {
   totalUnassignedForHeader: number;
   totalViewAllCount: number;
   allAvailableWards: RateSectionWardItem[];
-  wardAssignments: Record<string, { rateSectionNo: string; description?: string }>;
+  wardAssignments: Record<string, { rateSectionNo: string; id: number; description?: string }>;
   selectedWards: string[];
   availableSearch: string;
   availablePage: number;

@@ -22,8 +22,9 @@ export function useRateSectionList({
   // This ensures counts persist even when a rate section isn't currently selected
   const [wardCounts, setWardCounts] = useState<Record<string, number>>(initialWardCounts);
   
-  // Track search value - needs to sync with URL for back/forward navigation
-  const [searchValue, setSearchValue] = useState(initialSearch);
+  // Track local search value - only used while user is typing
+  const [localSearchValue, setLocalSearchValue] = useState(initialSearch);
+  const [isUserTyping, setIsUserTyping] = useState(false);
   
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
@@ -45,29 +46,37 @@ export function useRateSectionList({
     setWardCounts(prev => ({ ...prev, ...initialWardCounts }));
   }
 
-  // Sync searchValue with URL changes (back/forward navigation)
-  // Only update if initialSearch differs from current searchValue
-  if (initialSearch !== searchValue && searchParams.get("q") === initialSearch) {
-    setSearchValue(initialSearch);
-  }
+  // The effective search value: use local while typing, URL otherwise
+  const searchValue = isUserTyping ? localSearchValue : initialSearch;
 
+  // Debounced URL update when user types
   useEffect(() => {
+    if (!isUserTyping) return;
+    
     const timer = setTimeout(() => {
       const currentQ = searchParams?.get("q") || "";
-      if (searchValue.trim() !== currentQ.trim()) {
+      if (localSearchValue.trim() !== currentQ.trim()) {
         const params = new URLSearchParams(searchParams?.toString());
-        if (searchValue.trim()) {
-          params.set("q", searchValue.trim());
+        if (localSearchValue.trim()) {
+          params.set("q", localSearchValue.trim());
         } else {
           params.delete("q");
         }
         params.set("ratesectionpage", "1");
         router.push(`${pathname}?${params.toString()}`);
       }
+      // Reset typing flag after URL is updated
+      setIsUserTyping(false);
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [searchValue, router, pathname, searchParams]);
+  }, [localSearchValue, isUserTyping, router, pathname, searchParams]);
+
+  // Custom setter that marks user as typing
+  const handleSearchChange = useCallback((value: string) => {
+    setIsUserTyping(true);
+    setLocalSearchValue(value);
+  }, []);
 
   const changePageSize = useCallback((size: number) => {
     const params = new URLSearchParams(searchParams?.toString());
@@ -89,7 +98,7 @@ export function useRateSectionList({
     deletingId,
     setDeletingId,
     searchValue,
-    setSearchValue,
+    setSearchValue: handleSearchChange,
     totalPages,
     effectivePageSize,
     changePageSize,

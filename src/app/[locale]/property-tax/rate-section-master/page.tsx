@@ -1,6 +1,6 @@
 
 import RateSectionContent from '@/components/modules/property-tax/rate-section-master/RateSectionContent';
-import { getRateSectionsAction, getWardsByRateAction, getWardTotalCountAction, getRateSectionTotalCountAction, getRateSectionByNoAction, getAllRateSectionDetailsAction, getAllWardsForLinkAction, getRateSectionDetailsByIdAction, getSelectedWardsWithCountAction, getWardsPagedWithSearchAction, getWardByIdAction } from './actions';
+import { getRateSectionsAction, getWardsByRateAction, getWardTotalCountAction, getRateSectionTotalCountAction, getRateSectionByIdAction, getAllRateSectionDetailsAction, getAllWardsForLinkAction, getRateSectionDetailsByIdAction, getSelectedWardsWithCountAction, getWardsPagedWithSearchAction, getWardByIdAction } from './actions';
 import { ConfirmProvider } from '@/components/common';
 import type { SectionItem, RateItem } from '@/types/rateSectionMaster.types';
 import type { WardItem } from '@/types/wardMaster.types';
@@ -159,11 +159,11 @@ export default async function Page({ searchParams }: PageProps) {
     }
 
     // Build ward assignments map (wardNo -> rate section info)
-    const rateSectionIdToInfo: Record<number, { rateSectionNo: string; description: string }> = {};
+    const rateSectionIdToInfo: Record<number, { rateSectionId: number; description: string }> = {};
     allRateSectionsForLabels.forEach(rate => {
-      if (rate.id && rate.rateSectionNo) {
+      if (rate.id) {
         rateSectionIdToInfo[rate.id] = {
-          rateSectionNo: rate.rateSectionNo,
+          rateSectionId: rate.id,
           description: rate.description || ""
         };
       }
@@ -176,12 +176,10 @@ export default async function Page({ searchParams }: PageProps) {
       
       if (wardNo && rateSectionId && typeof wardNo === 'string') {
         const rateInfo = rateSectionIdToInfo[rateSectionId];
-        const rateSectionNo = rateInfo?.rateSectionNo || detail.rateSectionNo || detail["RateSectionNo"] || String(rateSectionId);
+        const rateSectionIdStr = String(rateInfo?.rateSectionId || rateSectionId);
         const description = rateInfo?.description || "";
-        if (typeof rateSectionNo === 'string') {
-          // IMPORTANT: Store the RateSectionDetails PK (detailId) here, not the rateSectionId
-          ssrWardAssignmentsMap[wardNo] = { rateSectionNo, id: detailId || 0, description };
-        }
+        // IMPORTANT: Store the RateSectionDetails PK (detailId) here, not the rateSectionId
+        ssrWardAssignmentsMap[wardNo] = { rateSectionNo: rateSectionIdStr, id: detailId || 0, description };
       }
     });
   }
@@ -194,31 +192,31 @@ export default async function Page({ searchParams }: PageProps) {
 
   if (paramZone) {
     const zoneInCurrentPage = allZones.find(
-      (z: RateItem) => String(z.rateSectionNo) === String(paramZone)
+      (z: RateItem) => String(z.id) === String(paramZone)
     );
 
     if (zoneInCurrentPage) {
       fetchId = zoneInCurrentPage.id;
       selectedZoneLabel = zoneInCurrentPage.description
-        ? `${zoneInCurrentPage.rateSectionNo} - ${zoneInCurrentPage.description}`
-        : zoneInCurrentPage.rateSectionNo;
+        ? `${zoneInCurrentPage.id} - ${zoneInCurrentPage.description}`
+        : String(zoneInCurrentPage.id);
     } else {
-      const zoneData = await getRateSectionByNoAction(paramZone);
-      if (zoneData) {
-        fetchId = zoneData.id;
-        selectedZoneNo = zoneData.rateSectionNo ?? null;
-        selectedZoneLabel = zoneData.description
-          ? `${zoneData.rateSectionNo} - ${zoneData.description}`
-          : zoneData.rateSectionNo ?? undefined;
+      const zoneData = await getRateSectionByIdAction(Number(paramZone));
+      if (zoneData.success && zoneData.data) {
+        fetchId = zoneData.data.id;
+        selectedZoneNo = String(zoneData.data.id) ?? null;
+        selectedZoneLabel = zoneData.data.description
+          ? `${zoneData.data.id} - ${zoneData.data.description}`
+          : String(zoneData.data.id) ?? undefined;
       }
     }
   } else if (allZones.length > 0) {
     const firstZone = allZones[0];
-    selectedZoneNo = firstZone.rateSectionNo ?? null;
+    selectedZoneNo = String(firstZone.id) ?? null;
     fetchId = firstZone.id;
     selectedZoneLabel = firstZone.description
-      ? `${firstZone.rateSectionNo} - ${firstZone.description}`
-      : firstZone.rateSectionNo;
+      ? `${firstZone.id} - ${firstZone.description}`
+      : String(firstZone.id);
   }
 
   // Fetch wards for the selected rate section (SSR)
@@ -270,9 +268,9 @@ export default async function Page({ searchParams }: PageProps) {
   const initialWardCounts: Record<string, number> = {};
   if (fetchId) {
     const selectedZone = allZones.find((zone: RateItem) => zone.id === fetchId);
-    const selectedZoneNo = selectedZone?.rateSectionNo ?? '';
-    if (selectedZoneNo) {
-      initialWardCounts[selectedZoneNo] = initialWardsTotalCount;
+    const selectedZoneId = String(selectedZone?.id ?? '');
+    if (selectedZoneId) {
+      initialWardCounts[selectedZoneId] = initialWardsTotalCount;
     }
   }
 
