@@ -146,7 +146,7 @@ export async function getRoomTypeOptions(): Promise<string[]> {
         getRoomTypeData,
         () => 0,
         item => {
-            const name = item.roomTypeName || item.description || '';
+            const name = item.roomTypeName || item.description || item.roomTypeDescription || '';
             const code = item.roomTypeCode || String(item.roomTypeId || getPropertySafely(item, ['id', 'ID']));
             return name || code;
         }

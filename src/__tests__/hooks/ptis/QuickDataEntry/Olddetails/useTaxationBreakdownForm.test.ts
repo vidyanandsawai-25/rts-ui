@@ -142,9 +142,10 @@ describe('useTaxationBreakdownForm', () => {
   });
 
   it('should allow selecting a future year but register validation error under yearMaster', () => {
+    const futureYear = new Date().getFullYear() + 1;
     const mockYearOptions = [
       { id: 1, year: 2024, yearCode: '2024-25', isActive: true, status: 'active', startDate: '', endDate: '', description: '' },
-      { id: 2, year: 2027, yearCode: '2027-28', isActive: true, status: 'active', startDate: '', endDate: '', description: '' }, // future year relative to 2026
+      { id: 2, year: futureYear, yearCode: `${futureYear}-${String(futureYear + 1).slice(2)}`, isActive: true, status: 'active', startDate: '', endDate: '', description: '' },
     ];
 
     const { result } = renderHook(() => useTaxationBreakdownForm(mockInitialData, mockYearOptions));

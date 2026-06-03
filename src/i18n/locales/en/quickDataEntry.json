@@ -287,8 +287,8 @@
             "fetchFloorById": "Failed to fetch floor details. Please try again later.",
             "fetchQuickDataEntry": "Failed to fetch quick data entry. Please try again later.",
             "fetchPropertyDetails": "Failed to fetch property details. Please try again later.",
-            "fetchFloorSubmissions": "Failed to fetch floor submissions. Please try again later.",
-            "fetchRoomTypes": "Failed to fetch Room types. Please try again later."
+            "fetchFloorSubmissions": "Failed to fetch floor submissions. Please try again later.",            
+            "fetchRoomTypes": "Failed to fetch room types. Please try again later."
         }
     },
     "property": {

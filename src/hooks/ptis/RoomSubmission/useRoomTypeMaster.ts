@@ -26,7 +26,7 @@ export const useRoomTypeMaster = () => {
           if (result.success && result.data) {
             setRoomTypeDetails(result.data);
             const options = result.data.map(item => {
-              const name = item.roomTypeName || item.description || (item.roomTypeDescription as string) || '';
+              const name = item.roomTypeName || item.description || item.roomTypeDescription || '';
               const code = item.roomTypeCode || String(item.roomTypeId || '');
               return name || code;
             });
