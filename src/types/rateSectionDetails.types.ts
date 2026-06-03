@@ -259,6 +259,8 @@ export interface EditWardData {
   wardNo: string;
   description: string;
   isActive: boolean;
+  zoneId: number;
+  sequenceNo: number | null;
 }
 
 /**

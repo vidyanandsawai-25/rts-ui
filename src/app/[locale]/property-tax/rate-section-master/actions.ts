@@ -19,7 +19,7 @@ import {
   bulkCreateRateSectionDetails,
   getWardsByRateSectionId,
 } from "@/lib/api/rate-section-master/rateSectionDetails.services";
-import { getWards, getWardById } from "@/lib/api/ward.services";
+import { getWards, getWardById, updateWard } from "@/lib/api/ward.services";
 import {
   ActionResponse,
   SectionItem,
@@ -27,7 +27,7 @@ import {
   ActionResult,
   RateSectionDetailPayload,
 } from "@/types/rateSectionMaster.types";
-import type { WardItem } from "@/types/wardMaster.types";
+import type { WardItem, UpdateWardPayload } from "@/types/wardMaster.types";
 import { apiClient } from "@/services/api.service";
 import { getUserIdFromCookies } from "@/lib/utils/cookie";
 
@@ -817,6 +817,57 @@ export async function getWardByIdAction(
     return { success: true, data };
   } catch (_error) {
     return { success: false, message: "Failed to fetch ward" };
+  }
+}
+
+/**
+ * Updates a ward in the Ward master.
+ * Used when editing ward properties like wardNo, description, isActive.
+ * API: PUT /api/Ward/{id}
+ * @param wardId - The numeric ward ID
+ * @param data - Update payload with ward details
+ * @returns Success status with updated ward data
+ */
+export async function updateWardMasterAction(
+  wardId: number,
+  data: {
+    wardNo: string;
+    zoneId: number;
+    description: string;
+    sequenceNo?: number | null;
+    isActive: boolean;
+  }
+): Promise<ActionResult<WardItem>> {
+  try {
+    if (!Number.isFinite(wardId) || wardId <= 0) {
+      return { success: false, message: "Valid Ward ID is required", statusCode: 400 };
+    }
+
+    const payload: UpdateWardPayload = {
+      wardNo: data.wardNo,
+      zoneId: data.zoneId,
+      description: data.description,
+      sequenceNo: typeof data.sequenceNo === "number" ? data.sequenceNo : undefined,
+      isActive: data.isActive,
+      updatedBy: 0, // Will be set by backend based on auth
+    };
+
+    const apiResponse = await updateWard(wardId, payload);
+
+    if (!apiResponse || apiResponse.success === false) {
+      const firstError = Array.isArray(apiResponse?.errors) ? apiResponse.errors[0] : apiResponse?.errors || "";
+      const errorMessage = apiResponse?.message || firstError || "Failed to update ward";
+      return { success: false, message: errorMessage };
+    }
+
+    // Revalidate all locale variants
+    for (const locale of locales) {
+      revalidatePath(`/${locale}/property-tax/rate-section-master`, "page");
+    }
+
+    return { success: true, data: apiResponse.items ?? undefined, message: "Ward updated successfully" };
+  } catch (_error) {
+    return { success: false, message: "Failed to update ward" };
   }
 }
 

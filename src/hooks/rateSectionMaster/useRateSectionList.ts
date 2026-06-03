@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 
 interface UseRateSectionListParams {
@@ -22,6 +22,9 @@ export function useRateSectionList({
   // This ensures counts persist even when a rate section isn't currently selected
   const [wardCounts, setWardCounts] = useState<Record<string, number>>(initialWardCounts);
   
+  // Track previous initialWardCounts to detect changes
+  const prevWardCountsRef = useRef<Record<string, number>>(initialWardCounts);
+  
   // Local search value - ALWAYS the source of truth for the input display
   const [searchValue, setSearchValue] = useState(initialSearch);
   
@@ -33,20 +36,21 @@ export function useRateSectionList({
   const effectivePageSize = pageSize || 10;
   const totalPages = Math.ceil(totalCount / effectivePageSize);
 
-  // Merge new ward counts into existing state (accumulate over time)
-  // Uses useMemo to avoid creating new objects on every render
-  const shouldUpdateWardCounts = useMemo(() => {
-    if (!initialWardCounts || Object.keys(initialWardCounts).length === 0) return false;
-    // Check if any new counts differ from current state
-    return Object.keys(initialWardCounts).some(
-      key => wardCounts[key] !== initialWardCounts[key]
-    );
-  }, [initialWardCounts, wardCounts]);
-
   // Update ward counts when new data arrives
-  if (shouldUpdateWardCounts) {
-    setWardCounts(prev => ({ ...prev, ...initialWardCounts }));
-  }
+  // Moved to useEffect to avoid calling setState during render
+  useEffect(() => {
+    if (!initialWardCounts || Object.keys(initialWardCounts).length === 0) return;
+    
+    // Check if initialWardCounts has actually changed by comparing with previous value
+    const hasChanges = Object.keys(initialWardCounts).some(
+      key => prevWardCountsRef.current[key] !== initialWardCounts[key]
+    );
+    
+    if (hasChanges) {
+      prevWardCountsRef.current = initialWardCounts;
+      setWardCounts(prev => ({ ...prev, ...initialWardCounts }));
+    }
+  }, [initialWardCounts]); // Only depend on initialWardCounts, not wardCounts
 
   // Sync local state with URL when initialSearch changes externally (e.g., browser back/forward)
   // Only sync if we're not currently updating the URL ourselves

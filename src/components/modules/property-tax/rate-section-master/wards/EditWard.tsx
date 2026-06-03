@@ -7,7 +7,7 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Drawer } from "@/components/common/Drawer";
 import { SaveButton, CancelButton, ToggleSwitch, Input, ValidationMessage } from "@/components/common";
-import { updateRateSectionDetailAction, getWardByIdAction } from "@/app/[locale]/property-tax/rate-section-master/actions";
+import { updateWardMasterAction, getWardByIdAction } from "@/app/[locale]/property-tax/rate-section-master/actions";
 import { cn } from "@/lib/utils/cn";
 import { EditWardData, EditWardProps, EditWardErrors } from "@/types/rateSectionMaster.types";
 
@@ -20,6 +20,8 @@ export default function EditWard({ open, onClose, id, wardId, sections, initialW
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
+    let isMounted = true; // Cancellation flag to prevent state updates after unmount
+    
     async function loadWardData() {
       if (open && id) {
         const ward = sections.find(s => String(s.id) === id);
@@ -30,26 +32,36 @@ export default function EditWard({ open, onClose, id, wardId, sections, initialW
           
           // Try to get description from initialWardData first
           let wardDescription = initialWardData?.description || '';
+          let zoneId = initialWardData?.zoneId ?? 0;
+          let sequenceNo = initialWardData?.sequenceNo ?? null;
           
           // If no description from initialWardData, try to fetch from Ward master
           if (!wardDescription && actualWardId) {
             try {
               const wardResult = await getWardByIdAction(actualWardId);
-              if (wardResult.success && wardResult.data) {
+              // Only update state if component is still mounted
+              if (isMounted && wardResult.success && wardResult.data) {
                 wardDescription = wardResult.data.description || '';
+                zoneId = wardResult.data.zoneId ?? zoneId;
+                sequenceNo = wardResult.data.sequenceNo ?? sequenceNo;
               }
             } catch {
               // Silent fail - use empty description
             }
           }
           
-          setEditData({ 
-            rateSectionId: ward.rateSectionId ?? 0, 
-            id: Number(actualWardId) || 0, 
-            wardNo: ward.wardNo ?? '',
-            description: wardDescription, 
-            isActive: ward.isActive ?? false 
-          });
+          // Only set state if component is still mounted
+          if (isMounted) {
+            setEditData({ 
+              rateSectionId: ward.rateSectionId ?? 0, 
+              id: Number(actualWardId) || 0, 
+              wardNo: ward.wardNo ?? '',
+              description: wardDescription, 
+              isActive: ward.isActive ?? false,
+              zoneId: zoneId,
+              sequenceNo: sequenceNo
+            });
+          }
         }
       } else if (!open) { 
         setEditData(null); 
@@ -58,6 +70,11 @@ export default function EditWard({ open, onClose, id, wardId, sections, initialW
       }
     }
     loadWardData();
+    
+    // Cleanup: set flag to false when effect is cleaned up
+    return () => {
+      isMounted = false;
+    };
   }, [open, id, wardId, sections, initialWardData]);
 
   const validate = (): boolean => {
@@ -78,9 +95,13 @@ export default function EditWard({ open, onClose, id, wardId, sections, initialW
     if (!validate()) { toast.error(t('error.fixValidation')); return; }
     setLoading(true);
     try {
-      const result = await updateRateSectionDetailAction(Number(id), {
-        isActive: editData.isActive, updatedBy: 0, rateSectionId: editData.rateSectionId, wardId: editData.id,
-        wardNo: editData.wardNo, description: editData.description
+      // Update Ward master data (wardNo, description, isActive)
+      const result = await updateWardMasterAction(editData.id, {
+        wardNo: editData.wardNo,
+        zoneId: editData.zoneId,
+        description: editData.description,
+        sequenceNo: editData.sequenceNo,
+        isActive: editData.isActive
       });
       if (result.success) { toast.success(t('wards.updateSuccess')); onClose(); router.refresh(); }
       else toast.error(result.message || result.error || t('wards.updateError'));
