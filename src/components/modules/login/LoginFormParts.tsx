@@ -52,7 +52,7 @@ function FormSubmitButton({
 
 /**
  * Full-form loading overlay while the server action is in flight (useFormStatus).
- * Must be rendered inside a &lt;form&gt;.
+ * Must be rendered inside a <form>.
  */
 export function FormLoadingOverlay() {
   const { pending } = useFormStatus();

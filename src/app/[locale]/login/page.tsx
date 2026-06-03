@@ -3,6 +3,7 @@ import { setRequestLocale } from 'next-intl/server';
 import { getTranslations } from 'next-intl/server';
 import type { LoginFormCopy, LoginPageProps } from '@/types/login.types';
 import { fetchLoginBrandingAction } from '@/app/[locale]/login/actions';
+import { resolveLoginPageErrorI18nSuffix } from '@/lib/utils/login-page-errors';
 
 export default async function LoginPage({ params, searchParams }: LoginPageProps) {
   const { locale } = await params;
@@ -19,26 +20,19 @@ export default async function LoginPage({ params, searchParams }: LoginPageProps
         : '';
 
   let errorMessage = '';
-  const msgParam = resolvedSearchParams?.message;
-  if (typeof msgParam === 'string') {
-    errorMessage = msgParam;
-  }
-
-  const errorTranslationKeyByCode: Record<string, string> = {
-    sessionExpired: 'login.errors.sessionExpired',
-    invalidToken: 'login.errors.invalidToken',
-  };
-
   const errParam = resolvedSearchParams?.error;
+  const msgParam = resolvedSearchParams?.message;
   const errStr =
     typeof errParam === 'string' ? errParam : Array.isArray(errParam) ? errParam[0] : undefined;
-  if (!errorMessage && errStr) {
-    const mappedKey = errorTranslationKeyByCode[errStr];
-    const keyToTry = mappedKey ?? `login.errors.${errStr}`;
+  const msgStr =
+    typeof msgParam === 'string' ? msgParam : Array.isArray(msgParam) ? msgParam[0] : undefined;
+
+  const i18nSuffix = resolveLoginPageErrorI18nSuffix(errStr, msgStr);
+  if (i18nSuffix) {
     try {
-      errorMessage = t(keyToTry);
+      errorMessage = t(`login.errors.${i18nSuffix}`);
     } catch {
-      errorMessage = errStr;
+      errorMessage = '';
     }
   }
 
