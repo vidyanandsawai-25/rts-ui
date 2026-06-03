@@ -3,8 +3,19 @@ import ServiceCards from "@/components/modules/home/ServiceCards";
 import { Footer } from "@/components/layout/home/Footer";
 import { Navbar } from "@/components/layout/home/Navbar";
 import { listServices, getUserProfileSSR } from "./action";
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { decodeCookieValue } from '@/lib/utils/cookie';
+
+function clientIpFromHeaders(h: Headers): string | undefined {
+  const forwarded = h.get('x-forwarded-for');
+  if (forwarded) {
+    const first = forwarded.split(',')[0]?.trim();
+    if (first) return first;
+  }
+  const realIp = h.get('x-real-ip')?.trim();
+  if (realIp) return realIp;
+  return undefined;
+}
 
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
     const { locale } = await params;
@@ -19,6 +30,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         getUserProfileSSR()
     ]);
     const cookieStore = await cookies();
+    const headerList = await headers();
+    const clientIp = clientIpFromHeaders(headerList);
     const userName = cookieStore.get('user_name')?.value;
     const sessionId = cookieStore.get('session_id')?.value;
 
@@ -38,6 +51,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                 userProfile={userProfile}
                 profileError={profileError}
                 sessionId={sessionId}
+                clientIp={clientIp}
             />
             <ServiceCards services={services} error={servicesError} />
             <Footer ulbName={displayUlbName} />

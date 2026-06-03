@@ -1,56 +1,12 @@
 'use client';
 
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { User, Shield, Building, Globe, Hash, Clock, X, Phone, MapPin, Briefcase, Mail } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { Badge } from '@/components/common/Badge';
 import { Label } from '@/components/common/label';
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import type { UserProfileDisplayValues } from '@/types/home/user-profile.types';
-
-/**
- * Session data structure for supplementary display info
- * (Session-specific data like IP, session ID, login time from localStorage)
- */
-interface SessionData {
-    loginTime: string | null;
-    ipAddress: string | null;
-}
-
-/**
- * Reads session-specific data from localStorage (client-side only)
- * Returns null values for server-side rendering
- */
-function getSessionData(): SessionData {
-    if (typeof window === 'undefined') {
-        return {
-            loginTime: null,
-            ipAddress: null,
-        };
-    }
-
-    return {
-        loginTime: localStorage.getItem('ntis_session_start'),
-        ipAddress: localStorage.getItem('ntis_user_ip'),
-    };
-}
-
-/**
- * Formats login time for display
- */
-function formatLoginTime(timestamp: string | null, locale: string): string {
-    if (!timestamp) return '-';
-    try {
-        const date = new Date(timestamp);
-        if (isNaN(date.getTime())) return timestamp;
-        return date.toLocaleString(locale === 'en' ? 'en-IN' : locale, {
-            dateStyle: 'short',
-            timeStyle: 'medium',
-        });
-    } catch {
-        return timestamp;
-    }
-}
 
 interface UserProfilePopupProps {
     isOpen: boolean;
@@ -60,6 +16,8 @@ interface UserProfilePopupProps {
     userProfile?: UserProfileDisplayValues | null;
     profileError?: string;
     sessionId?: string;
+    /** From server headers (SSR); preferred over any legacy client storage. */
+    clientIp?: string;
 }
 
 export const UserProfilePopup: React.FC<UserProfilePopupProps> = ({ 
@@ -69,13 +27,10 @@ export const UserProfilePopup: React.FC<UserProfilePopupProps> = ({
     ulbName,
     userProfile,
     profileError,
-    sessionId
+    sessionId,
+    clientIp,
 }) => {
     const t = useTranslations('common');
-    const locale = useLocale();
-    
-    // Session-specific data from localStorage
-    const [sessionData] = useState<SessionData>(() => getSessionData());
 
     // Format values with SSR data and fallbacks
     const displayValues = useMemo(() => ({
@@ -96,9 +51,9 @@ export const UserProfilePopup: React.FC<UserProfilePopupProps> = ({
         sessionId: sessionId 
             ? `${sessionId.slice(0, 8)}...` 
             : t('userMenu.notAvailable', { default: 'N/A' }),
-        loginTime: formatLoginTime(sessionData.loginTime, locale),
-        ipAddress: sessionData.ipAddress || t('userMenu.notAvailable', { default: 'N/A' }),
-    }), [userProfile, username, sessionData, locale, t, ulbName, sessionId]);
+        loginTime: t('userMenu.notAvailable', { default: 'N/A' }),
+        ipAddress: (clientIp ?? '').trim() || t('userMenu.notAvailable', { default: 'N/A' }),
+    }), [userProfile, username, t, ulbName, sessionId, clientIp]);
 
     useEffect(() => {
         const handleEscape = (e: KeyboardEvent) => {

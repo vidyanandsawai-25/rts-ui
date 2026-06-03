@@ -70,7 +70,12 @@ export const AUTH_COOKIES = {
   USER_ID: 'user_id',
   /** Pending auth state (for multi-step flows) */
   PENDING_AUTH: 'pending_auth',
+  /** Unix expiry (seconds) for client session timeout UI — not a secret */
+  SESSION_EXPIRES_AT: 'session_expires_at',
 } as const;
+
+/** Seconds to show session-timeout message before redirecting to login. */
+export const SESSION_TIMEOUT_REDIRECT_SECONDS = 10;
 
 /**
  * ULB (Urban Local Body) branding cookie names.
@@ -90,6 +95,9 @@ export const ULB_COOKIES = {
 /**
  * All cookies that should be cleared on logout.
  */
+/** Query param value for login page (`?error=sessionExpired`) after automatic session expiry. */
+export const SESSION_EXPIRED_LOGIN_ERROR = 'sessionExpired';
+
 export const LOGOUT_CLEAR_COOKIES = [
   AUTH_COOKIES.AUTH_TOKEN,
   AUTH_COOKIES.REFRESH_TOKEN,
@@ -98,6 +106,7 @@ export const LOGOUT_CLEAR_COOKIES = [
   AUTH_COOKIES.IS_LOGGED_IN,
   AUTH_COOKIES.USER_NAME,
   AUTH_COOKIES.USER_ID,
+  AUTH_COOKIES.SESSION_EXPIRES_AT,
   ULB_COOKIES.ULB_NAME,
   ULB_COOKIES.ULB_NAME_LOCAL,
   ULB_COOKIES.ULB_LOGO,
@@ -111,27 +120,36 @@ export const LOGOUT_CLEAR_COOKIES = [
 // ---------------------------------------------------------------------------
 
 /**
- * Default cookie options for secure HTTP-only cookies.
- * Used for sensitive data like tokens.
+ * Fallback session length (seconds) only when JWT/API expiry is absent.
+ * Override with `NTIS_SESSION_MAX_AGE_SECONDS` in the environment.
+ */
+const parsedSessionMaxAge = Number.parseInt(
+  process.env.NTIS_SESSION_MAX_AGE_SECONDS ?? '',
+  10
+);
+export const DEFAULT_SESSION_MAX_AGE_SECONDS =
+  Number.isFinite(parsedSessionMaxAge) && parsedSessionMaxAge > 0
+    ? parsedSessionMaxAge
+    : 60 * 60; // 1 hour
+
+/**
+ * Base options for secure HTTP-only cookies (maxAge set per login from token expiry).
  */
 export const SECURE_COOKIE_OPTIONS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
   sameSite: 'lax' as const,
   path: '/',
-  maxAge: 60 * 60 * 24 * 7, // 7 days
 } as const;
 
 /**
- * Cookie options for client-readable cookies.
- * Used for UI display data like user name.
+ * Base options for client-readable cookies (maxAge set per login from token expiry).
  */
 export const CLIENT_COOKIE_OPTIONS = {
   httpOnly: false,
   secure: process.env.NODE_ENV === 'production',
   sameSite: 'lax' as const,
   path: '/',
-  maxAge: 60 * 60 * 24 * 7, // 7 days
 } as const;
 
 // ---------------------------------------------------------------------------

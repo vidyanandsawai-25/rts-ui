@@ -14,9 +14,6 @@ import { getUlbConfigForLogin } from '@/lib/api/ulb-config.service';
 import {
   AUTH_COOKIES,
   ULB_COOKIES,
-  LOGOUT_CLEAR_COOKIES,
-  SECURE_COOKIE_OPTIONS,
-  CLIENT_COOKIE_OPTIONS,
   AUTH_ERROR_CODES,
 } from '@/components/modules/login/constants';
 import {
@@ -31,6 +28,11 @@ import {
   hasValidSessionTokens,
   extractUserDisplayName,
 } from '@/lib/api/auth-types-guard';
+import {
+  clearAuthSessionCookies,
+  persistAuthSessionCookies,
+  buildClientCookieOptions,
+} from '@/lib/utils/auth-session';
 
 // ---------------------------------------------------------------------------
 // Utility Functions
@@ -69,23 +71,20 @@ function isRedirectError(e: unknown): boolean {
  * @param cookieStore - Next.js cookie store
  */
 async function applyUlbCookiesFromApi(
-  cookieStore: Awaited<ReturnType<typeof cookies>>
+  cookieStore: Awaited<ReturnType<typeof cookies>>,
+  sessionMaxAgeSeconds: number
 ): Promise<void> {
   const ulbRes = await authService.getUlbConfig();
   if (!ulbRes.success || !ulbRes.data) return;
 
   const ulb = ulbRes.data;
   const logo = (ulb.ulbLogo ?? '').trim();
+  const clientOpts = buildClientCookieOptions(sessionMaxAgeSeconds);
 
-  // Use centralized cookie names
-  cookieStore.set(ULB_COOKIES.ULB_NAME, ulb.ulbName || '', CLIENT_COOKIE_OPTIONS);
-  cookieStore.set(
-    ULB_COOKIES.ULB_NAME_LOCAL,
-    (ulb.ulbNameLocal ?? '').trim(),
-    CLIENT_COOKIE_OPTIONS
-  );
-  cookieStore.set(ULB_COOKIES.ULB_LOGO, logo, CLIENT_COOKIE_OPTIONS);
-  cookieStore.set(ULB_COOKIES.ULB_CODE, ulb.ulbCode || '', CLIENT_COOKIE_OPTIONS);
+  cookieStore.set(ULB_COOKIES.ULB_NAME, ulb.ulbName || '', clientOpts);
+  cookieStore.set(ULB_COOKIES.ULB_NAME_LOCAL, (ulb.ulbNameLocal ?? '').trim(), clientOpts);
+  cookieStore.set(ULB_COOKIES.ULB_LOGO, logo, clientOpts);
+  cookieStore.set(ULB_COOKIES.ULB_CODE, ulb.ulbCode || '', clientOpts);
 }
 
 // ---------------------------------------------------------------------------
@@ -108,38 +107,23 @@ async function completeLoginSession(
   formUsername: string
 ): Promise<never> {
   const cookieStore = await cookies();
-
-  // Extract tokens (already validated by caller)
-  const accessToken = (auth.token ?? '').trim();
-  const refreshToken = (auth.refreshToken ?? '').trim();
-
-  // Set secure auth cookies using centralized names
-  cookieStore.set(AUTH_COOKIES.AUTH_TOKEN, accessToken, SECURE_COOKIE_OPTIONS);
-  cookieStore.set(AUTH_COOKIES.REFRESH_TOKEN, refreshToken, SECURE_COOKIE_OPTIONS);
-  cookieStore.set(AUTH_COOKIES.SESSION_ID, sessionId, SECURE_COOKIE_OPTIONS);
-  cookieStore.set(AUTH_COOKIES.IS_LOGGED_IN, 'true', CLIENT_COOKIE_OPTIONS);
-
-  // Set user display name using type guard utility
   const displayName = extractUserDisplayName(auth, formUsername);
-  cookieStore.set(AUTH_COOKIES.USER_NAME, displayName, CLIENT_COOKIE_OPTIONS);
 
-  // Set user ID if valid
-  const uid = auth.userId;
-  if (typeof uid === 'number' && Number.isFinite(uid) && uid > 0) {
-    cookieStore.set(AUTH_COOKIES.USER_ID, String(uid), SECURE_COOKIE_OPTIONS);
-  }
-
-  // Clean up pending auth state
-  cookieStore.delete(AUTH_COOKIES.PENDING_AUTH);
+  const sessionMaxAgeSeconds = await persistAuthSessionCookies(
+    cookieStore,
+    auth,
+    sessionId,
+    displayName
+  );
 
   // Apply ULB branding cookies (non-blocking)
   try {
-    await applyUlbCookiesFromApi(cookieStore);
+    await applyUlbCookiesFromApi(cookieStore, sessionMaxAgeSeconds);
   } catch {
     // ULB branding is optional, don't fail login
   }
 
-  redirect(`/${locale}/home`);
+  redirect(`/${locale}/home?loginSuccess=1`);
 }
 
 // ---------------------------------------------------------------------------
@@ -297,10 +281,7 @@ export async function logoutAction(locale: string = 'en') {
     }
   }
 
-  // Clear all auth-related cookies using centralized list
-  for (const name of LOGOUT_CLEAR_COOKIES) {
-    cookieStore.delete({ name, path: '/' });
-  }
+  await clearAuthSessionCookies(cookieStore);
 
   redirect(`/${safeLocale}/login`);
 }
