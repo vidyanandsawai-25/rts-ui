@@ -88,9 +88,10 @@ export function validateValueByDataType(
       if (!VALIDATION_PATTERNS.DATE.test(value)) {
         return 'form.validation.dateInvalid';
       }
-      // Additional check for valid date
-      const dateValue = new Date(value);
-      if (isNaN(dateValue.getTime())) {
+      // Additional check for valid calendar date (rejects e.g. 2026-02-30)
+      const [y, m, d] = value.split("-").map(Number);
+      const dateValue = new Date(Date.UTC(y, m - 1, d));
+      if (dateValue.getUTCFullYear() !== y || dateValue.getUTCMonth() + 1 !== m || dateValue.getUTCDate() !== d) {
         return 'form.validation.dateInvalid';
       }
       break;
@@ -194,14 +195,15 @@ export function sanitizeValueByDataType(value: string, dataType: string): string
       // Allow digits and one decimal point
       let sanitized = value.replace(/[^\d.]/g, '');
       // Keep only first decimal point
-      const parts = sanitized.split('.');
-      if (parts.length > 2) {
-        sanitized = parts[0] + '.' + parts.slice(1).join('');
+      const initialParts = sanitized.split('.');
+      if (initialParts.length > 2) {
+        sanitized = initialParts[0] + '.' + initialParts.slice(1).join('');
       }
       // Limit to 6 digits before decimal and 2 after
-      if (parts.length === 2) {
-        const beforeDecimal = parts[0].substring(0, 6);
-        const afterDecimal = parts[1].substring(0, 2);
+      const finalParts = sanitized.split('.');
+      if (finalParts.length === 2) {
+        const beforeDecimal = finalParts[0].substring(0, 6);
+        const afterDecimal = finalParts[1].substring(0, 2);
         sanitized = beforeDecimal + '.' + afterDecimal;
       } else {
         sanitized = sanitized.substring(0, 6);

@@ -106,7 +106,7 @@
       "messages": {
         "createSuccess": "Policy Configuration created successfully",
         "updateSuccess": "Policy Configuration updated successfully",
-        "error": "Cannot delete/Deactivate policy because it is in use",
+         "error": "Unable to save policy configuration. Please try again.",
         "invalidIdError": "Invalid ID format. ID must be a positive number."
       }
     },

@@ -61,6 +61,43 @@ vi.mock("@/components/common", () => ({
       aria-label="Toggle status"
     />
   ),
+  Select: ({
+    name,
+    label,
+    options,
+    value,
+    onChange,
+    onBlur,
+    placeholder,
+    ...props
+  }: {
+    name: string;
+    label?: string;
+    options?: { label: string; value: string }[];
+    value?: string | null;
+    onChange?: (e: React.ChangeEvent<HTMLSelectElement>, val: string) => void;
+    onBlur?: (e: React.FocusEvent<HTMLSelectElement>) => void;
+    placeholder?: string;
+  }) => (
+    <select
+      {...props}
+      name={name}
+      value={value ?? ""}
+      data-testid={name}
+      onChange={(e) => {
+        onChange?.(e, e.target.value);
+      }}
+      onBlur={onBlur}
+      aria-label={label || name}
+    >
+      {placeholder && <option value="">{placeholder}</option>}
+      {options?.map((opt: { label: string; value: string }) => (
+        <option key={opt.value} value={opt.value}>
+          {opt.label || opt.value}
+        </option>
+      ))}
+    </select>
+  ),
   RequiredFieldsNote: ({ text }: { text: string }) => <div>{text}</div>,
 }));
 
@@ -89,13 +126,13 @@ describe("PolicyConfigurationForm", () => {
     // Fill all required fields
     fireEvent.change(screen.getByTestId("policyCode"), { target: { value: "PT_RATE" } });
     fireEvent.blur(screen.getByTestId("policyCode"));
-    fireEvent.change(screen.getByTestId("category"), { target: { value: "TAX" } });
+    fireEvent.change(screen.getByTestId("category"), { target: { value: "TAXATION" } });
     fireEvent.blur(screen.getByTestId("category"));
     fireEvent.change(screen.getByTestId("displayName"), { target: { value: "Property Tax Rate" } });
     fireEvent.blur(screen.getByTestId("displayName"));
     fireEvent.change(screen.getByTestId("description"), { target: { value: "Standard Tax Rate" } });
     fireEvent.blur(screen.getByTestId("description"));
-    fireEvent.change(screen.getByTestId("dataType"), { target: { value: "Number" } });
+    fireEvent.change(screen.getByTestId("dataType"), { target: { value: "DECIMAL" } });
     fireEvent.blur(screen.getByTestId("dataType"));
     fireEvent.change(screen.getByTestId("policyValue"), { target: { value: "15" } });
     fireEvent.blur(screen.getByTestId("policyValue"));
@@ -120,10 +157,10 @@ describe("PolicyConfigurationForm", () => {
     const initialData = {
       id: 1,
       policyCode: "PT_RATE_EXISTING",
-      category: "TAX",
+      category: "TAXATION",
       displayName: "Existing Rate",
       description: "Existing policy description",
-      dataType: "Number",
+      dataType: "DECIMAL",
       policyValue: "15",
       defaultValue: "10",
       unit: "%",
@@ -163,10 +200,10 @@ describe("PolicyConfigurationForm", () => {
     const initialData = {
       id: 1,
       policyCode: "PT_RATE_EXISTING",
-      category: "TAX",
+      category: "TAXATION",
       displayName: "Existing Rate",
       description: "Existing policy description",
-      dataType: "Number",
+      dataType: "DECIMAL",
       policyValue: "15",
       defaultValue: "10",
       unit: "%",
@@ -196,10 +233,10 @@ describe("PolicyConfigurationForm", () => {
     expect(input.value).toBe("ABC12_");
   });
 
-  it("limits policyCode length to 50 characters", async () => {
+  it("limits policyCode length to 40 characters", async () => {
     render(<PolicyConfigurationForm initialData={null} />);
     const input = screen.getByTestId("policyCode") as HTMLInputElement;
     fireEvent.change(input, { target: { value: "A".repeat(60) } });
-    expect(input.value).toHaveLength(50);
+    expect(input.value).toHaveLength(40);
   });
 });

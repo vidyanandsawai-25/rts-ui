@@ -35,11 +35,14 @@ export default function PolicyConfigurationMaster({
   const [searchTermState, setSearchTermState] = useState(search);
   const [prevSearch, setPrevSearch] = useState(search);
 
-  // Sync search state with URL when search changes (Avoid useEffect to prevent cascading renders)
-  if (search !== prevSearch) {
-    setSearchTermState(search);
-    setPrevSearch(search);
-  }
+  // Sync search state with URL when search changes
+  useEffect(() => {
+    if (search !== prevSearch) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSearchTermState(search);
+      setPrevSearch(search);
+    }
+  }, [search, prevSearch]);
 
   // Debounced search effect
   useEffect(() => {
