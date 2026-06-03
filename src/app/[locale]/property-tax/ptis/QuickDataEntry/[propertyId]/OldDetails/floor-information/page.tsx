@@ -43,7 +43,15 @@ function sanitizeParams(raw: { [key: string]: string | string[] | undefined }) {
     const rawTypeOfUseId = typeOfUseIdParam ? Number(typeOfUseIdParam) : 0;
     const typeOfUseId = Number.isFinite(rawTypeOfUseId) ? rawTypeOfUseId : 0;
 
-    return { pageNumber, pageSize, searchTerm, typeOfUseId };
+    const rawSortBy = raw.SortBy || raw.sortBy;
+    const sortByParam = Array.isArray(rawSortBy) ? rawSortBy[0] : rawSortBy;
+    const sortBy = typeof sortByParam === 'string' ? sortByParam.trim() : undefined;
+
+    const rawSortOrder = raw.SortOrder || raw.sortOrder;
+    const sortOrderParam = Array.isArray(rawSortOrder) ? rawSortOrder[0] : rawSortOrder;
+    const sortOrder = typeof sortOrderParam === 'string' ? sortOrderParam.trim() : undefined;
+
+    return { pageNumber, pageSize, searchTerm, typeOfUseId, sortBy, sortOrder };
 }
 
 export default async function FloorInformationPage({ params, searchParams }: PageProps) {
@@ -51,10 +59,11 @@ export default async function FloorInformationPage({ params, searchParams }: Pag
     const searchParamsResolved = await searchParams;
     setRequestLocale(locale);
 
-    const { pageNumber, pageSize, searchTerm, typeOfUseId } = sanitizeParams(searchParamsResolved);
+    const { pageNumber, pageSize, searchTerm, typeOfUseId, sortBy, sortOrder } = sanitizeParams(searchParamsResolved);
 
     let floors, subFloors, constructionTypes, useTypes, subUseTypeList, floorPaginationData;
 
+    console.log("sortBy, sortOrder :",sortBy, sortOrder);
     try {
         // Fetch all required data in parallel
         const [
@@ -70,7 +79,7 @@ export default async function FloorInformationPage({ params, searchParams }: Pag
             getConstructionTypesAction(1, -1),
             getTypeOfUsesAction(1, -1),
             typeOfUseId > 0 ? getSubTypeOfUsesAction(typeOfUseId, 1, -1) : Promise.resolve({ success: true, data: [] }),
-            getOldFloorDetailsAction(Number(propertyId), pageNumber, pageSize, searchTerm)
+            getOldFloorDetailsAction(Number(propertyId), pageNumber, pageSize, searchTerm, sortBy, sortOrder)
         ]);
 
         // Extract data with defaults

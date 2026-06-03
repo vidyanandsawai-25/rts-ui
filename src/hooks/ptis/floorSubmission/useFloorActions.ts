@@ -90,10 +90,10 @@ export const useFloorActions = (params: {
       updateUrlParams({
         floorId: null,
         typeOfUseId: null,
-        loadFloor: 'true',
-        loadSubFloor: 'true',
-        loadConstruction: 'true',
-        loadUsage: 'true',
+        loadFloor: 'false',
+        loadSubFloor: 'false',
+        loadConstruction: ' false',
+        loadUsage: 'false',
         loadSubType: null,
       });
 

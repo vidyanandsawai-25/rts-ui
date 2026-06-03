@@ -1,7 +1,7 @@
 "use server"
 
-import { getOldTaxesDetails, saveOldTaxesDetails } from "@/lib/api/property-old-details.service";
-import { OldTaxesDetails } from "@/types/OldDetails/property-old-details.types";
+import { getOldTaxesDetails, saveOldTaxesDetails, applyOldTaxesDetails, getYearMaster, ApplyOldTaxesPayload } from "@/lib/api/property-old-details.service";
+import { OldTaxesDetails, YearMaster } from "@/types/OldDetails/property-old-details.types";
 import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 import { oldDetailsValidations } from "@/lib/utils/validation-schemas";
@@ -35,11 +35,11 @@ export async function getOldTaxesDetailsAction(propertyId: number): Promise<Acti
  * @param locale The current locale for revalidation.
  */
 export async function saveOldTaxesDetailsAction(
-  propertyId: number, 
-  data: OldTaxesDetails, 
+  propertyId: number,
+  data: OldTaxesDetails,
   locale: string
 ): Promise<ActionResult<OldTaxesDetails | null>> {
-  const t = await getTranslations({ locale });
+  const t = await getTranslations({ locale, namespace: 'quickDataEntry' });
 
   try {
     // 1. Validate propertyId
@@ -55,7 +55,7 @@ export async function saveOldTaxesDetailsAction(
     if (hasErrors(validationErrors)) {
       return {
         success: false,
-        error: t('oldDetails.taxationBreakdown.error.unexpectedError')        
+        error: t('oldDetails.taxationBreakdown.error.unexpectedError')
       };
     }
 
@@ -64,7 +64,7 @@ export async function saveOldTaxesDetailsAction(
 
     // 4. Save
     const response = await saveOldTaxesDetails(propertyId, sanitizedData);
-    
+
     revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/OldDetails/taxation-breakdown`);
     return {
       success: true,
@@ -77,3 +77,89 @@ export async function saveOldTaxesDetailsAction(
     };
   }
 }
+
+/**
+ * Server Action to apply/save old taxes details for a property via POST.
+ * @param propertyId The ID of the property.
+ * @param data The taxation breakdown data to save.
+ * @param locale The current locale for revalidation.
+ */
+export async function applyOldTaxesDetailsAction(
+  propertyId: number,
+  data: OldTaxesDetails,
+  locale: string
+): Promise<ActionResult<OldTaxesDetails | null>> {
+  const t = await getTranslations({ locale, namespace: 'quickDataEntry' });
+
+  try {
+
+    // 1. Validate propertyId
+    if (!propertyId || propertyId <= 0) {
+      return {
+        success: false,
+        error: t('property.validation.propertyIdRequired')
+      };
+    }
+
+    // 2. Validate payload
+    const validationErrors = oldDetailsValidations.validateOldTaxesDetails(data, t);
+    if (hasErrors(validationErrors)) {
+      return {
+        success: false,
+        error: t('oldDetails.taxationBreakdown.error.unexpectedError')
+      };
+    }
+    // 3. Sanitize data
+    const sanitizedData = oldDetailsValidations.sanitizeOldTaxesDetails(data);
+
+    // Map to formatted API payload required for POST api
+    const formattedPayload: ApplyOldTaxesPayload = {
+      taxYears: (sanitizedData.taxYears || []).map((year) => ({
+        financeYearId: year.financeYearId,
+        taxes: (year.taxes || []).map((t) => ({
+          taxId: t.taxId,
+          taxAmount: t.taxAmount,
+        })),
+      })),
+    };
+
+    // 4. Save via POST
+    const response = await applyOldTaxesDetails(propertyId, formattedPayload);
+
+    revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/OldDetails/taxation-breakdown`);
+    return {
+      success: true,
+      data: response.items
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to apply old taxes details"
+    };
+  }
+}
+
+/**
+ * Server Action to fetch Year Master data.
+ * @param pageNumber The page number.
+ * @param pageSize The page size (-1 for all).
+ */
+export async function getYearMasterAction(
+  pageNumber: number = 1,
+  pageSize: number = -1
+): Promise<ActionResult<YearMaster[]>> {
+  try {
+    const response = await getYearMaster(pageNumber, pageSize);
+    return {
+      success: true,
+      data: response.items || []
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to fetch year master data"
+    };
+  }
+}
+
+

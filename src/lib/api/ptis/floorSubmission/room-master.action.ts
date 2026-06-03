@@ -2,7 +2,7 @@
 
 import { getRoomTypeOptions, getRoomTypeData } from "@/lib/api/ptis/floorSubmission/floor-lookup.service";
 import { ActionResult } from "@/types/common.types";
-import { RoomTypeResponse } from "@/types/floor-details.types";
+import { RoomTypeResponse } from "@/types/room-details.types";
 
 function getActionErrorMessage(error: unknown): string {
     if (error instanceof Error && error.message) {

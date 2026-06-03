@@ -2,6 +2,7 @@ import React from 'react';
 import { Input, Select } from '@/components/common';
 import { COLUMN_WIDTHS } from '../../RoomTableConfig';
 import { RoomFormData } from '@/types/common-details.types';
+import { RoomTypeResponse } from '@/types/room-details.types';
 import { RoomTypeSelect } from '../RoomTypeSelect';
 
 interface RoomTypeShapeFieldsProps {
@@ -11,6 +12,7 @@ interface RoomTypeShapeFieldsProps {
   validationErrors: Record<string, string>;
   focusRefs: React.MutableRefObject<Record<string, HTMLElement | null>>;
   t: (key: string) => string;
+  roomTypeData?: RoomTypeResponse[];
 }
 
 export const RoomTypeShapeFields: React.FC<RoomTypeShapeFieldsProps> = ({
@@ -19,6 +21,7 @@ export const RoomTypeShapeFields: React.FC<RoomTypeShapeFieldsProps> = ({
   isEditMode,
   focusRefs,
   t,
+  roomTypeData,
 }) => {
   const setRoomNoRef = (el: HTMLElement | null) => {
     if (focusRefs.current) {
@@ -57,6 +60,7 @@ export const RoomTypeShapeFields: React.FC<RoomTypeShapeFieldsProps> = ({
       <div className="flex flex-col justify-center flex-shrink-0 px-1" style={{ width: COLUMN_WIDTHS.roomType }}>
         <RoomTypeSelect
           value={formData.utilities}
+          roomTypeData={roomTypeData}
           onChange={(value, id) => {
             handleInputChange('utilities', value);
             if (id) {

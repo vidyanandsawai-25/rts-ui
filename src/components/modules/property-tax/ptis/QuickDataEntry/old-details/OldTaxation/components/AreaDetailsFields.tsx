@@ -51,7 +51,7 @@ export function AreaDetailsFields({
           placeholder={t("oldDetails.plotNoPlaceholder")}
           className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
           value={formData.oldPlotNo}
-          maxLength={30}
+          maxLength={20}
           onChange={(e) => {
             const value = sanitizeAlphanumeric(e.target.value);
             if (value.trim() || value === '') {
@@ -64,7 +64,7 @@ export function AreaDetailsFields({
       {/* Old Construction Area */}
       <div className="space-y-1.5">
         <Label className="text-xs font-semibold text-gray-700">
-          {t("oldDetails.constructionArea")}<span className="text-red-500 ml-1">*</span>
+          {t("oldDetails.constructionArea")}
         </Label>
         <Input
           type="text"
@@ -80,9 +80,6 @@ export function AreaDetailsFields({
           }}
           onKeyDown={preventInvalidNumericKeys}
         />
-        {showError('oldConstructionArea', isValidDecimalField(formData.oldConstructionArea)) && (
-          <span className="text-xs text-red-500">{t('oldDetails.validation.constructionAreaRequired')}</span>
-        )}
       </div>
     </>
   );

@@ -132,7 +132,7 @@ export const useFloorDataHandlers = (params: {
             setEditingFloorForm(INITIAL_FORM_STATE);
           }
           toast.success(t(isAddingNewFloor ? 'floor.floorAddedSuccess' : 'floor.floorUpdatedSuccess'));
-          
+
           startTransition(() => {
             router.refresh();
             if (typeof window !== 'undefined') {
@@ -141,15 +141,6 @@ export const useFloorDataHandlers = (params: {
                 url.searchParams.delete('floorId');
                 url.searchParams.delete('drawer');
                 router.replace(url.pathname + url.search);
-                setTimeout(() => {
-                  try {
-                    if (typeof window.location.reload === 'function') {
-                      window.location.reload();
-                    }
-                  } catch (_e) {
-                    // Safe fallback for mock test environments
-                  }
-                }, 300);
               } catch (_e) {
                 // Safe fallback for mock test environments (like JSDOM/Vitest)
                 router.replace(window.location.pathname || '/');
@@ -197,4 +188,3 @@ export const useFloorDataHandlers = (params: {
     isDeleting,
   };
 };
-

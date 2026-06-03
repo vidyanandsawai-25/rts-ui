@@ -287,7 +287,8 @@
             "fetchFloorById": "मंज़िल विवरण प्राप्त करने में विफल। कृपया बाद में पुनः प्रयास करें।",
             "fetchQuickDataEntry": "त्वरित डेटा प्रविष्टि प्राप्त करने में विफल। कृपया बाद में पुनः प्रयास करें।",
             "fetchPropertyDetails": "संपत्ति विवरण प्राप्त करने में विफल। कृपया बाद में पुनः प्रयास करें।",
-            "fetchFloorSubmissions": "मंज़िल सबमिशन प्राप्त करने में विफल। कृपया बाद में पुनः प्रयास करें."
+            "fetchFloorSubmissions": "मंज़िल सबमिशन प्राप्त करने में विफल। कृपया बाद में पुनः प्रयास करें.",
+            "fetchRoomTypes": "कमरा प्रकार प्राप्त करने में विफल। कृपया बाद में पुनः प्रयास करें।"
         }
     },
     "property": {
@@ -384,13 +385,25 @@
             "propertyIdRequired": "संपत्ति आईडी आवश्यक है",
             "taxYearsRequired": "कर वर्ष डेटा आवश्यक है",
             "financeYearRequired": "वित्तीय वर्ष आवश्यक है",
+            "futureYearNotAllowed": "आप चालू वर्ष के बाद का वर्ष नहीं चुन सकते",
             "taxTotalInvalid": "कर कुल ऋणात्मक नहीं हो सकता",
             "toiletCountZero": "आप केवल 0 दर्ज नहीं कर सकते",
             "required": "यह फ़ील्ड आवश्यक है",
             "invalidNumber": "कृपया एक मान्य संख्या दर्ज करें",
             "negativeNotAllowed": "ऋणात्मक मान की अनुमति नहीं है",
             "maxTwoDecimals": "अधिकतम 2 दशमलव स्थान की अनुमति है",
-            "fixErrors": "कृपया सहेजने से पहले सत्यापन त्रुटियों को ठीक करें"
+            "fixErrors": "कृपया सहेजने से पहले सत्यापन त्रुटियों को ठीक करें",
+            "oldPlotAreaInvalid": "प्लॉट क्षेत्र एक वैध संख्या होनी चाहिए",
+            "oldRVInvalid": "आरवी (मूल्यांकन मूल्य) एक वैध संख्या होनी चाहिए",
+            "oldALVInvalid": "एएलवी (वार्षिक किराया मूल्य) एक वैध संख्या होनी चाहिए",
+            "oldTotalTaxInvalid": "कुल कर एक वैध संख्या होनी चाहिए",
+            "oldGeneralTaxInvalid": "सामान्य कर एक वैध संख्या होनी चाहिए",
+            "oldConstructionAreaInvalid": "निर्माण क्षेत्र एक वैध संख्या होनी चाहिए",
+            "oldCarpetAreaSqFeetInvalid": "कालीनों का क्षेत्रफल एक वैध संख्या होनी चाहिए",
+            "oldCarpetAreaSqMeterInvalid": "वर्ग मीटर में कालीनों का क्षेत्रफल एक वैध संख्या होनी चाहिए",
+            "oldConstructionTypeIdInvalid": "निर्माण का प्रकार अमान्य है",
+            "oldTypeOfUseIdInvalid": "उपयोग का प्रकार अमान्य है",
+            "invalidIds": "अमान्य आईडी प्रदान की गई"
         },
         "errors": {
             "failedToConnect": {
@@ -833,7 +846,7 @@
             "continueButton": "समझ गया, मंजिल प्रविष्टि के साथ जारी रखें"
         },
         "floorInformation": "मंजिल की जानकारी",
-         "noFloorData": "मंजिल की जानकारी उपलब्ध नहीं है"
+        "noFloorData": "मंजिल की जानकारी उपलब्ध नहीं है"
     },
     "discount": {
         "title": "छूट जानकारी",
@@ -869,11 +882,17 @@
         "documentUploaded": "दस्तावेज़ अपलोड हो चुका है।"
     },
     "oldDetails": {
-        "title": "पुराना कर", 
-         "validation": {
+        "title": "पुराना कर",
+        "validation": {
             "zoneNameRequired": "जोन का नाम आवश्यक है।",
+            "zoneNameMaxLength": "जोन का नाम 20 वर्णों से अधिक नहीं हो सकता।",
             "wardNoRequired": "वार्ड नंबर आवश्यक है।",
+            "wardNoMaxLength": "वार्ड नंबर 10 वर्णों से अधिक नहीं हो सकता।",
             "propertyNoRequired": "संपत्ति संख्या आवश्यक है।",
+            "propertyNoMaxLength": "संपत्ति संख्या 10 वर्णों से अधिक नहीं हो सकती।",
+            "partitionNoMaxLength": "विभाजन संख्या 10 वर्णों से अधिक नहीं हो सकती।",
+            "egovNoMaxLength": "ई-गवर्नेंस नंबर 10 वर्णों से अधिक नहीं हो सकता।",
+            "plotNoMaxLength": "प्लॉट नंबर 20 वर्णों से अधिक नहीं हो सकता।",
             "plotAreaRequired": "प्लॉट क्षेत्र आवश्यक है।",
             "constructionAreaRequired": "निर्माण क्षेत्र आवश्यक है।",
             "rvRequired": "RV आवश्यक है।",
@@ -881,7 +900,7 @@
             "propertyTaxRequired": "संपत्ति कर आवश्यक है।",
             "totalTaxRequired": "कुल कर आवश्यक है।",
             "fillRequiredFields": "कृपया सभी आवश्यक फ़ील्ड भरें।"
-        },      
+        },
         "error": {
             "title": "पुराने विवरण लोड करने में त्रुटि",
             "description": "ऐतिहासिक संपत्ति डेटा प्राप्त करते समय हमें एक त्रुटि का सामना करना पड़ा।",
@@ -912,7 +931,9 @@
                 "description": "ऐतिहासिक कर डेटा प्राप्त किया जा रहा है"
             },
             "updateSuccess": "पुरानी संपत्ति कराधान विवरण सफलतापूर्वक अपडेट किया गया",
-            "updateError": "पुरानी संपत्ति कराधान विवरण अपडेट करने में विफल"
+            "updateError": "पुरानी संपत्ति कराधान विवरण अपडेट करने में विफल",
+             "applyTaxes": "कर लागू करें",
+             "applyMoreTaxes": "अधिक कर लागू करें"
         },
         "floorInformation": {
             "error": {
@@ -933,7 +954,7 @@
             "deleteError": "मंजिल का विवरण हटाने में विफल",
             "unexpectedError": "एक अप्रत्याशित त्रुटि हुई"
         },
-         "existingFloorDetails": "मौजूदा मंजिल विवरण",
+        "existingFloorDetails": "मौजूदा मंजिल विवरण",
         "zoneName": "क्षेत्र का नाम",
         "wardNo": "वार्ड नं.",
         "propertyNo": "संपत्ति नं.",
@@ -1041,7 +1062,11 @@
             "saving": "सहेज रहा है...",
             "update": "अद्यतन करें",
             "invalidYear": "कृपया मान्य 4 अंकों का मूल्यांकन वर्ष दर्ज करें.",
-            "noTaxDataAvailable": "कर डेटा उपलब्ध नहीं है। कृपया पहले कर प्रकार कॉन्फ़िगर करें।"
+            "noTaxDataAvailable": "कर डेटा उपलब्ध नहीं है। कृपया पहले कर प्रकार कॉन्फ़िगर करें।",
+            "selectYearPlaceholder": "वर्ष चुनें"
+        },
+        "common": {
+            "validationError": "कृपया सबमिट करने से पहले सत्यापन त्रुटियों को ठीक करें"
         }
     },
     "footer": {

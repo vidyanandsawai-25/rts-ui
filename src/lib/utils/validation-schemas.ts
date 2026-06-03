@@ -705,6 +705,51 @@ export const oldDetailsValidations = {
       }
     });
 
+    
+    // String length and required validations
+    if (data.oldZoneNo !== undefined) {
+      const val = String(data.oldZoneNo).trim();
+      if (val.length === 0) {
+        errors.oldZoneNo = t('oldDetails.validation.zoneNameRequired');
+      } else if (val.length > 20) {
+        errors.oldZoneNo = t('oldDetails.validation.zoneNameMaxLength');
+      }
+    }
+    if (data.oldWardNo !== undefined) {
+      const val = String(data.oldWardNo).trim();
+      if (val.length === 0) {
+        errors.oldWardNo = t('oldDetails.validation.wardNoRequired');
+      } else if (val.length > 10) {
+        errors.oldWardNo = t('oldDetails.validation.wardNoMaxLength');
+      }
+    }
+    if (data.oldPropertyNo !== undefined) {
+      const val = String(data.oldPropertyNo).trim();
+      if (val.length === 0) {
+        errors.oldPropertyNo = t('oldDetails.validation.propertyNoRequired');
+      } else if (val.length > 10) {
+        errors.oldPropertyNo = t('oldDetails.validation.propertyNoMaxLength');
+      }
+    }
+    if (data.oldPartitionNo !== undefined && data.oldPartitionNo !== null) {
+      const val = String(data.oldPartitionNo).trim();
+      if (val.length > 10) {
+        errors.oldPartitionNo = t('oldDetails.validation.partitionNoMaxLength');
+      }
+    }
+    if (data.oldEgovNo !== undefined && data.oldEgovNo !== null) {
+      const val = String(data.oldEgovNo).trim();
+      if (val.length > 10) {
+        errors.oldEgovNo = t('oldDetails.validation.egovNoMaxLength');
+      }
+    }
+    if (data.oldPlotNo !== undefined && data.oldPlotNo !== null) {
+      const val = String(data.oldPlotNo).trim();
+      if (val.length > 20) {
+        errors.oldPlotNo = t('oldDetails.validation.plotNoMaxLength');
+      }
+    }
+
     // Construction Year validation (must be 4 digits)
     if (data.oldConstructionYear) {
       if (!YEAR_REGEX.test(data.oldConstructionYear)) {
@@ -832,10 +877,7 @@ export const oldDetailsValidations = {
       data.taxYears.forEach((year: OldTaxYear, index: number) => {
         if (!year.financeYearId || year.financeYearId <= 0) {
           errors[`taxYears.${index}.financeYearId`] = t('property.validation.financeYearRequired');
-        }
-        if (year.taxTotal < 0) {
-          errors[`taxYears.${index}.taxTotal`] = t('property.validation.taxTotalInvalid');
-        }
+        }       
       });
     }
 
@@ -855,11 +897,7 @@ export const oldDetailsValidations = {
       taxYears: (data.taxYears || []).map((year: OldTaxYear) => ({
         ...year,
         financeYearId: Number(year.financeYearId),
-        year: Number(year.year),
-        rVorCVValue: Number(year.rVorCVValue || 0),
-        taxTotal: Number(year.taxTotal || 0),
-        interest: Number(year.interest || 0),
-        netTotal: Number(year.netTotal || 0),
+        year: Number(year.year),       
         taxes: (year.taxes || []).map((tax: OldTaxItem) => ({
           ...tax,
           taxId: Number(tax.taxId),

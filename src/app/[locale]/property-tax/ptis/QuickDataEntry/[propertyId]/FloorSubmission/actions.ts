@@ -13,6 +13,7 @@ import {
     getConstructionTypeData,
     getSubTypeOfUseData,
     getSubFloorData,
+    getRoomTypeData,
     deleteRoomSubmission,
     deleteOffsetSubmission,
     saveRenterDetails,
@@ -66,6 +67,14 @@ export async function getSubFloorDataAction() {
         return await getSubFloorData();
     } catch (_error) {
         return { success: false, error: "quickDataEntry.floorSubmission.errors.fetchSubFloorData" };
+    }
+}
+
+export async function getRoomTypeDataAction() {
+    try {
+        return await getRoomTypeData();
+    } catch (_error) {
+        return { success: false, error: "quickDataEntry.floorSubmission.errors.fetchRoomTypes" };
     }
 }
 

@@ -287,7 +287,8 @@
             "fetchFloorById": "Failed to fetch floor details. Please try again later.",
             "fetchQuickDataEntry": "Failed to fetch quick data entry. Please try again later.",
             "fetchPropertyDetails": "Failed to fetch property details. Please try again later.",
-            "fetchFloorSubmissions": "Failed to fetch floor submissions. Please try again later."
+            "fetchFloorSubmissions": "Failed to fetch floor submissions. Please try again later.",
+            "fetchRoomTypes": "Failed to fetch Room types. Please try again later."
         }
     },
     "property": {
@@ -384,13 +385,25 @@
             "propertyIdRequired": "Property ID is required",
             "taxYearsRequired": "Tax years data is required",
             "financeYearRequired": "Finance year is required",
+            "futureYearNotAllowed": "Cannot select a year after the current year",
             "taxTotalInvalid": "Tax total cannot be negative",
             "toiletCountZero": "You cannot enter only 0",
             "required": "This field is required",
             "invalidNumber": "Please enter a valid number",
             "negativeNotAllowed": "Negative values are not allowed",
             "maxTwoDecimals": "Maximum 2 decimal places allowed",
-            "fixErrors": "Please fix validation errors before saving"
+            "fixErrors": "Please fix validation errors before saving",
+            "oldPlotAreaInvalid": "Plot Area must be a valid number",
+            "oldRVInvalid": "RV (Rateable Value) must be a valid number",
+            "oldALVInvalid": "ALV (Annual Letting Value) must be a valid number",
+            "oldTotalTaxInvalid": "Total Tax must be a valid number",
+            "oldGeneralTaxInvalid": "General Tax must be a valid number",
+            "oldConstructionAreaInvalid": "Construction Area must be a valid number",
+            "oldCarpetAreaSqFeetInvalid": "Carpet Area must be a valid number",
+            "oldCarpetAreaSqMeterInvalid": "Carpet Area in Sq. Meter must be a valid number",
+            "oldConstructionTypeIdInvalid": "Construction Type is invalid",
+            "oldTypeOfUseIdInvalid": "Type of Use is invalid",
+            "invalidIds": "Invalid IDs provided"
         },
         "errors": {
             "failedToConnect": {
@@ -872,8 +885,14 @@
         "title": "Old Taxation",
         "validation": {
             "zoneNameRequired": "Zone Name is required.",
+            "zoneNameMaxLength": "Zone Name cannot exceed 20 characters.",
             "wardNoRequired": "Ward No is required.",
+            "wardNoMaxLength": "Ward No cannot exceed 10 characters.",
             "propertyNoRequired": "Property No is required.",
+            "propertyNoMaxLength": "Property No cannot exceed 10 characters.",
+            "partitionNoMaxLength": "Partition No cannot exceed 10 characters.",
+            "egovNoMaxLength": "E-Governance No cannot exceed 10 characters.",
+            "plotNoMaxLength": "Plot No cannot exceed 20 characters.",
             "plotAreaRequired": "Plot Area is required.",
             "constructionAreaRequired": "Construction Area is required.",
             "rvRequired": "RV is required.",
@@ -912,7 +931,9 @@
                 "description": "Fetching historical tax data"
             },
             "updateSuccess": "Old property taxation details updated successfully",
-            "updateError": "Failed to update old property taxation details"
+            "updateError": "Failed to update old property taxation details",
+            "applyTaxes": "Apply Taxes",
+            "applyMoreTaxes": "Apply More Taxes"
         },
         "floorInformation": {
             "error": {
@@ -1041,7 +1062,8 @@
             "saving": "Saving...",
             "update": "Update",
             "invalidYear": "Please enter a valid 4-digit assessment year.",
-            "noTaxDataAvailable": "No tax data available. Please configure tax types first."
+            "noTaxDataAvailable": "No tax data available. Please configure tax types first.",
+            "selectYearPlaceholder": "Select Year"
         },
         "common": {
             "showing": "Showing",
@@ -1051,7 +1073,8 @@
             "itemsPerPage": "Items per page",
             "previous": "Previous",
             "page": "Page",
-            "next": "Next"
+            "next": "Next",
+            "validationError": "Please fix the validation errors before submitting"
         }
     },
     "footer": {
