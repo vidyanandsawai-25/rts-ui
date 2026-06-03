@@ -754,7 +754,7 @@ export async function exportApartmentQCToExcel(
    APARTMENT PROPERTY TAX DETAILS — GET
    Endpoint: GET /Property/apartment-property-tax-details-rv
    Fetches aggregated tax details for apartment properties by type
-============================================================ */
+   ============================================================ */
 
 import type {
   ApartmentPropertyTaxDetailsResponse,
@@ -861,7 +861,6 @@ export function getPartTypeFromMainTab(mainTab: string): ApartmentPartType {
    APARTMENT PROPERTY TAX DETAILS — CAPITAL VALUE (CV)
    Endpoint: GET /Property/apartment-property-tax-details-cv
    Fetches capital value tax details for apartment properties by PartType
-============================================================ */
 
 /**
  * Fetch apartment property tax details for Capital Value (CV).

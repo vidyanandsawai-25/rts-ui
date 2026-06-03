@@ -186,20 +186,54 @@ const ResidentialEditScreen = ({
     const oldPropNo = hookFormData.oldPropertyNo?.trim();
     if (!oldPropNo) return;
 
+    // Helper to clear all old property fields
+    const clearOldPropertyFields = () => {
+      hookUpdateFormField("oldRV", "");
+      hookUpdateFormField("oldTax", "");
+      hookUpdateFormField("oldArea", "");
+      hookUpdateFormField("oldUseType", "");
+      hookUpdateFormField("oldConstructionType", "");
+      hookUpdateFormField("oldConstructionYear", "");
+      hookUpdateFormField("oldCSN", "");
+    };
+
     try {
       const { fetchOldPropertyDataAction } = await import("@/app/[locale]/property-tax/ptis/appartmentQC/action");
       const result = await fetchOldPropertyDataAction(oldPropNo);
 
       if (!result.success) {
+        // Clear all old property fields when fetch fails
+        clearOldPropertyFields();
         toast.error(result.error || "Failed to fetch old property data");
         return;
       }
       if (!result.data) {
+        // Clear all old property fields when no data found
+        clearOldPropertyFields();
         toast.error("No old property data found");
         return;
       }
 
       const d = result.data;
+      
+      // Check if all old property fields are null/empty
+      const hasOldRV = d.oldRV != null && d.oldRV !== 0;
+      const hasOldTax = d.oldTotalTax != null && d.oldTotalTax !== 0;
+      const hasOldArea = d.oldConstructionArea != null && d.oldConstructionArea !== 0;
+      const hasOldUseType = d.oldUseType && d.oldUseType.trim() !== "";
+      const hasOldConType = d.oldConstructionType && d.oldConstructionType.trim() !== "";
+      const hasOldConYear = d.oldConstructionYear && d.oldConstructionYear.trim() !== "";
+      const hasOldCSN = d.oldCSN && d.oldCSN.trim() !== "";
+      
+      const hasAnyData = hasOldRV || hasOldTax || hasOldArea || hasOldUseType || hasOldConType || hasOldConYear || hasOldCSN;
+
+      if (!hasAnyData) {
+        // Clear all old property fields when all values are null/empty
+        clearOldPropertyFields();
+        toast.error(`No old property data found for property no. "${oldPropNo}"`);
+        return;
+      }
+
       hookUpdateFormField("oldRV", d.oldRV != null ? String(d.oldRV) : "");
       hookUpdateFormField("oldTax", d.oldTotalTax != null ? String(d.oldTotalTax) : "");
       hookUpdateFormField("oldArea", d.oldConstructionArea != null ? String(d.oldConstructionArea) : "");
@@ -209,6 +243,8 @@ const ResidentialEditScreen = ({
       hookUpdateFormField("oldCSN", d.oldCSN || "");
       toast.success("Old property data refreshed");
     } catch {
+      // Clear all old property fields on error
+      clearOldPropertyFields();
       toast.error("Failed to fetch old property data");
     }
   }, [hookFormData.oldPropertyNo, hookUpdateFormField]);
@@ -239,8 +275,8 @@ const ResidentialEditScreen = ({
         id: r.id || 0,
         roomWiseSubmissionId: r.id || 0,
         roomNo: String(r.roomNo || ''),
-        roomType: r.roomType || '',
-        utilities: r.roomType || '',
+        roomType: r.roomTypeDescription || r.roomType || '',
+        utilities: r.roomTypeDescription || r.roomType || '',
         roomTypeId: r.roomTypeId || 0,
         lengthMtr: r.lengthMtr || 0,
         length: r.lengthMtr || 0,
@@ -288,7 +324,7 @@ const ResidentialEditScreen = ({
   // Handle room submission updates: optimistic local area update, then ask
   // the backend to recompute room aggregates for this floor (sync-rooms), then
   // refetch the Floor QC table so the new aggregates appear in the drawer.
-  const handleRoomUpdate = useCallback(async (data: { totalAreaSqM: number; roomCount?: number }) => {
+  const handleRoomUpdate = useCallback(async (data: { floorNumber: string; rooms: import("@/types/room-details.types").RoomData[]; totalAreaSqM: number; builtUpAreaSqM: number; roomCount: number }) => {
     if (!roomPdnId || !roomPropertyId) return;
 
     const floorRow = hookFloorData.find(row => row.pdnId === Number(roomPdnId));

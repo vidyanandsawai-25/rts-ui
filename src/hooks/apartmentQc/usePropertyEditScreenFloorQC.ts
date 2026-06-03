@@ -1,6 +1,7 @@
 import { useEffect, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
+import { logger } from "@/lib/utils/logger";
 import { fetchFloorQCByPropertyIdSafeAction } from "@/app/[locale]/property-tax/ptis/appartmentQC/action";
 import type { ApartmentQCDetail } from "@/types/apartmentQC.types";
 import {
@@ -208,7 +209,7 @@ export function usePropertyEditScreenFloorQC({
         processFloorQCData(result);
       })
       .catch((error) => {
-        console.error("[Floor QC] Failed to fetch floor data:", error);
+        logger.error("[Floor QC] Failed to fetch floor data", { error: error as Error });
         toast.error("Failed to load Floor QC data");
         setFloorData([createEmptyFloorRow()]);
       })
@@ -251,7 +252,7 @@ export function usePropertyEditScreenFloorQC({
       const result = await fetchFloorQCByPropertyIdSafeAction(propertyId, type);
       processFloorQCData(result);
     } catch (error) {
-      console.error("[Floor QC] Refetch failed:", error);
+      logger.error("[Floor QC] Refetch failed", { error: error as Error });
       toast.error("Failed to refresh Floor QC data");
     } finally {
       setIsLoadingFloorQCData(false);

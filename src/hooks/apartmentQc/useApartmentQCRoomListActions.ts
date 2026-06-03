@@ -183,6 +183,37 @@ export const useApartmentQCRoomListActions = (
       };
 
       setRooms((prev) => [...prev, newRoom]);
+
+      // Call sync-rooms API to update floor aggregates
+      if (propertyId > 0 && propertyDetailsId > 0) {
+        const syncResult = await syncRoomsForPropertyDetailsAction(propertyId, propertyDetailsId);
+        if (syncResult.success) {
+          // Trigger Floor QC table refresh via onUpdate callback
+          const updatedRooms = [...rooms, newRoom];
+          const totalArea = updatedRooms.reduce((sum, room) => {
+            const area = Number(room.total || room.totalAreaSqMtr || room.carpetArea || room.area || 0);
+            return sum + area;
+          }, 0);
+          const builtUpArea = updatedRooms.reduce((sum, room) => {
+            const area = Number(room.builtUpArea || room.total || room.totalAreaSqMtr || room.area || 0);
+            return sum + area;
+          }, 0);
+          if (props.onUpdate) {
+            try {
+              props.onUpdate({
+                floorNumber: String(propertyDetailsId),
+                rooms: updatedRooms,
+                totalAreaSqM: totalArea,
+                builtUpAreaSqM: builtUpArea,
+                roomCount: updatedRooms.length,
+              });
+            } catch {
+              // onUpdate errors are non-critical
+            }
+          }
+        }
+      }
+
       toast.success("Room added successfully");
       handleCancelEdit();
     });
@@ -257,35 +288,67 @@ export const useApartmentQCRoomListActions = (
         return;
       }
 
+      const updatedRoom: RoomData = {
+        ...currentRoom,
+        roomNo: formData.roomNo || currentRoom.roomNo,
+        length: isManualUpdate ? formData.length : (shapeParameters.length || shapeParameters.radius || ""),
+        width: isManualUpdate ? formData.width : (shapeParameters.width || ""),
+        area: baseArea,
+        mainArea: baseArea,
+        carpetArea: computed.carpetArea,
+        builtUpArea: computed.builtUpArea,
+        roomCount: "1",
+        offsetMinus: formData.offsetMinus,
+        offsets: [...currentRoomOffsets],
+        roomWiseMinusData: [...currentRoomOffsets],
+        outer: formData.outer,
+        total: computed.carpetArea,
+        areaSqMtr: baseArea,
+        totalAreaSqMtr: computed.carpetArea,
+        remark: formData.remark === "-Select-" ? "" : formData.remark,
+        utilities: formData.utilities === "-Select-" ? "" : formData.utilities,
+        roomType: formData.utilities === "-Select-" ? "" : formData.utilities,
+        roomTypeId: formData.roomTypeId ? Number(formData.roomTypeId) : undefined,
+        shape: formData.shape === "-Select-" ? "" : formData.shape,
+        shapeParams: { ...shapeParameters },
+        shapeParameters: { ...shapeParameters },
+      };
+
       setRooms((prev) => {
         const updated = [...prev];
-        updated[editingIndex] = {
-          ...currentRoom,
-          roomNo: formData.roomNo || currentRoom.roomNo,
-          length: isManualUpdate ? formData.length : (shapeParameters.length || shapeParameters.radius || ""),
-          width: isManualUpdate ? formData.width : (shapeParameters.width || ""),
-          area: baseArea,
-          mainArea: baseArea,
-          carpetArea: computed.carpetArea,
-          builtUpArea: computed.builtUpArea,
-          roomCount: "1",
-          offsetMinus: formData.offsetMinus,
-          offsets: [...currentRoomOffsets],
-          roomWiseMinusData: [...currentRoomOffsets],
-          outer: formData.outer,
-          total: computed.carpetArea,
-          areaSqMtr: baseArea,
-          totalAreaSqMtr: computed.carpetArea,
-          remark: formData.remark === "-Select-" ? "" : formData.remark,
-          utilities: formData.utilities === "-Select-" ? "" : formData.utilities,
-          roomType: formData.utilities === "-Select-" ? "" : formData.utilities,
-          roomTypeId: formData.roomTypeId ? Number(formData.roomTypeId) : undefined,
-          shape: formData.shape === "-Select-" ? "" : formData.shape,
-          shapeParams: { ...shapeParameters },
-          shapeParameters: { ...shapeParameters },
-        };
+        updated[editingIndex] = updatedRoom;
         return updated;
       });
+
+      // Call sync-rooms API to update floor aggregates
+      if (propertyId > 0 && propertyDetailsId > 0) {
+        const syncResult = await syncRoomsForPropertyDetailsAction(propertyId, propertyDetailsId);
+        if (syncResult.success) {
+          // Trigger Floor QC table refresh via onUpdate callback
+          const updatedRooms = rooms.map((r, i) => i === editingIndex ? updatedRoom : r);
+          const totalArea = updatedRooms.reduce((sum, room) => {
+            const area = Number(room.total || room.totalAreaSqMtr || room.carpetArea || room.area || 0);
+            return sum + area;
+          }, 0);
+          const builtUpArea = updatedRooms.reduce((sum, room) => {
+            const area = Number(room.builtUpArea || room.total || room.totalAreaSqMtr || room.area || 0);
+            return sum + area;
+          }, 0);
+          if (props.onUpdate) {
+            try {
+              props.onUpdate({
+                floorNumber: String(propertyDetailsId),
+                rooms: updatedRooms,
+                totalAreaSqM: totalArea,
+                builtUpAreaSqM: builtUpArea,
+                roomCount: updatedRooms.length,
+              });
+            } catch {
+              // onUpdate errors are non-critical
+            }
+          }
+        }
+      }
 
       toast.success("Room updated successfully");
       handleCancelEdit();
@@ -341,11 +404,41 @@ export const useApartmentQCRoomListActions = (
           }
         }
 
-        setRooms((prev) =>
-          prev
-            .filter((_, i) => i !== index)
-            .map((r, i) => ({ ...r, roomNo: (i + 1).toString() }))
+        // Calculate remaining rooms data for floor QC update
+        const remainingRooms = rooms.filter((_, i) => i !== index);
+        const remainingRoomCount = remainingRooms.length;
+        // Calculate total area from remaining rooms
+        const totalAreaAfterDelete = remainingRooms.reduce((sum, room) => {
+          const area = Number(room.total || room.totalAreaSqMtr || room.carpetArea || room.area || 0);
+          return sum + area;
+        }, 0);
+        // Calculate built-up area from remaining rooms
+        const builtUpAreaAfterDelete = remainingRooms.reduce((sum, room) => {
+          const area = Number(room.builtUpArea || room.total || room.totalAreaSqMtr || room.area || 0);
+          return sum + area;
+        }, 0);
+
+        // Update local state first
+        setRooms(
+          remainingRooms.map((r, i) => ({ ...r, roomNo: (i + 1).toString() }))
         );
+
+        // Trigger Floor QC table refresh via onUpdate callback with calculated values
+        // This will call syncRoomsForPropertyDetailsAction and hookRefetchFloorQC
+        if (props.onUpdate && propertyId > 0 && propertyDetailsId > 0) {
+          try {
+            props.onUpdate({
+              floorNumber: String(propertyDetailsId),
+              rooms: remainingRooms,
+              totalAreaSqM: totalAreaAfterDelete,
+              builtUpAreaSqM: builtUpAreaAfterDelete,
+              roomCount: remainingRoomCount,
+            });
+          } catch {
+            // onUpdate errors are non-critical, floor QC will still be refreshed
+          }
+        }
+
         toast.success(
           t("roomSubmission.success.deleted") || "Room deleted successfully"
         );

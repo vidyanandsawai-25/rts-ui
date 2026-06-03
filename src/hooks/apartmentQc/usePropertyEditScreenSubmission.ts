@@ -1,5 +1,7 @@
 import { useCallback, useTransition } from "react";
 import { toast } from "sonner";
+import { logger } from "@/lib/utils/logger";
+import { getUserIdFromCookie } from "@/lib/utils/cookie";
 import {
   updateBasicDetailsAction,
   updateFloorQCDetailsBulkAction,
@@ -84,7 +86,7 @@ export function usePropertyEditScreenSubmission({
         flatOrShopNo: formData.flatOrShopNo || undefined,
         flatOrShopName: formData.flatOrShopName || undefined,
         oldPropertyNo: formData.oldPropertyNo || undefined,
-        updatedBy: 1, // TODO: Replace with actual user ID from auth context
+        updatedBy: getUserIdFromCookie() || 1,
       };
 
       const basicResult = await updateBasicDetailsAction(propertyData.id, basicPayload);
@@ -131,7 +133,7 @@ export function usePropertyEditScreenSubmission({
               subTypeOfUseId,
               constructionYear: row.conYear || undefined,
               assessmentYear: row.asstYear || undefined,
-              updatedBy: 1,
+              updatedBy: getUserIdFromCookie() || 1,
             };
           });
 
@@ -143,7 +145,7 @@ export function usePropertyEditScreenSubmission({
             toast.error(floorQCResult.error || "Failed to update floor QC details");
           }
         } catch (error) {
-          console.error("[Floor QC] Failed to save rows:", error);
+          logger.error("[Floor QC] Failed to save rows", { error: error as Error });
           toast.error("Failed to save floor QC details");
         } finally {
           setIsSavingFloorQC(false);

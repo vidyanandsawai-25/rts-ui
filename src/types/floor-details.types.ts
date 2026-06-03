@@ -74,6 +74,7 @@ export interface RoomTypeResponse {
     roomTypeCode: string;
     roomTypeName?: string;
     description: string;
+    roomTypeDescription?: string; // Some APIs return this instead of description
     isActive: boolean;
     createdDate: string;
     updatedDate: string | null;

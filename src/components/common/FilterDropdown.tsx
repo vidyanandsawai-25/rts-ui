@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, type MouseEvent } from "react";
 import { createPortal } from "react-dom";
 import { Funnel, X, Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
@@ -54,7 +54,7 @@ export function FilterDropdown({
 
   // Close dropdown when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (event: globalThis.MouseEvent) => {
       if (
         dropdownRef.current &&
         !dropdownRef.current.contains(event.target as Node) &&
@@ -162,7 +162,7 @@ export function FilterDropdown({
     }
   };
 
-  const handleIconClick = (e: React.MouseEvent) => {
+  const handleIconClick = (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     if (isOpen) {
       setIsOpen(false);
@@ -292,6 +292,7 @@ export function FilterDropdown({
         type="button"
         onClick={handleIconClick}
         disabled={disabled}
+        aria-label={placeholder}
         className={cn(
           "p-0.5 rounded transition-colors focus:outline-none",
           isActive

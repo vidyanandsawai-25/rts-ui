@@ -4,6 +4,7 @@ import type { ApartmentQCDetail } from "@/types/apartmentQC.types";
 import type { Floor } from "@/types/floor.types";
 import type { ConstructionType } from "@/types/construction.types";
 import type { UseType, UseSubType } from "@/types/typeOfUse.types";
+import { logger } from "@/lib/utils/logger";
 import { usePropertyEditScreenState } from "./usePropertyEditScreenState";
 import { usePropertyEditScreenDropdowns } from "./usePropertyEditScreenDropdowns";
 import { usePropertyEditScreenFloorQC } from "./usePropertyEditScreenFloorQC";
@@ -126,7 +127,7 @@ export function usePropertyEditScreenDrawer({
   const handleOpenRoomSubmission = useCallback(async (row: DrawerFloorDataRow) => {
     const propertyId = propertyData?.id;
     if (!row.pdnId || !propertyId) {
-      console.error('[Room Submission] Missing pdnId or propertyId');
+      logger.error('[Room Submission] Missing pdnId or propertyId');
       return;
     }
 

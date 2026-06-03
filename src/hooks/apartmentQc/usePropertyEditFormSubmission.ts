@@ -14,6 +14,8 @@ import type {
 import type { UseSubType } from '@/types/typeOfUse.types';
 import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 import { toast } from 'sonner';
+import { logger } from '@/lib/utils/logger';
+import { getUserIdFromCookie } from '@/lib/utils/cookie';
 
 interface UsePropertyEditFormSubmissionArgs {
   propertyId: number;
@@ -71,7 +73,7 @@ export function usePropertyEditFormSubmission(
       flatOrShopNo: formData.flatOrShopNo || undefined,
       flatOrShopName: formData.flatOrShopName || undefined,
       oldPropertyNo: formData.oldPropertyNo || undefined,
-      updatedBy: 1,
+      updatedBy: getUserIdFromCookie() || 1,
     };
   }, [formData]);
 
@@ -107,7 +109,7 @@ export function usePropertyEditFormSubmission(
         subTypeOfUseId: subTypeOption ? parseInt(subTypeOption.value, 10) : undefined,
         constructionYear: row.conYear || undefined,
         assessmentYear: row.asstYear || undefined,
-        updatedBy: 1,
+        updatedBy: getUserIdFromCookie() || 1,
       };
     });
   }, [floorData, floorOptions, conTypeOptions, useTypeOptions, allSubTypes]);
@@ -179,7 +181,7 @@ export function usePropertyEditFormSubmission(
           toast.success(copy.messages.basicDetailsUpdated);
         }
       } catch (error) {
-        console.error('[PropertyEditFormSubmission] Save failed:', error);
+        logger.error('[PropertyEditFormSubmission] Save failed', { error: error as Error });
         toast.error(copy.messages.floorQCUpdateFailed);
       } finally {
         setIsSaving(false);

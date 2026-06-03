@@ -1,6 +1,7 @@
 import { useMemo, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getPropertyTypeByIdAction } from '@/app/[locale]/property-tax/propertytype/action';
+import { logger } from '@/lib/utils/logger';
 import { usePropertyEditFormState } from './usePropertyEditFormState';
 import { usePropertyEditFormValidation } from './usePropertyEditFormValidation';
 import { usePropertyEditFormSubmission } from './usePropertyEditFormSubmission';
@@ -156,7 +157,7 @@ export function usePropertyEditForm({
           }
         })
         .catch((err) => {
-          console.error('[usePropertyEditForm] Failed to fetch property type description:', err);
+          logger.error('[usePropertyEditForm] Failed to fetch property type description', { error: err as Error });
         });
     }
   }, [propertyData, setFormData]);

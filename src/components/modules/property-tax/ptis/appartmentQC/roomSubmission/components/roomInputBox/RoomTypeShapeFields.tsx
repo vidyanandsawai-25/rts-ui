@@ -61,9 +61,8 @@ export const RoomTypeShapeFields: React.FC<RoomTypeShapeFieldsProps> = ({
           value={formData.utilities}
           onChange={(value, roomTypeId) => {
             handleInputChange('utilities', value);
-            if (roomTypeId !== undefined) {
-              handleInputChange('roomTypeId', String(roomTypeId));
-            }
+            // Always set roomTypeId - use empty string if undefined to clear previous value
+            handleInputChange('roomTypeId', roomTypeId !== undefined ? String(roomTypeId) : '');
             setTimeout(() => { focusRefs?.current['shape']?.focus(); (focusRefs?.current['shape'] as HTMLElement)?.click(); }, 100);
           }}
           disabled={false}
