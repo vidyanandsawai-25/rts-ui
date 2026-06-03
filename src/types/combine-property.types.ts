@@ -40,6 +40,7 @@ export interface PropertyCombineDetails {
   pendingAmount: number;
   propertyDescription: string;
   propertyTypeId: number;
+  combineReason?: string;
 }
 
 export interface PropertyCombineDetailsResponse {
@@ -54,6 +55,10 @@ export interface GetPropertyCombineDetailsParams {
   wardId: number;
   propertyNo: string;
   partitionNo: string;
+}
+
+export interface GetCombinePropertiesHistoryParams {
+  sourcePropertyId?: number;
 }
 
 export interface CombinePropertyPayload {

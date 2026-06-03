@@ -31,6 +31,9 @@ vi.mock('@/components/common/ActionButtons', () => ({
   CancelButton: ({ onClick, label }: { onClick: () => void, label: string }) => (
     <button data-testid="cancel-btn" onClick={onClick}>{label}</button>
   ),
+  ShowHistoryButton: ({ onClick, label }: { onClick: () => void, label: string }) => (
+    <button data-testid="history-btn" onClick={onClick}>{label}</button>
+  ),
 }));
 
 describe('CombinePropertyFilterBar', () => {
@@ -57,6 +60,8 @@ describe('CombinePropertyFilterBar', () => {
     setSelectedPropertyType: vi.fn(),
     handleClear: vi.fn(),
     handleProceed: vi.fn(),
+    showHistory: false,
+    setShowHistory: vi.fn(),
   };
 
   it('renders correctly with range method', () => {

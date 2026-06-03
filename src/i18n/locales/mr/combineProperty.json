@@ -64,5 +64,10 @@
   "loading": {
     "message": "मालमत्ता एकत्रीकरण लोड होत आहे...",
     "description": "आम्ही मालमत्ता डेटा प्राप्त करेपर्यंत कृपया प्रतीक्षा करा"
-  }
+  },
+  "combinePropertyHistory": "Combine Property History Details",
+  "viewDetails": "तपशील पहा",
+  "action": "कृती",
+  "showHistory": "इतिहास दाखवा",
+  "hideHistory": "इतिहास लपवा"
 }
