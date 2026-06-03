@@ -84,6 +84,14 @@ export function useTaxationBreakdownForm(
         return copy;
       });
     }
+    
+    // Reset taxes when year changes
+    const newTaxYear = initialData?.taxYears?.find(y =>
+      y.financeYearId === selectedYear?.id ||
+      y.year === selectedYear?.year ||
+      y.yearCode === selectedYear?.yearCode
+    ) || null;
+    resetTaxesForYear(newTaxYear);
   };
 
 
@@ -109,16 +117,14 @@ export function useTaxationBreakdownForm(
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Sync taxes when activeTaxYear changes
-  useEffect(() => {
+  // Reset taxes when active tax year changes (triggered by year selection)
+  const resetTaxesForYear = (taxYear: OldTaxYear | null) => {
     setTaxes(
-      activeTaxYear?.taxes && activeTaxYear.taxes.length > 0
-        ? activeTaxYear.taxes
+      taxYear?.taxes && taxYear.taxes.length > 0
+        ? taxYear.taxes
         : defaultTaxList
     );
-  }, [activeTaxYear, defaultTaxList]);
-
-  // Dynamic Taxes State
+  };
 
   const handleTaxChange = (taxId: number, value: string) => {
     const numValue = Number(value) || 0;
@@ -243,9 +249,8 @@ export function useTaxationBreakdownForm(
 
   const hasTaxData = taxes && taxes.length > 0;
 
-  const hasAppliedTaxes = useMemo(() => {
-    return !!(activeTaxYear?.taxes && activeTaxYear.taxes.length > 0);
-  }, [activeTaxYear]);
+  // Let React Compiler optimize this instead of manual memoization
+  const hasAppliedTaxes = !!(activeTaxYear?.taxes && activeTaxYear.taxes.length > 0);
 
   return {
     taxes,
