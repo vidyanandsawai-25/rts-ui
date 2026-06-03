@@ -176,20 +176,24 @@ describe("useRateSectionList", () => {
         result.current.setSearchValue("test search");
       });
 
+      // Verify search is set immediately while typing
+      expect(result.current.searchValue).toBe("test search");
+
       await act(async () => {
         await vi.runAllTimersAsync();
       });
 
-      // Verify search was set
-      expect(result.current.searchValue).toBe("test search");
-      expect(mockPush).toHaveBeenCalled();
+      // Verify URL was updated
+      expect(mockPush).toHaveBeenCalledWith(
+        expect.stringContaining("q=test+search")
+      );
 
       // Clear the search value
       act(() => {
         result.current.setSearchValue("");
       });
 
-      // Should update local state immediately
+      // Should update local state immediately while typing
       expect(result.current.searchValue).toBe("");
 
       vi.useRealTimers();

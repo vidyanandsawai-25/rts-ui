@@ -75,8 +75,9 @@ export async function handleWardDelete({
 
 export function handleWardEdit({ row, searchParams, router }: HandleWardEditParams) {
   const params = new URLSearchParams(searchParams.toString());
-  const wardId = row.wardId;
-  const rateSectionDetailsId = row.id;
+  // Handle case-insensitive property names from API
+  const wardId = row.wardId ?? (row as Record<string, unknown>)["WardId"];
+  const rateSectionDetailsId = row.id ?? (row as Record<string, unknown>)["Id"];
 
   if (wardId) {
     params.set("ward", String(wardId));

@@ -61,7 +61,8 @@ describe("RateSectionCard", () => {
   it("renders rate section card", () => {
     render(<RateSectionCard {...defaultProps} />);
     expect(screen.getByTestId("card")).toBeInTheDocument();
-    expect(screen.getByText("RS001")).toBeInTheDocument();
+    // Card now displays rate.id (1) instead of rateSectionNo
+    expect(screen.getByText("1")).toBeInTheDocument();
     expect(screen.getByText("Rate Section 1")).toBeInTheDocument();
   });
 
@@ -90,8 +91,9 @@ describe("RateSectionCard", () => {
   it("navigates to zone on card click", () => {
     render(<RateSectionCard {...defaultProps} />);
     fireEvent.click(screen.getByTestId("card"));
+    // Now navigates with zone=id (1) instead of rateSectionNo
     expect(mockPush).toHaveBeenCalledWith(
-      expect.stringContaining("zone=RS001")
+      expect.stringContaining("zone=1")
     );
   });
 
@@ -111,7 +113,8 @@ describe("RateSectionCard", () => {
     const onDelete = vi.fn();
     render(<RateSectionCard {...defaultProps} onDelete={onDelete} />);
     fireEvent.click(screen.getByTestId("delete-button"));
-    expect(onDelete).toHaveBeenCalledWith("1", "Rate Section 1", "RS001");
+    // Third argument is now String(rateId) = "1" instead of rateSectionNo
+    expect(onDelete).toHaveBeenCalledWith("1", "Rate Section 1", "1");
   });
 
   it("disables delete button when deletingId matches", () => {

@@ -139,7 +139,7 @@
     "updateError": "Failed to update rate section",
     "deleteSuccess": "Rate Section \"{name}\" deleted successfully",
     "deleteError": "Failed to delete rate section",
-    "inUseError": "\"{name}\" is in use. You cannot delete this rate section.",
+    "inUseError": "The rate section \"{name}\" cannot be deleted because wards are currently associated with it. Please remove the associated wards before deleting this rate section.",
     "thisRateSection": "this rate section"
   },
   "pagination": {
