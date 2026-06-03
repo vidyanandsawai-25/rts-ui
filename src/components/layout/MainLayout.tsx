@@ -14,10 +14,15 @@ import { buildSidebarTreeFromUserScreens } from '@/lib/utils/sidebar-tree-user';
 import { PermissionsProvider } from '@/lib/providers/PermissionsProvider';
 import type { UserScreenAccess } from '@/types/user-screen-access.types';
 import { getModules } from '@/lib/api/configuration-settings/screenAccess/master-data.service';
+import { getUserById } from '@/lib/api/configuration-settings/user-management/user.services';
 import {
   applyModuleActivationGate,
   buildActiveModuleIdSet,
+  mergeUserScreens,
+  filterScreensByAllocatedRoles,
 } from '@/lib/utils/module-access-guard';
+
+
 
 export interface MainLayoutProps {
   children: React.ReactNode;
@@ -76,16 +81,24 @@ const fetchActiveModuleIds = cache(async () => {
  */
 const fetchUserMenuItems = cache(async (userId: number, token?: string) => {
   try {
-    const [screensRes, activeModuleIds] = await Promise.all([
+    const [screensRes, activeModuleIds, userProfile] = await Promise.all([
       userScreenAccessService.getScreensForUser(userId, token),
       fetchActiveModuleIds(),
+      getUserById(String(userId)).catch(() => null),
     ]);
 
     if (screensRes.success && Array.isArray(screensRes.data) && screensRes.data.length > 0) {
+      const filteredScreens = filterScreensByAllocatedRoles(
+        screensRes.data,
+        userProfile?.roleAccess
+      );
+
+      const mergedScreens = mergeUserScreens(filteredScreens);
       const effectiveScreens =
         activeModuleIds != null
-          ? applyModuleActivationGate(screensRes.data, activeModuleIds)
-          : screensRes.data;
+          ? applyModuleActivationGate(mergedScreens, activeModuleIds)
+          : mergedScreens;
+
 
       const userMenuItems = buildSidebarTreeFromUserScreens(effectiveScreens);
       if (userMenuItems.length > 0) {

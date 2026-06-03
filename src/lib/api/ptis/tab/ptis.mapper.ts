@@ -128,8 +128,8 @@ export const ptisMapper = {
       constructionType: (item.constructionTypeDescription as string) || '',
       typeOfUse: (item.typeOfUseDescription as string) || '',
       subType: (item.subTypeOfUseDescription as string) || '',
-      carpetArea: `${(item.carpetAreaSqFeet as number) || 0} / ${(item.carpetAreaSqMeter as number) || 0}`,
-      builtupArea: `${(item.builtupAreaSqFeet as number) || 0} / ${(item.builtupAreaSqMeter as number) || 0}`,
+      carpetArea: `${item.oldCarpetAreaSqFeet ?? item.carpetAreaSqFeet ?? 0} / ${item.oldCarpetAreaSqMeter ?? item.carpetAreaSqMeter ?? 0}`,
+      builtupArea: `${item.oldBuiltupAreaSqFeet ?? item.builtupAreaSqFeet ?? 0} / ${item.oldBuiltupAreaSqMeter ?? item.builtupAreaSqMeter ?? 0}`,
     }));
   },
 };

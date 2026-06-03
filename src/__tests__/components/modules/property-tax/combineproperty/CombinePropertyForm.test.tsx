@@ -53,6 +53,9 @@ vi.mock('@/components/common/ActionButtons', () => ({
   CancelButton: ({ onClick, label }: { onClick: () => void, label: string }) => (
     <button data-testid="cancel-btn" onClick={onClick}>{label}</button>
   ),
+  ShowHistoryButton: ({ onClick, label }: { onClick: () => void, label: string }) => (
+    <button data-testid="history-btn" onClick={onClick}>{label}</button>
+  ),
 }));
 
 vi.mock('@/components/common/MasterTable', () => ({
