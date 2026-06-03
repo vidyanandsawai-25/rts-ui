@@ -111,5 +111,6 @@ export function normalizePropertyCombineDetails(data: Record<string, unknown>): 
     pendingAmount: Number.isFinite(pendingAmount) ? pendingAmount : 0,
     propertyDescription: String(data.propertyDescription ?? "").trim(),
     propertyTypeId: Number.isFinite(propertyTypeId) ? propertyTypeId : 0,
+    combineReason: data.combineReason != null ? String(data.combineReason).trim() : undefined,
   };
 }
