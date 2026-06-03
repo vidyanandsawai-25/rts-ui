@@ -43,7 +43,6 @@ export default function TaxationBreakdownForm({
   }, [yearOptions]);
 
 
-
   return (
     <div className="p-2 space-y-3">
       <div className="bg-white rounded-xl shadow-md border-2 border-blue-100 p-4">

@@ -5,7 +5,7 @@ import { useTaxationBreakdownForm } from '@/hooks/ptis/QuickDataEntry/Olddetails
 import { toast } from 'sonner';
 import { useConfirm } from '@/components/common';
 import { useParams, useRouter } from 'next/navigation';
-import { saveOldTaxesDetailsAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/OldDetails/taxation-breakdown/action';
+import { saveOldTaxesDetailsAction, applyOldTaxesDetailsAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/OldDetails/taxation-breakdown/action';
 
 vi.mock('sonner', () => ({
   toast: {
@@ -32,6 +32,7 @@ vi.mock('next-intl', () => ({
 
 vi.mock('@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/OldDetails/taxation-breakdown/action', () => ({
   saveOldTaxesDetailsAction: vi.fn(),
+  applyOldTaxesDetailsAction: vi.fn(),
 }));
 
 describe('useTaxationBreakdownForm', () => {
@@ -175,5 +176,60 @@ describe('useTaxationBreakdownForm', () => {
     expect(result.current.selectedYearId).toBe('2');
     expect(result.current.isChanged).toBe(true);
     expect(result.current.validationErrors.yearMaster).toBeUndefined();
+  });
+
+  it('should call applyOldTaxesDetailsAction when taxes have not been applied yet', async () => {
+    mockConfirm.mockImplementation(({ onConfirm }) => onConfirm());
+    vi.mocked(applyOldTaxesDetailsAction).mockResolvedValue({ success: true } as any);
+
+    const mockInitialDataNotApplied = {
+      propertyId: 123,
+      taxYears: [
+        {
+          financeYearId: 1,
+          year: 2024,
+          yearCode: '2024-25',
+          taxes: [] as any[],
+        },
+        {
+          financeYearId: 2,
+          year: 2025,
+          yearCode: '2025-26',
+          taxes: [
+            { taxId: 1, taxName: 'Property Tax', taxAmount: 500 },
+          ],
+        }
+      ],
+    };
+
+    const { result } = renderHook(() => useTaxationBreakdownForm(mockInitialDataNotApplied));
+
+    act(() => {
+      result.current.handleTaxChange(1, '600');
+    });
+
+    await act(async () => {
+      result.current.handleSave();
+    });
+
+    expect(mockConfirm).toHaveBeenCalled();
+    expect(applyOldTaxesDetailsAction).toHaveBeenCalledWith(
+      123,
+      expect.objectContaining({
+        taxYears: expect.arrayContaining([
+          expect.objectContaining({
+            taxes: expect.arrayContaining([
+              expect.objectContaining({
+                taxId: 1,
+                taxAmount: 600,
+              }),
+            ]),
+          }),
+        ]),
+      }),
+      'en'
+    );
+    expect(toast.success).toHaveBeenCalled();
+    expect(mockRefresh).toHaveBeenCalled();
   });
 });

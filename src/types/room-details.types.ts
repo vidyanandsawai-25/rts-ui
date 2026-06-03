@@ -144,6 +144,7 @@ export interface RoomTypeResponse {
     isActive: boolean;
     createdDate: string;
     updatedDate: string | null;
+    roomTypeDescription?: string; // Some APIs return this instead of description
     [key: string]: unknown;
 }
 

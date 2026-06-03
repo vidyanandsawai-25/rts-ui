@@ -63,7 +63,6 @@ export default async function FloorInformationPage({ params, searchParams }: Pag
 
     let floors, subFloors, constructionTypes, useTypes, subUseTypeList, floorPaginationData;
 
-    console.log("sortBy, sortOrder :",sortBy, sortOrder);
     try {
         // Fetch all required data in parallel
         const [

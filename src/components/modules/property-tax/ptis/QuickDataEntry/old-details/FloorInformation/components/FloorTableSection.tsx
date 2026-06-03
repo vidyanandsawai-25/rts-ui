@@ -2,8 +2,8 @@
 
 import { useCallback, useMemo, useTransition } from "react";
 import { useRouter, useSearchParams, useParams } from "next/navigation";
-import { ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import { DeleteButton, EditButton, MasterTable, useConfirm } from "@/components/common";
+import { ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import type { FloorTableRow } from "@/types/OldDetails/property-old-details.types";
 import { getFloorInformationColumns } from "../FloorInformationColumns";
 import { FloorTableSectionProps } from "@/types/OldDetails/property-old-floor-info.types";
@@ -110,9 +110,12 @@ export function FloorTableSection({
       return {
         ...col,
         label: (
-          <div
+          <button
+            type="button"
             onClick={() => handleSortClick(col.key as string)}
-            className="inline-flex h-6 w-full items-center justify-center gap-0.5 rounded border border-white/10 bg-black/5 px-1.5 text-[10px] font-bold text-white shadow-sm transition-colors duration-200 select-none cursor-pointer hover:bg-black/15 active:bg-black/25 whitespace-nowrap"
+            className="inline-flex h-6 w-full items-center justify-center gap-0.5 rounded border border-white/10 bg-black/5 px-1.5 text-[10px] font-bold text-white shadow-sm transition-colors duration-200 select-none cursor-pointer hover:bg-black/15 active:bg-black/25 whitespace-nowrap focus:outline-none focus:ring-1 focus:ring-white/50"
+            aria-label={`Sort by ${col.label}`}
+            aria-sort={visualSort === 'asc' ? 'ascending' : visualSort === 'desc' ? 'descending' : 'none'}
           >
             <span className="truncate font-bold uppercase tracking-normal">{col.label}</span>
             <span className="inline-flex flex-shrink-0 items-center ml-1">
@@ -124,7 +127,7 @@ export function FloorTableSection({
                 <ArrowUpDown className="h-2.5 w-2.5 text-white opacity-60 hover:opacity-100 transition-opacity" />
               )}
             </span>
-          </div>
+          </button>
         ),
         render: (value: unknown, row: FloorTableRow, index: number) => {
           const content = col.render

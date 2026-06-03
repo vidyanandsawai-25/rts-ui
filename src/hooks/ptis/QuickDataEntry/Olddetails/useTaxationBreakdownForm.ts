@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useLocale, useTranslations } from "next-intl";
@@ -57,18 +57,16 @@ export function useTaxationBreakdownForm(
 
   // Selected Year Master ID state
   const [selectedYearId, setSelectedYearIdState] = useState<string>(initialYearId);
-  const [prevInitialYearId, setPrevInitialYearId] = useState<string>(initialYearId);
 
-  // Sync selectedYearId when initialYearId changes (render-phase state adjustment)
-  if (initialYearId !== prevInitialYearId) {
-    setPrevInitialYearId(initialYearId);
+  // Sync selectedYearId when initialYearId changes
+  useEffect(() => {
     setSelectedYearIdState(initialYearId);
     setValidationErrors(prev => {
       const copy = { ...prev };
       delete copy.yearMaster;
       return copy;
     });
-  }
+  }, [initialYearId]);
 
   const setSelectedYearId = (val: string) => {
     setSelectedYearIdState(val);
@@ -104,17 +102,21 @@ export function useTaxationBreakdownForm(
   }, [initialData, activeYearMaster]);
 
   // Dynamic Taxes State
-  const [prevActiveTaxYear, setPrevActiveTaxYear] = useState<OldTaxYear | null>(activeTaxYear);
   const [taxes, setTaxes] = useState<OldTaxItem[]>(() => {
-    return activeTaxYear?.taxes || defaultTaxList;
+    return activeTaxYear?.taxes && activeTaxYear.taxes.length > 0
+      ? activeTaxYear.taxes
+      : defaultTaxList;
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Sync taxes when activeTaxYear changes (render-phase state adjustment)
-  if (activeTaxYear !== prevActiveTaxYear) {
-    setPrevActiveTaxYear(activeTaxYear);
-    setTaxes(activeTaxYear?.taxes || defaultTaxList);
-  }
+  // Sync taxes when activeTaxYear changes
+  useEffect(() => {
+    setTaxes(
+      activeTaxYear?.taxes && activeTaxYear.taxes.length > 0
+        ? activeTaxYear.taxes
+        : defaultTaxList
+    );
+  }, [activeTaxYear, defaultTaxList]);
 
   // Dynamic Taxes State
 
@@ -153,7 +155,7 @@ export function useTaxationBreakdownForm(
 
     // Ensure a Year is selected
     if (!selectedYearId) {
-      toast.error('Please select a Year Master');
+       toast.error(tValidation('property.validation.financeYearRequired'));
       return false;
     }
 
@@ -178,7 +180,7 @@ export function useTaxationBreakdownForm(
     }
 
     if (!selectedYearId) {
-      toast.error('Please select a Year Master');
+       toast.error(tValidation('property.validation.financeYearRequired'));
       return;
     }
 
@@ -225,11 +227,14 @@ export function useTaxationBreakdownForm(
 
   const handleSave = () => {
     if (!validate()) return;
-    saveTaxes(taxes);
+    saveTaxes(taxes, !hasAppliedTaxes);
   };
 
   const isTaxesChanged = taxes.some(t => {
-    const orig = (activeTaxYear?.taxes || defaultTaxList).find(ot => ot.taxId === t.taxId);
+    const originalTaxes = activeTaxYear?.taxes && activeTaxYear.taxes.length > 0
+      ? activeTaxYear.taxes
+      : defaultTaxList;
+    const orig = originalTaxes.find(ot => ot.taxId === t.taxId);
     return (orig?.taxAmount || 0) !== (t.taxAmount || 0);
   });
 

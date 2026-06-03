@@ -103,7 +103,6 @@ export async function getOldFloorDetailsForFloorInformation(
         params.append("SortOrder", sortOrder.trim());
     }
 
-    console.log("Params :",params.toString())
     const response = await apiClient.get<OldFloorDetailsResponse>(
         `/Property/${propertyId}/floor-details-old/paged?${params.toString()}`,
         {cache: 'no-store'}
