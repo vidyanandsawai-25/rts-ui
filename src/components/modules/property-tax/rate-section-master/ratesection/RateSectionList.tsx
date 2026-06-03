@@ -97,13 +97,13 @@ export default function RateSectionList({
       emptyText={searchValue ? t('list.noRateSectionsFound') : t('list.noRateSectionsAvailable')}
       emptyIcon={<Layers className="w-12 h-12 mx-auto mb-2 text-gray-300" />}
       renderCard={(rate, index) => {
-        const rateNo = rate.rateSectionNo;
-        const isSelected = selectedRateSection === rateNo;
-        const isNewlyCreated = newlyCreatedRateNo === rateNo;
+        const rateId = String(rate.id);
+        const isSelected = selectedRateSection === rateId;
+        const isNewlyCreated = newlyCreatedRateNo === rateId;
 
         return (
           <RateSectionCard
-            key={rate.id || rateNo || index}
+            key={rate.id || index}
             rate={rate}
             index={index}
             isSelected={isSelected}

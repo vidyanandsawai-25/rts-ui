@@ -192,7 +192,8 @@ describe("RateSectionContent", () => {
     };
     
     render(<RateSectionContent {...propsWithoutRateSection} />);
-    expect(screen.getByTestId("selected-zone")).toHaveTextContent("RS001");
+    // When no initialSelectedRateSection, uses String(rates[0].id) = "1"
+    expect(screen.getByTestId("selected-zone")).toHaveTextContent("1");
   });
 
   it("handles empty rates array", () => {

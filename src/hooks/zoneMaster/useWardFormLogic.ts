@@ -5,6 +5,7 @@ import { WardItem } from "@/types/wardMaster.types";
 import { WardFormState, WardFormErrors } from "@/components/modules/property-tax/zone-master/wards/WardFormFields";
 import { ZONE_WARD_NO_MAX_LENGTH, ZONE_WARD_NAME_MAX_LENGTH } from "@/components/modules/property-tax/zone-master/constants";
 import { handleWardUpdate } from "@/components/modules/property-tax/zone-master/wards/wardHandlers";
+import { POSITIVE_INTEGER_REGEX } from "@/lib/utils/validation-rules";
 
 interface UseWardFormLogicProps {
   open: boolean;
@@ -141,7 +142,7 @@ export function useWardFormLogic({
     
     if (!data.sequenceNo) {
       newErrors.sequenceNo = t("validation.sequenceNoRequired");
-    } else if (!/^\d+$/.test(data.sequenceNo.toString())) {
+    } else if (!POSITIVE_INTEGER_REGEX.test(data.sequenceNo.toString())) {
       newErrors.sequenceNo = t("validation.sequenceNoNumber");
     } else {
       const seqNum = parseInt(data.sequenceNo, 10);
