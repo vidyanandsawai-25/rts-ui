@@ -1,6 +1,6 @@
 'use client';
 
-import { Monitor, Shield } from 'lucide-react';
+import { Monitor, Shield, AlertCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Card } from '@/components/common/Card';
 import { Tabs, TabList, Tab, TabPanel } from '@/components/common/Tabs';
@@ -36,6 +36,8 @@ interface ScreenAccessLayoutProps {
   };
   screensPagination: PaginationData;
   groupsPagination: PaginationData;
+  fetchError?: string;
+  statusCode?: number;
 }
 
 export function ScreenAccessLayout({
@@ -52,9 +54,19 @@ export function ScreenAccessLayout({
   translations,
   screensPagination,
   groupsPagination,
+  fetchError,
+  statusCode,
 }: ScreenAccessLayoutProps) {
   const t = useTranslations('screenAccess');
+  const tCommon = useTranslations('common');
   const { updateQueries } = useQueryTransition();
+
+  const isUnauthorized =
+    statusCode === 401 ||
+    (fetchError &&
+      (fetchError.toLowerCase().includes('unauthorized') ||
+        fetchError.toLowerCase().includes('token') ||
+        fetchError === 'messages.unauthorizedToken'));
 
   const handleTabChange = (value: string | number) => {
     const val = String(value);
@@ -69,9 +81,35 @@ export function ScreenAccessLayout({
     updateQueries(updates);
   };
 
+  if (isUnauthorized) {
+    const messageKey = 'errors.unauthorized';
+
+    return (
+      <PageContainer className="flex flex-col min-h-screen">
+        <TableHeader title={translations.title} subtitle={translations.subtitle} icon={Monitor} />
+        <div className="flex-1 flex flex-col items-center justify-center p-6 bg-white rounded-xl border border-gray-200/80 shadow-sm mt-4 animate-in fade-in duration-300">
+          <AlertCircle className="w-12 h-12 text-red-500 mb-4 animate-bounce" />
+          <h3 className="text-lg font-semibold text-gray-900">{tCommon(messageKey)}</h3>
+        </div>
+      </PageContainer>
+    );
+  }
+
   return (
     <PageContainer className="flex flex-col min-h-screen">
       <TableHeader title={translations.title} subtitle={translations.subtitle} icon={Monitor} />
+
+      {fetchError && (
+        <div className="mt-4 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-xl shadow-sm flex items-start gap-3 animate-in fade-in duration-300">
+          <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+          <div>
+            <h3 className="text-sm font-semibold text-red-800">
+              {tCommon('messages.fetchError') || 'Error fetching data'}
+            </h3>
+            <p className="text-xs text-red-700 mt-1 font-mono">{fetchError}</p>
+          </div>
+        </div>
+      )}
 
       <Card className="flex-1 flex flex-col bg-white shadow-2xl mt-4 relative overflow-hidden">
         <Tabs

@@ -11,6 +11,7 @@ import {
   PropertyCombineDetails,
   GetPropertyCombineDetailsParams,
   PropertyCombineDetailsResponse,
+  GetCombinePropertiesHistoryParams,
 } from "@/types/combine-property.types";
 import {
   isCombinePropertyItemShape,
@@ -135,6 +136,53 @@ export async function createCombineProperty(payload: CombinePropertyPayload): Pr
     return handleApiResponse(response, "Combine properties failed");
   } catch (error) {
     logger.error("Error creating combine property", undefined, error);
+    throw error;
+  }
+}
+
+/**
+ * Fetches history of combined properties
+ */
+export async function getCombinePropertiesHistory(
+  params?: GetCombinePropertiesHistoryParams
+): Promise<PropertyCombineDetails[]> {
+  try {
+    const queryParams = new URLSearchParams();
+    if (params?.sourcePropertyId !== undefined) {
+      queryParams.append("sourcePropertyId", params.sourcePropertyId.toString());
+    }
+
+    // Avoid trailing '?' if no query params
+    const queryString = queryParams.toString();
+    const url = queryString ? `/Property/combine-properties-history?${queryString}` : `/Property/combine-properties-history`;
+
+    const response = await apiClient.get<PropertyCombineDetailsResponse | PropertyCombineDetails[]>(url);
+
+    if (!response.success) {
+      throw new ApiError(
+        response.statusCode ?? 500,
+        response.error || "Failed to fetch property combine history",
+        "Get property combine history failed"
+      );
+    }
+
+    if (!response.data) {
+      throw new ApiError(500, "No data received from server", "Invalid response format");
+    }
+
+    // Since the API returns a PropertyCombineDetailsResponse object with an items array
+    let rawItems: unknown[] = [];
+    if ("items" in response.data && !Array.isArray(response.data)) {
+      rawItems = response.data.items || [];
+    } else if (Array.isArray(response.data)) {
+      // Fallback if the API ever returns an array directly
+      rawItems = response.data;
+    }
+
+    const validItems = rawItems.filter(isPropertyCombineDetailsShape);
+    return validItems.map(normalizePropertyCombineDetails);
+  } catch (error) {
+    logger.error("Error fetching property combine history", undefined, error);
     throw error;
   }
 }

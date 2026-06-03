@@ -10,6 +10,7 @@ import {
   getCombinePropertiesPaged,
   getPropertyCombineDetails,
   createCombineProperty,
+  getCombinePropertiesHistory,
 } from "@/lib/api/combine-property/combine-property.service";
 import {
   CombinePropertyParams,
@@ -17,6 +18,7 @@ import {
   CombinePropertyPayload,
   GetPropertyCombineDetailsParams,
   PropertyCombineDetails,
+  GetCombinePropertiesHistoryParams,
 } from "@/types/combine-property.types";
 import { PagedResponse } from "@/types/common.types";
 
@@ -150,5 +152,27 @@ export async function createCombinePropertyAction(
       return { success: false, message: error.message };
     }
     return { success: false, message: "Failed to combine properties" };
+  }
+}
+
+/* ================================================================
+   GET COMBINE PROPERTIES HISTORY
+   Optional: sourcePropertyId
+================================================================ */
+export async function fetchCombinePropertiesHistoryAction(
+  params?: GetCombinePropertiesHistoryParams
+): Promise<PropertyCombineDetails[]> {
+  try {
+    if (params?.sourcePropertyId !== undefined && (!Number.isFinite(params.sourcePropertyId) || params.sourcePropertyId <= 0)) {
+      logger.warn("Invalid Source Property ID", { sourcePropertyId: params.sourcePropertyId });
+      return [];
+    }
+
+    const result = await getCombinePropertiesHistory(params);
+    return result;
+  } catch (error: unknown) {
+    logger.error("Error fetching property combine history", undefined, error);
+    // Throw a simple error message for better user experience
+    throw new Error("Failed to load combine properties history. Please try again.");
   }
 }

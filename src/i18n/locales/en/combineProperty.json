@@ -64,5 +64,10 @@
   "loading": {
     "message": "Loading Combine Property...",
     "description": "Please wait while we fetch the property data"
-  }
+  },
+  "combinePropertyHistory": "Combine Property History Details",
+  "viewDetails": "View Details",
+  "action": "Action",
+  "showHistory": "Show History",
+  "hideHistory": "Hide History"
 }

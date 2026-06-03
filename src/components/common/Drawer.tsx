@@ -1,8 +1,8 @@
 "use client";
- 
+
 import { X } from "lucide-react";
 import React from "react";
- 
+
 interface DrawerProps {
   open: boolean;
   onClose: () => void;
@@ -14,8 +14,8 @@ interface DrawerProps {
   footer?: React.ReactNode;
   hideHeader?: boolean;
 }
- 
-export  function Drawer({
+
+export function Drawer({
   open,
   onClose,
   title,
@@ -42,18 +42,18 @@ export  function Drawer({
   }, [open]);
 
   if (!open) return null;
- 
+
   const widthClass = {
     sm: "w-[90vw] md:w-[420px]",
     md: "w-[90vw] md:w-[520px]",
     lg: "w-[95vw] md:w-[900px] lg:w-[900px] xl:w-[900px]",
     xl: "w-[97vw] md:w-[1000px] lg:w-[1200px] xl:w-[1400px]",
   }[width];
- 
+
   return (
     <>
- 
-        <div
+
+      <div
         className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm"
         onClick={onClose}
         role="button"
@@ -64,8 +64,8 @@ export  function Drawer({
           }
         }}
       />
- 
- 
+
+
       <div
         className={`
           drawer-instance
@@ -79,7 +79,7 @@ export  function Drawer({
         role="dialog"
         aria-modal="true"
         aria-labelledby="drawer-title"
- 
+
       >
         {/* ================= HEADER ================= */}
         {!hideHeader && (
@@ -91,8 +91,8 @@ export  function Drawer({
               {/* ICON SLOT (from title JSX) */}
               {title}
             </div>
-   
-           <button
+
+            <button
               onClick={onClose}
               className="
                 p-2 rounded-lg
@@ -104,14 +104,14 @@ export  function Drawer({
             </button>
           </div>
         )}
- 
+
         {/* ================= BODY ================= */}
         <div className="flex-1 overflow-y-auto">
           <div className="min-h-full">
             {children}
           </div>
         </div>
- 
+
         {/* ================= FOOTER ================= */}
         {footer && (
           <div className="
