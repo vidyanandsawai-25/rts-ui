@@ -145,6 +145,13 @@ export interface EffectState {
   overrideRate?: number | string;
 }
 
+export interface SkipRuleRef {
+  ruleId: number;
+  ruleCode: string;
+  ruleName: string;
+  reason?: string;
+}
+
 export interface RuleItem {
   id?: number;
   ruleName: string;
@@ -164,6 +171,18 @@ export interface RuleItem {
   changeReason?: string;
   createdBy?: number;
   updatedBy?: number;
+  /** Rule evaluation priority — lower number = higher priority */
+  priority?: number;
+  /** Whether this rule is enabled for evaluation */
+  isEnabled?: boolean;
+  /** When true, no further rules are evaluated after this one matches */
+  stopProcessing?: boolean;
+  /** IDs of rules to skip when this rule matches */
+  skipRuleIds?: number[];
+  /** Human-readable reason why the listed rules are skipped */
+  exclusionReason?: string;
+  /** Populated by the API response — resolved skip rule references */
+  skipRules?: SkipRuleRef[];
 }
 
 export interface RuleListResponse {

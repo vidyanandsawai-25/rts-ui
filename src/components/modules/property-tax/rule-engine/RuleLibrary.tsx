@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { RuleItem, RuleScope } from '@/types/rule-engine.types';
 import TableHeader from '@/components/common/TableHeader';
-import { MasterTable, Column } from '@/components/common/MasterTable';
+import { MasterTable, Column, SearchSelect } from '@/components/common';
 import { Select } from '@/components/common/select';
 import { Input } from '@/components/common/Input';
 import { EditButton, DeleteButton } from '@/components/common/ActionButtons';
@@ -144,7 +144,7 @@ export default function RuleLibrary({
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <Select options={categoryFilterOptions} value={filterCategory} onChange={(_e, val) => setFilterCategory(val)} />
+        <SearchSelect options={categoryFilterOptions} value={filterCategory} onChange={(_e, val) => setFilterCategory(val)} />
       </div>
 
       {/* 3. Rule list master table */}

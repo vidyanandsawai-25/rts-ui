@@ -3,7 +3,7 @@
 import React from 'react';
 import { useTranslations } from 'next-intl';
 import { FieldConfig } from '@/types/rule-engine.types';
-import { Select, Input } from '@/components/common';
+import { Input, SearchSelect } from '@/components/common';
 
 interface DropdownValueInputProps {
   config: FieldConfig;
@@ -71,12 +71,13 @@ export default function DropdownValueInput({
   if (config.sourceType === 'API') {
     return (
       <div className="flex flex-col gap-1 w-full">
-        <Select
+        <SearchSelect
           options={effectiveOptions}
           value={value}
           onChange={(_, val) => onChange(val)}
           placeholder={loadingPlaceholder}
           disabled={disabled || apiLoading}
+          isLoading={apiLoading}
           error={error}
         />
       </div>
@@ -85,23 +86,15 @@ export default function DropdownValueInput({
 
   return (
     <div className="flex flex-col gap-1 w-full">
-      <Select
+      <SearchSelect
         options={effectiveOptions}
         value={value}
         onChange={(_, val) => onChange(val)}
         placeholder={loadingPlaceholder}
         disabled={disabled || apiLoading}
+        isLoading={apiLoading}
         error={error}
       />
-      {!apiLoading && effectiveOptions.length > 0 && (
-        <button
-          type="button"
-          onClick={() => setIsCustom(true)}
-          className="self-start text-[11px] font-semibold text-gray-400 hover:text-blue-600 hover:underline transition-colors"
-        >
-          {t('valueInput.enterCustomValue')}
-        </button>
-      )}
     </div>
   );
 }

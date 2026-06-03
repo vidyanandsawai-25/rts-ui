@@ -1,6 +1,6 @@
 'use client';
 import { FieldConfig, ConditionState } from '@/types/rule-engine.types';
-import { Select, EditLabelButton, DeleteButton, ApplyButton } from '@/components/common';
+import { SearchSelect, EditLabelButton, DeleteButton, ApplyButton } from '@/components/common';
 import { useConditionRow } from './useConditionRow';
 import ValueInput from './ValueInput';
 import { useTranslations } from 'next-intl';
@@ -59,7 +59,7 @@ export default function ConditionRow({
     <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 p-4 bg-blue-50/20 border-2 border-blue-500 rounded-lg shadow-md transition-all">
       {/* Field Dropdown */}
       <div className="flex-1 lg:max-w-[24%]">
-        <Select
+        <SearchSelect
           options={fieldOptions}
           value={condition.fieldId}
           onChange={(_, val) => handleFieldChange(val)}
@@ -69,7 +69,7 @@ export default function ConditionRow({
 
       {/* Operator Dropdown */}
       <div className="w-full lg:max-w-[18%]">
-        <Select
+        <SearchSelect
           options={operatorOptions}
           value={condition.operator}
           onChange={(_, val) => onChange({ ...condition, operator: val })}

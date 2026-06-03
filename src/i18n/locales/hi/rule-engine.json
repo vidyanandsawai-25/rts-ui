@@ -18,7 +18,9 @@
     "category": "श्रेणी",
     "ruleScope": "नियम क्षेत्र",
     "description": "विवरण",
-    "descriptionPlaceholder": "नियम विवरण दर्ज करें"
+    "descriptionPlaceholder": "नियम विवरण दर्ज करें",
+    "priority": "प्राथमिकता",
+    "priorityPlaceholder": "उदा. 1"
   },
   "conditionRow": {
     "selectField": "फ़ील्ड चुनें",
@@ -36,7 +38,8 @@
     "exemptionRatio": "छूट अनुपात",
     "percentageValue": "प्रतिशत मान (%)",
     "rateValue": "दर मान",
-    "performAction": "निम्नलिखित क्रिया करें"
+    "performAction": "निम्नलिखित क्रिया करें",
+    "invalidPercentage": "मान 0% और 100% के बीच होना चाहिए"
   },
   "saveReasonModal": {
     "title": "नियम कॉन्फ़िगरेशन सहेजने की पुष्टि करें",
@@ -70,5 +73,18 @@
     "saving": "सहेज रहा है…",
     "saveChanges": "परिवर्तन सहेजें",
     "add": "जोड़ें"
+  },
+  "stopProcessing": {
+    "sectionLabel": "नियम अपवर्जन और प्रसंस्करण रोकें",
+    "toggleLabel": "प्रसंस्करण रोकें",
+    "toggleHint": "सक्षम होने पर, इस नियम के मेल खाने के बाद आगे किसी भी नियम का मूल्यांकन नहीं किया जाएगा",
+    "warningText": "प्रसंस्करण रोकें सक्रिय है। एक बार जब यह नियम मेल खा जाता है, तो बाद के नियमों का मूल्यांकन नहीं किया जाएगा। जटिल नियम श्रृंखलाओं में इसका सावधानी से उपयोग करें।",
+    "skipRulesLabel": "नियमों को छोड़ें",
+    "skipRulesPlaceholder": "छोड़ने के लिए नियम चुनें...",
+    "loadingRules": "नियम लोड हो रहे हैं...",
+    "skipRulesSelected": "अपवर्जन के लिए {count} नियम चुने गए",
+    "exclusionReasonLabel": "अपवर्जन का कारण",
+    "exclusionReasonPlaceholder": "उदा. आवासीय क्षेत्र के लिए नई एआरवी नीति द्वारा प्रतिस्थापित",
+    "optional": "वैकल्पिक"
   }
 }

@@ -97,6 +97,10 @@ export interface SearchSelectProps {
    * Direction/placement of the menu dropdown. Defaults to 'bottom'.
    */
   menuPlacement?: 'top' | 'bottom';
+  /**
+   * Optional validation error message.
+   */
+  error?: string;
 }
 
 export function SearchSelect({
@@ -119,6 +123,7 @@ export function SearchSelect({
   loadingPlaceholder,
   noOptionsPlaceholder,
   menuPlacement = 'bottom',
+  error,
 }: SearchSelectProps): React.ReactElement {
   // Fallback id and name for backward compatibility
   const fallbackId = id || name || 'search-select';
@@ -332,6 +337,7 @@ export function SearchSelect({
           className={`w-full rounded-lg border border-blue-200 px-2.5 py-1 pr-8 text-sm bg-white
             focus:ring-2 focus:ring-blue-500 outline-none text-gray-900
             cursor-pointer focus:cursor-text disabled:bg-gray-100 disabled:cursor-not-allowed
+            ${error ? 'border-red-500 focus:ring-red-400 focus:border-red-500' : 'border-blue-200 focus:ring-blue-500'}
             ${className ?? ''}`}
         />
         <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
@@ -368,6 +374,7 @@ export function SearchSelect({
           ))}
         </ul>
       )}
+      {error && <span className="text-[13px] text-red-600 mt-1 block">{error}</span>}
     </div>
   );
 }

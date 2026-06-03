@@ -18,7 +18,9 @@
     "category": "Category",
     "ruleScope": "Rule Scope",
     "description": "Description",
-    "descriptionPlaceholder": "Enter rule description"
+    "descriptionPlaceholder": "Enter rule description",
+    "priority": "Priority",
+    "priorityPlaceholder": "e.g. 1"
   },
   "conditionRow": {
     "selectField": "Select Field",
@@ -36,7 +38,8 @@
     "exemptionRatio": "Exemption Ratio",
     "percentageValue": "Percentage Value (%)",
     "rateValue": "Rate Value",
-    "performAction": "Perform the following action"
+    "performAction": "Perform the following action",
+    "invalidPercentage": "Value must be between 0% and 100%"
   },
   "saveReasonModal": {
     "title": "Confirm Rule Configuration Save",
@@ -70,5 +73,18 @@
     "saving": "Saving…",
     "saveChanges": "Save Changes",
     "add": "Add"
+  },
+  "stopProcessing": {
+    "sectionLabel": "Rule Exclusion & Stop Processing",
+    "toggleLabel": "Stop Processing",
+    "toggleHint": "When enabled, no further rules will be evaluated after this rule matches",
+    "warningText": "Stop processing is active. Once this rule matches, subsequent rules will not be evaluated. Use this with caution in complex rule chains.",
+    "skipRulesLabel": "Skip Rules",
+    "skipRulesPlaceholder": "Select rules to skip...",
+    "loadingRules": "Loading rules...",
+    "skipRulesSelected": "{count} rule(s) selected for exclusion",
+    "exclusionReasonLabel": "Exclusion Reason",
+    "exclusionReasonPlaceholder": "e.g. Superseded by new ARV policy for residential zone",
+    "optional": "optional"
   }
 }

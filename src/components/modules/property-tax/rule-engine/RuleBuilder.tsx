@@ -29,8 +29,12 @@ export default function RuleBuilder(props: RuleBuilderProps) {
     ruleScopeId, setRuleScopeId,
     ruleCategory, setRuleCategory,
     description, setDescription,
+    priority, setPriority,
     conditions, setConditions,
     effect, setEffect, fields,
+    stopProcessing, setStopProcessing,
+    skipRuleIds, setSkipRuleIds,
+    exclusionReason, setExclusionReason,
     isReasonOpen, setIsReasonOpen, changeReason, setChangeReason,
     activeScopeName, handleSaveClick, handleConfirmSave,
     isSaving,
@@ -43,6 +47,7 @@ export default function RuleBuilder(props: RuleBuilderProps) {
       <TargetFilterPanel
         ruleName={ruleName} setRuleName={setRuleName}
         description={description} setDescription={setDescription}
+        priority={priority} setPriority={setPriority}
         ruleScopeId={ruleScopeId} setRuleScopeId={setRuleScopeId}
         ruleCategory={ruleCategory} setRuleCategory={setRuleCategory}
         scopes={props.scopes}
@@ -59,6 +64,12 @@ export default function RuleBuilder(props: RuleBuilderProps) {
         effect={effect} setEffect={setEffect}
         effectTypes={props.effectTypes} categoryOptions={props.categoryOptions}
         effectTypeConfigs={props.effectTypeConfigs}
+        stopProcessing={stopProcessing}
+        onStopProcessingChange={setStopProcessing}
+        skipRuleIds={skipRuleIds}
+        onSkipRuleIdsChange={setSkipRuleIds}
+        exclusionReason={exclusionReason}
+        onExclusionReasonChange={setExclusionReason}
       />
 
       <RuleSaveReasonModal

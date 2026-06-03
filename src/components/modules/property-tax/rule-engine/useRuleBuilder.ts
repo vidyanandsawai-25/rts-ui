@@ -39,6 +39,7 @@ export function useRuleBuilder({
   const [ruleScopeId, setRuleScopeId] = React.useState(initialRule?.ruleScopeId ?? scopes[0]?.id ?? 0);
   const [ruleCategory, setRuleCategory] = React.useState(initialRule?.ruleCategory ?? 'ARV');
   const [description, setDescription]  = React.useState(initialRule?.description ?? '');
+  const [priority, setPriority]       = React.useState<number | ''>(initialRule?.priority ?? 1);
 
   const [targetFilters, setTargetFilters] = React.useState<TargetFilterState>(
     () => safeParse<TargetFilterState>(initialRule?.targetFiltersJson, {})
@@ -55,9 +56,16 @@ export function useRuleBuilder({
     () => safeParse<EffectState>(initialRule?.effectJson, {
       effectType: '',
       value: '',
-      isPercentage: false,
+      isPercentage: true,
     })
   );
+
+  // ─── Stop Processing state ─────────────────────────────────────────────────
+  const [stopProcessing, setStopProcessing]   = React.useState(initialRule?.stopProcessing ?? false);
+  const [skipRuleIds, setSkipRuleIds]         = React.useState<string[]>(
+    () => (initialRule?.skipRuleIds ?? []).map(String)
+  );
+  const [exclusionReason, setExclusionReason] = React.useState(initialRule?.exclusionReason ?? '');
 
   const { fields, setFields } = useRuleFieldsConfig({
     ruleScopeId,
@@ -77,6 +85,21 @@ export function useRuleBuilder({
   const handleSaveClick = () => {
     if (!ruleName.trim()) { toast.error('Rule Name is required!'); return; }
     if (!ruleCategory)    { toast.error('Category is required!'); return; }
+    if (priority === '' || isNaN(Number(priority)) || Number(priority) < 1) {
+      toast.error('Rule Priority must be 1 or greater!');
+      return;
+    }
+
+    const valNum = Number(effect.value);
+    if (effect.value === undefined || effect.value === null || effect.value.toString().trim() === '') {
+      toast.error('Effect Value is required!');
+      return;
+    }
+    if (isNaN(valNum) || valNum < 0 || valNum > 100) {
+      toast.error('Effect Value must be between 0% and 100%!');
+      return;
+    }
+
     setChangeReason(initialRule ? '' : 'Initial rule creation');
     setIsReasonOpen(true);
   };
@@ -105,6 +128,10 @@ export function useRuleBuilder({
         description:      description.trim(),
         ruleCategory,
         changeReason:     changeReason.trim(),
+        priority:         priority === '' ? undefined : Number(priority),
+        stopProcessing,
+        skipRuleIds:      skipRuleIds.map(Number),
+        exclusionReason:  exclusionReason.trim() || undefined,
       };
       const res = await onSaveRule(payload);
       if (res.success) {
@@ -124,8 +151,12 @@ export function useRuleBuilder({
     ruleScopeId, setRuleScopeId,
     ruleCategory, setRuleCategory,
     description, setDescription,
+    priority, setPriority,
     targetFilters, setTargetFilters, conditions, setConditions,
     effect, setEffect, fields, setFields,
+    stopProcessing, setStopProcessing,
+    skipRuleIds, setSkipRuleIds,
+    exclusionReason, setExclusionReason,
     isReasonOpen, setIsReasonOpen, changeReason, setChangeReason,
     activeScopeName, handleSaveClick, handleConfirmSave,
     isSaving,

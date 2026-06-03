@@ -88,15 +88,6 @@ export default function RadioValueInput({
       </RadioGroup>
       {apiLoading && <span className="text-xs text-blue-500 font-medium">{t('valueInput.loadingOptions')}</span>}
       {error && <span className="text-xs text-red-500 font-medium">{error}</span>}
-      {!apiLoading && config.sourceType !== 'API' && (
-        <button
-          type="button"
-          onClick={() => setIsCustom(true)}
-          className="self-start text-[11px] font-semibold text-gray-400 hover:text-blue-600 hover:underline transition-colors"
-        >
-          {t('valueInput.enterCustomValue')}
-        </button>
-      )}
     </div>
   );
 }

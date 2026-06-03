@@ -29,6 +29,26 @@ export async function fetchRulesPagedAction(
   }
 }
 
+/**
+ * Server Action: Fetches all active rules as flat {label, value} pairs for the
+ * "Skip Rules" MultiSelect in StopProcessingPanel.
+ */
+export async function fetchAllRulesForSkipAction(): Promise<{ label: string; value: string }[]> {
+  try {
+    const result = await getRules(1, 500);
+    return (result.items ?? []).map((r) => ({
+      label: r.description
+        ? `[${r.ruleCode}] ${r.ruleName} — ${r.description}`
+        : `[${r.ruleCode}] ${r.ruleName}`,
+      value: String(r.id),
+    }));
+  } catch (error) {
+    logger.error('fetchAllRulesForSkipAction failed', { operation: 'fetchAllRulesForSkipAction' }, error);
+    return [];
+  }
+}
+
+
 /** Server Action: Fetches scope-specific field metadata for visual builder inputs. */
 export async function fetchFieldsForScopeAction(scopeId: number) {
   try {

@@ -14,6 +14,10 @@ interface BackendRuleDto {
   ruleCategory?: string;
   createdDate?: string;
   updatedDate?: string;
+  priority?: number;
+  stopProcessing?: boolean;
+  skipRuleIds?: number[];
+  exclusionReason?: string;
 }
 
 interface RuleEngineBackendResponse {
@@ -42,6 +46,10 @@ interface RuleResponseData {
   ruleCategory?: string;
   createdDate?: string;
   updatedDate?: string;
+  priority?: number;
+  stopProcessing?: boolean;
+  skipRuleIds?: number[];
+  exclusionReason?: string;
 }
 
 /**
@@ -62,6 +70,10 @@ function mapBackendDtoToRuleItem(dto: BackendRuleDto): RuleItem {
     ruleCategory: dto.ruleCategory || '',
     createdDate: dto.createdDate,
     updatedDate: dto.updatedDate,
+    priority: dto.priority,
+    stopProcessing: dto.stopProcessing,
+    skipRuleIds: dto.skipRuleIds,
+    exclusionReason: dto.exclusionReason,
   };
 }
 
@@ -84,6 +96,10 @@ function mapRuleItemToBackendPayload(item: RuleItem, userId: number = 1) {
     isActive:          item.isActive,
     createdBy:         userId,
     updatedBy:         userId,
+    priority:          item.priority,
+    stopProcessing:    item.stopProcessing,
+    skipRuleIds:       item.skipRuleIds,
+    exclusionReason:   item.exclusionReason,
   };
 }
 

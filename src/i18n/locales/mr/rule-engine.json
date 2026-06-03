@@ -18,7 +18,9 @@
     "category": "श्रेणी",
     "ruleScope": "नियम व्याप्ती",
     "description": "वर्णन",
-    "descriptionPlaceholder": "नियम वर्णन प्रविष्ट करा"
+    "descriptionPlaceholder": "नियम वर्णन प्रविष्ट करा",
+    "priority": "प्राधान्य",
+    "priorityPlaceholder": "उदा. 1"
   },
   "conditionRow": {
     "selectField": "फील्ड निवडा",
@@ -36,7 +38,8 @@
     "exemptionRatio": "सूट गुणोत्तर",
     "percentageValue": "टक्केवारी मूल्य (%)",
     "rateValue": "दर मूल्य",
-    "performAction": "खालील क्रिया करा"
+    "performAction": "खालील क्रिया करा",
+    "invalidPercentage": "मूल्य ०% आणि १००% दरम्यान असणे आवश्यक आहे"
   },
   "saveReasonModal": {
     "title": "नियम कॉन्फिगरेशन जतन करण्याची पुष्टी करा",
@@ -70,5 +73,18 @@
     "saving": "जतन करत आहे…",
     "saveChanges": "बदल जतन करा",
     "add": "जोडा"
+  },
+  "stopProcessing": {
+    "sectionLabel": "नियम वगळणे आणि प्रक्रिया थांबवणे",
+    "toggleLabel": "प्रक्रिया थांबवा",
+    "toggleHint": "सक्षम केल्यास, हा नियम जुळल्यानंतर पुढील कोणत्याही नियमांचे मूल्यमापन केले जाणार नाही",
+    "warningText": "प्रक्रिया थांबवणे सक्रिय आहे. एकदा हा नियम जुळला की, त्यानंतरच्या नियमांचे मूल्यमापन केले जाणार नाही. जटिल नियम साखळीत याचा काळजीपूर्वक वापर करा.",
+    "skipRulesLabel": "नियम वगळा",
+    "skipRulesPlaceholder": "वगळण्यासाठी नियम निवडा...",
+    "loadingRules": "नियम लोड होत आहेत...",
+    "skipRulesSelected": "वगळण्यासाठी {count} नियम निवडले गेले",
+    "exclusionReasonLabel": "वगळण्याचे कारण",
+    "exclusionReasonPlaceholder": "उदा. निवासी क्षेत्रासाठी नवीन एआरव्ही धोरणाद्वारे अधिग्रहित",
+    "optional": "पर्यायी"
   }
 }

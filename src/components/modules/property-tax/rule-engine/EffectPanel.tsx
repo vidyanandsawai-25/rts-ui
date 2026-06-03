@@ -1,8 +1,7 @@
 'use client';
 
 import { EffectState, EffectTypeConfig, FieldConfig } from '@/types/rule-engine.types';
-import { Select } from '@/components/common/select';
-import { Input } from '@/components/common';
+import { Input, SearchSelect } from '@/components/common';
 import { adaptEffectConfigToFieldConfig } from '@/lib/api/rule-engine/mappers';
 import ValueInput from './ValueInput';
 import { useEffectPanelOptions } from './useEffectPanelOptions';
@@ -34,19 +33,17 @@ export default function EffectPanel({
   ];
 
   const handleTypeChange = (type: string) => {
-    const isExemption = type === 'Exemption';
-    const isPercent = type.includes('%') || isExemption;
     onChange({
       ...effect,
       effectType: type,
-      isPercentage: isPercent,
-      value: isExemption ? 0 : 0,
+      isPercentage: true,
+      value: 0,
       multiplierField: undefined,
     });
   };
 
   const fieldConfig: FieldConfig = selectedConfig
-    ? adaptEffectConfigToFieldConfig(selectedConfig)
+    ? { ...adaptEffectConfigToFieldConfig(selectedConfig), numericMin: 0, numericMax: 100 }
     : {
         id: 0,
         fieldId: 'value',
@@ -54,16 +51,35 @@ export default function EffectPanel({
         inputType: 'TEXTBOX',
         sourceType: 'NONE',
         isRequired: true,
+        numericMin: 0,
+        numericMax: 100,
       };
 
   const handleValueChange = (newVal: string | string[]) => {
     const scalar = Array.isArray(newVal) ? newVal[0] : newVal;
     const num = Number(scalar);
+    if (!isNaN(num) && num > 100) {
+      onChange({
+        ...effect,
+        value: 100,
+      });
+      return;
+    }
+    if (!isNaN(num) && num < 0) {
+      onChange({
+        ...effect,
+        value: 0,
+      });
+      return;
+    }
     onChange({
       ...effect,
       value: isNaN(num) || scalar.trim() === '' ? scalar : num,
     });
   };
+
+  const valNum = Number(effect.value);
+  const isInvalidPercent = effect.value !== undefined && effect.value !== null && effect.value !== '' && (isNaN(valNum) || valNum < 0 || valNum > 100);
 
   const hasReferenceCategory = !!(selectedConfig && selectedConfig.hasApiSource && selectedConfig.apiEndpoint);
   const hasParameter = !!(selectedConfig && selectedConfig.staticApiEndpoint);
@@ -93,7 +109,7 @@ export default function EffectPanel({
       <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
         {/* 1. Effect Type selection */}
         <div className={effectTypeColSpan}>
-          <Select
+          <SearchSelect
             label={t('effectPanel.effectType')}
             options={effectTypes}
             value={effect.effectType}
@@ -105,7 +121,7 @@ export default function EffectPanel({
         {/* 2. Reference Category selection (shown when config has apiEndpoint) */}
         {hasReferenceCategory && (
           <div className={referenceCategoryColSpan}>
-            <Select
+            <SearchSelect
               label={t('effectPanel.referenceCategory')}
               options={options}
               value={effect.multiplierField ?? ''}
@@ -118,7 +134,7 @@ export default function EffectPanel({
         {/* 3. Parameter selection (shown when config has staticApiEndpoint) */}
         {hasParameter && (
           <div className={parameterColSpan}>
-            <Select
+            <SearchSelect
               label={t('effectPanel.parameter')}
               options={staticApiOptions}
               value={effect.overrideRate === undefined || effect.overrideRate === null ? '' : effect.overrideRate.toString()}
@@ -140,28 +156,28 @@ export default function EffectPanel({
           {hasParameter ? (
             <div className="flex flex-col gap-1 w-full">
               <label className="text-[13px] font-semibold text-zinc-600">
-                {t('effectPanel.value')}
+                {t('effectPanel.percentageValue')}
               </label>
               <Input
-                type="text"
+                type="number"
+                min={0}
+                max={100}
                 value={effect.value === undefined || effect.value === null || effect.value === '' ? '' : effect.value.toString()}
                 onChange={(e) => handleValueChange(e.target.value)}
                 placeholder={t('effectPanel.enterValue')}
+                error={isInvalidPercent ? t('effectPanel.invalidPercentage') : undefined}
               />
             </div>
           ) : (
             <div className="flex flex-col gap-1 w-full">
               <label className="text-[13px] font-semibold text-zinc-600">
-                {effect.effectType === 'Exemption'
-                  ? t('effectPanel.exemptionRatio')
-                  : effect.isPercentage
-                  ? t('effectPanel.percentageValue')
-                  : t('effectPanel.rateValue')}
+                {t('effectPanel.percentageValue')}
               </label>
               <ValueInput
                 config={fieldConfig}
                 value={effect.value === undefined || effect.value === null || effect.value === '' ? '' : effect.value.toString()}
                 onChange={handleValueChange}
+                error={isInvalidPercent ? t('effectPanel.invalidPercentage') : undefined}
               />
             </div>
           )}

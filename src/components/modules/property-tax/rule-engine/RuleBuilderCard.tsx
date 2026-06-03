@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { RuleItem, FieldConfig, ConditionGroupState, EffectState, EffectTypeConfig } from '@/types/rule-engine.types';
 import ConditionGroup from './ConditionGroup';
 import EffectPanel from './EffectPanel';
+import StopProcessingPanel from './StopProcessingPanel';
 
 interface RuleBuilderCardProps {
   activeScopeName: string;
@@ -19,6 +20,13 @@ interface RuleBuilderCardProps {
   effectTypes: { label: string; value: string }[];
   categoryOptions: { label: string; value: string }[];
   effectTypeConfigs: EffectTypeConfig[];
+  // ─── Stop Processing ─────────────────────────────────────────
+  stopProcessing: boolean;
+  onStopProcessingChange: (val: boolean) => void;
+  skipRuleIds: string[];
+  onSkipRuleIdsChange: (ids: string[]) => void;
+  exclusionReason: string;
+  onExclusionReasonChange: (val: string) => void;
 }
 
 /** The main IF/THEN card container: card header and rule configurator panel. */
@@ -26,6 +34,9 @@ export default function RuleBuilderCard({
   activeScopeName, handleSaveClick, isSaving,
   initialRule, conditions, fields, setConditions,
   effect, setEffect, effectTypes, categoryOptions, effectTypeConfigs,
+  stopProcessing, onStopProcessingChange,
+  skipRuleIds, onSkipRuleIdsChange,
+  exclusionReason, onExclusionReasonChange,
 }: RuleBuilderCardProps) {
   const t = useTranslations('ruleEngine');
   return (
@@ -59,7 +70,17 @@ export default function RuleBuilderCard({
           categoryOptions={categoryOptions}
           effectTypeConfigs={effectTypeConfigs}
         />
+        <StopProcessingPanel
+          stopProcessing={stopProcessing}
+          onStopProcessingChange={onStopProcessingChange}
+          skipRuleIds={skipRuleIds}
+          onSkipRuleIdsChange={onSkipRuleIdsChange}
+          exclusionReason={exclusionReason}
+          onExclusionReasonChange={onExclusionReasonChange}
+          currentRuleId={initialRule?.id}
+        />
       </div>
     </div>
   );
 }
+

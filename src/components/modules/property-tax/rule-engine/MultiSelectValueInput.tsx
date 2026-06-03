@@ -82,15 +82,6 @@ export default function MultiSelectValueInput({
         disabled={disabled || apiLoading}
         error={!!error}
       />
-      {!apiLoading && effectiveOptions.length > 0 && config.sourceType !== 'API' && (
-        <button
-          type="button"
-          onClick={() => setIsCustom(true)}
-          className="self-start text-[11px] font-semibold text-gray-400 hover:text-blue-600 hover:underline transition-colors"
-        >
-          {t('valueInput.enterCustomValue')}
-        </button>
-      )}
     </div>
   );
 }
