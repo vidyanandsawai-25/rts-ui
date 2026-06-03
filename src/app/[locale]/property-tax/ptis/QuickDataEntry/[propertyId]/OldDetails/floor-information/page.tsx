@@ -23,6 +23,19 @@ const MIN_PAGE_SIZE = 1;
 const DEFAULT_PAGE_SIZE = 5;
 const MAX_PAGE_SIZE = 100;
 
+// Whitelist of allowed sort fields
+const ALLOWED_SORT_FIELDS = [
+    'oldFloorId',
+    'oldSubFloorId',
+    'oldConstructionYear',
+    'oldAssessmentYear',
+    'oldConstructionTypeId',
+    'oldTypeOfUseId',
+    'oldSubTypeOfUseId',
+    'oldCarpetAreaSqFeet',
+    'oldBuiltupAreaSqFeet',
+] as const;
+
 /**
  * Sanitizes and validates query parameters
  */
@@ -45,11 +58,17 @@ function sanitizeParams(raw: { [key: string]: string | string[] | undefined }) {
 
     const rawSortBy = raw.SortBy || raw.sortBy;
     const sortByParam = Array.isArray(rawSortBy) ? rawSortBy[0] : rawSortBy;
-    const sortBy = typeof sortByParam === 'string' ? sortByParam.trim() : undefined;
+    const sortByValue = typeof sortByParam === 'string' ? sortByParam.trim() : undefined;
+    // Whitelist sort field - only allow known safe fields
+    const sortBy = sortByValue && ALLOWED_SORT_FIELDS.includes(sortByValue as typeof ALLOWED_SORT_FIELDS[number])
+        ? sortByValue
+        : undefined;
 
     const rawSortOrder = raw.SortOrder || raw.sortOrder;
     const sortOrderParam = Array.isArray(rawSortOrder) ? rawSortOrder[0] : rawSortOrder;
-    const sortOrder = typeof sortOrderParam === 'string' ? sortOrderParam.trim() : undefined;
+    const sortOrderValue = typeof sortOrderParam === 'string' ? sortOrderParam.trim().toLowerCase() : undefined;
+    // Normalize sort order to asc or desc only
+    const sortOrder = sortOrderValue === 'asc' || sortOrderValue === 'desc' ? sortOrderValue : undefined;
 
     return { pageNumber, pageSize, searchTerm, typeOfUseId, sortBy, sortOrder };
 }

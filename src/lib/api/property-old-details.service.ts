@@ -56,27 +56,6 @@ export async function saveOldTaxesDetails(propertyId: number, data: OldTaxesDeta
   return handleApiResponse(response, `Save old taxes details ${propertyId} failed`);
 }
 
-export interface ApplyOldTaxesPayload {
-  taxYears: Array<{
-    financeYearId: number;
-    taxes: Array<{
-      taxId: number;
-      taxAmount: number;
-    }>;
-  }>;
-}
-
-/**
- * Applies property old taxes details (HTTP POST).
- * 
- * @param propertyId The ID of the property to apply taxes for.
- * @param data The payload containing taxes details.
- */
-export async function applyOldTaxesDetails(propertyId: number, data: ApplyOldTaxesPayload): Promise<OldTaxesDetailsResponse> {
-  const response = await apiClient.post<OldTaxesDetailsResponse>(`/Property/${propertyId}/old-taxes-details`, data);
-  return handleApiResponse(response, `Apply old taxes details ${propertyId} failed`);
-}
-
 /**
  * Fetches year master data.
  * 

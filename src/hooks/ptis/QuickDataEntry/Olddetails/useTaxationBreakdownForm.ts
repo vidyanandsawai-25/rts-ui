@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { useLocale, useTranslations } from "next-intl";
 import { useConfirm } from "@/components/common";
 import { OldTaxesDetails, OldTaxItem, OldTaxYear, YearMaster } from "@/types/OldDetails/property-old-details.types";
-import { saveOldTaxesDetailsAction, applyOldTaxesDetailsAction } from "@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/OldDetails/taxation-breakdown/action";
+import { saveOldTaxesDetailsAction } from "@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/OldDetails/taxation-breakdown/action";
 
 export function useTaxationBreakdownForm(
   initialData: OldTaxesDetails | null,
@@ -168,7 +168,7 @@ export function useTaxationBreakdownForm(
     return true;
   };
 
-  const saveTaxes = (taxesList: OldTaxItem[], isPost: boolean = false, onSuccess?: () => void) => {
+  const saveTaxes = (taxesList: OldTaxItem[], onSuccess?: () => void) => {
     if (Object.keys(validationErrors).length > 0) {
       toast.error(tValidation('property.validation.fixErrors'));
       return;
@@ -212,9 +212,8 @@ export function useTaxationBreakdownForm(
             taxYears: [currentYearData]
           };
         
-          const result = isPost
-            ? await applyOldTaxesDetailsAction(propertyId, payload, locale)
-            : await saveOldTaxesDetailsAction(propertyId, payload, locale);
+          // Always use PUT endpoint - it handles both create and update operations
+          const result = await saveOldTaxesDetailsAction(propertyId, payload, locale);
           if (result.success) {
             toast.success(t("saveSuccess"));
             onSuccess?.();
@@ -233,7 +232,7 @@ export function useTaxationBreakdownForm(
 
   const handleSave = () => {
     if (!validate()) return;
-    saveTaxes(taxes, !hasAppliedTaxes);
+    saveTaxes(taxes);
   };
 
   const isTaxesChanged = taxes.some(t => {

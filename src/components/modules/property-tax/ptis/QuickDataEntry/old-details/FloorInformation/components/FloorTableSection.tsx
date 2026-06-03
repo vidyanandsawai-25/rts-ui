@@ -47,9 +47,9 @@ export function FloorTableSection({
   const propertyId = params.propertyId as string;
   const [, startTransition] = useTransition();
 
-  // Read current sort from URL search params
+  // Read current sort from URL search params (normalize to lowercase for comparison)
   const currentSortBy = searchParams.get("SortBy") || searchParams.get("sortBy") || "";
-  const currentSortOrder = searchParams.get("SortOrder") || searchParams.get("sortOrder") || "";
+  const currentSortOrder = (searchParams.get("SortOrder") || searchParams.get("sortOrder") || "").toLowerCase();
 
   const handleSortClick = useCallback((key: string) => {
     const mappedKey = COLUMN_SORT_MAP[key] || key;

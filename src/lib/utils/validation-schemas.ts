@@ -877,7 +877,23 @@ export const oldDetailsValidations = {
       data.taxYears.forEach((year: OldTaxYear, index: number) => {
         if (!year.financeYearId || year.financeYearId <= 0) {
           errors[`taxYears.${index}.financeYearId`] = t('property.validation.financeYearRequired');
-        }       
+        }
+        
+        // Validate individual tax amounts
+        if (year.taxes && Array.isArray(year.taxes)) {
+          year.taxes.forEach((tax: OldTaxItem, taxIndex: number) => {
+            const taxAmount = Number(tax.taxAmount);
+            
+            // Check for NaN
+            if (isNaN(taxAmount)) {
+              errors[`taxYears.${index}.taxes.${taxIndex}.taxAmount`] = t('property.validation.invalidTaxAmount');
+            }
+            // Check for negative values
+            else if (taxAmount < 0) {
+              errors[`taxYears.${index}.taxes.${taxIndex}.taxAmount`] = t('property.validation.negativeNotAllowed');
+            }
+          });
+        }
       });
     }
 

@@ -5,7 +5,7 @@ import { useTaxationBreakdownForm } from '@/hooks/ptis/QuickDataEntry/Olddetails
 import { toast } from 'sonner';
 import { useConfirm } from '@/components/common';
 import { useParams, useRouter } from 'next/navigation';
-import { saveOldTaxesDetailsAction, applyOldTaxesDetailsAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/OldDetails/taxation-breakdown/action';
+import { saveOldTaxesDetailsAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/OldDetails/taxation-breakdown/action';
 
 vi.mock('sonner', () => ({
   toast: {
@@ -32,7 +32,6 @@ vi.mock('next-intl', () => ({
 
 vi.mock('@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/OldDetails/taxation-breakdown/action', () => ({
   saveOldTaxesDetailsAction: vi.fn(),
-  applyOldTaxesDetailsAction: vi.fn(),
 }));
 
 describe('useTaxationBreakdownForm', () => {
@@ -179,9 +178,9 @@ describe('useTaxationBreakdownForm', () => {
     expect(result.current.validationErrors.yearMaster).toBeUndefined();
   });
 
-  it('should call applyOldTaxesDetailsAction when taxes have not been applied yet', async () => {
+  it('should always call saveOldTaxesDetailsAction (PUT) regardless of existing data', async () => {
     mockConfirm.mockImplementation(({ onConfirm }) => onConfirm());
-    vi.mocked(applyOldTaxesDetailsAction).mockResolvedValue({ success: true } as any);
+    vi.mocked(saveOldTaxesDetailsAction).mockResolvedValue({ success: true } as any);
 
     const mockInitialDataNotApplied = {
       propertyId: 123,
@@ -214,7 +213,7 @@ describe('useTaxationBreakdownForm', () => {
     });
 
     expect(mockConfirm).toHaveBeenCalled();
-    expect(applyOldTaxesDetailsAction).toHaveBeenCalledWith(
+    expect(saveOldTaxesDetailsAction).toHaveBeenCalledWith(
       123,
       expect.objectContaining({
         taxYears: expect.arrayContaining([
