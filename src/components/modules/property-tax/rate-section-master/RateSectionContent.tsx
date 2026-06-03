@@ -50,6 +50,7 @@ export default function RateSectionContent({
   sections = [], 
   sectionsTotalCount = 0,
   totalRateSectionCount, 
+  filteredRateSectionCount,
   totalWardsCount: initialTotalWards, 
   initialWardCounts, 
   initialSelectedRateSection,
@@ -187,7 +188,7 @@ export default function RateSectionContent({
             selectedRateSection={selectedRateSection}
             newlyCreatedRateNo={newlyCreatedRateNo}
             initialWardCounts={initialWardCounts}
-            totalCount={totalRateSectionCount}
+            totalCount={filteredRateSectionCount ?? totalRateSectionCount}
             onDeleteSuccess={() => router.refresh()}
           />
         </div>

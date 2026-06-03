@@ -194,6 +194,7 @@ export interface RateSectionContentProps {
   sections: SectionItem[];
   sectionsTotalCount?: number;
   totalRateSectionCount: number;
+  filteredRateSectionCount?: number;
   totalWardsCount: number;
   selectedRateSectionId?: string;
   initialWardCounts?: Record<string, number>;

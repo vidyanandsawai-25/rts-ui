@@ -100,13 +100,14 @@ export default async function Page({ searchParams }: PageProps) {
   // Fetch all rate sections (paged) with optional search
   const response = await getRateSectionsAction(pageNumber, pageSize, rateSectionSearchTerm);
   const allZones: RateItem[] = response.items ?? [];
+  const filteredRateSectionCount = response.totalCount ?? allZones.length; // Count for pagination (filtered)
 
-  // Fetch global total rate sections count
+  // Fetch global total rate sections count (for dashboard card)
   const totalRateRes = await getRateSectionTotalCountAction();
   const totalRateSectionCount =
     (totalRateRes.success && typeof totalRateRes.data === "number")
       ? totalRateRes.data
-      : (response?.totalCount ?? allZones.length);
+      : filteredRateSectionCount; // Fallback to filtered count
 
   // Fetch total wards count
   const wardsCountRes = await getWardTotalCountAction();
@@ -309,7 +310,8 @@ export default async function Page({ searchParams }: PageProps) {
         rates={allZones}
         sections={initialWards}
         sectionsTotalCount={initialWardsTotalCount}
-        totalRateSectionCount={rateSectionSearchTerm ? response.totalCount : totalRateSectionCount}
+        totalRateSectionCount={totalRateSectionCount}
+        filteredRateSectionCount={filteredRateSectionCount}
         totalWardsCount={totalWardsCount}
         initialWardCounts={initialWardCounts}
         initialSelectedRateSection={selectedZoneNo || undefined}

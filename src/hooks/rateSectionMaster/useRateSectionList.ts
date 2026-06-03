@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 
 interface UseRateSectionListParams {
@@ -22,9 +22,11 @@ export function useRateSectionList({
   // This ensures counts persist even when a rate section isn't currently selected
   const [wardCounts, setWardCounts] = useState<Record<string, number>>(initialWardCounts);
   
-  // Track local search value - only used while user is typing
-  const [localSearchValue, setLocalSearchValue] = useState(initialSearch);
-  const [isUserTyping, setIsUserTyping] = useState(false);
+  // Local search value - ALWAYS the source of truth for the input display
+  const [searchValue, setSearchValue] = useState(initialSearch);
+  
+  // Track if we're currently updating the URL to avoid loops
+  const isUpdatingUrl = useRef(false);
   
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
@@ -46,37 +48,46 @@ export function useRateSectionList({
     setWardCounts(prev => ({ ...prev, ...initialWardCounts }));
   }
 
-  // The effective search value: use local while typing, URL otherwise
-  const searchValue = isUserTyping ? localSearchValue : initialSearch;
-
-  // Debounced URL update when user types
+  // Sync local state with URL when initialSearch changes externally (e.g., browser back/forward)
+  // Only sync if we're not currently updating the URL ourselves
   useEffect(() => {
-    if (!isUserTyping) return;
+    if (!isUpdatingUrl.current && initialSearch !== searchValue) {
+      setSearchValue(initialSearch);
+    }
+  }, [initialSearch]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Debounced URL update when search value changes
+  useEffect(() => {
+    const currentQ = searchParams?.get("q") || "";
+    
+    // Skip if values are the same
+    if (searchValue.trim() === currentQ.trim()) {
+      return;
+    }
+
+    isUpdatingUrl.current = true;
     
     const timer = setTimeout(() => {
-      const currentQ = searchParams?.get("q") || "";
-      if (localSearchValue.trim() !== currentQ.trim()) {
-        const params = new URLSearchParams(searchParams?.toString());
-        if (localSearchValue.trim()) {
-          params.set("q", localSearchValue.trim());
-        } else {
-          params.delete("q");
-        }
-        params.set("ratesectionpage", "1");
-        router.push(`${pathname}?${params.toString()}`);
+      const params = new URLSearchParams(searchParams?.toString());
+      if (searchValue.trim()) {
+        params.set("q", searchValue.trim());
+      } else {
+        params.delete("q");
       }
-      // Reset typing flag after URL is updated
-      setIsUserTyping(false);
+      params.set("ratesectionpage", "1");
+      router.push(`${pathname}?${params.toString()}`);
+      
+      // Reset flag after a short delay to allow navigation to complete
+      setTimeout(() => {
+        isUpdatingUrl.current = false;
+      }, 100);
     }, 300);
 
-    return () => clearTimeout(timer);
-  }, [localSearchValue, isUserTyping, router, pathname, searchParams]);
-
-  // Custom setter that marks user as typing
-  const handleSearchChange = useCallback((value: string) => {
-    setIsUserTyping(true);
-    setLocalSearchValue(value);
-  }, []);
+    return () => {
+      clearTimeout(timer);
+      isUpdatingUrl.current = false;
+    };
+  }, [searchValue, router, pathname, searchParams]);
 
   const changePageSize = useCallback((size: number) => {
     const params = new URLSearchParams(searchParams?.toString());
@@ -98,7 +109,7 @@ export function useRateSectionList({
     deletingId,
     setDeletingId,
     searchValue,
-    setSearchValue: handleSearchChange,
+    setSearchValue,
     totalPages,
     effectivePageSize,
     changePageSize,
