@@ -30,6 +30,7 @@ export const PROPERTY_SEARCH_FIELD_LIMITS = {
   shopBuildingName: 100,
   societyName: 100,
   address: 300,
+  rateableValue: 15,
 } as const;
 
 /** Alphanumeric with hyphen (/) and slash (-), no leading/trailing separators. */
@@ -265,6 +266,15 @@ export function validateSearchFieldValue(
         ? null
         : t("addressInvalid");
 
+    case "rateableValueFrom":
+    case "rateableValueTo":
+      return validateDigitsOnly(
+        value,
+        PROPERTY_SEARCH_FIELD_LIMITS.rateableValue
+      )
+        ? null
+        : t("rateableValueInvalid");
+
     default:
       return null;
   }
@@ -340,6 +350,13 @@ export function getPropertySearchFieldErrors(
       }
       if (!trimFieldValue(criteria.rateableValueTo)) {
         errors.rateableValueTo = t("rateableValueBetweenRequired");
+      }
+    }
+
+    for (const field of ["rateableValueFrom", "rateableValueTo"] as const) {
+      if (!errors[field]) {
+        const message = validateSearchFieldValue(field, criteria[field], t);
+        if (message) errors[field] = message;
       }
     }
   }
