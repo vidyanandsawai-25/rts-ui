@@ -260,6 +260,8 @@ export const useApartmentQCRoomListActions = (
 
     startTransition(async () => {
       const result = await updateRoomWiseSubmissionAction(Number(dbId), {
+        propertyId,
+        propertyDetailsId,
         ...updateDims,
         areaSqMtr: baseArea,
         noOfRooms: 1,
@@ -270,17 +272,25 @@ export const useApartmentQCRoomListActions = (
         shape: formData.shape === "-Select-" ? "" : formData.shape,
         outerYesNo: formData.outer === "Yes",
         minusYesNo: formData.offsetMinus === "Yes",
-        roomWiseMinusData: currentRoomOffsets.map((o) => ({
-          id: o.id as number | undefined,
-          roomWiseSubmissionId: Number(dbId),
-          lengthMtr: parseFloat(o.length || "0") || 0,
-          widthMtr: parseFloat(o.width || "0") || 0,
-          heightMtr: parseFloat(o.height || "0") || 0,
-          areaSqMtr: o.area || 0,
-          shape: o.shape || "Rectangle",
-          operation: o.operation,
-          remark: o.operation === "add" ? "ADD" : "SUB",
-        })),
+        roomWiseMinusData: currentRoomOffsets.map((o) => {
+          // Ensure id is properly converted to number (may be string from API)
+          const offsetId = o.id ? Number(o.id) : undefined;
+          // Access dimensions from both possible field names (length or lengthMtr)
+          const oAny = o as unknown as Record<string, unknown>;
+          return {
+            id: offsetId && offsetId > 0 ? offsetId : undefined,
+            roomWiseSubmissionId: Number(dbId),
+            lengthMtr: parseFloat(String(o.length || oAny.lengthMtr || "0")) || 0,
+            widthMtr: parseFloat(String(o.width || oAny.widthMtr || "0")) || 0,
+            heightMtr: parseFloat(String(o.height || oAny.heightMtr || "0")) || 0,
+            areaSqMtr: Number(o.area || oAny.areaSqMtr || 0) || 0,
+            shape: o.shape || (oAny.shape as string) || "Rectangle",
+            operation: o.operation,
+            remark: o.operation === "add" ? "ADD" : "SUB",
+            base1Mtr: parseFloat(String(o.base1 || oAny.base1Mtr || "0")) || 0,
+            base2Mtr: parseFloat(String(o.base2 || oAny.base2Mtr || "0")) || 0,
+          };
+        }),
       });
 
       if (!result.success) {
