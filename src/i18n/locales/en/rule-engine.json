@@ -7,7 +7,8 @@
     "autoSave": "All changes are automatically saved to your browser • {count} rules saved",
     "configTitle": "Rule Engine Configuration",
     "configSubtitle": "Manage complex dynamic taxation policies",
-    "configureNew": "Configure New Rule"
+    "configureNew": "Configure New Rule",
+    "backToList": "Back to List"
   },
   "targetFilter": {
     "ruleId": "Rule ID",

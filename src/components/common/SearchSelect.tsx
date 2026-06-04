@@ -334,8 +334,8 @@ export function SearchSelect({
           onBlur={handleBlur}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
-          className={`w-full rounded-lg border border-blue-200 px-2.5 py-1 pr-8 text-sm bg-white
-            focus:ring-2 focus:ring-blue-500 outline-none text-gray-900
+          className={`w-full rounded-lg border px-2.5 py-1 pr-8 text-sm bg-white
+            focus:ring-2 outline-none text-gray-900
             cursor-pointer focus:cursor-text disabled:bg-gray-100 disabled:cursor-not-allowed
             ${error ? 'border-red-500 focus:ring-red-400 focus:border-red-500' : 'border-blue-200 focus:ring-blue-500'}
             ${className ?? ''}`}

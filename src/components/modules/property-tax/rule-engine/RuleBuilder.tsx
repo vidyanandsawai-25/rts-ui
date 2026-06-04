@@ -42,7 +42,7 @@ export default function RuleBuilder(props: RuleBuilderProps) {
 
   return (
     <div className="flex flex-col gap-5 w-full pb-8 select-none">
-      <RuleBuilderHeader />
+      <RuleBuilderHeader locale={props.locale} />
 
       <TargetFilterPanel
         ruleName={ruleName} setRuleName={setRuleName}
