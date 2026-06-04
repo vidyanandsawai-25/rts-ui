@@ -2,9 +2,9 @@ import { setRequestLocale } from 'next-intl/server';
 import FloorSubmission from '@/components/modules/property-tax/ptis/QuickDataEntry/floorSubmission/FloorSubmission';
 import { FloorSubmissionErrorBoundary } from '@/components/modules/property-tax/ptis/QuickDataEntry/floorSubmission/error/FloorSubmissionErrorBoundary';
 import { FloorResponse, ConstructionTypeResponse, TypeOfUseApiItem, SubFloorResponse, SubTypeOfUseResponse } from '@/types/floor-details.types';
-import { FloorData } from '@/types/room-details.types';
+import { FloorData, RoomTypeResponse } from '@/types/room-details.types';
 import { normalizeObjectResponse, normalizeArrayResponse, normalizeWrappedResponse, } from '@/lib/utils/action-response-helpers';
-import { getFloorDataAction, getConstructionTypeDataAction, getTypeOfUseDataAction, getSubFloorDataAction, getSubTypeOfUseDataAction, getQuickDataEntryAction, getPropertyByDetailsAction, getFloorByIdAction, getFloorSubmissionsByOwnerAction, } from './actions';
+import { getFloorDataAction, getConstructionTypeDataAction, getTypeOfUseDataAction, getSubFloorDataAction, getSubTypeOfUseDataAction, getRoomTypeDataAction, getQuickDataEntryAction, getPropertyByDetailsAction, getFloorByIdAction, getFloorSubmissionsByOwnerAction, } from './actions';
 
 // Force dynamic rendering — this page relies on per-request search params.
 export const dynamic = 'force-dynamic';
@@ -89,6 +89,7 @@ export default async function FloorSubmissionPage({
         useDataResult,
         subFloorDataResult,
         subTypeDataResult,
+        roomTypeDataResult,
         quickDataRaw,
         propertyRaw,
         floorDetailRaw,
@@ -99,6 +100,7 @@ export default async function FloorSubmissionPage({
         (shouldLoadAll || asString(sp.loadUsage) === 'true') ? getTypeOfUseDataAction() : Promise.resolve([]),
         (shouldLoadAll || asString(sp.loadSubFloor) === 'true') ? getSubFloorDataAction() : Promise.resolve([]),
         shouldLoadSubType ? getSubTypeOfUseDataAction(effectiveUseIdForPrefetch) : Promise.resolve([]),
+        getRoomTypeDataAction(),
         hasPropertyKeys ? getQuickDataEntryAction(wardNo, propertyNo, partitionNo) : Promise.resolve(null),
         hasPropertyKeys ? getPropertyByDetailsAction(wardNo, propertyNo, partitionNo) : Promise.resolve(null),
         (floorId && floorId !== 'new') ? getFloorByIdAction(floorId) : Promise.resolve(null),
@@ -140,6 +142,7 @@ export default async function FloorSubmissionPage({
     const useData = checkResult<TypeOfUseApiItem>(useDataResult, 'Usage types');
     const subFloorData = checkResult<SubFloorResponse>(subFloorDataResult, 'Sub-floor data');
     let subTypeData = checkResult<SubTypeOfUseResponse>(subTypeDataResult, 'Sub-usage types');
+    const roomTypeData = checkResult<RoomTypeResponse>(roomTypeDataResult, 'Room types');
 
     // ── Resolve property data & ID ──────────────────────────────────────────
     const quickData = normalizeObjectResponse(quickDataRaw, (m) => metadataErrors.push(m));
@@ -222,6 +225,7 @@ export default async function FloorSubmissionPage({
                 constructionTypeOptions={constructionTypeData}
                 useOptions={useData}
                 subFloorOptions={subFloorData}
+                roomTypeData={roomTypeData}
                 subTypeOptions={[]}
                 floorData={floorData}
                 constructionTypeData={constructionTypeData}

@@ -27,13 +27,13 @@ export function useOldTaxationForm(propertyOldDetails: PropertyOldDetailsApiItem
     oldPropertyNo: propertyOldDetails?.oldPropertyNo ?? "",
     oldPartitionNo: propertyOldDetails?.oldPartitionNo ?? "",
     oldEgovNo: propertyOldDetails?.oldEgovNo ?? "",
-    oldPlotArea: propertyOldDetails?.oldPlotArea?.toString() ?? "",
+    oldPlotArea: propertyOldDetails?.oldPlotArea && propertyOldDetails.oldPlotArea !== 0 ? propertyOldDetails.oldPlotArea.toString() : "",
     oldPlotNo: propertyOldDetails?.oldPlotNo ?? "",
     oldCarpetAreaSqFeet: propertyOldDetails?.oldCarpetAreaSqFeet ?? 0,
-    oldConstructionArea: propertyOldDetails?.oldConstructionArea?.toString() ?? "",
-    oldRV: propertyOldDetails?.oldRV?.toString() ?? "",
-    oldALV: propertyOldDetails?.oldALV?.toString() ?? "",
-    oldGeneralTax: propertyOldDetails?.oldGeneralTax?.toString() ?? "",
+    oldConstructionArea: propertyOldDetails?.oldConstructionArea && propertyOldDetails.oldConstructionArea !== 0 ? propertyOldDetails.oldConstructionArea.toString() : "",
+    oldRV: propertyOldDetails?.oldRV && propertyOldDetails.oldRV !== 0 ? propertyOldDetails.oldRV.toString() : "",
+    oldALV: propertyOldDetails?.oldALV && propertyOldDetails.oldALV !== 0 ? propertyOldDetails.oldALV.toString() : "",
+    oldGeneralTax: propertyOldDetails?.oldGeneralTax && propertyOldDetails.oldGeneralTax !== 0 ? propertyOldDetails.oldGeneralTax.toString() : "",
     oldTotalTax: propertyOldDetails?.oldTotalTax ?? 0,
   });
 
@@ -95,20 +95,26 @@ export function useOldTaxationForm(propertyOldDetails: PropertyOldDetailsApiItem
     
     // Apply sanitization based on field type
     if (typeof value === 'string') {
+      let tempValue = value;
+      // Strip leading zeros for numeric/area/tax fields
+      if (['oldPlotArea', 'oldConstructionArea', 'oldRV', 'oldALV', 'oldGeneralTax'].includes(key)) {
+        tempValue = value.replace(/^0+(?=\d)/, '');
+      }
+
       if (key === 'oldPlotArea') {
-        sanitizedValue = sanitizePlotArea(value);
+        sanitizedValue = sanitizePlotArea(tempValue);
       } else if (key === 'oldPropertyNo' || key === 'oldPartitionNo') {
-        sanitizedValue = sanitizePropertyPartitionNo(value);
+        sanitizedValue = sanitizePropertyPartitionNo(tempValue);
       } else if (key === 'oldZoneNo') {
-        sanitizedValue = sanitizeZoneName(value);
+        sanitizedValue = sanitizeZoneName(tempValue);
       } else if (key === 'oldWardNo') {
-        sanitizedValue = sanitizeWardNo(value);
+        sanitizedValue = sanitizeWardNo(tempValue);
       } else if (key === 'oldEgovNo') {
-        sanitizedValue = sanitizeEgovNo(value);
+        sanitizedValue = sanitizeEgovNo(tempValue);
       } else if (key === 'oldPlotNo') {
-        sanitizedValue = sanitizePlotNo(value);
+        sanitizedValue = sanitizePlotNo(tempValue);
       } else if (key === 'oldConstructionArea' || key === 'oldRV' || key === 'oldALV' || key === 'oldGeneralTax') {        
-         sanitizedValue = sanitizePlotArea(value);
+         sanitizedValue = sanitizePlotArea(tempValue);
       }
     }    
     setFormData(prev => ({ ...prev, [key]: sanitizedValue }));
@@ -120,13 +126,13 @@ export function useOldTaxationForm(propertyOldDetails: PropertyOldDetailsApiItem
     formData.oldPropertyNo !== (propertyOldDetails?.oldPropertyNo ?? "") ||
     formData.oldPartitionNo !== (propertyOldDetails?.oldPartitionNo ?? "") ||
     formData.oldEgovNo !== (propertyOldDetails?.oldEgovNo ?? "") ||
-    formData.oldPlotArea !== (propertyOldDetails?.oldPlotArea?.toString() ?? "0") ||
+    (formData.oldPlotArea || "0") !== (propertyOldDetails?.oldPlotArea?.toString() ?? "0") ||
     formData.oldPlotNo !== (propertyOldDetails?.oldPlotNo ?? "") ||
     formData.oldCarpetAreaSqFeet !== (propertyOldDetails?.oldCarpetAreaSqFeet ?? 0) ||
-    formData.oldConstructionArea !== (propertyOldDetails?.oldConstructionArea?.toString() ?? "0") ||
-    formData.oldRV !== (propertyOldDetails?.oldRV?.toString() ?? "0") ||
-    formData.oldALV !== (propertyOldDetails?.oldALV?.toString() ?? "0") ||
-    formData.oldGeneralTax !== (propertyOldDetails?.oldGeneralTax?.toString() ?? "0") ||
+    (formData.oldConstructionArea || "0") !== (propertyOldDetails?.oldConstructionArea?.toString() ?? "0") ||
+    (formData.oldRV || "0") !== (propertyOldDetails?.oldRV?.toString() ?? "0") ||
+    (formData.oldALV || "0") !== (propertyOldDetails?.oldALV?.toString() ?? "0") ||
+    (formData.oldGeneralTax || "0") !== (propertyOldDetails?.oldGeneralTax?.toString() ?? "0") ||
     formData.oldTotalTax !== (propertyOldDetails?.oldTotalTax ?? 0);
 
   return {

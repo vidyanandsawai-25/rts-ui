@@ -126,7 +126,7 @@ export default async function EditRateSectionPage({ params, searchParams }: Page
     if (selectedZoneNo) {
       // User requested a specific zone, find its correct ID for fetching
       const matchedZone = allZones.find((z: RateItem) => 
-        String(z.rateSectionNo) === String(selectedZoneNo)
+        String(z.id) === String(selectedZoneNo)
       );
       if (matchedZone) {
         fetchId = matchedZone.id;
@@ -134,7 +134,7 @@ export default async function EditRateSectionPage({ params, searchParams }: Page
     } else {
       // Default to first zone
       const firstZone = allZones[0];
-      selectedZoneNo = firstZone.rateSectionNo;
+      selectedZoneNo = String(firstZone.id);
       fetchId = firstZone.id;
     }
   }
@@ -160,9 +160,9 @@ export default async function EditRateSectionPage({ params, searchParams }: Page
   const initialWardCounts: Record<string, number> = {};
   if (fetchId) {
     const selectedZone = allZones.find((zone: RateItem) => zone.id === fetchId);
-    const selectedZoneNoForCount = selectedZone?.rateSectionNo ?? '';
-    if (selectedZoneNoForCount) {
-      initialWardCounts[selectedZoneNoForCount] = initialWardsTotalCount;
+    const selectedZoneIdForCount = String(selectedZone?.id ?? '');
+    if (selectedZoneIdForCount) {
+      initialWardCounts[selectedZoneIdForCount] = initialWardsTotalCount;
     }
   }
 

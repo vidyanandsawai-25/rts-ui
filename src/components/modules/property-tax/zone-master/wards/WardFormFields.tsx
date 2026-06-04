@@ -6,7 +6,7 @@ import { Input, ToggleSwitch, ValidationMessage } from "@/components/common";
 import { Label } from "@/components/common/label";
 import { cn } from "@/lib/utils/cn";
 import { ZONE_WARD_NO_MAX_LENGTH, ZONE_WARD_NAME_MAX_LENGTH } from "../constants";
-import { CODE_SANITIZE, DESCRIPTION_SANITIZE } from "@/lib/utils/validation-rules";
+import { CODE_SANITIZE, DESCRIPTION_SANITIZE, POSITIVE_INTEGER_REGEX } from "@/lib/utils/validation-rules";
 
 export interface WardFormState {
   wardNo: string;
@@ -143,9 +143,13 @@ export function WardFormFields({
             placeholder={t("wardForm.placeholders.sequenceNo")}
             disabled={disabled}
             value={data.sequenceNo}
+            maxLength={3}
             onChange={(e) => {
               const sanitized = sanitizeNumber(e.target.value);
-              onChange({ ...data, sequenceNo: sanitized });
+              // Only accept if it matches POSITIVE_INTEGER_REGEX and is <= 999
+              if (sanitized === "" || (POSITIVE_INTEGER_REGEX.test(sanitized) && parseInt(sanitized, 10) <= 999)) {
+                onChange({ ...data, sequenceNo: sanitized });
+              }
             }}
             onBlur={() => onBlur?.("sequenceNo")}
             className={errors.sequenceNo ? "border-red-500 focus:ring-red-500" : ""}

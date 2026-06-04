@@ -1,12 +1,18 @@
 /**
  * Next.js Middleware: i18n routing + auth gate
- * All locale routes except /[locale]/login require a valid session cookie pair.
+ * Protected routes require a non-expired access + refresh token pair.
  */
 
 import createMiddleware from 'next-intl/middleware';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { defaultLocale, locales } from './i18n/config';
+import {
+  AUTH_COOKIES,
+  LOGOUT_CLEAR_COOKIES,
+  SESSION_EXPIRED_LOGIN_ERROR,
+} from './components/modules/login/constants';
+import { getSessionValidityFromTokens } from './lib/utils/session-validity';
 
 const intlMiddleware = createMiddleware({
   locales: [...locales],
@@ -14,12 +20,6 @@ const intlMiddleware = createMiddleware({
   localePrefix: 'always',
   localeDetection: false,
 });
-
-function hasFullSession(request: NextRequest): boolean {
-  const token = (request.cookies.get('auth_token')?.value ?? '').trim();
-  const refresh = (request.cookies.get('refresh_token')?.value ?? '').trim();
-  return token.length > 0 && refresh.length > 0;
-}
 
 function localeAndPathWithoutLocale(pathname: string): { locale: string; pathWithoutLocale: string } {
   const segments = pathname.split('/').filter(Boolean);
@@ -31,49 +31,82 @@ function localeAndPathWithoutLocale(pathname: string): { locale: string; pathWit
   return { locale, pathWithoutLocale };
 }
 
+function clearAuthCookiesOnResponse(response: NextResponse): void {
+  for (const name of LOGOUT_CLEAR_COOKIES) {
+    response.cookies.delete(name);
+  }
+}
+
+function redirectToLogin(
+  request: NextRequest,
+  locale: string,
+  sessionExpired: boolean
+): NextResponse {
+  const url = new URL(`/${locale}/login`, request.url);
+  if (sessionExpired) {
+    url.searchParams.set('error', SESSION_EXPIRED_LOGIN_ERROR);
+  }
+  const response = NextResponse.redirect(url);
+  clearAuthCookiesOnResponse(response);
+  return response;
+}
+
 export default function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const { locale, pathWithoutLocale } = localeAndPathWithoutLocale(pathname);
 
-  const isLoggedIn = hasFullSession(request);
-  const isLoginRoute = pathWithoutLocale === '/login' || pathWithoutLocale.startsWith('/login/');
+  const accessToken = request.cookies.get(AUTH_COOKIES.AUTH_TOKEN)?.value;
+  const refreshToken = request.cookies.get(AUTH_COOKIES.REFRESH_TOKEN)?.value;
+  const sessionExpiresAt = request.cookies.get(AUTH_COOKIES.SESSION_EXPIRES_AT)?.value;
+  const sessionState = getSessionValidityFromTokens(
+    accessToken,
+    refreshToken,
+    sessionExpiresAt
+  );
+  const isLoggedIn = sessionState === 'active';
+  const sessionExpired = sessionState === 'expired';
 
-  // 1. Redirect logic
-  if (isLoginRoute && isLoggedIn) {
+  const isLoginRoute = pathWithoutLocale === '/login' || pathWithoutLocale.startsWith('/login/');
+  const sessionExpiredLogin =
+    isLoginRoute &&
+    !isLoggedIn &&
+    request.nextUrl.searchParams.get('error') === SESSION_EXPIRED_LOGIN_ERROR;
+
+  if (isLoginRoute && isLoggedIn && !sessionExpiredLogin) {
     return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
   }
 
-  // Explicitly redirect root path to home if logged in, or login if not
   if (pathWithoutLocale === '/') {
-    return NextResponse.redirect(new URL(`/${locale}/${isLoggedIn ? 'home' : 'login'}`, request.url));
+    if (!isLoggedIn) {
+      return redirectToLogin(request, locale, sessionExpired);
+    }
+    return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
   }
 
   if (!isLoginRoute && !isLoggedIn) {
-    return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
+    return redirectToLogin(request, locale, sessionExpired);
   }
 
-  // 2. Identify shell-less routes (auth or home landing)
-  const isAuthOrHome = 
+  const isAuthOrHome =
     pathWithoutLocale === '/' ||
-    pathWithoutLocale === '/home' || 
+    pathWithoutLocale === '/home' ||
     pathWithoutLocale.startsWith('/home/') ||
-    pathWithoutLocale === '/login' || 
+    pathWithoutLocale === '/login' ||
     pathWithoutLocale.startsWith('/login/');
-    
-  // 3. Prepare custom headers for downstream Server Components
+
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-pathname', pathname);
   requestHeaders.set('x-is-auth-or-home', isAuthOrHome ? 'true' : 'false');
 
-  // 4. Handle locale routing with next-intl
   const intlResponse = intlMiddleware(request);
 
-  // If it's a redirect, just return it as is
   if (intlResponse.headers.has('location')) {
+    if (sessionExpired || sessionExpiredLogin || (isLoginRoute && !isLoggedIn)) {
+      clearAuthCookiesOnResponse(intlResponse);
+    }
     return intlResponse;
   }
 
-  // Merge headers and cookies from intlResponse into our final response
   const response = NextResponse.next({
     request: { headers: requestHeaders },
   });
@@ -83,9 +116,13 @@ export default function middleware(request: NextRequest) {
   intlResponse.cookies.getAll().forEach((cookie) => {
     response.cookies.set(cookie);
   });
-  // Ensure custom headers are also set on the response object
   response.headers.set('x-pathname', pathname);
   response.headers.set('x-is-auth-or-home', isAuthOrHome ? 'true' : 'false');
+
+  if (isLoginRoute && (!isLoggedIn || sessionExpired || sessionExpiredLogin)) {
+    clearAuthCookiesOnResponse(response);
+  }
+
   return response;
 }
 

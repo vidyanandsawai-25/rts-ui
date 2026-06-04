@@ -308,12 +308,7 @@ export interface OldTaxYear {
   financeYearId: number;
   year: number;
   yearCode: string | null;
-  rVorCV: string;
-  rVorCVValue: number;
   taxes: OldTaxItem[];
-  taxTotal: number;
-  interest: number;
-  netTotal: number;
 }
 
 export interface OldTaxesDetails {
@@ -330,6 +325,7 @@ export interface OldTaxesDetailsResponse {
 
 export interface TaxationBreakdownFormProps {
   initialData?: OldTaxesDetails | null;
+  yearOptions?: YearMaster[];
 }
 
 
@@ -337,4 +333,25 @@ export interface UseFloorInformationFormProps {
   propertyId: number;
   locale: string;
   initialSubUseTypeOptions: SubTypeOfUse[];
+}
+
+export interface YearMaster {
+  id: number;
+  year: number;
+  yearCode: string;
+  isActive: boolean;
+  status: string;
+  startDate: string;
+  endDate: string;
+  description: string | null;
+}
+
+export interface YearMasterResponse {
+  items: YearMaster[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+  hasPrevious: boolean;
+  hasNext: boolean;
 }

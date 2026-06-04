@@ -153,22 +153,21 @@ export async function getRateSectionById(id: string): Promise<RateItem | null> {
  * Create a new Rate Section.
  * Use this function in the Add Rate Section form submission.
  */
-export async function createRateSection(payload: RateSectionFormState): Promise<{ success: boolean; error?: string }> {
+export async function createRateSection(payload: RateSectionFormState): Promise<{ success: boolean; error?: string; data?: { id: number } }> {
   const apiPayload = {
-    RateSectionNo: payload.zoneCode,
     Description: payload.zoneRegional || payload.description || "",
     IsActive: payload.isActive ?? true,
     CreatedBy: payload.createdBy,
     UpdatedBy: payload.updatedBy
   };
 
-  const response = await apiClient.post(`/RateSection`, apiPayload);
+  const response = await apiClient.post<{ items?: { id: number } }>(`/RateSection`, apiPayload);
 
   if (!response.success) {
     return { success: false, error: response.error || "Failed to create rate section" };
   }
 
-  return { success: true };
+  return { success: true, data: response.data?.items };
 }
 
 /**
@@ -177,7 +176,6 @@ export async function createRateSection(payload: RateSectionFormState): Promise<
  */
 export async function updateRateSection(id: string, payload: RateSectionFormState): Promise<{ success: boolean; error?: string; statusCode?: number }> {
   const apiPayload = {
-    RateSectionNo: payload.zoneCode,
     Description: payload.zoneRegional || payload.description || "",
     IsActive: payload.isActive ?? true,
     UpdatedBy: payload.updatedBy

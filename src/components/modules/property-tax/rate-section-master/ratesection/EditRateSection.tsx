@@ -17,7 +17,7 @@ export function useEditRateSection({ onClose, onUpdate, zoneId, initialData, rat
   const rate = initialData || rates.find((r: RateItem) => String(r.id) === String(zoneId));
 
   const [form, setForm] = useState<RateSectionFormState>(() => rate ? {
-    zoneCode: rate.rateSectionNo || "", zoneEnglish: rate.rateSectionNo || "", zoneRegional: rate.description || "",
+    zoneCode: "", zoneEnglish: "", zoneRegional: rate.description || "",
     description: rate.description || "", wards: [], isActive: Boolean(rate.isActive),
   } : { zoneCode: "", zoneEnglish: "", zoneRegional: "", description: "", wards: [], isActive: true });
 
@@ -31,7 +31,7 @@ export function useEditRateSection({ onClose, onUpdate, zoneId, initialData, rat
     // Only update if rate has actually changed to prevent cascading renders
     if (rate && rate !== prevRateRef.current) {
       prevRateRef.current = rate;
-      setForm(p => ({ ...p, zoneCode: rate.rateSectionNo || "", zoneRegional: rate.description || "",
+      setForm(p => ({ ...p, zoneCode: "", zoneRegional: rate.description || "",
         description: rate.description || "", isActive: Boolean(rate.isActive) }));
     }
   }, [rate]);
@@ -75,13 +75,13 @@ export function useEditRateSection({ onClose, onUpdate, zoneId, initialData, rat
     setLoading(true);
     try {
       const result = await updateRateSectionAction(rate.id!, {
-        rateSectionNo: form.zoneCode, description: form.zoneRegional, isActive: form.isActive ?? false
+        description: form.zoneRegional, isActive: form.isActive ?? false
       });
       if (result.success) {
-        toast.success(t('messages.updateSuccess', { name: `${form.zoneCode} - ${form.zoneRegional}` }));
+        toast.success(t('messages.updateSuccess', { name: form.zoneRegional }));
         handleClose();
         router.refresh();
-        if (onUpdate) onUpdate({ ...rate, rateSectionNo: form.zoneCode, description: form.zoneRegional, isActive: form.isActive } as RateItem);
+        if (onUpdate) onUpdate({ ...rate, description: form.zoneRegional, isActive: form.isActive } as RateItem);
       } else toast.error(result.error || t('messages.updateError'));
     } finally {
       setLoading(false);
@@ -96,7 +96,6 @@ export function useEditRateSection({ onClose, onUpdate, zoneId, initialData, rat
     setLoading(true);
     try {
       const result = await updateRateSectionAction(rate.id!, {
-        rateSectionNo: form.zoneCode,
         description: form.zoneRegional,
         isActive: newStatus
       });

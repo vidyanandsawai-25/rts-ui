@@ -1,11 +1,12 @@
 import { apiClient } from "@/services/api.service";
-import { 
-  OldTaxesDetailsResponse, 
+import {
+  OldTaxesDetailsResponse,
   PropertyOldDetailsApiItem,
   PropertyOldDetailsResponse,
-  OldTaxesDetails
+  OldTaxesDetails,
+  YearMasterResponse
 } from "@/types/OldDetails/property-old-details.types";
-   
+
 import { handleApiResponse } from "@/lib/utils/api";
 
 /**
@@ -18,7 +19,6 @@ import { handleApiResponse } from "@/lib/utils/api";
 export async function getPropertyOldDetails(propertyId: number): Promise<PropertyOldDetailsApiItem | null> {
   const response = await apiClient.get<PropertyOldDetailsResponse>(`/Property/${propertyId}/old-details`);
   const data = handleApiResponse(response, `Fetch property old details ${propertyId} failed`);
-  
   // Return the items object directly (it's a single object, not an array)
   return data.items ?? null;
 }
@@ -54,4 +54,19 @@ export async function getOldTaxesDetails(propertyId: number): Promise<OldTaxesDe
 export async function saveOldTaxesDetails(propertyId: number, data: OldTaxesDetails): Promise<OldTaxesDetailsResponse> {
   const response = await apiClient.put<OldTaxesDetailsResponse>(`/Property/${propertyId}/old-taxes-details`, data);
   return handleApiResponse(response, `Save old taxes details ${propertyId} failed`);
+}
+
+/**
+ * Fetches year master data.
+ * 
+ * @param pageNumber The page number.
+ * @param pageSize The page size (-1 for all).
+ */
+export async function getYearMaster(pageNumber: number = 1, pageSize: number = -1): Promise<YearMasterResponse> {
+  const params = new URLSearchParams({
+    PageNumber: pageNumber.toString(),
+    PageSize: pageSize.toString(),
+  });
+  const response = await apiClient.get<YearMasterResponse>(`/YearMaster?${params.toString()}`, { cache: 'no-store' });
+  return handleApiResponse(response, "Failed to fetch year master data");
 }

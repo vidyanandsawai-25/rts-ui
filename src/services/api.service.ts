@@ -6,6 +6,7 @@ import 'server-only';
 import { cookies } from 'next/headers';
 import { getAppConfig } from '@/config/app.config';
 import { ApiResponse } from '@/types/common.types';
+import { handleHttpUnauthorized } from '@/lib/utils/session-unauthorized.server';
 
 export const LOCAL_HTTPS_RE = /^https:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//;
 interface ApiError extends Error {
@@ -185,6 +186,10 @@ class ApiClient {
       const data = await this.parseResponseBody<T>(response);
       if (!response.ok) {
         if (response.status === 401) {
+          if (!skipAuth) {
+            const hadAuth = !!headers['Authorization'] || !!headers['authorization'];
+            await handleHttpUnauthorized(401, hadAuth);
+          }
           const errorMsg = (data as { message?: string })?.message || 'Invalid credentials';
           return {
             success: false,
@@ -203,6 +208,15 @@ class ApiClient {
       return { success: true, statusCode: response.status, data: data as T };
     } catch (error: unknown) {
       clearTimeout(timeoutId);
+      if (
+        typeof error === 'object' &&
+        error !== null &&
+        'digest' in error &&
+        typeof (error as { digest?: unknown }).digest === 'string' &&
+        String((error as { digest: string }).digest).startsWith('NEXT_REDIRECT')
+      ) {
+        throw error;
+      }
       const err = error as ApiError;
       if (err.name === 'AbortError')
         return { success: false, statusCode: 408, error: 'Request timeout' };

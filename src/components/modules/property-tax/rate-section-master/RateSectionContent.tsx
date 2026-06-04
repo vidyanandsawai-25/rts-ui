@@ -50,6 +50,7 @@ export default function RateSectionContent({
   sections = [], 
   sectionsTotalCount = 0,
   totalRateSectionCount, 
+  filteredRateSectionCount,
   totalWardsCount: initialTotalWards, 
   initialWardCounts, 
   initialSelectedRateSection,
@@ -79,7 +80,7 @@ export default function RateSectionContent({
   // Selected rate section - use prop value or compute default
   const selectedRateSection = useMemo(() => {
     if (initialSelectedRateSection) return initialSelectedRateSection;
-    return rates.length > 0 ? String(rates[0].rateSectionNo ?? '') : null;
+    return rates.length > 0 ? String(rates[0].id ?? '') : null;
   }, [initialSelectedRateSection, rates]);
 
   // Wards for selected rate section - use sections from SSR directly
@@ -103,14 +104,22 @@ export default function RateSectionContent({
     });
   }, [searchParams, pathname, router]);
 
-  // Handle rate section creation
-  const handleRateSectionCreated = (newRateNo: string) => {
-    setNewlyCreatedRateNo(newRateNo);
+  // Handle rate section creation - navigate to the page where new item appears
+  const handleRateSectionCreated = (newRateId: string) => {
+    setNewlyCreatedRateNo(newRateId);
 
     const params = new URLSearchParams(searchParams.toString());
     params.delete("action");
     params.delete("addRateSection");
-    params.set("zone", newRateNo);
+    params.set("zone", newRateId);
+    
+    // Calculate the page where the new rate section will appear
+    // New rate sections are added at the end (highest ID), so they'll be on the last page
+    const currentPageSize = Number(params.get("ratesectionpagesize")) || 10;
+    const newTotalCount = totalRateSectionCount + 1; // Account for the newly created item
+    const lastPage = Math.ceil(newTotalCount / currentPageSize);
+    params.set("ratesectionpage", String(lastPage));
+    
     router.push(`?${params.toString()}`);
 
     setTimeout(() => setNewlyCreatedRateNo(null), 3000);
@@ -179,7 +188,7 @@ export default function RateSectionContent({
             selectedRateSection={selectedRateSection}
             newlyCreatedRateNo={newlyCreatedRateNo}
             initialWardCounts={initialWardCounts}
-            totalCount={totalRateSectionCount}
+            totalCount={filteredRateSectionCount ?? totalRateSectionCount}
             onDeleteSuccess={() => router.refresh()}
           />
         </div>
