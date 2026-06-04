@@ -12,6 +12,7 @@ export interface PolicyConfiguration extends Record<string, unknown> {
   unit: string;
   effectiveFrom: string;
   effectiveTo: string | null;
+  allowedValues: string | null;
   isActive: boolean;
   createdBy?: number;
   createdDate?: string;
@@ -30,6 +31,7 @@ export interface PolicyConfigurationFormModel {
   unit: string;
   effectiveFrom: string;
   effectiveTo: string | null;
+  allowedValues: string | null;
   isActive: boolean;
   createdBy?: number;
 }

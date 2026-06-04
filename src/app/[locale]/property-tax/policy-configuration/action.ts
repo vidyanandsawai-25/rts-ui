@@ -38,7 +38,7 @@ export async function getPolicyConfigurationByIdAction(
 export async function deletePolicyConfigurationAction(formData: FormData) {
   const locale = validateRequiredStringFromFormData(formData, "locale");
   const idRaw = validateRequiredStringFromFormData(formData, "id");
-  
+
   const id = Number(idRaw);
   if (!Number.isFinite(id) || id <= 0) {
     throw new Error("Invalid id: must be a positive number");
@@ -58,93 +58,89 @@ export async function savePolicyConfiguration(id: string, formData: FormData) {
   let dataType: string;
   let policyValue: string;
   let defaultValue: string;
-  let unit: string;
   let effectiveFrom: string;
-  
-  // Validate and parse required fields from FormData
+
   try {
     locale = validateRequiredStringFromFormData(formData, "locale");
   } catch {
     return { ok: false, error: "invalid_locale" };
   }
-  
+
   try {
     policyCode = validateRequiredStringFromFormData(formData, "policyCode");
   } catch {
     return { ok: false, error: "invalid_policyCode" };
   }
-  
+
   try {
     category = validateRequiredStringFromFormData(formData, "category");
   } catch {
     return { ok: false, error: "invalid_category" };
   }
-  
+
   try {
     displayName = validateRequiredStringFromFormData(formData, "displayName");
   } catch {
     return { ok: false, error: "invalid_displayName" };
   }
-  
+
   try {
     description = validateRequiredStringFromFormData(formData, "description");
   } catch {
     return { ok: false, error: "invalid_description" };
   }
-  
+
   try {
     dataType = validateRequiredStringFromFormData(formData, "dataType");
   } catch {
     return { ok: false, error: "invalid_dataType" };
   }
-  
+
   try {
     policyValue = validateRequiredStringFromFormData(formData, "policyValue");
   } catch {
     return { ok: false, error: "invalid_policyValue" };
   }
-  
+
   try {
     defaultValue = validateRequiredStringFromFormData(formData, "defaultValue");
   } catch {
     return { ok: false, error: "invalid_defaultValue" };
   }
-  
-  try {
-    unit = validateRequiredStringFromFormData(formData, "unit");
-  } catch {
-    return { ok: false, error: "invalid_unit" };
-  }
-  
+
+  // unit optional hai — kisi bhi datatype ke liye required nahi
+  const unit = getOptionalStringFromFormData(formData, "unit") ?? "";
+
   try {
     effectiveFrom = validateRequiredStringFromFormData(formData, "effectiveFrom");
   } catch {
     return { ok: false, error: "invalid_effectiveFrom" };
   }
-  
-  // Optional and helper fields
+
+  // Optional fields
   const effectiveToRaw = getOptionalStringFromFormData(formData, "effectiveTo");
   const effectiveTo = effectiveToRaw && effectiveToRaw.trim() !== "" ? effectiveToRaw : null;
+
+  const allowedValuesRaw = getOptionalStringFromFormData(formData, "allowedValues");
+  const allowedValues =
+    allowedValuesRaw && allowedValuesRaw.trim() !== "" ? allowedValuesRaw.trim() : null;
+
   const isActive = getBooleanFromFormData(formData, "isActive");
-  
+
   const cookieStore = await cookies();
   const createdBy = getUserIdFromCookies(cookieStore) ?? undefined;
-  
+
   let numericId: number | undefined = undefined;
   let isUpdate = false;
 
-  // Validate ID if it is an update operation
   if (id && id.trim() !== "") {
     numericId = Number(id);
     if (!Number.isFinite(numericId) || numericId <= 0) {
-      return {
-        ok: false,
-        error: "invalid_id",
-      };
+      return { ok: false, error: "invalid_id" };
     }
     isUpdate = true;
   }
-  
+
   const payload = {
     id: numericId,
     policyCode,
@@ -157,6 +153,7 @@ export async function savePolicyConfiguration(id: string, formData: FormData) {
     unit,
     effectiveFrom,
     effectiveTo,
+    allowedValues,
     isActive,
     createdBy,
   };
@@ -172,15 +169,9 @@ export async function savePolicyConfiguration(id: string, formData: FormData) {
       return { ok: true, mode: "create" as const };
     }
   } catch (error) {
-    // Handle 409 Conflict (e.g., duplicate policy codes)
     if (error instanceof ApiError && error.statusCode === 409) {
-      return {
-        ok: false,
-        error: "duplicate",
-      };
+      return { ok: false, error: "duplicate" };
     }
-    
-    // Handle other specific API errors
     if (error instanceof ApiError) {
       return {
         ok: false,
@@ -188,8 +179,6 @@ export async function savePolicyConfiguration(id: string, formData: FormData) {
         message: error.message || "An error occurred while saving the record.",
       };
     }
-    
-    // Handle generic system errors
     return {
       ok: false,
       error: "unknown",
