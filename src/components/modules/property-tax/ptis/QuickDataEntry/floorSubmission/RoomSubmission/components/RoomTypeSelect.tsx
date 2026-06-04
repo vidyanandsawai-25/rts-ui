@@ -14,7 +14,7 @@ interface RoomTypeSelectProps {
 }
 
 export const RoomTypeSelect: React.FC<RoomTypeSelectProps> = ({ value, onChange, className, disabled, roomTypeData }) => {
-    const roomTypeDetails = roomTypeData || [];
+    const roomTypeDetails = React.useMemo(() => roomTypeData || [], [roomTypeData]);
     const isLoading = false;
     const t = useTranslations("quickDataEntry");
 
