@@ -106,7 +106,7 @@ export function ULBDepartmentLicenseTab({
         </div>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto pr-1 pb-4">
+      <div className="min-h-0 flex-1 overflow-y-auto pr-1 pb-48">
         {isLoadingDepartments ? (
           <div className="flex min-h-[240px] flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white px-6 py-10 text-center">
             <Package className="mb-3 h-8 w-8 animate-pulse text-slate-300" />
@@ -125,7 +125,7 @@ export function ULBDepartmentLicenseTab({
                 key={dept.id}
                 dept={dept}
                 t={t}
-                onToggle={onToggle}
+                onToggle={(id, enabled) => onToggle(id, enabled, master)}
                 onDateChange={onDateChange}
               />
             ))}

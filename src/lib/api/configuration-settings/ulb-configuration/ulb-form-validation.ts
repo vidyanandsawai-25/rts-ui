@@ -1,6 +1,6 @@
 import { commonValidations } from '@/lib/utils/validation';
 import { validateForm, type Validator } from '@/lib/utils/validation-helpers';
-import { CODE_SANITIZE, DESCRIPTION_REGEX, DESCRIPTION_SANITIZE } from '@/lib/utils/validation-rules';
+import { CODE_SANITIZE, DESCRIPTION_REGEX, DESCRIPTION_SANITIZE, PERSON_NAME_REGEX, PERSON_NAME_SANITIZE } from '@/lib/utils/validation-rules';
 import { isValidWebsiteUrl } from './ulb-master.formatters';
 import * as CONST from './ulb-form-validation.constants';
 import type {
@@ -49,6 +49,21 @@ function websiteValidator(t: TranslateFn, formatKey: string): Validator {
   };
 }
 
+function personNameValidator(
+  tCommon: TranslateFn,
+  tUlb: TranslateFn,
+  maxLength: number,
+  formatKey: string
+): Validator {
+  return (value: unknown) => {
+    const strVal = String(value ?? '').trim();
+    if (!strVal) return undefined;
+    if (strVal.length > maxLength) return tCommon('form.validation.nameMaxLength', { count: maxLength });
+    if (!PERSON_NAME_REGEX.test(strVal)) return tUlb(formatKey);
+    return undefined;
+  };
+}
+
 function getTextMaxLength(field: keyof ULBConfigurationFormData): number {
   switch (field) {
     case 'ulbName':
@@ -84,12 +99,13 @@ export function sanitizeUlbFieldValue(
     case 'ulbCode':
       return value.replace(CODE_SANITIZE, '').slice(0, CONST.ULB_CODE_MAX);
     case 'ulbName':
-    case 'contactPerson':
     case 'designation':
     case 'address':
     case 'implementationPartner':
-    case 'projectManager':
       return value.replace(DESCRIPTION_SANITIZE, '').slice(0, getTextMaxLength(field));
+    case 'contactPerson':
+    case 'projectManager':
+      return value.replace(PERSON_NAME_SANITIZE, '').slice(0, getTextMaxLength(field));
     case 'pincode':
       return value.replace(/\D/g, '').slice(0, CONST.PINCODE_LENGTH);
     case 'phone':
@@ -132,7 +148,7 @@ function createUlbInfoSchema(tCommon: TranslateFn, tUlb: TranslateFn): Record<st
     pincode: pincodeValidator(tCommon, 'validation.pincodeRequired'),
     contactPerson: chainValidators(
       requiredField(tUlb, 'validation.contactPersonRequired'),
-      commonValidations.masterDescription(tCommon, CONST.CONTACT_PERSON_MAX)
+      personNameValidator(tCommon, tUlb, CONST.CONTACT_PERSON_MAX, 'validation.contactPersonFormat')
     ),
     designation: chainValidators(
       requiredField(tUlb, 'validation.designationRequired'),
@@ -164,7 +180,7 @@ function createProjectLicenseSchema(
     financialYearStart: requiredField(tUlb, 'validation.financialYearStartRequired'),
     projectManager: chainValidators(
       requiredField(tUlb, 'validation.projectManagerRequired'),
-      commonValidations.masterDescription(tCommon, CONST.PROJECT_MANAGER_MAX)
+      personNameValidator(tCommon, tUlb, CONST.PROJECT_MANAGER_MAX, 'validation.projectManagerFormat')
     ),
     projectManagerEmail: chainValidators(
       requiredField(tUlb, 'validation.projectManagerEmailRequired'),
