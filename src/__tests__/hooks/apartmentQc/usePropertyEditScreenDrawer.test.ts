@@ -70,7 +70,7 @@ describe('usePropertyEditScreenDrawer', () => {
   afterEach(async () => {
     // Wait for any pending async operations
     await vi.waitFor(() => {}, { timeout: 100 }).catch(() => {});
-    vi.clearAllTimers();
+    vi.useRealTimers();
   });
 
   it('should initialize with default state', () => {
