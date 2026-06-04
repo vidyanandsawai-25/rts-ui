@@ -1,15 +1,12 @@
-import { BuildingPermissionItems, BuildingPermissionState } from "@/types/building-permission.types";
+import { 
+    BuildingPermissionState,
+    PropertyCertificateWithStatusDto,
+    PropertyCertificateBulkSaveDto,
+    PropertyCertificateItemDto
+} from "@/types/building-permission.types";
 
-/**
- * Formats a date string for input type="date" (YYYY-MM-DD)
- */
-
-/**
- * Formats a date string for input type="date" (YYYY-MM-DD)
- * API sometimes returns the literal string "string" as a placeholder for missing values
- */
 export const formatDateForInput = (dateStr: string | null | undefined): string => {
-    if (!dateStr || dateStr === "string") return "";
+    if (!dateStr || dateStr === "string" || dateStr.toLowerCase() === "null") return "";
     try {
         return dateStr.split('T')[0];
     } catch {
@@ -17,95 +14,138 @@ export const formatDateForInput = (dateStr: string | null | undefined): string =
     }
 };
 
-/**
- * Checks if a certificate entry should be considered enabled based on its values
- */
-export const isCertificateEnabled = (
-    no: string | null | undefined, 
-    date: string | null | undefined, 
-    guid: string | null | undefined
-): boolean => {
-    const isValid = (val: string | null | undefined) =>
-        !!val &&
-        String(val).trim() !== "" &&
-        String(val).toLowerCase() !== "string" &&
-        String(val).toLowerCase() !== "null";
-
-    return isValid(no) || isValid(date) || isValid(guid);
+/** Strips backend placeholder values ("string", "null", "undefined") to empty string. */
+const sanitizeString = (value: string | null | undefined): string => {
+    if (!value) return "";
+    const lower = value.trim().toLowerCase();
+    if (lower === "string" || lower === "null" || lower === "undefined") return "";
+    return value.trim();
 };
 
-/**
- * Maps API response items to the internal component state
- */
-export const mapApiToBuildingState = (items: BuildingPermissionItems | null | undefined): BuildingPermissionState => {
-    const normalizeGuid = (guid: string | null | undefined) => {
-        if (!guid || guid.toLowerCase() === "null" || guid.toLowerCase() === "string") return undefined;
-        return guid;
-    };
-    const createEntry = (no: string | null | undefined, date: string | null | undefined, guid: string | null | undefined) => ({
-        enabled: isCertificateEnabled(no, date, guid),
-        number: no === "string" ? "" : (no || ""),
-        date: formatDateForInput(date),
-        documentGuid: normalizeGuid(guid),
-    });
+const MAPPING: Record<string, string> = {
+    propertytaxcertificate: "propertyTaxCertificate", noduescertificate: "noDuesCertificate",
+    assessmentcertificate: "assessmentCertificate", propertyvaluationcertificate: "propertyValuationCertificate",
+    encumbrancecertificate: "encumbranceCertificate", buildingpermissioncertificate: "buildingPermissionCertificate",
+    buildingplanapprovalcertificate: "buildingPlanApprovalCertificate", commencementcertificatecc: "commencementCertificate",
+    occupancycertificateoc: "occupancyCertificate", completioncertificate: "buildCompletionCertificate",
+    buildcompletioncertificate: "buildCompletionCertificate", revisedbuildingpermissioncertificate: "revisedBuildingPermissionCertificate",
+    buildingregularizationcertificate: "buildingRegularizationCertificate", buildingrenovationapprovalcertificate: "buildingRenovationApprovalCertificate",
+    buildingextensionapprovalcertificate: "buildingExtensionApprovalCertificate", additionalfloorpermissioncertificate: "additionalFloorPermissionCertificate",
+    layoutapprovalcertificate: "layoutApprovalCertificate", subdivisionapprovalcertificate: "subdivisionApprovalCertificate",
+    amalgamationapprovalcertificate: "amalgamationApprovalCertificate", developmentpermissioncertificate: "developmentPermissionCertificate",
+    buildingsafetycertificate: "buildingSafetyCertificate", structuralstabilitycertificate: "structuralStabilityCertificate",
+    firesafetycertificate: "fireSafetyCertificate", liftsafetycertificate: "liftSafetyCertificate",
+    electricalsafetycertificate: "electricalSafetyCertificate", waterconnectionapprovalcertificate: "waterConnectionApprovalCertificate",
+    sewerageconnectionapprovalcertificate: "sewerageConnectionApprovalCertificate", rainwaterharvestingcompliancecertificate: "rainwaterHarvestingComplianceCertificate",
+    environmentalclearancecertificate: "environmentalClearanceCertificate", treecuttingpermissioncertificate: "treeCuttingPermissionCertificate",
+    demolitionpermissioncertificate: "demolitionPermissionCertificate", roadcuttingpermissioncertificate: "roadCuttingPermissionCertificate",
+    noccertificate: "nocCertificate", propertycertificate: "propertyCertificate",
+    ownershipcertificate: "ownershipCertificate", landusecertificate: "landUseCertificate",
+    zoningcertificate: "zoningCertificate", addressverificationcertificate: "addressVerificationCertificate",
+    buildingpermit: "buildingPermit", permit: "buildingPermit",
+    possessioncertificate: "possessionCertificate", index2: "index2",
+    electricbill: "electricBill",
+};
 
-    if (!items) {
-        const emptyEntry = { enabled: false, number: "", date: "" };
-        return {
-            buildingPermit: emptyEntry,
-            commencementCertificate: emptyEntry,
-            occupancyCertificate: emptyEntry,
-            possessionCertificate: emptyEntry,
-            index2: emptyEntry,
-            electricBill: emptyEntry,
-            buildCompletionCertificate: emptyEntry,
+export const mapTypeNameToKey = (name: string): string | null => {
+    const norm = name.toLowerCase().replace(/[^a-z0-9]/g, "");
+    if (MAPPING[norm]) return MAPPING[norm];
+    if (norm.includes("commencement")) return "commencementCertificate";
+    if (norm.includes("occupancy")) return "occupancyCertificate";
+    if (norm.includes("possession")) return "possessionCertificate";
+    if (norm.includes("index")) return "index2";
+    if (norm.includes("electric")) return "electricBill";
+    if (norm.includes("completion") || norm.includes("buildcompletion")) return "buildCompletionCertificate";
+    if (norm.includes("buildingpermit") || norm === "permit") return "buildingPermit";
+    return null;
+};
+
+export const mapApiToBuildingState = (
+    items: PropertyCertificateWithStatusDto[] | null | undefined
+): BuildingPermissionState => {
+    const state: BuildingPermissionState = {};
+    if (!items || !Array.isArray(items)) return state;
+
+    items.forEach((item) => {
+        state[item.certificateTypeId] = {
+            enabled: item.isActive,
+            number: sanitizeString(item.certificateNo),
+            date: formatDateForInput(item.issueDate),
+            documentGuid: sanitizeString(item.documentGuid) || undefined,
+            certificateTypeId: item.certificateTypeId,
+            propertyCertificateId: item.propertyCertificateId || null,
+            fileName: sanitizeString(item.fileName) || undefined,
+            certificateTypeName: item.certificateTypeName,
+            displayOrder: item.displayOrder
         };
-    }
-
-    return {
-        buildingPermit: createEntry(items.buildingPermitNo, items.buildingPermitDate, items.buildingPermitDocumentGuid),
-        commencementCertificate: createEntry(items.commencementNo, items.commencementDate, items.commencementDocumentGuid),
-        occupancyCertificate: createEntry(items.occupancyCertNo, items.occupancyCertDate, items.occupancyCertDocumentGuid),
-        possessionCertificate: createEntry(items.possessionCertNo, items.possessionCertDate, items.possessionCertDocumentGuid),
-        index2: createEntry(items.index2No, items.index2Date, items.index2DocumentGuid),
-        electricBill: createEntry(items.electricBillNo, items.electricBillDate, items.electricBillDocumentGuid),
-        buildCompletionCertificate: createEntry(items.buildCompletionCertNo, items.buildCompletionDate, items.buildCompletionCertDocumentGuid),
-    };
+    });
+    return state;
 };
 
-/**
- * Maps component state back to the API payload format
- */
-export const mapBuildingStateToApi = (state: BuildingPermissionState): Partial<BuildingPermissionItems> => {
-    const formatPayloadDate = (date: string | undefined) => date ? `${date}T00:00:00` : null;
+export const mapBuildingStateToApi = (
+    state: BuildingPermissionState,
+    propertyId: number
+): PropertyCertificateBulkSaveDto => {
+    const certificates: PropertyCertificateItemDto[] = [];
+    Object.values(state).forEach((item) => {
+        certificates.push({
+            certificateTypeId: item.certificateTypeId,
+            isEnabled: item.enabled,
+            certificateNumber: item.number ? item.number : null,
+            certificateDate: item.date ? `${item.date}T00:00:00` : null,
+            propertyCertificateId: item.propertyCertificateId || null,
+            existingDocumentGuid: item.documentGuid || null,
+            hasNewDocument: false
+        });
+    });
+    return { propertyId, certificates };
+};
 
-    return {
-        buildingPermitNo: state.buildingPermit.number || null,
-        buildingPermitDate: formatPayloadDate(state.buildingPermit.date),
-        buildingPermitDocumentGuid: state.buildingPermit.documentGuid || null,
+export const localizeBackendError = (errorMsg: string, t: (key: string) => string): string => {
+    if (!errorMsg) return "";
+    const cleanMsg = errorMsg.trim().toLowerCase();
+    if (cleanMsg.includes("without an issue date")) {
+        return t("building.errors.cannotEnableWithoutDate") || "Cannot enable certificate without an issue date.";
+    }
+    if (cleanMsg.includes("without a certificate number")) {
+        return t("building.errors.cannotEnableWithoutNumber") || "Cannot enable certificate without a certificate number.";
+    }
+    if (cleanMsg.includes("cannot be in the future")) {
+        return t("building.errors.futureDate") || "Issue date cannot be in the future.";
+    }
+    if (cleanMsg.includes("cannot exceed 100 characters")) {
+        return t("building.errors.numberExceedsLimit") || "Certificate number cannot exceed 100 characters.";
+    }
+    if (cleanMsg.includes("not found")) {
+        return t("building.errors.notFound") || "Certificate not found.";
+    }
+    return errorMsg;
+};
 
-        commencementNo: state.commencementCertificate.number || null,
-        commencementDate: formatPayloadDate(state.commencementCertificate.date),
-        commencementDocumentGuid: state.commencementCertificate.documentGuid || null,
-
-        occupancyCertNo: state.occupancyCertificate.number || null,
-        occupancyCertDate: formatPayloadDate(state.occupancyCertificate.date),
-        occupancyCertDocumentGuid: state.occupancyCertificate.documentGuid || null,
-
-        possessionCertNo: state.possessionCertificate.number || null,
-        possessionCertDate: formatPayloadDate(state.possessionCertificate.date),
-        possessionCertDocumentGuid: state.possessionCertificate.documentGuid || null,
-
-        index2No: state.index2.number || null,
-        index2Date: formatPayloadDate(state.index2.date),
-        index2DocumentGuid: state.index2.documentGuid || null,
-
-        electricBillNo: state.electricBill.number || null,
-        electricBillDate: formatPayloadDate(state.electricBill.date),
-        electricBillDocumentGuid: state.electricBill.documentGuid || null,
-
-        buildCompletionCertNo: state.buildCompletionCertificate.number || null,
-        buildCompletionDate: formatPayloadDate(state.buildCompletionCertificate.date),
-        buildCompletionCertDocumentGuid: state.buildCompletionCertificate.documentGuid || null,
-    };
+export const parseAndLocalizeBackendError = (
+    errorMsg: string,
+    buildingPermission: Record<number, { certificateTypeName?: string }>,
+    t: (key: string) => string
+): string => {
+    if (!errorMsg) return "";
+    const errors = errorMsg.split(";").map(err => err.trim()).filter(Boolean);
+    const localizedErrors = errors.map(err => {
+        const match = err.match(/Certificate Type (\d+):\s*(.*)/i);
+        if (match) {
+            const typeId = parseInt(match[1]);
+            const innerError = match[2];
+            const cert = buildingPermission[typeId];
+            let certName = `Certificate Type ${typeId}`;
+            if (cert?.certificateTypeName) {
+                const key = mapTypeNameToKey(cert.certificateTypeName);
+                certName = key && t(`building.${key}`) && t(`building.${key}`) !== `building.${key}`
+                    ? t(`building.${key}`)
+                    : cert.certificateTypeName;
+            }
+            const localizedInner = localizeBackendError(innerError, t);
+            return `${certName}: ${localizedInner}`;
+        }
+        return localizeBackendError(err, t);
+    });
+    return localizedErrors.join("\n");
 };

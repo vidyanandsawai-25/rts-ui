@@ -74,7 +74,7 @@ export const SimpleToggleSection: React.FC<SimpleToggleSectionProps> = ({
                                 {displayName}
                             </span>
                             <div 
-                                className="flex-shrink-0 cursor-pointer [&_button]:cursor-pointer [&_span]:cursor-pointer flex items-center"
+                                className="flex-shrink-0 cursor-pointer [&_button:not(:disabled)]:cursor-pointer [&_span]:cursor-pointer flex items-center"
                                 onClick={(e) => e.stopPropagation()}
                             >
                                 <ToggleSwitch
