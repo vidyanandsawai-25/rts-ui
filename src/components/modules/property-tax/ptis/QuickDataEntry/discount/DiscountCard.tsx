@@ -58,11 +58,13 @@ export const DiscountCard: React.FC<DiscountCardProps> = ({
                         <EyeOff size={16} className="text-gray-400" />
                     )}
 
-                    <ToggleSwitch
-                        checked={data.enabled}
-                        onChange={onToggle}
-                        showPopup={false}
-                    />
+                    <div className="[&_button:not(:disabled)]:cursor-pointer">
+                        <ToggleSwitch
+                            checked={data.enabled}
+                            onChange={onToggle}
+                            showPopup={false}
+                        />
+                    </div>
                 </div>
             </div>
             <div className={`col-span-2 mt-2 pt-3 border-t ${data.enabled ? "border-blue-200" : "border-gray-100"}`}>

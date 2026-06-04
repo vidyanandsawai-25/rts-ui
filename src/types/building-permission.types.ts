@@ -1,21 +1,17 @@
-export type BuildingKey =
-    | "buildingPermit"
-    | "commencementCertificate"
-    | "occupancyCertificate"
-    | "possessionCertificate"
-    | "index2"
-    | "electricBill"
-    | "buildCompletionCertificate";
-
 export type CertificateData = {
     enabled: boolean;
     number: string;
     date: string;
     documentGuid?: string;
     isUploading?: boolean;
+    certificateTypeId: number;
+    propertyCertificateId?: number | null;
+    fileName?: string;
+    certificateTypeName?: string;
+    displayOrder?: number;
 };
 
-export type BuildingPermissionState = Record<BuildingKey, CertificateData>;
+export type BuildingPermissionState = Record<number, CertificateData>;
 
 export interface BuildingPermissionItems {
     propertyId: number;
@@ -49,7 +45,58 @@ export interface BuildingPermissionApiResponse {
     items: BuildingPermissionItems;
 }
 
+export interface PropertyCertificateWithStatusDto {
+    certificateTypeId: number;
+    certificateTypeName: string;
+    displayOrder: number;
+    hasCertificate: boolean;
+    propertyCertificateId: number | null;
+    isActive: boolean;
+    certificateNo: string | null;
+    issueDate: string | null;
+    documentGuid: string | null;
+    fileName: string | null;
+}
+
+export interface PropertyCertificateUploadResponseDto {
+    propertyCertificateId: number;
+    documentGuid: string;
+    documentId: number;
+    documentBindingId: number;
+    propertyId: number;
+    certificateTypeId: number;
+    certificateNo: string | null;
+    issueDate: string | null;
+    fileName: string;
+    fileSizeBytes: number;
+    storagePath: string;
+}
+
+export interface PropertyCertificateItemDto {
+    certificateTypeId: number;
+    isEnabled: boolean;
+    certificateNumber?: string | null;
+    certificateDate?: string | null;
+    propertyCertificateId?: number | null;
+    existingDocumentGuid?: string | null;
+    hasNewDocument: boolean;
+}
+
+export interface PropertyCertificateBulkSaveDto {
+    propertyId: number;
+    certificates: PropertyCertificateItemDto[];
+}
+
+export interface PropertyCertificateBulkSaveResponseDto {
+    propertyId: number;
+    totalProcessed: number;
+    enabledCount: number;
+    disabledCount: number;
+    updatedCertificates: PropertyCertificateWithStatusDto[];
+    errors: string[];
+}
+
 export interface BuildingFormProps {
-    initialBuildingPermission: BuildingPermissionApiResponse | null;
+    initialBuildingPermission: PropertyCertificateWithStatusDto[] | null;
     propertyId: string;
 }
