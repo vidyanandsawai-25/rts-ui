@@ -187,8 +187,9 @@ export function BuildingPreviewModal({
           const errorMessages = result.data.errors || [];
           const parsedErrors = parseBulkPropertyErrors(errorMessages, t, result.data.failedCount);
 
-          // Show error toast with title and description
-          toast.error(parsedErrors.title, {
+          // Show toast with title and description based on severity
+          const toastFn = parsedErrors.severity === "warning" ? toast.warning : toast.error;
+          toastFn(parsedErrors.title, {
             description: parsedErrors.messages.join("\n"),
             duration: 8000,
           });
@@ -198,7 +199,8 @@ export function BuildingPreviewModal({
         const errorMessages = result.error ? [result.error] : [];
         const parsedErrors = parseBulkPropertyErrors(errorMessages, t);
 
-        toast.error(parsedErrors.title, {
+        const toastFn = parsedErrors.severity === "warning" ? toast.warning : toast.error;
+        toastFn(parsedErrors.title, {
           description: parsedErrors.messages.join("\n"),
           duration: 8000,
         });

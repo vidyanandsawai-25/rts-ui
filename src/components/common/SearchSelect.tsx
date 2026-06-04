@@ -303,12 +303,8 @@ export function SearchSelect({
           required={required}
           autoComplete="off"
           role="combobox"
-          aria-expanded={isOpen && (filteredOptions.length > 0 || isLoading)}
-          aria-controls={
-            isOpen && (filteredOptions.length > 0 || isLoading)
-              ? `${accessibleId}-listbox`
-              : undefined
-          }
+          aria-expanded={isOpen}
+          aria-controls={isOpen ? `${accessibleId}-listbox` : undefined}
           aria-activedescendant={
             isOpen && highlightedIndex >= 0 && highlightedIndex < filteredOptions.length
               ? `${accessibleId}-option-${highlightedIndex}`
@@ -358,7 +354,7 @@ export function SearchSelect({
       </div>
 
       {/* Dropdown */}
-      {isOpen && (filteredOptions.length > 0 || isLoading) && (
+      {isOpen && (
         <ul
           ref={listRef}
           id={`${accessibleId}-listbox`}

@@ -266,7 +266,8 @@ export function usePartitionSubmit({
             // Parse and display errors as toast alert
             const errorMessages = result.data.errors || [];
             const parsedErrors = parseBulkPropertyErrors(errorMessages, t, result.data.failedCount);
-            toast.error(parsedErrors.title, {
+            const toastFn = parsedErrors.severity === "warning" ? toast.warning : toast.error;
+            toastFn(parsedErrors.title, {
               description: parsedErrors.messages.join("\n"),
               duration: 8000,
             });
@@ -340,7 +341,8 @@ export function usePartitionSubmit({
             // Parse and display errors as toast alert
             const errorMessages = result.data.errors || [];
             const parsedErrors = parseBulkPropertyErrors(errorMessages, t, result.data.failedCount);
-            toast.error(parsedErrors.title, {
+            const toastFn = parsedErrors.severity === "warning" ? toast.warning : toast.error;
+            toastFn(parsedErrors.title, {
               description: parsedErrors.messages.join("\n"),
               duration: 8000,
             });

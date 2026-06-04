@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { PartitionFormErrors } from "@/types/zone-master/properties/partition-form.types";
@@ -47,10 +47,12 @@ export function useWingManagement({
   };
 
   // Initialize newWingId and newWingNo when showing add form
-  if (showAddWingForm && !editingSocietyDetailId && newWingId === null) {
-    setNewWingId(nextWingId);
-    setNewWingNo(getWingNoById(nextWingId));
-  }
+  useEffect(() => {
+    if (showAddWingForm && !editingSocietyDetailId && newWingId === null) {
+      setNewWingId(nextWingId);
+      setNewWingNo(getWingNoById(nextWingId));
+    }
+  }, [showAddWingForm, editingSocietyDetailId, newWingId, nextWingId]);
 
   // Group society details by wing
   const wingSummaries = useMemo<WingSummary[]>(() => {
