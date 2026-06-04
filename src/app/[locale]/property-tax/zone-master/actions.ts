@@ -1031,11 +1031,11 @@ export async function getAllPropertiesForWardAction(wardId: number): Promise<{
       return { success: false, error: "Invalid ward ID" };
     }
 
-    // Fetch all properties for the ward (use large page size)
+    // Fetch all properties for the ward (use PageSize=-1 to get all)
     const params = new URLSearchParams();
     params.set("WardId", wardId.toString());
     params.set("PageNumber", "1");
-    params.set("PageSize", "1000"); // Large number to get all
+    params.set("PageSize", "-1"); // -1 returns all items without pagination
 
     const response = await apiClient.get<ZonePropertyListResponse>(`/Property?${params.toString()}`);
 

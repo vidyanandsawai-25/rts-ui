@@ -118,6 +118,7 @@ export function BulkCreateSection({
                 type="number"
                 required
                 className="bg-white"
+                min={0}
               />
               <ValidationMessage
                 message={errors.toPropertyNo}

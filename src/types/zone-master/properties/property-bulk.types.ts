@@ -14,13 +14,14 @@ export interface BulkPropertyItem {
   propertyTypeId: number;
   categoryId: number;
   partitionNo: string;
-  flatOrShopNo: string;
-  flatOrShopNoEnglish: string;
-  address: string;
-  addressEnglish: string;
-  location: string;
-  locationEnglish: string;
+  flatOrShopNo: string | null;
+  flatOrShopNoEnglish: string | null;
+  address: string | null;
+  addressEnglish: string | null;
+  location: string | null;
+  locationEnglish: string | null;
   societyDetailId?: number; // Optional - only needed for apartment categories
+  propertyFloorId?: number; // Floor ID from building structure (optional for amenities/partitions)
   createdBy: number;
   createdDate: string;
 }

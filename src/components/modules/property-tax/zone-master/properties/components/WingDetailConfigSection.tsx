@@ -5,6 +5,7 @@ import { Info, AlertCircle } from "lucide-react";
 import { PartitionFormState, PartitionFormErrors } from "@/types/zone-master/properties/partition-form.types";
 import { Option } from "@/components/common";
 import { PreviewButton } from "@/components/common/ActionButtons";
+import { CODE_SANITIZE } from "@/lib/utils/validation-rules";
 
 interface WingDetailConfigSectionProps {
   form: PartitionFormState;
@@ -197,9 +198,16 @@ export function WingDetailConfigSection({
           <Input
             label={t("partitionForm.wing.prefix")}
             value={form.prefix}
-            onChange={(e) => setForm({ ...form, prefix: e.target.value })}
+            onChange={(e) => {
+              const sanitized = e.target.value
+                .replace(CODE_SANITIZE, '')
+                .toUpperCase()
+                .slice(0, 10);
+              setForm({ ...form, prefix: sanitized });
+            }}
             placeholder={t("partitionForm.wing.placeholders.prefix")}
             disabled={loading}
+            maxLength={10}
           />
         </div>
 

@@ -364,7 +364,9 @@
   },
   "partitionForm": {
     "title": "विभाजन / विंग तयार करा",
-    "subtitle": "मालमत्तेत विभाजन किंवा विंग जोडा",    "propertyInformation": "मालमत्ता माहिती",    "ward": "प्रभाग",
+    "subtitle": "मालमत्तेत विभाजन किंवा विंग जोडा",
+    "createPartition": "विभाजन तयार करा",
+    "propertyInformation": "मालमत्ता माहिती",    "ward": "प्रभाग",
     "propertyCategory": "मालमत्ता श्रेणी",
     "categoryType": "श्रेणी प्रकार",
     "apartment": "अपार्टमेंट",
@@ -418,8 +420,8 @@
     "placeholders": {
       "selectMainProperty": "मुख्य मालमत्ता निवडा",
       "partitionNo": "विभाजन क्रमांक प्रविष्ट करा",
-      "fromPartition": "उदा., 1",
-      "toPartition": "उदा., 10"
+      "fromPartition": "विभाजन पासून संख्या प्रविष्ट करा",
+      "toPartition": "विभाजन पर्यंत संख्या प्रविष्ट करा"
     },
     "helpText": {
       "selectMainProperty": "विभाजन/विंग जोडण्यासाठी मुख्य मालमत्ता निवडा",
@@ -560,20 +562,41 @@
         "partialSuccess": "काही मालमत्ता तयार करण्यात अयशस्वी",
         "successCount": "यशस्वी",
         "failedCount": "अयशस्वी",
-        "details": "परिणाम"      },
+        "details": "परिणाम",
+        "errors": {
+          "title": "मालमत्ता निर्मिती अयशस्वी",
+          "criticalErrorTitle": "गंभीर त्रुटी",
+          "duplicateErrorTitle": "डुप्लिकेट रेकॉर्ड आढळले",
+          "genericError": "मालमत्ता तयार करताना त्रुटी आली.",
+          "failedToCreate": "{count} मालमत्ता तयार करण्यात अयशस्वी झाल्या.",
+          "buildingNotFound": "बिल्डिंग तपशील सापडले नाहीत. कृपया निवडलेली बिल्डिंग तपासा आणि पुन्हा प्रयत्न करा.",
+          "invalidCategory": "निवडलेली मालमत्ता श्रेणी अवैध आहे. कृपया वैध श्रेणी निवडा.",
+          "societyWingMissing": "अपार्टमेंट मालमत्तांसाठी सोसायटी विंग तपशील आवश्यक आहेत.",
+          "duplicatePartitionSingle": "पार्टिशन {partition} निवडलेल्या विंगमध्ये आधीपासून अस्तित्वात आहे.",
+          "duplicatePartitionMultiple": "खालील पार्टिशन या विंगमध्ये आधीपासून अस्तित्वात आहेत: {partitions}.",
+          "duplicateFlatSingle": "फ्लॅट क्रमांक {flat} निवडलेल्या विंगमध्ये आधीपासून अस्तित्वात आहे.",
+          "duplicateFlatNumbers": "फ्लॅट क्रमांक {flats} निवडलेल्या विंगमध्ये आधीपासून अस्तित्वात आहेत.",
+          "repositoryError": "पंक्ती {row}: {message}.",
+          "unknownErrorAtRow": "पंक्ती {row} वर मालमत्ता तयार करताना अनपेक्षित त्रुटी आली.",
+          "transactionFailure": "सिस्टम त्रुटीमुळे मालमत्ता निर्मिती अयशस्वी झाली. कृपया नंतर पुन्हा प्रयत्न करा."
+        }
+      },
       "amenity": {
         "notImplemented": "सुविधा सामग्री अद्याप लागू केली नाही"      }
     },
     "amenity": {
       "description": "निवडलेल्या मालमत्तेसाठी सुविधा तयार करा. सुविधा एका विंगला (पर्यायी) नियुक्त केल्या जातील आणि क्रमवार क्रमांकित केल्या जातील.",
       "selectWing": "विंग निवडा (पर्यायी)",
-      "noWing": "विंग नाही (डीफॉल्ट सुविधा)",
+      "noWing": "मुख्य मालमत्ता",
       "fromAmenity": "सुविधा पासून",
       "toAmenity": "सुविधा पर्यंत",
       "amenities": "सुविधा",
       "amenitiesWillBeCreated": "सुविधा तयार केल्या जातील:",
+      "createAmenity": "सुविधा तयार करा",
       "placeholders": {
-        "selectWing": "एक विंग निवडा किंवा रिकामे सोडा"
+        "selectWing": "एक विंग निवडा किंवा रिकामे सोडा",
+        "fromAmenity": "सुविधा पासून क्रमांक प्रविष्ट करा",
+        "toAmenity": "सुविधा पर्यंत क्रमांक प्रविष्ट करा"
       }
     }
   },

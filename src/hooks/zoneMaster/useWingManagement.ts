@@ -12,6 +12,8 @@ interface UseWingManagementProps {
   setSocietyDetails: React.Dispatch<React.SetStateAction<SocietyDetailItem[]>>;
   wings: WingItem[];
   selectedPropertyId: number | null;
+  /** Optional callback to refresh data after wing save (create/edit) */
+  onWingSaveSuccess?: () => Promise<void> | void;
 }
 
 export function useWingManagement({
@@ -19,6 +21,7 @@ export function useWingManagement({
   setSocietyDetails,
   wings,
   selectedPropertyId,
+  onWingSaveSuccess,
 }: UseWingManagementProps) {
   const t = useTranslations("zoneMaster");
 
@@ -28,6 +31,7 @@ export function useWingManagement({
   const [addingWing, setAddingWing] = useState(false);
   const [editingSocietyDetailId, setEditingSocietyDetailId] = useState<number | null>(null);
   const [newWingId, setNewWingId] = useState<number | null>(null);
+  const [newWingNo, setNewWingNo] = useState<string>("");
 
   // Calculate next wing ID from SSR society details
   const nextWingId = useMemo(() => {
@@ -36,9 +40,16 @@ export function useWingManagement({
     return maxWingId + 1;
   }, [societyDetails]);
 
-  // Initialize newWingId when showing add form
+  // Get wingNo from wings array based on wingId
+  const getWingNoById = (wingId: number): string => {
+    const wing = wings.find(w => w.id === wingId);
+    return wing?.wingNo || "";
+  };
+
+  // Initialize newWingId and newWingNo when showing add form
   if (showAddWingForm && !editingSocietyDetailId && newWingId === null) {
     setNewWingId(nextWingId);
+    setNewWingNo(getWingNoById(nextWingId));
   }
 
   // Group society details by wing
@@ -61,7 +72,8 @@ export function useWingManagement({
       }
     });
     
-    return Array.from(groups.values()).sort((a, b) => a.wingName.localeCompare(b.wingName));
+    // Sort by societyDetailId to maintain database order (latest added at bottom)
+    return Array.from(groups.values()).sort((a, b) => a.societyDetailId - b.societyDetailId);
   }, [societyDetails, wings]);
 
   // Handle save wing
@@ -112,9 +124,15 @@ export function useWingManagement({
       
       // Reset form
       setNewWingId(null);
+      setNewWingNo("");
       setNewWingName("");
       setEditingSocietyDetailId(null);
       setShowAddWingForm(false);
+      
+      // Refresh data after successful save
+      if (onWingSaveSuccess) {
+        await onWingSaveSuccess();
+      }
     } catch (_error) {
       toast.error(t("partitionForm.wing.messages.saveWingError"));
     } finally {
@@ -135,6 +153,9 @@ export function useWingManagement({
     setEditingSocietyDetailId,
     newWingId,
     setNewWingId,
+    newWingNo,
+    setNewWingNo,
+    getWingNoById,
     nextWingId,
     wingSummaries,
     handleSaveWing,
