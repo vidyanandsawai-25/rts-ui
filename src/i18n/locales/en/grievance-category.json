@@ -144,7 +144,7 @@
       "invalidId": "Invalid record ID",
       "createError": "Failed to create grievance category",
       "updateError": "Failed to update grievance category",
-      "unauthorized": "Unauthorized. Please log in.",
+      "unauthorized": "Session expired. Please log in.",
       "duplicateCode": "Category code already exists. Please use a unique code.",
       "duplicateName": "Category name already exists. Please use a unique name.",
       "duplicateRecord": "Grievance category already exists.",

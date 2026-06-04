@@ -2,7 +2,7 @@
 import { getFloorPaged } from "@/lib/api/floor.service";
 import { getConstructionPaged } from "@/lib/api/constructiontypemaster/construction-crud.service";
 import { getUseTypesPagedServer, getSubTypesPagedServer } from "@/lib/api/typeofusemaster.service";
-import { getApartmentQCDetailsSafe } from "@/lib/api/appartmentQC.service";
+import { getApartmentQCDetailsSafe } from "@/lib/api/ptis/appartmentQC/appartmentQC.service";
 import type { Floor } from "@/types/floor.types";
 import type { ConstructionType } from "@/types/construction.types";
 import type { UseType, UseSubType } from "@/types/typeOfUse.types";

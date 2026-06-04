@@ -21,6 +21,7 @@ import {
   ArrowDown,
   CheckSquare,
   Eye, // Added Eye icon for preview
+  History,
 } from "lucide-react";
 import { Button, type ButtonProps } from "./ActionButton";
 import { cn } from "@/lib/utils/cn";
@@ -219,6 +220,17 @@ export function PreviewButton({
 }: LabeledActionButtonProps): React.ReactElement {
   return (
     <Button variant="primary" icon={Eye} {...props}>
+      {label}
+    </Button>
+  );
+}
+
+export function ShowHistoryButton({
+  label = "Show History",
+  ...props
+}: LabeledActionButtonProps): React.ReactElement {
+  return (
+    <Button variant="secondary" icon={History} {...props}>
       {label}
     </Button>
   );

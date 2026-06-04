@@ -17,7 +17,7 @@ export async function handleRateSectionDelete({
 }: HandleRateSectionDeleteParams) {
   setDeletingId(rateId);
   const formattedName = rateNo ? `${rateNo} - ${rateName}` : rateName;
-  const hasWards = rateNo ? (wardCounts[rateNo] || 0) > 0 : false;
+  const hasWards = rateId ? (wardCounts[rateId] || 0) > 0 : false;
 
   try {
     const result = await deleteRateSectionAction(Number(rateId));
@@ -25,14 +25,14 @@ export async function handleRateSectionDelete({
       toast.success(t('messages.deleteSuccess', { name: formattedName }));
 
       const params = new URLSearchParams(searchParams.toString());
-      const deletedZone = rateNo;
+      const deletedZone = rateId;
       const currentZone = searchParams.get("zone");
 
       if (deletedZone && currentZone === deletedZone) {
-        const remaining = rates.filter(r => r.rateSectionNo !== deletedZone);
+        const remaining = rates.filter(r => String(r.id) !== deletedZone);
 
-        if (remaining.length > 0 && remaining[0].rateSectionNo) {
-          params.set("zone", remaining[0].rateSectionNo);
+        if (remaining.length > 0 && remaining[0].id) {
+          params.set("zone", String(remaining[0].id));
         } else {
           params.delete("zone");
         }

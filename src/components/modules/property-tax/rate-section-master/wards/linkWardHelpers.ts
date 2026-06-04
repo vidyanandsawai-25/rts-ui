@@ -2,29 +2,29 @@ import { toast } from "sonner";
 import { RateItem } from "@/types/rateSectionMaster.types";
 
 export const getRateSectionDisplayLabel = (
-  rateSectionNo: string,
+  rateSectionId: string,
   rates: RateItem[]
 ): string => {
-  const rate = rates.find(r => r.rateSectionNo === rateSectionNo);
+  const rate = rates.find(r => String(r.id) === rateSectionId);
   if (rate?.description) {
-    return `${rateSectionNo} - ${rate.description}`;
+    return `${rate.id} - ${rate.description}`;
   }
-  return rateSectionNo;
+  return rateSectionId;
 };
 
 export const getSelectedZoneName = (
-  selectedZoneNo: string | undefined,
+  selectedZoneId: string | undefined,
   rates: RateItem[]
 ): string => {
-  if (!selectedZoneNo) return "";
-  const rate = rates.find(r => r.rateSectionNo === selectedZoneNo);
-  return rate?.description || selectedZoneNo;
+  if (!selectedZoneId) return "";
+  const rate = rates.find(r => String(r.id) === selectedZoneId);
+  return rate?.description || selectedZoneId;
 };
 
 export const handleToggleAvailable = (
   wardNo: string,
-  wardAssignments: Record<string, { rateSectionNo: string; description?: string }>,
-  selectedZoneNo: string | undefined,
+  wardAssignments: Record<string, { rateSectionNo: string; id: number; description?: string }>,
+  selectedZoneId: string | undefined,
   checkedAvailable: Set<string>,
   setCheckedAvailable: (set: Set<string>) => void,
   rates: RateItem[],
@@ -32,11 +32,11 @@ export const handleToggleAvailable = (
   t: any
 ) => {
   const assignment = wardAssignments[wardNo];
-  if (assignment && assignment.rateSectionNo !== selectedZoneNo) {
+  if (assignment && assignment.rateSectionNo !== selectedZoneId) {
     const assignedLabel = assignment.description 
       ? `${assignment.rateSectionNo} - ${assignment.description}` 
       : getRateSectionDisplayLabel(assignment.rateSectionNo, rates);
-    const selectedLabel = getRateSectionDisplayLabel(selectedZoneNo || "", rates);
+    const selectedLabel = getRateSectionDisplayLabel(selectedZoneId || "", rates);
     toast.warning(
       t("wards.alreadyPresentInOtherRateSection", {
         wardNo,

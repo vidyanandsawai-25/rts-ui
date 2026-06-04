@@ -64,5 +64,10 @@
   "loading": {
     "message": "संपत्ति संयोजन लोड हो रहा है...",
     "description": "जब हम संपत्ति डेटा प्राप्त करते हैं तो कृपया प्रतीक्षा करें"
-  }
+  },
+  "combinePropertyHistory": "Combine Property History Details",
+  "viewDetails": "विवरण देखें",
+  "action": "कार्रवाई",
+  "showHistory": "इतिहास दिखाएं",
+  "hideHistory": "इतिहास छुपाएं"
 }

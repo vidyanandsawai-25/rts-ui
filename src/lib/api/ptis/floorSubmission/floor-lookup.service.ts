@@ -1,16 +1,18 @@
 import {
+    ConstructionTypeResponse,
+    FloorResponse,
+    SubFloorResponse,
+    SubTypeOfUseResponse
+} from "@/types/floor-details.types";
+
+import {
     fetchItems,
     getOptionsFromData,
     getPropertySafely
-} from "./floor-service-utils";
-import {
-    type FloorResponse,
-    type ConstructionTypeResponse,
-    type TypeOfUseApiItem,
-    type SubTypeOfUseResponse,
-    type SubFloorResponse,
-    type RoomTypeResponse,
-} from '@/types/floor-details.types';
+} from "./floor-service-utils"
+
+import { TypeOfUseApiItem } from "@/types/property-basic-details.types";
+import { RoomTypeResponse } from "@/types/room-details.types";
 
 /**
  * Fetches floor type data from API
@@ -144,7 +146,6 @@ export async function getRoomTypeOptions(): Promise<string[]> {
         getRoomTypeData,
         () => 0,
         item => {
-            // Check all possible name fields from API response
             const name = item.roomTypeName || item.description || item.roomTypeDescription || '';
             const code = item.roomTypeCode || String(item.roomTypeId || getPropertySafely(item, ['id', 'ID']));
             return name || code;

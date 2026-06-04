@@ -6,10 +6,11 @@ import { useTranslations } from 'next-intl';
 import { Drawer } from '@/components/common/Drawer';
 import { type SearchSelectOption } from '@/components/common/SearchSelect';
 import { CancelButton, AddButton } from '@/components/common/ActionButtons';
-import { CombinePropertyItem } from '@/types/combine-property.types';
+import { CombinePropertyItem, PropertyCombineDetails } from '@/types/combine-property.types';
 import { useCombinePropertyForm } from '@/hooks/combineProperty/useCombineProperty';
-import { getCombinePropertyColumns, PropertyRow } from './combinePropertyColumns';
-import { useRouter } from 'next/navigation';
+import { getCombinePropertyColumns, getCombinePropertyHistoryColumns, PropertyRow } from './combinePropertyColumns';
+import { MasterTable } from '@/components/common/MasterTable';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { PropertyType } from '@/types/property-type.types';
 import { CombinePropertyFilterBar } from './CombinePropertyFilterBar';
 import { CombinePropertyReviewSection } from './CombinePropertyReviewSection';
@@ -19,6 +20,8 @@ import { StatusBadge } from '@/components/common/StatusBadge';
 /*  Types                                                               */
 /* ------------------------------------------------------------------ */
 
+export type HistoryRow = PropertyCombineDetails & Record<string, unknown>;
+
 interface CombinePropertyFormProps {
   basePropertyList: CombinePropertyItem[];
   subPropertyList: CombinePropertyItem[];
@@ -27,6 +30,8 @@ interface CombinePropertyFormProps {
   selectedWardId?: string;
   selectedWardNo?: string;
   selectedPropertyNo?: string;
+  showHistory?: boolean;
+  historyData?: PropertyCombineDetails[];
 }
 
 /* ------------------------------------------------------------------ */
@@ -59,8 +64,12 @@ export default function CombinePropertyForm(props: CombinePropertyFormProps) {
     selectedWardId,
     selectedWardNo,
     selectedPropertyNo,
+    showHistory = false,
+    historyData = [],
   } = props;
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
   const t = useTranslations('combineProperty');
 
   const {
@@ -108,6 +117,21 @@ export default function CombinePropertyForm(props: CombinePropertyFormProps) {
     () => getCombinePropertyColumns(t, reviewData, checkedPropertyIds, togglePropertyCheck, toggleAllProperties, selectedBasePropertyId),
     [reviewData, t, checkedPropertyIds, togglePropertyCheck, toggleAllProperties, selectedBasePropertyId]
   );
+
+  const handleShowHistory = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (showHistory) {
+      params.delete('showHistory');
+    } else {
+      params.set('showHistory', 'true');
+    }
+    router.push(`?${params.toString()}`);
+  };
+
+  const historyColumns = useMemo(() => getCombinePropertyHistoryColumns(
+    t as unknown as (key: string) => string, 
+    (row) => router.push(`${pathname}/${row.propertyId}`)
+  ), [t, router, pathname]);
 
   /* ---- Options ---- */
   const BASE_PROPERTY_OPTIONS = useMemo<SearchSelectOption[]>(() => {
@@ -224,26 +248,48 @@ export default function CombinePropertyForm(props: CombinePropertyFormProps) {
         handleIndividualChange={handleIndividualChange}
         setSelectedPropertyType={setSelectedPropertyType}
         handleClear={handleClear}
-        handleProceed={handleProceed}
+        handleProceed={() => {
+          if (showHistory) {
+            const params = new URLSearchParams(searchParams.toString());
+            params.delete('showHistory');
+            router.push(`?${params.toString()}`);
+          }
+          handleProceed();
+        }}
+        onShowHistory={handleShowHistory}
+        showHistory={showHistory}
       />
 
-      <CombinePropertyReviewSection
-        t={t as unknown as (key: string, values?: Record<string, string | number>) => string}
-        isReviewing={isReviewing}
-        isPending={isPending}
-        isSubmitting={isSubmitting}
-        selectedBasePropertyId={selectedBasePropertyId}
-        selectedPropertyNo={selectedPropertyNo}
-        reviewDataLength={reviewData.length}
-        checkedCount={checkedCount}
-        hasDifferentOwners={hasDifferentOwners}
-        differentOwnerProps={differentOwnerProps}
-        columns={columns}
-        reviewData={reviewData as PropertyRow[]}
-        remark={remark}
-        remarkError={remarkError}
-        setRemark={setRemark}
-      />
+      {showHistory ? (
+        <div className="px-4 py-4 flex flex-col gap-4">
+          <MasterTable<HistoryRow>
+            columns={historyColumns}
+            data={historyData as HistoryRow[]}
+            paginationConfig={{ enabled: false }}
+            height="md"
+            getRowKey={(row, i) => `history-${row.propertyId || 0}-${i}`}
+            emptyText={t('emptyTableText')}
+          />
+        </div>
+      ) : (
+        <CombinePropertyReviewSection
+          t={t as unknown as (key: string, values?: Record<string, string | number>) => string}
+          isReviewing={isReviewing}
+          isPending={isPending}
+          isSubmitting={isSubmitting}
+          selectedBasePropertyId={selectedBasePropertyId}
+          selectedPropertyNo={selectedPropertyNo}
+          reviewDataLength={reviewData.length}
+          checkedCount={checkedCount}
+          hasDifferentOwners={hasDifferentOwners}
+          differentOwnerProps={differentOwnerProps}
+          columns={columns}
+          reviewData={reviewData as PropertyRow[]}
+          remark={remark}
+          remarkError={remarkError}
+          setRemark={setRemark}
+        />
+      )}
     </Drawer>
   );
 }

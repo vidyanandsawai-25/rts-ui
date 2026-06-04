@@ -3,6 +3,7 @@ import { MasterTable, Column } from '@/components/common/MasterTable';
 import { TextArea } from '@/components/common/Textarea';
 import { ValidationMessage } from '@/components/common/ValidationMessage';
 import { PropertyRow } from './combinePropertyColumns';
+import { DESCRIPTION_SANITIZE } from '@/lib/utils/validation-rules';
 
 export interface CombinePropertyReviewSectionProps {
   t: (key: string, values?: Record<string, string | number>) => string;
@@ -116,7 +117,10 @@ export function CombinePropertyReviewSection({
             id="remark"
             label={t('remarkLabel')}
             value={remark}
-            onChange={(e) => setRemark(e.target.value)}
+            onChange={(e) => {
+              const val = e.target.value.replace(DESCRIPTION_SANITIZE, '');
+              setRemark(val);
+            }}
             placeholder={t('remarkPlaceholder')}
             disabled={isSubmitting || isPending || checkedCount <= 1}
             rows={2}

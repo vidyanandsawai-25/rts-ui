@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useCallback, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
 import { MasterTable, Column } from "@/components/common/MasterTable";
 import { Button, SearchInput } from "@/components/common";
@@ -62,6 +62,7 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
 }: CommonPropertyTableProps<T>) {
   const t = useTranslations("appartmentQC");
   const tCommon = useTranslations("common");
+  const locale = useLocale();
   useTableAutoScroll(isAutoScrolling);
   
   // Excel export state
@@ -85,7 +86,7 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
       const params = new URLSearchParams();
       params.append('WardId', String(wardId));
       params.append('PropertyNo', propertyNo);
-      const exportUrl = `/api/apartment-qc/export-excel?${params.toString()}`;
+      const exportUrl = `/${locale}/property-tax/ptis/appartmentQC/export-excel?${params.toString()}`;
       
       // Fetch the Excel file from secure API route
       const response = await fetch(exportUrl, {
@@ -121,7 +122,7 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
     } finally {
       setIsExporting(false);
     }
-  }, [wardId, propertyNo, t]);
+  }, [wardId, propertyNo, t, locale]);
 
   const getCellColorClass = useCallback((type: string | undefined) => {
     if (!applyTypeColors) return 'bg-white border-gray-300 hover:border-blue-400 text-blue-700';

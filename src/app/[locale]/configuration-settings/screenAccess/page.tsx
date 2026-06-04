@@ -11,6 +11,7 @@ import {
 } from './action';
 import { mapPagination } from './page.utils';
 import { executeConditionalFetches } from '@/lib/utils/fetch-helpers';
+import { getCleanErrorMessage } from '@/lib/utils/backend-error-detection';
 import type { ScreenAccessPermissionData } from '@/types/screen-access.types';
 
 export const dynamic = 'force-dynamic';
@@ -68,6 +69,20 @@ export default async function ScreenAccessPage({ params, searchParams }: ScreenA
     hasNext: false,
   });
 
+  const errorState = {
+    fetchError: undefined as string | undefined,
+    statusCode: undefined as number | undefined,
+  };
+
+  const handleFetchError = (err: { message?: string; statusCode?: number }) => {
+    if (!errorState.fetchError && err.message) {
+      errorState.fetchError = getCleanErrorMessage(err.message);
+    }
+    if (!errorState.statusCode && err.statusCode) {
+      errorState.statusCode = err.statusCode;
+    }
+  };
+
   const fetchData = await executeConditionalFetches({
     screens: {
       condition: isScreens,
@@ -81,12 +96,14 @@ export default async function ScreenAccessPage({ params, searchParams }: ScreenA
         ),
       fallback: defaultPaginatedFallback(ssize),
       errorMessage: 'errors.apiConnection.fetchScreensFailed',
+      onError: handleFetchError,
     },
     allScreens: {
       condition: true,
       fetcher: () => getAllScreensAction(),
       fallback: [],
       errorMessage: 'errors.apiConnection.fetchScreensFailed',
+      onError: handleFetchError,
     },
     groups: {
       condition: isScreens || isGroups,
@@ -99,24 +116,28 @@ export default async function ScreenAccessPage({ params, searchParams }: ScreenA
         ),
       fallback: defaultPaginatedFallback(gsize),
       errorMessage: 'errors.apiConnection.fetchScreensFailed',
+      onError: handleFetchError,
     },
     depts: {
       condition: isAccessControl,
       fetcher: () => getDepartmentsAction(),
       fallback: [],
       errorMessage: 'errors.apiConnection.fetchDepartmentsFailed',
+      onError: handleFetchError,
     },
     roles: {
       condition: isAccessControl,
       fetcher: () => getRolesAction(),
       fallback: [],
       errorMessage: 'errors.apiConnection.fetchScreensFailed',
+      onError: handleFetchError,
     },
     modules: {
       condition: isAccessControl,
       fetcher: () => getModulesAction(),
       fallback: [],
       errorMessage: 'errors.apiConnection.fetchModulesFailed',
+      onError: handleFetchError,
     },
   });
 
@@ -137,9 +158,13 @@ export default async function ScreenAccessPage({ params, searchParams }: ScreenA
     if (dataRoleId) {
       const screenAccessRes = await getScreenAccessWithAllScreensAction(dataRoleId, allScreens);
       if (!screenAccessRes.success) {
-        throw new Error(screenAccessRes.message || 'messages.errorOccurred');
+        errorState.fetchError = screenAccessRes.message
+          ? getCleanErrorMessage(screenAccessRes.message)
+          : 'messages.errorOccurred';
+        errorState.statusCode = screenAccessRes.statusCode;
+      } else {
+        initialRoleAccess = screenAccessRes.data || [];
       }
-      initialRoleAccess = screenAccessRes.data || [];
     }
   }
 
@@ -158,6 +183,8 @@ export default async function ScreenAccessPage({ params, searchParams }: ScreenA
       screensPagination={mapPagination(fetchData.screens, ssize)}
       groupsPagination={mapPagination(fetchData.groups, gsize)}
       translations={{ title: t('title'), subtitle: t('subtitle') }}
+      fetchError={errorState.fetchError}
+      statusCode={errorState.statusCode}
     />
   );
 }

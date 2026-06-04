@@ -1,7 +1,7 @@
 "use server"
 
-import { getOldTaxesDetails, saveOldTaxesDetails } from "@/lib/api/property-old-details.service";
-import { OldTaxesDetails } from "@/types/OldDetails/property-old-details.types";
+import { getOldTaxesDetails, saveOldTaxesDetails, getYearMaster } from "@/lib/api/property-old-details.service";
+import { OldTaxesDetails, YearMaster } from "@/types/OldDetails/property-old-details.types";
 import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 import { oldDetailsValidations } from "@/lib/utils/validation-schemas";
@@ -35,11 +35,11 @@ export async function getOldTaxesDetailsAction(propertyId: number): Promise<Acti
  * @param locale The current locale for revalidation.
  */
 export async function saveOldTaxesDetailsAction(
-  propertyId: number, 
-  data: OldTaxesDetails, 
+  propertyId: number,
+  data: OldTaxesDetails,
   locale: string
 ): Promise<ActionResult<OldTaxesDetails | null>> {
-  const t = await getTranslations({ locale });
+  const t = await getTranslations({ locale, namespace: 'quickDataEntry' });
 
   try {
     // 1. Validate propertyId
@@ -55,7 +55,7 @@ export async function saveOldTaxesDetailsAction(
     if (hasErrors(validationErrors)) {
       return {
         success: false,
-        error: t('oldDetails.taxationBreakdown.error.unexpectedError')        
+        error: t('oldDetails.taxationBreakdown.error.unexpectedError')
       };
     }
 
@@ -64,7 +64,7 @@ export async function saveOldTaxesDetailsAction(
 
     // 4. Save
     const response = await saveOldTaxesDetails(propertyId, sanitizedData);
-    
+
     revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/OldDetails/taxation-breakdown`);
     return {
       success: true,
@@ -77,3 +77,28 @@ export async function saveOldTaxesDetailsAction(
     };
   }
 }
+
+/**
+ * Server Action to fetch Year Master data.
+ * @param pageNumber The page number.
+ * @param pageSize The page size (-1 for all).
+ */
+export async function getYearMasterAction(
+  pageNumber: number = 1,
+  pageSize: number = -1
+): Promise<ActionResult<YearMaster[]>> {
+  try {
+    const response = await getYearMaster(pageNumber, pageSize);
+    return {
+      success: true,
+      data: response.items || []
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to fetch year master data"
+    };
+  }
+}
+
+

@@ -28,16 +28,14 @@ export function useAddRateSection({ onClose, onSuccess, existingRates }: AddRate
 
   const showError = (field: keyof RateSectionFormErrors): boolean => (submittedOnce || touched[field]) && !!errors[field];
 
-  const checkDuplicateRateSection = (zoneCode: string, zoneRegional: string) => {
-    const codeValue = zoneCode.trim().toUpperCase();
-    const regionalValue = zoneRegional.trim().toUpperCase();
+  const checkDuplicateRateSection = (zoneRegional: string) => {
+    const regionalValue = zoneRegional.trim().toLowerCase();
     const duplicate = existingRates.find((r: RateItem) => {
-      const existingCode = (r.rateSectionNo || '').trim().toUpperCase();
-      const existingRegional = (r.description || '').trim().toUpperCase();
-      return existingCode === codeValue || (regionalValue && existingRegional === regionalValue);
+      const existingRegional = (r.description || '').trim().toLowerCase();
+      return regionalValue && existingRegional === regionalValue;
     });
     if (duplicate) {
-      const label = `${duplicate.rateSectionNo || zoneCode}${duplicate.description ? ` - ${duplicate.description}` : ''}`;
+      const label = duplicate.description || '';
       toast.error(t('validation.duplicate', { name: label }));
       return true;
     }
@@ -75,25 +73,25 @@ export function useAddRateSection({ onClose, onSuccess, existingRates }: AddRate
     setSubmittedOnce(true);
     const v = validate(form);
     setErrors(v);
-    const isDuplicate = checkDuplicateRateSection(form.zoneCode, form.zoneRegional);
+    const isDuplicate = checkDuplicateRateSection(form.zoneRegional);
     if (Object.keys(v).length || isDuplicate) return;
     setLoading(true);
     try {
       const result = await createRateSectionAction({
-        rateSectionNo: form.zoneCode, description: form.zoneRegional, isActive: form.isActive ?? true
+        description: form.zoneRegional, isActive: form.isActive ?? true
       });
       if (result.success) {
-        toast.success(t('messages.createSuccess', { name: form.zoneCode }));
+        toast.success(t('messages.createSuccess', { name: form.zoneRegional }));
         setForm(INITIAL_FORM_STATE);
         setErrors({});
-        if (onSuccess) onSuccess(form.zoneCode);
+        if (onSuccess) onSuccess(String(result.data?.id || ''));
         else if (onClose) onClose();
         else router.back();
         router.refresh();
       } else toast.error(result.error || t('messages.createError'));
     } catch (error: unknown) {
       const err = error as { message?: string };
-      toast.error(err?.message?.includes("500") ? t('messages.createExistsError', { name: form.zoneCode }) : err?.message || "Unexpected error occurred");
+      toast.error(err?.message?.includes("500") ? t('messages.createExistsError', { name: form.zoneRegional }) : err?.message || "Unexpected error occurred");
     } finally {
       setLoading(false);
     }

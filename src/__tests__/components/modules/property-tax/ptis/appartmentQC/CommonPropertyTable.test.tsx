@@ -12,6 +12,7 @@ vi.mock('next-intl', () => ({
     if (key === 'searchPlaceholder') return 'Search properties...';
     return key;
   },
+  useLocale: () => 'en',
 }));
 
 describe('CommonPropertyTable', () => {

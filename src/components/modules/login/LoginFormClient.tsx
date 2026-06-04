@@ -7,6 +7,7 @@ import {
   type FormEvent,
   type ComponentProps,
 } from 'react';
+import { clearLegacyAuthClientStorage } from '@/lib/utils/legacy-auth-storage';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import { ValidationMessage, Button } from '@/components/common';
@@ -88,6 +89,10 @@ export function LoginFormClient({
   const t = useTranslations('common.login');
 
   const [credState, credAction] = useActionState(loginCredentialsFormAction, null);
+
+  useEffect(() => {
+    clearLegacyAuthClientStorage();
+  }, []);
 
   const credentialFieldsKey = credState?.resetKey ?? 'idle';
   const initialUsernameForFields = credState?.message ? '' : (username ?? '');

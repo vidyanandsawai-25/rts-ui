@@ -33,12 +33,22 @@ vi.mock('next/navigation', () => ({
   })),
 }));
 
+// Mock ConfirmProvider
+vi.mock('@/components/common/ConfirmProvider', () => ({
+  useConfirm: () => ({
+    confirm: vi.fn((options) => options.onConfirm()),
+  }),
+}));
+
 // Mock next-intl
 vi.mock('next-intl', () => ({
-  useTranslations: () => (key: string) => {
+  useTranslations: () => (key: string, values?: Record<string, unknown>) => {
     const translations: Record<string, string> = {
       'discount.title': 'Discount Information',
       'discount.description': 'Configure discount eligibility',
+      'discount.socialTitle': 'Social Information',
+      'discount.socialDescription': 'Configure social attributes, status, and associated documents for this property.',
+      'discount.unitLabel': 'Unit: {unit}',
       'discount.solarPanel': 'Solar Panel System',
       'discount.solarHeater': 'Solar Water Heater',
       'discount.uploadDocument': 'Upload Document',
@@ -47,7 +57,13 @@ vi.mock('next-intl', () => ({
       'discount.saveError': 'Failed to save discount details',
       'common.saveChanges': 'Save Changes',
     };
-    return translations[key] || key;
+    let val = translations[key] || key;
+    if (values) {
+      Object.entries(values).forEach(([k, v]) => {
+        val = val.replace(`{${k}}`, String(v));
+      });
+    }
+    return val;
   },
 }));
 
@@ -62,6 +78,8 @@ vi.mock('sonner', () => ({
 // We need to mock the action as well because it's imported by the hook
 vi.mock('@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Discount/action', () => ({
   updateDiscountDetailsAction: vi.fn(),
+  getPropertySocialInfoAction: vi.fn(),
+  upsertPropertySocialInfoAction: vi.fn(),
 }));
 
 // Now we can safely import the action for our tests since it's mocked
@@ -83,6 +101,22 @@ const mockInitialData = {
   }
 };
 
+const mockSocialData = {
+  propertyId: 123,
+  socialAttributes: [
+    {
+      id: 1,
+      socialAttributeCode: "HAS_SOLAR",
+      socialAttributeName: "Solar Panel Installed",
+      dataType: "BIT",
+      bitValue: true,
+      isRequiredWhenParentTrue: false,
+      isDiscountApplicable: true,
+      children: []
+    }
+  ]
+};
+
 describe('DiscountFormview', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -92,11 +126,17 @@ describe('DiscountFormview', () => {
     render(
       <DiscountFormview
         initialDiscountData={mockInitialData as unknown as DiscountApiResponse}
+        initialSocialData={mockSocialData}
         propertyId="123"
       />
     );
 
-    expect(screen.getByText('Discount Information')).toBeInTheDocument();
+    expect(screen.getAllByText('Discount Information').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Social Information').length).toBeGreaterThan(0);
+
+    const discountTab = screen.getByRole('tab', { name: /Discount Information/i });
+    fireEvent.click(discountTab);
+
     expect(screen.getByText('Solar Panel System')).toBeInTheDocument();
   });
 
@@ -104,9 +144,13 @@ describe('DiscountFormview', () => {
     render(
       <DiscountFormview
         initialDiscountData={mockInitialData as unknown as DiscountApiResponse}
+        initialSocialData={mockSocialData}
         propertyId="123"
       />
     );
+
+    const discountTab = screen.getByRole('tab', { name: /Discount Information/i });
+    fireEvent.click(discountTab);
 
     const saveBtn = screen.getByRole('button', { name: /Save Changes/i });
     expect(saveBtn).toBeDisabled();
@@ -116,9 +160,13 @@ describe('DiscountFormview', () => {
     render(
       <DiscountFormview
         initialDiscountData={mockInitialData as unknown as DiscountApiResponse}
+        initialSocialData={mockSocialData}
         propertyId="123"
       />
     );
+
+    const discountTab = screen.getByRole('tab', { name: /Discount Information/i });
+    fireEvent.click(discountTab);
 
     const switches = screen.getAllByRole('switch');
     // Find the solarWaterHeater toggle (which is initially false)
@@ -134,9 +182,13 @@ describe('DiscountFormview', () => {
     render(
       <DiscountFormview
         initialDiscountData={mockInitialData as unknown as DiscountApiResponse}
+        initialSocialData={mockSocialData}
         propertyId="123"
       />
     );
+
+    const discountTab = screen.getByRole('tab', { name: /Discount Information/i });
+    fireEvent.click(discountTab);
 
     const switches = screen.getAllByRole('switch');
     fireEvent.click(switches[1]);
@@ -162,9 +214,13 @@ describe('DiscountFormview', () => {
     render(
       <DiscountFormview
         initialDiscountData={mockInitialData as unknown as DiscountApiResponse}
+        initialSocialData={mockSocialData}
         propertyId="123"
       />
     );
+
+    const discountTab = screen.getByRole('tab', { name: /Discount Information/i });
+    fireEvent.click(discountTab);
 
     const switches = screen.getAllByRole('switch');
     fireEvent.click(switches[1]);

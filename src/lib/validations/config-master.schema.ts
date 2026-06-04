@@ -80,7 +80,7 @@ export const ConfigKeyBaseSchema = z.object({
     .trim()
     .max(500, 'Description cannot exceed 500 characters')
     .refine(val => !/[<>]/.test(val), 'Description cannot contain HTML tags or angle brackets')
-    .refine(val => isValidDescription(val), 'Description contains unauthorized characters')
+    .refine(val => isValidDescription(val), 'Description contains invalid characters')
     .optional()
     .or(z.literal('')),
   dataType: z.enum(['string', 'int', 'decimal', 'boolean', 'datetime'], {
