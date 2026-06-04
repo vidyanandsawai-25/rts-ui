@@ -219,7 +219,12 @@ const FloorTable: React.FC<FloorTableProps> = ({
               <tbody>
                 {rooms.map((room, idx) => {
                   const dimStr = `${room.length || '-'} x ${room.breadth || '-'} x ${room.height || '-'}`;
-                  const areaStr = `${room.area || '0.00'} Sq.Ft`;
+                  const formatArea = (val: unknown) => {
+                    if (val === undefined || val === null || val === '') return '0.00';
+                    const num = Number(val);
+                    return isNaN(num) ? '0.00' : num.toFixed(2);
+                  };
+                  const areaStr = `${formatArea(room.area)} Sq.Ft`;
                   return (
                     <tr
                       key={room.id || idx}

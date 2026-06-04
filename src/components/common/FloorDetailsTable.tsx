@@ -19,6 +19,7 @@ export const COLUMN_FULL_NAMES: Record<string, string> = {
   conYr: 'Construction Year',
   assessmentYear: 'Assessment Year',
   asstYear: 'Assessment Year',
+  asstYr: 'Assessment Year',
   assmtYear: 'Assessment Year',
   constructionType: 'Construction Type',
   constType: 'Construction Type',
@@ -30,10 +31,11 @@ export const COLUMN_FULL_NAMES: Record<string, string> = {
   noOfRooms: 'Number of Rooms',
   rooms: 'Number of Rooms',
   carpetArea: 'Carpet Area (Square Feet / Square Meter)',
+  areaSqFt: 'Carpet Area (Square Feet / Square Meter)',
   carpetSqFt: 'Carpet Area (Square Feet)',
   carpetSqM: 'Carpet Area (Square Meter)',
   builtUpArea: 'Built-Up Area (Square Feet / Square Meter)',
-  builtupAreaSqFt: 'Built-Up Area (Square Feet)',
+  builtupAreaSqFt: 'Built-Up Area (Square Feet / Square Meter)',
   builtupAreaSqM: 'Built-Up Area (Square Meter)',
   ocNumber: 'Occupancy Certificate Number',
   ocDate: 'Occupancy Certificate Date',
@@ -61,6 +63,7 @@ export const COLUMN_FULL_NAMES: Record<string, string> = {
   capitalValue: 'Capital Value',
   isTaxable: 'Is Taxable',
   taxable: 'Is Taxable',
+  renter: 'Renter',
   actions: 'Actions',
 };
 
