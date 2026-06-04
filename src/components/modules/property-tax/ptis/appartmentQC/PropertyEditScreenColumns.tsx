@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/common";
 import { Column } from "@/components/common/MasterTable";
 import { ArrowUpDown, Eye } from "lucide-react";
@@ -108,52 +109,55 @@ interface ColumnBuilderProps {
 
 export function useDrawerCommonColumns(props: ColumnBuilderProps): Column<DrawerFloorDataRow>[] {
   const { floorOptions, conTypeOptions, useTypeOptions, getSubTypeOptions, isLoadingFloors, isLoadingConTypes, isLoadingUseTypes, handleFloorDropdownClick, handleConTypeDropdownClick, handleUseTypeDropdownClick, updateRow, onOpenRoomSubmission } = props;
+  const t = useTranslations("appartmentQC");
   return useMemo(() => [
-    { key: "floorId", label: makeHeader("Floor"), cellClassName: "px-0.5 py-0.5", render: (_v, row) => <CompactSelect value={row.floorId} onChange={(v) => updateRow(row.id, "floorId", v)} options={floorOptions} onDropdownClick={handleFloorDropdownClick} isLoading={isLoadingFloors} /> },
-    { key: "conYear", label: makeHeader("Con Year"), cellClassName: "px-0.5 py-0.5", render: (_v, row) => <CompactCellInput value={row.conYear} onChange={(v) => updateRow(row.id, "conYear", v)} placeholder="Year" maxLength={4} pattern={YEAR_REGEX} error={row.conYear && !YEAR_REGEX.test(row.conYear) ? "4 digits" : undefined} /> },
-    { key: "asstYear", label: makeHeader("Asst Year"), cellClassName: "px-0.5 py-0.5", render: (_v, row) => <CompactCellInput value={row.asstYear} onChange={(v) => updateRow(row.id, "asstYear", v)} placeholder="Year" maxLength={4} pattern={YEAR_REGEX} error={row.asstYear && !YEAR_REGEX.test(row.asstYear) ? "4 digits" : undefined} /> },
-    { key: "constructionTypeId", label: makeHeader("Con Type"), cellClassName: "px-0.5 py-0.5", render: (_v, row) => <CompactSelect value={row.constructionTypeId} onChange={(v) => updateRow(row.id, "constructionTypeId", v)} options={conTypeOptions} onDropdownClick={handleConTypeDropdownClick} isLoading={isLoadingConTypes} /> },
-    { key: "typeOfUseId", label: makeHeader("Use"), cellClassName: "px-0.5 py-0.5", render: (_v, row) => <CompactSelect value={row.typeOfUseId} onChange={(v) => updateRow(row.id, "typeOfUseId", v)} options={useTypeOptions} onDropdownClick={handleUseTypeDropdownClick} isLoading={isLoadingUseTypes} /> },
-    { key: "subTypeOfUseId", label: makeHeader("Sub Type"), cellClassName: "px-0.5 py-0.5", render: (_v, row) => {
+    { key: "floorId", label: makeHeader(t("floorQC.columns.floor")), cellClassName: "px-0.5 py-0.5", render: (_v, row) => <CompactSelect value={row.floorId} onChange={(v) => updateRow(row.id, "floorId", v)} options={floorOptions} onDropdownClick={handleFloorDropdownClick} isLoading={isLoadingFloors} /> },
+    { key: "conYear", label: makeHeader(t("floorQC.columns.conYear")), cellClassName: "px-0.5 py-0.5", render: (_v, row) => <CompactCellInput value={row.conYear} onChange={(v) => updateRow(row.id, "conYear", v)} placeholder="Year" maxLength={4} pattern={YEAR_REGEX} error={row.conYear && !YEAR_REGEX.test(row.conYear) ? "4 digits" : undefined} /> },
+    { key: "asstYear", label: makeHeader(t("floorQC.columns.asstYear")), cellClassName: "px-0.5 py-0.5", render: (_v, row) => <CompactCellInput value={row.asstYear} onChange={(v) => updateRow(row.id, "asstYear", v)} placeholder="Year" maxLength={4} pattern={YEAR_REGEX} error={row.asstYear && !YEAR_REGEX.test(row.asstYear) ? "4 digits" : undefined} /> },
+    { key: "constructionTypeId", label: makeHeader(t("floorQC.columns.conType")), cellClassName: "px-0.5 py-0.5", render: (_v, row) => <CompactSelect value={row.constructionTypeId} onChange={(v) => updateRow(row.id, "constructionTypeId", v)} options={conTypeOptions} onDropdownClick={handleConTypeDropdownClick} isLoading={isLoadingConTypes} /> },
+    { key: "typeOfUseId", label: makeHeader(t("floorQC.columns.use")), cellClassName: "px-0.5 py-0.5", render: (_v, row) => <CompactSelect value={row.typeOfUseId} onChange={(v) => updateRow(row.id, "typeOfUseId", v)} options={useTypeOptions} onDropdownClick={handleUseTypeDropdownClick} isLoading={isLoadingUseTypes} /> },
+    { key: "subTypeOfUseId", label: makeHeader(t("floorQC.columns.subTypeOfUse")), cellClassName: "px-0.5 py-0.5", render: (_v, row) => {
       const opts = getSubTypeOptions(row.typeOfUseId);
       return <CompactSelect value={row.subTypeOfUseId} onChange={(v) => updateRow(row.id, "subTypeOfUseId", v)} options={opts} disabled={!row.typeOfUseId || opts.length === 0} isLoading={isLoadingUseTypes} />;
     } },
-    { key: "noOfRooms", label: makeHeader("No. of Rooms"), cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={String(row.noOfRooms || "")} /> },
-    { key: "area", label: makeHeader("Area"), cellClassName: "px-0.5 py-0.5", render: (_v, row) => (
+    { key: "noOfRooms", label: makeHeader(t("floorQC.columns.noOfRooms")), cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={String(row.noOfRooms || "")} /> },
+    { key: "area", label: makeHeader(t("floorQC.columns.area")), cellClassName: "px-0.5 py-0.5", render: (_v, row) => (
       <div className="flex items-center gap-1">
         <ReadOnlyCell value={row.area} />
-        <button type="button" onClick={() => onOpenRoomSubmission(row)} disabled={!row.pdnId} className={cn("h-6 w-6 flex items-center justify-center rounded transition", row.pdnId ? "text-blue-600 hover:bg-blue-100 cursor-pointer" : "text-gray-300 cursor-not-allowed")} title={row.pdnId ? "View/Edit Room Details" : "No detail ID"}>
+        <button type="button" onClick={() => onOpenRoomSubmission(row)} disabled={!row.pdnId} className={cn("h-6 w-6 flex items-center justify-center rounded transition", row.pdnId ? "text-blue-600 hover:bg-blue-100 cursor-pointer" : "text-gray-300 cursor-not-allowed")} title={row.pdnId ? t("floorQC.tooltips.viewRoomDetails") : t("floorQC.tooltips.noDetailId")}>
           <Eye className="w-3.5 h-3.5" />
         </button>
       </div>
     ) },
-  ], [floorOptions, conTypeOptions, useTypeOptions, getSubTypeOptions, isLoadingFloors, isLoadingConTypes, isLoadingUseTypes, handleFloorDropdownClick, handleConTypeDropdownClick, handleUseTypeDropdownClick, updateRow, onOpenRoomSubmission]);
+  ], [floorOptions, conTypeOptions, useTypeOptions, getSubTypeOptions, isLoadingFloors, isLoadingConTypes, isLoadingUseTypes, handleFloorDropdownClick, handleConTypeDropdownClick, handleUseTypeDropdownClick, updateRow, onOpenRoomSubmission, t]);
 }
 
 // ─── Rateable Columns ───────────────────────────────────────────────────────
 
 export function useDrawerRateableColumns(): Column<DrawerFloorDataRow>[] {
+  const t = useTranslations("appartmentQC");
   return useMemo(() => [
-    { key: "rentMY", label: makeHeader("Rent M/Y"), cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.rentMY} /> },
-    { key: "rateMY", label: makeHeader("Rate M/Y"), cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.rateMY} /> },
-    { key: "rentalValue", label: makeHeader("Rental Value"), cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.rentalValue} /> },
-    { key: "depreciation", label: makeHeader("Depreciation"), cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.depreciation} /> },
-    { key: "alv", label: makeHeader("ALV"), cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.alv} /> },
-    { key: "mr", label: makeHeader("M&R"), cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.mr} /> },
-    { key: "rv", label: makeHeader("RV"), cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.rv} /> },
-  ], []);
+    { key: "rentMY", label: makeHeader(t("floorQC.columns.rentMY")), cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.rentMY} /> },
+    { key: "rateMY", label: makeHeader(t("floorQC.columns.rateMY")), cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.rateMY} /> },
+    { key: "rentalValue", label: makeHeader(t("floorQC.columns.rentalValue")), cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.rentalValue} /> },
+    { key: "depreciation", label: makeHeader(t("floorQC.columns.depreciation")), cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.depreciation} /> },
+    { key: "alv", label: makeHeader(t("floorQC.columns.alv")), cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.alv} /> },
+    { key: "mr", label: makeHeader(t("floorQC.columns.mr")), cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.mr} /> },
+    { key: "rv", label: makeHeader(t("floorQC.columns.rv")), cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.rv} /> },
+  ], [t]);
 }
 
 // ─── Capital Columns ────────────────────────────────────────────────────────
 
 export function useDrawerCapitalColumns(): Column<DrawerFloorDataRow>[] {
+  const t = useTranslations("appartmentQC");
   return useMemo(() => [
-    { key: "sdrr", label: makeHeader("SDRR"), cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.sdrr} /> },
-    { key: "baseValue", label: makeHeader("Base Value"), cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.baseValue} /> },
-    { key: "floorFactor", label: makeHeader("Floor Factor"), cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.floorFactor} /> },
-    { key: "ageFactor", label: makeHeader("Age Factor"), cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.ageFactor} /> },
-    { key: "ntbFactor", label: makeHeader("NTB Factor"), cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.ntbFactor} /> },
-    { key: "useFactor", label: makeHeader("Use Factor"), cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.useFactor} /> },
-    { key: "capitalValue", label: makeHeader("Capital Value"), cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.capitalValue} /> },
-  ], []);
+    { key: "sdrr", label: makeHeader(t("floorQC.columns.sdrr")), cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.sdrr} /> },
+    { key: "baseValue", label: makeHeader(t("floorQC.columns.baseValue")), cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.baseValue} /> },
+    { key: "floorFactor", label: makeHeader(t("floorQC.columns.floorFactor")), cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.floorFactor} /> },
+    { key: "ageFactor", label: makeHeader(t("floorQC.columns.ageFactor")), cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.ageFactor} /> },
+    { key: "ntbFactor", label: makeHeader(t("floorQC.columns.ntbFactor")), cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.ntbFactor} /> },
+    { key: "useFactor", label: makeHeader(t("floorQC.columns.useFactor")), cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.useFactor} /> },
+    { key: "capitalValue", label: makeHeader(t("floorQC.columns.capitalValue")), cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.capitalValue} /> },
+  ], [t]);
 }

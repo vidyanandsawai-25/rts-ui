@@ -157,14 +157,15 @@ describe('PropertyDetailsEditScreen', () => {
     );
 
     // Both sections default to open, so the field is visible initially.
-    expect(screen.getByLabelText(/Owner Name/i)).toBeInTheDocument();
+    // The label shows the translation key since mock returns key as-is
+    expect(screen.getByLabelText(/basicInfo\.fields\.ownerName\.label/i)).toBeInTheDocument();
 
     // Clicking the toggle button collapses the section.
     const basicInfoButton = screen.getByRole('button', { name: /drawer\.basicInformation/i });
     await user.click(basicInfoButton);
 
     await waitFor(() => {
-      expect(screen.queryByLabelText(/Owner Name/i)).not.toBeInTheDocument();
+      expect(screen.queryByLabelText(/basicInfo\.fields\.ownerName\.label/i)).not.toBeInTheDocument();
     });
   });
 

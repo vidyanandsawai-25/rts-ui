@@ -13,6 +13,19 @@ vi.mock('@/lib/utils/logger', () => ({
   },
 }));
 
+// Mock all server actions to prevent real API calls during tests
+vi.mock('@/app/[locale]/property-tax/ptis/appartmentQC/action', () => ({
+  fetchAllFloorsAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
+  fetchAllConstructionTypesAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
+  fetchAllUseTypesAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
+  fetchAllSubTypesAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
+  fetchAllPropertyTypesAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
+  fetchFloorQCByPropertyIdSafeAction: vi.fn().mockResolvedValue([]),
+  updateBasicDetailsAction: vi.fn().mockResolvedValue({ success: true }),
+  updateFloorQCDetailsBulkAction: vi.fn().mockResolvedValue({ success: true }),
+  syncRoomsForPropertyDetailsAction: vi.fn().mockResolvedValue({ success: true }),
+}));
+
 // Mock Next.js navigation
 const mockReplace = vi.fn();
 const mockSearchParams = new URLSearchParams();
