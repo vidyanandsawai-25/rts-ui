@@ -194,7 +194,7 @@ const AgreementDetails = memo(({ formData, setFormData, existingFloors = [], cur
     <div className="bg-white/60 border border-gray-200 p-4 rounded-xl shadow-sm">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4">
         {/* Document Upload */}
-        <div className="lg:col-span-1 flex flex-col gap-1.5">
+        <div className={`${uploadedDocument ? 'lg:col-span-2' : 'lg:col-span-1'} flex flex-col gap-1.5`}>
           <Label className={fieldLabelClassName}>{t('floor.renterSection.document')}</Label>
           <div className="flex items-center gap-1">
             <Input id="doc-upload" type="file" naked className="hidden" tabIndex={-1} onChange={e => {
@@ -324,7 +324,7 @@ const AgreementDetails = memo(({ formData, setFormData, existingFloors = [], cur
             onChange={e => {
               const rawVal = e.target.value;
               // Prevent non-alphabetic, non-space characters in real time (typing and paste)
-              const filtered = rawVal.replace(/[^A-Za-z ]/g, '');
+              const filtered = rawVal.replace(/[^A-Za-z\u0900-\u097F ]/g, '');
               // Trim leading spaces, collapse multiple spaces, slice to 100 max chars
               const val = filtered.replace(/^\s+/, '').replace(/\s{2,}/g, ' ').slice(0, 100);
               
@@ -352,7 +352,7 @@ const AgreementDetails = memo(({ formData, setFormData, existingFloors = [], cur
         </div>
 
         {/* Duration (From - To) — DD-MM-YYYY, From < To */}
-        <div className="lg:col-span-4 flex flex-col gap-1.5">
+        <div className={`${uploadedDocument ? 'lg:col-span-3' : 'lg:col-span-4'} flex flex-col gap-1.5`}>
           <Label className={fieldLabelClassName}>{t('floor.renterSection.durationFromTo')} <span className="text-red-500">*</span></Label>
           <div className="flex items-center gap-2 h-10 relative">
             <div className={`flex items-center bg-white border rounded-md px-2 h-full flex-1 min-w-0 ${fieldErrors.agreementDateFrom ? 'border-red-400' : 'border-gray-200'}`}>

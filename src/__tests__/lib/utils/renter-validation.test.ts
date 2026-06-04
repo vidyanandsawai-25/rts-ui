@@ -61,7 +61,17 @@ describe('validateRenterForm', () => {
 
     describe('Renter Name Validation', () => {
         it('should allow valid renter names', () => {
-            const validNames = ['Rahul Deshmukh', 'Yash Patil', 'Amit Sharma', 'Sneha Kulkarni', 'Raj Kumar'];
+            const validNames = [
+                'Rahul Deshmukh', 
+                'Yash Patil', 
+                'Amit Sharma', 
+                'Sneha Kulkarni', 
+                'Raj Kumar',
+                'राहुल देशमुख',
+                'अमित शर्मा',
+                'स्नेहा कुलकर्णी',
+                'राज कुमार'
+            ];
             validNames.forEach(name => {
                 const errors = validateRenterForm({ ...validBaseForm, renterName: name });
                 expect(errors.filter(e => e.field === 'renterName')).toHaveLength(0);
