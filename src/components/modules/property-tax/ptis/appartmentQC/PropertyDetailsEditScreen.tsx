@@ -428,20 +428,20 @@ const ResidentialEditScreen = ({
           {hook.isBasicInfoOpen && (
             <div className="p-3 bg-white space-y-2">
               <div className="grid grid-cols-4 gap-2">
-                <EditableInput label="Owner Name" value={hook.formData.ownerName} onChange={(v) => hook.updateFormField("ownerName", v)} required error={hook.formErrors.ownerName} onBlur={() => hook.handleFieldBlur("ownerName")} />
-                <EditableInput label="Occupier Name" value={hook.formData.occupierName} onChange={(v) => hook.updateFormField("occupierName", v)} required error={hook.formErrors.occupierName} onBlur={() => hook.handleFieldBlur("occupierName")} />
-                <EditableInput label="Renter Name" value={hook.formData.renterName} onChange={(v) => hook.updateFormField("renterName", v)} error={hook.formErrors.renterName} onBlur={() => hook.handleFieldBlur("renterName")} />
-                <EditableSelect label="Property Description" value={hook.formData.propertyTypeId} onChange={(v) => { hook.updateFormField("propertyTypeId", v); const s = hook.propertyTypeOptions.find(o => o.value === v); hook.updateFormField("propertyDescription", s?.label || ""); }} options={hook.propertyTypeOptions} isLoading={hook.isLoadingPropertyTypes} />
+                <EditableInput label={t("basicInfo.fields.ownerName.label")} value={hook.formData.ownerName} onChange={(v) => hook.updateFormField("ownerName", v)} required error={hook.formErrors.ownerName} onBlur={() => hook.handleFieldBlur("ownerName")} />
+                <EditableInput label={t("basicInfo.fields.occupierName.label")} value={hook.formData.occupierName} onChange={(v) => hook.updateFormField("occupierName", v)} required error={hook.formErrors.occupierName} onBlur={() => hook.handleFieldBlur("occupierName")} />
+                <EditableInput label={t("basicInfo.fields.renterName.label")} value={hook.formData.renterName} onChange={(v) => hook.updateFormField("renterName", v)} error={hook.formErrors.renterName} onBlur={() => hook.handleFieldBlur("renterName")} />
+                <EditableSelect label={t("basicInfo.fields.propertyDescription.label")} value={hook.formData.propertyTypeId} onChange={(v) => { hook.updateFormField("propertyTypeId", v); const s = hook.propertyTypeOptions.find(o => o.value === v); hook.updateFormField("propertyDescription", s?.label || ""); }} options={hook.propertyTypeOptions} isLoading={hook.isLoadingPropertyTypes} />
               </div>
               <div className="grid grid-cols-7 gap-2">
-                <EditableInput label="BHK" value={hook.formData.bhk} onChange={(v) => hook.updateFormField("bhk", v)} error={hook.formErrors.bhk} onBlur={() => hook.handleFieldBlur("bhk")} />
-                <EditableInput label="Mobile" value={hook.formData.mobileNo} onChange={(v) => hook.updateFormField("mobileNo", v)} error={hook.formErrors.mobileNo} onBlur={() => hook.handleFieldBlur("mobileNo")} />
-                <EditableInput label="Email ID" value={hook.formData.emailId} onChange={(v) => hook.updateFormField("emailId", v)} type="email" error={hook.formErrors.emailId} onBlur={() => hook.handleFieldBlur("emailId")} />
-                <EditableInput label="Shop Name" value={hook.formData.flatOrShopName} onChange={(v) => hook.updateFormField("flatOrShopName", v)} error={hook.formErrors.flatOrShopName} onBlur={() => hook.handleFieldBlur("flatOrShopName")} />
-                <EditableInput label="Wing" value={hook.formData.wingName} onChange={(v) => hook.updateFormField("wingName", v)} error={hook.formErrors.wingName} onBlur={() => hook.handleFieldBlur("wingName")} />
-                <EditableInput label="Flat/ShopNo." value={hook.formData.flatOrShopNo} onChange={(v) => hook.updateFormField("flatOrShopNo", v)} required error={hook.formErrors.flatOrShopNo} onBlur={() => hook.handleFieldBlur("flatOrShopNo")} />
+                <EditableInput label={t("basicInfo.fields.bhk.label")} value={hook.formData.bhk} onChange={(v) => hook.updateFormField("bhk", v)} error={hook.formErrors.bhk} onBlur={() => hook.handleFieldBlur("bhk")} />
+                <EditableInput label={t("basicInfo.fields.mobileNo.label")} value={hook.formData.mobileNo} onChange={(v) => hook.updateFormField("mobileNo", v)} error={hook.formErrors.mobileNo} onBlur={() => hook.handleFieldBlur("mobileNo")} />
+                <EditableInput label={t("basicInfo.fields.emailId.label")} value={hook.formData.emailId} onChange={(v) => hook.updateFormField("emailId", v)} type="email" error={hook.formErrors.emailId} onBlur={() => hook.handleFieldBlur("emailId")} />
+                <EditableInput label={t("basicInfo.fields.flatOrShopName.label")} value={hook.formData.flatOrShopName} onChange={(v) => hook.updateFormField("flatOrShopName", v)} error={hook.formErrors.flatOrShopName} onBlur={() => hook.handleFieldBlur("flatOrShopName")} />
+                <EditableInput label={t("basicInfo.fields.wingName.label")} value={hook.formData.wingName} onChange={(v) => hook.updateFormField("wingName", v)} error={hook.formErrors.wingName} onBlur={() => hook.handleFieldBlur("wingName")} />
+                <EditableInput label={t("basicInfo.fields.flatOrShopNo.label")} value={hook.formData.flatOrShopNo} onChange={(v) => hook.updateFormField("flatOrShopNo", v)} required error={hook.formErrors.flatOrShopNo} onBlur={() => hook.handleFieldBlur("flatOrShopNo")} />
                 <EditableInputWithRefresh 
-                  label="Old Prop No" 
+                  label={t("basicInfo.fields.oldPropertyNo.label")} 
                   value={hook.formData.oldPropertyNo} 
                   onChange={(v) => hook.updateFormField("oldPropertyNo", v)} 
                   onRefresh={handleOldPropertyRefresh}
@@ -450,19 +450,19 @@ const ResidentialEditScreen = ({
                 />
               </div>
               <div className="grid grid-cols-7 gap-2">
-                <ReadOnlyInput label="Remark" value={hook.formData.remark} />
-                <ReadOnlyInput label="Old RV" value={hook.formData.oldRV} />
-                <ReadOnlyInput label="New RV" value={hook.formData.newRV} />
-                <ReadOnlyInput label="Old Tax" value={hook.formData.oldTax} />
-                <ReadOnlyInput label="New Tax" value={hook.formData.newTax} />
-                <ReadOnlyInput label="Old Area" value={hook.formData.oldArea} />
-                <ReadOnlyInput label="New Area" value={hook.formData.newArea} />
+                <ReadOnlyInput label={t("basicInfo.fields.remark.label")} value={hook.formData.remark} />
+                <ReadOnlyInput label={t("basicInfo.fields.oldRV.label")} value={hook.formData.oldRV} />
+                <ReadOnlyInput label={t("basicInfo.fields.newRV.label")} value={hook.formData.newRV} />
+                <ReadOnlyInput label={t("basicInfo.fields.oldTax.label")} value={hook.formData.oldTax} />
+                <ReadOnlyInput label={t("basicInfo.fields.newTax.label")} value={hook.formData.newTax} />
+                <ReadOnlyInput label={t("basicInfo.fields.oldArea.label")} value={hook.formData.oldArea} />
+                <ReadOnlyInput label={t("basicInfo.fields.newArea.label")} value={hook.formData.newArea} />
               </div>
               <div className="grid grid-cols-4 gap-2">
-                <ReadOnlyInput label="Old Use Type" value={hook.formData.oldUseType} />
-                <ReadOnlyInput label="Old Construction Type" value={hook.formData.oldConstructionType} />
-                <ReadOnlyInput label="Old CSN" value={hook.formData.oldCSN} />
-                <ReadOnlyInput label="Old Construction Year" value={hook.formData.oldConstructionYear} />
+                <ReadOnlyInput label={t("basicInfo.fields.oldUseType.label")} value={hook.formData.oldUseType} />
+                <ReadOnlyInput label={t("basicInfo.fields.oldConstructionType.label")} value={hook.formData.oldConstructionType} />
+                <ReadOnlyInput label={t("basicInfo.fields.oldCSN.label")} value={hook.formData.oldCSN} />
+                <ReadOnlyInput label={t("basicInfo.fields.oldConstructionYear.label")} value={hook.formData.oldConstructionYear} />
               </div>
 
             </div>
@@ -523,7 +523,7 @@ const ResidentialEditScreen = ({
         {isLoadingRoomData ? (
           <div className="p-8 text-center">
             <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
-            <p className="mt-4 text-gray-600">Loading room data...</p>
+            <p className="mt-4 text-gray-600">{t("drawer.loadingRoomData")}</p>
           </div>
         ) : (
           <RoomWiseSubmission
