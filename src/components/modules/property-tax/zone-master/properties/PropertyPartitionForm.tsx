@@ -155,6 +155,7 @@ export default function PropertyPartitionForm({
     getWingNoById,
     wingSummaries,
     handleSaveWing: handleSaveWingCore,
+    openAddWingForm,
   } = useWingManagement({
     societyDetails,
     setSocietyDetails,
@@ -424,7 +425,7 @@ export default function PropertyPartitionForm({
               <WingSummaryTable
                 wingSummaries={enhancedWingSummaries}
                 wingColumns={wingColumns as unknown as Column<WingSummary>[]}
-                onAddWingClick={() => setShowAddWingForm(true)}
+                onAddWingClick={openAddWingForm}
                 t={t}
               />
             )}

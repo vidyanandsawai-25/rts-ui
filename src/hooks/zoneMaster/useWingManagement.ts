@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { PartitionFormErrors } from "@/types/zone-master/properties/partition-form.types";
@@ -41,18 +41,17 @@ export function useWingManagement({
   }, [societyDetails]);
 
   // Get wingNo from wings array based on wingId
-  const getWingNoById = (wingId: number): string => {
+  const getWingNoById = useCallback((wingId: number): string => {
     const wing = wings.find(w => w.id === wingId);
     return wing?.wingNo || "";
-  };
+  }, [wings]);
 
-  // Initialize newWingId and newWingNo when showing add form
-  useEffect(() => {
-    if (showAddWingForm && !editingSocietyDetailId && newWingId === null) {
-      setNewWingId(nextWingId);
-      setNewWingNo(getWingNoById(nextWingId));
-    }
-  }, [showAddWingForm, editingSocietyDetailId, newWingId, nextWingId]);
+  // Open add wing form with initialized values
+  const openAddWingForm = useCallback(() => {
+    setShowAddWingForm(true);
+    setNewWingId(nextWingId);
+    setNewWingNo(getWingNoById(nextWingId));
+  }, [nextWingId, getWingNoById]);
 
   // Group society details by wing
   const wingSummaries = useMemo<WingSummary[]>(() => {
@@ -161,5 +160,6 @@ export function useWingManagement({
     nextWingId,
     wingSummaries,
     handleSaveWing,
+    openAddWingForm,
   };
 }
