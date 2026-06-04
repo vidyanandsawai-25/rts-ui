@@ -190,7 +190,9 @@
       "shopBuildingName": "दुकान/भवन का नाम",
       "societyName": "सोसायटी का नाम",
       "address": "पता",
-      "rvCv": "RV/CV",
+      "rv": "आरवी",
+      "cv": "सीवी",
+      "rvCv": "आरवी/सीवी",
       "totalTax": "कुल कर",
       "status": "स्थिति"
     }

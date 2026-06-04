@@ -190,7 +190,9 @@
       "shopBuildingName": "दुकान/इमारत नाव",
       "societyName": "सोसायटीचे नाव",
       "address": "पत्ता",
-      "rvCv": "RV/CV",
+      "rv": "आरव्ही",
+      "cv": "सीव्ही",
+      "rvCv": "आरव्ही/सीव्ही",
       "totalTax": "एकूण कर",
       "status": "स्थिती"
     }

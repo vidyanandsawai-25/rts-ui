@@ -190,6 +190,8 @@
       "shopBuildingName": "Shop/Building Name",
       "societyName": "Society Name",
       "address": "Address",
+      "rv": "RV",
+      "cv": "CV",
       "rvCv": "RV/CV",
       "totalTax": "Total Tax",
       "status": "Status"
