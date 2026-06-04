@@ -135,8 +135,10 @@ export function FloorTableSection({
             : <span className="font-bold text-slate-900">{value === null || typeof value === 'undefined' ? '-' : String(value)}</span>;
 
           return (
-            <div className="px-0 py-0.5 text-[12px] text-center flex items-center justify-center min-h-6 font-semibold text-slate-700">
-              {content}
+            <div className="px-1 py-1.5 text-[12px] text-center font-semibold text-slate-700">
+              <div className="truncate" title={typeof value === 'string' ? value : String(value)}>
+                {content}
+              </div>
             </div>
           );
         },
@@ -145,13 +147,13 @@ export function FloorTableSection({
   }, [t, currentSortBy, currentSortOrder, handleSortClick]);
 
   return (
-    <div className="rounded-lg bg-white shadow-sm mb-6 border border-blue-200 [&_th]:whitespace-nowrap [&_th:last-child]:text-white! [&_th:last-child]:text-xs [&_th:last-child]:border-l [&_th:last-child]:border-solid [&_th:last-child]:border-white/30 [&_th]:border-r [&_th]:border-white/30 [&_th:last-child]:border-r-0 [&_td]:border-r [&_td]:border-blue-100 [&_td:last-child]:border-r-0 [&_th:last-child]:w-25 [&_th:last-child]:min-w-25 [&_td:last-child]:w-25 [&_td:last-child]:min-w-25">
+    <div className="rounded-lg bg-white shadow-sm mb-6 border border-blue-200 [&_th]:whitespace-nowrap [&_th:last-child]:text-white! [&_th:last-child]:text-xs [&_th:last-child]:border-l [&_th:last-child]:border-solid [&_th:last-child]:border-white/30 [&_th]:border-r [&_th]:border-white/30 [&_th:last-child]:border-r-0 [&_td]:border-r [&_td]:border-blue-100 [&_td:last-child]:border-r-0 [&_th:last-child]:w-25 [&_th:last-child]:min-w-25 [&_td:last-child]:w-25 [&_td:last-child]:min-w-25 [&_td]:overflow-hidden">
       <MasterTable
         data={transformedData}
         columns={adaptedColumns}
         emptyText={t('floor.noFloorData')}
         maxBodyHeightClassName="max-h-[400px] whitespace-nowrap" //max-h-[400px]
-        tableClassName="table-fixed w-full min-w-[1170px]"
+        tableClassName="table-fixed w-full min-w-[1230px]"
         theadClassName="sticky top-0 z-20 bg-[#1e3a8a] text-white border-b border-blue-300 [&_th]:px-1 [&_th]:py-1.5 [&_th:last-child]:border-l [&_th:last-child]:border-solid [&_th:last-child]:border-white/30"
         rowClassName={() => "hover:bg-blue-50/50 transition-colors"}       
         pageNumber={pageNumber}

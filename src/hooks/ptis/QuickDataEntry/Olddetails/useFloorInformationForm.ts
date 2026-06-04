@@ -70,7 +70,7 @@ export function useFloorInformationForm({
     formData.oldConstructionTypeId !== initialEditValues.oldConstructionTypeId ||
     formData.oldTypeOfUseId !== initialEditValues.oldTypeOfUseId ||
     formData.oldSubTypeOfUseId !== initialEditValues.oldSubTypeOfUseId ||
-    formData.oldCarpetAreaSqFeet !== initialEditValues.oldCarpetAreaSqFeet
+    formData.oldAreaSqMeter !== initialEditValues.oldAreaSqMeter
   ) : false;
 
   /**

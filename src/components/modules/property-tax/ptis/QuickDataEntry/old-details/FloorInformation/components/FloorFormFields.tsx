@@ -167,42 +167,42 @@ export function FloorFormFields({
                 )}
             </div>
 
-            {/* Carpet Area (Sq Ft) - Editable */}
+            {/* Area (Sq M) - Editable */}
             <div className="space-y-1.5">
                 <Label className="text-xs font-semibold text-gray-700">
-                    {t('oldDetails.carpetAreaSqFt')}<span className="text-red-500 ml-1">*</span>
+                    {t('oldDetails.areaSqM')}<span className="text-red-500 ml-1">*</span>
                 </Label>
                 <Input
                     type="text"
                     inputMode="decimal"
                     className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
-                    placeholder={t('oldDetails.floordtails.carpetAreaPlaceholder')}
-                    value={formData.oldCarpetAreaSqFeet ?? ''}
+                    placeholder="0.00"
+                    value={formData.oldAreaSqMeter ?? ''}
                     onChange={(e) => {
                         const value = sanitizeTaxDecimal(e.target.value);
                         if (value !== '' || e.target.value === '') {
-                            onFieldChange('oldCarpetAreaSqFeet', value);
+                            onFieldChange('oldAreaSqMeter', value);
                         }
                     }}
                     onKeyDown={preventInvalidNumericKeys}
                 />
-                {showError("oldCarpetAreaSqFeet") && (
-                    <span className="text-xs text-red-500">{errors.oldCarpetAreaSqFeet}</span>
+                {showError("oldAreaSqMeter") && (
+                    <span className="text-xs text-red-500">{errors.oldAreaSqMeter}</span>
                 )}
             </div>
 
-            {/* Area (Sq M) - Read Only */}
+            {/* Carpet Area (Sq Ft) - Read Only */}
             <div className="space-y-1.5">
                 <Label className="text-xs font-semibold text-gray-700">
-                    {t('oldDetails.areaSqM')}
+                    {t('oldDetails.carpetAreaSqFt')}
                 </Label>
                 <Input
                     type="number"
                     className="h-9 text-sm border-blue-200 bg-gray-50 cursor-not-allowed focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
-                    placeholder="0"
+                    placeholder="0.00"
                     value={
-                        formData.oldAreaSqMeter
-                            ? Number(formData.oldAreaSqMeter).toFixed(2)
+                        formData.oldCarpetAreaSqFeet
+                            ? Number(formData.oldCarpetAreaSqFeet).toFixed(2)
                             : ''
                     }
                     readOnly
@@ -217,7 +217,7 @@ export function FloorFormFields({
                 <Input
                     type="number"
                     className="h-9 text-sm border-blue-200 bg-gray-50 cursor-not-allowed focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
-                    placeholder="0"
+                    placeholder="0.00"
                     value={
                         formData.oldBuiltupAreaSqFeet
                             ? Number(formData.oldBuiltupAreaSqFeet).toFixed(2)
@@ -235,7 +235,7 @@ export function FloorFormFields({
                 <Input
                     type="number"
                     className="h-9 text-sm border-blue-200 bg-gray-50 cursor-not-allowed focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
-                    placeholder="0"
+                    placeholder="0.00"
                     value={
                         formData.oldBuiltupAreaSqMeter
                             ? Number(formData.oldBuiltupAreaSqMeter).toFixed(2)

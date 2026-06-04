@@ -12,7 +12,7 @@ export const getFloorInformationColumns = (t: (key: string) => string): Column<F
     key: 'floor',
     label: t('floor.floorLabel'),
     headerClassName: 'text-xs uppercase border-r border-white/30 font-semibold text-white text-center whitespace-nowrap',
-    width: '120px',
+    width: '120px',    
   },
   {
     key: 'subFloor',
@@ -36,7 +36,7 @@ export const getFloorInformationColumns = (t: (key: string) => string): Column<F
     key: 'conTyp',
     label: t('floor.conTyp'),
     headerClassName: 'text-xs uppercase border-r border-white/30 font-semibold text-white text-center whitespace-nowrap',
-    width: '180px',
+    width: '200px',
   },
   {
     key: 'use',
@@ -48,7 +48,7 @@ export const getFloorInformationColumns = (t: (key: string) => string): Column<F
     key: 'subUse',
     label: t('floor.subTyp'),
     headerClassName: 'text-xs uppercase border-r border-white/30 font-semibold text-white text-center whitespace-nowrap',
-    width: '140px',
+    width: '110px',
   },
   {
     key: 'carpetAreaCombined',
