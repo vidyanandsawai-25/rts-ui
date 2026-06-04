@@ -19,15 +19,15 @@ export default function RateSectionCard({
 }: RateSectionCardProps) {
   const router = useRouter();
 
-  const rateNo = rate.rateSectionNo;
+  const rateId = rate.id;
   const description = rate.description;
   const isActive = rate.isActive;
 
   const handleClick = () => {
-    if (!rateNo) return;
+    if (!rateId) return;
 
     const params = new URLSearchParams(searchParams.toString());
-    params.set("zone", rateNo);
+    params.set("zone", String(rateId));
     params.set("wardpage", "1");
 
     router.push(`${pathname}?${params.toString()}`);
@@ -52,14 +52,14 @@ export default function RateSectionCard({
       onDelete(
         String(rateGuid),
         description || t('messages.thisRateSection'),
-        rateNo
+        String(rateId)
       );
     }
   };
 
   return (
     <div
-      key={rate.id || rateNo || index}
+      key={rate.id || index}
       className="w-full  px-2 mb-2"
     >
       <Card
@@ -83,7 +83,7 @@ export default function RateSectionCard({
               className={`text-sm font-bold ${isSelected ? "text-white" : "text-[#1A86E8]"
                 }`}
             >
-              {rateNo}
+              {rateId}
             </span>
           </div>
 
@@ -108,7 +108,7 @@ export default function RateSectionCard({
                 <DeleteButton
                   size="xs"
                   onClick={handleDelete}
-                  disabled={deletingId === String(rate.id || rateNo)}
+                  disabled={deletingId === String(rate.id)}
                 />
               </div>
             </div>

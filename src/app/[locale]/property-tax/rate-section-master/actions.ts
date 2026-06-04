@@ -9,7 +9,7 @@ import {
   getRateSectionById,
   createRateSection,
   updateRateSection,
-} from "@/lib/api/rateSection.services";
+} from "@/lib/api/rate-section-master/rateSection.services";
 import {
   getAllRateSectionDetails,
   getWardTotalCount,
@@ -18,8 +18,8 @@ import {
   bulkPurgeRateSectionDetails,
   bulkCreateRateSectionDetails,
   getWardsByRateSectionId,
-} from "@/lib/api/rateSectionDetails.services";
-import { getWards, getWardById } from "@/lib/api/ward.services";
+} from "@/lib/api/rate-section-master/rateSectionDetails.services";
+import { getWards, getWardById, updateWard } from "@/lib/api/ward.services";
 import {
   ActionResponse,
   SectionItem,
@@ -27,7 +27,7 @@ import {
   ActionResult,
   RateSectionDetailPayload,
 } from "@/types/rateSectionMaster.types";
-import type { WardItem } from "@/types/wardMaster.types";
+import type { WardItem, UpdateWardPayload } from "@/types/wardMaster.types";
 import { apiClient } from "@/services/api.service";
 import { getUserIdFromCookies } from "@/lib/utils/cookie";
 
@@ -221,7 +221,6 @@ export async function getWardTotalCountAction(): Promise<
 export async function updateRateSectionAction(
   id: number,
   payload: {
-    rateSectionNo: string;
     description: string;
     isActive: boolean;
   }
@@ -229,10 +228,6 @@ export async function updateRateSectionAction(
   try {
     if (!Number.isFinite(id) || id <= 0) {
       return { success: false, message: "Valid Rate Section ID is required", statusCode: 400 };
-    }
-
-    if (!payload.rateSectionNo?.trim()) {
-      return { success: false, message: "Rate Section No is required", statusCode: 400 };
     }
 
     if (!payload.description?.trim()) {
@@ -246,8 +241,8 @@ export async function updateRateSectionAction(
     }
 
     const result = await updateRateSection(String(id), {
-      zoneCode: payload.rateSectionNo,
-      zoneEnglish: payload.rateSectionNo,
+      zoneCode: "",
+      zoneEnglish: "",
       zoneRegional: payload.description,
       description: payload.description,
       isActive: payload.isActive,
@@ -302,15 +297,10 @@ export async function deleteRateSectionAction(
 
 
 export async function createRateSectionAction(payload: {
-  rateSectionNo: string;
   description: string;
   isActive: boolean;
-}): Promise<{ success: boolean; message?: string; error?: string; statusCode?: number; data?: unknown }> {
+}): Promise<{ success: boolean; message?: string; error?: string; statusCode?: number; data?: { id: number } }> {
   try {
-    if (!payload.rateSectionNo?.trim()) {
-      return { success: false, message: "Rate Section No is required", statusCode: 400 };
-    }
-
     if (!payload.description?.trim()) {
       return { success: false, message: "Description is required", statusCode: 400 };
     }
@@ -321,9 +311,24 @@ export async function createRateSectionAction(payload: {
       return { success: false, error: "User authentication required", statusCode: 401 };
     }
 
+    // Check for duplicate rate section (case-insensitive)
+    const existingRates = await queryRateSections({ pageNumber: 1, pageSize: -1 });
+    const normalizedDescription = payload.description.trim().toLowerCase();
+    const duplicate = existingRates.rateSectionMaster.find(
+      (r) => (r.description || '').trim().toLowerCase() === normalizedDescription
+    );
+    
+    if (duplicate) {
+      return { 
+        success: false, 
+        error: `Rate section "${duplicate.description}" already exists`, 
+        statusCode: 409 
+      };
+    }
+
     const result = await createRateSection({
-      zoneCode: payload.rateSectionNo.trim(),
-      zoneEnglish: payload.rateSectionNo.trim(),
+      zoneCode: "",
+      zoneEnglish: "",
       zoneRegional: payload.description.trim(),
       description: payload.description.trim(),
       isActive: payload.isActive,
@@ -341,7 +346,7 @@ export async function createRateSectionAction(payload: {
       revalidatePath(`/${locale}/property-tax/rate-section-master`, "page");
     }
 
-    return { success: true, message: "Rate section created successfully" };
+    return { success: true, message: "Rate section created successfully", data: result.data };
   } catch (_error) {
     return { success: false, error: "Failed to create rate section" };
   }
@@ -812,6 +817,57 @@ export async function getWardByIdAction(
     return { success: true, data };
   } catch (_error) {
     return { success: false, message: "Failed to fetch ward" };
+  }
+}
+
+/**
+ * Updates a ward in the Ward master.
+ * Used when editing ward properties like wardNo, description, isActive.
+ * API: PUT /api/Ward/{id}
+ * @param wardId - The numeric ward ID
+ * @param data - Update payload with ward details
+ * @returns Success status with updated ward data
+ */
+export async function updateWardMasterAction(
+  wardId: number,
+  data: {
+    wardNo: string;
+    zoneId: number;
+    description: string;
+    sequenceNo?: number | null;
+    isActive: boolean;
+  }
+): Promise<ActionResult<WardItem>> {
+  try {
+    if (!Number.isFinite(wardId) || wardId <= 0) {
+      return { success: false, message: "Valid Ward ID is required", statusCode: 400 };
+    }
+
+    const payload: UpdateWardPayload = {
+      wardNo: data.wardNo,
+      zoneId: data.zoneId,
+      description: data.description,
+      sequenceNo: typeof data.sequenceNo === "number" ? data.sequenceNo : undefined,
+      isActive: data.isActive,
+      updatedBy: 0, // Will be set by backend based on auth
+    };
+
+    const apiResponse = await updateWard(wardId, payload);
+
+    if (!apiResponse || apiResponse.success === false) {
+      const firstError = Array.isArray(apiResponse?.errors) ? apiResponse.errors[0] : apiResponse?.errors || "";
+      const errorMessage = apiResponse?.message || firstError || "Failed to update ward";
+      return { success: false, message: errorMessage };
+    }
+
+    // Revalidate all locale variants
+    for (const locale of locales) {
+      revalidatePath(`/${locale}/property-tax/rate-section-master`, "page");
+    }
+
+    return { success: true, data: apiResponse.items ?? undefined, message: "Ward updated successfully" };
+  } catch (_error) {
+    return { success: false, message: "Failed to update ward" };
   }
 }
 

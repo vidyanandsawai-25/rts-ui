@@ -146,8 +146,8 @@ export default function AddWard({
       return;
     }
 
-    // Find the rate section by rateSectionNo
-    const selectedRate = ssrAllRateSections.find(r => r.rateSectionNo === selectedZoneNo);
+    // Find the rate section by id
+    const selectedRate = ssrAllRateSections.find(r => String(r.id) === selectedZoneNo);
     if (!selectedRate?.id) {
       return;
     }

@@ -32,6 +32,7 @@ export const InputBox: React.FC<InputBoxProps & { focusRefs: React.MutableRefObj
   editingIndex,
   areaUnit,
   focusRefs,
+  roomTypeData,
 }) => {
   const t = useTranslations('quickDataEntry');
 
@@ -82,6 +83,7 @@ export const InputBox: React.FC<InputBoxProps & { focusRefs: React.MutableRefObj
               validationErrors={validationErrors} 
               focusRefs={focusRefs!} 
               t={t} 
+              roomTypeData={roomTypeData}
             />
 
             <DimensionAreaFields 

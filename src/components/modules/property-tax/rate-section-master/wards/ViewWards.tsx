@@ -100,8 +100,8 @@ export default function ViewWards({
                 {assignment && !isAlreadyInSelected && (
                   <Badge size="sm" variant="success">
                     {assignment.description
-                      ? `${assignment.rateSectionNo} - ${assignment.description}`
-                      : assignment.rateSectionNo}
+                      ? `${assignment.id} - ${assignment.description}`
+                      : String(assignment.id)}
                   </Badge>
                 )}
               </span>

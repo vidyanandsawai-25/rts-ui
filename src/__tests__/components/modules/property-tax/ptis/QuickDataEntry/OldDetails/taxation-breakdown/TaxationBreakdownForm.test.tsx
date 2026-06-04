@@ -41,13 +41,8 @@ describe('TaxationBreakdownForm Component', () => {
     taxYears: [
       {
         year: 2023,
-        interest: 100,
-        taxTotal: 1000,
-        netTotal: 1100,
         financeYearId: 5,
         yearCode: '23-24',
-        rVorCV: 'RV',
-        rVorCVValue: 5000,
         taxes: [
           { taxId: 1, taxName: 'Property Tax', taxAmount: 1000 },
         ],

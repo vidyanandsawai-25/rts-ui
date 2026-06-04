@@ -8,7 +8,7 @@ import { locales } from "@/i18n/config";
 import { ApiError } from "@/lib/utils/api";
 import { IRateMaster, ISelectOption, IZoneDescription, RateCategory, AssessmentYearRangeOption, IRateCreate, IBackendRateMaster } from "@/types/RVRateMaster";
 import * as rateMasterService from "@/lib/api/rvRateMaster";
-import { queryRateSections } from "@/lib/api/rateSection.services";
+import { queryRateSections } from "@/lib/api/rate-section-master/rateSection.services";
 import type { RateItem } from "@/types/rateSectionMaster.types";
 import { getUseGroupsPagedServer } from "@/lib/api/typeofusemaster.service";
 import { getAssessmentYearRangePaged } from "@/lib/api/assessment-year-range.service";

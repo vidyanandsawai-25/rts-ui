@@ -189,13 +189,13 @@ vi.mock("@/components/common/Tabs", () => ({
 describe("LinkWard", () => {
   const mockRates = [
     {
-      rateSectionId: 1,
+      id: 1,
       rateSectionNo: "RS001",
       description: "Rate Section 1",
       isActive: true,
     },
     {
-      rateSectionId: 2,
+      id: 2,
       rateSectionNo: "RS002",
       description: "Rate Section 2",
       isActive: false,
@@ -219,7 +219,7 @@ describe("LinkWard", () => {
   ];
 
   const mockWardAssignments = {
-    "W001": { rateSectionNo: "RS001", id: 1, description: "Rate Section 1" },
+    "W001": { rateSectionNo: "1", id: 1, description: "Rate Section 1" },
   };
 
   const defaultProps = {
@@ -228,7 +228,7 @@ describe("LinkWard", () => {
     onSuccess: vi.fn(),
     rates: mockRates,
     sections: mockSections,
-    selectedZoneNo: "RS001",
+    selectedZoneNo: "1",
     ssrAllWards: mockAllWards,
     ssrAllWardsCount: 3,
     ssrWardAssignments: mockWardAssignments,
@@ -295,8 +295,8 @@ describe("LinkWard", () => {
 
   it("displays selected zone name", () => {
     render(<LinkWard {...defaultProps} />);
-    // The StatusBadge label is 'RS001 - Rate Section 1'
-    expect(screen.getByTestId("status-badge")).toHaveTextContent("RS001 - Rate Section 1");
+    // StatusBadge label is now 'selectedZoneNo - selectedZoneName' = '1 - Rate Section 1'
+    expect(screen.getByTestId("status-badge")).toHaveTextContent("1 - Rate Section 1");
   });
 
   it("uses selectedZoneNo as fallback when no description", () => {
@@ -306,7 +306,8 @@ describe("LinkWard", () => {
     };
     
     render(<LinkWard {...propsWithNoDesc} />);
-    expect(screen.getByText("RS001")).toBeInTheDocument();
+    // Falls back to selectedZoneNo which is "1" - use status-badge to be specific
+    expect(screen.getByTestId("status-badge")).toHaveTextContent("1");
   });
 
   it("disables move right button when nothing selected", () => {

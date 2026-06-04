@@ -164,9 +164,13 @@ describe('UserProfilePopup Component', () => {
   });
 
   it('displays user profile data from props and session data from props', () => {
-    localStorageMock.setItem('ntis_user_ip', '192.168.1.1');
-
-    render(<UserProfilePopup {...defaultProps} sessionId="session-12345678-abcd" />);
+    render(
+      <UserProfilePopup
+        {...defaultProps}
+        sessionId="session-12345678-abcd"
+        clientIp="192.168.1.1"
+      />
+    );
 
     // User profile data from props
     expect(screen.getByText(/USR-2025-1047/)).toBeInTheDocument();

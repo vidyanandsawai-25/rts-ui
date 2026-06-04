@@ -194,6 +194,7 @@ export interface RateSectionContentProps {
   sections: SectionItem[];
   sectionsTotalCount?: number;
   totalRateSectionCount: number;
+  filteredRateSectionCount?: number;
   totalWardsCount: number;
   selectedRateSectionId?: string;
   initialWardCounts?: Record<string, number>;
@@ -237,7 +238,6 @@ export interface RateSectionListProps {
  * Form errors for RateSectionForm
  */
 export interface RateSectionFormErrors {
-  zoneCode?: string;
   zoneRegional?: string;
   description?: string;
 }
@@ -346,7 +346,7 @@ export interface HandleRateSectionDeleteParams {
   wardCounts: Record<string, number>;
   searchParams: URLSearchParams;
   pathname: string;
-  rates: Array<{ rateSectionNo?: string }>;
+  rates: Array<{ id?: number }>;
   router: {
     push: (url: string) => void;
     refresh: () => void;
