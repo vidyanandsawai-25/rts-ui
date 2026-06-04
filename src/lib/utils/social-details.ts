@@ -26,6 +26,20 @@ export function flattenAttributes(attributes: SocialAttributeHierarchyDto[]): Re
     const map: Record<number, FlatSocialAttributeState> = {};
     const traverse = (attrs: SocialAttributeHierarchyDto[], parentId?: number | null) => {
         for (const attr of attrs) {
+            const isSpecialToggle = 
+                attr.socialAttributeCode.toUpperCase() === "ROAD_WIDTH" || 
+                attr.socialAttributeCode.toUpperCase() === "WATER_CONN_YEAR" || 
+                attr.socialAttributeCode.toUpperCase().includes("TREE");
+
+            let initialBitValue = attr.bitValue ?? null;
+            if (isSpecialToggle) {
+                const hasValue = 
+                    (attr.intValue !== null && attr.intValue !== undefined) || 
+                    (attr.decimalValue !== null && attr.decimalValue !== undefined) || 
+                    (attr.propertySocialDetailId !== null && attr.propertySocialDetailId !== undefined);
+                initialBitValue = hasValue;
+            }
+
             map[attr.id] = {
                 id: attr.propertySocialDetailId || null,
                 socialAttributeId: attr.id,
@@ -34,7 +48,7 @@ export function flattenAttributes(attributes: SocialAttributeHierarchyDto[]): Re
                 dataType: attr.dataType,
                 parentAttributeId: attr.parentAttributeId || parentId || null,
                 isRequiredWhenParentTrue: attr.isRequiredWhenParentTrue,
-                bitValue: attr.bitValue ?? null,
+                bitValue: initialBitValue,
                 intValue: attr.intValue ?? null,
                 decimalValue: attr.decimalValue ?? null,
                 textValue: attr.textValue ?? null,
@@ -59,6 +73,15 @@ export function isAttributeEnabled(
     attr: FlatSocialAttributeState,
     currentData: Record<number, FlatSocialAttributeState>
 ): boolean {
+    const isSpecialToggle = 
+        attr.socialAttributeCode.toUpperCase() === "ROAD_WIDTH" || 
+        attr.socialAttributeCode.toUpperCase() === "WATER_CONN_YEAR" || 
+        attr.socialAttributeCode.toUpperCase().includes("TREE");
+
+    if (isSpecialToggle && attr.bitValue === false) {
+        return false;
+    }
+
     if (!attr.parentAttributeId) return true;
     const parent = currentData[attr.parentAttributeId];
     if (!parent) return false;

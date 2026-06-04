@@ -167,6 +167,7 @@ describe("PolicyConfigurationForm", () => {
       effectiveFrom: "2026-06-03T00:00:00Z",
       effectiveTo: null,
       isActive: true,
+      allowedValues: null,
     };
     
     render(<PolicyConfigurationForm initialData={initialData} />);
@@ -210,6 +211,7 @@ describe("PolicyConfigurationForm", () => {
       effectiveFrom: "2026-06-03T00:00:00Z",
       effectiveTo: null,
       isActive: true,
+      allowedValues: null,
     };
     
     render(<PolicyConfigurationForm initialData={initialData} />);

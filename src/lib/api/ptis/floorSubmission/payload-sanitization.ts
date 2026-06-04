@@ -102,7 +102,11 @@ const sanitizeFloorBase = (payload: any) => {
 
     const constructionTypeIdVal = parseSafeInt(payload.constructionTypeId !== undefined ? payload.constructionTypeId : (payload.constructionId ?? payload.ConstructionTypeId));
     const typeOfUseIdVal = parseSafeInt(payload.typeOfUseId !== undefined ? payload.typeOfUseId : payload.useId);
-    const subTypeOfUseIdVal = parseSafeInt(payload.subTypeOfUseId !== undefined ? payload.subTypeOfUseId : payload.subTypId);
+    
+    const rawSubTypeOfUseId = payload.subTypeOfUseId !== undefined ? payload.subTypeOfUseId : payload.subTypId;
+    const subTypeOfUseIdVal = (rawSubTypeOfUseId === undefined || rawSubTypeOfUseId === null || rawSubTypeOfUseId === "" || rawSubTypeOfUseId === 0 || rawSubTypeOfUseId === "0" || String(rawSubTypeOfUseId).toLowerCase() === "select subtype" || String(rawSubTypeOfUseId).toLowerCase() === "select sub type" || String(rawSubTypeOfUseId) === "-Select-")
+        ? null 
+        : parseSafeInt(rawSubTypeOfUseId);
 
     const floorDescriptionVal = String(payload.floorDescription || payload.floor || '');
     
@@ -113,7 +117,11 @@ const sanitizeFloorBase = (payload: any) => {
 
     const constructionTypeDescriptionVal = String(payload.constructionTypeDescription || payload.conTyp || '');
     const typeOfUseDescriptionVal = String(payload.typeOfUseDescription || payload.use || '');
-    const subTypeOfUseDescriptionVal = String(payload.subTypeOfUseDescription || payload.subTyp || '');
+    
+    const rawSubTypeOfUseDesc = payload.subTypeOfUseDescription || payload.subTyp || '';
+    const subTypeOfUseDescriptionVal = (subTypeOfUseIdVal === null || !rawSubTypeOfUseDesc || String(rawSubTypeOfUseDesc).toLowerCase() === "select subtype" || String(rawSubTypeOfUseDesc).toLowerCase() === "select sub type" || String(rawSubTypeOfUseDesc) === "-Select-")
+        ? null
+        : String(rawSubTypeOfUseDesc);
 
     const constructionYearVal = String(payload.constructionYear !== undefined ? payload.constructionYear : (payload.conYr || ''));
     const assessmentYearVal = String(payload.assessmentYear !== undefined ? payload.assessmentYear : (payload.asstYr || ''));

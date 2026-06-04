@@ -138,9 +138,9 @@ const RentIncrementCalculatorInner = React.memo(({
             <Button
               type="button"
               variant="ghost"
-              className={`relative z-10 flex-1 px-2 py-1.5 rounded-md text-[10px] font-bold transition-all duration-300 ease-out ${!isCompounding
+              className={`relative z-10 flex-1 h-auto px-2 py-1.5 rounded-md text-[10px] font-bold transition-all duration-300 ease-out inline-flex items-center justify-center focus:outline-none hover:bg-transparent ${!isCompounding
                   ? "text-white scale-100"
-                  : "text-gray-600 hover:text-gray-800 hover:bg-white/30 scale-95"
+                  : "text-gray-600 hover:text-gray-800 scale-95"
                 }`}
               onClick={() => handleModeChange(false)}
             >
@@ -155,9 +155,9 @@ const RentIncrementCalculatorInner = React.memo(({
             <Button
               type="button"
               variant="ghost"
-              className={`relative z-10 flex-1 px-2 py-1.5 rounded-md text-[10px] font-bold transition-all duration-300 ease-out ${isCompounding
+              className={`relative z-10 flex-1 h-auto px-2 py-1.5 rounded-md text-[10px] font-bold transition-all duration-300 ease-out inline-flex items-center justify-center focus:outline-none hover:bg-transparent ${isCompounding
                   ? "text-white scale-100"
-                  : "text-gray-600 hover:text-gray-800 hover:bg-white/30 scale-95"
+                  : "text-gray-600 hover:text-gray-800 scale-95"
                 }`}
               onClick={() => handleModeChange(true)}
             >
