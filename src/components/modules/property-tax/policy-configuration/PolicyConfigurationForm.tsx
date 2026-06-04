@@ -23,6 +23,66 @@ export interface PolicyConfigurationFormProps {
   initialData: PolicyConfigurationFormModel | null;
 }
 
+/**
+ * Agar stored value (e.g. "1" ya "0") allowedValues list mein nahi hai,
+ * toh BIT legacy mapping lagao:
+ *   "1" → pehla option (e.g. "Enable")
+ *   "0" → doosra option (e.g. "Disable")
+ * Agar value already list mein hai toh as-is return karo.
+ */
+function resolveValueFromAllowedList(value: string, allowedValues: string | null): string {
+  if (!allowedValues || !allowedValues.trim()) return value;
+
+  const options = allowedValues
+    .split(",")
+    .map((v) => v.trim())
+    .filter(Boolean);
+
+  // Direct match — already correct
+  if (options.includes(value)) return value;
+
+  // Legacy BIT mapping: "1" → first option, "0" → second option
+  if (value === "1" && options.length >= 1) return options[0];
+  if (value === "0" && options.length >= 2) return options[1];
+
+  // Fallback: first option
+  return options[0] ?? value;
+}
+
+/**
+ * initialData ko process karke form ke liye ready karo.
+ * policyValue aur defaultValue ko allowedValues se match karo.
+ */
+function prepareInitialData(
+  data: PolicyConfigurationFormModel | null
+): PolicyConfigurationFormModel {
+  if (!data) {
+    return {
+      id: undefined,
+      policyCode: "",
+      category: "",
+      displayName: "",
+      description: "",
+      dataType: "",
+      policyValue: "",
+      defaultValue: "",
+      unit: "",
+      effectiveFrom: "",
+      effectiveTo: null,
+      allowedValues: null,
+      isActive: true,
+    };
+  }
+
+  return {
+    ...data,
+    unit: data.unit ?? "",
+    effectiveFrom: data.effectiveFrom ?? "",
+    policyValue: resolveValueFromAllowedList(data.policyValue ?? "", data.allowedValues ?? null),
+    defaultValue: resolveValueFromAllowedList(data.defaultValue ?? "", data.allowedValues ?? null),
+  };
+}
+
 export default function PolicyConfigurationForm({ initialData }: PolicyConfigurationFormProps) {
   const router = useRouter();
   const isEdit = initialData?.id != null;
@@ -35,20 +95,7 @@ export default function PolicyConfigurationForm({ initialData }: PolicyConfigura
   const locale = useLocale();
 
   const [formData, setFormData] = useState<PolicyConfigurationFormModel>(
-    initialData ?? {
-      id: undefined,
-      policyCode: "",
-      category: "",
-      displayName: "",
-      description: "",
-      dataType: "",
-      policyValue: "",
-      defaultValue: "",
-      unit: "",
-      effectiveFrom: "",
-      effectiveTo: null,
-      isActive: true,
-    }
+    () => prepareInitialData(initialData)
   );
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -59,45 +106,47 @@ export default function PolicyConfigurationForm({ initialData }: PolicyConfigura
     router.back();
   }, [router]);
 
-  const validate = useCallback((data: PolicyConfigurationFormModel) => {
-    const e: Record<string, string> = {};
-    if (!data.policyCode.trim()) e.policyCode = t("form.validation.policyCodeRequired");
-    if (!data.category.trim()) e.category = t("form.validation.categoryRequired");
-    if (!data.displayName.trim()) e.displayName = t("form.validation.displayNameRequired");
-    if (!data.description.trim()) e.description = t("form.validation.descriptionRequired");
-    if (!data.dataType.trim()) e.dataType = t("form.validation.dataTypeRequired");
-    if (!data.policyValue.trim()) e.policyValue = t("form.validation.policyValueRequired");
-    if (!data.defaultValue.trim()) e.defaultValue = t("form.validation.defaultValueRequired");
-    if (!data.unit.trim()) e.unit = t("form.validation.unitRequired");
-    if (!data.effectiveFrom.trim()) e.effectiveFrom = t("form.validation.effectiveFromRequired");
+  const validate = useCallback(
+    (data: PolicyConfigurationFormModel) => {
+      const e: Record<string, string> = {};
 
-    // Data type-based validation for policyValue
-    if (data.policyValue.trim() && data.dataType.trim()) {
-      const policyValueError = validateValueByDataType(data.policyValue, data.dataType);
-      if (policyValueError) {
-        e.policyValue = t(policyValueError);
+      if (!data.policyCode.trim()) e.policyCode = t("form.validation.policyCodeRequired");
+      if (!data.category.trim()) e.category = t("form.validation.categoryRequired");
+      if (!data.displayName.trim()) e.displayName = t("form.validation.displayNameRequired");
+      if (!data.description.trim()) e.description = t("form.validation.descriptionRequired");
+      if (!data.dataType.trim()) e.dataType = t("form.validation.dataTypeRequired");
+      if (!data.policyValue.trim()) e.policyValue = t("form.validation.policyValueRequired");
+      if (!data.defaultValue.trim()) e.defaultValue = t("form.validation.defaultValueRequired");
+      // unit is optional for all data types
+      if (!data.effectiveFrom?.trim()) e.effectiveFrom = t("form.validation.effectiveFromRequired");
+
+      // Skip dataType-based validation when allowedValues present
+      // (values come from dropdown, already constrained to valid list)
+      const hasAllowedValues = !!(data.allowedValues && data.allowedValues.trim());
+
+      if (!hasAllowedValues && data.policyValue.trim() && data.dataType.trim()) {
+        const err = validateValueByDataType(data.policyValue, data.dataType);
+        if (err) e.policyValue = t(err);
       }
-    }
 
-    // Data type-based validation for defaultValue
-    if (data.defaultValue.trim() && data.dataType.trim()) {
-      const defaultValueError = validateValueByDataType(data.defaultValue, data.dataType);
-      if (defaultValueError) {
-        e.defaultValue = t(defaultValueError);
+      if (!hasAllowedValues && data.defaultValue.trim() && data.dataType.trim()) {
+        const err = validateValueByDataType(data.defaultValue, data.dataType);
+        if (err) e.defaultValue = t(err);
       }
-    }
 
-    return e;
-  }, [t]);
+      return e;
+    },
+    [t]
+  );
 
   const showError = (field: keyof PolicyConfigurationFormModel) =>
     touched[field] && !!errors[field];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    
+
     let sanitizedValue = value;
-    
+
     if (name === "policyCode") {
       sanitizedValue = value.replace(CODE_SANITIZE, "").toUpperCase().substring(0, 40);
     } else if (name === "displayName") {
@@ -105,8 +154,7 @@ export default function PolicyConfigurationForm({ initialData }: PolicyConfigura
     } else if (name === "description") {
       sanitizedValue = value.replace(DESCRIPTION_SANITIZE, "").substring(0, 100);
     } else if (name === "policyValue" || name === "defaultValue") {
-      // Apply data type-based sanitization
-      if (formData.dataType) {
+      if (formData.dataType && !formData.allowedValues) {
         sanitizedValue = sanitizeValueByDataType(value, formData.dataType);
       } else {
         sanitizedValue = value.replace(TEXT_SANITIZE, "").substring(0, 40);
@@ -123,17 +171,24 @@ export default function PolicyConfigurationForm({ initialData }: PolicyConfigura
     const { name } = e.target;
     setFormData((p) => {
       const updated = { ...p, [name]: value };
-      // Clear policyValue and defaultValue when data type changes
-      // to ensure users enter values in the correct format
       if (name === "dataType" && value !== p.dataType) {
         updated.policyValue = "";
         updated.defaultValue = "";
+        if (value.toUpperCase() === "BIT") {
+          updated.unit = "";
+        }
       }
       return updated;
     });
-    // Clear field errors, and also clear value errors if data type changed
     if (name === "dataType") {
-      setErrors((p) => ({ ...p, [name]: "", policyValue: "", defaultValue: "" }));
+      const isBit = value.toUpperCase() === "BIT";
+      setErrors((p) => ({
+        ...p,
+        [name]: "",
+        policyValue: "",
+        defaultValue: "",
+        ...(isBit ? { unit: "" } : {}),
+      }));
     } else {
       setErrors((p) => ({ ...p, [name]: "" }));
     }
@@ -161,9 +216,15 @@ export default function PolicyConfigurationForm({ initialData }: PolicyConfigura
     e.preventDefault();
 
     setTouched({
-      policyCode: true, category: true, displayName: true,
-      description: true, dataType: true, policyValue: true,
-      defaultValue: true, unit: true, effectiveFrom: true,
+      policyCode: true,
+      category: true,
+      displayName: true,
+      description: true,
+      dataType: true,
+      policyValue: true,
+      defaultValue: true,
+      unit: true,
+      effectiveFrom: true,
     });
 
     const v = validate(formData);
@@ -186,9 +247,10 @@ export default function PolicyConfigurationForm({ initialData }: PolicyConfigura
       fd.append("dataType", formData.dataType);
       fd.append("policyValue", formData.policyValue);
       fd.append("defaultValue", formData.defaultValue);
-      fd.append("unit", formData.unit);
+      fd.append("unit", formData.unit ?? "");
       fd.append("effectiveFrom", formData.effectiveFrom);
       fd.append("effectiveTo", formData.effectiveTo ?? "");
+      fd.append("allowedValues", formData.allowedValues ?? "");
       fd.append("isActive", String(formData.isActive));
 
       const res = await savePolicyConfiguration(isEdit ? String(formData.id) : "", fd);
@@ -259,7 +321,6 @@ export default function PolicyConfigurationForm({ initialData }: PolicyConfigura
       }
     >
       <form id="policy-config-form" onSubmit={handleSubmit} className="space-y-6 bg-[#F8FAFF] p-5">
-
         <StatusToggleSection
           isEdit={isEdit}
           isActive={formData.isActive}
