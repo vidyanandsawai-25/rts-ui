@@ -10,6 +10,10 @@ import { SaveButton, CancelButton, ToggleSwitch, Input, ValidationMessage } from
 import { updateWardMasterAction, getWardByIdAction } from "@/app/[locale]/property-tax/rate-section-master/actions";
 import { cn } from "@/lib/utils/cn";
 import { EditWardData, EditWardProps, EditWardErrors } from "@/types/rateSectionMaster.types";
+import { CODE_REGEX, CODE_SANITIZE, DESCRIPTION_REGEX, DESCRIPTION_SANITIZE } from "@/lib/utils/validation-rules";
+
+const WARD_NO_MAX_LENGTH = 10;
+const DESCRIPTION_MAX_LENGTH = 100;
 
 export default function EditWard({ open, onClose, id, wardId, sections, initialWardData }: EditWardProps) {
   const t = useTranslations("rateSectionMaster");
@@ -80,10 +84,33 @@ export default function EditWard({ open, onClose, id, wardId, sections, initialW
   const validate = (): boolean => {
     if (!editData) return false;
     const newErrors: EditWardErrors = {};
-    if (!editData.wardNo?.trim()) newErrors.wardNo = t('validation.required', { label: t('wards.wardNo') });
-    if (!editData.description?.trim()) newErrors.description = t('validation.required', { label: t('form.description') });
+    
+    // Ward No validation
+    if (!editData.wardNo?.trim()) {
+      newErrors.wardNo = t('validation.required', { label: t('wards.wardNo') });
+    } else if (!CODE_REGEX.test(editData.wardNo.trim())) {
+      newErrors.wardNo = t('validation.invalidCharacters', { label: t('wards.wardNo') });
+    }
+    
+    // Description validation
+    if (!editData.description?.trim()) {
+      newErrors.description = t('validation.required', { label: t('form.description') });
+    } else if (!DESCRIPTION_REGEX.test(editData.description.trim())) {
+      newErrors.description = t('validation.invalidCharacters', { label: t('form.description') });
+    }
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const handleWardNoChange = (value: string) => {
+    const sanitized = value.replace(CODE_SANITIZE, '').slice(0, WARD_NO_MAX_LENGTH);
+    setEditData(prev => prev ? { ...prev, wardNo: sanitized } : prev);
+  };
+
+  const handleDescriptionChange = (value: string) => {
+    const sanitized = value.replace(DESCRIPTION_SANITIZE, '').slice(0, DESCRIPTION_MAX_LENGTH);
+    setEditData(prev => prev ? { ...prev, description: sanitized } : prev);
   };
 
   const handleBlur = (field: string) => { setTouched(prev => ({ ...prev, [field]: true })); };
@@ -151,16 +178,18 @@ export default function EditWard({ open, onClose, id, wardId, sections, initialW
           </div>
           <div className="bg-white rounded-lg shadow-md border-2 border-[#6F8EC0]/40 p-3">
             <Input label={t("wards.wardNo")} type="text" required value={editData.wardNo}
-              placeholder={t("wards.wardNoPlaceholder")} onChange={e => setEditData({ ...editData, wardNo: e.target.value })}
+              placeholder={t("wards.wardNoPlaceholder")} onChange={e => handleWardNoChange(e.target.value)}
               onBlur={() => handleBlur("wardNo")}
+              maxLength={WARD_NO_MAX_LENGTH}
               data-testid="input-wards.wardno"
             />
             <ValidationMessage message={errors.wardNo} visible={showError("wardNo")} />
           </div>
           <div className="bg-white rounded-lg shadow-md border-2 border-[#6F8EC0]/40 p-3">
             <Input label={t("form.description")} type="text" required value={editData.description}
-              placeholder={t("form.descriptionPlaceholder")} onChange={e => setEditData({ ...editData, description: e.target.value })}
+              placeholder={t("form.descriptionPlaceholder")} onChange={e => handleDescriptionChange(e.target.value)}
               onBlur={() => handleBlur("description")}
+              maxLength={DESCRIPTION_MAX_LENGTH}
               data-testid="input-form.description"
             />
             <ValidationMessage message={errors.description} visible={showError("description")} />
