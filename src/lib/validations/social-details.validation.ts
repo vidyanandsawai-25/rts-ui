@@ -31,8 +31,14 @@ export function validateSocialDetails(
         const isEnabled = isAttributeEnabled(attr, data);
         if (!isEnabled) return; // skip validation if parent is disabled
 
-        // 1. Required Check (only for required fields if parent is enabled)
-        if (attr.isRequiredWhenParentTrue) {
+        const isSpecialToggle = 
+            attr.socialAttributeCode.toUpperCase() === "ROAD_WIDTH" || 
+            attr.socialAttributeCode.toUpperCase() === "WATER_CONN_YEAR" || 
+            attr.socialAttributeCode.toUpperCase().includes("TREE");
+
+        // 1. Required Check (only for required fields or toggled-on special attributes)
+        const isRequired = attr.isRequiredWhenParentTrue || (isSpecialToggle && attr.bitValue === true);
+        if (isRequired) {
             let isEmpty = false;
             if (attr.dataType === "INT" && (attr.intValue === null || attr.intValue === undefined || String(attr.intValue) === "")) {
                 isEmpty = true;

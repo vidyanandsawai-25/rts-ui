@@ -107,7 +107,7 @@ export const useSocialDetailsForm = (
                                 socialAttributes.push({
                                     id: attr.id,
                                     socialAttributeId: attr.socialAttributeId,
-                                    bitValue: attr.bitValue,
+                                    bitValue: attr.dataType.toUpperCase() === "BIT" ? attr.bitValue : null,
                                     intValue: attr.intValue,
                                     decimalValue: attr.decimalValue,
                                     textValue: attr.textValue,
