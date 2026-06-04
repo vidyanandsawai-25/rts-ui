@@ -69,7 +69,6 @@ export default function middleware(request: NextRequest) {
   const isLoginRoute = pathWithoutLocale === '/login' || pathWithoutLocale.startsWith('/login/');
   const sessionExpiredLogin =
     isLoginRoute &&
-    !isLoggedIn &&
     request.nextUrl.searchParams.get('error') === SESSION_EXPIRED_LOGIN_ERROR;
 
   if (isLoginRoute && isLoggedIn && !sessionExpiredLogin) {
