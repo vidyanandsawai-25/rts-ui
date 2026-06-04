@@ -57,8 +57,9 @@ export default getRequestConfig(async ({ locale }) => {
     waterConnectionMasterMessages,
     commonDetailsUpdateMessages,
     financialYearMessages,
-    modulesMessages,
     moujaMessages,
+    policyConfigurationMessages,
+    modulesMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/dashboard.json`).then((m) => m.default),
@@ -131,10 +132,11 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/financialYear.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
-    import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
-    import(`./locales/${validatedLocale}/mouja.json`)
+    import(`./locales/${validatedLocale}/mouja.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/policyConfiguration.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
   ]);
 
   return {
@@ -180,10 +182,12 @@ export default getRequestConfig(async ({ locale }) => {
       waterConnection: waterConnectionMessages?.waterConnection || waterConnectionMessages,
       waterConnectionMaster: waterConnectionMasterMessages.waterConnectionMaster,
       commonDetailsUpdate:
-        commonDetailsUpdateMessages?.commonDetailsUpdate || commonDetailsUpdateMessages,
+      commonDetailsUpdateMessages?.commonDetailsUpdate || commonDetailsUpdateMessages,
       financialYear: financialYearMessages,
-      modules: modulesMessages,
       mouja: moujaMessages,
+      policyConfiguration:
+      policyConfigurationMessages?.policyConfiguration || policyConfigurationMessages,
+      modules: modulesMessages,
     },
   };
 });
