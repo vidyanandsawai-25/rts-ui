@@ -6,6 +6,7 @@ import { createDepartmentMaster, updateDepartmentMaster, deleteDepartmentMaster,
 import { DepartmentMasterFormModel, DepartmentMaster } from "@/types/departmentMaster.types";
 import { cookies } from "next/headers";
 import { getUserIdFromCookies } from "@/lib/utils/auth-session";
+import { syncDepartmentLicenseWithMaster } from "@/lib/api/configuration-settings/ulb-configuration/ulbConfiguration.service";
 
 
 export async function fetchDepartmentsPagedAction(
@@ -78,10 +79,17 @@ export async function saveDepartmentMasterAction(
       if (!/[\p{L}\p{N}]/u.test(desc)) return { success: false, error: "Description must contain at least one letter or digit" };
     }
 
+    let targetDeptId = id;
     if (id) {
       await updateDepartmentMaster(data, userId);
     } else {
       await createDepartmentMaster(data, userId);
+      const paged = await getDepartmentMastersPaged(1, 1, data.departmentCode);
+      targetDeptId = paged.items[0]?.departmentId;
+    }
+
+    if (targetDeptId) {
+      await syncDepartmentLicenseWithMaster(targetDeptId, data.isActive, userId);
     }
 
     revalidateTag("user-management", "default");
@@ -100,7 +108,10 @@ export async function deleteDepartmentAction(
   departmentId: number
 ): Promise<{ success: boolean; message?: string; error?: string }> {
   try {
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore) || 0;
     await deleteDepartmentMaster(departmentId);
+    await syncDepartmentLicenseWithMaster(departmentId, false, userId);
     revalidateTag("user-management", "default");
     for (const locale of locales) {
       revalidatePath(`/${locale}/configuration-settings/department-master`, "page");

@@ -23,6 +23,7 @@ import {
   getAllDepartments,
   saveDepartmentLicence,
   updateDepartmentLicence,
+  syncMasterDepartmentWithLicense,
 } from '@/lib/api/configuration-settings/ulb-configuration/ulbConfiguration.service';
 import {
   findInvalidEnabledDepartment,
@@ -34,6 +35,23 @@ import {
   resolveUserId,
   validateAndNormalize,
 } from './actions.utils';
+
+function isLicenseExpiredServer(endDateStr: string): boolean {
+  if (!endDateStr) return false;
+  const dateOnlyStr = endDateStr.split('T')[0];
+  const parts = dateOnlyStr.split('-');
+  if (parts.length !== 3 || parts[0].length !== 4 || parts[1].length !== 2 || parts[2].length !== 2) {
+    return false;
+  }
+
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  const todayStr = `${year}-${month}-${day}`;
+
+  return dateOnlyStr < todayStr;
+}
 
 /**
  * Loads all SSR data required by the ULB configuration screen.
@@ -59,6 +77,48 @@ export async function getUlbConfigurationPageDataAction(): Promise<
       ulbResult.reason,
       'messages.fetchError'
     );
+  }
+
+  // Auto-deactivate expired active department licenses
+  let hasExpiredUpdates = false;
+  const userId = await resolveUserId();
+
+  for (const licence of licences) {
+    const isLicenseActive = !!(licence.isActive ?? licence.isEnabled);
+    if (isLicenseActive && licence.licenceEndDate) {
+      if (isLicenseExpiredServer(licence.licenceEndDate)) {
+        licence.isActive = false;
+        licence.isEnabled = false;
+        licence.status = 'inactive';
+        hasExpiredUpdates = true;
+
+        if (licence.departmentLicenceDetailsId != null) {
+          try {
+            await updateDepartmentLicence(licence.departmentLicenceDetailsId, {
+              ...licence,
+              isActive: false,
+              isEnabled: false,
+              status: 'inactive',
+            });
+          } catch (err) {
+            console.error(`[ULBConfiguration] Failed to auto-deactivate expired license ${licence.departmentLicenceDetailsId}:`, err);
+          }
+        }
+
+        const deptId = licence.departmentId ?? licence.departmentMasterId;
+        if (deptId != null && userId != null) {
+          try {
+            await syncMasterDepartmentWithLicense(deptId, false, userId);
+          } catch (err) {
+            console.error(`[ULBConfiguration] Failed to sync deactivated license for department ${deptId} to master:`, err);
+          }
+        }
+      }
+    }
+  }
+
+  if (hasExpiredUpdates) {
+    revalidateUlbConfiguration();
   }
 
   return {
@@ -275,6 +335,14 @@ export async function saveDepartmentLicencesAction(
         firstRejected?.status === 'rejected' ? firstRejected.reason : undefined,
         'messages.error'
       );
+    }
+
+    // Sync active state back to DepartmentMaster
+    for (const licence of saved) {
+      const deptId = licence.departmentId ?? licence.departmentMasterId;
+      if (deptId != null) {
+        await syncMasterDepartmentWithLicense(deptId, !!licence.isActive, userId);
+      }
     }
 
     revalidateUlbConfiguration();

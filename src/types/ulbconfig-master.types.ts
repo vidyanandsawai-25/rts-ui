@@ -446,7 +446,7 @@ export interface ULBDepartmentLicenseTabProps {
   searchQuery: string;
   onSearchChange: (value: string) => void;
   master: UlbMasterLicenseSnapshot;
-  onToggle: (id: string, enabled: boolean) => void;
+  onToggle: (id: string, enabled: boolean, masterDates?: UlbMasterLicenseSnapshot) => void;
   onDateChange: (id: string, field: 'startDate' | 'duration' | 'endDate', value: string) => void;
   onApplyMaster: () => void;
   onEnableAll: () => void;
@@ -481,7 +481,7 @@ export interface ULBLicenseSectionProps extends Pick<UlbValidatedFieldProps, 'on
 export interface ULBDepartmentCardProps {
   dept: DepartmentLicense;
   t: (key: string) => string;
-  onToggle: (id: string, enabled: boolean) => void;
+  onToggle: (id: string, enabled: boolean, masterDates?: UlbMasterLicenseSnapshot) => void;
   onDateChange: (id: string, field: 'startDate' | 'duration' | 'endDate', value: string) => void;
 }
 

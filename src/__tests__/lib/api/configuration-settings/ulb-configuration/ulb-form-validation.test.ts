@@ -105,4 +105,42 @@ describe('ulb-form-validation', () => {
     expect(errors.projectManager).toBe('validation.projectManagerRequired');
     expect(errors.licenseKey).toBe('validation.licenseKeyRequired');
   });
+
+  it('allows names with multiple consecutive spaces and basic punctuation for contactPerson and projectManager', () => {
+    const infoErrors = validateUlbConfigurationFields(
+      { ...baseForm, contactPerson: 'Ashwin  Deshmukh' },
+      'ulb-info',
+      tCommon,
+      tUlb
+    );
+    expect(infoErrors.contactPerson).toBeUndefined();
+
+    const licenseErrors = validateUlbConfigurationFields(
+      { ...baseForm, projectManager: 'Project Lead  Name' },
+      'project-license-info',
+      tCommon,
+      tUlb
+    );
+    expect(licenseErrors.projectManager).toBeUndefined();
+  });
+
+  it('returns validation format errors for contactPerson with invalid characters', () => {
+    const errors = validateUlbConfigurationFields(
+      { ...baseForm, contactPerson: 'Ashwin @ Deshmukh' },
+      'ulb-info',
+      tCommon,
+      tUlb
+    );
+    expect(errors.contactPerson).toBe('validation.contactPersonFormat');
+  });
+
+  it('returns validation format errors for projectManager with invalid characters', () => {
+    const errors = validateUlbConfigurationFields(
+      { ...baseForm, projectManager: 'Project # Lead' },
+      'project-license-info',
+      tCommon,
+      tUlb
+    );
+    expect(errors.projectManager).toBe('validation.projectManagerFormat');
+  });
 });

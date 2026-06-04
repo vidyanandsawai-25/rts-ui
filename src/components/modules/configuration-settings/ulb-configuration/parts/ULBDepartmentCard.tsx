@@ -46,13 +46,13 @@ export function ULBDepartmentCard({ dept, t, onToggle, onDateChange }: ULBDepart
   return (
     <div
       className={cn(
-        'group flex h-full min-w-[280px] flex-col overflow-hidden rounded-lg border bg-white transition-all duration-300',
+        'group relative flex h-full min-w-[280px] flex-col rounded-lg border bg-white transition-all duration-300 focus-within:z-10',
         dept.enabled ? 'border-emerald-200 shadow-sm' : 'border-slate-200 hover:border-slate-300'
       )}
     >
       <div
         className={cn(
-          'flex items-center justify-between border-b px-3 py-2.5',
+          'flex items-center justify-between rounded-t-lg border-b px-3 py-2.5',
           dept.enabled ? 'border-emerald-100 bg-emerald-50/60' : 'border-slate-100 bg-slate-50/60'
         )}
       >
@@ -126,7 +126,7 @@ export function ULBDepartmentCard({ dept, t, onToggle, onDateChange }: ULBDepart
                     value={dept.duration}
                     onChange={(val) => onDateChange(dept.id, 'duration', val)}
                     placeholder="Select"
-                    className={cn(fieldClass, 'text-[10px]')}
+                    className="h-7 w-full border-none bg-transparent p-0 [&_button]:h-7 [&_button]:border-slate-200 [&_button]:bg-white [&_button]:px-1.5 [&_button]:text-[10px] [&_button]:font-medium [&_span]:text-[10px] [&_svg]:w-3 [&_svg]:h-3 [&_ul]:max-h-[160px]"
                   />
                 )}
               </CardField>
