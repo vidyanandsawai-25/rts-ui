@@ -91,6 +91,19 @@ describe("property-search-field-rules", () => {
       "addressInvalid"
     );
   });
+
+  it("validates rateable value format", () => {
+    expect(validateSearchFieldValue("rateableValueFrom", "1234", t)).toBeNull();
+    expect(validateSearchFieldValue("rateableValueFrom", "123.45", t)).toBe(
+      "rateableValueInvalid"
+    );
+    expect(validateSearchFieldValue("rateableValueFrom", "-100", t)).toBe(
+      "rateableValueInvalid"
+    );
+    expect(validateSearchFieldValue("rateableValueFrom", "+50", t)).toBe(
+      "rateableValueInvalid"
+    );
+  });
 });
 
 describe("property-search-input-sanitizers", () => {
@@ -116,6 +129,12 @@ describe("property-search-input-sanitizers", () => {
     expect(sanitizePropertySearchField("societyName", "सनराइज को-ऑपरेटिव हाउसिंग सोसायटी")).toBe("सनराइज को-ऑपरेटिव हाउसिंग सोसायटी");
     expect(sanitizePropertySearchField("address", "Lodha Amara, Kolshet Road - 400607")).toBe("Lodha Amara, Kolshet Road - 400607");
     expect(sanitizePropertySearchField("address", " Lodha  Amara ")).toBe("Lodha Amara ");
+  });
+
+  it("strips invalid characters from rateable value", () => {
+    expect(sanitizePropertySearchField("rateableValueFrom", "-123")).toBe("123");
+    expect(sanitizePropertySearchField("rateableValueTo", "45.67")).toBe("4567");
+    expect(sanitizePropertySearchField("rateableValueFrom", "+5e3")).toBe("53");
   });
 });
 
@@ -218,6 +237,17 @@ describe("property-search.validation", () => {
       const errors = getPropertySearchFieldErrors(criteria, "quick-search", t);
 
       expect(errors.upicId).toBe("upicIdInvalid");
+    });
+
+    it("returns field errors for invalid values-dues input", () => {
+      const criteria: SearchCriteria = {
+        ...INITIAL_SEARCH_CRITERIA,
+        rateableValueFrom: "bad-value",
+      };
+
+      const errors = getPropertySearchFieldErrors(criteria, "values-dues", t);
+
+      expect(errors.rateableValueFrom).toBe("rateableValueInvalid");
     });
   });
 });

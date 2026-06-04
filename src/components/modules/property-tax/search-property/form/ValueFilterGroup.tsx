@@ -86,8 +86,8 @@ export function ValueFilterGroup({
         </Label>
         <Input
           id={String(fromField)}
-          type="number"
-          min={isTop ? 1 : undefined}
+          type="text"
+          inputMode="numeric"
           placeholder={amountPlaceholder}
           value={String(formState[fromField] ?? "")}
           onChange={onInputChange(fromField)}
@@ -119,7 +119,8 @@ export function ValueFilterGroup({
           </Label>
           <Input
             id={String(toField)}
-            type="number"
+            type="text"
+            inputMode="numeric"
             placeholder={t("placeholders.toAmount")}
             value={String(formState[toField] ?? "")}
             onChange={onInputChange(toField)}
