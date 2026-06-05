@@ -69,8 +69,8 @@
     "goLiveDate": "गो-लाइव की अपेक्षित तारीख",
     "implementationPartner": "कार्यान्वयन भागीदार",
     "projectManager": "परियोजना प्रबंधक",
-    "pmEmail": "PM ईमेल",
-    "pmPhone": "PM फ़ोन नंबर",
+    "pmEmail": "परियोजना प्रबंधक ईमेल",
+    "pmPhone": "परियोजना प्रबंधक फ़ोन नंबर",
     "licenseType": "लाइसेंस प्रकार",
     "licenseKey": "लाइसेंस की",
     "licenseStartDate": "लाइसेंस शुरू होने की तारीख",
@@ -182,6 +182,7 @@
     "enableAllSuccess": "सभी विभाग सक्षम किए गए",
     "disableAllSuccess": "सभी विभाग अक्षम किए गए",
     "masterDatesRequired": "कृपया पहले मास्टर लाइसेंस तिथियां सेट करें",
+    "masterExpired": "मास्टर लाइसेंस तिथियां समाप्त हो चुकी हैं। विभागों पर लागू नहीं किया जा सकता।",
     "masterApplied": "मास्टर लाइसेंस सभी सक्षम विभागों पर लागू किया गया",
     "invalidImageFile": "कृपया एक मान्य चित्र फ़ाइल अपलोड करें",
     "logoSizeExceeded": "लोगो का आकार 2MB से अधिक नहीं होना चाहिए",
@@ -212,6 +213,7 @@
     "districtRequired": "जिला आवश्यक है",
     "pincodeRequired": "पिनकोड आवश्यक है",
     "contactPersonRequired": "संपर्क व्यक्ति का नाम आवश्यक है",
+    "contactPersonFormat": "संपर्क व्यक्ति के नाम में केवल अक्षर, स्थान और सामान्य विराम चिह्न (. , ' -) होने चाहिए",
     "designationRequired": "पदनाम आवश्यक है",
     "addressRequired": "पता आवश्यक है",
     "emailRequired": "ईमेल आवश्यक है",
@@ -220,6 +222,7 @@
     "projectStartDateRequired": "प्रोजेक्ट प्रारंभ तिथि आवश्यक है",
     "financialYearStartRequired": "वित्तीय वर्ष प्रारंभ तिथि आवश्यक है",
     "projectManagerRequired": "प्रोजेक्ट मैनेजर का नाम आवश्यक है",
+    "projectManagerFormat": "प्रोजेक्ट मैनेजर के नाम में केवल अक्षर, स्थान और सामान्य विराम चिह्न (. , ' -) होने चाहिए",
     "projectManagerEmailRequired": "प्रोजेक्ट मैनेजर ईमेल आवश्यक है",
     "licenseTypeRequired": "लाइसेंस प्रकार आवश्यक है",
     "licenseKeyRequired": "लाइसेंस कुंजी आवश्यक है",
@@ -237,6 +240,9 @@
     "ulbNameExists": "यह ULB नाम पहले से पंजीकृत है",
     "licenseKeyFormat": "कृपया मान्य लाइसेंस कुंजी दर्ज करें",
     "licenseKeyExists": "यह लाइसेंस कुंजी पहले से उपयोग में है",
-    "maxUsersRequired": "अधिकतम उपयोगकर्ता आवश्यक है"
+    "maxUsersRequired": "अधिकतम उपयोगकर्ता आवश्यक है",
+    "addressFormat": "कृपया एक वैध पता दर्ज करें (कम से कम ५ अक्षर, अक्षर और संख्या)",
+    "gibberishError": "यादृच्छिक या बार-बार आने वाले वर्णों की अनुमति नहीं है",
+    "alternatePhoneSame": "वैकल्पिक फ़ोन नंबर प्राथमिक फ़ोन नंबर के समान नहीं हो सकता है"
   }
 }

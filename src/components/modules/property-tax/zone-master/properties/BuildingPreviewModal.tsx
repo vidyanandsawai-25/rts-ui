@@ -2,13 +2,14 @@
 
 import { useState, useMemo } from "react";
 import { useTranslations } from "next-intl";
-import { Building2, Layers, Home, Grid3x3, Loader2, Info, Zap, CheckCircle2, XCircle, X } from "lucide-react";
+import { Building2, Layers, Home, Grid3x3, Loader2, Info, Zap, X } from "lucide-react";
 import { toast } from "sonner";
 import { Modal } from "@/components/common/Modal";
 import { BuildingStructureItem } from "@/types/zone-master/properties/building-structure.types";
-import { BulkPropertyItem, BulkPropertyCreateResponse } from "@/types/zone-master/properties/property-bulk.types";
+import { BulkPropertyItem } from "@/types/zone-master/properties/property-bulk.types";
 import { createBulkBuildingPropertiesAction } from "@/app/[locale]/property-tax/zone-master/actions";
 import { Button } from "@/components/common";
+import { parseBulkPropertyErrors } from "@/lib/utils/bulk-property-errors";
 
 interface BuildingPreviewProps {
   open: boolean;
@@ -42,14 +43,20 @@ export function BuildingPreviewModal({
   onGenerateSuccess,
 }: BuildingPreviewProps) {
   const t = useTranslations("zoneMaster");
-  
+
   // Generation state
   const [generating, setGenerating] = useState(false);
-  const [generateResult, setGenerateResult] = useState<BulkPropertyCreateResponse | null>(null);
+
+  // Generation type mapping
+  const generationTypeLabels: Record<string, string> = {
+    "V": "V - Vertical",
+    "H": "H - Horizontal",
+    "VC": "VC - Vertical Custom",
+    "HC": "HC - Horizontal Custom",
+  };
 
   // Reset state when modal closes
   const handleClose = () => {
-    setGenerateResult(null);
     onClose();
   };
 
@@ -153,38 +160,56 @@ export function BuildingPreviewModal({
       categoryId,
       partitionNo: item.partitionNo || item.flatNo,
       flatOrShopNo: item.flatNo,
-      flatOrShopNoEnglish: item.flatNo,
-      address: item.flatNo,
-      addressEnglish: item.flatNo,
-      location: item.flatNo,
-      locationEnglish: item.flatNo,
+      flatOrShopNoEnglish: null,
+      address: null,
+      addressEnglish: null,
+      location: null,
+      locationEnglish: null,
       societyDetailId,
+      propertyFloorId: item.propertyFloorId,
       createdBy: 0, // Will be set by server action from authenticated user
       createdDate: new Date().toISOString(),
     }));
 
     setGenerating(true);
-    setGenerateResult(null);
 
     try {
       const result = await createBulkBuildingPropertiesAction(payload);
-      
-      if (result.success && result.data) {
-        setGenerateResult(result.data);
+
+      // Check if we have data (could be success or partial failure)
+      if (result.data) {
         if (result.data.allSucceeded) {
           toast.success(t("partitionForm.wing.generate.success", { count: result.data.successCount }));
           onGenerateSuccess?.();
         } else {
-          toast.warning(t("partitionForm.wing.generate.partial", { 
-            success: result.data.successCount, 
-            failed: result.data.failedCount 
-          }));
+          // Parse and display errors as toast alert
+          // Use result.data.errors from the API response
+          const errorMessages = result.data.errors || [];
+          const parsedErrors = parseBulkPropertyErrors(errorMessages, t, result.data.failedCount);
+
+          // Show toast with title and description based on severity
+          const toastFn = parsedErrors.severity === "warning" ? toast.warning : toast.error;
+          toastFn(parsedErrors.title, {
+            description: parsedErrors.messages.join("\n"),
+            duration: 8000,
+          });
         }
       } else {
-        toast.error(result.error || t("partitionForm.wing.generate.error"));
+        // Handle complete failure - no data returned
+        const errorMessages = result.error ? [result.error] : [];
+        const parsedErrors = parseBulkPropertyErrors(errorMessages, t);
+
+        const toastFn = parsedErrors.severity === "warning" ? toast.warning : toast.error;
+        toastFn(parsedErrors.title, {
+          description: parsedErrors.messages.join("\n"),
+          duration: 8000,
+        });
       }
     } catch (_error) {
-      toast.error(t("partitionForm.wing.generate.error"));
+      toast.error(t("partitionForm.wing.generate.errors.title"), {
+        description: t("partitionForm.wing.generate.errors.genericError"),
+        duration: 6000,
+      });
     } finally {
       setGenerating(false);
     }
@@ -209,19 +234,19 @@ export function BuildingPreviewModal({
       title={t("partitionForm.wing.preview.title")}
       subtitle={t("partitionForm.wing.preview.subtitle")}
       count={organizedData.totalUnits}
-      maxWidth="xl"
+      maxWidth="2xl"
       footer={
         <div className="flex items-center justify-end gap-3">
           <Button
             onClick={handleClose}
             className="px-4 py-2 bg-slate-100 hover:bg-slate-200 !text-slate-600 rounded-md font-medium transition-colors text-sm border border-slate-300"
-          > 
+          >
             <div className="flex items-center justify-end gap-2">
-            <X className="w-4 h-4 text-slate-600 mr-1" />
-            {t("partitionForm.wing.preview.close")}
+              <X className="w-4 h-4 text-slate-600 mr-1" />
+              {t("partitionForm.wing.preview.close")}
             </div>
           </Button>
-          {organizedData.totalUnits > 0 && !generateResult?.allSucceeded && (
+          {organizedData.totalUnits > 0 && (
             <Button
               onClick={handleGenerate}
               disabled={generating || !canGenerate}
@@ -258,9 +283,9 @@ export function BuildingPreviewModal({
           </p>
         </div>
       ) : (
-        <div className="space-y-4">
-          {/* Stats + Property row */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+        <div className="flex gap-3 h-[60vh]">
+          {/* Left Sticky Stats Panel */}
+          <div className="w-44 shrink-0 sticky top-0 self-start space-y-2">
             <div className="rounded border border-blue-200 bg-blue-50/60 px-2.5 py-1.5 flex items-center gap-2">
               <Building2 className="w-4 h-4 text-blue-600 shrink-0" />
               <div>
@@ -309,272 +334,228 @@ export function BuildingPreviewModal({
                 </p>
               </div>
             </div>
+
+            {propertyNo && (
+              <div className="flex items-center gap-2 text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded py-1 px-2.5">
+                <span className="text-slate-400 font-medium">
+                  {t("partitionForm.wing.preview.propertyNo")}:
+                </span>
+                <span className="font-semibold text-slate-800">{propertyNo}</span>
+              </div>
+            )}
+
+            {/* Legend */}
+            <div className="bg-slate-50 border border-slate-200 rounded-md p-2">
+              <div className="space-y-1.5 text-[10px] text-slate-500">
+                <div className="flex items-center gap-1">
+                  <div className="w-4 h-2 rounded-t-[2px] border border-sky-300 bg-sky-50" />
+                  <span>{t("partitionForm.wing.preview.legend.window")}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-2.5 h-3 rounded-t-[2px] border border-amber-300 bg-amber-50" />
+                  <span>{t("partitionForm.wing.preview.legend.door")}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-2.5 h-2.5 rounded-sm bg-amber-50 border border-amber-200" />
+                  <span>{t("partitionForm.wing.preview.topFloor")}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-2.5 h-2.5 rounded-sm bg-emerald-50 border border-emerald-200" />
+                  <span>{t("partitionForm.wing.preview.legend.ground")}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="px-1 py-px rounded bg-amber-100 border border-amber-200 text-[10px] text-slate-700 font-medium">
+                    {wingLetter}1
+                  </span>
+                  <span>{t("partitionForm.wing.preview.partitionId")}</span>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {propertyNo && (
-            <div className="flex items-center gap-2 text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded py-1 px-2.5">
-              <span className="text-slate-400 font-medium">
-                {t("partitionForm.wing.preview.propertyNo")}:
-              </span>
-              <span className="font-semibold text-slate-800">{propertyNo}</span>
-            </div>
-          )}
+          {/* Center Scrollable Building Structure */}
+          <div className="flex-1 overflow-y-auto pr-2 scrollbar-thin">
+            <div className="flex justify-center">
+              <div className="inline-flex flex-col items-center w-full max-w-xl">
 
-          {/* Generation Result Display */}
-          {generateResult && (
-            <div className={`rounded-md border p-3 ${
-              generateResult.allSucceeded 
-                ? "bg-emerald-50 border-emerald-200" 
-                : generateResult.hasFailures 
-                  ? "bg-amber-50 border-amber-200"
-                  : "bg-red-50 border-red-200"
-            }`}>
-              <div className="flex items-center gap-2 mb-2">
-                {generateResult.allSucceeded ? (
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                ) : (
-                  <XCircle className="w-5 h-5 text-amber-600" />
-                )}
-                <span className="font-semibold text-sm">
-                  {generateResult.allSucceeded 
-                    ? t("partitionForm.wing.generate.allSuccess")
-                    : t("partitionForm.wing.generate.partialSuccess")}
-                </span>
-              </div>
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="bg-white/60 rounded px-2 py-1">
-                  <span className="text-slate-500">{t("partitionForm.wing.generate.successCount")}:</span>
-                  <span className="ml-1 font-semibold text-emerald-700">{generateResult.successCount}</span>
-                </div>
-                <div className="bg-white/60 rounded px-2 py-1">
-                  <span className="text-slate-500">{t("partitionForm.wing.generate.failedCount")}:</span>
-                  <span className="ml-1 font-semibold text-red-700">{generateResult.failedCount}</span>
-                </div>
-              </div>
-              {generateResult.results && generateResult.results.length > 0 && (
-                <div className="mt-2 max-h-32 overflow-y-auto">
-                  <div className="text-xs text-slate-500 mb-1">{t("partitionForm.wing.generate.details")}:</div>
-                  {generateResult.results.slice(0, 5).map((result, idx) => (
-                    <div key={idx} className={`text-xs py-0.5 ${result.success ? "text-emerald-700" : "text-red-700"}`}>
-                      {result.success ? "✓" : "✗"} {t("partitionForm.wing.preview.propertyNo")} #{result.propertyId}: {result.message}
+                {/* Roof */}
+                <div className="relative w-[88%]">
+                  {/* Antenna */}
+                  <div className="flex justify-center">
+                    <div className="relative">
+                      <div className="w-px h-4 bg-slate-400 mx-auto" />
+                      <div className="w-2 h-2 border border-slate-400 rounded-full bg-white absolute -top-0.5 left-1/2 -translate-x-1/2" />
                     </div>
-                  ))}
-                  {generateResult.results && generateResult.results.length > 5 && (
-                    <div className="text-xs text-slate-400 italic">
-                      {t("partitionForm.wing.preview.moreResults", { count: generateResult.results.length - 5 })}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ── Building ── */}
-          <div className="flex justify-center">
-            <div className="inline-flex flex-col items-center w-full max-w-xl">
-
-              {/* Roof */}
-              <div className="relative w-[88%]">
-                {/* Antenna */}
-                <div className="flex justify-center">
-                  <div className="relative">
-                    <div className="w-px h-4 bg-slate-400 mx-auto" />
-                    <div className="w-2 h-2 border border-slate-400 rounded-full bg-white absolute -top-0.5 left-1/2 -translate-x-1/2" />
+                  </div>
+                  {/* Triangle */}
+                  <div className="flex justify-center">
+                    <div
+                      className="w-0 h-0"
+                      style={{
+                        borderLeft: "50px solid transparent",
+                        borderRight: "50px solid transparent",
+                        borderBottom: "14px solid #475569",
+                      }}
+                    />
+                  </div>
+                  {/* Roof slab */}
+                  <div className="h-2 bg-slate-600 rounded-t-sm" />
+                  {/* Name plate */}
+                  <div className="bg-slate-700 flex items-center justify-center py-1">
+                    <Building2 className="w-3 h-3 text-blue-300 mr-1" />
+                    <span className="text-white text-[10px] font-bold tracking-widest uppercase">
+                      {t("partitionForm.wing.preview.wingLabel")} {wingLetter}
+                    </span>
                   </div>
                 </div>
-                {/* Triangle */}
-                <div className="flex justify-center">
-                  <div
-                    className="w-0 h-0"
-                    style={{
-                      borderLeft: "50px solid transparent",
-                      borderRight: "50px solid transparent",
-                      borderBottom: "14px solid #475569",
-                    }}
-                  />
-                </div>
-                {/* Roof slab */}
-                <div className="h-2 bg-slate-600 rounded-t-sm" />
-                {/* Name plate */}
-                <div className="bg-slate-700 flex items-center justify-center py-1">
-                  <Building2 className="w-3 h-3 text-blue-300 mr-1" />
-                  <span className="text-white text-[10px] font-bold tracking-widest uppercase">
-                    {t("partitionForm.wing.preview.wingLabel")} {wingLetter}
-                  </span>
-                </div>
-              </div>
 
-              {/* Floors */}
-              <div className="w-[88%]">
-                {organizedData.floors.map((floor, floorIndex) => {
-                  const isTop = floorIndex === 0;
-                  const isGround = floor.floorNo === organizedData.fromFloor;
+                {/* Floors */}
+                <div className="w-[88%]">
+                  {organizedData.floors.map((floor, floorIndex) => {
+                    const isTop = floorIndex === 0;
+                    const isGround = floor.floorNo === organizedData.fromFloor;
 
-                  return (
-                    <div key={floor.floorNo}>
-                      <div className="flex">
-                        {/* Left wall */}
-                        <div className="w-2 bg-slate-300 border-l border-slate-400 shrink-0" />
+                    return (
+                      <div key={floor.floorNo}>
+                        <div className="flex">
+                          {/* Left wall */}
+                          <div className="w-2 bg-slate-300 border-l border-slate-400 shrink-0" />
 
-                        <div className="flex-1 flex flex-col min-w-0">
-                          {/* Floor label */}
-                          <div
-                            className={`flex items-center justify-between px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider border-b ${
-                              isTop
-                                ? "bg-amber-50 text-amber-700 border-amber-200"
-                                : isGround
-                                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                  : "bg-slate-100 text-slate-500 border-slate-200"
-                            }`}
-                          >
-                            <span>
-                              {isGround ? `${t("partitionForm.wing.preview.groundFloorLabel")} (${t("partitionForm.wing.preview.floorLabel")}${floor.floorNo})` : `${t("partitionForm.wing.preview.floorLabel")}${floor.floorNo}`}
-                            </span>
-                            {isTop && (
-                              <span className="text-[8px] bg-amber-200 text-amber-800 rounded px-1 py-px">
-                                {t("partitionForm.wing.preview.topLabel")}
-                              </span>
-                            )}
-                          </div>
-
-                          {/* Flats row */}
-                          <div className="bg-slate-50/80 px-1.5 py-1.5">
+                          <div className="flex-1 flex flex-col min-w-0">
+                            {/* Floor label */}
                             <div
-                              className="grid gap-1"
-                              style={{
-                                gridTemplateColumns: `repeat(${organizedData.flatsPerFloor}, minmax(0, 1fr))`,
-                              }}
+                              className={`flex items-center justify-between px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider border-b ${isTop
+                                  ? "bg-amber-50 text-amber-700 border-amber-200"
+                                  : isGround
+                                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                    : "bg-slate-100 text-slate-500 border-slate-200"
+                                }`}
                             >
-                              {floor.flats.map((flat, flatIndex) => (
-                                <div
-                                  key={flat.partitionNo || `${floor.floorNo}-${flatIndex}`}
-                                  className="bg-white border border-slate-200 rounded-sm hover:border-blue-400 transition-colors cursor-default group/flat"
-                                >
-                                  <div className="flex flex-col items-center py-1.5 px-0.5 min-h-[38px] justify-center">
-                                    {/* Window */}
-                                    <div className="w-4 h-2 rounded-t-[2px] border border-sky-300 bg-sky-50 mb-0.5" />
-                                    {/* Flat no */}
-                                    <span className="text-[11px] font-bold text-slate-800 group-hover/flat:text-blue-700 transition-colors leading-none">
-                                      {flat.flatNo}
-                                    </span>
-                                    {/* Partition / Unit */}
-                                    <span className="text-[8px] text-slate-400 leading-none mt-0.5">
-                                      {flat.partitionNo || `U${flat.unitNo}`}
-                                    </span>
-                                    {/* Door */}
-                                    <div className="w-2.5 h-3 rounded-t-[2px] border border-amber-300 bg-amber-50 mt-1 relative">
-                                      <div className="absolute right-px top-1/2 -translate-y-1/2 w-[3px] h-[3px] rounded-full bg-amber-400" />
+                              <span>
+                                {isGround ? `${t("partitionForm.wing.preview.groundFloorLabel")} (${t("partitionForm.wing.preview.floorLabel")}${floor.floorNo})` : `${t("partitionForm.wing.preview.floorLabel")}${floor.floorNo}`}
+                              </span>
+                              {isTop && (
+                                <span className="text-[8px] bg-amber-200 text-amber-800 rounded px-1 py-px">
+                                  {t("partitionForm.wing.preview.topLabel")}
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Flats row */}
+                            <div className="bg-slate-50/80 px-1.5 py-1.5">
+                              <div
+                                className="grid gap-1"
+                                style={{
+                                  gridTemplateColumns: `repeat(${organizedData.flatsPerFloor}, minmax(0, 1fr))`,
+                                }}
+                              >
+                                {floor.flats.map((flat, flatIndex) => (
+                                  <div
+                                    key={flat.partitionNo || `${floor.floorNo}-${flatIndex}`}
+                                    className="bg-white border border-slate-200 rounded-sm hover:border-blue-400 transition-colors cursor-default group/flat"
+                                  >
+                                    <div className="flex flex-col items-center py-1.5 px-0.5 min-h-[38px] justify-center">
+                                      {/* Window */}
+                                      <div className="w-4 h-2 rounded-t-[2px] border border-sky-300 bg-sky-50 mb-0.5" />
+                                      {/* Flat no */}
+                                      <span className="text-[11px] font-bold text-slate-800 group-hover/flat:text-blue-700 transition-colors leading-none">
+                                        {flat.flatNo}
+                                      </span>
+                                      {/* Partition / Unit */}
+                                      <span className="text-[10px] font-bold text-slate-700 leading-none mt-0.5 bg-amber-100 px-1.5 py-0.5 rounded border border-amber-300">
+                                        {flat.partitionNo || `U${flat.unitNo}`}
+                                      </span>
+                                      {/* Door */}
+                                      <div className="w-2.5 h-3 rounded-t-[2px] border border-amber-300 bg-amber-50 mt-1 relative">
+                                        <div className="absolute right-px top-1/2 -translate-y-1/2 w-[3px] h-[3px] rounded-full bg-amber-400" />
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
-                              ))}
+                                ))}
+                              </div>
                             </div>
+
+                            {/* Floor slab */}
+                            <div className="h-1 bg-slate-300" />
                           </div>
 
-                          {/* Floor slab */}
-                          <div className="h-1 bg-slate-300" />
+                          {/* Right wall */}
+                          <div className="w-2 bg-slate-300 border-r border-slate-400 shrink-0" />
                         </div>
-
-                        {/* Right wall */}
-                        <div className="w-2 bg-slate-300 border-r border-slate-400 shrink-0" />
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Foundation */}
-              <div className="w-[94%]">
-                <div className="h-2.5 bg-slate-500 rounded-b-sm" />
-                <div className="h-3 bg-gradient-to-b from-amber-700 to-amber-800 rounded-b relative overflow-hidden">
-                  <div className="absolute inset-0 opacity-20">
-                    {Array.from({ length: 16 }).map((_, i) => (
-                      <div
-                        key={i}
-                        className="absolute h-full w-px bg-amber-300 -skew-x-[30deg]"
-                        style={{ left: `${i * 6 + 2}%` }}
-                      />
-                    ))}
-                  </div>
+                    );
+                  })}
                 </div>
-                <div className="flex items-center mt-0.5">
-                  <div className="flex-1 h-px bg-slate-300" />
-                  <span className="px-2 text-[8px] font-semibold text-slate-400 uppercase tracking-widest">
-                    {t("partitionForm.wing.preview.groundLevel")}
-                  </span>
-                  <div className="flex-1 h-px bg-slate-300" />
+
+                {/* Foundation */}
+                <div className="w-[94%]">
+                  <div className="h-2.5 bg-slate-500 rounded-b-sm" />
+                  <div className="h-3 bg-gradient-to-b from-amber-700 to-amber-800 rounded-b relative overflow-hidden">
+                    <div className="absolute inset-0 opacity-20">
+                      {Array.from({ length: 16 }).map((_, i) => (
+                        <div
+                          key={i}
+                          className="absolute h-full w-px bg-amber-300 -skew-x-[30deg]"
+                          style={{ left: `${i * 6 + 2}%` }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex items-center mt-0.5">
+                    <div className="flex-1 h-px bg-slate-300" />
+                    <span className="px-2 text-[8px] font-semibold text-slate-400 uppercase tracking-widest">
+                      {t("partitionForm.wing.preview.groundLevel")}
+                    </span>
+                    <div className="flex-1 h-px bg-slate-300" />
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Legend + Summary combined */}
-          <div className="bg-slate-50 border border-slate-200 rounded-md p-2.5">
-            {/* Legend */}
-            <div className="flex flex-wrap items-center gap-3 text-[10px] text-slate-500 mb-2 pb-2 border-b border-slate-200">
-              <div className="flex items-center gap-1">
-                <div className="w-4 h-2 rounded-t-[2px] border border-sky-300 bg-sky-50" />
-                <span>{t("partitionForm.wing.preview.legend.window")}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="w-2.5 h-3 rounded-t-[2px] border border-amber-300 bg-amber-50" />
-                <span>{t("partitionForm.wing.preview.legend.door")}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="w-2.5 h-2.5 rounded-sm bg-amber-50 border border-amber-200" />
-                <span>{t("partitionForm.wing.preview.topFloor")}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="w-2.5 h-2.5 rounded-sm bg-emerald-50 border border-emerald-200" />
-                <span>{t("partitionForm.wing.preview.legend.ground")}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <span className="px-1 py-px rounded bg-slate-100 border border-slate-200 text-[9px] text-slate-500 font-medium">
-                  {wingLetter}1
-                </span>
-                <span>{t("partitionForm.wing.preview.partitionId")}</span>
-              </div>
-            </div>
-
-            {/* Summary */}
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <Info className="w-3 h-3 text-blue-600" />
-              <span className="text-[10px] font-semibold text-slate-600 uppercase tracking-wide">
-                {t("partitionForm.wing.preview.generationSummary")}
-              </span>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
-              <div className="bg-white rounded border border-slate-200 px-2 py-1.5">
-                <span className="block text-[9px] text-slate-400 leading-none">
-                  {t("partitionForm.wing.preview.flatRange")}
-                </span>
-                <span className="text-[11px] font-semibold text-slate-800 leading-tight">
-                  {organizedData.flatStart} – {organizedData.flatEnd}
+          {/* Right Sticky Summary Panel */}
+          <div className="w-44 shrink-0 sticky top-0 self-start">
+            <div className="bg-slate-50 border border-slate-200 rounded-md p-2.5">
+              {/* Summary */}
+              <div className="flex items-center gap-1.5 mb-2">
+                <Info className="w-3 h-3 text-blue-600" />
+                <span className="text-[10px] font-semibold text-slate-600 uppercase tracking-wide">
+                  {t("partitionForm.wing.preview.generationSummary")}
                 </span>
               </div>
-              <div className="bg-white rounded border border-slate-200 px-2 py-1.5">
-                <span className="block text-[9px] text-slate-400 leading-none">
-                  {t("partitionForm.wing.preview.increment")}
-                </span>
-                <span className="text-[11px] font-semibold text-slate-800 leading-tight">
-                  +{organizedData.incrementedBy}
-                </span>
-              </div>
-              <div className="bg-white rounded border border-slate-200 px-2 py-1.5">
-                <span className="block text-[9px] text-slate-400 leading-none">
-                  {t("partitionForm.wing.preview.prefix")}
-                </span>
-                <span className="text-[11px] font-semibold text-slate-800 leading-tight">
-                  {organizedData.prefix || "—"}
-                </span>
-              </div>
-              <div className="bg-white rounded border border-slate-200 px-2 py-1.5">
-                <span className="block text-[9px] text-slate-400 leading-none">
-                  {t("partitionForm.wing.preview.type")}
-                </span>
-                <span className="text-[11px] font-semibold text-slate-800 leading-tight uppercase">
-                  {organizedData.generationType}
-                </span>
+              <div className="space-y-1.5">
+                <div className="bg-white rounded border border-slate-200 px-2 py-1.5">
+                  <span className="block text-[9px] text-slate-400 leading-none">
+                    {t("partitionForm.wing.preview.flatRange")}
+                  </span>
+                  <span className="text-[11px] font-semibold text-slate-800 leading-tight">
+                    {organizedData.flatStart} – {organizedData.flatEnd}
+                  </span>
+                </div>
+                <div className="bg-white rounded border border-slate-200 px-2 py-1.5">
+                  <span className="block text-[9px] text-slate-400 leading-none">
+                    {t("partitionForm.wing.preview.increment")}
+                  </span>
+                  <span className="text-[11px] font-semibold text-slate-800 leading-tight">
+                    +{organizedData.incrementedBy}
+                  </span>
+                </div>
+                <div className="bg-white rounded border border-slate-200 px-2 py-1.5">
+                  <span className="block text-[9px] text-slate-400 leading-none">
+                    {t("partitionForm.wing.preview.prefix")}
+                  </span>
+                  <span className="text-[11px] font-semibold text-slate-800 leading-tight">
+                    {organizedData.prefix || "—"}
+                  </span>
+                </div>
+                <div className="bg-white rounded border border-slate-200 px-2 py-1.5">
+                  <span className="block text-[9px] text-slate-400 leading-none">
+                    {t("partitionForm.wing.preview.type")}
+                  </span>
+                  <span className="text-[11px] font-semibold text-slate-800 leading-tight uppercase">
+                    {generationTypeLabels[organizedData.generationType] || organizedData.generationType}
+                  </span>
+                </div>
               </div>
             </div>
           </div>

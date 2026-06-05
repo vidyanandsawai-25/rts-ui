@@ -1,11 +1,14 @@
 "use client"
 
+import { useMemo } from "react";
 import type { TaxationBreakdownFormProps } from "@/types/OldDetails/property-old-details.types";
 import { useTaxationBreakdownForm } from "@/hooks/ptis/QuickDataEntry/Olddetails/useTaxationBreakdownForm";
+import { SearchSelect, Input } from "@/components/common";
+import { Label } from "@/components/common/label";
 
 // Import refactored components
 import { DynamicTaxFields } from "./components/DynamicTaxFields";
-import { UpdateButton } from "@/components/common/ActionButtons";
+import { UpdateButton, AddButton } from "@/components/common/ActionButtons";
 
 /**
  * TaxationBreakdownForm - Main Component
@@ -14,19 +17,45 @@ import { UpdateButton } from "@/components/common/ActionButtons";
  */
 export default function TaxationBreakdownForm({
   initialData = null,
+  yearOptions = [],
 }: TaxationBreakdownFormProps) {
 
   const {
     taxes,
+    selectedYearId,
+    setSelectedYearId,
     isSubmitting,
     handleTaxChange,
     handleSave,
     isChanged,
     hasTaxData,
+    hasAppliedTaxes,
     validationErrors,
     t,
-    tValidation
-  } = useTaxationBreakdownForm(initialData);
+    tValidation,
+  } = useTaxationBreakdownForm(initialData, yearOptions);
+
+  const transformedYearOptions = useMemo(() => {
+    return (yearOptions || []).map((y) => ({
+      label: String(y.year),
+      value: String(y.id),
+    }));
+  }, [yearOptions]);
+
+  // Check if year is already set (financeYearId and year are available)
+  const isYearLocked = useMemo(() => {
+    return !!(initialData?.taxYears?.[0]?.financeYearId && initialData?.taxYears?.[0]?.year);
+  }, [initialData]);
+
+  // Get the selected year display value
+  const selectedYearDisplay = useMemo(() => {
+    if (isYearLocked && initialData?.taxYears?.[0]?.year) {
+      return String(initialData.taxYears[0].year);
+    }
+    const selectedYear = yearOptions.find(y => String(y.id) === selectedYearId);
+    return selectedYear ? String(selectedYear.year) : '';
+  }, [isYearLocked, initialData, yearOptions, selectedYearId]);
+
 
   return (
     <div className="p-2 space-y-3">
@@ -44,8 +73,41 @@ export default function TaxationBreakdownForm({
           </div>
         )}
 
-        <div className="grid grid-cols-4 gap-x-4 gap-y-3">
-          {/* Dynamic Tax Fields */}
+        <div className="grid grid-cols-4 gap-x-4 gap-y-5">
+          <div className=" max-w-xs relative focus-within:z-100 space-y-1.5 z-999">
+            <Label className="text-xs font-semibold text-gray-700">
+             {t("assessmentYear")} <span className="text-red-500 ml-1">*</span>
+            </Label>
+            {isYearLocked ? (
+              <Input
+                type="text"
+                className="h-9 text-sm rounded-lg border-blue-200 bg-gray-50 cursor-not-allowed text-gray-700"
+                value={selectedYearDisplay}
+                disabled
+                readOnly
+              />
+            ) : (
+              <>
+                <SearchSelect
+                  options={transformedYearOptions}
+                  placeholder={t("selectYearPlaceholder")}
+                  className={`h-9 text-sm rounded-lg focus:ring-2 ${
+                    validationErrors.yearMaster
+                      ? 'border-red-500 focus:border-red-500 focus:ring-red-200 text-red-900 bg-red-50'
+                      : 'border-blue-200 focus:border-blue-500 focus:ring-blue-200 text-gray-900 bg-white'
+                  }`}
+                  name="yearMaster"
+                  onChange={(_, val) => setSelectedYearId(val)}
+                  value={selectedYearId}
+                />
+                {validationErrors.yearMaster && (
+                  <span className="text-[11px]  text-red-500 absolute top-full left-0 mt-0.5 whitespace-nowrap z-10">
+                    {validationErrors.yearMaster}
+                  </span>
+                )}
+              </>
+            )}
+          </div>
           <DynamicTaxFields
             taxes={taxes}
             onTaxChange={handleTaxChange}
@@ -53,8 +115,8 @@ export default function TaxationBreakdownForm({
           />
         </div>
 
-        <div className="flex justify-end border-t border-gray-100 pt-4">
-          {hasTaxData && (
+        <div className="flex justify-end border-t border-gray-100 pt-4 gap-3">
+          {hasAppliedTaxes ? (
             <UpdateButton
               label={
                 isSubmitting
@@ -64,8 +126,18 @@ export default function TaxationBreakdownForm({
               type="submit"
               onClick={handleSave}
               isLoading={isSubmitting}
-              disabled={isSubmitting || !hasTaxData || !isChanged}
+              disabled={isSubmitting || !hasTaxData || !isChanged || Object.keys(validationErrors).length > 0}
             />
+          ) : (
+            hasTaxData && (
+              <AddButton
+                label={tValidation("oldDetails.oldTaxation.applyTaxes")}
+                type="submit"
+                onClick={handleSave}
+                isLoading={isSubmitting}
+                disabled={isSubmitting || !hasTaxData || !isChanged || Object.keys(validationErrors).length > 0}
+              />
+            )
           )}
         </div>
       </div>

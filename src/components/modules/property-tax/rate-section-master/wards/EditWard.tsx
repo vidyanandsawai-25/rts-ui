@@ -7,9 +7,13 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Drawer } from "@/components/common/Drawer";
 import { SaveButton, CancelButton, ToggleSwitch, Input, ValidationMessage } from "@/components/common";
-import { updateRateSectionDetailAction } from "@/app/[locale]/property-tax/rate-section-master/actions";
+import { updateWardMasterAction, getWardByIdAction } from "@/app/[locale]/property-tax/rate-section-master/actions";
 import { cn } from "@/lib/utils/cn";
 import { EditWardData, EditWardProps, EditWardErrors } from "@/types/rateSectionMaster.types";
+import { CODE_REGEX, CODE_SANITIZE, DESCRIPTION_REGEX, DESCRIPTION_SANITIZE } from "@/lib/utils/validation-rules";
+
+const WARD_NO_MAX_LENGTH = 10;
+const DESCRIPTION_MAX_LENGTH = 100;
 
 export default function EditWard({ open, onClose, id, wardId, sections, initialWardData }: EditWardProps) {
   const t = useTranslations("rateSectionMaster");
@@ -20,27 +24,93 @@ export default function EditWard({ open, onClose, id, wardId, sections, initialW
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    function loadWardData() {
-      if (open && id && wardId) {
+    let isMounted = true; // Cancellation flag to prevent state updates after unmount
+    
+    async function loadWardData() {
+      if (open && id) {
         const ward = sections.find(s => String(s.id) === id);
         if (ward) {
-          // Use ward.description from RateSectionDetails first, fallback to Ward Master description
-          const wardDescription = (ward.description as string) || initialWardData?.description || '';
-          setEditData({ rateSectionId: ward.rateSectionId ?? 0, id: ward.wardId ?? 0, wardNo: ward.wardNo ?? '',
-            description: wardDescription, isActive: ward.isActive ?? false });
+          // Get wardId from ward object or URL param - handle case-insensitive property names
+          const rawWardId = ward.wardId ?? (ward as Record<string, unknown>)["WardId"];
+          const actualWardId = typeof rawWardId === 'number' ? rawWardId : (wardId ? Number(wardId) : 0);
+          
+          // Try to get description from initialWardData first
+          let wardDescription = initialWardData?.description || '';
+          let zoneId = initialWardData?.zoneId ?? 0;
+          let sequenceNo = initialWardData?.sequenceNo ?? null;
+          
+          // If no description from initialWardData, try to fetch from Ward master
+          if (!wardDescription && actualWardId) {
+            try {
+              const wardResult = await getWardByIdAction(actualWardId);
+              // Only update state if component is still mounted
+              if (isMounted && wardResult.success && wardResult.data) {
+                wardDescription = wardResult.data.description || '';
+                zoneId = wardResult.data.zoneId ?? zoneId;
+                sequenceNo = wardResult.data.sequenceNo ?? sequenceNo;
+              }
+            } catch {
+              // Silent fail - use empty description
+            }
+          }
+          
+          // Only set state if component is still mounted
+          if (isMounted) {
+            setEditData({ 
+              rateSectionId: ward.rateSectionId ?? 0, 
+              id: Number(actualWardId) || 0, 
+              wardNo: ward.wardNo ?? '',
+              description: wardDescription, 
+              isActive: ward.isActive ?? false,
+              zoneId: zoneId,
+              sequenceNo: sequenceNo
+            });
+          }
         }
-      } else if (!open) { setEditData(null); setErrors({}); setTouched({}); }
+      } else if (!open) { 
+        setEditData(null); 
+        setErrors({}); 
+        setTouched({}); 
+      }
     }
     loadWardData();
+    
+    // Cleanup: set flag to false when effect is cleaned up
+    return () => {
+      isMounted = false;
+    };
   }, [open, id, wardId, sections, initialWardData]);
 
   const validate = (): boolean => {
     if (!editData) return false;
     const newErrors: EditWardErrors = {};
-    if (!editData.wardNo?.trim()) newErrors.wardNo = t('validation.required', { label: t('wards.wardNo') });
-    if (!editData.description?.trim()) newErrors.description = t('validation.required', { label: t('form.description') });
+    
+    // Ward No validation
+    if (!editData.wardNo?.trim()) {
+      newErrors.wardNo = t('validation.required', { label: t('wards.wardNo') });
+    } else if (!CODE_REGEX.test(editData.wardNo.trim())) {
+      newErrors.wardNo = t('validation.invalidCharacters', { label: t('wards.wardNo') });
+    }
+    
+    // Description validation
+    if (!editData.description?.trim()) {
+      newErrors.description = t('validation.required', { label: t('form.description') });
+    } else if (!DESCRIPTION_REGEX.test(editData.description.trim())) {
+      newErrors.description = t('validation.invalidCharacters', { label: t('form.description') });
+    }
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const handleWardNoChange = (value: string) => {
+    const sanitized = value.replace(CODE_SANITIZE, '').slice(0, WARD_NO_MAX_LENGTH);
+    setEditData(prev => prev ? { ...prev, wardNo: sanitized } : prev);
+  };
+
+  const handleDescriptionChange = (value: string) => {
+    const sanitized = value.replace(DESCRIPTION_SANITIZE, '').slice(0, DESCRIPTION_MAX_LENGTH);
+    setEditData(prev => prev ? { ...prev, description: sanitized } : prev);
   };
 
   const handleBlur = (field: string) => { setTouched(prev => ({ ...prev, [field]: true })); };
@@ -52,9 +122,13 @@ export default function EditWard({ open, onClose, id, wardId, sections, initialW
     if (!validate()) { toast.error(t('error.fixValidation')); return; }
     setLoading(true);
     try {
-      const result = await updateRateSectionDetailAction(Number(id), {
-        isActive: editData.isActive, updatedBy: 0, rateSectionId: editData.rateSectionId, wardId: editData.id,
-        wardNo: editData.wardNo, description: editData.description
+      // Update Ward master data (wardNo, description, isActive)
+      const result = await updateWardMasterAction(editData.id, {
+        wardNo: editData.wardNo,
+        zoneId: editData.zoneId,
+        description: editData.description,
+        sequenceNo: editData.sequenceNo,
+        isActive: editData.isActive
       });
       if (result.success) { toast.success(t('wards.updateSuccess')); onClose(); router.refresh(); }
       else toast.error(result.message || result.error || t('wards.updateError'));
@@ -104,16 +178,18 @@ export default function EditWard({ open, onClose, id, wardId, sections, initialW
           </div>
           <div className="bg-white rounded-lg shadow-md border-2 border-[#6F8EC0]/40 p-3">
             <Input label={t("wards.wardNo")} type="text" required value={editData.wardNo}
-              placeholder={t("wards.wardNoPlaceholder")} onChange={e => setEditData({ ...editData, wardNo: e.target.value })}
+              placeholder={t("wards.wardNoPlaceholder")} onChange={e => handleWardNoChange(e.target.value)}
               onBlur={() => handleBlur("wardNo")}
+              maxLength={WARD_NO_MAX_LENGTH}
               data-testid="input-wards.wardno"
             />
             <ValidationMessage message={errors.wardNo} visible={showError("wardNo")} />
           </div>
           <div className="bg-white rounded-lg shadow-md border-2 border-[#6F8EC0]/40 p-3">
             <Input label={t("form.description")} type="text" required value={editData.description}
-              placeholder={t("form.descriptionPlaceholder")} onChange={e => setEditData({ ...editData, description: e.target.value })}
+              placeholder={t("form.descriptionPlaceholder")} onChange={e => handleDescriptionChange(e.target.value)}
               onBlur={() => handleBlur("description")}
+              maxLength={DESCRIPTION_MAX_LENGTH}
               data-testid="input-form.description"
             />
             <ValidationMessage message={errors.description} visible={showError("description")} />

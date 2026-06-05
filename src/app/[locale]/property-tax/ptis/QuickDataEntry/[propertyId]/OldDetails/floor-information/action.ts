@@ -147,7 +147,9 @@ export async function getOldFloorDetailsAction(
     propertyId: number,
     pageNumber: number = 1,
     pageSize: number = 10,
-    searchTerm?: string
+    searchTerm?: string,
+    sortBy?: string,
+    sortOrder?: string
 ): Promise<ActionResult<{
     items: OldFloorDetail[];
     totalCount: number;
@@ -158,7 +160,7 @@ export async function getOldFloorDetailsAction(
     hasNext: boolean;
 }>> {
     try {
-        const response = await getOldFloorDetailsForFloorInformation(propertyId, pageNumber, pageSize, searchTerm);
+        const response = await getOldFloorDetailsForFloorInformation(propertyId, pageNumber, pageSize, searchTerm, sortBy, sortOrder);
         
         if (!response.items) {
             return {
@@ -198,7 +200,7 @@ export async function saveOldFloorDetailsAction(
     data: SaveOldFloorDetailPayload, 
     locale: string
 ): Promise<ActionResult<OldFloorDetailsResponse>> {
-    const t = await getTranslations({ locale });
+    const t = await getTranslations({ locale, namespace: 'quickDataEntry' });
 
     try {
         // 1. Validate propertyId
@@ -214,7 +216,7 @@ export async function saveOldFloorDetailsAction(
         if (hasErrors(validationErrors)) {
             return {
                 success: false,
-                error: t('common.validationError')
+                error: t('oldDetails.common.validationError')
             };
         }
 
@@ -250,7 +252,7 @@ export async function updateOldFloorDetailsAction(
     data: SaveOldFloorDetailPayload,
     locale: string
 ): Promise<ActionResult<OldFloorDetailsResponse>> {
-    const t = await getTranslations({ locale });
+    const t = await getTranslations({ locale, namespace: 'quickDataEntry' });
 
     try {
         // 1. Validate IDs
@@ -266,7 +268,7 @@ export async function updateOldFloorDetailsAction(
         if (hasErrors(validationErrors)) {
             return {
                 success: false,
-                error: t('common.validationError')
+                error: t('oldDetails.common.validationError')
             };
         }
 

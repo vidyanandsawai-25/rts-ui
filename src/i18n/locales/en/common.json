@@ -343,8 +343,16 @@
       "tryAgain": "Try Again"
     },
     "pageLoading": {
-      "message": "Loading sign in...",
+      "message": "Signing in...",
       "description": "Please wait while we prepare the login page"
+    },
+    "loginSuccess": "Login successful",
+    "loginSuccessRedirect": "Redirecting to your dashboard...",
+    "sessionTimeout": {
+      "title": "Session expired",
+      "description": "Your session has ended due to timeout. You will be signed out automatically.",
+      "countdown": "{seconds}s",
+      "redirectHint": "Redirecting to login when the timer reaches zero"
     },
     "errors": {
       "validationError": "Validation Error",

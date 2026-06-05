@@ -42,6 +42,7 @@ vi.mock('@/app/[locale]/property-tax/ptis/actions', () => ({
 // ✅ ICON SHELL
 vi.mock('lucide-react', () => ({
   __esModule: true,
+  AlertCircle: () => <div />,
   Search: () => <div />,
   Building2: () => <div />,
   Users: () => <div />,
@@ -97,6 +98,9 @@ vi.mock('@/components/modules/property-tax/ptis/tabs/SocietyDetailsTab', () => (
   default: () => null,
 }));
 vi.mock('@/components/modules/property-tax/ptis/tabs/OldDetailsTab', () => ({
+  default: () => null,
+}));
+vi.mock('@/components/modules/property-tax/ptis/tabs/DiscountDataTab', () => ({
   default: () => null,
 }));
 

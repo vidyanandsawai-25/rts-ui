@@ -163,6 +163,11 @@
     "dateLabel": "दिनांक",
     "amount": "रक्कम",
     "percentage": "टक्केवारी",
+    "status": "स्थिती",
+    "value": "मूल्य",
+    "applied": "लागू",
+    "yes": "आहे",
+    "no": "नाही",
     "solarPanelProduct": "सौर पॅनेल यंत्रणा",
     "solarWaterProduct": "सौर पाणी तापक",
     "rainwaterProduct": "रेन वॉटर हार्वेस्टिंग",
@@ -183,6 +188,8 @@
     "oldPlotNo": "जुना प्लॉट क्र",
     "oldBuiltupArea": "जुने निर्मित क्षेत्रफळ",
     "oldBuiltupAreaWithUnit": "जुने निर्मित क्षेत्रफळ (चौ. मीटर)",
+    "oldConstructionArea": "जुने बांधकाम क्षेत्रफळ",
+    "oldConstructionAreaWithUnit": "जुने बांधकाम क्षेत्रफळ (चौ. मीटर)",
     "oldRV": "जुने आरव्ही",
     "oldALV": "जुने एएलव्ही",
     "oldPropTax": "जुना मालमत्ता कर",
@@ -351,7 +358,7 @@
       "useFactor": "वापर घटक",
       "capitalValue": "भांडवली मूल्य",
       "taxAmount": "कर रक्कम",
-      "appliedOn": "लागू केलेली तारीख"
+      "appliedOn": "लागू केलेले"
     },
     "placeholders": {
       "oc": "ओसी/वर्ष/###",

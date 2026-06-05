@@ -1,7 +1,30 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, beforeAll, afterAll, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { usePropertyEditScreenDrawer } from '@/hooks/apartmentQc/usePropertyEditScreenDrawer';
 import type { ApartmentQCDetail } from '@/types/apartmentQC.types';
+
+// Mock logger to prevent console logs during teardown
+vi.mock('@/lib/utils/logger', () => ({
+  logger: {
+    error: vi.fn(),
+    warn: vi.fn(),
+    info: vi.fn(),
+    debug: vi.fn(),
+  },
+}));
+
+// Mock all server actions to prevent real API calls during tests
+vi.mock('@/app/[locale]/property-tax/ptis/appartmentQC/action', () => ({
+  fetchAllFloorsAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
+  fetchAllConstructionTypesAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
+  fetchAllUseTypesAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
+  fetchAllSubTypesAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
+  fetchAllPropertyTypesAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
+  fetchFloorQCByPropertyIdSafeAction: vi.fn().mockResolvedValue([]),
+  updateBasicDetailsAction: vi.fn().mockResolvedValue({ success: true }),
+  updateFloorQCDetailsBulkAction: vi.fn().mockResolvedValue({ success: true }),
+  syncRoomsForPropertyDetailsAction: vi.fn().mockResolvedValue({ success: true }),
+}));
 
 // Mock Next.js navigation
 const mockReplace = vi.fn();
@@ -17,6 +40,17 @@ vi.mock('next/navigation', () => ({
 }));
 
 describe('usePropertyEditScreenDrawer', () => {
+  // Mock console methods to prevent teardown errors
+  beforeAll(() => {
+    vi.spyOn(console, 'log').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+  });
+
+  afterAll(() => {
+    vi.restoreAllMocks();
+  });
+
   const mockPropertyData: ApartmentQCDetail = {
     id: 550296,
     propertyId: 550296,
@@ -31,6 +65,12 @@ describe('usePropertyEditScreenDrawer', () => {
     mockSearchParams.delete('roomDrawer');
     mockSearchParams.delete('roomPdnId');
     mockSearchParams.delete('roomPropertyId');
+  });
+
+  afterEach(async () => {
+    // Wait for any pending async operations
+    await vi.waitFor(() => {}, { timeout: 100 }).catch(() => {});
+    vi.useRealTimers();
   });
 
   it('should initialize with default state', () => {

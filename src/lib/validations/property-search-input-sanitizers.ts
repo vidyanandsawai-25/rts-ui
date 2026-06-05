@@ -91,6 +91,8 @@ const SANITIZERS: Partial<Record<keyof SearchCriteria, Sanitizer>> = {
   ),
   societyName: societyName(PROPERTY_SEARCH_FIELD_LIMITS.societyName),
   address: addressField(PROPERTY_SEARCH_FIELD_LIMITS.address),
+  rateableValueFrom: onlyDigits(PROPERTY_SEARCH_FIELD_LIMITS.rateableValue),
+  rateableValueTo: onlyDigits(PROPERTY_SEARCH_FIELD_LIMITS.rateableValue),
 };
 
 /**

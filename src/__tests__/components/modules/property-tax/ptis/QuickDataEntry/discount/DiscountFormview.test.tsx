@@ -21,33 +21,78 @@ vi.mock('@/lib/api/discount.service', () => ({
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, beforeEach, Mock } from 'vitest';
 import DiscountFormview from '@/components/modules/property-tax/ptis/QuickDataEntry/discount/DiscountFormview';
-import { DiscountApiResponse } from '@/types/discount.types';
+import { PropertyDiscountInfoResponseDto } from '@/types/discount.types';
 import { toast } from 'sonner';
 
 // Mock next/navigation
+const mockPush = vi.fn();
+const mockParams = { locale: 'en', propertyId: '123' };
+let mockSearchQuery = 'view=social';
+
 vi.mock('next/navigation', () => ({
-  useParams: vi.fn(() => ({ locale: 'en', propertyId: '123' })),
+  useParams: vi.fn(() => mockParams),
   useRouter: vi.fn(() => ({
-    push: vi.fn(),
+    push: mockPush,
     refresh: vi.fn(),
   })),
+  usePathname: vi.fn(() => '/en/property-tax/ptis/QuickDataEntry/123/Discount'),
+  useSearchParams: vi.fn(() => new URLSearchParams(mockSearchQuery)),
+}));
+
+// Mock ConfirmProvider
+vi.mock('@/components/common/ConfirmProvider', () => ({
+  useConfirm: () => ({
+    confirm: vi.fn((options) => options.onConfirm()),
+  }),
 }));
 
 // Mock next-intl
 vi.mock('next-intl', () => ({
-  useTranslations: () => (key: string) => {
+  useTranslations: () => (key: string, values?: Record<string, unknown>) => {
     const translations: Record<string, string> = {
       'discount.title': 'Discount Information',
       'discount.description': 'Configure discount eligibility',
+      'discount.socialTitle': 'Social Information',
+      'discount.socialDescription': 'Configure social attributes, status, and associated documents for this property.',
+      'discount.unitLabel': 'Unit: {unit}',
       'discount.solarPanel': 'Solar Panel System',
       'discount.solarHeater': 'Solar Water Heater',
       'discount.uploadDocument': 'Upload Document',
       'discount.viewDocument': 'View Document',
       'discount.saveSuccess': 'Discount details saved successfully!',
       'discount.saveError': 'Failed to save discount details',
+      'discount.searchPlaceholder': 'Search discount attributes...',
+      'discount.statusActiveUploaded': 'Active & Uploaded',
+      'discount.statusIncomplete': 'Incomplete',
+      'discount.statusDisabled': 'Disabled',
+      'discount.showActiveFirst': 'Show Active First',
+      'discount.noDiscountsFound': 'No discount attributes found',
+      'discount.incompleteCertificates': 'The following attributes have incomplete required fields',
+      'discount.bannerNavigationHint': 'Click an attribute tag to navigate directly to its fields.',
+      'discount.bannerTagAriaLabel': 'View incomplete fields for {name}',
+      'discount.bannerTagTooltip': 'Click to view incomplete fields for {name}',
+      'discount.disabledWithDataNote': 'This discount is currently disabled. Toggle it active to edit details.',
+      'discount.enableDiscountPrompt': 'This discount type is currently disabled. Toggle it active in the sidebar list to edit details and attach documents.',
+      'discount.selectDiscountPrompt': 'Select a discount attribute from the sidebar to edit details',
+      'discount.verifyDetailsNote': 'Verify details & file attachment before saving changes.',
       'common.saveChanges': 'Save Changes',
+      'common.validation.documentRequired': 'Document is required',
+      'building.statusActiveUploaded': 'Active & Uploaded',
+      'building.statusIncomplete': 'Incomplete',
+      'building.statusDisabled': 'Disabled',
+      'building.searchPlaceholder': 'Search discounts...',
+      'building.showActiveFirst': 'Show Active First',
+      'building.editingCertificate': 'Discount Details',
+      'building.selectCertificatePrompt': 'Select an attribute from the sidebar to edit details',
+      'building.verifyDetailsNote': 'Verify details & file attachment before saving changes.'
     };
-    return translations[key] || key;
+    let val = translations[key] || key;
+    if (values) {
+      Object.entries(values).forEach(([k, v]) => {
+        val = val.replace(`{${k}}`, String(v));
+      });
+    }
+    return val;
   },
 }));
 
@@ -62,48 +107,99 @@ vi.mock('sonner', () => ({
 // We need to mock the action as well because it's imported by the hook
 vi.mock('@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Discount/action', () => ({
   updateDiscountDetailsAction: vi.fn(),
+  uploadDiscountDocumentAction: vi.fn(),
+  replaceDiscountDocumentAction: vi.fn(),
+  getPropertySocialInfoAction: vi.fn(),
+  upsertPropertySocialInfoAction: vi.fn(),
 }));
 
 // Now we can safely import the action for our tests since it's mocked
 import { updateDiscountDetailsAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Discount/action';
 
-const mockInitialData = {
-  success: true,
-  message: "Success",
-  items: {
-    propertyId: 123,
-    solarPanelSystemEnabled: true,
-    solarPanelSystemAmount: 1000,
-    solarPanelSystemPercentage: 5,
-    solarPanelSystemDocumentGuid: "guid-solar",
-    solarWaterHeaterEnabled: false,
-    solarWaterHeaterAmount: 0,
-    solarWaterHeaterPercentage: 0,
-    solarWaterHeaterDocumentGuid: null,
-  }
+const mockInitialData: PropertyDiscountInfoResponseDto = {
+  propertyId: 123,
+  discountAttributes: [
+    {
+      id: 1,
+      socialAttributeCode: "SOLAR_PANEL",
+      socialAttributeName: "Solar Panel System",
+      dataType: "BIT",
+      isDiscountApplicable: true,
+      propertySocialDetailId: 10,
+      bitValue: true,
+      documentGuid: "guid-solar",
+      documentBindingId: 100
+    },
+    {
+      id: 2,
+      socialAttributeCode: "SOLAR_WATER_HEATER",
+      socialAttributeName: "Solar Water Heater",
+      dataType: "BIT",
+      isDiscountApplicable: true,
+      propertySocialDetailId: null,
+      bitValue: false,
+      documentGuid: "guid-water", // Setting documentGuid so that validation passes when enabled
+      documentBindingId: 101
+    }
+  ]
+};
+
+const mockSocialData = {
+  propertyId: 123,
+  socialAttributes: [
+    {
+      id: 1,
+      socialAttributeCode: "HAS_SOLAR",
+      socialAttributeName: "Solar Panel Installed",
+      dataType: "BIT",
+      bitValue: true,
+      isRequiredWhenParentTrue: false,
+      isDiscountApplicable: true,
+      children: []
+    }
+  ]
 };
 
 describe('DiscountFormview', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockSearchQuery = 'view=social';
   });
 
   it('renders correctly with initial data', () => {
-    render(
+    mockSearchQuery = 'view=social';
+    const { rerender } = render(
       <DiscountFormview
-        initialDiscountData={mockInitialData as unknown as DiscountApiResponse}
+        initialDiscountData={mockInitialData}
+        initialSocialData={mockSocialData}
         propertyId="123"
       />
     );
 
-    expect(screen.getByText('Discount Information')).toBeInTheDocument();
-    expect(screen.getByText('Solar Panel System')).toBeInTheDocument();
+    expect(screen.getAllByText('Discount Information').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Social Information').length).toBeGreaterThan(0);
+
+    const discountTab = screen.getByRole('tab', { name: /Discount Information/i });
+    fireEvent.click(discountTab);
+
+    mockSearchQuery = 'view=discount';
+    rerender(
+      <DiscountFormview
+        initialDiscountData={mockInitialData}
+        initialSocialData={mockSocialData}
+        propertyId="123"
+      />
+    );
+
+    expect(screen.getAllByText('Solar Panel System').length).toBeGreaterThan(0);
   });
 
   it('disables save button initially', () => {
+    mockSearchQuery = 'view=discount';
     render(
       <DiscountFormview
-        initialDiscountData={mockInitialData as unknown as DiscountApiResponse}
+        initialDiscountData={mockInitialData}
+        initialSocialData={mockSocialData}
         propertyId="123"
       />
     );
@@ -113,16 +209,18 @@ describe('DiscountFormview', () => {
   });
 
   it('enables save button when a toggle is changed', async () => {
+    mockSearchQuery = 'view=discount';
     render(
       <DiscountFormview
-        initialDiscountData={mockInitialData as unknown as DiscountApiResponse}
+        initialDiscountData={mockInitialData}
+        initialSocialData={mockSocialData}
         propertyId="123"
       />
     );
 
     const switches = screen.getAllByRole('switch');
-    // Find the solarWaterHeater toggle (which is initially false)
-    fireEvent.click(switches[1]);
+    // Toggle the second switch (index 2)
+    fireEvent.click(switches[2]);
 
     const saveBtn = screen.getByRole('button', { name: /Save Changes/i });
     expect(saveBtn).not.toBeDisabled();
@@ -130,16 +228,18 @@ describe('DiscountFormview', () => {
 
   it('calls updateDiscountDetailsAction when saving', async () => {
     (updateDiscountDetailsAction as Mock).mockResolvedValue({ success: true });
+    mockSearchQuery = 'view=discount';
 
     render(
       <DiscountFormview
-        initialDiscountData={mockInitialData as unknown as DiscountApiResponse}
+        initialDiscountData={mockInitialData}
+        initialSocialData={mockSocialData}
         propertyId="123"
       />
     );
 
     const switches = screen.getAllByRole('switch');
-    fireEvent.click(switches[1]);
+    fireEvent.click(switches[2]);
 
     const saveBtn = screen.getByRole('button', { name: /Save Changes/i });
     fireEvent.click(saveBtn);
@@ -148,9 +248,12 @@ describe('DiscountFormview', () => {
       expect(updateDiscountDetailsAction).toHaveBeenCalledWith(
         'en',
         '123',
-        expect.objectContaining({
-          solarWaterHeaterEnabled: true,
-        })
+        expect.arrayContaining([
+          expect.objectContaining({
+            socialAttributeId: 2,
+            bitValue: true,
+          })
+        ])
       );
       expect(toast.success).toHaveBeenCalledWith("Discount details saved successfully!");
     });
@@ -158,16 +261,18 @@ describe('DiscountFormview', () => {
 
   it('handles submission error correctly', async () => {
     (updateDiscountDetailsAction as Mock).mockResolvedValue({ success: false, error: 'Save failed' });
+    mockSearchQuery = 'view=discount';
 
     render(
       <DiscountFormview
-        initialDiscountData={mockInitialData as unknown as DiscountApiResponse}
+        initialDiscountData={mockInitialData}
+        initialSocialData={mockSocialData}
         propertyId="123"
       />
     );
 
     const switches = screen.getAllByRole('switch');
-    fireEvent.click(switches[1]);
+    fireEvent.click(switches[2]);
 
     const saveBtn = screen.getByRole('button', { name: /Save Changes/i });
     fireEvent.click(saveBtn);
@@ -175,5 +280,36 @@ describe('DiscountFormview', () => {
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith("Save failed");
     });
+  });
+
+  it('synchronizes active tab with URL query parameter when tab is clicked', () => {
+    mockSearchQuery = 'view=social';
+    render(
+      <DiscountFormview
+        initialDiscountData={mockInitialData}
+        initialSocialData={mockSocialData}
+        propertyId="123"
+      />
+    );
+
+    const discountTab = screen.getByRole('tab', { name: /Discount Information/i });
+    fireEvent.click(discountTab);
+
+    expect(mockPush).toHaveBeenCalledWith(
+      expect.stringContaining('view=discount')
+    );
+  });
+
+  it('starts on discount tab when URL query parameter view is set to discount', () => {
+    mockSearchQuery = 'view=discount';
+    render(
+      <DiscountFormview
+        initialDiscountData={mockInitialData}
+        initialSocialData={mockSocialData}
+        propertyId="123"
+      />
+    );
+
+    expect(screen.getAllByText('Solar Panel System').length).toBeGreaterThan(0);
   });
 });

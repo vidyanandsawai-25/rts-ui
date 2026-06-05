@@ -124,6 +124,30 @@ describe('Payload Sanitization Tests', () => {
       expect(result.subFloorDescription).toBeNull();
     });
 
+    it('should map subTypeOfUseId and subTypeOfUseDescription to null if not selected', () => {
+      const payload = {
+        propertyDetailsId: 206094,
+        subTypeOfUseId: "0",
+        subTypeOfUseDescription: "-Select-"
+      };
+
+      const result = sanitizeRenterPayload(payload);
+      expect(result.subTypeOfUseId).toBeNull();
+      expect(result.subTypeOfUseDescription).toBeNull();
+    });
+
+    it('should map subTypeOfUseId and subTypeOfUseDescription to null for select sub type variants with casing', () => {
+      const payload = {
+        propertyDetailsId: 206094,
+        subTypeOfUseId: "Select Sub Type",
+        subTypeOfUseDescription: "select subtype"
+      };
+
+      const result = sanitizeRenterPayload(payload);
+      expect(result.subTypeOfUseId).toBeNull();
+      expect(result.subTypeOfUseDescription).toBeNull();
+    });
+
     it('should fall back to raw API keys if UI keys are not present', () => {
       const rawPayload = {
         propertyDetailsId: 206094,

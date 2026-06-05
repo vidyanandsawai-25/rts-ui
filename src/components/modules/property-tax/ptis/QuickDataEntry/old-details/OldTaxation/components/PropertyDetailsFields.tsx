@@ -29,7 +29,7 @@ export function PropertyDetailsFields({
           placeholder={t("oldDetails.zoneNamePlaceholder")}
           className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
           value={formData.oldZoneNo}
-          maxLength={100}
+          maxLength={20}
           onChange={(e) => {
             const value = sanitizeAlphanumeric(e.target.value);
             if (value.trim() || value === '') {
@@ -52,7 +52,7 @@ export function PropertyDetailsFields({
           placeholder={t("oldDetails.wardNoPlaceholder")}
           className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
           value={formData.oldWardNo}
-          maxLength={50}
+          maxLength={10}
           onChange={(e) => {
             const value = sanitizeAlphanumeric(e.target.value);
             if (value.trim() || value === '') {
@@ -75,7 +75,7 @@ export function PropertyDetailsFields({
           placeholder={t("oldDetails.propertyNoPlaceholder")}
           className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
           value={formData.oldPropertyNo}
-          maxLength={50}
+          maxLength={10}
           onChange={(e) => {
             const value = sanitizeAlphanumeric(e.target.value);
             if (value.trim() || value === '') {
@@ -97,7 +97,7 @@ export function PropertyDetailsFields({
           placeholder={t("oldDetails.partitionNoPlaceholder")}
           className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
           value={formData.oldPartitionNo}
-          maxLength={50}
+          maxLength={10}
           onChange={(e) => {
             const value = sanitizeAlphanumeric(e.target.value);
             if (value.trim() || value === '') {
@@ -116,7 +116,7 @@ export function PropertyDetailsFields({
           placeholder={t("oldDetails.eGovernanceNoPlaceholder")}
           className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
           value={formData.oldEgovNo}
-          maxLength={50}
+          maxLength={10}
           onChange={(e) => {
             const value = e.target.value.replace(/[^A-Za-z0-9\-\/]/g, '');
             onFieldChange('oldEgovNo', value);

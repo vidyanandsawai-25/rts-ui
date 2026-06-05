@@ -42,14 +42,9 @@ describe('useTaxationBreakdownForm', () => {
         financeYearId: 1,
         year: 2024,
         yearCode: '2024-25',
-        rVorCV: 'RV',
-        rVorCVValue: 1000,
         taxes: [
           { taxId: 1, taxName: 'Property Tax', taxAmount: 500 },
         ],
-        taxTotal: 500,
-        interest: 50,
-        netTotal: 550,
       },
     ],
   };
@@ -90,8 +85,12 @@ describe('useTaxationBreakdownForm', () => {
       expect.objectContaining({
         taxYears: expect.arrayContaining([
           expect.objectContaining({
-            taxTotal: 700,
-            netTotal: 750, // 700 + 50 interest
+            taxes: expect.arrayContaining([
+              expect.objectContaining({
+                taxId: 1,
+                taxAmount: 700,
+              }),
+            ]),
           }),
         ]),
       }),
@@ -109,12 +108,7 @@ describe('useTaxationBreakdownForm', () => {
           financeYearId: 1,
           year: 2024,
           yearCode: '2024-25',
-          rVorCV: 'RV',
-          rVorCVValue: 1000,
           taxes: [], // empty taxes
-          taxTotal: 0,
-          interest: 50,
-          netTotal: 50,
         },
       ],
     };
@@ -144,5 +138,98 @@ describe('useTaxationBreakdownForm', () => {
 
     expect(toast.error).toHaveBeenCalledWith('property.validation.fixErrors');
     expect(mockConfirm).not.toHaveBeenCalled();
+  });
+
+  it('should allow selecting a future year but register validation error under yearMaster', () => {
+    const futureYear = new Date().getFullYear() + 1;
+    const mockYearOptions = [
+      { id: 1, year: 2024, yearCode: '2024-25', isActive: true, status: 'active', startDate: '', endDate: '', description: '' },
+      { id: 2, year: futureYear, yearCode: `${futureYear}-${String(futureYear + 1).slice(2)}`, isActive: true, status: 'active', startDate: '', endDate: '', description: '' },
+    ];
+
+    const { result } = renderHook(() => useTaxationBreakdownForm(mockInitialData, mockYearOptions));
+
+    // Try selecting the future year
+    act(() => {
+      result.current.setSelectedYearId('2'); // ID 2 is year 2027
+    });
+
+    expect(result.current.selectedYearId).toBe('2');
+    expect(result.current.validationErrors.yearMaster).toBe('property.validation.futureYearNotAllowed');
+  });
+
+  it('should set isChanged to true and validationErrors.yearMaster to undefined when selecting a valid different year', () => {
+    const mockYearOptions = [
+      { id: 1, year: 2024, yearCode: '2024-25', isActive: true, status: 'active', startDate: '', endDate: '', description: '' },
+      { id: 2, year: 2025, yearCode: '2025-26', isActive: true, status: 'active', startDate: '', endDate: '', description: '' },
+    ];
+
+    const { result } = renderHook(() => useTaxationBreakdownForm(mockInitialData, mockYearOptions));
+
+    expect(result.current.isChanged).toBe(false);
+
+    // Select a valid different year (2025)
+    act(() => {
+      result.current.setSelectedYearId('2');
+    });
+
+    expect(result.current.selectedYearId).toBe('2');
+    expect(result.current.isChanged).toBe(true);
+    expect(result.current.validationErrors.yearMaster).toBeUndefined();
+  });
+
+  it('should always call saveOldTaxesDetailsAction (PUT) regardless of existing data', async () => {
+    mockConfirm.mockImplementation(({ onConfirm }) => onConfirm());
+    vi.mocked(saveOldTaxesDetailsAction).mockResolvedValue({ success: true } as any);
+
+    const mockInitialDataNotApplied = {
+      propertyId: 123,
+      taxYears: [
+        {
+          financeYearId: 1,
+          year: 2024,
+          yearCode: '2024-25',
+          taxes: [] as any[],
+        },
+        {
+          financeYearId: 2,
+          year: 2025,
+          yearCode: '2025-26',
+          taxes: [
+            { taxId: 1, taxName: 'Property Tax', taxAmount: 500 },
+          ],
+        }
+      ],
+    };
+
+    const { result } = renderHook(() => useTaxationBreakdownForm(mockInitialDataNotApplied));
+
+    act(() => {
+      result.current.handleTaxChange(1, '600');
+    });
+
+    await act(async () => {
+      result.current.handleSave();
+    });
+
+    expect(mockConfirm).toHaveBeenCalled();
+    expect(saveOldTaxesDetailsAction).toHaveBeenCalledWith(
+      123,
+      expect.objectContaining({
+        taxYears: expect.arrayContaining([
+          expect.objectContaining({
+            taxes: expect.arrayContaining([
+              expect.objectContaining({
+                taxId: 1,
+                taxAmount: 600,
+              }),
+            ]),
+          }),
+        ]),
+      }),
+      'en'
+    );
+    expect(toast.success).toHaveBeenCalled();
+    expect(mockRefresh).toHaveBeenCalled();
   });
 });

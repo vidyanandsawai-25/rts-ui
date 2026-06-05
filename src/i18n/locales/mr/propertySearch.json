@@ -85,6 +85,7 @@
       "valuationMethod": "मूल्यांकन पद्धत",
       "filterType": "फिल्टर प्रकार",
       "amount": "रक्कम प्रविष्ट करा",
+      "amountFrom": "रक्कम सुरुवातीपासून प्रविष्ट करा",
       "topCount": "शीर्ष संख्या (उदा. 1)",
       "toAmount": "कमाल रक्कम",
       "taxDefaulter": "कर थकबाकीदार",
@@ -154,6 +155,7 @@
       "taxDefaulterRangeInvalid": "कर थकबाकी 'To' मूल्य 'From' पेक्षा कमी असू शकत नाही.",
       "rateableValueBetweenRequired": "रेटेबल व्हॅल्यू between फिल्टरसाठी दोन्ही रक्कम भरा.",
       "capitalValueBetweenRequired": "कॅपिटल व्हॅल्यू between फिल्टरसाठी दोन्ही रक्कम भरा.",
+      "rateableValueInvalid": "रेटेबल व्हॅल्यूमध्ये फक्त धन संख्या असणे आवश्यक आहे.",
       "noSearchCriteria": "शोधण्यापूर्वी किमान एक फिल्टर (झोन, वॉर्ड, मालमत्ता क्र., UPIC ID, धारक नाव, मोबाइल इ.) निवडा."
     }
   },
@@ -189,7 +191,9 @@
       "shopBuildingName": "दुकान/इमारत नाव",
       "societyName": "सोसायटीचे नाव",
       "address": "पत्ता",
-      "rvCv": "RV/CV",
+      "rv": "आरव्ही",
+      "cv": "सीव्ही",
+      "rvCv": "आरव्ही/सीव्ही",
       "totalTax": "एकूण कर",
       "status": "स्थिती"
     }

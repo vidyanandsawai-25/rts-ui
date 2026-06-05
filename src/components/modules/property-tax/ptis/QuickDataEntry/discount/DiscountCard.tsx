@@ -4,12 +4,12 @@ import { Label } from "@/components/common/label";
 import { Eye, EyeOff, Upload } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { getViewDocumentUrl } from "@/lib/utils/document-utils";
-import { DiscountItemState } from "@/types/discount.types";
+import { DiscountAttributeState } from "@/types/discount.types";
 
 
 interface DiscountCardProps {
     label: string;
-    data: DiscountItemState;
+    data: DiscountAttributeState;
     onToggle: (checked: boolean) => void;
     onFileUpload: (file: File) => void;
 }
@@ -46,7 +46,7 @@ export const DiscountCard: React.FC<DiscountCardProps> = ({
                             type="button"
                             aria-label={t('discount.viewDocument')}
                             className="p-0 bg-transparent border-0 focus:outline-none"
-                            onClick={() => handleViewDocument(data.documentGuid)}
+                            onClick={() => handleViewDocument(data.documentGuid || undefined)}
                         >
                             <Eye
                                 size={16}
@@ -58,11 +58,13 @@ export const DiscountCard: React.FC<DiscountCardProps> = ({
                         <EyeOff size={16} className="text-gray-400" />
                     )}
 
-                    <ToggleSwitch
-                        checked={data.enabled}
-                        onChange={onToggle}
-                        showPopup={false}
-                    />
+                    <div className="[&_button:not(:disabled)]:cursor-pointer">
+                        <ToggleSwitch
+                            checked={data.enabled}
+                            onChange={onToggle}
+                            showPopup={false}
+                        />
+                    </div>
                 </div>
             </div>
             <div className={`col-span-2 mt-2 pt-3 border-t ${data.enabled ? "border-blue-200" : "border-gray-100"}`}>
@@ -111,7 +113,7 @@ export const DiscountCard: React.FC<DiscountCardProps> = ({
                                     ? "bg-blue-600 border-blue-600 text-white hover:bg-blue-700 shadow-md active:scale-95"
                                     : "bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed opacity-70"
                                 }`}
-                            onClick={() => handleViewDocument(data.documentGuid)}
+                            onClick={() => handleViewDocument(data.documentGuid || undefined)}
                         >
                             <Eye size={14} className={data.enabled && data.documentGuid ? "text-blue-100" : "text-gray-400"} />
                             {t("discount.viewDocument")}

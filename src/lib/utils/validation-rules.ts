@@ -61,6 +61,8 @@ export const LETTERS_ONLY_SANITIZE = /[^\p{L}\p{M}]/gu;
 
 /* ================= SOCIETY VALIDATION ================= */
 export const PERSON_NAME_REGEX = /^[\p{L}\p{M}\s.,'-]+$/u;
+// Sanitize pattern for person names: removes anything not letter/mark/space/period/comma/apostrophe/hyphen
+export const PERSON_NAME_SANITIZE = /[^\p{L}\p{M}\s.,'-]/gu;
 export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const EMAIL_LOWERCASE_RESTRICTED_REGEX = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.(com|in)$/;
 export const MOBILE_10_REGEX = /^[6-9][0-9]{9}$/;

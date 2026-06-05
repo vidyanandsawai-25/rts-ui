@@ -1,8 +1,9 @@
 import CombinePropertyForm from "@/components/modules/property-tax/ptis/combineproperty/CombinePropertyForm";
-import { fetchCombinePropertiesPagedAction } from "./action";
+import { fetchCombinePropertiesPagedAction, fetchCombinePropertiesHistoryAction } from "./action";
 import { fetchPropertyTypePagedServerAction } from "../../propertytype/action";
 import { CombinePropertyItem } from "@/types/combine-property.types";
 import { PropertyType } from "@/types/property-type.types";
+import { PropertyCombineDetails } from "@/types/combine-property.types";
 
 /** Use pageSize = -1 to fetch all records (supported by the action) */
 const ALL_RECORDS_PAGE_SIZE = -1;
@@ -16,12 +17,13 @@ interface PageProps {
     basePartitionNo?: string;
     categoryId?: string;
     societyDetailId?: string;
+    showHistory?: string;
   }>;
 }
 
 export default async function Page({ searchParams }: PageProps) {
   const params = await searchParams;
-  const { basePropertyId, wardId, wardNo, propertyNo, basePartitionNo, categoryId, societyDetailId } = params;
+  const { basePropertyId, wardId, wardNo, propertyNo, basePartitionNo, categoryId, societyDetailId, showHistory } = params;
 
   // ── 1. Fetch base property list (filtered by ward if available) ─────────
   const baseResult = await fetchCombinePropertiesPagedAction({
@@ -67,6 +69,12 @@ export default async function Page({ searchParams }: PageProps) {
   const propertyTypeResult = await fetchPropertyTypePagedServerAction(1, ALL_RECORDS_PAGE_SIZE);
   const propertyTypeList: PropertyType[] = propertyTypeResult.items ?? [];
 
+  // ── 4. Fetch history data if requested ─────────
+  let historyData: PropertyCombineDetails[] = [];
+  if (showHistory === 'true') {
+    historyData = await fetchCombinePropertiesHistoryAction({});
+  }
+
   return (
     <CombinePropertyForm
       basePropertyList={basePropertyList}
@@ -76,6 +84,8 @@ export default async function Page({ searchParams }: PageProps) {
       selectedWardId={wardId}
       selectedWardNo={wardNo}
       selectedPropertyNo={propertyNo}
+      showHistory={showHistory === 'true'}
+      historyData={historyData}
     />
   );
 }

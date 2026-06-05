@@ -56,37 +56,22 @@ export interface SocietyDetailsData {
   managerMobileNo: string;
 }
 
+export interface BuildingPermissionItem {
+  certificateTypeId: number;
+  certificateTypeName: string;
+  displayOrder: number;
+  hasCertificate: boolean;
+  propertyCertificateId: number | null;
+  isActive: boolean;
+  certificateNo: string | null;
+  issueDate: string | null;
+  documentGuid: string | null;
+  fileName: string | null;
+  documentViewUrl?: string | null;
+}
+
 export interface BuildingPermissionData {
-  completionCertificate: boolean;
-  completionCertificateNumber: string;
-  completionCertificateDate: string;
-  completionCertificateDoc: string;
-  completionCertificateDocData: string;
-  completionCertificateDocType: string;
-  occupancyCertificate: boolean;
-  occupancyCertificateNumber: string;
-  occupancyCertificateDate: string;
-  occupancyCertificateDoc: string;
-  occupancyCertificateDocData: string;
-  occupancyCertificateDocType: string;
-  possessionCertificate: boolean;
-  possessionCertificateNumber: string;
-  possessionCertificateDate: string;
-  possessionCertificateDoc: string;
-  possessionCertificateDocData: string;
-  possessionCertificateDocType: string;
-  index2: boolean;
-  index2Number: string;
-  index2Date: string;
-  index2Doc: string;
-  index2DocData: string;
-  index2DocType: string;
-  electricBill: boolean;
-  electricBillNumber: string;
-  electricBillDate: string;
-  electricBillDoc: string;
-  electricBillDocData: string;
-  electricBillDocType: string;
+  items: BuildingPermissionItem[];
 }
 export interface OldDetailsData {
   oldZoneName: string;
@@ -107,6 +92,8 @@ export interface OldDetailsData {
   oldRegistration?: boolean;
   oldConstructionTypeId?: string;
   oldTypeOfUseId?: string;
+  oldConstructionArea?: string;
+  oldGeneralTax?: string;
 }
 export interface OldFloorDetailsData {
   floor: string;
@@ -133,47 +120,26 @@ export interface SocialDetails {
   liftAvailable: boolean;
   electricConnection: boolean;
 }
+export interface PropertySocialDetailItem {
+  propertyId: number;
+  socialAttributeId: number;
+  bitValue: boolean | null;
+  intValue: number | null;
+  decimalValue: number | null;
+  textValue: string | null;
+  dateValue: string | null;
+  documentBindingId: number | null;
+  remark: string | null;
+  socialAttributeCode: string;
+  socialAttributeName: string;
+  id: number;
+  isActive: boolean;
+  createdDate: string;
+  updatedDate: string | null;
+}
+
 export interface DiscountData {
-  flags: {
-    solarPanel: boolean;
-    rainwater: boolean;
-    waste: boolean;
-    evCharging: boolean;
-    solarWater: boolean;
-    solarElectric: boolean;
-    wasteDisposal: boolean;
-    fireFighting: boolean;
-    greenProperty: boolean;
-    womanOwner: boolean;
-    exServiceman: boolean;
-  };
-  amounts: {
-    solarPanel: string;
-    rainwater: string;
-    waste: string;
-    evCharging: string;
-    solarWater: string;
-    solarElectric: string;
-    wasteDisposal: string;
-    fireFighting: string;
-    greenProperty: string;
-    womanOwner: string;
-    exServiceman: string;
-  };
-  percentages: {
-    solarPanel: string;
-    rainwater: string;
-    waste: string;
-    evCharging: string;
-    solarWater: string;
-    solarElectric: string;
-    wasteDisposal: string;
-    fireFighting: string;
-    greenProperty: string;
-    womanOwner: string;
-    exServiceman: string;
-  };
-  documents: Record<string, string>;
+  items: PropertySocialDetailItem[];
 }
 export interface PropertyData {
   id: string;

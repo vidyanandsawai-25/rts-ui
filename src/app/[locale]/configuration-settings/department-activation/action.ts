@@ -6,6 +6,7 @@ import { departmentActivationService } from "@/lib/api/configuration-settings/de
 import { DepartmentUpdateRequest, ModuleUpdateRequest } from "@/types/departmentActivation.types";
 import { cookies } from "next/headers";
 import { getUserIdFromCookies } from "@/lib/utils/auth-session";
+import { syncDepartmentLicenseWithMaster } from "@/lib/api/configuration-settings/ulb-configuration/ulbConfiguration.service";
 
 export async function updateDepartmentStatusAction(
   formData: FormData
@@ -27,6 +28,8 @@ export async function updateDepartmentStatusAction(
 
     const result = await departmentActivationService.updateDepartmentStatus(data, userId);
     if (!result.success) return { success: false, error: result.error };
+
+    await syncDepartmentLicenseWithMaster(data.departmentId, data.isActive, userId);
 
     revalidateTag("user-management", "default");
 

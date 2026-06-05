@@ -183,7 +183,7 @@ export const validateRenterForm = (
     } else {
         const nameVal = details.renterName;
         const trimmedName = nameVal.trim();
-        const primaryRegex = /^[A-Za-z]+(?:\s[A-Za-z]+)*$/;
+        const primaryRegex = /^[A-Za-z\u0900-\u097F]+(?:\s[A-Za-z\u0900-\u097F]+)*$/;
 
         if (trimmedName.length < 3) {
             errors.push({ field: 'renterName', message: 'Renter Name must be at least 3 characters.' });
@@ -198,7 +198,7 @@ export const validateRenterForm = (
             // Repeated sequence patterns:
             // 1. Any 2-character sequence repeated continuously 3 or more times (e.g. hahaha)
             // 2. Any 3+ character sequence repeated continuously 2 or more times (e.g. qweqwe, abcabcabc)
-            const hasRepeatedSeq = /([A-Za-z]{2})\1{2,}/i.test(nameVal) || /([A-Za-z]{3,})\1+/i.test(nameVal);
+            const hasRepeatedSeq = /([A-Za-z\u0900-\u097F]{2})\1{2,}/i.test(nameVal) || /([A-Za-z\u0900-\u097F]{3,})\1+/i.test(nameVal);
 
             if (hasRepeatedChar || hasRepeatedSeq) {
                 errors.push({ field: 'renterName', message: 'Repeated or random characters are not allowed.' });
@@ -208,9 +208,9 @@ export const validateRenterForm = (
                 const keyboardPatterns = ['asdfgh', 'qwerty', 'zxcvbn'];
                 const hasKeyboardPattern = keyboardPatterns.some(pat => nameLower.includes(pat));
 
-                // Consonant-only / Vowel check: Reject words of length >= 3 with no vowels
+                // Consonant-only / Vowel check: Reject words of length >= 3 with no vowels (skipping Devanagari words)
                 const words = nameVal.split(/\s+/);
-                const hasSpamWord = words.some(word => word.length >= 3 && !/[aeiouy]/i.test(word));
+                const hasSpamWord = words.some(word => word.length >= 3 && !/[\u0900-\u097F]/.test(word) && !/[aeiouy]/i.test(word));
 
                 if (hasKeyboardPattern || hasSpamWord) {
                     errors.push({ field: 'renterName', message: 'Please enter a meaningful renter name.' });

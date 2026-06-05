@@ -85,6 +85,7 @@
       "valuationMethod": "Valuation Method",
       "filterType": "Filter Type",
       "amount": "Enter Amount",
+      "amountFrom": "Enter From Amount",
       "topCount": "Top Count (e.g. 1)",
       "toAmount": "To Amount",
       "taxDefaulter": "Tax Defaulter",
@@ -154,6 +155,7 @@
       "taxDefaulterRangeInvalid": "Tax defaulter 'To' value must be greater than or equal to 'From'.",
       "rateableValueBetweenRequired": "Enter both amount fields for the rateable value between filter.",
       "capitalValueBetweenRequired": "Enter both amount fields for the capital value between filter.",
+      "rateableValueInvalid": "Rateable Value must contain positive numbers only.",
       "noSearchCriteria": "Select at least one filter (Zone, Ward, Property No, UPIC ID, Holder Name, Mobile, etc.) before searching."
     }
   },
@@ -189,6 +191,8 @@
       "shopBuildingName": "Shop/Building Name",
       "societyName": "Society Name",
       "address": "Address",
+      "rv": "RV",
+      "cv": "CV",
       "rvCv": "RV/CV",
       "totalTax": "Total Tax",
       "status": "Status"

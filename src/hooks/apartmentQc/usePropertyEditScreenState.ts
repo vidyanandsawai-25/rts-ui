@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import type { ApartmentQCDetail } from "@/types/apartmentQC.types";
 import { getPropertyTypeByIdAction } from "@/app/[locale]/property-tax/propertytype/action";
 import { DrawerFormData, DrawerFormErrors, DrawerFloorDataRow, DrawerDropdownOption, DrawerSubTypeOption, INITIAL_DRAWER_FORM_DATA } from "./propertyEditScreenDrawer.types";
+import { PERSON_NAME_SANITIZE, CODE_SANITIZE, TEXT_SANITIZE } from "@/lib/utils/validation-rules";
 
 interface UsePropertyEditScreenStateArgs { open: boolean; propertyData?: ApartmentQCDetail | null; }
 
@@ -113,7 +114,43 @@ export function usePropertyEditScreenState({ open, propertyData }: UsePropertyEd
   }, [propertyData]);
 
   const updateFormField = useCallback((field: keyof DrawerFormData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    let sanitizedValue = value;
+    
+    // Sanitize input based on field type (like ConstructionTypeForm)
+    switch (field) {
+      // Person name fields - allow only letters, spaces, period, comma, apostrophe, hyphen
+      case "ownerName":
+      case "occupierName":
+      case "renterName":
+        sanitizedValue = value.replace(PERSON_NAME_SANITIZE, "");
+        break;
+      // Code/identifier fields - allow only alphanumeric and underscore
+      case "wingName":
+      case "oldPropertyNo":
+        sanitizedValue = value.replace(CODE_SANITIZE, "");
+        break;
+      // Text fields - allow letters, numbers, spaces, basic punctuation
+      case "flatOrShopName":
+        sanitizedValue = value.replace(TEXT_SANITIZE, "");
+        break;
+      // BHK - only digits
+      case "bhk":
+        sanitizedValue = value.replace(/[^0-9]/g, "");
+        break;
+      // Mobile - only digits, max 10
+      case "mobileNo":
+        sanitizedValue = value.replace(/[^0-9]/g, "").substring(0, 10);
+        break;
+      // FlatOrShopNo - alphanumeric with some special chars
+      case "flatOrShopNo":
+        sanitizedValue = value.replace(/[^\p{L}\p{M}\p{N}\s\-\/]/gu, "");
+        break;
+      // Default - no sanitization
+      default:
+        break;
+    }
+    
+    setFormData((prev) => ({ ...prev, [field]: sanitizedValue }));
     setFormErrors((prev) => ({ ...prev, [field]: undefined }));
   }, []);
 

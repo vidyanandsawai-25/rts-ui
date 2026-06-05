@@ -85,6 +85,7 @@
       "valuationMethod": "मूल्यांकन विधि",
       "filterType": "फ़िल्टर प्रकार",
       "amount": "राशि दर्ज करें",
+      "amountFrom": "राशि प्रारंभ से दर्ज करें",
       "topCount": "शीर्ष संख्या (उदा. 1)",
       "toAmount": "अधिकतम राशि",
       "taxDefaulter": "कर बकायादार",
@@ -154,6 +155,7 @@
       "taxDefaulterRangeInvalid": "टैक्स डिफ़ॉल्टर 'To' मान 'From' से कम नहीं हो सकता।",
       "rateableValueBetweenRequired": "रेटेबल वैल्यू between फ़िल्टर के लिए दोनों राशि दर्ज करें।",
       "capitalValueBetweenRequired": "कैपिटल वैल्यू between फ़िल्टर के लिए दोनों राशि दर्ज करें।",
+      "rateableValueInvalid": "रेटेबल वैल्यू में केवल धनात्मक संख्याएँ होनी चाहिए।",
       "noSearchCriteria": "खोज करने से पहले कम से कम एक फ़िल्टर (ज़ोन, वार्ड, संपत्ति क्र., UPIC ID, धारक नाम, मोबाइल आदि) चुनें।"
     }
   },
@@ -189,7 +191,9 @@
       "shopBuildingName": "दुकान/भवन का नाम",
       "societyName": "सोसायटी का नाम",
       "address": "पता",
-      "rvCv": "RV/CV",
+      "rv": "आरवी",
+      "cv": "सीवी",
+      "rvCv": "आरवी/सीवी",
       "totalTax": "कुल कर",
       "status": "स्थिति"
     }

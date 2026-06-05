@@ -90,11 +90,11 @@ export const useFloorActions = (params: {
       updateUrlParams({
         floorId: null,
         typeOfUseId: null,
-        loadFloor: 'true',
-        loadSubFloor: 'true',
-        loadConstruction: 'true',
-        loadUsage: 'true',
-        loadSubType: null,
+        loadFloor: 'false',
+        loadSubFloor: 'false',
+        loadConstruction: 'false',
+        loadUsage: 'false',
+        loadSubType: 'false',
       });
 
       const gFloor = (floorData as { floorCode?: string; floorId?: number; description?: string }[]).find(

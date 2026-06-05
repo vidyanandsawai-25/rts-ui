@@ -13,6 +13,8 @@ export interface BuildingStructureItem {
   wingId: number;
   rowNo: number;
   floorNo: number;
+  floorCode: string;
+  propertyFloorId: number;
   unitNo: number;
   flatNo: string;
   partitionNo: string;

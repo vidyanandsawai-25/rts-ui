@@ -1,0 +1,91 @@
+{
+  "header": {
+    "title": "नियम इंजन",
+    "subtitle": "संपत्ति कर गणना के लिए शर्तें और प्रभाव कॉन्फ़िगर करें",
+    "totalRules": "कुल नियम",
+    "activeRules": "सक्रिय नियम",
+    "autoSave": "सभी परिवर्तन स्वचालित रूप से आपके ब्राउज़र में सहेजे जाते हैं • {count} नियम सहेजे गए",
+    "configTitle": "नियम इंजन कॉन्फ़िगरेशन",
+    "configSubtitle": "जटिल गतिशील कराधान नीतियाँ प्रबंधित करें",
+    "configureNew": "नया नियम कॉन्फ़िगर करें",
+    "backToList": "सूची पर वापस जाएं"
+  },
+  "targetFilter": {
+    "ruleId": "नियम आईडी",
+    "ruleIdValue": "स्वत: उत्पन्न",
+    "ruleName": "नियम नाम",
+    "ruleNamePlaceholder": "नियम नाम दर्ज करें",
+    "corp": "निगम",
+    "category": "श्रेणी",
+    "ruleScope": "नियम क्षेत्र",
+    "description": "विवरण",
+    "descriptionPlaceholder": "नियम विवरण दर्ज करें",
+    "priority": "प्राथमिकता",
+    "priorityPlaceholder": "उदा. 1"
+  },
+  "conditionRow": {
+    "selectField": "फ़ील्ड चुनें",
+    "selectOperator": "ऑपरेटर चुनें",
+    "chooseField": "मान निर्दिष्ट करने के लिए फ़ील्ड चुनें",
+    "done": "पूर्ण",
+    "deleteCondition": "शर्त हटाएं"
+  },
+  "effectPanel": {
+    "effectType": "प्रभाव प्रकार",
+    "referenceCategory": "संदर्भ श्रेणी",
+    "parameter": "पैरामीटर",
+    "value": "मान",
+    "enterValue": "मान दर्ज करें",
+    "exemptionRatio": "छूट अनुपात",
+    "percentageValue": "प्रतिशत मान (%)",
+    "rateValue": "दर मान",
+    "performAction": "निम्नलिखित क्रिया करें",
+    "invalidPercentage": "मान 0% और 100% के बीच होना चाहिए"
+  },
+  "saveReasonModal": {
+    "title": "नियम कॉन्फ़िगरेशन सहेजने की पुष्टि करें",
+    "description": "ऑडिट इतिहास और संस्करण लॉग के लिए एक परिवर्तन विवरण दर्ज करें।",
+    "changeReason": "परिवर्तन का कारण",
+    "placeholder": "उदा. संपत्ति क्षेत्र संशोधक के लिए कर दर सूत्र अपडेट किया",
+    "confirmSave": "पुष्टि करें और सहेजें"
+  },
+  "library": {
+    "title": "नियम पुस्तकालय",
+    "searchPlaceholder": "नियम खोजें...",
+    "noRules": "कोई नियम नहीं मिला",
+    "addRule": "नियम जोड़ें"
+  },
+  "conditionGroup": {
+    "if": "यदि",
+    "all": "सभी",
+    "any": "कोई भी",
+    "conditionsMet": "निम्नलिखित शर्तों को पूरा किया जाता है",
+    "removeGroup": "समूह हटाएं",
+    "addCondition": "शर्त जोड़ें",
+    "addSubGroup": "उप-समूह जोड़ें"
+  },
+  "valueInput": {
+    "pickFromList": "← सूची से चुनें",
+    "enterCustomValue": "कस्टम मान दर्ज करें →",
+    "loadingOptions": "विकल्प लोड हो रहे हैं…"
+  },
+  "builder": {
+    "title": "{scopeName} नियम बिल्डर",
+    "saving": "सहेज रहा है…",
+    "saveChanges": "परिवर्तन सहेजें",
+    "add": "जोड़ें"
+  },
+  "stopProcessing": {
+    "sectionLabel": "नियम अपवर्जन और प्रसंस्करण रोकें",
+    "toggleLabel": "प्रसंस्करण रोकें",
+    "toggleHint": "सक्षम होने पर, इस नियम के मेल खाने के बाद आगे किसी भी नियम का मूल्यांकन नहीं किया जाएगा",
+    "warningText": "प्रसंस्करण रोकें सक्रिय है। एक बार जब यह नियम मेल खा जाता है, तो बाद के नियमों का मूल्यांकन नहीं किया जाएगा। जटिल नियम श्रृंखलाओं में इसका सावधानी से उपयोग करें।",
+    "skipRulesLabel": "नियमों को छोड़ें",
+    "skipRulesPlaceholder": "छोड़ने के लिए नियम चुनें...",
+    "loadingRules": "नियम लोड हो रहे हैं...",
+    "skipRulesSelected": "अपवर्जन के लिए {count} नियम चुने गए",
+    "exclusionReasonLabel": "अपवर्जन का कारण",
+    "exclusionReasonPlaceholder": "उदा. आवासीय क्षेत्र के लिए नई एआरवी नीति द्वारा प्रतिस्थापित",
+    "optional": "वैकल्पिक"
+  }
+}

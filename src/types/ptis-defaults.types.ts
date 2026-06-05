@@ -67,36 +67,7 @@ export const defaultSocietyDetails: SocietyDetailsData = {
 };
 
 export const defaultBuildingPermission: BuildingPermissionData = {
-  completionCertificate: false,
-  completionCertificateNumber: '',
-  completionCertificateDate: '',
-  completionCertificateDoc: '',
-  completionCertificateDocData: '',
-  completionCertificateDocType: '',
-  occupancyCertificate: false,
-  occupancyCertificateNumber: '',
-  occupancyCertificateDate: '',
-  occupancyCertificateDoc: '',
-  occupancyCertificateDocData: '',
-  occupancyCertificateDocType: '',
-  possessionCertificate: false,
-  possessionCertificateNumber: '',
-  possessionCertificateDate: '',
-  possessionCertificateDoc: '',
-  possessionCertificateDocData: '',
-  possessionCertificateDocType: '',
-  index2: false,
-  index2Number: '',
-  index2Date: '',
-  index2Doc: '',
-  index2DocData: '',
-  index2DocType: '',
-  electricBill: false,
-  electricBillNumber: '',
-  electricBillDate: '',
-  electricBillDoc: '',
-  electricBillDocData: '',
-  electricBillDocType: '',
+  items: [],
 };
 
 export const defaultOldDetails: OldDetailsData = {

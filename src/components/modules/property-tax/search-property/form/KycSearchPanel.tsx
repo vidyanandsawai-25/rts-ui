@@ -109,7 +109,7 @@ export function KycSearchPanel({
   );
 
   return (
-    <div className="space-y-1.5 pb-1 pt-0.5">
+    <div className="space-y-1.5 pb-1 pt-1.5">
       <div className="grid grid-cols-1 gap-x-2 gap-y-1 sm:grid-cols-3">
         {KYC_COMPACT_FIELDS.map(renderField)}
       </div>

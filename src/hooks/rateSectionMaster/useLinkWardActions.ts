@@ -74,7 +74,7 @@ export function useLinkWardActions({
     if (isSelectAllMode) {
       // Fetch all wards server-side
       // Use allRateSections (all rate sections) instead of rates (paginated) for lookup
-      const selectedRate = allRateSections.find(r => r.rateSectionNo === selectedZoneNo);
+      const selectedRate = allRateSections.find(r => String(r.id) === selectedZoneNo);
       if (!selectedRate?.id) {
         toast.error(t("wards.rateSectionNotFound"));
         return;
@@ -171,7 +171,7 @@ export function useLinkWardActions({
     if (toMove.length === 0) return;
 
     // Use allRateSections (all rate sections) instead of rates (paginated) for lookup
-    const selectedRate = allRateSections.find(r => r.rateSectionNo === selectedZoneNo);
+    const selectedRate = allRateSections.find(r => String(r.id) === selectedZoneNo);
     if (!selectedRate?.id) {
       toast.error(t("wards.rateSectionNotFound"));
       return;
@@ -284,7 +284,7 @@ export function useLinkWardActions({
     // Check if Select All is active for RateSectionWards
     if (isRateSectionSelectAllActive) {
       // Use allRateSections (all rate sections) instead of rates (paginated) for lookup
-      const selectedRate = allRateSections.find(r => r.rateSectionNo === selectedZoneNo);
+      const selectedRate = allRateSections.find(r => String(r.id) === selectedZoneNo);
       if (!selectedRate?.id) {
         toast.error(t("wards.rateSectionNotFound"));
         return;
@@ -346,7 +346,7 @@ export function useLinkWardActions({
     if (toMove.length === 0) return;
 
     // Use allRateSections (all rate sections) instead of rates (paginated) for lookup
-    const selectedRate = allRateSections.find(r => r.rateSectionNo === selectedZoneNo);
+    const selectedRate = allRateSections.find(r => String(r.id) === selectedZoneNo);
     if (!selectedRate?.id) {
       toast.error(t("wards.rateSectionNotFound"));
       return;

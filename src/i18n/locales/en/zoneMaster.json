@@ -369,6 +369,7 @@
   "partitionForm": {
     "title": "Create Partition / Wing",
     "subtitle": "Add partitions or wings to a property",
+    "createPartition": "Create Partition",
     "propertyInformation": "Property Information",
     "ward": "Ward",
     "propertyCategory": "Property Category",
@@ -426,8 +427,8 @@
     "placeholders": {
       "selectMainProperty": "Select a main property",
       "partitionNo": "Enter partition number",
-      "fromPartition": "e.g., 1",
-      "toPartition": "e.g., 10"
+      "fromPartition": "Enter partition number",
+      "toPartition": "Enter partition number"
     },
     "helpText": {
       "selectMainProperty": "Select the main property to add partition/wing",
@@ -571,7 +572,24 @@
         "partialSuccess": "Some Properties Failed to Generate",
         "successCount": "Success",
         "failedCount": "Failed",
-        "details": "Results"
+        "details": "Results",
+        "errors": {
+          "title": "Property Generation Failed",
+          "criticalErrorTitle": "Critical Error",
+          "duplicateErrorTitle": "Duplicate Records Found",
+          "genericError": "An error occurred while generating properties.",
+          "failedToCreate": "{count} properties failed to create.",
+          "buildingNotFound": "Building details could not be found. Please verify the selected building and try again.",
+          "invalidCategory": "Selected property category is invalid. Please select a valid category.",
+          "societyWingMissing": "Society wing details are required for apartment properties.",
+          "duplicatePartitionSingle": "Partition {partition} already exists in the selected wing.",
+          "duplicatePartitionMultiple": "The following partitions already exist in this wing: {partitions}.",
+          "duplicateFlatSingle": "Flat number {flat} already exists in the selected wing.",
+          "duplicateFlatNumbers": "Flat numbers {flats} already exist in the selected wing.",
+          "repositoryError": "Row {row}: {message}.",
+          "unknownErrorAtRow": "An unexpected error occurred while creating property at row {row}.",
+          "transactionFailure": "Property creation failed due to a system error. Please try again later."
+        }
       },
       "amenity": {
         "notImplemented": "Amenity content not yet implemented"
@@ -580,13 +598,16 @@
     "amenity": {
       "description": "Create amenities for selected property. Amenities will be assigned to a wing (optional) and numbered sequentially.",
       "selectWing": "Select Wing (Optional)",
-      "noWing": "No Wing (Default Amenity)",
+      "noWing": "Main Property",
       "fromAmenity": "From Amenity",
       "toAmenity": "To Amenity",
       "amenities": "amenities",
       "amenitiesWillBeCreated": "Amenities will be created:",
+      "createAmenity": "Create Amenity",
       "placeholders": {
-        "selectWing": "Select a wing or leave empty"
+        "selectWing": "Select a wing or leave empty",
+        "fromAmenity": "Enter from amenity number",
+        "toAmenity": "Enter to amenity number"
       }
     }
   },
