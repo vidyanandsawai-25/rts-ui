@@ -31,11 +31,85 @@ function requiredField(t: TranslateFn, messageKey: string): Validator {
   };
 }
 
-function pincodeValidator(t: TranslateFn, requiredKey?: string): Validator {
+function isGibberish(val: string): boolean {
+  const lower = val.toLowerCase();
+  const keyboardPatterns = ['qwerty', 'asdfgh', 'zxcvbn'];
+  const hasKeyboard = keyboardPatterns.some((pat) => lower.includes(pat));
+  const hasRepeatedChar = /([a-z0-9])\1{3,}/i.test(lower);
+  const hasRepeatedSeq =
+    /([a-z0-9]{2})\1{2,}/i.test(lower) || /([a-z0-9]{3,})\1+/i.test(lower);
+
+  const words = lower.split(/[^a-z\u0900-\u097F]+/);
+  let hasGibberishWord = false;
+  for (const word of words) {
+    if (word.length >= 4 && /^[a-z]+$/.test(word) && !/[aeiouy]/.test(word)) {
+      hasGibberishWord = true;
+      break;
+    }
+    if (/[bcdfghjklmnpqrstvwxz]{6,}/.test(word)) {
+      hasGibberishWord = true;
+      break;
+    }
+  }
+
+  return hasKeyboard || hasRepeatedChar || hasRepeatedSeq || hasGibberishWord;
+}
+
+function pincodeValidator(tUlb: TranslateFn, requiredKey?: string): Validator {
   return (value: unknown) => {
     const strVal = String(value ?? '').trim();
-    if (!strVal) return requiredKey ? t(requiredKey) : undefined;
-    if (!/^[1-9]\d{5}$/.test(strVal)) return t('form.validation.invalidPincode');
+    if (!strVal) return requiredKey ? tUlb(requiredKey) : undefined;
+    if (strVal.length !== 6 || !/^[1-9][0-9]{5}$/.test(strVal)) {
+      return tUlb('validation.pincodeFormat');
+    }
+    return undefined;
+  };
+}
+
+function phoneValidator(tUlb: TranslateFn, formatKey: string, requiredKey?: string): Validator {
+  return (value: unknown) => {
+    const strVal = String(value ?? '').trim();
+    if (!strVal) return requiredKey ? tUlb(requiredKey) : undefined;
+    if (strVal.length !== 10 || !/^[6-9]\d{9}$/.test(strVal)) {
+      return tUlb(formatKey);
+    }
+    return undefined;
+  };
+}
+
+function emailValidator(tCommon: TranslateFn, tUlb: TranslateFn, formatKey: string, requiredKey?: string): Validator {
+  return (value: unknown) => {
+    const strVal = String(value ?? '').trim();
+    if (!strVal) return requiredKey ? tUlb(requiredKey) : undefined;
+    if (strVal.length > CONST.EMAIL_MAX) {
+      return tCommon('form.validation.descriptionMaxLength', { count: CONST.EMAIL_MAX });
+    }
+    if (!/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(strVal)) {
+      return tUlb(formatKey);
+    }
+    return undefined;
+  };
+}
+
+function addressValidator(tCommon: TranslateFn, tUlb: TranslateFn): Validator {
+  return (value: unknown) => {
+    const strVal = String(value ?? '').trim();
+    if (!strVal) return tUlb('validation.addressRequired');
+    if (strVal.length > CONST.ADDRESS_MAX) {
+      return tCommon('form.validation.descriptionMaxLength', { count: CONST.ADDRESS_MAX });
+    }
+    if (strVal.length < 5) {
+      return tUlb('validation.addressFormat');
+    }
+    if (/\s{2,}/.test(strVal)) {
+      return tUlb('validation.addressFormat');
+    }
+    if (!DESCRIPTION_REGEX.test(strVal)) {
+      return tUlb('validation.addressFormat');
+    }
+    if (isGibberish(strVal)) {
+      return tUlb('validation.gibberishError');
+    }
     return undefined;
   };
 }
@@ -45,21 +119,6 @@ function websiteValidator(t: TranslateFn, formatKey: string): Validator {
     const strVal = String(value ?? '').trim();
     if (!strVal) return undefined;
     if (!isValidWebsiteUrl(strVal)) return t(formatKey);
-    return undefined;
-  };
-}
-
-function personNameValidator(
-  tCommon: TranslateFn,
-  tUlb: TranslateFn,
-  maxLength: number,
-  formatKey: string
-): Validator {
-  return (value: unknown) => {
-    const strVal = String(value ?? '').trim();
-    if (!strVal) return undefined;
-    if (strVal.length > maxLength) return tCommon('form.validation.nameMaxLength', { count: maxLength });
-    if (!PERSON_NAME_REGEX.test(strVal)) return tUlb(formatKey);
     return undefined;
   };
 }
@@ -136,7 +195,19 @@ function createUlbInfoSchema(tCommon: TranslateFn, tUlb: TranslateFn): Record<st
   return {
     ulbName: chainValidators(
       requiredField(tUlb, 'validation.ulbNameRequired'),
-      commonValidations.masterDescription(tCommon, CONST.ULB_NAME_MAX)
+      (value: unknown) => {
+        const strVal = String(value ?? '').trim();
+        if (strVal.length > CONST.ULB_NAME_MAX) {
+          return tCommon('form.validation.descriptionMaxLength', { count: CONST.ULB_NAME_MAX });
+        }
+        if (!DESCRIPTION_REGEX.test(strVal)) {
+          return tCommon('form.validation.descriptionFormat');
+        }
+        if (isGibberish(strVal)) {
+          return tUlb('validation.gibberishError');
+        }
+        return undefined;
+      }
     ),
     ulbCode: chainValidators(
       requiredField(tUlb, 'validation.ulbCodeRequired'),
@@ -145,28 +216,31 @@ function createUlbInfoSchema(tCommon: TranslateFn, tUlb: TranslateFn): Record<st
     ulbType: requiredField(tUlb, 'validation.ulbTypeRequired'),
     state: requiredField(tUlb, 'validation.stateRequired'),
     district: requiredField(tUlb, 'validation.districtRequired'),
-    pincode: pincodeValidator(tCommon, 'validation.pincodeRequired'),
+    pincode: pincodeValidator(tUlb, 'validation.pincodeRequired'),
     contactPerson: chainValidators(
       requiredField(tUlb, 'validation.contactPersonRequired'),
-      personNameValidator(tCommon, tUlb, CONST.CONTACT_PERSON_MAX, 'validation.contactPersonFormat')
+      (value: unknown) => {
+        const strVal = String(value ?? '').trim();
+        if (strVal.length > CONST.CONTACT_PERSON_MAX) {
+          return tCommon('form.validation.nameMaxLength', { count: CONST.CONTACT_PERSON_MAX });
+        }
+        if (!PERSON_NAME_REGEX.test(strVal)) {
+          return tUlb('validation.contactPersonFormat');
+        }
+        if (isGibberish(strVal)) {
+          return tUlb('validation.gibberishError');
+        }
+        return undefined;
+      }
     ),
     designation: chainValidators(
       requiredField(tUlb, 'validation.designationRequired'),
       commonValidations.masterDescription(tCommon, CONST.DESIGNATION_MAX)
     ),
-    address: chainValidators(
-      requiredField(tUlb, 'validation.addressRequired'),
-      commonValidations.masterDescription(tCommon, CONST.ADDRESS_MAX)
-    ),
-    email: chainValidators(
-      requiredField(tUlb, 'validation.emailRequired'),
-      commonValidations.email(tCommon, 'form.validation.invalidEmail')
-    ),
-    phone: chainValidators(
-      requiredField(tUlb, 'validation.phoneRequired'),
-      commonValidations.mobile(tCommon, 'form.validation.invalidPhone')
-    ),
-    alternatePhone: commonValidations.mobile(tCommon, 'form.validation.invalidPhone'),
+    address: addressValidator(tCommon, tUlb),
+    email: emailValidator(tCommon, tUlb, 'validation.emailFormat', 'validation.emailRequired'),
+    phone: phoneValidator(tUlb, 'validation.phoneFormat', 'validation.phoneRequired'),
+    alternatePhone: phoneValidator(tUlb, 'validation.alternatePhoneFormat'),
     website: websiteValidator(tUlb, 'validation.websiteFormat'),
   };
 }
@@ -180,13 +254,22 @@ function createProjectLicenseSchema(
     financialYearStart: requiredField(tUlb, 'validation.financialYearStartRequired'),
     projectManager: chainValidators(
       requiredField(tUlb, 'validation.projectManagerRequired'),
-      personNameValidator(tCommon, tUlb, CONST.PROJECT_MANAGER_MAX, 'validation.projectManagerFormat')
+      (value: unknown) => {
+        const strVal = String(value ?? '').trim();
+        if (strVal.length > CONST.PROJECT_MANAGER_MAX) {
+          return tCommon('form.validation.nameMaxLength', { count: CONST.PROJECT_MANAGER_MAX });
+        }
+        if (!PERSON_NAME_REGEX.test(strVal)) {
+          return tUlb('validation.projectManagerFormat');
+        }
+        if (isGibberish(strVal)) {
+          return tUlb('validation.gibberishError');
+        }
+        return undefined;
+      }
     ),
-    projectManagerEmail: chainValidators(
-      requiredField(tUlb, 'validation.projectManagerEmailRequired'),
-      commonValidations.email(tCommon, 'form.validation.invalidEmail')
-    ),
-    projectManagerPhone: commonValidations.mobile(tCommon, 'form.validation.invalidPhone'),
+    projectManagerEmail: emailValidator(tCommon, tUlb, 'validation.pmEmailFormat', 'validation.projectManagerEmailRequired'),
+    projectManagerPhone: phoneValidator(tUlb, 'validation.pmPhoneFormat'),
     implementationPartner: optionalDescription(tCommon, CONST.IMPLEMENTATION_PARTNER_MAX),
     licenseType: requiredField(tUlb, 'validation.licenseTypeRequired'),
     licenseKey: requiredField(tUlb, 'validation.licenseKeyRequired'),
@@ -216,7 +299,17 @@ export function validateUlbConfigurationFields(
   if (!buildSchema) return {};
 
   const schema = buildSchema(tCommon, tUlb);
-  return validateForm(data, schema) as UlbConfigurationFieldErrors;
+  const errors = validateForm(data, schema) as UlbConfigurationFieldErrors;
+
+  if (section === 'ulb-info') {
+    const phone = String(data.phone ?? '').trim();
+    const alternatePhone = String(data.alternatePhone ?? '').trim();
+    if (phone && alternatePhone && phone === alternatePhone) {
+      errors.alternatePhone = tUlb('validation.alternatePhoneSame');
+    }
+  }
+
+  return errors;
 }
 
 /** Returns the first validation error message for a section, if any. */
