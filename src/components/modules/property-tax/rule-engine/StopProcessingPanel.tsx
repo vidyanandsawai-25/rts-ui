@@ -46,7 +46,9 @@ export default function StopProcessingPanel({
     if (ruleOptions.length > 0) return;
 
     let cancelled = false;
-    setLoading(true);
+    Promise.resolve().then(() => {
+      if (!cancelled) setLoading(true);
+    });
 
     fetchAllRulesForSkipAction()
       .then((opts) => {
