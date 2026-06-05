@@ -105,6 +105,8 @@ export const FormFieldsSection = ({
         name="searchSequence"
         label={t("form.fields.searchSequence.label")}
         maxLength={3}
+        inputMode="numeric"
+        pattern="[0-9]*"
         value={searchSequenceValue}
         onChange={(e) => {
           const sanitized = sanitizeNumber(e.target.value);
