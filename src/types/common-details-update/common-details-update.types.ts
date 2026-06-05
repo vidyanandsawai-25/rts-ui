@@ -105,6 +105,7 @@ export interface CommonDetailsUpdatePageProps {
   initialPage?: number;
   initialPageSize?: number;
   initialSearchTerm?: string;
+  initialTab?: string;
 }
 
 export type ActionResult<T> =
