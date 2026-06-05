@@ -37,7 +37,7 @@ export async function getApartmentQCDataAction(
     let partType = '';
     if (appartmentTab === 'residential') partType = 'R';
     else if (appartmentTab === 'commercial') partType = 'C';
-    else if (appartmentTab === 'amenities') partType = 'utilsub';
+    else if (appartmentTab === 'amenities') partType = 'Amenity';
 
     const params = {
       wardId,
