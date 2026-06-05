@@ -146,12 +146,6 @@ export function getPropertyTypeColumns(
       width: "14%",
       render: (value) => (typeof value === "string" ? value : ""),
     },
-    // {
-    //   key: "propertyTypeGroup",
-    //   label: t("list.table.propertyTypeGroup"),
-    //   width: "14%",
-    //   render: (value) => (typeof value === "string" ? value : ""),
-    // },
     {
       key: "propertyTypeCategoryId",
       label: createSortableLabel(t("list.table.category"), "propertyTypeCategoryId"),

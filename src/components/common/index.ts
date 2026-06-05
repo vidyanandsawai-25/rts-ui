@@ -24,6 +24,7 @@ export {
   DeleteButton,
   SaveButton,
   CancelButton,
+  ApplyButton,
   UploadButton,
   ExportButton,
   ImportButton,
@@ -36,6 +37,8 @@ export {
   SortAscButton,
   SortDescButton,
   SortDefaultButton,
+  EditLabelButton,
+  DeleteLabelButton,
   LockButton,
   UnlockButton,
 } from './ActionButtons';
@@ -64,6 +67,8 @@ export { Calendar } from './Calendar';
 export { Drawer } from './Drawer';
 
 export { MultiSelectDropdown } from './Dropdown';
+export { MultiSelect } from './MultiSelect';
+export type { Option as MultiSelectOption } from './MultiSelect';
 
 export { MasterTable } from './MasterTable';
 export type { Column, MasterTableProps } from './MasterTable';

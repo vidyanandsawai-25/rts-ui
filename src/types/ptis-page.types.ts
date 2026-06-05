@@ -38,6 +38,8 @@ export interface OldDetailsApiResponse {
   oldRegistration: boolean | null;
   oldConstructionTypeId: string | null;
   oldTypeOfUseId: string | null;
+  oldConstructionArea?: number | null;
+  oldGeneralTax?: number | null;
 }
 
 export interface OldFloorDetailsApiResponse {

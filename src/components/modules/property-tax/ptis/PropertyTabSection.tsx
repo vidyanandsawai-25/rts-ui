@@ -6,6 +6,8 @@ import PropertyDetailsTab from '@/components/modules/property-tax/ptis/tabs/Prop
 import KycDetailsTab from '@/components/modules/property-tax/ptis/tabs/KycDetailsTab';
 import SocietyDetailsTab from '@/components/modules/property-tax/ptis/tabs/SocietyDetailsTab';
 import OldDetailsTab from '@/components/modules/property-tax/ptis/tabs/OldDetailsTab';
+import DiscountDataTab from '@/components/modules/property-tax/ptis/tabs/DiscountDataTab';
+import BuildingPermissionTab from '@/components/modules/property-tax/ptis/tabs/BuildingPermissionTab';
 import { PropertySearchBar } from './tabs/components/PropertySearchBar';
 import { PropertyTabHeaders } from './tabs/components/PropertyTabHeaders';
 import { useSyncedSearchParams } from '@/hooks/ptis/tab/useSyncedSearchParams';
@@ -80,6 +82,7 @@ export default function PropertyTabSection({
     data,
     kycDetailsData,
     societyDetailsData,
+    buildingPermissionData,
     oldDetailsData,
     oldFloorTableData,
     showOldFloorInfo,
@@ -87,6 +90,7 @@ export default function PropertyTabSection({
     oldTaxesData,
     showOldTaxInfo,
     setShowOldTaxInfo,
+    discountDetails,
   } = useSyncedTabData(
     initialData?.propertyDetails,
     initialData?.kycDetails,
@@ -95,7 +99,9 @@ export default function PropertyTabSection({
     initialData?.oldFloorTableData,
     initialData?.showOldFloorInfo,
     initialData?.oldTaxesData,
-    initialData?.showOldTaxInfo
+    initialData?.showOldTaxInfo,
+    initialData?.discountDetails,
+    initialData?.buildingPermission
   );
 
   // 6. Hook: Options Management
@@ -198,6 +204,16 @@ export default function PropertyTabSection({
           </Tabs.TabPanel>
           <Tabs.TabPanel value="societydetails" className="mt-0 pt-0">
             <SocietyDetailsTab data={societyDetailsData} />
+          </Tabs.TabPanel>
+          <Tabs.TabPanel value="buildingpermission" className="mt-0 pt-0">
+            <BuildingPermissionTab
+              data={buildingPermissionData}
+              onFieldChange={() => {}}
+              readOnly={true}
+            />
+          </Tabs.TabPanel>
+          <Tabs.TabPanel value="discountdetails" className="mt-0 pt-0">
+            <DiscountDataTab initialData={discountDetails} readOnly={true} />
           </Tabs.TabPanel>
           <Tabs.TabPanel value="olddetails" className="mt-0 pt-0">
             <OldDetailsTab
