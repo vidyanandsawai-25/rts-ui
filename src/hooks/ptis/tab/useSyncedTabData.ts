@@ -4,6 +4,8 @@ import {
   defaultKycDetails,
   defaultSocietyDetails,
   defaultOldDetails,
+  defaultDiscountData,
+  defaultBuildingPermission,
 } from '@/lib/constants/ptis.constants';
 import type {
   PropertyDetailsData,
@@ -12,6 +14,8 @@ import type {
   OldDetailsData,
   OldFloorDetailsData,
   OldTaxesData,
+  DiscountData,
+  BuildingPermissionData,
 } from '@/types/ptis.types';
 
 export function useSyncedTabData(
@@ -22,7 +26,9 @@ export function useSyncedTabData(
   initialOldFloorTableData?: OldFloorDetailsData[],
   initialShowOldFloorInfo?: boolean,
   initialOldTaxesData?: OldTaxesData | null,
-  initialShowOldTaxInfo?: boolean
+  initialShowOldTaxInfo?: boolean,
+  initialDiscountDetails?: DiscountData,
+  initialBuildingPermission?: BuildingPermissionData
 ) {
   const data = useMemo<PropertyDetailsData>(
     () => ({ ...defaultPropertyDetails, ...(initialPropertyDetails ?? {}) }),
@@ -58,10 +64,21 @@ export function useSyncedTabData(
   const [showOldFloorInfo, setShowOldFloorInfo] = useState(initialShowOldFloorInfo ?? false);
   const [showOldTaxInfo, setShowOldTaxInfo] = useState(initialShowOldTaxInfo ?? false);
 
+  const discountDetails = useMemo<DiscountData>(
+    () => ({ ...defaultDiscountData, ...(initialDiscountDetails ?? {}) }),
+    [initialDiscountDetails]
+  );
+
+  const buildingPermissionData = useMemo<BuildingPermissionData>(
+    () => ({ ...defaultBuildingPermission, ...(initialBuildingPermission ?? {}) }),
+    [initialBuildingPermission]
+  );
+
   return {
     data,
     kycDetailsData,
     societyDetailsData,
+    buildingPermissionData,
     oldDetailsData,
     showOldFloorInfo,
     setShowOldFloorInfo,
@@ -69,5 +86,6 @@ export function useSyncedTabData(
     oldTaxesData,
     showOldTaxInfo,
     setShowOldTaxInfo,
+    discountDetails,
   };
 }
