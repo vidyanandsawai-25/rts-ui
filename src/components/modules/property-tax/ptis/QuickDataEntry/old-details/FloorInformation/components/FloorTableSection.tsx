@@ -136,7 +136,7 @@ export function FloorTableSection({
 
           return (
             <div className="px-1 py-1.5 text-[12px] text-center font-semibold text-slate-700">
-              <div className="truncate" title={typeof value === 'string' ? value : String(value)}>
+              <div className="truncate" title={value === null || typeof value === 'undefined' ? '-' : (typeof value === 'string' ? value : String(value))}>
                 {content}
               </div>
             </div>

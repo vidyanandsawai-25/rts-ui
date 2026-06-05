@@ -12,7 +12,7 @@ export const getFloorInformationColumns = (t: (key: string) => string): Column<F
     key: 'floor',
     label: t('floor.floorLabel'),
     headerClassName: 'text-xs uppercase border-r border-white/30 font-semibold text-white text-center whitespace-nowrap',
-    width: '120px',    
+    width: '120px',
   },
   {
     key: 'subFloor',
