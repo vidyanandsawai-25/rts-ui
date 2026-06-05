@@ -3,10 +3,9 @@
 import React, { useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { MasterTable } from "@/components/common/MasterTable";
-import { EditButton, DeleteButton } from "@/components/common/ActionButtons";
+import { EditButton, DeleteButton, AddButton } from "@/components/common/ActionButtons";
 import type { Mouja, MoujaProps } from "@/types/mouja.types";
 import { deleteMoujaAction } from "@/app/[locale]/property-tax/rate-master/moujamaster/action";
 import { useConfirm } from "@/components/common/ConfirmProvider";
@@ -142,17 +141,14 @@ export function MoujaMaster({
               placeholder={t("list.filters.search") || "Search Mouja..."}
               className="mb-0 w-full max-w-xs text-gray-900"
             />
-            <button
+            <AddButton
               onClick={() => {
                 startTransition(() => {
                   router.push(`/${locale}/property-tax/rate-master/moujamaster/add`);
                 });
               }}
-              className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 whitespace-nowrap"
-            >
-              <MapPin size={16} />
-              {t("list.buttons.add")}
-            </button>
+              label={t("list.buttons.add")}
+            />
           </div>
         }
           renderActions={(row) => (
