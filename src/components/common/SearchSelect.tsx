@@ -10,15 +10,15 @@ export interface SearchSelectOption {
 }
 
 export interface SearchSelectProps {
-    /**
-     * Optional custom placeholder text when loading.
-     */
-    loadingPlaceholder?: string;
+  /**
+   * Optional custom placeholder text when loading.
+   */
+  loadingPlaceholder?: string;
 
-    /**
-     * Optional custom placeholder text when no options are available.
-     */
-    noOptionsPlaceholder?: string;
+  /**
+   * Optional custom placeholder text when no options are available.
+   */
+  noOptionsPlaceholder?: string;
   /**
    * Optional id for the input. If not provided, a default will be used.
    */
@@ -133,8 +133,8 @@ export function SearchSelect({
   const [search, setSearch] = useState('');
   const [hasTyped, setHasTyped] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
-    // Accessible id for aria attributes and listbox
-    const accessibleId = name || id || 'search-select';
+  // Accessible id for aria attributes and listbox
+  const accessibleId = name || id || 'search-select';
 
   const wrapperRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
@@ -282,8 +282,8 @@ export function SearchSelect({
   return (
     <div ref={wrapperRef} className="relative w-full">
       {label && (
-        <label 
-          htmlFor={fallbackId} 
+        <label
+          htmlFor={fallbackId}
           className="block text-sm font-medium mb-1.5 text-slate-700"
         >
           {label}
@@ -302,7 +302,7 @@ export function SearchSelect({
               ? loadingPlaceholder || t('actions.loading') || 'Loading...'
               : !hasOptions && !value && !forceSearchText
                 ? noOptionsPlaceholder ||
-                  t('multiSelect.noOptionsAvailable') 
+                t('multiSelect.noOptionsAvailable')
                 : placeholder
           }
           required={required}
@@ -333,11 +333,6 @@ export function SearchSelect({
           onBlur={handleBlur}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
-          className={`w-full rounded-lg border px-2.5 py-1 pr-8 text-sm bg-white
-            focus:ring-2 outline-none text-gray-900
-            cursor-pointer focus:cursor-text disabled:bg-gray-100 disabled:cursor-not-allowed
-            ${error ? 'border-red-500 focus:ring-red-400 focus:border-red-500' : 'border-blue-200 focus:ring-blue-500'}
-            ${className ?? ''}`}
           className={`
             w-full h-9 rounded-md border bg-white px-3 pr-9 text-sm text-slate-900
             placeholder:text-slate-400
@@ -350,14 +345,14 @@ export function SearchSelect({
             ${className ?? ''}
           `}
         />
-        
+
         {/* Right side icon area */}
         <div className="absolute right-0 top-0 h-full flex items-center pr-2.5 pointer-events-none">
           {isLoading ? (
             <Loader2 className="h-4 w-4 text-slate-400 animate-spin" />
           ) : (
-            <ChevronDown 
-              className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
+            <ChevronDown
+              className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
             />
           )}
         </div>
@@ -387,7 +382,7 @@ export function SearchSelect({
             filteredOptions.map((opt, index) => {
               const isSelected = opt.value === value;
               const isHighlighted = index === highlightedIndex;
-              
+
               return (
                 <li
                   key={opt.value}
