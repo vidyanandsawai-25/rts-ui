@@ -40,12 +40,12 @@ export function createPtisSchemas(t: PtisTranslate = defaultPtisTranslate) {
     .string()
     .min(1, { message: t('search.errors.propertyNoRequired') })
     .max(10, { message: t('search.errors.propertyNoMax') })
-    .regex(/^[a-zA-Z0-9]+$/, { message: t('search.errors.propertyNoPattern') });
+    .regex(/^[a-zA-Z0-9-]+$/, { message: t('search.errors.propertyNoPattern') });
 
   const partitionNoSchema = z
     .string()
     .max(10, { message: t('search.errors.partitionNoMax') })
-    .regex(/^[a-zA-Z0-9]*$/, { message: t('search.errors.partitionNoPattern') })
+    .regex(/^[a-zA-Z0-9-]*$/, { message: t('search.errors.partitionNoPattern') })
     .optional();
 
   return {

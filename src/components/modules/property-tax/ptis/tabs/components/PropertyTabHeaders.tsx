@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useTranslations } from 'next-intl';
-import { Building2, UserCheck, Users, History } from 'lucide-react';
+import { Building2, UserCheck, Users, History, Percent, FileText } from 'lucide-react';
 import { Tabs } from '@/components/common/Tabs';
 import type { PtisTabId } from '@/types/ptis.types';
 
@@ -41,6 +41,24 @@ export const PropertyTabHeaders: React.FC<PropertyTabHeadersProps> = ({ activeTa
           <span className="inline-flex items-center">
             <Users className="h-4 w-4" />
             <span className="ml-2">{t('tabs.societyDetails')}</span>
+          </span>
+        </Tabs.Tab>
+        <Tabs.Tab
+          value="buildingpermission"
+          className="rounded-b-none rounded-t-lg border-0 py-1.5 text-sm text-white data-[state=active]:bg-white data-[state=active]:text-blue-900 data-[state=active]:shadow-none hover:text-white justify-center"
+        >
+          <span className="inline-flex items-center">
+            <FileText className="h-4 w-4" />
+            <span className="ml-2">{t('tabs.buildingPermission')}</span>
+          </span>
+        </Tabs.Tab>
+        <Tabs.Tab
+          value="discountdetails"
+          className="rounded-b-none rounded-t-lg border-0 py-1.5 text-sm text-white data-[state=active]:bg-white data-[state=active]:text-blue-900 data-[state=active]:shadow-none hover:text-white justify-center"
+        >
+          <span className="inline-flex items-center">
+            <Percent className="h-4 w-4" />
+            <span className="ml-2">{t('tabs.discountData')}</span>
           </span>
         </Tabs.Tab>
         <Tabs.Tab
