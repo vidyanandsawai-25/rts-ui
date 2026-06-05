@@ -21,7 +21,9 @@
   },
   "options": {
     "monthly": "मासिक",
-    "yearly": "वार्षिक"
+    "yearly": "वार्षिक",
+    "sqMeter": "वर्ग.मी.",
+    "sqFeet": "वर्ग.फ़ी."
   },
   "buttons": {
     "generateRate": "दर उत्पन्न करें",
@@ -94,7 +96,8 @@
     "noRatesAvailable": "कोई दरें उपलब्ध नहीं हैं",
     "noRatesMatch": "चयनित फिल्टर से कोई डेटा मेल नहीं खाता। कृपया अपने मानदंड समायोजित करें या नई दरें उत्पन्न करें।",
     "rateExceedsMaximum": "दर मूल्य {max} से अधिक नहीं हो सकता। कृपया एक वैध दर दर्ज करें।",
-    "rateValueInvalid": "दर मूल्य वैध होना चाहिए। कृपया एक वैध दर मूल्य दर्ज करें।"
+    "rateValueInvalid": "दर मूल्य वैध होना चाहिए। कृपया एक वैध दर मूल्य दर्ज करें।",
+    "cannotChangeConfiguredValue": "कॉन्फ़िगर किया गया मान बदलना संभव नहीं है। कृपया नीति कॉन्फ़िगरेशन में अपडेट करें।"
   },
   "sections": {
     "copyRatesTitle": "दरें कॉपी करें",
@@ -112,6 +115,7 @@
     "selectSourceRateSection": "स्रोत दर अनुभाग चुनें",
     "quickImport": "त्वरित आयात:",
     "rateFrequency": "दर आवृत्ति:",
+    "rateUnit": "दर इकाई:",
     "rateEntryMatrix": "दर प्रविष्टि मैट्रिक्स"
   },
   "placeholders": {

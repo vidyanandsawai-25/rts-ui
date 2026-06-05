@@ -31,6 +31,7 @@ export type RateCategory = {
 export interface IRateValue {
   rateCategory: string; // constructionId
   ratePerSqMtr: number | null;
+  ratePerSqFt?: number | null; // Rate per square feet for SqFeet display
   id?: number | string; // Backend record id for update
   rateRemark?: string; // Optional, for edit mode compatibility
 }
@@ -216,6 +217,16 @@ export interface RateFormProps {
   };
   // Server-side check for existing rates (add mode validation)
   initialExistingRatesCheck?: boolean;
+  // Policy-configured rate frequency (from PolicyConfiguration table)
+  rateFrequencyPolicy?: {
+    value: 'Monthly' | 'Yearly';
+    isConfigured: boolean;
+  };
+  // Policy-configured rate unit (from PolicyConfiguration table)
+  rateUnitPolicy?: {
+    value: 'SqMeter' | 'SqFeet';
+    isConfigured: boolean;
+  };
 }
 
 export interface RateMasterClientProps {
@@ -232,6 +243,7 @@ export interface RateMasterClientProps {
   initialZone?: string;
   initialUseGroup?: string;
   initialYear?: string;
+  rateUnitPolicy?: { value: 'SqMeter' | 'SqFeet'; isConfigured: boolean };
 }
 /**
  * Props for Add Rate drawer component
@@ -262,6 +274,16 @@ export interface AddRateDrawerProps {
   };
   // Server-side check for existing rates (add mode validation)
   initialExistingRatesCheck?: boolean;
+  // Policy-configured rate frequency (from PolicyConfiguration table)
+  rateFrequencyPolicy?: {
+    value: 'Monthly' | 'Yearly';
+    isConfigured: boolean;
+  };
+  // Policy-configured rate unit (from PolicyConfiguration table)
+  rateUnitPolicy?: {
+    value: 'SqMeter' | 'SqFeet';
+    isConfigured: boolean;
+  };
 }
 
 /**
@@ -292,6 +314,16 @@ export interface EditRateDrawerProps {
     totalCount: number;
     pageNumber: number;
     pageSize: number;
+  };
+  // Policy-configured rate frequency (from PolicyConfiguration table)
+  rateFrequencyPolicy?: {
+    value: 'Monthly' | 'Yearly';
+    isConfigured: boolean;
+  };
+  // Policy-configured rate unit (from PolicyConfiguration table)
+  rateUnitPolicy?: {
+    value: 'SqMeter' | 'SqFeet';
+    isConfigured: boolean;
   };
 }
 

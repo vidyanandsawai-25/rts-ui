@@ -34,6 +34,7 @@ interface BuildPayloadConfig {
   selectedUseGroup: string;
   assessmentYear: string;
   rateFrequency: "Monthly" | "Yearly";
+  rateUnit: "SqMeter" | "SqFeet";
   rateCategories: RateCategory[];
 }
 

@@ -22,6 +22,8 @@ interface RateViewGridProps {
   useGroups: ISelectOption[];
   // Zone remarks
   zoneRemarksMap: Map<string, string>;
+  // Rate unit
+  rateUnit: "SqMeter" | "SqFeet";
   // Pagination
   pageNumber: number;
   pageSize: number;
@@ -46,6 +48,7 @@ export function RateViewGrid({
   assessmentYears,
   useGroups,
   zoneRemarksMap,
+  rateUnit,
   pageNumber,
   pageSize,
   totalCount,
@@ -132,7 +135,10 @@ export function RateViewGrid({
                         const rateObj = row.rates.find((r: IRateValue) =>
                           r.rateCategory?.trim().toLowerCase() === col.id.trim().toLowerCase()
                         );
-                        value = (rateObj && rateObj.ratePerSqMtr != null) ? rateObj.ratePerSqMtr : 0.00;
+                        // Use rate value based on selected rate unit
+                        value = rateUnit === 'SqFeet' 
+                          ? ((rateObj && rateObj.ratePerSqFt != null) ? rateObj.ratePerSqFt : 0.00)
+                          : ((rateObj && rateObj.ratePerSqMtr != null) ? rateObj.ratePerSqMtr : 0.00);
                       } else if ((row as unknown as Record<string, unknown>)[col.id] != null) {
                         value = (row as unknown as Record<string, unknown>)[col.id] as number;
                       }

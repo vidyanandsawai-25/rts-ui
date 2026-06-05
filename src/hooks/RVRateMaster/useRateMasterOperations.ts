@@ -21,6 +21,7 @@ interface UseRateMasterOperationsProps {
   selectedUseGroup: string;
   assessmentYear: string;
   rateFrequency: "Monthly" | "Yearly";
+  rateUnit: "SqMeter" | "SqFeet";
   multipliers: Record<string, number>;
   rateCategories: RateCategory[];
   useGroupOptions: Array<{ label: string; value: string }>;
@@ -33,6 +34,7 @@ export function useRateMasterOperations({
   selectedUseGroup,
   assessmentYear,
   rateFrequency,
+  rateUnit,
   multipliers,
   rateCategories,
   useGroupOptions,
@@ -69,7 +71,7 @@ export function useRateMasterOperations({
       }
     }
 
-    const config = { selectedZone, selectedUseGroup, assessmentYear, rateFrequency, rateCategories };
+    const config = { selectedZone, selectedUseGroup, assessmentYear, rateFrequency, rateUnit, rateCategories };
     const allRateSubmissions = buildRateSubmissions(completeMatrixData, selectedUseGroup, multipliers, rateCategories);
 
     // Fetch backend rates for each submission
@@ -92,7 +94,7 @@ export function useRateMasterOperations({
       toast.error(t('messages.ratesAddedFailed', { errors: errorMessages.join('; ') }));
       return { success: false };
     }
-  }, [assessmentYear, selectedZone, selectedUseGroup, multipliers, rateCategories, mode, id, t, rateFrequency, getUseGroupLabel]);
+  }, [assessmentYear, selectedZone, selectedUseGroup, multipliers, rateCategories, mode, id, t, rateFrequency, rateUnit, getUseGroupLabel]);
 
   // Bulk update handler
   const handleBulkUpdate = useCallback(async (completeMatrixData: Array<Record<string, unknown>>) => {
@@ -101,7 +103,7 @@ export function useRateMasterOperations({
       return { success: false };
     }
 
-    const config = { selectedZone, selectedUseGroup, assessmentYear, rateFrequency, rateCategories };
+    const config = { selectedZone, selectedUseGroup, assessmentYear, rateFrequency, rateUnit, rateCategories };
     const parsedMatrixData = parseMatrixData(completeMatrixData, rateCategories);
     const allRateSubmissions = buildRateSubmissions(parsedMatrixData, selectedUseGroup, multipliers, rateCategories);
 
@@ -137,7 +139,7 @@ export function useRateMasterOperations({
       toast.error(t('messages.ratesUpdatedFailed', { errors: errorMessages.join('; ') }));
       return { success: false };
     }
-  }, [assessmentYear, selectedZone, selectedUseGroup, multipliers, rateCategories, t, rateFrequency, getUseGroupLabel]);
+  }, [assessmentYear, selectedZone, selectedUseGroup, multipliers, rateCategories, t, rateFrequency, rateUnit, getUseGroupLabel]);
 
   // Delete handler
   const handleDelete = useCallback(async (latestBackendRates: IBackendRateMaster[]) => {

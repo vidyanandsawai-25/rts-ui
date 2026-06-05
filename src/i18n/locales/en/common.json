@@ -418,5 +418,7 @@
     "mandatory": "Fields marked with * are mandatory"
   },
   "rateUnit": "(₹/Sq.mtr)",
+  "rateUnitSqMeter": "(₹/Sq.mtr)",
+  "rateUnitSqFeet": "(₹/Sq.ft)",
   "searchPlaceholder": "Search properties..."
 }

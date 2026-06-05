@@ -5,6 +5,7 @@ interface BuildPayloadConfig {
   selectedUseGroup: string;
   assessmentYear: string;
   rateFrequency: "Monthly" | "Yearly";
+  rateUnit: "SqMeter" | "SqFeet";
   rateCategories: RateCategory[];
 }
 
@@ -44,7 +45,7 @@ export function buildPayloadFromMatrix(
   config: BuildPayloadConfig,
   targetUseGroup?: string
 ): PayloadResult {
-  const { selectedZone, selectedUseGroup, assessmentYear, rateFrequency, rateCategories } = config;
+  const { selectedZone, selectedUseGroup, assessmentYear, rateFrequency, rateUnit, rateCategories } = config;
   const updates: RatePayload[] = [];
   const inserts: RatePayload[] = [];
   const useGroupForPayload = targetUseGroup || selectedUseGroup;
@@ -76,14 +77,25 @@ export function buildPayloadFromMatrix(
       if (Number(val) < 0) return;
       if (!existing && Number(val) === 0) return;
       
+      // Calculate rate values based on selected rate unit
+      // If SqMeter: entered value goes to rateSquareMeter, rateSquareFeet is calculated
+      // If SqFeet: entered value goes to rateSquareFeet, rateSquareMeter is calculated
+      const enteredValue = Number(val);
+      const rateSquareMeterValue = rateUnit === 'SqMeter' 
+        ? enteredValue 
+        : Number((enteredValue / 10.7639).toFixed(2));
+      const rateSquareFeetValue = rateUnit === 'SqFeet' 
+        ? enteredValue 
+        : Number((enteredValue * 10.7639).toFixed(2));
+      
       const payload: RatePayload = {
         taxZoneId: Number(row.taxZoneId) || Number(zoneNoVal),
         constructionTypeId: Number(constructionId),
         typeOfUseGroupId: Number(useGroupForPayload),
         YearRangeRVId: Number(assessmentYear),
         rateSectionId: Number(selectedZone),
-        rateSquareMeter: Number(val),
-        rateSquareFeet: Number((Number(val) * 10.7639).toFixed(2)),
+        rateSquareMeter: rateSquareMeterValue,
+        rateSquareFeet: rateSquareFeetValue,
         rateRemark: rateFrequency === "Yearly" ? "YearWise Rate" : "MonthWise Rate",
         createdBy: 1,
         floorId: Number(row.floorID ?? 67),
@@ -98,8 +110,11 @@ export function buildPayloadFromMatrix(
       const existingId = rateIdInRow || existing?.id;
       
       if (existingId) {
-        const originalValue = existing?.rateSquareMeter ?? 0;
-        if (Number(val) !== Number(originalValue)) {
+        // Compare with the appropriate original value based on rate unit
+        const originalValue = rateUnit === 'SqMeter' 
+          ? (existing?.rateSquareMeter ?? 0)
+          : (existing?.rateSquareFeet ?? 0);
+        if (enteredValue !== Number(originalValue)) {
           payload.Id = Number(existingId);
           updates.push(payload);
         }

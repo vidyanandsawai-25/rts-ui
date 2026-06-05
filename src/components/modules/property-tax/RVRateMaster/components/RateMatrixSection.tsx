@@ -39,6 +39,8 @@ interface RateMatrixSectionProps {
   selectedUseGroupLabel?: string;
   assessmentYear: string;
   assessmentYearLabel?: string;
+  // Rate unit
+  rateUnit: "SqMeter" | "SqFeet";
   // Options for labels
   zoneOptions: ISelectOption[];
   useGroupOptions: ISelectOption[];
@@ -83,6 +85,7 @@ export function RateMatrixSection({
   selectedUseGroupLabel,
   assessmentYear,
   assessmentYearLabel,
+  rateUnit,
   zoneOptions,
   useGroupOptions,
   assessmentYears,
@@ -108,7 +111,7 @@ export function RateMatrixSection({
 
   const categoryColorMap = buildCategoryColorMap(rateCategories, singleColorClass);
   const filteredCategories = filterRateCategories(rateCategories);
-  const matrixColumns = buildMatrixColumns(filteredCategories, singleColorClassHeader, tCommon);
+  const matrixColumns = buildMatrixColumns(filteredCategories, singleColorClassHeader, tCommon, rateUnit);
   const matrixMetaColumns = buildMatrixMetaColumns(t);
   const matrixRows = buildMatrixRows(matrixData, filteredCategories, zoneRemarksMap);
 

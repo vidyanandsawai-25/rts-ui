@@ -28,6 +28,7 @@ interface UseRateMasterFormStateProps {
   setAssessmentYear: (year: string) => void;
   rateFrequency: string;
   setRateFrequency: (freq: "Monthly" | "Yearly") => void;
+  rateUnit: "SqMeter" | "SqFeet";
   zoneDescriptions: IZoneDescription[];
   allZones: IZoneDescription[];
   rateCategories: RateCategory[];
@@ -61,6 +62,7 @@ export function useRateMasterFormState({
   setSelectedUseGroup,
   setAssessmentYear,
   setRateFrequency,
+  rateUnit,
   zoneDescriptions,
   allZones,
   rateCategories,
@@ -131,6 +133,7 @@ export function useRateMasterFormState({
     selectedZone,
     selectedUseGroup,
     assessmentYear,
+    rateUnit,
     paginatedZoneDescriptions,
     zoneDescriptions,
     rateCategories,

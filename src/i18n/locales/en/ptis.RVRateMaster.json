@@ -21,7 +21,9 @@
   },
   "options": {
     "monthly": "Monthly",
-    "yearly": "Yearly"
+    "yearly": "Yearly",
+    "sqMeter": "Sq.Mtr",
+    "sqFeet": "Sq.Ft"
   },
   "buttons": {
     "generateRate": "Generate Rate",
@@ -94,7 +96,8 @@
     "noRatesAvailable": "No rates available",
     "noRatesMatch": "No data matches the selected filters. Try adjusting your criteria or generate new rates.",
     "rateExceedsMaximum": "Rate value cannot exceed {max}. Please enter a valid rate.",
-    "rateValueInvalid": "Rate value must be valid. Please enter a valid rate value."
+    "rateValueInvalid": "Rate value must be valid. Please enter a valid rate value.",
+    "cannotChangeConfiguredValue": "Cannot change configured value. Please update in Policy Configuration."
   },
   "sections": {
     "copyRatesTitle": "Copy Rates",
@@ -112,6 +115,7 @@
     "selectSourceRateSection": "Select Source Rate Section",
     "quickImport": "Quick Import:",
     "rateFrequency": "Rate Frequency:",
+    "rateUnit": "Rate Unit:",
     "rateEntryMatrix": "Rate Entry Matrix"
   },
   "placeholders": {

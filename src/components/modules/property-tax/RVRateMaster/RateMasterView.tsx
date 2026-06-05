@@ -24,6 +24,7 @@ export default function RateMasterView({
   initialZone = "ALL",
   initialUseGroup,
   initialYear = "ALL",
+  rateUnitPolicy,
 }: RateMasterClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -93,7 +94,7 @@ export default function RateMasterView({
   };
 
   const handleDownloadRates = async () => {
-    await downloadDetailedRates(selectedZone, zones, t, rateCategories);
+    await downloadDetailedRates(selectedZone, zones, rateUnitPolicy?.value ?? "SqMeter", t, rateCategories);
   };
   const filteredData = useMemo(() =>
     filterTableData(rateMasterData, selectedZone, selectedYear, selectedUseGroup, isPaginationEnabled),
@@ -109,8 +110,8 @@ export default function RateMasterView({
   );
 
   const columns = useMemo(() =>
-    buildRateColumns(rateCategories, singleColorClassHeader, tCommon),
-    [rateCategories, tCommon]
+    buildRateColumns(rateCategories, singleColorClassHeader, tCommon, rateUnitPolicy?.value ?? "SqMeter"),
+    [rateCategories, tCommon, rateUnitPolicy]
   );
 
   const isDownloadDisabled = !selectedZone || selectedZone === 'ALL' ||
@@ -177,6 +178,7 @@ export default function RateMasterView({
         assessmentYears={assessmentYears}
         useGroups={useGroups}
         zoneRemarksMap={zoneRemarksMap}
+        rateUnit={rateUnitPolicy?.value ?? "SqMeter"}
         pageNumber={pageNumber}
         pageSize={pageSize}
         totalCount={totalCount}

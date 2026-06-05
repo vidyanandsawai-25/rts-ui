@@ -11,6 +11,16 @@ interface UseRateMasterFiltersProps {
     year?: string;
   };
   useGroupOptions: Array<{ label: string; value: string }>;
+  // Policy-configured rate frequency (from PolicyConfiguration table)
+  rateFrequencyPolicy?: {
+    value: 'Monthly' | 'Yearly';
+    isConfigured: boolean;
+  };
+  // Policy-configured rate unit (from PolicyConfiguration table)
+  rateUnitPolicy?: {
+    value: 'SqMeter' | 'SqFeet';
+    isConfigured: boolean;
+  };
 }
 
 export function useRateMasterFilters({
@@ -18,6 +28,8 @@ export function useRateMasterFilters({
   backendRates = [],
   filterValues,
   useGroupOptions,
+  rateFrequencyPolicy,
+  rateUnitPolicy,
 }: UseRateMasterFiltersProps) {
   const router = useRouter();
 
@@ -32,8 +44,15 @@ export function useRateMasterFilters({
   // Data states - backendRates are passed from server component
   const [fetchedBackendRates, setFetchedBackendRates] = useState<IBackendRateMaster[]>(backendRates || []);
   
-  // Rate frequency state
-  const [rateFrequency, setRateFrequency] = useState<"Monthly" | "Yearly">("Yearly");
+  // Rate frequency state - use policy value if configured, else default to "Yearly"
+  const [rateFrequency, setRateFrequency] = useState<"Monthly" | "Yearly">(
+    rateFrequencyPolicy?.isConfigured ? rateFrequencyPolicy.value : "Yearly"
+  );
+
+  // Rate unit state - use policy value if configured, else default to "SqMeter"
+  const [rateUnit, setRateUnit] = useState<"SqMeter" | "SqFeet">(
+    rateUnitPolicy?.isConfigured ? rateUnitPolicy.value : "SqMeter"
+  );
 
   // Multipliers state
   const [multipliers, setMultipliers] = useState<Record<string, number>>(() => 
@@ -125,6 +144,10 @@ export function useRateMasterFilters({
     // Rate frequency
     rateFrequency,
     setRateFrequency,
+    
+    // Rate unit
+    rateUnit,
+    setRateUnit,
     
     // Multipliers
     multipliers,

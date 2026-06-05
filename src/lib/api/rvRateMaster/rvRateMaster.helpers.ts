@@ -72,7 +72,8 @@ export function transformBackendRatesToMatrix(
       if (!groupedData.has(key)) {
         const initialRates = constructionTypes.map(ct => ({
           rateCategory: ct.constructionCode || ct.constructionId,
-          ratePerSqMtr: null
+          ratePerSqMtr: null,
+          ratePerSqFt: null
         }));
 
         groupedData.set(key, {
@@ -97,7 +98,9 @@ export function transformBackendRatesToMatrix(
           if (rateIndex !== -1) {
             const existingRate = group.rates[rateIndex].ratePerSqMtr;
             const newRate = item.rateSquareMeter;
+            const newRateSqFt = item.rateSquareFeet;
             group.rates[rateIndex].ratePerSqMtr = existingRate && existingRate !== 0 ? existingRate : newRate;
+            group.rates[rateIndex].ratePerSqFt = group.rates[rateIndex].ratePerSqFt || newRateSqFt;
             group.rates[rateIndex].id = item.id;
           }
         }

@@ -9,6 +9,7 @@ interface MatrixDataSyncProps {
   selectedZone: string;
   selectedUseGroup: string;
   assessmentYear: string;
+  rateUnit: "SqMeter" | "SqFeet";
   paginatedZoneDescriptions: IZoneDescription[];
   zoneDescriptions: IZoneDescription[];
   rateCategories: RateCategory[];
@@ -31,6 +32,7 @@ export function useMatrixDataSync({
   selectedZone,
   selectedUseGroup,
   assessmentYear,
+  rateUnit,
   paginatedZoneDescriptions,
   zoneDescriptions,
   rateCategories,
@@ -75,8 +77,10 @@ export function useMatrixDataSync({
         const rateValues: Record<string, number> = {};
         zoneRates.forEach(rate => {
           const constructionKey = String(rate.constructionTypeId);
-          if (rate.rateSquareMeter !== undefined) {
-            rateValues[constructionKey] = rate.rateSquareMeter;
+          // Use rate value based on selected rate unit
+          const rateValue = rateUnit === 'SqFeet' ? rate.rateSquareFeet : rate.rateSquareMeter;
+          if (rateValue !== undefined) {
+            rateValues[constructionKey] = rateValue;
           }
         });
         
@@ -105,7 +109,7 @@ export function useMatrixDataSync({
       }));
       setMatrixData(zeroMatrix);
     }
-  }, [fetchedBackendRates, backendRates, selectedZone, selectedUseGroup, assessmentYear, mode, paginatedZoneDescriptions, zoneDescriptions, rateCategories, defaultMatrixData, setMatrixData, setShowMatrix, setRateFrequency]);
+  }, [fetchedBackendRates, backendRates, selectedZone, selectedUseGroup, assessmentYear, rateUnit, mode, paginatedZoneDescriptions, zoneDescriptions, rateCategories, defaultMatrixData, setMatrixData, setShowMatrix, setRateFrequency]);
 
   // Initialize allZoneEdits with existing matrixData in edit mode
   useEffect(() => {

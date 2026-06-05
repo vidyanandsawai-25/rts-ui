@@ -17,7 +17,104 @@ import { getTaxZonePagedServer } from "@/lib/api/taxzone.services";
 import { getDetailedRates } from "@/lib/api/rvRateMaster";
 import { getConstructionPaged } from "@/lib/api/constructiontypemaster/construction-crud.service";
 import { createLogger } from "@/lib/utils/server-logger";
+import { getPolicyConfigurationsPagedServer } from "@/lib/api/policy-configuration.services";
 const logger = createLogger('RVRateMasterAction');
+
+/* ========== POLICY CONFIGURATION ========== */
+
+/**
+ * Get rate frequency policy configuration (Monthly/Yearly)
+ * Fetches the RateMonthlyOrYearly policy and returns the configured value
+ * Falls back to DefaultValue if PolicyValue is empty
+ */
+export async function getRateFrequencyPolicy(): Promise<{
+  value: 'Monthly' | 'Yearly';
+  isConfigured: boolean;
+}> {
+  try {
+    // Search for the RateMonthlyOrYearly policy
+    const response = await getPolicyConfigurationsPagedServer(1, 100, 'RateMonthlyOrYearly');
+    
+    // Find the exact policy by policyCode
+    const policy = response.items?.find(
+      (item) => item.policyCode === 'RateMonthlyOrYearly' && item.isActive
+    );
+    
+    if (!policy) {
+      // No policy found, return default
+      logger.warn('RateMonthlyOrYearly policy not found, using default', { operation: 'getRateFrequencyPolicy' });
+      return {
+        value: 'Monthly',
+        isConfigured: false,
+      };
+    }
+    
+    // Use PolicyValue if available, otherwise use DefaultValue
+    const rawValue = policy.policyValue?.trim() || policy.defaultValue?.trim() || 'Monthly';
+    
+    // Normalize the value to ensure it's either 'Monthly' or 'Yearly'
+    const normalizedValue = rawValue.toLowerCase() === 'yearly' ? 'Yearly' : 'Monthly';
+    
+    return {
+      value: normalizedValue,
+      isConfigured: true,
+    };
+  } catch (error) {
+    logger.error('Failed to fetch rate frequency policy', { operation: 'getRateFrequencyPolicy' }, error);
+    // Return default on error to prevent UI from breaking
+    return {
+      value: 'Monthly',
+      isConfigured: false,
+    };
+  }
+}
+
+/**
+ * Get rate unit policy configuration (SqMeter/SqFeet)
+ * Fetches the RateMasterAreaUnit policy and returns the configured value
+ * Falls back to DefaultValue if PolicyValue is empty
+ */
+export async function getRateUnitPolicy(): Promise<{
+  value: 'SqMeter' | 'SqFeet';
+  isConfigured: boolean;
+}> {
+  try {
+    // Search for the RateMasterAreaUnit policy
+    const response = await getPolicyConfigurationsPagedServer(1, 100, 'RateMasterAreaUnit');
+    
+    // Find the exact policy by policyCode
+    const policy = response.items?.find(
+      (item) => item.policyCode === 'RateMasterAreaUnit' && item.isActive
+    );
+    
+    if (!policy) {
+      // No policy found, return default
+      logger.warn('RateMasterAreaUnit policy not found, using default', { operation: 'getRateUnitPolicy' });
+      return {
+        value: 'SqMeter',
+        isConfigured: false,
+      };
+    }
+    
+    // Use PolicyValue if available, otherwise use DefaultValue
+    const rawValue = policy.policyValue?.trim() || policy.defaultValue?.trim() || 'SqMeter';
+    
+    // Normalize the value to ensure it's either 'SqMeter' or 'SqFeet'
+    const normalizedValue = rawValue.toLowerCase() === 'sqfeet' ? 'SqFeet' : 'SqMeter';
+    
+    return {
+      value: normalizedValue,
+      isConfigured: true,
+    };
+  } catch (error) {
+    logger.error('Failed to fetch rate unit policy', { operation: 'getRateUnitPolicy' }, error);
+    // Return default on error to prevent UI from breaking
+    return {
+      value: 'SqMeter',
+      isConfigured: false,
+    };
+  }
+}
 
 /* ========== DATA FETCHING (GET) ========== */
 export async function getDetailedRatesAction(
