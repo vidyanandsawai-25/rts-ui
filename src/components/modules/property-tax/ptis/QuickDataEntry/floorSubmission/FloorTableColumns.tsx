@@ -172,7 +172,7 @@ export const useFloorTableColumns = ({
           return (
             <div className="flex items-center gap-1.5">
               <span className="text-blue-700 font-semibold">{formatArea(row.areaSqFt)}</span>
-              <span className="text-[10px] text-gray-400 italic font-normal">
+              <span className="text-[10px] text-black font-bold">
                 ({formatArea(row.areaSqM)} {t('floor.sqM')})
               </span>
             </div>
@@ -189,7 +189,7 @@ export const useFloorTableColumns = ({
           return (
             <div className="flex items-center gap-1.5">
               <span className="text-slate-700 font-semibold">{formatArea(row.builtupAreaSqFt)}</span>
-              <span className="text-[10px] text-gray-400 italic font-normal">
+              <span className="text-[10px] text-black font-bold">
                 ({formatArea(row.builtupAreaSqM)} {t('floor.sqM')})
               </span>
             </div>
