@@ -11,6 +11,10 @@ interface PageProps {
     pageNumber?: string;
     pageSize?: string;
     searchTerm?: string;
+    filterWing?: string;
+    filterFlatOrShopNo?: string;
+    filterApartmentType?: string;
+    filterPropertyType?: string;
   }>;
 }
 
@@ -35,6 +39,8 @@ const Page = async ({ searchParams }: PageProps) => {
         initialPageSize={10}
         initialTotalPages={0}
         initialSearchTerm=""
+        wardId=""
+        propertyNo=""
         error="Ward ID and Property Number are required"
       />
     );
@@ -61,6 +67,8 @@ const Page = async ({ searchParams }: PageProps) => {
       initialPageSize={pageSize}
       initialTotalPages={totalPages}
       initialSearchTerm={searchTerm}
+      wardId={wardId}
+      propertyNo={propertyNo}
       error={result.success ? undefined : result.error}
     />
   );

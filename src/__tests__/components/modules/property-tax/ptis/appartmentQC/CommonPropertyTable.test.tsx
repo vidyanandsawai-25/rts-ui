@@ -12,6 +12,7 @@ vi.mock('next-intl', () => ({
     if (key === 'searchPlaceholder') return 'Search properties...';
     return key;
   },
+  useLocale: () => 'en',
 }));
 
 describe('CommonPropertyTable', () => {
@@ -22,6 +23,7 @@ describe('CommonPropertyTable', () => {
     activeTab: 'residential',
     searchQuery: '',
     onSearchChange: vi.fn(),
+    onRowClick: vi.fn(),
     isAutoScrolling: false,
     onToggleAutoScroll: vi.fn(),
   };

@@ -26,6 +26,13 @@ vi.mock("./usePropertyListHandlers", () => ({
   })),
 }));
 
+vi.mock("@/hooks/zoneMaster/usePropertyDelete", () => ({
+  usePropertyDelete: vi.fn(() => ({
+    isDeleting: false,
+    handleBulkDelete: vi.fn(),
+  })),
+}));
+
 // Mock components
 vi.mock("@/components/common/MasterTable", () => ({
   MasterTable: ({ emptyText, data }: { emptyText: string; data: unknown[] }) => (

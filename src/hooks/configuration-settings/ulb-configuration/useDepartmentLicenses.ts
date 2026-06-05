@@ -15,6 +15,22 @@ import type {
   UlbMasterLicenseSnapshot,
 } from '@/types/ulbconfig-master.types';
 
+function isLicenseExpired(endDateStr: string): boolean {
+  if (!endDateStr) return false;
+  const parts = endDateStr.split('-');
+  if (parts.length !== 3 || parts[0].length !== 4 || parts[1].length !== 2 || parts[2].length !== 2) {
+    return false;
+  }
+
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  const todayStr = `${year}-${month}-${day}`;
+
+  return endDateStr < todayStr;
+}
+
 function toDepartmentLicense(
   dept: Department,
   licences: DepartmentLicenceDetails[]
@@ -23,8 +39,10 @@ function toDepartmentLicense(
   const existing = licences.find(
     (l) => Number(l.departmentId ?? l.departmentMasterId) === Number(deptId)
   );
-  const enabled = existing ? !!(existing.isActive ?? existing.isEnabled) : false;
   const endDate = existing?.licenceEndDate ? existing.licenceEndDate.split('T')[0] : '';
+  const expired = isLicenseExpired(endDate);
+  const isMasterActive = dept.isActive !== false;
+  const enabled = (expired || !isMasterActive) ? false : (existing ? !!(existing.isActive ?? existing.isEnabled) : false);
 
   return {
     id: dept.departmentCode || String(deptId ?? '') || dept.departmentName.toLowerCase().replace(/\s+/g, '-'),
@@ -35,7 +53,7 @@ function toDepartmentLicense(
     startDate: existing?.licenceStartDate ? existing.licenceStartDate.split('T')[0] : '',
     duration: existing?.licenceDuration ? parseDurationFromApi(existing.licenceDuration) : '',
     endDate,
-    status: (existing?.status as DepartmentLicense['status']) || (enabled ? 'active' : 'inactive'),
+    status: expired ? 'inactive' : ((existing?.status as DepartmentLicense['status']) || (enabled ? 'active' : 'inactive')),
     renewalAlerts: endDate ? calculateRenewalAlerts(endDate) : [],
   };
 }
@@ -98,20 +116,56 @@ export function useDepartmentLicenses(
     [mergeWithPreviousState]
   );
 
-  const toggle = useCallback((id: string, enabled: boolean) => {
-    setDepartments((prev) =>
-      prev.map((d) =>
-        d.id !== id
-          ? d
-          : {
-              ...d,
-              enabled,
-              status: enabled ? 'active' : 'inactive',
-              renewalAlerts: enabled ? d.renewalAlerts : [],
+  const toggle = useCallback(
+    (id: string, enabled: boolean, masterDates?: UlbMasterLicenseSnapshot) => {
+      setDepartments((prev) =>
+        prev.map((d) => {
+          if (d.id !== id) return d;
+
+          let startDate = d.startDate;
+          let duration = d.duration;
+          let endDate = d.endDate;
+
+          if (enabled) {
+            const expired = endDate ? isLicenseExpired(endDate) : true;
+            if (expired) {
+              if (
+                masterDates?.startDate &&
+                masterDates?.duration &&
+                masterDates?.endDate &&
+                !isLicenseExpired(masterDates.endDate)
+              ) {
+                startDate = masterDates.startDate;
+                duration = masterDates.duration;
+                endDate = masterDates.endDate;
+              } else {
+                const todayStr = new Date().toISOString().split('T')[0];
+                startDate = todayStr;
+                duration = '12';
+                endDate = calculateLicenseEndDate(todayStr, '12');
+              }
             }
-      )
-    );
-  }, []);
+          }
+
+          const currentEndDate = endDate;
+          const expiredAfterToggle = currentEndDate ? isLicenseExpired(currentEndDate) : false;
+          const finalEnabled = enabled && !expiredAfterToggle;
+          const finalStatus = finalEnabled ? 'active' : 'inactive';
+
+          return {
+            ...d,
+            enabled: finalEnabled,
+            startDate,
+            duration,
+            endDate,
+            status: finalStatus as DepartmentLicense['status'],
+            renewalAlerts: finalEnabled && endDate ? calculateRenewalAlerts(endDate) : [],
+          };
+        })
+      );
+    },
+    []
+  );
 
   const updateDate = useCallback(
     (id: string, field: 'startDate' | 'duration' | 'endDate', value: string) => {
@@ -123,8 +177,13 @@ export function useDepartmentLicenses(
           if (field === 'endDate') {
             if (next.endDate) {
               next.renewalAlerts = calculateRenewalAlerts(next.endDate);
-              const end = new Date(next.endDate);
-              next.status = end < new Date() ? 'expired' : 'active';
+              const expired = isLicenseExpired(next.endDate);
+              if (expired) {
+                next.enabled = false;
+                next.status = 'inactive';
+              } else {
+                next.status = 'active';
+              }
             } else {
               next.renewalAlerts = [];
             }
@@ -134,8 +193,13 @@ export function useDepartmentLicenses(
           if (next.startDate && next.duration) {
             next.endDate = calculateLicenseEndDate(next.startDate, next.duration);
             next.renewalAlerts = calculateRenewalAlerts(next.endDate);
-            const end = new Date(next.endDate);
-            next.status = end < new Date() ? 'expired' : 'active';
+            const expired = isLicenseExpired(next.endDate);
+            if (expired) {
+              next.enabled = false;
+              next.status = 'inactive';
+            } else {
+              next.status = 'active';
+            }
           }
 
           return next;
@@ -153,6 +217,10 @@ export function useDepartmentLicenses(
       }
       const endDate =
         master.endDate?.trim() || calculateLicenseEndDate(master.startDate, master.duration);
+      if (isLicenseExpired(endDate)) {
+        toast.error(t('messages.masterExpired') || 'Master license dates are expired. Cannot enable departments.');
+        return;
+      }
       setDepartments((prev) =>
         prev.map((d) => ({
           ...d,
@@ -231,6 +299,10 @@ export function useDepartmentLicenses(
       }
       const endDate =
         master.endDate?.trim() || calculateLicenseEndDate(master.startDate, master.duration);
+      if (isLicenseExpired(endDate)) {
+        toast.error(t('messages.masterExpired') || 'Master license dates are expired. Cannot sync with departments.');
+        return;
+      }
       setDepartments((prev) =>
         prev.map((d) =>
           !d.enabled

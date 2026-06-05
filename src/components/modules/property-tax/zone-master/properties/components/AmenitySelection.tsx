@@ -26,19 +26,17 @@ export function AmenitySelection({
 }: AmenitySelectionProps) {
   // Wing options from society wing details
   const wingOptions = useMemo(() => {
-    const options = [
-      { value: "", label: t("partitionForm.amenity.noWing") }
-    ];
+    const options: { value: string; label: string }[] = [];
     
     wingDetails.forEach((detail) => {
       options.push({
         value: detail.wingNo,
-        label: `${detail.wingNo} - ${detail.wingName}`
+        label: `${detail.wingName}`
       });
     });
     
     return options;
-  }, [wingDetails, t]);
+  }, [wingDetails]);
 
   // Calculate max amenity based on selected wing
   const maxAmenity = useMemo(() => {
@@ -108,7 +106,7 @@ export function AmenitySelection({
               setForm({ ...form, fromAmenity: e.target.value });
               setErrors({ ...errors, fromAmenity: undefined });
             }}
-            placeholder="1"
+            placeholder={t("partitionForm.amenity.placeholders.fromAmenity")}
             required
             disabled
             className="bg-gray-50 font-bold text-blue-800"
@@ -129,8 +127,9 @@ export function AmenitySelection({
               setForm({ ...form, toAmenity: e.target.value });
               setErrors({ ...errors, toAmenity: undefined });
             }}
-            placeholder="5"
+            placeholder={t("partitionForm.amenity.placeholders.toAmenity")}
             required
+            min={0}
           />
           <ValidationMessage
             message={errors.toAmenity}

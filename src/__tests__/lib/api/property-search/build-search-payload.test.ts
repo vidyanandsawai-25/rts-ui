@@ -43,4 +43,79 @@ describe("buildPropertySearchPayload", () => {
     expect(payload.propertyAssessmentStatusId).toBeUndefined();
     expect(payload.dashboardFilter).toBe(3);
   });
+
+  it("maps values-dues top RV search to RVorCV, AmountFilterOperator, and TopCount", () => {
+    const payload = buildPropertySearchPayload(
+      null,
+      {
+        ...INITIAL_SEARCH_CRITERIA,
+        rateableValueFilter: "top",
+        rateableValueFrom: "1",
+      },
+      true,
+      "values-dues"
+    );
+
+    expect(payload.rvOrCv).toBe("RV");
+    expect(payload.amountFilterOperator).toBe("top");
+    expect(payload.topCount).toBe(1);
+    expect(payload.amountValue).toBeUndefined();
+    expect(payload.pageSize).toBe(-1);
+    expect(payload.pageNumber).toBe(1);
+  });
+
+  it("defaults TopCount to 1 when top filter has no count", () => {
+    const payload = buildPropertySearchPayload(
+      null,
+      {
+        ...INITIAL_SEARCH_CRITERIA,
+        rateableValueFilter: "top",
+        rateableValueFrom: "",
+      },
+      true,
+      "values-dues"
+    );
+
+    expect(payload.topCount).toBe(1);
+  });
+
+  it("maps values-dues exact search to AmountFilterOperator=Equals and AmountValue", () => {
+    const payload = buildPropertySearchPayload(
+      null,
+      {
+        ...INITIAL_SEARCH_CRITERIA,
+        rateableValueFilter: "exact",
+        rateableValueFrom: "1224880",
+      },
+      true,
+      "values-dues"
+    );
+
+    expect(payload.amountFilterOperator).toBe("Equals");
+    expect(payload.amountValue).toBe(1224880);
+    expect(payload.rvOrCv).toBe("RV");
+    expect(payload.pageSize).toBe(-1);
+    expect(payload.pageNumber).toBe(1);
+  });
+
+  it("maps values-dues between search to AmountValue and AmountTo only", () => {
+    const payload = buildPropertySearchPayload(
+      null,
+      {
+        ...INITIAL_SEARCH_CRITERIA,
+        rateableValueFilter: "between",
+        rateableValueFrom: "1224866",
+        rateableValueTo: "1224874",
+      },
+      true,
+      "values-dues"
+    );
+
+    expect(payload.amountValue).toBe(1224866);
+    expect(payload.amountTo).toBe(1224874);
+    expect(payload.rvOrCv).toBe("RV");
+    expect(payload.amountFilterOperator).toBeUndefined();
+    expect(payload.pageSize).toBe(-1);
+    expect(payload.pageNumber).toBe(1);
+  });
 });

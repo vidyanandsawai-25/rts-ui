@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, Check, Loader2 } from 'lucide-react';
 
 export interface SearchSelectOption {
   label: string;
@@ -278,17 +278,20 @@ export function SearchSelect({
   /* ---------------- Render ---------------- */
 
   const t = useTranslations("common");
-  // Removed unused defaultNoOptionsPlaceholder
 
   return (
-    <div ref={wrapperRef} className="relative">
+    <div ref={wrapperRef} className="relative w-full">
       {label && (
-        <label htmlFor={fallbackId} className="block text-sm font-medium mb-1 text-gray-700">
-          {label} {required && <span className="text-red-500">*</span>}
+        <label 
+          htmlFor={fallbackId} 
+          className="block text-sm font-medium mb-1.5 text-slate-700"
+        >
+          {label}
+          {required && <span className="text-red-500 ml-0.5">*</span>}
         </label>
       )}
 
-      <div className="relative">
+      <div className="relative group">
         <input
           id={fallbackId}
           type="text"
@@ -305,12 +308,8 @@ export function SearchSelect({
           required={required}
           autoComplete="off"
           role="combobox"
-          aria-expanded={isOpen && (filteredOptions.length > 0 || isLoading)}
-          aria-controls={
-            isOpen && (filteredOptions.length > 0 || isLoading)
-              ? `${accessibleId}-listbox`
-              : undefined
-          }
+          aria-expanded={isOpen}
+          aria-controls={isOpen ? `${accessibleId}-listbox` : undefined}
           aria-activedescendant={
             isOpen && highlightedIndex >= 0 && highlightedIndex < filteredOptions.length
               ? `${accessibleId}-option-${highlightedIndex}`
@@ -320,17 +319,17 @@ export function SearchSelect({
           inputMode={inputMode}
           onFocus={() => {
             isFocused.current = true;
-            onInputFocus?.(); // May trigger async load; auto-open effect handles the delayed case
+            onInputFocus?.();
             if (!disabled) {
               setIsOpen(true);
             }
           }}
-	  onClick={(e) => {
-          if (!isOpen && !disabled) {
-            setIsOpen(true);
-          }
-          (e.target as HTMLInputElement).select();
-        }}
+          onClick={(e) => {
+            if (!isOpen && !disabled) {
+              setIsOpen(true);
+            }
+            (e.target as HTMLInputElement).select();
+          }}
           onBlur={handleBlur}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
@@ -339,39 +338,83 @@ export function SearchSelect({
             cursor-pointer focus:cursor-text disabled:bg-gray-100 disabled:cursor-not-allowed
             ${error ? 'border-red-500 focus:ring-red-400 focus:border-red-500' : 'border-blue-200 focus:ring-blue-500'}
             ${className ?? ''}`}
+          className={`
+            w-full h-9 rounded-md border bg-white px-3 pr-9 text-sm text-slate-900
+            placeholder:text-slate-400
+            transition-all duration-150 ease-in-out
+            border-slate-200
+            hover:border-slate-300
+            focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none
+            disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed disabled:border-slate-200
+            ${isOpen ? 'border-blue-500 ring-2 ring-blue-500/20' : ''}
+            ${className ?? ''}
+          `}
         />
-        <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
-          {isOpen ? (
-            <ChevronUp size={16} />
+        
+        {/* Right side icon area */}
+        <div className="absolute right-0 top-0 h-full flex items-center pr-2.5 pointer-events-none">
+          {isLoading ? (
+            <Loader2 className="h-4 w-4 text-slate-400 animate-spin" />
           ) : (
-            <ChevronDown size={16} />
+            <ChevronDown 
+              className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
+            />
           )}
         </div>
       </div>
 
-      {isOpen && (filteredOptions.length > 0 || isLoading) && (
+      {/* Dropdown */}
+      {isOpen && (
         <ul
           ref={listRef}
           id={`${accessibleId}-listbox`}
           role="listbox"
-          className={`absolute left-0 right-0 z-10000 max-h-60 overflow-auto
-          rounded-lg border bg-white shadow-lg text-gray-900 ${
-            menuPlacement === 'top' ? 'bottom-full mb-1' : 'top-full mt-1'
-          }`}
+          className={`
+            absolute left-0 right-0 z-[9999] 
+            max-h-56 overflow-auto overscroll-contain
+            rounded-md border-2 border-slate-300 bg-white 
+            shadow-xl shadow-slate-300/60
+            ring-1 ring-slate-200
+            animate-in fade-in-0 zoom-in-95 duration-150
+            ${menuPlacement === 'top' ? 'bottom-full mb-1.5' : 'top-full mt-1.5'}
+          `}
         >
-          {filteredOptions.map((opt, index) => (
-            <li
-              key={opt.value}
-              id={`${accessibleId}-option-${index}`}
-              role="option"
-              aria-selected={index === highlightedIndex}
-              onMouseDown={() => handleSelect(opt.value)}
-              className={`px-3 py-2 cursor-pointer ${index === highlightedIndex ? 'bg-blue-200' : 'hover:bg-blue-100'
-                }`}
-            >
-              {opt.label}
+          {filteredOptions.length === 0 && !isLoading ? (
+            <li className="px-3 py-2.5 text-sm text-slate-500 text-center">
+              {t('multiSelect.noOptionsAvailable')}
             </li>
-          ))}
+          ) : (
+            filteredOptions.map((opt, index) => {
+              const isSelected = opt.value === value;
+              const isHighlighted = index === highlightedIndex;
+              
+              return (
+                <li
+                  key={opt.value}
+                  id={`${accessibleId}-option-${index}`}
+                  role="option"
+                  aria-selected={isSelected}
+                  onMouseDown={() => handleSelect(opt.value)}
+                  onMouseEnter={() => setHighlightedIndex(index)}
+                  className={`
+                    relative flex items-center justify-between
+                    px-3 py-2 text-sm cursor-pointer
+                    transition-colors duration-100
+                    ${isHighlighted ? 'bg-blue-50' : ''}
+                    ${isSelected && !isHighlighted ? 'bg-slate-50' : ''}
+                    ${!isHighlighted && !isSelected ? 'hover:bg-slate-50' : ''}
+                  `}
+                >
+                  <span className={`truncate ${isSelected ? 'font-medium text-blue-600' : 'text-slate-700'}`}>
+                    {opt.label}
+                  </span>
+                  {isSelected && (
+                    <Check className="h-4 w-4 text-blue-600 flex-shrink-0 ml-2" />
+                  )}
+                </li>
+              );
+            })
+          )}
         </ul>
       )}
       {error && <span className="text-[13px] text-red-600 mt-1 block">{error}</span>}

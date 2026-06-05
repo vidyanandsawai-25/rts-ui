@@ -1,7 +1,7 @@
 import { SearchSelect, type SearchSelectOption } from '@/components/common/SearchSelect';
 import { MultiSelectDropdown } from '@/components/common/Dropdown';
 import { Tabs, TabList, Tab } from '@/components/common/Tabs';
-import { CancelButton, AddButton } from '@/components/common/ActionButtons';
+import { CancelButton, AddButton, ShowHistoryButton } from '@/components/common/ActionButtons';
 import { SelectionMethod } from '@/hooks/combineProperty/useCombinePropertyFilters';
 
 export interface CombinePropertyFilterBarProps {
@@ -20,6 +20,7 @@ export interface CombinePropertyFilterBarProps {
   selectedCount: number;
   canProceed: boolean;
   isPending: boolean;
+  showHistory: boolean;
 
   handleBasePropertyChange: (_name: string, value: string) => void;
   handleMethodChange: (method: SelectionMethod) => void;
@@ -29,6 +30,7 @@ export interface CombinePropertyFilterBarProps {
   setSelectedPropertyType: (val: string) => void;
   handleClear: () => void;
   handleProceed: () => void;
+  onShowHistory?: () => void;
 }
 
 export function CombinePropertyFilterBar({
@@ -46,6 +48,7 @@ export function CombinePropertyFilterBar({
   selectedCount,
   canProceed,
   isPending,
+  showHistory,
   handleBasePropertyChange,
   handleMethodChange,
   handleRangeFromChange,
@@ -54,6 +57,7 @@ export function CombinePropertyFilterBar({
   setSelectedPropertyType,
   handleClear,
   handleProceed,
+  onShowHistory,
 }: CombinePropertyFilterBarProps) {
   return (
     <div className="flex items-end gap-2 px-3 py-2 bg-[#EFF4FF] border-b border-blue-100">
@@ -155,7 +159,7 @@ export function CombinePropertyFilterBar({
             value={selectedPropertyType}
             onChange={(_name, val) => setSelectedPropertyType(val)}
             placeholder={t('select')}
-            className="text-[11px] h-[28px]"
+            className="text-[11px] h-[28px] !border-green-800 !ring-2 !ring-green-400 shadow-sm animate-pulse transition-all"
             required
           />
         </div>
@@ -163,6 +167,11 @@ export function CombinePropertyFilterBar({
 
       {/* ---- Action buttons ---- */}
       <div className="flex items-end gap-2 shrink-0 ml-auto">
+        <ShowHistoryButton 
+          size="sm" 
+          label={showHistory ? t('hideHistory') || 'Hide History' : t('showHistory') || 'Show History'} 
+          onClick={onShowHistory} 
+        />
         <CancelButton label={t('clear')} onClick={handleClear} size="sm" />
         <AddButton
           label={isPending ? t('loadingButton') : t('proceed', { count: selectedCount })}

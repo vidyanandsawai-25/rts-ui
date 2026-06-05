@@ -1,6 +1,7 @@
 "use client";
 
-import { Input, Select, ValidationMessage } from "@/components/common";
+import { Input, ValidationMessage } from "@/components/common";
+import { SearchSelect } from "@/components/common/SearchSelect";
 import { CreatePropertyFormData, CreatePropertyFormErrors } from "@/types/zone-master/properties/create-property-drawer.types";
 import { WardItem } from "@/types/wardMaster.types";
 import { Option } from "@/components/common";
@@ -42,13 +43,12 @@ export function PropertyFormFields({
       {/* Property Type & Category Row */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <Select
+          <SearchSelect
             label={t("createProperty.propertyType")}
             options={propertyTypeOptions}
             value={formData.propertyTypeId}
             onChange={(_, value) => handleFieldChange("propertyTypeId", value)}
             placeholder={t("createProperty.selectPropertyType")}
-            selectSize="md"
             required
           />
           <ValidationMessage
@@ -59,13 +59,12 @@ export function PropertyFormFields({
         </div>
 
         <div>
-          <Select
+          <SearchSelect
             label={t("createProperty.category")}
             options={categoryOptions}
             value={formData.categoryId}
             onChange={(_, value) => handleFieldChange("categoryId", value)}
             placeholder={t("createProperty.selectCategory")}
-            selectSize="md"
             required
           />
           <ValidationMessage
@@ -78,13 +77,12 @@ export function PropertyFormFields({
 
       {/* Tax Zone ID */}
       <div>
-        <Select
+        <SearchSelect
           label={t("createProperty.taxZoneId")}
           options={taxZoneOptions}
           value={formData.taxZoneId}
           onChange={(_, value) => handleFieldChange("taxZoneId", value)}
           placeholder={t("createProperty.selectTaxZone")}
-          selectSize="md"
           required
         />
         <ValidationMessage

@@ -997,12 +997,16 @@ export async function linkWardsToZoneAction(
 
 import { getAllActiveWings } from "@/lib/api/wing.service";
 import { getFloorPaged } from "@/lib/api/floor.service";
-import { 
-  getSocietyDetailsByProperty, 
-  getLatestSocietyDetailByProperty, 
-  createSocietyDetail, 
-  updateSocietyDetail 
+import {
+  getSocietyDetailsByProperty,
+  getLatestSocietyDetailByProperty,
+  createSocietyDetail,
+  updateSocietyDetail,
+  deleteSocietyDetail,
+  getSocietyAmenityDetails,
 } from "@/lib/api/societyDetails.services";
+import { deletePropertyAmenity, deleteMultiplePropertiesAmenities, deleteProperty, deleteBulkProperties } from "@/lib/api/property.service";
+import { SocietyAmenityDetailItem } from "@/types/zone-master/properties/society-amenity-details.types";
 import { ZonePropertyItem, ZonePropertyListResponse } from "@/types/zone-master/properties/zoneProperty.types";
 import { WingItem } from "@/types/zone-master/properties/wing.types";
 import { Floor } from "@/types/floor.types";
@@ -1027,11 +1031,11 @@ export async function getAllPropertiesForWardAction(wardId: number): Promise<{
       return { success: false, error: "Invalid ward ID" };
     }
 
-    // Fetch all properties for the ward (use large page size)
+    // Fetch all properties for the ward (use PageSize=-1 to get all)
     const params = new URLSearchParams();
     params.set("WardId", wardId.toString());
     params.set("PageNumber", "1");
-    params.set("PageSize", "1000"); // Large number to get all
+    params.set("PageSize", "-1"); // -1 returns all items without pagination
 
     const response = await apiClient.get<ZonePropertyListResponse>(`/Property?${params.toString()}`);
 
@@ -1351,6 +1355,45 @@ export async function updateSocietyDetailAction(
 }
 
 /**
+ * Deletes a society detail (wing) record by ID.
+ */
+export async function deleteSocietyDetailAction(id: number): Promise<{
+  success: boolean;
+  error?: string;
+}> {
+  try {
+    if (!id || id <= 0) {
+      return { success: false, error: "Invalid society detail ID" };
+    }
+
+    const result = await deleteSocietyDetail(id);
+
+    if (!result.success) {
+      return { success: false, error: result.message || "Failed to delete wing" };
+    }
+
+    revalidatePath("/[locale]/property-tax/zone-master", "page");
+    return { success: true };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      logger.error("[deleteSocietyDetailAction] API Error", {
+        error,
+        statusCode: error.statusCode,
+      });
+      return { success: false, error: error.responseText };
+    }
+    if (error instanceof Error) {
+      logger.error("[deleteSocietyDetailAction] Error", {
+        error,
+        message: error.message,
+      });
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to delete wing" };
+  }
+}
+
+/**
  * Generates building structure preview based on wing configuration.
  * API: GET /api/Property/generate-buildingstructure
  */
@@ -1576,5 +1619,244 @@ export async function getNextPartitionNumberAction(
       return { success: false, error: error.message };
     }
     return { success: false, error: "Failed to get next partition number" };
+  }
+}
+
+/**
+ * Fetches property or amenity records for a selected wing.
+ * API: GET /Property/{societyDetailId}/{isAmenity}/society-amenity-details
+ */
+export async function getSocietyAmenityDetailsAction(
+  societyDetailId: number,
+  isAmenity: boolean
+): Promise<{
+  success: boolean;
+  data?: SocietyAmenityDetailItem[];
+  error?: string;
+}> {
+  try {
+    if (!societyDetailId || societyDetailId <= 0) {
+      return { success: false, error: "Invalid society detail ID" };
+    }
+
+    const result = await getSocietyAmenityDetails(societyDetailId, isAmenity);
+    return { success: true, data: result.items ?? [] };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      logger.error("[getSocietyAmenityDetailsAction] API Error", {
+        error,
+        statusCode: error.statusCode,
+      });
+      return { success: false, error: error.responseText };
+    }
+    if (error instanceof Error) {
+      logger.error("[getSocietyAmenityDetailsAction] Error", {
+        error,
+        message: error.message,
+      });
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to fetch society amenity details" };
+  }
+}
+
+/**
+ * Deletes a single property or amenity record by ID.
+ */
+export async function deletePropertyAmenityAction(
+  propertyId: number
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    if (!propertyId || propertyId <= 0) {
+      return { success: false, error: "Invalid property ID" };
+    }
+
+    const result = await deletePropertyAmenity(propertyId);
+
+    if (!result.success) {
+      return { success: false, error: result.error || "Failed to delete record" };
+    }
+
+    revalidatePath("/[locale]/property-tax/zone-master", "page");
+    return { success: true };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      logger.error("[deletePropertyAmenityAction] API Error", {
+        error,
+        statusCode: error.statusCode,
+      });
+      return { success: false, error: error.responseText };
+    }
+    if (error instanceof Error) {
+      logger.error("[deletePropertyAmenityAction] Error", {
+        error,
+        message: error.message,
+      });
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to delete record" };
+  }
+}
+
+/**
+ * Bulk deletes multiple property or amenity records by their IDs.
+ */
+export async function deleteMultiplePropertiesAmenitiesAction(
+  propertyIds: number[]
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    if (!propertyIds || propertyIds.length === 0) {
+      return { success: false, error: "No records selected" };
+    }
+
+    const result = await deleteMultiplePropertiesAmenities(propertyIds);
+
+    if (!result.success) {
+      return { success: false, error: result.error || "Failed to delete records" };
+    }
+
+    revalidatePath("/[locale]/property-tax/zone-master", "page");
+    return { success: true };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      logger.error("[deleteMultiplePropertiesAmenitiesAction] API Error", {
+        error,
+        statusCode: error.statusCode,
+      });
+      return { success: false, error: error.responseText };
+    }
+    if (error instanceof Error) {
+      logger.error("[deleteMultiplePropertiesAmenitiesAction] Error", {
+        error,
+        message: error.message,
+      });
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to delete records" };
+  }
+}
+
+/* ===================================================================================
+   MAIN PROPERTY DELETE ACTIONS
+   APIs: DELETE /api/Property/{PropertyId}  |  DELETE /api/Property/Bulk
+   =================================================================================== */
+
+/**
+ * Deletes a single main property by its ID.
+ * API: DELETE /api/Property/{PropertyId}
+ */
+export async function deletePropertyAction(
+  propertyId: string
+): Promise<{ success: boolean; message?: string; error?: string }> {
+  try {
+    if (!propertyId) {
+      return { success: false, error: "Invalid property ID" };
+    }
+
+    const result = await deleteProperty(propertyId);
+
+    if (!result.success) {
+      return { success: false, error: result.error || "Failed to delete property" };
+    }
+
+    revalidatePath("/[locale]/property-tax/zone-master", "page");
+    return {
+      success: true,
+      message: result.data?.message || "Property deleted successfully",
+    };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      logger.error("[deletePropertyAction] API Error", {
+        error,
+        statusCode: error.statusCode,
+      });
+      return { success: false, error: error.responseText };
+    }
+    if (error instanceof Error) {
+      logger.error("[deletePropertyAction] Error", { error, message: error.message });
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to delete property" };
+  }
+}
+
+/**
+ * Bulk deletes multiple main properties in a single API call.
+ * API: DELETE /api/Property/Bulk  (body: number[] of property IDs)
+ * Properties should be sorted in correct order by caller before passing to this function.
+ */
+export async function deleteBulkPropertiesAction(
+  propertyIds: string[]
+): Promise<{ success: boolean; message?: string; error?: string }> {
+  try {
+    if (!propertyIds || propertyIds.length === 0) {
+      return { success: false, error: "No properties selected" };
+    }
+
+    // Convert string IDs to numbers for backend
+    const numericIds = propertyIds.map(id => parseInt(id, 10)).filter(id => !isNaN(id));
+    
+    if (numericIds.length === 0) {
+      return { success: false, error: "Invalid property IDs" };
+    }
+
+    // Use bulk delete API - backend handles all deletions in one call
+    const result = await deleteBulkProperties(numericIds);
+
+    if (!result.success) {
+      // Extract error message from response
+      const errorMsg = result.error || "Failed to delete properties";
+      logger.error("[deleteBulkPropertiesAction] Bulk delete failed", {
+        error: errorMsg,
+        propertyIds,
+      });
+      return { success: false, error: errorMsg };
+    }
+
+    // Backend can return HTTP 200 with success: false inside the data payload.
+    // Check the inner response body to catch this case (mirrors deleteMultiplePropertiesAmenities).
+    if (result.data) {
+      const responseData = result.data as {
+        success?: boolean;
+        message?: string;
+        errors?: string[];
+      };
+      if (responseData.success === false) {
+        const errorMsg =
+          (responseData.errors && responseData.errors.length > 0 && responseData.errors[0]) ||
+          responseData.message ||
+          "Failed to delete properties";
+        logger.error("[deleteBulkPropertiesAction] Backend reported failure", {
+          error: errorMsg,
+          propertyIds,
+        });
+        return { success: false, error: errorMsg };
+      }
+    }
+
+    revalidatePath("/[locale]/property-tax/zone-master", "page");
+
+    // Extract success message from response data
+    const responseData = result.data as { message?: string } | undefined;
+    const successMessage = responseData?.message ||
+      `${propertyIds.length} ${propertyIds.length === 1 ? "property" : "properties"} deleted successfully`;
+
+    return {
+      success: true,
+      message: successMessage,
+    };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      logger.error("[deleteBulkPropertiesAction] API Error", {
+        error,
+        statusCode: error.statusCode,
+      });
+      return { success: false, error: error.responseText };
+    }
+    if (error instanceof Error) {
+      logger.error("[deleteBulkPropertiesAction] Error", { error, message: error.message });
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to delete properties" };
   }
 }

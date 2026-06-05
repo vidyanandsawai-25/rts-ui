@@ -21,6 +21,8 @@ export interface ApartmentQCDetail {
   oldPropertyNo: string | null;
   /** Ward identifier */
   wardId: number;
+  /** Ward number/code */
+  wardNo?: string | null;
   /** Mobile number */
   mobileNo: string | null;
   /** Email address */
@@ -61,6 +63,8 @@ export interface ApartmentQCDetail {
   partType: string | null;
   /** Wing name from the API (new field) */
   wing?: string | null;
+  /** Number of rooms */
+  noOfRooms?: number | null;
   /** Floor */
   floor: string | null;
   /** Sub floor */
@@ -75,6 +79,14 @@ export interface ApartmentQCDetail {
   constructionType: string | null;
   /** Old construction area */
   oldConstructionArea: number | null;
+  /** Old construction year */
+  oldConstructionYear: string | null;
+  /** Old use type */
+  oldUseType: string | null;
+  /** Old construction type */
+  oldConstructionType: string | null;
+  /** Old CSN */
+  oldCSN: string | null;
   /** Old rateable value */
   oldRV: number | null;
   /** Old total tax */
@@ -167,6 +179,7 @@ export interface ApartmentQCSearchParams {
   wardId?: number | string;
   propertyNo?: string;
   propertyDetailsId?: number | string;
+  propertyId?: number | string;
   partType?: string;
   type?: string;
   pageNumber?: number;
@@ -175,6 +188,11 @@ export interface ApartmentQCSearchParams {
   sortBy?: string;
   sortOrder?: string;
   filterLogic?: number;
+  // Column filter parameters
+  wing?: string;
+  flatOrShopNo?: string;
+  apartmentType?: string;
+  propertyType?: string;
 }
 
 /**
@@ -194,3 +212,65 @@ export interface PagedResponse<T> {
  * Tab type for apartment QC view
  */
 export type ApartmentQCTab = 'rateable' | 'capital' | 'dual';
+
+/**
+ * Individual tax amount item for apartment tax details
+ */
+export interface ApartmentTaxAmountItem {
+  taxName: string;
+  taxAmount: number;
+  displayOrder: number;
+}
+
+/**
+ * Apartment tax details response items
+ */
+export interface ApartmentTaxDetailsItems {
+  propertyId: number;
+  taxAmounts: ApartmentTaxAmountItem[];
+  propertyCount: number;
+}
+
+/**
+ * Apartment property tax details API response
+ * Endpoint: GET /api/Property/apartment-property-tax-details-rv
+ */
+export interface ApartmentPropertyTaxDetailsResponse {
+  success: boolean;
+  message: string;
+  items: ApartmentTaxDetailsItems;
+  errors: string[] | null;
+  correlationId: string | null;
+}
+
+/**
+ * Part type values for apartment property tax details
+ * Aminity = Amenities tab, C = Commercial tab, R = Residential tab
+ */
+export type ApartmentPartType = 'Aminity' | 'C' | 'R';
+
+/**
+ * Parameters for fetching apartment property tax details (using WardId and PropertyNo)
+ */
+export interface ApartmentPropertyTaxDetailsParams {
+  wardId: string | number;
+  propertyNo: string;
+  partType: ApartmentPartType; // Aminity=Amenities, C=Commercial, R=Residential
+}
+
+/**
+ * Parameters for fetching apartment property tax details by property ID
+ * Used by PropertyDetailsEditScreen drawer
+ */
+export interface ApartmentPropertyTaxDetailsByIdParams {
+  propertyId: string | number;
+  partType: ApartmentPartType; // Aminity=Amenities, C=Commercial, R=Residential
+}
+
+/**
+ * Dual method tax details containing both Rateable Value and Capital Value data
+ */
+export interface DualMethodTaxDetails {
+  rateable: ApartmentTaxDetailsItems | null;
+  capital: ApartmentTaxDetailsItems | null;
+}

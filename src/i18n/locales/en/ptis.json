@@ -270,7 +270,8 @@
   },
   "loading": {
     "message": "Loading Property Details",
-    "description": "Please wait while we fetch the latest property tax information."
+    "description": "Please wait while we fetch the latest property tax information.",
+    "rendering": "Rendering..."
   },
   "assessmentMethods": {
     "rateable": "Rateable",
@@ -284,6 +285,7 @@
   },
   "floorTable": {
     "columns": {
+      "taxable": "Taxable",
       "serialNo": "Sr. No.",
       "floor": "Floor",
       "subFloor": "Sub Floor",
@@ -320,6 +322,7 @@
       "appliedOn": "AppliedON"
     },
     "tooltips": {
+      "taxable": "Taxable",
       "floor": "Floor",
       "subFloor": "Sub Floor",
       "constYear": "Construction Year",
@@ -348,7 +351,7 @@
       "useFactor": "Use Factor",
       "capitalValue": "Capital Value",
       "taxAmount": "Tax Amount",
-      "appliedOn": "Applied On Date"
+      "appliedOn": "Applied On"
     },
     "placeholders": {
       "oc": "OC/YYYY/###",
@@ -521,9 +524,14 @@
     "previousPage": "Previous Page",
     "nextPage": "Next Page",
     "lastPage": "Last Page",
+    "firstProperty": "First Property",
+    "previousProperty": "Previous Property",
+    "nextProperty": "Next Property",
+    "lastProperty": "Last Property",
     "backToSearch": "Back to Search Property"
   },
   "table": {
-    "page": "Page {current} of {total}"
+    "page": "Page {current} of {total}",
+    "property": "Property {current} of {total}"
   }
 }

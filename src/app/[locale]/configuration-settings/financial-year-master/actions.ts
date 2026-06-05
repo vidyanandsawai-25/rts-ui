@@ -32,7 +32,7 @@ async function ensureAuthorized() {
 
 export async function saveFinancialYearAction(data: FinancialYearFormValues, id?: number): Promise<ActionResult<void>> {
   try {
-    if (!(await ensureAuthorized())) return { success: false, error: "Unauthorized: Please login to continue" };
+    if (!(await ensureAuthorized())) return { success: false, error: "Session expired: Please login to continue" };
 
     const parsed = createFinancialYearSchema((key) => key).safeParse(data);
     if (!parsed.success) {
@@ -85,7 +85,7 @@ export async function saveFinancialYearAction(data: FinancialYearFormValues, id?
 
 export async function deleteFinancialYearAction(id: number): Promise<ActionResult<void>> {
   try {
-    if (!(await ensureAuthorized())) return { success: false, error: "Unauthorized" };
+    if (!(await ensureAuthorized())) return { success: false, error: "Access denied" };
     const t = await getTranslations("financialYear");
     const year = await getFinancialYearById(id);
     if (year.isActive) return { success: false, error: t("table.messages.cannotDeleteCurrent") };
@@ -100,7 +100,7 @@ export async function deleteFinancialYearAction(id: number): Promise<ActionResul
 
 export async function setAsCurrentAction(id: number): Promise<ActionResult<void>> {
   try {
-    if (!(await ensureAuthorized())) return { success: false, error: "Unauthorized" };
+    if (!(await ensureAuthorized())) return { success: false, error: "Access denied" };
     const year = await getFinancialYearById(id);
     if (year.status === "Closed") return { success: false, error: "Closed financial year cannot be marked as current" };
     const existingYears = (await getFinancialYearsPaged(1, 2000)).items || [];
@@ -116,7 +116,7 @@ export async function setAsCurrentAction(id: number): Promise<ActionResult<void>
 
 export async function closeYearAction(id: number): Promise<ActionResult<void>> {
   try {
-    if (!(await ensureAuthorized())) return { success: false, error: "Unauthorized" };
+    if (!(await ensureAuthorized())) return { success: false, error: "Access denied" };
     const year = await getFinancialYearById(id);
     await updateFinancialYear(id, buildYearPayload(year as FinancialYear, false, "Closed"));
     revalidatePath(REVALIDATE_PATH, "page");

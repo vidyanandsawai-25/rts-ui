@@ -53,6 +53,7 @@
   "remarkLabel": "Remark",
   "remarkPlaceholder": "Enter remark for combining properties",
   "remarkRequiredError": "Please enter a remark",
+  "cannotUncheckBaseProperty": "Cannot uncheck the primary property",
   "error": {
     "title": "Failed to connect server. Please try again later.",
     "description": "An error occurred while loading the combine property page. Please try again.",
@@ -63,5 +64,10 @@
   "loading": {
     "message": "Loading Combine Property...",
     "description": "Please wait while we fetch the property data"
-  }
+  },
+  "combinePropertyHistory": "Combine Property History Details",
+  "viewDetails": "View Details",
+  "action": "Action",
+  "showHistory": "Show History",
+  "hideHistory": "Hide History"
 }

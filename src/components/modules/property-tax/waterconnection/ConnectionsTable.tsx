@@ -8,6 +8,7 @@ import { EditButton, DeleteButton, AddButton } from "@/components/common/ActionB
 import { Badge } from "@/components/common";
 import type { WaterConnection } from "@/types/waterconnection.types";
 import { getWaterConnectionColumns } from "./WaterConnectionColumns";
+import type React from "react";
 
 interface ConnectionsTableProps {
   propertyNo: string;
@@ -17,11 +18,11 @@ interface ConnectionsTableProps {
   pageSize: number;
   totalPages: number;
   onPageChange: (page: number) => void;
-  onPageSizeChange: (size: number) => void;
   onAdd: () => void;
   onEdit: (connection: WaterConnection) => void;
   onDelete: (connection: WaterConnection) => void;
   loading?: boolean;
+  footerLeft?: React.ReactNode;
 }
 
 export function ConnectionsTable({
@@ -32,11 +33,11 @@ export function ConnectionsTable({
   pageSize,
   totalPages,
   onPageChange,
-  onPageSizeChange,
   onAdd,
   onEdit,
   onDelete,
   loading = false,
+  footerLeft,
 }: ConnectionsTableProps) {
   const t = useTranslations("waterConnection");
   const tCommon = useTranslations("common");
@@ -76,13 +77,14 @@ export function ConnectionsTable({
         columns={columns}
         data={connections}
         loading={loading}
+        height="md"
         pageNumber={pageNumber}
         pageSize={pageSize}
         totalCount={totalCount}
         totalPages={totalPages}
         onPageChange={onPageChange}
-        onPageSizeChange={onPageSizeChange}
-        paginationConfig={{ enabled: true, showPageSizeSelector: true }}
+        paginationConfig={{ enabled: true, showPageSizeSelector: false }}
+        footerLeftContent={footerLeft}
         renderActions={(row) => (
           <>
             <EditButton

@@ -1,5 +1,12 @@
 export { Select } from './select';
 export type { Option, SelectProps } from './select';
+
+export { SortableColumnHeader } from './SortableColumnHeader';
+export type { SortableColumnHeaderProps, SortDirection } from './SortableColumnHeader';
+
+export { CollapsibleSectionHeader } from './CollapsibleSectionHeader';
+export type { CollapsibleSectionHeaderProps } from './CollapsibleSectionHeader';
+
 /**
  * Common components barrel export
  * Centralized exports for all reusable UI components

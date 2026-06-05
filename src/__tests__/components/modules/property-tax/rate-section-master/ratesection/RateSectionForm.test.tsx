@@ -221,17 +221,14 @@ describe("RateSectionForm", () => {
       
       render(<RateSectionForm {...addModeProps} />);
       
-      const codeInput = screen.getByTestId("input-form.ratesectionno");
       const nameInput = screen.getByTestId("input-form.ratesectionname");
       
-      fireEvent.change(codeInput, { target: { value: "RS003" } });
       fireEvent.change(nameInput, { target: { value: "New Rate Section" } });
       
       fireEvent.click(screen.getByTestId("save-button"));
       
       await waitFor(() => {
         expect(mockCreateRateSectionAction).toHaveBeenCalledWith({
-          rateSectionNo: "RS003",
           description: "New Rate Section",
           isActive: true,
         });
@@ -241,12 +238,10 @@ describe("RateSectionForm", () => {
     it("shows error for duplicate rate section", async () => {
       render(<RateSectionForm {...addModeProps} />);
       
-      const codeInput = screen.getByTestId("input-form.ratesectionno");
       const nameInput = screen.getByTestId("input-form.ratesectionname");
       
-      // Use existing rate section code
-      fireEvent.change(codeInput, { target: { value: "RS001" } });
-      fireEvent.change(nameInput, { target: { value: "New Name" } });
+      // Use existing rate section name
+      fireEvent.change(nameInput, { target: { value: "Rate Section 1" } });
       
       fireEvent.click(screen.getByTestId("save-button"));
       
@@ -255,47 +250,11 @@ describe("RateSectionForm", () => {
       });
     });
 
-    it("validates rate section number with only zeros", async () => {
-      render(<RateSectionForm {...addModeProps} />);
-      
-      const codeInput = screen.getByTestId("input-form.ratesectionno");
-      const nameInput = screen.getByTestId("input-form.ratesectionname");
-      
-      fireEvent.change(codeInput, { target: { value: "0" } });
-      fireEvent.change(nameInput, { target: { value: "Valid Name" } });
-      fireEvent.blur(codeInput);
-      
-      // Wait for validation error to appear
-      await waitFor(() => {
-        const saveButton = screen.getByTestId("save-button");
-        expect(saveButton).toBeDisabled();
-      });
-    });
-
-    it("validates rate section number with multiple zeros", async () => {
-      render(<RateSectionForm {...addModeProps} />);
-      
-      const codeInput = screen.getByTestId("input-form.ratesectionno");
-      const nameInput = screen.getByTestId("input-form.ratesectionname");
-      
-      fireEvent.change(codeInput, { target: { value: "000" } });
-      fireEvent.change(nameInput, { target: { value: "Valid Name" } });
-      fireEvent.blur(codeInput);
-      
-      // Wait for validation error to appear
-      await waitFor(() => {
-        const saveButton = screen.getByTestId("save-button");
-        expect(saveButton).toBeDisabled();
-      });
-    });
-
     it("validates rate section name with only zeros", async () => {
       render(<RateSectionForm {...addModeProps} />);
       
-      const codeInput = screen.getByTestId("input-form.ratesectionno");
       const nameInput = screen.getByTestId("input-form.ratesectionname");
       
-      fireEvent.change(codeInput, { target: { value: "RS003" } });
       fireEvent.change(nameInput, { target: { value: "0" } });
       fireEvent.blur(nameInput);
       
@@ -309,10 +268,8 @@ describe("RateSectionForm", () => {
     it("validates rate section name with multiple zeros", async () => {
       render(<RateSectionForm {...addModeProps} />);
       
-      const codeInput = screen.getByTestId("input-form.ratesectionno");
       const nameInput = screen.getByTestId("input-form.ratesectionname");
       
-      fireEvent.change(codeInput, { target: { value: "RS003" } });
       fireEvent.change(nameInput, { target: { value: "000" } });
       fireEvent.blur(nameInput);
       
@@ -323,21 +280,18 @@ describe("RateSectionForm", () => {
       });
     });
 
-    it("accepts rate section number with zeros mixed with other characters", async () => {
+    it("accepts valid rate section name", async () => {
       mockCreateRateSectionAction.mockResolvedValue({ success: true });
       
       render(<RateSectionForm {...addModeProps} />);
       
-      const codeInput = screen.getByTestId("input-form.ratesectionno");
       const nameInput = screen.getByTestId("input-form.ratesectionname");
       
-      fireEvent.change(codeInput, { target: { value: "RS001" } });
       fireEvent.change(nameInput, { target: { value: "Valid Name" } });
       
       // Save button should not be disabled for valid input
       await waitFor(() => {
-        // Note: Button might still be disabled due to duplicate check, but not due to all-zeros validation
-        expect(codeInput).toHaveValue("RS001");
+        expect(nameInput).toHaveValue("Valid Name");
       });
     });
   });

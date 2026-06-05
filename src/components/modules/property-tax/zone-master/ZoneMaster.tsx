@@ -14,6 +14,7 @@ import {
   RightPanelTab,
   CreatePropertyData,
   CreatePartitionData,
+  DeletePropertyData,
 } from "@/types/zoneMaster.types";
 
 export interface ZoneMasterProps {
@@ -28,6 +29,7 @@ export interface ZoneMasterProps {
   activeRightTab?: RightPanelTab;
   createPropertyData?: CreatePropertyData;
   createPartitionData?: CreatePartitionData;
+  deletePropertyData?: DeletePropertyData;
 }
 
 export default function ZoneMaster({
@@ -42,6 +44,7 @@ export default function ZoneMaster({
   activeRightTab = "wards",
   createPropertyData,
   createPartitionData,
+  deletePropertyData,
 }: ZoneMasterProps) {
   return (
     <PageContainer>
@@ -57,6 +60,7 @@ export default function ZoneMaster({
         activeRightTab={activeRightTab}
         createPropertyData={createPropertyData}
         createPartitionData={createPartitionData}
+        deletePropertyData={deletePropertyData}
       />
     </PageContainer>
   );

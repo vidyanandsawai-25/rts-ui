@@ -50,14 +50,28 @@ export const TRANSLATION_TEXT_SANITIZE = /[^\p{L}\p{M}\p{N}\s,.\-\/_()]/gu;
 /* ================= SEARCH VALIDATION ================= */
 export const SEARCH_KEY_REGEX = /^[A-Za-z0-9+\-]+$/;
 
+/* ================= NAME ONLY VALIDATION ================= */
+// Name fields: Unicode letters and spaces only. No numbers, no special characters.
+export const NAME_ONLY_REGEX = /^[\p{L}\p{M}\s]+$/u;
+export const NAME_ONLY_SANITIZE = /[^\p{L}\p{M}\s]/gu;
+
+// Code fields (letters only, no spaces, no numbers, no special characters)
+export const LETTERS_ONLY_REGEX = /^[\p{L}\p{M}]+$/u;
+export const LETTERS_ONLY_SANITIZE = /[^\p{L}\p{M}]/gu;
+
 /* ================= SOCIETY VALIDATION ================= */
 export const PERSON_NAME_REGEX = /^[\p{L}\p{M}\s.,'-]+$/u;
+// Sanitize pattern for person names: removes anything not letter/mark/space/period/comma/apostrophe/hyphen
+export const PERSON_NAME_SANITIZE = /[^\p{L}\p{M}\s.,'-]/gu;
 export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const EMAIL_LOWERCASE_RESTRICTED_REGEX = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.(com|in)$/;
 export const MOBILE_10_REGEX = /^[6-9][0-9]{9}$/;
 export const PINCODE_6_REGEX = /^[0-9]{6}$/;
 export const CITY_NAME_REGEX = /^[a-zA-Z\s]+$/;
 export const YEAR_REGEX = /^\d{4}$/;
+// Positive integer (one or more digits, no decimal/sign). Generic — usable
+// for BHK, room counts, floor counts, etc.
+export const POSITIVE_INTEGER_REGEX = /^\d+$/;
 
 
 /* ================= POSITIVE DECIMAL VALIDATION ================= */

@@ -132,9 +132,22 @@ export default function FloorForm({ id, initialData }: Readonly<FloorFormProps>)
       newValue = sanitizeFloorCode(newValue);
     }
 
+    let parsedValue: number | string = newValue;
+    if (name === 'sequenceNo') {
+      const num = Number(newValue);
+      // Block negative numbers
+      if (newValue === '' || newValue === undefined) {
+        parsedValue = 0;
+      } else if (num < 0) {
+        parsedValue = 1;
+      } else {
+        parsedValue = num;
+      }
+    }
+
     setFormData((p) => ({
       ...p,
-      [name]: name === 'sequenceNo' ? Number(newValue) : newValue,
+      [name]: name === 'sequenceNo' ? parsedValue : newValue,
     }));
   };
 

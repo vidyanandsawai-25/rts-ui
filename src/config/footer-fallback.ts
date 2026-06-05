@@ -170,6 +170,20 @@ export const FALLBACK_FOOTER_ACTIONS: FallbackFooterAction[] = [
     haveNoAccess: false,
   },
   {
+  actionCommand: 'PTIS_TAP_WATER',
+  buttonName: 'Water',
+  lucideIcon: 'Droplet',
+  routePath: '',
+  displayOrder: 205,
+  isEnabled: true,
+  canView: true,
+  canEdit: true,
+  canDelete: true,
+  haveFullAccess: true,
+  haveNoAccess: false,
+},
+
+  {
     actionCommand: 'PTIS_ADD',
     buttonName: 'Add',
     lucideIcon: 'Plus',

@@ -12,7 +12,7 @@ import { ZoneItem } from "@/types/zoneMaster.types";
 import { WardItem } from "@/types/wardMaster.types";
 import { ZONE_WARD_NO_MAX_LENGTH, ZONE_WARD_NAME_MAX_LENGTH } from "../constants";
 import { handleWardCreate, handleWardBulkCreate } from "./wardHandlers";
-import { isAllZeros } from "@/lib/utils/validation-rules";
+import { isAllZeros, POSITIVE_INTEGER_REGEX } from "@/lib/utils/validation-rules";
 
 // Max length for bulk fields
 const BULK_PREFIX_MAX_LENGTH = 10;
@@ -75,6 +75,19 @@ export default function CreateNewWard({ open, onClose, onSuccess, currentZone, e
     if (!data.description?.trim()) newErrors.description = t("validation.wardNameRequired");
     else if (data.description.length > ZONE_WARD_NAME_MAX_LENGTH) newErrors.description = t("validation.wardNameMaxLength", { count: ZONE_WARD_NAME_MAX_LENGTH });
     else if (isAllZeros(data.description)) newErrors.description = t("validation.wardNameAllZeros");
+    
+    // Validate sequence number (optional field)
+    if (data.sequenceNo) {
+      if (!POSITIVE_INTEGER_REGEX.test(data.sequenceNo)) {
+        newErrors.sequenceNo = t("validation.sequenceNoNumber");
+      } else {
+        const seqNum = parseInt(data.sequenceNo, 10);
+        if (seqNum < 1 || seqNum > 999) {
+          newErrors.sequenceNo = t("validation.sequenceNoRange");
+        }
+      }
+    }
+    
     return newErrors;
   };
 

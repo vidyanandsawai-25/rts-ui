@@ -41,7 +41,8 @@
       "mobile": "Mobile No.",
       "shopBuildingName": "Shop/Building Name",
       "societyName": "Society Name",
-      "address": "Address"
+      "address": "Address",
+      "filters": "Filters"
     },
     "tooltips": {
       "propertyNo": "Letters, numbers, hyphen (-), and slash (/). Max 20 characters. Example: P-2023-001, 10/A",
@@ -84,6 +85,7 @@
       "valuationMethod": "Valuation Method",
       "filterType": "Filter Type",
       "amount": "Enter Amount",
+      "topCount": "Top Count (e.g. 1)",
       "toAmount": "To Amount",
       "taxDefaulter": "Tax Defaulter",
       "fromValue": "From Value",
@@ -152,6 +154,7 @@
       "taxDefaulterRangeInvalid": "Tax defaulter 'To' value must be greater than or equal to 'From'.",
       "rateableValueBetweenRequired": "Enter both amount fields for the rateable value between filter.",
       "capitalValueBetweenRequired": "Enter both amount fields for the capital value between filter.",
+      "rateableValueInvalid": "Rateable Value must contain positive numbers only.",
       "noSearchCriteria": "Select at least one filter (Zone, Ward, Property No, UPIC ID, Holder Name, Mobile, etc.) before searching."
     }
   },
@@ -187,6 +190,8 @@
       "shopBuildingName": "Shop/Building Name",
       "societyName": "Society Name",
       "address": "Address",
+      "rv": "RV",
+      "cv": "CV",
       "rvCv": "RV/CV",
       "totalTax": "Total Tax",
       "status": "Status"

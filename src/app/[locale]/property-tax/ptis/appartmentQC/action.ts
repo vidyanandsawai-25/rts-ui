@@ -1,13 +1,16 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import type { ApartmentQCDetail, ApartmentQCSearchParams } from "@/types/apartmentQC.types";
 import {
   getApartmentQCDetailsLocalized,
   getApartmentQCDetailsSafe,
   updateApartmentQCDetailsLocalized,
-} from "@/lib/api/appartmentQC.service";
+} from "@/lib/api/ptis/appartmentQC/appartmentQC.service";
 import { ApiError } from "@/lib/utils/api";
+import { logger } from "@/lib/utils/logger";
+import { getUserIdFromCookies } from "@/lib/utils/cookie";
 
 /* ============================================================
    ACTION RESULT TYPE
@@ -25,6 +28,7 @@ export type ActionResult<T = void> =
  * Convert translation keys or error messages to user-facing strings.
  * If the input looks like a translation key (e.g., "ptis.apartmentQC.errors.fetchFailed"),
  * convert it to a human-readable message as a fallback.
+ * Backend error messages (e.g., "Rate not found for...") are returned as-is.
  */
 function toUserFacingErrorMessage(messageOrKey: string): string {
   const value = messageOrKey.trim();
@@ -32,11 +36,11 @@ function toUserFacingErrorMessage(messageOrKey: string): string {
     return "An unexpected error occurred.";
   }
 
-  // Check if it looks like a translation key (dotted notation)
+  // Check if it looks like a translation key (dotted notation with only lowercase/numbers)
   const looksLikeTranslationKey = /^[a-z0-9]+(?:\.[a-z0-9]+)+$/i.test(value);
   
   if (!looksLikeTranslationKey) {
-    // Already a plain message, return as-is
+    // Already a plain message (including backend error messages), return as-is
     return value;
   }
 
@@ -57,10 +61,11 @@ function toUserFacingErrorMessage(messageOrKey: string): string {
 }
 
 function handleActionError(error: unknown, defaultKey: string): { success: false; error: string } {
+  logger.error(`[appartmentQC.action] ${defaultKey}`, { error: error as Error });
   if (error instanceof ApiError) {
     return {
       success: false,
-      error: toUserFacingErrorMessage(error.contextMessage || defaultKey),
+      error: toUserFacingErrorMessage(error.error || error.contextMessage || defaultKey),
     };
   }
   return { success: false, error: toUserFacingErrorMessage(defaultKey) };
@@ -189,5 +194,955 @@ export async function revalidateApartmentQCAction(): Promise<ActionResult> {
     return { success: true, message: "Apartment QC data refreshed" };
   } catch (error: unknown) {
     return handleActionError(error, "Failed to refresh apartment QC data");
+  }
+}
+
+/* ============================================================
+   FLOOR QC DROPDOWN DATA ACTIONS
+ ============================================================ */
+
+/**
+ * Fetch all floors for Floor QC dropdown (paginated fetch all pages)
+ */
+export async function fetchAllFloorsAction(): Promise<ActionResult<Array<{ value: string; label: string }>>> {
+  try {
+    const { getFloorPaged } = await import("@/lib/api/floor.service");
+    const pageSize = 1000;
+    let page = 1;
+    let all: Array<{ value: string; label: string }> = [];
+    let hasMore = true;
+    
+    while (hasMore) {
+      const res = await getFloorPaged(page, pageSize);
+      const items = res.items ?? [];
+      all = [...all, ...items.map((f: { id: number | string; description?: string; floorCode?: string }) => ({ value: String(f.id), label: f.description || f.floorCode || '' }))];
+      if (items.length === 0 || all.length >= res.totalCount) hasMore = false;
+      else page++;
+    }
+    
+    return { success: true, data: all };
+  } catch (error: unknown) {
+    return handleActionError(error, "Failed to fetch floors");
+  }
+}
+
+/**
+ * Fetch all construction types for Floor QC dropdown (paginated fetch all pages)
+ */
+export async function fetchAllConstructionTypesAction(): Promise<ActionResult<Array<{ value: string; label: string }>>> {
+  try {
+    const { getConstructionPaged } = await import("@/lib/api/constructiontypemaster/construction-crud.service");
+    const pageSize = 1000;
+    let page = 1;
+    let all: Array<{ value: string; label: string }> = [];
+    let hasMore = true;
+    
+    while (hasMore) {
+      const res = await getConstructionPaged(page, pageSize);
+      const items = res.items ?? [];
+      all = [...all, ...items.map((c: { id: number | string; description?: string; constructionCode?: string }) => ({ value: String(c.id), label: c.description || c.constructionCode || '' }))];
+      if (items.length === 0 || all.length >= res.totalCount) hasMore = false;
+      else page++;
+    }
+    
+    return { success: true, data: all };
+  } catch (error: unknown) {
+    return handleActionError(error, "Failed to fetch construction types");
+  }
+}
+
+/**
+ * Fetch all use types for Floor QC dropdown (paginated fetch all pages)
+ */
+export async function fetchAllUseTypesAction(): Promise<ActionResult<Array<{ value: string; label: string }>>> {
+  try {
+    const { getUseTypesPagedServer } = await import("@/lib/api/typeofusemaster.service");
+    const pageSize = 5000;
+    let page = 1;
+    let all: Array<{ value: string; label: string }> = [];
+    let hasMore = true;
+    
+    while (hasMore) {
+      const res = await getUseTypesPagedServer({ pageNumber: page, pageSize });
+      const items = res.items ?? [];
+      all = [...all, ...items.map(u => ({ value: String(u.typeOfUseId), label: u.description || u.typeOfUseCode }))];
+      if (items.length === 0 || all.length >= res.totalCount) hasMore = false;
+      else page++;
+    }
+    
+    return { success: true, data: all };
+  } catch (error: unknown) {
+    return handleActionError(error, "Failed to fetch use types");
+  }
+}
+
+/**
+ * Fetch all sub-types for Floor QC dropdown (paginated fetch all pages)
+ */
+export async function fetchAllSubTypesAction(): Promise<ActionResult<Array<{ value: string; label: string; typeOfUseId: string }>>> {
+  try {
+    const { getSubTypesPagedServer } = await import("@/lib/api/typeofusemaster.service");
+    const pageSize = 5000;
+    let page = 1;
+    let all: Array<{ value: string; label: string; typeOfUseId: string }> = [];
+    let hasMore = true;
+    
+    while (hasMore) {
+      const res = await getSubTypesPagedServer({ pageNumber: page, pageSize });
+      const items = res.items ?? [];
+      all = [...all, ...items.map(s => ({ 
+        value: String(s.subTypeOfUseId), 
+        label: s.description,
+        typeOfUseId: String(s.typeOfUseId)
+      }))];
+      if (items.length === 0 || all.length >= res.totalCount) hasMore = false;
+      else page++;
+    }
+    
+    return { success: true, data: all };
+  } catch (error: unknown) {
+    return handleActionError(error, "Failed to fetch sub-types");
+  }
+}
+
+/* ============================================================
+   FLOOR QC DATA ACTIONS
+   New API endpoint: GET /Property/apartmentQC-details/{propertyId}?type={type}
+   Fetches all floor records for a property filtered by type
+ ============================================================ */
+
+/**
+ * Fetch Floor QC data by propertyId and type.
+ * Uses the new endpoint: /Property/apartmentQC-details/{propertyId}?type={type}
+ * Returns all floor records for the property.
+ * 
+ * @param propertyId - The property ID (e.g., 549357)
+ * @param type - The type filter: 'rateable', 'capital', or 'dual'
+ * @returns ActionResult with array of ApartmentQCDetail items (floor records)
+ */
+export async function fetchFloorQCByPropertyIdAction(
+  propertyId: number | string,
+  type: 'rateable' | 'capital' | 'dual' | string
+): Promise<ActionResult<ApartmentQCDetail[]>> {
+  try {
+    const { getFloorQCByPropertyIdLocalized } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
+    const data = await getFloorQCByPropertyIdLocalized(propertyId, type);
+    // data.items is PagedResponse<ApartmentQCDetail>; extract the flat items array
+    return {
+      success: true,
+      data: data.items?.items ?? [],
+      message: data.message,
+    };
+  } catch (error: unknown) {
+    return handleActionError(error, "Failed to fetch floor QC details");
+  }
+}
+
+/**
+ * Safe variant of fetchFloorQCByPropertyIdAction — always resolves with an array.
+ * Returns empty array on failure instead of throwing an error.
+ * 
+ * @param propertyId - The property ID (e.g., 549357)
+ * @param type - The type filter: 'rateable', 'capital', or 'dual'
+ * @returns Array of ApartmentQCDetail items (floor records)
+ */
+export async function fetchFloorQCByPropertyIdSafeAction(
+  propertyId: number | string,
+  type: 'rateable' | 'capital' | 'dual' | string
+): Promise<ApartmentQCDetail[]> {
+  try {
+    const { getFloorQCByPropertyIdSafe } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
+    return await getFloorQCByPropertyIdSafe(propertyId, type);
+  } catch {
+    return [];
+  }
+}
+
+/* ============================================================
+   FLOOR QC UPDATE ACTION
+   Endpoint: PATCH /Property/apartmentQC-details/{propertyId}/detail/{detailId}
+   Updates a specific floor detail record
+ ============================================================ */
+
+/**
+ * Payload for updating a floor QC detail record
+ */
+export interface FloorQCUpdatePayload {
+  floorId?: number;
+  constructionTypeId?: number;
+  typeOfUseId?: number;
+  subTypeOfUseId?: number;
+  updatedBy?: number;
+  constructionYear?: string;
+  assessmentYear?: string;
+}
+
+/**
+ * Update a Floor QC detail record by propertyId and detailId.
+ * Uses the PATCH endpoint: /Property/apartmentQC-details/{propertyId}/detail/{detailId}
+ * 
+ * @param propertyId - The property ID (e.g., 550299)
+ * @param detailId - The detail ID / pdnId (e.g., 206147)
+ * @param payload - The fields to update
+ * @returns ActionResult indicating success or failure
+ */
+export async function updateFloorQCDetailAction(
+  propertyId: number | string,
+  detailId: number | string,
+  payload: FloorQCUpdatePayload
+): Promise<ActionResult> {
+  try {
+    const { updateFloorQCDetailLocalized } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
+    await updateFloorQCDetailLocalized(propertyId, detailId, payload);
+    // Revalidate the apartment QC pages to reflect changes
+    revalidatePath("/[locale]/property-tax/ptis/appartmentQC", "page");
+    return {
+      success: true,
+      message: "Floor QC detail updated successfully",
+    };
+  } catch (error: unknown) {
+    return handleActionError(error, "Failed to update floor QC detail");
+  }
+}
+
+/* ============================================================
+   FLOOR QC BULK UPDATE ACTION
+   Endpoint: PATCH /Property/apartmentQC-details/{propertyId}/details
+   Updates multiple floor detail records at once
+ ============================================================ */
+
+/**
+ * Payload item for bulk updating floor QC detail records
+ */
+export interface FloorQCBulkUpdateItem extends FloorQCUpdatePayload {
+  detailId: number; // The pdnId of the floor detail to update
+}
+
+/**
+ * Bulk update Floor QC detail records by propertyId.
+ * Uses the PATCH endpoint: /Property/apartmentQC-details/{propertyId}/details
+ * 
+ * @param propertyId - The property ID (e.g., 550299)
+ * @param items - Array of floor detail updates with detailId for each
+ * @returns ActionResult indicating success or failure
+ */
+export async function updateFloorQCDetailsBulkAction(
+  propertyId: number | string,
+  items: FloorQCBulkUpdateItem[]
+): Promise<ActionResult> {
+  try {
+    const { updateFloorQCDetailsBulkLocalized } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
+    await updateFloorQCDetailsBulkLocalized(propertyId, items);
+    // Revalidate the apartment QC pages to reflect changes
+    revalidatePath("/[locale]/property-tax/ptis/appartmentQC", "page");
+    return {
+      success: true,
+      message: "Floor QC details updated successfully",
+    };
+  } catch (error: unknown) {
+    return handleActionError(error, "Failed to update floor QC details");
+  }
+}
+
+/* ============================================================
+   BASIC DETAILS UPDATE ACTION
+   Endpoint: PATCH /Property/apartmentQC-details/{propertyId}/basic-details
+   Updates the basic information of a property
+ ============================================================ */
+
+/**
+ * Payload for updating basic details of a property
+ */
+export interface BasicDetailsUpdatePayload {
+  ownerName?: string;
+  occupierName?: string;
+  renterName?: string;
+  propertyType?: number;
+  bhk?: string;
+  mobileNo?: string;
+  emailId?: string;
+  wing?: string;
+  flatOrShopNo?: string;
+  flatOrShopName?: string;
+  oldPropertyNo?: string;
+  updatedBy?: number;
+}
+
+/**
+ * Update basic details of a property by propertyId.
+ * Uses the PATCH endpoint: /Property/apartmentQC-details/{propertyId}/basic-details
+ * 
+ * @param propertyId - The property ID (e.g., 549357)
+ * @param payload - The fields to update
+ * @returns ActionResult indicating success or failure
+ */
+export async function updateBasicDetailsAction(
+  propertyId: number | string,
+  payload: BasicDetailsUpdatePayload
+): Promise<ActionResult> {
+  try {
+    const { updateBasicDetailsLocalized } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
+    await updateBasicDetailsLocalized(propertyId, payload);
+    // Revalidate the apartment QC pages to reflect changes
+    revalidatePath("/[locale]/property-tax/ptis/appartmentQC", "page");
+    return {
+      success: true,
+      message: "Basic details updated successfully",
+    };
+  } catch (error: unknown) {
+    return handleActionError(error, "Failed to update basic details");
+  }
+}
+
+/**
+ * Fetch all property types for dropdown
+ */
+export async function fetchAllPropertyTypesAction(): Promise<ActionResult<Array<{ value: string; label: string }>>> {
+  try {
+    const { getPropertyTypesPaged } = await import("@/lib/api/property-type-crud.service");
+    const pageSize = 1000;
+    let page = 1;
+    let all: Array<{ value: string; label: string }> = [];
+    let hasMore = true;
+    
+    while (hasMore) {
+      const res = await getPropertyTypesPaged(page, pageSize);
+      const items = res.items ?? [];
+      all = [...all, ...items.map((pt) => ({ 
+        value: String(pt.id), 
+        label: pt.propertyDescription || pt.type 
+      }))];
+      if (items.length === 0 || all.length >= res.totalCount) hasMore = false;
+      else page++;
+    }
+    
+    return { success: true, data: all };
+  } catch (error: unknown) {
+    return handleActionError(error, "Failed to fetch property types");
+  }
+}
+
+/* ============================================================
+   ROOM WISE SUBMISSION CRUD ACTIONS
+   API: /api/RoomWiseSubmission
+============================================================ */
+
+/**
+ * Fetch room types with IDs for dropdown mapping
+ */
+export async function fetchRoomTypesAction(): Promise<ActionResult<Array<{ id: number; code: string; name: string; description: string }>>> {
+  try {
+    const { getRoomTypeData } = await import("@/lib/api/ptis/floorSubmission/floor-lookup.service");
+    const data = await getRoomTypeData();
+    return {
+      success: true,
+      data: data.map((item: { roomTypeId?: number; id?: number; roomTypeCode?: string; roomTypeName?: string; description?: string }) => ({
+        id: item.roomTypeId || item.id || 0,
+        code: item.roomTypeCode || String(item.roomTypeId || item.id || 0),
+        name: item.roomTypeName || '',
+        description: item.description || ''
+      }))
+    };
+  } catch (error: unknown) {
+    return handleActionError(error, "Failed to fetch room types");
+  }
+}
+
+/**
+ * Fetch room wise submissions by propertyId and propertyDetailsId (pdnId)
+ */
+export async function fetchRoomWiseSubmissionsAction(params: {
+  propertyId?: number;
+  propertyDetailsId?: number;
+}): Promise<ActionResult<unknown[]>> {
+  try {
+    const { getRoomWiseSubmissionsSafe } = await import("@/lib/api/ptis/appartmentQC/appartmentQC-room.service");
+    const data = await getRoomWiseSubmissionsSafe(params);
+    return { success: true, data };
+  } catch (error: unknown) {
+    return handleActionError(error, "Failed to fetch room submissions");
+  }
+}
+
+/**
+ * Fetch room wise submissions with typed result (alternative to fetchRoomWiseSubmissionsAction)
+ * This version returns RoomWiseSubmissionData[] for better type safety
+ */
+export async function getRoomWiseSubmissionsAction(params: {
+  propertyId: number;
+  propertyDetailsId: number;
+}): Promise<{ success: boolean; data?: import("@/lib/api/ptis/appartmentQC/appartmentQC-room.service").RoomWiseSubmissionData[]; error?: string }> {
+  try {
+    const { getRoomWiseSubmissionsSafe } = await import("@/lib/api/ptis/appartmentQC/appartmentQC-room.service");
+    const data = await getRoomWiseSubmissionsSafe({
+      propertyId: params.propertyId,
+      propertyDetailsId: params.propertyDetailsId,
+    });
+    
+    return {
+      success: true,
+      data,
+    };
+  } catch (error) {
+    logger.error('[getRoomWiseSubmissionsAction] Error', { error: error as Error });
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to fetch room submissions',
+    };
+  }
+}
+
+/**
+ * Create a new room wise submission
+ */
+export async function createRoomWiseSubmissionAction(payload: {
+  propertyDetailsId: number;
+  propertyId: number;
+  lengthMtr?: number;
+  widthMtr?: number;
+  heightMtr?: number;
+  areaSqMtr?: number;
+  noOfRooms?: number;
+  totalAreaSqMtr?: number;
+  roomNo?: string;
+  roomType?: string;
+  roomTypeId?: number;  // API expects numeric ID
+  shape?: string;
+  outerYesNo?: boolean;
+  minusYesNo?: boolean;
+  submissionType?: string;
+  base1Mtr?: number;
+  base2Mtr?: number;
+  roomWiseMinusData?: Array<{
+    id?: number;
+    roomWiseSubmissionId?: number;
+    lengthMtr?: number;
+    widthMtr?: number;
+    heightMtr?: number;
+    areaSqMtr?: number;
+    shape?: string;
+    base1Mtr?: number;
+    base2Mtr?: number;
+    operation?: string;
+    remark?: string;
+  }>;
+}): Promise<ActionResult<unknown>> {
+  try {
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore) || 1;
+    const { createRoomWiseSubmissionSafe } = await import("@/lib/api/ptis/appartmentQC/appartmentQC-room.service");
+    const result = await createRoomWiseSubmissionSafe({
+      isActive: true,
+      createdBy: userId,
+      ...payload,
+      roomWiseMinusData: payload.roomWiseMinusData?.map(offset => ({
+        isActive: true,
+        createdBy: userId,
+        ...offset
+      }))
+    });
+    if (!result.success) {
+      return { success: false, error: result.error || "Failed to create room" };
+    }
+    revalidatePath("/[locale]/property-tax/ptis/appartmentQC", "page");
+    return { success: true, data: result.data, message: "Room created successfully" };
+  } catch (error: unknown) {
+    return handleActionError(error, "Failed to create room");
+  }
+}
+
+/**
+ * Update an existing room wise submission
+ */
+export async function updateRoomWiseSubmissionAction(
+  id: number,
+  payload: {
+    propertyDetailsId?: number;
+    propertyId?: number;
+    lengthMtr?: number;
+    widthMtr?: number;
+    heightMtr?: number;
+    areaSqMtr?: number;
+    noOfRooms?: number;
+    totalAreaSqMtr?: number;
+    roomNo?: string;
+    roomType?: string;
+    roomTypeId?: number;  // API expects numeric ID
+    shape?: string;
+    outerYesNo?: boolean;
+    minusYesNo?: boolean;
+    submissionType?: string;
+    base1Mtr?: number;
+    base2Mtr?: number;
+    roomWiseMinusData?: Array<{
+      id?: number;
+      roomWiseSubmissionId?: number;
+      lengthMtr?: number;
+      widthMtr?: number;
+      heightMtr?: number;
+      areaSqMtr?: number;
+      shape?: string;
+      base1Mtr?: number;
+      base2Mtr?: number;
+      operation?: string;
+      remark?: string;
+    }>;
+  }
+): Promise<ActionResult<unknown>> {
+  try {
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore) || 1;
+    const { updateRoomWiseSubmissionSafe } = await import("@/lib/api/ptis/appartmentQC/appartmentQC-room.service");
+    const result = await updateRoomWiseSubmissionSafe(id, {
+      isActive: true,
+      updatedBy: userId,
+      id,
+      ...payload,
+      roomWiseMinusData: payload.roomWiseMinusData?.map(offset => {
+        // If offset has an id, it's an existing record (update), otherwise it's new (create)
+        const isExisting = offset.id !== undefined && offset.id !== null && offset.id > 0;
+        return {
+          ...offset,
+          isActive: true,
+          ...(isExisting ? { updatedBy: userId } : { createdBy: userId }),
+          roomWiseSubmissionId: id,
+        };
+      })
+    });
+    if (!result.success) {
+      return { success: false, error: result.error || "Failed to update room" };
+    }
+    revalidatePath("/[locale]/property-tax/ptis/appartmentQC", "page");
+    return { success: true, data: result.data, message: "Room updated successfully" };
+  } catch (error: unknown) {
+    return handleActionError(error, "Failed to update room");
+  }
+}
+
+/**
+ * Delete a room wise submission
+ */
+export async function deleteRoomWiseSubmissionAction(id: number): Promise<ActionResult<void>> {
+  try {
+    const { deleteRoomWiseSubmissionSafe } = await import("@/lib/api/ptis/appartmentQC/appartmentQC-room.service");
+    const result = await deleteRoomWiseSubmissionSafe(id);
+    if (!result.success) {
+      return { success: false, error: result.error || "Failed to delete room" };
+    }
+    revalidatePath("/[locale]/property-tax/ptis/appartmentQC", "page");
+    return { success: true, data: undefined, message: "Room deleted successfully" };
+  } catch (error: unknown) {
+    return handleActionError(error, "Failed to delete room");
+  }
+}
+
+/**
+ * Delete a room wise minus (offset)
+ */
+export async function deleteRoomWiseMinusAction(id: number): Promise<ActionResult<void>> {
+  try {
+    const { deleteRoomWiseMinusSafe } = await import("@/lib/api/ptis/appartmentQC/appartmentQC-room.service");
+    const result = await deleteRoomWiseMinusSafe(id);
+    if (!result.success) {
+      return { success: false, error: result.error || "Failed to delete offset" };
+    }
+    revalidatePath("/[locale]/property-tax/ptis/appartmentQC", "page");
+    return { success: true, data: undefined, message: "Offset deleted successfully" };
+  } catch (error: unknown) {
+    return handleActionError(error, "Failed to delete offset");
+  }
+}
+
+/**
+ * Create a new room wise minus (offset)
+ */
+export async function createRoomWiseMinusAction(payload: {
+  isActive: boolean;
+  createdBy: number;
+  roomWiseSubmissionId: number;
+  lengthMtr?: number;
+  widthMtr?: number;
+  heightMtr?: number;
+  areaSqMtr?: number;
+  shape?: string;
+  operation?: string;
+  remark?: string;
+  base1Mtr?: number;
+  base2Mtr?: number;
+}): Promise<ActionResult<{ id: number }>> {
+  try {
+    const { createRoomWiseMinusSafe } = await import("@/lib/api/ptis/appartmentQC/appartmentQC-room.service");
+    const result = await createRoomWiseMinusSafe(payload);
+    if (!result.success) {
+      return { success: false, error: result.error || "Failed to create offset" };
+    }
+    return { success: true, data: { id: result.data?.id || 0 }, message: "Offset created successfully" };
+  } catch (error: unknown) {
+    return handleActionError(error, "Failed to create offset");
+  }
+}
+
+/**
+ * Delete room submission without redirect (for hook compatibility)
+ */
+export async function deleteRoomSubmissionNoRedirectAction(roomId: number | string): Promise<ActionResult<void>> {
+  try {
+    const { deleteRoomWiseSubmissionSafe } = await import("@/lib/api/ptis/appartmentQC/appartmentQC-room.service");
+    const result = await deleteRoomWiseSubmissionSafe(Number(roomId));
+    if (!result.success) {
+      return { success: false, error: result.error || "Failed to delete room" };
+    }
+    return { success: true, data: undefined };
+  } catch (error: unknown) {
+    return { success: false, error: error instanceof Error ? error.message : "Failed to delete room" };
+  }
+}
+
+/**
+ * Delete offset submission without redirect (for hook compatibility)
+ */
+export async function deleteOffsetSubmissionNoRedirectAction(offsetId: number | string): Promise<ActionResult<void>> {
+  try {
+    const { deleteRoomWiseMinusSafe } = await import("@/lib/api/ptis/appartmentQC/appartmentQC-room.service");
+    const result = await deleteRoomWiseMinusSafe(Number(offsetId));
+    if (!result.success) {
+      return { success: false, error: result.error || "Failed to delete offset" };
+    }
+    return { success: true, data: undefined };
+  } catch (error: unknown) {
+    return { success: false, error: error instanceof Error ? error.message : "Failed to delete offset" };
+  }
+}
+
+/* ============================================================
+   OLD PROPERTY DATA ACTION
+   Fetches historical data for an old property number
+ ============================================================ */
+
+/**
+ * Fetch old property data by old property number.
+ * 
+ * @param oldPropertyNo - The old property number (e.g., "22")
+ * @returns ActionResult with old property data
+ */
+export async function fetchOldPropertyDataAction(
+  oldPropertyNo: string
+): Promise<ActionResult<import("@/lib/api/ptis/appartmentQC/appartmentQC.service").OldPropertyData>> {
+  try {
+    if (!oldPropertyNo || oldPropertyNo.trim() === "") {
+      return { success: false, error: "Old property number is required" };
+    }
+
+    const { getOldPropertyDataLocalized } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
+    const data = await getOldPropertyDataLocalized(oldPropertyNo.trim());
+    
+    return {
+      success: true,
+      data,
+      message: "Old property data fetched successfully"
+    };
+  } catch (error) {
+    return handleActionError(error, "ptis.apartmentQC.errors.fetchOldPropertyFailed");
+  }
+}
+
+/* ============================================================
+   SYNC ROOMS ACTION
+   Fires POST /ApartmentQC/{propertyId}/{propertyDetailsId}/sync-rooms after a
+   successful RoomWiseSubmission PUT to recompute aggregates.
+ ============================================================ */
+
+export async function syncRoomsForPropertyDetailsAction(
+  propertyId: number | string,
+  propertyDetailsId: number | string
+): Promise<ActionResult<void>> {
+  try {
+    const { syncRoomsForPropertyDetailsLocalized } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
+    await syncRoomsForPropertyDetailsLocalized(propertyId, propertyDetailsId);
+    return { success: true, message: "Rooms synced successfully" };
+  } catch (error) {
+    return handleActionError(error, "Failed to sync rooms");
+  }
+}
+
+/* ============================================================
+   FILTER OPTIONS ACTION
+   Fetches distinct filter options for column filters.
+ ============================================================ */
+
+export type FilterField = 'wing' | 'flatOrShopNo' | 'apartmentType' | 'propertyType';
+
+export interface FilterOptionsItems {
+  wings: string[];
+  apartmentTypes: string[];
+  flatOrShopNos: string[];
+  propertyTypes: number[];
+}
+
+export async function fetchFilterOptionsAction(
+  wardId: number | string,
+  propertyNo: string,
+  field: FilterField
+): Promise<ActionResult<FilterOptionsItems>> {
+  try {
+    const { getFilterOptionsLocalized } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
+    const result = await getFilterOptionsLocalized(wardId, propertyNo, field);
+    return { success: true, data: result.items, message: result.message };
+  } catch (error) {
+    return handleActionError(error, "Failed to fetch filter options");
+  }
+}
+
+/* ============================================================
+   EXCEL EXPORT ACTION
+   Returns config for client-side Excel download.
+   Endpoint: GET /ApartmentQC/export-excel?WardId={wardId}&PropertyNo={propertyNo}
+ ============================================================ */
+
+export interface ExcelExportConfig {
+  baseUrl: string;
+  authToken: string;
+}
+
+/**
+ * Get the API configuration for client-side Excel export.
+ * This action returns the base URL and auth token so the client can
+ * directly download the Excel file via fetch.
+ * 
+ * @returns ActionResult with baseUrl and authToken
+ */
+export async function getExcelExportConfigAction(): Promise<ActionResult<ExcelExportConfig>> {
+  try {
+    const { cookies } = await import("next/headers");
+    const { getAppConfig } = await import("@/config/app.config");
+    
+    const store = await cookies();
+    const authToken = store.get('auth_token')?.value || '';
+    const config = getAppConfig();
+    
+    return {
+      success: true,
+      data: {
+        baseUrl: config.api.baseUrl,
+        authToken,
+      },
+    };
+  } catch (error) {
+    return handleActionError(error, "Failed to get export configuration");
+  }
+}
+
+/* ============================================================
+   APARTMENT PROPERTY TAX DETAILS ACTION
+   Endpoint: GET /Property/apartment-property-tax-details-rv
+   Fetches tax details for apartment properties by PartType
+ ============================================================ */
+
+import type {
+  ApartmentTaxDetailsItems,
+  ApartmentPartType,
+  DualMethodTaxDetails,
+} from "@/types/apartmentQC.types";
+
+/**
+ * Fetch apartment property tax details for a specific PartType.
+ * 
+ * @param wardId - The ward ID
+ * @param propertyNo - The property number
+ * @param partType - The part type: 'Aminity' (Amenities), 'C' (Commercial), 'R' (Residential)
+ * @returns ActionResult with tax details
+ */
+export async function fetchApartmentPropertyTaxDetailsAction(
+  wardId: string | number,
+  propertyNo: string,
+  partType: ApartmentPartType
+): Promise<ActionResult<ApartmentTaxDetailsItems>> {
+  try {
+    const { getApartmentPropertyTaxDetailsLocalized } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
+    const data = await getApartmentPropertyTaxDetailsLocalized({ wardId, propertyNo, partType });
+    return {
+      success: true,
+      data,
+      message: "Tax details fetched successfully",
+    };
+  } catch (error: unknown) {
+    return handleActionError(error, "Failed to fetch apartment property tax details");
+  }
+}
+
+/**
+ * Fetch apartment property tax details based on the selected main tab.
+ * Converts main tab value to PartType and fetches the data.
+ * 
+ * @param wardId - The ward ID
+ * @param propertyNo - The property number
+ * @param mainTab - The main tab: 'amenities', 'commercial', or 'residential'
+ * @returns ActionResult with tax details for the selected tab
+ */
+export async function fetchApartmentPropertyTaxDetailsByTabAction(
+  wardId: string | number,
+  propertyNo: string,
+  mainTab: string
+): Promise<ActionResult<ApartmentTaxDetailsItems>> {
+  try {
+    const { getApartmentPropertyTaxDetailsLocalized, getPartTypeFromMainTab } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
+    const partType = getPartTypeFromMainTab(mainTab);
+    const data = await getApartmentPropertyTaxDetailsLocalized({ wardId, propertyNo, partType });
+    return {
+      success: true,
+      data,
+      message: "Tax details fetched successfully",
+    };
+  } catch (error: unknown) {
+    return handleActionError(error, "Failed to fetch apartment property tax details");
+  }
+}
+
+/* ============================================================
+   APARTMENT PROPERTY TAX DETAILS - CAPITAL VALUE (CV)
+   Endpoint: GET /Property/apartment-property-tax-details-cv
+   Fetches capital value tax details for apartment properties
+ ============================================================ */
+
+/**
+ * Fetch apartment property Capital Value (CV) tax details based on the selected main tab.
+ * 
+ * @param wardId - The ward ID
+ * @param propertyNo - The property number
+ * @param mainTab - The main tab: 'amenities', 'commercial', or 'residential'
+ * @returns ActionResult with CV tax details for the selected tab
+ */
+export async function fetchApartmentPropertyTaxDetailsCvByTabAction(
+  wardId: string | number,
+  propertyNo: string,
+  mainTab: string
+): Promise<ActionResult<ApartmentTaxDetailsItems>> {
+  try {
+    const { getApartmentPropertyTaxDetailsCvLocalized, getPartTypeFromMainTab } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
+    const partType = getPartTypeFromMainTab(mainTab);
+    const data = await getApartmentPropertyTaxDetailsCvLocalized({ wardId, propertyNo, partType });
+    return {
+      success: true,
+      data,
+      message: "CV tax details fetched successfully",
+    };
+  } catch (error: unknown) {
+    return handleActionError(error, "Failed to fetch apartment property CV tax details");
+  }
+}
+
+/* ============================================================
+   APARTMENT PROPERTY TAX DETAILS - DUAL METHOD
+   Fetches both RV and CV tax details for dual method display
+ ============================================================ */
+
+/**
+ * Fetch both Rateable Value and Capital Value tax details for dual method display.
+ * 
+ * @param wardId - The ward ID
+ * @param propertyNo - The property number
+ * @param mainTab - The main tab: 'amenities', 'commercial', or 'residential'
+ * @returns ActionResult with both RV and CV tax details
+ */
+export async function fetchDualMethodTaxDetailsByTabAction(
+  wardId: string | number,
+  propertyNo: string,
+  mainTab: string
+): Promise<ActionResult<DualMethodTaxDetails>> {
+  try {
+    const { getDualMethodTaxDetails, getPartTypeFromMainTab } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
+    const partType = getPartTypeFromMainTab(mainTab);
+    const data = await getDualMethodTaxDetails(wardId, propertyNo, partType);
+    return {
+      success: true,
+      data,
+      message: "Dual method tax details fetched successfully",
+    };
+  } catch (error: unknown) {
+    return handleActionError(error, "Failed to fetch dual method tax details");
+  }
+}
+
+/* ============================================================
+   APARTMENT PROPERTY TAX DETAILS BY PROPERTY ID
+   These actions use propertyId instead of WardId/PropertyNo
+   Used by PropertyDetailsEditScreen drawer
+ ============================================================ */
+
+/**
+ * Fetch apartment property Rateable Value (RV) tax details by property ID.
+ * Used by PropertyDetailsEditScreen drawer.
+ * 
+ * @param propertyId - The property ID
+ * @param mainTab - The main tab: 'amenities', 'commercial', or 'residential'
+ * @returns ActionResult with RV tax details
+ */
+export async function fetchApartmentTaxDetailsByIdAction(
+  propertyId: string | number,
+  mainTab: string
+): Promise<ActionResult<ApartmentTaxDetailsItems>> {
+  try {
+    const { getApartmentPropertyTaxDetailsByIdLocalized, getPartTypeFromMainTab } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
+    const partType = getPartTypeFromMainTab(mainTab);
+    const data = await getApartmentPropertyTaxDetailsByIdLocalized({ propertyId, partType });
+    return {
+      success: true,
+      data,
+      message: "Tax details fetched successfully",
+    };
+  } catch (error: unknown) {
+    return handleActionError(error, "Failed to fetch apartment property tax details");
+  }
+}
+
+/**
+ * Fetch apartment property Capital Value (CV) tax details by property ID.
+ * Used by PropertyDetailsEditScreen drawer.
+ * 
+ * @param propertyId - The property ID
+ * @param mainTab - The main tab: 'amenities', 'commercial', or 'residential'
+ * @returns ActionResult with CV tax details
+ */
+export async function fetchApartmentTaxDetailsCvByIdAction(
+  propertyId: string | number,
+  mainTab: string
+): Promise<ActionResult<ApartmentTaxDetailsItems>> {
+  try {
+    const { getApartmentPropertyTaxDetailsCvByIdLocalized, getPartTypeFromMainTab } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
+    const partType = getPartTypeFromMainTab(mainTab);
+    const data = await getApartmentPropertyTaxDetailsCvByIdLocalized({ propertyId, partType });
+    return {
+      success: true,
+      data,
+      message: "CV tax details fetched successfully",
+    };
+  } catch (error: unknown) {
+    return handleActionError(error, "Failed to fetch apartment property CV tax details");
+  }
+}
+
+/**
+ * Fetch both Rateable Value and Capital Value tax details for dual method by property ID.
+ * Used by PropertyDetailsEditScreen drawer.
+ * 
+ * @param propertyId - The property ID
+ * @param mainTab - The main tab: 'amenities', 'commercial', or 'residential'
+ * @returns ActionResult with both RV and CV tax details
+ */
+export async function fetchDualMethodTaxDetailsByIdAction(
+  propertyId: string | number,
+  mainTab: string
+): Promise<ActionResult<DualMethodTaxDetails>> {
+  try {
+    const { getDualMethodTaxDetailsById, getPartTypeFromMainTab } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
+    const partType = getPartTypeFromMainTab(mainTab);
+    const data = await getDualMethodTaxDetailsById(propertyId, partType);
+    return {
+      success: true,
+      data,
+      message: "Dual method tax details fetched successfully",
+    };
+  } catch (error: unknown) {
+    return handleActionError(error, "Failed to fetch dual method tax details");
   }
 }

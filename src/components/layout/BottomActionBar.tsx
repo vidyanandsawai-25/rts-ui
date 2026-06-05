@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { FooterPagination } from './FooterPagination';
 import { UtilityActions, RightActions } from './FooterActionButtons';
 import { useFooterActions } from '@/hooks/layout/useFooterActions';
+import type { PropertyListItem } from '@/types/ptis.types';
 
 interface BottomActionBarProps {
   actions?: FooterAction[];
@@ -19,6 +20,7 @@ interface BottomActionBarProps {
   leftContent?: React.ReactNode;
   centerContent?: React.ReactNode;
   rightContent?: React.ReactNode;
+  properties?: PropertyListItem[];
 }
 
 export function BottomActionBar({
@@ -31,17 +33,48 @@ export function BottomActionBar({
   leftContent,
   centerContent,
   rightContent,
+  properties = [],
 }: BottomActionBarProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const [, startTransition] = useTransition();
+  const [isPaginationPending, startPaginationTransition] = useTransition();
   const groupedActions = useFooterActions(actions);
+
+  // Find current property index in properties array
+  const activePropertyId = searchParams.get('propertyId') ? Number(searchParams.get('propertyId')) : null;
+  const activeIndex = activePropertyId && properties.length > 0
+    ? properties.findIndex((p) => p.propertyId === activePropertyId)
+    : -1;
+
+  const hasProperties = properties.length > 0;
+  const activePropertySelected = activeIndex !== -1;
+  const resolvedCurrentPage = hasProperties
+    ? (activePropertySelected ? activeIndex + 1 : 0)
+    : currentPage;
+  const resolvedTotalPages = hasProperties
+    ? properties.length
+    : totalPages;
+
+  const isPaginationDisabled = hasProperties && !activePropertySelected;
 
   const handlePageChange = onPageChange || ((page: number) => {
     const newParams = new URLSearchParams(searchParams.toString());
-    newParams.set('pageNumber', String(page));
-    startTransition(() => {
+    if (hasProperties) {
+      const targetProperty = properties[page - 1];
+      if (targetProperty) {
+        newParams.set('propertyId', String(targetProperty.propertyId));
+        newParams.set('propertyNo', targetProperty.propertyNo);
+        const rawPart = targetProperty.partitionNo;
+        newParams.set('partitionNo', rawPart && rawPart.trim() !== '' && rawPart !== '0' ? rawPart : '0');
+        // Reset table pageNumber as we are switching properties
+        newParams.delete('pageNumber');
+      }
+    } else {
+      newParams.set('pageNumber', String(page));
+    }
+    startPaginationTransition(() => {
       router.replace(`${pathname}?${newParams.toString()}`, { scroll: false });
     });
   });
@@ -80,7 +113,7 @@ export function BottomActionBar({
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-[100] h-auto min-h-[48px] md:h-14 bg-white/95 backdrop-blur-xl border-t border-slate-200/60 shadow-[0_-8px_40px_rgb(0,0,0,0.06)] print:hidden transition-all duration-300 layout-content-shifted flex flex-col md:flex-row items-stretch md:items-center justify-between px-3 sm:px-6 py-2 md:py-0">
+    <div className="fixed bottom-0 left-0 right-0 z-[50] h-auto min-h-[48px] md:h-14 bg-white/95 backdrop-blur-xl border-t border-slate-200/60 shadow-[0_-8px_40px_rgb(0,0,0,0.06)] print:hidden transition-all duration-300 layout-content-shifted flex flex-col md:flex-row items-stretch md:items-center justify-between px-3 sm:px-6 py-2 md:py-0">
       {/* Premium glossy top highlight */}
       <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-blue-500/10 to-transparent" />
 
@@ -88,10 +121,13 @@ export function BottomActionBar({
         {/* ROW 1: Pagination & Controls (Mobile), LEFT on Desktop */}
         <div className="w-full md:w-auto flex items-center justify-between md:justify-start gap-2 md:gap-3 shrink-0">
           <FooterPagination
-            currentPage={currentPage}
-            totalPages={totalPages}
+            currentPage={resolvedCurrentPage}
+            totalPages={resolvedTotalPages}
             onPageChange={handlePageChange}
             leftContent={leftContent}
+            isPropertyPagination={hasProperties}
+            isLoading={isPaginationPending || isLoading}
+            disabled={isPaginationDisabled}
           />
         </div>
 

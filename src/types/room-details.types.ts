@@ -136,6 +136,18 @@ export interface RoomAPIResponse {
     [key: string]: unknown;
 }
 
+export interface RoomTypeResponse {
+    roomTypeId: number;
+    roomTypeCode: string;
+    roomTypeName?: string;
+    description: string;
+    isActive: boolean;
+    createdDate: string;
+    updatedDate: string | null;
+    roomTypeDescription?: string; // Some APIs return this instead of description
+    [key: string]: unknown;
+}
+
 export interface RoomWiseSubmissionProps {
     isOpen: boolean;
     onClose: () => void;
@@ -153,6 +165,7 @@ export interface RoomWiseSubmissionProps {
     t?: (key: string) => string;
     onSaveRooms?: (rooms: RoomData[], area: number) => void;
     onUpdate?: (data: { floorNumber: string; rooms: RoomData[]; totalAreaSqM: number; builtUpAreaSqM: number; roomCount: number }) => void;
+    roomTypeData?: RoomTypeResponse[];
 }
 
 export interface RoomTableHeaderProps {
@@ -177,6 +190,7 @@ export interface RoomDataTableProps {
     onOpenOffset?: (index: number) => void;
     addNewRow?: () => void;
     floorData?: FloorData;
+    roomTypeData?: RoomTypeResponse[];
 }
 
 export interface InputBoxProps {
@@ -208,6 +222,7 @@ export interface InputBoxProps {
     floorData?: FloorData;
     InlineError?: FC<{ message: string }>;
     handleEdit: (index: number, roomData?: RoomData) => void;
+    roomTypeData?: RoomTypeResponse[];
 }
 
 export interface RoomActions {

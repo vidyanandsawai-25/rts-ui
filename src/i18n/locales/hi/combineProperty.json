@@ -53,6 +53,7 @@
   "remarkLabel": "टिप्पणी",
   "remarkPlaceholder": "संपत्तियों को मिलाने के लिए टिप्पणी दर्ज करें",
   "remarkRequiredError": "कृपया टिप्पणी दर्ज करें",
+  "cannotUncheckBaseProperty": "प्राथमिक संपत्ति का चयन नहीं हटाया जा सकता",
   "error": {
     "title": "सर्वर से कनेक्ट करने में विफल। कृपया बाद में पुनः प्रयास करें।",
     "description": "संपत्ति संयोजन पृष्ठ लोड करते समय एक त्रुटि हुई। कृपया पुन: प्रयास करें।",
@@ -63,5 +64,10 @@
   "loading": {
     "message": "संपत्ति संयोजन लोड हो रहा है...",
     "description": "जब हम संपत्ति डेटा प्राप्त करते हैं तो कृपया प्रतीक्षा करें"
-  }
+  },
+  "combinePropertyHistory": "Combine Property History Details",
+  "viewDetails": "विवरण देखें",
+  "action": "कार्रवाई",
+  "showHistory": "इतिहास दिखाएं",
+  "hideHistory": "इतिहास छुपाएं"
 }

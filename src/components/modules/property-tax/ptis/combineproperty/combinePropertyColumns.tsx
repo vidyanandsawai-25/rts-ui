@@ -1,6 +1,7 @@
 import { Column } from '@/components/common/MasterTable';
 import { PropertyCombineDetails } from '@/types/combine-property.types';
 import { Checkbox } from '@/components/common/checkbox';
+import { PreviewButton } from '@/components/common/ActionButtons';
 
 export type PropertyRow = PropertyCombineDetails & Record<string, unknown>;
 
@@ -10,6 +11,7 @@ export const getCombinePropertyColumns = (
   checkedPropertyIds?: Set<number>,
   onToggleCheck?: (propertyId: number) => void,
   onToggleAll?: () => void,
+  selectedBasePropertyId?: string
 ): Column<PropertyRow>[] => [
   // Checkbox column — uses '_checkbox' key to avoid duplicate with 'propertyId' SR.NO. column
   {
@@ -24,6 +26,9 @@ export const getCombinePropertyColumns = (
     align: 'center',
     width: '45px',
     render: (_val, row) => {
+      if (String(row.propertyId) === selectedBasePropertyId) {
+        return null;
+      }
       const propertyId = row.propertyId as number;
       return (
         <Checkbox
@@ -60,7 +65,7 @@ export const getCombinePropertyColumns = (
     align: 'center',
     width: '100px',
     render: (val) => (
-      <span className="inline-flex items-center justify-center w-9 h-9 rounded-full border-2 border-blue-400 text-blue-600 text-[11px] font-bold">
+      <span className="text-blue-600 font-semibold text-[12px]">
         {String(val ?? '-')}
       </span>
     ),
@@ -136,4 +141,62 @@ export const getCombinePropertyColumns = (
     ),
   },
 ];
+
+export const getCombinePropertyHistoryColumns = (
+  t: (key: string) => string,
+  onPreviewClick?: (row: PropertyRow) => void
+): Column<PropertyRow>[] => {
+  const columns: Column<PropertyRow>[] = [
+    { key: 'propertyNo', label: t('propertyNo'), align: 'center', width: '100px' },
+    { key: 'wardNo', label: t('ward'), align: 'center', width: '100px' },
+    { key: 'oldPropertyNo', label: t('oldPropertyNo'), align: 'center', width: '100px' },
+    { key: 'propertyDescription', label: t('propertyType'), align: 'left' },
+    { key: 'ownerName', label: t('ownerName'), align: 'left' },
+    { key: 'occupierName', label: t('occupierName'), align: 'left' },
+    {
+      key: 'taxAmount',
+      label: t('currentTax') || 'Tax Amount',
+      align: 'right',
+      width: '110px',
+      render: (val) => (
+        /* eslint-disable-next-line i18next/no-literal-string */
+        <span className="font-semibold text-gray-800">
+          ₹{Number(val ?? 0).toLocaleString('en-IN')}
+        </span>
+      ),
+    },
+    {
+      key: 'pendingAmount',
+      label: t('pendingTax') || 'Pending Amount',
+      align: 'right',
+      width: '110px',
+      render: (val) => (
+        /* eslint-disable-next-line i18next/no-literal-string */
+        <span className="font-semibold text-gray-800">
+          ₹{Number(val ?? 0).toLocaleString('en-IN')}
+        </span>
+      ),
+    },
+    { key: 'combineReason', label: t('remarkLabel') || 'Reason', align: 'left' },
+  ];
+
+  if (onPreviewClick) {
+    columns.push({
+      key: '_action' as keyof PropertyRow,
+      label: t('action') || 'Action',
+      align: 'center',
+      width: '60px',
+      render: (_val, row) => (
+        <PreviewButton
+          size="sm"
+          aria-label="View Details"
+          label={t('viewDetails')}
+          onClick={() => onPreviewClick(row)}
+        />
+      ),
+    });
+  }
+
+  return columns;
+};
 

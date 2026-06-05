@@ -6,6 +6,8 @@ export interface CombinePropertyItem {
   fromProperty: string;
   toProperty: string;
   isActive: boolean;
+  categoryId?: number;
+  societyDetailId?: number | null;
   createdDate: string | null;
   updatedDate: string | null;
 }
@@ -21,6 +23,8 @@ export interface CombinePropertyParams {
   sortBy?: string;
   sortOrder?: string;
   filterLogic?: number;
+  categoryId?: number;
+  societyDetailId?: number;
 }
 
 export interface PropertyCombineDetails {
@@ -36,6 +40,7 @@ export interface PropertyCombineDetails {
   pendingAmount: number;
   propertyDescription: string;
   propertyTypeId: number;
+  combineReason?: string;
 }
 
 export interface PropertyCombineDetailsResponse {
@@ -50,6 +55,10 @@ export interface GetPropertyCombineDetailsParams {
   wardId: number;
   propertyNo: string;
   partitionNo: string;
+}
+
+export interface GetCombinePropertiesHistoryParams {
+  sourcePropertyId?: number;
 }
 
 export interface CombinePropertyPayload {

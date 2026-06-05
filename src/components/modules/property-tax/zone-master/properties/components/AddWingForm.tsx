@@ -6,7 +6,7 @@ import { sanitizeWingName } from "@/lib/utils/input-sanitization";
 import { KYC_VALIDATION_RULES } from "@/lib/utils/kyc-validation.constants";
 
 interface AddWingFormProps {
-  newWingId: number | null;
+  newWingNo: string;
   newWingName: string;
   setNewWingName: (name: string) => void;
   errors: PartitionFormErrors;
@@ -19,7 +19,7 @@ interface AddWingFormProps {
 }
 
 export function AddWingForm({
-  newWingId,
+  newWingNo,
   newWingName,
   setNewWingName,
   errors,
@@ -45,8 +45,8 @@ export function AddWingForm({
       <div className="grid grid-cols-2 gap-3">
         <div>
           <Input
-            label={t("partitionForm.wing.wingId")}
-            value={String(newWingId || "")}
+            label={t("partitionForm.wing.wingNo")}
+            value={newWingNo}
             disabled
             className="bg-gray-100 text-gray-600"
           />

@@ -11,12 +11,27 @@ vi.mock('sonner', () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 
 // Hoisted spies
 const pushSpy = vi.hoisted(() => vi.fn());
+const replaceSpy = vi.hoisted(() => vi.fn());
 const refreshSpy = vi.hoisted(() => vi.fn());
 const confirmSpy = vi.hoisted(() => vi.fn());
 
 // Mock next/navigation
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: pushSpy, refresh: refreshSpy }),
+  useRouter: () => ({
+    push: pushSpy,
+    replace: replaceSpy,
+    refresh: refreshSpy,
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    getAll: vi.fn(),
+    has: vi.fn(),
+    forEach: vi.fn(),
+    entries: vi.fn(),
+    keys: vi.fn(),
+    values: vi.fn(),
+    toString: vi.fn(() => ''),
+  }),
 }));
 
 // Mock ConfirmProvider
@@ -29,11 +44,13 @@ vi.mock('@/app/[locale]/property-tax/waterconnection/action', () => ({
   deleteWaterConnectionAction: vi.fn(),
   getConnectionLookupsAction: vi.fn(),
   getWaterConnectionPageData: vi.fn(),
+  getWaterConnectionsOnlyAction: vi.fn(),
+  getAllWaterConnectionsAction: vi.fn(() => Promise.resolve([])),
 }));
 
 import { toast } from 'sonner';
 import WaterConnectionPage from '@/components/modules/property-tax/waterconnection/WaterConnectionPage';
-import { deleteWaterConnectionAction, getConnectionLookupsAction, getWaterConnectionPageData } from '@/app/[locale]/property-tax/waterconnection/action';
+import { deleteWaterConnectionAction, getConnectionLookupsAction, getWaterConnectionPageData, getWaterConnectionsOnlyAction, getAllWaterConnectionsAction } from '@/app/[locale]/property-tax/waterconnection/action';
 import {
   createMockPageData,
   mockWaterConnections,
@@ -56,6 +73,8 @@ describe('WaterConnectionPage', () => {
   const defaultProps = {
     initialData: createMockPageData(),
     propertyId: 123,
+    initialPage: 1,
+    initialPageSize: 10,
   };
 
   beforeEach(() => {
@@ -70,6 +89,14 @@ describe('WaterConnectionPage', () => {
     (getWaterConnectionPageData as ReturnType<typeof vi.fn>).mockResolvedValue(
       createMockPageData()
     );
+    (getAllWaterConnectionsAction as ReturnType<typeof vi.fn>).mockResolvedValue(mockWaterConnections);
+    (getWaterConnectionsOnlyAction as ReturnType<typeof vi.fn>).mockResolvedValue({
+      connections: mockWaterConnections,
+      totalCount: 2,
+      totalPages: 1,
+      pageNumber: 1,
+      pageSize: 10,
+    });
   });
 
   describe('rendering', () => {
@@ -129,7 +156,7 @@ describe('WaterConnectionPage', () => {
       });
 
       renderWithIntl(
-        <WaterConnectionPage initialData={pageData} propertyId={123} />
+        <WaterConnectionPage initialData={pageData} propertyId={123} initialPage={1} initialPageSize={10} />
       );
 
       // 1 active connection - check the stats card
@@ -146,7 +173,7 @@ describe('WaterConnectionPage', () => {
       });
 
       renderWithIntl(
-        <WaterConnectionPage initialData={pageData} propertyId={123} />
+        <WaterConnectionPage initialData={pageData} propertyId={123} initialPage={1} initialPageSize={10} />
       );
 
       // Only active connections contribute to revenue
@@ -226,7 +253,7 @@ describe('WaterConnectionPage', () => {
       fireEvent.click(deleteButtons[0]);
 
       await waitFor(() => {
-        expect(getWaterConnectionPageData).toHaveBeenCalled();
+        expect(getWaterConnectionsOnlyAction).toHaveBeenCalled();
       });
     });
 
@@ -275,7 +302,7 @@ describe('WaterConnectionPage', () => {
       const pageData = createMockPageData({ connections: [], totalCount: 0 });
 
       renderWithIntl(
-        <WaterConnectionPage initialData={pageData} propertyId={123} />
+        <WaterConnectionPage initialData={pageData} propertyId={123} initialPage={1} initialPageSize={10} />
       );
 
       expect(screen.getByText(/0 connections/i)).toBeInTheDocument();
@@ -285,7 +312,7 @@ describe('WaterConnectionPage', () => {
       const pageData = createMockPageData({ connections: [] });
 
       renderWithIntl(
-        <WaterConnectionPage initialData={pageData} propertyId={123} />
+        <WaterConnectionPage initialData={pageData} propertyId={123} initialPage={1} initialPageSize={10} />
       );
 
       expect(screen.getByRole('button', { name: /add connection/i })).toBeInTheDocument();

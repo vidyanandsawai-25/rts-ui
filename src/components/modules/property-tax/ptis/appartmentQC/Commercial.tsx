@@ -9,6 +9,7 @@ import { ApartmentQCDetail } from "@/types/apartmentQC.types";
 import { getApartmentQCColumns } from "./apartmentQC.columns";
 import { transformApartmentData } from "./apartmentQC.utils";
 import { useRouter } from "next/navigation";
+import { useColumnFilters } from "@/hooks/apartmentQc/useColumnFilters";
 
 interface CommercialProps {
   initialData: ApartmentQCDetail[];
@@ -17,6 +18,8 @@ interface CommercialProps {
   initialPageSize: number;
   initialTotalPages: number;
   initialSearchTerm: string;
+  wardId?: number | string;
+  propertyNo?: string;
   error?: string;
 }
 
@@ -27,6 +30,8 @@ const Commercial = ({
   initialPageSize,
   initialTotalPages,
   initialSearchTerm,
+  wardId = '',
+  propertyNo = '',
   error,
 }: CommercialProps) => {
   const searchParams = useSearchParams();
@@ -34,6 +39,12 @@ const Commercial = ({
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
   const activeTab = searchParams.get("subTab") || "rateable";
+
+  // Column filters
+  const { activeFilters, handleFilterChange, fetchFilterOptions } = useColumnFilters({
+    wardId,
+    propertyNo,
+  });
 
   useEffect(() => {
     if (error) toast.error(error);
@@ -51,6 +62,11 @@ const Commercial = ({
     startTransition(() => router.push(`${pathname}?${params.toString()}`));
   }, [pathname, router, searchParams]);
 
+  const handleRowClick = useCallback((row: Record<string, unknown>) => {
+    const rowId = String(row.id || row.propertyId || 'new');
+    router.push(`${pathname}/edit/${rowId}`);
+  }, [pathname, router]);
+
   const tAqc = useTranslations("appartmentQC");
   const columns = useMemo(() => getApartmentQCColumns('commercial', activeTab, tAqc), [activeTab, tAqc]);
   const transformedData = useMemo(() => transformApartmentData(initialData, 'commercial'), [initialData]);
@@ -60,9 +76,13 @@ const Commercial = ({
       <CommonPropertyTable
         columns={columns} data={transformedData} title={tAqc("apartmentTabs.commercialTitle")} activeTab={activeTab}
         searchQuery={searchQuery} onSearchChange={(q) => { setSearchQuery(q); updateQueryParams({ searchTerm: q, pageNumber: 1 }); }}
+        onRowClick={handleRowClick}
         loading={isPending} isAutoScrolling={isAutoScrolling} onToggleAutoScroll={() => setIsAutoScrolling(!isAutoScrolling)}
         pageNumber={initialPageNumber} pageSize={initialPageSize} totalCount={initialTotalCount} totalPages={initialTotalPages}
         onPageChange={(p) => updateQueryParams({ pageNumber: p })} onPageSizeChange={(s) => updateQueryParams({ pageSize: s, pageNumber: 1 })}
+        activeFilters={activeFilters}
+        onFilterChange={handleFilterChange}
+        onFetchFilterOptions={fetchFilterOptions}
       />
     </div>
   );

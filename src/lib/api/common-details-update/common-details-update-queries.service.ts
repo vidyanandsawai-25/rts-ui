@@ -11,8 +11,9 @@ import {
   PropertyFilterParams,
 } from "@/types/common-details-update/common-details-update.types";
 import { createLogger } from "@/lib/utils/server-logger";
-import type { WingItem } from "@/types/zone-master/properties/wing.types";
+import type { WingItem } from "@/types/wing.types";
 
+// Re-export WingItem for convenience
 export type { WingItem };
 
 const logger = createLogger("BulkUpdateService");

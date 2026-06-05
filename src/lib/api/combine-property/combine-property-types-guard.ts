@@ -60,6 +60,8 @@ export function normalizeCombinePropertyItem(data: Record<string, unknown>): Com
     fromProperty: String(data.fromProperty ?? "").trim(),
     toProperty: String(data.toProperty ?? "").trim(),
     isActive: parseBoolean(data.isActive ?? data.isStatus ?? true),
+    categoryId: data.categoryId != null ? Number(data.categoryId) : undefined,
+    societyDetailId: data.societyDetailId != null ? Number(data.societyDetailId) : null,
     createdDate: data.createdDate != null ? String(data.createdDate) : null,
     updatedDate: data.updatedDate != null ? String(data.updatedDate) : null,
   };
@@ -109,5 +111,6 @@ export function normalizePropertyCombineDetails(data: Record<string, unknown>): 
     pendingAmount: Number.isFinite(pendingAmount) ? pendingAmount : 0,
     propertyDescription: String(data.propertyDescription ?? "").trim(),
     propertyTypeId: Number.isFinite(propertyTypeId) ? propertyTypeId : 0,
+    combineReason: data.combineReason != null ? String(data.combineReason).trim() : undefined,
   };
 }

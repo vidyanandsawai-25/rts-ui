@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback, useMemo } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Building2 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -8,8 +9,8 @@ import { SearchInput, StatusBadge, AddButton, Select, Option, Label } from "@/co
 import { ZonePropertyItem } from "@/types/zone-master/properties/zoneProperty.types";
 import { WardItem } from "@/types/wardMaster.types";
 import { usePropertyListHandlers } from "@/hooks/zoneMaster/usePropertyListHandlers";
-import { useCallback, useMemo } from "react";
 import { getPropertyColumns } from "./propertyColumns";
+import { DeleteLabelButton } from "@/components/common/ActionButtons";
 
 interface PropertyCategoryMap {
     [key: number]: string;
@@ -53,6 +54,9 @@ export default function PropertyList({
     const t = useTranslations("zoneMaster");
     const tCommon = useTranslations("common");
 
+
+
+
     const {
         localSearch,
         handleSearchChange,
@@ -75,36 +79,43 @@ export default function PropertyList({
         }));
     }, [wards]);
 
-    // Table columns
+
+
+    // ── Columns ──────────────────────────────────────────────────────────────
     const columns = useMemo(
-        () => getPropertyColumns({
-            t,
-            pageNumber,
-            pageSize,
-            wards,
-            categoryMap,
-            propertyTypeMap,
-        }),
+        () =>
+            getPropertyColumns({
+                t,
+                pageNumber,
+                pageSize,
+                wards,
+                categoryMap,
+                propertyTypeMap,
+            }),
         [t, pageNumber, pageSize, wards, categoryMap, propertyTypeMap]
     );
 
     const handleCreateProperty = useCallback(() => {
         const params = new URLSearchParams(searchParams.toString());
-        if (selectedWardId !== null) {
-            params.set("propWardId", String(selectedWardId));
-        }
+        if (selectedWardId !== null) params.set("propWardId", String(selectedWardId));
         params.set("createProperty", "");
         router.push(`${pathname}?${params.toString()}`);
     }, [router, pathname, searchParams, selectedWardId]);
 
     const handleCreatePartition = useCallback(() => {
         const params = new URLSearchParams(searchParams.toString());
-        if (selectedWardId !== null) {
-            params.set("propWardId", String(selectedWardId));
-        }
+        if (selectedWardId !== null) params.set("propWardId", String(selectedWardId));
         params.set("createPartition", "");
         router.push(`${pathname}?${params.toString()}`);
     }, [router, pathname, searchParams, selectedWardId]);
+
+    const handleOpenDeleteDrawer = useCallback(() => {
+        const params = new URLSearchParams(searchParams.toString());
+        if (selectedWardId !== null) params.set("propWardId", String(selectedWardId));
+        params.set("deleteProperty", "");
+        router.push(`${pathname}?${params.toString()}`);
+    }, [router, pathname, searchParams, selectedWardId]);
+
 
     return (
         <div className="flex flex-col h-full">
@@ -145,7 +156,6 @@ export default function PropertyList({
                             selectSize="md"
                         />
                     </div>
-
                     <div>
                         <Label className="block text-sm font-medium text-gray-700 mb-1">
                             {t("propertyList.search")}
@@ -184,6 +194,12 @@ export default function PropertyList({
                             size="sm"
                             label={t("propertyList.createPartition")}
                             onClick={handleCreatePartition}
+                            disabled={selectedWardId === null}
+                        />
+
+                        <DeleteLabelButton
+                            label={t("propertyList.deleteButton")}
+                            onClick={handleOpenDeleteDrawer}
                             disabled={selectedWardId === null}
                         />
                     </div>
@@ -234,6 +250,8 @@ export default function PropertyList({
                     />
                 )}
             </div>
+
         </div>
     );
 }
+

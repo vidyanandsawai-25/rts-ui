@@ -357,6 +357,16 @@ export type UlbFieldChangeHandler = <K extends keyof ULBConfigurationFormData>(
   value: ULBConfigurationFormData[K]
 ) => void;
 
+export type UlbFieldBlurHandler = (field: keyof ULBConfigurationFormData) => void;
+
+export type UlbFieldErrorGetter = (field: keyof ULBConfigurationFormData) => string | undefined;
+
+export interface UlbValidatedFieldProps {
+  onFieldChange: UlbFieldChangeHandler;
+  onFieldBlur: UlbFieldBlurHandler;
+  getFieldError: UlbFieldErrorGetter;
+}
+
 /** Server-data props shared by the server wrapper and the client orchestrator. */
 export interface ULBConfigurationModuleProps {
   initialUlbData: UlbConfigurationMaster | null;
@@ -395,10 +405,9 @@ export type UlbTextAreaProps = TextAreaProps & {
   required?: boolean;
 };
 
-export interface ULBInfoTabProps {
+export interface ULBInfoTabProps extends UlbValidatedFieldProps {
   formData: ULBConfigurationFormData;
   t: (key: string) => string;
-  onFieldChange: UlbFieldChangeHandler;
   onStateChange: (value: string) => void;
   onSave: () => void;
   onNext: () => void;
@@ -416,11 +425,10 @@ export interface ULBLogoImagesTabProps {
   footerClassName: string;
 }
 
-export interface ULBProjectLicenseTabProps {
+export interface ULBProjectLicenseTabProps extends UlbValidatedFieldProps {
   formData: ULBConfigurationFormData;
   masterRenewalAlerts: RenewalAlert[];
   t: (key: string, values?: Record<string, string | number>) => string;
-  onFieldChange: UlbFieldChangeHandler;
   onLicenseFieldChange: (field: 'licenseStartDate' | 'licenseDuration', value: string) => void;
   onGenerateLicenseKey: () => void;
   onSave: () => void;
@@ -438,7 +446,7 @@ export interface ULBDepartmentLicenseTabProps {
   searchQuery: string;
   onSearchChange: (value: string) => void;
   master: UlbMasterLicenseSnapshot;
-  onToggle: (id: string, enabled: boolean) => void;
+  onToggle: (id: string, enabled: boolean, masterDates?: UlbMasterLicenseSnapshot) => void;
   onDateChange: (id: string, field: 'startDate' | 'duration' | 'endDate', value: string) => void;
   onApplyMaster: () => void;
   onEnableAll: () => void;
@@ -451,19 +459,17 @@ export interface ULBDepartmentLicenseTabProps {
   footerClassName: string;
 }
 
-export interface ULBContactAddressCardProps {
+export interface ULBContactAddressCardProps extends UlbValidatedFieldProps {
   formData: ULBConfigurationFormData;
   t: (key: string) => string;
-  onFieldChange: UlbFieldChangeHandler;
 }
 
-export interface ULBProjectInfoSectionProps {
+export interface ULBProjectInfoSectionProps extends UlbValidatedFieldProps {
   formData: ULBConfigurationFormData;
   t: (key: string) => string;
-  onFieldChange: UlbFieldChangeHandler;
 }
 
-export interface ULBLicenseSectionProps {
+export interface ULBLicenseSectionProps extends Pick<UlbValidatedFieldProps, 'onFieldBlur' | 'getFieldError'> {
   formData: ULBConfigurationFormData;
   masterRenewalAlerts: RenewalAlert[];
   t: (key: string, values?: Record<string, string | number>) => string;
@@ -475,7 +481,7 @@ export interface ULBLicenseSectionProps {
 export interface ULBDepartmentCardProps {
   dept: DepartmentLicense;
   t: (key: string) => string;
-  onToggle: (id: string, enabled: boolean) => void;
+  onToggle: (id: string, enabled: boolean, masterDates?: UlbMasterLicenseSnapshot) => void;
   onDateChange: (id: string, field: 'startDate' | 'duration' | 'endDate', value: string) => void;
 }
 

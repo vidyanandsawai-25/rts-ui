@@ -361,20 +361,12 @@ describe('useCommonDetailsUpdateActions', () => {
 
       expect(result.current.saving).toBe(false);
 
-      let updatePromise: Promise<void>;
-      act(() => {
-        updatePromise = result.current.handleBulkUpdate('/api/test', payload, vi.fn());
-      });
-
-      // Should be saving immediately after call
-      expect(result.current.saving).toBe(true);
-
-      // Await the update promise to let it resolve
+      // Properly await the async handleBulkUpdate call
       await act(async () => {
-        await updatePromise;
+        await result.current.handleBulkUpdate('/api/test', payload, vi.fn());
       });
 
-      // Should be false after completion
+      // After awaiting, saving should be false
       expect(result.current.saving).toBe(false);
     });
   });

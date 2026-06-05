@@ -495,4 +495,47 @@ describe("useWingManagement", () => {
     expect(result.current.editingSocietyDetailId).toBeNull();
     expect(result.current.showAddWingForm).toBe(false);
   });
+
+  it("should call onWingSaveSuccess callback after successful wing save", async () => {
+    const newSocietyDetail: SocietyDetailItem = {
+      ...mockSocietyDetails[0],
+      id: 10,
+      wingId: 3,
+      wingName: "Wing C",
+    };
+
+    vi.mocked(createSocietyDetailAction).mockResolvedValueOnce({
+      success: true,
+      data: newSocietyDetail,
+    });
+
+    const mockOnWingSaveSuccess = vi.fn();
+
+    const { result } = renderHook(() =>
+      useWingManagement({
+        societyDetails: mockSocietyDetails,
+        setSocietyDetails: mockSetSocietyDetails,
+        wings: mockWings,
+        selectedPropertyId: 1,
+        onWingSaveSuccess: mockOnWingSaveSuccess,
+      })
+    );
+
+    act(() => {
+      result.current.setShowAddWingForm(true);
+      result.current.setNewWingId(3);
+      result.current.setNewWingName("Wing C");
+    });
+
+    const mockErrors = {};
+    const mockSetErrors = vi.fn();
+
+    await act(async () => {
+      await result.current.handleSaveWing(mockErrors, mockSetErrors);
+    });
+
+    expect(createSocietyDetailAction).toHaveBeenCalled();
+    expect(mockOnWingSaveSuccess).toHaveBeenCalledTimes(1);
+    expect(toast.success).toHaveBeenCalled();
+  });
 });

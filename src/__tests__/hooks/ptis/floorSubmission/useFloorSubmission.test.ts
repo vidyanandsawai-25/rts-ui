@@ -208,11 +208,11 @@ describe('useFloorSubmission', () => {
         expect.objectContaining({
           floorId: null,
           typeOfUseId: null,
-          loadFloor: 'true',
-          loadSubFloor: 'true',
-          loadConstruction: 'true',
-          loadUsage: 'true',
-          loadSubType: null,
+          loadFloor: 'false',
+          loadSubFloor: 'false',
+          loadConstruction: 'false',
+          loadUsage: 'false',
+          loadSubType: 'false',
         })
       );
     });

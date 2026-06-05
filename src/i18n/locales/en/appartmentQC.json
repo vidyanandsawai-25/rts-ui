@@ -3,7 +3,7 @@
     "propertyNo": "Property No",
     "partitionNo": "Partition No.",
     "oldPropertyNo": "Old Property No.",
-    "wingName": "Wing Name",
+    "wingName": "Wing",
     "shopNo": "Shop No.",
     "flatNo": "Flat No.",
     "ownerName": "Owner Name",
@@ -13,6 +13,7 @@
     "renterName": "Renter Name",
     "description": "Description",
     "type": "Type",
+    "apartmentType": "Apartment Type",
     "floor": "Floor",
     "assessmentYear": "Assessment Year",
     "asstYear": "Asst Year",
@@ -52,6 +53,13 @@
     "ocDate": "OC Date"
   },
   "taxDetails": {
+    "title": "Property Tax Details Summary",
+    "subtitle": "Aggregated tax details by Method",
+    "propertyType": "Property Type",
+    "methodLabel": "Method",
+    "total": "Total",
+    "columnTotal": "Column Total",
+    "noData": "No tax details available",
     "taxes": "Taxes",
     "method": "Method",
     "generalTax": "General Tax",
@@ -76,7 +84,10 @@
     "oldPenaltyULB": "Old Penalty of ULB",
     "oldPenaltyULBShort": "Old Penalty ULB",
     "runTimePenalty": "Run Time Penalty",
-    "totalTax": "Total Tax"
+    "totalTax": "Total Tax",
+    "propertyCount": "Property Count",
+    "rvPropertyCount": "RV Property Count",
+    "cvPropertyCount": "CV Property Count"
   },
   "apartmentTabs": {
     "amenitiesTitle": "Property Tax Amenities",
@@ -86,6 +97,219 @@
   },
   "actions": {
     "startAutoScroll": "Start auto-scroll",
-    "stopAutoScroll": "Stop auto-scroll"
+    "stopAutoScroll": "Stop auto-scroll",
+    "exportExcel": "Export to Excel"
+  },
+  "export": {
+    "downloading": "Downloading Excel file...",
+    "success": "Excel file downloaded successfully!",
+    "error": "Failed to download Excel file",
+    "missingParams": "Missing ward ID or property number"
+  },
+  "filter": {
+    "filterColumn": "Filter column",
+    "filterBy": "Filter by",
+    "noOptions": "No options available",
+    "clearAll": "Clear All",
+    "apply": "Apply"
+  },
+  "drawer": {
+    "title": "Property Details",
+    "noPropertyData": "No property data found.",
+    "goBack": "Go Back",
+    "cancel": "Cancel",
+    "basicInformation": "Basic Information",
+    "floorQC": "Floor QC",
+    "roomWiseSubmission": "Room Wise Submission",
+    "loadingRoomData": "Loading room data...",
+    "tabs": {
+      "rateable": "Rateable Value",
+      "capital": "Capital Value"
+    }
+  },
+  "pageTitle": "Edit Property Details",
+  "badges": {
+    "ward": "Ward",
+    "zone": "Zone",
+    "prop": "Prop",
+    "type": "Type"
+  },
+  "buttons": {
+    "back": "Back",
+    "save": "Save Changes",
+    "saving": "Saving..."
+  },
+  "messages": {
+    "propertyIdMissing": "Property ID is missing",
+    "validationErrors": "Please fix validation errors before saving",
+    "floorQCValidationError": "Floor QC validation error",
+    "basicDetailsUpdateFailed": "Failed to update basic details",
+    "floorQCUpdateFailed": "Failed to update floor QC details",
+    "allChangesSaved": "All changes saved successfully",
+    "basicDetailsUpdated": "Basic details updated successfully",
+    "roomDataUpdated": "Room data updated - area refreshed",
+    "failedToLoadRooms": "Failed to load existing rooms",
+    "cannotOpenRoomSubmission": "Cannot open room submission - no detail ID"
+  },
+  "basicInfo": {
+    "title": "Basic Information",
+    "fields": {
+      "ownerName": {
+        "label": "Owner Name",
+        "placeholder": "Enter owner name"
+      },
+      "occupierName": {
+        "label": "Occupier Name",
+        "placeholder": "Enter occupier name"
+      },
+      "renterName": {
+        "label": "Renter Name",
+        "placeholder": "Enter renter name"
+      },
+      "propertyDescription": {
+        "label": "Property Description",
+        "placeholder": "Select Property Type"
+      },
+      "bhk": {
+        "label": "BHK",
+        "placeholder": "Enter BHK"
+      },
+      "mobileNo": {
+        "label": "Mobile",
+        "placeholder": "Enter mobile number"
+      },
+      "emailId": {
+        "label": "Email ID",
+        "placeholder": "Enter email"
+      },
+      "flatOrShopName": {
+        "label": "Shop Name",
+        "placeholder": "Enter shop name"
+      },
+      "wingName": {
+        "label": "Wing",
+        "placeholder": "Enter wing"
+      },
+      "flatOrShopNo": {
+        "label": "Flat/Shop No.",
+        "placeholder": "Enter flat/shop no."
+      },
+      "oldPropertyNo": {
+        "label": "Old Property No.",
+        "placeholder": "Enter old property no."
+      },
+      "remark": {
+        "label": "Remark"
+      },
+      "oldRV": {
+        "label": "Old RV"
+      },
+      "newRV": {
+        "label": "New RV"
+      },
+      "oldTax": {
+        "label": "Old Tax"
+      },
+      "newTax": {
+        "label": "New Tax"
+      },
+      "oldArea": {
+        "label": "Old Area"
+      },
+      "newArea": {
+        "label": "New Area"
+      },
+      "oldUseType": {
+        "label": "Old Use Type"
+      },
+      "oldConstructionType": {
+        "label": "Old Construction Type"
+      },
+      "oldCSN": {
+        "label": "Old CSN"
+      },
+      "oldConstructionYear": {
+        "label": "Old Construction Year"
+      }
+    },
+    "validation": {
+      "ownerNameRequired": "Owner name is required",
+      "occupierNameRequired": "Occupier name is required",
+      "invalidNameFormat": "Invalid name format",
+      "invalidMobile": "Enter valid 10-digit mobile",
+      "invalidEmail": "Enter valid email",
+      "flatOrShopNoRequired": "Flat/Shop No. is required",
+      "invalidWingFormat": "Invalid wing format",
+      "invalidPropertyNoFormat": "Invalid property no. format"
+    }
+  },
+  "floorQC": {
+    "title": "Floor QC",
+    "columns": {
+      "floor": "Floor",
+      "conYear": "Con Year",
+      "asstYear": "Asst Year",
+      "conType": "Con Type",
+      "use": "Use",
+      "subTypeOfUse": "Sub Type Of Use",
+      "noOfRooms": "No. of Rooms",
+      "area": "Area",
+      "rentMY": "Rent M/Y",
+      "rateMY": "Rate M/Y",
+      "rentalValue": "Rental Value",
+      "depreciation": "Depreciation",
+      "alv": "ALV",
+      "mr": "M.R.",
+      "rv": "RV",
+      "sdrr": "SDRR",
+      "baseValue": "Base Value",
+      "floorFactor": "Floor Factor",
+      "ageFactor": "Age Factor",
+      "ntbFactor": "NTB Factor",
+      "useFactor": "Use Factor",
+      "capitalValue": "Capital Value"
+    },
+    "tabs": {
+      "rateable": "Rateable",
+      "capital": "Capital"
+    },
+    "validation": {
+      "invalidYear": "Enter 4-digit year",
+      "yearOutOfRange": "Year out of range"
+    },
+    "tooltips": {
+      "viewRoomDetails": "View/Edit Room Details",
+      "noDetailId": "No detail ID available"
+    }
+  },
+  "list": {
+    "title": "Apartment QC",
+    "tabs": {
+      "residential": "Residential",
+      "commercial": "Commercial",
+      "amenities": "Amenities"
+    },
+    "search": {
+      "placeholder": "Search by property no., owner name...",
+      "noResults": "No properties found"
+    },
+    "table": {
+      "ward": "Ward",
+      "zone": "Zone",
+      "propertyNo": "Property No.",
+      "flatShopNo": "Flat/Shop No.",
+      "ownerName": "Owner Name",
+      "occupierName": "Occupier Name",
+      "type": "Type",
+      "oldArea": "Old Area",
+      "newArea": "New Area",
+      "oldRV": "Old RV",
+      "newRV": "New RV",
+      "actions": "Actions"
+    },
+    "actions": {
+      "edit": "Edit",
+      "view": "View"
+    }
   }
 }

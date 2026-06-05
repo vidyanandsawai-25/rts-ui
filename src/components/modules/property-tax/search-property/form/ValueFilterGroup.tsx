@@ -49,8 +49,15 @@ export function ValueFilterGroup({
 
   const filterValue = String(formState[filterField] ?? "");
   const isBetween = filterValue === "between";
+  const isTop = filterValue === "top";
   const fromError = fieldErrors[fromField];
   const toError = fieldErrors[toField];
+  const amountLabel = isTop
+    ? t("placeholders.topCount")
+    : t("placeholders.amount");
+  const amountPlaceholder = isTop
+    ? t("placeholders.topCount")
+    : t("placeholders.amount");
 
   return (
     <div className="flex items-start gap-x-1.5">
@@ -72,15 +79,16 @@ export function ValueFilterGroup({
         />
       </div>
 
-      {/* Amount (From) */}
+      {/* Amount / Top Count */}
       <div className="flex min-w-0 flex-col w-36 shrink-0">
         <Label htmlFor={String(fromField)} className={COMPACT_LABEL_CLASS}>
-          {t("placeholders.amount")}
+          {amountLabel}
         </Label>
         <Input
           id={String(fromField)}
-          type="number"
-          placeholder={t("placeholders.amount")}
+          type="text"
+          inputMode="numeric"
+          placeholder={amountPlaceholder}
           value={String(formState[fromField] ?? "")}
           onChange={onInputChange(fromField)}
           onBlur={onInputBlur(fromField)}
@@ -111,7 +119,8 @@ export function ValueFilterGroup({
           </Label>
           <Input
             id={String(toField)}
-            type="number"
+            type="text"
+            inputMode="numeric"
             placeholder={t("placeholders.toAmount")}
             value={String(formState[toField] ?? "")}
             onChange={onInputChange(toField)}

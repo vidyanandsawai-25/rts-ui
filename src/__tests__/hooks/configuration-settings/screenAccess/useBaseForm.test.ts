@@ -3,7 +3,7 @@ import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useBaseForm } from '@/hooks/configuration-settings/screenAccess/useBaseForm';
 
-const { mockRouter, mockToast } = vi.hoisted(() => ({
+const { mockRouter, mockToast, mockConfirm } = vi.hoisted(() => ({
   mockRouter: {
     push: vi.fn(),
     refresh: vi.fn(),
@@ -12,6 +12,7 @@ const { mockRouter, mockToast } = vi.hoisted(() => ({
     success: vi.fn(),
     error: vi.fn(),
   },
+  mockConfirm: vi.fn(),
 }));
 
 vi.mock('next/navigation', () => ({
@@ -25,6 +26,12 @@ vi.mock('next-intl', () => ({
 
 vi.mock('sonner', () => ({
   toast: mockToast,
+}));
+
+vi.mock('@/components/common/ConfirmProvider', () => ({
+  useConfirm: () => ({
+    confirm: mockConfirm,
+  }),
 }));
 
 vi.mock('@/hooks/useLoading', () => ({
@@ -117,5 +124,49 @@ describe('useBaseForm', () => {
     expect(result.current.errors.name).toBe('Required');
     expect(mockSaveAction).not.toHaveBeenCalled();
     expect(mockToast.error).not.toHaveBeenCalled();
+  });
+
+  it('should call handleCancel directly if there are no unsaved changes', () => {
+    const { result } = renderHook(() => useBaseForm(baseProps));
+
+    act(() => {
+      result.current.handleCancel();
+    });
+
+    expect(mockConfirm).not.toHaveBeenCalled();
+    expect(result.current.open).toBe(false);
+
+    act(() => {
+      vi.advanceTimersByTime(300);
+    });
+    expect(mockRouter.push).toHaveBeenCalledWith('/en/test');
+  });
+
+  it('should prompt user on handleCancel if there are unsaved changes', () => {
+    const { result } = renderHook(() => useBaseForm(baseProps));
+
+    act(() => {
+      result.current.handleChange('name', 'changed');
+    });
+
+    act(() => {
+      result.current.handleCancel();
+    });
+
+    expect(mockConfirm).toHaveBeenCalled();
+    const confirmArg = mockConfirm.mock.calls[0][0];
+    expect(confirmArg.variant).toBe('warning');
+
+    // Trigger onConfirm
+    act(() => {
+      confirmArg.onConfirm();
+    });
+
+    expect(result.current.open).toBe(false);
+
+    act(() => {
+      vi.advanceTimersByTime(300);
+    });
+    expect(mockRouter.push).toHaveBeenCalledWith('/en/test');
   });
 });

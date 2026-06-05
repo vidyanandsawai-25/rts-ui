@@ -34,7 +34,7 @@ export function QuickSearchPanel({
   const t = useTranslations("propertySearch.form");
 
   return (
-    <div className="overflow-x-auto pb-1 pt-0.5">
+    <div className="overflow-x-auto pb-1 pt-1.5">
       <div className="grid min-w-[78rem] grid-cols-7 items-start gap-x-1.5 gap-y-1">
         <LookupInput
           id="propertyNoFrom"

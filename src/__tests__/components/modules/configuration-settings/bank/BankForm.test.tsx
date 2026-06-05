@@ -17,6 +17,12 @@ vi.mock('sonner', () => ({
   },
 }));
 
+vi.mock('@/components/common/ConfirmProvider', () => ({
+  useConfirm: () => ({
+    confirm: vi.fn(),
+  }),
+}));
+
 const mockPush = vi.fn();
 const mockRefresh = vi.fn();
 

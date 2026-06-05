@@ -262,6 +262,11 @@
     "noPropertiesFound": "कोणतीही मालमत्ता आढळली नाही",
     "dependencyFlow": "अवलंबित्व पदानुक्रम प्रवाह",
     "dependencyPath": "झोन → प्रभाग → मालमत्ता → विभाजन",
+    "deleteSuccess": "मालमत्ता यशस्वीरित्या हटवली",
+    "deleteBulkSuccess": "{count} मालमत्ता यशस्वीरित्या हटवल्या",
+    "deleteError": "मालमत्ता हटविण्यात अयशस्वी",
+    "deleteButton": "मालमत्ता हटवा",
+    "loading": "लोड होत आहे...",
     "columns": {
       "srNo": "अनु. क्र.",
       "wardNo": "प्रभाग क्रमांक",
@@ -271,7 +276,38 @@
       "type": "प्रकार"
     }
   },
-  "createProperty": {
+    "createProperty": {
+      "wings": "विंग्स",
+      "wingsAssociated": "या मालमत्तेशी संबंधित विंग्स",
+      "selectAWing": "एक विंग निवडा",
+      "noWingsAvailable": "या मालमत्तेसाठी कोणतेही विंग उपलब्ध नाही.",
+      "property": "मालमत्ता",
+      "properties": "मालमत्ता",
+      "amenities": "सुविधा",
+      "wardName": "प्रभागाचे नाव",
+      "propertyNoLabel": "मालमत्ता क्र.",
+      "partitionNumber": "विभाजन क्रमांक",
+      "action": "क्रिया",
+      "noAmenitiesFound": "कोणतीही सुविधा आढळली नाही.",
+      "noPropertiesFound": "कोणतीही मालमत्ता आढळली नाही.",
+      "noPropertiesFoundInWing": "कोणतीही मालमत्ता आढळली नाही.",
+      "deleteSelectedCount": "निवडलेले हटवा ({count})",
+      "deletePropertyConfirm": "मालमत्ता हटवा",
+      "deleteAmenityConfirm": "सुविधा हटवा",
+      "deleteSinglePropertyDesc": "तुम्हाला खरोखर ही मालमत्ता हटवायची आहे? ही क्रिया पूर्ववत करता येणार नाही.",
+      "deleteSingleAmenityDesc": "तुम्हाला खरोखर ही सुविधा हटवायची आहे? ही क्रिया पूर्ववत करता येणार नाही.",
+      "propertyDeleteSuccess": "मालमत्ता यशस्वीरित्या हटवली",
+      "amenityDeleteSuccess": "सुविधा यशस्वीरित्या हटवली",
+      "failedToDeleteProperty": "मालमत्ता हटविण्यात अयशस्वी",
+      "failedToDeleteAmenity": "सुविधा हटविण्यात अयशस्वी",
+      "deleteSelectedPropertiesTitle": "निवडलेल्या मालमत्ता हटवा",
+      "deleteSelectedAmenitiesTitle": "निवडलेल्या सुविधा हटवा",
+      "deleteSelectedPropertiesDesc": "तुम्हाला खरोखर {count} निवडलेल्या मालमत्ता हटवायच्या आहेत? ही क्रिया पूर्ववत करता येणार नाही.",
+      "deleteSelectedAmenitiesDesc": "तुम्हाला खरोखर {count} निवडलेल्या सुविधा हटवायच्या आहेत? ही क्रिया पूर्ववत करता येणार नाही.",
+      "propertiesDeletedSuccess": "{count} मालमत्ता यशस्वीरित्या हटवल्या",
+      "amenitiesDeletedSuccess": "{count} सुविधा यशस्वीरित्या हटवल्या",
+      "failedToDeleteSelectedProperties": "निवडलेल्या मालमत्ता हटविण्यात अयशस्वी",
+      "failedToDeleteSelectedAmenities": "निवडलेल्या सुविधा हटविण्यात अयशस्वी",
     "title": "नवीन मालमत्ता तयार करा",
     "subtitle": "निवडलेल्या प्रभागाअंतर्गत नवीन मुख्य मालमत्ता तयार करा",
     "ward": "प्रभाग",
@@ -328,7 +364,9 @@
   },
   "partitionForm": {
     "title": "विभाजन / विंग तयार करा",
-    "subtitle": "मालमत्तेत विभाजन किंवा विंग जोडा",    "propertyInformation": "मालमत्ता माहिती",    "ward": "प्रभाग",
+    "subtitle": "मालमत्तेत विभाजन किंवा विंग जोडा",
+    "createPartition": "विभाजन तयार करा",
+    "propertyInformation": "मालमत्ता माहिती",    "ward": "प्रभाग",
     "propertyCategory": "मालमत्ता श्रेणी",
     "categoryType": "श्रेणी प्रकार",
     "apartment": "अपार्टमेंट",
@@ -382,8 +420,8 @@
     "placeholders": {
       "selectMainProperty": "मुख्य मालमत्ता निवडा",
       "partitionNo": "विभाजन क्रमांक प्रविष्ट करा",
-      "fromPartition": "उदा., 1",
-      "toPartition": "उदा., 10"
+      "fromPartition": "विभाजन पासून संख्या प्रविष्ट करा",
+      "toPartition": "विभाजन पर्यंत संख्या प्रविष्ट करा"
     },
     "helpText": {
       "selectMainProperty": "विभाजन/विंग जोडण्यासाठी मुख्य मालमत्ता निवडा",
@@ -524,20 +562,41 @@
         "partialSuccess": "काही मालमत्ता तयार करण्यात अयशस्वी",
         "successCount": "यशस्वी",
         "failedCount": "अयशस्वी",
-        "details": "परिणाम"      },
+        "details": "परिणाम",
+        "errors": {
+          "title": "मालमत्ता निर्मिती अयशस्वी",
+          "criticalErrorTitle": "गंभीर त्रुटी",
+          "duplicateErrorTitle": "डुप्लिकेट रेकॉर्ड आढळले",
+          "genericError": "मालमत्ता तयार करताना त्रुटी आली.",
+          "failedToCreate": "{count} मालमत्ता तयार करण्यात अयशस्वी झाल्या.",
+          "buildingNotFound": "बिल्डिंग तपशील सापडले नाहीत. कृपया निवडलेली बिल्डिंग तपासा आणि पुन्हा प्रयत्न करा.",
+          "invalidCategory": "निवडलेली मालमत्ता श्रेणी अवैध आहे. कृपया वैध श्रेणी निवडा.",
+          "societyWingMissing": "अपार्टमेंट मालमत्तांसाठी सोसायटी विंग तपशील आवश्यक आहेत.",
+          "duplicatePartitionSingle": "पार्टिशन {partition} निवडलेल्या विंगमध्ये आधीपासून अस्तित्वात आहे.",
+          "duplicatePartitionMultiple": "खालील पार्टिशन या विंगमध्ये आधीपासून अस्तित्वात आहेत: {partitions}.",
+          "duplicateFlatSingle": "फ्लॅट क्रमांक {flat} निवडलेल्या विंगमध्ये आधीपासून अस्तित्वात आहे.",
+          "duplicateFlatNumbers": "फ्लॅट क्रमांक {flats} निवडलेल्या विंगमध्ये आधीपासून अस्तित्वात आहेत.",
+          "repositoryError": "पंक्ती {row}: {message}.",
+          "unknownErrorAtRow": "पंक्ती {row} वर मालमत्ता तयार करताना अनपेक्षित त्रुटी आली.",
+          "transactionFailure": "सिस्टम त्रुटीमुळे मालमत्ता निर्मिती अयशस्वी झाली. कृपया नंतर पुन्हा प्रयत्न करा."
+        }
+      },
       "amenity": {
         "notImplemented": "सुविधा सामग्री अद्याप लागू केली नाही"      }
     },
     "amenity": {
       "description": "निवडलेल्या मालमत्तेसाठी सुविधा तयार करा. सुविधा एका विंगला (पर्यायी) नियुक्त केल्या जातील आणि क्रमवार क्रमांकित केल्या जातील.",
       "selectWing": "विंग निवडा (पर्यायी)",
-      "noWing": "विंग नाही (डीफॉल्ट सुविधा)",
+      "noWing": "मुख्य मालमत्ता",
       "fromAmenity": "सुविधा पासून",
       "toAmenity": "सुविधा पर्यंत",
       "amenities": "सुविधा",
       "amenitiesWillBeCreated": "सुविधा तयार केल्या जातील:",
+      "createAmenity": "सुविधा तयार करा",
       "placeholders": {
-        "selectWing": "एक विंग निवडा किंवा रिकामे सोडा"
+        "selectWing": "एक विंग निवडा किंवा रिकामे सोडा",
+        "fromAmenity": "सुविधा पासून क्रमांक प्रविष्ट करा",
+        "toAmenity": "सुविधा पर्यंत क्रमांक प्रविष्ट करा"
       }
     }
   },
@@ -547,5 +606,9 @@
     "bulkCreateSuccess": "{count} विभाजन यशस्वीरित्या तयार झाले!",
     "amenityCreateSuccess": "{count} सुविधा यशस्वीरित्या तयार झाल्या!",
     "amenityCreateError": "सुविधा तयार करण्यात अयशस्वी"
+  },
+  "deleteProperty": {
+    "pageTitle": "मालमत्ता हटवा",
+    "pageSubtitle": "निवडलेल्या प्रभागातून हटवायची मालमत्ता निवडा"
   }
 }

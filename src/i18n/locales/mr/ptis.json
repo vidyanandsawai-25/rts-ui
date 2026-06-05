@@ -270,7 +270,8 @@
   },
   "loading": {
     "message": "मालमत्ता तपशील लोड होत आहे",
-    "description": "कृपया आम्ही नवीनतम मालमत्ता कर माहिती मिळेपर्यंत प्रतीक्षा करा."
+    "description": "कृपया आम्ही नवीनतम मालमत्ता कर माहिती मिळेपर्यंत प्रतीक्षा करा.",
+    "rendering": "रेंडर होत आहे..."
   },
   "assessmentMethods": {
     "rateable": "करयोग्य मूल्य",
@@ -284,6 +285,7 @@
   },
   "floorTable": {
     "columns": {
+      "taxable": "करपात्र",
       "serialNo": "क्र.",
       "floor": "मजला",
       "subFloor": "उप-मजला",
@@ -320,6 +322,7 @@
       "appliedOn": "अप्लाइड ऑन"
     },
     "tooltips": {
+      "taxable": "करपात्र मालमत्ता",
       "floor": "मजला",
       "subFloor": "उप-मजला",
       "constYear": "बांधकाम वर्ष",
@@ -348,7 +351,7 @@
       "useFactor": "वापर घटक",
       "capitalValue": "भांडवली मूल्य",
       "taxAmount": "कर रक्कम",
-      "appliedOn": "लागू केलेली तारीख"
+      "appliedOn": "लागू केलेले"
     },
     "placeholders": {
       "oc": "ओसी/वर्ष/###",
@@ -529,9 +532,14 @@
     "previousPage": "मागील पृष्ठ",
     "nextPage": "पुढील पृष्ठ",
     "lastPage": "शेवटचे पृष्ठ",
+    "firstProperty": "पहिली मालमत्ता",
+    "previousProperty": "मागील मालमत्ता",
+    "nextProperty": "पुढील मालमत्ता",
+    "lastProperty": "शेवटची मालमत्ता",
     "backToSearch": "शोध मालमत्तेवर परत जा"
   },
   "table": {
-    "page": "पृष्ठ {current} चे {total}"
+    "page": "पृष्ठ {current} चे {total}",
+    "property": "मालमत्ता {current} चे {total}"
   }
 }

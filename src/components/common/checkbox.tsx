@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Check } from 'lucide-react';
+import { Check, Minus } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { CheckboxProps } from '@/types/common.types';
 
@@ -22,6 +22,7 @@ const Checkbox = React.forwardRef<HTMLButtonElement, CheckboxProps>(
             onClick,
             onKeyDown,
             id: providedId,
+            indeterminate = false,
             ...restProps
         },
         ref
@@ -32,7 +33,18 @@ const Checkbox = React.forwardRef<HTMLButtonElement, CheckboxProps>(
         const isControlled: boolean = controlledChecked !== undefined;
         const [internalChecked, setInternalChecked] = React.useState<boolean>(defaultChecked);
         const isChecked: boolean = (isControlled ? controlledChecked : internalChecked) ?? false;
-        const dataState: CheckboxState = isChecked ? 'checked' : 'unchecked';
+        const dataState: CheckboxState | 'indeterminate' = indeterminate
+            ? 'indeterminate'
+            : isChecked
+            ? 'checked'
+            : 'unchecked';
+
+        const inputRef = React.useRef<HTMLInputElement>(null);
+        React.useEffect(() => {
+            if (inputRef.current) {
+                inputRef.current.indeterminate = !!indeterminate;
+            }
+        }, [indeterminate]);
 
         /* ---- handlers ------------------------------------------------ */
         const toggle = React.useCallback((): void => {
@@ -72,6 +84,7 @@ const Checkbox = React.forwardRef<HTMLButtonElement, CheckboxProps>(
         const checkboxContent = (
             <>
                 <input
+                    ref={inputRef}
                     type="checkbox"
                     name={name}
                     value={value}
@@ -87,7 +100,7 @@ const Checkbox = React.forwardRef<HTMLButtonElement, CheckboxProps>(
                     id={id}
                     type="button"
                     role="checkbox"
-                    aria-checked={isChecked}
+                    aria-checked={indeterminate ? 'mixed' : isChecked}
                     data-state={dataState}
                     disabled={disabled}
                     className={cn(
@@ -95,14 +108,18 @@ const Checkbox = React.forwardRef<HTMLButtonElement, CheckboxProps>(
                         'transition-colors duration-150 ease-in-out',
                         'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
                         'disabled:cursor-not-allowed disabled:opacity-50',
-                        isChecked && 'bg-primary text-primary-foreground',
+                        (isChecked || indeterminate) && 'bg-primary text-primary-foreground',
                         className
                     )}
                     onClick={handleClick}
                     onKeyDown={handleKeyDown}
                     {...restProps}
                 >
-                    {isChecked && <Check className="h-3.5 w-3.5" />}
+                    {indeterminate ? (
+                        <Minus className="h-3.5 w-3.5" />
+                    ) : isChecked ? (
+                        <Check className="h-3.5 w-3.5" />
+                    ) : null}
                 </button>
             </>
         );

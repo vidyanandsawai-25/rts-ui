@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Grid3x3, Building2 } from "lucide-react";
@@ -52,7 +52,6 @@ export default function PropertyPartitionForm({
 
   // Normalize selectedWard to prevent undefined
   const ward = selectedWard ?? null;
-
   // Fetch building list using wardId from selectedWard
   const {
     buildingList,
@@ -70,6 +69,7 @@ export default function PropertyPartitionForm({
     errors,
     setErrors,
     allProperties,
+    setAllProperties,
     wings,
     floors,
     societyDetails,
@@ -95,6 +95,7 @@ export default function PropertyPartitionForm({
   // Fetch society wing details using main propertyId
   const {
     wingDetails,
+    refetchWingDetails,
   } = useSocietyWingDetails({
     propertyId: form.mainPropertyId,
   });
@@ -149,13 +150,18 @@ export default function PropertyPartitionForm({
     setEditingSocietyDetailId,
     newWingId,
     setNewWingId,
+    newWingNo,
+    setNewWingNo,
+    getWingNoById,
     wingSummaries,
     handleSaveWing: handleSaveWingCore,
+    openAddWingForm,
   } = useWingManagement({
     societyDetails,
     setSocietyDetails,
     wings,
     selectedPropertyId,
+    onWingSaveSuccess: refetchWingDetails,
   });
 
   // Enhance wing summaries with amenity counts and property counts from API
@@ -186,6 +192,7 @@ export default function PropertyPartitionForm({
   // Use hooks for submit
   const { handleSubmit: handleSubmitCore } = usePartitionSubmit({
     form,
+    setForm,
     selectedWard: ward,
     selectedProperty,
     wings,
@@ -199,21 +206,34 @@ export default function PropertyPartitionForm({
     newWingId,
     newWingName,
     handleSaveWing: handleSaveWingCore,
+    refetchWingDetails,
+    setAllProperties,
   });
 
-  // Check if selected property category is Apartment or Multi Commercial Apartment
-  // Note: categoryMap values are in English from database, so we compare against English literals
-  const isApartmentCategory = useMemo(() => {
-    if (!selectedProperty?.categoryId || !categoryMap) return false;
-    const categoryName = categoryMap.get(selectedProperty.categoryId);
-    return categoryName === "Apartment" || categoryName === "Multi Commercial Apartment";
-  }, [selectedProperty, categoryMap]);
-
-  // Get actual category name from categoryMap
+  // Resolve category name: prefer buildingList (has name directly) over ssrProperties + categoryMap lookup
   const categoryName = useMemo(() => {
+    if (!form.mainPropertyId) return null;
+    const buildingItem = buildingList.find(b => b.propertyId === form.mainPropertyId);
+    if (buildingItem?.catPropertyCategoryName) return buildingItem.catPropertyCategoryName;
     if (!selectedProperty?.categoryId || !categoryMap) return null;
     return categoryMap.get(selectedProperty.categoryId) || null;
-  }, [selectedProperty, categoryMap]);
+  }, [form.mainPropertyId, buildingList, selectedProperty, categoryMap]);
+
+  // Check if selected property category is Apartment or Multi Commercial Apartment
+  const isApartmentCategory = useMemo(() => {
+    return categoryName === "Apartment" || categoryName === "Multi Commercial Apartment";
+  }, [categoryName]);
+
+  // Update partitionType based on category when property is selected
+  // For non-apartment properties, use "partition" type to enable correct validation
+  useEffect(() => {
+    if (form.mainPropertyId && categoryName !== null) {
+      const expectedType = isApartmentCategory ? "wing" : "partition";
+      if (form.partitionType !== expectedType && form.partitionType !== "amenity") {
+        setForm(prev => ({ ...prev, partitionType: expectedType }));
+      }
+    }
+  }, [form.mainPropertyId, categoryName, isApartmentCategory, form.partitionType, setForm]);
 
   // Define columns for the wing summary table
   const wingColumns = useMemo(() => getWingColumns({
@@ -221,6 +241,7 @@ export default function PropertyPartitionForm({
     onEditWing: (row) => {
       setEditingSocietyDetailId(row.societyDetailId);
       setNewWingId(row.wingId);
+      setNewWingNo(row.wingNo || getWingNoById(row.wingId));
       setNewWingName(row.wingName);
       setShowAddWingForm(true);
     },
@@ -232,7 +253,23 @@ export default function PropertyPartitionForm({
       setShowWingConfig(true);
       toast.info(`Selected Wing ${row.wingName} (${row.wingNo}) for updates`);
     }
-  }), [t, setEditingSocietyDetailId, setNewWingId, setNewWingName, setShowAddWingForm, setForm, setShowWingConfig]);
+  }), [t, setEditingSocietyDetailId, setNewWingId, setNewWingNo, getWingNoById, setNewWingName, setShowAddWingForm, setForm, setShowWingConfig]);
+
+  // Helper to reset wing configuration fields
+  const resetWingConfigFields = () => {
+    setForm((prev) => ({
+      ...prev,
+      wingLetter: "",
+      fromFloor: "",
+      toFloor: "",
+      noOfFlatOnOneFloor: "",
+      flatStart: "",
+      incrementedBy: "",
+      prefix: "",
+      generationType: "",
+    }));
+    setErrors({});
+  };
 
   // Handle close
   const handleClose = () => {
@@ -242,6 +279,7 @@ export default function PropertyPartitionForm({
     setShowWingConfig(false);
     setShowAddWingForm(false);
     setNewWingId(null);
+    setNewWingNo("");
     setNewWingName("");
     setEditingSocietyDetailId(null);
 
@@ -283,7 +321,22 @@ export default function PropertyPartitionForm({
           <SaveButton
             onClick={handleSubmit}
             isLoading={loading || addingWing}
-            disabled={showAddWingForm && (!newWingId || !newWingName)}
+            disabled={
+              (showAddWingForm && (!newWingId || !newWingName)) ||
+              // Disable when WingSummaryTable is showing (wing tab, no add form, no config)
+              (isApartmentCategory && form.partitionType === "wing" && !showAddWingForm && !showWingConfig) ||
+              // Disable when WingDetailConfigSection is showing
+              showWingConfig
+            }
+            label={
+              showAddWingForm
+                ? (editingSocietyDetailId ? t("partitionForm.wing.editWing") : t("partitionForm.wing.addWing"))
+                : form.partitionType === "amenity" 
+                ? t("partitionForm.amenity.createAmenity") 
+                : form.partitionType === "partition"
+                ? t("partitionForm.createPartition")
+                : undefined
+            }
           />
         </>
       }
@@ -338,7 +391,18 @@ export default function PropertyPartitionForm({
             variant="pills"
             value={form.partitionType}
             onChange={(val) => {
-              setForm({ ...form, partitionType: val as "wing" | "partition" | "amenity" });
+              setForm((prev) => ({
+                ...prev,
+                partitionType: val as "wing" | "partition" | "amenity",
+                wingLetter: "",
+                fromFloor: "",
+                toFloor: "",
+                noOfFlatOnOneFloor: "",
+                flatStart: "",
+                incrementedBy: "",
+                prefix: "",
+                generationType: "",
+              }));
               setErrors({});
               setShowWingConfig(false);
             }}
@@ -361,14 +425,14 @@ export default function PropertyPartitionForm({
               <WingSummaryTable
                 wingSummaries={enhancedWingSummaries}
                 wingColumns={wingColumns as unknown as Column<WingSummary>[]}
-                onAddWingClick={() => setShowAddWingForm(true)}
+                onAddWingClick={openAddWingForm}
                 t={t}
               />
             )}
 
             {showAddWingForm && (
               <AddWingForm
-                newWingId={newWingId}
+                newWingNo={newWingNo}
                 newWingName={newWingName}
                 setNewWingName={setNewWingName}
                 errors={errors}
@@ -379,6 +443,7 @@ export default function PropertyPartitionForm({
                   setShowAddWingForm(false);
                   setEditingSocietyDetailId(null);
                   setNewWingId(null);
+                  setNewWingNo("");
                   setNewWingName("");
                 }}
                 t={t}
@@ -408,7 +473,10 @@ export default function PropertyPartitionForm({
                       handleToFloorChange={handleToFloorChange}
                       handlePreviewBuilding={handlePreviewBuilding}
                       loading={loadingPreview}
-                      onCancel={() => setShowWingConfig(false)}
+                      onCancel={() => {
+                        setShowWingConfig(false);
+                        resetWingConfigFields();
+                      }}
                       t={t}
                       tCommon={tCommon}
                     />
@@ -451,8 +519,11 @@ export default function PropertyPartitionForm({
         propertyTypeId={selectedProperty?.propertyTypeId ?? undefined}
         categoryId={selectedProperty?.categoryId ?? undefined}
         societyDetailId={selectedSocietyDetailId}
-        onGenerateSuccess={() => {
+        onGenerateSuccess={async () => {
           setShowPreview(false);
+          setShowWingConfig(false);
+          resetWingConfigFields();
+          await refetchWingDetails();
           onSuccess?.();
         }}
       />
