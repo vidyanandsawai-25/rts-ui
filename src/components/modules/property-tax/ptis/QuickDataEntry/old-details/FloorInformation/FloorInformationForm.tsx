@@ -11,6 +11,12 @@ import { useFloorPagination } from "@/hooks/ptis/QuickDataEntry/Olddetails/useFl
 import { useFloorSearch } from "@/hooks/ptis/QuickDataEntry/Olddetails/useFloorSearch";
 import { SearchInput } from "@/components/common";
 
+import { 
+  convertSqFtToSqM,
+  convertSqMToSqFt, 
+  calculateBuiltUpArea 
+} from "@/lib/utils/RoomSubmission/conversions";
+
 // Import refactored components
 import { FloorFormFields } from "./components/FloorFormFields";
 import { FloorTableSection } from "./components/FloorTableSection";
@@ -76,9 +82,31 @@ export default function FloorInformationForm({
   const transformedUseOptions = useMemo(() => transformUseOptions(useOptions), [useOptions]);
   const transformedSubUseOptions = useMemo(() => transformSubUseOptions(subUseTypeOptions), [subUseTypeOptions]);
 
-  // Field change handler
+  // Field change handler with automatic area calculations
   const handleFieldChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    // If carpet area in sq m is changed, calculate all derived fields
+    if (field === 'oldAreaSqMeter') {
+      const carpetAreaSqM = parseFloat(value) || 0;
+      
+      // Calculate Carpet Area (Sq Ft) from Carpet Area (Sq M)
+      const carpetAreaSqFt = carpetAreaSqM > 0 ? convertSqMToSqFt(carpetAreaSqM) : 0;
+      
+      // Calculate Built-up Area (Sq Ft) from Carpet Area (Sq Ft) - adds 20%
+      const builtupAreaSqFt = carpetAreaSqFt > 0 ? calculateBuiltUpArea(carpetAreaSqFt) : 0;
+      
+      // Calculate Built-up Area (Sq M) from Built-up Area (Sq Ft)
+      const builtupAreaSqMeter = builtupAreaSqFt > 0 ? convertSqFtToSqM(builtupAreaSqFt) : 0;
+      
+      setFormData(prev => ({
+        ...prev,
+        [field]: value,
+        oldCarpetAreaSqFeet: carpetAreaSqFt > 0 ? carpetAreaSqFt.toFixed(2) : '',
+        oldBuiltupAreaSqFeet: builtupAreaSqFt > 0 ? builtupAreaSqFt.toFixed(2) : '',
+        oldBuiltupAreaSqMeter: builtupAreaSqMeter > 0 ? builtupAreaSqMeter.toFixed(2) : ''
+      }));
+    } else {
+      setFormData(prev => ({ ...prev, [field]: value }));
+    }
   };
 
   // Pagination hook

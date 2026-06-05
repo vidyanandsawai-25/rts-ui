@@ -17,10 +17,12 @@ function mapFloorFormToPayload(
   propertyId: number,
   formData: FloorInformationFormData
 ): SaveOldFloorDetailPayload {
-  const carpetAreaSqFeet = Number(formData.oldCarpetAreaSqFeet) || 0;
-  const carpetAreaSqMeter = carpetAreaSqFeet * 0.092903; // Convert sq ft to sq m
-  const builtupAreaSqFeet = Number(formData.oldBuiltupAreaSqFeet) || 0;
-  const builtupAreaSqMeter = builtupAreaSqFeet * 0.092903; // Convert sq ft to sq m
+  // Use the calculated values directly from formData (already computed in the form)
+  // Use Number.isFinite to explicitly check for valid numbers and avoid masking NaN
+  const carpetAreaSqMeter = Number.isFinite(Number(formData.oldAreaSqMeter)) ? Number(formData.oldAreaSqMeter) : 0;
+  const carpetAreaSqFeet = Number.isFinite(Number(formData.oldCarpetAreaSqFeet)) ? Number(formData.oldCarpetAreaSqFeet) : 0;
+  const builtupAreaSqFeet = Number.isFinite(Number(formData.oldBuiltupAreaSqFeet)) ? Number(formData.oldBuiltupAreaSqFeet) : 0;
+  const builtupAreaSqMeter = Number.isFinite(Number(formData.oldBuiltupAreaSqMeter)) ? Number(formData.oldBuiltupAreaSqMeter) : 0;
 
   return {
     propertyId: propertyId,
