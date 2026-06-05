@@ -234,6 +234,9 @@
     "ulbNameExists": "This ULB name is already registered",
     "licenseKeyFormat": "Please enter a valid license key",
     "licenseKeyExists": "This license key is already in use",
-    "maxUsersRequired": "Maximum users is required"
+    "maxUsersRequired": "Maximum users is required",
+    "addressFormat": "Please enter a valid address (minimum 5 characters, alphanumeric and spaces)",
+    "gibberishError": "Random or repeated characters are not allowed",
+    "alternatePhoneSame": "Alternate phone number cannot be the same as the primary phone number"
   }
 }
