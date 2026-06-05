@@ -351,7 +351,7 @@
       "useFactor": "Use Factor",
       "capitalValue": "Capital Value",
       "taxAmount": "Tax Amount",
-      "appliedOn": "Applied On Date"
+      "appliedOn": "Applied On"
     },
     "placeholders": {
       "oc": "OC/YYYY/###",

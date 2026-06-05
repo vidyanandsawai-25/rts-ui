@@ -3,6 +3,7 @@ import type { PolicyConfigurationFormModel } from "@/types/policy-configuration.
 import {
   POLICY_DATA_TYPES,
   POLICY_CATEGORIES,
+  BIT_OPTIONS,
   getPlaceholderForDataType,
   getInputTypeForDataType,
 } from "@/lib/validations/policy-configuration-datatype";
@@ -28,7 +29,6 @@ export function FormFieldsSection({
   onSelectBlur,
   t,
 }: FormFieldsSectionProps) {
-  // Get dynamic placeholders based on selected data type
   const valuePlaceholder = formData.dataType
     ? getPlaceholderForDataType(formData.dataType)
     : t("form.fields.policyValue.placeholder");
@@ -36,6 +36,31 @@ export function FormFieldsSection({
     ? getPlaceholderForDataType(formData.dataType)
     : t("form.fields.defaultValue.placeholder");
   const inputType = getInputTypeForDataType(formData.dataType);
+
+  // BIT type check
+  const isBitType = formData.dataType?.toUpperCase() === "BIT";
+
+  /**
+   * allowedValues se dropdown options banao.
+   * "Enable,Disable" → [{label:"Enable",value:"Enable"},{label:"Disable",value:"Disable"}]
+   * "Monthly,Yearly" → [{label:"Monthly",value:"Monthly"},{label:"Yearly",value:"Yearly"}]
+   * BIT ke liye fallback: agar allowedValues null/empty ho toh BIT_OPTIONS use karo.
+   */
+  const allowedOptions: { label: string; value: string }[] | null = (() => {
+    if (formData.allowedValues && formData.allowedValues.trim()) {
+      return formData.allowedValues
+        .split(",")
+        .map((v) => v.trim())
+        .filter(Boolean)
+        .map((v) => ({ label: v, value: v }));
+    }
+    if (isBitType) return BIT_OPTIONS;
+    return null;
+  })();
+
+  // Dropdown dikhao agar allowedOptions available hai
+  const useDropdown = allowedOptions !== null && allowedOptions.length > 0;
+  const dropdownPlaceholder = isBitType ? "Select Enable or Disable" : "Select a value";
 
   return (
     <div className="rounded-xl border border-[#DCEAFF] bg-slate-50 p-5 space-y-4">
@@ -53,12 +78,8 @@ export function FormFieldsSection({
             placeholder={t("form.fields.policyCode.placeholder")}
             fullWidth
           />
-          <ValidationMessage
-            message={errors.policyCode}
-            visible={showError("policyCode")}
-          />
+          <ValidationMessage message={errors.policyCode} visible={showError("policyCode")} />
         </div>
-
         <div>
           <Select
             name="category"
@@ -71,10 +92,7 @@ export function FormFieldsSection({
             placeholder={t("form.fields.category.placeholder")}
             error={showError("category") ? errors.category : undefined}
           />
-          <ValidationMessage
-            message={errors.category}
-            visible={showError("category")}
-          />
+          <ValidationMessage message={errors.category} visible={showError("category")} />
         </div>
       </div>
 
@@ -90,13 +108,10 @@ export function FormFieldsSection({
           placeholder={t("form.fields.displayName.placeholder")}
           fullWidth
         />
-        <ValidationMessage
-          message={errors.displayName}
-          visible={showError("displayName")}
-        />
+        <ValidationMessage message={errors.displayName} visible={showError("displayName")} />
       </div>
 
-      {/* Row 3: Description (Textarea) */}
+      {/* Row 3: Description */}
       <div>
         <TextArea
           name="description"
@@ -126,66 +141,81 @@ export function FormFieldsSection({
             placeholder={t("form.fields.dataType.placeholder")}
             error={showError("dataType") ? errors.dataType : undefined}
           />
-          <ValidationMessage
-            message={errors.dataType}
-            visible={showError("dataType")}
-          />
+          <ValidationMessage message={errors.dataType} visible={showError("dataType")} />
         </div>
-
         <div>
+          {/* Unit: optional for all data types */}
           <Input
             name="unit"
             label={t("form.fields.unit.label")}
-            required
             value={formData.unit}
             onChange={onChange}
             onBlur={onBlur}
             placeholder={t("form.fields.unit.placeholder")}
             fullWidth
           />
-          <ValidationMessage
-            message={errors.unit}
-            visible={showError("unit")}
-          />
         </div>
       </div>
+
 
       {/* Row 5: Policy Value + Default Value */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <Input
-            name="policyValue"
-            label={t("form.fields.policyValue.label")}
-            required
-            type={inputType}
-            value={formData.policyValue}
-            onChange={onChange}
-            onBlur={onBlur}
-            placeholder={valuePlaceholder}
-            fullWidth
-          />
-          <ValidationMessage
-            message={errors.policyValue}
-            visible={showError("policyValue")}
-          />
+          {useDropdown ? (
+            <Select
+              name="policyValue"
+              label={t("form.fields.policyValue.label")}
+              required
+              options={allowedOptions!}
+              value={formData.policyValue}
+              onChange={onSelectChange}
+              onBlur={onSelectBlur}
+              placeholder={dropdownPlaceholder}
+              error={showError("policyValue") ? errors.policyValue : undefined}
+            />
+          ) : (
+            <Input
+              name="policyValue"
+              label={t("form.fields.policyValue.label")}
+              required
+              type={inputType}
+              value={formData.policyValue}
+              onChange={onChange}
+              onBlur={onBlur}
+              placeholder={valuePlaceholder}
+              fullWidth
+            />
+          )}
+          <ValidationMessage message={errors.policyValue} visible={showError("policyValue")} />
         </div>
 
         <div>
-          <Input
-            name="defaultValue"
-            label={t("form.fields.defaultValue.label")}
-            required
-            type={inputType}
-            value={formData.defaultValue}
-            onChange={onChange}
-            onBlur={onBlur}
-            placeholder={defaultValuePlaceholder}
-            fullWidth
-          />
-          <ValidationMessage
-            message={errors.defaultValue}
-            visible={showError("defaultValue")}
-          />
+          {useDropdown ? (
+            <Select
+              name="defaultValue"
+              label={t("form.fields.defaultValue.label")}
+              required
+              options={allowedOptions!}
+              value={formData.defaultValue}
+              onChange={onSelectChange}
+              onBlur={onSelectBlur}
+              placeholder={dropdownPlaceholder}
+              error={showError("defaultValue") ? errors.defaultValue : undefined}
+            />
+          ) : (
+            <Input
+              name="defaultValue"
+              label={t("form.fields.defaultValue.label")}
+              required
+              type={inputType}
+              value={formData.defaultValue}
+              onChange={onChange}
+              onBlur={onBlur}
+              placeholder={defaultValuePlaceholder}
+              fullWidth
+            />
+          )}
+          <ValidationMessage message={errors.defaultValue} visible={showError("defaultValue")} />
         </div>
       </div>
 
@@ -202,12 +232,8 @@ export function FormFieldsSection({
             onBlur={onBlur}
             fullWidth
           />
-          <ValidationMessage
-            message={errors.effectiveFrom}
-            visible={showError("effectiveFrom")}
-          />
+          <ValidationMessage message={errors.effectiveFrom} visible={showError("effectiveFrom")} />
         </div>
-
         <div>
           <Input
             name="effectiveTo"

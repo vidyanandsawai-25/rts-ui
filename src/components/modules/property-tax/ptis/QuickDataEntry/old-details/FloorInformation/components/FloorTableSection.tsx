@@ -115,7 +115,6 @@ export function FloorTableSection({
             onClick={() => handleSortClick(col.key as string)}
             className="inline-flex h-6 w-full items-center justify-center gap-0.5 rounded border border-white/10 bg-black/5 px-1.5 text-[10px] font-bold text-white shadow-sm transition-colors duration-200 select-none cursor-pointer hover:bg-black/15 active:bg-black/25 whitespace-nowrap focus:outline-none focus:ring-1 focus:ring-white/50"
             aria-label={`Sort by ${col.label}`}
-            aria-sort={visualSort === 'asc' ? 'ascending' : visualSort === 'desc' ? 'descending' : 'none'}
           >
             <span className="truncate font-bold uppercase tracking-normal">{col.label}</span>
             <span className="inline-flex shrink-0 items-center ml-1">

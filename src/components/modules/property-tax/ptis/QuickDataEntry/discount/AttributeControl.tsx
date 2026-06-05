@@ -36,7 +36,7 @@ export const AttributeControl: React.FC<AttributeControlProps> = ({
     switch (attr.dataType.toUpperCase()) {
         case "BIT":
             return (
-                <div className="cursor-pointer [&_button]:cursor-pointer [&_span]:cursor-pointer flex items-center">
+                <div className="cursor-pointer [&_button:not(:disabled)]:cursor-pointer [&_span]:cursor-pointer flex items-center">
                     <ToggleSwitch
                         checked={!!state.bitValue}
                         onChange={(checked) => handleValueChange(attr.id, "bitValue", checked)}

@@ -351,7 +351,7 @@
       "useFactor": "वापर घटक",
       "capitalValue": "भांडवली मूल्य",
       "taxAmount": "कर रक्कम",
-      "appliedOn": "लागू केलेली तारीख"
+      "appliedOn": "लागू केलेले"
     },
     "placeholders": {
       "oc": "ओसी/वर्ष/###",

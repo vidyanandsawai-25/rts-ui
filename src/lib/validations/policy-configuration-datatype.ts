@@ -17,6 +17,16 @@ export const POLICY_DATA_TYPES: { label: string; value: PolicyDataType }[] = [
   { label: 'URL', value: 'URL' },
 ];
 
+/**
+ * BIT data type ke liye Enable/Disable dropdown options
+ * Jab allowedValues empty ho toh fallback ke taur pe use hota hai
+ */
+export const BIT_OPTIONS: { label: string; value: string }[] = [
+  { label: 'Enable', value: 'Enable' },
+  { label: 'Disable', value: 'Disable' },
+];
+
+
 export type PolicyCategory = 'CALCULATION' | 'TAXATION' | 'ASSESSMENT' | 'PENALTY' | 'DISCOUNT' | 'INTEGRATION' | 'SECURITY' | 'BILLING';
 
 export const POLICY_CATEGORIES: { label: string; value: PolicyCategory }[] = [
