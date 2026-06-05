@@ -21,10 +21,19 @@ export interface FooterActionPayload {
 const ptisEditRedirectSchema = z.object({
   propertyId: z.coerce.number().positive(),
   locale: z.enum(['en', 'hi', 'mr']).default('en'),
-  wardNo: z.string().regex(/^[a-zA-Z0-9_-]+$/).optional(),
+  wardNo: z
+    .string()
+    .regex(/^[a-zA-Z0-9_-]+$/)
+    .optional(),
   wardId: z.coerce.number().positive().optional(),
-  propertyNo: z.string().regex(/^[a-zA-Z0-9_-]+$/).optional(),
-  partitionNo: z.string().regex(/^[a-zA-Z0-9_-]*$/).optional(),
+  propertyNo: z
+    .string()
+    .regex(/^[a-zA-Z0-9_-]+$/)
+    .optional(),
+  partitionNo: z
+    .string()
+    .regex(/^[a-zA-Z0-9_-]*$/)
+    .optional(),
   tab: z.string().optional(),
 });
 
@@ -83,7 +92,8 @@ export async function handleFooterAction(
           return { success: false, error: 'Invalid or insecure redirect payload.' };
         }
 
-        const { propertyId, locale, wardNo, wardId, propertyNo, partitionNo, tab } = validationResult.data;
+        const { propertyId, locale, wardNo, wardId, propertyNo, partitionNo, tab } =
+          validationResult.data;
 
         const params = new URLSearchParams();
         if (wardNo) params.set('wardNo', wardNo);
@@ -98,20 +108,27 @@ export async function handleFooterAction(
           targetPath = `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Kyc`;
         } else if (tab === 'societydetails') {
           params.set('propertyId', String(propertyId));
-           params.set('returnTab', 'societydetails');
+          params.set('returnTab', 'societydetails');
           targetPath = `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Society`;
+        } else if (tab === 'buildingpermission') {
+          params.set('propertyId', String(propertyId));
+          params.set('returnTab', 'buildingpermission');
+          targetPath = `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Building`;
+        } else if (tab === 'discountdetails') {
+          params.set('propertyId', String(propertyId));
+          params.set('returnTab', 'discountdetails');
+          targetPath = `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Discount`;
         } else if (tab === 'olddetails') {
           params.set('propertyId', String(propertyId));
-            params.set('returnTab', 'olddetails');
+          params.set('returnTab', 'olddetails');
           targetPath = `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/OldDetails/old-taxation`;
         } else {
-           params.set('returnTab', 'propertydetails');
+          params.set('returnTab', 'propertydetails');
           targetPath = `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Property`;
         }
 
         const queryString = params.toString();
         const suffix = queryString ? `?${queryString}` : '';
-
         redirect(`${targetPath}${suffix}`);
       }
       case 'PTIS_COMBINE': {
