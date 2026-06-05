@@ -3,6 +3,7 @@
 import { Input, ValidationMessage, Select } from "@/components/common";
 import { PropertyTypeFormModel } from "@/types/property-type.types";
 import { PropertyTypeCategory } from "@/types/property-type-category.types";
+import { POSITIVE_INTEGER_REGEX } from "@/lib/utils/validation-rules";
 import type React from "react";
 
 interface FormFieldsSectionProps {
@@ -30,6 +31,10 @@ export const FormFieldsSection = ({
   categories,
   t,
 }: FormFieldsSectionProps) => {
+  const sanitizeNumber = (value: string) => {
+    return value.replace(/[^0-9]/g, '');
+  };
+
   return (
     <div className="rounded-xl border border-[#DCEAFF] bg-slate-50 p-5 space-y-4">
       <Input
@@ -73,24 +78,6 @@ export const FormFieldsSection = ({
         />
       </div>
 
-      {/* 
-      <Input
-        name="propertyTypeGroup"
-        label={t("form.fields.propertyTypeGroup.label")}
-        required
-        placeholder={t("form.fields.propertyTypeGroup.placeholder")}
-        value={formData.propertyTypeGroup}
-        onChange={handleChange}
-        onBlur={handleBlur}
-        fullWidth
-        className="text-gray-700"
-      />
-      <ValidationMessage
-        message={errors.propertyTypeGroup}
-        visible={showError("propertyTypeGroup")}
-      />
-      */}
-
       <div>
         <Select
           label={t("form.fields.category.label")}
@@ -117,10 +104,20 @@ export const FormFieldsSection = ({
       <Input
         name="searchSequence"
         label={t("form.fields.searchSequence.label")}
-        type="number"
-        min={0}
+        maxLength={3}
         value={searchSequenceValue}
-        onChange={handleChange}
+        onChange={(e) => {
+          const sanitized = sanitizeNumber(e.target.value);
+          // Only accept if it matches POSITIVE_INTEGER_REGEX and is <= 999
+          if (sanitized === "" || (POSITIVE_INTEGER_REGEX.test(sanitized) && parseInt(sanitized, 10) <= 999)) {
+            // Create synthetic event with sanitized value
+            const syntheticEvent = {
+              ...e,
+              target: { ...e.target, value: sanitized, name: "searchSequence" }
+            } as React.ChangeEvent<HTMLInputElement>;
+            handleChange(syntheticEvent);
+          }
+        }}
         onBlur={handleBlur}
         fullWidth
         className="text-gray-700"

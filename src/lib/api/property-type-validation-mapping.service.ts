@@ -145,7 +145,7 @@ export async function createPropertyTypeValidationBulk(
 export async function deletePropertyTypeValidation(id: number): Promise<void> {
   try {
     const response = await apiClient.delete<void>(
-      `/PropertyDescriptionAndTypeOfUseValidation/${encodeURIComponent(String(id))}`
+      `/PropertyDescriptionAndTypeOfUseValidation/${encodeURIComponent(String(id))}/purge`
     );
     if (!response.success) {
       throw new ApiError(
