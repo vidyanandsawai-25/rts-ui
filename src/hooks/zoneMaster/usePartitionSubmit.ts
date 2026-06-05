@@ -9,9 +9,11 @@ import { Floor } from "@/types/floor.types";
 import { BulkPropertyItem } from "@/types/zone-master/properties/property-bulk.types";
 import { SocietyWingDetailItem } from "@/types/zone-master/properties/society-wing-details.types";
 import { generateBuildingStructureAction, createBulkBuildingPropertiesAction } from "@/app/[locale]/property-tax/zone-master/actions";
+import { parseBulkPropertyErrors } from "@/lib/utils/bulk-property-errors";
 
 interface UsePartitionSubmitProps {
   form: PartitionFormState;
+  setForm: React.Dispatch<React.SetStateAction<PartitionFormState>>;
   selectedWard: WardItem | null;
   selectedProperty: ZonePropertyItem | null;
   wings: WingItem[];
@@ -25,10 +27,13 @@ interface UsePartitionSubmitProps {
   newWingId: number | null;
   newWingName: string;
   handleSaveWing: (errors: PartitionFormErrors, setErrors: React.Dispatch<React.SetStateAction<PartitionFormErrors>>) => Promise<void>;
+  refetchWingDetails?: () => Promise<void>;
+  setAllProperties?: React.Dispatch<React.SetStateAction<ZonePropertyItem[]>>;
 }
 
 export function usePartitionSubmit({
   form,
+  setForm,
   selectedWard,
   selectedProperty,
   wings,
@@ -42,6 +47,8 @@ export function usePartitionSubmit({
   newWingId,
   newWingName,
   handleSaveWing,
+  refetchWingDetails,
+  setAllProperties,
 }: UsePartitionSubmitProps) {
   const t = useTranslations("zoneMaster");
 
@@ -165,6 +172,9 @@ export function usePartitionSubmit({
             detail => detail.wingNo === form.selectedWingForAmenity
           );
           societyDetailId = selectedWingDetail?.societyDetailId;
+        } else {
+          // Use main property's societyDetailId for amenities without wing
+          societyDetailId = selectedProperty.societyDetailId ?? undefined;
         }
 
         const currentDate = new Date().toISOString();
@@ -192,11 +202,86 @@ export function usePartitionSubmit({
 
         const result = await createBulkBuildingPropertiesAction(bulkPayload);
         
-        if (result.success) {
-          const successCount = result.data?.successCount ?? bulkPayload.length;
-          toast.success(t("partitionMessages.amenityCreateSuccess", { count: successCount }));
-          onSuccess?.();
-          onClose();
+        if (result.data) {
+          if (result.data.allSucceeded) {
+            toast.success(t("partitionMessages.amenityCreateSuccess", { count: result.data.successCount }));
+            
+            // Add newly created amenities to allProperties so calculateMaxAmenity returns correct value
+            if (setAllProperties && selectedProperty) {
+              const newAmenities: ZonePropertyItem[] = bulkPayload.map((item, index) => ({
+                id: -(index + 1), // Temporary negative ID
+                taxZoneId: item.taxZoneId,
+                wardId: item.wardId,
+                propertyNo: item.propertyNo,
+                partitionNo: item.partitionNo,
+                propertyTypeId: item.propertyTypeId,
+                categoryId: item.categoryId,
+                upicId: "",
+                openPlot: false,
+                csn: null,
+                subZoneNo: null,
+                plotNo: null,
+                type: null,
+                ownerTitle: null,
+                ownerName: null,
+                ownerTitleEnglish: null,
+                ownerNameEnglish: null,
+                occupierTitle: null,
+                occupierName: null,
+                occupierTitleEnglish: null,
+                occupierNameEnglish: null,
+                flatOrShopNo: item.flatOrShopNo,
+                flatOrShopName: null,
+                flatOrShopNoEnglish: item.flatOrShopNoEnglish,
+                flatOrShopNameEnglish: null,
+                address: item.address,
+                location: item.location,
+                addressEnglish: item.addressEnglish,
+                locationEnglish: item.locationEnglish,
+                mobileNo: null,
+                emailId: null,
+                societyDetailId: item.societyDetailId ?? null,
+                markedForDeletion: false,
+                propertySeqNo: null,
+                displayProperty: null,
+                isActive: true,
+                createdDate: item.createdDate,
+                updatedDate: null,
+              }));
+              setAllProperties(prev => [...prev, ...newAmenities]);
+            }
+            
+            // Reset amenity form fields and switch to wing tab, but don't close drawer
+            setForm(prev => ({ 
+              ...prev, 
+              selectedWingForAmenity: "", 
+              fromAmenity: "",
+              toAmenity: "", 
+              partitionType: "wing" 
+            }));
+            // Refresh wing details to get updated amenity counts
+            await refetchWingDetails?.();
+            onSuccess?.();
+          } else {
+            // Parse and display errors as toast alert
+            const errorMessages = result.data.errors || [];
+            const parsedErrors = parseBulkPropertyErrors(errorMessages, t, result.data.failedCount);
+            const toastFn = parsedErrors.severity === "warning" ? toast.warning : toast.error;
+            toastFn(parsedErrors.title, {
+              description: parsedErrors.messages.join("\n"),
+              duration: 8000,
+            });
+            // Refresh data and reset amenity form to get latest amenity count
+            setForm(prev => ({ 
+              ...prev, 
+              selectedWingForAmenity: "", 
+              fromAmenity: "",
+              toAmenity: "" 
+            }));
+            // Refresh wing details to get updated amenity counts
+            await refetchWingDetails?.();
+            onSuccess?.();
+          }
         } else {
           toast.error(result.error || t("partitionMessages.amenityCreateError"));
         }
@@ -247,11 +332,21 @@ export function usePartitionSubmit({
 
         const result = await createBulkBuildingPropertiesAction(bulkPayload);
         
-        if (result.success) {
-          const successCount = result.data?.successCount ?? bulkPayload.length;
-          toast.success(t("partitionMessages.bulkCreateSuccess", { count: successCount }));
-          onSuccess?.();
-          onClose();
+        if (result.data) {
+          if (result.data.allSucceeded) {
+            toast.success(t("partitionMessages.bulkCreateSuccess", { count: result.data.successCount }));
+            onSuccess?.();
+            onClose();
+          } else {
+            // Parse and display errors as toast alert
+            const errorMessages = result.data.errors || [];
+            const parsedErrors = parseBulkPropertyErrors(errorMessages, t, result.data.failedCount);
+            const toastFn = parsedErrors.severity === "warning" ? toast.warning : toast.error;
+            toastFn(parsedErrors.title, {
+              description: parsedErrors.messages.join("\n"),
+              duration: 8000,
+            });
+          }
         } else {
           toast.error(result.error || t("partitionMessages.createError"));
         }
@@ -261,7 +356,7 @@ export function usePartitionSubmit({
     } finally {
       setLoading(false);
     }
-  }, [form, selectedWard, selectedProperty, wings, wingDetails, floors, validate, setLoading, onSuccess, onClose, showAddWingForm, newWingId, newWingName, handleSaveWing, t]);
+  }, [form, setForm, selectedWard, selectedProperty, wings, wingDetails, floors, validate, setLoading, onSuccess, onClose, showAddWingForm, newWingId, newWingName, handleSaveWing, refetchWingDetails, setAllProperties, t]);
 
   return {
     handleSubmit,

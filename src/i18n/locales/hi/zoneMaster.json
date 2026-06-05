@@ -368,8 +368,7 @@
   },
   "partitionForm": {
     "title": "विभाजन / विंग बनाएं",
-    "subtitle": "संपत्ति में विभाजन या विंग जोड़ें",
-    "propertyInformation": "संपत्ति जानकारी",
+    "subtitle": "संपत्ति में विभाजन या विंग जोड़ें",    "createPartition": "विभाजन बनाएं",    "propertyInformation": "संपत्ति जानकारी",
     "ward": "वार्ड",
     "propertyCategory": "संपत्ति श्रेणी",
     "categoryType": "श्रेणी प्रकार",
@@ -426,8 +425,8 @@
     "placeholders": {
       "selectMainProperty": "मुख्य संपत्ति चुनें",
       "partitionNo": "विभाजन संख्या दर्ज करें",
-      "fromPartition": "उदा., 1",
-      "toPartition": "उदा., 10"
+      "fromPartition": "विभाजन से संख्या दर्ज करें",
+      "toPartition": "विभाजन तक संख्या दर्ज करें"
     },
     "helpText": {
       "selectMainProperty": "विभाजन/विंग जोड़ने के लिए मुख्य संपत्ति चुनें",
@@ -568,7 +567,24 @@
         "partialSuccess": "कुछ संपत्ति उत्पन्न करने में विफल",
         "successCount": "सफल",
         "failedCount": "विफल",
-        "details": "परिणाम"
+        "details": "परिणाम",
+        "errors": {
+          "title": "संपत्ति निर्माण विफल",
+          "criticalErrorTitle": "गंभीर त्रुटि",
+          "duplicateErrorTitle": "डुप्लिकेट रिकॉर्ड मिले",
+          "genericError": "संपत्ति उत्पन्न करते समय एक त्रुटि हुई।",
+          "failedToCreate": "{count} संपत्तियां बनाने में विफल रहीं।",
+          "buildingNotFound": "बिल्डिंग विवरण नहीं मिला। कृपया चयनित बिल्डिंग को सत्यापित करें और पुनः प्रयास करें।",
+          "invalidCategory": "चयनित संपत्ति श्रेणी अमान्य है। कृपया एक वैध श्रेणी चुनें।",
+          "societyWingMissing": "अपार्टमेंट संपत्तियों के लिए सोसाइटी विंग विवरण आवश्यक है।",
+          "duplicatePartitionSingle": "पार्टीशन {partition} चयनित विंग में पहले से मौजूद है।",
+          "duplicatePartitionMultiple": "निम्नलिखित पार्टीशन इस विंग में पहले से मौजूद हैं: {partitions}।",
+          "duplicateFlatSingle": "फ्लैट नंबर {flat} चयनित विंग में पहले से मौजूद है।",
+          "duplicateFlatNumbers": "फ्लैट नंबर {flats} चयनित विंग में पहले से मौजूद हैं।",
+          "repositoryError": "पंक्ति {row}: {message}।",
+          "unknownErrorAtRow": "पंक्ति {row} पर संपत्ति बनाते समय एक अप्रत्याशित त्रुटि हुई।",
+          "transactionFailure": "सिस्टम त्रुटि के कारण संपत्ति निर्माण विफल हुआ। कृपया बाद में पुनः प्रयास करें।"
+        }
       },
       "amenity": {
         "notImplemented": "सुविधा सामग्री अभी लागू नहीं की गई"
@@ -577,13 +593,16 @@
     "amenity": {
       "description": "चयनित संपत्ति के लिए सुविधाएं बनाएं। सुविधाओं को एक विंग (वैकल्पिक) को सौंपा जाएगा और क्रमिक रूप से क्रमांकित किया जाएगा।",
       "selectWing": "विंग चुनें (वैकल्पिक)",
-      "noWing": "कोई विंग नहीं (डिफ़ॉल्ट सुविधा)",
+      "noWing": "मुख्य संपत्ति",
       "fromAmenity": "सुविधा से",
       "toAmenity": "सुविधा तक",
       "amenities": "सुविधाएं",
       "amenitiesWillBeCreated": "सुविधाएं बनाई जाएंगी:",
+      "createAmenity": "सुविधा बनाएं",
       "placeholders": {
-        "selectWing": "एक विंग चुनें या खाली छोड़ें"
+        "selectWing": "एक विंग चुनें या खाली छोड़ें",
+        "fromAmenity": "सुविधा से संख्या दर्ज करें",
+        "toAmenity": "सुविधा तक संख्या दर्ज करें"
       }
     }
   },

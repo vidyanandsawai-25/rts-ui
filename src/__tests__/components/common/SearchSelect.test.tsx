@@ -142,8 +142,9 @@ describe('SearchSelect', () => {
     );
     const input = screen.getByRole('combobox');
     fireEvent.focus(input);
-    // Dropdown should open, but no options
-    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    // Dropdown should open and show "No options available" message
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+    expect(screen.getByText('No options available')).toBeInTheDocument();
     // Now rerender with options (simulate async load)
     rerender(
       <SearchSelect id="test-select" name="test-select" options={options} value="" onChange={() => {}} />

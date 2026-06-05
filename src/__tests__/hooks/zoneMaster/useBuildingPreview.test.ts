@@ -246,6 +246,8 @@ describe("useBuildingPreview", () => {
         wingId: 1,
         rowNo: 1,
         floorNo: 1,
+        floorCode: "1",
+        propertyFloorId: 1,
         unitNo: 1,
         flatNo: "A-101",
         partitionNo: "1",
