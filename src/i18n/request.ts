@@ -134,7 +134,11 @@ export default getRequestConfig(async ({ locale }) => {
       .catch(() => ({}))
       .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/rule-engine.json`)
-    import(`./locales/${validatedLocale}/mouja.json`).catch(() => ({})).then((m) => m.default || m),
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/mouja.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/policyConfiguration.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
@@ -185,12 +189,12 @@ export default getRequestConfig(async ({ locale }) => {
       waterConnection: waterConnectionMessages?.waterConnection || waterConnectionMessages,
       waterConnectionMaster: waterConnectionMasterMessages.waterConnectionMaster,
       commonDetailsUpdate:
-      commonDetailsUpdateMessages?.commonDetailsUpdate || commonDetailsUpdateMessages,
+        commonDetailsUpdateMessages?.commonDetailsUpdate || commonDetailsUpdateMessages,
       financialYear: financialYearMessages,
       ruleEngine: ruleEngineMessages,
       mouja: moujaMessages,
       policyConfiguration:
-      policyConfigurationMessages?.policyConfiguration || policyConfigurationMessages,
+        policyConfigurationMessages?.policyConfiguration || policyConfigurationMessages,
       modules: modulesMessages,
     },
   };
