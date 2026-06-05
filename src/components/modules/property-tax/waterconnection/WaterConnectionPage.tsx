@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Droplets } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
-import { PageContainer } from "@/components/common";
+import { Drawer } from "@/components/common/Drawer";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { Select } from "@/components/common";
 import type {
@@ -17,7 +17,6 @@ import {
   getWaterConnectionsOnlyAction,
   getAllWaterConnectionsAction,
 } from "@/app/[locale]/property-tax/waterconnection/action";
-import { PropertyStatsCards } from "./PropertyStatsCards";
 import { PropertyInfoCard } from "./PropertyInfoCard";
 import { ConnectionsTable } from "./ConnectionsTable";
 import { AddConnectionDrawer } from "./AddConnectionDrawer";
@@ -170,7 +169,24 @@ export default function WaterConnectionPage({
     refreshAllConnections(); // Refresh stats after save
   }, [updateUrl, fetchConnections, refreshAllConnections, pageSize]);
 
-  /* ================= DELETE ================= */
+  const handleBackToPtis = useCallback(() => {
+    const params = new URLSearchParams();
+    const wardNo = searchParams.get("wardNo") || "";
+    const wardId = searchParams.get("wardId") || "";
+    const propertyNo = searchParams.get("propertyNo") || "";
+    const partitionNo = searchParams.get("partitionNo") || "";
+    const returnTab = searchParams.get("returnTab") || "";
+
+    if (propertyId) params.set('propertyId', String(propertyId));
+    if (wardNo) params.set('wardNo', wardNo);
+    if (wardId) params.set('wardId', wardId);
+    if (propertyNo) params.set('propertyNo', propertyNo);
+    if (partitionNo) params.set('partitionNo', partitionNo);
+    if (returnTab) params.set('tab', returnTab);
+
+    router.push(`/${locale}/property-tax/ptis?${params}`);
+  }, [propertyId, searchParams, router, locale]);
+
   const handleDelete = useCallback(
     (connection: WaterConnection) => {
       confirm({
@@ -202,36 +218,51 @@ export default function WaterConnectionPage({
   const totalPages =
     pageData.totalPages ?? Math.max(1, Math.ceil(pageData.totalCount / pageSize));
 
-  /* ================= UI ================= */
-  return (
-    <PageContainer>
-      <div className="space-y-5">
-        {/* Page Header */}
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl shadow text-white">
-            <Droplets size={20} />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">{t("page.title")}</h1>
-            <p className="text-sm text-gray-500">
-              {t("page.subtitle")} &bull;{" "}
-              <span className="font-medium text-blue-600">
-                {pageData.property.propertyNo}
-              </span>
-            </p>
-          </div>
+  /* ================= DRAWER TITLE ================= */
+  const drawerTitle = (
+    <div className="flex items-center gap-3">
+      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center shrink-0 shadow-sm">
+        <Droplets className="w-4 h-4 text-white" />
+      </div>
+      <div className="flex flex-col gap-0.5">
+        <div className="flex items-center gap-2">
+          <h2 className="text-sm font-bold text-gray-900 leading-tight">{t("page.title")}</h2>
+          {pageData && (
+            <span className="inline-flex px-2 py-0.5 text-[10px] font-medium rounded-full bg-blue-100 text-blue-700 border border-blue-200">
+              {pageData.property.propertyNo}
+            </span>
+          )}
         </div>
+        <p className="text-[11px] text-gray-500 leading-tight">{t("page.subtitle")}</p>
+      </div>
+    </div>
+  );
 
-        {/* Stats Cards */}
-        <PropertyStatsCards
-          stats={stats}
-          labels={{
-            totalConnections: t("stats.totalConnections"),
-            activeConnections: t("stats.activeConnections"),
-            stoppedConnections: t("stats.stoppedConnections"),
-            yearlyRevenue: t("stats.yearlyRevenue"),
-          }}
-        />
+  return (
+    <Drawer
+      open={true}
+      onClose={handleBackToPtis}
+      title={drawerTitle}
+      width="xl"
+    >
+      <div className="space-y-3 p-3">
+        {/* Stats — compact row */}
+        <div className="grid grid-cols-4 gap-2">
+          {[
+            { label: t("stats.totalConnections"), value: stats.totalConnections, color: "blue" },
+            { label: t("stats.activeConnections"), value: stats.activeConnections, color: "green" },
+            { label: t("stats.stoppedConnections"), value: stats.stoppedConnections, color: "orange" },
+            { label: t("stats.yearlyRevenue"), value: `₹${stats.yearlyRevenue.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`, color: "purple" },
+          ].map(({ label, value, color }) => (
+            <div
+              key={label}
+              className={`bg-${color}-50 border border-${color}-100 rounded-lg px-3 py-2 flex flex-col gap-0.5`}
+            >
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">{label}</div>
+              <div className={`text-base font-bold text-${color}-700`}>{value}</div>
+            </div>
+          ))}
+        </div>
 
         {/* Property Info */}
         <PropertyInfoCard
@@ -303,6 +334,6 @@ export default function WaterConnectionPage({
         onClose={handleClose}
         onSaved={handleSaved}
       />
-    </PageContainer>
+    </Drawer>
   );
 }

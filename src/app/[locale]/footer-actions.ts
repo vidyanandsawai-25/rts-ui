@@ -133,7 +133,17 @@ export async function handleFooterAction(
           return { success: false, error: 'Property ID is missing.' };
         }
         const payloadLocale = payload.locale || 'en';
-        redirect(`/${payloadLocale}/property-tax/waterconnection?propertyId=${payload.propertyId}`);
+        const params = new URLSearchParams();
+        params.set('propertyId', String(payload.propertyId));
+        if (payload.wardId) params.set('wardId', String(payload.wardId));
+        if (payload.wardNo) params.set('wardNo', payload.wardNo);
+        if (payload.propertyNo) params.set('propertyNo', payload.propertyNo);
+        if (payload.partitionNo) params.set('partitionNo', payload.partitionNo);
+        if (payload.tab) params.set('returnTab', payload.tab);
+
+        const queryString = params.toString();
+        const suffix = queryString ? `?${queryString}` : '';
+        redirect(`/${payloadLocale}/property-tax/waterconnection${suffix}`);
       }
       default:
         return { success: false, error: `Command ${command} is not yet implemented.` };

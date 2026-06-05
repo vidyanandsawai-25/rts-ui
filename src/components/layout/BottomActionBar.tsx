@@ -40,6 +40,7 @@ export function BottomActionBar({
   const pathname = usePathname();
   const [, startTransition] = useTransition();
   const [isPaginationPending, startPaginationTransition] = useTransition();
+
   const groupedActions = useFooterActions(actions);
 
   // Find current property index in properties array
@@ -85,6 +86,8 @@ export function BottomActionBar({
       return;
     }
 
+
+
     startTransition(async () => {
       const propertyId = searchParams.get('propertyId') || undefined;
       const wardNo = searchParams.get('wardNo') || undefined;
@@ -111,6 +114,8 @@ export function BottomActionBar({
       }
     });
   };
+
+
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-[50] h-auto min-h-[48px] md:h-14 bg-white/95 backdrop-blur-xl border-t border-slate-200/60 shadow-[0_-8px_40px_rgb(0,0,0,0.06)] print:hidden transition-all duration-300 layout-content-shifted flex flex-col md:flex-row items-stretch md:items-center justify-between px-3 sm:px-6 py-2 md:py-0">
@@ -173,6 +178,7 @@ export function BottomActionBar({
           scrollbar-width: none;
         }
       `}</style>
+
     </div>
   );
 }

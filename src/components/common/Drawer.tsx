@@ -52,7 +52,6 @@ export function Drawer({
 
   return (
     <>
-
       <div
         className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm"
         onClick={onClose}
@@ -64,7 +63,6 @@ export function Drawer({
           }
         }}
       />
-
 
       <div
         className={`
@@ -79,7 +77,6 @@ export function Drawer({
         role="dialog"
         aria-modal="true"
         aria-labelledby="drawer-title"
-
       >
         {/* ================= HEADER ================= */}
         {!hideHeader && (
@@ -126,4 +123,4 @@ export function Drawer({
       </div>
     </>
   );
-}
+}
