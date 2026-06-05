@@ -10,15 +10,15 @@ export interface SearchSelectOption {
 }
 
 export interface SearchSelectProps {
-    /**
-     * Optional custom placeholder text when loading.
-     */
-    loadingPlaceholder?: string;
+  /**
+   * Optional custom placeholder text when loading.
+   */
+  loadingPlaceholder?: string;
 
-    /**
-     * Optional custom placeholder text when no options are available.
-     */
-    noOptionsPlaceholder?: string;
+  /**
+   * Optional custom placeholder text when no options are available.
+   */
+  noOptionsPlaceholder?: string;
   /**
    * Optional id for the input. If not provided, a default will be used.
    */
@@ -97,6 +97,10 @@ export interface SearchSelectProps {
    * Direction/placement of the menu dropdown. Defaults to 'bottom'.
    */
   menuPlacement?: 'top' | 'bottom';
+  /**
+   * Optional validation error message.
+   */
+  error?: string;
 }
 
 export function SearchSelect({
@@ -119,6 +123,7 @@ export function SearchSelect({
   loadingPlaceholder,
   noOptionsPlaceholder,
   menuPlacement = 'bottom',
+  error,
 }: SearchSelectProps): React.ReactElement {
   // Fallback id and name for backward compatibility
   const fallbackId = id || name || 'search-select';
@@ -128,8 +133,8 @@ export function SearchSelect({
   const [search, setSearch] = useState('');
   const [hasTyped, setHasTyped] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
-    // Accessible id for aria attributes and listbox
-    const accessibleId = name || id || 'search-select';
+  // Accessible id for aria attributes and listbox
+  const accessibleId = name || id || 'search-select';
 
   const wrapperRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
@@ -277,8 +282,8 @@ export function SearchSelect({
   return (
     <div ref={wrapperRef} className="relative w-full">
       {label && (
-        <label 
-          htmlFor={fallbackId} 
+        <label
+          htmlFor={fallbackId}
           className="block text-sm font-medium mb-1.5 text-slate-700"
         >
           {label}
@@ -297,7 +302,7 @@ export function SearchSelect({
               ? loadingPlaceholder || t('actions.loading') || 'Loading...'
               : !hasOptions && !value && !forceSearchText
                 ? noOptionsPlaceholder ||
-                  t('multiSelect.noOptionsAvailable') 
+                t('multiSelect.noOptionsAvailable')
                 : placeholder
           }
           required={required}
@@ -340,14 +345,14 @@ export function SearchSelect({
             ${className ?? ''}
           `}
         />
-        
+
         {/* Right side icon area */}
         <div className="absolute right-0 top-0 h-full flex items-center pr-2.5 pointer-events-none">
           {isLoading ? (
             <Loader2 className="h-4 w-4 text-slate-400 animate-spin" />
           ) : (
-            <ChevronDown 
-              className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
+            <ChevronDown
+              className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
             />
           )}
         </div>
@@ -377,7 +382,7 @@ export function SearchSelect({
             filteredOptions.map((opt, index) => {
               const isSelected = opt.value === value;
               const isHighlighted = index === highlightedIndex;
-              
+
               return (
                 <li
                   key={opt.value}
@@ -407,6 +412,7 @@ export function SearchSelect({
           )}
         </ul>
       )}
+      {error && <span className="text-[13px] text-red-600 mt-1 block">{error}</span>}
     </div>
   );
 }
