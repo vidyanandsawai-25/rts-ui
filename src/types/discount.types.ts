@@ -1,58 +1,65 @@
-export type DiscountKey =
-    | "solarPanel"
-    | "solarHeater"
-    | "rainwaterHarvesting"
-    | "wasteSegregation"
-    | "wasteDisposal"
-    | "greenCertified"
-    | "fireFighting"
-    | "evCharging"
-    | "womanOwner"
-    | "exServicemanOwner";
-
-export interface DiscountDetailsItem {
-    propertyId: number;
-    [key: string]: string | number | boolean | null | undefined;
-}
-
-export interface DiscountApiResponse {
-    success: boolean;
-    message: string;
-    items: DiscountDetailsItem;
-}
-
-export interface DiscountItemState {
+export interface DiscountAttributeState extends Omit<DiscountAttributeDto, 'intValue' | 'decimalValue'> {
     enabled: boolean;
-    amount: string;
-    percentage: string;
-    documentGuid?: string;
     isUploading?: boolean;
+    intValue?: number | string | null;
+    decimalValue?: number | string | null;
 }
 
-export type DiscountState = Record<DiscountKey, DiscountItemState>;
+export type DiscountState = Record<number, DiscountAttributeState>;
 
-export const DOC_TYPE_MAPPING: Record<DiscountKey, string> = {
-    solarPanel: "SolarPanelSystem",
-    solarHeater: "SolarWaterHeater",
-    rainwaterHarvesting: "RainWaterHarvesting",
-    wasteSegregation: "WasteSegregationSystem",
-    wasteDisposal: "WasteDisposalSystem",
-    greenCertified: "GreenCertifiedProperty",
-    fireFighting: "FireFightingSystem",
-    evCharging: "EvChargingStation",
-    womanOwner: "WomenOwner",
-    exServicemanOwner: "ExServicemanOwner"
-};
 
-export const API_MAPPING: Record<DiscountKey, string> = {
-    solarPanel: "solarPanelSystem",
-    solarHeater: "solarWaterHeater",
-    rainwaterHarvesting: "rainWaterHarvesting",
-    wasteSegregation: "wasteSegregationSystem",
-    wasteDisposal: "wasteDisposalSystem",
-    greenCertified: "greenCertifiedProperty",
-    fireFighting: "fireFightingSystem",
-    evCharging: "evChargingStation",
-    womanOwner: "womanOwner",
-    exServicemanOwner: "exServicemanOwner"
-};
+export interface DiscountAttributeDto {
+    id: number;
+    socialAttributeCode: string;
+    socialAttributeName: string;
+    dataType: string;
+    unit?: string | null;
+    displayOrder?: number | null;
+    isDiscountApplicable: boolean;
+    propertySocialDetailId?: number | null;
+    bitValue?: boolean | null;
+    intValue?: number | null;
+    decimalValue?: number | null;
+    textValue?: string | null;
+    dateValue?: string | null;
+    documentBindingId?: number | null;
+    documentGuid?: string | null;
+    documentUrl?: string | null;
+    remark?: string | null;
+}
+
+export interface PropertyDiscountInfoResponseDto {
+    propertyId: number;
+    discountAttributes: DiscountAttributeDto[];
+}
+
+export interface DiscountDocumentUploadResponseDto {
+    propertySocialDetailId: number;
+    propertyId: number;
+    socialAttributeId: number;
+    documentBindingId: number;
+    documentGuid: string;
+    documentUrl: string;
+    fileName: string;
+    remark?: string | null;
+}
+
+export interface DiscountAttributeItemDto {
+    propertySocialDetailId: number | null;
+    socialAttributeId: number;
+    bitValue?: boolean | null;
+    intValue?: number | null;
+    decimalValue?: number | null;
+    textValue?: string | null;
+    dateValue?: string | null;
+    documentBindingId?: number | null;
+    remark?: string | null;
+}
+
+export interface UpsertPropertyDiscountInfoDto {
+    propertyId: number;
+    updatedBy: number;
+    discountAttributes: DiscountAttributeItemDto[];
+}
+
+
