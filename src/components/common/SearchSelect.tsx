@@ -347,7 +347,7 @@ export function SearchSelect({
           ref={listRef}
           id={`${accessibleId}-listbox`}
           role="listbox"
-          className={`absolute left-0 right-0 z-10000 max-h-60 overflow-auto
+          className={`absolute left-0 right-0 z-[10000] max-h-60 overflow-auto
           rounded-lg border bg-white shadow-lg text-gray-900 ${
             menuPlacement === 'top' ? 'bottom-full mb-1' : 'top-full mt-1'
           }`}

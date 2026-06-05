@@ -527,13 +527,19 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
   const handleSubmitBulkUpdate = useCallback(async () => {
     setFormSubmitted(true);
     if (!isFormValid || !selectedMenuItem) return;
-    if (selectedPropertyIds.size === 0) return;
+    
+    // Use selected property IDs if any are selected, otherwise use all loaded property IDs
+    const idsToUpdate = selectedPropertyIds.size > 0 
+      ? Array.from(selectedPropertyIds)
+      : properties.map((p) => p.id);
+    
+    if (idsToUpdate.length === 0) return;
 
     await handleBulkUpdate(
       selectedMenuItem.apiRoute,
       {
         updateCode: selectedCode,
-        propertyIds: Array.from(selectedPropertyIds),
+        propertyIds: idsToUpdate,
         updateData: formValues,
       },
       async () => {
@@ -547,6 +553,7 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
     isFormValid,
     selectedMenuItem,
     selectedPropertyIds,
+    properties,
     selectedCode,
     formValues,
     handleBulkUpdate,
