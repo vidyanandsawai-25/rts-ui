@@ -36,6 +36,8 @@ export {
   SortAscButton,
   SortDescButton,
   SortDefaultButton,
+  LockButton,
+  UnlockButton,
 } from './ActionButtons';
 export { IconButton } from './ActionButtons';
 export { Card, CardHeader, CardTitle, CardContent } from './Card';

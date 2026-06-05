@@ -22,6 +22,8 @@ import {
   CheckSquare,
   Eye, // Added Eye icon for preview
   History,
+  Lock,
+  Unlock,
 } from "lucide-react";
 import { Button, type ButtonProps } from "./ActionButton";
 import { cn } from "@/lib/utils/cn";
@@ -95,6 +97,28 @@ export function ApplyButton({
 }: LabeledActionButtonProps): React.ReactElement {
   return (
     <Button variant="success" icon={Check} {...props}>
+      {label}
+    </Button>
+  );
+}
+
+export function LockButton({
+  label = "Lock",
+  ...props
+}: LabeledActionButtonProps): React.ReactElement {
+  return (
+    <Button variant="danger" icon={Lock} {...props}>
+      {label}
+    </Button>
+  );
+}
+
+export function UnlockButton({
+  label = "Unlock",
+  ...props
+}: LabeledActionButtonProps): React.ReactElement {
+  return (
+    <Button variant="success" icon={Unlock} {...props}>
       {label}
     </Button>
   );
