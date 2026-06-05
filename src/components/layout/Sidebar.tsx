@@ -57,7 +57,7 @@ export async function Sidebar({ menuItems, locale }: SidebarProps) {
 
       <nav className="flex-1 overflow-y-auto py-2 px-2 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full">
         <div className="space-y-2">
-          {menuItems.map((item) => {
+          {menuItems.map((item, idx) => {
             const itemPath = item.href.startsWith('/') ? item.href : `/${item.href}`;
             const active = pathWithoutLocale === itemPath || pathWithoutLocale.startsWith(`${itemPath}/`);
             const hasSubItems = item.subItems && item.subItems.length > 0;
@@ -74,7 +74,7 @@ export async function Sidebar({ menuItems, locale }: SidebarProps) {
             if (hasSubItems) {
               return (
                 <details
-                  key={item.name}
+                  key={`${item.name}-${item.href}-${idx}`}
                   className="group/sub"
                   open={hasActiveChild}
                 >
@@ -114,12 +114,12 @@ export async function Sidebar({ menuItems, locale }: SidebarProps) {
                     </div>
                   </summary>
                   <div className="ml-5 border-l-2 border-gray-200 pl-2 space-y-1 my-1 max-h-60 overflow-y-auto [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full">
-                    {item.subItems!.map((sub) => {
+                    {item.subItems!.map((sub, sIdx) => {
                       const subPath = sub.href.startsWith('/') ? sub.href : `/${sub.href}`;
                       const subActive = pathWithoutLocale === subPath || pathWithoutLocale.startsWith(`${subPath}/`);
                       return (
                         <Link
-                          key={sub.name}
+                          key={`${sub.name}-${sub.href}-${sIdx}`}
                           href={withLocale(locale, sub.href)}
                           className={`block px-3 py-1.5 rounded-lg text-[14px] font-medium transition-colors duration-200 ${
                             subActive
@@ -137,7 +137,7 @@ export async function Sidebar({ menuItems, locale }: SidebarProps) {
             }
 
             return (
-              <div key={item.name}>
+              <div key={`${item.name}-${item.href}-${idx}`}>
                 <Link
                   href={withLocale(locale, item.href)}
                   className={`
