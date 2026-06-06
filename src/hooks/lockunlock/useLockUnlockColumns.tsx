@@ -1,7 +1,7 @@
 import { Lock, Unlock } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Column } from "@/components/common/MasterTable";
-import { Button, ToggleSwitch } from "@/components/common";
+import { Badge, Button, ToggleSwitch } from "@/components/common";
 import { Checkbox } from "@/components/common/checkbox";
 import { LockedScreen, LockUnlockPropertyItem } from "@/types/lockunlock.types";
 import { cn } from "@/lib/utils/cn";
@@ -94,12 +94,13 @@ export function useLockUnlockColumns({
         return (
           <div className="flex flex-wrap gap-1 px-2 justify-center w-full">
             {names.map((name, idx) => (
-              <span
+              <Badge
                 key={idx}
-                className="inline-flex items-center px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] font-medium border border-slate-200"
+                variant="success"
+                size="sm"
               >
                 {name}
-              </span>
+              </Badge>
             ))}
           </div>
         );
@@ -108,32 +109,34 @@ export function useLockUnlockColumns({
     {
       key: "isLocked",
       label: <span className="font-semibold px-2 text-xs text-[#1E3A8A]">{t("resultsTable.columns.status")}</span>,
-      width: "13%",
+      width: "16%",
       align: "center",
       render: (val: unknown) => {
         const isLocked = Boolean(val);
         return (
           <div className="flex items-center justify-center w-full">
-            <span
-              className={cn(
-                "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border shadow-sm transition-all duration-300",
-                isLocked
-                  ? "bg-red-50 text-red-700 border-red-200"
-                  : "bg-emerald-50 text-emerald-700 border-emerald-200"
-              )}
-            >
-              {isLocked ? (
-                <>
-                  <Lock className="w-3 h-3 text-red-500" />
-                  <span>{t("resultsTable.status.locked")}</span>
-                </>
-              ) : (
-                <>
-                  <Unlock className="w-3 h-3 text-emerald-500" />
-                  <span>{t("resultsTable.status.unlocked")}</span>
-                </>
-              )}
-            </span>
+            <Badge
+  className={cn(
+    "inline-flex items-center gap-1 whitespace-nowrap px-3 py-1 rounded-full text-xs font-semibold border shadow-sm transition-all duration-300",
+    isLocked
+      ? "bg-red-50 text-red-700 border-red-200"
+      : "bg-emerald-50 text-emerald-700 border-emerald-200"
+  )}
+>
+  <span className="inline-flex items-center gap-1 whitespace-nowrap">
+    {isLocked ? (
+      <>
+        <Lock className="w-3 h-3 shrink-0 text-red-500" />
+        <span>{t("resultsTable.status.locked")}</span>
+      </>
+    ) : (
+      <>
+        <Unlock className="w-3 h-3 shrink-0 text-emerald-500" />
+        <span>{t("resultsTable.status.unlocked")}</span>
+      </>
+    )}
+  </span>
+</Badge>
           </div>
         );
       },
