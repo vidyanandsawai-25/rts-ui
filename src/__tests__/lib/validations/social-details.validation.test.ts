@@ -232,8 +232,8 @@ describe("social-details.validation", () => {
                 socialAttributeCode: "random_invalid_code",
                 socialAttributeName: "Water Meter Available",
                 isRequiredWhenParentTrue: true,
-                dataType: "BIT",
-                bitValue: null
+                dataType: "TEXT",
+                textValue: null
             });
 
             // Mock t translator
@@ -257,6 +257,20 @@ describe("social-details.validation", () => {
 
             const errors = validateSocialDetails({ 1: attrRequired }, tMock);
             expect(errors[1]).toBe("पाण्याचा मीटर उपलब्ध आवश्यक आहे.");
+        });
+
+        it("should not require root BIT attributes on load even if isRequiredWhenParentTrue is true", () => {
+            const attr = createBaseAttr({
+                socialAttributeId: 1,
+                socialAttributeCode: "HAS_SOLAR",
+                socialAttributeName: "Solar Installed",
+                dataType: "BIT",
+                parentAttributeId: null,
+                isRequiredWhenParentTrue: true,
+                bitValue: null
+            });
+            const errors = validateSocialDetails({ 1: attr });
+            expect(errors[1]).toBeUndefined();
         });
     });
 });
