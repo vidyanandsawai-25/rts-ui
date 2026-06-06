@@ -84,12 +84,12 @@ const PropertyDetailsTab = ({ data }: PropertyDetailsTabProps) => {
 
         {/* Row 2 */}
         <FieldShell
-          id="moujaNo"
-          label={t('fields.moujaNo')}
+          id="moujaDescription"
+          label={t('fields.moujaDescription')}
           icon={FileText}
-          className="col-span-1 sm:col-span-2 lg:col-span-1"
+          className="col-span-1 sm:col-span-2 lg:col-span-2"
         >
-          <ValueDisplay value={data.moujaNo} />
+          <ValueDisplay value={data.moujaDescription} />
         </FieldShell>
 
         <FieldShell
@@ -112,15 +112,6 @@ const PropertyDetailsTab = ({ data }: PropertyDetailsTabProps) => {
           className="col-span-1 sm:col-span-2 lg:col-span-1"
         >
           <ValueDisplay value={data.subZoneNo} />
-        </FieldShell>
-
-        <FieldShell
-          id="moujaDescription"
-          label={t('fields.moujaDescription')}
-          icon={FileText}
-          className="col-span-1 sm:col-span-2 lg:col-span-1"
-        >
-          <ValueDisplay value={data.moujaDescription} />
         </FieldShell>
 
         <FieldShell
