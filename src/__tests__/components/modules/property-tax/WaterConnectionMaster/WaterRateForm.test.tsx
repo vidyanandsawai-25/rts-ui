@@ -93,7 +93,7 @@ function setupMockOptions() {
   mockFetchYears.mockResolvedValue({
     ...pagedBase,
     pageSize: 2000,
-    items: [{ id: 1, yearCode: "2024-25", year: 2024, isActive: true }],
+    items: [{ id: 1, yearCode: "2024-25", year: 2024, isActive: true, status: null, startDate: null, endDate: null, description: null }],
   });
 }
 

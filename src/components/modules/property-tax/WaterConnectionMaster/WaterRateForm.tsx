@@ -49,7 +49,7 @@ export function WaterRateForm({ id, initialData }: Readonly<WaterRateFormProps>)
     waterConnectionTypeId: initialData?.waterConnectionTypeId ? String(initialData.waterConnectionTypeId) : "",
     waterConnectionSizeId: initialData?.waterConnectionSizeId ? String(initialData.waterConnectionSizeId) : "",
     financeYearId: initialData?.financeYearId ? String(initialData.financeYearId) : "",
-    yearlyRate: initialData?.yearlyRate ? String(initialData.yearlyRate) : "",
+    yearlyRate: initialData?.yearlyRate != null ? String(initialData.yearlyRate) : "",
     isActive: initialData?.isActive ?? true,
   });
 

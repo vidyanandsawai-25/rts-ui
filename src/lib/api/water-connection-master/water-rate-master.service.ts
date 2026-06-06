@@ -7,19 +7,25 @@ import { apiClient } from "@/services/api.service";
 import { ApiError } from "@/lib/utils/api";
 
 function isWaterRateShape(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && "id" in value && "yearlyRate" in value;
+  if (typeof value !== "object" || value === null) return false;
+  const obj = value as Record<string, unknown>;
+  const hasId = "id" in obj || "waterRateMasterId" in obj || "rateId" in obj;
+  const hasRate = "yearlyRate" in obj || "rate" in obj || "yearlyrate" in obj;
+  return hasId && hasRate;
 }
 
 function normalizeWaterRate(data: Record<string, unknown>): WaterRate {
+  const id = Number(data.id ?? data.waterRateMasterId ?? data.rateId ?? 0);
+  const rate = Number(data.yearlyRate ?? data.rate ?? data.yearlyrate ?? 0);
   return {
-    id: Number(data.id ?? 0),
+    id: Number.isFinite(id) ? id : 0,
     waterConnectionTypeId: Number(data.waterConnectionTypeId ?? 0),
     connectionTypeName: data.connectionTypeName ? String(data.connectionTypeName) : null,
     waterConnectionSizeId: Number(data.waterConnectionSizeId ?? 0),
     connectionSizeDisplay: data.connectionSizeDisplay ? String(data.connectionSizeDisplay) : null,
     financeYearId: Number(data.financeYearId ?? 0),
     yearCode: data.yearCode ? String(data.yearCode) : null,
-    yearlyRate: Number(data.yearlyRate ?? 0),
+    yearlyRate: Number.isFinite(rate) ? rate : 0,
     isActive: Boolean(data.isActive),
   };
 }
@@ -69,6 +75,7 @@ export async function createWaterRate(
     waterConnectionSizeId: data.waterConnectionSizeId,
     financeYearId: data.financeYearId,
     yearlyRate: data.yearlyRate,
+    rate: data.yearlyRate,
     isActive: data.isActive,
     createdBy: userId,
   });
@@ -101,6 +108,7 @@ export async function updateWaterRate(
       waterConnectionSizeId: data.waterConnectionSizeId,
       financeYearId: data.financeYearId,
       yearlyRate: data.yearlyRate,
+      rate: data.yearlyRate,
       isActive: data.isActive,
       updatedBy: userId,
     }
