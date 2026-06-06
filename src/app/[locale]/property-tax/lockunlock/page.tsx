@@ -1,10 +1,10 @@
 import React from "react";
 import { getTranslations } from "next-intl/server";
-import LockUnlockMaster from "@/components/modules/property-tax/lockunlock/loackunlockmaster";
+import LockUnlockMaster from "@/components/modules/property-tax/lockunlock/LockUnlockMaster";
 import { fetchWardsPagedAction } from "@/app/[locale]/property-tax/zone-master/actions";
 import { getLockUnlockScreensAction, fetchLockUnlockPropertiesPagedAction } from "./action";
 import { WardItem } from "@/types/wardMaster.types";
-import { LockedScreen, LockUnlockPropertyItem } from "@/types/loackunlock.types";
+import { LockedScreen, LockUnlockPropertyItem } from "@/types/lockunlock.types";
 
 export const dynamic = "force-dynamic";
 
@@ -43,7 +43,7 @@ export default async function Page({
       });
       const seen = new Set<string>();
       dropdownProperties = (propertiesResponse.items || [])
-        .map((p) => {
+        .map((p: LockUnlockPropertyItem) => {
           const normalizedPartitionNo = String(p.partitionNo ?? "").trim();
           const hasPartition =
             normalizedPartitionNo !== "" &&
@@ -57,7 +57,7 @@ export default async function Page({
             value: displayValue,
           };
         })
-        .filter((option) => {
+        .filter((option: { label: string; value: string }) => {
           if (seen.has(option.value)) {
             return false;
           }

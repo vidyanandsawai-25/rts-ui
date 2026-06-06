@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { TableModal } from "@/components/modules/property-tax/lockunlock/TableModal";
-import { LockedScreen, LockUnlockPropertyItem } from "@/types/loackunlock.types";
+import { LockedScreen, LockUnlockPropertyItem } from "@/types/lockunlock.types";
 
 vi.mock("next-intl", () => ({
   useTranslations: () => (key: string, values?: Record<string, unknown>) => {

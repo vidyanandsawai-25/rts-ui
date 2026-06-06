@@ -13,7 +13,7 @@ import {
   LockUnlockPropertiesQueryParams,
   LockUnlockPropertiesResponse,
   BulkLockUnlockPayload
-} from "@/types/loackunlock.types";
+} from "@/types/lockunlock.types";
 
 /**
  * Server Action to fetch all lockable screen configurations.

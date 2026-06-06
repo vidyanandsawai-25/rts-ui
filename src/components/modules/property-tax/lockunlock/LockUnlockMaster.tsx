@@ -6,13 +6,13 @@ import { PageContainer, LockButton, UnlockButton } from "@/components/common";
 import TableHeader from "@/components/common/TableHeader";
 import { MasterTable } from "@/components/common/MasterTable";
 import { WardItem } from "@/types/wardMaster.types";
-import { LockedScreen, LockUnlockPropertyItem } from "@/types/loackunlock.types";
+import { LockedScreen, LockUnlockPropertyItem } from "@/types/lockunlock.types";
 import { useSearchParams } from "next/navigation";
 import { useLockUnlockMaster, PaginationState } from "@/hooks/lockunlock/useLockUnlockMaster";
-import { ScreenSelectionCard } from "./Screenselectioncard";
 import { TableModal } from "./TableModal";
-import { SelectProperty } from "./Selectproperty";
 import { useTranslations } from "next-intl";
+import { ScreenSelectionCard } from "./ScreenSelectionCard";
+// import { SelectProperty } from "./Selectproperty";
 
 export interface LockUnlockMasterProps {
   wards: WardItem[];

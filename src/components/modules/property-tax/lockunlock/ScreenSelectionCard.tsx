@@ -1,7 +1,7 @@
 import React from "react";
 import { Layers } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent, Checkbox } from "@/components/common";
-import { LockedScreen } from "@/types/loackunlock.types";
+import { LockedScreen } from "@/types/lockunlock.types";
 import { useTranslations } from "next-intl";
 
 interface ScreenSelectionCardProps {

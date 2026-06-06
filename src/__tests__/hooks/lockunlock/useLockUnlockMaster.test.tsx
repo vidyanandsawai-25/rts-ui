@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { useLockUnlockMaster } from "@/hooks/lockunlock/useLockUnlockMaster";
 import { fetchLockUnlockPropertiesPagedAction } from "@/app/[locale]/property-tax/lockunlock/action";
 import { toast } from "sonner";
-import { LockedScreen, LockUnlockPropertyItem } from "@/types/loackunlock.types";
+import { LockedScreen, LockUnlockPropertyItem } from "@/types/lockunlock.types";
 
 // Mock dependencies
 vi.mock("next-intl", () => ({

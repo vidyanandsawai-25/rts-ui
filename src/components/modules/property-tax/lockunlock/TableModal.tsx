@@ -1,7 +1,7 @@
 import React from "react";
 import { Lock, ShieldAlert } from "lucide-react";
 import { Drawer, Checkbox, Button } from "@/components/common";
-import { LockedScreen, LockUnlockPropertyItem } from "@/types/loackunlock.types";
+import { LockedScreen, LockUnlockPropertyItem } from "@/types/lockunlock.types";
 import { cn } from "@/lib/utils/cn";
 import { useTranslations } from "next-intl";
 
@@ -41,9 +41,8 @@ export function TableModal({
           <ShieldAlert className="w-5 h-5 text-blue-600" />
           <h2 className="text-base font-bold text-slate-800">
             {t("manageModal.title", {
-              propertyNo: `${editModal.property.propertyNo}${
-                editModal.property.partitionNo ? ` - ${editModal.property.partitionNo}` : ""
-              }`
+              propertyNo: `${editModal.property.propertyNo}${editModal.property.partitionNo ? ` - ${editModal.property.partitionNo}` : ""
+                }`
             })}
           </h2>
         </div>

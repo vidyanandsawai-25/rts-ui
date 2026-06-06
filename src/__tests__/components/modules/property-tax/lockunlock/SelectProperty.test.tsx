@@ -1,6 +1,7 @@
+import { SelectProperty } from "@/components/modules/property-tax/lockunlock/Selectproperty";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
-import { SelectProperty } from "@/components/modules/property-tax/lockunlock/Selectproperty";
+// import { SelectProperty } from "@/components/modules/property-tax/lockunlock/Selectproperty";
 
 const translations: Record<string, string> = {
   "selectPropertyCard.title": "Select properties",

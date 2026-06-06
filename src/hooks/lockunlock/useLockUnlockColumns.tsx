@@ -3,7 +3,7 @@ import { useTranslations } from "next-intl";
 import { Column } from "@/components/common/MasterTable";
 import { Button, ToggleSwitch } from "@/components/common";
 import { Checkbox } from "@/components/common/checkbox";
-import { LockedScreen, LockUnlockPropertyItem } from "@/types/loackunlock.types";
+import { LockedScreen, LockUnlockPropertyItem } from "@/types/lockunlock.types";
 import { cn } from "@/lib/utils/cn";
 
 interface UseLockUnlockColumnsParams {

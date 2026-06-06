@@ -6,7 +6,7 @@ import {
   LockUnlockPropertyItem,
   LockUnlockPropertiesQueryParams,
   LockUnlockPropertiesResponse,
-} from "@/types/loackunlock.types";
+} from "@/types/lockunlock.types";
 
 interface GetScreensResponse {
   items?: LockedScreen[];

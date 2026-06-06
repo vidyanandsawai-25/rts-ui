@@ -1,4 +1,4 @@
-import { LockedScreen, LockUnlockPropertyItem } from "@/types/loackunlock.types";
+import { LockedScreen, LockUnlockPropertyItem } from "@/types/lockunlock.types";
 
 /**
  * Converts a list that may contain screen IDs or screen objects into an array of numeric IDs.

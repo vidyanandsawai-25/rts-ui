@@ -1,7 +1,7 @@
 import { apiClient } from "@/services/api.service";
 import { getTranslations } from "next-intl/server";
 import { ApiError } from "@/lib/utils/api";
-import { BulkLockUnlockPayload } from "@/types/loackunlock.types";
+import { BulkLockUnlockPayload } from "@/types/lockunlock.types";
 
 /**
  * Submits bulk lock or unlock request for property IDs and screen IDs.
