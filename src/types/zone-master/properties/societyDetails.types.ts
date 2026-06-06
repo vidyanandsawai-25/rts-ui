@@ -3,6 +3,7 @@ import { PagedResponse } from "@/types/common.types";
 export interface SocietyDetailItem {
   propertyId: number;
   wingId: number;
+  wingNo?: string;
   wingName: string;
   societyName: string;
   societyAddress: string;
