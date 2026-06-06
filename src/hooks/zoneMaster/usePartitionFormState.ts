@@ -58,7 +58,7 @@ export function usePartitionFormState({
   const [errors, setErrors] = useState<PartitionFormErrors>({});
   
   // State for all properties - initialized from SSR data
-  const [allProperties] = useState<ZonePropertyItem[]>(ssrProperties);
+  const [allProperties, setAllProperties] = useState<ZonePropertyItem[]>(ssrProperties);
   const [loadingProperties] = useState(false);
 
   // State for wings - initialized from SSR data
@@ -129,6 +129,7 @@ export function usePartitionFormState({
     errors,
     setErrors,
     allProperties,
+    setAllProperties,
     loadingProperties,
     wings,
     floors,

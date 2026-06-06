@@ -85,6 +85,7 @@
       "valuationMethod": "मूल्यांकन विधि",
       "filterType": "फ़िल्टर प्रकार",
       "amount": "राशि दर्ज करें",
+      "amountFrom": "राशि प्रारंभ से दर्ज करें",
       "topCount": "शीर्ष संख्या (उदा. 1)",
       "toAmount": "अधिकतम राशि",
       "taxDefaulter": "कर बकायादार",
@@ -190,7 +191,9 @@
       "shopBuildingName": "दुकान/भवन का नाम",
       "societyName": "सोसायटी का नाम",
       "address": "पता",
-      "rvCv": "RV/CV",
+      "rv": "आरवी",
+      "cv": "सीवी",
+      "rvCv": "आरवी/सीवी",
       "totalTax": "कुल कर",
       "status": "स्थिति"
     }

@@ -71,29 +71,40 @@ export function getWingColumns({
       label: t("partitionForm.wing.table.actions"),
       key: "wingId",
       align: "center",
-      render: (_value, row) => (
-        <div className="flex items-center justify-center gap-1">
-          {/* Edit Wing Name Button */}
-          <IconOnlyActionButton
-            icon={PenLine}
-            onClick={() => onEditWing(row)}
-            aria-label={t("partitionForm.wing.table.editWingName")}
-            variant="ghost"
-            size="sm"
-            className="text-green-600 hover:scale-110 transition-transform p-1.5 hover:bg-transparent"
-          />
+      render: (_value, row) => {
+        const isWingIdMissing = row.wingId == null;
+        return (
+          <div className="flex items-center justify-center gap-1">
+            {/* Edit Wing Name Button */}
+            <IconOnlyActionButton
+              icon={PenLine}
+              onClick={() => onEditWing(row)}
+              aria-label={t("partitionForm.wing.table.editWingName")}
+              variant="ghost"
+              size="sm"
+              disabled={isWingIdMissing}
+              className={isWingIdMissing 
+                ? "text-gray-400 cursor-not-allowed p-1.5" 
+                : "text-green-600 hover:scale-110 transition-transform p-1.5 hover:bg-transparent"
+              }
+            />
 
-          {/* Update Wing Structure Button */}
-          <IconOnlyActionButton
-            icon={Building2}
-            onClick={() => onUpdateStructure(row)}
-            aria-label={t("partitionForm.wing.table.updateWing")}
-            variant="ghost"
-            size="sm"
-            className="text-blue-600 hover:scale-110 transition-transform p-1.5 hover:bg-transparent"
-          />
-        </div>
-      ),
+            {/* Update Wing Structure Button */}
+            <IconOnlyActionButton
+              icon={Building2}
+              onClick={() => onUpdateStructure(row)}
+              aria-label={t("partitionForm.wing.table.updateWing")}
+              variant="ghost"
+              size="sm"
+              disabled={isWingIdMissing}
+              className={isWingIdMissing 
+                ? "text-gray-400 cursor-not-allowed p-1.5" 
+                : "text-blue-600 hover:scale-110 transition-transform p-1.5 hover:bg-transparent"
+              }
+            />
+          </div>
+        );
+      },
     },
   ];
 }

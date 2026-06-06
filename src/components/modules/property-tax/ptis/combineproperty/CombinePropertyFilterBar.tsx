@@ -62,7 +62,7 @@ export function CombinePropertyFilterBar({
   return (
     <div className="flex items-end gap-2 px-3 py-2 bg-[#EFF4FF] border-b border-blue-100">
       {/* ---- Base Property ---- */}
-      <div className="flex flex-col gap-0.5 w-[160px] shrink-0">
+      <div className="flex flex-col gap-0.5 w-[250px] shrink-0">
         <SearchSelect
           label={t('baseProperty')}
           id="baseProperty"
@@ -102,7 +102,7 @@ export function CombinePropertyFilterBar({
       {/* ---- Conditional: Range fields ---- */}
       {selectionMethod === 'range' && (
         <>
-          <div className="flex flex-col gap-0.5 w-[120px] shrink-0">
+          <div className="flex flex-col gap-0.5 w-[150px] shrink-0">
             <SearchSelect
               label={t('from')}
               id="rangeFrom"
@@ -115,7 +115,7 @@ export function CombinePropertyFilterBar({
               className="text-[11px] h-[28px]"
             />
           </div>
-          <div className="flex flex-col gap-0.5 w-[120px] shrink-0">
+          <div className="flex flex-col gap-0.5 w-[150px] shrink-0">
             <SearchSelect
               label={t('to')}
               id="rangeTo"

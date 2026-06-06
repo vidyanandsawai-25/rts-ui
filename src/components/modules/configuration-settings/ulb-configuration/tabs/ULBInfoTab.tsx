@@ -168,12 +168,14 @@ export function ULBInfoTab({
         <SaveButton label={t('buttons.save')} onClick={onSave} className="h-11 rounded-xl px-6" />
         <Button
           onClick={onNext}
-          className="flex h-11 items-center gap-2.5 rounded-xl bg-blue-700 px-8 font-black text-white hover:bg-blue-800"
+          icon={ChevronRight}
+          iconPosition="right"
+          className="inline-flex h-11 items-center justify-center gap-2.5 whitespace-nowrap rounded-xl bg-blue-700 px-8 font-black text-white hover:bg-blue-800"
         >
           {t('buttons.next')}
-          <ChevronRight className="h-5 w-5" />
         </Button>
       </div>
     </>
   );
 }
+

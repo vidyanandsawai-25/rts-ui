@@ -2,7 +2,6 @@ import { useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useLoading } from "@/hooks/useLoading";
-import { parseErrorMessage } from "@/lib/utils/error-parser";
 import { upsertPropertySocialInfoAction } from "@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Discount/action";
 import { PropertySocialInfoResponseDto, PropertySocialInfoItemDto } from "@/types/property-social-details.types";
 import { useConfirm } from "@/components/common/ConfirmProvider";
@@ -107,7 +106,7 @@ export const useSocialDetailsForm = (
                                 socialAttributes.push({
                                     id: attr.id,
                                     socialAttributeId: attr.socialAttributeId,
-                                    bitValue: attr.bitValue,
+                                    bitValue: attr.dataType.toUpperCase() === "BIT" ? attr.bitValue : null,
                                     intValue: attr.intValue,
                                     decimalValue: attr.decimalValue,
                                     textValue: attr.textValue,
@@ -130,17 +129,12 @@ export const useSocialDetailsForm = (
                         socialAttributeIdsToRemove
                     });
 
-                    const isSuccess = response.success && (!response.data || response.data.success);
-                    const displayMessage = isSuccess
-                        ? (response.data?.message || response.message || "")
-                        : parseErrorMessage(response.data?.message || response.message || response.error);
-
-                    if (isSuccess) {
+                    if (response.success) {
                         setHasChanges(false);
-                        toast.success(displayMessage || t("discount.socialConfirm.saveSuccess") || "Social details saved successfully!");
+                        toast.success(response.message || t("discount.socialConfirm.saveSuccess") || "Social details saved successfully!");
                         router.refresh();
                     } else {
-                        toast.error(displayMessage || t("discount.socialConfirm.saveError") || "Failed to save social details.");
+                        toast.error(response.error || t("discount.socialConfirm.saveError") || "Failed to save social details.");
                     }
                 } catch (_error) {
                     toast.error(t("discount.socialConfirm.unexpectedError") || "An unexpected error occurred while saving.");

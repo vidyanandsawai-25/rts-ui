@@ -57,7 +57,7 @@ export function NonApartmentPartitionSection({
               setForm({ ...form, toPartition: e.target.value });
               setErrors({ ...errors, toPartition: undefined });
             }}
-            placeholder="10"
+            placeholder={t("partitionForm.placeholders.toPartition")}
             required
           />
           <ValidationMessage

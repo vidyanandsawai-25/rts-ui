@@ -1,10 +1,14 @@
 import { apiClient } from '@/services/api.service';
 import { PagedResponse } from '@/types/common.types';
 import { Department, DepartmentLicenceDetails, DepartmentLicense } from '@/types/ulbconfig-master.types';
+import { DEPARTMENT_DURATION_OPTIONS } from '@/config/ulb-configuration.config';
 import { ApiError } from '@/lib/utils/api';
-import { getDepartmentMastersPaged } from '@/lib/api/configuration-settings/department-master/departmentMaster.service';
+import { getDepartmentMastersPaged, getDepartmentById, updateDepartmentMaster } from '@/lib/api/configuration-settings/department-master/departmentMaster.service';
 import { normalizeDepartmentLicenceDetails, parseDepartmentLicenceMutationResponse, extractDepartmentLicenceRecord } from './department-licence-types-guard';
 import { mapDepartmentLicenseToPayload } from './department-licence.mapper';
+import { getUlbMaster } from './ulb-master.services';
+import { calculateLicenseEndDate } from '@/lib/utils/ulb-configuration.utils';
+import { parseLicenseDurationFromApi } from './ulb-master.mapper';
 import {
   DEPARTMENT_LICENCE_ENDPOINT,
 } from './ulb-master.constants';
@@ -77,11 +81,11 @@ function mapDepartmentMasterToUlbDepartment(dept: {
   };
 }
 
-/** GET `/DepartmentMaster?PageNumber=1&PageSize=-1` — active departments for the licence section. */
+/** GET `/DepartmentMaster?PageNumber=1&PageSize=-1` — all departments for the licence section. */
 export async function getAllDepartments(): Promise<Department[]> {
   const paged = await getDepartmentMastersPaged(1, -1);
   return (paged.items ?? [])
-    .filter((dept) => dept.departmentId > 0 && dept.isActive)
+    .filter((dept) => dept.departmentId > 0)
     .map(mapDepartmentMasterToUlbDepartment);
 }
 
@@ -197,4 +201,82 @@ export async function getDepartmentLicenceById(
   }
 
   return normalized;
+}
+
+/**
+ * Syncs the department license status with the department master's status.
+ * Called when a department status changes in Department Master or Department Activation screen.
+ */
+export async function syncDepartmentLicenseWithMaster(
+  departmentId: number,
+  isActive: boolean,
+  _userId: number
+): Promise<void> {
+  const licenses = await getAllDepartmentLicences();
+  const existing = licenses.find(
+    (l) => Number(l.departmentId ?? l.departmentMasterId) === Number(departmentId)
+  );
+
+  if (isActive) {
+    if (existing) {
+      if (existing.isActive === false || existing.isEnabled === false) {
+        await updateDepartmentLicence(existing.departmentLicenceDetailsId!, {
+          ...existing,
+          isActive: true,
+          isEnabled: true,
+          status: 'active',
+        });
+      }
+    } else {
+      const ulb = await getUlbMaster();
+      
+      const startDate = ulb?.licenceStartDate ? ulb.licenceStartDate.split('T')[0] : new Date().toISOString().split('T')[0];
+      const durationVal = ulb?.licenceDuration ? parseLicenseDurationFromApi(ulb.licenceDuration) : "12";
+      const matchedOption = DEPARTMENT_DURATION_OPTIONS.find((o) => o.value === durationVal);
+      const durationLabel = matchedOption ? matchedOption.label : (ulb?.licenceDuration || "1 Year");
+      const endDate = ulb?.licenceEndDate ? ulb.licenceEndDate.split('T')[0] : calculateLicenseEndDate(startDate, durationVal);
+
+      await createDepartmentLicence({
+        departmentId,
+        departmentMasterId: departmentId,
+        licenceStartDate: startDate.includes('T') ? startDate : `${startDate}T00:00:00`,
+        licenceEndDate: endDate.includes('T') ? endDate : `${endDate}T00:00:00`,
+        licenceDuration: durationLabel,
+        isActive: true,
+        isEnabled: true,
+        status: 'active',
+      });
+    }
+  } else {
+    if (existing && (existing.isActive !== false || existing.isEnabled !== false)) {
+      await updateDepartmentLicence(existing.departmentLicenceDetailsId!, {
+        ...existing,
+        isActive: false,
+        isEnabled: false,
+        status: 'inactive',
+      });
+    }
+  }
+}
+
+/**
+ * Syncs the department master status with the department license status.
+ * Called when a department license status changes in the ULB Configuration panel.
+ */
+export async function syncMasterDepartmentWithLicense(
+  departmentId: number,
+  isActive: boolean,
+  userId: number
+): Promise<void> {
+  const dept = await getDepartmentById(departmentId);
+  if (dept && dept.isActive !== isActive) {
+    await updateDepartmentMaster({
+      departmentId: dept.departmentId,
+      departmentCode: dept.departmentCode,
+      departmentName: dept.departmentName,
+      departmentNameLocal: dept.departmentNameLocal || '',
+      departmentDescription: dept.departmentDescription || '',
+      isActive: isActive,
+    }, userId);
+  }
 }

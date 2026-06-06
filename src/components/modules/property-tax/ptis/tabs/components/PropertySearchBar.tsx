@@ -80,11 +80,11 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
   }, []);
 
   const sanitizePropertyNo = useCallback((val: string) => {
-    return val.replace(/[^a-zA-Z0-9]/g, '').slice(0, 10);
+    return val.replace(/[^a-zA-Z0-9-]/g, '').slice(0, 10);
   }, []);
 
   const sanitizePartitionNo = useCallback((val: string) => {
-    return val.replace(/[^a-zA-Z0-9]/g, '').slice(0, 10);
+    return val.replace(/[^a-zA-Z0-9-]/g, '').slice(0, 10);
   }, []);
 
   const handleWardChange = useCallback(

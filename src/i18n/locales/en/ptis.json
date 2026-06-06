@@ -112,7 +112,7 @@
     "partitionNo": "Partition No",
     "taxZoneNo": "Tax Zone No",
     "taxZoneNoRequired": "Tax Zone No *",
-    "subZoneNo": "Sub Zone No",
+    "subZoneNo": "SubZone No",
     "surveyNo": "Survey No",
     "moujaNo": "Mouja No",
     "moujaDescription": "Mouja Description",
@@ -163,6 +163,11 @@
     "dateLabel": "Date",
     "amount": "Amount",
     "percentage": "Percentage",
+    "status": "Status",
+    "value": "Value",
+    "applied": "Applied",
+    "yes": "Yes",
+    "no": "No",
     "solarPanelProduct": "Solar Panel System",
     "solarWaterProduct": "Solar Water Heater",
     "rainwaterProduct": "Rainwater Harvesting",
@@ -183,6 +188,8 @@
     "oldPlotNo": "Old Plot No",
     "oldBuiltupArea": "Old Builtup Area",
     "oldBuiltupAreaWithUnit": "Old Builtup Area (Sq. Mtr)",
+    "oldConstructionArea": "Old Construction Area",
+    "oldConstructionAreaWithUnit": "Old Construction Area (Sq. Mtr)",
     "oldRV": "Old RV",
     "oldALV": "Old ALV",
     "oldPropTax": "Old Property Tax",
@@ -351,7 +358,7 @@
       "useFactor": "Use Factor",
       "capitalValue": "Capital Value",
       "taxAmount": "Tax Amount",
-      "appliedOn": "Applied On Date"
+      "appliedOn": "Applied On"
     },
     "placeholders": {
       "oc": "OC/YYYY/###",

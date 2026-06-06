@@ -35,6 +35,7 @@ vi.mock("@/app/[locale]/property-tax/zone-master/actions", () => ({
 
 describe("usePartitionSubmit", () => {
   const mockSetLoading = vi.fn();
+  const mockSetForm = vi.fn();
   const mockOnSuccess = vi.fn();
   const mockOnClose = vi.fn();
   const mockValidate = vi.fn();
@@ -196,6 +197,7 @@ describe("usePartitionSubmit", () => {
     const { result } = renderHook(() =>
       usePartitionSubmit({
         form: wingForm,
+        setForm: mockSetForm,
         selectedWard: mockWard,
         selectedProperty: mockProperty,
         wings: mockWings,
@@ -233,6 +235,7 @@ describe("usePartitionSubmit", () => {
     const { result } = renderHook(() =>
       usePartitionSubmit({
         form: wingForm,
+        setForm: mockSetForm,
         selectedWard: mockWard,
         selectedProperty: mockProperty,
         wings: mockWings,
@@ -292,6 +295,7 @@ describe("usePartitionSubmit", () => {
     const { result } = renderHook(() =>
       usePartitionSubmit({
         form: partitionForm,
+        setForm: mockSetForm,
         selectedWard: mockWard,
         selectedProperty: mockProperty,
         wings: mockWings,
@@ -332,6 +336,7 @@ describe("usePartitionSubmit", () => {
     const { result } = renderHook(() =>
       usePartitionSubmit({
         form: wingForm,
+        setForm: mockSetForm,
         selectedWard: mockWard,
         selectedProperty: mockProperty,
         wings: mockWings,
@@ -363,6 +368,7 @@ describe("usePartitionSubmit", () => {
     const { result } = renderHook(() =>
       usePartitionSubmit({
         form: wingForm,
+        setForm: mockSetForm,
         selectedWard: mockWard,
         selectedProperty: mockProperty,
         wings: mockWings,
@@ -393,6 +399,7 @@ describe("usePartitionSubmit", () => {
     const { result } = renderHook(() =>
       usePartitionSubmit({
         form: wingForm,
+        setForm: mockSetForm,
         selectedWard: mockWard,
         selectedProperty: mockProperty,
         wings: mockWings,
@@ -430,6 +437,7 @@ describe("usePartitionSubmit", () => {
     const { result } = renderHook(() =>
       usePartitionSubmit({
         form: invalidForm,
+        setForm: mockSetForm,
         selectedWard: mockWard,
         selectedProperty: mockProperty,
         wings: mockWings,

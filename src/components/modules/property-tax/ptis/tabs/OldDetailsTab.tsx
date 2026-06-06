@@ -134,14 +134,14 @@ const OldDetailsTab: React.FC<OldDetailsTabProps> = ({
               </FieldShell>
             </div>
 
-            {/* Second row: built-up, RV, ALV, prop tax, total tax + buttons */}
+            {/* Second row: construction area, RV, ALV, prop tax, total tax + buttons */}
             <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-12 gap-0.5 mt-0.5">
               <FieldShell
-                id="oldBuiltupArea"
-                label={t('fields.oldBuiltupAreaWithUnit')}
+                id="oldConstructionArea"
+                label={t('fields.oldConstructionAreaWithUnit')}
                 className="col-span-1 sm:col-span-2 lg:col-span-2"
               >
-                <ValueDisplay value={oldDetailsData?.oldBuiltupAreaSqMeter || ''} />
+                <ValueDisplay value={oldDetailsData?.oldConstructionArea || ''} />
               </FieldShell>
 
               <FieldShell

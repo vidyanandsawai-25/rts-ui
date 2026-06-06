@@ -629,7 +629,7 @@ export const oldDetailsValidations = {
       oldConstructionTypeId: formData.oldConstructionTypeId,
       oldTypeOfUseId: formData.oldTypeOfUseId,
       oldSubTypeOfUseId: formData.oldSubTypeOfUseId,
-      oldCarpetAreaSqFeet: formData.oldCarpetAreaSqFeet,
+      oldAreaSqMeter: formData.oldAreaSqMeter,
     };
 
     const validationRules: Record<string, Validator> = {
@@ -639,7 +639,7 @@ export const oldDetailsValidations = {
       oldAssessmentYear: propertyValidations.year('assessmentYear', t),
       oldConstructionTypeId: propertyValidations.required('constructionType', t),
       oldTypeOfUseId: propertyValidations.required('typeOfUse', t),
-      oldCarpetAreaSqFeet: propertyValidations.required('carpetArea', t),
+      oldAreaSqMeter: propertyValidations.required('carpetArea', t),
     };
 
     // Only require Sub Type if options are available
@@ -648,6 +648,14 @@ export const oldDetailsValidations = {
     }
 
     const errors = validateForm(validationData, validationRules);
+
+    // Additional validation for carpet area - must be a valid finite number > 0
+    if (formData.oldAreaSqMeter) {
+      const areaValue = Number(formData.oldAreaSqMeter);
+      if (!Number.isFinite(areaValue) || areaValue <= 0) {
+        errors.oldAreaSqMeter = t('property.validation.invalidCarpetArea') || 'Carpet area must be a valid number greater than 0';
+      }
+    }
 
     // Additional validation for construction year range (1700-2026)
     if (formData.oldConstructionYear) {

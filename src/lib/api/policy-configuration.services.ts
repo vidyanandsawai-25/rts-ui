@@ -63,6 +63,7 @@ export async function createPolicyConfiguration(data: PolicyConfigurationFormMod
     unit: data.unit?.trim() || "",
     effectiveFrom: data.effectiveFrom,
     effectiveTo: data.effectiveTo,
+    allowedValues: data.allowedValues ?? null,
     isActive: data.isActive,
     createdBy: data.createdBy ?? 0,
   };
@@ -92,6 +93,7 @@ export async function updatePolicyConfiguration(data: PolicyConfigurationFormMod
     unit: data.unit?.trim() || "",
     effectiveFrom: data.effectiveFrom,
     effectiveTo: data.effectiveTo,
+    allowedValues: data.allowedValues ?? null,
     isActive: data.isActive,
     createdBy: data.createdBy ?? 0,
   };

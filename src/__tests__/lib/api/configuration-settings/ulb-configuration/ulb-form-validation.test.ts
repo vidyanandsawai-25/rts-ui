@@ -82,7 +82,7 @@ describe('ulb-form-validation', () => {
       tCommon,
       tUlb
     );
-    expect(errors.pincode).toBe('form.validation.invalidPincode');
+    expect(errors.pincode).toBe('validation.pincodeFormat');
   });
 
   it('returns email error for invalid email format', () => {
@@ -92,7 +92,97 @@ describe('ulb-form-validation', () => {
       tCommon,
       tUlb
     );
-    expect(errors.email).toBe('form.validation.invalidEmail');
+    expect(errors.email).toBe('validation.emailFormat');
+  });
+
+  it('returns email length error for emails exceeding max characters', () => {
+    const errors = validateUlbConfigurationFields(
+      { ...baseForm, email: 'a'.repeat(93) + '@ulb.gov.in' }, // 104 characters
+      'ulb-info',
+      tCommon,
+      tUlb
+    );
+    expect(errors.email).toBe('form.validation.descriptionMaxLength:100');
+  });
+
+  it('returns phone format error for invalid phone numbers', () => {
+    const errorShort = validateUlbConfigurationFields(
+      { ...baseForm, phone: '98765' },
+      'ulb-info',
+      tCommon,
+      tUlb
+    );
+    expect(errorShort.phone).toBe('validation.phoneFormat');
+
+    const errorInvalidStart = validateUlbConfigurationFields(
+      { ...baseForm, phone: '5876543210' },
+      'ulb-info',
+      tCommon,
+      tUlb
+    );
+    expect(errorInvalidStart.phone).toBe('validation.phoneFormat');
+  });
+
+  it('returns alternate phone error when identical to primary phone', () => {
+    const errors = validateUlbConfigurationFields(
+      { ...baseForm, phone: '9876543210', alternatePhone: '9876543210' },
+      'ulb-info',
+      tCommon,
+      tUlb
+    );
+    expect(errors.alternatePhone).toBe('validation.alternatePhoneSame');
+  });
+
+  it('returns address format and gibberish errors for address field', () => {
+    const errorShort = validateUlbConfigurationFields(
+      { ...baseForm, address: 'Road' },
+      'ulb-info',
+      tCommon,
+      tUlb
+    );
+    expect(errorShort.address).toBe('validation.addressFormat');
+
+    const errorConsecutiveSpaces = validateUlbConfigurationFields(
+      { ...baseForm, address: 'Main  Road  Thane' },
+      'ulb-info',
+      tCommon,
+      tUlb
+    );
+    expect(errorConsecutiveSpaces.address).toBe('validation.addressFormat');
+
+    const errorGibberish = validateUlbConfigurationFields(
+      { ...baseForm, address: 'asdfghjklqwerty' },
+      'ulb-info',
+      tCommon,
+      tUlb
+    );
+    expect(errorGibberish.address).toBe('validation.gibberishError');
+  });
+
+  it('returns gibberish error for names with keyboard patterns or key-mashing', () => {
+    const errorName = validateUlbConfigurationFields(
+      { ...baseForm, ulbName: 'qwerty Corporation' },
+      'ulb-info',
+      tCommon,
+      tUlb
+    );
+    expect(errorName.ulbName).toBe('validation.gibberishError');
+
+    const errorContact = validateUlbConfigurationFields(
+      { ...baseForm, contactPerson: 'asdfgh User' },
+      'ulb-info',
+      tCommon,
+      tUlb
+    );
+    expect(errorContact.contactPerson).toBe('validation.gibberishError');
+
+    const errorManager = validateUlbConfigurationFields(
+      { ...baseForm, projectManager: 'zxcvbn PM' },
+      'project-license-info',
+      tCommon,
+      tUlb
+    );
+    expect(errorManager.projectManager).toBe('validation.gibberishError');
   });
 
   it('returns required errors for missing project license fields', () => {
@@ -104,5 +194,43 @@ describe('ulb-form-validation', () => {
     );
     expect(errors.projectManager).toBe('validation.projectManagerRequired');
     expect(errors.licenseKey).toBe('validation.licenseKeyRequired');
+  });
+
+  it('allows valid names for contactPerson and projectManager', () => {
+    const infoErrors = validateUlbConfigurationFields(
+      { ...baseForm, contactPerson: 'Ashwin Deshmukh' },
+      'ulb-info',
+      tCommon,
+      tUlb
+    );
+    expect(infoErrors.contactPerson).toBeUndefined();
+
+    const licenseErrors = validateUlbConfigurationFields(
+      { ...baseForm, projectManager: 'Project Lead Name' },
+      'project-license-info',
+      tCommon,
+      tUlb
+    );
+    expect(licenseErrors.projectManager).toBeUndefined();
+  });
+
+  it('returns validation format errors for contactPerson with invalid characters', () => {
+    const errors = validateUlbConfigurationFields(
+      { ...baseForm, contactPerson: 'Ashwin @ Deshmukh' },
+      'ulb-info',
+      tCommon,
+      tUlb
+    );
+    expect(errors.contactPerson).toBe('validation.contactPersonFormat');
+  });
+
+  it('returns validation format errors for projectManager with invalid characters', () => {
+    const errors = validateUlbConfigurationFields(
+      { ...baseForm, projectManager: 'Project # Lead' },
+      'project-license-info',
+      tCommon,
+      tUlb
+    );
+    expect(errors.projectManager).toBe('validation.projectManagerFormat');
   });
 });

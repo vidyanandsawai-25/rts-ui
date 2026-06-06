@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import dynamic from 'next/dynamic';
 import { Button, ToastContainer } from '@/components/common';
 import type { ToastProps } from '@/components/common';
-import { X, CheckCircle, ArrowLeft, Loader2 } from 'lucide-react';
+import { CheckCircle, ArrowLeft, Loader2 } from 'lucide-react';
 import { PropertyDetailsOnRenter } from './PropertyDetailsOnRenter';
 import AgreementDetails from './AgreementDetails';
 import { SelectedFloorDetails } from './SelectedFloorDetails';
@@ -238,27 +238,9 @@ export const RenterDetailsForm = memo(
               </div>
             </div>
 
-            {/* Right Side: Property Context + Close Button */}
+            {/* Right Side: Property Context */}
             <div className="flex-1 flex items-center justify-end gap-6 px-4">
               <PropertyDetailsOnRenter propertyInfo={propertyInfo} />
-
-              <div className="h-8 w-px bg-gray-100 ml-2" />
-
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  const params = new URLSearchParams();
-                  if (propertyId) params.set('propertyId', propertyId);
-                  if (wardNo) params.set('wardNo', wardNo);
-                  if (propertyNo) params.set('propertyNo', propertyNo);
-                  if (partitionNo) params.set('partitionNo', partitionNo);
-                  router.push(`/${locale}/property-tax/ptis?${params}`);
-                }}
-                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-50 text-gray-400 hover:text-red-500 transition-all group p-0"
-                title={t('floor.renterSection.closeManagement')}
-              >
-                <X className="w-5 h-5 group-hover:scale-110 transition-transform" />
-              </Button>
             </div>
           </div>
 

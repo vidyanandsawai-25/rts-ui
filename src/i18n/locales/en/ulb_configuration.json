@@ -176,6 +176,7 @@
     "enableAllSuccess": "All departments enabled",
     "disableAllSuccess": "All departments disabled",
     "masterDatesRequired": "Please set master license dates first",
+    "masterExpired": "Master license dates have expired. Cannot apply to departments.",
     "masterApplied": "Master license applied to all enabled departments",
     "invalidImageFile": "Please upload a valid image file",
     "logoSizeExceeded": "Logo size should not exceed 2MB",
@@ -206,6 +207,7 @@
     "districtRequired": "District is required",
     "pincodeRequired": "Pincode is required",
     "contactPersonRequired": "Contact person name is required",
+    "contactPersonFormat": "Contact person name must contain only letters, spaces, and basic punctuation (. , ' -)",
     "designationRequired": "Designation is required",
     "addressRequired": "Address is required",
     "emailRequired": "Email is required",
@@ -214,6 +216,7 @@
     "projectStartDateRequired": "Project start date is required",
     "financialYearStartRequired": "Financial year start date is required",
     "projectManagerRequired": "Project manager name is required",
+    "projectManagerFormat": "Project manager name must contain only letters, spaces, and basic punctuation (. , ' -)",
     "projectManagerEmailRequired": "Project manager email is required",
     "licenseTypeRequired": "License type is required",
     "licenseKeyRequired": "License key is required",
@@ -231,6 +234,9 @@
     "ulbNameExists": "This ULB name is already registered",
     "licenseKeyFormat": "Please enter a valid license key",
     "licenseKeyExists": "This license key is already in use",
-    "maxUsersRequired": "Maximum users is required"
+    "maxUsersRequired": "Maximum users is required",
+    "addressFormat": "Please enter a valid address (minimum 5 characters, alphanumeric and spaces)",
+    "gibberishError": "Random or repeated characters are not allowed",
+    "alternatePhoneSame": "Alternate phone number cannot be the same as the primary phone number"
   }
 }

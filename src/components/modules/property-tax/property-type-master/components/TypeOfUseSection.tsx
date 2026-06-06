@@ -6,6 +6,7 @@ import { Input, Select } from "@/components/common";
 import { SelectAllButton, ClearButton } from "@/components/common/ActionButtons";
 import { Checkbox } from "@/components/common/checkbox";
 import { cn } from "@/lib/utils/cn";
+import { TEXT_SANITIZE } from "@/lib/utils/validation-rules";
 import type { UseType } from "@/types/typeOfUse.types";
 
 interface TypeOfUseSectionProps {
@@ -29,6 +30,11 @@ export const TypeOfUseSection = ({
   // --- Search & filter state (SSR-safe, no useEffect) ---
   const [touSearchTerm, setTouSearchTerm] = useState("");
   const [selectedTouType, setSelectedTouType] = useState<string>("ALL");
+
+  // Sanitize search input
+  const sanitizeSearchText = (value: string) => {
+    return value.replace(TEXT_SANITIZE, '');
+  };
 
   // Compute unique type options from the list
   const touTypeOptions = useMemo(() => {
@@ -81,7 +87,10 @@ export const TypeOfUseSection = ({
                   type="text"
                   placeholder={t("form.typeOfUseSection.searchPlaceholder")}
                   value={touSearchTerm}
-                  onChange={(e) => setTouSearchTerm(e.target.value)}
+                  onChange={(e) => {
+                    const sanitized = sanitizeSearchText(e.target.value);
+                    setTouSearchTerm(sanitized);
+                  }}
                   className="w-full pl-9 pr-3 py-2 text-sm text-gray-700"
                 />
               </div>

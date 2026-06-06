@@ -85,6 +85,7 @@
       "valuationMethod": "Valuation Method",
       "filterType": "Filter Type",
       "amount": "Enter Amount",
+      "amountFrom": "Enter From Amount",
       "topCount": "Top Count (e.g. 1)",
       "toAmount": "To Amount",
       "taxDefaulter": "Tax Defaulter",
@@ -190,6 +191,8 @@
       "shopBuildingName": "Shop/Building Name",
       "societyName": "Society Name",
       "address": "Address",
+      "rv": "RV",
+      "cv": "CV",
       "rvCv": "RV/CV",
       "totalTax": "Total Tax",
       "status": "Status"

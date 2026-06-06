@@ -4,6 +4,8 @@ import {
   defaultKycDetails,
   defaultSocietyDetails,
   defaultOldDetails,
+  defaultDiscountData,
+  defaultBuildingPermission,
 } from '@/lib/constants/ptis.constants';
 import {
   fetchPropertyDetailsOnlyAction,
@@ -15,6 +17,8 @@ import {
   fetchOldDetailsOnlyAction,
   fetchOldFloorDetailsAction,
   fetchOldTaxesDetailsAction,
+  fetchDiscountDetailsOnlyAction,
+  fetchBuildingPermissionOnlyAction,
 } from './actions';
 import { getApartmentQCDataAction } from './apartmentQC.action';
 import { getCapitalValue } from './CapitalValue.action';
@@ -213,7 +217,9 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
   let rawPropertyData: PropertyListItem[] = [];
   let kycDetails = defaultKycDetails;
   let societyDetails = defaultSocietyDetails;
+  let buildingPermission = defaultBuildingPermission;
   let oldDetails = defaultOldDetails;
+  let discountDetails = defaultDiscountData;
   let oldFloorTableData: OldFloorDetailsData[] = [];
   let oldTaxesData: OldTaxesData | null = null;
   let resolvedPropertyId: number | undefined = undefined;
@@ -248,7 +254,13 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
 
   if (!criticalError) {
     try {
-      const propDetailsRes = await getInitialData(wardNo, propertyNo, partitionNo, resolvedWardId, propertyIdParam);
+      const propDetailsRes = await getInitialData(
+        wardNo,
+        propertyNo,
+        partitionNo,
+        resolvedWardId,
+        propertyIdParam
+      );
       propertyDetailsResult = propDetailsRes;
 
       if (!resolvedWardId && propertyDetailsResult.success && propertyDetailsResult.wardId) {
@@ -288,9 +300,11 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
         capitalRes,
         kycResult,
         societyResult,
+        buildingPermissionResult,
         oldDetailsResult,
         oldFloorResult,
         oldTaxesResult,
+        discountResult,
       ] = await Promise.all([
         resolvedWardId && propertyNo
           ? getApartmentQCDataAction(
@@ -314,16 +328,23 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
               residential: emptyPaged,
             }),
         resolvedPropertyId ? getRateableValue(resolvedPropertyId) : Promise.resolve(null),
-        resolvedPropertyId && (valuationTab === 'capital' || (valuationTab === 'dual' && showDetailsParam))
+        resolvedPropertyId &&
+        (valuationTab === 'capital' || (valuationTab === 'dual' && showDetailsParam))
           ? getCapitalValue(resolvedPropertyId)
           : Promise.resolve(null),
         resolvedPropertyId ? fetchKycDetailsOnlyAction(resolvedPropertyId) : Promise.resolve(null),
         resolvedPropertyId
           ? fetchSocietyDetailsOnlyAction(resolvedPropertyId)
           : Promise.resolve(null),
+        resolvedPropertyId
+          ? fetchBuildingPermissionOnlyAction(resolvedPropertyId)
+          : Promise.resolve(null),
         resolvedPropertyId ? fetchOldDetailsOnlyAction(resolvedPropertyId) : Promise.resolve(null),
         resolvedPropertyId ? fetchOldFloorDetailsAction(resolvedPropertyId) : Promise.resolve(null),
         resolvedPropertyId ? fetchOldTaxesDetailsAction(resolvedPropertyId) : Promise.resolve(null),
+        resolvedPropertyId
+          ? fetchDiscountDetailsOnlyAction(resolvedPropertyId)
+          : Promise.resolve(null),
       ]);
 
       apartmentData = aptData;
@@ -337,6 +358,9 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
       if (societyResult?.success && societyResult.data) {
         societyDetails = { ...defaultSocietyDetails, ...societyResult.data };
       }
+      if (buildingPermissionResult?.success && buildingPermissionResult.data) {
+        buildingPermission = { ...defaultBuildingPermission, ...buildingPermissionResult.data };
+      }
       if (oldDetailsResult?.success && oldDetailsResult.data) {
         oldDetails = { ...defaultOldDetails, ...oldDetailsResult.data };
       }
@@ -346,12 +370,20 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
       if (oldTaxesResult?.success && oldTaxesResult.data) {
         oldTaxesData = oldTaxesResult.data;
       }
+      if (discountResult?.success && discountResult.data) {
+        discountDetails = { ...defaultDiscountData, ...discountResult.data };
+      }
 
       // Dual Method data triggers additional valuation fetches internally,
       // so only load it when the dual-method UI is actually being rendered.
       dualSectionData =
         ptisParams.tab === 'dual'
-          ? await assembleDualMethodSectionData(resolvedPropertyId, oldDetails, rateableRes, capitalRes)
+          ? await assembleDualMethodSectionData(
+              resolvedPropertyId,
+              oldDetails,
+              rateableRes,
+              capitalRes
+            )
           : undefined;
     } catch (err) {
       criticalError = getCleanErrorMessage(err, t('search.errors.fetchPropertiesFailed'));
@@ -362,6 +394,7 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
     propertyDetails: propertyDetailsResult.propertyDetails,
     kycDetails,
     societyDetails,
+    buildingPermission,
     wardOptions,
     propertyOptions,
     rawPropertyData,
@@ -370,6 +403,7 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
     showOldFloorInfo: showFloorParam,
     oldTaxesData,
     showOldTaxInfo: showOldTaxParam,
+    discountDetails,
   };
 
   try {
