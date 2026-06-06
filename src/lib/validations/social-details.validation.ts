@@ -37,7 +37,10 @@ export function validateSocialDetails(
             attr.socialAttributeCode.toUpperCase().includes("TREE");
 
         // 1. Required Check (only for required fields or toggled-on special attributes)
-        const isRequired = attr.isRequiredWhenParentTrue || (isSpecialToggle && attr.bitValue === true);
+        // Root BIT attributes (feature toggles) should not be required on load.
+        const isRequired = 
+            (attr.isRequiredWhenParentTrue && !(attr.dataType === "BIT" && !attr.parentAttributeId)) || 
+            (isSpecialToggle && attr.bitValue === true);
         if (isRequired) {
             let isEmpty = false;
             if (attr.dataType === "INT" && (attr.intValue === null || attr.intValue === undefined || String(attr.intValue) === "")) {
