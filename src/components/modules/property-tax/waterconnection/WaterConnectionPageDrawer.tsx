@@ -64,15 +64,19 @@ export function WaterConnectionPageDrawer({
   /* =========== INITIAL DATA FETCH =========== */
   useEffect(() => {
     if (!open || !propertyId) {
-      setPageData(null);
-      setAllConnections([]);
-      setPage(INITIAL_PAGE);
-      setPageSize(INITIAL_PAGE_SIZE);
+      Promise.resolve().then(() => {
+        setPageData(null);
+        setAllConnections([]);
+        setPage(INITIAL_PAGE);
+        setPageSize(INITIAL_PAGE_SIZE);
+      });
       return;
     }
 
     let cancelled = false;
-    setInitialLoading(true);
+    Promise.resolve().then(() => {
+      setInitialLoading(true);
+    });
 
     getWaterConnectionPageData(propertyId, INITIAL_PAGE, INITIAL_PAGE_SIZE)
       .then((data) => {
@@ -93,7 +97,6 @@ export function WaterConnectionPageDrawer({
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, propertyId]);
 
   /* =========== FETCH ALL CONNECTIONS (for stats) =========== */
@@ -236,7 +239,7 @@ export function WaterConnectionPageDrawer({
         {initialLoading ? (
           <div className="flex flex-col items-center justify-center h-64 gap-3 text-blue-600">
             <Loader2 size={36} className="animate-spin" />
-            <span className="text-sm font-medium text-slate-500">Loading…</span>
+            <span className="text-sm font-medium text-slate-500">{tCommon("actions.loading")}</span>
           </div>
         ) : pageData ? (
           <div className="space-y-3 p-3">

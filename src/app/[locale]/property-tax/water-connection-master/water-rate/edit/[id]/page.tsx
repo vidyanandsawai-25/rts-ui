@@ -16,10 +16,12 @@ export default async function EditWaterRatePage({ params }: EditPageProps) {
     notFound();
   }
 
+  let initialData;
   try {
-    const initialData = await getWaterRateByIdAction(numericId);
-    return <WaterRateForm id={numericId} initialData={initialData} />;
+    initialData = await getWaterRateByIdAction(numericId);
   } catch {
     notFound();
   }
+
+  return <WaterRateForm id={numericId} initialData={initialData} />;
 }

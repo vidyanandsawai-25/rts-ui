@@ -97,7 +97,7 @@ export function WaterRateForm({ id, initialData }: Readonly<WaterRateFormProps>)
               value: String(y.id),
             }))
         );
-      } catch (err) {
+      } catch {
         toast.error("Failed to load options");
       } finally {
         setLoadingOptions(false);
