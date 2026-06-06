@@ -300,6 +300,7 @@ export function useLockUnlockMaster({
           type="checkbox"
           checked={properties.length > 0 && selectedPropertyIds.length === properties.length}
           onChange={handleSelectAllProperties}
+          aria-label="Select all properties"
           className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300 ml-2 cursor-pointer"
         />
       ),

@@ -4,7 +4,7 @@ import { ScreenSelectionCard } from "@/components/modules/property-tax/lockunloc
 import { LockedScreen } from "@/types/loackunlock.types";
 
 vi.mock("next-intl", () => ({
-  useTranslations: () => (key: string, values?: any) => {
+  useTranslations: () => (key: string, values?: Record<string, unknown>) => {
     if (key === "screenSelectionCard.selectedCount") {
       return `${values?.count} selected`;
     }
@@ -46,7 +46,7 @@ describe("ScreenSelectionCard", () => {
         setSelectedScreenIds={vi.fn()}
       />
     );
-
+    
     expect(screen.getByText("No screens available to select.")).toBeInTheDocument();
   });
 

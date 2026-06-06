@@ -4,7 +4,7 @@ import { TableModal } from "@/components/modules/property-tax/lockunlock/TableMo
 import { LockedScreen, LockUnlockPropertyItem } from "@/types/loackunlock.types";
 
 vi.mock("next-intl", () => ({
-  useTranslations: () => (key: string, values?: any) => {
+  useTranslations: () => (key: string, values?: Record<string, unknown>) => {
     if (key === "manageModal.title") {
       return `Manage Locks: ${values?.propertyNo}`;
     }

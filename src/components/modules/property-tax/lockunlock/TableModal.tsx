@@ -36,7 +36,11 @@ export function TableModal({
         className="absolute inset-0 bg-black/45 backdrop-blur-[1px]"
         onClick={() => setEditModal({ isOpen: false, property: null, selectedScreenIds: [] })}
       />
-      <Card className="relative w-[480px] max-w-full rounded-xl shadow-2xl border border-slate-200 bg-white overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-150 animate-out fade-out zoom-out-95">
+      <Card
+        role="dialog"
+        aria-modal="true"
+        className="relative w-[480px] max-w-full rounded-xl shadow-2xl border border-slate-200 bg-white overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-150 animate-out fade-out zoom-out-95"
+      >
         <div className="h-1 w-full bg-blue-600" />
         <CardHeader className="py-4 px-6 border-b border-slate-100 flex flex-row items-center justify-between">
           <div className="flex items-center gap-2">
@@ -87,6 +91,7 @@ export function TableModal({
                           : prev.selectedScreenIds.filter((id) => id !== screen.id),
                       }));
                     }}
+                    aria-label={screen.screenName}
                   />
                   <div className="flex-1">
                     <span className="text-sm font-semibold text-slate-800 block">

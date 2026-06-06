@@ -42,5 +42,5 @@ export interface LockUnlockPropertiesQueryParams {
 export interface BulkLockUnlockPayload {
   propertyIds: number[];
   screenIds: number[];
-  action: string;
+  action: "lock" | "unlock";
 }
