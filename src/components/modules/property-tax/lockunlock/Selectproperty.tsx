@@ -1,5 +1,6 @@
-import { Search, X, Building } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent, Button } from "@/components/common";
+import { Building } from "lucide-react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/common";
+import {ShowHistoryButton,ClearButton} from "@/components/common/ActionButtons";
 import { SearchSelect } from "@/components/common/SearchSelect";
 import { useTranslations } from "next-intl";
 
@@ -70,26 +71,20 @@ export function SelectProperty({
           </div>
 
           <div className="flex items-center gap-3 flex-shrink-0 pt-4 md:pt-0">
-            <Button
-              variant="secondary"
+            <ShowHistoryButton 
+            label={t("selectPropertyCard.showButton")}          
               size="md"
-              icon={Search}
               onClick={handleShow}
               isLoading={isPending}
-              className="bg-white hover:bg-slate-50 border-slate-300 text-slate-700 h-9 font-semibold"
-            >
-              {t("selectPropertyCard.showButton")}
-            </Button>
-            <Button
-              variant="secondary"
+              //className="bg-white hover:bg-slate-50 border-slate-300 text-slate-700 h-9 font-semibold"
+            />
+            <ClearButton
               size="md"
-              icon={X}
+              label={t("selectPropertyCard.clearButton")}
               onClick={handleClearAll}
               disabled={isPending}
-              className="bg-white hover:bg-slate-50 border-slate-300 text-slate-700 h-9 font-semibold"
-            >
-              {t("selectPropertyCard.clearAllButton")}
-            </Button>
+              //className="bg-white hover:bg-slate-50 border-slate-300 text-slate-700 h-9 font-semibold"
+            />
           </div>
         </div>
       </CardContent>

@@ -10,7 +10,7 @@
     "toProperty": "To property",
     "selectEndRange": "Select End Range",
     "showButton": "Show",
-    "clearAllButton": "Clear all"
+    "clearButton": "Clear all"
   },
   "screenSelectionCard": {
     "title": "Screen selection",

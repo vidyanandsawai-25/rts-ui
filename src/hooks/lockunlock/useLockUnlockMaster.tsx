@@ -1,11 +1,10 @@
-import { useState, useTransition } from "react";
-import { Lock, Unlock } from "lucide-react";
+import { useState, useTransition, useCallback } from "react";
 import { toast } from "sonner";
-import { Button, ToggleSwitch } from "@/components/common";
 import { useConfirm } from "@/components/common/ConfirmProvider";
-import { LockedScreen, LockUnlockPropertyItem } from "@/types/loackunlock.types";
+import { LockedScreen, LockUnlockPropertyItem, LockUnlockPropertiesResponse } from "@/types/loackunlock.types";
 import { fetchLockUnlockPropertiesPagedAction, bulkLockUnlockPropertiesAction } from "@/app/[locale]/property-tax/lockunlock/action";
-import { cn } from "@/lib/utils/cn";
+import { getScreenIds } from "@/lib/api/lockunlock/lockunlock.utils";
+import { useLockUnlockColumns } from "./useLockUnlockColumns";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 
@@ -13,23 +12,23 @@ export interface UseLockUnlockMasterProps {
   wardIdFromUrl: string;
   screens: LockedScreen[];
   dropdownProperties: { label: string; value: string }[];
+  initialProperties?: LockUnlockPropertyItem[];
+  initialPagination?: PaginationState;
 }
 
-function getScreenIds(screensList: (number | LockedScreen)[]): number[] {
-  return (screensList || [])
-    .map((item: number | LockedScreen) => {
-      if (item && typeof item === "object") {
-        return Number((item as LockedScreen).id ?? 0);
-      }
-      return Number(item);
-    })
-    .filter((id) => id > 0);
+export interface PaginationState {
+  pageNumber: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
 }
 
 export function useLockUnlockMaster({
   wardIdFromUrl,
   screens = [],
   dropdownProperties = [],
+  initialProperties = [],
+  initialPagination,
 }: UseLockUnlockMasterProps) {
   const { confirm } = useConfirm();
   const t = useTranslations("lockUnlock");
@@ -38,20 +37,34 @@ export function useLockUnlockMaster({
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
-  // Form State
+  // Form State - initialized from URL params
+  const fromPropertyFromUrl = searchParams.get("fromProperty") || "";
+  const toPropertyFromUrl = searchParams.get("toProperty") || "";
+  const pageFromUrl = searchParams.get("page") ? Number(searchParams.get("page")) : 1;
+  const pageSizeFromUrl = searchParams.get("pageSize") ? Number(searchParams.get("pageSize")) : 10;
   const [formData, setFormData] = useState({
     wardId: wardIdFromUrl || "",
-    fromProperty: "",
-    toProperty: "",
+    fromProperty: fromPropertyFromUrl,
+    toProperty: toPropertyFromUrl,
   });
 
   // Selected Screen IDs
   const [selectedScreenIds, setSelectedScreenIds] = useState<number[]>([]);
 
-  // Results State
-  const [showResults, setShowResults] = useState(false);
-  const [properties, setProperties] = useState<LockUnlockPropertyItem[]>([]);
+  // Results State - initialize with server-fetched data if available
+  const [showResults, setShowResults] = useState(initialProperties.length > 0);
+  const [properties, setProperties] = useState<LockUnlockPropertyItem[]>(initialProperties);
   const [selectedPropertyIds, setSelectedPropertyIds] = useState<number[]>([]);
+
+  // Pagination State - initialize with server-provided pagination if available, or from URL
+  const [pagination, setPagination] = useState<PaginationState>(
+    initialPagination || {
+      pageNumber: pageFromUrl,
+      pageSize: pageSizeFromUrl,
+      totalCount: 0,
+      totalPages: 1,
+    }
+  );
 
   // Individual Property Modal State
   const [editModal, setEditModal] = useState<{
@@ -67,19 +80,38 @@ export function useLockUnlockMaster({
   const propertyOptions = dropdownProperties;
 
   const handleSelectChange = (name: string, value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    // Update form data
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
 
     if (name === "wardId") {
-      const params = new URLSearchParams(searchParams.toString());
       if (value) {
         params.set("wardId", value);
       } else {
         params.delete("wardId");
       }
+      // Clear property selections when ward changes
       setFormData((prev) => ({ ...prev, fromProperty: "", toProperty: "" }));
+      params.delete("fromProperty");
+      params.delete("toProperty");
+      router.push(`${pathname}?${params.toString()}`);
+    } else if (name === "fromProperty") {
+      if (value) {
+        params.set("fromProperty", value);
+      } else {
+        params.delete("fromProperty");
+      }
+      router.push(`${pathname}?${params.toString()}`);
+    } else if (name === "toProperty") {
+      if (value) {
+        params.set("toProperty", value);
+      } else {
+        params.delete("toProperty");
+      }
       router.push(`${pathname}?${params.toString()}`);
     }
   };
@@ -94,40 +126,84 @@ export function useLockUnlockMaster({
     setShowResults(false);
     setProperties([]);
     setSelectedPropertyIds([]);
+    setPagination({ pageNumber: 1, pageSize: 10, totalCount: 0, totalPages: 1 });
+    
+    // Clear URL parameters
+    router.push(pathname);
+    
     toast.info(t("messages.clearedFilters"));
   };
 
-  const handleShow = () => {
-    if (!formData.wardId || !formData.fromProperty || !formData.toProperty) {
-      toast.error(t("messages.validationError"));
-      return;
-    }
-
-    startTransition(async () => {
-      try {
-        const response = await fetchLockUnlockPropertiesPagedAction({
-          WardId: Number(formData.wardId),
-          FromPropertyNo: formData.fromProperty.split("-")[0],
-          ToPropertyNo: formData.toProperty.split("-")[0],
-          PageNumber: 1,
-          PageSize: -1, // Fetch all in range
-        });
-
-        if (response && response.items) {
-          setProperties(response.items);
-          setSelectedPropertyIds([]);
-          setShowResults(true);
-          toast.success(t("messages.fetchSuccess"));
-        } else {
-          setProperties([]);
-          setShowResults(true);
-          toast.info(t("messages.fetchNoResults"));
-        }
-      } catch (err: unknown) {
-        toast.error(err instanceof Error ? err.message : t("messages.fetchFailed"));
+  const fetchProperties = useCallback(
+    (pageNum: number, pageSz: number) => {
+      if (!formData.wardId || !formData.fromProperty || !formData.toProperty) {
+        toast.error(t("messages.validationError"));
+        return;
       }
-    });
-  };
+
+      startTransition(async () => {
+        try {
+          const response: LockUnlockPropertiesResponse = await fetchLockUnlockPropertiesPagedAction({
+            WardId: Number(formData.wardId),
+            FromPropertyNo: formData.fromProperty.split("-")[0],
+            ToPropertyNo: formData.toProperty.split("-")[0],
+            PageNumber: pageNum,
+            PageSize: pageSz,
+          });
+
+          if (response && response.items) {
+            setProperties(response.items);
+            setSelectedPropertyIds([]);
+            setPagination({
+              pageNumber: response.pageNumber || pageNum,
+              pageSize: response.pageSize || pageSz,
+              totalCount: response.totalCount || response.items.length,
+              totalPages: response.totalPages || 1,
+            });
+            setShowResults(true);
+            toast.success(t("messages.fetchSuccess"));
+          } else {
+            setProperties([]);
+            setPagination({ pageNumber: 1, pageSize: pageSz, totalCount: 0, totalPages: 0 });
+            setShowResults(true);
+            toast.info(t("messages.fetchNoResults"));
+          }
+        } catch (err: unknown) {
+          toast.error(err instanceof Error ? err.message : t("messages.fetchFailed"));
+        }
+      });
+    },
+    [formData, t]
+  );
+
+  const handleShow = useCallback(() => {
+    fetchProperties(1, pagination.pageSize);
+  }, [fetchProperties, pagination.pageSize]);
+
+  const handlePageChange = useCallback(
+    (page: number) => {
+      // Update URL with new page number
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("page", page.toString());
+      router.push(`${pathname}?${params.toString()}`);
+
+      fetchProperties(page, pagination.pageSize);
+    },
+    [fetchProperties, pagination.pageSize, searchParams, pathname, router]
+  );
+
+  const handlePageSizeChange = useCallback(
+    (size: number) => {
+      // Update URL with new page size and reset to page 1
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("pageSize", size.toString());
+      params.set("page", "1");
+      router.push(`${pathname}?${params.toString()}`);
+
+      fetchProperties(1, size);
+    },
+    [fetchProperties, searchParams, pathname, router]
+  );
 
   const handleSelectProperty = (propertyId: number) => {
     setSelectedPropertyIds((prev) =>
@@ -164,7 +240,7 @@ export function useLockUnlockMaster({
       onConfirm: async () => {
         startTransition(async () => {
           try {
-            const screenIds = getScreenIds(willLock ? selectedScreenIds : row.lockedScreens);
+            const screenIds = getScreenIds(willLock ? selectedScreenIds : row.lockedScreens as unknown as []);
             const response = await bulkLockUnlockPropertiesAction({
               propertyIds: [Number(row.propertyId)],
               screenIds,
@@ -196,7 +272,7 @@ export function useLockUnlockMaster({
     setEditModal({
       isOpen: true,
       property: row,
-      selectedScreenIds: getScreenIds(row.lockedScreens),
+      selectedScreenIds: getScreenIds(row.lockedScreens as unknown as []),
     });
   };
 
@@ -204,7 +280,7 @@ export function useLockUnlockMaster({
     if (!editModal.property) return;
 
     const propertyId = Number(editModal.property.propertyId);
-    const initialLocked = getScreenIds(editModal.property.lockedScreens);
+    const initialLocked = getScreenIds(editModal.property.lockedScreens as unknown as []);
     const currentLocked = getScreenIds(editModal.selectedScreenIds);
 
     const screensToLock = currentLocked.filter((id) => !initialLocked.includes(id));
@@ -292,153 +368,16 @@ export function useLockUnlockMaster({
     });
   };
 
-  const columns = [
-    {
-      key: "checkbox" as const,
-      label: (
-        <input
-          type="checkbox"
-          checked={properties.length > 0 && selectedPropertyIds.length === properties.length}
-          onChange={handleSelectAllProperties}
-          aria-label="Select all properties"
-          className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300 ml-2 cursor-pointer"
-        />
-      ),
-      width: "5%",
-      align: "center" as const,
-      render: (_: unknown, row: LockUnlockPropertyItem) => (
-        <input
-          type="checkbox"
-          checked={selectedPropertyIds.includes(row.propertyId)}
-          onChange={() => handleSelectProperty(row.propertyId)}
-          className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300 ml-2 cursor-pointer"
-        />
-      ),
-    },
-    {
-      key: "wardNo" as const,
-      label: <span className="font-semibold px-2 text-xs text-[#1E3A8A]">{t("resultsTable.columns.wardNo")}</span>,
-      width: "12%",
-      align: "center" as const,
-      render: (val: unknown) => <span className="text-gray-700 px-2">{String(val)}</span>,
-    },
-    {
-      key: "propertyNo" as const,
-      label: <span className="font-semibold px-2 text-xs text-[#1E3A8A]">{t("resultsTable.columns.propertyNo")}</span>,
-      width: "15%",
-      align: "center" as const,
-      render: (val: unknown) => <span className="font-bold text-gray-900 px-2">{String(val)}</span>,
-    },
-    {
-      key: "partitionNo" as const,
-      label: <span className="font-semibold px-2 text-xs text-[#1E3A8A]">{t("resultsTable.columns.partitionNo")}</span>,
-      width: "13%",
-      align: "center" as const,
-      render: (val: unknown) => <span className="text-gray-700 px-2">{String(val ?? "-")}</span>,
-    },
-    {
-      key: "lockedScreens" as const,
-      label: <span className="font-semibold px-2 text-xs text-[#1E3A8A]">{t("resultsTable.columns.screenNames")}</span>,
-      width: "20%",
-      align: "center" as const,
-      render: (val: unknown) => {
-        const lockedItems = (val as number[]) || [];
-        if (lockedItems.length === 0) {
-          return <span className="text-slate-400 px-2 text-xs">{t("resultsTable.status.none")}</span>;
-        }
-        return (
-          <div className="flex flex-wrap gap-1 px-2 justify-center w-full">
-            {lockedItems.map((item: number, idx: number) => {
-              let name = "";
-              let key = idx;
-
-              const match = screens.find((s) => s.id === Number(item));
-              name = match ? match.screenName : `ID: ${item}`;
-              key = item;
-
-              return (
-                <span
-                  key={key}
-                  className="inline-flex items-center px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] font-medium border border-slate-200"
-                >
-                  {name}
-                </span>
-              );
-            })}
-          </div>
-        );
-      },
-    },
-    {
-      key: "isLocked" as const,
-      label: <span className="font-semibold px-2 text-xs text-[#1E3A8A]">{t("resultsTable.columns.status")}</span>,
-      width: "13%",
-      align: "center" as const,
-      render: (val: unknown) => {
-        const isLocked = Boolean(val);
-        return (
-          <div className="flex items-center justify-center w-full">
-            <span
-              className={cn(
-                "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border shadow-sm transition-all duration-300",
-                isLocked
-                  ? "bg-red-50 text-red-700 border-red-200"
-                  : "bg-emerald-50 text-emerald-700 border-emerald-200"
-              )}
-            >
-              {isLocked ? (
-                <>
-                  <Lock className="w-3 h-3 text-red-500" />
-                  <span>{t("resultsTable.status.locked")}</span>
-                </>
-              ) : (
-                <>
-                  <Unlock className="w-3 h-3 text-emerald-500" />
-                  <span>{t("resultsTable.status.unlocked")}</span>
-                </>
-              )}
-            </span>
-          </div>
-        );
-      },
-    },
-    {
-      key: "lockUnlockAction" as const,
-      label: <span className="font-semibold px-2 text-xs text-[#1E3A8A]">{t("resultsTable.columns.lockUnlock")}</span>,
-      width: "12%",
-      align: "center" as const,
-      render: (_: unknown, row: LockUnlockPropertyItem) => (
-        <div className="flex items-center justify-center w-full">
-          <ToggleSwitch
-            checked={row.isLocked}
-            onChange={() => handleToggleLock(row)}
-            activeLabel={t("resultsTable.status.locked")}
-            inactiveLabel={t("resultsTable.status.unlocked")}
-            showPopup={false}
-            disabled={!selectedPropertyIds.includes(row.propertyId) || isPending}
-          />
-        </div>
-      ),
-    },
-    {
-      key: "actions" as const,
-      label: <span className="font-semibold px-2 text-xs text-[#1E3A8A]">{t("resultsTable.columns.actions")}</span>,
-      width: "10%",
-      align: "center" as const,
-      render: (_: unknown, row: LockUnlockPropertyItem) => (
-        <div className="flex items-center justify-center w-full">
-          <Button
-            variant="secondary"
-            size="xs"
-            onClick={() => handleManageLocks(row)}
-            className="h-8 border border-slate-300 font-semibold bg-white text-slate-700 hover:bg-slate-50"
-          >
-            {t("resultsTable.actions.manage")}
-          </Button>
-        </div>
-      ),
-    },
-  ];
+  const columns = useLockUnlockColumns({
+    screens,
+    selectedPropertyIds,
+    properties,
+    isPending,
+    onSelectProperty: handleSelectProperty,
+    onSelectAllProperties: handleSelectAllProperties,
+    onToggleLock: handleToggleLock,
+    onManageLocks: handleManageLocks,
+  });
 
   return {
     formData,
@@ -455,6 +394,7 @@ export function useLockUnlockMaster({
     setEditModal,
     isPending,
     propertyOptions,
+    pagination,
     handleSelectChange,
     handleClearAll,
     handleShow,
@@ -464,6 +404,8 @@ export function useLockUnlockMaster({
     handleManageLocks,
     handleSaveIndividualLock,
     handleBulkAction,
+    handlePageChange,
+    handlePageSizeChange,
     columns,
   };
 }

@@ -171,7 +171,7 @@ describe("useLockUnlockMaster", () => {
       FromPropertyNo: "P1",
       ToPropertyNo: "P2",
       PageNumber: 1,
-      PageSize: -1,
+      PageSize: 10,
     });
     expect(result.current.properties).toEqual(mockItems);
     expect(result.current.showResults).toBe(true);

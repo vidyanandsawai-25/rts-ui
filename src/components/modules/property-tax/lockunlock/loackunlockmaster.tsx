@@ -8,7 +8,7 @@ import { MasterTable } from "@/components/common/MasterTable";
 import { WardItem } from "@/types/wardMaster.types";
 import { LockedScreen, LockUnlockPropertyItem } from "@/types/loackunlock.types";
 import { useSearchParams } from "next/navigation";
-import { useLockUnlockMaster } from "@/hooks/lockunlock/useLockUnlockMaster";
+import { useLockUnlockMaster, PaginationState } from "@/hooks/lockunlock/useLockUnlockMaster";
 import { ScreenSelectionCard } from "./Screenselectioncard";
 import { TableModal } from "./TableModal";
 import { SelectProperty } from "./Selectproperty";
@@ -18,12 +18,16 @@ export interface LockUnlockMasterProps {
   wards: WardItem[];
   dropdownProperties?: { label: string; value: string }[];
   screens?: LockedScreen[];
+  initialProperties?: LockUnlockPropertyItem[];
+  initialPagination?: PaginationState;
 }
 
 export default function LockUnlockMaster({
   wards,
   dropdownProperties = [],
   screens = [],
+  initialProperties = [],
+  initialPagination,
 }: LockUnlockMasterProps): React.ReactElement {
   const searchParams = useSearchParams();
   const t = useTranslations("lockUnlock");
@@ -39,16 +43,21 @@ export default function LockUnlockMaster({
     setEditModal,
     isPending,
     propertyOptions,
+    pagination,
     handleSelectChange,
     handleClearAll,
     handleShow,
     handleSaveIndividualLock,
     handleBulkAction,
+    handlePageChange,
+    handlePageSizeChange,
     columns,
   } = useLockUnlockMaster({
     wardIdFromUrl: searchParams.get("wardId") || "",
     screens,
     dropdownProperties,
+    initialProperties,
+    initialPagination,
   });
 
   // Map Wards to options format for SearchSelect
@@ -88,7 +97,13 @@ export default function LockUnlockMaster({
               data={properties}
               height="md"
               getRowKey={(row: LockUnlockPropertyItem) => row.propertyId}
-              paginationConfig={{ enabled: false }}
+              pageNumber={pagination.pageNumber}
+              pageSize={pagination.pageSize}
+              totalCount={pagination.totalCount}
+              totalPages={pagination.totalPages}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+              paginationConfig={{ enabled: true, showPageSizeSelector: true }}
               headerTitle={t("resultsTable.title", { count: selectedPropertyIds.length })}
               headerExtra={
                 <div className="flex items-center gap-3 justify-end w-full">

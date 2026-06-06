@@ -5,7 +5,7 @@ import { SelectProperty } from "@/components/modules/property-tax/lockunlock/Sel
 const translations: Record<string, string> = {
   "selectPropertyCard.title": "Select properties",
   "selectPropertyCard.showButton": "Show",
-  "selectPropertyCard.clearAllButton": "Clear all",
+  "selectPropertyCard.clearButton": "Clear all",
 };
 
 vi.mock("next-intl", () => ({

@@ -2,9 +2,9 @@ import React from "react";
 import { getTranslations } from "next-intl/server";
 import LockUnlockMaster from "@/components/modules/property-tax/lockunlock/loackunlockmaster";
 import { fetchWardsPagedAction } from "@/app/[locale]/property-tax/zone-master/actions";
-import { fetchLockUnlockPropertiesPagedAction, getLockUnlockScreensAction } from "./action";
+import { getLockUnlockScreensAction, fetchLockUnlockPropertiesPagedAction } from "./action";
 import { WardItem } from "@/types/wardMaster.types";
-import { LockedScreen } from "@/types/loackunlock.types";
+import { LockedScreen, LockUnlockPropertyItem } from "@/types/loackunlock.types";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +18,7 @@ export default async function Page({
   let wards: WardItem[] = [];
   let dropdownProperties: { label: string; value: string }[] = [];
   let screens: LockedScreen[] = [];
+  let properties: LockUnlockPropertyItem[] = [];
   let errorMsg: string | null = null;
 
   try {
@@ -30,6 +31,10 @@ export default async function Page({
 
     const params = await searchParams;
     const wardId = params?.wardId;
+    const fromProperty = params?.fromProperty;
+    const toProperty = params?.toProperty;
+
+    // Fetch dropdown properties when wardId is selected
     if (wardId && typeof wardId === "string") {
       const propertiesResponse = await fetchLockUnlockPropertiesPagedAction({
         WardId: Number(wardId),
@@ -60,6 +65,18 @@ export default async function Page({
           return true;
         });
     }
+
+    // Fetch filtered properties when all required params are present
+    if (wardId && fromProperty && toProperty && typeof wardId === "string" && typeof fromProperty === "string" && typeof toProperty === "string") {
+      const propertiesResponse = await fetchLockUnlockPropertiesPagedAction({
+        WardId: Number(wardId),
+        FromPropertyNo: fromProperty.split("-")[0],
+        ToPropertyNo: toProperty.split("-")[0],
+        PageNumber: 1,
+        PageSize: 10,
+      });
+      properties = propertiesResponse.items || [];
+    }
   } catch (err: unknown) {
     errorMsg = err instanceof Error ? err.message : String(err);
   }
@@ -79,6 +96,13 @@ export default async function Page({
       wards={wards}
       dropdownProperties={dropdownProperties}
       screens={screens}
+      initialProperties={properties}
+      initialPagination={{
+        pageNumber: 1,
+        pageSize: 10,
+        totalCount: properties.length,
+        totalPages: Math.ceil(properties.length / 10),
+      }}
     />
   );
 }
