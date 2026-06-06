@@ -68,3 +68,4 @@ export function WaterConnectionStats({ stats, labels }: WaterConnectionStatsProp
     </div>
   );
 }
+
