@@ -3,7 +3,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { usePropertyAmenityData } from "@/components/modules/property-tax/zone-master/properties/components/hooks/usePropertyAmenityData";
 import {
   fetchSocietyDetailsByPropertyAction,
-  getSocietyAmenityDetailsAction,
 } from "@/app/[locale]/property-tax/zone-master/actions";
 import { SocietyDetailItem } from "@/types/zone-master/properties/societyDetails.types";
 
@@ -60,6 +59,8 @@ describe("usePropertyAmenityData", () => {
         pageSize: 10,
         pageNumber: 1,
         totalPages: 1,
+        hasNext: false,
+        hasPrevious: false,
       },
     });
 

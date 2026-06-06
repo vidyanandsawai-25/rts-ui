@@ -111,14 +111,14 @@ export function usePropertyAmenityData({
 
   // Wing dropdown options
   const wingOptions = wings.map((item) => {
-    const hasWingNo = item.wingNo !== null && item.wingNo !== undefined && String(item.wingNo) !== "null" && item.wingNo !== "";
+    const hasWingId = item.wingId !== null && item.wingId !== undefined && String(item.wingId) !== "null";
     const hasWingName = item.wingName !== null && item.wingName !== undefined && String(item.wingName) !== "null";
 
     let label = "";
-    if (hasWingNo && hasWingName) {
-      label = `${item.wingNo} - ${item.wingName}`;
-    } else if (hasWingNo) {
-      label = `${item.wingNo}`;
+    if (hasWingId && hasWingName) {
+      label = `${item.wingId} - ${item.wingName}`;
+    } else if (hasWingId) {
+      label = `${item.wingId}`;
     } else if (hasWingName) {
       label = item.wingName;
     }
