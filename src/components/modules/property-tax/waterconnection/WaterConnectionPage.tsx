@@ -248,17 +248,37 @@ export default function WaterConnectionPage({
         {/* Stats — compact row */}
         <div className="grid grid-cols-4 gap-2">
           {[
-            { label: t("stats.totalConnections"), value: stats.totalConnections, color: "blue" },
-            { label: t("stats.activeConnections"), value: stats.activeConnections, color: "green" },
-            { label: t("stats.stoppedConnections"), value: stats.stoppedConnections, color: "orange" },
-            { label: t("stats.yearlyRevenue"), value: `₹${stats.yearlyRevenue.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`, color: "purple" },
-          ].map(({ label, value, color }) => (
+            {
+              label: t("stats.totalConnections"),
+              value: stats.totalConnections,
+              bgClass: "bg-blue-50 border-blue-100",
+              textClass: "text-blue-700",
+            },
+            {
+              label: t("stats.activeConnections"),
+              value: stats.activeConnections,
+              bgClass: "bg-green-50 border-green-100",
+              textClass: "text-green-700",
+            },
+            {
+              label: t("stats.stoppedConnections"),
+              value: stats.stoppedConnections,
+              bgClass: "bg-orange-50 border-orange-100",
+              textClass: "text-orange-700",
+            },
+            {
+              label: t("stats.yearlyRevenue"),
+              value: `₹${stats.yearlyRevenue.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`,
+              bgClass: "bg-purple-50 border-purple-100",
+              textClass: "text-purple-700",
+            },
+          ].map(({ label, value, bgClass, textClass }) => (
             <div
               key={label}
-              className={`bg-${color}-50 border border-${color}-100 rounded-lg px-3 py-2 flex flex-col gap-0.5`}
+              className={`${bgClass} border rounded-lg px-3 py-2 flex flex-col gap-0.5`}
             >
               <div className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">{label}</div>
-              <div className={`text-base font-bold text-${color}-700`}>{value}</div>
+              <div className={`text-base font-bold ${textClass}`}>{value}</div>
             </div>
           ))}
         </div>
