@@ -8,3 +8,7 @@ export { TapSizeForm } from "./TapSizeForm";
 export { getTapStatusColumns } from "./tapStatusColumns";
 export { getTapTypeColumns } from "./tapTypeColumns";
 export { getTapSizeColumns } from "./tapSizeColumns";
+export { WaterRateMaster } from "./WaterRateMaster";
+export { WaterRateForm } from "./WaterRateForm";
+export { getWaterRateColumns } from "./waterRateColumns";
+

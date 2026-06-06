@@ -164,10 +164,9 @@ export default function WaterConnectionPage({
 
   const handleSaved = useCallback(() => {
     setPage(1);
-    updateUrl(1, pageSize);
     fetchConnections(1, pageSize);
     refreshAllConnections(); // Refresh stats after save
-  }, [updateUrl, fetchConnections, refreshAllConnections, pageSize]);
+  }, [fetchConnections, refreshAllConnections, pageSize]);
 
   const handleBackToPtis = useCallback(() => {
     const params = new URLSearchParams();
