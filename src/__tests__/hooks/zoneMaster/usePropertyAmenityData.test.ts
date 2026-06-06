@@ -13,7 +13,7 @@ vi.mock("@/app/[locale]/property-tax/zone-master/actions", () => ({
 }));
 
 describe("usePropertyAmenityData", () => {
-  const mockWings: Partial<SocietyDetailItem>[] = [
+  const mockWings = [
     {
       id: 10,
       propertyId: 1,
@@ -23,26 +23,26 @@ describe("usePropertyAmenityData", () => {
     {
       id: 11,
       propertyId: 1,
-      wingId: null as any,
+      wingId: null,
       wingName: "Building Society",
     },
     {
       id: 12,
       propertyId: 1,
-      wingId: undefined as any,
+      wingId: undefined,
       wingName: "Wing BBB",
     },
     {
       id: 13,
       propertyId: 1,
-      wingId: "null" as any,
+      wingId: "null",
       wingName: "Wing CCC",
     },
     {
       id: 14,
       propertyId: 1,
       wingId: 2,
-      wingName: null as any,
+      wingName: null,
     },
   ];
 
@@ -54,7 +54,7 @@ describe("usePropertyAmenityData", () => {
     vi.mocked(fetchSocietyDetailsByPropertyAction).mockResolvedValue({
       success: true,
       data: {
-        items: mockWings as SocietyDetailItem[],
+        items: mockWings as unknown as SocietyDetailItem[],
         totalCount: mockWings.length,
         pageSize: 10,
         pageNumber: 1,
