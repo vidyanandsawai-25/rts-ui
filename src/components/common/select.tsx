@@ -260,7 +260,7 @@ export function Select({
           ref={listRef}
           id={listboxId}
           className={cn(
-            'absolute z-50 w-full text-gray-800 text-sm bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto',
+            'absolute z-[10000] w-full text-gray-800 text-sm bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto',
             openUpward ? 'bottom-full mb-1' : 'top-full mt-1'
           )}
           role="listbox"

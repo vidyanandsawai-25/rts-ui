@@ -167,15 +167,16 @@ const AppartmentQCSection = ({
     if (!propertyId) return;
     
     // Open drawer by updating URL params instead of navigating
+    // Keep the original propertyId and use editPropertyId for the drawer
     const params = new URLSearchParams(searchParams.toString());
     params.set('drawer', 'edit');
-    params.set('propertyId', propertyId);
+    params.set('editPropertyId', propertyId);
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   }, [searchParams, pathname, router]);
 
   // Drawer state management - fetch data client-side when drawer opens
   const drawerOpen = searchParams.get('drawer') === 'edit';
-  const selectedPropertyId = searchParams.get('propertyId');
+  const selectedPropertyId = searchParams.get('editPropertyId');
 
   const [drawerLocalData, setDrawerLocalData] = useState<DrawerLocalData | null>(null);
 
@@ -212,7 +213,8 @@ const AppartmentQCSection = ({
   const handleCloseDrawer = useCallback(() => {
     const params = new URLSearchParams(searchParams.toString());
     params.delete('drawer');
-    params.delete('propertyId');
+    params.delete('editPropertyId');
+    // Keep the original propertyId intact
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   }, [searchParams, pathname, router]);
 
