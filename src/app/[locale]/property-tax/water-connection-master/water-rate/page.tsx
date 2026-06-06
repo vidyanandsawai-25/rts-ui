@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+
 import { fetchWaterRatesPagedAction } from "@/app/[locale]/property-tax/water-connection-master/actions";
 import { WaterRateMaster } from "@/components/modules/property-tax/WaterConnectionMaster";
 
@@ -21,8 +21,8 @@ export default async function WaterRatePage({ searchParams }: PageProps) {
   const result = await fetchWaterRatesPagedAction(pageNumber, pageSize, searchTerm);
 
   return (
-    <Suspense fallback={null}>
+    
       <WaterRateMaster data={result} />
-    </Suspense>
+   
   );
 }
