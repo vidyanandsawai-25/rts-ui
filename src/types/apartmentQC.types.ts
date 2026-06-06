@@ -245,9 +245,9 @@ export interface ApartmentPropertyTaxDetailsResponse {
 
 /**
  * Part type values for apartment property tax details
- * Aminity = Amenities tab, C = Commercial tab, R = Residential tab
+ * Amenity = Amenities tab, C = Commercial tab, R = Residential tab
  */
-export type ApartmentPartType = 'Aminity' | 'C' | 'R';
+export type ApartmentPartType = 'Amenity' | 'C' | 'R';
 
 /**
  * Parameters for fetching apartment property tax details (using WardId and PropertyNo)
@@ -255,7 +255,7 @@ export type ApartmentPartType = 'Aminity' | 'C' | 'R';
 export interface ApartmentPropertyTaxDetailsParams {
   wardId: string | number;
   propertyNo: string;
-  partType: ApartmentPartType; // Aminity=Amenities, C=Commercial, R=Residential
+  partType: ApartmentPartType; // Amenity=Amenities, C=Commercial, R=Residential
 }
 
 /**
