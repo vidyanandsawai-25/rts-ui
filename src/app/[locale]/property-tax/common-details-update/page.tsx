@@ -5,6 +5,7 @@ export const dynamic = "force-dynamic";
 
 interface PageProps {
   searchParams: Promise<{
+    tab?: string;
     field?: string;
     wardId?: string;
     fromProperty?: string;
@@ -43,13 +44,14 @@ function sanitizeParams(raw: Awaited<PageProps["searchParams"]>) {
   const fromProperty = raw.fromProperty?.trim() || "";
   const toProperty = raw.toProperty?.trim() || "";
   const wing = raw.wing?.trim() || "";
+  const tab = raw.tab?.trim() || "updateFields";
 
-  return { pageNumber, pageSize, searchTerm, selectedField, wardId, fromProperty, toProperty, wing };
+  return { pageNumber, pageSize, searchTerm, selectedField, wardId, fromProperty, toProperty, wing, tab };
 }
 
 export default async function Page({ searchParams }: PageProps) {
   const params = await searchParams;
-  const { pageNumber, pageSize, searchTerm, selectedField, wardId, fromProperty, toProperty, wing } = sanitizeParams(params);
+  const { pageNumber, pageSize, searchTerm, selectedField, wardId, fromProperty, toProperty, wing, tab } = sanitizeParams(params);
 
   // Fetch menu items - throw error to trigger error boundary
   const menuItems = await getMenuItemsAction();
@@ -93,6 +95,7 @@ export default async function Page({ searchParams }: PageProps) {
       initialPage={pageNumber}
       initialPageSize={pageSize}
       initialSearchTerm={searchTerm}
+      initialTab={tab}
     />
   );
 }

@@ -9,6 +9,8 @@ import type {
   OldDetailsApiResponse,
   OldFloorDetailApiResponse,
   OldTaxesApiResponse,
+  DiscountData,
+  BuildingPermissionData,
 } from '@/types/ptis.types';
 import { fetchWithCertSupport, getErrorFormattedMessage, extractData } from './base-api';
 import { ptisMapper } from './ptis.mapper';
@@ -156,6 +158,65 @@ export const ptisDetailsService = {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to fetch old tax details',
+      };
+    }
+  },
+
+  async getDiscountDetails(propertyId: string | number): Promise<{
+    success: boolean;
+    data?: DiscountData;
+    error?: string;
+  }> {
+    try {
+      const response = await fetchWithCertSupport<unknown>(
+        `/PropertySocialDetails?PropertyId=${propertyId}&PageSize=-1`
+      );
+
+      if (!response.success) {
+        return {
+          success: false,
+          error: getErrorFormattedMessage(response.error, 'Discount details not found'),
+        };
+      }
+
+      const rawData = response.data;
+      if (!rawData) return { success: false, error: 'Discount details not found' };
+
+      return { success: true, data: ptisMapper.mapDiscountDetails(rawData) };
+    } catch (error: unknown) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch discount details',
+      };
+    }
+  },
+
+  async getBuildingPermissionDetails(propertyId: string | number): Promise<{
+    success: boolean;
+    data?: BuildingPermissionData;
+    error?: string;
+  }> {
+    try {
+      const response = await fetchWithCertSupport<unknown>(
+        `/property-certificates/types-with-status/${propertyId}`
+      );
+
+      if (!response.success) {
+        return {
+          success: false,
+          error: getErrorFormattedMessage(response.error, 'Building permission details not found'),
+        };
+      }
+
+      const rawData = response.data;
+      if (!rawData) return { success: false, error: 'Building permission details not found' };
+
+      return { success: true, data: ptisMapper.mapBuildingPermissionDetails(rawData) };
+    } catch (error: unknown) {
+      return {
+        success: false,
+        error:
+          error instanceof Error ? error.message : 'Failed to fetch building permission details',
       };
     }
   },

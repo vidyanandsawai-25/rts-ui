@@ -54,10 +54,14 @@ export function ValueFilterGroup({
   const toError = fieldErrors[toField];
   const amountLabel = isTop
     ? t("placeholders.topCount")
-    : t("placeholders.amount");
+    : isBetween
+      ? t("placeholders.amountFrom")
+      : t("placeholders.amount");
   const amountPlaceholder = isTop
     ? t("placeholders.topCount")
-    : t("placeholders.amount");
+    : isBetween
+      ? t("placeholders.amountFrom")
+      : t("placeholders.amount");
 
   return (
     <div className="flex items-start gap-x-1.5">

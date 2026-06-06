@@ -1,5 +1,13 @@
 import type { SearchSelectOption } from '@/components/common/SearchSelect';
-export const PTIS_TABS = ['propertydetails', 'kycdetails', 'societydetails', 'olddetails'] as const;
+import type { DiscountData, BuildingPermissionData } from './ptis-core.types';
+export const PTIS_TABS = [
+  'propertydetails',
+  'kycdetails',
+  'societydetails',
+  'buildingpermission',
+  'discountdetails',
+  'olddetails',
+] as const;
 export type PtisTabId = (typeof PTIS_TABS)[number];
 
 // Separate constant/type for valuation tabs
@@ -94,6 +102,8 @@ export interface OldDetailsData {
   oldBuiltupAreaSqFeet?: string;
   oldConstructionTypeId?: string;
   oldTypeOfUseId?: string;
+  oldConstructionArea?: string;
+  oldGeneralTax?: string;
   extra?: Record<string, unknown>;
 }
 
@@ -345,6 +355,8 @@ export interface OldDetailsApiResponse {
   oldCarpetAreaSqFeet?: number | string;
   oldBuiltupAreaSqMeter?: number | string;
   oldBuiltupAreaSqFeet?: number | string;
+  oldConstructionArea?: number | string;
+  oldGeneralTax?: number | string;
 }
 
 export interface OldFloorDetailApiResponse {
@@ -393,6 +405,7 @@ export interface PtisInitialData {
   propertyDetails?: PropertyDetailsData;
   kycDetails?: KYCDetailsData;
   societyDetails?: SocietyDetailsData;
+  buildingPermission?: BuildingPermissionData;
   wardOptions?: SearchSelectOption[];
   propertyOptions?: SearchSelectOption[];
   rawPropertyData?: PropertyListItem[];
@@ -401,6 +414,7 @@ export interface PtisInitialData {
   showOldFloorInfo?: boolean;
   oldTaxesData?: OldTaxesData | null;
   showOldTaxInfo?: boolean;
+  discountDetails?: DiscountData;
 }
 export * from './ptis-core.types';
 export * from './ptis-defaults.types';

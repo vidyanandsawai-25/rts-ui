@@ -51,8 +51,8 @@ describe('propertySearchSchema', () => {
   });
 
   describe('propertyNo validation', () => {
-    it('should pass with valid alphanumeric property numbers up to 10 characters', () => {
-      const validPropertyNos = ['7', 'ABC1234567', 'A', '1234567890'];
+    it('should pass with valid alphanumeric and hyphen property numbers up to 10 characters', () => {
+      const validPropertyNos = ['7', 'ABC1234567', 'A', '1234567890', '7-A', 'PROP-002'];
       validPropertyNos.forEach((propertyNo) => {
         const result = propertySearchSchema.safeParse({ ...baseValidData, propertyNo });
         expect(result.success).toBe(true);
@@ -70,8 +70,8 @@ describe('propertySearchSchema', () => {
       }
     });
 
-    it('should fail if property number contains spaces or symbols', () => {
-      const invalidPropertyNos = ['7-A', '7A ', '7@B', '7_A'];
+    it('should fail if property number contains spaces or invalid symbols', () => {
+      const invalidPropertyNos = ['7A ', '7@B', '7_A'];
       invalidPropertyNos.forEach((propertyNo) => {
         const result = propertySearchSchema.safeParse({ ...baseValidData, propertyNo });
         expect(result.success).toBe(false);
@@ -91,8 +91,8 @@ describe('propertySearchSchema', () => {
   });
 
   describe('partitionNo validation', () => {
-    it('should pass with valid alphanumeric partition numbers up to 10 characters', () => {
-      const validPartitionNos = ['0', 'ABC1234567', 'A', '1234567890', ''];
+    it('should pass with valid alphanumeric and hyphen partition numbers up to 10 characters', () => {
+      const validPartitionNos = ['0', 'ABC1234567', 'A', '1234567890', '', '1-A', 'B-1'];
       validPartitionNos.forEach((partitionNo) => {
         const result = propertySearchSchema.safeParse({ ...baseValidData, partitionNo });
         expect(result.success).toBe(true);
@@ -116,8 +116,8 @@ describe('propertySearchSchema', () => {
       }
     });
 
-    it('should fail if partition number contains spaces or symbols', () => {
-      const invalidPartitionNos = ['1-A', '1A ', '1@B', '1_A'];
+    it('should fail if partition number contains spaces or invalid symbols', () => {
+      const invalidPartitionNos = ['1A ', '1@B', '1_A'];
       invalidPartitionNos.forEach((partitionNo) => {
         const result = propertySearchSchema.safeParse({ ...baseValidData, partitionNo });
         expect(result.success).toBe(false);

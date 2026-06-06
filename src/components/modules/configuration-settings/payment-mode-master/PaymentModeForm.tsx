@@ -33,13 +33,19 @@ export default function PaymentModeForm(props: PaymentModeFormProps) {
     handleToggleStatus,
     showError,
     setFieldValue,
+    resetForm,
   } = usePaymentModeForm({ ...props, t });
+
+  const handleClose = () => {
+    resetForm();
+    onClose();
+  };
 
   /* ================= UI ================= */
   return (
     <Drawer
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       className="border-l-4 border-[#4F6A94]"
       title={
         <div className="flex items-center gap-3">
@@ -58,7 +64,7 @@ export default function PaymentModeForm(props: PaymentModeFormProps) {
       }
       footer={
         <>
-          <CancelButton label={t('form.buttons.cancel')} onClick={onClose} />
+          <CancelButton label={t('form.buttons.cancel')} onClick={handleClose} />
           <AddButton
             label={isEdit ? t('form.buttons.update') : t('form.buttons.save')}
             type="submit"
@@ -173,8 +179,15 @@ export default function PaymentModeForm(props: PaymentModeFormProps) {
                   name="transactionCharge"
                   value={formData.transactionCharge}
                   onChange={(e) => {
-                    const val = parseFloat(e.target.value);
-                    setFieldValue('transactionCharge', isNaN(val) ? 0 : val);
+                    const rawValue = e.target.value;
+
+                    if (rawValue === '') {
+                      setFieldValue('transactionCharge', '');
+                      return;
+                    }
+
+                    const val = parseFloat(rawValue);
+                    setFieldValue('transactionCharge', Number.isNaN(val) ? '' : val);
                   }}
                   onBlur={handleBlur}
                   onFocus={(e) => e.target.select()}

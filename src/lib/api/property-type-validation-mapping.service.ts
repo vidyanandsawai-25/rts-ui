@@ -128,7 +128,7 @@ export async function createPropertyTypeValidationBulk(
         // Rollback all created mappings
         await Promise.all(
           created.map((id) => 
-            deletePropertyTypeValidation(id).catch(() => {
+            purgeDeletePropertyTypeValidation(id).catch(() => {
               // Ignore rollback errors - already logged at service layer
             })
           )
@@ -141,17 +141,17 @@ export async function createPropertyTypeValidationBulk(
   }
 }
 
-/** Deletes a PropertyType to TypeOfUse validation mapping by ID */
-export async function deletePropertyTypeValidation(id: number): Promise<void> {
+/** Permanently deletes (purges) a PropertyType to TypeOfUse validation mapping by ID */
+export async function purgeDeletePropertyTypeValidation(id: number): Promise<void> {
   try {
     const response = await apiClient.delete<void>(
-      `/PropertyDescriptionAndTypeOfUseValidation/${encodeURIComponent(String(id))}`
+      `/PropertyDescriptionAndTypeOfUseValidation/${encodeURIComponent(String(id))}/purge`
     );
     if (!response.success) {
       throw new ApiError(
         response.statusCode ?? 500,
-        response.error || "Failed to delete validation mapping",
-        "Delete validation failed"
+        response.error || "Failed to purge delete validation mapping",
+        "Purge delete validation failed"
       );
     }
   } catch (error) {
@@ -170,7 +170,7 @@ export async function deleteValidationsByPropertyTypeId(propertyTypeId: number, 
     
     for (const validation of validations) {
       try {
-        await deletePropertyTypeValidation(validation.id);
+        await purgeDeletePropertyTypeValidation(validation.id);
         deletedMappings.push(validation);
       } catch (error) {
         deleteError = error as Error;
@@ -252,7 +252,7 @@ export async function updatePropertyTypeValidations(
     if (addError) {
       await Promise.all(
         createdMappings.map((m) => 
-          deletePropertyTypeValidation(m.id).catch((_rollbackError) => {
+          purgeDeletePropertyTypeValidation(m.id).catch((_rollbackError) => {
             // Rollback failed - error already logged at service layer
           })
         )
@@ -266,7 +266,7 @@ export async function updatePropertyTypeValidations(
     
     for (const mapping of toRemove) {
       try {
-        await deletePropertyTypeValidation(mapping.id);
+        await purgeDeletePropertyTypeValidation(mapping.id);
         deletedMappings.push(mapping);
       } catch (error) {
         deleteError = error as Error;
@@ -285,7 +285,7 @@ export async function updatePropertyTypeValidations(
 
       // Remove newly created mappings
       const rollbackPromises = createdMappings.map((m) =>
-        deletePropertyTypeValidation(m.id).catch((_rollbackError) => {
+        purgeDeletePropertyTypeValidation(m.id).catch((_rollbackError) => {
           // Rollback failed - error already logged at service layer
         })
       );
