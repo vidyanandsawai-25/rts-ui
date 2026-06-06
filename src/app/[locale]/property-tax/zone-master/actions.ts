@@ -1010,7 +1010,7 @@ import { SocietyAmenityDetailItem } from "@/types/zone-master/properties/society
 import { ZonePropertyItem, ZonePropertyListResponse } from "@/types/zone-master/properties/zoneProperty.types";
 import { WingItem } from "@/types/zone-master/properties/wing.types";
 import { Floor } from "@/types/floor.types";
-import { SocietyDetailsListResponse, CreateSocietyDetailPayload, SocietyDetailItem } from "@/types/zone-master/properties/societyDetails.types";
+import { SocietyDetailsListResponse, CreateSocietyDetailPayload, SocietyDetailItem, UpdateSocietyDetailPayload } from "@/types/zone-master/properties/societyDetails.types";
 import { BuildingStructureItem, GenerateBuildingStructurePayload, BuildingStructureResponse } from "@/types/zone-master/properties/building-structure.types";
 import { BulkPropertyItem, BulkPropertyCreateResponse } from "@/types/zone-master/properties/property-bulk.types";
 import { BuildingListItem } from "@/types/zone-master/properties/building-list.types";
@@ -1314,7 +1314,7 @@ export async function createSocietyDetailAction(payload: CreateSocietyDetailPayl
  */
 export async function updateSocietyDetailAction(
   id: number,
-  payload: Partial<CreateSocietyDetailPayload>
+  payload: UpdateSocietyDetailPayload
 ): Promise<{
   success: boolean;
   data?: SocietyDetailItem;
@@ -1322,7 +1322,7 @@ export async function updateSocietyDetailAction(
 }> {
   try {
     const userId = await getCurrentUserId();
-    const fullPayload = {
+    const fullPayload: UpdateSocietyDetailPayload = {
       ...payload,
       updatedBy: userId,
     };
