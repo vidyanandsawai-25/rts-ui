@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { LockedScreen } from "@/types/lockunlock.types";
-import { ScreenSelectionCard } from "@/components/modules/property-tax/lockunlock/Screenselectioncard";
+import { ScreenSelectionCard } from "@/components/modules/property-tax/lockunlock/ScreenSelectionCard";
 
 
 vi.mock("next-intl", () => ({

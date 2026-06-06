@@ -12,7 +12,7 @@ import { useLockUnlockMaster, PaginationState } from "@/hooks/lockunlock/useLock
 import { TableModal } from "./TableModal";
 import { useTranslations } from "next-intl";
 import { ScreenSelectionCard } from "./ScreenSelectionCard";
-// import { SelectProperty } from "./Selectproperty";
+import { SelectProperty } from "./SelectProperty";
 
 export interface LockUnlockMasterProps {
   wards: WardItem[];
