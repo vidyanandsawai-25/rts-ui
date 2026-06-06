@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Droplets, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Drawer } from "@/components/common/Drawer";
 import { Select } from "@/components/common";
@@ -10,6 +10,7 @@ import { PropertyInfoCard } from "./PropertyInfoCard";
 import { ConnectionsTable } from "./ConnectionsTable";
 import { AddConnectionDrawer } from "./AddConnectionDrawer";
 import { WaterConnectionStats } from "./WaterConnectionStats";
+import { WaterConnectionDrawerTitle } from "./WaterConnectionDrawerTitle";
 import { useWaterConnectionData } from "./hooks/useWaterConnectionData";
 import type { WaterConnection } from "@/types/waterconnection.types";
 
@@ -77,33 +78,19 @@ export function WaterConnectionPageDrawer({
     [confirm, deleteConnection]
   );
 
-  /* =========== DRAWER TITLE =========== */
-  const drawerTitle = (
-    <div className="flex items-center gap-3">
-      <div className="w-9 h-9 rounded-xl bg-linear-to-br from-blue-600 to-blue-700 flex items-center justify-center shrink-0 shadow-sm">
-        <Droplets className="w-4 h-4 text-white" />
-      </div>
-      <div className="flex flex-col gap-0.5">
-        <div className="flex items-center gap-2">
-          <h2 className="text-sm font-bold text-gray-900 leading-tight">{t("page.title")}</h2>
-          {pageData && (
-            <span className="inline-flex px-2 py-0.5 text-[10px] font-medium rounded-full bg-blue-100 text-blue-700 border border-blue-200">
-              {pageData.property.propertyNo}
-            </span>
-          )}
-        </div>
-        <p className="text-[11px] text-gray-500 leading-tight">{t("page.subtitle")}</p>
-      </div>
-    </div>
-  );
-
   /* =========== RENDER =========== */
   return (
     <>
       <Drawer
         open={open}
         onClose={onClose}
-        title={drawerTitle}
+        title={
+          <WaterConnectionDrawerTitle
+            title={t("page.title")}
+            subtitle={t("page.subtitle")}
+            propertyNo={pageData?.property.propertyNo}
+          />
+        }
         width="xl"
       >
         {initialLoading ? (
