@@ -16,11 +16,13 @@ import {
     DiscountDocumentUploadResponseDto,
     DiscountAttributeItemDto
 } from "@/types/discount.types";
-import { ApiResponse } from "@/types/common.types";
+import { ApiResponse, PagedResponse } from "@/types/common.types";
 import { 
     PropertySocialInfoApiResponse,
-    PropertySocialInfoItemDto
+    PropertySocialInfoItemDto,
+    PropertySocialDetailsDto
 } from "@/types/property-social-details.types";
+import { apiClient } from "@/services/api.service";
 
 export async function getDiscountDetailsAction(propertyId: string): Promise<ApiResponse<PropertyDiscountInfoResponseDto>> {
     try {
@@ -123,19 +125,94 @@ export async function upsertPropertySocialInfoAction(
             return { success: false, error: "Unauthorized: Please log in." };
         }
 
-        const payload = {
-            propertyId: Number(propertyId),
-            updatedBy: userId,
-            socialAttributes: data.socialAttributes,
-            socialAttributeIdsToRemove: data.socialAttributeIdsToRemove,
-        };
+        // 1. Fetch all social details for this property (both active and inactive) on demand
+        // Use a large pageSize (200) to ensure we fetch all of them, and fail fast if the lookup fails.
+        const allSocialDetailsResponse = await apiClient.get<PagedResponse<PropertySocialDetailsDto>>(
+            `/PropertySocialDetails?propertyId=${propertyId}&pageSize=200`
+        );
 
-        const response = await upsertPropertySocialInfo(payload);
-        if (response.success && response.data?.success) {
-            revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Discount`, 'page');
-            return { success: true, message: response.data?.message || response.message };
+        if (!allSocialDetailsResponse.success) {
+            return {
+                success: false,
+                error: allSocialDetailsResponse.error || "Failed to load existing social details.",
+                statusCode: allSocialDetailsResponse.statusCode
+            };
         }
-        return { success: false, error: response.data?.message || response.message || response.error, statusCode: response.statusCode };
+
+        const allDetails = allSocialDetailsResponse.data?.items || [];
+
+        // Build a map of socialAttributeId -> { id, isActive }
+        const dbRecordsMap = new Map<number, { id: number; isActive: boolean }>();
+        allDetails.forEach((rec) => {
+            // Default missing isActive to true if undefined
+            dbRecordsMap.set(rec.socialAttributeId, { id: rec.id, isActive: rec.isActive ?? true });
+        });
+
+        const reactivateAttributes: PropertySocialInfoItemDto[] = [];
+        const normalAttributes: PropertySocialInfoItemDto[] = [];
+
+        data.socialAttributes.forEach((item) => {
+            const dbRecord = dbRecordsMap.get(item.socialAttributeId);
+            if (dbRecord && !dbRecord.isActive) {
+                reactivateAttributes.push(item);
+            } else {
+                normalAttributes.push(item);
+            }
+        });
+
+        // 2. Perform reactivations using PUT /PropertySocialDetails/{id}
+        if (reactivateAttributes.length > 0) {
+            const reactivatePromises = reactivateAttributes.map((item) => {
+                const dbRecord = dbRecordsMap.get(item.socialAttributeId)!;
+                const updatePayload = {
+                    id: dbRecord.id,
+                    propertyId: Number(propertyId),
+                    socialAttributeId: item.socialAttributeId,
+                    bitValue: item.bitValue,
+                    intValue: item.intValue,
+                    decimalValue: item.decimalValue,
+                    textValue: item.textValue,
+                    dateValue: item.dateValue,
+                    documentBindingId: item.documentBindingId,
+                    remark: item.remark,
+                    isActive: true, // Reactivate!
+                    updatedBy: userId
+                };
+                return apiClient.put<unknown>(`/PropertySocialDetails/${dbRecord.id}`, updatePayload);
+            });
+
+            const reactivateResults = await Promise.all(reactivatePromises);
+            const failedReactivation = reactivateResults.find(res => !res.success);
+            if (failedReactivation) {
+                return { 
+                    success: false, 
+                    error: failedReactivation.error || "Failed to reactivate some social attributes",
+                    statusCode: failedReactivation.statusCode
+                };
+            }
+        }
+
+        // 3. Perform normal upsert for other attributes
+        if (normalAttributes.length > 0 || data.socialAttributeIdsToRemove.length > 0) {
+            const payload = {
+                propertyId: Number(propertyId),
+                updatedBy: userId,
+                socialAttributes: normalAttributes,
+                socialAttributeIdsToRemove: data.socialAttributeIdsToRemove,
+            };
+
+            const response = await upsertPropertySocialInfo(payload);
+            if (!response.success || !response.data?.success) {
+                return { 
+                    success: false, 
+                    error: response.data?.message || response.message || response.error, 
+                    statusCode: response.statusCode 
+                };
+            }
+        }
+
+        revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Discount`, 'page');
+        return { success: true, message: "Property social information updated successfully" };
     } catch (error) {
         logger.error("upsertPropertySocialInfoAction failed", { propertyId, error: error instanceof Error ? error : new Error(String(error)) });
         return { success: false, error: "An unexpected error occurred" };

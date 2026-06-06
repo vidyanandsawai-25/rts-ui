@@ -169,13 +169,22 @@ export function buildPropertySearchColumns(
         key: "totalTax",
         label: t("columns.totalTax"),
         align: "right",
+        cellClassName: NUMERIC_CELL,
         render: (value) => (
-          <span className="font-medium text-gray-800 whitespace-normal break-words tabular-nums">
+          <span className="font-medium text-gray-800 whitespace-nowrap tabular-nums">
             {formatInr(Number(value ?? 0))}
           </span>
         ),
       },
       COLUMN_WIDTHS.totalTax
+    ),
+    withFixedWidth(
+      {
+        key: "scrollbarSpacer",
+        label: "",
+        render: () => null,
+      },
+      COLUMN_WIDTHS.scrollbarSpacer
     ),
   ];
 }
