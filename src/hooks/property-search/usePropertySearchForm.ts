@@ -155,9 +155,12 @@ export function usePropertySearchForm({
         markFieldTouched(field);
         const trimmed = trimFieldValue(e.target.value);
         setField(field, trimmed);
-        updateDraftCriteria(field, trimmed);
+        // Note: We intentionally do NOT call updateDraftCriteria here.
+        // Syncing to URL on blur causes race conditions when clicking Search
+        // (blur fires first, then submit). Values persist in React state and
+        // are synced to URL when Search is clicked via handleSubmit.
       },
-    [markFieldTouched, setField, updateDraftCriteria]
+    [markFieldTouched, setField]
   );
 
   const handleSelectChange = React.useCallback(
