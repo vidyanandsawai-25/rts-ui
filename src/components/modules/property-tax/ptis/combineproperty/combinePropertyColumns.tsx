@@ -75,11 +75,6 @@ export const getCombinePropertyColumns = (
     label: t('partitionNo'),
     align: 'center',
     width: '100px',
-    render: (val) => (
-      <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-slate-100 border border-slate-300 text-slate-600 text-[10px] font-bold">
-        {String(val ?? '-')}
-      </span>
-    ),
   },
   {
     key: 'oldPropertyNo',
@@ -149,6 +144,7 @@ export const getCombinePropertyHistoryColumns = (
   const columns: Column<PropertyRow>[] = [
     { key: 'propertyNo', label: t('propertyNo'), align: 'center', width: '100px' },
     { key: 'wardNo', label: t('ward'), align: 'center', width: '100px' },
+    { key: 'partitionNo', label: t('partitionNo') || 'Partition No', align: 'center', width: '100px' },
     { key: 'oldPropertyNo', label: t('oldPropertyNo'), align: 'center', width: '100px' },
     { key: 'propertyDescription', label: t('propertyType'), align: 'left' },
     { key: 'ownerName', label: t('ownerName'), align: 'left' },

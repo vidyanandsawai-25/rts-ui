@@ -1,5 +1,8 @@
-import { headers } from 'next/headers';
+'use client';
+
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import {
   ArrowLeft,
   ChevronDown,
@@ -7,7 +10,6 @@ import {
   FileText,
 } from 'lucide-react';
 import { resolveIcon } from '@/lib/utils/icon-mapping';
-import { getTranslations } from 'next-intl/server';
 import { locales } from '@/i18n/config';
 import type { MenuItem } from '@/types/menu.types';
 import { SidebarFrame } from './SidebarFrame';
@@ -23,18 +25,46 @@ function withLocale(locale: string, href: string): string {
   return `/${locale}${path}`;
 }
 
-
 /**
- * App sidebar: menu tree and copy are rendered on the server (SSR).
- * Interactive frame (mobile drawer, width sync) lives in SidebarFrame (client).
+ * App sidebar: interactive and updates highlighting instantly on client-side routing.
  */
-export async function Sidebar({ menuItems, locale }: SidebarProps) {
-  const h = await headers();
-  const pathname = h.get('x-pathname') || `/${locale}`;
+export function Sidebar({ menuItems, locale }: SidebarProps) {
+  const pathname = usePathname();
   const localePattern = new RegExp(`^/(${locales.join('|')})`);
   const pathWithoutLocale = pathname.replace(localePattern, '') || '/';
 
-  const t = await getTranslations({ locale, namespace: 'common' });
+  const t = useTranslations('common');
+
+  // Collect all paths defined in the sidebar menu items to determine most specific match
+  const allPaths: string[] = [];
+  menuItems.forEach((item) => {
+    if (item.href && item.href !== '#') {
+      allPaths.push(item.href.startsWith('/') ? item.href : `/${item.href}`);
+    }
+    if (item.subItems) {
+      item.subItems.forEach((sub) => {
+        if (sub.href && sub.href !== '#') {
+          allPaths.push(sub.href.startsWith('/') ? sub.href : `/${sub.href}`);
+        }
+      });
+    }
+  });
+
+  const isPathActive = (itemPath: string): boolean => {
+    if (pathWithoutLocale === itemPath) return true;
+    if (!pathWithoutLocale.startsWith(`${itemPath}/`)) return false;
+
+    // If prefix matches, verify there is no other more specific match in the sidebar paths list
+    const hasMoreSpecificMatch = allPaths.some((otherPath) => {
+      if (otherPath === itemPath) return false;
+      return (
+        otherPath.length > itemPath.length &&
+        (pathWithoutLocale === otherPath || pathWithoutLocale.startsWith(`${otherPath}/`))
+      );
+    });
+
+    return !hasMoreSpecificMatch;
+  };
 
   return (
     <SidebarFrame 
@@ -42,7 +72,7 @@ export async function Sidebar({ menuItems, locale }: SidebarProps) {
       closeMenuLabel={t('sidebar.closeMenu')}
     >
       <div
-        className={`p-4 flex items-center gap-3 border-b border-gray-100 bg-white/50 transition-all duration-300 ease-in-out sidebar-brand-row`}
+        className="p-4 flex items-center gap-3 border-b border-gray-100 bg-white/50 transition-all duration-300 ease-in-out sidebar-brand-row"
       >
         <div className="bg-[#4b70a6] p-2 rounded-xl shadow-md shrink-0">
           <FileText className="h-6 w-6 text-white" />
@@ -57,9 +87,9 @@ export async function Sidebar({ menuItems, locale }: SidebarProps) {
 
       <nav className="flex-1 overflow-y-auto py-2 px-2 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full">
         <div className="space-y-2">
-          {menuItems.map((item) => {
+          {menuItems.map((item, idx) => {
             const itemPath = item.href.startsWith('/') ? item.href : `/${item.href}`;
-            const active = pathWithoutLocale === itemPath || pathWithoutLocale.startsWith(`${itemPath}/`);
+            const active = isPathActive(itemPath);
             const hasSubItems = item.subItems && item.subItems.length > 0;
 
             const IconComponent = resolveIcon(item.iconName, item.name);
@@ -68,13 +98,13 @@ export async function Sidebar({ menuItems, locale }: SidebarProps) {
               hasSubItems &&
               item.subItems!.some((sub) => {
                 const sp = sub.href.startsWith('/') ? sub.href : `/${sub.href}`;
-                return pathWithoutLocale === sp || pathWithoutLocale.startsWith(`${sp}/`);
+                return isPathActive(sp);
               });
 
             if (hasSubItems) {
               return (
                 <details
-                  key={item.name}
+                  key={`${item.name}-${item.href}-${idx}`}
                   className="group/sub"
                   open={hasActiveChild}
                 >
@@ -114,12 +144,12 @@ export async function Sidebar({ menuItems, locale }: SidebarProps) {
                     </div>
                   </summary>
                   <div className="ml-5 border-l-2 border-gray-200 pl-2 space-y-1 my-1 max-h-60 overflow-y-auto [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full">
-                    {item.subItems!.map((sub) => {
+                    {item.subItems!.map((sub, sIdx) => {
                       const subPath = sub.href.startsWith('/') ? sub.href : `/${sub.href}`;
-                      const subActive = pathWithoutLocale === subPath || pathWithoutLocale.startsWith(`${subPath}/`);
+                      const subActive = isPathActive(subPath);
                       return (
                         <Link
-                          key={sub.name}
+                          key={`${sub.name}-${sub.href}-${sIdx}`}
                           href={withLocale(locale, sub.href)}
                           className={`block px-3 py-1.5 rounded-lg text-[14px] font-medium transition-colors duration-200 ${
                             subActive
@@ -137,7 +167,7 @@ export async function Sidebar({ menuItems, locale }: SidebarProps) {
             }
 
             return (
-              <div key={item.name}>
+              <div key={`${item.name}-${item.href}-${idx}`}>
                 <Link
                   href={withLocale(locale, item.href)}
                   className={`

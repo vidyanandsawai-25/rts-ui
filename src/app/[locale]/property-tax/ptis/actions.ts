@@ -188,3 +188,23 @@ export async function fetchApartmentQCDetailsAction(propertyId?: number) {
   }
   return { success: false, error: 'Apartment QC details action is not implemented' };
 }
+
+export async function fetchDiscountDetailsOnlyAction(propertyId: number) {
+  const { wardIdActionSchema } = await getPtisValidationSchemas();
+  const validation = wardIdActionSchema.safeParse({ wardId: propertyId });
+  if (!validation.success) {
+    return { success: false, error: validation.error.issues[0].message };
+  }
+
+  return createAction(() => ptisService.getDiscountDetails(propertyId));
+}
+
+export async function fetchBuildingPermissionOnlyAction(propertyId: number) {
+  const { wardIdActionSchema } = await getPtisValidationSchemas();
+  const validation = wardIdActionSchema.safeParse({ wardId: propertyId });
+  if (!validation.success) {
+    return { success: false, error: validation.error.issues[0].message };
+  }
+
+  return createAction(() => ptisService.getBuildingPermissionDetails(propertyId));
+}

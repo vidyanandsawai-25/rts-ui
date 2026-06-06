@@ -50,71 +50,79 @@ export const OldTaxDetailsTable: React.FC<OldTaxDetailsTableProps> = ({
             </div>
 
             {/* Dynamic Taxes */}
-            {yearData.taxes.map((tax) => (
-              <div key={tax.taxId} className="relative">
+            {yearData.taxes
+              .filter((tax) => Number(tax.taxAmount) !== 0)
+              .map((tax) => (
+                <div key={tax.taxId} className="relative">
+                  <div
+                    id={`tax-${yearIdx}-${tax.taxId}-label`}
+                    title={tax.taxName}
+                    className="absolute -top-1.5 left-1 px-0.5 text-sm text-blue-800 bg-blue-50 z-10 leading-none truncate max-w-full"
+                  >
+                    {tax.taxName}
+                  </div>
+                  <div className="rounded bg-gradient-to-br from-blue-50 to-blue-100 p-0.5 shadow-sm mt-0.5">
+                    <ValueDisplay
+                      aria-labelledby={`tax-${yearIdx}-${tax.taxId}-label`}
+                      value={tax.taxAmount ?? 0}
+                    />
+                  </div>
+                </div>
+              ))}
+
+            {/* Tax Total */}
+            {Number(yearData.taxTotal) !== 0 && (
+              <div className="relative">
                 <div
-                  id={`tax-${yearIdx}-${tax.taxId}-label`}
-                  title={tax.taxName}
-                  className="absolute -top-1.5 left-1 px-0.5 text-sm text-blue-800 bg-blue-50 z-10 leading-none truncate max-w-full"
+                  id={`tax-total-${yearIdx}-label`}
+                  className="absolute -top-1.5 left-1 px-0.5 text-sm text-blue-800 bg-blue-50 z-10 leading-none"
                 >
-                  {tax.taxName}
+                  {t('fields.taxTotal')}
                 </div>
                 <div className="rounded bg-gradient-to-br from-blue-50 to-blue-100 p-0.5 shadow-sm mt-0.5">
                   <ValueDisplay
-                    aria-labelledby={`tax-${yearIdx}-${tax.taxId}-label`}
-                    value={tax.taxAmount ?? 0}
+                    aria-labelledby={`tax-total-${yearIdx}-label`}
+                    value={yearData.taxTotal ?? 0}
                   />
                 </div>
               </div>
-            ))}
-
-            {/* Tax Total */}
-            <div className="relative">
-              <div
-                id={`tax-total-${yearIdx}-label`}
-                className="absolute -top-1.5 left-1 px-0.5 text-sm text-blue-800 bg-blue-50 z-10 leading-none"
-              >
-                {t('fields.taxTotal')}
-              </div>
-              <div className="rounded bg-gradient-to-br from-blue-50 to-blue-100 p-0.5 shadow-sm mt-0.5">
-                <ValueDisplay
-                  aria-labelledby={`tax-total-${yearIdx}-label`}
-                  value={yearData.taxTotal ?? 0}
-                />
-              </div>
-            </div>
+            )}
 
             {/* Interest */}
-            <div className="relative">
-              <div
-                id={`tax-interest-${yearIdx}-label`}
-                className="absolute -top-1.5 left-1 px-0.5 text-sm text-blue-800 bg-blue-50 z-10 leading-none"
-              >
-                {t('fields.interest')}
+            {Number(yearData.interest) !== 0 && (
+              <div className="relative">
+                <div
+                  id={`tax-interest-${yearIdx}-label`}
+                  className="absolute -top-1.5 left-1 px-0.5 text-sm text-blue-800 bg-blue-50 z-10 leading-none"
+                >
+                  {t('fields.interest')}
+                </div>
+                <div className="rounded bg-gradient-to-br from-blue-50 to-blue-100 p-0.5 shadow-sm mt-0.5">
+                  <ValueDisplay
+                    aria-labelledby={`tax-interest-${yearIdx}-label`}
+                    value={yearData.interest ?? 0}
+                  />
+                </div>
               </div>
-              <div className="rounded bg-gradient-to-br from-blue-50 to-blue-100 p-0.5 shadow-sm mt-0.5">
-                <ValueDisplay
-                  aria-labelledby={`tax-interest-${yearIdx}-label`}
-                  value={yearData.interest ?? 0}
-                />
-              </div>
-            </div>
+            )}
 
             {/* Net Total */}
-            <div className="relative">
-              <div
-                id={`tax-net-total-${yearIdx}-label`}
-                className="absolute -top-1.5 left-1 px-0.5 text-sm text-blue-800 bg-blue-50 z-10 leading-none"
-              >
-                {t('fields.netTotal')}
+            {Number(yearData.netTotal) !== 0 && (
+              <div className="relative">
+                <div
+                  id={`tax-net-total-${yearIdx}-label`}
+                  className="absolute -top-1.5 left-1 px-0.5 text-sm text-blue-800 bg-blue-50 z-10 leading-none"
+                >
+                  {t('fields.netTotal')}
+                </div>
+                <div className="rounded bg-gradient-to-br from-blue-50 to-blue-100 p-0.5 shadow-sm mt-0.5">
+                  <ValueDisplay
+                    aria-labelledby={`tax-net-total-${yearIdx}-label`}
+                    value={yearData.netTotal ?? 0}
+                  />
+                </div>
               </div>
-              <div className="rounded bg-gradient-to-br from-blue-50 to-blue-100 p-0.5 shadow-sm mt-0.5">
-                <ValueDisplay
-                  aria-labelledby={`tax-net-total-${yearIdx}-label`}
-                  value={yearData.netTotal ?? 0}
-                />
-              </div>
-            </div>
+            )}
           </div>
         </div>
       ))}

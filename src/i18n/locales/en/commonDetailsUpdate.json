@@ -1,7 +1,46 @@
 {
   "commonDetailsUpdate": {
-    "title": "Update Common Details",
-    "subtitle": "Update thousands of properties safely in one action",
+    "title": "Dynamic Field Configuration & Bulk Update",
+    "subtitle": "Configure which property-tax fields can be updated, then allow users to update only those enabled fields for selected properties.",
+    "screenObjective": {
+      "title": "Screen Objective",
+      "description": "First configure updateable fields in Field Registry & Activation. Then use Update Enabled Fields to bulk update only those fields for selected properties."
+    },
+    "tabs": {
+      "updateFields": "Update Fields",
+      "fieldRegistry": "Field Registry",
+      "excelUpload": "Excel Upload",
+      "jobsAudit": "Jobs & Audit"
+    },
+    "propertyCriteria": {
+      "title": "Select Property Criteria",
+      "subtitle": "Select criteria first. Only required parameters for the selected criteria will be shown.",
+      "selectionCriteria": "PROPERTY SELECTION CRITERIA",
+      "matchedProperties": "Matched Properties",
+      "inputParameters": "Input Parameters",
+      "allPropertiesNote": "All properties under selected Zone / Node will be considered.",
+      "generalUserAllowed": "General user allowed",
+      "wardPropertyRange": "Ward / Property Range"
+    },
+    "fieldList": {
+      "title": "Select Fields to Update",
+      "subtitle": "Only active fields allowed to general users are shown below.",
+      "enabledFieldList": "Enabled Field List",
+      "available": "available",
+      "selected": "selected",
+      "noApproval": "No Approval",
+      "approval": "Approval",
+      "refreshFields": "Refresh Enabled Fields"
+    },
+    "newValues": {
+      "title": "New Values",
+      "updateReason": "Update Reason",
+      "updateReasonPlaceholder": "Enter reason for update",
+      "validationReady": "Validation Ready",
+      "fieldsSelected": "fields selected",
+      "matchedProperties": "matched properties",
+      "validationSummary": "{fields} fields selected and {properties} matched properties."
+    },
     "menu": {
       "title": "Choose Field to Update",
       "searchPlaceholder": "Search update type..."
@@ -18,7 +57,9 @@
       "selectWing": "Select wing",
       "show": "Show",
       "back": "Back",
-      "clear": "Clear"
+      "clear": "Clear",
+      "zoneNode": "Zone / Node",
+      "selectZoneNode": "Select Zone / Node"
     },
     "preview": {
       "title": "Preview List",
@@ -50,6 +91,49 @@
       "updating": "Updating...",
       "selectMenuPrompt": "Select a field to update from the left panel",
       "noFields": "No fields configured for this update type"
+    },
+    "fieldRegistry": {
+      "title": "Authorized User Workflow",
+      "subtitle": "Use this section to decide which fields are updateable, who can update them, and whether approval is required.",
+      "authenticatedUserOnly": "Authenticated user only",
+      "addFieldFromDb": {
+        "title": "Add Field from Database",
+        "subtitle": "Authenticated user can add a database field into the registry, define user-facing name and then activate it.",
+        "sourceModule": "Source Module",
+        "sourceTable": "Source Table",
+        "databaseColumn": "Database Column",
+        "userFacingName": "User-facing Field Name",
+        "fieldType": "Field Type",
+        "validationRule": "Validation Rule",
+        "allowGeneralUserUpdate": "Allow General User Update",
+        "approvalRequired": "Approval Required",
+        "addToRegistry": "Add Field to Registry",
+        "addFromDb": "Add Field from DB",
+        "preview": "Preview"
+      },
+      "filters": {
+        "category": "Category",
+        "status": "Status",
+        "searchPlaceholder": "Search field / database name",
+        "allCategories": "All Categories",
+        "active": "Active",
+        "inactive": "Inactive",
+        "all": "All"
+      },
+      "stats": {
+        "totalEligible": "Total Eligible Fields",
+        "activeFields": "Active Fields",
+        "generalUserAllowed": "General User Allowed",
+        "approvalRequired": "Approval Required"
+      },
+      "table": {
+        "fieldName": "Field Name",
+        "active": "Active"
+      },
+      "emptyState": {
+        "title": "No fields registered yet",
+        "description": "Use the form above to add fields from the database"
+      }
     },
     "buttons": {
       "import": "Import",

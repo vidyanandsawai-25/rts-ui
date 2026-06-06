@@ -118,10 +118,18 @@ export function usePropertySearchNavigation({
   /**
    * Reset all search parameters. Locale stays in the pathname; every query
    * param on this screen is search state, so we drop the entire query string.
+   * Preserves the current tab if provided.
    */
-  const resetSearch = useCallback(() => {
-    navigateTo(pathname);
-  }, [navigateTo, pathname]);
+  const resetSearch = useCallback(
+    (tab?: SearchTab) => {
+      if (tab && tab !== "quick-search") {
+        navigateTo(`${pathname}?tab=${tab}`);
+      } else {
+        navigateTo(pathname);
+      }
+    },
+    [navigateTo, pathname]
+  );
 
   /**
    * Update tab selection

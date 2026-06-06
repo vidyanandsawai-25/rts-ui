@@ -93,6 +93,11 @@ vi.mock("@/components/common/ActionButtons", () => ({
       Delete
     </button>
   ),
+  AddButton: ({ onClick, label }: any) => (
+    <button data-testid="add-button" onClick={onClick}>
+      {label}
+    </button>
+  ),
 }));
 
 describe("MoujaMaster", () => {
