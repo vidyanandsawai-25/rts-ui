@@ -66,7 +66,7 @@ export const PropertyFilter = ({
       </CardHeader>
 
       <CardContent className="p-3">
-        <div className="grid grid-cols-2 gap-x-3 gap-y-2 sm:grid-cols-5 items-end">
+        <div className="grid grid-cols-3 gap-x-3 gap-y-2 sm:grid-cols-5 items-end">
           <div>
             <SearchSelect
               label={t("filter.wardNumber")}
