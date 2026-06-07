@@ -9,6 +9,7 @@ export interface PtisPageProps {
     propertyId?: string;
     wardId?: string;
     tab?: string;
+    valuationTab?: string;
     rateableExpand?: string;
     capitalExpand?: string;
     drawer?: string;

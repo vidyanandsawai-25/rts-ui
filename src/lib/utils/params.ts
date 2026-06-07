@@ -33,7 +33,10 @@ export function parsePtisSearchParams(
   searchParams: Record<string, SearchParamValue>
 ): PtisSearchParams {
   const propertyIdStr = getSingleSearchParamValue(searchParams.propertyId);
-  const tabParam = getSingleSearchParamValue(searchParams.tab) || 'rateable';
+  const tabParam =
+    getSingleSearchParamValue(searchParams.valuationTab) ||
+    getSingleSearchParamValue(searchParams.tab) ||
+    'rateable';
   
   // Validate tab against centralized VALUATION_TABS list
   const tab: PtisTab = (VALUATION_TABS as readonly string[]).includes(tabParam)
