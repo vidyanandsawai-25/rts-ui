@@ -130,10 +130,9 @@ export function useRateMasterOperations({
     const result = getOperationResult(successCount, allRateSubmissions.length);
     const useGroupLabels = formatUseGroupLabels(allRateSubmissions, getUseGroupLabel);
 
-    // Check if error is "No rates to update"
-    const hasNoRatesToUpdateError = errorMessages.some(msg => msg === NO_RATES_TO_UPDATE_ERROR);
+    const nonUpdateErrors = errorMessages.filter(msg => msg !== NO_RATES_TO_UPDATE_ERROR);
     
-    if (hasNoRatesToUpdateError && errorMessages.length === 1) {
+    if (errorMessages.length > 0 && nonUpdateErrors.length === 0) {
       toast.error(t('messages.noRatesToUpdate'));
       return { success: false };
     }
@@ -142,10 +141,10 @@ export function useRateMasterOperations({
       toast.success(t('messages.ratesUpdatedSuccess', { groups: useGroupLabels }));
       return { success: true };
     } else if (result.partialSuccess) {
-      toast.warning(t('messages.ratesUpdatedPartial', { count: successCount, errors: errorMessages.join('; ') }));
+      toast.warning(t('messages.ratesUpdatedPartial', { count: successCount, errors: nonUpdateErrors.join('; ') }));
       return { success: true };
     } else {
-      toast.error(t('messages.ratesUpdatedFailed', { errors: errorMessages.join('; ') }));
+      toast.error(t('messages.ratesUpdatedFailed', { errors: nonUpdateErrors.join('; ') }));
       return { success: false };
     }
   }, [assessmentYear, selectedZone, selectedUseGroup, multipliers, rateCategories, t, rateFrequency, rateUnit, getUseGroupLabel]);

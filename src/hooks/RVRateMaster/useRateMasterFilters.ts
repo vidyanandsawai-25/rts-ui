@@ -73,8 +73,6 @@ export function useRateMasterFilters({
     if (rateFrequencyPolicy?.isConfigured) {  
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setRateFrequency(rateFrequencyPolicy.value);
-    } else {
-      console.log('⚠️ Rate Frequency Policy not configured or not loaded');
     }
   }, [rateFrequencyPolicy]);
 
@@ -82,8 +80,6 @@ export function useRateMasterFilters({
     if (rateUnitPolicy?.isConfigured) {    
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setRateUnit(rateUnitPolicy.value);
-    } else {
-      console.log('⚠️ Rate Unit Policy not configured or not loaded');
     }
   }, [rateUnitPolicy]);
 
@@ -166,7 +162,6 @@ export function useRateMasterFilters({
   const safeSetRateFrequency = useCallback((value: "Monthly" | "Yearly") => {
     // If policy is configured, ignore the change and keep policy value
     if (rateFrequencyPolicy?.isConfigured) {
-      console.warn('Cannot change rate frequency when policy is configured. Using policy value:', rateFrequencyPolicy.value);
       setRateFrequency(rateFrequencyPolicy.value);
       return;
     }
@@ -177,7 +172,6 @@ export function useRateMasterFilters({
   const safeSetRateUnit = useCallback((value: "SqMeter" | "SqFeet") => {
     // If policy is configured, ignore the change and keep policy value
     if (rateUnitPolicy?.isConfigured) {
-      console.warn('Cannot change rate unit when policy is configured. Using policy value:', rateUnitPolicy.value);
       setRateUnit(rateUnitPolicy.value);
       return;
     }

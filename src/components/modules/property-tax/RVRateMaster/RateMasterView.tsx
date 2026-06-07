@@ -206,7 +206,7 @@ export default function RateMasterView({
       {frequencyMismatch && (
         <div className="flex justify-center">
           <div className="flex items-center gap-2 bg-orange-50 border border-orange-300 rounded-lg px-4 py-2 shadow-sm max-w-4xl">
-            <span className="text-orange-600 shrink-0">⚠</span>
+            <span className="text-orange-600 shrink-0" aria-hidden="true">{"\u26A0"}</span>
             <span className="text-sm text-orange-800 font-medium">
               {t('messages.rateFrequencyMismatch', {
                 configured: frequencyMismatch.configuredFrequency,

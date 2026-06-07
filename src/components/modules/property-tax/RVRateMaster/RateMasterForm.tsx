@@ -105,7 +105,7 @@ const RateMasterForm: React.FC<RateMasterFormProps> = ({ id, zoneOptions, useGro
           onFileChange={handleUploadExcel}
           isDisabled={isImportDisabled}
           isFrequencyLocked={rateFrequencyPolicy?.isConfigured ?? false}
-          isUnitLocked={rateUnitPolicy?.isConfigured ?? false}
+          isUnitLocked={(rateUnitPolicy?.isConfigured ?? false) || filledRatesCount > 0}
           t={t}
         />
         <div className="bg-[#f8faff] rounded-xl border border-blue-200 shadow-md p-1">

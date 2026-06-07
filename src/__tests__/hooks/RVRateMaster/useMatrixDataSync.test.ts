@@ -48,7 +48,6 @@ describe("useMatrixDataSync", () => {
     zoneDescriptions: mockZoneDescriptions,
     rateCategories: mockRateCategories,
     defaultMatrixData: mockDefaultMatrixData,
-    matrixData: [],
     setMatrixData: mockSetMatrixData,
     setShowMatrix: mockSetShowMatrix,
     setRateFrequency: mockSetRateFrequency,
@@ -421,15 +420,81 @@ describe("useMatrixDataSync", () => {
 
   describe("allZoneEdits Initialization", () => {
     it("should initialize allZoneEdits in edit mode with non-zero values", () => {
-      const matrixWithValues: MatrixRow[] = [
-        { id: 1, zoneNo: "1", taxZoneId: 1, A: 100, B: 80, C: 0 },
-        { id: 2, zoneNo: "2", taxZoneId: 2, A: 90, B: 70, C: 0 },
+      const mockBackendRates: IBackendRateMaster[] = [
+        {
+          id: 1,
+          taxZoneNo: "1",
+          taxZoneId: 1,
+          constructionTypeId: 1,
+          rateSquareMeter: 100,
+          rateSquareFeet: 1076.39,
+          rateRemark: "YearWise Rate",
+          typeOfUseGroupId: 1,
+          rateSectionId: 1,
+          yearRangeRVId: 2024,
+          year: 2024,
+          floorId: 67,
+          isActive: true,
+          createdDate: "2024-01-01",
+          updatedDate: null,
+        },
+        {
+          id: 2,
+          taxZoneNo: "1",
+          taxZoneId: 1,
+          constructionTypeId: 2,
+          rateSquareMeter: 80,
+          rateSquareFeet: 861.11,
+          rateRemark: "YearWise Rate",
+          typeOfUseGroupId: 1,
+          rateSectionId: 1,
+          yearRangeRVId: 2024,
+          year: 2024,
+          floorId: 67,
+          isActive: true,
+          createdDate: "2024-01-01",
+          updatedDate: null,
+        },
+        {
+          id: 3,
+          taxZoneNo: "2",
+          taxZoneId: 2,
+          constructionTypeId: 1,
+          rateSquareMeter: 90,
+          rateSquareFeet: 968.75,
+          rateRemark: "YearWise Rate",
+          typeOfUseGroupId: 1,
+          rateSectionId: 1,
+          yearRangeRVId: 2024,
+          year: 2024,
+          floorId: 67,
+          isActive: true,
+          createdDate: "2024-01-01",
+          updatedDate: null,
+        },
+        {
+          id: 4,
+          taxZoneNo: "2",
+          taxZoneId: 2,
+          constructionTypeId: 2,
+          rateSquareMeter: 70,
+          rateSquareFeet: 753.47,
+          rateRemark: "YearWise Rate",
+          typeOfUseGroupId: 1,
+          rateSectionId: 1,
+          yearRangeRVId: 2024,
+          year: 2024,
+          floorId: 67,
+          isActive: true,
+          createdDate: "2024-01-01",
+          updatedDate: null,
+        },
       ];
 
       const props = {
         ...getDefaultProps(),
         mode: "edit" as const,
-        matrixData: matrixWithValues,
+        backendRates: mockBackendRates,
       };
 
       renderHook(() => useMatrixDataSync(props));
@@ -444,7 +509,6 @@ describe("useMatrixDataSync", () => {
       const props = {
         ...getDefaultProps(),
         mode: "edit" as const,
-        matrixData: mockDefaultMatrixData,
       };
 
       renderHook(() => useMatrixDataSync(props));
@@ -454,14 +518,30 @@ describe("useMatrixDataSync", () => {
     });
 
     it("should not initialize allZoneEdits in add mode", () => {
-      const matrixWithValues: MatrixRow[] = [
-        { id: 1, zoneNo: "1", taxZoneId: 1, A: 100, B: 80, C: 0 },
+      const mockBackendRates: IBackendRateMaster[] = [
+        {
+          id: 1,
+          taxZoneNo: "1",
+          taxZoneId: 1,
+          constructionTypeId: 1,
+          rateSquareMeter: 100,
+          rateSquareFeet: 1076.39,
+          rateRemark: "YearWise Rate",
+          typeOfUseGroupId: 1,
+          rateSectionId: 1,
+          yearRangeRVId: 2024,
+          year: 2024,
+          floorId: 67,
+          isActive: true,
+          createdDate: "2024-01-01",
+          updatedDate: null,
+        },
       ];
 
       const props = {
         ...getDefaultProps(),
         mode: "add" as const,
-        matrixData: matrixWithValues,
+        backendRates: mockBackendRates,
       };
 
       renderHook(() => useMatrixDataSync(props));

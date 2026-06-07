@@ -97,7 +97,7 @@ export async function processSingleSubmission(
   submission: RateSubmission,
   backendRates: IBackendRateMaster[],
   config: BuildPayloadConfig,
-  _getUseGroupLabel: (useGroup: string) => string
+  getUseGroupLabel: (useGroup: string) => string
 ): Promise<{ success: boolean; errors: string[] }> {
   const errors: string[] = [];
   
@@ -124,7 +124,7 @@ export async function processSingleSubmission(
         if (errorMsg.includes('No rates to update')) {
           errors.push(NO_RATES_TO_UPDATE_ERROR);
         } else {
-          errors.push(parseBackendError(errorMsg));
+          errors.push(`${getUseGroupLabel(submission.useGroup)} (Update): ${parseBackendError(errorMsg)}`);
         }
       }
     } catch (error) {
@@ -138,7 +138,7 @@ export async function processSingleSubmission(
       const createResult = await bulkCreateRateMasterAction(buildBulkCreatePayload(inserts));
       if (!createResult.success) {
         const errorMsg = createResult.message || 'Failed to create rates';
-        errors.push(parseBackendError(errorMsg));
+        errors.push(`${getUseGroupLabel(submission.useGroup)} (Create): ${parseBackendError(errorMsg)}`);
       }
     } catch (error) {
       errors.push(error instanceof Error ? error.message : 'Server action failed');

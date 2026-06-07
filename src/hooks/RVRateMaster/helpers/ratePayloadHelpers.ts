@@ -81,12 +81,14 @@ export function buildPayloadFromMatrix(
       // If SqMeter: entered value goes to rateSquareMeter, rateSquareFeet is calculated
       // If SqFeet: entered value goes to rateSquareFeet, rateSquareMeter is calculated
       const enteredValue = Number(val);
+      const SQM_TO_SQFT = 10.7639104;
+      const SQFT_TO_SQM = 0.092903;
       const rateSquareMeterValue = rateUnit === 'SqMeter' 
         ? enteredValue 
-        : Number((enteredValue / 10.7639).toFixed(2));
+        : Number((enteredValue * SQFT_TO_SQM).toFixed(2));
       const rateSquareFeetValue = rateUnit === 'SqFeet' 
         ? enteredValue 
-        : Number((enteredValue * 10.7639).toFixed(2));
+        : Number((enteredValue * SQM_TO_SQFT).toFixed(2));
       
       const payload: RatePayload = {
         taxZoneId: Number(row.taxZoneId) || Number(zoneNoVal),

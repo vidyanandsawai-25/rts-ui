@@ -1,3 +1,5 @@
+"use client";
+
 import { MatrixGrid } from "@/components/common/MatrixGrid";
 import { MatrixGridPagination } from "@/components/common/MatrixGrid";
 import { sanitizePositiveDecimal, POSITIVE_DECIMAL_INVALID_KEYS } from "@/lib/utils/validation";
@@ -65,6 +67,7 @@ interface RateMatrixSectionProps {
   // Mode and handlers
   mode: "edit" | "delete" | "add";
   id?: string | null;
+  // Action handlers
   onAddRates: () => void;
   onUpdateRates: () => void;
   onDeleteRates: () => void;
@@ -163,8 +166,8 @@ export function RateMatrixSection({
         onAddRates={onAddRates}
         onUpdateRates={onUpdateRates}
         onDeleteRates={onDeleteRates}
-        t={t}
         existingRateFound={existingRateFound}
+        t={t}
       />
 
       {/* Preview Tabs */}

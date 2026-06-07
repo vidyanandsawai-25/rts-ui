@@ -138,7 +138,6 @@ export function useRateMasterFormState({
     zoneDescriptions,
     rateCategories,
     defaultMatrixData,
-    matrixData,
     setMatrixData,
     setShowMatrix,
     setRateFrequency,
