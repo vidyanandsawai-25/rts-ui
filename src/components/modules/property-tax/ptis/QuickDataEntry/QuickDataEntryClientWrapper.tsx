@@ -8,6 +8,15 @@ import { TabNavigation } from "./TabNavigation";
 import { cn } from '@/lib/utils/cn';
 import { ReactNode } from 'react';
 
+const RETURN_TAB_BY_QDE_SEGMENT: Record<string, string> = {
+    property: 'propertydetails',
+    kyc: 'kycdetails',
+    society: 'societydetails',
+    building: 'buildingpermission',
+    discount: 'discountdetails',
+    olddetails: 'olddetails',
+};
+
 function QuickDataEntryContent({
     children,
 }: { children: ReactNode }) {
@@ -25,6 +34,12 @@ function QuickDataEntryContent({
     const partitionNo = searchParams.get("partitionNo") || "";
     const returnTab = searchParams.get("returnTab") || "";
 
+    const pathSegments = pathname?.split('/').filter(Boolean) || [];
+    const qdeIndex = pathSegments.findIndex((segment) => segment.toLowerCase() === 'quickdataentry');
+    const qdeTabSegment = qdeIndex >= 0 ? (pathSegments[qdeIndex + 2] || '').toLowerCase() : '';
+    const derivedReturnTab = RETURN_TAB_BY_QDE_SEGMENT[qdeTabSegment] || '';
+    const resolvedReturnTab = returnTab || derivedReturnTab;
+
     const handleClose = () => {
         const params = new URLSearchParams();
         if (propertyId) params.set('propertyId', propertyId);
@@ -32,7 +47,7 @@ function QuickDataEntryContent({
         if (wardId) params.set('wardId', wardId);
         if (propertyNo) params.set('propertyNo', propertyNo);
         if (partitionNo) params.set('partitionNo', partitionNo);
-        if (returnTab) params.set('tab', returnTab);
+        if (resolvedReturnTab) params.set('tab', resolvedReturnTab);
 
         router.push(`/${locale}/property-tax/ptis?${params}`);
     };

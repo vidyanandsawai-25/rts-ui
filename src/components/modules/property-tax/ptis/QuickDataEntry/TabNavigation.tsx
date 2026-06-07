@@ -20,6 +20,15 @@ const TAB_GRADIENT_CLASSES = {
   activeClass: 'from-blue-500 to-blue-600 border-blue-700',
 };
 
+const RETURN_TAB_BY_QDE_HREF: Record<string, string> = {
+  Property: 'propertydetails',
+  Kyc: 'kycdetails',
+  Society: 'societydetails',
+  Building: 'buildingpermission',
+  Discount: 'discountdetails',
+  'OldDetails/old-taxation': 'olddetails',
+};
+
 export function TabNavigation() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -63,6 +72,8 @@ export function TabNavigation() {
 
           const tabPath = `${baseTabPath}/${tab.href}`;
 
+          const tabReturnValue = RETURN_TAB_BY_QDE_HREF[tab.href] || returnTab;
+
           // For FloorSubmission tab: exclude propertyId if we have search params
           // to let the page resolve authoritative ID from backend
           let tabQueryString = queryString;
@@ -72,6 +83,15 @@ export function TabNavigation() {
             if (wardId) tabParams.set('wardId', wardId);
             if (propertyNo) tabParams.set('propertyNo', propertyNo);
             if (partitionNo) tabParams.set('partitionNo', partitionNo);
+            if (tabReturnValue) tabParams.set('returnTab', tabReturnValue);
+            tabQueryString = tabParams.toString();
+          } else {
+            const tabParams = new URLSearchParams(queryString);
+            if (tabReturnValue) {
+              tabParams.set('returnTab', tabReturnValue);
+            } else {
+              tabParams.delete('returnTab');
+            }
             tabQueryString = tabParams.toString();
           }
 
@@ -85,8 +105,8 @@ export function TabNavigation() {
           const isOldDetailsTab = tab.href === 'OldDetails/old-taxation';
           const isActive = isOldDetailsTab
             ? pathname === tabPath ||
-              pathname === oldDetailsSectionPath ||
-              pathname.startsWith(`${oldDetailsSectionPath}/`)
+            pathname === oldDetailsSectionPath ||
+            pathname.startsWith(`${oldDetailsSectionPath}/`)
             : activeSegment === tab.href || pathname === tabPath;
 
           const Icon = tab.icon;
