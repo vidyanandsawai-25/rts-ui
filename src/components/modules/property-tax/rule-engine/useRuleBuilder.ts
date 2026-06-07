@@ -112,14 +112,14 @@ export function useRuleBuilder({
   const updateRuleBlock = (
     index: number,
     key: 'conditions' | 'effect' | 'description',
-    value: unknown
+    value: RuleBlock['conditions'] | RuleBlock['effect'] | string
   ) => {
     setRulesList((prev) => {
       const copy = [...prev];
       copy[index] = {
         ...copy[index],
-        [key]: value as any,
-      };
+        [key]: value,
+      } as RuleBlock;
       return copy;
     });
   };

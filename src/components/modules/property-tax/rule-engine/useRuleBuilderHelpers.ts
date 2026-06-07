@@ -10,7 +10,7 @@ export function initializeRulesList(initialRule?: RuleItem): RuleBlock[] {
     if (!initialRule?.conditionsJson) throw new Error();
     const parsed = JSON.parse(initialRule.conditionsJson);
     if (Array.isArray(parsed)) {
-      return parsed.map((item: any) => ({
+      return (parsed as Partial<RuleBlock>[]).map((item) => ({
         id: item.id || safeUUID(),
         description: item.description || '',
         conditions: item.conditions || {

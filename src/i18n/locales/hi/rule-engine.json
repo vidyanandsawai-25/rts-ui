@@ -73,7 +73,8 @@
     "title": "{scopeName} नियम बिल्डर",
     "saving": "सहेज रहा है…",
     "saveChanges": "परिवर्तन सहेजें",
-    "add": "जोड़ें"
+    "add": "जोड़ें",
+    "ruleIndex": "नियम {index}"
   },
   "stopProcessing": {
     "sectionLabel": "नियम अपवर्जन और प्रसंस्करण रोकें",
@@ -87,5 +88,21 @@
     "exclusionReasonLabel": "अपवर्जन का कारण",
     "exclusionReasonPlaceholder": "उदा. आवासीय क्षेत्र के लिए नई एआरवी नीति द्वारा प्रतिस्थापित",
     "optional": "वैकल्पिक"
+  },
+  "simulation": {
+    "consoleTitle": "सिमुलेशन कंसोल: {code}",
+    "jsonStructure": "नियम JSON संरचना",
+    "readOnly": "केवल पढ़ने के लिए",
+    "copied": "कॉपी किया गया!",
+    "copyJson": "JSON कॉपी करें",
+    "simulator": "नियम सिमुलेटर",
+    "simulatorHint": "मान दर्ज करके नीति मूल्यांकन का परीक्षण करें। निकाले गए चर नियम कॉन्फ़िगरेशन से स्वतः भर जाते हैं।",
+    "parameterName": "पैरामीटर नाम",
+    "simulationValue": "सिमुलेशन मान",
+    "addCustomParameter": "कस्टम पैरामीटर जोड़ें",
+    "runSimulation": "सिमुलेशन चलाएं",
+    "resultOutput": "निष्पादन परिणाम आउटपुट",
+    "successMessage": "मूल्यांकन सफलतापूर्वक संसाधित किया गया।",
+    "failureMessage": "मूल्यांकन विफल रहा या त्रुटियां आईं।"
   }
 }

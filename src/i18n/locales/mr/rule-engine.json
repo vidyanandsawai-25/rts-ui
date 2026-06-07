@@ -73,7 +73,8 @@
     "title": "{scopeName} नियम बिल्डर",
     "saving": "जतन करत आहे…",
     "saveChanges": "बदल जतन करा",
-    "add": "जोडा"
+    "add": "जोडा",
+    "ruleIndex": "नियम {index}"
   },
   "stopProcessing": {
     "sectionLabel": "नियम वगळणे आणि प्रक्रिया थांबवणे",
@@ -87,5 +88,21 @@
     "exclusionReasonLabel": "वगळण्याचे कारण",
     "exclusionReasonPlaceholder": "उदा. निवासी क्षेत्रासाठी नवीन एआरव्ही धोरणाद्वारे अधिग्रहित",
     "optional": "पर्यायी"
+  },
+  "simulation": {
+    "consoleTitle": "सिम्युलेशन कन्सोल: {code}",
+    "jsonStructure": "नियम JSON रचना",
+    "readOnly": "केवळ वाचनासाठी",
+    "copied": "कॉपी केले!",
+    "copyJson": "JSON कॉपी करा",
+    "simulator": "नियम सिम्युलेटर",
+    "simulatorHint": "मूल्ये प्रविष्ट करून धोरण मूल्यमापनाची चाचणी घ्या. काढलेले व्हेरिएबल्स नियम कॉन्फिगरेशनमधून स्वयंचलितपणे भरले जातात.",
+    "parameterName": "पॅरामीटर नाव",
+    "simulationValue": "सिम्युलेशन मूल्य",
+    "addCustomParameter": "सानुकूल पॅरामीटर जोडा",
+    "runSimulation": "सिम्युलेशन चालवा",
+    "resultOutput": "अंमलबजावणी परिणाम आउटपुट",
+    "successMessage": "मूल्यमापन यशस्वीरित्या पूर्ण झाले.",
+    "failureMessage": "मूल्यमापन अयशस्वी झाले किंवा त्रुटी आढळल्या."
   }
 }

@@ -1,5 +1,6 @@
 import { apiClient } from '@/services/api.service';
 import { RuleItem, RuleListResponse } from '@/types/rule-engine.types';
+import { ApiResponse } from '@/types/common.types';
 
 interface BackendRuleDto {
   id?: number;
@@ -214,8 +215,8 @@ export async function deleteRule(id: number | string): Promise<{ success: boolea
 export async function executeRule(
   category: string,
   input: Record<string, string>
-): Promise<any> {
-  const response = await apiClient.post<any>('/RuleEngine/execute', {
+): Promise<ApiResponse<Record<string, unknown>>> {
+  const response = await apiClient.post<Record<string, unknown>>('/RuleEngine/execute', {
     category,
     input,
   });

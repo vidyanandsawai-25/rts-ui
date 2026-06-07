@@ -1,6 +1,6 @@
 import { PlusCircle, Loader2, ArrowUp, ArrowDown, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { RuleItem, FieldConfig, RuleBlock, EffectTypeConfig } from '@/types/rule-engine.types';
+import { RuleItem, FieldConfig, RuleBlock, EffectTypeConfig, ConditionGroupState, EffectState } from '@/types/rule-engine.types';
 import { Input } from '@/components/common';
 import ConditionGroup from './ConditionGroup';
 import EffectPanel from './EffectPanel';
@@ -18,7 +18,7 @@ interface RuleBuilderCardProps {
   onAddRuleBlock: () => void;
   onRemoveRuleBlock: (index: number) => void;
   onMoveRuleBlock: (index: number, direction: 'up' | 'down') => void;
-  onUpdateRuleBlock: (index: number, key: 'conditions' | 'effect' | 'description', value: any) => void;
+  onUpdateRuleBlock: (index: number, key: 'conditions' | 'effect' | 'description', value: ConditionGroupState | EffectState | string) => void;
 }
 
 /** The main IF/THEN card container: card header and rule configurator panel. */
@@ -60,7 +60,7 @@ export default function RuleBuilderCard({
               
               {/* Rule block header */}
               <div className="flex items-center justify-between pb-3 border-b border-zinc-200">
-                <span className="text-sm font-bold text-blue-800">Rule {index + 1}</span>
+                <span className="text-sm font-bold text-blue-800">{t('builder.ruleIndex', { index: index + 1 })}</span>
                 <div className="flex items-center gap-2">
                   {/* Move Up */}
                   <button
@@ -135,7 +135,7 @@ export default function RuleBuilderCard({
           onClick={onAddRuleBlock}
           className="flex items-center justify-center gap-2 w-full py-3 border-2 border-dashed border-zinc-300 hover:border-zinc-400 hover:bg-zinc-50 rounded-xl text-zinc-600 hover:text-zinc-800 transition-all font-semibold text-sm cursor-pointer"
         >
-          <PlusCircle className="w-4 h-4" /> Add Rule
+          <PlusCircle className="w-4 h-4" /> {t('library.addRule')}
         </button>
 
       </div>
