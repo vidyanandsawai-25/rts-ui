@@ -90,12 +90,13 @@ export function useLockUnlockMaster({
   // Fetch property dropdown options when wardId changes
   useEffect(() => {
     if (!wardIdFromUrl) {
-      setPropertyOptions([]);
       return;
     }
 
+
     const fetchDropdownProperties = async () => {
       setIsLoadingProperties(true);
+
       try {
         const propertiesResponse = await fetchLockUnlockPropertiesPagedAction({
           WardId: Number(wardIdFromUrl),
