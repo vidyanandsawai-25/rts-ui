@@ -159,8 +159,8 @@ const AppartmentQCSection = ({
   const columns = useMemo(() => getApartmentQCColumns(activeMainTab, activeSubTab, tAqc), [activeMainTab, activeSubTab, tAqc]);
   const convertedData = useMemo(() => transformApartmentData(activePagedData.items || [], activeMainTab), [activePagedData, activeMainTab]);
 
-  const handleMainTabChange = (v: string | number) => updateUrl({ tab: 'apartment', appartmentTab: v.toString(), subTab: 'rateable', pageNumber: 1 });
-  const handleSubTabChange = (v: string | number) => updateUrl({ tab: 'apartment', appartmentTab: activeMainTab, subTab: v.toString(), pageNumber: 1 });
+  const handleMainTabChange = (v: string | number) => updateUrl({ valuationTab: 'apartment', appartmentTab: v.toString(), subTab: 'rateable', pageNumber: 1 });
+  const handleSubTabChange = (v: string | number) => updateUrl({ valuationTab: 'apartment', appartmentTab: activeMainTab, subTab: v.toString(), pageNumber: 1 });
 
   const handleRowClick = useCallback((row: Record<string, unknown>) => {
     const propertyId = String(row.id || row.propertyDetailsId || '');

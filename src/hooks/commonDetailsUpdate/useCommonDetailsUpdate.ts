@@ -152,35 +152,23 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
     initialLoadRef.current = true;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoadingConfigs(true);
-
-    // Wrap in try-catch and use timeout fallback to ensure loading state is cleared
-    const loadingTimeout = setTimeout(() => {
-      setLoadingConfigs(false);
-    }, 10000); // 10 second timeout as fallback
-
-    try {
-      loadFieldConfigs(selectedCode, (configs) => {
-        clearTimeout(loadingTimeout);
-        setFieldConfigs(configs);
-        const defaults: Record<string, string | number | boolean> = {};
-        configs.forEach((f) => {
-          if (f.defaultValue != null) {
-            defaults[f.fieldName] = f.defaultValue;
-          } else if (f.controlType === "checkbox") {
-            defaults[f.fieldName] = false;
-          } else {
-            defaults[f.fieldName] = "";
-          }
-        });
-        setFormValues(defaults);
-        setLoadingConfigs(false);
+    
+    loadFieldConfigs(selectedCode, (configs) => {
+      setFieldConfigs(configs);
+      const defaults: Record<string, string | number | boolean> = {};
+      configs.forEach((f) => {
+        if (f.defaultValue != null) {
+          defaults[f.fieldName] = f.defaultValue;
+        } else if (f.controlType === "checkbox") {
+          defaults[f.fieldName] = false;
+        } else {
+          defaults[f.fieldName] = "";
+        }
       });
-    } catch {
-      clearTimeout(loadingTimeout);
+      setFormValues(defaults);
+    }).finally(() => {
       setLoadingConfigs(false);
-    }
-
-    return () => clearTimeout(loadingTimeout);
+    });
   }, [selectedCode, menuItems.length, loadFieldConfigs]);
 
   // Load property options when initialWardId is provided from URL params
@@ -188,77 +176,55 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
     if (initialWardId) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setLoadingPropertyOptions(true);
-      
-      // Fallback timeout to clear loading state
-      const loadingTimeout = setTimeout(() => {
+      loadPropertiesByWard(Number(initialWardId), (options) => {
+        setPropertyOptions(options);
+      }).finally(() => {
         setLoadingPropertyOptions(false);
-      }, 10000);
-
-      try {
-        loadPropertiesByWard(Number(initialWardId), (options) => {
-          clearTimeout(loadingTimeout);
-          setPropertyOptions(options);
-          setLoadingPropertyOptions(false);
-        });
-      } catch {
-        clearTimeout(loadingTimeout);
-        setLoadingPropertyOptions(false);
-      }
-
-      return () => clearTimeout(loadingTimeout);
+      });
     }
   }, [initialWardId, loadPropertiesByWard]);
 
-  // Track if auto-load has been done
-  const autoLoadDoneRef = useRef(false);
+  // Track which field+filter combination has been auto-loaded (to prevent duplicate loads)
+  const autoLoadKeyRef = useRef<string>("");
 
-  // Auto-load properties when all URL params exist and wings are loaded (on page refresh)
+  // Auto-load properties when all URL params exist and wings are loaded (on page refresh or field change)
   useEffect(() => {
-    // Only auto-load once, and only if all required params exist
-    if (autoLoadDoneRef.current) return;
+    // Skip if required params are missing
     if (!initialWardId || !initialFromProperty || !initialToProperty || !initialWing) return;
     // Wait for allWingOptions to be loaded
     if (allWingOptions.length === 0) return;
     
-    autoLoadDoneRef.current = true;
+    // Create a unique key for this combination of params + selected field
+    const autoLoadKey = `${selectedCode}-${initialWardId}-${initialFromProperty}-${initialToProperty}-${initialWing}`;
+    
+    // Only auto-load if we haven't loaded this exact combination before
+    if (autoLoadKeyRef.current === autoLoadKey) return;
+    autoLoadKeyRef.current = autoLoadKey;
     
     // Get the wing label from the selected wing option
     const selectedWingOption = allWingOptions.find(w => w.value === initialWing);
     const wingLabel = selectedWingOption?.label || "";
     
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setLoadingProperties(true);
     setFilterSubmitted(true);
+    setLoadingProperties(true);
     
-    // Use timeout fallback to ensure loading state is cleared even if callback fails
-    const loadingTimeout = setTimeout(() => {
+    loadProperties(
+      {
+        wardId: initialWardId,
+        fromPropertyNo: initialFromProperty.split('-')[0],
+        toPropertyNo: initialToProperty.split('-')[0],
+        wingId: wingLabel,
+        updateCode: selectedCode,
+        page: 1,
+        pageSize: 200,
+      },
+      (data: PagedResponse<PropertyPreviewRow>) => {
+        setProperties(data.items);
+        setTotalCount(data.totalCount);
+      }
+    ).finally(() => {
       setLoadingProperties(false);
-    }, 15000); // 15 second timeout as fallback
-
-    try {
-      loadProperties(
-        {
-          wardId: initialWardId,
-          fromPropertyNo: initialFromProperty.split('-')[0],
-          toPropertyNo: initialToProperty.split('-')[0],
-          wingId: wingLabel,
-          updateCode: selectedCode,
-          page: 1,
-          pageSize: 200,
-        },
-        (data: PagedResponse<PropertyPreviewRow>) => {
-          clearTimeout(loadingTimeout);
-          setProperties(data.items);
-          setTotalCount(data.totalCount);
-          setLoadingProperties(false);
-        }
-      );
-    } catch {
-      clearTimeout(loadingTimeout);
-      setLoadingProperties(false);
-    }
-
-    return () => clearTimeout(loadingTimeout);
+    });
   }, [initialWardId, initialFromProperty, initialToProperty, initialWing, allWingOptions, selectedCode, loadProperties]);
 
   // ── Derived ──────────────────────────────────────────────────────────────────
@@ -332,14 +298,21 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
   const handleMenuSelect = useCallback(
     async (code: string) => {
       if (code === selectedCode) return;
+      
+      // Build new URL with updated field param
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("field", code);
+      
+      // Navigate to the new URL - this will trigger server-side re-render with new data
+      const newUrl = `${pathname}?${params.toString()}`;
+      router.push(newUrl, { scroll: false });
+      
+      // Update local state
       setSelectedCode(code);
       setFieldConfigs([]);
       setFormValues({});
       setFormSubmitted(false);
       setLoadingConfigs(true);
-
-      // Sync to URL
-      updateUrlParams({ field: code });
 
       await loadFieldConfigs(code, (configs) => {
         setFieldConfigs(configs);
@@ -354,12 +327,11 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
           }
         });
         setFormValues(defaults);
+      }).finally(() => {
         setLoadingConfigs(false);
       });
-
-      setLoadingConfigs(false);
     },
-    [selectedCode, loadFieldConfigs, updateUrlParams]
+    [selectedCode, loadFieldConfigs, pathname, searchParams, router]
   );
 
   const handleWardChange = useCallback(
@@ -388,6 +360,7 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
         setLoadingPropertyOptions(true);
         await loadPropertiesByWard(Number(wardId), (options) => {
           setPropertyOptions(options);
+        }).finally(() => {
           setLoadingPropertyOptions(false);
         });
         
@@ -408,6 +381,7 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
     setLoadingPropertyOptions(true);
     await loadPropertiesByWard(Number(filterValues.wardId), (options) => {
       setPropertyOptions(options);
+    }).finally(() => {
       setLoadingPropertyOptions(false);
     });
   }, [filterValues.wardId, propertyOptions.length, loadPropertiesByWard]);
@@ -437,7 +411,6 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
       (data: PagedResponse<PropertyPreviewRow>) => {
         setProperties(data.items);
         setTotalCount(data.totalCount);
-        setLoadingProperties(false);
         // Show success toast with count or info toast when no properties found
         if (data.totalCount > 0) {
           toast.success(t("messages.propertiesLoaded", { count: data.totalCount }));
@@ -452,9 +425,9 @@ export const useCommonDetailsUpdate = (props: CommonDetailsUpdatePageProps) => {
           wing: filterValues.wingId || undefined,
         });
       }
-    );
-
-    setLoadingProperties(false);
+    ).finally(() => {
+      setLoadingProperties(false);
+    });
   }, [filterValues, loadProperties, selectedCode, canShowProperties, allWingOptions, t, updateUrlParams]);
 
   const handleBack = useCallback(() => {

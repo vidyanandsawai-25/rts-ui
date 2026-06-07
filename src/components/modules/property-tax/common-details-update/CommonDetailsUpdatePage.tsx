@@ -1,6 +1,6 @@
 "use client";
 
-import { Database, RefreshCw, ChevronRight } from "lucide-react";
+import { Database, ChevronRight } from "lucide-react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import {
   PageContainer, Badge, Tabs, Tab, TabList, TabPanel, TableHeader,
@@ -283,7 +283,7 @@ export default function CommonDetailsUpdatePage(
               </div>
 
               {/* Lower Section: 12-Column Layout */}
-              <div className="grid grid-cols-12 gap-4 h-[calc(100vh-280px)] min-h-[500px]">
+              <div className="grid grid-cols-12 gap-4 h-[calc(100vh-480px)] min-h-[500px]">
                 {/* Left: Enabled Field List (col-4) */}
                 <div className="col-span-12 lg:col-span-4 flex flex-col min-h-0 border border-blue-200 rounded-xl bg-white overflow-hidden">
                   <div className="flex items-center justify-between px-4 py-3 border-b bg-[#F8FAFF]">
@@ -295,13 +295,6 @@ export default function CommonDetailsUpdatePage(
                         {t("fieldList.subtitle")}
                       </p>
                     </div>
-                    <button
-                      type="button"
-                      className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-[#1E3A8A] bg-white border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
-                    >
-                      <RefreshCw className="w-4 h-4" />
-                      <span className="hidden sm:inline">{t("fieldList.refreshFields")}</span>
-                    </button>
                   </div>
 
                   <div className="p-4 flex-1 overflow-hidden flex flex-col">
@@ -345,17 +338,6 @@ export default function CommonDetailsUpdatePage(
                               )}
                             </div>
                             <div className="flex items-center gap-2 ml-2 shrink-0">
-                              <Badge
-                                variant={item.isActive ? "secondary" : "default"}
-                                size="sm"
-                                className={cn(
-                                  item.isActive
-                                    ? "bg-amber-50 text-amber-700 border-amber-200"
-                                    : "bg-green-50 text-green-700 border-green-200"
-                                )}
-                              >
-                                {item.isActive ? t("fieldList.approval") : t("fieldList.noApproval")}
-                              </Badge>
                               <ChevronRight className={cn(
                                 "w-5 h-5 transition-colors",
                                 isSelected ? "text-[#1E3A8A]" : "text-gray-300"
