@@ -194,3 +194,10 @@ export interface RuleListResponse {
   hasPrevious: boolean;
   hasNext: boolean;
 }
+
+export interface RuleBlock {
+  id: string;
+  description: string;
+  conditions: ConditionGroupState;
+  effect: EffectState;
+}

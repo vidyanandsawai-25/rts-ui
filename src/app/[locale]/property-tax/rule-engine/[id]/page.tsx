@@ -56,11 +56,17 @@ export default async function EditRulePage(props: PageProps) {
   let scopeId = rule.ruleScopeId;
   if (!scopeId || scopeId === 0) {
     try {
-      const parsed: ConditionGroup = JSON.parse(rule.conditionsJson);
+      const parsed = JSON.parse(rule.conditionsJson);
       let firstFieldId = '';
-      if (parsed.conditions && parsed.conditions.length > 0) {
-        firstFieldId = parsed.conditions[0].fieldId;
-      } else if (parsed.groups && parsed.groups.length > 0) {
+
+      if (Array.isArray(parsed)) {
+        for (const r of parsed) {
+          if (r.conditions) {
+            firstFieldId = findFirstFieldId(r.conditions);
+            if (firstFieldId) break;
+          }
+        }
+      } else {
         firstFieldId = findFirstFieldId(parsed);
       }
 

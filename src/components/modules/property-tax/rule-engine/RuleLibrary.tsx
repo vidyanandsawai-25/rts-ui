@@ -8,7 +8,8 @@ import TableHeader from '@/components/common/TableHeader';
 import { MasterTable, Column, SearchSelect } from '@/components/common';
 import { Select } from '@/components/common/select';
 import { Input } from '@/components/common/Input';
-import { EditButton, DeleteButton } from '@/components/common/ActionButtons';
+import { EditButton, DeleteButton, ExecuteTestButton } from '@/components/common/ActionButtons';
+import RuleExecutionDrawer from './RuleExecutionDrawer';
 import { useConfirm } from '@/components/common/ConfirmProvider';
 import { useToast } from '@/components/common/ToastProvider';
 
@@ -43,6 +44,13 @@ export default function RuleLibrary({
   const [rules, setRules] = React.useState<RuleItem[]>(initialRules);
   const [filterCategory, setFilterCategory] = React.useState<string>('ALL');
   const [searchTerm, setSearchTerm] = React.useState<string>(initialSearchTerm);
+  const [activeRuleForTest, setActiveRuleForTest] = React.useState<RuleItem | null>(null);
+  const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
+
+  const handleOpenTestDrawer = (rule: RuleItem) => {
+    setActiveRuleForTest(rule);
+    setIsDrawerOpen(true);
+  };
 
   React.useEffect(() => {
     Promise.resolve().then(() => {
@@ -160,6 +168,7 @@ export default function RuleLibrary({
         actionLabel="Actions"
         renderActions={(row) => (
           <div className="flex items-center gap-1.5 justify-center">
+            <ExecuteTestButton onClick={() => handleOpenTestDrawer(row)} />
             <EditButton onClick={() => router.push(`/${locale}/property-tax/rule-engine/${row.id}`)} />
             <DeleteButton onClick={() => { if (row.id !== undefined) handleDelete(row.id); }} />
           </div>
@@ -189,6 +198,11 @@ export default function RuleLibrary({
             </div>
           </div>
         }
+      />
+      <RuleExecutionDrawer
+        rule={activeRuleForTest}
+        open={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
       />
     </div>
   );

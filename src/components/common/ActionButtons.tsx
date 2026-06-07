@@ -22,6 +22,7 @@ import {
   CheckSquare,
   Eye, // Added Eye icon for preview
   History,
+  Play,
 } from "lucide-react";
 import { Button, type ButtonProps } from "./ActionButton";
 import { cn } from "@/lib/utils/cn";
@@ -328,6 +329,25 @@ export function DeleteButton(
     />
   );
 }
+
+export function ExecuteTestButton(
+  { ["aria-label"]: ariaLabel, className = "", ...props }: Omit<ButtonProps, "icon" | "variant">
+): React.ReactElement {
+  return (
+    <Button
+      variant="edit"
+      icon={Play}
+      size="sm"
+      aria-label={ariaLabel ?? "Test/Execute"}
+      className={cn(
+        "text-indigo-600 hover:bg-indigo-50 border-indigo-400 focus:ring-indigo-300",
+        className
+      )}
+      {...props}
+    />
+  );
+}
+
 
 export function CloseIconButton({
   title = "Close",

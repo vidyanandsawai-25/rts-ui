@@ -207,3 +207,18 @@ export async function deleteRule(id: number | string): Promise<{ success: boolea
   }
   return { success: true, message: 'Rule deleted successfully' };
 }
+
+/**
+ * Executes a rule category against an input payload.
+ */
+export async function executeRule(
+  category: string,
+  input: Record<string, string>
+): Promise<any> {
+  const response = await apiClient.post<any>('/RuleEngine/execute', {
+    category,
+    input,
+  });
+  return response;
+}
+
