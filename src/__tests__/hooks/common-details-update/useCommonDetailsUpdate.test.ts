@@ -11,7 +11,11 @@ vi.mock('next-intl', () => ({
 }));
 
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ replace: vi.fn() }),
+  useRouter: () => ({ 
+    replace: vi.fn(),
+    push: vi.fn(),
+    refresh: vi.fn(),
+  }),
   usePathname: () => '/en/property-tax/common-details-update',
   useSearchParams: () => new URLSearchParams(),
 }));
@@ -97,14 +101,40 @@ describe('useCommonDetailsUpdate', () => {
     // Setup default mock implementations
     mockActions.loadAllWards.mockImplementation((callback) => {
       callback(mockWardOptions);
+      return Promise.resolve();
     });
     
     mockActions.loadAllWings.mockImplementation((callback) => {
       callback(mockWingOptions);
+      return Promise.resolve();
     });
     
     mockActions.loadFieldConfigs.mockImplementation((_code, callback) => {
       callback([]);
+      return Promise.resolve();
+    });
+    
+    mockActions.loadProperties.mockImplementation((_params, callback) => {
+      callback({
+        items: [],
+        pageNumber: 1,
+        pageSize: 100,
+        totalCount: 0,
+        totalPages: 1,
+        hasPrevious: false,
+        hasNext: false,
+      });
+      return Promise.resolve();
+    });
+    
+    mockActions.loadPropertiesByWard.mockImplementation((_wardId, callback) => {
+      callback([]);
+      return Promise.resolve();
+    });
+    
+    mockActions.loadWings.mockImplementation((_wardId, callback) => {
+      callback([]);
+      return Promise.resolve();
     });
     
     vi.mocked(useActions.useCommonDetailsUpdateActions).mockReturnValue(mockActions);
@@ -337,6 +367,7 @@ describe('useCommonDetailsUpdate', () => {
         hasPrevious: false,
         hasNext: false,
       });
+      return Promise.resolve();
     });
 
     await act(async () => {
@@ -438,6 +469,7 @@ describe('useCommonDetailsUpdate', () => {
           bindApi: null,
         },
       ]);
+      return Promise.resolve();
     });
 
     const { result } = renderHook(() =>
@@ -482,6 +514,7 @@ describe('useCommonDetailsUpdate', () => {
         hasPrevious: false,
         hasNext: false,
       });
+      return Promise.resolve();
     });
 
     act(() => {

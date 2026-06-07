@@ -17,10 +17,10 @@ export function useCombinePropertyFilters(
 
   const rangeFrom = searchParams.get('from') ?? '';
   const rangeTo = searchParams.get('to') ?? '';
-  const selectedProperties = useMemo(
-    () => searchParams.get('individual')?.split(',').filter(Boolean) ?? [],
-    [searchParams]
-  );
+  const selectedProperties = useMemo(() => {
+    const ids = searchParams.get('individual')?.split(',').filter(Boolean) ?? [];
+    return ids.filter(id => subPropertyList.some(p => String(p.id) === id));
+  }, [searchParams, subPropertyList]);
   const selectionMethod = (searchParams.get('method') as SelectionMethod) ?? 'range';
 
   const buildUrl = useCallback(
