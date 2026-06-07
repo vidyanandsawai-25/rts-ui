@@ -37,6 +37,7 @@ export interface PropertySocialDetailsDto {
     remark?: string | null;
     socialAttributeCode?: string | null;
     socialAttributeName?: string | null;
+    isActive?: boolean;
 }
 
 export interface PropertySocialInfoItemDto {

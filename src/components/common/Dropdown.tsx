@@ -95,6 +95,7 @@ export function MultiSelectDropdown({
   const handleClearAll = () => {
     const filteredValues = filteredOptions.map((o) => o.value);
     onChange(value.filter((v) => !filteredValues.includes(v)));
+    setSearch("");
   };
 
   const allFilteredSelected =

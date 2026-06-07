@@ -82,7 +82,7 @@ export function PropertySearchResults({
             onPageChange={handlePageChange}
             onPageSizeChange={handlePageSizeChange}
             containerClassName="min-w-0"
-            tableClassName="table-fixed w-full"
+            tableClassName="table-fixed w-max min-w-full"
             maxBodyHeightClassName="max-h-[calc(100vh-280px)] overflow-y-auto overflow-x-hidden"
             emptyText={searchError ? t("searchFailed") : t("noResults")}
             pageSizeOptions={PAGE_SIZE_OPTIONS}

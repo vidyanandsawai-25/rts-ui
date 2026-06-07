@@ -76,8 +76,8 @@ export function PropertySearch({
 
   const handleReset = useCallback(() => {
     setAwaitingResults(true);
-    resetSearch();
-  }, [resetSearch]);
+    resetSearch(activeTab);
+  }, [activeTab, resetSearch]);
 
   const handleTabChange = useCallback(
     (tab: SearchTab) => {

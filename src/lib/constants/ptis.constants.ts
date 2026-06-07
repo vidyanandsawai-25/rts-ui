@@ -3,6 +3,8 @@ import type {
   KYCDetailsData,
   SocietyDetailsData,
   OldDetailsData,
+  DiscountData,
+  BuildingPermissionData,
 } from '@/types/ptis.types';
 
 /**
@@ -79,6 +81,10 @@ export const defaultSocietyDetails: SocietyDetailsData = {
   managerMobileNo: '',
 };
 
+export const defaultBuildingPermission: BuildingPermissionData = {
+  items: [],
+};
+
 /**
  * Default Values for PTIS Old Details
  */
@@ -102,4 +108,13 @@ export const defaultOldDetails: OldDetailsData = {
   oldBuiltupAreaSqFeet: '',
   oldConstructionTypeId: '',
   oldTypeOfUseId: '',
+  oldConstructionArea: '',
+  oldGeneralTax: '',
+};
+
+/**
+ * Default Values for PTIS Discount Details
+ */
+export const defaultDiscountData: DiscountData = {
+  items: [],
 };

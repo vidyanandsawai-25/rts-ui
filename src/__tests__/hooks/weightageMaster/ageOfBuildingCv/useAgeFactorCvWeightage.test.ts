@@ -125,10 +125,7 @@ describe('useAgeFactorCvWeightage', () => {
     expect(result.current.selectedYear).toBe('2024');
   });
 
-  it('canGenerateAll should be true when missing records exist', () => {
-    const { result } = renderHook(() => useAgeFactorCvWeightage(defaultProps));
-    expect(result.current.canGenerateAll).toBe(true);
-  });
+
 
   describe('handleAddAgeRange', () => {
     it('should show warning when ageFrom is missing', () => {

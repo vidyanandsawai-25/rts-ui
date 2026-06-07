@@ -1,6 +1,7 @@
-"use server"
+"use server";
 
 import { uploadDocument } from "@/lib/api/document.service";
+import { logger } from "@/lib/utils/logger";
 
 /**
  * Server Action to upload a document.
@@ -28,7 +29,7 @@ export async function uploadDocumentAction(formData: FormData) {
         return { success: true, data: result };
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : "Failed to upload document";
-        console.error("Upload document action error:", error);
+        logger.error("Upload document action error", { error: error instanceof Error ? error : new Error(String(error)) });
         return { success: false, error: message };
     }
 }

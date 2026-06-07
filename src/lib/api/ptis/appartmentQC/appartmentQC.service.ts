@@ -764,9 +764,9 @@ import type {
 } from '@/types/apartmentQC.types';
 
 /**
- * Fetch apartment property tax details for a specific part type.
+  * Fetch apartment property tax details for a specific part type.
  * 
- * @param params - WardId, PropertyNo, and PartType (Aminity=Amenities, C=Commercial, R=Residential)
+* @param params - WardId, PropertyNo, and PartType (Amenity=Amenities, C=Commercial, R=Residential)
  * @returns API response with tax amounts
  */
 export async function getApartmentPropertyTaxDetails(
@@ -853,7 +853,7 @@ export function getPartTypeFromMainTab(mainTab: string): ApartmentPartType {
       return 'R';
     case 'amenities':
     default:
-      return 'Aminity';
+      return 'Amenity';
   }
 }
 
@@ -865,7 +865,7 @@ export function getPartTypeFromMainTab(mainTab: string): ApartmentPartType {
 /**
  * Fetch apartment property tax details for Capital Value (CV).
  * 
- * @param params - WardId, PropertyNo, and PartType (Aminity=Amenities, C=Commercial, R=Residential)
+* @param params - WardId, PropertyNo, and PartType (Amenity=Amenities, C=Commercial, R=Residential)
  * @returns API response with tax amounts
  */
 export async function getApartmentPropertyTaxDetailsCv(
@@ -954,7 +954,7 @@ import type { DualMethodTaxDetails } from '@/types/apartmentQC.types';
  * 
  * @param wardId - The ward ID
  * @param propertyNo - The property number
- * @param partType - The part type (Aminity, C, or R)
+* @param partType - The part type (Amenity, C, or R)
  * @returns Object containing both RV and CV tax details
  */
 export async function getDualMethodTaxDetails(

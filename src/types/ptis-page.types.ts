@@ -9,6 +9,7 @@ export interface PtisPageProps {
     propertyId?: string;
     wardId?: string;
     tab?: string;
+    valuationTab?: string;
     rateableExpand?: string;
     capitalExpand?: string;
     drawer?: string;
@@ -38,6 +39,8 @@ export interface OldDetailsApiResponse {
   oldRegistration: boolean | null;
   oldConstructionTypeId: string | null;
   oldTypeOfUseId: string | null;
+  oldConstructionArea?: number | null;
+  oldGeneralTax?: number | null;
 }
 
 export interface OldFloorDetailsApiResponse {
