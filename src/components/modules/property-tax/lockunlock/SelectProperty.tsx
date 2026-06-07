@@ -1,6 +1,6 @@
 import { Building } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/common";
-import {ShowHistoryButton,ClearButton} from "@/components/common/ActionButtons";
+import {SearchButton,ClearButton} from "@/components/common/ActionButtons";
 import { SearchSelect } from "@/components/common/SearchSelect";
 import { useTranslations } from "next-intl";
 
@@ -16,6 +16,7 @@ interface SelectPropertyProps {
   handleShow: () => void;
   handleClearAll: () => void;
   isPending: boolean;
+  isLoadingProperties?: boolean;
 }
 
 export function SelectProperty({
@@ -26,6 +27,7 @@ export function SelectProperty({
   handleShow,
   handleClearAll,
   isPending,
+  isLoadingProperties = false,
 }: SelectPropertyProps) {
   const t = useTranslations("lockUnlock");
   return (
@@ -56,6 +58,7 @@ export function SelectProperty({
               onChange={handleSelectChange}
               options={propertyOptions}
               placeholder={t("selectPropertyCard.selectStartRange")}
+              isLoading={isLoadingProperties}
             />
           </div>
           <div className="flex-1 min-w-[200px]">
@@ -67,11 +70,12 @@ export function SelectProperty({
               onChange={handleSelectChange}
               options={propertyOptions}
               placeholder={t("selectPropertyCard.selectEndRange")}
+              isLoading={isLoadingProperties}
             />
           </div>
 
           <div className="flex items-center gap-3 flex-shrink-0 pt-4 md:pt-0">
-            <ShowHistoryButton 
+            <SearchButton 
             label={t("selectPropertyCard.showButton")}          
               size="md"
               onClick={handleShow}

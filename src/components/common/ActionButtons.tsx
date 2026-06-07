@@ -24,6 +24,7 @@ import {
   History,
   Lock,
   Unlock,
+  Search,
 } from "lucide-react";
 import { Button, type ButtonProps } from "./ActionButton";
 import { cn } from "@/lib/utils/cn";
@@ -255,6 +256,17 @@ export function ShowHistoryButton({
 }: LabeledActionButtonProps): React.ReactElement {
   return (
     <Button variant="secondary" icon={History} {...props}>
+      {label}
+    </Button>
+  );
+}
+
+export function SearchButton({
+  label = "Search",
+  ...props
+}: LabeledActionButtonProps): React.ReactElement {
+  return (
+    <Button variant="primary" icon={Search} {...props}>
       {label}
     </Button>
   );

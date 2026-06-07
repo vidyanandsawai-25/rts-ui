@@ -19,8 +19,10 @@
   },
   "resultsTable": {
     "title": "बल्क ऑपरेशन्स ({count} संपत्तियां चुनी गईं)",
+    "propertyMasterTitle": "संपत्ति मास्टर प्रबंधन",
     "lockButton": "चयनित स्क्रीन लॉक करें",
     "unlockButton": "चयनित स्क्रीन अनलॉक करें",
+    "searchPropertyPlaceholder": "संपत्ति क्र. से खोजें...",
     "placeholderText": "कृपया वार्ड और संपत्ति सीमा चुनें, फिर संपत्तियां देखने के लिए \"दिखाएं\" पर क्लिक करें.",
     "columns": {
       "wardNo": "वार्ड क्र.",

@@ -2,9 +2,10 @@
 
 import React from "react";
 import { ShieldAlert } from "lucide-react";
-import { PageContainer, LockButton, UnlockButton } from "@/components/common";
+import { PageContainer, LockButton, UnlockButton, SearchButton } from "@/components/common";
 import TableHeader from "@/components/common/TableHeader";
 import { MasterTable } from "@/components/common/MasterTable";
+import { SearchInput } from "@/components/common/SearchInput";
 import { WardItem } from "@/types/wardMaster.types";
 import { LockedScreen, LockUnlockPropertyItem } from "@/types/lockunlock.types";
 import { useSearchParams } from "next/navigation";
@@ -43,6 +44,10 @@ export default function LockUnlockMaster({
     setEditModal,
     isPending,
     propertyOptions,
+    isLoadingProperties,
+    propertySearchTerm,
+    handlePropertySearch,
+    handleSearchButtonClick,
     pagination,
     handleSelectChange,
     handleClearAll,
@@ -82,6 +87,7 @@ export default function LockUnlockMaster({
           handleShow={handleShow}
           handleClearAll={handleClearAll}
           isPending={isPending}
+          isLoadingProperties={isLoadingProperties}
         />
 
         <ScreenSelectionCard
@@ -104,9 +110,21 @@ export default function LockUnlockMaster({
               onPageChange={handlePageChange}
               onPageSizeChange={handlePageSizeChange}
               paginationConfig={{ enabled: true, showPageSizeSelector: true }}
-              headerTitle={t("resultsTable.title", { count: selectedPropertyIds.length })}
+              headerTitle={t("resultsTable.propertyMasterTitle")}
               headerExtra={
-                <div className="flex items-center gap-3 justify-end w-full">
+                <div className="flex items-center gap-3 w-full justify-end">
+                  {/* Server-side search input for property number */}
+                  <SearchInput
+                    value={propertySearchTerm}
+                    onChange={handlePropertySearch}
+                    placeholder={t("resultsTable.searchPropertyPlaceholder")}
+                    className="!mb-0"
+                  />
+                  <SearchButton
+                    size="sm"
+                    label="Search"
+                    onClick={handleSearchButtonClick}
+                  />
                   <LockButton
                     size="sm"
                     label={t("resultsTable.lockButton")}

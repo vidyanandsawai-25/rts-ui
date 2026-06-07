@@ -1,4 +1,4 @@
-import { useState, useTransition, useCallback } from "react";
+import { useState, useTransition, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { LockedScreen, LockUnlockPropertyItem, LockUnlockPropertiesResponse } from "@/types/lockunlock.types";
@@ -77,7 +77,72 @@ export function useLockUnlockMaster({
     selectedScreenIds: [],
   });
 
-  const propertyOptions = dropdownProperties;
+  // Property dropdown options state - starts with server-fetched data
+  const [propertyOptions, setPropertyOptions] = useState<{ label: string; value: string }[]>(dropdownProperties);
+  const [isLoadingProperties, setIsLoadingProperties] = useState(false);
+
+  // Search state for property number filtering (server-side search)
+  const searchFromUrl = searchParams.get("search") || "";
+  const [propertySearchTerm, setPropertySearchTerm] = useState(searchFromUrl);
+  const [isSearching, setIsSearching] = useState(false);
+  const [appliedPropertySearchTerm, setAppliedPropertySearchTerm] = useState(searchFromUrl);
+
+  // Fetch property dropdown options when wardId changes
+  useEffect(() => {
+    if (!wardIdFromUrl) {
+      setPropertyOptions([]);
+      return;
+    }
+
+    const fetchDropdownProperties = async () => {
+      setIsLoadingProperties(true);
+      try {
+        const propertiesResponse = await fetchLockUnlockPropertiesPagedAction({
+          WardId: Number(wardIdFromUrl),
+          PageNumber: 1,
+          PageSize: -1,
+        });
+
+        if (propertiesResponse && propertiesResponse.items) {
+          const seen = new Set<string>();
+          const options = (propertiesResponse.items || [])
+            .map((p: LockUnlockPropertyItem) => {
+              const normalizedPartitionNo = String(p.partitionNo ?? "").trim();
+              const hasPartition =
+                normalizedPartitionNo !== "" &&
+                normalizedPartitionNo !== "0" &&
+                normalizedPartitionNo !== "-";
+              const displayValue = hasPartition
+                ? `${p.propertyNo}-${normalizedPartitionNo}`
+                : p.propertyNo;
+              return {
+                label: displayValue,
+                value: displayValue,
+              };
+            })
+            .filter((option: { label: string; value: string }) => {
+              if (seen.has(option.value)) {
+                return false;
+              }
+              seen.add(option.value);
+              return true;
+            });
+
+          setPropertyOptions(options);
+        } else {
+          setPropertyOptions([]);
+        }
+      } catch (err: unknown) {
+        console.error("Failed to fetch dropdown properties:", err);
+        toast.error(t("messages.fetchPropertiesFailed"));
+        setPropertyOptions([]);
+      } finally {
+        setIsLoadingProperties(false);
+      }
+    };
+
+    fetchDropdownProperties();
+  }, [wardIdFromUrl, t]);
 
   const handleSelectChange = (name: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -127,6 +192,8 @@ export function useLockUnlockMaster({
     setProperties([]);
     setSelectedPropertyIds([]);
     setPagination({ pageNumber: 1, pageSize: 10, totalCount: 0, totalPages: 1 });
+    setPropertyOptions([]);
+    setPropertySearchTerm("");
     
     // Clear URL parameters
     router.push(pathname);
@@ -134,14 +201,37 @@ export function useLockUnlockMaster({
     toast.info(t("messages.clearedFilters"));
   };
 
+  // Keeps the input responsive without firing a request until the button is clicked.
+  const handlePropertySearch = useCallback((searchTerm: string) => {
+    setPropertySearchTerm(searchTerm);
+    // If clearing the search, also clear URL and applied term immediately
+    if (!searchTerm) {
+      setAppliedPropertySearchTerm("");
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("search");
+      router.push(`${pathname}?${params.toString()}`);
+    }
+  }, [searchParams, pathname, router]);
+
+  // Clear search
+  const handleClearSearch = useCallback(() => {
+    setPropertySearchTerm("");
+    setAppliedPropertySearchTerm("");
+    // Clear search param from URL
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("search");
+    router.push(`${pathname}?${params.toString()}`);
+  }, [searchParams, pathname, router]);
+
   const fetchProperties = useCallback(
-    (pageNum: number, pageSz: number) => {
+    (pageNum: number, pageSz: number, searchTerm: string = appliedPropertySearchTerm) => {
       if (!formData.wardId || !formData.fromProperty || !formData.toProperty) {
         toast.error(t("messages.validationError"));
         return;
       }
 
       startTransition(async () => {
+        setIsSearching(true);
         try {
           const response: LockUnlockPropertiesResponse = await fetchLockUnlockPropertiesPagedAction({
             WardId: Number(formData.wardId),
@@ -149,6 +239,7 @@ export function useLockUnlockMaster({
             ToPropertyNo: formData.toProperty.split("-")[0],
             PageNumber: pageNum,
             PageSize: pageSz,
+            Search: searchTerm || undefined,
           });
 
           if (response && response.items) {
@@ -170,15 +261,30 @@ export function useLockUnlockMaster({
           }
         } catch (err: unknown) {
           toast.error(err instanceof Error ? err.message : t("messages.fetchFailed"));
+        } finally {
+          setIsSearching(false);
         }
       });
     },
-    [formData, t]
+    [appliedPropertySearchTerm, formData, t]
   );
 
   const handleShow = useCallback(() => {
     fetchProperties(1, pagination.pageSize);
   }, [fetchProperties, pagination.pageSize]);
+
+  const handleSearchButtonClick = useCallback(() => {
+    setAppliedPropertySearchTerm(propertySearchTerm);
+    // Update URL with search term
+    const params = new URLSearchParams(searchParams.toString());
+    if (propertySearchTerm) {
+      params.set("search", propertySearchTerm);
+    } else {
+      params.delete("search");
+    }
+    router.push(`${pathname}?${params.toString()}`);
+    fetchProperties(1, pagination.pageSize, propertySearchTerm);
+  }, [fetchProperties, pagination.pageSize, propertySearchTerm, searchParams, pathname, router]);
 
   const handlePageChange = useCallback(
     (page: number) => {
@@ -394,6 +500,13 @@ export function useLockUnlockMaster({
     setEditModal,
     isPending,
     propertyOptions,
+    isLoadingProperties,
+    propertySearchTerm,
+    setPropertySearchTerm,
+    isSearching,
+    handlePropertySearch,
+    handleSearchButtonClick,
+    handleClearSearch,
     pagination,
     handleSelectChange,
     handleClearAll,
