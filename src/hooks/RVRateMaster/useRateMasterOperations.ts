@@ -6,7 +6,8 @@ import type { IBackendRateMaster, RateCategory } from "@/types/RVRateMaster";
 import { 
   buildRateSubmissions, 
   fetchBackendRatesForSubmission, 
-  processRateSubmissions 
+  processRateSubmissions,
+  NO_RATES_TO_UPDATE_ERROR
 } from "./helpers/rateBulkOperations";
 import {
   validateMatrixHasRates,
@@ -128,6 +129,14 @@ export function useRateMasterOperations({
     const { successCount, errorMessages } = await processRateSubmissions(allRateSubmissions, config, getUseGroupLabel);
     const result = getOperationResult(successCount, allRateSubmissions.length);
     const useGroupLabels = formatUseGroupLabels(allRateSubmissions, getUseGroupLabel);
+
+    // Check if error is "No rates to update"
+    const hasNoRatesToUpdateError = errorMessages.some(msg => msg === NO_RATES_TO_UPDATE_ERROR);
+    
+    if (hasNoRatesToUpdateError && errorMessages.length === 1) {
+      toast.error(t('messages.noRatesToUpdate'));
+      return { success: false };
+    }
 
     if (result.allSuccess) {
       toast.success(t('messages.ratesUpdatedSuccess', { groups: useGroupLabels }));

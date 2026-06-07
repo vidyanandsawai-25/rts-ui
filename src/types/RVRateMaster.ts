@@ -244,6 +244,7 @@ export interface RateMasterClientProps {
   initialUseGroup?: string;
   initialYear?: string;
   rateUnitPolicy?: { value: 'SqMeter' | 'SqFeet'; isConfigured: boolean };
+  rateFrequencyPolicy?: { value: 'Monthly' | 'Yearly'; isConfigured: boolean };
 }
 /**
  * Props for Add Rate drawer component

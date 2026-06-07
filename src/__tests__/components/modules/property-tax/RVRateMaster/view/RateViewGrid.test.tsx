@@ -17,6 +17,9 @@ vi.mock("@/components/common", () => ({
       ))}
     </div>
   ),
+}));
+
+vi.mock("@/components/common/MatrixGrid", () => ({
   MatrixGridPagination: () => <div data-testid="pagination">Pagination</div>,
 }));
 
@@ -97,6 +100,7 @@ describe("RateViewGrid", () => {
     totalPages: 0,
     onPageChange: vi.fn(),
     onPageSizeChange: vi.fn(),
+    frequencyMismatch: null,
     t: mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>,
     tCommon: mockTCommon as unknown as ReturnType<typeof import("next-intl").useTranslations>,
   });

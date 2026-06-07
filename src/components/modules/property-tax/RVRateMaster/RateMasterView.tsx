@@ -25,6 +25,7 @@ export default function RateMasterView({
   initialUseGroup,
   initialYear = "ALL",
   rateUnitPolicy,
+  rateFrequencyPolicy,
 }: RateMasterClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -118,6 +119,42 @@ export default function RateMasterView({
     !selectedUseGroup || selectedUseGroup === 'ALL' ||
     !selectedYear || selectedYear === 'ALL';
 
+  // Check for rate frequency mismatch between policy and existing rates
+  // Use filteredData (displayed rates) instead of rateMasterData
+  const frequencyMismatch = useMemo(() => {
+    // Only check if policy is configured and we have filtered data to display
+    if (!rateFrequencyPolicy?.isConfigured || filteredData.length === 0) {
+      return null;
+    }
+
+    // Check existing rate frequencies from the FILTERED/DISPLAYED rates
+    const hasMonthWise = filteredData.some(rate => 
+      rate.rates?.some(r => r.rateRemark === "MonthWise Rate")
+    );
+    const hasYearWise = filteredData.some(rate => 
+      rate.rates?.some(r => r.rateRemark === "YearWise Rate")
+    );
+
+    // If no rates have frequency indicators, no mismatch
+    if (!hasMonthWise && !hasYearWise) {
+      return null;
+    }
+
+    // Determine existing frequency from displayed rates
+    const existingFrequency: "Monthly" | "Yearly" = hasMonthWise && !hasYearWise ? "Monthly" : "Yearly";
+    const configuredFrequency = rateFrequencyPolicy.value;
+
+    // Return mismatch if frequencies differ
+    if (existingFrequency !== configuredFrequency) {
+      return {
+        configuredFrequency,
+        existingFrequency,
+      };
+    }
+
+    return null;
+  }, [rateFrequencyPolicy, filteredData]); // Re-check when filters change
+
   const handlePageChange = (page: number) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set('page', page.toString());
@@ -165,6 +202,21 @@ export default function RateMasterView({
         </div>
       </div>
 
+      {/* Rate Frequency Mismatch Banner */}
+      {frequencyMismatch && (
+        <div className="flex justify-center">
+          <div className="flex items-center gap-2 bg-orange-50 border border-orange-300 rounded-lg px-4 py-2 shadow-sm max-w-4xl">
+            <span className="text-orange-600 shrink-0">⚠</span>
+            <span className="text-sm text-orange-800 font-medium">
+              {t('messages.rateFrequencyMismatch', {
+                configured: frequencyMismatch.configuredFrequency,
+                existing: frequencyMismatch.existingFrequency,
+              })}
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Grid Content */}
       <RateViewGrid
         data={filteredData}
@@ -179,6 +231,8 @@ export default function RateMasterView({
         useGroups={useGroups}
         zoneRemarksMap={zoneRemarksMap}
         rateUnit={rateUnitPolicy?.value ?? "SqMeter"}
+        rateFrequencyPolicy={rateFrequencyPolicy}
+        rateUnitPolicy={rateUnitPolicy}
         pageNumber={pageNumber}
         pageSize={pageSize}
         totalCount={totalCount}

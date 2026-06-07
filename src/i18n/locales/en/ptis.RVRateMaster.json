@@ -73,6 +73,7 @@
     "ratesDeleteFailed": "Failed to delete rates.",
     "fetchRatesForDeleteFailed": "Failed to fetch rates for delete. Please try again.",
     "noRatesToDelete": "No rates found to delete.",
+    "noRatesToUpdate": "No rate values configured to update. Please update rate values first.",
     "downloadingRates": "Downloading rates...",
     "ratesDownloaded": "Rates downloaded successfully!",
     "downloadFailed": "Failed to download rates. Please try again.",
@@ -97,7 +98,8 @@
     "noRatesMatch": "No data matches the selected filters. Try adjusting your criteria or generate new rates.",
     "rateExceedsMaximum": "Rate value cannot exceed {max}. Please enter a valid rate.",
     "rateValueInvalid": "Rate value must be valid. Please enter a valid rate value.",
-    "cannotChangeConfiguredValue": "Cannot change configured value. Please update in Policy Configuration."
+    "cannotChangeConfiguredValue": "Cannot change configured value. Please update in Policy Configuration.",
+    "rateFrequencyMismatch": "The configured rate master frequency is ({configured}) whereas current rates are filled for ({existing}). Please update the policy configuration or delete existing rates and then configure new rates."
   },
   "sections": {
     "copyRatesTitle": "Copy Rates",
@@ -116,7 +118,8 @@
     "quickImport": "Quick Import:",
     "rateFrequency": "Rate Frequency:",
     "rateUnit": "Rate Unit:",
-    "rateEntryMatrix": "Rate Entry Matrix"
+    "rateEntryMatrix": "Rate Entry Matrix",
+    "previewRates": "Preview Rates:"
   },
   "placeholders": {
     "selectUseGroup": "Select use group...",

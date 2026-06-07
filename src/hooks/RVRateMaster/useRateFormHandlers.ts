@@ -91,6 +91,23 @@ export function useRateFormHandlers(props: RateFormHandlersProps) {
 
   const handleUpdateRates = async () => {
     const completeMatrixData = buildCompleteMatrixForSubmission();
+    
+    // Check if there are any non-zero rates to update
+    const hasNonZeroRates = completeMatrixData.some((row: Record<string, unknown>) => {
+      return Object.keys(row).some(key => {
+        if (key === 'id' || key === 'zoneNo' || key === 'taxZoneId' || key === 'zone') {
+          return false;
+        }
+        const value = Number(row[key]);
+        return !isNaN(value) && value > 0;
+      });
+    });
+    
+    if (!hasNonZeroRates) {
+      toast.error(t('messages.noRatesToUpdate'));
+      return;
+    }
+    
     const result = await handleBulkUpdate(completeMatrixData);
     if (result?.success) {
       handleClose();

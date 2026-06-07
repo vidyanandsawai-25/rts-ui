@@ -2,7 +2,8 @@ import RateMasterView from "@/components/modules/property-tax/RVRateMaster/RateM
 import {
   getRateMasterData,
   getZoneDescriptionsPaged,
-  getRateUnitPolicy
+  getRateUnitPolicy,
+  getRateFrequencyPolicy
 } from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
 import { getRateMasterPaged } from "@/lib/api/rvRateMaster";
 
@@ -30,11 +31,13 @@ const RateMasterPageServer = async ({ searchParams }: PageProps) => {
   const [
     allMasterData,
     paginatedZonesResult,
-    rateUnitPolicy
+    rateUnitPolicy,
+    rateFrequencyPolicy
   ] = await Promise.all([
     getRateMasterData(1, -1), 
     getZoneDescriptionsPaged(zonePage, zonePageSize),
-    getRateUnitPolicy()
+    getRateUnitPolicy(),
+    getRateFrequencyPolicy()
   ]);
 
   const {
@@ -95,6 +98,7 @@ const RateMasterPageServer = async ({ searchParams }: PageProps) => {
       initialUseGroup={selectedUseGroup}
       initialYear={selectedYear}
       rateUnitPolicy={rateUnitPolicy}
+      rateFrequencyPolicy={rateFrequencyPolicy}
     />
   );
 };

@@ -73,7 +73,8 @@ export function transformBackendRatesToMatrix(
         const initialRates = constructionTypes.map(ct => ({
           rateCategory: ct.constructionCode || ct.constructionId,
           ratePerSqMtr: null,
-          ratePerSqFt: null
+          ratePerSqFt: null,
+          rateRemark: undefined as string | undefined
         }));
 
         groupedData.set(key, {
@@ -102,6 +103,8 @@ export function transformBackendRatesToMatrix(
             group.rates[rateIndex].ratePerSqMtr = existingRate && existingRate !== 0 ? existingRate : newRate;
             group.rates[rateIndex].ratePerSqFt = group.rates[rateIndex].ratePerSqFt || newRateSqFt;
             group.rates[rateIndex].id = item.id;
+            // Include rateRemark for frequency mismatch detection
+            group.rates[rateIndex].rateRemark = item.rateRemark;
           }
         }
       }
