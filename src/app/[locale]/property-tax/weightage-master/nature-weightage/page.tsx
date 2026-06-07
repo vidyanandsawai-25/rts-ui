@@ -55,10 +55,12 @@ export default async function Page({ searchParams }: NatureFactorCvPageProps): P
 
     // Assessment years for dropdown
     const assessmentYearData = await getAssessmentYearsPagedServerCV(1, -1);
-    const assessmentYearOptions = assessmentYearData.items.map((year) => ({
-        label: `${year.fromYear}-${year.toYear}`,
-        value: year.id.toString(),
-    }));
+    const assessmentYearOptions = assessmentYearData.items
+        .filter((year) => year.isActive)
+        .map((year) => ({
+            label: `${year.fromYear}-${year.toYear}`,
+            value: year.id.toString(),
+        }));
 
     // Nature factor data with filters - no default year filter
     const natureResult = await fetchNatureFactorCVMasterPagedServerAction(

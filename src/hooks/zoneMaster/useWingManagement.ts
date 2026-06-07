@@ -90,9 +90,39 @@ export function useWingManagement({
     setAddingWing(true);
     try {
       if (editingSocietyDetailId) {
-        // Update existing wing
+        // Find existing record to preserve all existing data
+        const existingRecord = societyDetails.find(item => item.id === editingSocietyDetailId);
+        if (!existingRecord) {
+          throw new Error("Existing record not found");
+        }
+
+        // Update existing wing - preserve all existing fields and only update modified ones
         const result = await updateSocietyDetailAction(editingSocietyDetailId, {
-          propertyId: selectedPropertyId,
+          // Preserve existing core data
+          isActive: existingRecord.isActive,
+          propertyId: existingRecord.propertyId,
+          // Preserve society details
+          societyName: existingRecord.societyName,
+          societyAddress: existingRecord.societyAddress,
+          societyNameEnglish: existingRecord.societyNameEnglish,
+          societyAddressEnglish: existingRecord.societyAddressEnglish,
+          societyEmailId: existingRecord.societyEmailId,
+          // Preserve secretary details
+          secretaryName: existingRecord.secretaryName,
+          secretaryNameEnglish: existingRecord.secretaryNameEnglish,
+          secretaryMobileNo: existingRecord.secretaryMobileNo,
+          secretaryEmailId: existingRecord.secretaryEmailId,
+          // Preserve manager details
+          managerName: existingRecord.managerName,
+          managerNameEnglish: existingRecord.managerNameEnglish,
+          managerMobileNo: existingRecord.managerMobileNo,
+          managerEmailId: existingRecord.managerEmailId,
+          // Preserve land owner and builder details
+          landOwnerName: existingRecord.landOwnerName,
+          landOwnerNameEnglish: existingRecord.landOwnerNameEnglish,
+          builderName: existingRecord.builderName,
+          builderNameEnglish: existingRecord.builderNameEnglish,
+          // Update only the modified fields
           wingId: newWingId,
           wingName: newWingName,
         });

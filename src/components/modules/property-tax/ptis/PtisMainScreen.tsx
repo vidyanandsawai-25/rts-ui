@@ -57,7 +57,7 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = (props) => {
 
   const handleTabChange = (value: string | number) => {
     const params = new URLSearchParams(searchParams.toString());
-    params.set('tab', value.toString());
+    params.set('valuationTab', value.toString());
     router.push(`?${params.toString()}`);
   };
 

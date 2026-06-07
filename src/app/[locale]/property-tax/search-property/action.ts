@@ -37,6 +37,44 @@ const DEFAULT_STATS: PropertyStatsData[] = [
   { label: "Assessment Completed", value: "0" },
 ];
 
+function parsePositiveInteger(value: string): number | null {
+  const trimmed = value.trim();
+  if (!/^\d+$/.test(trimmed)) {
+    return null;
+  }
+  const parsed = Number(trimmed);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+function filterByPropertyNumberRange(
+  results: SearchResult[],
+  searchCriteria: SearchCriteria
+): SearchResult[] {
+  const from = parsePositiveInteger(searchCriteria.propertyNoFrom);
+  const to = parsePositiveInteger(searchCriteria.propertyNoTo);
+
+  if (from == null && to == null) {
+    return results;
+  }
+
+  return results.filter((item) => {
+    const propertyNo = parsePositiveInteger(item.propertyNo);
+    if (propertyNo == null) {
+      return false;
+    }
+
+    if (from != null && propertyNo < from) {
+      return false;
+    }
+
+    if (to != null && propertyNo > to) {
+      return false;
+    }
+
+    return true;
+  });
+}
+
 /* ================= ZONE / WARD / LOOKUP ================= */
 
 export async function listZonesAction(): Promise<ZoneApiResponse[]> {
@@ -123,7 +161,15 @@ export async function filterPropertiesAction(
 
   try {
     const result = await searchProperties(payload);
-    return { results: result.items ?? [], error: null };
+    const normalizedResults = result.items ?? [];
+    const shouldEnforcePropertyNoRange =
+      isSearchActive && activeTab === "quick-search";
+
+    const filteredResults = shouldEnforcePropertyNoRange
+      ? filterByPropertyNumberRange(normalizedResults, searchCriteria)
+      : normalizedResults;
+
+    return { results: filteredResults, error: null };
   } catch (err) {
     const message =
       err instanceof Error

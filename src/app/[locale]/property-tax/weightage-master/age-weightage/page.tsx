@@ -65,10 +65,12 @@ export default async function Page({ searchParams }: PagePropsAgeFactor): Promis
 
     // Fetch assessment years for dropdown - use -1 to fetch all records
     const assessmentYearData = await getAssessmentYearsPagedServerCV(1, -1);
-    const assessmentYearOptions = assessmentYearData.items.map((year) => ({
-        label: `${year.fromYear}-${year.toYear}`,
-        value: year.id.toString(),
-    }));
+    const assessmentYearOptions = assessmentYearData.items
+        .filter((year) => year.isActive)
+        .map((year) => ({
+            label: `${year.fromYear}-${year.toYear}`,
+            value: year.id.toString(),
+        }));
 
     // Age factor data with filters and sorting
     const ageResult = await fetchAgeFactorCVMasterPagedServerAction(

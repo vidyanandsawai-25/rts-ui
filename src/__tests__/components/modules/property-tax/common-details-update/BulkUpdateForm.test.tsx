@@ -131,7 +131,7 @@ describe('BulkUpdateForm', () => {
 
   it('should call onUpdate when update button is clicked', async () => {
     const user = userEvent.setup();
-    render(<BulkUpdateForm {...defaultProps} selectedCount={3} />);
+    render(<BulkUpdateForm {...defaultProps} selectedCount={3} selectedFieldsCount={1} />);
     
     const updateButton = screen.getByRole('button', { name: 'form.update' });
     await user.click(updateButton);
@@ -141,7 +141,7 @@ describe('BulkUpdateForm', () => {
 
   it('should call onClear when clear button is clicked', async () => {
     const user = userEvent.setup();
-    render(<BulkUpdateForm {...defaultProps} selectedCount={3} />);
+    render(<BulkUpdateForm {...defaultProps} selectedCount={3} selectedFieldsCount={1} />);
     
     const clearButton = screen.getByRole('button', { name: 'form.clear' });
     await user.click(clearButton);
@@ -172,6 +172,6 @@ describe('BulkUpdateForm', () => {
   it('should render form title', () => {
     render(<BulkUpdateForm {...defaultProps} />);
     
-    expect(screen.getByText('form.title')).toBeInTheDocument();
+    expect(screen.getByText('newValues.title')).toBeInTheDocument();
   });
 });

@@ -27,17 +27,15 @@ const DiscountDataTab: React.FC<DiscountDataTabProps> = ({ initialData }) => {
   }
 
   const getValueLabel = (item: PropertySocialDetailItem) => {
-    if (item.bitValue !== null) return t('fields.status') || 'Status';
     if (item.dateValue !== null) return t('fields.dateLabel') || 'Date';
     if (item.intValue !== null) return t('fields.value') || 'Value';
     if (item.decimalValue !== null) return t('fields.value') || 'Value';
     if (item.textValue !== null) return t('fields.value') || 'Value';
+    if (item.bitValue !== null) return t('fields.status') || 'Status';
     return t('fields.value') || 'Value';
   };
 
   const getValueDisplay = (item: PropertySocialDetailItem) => {
-    if (item.bitValue !== null)
-      return item.bitValue ? t('fields.yes') || 'Yes' : t('fields.no') || 'No';
     if (item.dateValue !== null) {
       try {
         const date = new Date(item.dateValue);
@@ -52,6 +50,8 @@ const DiscountDataTab: React.FC<DiscountDataTabProps> = ({ initialData }) => {
     if (item.intValue !== null) return String(item.intValue);
     if (item.decimalValue !== null) return String(item.decimalValue);
     if (item.textValue !== null) return item.textValue;
+    if (item.bitValue !== null)
+      return item.bitValue ? t('fields.yes') || 'Yes' : t('fields.no') || 'No';
     return '-';
   };
 
