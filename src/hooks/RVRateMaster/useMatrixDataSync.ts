@@ -111,6 +111,13 @@ export function useMatrixDataSync({
     }
   }, [fetchedBackendRates, backendRates, selectedZone, selectedUseGroup, assessmentYear, rateUnit, mode, paginatedZoneDescriptions, zoneDescriptions, rateCategories, defaultMatrixData, setMatrixData, setShowMatrix, setRateFrequency]);
 
+  // Reset initialization flag when filters change
+  useEffect(() => {
+    allZoneEditsInitializedRef.current = false;
+    setAllZoneEdits({});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedZone, selectedUseGroup, assessmentYear, backendRates, setAllZoneEdits]);
+
   // Initialize allZoneEdits with existing matrixData in edit mode
   useEffect(() => {
     const isEditMode = mode === 'edit' || mode === 'delete';
@@ -142,11 +149,4 @@ export function useMatrixDataSync({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [matrixData, mode, rateCategories, setAllZoneEdits]);
-
-  // Reset initialization flag when filters change
-  useEffect(() => {
-    allZoneEditsInitializedRef.current = false;
-    setAllZoneEdits({});
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedZone, selectedUseGroup, assessmentYear, backendRates, setAllZoneEdits]);
 }
