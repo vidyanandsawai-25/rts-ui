@@ -8,9 +8,7 @@ import { locales } from "@/i18n/config";
 import { createPropertyType, getPropertyTypesPaged, getPropertyTypeById, updatePropertyType, purgeDeletePropertyType } from "@/lib/api/property-type-crud.service";
 import { 
   getPropertyTypeAndTypeOfUseValidation, 
-  updatePropertyTypeValidations,
-  getValidationByPropertyTypeId,
-  purgeDeletePropertyTypeValidationBulk 
+  updatePropertyTypeValidations
 } from "@/lib/api/property-type-validation-mapping.service";
 import { getPropertyTypeCategories } from "@/lib/api/property-type-category.service";
 import { ApiError } from "@/lib/utils/api";
@@ -185,15 +183,7 @@ export async function deletePropertyTypeAction(
   }
 
   try {
-    // 1. First, fetch and purge all validation mappings for this property type
-    // This is necessary because PropertyTypeId is a foreign key in the validation table
-    const validations = await getValidationByPropertyTypeId(id);
-    if (validations && validations.length > 0) {
-      const validationIds = validations.map((v) => v.id);
-      await purgeDeletePropertyTypeValidationBulk(validationIds);
-    }
-
-    // 2. Then, purge the property type master record
+    // Purge the property type master record
     await purgeDeletePropertyType(id);
 
     // Revalidate all locale variants of the property type page

@@ -20,11 +20,7 @@ export function usePaymentModeForm({
 }: Omit<PaymentModeFormProps, "open"> & { t: (key: string) => string }) {
     const isEdit = Boolean(editingMode);
 
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [submittedOnce, setSubmittedOnce] = useState(false);
-    const [isActive, setIsActive] = useState(editingMode?.isActive ?? true);
-
-    const [formData, setFormData] = useState<PaymentModeFormData>({
+    const getInitialFormData = useCallback((): PaymentModeFormData => ({
         code: editingMode?.code ?? "",
         paymentModeName: editingMode?.paymentModeName ?? "",
         type: editingMode?.type ?? "Online",
@@ -33,7 +29,13 @@ export function usePaymentModeForm({
         chargeType: editingMode?.chargeType ?? "None",
         transactionCharge: editingMode?.transactionCharge ?? 0,
         isActive: editingMode?.isActive ?? true,
-    });
+    }), [editingMode]);
+
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submittedOnce, setSubmittedOnce] = useState(false);
+    const [isActive, setIsActive] = useState(editingMode?.isActive ?? true);
+
+    const [formData, setFormData] = useState<PaymentModeFormData>(getInitialFormData);
 
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [touched, setTouched] = useState<Record<string, boolean>>({});
@@ -84,6 +86,15 @@ export function usePaymentModeForm({
             return newValue;
         });
     };
+
+    const resetForm = useCallback(() => {
+        setFormData(getInitialFormData());
+        setErrors({});
+        setTouched({});
+        setSubmittedOnce(false);
+        setIsSubmitting(false);
+        setIsActive(editingMode?.isActive ?? true);
+    }, [editingMode?.isActive, getInitialFormData]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -166,6 +177,7 @@ export function usePaymentModeForm({
         handleSubmit,
         handleToggleStatus,
         showError,
-        setFieldValue
+        setFieldValue,
+        resetForm
     };
 }

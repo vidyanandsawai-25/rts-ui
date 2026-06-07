@@ -18,7 +18,8 @@ export const COLUMN_WIDTHS = {
   societyName: "130px",
   address: "180px",
   rvCv: "180px",
-  totalTax: "96px",
+  totalTax: "130px",
+  scrollbarSpacer: "40px",
 } as const;
 
 export const TABLE_TOTAL_WIDTH = Object.values(COLUMN_WIDTHS).reduce(

@@ -307,7 +307,31 @@ describe("useWingManagement", () => {
     });
 
     expect(updateSocietyDetailAction).toHaveBeenCalledWith(1, {
+      // Preserve existing core data
+      isActive: true,
       propertyId: 1,
+      // Preserve society details
+      societyName: "",
+      societyAddress: "",
+      societyNameEnglish: "",
+      societyAddressEnglish: "",
+      societyEmailId: "",
+      // Preserve secretary details
+      secretaryName: "",
+      secretaryNameEnglish: "",
+      secretaryMobileNo: "",
+      secretaryEmailId: "",
+      // Preserve manager details
+      managerName: "",
+      managerNameEnglish: "",
+      managerMobileNo: "",
+      managerEmailId: "",
+      // Preserve land owner and builder details
+      landOwnerName: "",
+      landOwnerNameEnglish: "",
+      builderName: "",
+      builderNameEnglish: "",
+      // Updated fields
       wingId: 1,
       wingName: "Wing A Updated",
     });

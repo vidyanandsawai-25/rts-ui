@@ -15,14 +15,7 @@ interface DynamicFormFieldProps {
   dropdownOptions?: SelectOption[];
 }
 
-const currentYear = new Date().getFullYear();
-const YEAR_OPTIONS: SelectOption[] = Array.from(
-  { length: currentYear - 1900 + 6 },
-  (_, i) => {
-    const year = String(currentYear + 5 - i);
-    return { label: year, value: year };
-  }
-);
+
 
 export const DynamicFormField = ({
   config,
@@ -97,12 +90,19 @@ export const DynamicFormField = ({
 
       case "year":
         return (
-          <Select
+          <Input
+            type="text"
             value={String(value ?? "")}
-            onChange={(_, val) => onChange(config.fieldName, val)}
-            options={YEAR_OPTIONS}
-            placeholder={placeholder || "Select year"}
-            disabled={config.isReadonly}
+            onChange={(e) => {
+              const val = e.target.value;
+              // Allow empty or digits only
+              if (val === "" || /^\d+$/.test(val)) {
+                onChange(config.fieldName, val);
+              }
+            }}
+            placeholder={placeholder || "YYYY"}
+            maxLength={config.maxLength ?? 4}
+            readOnly={config.isReadonly}
           />
         );
 
