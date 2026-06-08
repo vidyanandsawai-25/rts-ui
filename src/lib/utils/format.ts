@@ -103,6 +103,17 @@ export function formatNumericDate(value: string | null | undefined): string {
   }).format(date);
 }
 
+export function formatAreaWithUnit(
+  sqft: number | null | undefined,
+  sqm: number | null | undefined,
+  minimumFractionDigits = 2,
+  maximumFractionDigits = 2
+): string {
+  const sqftValue = formatNumber(sqft, minimumFractionDigits, maximumFractionDigits);
+  const sqmValue = formatNumber(sqm, minimumFractionDigits, maximumFractionDigits);
+  return `${sqftValue} (${sqmValue} m²)`;
+}
+
 import { DateUtils } from "./date-helpers";
 
 export function formatDateToDDMMYYYY(dateStr: string | null | undefined): string {
