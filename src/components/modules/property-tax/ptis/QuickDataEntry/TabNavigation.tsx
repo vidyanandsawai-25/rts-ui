@@ -41,6 +41,13 @@ export function TabNavigation() {
   const propertyNo = searchParams.get('propertyNo') || '';
   const partitionNo = searchParams.get('partitionNo') || '';
   const returnTab = searchParams.get('returnTab') || '';
+  const valuationTab = searchParams.get('valuationTab') || '';
+  const appartmentTab = searchParams.get('appartmentTab') || '';
+  const subTab = searchParams.get('subTab') || '';
+  const showDetails = searchParams.get('showDetails') || '';
+  const rateableExpands = searchParams.getAll('rateableExpand');
+  const capitalExpands = searchParams.getAll('capitalExpand');
+  const dualExpands = searchParams.getAll('dualExpand');
 
   // Check if we have search parameters that can resolve authoritative property ID
   const hasPropertyKeys = wardNo && propertyNo && partitionNo;
@@ -52,6 +59,13 @@ export function TabNavigation() {
   if (propertyNo) params.set('propertyNo', propertyNo);
   if (partitionNo) params.set('partitionNo', partitionNo);
   if (returnTab) params.set('returnTab', returnTab);
+  if (valuationTab) params.set('valuationTab', valuationTab);
+  if (appartmentTab) params.set('appartmentTab', appartmentTab);
+  if (subTab) params.set('subTab', subTab);
+  if (showDetails) params.set('showDetails', showDetails);
+  rateableExpands.forEach(v => params.append('rateableExpand', v));
+  capitalExpands.forEach(v => params.append('capitalExpand', v));
+  dualExpands.forEach(v => params.append('dualExpand', v));
 
   const queryString = params.toString();
 
@@ -84,6 +98,13 @@ export function TabNavigation() {
             if (propertyNo) tabParams.set('propertyNo', propertyNo);
             if (partitionNo) tabParams.set('partitionNo', partitionNo);
             if (tabReturnValue) tabParams.set('returnTab', tabReturnValue);
+            if (valuationTab) tabParams.set('valuationTab', valuationTab);
+            if (appartmentTab) tabParams.set('appartmentTab', appartmentTab);
+            if (subTab) tabParams.set('subTab', subTab);
+            if (showDetails) tabParams.set('showDetails', showDetails);
+            rateableExpands.forEach(v => tabParams.append('rateableExpand', v));
+            capitalExpands.forEach(v => tabParams.append('capitalExpand', v));
+            dualExpands.forEach(v => tabParams.append('dualExpand', v));
             tabQueryString = tabParams.toString();
           } else {
             const tabParams = new URLSearchParams(queryString);

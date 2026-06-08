@@ -92,6 +92,19 @@ export function BottomActionBar({
       const propertyNo = searchParams.get('propertyNo') || undefined;
       const partitionNo = searchParams.get('partitionNo') || undefined;
       const tab = searchParams.get('tab') || undefined;
+      const valuationTab = searchParams.get('valuationTab') || undefined;
+      const appartmentTab = searchParams.get('appartmentTab') || undefined;
+      const subTab = searchParams.get('subTab') || undefined;
+      const showDetails = searchParams.get('showDetails') || undefined;
+      
+      const rateableExpand = searchParams.getAll('rateableExpand');
+      const capitalExpand = searchParams.getAll('capitalExpand');
+      const dualExpand = searchParams.getAll('dualExpand');
+
+      const rateableExpandParam = rateableExpand.length > 0 ? rateableExpand : undefined;
+      const capitalExpandParam = capitalExpand.length > 0 ? capitalExpand : undefined;
+      const dualExpandParam = dualExpand.length > 0 ? dualExpand : undefined;
+
       const pathnameSegments = pathname.split('/').filter(Boolean);
       const locale = pathnameSegments[0] || 'en';
 
@@ -103,6 +116,13 @@ export function BottomActionBar({
         propertyNo,
         partitionNo,
         tab,
+        valuationTab,
+        appartmentTab,
+        subTab,
+        showDetails,
+        rateableExpand: rateableExpandParam,
+        capitalExpand: capitalExpandParam,
+        dualExpand: dualExpandParam,
       });
       if (result.success) {
         toast.success(result.message || 'Action executed.');

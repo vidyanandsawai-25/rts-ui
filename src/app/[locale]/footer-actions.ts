@@ -16,6 +16,13 @@ export interface FooterActionPayload {
   propertyNo?: string;
   partitionNo?: string;
   tab?: string;
+  valuationTab?: string;
+  appartmentTab?: string;
+  subTab?: string;
+  showDetails?: string;
+  rateableExpand?: string | string[];
+  capitalExpand?: string | string[];
+  dualExpand?: string | string[];
 }
 
 const ptisEditRedirectSchema = z.object({
@@ -35,6 +42,13 @@ const ptisEditRedirectSchema = z.object({
     .regex(/^[a-zA-Z0-9_-]*$/)
     .optional(),
   tab: z.string().optional(),
+  valuationTab: z.string().optional(),
+  appartmentTab: z.string().optional(),
+  subTab: z.string().optional(),
+  showDetails: z.string().optional(),
+  rateableExpand: z.union([z.string(), z.array(z.string())]).optional(),
+  capitalExpand: z.union([z.string(), z.array(z.string())]).optional(),
+  dualExpand: z.union([z.string(), z.array(z.string())]).optional(),
 });
 
 /**
@@ -92,7 +106,7 @@ export async function handleFooterAction(
           return { success: false, error: 'Invalid or insecure redirect payload.' };
         }
 
-        const { propertyId, locale, wardNo, wardId, propertyNo, partitionNo, tab } =
+        const { propertyId, locale, wardNo, wardId, propertyNo, partitionNo, tab, valuationTab, appartmentTab, subTab, showDetails, rateableExpand, capitalExpand, dualExpand } =
           validationResult.data;
 
         const params = new URLSearchParams();
@@ -100,6 +114,23 @@ export async function handleFooterAction(
         if (wardId) params.set('wardId', String(wardId));
         if (propertyNo) params.set('propertyNo', propertyNo);
         if (partitionNo && partitionNo !== '0') params.set('partitionNo', partitionNo);
+        if (valuationTab) params.set('valuationTab', valuationTab);
+        if (appartmentTab) params.set('appartmentTab', appartmentTab);
+        if (subTab) params.set('subTab', subTab);
+        if (showDetails) params.set('showDetails', showDetails);
+
+        const handleExpand = (key: string, val: string | string[] | undefined) => {
+          if (val) {
+            if (Array.isArray(val)) {
+              val.forEach((v) => params.append(key, v));
+            } else {
+              params.set(key, val);
+            }
+          }
+        };
+        handleExpand('rateableExpand', rateableExpand);
+        handleExpand('capitalExpand', capitalExpand);
+        handleExpand('dualExpand', dualExpand);
 
         let targetPath = '';
         if (tab === 'kycdetails') {
