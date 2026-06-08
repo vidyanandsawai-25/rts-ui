@@ -27,6 +27,16 @@ import {
   deleteTapSize,
 } from "@/lib/api/water-connection-master/water-connection-type-size.service";
 
+import {
+  getWaterRatesPaged,
+  getWaterRateById,
+  createWaterRate,
+  updateWaterRate,
+  deleteWaterRate,
+} from "@/lib/api/water-connection-master/water-rate-master.service";
+
+import { getFinancialYearsPaged } from "@/lib/api/financial-year.service";
+
 import type {
   TapStatus,
   TapStatusFormModel,
@@ -34,6 +44,8 @@ import type {
   TapTypeFormModel,
   TapSize,
   TapSizeFormModel,
+  WaterRate,
+  WaterRateFormModel,
   PagedResponse,
 } from "@/types/water-connection.types";
 import type { ApiResponse } from "@/types/common.types";
@@ -42,6 +54,7 @@ const REVALIDATE_PATHS = {
   tapStatus: "tap-status",
   tapType: "tap-type",
   tapSize: "tap-size",
+  waterRate: "water-rate",
 } as const;
 
 function revalidateAll(tab: keyof typeof REVALIDATE_PATHS) {
@@ -250,4 +263,64 @@ export async function deleteTapSizeAction(
   } catch (error) {
     return parseWaterConnectionError(error);
   }
+}
+
+/* ============================================================
+   WATER RATE ACTIONS
+============================================================ */
+
+export async function fetchWaterRatesPagedAction(
+  pageNumber: number,
+  pageSize: number,
+  searchTerm?: string
+): Promise<PagedResponse<WaterRate>> {
+  return getWaterRatesPaged(pageNumber, pageSize, searchTerm);
+}
+
+export async function getWaterRateByIdAction(id: number): Promise<WaterRate> {
+  return getWaterRateById(id);
+}
+
+export async function createWaterRateAction(
+  data: WaterRateFormModel
+): Promise<ApiResponse<WaterRate>> {
+  try {
+    const userId = await getAuthUserId();
+    const result = await createWaterRate(data, userId);
+    revalidateAll("waterRate");
+    return { success: true, data: result };
+  } catch (error) {
+    return parseWaterConnectionError(error);
+  }
+}
+
+export async function updateWaterRateAction(
+  id: number,
+  data: WaterRateFormModel
+): Promise<ApiResponse<WaterRate>> {
+  try {
+    const userId = await getAuthUserId();
+    const result = await updateWaterRate(id, data, userId);
+    revalidateAll("waterRate");
+    return { success: true, data: result };
+  } catch (error) {
+    return parseWaterConnectionError(error);
+  }
+}
+
+export async function deleteWaterRateAction(
+  id: number
+): Promise<ApiResponse<void>> {
+  try {
+    const userId = await getAuthUserId();
+    await deleteWaterRate(id, userId);
+    revalidateAll("waterRate");
+    return { success: true };
+  } catch (error) {
+    return parseWaterConnectionError(error);
+  }
+}
+
+export async function fetchFinancialYearsPagedAction() {
+  return getFinancialYearsPaged(1, 2000);
 }

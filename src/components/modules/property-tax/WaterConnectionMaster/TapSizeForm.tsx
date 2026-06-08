@@ -103,7 +103,7 @@ export function TapSizeForm({ id, initialData }: Readonly<TapSizeFormProps>) {
         setOpen(false);
         router.push(listUrl);
       } else {
-        toast.error(result.error ?? tCommon("errors.unexpectedError"));
+        toast.error(result.error ?? tCommon("errors.generic"));
       }
     } finally {
       setIsSubmitting(false);

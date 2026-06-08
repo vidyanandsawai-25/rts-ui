@@ -95,7 +95,7 @@ export async function getWaterConnectionPageData(
     contact: kyc?.mobileNo ?? '—',
     email: kyc?.emailId ?? '—',
     address: kyc?.address ?? '—',
-    zone: basicDetails?.taxZoneNo ?? '—',
+    zone: basicDetails?.division || basicDetails?.taxZoneNo || '—',
     ward: basicDetails?.wardNo ?? '—',
     buildingType: basicDetails?.categoryName ?? '—',
   };
