@@ -33,6 +33,13 @@ function QuickDataEntryContent({
     const propertyNo = searchParams.get("propertyNo") || "";
     const partitionNo = searchParams.get("partitionNo") || "";
     const returnTab = searchParams.get("returnTab") || "";
+    const valuationTab = searchParams.get("valuationTab") || "";
+    const appartmentTab = searchParams.get("appartmentTab") || "";
+    const subTab = searchParams.get("subTab") || "";
+    const showDetails = searchParams.get("showDetails") || "";
+    const rateableExpands = searchParams.getAll("rateableExpand");
+    const capitalExpands = searchParams.getAll("capitalExpand");
+    const dualExpands = searchParams.getAll("dualExpand");
 
     const pathSegments = pathname?.split('/').filter(Boolean) || [];
     const qdeIndex = pathSegments.findIndex((segment) => segment.toLowerCase() === 'quickdataentry');
@@ -48,6 +55,13 @@ function QuickDataEntryContent({
         if (propertyNo) params.set('propertyNo', propertyNo);
         if (partitionNo) params.set('partitionNo', partitionNo);
         if (resolvedReturnTab) params.set('tab', resolvedReturnTab);
+        if (valuationTab) params.set('valuationTab', valuationTab);
+        if (appartmentTab) params.set('appartmentTab', appartmentTab);
+        if (subTab) params.set('subTab', subTab);
+        if (showDetails) params.set('showDetails', showDetails);
+        rateableExpands.forEach(v => params.append('rateableExpand', v));
+        capitalExpands.forEach(v => params.append('capitalExpand', v));
+        dualExpands.forEach(v => params.append('dualExpand', v));
 
         router.push(`/${locale}/property-tax/ptis?${params}`);
     };
