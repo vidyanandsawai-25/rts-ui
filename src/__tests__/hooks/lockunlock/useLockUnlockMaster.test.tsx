@@ -5,7 +5,7 @@ import { LockedScreen, LockUnlockPropertyItem, LockUnlockPropertiesResponse } fr
 import { useLockUnlockMaster } from "@/hooks/lockunlock/useLockUnlockMaster";
 
 // Mock next-intl
-const mockT = vi.fn((key: string, values?: Record<string, unknown>) => {
+const mockT = vi.fn((key: string, _values?: Record<string, unknown>) => {
   const translations: Record<string, string> = {
     "messages.validationError": "Please fill in all required fields",
     "messages.fetchSuccess": "Properties fetched successfully",

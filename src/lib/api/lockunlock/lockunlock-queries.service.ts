@@ -24,7 +24,7 @@ export async function getLockUnlockScreens(): Promise<LockedScreen[]> {
     const t = await getTranslations("lockUnlock");
     throw new ApiError(
       response.statusCode ?? 500,
-      response.error || t("messages.fetchScreensFailed"),
+      response.error || t("messages.fetchFailed"),
       "Get screens failed"
     );
   }
@@ -69,7 +69,7 @@ export async function getLockUnlockProperties(
     const t = await getTranslations("lockUnlock");
     throw new ApiError(
       response.statusCode ?? 500,
-      response.error || t("messages.fetchPropertiesFailed"),
+      response.error || t("messages.fetchFailed"),
       "Get properties failed"
     );
   }

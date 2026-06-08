@@ -19,6 +19,14 @@ export default async function Page({
   let dropdownProperties: { label: string; value: string }[] = [];
   let screens: LockedScreen[] = [];
   let properties: LockUnlockPropertyItem[] = [];
+  let initialPagination:
+    | {
+        pageNumber: number;
+        pageSize: number;
+        totalCount: number;
+        totalPages: number;
+      }
+    | undefined;
   let errorMsg: string | null = null;
 
   try {
@@ -76,6 +84,12 @@ export default async function Page({
         PageSize: 10,
       });
       properties = propertiesResponse.items || [];
+      initialPagination = {
+        pageNumber: propertiesResponse.pageNumber,
+        pageSize: propertiesResponse.pageSize,
+        totalCount: propertiesResponse.totalCount,
+        totalPages: propertiesResponse.totalPages,
+      };
     }
   } catch (err: unknown) {
     errorMsg = err instanceof Error ? err.message : String(err);
@@ -97,12 +111,7 @@ export default async function Page({
       dropdownProperties={dropdownProperties}
       screens={screens}
       initialProperties={properties}
-      initialPagination={{
-        pageNumber: 1,
-        pageSize: 10,
-        totalCount: properties.length,
-        totalPages: Math.ceil(properties.length / 10),
-      }}
+      initialPagination={initialPagination}
     />
   );
 }

@@ -3,7 +3,7 @@ import { renderHook } from "@testing-library/react";
 import { LockedScreen, LockUnlockPropertyItem } from "@/types/lockunlock.types";
 import { useLockUnlockColumns } from "@/hooks/lockunlock/useLockUnlockColumns";
 
-const mockT = vi.fn((key: string, values?: Record<string, unknown>) => {
+const mockT = vi.fn((key: string, _values?: Record<string, unknown>) => {
   const translations: Record<string, string> = {
     "resultsTable.columns.wardNo": "Ward No",
     "resultsTable.columns.propertyNo": "Property No",

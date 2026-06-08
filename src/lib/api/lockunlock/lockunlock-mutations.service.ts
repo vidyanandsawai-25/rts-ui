@@ -5,7 +5,7 @@ import { BulkLockUnlockPayload } from "@/types/lockunlock.types";
 
 /**
  * Submits bulk lock or unlock request for property IDs and screen IDs.
- * PUT /api/LockUnlock/bulk
+ * POST /api/LockUnlock/bulk
  */
 export async function bulkLockUnlockProperties(
   payload: BulkLockUnlockPayload
@@ -19,7 +19,7 @@ export async function bulkLockUnlockProperties(
     const t = await getTranslations("lockUnlock");
     throw new ApiError(
       response.statusCode ?? 500,
-      response.error || t("messages.bulkActionFailed"),
+      response.error || t("messages.bulkFailed"),
       "Bulk lock/unlock failed"
     );
   }

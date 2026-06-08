@@ -243,20 +243,23 @@ export function useLockUnlockMaster({
             Search: searchTerm || undefined,
           });
 
-          if (response && response.items) {
-            setProperties(response.items);
+          const items = response?.items ?? [];
+
+          if (items.length > 0) {
+            setProperties(items);
             setSelectedPropertyIds([]);
             setPagination({
               pageNumber: response.pageNumber || pageNum,
               pageSize: response.pageSize || pageSz,
-              totalCount: response.totalCount || response.items.length,
-              totalPages: response.totalPages || 1,
+              totalCount: response.totalCount ?? items.length,
+              totalPages: Math.max(1, response.totalPages || 1),
             });
             setShowResults(true);
             toast.success(t("messages.fetchSuccess"));
           } else {
             setProperties([]);
-            setPagination({ pageNumber: 1, pageSize: pageSz, totalCount: 0, totalPages: 0 });
+            setSelectedPropertyIds([]);
+            setPagination({ pageNumber: 1, pageSize: pageSz, totalCount: 0, totalPages: 1 });
             setShowResults(true);
             toast.info(t("messages.fetchNoResults"));
           }

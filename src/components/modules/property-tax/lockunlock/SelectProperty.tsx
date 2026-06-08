@@ -73,7 +73,6 @@ export function SelectProperty({
               isLoading={isLoadingProperties}
             />
           </div>
-
           <div className="flex items-center gap-3 flex-shrink-0 pt-4 md:pt-0">
             <SearchButton 
             label={t("selectPropertyCard.showButton")}          
