@@ -27,6 +27,7 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({
     push: pushMock,
   }),
+  usePathname: () => '/en/configuration-settings/payment-mode-master',
 }));
 
 // Mock PaymentModeRowActions to avoid server-side imports

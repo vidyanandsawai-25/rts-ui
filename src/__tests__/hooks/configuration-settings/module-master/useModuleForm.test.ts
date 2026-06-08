@@ -1,8 +1,13 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { useModuleForm } from '@/hooks/configuration-settings/module-master/useModuleForm';
-import * as actions from '@/app/[locale]/configuration-settings/module-master/actions';
-import { toast } from 'sonner';
+
+const mockPermissions = {
+  canView: true,
+  canEdit: true,
+  canDelete: true,
+  haveFullAccess: true,
+  hasAccess: true,
+};
 
 vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
@@ -16,16 +21,12 @@ vi.mock('sonner', () => ({
   },
 }));
 
-const mockPermissions = {
-  canView: true,
-  canEdit: true,
-  canDelete: true,
-  haveFullAccess: true,
-  hasAccess: true,
-};
-
 vi.mock('@/hooks/usePermissions', () => ({
   usePermissions: () => mockPermissions,
+}));
+
+vi.mock('@/hooks/useActivePagePermissions', () => ({
+  useActivePagePermissions: () => mockPermissions,
 }));
 
 const mockPush = vi.fn();
@@ -52,6 +53,10 @@ vi.mock('@/app/[locale]/configuration-settings/module-master/actions', () => ({
   updateModuleMasterAction: vi.fn(),
   getModuleMastersSummaryAction: vi.fn(),
 }));
+
+import { useModuleForm } from '@/hooks/configuration-settings/module-master/useModuleForm';
+import * as actions from '@/app/[locale]/configuration-settings/module-master/actions';
+import { toast } from 'sonner';
 
 describe('useModuleForm', () => {
   beforeEach(() => {
