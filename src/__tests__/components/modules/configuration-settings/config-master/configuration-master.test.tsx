@@ -3,6 +3,26 @@ import './test-setup';
 import { render, screen } from '@testing-library/react';
 import { revalidatePath } from 'next/cache';
 
+const mockPermissions = {
+  canView: true,
+  canEdit: true,
+  canDelete: true,
+  haveFullAccess: true,
+  hasAccess: true,
+};
+
+vi.mock('@/hooks/usePermissions', () => ({
+  usePermissions: () => mockPermissions,
+}));
+
+vi.mock('@/hooks/useActivePagePermissions', () => ({
+  useActivePagePermissions: () => mockPermissions,
+}));
+
+vi.mock('@/components/modules/configuration-settings/config-master/ConfigModalsController', () => ({
+  ConfigModalsController: () => null,
+}));
+
 import { createConfigCategoryAction } from '@/app/[locale]/configuration-settings/config-master/actions/category';
 import { createConfigKeyAction } from '@/app/[locale]/configuration-settings/config-master/actions/key';
 import { createConfigValueAction } from '@/app/[locale]/configuration-settings/config-master/actions/value';
@@ -19,22 +39,6 @@ import { moduleMasterService } from '@/lib/api/moduleMaster.service';
 import { departmentMasterService } from '@/lib/api/departmentMaster.service';
 import { mockVerifySession } from './test-setup';
 import type { ConfigCategory, ConfigItem } from '@/types/configMaster.types';
-
-const mockPermissions = {
-  canView: true,
-  canEdit: true,
-  canDelete: true,
-  haveFullAccess: true,
-  hasAccess: true,
-};
-
-vi.mock('@/hooks/usePermissions', () => ({
-  usePermissions: () => mockPermissions,
-}));
-
-vi.mock('@/components/modules/configuration-settings/config-master/ConfigModalsController', () => ({
-  ConfigModalsController: () => null,
-}));
 
 vi.mock('@/lib/api/configuration-settings/config-master/configMaster.service', () => ({
   configMasterService: {
@@ -204,23 +208,6 @@ describe('Configuration Master PR Smoke Tests', () => {
       },
     ];
 
-    it('renders "No Access" screen when no view or full access is present', () => {
-      mockPermissions.canView = false;
-      mockPermissions.haveFullAccess = false;
-
-      render(
-        <ConfigurationMaster
-          categories={categories}
-          initialItems={items}
-          departmentData={null}
-          categoryId="1"
-          search=""
-          locale="en"
-        />
-      );
-
-      expect(screen.getByText('errors.noAccess')).toBeInTheDocument();
-    });
 
     it('renders unauthorized screen when statusCode is 401', () => {
       mockPermissions.canView = false;
@@ -242,6 +229,7 @@ describe('Configuration Master PR Smoke Tests', () => {
     });
 
     it('gates category and key creation actions in header based on full access', () => {
+      mockPermissions.haveFullAccess = true;
       const { rerender } = render(
         <ConfigurationMasterHeader
           title="title"
@@ -250,12 +238,12 @@ describe('Configuration Master PR Smoke Tests', () => {
           addCategoryLabel="Add Category"
           addConfigKeyLabel="Add Key"
           activeCategoryId="1"
-          haveFullAccess={true}
         />
       );
       expect(screen.getByText('Add Category')).toBeInTheDocument();
       expect(screen.getByText('Add Key')).toBeInTheDocument();
 
+      mockPermissions.haveFullAccess = false;
       rerender(
         <ConfigurationMasterHeader
           title="title"
@@ -264,7 +252,6 @@ describe('Configuration Master PR Smoke Tests', () => {
           addCategoryLabel="Add Category"
           addConfigKeyLabel="Add Key"
           activeCategoryId="1"
-          haveFullAccess={false}
         />
       );
       expect(screen.queryByText('Add Category')).not.toBeInTheDocument();

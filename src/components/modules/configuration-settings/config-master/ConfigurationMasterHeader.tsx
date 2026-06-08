@@ -1,5 +1,10 @@
-import { FolderPlus, Key, Settings } from 'lucide-react';
-import Link from 'next/link';
+'use client';
+
+import { Settings, Plus } from 'lucide-react';
+import { Button } from '@/components/common';
+import { useRouter } from 'next/navigation';
+
+import { useActivePagePermissions } from '@/hooks/useActivePagePermissions';
 
 interface ConfigurationMasterHeaderProps {
   title: string;
@@ -9,7 +14,6 @@ interface ConfigurationMasterHeaderProps {
   addConfigKeyLabel: string;
   activeCategoryId: string;
   search?: string;
-  haveFullAccess?: boolean;
 }
 
 export function ConfigurationMasterHeader({
@@ -20,8 +24,10 @@ export function ConfigurationMasterHeader({
   addConfigKeyLabel,
   activeCategoryId,
   search,
-  haveFullAccess,
 }: ConfigurationMasterHeaderProps) {
+  const router = useRouter();
+  const { haveFullAccess } = useActivePagePermissions();
+
   const buildActionHref = (action: 'addCategory' | 'addConfigKey') => {
     const params = new URLSearchParams();
     params.set('categoryId', activeCategoryId);
@@ -54,23 +60,23 @@ export function ConfigurationMasterHeader({
 
         {haveFullAccess && (
           <div className="flex items-center gap-3">
-            <Link
-              href={buildActionHref('addCategory')}
-              scroll={false}
-              className="h-10 px-4 bg-white border-2 border-slate-100 hover:border-indigo-200 text-slate-600 font-black transition-all shadow-sm rounded-xl inline-flex items-center justify-center gap-2 text-[11px] uppercase tracking-widest hover:bg-slate-50"
+            <Button
+              onClick={() => router.push(buildActionHref('addCategory'), { scroll: false })}
+              variant="secondary"
+              icon={Plus}
+              className="h-10 px-4 bg-white border-2 border-slate-100 hover:border-indigo-200 text-slate-600 font-black transition-all shadow-sm rounded-xl inline-flex items-center justify-center gap-2 text-[11px] uppercase tracking-widest hover:bg-slate-50 cursor-pointer"
             >
-              <FolderPlus className="w-4 h-4 text-indigo-500" />
               {addCategoryLabel}
-            </Link>
+            </Button>
 
-            <Link
-              href={buildActionHref('addConfigKey')}
-              scroll={false}
-              className="h-10 px-4 bg-white border-2 border-slate-100 hover:border-indigo-200 text-slate-600 font-black transition-all shadow-sm rounded-xl inline-flex items-center justify-center gap-2 text-[11px] uppercase tracking-widest hover:bg-slate-50"
+            <Button
+              onClick={() => router.push(buildActionHref('addConfigKey'), { scroll: false })}
+              variant="secondary"
+              icon={Plus}
+              className="h-10 px-4 bg-white border-2 border-slate-100 hover:border-indigo-200 text-slate-600 font-black transition-all shadow-sm rounded-xl inline-flex items-center justify-center gap-2 text-[11px] uppercase tracking-widest hover:bg-slate-50 cursor-pointer"
             >
-              <Key className="w-4 h-4 text-indigo-500" />
               {addConfigKeyLabel}
-            </Link>
+            </Button>
           </div>
         )}
       </div>
