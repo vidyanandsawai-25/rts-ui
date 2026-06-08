@@ -132,7 +132,7 @@ export function useRateMasterOperations({
 
     const nonUpdateErrors = errorMessages.filter(msg => msg !== NO_RATES_TO_UPDATE_ERROR);
     
-    if (errorMessages.length > 0 && nonUpdateErrors.length === 0) {
+    if (successCount === 0 && errorMessages.length > 0 && nonUpdateErrors.length === 0) {
       toast.error(t('messages.noRatesToUpdate'));
       return { success: false };
     }

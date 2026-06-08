@@ -157,6 +157,7 @@ export function RateFiltersSection({
             <IconButton
               icon={TrendingUp}
               variant="primary"
+              aria-label={existingRateFound ? t('messages.validationRatesAlreadyExist') : "Use Group Multipliers"}
               disabled={!allFiltersSelected || existingRateFound || isCheckingRates}
               onClick={onToggleMultipliers}
             />
@@ -167,6 +168,7 @@ export function RateFiltersSection({
             <IconButton
               icon={Plus}
               variant="primary"
+              aria-label={existingRateFound ? t('messages.validationRatesAlreadyExist') : "Generate Rate Matrix"}
               disabled={!allFiltersSelected || existingRateFound || isCheckingRates}
               onClick={onGenerateMatrix}
             />
@@ -177,6 +179,7 @@ export function RateFiltersSection({
             <IconButton
               icon={ClipboardCopy}
               variant="primary"
+              aria-label={existingRateFound ? t('messages.validationRatesAlreadyExist') : "Copy Rates"}
               disabled={!allFiltersSelected || existingRateFound || isCheckingRates}
               onClick={onToggleCopyRates}
             />

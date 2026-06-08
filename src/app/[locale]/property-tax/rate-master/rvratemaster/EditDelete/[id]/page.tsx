@@ -1,8 +1,18 @@
 import {PageContainer} from "@/components/common/PageContainer";
 import RateMasterView from "@/components/modules/property-tax/RVRateMaster/RateMasterView";
 import EditRateDrawer from "@/components/modules/property-tax/RVRateMaster/EditRateDrawer";
-import {getZoneOptions,getUseGroupOptions,getZoneDescriptionsPaged,getAllZoneDescriptions,getConstructionTypes,getRateMasterById,getAssessmentYears,getRateMasterByFilters,
-  getRateMasterPagedAction,getRateFrequencyPolicy,getRateUnitPolicy,
+import {
+  getZoneOptions,
+  getUseGroupOptions,
+  getZoneDescriptionsPaged,
+  getAllZoneDescriptions,
+  getConstructionTypes,
+  getRateMasterById,
+  getAssessmentYears,
+  getRateMasterByFilters,
+  getRateMasterPagedAction,
+  getRateFrequencyPolicy,
+  getRateUnitPolicy,
 } from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
 
 // Force dynamic rendering to ensure fresh data on each navigation
