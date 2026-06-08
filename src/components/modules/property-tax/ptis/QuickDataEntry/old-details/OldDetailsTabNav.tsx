@@ -21,6 +21,14 @@ export function OldDetailsTabNav() {
     const wardId = searchParams.get("wardId") || "";
     const propertyNo = searchParams.get("propertyNo") || "";
     const partitionNo = searchParams.get("partitionNo") || "";
+    const returnTab = searchParams.get("returnTab") || "";
+    const valuationTab = searchParams.get("valuationTab") || "";
+    const appartmentTab = searchParams.get("appartmentTab") || "";
+    const subTab = searchParams.get("subTab") || "";
+    const showDetails = searchParams.get("showDetails") || "";
+    const rateableExpands = searchParams.getAll("rateableExpand");
+    const capitalExpands = searchParams.getAll("capitalExpand");
+    const dualExpands = searchParams.getAll("dualExpand");
 
     // Build query string
     const queryParams = new URLSearchParams();
@@ -29,6 +37,14 @@ export function OldDetailsTabNav() {
     if (wardId) queryParams.set('wardId', wardId);
     if (propertyNo) queryParams.set('propertyNo', propertyNo);
     if (partitionNo) queryParams.set('partitionNo', partitionNo);
+    if (returnTab) queryParams.set('returnTab', returnTab);
+    if (valuationTab) queryParams.set('valuationTab', valuationTab);
+    if (appartmentTab) queryParams.set('appartmentTab', appartmentTab);
+    if (subTab) queryParams.set('subTab', subTab);
+    if (showDetails) queryParams.set('showDetails', showDetails);
+    rateableExpands.forEach(v => queryParams.append('rateableExpand', v));
+    capitalExpands.forEach(v => queryParams.append('capitalExpand', v));
+    dualExpands.forEach(v => queryParams.append('dualExpand', v));
 
     const queryString = queryParams.toString();
 

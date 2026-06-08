@@ -1,6 +1,31 @@
 import { FloorTableRow } from "@/types/OldDetails/property-old-details.types";
 import { Column } from "@/components/common/MasterTable";
 
+const renderCombinedArea = (value: unknown, t: (key: string) => string) => {
+  const localizedUnit = t('roomSubmission.table.sqMeter');
+  const valStr = typeof value === 'string' ? value.replace('m²', localizedUnit) : '';
+  if (!valStr) return <span className="text-slate-900">-</span>;
+
+  const parts = valStr.split(' (');
+  if (parts.length === 2) {
+    return (
+      <div className="flex flex-col items-center justify-center py-1">
+        <span className="text-xs font-bold text-blue-700 whitespace-nowrap">
+          {parts[0]} <span className="text-black">({parts[1]}</span>
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col items-center justify-center py-1">
+      <span className="text-xs font-bold text-blue-700 whitespace-nowrap">
+        {valStr}
+      </span>
+    </div>
+  );
+};
+
 /**
  * Defines the columns for the Floor Information MasterTable.
  * 
@@ -55,13 +80,13 @@ export const getFloorInformationColumns = (t: (key: string) => string): Column<F
     label: t('oldDetails.carpetformheaderArea'),
     headerClassName: 'text-xs uppercase border-r border-white/30 font-semibold text-white text-center whitespace-nowrap',
     width: '140px',
-    render: (value: unknown) => <span className="font-bold text-blue-800 flex w-full justify-center items-center">{String(value)}</span>
+    render: (value: unknown) => renderCombinedArea(value, t),
   },
   {
     key: 'builtupAreaCombined',
     label: t('oldDetails.builtupformheaderArea'),
     headerClassName: 'text-xs uppercase border-r border-white/30 font-semibold text-white text-center whitespace-nowrap',
     width: '140px',
-    render: (value: unknown) => <span className="font-bold text-blue-800 flex w-full justify-center items-center">{String(value)}</span>
+    render: (value: unknown) => renderCombinedArea(value, t),
   },
 ];
