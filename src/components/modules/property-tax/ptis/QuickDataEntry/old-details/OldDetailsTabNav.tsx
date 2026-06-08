@@ -21,6 +21,7 @@ export function OldDetailsTabNav() {
     const wardId = searchParams.get("wardId") || "";
     const propertyNo = searchParams.get("propertyNo") || "";
     const partitionNo = searchParams.get("partitionNo") || "";
+    const returnTab = searchParams.get("returnTab") || "";
 
     // Build query string
     const queryParams = new URLSearchParams();
@@ -29,6 +30,7 @@ export function OldDetailsTabNav() {
     if (wardId) queryParams.set('wardId', wardId);
     if (propertyNo) queryParams.set('propertyNo', propertyNo);
     if (partitionNo) queryParams.set('partitionNo', partitionNo);
+    if (returnTab) queryParams.set('returnTab', returnTab);
 
     const queryString = queryParams.toString();
 

@@ -7,7 +7,7 @@ import { ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import type { FloorTableRow } from "@/types/OldDetails/property-old-details.types";
 import { getFloorInformationColumns } from "../FloorInformationColumns";
 import { FloorTableSectionProps } from "@/types/OldDetails/property-old-floor-info.types";
-import { formatNumberPair } from "@/lib/utils/format";
+import { formatAreaWithUnit } from "@/lib/utils/format";
 
 const COLUMN_SORT_MAP: Record<string, string> = {
   floor: 'oldFloorId',
@@ -90,11 +90,11 @@ export function FloorTableSection({
     subUse: f.subTypeOfUseDescription,
     carpetAreaSqFt: f.oldCarpetAreaSqFeet,
     carpetAreaSqM: f.oldCarpetAreaSqMeter,
-    carpetAreaCombined: formatNumberPair(
+    carpetAreaCombined: formatAreaWithUnit(
       f.oldCarpetAreaSqFeet != null ? Number(f.oldCarpetAreaSqFeet) : null,
       f.oldCarpetAreaSqMeter != null ? Number(f.oldCarpetAreaSqMeter) : null
     ),
-    builtupAreaCombined: formatNumberPair(
+    builtupAreaCombined: formatAreaWithUnit(
       f.oldBuiltupAreaSqFeet != null ? Number(f.oldBuiltupAreaSqFeet) : null,
       f.oldBuiltupAreaSqMeter != null ? Number(f.oldBuiltupAreaSqMeter) : null
     ),
