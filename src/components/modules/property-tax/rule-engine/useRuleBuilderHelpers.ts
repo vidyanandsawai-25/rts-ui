@@ -1,5 +1,4 @@
-import { RuleItem, RuleBlock, EffectState, ConditionGroupState } from '@/types/rule-engine.types';
-import { safeParse } from '@/lib/utils/json-parse';
+import { RuleItem, RuleBlock, ConditionGroupState } from '@/types/rule-engine.types';
 
 /**
  * Initializes the rules list, falling back to legacy single conditions and effect format
@@ -26,47 +25,27 @@ export function initializeRulesList(initialRule?: RuleItem): RuleBlock[] {
         },
         stopProcessing: item.stopProcessing || false,
       }));
-    } else {
-      // Fallback: parse legacy single conditions and single effect
-      return [
-        {
-          id: safeUUID(),
-          description: initialRule?.description ?? '',
-          conditions: parsed || {
-            id: safeUUID(),
-            logicalOperator: 'AND',
-            conditions: [],
-            groups: [],
-          },
-          effect: safeParse<EffectState>(initialRule?.effectJson, {
-            effectType: '',
-            value: '',
-            isPercentage: true,
-          }),
-          stopProcessing: initialRule?.stopProcessing || false,
-        },
-      ];
     }
-  } catch {
-    return [
-      {
+  } catch {}
+
+  return [
+    {
+      id: safeUUID(),
+      description: '',
+      conditions: {
         id: safeUUID(),
-        description: '',
-        conditions: {
-          id: safeUUID(),
-          logicalOperator: 'AND',
-          conditions: [],
-          groups: [],
-        },
-        effect: {
-          effectType: '',
-          value: '',
-          isPercentage: true,
-        },
-        stopProcessing: false,
+        logicalOperator: 'AND',
+        conditions: [],
+        groups: [],
       },
-    ];
-  }
+      effect: {
+        effectType: '',
+        value: '',
+        isPercentage: true,
+      },
+      stopProcessing: false,
+    },
+  ];
 }
 
 /**
@@ -149,17 +128,16 @@ export function extractRuleParameters(rule: RuleItem): string[] {
 }
 
 /**
- * Resolves rule-wise description lists from conditionsJson or top-level description.
+ * Resolves rule-wise description lists from conditionsJson.
  */
-export function getRuleWiseDescriptions(conditionsJson?: string, fallbackDescription?: string): string[] {
+export function getRuleWiseDescriptions(conditionsJson?: string): string[] {
   try {
-    if (!conditionsJson) throw new Error();
+    if (!conditionsJson) return [];
     const parsed = JSON.parse(conditionsJson);
     if (Array.isArray(parsed)) {
-      const list = parsed.map((item) => item.description).filter(Boolean);
-      if (list.length > 0) return list;
+      return parsed.map((item) => item.description).filter(Boolean);
     }
   } catch {}
-  return fallbackDescription ? [fallbackDescription] : [];
+  return [];
 }
 

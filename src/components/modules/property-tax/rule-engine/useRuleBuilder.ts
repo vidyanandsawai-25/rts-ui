@@ -153,7 +153,12 @@ export function useRuleBuilder({
         ruleCode,
         isActive,
         ruleScopeId,
-        conditionsJson:   JSON.stringify(rulesList),
+        conditionsJson:   JSON.stringify(
+          rulesList.map((block) => ({
+            ...block,
+            ruleScopeName: activeScopeName,
+          }))
+        ),
         effectJson:       JSON.stringify(rulesList[0]?.effect || {}),
         targetFiltersJson: JSON.stringify(targetFilters),
         description:      (rulesList[0]?.description || '').trim(),

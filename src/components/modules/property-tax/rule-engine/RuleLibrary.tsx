@@ -114,7 +114,7 @@ export default function RuleLibrary({
       key: 'description',
       label: 'Description',
       render: (_val: unknown, row: RuleItemRecord) => {
-        const descs = getRuleWiseDescriptions(row.conditionsJson, row.description);
+        const descs = getRuleWiseDescriptions(row.conditionsJson);
         if (descs.length === 0) return <span className="text-gray-300 text-xs">—</span>;
         return (
           <div className="flex flex-col gap-0.5 text-xs text-gray-600 max-w-[320px]">

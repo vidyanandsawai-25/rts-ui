@@ -18,22 +18,8 @@ export function useConditionRow({
   const [apiOptions, setApiOptions] = React.useState<{ label: string; value: string }[]>([]);
 
   const currentField = React.useMemo(() => {
-    return fields.find(
-      (f) =>
-        f.fieldId === condition.fieldId ||
-        f.fieldName === condition.fieldId ||
-        f.databaseColumnName === condition.fieldId
-    );
+    return fields.find((f) => f.fieldId === condition.fieldId);
   }, [fields, condition.fieldId]);
-
-  React.useEffect(() => {
-    if (currentField && condition.fieldId !== currentField.fieldId) {
-      onChange({
-        ...condition,
-        fieldId: currentField.fieldId,
-      });
-    }
-  }, [currentField, condition, onChange]);
 
   const fieldOptions = React.useMemo(() => {
     return fields.map((f) => ({

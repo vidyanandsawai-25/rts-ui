@@ -203,4 +203,5 @@ export interface RuleBlock {
   conditions: ConditionGroupState;
   effect: EffectState;
   stopProcessing?: boolean;
+  ruleScopeName?: string;
 }
