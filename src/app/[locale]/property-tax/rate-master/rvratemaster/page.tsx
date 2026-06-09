@@ -1,7 +1,10 @@
 import RateMasterView from "@/components/modules/property-tax/RVRateMaster/RateMasterView";
 import {
   getRateMasterData,
-  getZoneDescriptionsPaged
+  getZoneDescriptionsPaged,
+  getRateUnitPolicy,
+  getRateFrequencyPolicy,
+  getGlobalFrequencyMismatch
 } from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
 import { getRateMasterPaged } from "@/lib/api/rvRateMaster";
 
@@ -28,10 +31,14 @@ const RateMasterPageServer = async ({ searchParams }: PageProps) => {
   // Fetch all master data in one call (for mapping, fetch all zones, not just paginated)
   const [
     allMasterData,
-    paginatedZonesResult
+    paginatedZonesResult,
+    rateUnitPolicy,
+    rateFrequencyPolicy
   ] = await Promise.all([
     getRateMasterData(1, -1), 
-    getZoneDescriptionsPaged(zonePage, zonePageSize)
+    getZoneDescriptionsPaged(zonePage, zonePageSize),
+    getRateUnitPolicy(),
+    getRateFrequencyPolicy()
   ]);
 
   const {
@@ -72,6 +79,13 @@ const RateMasterPageServer = async ({ searchParams }: PageProps) => {
   // Use the filtered rates directly (already filtered by taxZoneIds in getRateMasterPaged)
   const filteredRates = ratesResult.items;
 
+  // STEP 4: Check for global frequency mismatch
+  const globalFrequencyMismatch = await getGlobalFrequencyMismatch(
+    rateFrequencyPolicy, 
+    constructionTypes, 
+    zoneDescriptions
+  );
+
   return (
     <RateMasterView
       rateMasterData={filteredRates}
@@ -91,6 +105,9 @@ const RateMasterPageServer = async ({ searchParams }: PageProps) => {
       initialZone={selectedZone}
       initialUseGroup={selectedUseGroup}
       initialYear={selectedYear}
+      rateUnitPolicy={rateUnitPolicy}
+      rateFrequencyPolicy={rateFrequencyPolicy}
+      globalFrequencyMismatch={globalFrequencyMismatch}
     />
   );
 };

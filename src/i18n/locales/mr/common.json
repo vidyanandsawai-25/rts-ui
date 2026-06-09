@@ -383,6 +383,8 @@
     "deleteRow": "पंक्ती काढा"
   },
   "rateUnit": "(₹/चौ.मी.)",
+  "rateUnitSqMeter": "(₹/चौ.मी.)",
+  "rateUnitSqFeet": "(₹/चौ.फु.)",
   "tabs": {
     "yearWise": "वर्षनिहाय धारणा धोरण",
     "factorWise": "घटकनिहाय धारणा धोरण"

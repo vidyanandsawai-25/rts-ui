@@ -3,17 +3,8 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { getRateMasterByFilters, deleteRateMasterAction } from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
 import type { IBackendRateMaster, RateCategory } from "@/types/RVRateMaster";
-import { 
-  buildRateSubmissions, 
-  fetchBackendRatesForSubmission, 
-  processRateSubmissions 
-} from "./helpers/rateBulkOperations";
-import {
-  validateMatrixHasRates,
-  parseMatrixData,
-  formatUseGroupLabels,
-  getOperationResult
-} from "./helpers/rateOperationValidation";
+import { buildRateSubmissions, fetchBackendRatesForSubmission,  processRateSubmissions, NO_RATES_TO_UPDATE_ERROR} from "./helpers/rateBulkOperations";
+import { validateMatrixHasRates, parseMatrixData, formatUseGroupLabels, getOperationResult } from "./helpers/rateOperationValidation";
 interface UseRateMasterOperationsProps {
   mode: "add" | "edit" | "delete";
   id?: string;
@@ -21,6 +12,7 @@ interface UseRateMasterOperationsProps {
   selectedUseGroup: string;
   assessmentYear: string;
   rateFrequency: "Monthly" | "Yearly";
+  rateUnit: "SqMeter" | "SqFeet";
   multipliers: Record<string, number>;
   rateCategories: RateCategory[];
   useGroupOptions: Array<{ label: string; value: string }>;
@@ -33,6 +25,7 @@ export function useRateMasterOperations({
   selectedUseGroup,
   assessmentYear,
   rateFrequency,
+  rateUnit,
   multipliers,
   rateCategories,
   useGroupOptions,
@@ -69,7 +62,7 @@ export function useRateMasterOperations({
       }
     }
 
-    const config = { selectedZone, selectedUseGroup, assessmentYear, rateFrequency, rateCategories };
+    const config = { selectedZone, selectedUseGroup, assessmentYear, rateFrequency, rateUnit, rateCategories };
     const allRateSubmissions = buildRateSubmissions(completeMatrixData, selectedUseGroup, multipliers, rateCategories);
 
     // Fetch backend rates for each submission
@@ -92,7 +85,7 @@ export function useRateMasterOperations({
       toast.error(t('messages.ratesAddedFailed', { errors: errorMessages.join('; ') }));
       return { success: false };
     }
-  }, [assessmentYear, selectedZone, selectedUseGroup, multipliers, rateCategories, mode, id, t, rateFrequency, getUseGroupLabel]);
+  }, [assessmentYear, selectedZone, selectedUseGroup, multipliers, rateCategories, mode, id, t, rateFrequency, rateUnit, getUseGroupLabel]);
 
   // Bulk update handler
   const handleBulkUpdate = useCallback(async (completeMatrixData: Array<Record<string, unknown>>) => {
@@ -101,7 +94,7 @@ export function useRateMasterOperations({
       return { success: false };
     }
 
-    const config = { selectedZone, selectedUseGroup, assessmentYear, rateFrequency, rateCategories };
+    const config = { selectedZone, selectedUseGroup, assessmentYear, rateFrequency, rateUnit, rateCategories };
     const parsedMatrixData = parseMatrixData(completeMatrixData, rateCategories);
     const allRateSubmissions = buildRateSubmissions(parsedMatrixData, selectedUseGroup, multipliers, rateCategories);
 
@@ -127,17 +120,24 @@ export function useRateMasterOperations({
     const result = getOperationResult(successCount, allRateSubmissions.length);
     const useGroupLabels = formatUseGroupLabels(allRateSubmissions, getUseGroupLabel);
 
+    const nonUpdateErrors = errorMessages.filter(msg => msg !== NO_RATES_TO_UPDATE_ERROR);
+    
+    if (successCount === 0 && errorMessages.length > 0 && nonUpdateErrors.length === 0) {
+      toast.error(t('messages.noRatesToUpdate'));
+      return { success: false };
+    }
+
     if (result.allSuccess) {
       toast.success(t('messages.ratesUpdatedSuccess', { groups: useGroupLabels }));
       return { success: true };
     } else if (result.partialSuccess) {
-      toast.warning(t('messages.ratesUpdatedPartial', { count: successCount, errors: errorMessages.join('; ') }));
+      toast.warning(t('messages.ratesUpdatedPartial', { count: successCount, errors: nonUpdateErrors.join('; ') }));
       return { success: true };
     } else {
-      toast.error(t('messages.ratesUpdatedFailed', { errors: errorMessages.join('; ') }));
+      toast.error(t('messages.ratesUpdatedFailed', { errors: nonUpdateErrors.join('; ') }));
       return { success: false };
     }
-  }, [assessmentYear, selectedZone, selectedUseGroup, multipliers, rateCategories, t, rateFrequency, getUseGroupLabel]);
+  }, [assessmentYear, selectedZone, selectedUseGroup, multipliers, rateCategories, t, rateFrequency, rateUnit, getUseGroupLabel]);
 
   // Delete handler
   const handleDelete = useCallback(async (latestBackendRates: IBackendRateMaster[]) => {
