@@ -74,7 +74,9 @@
     "saving": "सहेज रहा है…",
     "saveChanges": "परिवर्तन सहेजें",
     "add": "जोड़ें",
-    "ruleIndex": "नियम {index}"
+    "ruleIndex": "नियम {index}",
+    "addRule": "नियम जोड़ें",
+    "saveRules": "नियम सहेजें"
   },
   "stopProcessing": {
     "sectionLabel": "नियम अपवर्जन और प्रसंस्करण रोकें",

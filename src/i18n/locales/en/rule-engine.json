@@ -74,7 +74,9 @@
     "saving": "Saving…",
     "saveChanges": "Save Changes",
     "add": "Add",
-    "ruleIndex": "Rule {index}"
+    "ruleIndex": "Rule {index}",
+    "addRule": "Add Rule",
+    "saveRules": "Save Rules"
   },
   "stopProcessing": {
     "sectionLabel": "Rule Exclusion & Stop Processing",

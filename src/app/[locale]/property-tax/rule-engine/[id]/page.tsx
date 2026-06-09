@@ -73,7 +73,7 @@ export default async function EditRulePage(props: PageProps) {
       if (firstFieldId) {
         for (const s of scopes) {
           const fields = await fetchFieldsForScopeAction(s.id);
-          if (fields.some((f) => f.fieldId === firstFieldId)) {
+          if (fields.some((f) => f.fieldId === firstFieldId || f.fieldName === firstFieldId || f.databaseColumnName === firstFieldId)) {
             scopeId = s.id;
             rule.ruleScopeId = s.id;
             break;

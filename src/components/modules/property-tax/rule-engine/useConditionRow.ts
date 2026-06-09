@@ -18,12 +18,26 @@ export function useConditionRow({
   const [apiOptions, setApiOptions] = React.useState<{ label: string; value: string }[]>([]);
 
   const currentField = React.useMemo(() => {
-    return fields.find((f) => f.fieldId === condition.fieldId);
+    return fields.find(
+      (f) =>
+        f.fieldId === condition.fieldId ||
+        f.fieldName === condition.fieldId ||
+        f.databaseColumnName === condition.fieldId
+    );
   }, [fields, condition.fieldId]);
+
+  React.useEffect(() => {
+    if (currentField && condition.fieldId !== currentField.fieldId) {
+      onChange({
+        ...condition,
+        fieldId: currentField.fieldId,
+      });
+    }
+  }, [currentField, condition, onChange]);
 
   const fieldOptions = React.useMemo(() => {
     return fields.map((f) => ({
-      label: f.fieldId.replace(/([A-Z])/g, ' $1').trim().replace(/^\w/, (c) => c.toUpperCase()),
+      label: f.fieldName || f.fieldId.replace(/([A-Z])/g, ' $1').trim().replace(/^\w/, (c) => c.toUpperCase()),
       value: f.fieldId,
     }));
   }, [fields]);
@@ -138,7 +152,7 @@ export function useConditionRow({
     return op ? op.label : condition.operator;
   }, [currentField, condition.operator]);
 
-  const fieldLabel = currentField?.fieldId
+  const fieldLabel = currentField?.fieldName || currentField?.fieldId
     .replace(/([A-Z])/g, ' $1')
     .trim()
     .replace(/^\w/, (c) => c.toUpperCase()) || condition.fieldId;

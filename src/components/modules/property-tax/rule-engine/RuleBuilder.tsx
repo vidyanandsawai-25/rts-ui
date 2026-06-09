@@ -51,7 +51,7 @@ export default function RuleBuilder(props: RuleBuilderProps) {
         activeScopeName={activeScopeName}
         handleSaveClick={handleSaveClick}
         isSaving={isSaving}
-        initialRule={props.initialRule}
+        isEdit={!!props.initialRule}
         rulesList={rulesList}
         fields={fields}
         effectTypes={props.effectTypes}

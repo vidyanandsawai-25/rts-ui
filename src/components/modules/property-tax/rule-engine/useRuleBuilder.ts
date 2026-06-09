@@ -111,8 +111,8 @@ export function useRuleBuilder({
 
   const updateRuleBlock = (
     index: number,
-    key: 'conditions' | 'effect' | 'description',
-    value: RuleBlock['conditions'] | RuleBlock['effect'] | string
+    key: 'conditions' | 'effect' | 'description' | 'stopProcessing',
+    value: RuleBlock['conditions'] | RuleBlock['effect'] | string | boolean
   ) => {
     setRulesList((prev) => {
       const copy = [...prev];
@@ -160,6 +160,7 @@ export function useRuleBuilder({
         ruleCategory,
         changeReason:     changeReason.trim(),
         priority:         1,
+        stopProcessing:   rulesList[0]?.stopProcessing || false,
       };
       const res = await onSaveRule(payload);
       if (res.success) {

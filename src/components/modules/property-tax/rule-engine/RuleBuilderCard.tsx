@@ -1,15 +1,16 @@
-import { PlusCircle, Loader2, ArrowUp, ArrowDown, Trash2 } from 'lucide-react';
+'use client';
+
+import React from 'react';
+import { PlusCircle, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { RuleItem, FieldConfig, RuleBlock, EffectTypeConfig, ConditionGroupState, EffectState } from '@/types/rule-engine.types';
-import { Input } from '@/components/common';
-import ConditionGroup from './ConditionGroup';
-import EffectPanel from './EffectPanel';
+import { FieldConfig, RuleBlock, EffectTypeConfig, ConditionGroupState, EffectState } from '@/types/rule-engine.types';
+import RuleBlockItem from './RuleBlockItem';
 
 interface RuleBuilderCardProps {
   activeScopeName: string;
   handleSaveClick: () => void;
   isSaving: boolean;
-  initialRule?: RuleItem;
+  isEdit: boolean;
   rulesList: RuleBlock[];
   fields: FieldConfig[];
   effectTypes: { label: string; value: string }[];
@@ -18,17 +19,57 @@ interface RuleBuilderCardProps {
   onAddRuleBlock: () => void;
   onRemoveRuleBlock: (index: number) => void;
   onMoveRuleBlock: (index: number, direction: 'up' | 'down') => void;
-  onUpdateRuleBlock: (index: number, key: 'conditions' | 'effect' | 'description', value: ConditionGroupState | EffectState | string) => void;
+  onUpdateRuleBlock: (
+    index: number,
+    key: 'conditions' | 'effect' | 'description' | 'stopProcessing',
+    value: ConditionGroupState | EffectState | string | boolean
+  ) => void;
 }
 
 /** The main IF/THEN card container: card header and rule configurator panel. */
 export default function RuleBuilderCard({
-  activeScopeName, handleSaveClick, isSaving,
-  initialRule, rulesList, fields,
+  activeScopeName, handleSaveClick, isSaving, isEdit,
+  rulesList, fields,
   effectTypes, categoryOptions, effectTypeConfigs,
   onAddRuleBlock, onRemoveRuleBlock, onMoveRuleBlock, onUpdateRuleBlock,
 }: RuleBuilderCardProps) {
   const t = useTranslations('ruleEngine');
+  const [collapsedBlocks, setCollapsedBlocks] = React.useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {};
+    rulesList.forEach((block) => {
+      initial[block.id] = isEdit;
+    });
+    return initial;
+  });
+
+  const prevLengthRef = React.useRef(rulesList.length);
+
+  React.useEffect(() => {
+    if (rulesList.length > prevLengthRef.current) {
+      // Collapse all existing blocks and expand the newly added one
+      const newCollapsedBlocks: Record<string, boolean> = {};
+      rulesList.forEach((block, index) => {
+        if (index === rulesList.length - 1) {
+          newCollapsedBlocks[block.id] = false; // expanded
+        } else {
+          newCollapsedBlocks[block.id] = true; // collapsed
+        }
+      });
+      setCollapsedBlocks(newCollapsedBlocks);
+    }
+    prevLengthRef.current = rulesList.length;
+  }, [rulesList]);
+
+  const toggleCollapse = (id: string) => {
+    setCollapsedBlocks((prev) => {
+      const current = prev[id] !== false;
+      return {
+        ...prev,
+        [id]: !current,
+      };
+    });
+  };
+
   return (
     <div className="bg-white border border-zinc-200 rounded-xl shadow-sm mt-2">
 
@@ -40,11 +81,11 @@ export default function RuleBuilderCard({
             type="button"
             onClick={handleSaveClick}
             disabled={isSaving}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-black hover:bg-zinc-800 disabled:opacity-60 disabled:cursor-not-allowed border border-transparent rounded-lg transition-all shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed border border-transparent rounded-lg transition-all shadow-sm"
           >
             {isSaving
-              ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> {t('builder.saving')}</>
-              : <><PlusCircle className="w-3.5 h-3.5" /> {initialRule ? t('builder.saveChanges') : t('builder.add')}</>
+              ? <><Loader2 className="w-4 h-4 animate-spin" /> {t('builder.saving')}</>
+              : <><PlusCircle className="w-4 h-4" /> {t('builder.saveRules')}</>
             }
           </button>
         </div>
@@ -55,78 +96,27 @@ export default function RuleBuilderCard({
         
         {/* Rules list */}
         <div className="flex flex-col gap-8">
-          {rulesList.map((ruleBlock, index) => (
-            <div key={ruleBlock.id} className="border border-zinc-200 bg-zinc-50/10 p-5 rounded-xl flex flex-col gap-5 relative shadow-sm hover:shadow-md transition-all">
-              
-              {/* Rule block header */}
-              <div className="flex items-center justify-between pb-3 border-b border-zinc-200">
-                <span className="text-sm font-bold text-blue-800">{t('builder.ruleIndex', { index: index + 1 })}</span>
-                <div className="flex items-center gap-2">
-                  {/* Move Up */}
-                  <button
-                    type="button"
-                    disabled={index === 0}
-                    onClick={() => onMoveRuleBlock(index, 'up')}
-                    className="p-1.5 rounded-lg border border-zinc-200 bg-white hover:bg-zinc-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-                    title="Move Up"
-                  >
-                    <ArrowUp className="w-4 h-4 text-zinc-600" />
-                  </button>
+          {rulesList.map((ruleBlock, index) => {
+            const isCollapsed = collapsedBlocks[ruleBlock.id] ?? isEdit;
 
-                  {/* Move Down */}
-                  <button
-                    type="button"
-                    disabled={index === rulesList.length - 1}
-                    onClick={() => onMoveRuleBlock(index, 'down')}
-                    className="p-1.5 rounded-lg border border-zinc-200 bg-white hover:bg-zinc-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-                    title="Move Down"
-                  >
-                    <ArrowDown className="w-4 h-4 text-zinc-600" />
-                  </button>
-
-                  {/* Delete Block */}
-                  <button
-                    type="button"
-                    disabled={rulesList.length <= 1}
-                    onClick={() => onRemoveRuleBlock(index)}
-                    className="p-1.5 rounded-lg border border-red-200 bg-white hover:bg-red-50 hover:border-red-300 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-                    title="Remove Rule"
-                  >
-                    <Trash2 className="w-4 h-4 text-red-500" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Description Input */}
-              <div className="flex flex-col gap-1 w-full">
-                <label className="text-[13px] font-semibold text-zinc-600">
-                  {t('targetFilter.description')}
-                </label>
-                <Input
-                  value={ruleBlock.description}
-                  onChange={(e) => onUpdateRuleBlock(index, 'description', e.target.value)}
-                  placeholder={t('targetFilter.descriptionPlaceholder')}
-                  fullWidth
-                />
-              </div>
-
-              {/* Conditions Group */}
-              <ConditionGroup
-                group={ruleBlock.conditions}
+            return (
+              <RuleBlockItem
+                key={ruleBlock.id}
+                ruleBlock={ruleBlock}
+                index={index}
+                isCollapsed={isCollapsed}
+                totalBlocks={rulesList.length}
                 fields={fields}
-                onChange={(updatedConditions) => onUpdateRuleBlock(index, 'conditions', updatedConditions)}
-              />
-
-              {/* Effect Panel */}
-              <EffectPanel
-                effect={ruleBlock.effect}
-                onChange={(updatedEffect) => onUpdateRuleBlock(index, 'effect', updatedEffect)}
                 effectTypes={effectTypes}
                 categoryOptions={categoryOptions}
                 effectTypeConfigs={effectTypeConfigs}
+                onRemoveRuleBlock={onRemoveRuleBlock}
+                onMoveRuleBlock={onMoveRuleBlock}
+                onUpdateRuleBlock={onUpdateRuleBlock}
+                onToggleCollapse={() => toggleCollapse(ruleBlock.id)}
               />
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Add Rule Button */}
@@ -142,4 +132,3 @@ export default function RuleBuilderCard({
     </div>
   );
 }
-

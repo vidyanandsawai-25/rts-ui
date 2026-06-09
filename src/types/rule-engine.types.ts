@@ -48,6 +48,8 @@ export interface StaticValue {
 export interface FieldConfig {
   id: number;
   fieldId: string;
+  fieldName?: string;
+  databaseColumnName?: string;
   dataType: DataType;
   inputType: InputType;
   sourceType: SourceType;
@@ -200,4 +202,5 @@ export interface RuleBlock {
   description: string;
   conditions: ConditionGroupState;
   effect: EffectState;
+  stopProcessing?: boolean;
 }

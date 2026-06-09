@@ -74,7 +74,9 @@
     "saving": "जतन करत आहे…",
     "saveChanges": "बदल जतन करा",
     "add": "जोडा",
-    "ruleIndex": "नियम {index}"
+    "ruleIndex": "नियम {index}",
+    "addRule": "नियम जोडा",
+    "saveRules": "नियम जतन करा"
   },
   "stopProcessing": {
     "sectionLabel": "नियम वगळणे आणि प्रक्रिया थांबवणे",

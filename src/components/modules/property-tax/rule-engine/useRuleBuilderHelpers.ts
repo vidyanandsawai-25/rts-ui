@@ -1,4 +1,4 @@
-import { RuleItem, RuleBlock, EffectState } from '@/types/rule-engine.types';
+import { RuleItem, RuleBlock, EffectState, ConditionGroupState } from '@/types/rule-engine.types';
 import { safeParse } from '@/lib/utils/json-parse';
 
 /**
@@ -23,7 +23,8 @@ export function initializeRulesList(initialRule?: RuleItem): RuleBlock[] {
           effectType: '',
           value: '',
           isPercentage: true,
-        }
+        },
+        stopProcessing: item.stopProcessing || false,
       }));
     } else {
       // Fallback: parse legacy single conditions and single effect
@@ -42,6 +43,7 @@ export function initializeRulesList(initialRule?: RuleItem): RuleBlock[] {
             value: '',
             isPercentage: true,
           }),
+          stopProcessing: initialRule?.stopProcessing || false,
         },
       ];
     }
@@ -61,6 +63,7 @@ export function initializeRulesList(initialRule?: RuleItem): RuleBlock[] {
           value: '',
           isPercentage: true,
         },
+        stopProcessing: false,
       },
     ];
   }
@@ -111,3 +114,52 @@ export function safeUUID(): string {
     return v.toString(16);
   });
 }
+
+/**
+ * Extracts rule parameter field IDs recursively from the rule conditions.
+ */
+export function extractRuleParameters(rule: RuleItem): string[] {
+  const extracted = new Set<string>();
+  try {
+    const blocks = initializeRulesList(rule);
+    blocks.forEach((block) => {
+      if (block.conditions) {
+        const extract = (g: ConditionGroupState) => {
+          if (!g) return;
+          if (Array.isArray(g.conditions)) {
+            g.conditions.forEach((cond) => {
+              if (cond && cond.fieldId) {
+                extracted.add(cond.fieldId);
+              }
+            });
+          }
+          if (Array.isArray(g.groups)) {
+            g.groups.forEach((subGroup) => {
+              extract(subGroup);
+            });
+          }
+        };
+        extract(block.conditions);
+      }
+    });
+  } catch (_e) {
+    // safe fallback
+  }
+  return Array.from(extracted);
+}
+
+/**
+ * Resolves rule-wise description lists from conditionsJson or top-level description.
+ */
+export function getRuleWiseDescriptions(conditionsJson?: string, fallbackDescription?: string): string[] {
+  try {
+    if (!conditionsJson) throw new Error();
+    const parsed = JSON.parse(conditionsJson);
+    if (Array.isArray(parsed)) {
+      const list = parsed.map((item) => item.description).filter(Boolean);
+      if (list.length > 0) return list;
+    }
+  } catch {}
+  return fallbackDescription ? [fallbackDescription] : [];
+}
+
