@@ -73,35 +73,36 @@ export default function LockUnlockMaster({
 
   return (
     <PageContainer>
-      <div className="space-y-6">
+      <div className="space-y-4">
         <TableHeader
           title={t("title")}
           subtitle={t("subtitle")}
           icon={ShieldAlert}
         />
-        <SelectProperty
-          formData={formData}
-          handleSelectChange={handleSelectChange}
-          wardOptions={wardOptions}
-          propertyOptions={propertyOptions}
-          handleShow={handleShow}
-          handleClearAll={handleClearAll}
-          isPending={isPending}
-          isLoadingProperties={isLoadingProperties}
-        />
 
-        <ScreenSelectionCard
-          screens={screens}
-          selectedScreenIds={selectedScreenIds}
-          setSelectedScreenIds={setSelectedScreenIds}
-        />
-
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 items-stretch">
+          <SelectProperty
+            formData={formData}
+            handleSelectChange={handleSelectChange}
+            wardOptions={wardOptions}
+            propertyOptions={propertyOptions}
+            handleShow={handleShow}
+            handleClearAll={handleClearAll}
+            isPending={isPending}
+            isLoadingProperties={isLoadingProperties}
+          />
+          <ScreenSelectionCard
+            screens={screens}
+            selectedScreenIds={selectedScreenIds}
+            setSelectedScreenIds={setSelectedScreenIds}
+          />
+        </div>
         {showResults ? (
           <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
             <MasterTable<LockUnlockPropertyItem>
               columns={columns}
               data={properties}
-              height="md"
+              height="sm"
               getRowKey={(row: LockUnlockPropertyItem) => row.propertyId}
               pageNumber={pagination.pageNumber}
               pageSize={pagination.pageSize}
@@ -122,7 +123,7 @@ export default function LockUnlockMaster({
                   />
                   <SearchButton
                     size="sm"
-                    label="Search"
+                    label={t("resultsTable.searchButton")}
                     onClick={handleSearchButtonClick}
                   />
                   <LockButton

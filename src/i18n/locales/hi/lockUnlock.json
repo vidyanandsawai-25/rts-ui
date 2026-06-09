@@ -10,12 +10,19 @@
     "toProperty": "संपत्ति क्र. तक",
     "selectEndRange": "अंतिम सीमा चुनें",
     "showButton": "दिखाएं",
-    "clearButton": "साफ करें"
+    "clearButton": "साफ करें",
+    "mandatoryBanner": "* से चिह्नित फ़ील्ड अनिवार्य हैं"
   },
   "screenSelectionCard": {
     "title": "स्क्रीन चयन",
     "selectedCount": "{count} चयनित",
-    "noScreens": "चयन के लिए कोई स्क्रीन उपलब्ध नहीं है।"
+    "noScreens": "चयन के लिए कोई स्क्रीन उपलब्ध नहीं है।",
+    "searchPlaceholder": "कोड या विवरण से खोजें",
+    "typeOfUse": "सभी प्रकार",
+    "selectAll": "सभी चुनें",
+    "clearAll": "सभी साफ़ करें",
+    "helperText": "लॉक/अनलॉक करने के लिए लागू स्क्रीन कोड चुनें",
+    "allTypes": "सभी प्रकार"
   },
   "resultsTable": {
     "title": "बल्क ऑपरेशन्स ({count} संपत्तियां चुनी गईं)",
@@ -23,6 +30,7 @@
     "lockButton": "चयनित स्क्रीन लॉक करें",
     "unlockButton": "चयनित स्क्रीन अनलॉक करें",
     "searchPropertyPlaceholder": "संपत्ति क्र. से खोजें...",
+    "searchButton": "खोजें",
     "placeholderText": "कृपया वार्ड और संपत्ति सीमा चुनें, फिर संपत्तियां देखने के लिए \"दिखाएं\" पर क्लिक करें.",
     "columns": {
       "wardNo": "वार्ड क्र.",

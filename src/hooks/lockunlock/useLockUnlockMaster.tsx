@@ -135,7 +135,7 @@ export function useLockUnlockMaster({
         }
       } catch (err: unknown) {
         console.error("Failed to fetch dropdown properties:", err);
-        toast.error(t("messages.fetchPropertiesFailed"));
+        toast.error(t("messages.fetchFailed"));
         setPropertyOptions([]);
       } finally {
         setIsLoadingProperties(false);

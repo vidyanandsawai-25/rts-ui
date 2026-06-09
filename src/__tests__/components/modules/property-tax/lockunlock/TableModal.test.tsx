@@ -99,4 +99,28 @@ describe("TableModal", () => {
     fireEvent.click(saveButton);
     expect(mockSave).toHaveBeenCalled();
   });
+
+  it("should trigger setEditModal when screen checkbox is toggled", () => {
+    const mockSetEditModal = vi.fn();
+    render(
+      <TableModal
+        editModal={{ isOpen: true, property: mockProperty, selectedScreenIds: [1] }}
+        setEditModal={mockSetEditModal}
+        screens={mockScreens}
+        handleSaveIndividualLock={vi.fn()}
+        isPending={false}
+      />
+    );
+
+    const checkbox1 = screen.getByLabelText("Screen 1");
+    const checkbox2 = screen.getByLabelText("Screen 2");
+
+    // Toggle screen 1
+    fireEvent.click(checkbox1);
+    expect(mockSetEditModal).toHaveBeenCalled();
+
+    // Toggle screen 2
+    fireEvent.click(checkbox2);
+    expect(mockSetEditModal).toHaveBeenCalled();
+  });
 });

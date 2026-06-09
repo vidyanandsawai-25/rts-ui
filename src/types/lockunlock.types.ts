@@ -13,7 +13,7 @@ export interface LockUnlockPropertyItem extends Record<string, unknown> {
   propertyNo: string;
   partitionNo: string;
   isLocked: boolean;
-   lockedScreens: Array<number | LockedScreen>;
+  lockedScreens: Array<number | LockedScreen>;
 }
 
 export interface LockUnlockPropertiesResponse {

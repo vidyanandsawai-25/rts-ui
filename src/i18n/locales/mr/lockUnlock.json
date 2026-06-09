@@ -10,12 +10,19 @@
     "toProperty": "मालमत्ता क्र. पर्यंत",
     "selectEndRange": "शेवटची श्रेणी निवडा",
     "showButton": "दाखवा",
-    "clearButton": "साफ करा"
+    "clearButton": "साफ करा",
+    "mandatoryBanner": "* चिन्हांकित फील्ड अनिवार्य आहेत"
   },
   "screenSelectionCard": {
     "title": "स्क्रीन निवड",
     "selectedCount": "{count} निवडले",
-    "noScreens": "निवडण्यासाठी कोणतीही स्क्रीन उपलब्ध नाही."
+    "noScreens": "निवडण्यासाठी कोणतीही स्क्रीन उपलब्ध नाही.",
+    "searchPlaceholder": "कोड किंवा वर्णनाद्वारे शोधा",
+    "typeOfUse": "सर्व प्रकार",
+    "selectAll": "सर्व निवडा",
+    "clearAll": "सर्व साफ करा",
+    "helperText": "लॉक/अनलॉक करण्यासाठी लागू स्क्रीन कोड निवडा",
+    "allTypes": "सर्व प्रकार"
   },
   "resultsTable": {
     "title": "बल्क ऑपरेशन्स ({count} मालमत्ता निवडल्या)",
@@ -23,6 +30,7 @@
     "lockButton": "निवडलेल्या स्क्रीन लॉक करा",
     "unlockButton": "निवडलेल्या स्क्रीन अनलॉक करा",
     "searchPropertyPlaceholder": "मालमत्ता क्र. वरून शोधा...",
+    "searchButton": "शोधा",
     "placeholderText": "कृपया वॉर्ड आणि मालमत्ता श्रेणी निवडा, नंतर मालमत्ता पाहण्यासाठी \"दाखवा\" वर क्लिक करा.",
     "columns": {
       "wardNo": "वॉर्ड क्र.",

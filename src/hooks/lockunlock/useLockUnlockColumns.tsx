@@ -116,28 +116,28 @@ export function useLockUnlockColumns({
         return (
           <div className="flex items-center justify-center w-full">
             <Badge
-  className={cn(
+                 className={cn(
     "inline-flex items-center gap-1 whitespace-nowrap px-3 py-1 rounded-full text-xs font-semibold border shadow-sm transition-all duration-300",
     isLocked
       ? "bg-red-50 text-red-700 border-red-200"
       : "bg-emerald-50 text-emerald-700 border-emerald-200"
-  )}
->
-  <span className="inline-flex items-center gap-1 whitespace-nowrap">
-    {isLocked ? (
-      <>
-        <Lock className="w-3 h-3 shrink-0 text-red-500" />
-        <span>{t("resultsTable.status.locked")}</span>
-      </>
-    ) : (
-      <>
-        <Unlock className="w-3 h-3 shrink-0 text-emerald-500" />
-        <span>{t("resultsTable.status.unlocked")}</span>
-      </>
-    )}
-  </span>
-</Badge>
-          </div>
+                 )}
+            >
+               <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                 {isLocked ? (
+                    <>
+                     <Lock className="w-3 h-3 shrink-0 text-red-500" />
+                      <span>{t("resultsTable.status.locked")}</span>
+                    </>
+                     ) : (
+                      <>
+                       <Unlock className="w-3 h-3 shrink-0 text-emerald-500" />
+                       <span>{t("resultsTable.status.unlocked")}</span>
+                      </>
+                   )}
+               </span>
+          </Badge>
+          </div>             
         );
       },
     },

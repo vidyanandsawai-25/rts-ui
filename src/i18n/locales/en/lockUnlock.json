@@ -10,12 +10,19 @@
     "toProperty": "To property",
     "selectEndRange": "Select End Range",
     "showButton": "Show",
-    "clearButton": "Clear all"
+    "clearButton": "Clear all",
+    "mandatoryBanner": "Fields marked with * are mandatory"
   },
   "screenSelectionCard": {
     "title": "Screen selection",
     "selectedCount": "{count} selected",
-    "noScreens": "No screens available to select."
+    "noScreens": "No screens available to select.",
+    "searchPlaceholder": "Search by code or description",
+    "typeOfUse": "All Types",
+    "selectAll": "Select All",
+    "clearAll": "Clear All",
+    "helperText": "Select the screen codes applicable to lock/unlock",
+    "allTypes": "All Types"
   },
   "resultsTable": {
     "title": "Bulk Operations ({count} properties selected)",
@@ -23,6 +30,7 @@
     "lockButton": "Lock Selected Screens",
     "unlockButton": "Unlock Selected Screens",
     "searchPropertyPlaceholder": "Search by property no...",
+    "searchButton": "Search",
     "placeholderText": "Please select a ward and property range, then click \"Show\" to view properties.",
     "columns": {
       "wardNo": "Ward No.",

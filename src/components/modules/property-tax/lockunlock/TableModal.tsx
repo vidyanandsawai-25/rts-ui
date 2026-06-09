@@ -74,33 +74,30 @@ export function TableModal({
           {screens.map((screen) => {
             const isChecked = editModal.selectedScreenIds.includes(screen.id);
             return (
-              <label
+              <div
                 key={screen.id}
                 className={cn(
-                  "flex items-center gap-3 p-3 rounded-lg border cursor-pointer hover:bg-slate-50/50 transition-colors",
+                  "flex items-center gap-3 p-3 rounded-lg border hover:bg-slate-50/50 transition-colors",
                   isChecked ? "border-red-200 bg-red-50/10" : "border-slate-200 bg-white"
                 )}
               >
-                <Checkbox
-                  id={`modal-screen-${screen.id}`}
-                  checked={isChecked}
-                  onCheckedChange={(checked) => {
-                    setEditModal((prev) => ({
-                      ...prev,
-                      selectedScreenIds: checked
-                        ? [...prev.selectedScreenIds, screen.id]
-                        : prev.selectedScreenIds.filter((id) => id !== screen.id),
-                    }));
-                  }}
-                  aria-label={screen.screenName}
-                />
                 <div className="flex-1">
-                  <span className="text-sm font-semibold text-slate-800 block">
-                    {screen.screenName}
-                  </span>
+                  <Checkbox
+                    id={`modal-screen-${screen.id}`}
+                    checked={isChecked}
+                    onCheckedChange={(checked) => {
+                      setEditModal((prev) => ({
+                        ...prev,
+                        selectedScreenIds: checked
+                          ? [...prev.selectedScreenIds, screen.id]
+                          : prev.selectedScreenIds.filter((id) => id !== screen.id),
+                      }));
+                    }}
+                    label={screen.screenName}
+                  />
                 </div>
                 {isChecked && <Lock className="w-4 h-4 text-red-500 mr-1" />}
-              </label>
+              </div>
             );
           })}
         </div>
