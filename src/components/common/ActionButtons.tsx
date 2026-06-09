@@ -289,6 +289,10 @@ export function SearchButton({
   return (
     <Button variant="primary" icon={Search} {...props}>
       {label}
+    </Button>
+  );
+}
+
 export function SortButton({
   label,
 }: SortButtonProps): React.ReactElement {
