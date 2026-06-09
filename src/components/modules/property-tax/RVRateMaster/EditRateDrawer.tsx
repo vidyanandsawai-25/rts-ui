@@ -22,6 +22,8 @@ export default function EditRateDrawer({
   filterValues,
   mode = "edit",
   paginatedZonesData,
+  rateFrequencyPolicy,
+  rateUnitPolicy,
 }: EditRateDrawerProps) {
   const router = useRouter();
   const locale = useLocale();
@@ -80,6 +82,8 @@ export default function EditRateDrawer({
         onClose={handleClose}
         mode={mode}
         paginatedZonesData={paginatedZonesData}
+        rateFrequencyPolicy={rateFrequencyPolicy}
+        rateUnitPolicy={rateUnitPolicy}
       />
     </Drawer>
   );

@@ -22,11 +22,12 @@ interface TemplateDownloadParams {
   assessmentYear: string;
   allZones: IZoneDescription[];
   rateCategories: RateCategory[];
+  rateUnit: "SqMeter" | "SqFeet";
   t: ReturnType<typeof import("next-intl").useTranslations>;
 }
 
 export function handleTemplateDownload(params: TemplateDownloadParams) {
-  const { selectedZone, selectedUseGroup, assessmentYear, allZones, rateCategories, t } = params;
+  const { selectedZone, selectedUseGroup, assessmentYear, allZones, rateCategories, rateUnit, t } = params;
 
   if (!assessmentYear) {
     toast.error(t('messages.selectAssessmentYearRange'));
@@ -46,7 +47,7 @@ export function handleTemplateDownload(params: TemplateDownloadParams) {
   }
   
   try {
-    const csvContent = generateCsvTemplate(allZones, rateCategories);
+    const csvContent = generateCsvTemplate(allZones, rateCategories, rateUnit);
     const filename = `rate-master-template-${selectedZone}-${selectedUseGroup}.csv`;
     downloadFile(csvContent, filename);
     toast.success('Template downloaded successfully!');

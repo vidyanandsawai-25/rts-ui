@@ -21,7 +21,9 @@
   },
   "options": {
     "monthly": "मासिक",
-    "yearly": "वार्षिक"
+    "yearly": "वार्षिक",
+    "sqMeter": "चौ.मी.",
+    "sqFeet": "चौ.फी."
   },
   "buttons": {
     "generateRate": "दर तयार करा",
@@ -82,6 +84,7 @@
     "validationEnterRateValue": "कृपया किमान एक दर मूल्य प्रविष्ट करा",
     "validationDeleteRecordsFirst": "प्रथम {year} आर्थिक वर्षाचे रेकॉर्ड हटवा, आणि नंतर इतर वर्षाचे दर तयार करण्यास पुढे जा.",
     "validationFetchUpdateFailed": "अद्यतनासाठी दर प्राप्त करण्यात अयशस्वी",
+    "noRatesToUpdate": "अद्यतनासाठी कोणतीही दर मूल्ये कॉन्फिगर केलेली नाहीत. कृपया प्रथम दर मूल्ये प्रविष्ट करा.",
     "validationDownloadTemplateFailed": "टेम्प्लेट डाउनलोड करण्यास अयशस्वी",
     "validationUploadValidFile": "कृपया वैध CSV किंवा Excel फाइल अपलोड करा",
     "validationRatesAlreadyExist": "निवडलेल्या फिल्टर्ससाठी दर आधीच अस्तित्वात आहेत. कृपया अपडेट करा",
@@ -92,7 +95,9 @@
     "noRatesAvailable": "कोणतेही दर उपलब्ध नाहीत",
     "noRatesMatch": "निवडलेल्या निकषांनुसार डेटा आढळला नाही. कृपया निकष तपासा किंवा नवीन दर तयार करा.",
     "rateExceedsMaximum": "दर मूल्य {max} पेक्षा जास्त असू शकत नाही. कृपया वैध दर प्रविष्ट करा.",
-    "rateValueInvalid": "दर मूल्य वैध असणे आवश्यक आहे. कृपया वैध दर मूल्य प्रविष्ट करा."
+    "rateValueInvalid": "दर मूल्य वैध असणे आवश्यक आहे. कृपया वैध दर मूल्य प्रविष्ट करा.",
+    "cannotChangeConfiguredValue": "कॉन्फिगर केलेले मूल्य बदलता येत नाही. कृपया पॉलिसी कॉन्फिगरेशनमध्ये अपडेट करा.",
+    "rateFrequencyMismatch": "RateMonthlyOrYearly पॉलिसीसाठी दर वारंवारता जुळत नाही.:-पॉलिसी {configured} म्हणून कॉन्फिगर केली आहे, परंतु सध्याचे दर {existing} म्हणून प्रविष्ट केले आहेत. कृपया पॉलिसी कॉन्फिगरेशन अपडेट करा किंवा नवीन दर कॉन्फिगर करण्यापूर्वी विद्यमान दर हटवा."
   },
   "sections": {
     "copyRatesTitle": "दर कॉपी करा",
@@ -110,7 +115,9 @@
     "selectSourceRateSection": "स्रोत दर विभाग निवडा",
     "quickImport": "जलद आयात:",
     "rateFrequency": "दर वारंवारता:",
-    "rateEntryMatrix": "दर नोंदणी मॅट्रिक्स"
+    "rateUnit": "दर एकक:",
+    "rateEntryMatrix": "दर नोंदणी मॅट्रिक्स",
+    "previewRates": "दर पूर्वावलोकन:"
   },
   "placeholders": {
     "selectUseGroup": "वापर गट निवडा...",

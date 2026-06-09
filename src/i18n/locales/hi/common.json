@@ -382,6 +382,8 @@
     "deleteRow": "पंक्ति हटाएं"
   },
   "rateUnit": "(₹/वर्ग.मी.)",
+  "rateUnitSqMeter": "(₹/वर्ग.मी.)",
+  "rateUnitSqFeet": "(₹/वर्ग.फ़ी.)",
   "tabs": {
     "yearWise": "वर्षानुसार प्रतिधारण नीति",
     "factorWise": "गुणांकानुसार प्रतिधारण नीति"

@@ -41,7 +41,8 @@ interface GroupedGrid {
  */
 function groupRatesIntoGrids(
   rates: RateData[],
-  rateCategories: (string | RateCategory)[]
+  rateCategories: (string | RateCategory)[],
+  rateUnit: "SqMeter" | "SqFeet"
 ): GroupedGrid[] {
   // First, group by (yearRange, useGroup) combination
   const combinationMap = new Map<string, RateData[]>();
@@ -88,7 +89,10 @@ function groupRatesIntoGrids(
                                      rate.constructionCode || 
                                      rate.constructionTypeCode || 
                                      (rate.constructionTypeId ? String(rate.constructionTypeId) : '');
-      const rateValue = rate.rateSquareMeter || 0;
+      // Use rate value based on selected unit
+      const rateValue = rateUnit === 'SqFeet' 
+        ? (rate.rateSquareFeet || 0) 
+        : (rate.rateSquareMeter || 0);
       
       // Map backend construction type to display code
       const displayConstructionType = constructionTypeMap.get(backendConstructionType) || backendConstructionType;
@@ -146,6 +150,7 @@ function groupRatesIntoGrids(
 function gridsToCSV(
   grids: GroupedGrid[], 
   rateSection: string,
+  rateUnit: "SqMeter" | "SqFeet",
   t: ReturnType<typeof import("next-intl").useTranslations>
 ): string {
   const csvLines: string[] = [];
@@ -158,13 +163,17 @@ function gridsToCSV(
   const allConstructionTypes = Array.from(allConstructionTypesSet);
   
   // Add single header row at the top
+  const rateUnitLabel = rateUnit === 'SqFeet' 
+    ? t('downloadHeaders.rateSqFt') 
+    : t('downloadHeaders.rateSqMtr');
+  
   const headerRow = [
     escapeCsvValue(t('downloadHeaders.rateSection')),
     escapeCsvValue(t('downloadHeaders.assessmentYearRange')),
     escapeCsvValue(t('downloadHeaders.useGroup')),
     escapeCsvValue(t('downloadHeaders.taxZoneNo')),
     ...allConstructionTypes.map(ct => {
-      const label = `${ct} (${t('downloadHeaders.rateSqMtr')})`;
+      const label = `${ct} (${rateUnitLabel})`;
       return escapeCsvValue(label);
     })
   ];
@@ -199,6 +208,7 @@ function gridsToCSV(
 export async function downloadDetailedRates(
   selectedZone: string,
   zones: ISelectOption[],
+  rateUnit: "SqMeter" | "SqFeet",
   t: ReturnType<typeof import("next-intl").useTranslations>,
   rateCategories: (string | RateCategory)[]
 ) {
@@ -230,10 +240,10 @@ export async function downloadDetailedRates(
     const zoneName = zones.find(z => z.value === selectedZone)?.label || selectedZone;
     
     // Group rates into grids with proper ordering
-    const grids = groupRatesIntoGrids(allRates, rateCategories);
+    const grids = groupRatesIntoGrids(allRates, rateCategories, rateUnit);
     
     // Convert grids to CSV with translations
-    const csvContent = gridsToCSV(grids, zoneName, t);
+    const csvContent = gridsToCSV(grids, zoneName, rateUnit, t);
 
     const BOM = '\uFEFF';
     const csvWithBOM = BOM + csvContent;
