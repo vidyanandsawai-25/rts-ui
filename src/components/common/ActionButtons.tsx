@@ -25,6 +25,9 @@ import {
   EyeOff,
   FileSpreadsheet,
   History,
+  Lock,
+  Unlock,
+  Search,
 } from "lucide-react";
 import { Button, type ButtonProps } from "./ActionButton";
 import { cn } from "@/lib/utils/cn";
@@ -116,6 +119,28 @@ export function ApplyButton({
 }: LabeledActionButtonProps): React.ReactElement {
   return (
     <Button variant="success" icon={Check} {...props}>
+      {label}
+    </Button>
+  );
+}
+
+export function LockButton({
+  label = "Lock",
+  ...props
+}: LabeledActionButtonProps): React.ReactElement {
+  return (
+    <Button variant="danger" icon={Lock} {...props}>
+      {label}
+    </Button>
+  );
+}
+
+export function UnlockButton({
+  label = "Unlock",
+  ...props
+}: LabeledActionButtonProps): React.ReactElement {
+  return (
+    <Button variant="success" icon={Unlock} {...props}>
       {label}
     </Button>
   );
@@ -252,6 +277,17 @@ export function ShowHistoryButton({
 }: LabeledActionButtonProps): React.ReactElement {
   return (
     <Button variant="secondary" icon={History} {...props}>
+      {label}
+    </Button>
+  );
+}
+
+export function SearchButton({
+  label = "Search",
+  ...props
+}: LabeledActionButtonProps): React.ReactElement {
+  return (
+    <Button variant="primary" icon={Search} {...props}>
       {label}
     </Button>
   );

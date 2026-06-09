@@ -60,6 +60,7 @@ export default getRequestConfig(async ({ locale }) => {
     ruleEngineMessages,
     moujaMessages,
     policyConfigurationMessages,
+    lockUnlockMessages,
     modulesMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
@@ -142,6 +143,9 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/policyConfiguration.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/lockUnlock.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
   ]);
 
@@ -189,12 +193,13 @@ export default getRequestConfig(async ({ locale }) => {
       waterConnection: waterConnectionMessages?.waterConnection || waterConnectionMessages,
       waterConnectionMaster: waterConnectionMasterMessages.waterConnectionMaster,
       commonDetailsUpdate:
-        commonDetailsUpdateMessages?.commonDetailsUpdate || commonDetailsUpdateMessages,
+      commonDetailsUpdateMessages?.commonDetailsUpdate || commonDetailsUpdateMessages,
       financialYear: financialYearMessages,
       ruleEngine: ruleEngineMessages,
       mouja: moujaMessages,
       policyConfiguration:
-        policyConfigurationMessages?.policyConfiguration || policyConfigurationMessages,
+      policyConfigurationMessages?.policyConfiguration || policyConfigurationMessages,
+      lockUnlock: lockUnlockMessages?.lockUnlock || lockUnlockMessages,
       modules: modulesMessages,
     },
   };

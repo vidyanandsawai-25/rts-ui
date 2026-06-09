@@ -42,6 +42,9 @@ export {
   EyeIconButton,
   EditLabelButton,
   DeleteLabelButton,
+  LockButton,
+  UnlockButton,
+  SearchButton,
 } from './ActionButtons';
 export { IconButton } from './ActionButtons';
 export { Card, CardHeader, CardTitle, CardContent } from './Card';
