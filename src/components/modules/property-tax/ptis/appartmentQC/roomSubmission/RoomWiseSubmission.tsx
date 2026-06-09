@@ -6,11 +6,11 @@ import { RoomWiseSubmissionProps } from "@/types/room-details.types";
 import { FullOffSetFormProps } from "@/types/offset-details.types";
 import { OffSetSidebar } from "../floorSubmission/offset/OffSetSidebar";
 
-// ── Reused state & pure-logic hooks (no QuickDataEntry–specific API calls) ──
+// ── Reused state & pure-logic hooks (no Quick Data Entry–specific API calls) ──
 import { useRoomSubmissionState } from "@/hooks/ptis/RoomSubmission/useRoomSubmissionState";
 import { useRoomInputActions } from "@/hooks/ptis/RoomSubmission/useRoomInputActions";
 import { useRoomEditActions } from "@/hooks/ptis/RoomSubmission/useRoomEditActions";
-import { useOffsetActions } from "@/hooks/ptis/RoomSubmission/useOffsetActions";
+import { useApartmentQCOffsetActions } from "@/hooks/apartmentQc/useApartmentQCOffsetActions";
 
 // ── Apartment QC–specific hooks (separated from QuickDataEntry) ──────────────
 import { useApartmentQCRoomInitialization } from "@/hooks/apartmentQc/useApartmentQCRoomInitialization";
@@ -47,7 +47,7 @@ export const RoomWiseSubmission: React.FC<
   // ── Pure-logic hooks (reused) ────────────────────────────────────────────
   const { handleEdit, handleCancelEdit } = useRoomEditActions(state);
   const { handleInputChange } = useRoomInputActions(state, null);
-  const offsetActions = useOffsetActions(state, handleEdit);
+  const offsetActions = useApartmentQCOffsetActions(state, handleEdit);
 
   // ── Apartment QC initialization (no empty rows) ──────────────────────────
   useApartmentQCRoomInitialization(state, props);

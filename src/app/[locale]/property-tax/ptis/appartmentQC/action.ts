@@ -638,6 +638,7 @@ export async function createRoomWiseSubmissionAction(payload: {
       roomWiseMinusData: payload.roomWiseMinusData?.map(offset => ({
         isActive: true,
         createdBy: userId,
+        isOffset: true,
         ...offset
       }))
     });
@@ -648,6 +649,117 @@ export async function createRoomWiseSubmissionAction(payload: {
     return { success: true, data: result.data, message: "Room created successfully" };
   } catch (error: unknown) {
     return handleActionError(error, "Failed to create room");
+  }
+}
+
+/**
+ * Update an existing room wise submission with offsets
+ */
+export async function updateRoomWithOffsetsAction(
+  id: number,
+  payload: {
+    propertyDetailsId?: number;
+    propertyId?: number;
+    lengthMtr?: number;
+    widthMtr?: number;
+    heightMtr?: number;
+    areaSqMtr?: number;
+    noOfRooms?: number;
+    totalAreaSqMtr?: number;
+    roomNo?: string;
+    roomType?: string;
+    roomTypeId?: number;  // API expects numeric ID
+    shape?: string;
+    outerYesNo?: boolean;
+    minusYesNo?: boolean;
+    submissionType?: string;
+    base1Mtr?: number;
+    base2Mtr?: number;
+    roomWiseMinusData?: Array<{
+      id?: number;
+      roomWiseSubmissionId?: number;
+      lengthMtr?: number;
+      widthMtr?: number;
+      heightMtr?: number;
+      areaSqMtr?: number;
+      shape?: string;
+      base1Mtr?: number;
+      base2Mtr?: number;
+      operation?: string;
+      remark?: string;
+    }>;
+  }
+): Promise<ActionResult<unknown>> {
+  try {
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore) || 1;
+    const { 
+      updateRoomWiseSubmissionSafe,
+      createRoomWiseMinusSafe,
+      updateRoomWiseMinusSafe
+    } = await import("@/lib/api/ptis/appartmentQC/appartmentQC-room.service");
+
+    // Update main room (without roomWiseMinusData since we handle offsets separately)
+    const { roomWiseMinusData, ...roomPayload } = payload;
+    const roomResult = await updateRoomWiseSubmissionSafe(id, {
+      isActive: true,
+      updatedBy: userId,
+      id,
+      ...roomPayload,
+      minusYesNo: payload.minusYesNo,
+    });
+
+    if (!roomResult.success) {
+      return { success: false, error: roomResult.error || "Failed to update room" };
+    }
+
+    // Process offsets (create new or update existing)
+    const processedOffsets = await Promise.all(
+      (roomWiseMinusData || []).map(async (offset) => {
+        const isExisting = offset.id !== undefined && offset.id !== null && offset.id > 0;
+        
+        if (isExisting) {
+          // Update existing offset
+          const offsetId = offset.id as number;
+          const updateResult = await updateRoomWiseMinusSafe(offsetId, {
+            ...offset,
+            isActive: true,
+            updatedBy: userId,
+            id: offsetId,
+            isOffset: true,
+          });
+          if (!updateResult.success) {
+            console.error('Failed to update offset:', updateResult.error);
+            return offset;
+          }
+          return { ...offset, ...updateResult.data };
+        } else {
+          // Create new offset
+          const createResult = await createRoomWiseMinusSafe({
+            ...offset,
+            isActive: true,
+            createdBy: userId,
+            roomWiseSubmissionId: id,
+            isOffset: true,
+          });
+          if (!createResult.success) {
+            console.error('Failed to create offset:', createResult.error);
+            return offset;
+          }
+          return { ...offset, id: createResult.data?.id };
+        }
+      })
+    );
+
+    revalidatePath("/[locale]/property-tax/ptis/appartmentQC", "page");
+    
+    return { 
+      success: true, 
+      data: { ...roomResult.data, roomWiseMinusData: processedOffsets }, 
+      message: "Room updated successfully" 
+    };
+  } catch (error: unknown) {
+    return handleActionError(error, "Failed to update room");
   }
 }
 
@@ -689,34 +801,8 @@ export async function updateRoomWiseSubmissionAction(
     }>;
   }
 ): Promise<ActionResult<unknown>> {
-  try {
-    const cookieStore = await cookies();
-    const userId = getUserIdFromCookies(cookieStore) || 1;
-    const { updateRoomWiseSubmissionSafe } = await import("@/lib/api/ptis/appartmentQC/appartmentQC-room.service");
-    const result = await updateRoomWiseSubmissionSafe(id, {
-      isActive: true,
-      updatedBy: userId,
-      id,
-      ...payload,
-      roomWiseMinusData: payload.roomWiseMinusData?.map(offset => {
-        // If offset has an id, it's an existing record (update), otherwise it's new (create)
-        const isExisting = offset.id !== undefined && offset.id !== null && offset.id > 0;
-        return {
-          ...offset,
-          isActive: true,
-          ...(isExisting ? { updatedBy: userId } : { createdBy: userId }),
-          roomWiseSubmissionId: id,
-        };
-      })
-    });
-    if (!result.success) {
-      return { success: false, error: result.error || "Failed to update room" };
-    }
-    revalidatePath("/[locale]/property-tax/ptis/appartmentQC", "page");
-    return { success: true, data: result.data, message: "Room updated successfully" };
-  } catch (error: unknown) {
-    return handleActionError(error, "Failed to update room");
-  }
+  // Use the new action that handles offsets properly
+  return updateRoomWithOffsetsAction(id, payload);
 }
 
 /**
@@ -772,7 +858,10 @@ export async function createRoomWiseMinusAction(payload: {
 }): Promise<ActionResult<{ id: number }>> {
   try {
     const { createRoomWiseMinusSafe } = await import("@/lib/api/ptis/appartmentQC/appartmentQC-room.service");
-    const result = await createRoomWiseMinusSafe(payload);
+    const result = await createRoomWiseMinusSafe({
+      ...payload,
+      isOffset: true
+    });
     if (!result.success) {
       return { success: false, error: result.error || "Failed to create offset" };
     }
