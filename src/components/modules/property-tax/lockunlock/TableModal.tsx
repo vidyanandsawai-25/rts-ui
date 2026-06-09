@@ -1,6 +1,6 @@
 import React from "react";
 import { Lock, ShieldAlert } from "lucide-react";
-import { Drawer, Checkbox, Button } from "@/components/common";
+import { Drawer, Checkbox, CancelButton, SaveButton } from "@/components/common";
 import { LockedScreen, LockUnlockPropertyItem } from "@/types/lockunlock.types";
 import { cn } from "@/lib/utils/cn";
 import { useTranslations } from "next-intl";
@@ -50,21 +50,19 @@ export function TableModal({
       width="sm"
       footer={
         <div className="flex items-center justify-end gap-3 w-full">
-          <Button
-            variant="secondary"
+          <CancelButton
+          label={t("manageModal.cancel")}
             size="sm"
             onClick={() => setEditModal({ isOpen: false, property: null, selectedScreenIds: [] })}
-          >
-            {t("manageModal.cancel")}
-          </Button>
-          <Button
-            variant="primary"
+          />
+        
+          <SaveButton
+            label={t("manageModal.saveChanges")}
             size="sm"
             onClick={handleSaveIndividualLock}
             isLoading={isPending}
-          >
-            {t("manageModal.saveChanges")}
-          </Button>
+          />
+            
         </div>
       }
     >

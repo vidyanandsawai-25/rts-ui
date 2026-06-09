@@ -74,7 +74,7 @@ export function SelectProperty({
             />
           </div>
           <div className="flex items-center gap-3 flex-shrink-0 pt-4 md:pt-0">
-            <SearchButton 
+            <SearchButton
             label={t("selectPropertyCard.showButton")}          
               size="md"
               onClick={handleShow}
