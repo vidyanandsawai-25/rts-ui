@@ -1,7 +1,7 @@
 import { Lock, Unlock } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Column } from "@/components/common/MasterTable";
-import { Badge, Button, ToggleSwitch } from "@/components/common";
+import { Badge, EditButton, ToggleSwitch } from "@/components/common";
 import { Checkbox } from "@/components/common/checkbox";
 import { LockedScreen, LockUnlockPropertyItem } from "@/types/lockunlock.types";
 import { cn } from "@/lib/utils/cn";
@@ -166,14 +166,11 @@ export function useLockUnlockColumns({
       align: "center",
       render: (_: unknown, row: LockUnlockPropertyItem) => (
         <div className="flex items-center justify-center w-full">
-          <Button
-            variant="secondary"
+          <EditButton
             size="xs"
             onClick={() => onManageLocks(row)}
             className="h-8 border border-slate-300 font-semibold bg-white text-slate-700 hover:bg-slate-50"
-          >
-            {t("resultsTable.actions.manage")}
-          </Button>
+          />
         </div>
       ),
     },
