@@ -28,6 +28,7 @@ export default function RuleBuilder(props: RuleBuilderProps) {
     ruleName, setRuleName,
     ruleScopeId, setRuleScopeId,
     ruleCategory, setRuleCategory,
+    ruleDescription, setRuleDescription,
     rulesList, fields,
     isReasonOpen, setIsReasonOpen, changeReason, setChangeReason,
     activeScopeName, handleSaveClick, handleConfirmSave,
@@ -43,6 +44,7 @@ export default function RuleBuilder(props: RuleBuilderProps) {
         ruleName={ruleName} setRuleName={setRuleName}
         ruleScopeId={ruleScopeId} setRuleScopeId={setRuleScopeId}
         ruleCategory={ruleCategory} setRuleCategory={setRuleCategory}
+        ruleDescription={ruleDescription} setRuleDescription={setRuleDescription}
         scopes={props.scopes}
         ruleCategoryOptions={props.ruleCategoryOptions}
       />

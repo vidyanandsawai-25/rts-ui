@@ -42,6 +42,7 @@ export function useRuleBuilder({
   const [isActive, setIsActive]       = React.useState(initialRule?.isActive ?? true);
   const [ruleScopeId, setRuleScopeId] = React.useState(initialRule?.ruleScopeId ?? scopes[0]?.id ?? 0);
   const [ruleCategory, setRuleCategory] = React.useState(initialRule?.ruleCategory ?? 'ARV');
+  const [ruleDescription, setRuleDescription] = React.useState(initialRule?.description ?? '');
 
   const [targetFilters, setTargetFilters] = React.useState<TargetFilterState>(
     () => safeParse<TargetFilterState>(initialRule?.targetFiltersJson, {})
@@ -161,7 +162,7 @@ export function useRuleBuilder({
         ),
         effectJson:       JSON.stringify(rulesList[0]?.effect || {}),
         targetFiltersJson: JSON.stringify(targetFilters),
-        description:      (rulesList[0]?.description || '').trim(),
+        description:      ruleDescription.trim(),
         ruleCategory,
         changeReason:     changeReason.trim(),
         priority:         1,
@@ -184,6 +185,7 @@ export function useRuleBuilder({
     isActive, setIsActive,
     ruleScopeId, setRuleScopeId,
     ruleCategory, setRuleCategory,
+    ruleDescription, setRuleDescription,
     targetFilters, setTargetFilters,
     rulesList, setRulesList,
     fields, setFields,

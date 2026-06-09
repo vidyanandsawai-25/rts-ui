@@ -13,6 +13,8 @@ interface TargetFilterPanelProps {
   setRuleScopeId: (val: number) => void;
   ruleCategory: string;
   setRuleCategory: (val: string) => void;
+  ruleDescription: string;
+  setRuleDescription: (val: string) => void;
   scopes: RuleScope[];
   /** API-driven rule category options from PTIS.RuleCategoryMaster */
   ruleCategoryOptions: { label: string; value: string }[];
@@ -22,6 +24,7 @@ export default function TargetFilterPanel({
   ruleName, setRuleName,
   ruleScopeId, setRuleScopeId,
   ruleCategory, setRuleCategory,
+  ruleDescription, setRuleDescription,
   scopes,
   ruleCategoryOptions,
 }: TargetFilterPanelProps) {
@@ -86,6 +89,17 @@ export default function TargetFilterPanel({
             required
           />
         </div>
+      </div>
+
+      {/* Rule Description */}
+      <div className="w-full">
+        <Input
+          label={t('targetFilter.description')}
+          value={ruleDescription}
+          onChange={(e) => setRuleDescription(e.target.value)}
+          placeholder={t('targetFilter.descriptionPlaceholder')}
+          fullWidth
+        />
       </div>
     </div>
   );
