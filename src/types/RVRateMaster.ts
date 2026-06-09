@@ -245,6 +245,7 @@ export interface RateMasterClientProps {
   initialYear?: string;
   rateUnitPolicy?: { value: 'SqMeter' | 'SqFeet'; isConfigured: boolean };
   rateFrequencyPolicy?: { value: 'Monthly' | 'Yearly'; isConfigured: boolean };
+  globalFrequencyMismatch?: { configuredFrequency: string, existingFrequency: string } | null;
 }
 /**
  * Props for Add Rate drawer component

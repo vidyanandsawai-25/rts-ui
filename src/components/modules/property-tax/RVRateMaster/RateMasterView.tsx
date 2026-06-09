@@ -26,6 +26,7 @@ export default function RateMasterView({
   initialYear = "ALL",
   rateUnitPolicy,
   rateFrequencyPolicy,
+  globalFrequencyMismatch,
 }: RateMasterClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -119,41 +120,8 @@ export default function RateMasterView({
     !selectedUseGroup || selectedUseGroup === 'ALL' ||
     !selectedYear || selectedYear === 'ALL';
 
-  // Check for rate frequency mismatch between policy and existing rates
-  // Use filteredData (displayed rates) instead of rateMasterData
-  const frequencyMismatch = useMemo(() => {
-    // Only check if policy is configured and we have filtered data to display
-    if (!rateFrequencyPolicy?.isConfigured || filteredData.length === 0) {
-      return null;
-    }
-
-    // Check existing rate frequencies from the FILTERED/DISPLAYED rates
-    const hasMonthWise = filteredData.some(rate => 
-      rate.rates?.some(r => r.rateRemark === "MonthWise Rate")
-    );
-    const hasYearWise = filteredData.some(rate => 
-      rate.rates?.some(r => r.rateRemark === "YearWise Rate")
-    );
-
-    // If no rates have frequency indicators, no mismatch
-    if (!hasMonthWise && !hasYearWise) {
-      return null;
-    }
-
-    // Determine existing frequency from displayed rates
-    const existingFrequency: "Monthly" | "Yearly" = hasMonthWise && !hasYearWise ? "Monthly" : "Yearly";
-    const configuredFrequency = rateFrequencyPolicy.value;
-
-    // Return mismatch if frequencies differ
-    if (existingFrequency !== configuredFrequency) {
-      return {
-        configuredFrequency,
-        existingFrequency,
-      };
-    }
-
-    return null;
-  }, [rateFrequencyPolicy, filteredData]); // Re-check when filters change
+  // Use the global frequency mismatch from props
+  const frequencyMismatch = globalFrequencyMismatch;
 
   const handlePageChange = (page: number) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -197,6 +165,7 @@ export default function RateMasterView({
             onDeleteRate={handleDeleteRate}
             onDownloadRates={handleDownloadRates}
             isDownloadDisabled={isDownloadDisabled}
+            isActionDisabled={!!frequencyMismatch}
             t={t}
           />
         </div>

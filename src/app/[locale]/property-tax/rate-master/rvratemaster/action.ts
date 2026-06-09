@@ -44,13 +44,13 @@ export async function getRateFrequencyPolicy(): Promise<{
       // No policy found, return default
       logger.warn('RateMonthlyOrYearly policy not found, using default', { operation: 'getRateFrequencyPolicy' });
       return {
-        value: 'Monthly',
+        value: 'Yearly',
         isConfigured: false,
       };
     }
     
     // Use PolicyValue if available, otherwise use DefaultValue
-    const rawValue = policy.policyValue?.trim() || policy.defaultValue?.trim() || 'Monthly';
+    const rawValue = policy.policyValue?.trim() || policy.defaultValue?.trim() || 'Yearly';
     
     // Normalize the value to ensure it's either 'Monthly' or 'Yearly'
     const normalizedValue = rawValue.toLowerCase() === 'yearly' ? 'Yearly' : 'Monthly';
@@ -63,7 +63,7 @@ export async function getRateFrequencyPolicy(): Promise<{
     logger.error('Failed to fetch rate frequency policy', { operation: 'getRateFrequencyPolicy' }, error);
     // Return default on error to prevent UI from breaking
     return {
-      value: 'Monthly',
+      value: 'Yearly',
       isConfigured: false,
     };
   }
@@ -114,6 +114,43 @@ export async function getRateUnitPolicy(): Promise<{
       isConfigured: false,
     };
   }
+}
+
+/**
+ * Get global frequency mismatch by checking any existing rate in the database against the policy.
+ */
+export async function getGlobalFrequencyMismatch(
+  rateFrequencyPolicy: { value: 'Monthly' | 'Yearly'; isConfigured: boolean; } | null | undefined,
+  constructionTypes: RateCategory[],
+  zoneDescriptions: IZoneDescription[]
+): Promise<{ configuredFrequency: string, existingFrequency: string } | null> {
+  if (!rateFrequencyPolicy?.isConfigured) return null;
+
+  try {
+    const globalRatesResult = await rateMasterService.getRateMasterPaged(
+      1, 1, constructionTypes, zoneDescriptions, undefined, undefined, undefined, []
+    );
+    if (globalRatesResult.totalCount > 0 && globalRatesResult.items && globalRatesResult.items.length > 0) {
+      const sampleRate = globalRatesResult.items[0];
+      const hasMonthWise = sampleRate.rates?.some((r: { rateRemark?: string }) => r.rateRemark === "MonthWise Rate");
+      const hasYearWise = sampleRate.rates?.some((r: { rateRemark?: string }) => r.rateRemark === "YearWise Rate");
+      
+      if (hasMonthWise || hasYearWise) {
+        const existingFrequency = hasMonthWise && !hasYearWise ? "Monthly" : "Yearly";
+        if (existingFrequency !== rateFrequencyPolicy.value) {
+          return {
+            configuredFrequency: rateFrequencyPolicy.value,
+            existingFrequency
+          };
+        }
+      }
+    }
+  } catch (e) {
+    // Ignore error for global frequency check
+    logger.error('Failed to get global frequency mismatch', { operation: 'getGlobalFrequencyMismatch' }, e);
+  }
+  
+  return null;
 }
 
 /* ========== DATA FETCHING (GET) ========== */

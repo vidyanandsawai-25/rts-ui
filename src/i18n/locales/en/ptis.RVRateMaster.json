@@ -99,7 +99,7 @@
     "rateExceedsMaximum": "Rate value cannot exceed {max}. Please enter a valid rate.",
     "rateValueInvalid": "Rate value must be valid. Please enter a valid rate value.",
     "cannotChangeConfiguredValue": "Cannot change configured value. Please update in Policy Configuration.",
-    "rateFrequencyMismatch": "The configured rate master frequency is ({configured}) whereas current rates are filled for ({existing}). Please update the policy configuration or delete existing rates and then configure new rates."
+    "rateFrequencyMismatch": "Rate Frequency Mismatch for policy RateMonthlyOrYearly.:-The policy is configured as {configured}, but the current rates are entered as {existing}. Please update the policy configuration or delete the existing rates before configuring new rates."
   },
   "sections": {
     "copyRatesTitle": "Copy Rates",

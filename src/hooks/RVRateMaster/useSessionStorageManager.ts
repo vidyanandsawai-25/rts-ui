@@ -26,7 +26,6 @@ export function useSessionStorageManager({
     if (typeof window !== 'undefined' && matrixData.length > 0) {
       sessionStorage.setItem(keyRef.current, JSON.stringify(matrixData));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [matrixData]);
 
   // Clear sessionStorage when component unmounts
