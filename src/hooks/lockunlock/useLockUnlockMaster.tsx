@@ -160,10 +160,21 @@ export function useLockUnlockMaster({
       } else {
         params.delete("wardId");
       }
-      // Clear property selections when ward changes
+      // Clear property selections/results when ward changes
       setFormData((prev) => ({ ...prev, fromProperty: "", toProperty: "" }));
+      setShowResults(false);
+      setProperties([]);
+      setSelectedPropertyIds([]);
+      setSelectedScreenIds([]);
+      setPagination({ pageNumber: 1, pageSize: 10, totalCount: 0, totalPages: 1 });
+      setPropertySearchTerm("");
+      setAppliedPropertySearchTerm("");
+      setPropertyOptions([]);
+
       params.delete("fromProperty");
       params.delete("toProperty");
+      params.delete("page");
+      params.delete("search");
       router.push(`${pathname}?${params.toString()}`);
     } else if (name === "fromProperty") {
       if (value) {
