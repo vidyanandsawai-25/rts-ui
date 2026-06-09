@@ -8,7 +8,7 @@ import { AddButton, Tabs } from "@/components/common";
 import { SearchInput } from "@/components/common/SearchInput";
 
 
-type TabKey = "tap-status" | "tap-type" | "tap-size";
+type TabKey = "tap-status" | "tap-type" | "tap-size" | "water-rate";
 
 export function WaterConnectionToolbar() {
   const router = useRouter();
@@ -23,7 +23,9 @@ export function WaterConnectionToolbar() {
     ? "tap-type"
     : pathname.includes("/tap-size")
       ? "tap-size"
-      : "tap-status";
+      : pathname.includes("/water-rate")
+        ? "water-rate"
+        : "tap-status";
 
   const currentSearchTerm = searchParams.get("q") ?? "";
   const [search, setSearch] = useState<string>(currentSearchTerm);
@@ -75,14 +77,18 @@ export function WaterConnectionToolbar() {
       ? t("tapType.addTitle")
       : activeTab === "tap-size"
         ? t("tapSize.addTitle")
-        : t("tapStatus.addTitle");
+        : activeTab === "water-rate"
+          ? t("waterRate.addTitle")
+          : t("tapStatus.addTitle");
 
   const searchPlaceholder =
     activeTab === "tap-type"
       ? t("tapType.searchPlaceholder")
       : activeTab === "tap-size"
         ? t("tapSize.searchPlaceholder")
-        : t("tapStatus.searchPlaceholder");
+        : activeTab === "water-rate"
+          ? t("waterRate.searchPlaceholder")
+          : t("tapStatus.searchPlaceholder");
 
   return (
     <div className="flex items-center gap-3">
@@ -94,6 +100,7 @@ export function WaterConnectionToolbar() {
           { value: "tap-status", label: t("tabs.tapStatus"), content: null },
           { value: "tap-type", label: t("tabs.tapType"), content: null },
           { value: "tap-size", label: t("tabs.tapSize"), content: null },
+          { value: "water-rate", label: t("tabs.waterRate"), content: null },
         ]}
         onChange={(v) => router.push(`${base}/${v}`)}
       />

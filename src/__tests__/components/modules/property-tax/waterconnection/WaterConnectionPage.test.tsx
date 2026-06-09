@@ -292,7 +292,7 @@ describe('WaterConnectionPage', () => {
 
       // Drawer should close (title should not be visible)
       await waitFor(() => {
-        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        expect(screen.queryByText(/add water connection/i)).not.toBeInTheDocument();
       });
     });
   });
