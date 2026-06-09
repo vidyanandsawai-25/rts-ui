@@ -11,6 +11,16 @@ interface UseRateMasterFiltersProps {
     year?: string;
   };
   useGroupOptions: Array<{ label: string; value: string }>;
+  // Policy-configured rate frequency (from PolicyConfiguration table)
+  rateFrequencyPolicy?: {
+    value: 'Monthly' | 'Yearly';
+    isConfigured: boolean;
+  };
+  // Policy-configured rate unit (from PolicyConfiguration table)
+  rateUnitPolicy?: {
+    value: 'SqMeter' | 'SqFeet';
+    isConfigured: boolean;
+  };
 }
 
 export function useRateMasterFilters({
@@ -18,6 +28,8 @@ export function useRateMasterFilters({
   backendRates = [],
   filterValues,
   useGroupOptions,
+  rateFrequencyPolicy,
+  rateUnitPolicy,
 }: UseRateMasterFiltersProps) {
   const router = useRouter();
 
@@ -32,8 +44,21 @@ export function useRateMasterFilters({
   // Data states - backendRates are passed from server component
   const [fetchedBackendRates, setFetchedBackendRates] = useState<IBackendRateMaster[]>(backendRates || []);
   
-  // Rate frequency state
-  const [rateFrequency, setRateFrequency] = useState<"Monthly" | "Yearly">("Yearly");
+  // Rate frequency state - ALWAYS use policy value if configured
+  const [rateFrequency, setRateFrequency] = useState<"Monthly" | "Yearly">(() => {
+    if (rateFrequencyPolicy?.isConfigured) {
+      return rateFrequencyPolicy.value;
+    }
+    return "Yearly";
+  });
+
+  // Rate unit state - ALWAYS use policy value if configured
+  const [rateUnit, setRateUnit] = useState<"SqMeter" | "SqFeet">(() => {
+    if (rateUnitPolicy?.isConfigured) {
+      return rateUnitPolicy.value;
+    }
+    return "SqMeter";
+  });
 
   // Multipliers state
   const [multipliers, setMultipliers] = useState<Record<string, number>>(() => 
@@ -43,16 +68,42 @@ export function useRateMasterFilters({
     }, {} as Record<string, number>)
   );
 
-  // Set rateFrequency from backendRates
+  // Enforce policy configuration values - always sync from policy when configured
   useEffect(() => {
+    if (rateFrequencyPolicy?.isConfigured) {  
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setRateFrequency(rateFrequencyPolicy.value);
+    }
+  }, [rateFrequencyPolicy]);
+
+  useEffect(() => {
+    if (rateUnitPolicy?.isConfigured) {    
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setRateUnit(rateUnitPolicy.value);
+    }
+  }, [rateUnitPolicy]);
+
+  // Set rateFrequency from backendRates ONLY if policy is not configured
+  // If policy is configured, always use policy value (user cannot change it)
+  useEffect(() => {
+    // CRITICAL: If policy is configured, don't even try to detect from backend
+    if (rateFrequencyPolicy?.isConfigured) {
+      return; // Skip detection from backend rates entirely
+    }
+
+    // If policy is NOT configured, detect from backend rates
     if (backendRates && Array.isArray(backendRates) && backendRates.length > 0) {
       const hasMonthly = backendRates.some(r => r.rateRemark === "MonthWise Rate");
       const hasYearWise = backendRates.some(r => r.rateRemark === "YearWise Rate");
-      const newFrequency = (hasMonthly && !hasYearWise) ? "Monthly" : "Yearly";
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- Intentional prop-to-state sync for rate frequency
-      setRateFrequency(prev => prev === newFrequency ? prev : newFrequency);
+      
+      // Only set if we actually detected a frequency
+      if (hasMonthly || hasYearWise) {
+        const newFrequency = (hasMonthly && !hasYearWise) ? "Monthly" : "Yearly";
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setRateFrequency(newFrequency);
+      }
     }
-  }, [backendRates]);
+  }, [backendRates, rateFrequencyPolicy]);
 
   // Sync fetchedBackendRates with backendRates prop whenever it changes
   // Use JSON comparison to detect actual data changes (needed for filter changes in edit/delete mode)
@@ -107,6 +158,26 @@ export function useRateMasterFilters({
     router.refresh();
   }, [router]);
 
+  // Wrapper for setRateFrequency that enforces policy
+  const safeSetRateFrequency = useCallback((value: "Monthly" | "Yearly") => {
+    // If policy is configured, ignore the change and keep policy value
+    if (rateFrequencyPolicy?.isConfigured) {
+      setRateFrequency(rateFrequencyPolicy.value);
+      return;
+    }
+    setRateFrequency(value);
+  }, [rateFrequencyPolicy]);
+
+  // Wrapper for setRateUnit that enforces policy
+  const safeSetRateUnit = useCallback((value: "SqMeter" | "SqFeet") => {
+    // If policy is configured, ignore the change and keep policy value
+    if (rateUnitPolicy?.isConfigured) {
+      setRateUnit(rateUnitPolicy.value);
+      return;
+    }
+    setRateUnit(value);
+  }, [rateUnitPolicy]);
+
   return {
     // Filter states
     selectedZone,
@@ -124,7 +195,11 @@ export function useRateMasterFilters({
     
     // Rate frequency
     rateFrequency,
-    setRateFrequency,
+    setRateFrequency: safeSetRateFrequency,
+    
+    // Rate unit
+    rateUnit,
+    setRateUnit: safeSetRateUnit,
     
     // Multipliers
     multipliers,

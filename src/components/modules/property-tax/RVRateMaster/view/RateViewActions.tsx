@@ -8,6 +8,7 @@ interface RateViewActionsProps {
   onDeleteRate: () => void;
   onDownloadRates: () => void;
   isDownloadDisabled: boolean;
+  isActionDisabled?: boolean;
   t: ReturnType<typeof import("next-intl").useTranslations>;
 }
 
@@ -17,6 +18,7 @@ export function RateViewActions({
   onDeleteRate,
   onDownloadRates,
   isDownloadDisabled,
+  isActionDisabled,
   t,
 }: RateViewActionsProps) {
   return (
@@ -33,11 +35,13 @@ export function RateViewActions({
         onClick={onGenerateRate}
         size="sm"
         label={t('buttons.generateRate')}
+        disabled={isActionDisabled}
       />
       <EditLabelButton
         onClick={onEditRate}
         size="sm"
         label={t('buttons.editRates')}
+        disabled={isActionDisabled}
       />
       <DeleteLabelButton
         onClick={onDeleteRate}

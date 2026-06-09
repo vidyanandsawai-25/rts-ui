@@ -53,9 +53,11 @@ export function buildCategoryColorMap(
 export function buildRateColumns(
   rateCategories: (string | RateCategory)[],
   singleColorClassHeader: string,
-  tCommon: ReturnType<typeof import("next-intl").useTranslations>
+  tCommon: ReturnType<typeof import("next-intl").useTranslations>,
+  rateUnit: "SqMeter" | "SqFeet" = "SqMeter"
 ): MatrixColumn[] {
   const seenCodes = new Set<string>();
+  const rateUnitLabel = rateUnit === "SqMeter" ? tCommon('rateUnitSqMeter') : tCommon('rateUnitSqFeet');
   return rateCategories
     .map((cat) => {
       const catCode = typeof cat === 'string' ? cat : (cat.constructionCode || cat.constructionId);
@@ -67,7 +69,7 @@ export function buildRateColumns(
         id: catCode,
         label: (
           <span className={`inline-block font-bold rounded-lg px-2 py-0.5 ${singleColorClassHeader}`}>
-            {normalizedCode} <span className="text-[10px] font-normal">{tCommon('rateUnit')}</span>
+            {normalizedCode} <span className="text-[10px] font-normal">{rateUnitLabel}</span>
           </span>
         ) as React.ReactNode,
         tooltip: description,

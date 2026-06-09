@@ -24,6 +24,9 @@ export default function RateMasterView({
   initialZone = "ALL",
   initialUseGroup,
   initialYear = "ALL",
+  rateUnitPolicy,
+  rateFrequencyPolicy,
+  globalFrequencyMismatch,
 }: RateMasterClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -93,7 +96,7 @@ export default function RateMasterView({
   };
 
   const handleDownloadRates = async () => {
-    await downloadDetailedRates(selectedZone, zones, t, rateCategories);
+    await downloadDetailedRates(selectedZone, zones, rateUnitPolicy?.value ?? "SqMeter", t, rateCategories);
   };
   const filteredData = useMemo(() =>
     filterTableData(rateMasterData, selectedZone, selectedYear, selectedUseGroup, isPaginationEnabled),
@@ -109,13 +112,16 @@ export default function RateMasterView({
   );
 
   const columns = useMemo(() =>
-    buildRateColumns(rateCategories, singleColorClassHeader, tCommon),
-    [rateCategories, tCommon]
+    buildRateColumns(rateCategories, singleColorClassHeader, tCommon, rateUnitPolicy?.value ?? "SqMeter"),
+    [rateCategories, tCommon, rateUnitPolicy]
   );
 
   const isDownloadDisabled = !selectedZone || selectedZone === 'ALL' ||
     !selectedUseGroup || selectedUseGroup === 'ALL' ||
     !selectedYear || selectedYear === 'ALL';
+
+  // Use the global frequency mismatch from props
+  const frequencyMismatch = globalFrequencyMismatch;
 
   const handlePageChange = (page: number) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -159,10 +165,26 @@ export default function RateMasterView({
             onDeleteRate={handleDeleteRate}
             onDownloadRates={handleDownloadRates}
             isDownloadDisabled={isDownloadDisabled}
+            isActionDisabled={!!frequencyMismatch}
             t={t}
           />
         </div>
       </div>
+
+      {/* Rate Frequency Mismatch Banner */}
+      {frequencyMismatch && (
+        <div className="flex justify-center">
+          <div className="flex items-center gap-2 bg-orange-50 border border-orange-300 rounded-lg px-4 py-2 shadow-sm max-w-4xl">
+            <span className="text-orange-600 shrink-0" aria-hidden="true">{"\u26A0"}</span>
+            <span className="text-sm text-orange-800 font-medium">
+              {t('messages.rateFrequencyMismatch', {
+                configured: frequencyMismatch.configuredFrequency,
+                existing: frequencyMismatch.existingFrequency,
+              })}
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Grid Content */}
       <RateViewGrid
@@ -177,6 +199,9 @@ export default function RateMasterView({
         assessmentYears={assessmentYears}
         useGroups={useGroups}
         zoneRemarksMap={zoneRemarksMap}
+        rateUnit={rateUnitPolicy?.value ?? "SqMeter"}
+        rateFrequencyPolicy={rateFrequencyPolicy}
+        rateUnitPolicy={rateUnitPolicy}
         pageNumber={pageNumber}
         pageSize={pageSize}
         totalCount={totalCount}

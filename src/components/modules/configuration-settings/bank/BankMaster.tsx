@@ -12,7 +12,7 @@ import type { BankMasterData } from '@/types/bank-master.types';
 import { useBankPagination } from '@/hooks/configuration-settings/bank/useBankPagination';
 import { useBankSearch } from '@/hooks/configuration-settings/bank/useBankSearch';
 import { useBankDelete } from '@/hooks/configuration-settings/bank/useBankDelete';
-import { usePermissions } from '@/hooks/usePermissions';
+
 
 import { getBankColumns, type BankMasterTableRow } from './BankColumns';
 import { BankMasterHeader } from './components/BankMasterHeader';
@@ -42,7 +42,6 @@ export function BankMaster({
   totalPages,
   statsData,
   errorMessage,
-  statusCode,
 }: BankMasterProps) {
   const t = useTranslations('bankMaster');
   const tCommon = useTranslations('common');
@@ -88,37 +87,16 @@ export function BankMaster({
     [locale, router, startTransition]
   );
 
-  const { canView, canEdit, canDelete, haveFullAccess } = usePermissions('BANK_MASTER');
-
   const renderActions = useCallback(
     (row: BankMasterTableRow) => (
       <div className="flex items-center gap-1">
-        {(canEdit || haveFullAccess) && <EditButton onClick={() => handleEdit(row)} />}
-        {(canDelete || haveFullAccess) && <DeleteButton onClick={() => handleDelete(row)} />}
+        <EditButton onClick={() => handleEdit(row)} />
+        <DeleteButton onClick={() => handleDelete(row)} />
       </div>
     ),
-    [handleEdit, handleDelete, canEdit, canDelete, haveFullAccess]
+    [handleEdit, handleDelete]
   );
 
-  if (!canView && !haveFullAccess) {
-    const isUnauthorized =
-      statusCode === 401 ||
-      (errorMessage &&
-        (errorMessage.toLowerCase().includes('unauthorized') ||
-          errorMessage.toLowerCase().includes('token') ||
-          errorMessage === 'messages.unauthorizedToken'));
-
-    const messageKey = isUnauthorized ? 'errors.unauthorized' : 'errors.noAccess';
-
-    return (
-      <PageContainer>
-        <div className="flex flex-col items-center justify-center min-h-[400px] p-6 bg-white rounded-xl border border-gray-200/80 shadow-sm animate-in fade-in duration-300">
-          <AlertCircle className="w-12 h-12 text-red-500 mb-4 animate-bounce" />
-          <h3 className="text-lg font-semibold text-gray-900">{tCommon(messageKey)}</h3>
-        </div>
-      </PageContainer>
-    );
-  }
 
   return (
     <PageContainer>
@@ -140,7 +118,7 @@ export function BankMaster({
         )}
         <BankMasterHeader
           t={t}
-          onAdd={haveFullAccess ? handleAdd : undefined}
+          onAdd={handleAdd}
           search={search}
           onSearchChange={handleSearchChange}
         />

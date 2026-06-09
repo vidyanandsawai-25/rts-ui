@@ -4,6 +4,7 @@ import {
   Plus,
   Pencil,
   Trash2,
+  Loader2,
   Upload,
   Download,
   Share,
@@ -20,7 +21,9 @@ import {
   ArrowUp,
   ArrowDown,
   CheckSquare,
-  Eye, // Added Eye icon for preview
+  Eye,
+  EyeOff,
+  FileSpreadsheet,
   History,
   Lock,
   Unlock,
@@ -66,6 +69,24 @@ export interface IconOnlyActionButtonProps extends Omit<ButtonProps, "children">
   icon: React.ElementType;
   "aria-label": string;
 }
+
+export type SortButtonProps = {
+  label: string;
+};
+
+export type ExportButtonProps = {
+  isExporting: boolean;
+  disabled?: boolean;
+  onClick: () => void;
+  title: string;
+};
+
+export type EyeIconButtonProps = {
+  isAutoScrolling: boolean;
+  onClick: () => void;
+  startTitle: string;
+  stopTitle: string;
+};
 
 /* ----------------------------------------------------------
    LABELED ACTION BUTTONS
@@ -268,7 +289,67 @@ export function SearchButton({
   return (
     <Button variant="primary" icon={Search} {...props}>
       {label}
+export function SortButton({
+  label,
+}: SortButtonProps): React.ReactElement {
+  return (
+    <Button
+      type="button"
+      variant="secondary"
+      size="xs"
+      icon={ArrowUpDown}
+      iconPosition="right"
+      className="h-6 flex items-center justify-center gap-1 rounded-md border border-gray-300 bg-gray-100 text-[11px] font-semibold text-gray-900 hover:bg-gray-200 pr-1.5"
+    >
+      <span className="truncate">{label}</span>
     </Button>
+  );
+}
+
+export function ExportIconButton({
+  isExporting,
+  disabled = false,
+  onClick,
+  title,
+}: ExportButtonProps): React.ReactElement {
+  return (
+    <button
+      onClick={onClick}
+      type="button"
+      disabled={disabled}
+      className={cn(
+        "p-2 rounded-md border transition-all duration-200 flex items-center justify-center min-w-[36px] h-[36px]",
+        isExporting
+          ? "bg-green-100 text-green-600 border-green-300 cursor-wait"
+          : "bg-white text-green-600 border-gray-300 hover:border-green-500 hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed"
+      )}
+      title={title}
+    >
+      {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileSpreadsheet className="w-4 h-4" />}
+    </button>
+  );
+}
+
+export function EyeIconButton({
+  onClick,
+  startTitle,
+  stopTitle,
+  isAutoScrolling,
+}: EyeIconButtonProps): React.ReactElement {
+  return (
+    <button
+      onClick={onClick}
+      type="button"
+      className={cn(
+        "p-2 rounded-md border transition-all duration-200 flex items-center justify-center min-w-[36px] h-[36px]",
+        isAutoScrolling
+          ? "bg-[#1E3A8A] text-white border-[#1E3A8A] shadow-md animate-pulse"
+          : "bg-white text-gray-500 border-gray-300 hover:border-[#1E3A8A] hover:text-[#1E3A8A] hover:bg-gray-50"
+      )}
+      title={isAutoScrolling ? stopTitle : startTitle}
+    >
+      {isAutoScrolling ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+    </button>
   );
 }
 

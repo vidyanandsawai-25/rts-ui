@@ -37,6 +37,9 @@ export {
   SortAscButton,
   SortDescButton,
   SortDefaultButton,
+  SortButton,
+  ExportIconButton,
+  EyeIconButton,
   EditLabelButton,
   DeleteLabelButton,
   LockButton,
@@ -145,4 +148,4 @@ export type { FloorDetailsTableColumn } from './FloorDetailsTable';
 
 export { RequiredFieldsNote } from './RequiredFieldsNote';
 export { StatusToggleCard } from './StatusToggleCard';
-
+export { UnauthorizedPage } from './UnauthorizedPage';
