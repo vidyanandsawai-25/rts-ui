@@ -81,7 +81,7 @@ jobs:
 
   coverage-report:
     needs: build-and-test
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux]
     if: github.event_name == 'pull_request'
     permissions:
       contents: read

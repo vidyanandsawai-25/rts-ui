@@ -4,11 +4,13 @@ import { useMemo, useCallback, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
 import { MasterTable, Column } from "@/components/common/MasterTable";
-import { Button, SearchInput } from "@/components/common";
-import { ArrowUpDown, Eye, EyeOff, ExternalLink, FileSpreadsheet, Loader2 } from "lucide-react";
+import { SearchInput, SortButton } from "@/components/common";
+import { ExternalLink } from "lucide-react";
 import { useTableAutoScroll } from "@/hooks/apartmentQc/useTableAutoScroll";
 import { ColumnFilterDropdown, type FilterField } from "./ColumnFilterDropdown";
 import { logger } from "@/lib/utils/logger";
+import { TEXT_SANITIZE } from "@/lib/utils/validation";
+import { ExportIconButton, EyeIconButton } from "@/components/common/ActionButtons";
 
 // Map column keys to filter fields
 const FILTERABLE_COLUMNS: Record<string, FilterField> = {
@@ -145,16 +147,7 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
           <div className="flex items-center gap-1 w-full justify-center">
             {/* Column name with sort icon and filter icon integrated */}
             <div className="relative inline-flex items-center gap-1">
-              <Button 
-                type="button" 
-                variant="secondary" 
-                size="xs" 
-                icon={ArrowUpDown} 
-                iconPosition="right" 
-                className="h-6 flex items-center justify-center gap-1 rounded-md border border-gray-300 bg-gray-100 text-[11px] font-semibold text-gray-900 hover:bg-gray-200 pr-1.5"
-              >
-                <span className="truncate">{col.label as string}</span>
-              </Button>
+              <SortButton label={col.label as string} />
               {/* Funnel icon positioned to the right of the button */}
               {isFilterable && (
                 <ColumnFilterDropdown
@@ -196,6 +189,18 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
     return data.filter(row => Object.values(row).some(val => val?.toString().toLowerCase().includes(query)));
   }, [data, searchQuery]);
 
+  const handleSearchInputChange = useCallback((value: string) => {
+    const sanitized = value.replace(TEXT_SANITIZE, "");
+    onSearchChange(sanitized);
+  }, [onSearchChange]);
+
+  const localizedTabLabel = useMemo(() => {
+    if (activeTab === "rateable") return t("apartmentTabs.rateable");
+    if (activeTab === "capital") return t("apartmentTabs.capital");
+    if (activeTab === "dual-method") return t("apartmentTabs.dual");
+    return activeTab;
+  }, [activeTab, t]);
+
   return (
     <div className="mb-2">
       <MasterTable
@@ -210,32 +215,22 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
             <div className="flex gap-2 items-center">
               <h3 className="text-sm font-semibold text-[#1E3A8A]">{title}</h3>
               <span className="text-[#6B7280]">-</span>
-              <p className="text-sm text-[#6B7280]">{t("apartmentTabs.showingData", { tab: activeTab })}</p>
+              <p className="text-sm text-[#6B7280]">{t("apartmentTabs.showingData", { tab: localizedTabLabel })}</p>
             </div>
             <div className="flex items-center gap-2">
-              <SearchInput value={searchQuery} onChange={onSearchChange} placeholder={tCommon("searchPlaceholder")} className="w-80 mb-0" />
-              {/* Excel Export Button */}
-              <button
+              <SearchInput value={searchQuery} onChange={handleSearchInputChange} placeholder={tCommon("searchPlaceholder")} className="w-80 mb-0" />
+              <ExportIconButton
                 onClick={handleExcelExport}
-                type="button"
+                isExporting={isExporting}
                 disabled={isExporting || !wardId || !propertyNo}
-                className={`p-2 rounded-md border transition-all duration-200 flex items-center justify-center min-w-[36px] h-[36px] ${
-                  isExporting
-                    ? 'bg-green-100 text-green-600 border-green-300 cursor-wait'
-                    : 'bg-white text-green-600 border-gray-300 hover:border-green-500 hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed'
-                }`}
                 title={t("actions.exportExcel") || "Export to Excel"}
-              >
-                {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileSpreadsheet className="w-4 h-4" />}
-              </button>
-              {/* Auto-scroll toggle */}
-              <button
-                onClick={onToggleAutoScroll} type="button"
-                className={`p-2 rounded-md border transition-all duration-200 flex items-center justify-center min-w-[36px] h-[36px] ${isAutoScrolling ? 'bg-[#1E3A8A] text-white border-[#1E3A8A] shadow-md animate-pulse' : 'bg-white text-gray-500 border-gray-300 hover:border-[#1E3A8A] hover:text-[#1E3A8A] hover:bg-gray-50'}`}
-                title={isAutoScrolling ? t("actions.stopAutoScroll") : t("actions.startAutoScroll")}
-              >
-                {isAutoScrolling ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
+              />
+              <EyeIconButton
+                onClick={onToggleAutoScroll}
+                isAutoScrolling={isAutoScrolling}
+                startTitle={t("actions.startAutoScroll")}
+                stopTitle={t("actions.stopAutoScroll")}
+              />
             </div>
           </div>
         }

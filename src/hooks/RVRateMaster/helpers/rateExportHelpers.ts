@@ -5,9 +5,11 @@ import type { IZoneDescription, RateCategory } from "@/types/RVRateMaster";
  */
 export function generateCsvTemplate(
   allZones: IZoneDescription[],
-  rateCategories: RateCategory[]
+  rateCategories: RateCategory[],
+  rateUnit: "SqMeter" | "SqFeet" = "SqMeter"
 ): string {
-  const headers = ['Tax Zone No', ...rateCategories.map(cat => `${cat.constructionCode || cat.constructionId} (Rs./Sq.mtr)`)];
+  const unitText = rateUnit === "SqFeet" ? "Rs./Sq.ft" : "Rs./Sq.mtr";
+  const headers = ['Tax Zone No', ...rateCategories.map(cat => `${cat.constructionCode || cat.constructionId} (${unitText})`)];
   
   const rows = allZones.map(zone => [
     zone.zoneNo,

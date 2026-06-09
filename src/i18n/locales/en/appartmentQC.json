@@ -93,6 +93,9 @@
     "amenitiesTitle": "Property Tax Amenities",
     "commercialTitle": "Property Tax Commercial Details",
     "residentialTitle": "Property Tax Residential Details",
+    "rateable": "Rateable",
+    "capital": "Capital",
+    "dual": "Dual Method",
     "showingData": "Showing {tab} data"
   },
   "actions": {
