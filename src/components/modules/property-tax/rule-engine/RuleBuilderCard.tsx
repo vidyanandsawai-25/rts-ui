@@ -1,44 +1,75 @@
 'use client';
 
+import React from 'react';
 import { PlusCircle, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { RuleItem, FieldConfig, ConditionGroupState, EffectState, EffectTypeConfig } from '@/types/rule-engine.types';
-import ConditionGroup from './ConditionGroup';
-import EffectPanel from './EffectPanel';
-import StopProcessingPanel from './StopProcessingPanel';
+import { FieldConfig, RuleBlock, EffectTypeConfig, ConditionGroupState, EffectState } from '@/types/rule-engine.types';
+import RuleBlockItem from './RuleBlockItem';
 
 interface RuleBuilderCardProps {
   activeScopeName: string;
   handleSaveClick: () => void;
   isSaving: boolean;
-  initialRule?: RuleItem;
-  conditions: ConditionGroupState;
+  isEdit: boolean;
+  rulesList: RuleBlock[];
   fields: FieldConfig[];
-  setConditions: (g: ConditionGroupState) => void;
-  effect: EffectState;
-  setEffect: (e: EffectState) => void;
   effectTypes: { label: string; value: string }[];
   categoryOptions: { label: string; value: string }[];
   effectTypeConfigs: EffectTypeConfig[];
-  // ─── Stop Processing ─────────────────────────────────────────
-  stopProcessing: boolean;
-  onStopProcessingChange: (val: boolean) => void;
-  skipRuleIds: string[];
-  onSkipRuleIdsChange: (ids: string[]) => void;
-  exclusionReason: string;
-  onExclusionReasonChange: (val: string) => void;
+  onAddRuleBlock: () => void;
+  onRemoveRuleBlock: (index: number) => void;
+  onMoveRuleBlock: (index: number, direction: 'up' | 'down') => void;
+  onUpdateRuleBlock: (
+    index: number,
+    key: 'conditions' | 'effect' | 'description' | 'stopProcessing',
+    value: ConditionGroupState | EffectState | string | boolean
+  ) => void;
 }
 
 /** The main IF/THEN card container: card header and rule configurator panel. */
 export default function RuleBuilderCard({
-  activeScopeName, handleSaveClick, isSaving,
-  initialRule, conditions, fields, setConditions,
-  effect, setEffect, effectTypes, categoryOptions, effectTypeConfigs,
-  stopProcessing, onStopProcessingChange,
-  skipRuleIds, onSkipRuleIdsChange,
-  exclusionReason, onExclusionReasonChange,
+  activeScopeName, handleSaveClick, isSaving, isEdit,
+  rulesList, fields,
+  effectTypes, categoryOptions, effectTypeConfigs,
+  onAddRuleBlock, onRemoveRuleBlock, onMoveRuleBlock, onUpdateRuleBlock,
 }: RuleBuilderCardProps) {
   const t = useTranslations('ruleEngine');
+  const [collapsedBlocks, setCollapsedBlocks] = React.useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {};
+    rulesList.forEach((block) => {
+      initial[block.id] = isEdit;
+    });
+    return initial;
+  });
+
+  const prevLengthRef = React.useRef(rulesList.length);
+
+  React.useEffect(() => {
+    if (rulesList.length > prevLengthRef.current) {
+      // Collapse all existing blocks and expand the newly added one
+      const newCollapsedBlocks: Record<string, boolean> = {};
+      rulesList.forEach((block, index) => {
+        if (index === rulesList.length - 1) {
+          newCollapsedBlocks[block.id] = false; // expanded
+        } else {
+          newCollapsedBlocks[block.id] = true; // collapsed
+        }
+      });
+      setCollapsedBlocks(newCollapsedBlocks);
+    }
+    prevLengthRef.current = rulesList.length;
+  }, [rulesList]);
+
+  const toggleCollapse = (id: string) => {
+    setCollapsedBlocks((prev) => {
+      const current = prev[id] !== false;
+      return {
+        ...prev,
+        [id]: !current,
+      };
+    });
+  };
+
   return (
     <div className="bg-white border border-zinc-200 rounded-xl shadow-sm mt-2">
 
@@ -50,11 +81,11 @@ export default function RuleBuilderCard({
             type="button"
             onClick={handleSaveClick}
             disabled={isSaving}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-black hover:bg-zinc-800 disabled:opacity-60 disabled:cursor-not-allowed border border-transparent rounded-lg transition-all shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed border border-transparent rounded-lg transition-all shadow-sm"
           >
             {isSaving
-              ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> {t('builder.saving')}</>
-              : <><PlusCircle className="w-3.5 h-3.5" /> {initialRule ? t('builder.saveChanges') : t('builder.add')}</>
+              ? <><Loader2 className="w-4 h-4 animate-spin" /> {t('builder.saving')}</>
+              : <><PlusCircle className="w-4 h-4" /> {t('builder.saveRules')}</>
             }
           </button>
         </div>
@@ -62,25 +93,42 @@ export default function RuleBuilderCard({
 
       {/* Tab content */}
       <div className="p-6 flex flex-col gap-6">
-        <ConditionGroup group={conditions} fields={fields} onChange={setConditions} />
-        <EffectPanel
-          effect={effect}
-          onChange={setEffect}
-          effectTypes={effectTypes}
-          categoryOptions={categoryOptions}
-          effectTypeConfigs={effectTypeConfigs}
-        />
-        <StopProcessingPanel
-          stopProcessing={stopProcessing}
-          onStopProcessingChange={onStopProcessingChange}
-          skipRuleIds={skipRuleIds}
-          onSkipRuleIdsChange={onSkipRuleIdsChange}
-          exclusionReason={exclusionReason}
-          onExclusionReasonChange={onExclusionReasonChange}
-          currentRuleId={initialRule?.id}
-        />
+        
+        {/* Rules list */}
+        <div className="flex flex-col gap-8">
+          {rulesList.map((ruleBlock, index) => {
+            const isCollapsed = collapsedBlocks[ruleBlock.id] ?? isEdit;
+
+            return (
+              <RuleBlockItem
+                key={ruleBlock.id}
+                ruleBlock={ruleBlock}
+                index={index}
+                isCollapsed={isCollapsed}
+                totalBlocks={rulesList.length}
+                fields={fields}
+                effectTypes={effectTypes}
+                categoryOptions={categoryOptions}
+                effectTypeConfigs={effectTypeConfigs}
+                onRemoveRuleBlock={onRemoveRuleBlock}
+                onMoveRuleBlock={onMoveRuleBlock}
+                onUpdateRuleBlock={onUpdateRuleBlock}
+                onToggleCollapse={() => toggleCollapse(ruleBlock.id)}
+              />
+            );
+          })}
+        </div>
+
+        {/* Add Rule Button */}
+        <button
+          type="button"
+          onClick={onAddRuleBlock}
+          className="flex items-center justify-center gap-2 w-full py-3 border-2 border-dashed border-zinc-300 hover:border-zinc-400 hover:bg-zinc-50 rounded-xl text-zinc-600 hover:text-zinc-800 transition-all font-semibold text-sm cursor-pointer"
+        >
+          <PlusCircle className="w-4 h-4" /> {t('library.addRule')}
+        </button>
+
       </div>
     </div>
   );
 }
-

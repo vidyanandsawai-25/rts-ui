@@ -48,6 +48,8 @@ export interface StaticValue {
 export interface FieldConfig {
   id: number;
   fieldId: string;
+  fieldName?: string;
+  databaseColumnName?: string;
   dataType: DataType;
   inputType: InputType;
   sourceType: SourceType;
@@ -193,4 +195,13 @@ export interface RuleListResponse {
   totalPages: number;
   hasPrevious: boolean;
   hasNext: boolean;
+}
+
+export interface RuleBlock {
+  id: string;
+  description: string;
+  conditions: ConditionGroupState;
+  effect: EffectState;
+  stopProcessing?: boolean;
+  ruleScopeName?: string;
 }
