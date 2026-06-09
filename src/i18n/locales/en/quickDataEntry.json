@@ -86,11 +86,12 @@
             "no": "No",
             "rooms": "Rooms",
             "areaSqM": "Area (Sq.M)",
-            "areaSqFt": "Area (Sq.Ft)",
-            "sqMeter": "Sq.Meter",
+            "areaSqFt": "Area (Sq.Ft)",            
+            "sqMeter": "m²",
             "sqFeet": "Sq.Feet",
             "ward": "Ward",
             "property": "Property",
+            
             "partition": "Partition",
             "selectedFloorDetails": "Selected Floor Details"
         },
