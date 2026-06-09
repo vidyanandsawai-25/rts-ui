@@ -60,6 +60,7 @@ export default getRequestConfig(async ({ locale }) => {
     ruleEngineMessages,
     moujaMessages,
     policyConfigurationMessages,
+    remarkMasterMessages,
     lockUnlockMessages,
     modulesMessages,
   ] = await Promise.all([
@@ -143,6 +144,7 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/policyConfiguration.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/remark.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/lockUnlock.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
@@ -198,7 +200,8 @@ export default getRequestConfig(async ({ locale }) => {
       ruleEngine: ruleEngineMessages,
       mouja: moujaMessages,
       policyConfiguration:
-      policyConfigurationMessages?.policyConfiguration || policyConfigurationMessages,
+        policyConfigurationMessages?.policyConfiguration || policyConfigurationMessages,
+      remarkMaster: remarkMasterMessages.remarkMaster,
       lockUnlock: lockUnlockMessages?.lockUnlock || lockUnlockMessages,
       modules: modulesMessages,
     },
