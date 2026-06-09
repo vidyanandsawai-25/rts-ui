@@ -71,3 +71,32 @@ export interface TapTypeMasterProps {
 export interface TapSizeMasterProps {
   data: PagedResponse<TapSize>;
 }
+
+/* ============================================================
+   WATER RATE MASTER
+============================================================ */
+export interface WaterRate {
+  [key: string]: unknown;
+  id: number;
+  waterConnectionTypeId: number;
+  connectionTypeName?: string | null;
+  waterConnectionSizeId: number;
+  connectionSizeDisplay?: string | null;
+  financeYearId: number;
+  yearCode?: string | null;
+  yearlyRate: number;
+  isActive: boolean;
+}
+
+export interface WaterRateFormModel {
+  id?: number;
+  waterConnectionTypeId: number;
+  waterConnectionSizeId: number;
+  financeYearId: number;
+  yearlyRate: number;
+  isActive: boolean;
+}
+
+export interface WaterRateMasterProps {
+  data: PagedResponse<WaterRate>;
+}

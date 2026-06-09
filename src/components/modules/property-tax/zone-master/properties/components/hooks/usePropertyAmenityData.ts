@@ -110,10 +110,24 @@ export function usePropertyAmenityData({
   }, []);
 
   // Wing dropdown options
-  const wingOptions = wings.map((item) => ({
-    label: `${item.wingId} - ${item.wingName}`,
-    value: item.id.toString(),
-  }));
+  const wingOptions = wings.map((item) => {
+    const hasWingId = item.wingId !== null && item.wingId !== undefined && String(item.wingId) !== "null";
+    const hasWingName = item.wingName !== null && item.wingName !== undefined && String(item.wingName) !== "null";
+
+    let label = "";
+    if (hasWingId && hasWingName) {
+      label = `${item.wingId} - ${item.wingName}`;
+    } else if (hasWingId) {
+      label = `${item.wingId}`;
+    } else if (hasWingName) {
+      label = item.wingName;
+    }
+
+    return {
+      label,
+      value: item.id.toString(),
+    };
+  });
 
   return {
     wings,

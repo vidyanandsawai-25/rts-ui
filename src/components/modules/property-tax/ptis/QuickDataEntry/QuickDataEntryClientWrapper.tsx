@@ -8,6 +8,15 @@ import { TabNavigation } from "./TabNavigation";
 import { cn } from '@/lib/utils/cn';
 import { ReactNode } from 'react';
 
+const RETURN_TAB_BY_QDE_SEGMENT: Record<string, string> = {
+    property: 'propertydetails',
+    kyc: 'kycdetails',
+    society: 'societydetails',
+    building: 'buildingpermission',
+    discount: 'discountdetails',
+    olddetails: 'olddetails',
+};
+
 function QuickDataEntryContent({
     children,
 }: { children: ReactNode }) {
@@ -24,6 +33,19 @@ function QuickDataEntryContent({
     const propertyNo = searchParams.get("propertyNo") || "";
     const partitionNo = searchParams.get("partitionNo") || "";
     const returnTab = searchParams.get("returnTab") || "";
+    const valuationTab = searchParams.get("valuationTab") || "";
+    const appartmentTab = searchParams.get("appartmentTab") || "";
+    const subTab = searchParams.get("subTab") || "";
+    const showDetails = searchParams.get("showDetails") || "";
+    const rateableExpands = searchParams.getAll("rateableExpand");
+    const capitalExpands = searchParams.getAll("capitalExpand");
+    const dualExpands = searchParams.getAll("dualExpand");
+
+    const pathSegments = pathname?.split('/').filter(Boolean) || [];
+    const qdeIndex = pathSegments.findIndex((segment) => segment.toLowerCase() === 'quickdataentry');
+    const qdeTabSegment = qdeIndex >= 0 ? (pathSegments[qdeIndex + 2] || '').toLowerCase() : '';
+    const derivedReturnTab = RETURN_TAB_BY_QDE_SEGMENT[qdeTabSegment] || '';
+    const resolvedReturnTab = returnTab || derivedReturnTab;
 
     const handleClose = () => {
         const params = new URLSearchParams();
@@ -32,7 +54,14 @@ function QuickDataEntryContent({
         if (wardId) params.set('wardId', wardId);
         if (propertyNo) params.set('propertyNo', propertyNo);
         if (partitionNo) params.set('partitionNo', partitionNo);
-        if (returnTab) params.set('tab', returnTab);
+        if (resolvedReturnTab) params.set('tab', resolvedReturnTab);
+        if (valuationTab) params.set('valuationTab', valuationTab);
+        if (appartmentTab) params.set('appartmentTab', appartmentTab);
+        if (subTab) params.set('subTab', subTab);
+        if (showDetails) params.set('showDetails', showDetails);
+        rateableExpands.forEach(v => params.append('rateableExpand', v));
+        capitalExpands.forEach(v => params.append('capitalExpand', v));
+        dualExpands.forEach(v => params.append('dualExpand', v));
 
         router.push(`/${locale}/property-tax/ptis?${params}`);
     };

@@ -107,4 +107,23 @@ describe('QuickDataEntryClientWrapper', () => {
 
         expect(screen.queryByTestId('tab-navigation')).not.toBeInTheDocument();
     });
+
+    it('returns to olddetails tab when closing from OldDetails page without returnTab query', () => {
+        (usePathname as Mock).mockReturnValue('/en/property-tax/ptis/QuickDataEntry/123/OldDetails/old-taxation');
+        (useParams as Mock).mockReturnValue({ locale: 'en', propertyId: '123' });
+
+        const searchParams = new URLSearchParams();
+        searchParams.set('wardNo', 'W01');
+        (useSearchParams as Mock).mockReturnValue(searchParams);
+
+        render(
+            <QuickDataEntryClientWrapper>
+                <div>Content</div>
+            </QuickDataEntryClientWrapper>
+        );
+
+        fireEvent.click(screen.getByTestId('drawer-close-btn'));
+
+        expect(mockPush).toHaveBeenCalledWith(expect.stringContaining('tab=olddetails'));
+    });
 });

@@ -16,7 +16,8 @@
     "tabs": {
       "tapStatus": "नल स्थिति",
       "tapType": "नल प्रकार",
-      "tapSize": "नल आकार"
+      "tapSize": "नल आकार",
+      "waterRate": "जल दर"
     },
     "tapStatus": {
       "title": "नल स्थिति मास्टर",
@@ -162,6 +163,61 @@
       "confirm": {
         "deleteTitle": "नल आकार हटाएं?",
         "deleteDescription": "क्या आप वाकई इस नल आकार को हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती।"
+      }
+    },
+    "waterRate": {
+      "title": "जल दर मास्टर",
+      "subtitle": "प्रकार और आकार के अनुसार वार्षिक जल कनेक्शन दरें प्रबंधित करें",
+      "searchPlaceholder": "जल दरें खोजें...",
+      "addTitle": "जल दर जोड़ें",
+      "editTitle": "जल दर संपादित करें",
+      "addSubtitle": "नई जल दर विवरण दर्ज करें",
+      "editSubtitle": "जल दर विवरण अपडेट करें",
+      "table": {
+        "connectionTypeName": "कनेक्शन प्रकार",
+        "connectionSizeDisplay": "कनेक्शन आकार",
+        "yearCode": "वित्तीय वर्ष",
+        "yearlyRate": "वार्षिक दर",
+        "status": "स्थिति"
+      },
+      "form": {
+        "connectionType": {
+          "label": "कनेक्शन प्रकार",
+          "placeholder": "प्रकार चुनें..."
+        },
+        "connectionSize": {
+          "label": "कनेक्शन आकार",
+          "placeholder": "आकार चुनें..."
+        },
+        "financeYear": {
+          "label": "वित्तीय वर्ष",
+          "placeholder": "वर्ष चुनें..."
+        },
+        "yearlyRate": {
+          "label": "वार्षिक दर",
+          "placeholder": "उदा., 1500"
+        },
+        "activeStatusTitle": "जल दर",
+        "activeStatusOn": "सक्रिय - दर लागू है",
+        "activeStatusOff": "निष्क्रिय - दर लागू नहीं है"
+      },
+      "validation": {
+        "typeRequired": "कनेक्शन प्रकार आवश्यक है",
+        "sizeRequired": "कनेक्शन आकार आवश्यक है",
+        "yearRequired": "वित्तीय वर्ष आवश्यक है",
+        "rateRequired": "वार्षिक दर आवश्यक है",
+        "rateInvalid": "वार्षिक दर एक वैध सकारात्मक संख्या होनी चाहिए",
+        "rateMaxDigits": "वार्षिक दर 5 अंकों से अधिक नहीं होनी चाहिए"
+      },
+      "messages": {
+        "createSuccess": "जल दर सफलतापूर्वक बनाई गई",
+        "updateSuccess": "जल दर सफलतापूर्वक अपडेट की गई",
+        "deleteSuccess": "जल दर सफलतापूर्वक हटाई गई",
+        "deleteInUse": "यह जल दर वर्तमान में उपयोग में है और इसे हटाया नहीं जा सकता"
+      },
+      "confirm": {
+        "deleteTitle": "जल दर हटाएं?",
+        "deleteDescription": "क्या आप वाकई इस जल दर को हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती।"
       }
     }
   }

@@ -14,6 +14,7 @@ vi.mock('next/navigation', () => ({
 vi.mock('next-intl', () => ({
     useTranslations: () => (key: string) => {
         if (key === 'tabs.Property') return 'Property Info';
+        if (key === 'tabs.Kyc') return 'Kyc Info';
         if (key === 'tabs.Society') return 'Society Info';
         return key;
     },
@@ -61,5 +62,19 @@ describe('TabNavigation', () => {
         expect(societyTab?.getAttribute('href')).toContain('wardNo=10');
         expect(societyTab?.getAttribute('href')).toContain('wardId=1');
         expect(societyTab?.getAttribute('href')).toContain('Society');
+    });
+
+    it('updates returnTab based on the selected quick data entry tab', () => {
+        (usePathname as Mock).mockReturnValue('/en/property-tax/ptis/QuickDataEntry/123/Property');
+        (useParams as Mock).mockReturnValue({ propertyId: '123' });
+
+        const searchParams = new URLSearchParams();
+        searchParams.set('returnTab', 'propertydetails');
+        (useSearchParams as Mock).mockReturnValue(searchParams);
+
+        render(<TabNavigation />);
+
+        const kycTab = screen.getByText('Kyc Info').closest('a');
+        expect(kycTab?.getAttribute('href')).toContain('returnTab=kycdetails');
     });
 });

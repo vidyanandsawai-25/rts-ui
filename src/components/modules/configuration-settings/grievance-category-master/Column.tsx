@@ -17,7 +17,6 @@ import {
   renderSla,
   renderStatus,
 } from './ColumnRenderers';
-import { usePermissions } from '@/hooks/usePermissions';
 
 type UseGrievanceCategoryColumnsParams = {
   locale: string;
@@ -40,8 +39,6 @@ export function useGrievanceCategoryColumns({
   const tEscalationOptions = useTranslations('grievanceCategory.options.escalation');
   const tCommonStatus = useTranslations('common.status');
   const tCommonTable = useTranslations('common.table');
-
-  const { canEdit, canDelete, haveFullAccess } = usePermissions('GRIEVANCE_CATEGORY_MASTER');
 
   const departmentMap = useMemo(() => {
     const map = new Map<number, string>();
@@ -107,14 +104,12 @@ export function useGrievanceCategoryColumns({
       },
     ];
 
-    if (canEdit || canDelete || haveFullAccess) {
-      cols.push({
-        key: 'id' as keyof GrievanceCategory,
-        label: tCommonTable('columns.actions'),
-        align: 'right',
-        render: (_, row) => renderActions(row, onEdit, onDelete, deletingId, editingId),
-      });
-    }
+    cols.push({
+      key: 'id' as keyof GrievanceCategory,
+      label: tCommonTable('columns.actions'),
+      align: 'right',
+      render: (_, row) => renderActions(row, onEdit, onDelete, deletingId, editingId),
+    });
 
     return cols;
   }, [
@@ -128,8 +123,5 @@ export function useGrievanceCategoryColumns({
     onDelete,
     deletingId,
     editingId,
-    canEdit,
-    canDelete,
-    haveFullAccess,
   ]);
 }
