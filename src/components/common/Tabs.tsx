@@ -254,7 +254,7 @@ const TabsRoot = React.forwardRef<HTMLDivElement, TabsProps>(
         <div
           ref={ref}
           className={cn(
-            'w-full',
+            
             isVertical ? 'flex flex-col md:flex-row gap-6' : 'flex flex-col',
             className
           )}

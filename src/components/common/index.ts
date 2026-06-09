@@ -37,6 +37,9 @@ export {
   SortAscButton,
   SortDescButton,
   SortDefaultButton,
+  SortButton,
+  ExportIconButton,
+  EyeIconButton,
   EditLabelButton,
   DeleteLabelButton,
 } from './ActionButtons';
