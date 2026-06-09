@@ -25,12 +25,14 @@ export function ScreenSelectionCard({
     const screenModuleFromUrl = searchParams.get("screenModule") || "ALL";
 
     const [searchTerm, setSearchTerm] = useState(screenSearchFromUrl);
+    const [prevScreenSearchFromUrl, setPrevScreenSearchFromUrl] = useState(screenSearchFromUrl);
     const isFirstRender = useRef(true);
 
     // Sync local search term if URL changes from outside (e.g. clear filters)
-    useEffect(() => {
+    if (screenSearchFromUrl !== prevScreenSearchFromUrl) {
+        setPrevScreenSearchFromUrl(screenSearchFromUrl);
         setSearchTerm(screenSearchFromUrl);
-    }, [screenSearchFromUrl]);
+    }
 
     // Debounce updating URL query parameters for screenSearch
     useEffect(() => {
