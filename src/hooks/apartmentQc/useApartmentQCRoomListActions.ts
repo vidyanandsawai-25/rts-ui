@@ -299,7 +299,7 @@ export const useApartmentQCRoomListActions = (
         return;
       }
 
-      const resultData = result.data as any;
+      const resultData = result.data as { roomWiseMinusData?: typeof currentRoomOffsets };
       const processedOffsets = resultData?.roomWiseMinusData || currentRoomOffsets;
 
       const updatedRoom: RoomData = {
