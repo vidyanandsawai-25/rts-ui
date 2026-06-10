@@ -44,6 +44,7 @@ export default function LockUnlockMaster({
     setEditModal,
     isPending,
     propertyOptions,
+    toPropertyOptions,
     isLoadingProperties,
     propertySearchTerm,
     handlePropertySearch,
@@ -86,6 +87,7 @@ export default function LockUnlockMaster({
             handleSelectChange={handleSelectChange}
             wardOptions={wardOptions}
             propertyOptions={propertyOptions}
+            toPropertyOptions={toPropertyOptions}
             handleShow={handleShow}
             handleClearAll={handleClearAll}
             isPending={isPending}

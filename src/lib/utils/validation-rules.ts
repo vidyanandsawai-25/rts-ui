@@ -49,6 +49,7 @@ export const TRANSLATION_TEXT_SANITIZE = /[^\p{L}\p{M}\p{N}\s,.\-\/_()]/gu;
 
 /* ================= SEARCH VALIDATION ================= */
 export const SEARCH_KEY_REGEX = /^[A-Za-z0-9+\-]+$/;
+export const SEARCH_ALPHANUMERIC_SANITIZE = /[^A-Za-z0-9\s+\-]/g;
 
 /* ================= NAME ONLY VALIDATION ================= */
 // Name fields: Unicode letters and spaces only. No numbers, no special characters.
