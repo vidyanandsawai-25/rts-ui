@@ -3,6 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/common";
 import { SearchButton, ClearButton } from "@/components/common/ActionButtons";
 import { SearchSelect } from "@/components/common/SearchSelect";
 import { useTranslations } from "next-intl";
+import { SEARCH_ALPHANUMERIC_SANITIZE } from "@/lib/utils/validation-rules";
 
 interface SelectPropertyProps {
   formData: {
@@ -13,6 +14,7 @@ interface SelectPropertyProps {
   handleSelectChange: (name: string, value: string) => void;
   wardOptions: { label: string; value: string }[];
   propertyOptions: { label: string; value: string }[];
+  toPropertyOptions?: { label: string; value: string }[];
   handleShow: () => void;
   handleClearAll: () => void;
   isPending: boolean;
@@ -24,6 +26,7 @@ export function SelectProperty({
   handleSelectChange,
   wardOptions = [],
   propertyOptions = [],
+  toPropertyOptions,
   handleShow,
   handleClearAll,
   isPending,
@@ -60,6 +63,7 @@ export function SelectProperty({
                 options={propertyOptions}
                 placeholder={t("selectPropertyCard.selectStartRange")}
                 isLoading={isLoadingProperties}
+                sanitizeInput={(val) => val.replace(SEARCH_ALPHANUMERIC_SANITIZE, "")}
               />
             </div>
             <div className="flex-1">
@@ -69,9 +73,10 @@ export function SelectProperty({
                 required
                 value={formData.toProperty}
                 onChange={handleSelectChange}
-                options={propertyOptions}
+                options={toPropertyOptions || propertyOptions}
                 placeholder={t("selectPropertyCard.selectEndRange")}
                 isLoading={isLoadingProperties}
+                sanitizeInput={(val) => val.replace(SEARCH_ALPHANUMERIC_SANITIZE, "")}
               />
             </div>
           </div>
