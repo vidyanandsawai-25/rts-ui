@@ -5,7 +5,7 @@ import {
   getCommonRemarkByIdAction,
   deleteCommonRemarkAction,
   saveCommonRemarkAction,
-} from "@/app/[locale]/property-tax/common-remark-master/actions";
+} from "@/app/[locale]/configuration-settings/common-remark-master/actions";
 import {
   getCommonRemarksPaged,
   getCommonRemarkById,

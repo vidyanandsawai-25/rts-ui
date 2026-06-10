@@ -1,4 +1,4 @@
-import { CommonRemarkForm } from "@/components/modules/property-tax/common-remark-master";
+import { CommonRemarkForm } from "@/components/modules/configuration-settings/common-remark-master";
 import React from "react";
 import { fetchRemarkCategoriesAction } from "../actions";
 

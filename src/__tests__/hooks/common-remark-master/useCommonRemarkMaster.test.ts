@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
 import { useConfirm } from "@/components/common/ConfirmProvider";
-import { deleteCommonRemarkAction } from "@/app/[locale]/property-tax/common-remark-master/actions";
+import { deleteCommonRemarkAction } from "@/app/[locale]/configuration-settings/common-remark-master/actions";
 import { useSearchNavigation } from "@/hooks/useSearchNavigation";
 import type { CommonRemark, RemarkCategory } from "@/types/common-remark-master/common-remark.types";
 
@@ -39,7 +39,7 @@ vi.mock("@/components/common/ConfirmProvider", () => ({
 }));
 
 // Mock server actions
-vi.mock("@/app/[locale]/property-tax/common-remark-master/actions", () => ({
+vi.mock("@/app/[locale]/configuration-settings/common-remark-master/actions", () => ({
   deleteCommonRemarkAction: vi.fn(),
 }));
 

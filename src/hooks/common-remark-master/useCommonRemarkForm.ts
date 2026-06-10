@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
 import type { CommonRemark, CommonRemarkFormModel, RemarkCategory } from "@/types/common-remark-master/common-remark.types";
-import { saveCommonRemarkAction } from "@/app/[locale]/property-tax/common-remark-master/actions";
+import { saveCommonRemarkAction } from "@/app/[locale]/configuration-settings/common-remark-master/actions";
 import {
   validateRemarkType,
   validateCustomRemarkType,
@@ -117,7 +117,7 @@ export function useCommonRemarkForm({
     setOpen(false);
     setTimeout(() => {
       startTransition(() => {
-        router.push(`/${locale}/property-tax/common-remark-master`);
+        router.push(`/${locale}/configuration-settings/common-remark-master`);
       });
     }, 300);
   }, [router, locale]);

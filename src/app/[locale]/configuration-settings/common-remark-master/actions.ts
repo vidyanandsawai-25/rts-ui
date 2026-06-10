@@ -75,7 +75,7 @@ export async function deleteCommonRemarkAction(formData: FormData) {
     await deleteCommonRemark(id);
 
     for (const loc of locales) {
-      revalidatePath(`/${loc}/property-tax/common-remark-master`, "page");
+      revalidatePath(`/${loc}/configuration-settings/common-remark-master`, "page");
     }
     return { success: true };
   } catch (error) {
@@ -159,13 +159,13 @@ export async function saveCommonRemarkAction(id: string, formData: FormData) {
     if (isUpdate) {
       await updateCommonRemark(payload);
       for (const loc of locales) {
-        revalidatePath(`/${loc}/property-tax/common-remark-master`, "page");
+        revalidatePath(`/${loc}/configuration-settings/common-remark-master`, "page");
       }
       return { ok: true, mode: "update" as const };
     } else {
       await createCommonRemark(payload);
       for (const loc of locales) {
-        revalidatePath(`/${loc}/property-tax/common-remark-master`, "page");
+        revalidatePath(`/${loc}/configuration-settings/common-remark-master`, "page");
       }
       return { ok: true, mode: "create" as const };
     }

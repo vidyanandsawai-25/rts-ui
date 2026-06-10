@@ -1,68 +1,12 @@
-import React from "react";
 import type { Column } from "@/components/common/MasterTable";
 import type { CommonRemark } from "@/types/common-remark-master/common-remark.types";
-import { SortAscButton, SortDescButton, SortDefaultButton } from "@/components/common";
-
-interface SortableHeaderProps {
-  label: string;
-  columnKey: string;
-  sortBy?: string;
-  sortOrder?: string;
-  onSort: (key: string) => void;
-  tCommon: (key: string) => string;
-}
-
-function SortableHeader({
-  label,
-  columnKey,
-  sortBy,
-  sortOrder,
-  onSort,
-  tCommon,
-}: SortableHeaderProps): React.ReactElement {
-  const isActive = sortBy === columnKey;
-  const isAsc = isActive && sortOrder === "asc";
-  const isDesc = isActive && sortOrder === "desc";
-
-  const renderSortButton = () => {
-    if (isAsc) {
-      return (
-        <SortAscButton
-          onClick={() => onSort(columnKey)}
-          aria-label={`${tCommon("table.sort.verb") || "Sort"} ${label} ${tCommon("table.sort.ascending") || "ascending"}`}
-        />
-      );
-    }
-    if (isDesc) {
-      return (
-        <SortDescButton
-          onClick={() => onSort(columnKey)}
-          aria-label={`${tCommon("table.sort.verb") || "Sort"} ${label} ${tCommon("table.sort.descending") || "descending"}`}
-        />
-      );
-    }
-    return (
-      <SortDefaultButton
-        onClick={() => onSort(columnKey)}
-        aria-label={`${tCommon("table.sort.by") || "Sort by"} ${label}`}
-      />
-    );
-  };
-
-  return (
-    <div className="flex items-center gap-1 justify-start w-full">
-      <span>{label}</span>
-      {renderSortButton()}
-    </div>
-  );
-}
 
 export function getCommonRemarkColumns(
   t: (key: string, values?: Record<string, string | number>) => string,
-  tCommon: (key: string) => string,
-  sortBy?: string,
-  sortOrder?: string,
-  onSort?: (key: string) => void
+  _tCommon: (key: string) => string,
+  _sortBy?: string,
+  _sortOrder?: string,
+  _onSort?: (key: string) => void
 ): Column<CommonRemark>[] {
   const getBadgeColorClass = (type: string, id?: number) => {
     const staticColors: Record<string, string> = {
@@ -115,26 +59,10 @@ export function getCommonRemarkColumns(
     }
   };
 
-  const createSortableLabel = (label: string, key: string) => {
-    if (onSort) {
-      return (
-        <SortableHeader
-          label={label}
-          columnKey={key}
-          sortBy={sortBy}
-          sortOrder={sortOrder}
-          onSort={onSort}
-          tCommon={tCommon}
-        />
-      );
-    }
-    return label;
-  };
-
   return [
     {
       key: "remarkType",
-      label: createSortableLabel(t("table.columns.remarkType"), "remarkType"),
+      label: t("table.columns.remarkType"),
       width: "20%",
       render: (value, row) => {
         const type = String(value);
@@ -148,7 +76,7 @@ export function getCommonRemarkColumns(
     },
     {
       key: "remark",
-      label: createSortableLabel(t("table.columns.remark"), "remark"),
+      label: t("table.columns.remark"),
       width: "45%",
       render: (value) => (
         <span className="text-gray-800 font-medium line-clamp-2" title={String(value)}>
@@ -164,7 +92,7 @@ export function getCommonRemarkColumns(
     },
     {
       key: "createdDate",
-      label: createSortableLabel(t("table.columns.createdDate"), "createdDate"),
+      label: t("table.columns.createdDate"),
       width: "20%",
       render: (value) => (
         <span className="text-gray-500 text-sm">

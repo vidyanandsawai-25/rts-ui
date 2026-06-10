@@ -4,7 +4,7 @@ import { useCommonRemarkForm } from "@/hooks/common-remark-master/useCommonRemar
 import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
-import { saveCommonRemarkAction, fetchRemarkCategoriesAction } from "@/app/[locale]/property-tax/common-remark-master/actions";
+import { saveCommonRemarkAction, fetchRemarkCategoriesAction } from "@/app/[locale]/configuration-settings/common-remark-master/actions";
 import type { CommonRemark } from "@/types/common-remark-master/common-remark.types";
 
 // Mock next/navigation
@@ -32,7 +32,7 @@ vi.mock("sonner", () => ({
 }));
 
 // Mock server actions
-vi.mock("@/app/[locale]/property-tax/common-remark-master/actions", () => ({
+vi.mock("@/app/[locale]/configuration-settings/common-remark-master/actions", () => ({
   saveCommonRemarkAction: vi.fn(),
   fetchRemarkCategoriesAction: vi.fn(() => Promise.resolve([])),
 }));

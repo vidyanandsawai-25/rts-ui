@@ -1,5 +1,5 @@
 import React from "react";
-import { CommonRemarkMaster } from "@/components/modules/property-tax/common-remark-master";
+import { CommonRemarkMaster } from "@/components/modules/configuration-settings/common-remark-master";
 import { fetchCommonRemarksPagedAction, fetchRemarkCategoriesAction } from "./actions";
 
 interface PageProps {
