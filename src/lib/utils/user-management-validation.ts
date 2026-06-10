@@ -24,6 +24,9 @@ export const userManagementValidations = {
       userName: (val) => {
         if (!isEdit && !val) return t('form.errors.usernameRequired');
         if (val && String(val).length > 20) return t('form.errors.usernameTooLong');
+        if (val && !/^[a-zA-Z0-9]+$/.test(String(val))) {
+          return t('form.errors.usernameInvalid');
+        }
         if (val && existingUsers) {
           const usernameVal = String(val).trim().toLowerCase();
           const isDuplicate = existingUsers.some(
@@ -121,6 +124,9 @@ export const userManagementValidations = {
       },
       userCode: (val) => {
         if (val && String(val).length > 15) return t('form.errors.userCodeTooLong');
+        if (val && !/^[a-zA-Z0-9_]+$/.test(String(val))) {
+          return t('form.errors.userCodeInvalid');
+        }
         if (val && existingUsers) {
           const codeVal = String(val).trim().toLowerCase();
           if (codeVal) {

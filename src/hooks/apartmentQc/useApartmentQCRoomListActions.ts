@@ -122,29 +122,30 @@ export const useApartmentQCRoomListActions = (
 
     startTransition(async () => {
       const result = await createRoomWiseSubmissionAction({
-        propertyId,
-        propertyDetailsId,
-        ...dims,
-        areaSqMtr: baseArea,
-        noOfRooms: 1,
-        totalAreaSqMtr: computed.carpetArea,
-        roomNo: String(rooms.length + 1),
-        roomType: formData.utilities === "-Select-" ? "" : formData.utilities,
-        roomTypeId: formData.roomTypeId ? Number(formData.roomTypeId) : undefined,
-        shape: formData.shape === "-Select-" ? "" : formData.shape,
-        outerYesNo: formData.outer === "Yes",
-        minusYesNo: formData.offsetMinus === "Yes",
-        submissionType: "room",
-        roomWiseMinusData: currentRoomOffsets.map((o) => ({
-          lengthMtr: parseFloat(o.length || "0") || 0,
-          widthMtr: parseFloat(o.width || "0") || 0,
-          heightMtr: parseFloat(o.height || "0") || 0,
-          areaSqMtr: o.area || 0,
-          shape: o.shape || "Rectangle",
-          operation: o.operation,
-          remark: o.operation === "add" ? "ADD" : "SUB",
-        })),
-      });
+      propertyId,
+      propertyDetailsId,
+      ...dims,
+      areaSqMtr: baseArea,
+      noOfRooms: 1,
+      totalAreaSqMtr: computed.carpetArea,
+      roomNo: String(rooms.length + 1),
+      roomType: formData.utilities === "-Select-" ? "" : formData.utilities,
+      roomTypeId: formData.roomTypeId ? Number(formData.roomTypeId) : undefined,
+      shape: formData.shape === "-Select-" ? "" : formData.shape,
+      outerYesNo: formData.outer === "Yes",
+      minusYesNo: formData.offsetMinus === "Yes",
+      submissionType: "room",
+      roomWiseMinusData: currentRoomOffsets.map((o) => ({
+        id: o.id ? Number(o.id) : undefined,
+        lengthMtr: parseFloat(o.length || "0") || 0,
+        widthMtr: parseFloat(o.width || "0") || 0,
+        heightMtr: parseFloat(o.height || "0") || 0,
+        areaSqMtr: o.area || 0,
+        shape: o.shape || "Rectangle",
+        operation: o.operation,
+        remark: o.operation === "add" ? "ADD" : "SUB",
+      })),
+    });
 
       if (!result.success) {
         toast.error((result as { error?: string }).error || "Failed to create room");
@@ -298,6 +299,9 @@ export const useApartmentQCRoomListActions = (
         return;
       }
 
+      const resultData = result.data as { roomWiseMinusData?: typeof currentRoomOffsets };
+      const processedOffsets = resultData?.roomWiseMinusData || currentRoomOffsets;
+
       const updatedRoom: RoomData = {
         ...currentRoom,
         roomNo: formData.roomNo || currentRoom.roomNo,
@@ -309,8 +313,8 @@ export const useApartmentQCRoomListActions = (
         builtUpArea: computed.builtUpArea,
         roomCount: "1",
         offsetMinus: formData.offsetMinus,
-        offsets: [...currentRoomOffsets],
-        roomWiseMinusData: [...currentRoomOffsets],
+        offsets: processedOffsets,
+        roomWiseMinusData: processedOffsets,
         outer: formData.outer,
         total: computed.carpetArea,
         areaSqMtr: baseArea,

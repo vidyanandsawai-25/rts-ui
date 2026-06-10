@@ -4,6 +4,8 @@ import { Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { FieldConfig, ConditionGroupState, ConditionState } from '@/types/rule-engine.types';
 import ConditionRow from './ConditionRow';
+import { safeUUID } from './useRuleBuilderHelpers';
+import { useToast } from '@/components/common';
 
 interface ConditionGroupProps {
   group: ConditionGroupState;
@@ -21,16 +23,20 @@ export default function ConditionGroup({
   depth = 0,
 }: ConditionGroupProps) {
   const t = useTranslations('ruleEngine');
+  const toast = useToast();
 
   const handleOperatorChange = (op: 'AND' | 'OR') => {
     onChange({ ...group, logicalOperator: op });
   };
 
   const addCondition = () => {
-    if (fields.length === 0) return;
+    if (fields.length === 0) {
+      toast.error('Please select a Rule Scope first to load available fields!');
+      return;
+    }
     const defaultField = fields[0];
     const newCondition: ConditionState = {
-      id: crypto.randomUUID(),
+      id: safeUUID(),
       fieldId: defaultField.fieldId,
       operator: defaultField.supportedOperators?.[0]?.code || 'EQUALS',
       value: defaultField.inputType === 'MULTISELECT' ? [] : '',
@@ -60,7 +66,7 @@ export default function ConditionGroup({
       groups: [
         ...(group.groups || []),
         {
-          id: crypto.randomUUID(),
+          id: safeUUID(),
           logicalOperator: 'AND',
           conditions: [],
           groups: [],
