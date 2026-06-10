@@ -710,6 +710,76 @@ describe('PhotoPlan Section - Complete Tests', () => {
       expect(screen.getByText('media.invalidNameFormat')).toBeInTheDocument();
     });
 
+    it('validates naming modal allowed formats, sizes, Devanagari characters, and disabled type dropdown', () => {
+      const onSubmit = vi.fn();
+      const availableTypes = [{ label: 'Front View', value: '1' }];
+
+      const { container } = render(
+        <PhotoPlanNamingModal
+          open
+          onClose={vi.fn()}
+          onSubmit={onSubmit}
+          availableTypes={availableTypes}
+          defaultDisplayOrder={1}
+          defaultPhotoTypeId={1}
+          isEdit={false}
+          isReplacement={false}
+        />
+      );
+
+      // 1. Verify dynamic title containing the selected photo type name
+      expect(screen.getByText('Add Photo for Front View')).toBeInTheDocument();
+
+      // 2. Verify target slot select dropdown is disabled
+      const typeSelect = screen.getByRole('combobox', { name: /media.photoTypeSlot/i });
+      expect(typeSelect).toBeDisabled();
+
+      // 3. Verify name validation with Devanagari character (Hindi/Marathi name input)
+      const nameInput = screen.getByLabelText(/media.photoPlanName/i);
+      fireEvent.change(nameInput, { target: { value: 'मुख्य प्रवेशद्वार' } });
+      const displayOrderInput = screen.getByLabelText(/media.displayOrder/i);
+      fireEvent.change(displayOrderInput, { target: { value: '2' } });
+
+      // 4. Verify validation error on invalid file type (e.g. text file)
+      const invalidFile = new File(['text'], 'test.txt', { type: 'text/plain' });
+      const fileInput = container.querySelector('input[type="file"]')!;
+      expect(fileInput).toBeInTheDocument();
+
+      // Select invalid file
+      fireEvent.change(fileInput, { target: { files: [invalidFile] } });
+
+      const saveBtn = screen.getByRole('button', { name: 'actions.save' });
+      fireEvent.click(saveBtn);
+
+      expect(screen.getByText('Only JPEG, JPG, and PNG images are allowed')).toBeInTheDocument();
+
+      // 5. Verify validation error on oversized file (e.g. > 5MB)
+      const largeFile = new File(['large_image_content'], 'oversized.png', { type: 'image/png' });
+      Object.defineProperty(largeFile, 'size', { value: 6 * 1024 * 1024 }); // Mock 6 MB file
+
+      fireEvent.change(fileInput, { target: { files: [largeFile] } });
+      fireEvent.click(saveBtn);
+
+      expect(screen.getByText('File size should not exceed 5 MB')).toBeInTheDocument();
+
+      // 6. Verify successful submit with valid file, remarks, and Devanagari name
+      const validFile = new File(['image_content'], 'photo.png', { type: 'image/png' });
+      fireEvent.change(fileInput, { target: { files: [validFile] } });
+
+      const remarksInput = screen.getByPlaceholderText('media.remarksPlaceholder');
+      fireEvent.change(remarksInput, { target: { value: 'Valid remarks' } });
+
+      fireEvent.click(saveBtn);
+
+      expect(onSubmit).toHaveBeenCalledWith(
+        'मुख्य प्रवेशद्वार',
+        2,
+        1,
+        validFile,
+        'Valid remarks'
+      );
+    });
+
     it('validates custom category modal inputs correctly', () => {
       const onSubmit = vi.fn();
       render(

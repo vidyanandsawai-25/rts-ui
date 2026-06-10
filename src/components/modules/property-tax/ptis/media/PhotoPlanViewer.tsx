@@ -57,8 +57,8 @@ export function PhotoPlanViewer({
         <span className="text-slate-300">/</span>
         <span className="text-xs font-semibold text-slate-600">{categoryName}</span>
       </div>
-      
-      <div className="flex-1 relative flex items-center justify-center p-8 select-none">
+
+      <div className="flex-1 relative flex items-center justify-center p-2 sm:p-8 select-none">
         {images.length > 1 && (
           <>
             <Button
@@ -67,7 +67,7 @@ export function PhotoPlanViewer({
               onClick={onPrev}
               icon={ChevronLeft}
               aria-label="Previous image"
-              className="absolute left-4 z-10 !h-11 !w-11 !p-2.5 rounded-full bg-white/80 hover:bg-white text-slate-700 border border-slate-200 shadow-lg hover:scale-105 transition-all opacity-0 group-hover/viewer:opacity-100 flex items-center justify-center"
+              className="absolute left-2 sm:left-4 z-10 !h-9 !w-9 sm:!h-11 sm:!w-11 !p-1 sm:!p-2.5 rounded-full bg-white/80 hover:bg-white text-slate-700 border border-slate-200 shadow-lg hover:scale-105 transition-all opacity-100 sm:opacity-0 sm:group-hover/viewer:opacity-100 flex items-center justify-center"
             />
             <Button
               variant="ghost"
@@ -75,15 +75,19 @@ export function PhotoPlanViewer({
               onClick={onNext}
               icon={ChevronRight}
               aria-label="Next image"
-              className="absolute right-4 z-10 !h-11 !w-11 !p-2.5 rounded-full bg-white/80 hover:bg-white text-slate-700 border border-slate-200 shadow-lg hover:scale-105 transition-all opacity-0 group-hover/viewer:opacity-100 flex items-center justify-center"
+              className="absolute right-2 sm:right-4 z-10 !h-9 !w-9 sm:!h-11 sm:!w-11 !p-1 sm:!p-2.5 rounded-full bg-white/80 hover:bg-white text-slate-700 border border-slate-200 shadow-lg hover:scale-105 transition-all opacity-100 sm:opacity-0 sm:group-hover/viewer:opacity-100 flex items-center justify-center"
             />
           </>
         )}
         <div className="relative max-w-full max-h-full flex items-center justify-center overflow-hidden rounded-lg shadow-xl bg-slate-100 border border-slate-200 w-full h-full">
-          <MainImageViewer src={currentImage?.src || ''} alt={currentImage?.title || ''} rotation={rotation} />
+          <MainImageViewer
+            src={currentImage?.src || ''}
+            alt={currentImage?.title || ''}
+            rotation={rotation}
+          />
         </div>
       </div>
-      
+
       <PhotoPlanToolbar
         title={currentImage?.remarks || currentImage?.title || ''}
         currentIndex={selectedImageIndex}

@@ -51,7 +51,7 @@ export function MediaImageCard({
 }: MediaImageCardProps): React.ReactElement {
   return (
     <div
-      className={`relative group bg-slate-100 rounded-lg overflow-hidden border-2 border-slate-300 shadow-md ${hoverBorderColor} hover:border-4 transition-all cursor-pointer flex-1 min-h-0`}
+      className={`relative group bg-slate-100 rounded-lg overflow-hidden border-2 border-slate-300 shadow-md ${hoverBorderColor} hover:border-4 transition-all cursor-pointer flex-1 min-h-[150px] lg:min-h-0`}
       onClick={onClick}
     >
       <ImageWithFallback

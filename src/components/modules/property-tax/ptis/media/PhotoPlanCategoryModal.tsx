@@ -39,14 +39,20 @@ export function PhotoPlanCategoryModal({
     if (!trimmedName) {
       newErrors.name = t('media.nameRequired') || 'Category name is required';
     } else if (!/^[a-zA-Z0-9\s-_()]+$/.test(trimmedName)) {
-      newErrors.name = t('media.invalidNameFormat') || 'Only letters, numbers, spaces, hyphens, parentheses, and underscores are allowed';
-    } else if (existingNames.some(n => normalize(n) === normalizedName)) {
+      newErrors.name =
+        t('media.invalidNameFormat') ||
+        'Only letters, numbers, spaces, hyphens, parentheses, and underscores are allowed';
+    } else if (existingNames.some((n) => normalize(n) === normalizedName)) {
       newErrors.name = 'A category with this name already exists';
     }
 
     const orderNum = displayOrder.trim() ? Number(displayOrder) : undefined;
-    if (orderNum !== undefined && (isNaN(orderNum) || orderNum <= 0 || !Number.isInteger(orderNum))) {
-      newErrors.displayOrder = t('media.invalidDisplayOrder') || 'Display order must be a positive integer';
+    if (
+      orderNum !== undefined &&
+      (isNaN(orderNum) || orderNum <= 0 || !Number.isInteger(orderNum))
+    ) {
+      newErrors.displayOrder =
+        t('media.invalidDisplayOrder') || 'Display order must be a positive integer';
     }
 
     const trimmedDesc = description.trim();
@@ -80,7 +86,7 @@ export function PhotoPlanCategoryModal({
         disabled={isLoading || !name.trim()}
         className="!bg-blue-600 hover:!bg-blue-700 !text-white font-medium px-4 py-2 rounded-lg cursor-pointer hover:scale-105 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {isLoading ? 'Saving...' : (t('actions.save') || 'Save')}
+        {isLoading ? 'Saving...' : t('actions.save') || 'Save'}
       </Button>
     </div>
   );
@@ -101,7 +107,7 @@ export function PhotoPlanCategoryModal({
           value={name}
           onChange={(e) => {
             setName(e.target.value);
-            setErrors(prev => {
+            setErrors((prev) => {
               const next = { ...prev };
               delete next.name;
               return next;
@@ -122,7 +128,7 @@ export function PhotoPlanCategoryModal({
           value={displayOrder}
           onChange={(e) => {
             setDisplayOrder(e.target.value);
-            setErrors(prev => {
+            setErrors((prev) => {
               const next = { ...prev };
               delete next.displayOrder;
               return next;
@@ -139,7 +145,7 @@ export function PhotoPlanCategoryModal({
           value={description}
           onChange={(e) => {
             setDescription(e.target.value);
-            setErrors(prev => {
+            setErrors((prev) => {
               const next = { ...prev };
               delete next.description;
               return next;

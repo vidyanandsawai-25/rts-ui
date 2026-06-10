@@ -26,6 +26,7 @@
     "photoPlanName": "Slot Name",
     "photoPlanNamePlaceholder": "e.g. Side Entrance",
     "photoTypeSlot": "Photo Type Slot",
+    "slot": "Slot",
     "photoTypePlaceholder": "Select target slot...",
     "displayOrder": "Display Order",
     "remarks": "Remarks",
@@ -63,7 +64,11 @@
     "fullView": "{title} - Full View",
     "photoFile": "Photo File",
     "backToGrid": "Back to Grid",
-    "retry": "Retry"
+    "retry": "Retry",
+    "uploadInstructions": "Upload Instructions",
+    "allowedFormats": "Allowed formats: JPEG, JPG, PNG",
+    "maxFileSize": "Maximum file size: 5 MB",
+    "photoLegibilityNote": "Ensure the photo is clear and legible"
   },
   "noDataAvailable": "No data available for this section",
   "taxDetailsDualMethod": "Tax Details (Dual Method)",

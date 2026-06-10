@@ -26,6 +26,7 @@
     "photoPlanName": "स्लॉट का नाम",
     "photoPlanNamePlaceholder": "उदा. मुख्य द्वार",
     "photoTypeSlot": "फोटो प्रकार स्लॉट",
+    "slot": "स्लॉट",
     "photoTypePlaceholder": "लक्षित स्लॉट चुनें...",
     "displayOrder": "प्रदर्शन क्रम",
     "remarks": "टिप्पणी",
@@ -63,7 +64,11 @@
     "fullView": "{title} - पूर्ण दृश्य",
     "photoFile": "फोटो फ़ाइल",
     "backToGrid": "ग्रिड पर वापस जाएं",
-    "retry": "पुनः प्रयास करें"
+    "retry": "पुनः प्रयास करें",
+    "uploadInstructions": "अपलोड निर्देश",
+    "allowedFormats": "अनुमत प्रारूप: JPEG, JPG, PNG",
+    "maxFileSize": "अधिकतम फ़ाइल आकार: 5 MB",
+    "photoLegibilityNote": "सुनिश्चित करें कि फोटो स्पष्ट और पठनीय है"
   },
   "noDataAvailable": "इस अनुभाग के लिए कोई डेटा उपलब्ध नहीं है",
   "taxDetailsDualMethod": "कर विवरण (दोहरी पद्धति)",

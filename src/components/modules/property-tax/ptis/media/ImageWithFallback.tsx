@@ -60,9 +60,7 @@ function ImagePlaceholder({
             d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
           />
         </svg>
-        {!isSmall && (
-          <span className="text-xs font-medium opacity-60 text-center">{label}</span>
-        )}
+        {!isSmall && <span className="text-xs font-medium opacity-60 text-center">{label}</span>}
       </div>
     </div>
   );
@@ -99,13 +97,7 @@ export function ImageWithFallback({
   const isSmall = width !== undefined && width < 100;
 
   if ((hasError || !src) && !fallbackSrc) {
-    return (
-      <ImagePlaceholder
-        alt={alt}
-        isSmall={isSmall}
-        label={t('media.imageUnavailable')}
-      />
-    );
+    return <ImagePlaceholder alt={alt} isSmall={isSmall} label={t('media.imageUnavailable')} />;
   }
 
   return (
@@ -124,7 +116,11 @@ export function ImageWithFallback({
         priority={priority}
         quality={80}
         loading={priority ? undefined : 'lazy'}
-        unoptimized={isBlobOrDataUrl(effectiveSrc) || !effectiveSrc.startsWith('/') || effectiveSrc.startsWith('/api/documents/')}
+        unoptimized={
+          isBlobOrDataUrl(effectiveSrc) ||
+          !effectiveSrc.startsWith('/') ||
+          effectiveSrc.startsWith('/api/documents/')
+        }
       />
     </div>
   );

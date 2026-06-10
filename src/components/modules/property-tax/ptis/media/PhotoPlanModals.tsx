@@ -18,7 +18,13 @@ interface PhotoPlanModalsProps {
   isCategoryUploading: boolean;
   existingCategoryNames: string[];
   categoriesLength: number;
-  handleNamingSubmit: (name: string, order: number, typeId: number, file?: File, remarks?: string) => void;
+  handleNamingSubmit: (
+    name: string,
+    order: number,
+    typeId: number,
+    file?: File,
+    remarks?: string
+  ) => void;
   handleCreateCategorySlot: (name: string, order?: number, desc?: string) => void;
 }
 

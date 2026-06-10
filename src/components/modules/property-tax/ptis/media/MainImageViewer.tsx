@@ -28,7 +28,13 @@ function ImageLoadingSkeleton(): React.ReactElement {
 }
 
 /** Fallback shown when the main image fails to load. */
-function ImageErrorFallback({ alt, errorLabel }: { alt: string; errorLabel: string }): React.ReactElement {
+function ImageErrorFallback({
+  alt,
+  errorLabel,
+}: {
+  alt: string;
+  errorLabel: string;
+}): React.ReactElement {
   return (
     <div className="flex flex-col items-center justify-center gap-3 p-8 text-slate-500">
       <svg className="w-16 h-16 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -67,11 +73,21 @@ export function MainImageViewer({ src, alt, rotation }: MainImageViewerProps): R
   };
 
   if (!src) {
-    return <ImageErrorFallback alt={alt} errorLabel={t('media.imageUnavailable') || 'Image Unavailable'} />;
+    return (
+      <ImageErrorFallback
+        alt={alt}
+        errorLabel={t('media.imageUnavailable') || 'Image Unavailable'}
+      />
+    );
   }
 
   if (hasError) {
-    return <ImageErrorFallback alt={alt} errorLabel={t('media.imageUnavailable') || 'Image Unavailable'} />;
+    return (
+      <ImageErrorFallback
+        alt={alt}
+        errorLabel={t('media.imageUnavailable') || 'Image Unavailable'}
+      />
+    );
   }
 
   return (

@@ -40,7 +40,9 @@ export function PhotoPlanGrid({
     confirm({
       variant: 'delete',
       title: t('media.deleteSlotTitle') || 'Delete Photo',
-      description: t('media.deleteSlotDescription', { name: title }) || `Are you sure you want to delete ${title}?`,
+      description:
+        t('media.deleteSlotDescription', { name: title }) ||
+        `Are you sure you want to delete ${title}?`,
       meta: { name: title },
       onConfirm: () => onDeletePhoto(index),
     });
@@ -49,20 +51,26 @@ export function PhotoPlanGrid({
   const totalPhotos = typeof photoCount === 'number' ? photoCount : images.length;
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-slate-50 overflow-y-auto p-6 scrollbar-thin">
-      <div className="flex justify-between items-center mb-6">
+    <div className="flex-1 flex flex-col h-full bg-slate-50 overflow-y-auto p-3 sm:p-6 scrollbar-thin">
+      <div className="flex justify-between items-center mb-4 sm:mb-6">
         <div className="flex items-center gap-2">
           <FileImage className="w-5 h-5 text-blue-600" />
           <h2 className="text-lg font-bold text-slate-800">
-            {categoryName} <span className="text-sm font-medium text-slate-500">({totalPhotos} {totalPhotos === 1 ? 'photo' : 'photos'})</span>
+            {categoryName}{' '}
+            <span className="text-sm font-medium text-slate-500">
+              ({totalPhotos} {totalPhotos === 1 ? 'photo' : 'photos'})
+            </span>
           </h2>
         </div>
       </div>
 
       {isLoading ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 pb-8">
           {Array.from({ length: 4 }).map((_, idx) => (
-            <div key={idx} className="h-40 rounded-lg bg-white border border-slate-200 p-2 flex flex-col gap-2 shadow-sm animate-pulse">
+            <div
+              key={idx}
+              className="h-40 rounded-lg bg-white border border-slate-200 p-2 flex flex-col gap-2 shadow-sm animate-pulse"
+            >
               <div className="flex-1 bg-slate-100 rounded" />
               <div className="h-4 bg-slate-200 rounded w-3/4" />
             </div>
@@ -81,7 +89,7 @@ export function PhotoPlanGrid({
           </div>
         </div>
       ) : images.length === 0 ? (
-        <div 
+        <div
           onClick={onAddPhoto}
           className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-slate-300 rounded-xl bg-white p-12 hover:border-blue-500 hover:bg-blue-50/20 cursor-pointer transition-all duration-300 select-none group"
         >
@@ -92,11 +100,12 @@ export function PhotoPlanGrid({
             {t('media.noImageUploaded') || 'No Photos Uploaded'}
           </h3>
           <p className="text-xs text-slate-400 max-w-xs text-center">
-            {t('media.clickToUpload', { title: categoryName }) || `Click here to upload a photo to the ${categoryName} folder.`}
+            {t('media.clickToUpload', { title: categoryName }) ||
+              `Click here to upload a photo to the ${categoryName} folder.`}
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 pb-8">
           {images.map((img, index) => (
             <div
               key={img.propertyPhotoId || index}
@@ -112,11 +121,14 @@ export function PhotoPlanGrid({
                   height={150}
                   sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                 />
-                
+
                 {/* Actions overlay */}
                 <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
                   <button
-                    onClick={(e) => { e.stopPropagation(); onReplacePhoto(index); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onReplacePhoto(index);
+                    }}
                     className="p-1.5 bg-white hover:bg-slate-50 rounded shadow border border-slate-200 text-slate-600 hover:text-green-600 cursor-pointer transition-colors"
                     title="Replace file"
                   >
@@ -146,7 +158,7 @@ export function PhotoPlanGrid({
               </div>
             </div>
           ))}
-          
+
           {/* Inline Add Card */}
           <div
             onClick={onAddPhoto}

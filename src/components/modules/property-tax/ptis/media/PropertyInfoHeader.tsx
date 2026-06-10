@@ -59,7 +59,9 @@ export function PropertyInfoHeader({
 
         {/* Language Toggle + Expand */}
         <div className="flex justify-center items-center gap-1">
-          <Tooltip content={sharedLanguage === 'english' ? 'Switch to Marathi' : 'Switch to English'}>
+          <Tooltip
+            content={sharedLanguage === 'english' ? 'Switch to Marathi' : 'Switch to English'}
+          >
             <Button
               variant="secondary"
               size="xs"
@@ -83,12 +85,7 @@ export function PropertyInfoHeader({
               className="p-1 rounded-full hover:bg-indigo-200 transition-colors text-indigo-600 h-7 w-7"
               aria-label="Toggle property holder visibility"
             >
-              <svg
-                className="w-3.5 h-3.5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"

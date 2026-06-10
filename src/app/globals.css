@@ -80,3 +80,9 @@ input::-ms-clear {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+/* Ensure the drawer instance never overflows the viewport width */
+.drawer-instance {
+  max-width: 100vw !important;
+}
+

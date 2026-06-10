@@ -35,15 +35,17 @@ export function PtisLayoutWrapper({
   initialPhotos,
 }: PtisLayoutWrapperProps): React.ReactElement {
   const [sharedLanguage, setSharedLanguage] = useState<'english' | 'marathi'>('english');
-  const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
+  const mounted = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  );
 
   return (
-    <div className="relative flex gap-4 w-full">
-      <div className="flex-1 min-w-0">
-        {children}
-      </div>
+    <div className="relative flex flex-col lg:flex-row gap-4 w-full">
+      <div className="flex-1 min-w-0 w-full">{children}</div>
 
-      <div className="sticky top-[92px] w-[208px] h-[calc(100vh-152px)] z-30 shrink-0">
+      <div className="w-full lg:sticky lg:top-[92px] lg:w-[208px] lg:h-[calc(100vh-152px)] z-30 lg:shrink-0">
         {mounted && (
           <PropertyMediaPanel
             sharedLanguage={sharedLanguage}
