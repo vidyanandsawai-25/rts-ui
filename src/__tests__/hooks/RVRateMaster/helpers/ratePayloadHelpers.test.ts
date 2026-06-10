@@ -19,6 +19,7 @@ describe("ratePayloadHelpers", () => {
     selectedUseGroup: "1",
     assessmentYear: "2024",
     rateFrequency: "Monthly" as const,
+    rateUnit: "SqMeter" as const,
     rateCategories: mockRateCategories,
   };
 
@@ -85,7 +86,7 @@ describe("ratePayloadHelpers", () => {
         rateRemark: "",
         typeOfUseGroupId: 1,
         rateSectionId: 1,
-        yearRangeRVId: 1,
+        yearRangeRVId: 2024,
         year: 2024,
         floorId: 1,
         isActive: true,
@@ -143,6 +144,173 @@ describe("ratePayloadHelpers", () => {
       // Should only insert LOAD (non-zero value)
       const loadInserts = inserts.filter(i => i.constructionTypeId === 2);
       expect(loadInserts.length).toBe(1);
+    });
+
+    describe("Rate Unit Calculations", () => {
+      it("should store entered value in rateSquareMeter when unit is SqMeter", () => {
+        const matrixWithRate = [
+          { zoneNo: "Z1", taxZoneId: 1, RCC: 100 },
+        ];
+
+        const config = {
+          ...mockConfig,
+          rateUnit: "SqMeter" as const,
+        };
+
+        const { inserts } = buildPayloadFromMatrix(
+          matrixWithRate,
+          [],
+          config,
+          "1"
+        );
+
+        expect(inserts[0].rateSquareMeter).toBe(100);
+        expect(inserts[0].rateSquareFeet).toBe(1076.39); // 100 * 10.7639
+      });
+
+      it("should store entered value in rateSquareFeet when unit is SqFeet", () => {
+        const matrixWithRate = [
+          { zoneNo: "Z1", taxZoneId: 1, RCC: 100 },
+        ];
+
+        const config = {
+          ...mockConfig,
+          rateUnit: "SqFeet" as const,
+        };
+
+        const { inserts } = buildPayloadFromMatrix(
+          matrixWithRate,
+          [],
+          config,
+          "1"
+        );
+
+        expect(inserts[0].rateSquareFeet).toBe(100);
+        expect(inserts[0].rateSquareMeter).toBe(9.29); // 100 / 10.7639
+      });
+
+      it("should calculate rateSquareFeet correctly when SqMeter is selected", () => {
+        const matrixWithRate = [
+          { zoneNo: "Z1", taxZoneId: 1, RCC: 50.5 },
+        ];
+
+        const config = {
+          ...mockConfig,
+          rateUnit: "SqMeter" as const,
+        };
+
+        const { inserts } = buildPayloadFromMatrix(
+          matrixWithRate,
+          [],
+          config,
+          "1"
+        );
+
+        expect(inserts[0].rateSquareMeter).toBe(50.5);
+        // 50.5 * 10.7639 = 543.58
+        expect(inserts[0].rateSquareFeet).toBeCloseTo(543.58, 1);
+      });
+
+      it("should calculate rateSquareMeter correctly when SqFeet is selected", () => {
+        const matrixWithRate = [
+          { zoneNo: "Z1", taxZoneId: 1, RCC: 107.64 },
+        ];
+
+        const config = {
+          ...mockConfig,
+          rateUnit: "SqFeet" as const,
+        };
+
+        const { inserts } = buildPayloadFromMatrix(
+          matrixWithRate,
+          [],
+          config,
+          "1"
+        );
+
+        expect(inserts[0].rateSquareFeet).toBe(107.64);
+        // 107.64 / 10.7639 = 10.00
+        expect(inserts[0].rateSquareMeter).toBeCloseTo(10.0, 1);
+      });
+
+      it("should detect updates based on rateUnit selection", () => {
+        const matrixWithRate = [
+          { zoneNo: "Z1", taxZoneId: 1, RCC: 100 },
+        ];
+
+        const existingRates: IBackendRateMaster[] = [
+          {
+            id: 1,
+            taxZoneNo: "Z1",
+            taxZoneId: 1,
+            constructionTypeId: 1,
+            rateSquareMeter: 100,
+            rateSquareFeet: 90, // Different from calculated
+            rateRemark: "",
+            typeOfUseGroupId: 1,
+            rateSectionId: 1,
+            yearRangeRVId: 2024,
+            year: 2024,
+            floorId: 1,
+            isActive: true,
+            createdDate: "2024-01-01",
+            updatedDate: null
+          },
+        ];
+
+        // When SqMeter is selected, compare with rateSquareMeter
+        const configSqMeter = {
+          ...mockConfig,
+          rateUnit: "SqMeter" as const,
+        };
+
+        const resultSqMeter = buildPayloadFromMatrix(
+          matrixWithRate,
+          existingRates,
+          configSqMeter,
+          "1"
+        );
+
+        // No update because entered value (100) matches existing rateSquareMeter (100)
+        expect(resultSqMeter.updates).toHaveLength(0);
+
+        // When SqFeet is selected, compare with rateSquareFeet
+        const configSqFeet = {
+          ...mockConfig,
+          rateUnit: "SqFeet" as const,
+        };
+
+        const resultSqFeet = buildPayloadFromMatrix(
+          matrixWithRate,
+          existingRates,
+          configSqFeet,
+          "1"
+        );
+
+        // Update detected because entered value (100) differs from existing rateSquareFeet (90)
+        expect(resultSqFeet.updates.length).toBeGreaterThan(0);
+      });
+
+      it("should round calculated values to 2 decimal places", () => {
+        const matrixWithRate = [
+          { zoneNo: "Z1", taxZoneId: 1, RCC: 33.33 },
+        ];
+
+        const config = {
+          ...mockConfig,
+          rateUnit: "SqMeter" as const,
+        };
+
+        const { inserts } = buildPayloadFromMatrix(
+          matrixWithRate,
+          [],
+          config,
+          "1"
+        );
+
+        // 33.33 * 10.7639 = 358.76
+        expect(inserts[0].rateSquareFeet).toBe(358.76);
+      });
     });
   });
 

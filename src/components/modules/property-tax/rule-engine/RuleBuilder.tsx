@@ -28,16 +28,12 @@ export default function RuleBuilder(props: RuleBuilderProps) {
     ruleName, setRuleName,
     ruleScopeId, setRuleScopeId,
     ruleCategory, setRuleCategory,
-    description, setDescription,
-    priority, setPriority,
-    conditions, setConditions,
-    effect, setEffect, fields,
-    stopProcessing, setStopProcessing,
-    skipRuleIds, setSkipRuleIds,
-    exclusionReason, setExclusionReason,
+    ruleDescription, setRuleDescription,
+    rulesList, fields,
     isReasonOpen, setIsReasonOpen, changeReason, setChangeReason,
     activeScopeName, handleSaveClick, handleConfirmSave,
     isSaving,
+    addRuleBlock, removeRuleBlock, moveRuleBlock, updateRuleBlock,
   } = useRuleBuilder(props);
 
   return (
@@ -46,12 +42,10 @@ export default function RuleBuilder(props: RuleBuilderProps) {
 
       <TargetFilterPanel
         ruleName={ruleName} setRuleName={setRuleName}
-        description={description} setDescription={setDescription}
-        priority={priority} setPriority={setPriority}
         ruleScopeId={ruleScopeId} setRuleScopeId={setRuleScopeId}
         ruleCategory={ruleCategory} setRuleCategory={setRuleCategory}
+        ruleDescription={ruleDescription} setRuleDescription={setRuleDescription}
         scopes={props.scopes}
-        corporations={props.corporations}
         ruleCategoryOptions={props.ruleCategoryOptions}
       />
 
@@ -59,17 +53,16 @@ export default function RuleBuilder(props: RuleBuilderProps) {
         activeScopeName={activeScopeName}
         handleSaveClick={handleSaveClick}
         isSaving={isSaving}
-        initialRule={props.initialRule}
-        conditions={conditions} fields={fields} setConditions={setConditions}
-        effect={effect} setEffect={setEffect}
-        effectTypes={props.effectTypes} categoryOptions={props.categoryOptions}
+        isEdit={!!props.initialRule}
+        rulesList={rulesList}
+        fields={fields}
+        effectTypes={props.effectTypes}
+        categoryOptions={props.categoryOptions}
         effectTypeConfigs={props.effectTypeConfigs}
-        stopProcessing={stopProcessing}
-        onStopProcessingChange={setStopProcessing}
-        skipRuleIds={skipRuleIds}
-        onSkipRuleIdsChange={setSkipRuleIds}
-        exclusionReason={exclusionReason}
-        onExclusionReasonChange={setExclusionReason}
+        onAddRuleBlock={addRuleBlock}
+        onRemoveRuleBlock={removeRuleBlock}
+        onMoveRuleBlock={moveRuleBlock}
+        onUpdateRuleBlock={updateRuleBlock}
       />
 
       <RuleSaveReasonModal

@@ -42,6 +42,7 @@ describe("rateDownloadHelpers", () => {
       "downloadHeaders.useGroup": "Use Group",
       "downloadHeaders.taxZoneNo": "Tax Zone No",
       "downloadHeaders.rateSqMtr": "Rate (₹/Sq.mtr)",
+      "downloadHeaders.rateSqFt": "Rate (₹/Sq.ft)",
     };
     return translations[key] || key;
   };
@@ -80,14 +81,14 @@ describe("rateDownloadHelpers", () => {
 
   describe("downloadDetailedRates", () => {
     it("should show error when no zone is selected", async () => {
-      await downloadDetailedRates("", mockZones, mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>, mockRateCategories);
+      await downloadDetailedRates("", mockZones, "SqMeter", mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>, mockRateCategories);
 
       expect(toast.error).toHaveBeenCalledWith("Please select a rate section");
       expect(getDetailedRatesAction).not.toHaveBeenCalled();
     });
 
     it("should show error when zone is ALL", async () => {
-      await downloadDetailedRates("ALL", mockZones, mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>, mockRateCategories);
+      await downloadDetailedRates("ALL", mockZones, "SqMeter", mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>, mockRateCategories);
 
       expect(toast.error).toHaveBeenCalledWith("Please select a rate section");
       expect(getDetailedRatesAction).not.toHaveBeenCalled();
@@ -96,7 +97,7 @@ describe("rateDownloadHelpers", () => {
     it("should show loading toast before fetching data", async () => {
       vi.mocked(getDetailedRatesAction).mockResolvedValue({ items: [] });
 
-      await downloadDetailedRates("UTHALSAR", mockZones, mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>, mockRateCategories);
+      await downloadDetailedRates("UTHALSAR", mockZones, "SqMeter", mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>, mockRateCategories);
 
       expect(toast.loading).toHaveBeenCalledWith("Downloading rates...");
     });
@@ -115,7 +116,7 @@ describe("rateDownloadHelpers", () => {
 
       vi.mocked(getDetailedRatesAction).mockResolvedValue({ items: mockRates });
 
-      await downloadDetailedRates("UTHALSAR", mockZones, mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>, mockRateCategories);
+      await downloadDetailedRates("UTHALSAR", mockZones, "SqMeter", mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>, mockRateCategories);
 
       expect(getDetailedRatesAction).toHaveBeenCalledWith("UTHALSAR", undefined, undefined, 1, -1);
     });
@@ -123,7 +124,7 @@ describe("rateDownloadHelpers", () => {
     it("should show error when no rates are available", async () => {
       vi.mocked(getDetailedRatesAction).mockResolvedValue({ items: [] });
 
-      await downloadDetailedRates("UTHALSAR", mockZones, mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>, mockRateCategories);
+      await downloadDetailedRates("UTHALSAR", mockZones, "SqMeter", mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>, mockRateCategories);
 
       expect(toast.dismiss).toHaveBeenCalled();
       expect(toast.error).toHaveBeenCalledWith("No rates available");
@@ -151,7 +152,7 @@ describe("rateDownloadHelpers", () => {
 
       vi.mocked(getDetailedRatesAction).mockResolvedValue({ items: mockRates });
 
-      await downloadDetailedRates("UTHALSAR", mockZones, mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>, mockRateCategories);
+      await downloadDetailedRates("UTHALSAR", mockZones, "SqMeter", mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>, mockRateCategories);
 
       expect(toast.success).toHaveBeenCalledWith("Rates downloaded successfully");
       expect(createElementSpy).toHaveBeenCalledWith("a");
@@ -181,7 +182,7 @@ describe("rateDownloadHelpers", () => {
 
       vi.mocked(getDetailedRatesAction).mockResolvedValue({ items: mockRates });
 
-      await downloadDetailedRates("UTHALSAR", mockZones, mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>, mockRateCategories);
+      await downloadDetailedRates("UTHALSAR", mockZones, "SqMeter", mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>, mockRateCategories);
 
       expect(toast.success).toHaveBeenCalledWith("Rates downloaded successfully");
     });
@@ -200,7 +201,7 @@ describe("rateDownloadHelpers", () => {
 
       vi.mocked(getDetailedRatesAction).mockResolvedValue({ items: mockRates });
 
-      await downloadDetailedRates("UTHALSAR", mockZones, mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>, mockRateCategories);
+      await downloadDetailedRates("UTHALSAR", mockZones, "SqMeter", mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>, mockRateCategories);
 
       // Verify that the download was triggered
       const linkElement = createElementSpy.mock.results[0]?.value;
@@ -210,7 +211,7 @@ describe("rateDownloadHelpers", () => {
     it("should handle download failure gracefully", async () => {
       vi.mocked(getDetailedRatesAction).mockRejectedValue(new Error("Network error"));
 
-      await downloadDetailedRates("UTHALSAR", mockZones, mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>, mockRateCategories);
+      await downloadDetailedRates("UTHALSAR", mockZones, "SqMeter", mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>, mockRateCategories);
 
       expect(toast.dismiss).toHaveBeenCalled();
       expect(toast.error).toHaveBeenCalledWith("Failed to download rates");
@@ -237,7 +238,7 @@ describe("rateDownloadHelpers", () => {
         }
       } as unknown as typeof Blob;
 
-      await downloadDetailedRates("UTHALSAR", mockZones, mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>, mockRateCategories);
+      await downloadDetailedRates("UTHALSAR", mockZones, "SqMeter", mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>, mockRateCategories);
 
       expect(blobContent).toBeDefined();
       expect(typeof blobContent).toBe('string');
@@ -274,7 +275,7 @@ describe("rateDownloadHelpers", () => {
 
       vi.mocked(getDetailedRatesAction).mockResolvedValue({ items: mockRates });
 
-      await downloadDetailedRates("UTHALSAR", mockZones, mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>, mockRateCategories);
+      await downloadDetailedRates("UTHALSAR", mockZones, "SqMeter", mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>, mockRateCategories);
 
       expect(toast.success).toHaveBeenCalledWith("Rates downloaded successfully");
     });
@@ -301,9 +302,144 @@ describe("rateDownloadHelpers", () => {
 
       vi.mocked(getDetailedRatesAction).mockResolvedValue({ items: mockRates });
 
-      await downloadDetailedRates("UTHALSAR", mockZones, mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>, mockRateCategories);
+      await downloadDetailedRates("UTHALSAR", mockZones, "SqMeter", mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>, mockRateCategories);
 
       expect(toast.success).toHaveBeenCalledWith("Rates downloaded successfully");
+    });
+
+    describe("Rate Unit Handling", () => {
+      it("should use rateSquareMeter values when unit is SqMeter", async () => {
+        const mockRates = [
+          {
+            rateSection: "UTHALSAR",
+            taxZone: "1",
+            typeOfUseGroup: "निवासी",
+            yearRangeRV: "1700-1997",
+            constructionType: "A",
+            rateSquareMeter: 100,
+            rateSquareFeet: 1076.39,
+          },
+        ];
+
+        vi.mocked(getDetailedRatesAction).mockResolvedValue({ items: mockRates });
+
+        await downloadDetailedRates("UTHALSAR", mockZones, "SqMeter", mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>, mockRateCategories);
+
+        expect(toast.success).toHaveBeenCalledWith("Rates downloaded successfully");
+      });
+
+      it("should use rateSquareFeet values when unit is SqFeet", async () => {
+        const mockRates = [
+          {
+            rateSection: "UTHALSAR",
+            taxZone: "1",
+            typeOfUseGroup: "निवासी",
+            yearRangeRV: "1700-1997",
+            constructionType: "A",
+            rateSquareMeter: 100,
+            rateSquareFeet: 1076.39,
+          },
+        ];
+
+        vi.mocked(getDetailedRatesAction).mockResolvedValue({ items: mockRates });
+
+        await downloadDetailedRates("UTHALSAR", mockZones, "SqFeet", mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>, mockRateCategories);
+
+        expect(toast.success).toHaveBeenCalledWith("Rates downloaded successfully");
+      });
+
+      it("should show SqMtr unit label in header when unit is SqMeter", async () => {
+        const mockRates = [
+          {
+            rateSection: "UTHALSAR",
+            taxZone: "1",
+            typeOfUseGroup: "निवासी",
+            yearRangeRV: "1700-1997",
+            constructionType: "A",
+            rateSquareMeter: 100,
+          },
+        ];
+
+        vi.mocked(getDetailedRatesAction).mockResolvedValue({ items: mockRates });
+
+        let blobContent: string | undefined;
+        global.Blob = class MockBlob {
+          constructor(content: string[]) {
+            blobContent = content[0];
+          }
+        } as unknown as typeof Blob;
+
+        await downloadDetailedRates("UTHALSAR", mockZones, "SqMeter", mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>, mockRateCategories);
+
+        expect(blobContent).toContain("Rate (₹/Sq.mtr)");
+      });
+
+      it("should show SqFt unit label in header when unit is SqFeet", async () => {
+        const mockRates = [
+          {
+            rateSection: "UTHALSAR",
+            taxZone: "1",
+            typeOfUseGroup: "निवासी",
+            yearRangeRV: "1700-1997",
+            constructionType: "A",
+            rateSquareFeet: 1076.39,
+          },
+        ];
+
+        vi.mocked(getDetailedRatesAction).mockResolvedValue({ items: mockRates });
+
+        let blobContent: string | undefined;
+        global.Blob = class MockBlob {
+          constructor(content: string[]) {
+            blobContent = content[0];
+          }
+        } as unknown as typeof Blob;
+
+        await downloadDetailedRates("UTHALSAR", mockZones, "SqFeet", mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>, mockRateCategories);
+
+        expect(blobContent).toContain("Rate (₹/Sq.ft)");
+      });
+
+      it("should use correct rate value based on unit selection", async () => {
+        const mockRates = [
+          {
+            rateSection: "UTHALSAR",
+            taxZone: "1",
+            typeOfUseGroup: "निवासी",
+            yearRangeRV: "1700-1997",
+            constructionType: "A",
+            rateSquareMeter: 100,
+            rateSquareFeet: 50,
+          },
+        ];
+
+        vi.mocked(getDetailedRatesAction).mockResolvedValue({ items: mockRates });
+
+        let blobContentSqMeter: string | undefined;
+        global.Blob = class MockBlob {
+          constructor(content: string[]) {
+            blobContentSqMeter = content[0];
+          }
+        } as unknown as typeof Blob;
+
+        await downloadDetailedRates("UTHALSAR", mockZones, "SqMeter", mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>, mockRateCategories);
+
+        // Check that the CSV contains the square meter value (100)
+        expect(blobContentSqMeter).toContain("100");
+
+        // Now test with SqFeet
+        let blobContentSqFeet: string | undefined;
+        global.Blob = class MockBlob {
+          constructor(content: string[]) {
+            blobContentSqFeet = content[0];
+          }
+        } as unknown as typeof Blob;
+
+        await downloadDetailedRates("UTHALSAR", mockZones, "SqFeet", mockT as unknown as ReturnType<typeof import("next-intl").useTranslations>, mockRateCategories);
+
+        // Check that the CSV contains the square feet value (50)
+        expect(blobContentSqFeet).toContain("50");
+      });
     });
   });
 });

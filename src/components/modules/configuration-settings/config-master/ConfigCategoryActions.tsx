@@ -9,7 +9,7 @@ import {
   deleteConfigCategoryAction,
   updateAllConfigKeysStatusByCategoryIdAction,
 } from '@/app/[locale]/configuration-settings/config-master/actions';
-import { usePermissions } from '@/hooks/usePermissions';
+import { useActivePagePermissions } from '@/hooks/useActivePagePermissions';
 
 interface CategoryContextProps {
   categoryId: string;
@@ -26,7 +26,7 @@ export function CategoryEditDeleteActions({ categoryId, categoryName }: Category
   const [isPending, startTransition] = useTransition();
   const [activeAction, setActiveAction] = useState<'edit' | 'delete' | null>(null);
 
-  const { canEdit, canDelete, haveFullAccess } = usePermissions('CONFIG_MASTER');
+  const { canEdit, canDelete, haveFullAccess } = useActivePagePermissions();
 
   const showEdit = canEdit || canDelete || haveFullAccess;
   const showDelete = canDelete || haveFullAccess;
@@ -107,7 +107,7 @@ export function CategoryBulkActions({ categoryId, categoryName }: CategoryContex
   const [isPending, startTransition] = useTransition();
   const [activeAction, setActiveAction] = useState<'enable' | 'disable' | null>(null);
 
-  const { haveFullAccess } = usePermissions('CONFIG_MASTER');
+  const { haveFullAccess } = useActivePagePermissions();
 
   if (!haveFullAccess) return null;
 

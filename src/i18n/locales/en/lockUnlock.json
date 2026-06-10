@@ -1,0 +1,94 @@
+{
+  "title": "Lock Property",
+  "subtitle": "Administrative control utility for locking or unlocking groups of properties within selected ranges.",
+  "selectPropertyCard": {
+    "title": "Select properties",
+    "wardNo": "Ward no",
+    "selectWard": "Select Ward",
+    "fromProperty": "From property",
+    "selectStartRange": "Select Start Range",
+    "toProperty": "To property",
+    "selectEndRange": "Select End Range",
+    "showButton": "Show",
+    "clearButton": "Clear all",
+    "mandatoryBanner": "Fields marked with * are mandatory"
+  },
+  "screenSelectionCard": {
+    "title": "Screen selection",
+    "selectedCount": "{count} selected",
+    "noScreens": "No screens available to select.",
+    "searchPlaceholder": "Search by code or description",
+    "typeOfUse": "All Types",
+    "selectAll": "Select All",
+    "clearAll": "Clear All",
+    "helperText": "Select the screen codes applicable to lock/unlock",
+    "allTypes": "All Types"
+  },
+  "resultsTable": {
+    "title": "Bulk Operations ({count} properties selected)",
+    "propertyMasterTitle": "Property Master Management",
+    "lockButton": "Lock Selected Screens",
+    "unlockButton": "Unlock Selected Screens",
+    "searchPropertyPlaceholder": "Search by property no...",
+    "searchButton": "Search",
+    "placeholderText": "Please select a ward and property range, then click \"Show\" to view properties.",
+    "columns": {
+      "wardNo": "Ward No.",
+      "propertyNo": "Property No.",
+      "partitionNo": "Partition No.",
+      "screenNames": "Screen Names",
+      "status": "Status",
+      "lockUnlock": "Lock/Unlock",
+      "actions": "Actions"
+    },
+    "status": {
+      "locked": "Locked",
+      "unlocked": "Unlocked",
+      "none": "None"
+    },
+    "actions": {
+      "manage": "Manage"
+    }
+  },
+  "manageModal": {
+    "title": "Manage Locks: {propertyNo}",
+    "description": "Select which modules or screens should be locked for this property. Checked screens will prevent users from performing edits or submissions.",
+    "cancel": "Cancel",
+    "saveChanges": "Save Changes"
+  },
+  "messages": {
+    "screenRequired": "Please select at least one screen from the Screen selection card to lock.",
+    "lockConfirmTitle": "Lock Property",
+    "unlockConfirmTitle": "Unlock Property",
+    "lockConfirmDescription": "Are you sure you want to lock the selected screens for property {propertyNo}?",
+    "unlockConfirmDescription": "Are you sure you want to unlock all screens for property {propertyNo}?",
+    "lockButtonText": "Lock",
+    "unlockButtonText": "Unlock",
+    "propertySuccess": "Property successfully {action}.",
+    "operationFailed": "Operation failed.",
+    "unexpectedError": "An error occurred.",
+    "saveSuccess": "Lock settings updated successfully.",
+    "savePartialFailed": "Failed to update some lock configurations.",
+    "saveFailed": "Failed to update locks.",
+    "selectPropertyRequired": "Please select at least one property from the table.",
+    "selectScreenRequired": "Please select at least one screen to lock/unlock.",
+    "bulkLockTitle": "Bulk Lock Properties",
+    "bulkUnlockTitle": "Bulk Unlock Properties",
+    "bulkConfirmDescription": "Are you sure you want to {action} the selected {screenCount} screen(s) for the {propertyCount} checked properties?",
+    "bulkSuccess": "Bulk operation completed.",
+    "bulkFailed": "Bulk operation failed.",
+    "clearedFilters": "Cleared all filters.",
+    "validationError": "Please fill in all required fields (Ward no, From property, and To property).",
+    "fetchSuccess": "Properties fetched successfully.",
+    "fetchNoResults": "No properties found in the selected range.",
+    "fetchFailed": "Failed to load properties.",
+    "fetchWardsError": "Error fetching wards:"
+  },
+  "error": {
+    "title": "Failed to connect to the server. Please try again later.",
+    "description": "We encountered an error while loading the lock and unlock property page. Please try again.",
+    "errorId": "Error ID: {id}",
+    "goHome": "Go to Home",
+    "tryAgain": "Try Again"
+  }
+}

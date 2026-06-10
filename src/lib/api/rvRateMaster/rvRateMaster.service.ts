@@ -67,7 +67,8 @@ export async function getRateMasterTableData(
             useGroup: typeOfUseGroupId,
             rates: constructionTypes.map(ct => ({
               rateCategory: ct.constructionCode || ct.constructionId,
-              ratePerSqMtr: null
+              ratePerSqMtr: null,
+              ratePerSqFt: null
             }))
           });
         }
@@ -81,6 +82,7 @@ export async function getRateMasterTableData(
           const rateIndex = rateMaster.rates.findIndex(r => r.rateCategory === constructionCode);
           if (rateIndex !== -1) {
             rateMaster.rates[rateIndex].ratePerSqMtr = item.rateSquareMeter;
+            rateMaster.rates[rateIndex].ratePerSqFt = item.rateSquareFeet;
             rateMaster.rates[rateIndex].id = item.id;
           }
         }

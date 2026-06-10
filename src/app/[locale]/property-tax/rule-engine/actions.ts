@@ -2,7 +2,7 @@
 
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
-import { getRules, createRule, updateRule, deleteRule } from '@/lib/api/rule-engine/rule.service';
+import { getRules, createRule, updateRule, deleteRule, executeRule } from '@/lib/api/rule-engine/rule.service';
 import {
   getFieldConfigurations, getScopes, getCorporations,
   getEffectTypes, getEffectTypeConfigs, getRateSections, getRuleCategories, getDynamicFieldOptions,
@@ -217,4 +217,18 @@ export async function deleteRuleFieldAction(id: number) {
     };
   }
 }
+
+/** Server Action: Executes a rule category with dynamic payload parameters. */
+export async function executeRuleAction(category: string, input: Record<string, string>) {
+  try {
+    return await executeRule(category, input);
+  } catch (error) {
+    logger.error('executeRuleAction failed', { operation: 'executeRuleAction', category }, error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Server Action failed to execute rule',
+    };
+  }
+}
+
 

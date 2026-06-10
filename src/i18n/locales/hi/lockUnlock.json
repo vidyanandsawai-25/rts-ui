@@ -1,0 +1,94 @@
+{
+  "title": "संपत्ति लॉक करें",
+  "subtitle": "चयनित सीमाओं के भीतर संपत्तियों के समूहों को लॉक या अनलॉक करने के लिए प्रशासनिक नियंत्रण उपयोगिता।",
+  "selectPropertyCard": {
+    "title": "संपत्ति चुनें",
+    "wardNo": "वार्ड क्र.",
+    "selectWard": "वार्ड चुनें",
+    "fromProperty": "संपत्ति क्र. से",
+    "selectStartRange": "प्रारंभिक सीमा चुनें",
+    "toProperty": "संपत्ति क्र. तक",
+    "selectEndRange": "अंतिम सीमा चुनें",
+    "showButton": "दिखाएं",
+    "clearButton": "साफ करें",
+    "mandatoryBanner": "* से चिह्नित फ़ील्ड अनिवार्य हैं"
+  },
+  "screenSelectionCard": {
+    "title": "स्क्रीन चयन",
+    "selectedCount": "{count} चयनित",
+    "noScreens": "चयन के लिए कोई स्क्रीन उपलब्ध नहीं है।",
+    "searchPlaceholder": "कोड या विवरण से खोजें",
+    "typeOfUse": "सभी प्रकार",
+    "selectAll": "सभी चुनें",
+    "clearAll": "सभी साफ़ करें",
+    "helperText": "लॉक/अनलॉक करने के लिए लागू स्क्रीन कोड चुनें",
+    "allTypes": "सभी प्रकार"
+  },
+  "resultsTable": {
+    "title": "बल्क ऑपरेशन्स ({count} संपत्तियां चुनी गईं)",
+    "propertyMasterTitle": "संपत्ति मास्टर प्रबंधन",
+    "lockButton": "चयनित स्क्रीन लॉक करें",
+    "unlockButton": "चयनित स्क्रीन अनलॉक करें",
+    "searchPropertyPlaceholder": "संपत्ति क्र. से खोजें...",
+    "searchButton": "खोजें",
+    "placeholderText": "कृपया वार्ड और संपत्ति सीमा चुनें, फिर संपत्तियां देखने के लिए \"दिखाएं\" पर क्लिक करें.",
+    "columns": {
+      "wardNo": "वार्ड क्र.",
+      "propertyNo": "संपत्ति क्र.",
+      "partitionNo": "विभाजन क्र.",
+      "screenNames": "स्क्रीन के नाम",
+      "status": "स्थिति",
+      "lockUnlock": "लॉक/अनलॉक",
+      "actions": "कार्रवाई"
+    },
+    "status": {
+      "locked": "लॉक किया गया",
+      "unlocked": "अनलॉक किया गया",
+      "none": "कोई नहीं"
+    },
+    "actions": {
+      "manage": "प्रबंधित करें"
+    }
+  },
+  "manageModal": {
+    "title": "लॉक्स प्रबंधित करें: {propertyNo}",
+    "description": "चुनें कि इस संपत्ति के लिए कौन से मॉड्यूल या स्क्रीन लॉक होने चाहिए। चेक की गई स्क्रीन उपयोगकर्ताओं को संपादन या सबमिशन करने से रोकेंगी।",
+    "cancel": "रद्द करें",
+    "saveChanges": "बदलाव सहेजें"
+  },
+  "messages": {
+    "screenRequired": "लॉक करने के लिए कृपया स्क्रीन चयन कार्ड से कम से कम एक स्क्रीन चुनें।",
+    "lockConfirmTitle": "संपत्ति लॉक करें",
+    "unlockConfirmTitle": "संपत्ति अनलॉक करें",
+    "lockConfirmDescription": "क्या आप सुनिश्चित हैं कि आप संपत्ति {propertyNo} के लिए चयनित स्क्रीन लॉक करना चाहते हैं?",
+    "unlockConfirmDescription": "क्या आप सुनिश्चित हैं कि आप संपत्ति {propertyNo} के लिए सभी स्क्रीन अनलॉक करना चाहते हैं?",
+    "lockButtonText": "लॉक करें",
+    "unlockButtonText": "अनलॉक करें",
+    "propertySuccess": "संपत्ति सफलतापूर्वक {action} की गई।",
+    "operationFailed": "कार्रवाई विफल रही।",
+    "unexpectedError": "एक त्रुटि हुई।",
+    "saveSuccess": "लॉक सेटिंग्स सफलतापूर्वक अपडेट की गईं।",
+    "savePartialFailed": "कुछ लॉक कॉन्फ़िगरेशन को अपडेट करने में विफल।",
+    "saveFailed": "लॉक्स को अपडेट करने में विफल।",
+    "selectPropertyRequired": "कृपया तालिका से कम से कम एक संपत्ति चुनें।",
+    "selectScreenRequired": "लॉक/अनलॉक करने के लिए कृपया कम से कम एक स्क्रीन चुनें।",
+    "bulkLockTitle": "संपत्ति बल्क लॉक करें",
+    "bulkUnlockTitle": "संपत्ति बल्क अनलॉक करें",
+    "bulkConfirmDescription": "क्या आप सुनिश्चित हैं कि आप चयनित {propertyCount} संपत्तियों के लिए चयनित {screenCount} स्क्रीन {action} करना चाहते हैं?",
+    "bulkSuccess": "बल्क ऑपरेशन पूरा हुआ।",
+    "bulkFailed": "बल्क ऑपरेशन विफल रहा।",
+    "clearedFilters": "सभी फ़िल्टर साफ़ कर दिए गए।",
+    "validationError": "कृपया सभी आवश्यक फ़ील्ड भरें (वार्ड क्र., संपत्ति क्र. से और संपत्ति क्र. तक)।",
+    "fetchSuccess": "संपत्तियां सफलतापूर्वक प्राप्त की गईं।",
+    "fetchNoResults": "चयनित सीमा में कोई संपत्ति नहीं मिली।",
+    "fetchFailed": "संपत्तियां लोड करने में विफल।",
+    "fetchWardsError": "वार्ड प्राप्त करने में त्रुटि:"
+  },
+  "error": {
+    "title": "सर्वर से कनेक्ट करने में विफल। कृपया बाद में पुनः प्रयास करें।",
+    "description": "लॉक और अनलॉक संपत्ति पृष्ठ लोड करते समय हमें एक त्रुटि का सामना करना पड़ा। कृपया पुनः प्रयास करें।",
+    "errorId": "त्रुटि आईडी: {id}",
+    "goHome": "होम पर जाएं",
+    "tryAgain": "पुनः प्रयास करें"
+  }
+}

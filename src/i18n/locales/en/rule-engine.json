@@ -73,7 +73,10 @@
     "title": "{scopeName} Rule Builder",
     "saving": "Saving…",
     "saveChanges": "Save Changes",
-    "add": "Add"
+    "add": "Add",
+    "ruleIndex": "Rule {index}",
+    "addRule": "Add Rule",
+    "saveRules": "Save Rules"
   },
   "stopProcessing": {
     "sectionLabel": "Rule Exclusion & Stop Processing",
@@ -87,5 +90,21 @@
     "exclusionReasonLabel": "Exclusion Reason",
     "exclusionReasonPlaceholder": "e.g. Superseded by new ARV policy for residential zone",
     "optional": "optional"
+  },
+  "simulation": {
+    "consoleTitle": "Simulation Console: {code}",
+    "jsonStructure": "Rule JSON Structure",
+    "readOnly": "Read-Only",
+    "copied": "Copied!",
+    "copyJson": "Copy JSON",
+    "simulator": "Rule Simulator",
+    "simulatorHint": "Test policy evaluation by inputting values. Extracted variables are auto-populated from rules configuration.",
+    "parameterName": "Parameter Name",
+    "simulationValue": "Simulation Value",
+    "addCustomParameter": "Add Custom Parameter",
+    "runSimulation": "Run Simulation",
+    "resultOutput": "Execution Result Output",
+    "successMessage": "Evaluation processed successfully.",
+    "failureMessage": "Evaluation failed or encountered errors."
   }
 }

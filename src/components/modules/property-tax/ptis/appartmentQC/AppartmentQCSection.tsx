@@ -220,7 +220,7 @@ const AppartmentQCSection = ({
 
   return (
     <div className="flex flex-col h-full bg-white rounded-lg shadow-sm">
-      <div className="flex flex-row gap-4 p-4 border-b border-gray-100 bg-gray-50/50">
+      <div className="flex flex-row gap-4 p-0 border-b border-gray-100 bg-gray-50/50">
         <Tabs
           className="flex flex-row w-fit p-1 bg-white border border-gray-200 shadow-sm rounded-xl"
           value={activeMainTab}

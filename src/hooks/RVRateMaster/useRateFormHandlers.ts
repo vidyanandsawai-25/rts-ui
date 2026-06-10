@@ -91,6 +91,7 @@ export function useRateFormHandlers(props: RateFormHandlersProps) {
 
   const handleUpdateRates = async () => {
     const completeMatrixData = buildCompleteMatrixForSubmission();
+    
     const result = await handleBulkUpdate(completeMatrixData);
     if (result?.success) {
       handleClose();

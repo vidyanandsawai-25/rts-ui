@@ -11,6 +11,8 @@ import {
   getAssessmentYears,
   getRateMasterByFilters,
   getRateMasterPagedAction,
+  getRateFrequencyPolicy,
+  getRateUnitPolicy,
 } from "@/app/[locale]/property-tax/rate-master/rvratemaster/action";
 
 // Force dynamic rendering to ensure fresh data on each navigation
@@ -35,7 +37,7 @@ export default async function EditRatePage({
   
   if (isBulkEdit) {
     // Bulk edit: fetch dropdown options and fetch rates based on URL filters
-    const [zones, useGroups, paginatedZonesResult, allZonesResult, rateCategories, assessmentYears] =
+    const [zones, useGroups, paginatedZonesResult, allZonesResult, rateCategories, assessmentYears, rateFrequencyPolicy, rateUnitPolicy] =
       await Promise.all([
         getZoneOptions(),
         getUseGroupOptions(),
@@ -43,6 +45,8 @@ export default async function EditRatePage({
         getAllZoneDescriptions(), // Fetch all zones for copy rates functionality
         getConstructionTypes(),
         getAssessmentYears(),
+        getRateFrequencyPolicy(), // Fetch rate frequency policy configuration
+        getRateUnitPolicy(), // Fetch rate unit policy configuration
       ]);
 
 
@@ -100,7 +104,7 @@ export default async function EditRatePage({
             useGroups={useGroups ?? []}
             assessmentYears={assessmentYears ?? []}
             rateCategories={rateCategories ?? []}
-          
+            rateUnitPolicy={rateUnitPolicy}
           />
         </PageContainer>
         <EditRateDrawer
@@ -116,13 +120,15 @@ export default async function EditRatePage({
           filterValues={filterValues}
           mode={urlMode === "delete" ? "delete" : "edit"}
           paginatedZonesData={paginatedZonesData}
+          rateFrequencyPolicy={rateFrequencyPolicy}
+          rateUnitPolicy={rateUnitPolicy}
         />
       </>
     );
   }
   
   // Single record edit logic
-  const [zones, useGroups, paginatedZonesResult, allZonesResult, rateCategories, assessmentYears, editData] =
+  const [zones, useGroups, paginatedZonesResult, allZonesResult, rateCategories, assessmentYears, editData, rateFrequencyPolicy, rateUnitPolicy] =
     await Promise.all([
       getZoneOptions(),
       getUseGroupOptions(),
@@ -131,6 +137,8 @@ export default async function EditRatePage({
       getConstructionTypes(),
       getAssessmentYears(),
       getRateMasterById(resolvedParams.id, matrixPage, matrixPageSize),
+      getRateFrequencyPolicy(), // Fetch rate frequency policy configuration
+      getRateUnitPolicy(), // Fetch rate unit policy configuration
     ]);
 
   // Extract filter values from URL or editData
@@ -174,7 +182,7 @@ export default async function EditRatePage({
           useGroups={useGroups ?? []}
           assessmentYears={assessmentYears ?? []}
           rateCategories={rateCategories ?? []}
-       
+          rateUnitPolicy={rateUnitPolicy}
         />
       </PageContainer>
       <EditRateDrawer
@@ -192,6 +200,8 @@ export default async function EditRatePage({
           year: selectedYear,        
         }}
         paginatedZonesData={paginatedZonesData}
+        rateFrequencyPolicy={rateFrequencyPolicy}
+        rateUnitPolicy={rateUnitPolicy}
       />
     </>
   );

@@ -21,20 +21,6 @@ interface PageProps {
   }>;
 }
 
-interface ConditionGroup {
-  conditions?: { fieldId: string }[];
-  groups?: ConditionGroup[];
-}
-
-function findFirstFieldId(g: ConditionGroup): string {
-  if (g.conditions && g.conditions.length > 0) return g.conditions[0].fieldId;
-  for (const sub of g.groups ?? []) {
-    const f = findFirstFieldId(sub);
-    if (f) return f;
-  }
-  return '';
-}
-
 export default async function EditRulePage(props: PageProps) {
   const { locale, id } = await props.params;
 
@@ -52,39 +38,7 @@ export default async function EditRulePage(props: PageProps) {
     notFound();
   }
 
-  // Auto-infer ruleScopeId if missing or 0 in backend response
-  let scopeId = rule.ruleScopeId;
-  if (!scopeId || scopeId === 0) {
-    try {
-      const parsed: ConditionGroup = JSON.parse(rule.conditionsJson);
-      let firstFieldId = '';
-      if (parsed.conditions && parsed.conditions.length > 0) {
-        firstFieldId = parsed.conditions[0].fieldId;
-      } else if (parsed.groups && parsed.groups.length > 0) {
-        firstFieldId = findFirstFieldId(parsed);
-      }
-
-      if (firstFieldId) {
-        for (const s of scopes) {
-          const fields = await fetchFieldsForScopeAction(s.id);
-          if (fields.some((f) => f.fieldId === firstFieldId)) {
-            scopeId = s.id;
-            rule.ruleScopeId = s.id;
-            break;
-          }
-        }
-      }
-    } catch (e) {
-      console.error('Failed to infer ruleScopeId:', e);
-    }
-  }
-
-  // Fallback to first scope if still 0/invalid
-  if (!rule.ruleScopeId || rule.ruleScopeId === 0) {
-    rule.ruleScopeId = scopes[0]?.id || 1;
-  }
-
-  const initialFields = await fetchFieldsForScopeAction(rule.ruleScopeId);
+  const initialFields = rule.ruleScopeId ? await fetchFieldsForScopeAction(rule.ruleScopeId) : [];
 
   return (
     <RuleBuilder

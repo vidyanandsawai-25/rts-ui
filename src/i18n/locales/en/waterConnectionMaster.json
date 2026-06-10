@@ -16,7 +16,8 @@
     "tabs": {
       "tapStatus": "Tap Status",
       "tapType": "Tap Type",
-      "tapSize": "Tap Size"
+      "tapSize": "Tap Size",
+      "waterRate": "Water Rate"
     },
     "tapStatus": {
       "title": "Tap Status Master",
@@ -148,6 +149,61 @@
       "confirm": {
         "deleteTitle": "Delete Tap Size?",
         "deleteDescription": "Are you sure you want to delete this tap size? This action cannot be undone."
+      }
+    },
+    "waterRate": {
+      "title": "Water Rate Master",
+      "subtitle": "Manage yearly connection rates by type and size",
+      "searchPlaceholder": "Search water rates...",
+      "addTitle": "Add Water Rate",
+      "editTitle": "Edit Water Rate",
+      "addSubtitle": "Create a new connection rate",
+      "editSubtitle": "Update connection rate details",
+      "table": {
+        "connectionTypeName": "Connection Type",
+        "connectionSizeDisplay": "Connection Size",
+        "yearCode": "Finance Year",
+        "yearlyRate": "Yearly Rate",
+        "status": "Status"
+      },
+      "form": {
+        "connectionType": {
+          "label": "Connection Type",
+          "placeholder": "Select Type..."
+        },
+        "connectionSize": {
+          "label": "Connection Size",
+          "placeholder": "Select Size..."
+        },
+        "financeYear": {
+          "label": "Finance Year",
+          "placeholder": "Select Year..."
+        },
+        "yearlyRate": {
+          "label": "Yearly Rate",
+          "placeholder": "e.g., 1500"
+        },
+        "activeStatusTitle": "Water Rate",
+        "activeStatusOn": "Active - Rate is enabled",
+        "activeStatusOff": "Inactive - Rate is disabled"
+      },
+      "validation": {
+        "typeRequired": "Connection Type is required",
+        "sizeRequired": "Connection Size is required",
+        "yearRequired": "Finance Year is required",
+        "rateRequired": "Yearly Rate is required",
+        "rateInvalid": "Yearly Rate must be a valid positive number",
+        "rateMaxDigits": "Yearly Rate cannot exceed 5 digits"
+      },
+      "messages": {
+        "createSuccess": "Water Rate created successfully",
+        "updateSuccess": "Water Rate updated successfully",
+        "deleteSuccess": "Water Rate deleted successfully",
+        "deleteInUse": "This water rate is currently in use and cannot be deleted"
+      },
+      "confirm": {
+        "deleteTitle": "Delete Water Rate?",
+        "deleteDescription": "Are you sure you want to delete this water rate? This action cannot be undone."
       }
     }
   }
