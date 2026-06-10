@@ -40,8 +40,8 @@ export function mapPropertyPhotoToAdditionalImage(p: PropertyPhotoDto, categoryN
     parsedTitle = namePart || categoryName;
     parsedRemarks = remarkParts.join(' | ');
   } else if (remarksStr) {
-    parsedTitle = p.photoTypeCode === 'OTHER' ? remarksStr : categoryName;
-    parsedRemarks = p.photoTypeCode === 'OTHER' ? '' : remarksStr;
+    parsedTitle = remarksStr;
+    parsedRemarks = '';
   }
   return {
     src: p.viewUrl || (p.documentGuid ? getViewDocumentUrl(p.documentGuid) : ''),

@@ -147,7 +147,7 @@ export function PhotoPlanGrid({
               <div className="p-2 border-t border-slate-100 bg-white">
                 <div className="flex justify-between items-center gap-1">
                   <span className="text-[11px] font-semibold text-slate-700 truncate flex-1">
-                    {img.remarks || img.title}
+                    {img.title}
                   </span>
                   {img.displayOrder !== undefined && (
                     <span className="text-[9px] bg-slate-100 text-slate-600 font-medium px-1.5 py-0.5 rounded">

@@ -89,7 +89,7 @@ export function PhotoPlanViewer({
       </div>
 
       <PhotoPlanToolbar
-        title={currentImage?.remarks || currentImage?.title || ''}
+        title={currentImage?.title || ''}
         currentIndex={selectedImageIndex}
         totalCount={images.length}
         hasImage={!!currentImage?.src}

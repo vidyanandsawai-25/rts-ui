@@ -43,7 +43,7 @@ export function PhotoPlanCategoryModal({
         t('media.invalidNameFormat') ||
         'Only letters, numbers, spaces, hyphens, parentheses, and underscores are allowed';
     } else if (existingNames.some((n) => normalize(n) === normalizedName)) {
-      newErrors.name = 'A category with this name already exists';
+      newErrors.name = t('media.categoryExists') || 'A category with this name already exists';
     }
 
     const orderNum = displayOrder.trim() ? Number(displayOrder) : undefined;
@@ -57,7 +57,7 @@ export function PhotoPlanCategoryModal({
 
     const trimmedDesc = description.trim();
     if (trimmedDesc.length > 500) {
-      newErrors.description = 'Description cannot exceed 500 characters';
+      newErrors.description = t('media.descriptionTooLong') || 'Description cannot exceed 500 characters';
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -86,7 +86,7 @@ export function PhotoPlanCategoryModal({
         disabled={isLoading || !name.trim()}
         className="!bg-blue-600 hover:!bg-blue-700 !text-white font-medium px-4 py-2 rounded-lg cursor-pointer hover:scale-105 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {isLoading ? 'Saving...' : t('actions.save') || 'Save'}
+        {isLoading ? t('media.saving') || 'Saving...' : t('actions.save') || 'Save'}
       </Button>
     </div>
   );
@@ -95,15 +95,15 @@ export function PhotoPlanCategoryModal({
     <Modal
       open={open}
       onClose={onClose}
-      title="Add Photo Category Slot"
-      subtitle="Create a new slot to hold specific photos for this property."
+      title={t('media.addCategoryTitle') || 'Add Photo Category Slot'}
+      subtitle={t('media.addCategorySubtitle') || 'Create a new slot to hold specific photos for this property.'}
       footer={footer}
       maxWidth="sm"
     >
       <form onSubmit={isLoading ? undefined : handleSubmit} className="space-y-4">
         <Input
-          label="Category Name"
-          placeholder="e.g. Garden View, Kitchen Area"
+          label={t('media.categoryName') || 'Category Name'}
+          placeholder={t('media.categoryNamePlaceholder') || 'e.g. Garden View, Kitchen Area'}
           value={name}
           onChange={(e) => {
             setName(e.target.value);
@@ -140,8 +140,8 @@ export function PhotoPlanCategoryModal({
         />
 
         <Input
-          label="Description"
-          placeholder="Enter category description..."
+          label={t('media.description') || 'Description'}
+          placeholder={t('media.descriptionPlaceholder') || 'Enter category description...'}
           value={description}
           onChange={(e) => {
             setDescription(e.target.value);

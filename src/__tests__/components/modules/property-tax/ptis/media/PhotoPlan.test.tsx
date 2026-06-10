@@ -656,7 +656,7 @@ describe('PhotoPlan Section - Complete Tests', () => {
       });
 
       // Verify category modal inputs are displayed
-      expect(screen.getByText('Add Photo Category Slot')).toBeInTheDocument();
+      expect(screen.getByText('media.addCategoryTitle')).toBeInTheDocument();
 
       // Click cancel modal
       const cancelCategoryModalBtn = screen.getByRole('button', { name: 'actions.cancel' });
@@ -793,14 +793,14 @@ describe('PhotoPlan Section - Complete Tests', () => {
       );
 
       // Empty name validation checks
-      const nameInput = screen.getByLabelText(/Category Name/i);
+      const nameInput = screen.getByLabelText(/media.categoryName/i);
       // Valid name already exists duplicate validation
       fireEvent.change(nameInput, { target: { value: 'Existing Category' } });
 
       const saveBtn = screen.getByRole('button', { name: 'actions.save' });
       fireEvent.click(saveBtn);
 
-      expect(screen.getByText('A category with this name already exists')).toBeInTheDocument();
+      expect(screen.getByText('media.categoryExists')).toBeInTheDocument();
     });
   });
 });
