@@ -59,9 +59,13 @@ export const useApartmentQCRoomInitialization = (
         ...(Array.isArray(r.minusRooms) ? r.minusRooms : []),
       ];
 
-      // Deduplicate by id
+      // Deduplicate by id and filter out marked for deletion
       const seen = new Set<unknown>();
       const offsets = offsetsRaw
+        .filter((o) => {
+          const markedForDeletion = (o as Record<string, unknown>).MarkedForDeletion ?? (o as Record<string, unknown>).markedForDeletion;
+          return markedForDeletion !== 1 && markedForDeletion !== true;
+        })
         .map((o) => ({
           ...o,
           id: (o as Record<string, unknown>).roomWiseMinusId ?? o.id,
