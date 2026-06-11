@@ -139,6 +139,7 @@ export function normalizePropertySearchItem(
   return {
     id: item.upicId || `prop-${propertyId}`,
     propertyId,
+    upicId: toRawText(item.upicId),
     zone: toRawText(item.zoneName),
     ward: toRawText(item.wardName),
     propertyNo: toRawText(item.propertyNo),
