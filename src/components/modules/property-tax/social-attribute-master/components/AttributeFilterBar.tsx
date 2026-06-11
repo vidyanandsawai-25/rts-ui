@@ -28,7 +28,7 @@ export function AttributeFilterBar({
   const t = useTranslations('socialAttribute');
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-xs flex flex-wrap items-center gap-3 overflow-visible">
+    <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-xs flex flex-wrap items-center gap-3 overflow-visible relative z-[35]">
       <div className="flex flex-wrap items-center gap-3 flex-1 min-w-0">
         <div className="w-[380px]">
           <SearchInput

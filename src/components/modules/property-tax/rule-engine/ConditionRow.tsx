@@ -37,7 +37,7 @@ export default function ConditionRow({
   if (!isEditing) {
     // 1. Collapsed Read-only State
     return (
-      <div className="flex items-center justify-between p-3 bg-white hover:bg-blue-50/10 border border-blue-200 rounded-lg shadow-sm hover:border-blue-300 transition-all">
+      <div className="flex items-center justify-between p-2 bg-white hover:bg-blue-50/10 border border-blue-200 rounded-lg shadow-sm hover:border-blue-300 transition-all">
         <div className="flex items-center gap-2 text-sm text-blue-900 font-semibold">
           <span className="text-gray-500 font-bold">{index}.</span>
           <span className="text-blue-950 font-bold">{fieldLabel}</span>
@@ -56,9 +56,9 @@ export default function ConditionRow({
 
   // 2. Active Editing State
   return (
-    <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 p-4 bg-blue-50/20 border-2 border-blue-500 rounded-lg shadow-md transition-all">
+    <div className="relative z-20 flex flex-col lg:flex-row items-stretch lg:items-center gap-3 p-2.5 bg-blue-50/20 border border-blue-400 rounded-lg shadow-md transition-all">
       {/* Field Dropdown */}
-      <div className="flex-1 lg:max-w-[24%]">
+      <div className="w-full flex-1">
         <SearchSelect
           options={fieldOptions}
           value={condition.fieldId}
@@ -68,7 +68,7 @@ export default function ConditionRow({
       </div>
 
       {/* Operator Dropdown */}
-      <div className="w-full lg:max-w-[18%]">
+      <div className="w-full lg:max-w-[240px] flex-1">
         <SearchSelect
           options={operatorOptions}
           value={condition.operator}
@@ -79,10 +79,11 @@ export default function ConditionRow({
       </div>
 
       {/* Dynamic Input Control */}
-      <div className="flex-1">
+      <div className="w-full flex-1">
         {currentField ? (
           <ValueInput
             config={currentField}
+            operator={condition.operator}
             value={condition.value}
             onChange={(val) => {
               const label = resolveLabelForValue(val);
@@ -97,7 +98,9 @@ export default function ConditionRow({
       </div>
 
       {/* Done green button */}
-      <ApplyButton label={t('conditionRow.done')} onClick={() => setIsEditing(false)} />
+      <div className="lg:ml-auto">
+        <ApplyButton label={t('conditionRow.done')} onClick={() => setIsEditing(false)} />
+      </div>
     </div>
   );
 }

@@ -1,4 +1,30 @@
-import { RuleItem, RuleBlock, ConditionGroupState } from '@/types/rule-engine.types';
+import { RuleItem, RuleBlock, ConditionGroupState, ConditionState } from '@/types/rule-engine.types';
+
+/** Converts legacy verbose operator codes to the short symbols used in state. */
+function normalizeOperator(op: string): string {
+  switch (op) {
+    case 'EQUALS':                  return '=';
+    case 'NOT_EQUALS':              return '?';
+    case 'GREATER_THAN':            return '>';
+    case 'LESS_THAN':               return '<';
+    case 'GREATER_THAN_OR_EQUALS':  return '>=';
+    case 'LESS_THAN_OR_EQUALS':     return '<=';
+    case 'IN':                      return 'In';
+    case 'NOT_IN':                  return 'Not In';
+    case 'CONTAINS_ANY':            return 'contains any';
+    case 'CONTAINS_ALL':            return 'contains all';
+    default:                        return op;
+  }
+}
+
+/** Recursively normalizes operator codes in a condition group. */
+function normalizeGroup(g: ConditionGroupState): ConditionGroupState {
+  return {
+    ...g,
+    conditions: (g.conditions || []).map((c: ConditionState) => ({ ...c, operator: normalizeOperator(c.operator) })),
+    groups: (g.groups || []).map(normalizeGroup),
+  };
+}
 
 /**
  * Initializes the rules list, falling back to legacy single conditions and effect format
@@ -12,40 +38,25 @@ export function initializeRulesList(initialRule?: RuleItem): RuleBlock[] {
       return (parsed as Partial<RuleBlock>[]).map((item) => ({
         id: item.id || safeUUID(),
         description: item.description || '',
-        conditions: item.conditions || {
+        conditions: normalizeGroup(item.conditions || {
           id: safeUUID(),
           logicalOperator: 'AND',
           conditions: [],
           groups: [],
-        },
-        effect: item.effect || {
-          effectType: '',
-          value: '',
-          isPercentage: true,
-        },
+        }),
+        effect: item.effect || { effectType: '', value: '', isPercentage: true },
         stopProcessing: item.stopProcessing || false,
       }));
     }
   } catch {}
 
-  return [
-    {
-      id: safeUUID(),
-      description: '',
-      conditions: {
-        id: safeUUID(),
-        logicalOperator: 'AND',
-        conditions: [],
-        groups: [],
-      },
-      effect: {
-        effectType: '',
-        value: '',
-        isPercentage: true,
-      },
-      stopProcessing: false,
-    },
-  ];
+  return [{
+    id: safeUUID(),
+    description: '',
+    conditions: { id: safeUUID(), logicalOperator: 'AND', conditions: [], groups: [] },
+    effect: { effectType: '', value: '', isPercentage: true },
+    stopProcessing: false,
+  }];
 }
 
 /**
@@ -140,4 +151,5 @@ export function getRuleWiseDescriptions(conditionsJson?: string): string[] {
   } catch {}
   return [];
 }
-
+// Re-export label helpers from their dedicated file so existing imports remain valid
+export { formatFieldName, getFieldLabel, getFriendlyOperatorLabel } from './field-label.helpers';

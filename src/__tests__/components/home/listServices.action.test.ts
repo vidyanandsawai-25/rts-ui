@@ -78,9 +78,9 @@ describe('listServices Server Action', () => {
         mockGetDepartments.mockResolvedValue({
             success: true,
             data: [
-                { departmentId: 1, isActive: true },
-                { departmentId: 2, isActive: true },
-                { departmentId: 3, isActive: true },
+                { departmentId: 1, departmentCode: 'pt', departmentIcon: 'Home', isActive: true },
+                { departmentId: 2, departmentCode: 'tl', departmentIcon: 'ShoppingCart', isActive: true },
+                { departmentId: 3, departmentCode: 'am', departmentIcon: 'Landmark', isActive: true },
             ],
         });
     });
@@ -117,20 +117,20 @@ describe('listServices Server Action', () => {
             const result = await listServices('en');
 
             const ptService = result.services.find(s => s.name === 'Property Tax');
-            expect(ptService?.link).toBe('/en/property-tax/search-property');
+            expect(ptService?.link).toBe('/en/property-tax');
 
             const tlService = result.services.find(s => s.name === 'Trade License');
-            expect(tlService?.link).toBe('/en/bajar-parwana');
+            expect(tlService?.link).toBe('/en/trade-license');
         });
 
         it('returns localized routes based on locale parameter', async () => {
             const resultHi = await listServices('hi');
             const ptServiceHi = resultHi.services.find(s => s.name === 'Property Tax');
-            expect(ptServiceHi?.link).toBe('/hi/property-tax/search-property');
+            expect(ptServiceHi?.link).toBe('/hi/property-tax');
 
             const resultMr = await listServices('mr');
             const ptServiceMr = resultMr.services.find(s => s.name === 'Property Tax');
-            expect(ptServiceMr?.link).toBe('/mr/property-tax/search-property');
+            expect(ptServiceMr?.link).toBe('/mr/property-tax');
         });
 
         it('filters out inactive departments', async () => {
