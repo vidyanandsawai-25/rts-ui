@@ -8,14 +8,7 @@ import { ConfirmProvider, MasterTable, StatusBadge, useConfirm } from "@/compone
 import type { Column } from "@/components/common";
 import { IconOnlyActionButton } from "@/components/common/ActionButtons";
 import { deletePropertyAction } from "@/app/[locale]/property-tax/zone-master/actions";
-
-interface DirectPropertyDeleteRow {
-  propertyId: string;
-  wardNo: string;
-  propertyNo: string;
-  partitionNo: string;
-  categoryName: string;
-}
+import type { DirectPropertyDeleteRow } from "@/types/zoneMaster.types";
 
 interface DirectPropertyDeleteSectionProps {
   propertyId: string;
