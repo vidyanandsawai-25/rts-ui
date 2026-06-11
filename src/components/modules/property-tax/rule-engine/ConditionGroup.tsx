@@ -34,12 +34,11 @@ export default function ConditionGroup({
       toast.error('Please select a Rule Scope first to load available fields!');
       return;
     }
-    const defaultField = fields[0];
     const newCondition: ConditionState = {
       id: safeUUID(),
-      fieldId: defaultField.fieldId,
-      operator: defaultField.supportedOperators?.[0]?.code || 'EQUALS',
-      value: defaultField.inputType === 'MULTISELECT' ? [] : '',
+      fieldId: '',
+      operator: '',
+      value: '',
     };
     onChange({
       ...group,
@@ -91,12 +90,12 @@ export default function ConditionGroup({
   return (
     <div
       className={`
-        relative rounded-xl border border-dashed border-zinc-300 bg-white p-5
-        ${depth > 0 ? 'ml-6 border-l-2 border-l-blue-400 bg-zinc-50/30' : ''}
+        relative rounded-xl border border-dashed border-zinc-300 bg-white p-3.5
+        ${depth > 0 ? 'ml-4 border-l-2 border-l-blue-400 bg-zinc-50/30' : ''}
       `}
     >
       {/* 1. Header controls: "If [All/Any] of the following conditions are met" */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-4 mb-4 border-b border-zinc-100">
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-2 mb-2 border-b border-zinc-100">
         <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
           <span className="text-gray-500 font-medium">{t('conditionGroup.if')}</span>
           <select

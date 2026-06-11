@@ -21,7 +21,9 @@
     "description": "विवरण",
     "descriptionPlaceholder": "नियम विवरण दर्ज करें",
     "priority": "प्राथमिकता",
-    "priorityPlaceholder": "उदा. 1"
+    "priorityPlaceholder": "उदा. 1",
+    "selectCategory": "श्रेणी चुनें",
+    "selectScope": "नियम क्षेत्र चुनें"
   },
   "conditionRow": {
     "selectField": "फ़ील्ड चुनें",
@@ -40,7 +42,8 @@
     "percentageValue": "प्रतिशत मान (%)",
     "rateValue": "दर मान",
     "performAction": "निम्नलिखित क्रिया करें",
-    "invalidPercentage": "मान 0% और 100% के बीच होना चाहिए"
+    "invalidPercentage": "मान 0% और 100% के बीच होना चाहिए",
+    "selectCategory": "श्रेणी चुनें"
   },
   "saveReasonModal": {
     "title": "नियम कॉन्फ़िगरेशन सहेजने की पुष्टि करें",
@@ -53,7 +56,19 @@
     "title": "नियम पुस्तकालय",
     "searchPlaceholder": "नियम खोजें...",
     "noRules": "कोई नियम नहीं मिला",
-    "addRule": "नियम जोड़ें"
+    "addRule": "नियम जोड़ें",
+    "searchByCodeOrName": "कोड या नाम से खोजें...",
+    "allCategories": "सभी श्रेणियाँ",
+    "ruleCode": "नियम कोड",
+    "ruleName": "नियम का नाम",
+    "description": "विवरण",
+    "category": "श्रेणी",
+    "status": "स्थिति",
+    "deleteTitle": "गणना नियम हटाएं?",
+    "deleteDescription": "क्या आप इस नीति नियम को स्थायी रूप से हटाना चाहते हैं? यह क्रिया वापस नहीं की जा सकती।",
+    "deleteConfirm": "स्थायी रूप से हटाएं",
+    "deleteCancel": "रद्द करें",
+    "deleteSuccess": "नियम सफलतापूर्वक हटा दिया गया"
   },
   "conditionGroup": {
     "if": "यदि",
@@ -76,7 +91,9 @@
     "add": "जोड़ें",
     "ruleIndex": "नियम {index}",
     "addRule": "नियम जोड़ें",
-    "saveRules": "नियम सहेजें"
+    "saveRules": "नियम सहेजें",
+    "editRule": "नियम संपादित करें",
+    "noChanges": "कोई बदलाव नहीं मिला। सहेजने से पहले बदलाव करें।"
   },
   "stopProcessing": {
     "sectionLabel": "नियम अपवर्जन और प्रसंस्करण रोकें",
@@ -92,10 +109,11 @@
     "optional": "वैकल्पिक"
   },
   "simulation": {
+    "viewRuleTitle": "नियम देखें: {code}",
     "consoleTitle": "सिमुलेशन कंसोल: {code}",
     "jsonStructure": "नियम JSON संरचना",
     "readOnly": "केवल पढ़ने के लिए",
-    "copied": "कॉपी किया गया!",
+    "copied": "कॉपी किया!",
     "copyJson": "JSON कॉपी करें",
     "simulator": "नियम सिमुलेटर",
     "simulatorHint": "मान दर्ज करके नीति मूल्यांकन का परीक्षण करें। निकाले गए चर नियम कॉन्फ़िगरेशन से स्वतः भर जाते हैं।",
@@ -105,6 +123,27 @@
     "runSimulation": "सिमुलेशन चलाएं",
     "resultOutput": "निष्पादन परिणाम आउटपुट",
     "successMessage": "मूल्यांकन सफलतापूर्वक संसाधित किया गया।",
-    "failureMessage": "मूल्यांकन विफल रहा या त्रुटियां आईं।"
+    "failureMessage": "मूल्यांकन विफल रहा या त्रुटियां आईं।",
+    "ruleCode": "नियम कोड",
+    "ruleName": "नियम का नाम",
+    "category": "श्रेणी",
+    "scope": "दायरा",
+    "ruleIndex": "नियम #{index}",
+    "conditions": "शर्तें",
+    "noConditions": "कोई शर्त कॉन्फ़िगर नहीं की गई",
+    "outcomeAction": "परिणाम क्रिया",
+    "effectType": "प्रभाव प्रकार",
+    "value": "मान",
+    "multiplierField": "गुणक फ़ील्ड",
+    "overrideRate": "ओवरराइड दर",
+    "stopProcessingText": "प्रसंस्करण रोकें",
+    "noDescription": "कोई विवरण नहीं दिया गया",
+    "emptyValue": "खाली"
+  },
+  "fields": {
+    "floorId": "मजला",
+    "typeOfUseId": "उपयोग का प्रकार",
+    "constructionTypeId": "निर्माण प्रकार",
+    "usageTypeId": "उपयोग का प्रकार"
   }
 }

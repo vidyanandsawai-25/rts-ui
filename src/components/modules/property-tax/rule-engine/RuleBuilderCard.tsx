@@ -1,15 +1,17 @@
 'use client';
 
 import React from 'react';
-import { PlusCircle, Loader2 } from 'lucide-react';
+import { PlusCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { FieldConfig, RuleBlock, EffectTypeConfig, ConditionGroupState, EffectState } from '@/types/rule-engine.types';
 import RuleBlockItem from './RuleBlockItem';
+import SaveRulesButton from './SaveRulesButton';
 
 interface RuleBuilderCardProps {
   activeScopeName: string;
   handleSaveClick: () => void;
   isSaving: boolean;
+  currentData: string;
   isEdit: boolean;
   rulesList: RuleBlock[];
   fields: FieldConfig[];
@@ -28,7 +30,7 @@ interface RuleBuilderCardProps {
 
 /** The main IF/THEN card container: card header and rule configurator panel. */
 export default function RuleBuilderCard({
-  activeScopeName, handleSaveClick, isSaving, isEdit,
+  activeScopeName, handleSaveClick, isSaving, currentData, isEdit,
   rulesList, fields,
   effectTypes, categoryOptions, effectTypeConfigs,
   onAddRuleBlock, onRemoveRuleBlock, onMoveRuleBlock, onUpdateRuleBlock,
@@ -71,31 +73,25 @@ export default function RuleBuilderCard({
   };
 
   return (
-    <div className="bg-white border border-zinc-200 rounded-xl shadow-sm mt-2">
+    <div className="bg-white border border-zinc-200 rounded-xl shadow-sm mt-1.5 flex flex-col lg:h-full lg:overflow-hidden">
 
       {/* Card header */}
-      <div className="bg-[#dcf0fa]/60 px-5 py-3 border-b border-zinc-200 flex items-center justify-between">
+      <div className="bg-[#dcf0fa]/60 px-4 py-2.5 border-b border-zinc-200 flex items-center justify-between">
         <span className="text-sm font-bold text-gray-800">{t('builder.title', { scopeName: activeScopeName })}</span>
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={handleSaveClick}
-            disabled={isSaving}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed border border-transparent rounded-lg transition-all shadow-sm"
-          >
-            {isSaving
-              ? <><Loader2 className="w-4 h-4 animate-spin" /> {t('builder.saving')}</>
-              : <><PlusCircle className="w-4 h-4" /> {t('builder.saveRules')}</>
-            }
-          </button>
+          <SaveRulesButton
+            currentData={currentData}
+            isSaving={isSaving}
+            onSave={handleSaveClick}
+          />
         </div>
       </div>
 
       {/* Tab content */}
-      <div className="p-6 flex flex-col gap-6">
+      <div className="p-4 flex flex-col gap-4 flex-grow lg:min-h-0 lg:overflow-hidden">
         
         {/* Rules list */}
-        <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-4 flex-grow overflow-y-auto pr-1.5">
           {rulesList.map((ruleBlock, index) => {
             const isCollapsed = collapsedBlocks[ruleBlock.id] ?? isEdit;
 
@@ -123,9 +119,9 @@ export default function RuleBuilderCard({
         <button
           type="button"
           onClick={onAddRuleBlock}
-          className="flex items-center justify-center gap-2 w-full py-3 border-2 border-dashed border-zinc-300 hover:border-zinc-400 hover:bg-zinc-50 rounded-xl text-zinc-600 hover:text-zinc-800 transition-all font-semibold text-sm cursor-pointer"
+          className="flex items-center justify-center gap-2 w-full py-2.5 border-2 border-dashed border-zinc-300 hover:border-zinc-400 hover:bg-zinc-50 rounded-xl text-zinc-600 hover:text-zinc-800 transition-all font-semibold text-xs cursor-pointer shrink-0"
         >
-          <PlusCircle className="w-4 h-4" /> {t('library.addRule')}
+          <PlusCircle className="w-3.5 h-3.5" /> {t('library.addRule')}
         </button>
 
       </div>
