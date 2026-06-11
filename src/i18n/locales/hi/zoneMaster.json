@@ -341,6 +341,7 @@
       "taxZoneRequired": "कर क्षेत्र आवश्यक है",
       "propertyNoRequired": "संपत्ति नं. आवश्यक है",
       "ownerNameRequired": "मालिक का नाम आवश्यक है",
+      "ownerNameMinLength": "मालिक का नाम कम से कम 2 अक्षर का होना चाहिए",
       "fromPropertyNoRequired": "संपत्ति नं. से आवश्यक है",
       "toPropertyNoRequired": "संपत्ति नं. तक आवश्यक है",
       "invalidRange": "संपत्ति नं. तक, संपत्ति नं. से अधिक होना चाहिए",
