@@ -36,6 +36,13 @@ import {
   ListTree,
   FileSpreadsheet,
   LandPlot,
+  Droplet,
+  ShoppingCart,
+  Trash2,
+  Megaphone,
+  Timer,
+  Landmark,
+  Flame,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -78,6 +85,13 @@ export const MENU_ICON_MAP: Record<string, LucideIcon> = {
   ListTree,
   FileSpreadsheet,
   LandPlot,
+  Droplet,
+  ShoppingCart,
+  Trash2,
+  Megaphone,
+  Timer,
+  Landmark,
+  Flame,
 };
 
 /** Map common screen/module names to appropriate icons */

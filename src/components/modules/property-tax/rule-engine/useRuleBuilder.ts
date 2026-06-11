@@ -37,11 +37,11 @@ export function useRuleBuilder({
   const router = useRouter();
   const toast = useToast();
 
-  const [ruleName, setRuleName]       = React.useState(initialRule?.ruleName ?? '');
-  const [ruleCode, setRuleCode]       = React.useState(initialRule?.ruleCode ?? '');
-  const [isActive, setIsActive]       = React.useState(initialRule?.isActive ?? true);
-  const [ruleScopeId, setRuleScopeId] = React.useState(initialRule?.ruleScopeId ?? scopes[0]?.id ?? 0);
-  const [ruleCategory, setRuleCategory] = React.useState(initialRule?.ruleCategory ?? 'ARV');
+  const [ruleName, setRuleName] = React.useState(initialRule?.ruleName ?? '');
+  const [ruleCode, setRuleCode] = React.useState(initialRule?.ruleCode ?? '');
+  const [isActive, setIsActive] = React.useState(initialRule?.isActive ?? true);
+  const [ruleScopeId, setRuleScopeId] = React.useState(initialRule?.ruleScopeId ?? 0);
+  const [ruleCategory, setRuleCategory] = React.useState(initialRule?.ruleCategory ?? '');
   const [ruleDescription, setRuleDescription] = React.useState(initialRule?.description ?? '');
 
   const [targetFilters, setTargetFilters] = React.useState<TargetFilterState>(
@@ -60,7 +60,7 @@ export function useRuleBuilder({
 
   const [isReasonOpen, setIsReasonOpen] = React.useState(false);
   const [changeReason, setChangeReason] = React.useState('');
-  const [isSaving, setIsSaving]         = React.useState(false);
+  const [isSaving, setIsSaving] = React.useState(false);
 
   const activeScopeName = React.useMemo(
     () => scopes.find((s) => s.id === ruleScopeId)?.scopeName ?? '',
@@ -73,39 +73,24 @@ export function useRuleBuilder({
       {
         id: safeUUID(),
         description: '',
-        conditions: {
-          id: safeUUID(),
-          logicalOperator: 'AND',
-          conditions: [],
-          groups: [],
-        },
-        effect: {
-          effectType: '',
-          value: '',
-          isPercentage: true,
-        },
+        conditions: { id: safeUUID(), logicalOperator: 'AND', conditions: [], groups: [] },
+        effect: { effectType: '', value: '', isPercentage: true },
       },
     ]);
   };
 
   const removeRuleBlock = (index: number) => {
-    if (rulesList.length <= 1) {
-      toast.error('At least one rule is required.');
-      return;
-    }
+    if (rulesList.length <= 1) { toast.error('At least one rule is required.'); return; }
     setRulesList((prev) => prev.filter((_, i) => i !== index));
   };
 
   const moveRuleBlock = (index: number, direction: 'up' | 'down') => {
     if (direction === 'up' && index === 0) return;
     if (direction === 'down' && index === rulesList.length - 1) return;
-
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
     setRulesList((prev) => {
       const copy = [...prev];
-      const temp = copy[index];
-      copy[index] = copy[targetIndex];
-      copy[targetIndex] = temp;
+      [copy[index], copy[targetIndex]] = [copy[targetIndex], copy[index]];
       return copy;
     });
   };
@@ -117,21 +102,14 @@ export function useRuleBuilder({
   ) => {
     setRulesList((prev) => {
       const copy = [...prev];
-      copy[index] = {
-        ...copy[index],
-        [key]: value,
-      } as RuleBlock;
+      copy[index] = { ...copy[index], [key]: value } as RuleBlock;
       return copy;
     });
   };
 
   const handleSaveClick = () => {
     const errorMsg = validateRuleBuilder(ruleName, ruleCategory, rulesList);
-    if (errorMsg) {
-      toast.error(errorMsg);
-      return;
-    }
-
+    if (errorMsg) { toast.error(errorMsg); return; }
     setChangeReason(initialRule ? '' : 'Initial rule creation');
     setIsReasonOpen(true);
   };
@@ -149,24 +127,24 @@ export function useRuleBuilder({
     try {
       // Backend generates ruleJson from conditionsJson + effectJson — no transform needed here
       const payload: RuleItem = {
-        id:               initialRule?.id,
-        ruleName:         ruleName.trim(),
+        id: initialRule?.id,
+        ruleName: ruleName.trim(),
         ruleCode,
         isActive,
         ruleScopeId,
-        conditionsJson:   JSON.stringify(
+        conditionsJson: JSON.stringify(
           rulesList.map((block) => ({
             ...block,
             ruleScopeName: activeScopeName,
           }))
         ),
-        effectJson:       JSON.stringify(rulesList[0]?.effect || {}),
+        effectJson: JSON.stringify(rulesList[0]?.effect || {}),
         targetFiltersJson: JSON.stringify(targetFilters),
-        description:      ruleDescription.trim(),
+        description: ruleDescription.trim(),
         ruleCategory,
-        changeReason:     changeReason.trim(),
-        priority:         1,
-        stopProcessing:   rulesList[0]?.stopProcessing || false,
+        changeReason: changeReason.trim(),
+        priority: 1,
+        stopProcessing: rulesList[0]?.stopProcessing || false,
       };
       const res = await onSaveRule(payload);
       if (res.success) {
@@ -181,7 +159,8 @@ export function useRuleBuilder({
   };
 
   return {
-    ruleName, setRuleName, ruleCode, setRuleCode,
+    ruleName, setRuleName,
+    ruleCode, setRuleCode,
     isActive, setIsActive,
     ruleScopeId, setRuleScopeId,
     ruleCategory, setRuleCategory,
@@ -191,7 +170,7 @@ export function useRuleBuilder({
     fields, setFields,
     isReasonOpen, setIsReasonOpen, changeReason, setChangeReason,
     activeScopeName, handleSaveClick, handleConfirmSave,
-    isSaving,
+    isSaving, 
     addRuleBlock, removeRuleBlock, moveRuleBlock, updateRuleBlock,
   };
 }
