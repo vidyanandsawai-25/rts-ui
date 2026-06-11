@@ -12,6 +12,7 @@ import { MainLayout } from '@/components/layout';
 import { ConditionalShell } from '@/components/layout/ConditionalShell';
 import { verifyServerRouteAccess } from '@/lib/utils/server-access-guard';
 import { UnauthorizedPage } from '@/components/common';
+import { getUlbConfigForLogin } from '@/lib/api/ulb-config.service';
 
 const inter = Inter({ subsets: ['latin'] });
 const notoSansDevanagari = Noto_Sans_Devanagari({
@@ -20,10 +21,28 @@ const notoSansDevanagari = Noto_Sans_Devanagari({
   variable: '--font-devanagari',
 });
 
-export const metadata: Metadata = {
-  title: `${appConfig.app.name} - ${appConfig.app.description}`,
-  description: appConfig.app.description,
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const ulbData = await getUlbConfigForLogin().catch(() => undefined);
+  const logoUrl = ulbData?.ulbLogo;
+
+  const title = ulbData?.ulbName
+    ? `${ulbData.ulbName}${ulbData.ulbNameLocal ? ` (${ulbData.ulbNameLocal})` : ''} - ${appConfig.app.name}`
+    : `${appConfig.app.name} - ${appConfig.app.description}`;
+
+  const description = ulbData?.ulbName
+    ? `${ulbData.ulbName} Portal - ${ulbData.ulbAddress || appConfig.app.description}`
+    : appConfig.app.description;
+
+  return {
+    title,
+    description,
+    icons: logoUrl
+      ? {
+          icon: logoUrl,
+        }
+      : undefined,
+  };
+}
 
 export async function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
