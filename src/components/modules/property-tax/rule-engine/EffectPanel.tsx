@@ -107,6 +107,7 @@ export default function EffectPanel({
             options={effectTypes}
             value={effect.effectType}
             onChange={(_, val) => handleTypeChange(val)}
+            placeholder={t('effectPanel.selectEffectType')}
             required
           />
         </div>

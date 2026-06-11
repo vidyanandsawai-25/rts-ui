@@ -43,7 +43,8 @@
     "rateValue": "दर मान",
     "performAction": "निम्नलिखित क्रिया करें",
     "invalidPercentage": "मान 0% और 100% के बीच होना चाहिए",
-    "selectCategory": "श्रेणी चुनें"
+    "selectCategory": "श्रेणी चुनें",
+    "selectEffectType": "प्रभाव प्रकार चुनें"
   },
   "saveReasonModal": {
     "title": "नियम कॉन्फ़िगरेशन सहेजने की पुष्टि करें",

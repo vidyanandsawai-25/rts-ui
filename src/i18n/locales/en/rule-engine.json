@@ -43,7 +43,8 @@
     "rateValue": "Rate Value",
     "performAction": "Perform the following action",
     "invalidPercentage": "Value must be between 0% and 100%",
-    "selectCategory": "Select category"
+    "selectCategory": "Select category",
+    "selectEffectType": "Select Effect Type"
   },
   "saveReasonModal": {
     "title": "Confirm Rule Configuration Save",

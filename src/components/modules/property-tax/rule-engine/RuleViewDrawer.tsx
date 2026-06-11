@@ -166,7 +166,9 @@ function RenderConditionGroup({ group, fields }: { group: ConditionGroupState; f
           ? (Array.isArray(cond.valueLabel) ? cond.valueLabel.join(', ') : String(cond.valueLabel))
           : (Array.isArray(cond.value) ? cond.value.join(', ') : String(cond.value));
 
-        const fieldObj = fields.find((f) => f.fieldId === cond.fieldId);
+        const fieldObj = fields.find(
+          (f) => f.fieldId === cond.fieldId || f.fieldName === cond.fieldId || f.databaseColumnName === cond.fieldId
+        );
         const rawLabel = fieldObj?.fieldName || cond.fieldId;
         const displayLabel = getFieldLabel(cond.fieldId, rawLabel, t);
 

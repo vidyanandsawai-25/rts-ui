@@ -43,7 +43,8 @@
     "rateValue": "दर मूल्य",
     "performAction": "खालील क्रिया करा",
     "invalidPercentage": "मूल्य ०% आणि १००% दरम्यान असणे आवश्यक आहे",
-    "selectCategory": "श्रेणी निवडा"
+    "selectCategory": "श्रेणी निवडा",
+    "selectEffectType": "परिणाम प्रकार निवडा"
   },
   "saveReasonModal": {
     "title": "नियम कॉन्फिगरेशन जतन करण्याची पुष्टी करा",
