@@ -79,6 +79,7 @@ export interface EligibleCountRequest {
   financeYear: string;
   scopeType: string;
   scope: OperationScope;
+  operation: string;
 }
 
 export interface EligibleCountResult {

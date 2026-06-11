@@ -124,14 +124,19 @@ export function useAddTaxesConsole({ init }: AddTaxesConsoleProps): AddTaxesCons
   const calculateEligible = useCallback(() => {
     if (!financeYear) return;
     startEligibleTransition(async () => {
-      const result = await getEligibleCountAction({ financeYear, scopeType, scope });
+      const result = await getEligibleCountAction({
+        financeYear,
+        scopeType,
+        scope,
+        operation: operation || 'AddTax',
+      });
       if (result.success) {
         setEligibleResult(result.data);
       } else {
         toast.error(result.error);
       }
     });
-  }, [financeYear, scopeType, scope]);
+  }, [financeYear, scopeType, scope, operation]);
 
   // ─── Review & Execute ──────────────────────────────────────────────────────
   const openReview = useCallback(() => {
