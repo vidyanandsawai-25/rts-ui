@@ -82,6 +82,12 @@ export function BuildingPreviewModal({
     let minFlatNo = Infinity;
     let maxFlatNo = -Infinity;
 
+    // Helper to extract numeric suffix from flatNo (handles prefix like "A", "B1", etc.)
+    const extractNumeric = (flatNo: string): number => {
+      const match = flatNo.match(/(\d+)$/); // Extract trailing digits
+      return match ? parseInt(match[1], 10) : NaN;
+    };
+
     buildingData.forEach((item) => {
       if (!floorMap.has(item.floorNo)) {
         floorMap.set(item.floorNo, []);
@@ -91,7 +97,8 @@ export function BuildingPreviewModal({
       minFloor = Math.min(minFloor, item.floorNo);
       maxFloor = Math.max(maxFloor, item.floorNo);
 
-      const flatNum = parseInt(item.flatNo, 10);
+      // ✅ Use extractNumeric instead of parseInt directly
+      const flatNum = extractNumeric(item.flatNo);
       if (!isNaN(flatNum)) {
         minFlatNo = Math.min(minFlatNo, flatNum);
         maxFlatNo = Math.max(maxFlatNo, flatNum);
@@ -110,8 +117,9 @@ export function BuildingPreviewModal({
 
     let increment = 1;
     if (buildingData.length > 1) {
-      const flat1 = parseInt(buildingData[0].flatNo, 10);
-      const flat2 = parseInt(buildingData[1].flatNo, 10);
+      // ✅ Use extractNumeric for increment calculation too
+      const flat1 = extractNumeric(buildingData[0].flatNo);
+      const flat2 = extractNumeric(buildingData[1].flatNo);
       if (!isNaN(flat1) && !isNaN(flat2)) {
         increment = flat2 - flat1;
       }
@@ -126,7 +134,8 @@ export function BuildingPreviewModal({
       flatStart: minFlatNo === Infinity ? 0 : minFlatNo,
       flatEnd: maxFlatNo === -Infinity ? 0 : maxFlatNo,
       incrementedBy: Math.abs(increment),
-      prefix: sampleItem?.flatNo.replace(/\d+$/, "") || "",
+      // ✅ Extract prefix from leading non-digit characters
+      prefix: sampleItem?.flatNo.match(/^([^\d]*)/)?.[1] || "",
       generationType: sampleItem?.generationType || "",
     };
   }, [buildingData]);
@@ -285,59 +294,59 @@ export function BuildingPreviewModal({
       ) : (
         <div className="flex gap-3 h-[60vh]">
           {/* Left Sticky Stats Panel */}
-          <div className="w-44 shrink-0 sticky top-0 self-start space-y-2">
-            <div className="rounded border border-blue-200 bg-blue-50/60 px-2.5 py-1.5 flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-blue-600 shrink-0" />
+          <div className="w-48 shrink-0 sticky top-0 self-start space-y-2.5">
+            <div className="rounded-md border border-blue-200 bg-blue-50/60 px-3 py-2 flex items-center gap-2.5">
+              <Building2 className="w-[18px] h-[18px] text-blue-600 shrink-0" />
               <div>
-                <p className="text-[9px] font-medium uppercase tracking-wider text-slate-400 leading-none">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 leading-none">
                   {t("partitionForm.wing.preview.wing")}
                 </p>
-                <p className="text-sm font-bold text-slate-900 leading-tight mt-0.5">{wingLetter}</p>
+                <p className="text-[15px] font-bold text-slate-900 leading-tight mt-0.5">{wingLetter}</p>
               </div>
             </div>
 
-            <div className="rounded border border-emerald-200 bg-emerald-50/60 px-2.5 py-1.5 flex items-center gap-2">
-              <Layers className="w-4 h-4 text-emerald-600 shrink-0" />
+            <div className="rounded-md border border-emerald-200 bg-emerald-50/60 px-3 py-2 flex items-center gap-2.5">
+              <Layers className="w-[18px] h-[18px] text-emerald-600 shrink-0" />
               <div>
-                <p className="text-[9px] font-medium uppercase tracking-wider text-slate-400 leading-none">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 leading-none">
                   {t("partitionForm.wing.preview.floors")}
                 </p>
-                <p className="text-sm font-bold text-slate-900 leading-tight mt-0.5">
+                <p className="text-[15px] font-bold text-slate-900 leading-tight mt-0.5">
                   {totalFloors}
-                  <span className="text-[9px] text-slate-400 font-normal ml-1">
+                  <span className="text-[10px] text-slate-400 font-normal ml-1">
                     ({organizedData.fromFloor}–{organizedData.toFloor})
                   </span>
                 </p>
               </div>
             </div>
 
-            <div className="rounded border border-violet-200 bg-violet-50/60 px-2.5 py-1.5 flex items-center gap-2">
-              <Home className="w-4 h-4 text-violet-600 shrink-0" />
+            <div className="rounded-md border border-violet-200 bg-violet-50/60 px-3 py-2 flex items-center gap-2.5">
+              <Home className="w-[18px] h-[18px] text-violet-600 shrink-0" />
               <div>
-                <p className="text-[9px] font-medium uppercase tracking-wider text-slate-400 leading-none">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 leading-none">
                   {t("partitionForm.wing.preview.flatsPerFloor")}
                 </p>
-                <p className="text-sm font-bold text-slate-900 leading-tight mt-0.5">
+                <p className="text-[15px] font-bold text-slate-900 leading-tight mt-0.5">
                   {organizedData.flatsPerFloor}
                 </p>
               </div>
             </div>
 
-            <div className="rounded border border-amber-200 bg-amber-50/60 px-2.5 py-1.5 flex items-center gap-2">
-              <Grid3x3 className="w-4 h-4 text-amber-600 shrink-0" />
+            <div className="rounded-md border border-amber-200 bg-amber-50/60 px-3 py-2 flex items-center gap-2.5">
+              <Grid3x3 className="w-[18px] h-[18px] text-amber-600 shrink-0" />
               <div>
-                <p className="text-[9px] font-medium uppercase tracking-wider text-slate-400 leading-none">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 leading-none">
                   {t("partitionForm.wing.preview.totalUnits")}
                 </p>
-                <p className="text-sm font-bold text-slate-900 leading-tight mt-0.5">
+                <p className="text-[15px] font-bold text-slate-900 leading-tight mt-0.5">
                   {organizedData.totalUnits}
                 </p>
               </div>
             </div>
 
             {propertyNo && (
-              <div className="flex items-center gap-2 text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded py-1 px-2.5">
-                <span className="text-slate-400 font-medium">
+              <div className="flex items-center gap-2 text-[11px] text-slate-600 bg-slate-50 border border-slate-200 rounded-md py-1.5 px-3">
+                <span className="text-slate-500 font-semibold">
                   {t("partitionForm.wing.preview.propertyNo")}:
                 </span>
                 <span className="font-semibold text-slate-800">{propertyNo}</span>
@@ -345,25 +354,25 @@ export function BuildingPreviewModal({
             )}
 
             {/* Legend */}
-            <div className="bg-slate-50 border border-slate-200 rounded-md p-2">
-              <div className="space-y-1.5 text-[10px] text-slate-500">
-                <div className="flex items-center gap-1">
-                  <div className="w-4 h-2 rounded-t-[2px] border border-sky-300 bg-sky-50" />
+            <div className="bg-slate-50 border border-slate-200 rounded-md p-2.5">
+              <div className="space-y-2 text-[11px] text-slate-500">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-4.5 h-2.5 rounded-t-[2px] border border-sky-300 bg-sky-50" />
                   <span>{t("partitionForm.wing.preview.legend.window")}</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-2.5 h-3 rounded-t-[2px] border border-amber-300 bg-amber-50" />
+                <div className="flex items-center gap-1.5">
+                  <div className="w-3 h-3.5 rounded-t-[2px] border border-amber-300 bg-amber-50" />
                   <span>{t("partitionForm.wing.preview.legend.door")}</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-2.5 h-2.5 rounded-sm bg-amber-50 border border-amber-200" />
+                <div className="flex items-center gap-1.5">
+                  <div className="w-3 h-3 rounded-sm bg-amber-50 border border-amber-200" />
                   <span>{t("partitionForm.wing.preview.topFloor")}</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-2.5 h-2.5 rounded-sm bg-emerald-50 border border-emerald-200" />
+                <div className="flex items-center gap-1.5">
+                  <div className="w-3 h-3 rounded-sm bg-emerald-50 border border-emerald-200" />
                   <span>{t("partitionForm.wing.preview.legend.ground")}</span>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1.5">
                   <span className="px-1 py-px rounded bg-amber-100 border border-amber-200 text-[10px] text-slate-700 font-medium">
                     {wingLetter}1
                   </span>
@@ -374,9 +383,9 @@ export function BuildingPreviewModal({
           </div>
 
           {/* Center Scrollable Building Structure */}
-          <div className="flex-1 overflow-y-auto pr-2 scrollbar-thin">
-            <div className="flex justify-center">
-              <div className="inline-flex flex-col items-center w-full max-w-xl">
+          <div className="flex-1 min-h-0 overflow-y-auto pr-2 scrollbar-thin">
+            <div className="flex justify-center min-h-full items-center">
+              <div className="inline-flex flex-col items-center w-full max-w-xl py-4">
 
                 {/* Roof */}
                 <div className="relative w-[88%]">
@@ -425,10 +434,10 @@ export function BuildingPreviewModal({
                             {/* Floor label */}
                             <div
                               className={`flex items-center justify-between px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider border-b ${isTop
-                                  ? "bg-amber-50 text-amber-700 border-amber-200"
-                                  : isGround
-                                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                    : "bg-slate-100 text-slate-500 border-slate-200"
+                                ? "bg-amber-50 text-amber-700 border-amber-200"
+                                : isGround
+                                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                  : "bg-slate-100 text-slate-500 border-slate-200"
                                 }`}
                             >
                               <span>
@@ -514,45 +523,45 @@ export function BuildingPreviewModal({
           </div>
 
           {/* Right Sticky Summary Panel */}
-          <div className="w-44 shrink-0 sticky top-0 self-start">
-            <div className="bg-slate-50 border border-slate-200 rounded-md p-2.5">
+          <div className="w-48 shrink-0 sticky top-0 self-start">
+            <div className="bg-slate-50 border border-slate-200 rounded-md p-3">
               {/* Summary */}
-              <div className="flex items-center gap-1.5 mb-2">
-                <Info className="w-3 h-3 text-blue-600" />
-                <span className="text-[10px] font-semibold text-slate-600 uppercase tracking-wide">
+              <div className="flex items-center gap-1.5 mb-2.5">
+                <Info className="w-3.5 h-3.5 text-blue-600" />
+                <span className="text-[11px] font-semibold text-slate-600 uppercase tracking-wide">
                   {t("partitionForm.wing.preview.generationSummary")}
                 </span>
               </div>
-              <div className="space-y-1.5">
-                <div className="bg-white rounded border border-slate-200 px-2 py-1.5">
-                  <span className="block text-[9px] text-slate-400 leading-none">
+              <div className="space-y-2">
+                <div className="bg-white rounded-md border border-slate-200 px-2.5 py-2">
+                  <span className="block text-[10px] font-semibold text-slate-500 leading-none">
                     {t("partitionForm.wing.preview.flatRange")}
                   </span>
-                  <span className="text-[11px] font-semibold text-slate-800 leading-tight">
+                  <span className="text-[13px] font-semibold text-slate-800 leading-tight mt-0.5 block">
                     {organizedData.flatStart} – {organizedData.flatEnd}
                   </span>
                 </div>
-                <div className="bg-white rounded border border-slate-200 px-2 py-1.5">
-                  <span className="block text-[9px] text-slate-400 leading-none">
+                <div className="bg-white rounded-md border border-slate-200 px-2.5 py-2">
+                  <span className="block text-[10px] font-semibold text-slate-500 leading-none">
                     {t("partitionForm.wing.preview.increment")}
                   </span>
-                  <span className="text-[11px] font-semibold text-slate-800 leading-tight">
+                  <span className="text-[13px] font-semibold text-slate-800 leading-tight mt-0.5 block">
                     +{organizedData.incrementedBy}
                   </span>
                 </div>
-                <div className="bg-white rounded border border-slate-200 px-2 py-1.5">
-                  <span className="block text-[9px] text-slate-400 leading-none">
+                <div className="bg-white rounded-md border border-slate-200 px-2.5 py-2">
+                  <span className="block text-[10px] font-semibold text-slate-500 leading-none">
                     {t("partitionForm.wing.preview.prefix")}
                   </span>
-                  <span className="text-[11px] font-semibold text-slate-800 leading-tight">
+                  <span className="text-[13px] font-semibold text-slate-800 leading-tight mt-0.5 block">
                     {organizedData.prefix || "—"}
                   </span>
                 </div>
-                <div className="bg-white rounded border border-slate-200 px-2 py-1.5">
-                  <span className="block text-[9px] text-slate-400 leading-none">
+                <div className="bg-white rounded-md border border-slate-200 px-2.5 py-2">
+                  <span className="block text-[10px] font-semibold text-slate-500 leading-none">
                     {t("partitionForm.wing.preview.type")}
                   </span>
-                  <span className="text-[11px] font-semibold text-slate-800 leading-tight uppercase">
+                  <span className="text-[13px] font-semibold text-slate-800 leading-tight mt-0.5 block uppercase">
                     {generationTypeLabels[organizedData.generationType] || organizedData.generationType}
                   </span>
                 </div>
