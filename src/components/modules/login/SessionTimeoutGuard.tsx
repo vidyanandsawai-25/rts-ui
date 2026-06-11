@@ -175,9 +175,9 @@ export function SessionTimeoutGuard() {
       try {
         sessionStorage.removeItem('is_tab_active_session');
       } catch {}
-      redirectSessionExpiredOnClient();
+      window.location.assign(`/${locale}/login?requireVerification=1`);
     }
-  }, [pathname]);
+  }, [pathname, locale]);
 
   useEffect(() => {
     const onUnauthorized = () => {
