@@ -187,19 +187,28 @@ describe("useWingManagement", () => {
       })
     );
 
-    expect(result.current.wingSummaries).toHaveLength(2);
+    expect(result.current.wingSummaries).toHaveLength(3);
     
-    const wingA = result.current.wingSummaries.find(w => w.wingName === "Wing A");
-    expect(wingA).toBeDefined();
-    expect(wingA?.count).toBe(2);
-    expect(wingA?.wingId).toBe(1);
-    expect(wingA?.wingNo).toBe("A");
+    const wingA1 = result.current.wingSummaries.find(w => w.societyDetailId === 1);
+    expect(wingA1).toBeDefined();
+    expect(wingA1?.count).toBe(1);
+    expect(wingA1?.wingId).toBe(1);
+    expect(wingA1?.wingNo).toBe("A");
+    expect(wingA1?.wingName).toBe("Wing A");
 
-    const wingB = result.current.wingSummaries.find(w => w.wingName === "Wing B");
+    const wingA2 = result.current.wingSummaries.find(w => w.societyDetailId === 3);
+    expect(wingA2).toBeDefined();
+    expect(wingA2?.count).toBe(1);
+    expect(wingA2?.wingId).toBe(1);
+    expect(wingA2?.wingNo).toBe("A");
+    expect(wingA2?.wingName).toBe("Wing A");
+
+    const wingB = result.current.wingSummaries.find(w => w.societyDetailId === 2);
     expect(wingB).toBeDefined();
     expect(wingB?.count).toBe(1);
     expect(wingB?.wingId).toBe(2);
     expect(wingB?.wingNo).toBe("B");
+    expect(wingB?.wingName).toBe("Wing B");
   });
 
   it("should successfully create new wing", async () => {
