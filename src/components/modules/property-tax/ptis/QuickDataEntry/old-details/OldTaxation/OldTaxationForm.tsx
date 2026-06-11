@@ -1,5 +1,6 @@
 "use client"
 import { useOldTaxationForm } from "@/hooks/ptis/QuickDataEntry/Olddetails/useOldTaxationForm";
+import { ReceiptText } from "lucide-react";
 
 // Import refactored components
 import { PropertyDetailsFields } from "./components/PropertyDetailsFields";
@@ -33,11 +34,14 @@ export default function OldTaxationForm({
   };
 
   return (
-    <div className="p-4 space-y-3">
-      <div className="bg-white rounded-xl shadow-md border-2 border-blue-100 p-4">
-        <h3 className="text-sm font-bold text-blue-800 mb-3 pb-2 border-b-2 border-blue-200">
-          {t("oldDetails.title")}
-        </h3>
+    <div className="p-4 max-w-7xl mx-auto space-y-4">
+      <div className="bg-white rounded-xl border border-blue-100 shadow-xs p-5">
+        <div className="-mx-5 mb-5 px-5 pb-3 border-b border-blue-100 flex items-center gap-2">
+          <ReceiptText className="w-4 h-4 text-blue-600" />
+          <h3 className="text-sm font-bold text-blue-700">
+            {t("oldDetails.title")}
+          </h3>
+        </div>
 
         <div className="grid grid-cols-3 gap-x-4 gap-y-3">
           {/* Property Identification Fields */}

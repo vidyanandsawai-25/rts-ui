@@ -73,7 +73,7 @@ export function OldDetailsTabNav() {
     ];
 
     return (
-        <div className="sticky top-0 z-10 border-b border-slate-200 bg-slate-50/95 px-4 py-3 shadow-sm backdrop-blur">
+        <div className="sticky top-0 z-10 border-b border-slate-200 bg-white px-4 py-3 shadow-sm backdrop-blur">
             <nav className="flex flex-wrap gap-5">
                 {sections.map((section) => {
                     const Icon = section.icon;
@@ -89,7 +89,7 @@ export function OldDetailsTabNav() {
                             key={section.id}
                             href={sectionHref}
                             className={cn(
-                                'inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-xs font-bold transition-all duration-200',
+                                'inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-xs font-bold transition-all duration-200 focus:outline-none',
                                 'hover:-translate-y-0.5 hover:shadow-md',
                                 isActive
                                     ? `bg-linear-to-br ${section.activeClass} text-white shadow-md`
