@@ -83,7 +83,7 @@ export default function ValueInput({
   }, [operator, effectiveOptions, value, onChange]);
 
   const loadingPlaceholder = apiLoading ? 'Loading options…' : (config.placeholder ?? 'Select…');
-  const activeScalar = Array.isArray(value) ? value[0] || '' : value;
+  const activeScalar = Array.isArray(value) ? (value[0] || '') : (value || '');
 
   const isMultiSelectOp = operator && ['In', 'Not In', 'contains any', 'contains all'].includes(operator);
   const resolvedInputType = isMultiSelectOp || config.inputType === 'MULTISELECT' ? 'MULTISELECT' : config.inputType;
