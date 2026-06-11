@@ -23,6 +23,7 @@ export {
   EditButton,
   DeleteButton,
   ExecuteTestButton,
+  ViewButton,
   SaveButton,
   CancelButton,
   ApplyButton,

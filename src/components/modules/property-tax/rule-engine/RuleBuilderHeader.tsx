@@ -17,7 +17,7 @@ export default function RuleBuilderHeader({ locale }: RuleBuilderHeaderProps) {
   return (
     <div className="flex items-center justify-between border-b border-zinc-200 pb-4">
       <div className="flex items-center gap-3">
-        <div className="p-2 bg-blue-600 rounded-lg text-white">
+        <div className="p-2 bg-blue-50 text-blue-600 border border-blue-100 rounded-lg">
           <LayoutGrid className="w-6 h-6" />
         </div>
         <div>
@@ -31,10 +31,10 @@ export default function RuleBuilderHeader({ locale }: RuleBuilderHeaderProps) {
       <Button
         type="button"
         variant="secondary"
+        icon={ArrowLeft}
         onClick={() => router.push(`/${locale}/property-tax/rule-engine`)}
-        className="h-10 px-4 font-medium flex items-center gap-2 text-slate-700 border-slate-200 hover:bg-slate-50 shadow-sm"
+        className="h-10 px-4 font-bold text-slate-900 border-slate-300 hover:bg-slate-100 hover:text-blue-700 transition-all shadow-sm"
       >
-        <ArrowLeft className="w-4 h-4" />
         {t('header.backToList')}
       </Button>
     </div>
