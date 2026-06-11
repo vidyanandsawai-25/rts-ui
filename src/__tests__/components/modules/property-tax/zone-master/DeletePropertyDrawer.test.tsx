@@ -25,6 +25,12 @@ vi.mock("@/components/modules/property-tax/zone-master/properties/components/Pro
   ),
 }));
 
+vi.mock("@/components/modules/property-tax/zone-master/properties/components/DirectPropertyDeleteSection", () => ({
+  DirectPropertyDeleteSection: ({ propertyId }: { propertyId: string }) => (
+    <div data-testid="direct-property-delete-section" data-property-id={propertyId} />
+  ),
+}));
+
 vi.mock("@/components/modules/property-tax/zone-master/properties/components", () => ({
   PropertyInfoSection: (props: Record<string, unknown>) => (
     <div data-testid="property-info-section" data-has-ward={String(!!props.selectedWard)} />
@@ -249,7 +255,7 @@ describe("DeletePropertyDrawer", () => {
   it("shows PropertyAmenitySection after a property is selected", () => {
     mockBuildingList.mockReturnValue({
       buildingList: [
-        { propertyId: 5, propertyNo: "P-005", catPropertyCategoryName: "Residential", partitionNo: "" },
+        { propertyId: 5, propertyNo: "P-005", catPropertyCategoryName: "Apartment", partitionNo: "" },
       ],
       loadingBuildingList: false,
     });
@@ -263,12 +269,30 @@ describe("DeletePropertyDrawer", () => {
     );
   });
 
+  it("shows direct property delete section for an individual property", () => {
+    mockBuildingList.mockReturnValue({
+      buildingList: [
+        { propertyId: 6, propertyNo: "P-006", catPropertyCategoryName: "Individual", partitionNo: "" },
+      ],
+      loadingBuildingList: false,
+    });
+
+    render(<DeletePropertyDrawer {...defaultProps} wardId={10} />);
+    fireEvent.change(screen.getByTestId("property-select-input"), { target: { value: "6" } });
+
+    expect(screen.getByTestId("direct-property-delete-section")).toHaveAttribute(
+      "data-property-id",
+      "6"
+    );
+    expect(screen.queryByTestId("property-amenity-section")).not.toBeInTheDocument();
+  });
+
   // ── Ward reset ─────────────────────────────────────────────────────────────
 
   it("resets selected property when ward changes", () => {
     mockBuildingList.mockReturnValue({
       buildingList: [
-        { propertyId: 5, propertyNo: "P-005", catPropertyCategoryName: "Residential", partitionNo: "" },
+        { propertyId: 5, propertyNo: "P-005", catPropertyCategoryName: "Apartment", partitionNo: "" },
       ],
       loadingBuildingList: false,
     });

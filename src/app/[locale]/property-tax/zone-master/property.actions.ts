@@ -4,7 +4,7 @@ import { getPropertiesByWard, getPropertyCountByWard, createProperty, createBulk
 import { getPropertyCategories } from "@/lib/api/property-category.service";
 import { getPropertyTypesPaged } from "@/lib/api/property-type-crud.service";
 import { getTaxZonePagedServer } from "@/lib/api/taxZoning/taxzoning.service";
-import { ZonePropertyListResponse } from "@/types/zone-master/properties/zoneProperty.types";
+import { ZonePropertyItem, ZonePropertyListResponse } from "@/types/zone-master/properties/zoneProperty.types";
 import { PropertyCategory, CreatePropertyPayload, BulkCreatePropertyPayload } from "@/types/property-category.types";
 import { PropertyRangeCreatePayload, PropertyRangeCreateResponse } from "@/types/zone-master/properties/property-range.types";
 import { PropertyType } from "@/types/property-type.types";
@@ -17,6 +17,10 @@ import { getUserIdFromCookies } from "@/lib/utils/cookie";
 import { getTranslations } from "next-intl/server";
 
 const logger = createLogger("property-tax/zone-master/property.actions");
+
+function excludeMarkedForDeletion(items: ZonePropertyItem[]): ZonePropertyItem[] {
+  return items.filter((item) => item.markedForDeletion !== true);
+}
 
 /* ===================================================================================
    HELPER FUNCTIONS
@@ -62,7 +66,17 @@ export async function fetchPropertiesPagedAction(
     }
 
     const result = await getPropertiesByWard(pageNumber, pageSize, wardId, searchTerm);
-    return result;
+    const visibleItems = excludeMarkedForDeletion(result.items || []);
+
+    return {
+      ...result,
+      items: visibleItems,
+      totalCount: result.totalCount === result.items.length ? visibleItems.length : result.totalCount,
+      totalPages:
+        result.totalCount === result.items.length
+          ? Math.ceil(visibleItems.length / pageSize)
+          : result.totalPages,
+    };
   } catch (error: unknown) {
     // Log the error for debugging using centralized logger
     if (error instanceof ApiError) {
@@ -105,7 +119,20 @@ export async function getPropertiesByWardAction({
 }) {
   try {
     const result = await getPropertiesByWard(page, pageSize, wardId, searchTerm || undefined);
-    return { success: true, data: result };
+    const visibleItems = excludeMarkedForDeletion(result.items || []);
+
+    return {
+      success: true,
+      data: {
+        ...result,
+        items: visibleItems,
+        totalCount: result.totalCount === result.items.length ? visibleItems.length : result.totalCount,
+        totalPages:
+          result.totalCount === result.items.length
+            ? Math.ceil(visibleItems.length / pageSize)
+            : result.totalPages,
+      },
+    };
   } catch (error) {
     if (error instanceof ApiError) {
       const statusCode = isBackendErrorMessage(error.responseText)

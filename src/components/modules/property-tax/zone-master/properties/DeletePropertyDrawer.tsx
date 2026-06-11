@@ -7,6 +7,7 @@ import { CancelButton } from "@/components/common";
 import { useTranslations } from "next-intl";
 import { PropertyInfoSection, PropertySelectionSection } from "./components";
 import { PropertyAmenitySection } from "./components/PropertyAmenitySection";
+import { DirectPropertyDeleteSection } from "./components/DirectPropertyDeleteSection";
 import { WardItem } from "@/types/wardMaster.types";
 import { ZonePropertyItem } from "@/types/zone-master/properties/zoneProperty.types";
 
@@ -62,14 +63,20 @@ export default function DeletePropertyDrawer({
     [buildingList, ssrProperties, selectedPropertyId]
   );
 
-  const isApartmentCategory = useMemo(() => {
-    const cat = selectedProperty?.catPropertyCategoryName;
-    return cat === "Apartment" || cat === "Multi Commercial Apartment";
-  }, [selectedProperty]);
+  const categoryName = useMemo(() => {
+    if (!selectedProperty) return null;
+    if ("catPropertyCategoryName" in selectedProperty) {
+      return selectedProperty.catPropertyCategoryName ?? null;
+    }
+    if ("categoryId" in selectedProperty && selectedProperty.categoryId) {
+      return categoryMap[selectedProperty.categoryId] ?? null;
+    }
+    return null;
+  }, [selectedProperty, categoryMap]);
 
-  const categoryName = useMemo(
-    () => selectedProperty?.catPropertyCategoryName ?? null,
-    [selectedProperty]
+  const isApartmentCategory = useMemo(
+    () => categoryName === "Apartment" || categoryName === "Multi Commercial Apartment",
+    [categoryName]
   );
 
   const propertyOptions = useMemo(() => {
@@ -148,10 +155,26 @@ export default function DeletePropertyDrawer({
         />
 
         {/* Wing selection → toggle → table → delete */}
-        {selectedPropertyId && (
+        {selectedPropertyId && isApartmentCategory && (
           <PropertyAmenitySection propertyId={selectedPropertyId} />
+        )}
+
+        {selectedPropertyId && selectedProperty && !isApartmentCategory && (
+          <DirectPropertyDeleteSection
+            propertyId={selectedPropertyId}
+            wardNo={
+              "wardNo" in selectedProperty
+                ? selectedProperty.wardNo
+                : ward?.wardNo
+            }
+            propertyNo={selectedProperty.propertyNo}
+            partitionNo={selectedProperty.partitionNo}
+            categoryName={categoryName}
+            onDeleted={() => setSelectedPropertyId("")}
+            t={tZone}
+          />
         )}
       </div>
     </Drawer>
   );
-}  
+}
