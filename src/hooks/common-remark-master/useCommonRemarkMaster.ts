@@ -4,7 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import type { CommonRemark, CommonRemarkProps } from "@/types/common-remark-master/common-remark.types";
-import { deleteCommonRemarkAction } from "@/app/[locale]/property-tax/common-remark-master/actions";
+import { deleteCommonRemarkAction } from "@/app/[locale]/configuration-settings/common-remark-master/actions";
 import { TEXT_SANITIZE } from "@/lib/utils/validation-rules";
 import { useSearchNavigation } from "@/hooks/useSearchNavigation";
 
@@ -46,12 +46,12 @@ export function useCommonRemarkMaster({
     locale,
     sortBy,
     sortOrder,
-    basePath: "/property-tax/common-remark-master",
+    basePath: "/configuration-settings/common-remark-master",
     startTransition,
     extraParams,
   });
 
-  const base = `/${locale}/property-tax/common-remark-master`;
+  const base = `/${locale}/configuration-settings/common-remark-master`;
 
   const normalizedData = useMemo(
     () => (data ?? []).map((x) => ({ ...x, status: x.isActive })),

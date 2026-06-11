@@ -31,7 +31,7 @@ export const OldTaxDetailsTable: React.FC<OldTaxDetailsTableProps> = ({
           key={yearIdx}
           className="bg-gradient-to-br from-blue-50 via-blue-50 to-blue-50 rounded p-1 shadow-sm border border-blue-200"
         >
-          <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-1">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 2xl:grid-cols-8 gap-1">
             {/* Year Field */}
             <div className="relative">
               <div

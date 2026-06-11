@@ -6,6 +6,7 @@ import { LockedScreen } from "@/types/lockunlock.types";
 import { useTranslations } from "next-intl";
 import { useQueryTransition } from "@/hooks/useQueryTransition";
 import { cn } from "@/lib/utils/cn";
+import { SEARCH_ALPHANUMERIC_SANITIZE } from "@/lib/utils/validation-rules";
 
 interface ScreenSelectionCardProps {
     screens: LockedScreen[];
@@ -125,7 +126,14 @@ export function ScreenSelectionCard({
                             <input
                                 type="text"
                                 value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    const sanitized = val.replace(SEARCH_ALPHANUMERIC_SANITIZE, "");
+                                    if (val !== sanitized) {
+                                        e.target.value = sanitized;
+                                    }
+                                    setSearchTerm(sanitized);
+                                }}
                                 placeholder={t("screenSelectionCard.searchPlaceholder")}
                                 className="w-full h-9 rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all duration-150"
                             />

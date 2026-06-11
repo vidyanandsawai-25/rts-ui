@@ -42,6 +42,8 @@
       "otherRemarkType": "इतर (Other)",
       "customRemarkType": "कस्टम टिप्पणी प्रकार",
       "customRemarkTypePlaceholder": "कस्टम टिप्पणी प्रकार प्रविष्ट करा...",
+      "addNewTypeBtn": "नवीन टिप्पणी प्रकार जोडा",
+      "selectExistingBtn": "विद्यमान प्रकार निवडा",
       "validation": {
         "remarkTypeRequired": "कृपया टिप्पणीचा प्रकार निवडा.",
         "remarkRequired": "टिप्पणी आवश्यक आहे.",
