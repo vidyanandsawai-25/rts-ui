@@ -1,4 +1,4 @@
-import { useState, useTransition, useCallback, useEffect } from "react";
+import { useState, useTransition, useCallback, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { LockedScreen, LockUnlockPropertyItem, LockUnlockPropertiesResponse } from "@/types/lockunlock.types";
@@ -7,6 +7,7 @@ import { getScreenIds } from "@/lib/api/lockunlock/lockunlock.utils";
 import { useLockUnlockColumns } from "./useLockUnlockColumns";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { SEARCH_ALPHANUMERIC_SANITIZE } from "@/lib/utils/validation-rules";
 
 export interface UseLockUnlockMasterProps {
   wardIdFromUrl: string;
@@ -83,9 +84,10 @@ export function useLockUnlockMaster({
 
   // Search state for property number filtering (server-side search)
   const searchFromUrl = searchParams.get("search") || "";
-  const [propertySearchTerm, setPropertySearchTerm] = useState(searchFromUrl);
+  const initialSanitizedSearch = searchFromUrl.replace(SEARCH_ALPHANUMERIC_SANITIZE, "");
+  const [propertySearchTerm, setPropertySearchTerm] = useState(initialSanitizedSearch);
   const [isSearching, setIsSearching] = useState(false);
-  const [appliedPropertySearchTerm, setAppliedPropertySearchTerm] = useState(searchFromUrl);
+  const [appliedPropertySearchTerm, setAppliedPropertySearchTerm] = useState(initialSanitizedSearch);
 
   // Fetch property dropdown options when wardId changes
   useEffect(() => {
@@ -148,12 +150,6 @@ export function useLockUnlockMaster({
   const handleSelectChange = (name: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString());
 
-    // Update form data
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-
     if (name === "wardId") {
       if (value) {
         params.set("wardId", value);
@@ -161,7 +157,7 @@ export function useLockUnlockMaster({
         params.delete("wardId");
       }
       // Clear property selections/results when ward changes
-      setFormData((prev) => ({ ...prev, fromProperty: "", toProperty: "" }));
+      setFormData((prev) => ({ ...prev, wardId: value, fromProperty: "", toProperty: "" }));
       setShowResults(false);
       setProperties([]);
       setSelectedPropertyIds([]);
@@ -177,11 +173,22 @@ export function useLockUnlockMaster({
       params.delete("search");
       router.push(`${pathname}?${params.toString()}`);
     } else if (name === "fromProperty") {
+      let newToProperty = formData.toProperty;
       if (value) {
         params.set("fromProperty", value);
+        const fromIndex = propertyOptions.findIndex((o) => o.value === value);
+        const toIndex = propertyOptions.findIndex((o) => o.value === formData.toProperty);
+        
+        // If the previously selected 'toProperty' is now invalid (comes before 'fromProperty'),
+        // clear it instead of auto-selecting.
+        if (toIndex !== -1 && toIndex < fromIndex) {
+          newToProperty = "";
+          params.delete("toProperty");
+        }
       } else {
         params.delete("fromProperty");
       }
+      setFormData((prev) => ({ ...prev, fromProperty: value, toProperty: newToProperty }));
       router.push(`${pathname}?${params.toString()}`);
     } else if (name === "toProperty") {
       if (value) {
@@ -189,6 +196,7 @@ export function useLockUnlockMaster({
       } else {
         params.delete("toProperty");
       }
+      setFormData((prev) => ({ ...prev, toProperty: value }));
       router.push(`${pathname}?${params.toString()}`);
     }
   };
@@ -215,9 +223,19 @@ export function useLockUnlockMaster({
 
   // Keeps the input responsive without firing a request until the button is clicked.
   const handlePropertySearch = useCallback((searchTerm: string) => {
-    setPropertySearchTerm(searchTerm);
+    const sanitizedSearchTerm = searchTerm.replace(SEARCH_ALPHANUMERIC_SANITIZE, "");
+    
+    if (searchTerm !== sanitizedSearchTerm) {
+      // Force React to acknowledge the state change by setting the invalid value,
+      // then immediately queuing a state update to the sanitized value to fix the DOM.
+      setPropertySearchTerm(searchTerm);
+      setTimeout(() => setPropertySearchTerm(sanitizedSearchTerm), 0);
+    } else {
+      setPropertySearchTerm(sanitizedSearchTerm);
+    }
+
     // If clearing the search, also clear URL and applied term immediately
-    if (!searchTerm) {
+    if (!sanitizedSearchTerm) {
       setAppliedPropertySearchTerm("");
       const params = new URLSearchParams(searchParams.toString());
       params.delete("search");
@@ -237,7 +255,13 @@ export function useLockUnlockMaster({
 
   const fetchProperties = useCallback(
     (pageNum: number, pageSz: number, searchTerm: string = appliedPropertySearchTerm) => {
-      if (!formData.wardId || !formData.fromProperty || !formData.toProperty) {
+      if (!formData.wardId) {
+        toast.error("Please select a Ward");
+        return;
+      }
+      
+      const isSearchActive = !!searchTerm;
+      if (!isSearchActive && (!formData.fromProperty || !formData.toProperty)) {
         toast.error(t("messages.validationError"));
         return;
       }
@@ -247,8 +271,8 @@ export function useLockUnlockMaster({
         try {
           const response: LockUnlockPropertiesResponse = await fetchLockUnlockPropertiesPagedAction({
             WardId: Number(formData.wardId),
-            FromPropertyNo: formData.fromProperty.split("-")[0],
-            ToPropertyNo: formData.toProperty.split("-")[0],
+            FromPropertyNo: formData.fromProperty ? formData.fromProperty.split("-")[0] : undefined,
+            ToPropertyNo: formData.toProperty ? formData.toProperty.split("-")[0] : undefined,
             PageNumber: pageNum,
             PageSize: pageSz,
             Search: searchTerm || undefined,
@@ -489,6 +513,13 @@ export function useLockUnlockMaster({
     });
   };
 
+  const toPropertyOptions = useMemo(() => {
+    if (!formData.fromProperty) return propertyOptions;
+    const fromIndex = propertyOptions.findIndex((opt) => opt.value === formData.fromProperty);
+    if (fromIndex === -1) return propertyOptions;
+    return propertyOptions.slice(fromIndex);
+  }, [propertyOptions, formData.fromProperty]);
+
   const columns = useLockUnlockColumns({
     screens,
     selectedPropertyIds,
@@ -515,6 +546,7 @@ export function useLockUnlockMaster({
     setEditModal,
     isPending,
     propertyOptions,
+    toPropertyOptions,
     isLoadingProperties,
     propertySearchTerm,
     setPropertySearchTerm,

@@ -53,24 +53,19 @@ export function useWingManagement({
     setNewWingNo(getWingNoById(nextWingId));
   }, [nextWingId, getWingNoById]);
 
-  // Group society details by wing
+  // Group society details by wing - use unique ID to allow duplicate names
   const wingSummaries = useMemo<WingSummary[]>(() => {
-    const groups = new Map<string, WingSummary>();
+    const groups = new Map<number, WingSummary>();
     
     societyDetails.forEach((item) => {
-      const existing = groups.get(item.wingName);
-      if (existing) {
-        existing.count += 1;
-      } else {
-        const wing = wings.find(w => w.id === item.wingId);
-        groups.set(item.wingName, { 
-          wingName: item.wingName, 
-          count: 1, 
-          wingId: item.wingId,
-          wingNo: wing?.wingNo,
-          societyDetailId: item.id
-        });
-      }
+      const wing = wings.find(w => w.id === item.wingId);
+      groups.set(item.id, { 
+        wingName: item.wingName, 
+        count: 1, 
+        wingId: item.wingId,
+        wingNo: wing?.wingNo,
+        societyDetailId: item.id
+      });
     });
     
     // Sort by societyDetailId to maintain database order (latest added at bottom)

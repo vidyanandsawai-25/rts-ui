@@ -21,6 +21,7 @@ export function clearLegacyAuthClientStorage(): void {
     for (const key of LEGACY_AUTH_STORAGE_KEYS) {
       window.localStorage.removeItem(key);
     }
+    window.sessionStorage.removeItem('is_tab_active_session');
   } catch {
     // Private mode / blocked storage
   }

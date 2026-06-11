@@ -48,9 +48,13 @@ export const useRoomInitialization = (state: RoomSubmissionState, props: RoomWis
             ...(Array.isArray(r.roomWiseMinusData) ? r.roomWiseMinusData : []),
             ...(Array.isArray(r.minusRooms) ? r.minusRooms : [])
           ];
-          // Deduplicate by id/roomWiseMinusId
+          // Deduplicate by id/roomWiseMinusId and filter out marked for deletion
           const seen = new Set();
           const offsets = offsetsRaw
+            .filter(o => {
+              const markedForDeletion = o.MarkedForDeletion ?? o.markedForDeletion;
+              return markedForDeletion !== 1 && markedForDeletion !== true;
+            })
             .map(o => ({
               ...o,
               id: o.roomWiseMinusId ?? o.id,

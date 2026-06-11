@@ -42,6 +42,8 @@
       "otherRemarkType": "Other",
       "customRemarkType": "Custom Remark Type",
       "customRemarkTypePlaceholder": "Enter custom remark type...",
+      "addNewTypeBtn": "Add New Remark Type",
+      "selectExistingBtn": "Select Existing Type",
       "validation": {
         "remarkTypeRequired": "Please select Remark Type.",
         "remarkRequired": "Remark is required.",

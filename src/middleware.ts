@@ -70,8 +70,11 @@ export default function middleware(request: NextRequest) {
   const sessionExpiredLogin =
     isLoginRoute &&
     request.nextUrl.searchParams.get('error') === SESSION_EXPIRED_LOGIN_ERROR;
+  const requireVerification =
+    isLoginRoute &&
+    request.nextUrl.searchParams.get('requireVerification') === '1';
 
-  if (isLoginRoute && isLoggedIn && !sessionExpiredLogin) {
+  if (isLoginRoute && isLoggedIn && !sessionExpiredLogin && !requireVerification) {
     return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
   }
 
