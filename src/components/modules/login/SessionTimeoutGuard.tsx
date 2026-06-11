@@ -146,6 +146,39 @@ export function SessionTimeoutGuard() {
     };
   }, [pathname, startCountdown, clearCountdown, clearExpiryTimer, checkClientSessionExpiry]);
 
+  // Tab-session isolation: Ensure user has a valid tab-level session when authenticated.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const loggedIn = hasLoggedInFlag();
+    if (!loggedIn) {
+      try {
+        sessionStorage.removeItem('is_tab_active_session');
+      } catch {}
+      return;
+    }
+
+    if (!pathname || isLoginPath(pathname)) return;
+
+    const isNewLogin = window.location.search.includes('loginSuccess=1');
+    const isTabSessionActive = sessionStorage.getItem('is_tab_active_session') === 'true';
+
+    if (isNewLogin) {
+      try {
+        sessionStorage.setItem('is_tab_active_session', 'true');
+      } catch {}
+    } else if (!isTabSessionActive) {
+      // Authenticated according to cookies, but this tab session is not marked active.
+      // E.g. URL pasted in new tab or tab closed and reopened.
+      redirectingRef.current = true;
+      clearLegacyAuthClientStorage();
+      try {
+        sessionStorage.removeItem('is_tab_active_session');
+      } catch {}
+      redirectSessionExpiredOnClient();
+    }
+  }, [pathname]);
+
   useEffect(() => {
     const onUnauthorized = () => {
       if (redirectingRef.current) return;
