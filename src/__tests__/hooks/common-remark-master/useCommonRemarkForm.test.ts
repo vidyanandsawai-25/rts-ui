@@ -13,6 +13,7 @@ vi.mock("next/navigation", () => ({
     push: vi.fn(),
     refresh: vi.fn(),
   })),
+  useSearchParams: vi.fn(() => new URLSearchParams()),
 }));
 
 // Mock next-intl
@@ -282,6 +283,48 @@ describe("useCommonRemarkForm", () => {
     expect(result.current.errors.remark).toBe("form.validation.remarkConsecutiveSpaces");
   });
 
+  it("should sanitize remark and customRemarkType input by removing invalid characters", async () => {
+    const { result } = await renderFormHook(defaultProps);
+
+    // Test sanitization on customRemarkType
+    act(() => {
+      result.current.handleSelectChange({} as React.ChangeEvent<HTMLSelectElement>, "Other");
+      result.current.handleCustomTypeChange({
+        target: { value: "Test@#$ Remark%" },
+      } as React.ChangeEvent<HTMLInputElement>);
+    });
+    expect(result.current.customRemarkType).toBe("Test Remark");
+
+    // Test sanitization on remark
+    act(() => {
+      result.current.handleChange({
+        target: { name: "remark", value: "Valid remark with @#$ invalid chars" },
+      } as React.ChangeEvent<HTMLTextAreaElement>);
+    });
+    expect(result.current.formData.remark).toBe("Valid remark with  invalid chars");
+  });
+
+  it("should validate format errors when data contains unsanitized invalid characters", async () => {
+    const initialData: CommonRemark = {
+      id: 101,
+      remarkTypeId: 2,
+      remarkType: "Category 2",
+      remark: "Invalid remark @#$",
+      isActive: true,
+      createdDate: "2026-06-09",
+      updatedDate: null,
+    };
+
+    // Render with unsanitized initialData to bypass change handler sanitization
+    const { result } = await renderFormHook({ ...defaultProps, id: 101, initialData });
+
+    await act(async () => {
+      await result.current.handleSubmit({ preventDefault: vi.fn() } as unknown as React.FormEvent);
+    });
+
+    expect(result.current.errors.remark).toBe("form.validation.remarkFormat");
+  });
+
   it("should validate that isActive must be true on create", async () => {
     const { result } = await renderFormHook(defaultProps);
 
@@ -366,6 +409,35 @@ describe("useCommonRemarkForm", () => {
 
     expect(result.current.errors.remark).toBe("apiErrors.duplicateRecord");
     expect(toast.error).toHaveBeenCalledWith("apiErrors.duplicateRecord");
+  });
+
+  it("should handle backend JSON validation errors on submit and display clean translated errors", async () => {
+    const rawBackendError = 'Failed to create remark type category: {"type":"https://tools.ietf.org/html/rfc9110#section-15.5.1","title":"One or more validation errors occurred.","status":400,"errors":{"RemarkTypeName":["RemarkTypeName_Invalid"]}}';
+    
+    vi.mocked(saveCommonRemarkAction).mockResolvedValue({ 
+      ok: false, 
+      error: "api_error", 
+      message: rawBackendError 
+    });
+
+    const { result } = await renderFormHook(defaultProps);
+
+    act(() => {
+      result.current.handleSelectChange({} as React.ChangeEvent<HTMLSelectElement>, "Other");
+      result.current.handleCustomTypeChange({
+        target: { value: "Custom Type" },
+      } as React.ChangeEvent<HTMLInputElement>);
+      result.current.handleChange({
+        target: { name: "remark", value: "Valid remark content" },
+      } as React.ChangeEvent<HTMLTextAreaElement>);
+    });
+
+    await act(async () => {
+      await result.current.handleSubmit({ preventDefault: vi.fn() } as unknown as React.FormEvent);
+    });
+
+    expect(result.current.errors.customRemarkType).toBe("form.validation.customRemarkTypeFormat");
+    expect(toast.error).toHaveBeenCalledWith("form.validation.customRemarkTypeFormat");
   });
 
   it("should trigger cancel callback", async () => {

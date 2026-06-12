@@ -1,5 +1,6 @@
 import { CommonRemarkFormModel } from "@/types/common-remark-master/common-remark.types";
 import { ApiError } from "@/lib/utils/api";
+import { DESCRIPTION_REGEX } from "@/lib/utils/validation-rules";
 
 /**
  * Validates ID
@@ -52,6 +53,9 @@ export function validateCustomRemarkType(customRemarkType: string, remarkType: s
     if (/\s{2,}/.test(customRemarkType)) {
       return "form.validation.customRemarkTypeConsecutiveSpaces";
     }
+    if (!DESCRIPTION_REGEX.test(ct)) {
+      return "form.validation.customRemarkTypeFormat";
+    }
   }
   return null;
 }
@@ -75,6 +79,9 @@ export function validateRemark(remark?: string): string | null {
   }
   if (remark && /\s{2,}/.test(remark)) {
     return "form.validation.remarkConsecutiveSpaces";
+  }
+  if (!DESCRIPTION_REGEX.test(remarkVal)) {
+    return "form.validation.remarkFormat";
   }
   return null;
 }
