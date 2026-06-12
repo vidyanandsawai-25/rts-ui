@@ -469,6 +469,24 @@ export function ExecuteTestButton(
   );
 }
 
+export function ViewButton(
+  { ["aria-label"]: ariaLabel, className = "", ...props }: Omit<ButtonProps, "icon" | "variant">
+): React.ReactElement {
+  return (
+    <Button
+      variant="edit"
+      icon={Eye}
+      size="sm"
+      aria-label={ariaLabel ?? "View"}
+      className={cn(
+        "text-blue-600 hover:bg-blue-50 border-blue-400 focus:ring-blue-300",
+        className
+      )}
+      {...props}
+    />
+  );
+}
+
 
 export function CloseIconButton({
   title = "Close",

@@ -1,7 +1,7 @@
 'use client';
 
 import { EffectState, EffectTypeConfig, FieldConfig } from '@/types/rule-engine.types';
-import { Input, SearchSelect } from '@/components/common';
+import { Input, SearchSelect, ToggleSwitch } from '@/components/common';
 import { adaptEffectConfigToFieldConfig } from '@/lib/api/rule-engine/mappers';
 import ValueInput from './ValueInput';
 import { useEffectPanelOptions } from './useEffectPanelOptions';
@@ -13,6 +13,8 @@ interface EffectPanelProps {
   effectTypes: { label: string; value: string }[];
   categoryOptions: { label: string; value: string }[];
   effectTypeConfigs: EffectTypeConfig[];
+  stopProcessing?: boolean;
+  onStopProcessingChange?: (checked: boolean) => void;
 }
 
 export default function EffectPanel({
@@ -21,6 +23,8 @@ export default function EffectPanel({
   effectTypes,
   categoryOptions,
   effectTypeConfigs,
+  stopProcessing,
+  onStopProcessingChange,
 }: EffectPanelProps) {
   const selectedConfig = effectTypeConfigs.find((c) => c.effectType === effect.effectType);
   const { dynamicCategoryOptions, staticApiOptions } = useEffectPanelOptions(selectedConfig);
@@ -28,7 +32,7 @@ export default function EffectPanel({
 
 
   const options = [
-    { label: 'Select category', value: '' },
+    { label: t('effectPanel.selectCategory'), value: '' },
     ...(dynamicCategoryOptions.length > 0 ? dynamicCategoryOptions : categoryOptions),
   ];
 
@@ -84,21 +88,10 @@ export default function EffectPanel({
   const hasReferenceCategory = !!(selectedConfig && selectedConfig.hasApiSource && selectedConfig.apiEndpoint);
   const hasParameter = !!(selectedConfig && selectedConfig.staticApiEndpoint);
 
-  const effectTypeColSpan = (hasReferenceCategory && hasParameter) ? 'md:col-span-3' : 'md:col-span-4';
-  const referenceCategoryColSpan = (hasReferenceCategory && hasParameter) ? 'md:col-span-3' : 'md:col-span-4';
-  const parameterColSpan = (hasReferenceCategory && hasParameter) ? 'md:col-span-3' : 'md:col-span-4';
-
-  let valueColSpan = 'md:col-span-4';
-  if (hasReferenceCategory && hasParameter) {
-    valueColSpan = 'md:col-span-3';
-  } else if (!hasReferenceCategory && !hasParameter) {
-    valueColSpan = 'md:col-span-8';
-  }
-
   return (
-    <div className="flex flex-col gap-4 w-full">
+    <div className="flex flex-col gap-2.5 w-full">
       {/* Visual Dashed Divider: --- Perform the following action --- */}
-      <div className="relative flex py-2 items-center">
+      <div className="relative flex py-0.5 items-center">
         <div className="flex-grow border-t border-dashed border-zinc-300"></div>
         <span className="flex-shrink mx-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
           {t('effectPanel.performAction')}
@@ -106,21 +99,22 @@ export default function EffectPanel({
         <div className="flex-grow border-t border-dashed border-zinc-300"></div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+      <div className="flex flex-col lg:flex-row items-stretch lg:items-end gap-3 w-full">
         {/* 1. Effect Type selection */}
-        <div className={effectTypeColSpan}>
+        <div className="w-full flex-1">
           <SearchSelect
             label={t('effectPanel.effectType')}
             options={effectTypes}
             value={effect.effectType}
             onChange={(_, val) => handleTypeChange(val)}
+            placeholder={t('effectPanel.selectEffectType')}
             required
           />
         </div>
 
         {/* 2. Reference Category selection (shown when config has apiEndpoint) */}
         {hasReferenceCategory && (
-          <div className={referenceCategoryColSpan}>
+          <div className="w-full flex-1">
             <SearchSelect
               label={t('effectPanel.referenceCategory')}
               options={options}
@@ -133,7 +127,7 @@ export default function EffectPanel({
 
         {/* 3. Parameter selection (shown when config has staticApiEndpoint) */}
         {hasParameter && (
-          <div className={parameterColSpan}>
+          <div className="w-full flex-1">
             <SearchSelect
               label={t('effectPanel.parameter')}
               options={staticApiOptions}
@@ -152,36 +146,45 @@ export default function EffectPanel({
         )}
 
         {/* 4. Value / Dynamic Value Input */}
-        <div className={valueColSpan}>
-          {hasParameter ? (
-            <div className="flex flex-col gap-1 w-full">
-              <label className="text-[13px] font-semibold text-zinc-600">
-                {t('effectPanel.percentageValue')}
-              </label>
-              <Input
-                type="number"
-                min={0}
-                max={100}
-                value={effect.value === undefined || effect.value === null || effect.value === '' ? '' : effect.value.toString()}
-                onChange={(e) => handleValueChange(e.target.value)}
-                placeholder={t('effectPanel.enterValue')}
-                error={isInvalidPercent ? t('effectPanel.invalidPercentage') : undefined}
-              />
+        <div className="w-full flex-1">
+          <div className="flex flex-col gap-1 w-full">
+            <label className="text-[13px] font-semibold text-zinc-600 whitespace-nowrap">
+              {t('effectPanel.percentageValue')}
+            </label>
+            <div className="w-full">
+              {hasParameter ? (
+                <Input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={effect.value === undefined || effect.value === null || effect.value === '' ? '' : effect.value.toString()}
+                  onChange={(e) => handleValueChange(e.target.value)}
+                  placeholder={t('effectPanel.enterValue')}
+                  error={isInvalidPercent ? t('effectPanel.invalidPercentage') : undefined}
+                />
+              ) : (
+                <ValueInput
+                  config={fieldConfig}
+                  value={effect.value === undefined || effect.value === null || effect.value === '' ? '' : effect.value.toString()}
+                  onChange={handleValueChange}
+                  error={isInvalidPercent ? t('effectPanel.invalidPercentage') : undefined}
+                />
+              )}
             </div>
-          ) : (
-            <div className="flex flex-col gap-1 w-full">
-              <label className="text-[13px] font-semibold text-zinc-600">
-                {t('effectPanel.percentageValue')}
-              </label>
-              <ValueInput
-                config={fieldConfig}
-                value={effect.value === undefined || effect.value === null || effect.value === '' ? '' : effect.value.toString()}
-                onChange={handleValueChange}
-                error={isInvalidPercent ? t('effectPanel.invalidPercentage') : undefined}
-              />
-            </div>
-          )}
+          </div>
         </div>
+
+        {/* 5. Stop Processing Toggle */}
+        {onStopProcessingChange && (
+          <div className="lg:ml-auto pb-2.5 shrink-0">
+            <ToggleSwitch
+              checked={stopProcessing || false}
+              onChange={onStopProcessingChange}
+              label={t('stopProcessing.toggleLabel')}
+              showPopup={false}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

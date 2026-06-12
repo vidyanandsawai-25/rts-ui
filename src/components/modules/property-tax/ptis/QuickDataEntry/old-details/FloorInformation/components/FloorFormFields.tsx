@@ -39,11 +39,11 @@ export function FloorFormFields({
                 </Label>
                 <SearchSelect
                     options={floorOptions}
-                    placeholder={t('oldDetails.floordtails.selectPlaceholder')}
-                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
                     name="floor"
                     onChange={(_, val) => onFieldChange('oldFloorId', val)}
                     value={String(formData.oldFloorId)}
+                    placeholder={t('oldDetails.floordtails.selectPlaceholder')}
+                    className="h-9 text-sm border-blue-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
                 />
                 {showError("oldFloorId") && (
                     <span className="text-xs text-red-500">{errors.oldFloorId}</span>
@@ -57,11 +57,12 @@ export function FloorFormFields({
                 </Label>
                 <SearchSelect
                     options={subFloorOptions}
-                    placeholder={t('oldDetails.floordtails.selectPlaceholder')}
-                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
                     name="subFloor"
                     onChange={(_, val) => onFieldChange('oldSubFloorId', val)}
                     value={String(formData.oldSubFloorId)}
+                    placeholder={t('oldDetails.floordtails.selectPlaceholder')}
+                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
+
                 />
                 {showError("oldSubFloorId") && (
                     <span className="text-xs text-red-500">{errors.oldSubFloorId}</span>
@@ -74,10 +75,10 @@ export function FloorFormFields({
                     {t('oldDetails.year')}<span className="text-red-500 ml-1">*</span>
                 </Label>
                 <Input
-                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
-                    placeholder="YYYY"
                     maxLength={4}
                     value={formData.oldConstructionYear}
+                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
+                    placeholder="YYYY"
                     onChange={(e) => {
                         const val = e.target.value.replace(/\D/g, '').slice(0, 4);
                         onFieldChange('oldConstructionYear', val);
@@ -96,8 +97,6 @@ export function FloorFormFields({
                     {t('oldDetails.assessmentYear')}<span className="text-red-500 ml-1">*</span>
                 </Label>
                 <Input
-                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
-                    placeholder="YYYY"
                     maxLength={4}
                     value={formData.oldAssessmentYear || ''}
                     onChange={(e) => {
@@ -106,6 +105,8 @@ export function FloorFormFields({
                         // Validate year in real-time
                         validateYearField('oldAssessmentYear', val);
                     }}
+                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
+                    placeholder="YYYY"
                 />
                 {showError("oldAssessmentYear") && (
                     <span className="text-xs text-red-500">{errors.oldAssessmentYear}</span>
@@ -119,11 +120,11 @@ export function FloorFormFields({
                 </Label>
                 <SearchSelect
                     options={constructionTypeOptions}
-                    placeholder={t('oldDetails.floordtails.selectPlaceholder')}
-                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
                     name="conTyp"
                     onChange={(_, val) => onFieldChange('oldConstructionTypeId', val)}
                     value={String(formData.oldConstructionTypeId)}
+                    placeholder={t('oldDetails.floordtails.selectPlaceholder')}
+                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
                 />
                 {showError("oldConstructionTypeId") && (
                     <span className="text-xs text-red-500">{errors.oldConstructionTypeId}</span>
@@ -137,11 +138,11 @@ export function FloorFormFields({
                 </Label>
                 <SearchSelect
                     options={useOptions}
-                    placeholder={t('oldDetails.floordtails.selectPlaceholder')}
-                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
                     name="use"
                     onChange={(_, val) => onUseTypeChange(val)}
                     value={String(formData.oldTypeOfUseId)}
+                    placeholder={t('oldDetails.floordtails.selectPlaceholder')}
+                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
                 />
                 {showError("oldTypeOfUseId") && (
                     <span className="text-xs text-red-500">{errors.oldTypeOfUseId}</span>
@@ -154,13 +155,13 @@ export function FloorFormFields({
                     {t('floor.subTyp')} {hasSubUseOptions && <span className="text-red-500 ml-1">*</span>}
                 </Label>
                 <SearchSelect
-                    options={subUseOptions}
-                    placeholder={t('oldDetails.floordtails.selectPlaceholder')}
-                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
                     name="subUseType"
                     onChange={(_, val) => onFieldChange('oldSubTypeOfUseId', val)}
                     value={String(formData.oldSubTypeOfUseId)}
                     disabled={!hasSubUseOptions}
+                    options={subUseOptions}
+                    placeholder={t('oldDetails.floordtails.selectPlaceholder')}
+                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
                 />
                 {showError("oldSubTypeOfUseId") && (
                     <span className="text-xs text-red-500">{errors.oldSubTypeOfUseId}</span>
@@ -175,9 +176,9 @@ export function FloorFormFields({
                 <Input
                     type="text"
                     inputMode="decimal"
+                    value={formData.oldAreaSqMeter ?? ''}
                     className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
                     placeholder="0.00"
-                    value={formData.oldAreaSqMeter ?? ''}
                     onChange={(e) => {
                         const value = sanitizeTaxDecimal(e.target.value);
                         if (value !== '' || e.target.value === '') {
@@ -198,14 +199,14 @@ export function FloorFormFields({
                 </Label>
                 <Input
                     type="number"
-                    className="h-9 text-sm border-blue-200 bg-gray-50 cursor-not-allowed focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
-                    placeholder="0.00"
                     value={
                         formData.oldCarpetAreaSqFeet
                             ? Number(formData.oldCarpetAreaSqFeet).toFixed(2)
                             : ''
                     }
                     readOnly
+                    className="h-9 text-sm border-blue-200 bg-gray-50 cursor-not-allowed focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
+                    placeholder="0.00"
                 />
             </div>
 
@@ -216,14 +217,14 @@ export function FloorFormFields({
                 </Label>
                 <Input
                     type="number"
-                    className="h-9 text-sm border-blue-200 bg-gray-50 cursor-not-allowed focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
-                    placeholder="0.00"
                     value={
                         formData.oldBuiltupAreaSqFeet
                             ? Number(formData.oldBuiltupAreaSqFeet).toFixed(2)
                             : ''
                     }
                     readOnly
+                    className="h-9 text-sm border-blue-200 bg-gray-50 cursor-not-allowed focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
+                    placeholder="0.00"
                 />
             </div>
 
@@ -234,14 +235,14 @@ export function FloorFormFields({
                 </Label>
                 <Input
                     type="number"
-                    className="h-9 text-sm border-blue-200 bg-gray-50 cursor-not-allowed focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
-                    placeholder="0.00"
                     value={
                         formData.oldBuiltupAreaSqMeter
                             ? Number(formData.oldBuiltupAreaSqMeter).toFixed(2)
                             : ''
                     }
                     readOnly
+                    className="h-9 text-sm border-blue-200 bg-gray-50 cursor-not-allowed focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
+                    placeholder="0.00"
                 />
             </div>
             <div className="space-y-1.5 mt-6 w-full flex justify-end gap-5 items-end">
