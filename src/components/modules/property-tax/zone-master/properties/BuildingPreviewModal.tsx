@@ -18,6 +18,7 @@ interface BuildingPreviewProps {
   loading?: boolean;
   wingLetter: string;
   propertyNo?: string;
+  incrementedBy?: string;
   // Configuration data for bulk creation (from selected property)
   taxZoneId?: number;
   wardId?: number;
@@ -35,6 +36,7 @@ export function BuildingPreviewModal({
   loading = false,
   wingLetter,
   propertyNo,
+  incrementedBy,
   taxZoneId,
   wardId,
   propertyTypeId,
@@ -116,8 +118,14 @@ export function BuildingPreviewModal({
     const sampleItem = buildingData[0];
 
     let increment = 1;
-    if (buildingData.length > 1) {
-      // ✅ Use extractNumeric for increment calculation too
+    // If incrementedBy is provided as a prop, use that
+    if (incrementedBy) {
+      const parsedIncrement = parseInt(incrementedBy, 10);
+      if (!isNaN(parsedIncrement) && parsedIncrement > 0) {
+        increment = parsedIncrement;
+      }
+    } else if (buildingData.length > 1) {
+      // Fallback to calculation if prop not provided
       const flat1 = extractNumeric(buildingData[0].flatNo);
       const flat2 = extractNumeric(buildingData[1].flatNo);
       if (!isNaN(flat1) && !isNaN(flat2)) {
@@ -138,7 +146,7 @@ export function BuildingPreviewModal({
       prefix: sampleItem?.flatNo.match(/^([^\d]*)/)?.[1] || "",
       generationType: sampleItem?.generationType || "",
     };
-  }, [buildingData]);
+  }, [buildingData, incrementedBy]);
 
   const totalFloors = organizedData.toFloor - organizedData.fromFloor + 1;
 

@@ -1,10 +1,10 @@
 'use client';
 
 
-import { ArrowUp, ArrowDown, Trash2, Edit, ChevronUp } from 'lucide-react';
+import { ArrowUp, ArrowDown, Trash2, Pencil, ChevronUp, ChevronDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { FieldConfig, RuleBlock, EffectTypeConfig, ConditionGroupState, EffectState } from '@/types/rule-engine.types';
-import { Input, ToggleSwitch } from '@/components/common';
+import { Input } from '@/components/common';
 import ConditionGroup from './ConditionGroup';
 import EffectPanel from './EffectPanel';
 
@@ -44,22 +44,27 @@ export default function RuleBlockItem({
   const t = useTranslations('ruleEngine');
 
   return (
-    <div className="border border-zinc-200 bg-zinc-50/10 p-5 rounded-xl flex flex-col gap-5 relative shadow-sm hover:shadow-md transition-all">
+    <div className={`border border-zinc-200 bg-zinc-50/10 p-3.5 rounded-xl flex flex-col gap-3 relative shadow-sm hover:shadow-md transition-all ${!isCollapsed ? 'z-10' : 'z-0'}`}>
       
       {/* Rule block header */}
-      <div className="flex items-center justify-between pb-3 border-b border-zinc-200">
-        <span className="text-sm font-bold text-blue-800">{t('builder.ruleIndex', { index: index + 1 })}</span>
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4 flex-1">
+          <span className="text-sm font-bold text-blue-800 shrink-0">{t('builder.ruleIndex', { index: index + 1 })}</span>
+          
+          <div className="flex items-center gap-2 flex-grow max-w-[60%]">
+            <span className="text-[13px] font-semibold text-zinc-500 shrink-0">{t('targetFilter.description')}:</span>
+            <div className="flex-1">
+              <Input
+                value={ruleBlock.description}
+                onChange={(e) => onUpdateRuleBlock(index, 'description', e.target.value)}
+                placeholder={t('targetFilter.descriptionPlaceholder')}
+                fullWidth
+              />
+            </div>
+          </div>
+        </div>
         
-        <div className="flex items-center gap-4">
-          {/* Stop Processing Toggle */}
-          <ToggleSwitch
-            checked={ruleBlock.stopProcessing || false}
-            onChange={(checked) => onUpdateRuleBlock(index, 'stopProcessing', checked)}
-            label={t('stopProcessing.toggleLabel')}
-            showPopup={false}
-          />
-
-          <div className="flex items-center gap-2 border-l border-zinc-200 pl-4">
+        <div className="flex items-center gap-2 shrink-0">
             {/* Move Up */}
             <button
               type="button"
@@ -93,49 +98,36 @@ export default function RuleBlockItem({
               <Trash2 className="w-4 h-4 text-red-500" />
             </button>
 
-            {/* Expand / Collapse Button */}
+            {/* Edit Rule — only shown when collapsed */}
+            {isCollapsed && (
+              <button
+                type="button"
+                onClick={onToggleCollapse}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 text-xs font-semibold transition-all"
+                title="Edit Rule"
+              >
+                <Pencil className="w-3.5 h-3.5" />
+                <span>{t('builder.editRule')}</span>
+              </button>
+            )}
+
+            {/* Collapse / Expand chevron — always visible */}
             <button
               type="button"
               onClick={onToggleCollapse}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all duration-200 ${
-                isCollapsed
-                  ? 'bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100'
-                  : 'bg-white border-zinc-200 text-zinc-600 hover:bg-zinc-50'
-              }`}
-              title={isCollapsed ? 'Expand Rule' : 'Collapse Rule'}
+              className="p-1.5 rounded-lg border border-zinc-200 bg-white hover:bg-zinc-50 transition-all"
+              title={isCollapsed ? 'Expand' : 'Collapse'}
             >
-              {isCollapsed ? (
-                <>
-                  <Edit className="w-3.5 h-3.5" />
-                  <span>{t('library.addRule').replace('Add', 'Edit')}</span>
-                </>
-              ) : (
-                <>
-                  <ChevronUp className="w-3.5 h-3.5" />
-                  <span>{t('conditionRow.done').replace('Done', 'Collapse')}</span>
-                </>
-              )}
+              {isCollapsed
+                ? <ChevronDown className="w-4 h-4 text-zinc-500" />
+                : <ChevronUp className="w-4 h-4 text-zinc-500" />}
             </button>
           </div>
         </div>
-      </div>
-
-      {/* Description Input */}
-      <div className="flex flex-col gap-1 w-full">
-        <label className="text-[13px] font-semibold text-zinc-600">
-          {t('targetFilter.description')}
-        </label>
-        <Input
-          value={ruleBlock.description}
-          onChange={(e) => onUpdateRuleBlock(index, 'description', e.target.value)}
-          placeholder={t('targetFilter.descriptionPlaceholder')}
-          fullWidth
-        />
-      </div>
 
       {/* Collapsible Content */}
       {!isCollapsed && (
-        <div className="flex flex-col gap-5 border-t border-zinc-100 pt-3">
+        <div className="flex flex-col gap-2.5 border-t border-zinc-100 pt-2">
           {/* Conditions Group */}
           <ConditionGroup
             group={ruleBlock.conditions}
@@ -150,6 +142,8 @@ export default function RuleBlockItem({
             effectTypes={effectTypes}
             categoryOptions={categoryOptions}
             effectTypeConfigs={effectTypeConfigs}
+            stopProcessing={ruleBlock.stopProcessing || false}
+            onStopProcessingChange={(checked) => onUpdateRuleBlock(index, 'stopProcessing', checked)}
           />
         </div>
       )}
