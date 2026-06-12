@@ -204,6 +204,7 @@ export function ScreenSelectionCard({
                                                                     : prev.filter((id) => id !== screen.id)
                                                             );
                                                         }}
+                                                        className={isChecked ? 'data-[state=checked]:text-blue-600' : ''}
                                                     />
                                                 </div>
                                                 <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-slate-100 text-slate-600 border border-slate-200 uppercase tracking-wider min-w-[36px] justify-center shrink-0">
