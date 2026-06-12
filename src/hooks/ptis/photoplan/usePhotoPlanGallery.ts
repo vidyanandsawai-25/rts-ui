@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import type { AdditionalImage } from '../../../components/modules/property-tax/ptis/media/MediaImageCards';
+import type { AdditionalImage } from '@/components/modules/property-tax/ptis/media/MediaImageCards';
 
 export interface UsePhotoPlanGalleryProps {
   images: AdditionalImage[];

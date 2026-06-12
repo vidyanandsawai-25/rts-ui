@@ -1,7 +1,7 @@
 'use client';
 
 import React, { memo } from 'react';
-import { Plus, FolderOpen } from 'lucide-react';
+import { FolderOpen } from 'lucide-react';
 import { Button } from '@/components/common';
 import { useTranslations } from 'next-intl';
 import { ImageWithFallback } from './ImageWithFallback';
@@ -22,7 +22,6 @@ interface PhotoPlanSidebarProps {
   selectedCategoryIndex: number;
   onSelectCategory: (index: number) => void;
   title: string;
-  onAddSlot?: () => void;
   isLoading?: boolean;
 }
 
@@ -31,13 +30,12 @@ export const PhotoPlanSidebar = memo(function PhotoPlanSidebar({
   selectedCategoryIndex,
   onSelectCategory,
   title,
-  onAddSlot,
   isLoading = false,
 }: PhotoPlanSidebarProps): React.ReactElement {
   const t = useTranslations('ptis');
 
   return (
-    <div className="w-full xl:w-[280px] border-b xl:border-b-0 xl:border-r border-slate-200 bg-white flex flex-col shrink-0 select-none">
+    <div className="w-full xl:w-[220px] border-b xl:border-b-0 xl:border-r border-slate-200 bg-white flex flex-col shrink-0 select-none">
       <div className="p-3 bg-slate-50 border-b border-slate-200 flex-shrink-0 hidden xl:block">
         <h4 className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
           {title} ({categories.length})
@@ -90,40 +88,14 @@ export const PhotoPlanSidebar = memo(function PhotoPlanSidebar({
                   <span className="text-[9px] xl:text-[10px] text-slate-400 font-normal mt-0.5">
                     {isLoading && photoCount === 0
                       ? 'Loading...'
-                      : `${photoCount} ${photoCount === 1 ? 'photo' : 'photos'}`}
+                      : `${photoCount} ${photoCount === 1 ? t('media.photo') || 'photo' : t('media.photos') || 'photos'}`}
                   </span>
                 </div>
               </Button>
             </div>
           );
         })}
-
-        {onAddSlot && (
-          <div className="flex-shrink-0 flex items-center xl:hidden pl-2">
-            <Button
-              variant="secondary"
-              onClick={onAddSlot}
-              icon={Plus}
-              className="h-10 px-3 flex items-center justify-center gap-1.5 !text-blue-700 !bg-blue-50 !border-blue-200 hover:!bg-blue-100 transition-all cursor-pointer font-medium text-xs whitespace-nowrap"
-            >
-              {t('media.slot') || 'Slot'}
-            </Button>
-          </div>
-        )}
       </div>
-
-      {onAddSlot && (
-        <div className="p-3 border-t border-slate-200 bg-slate-50 flex-shrink-0 hidden xl:block">
-          <Button
-            variant="secondary"
-            onClick={onAddSlot}
-            icon={Plus}
-            className="w-full flex items-center justify-center gap-2 !text-blue-700 !bg-blue-50 !border-blue-200 hover:!bg-blue-100 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer font-medium"
-          >
-            {t('media.addPhotoPlanSlot') || 'Add Photo Slot'}
-          </Button>
-        </div>
-      )}
     </div>
   );
 });

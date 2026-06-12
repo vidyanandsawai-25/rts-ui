@@ -593,6 +593,10 @@
         "title": "भवन अनुमतियाँ और प्रमाणपत्र",
         "uploadDocument": "दस्तावेज़ अपलोड करें",
         "viewDocument": "दस्तावेज़ देखें",
+        "confirmReplaceTitle": "दस्तावेज़ बदलें",
+        "confirmReplaceDesc": "क्या आप वाकई मौजूदा दस्तावेज़ को नए दस्तावेज़ से बदलना चाहते हैं?",
+        "confirmReplaceOk": "हाँ, बदलें",
+        "confirmReplaceCancel": "नहीं, रद्द करें",
         "downloadDocument": "दस्तावेज़ डाउनलोड करें",
         "replaceDocument": "फ़ाइल बदलें",
         "documentPreviouslyAttached": "दस्तावेज़ पूर्व में संलग्न",
@@ -920,7 +924,7 @@
     "discount": {
         "title": "छूट जानकारी",
         "description": "इस संपत्ति के लिए छूट पात्रता और प्रतिशत कॉन्फ़िगर करें",
-        "socialTitle": "सामाजिक जानकारी",
+        "socialTitle": "अन्य सामाजिक जानकारी",
         "socialDescription": "इस संपत्ति के लिए सामाजिक विशेषताओं, स्थिति और संबंधित दस्तावेजों को कॉन्फ़िगर करें।",
         "simpleTogglesTitle": "सामाजिक विशेषताएं",
         "complexFieldsTitle": "विस्तृत विशेषताएं",
@@ -946,6 +950,10 @@
         "exServicemanOwner": "पूर्व सैनिक मालिक",
         "uploadDocument": "दस्तावेज़ अपलोड करें",
         "viewDocument": "दस्तावेज़ देखें",
+        "confirmReplaceTitle": "दस्तावेज़ बदलें",
+        "confirmReplaceDesc": "क्या आप वाकई मौजूदा दस्तावेज़ को नए दस्तावेज़ से बदलना चाहते हैं?",
+        "confirmReplaceOk": "हाँ, बदलें",
+        "confirmReplaceCancel": "नहीं, रद्द करें",
         "amountPlaceholder": "राशि दर्ज करें",
         "PercentagePlaceholder": "प्रतिशत दर्ज करें",
         "saveSuccess": "छूट का विवरण सफलतापूर्वक सहेजा गया!",
@@ -1356,5 +1364,14 @@
         "operationRequired": "कृपया ऑपरेशन चुनें।"
     },
     "offsetTooltip": "ऑफ़सेट विवरण: {details}",
-    "offsetTooltipEmpty": "ऑफ़सेट संपादित करने के लिए क्लिक करें"
+    "offsetTooltipEmpty": "ऑफ़सेट संपादित करने के लिए क्लिक करें",
+    "document": {
+        "errors": {
+            "notFound": "अनुरोधित दस्तावेज़ सर्वर पर नहीं मिला।",
+            "unauthorized": "आपको यह दस्तावेज़ देखने की अनुमति नहीं है। कृपया फिर से लॉगिन करें।",
+            "forbidden": "अनुरोधित दस्तावेज़ तक पहुँच प्रतिबंधित है।",
+            "general": "दस्तावेज़ प्राप्त करते समय एक अप्रत्याशित त्रुटि हुई। कृपया पुन: प्रयास करें।",
+            "uploadGeneral": "दस्तावेज़ अपलोड करते समय एक त्रुटि हुई। कृपया पुन: प्रयास करें।"
+        }
+    }
 }
