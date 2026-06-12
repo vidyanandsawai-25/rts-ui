@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { getLocalizationStringsColumns } from "@/components/modules/configuration-settings/alias-master/LocalizationStringsColumns";
-import type { MultilingualTranslation, SupportedLanguageCode } from "@/types/alias-master.types";
+import { getLocalizationStringsColumns } from "@/components/modules/configuration-settings/multilingual-translation/LocalizationStringsColumns";
+import type { MultilingualTranslation, SupportedLanguageCode } from "@/types/multilingual-translation.types";
 
 // Mock Input component
 vi.mock("@/components/common", () => ({

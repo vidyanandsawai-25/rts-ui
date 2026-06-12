@@ -4,9 +4,9 @@ import {
   validateLanguageFilter,
   validateResourceFilter,
   validateTranslationId,
-} from "@/lib/api/configuration-settings/alias-master/alias-master-validation";
+} from "@/lib/api/configuration-settings/multilingual-translation/multilingual-translation-validation";
 import { ApiError } from "@/lib/utils/api";
-import type { MultilingualTranslationBulkUpdateItem } from "@/types/alias-master.types";
+import type { MultilingualTranslationBulkUpdateItem } from "@/types/multilingual-translation.types";
 
 function makeItem(
   overrides: Partial<MultilingualTranslationBulkUpdateItem> = {}

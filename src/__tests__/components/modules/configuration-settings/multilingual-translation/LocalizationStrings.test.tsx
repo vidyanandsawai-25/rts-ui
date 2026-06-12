@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { LocalizationStrings } from "@/components/modules/configuration-settings/alias-master/LocalizationStrings";
-import type { MultilingualTranslation, SupportedLanguageCode } from "@/types/alias-master.types";
+import { LocalizationStrings } from "@/components/modules/configuration-settings/multilingual-translation/LocalizationStrings";
+import type { MultilingualTranslation, SupportedLanguageCode } from "@/types/multilingual-translation.types";
 
 // Mock next-intl
 vi.mock("next-intl", () => ({
@@ -25,7 +25,7 @@ vi.mock("sonner", () => ({
 // Mock actions
 const mockBulkUpdateAction = vi.fn();
 
-vi.mock("@/app/[locale]/configuration-settings/alias-master/action", () => ({
+vi.mock("@/app/[locale]/configuration-settings/multilingual-translation/action", () => ({
   bulkUpdateMultilingualTranslationsAction: (items: unknown) => mockBulkUpdateAction(items),
 }));
 
@@ -34,15 +34,13 @@ const mockChangePage = vi.fn();
 const mockHandlePageSizeChange = vi.fn();
 const mockHandleResourceChange = vi.fn();
 const mockHandleLanguagesChange = vi.fn();
-const mockHandleAutoTranslateChange = vi.fn();
 
-vi.mock("@/hooks/configuration-settings/alias-master/useAliasMasterPagination", () => ({
-  useAliasMasterPagination: () => ({
+vi.mock("@/hooks/configuration-settings/multilingual-translation/useMultilingualTranslationPagination", () => ({
+  useMultilingualTranslationPagination: () => ({
     changePage: mockChangePage,
     handlePageSizeChange: mockHandlePageSizeChange,
     handleResourceChange: mockHandleResourceChange,
     handleLanguagesChange: mockHandleLanguagesChange,
-    handleAutoTranslateChange: mockHandleAutoTranslateChange,
     paginationInfo: { start: 1, end: 10 },
   }),
 }));
@@ -51,7 +49,7 @@ vi.mock("@/hooks/configuration-settings/alias-master/useAliasMasterPagination", 
 const mockHandleCellChange = vi.fn();
 const mockClearEdits = vi.fn();
 
-vi.mock("@/hooks/configuration-settings/alias-master/useLocalizationStringsEdits", () => ({
+vi.mock("@/hooks/configuration-settings/multilingual-translation/useLocalizationStringsEdits", () => ({
   useLocalizationStringsEdits: () => ({
     edits: {},
     handleCellChange: mockHandleCellChange,
@@ -62,7 +60,7 @@ vi.mock("@/hooks/configuration-settings/alias-master/useLocalizationStringsEdits
 // Mock save hook
 const mockHandleSaveAll = vi.fn();
 
-vi.mock("@/hooks/configuration-settings/alias-master/useLocalizationStringsSave", () => ({
+vi.mock("@/hooks/configuration-settings/multilingual-translation/useLocalizationStringsSave", () => ({
   useLocalizationStringsSave: () => ({
     isSaving: false,
     handleSaveAll: mockHandleSaveAll,
@@ -70,7 +68,7 @@ vi.mock("@/hooks/configuration-settings/alias-master/useLocalizationStringsSave"
 }));
 
 // Mock columns
-vi.mock("@/components/modules/configuration-settings/alias-master/LocalizationStringsColumns", () => ({
+vi.mock("@/components/modules/configuration-settings/multilingual-translation/LocalizationStringsColumns", () => ({
   getLocalizationStringsColumns: () => [
     { key: "resource", label: "Resource", width: "15%", render: (value: unknown) => value },
     { key: "key", label: "Key", width: "20%", render: (value: unknown) => value },
@@ -81,20 +79,17 @@ vi.mock("@/components/modules/configuration-settings/alias-master/LocalizationSt
 }));
 
 // Mock filters component
-vi.mock("@/components/modules/configuration-settings/alias-master/LocalizationStringsFilters", () => ({
+vi.mock("@/components/modules/configuration-settings/multilingual-translation/LocalizationStringsFilters", () => ({
   LocalizationStringsFilters: ({
     onResourceChange,
     onLanguagesChange,
-    onAutoTranslateChange,
   }: {
     onResourceChange: (value: string) => void;
     onLanguagesChange: (values: SupportedLanguageCode[]) => void;
-    onAutoTranslateChange: (enabled: boolean) => void;
   }) => (
     <div data-testid="filters">
       <button onClick={() => onResourceChange("common")}>Change Resource</button>
       <button onClick={() => onLanguagesChange(["hi"])}>Change Languages</button>
-      <button onClick={() => onAutoTranslateChange(true)}>Toggle Auto Translate</button>
     </div>
   ),
 }));
@@ -124,6 +119,20 @@ vi.mock("@/components/common", () => ({
         value={value}
         onChange={(e) => onChange("resource", e.target.value)}
       />
+    </div>
+  ),
+  MultiSelectDropdown: ({
+    value,
+    onChange: _onChange,
+    label,
+  }: {
+    value: unknown[];
+    onChange: (values: unknown[]) => void;
+    label?: string;
+  }) => (
+    <div data-testid="multi-select-dropdown">
+      {label && <label>{label}</label>}
+      <div data-testid="multi-select-value">{JSON.stringify(value)}</div>
     </div>
   ),
   SaveButton: ({
@@ -204,8 +213,6 @@ describe("LocalizationStrings", () => {
     resources: ["common", "errors"],
     resource: "common",
     languages: ["hi", "mr"] as SupportedLanguageCode[],
-    autoTranslationEnabled: true,
-    autoTranslate: false,
   };
 
   beforeEach(() => {
@@ -264,15 +271,6 @@ describe("LocalizationStrings", () => {
       fireEvent.click(button);
 
       expect(mockHandleLanguagesChange).toHaveBeenCalledWith(["hi"]);
-    });
-
-    it("calls handleAutoTranslateChange when auto-translate is toggled", () => {
-      render(<LocalizationStrings {...defaultProps} />);
-
-      const button = screen.getByText("Toggle Auto Translate");
-      fireEvent.click(button);
-
-      expect(mockHandleAutoTranslateChange).toHaveBeenCalledWith(true);
     });
   });
 

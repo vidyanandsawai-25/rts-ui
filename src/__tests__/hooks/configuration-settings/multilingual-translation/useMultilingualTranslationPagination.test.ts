@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
-import { useAliasMasterPagination } from "@/hooks/configuration-settings/alias-master/useAliasMasterPagination";
-import { SupportedLanguageCode } from "@/types/alias-master.types";
+import { useMultilingualTranslationPagination } from "@/hooks/configuration-settings/multilingual-translation/useMultilingualTranslationPagination";
+import { SupportedLanguageCode } from "@/types/multilingual-translation.types";
 
 const mockPush = vi.fn();
 
@@ -22,43 +22,42 @@ function makeProps(overrides = {}) {
     locale: "en",
     resource: undefined,
     languages: [] as SupportedLanguageCode[],
-    autoTranslate: false,
     startTransition: makeStartTransition(),
     ...overrides,
   };
 }
 
-describe("useAliasMasterPagination", () => {
+describe("useMultilingualTranslationPagination", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   describe("buildUrl", () => {
     it("should build URL with page and pageSize", () => {
-      const { result } = renderHook(() => useAliasMasterPagination(makeProps()));
+      const { result } = renderHook(() => useMultilingualTranslationPagination(makeProps()));
       const url = result.current.buildUrl(2, 20);
 
-      expect(url).toContain("/en/configuration-settings/alias-master");
+      expect(url).toContain("/en/configuration-settings/multilingual-translation");
       expect(url).toContain("page=2");
       expect(url).toContain("pageSize=20");
     });
 
     it("should include resource when provided", () => {
-      const { result } = renderHook(() => useAliasMasterPagination(makeProps()));
+      const { result } = renderHook(() => useMultilingualTranslationPagination(makeProps()));
       const url = result.current.buildUrl(1, 10, "common");
 
       expect(url).toContain("resource=common");
     });
 
     it("should omit resource when not provided", () => {
-      const { result } = renderHook(() => useAliasMasterPagination(makeProps()));
+      const { result } = renderHook(() => useMultilingualTranslationPagination(makeProps()));
       const url = result.current.buildUrl(1, 10);
 
       expect(url).not.toContain("resource=");
     });
 
     it("should include languages as multiple query params", () => {
-      const { result } = renderHook(() => useAliasMasterPagination(makeProps()));
+      const { result } = renderHook(() => useMultilingualTranslationPagination(makeProps()));
       const languages: SupportedLanguageCode[] = ["hi", "mr"];
       const url = result.current.buildUrl(1, 10, undefined, languages);
 
@@ -67,43 +66,16 @@ describe("useAliasMasterPagination", () => {
     });
 
     it("should handle empty languages array", () => {
-      const { result } = renderHook(() => useAliasMasterPagination(makeProps()));
+      const { result } = renderHook(() => useMultilingualTranslationPagination(makeProps()));
       const url = result.current.buildUrl(1, 10, undefined, []);
 
       // URL should not contain languages param
       expect(url.split("languages=").length).toBe(1);
     });
 
-    it("should include autoTranslate when true", () => {
-      const { result } = renderHook(() => useAliasMasterPagination(makeProps()));
-      const url = result.current.buildUrl(1, 10, undefined, undefined, true);
-
-      expect(url).toContain("autoTranslate=true");
-    });
-
-    it("should omit autoTranslate when false", () => {
-      const { result } = renderHook(() => useAliasMasterPagination(makeProps()));
-      const url = result.current.buildUrl(1, 10, undefined, undefined, false);
-
-      expect(url).not.toContain("autoTranslate");
-    });
-
-    it("should handle all parameters together", () => {
-      const { result } = renderHook(() => useAliasMasterPagination(makeProps()));
-      const languages: SupportedLanguageCode[] = ["hi", "mr"];
-      const url = result.current.buildUrl(3, 25, "validation", languages, true);
-
-      expect(url).toContain("page=3");
-      expect(url).toContain("pageSize=25");
-      expect(url).toContain("resource=validation");
-      expect(url).toContain("languages=hi");
-      expect(url).toContain("languages=mr");
-      expect(url).toContain("autoTranslate=true");
-    });
-
     it("should use current resource from props when nextResource is undefined", () => {
       const { result } = renderHook(() =>
-        useAliasMasterPagination(makeProps({ resource: "common" }))
+        useMultilingualTranslationPagination(makeProps({ resource: "common" }))
       );
       const url = result.current.buildUrl(1, 10);
 
@@ -113,20 +85,11 @@ describe("useAliasMasterPagination", () => {
     it("should use current languages from props when nextLanguages is undefined", () => {
       const languages: SupportedLanguageCode[] = ["hi"];
       const { result } = renderHook(() =>
-        useAliasMasterPagination(makeProps({ languages }))
+        useMultilingualTranslationPagination(makeProps({ languages }))
       );
       const url = result.current.buildUrl(1, 10);
 
       expect(url).toContain("languages=hi");
-    });
-
-    it("should use current autoTranslate from props when nextAutoTranslate is undefined", () => {
-      const { result } = renderHook(() =>
-        useAliasMasterPagination(makeProps({ autoTranslate: true }))
-      );
-      const url = result.current.buildUrl(1, 10);
-
-      expect(url).toContain("autoTranslate=true");
     });
   });
 
@@ -134,7 +97,7 @@ describe("useAliasMasterPagination", () => {
     it("should navigate to new page", () => {
       const startTransition = makeStartTransition();
       const { result } = renderHook(() =>
-        useAliasMasterPagination(makeProps({ startTransition }))
+        useMultilingualTranslationPagination(makeProps({ startTransition }))
       );
 
       act(() => {
@@ -149,7 +112,7 @@ describe("useAliasMasterPagination", () => {
     it("should preserve resource when changing page", () => {
       const startTransition = makeStartTransition();
       const { result } = renderHook(() =>
-        useAliasMasterPagination(makeProps({ startTransition, resource: "common" }))
+        useMultilingualTranslationPagination(makeProps({ startTransition, resource: "common" }))
       );
 
       act(() => {
@@ -163,7 +126,7 @@ describe("useAliasMasterPagination", () => {
       const startTransition = makeStartTransition();
       const languages: SupportedLanguageCode[] = ["hi", "mr"];
       const { result } = renderHook(() =>
-        useAliasMasterPagination(makeProps({ startTransition, languages }))
+        useMultilingualTranslationPagination(makeProps({ startTransition, languages }))
       );
 
       act(() => {
@@ -175,23 +138,10 @@ describe("useAliasMasterPagination", () => {
       expect(url).toContain("languages=mr");
     });
 
-    it("should preserve autoTranslate when changing page", () => {
-      const startTransition = makeStartTransition();
-      const { result } = renderHook(() =>
-        useAliasMasterPagination(makeProps({ startTransition, autoTranslate: true }))
-      );
-
-      act(() => {
-        result.current.changePage(2);
-      });
-
-      expect(mockPush.mock.calls[0][0]).toContain("autoTranslate=true");
-    });
-
     it("should preserve pageSize when changing page", () => {
       const startTransition = makeStartTransition();
       const { result } = renderHook(() =>
-        useAliasMasterPagination(makeProps({ startTransition, pageSize: 25 }))
+        useMultilingualTranslationPagination(makeProps({ startTransition, pageSize: 25 }))
       );
 
       act(() => {
@@ -206,7 +156,7 @@ describe("useAliasMasterPagination", () => {
     it("should reset to page 1 when page size changes", () => {
       const startTransition = makeStartTransition();
       const { result } = renderHook(() =>
-        useAliasMasterPagination(makeProps({ pageNumber: 3, startTransition }))
+        useMultilingualTranslationPagination(makeProps({ pageNumber: 3, startTransition }))
       );
 
       act(() => {
@@ -222,7 +172,7 @@ describe("useAliasMasterPagination", () => {
     it("should preserve resource when changing page size", () => {
       const startTransition = makeStartTransition();
       const { result } = renderHook(() =>
-        useAliasMasterPagination(makeProps({ startTransition, resource: "validation" }))
+        useMultilingualTranslationPagination(makeProps({ startTransition, resource: "validation" }))
       );
 
       act(() => {
@@ -236,7 +186,7 @@ describe("useAliasMasterPagination", () => {
       const startTransition = makeStartTransition();
       const languages: SupportedLanguageCode[] = ["hi"];
       const { result } = renderHook(() =>
-        useAliasMasterPagination(makeProps({ startTransition, languages }))
+        useMultilingualTranslationPagination(makeProps({ startTransition, languages }))
       );
 
       act(() => {
@@ -246,23 +196,10 @@ describe("useAliasMasterPagination", () => {
       expect(mockPush.mock.calls[0][0]).toContain("languages=hi");
     });
 
-    it("should preserve autoTranslate when changing page size", () => {
-      const startTransition = makeStartTransition();
-      const { result } = renderHook(() =>
-        useAliasMasterPagination(makeProps({ startTransition, autoTranslate: true }))
-      );
-
-      act(() => {
-        result.current.handlePageSizeChange("15");
-      });
-
-      expect(mockPush.mock.calls[0][0]).toContain("autoTranslate=true");
-    });
-
     it("should default to pageSize 10 for invalid values", () => {
       const startTransition = makeStartTransition();
       const { result } = renderHook(() =>
-        useAliasMasterPagination(makeProps({ startTransition }))
+        useMultilingualTranslationPagination(makeProps({ startTransition }))
       );
 
       act(() => {
@@ -275,7 +212,7 @@ describe("useAliasMasterPagination", () => {
     it("should default to pageSize 10 for negative values", () => {
       const startTransition = makeStartTransition();
       const { result } = renderHook(() =>
-        useAliasMasterPagination(makeProps({ startTransition }))
+        useMultilingualTranslationPagination(makeProps({ startTransition }))
       );
 
       act(() => {
@@ -288,7 +225,7 @@ describe("useAliasMasterPagination", () => {
     it("should default to pageSize 10 for zero", () => {
       const startTransition = makeStartTransition();
       const { result } = renderHook(() =>
-        useAliasMasterPagination(makeProps({ startTransition }))
+        useMultilingualTranslationPagination(makeProps({ startTransition }))
       );
 
       act(() => {
@@ -301,7 +238,7 @@ describe("useAliasMasterPagination", () => {
     it("should default to pageSize 10 for values exceeding MAX_PAGE_SIZE", () => {
       const startTransition = makeStartTransition();
       const { result } = renderHook(() =>
-        useAliasMasterPagination(makeProps({ startTransition }))
+        useMultilingualTranslationPagination(makeProps({ startTransition }))
       );
 
       act(() => {
@@ -316,7 +253,7 @@ describe("useAliasMasterPagination", () => {
     it("should reset to page 1 and update resource", () => {
       const startTransition = makeStartTransition();
       const { result } = renderHook(() =>
-        useAliasMasterPagination(makeProps({ pageNumber: 3, startTransition }))
+        useMultilingualTranslationPagination(makeProps({ pageNumber: 3, startTransition }))
       );
 
       act(() => {
@@ -332,7 +269,7 @@ describe("useAliasMasterPagination", () => {
     it("should preserve pageSize when changing resource", () => {
       const startTransition = makeStartTransition();
       const { result } = renderHook(() =>
-        useAliasMasterPagination(makeProps({ startTransition, pageSize: 25 }))
+        useMultilingualTranslationPagination(makeProps({ startTransition, pageSize: 25 }))
       );
 
       act(() => {
@@ -346,7 +283,7 @@ describe("useAliasMasterPagination", () => {
       const startTransition = makeStartTransition();
       const languages: SupportedLanguageCode[] = ["hi", "mr"];
       const { result } = renderHook(() =>
-        useAliasMasterPagination(makeProps({ startTransition, languages }))
+        useMultilingualTranslationPagination(makeProps({ startTransition, languages }))
       );
 
       act(() => {
@@ -357,26 +294,13 @@ describe("useAliasMasterPagination", () => {
       expect(url).toContain("languages=hi");
       expect(url).toContain("languages=mr");
     });
-
-    it("should preserve autoTranslate when changing resource", () => {
-      const startTransition = makeStartTransition();
-      const { result } = renderHook(() =>
-        useAliasMasterPagination(makeProps({ startTransition, autoTranslate: true }))
-      );
-
-      act(() => {
-        result.current.handleResourceChange("common");
-      });
-
-      expect(mockPush.mock.calls[0][0]).toContain("autoTranslate=true");
-    });
   });
 
   describe("handleLanguagesChange", () => {
     it("should reset to page 1 and update languages", () => {
       const startTransition = makeStartTransition();
       const { result } = renderHook(() =>
-        useAliasMasterPagination(makeProps({ pageNumber: 3, startTransition }))
+        useMultilingualTranslationPagination(makeProps({ pageNumber: 3, startTransition }))
       );
 
       const newLanguages: SupportedLanguageCode[] = ["hi", "mr"];
@@ -395,7 +319,7 @@ describe("useAliasMasterPagination", () => {
     it("should preserve resource when changing languages", () => {
       const startTransition = makeStartTransition();
       const { result } = renderHook(() =>
-        useAliasMasterPagination(makeProps({ startTransition, resource: "common" }))
+        useMultilingualTranslationPagination(makeProps({ startTransition, resource: "common" }))
       );
 
       const newLanguages: SupportedLanguageCode[] = ["hi"];
@@ -410,7 +334,7 @@ describe("useAliasMasterPagination", () => {
     it("should preserve pageSize when changing languages", () => {
       const startTransition = makeStartTransition();
       const { result } = renderHook(() =>
-        useAliasMasterPagination(makeProps({ startTransition, pageSize: 25 }))
+        useMultilingualTranslationPagination(makeProps({ startTransition, pageSize: 25 }))
       );
 
       const newLanguages: SupportedLanguageCode[] = ["hi"];
@@ -422,25 +346,10 @@ describe("useAliasMasterPagination", () => {
       expect(mockPush.mock.calls[0][0]).toContain("pageSize=25");
     });
 
-    it("should preserve autoTranslate when changing languages", () => {
-      const startTransition = makeStartTransition();
-      const { result } = renderHook(() =>
-        useAliasMasterPagination(makeProps({ startTransition, autoTranslate: true }))
-      );
-
-      const newLanguages: SupportedLanguageCode[] = ["mr"];
-
-      act(() => {
-        result.current.handleLanguagesChange(newLanguages);
-      });
-
-      expect(mockPush.mock.calls[0][0]).toContain("autoTranslate=true");
-    });
-
     it("should handle empty languages array", () => {
       const startTransition = makeStartTransition();
       const { result } = renderHook(() =>
-        useAliasMasterPagination(makeProps({ startTransition }))
+        useMultilingualTranslationPagination(makeProps({ startTransition }))
       );
 
       act(() => {
@@ -455,7 +364,7 @@ describe("useAliasMasterPagination", () => {
     it("should handle all supported language codes", () => {
       const startTransition = makeStartTransition();
       const { result } = renderHook(() =>
-        useAliasMasterPagination(makeProps({ startTransition }))
+        useMultilingualTranslationPagination(makeProps({ startTransition }))
       );
 
       const allLanguages: SupportedLanguageCode[] = ["hi", "mr"];
@@ -470,83 +379,10 @@ describe("useAliasMasterPagination", () => {
     });
   });
 
-  describe("handleAutoTranslateChange", () => {
-    it("should reset to page 1 and enable autoTranslate", () => {
-      const startTransition = makeStartTransition();
-      const { result } = renderHook(() =>
-        useAliasMasterPagination(makeProps({ pageNumber: 3, startTransition }))
-      );
-
-      act(() => {
-        result.current.handleAutoTranslateChange(true);
-      });
-
-      expect(startTransition).toHaveBeenCalledOnce();
-      const url = mockPush.mock.calls[0][0];
-      expect(url).toContain("page=1");
-      expect(url).toContain("autoTranslate=true");
-    });
-
-    it("should reset to page 1 and disable autoTranslate", () => {
-      const startTransition = makeStartTransition();
-      const { result } = renderHook(() =>
-        useAliasMasterPagination(makeProps({ pageNumber: 2, startTransition, autoTranslate: true }))
-      );
-
-      act(() => {
-        result.current.handleAutoTranslateChange(false);
-      });
-
-      const url = mockPush.mock.calls[0][0];
-      expect(url).toContain("page=1");
-      expect(url).not.toContain("autoTranslate");
-    });
-
-    it("should preserve resource when changing autoTranslate", () => {
-      const startTransition = makeStartTransition();
-      const { result } = renderHook(() =>
-        useAliasMasterPagination(makeProps({ startTransition, resource: "validation" }))
-      );
-
-      act(() => {
-        result.current.handleAutoTranslateChange(true);
-      });
-
-      expect(mockPush.mock.calls[0][0]).toContain("resource=validation");
-    });
-
-    it("should preserve languages when changing autoTranslate", () => {
-      const startTransition = makeStartTransition();
-      const languages: SupportedLanguageCode[] = ["hi"];
-      const { result } = renderHook(() =>
-        useAliasMasterPagination(makeProps({ startTransition, languages }))
-      );
-
-      act(() => {
-        result.current.handleAutoTranslateChange(true);
-      });
-
-      expect(mockPush.mock.calls[0][0]).toContain("languages=hi");
-    });
-
-    it("should preserve pageSize when changing autoTranslate", () => {
-      const startTransition = makeStartTransition();
-      const { result } = renderHook(() =>
-        useAliasMasterPagination(makeProps({ startTransition, pageSize: 25 }))
-      );
-
-      act(() => {
-        result.current.handleAutoTranslateChange(true);
-      });
-
-      expect(mockPush.mock.calls[0][0]).toContain("pageSize=25");
-    });
-  });
-
   describe("paginationInfo", () => {
     it("should calculate correct pagination info for first page", () => {
       const { result } = renderHook(() =>
-        useAliasMasterPagination(makeProps({ pageNumber: 1, pageSize: 10, totalCount: 100 }))
+        useMultilingualTranslationPagination(makeProps({ pageNumber: 1, pageSize: 10, totalCount: 100 }))
       );
 
       expect(result.current.paginationInfo.start).toBe(1);
@@ -556,7 +392,7 @@ describe("useAliasMasterPagination", () => {
 
     it("should calculate correct pagination info for middle page", () => {
       const { result } = renderHook(() =>
-        useAliasMasterPagination(makeProps({ pageNumber: 3, pageSize: 10, totalCount: 100 }))
+        useMultilingualTranslationPagination(makeProps({ pageNumber: 3, pageSize: 10, totalCount: 100 }))
       );
 
       expect(result.current.paginationInfo.start).toBe(21);
@@ -566,7 +402,7 @@ describe("useAliasMasterPagination", () => {
 
     it("should calculate correct pagination info for last page with partial results", () => {
       const { result } = renderHook(() =>
-        useAliasMasterPagination(makeProps({ pageNumber: 10, pageSize: 10, totalCount: 95 }))
+        useMultilingualTranslationPagination(makeProps({ pageNumber: 10, pageSize: 10, totalCount: 95 }))
       );
 
       expect(result.current.paginationInfo.start).toBe(91);
@@ -576,7 +412,7 @@ describe("useAliasMasterPagination", () => {
 
     it("should handle empty results", () => {
       const { result } = renderHook(() =>
-        useAliasMasterPagination(makeProps({ pageNumber: 1, pageSize: 10, totalCount: 0 }))
+        useMultilingualTranslationPagination(makeProps({ pageNumber: 1, pageSize: 10, totalCount: 0 }))
       );
 
       expect(result.current.paginationInfo.start).toBe(0);
@@ -586,7 +422,7 @@ describe("useAliasMasterPagination", () => {
 
     it("should handle different page sizes", () => {
       const { result } = renderHook(() =>
-        useAliasMasterPagination(makeProps({ pageNumber: 2, pageSize: 25, totalCount: 100 }))
+        useMultilingualTranslationPagination(makeProps({ pageNumber: 2, pageSize: 25, totalCount: 100 }))
       );
 
       expect(result.current.paginationInfo.start).toBe(26);
@@ -596,7 +432,7 @@ describe("useAliasMasterPagination", () => {
 
     it("should handle page size of 50", () => {
       const { result } = renderHook(() =>
-        useAliasMasterPagination(makeProps({ pageNumber: 1, pageSize: 50, totalCount: 75 }))
+        useMultilingualTranslationPagination(makeProps({ pageNumber: 1, pageSize: 50, totalCount: 75 }))
       );
 
       expect(result.current.paginationInfo.start).toBe(1);
@@ -606,7 +442,7 @@ describe("useAliasMasterPagination", () => {
 
     it("should not exceed totalCount on last page", () => {
       const { result } = renderHook(() =>
-        useAliasMasterPagination(makeProps({ pageNumber: 3, pageSize: 10, totalCount: 22 }))
+        useMultilingualTranslationPagination(makeProps({ pageNumber: 3, pageSize: 10, totalCount: 22 }))
       );
 
       expect(result.current.paginationInfo.start).toBe(21);
@@ -616,7 +452,7 @@ describe("useAliasMasterPagination", () => {
 
     it("should handle single item", () => {
       const { result } = renderHook(() =>
-        useAliasMasterPagination(makeProps({ pageNumber: 1, pageSize: 10, totalCount: 1 }))
+        useMultilingualTranslationPagination(makeProps({ pageNumber: 1, pageSize: 10, totalCount: 1 }))
       );
 
       expect(result.current.paginationInfo.start).toBe(1);

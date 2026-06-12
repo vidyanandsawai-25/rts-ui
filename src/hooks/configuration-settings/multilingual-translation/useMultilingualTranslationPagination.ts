@@ -2,35 +2,33 @@
 
 import { useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { SupportedLanguageCode } from "@/types/alias-master.types";
+import { SupportedLanguageCode } from "@/types/multilingual-translation.types";
 import {
   DEFAULT_PAGE_SIZE,
   MAX_PAGE_SIZE,
-} from "@/app/[locale]/configuration-settings/alias-master/page";
+} from "@/app/[locale]/configuration-settings/multilingual-translation/page";
 
-interface UseAliasMasterPaginationProps {
+interface UseMultilingualTranslationPaginationProps {
   pageNumber: number;
   pageSize: number;
   totalCount: number;
   locale: string;
   resource?: string;
   languages: SupportedLanguageCode[];
-  autoTranslate: boolean;
   startTransition: (callback: () => void) => void;
 }
 
-const ROUTE_BASE = "configuration-settings/alias-master";
+const ROUTE_BASE = "configuration-settings/multilingual-translation";
 
-export function useAliasMasterPagination({
+export function useMultilingualTranslationPagination({
   pageNumber,
   pageSize,
   totalCount,
   locale,
   resource,
   languages,
-  autoTranslate,
   startTransition,
-}: UseAliasMasterPaginationProps) {
+}: UseMultilingualTranslationPaginationProps) {
   const router = useRouter();
 
   const buildUrl = useCallback(
@@ -38,8 +36,7 @@ export function useAliasMasterPagination({
       page: number,
       size: number,
       nextResource?: string,
-      nextLanguages?: SupportedLanguageCode[],
-      nextAutoTranslate?: boolean
+      nextLanguages?: SupportedLanguageCode[]
     ) => {
       const params = new URLSearchParams();
       params.set("page", String(page));
@@ -55,14 +52,9 @@ export function useAliasMasterPagination({
         params.append("languages", lang);
       }
 
-      const effectiveAutoTranslate = nextAutoTranslate ?? autoTranslate;
-      if (effectiveAutoTranslate) {
-        params.set("autoTranslate", "true");
-      }
-
       return `/${locale}/${ROUTE_BASE}?${params.toString()}`;
     },
-    [locale, resource, languages, autoTranslate]
+    [locale, resource, languages]
   );
 
   const changePage = useCallback(
@@ -91,28 +83,19 @@ export function useAliasMasterPagination({
   const handleResourceChange = useCallback(
     (nextResource: string) => {
       startTransition(() => {
-        router.push(buildUrl(1, pageSize, nextResource, languages, autoTranslate));
+        router.push(buildUrl(1, pageSize, nextResource, languages));
       });
     },
-    [buildUrl, pageSize, languages, autoTranslate, router, startTransition]
+    [buildUrl, pageSize, languages, router, startTransition]
   );
 
   const handleLanguagesChange = useCallback(
     (nextLanguages: SupportedLanguageCode[]) => {
       startTransition(() => {
-        router.push(buildUrl(1, pageSize, resource, nextLanguages, autoTranslate));
+        router.push(buildUrl(1, pageSize, resource, nextLanguages));
       });
     },
-    [buildUrl, pageSize, resource, autoTranslate, router, startTransition]
-  );
-
-  const handleAutoTranslateChange = useCallback(
-    (next: boolean) => {
-      startTransition(() => {
-        router.push(buildUrl(1, pageSize, resource, languages, next));
-      });
-    },
-    [buildUrl, pageSize, resource, languages, router, startTransition]
+    [buildUrl, pageSize, resource, router, startTransition]
   );
 
   const start = totalCount === 0 ? 0 : ((pageNumber || 1) - 1) * (pageSize || 10) + 1;
@@ -124,7 +107,6 @@ export function useAliasMasterPagination({
     handlePageSizeChange,
     handleResourceChange,
     handleLanguagesChange,
-    handleAutoTranslateChange,
     paginationInfo: { start, end, total: totalCount || 0 },
   };
 }

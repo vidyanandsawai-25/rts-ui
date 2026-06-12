@@ -11,13 +11,13 @@ import {
 import type {
   LocalizationStringsProps,
   MultilingualTranslation,
-} from "@/types/alias-master.types";
-import { SUPPORTED_LANGUAGE_CODES } from "@/types/alias-master.types";
+} from "@/types/multilingual-translation.types";
+import { SUPPORTED_LANGUAGE_CODES } from "@/types/multilingual-translation.types";
 import { getLocalizationStringsColumns } from "./LocalizationStringsColumns";
 import { LocalizationStringsFilters } from "./LocalizationStringsFilters";
-import { useAliasMasterPagination } from "@/hooks/configuration-settings/alias-master/useAliasMasterPagination";
-import { useLocalizationStringsEdits } from "@/hooks/configuration-settings/alias-master/useLocalizationStringsEdits";
-import { useLocalizationStringsSave } from "@/hooks/configuration-settings/alias-master/useLocalizationStringsSave";
+import { useMultilingualTranslationPagination } from "@/hooks/configuration-settings/multilingual-translation/useMultilingualTranslationPagination";
+import { useLocalizationStringsEdits } from "@/hooks/configuration-settings/multilingual-translation/useLocalizationStringsEdits";
+import { useLocalizationStringsSave } from "@/hooks/configuration-settings/multilingual-translation/useLocalizationStringsSave";
 import { Globe } from "lucide-react";
 
 export function LocalizationStrings({
@@ -29,10 +29,8 @@ export function LocalizationStrings({
   resources,
   resource,
   languages,
-  autoTranslationEnabled,
-  autoTranslate,
 }: LocalizationStringsProps): React.ReactElement {
-  const t = useTranslations("aliasMaster");
+  const t = useTranslations("multilingualTranslation");
   const tCommon = useTranslations("common");
   const locale = useLocale();
   const [isPending, startTransition] = useTransition();
@@ -42,16 +40,14 @@ export function LocalizationStrings({
     handlePageSizeChange,
     handleResourceChange,
     handleLanguagesChange,
-    handleAutoTranslateChange,
     paginationInfo,
-  } = useAliasMasterPagination({
+  } = useMultilingualTranslationPagination({
     pageNumber,
     pageSize,
     totalCount,
     locale,
     resource,
     languages,
-    autoTranslate,
     startTransition,
   });
 
@@ -60,7 +56,6 @@ export function LocalizationStrings({
   const { isSaving, handleSaveAll } = useLocalizationStringsSave({
     data,
     edits,
-    autoTranslate,
     onSuccess: clearEdits,
     t: (k) => t(k),
     tCommon: (k) => tCommon(k),
@@ -109,11 +104,8 @@ export function LocalizationStrings({
           resourceOptions={resourceOptions}
           languages={languages}
           languageOptions={languageOptions}
-          autoTranslationEnabled={autoTranslationEnabled}
-          autoTranslate={autoTranslate}
           onResourceChange={handleResourceChange}
           onLanguagesChange={handleLanguagesChange}
-          onAutoTranslateChange={handleAutoTranslateChange}
         />
 
         <MasterTable<MultilingualTranslation>

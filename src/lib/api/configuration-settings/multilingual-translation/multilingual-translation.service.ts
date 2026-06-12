@@ -2,21 +2,20 @@ import { apiClient } from "@/services/api.service";
 import { ApiError } from "@/lib/utils/api";
 import { PagedResponse } from "@/types/common.types";
 import {
-  AutoTranslationConfig,
   MultilingualTranslation,
   MultilingualTranslationBulkResult,
   MultilingualTranslationBulkUpdateItem,
   SupportedLanguageCode,
-} from "@/types/alias-master.types";
+} from "@/types/multilingual-translation.types";
 import {
   isMultilingualTranslationShape,
   normalizeMultilingualTranslation,
-} from "./alias-master-types-guard";
+} from "./multilingual-translation-types-guard";
 import {
   validateBulkUpdateItems,
   validateLanguageFilter,
   validateResourceFilter,
-} from "./alias-master-validation";
+} from "./multilingual-translation-validation";
 
 const ENDPOINT = "/MultilingualTranslation";
 
@@ -42,31 +41,12 @@ export async function getMultilingualResources(): Promise<string[]> {
     .filter((v) => v.length > 0);
 }
 
-/** Fetch the server-side auto-translation config flag. */
-export async function getAutoTranslationConfig(): Promise<AutoTranslationConfig> {
-  const response = await apiClient.get<unknown>(`${ENDPOINT}/AutoTranslationConfig`);
-  if (!response.success) {
-    throw new ApiError(
-      response.statusCode ?? 500,
-      response.error || "Failed to fetch auto-translation config",
-      "Get auto-translation config failed"
-    );
-  }
-  const raw = response.data;
-  const flag =
-    raw && typeof raw === "object" && "isEnabled" in raw
-      ? (raw as { isEnabled: unknown }).isEnabled
-      : raw;
-  return { isEnabled: flag === true || flag === "true" };
-}
-
 /** Fetch paged multilingual translations, optionally filtered by resource + languages. */
 export async function getMultilingualTranslationsPaged(
   pageNumber: number,
   pageSize: number,
   resource?: string,
-  filterEmptyLanguages?: SupportedLanguageCode[],
-  isAutoTranslate?: boolean
+  filterEmptyLanguages?: SupportedLanguageCode[]
 ): Promise<PagedResponse<MultilingualTranslation>> {
   const params = new URLSearchParams();
   params.append("PageNumber", String(pageNumber));
@@ -79,9 +59,6 @@ export async function getMultilingualTranslationsPaged(
   const safeLanguages = validateLanguageFilter(filterEmptyLanguages);
   for (const lang of safeLanguages) {
     params.append("FilterEmptyLanguages", lang);
-  }
-  if (isAutoTranslate) {
-    params.append("IsAutoTranslate", "true");
   }
 
   const response = await apiClient.get<PagedResponse<MultilingualTranslation>>(

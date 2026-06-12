@@ -3,8 +3,8 @@ import { toast } from "sonner";
 import type {
   MultilingualTranslation,
   MultilingualTranslationBulkUpdateItem,
-} from "@/types/alias-master.types";
-import { bulkUpdateMultilingualTranslationsAction } from "@/app/[locale]/configuration-settings/alias-master/action";
+} from "@/types/multilingual-translation.types";
+import { bulkUpdateMultilingualTranslationsAction } from "@/app/[locale]/configuration-settings/multilingual-translation/action";
 
 type EditableField = "hi_IN" | "mr_IN";
 type EditState = Record<number, Partial<Record<EditableField, string>>>;
@@ -12,7 +12,6 @@ type EditState = Record<number, Partial<Record<EditableField, string>>>;
 interface UseSaveArgs {
   data: MultilingualTranslation[];
   edits: EditState;
-  autoTranslate: boolean;
   onSuccess: () => void;
   t: (key: string) => string;
   tCommon: (key: string) => string;
@@ -21,7 +20,6 @@ interface UseSaveArgs {
 export function useLocalizationStringsSave({
   data,
   edits,
-  autoTranslate,
   onSuccess,
   t,
   tCommon,
@@ -42,15 +40,7 @@ export function useLocalizationStringsSave({
         (typeof hiDraft === "string" && hiDraft !== row.hi_IN) ||
         (typeof mrDraft === "string" && mrDraft !== row.mr_IN);
 
-      // With auto-translate on, the server-filled hi_IN/mr_IN values are NOT yet
-      // persisted — the user clicks Update to save them. So include every row
-      // on the page that has at least one translation. With auto-translate off,
-      // fall back to the original "only changed rows" behaviour.
-      const include = autoTranslate
-        ? finalHi.length > 0 || finalMr.length > 0
-        : userEdited;
-
-      if (!include) continue;
+      if (!userEdited) continue;
 
       payload.push({
         id: row.id,
@@ -65,7 +55,7 @@ export function useLocalizationStringsSave({
     }
 
     return payload;
-  }, [data, edits, autoTranslate]);
+  }, [data, edits]);
 
   const handleSaveAll = useCallback(async () => {
     if (isSaving) return;

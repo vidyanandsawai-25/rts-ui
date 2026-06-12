@@ -1,14 +1,13 @@
 import React from "react";
-import { LocalizationStrings } from "@/components/modules/configuration-settings/alias-master/LocalizationStrings";
+import { LocalizationStrings } from "@/components/modules/configuration-settings/multilingual-translation/LocalizationStrings";
 import {
-  fetchAutoTranslationConfigAction,
   fetchMultilingualResourcesAction,
   fetchMultilingualTranslationsPagedAction,
 } from "./action";
 import {
   SUPPORTED_LANGUAGE_CODES,
   SupportedLanguageCode,
-} from "@/types/alias-master.types";
+} from "@/types/multilingual-translation.types";
 
 interface PageProps {
   searchParams: Promise<{
@@ -16,7 +15,6 @@ interface PageProps {
     pageSize?: string;
     resource?: string;
     languages?: string | string[];
-    autoTranslate?: string;
   }>;
 }
 
@@ -55,21 +53,18 @@ function sanitizeParams(raw: Awaited<PageProps["searchParams"]>) {
     )
   );
 
-  const autoTranslate = raw.autoTranslate === "true" || raw.autoTranslate === "1";
-
-  return { pageNumber, pageSize, resource, languages, autoTranslate };
+  return { pageNumber, pageSize, resource, languages };
 }
 
 export default async function Page({ searchParams }: PageProps): Promise<React.ReactElement> {
   const params = await searchParams;
-  const { pageNumber, pageSize, resource, languages, autoTranslate } = sanitizeParams(params);
+  const { pageNumber, pageSize, resource, languages } = sanitizeParams(params);
 
   // Backend gates IsAutoTranslate on TranslationServiceOptions.IsActive itself,
   // so it is safe to forward the URL value as-is here.
-  const [resources, config, paged] = await Promise.all([
+  const [resources, paged] = await Promise.all([
     fetchMultilingualResourcesAction(),
-    fetchAutoTranslationConfigAction(),
-    fetchMultilingualTranslationsPagedAction(pageNumber, pageSize, resource, languages, autoTranslate),
+    fetchMultilingualTranslationsPagedAction(pageNumber, pageSize, resource, languages),
   ]);
 
   return (
@@ -82,8 +77,6 @@ export default async function Page({ searchParams }: PageProps): Promise<React.R
       resources={resources}
       resource={resource}
       languages={languages}
-      autoTranslationEnabled={config.isEnabled}
-      autoTranslate={config.isEnabled && autoTranslate}
     />
   );
 }

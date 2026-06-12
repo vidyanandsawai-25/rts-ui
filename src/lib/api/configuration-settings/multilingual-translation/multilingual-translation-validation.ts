@@ -3,7 +3,7 @@ import {
   MultilingualTranslationBulkUpdateItem,
   SUPPORTED_LANGUAGE_CODES,
   SupportedLanguageCode,
-} from "@/types/alias-master.types";
+} from "@/types/multilingual-translation.types";
 
 const MAX_TRANSLATION_LENGTH = 4000;
 const MAX_KEY_LENGTH = 200;

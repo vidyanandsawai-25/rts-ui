@@ -7,19 +7,17 @@ import { getLocale } from "next-intl/server";
 import { locales } from "@/i18n/config";
 import { ApiError } from "@/lib/utils/api";
 import { getUserIdFromCookies } from "@/lib/utils/auth-session";
-import { logger } from "@/lib/utils/logger";
 import {
   bulkUpdateMultilingualTranslations,
-  getAutoTranslationConfig,
   getMultilingualResources,
   getMultilingualTranslationsPaged,
-} from "@/lib/api/configuration-settings/alias-master/alias-master.service";
+} from "@/lib/api/configuration-settings/multilingual-translation/multilingual-translation.service";
 import {
   MultilingualTranslation,
   MultilingualTranslationBulkUpdateItem,
   SupportedLanguageCode,
   SUPPORTED_LANGUAGE_CODES,
-} from "@/types/alias-master.types";
+} from "@/types/multilingual-translation.types";
 import { PagedResponse } from "@/types/common.types";
 
 const MAX_PAGE_SIZE = 100;
@@ -42,29 +40,11 @@ export async function fetchMultilingualResourcesAction(): Promise<string[]> {
   }
 }
 
-export async function fetchAutoTranslationConfigAction(): Promise<{ isEnabled: boolean }> {
-  try {
-    return await getAutoTranslationConfig();
-  } catch (error) {
-    if (error instanceof ApiError && error.statusCode === 401) {
-      const currentLocale = await getLocale();
-      redirect(`/${currentLocale}/login`);
-    }
-    // Log the error for observability but fall back to disabled state
-    // so a transient failure doesn't crash the page.
-    logger.error("Failed to fetch auto-translation config", {
-      error: error instanceof Error ? error : undefined,
-    });
-    return { isEnabled: false };
-  }
-}
-
 export async function fetchMultilingualTranslationsPagedAction(
   pageNumber: number,
   pageSize: number,
   resource?: string,
-  languages?: string[],
-  isAutoTranslate?: boolean
+  languages?: string[]
 ): Promise<PagedResponse<MultilingualTranslation>> {
   try {
     if (
@@ -86,8 +66,7 @@ export async function fetchMultilingualTranslationsPagedAction(
       pageNumber,
       pageSize,
       resource,
-      validLanguages,
-      Boolean(isAutoTranslate)
+      validLanguages
     );
   } catch (error) {
     await redirectOnUnauthorized(error);
@@ -123,7 +102,7 @@ export async function bulkUpdateMultilingualTranslationsAction(
     const result = await bulkUpdateMultilingualTranslations(stamped);
 
     for (const loc of locales) {
-      revalidatePath(`/${loc}/configuration-settings/alias-master`, "page");
+      revalidatePath(`/${loc}/configuration-settings/multilingual-translation`, "page");
     }
 
     return {

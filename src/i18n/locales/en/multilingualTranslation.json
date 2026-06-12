@@ -1,14 +1,11 @@
 {
-  "title": "Alias Master",
+  "title": "Multilingual Translation Master",
   "subtitle": "Manage and edit your application resources across multiple locales.",
   "filters": {
     "resourceFile": "Resource File",
     "selectResource": "Select Resource",
     "targetLocale": "Target Locale",
-    "filterLanguage": "Filter Language",
-    "autoTranslation": "Auto Translation",
-    "autoTranslationOn": "On",
-    "autoTranslationOff": "Off"
+    "filterLanguage": "Filter Language"
   },
   "languages": {
     "hi": "Hindi (hi_IN)",

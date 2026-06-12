@@ -1,7 +1,7 @@
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { useLocalizationStringsSave } from "@/hooks/configuration-settings/alias-master/useLocalizationStringsSave";
-import type { MultilingualTranslation } from "@/types/alias-master.types";
+import { useLocalizationStringsSave } from "@/hooks/configuration-settings/multilingual-translation/useLocalizationStringsSave";
+import type { MultilingualTranslation } from "@/types/multilingual-translation.types";
 
 // Mock sonner toast
 const mockToastInfo = vi.fn();
@@ -16,10 +16,15 @@ vi.mock("sonner", () => ({
   },
 }));
 
+// Mock auth cookies
+vi.mock("@/lib/utils/auth-session", () => ({
+  getUserIdFromCookies: () => 123,
+}));
+
 // Mock actions
 const mockBulkUpdateAction = vi.fn();
 
-vi.mock("@/app/[locale]/configuration-settings/alias-master/action", () => ({
+vi.mock("@/app/[locale]/configuration-settings/multilingual-translation/action", () => ({
   bulkUpdateMultilingualTranslationsAction: (items: unknown) => mockBulkUpdateAction(items),
 }));
 
@@ -58,7 +63,6 @@ describe("useLocalizationStringsSave", () => {
         useLocalizationStringsSave({
           data: mockData,
           edits: {},
-          autoTranslate: false,
           onSuccess: mockOnSuccess,
           t: mockT,
           tCommon: mockTCommon,
@@ -73,7 +77,6 @@ describe("useLocalizationStringsSave", () => {
         useLocalizationStringsSave({
           data: mockData,
           edits: {},
-          autoTranslate: false,
           onSuccess: mockOnSuccess,
           t: mockT,
           tCommon: mockTCommon,
@@ -85,12 +88,11 @@ describe("useLocalizationStringsSave", () => {
   });
 
   describe("handleSaveAll - no changes", () => {
-    it("should show info toast when no edits and autoTranslate off", async () => {
+    it("should show info toast when no edits", async () => {
       const { result } = renderHook(() =>
         useLocalizationStringsSave({
           data: mockData,
           edits: {},
-          autoTranslate: false,
           onSuccess: mockOnSuccess,
           t: mockT,
           tCommon: mockTCommon,
@@ -105,7 +107,7 @@ describe("useLocalizationStringsSave", () => {
       expect(mockBulkUpdateAction).not.toHaveBeenCalled();
     });
 
-    it("should show info toast when rows have no translations and autoTranslate off", async () => {
+    it("should show info toast when rows have no translations", async () => {
       const dataWithoutTranslations: MultilingualTranslation[] = [
         {
           id: 3,
@@ -121,7 +123,6 @@ describe("useLocalizationStringsSave", () => {
         useLocalizationStringsSave({
           data: dataWithoutTranslations,
           edits: {},
-          autoTranslate: false,
           onSuccess: mockOnSuccess,
           t: mockT,
           tCommon: mockTCommon,
@@ -146,7 +147,6 @@ describe("useLocalizationStringsSave", () => {
         useLocalizationStringsSave({
           data: mockData,
           edits,
-          autoTranslate: false,
           onSuccess: mockOnSuccess,
           t: mockT,
           tCommon: mockTCommon,
@@ -180,7 +180,6 @@ describe("useLocalizationStringsSave", () => {
         useLocalizationStringsSave({
           data: mockData,
           edits,
-          autoTranslate: false,
           onSuccess: mockOnSuccess,
           t: mockT,
           tCommon: mockTCommon,
@@ -205,7 +204,6 @@ describe("useLocalizationStringsSave", () => {
         useLocalizationStringsSave({
           data: mockData,
           edits,
-          autoTranslate: false,
           onSuccess: mockOnSuccess,
           t: mockT,
           tCommon: mockTCommon,
@@ -235,7 +233,6 @@ describe("useLocalizationStringsSave", () => {
         useLocalizationStringsSave({
           data: mockData,
           edits,
-          autoTranslate: false,
           onSuccess: mockOnSuccess,
           t: mockT,
           tCommon: mockTCommon,
@@ -264,7 +261,6 @@ describe("useLocalizationStringsSave", () => {
         useLocalizationStringsSave({
           data: mockData,
           edits,
-          autoTranslate: false,
           onSuccess: mockOnSuccess,
           t: mockT,
           tCommon: mockTCommon,
@@ -294,7 +290,6 @@ describe("useLocalizationStringsSave", () => {
         useLocalizationStringsSave({
           data: mockData,
           edits,
-          autoTranslate: false,
           onSuccess: mockOnSuccess,
           t: mockT,
           tCommon: mockTCommon,
@@ -306,83 +301,6 @@ describe("useLocalizationStringsSave", () => {
       });
 
       expect(mockOnSuccess).not.toHaveBeenCalled();
-    });
-  });
-
-  describe("handleSaveAll - autoTranslate mode", () => {
-    it("should include all rows with translations when autoTranslate is on", async () => {
-      const { result } = renderHook(() =>
-        useLocalizationStringsSave({
-          data: mockData,
-          edits: {},
-          autoTranslate: true,
-          onSuccess: mockOnSuccess,
-          t: mockT,
-          tCommon: mockTCommon,
-        })
-      );
-
-      await act(async () => {
-        await result.current.handleSaveAll();
-      });
-
-      expect(mockBulkUpdateAction).toHaveBeenCalledWith([
-        {
-          id: 1,
-          data: {
-            resource: "common",
-            key: "greeting",
-            en_US: "Hello",
-            hi_IN: "नमस्ते",
-            mr_IN: "नमस्कार",
-          },
-        },
-      ]);
-    });
-
-    it("should include rows with draft edits when autoTranslate is on", async () => {
-      const dataWithEmptyTranslations: MultilingualTranslation[] = [
-        {
-          id: 3,
-          resource: "common",
-          key: "test",
-          en_US: "Test",
-          hi_IN: "",
-          mr_IN: "",
-        },
-      ];
-
-      const edits = {
-        3: { hi_IN: "परीक्षण" },
-      };
-
-      const { result } = renderHook(() =>
-        useLocalizationStringsSave({
-          data: dataWithEmptyTranslations,
-          edits,
-          autoTranslate: true,
-          onSuccess: mockOnSuccess,
-          t: mockT,
-          tCommon: mockTCommon,
-        })
-      );
-
-      await act(async () => {
-        await result.current.handleSaveAll();
-      });
-
-      expect(mockBulkUpdateAction).toHaveBeenCalledWith([
-        {
-          id: 3,
-          data: {
-            resource: "common",
-            key: "test",
-            en_US: "Test",
-            hi_IN: "परीक्षण",
-            mr_IN: "",
-          },
-        },
-      ]);
     });
   });
 
@@ -400,7 +318,6 @@ describe("useLocalizationStringsSave", () => {
         useLocalizationStringsSave({
           data: mockData,
           edits,
-          autoTranslate: false,
           onSuccess: mockOnSuccess,
           t: mockT,
           tCommon: mockTCommon,
@@ -432,7 +349,6 @@ describe("useLocalizationStringsSave", () => {
         useLocalizationStringsSave({
           data: mockData,
           edits,
-          autoTranslate: false,
           onSuccess: mockOnSuccess,
           t: mockT,
           tCommon: mockTCommon,
@@ -457,7 +373,6 @@ describe("useLocalizationStringsSave", () => {
         useLocalizationStringsSave({
           data: mockData,
           edits,
-          autoTranslate: false,
           onSuccess: mockOnSuccess,
           t: mockT,
           tCommon: mockTCommon,
@@ -482,7 +397,6 @@ describe("useLocalizationStringsSave", () => {
         useLocalizationStringsSave({
           data: mockData,
           edits,
-          autoTranslate: false,
           onSuccess: mockOnSuccess,
           t: mockT,
           tCommon: mockTCommon,

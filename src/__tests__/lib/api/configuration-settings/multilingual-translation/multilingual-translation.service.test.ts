@@ -4,7 +4,7 @@ import {
   bulkUpdateMultilingualTranslations,
   getMultilingualResources,
   getMultilingualTranslationsPaged,
-} from "@/lib/api/configuration-settings/alias-master/alias-master.service";
+} from "@/lib/api/configuration-settings/multilingual-translation/multilingual-translation.service";
 import { ApiError } from "@/lib/utils/api";
 
 vi.mock("@/services/api.service", () => ({

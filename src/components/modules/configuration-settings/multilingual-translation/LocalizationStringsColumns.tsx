@@ -2,7 +2,7 @@ import { Column, Input } from "@/components/common";
 import type {
   MultilingualTranslation,
   SupportedLanguageCode,
-} from "@/types/alias-master.types";
+} from "@/types/multilingual-translation.types";
 import { TRANSLATION_TEXT_SANITIZE } from "@/lib/utils/validation-rules";
 
 type EditableField = "hi_IN" | "mr_IN";

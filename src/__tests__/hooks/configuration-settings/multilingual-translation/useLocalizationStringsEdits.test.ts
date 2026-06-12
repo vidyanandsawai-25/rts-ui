@@ -1,6 +1,6 @@
 import { renderHook, act } from "@testing-library/react";
 import { describe, it, expect, beforeEach } from "vitest";
-import { useLocalizationStringsEdits } from "@/hooks/configuration-settings/alias-master/useLocalizationStringsEdits";
+import { useLocalizationStringsEdits } from "@/hooks/configuration-settings/multilingual-translation/useLocalizationStringsEdits";
 
 describe("useLocalizationStringsEdits", () => {
   beforeEach(() => {

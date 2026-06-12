@@ -39,18 +39,10 @@ export interface MultilingualTranslationBulkResult {
   allSucceeded: boolean;
 }
 
-export interface AutoTranslationConfig {
-  isEnabled: boolean;
-}
-
 export interface LocalizationStringsProps
   extends Omit<PagedResponse<MultilingualTranslation>, "items" | "hasPrevious" | "hasNext"> {
   data: MultilingualTranslation[];
   resources: string[];
   resource?: string;
   languages: SupportedLanguageCode[];
-  /** Server-side flag — when false the UI must keep the toggle off and disabled. */
-  autoTranslationEnabled: boolean;
-  /** Whether the user currently has auto-translation switched on. */
-  autoTranslate: boolean;
 }

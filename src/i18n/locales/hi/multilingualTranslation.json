@@ -1,14 +1,11 @@
 {
-  "title": "उपनाम प्रबंधक",
+  "title": "बहुभाषी अनुवाद मास्टर",
   "subtitle": "एकाधिक स्थानों में अपने एप्लिकेशन संसाधनों को प्रबंधित और संपादित करें।",
   "filters": {
     "resourceFile": "संसाधन फ़ाइल",
     "selectResource": "संसाधन चुनें",
     "targetLocale": "लक्षित लोकेल",
-    "filterLanguage": "भाषा फ़िल्टर करें",
-    "autoTranslation": "स्वतः अनुवाद",
-    "autoTranslationOn": "चालू",
-    "autoTranslationOff": "बंद"
+    "filterLanguage": "भाषा फ़िल्टर करें"
   },
   "languages": {
     "hi": "हिंदी (hi_IN)",

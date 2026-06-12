@@ -1,5 +1,5 @@
 import { ApiError } from "@/lib/utils/api";
-import { MultilingualTranslation } from "@/types/alias-master.types";
+import { MultilingualTranslation } from "@/types/multilingual-translation.types";
 
 export function isMultilingualTranslationShape(value: unknown): value is Record<string, unknown> {
   if (typeof value !== "object" || value === null) {
