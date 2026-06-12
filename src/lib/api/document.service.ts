@@ -62,3 +62,51 @@ export async function uploadDocument(file: File, groupKey: string, fileTypeName:
 
     return data.items;
 }
+
+/**
+ * Fetches a document from the backend API and returns its body as an ArrayBuffer,
+ * along with its content type and content disposition.
+ */
+export async function getDocument(documentGuid: string, action: 'view' | 'download') {
+    const config = getAppConfig();
+    const baseUrl = config.api.baseUrl?.trim();
+    if (!baseUrl) {
+        throw new Error("Backend API base URL is not configured");
+    }
+    
+    let cleanBase = baseUrl.replace(/\/+$/, "");
+    if (cleanBase.endsWith("/api")) {
+        cleanBase = cleanBase.substring(0, cleanBase.length - 4);
+    }
+    const finalRoot = cleanBase.endsWith("/") ? cleanBase : `${cleanBase}/`;
+    const backendUrl = `${finalRoot}api/documents/${encodeURIComponent(documentGuid)}/${action}`;
+
+    const cookieStore = await cookies();
+    const token = cookieStore.get("auth_token")?.value;
+    if (!token) {
+        throw new Error("Unauthorized");
+    }
+
+    const response = await serverFetch(backendUrl, {
+        method: "GET",
+        headers: {
+            "Accept": "*/*",
+            "Authorization": `Bearer ${token}`
+        }
+    });
+
+    if (!response.ok) {
+        throw new Error(`Failed to fetch document: ${response.status} ${response.statusText}`);
+    }
+
+    const contentType = response.headers.get("content-type") || "application/octet-stream";
+    const contentDisposition = response.headers.get("content-disposition") || "";
+    const buffer = await response.arrayBuffer();
+
+    return {
+        buffer,
+        contentType,
+        contentDisposition
+    };
+}
+

@@ -52,7 +52,7 @@ vi.mock('next-intl', () => ({
     const translations: Record<string, string> = {
       'discount.title': 'Discount Information',
       'discount.description': 'Configure discount eligibility',
-      'discount.socialTitle': 'Social Information',
+      'discount.socialTitle': 'Other Social Information',
       'discount.socialDescription': 'Configure social attributes, status, and associated documents for this property.',
       'discount.unitLabel': 'Unit: {unit}',
       'discount.solarPanel': 'Solar Panel System',
@@ -94,6 +94,7 @@ vi.mock('next-intl', () => ({
     }
     return val;
   },
+  useLocale: () => 'en',
 }));
 
 // Mock sonner
@@ -177,7 +178,7 @@ describe('DiscountFormview', () => {
     );
 
     expect(screen.getAllByText('Discount Information').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Social Information').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Other Social Information').length).toBeGreaterThan(0);
 
     const discountTab = screen.getByRole('tab', { name: /Discount Information/i });
     fireEvent.click(discountTab);

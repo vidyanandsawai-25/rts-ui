@@ -234,6 +234,7 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
         oldTaxesResult,
         discountResult,
         photoSlotsRes,
+        photosRes,
       ] = await Promise.all([
         resolvedWardId && propertyNo
           ? getApartmentQCDataAction(
@@ -277,6 +278,9 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
         resolvedPropertyId
           ? photoPlanService.getPhotoTypesWithStatus(resolvedPropertyId)
           : Promise.resolve(null),
+        resolvedPropertyId
+          ? photoPlanService.getPhotosByProperty(resolvedPropertyId)
+          : Promise.resolve(null),
       ]);
 
       apartmentData = aptData;
@@ -308,7 +312,9 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
       if (photoSlotsRes?.success && photoSlotsRes.data) {
         initialPhotoSlots = photoSlotsRes.data;
       }
-      initialPhotos = [];
+      if (photosRes?.success && photosRes.data) {
+        initialPhotos = photosRes.data;
+      }
 
       // Dual Method data triggers additional valuation fetches internally,
       // so only load it when the dual-method UI is actually being rendered.
