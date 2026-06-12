@@ -2,7 +2,6 @@ import { Lock, Unlock } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Column } from "@/components/common/MasterTable";
 import { Badge, EditButton, ToggleSwitch } from "@/components/common";
-import { Checkbox } from "@/components/common/checkbox";
 import { LockedScreen, LockUnlockPropertyItem } from "@/types/lockunlock.types";
 import { cn } from "@/lib/utils/cn";
 
@@ -33,9 +32,10 @@ export function useLockUnlockColumns({
     {
       key: "checkbox",
       label: (
-        <Checkbox
+        <input
+          type="checkbox"
           checked={properties.length > 0 && selectedPropertyIds.length === properties.length}
-          onCheckedChange={() => onSelectAllProperties()}
+          onChange={() => onSelectAllProperties()}
           aria-label="Select all properties"
           className="ml-2"
         />
@@ -43,9 +43,10 @@ export function useLockUnlockColumns({
       width: "5%",
       align: "center",
       render: (_: unknown, row: LockUnlockPropertyItem) => (
-        <Checkbox
+        <input
+          type="checkbox"
           checked={selectedPropertyIds.includes(row.propertyId)}
-          onCheckedChange={() => onSelectProperty(row.propertyId)}
+          onChange={() => onSelectProperty(row.propertyId)}
           aria-label={`Select property ${row.propertyNo}`}
           className="ml-2"
         />
