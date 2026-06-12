@@ -4,6 +4,7 @@ import React from "react";
 import { Filter, ShieldCheck, AlertCircle, EyeOff } from "lucide-react";
 import { ToggleSwitch, SearchInput, Badge } from "@/components/common";
 import { DiscountAttributeState } from "@/types/discount.types";
+import { getLocalizedName } from "@/lib/utils/social-details";
 
 interface DiscountSidebarProps {
     searchTerm: string;
@@ -15,7 +16,10 @@ interface DiscountSidebarProps {
     onSelect: (id: number) => void;
     onToggleEnabled: (id: number, checked: boolean) => void;
     validationErrors?: Record<number, string>;
-    t: (key: string) => string;
+    t: {
+        (key: string, values?: Record<string, string | number | Date>): string;
+        has?: (key: string) => boolean;
+    };
 }
 
 export const DiscountSidebar: React.FC<DiscountSidebarProps> = ({
@@ -94,7 +98,7 @@ export const DiscountSidebar: React.FC<DiscountSidebarProps> = ({
     };
 
     return (
-        <div className="flex flex-col min-h-[500px] lg:h-[calc(100vh-220px)] border-r border-blue-100 pr-2">
+        <div className="flex flex-col min-h-[300px] lg:h-[calc(100vh-340px)] border-r border-blue-100 pr-2">
             {/* Search and Filters */}
             <div className="space-y-3 mb-4">
                 <SearchInput
@@ -132,10 +136,11 @@ export const DiscountSidebar: React.FC<DiscountSidebarProps> = ({
                     discounts.map((discount) => {
                         const isSelected = selectedId === discount.id;
                         const hasError = discount.enabled && !!validationErrors?.[discount.id];
-                        const translated = t(`discount.socialAttributes.${discount.socialAttributeCode}`);
-                        const displayName = translated && !translated.includes("discount.socialAttributes")
-                            ? translated
-                            : discount.socialAttributeName;
+                        const displayName = getLocalizedName(
+                            discount.socialAttributeCode,
+                            discount.socialAttributeName,
+                            t
+                        );
 
 
                         const cardClass = isSelected

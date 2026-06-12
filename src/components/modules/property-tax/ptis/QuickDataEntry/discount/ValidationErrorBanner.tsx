@@ -2,6 +2,7 @@
 
 import React from "react";
 import { AlertTriangle, ChevronRight } from "lucide-react";
+import { getLocalizedName } from "@/lib/utils/social-details";
 
 interface IncompleteDiscount {
     id: number;
@@ -12,7 +13,10 @@ interface IncompleteDiscount {
 interface ValidationErrorBannerProps {
     incompleteDiscounts: IncompleteDiscount[];
     onTagClick: (id: number) => void;
-    t: (key: string, values?: Record<string, string | number>) => string;
+    t: {
+        (key: string, values?: Record<string, string | number>): string;
+        has?: (key: string) => boolean;
+    };
 }
 
 /**
@@ -49,8 +53,11 @@ export const ValidationErrorBanner: React.FC<ValidationErrorBannerProps> = ({
                     </p>
                     <div className="flex flex-wrap gap-1.5">
                         {incompleteDiscounts.map((discount) => {
-                            const translated = discount.code ? t(`discount.socialAttributes.${discount.code}`) : "";
-                            const displayName = translated && !translated.includes("discount.socialAttributes") ? translated : discount.name;
+                            const displayName = getLocalizedName(
+                                discount.code,
+                                discount.name,
+                                t as unknown as Parameters<typeof getLocalizedName>[2]
+                            );
                             return (
                                 <button
                                     key={discount.id}

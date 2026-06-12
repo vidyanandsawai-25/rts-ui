@@ -68,7 +68,7 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
 
     return (
         <div className="w-full">
-            <div className="space-y-6 max-h-[65vh] overflow-y-auto pr-1 no-scrollbar p-0.5">
+            <div className="space-y-6 max-h-[calc(100vh-360px)] overflow-y-auto pr-1 no-scrollbar p-0.5">
                 {/* Section 1: Compact Toggles */}
                 {simpleToggleFields.length > 0 && (
                     <SimpleToggleSection

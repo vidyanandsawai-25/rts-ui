@@ -7,13 +7,17 @@ import { DiscountAttributeState } from "@/types/discount.types";
 import { DocumentAttachment } from "../building/DocumentAttachment";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { DiscountValueInput } from "./DiscountValueInput";
+import { getLocalizedName } from "@/lib/utils/social-details";
 
 interface DiscountDetailPaneProps {
     data: DiscountAttributeState | null | undefined;
     onInputChange: (field: "intValue" | "decimalValue" | "textValue" | "dateValue" | "remark", value: string) => void;
     onFileUpload: (file: File) => void;
     validationError?: string;
-    t: (key: string, values?: Record<string, string | number>) => string;
+    t: {
+        (key: string, values?: Record<string, string | number>): string;
+        has?: (key: string) => boolean;
+    };
 }
 
 export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
@@ -52,10 +56,11 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
         );
     }
 
-    const translated = t(`discount.socialAttributes.${data.socialAttributeCode}`);
-    const displayName = translated && !translated.includes("discount.socialAttributes")
-        ? translated
-        : data.socialAttributeName;
+    const displayName = getLocalizedName(
+        data.socialAttributeCode,
+        data.socialAttributeName,
+        t as unknown as Parameters<typeof getLocalizedName>[2]
+    );
 
     const tWithHas = t as unknown as { has?: (key: string) => boolean };
     const hasRemark = typeof tWithHas.has === "function" && tWithHas.has("discount.remark");
@@ -72,7 +77,7 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
 
     if (!data.enabled && !hasAnyData) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[500px] lg:h-[calc(100vh-220px)] bg-gray-50 border border-gray-200 rounded-xl p-8 text-center">
+            <div className="flex flex-col items-center justify-center min-h-[300px] lg:h-[calc(100vh-340px)] bg-gray-50 border border-gray-200 rounded-xl p-8 text-center">
                 <AlertCircle size={36} className="text-blue-500 mb-3" />
                 <h4 className="text-base font-bold text-gray-800 mb-2">{displayName}</h4>
                 <p className="text-sm font-semibold text-gray-500 max-w-sm">
@@ -99,7 +104,7 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
     }`;
 
     return (
-        <div className={`flex flex-col min-h-[500px] lg:h-[calc(100vh-220px)] border rounded-xl shadow-sm p-4 justify-between transition-opacity ${
+        <div className={`flex flex-col min-h-[300px] lg:h-[calc(100vh-340px)] border rounded-xl shadow-sm p-4 justify-between transition-opacity ${
             isDisabled ? "bg-gray-50 border-gray-200 opacity-75" : "bg-white border-blue-100"
         }`}>
             <div className="space-y-5 overflow-y-auto pr-1">

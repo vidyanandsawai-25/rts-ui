@@ -37,7 +37,7 @@ export function ImageHoverPreview({
         <ImageWithFallback
           src={src}
           alt={title}
-          className="w-full h-full object-contain bg-white"
+          className="w-full h-full object-cover"
           width={960}
           height={1200}
           priority

@@ -26,6 +26,7 @@ export interface DiscountAttributeDto {
     documentGuid?: string | null;
     documentUrl?: string | null;
     remark?: string | null;
+    isActive?: boolean;
 }
 
 export interface PropertyDiscountInfoResponseDto {
