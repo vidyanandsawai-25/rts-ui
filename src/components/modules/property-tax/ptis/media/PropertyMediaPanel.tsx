@@ -60,9 +60,9 @@ function PropertyMediaPanel({
         >
           {remainingImages.length > 0 && (
             <Button
-              variant="secondary"
+              variant="edit"
               size="xs"
-              className="h-7 w-7 p-0 shadow-lg hover:bg-blue-500 hover:text-white transition-colors cursor-pointer"
+              className="h-7 w-7 p-0 shadow-lg bg-white cursor-pointer"
               onClick={(e) => {
                 e.stopPropagation();
                 setShowMoreImages((p) => !p);

@@ -89,6 +89,7 @@
     "uploading": "Uploading...",
     "uploadingDescription": "Please wait while your image is being uploaded.",
     "replaceImage": "Replace Image",
+    "replacing": "Replacing...",
     "replaceImageTitle": "Replace Image",
     "replaceImageDescription": "Are you sure you want to replace the current image for \"{name}\"? The existing image will be overwritten.",
     "replaceConfirm": "Replace",
