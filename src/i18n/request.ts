@@ -44,7 +44,7 @@ export default getRequestConfig(async ({ locale }) => {
     departmentMasterMessages,
     departmentActivationMessages,
     homeMessages,
-    aliasMasterMessages,
+    multilingualTranslationMessages,
     userManagementMessages,
     grievanceCategoryMessages,
     combinePropertyMessages,
@@ -64,6 +64,7 @@ export default getRequestConfig(async ({ locale }) => {
     lockUnlockMessages,
     socialAttributeMessages,
     modulesMessages,
+    addTaxesMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/dashboard.json`).then((m) => m.default),
@@ -105,7 +106,7 @@ export default getRequestConfig(async ({ locale }) => {
       .catch(() => ({}))
       .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/home.json`).catch(() => ({})).then((m) => m.default || m),
-    import(`./locales/${validatedLocale}/aliasMaster.json`)
+    import(`./locales/${validatedLocale}/multilingualTranslation.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/user-management.json`)
@@ -151,6 +152,7 @@ export default getRequestConfig(async ({ locale }) => {
       .catch(() => ({}))
       .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/addTaxes.json`).then((m) => m.default),
   ]);
 
   return {
@@ -184,7 +186,7 @@ export default getRequestConfig(async ({ locale }) => {
       departmentMaster: departmentMasterMessages,
       departmentActivation: departmentActivationMessages,
       home: homeMessages,
-      aliasMaster: aliasMasterMessages,
+      multilingualTranslation: multilingualTranslationMessages,
       userManagement: userManagementMessages,
       grievanceCategory: grievanceCategoryMessages,
       combineProperty: combinePropertyMessages,
@@ -206,6 +208,7 @@ export default getRequestConfig(async ({ locale }) => {
       lockUnlock: lockUnlockMessages?.lockUnlock || lockUnlockMessages,
       socialAttribute: socialAttributeMessages.socialAttribute || socialAttributeMessages,
       modules: modulesMessages,
+       addTaxes: addTaxesMessages.addTaxes,
     },
   };
 });

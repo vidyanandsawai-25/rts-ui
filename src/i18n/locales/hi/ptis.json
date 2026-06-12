@@ -89,6 +89,7 @@
     "uploading": "अपलोड किया जा रहा है...",
     "uploadingDescription": "कृपया प्रतीक्षा करें जब तक आपकी छवि अपलोड की जा रही है।",
     "replaceImage": "छवि बदलें",
+    "replacing": "बदला जा रहा है...",
     "replaceImageTitle": "छवि बदलें",
     "replaceImageDescription": "क्या आप निश्चित रूप से \"{name}\" के लिए वर्तमान छवि को बदलना चाहते हैं? मौजूदा छवि को बदल दिया जाएगा।",
     "replaceConfirm": "बदलें",
