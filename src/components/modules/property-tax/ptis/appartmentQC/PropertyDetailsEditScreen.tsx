@@ -114,6 +114,7 @@ const ResidentialEditScreen = ({
     })
       .then((result) => {
         if (cancelled) return;
+      
         setClientRoomData(result.success && result.data ? result.data : []);
       })
       .catch(() => {
@@ -269,6 +270,7 @@ const ResidentialEditScreen = ({
         base2Mtr: minus.base2Mtr || 0,
         operation: minus.operation || 'subtract',
         remark: minus.remark || 'SUB',
+        isOffset: minus.isOffset ?? false,
       })) as RoomAPIResponse['offsets'];
 
       const mapped: RoomAPIResponse = {
