@@ -20,8 +20,18 @@ vi.mock("@/hooks/zoneMaster/useBuildingList", () => ({
 }));
 
 vi.mock("@/components/modules/property-tax/zone-master/properties/components/PropertyAmenitySection", () => ({
-  PropertyAmenitySection: ({ propertyId }: { propertyId: string }) => (
-    <div data-testid="property-amenity-section" data-property-id={propertyId} />
+  PropertyAmenitySection: ({
+    propertyId,
+    directDeleteFallback,
+  }: {
+    propertyId: string;
+    directDeleteFallback?: React.ReactNode;
+  }) => (
+    <div
+      data-testid="property-amenity-section"
+      data-property-id={propertyId}
+      data-has-direct-fallback={String(!!directDeleteFallback)}
+    />
   ),
 }));
 
@@ -269,7 +279,7 @@ describe("DeletePropertyDrawer", () => {
     );
   });
 
-  it("shows direct property delete section for an individual property", () => {
+  it("passes direct property delete fallback for the selected property", () => {
     mockBuildingList.mockReturnValue({
       buildingList: [
         { propertyId: 6, propertyNo: "P-006", catPropertyCategoryName: "Individual", partitionNo: "" },
@@ -280,11 +290,14 @@ describe("DeletePropertyDrawer", () => {
     render(<DeletePropertyDrawer {...defaultProps} wardId={10} />);
     fireEvent.change(screen.getByTestId("property-select-input"), { target: { value: "6" } });
 
-    expect(screen.getByTestId("direct-property-delete-section")).toHaveAttribute(
+    expect(screen.getByTestId("property-amenity-section")).toHaveAttribute(
       "data-property-id",
       "6"
     );
-    expect(screen.queryByTestId("property-amenity-section")).not.toBeInTheDocument();
+    expect(screen.getByTestId("property-amenity-section")).toHaveAttribute(
+      "data-has-direct-fallback",
+      "true"
+    );
   });
 
   // ── Ward reset ─────────────────────────────────────────────────────────────

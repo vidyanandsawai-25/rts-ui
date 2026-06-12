@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   fetchSocietyDetailsByPropertyAction,
   getSocietyAmenityDetailsAction,
@@ -14,11 +14,15 @@ interface UsePropertyAmenityDataProps {
 
 interface UsePropertyAmenityDataReturn {
   // Wings
+  societyDetails: SocietyDetailItem[];
   wings: SocietyDetailItem[];
   wingsLoading: boolean;
   selectedSocietyDetailId: number | null;
-  setSelectedSocietyDetailId: (id: number | null) => void;
+  selectedWingId: string;
+  setSelectedWingId: (id: string) => void;
   wingOptions: { label: string; value: string }[];
+  shouldShowWingDropdown: boolean;
+  filteredProperties: SocietyDetailItem[];
   
   // Toggle
   isAmenity: boolean;
@@ -37,9 +41,9 @@ export function usePropertyAmenityData({
   propertyId,
 }: UsePropertyAmenityDataProps): UsePropertyAmenityDataReturn {
   // Wings state
-  const [wings, setWings] = useState<SocietyDetailItem[]>([]);
+  const [societyDetails, setSocietyDetails] = useState<SocietyDetailItem[]>([]);
   const [wingsLoading, setWingsLoading] = useState(false);
-  const [selectedSocietyDetailId, setSelectedSocietyDetailId] = useState<number | null>(null);
+  const [selectedWingId, setSelectedWingId] = useState("");
 
   // Toggle state
   const [isAmenity, setIsAmenity] = useState(false);
@@ -48,11 +52,40 @@ export function usePropertyAmenityData({
   const [tableData, setTableData] = useState<SocietyAmenityDetailItem[]>([]);
   const [tableLoading, setTableLoading] = useState(false);
 
+  const shouldShowWingDropdown = useMemo(() => {
+    return societyDetails?.some(
+      (item) =>
+        item.wingId !== null &&
+        item.wingId !== undefined &&
+        Number(item.wingId) !== 0
+    ) ?? false;
+  }, [societyDetails]);
+
+  const filteredProperties = useMemo(() => {
+    if (!societyDetails) return [];
+
+    if (!shouldShowWingDropdown) {
+      return societyDetails;
+    }
+
+    if (!selectedWingId) {
+      return [];
+    }
+
+    return societyDetails.filter(
+      (item) => Number(item.wingId) === Number(selectedWingId)
+    );
+  }, [societyDetails, shouldShowWingDropdown, selectedWingId]);
+
+  const selectedSocietyDetailId = useMemo(() => {
+    return filteredProperties[0]?.id ?? null;
+  }, [filteredProperties]);
+
   // Load wings when property changes
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    setWings([]);
-    setSelectedSocietyDetailId(null);
+    setSocietyDetails([]);
+    setSelectedWingId("");
     setTableData([]);
     setIsAmenity(false);
 
@@ -64,10 +97,10 @@ export function usePropertyAmenityData({
     fetchSocietyDetailsByPropertyAction(Number(propertyId))
       .then((result) => {
         if (cancelled) return;
-        setWings(result.success && result.data ? result.data.items || [] : []);
+        setSocietyDetails(result.success && result.data ? result.data.items || [] : []);
       })
       .catch(() => {
-        if (!cancelled) setWings([]);
+        if (!cancelled) setSocietyDetails([]);
       })
       .finally(() => {
         if (!cancelled) setWingsLoading(false);
@@ -110,31 +143,49 @@ export function usePropertyAmenityData({
   }, []);
 
   // Wing dropdown options
-  const wingOptions = wings.map((item) => {
-    const hasWingId = item.wingId !== null && item.wingId !== undefined && String(item.wingId) !== "null";
-    const hasWingName = item.wingName !== null && item.wingName !== undefined && String(item.wingName) !== "null";
+  const wingOptions = useMemo(() => {
+    const seenWingIds = new Set<number>();
 
-    let label = "";
-    if (hasWingId && hasWingName) {
-      label = `${item.wingId} - ${item.wingName}`;
-    } else if (hasWingId) {
-      label = `${item.wingId}`;
-    } else if (hasWingName) {
-      label = item.wingName;
-    }
+    return societyDetails.reduce<{ label: string; value: string }[]>((options, item) => {
+      const hasWingId =
+        item.wingId !== null &&
+        item.wingId !== undefined &&
+        Number(item.wingId) !== 0;
 
-    return {
-      label,
-      value: item.id.toString(),
-    };
-  });
+      if (!hasWingId) return options;
+
+      const numericWingId = Number(item.wingId);
+      if (seenWingIds.has(numericWingId)) return options;
+      seenWingIds.add(numericWingId);
+
+      const hasWingName = item.wingName !== null && item.wingName !== undefined && String(item.wingName) !== "null";
+
+      let label = "";
+      if (hasWingName) {
+        label = `${item.wingId} - ${item.wingName}`;
+      } else {
+        label = `${item.wingId}`;
+      }
+
+      options.push({
+        label,
+        value: String(item.wingId),
+      });
+
+      return options;
+    }, []);
+  }, [societyDetails]);
 
   return {
-    wings,
+    societyDetails,
+    wings: societyDetails,
     wingsLoading,
     selectedSocietyDetailId,
-    setSelectedSocietyDetailId,
+    selectedWingId,
+    setSelectedWingId,
     wingOptions,
+    shouldShowWingDropdown,
+    filteredProperties,
     isAmenity,
     setIsAmenity,
     tableData,

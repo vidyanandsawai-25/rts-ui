@@ -74,11 +74,6 @@ export default function DeletePropertyDrawer({
     return null;
   }, [selectedProperty, categoryMap]);
 
-  const isApartmentCategory = useMemo(
-    () => categoryName === "Apartment" || categoryName === "Multi Commercial Apartment",
-    [categoryName]
-  );
-
   const propertyOptions = useMemo(() => {
     if (buildingList.length > 0) {
       return buildingList
@@ -129,7 +124,7 @@ export default function DeletePropertyDrawer({
         <PropertyInfoSection
           selectedWard={ward}
           selectedProperty={selectedProperty as unknown as ZonePropertyItem}
-          isApartmentCategory={isApartmentCategory}
+          isApartmentCategory={false}
           categoryName={categoryName}
           t={tZone}
         />
@@ -140,7 +135,7 @@ export default function DeletePropertyDrawer({
           propertyOptions={propertyOptions}
           onPropertyChange={(_e, value) => setSelectedPropertyId(value)}
           t={tZone}
-          isApartmentCategory={isApartmentCategory}
+          isApartmentCategory={false}
           label={tZone("partitionForm.mainPropertyNo")}
           placeholder={
             loadingBuildingList && propertyOptions.length === 0
@@ -155,23 +150,24 @@ export default function DeletePropertyDrawer({
         />
 
         {/* Wing selection → toggle → table → delete */}
-        {selectedPropertyId && isApartmentCategory && (
-          <PropertyAmenitySection propertyId={selectedPropertyId} />
-        )}
-
-        {selectedPropertyId && selectedProperty && !isApartmentCategory && (
-          <DirectPropertyDeleteSection
+        {selectedPropertyId && selectedProperty && (
+          <PropertyAmenitySection
             propertyId={selectedPropertyId}
-            wardNo={
-              "wardNo" in selectedProperty
-                ? selectedProperty.wardNo
-                : ward?.wardNo
+            directDeleteFallback={
+              <DirectPropertyDeleteSection
+                propertyId={selectedPropertyId}
+                wardNo={
+                  "wardNo" in selectedProperty
+                    ? selectedProperty.wardNo
+                    : ward?.wardNo
+                }
+                propertyNo={selectedProperty.propertyNo}
+                partitionNo={selectedProperty.partitionNo}
+                categoryName={categoryName}
+                onDeleted={() => setSelectedPropertyId("")}
+                t={tZone}
+              />
             }
-            propertyNo={selectedProperty.propertyNo}
-            partitionNo={selectedProperty.partitionNo}
-            categoryName={categoryName}
-            onDeleted={() => setSelectedPropertyId("")}
-            t={tZone}
           />
         )}
       </div>
