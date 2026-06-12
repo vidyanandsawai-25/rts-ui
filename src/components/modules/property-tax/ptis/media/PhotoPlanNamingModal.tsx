@@ -4,18 +4,13 @@ import React, { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Modal } from '@/components/common/Modal';
 import { Input, Button, Select } from '@/components/common';
-import { Info } from 'lucide-react';
+import { photoPlanNamingSchema, validatePhotoFile } from '@/lib/validation/ptis/photo-plan-validation';
+import { UploadInstructions } from './UploadInstructions';
 
 interface PhotoPlanNamingModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (
-    name: string,
-    displayOrder: number,
-    photoTypeId: number,
-    file?: File,
-    remarks?: string
-  ) => void;
+  onSubmit: (name: string, displayOrder: number, photoTypeId: number, file?: File, remarks?: string) => void;
   availableTypes: { label: string; value: string }[];
   defaultDisplayOrder: number;
   defaultName?: string;
@@ -27,24 +22,14 @@ interface PhotoPlanNamingModalProps {
 }
 
 export function PhotoPlanNamingModal({
-  open,
-  onClose,
-  onSubmit,
-  availableTypes,
-  defaultDisplayOrder,
-  defaultName = '',
-  isReplacement = false,
-  defaultPhotoTypeId,
-  isEdit = false,
-  defaultRemarks = '',
-  isLoading = false,
+  open, onClose, onSubmit, availableTypes, defaultDisplayOrder,
+  defaultName = '', isReplacement = false, defaultPhotoTypeId,
+  isEdit = false, defaultRemarks = '', isLoading = false,
 }: PhotoPlanNamingModalProps): React.ReactElement {
   const t = useTranslations('ptis');
   const [name, setName] = useState(defaultName);
   const [displayOrder, setDisplayOrder] = useState(String(defaultDisplayOrder));
-  const [photoTypeId, setPhotoTypeId] = useState(
-    defaultPhotoTypeId ? String(defaultPhotoTypeId) : ''
-  );
+  const [photoTypeId, setPhotoTypeId] = useState(defaultPhotoTypeId ? String(defaultPhotoTypeId) : '');
   const [remarks, setRemarks] = useState(defaultRemarks);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -56,10 +41,7 @@ export function PhotoPlanNamingModal({
       return next;
     });
     const selectedType = availableTypes.find((t) => t.value === value);
-    if (
-      selectedType &&
-      (!name || availableTypes.some((t) => t.label === name) || name === 'Custom Photo Plan')
-    ) {
+    if (selectedType && (!name || availableTypes.some((t) => t.label === name) || name === 'Custom Photo Plan')) {
       setName(selectedType.label);
     }
   };
@@ -67,34 +49,40 @@ export function PhotoPlanNamingModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: Record<string, string> = {};
-
-    const trimmedName = name.trim();
-    if (!trimmedName) {
-      newErrors.name = t('media.nameRequired') || 'Name is required';
-    } else if (!/^[a-zA-Z0-9\s_()\u0900-\u097F-]+$/.test(trimmedName)) {
-      newErrors.name =
-        t('media.invalidNameFormat') ||
-        'Only letters, numbers, spaces, hyphens, parentheses, and underscores are allowed';
-    }
-
     const orderNum = Number(displayOrder);
-    if (isNaN(orderNum) || orderNum <= 0 || !Number.isInteger(orderNum)) {
-      newErrors.displayOrder =
-        t('media.invalidDisplayOrder') || 'Display order must be a positive integer';
+    const parsedData = {
+      name,
+      displayOrder: isNaN(orderNum) ? undefined : orderNum,
+      remarks: remarks || undefined,
+      photoTypeId: photoTypeId ? Number(photoTypeId) : undefined,
+    };
+
+    const validationResult = photoPlanNamingSchema.safeParse(parsedData);
+    if (!validationResult.success) {
+      validationResult.error.issues.forEach((err) => {
+        const path = err.path[0];
+        if (typeof path === 'string') {
+          const key = err.message as Parameters<typeof t>[0];
+          const fallback = key === 'media.invalidDisplayOrder'
+            ? 'Display order must be a positive integer'
+            : key === 'media.photoTypeIdRequired'
+            ? 'Valid Photo Type ID is required'
+            : key;
+          newErrors[path] = t.has(key) ? t(key) : fallback;
+        }
+      });
     }
 
     if (!isReplacement && !isEdit) {
-      if (!photoTypeId)
-        newErrors.photoTypeId = t('media.photoTypeRequired') || 'Photo Type is required';
-      if (!selectedFile) {
-        newErrors.file = 'Photo file is required';
-      } else {
-        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
-        if (!allowedTypes.includes(selectedFile.type)) {
-          newErrors.file = 'Only JPEG, JPG, and PNG images are allowed';
-        } else if (selectedFile.size > 5 * 1024 * 1024) {
-          newErrors.file = 'File size should not exceed 5 MB';
-        }
+      const fileErrorKey = validatePhotoFile(selectedFile);
+      if (fileErrorKey) {
+        let fallback = fileErrorKey;
+        if (fileErrorKey === 'media.fileRequired') fallback = 'Photo file is required';
+        if (fileErrorKey === 'media.allowedFormats') fallback = 'Only JPEG, JPG, and PNG images are allowed';
+        if (fileErrorKey === 'media.maxFileSize') fallback = 'File size should not exceed 5 MB';
+        
+        const rawMsg = t(fileErrorKey as Parameters<typeof t>[0]);
+        newErrors.file = rawMsg === fileErrorKey ? fallback : rawMsg;
       }
     }
 
@@ -102,95 +90,58 @@ export function PhotoPlanNamingModal({
       setErrors(newErrors);
       return;
     }
-
-    onSubmit(
-      trimmedName,
-      orderNum,
-      Number(photoTypeId || '0'),
-      selectedFile || undefined,
-      remarks.trim()
-    );
+    onSubmit(name.trim(), orderNum, Number(photoTypeId || '0'), selectedFile || undefined, remarks.trim());
   };
 
-  const isSaveDisabled =
-    isLoading ||
-    !name.trim() ||
-    !displayOrder.trim() ||
-    (!isReplacement && !isEdit && (!photoTypeId || !selectedFile));
+  const isSaveDisabled = isLoading || !name.trim() || !displayOrder.trim() || (!isReplacement && !isEdit && (!photoTypeId || !selectedFile));
 
-  const footer = (
-    <div className="flex gap-2 justify-end w-full">
-      <Button
-        variant="secondary"
-        onClick={onClose}
-        type="button"
-        disabled={isLoading}
-        className="cursor-pointer hover:!bg-slate-100 hover:!text-slate-900 transition-all hover:scale-105 active:scale-95 duration-200"
-      >
-        {t('actions.cancel') || 'Cancel'}
-      </Button>
-      <Button
-        variant="primary"
-        onClick={handleSubmit}
-        type="button"
-        disabled={isSaveDisabled}
-        className="!bg-blue-600 hover:!bg-blue-700 !text-white font-medium px-4 py-2 rounded-lg cursor-pointer hover:scale-105 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {isLoading ? 'Saving...' : t('actions.save') || 'Save'}
-      </Button>
-    </div>
-  );
-
-  const selectedPhotoTypeName =
-    availableTypes.find((t) => String(t.value) === String(photoTypeId))?.label ||
-    defaultName ||
-    'Photo Slot';
+  const selectedPhotoTypeName = availableTypes.find((t) => String(t.value) === String(photoTypeId))?.label || defaultName || t('media.slot') || 'Photo Slot';
   const titleStr = isEdit
-    ? 'Edit Photo Details'
+    ? t('media.editPhotoDetails') || 'Edit Photo Details'
     : isReplacement
-      ? t('media.replaceImageTitle') || 'Replace Image Details'
-      : `Add Photo for ${selectedPhotoTypeName}`;
-  const subtitleStr = isEdit ? 'Update the display name, display order and remarks.' : undefined;
+    ? t('media.replaceImageTitle') || 'Replace Image Details'
+    : t('media.addPhotoFor', { name: selectedPhotoTypeName }) || `Add Photo for ${selectedPhotoTypeName}`;
+  const subtitleStr = isEdit ? t('media.editPhotoSubtitle') || 'Update the display name, display order and remarks.' : undefined;
 
   return (
     <Modal
-      open={open}
-      onClose={onClose}
-      title={titleStr}
-      subtitle={subtitleStr}
-      footer={footer}
-      maxWidth="sm"
+      open={open} onClose={onClose} title={titleStr} subtitle={subtitleStr} maxWidth="sm"
+      footer={
+        <div className="flex gap-2 justify-end w-full">
+          <Button
+            variant="secondary" onClick={onClose} type="button" disabled={isLoading}
+            className="cursor-pointer hover:!bg-slate-100 hover:!text-slate-900 transition-all hover:scale-105 active:scale-95 duration-200"
+          >
+            {t('actions.cancel') || 'Cancel'}
+          </Button>
+          <Button
+            variant="primary" onClick={handleSubmit} type="button" disabled={isSaveDisabled}
+            className="!bg-blue-600 hover:!bg-blue-700 !text-white font-medium px-4 py-2 rounded-lg cursor-pointer hover:scale-105 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? t('media.saving') || 'Saving...' : t('actions.save') || 'Save'}
+          </Button>
+        </div>
+      }
     >
       <form onSubmit={isLoading ? undefined : handleSubmit} className="space-y-4">
         {!isReplacement && !isEdit ? (
           <Select
-            label={t('media.photoTypeSlot') || 'Photo Type Slot'}
-            options={availableTypes}
-            value={photoTypeId}
-            onChange={(_, val) => handleTypeChange(val)}
+            label={t('media.photoTypeSlot') || 'Photo Type Slot'} options={availableTypes}
+            value={photoTypeId} onChange={(_, val) => handleTypeChange(val)}
             placeholder={t('media.photoTypePlaceholder') || 'Select target slot...'}
-            error={errors.photoTypeId}
-            disabled={true}
-            required
+            error={errors.photoTypeId} disabled={true} required
           />
         ) : (
           <Input
-            label={t('media.photoTypeSlot') || 'Photo Type Slot'}
-            value={
-              availableTypes.find((t) => t.value === photoTypeId)?.label ||
-              defaultName ||
-              t('media.standardSlot') ||
-              'Standard Slot'
-            }
-            disabled
-            fullWidth
+            label={t('media.photoTypeSlot') || 'Photo Type Slot'} fullWidth disabled
+            value={availableTypes.find((t) => t.value === photoTypeId)?.label || defaultName || t('media.standardSlot') || 'Standard Slot'}
           />
         )}
 
         <Input
           label={t('media.photoPlanName') || 'Photo Plan Name'}
           placeholder={t('media.photoPlanNamePlaceholder') || 'e.g. Front Elevation, Terrace View'}
-          value={name}
+          value={name} error={errors.name} disabled={isLoading} required fullWidth autoFocus={!isReplacement && !isEdit}
           onChange={(e) => {
             setName(e.target.value);
             setErrors((prev) => {
@@ -198,19 +149,11 @@ export function PhotoPlanNamingModal({
               return next;
             });
           }}
-          error={errors.name}
-          disabled={isLoading}
-          required
-          fullWidth
-          autoFocus={!isReplacement && !isEdit}
         />
 
         <Input
-          label={t('media.displayOrder') || 'Display Order'}
-          placeholder="e.g. 1, 2, 3"
-          type="number"
-          min="1"
-          value={displayOrder}
+          label={t('media.displayOrder') || 'Display Order'} placeholder="e.g. 1, 2, 3"
+          type="number" min="1" value={displayOrder} error={errors.displayOrder} required disabled={isReplacement || isLoading} fullWidth
           onChange={(e) => {
             setDisplayOrder(e.target.value);
             setErrors((prev) => {
@@ -218,46 +161,21 @@ export function PhotoPlanNamingModal({
               return next;
             });
           }}
-          error={errors.displayOrder}
-          required
-          disabled={isReplacement || isLoading}
-          fullWidth
         />
 
         <Input
           label={t.has('media.remarks') ? t('media.remarks') : 'Remarks'}
-          placeholder={
-            t.has('media.remarksPlaceholder')
-              ? t('media.remarksPlaceholder')
-              : 'Enter any remarks...'
-          }
-          value={remarks}
-          onChange={(e) => setRemarks(e.target.value)}
-          disabled={isLoading}
-          fullWidth
+          placeholder={t.has('media.remarksPlaceholder') ? t('media.remarksPlaceholder') : 'Enter any remarks...'}
+          value={remarks} onChange={(e) => setRemarks(e.target.value)} disabled={isLoading} fullWidth
         />
 
         {!isReplacement && !isEdit && (
           <>
-            <div className="rounded-lg border border-blue-100 bg-blue-50/50 p-3 text-xs text-blue-800 space-y-1">
-              <div className="font-semibold flex items-center gap-1.5 text-blue-900">
-                <Info className="w-3.5 h-3.5 text-blue-600" />
-                <span>{t('media.uploadInstructions') || 'Upload Instructions'}</span>
-              </div>
-              <ul className="list-disc list-inside space-y-0.5 text-blue-700 ml-1">
-                <li>{t('media.allowedFormats') || 'Allowed formats: JPEG, JPG, PNG'}</li>
-                <li>{t('media.maxFileSize') || 'Maximum file size: 5 MB'}</li>
-                <li>{t('media.photoLegibilityNote') || 'Ensure the photo is clear and legible'}</li>
-              </ul>
-            </div>
+            <UploadInstructions />
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-700">
-                {t('media.photoFile') || 'Photo File'} *
-              </label>
+              <label className="text-xs font-semibold text-slate-700">{t('media.photoFile') || 'Photo File'} *</label>
               <input
-                type="file"
-                accept="image/*"
-                disabled={isLoading}
+                type="file" accept="image/*" disabled={isLoading}
                 onChange={(e) => {
                   setSelectedFile(e.target.files?.[0] || null);
                   setErrors((prev) => {

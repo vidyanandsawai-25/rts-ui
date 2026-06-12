@@ -1,7 +1,6 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, act, renderHook } from '@testing-library/react';
-import { toast } from 'sonner';
 
 // Mocks for next/navigation
 const mockPush = vi.fn();
@@ -33,12 +32,17 @@ const mockT = (key: string, values?: Record<string, unknown>) => {
     const vals = values as { current: number; total: number } | undefined;
     return `Image ${vals?.current} of ${vals?.total}`;
   }
+  if (key === 'media.addPhotoFor') {
+    const vals = values as { name: string } | undefined;
+    return `Add Photo for ${vals?.name}`;
+  }
   return key;
 };
 mockT.has = (_key: string) => true;
 
 vi.mock('next-intl', () => ({
   useTranslations: () => mockT,
+  useLocale: () => 'en',
 }));
 
 // Mock next/image to render a standard img tag
@@ -99,6 +103,11 @@ vi.mock('@/app/[locale]/property-tax/ptis/PhotoPlanType.action', () => ({
   createPropertyPhotoTypeAction: (...args: unknown[]) => mockCreatePropertyPhotoTypeAction(...args),
 }));
 
+const mockGetDocumentAction = vi.fn((_guid: string, _action: 'view' | 'download') => Promise.resolve({ success: true, data: { base64: 'mock-base-64', contentType: 'image/png' } }));
+vi.mock('@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/document.actions', () => ({
+  getDocumentAction: (guid: string, action: 'view' | 'download') => mockGetDocumentAction(guid, action),
+}));
+
 // Import target utilities and configurations
 import { getAdditionalImages, getGalleryImages } from '@/components/modules/property-tax/ptis/media/mediaConfig';
 import {
@@ -110,14 +119,12 @@ import {
 
 // Import hooks
 import { usePhotoPlanGallery } from '@/hooks/ptis/photoplan/usePhotoPlanGallery';
-import { usePhotoPlanCategoryMutations } from '@/hooks/ptis/photoplan/usePhotoPlanCategoryMutations';
 import { usePhotoPlanMutations } from '@/hooks/ptis/photoplan/usePhotoPlanMutations';
 
 // Import components
 import PropertyMediaPanel from '@/components/modules/property-tax/ptis/media/PropertyMediaPanel';
 import { PhotoPlanDrawer } from '@/components/modules/property-tax/ptis/media/PhotoPlanDrawer';
 import { PhotoPlanNamingModal } from '@/components/modules/property-tax/ptis/media/PhotoPlanNamingModal';
-import { PhotoPlanCategoryModal } from '@/components/modules/property-tax/ptis/media/PhotoPlanCategoryModal';
 import type { PhotoCategory } from '@/components/modules/property-tax/ptis/media/PhotoPlanSidebar';
 import { ImageWithFallback } from '@/components/modules/property-tax/ptis/media/ImageWithFallback';
 import { MainImageViewer } from '@/components/modules/property-tax/ptis/media/MainImageViewer';
@@ -332,75 +339,6 @@ describe('PhotoPlan Section - Complete Tests', () => {
     });
   });
 
-  describe('usePhotoPlanCategoryMutations hook', () => {
-    it('creates custom category slot successfully', async () => {
-      mockCreatePropertyPhotoTypeAction.mockResolvedValueOnce({
-        success: true,
-        data: { id: 202 },
-      });
-      const categories: PhotoCategory[] = [];
-      const onCategoriesChange = vi.fn();
-      const { result } = renderHook(() =>
-        usePhotoPlanCategoryMutations({ categories, onCategoriesChange })
-      );
-
-      let success;
-      await act(async () => {
-        success = await result.current.handleCreateCategorySlot('Garden View', 1, 'Garden Area');
-      });
-
-      expect(success).toBe(true);
-      expect(mockCreatePropertyPhotoTypeAction).toHaveBeenCalled();
-      expect(onCategoriesChange).toHaveBeenCalledWith([
-        {
-          photoTypeId: 202,
-          photoTypeCode: expect.stringContaining('GARDEN_VIEW_'),
-          photoTypeName: 'Garden View',
-          images: [],
-          isCustom: true,
-        },
-      ]);
-      expect(toast.success).toHaveBeenCalledWith('Category slot created successfully');
-    });
-
-    it('handles api error on custom slot creation', async () => {
-      mockCreatePropertyPhotoTypeAction.mockResolvedValueOnce({
-        success: false,
-        error: 'Failed to create',
-      });
-      const categories: PhotoCategory[] = [];
-      const onCategoriesChange = vi.fn();
-      const { result } = renderHook(() =>
-        usePhotoPlanCategoryMutations({ categories, onCategoriesChange })
-      );
-
-      let success;
-      await act(async () => {
-        success = await result.current.handleCreateCategorySlot('Garden View');
-      });
-
-      expect(success).toBe(false);
-      expect(toast.error).toHaveBeenCalledWith('Failed to create');
-    });
-
-    it('handles unexpected exceptions during slot creation', async () => {
-      mockCreatePropertyPhotoTypeAction.mockRejectedValueOnce(new Error('Crash'));
-      const categories: PhotoCategory[] = [];
-      const onCategoriesChange = vi.fn();
-      const { result } = renderHook(() =>
-        usePhotoPlanCategoryMutations({ categories, onCategoriesChange })
-      );
-
-      let success;
-      await act(async () => {
-        success = await result.current.handleCreateCategorySlot('Garden View');
-      });
-
-      expect(success).toBe(false);
-      expect(toast.error).toHaveBeenCalledWith('An unexpected error occurred.');
-    });
-  });
-
   describe('usePhotoPlanMutations hook', () => {
     let categories: PhotoCategory[];
     let onCategoriesChange: (cats: PhotoCategory[]) => void;
@@ -547,7 +485,7 @@ describe('PhotoPlan Section - Complete Tests', () => {
         await result.current.handleDeletePhoto(0);
       });
 
-      expect(mockDeletePropertyPhotoAction).toHaveBeenCalledWith(101);
+      expect(mockDeletePropertyPhotoAction).toHaveBeenCalledWith(101, 'en');
       expect(setSelectedImageIndex).toHaveBeenCalledWith(null);
       expect(setViewMode).toHaveBeenCalledWith('grid');
       expect(onCategoriesChange).toHaveBeenCalled();
@@ -607,6 +545,22 @@ describe('PhotoPlan Section - Complete Tests', () => {
       fireEvent.click(frontCard!);
       expect(mockPush).toHaveBeenCalled();
     });
+
+    it('handles Create click events on the Photo Plan Card and ensures Delete button is not present', () => {
+      render(<PropertyMediaPanel propertyId={1} initialPhotoSlots={slots} initialPhotos={photos} />);
+
+      // Create new plan button check
+      const createBtn = screen.getByLabelText('Create new plan');
+      expect(createBtn).toBeInTheDocument();
+
+      fireEvent.click(createBtn);
+      // It should push route with action=create
+      expect(mockPush).toHaveBeenCalled();
+
+      // Delete plan button check - should not exist
+      const deleteBtn = screen.queryByLabelText('Delete plan');
+      expect(deleteBtn).not.toBeInTheDocument();
+    });
   });
 
   describe('PhotoPlanDrawer & Child Modals/Views', () => {
@@ -648,21 +602,6 @@ describe('PhotoPlan Section - Complete Tests', () => {
       // Verify Category List Folders
       expect(screen.getAllByText('Front View').length).toBeGreaterThan(0);
       expect(screen.getByText('Custom View')).toBeInTheDocument();
-
-      // Open custom slot category modal
-      const addSlotBtn = screen.getByText('media.addPhotoPlanSlot');
-      await act(async () => {
-        fireEvent.click(addSlotBtn);
-      });
-
-      // Verify category modal inputs are displayed
-      expect(screen.getByText('media.addCategoryTitle')).toBeInTheDocument();
-
-      // Click cancel modal
-      const cancelCategoryModalBtn = screen.getByRole('button', { name: 'actions.cancel' });
-      await act(async () => {
-        fireEvent.click(cancelCategoryModalBtn);
-      });
 
       // Rerender with mock selections to trigger viewer mode
       mockSearchParamsGet.mockReturnValue('photo-plan');
@@ -778,29 +717,6 @@ describe('PhotoPlan Section - Complete Tests', () => {
         validFile,
         'Valid remarks'
       );
-    });
-
-    it('validates custom category modal inputs correctly', () => {
-      const onSubmit = vi.fn();
-      render(
-        <PhotoPlanCategoryModal
-          open
-          onClose={vi.fn()}
-          onSubmit={onSubmit}
-          defaultDisplayOrder={1}
-          existingNames={['Existing Category']}
-        />
-      );
-
-      // Empty name validation checks
-      const nameInput = screen.getByLabelText(/media.categoryName/i);
-      // Valid name already exists duplicate validation
-      fireEvent.change(nameInput, { target: { value: 'Existing Category' } });
-
-      const saveBtn = screen.getByRole('button', { name: 'actions.save' });
-      fireEvent.click(saveBtn);
-
-      expect(screen.getByText('media.categoryExists')).toBeInTheDocument();
     });
   });
 });

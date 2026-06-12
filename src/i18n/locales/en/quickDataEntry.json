@@ -596,6 +596,10 @@
         "title": "Building Permissions & Certificates",
         "uploadDocument": "Upload Document",
         "viewDocument": "View Document",
+        "confirmReplaceTitle": "Replace Document",
+        "confirmReplaceDesc": "Are you sure you want to replace the existing document with a new one?",
+        "confirmReplaceOk": "Yes, Replace",
+        "confirmReplaceCancel": "No, Cancel",
         "downloadDocument": "Download Document",
         "replaceDocument": "Replace File",
         "documentPreviouslyAttached": "Document Previously Attached",
@@ -921,7 +925,7 @@
     "discount": {
         "title": "Discount Information",
         "description": "Configure discount eligibility and percentage for this property",
-        "socialTitle": "Social Information",
+        "socialTitle": "Other Social Information",
         "socialDescription": "Configure social attributes, status, and associated documents for this property.",
         "simpleTogglesTitle": "Social Attributes",
         "complexFieldsTitle": "Detailed Attributes",
@@ -947,6 +951,10 @@
         "exServicemanOwner": "Ex Serviceman Owner",
         "uploadDocument": "Upload Document",
         "viewDocument": "View Document",
+        "confirmReplaceTitle": "Replace Document",
+        "confirmReplaceDesc": "Are you sure you want to replace the existing document with a new one?",
+        "confirmReplaceOk": "Yes, Replace",
+        "confirmReplaceCancel": "No, Cancel",
         "amountPlaceholder": "Enter amount",
         "PercentagePlaceholder": "Enter percentage",
         "uploading": "Uploading...",
@@ -1365,5 +1373,14 @@
         "operationRequired": "Please select an operation."
     },
     "offsetTooltip": "Offset Details: {details}",
-    "offsetTooltipEmpty": "Click to edit offsets"
+    "offsetTooltipEmpty": "Click to edit offsets",
+    "document": {
+        "errors": {
+            "notFound": "The requested document could not be found on the server.",
+            "unauthorized": "You are not authorized to access this document. Please log in again.",
+            "forbidden": "Access to the requested document is forbidden.",
+            "general": "An unexpected error occurred while retrieving the document. Please try again.",
+            "uploadGeneral": "An error occurred while uploading the document. Please try again."
+        }
+    }
 }

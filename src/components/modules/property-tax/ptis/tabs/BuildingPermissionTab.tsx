@@ -1,11 +1,13 @@
 'use client';
 
 import React from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { format } from 'date-fns';
-import { AlertCircle, Eye } from 'lucide-react';
+import { AlertCircle, Eye, Loader2 } from 'lucide-react';
 import FieldShell from '@/components/common/FieldShell';
 import { ValueDisplay } from './components/ValueDisplay';
+import { viewDocumentClient } from '@/lib/utils/document-client-utils';
+import { toast } from 'sonner';
 import type {
   BuildingPermissionData,
   BuildingPermissionItem,
@@ -19,6 +21,8 @@ export interface BuildingPermissionTabProps {
 
 const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({ data }) => {
   const t = useTranslations('ptis');
+  const locale = useLocale();
+  const [activeViewingGuid, setActiveViewingGuid] = React.useState<string | null>(null);
   const items = (data?.items || []).filter((item) => item.isActive);
 
   if (items.length === 0) {
@@ -66,17 +70,30 @@ const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({ data }) =
               <ValueDisplay value={formattedDate} />
             </div>
           </div>
-          {item.documentViewUrl && (
-            <a
-              href={item.documentViewUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="absolute top-1 right-1 p-1 rounded hover:bg-blue-200 text-blue-800 transition-colors cursor-pointer flex items-center justify-center"
+          {item.documentGuid && (
+            <button
+              type="button"
+              disabled={activeViewingGuid !== null}
+              onClick={async (e) => {
+                e.stopPropagation();
+                setActiveViewingGuid(item.documentGuid!);
+                try {
+                  await viewDocumentClient(item.documentGuid!, locale);
+                } catch (err: unknown) {
+                  toast.error(err instanceof Error ? err.message : "Failed to view document");
+                } finally {
+                  setActiveViewingGuid(null);
+                }
+              }}
+              className="absolute top-1 right-1 p-1 rounded hover:bg-blue-200 text-blue-800 transition-colors cursor-pointer flex items-center justify-center border-0 bg-transparent disabled:opacity-50"
               title={t('actions.viewDocument') || 'View Document'}
             >
-              <Eye className="h-3.5 w-3.5" />
-            </a>
+              {activeViewingGuid === item.documentGuid ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Eye className="h-3.5 w-3.5" />
+              )}
+            </button>
           )}
         </div>
       </FieldShell>
