@@ -4,6 +4,8 @@ import { Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { FieldConfig, ConditionGroupState, ConditionState } from '@/types/rule-engine.types';
 import ConditionRow from './ConditionRow';
+import { safeUUID } from './useRuleBuilderHelpers';
+import { useToast } from '@/components/common';
 
 interface ConditionGroupProps {
   group: ConditionGroupState;
@@ -21,19 +23,22 @@ export default function ConditionGroup({
   depth = 0,
 }: ConditionGroupProps) {
   const t = useTranslations('ruleEngine');
+  const toast = useToast();
 
   const handleOperatorChange = (op: 'AND' | 'OR') => {
     onChange({ ...group, logicalOperator: op });
   };
 
   const addCondition = () => {
-    if (fields.length === 0) return;
-    const defaultField = fields[0];
+    if (fields.length === 0) {
+      toast.error('Please select a Rule Scope first to load available fields!');
+      return;
+    }
     const newCondition: ConditionState = {
-      id: crypto.randomUUID(),
-      fieldId: defaultField.fieldId,
-      operator: defaultField.supportedOperators?.[0]?.code || 'EQUALS',
-      value: defaultField.inputType === 'MULTISELECT' ? [] : '',
+      id: safeUUID(),
+      fieldId: '',
+      operator: '',
+      value: '',
     };
     onChange({
       ...group,
@@ -60,7 +65,7 @@ export default function ConditionGroup({
       groups: [
         ...(group.groups || []),
         {
-          id: crypto.randomUUID(),
+          id: safeUUID(),
           logicalOperator: 'AND',
           conditions: [],
           groups: [],
@@ -85,12 +90,12 @@ export default function ConditionGroup({
   return (
     <div
       className={`
-        relative rounded-xl border border-dashed border-zinc-300 bg-white p-5
-        ${depth > 0 ? 'ml-6 border-l-2 border-l-blue-400 bg-zinc-50/30' : ''}
+        relative rounded-xl border border-dashed border-zinc-300 bg-white p-3.5
+        ${depth > 0 ? 'ml-4 border-l-2 border-l-blue-400 bg-zinc-50/30' : ''}
       `}
     >
       {/* 1. Header controls: "If [All/Any] of the following conditions are met" */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-4 mb-4 border-b border-zinc-100">
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-2 mb-2 border-b border-zinc-100">
         <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
           <span className="text-gray-500 font-medium">{t('conditionGroup.if')}</span>
           <select

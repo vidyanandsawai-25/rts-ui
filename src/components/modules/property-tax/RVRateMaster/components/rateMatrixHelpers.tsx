@@ -15,7 +15,8 @@ type MatrixRow = {
 export function buildMatrixColumns(
   rateCategories: RateCategory[],
   singleColorClassHeader: string,
-  tCommon: ReturnType<typeof import("next-intl").useTranslations>
+  tCommon: ReturnType<typeof import("next-intl").useTranslations>,
+  rateUnit: "SqMeter" | "SqFeet" = "SqMeter"
 ) {
   // Filter out zone columns
   const filteredCategories = rateCategories.filter(cat =>
@@ -23,13 +24,15 @@ export function buildMatrixColumns(
       .includes(cat.constructionId?.toLowerCase?.())
   );
 
+  const rateUnitLabel = rateUnit === "SqMeter" ? tCommon('rateUnitSqMeter') : tCommon('rateUnitSqFeet');
+
   return filteredCategories.map((cat) => {
     const code = (cat.constructionCode || cat.constructionId).trim().toUpperCase();
     return {
       id: cat.constructionCode || cat.constructionId,
       label: (
         <span className={`inline-block font-bold rounded-lg px-2 py-0.5 ${singleColorClassHeader}`}>
-          {code} <span className="text-[10px] font-normal">{tCommon('rateUnit')}</span>
+          {code} <span className="text-[10px] font-normal">{rateUnitLabel}</span>
         </span>
       ),
       tooltip: cat.description || cat.constructionId,

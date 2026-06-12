@@ -78,6 +78,8 @@ export interface SearchResult {
   [key: string]: unknown;
   /** UPIC ID acts as the unique identifier */
   id: string;
+  /** UPIC ID from backend database, empty string if null */
+  upicId: string;
   /** Backend property ID — used for PTIS deep links */
   propertyId: number;
   zone: string;

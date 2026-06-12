@@ -122,7 +122,7 @@ export function MultiSelectDropdown({
         aria-labelledby={ariaLabelledby}
         onClick={() => setOpen((p) => !p)}
         className={cn(
-          `w-full flex items-center justify-between
+          `w-full flex items-center justify-between text-gray-700
            px-3 py-2 border border-gray-300 rounded-lg
            bg-white text-sm
            focus:outline-none focus:ring-2 focus:ring-blue-500`,
@@ -192,7 +192,7 @@ export function MultiSelectDropdown({
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className={cn(
-                  `w-full pl-8 pr-2 py-1.5 text-sm
+                  `w-full pl-8 pr-2 py-1.5 text-sm text-gray-700
                    border border-gray-300 rounded-md
                    focus:outline-none focus:ring-2 focus:ring-blue-500`,
                   styles?.searchInput

@@ -11,10 +11,10 @@ import { useFloorPagination } from "@/hooks/ptis/QuickDataEntry/Olddetails/useFl
 import { useFloorSearch } from "@/hooks/ptis/QuickDataEntry/Olddetails/useFloorSearch";
 import { SearchInput } from "@/components/common";
 
-import { 
+import {
   convertSqFtToSqM,
-  convertSqMToSqFt, 
-  calculateBuiltUpArea 
+  convertSqMToSqFt,
+  calculateBuiltUpArea
 } from "@/lib/utils/RoomSubmission/conversions";
 
 // Import refactored components
@@ -87,16 +87,16 @@ export default function FloorInformationForm({
     // If carpet area in sq m is changed, calculate all derived fields
     if (field === 'oldAreaSqMeter') {
       const carpetAreaSqM = parseFloat(value) || 0;
-      
+
       // Calculate Carpet Area (Sq Ft) from Carpet Area (Sq M)
       const carpetAreaSqFt = carpetAreaSqM > 0 ? convertSqMToSqFt(carpetAreaSqM) : 0;
-      
+
       // Calculate Built-up Area (Sq Ft) from Carpet Area (Sq Ft) - adds 20%
       const builtupAreaSqFt = carpetAreaSqFt > 0 ? calculateBuiltUpArea(carpetAreaSqFt) : 0;
-      
+
       // Calculate Built-up Area (Sq M) from Built-up Area (Sq Ft)
       const builtupAreaSqMeter = builtupAreaSqFt > 0 ? convertSqFtToSqM(builtupAreaSqFt) : 0;
-      
+
       setFormData(prev => ({
         ...prev,
         [field]: value,
@@ -126,14 +126,16 @@ export default function FloorInformationForm({
   });
 
   return (
-    <div className="space-y-4">
-      <div className="bg-white rounded-xl shadow-sm mb-10">
-        <h3 className="text-base font-bold text-blue-800 px-4 py-3 flex items-center gap-2 border-b border-blue-100">
-          <Layers className="w-5 h-5" />
-          {formData.id ? t("oldDetails.updateFloorDetailsTitle") : t("oldDetails.floorDetailsTitle")}
-        </h3>
+    <div className="p-4 max-w-7xl mx-auto space-y-4">
+      <div className="bg-white rounded-xl border border-blue-100 shadow-xs mb-10">
+        <div className="px-5 py-3 border-b border-blue-100 flex items-center gap-2">
+          <Layers className="w-4 h-4 text-blue-600" />
+          <h3 className="text-sm font-bold text-blue-700">
+            {formData.id ? t("oldDetails.updateFloorDetailsTitle") : t("oldDetails.floorDetailsTitle")}
+          </h3>
+        </div>
 
-        <div className="mb-6 p-2">
+        <div className="p-5">
           {/* Floor Entry Form Fields */}
           <FloorFormFields
             t={t}
@@ -157,10 +159,14 @@ export default function FloorInformationForm({
 
           {/* Floor Details Table */}
           <div className="mt-5">
-            <div className="flex items-center justify-between mb-3 md:pr-3">
-              <h4 className="text-sm font-semibold text-blue-800">
-                {t('oldDetails.existingFloorDetails') || 'Existing Floor Details'}
-              </h4>
+            <div className="flex items-center justify-between mb-3 md:pr-3">            
+              <div className="flex items-center gap-2 border-b border-blue-100 pb-2 md:ml-2">
+                <Layers className="w-4 h-4 text-blue-600" />
+                <h4 className="text-sm font-bold text-slate-800">
+                  {t('oldDetails.existingFloorDetails') || 'Existing Floor Details'}
+                </h4>
+              </div>
+
               <div className="w-72">
                 <SearchInput
                   value={search}

@@ -54,6 +54,7 @@ export interface RoomWiseMinusData {
   updatedBy?: number;
   operation?: string;  // 'add' or 'subtract'
   remark?: string;     // 'ADD' or 'SUB' - stored in backend
+  isOffset?: boolean;  // Required by API
 }
 
 export interface RoomWiseSubmissionData {
@@ -115,6 +116,7 @@ export interface RoomWiseSubmissionCreatePayload {
     remark?: string;     // Stores operation type
     base1Mtr?: number;
     base2Mtr?: number;
+    isOffset?: boolean;  // Required by API
   }>;
 }
 
@@ -154,6 +156,7 @@ export interface RoomWiseSubmissionUpdatePayload {
     remark?: string;     // Stores operation type
     base1Mtr?: number;
     base2Mtr?: number;
+    isOffset?: boolean;  // Required by API
   }>;
 }
 
@@ -169,6 +172,7 @@ export interface RoomWiseMinusUpdatePayload {
   shape?: string;
   base1Mtr?: number;
   base2Mtr?: number;
+  isOffset?: boolean;  // Required by API
 }
 
 /* ============================================================
@@ -420,6 +424,7 @@ export interface RoomWiseMinusCreatePayload {
   remark?: string;     // 'ADD' or 'SUB'
   base1Mtr?: number;
   base2Mtr?: number;
+  isOffset?: boolean;  // Required by API
 }
 
 export async function createRoomWiseMinus(

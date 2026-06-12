@@ -21,7 +21,9 @@
     "description": "Description",
     "descriptionPlaceholder": "Enter rule description",
     "priority": "Priority",
-    "priorityPlaceholder": "e.g. 1"
+    "priorityPlaceholder": "e.g. 1",
+    "selectCategory": "Select Category",
+    "selectScope": "Select Scope"
   },
   "conditionRow": {
     "selectField": "Select Field",
@@ -40,7 +42,9 @@
     "percentageValue": "Percentage Value (%)",
     "rateValue": "Rate Value",
     "performAction": "Perform the following action",
-    "invalidPercentage": "Value must be between 0% and 100%"
+    "invalidPercentage": "Value must be between 0% and 100%",
+    "selectCategory": "Select category",
+    "selectEffectType": "Select Effect Type"
   },
   "saveReasonModal": {
     "title": "Confirm Rule Configuration Save",
@@ -53,7 +57,19 @@
     "title": "Rule Library",
     "searchPlaceholder": "Search rules...",
     "noRules": "No rules found",
-    "addRule": "Add Rule"
+    "addRule": "Add Rule",
+    "searchByCodeOrName": "Search by Code or Name...",
+    "allCategories": "All Categories",
+    "ruleCode": "Rule Code",
+    "ruleName": "Rule Name",
+    "description": "Description",
+    "category": "Category",
+    "status": "Status",
+    "deleteTitle": "Delete Calculation Rule?",
+    "deleteDescription": "Are you sure you want to permanently delete this policy rule? This action cannot be undone and will impact property tax demand runs.",
+    "deleteConfirm": "Permanently Delete",
+    "deleteCancel": "Cancel",
+    "deleteSuccess": "Rule deleted successfully"
   },
   "conditionGroup": {
     "if": "If",
@@ -73,7 +89,12 @@
     "title": "{scopeName} Rule Builder",
     "saving": "Saving…",
     "saveChanges": "Save Changes",
-    "add": "Add"
+    "add": "Add",
+    "ruleIndex": "Rule {index}",
+    "addRule": "Add Rule",
+    "saveRules": "Save Rules",
+    "editRule": "Edit Rule",
+    "noChanges": "No changes detected. Make a change before saving."
   },
   "stopProcessing": {
     "sectionLabel": "Rule Exclusion & Stop Processing",
@@ -87,5 +108,43 @@
     "exclusionReasonLabel": "Exclusion Reason",
     "exclusionReasonPlaceholder": "e.g. Superseded by new ARV policy for residential zone",
     "optional": "optional"
+  },
+  "simulation": {
+    "viewRuleTitle": "View Rule: {code}",
+    "consoleTitle": "Simulation Console: {code}",
+    "jsonStructure": "Rule JSON Structure",
+    "readOnly": "Read-Only",
+    "copied": "Copied!",
+    "copyJson": "Copy JSON",
+    "simulator": "Rule Simulator",
+    "simulatorHint": "Test policy evaluation by inputting values. Extracted variables are auto-populated from rules configuration.",
+    "parameterName": "Parameter Name",
+    "simulationValue": "Simulation Value",
+    "addCustomParameter": "Add Custom Parameter",
+    "runSimulation": "Run Simulation",
+    "resultOutput": "Execution Result Output",
+    "successMessage": "Evaluation processed successfully.",
+    "failureMessage": "Evaluation failed or encountered errors.",
+    "ruleCode": "Rule Code",
+    "ruleName": "Rule Name",
+    "category": "Category",
+    "scope": "Scope",
+    "ruleIndex": "Rule #{index}",
+    "conditions": "Conditions",
+    "noConditions": "No conditions configured",
+    "outcomeAction": "Outcome Action",
+    "effectType": "Effect Type",
+    "value": "Value",
+    "multiplierField": "Multiplier Field",
+    "overrideRate": "Override Rate",
+    "stopProcessingText": "Stop Processing",
+    "noDescription": "No description provided",
+    "emptyValue": "Empty"
+  },
+  "fields": {
+    "floorId": "Floor",
+    "typeOfUseId": "Type of Use",
+    "constructionTypeId": "Construction Type",
+    "usageTypeId": "Usage Type"
   }
 }

@@ -93,6 +93,9 @@
     "amenitiesTitle": "मालमत्ता कर सुविधा",
     "commercialTitle": "मालमत्ता कर व्यावसायिक तपशील",
     "residentialTitle": "मालमत्ता कर निवासी तपशील",
+    "rateable": "करयोग्य मूल्य",
+    "capital": "भांडवली मूल्य",
+    "dual": "दुहेरी पद्धत",
     "showingData": "{tab} डेटा दाखवत आहे"
   },
   "actions": {

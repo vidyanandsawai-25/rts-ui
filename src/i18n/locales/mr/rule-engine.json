@@ -21,7 +21,9 @@
     "description": "वर्णन",
     "descriptionPlaceholder": "नियम वर्णन प्रविष्ट करा",
     "priority": "प्राधान्य",
-    "priorityPlaceholder": "उदा. 1"
+    "priorityPlaceholder": "उदा. 1",
+    "selectCategory": "श्रेणी निवडा",
+    "selectScope": "नियम व्याप्ती निवडा"
   },
   "conditionRow": {
     "selectField": "फील्ड निवडा",
@@ -40,7 +42,9 @@
     "percentageValue": "टक्केवारी मूल्य (%)",
     "rateValue": "दर मूल्य",
     "performAction": "खालील क्रिया करा",
-    "invalidPercentage": "मूल्य ०% आणि १००% दरम्यान असणे आवश्यक आहे"
+    "invalidPercentage": "मूल्य ०% आणि १००% दरम्यान असणे आवश्यक आहे",
+    "selectCategory": "श्रेणी निवडा",
+    "selectEffectType": "परिणाम प्रकार निवडा"
   },
   "saveReasonModal": {
     "title": "नियम कॉन्फिगरेशन जतन करण्याची पुष्टी करा",
@@ -53,7 +57,19 @@
     "title": "नियम लायब्ररी",
     "searchPlaceholder": "नियम शोधा...",
     "noRules": "कोणतेही नियम सापडले नाहीत",
-    "addRule": "नियम जोडा"
+    "addRule": "नियम जोडा",
+    "searchByCodeOrName": "कोड किंवा नावाने शोधा...",
+    "allCategories": "सर्व श्रेणी",
+    "ruleCode": "नियम कोड",
+    "ruleName": "नियमाचे नाव",
+    "description": "वर्णन",
+    "category": "श्रेणी",
+    "status": "स्थिती",
+    "deleteTitle": "गणना नियम हटवायचा?",
+    "deleteDescription": "तुम्हाला हा धोरण नियम कायमचा हटवायचा आहे का? ही क्रिया परत करता येणार नाही.",
+    "deleteConfirm": "कायमचे हटवा",
+    "deleteCancel": "रद्द करा",
+    "deleteSuccess": "नियम यशस्वीरित्या हटवला"
   },
   "conditionGroup": {
     "if": "जर",
@@ -73,7 +89,12 @@
     "title": "{scopeName} नियम बिल्डर",
     "saving": "जतन करत आहे…",
     "saveChanges": "बदल जतन करा",
-    "add": "जोडा"
+    "add": "जोडा",
+    "ruleIndex": "नियम {index}",
+    "addRule": "नियम जोडा",
+    "saveRules": "नियम जतन करा",
+    "editRule": "नियम संपादित करा",
+    "noChanges": "कोणतेही बदल आढळले नाहीत. जतन करण्यापूर्वी बदल करा."
   },
   "stopProcessing": {
     "sectionLabel": "नियम वगळणे आणि प्रक्रिया थांबवणे",
@@ -87,5 +108,43 @@
     "exclusionReasonLabel": "वगळण्याचे कारण",
     "exclusionReasonPlaceholder": "उदा. निवासी क्षेत्रासाठी नवीन एआरव्ही धोरणाद्वारे अधिग्रहित",
     "optional": "पर्यायी"
+  },
+  "simulation": {
+    "viewRuleTitle": "नियम पहा: {code}",
+    "consoleTitle": "सिम्युलेशन कन्सोल: {code}",
+    "jsonStructure": "नियम JSON रचना",
+    "readOnly": "केवळ वाचनासाठी",
+    "copied": "कॉपी केले!",
+    "copyJson": "JSON कॉपी करा",
+    "simulator": "नियम सिम्युलेटर",
+    "simulatorHint": "मूल्ये प्रविष्ट करून धोरण मूल्यमापनाची चाचणी घ्या. काढलेले व्हेरिएबल्स नियम कॉन्फिगरेशनमधून स्वयंचलितपणे भरले जातात.",
+    "parameterName": "पॅरामीटर नाव",
+    "simulationValue": "सिम्युलेशन मूल्य",
+    "addCustomParameter": "सानुकूल पॅरामीटर जोडा",
+    "runSimulation": "सिम्युलेशन चालवा",
+    "resultOutput": "अंमलबजावणी परिणाम आउटपुट",
+    "successMessage": "मूल्यमापन यशस्वीरित्या पूर्ण झाले.",
+    "failureMessage": "मूल्यमापन अयशस्वी झाले किंवा त्रुटी आढळल्या.",
+    "ruleCode": "नियम कोड",
+    "ruleName": "नियमाचे नाव",
+    "category": "श्रेणी",
+    "scope": "व्याप्ती",
+    "ruleIndex": "नियम #{index}",
+    "conditions": "अटी",
+    "noConditions": "कोणत्याही अटी कॉन्फिगर केलेल्या नाहीत",
+    "outcomeAction": "परिणाम क्रिया",
+    "effectType": "परिणाम प्रकार",
+    "value": "मूल्य",
+    "multiplierField": "गुणक फील्ड",
+    "overrideRate": "ओव्हरराइड दर",
+    "stopProcessingText": "प्रक्रिया थांबवा",
+    "noDescription": "कोणतेही वर्णन दिलेले नाही",
+    "emptyValue": "रिकामा"
+  },
+  "fields": {
+    "floorId": "मजला",
+    "typeOfUseId": "वापराचा प्रकार",
+    "constructionTypeId": "बांधकाम प्रकार",
+    "usageTypeId": "वापराचा प्रकार"
   }
 }

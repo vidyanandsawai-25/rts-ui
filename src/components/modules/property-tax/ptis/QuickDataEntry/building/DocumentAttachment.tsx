@@ -1,9 +1,13 @@
 "use client";
 
 import React from "react";
-import { Eye, FileText, UploadCloud, ShieldCheck, Download, RefreshCw, FileCheck } from "lucide-react";
-import { Button, ValidationMessage, Badge } from "@/components/common";
-import { getViewDocumentUrl, getDownloadDocumentUrl } from "@/lib/utils/document-utils";
+import { Eye, FileText, ShieldCheck, Download, UploadCloud, Loader2 } from "lucide-react";
+import { Button, Badge } from "@/components/common";
+import { viewDocumentClient, downloadDocumentClient } from "@/lib/utils/document-client-utils";
+import { toast } from "sonner";
+import { useLocale } from "next-intl";
+import { UploadDropzone } from "./UploadDropzone";
+import { PreviousAttachmentInfo } from "./PreviousAttachmentInfo";
 
 interface DocumentAttachmentProps {
     documentGuid?: string;
@@ -20,7 +24,7 @@ interface DocumentAttachmentProps {
 export const DocumentAttachment: React.FC<DocumentAttachmentProps> = ({
     documentGuid,
     fileName,
-    documentUrl,
+    documentUrl: _documentUrl, // unused but kept in signature to avoid breaking parent callers
     hasDocumentBinding,
     isUploading,
     isDisabled,
@@ -28,104 +32,58 @@ export const DocumentAttachment: React.FC<DocumentAttachmentProps> = ({
     onFileUpload,
     t,
 }) => {
-    const handleViewDocument = () => {
-        const viewUrl = documentUrl || (documentGuid ? getViewDocumentUrl(documentGuid) : null);
-        if (viewUrl) window.open(viewUrl, "_blank", "noopener,noreferrer");
+    const locale = useLocale();
+    const [isViewing, setIsViewing] = React.useState(false);
+    const [isDownloading, setIsDownloading] = React.useState(false);
+
+    const isAnyActionRunning = !!isUploading || isViewing || isDownloading;
+
+    const handleViewDocument = async () => {
+        if (!documentGuid) return;
+        setIsViewing(true);
+        try {
+            await viewDocumentClient(documentGuid, locale);
+        } catch (error: unknown) {
+            toast.error(error instanceof Error ? error.message : "Failed to view document");
+        } finally {
+            setIsViewing(false);
+        }
     };
 
-    const handleDownloadDocument = () => {
-        if (documentGuid) window.open(getDownloadDocumentUrl(documentGuid), "_blank", "noopener,noreferrer");
+    const handleDownloadDocument = async () => {
+        if (!documentGuid) return;
+        setIsDownloading(true);
+        try {
+            await downloadDocumentClient(documentGuid, fileName, locale);
+        } catch (error: unknown) {
+            toast.error(error instanceof Error ? error.message : "Failed to download document");
+        } finally {
+            setIsDownloading(false);
+        }
     };
 
     // State: No document at all — show upload dropzone
     if (!documentGuid && !hasDocumentBinding) {
         return (
-            <div className="space-y-1.5 w-full">
-                <label
-                    className={`w-full flex flex-col items-center justify-center h-40 border-2 border-dashed rounded-xl transition-all p-4 text-center relative group
-                        ${isDisabled
-                            ? "border-gray-300 bg-gray-100/50 text-gray-500 cursor-not-allowed"
-                            : isUploading
-                                ? "border-blue-400 bg-blue-50/20 text-blue-800 animate-pulse cursor-not-allowed"
-                                : isDocumentInvalid
-                                    ? "border-red-400 bg-red-50/5 hover:bg-red-50/20 hover:border-red-500 text-red-800 shadow-sm cursor-pointer"
-                                    : "border-blue-200 bg-blue-50/5 hover:bg-blue-50/20 hover:border-blue-500 text-blue-800 shadow-sm cursor-pointer"
-                        }`}
-                >
-                    <UploadCloud
-                        size={32}
-                        className={`mb-2 transition-transform duration-300 ${
-                            isUploading
-                                ? "animate-bounce"
-                                : isDocumentInvalid
-                                    ? "text-red-500 group-hover:scale-110"
-                                    : "text-blue-500 group-hover:scale-110"
-                        }`}
-                    />
-                    <span className={`text-sm font-bold block mb-1 ${isDocumentInvalid ? "text-red-900" : "text-blue-900"}`}>
-                        {isUploading ? t("building.uploading") || "Uploading file..." : t("building.dragAndDrop") || "Click to select or drag & drop"}
-                    </span>
-                    <span className="text-xs text-gray-400 font-semibold">{t("building.allowedFormats") || "PDF, PNG, JPG (Max 5MB)"}</span>
-                    <input
-                        type="file"
-                        className="hidden"
-                        disabled={isDisabled || isUploading}
-                        onChange={(e) => {
-                            const file = e.target.files?.[0] || null;
-                            if (file) {
-                                onFileUpload(file);
-                                e.target.value = "";
-                            }
-                        }}
-                    />
-                </label>
-                {isDocumentInvalid && <ValidationMessage message={t("common.validation.documentRequired")} />}
-            </div>
+            <UploadDropzone
+                isDisabled={isDisabled}
+                isUploading={isUploading}
+                isDocumentInvalid={isDocumentInvalid}
+                onFileUpload={onFileUpload}
+                t={t}
+            />
         );
     }
 
     // State: Document binding exists but GUID is unavailable (page refresh scenario)
     if (!documentGuid && hasDocumentBinding) {
         return (
-            <div className="border border-amber-200 rounded-xl bg-amber-50/20 p-4 space-y-3 shadow-sm">
-                <div className="flex items-center gap-3">
-                    <div className="p-2.5 bg-amber-50 text-amber-600 rounded-xl flex-shrink-0 shadow-sm border border-amber-100/50">
-                        <FileCheck size={24} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-amber-950 mb-1">
-                            {t("building.documentPreviouslyAttached") || "Document Previously Attached"}
-                        </p>
-                        <Badge
-                            variant="warning"
-                            size="sm"
-                            className="bg-amber-50 text-amber-700 border-amber-200 font-bold"
-                        >
-                            {t("building.reUploadRequired") || "Re-upload to view or download"}
-                        </Badge>
-                    </div>
-                </div>
-                <label
-                    className={`flex items-center justify-center gap-2 w-full h-10 text-sm font-bold border border-amber-300 text-amber-800 rounded-lg transition-all bg-white shadow-sm ${
-                        isDisabled || isUploading ? "opacity-50 pointer-events-none cursor-not-allowed" : "cursor-pointer hover:bg-amber-50/40 hover:border-amber-500"
-                    }`}
-                >
-                    <RefreshCw size={14} />
-                    <span>{t("building.reUploadDocument") || "Re-upload Document"}</span>
-                    <input
-                        type="file"
-                        className="hidden"
-                        disabled={isDisabled || isUploading}
-                        onChange={(e) => {
-                            const file = e.target.files?.[0] || null;
-                            if (file) {
-                                onFileUpload(file);
-                                e.target.value = "";
-                            }
-                        }}
-                    />
-                </label>
-            </div>
+            <PreviousAttachmentInfo
+                isDisabled={isDisabled}
+                isUploading={isUploading}
+                onFileUpload={onFileUpload}
+                t={t}
+            />
         );
     }
 
@@ -152,7 +110,8 @@ export const DocumentAttachment: React.FC<DocumentAttachmentProps> = ({
 
             <div className="flex flex-wrap items-center gap-3 pt-1">
                 <Button
-                    disabled={isDisabled || isUploading}
+                    disabled={isDisabled || isAnyActionRunning}
+                    isLoading={isViewing}
                     variant="primary"
                     size="sm"
                     icon={Eye}
@@ -162,7 +121,8 @@ export const DocumentAttachment: React.FC<DocumentAttachmentProps> = ({
                     {t("building.viewDocument") || "View Document"}
                 </Button>
                 <Button
-                    disabled={isDisabled || isUploading}
+                    disabled={isDisabled || isAnyActionRunning}
+                    isLoading={isDownloading}
                     variant="secondary"
                     size="sm"
                     icon={Download}
@@ -173,15 +133,19 @@ export const DocumentAttachment: React.FC<DocumentAttachmentProps> = ({
                 </Button>
                 <label
                     className={`h-8 px-3 text-sm font-bold flex items-center gap-2 border border-blue-200 text-blue-700 rounded-lg transition-all bg-white shadow-sm whitespace-nowrap ${
-                        isDisabled || isUploading ? "opacity-50 pointer-events-none cursor-not-allowed" : "cursor-pointer hover:bg-blue-50/40 hover:border-blue-500"
+                        isDisabled || isAnyActionRunning ? "opacity-50 pointer-events-none cursor-not-allowed" : "cursor-pointer hover:bg-blue-50/40 hover:border-blue-500"
                     }`}
                 >
-                    <UploadCloud size={14} />
-                    <span>{t("building.replaceDocument") || "Replace File"}</span>
+                    {isUploading ? (
+                        <Loader2 size={14} className="animate-spin" />
+                    ) : (
+                        <UploadCloud size={14} />
+                    )}
+                    <span>{isUploading ? t("building.uploading") || "Uploading..." : t("building.replaceDocument") || "Replace File"}</span>
                     <input
                         type="file"
                         className="hidden"
-                        disabled={isDisabled || isUploading}
+                        disabled={isDisabled || isAnyActionRunning}
                         onChange={(e) => {
                             const file = e.target.files?.[0] || null;
                             if (file) {

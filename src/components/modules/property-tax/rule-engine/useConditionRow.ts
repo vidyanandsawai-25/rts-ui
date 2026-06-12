@@ -23,7 +23,7 @@ export function useConditionRow({
 
   const fieldOptions = React.useMemo(() => {
     return fields.map((f) => ({
-      label: f.fieldId.replace(/([A-Z])/g, ' $1').trim().replace(/^\w/, (c) => c.toUpperCase()),
+      label: f.fieldName || f.fieldId.replace(/([A-Z])/g, ' $1').trim().replace(/^\w/, (c) => c.toUpperCase()),
       value: f.fieldId,
     }));
   }, [fields]);
@@ -39,7 +39,7 @@ export function useConditionRow({
   const handleFieldChange = (fieldId: string) => {
     const nextField = fields.find((f) => f.fieldId === fieldId);
     if (!nextField) return;
-    const defaultOperator = nextField.supportedOperators?.[0]?.code || 'EQUALS';
+    const defaultOperator = nextField.supportedOperators?.[0]?.code || '=';
     const defaultValue = nextField.inputType === 'MULTISELECT' ? [] : '';
     onChange({
       ...condition,
@@ -48,6 +48,8 @@ export function useConditionRow({
       value: defaultValue,
     });
   };
+
+
 
   React.useEffect(() => {
     if (!currentField || currentField.sourceType !== 'API' || !currentField.apiEndpoint) {
@@ -91,23 +93,6 @@ export function useConditionRow({
     return val;
   }, [currentField, apiOptions]);
 
-  React.useEffect(() => {
-    if (!currentField || !condition.value) return;
-    let resolved: string | string[] | undefined = undefined;
-    if (currentField.sourceType === 'API') {
-      if (apiOptions.length > 0) {
-        resolved = resolveLabelForValue(condition.value);
-      }
-    } else if (currentField.staticValuesJson) {
-      resolved = resolveLabelForValue(condition.value);
-    }
-    if (resolved !== undefined && JSON.stringify(resolved) !== JSON.stringify(condition.valueLabel)) {
-      onChange({
-        ...condition,
-        valueLabel: resolved,
-      });
-    }
-  }, [apiOptions, currentField, condition, resolveLabelForValue, onChange]);
 
   const formattedValueLabel = React.useMemo(() => {
     if (!condition.value) return 'Empty';
@@ -138,7 +123,7 @@ export function useConditionRow({
     return op ? op.label : condition.operator;
   }, [currentField, condition.operator]);
 
-  const fieldLabel = currentField?.fieldId
+  const fieldLabel = currentField?.fieldName || currentField?.fieldId
     .replace(/([A-Z])/g, ' $1')
     .trim()
     .replace(/^\w/, (c) => c.toUpperCase()) || condition.fieldId;

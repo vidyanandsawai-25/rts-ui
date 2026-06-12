@@ -7,7 +7,7 @@ import { ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import type { FloorTableRow } from "@/types/OldDetails/property-old-details.types";
 import { getFloorInformationColumns } from "../FloorInformationColumns";
 import { FloorTableSectionProps } from "@/types/OldDetails/property-old-floor-info.types";
-import { formatNumberPair } from "@/lib/utils/format";
+import { formatAreaWithUnit } from "@/lib/utils/format";
 
 const COLUMN_SORT_MAP: Record<string, string> = {
   floor: 'oldFloorId',
@@ -90,11 +90,11 @@ export function FloorTableSection({
     subUse: f.subTypeOfUseDescription,
     carpetAreaSqFt: f.oldCarpetAreaSqFeet,
     carpetAreaSqM: f.oldCarpetAreaSqMeter,
-    carpetAreaCombined: formatNumberPair(
+    carpetAreaCombined: formatAreaWithUnit(
       f.oldCarpetAreaSqFeet != null ? Number(f.oldCarpetAreaSqFeet) : null,
       f.oldCarpetAreaSqMeter != null ? Number(f.oldCarpetAreaSqMeter) : null
     ),
-    builtupAreaCombined: formatNumberPair(
+    builtupAreaCombined: formatAreaWithUnit(
       f.oldBuiltupAreaSqFeet != null ? Number(f.oldBuiltupAreaSqFeet) : null,
       f.oldBuiltupAreaSqMeter != null ? Number(f.oldBuiltupAreaSqMeter) : null
     ),
@@ -146,7 +146,7 @@ export function FloorTableSection({
   }, [t, currentSortBy, currentSortOrder, handleSortClick]);
 
   return (
-    <div className="rounded-lg bg-white shadow-sm mb-6 border border-blue-200 [&_th]:whitespace-nowrap [&_th:last-child]:text-white! [&_th:last-child]:text-xs [&_th:last-child]:border-l [&_th:last-child]:border-solid [&_th:last-child]:border-white/30 [&_th]:border-r [&_th]:border-white/30 [&_th:last-child]:border-r-0 [&_td]:border-r [&_td]:border-blue-100 [&_td:last-child]:border-r-0 [&_th:last-child]:w-25 [&_th:last-child]:min-w-25 [&_td:last-child]:w-25 [&_td:last-child]:min-w-25 [&_td]:overflow-hidden">
+    <div className="mb-6 [&_th]:whitespace-nowrap [&_th:last-child]:text-white! [&_th:last-child]:text-xs [&_th:last-child]:border-l [&_th:last-child]:border-solid [&_th:last-child]:border-white/30 [&_th]:border-r [&_th]:border-white/30 [&_th:last-child]:border-r-0 [&_td]:border-r [&_td]:border-blue-100 [&_td:last-child]:border-r-0 [&_th:last-child]:w-25 [&_th:last-child]:min-w-25 [&_td:last-child]:w-25 [&_td:last-child]:min-w-25 [&_td]:overflow-hidden">
       <MasterTable
         data={transformedData}
         columns={adaptedColumns}

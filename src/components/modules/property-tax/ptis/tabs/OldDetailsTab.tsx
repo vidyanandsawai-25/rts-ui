@@ -80,7 +80,7 @@ const OldDetailsTab: React.FC<OldDetailsTabProps> = ({
               <FieldShell
                 id="oldZoneName"
                 label={t('fields.oldZoneName')}
-                className="col-span-1 sm:col-span-2 lg:col-span-2"
+                className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 2xl:col-span-2"
               >
                 <ValueDisplay value={oldDetailsData?.oldZoneName || ''} />
               </FieldShell>
@@ -88,7 +88,7 @@ const OldDetailsTab: React.FC<OldDetailsTabProps> = ({
               <FieldShell
                 id="oldWardNo"
                 label={t('fields.oldWardNo')}
-                className="col-span-1 sm:col-span-2 lg:col-span-1"
+                className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-2 2xl:col-span-1"
               >
                 <ValueDisplay value={oldDetailsData?.oldWardNo || ''} />
               </FieldShell>
@@ -96,7 +96,7 @@ const OldDetailsTab: React.FC<OldDetailsTabProps> = ({
               <FieldShell
                 id="oldPropertyNo"
                 label={t('fields.oldPropertyNo')}
-                className="col-span-1 sm:col-span-2 lg:col-span-2"
+                className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-2 2xl:col-span-2"
               >
                 <ValueDisplay value={oldDetailsData?.oldPropertyNo || ''} />
               </FieldShell>
@@ -104,7 +104,7 @@ const OldDetailsTab: React.FC<OldDetailsTabProps> = ({
               <FieldShell
                 id="oldPartitionNo"
                 label={t('fields.oldPartitionNo')}
-                className="col-span-1 sm:col-span-2 lg:col-span-2"
+                className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-2 2xl:col-span-2"
               >
                 <ValueDisplay value={oldDetailsData?.oldPartitionNo || ''} />
               </FieldShell>
@@ -112,7 +112,7 @@ const OldDetailsTab: React.FC<OldDetailsTabProps> = ({
               <FieldShell
                 id="oldEGovNo"
                 label={t('fields.oldEGovNo')}
-                className="col-span-1 sm:col-span-2 lg:col-span-2"
+                className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 2xl:col-span-2"
               >
                 <ValueDisplay value={oldDetailsData?.oldEGovernanceNo || ''} />
               </FieldShell>
@@ -120,7 +120,7 @@ const OldDetailsTab: React.FC<OldDetailsTabProps> = ({
               <FieldShell
                 id="oldPlotArea"
                 label={t('fields.oldPlotAreaWithUnit')}
-                className="col-span-1 sm:col-span-2 lg:col-span-2"
+                className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 2xl:col-span-2"
               >
                 <ValueDisplay value={oldDetailsData?.oldPlotArea || ''} />
               </FieldShell>
@@ -128,18 +128,15 @@ const OldDetailsTab: React.FC<OldDetailsTabProps> = ({
               <FieldShell
                 id="oldPlotNo"
                 label={t('fields.oldPlotNo')}
-                className="col-span-1 sm:col-span-2 lg:col-span-1"
+                className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-2 2xl:col-span-1"
               >
                 <ValueDisplay value={oldDetailsData?.oldPlotNo || ''} />
               </FieldShell>
-            </div>
 
-            {/* Second row: construction area, RV, ALV, prop tax, total tax + buttons */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-12 gap-0.5 mt-0.5">
               <FieldShell
                 id="oldConstructionArea"
                 label={t('fields.oldConstructionAreaWithUnit')}
-                className="col-span-1 sm:col-span-2 lg:col-span-2"
+                className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 2xl:col-span-2"
               >
                 <ValueDisplay value={oldDetailsData?.oldConstructionArea || ''} />
               </FieldShell>
@@ -147,7 +144,7 @@ const OldDetailsTab: React.FC<OldDetailsTabProps> = ({
               <FieldShell
                 id="oldRV"
                 label={t('fields.oldRV')}
-                className="col-span-1 sm:col-span-2 lg:col-span-2"
+                className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-2 2xl:col-span-2"
               >
                 <ValueDisplay value={oldDetailsData?.oldRV || ''} />
               </FieldShell>
@@ -155,7 +152,7 @@ const OldDetailsTab: React.FC<OldDetailsTabProps> = ({
               <FieldShell
                 id="oldALV"
                 label={t('fields.oldALV')}
-                className="col-span-1 sm:col-span-2 lg:col-span-1"
+                className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-2 2xl:col-span-2"
               >
                 <ValueDisplay value={oldDetailsData?.oldALV || ''} />
               </FieldShell>
@@ -163,7 +160,7 @@ const OldDetailsTab: React.FC<OldDetailsTabProps> = ({
               <FieldShell
                 id="oldPropTax"
                 label={t('fields.oldPropTax')}
-                className="col-span-1 sm:col-span-2 lg:col-span-2"
+                className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 2xl:col-span-2"
               >
                 <ValueDisplay value={oldDetailsData?.oldPropertyTax || ''} />
               </FieldShell>
@@ -171,12 +168,12 @@ const OldDetailsTab: React.FC<OldDetailsTabProps> = ({
               <FieldShell
                 id="oldTotalTax"
                 label={t('fields.oldTotalTax')}
-                className="col-span-1 sm:col-span-2 lg:col-span-2"
+                className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 2xl:col-span-2"
               >
                 <ValueDisplay value={oldDetailsData?.oldTotalTax || ''} />
               </FieldShell>
 
-              <div className="col-span-1 sm:col-span-2 lg:col-span-2 flex items-end gap-0.5">
+              <div className="col-span-2 sm:col-span-2 md:col-span-2 lg:col-span-6 2xl:col-span-2 flex items-end gap-0.5">
                 <Button
                   size="sm"
                   onClick={() => setShowOldFloorInfo(!showOldFloorInfo)}

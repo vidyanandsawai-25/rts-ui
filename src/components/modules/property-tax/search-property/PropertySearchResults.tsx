@@ -12,7 +12,6 @@ import type {
 import { usePropertySearchResults } from "@/hooks/property-search";
 import { buildPropertySearchColumns } from "./results/columns";
 import { ResultsHeader } from "./results/ResultsHeader";
-import { TABLE_TOTAL_WIDTH } from "./results/result-styles";
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 
@@ -69,28 +68,24 @@ export function PropertySearchResults({
         type="error"
       />
 
-      <div className="w-full min-w-0 overflow-x-auto">
-        <div style={{ minWidth: TABLE_TOTAL_WIDTH }}>
-          <MasterTable<SearchResult>
-            columns={columns}
-            data={paginatedData}
-            loading={loading}
-            pageNumber={pageNumber}
-            pageSize={pageSize}
-            totalCount={totalCount}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-            onPageSizeChange={handlePageSizeChange}
-            containerClassName="min-w-0"
-            tableClassName="table-fixed w-max min-w-full"
-            maxBodyHeightClassName="max-h-[calc(100vh-280px)] overflow-y-auto overflow-x-hidden"
-            emptyText={searchError ? t("searchFailed") : t("noResults")}
-            pageSizeOptions={PAGE_SIZE_OPTIONS}
-            paginationConfig={{ enabled: true, showPageSizeSelector: true }}
-            getRowKey={(row) => row.id}
-          />
-        </div>
-      </div>
+      <MasterTable<SearchResult>
+        columns={columns}
+        data={paginatedData}
+        loading={loading}
+        pageNumber={pageNumber}
+        pageSize={pageSize}
+        totalCount={totalCount}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
+        containerClassName="w-full min-w-0"
+        tableClassName="table-fixed w-max min-w-full"
+        maxBodyHeightClassName="max-h-[calc(100vh-280px)]"
+        emptyText={searchError ? t("searchFailed") : t("noResults")}
+        pageSizeOptions={PAGE_SIZE_OPTIONS}
+        paginationConfig={{ enabled: true, showPageSizeSelector: true }}
+        getRowKey={(row) => row.id}
+      />
     </div>
   );
 }

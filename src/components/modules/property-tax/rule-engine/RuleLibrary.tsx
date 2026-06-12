@@ -5,10 +5,13 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { RuleItem, RuleScope } from '@/types/rule-engine.types';
 import TableHeader from '@/components/common/TableHeader';
-import { MasterTable, Column, SearchSelect } from '@/components/common';
+import { MasterTable, SearchSelect } from '@/components/common';
 import { Select } from '@/components/common/select';
 import { Input } from '@/components/common/Input';
-import { EditButton, DeleteButton } from '@/components/common/ActionButtons';
+import { EditButton, DeleteButton, ExecuteTestButton, ViewButton } from '@/components/common/ActionButtons';
+import RuleExecutionDrawer from './RuleExecutionDrawer';
+import RuleViewDrawer from './RuleViewDrawer';
+import { useRuleLibraryColumns, RuleItemRecord } from './useRuleLibraryColumns';
 import { useConfirm } from '@/components/common/ConfirmProvider';
 import { useToast } from '@/components/common/ToastProvider';
 
@@ -24,9 +27,9 @@ interface RuleLibraryProps {
   initialSearchTerm?: string;
 }
 
-
 export default function RuleLibrary({
   initialRules,
+  scopes,
   locale,
   onDeleteRule,
   pageNumber,
@@ -38,11 +41,26 @@ export default function RuleLibrary({
   const router = useRouter();
   const confirmCtx = useConfirm();
   const toast = useToast();
+  const t = useTranslations('ruleEngine');
   const tCommon = useTranslations('common');
 
   const [rules, setRules] = React.useState<RuleItem[]>(initialRules);
   const [filterCategory, setFilterCategory] = React.useState<string>('ALL');
   const [searchTerm, setSearchTerm] = React.useState<string>(initialSearchTerm);
+  const [activeRuleForTest, setActiveRuleForTest] = React.useState<RuleItem | null>(null);
+  const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
+  const [activeRuleForView, setActiveRuleForView] = React.useState<RuleItem | null>(null);
+  const [isViewDrawerOpen, setIsViewDrawerOpen] = React.useState(false);
+
+  const handleOpenTestDrawer = (rule: RuleItem) => {
+    setActiveRuleForTest(rule);
+    setIsDrawerOpen(true);
+  };
+
+  const handleOpenViewDrawer = (rule: RuleItem) => {
+    setActiveRuleForView(rule);
+    setIsViewDrawerOpen(true);
+  };
 
   React.useEffect(() => {
     Promise.resolve().then(() => {
@@ -50,38 +68,31 @@ export default function RuleLibrary({
     });
   }, [initialRules]);
 
-  // Debounced search navigation
+  const pushRoute = React.useCallback((page: number, size: number | string) => {
+    const q = searchTerm.trim();
+    router.push(`/${locale}/property-tax/rule-engine?page=${page}&pageSize=${size}${q ? `&q=${encodeURIComponent(q)}` : ''}`);
+  }, [searchTerm, locale, router]);
+
   React.useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      const q = searchTerm.trim();
-      router.push(`/${locale}/property-tax/rule-engine?page=1&pageSize=${pageSize}${q ? `&q=${encodeURIComponent(q)}` : ''}`);
-    }, 400);
-
+    const delayDebounceFn = setTimeout(() => pushRoute(1, pageSize), 400);
     return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm, pageSize, locale, router]);
+  }, [pushRoute, pageSize]);
 
-  const handlePageChange = (page: number) => {
-    const q = searchTerm.trim();
-    router.push(`/${locale}/property-tax/rule-engine?page=${page}&pageSize=${pageSize}${q ? `&q=${encodeURIComponent(q)}` : ''}`);
-  };
-
-  const handlePageSizeChange = (size: string) => {
-    const q = searchTerm.trim();
-    router.push(`/${locale}/property-tax/rule-engine?page=1&pageSize=${size}${q ? `&q=${encodeURIComponent(q)}` : ''}`);
-  };
+  const handlePageChange = (page: number) => pushRoute(page, pageSize);
+  const handlePageSizeChange = (size: string) => pushRoute(1, size);
 
   const handleDelete = (id: number) => {
     confirmCtx.confirm({
       variant: 'delete',
-      title: 'Delete Calculation Rule?',
-      description: 'Are you sure you want to permanently delete this policy rule? This action cannot be undone and will impact property tax demand runs.',
-      confirmText: 'Permanently Delete',
-      cancelText: 'Cancel',
+      title: t('library.deleteTitle'),
+      description: t('library.deleteDescription'),
+      confirmText: t('library.deleteConfirm'),
+      cancelText: t('library.deleteCancel'),
       onConfirm: async () => {
         const res = await onDeleteRule(id);
         if (res.success) {
           setRules(rules.filter((r) => r.id !== id));
-          toast.success('Rule purged successfully');
+          toast.success(t('library.deleteSuccess'));
         } else {
           toast.error(res.message);
         }
@@ -100,54 +111,31 @@ export default function RuleLibrary({
   }, [rules, filterCategory, searchTerm]);
 
   const categoryFilterOptions = React.useMemo(() => {
-    const categories = Array.from(new Set(rules.map((r) => r.ruleCategory).filter(Boolean)));
-    const list = categories.map((cat) => ({ label: cat as string, value: cat as string }));
-    list.unshift({ label: 'All Categories', value: 'ALL' });
-    return list;
-  }, [rules]);
+    const cats = Array.from(new Set(rules.map((r) => r.ruleCategory).filter(Boolean)));
+    return [{ label: t('library.allCategories'), value: 'ALL' }, ...cats.map((cat) => ({ label: cat as string, value: cat as string }))];
+  }, [rules, t]);
 
-
-
-  type RuleItemRecord = RuleItem & Record<string, unknown>;
-
-  const columns: Column<RuleItemRecord>[] = [
-    { key: 'ruleCode', label: 'Rule Code', width: '150px' },
-    { key: 'ruleName', label: 'Rule Name', width: '130px' },
-    {
-      key: 'description',
-      label: 'Description',
-      render: (val: unknown) => typeof val === 'string' && val
-        ? <span title={val} className="text-xs text-gray-600 line-clamp-1 max-w-[180px] block">{val}</span>
-        : <span className="text-gray-300 text-xs">—</span>,
-    },
-
-    { key: 'ruleCategory', label: 'Category', width: '140px' },
-    { key: 'isActive', label: 'Status', width: '110px', isStatus: true },
-  ];
-
+  const columns = useRuleLibraryColumns({ t });
 
   return (
     <div className="flex flex-col gap-4.5 w-full select-none">
-      {/* 1. Header Component */}
       <TableHeader
-        title="Rule Engine Configuration"
-        subtitle="Manage complex dynamic taxation policies, exemptions, modifiers and multiplier criteria visually."
+        title={t('header.configTitle')}
+        subtitle={t('header.configSubtitle')}
         icon="settings"
-        actionLabel="Configure New Rule"
+        actionLabel={t('header.configureNew')}
         onActionClick={() => router.push(`/${locale}/property-tax/rule-engine/new`)}
       />
 
-      {/* 2. Advanced filters block */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 bg-white p-4 border border-blue-200 rounded-xl shadow-sm">
         <Input
-          placeholder="Search by Code or Name..."
+          placeholder={t('library.searchByCodeOrName')}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
         <SearchSelect options={categoryFilterOptions} value={filterCategory} onChange={(_e, val) => setFilterCategory(val)} />
       </div>
 
-      {/* 3. Rule list master table */}
       <MasterTable<RuleItemRecord>
         columns={columns}
         data={filteredRules as RuleItemRecord[]}
@@ -157,31 +145,25 @@ export default function RuleLibrary({
         pageNumber={pageNumber}
         totalPages={totalPages}
         onPageChange={handlePageChange}
-        actionLabel="Actions"
         renderActions={(row) => (
           <div className="flex items-center gap-1.5 justify-center">
+            <ViewButton onClick={() => handleOpenViewDrawer(row)} />
+            <ExecuteTestButton onClick={() => handleOpenTestDrawer(row)} />
             <EditButton onClick={() => router.push(`/${locale}/property-tax/rule-engine/${row.id}`)} />
-            <DeleteButton onClick={() => { if (row.id !== undefined) handleDelete(row.id); }} />
+            <DeleteButton onClick={() => row.id !== undefined && handleDelete(row.id)} />
           </div>
         )}
         footerLeftContent={
           <div className="flex items-center gap-4">
             <span className="text-sm text-gray-700">
-              {tCommon("table.showingEntries", {
-                start: totalCount > 0 ? (pageNumber - 1) * pageSize + 1 : 0,
-                end: Math.min(pageNumber * pageSize, totalCount),
-                total: totalCount
-              })}
+              {tCommon("table.showingEntries", { start: totalCount > 0 ? (pageNumber - 1) * pageSize + 1 : 0, end: Math.min(pageNumber * pageSize, totalCount), total: totalCount })}
             </span>
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-600">{tCommon("table.rowsPerPage")}:</span>
               <Select
                 value={String(pageSize)}
                 onChange={(e) => handlePageSizeChange(e.target.value)}
-                options={[10, 20, 30, 40, 50].map((s) => ({
-                  label: String(s),
-                  value: String(s),
-                }))}
+                options={[10, 20, 30, 40, 50].map((s) => ({ label: String(s), value: String(s) }))}
                 selectSize="sm"
                 className="w-20"
                 ariaLabel={tCommon("table.rowsPerPage") || "Rows per page"}
@@ -189,6 +171,17 @@ export default function RuleLibrary({
             </div>
           </div>
         }
+      />
+      <RuleExecutionDrawer
+        rule={activeRuleForTest}
+        open={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+      />
+      <RuleViewDrawer
+        rule={activeRuleForView}
+        open={isViewDrawerOpen}
+        onClose={() => setIsViewDrawerOpen(false)}
+        scopeName={scopes.find((s) => s.id === activeRuleForView?.ruleScopeId)?.scopeName}
       />
     </div>
   );

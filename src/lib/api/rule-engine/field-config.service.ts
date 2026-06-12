@@ -25,6 +25,7 @@ interface ApiRuleField {
   maxValue: number;
   minLength: number;
   maxLength: number;
+  databaseColumnName?: string | null;
   displayOrder: number;
 }
 
@@ -48,7 +49,9 @@ export async function getFieldConfigurations(scopeId: number): Promise<FieldConf
 
     return {
       id: item.rulesFieldId,
-      fieldId: item.fieldName,
+      fieldId: item.databaseColumnName || item.fieldName,
+      fieldName: item.fieldName,
+      databaseColumnName: item.databaseColumnName || undefined,
       dataType,
       inputType,
       sourceType,

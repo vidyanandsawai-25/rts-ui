@@ -341,6 +341,7 @@
       "taxZoneRequired": "Tax Zone is required",
       "propertyNoRequired": "Property No is required",
       "ownerNameRequired": "Owner Name is required",
+      "ownerNameMinLength": "Owner Name must be at least 2 characters long",
       "fromPropertyNoRequired": "From Property No is required",
       "toPropertyNoRequired": "To Property No is required",
       "invalidRange": "To Property No must be greater than From Property No",

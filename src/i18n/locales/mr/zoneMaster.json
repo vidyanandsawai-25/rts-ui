@@ -337,6 +337,7 @@
       "taxZoneRequired": "कर क्षेत्र आवश्यक आहे",
       "propertyNoRequired": "मालमत्ता क्र. आवश्यक आहे",
       "ownerNameRequired": "मालकाचे नाव आवश्यक आहे",
+      "ownerNameMinLength": "मालकाचे नाव कमीतकमी 2 अक्षरांचे असणे आवश्यक आहे",
       "fromPropertyNoRequired": "मालमत्ता क्र. पासून आवश्यक आहे",
       "toPropertyNoRequired": "मालमत्ता क्र. पर्यंत आवश्यक आहे",
       "invalidRange": "मालमत्ता क्र. पर्यंत, मालमत्ता क्र. पासून पेक्षा जास्त असणे आवश्यक आहे",

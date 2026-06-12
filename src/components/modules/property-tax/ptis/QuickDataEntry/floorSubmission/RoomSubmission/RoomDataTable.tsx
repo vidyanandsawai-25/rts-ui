@@ -93,7 +93,7 @@ export const RoomDataTable: React.FC<RoomDataTableProps> = (props) => {
             label: `${t("roomSubmission.table.area")} (${areaUnit})`,
             width: COLUMN_WIDTHS.area,
             align: "center",
-            render: (val: unknown) => <div className="text-center"><span className="font-semibold text-gray-800">{parseFloat(String(val || 0)).toFixed(2)}</span></div>
+            render: (val: unknown) => <div className="text-center"><span className="font-semibold text-gray-800">{parseFloat(String((val ?? 0) || 0)).toFixed(2)}</span></div>
         },
         {
             key: "roomCount",
@@ -116,7 +116,7 @@ export const RoomDataTable: React.FC<RoomDataTableProps> = (props) => {
                                                                  const normalizedShape = off.shape
                                                                      ? off.shape.replace(/\s+/g, "").replace(/^\w/, c => c.toLowerCase())
                                                                      : "";
-                                                                 return `${t(`roomSubmission.input.shapes.${normalizedShape}`)}, ${off.operation === "subtract" ? "-" : "+"}${off.area.toFixed(2)}`;
+                                                                 return `${t(`roomSubmission.input.shapes.${normalizedShape}`)}, ${off.operation === "subtract" ? "-" : "+"}${(off.area ?? 0).toFixed(2)}`;
                             }).join(", ")
                         })
                         : t("offsetTooltipEmpty")}
@@ -162,7 +162,7 @@ export const RoomDataTable: React.FC<RoomDataTableProps> = (props) => {
             label: `${t("roomSubmission.table.total")} (${areaUnit})`,
             width: COLUMN_WIDTHS.total,
             align: "center",
-            render: (val: unknown) => <div className="text-center"><span className="font-bold text-indigo-700">{parseFloat(String(val || 0)).toFixed(2)}</span></div>
+            render: (val: unknown) => <div className="text-center"><span className="font-bold text-indigo-700">{parseFloat(String((val ?? 0) || 0)).toFixed(2)}</span></div>
         }
     ], [rooms, areaUnit, inlineEditingCell, t, handleEdit, onOpenOffset, setInlineEditingCell, setRooms, roomTypeData]);
 
@@ -220,7 +220,7 @@ export const RoomDataTable: React.FC<RoomDataTableProps> = (props) => {
                                 {t("roomSubmission.table.totalArea")}
                             </span>
                             <span className="text-sm font-bold text-gray-800">
-                                {grandTotal.toFixed(2)} {areaUnit}
+                                {(grandTotal ?? 0).toFixed(2)} {areaUnit}
                             </span>
                         </div>
                         <div className="flex items-center gap-2">
@@ -228,7 +228,7 @@ export const RoomDataTable: React.FC<RoomDataTableProps> = (props) => {
                                 {t("roomSubmission.table.totalBuiltupArea")}
                             </span>
                             <span className="text-[12px] font-bold text-blue-700">
-                                {builtupGrandTotal.toFixed(2)} {areaUnit}
+                                {(builtupGrandTotal ?? 0).toFixed(2)} {areaUnit}
                             </span>
                         </div>
                     </div>

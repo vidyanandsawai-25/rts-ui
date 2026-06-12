@@ -34,6 +34,7 @@ vi.mock('next/navigation', () => ({
     push: vi.fn(),
     refresh: vi.fn(),
   }),
+  usePathname: () => '/en/configuration-settings/payment-mode-master',
 }));
 
 // Mock sonner

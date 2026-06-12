@@ -6,10 +6,14 @@ import { useToast } from '@/components/common';
 import { useRuleFieldsConfig } from './useRuleFieldsConfig';
 import {
   RuleItem, RuleScope, FieldConfig,
-  ConditionGroupState, EffectState, TargetFilterState,
-  EffectTypeConfig,
+  TargetFilterState, EffectTypeConfig, RuleBlock,
 } from '@/types/rule-engine.types';
 import { safeParse } from '@/lib/utils/json-parse';
+import {
+  initializeRulesList,
+  validateRuleBuilder,
+  safeUUID,
+} from './useRuleBuilderHelpers';
 
 // ─── Default fallback values ──────────────────────────────────────────────────
 
@@ -33,39 +37,20 @@ export function useRuleBuilder({
   const router = useRouter();
   const toast = useToast();
 
-  const [ruleName, setRuleName]       = React.useState(initialRule?.ruleName ?? '');
-  const [ruleCode, setRuleCode]       = React.useState(initialRule?.ruleCode ?? '');
-  const [isActive, setIsActive]       = React.useState(initialRule?.isActive ?? true);
-  const [ruleScopeId, setRuleScopeId] = React.useState(initialRule?.ruleScopeId ?? scopes[0]?.id ?? 0);
-  const [ruleCategory, setRuleCategory] = React.useState(initialRule?.ruleCategory ?? 'ARV');
-  const [description, setDescription]  = React.useState(initialRule?.description ?? '');
-  const [priority, setPriority]       = React.useState<number | ''>(initialRule?.priority ?? 1);
+  const [ruleName, setRuleName] = React.useState(initialRule?.ruleName ?? '');
+  const [ruleCode, setRuleCode] = React.useState(initialRule?.ruleCode ?? '');
+  const [isActive, setIsActive] = React.useState(initialRule?.isActive ?? true);
+  const [ruleScopeId, setRuleScopeId] = React.useState(initialRule?.ruleScopeId ?? 0);
+  const [ruleCategory, setRuleCategory] = React.useState(initialRule?.ruleCategory ?? '');
+  const [ruleDescription, setRuleDescription] = React.useState(initialRule?.description ?? '');
 
   const [targetFilters, setTargetFilters] = React.useState<TargetFilterState>(
     () => safeParse<TargetFilterState>(initialRule?.targetFiltersJson, {})
   );
-  const [conditions, setConditions] = React.useState<ConditionGroupState>(
-    () => safeParse<ConditionGroupState>(initialRule?.conditionsJson, {
-      id: crypto.randomUUID(),
-      logicalOperator: 'AND',
-      conditions: [],
-      groups: [],
-    })
-  );
-  const [effect, setEffect] = React.useState<EffectState>(
-    () => safeParse<EffectState>(initialRule?.effectJson, {
-      effectType: '',
-      value: '',
-      isPercentage: true,
-    })
-  );
 
-  // ─── Stop Processing state ─────────────────────────────────────────────────
-  const [stopProcessing, setStopProcessing]   = React.useState(initialRule?.stopProcessing ?? false);
-  const [skipRuleIds, setSkipRuleIds]         = React.useState<string[]>(
-    () => (initialRule?.skipRuleIds ?? []).map(String)
+  const [rulesList, setRulesList] = React.useState<RuleBlock[]>(() =>
+    initializeRulesList(initialRule)
   );
-  const [exclusionReason, setExclusionReason] = React.useState(initialRule?.exclusionReason ?? '');
 
   const { fields, setFields } = useRuleFieldsConfig({
     ruleScopeId,
@@ -75,31 +60,56 @@ export function useRuleBuilder({
 
   const [isReasonOpen, setIsReasonOpen] = React.useState(false);
   const [changeReason, setChangeReason] = React.useState('');
-  const [isSaving, setIsSaving]         = React.useState(false);
+  const [isSaving, setIsSaving] = React.useState(false);
 
   const activeScopeName = React.useMemo(
     () => scopes.find((s) => s.id === ruleScopeId)?.scopeName ?? '',
     [scopes, ruleScopeId]
   );
 
+  const addRuleBlock = () => {
+    setRulesList((prev) => [
+      ...prev,
+      {
+        id: safeUUID(),
+        description: '',
+        conditions: { id: safeUUID(), logicalOperator: 'AND', conditions: [], groups: [] },
+        effect: { effectType: '', value: '', isPercentage: true },
+      },
+    ]);
+  };
+
+  const removeRuleBlock = (index: number) => {
+    if (rulesList.length <= 1) { toast.error('At least one rule is required.'); return; }
+    setRulesList((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const moveRuleBlock = (index: number, direction: 'up' | 'down') => {
+    if (direction === 'up' && index === 0) return;
+    if (direction === 'down' && index === rulesList.length - 1) return;
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    setRulesList((prev) => {
+      const copy = [...prev];
+      [copy[index], copy[targetIndex]] = [copy[targetIndex], copy[index]];
+      return copy;
+    });
+  };
+
+  const updateRuleBlock = (
+    index: number,
+    key: 'conditions' | 'effect' | 'description' | 'stopProcessing',
+    value: RuleBlock['conditions'] | RuleBlock['effect'] | string | boolean
+  ) => {
+    setRulesList((prev) => {
+      const copy = [...prev];
+      copy[index] = { ...copy[index], [key]: value } as RuleBlock;
+      return copy;
+    });
+  };
+
   const handleSaveClick = () => {
-    if (!ruleName.trim()) { toast.error('Rule Name is required!'); return; }
-    if (!ruleCategory)    { toast.error('Category is required!'); return; }
-    if (priority === '' || isNaN(Number(priority)) || Number(priority) < 1) {
-      toast.error('Rule Priority must be 1 or greater!');
-      return;
-    }
-
-    const valNum = Number(effect.value);
-    if (effect.value === undefined || effect.value === null || effect.value.toString().trim() === '') {
-      toast.error('Effect Value is required!');
-      return;
-    }
-    if (isNaN(valNum) || valNum < 0 || valNum > 100) {
-      toast.error('Effect Value must be between 0% and 100%!');
-      return;
-    }
-
+    const errorMsg = validateRuleBuilder(ruleName, ruleCategory, rulesList);
+    if (errorMsg) { toast.error(errorMsg); return; }
     setChangeReason(initialRule ? '' : 'Initial rule creation');
     setIsReasonOpen(true);
   };
@@ -117,21 +127,24 @@ export function useRuleBuilder({
     try {
       // Backend generates ruleJson from conditionsJson + effectJson — no transform needed here
       const payload: RuleItem = {
-        id:               initialRule?.id,
-        ruleName:         ruleName.trim(),
+        id: initialRule?.id,
+        ruleName: ruleName.trim(),
         ruleCode,
         isActive,
         ruleScopeId,
-        conditionsJson:   JSON.stringify(conditions),
-        effectJson:       JSON.stringify(effect),
+        conditionsJson: JSON.stringify(
+          rulesList.map((block) => ({
+            ...block,
+            ruleScopeName: activeScopeName,
+          }))
+        ),
+        effectJson: JSON.stringify(rulesList[0]?.effect || {}),
         targetFiltersJson: JSON.stringify(targetFilters),
-        description:      description.trim(),
+        description: ruleDescription.trim(),
         ruleCategory,
-        changeReason:     changeReason.trim(),
-        priority:         priority === '' ? undefined : Number(priority),
-        stopProcessing,
-        skipRuleIds:      skipRuleIds.map(Number),
-        exclusionReason:  exclusionReason.trim() || undefined,
+        changeReason: changeReason.trim(),
+        priority: 1,
+        stopProcessing: rulesList[0]?.stopProcessing || false,
       };
       const res = await onSaveRule(payload);
       if (res.success) {
@@ -146,19 +159,18 @@ export function useRuleBuilder({
   };
 
   return {
-    ruleName, setRuleName, ruleCode, setRuleCode,
+    ruleName, setRuleName,
+    ruleCode, setRuleCode,
     isActive, setIsActive,
     ruleScopeId, setRuleScopeId,
     ruleCategory, setRuleCategory,
-    description, setDescription,
-    priority, setPriority,
-    targetFilters, setTargetFilters, conditions, setConditions,
-    effect, setEffect, fields, setFields,
-    stopProcessing, setStopProcessing,
-    skipRuleIds, setSkipRuleIds,
-    exclusionReason, setExclusionReason,
+    ruleDescription, setRuleDescription,
+    targetFilters, setTargetFilters,
+    rulesList, setRulesList,
+    fields, setFields,
     isReasonOpen, setIsReasonOpen, changeReason, setChangeReason,
     activeScopeName, handleSaveClick, handleConfirmSave,
-    isSaving,
+    isSaving, 
+    addRuleBlock, removeRuleBlock, moveRuleBlock, updateRuleBlock,
   };
 }
