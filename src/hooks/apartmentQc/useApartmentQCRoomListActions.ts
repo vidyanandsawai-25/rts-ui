@@ -144,6 +144,7 @@ export const useApartmentQCRoomListActions = (
         shape: o.shape || "Rectangle",
         operation: o.operation,
         remark: o.operation === "add" ? "ADD" : "SUB",
+        isOffset: o.isOffset ?? (o.operation === "add"),
       })),
     });
 
@@ -288,6 +289,7 @@ export const useApartmentQCRoomListActions = (
             shape: o.shape || (oAny.shape as string) || "Rectangle",
             operation: o.operation,
             remark: o.operation === "add" ? "ADD" : "SUB",
+            isOffset: o.isOffset ?? (o.operation === "add"),
             base1Mtr: parseFloat(String(o.base1 || oAny.base1Mtr || "0")) || 0,
             base2Mtr: parseFloat(String(o.base2 || oAny.base2Mtr || "0")) || 0,
           };
