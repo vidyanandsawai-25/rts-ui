@@ -3,6 +3,8 @@ import type { PropertyPhotoDto, PropertyPhotoTypeWithStatusDto, PropertyPhotoGal
 import type { PhotoCategory } from './PhotoPlanSidebar';
 import { getViewDocumentUrl, getDownloadDocumentUrl } from '@/lib/utils/document-utils';
 
+import { getLocalizedCategoryName } from '@/lib/utils/ptis-photo-plan-localization';
+
 export interface PhotoCategoryPayloadInput {
   photoTypeCode: string;
   images: {
@@ -35,14 +37,42 @@ export function mapPropertyPhotoToAdditionalImage(p: PropertyPhotoDto, categoryN
   const remarksStr = p.remarks || '';
   let parsedTitle = categoryName;
   let parsedRemarks = '';
+
+  const defaultEnglishNames = [
+    'property photo', 'property',
+    'photo plan',
+    'building photo', 'building', 'front', 'front view', 'front elevation',
+    'sign board photo', 'sign board', 'signboard',
+    'advertisement board photo', 'advertisement board', 'advertisement',
+    'owner signature photo', 'owner signature', 'signature',
+    'other photo', 'other',
+    'floor plan', 'floor',
+    'gis / satellite view', 'gis', 'satellite view', 'gis / satellite',
+    'rear elevation', 'back',
+    'living room', 'living',
+    'kitchen',
+    'bedroom',
+    'bathroom',
+    'balcony',
+    'terrace view', 'terrace',
+    'parking view', 'parking'
+  ];
+
   if (remarksStr.includes(' | ')) {
     const [namePart, ...remarkParts] = remarksStr.split(' | ');
-    parsedTitle = namePart || categoryName;
+    const trimmedName = namePart?.trim() || '';
+    const isDefault = !trimmedName || defaultEnglishNames.includes(trimmedName.toLowerCase()) || trimmedName.toLowerCase() === p.photoTypeCode?.toLowerCase();
+    
+    parsedTitle = isDefault ? categoryName : trimmedName;
     parsedRemarks = remarkParts.join(' | ');
   } else if (remarksStr) {
-    parsedTitle = remarksStr;
+    const trimmedRemarks = remarksStr.trim();
+    const isDefault = defaultEnglishNames.includes(trimmedRemarks.toLowerCase()) || trimmedRemarks.toLowerCase() === p.photoTypeCode?.toLowerCase();
+    
+    parsedTitle = isDefault ? categoryName : trimmedRemarks;
     parsedRemarks = '';
   }
+
   return {
     src: p.viewUrl || (p.documentGuid ? getViewDocumentUrl(p.documentGuid) : ''),
     fullSrc: p.viewUrl || (p.documentGuid ? getViewDocumentUrl(p.documentGuid) : ''),
@@ -59,23 +89,38 @@ export function mapPropertyPhotoToAdditionalImage(p: PropertyPhotoDto, categoryN
   };
 }
 
+export function findCategory(categories: PhotoCategory[], codeKeywords: string[], nameKeywords: string[]) {
+  return categories.find((c) => {
+    const code = c.photoTypeCode?.toUpperCase() || '';
+    const name = c.photoTypeName?.toLowerCase() || '';
+    return (
+      codeKeywords.some((kw) => code.includes(kw)) || nameKeywords.some((kw) => name.includes(kw))
+    );
+  });
+}
+
 export function mapSlotsToCategories(
   slots: PropertyPhotoTypeWithStatusDto[],
   uploadedPhotos: PropertyPhotoDto[] = [],
-  fullyLoadedIds?: Set<number>
+  fullyLoadedIds?: Set<number>,
+  t?: (key: string) => string
 ): PhotoCategory[] {
   const systemCodes = ['FRONT', 'FLOOR', 'GIS', 'BACK', 'LIVING', 'KITCHEN', 'BEDROOM', 'BATHROOM', 'BALCONY', 'TERRACE', 'PARKING'];
-  const baseCats = slots.map(s => ({
-    photoTypeId: s.photoTypeId,
-    photoTypeCode: s.photoTypeCode,
-    photoTypeName: s.photoTypeName,
-    isCustom: !systemCodes.includes(s.photoTypeCode.toUpperCase()),
-    hasPhoto: s.hasPhoto,
-    photoCount: s.photoCount,
-    propertyPhotoId: s.propertyPhotoId,
-    documentGuid: s.documentGuid,
-    viewUrl: s.viewUrl,
-  }));
+  const baseCats = slots.map(s => {
+    const nameFallback = s.photoTypeName || '';
+    const nameVal = t ? getLocalizedCategoryName(s.photoTypeCode, nameFallback, t) : nameFallback;
+    return {
+      photoTypeId: s.photoTypeId,
+      photoTypeCode: s.photoTypeCode,
+      photoTypeName: nameVal,
+      isCustom: !systemCodes.includes(s.photoTypeCode.toUpperCase()),
+      hasPhoto: s.hasPhoto,
+      photoCount: s.photoCount,
+      propertyPhotoId: s.propertyPhotoId,
+      documentGuid: s.documentGuid,
+      viewUrl: s.viewUrl,
+    };
+  });
 
   return baseCats.map(cat => {
     let catPhotos = uploadedPhotos
@@ -109,23 +154,26 @@ export function mapSlotsToCategories(
 }
 
 export function mapGroupedResponseToCategories(
-  groupedData: PropertyPhotoGalleryDto
+  groupedData: PropertyPhotoGalleryDto,
+  t?: (key: string) => string
 ): PhotoCategory[] {
   const systemCodes = ['FRONT', 'FLOOR', 'GIS', 'BACK', 'LIVING', 'KITCHEN', 'BEDROOM', 'BATHROOM', 'BALCONY', 'TERRACE', 'PARKING'];
   
   return (groupedData.photoTypes || []).map(group => {
+    const nameFallback = group.photoTypeName || '';
+    const nameVal = t ? getLocalizedCategoryName(group.photoTypeCode, nameFallback, t) : nameFallback;
     const mappedImages = (group.photos || [])
       .sort((a, b) => {
         const diff = (a.displayOrder ?? 999) - (b.displayOrder ?? 999);
         if (diff !== 0) return diff;
         return (a.propertyPhotoId ?? 0) - (b.propertyPhotoId ?? 0);
       })
-      .map(p => mapPropertyPhotoToAdditionalImage(p, group.photoTypeName));
+      .map(p => mapPropertyPhotoToAdditionalImage(p, nameVal));
 
     return {
       photoTypeId: group.photoTypeId,
       photoTypeCode: group.photoTypeCode,
-      photoTypeName: group.photoTypeName,
+      photoTypeName: nameVal,
       isCustom: !systemCodes.includes(group.photoTypeCode.toUpperCase()),
       images: mappedImages,
     };

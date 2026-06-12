@@ -2,9 +2,11 @@
 
 import React from "react";
 import { AlertCircle } from "lucide-react";
-import { Input, ValidationMessage, Label, TextArea } from "@/components/common";
+import { Label, TextArea } from "@/components/common";
 import { DiscountAttributeState } from "@/types/discount.types";
 import { DocumentAttachment } from "../building/DocumentAttachment";
+import { useConfirm } from "@/components/common/ConfirmProvider";
+import { DiscountValueInput } from "./DiscountValueInput";
 
 interface DiscountDetailPaneProps {
     data: DiscountAttributeState | null | undefined;
@@ -21,6 +23,24 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
     validationError,
     t,
 }) => {
+    const { confirm } = useConfirm();
+
+    const handleFileUploadWithConfirm = (file: File) => {
+        if (data && (data.documentGuid || data.documentBindingId)) {
+            confirm({
+                title: t("discount.confirmReplaceTitle") || "Replace Document",
+                description: t("discount.confirmReplaceDesc") || "Are you sure you want to replace the existing document with a new one?",
+                confirmText: t("discount.confirmReplaceOk") || "Yes, Replace",
+                cancelText: t("discount.confirmReplaceCancel") || "No, Cancel",
+                variant: "warning",
+                onConfirm: () => {
+                    onFileUpload(file);
+                }
+            });
+        } else {
+            onFileUpload(file);
+        }
+    };
     if (!data) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[500px] lg:h-[calc(100vh-220px)] bg-gray-50 border border-dashed border-gray-200 rounded-xl p-8 text-center">
@@ -99,59 +119,15 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
                 </div>
 
                 {showValueInput && (
-                    <div className="space-y-1.5 w-full">
-                        <Label className="text-sm font-bold text-blue-800">
-                            {t("discount.amount") || "Value"}
-                            {data.unit ? ` (${t("discount.unitLabel", { unit: data.unit }) || `Unit: ${data.unit}`})` : ""}
-                            <span className="text-red-500 ml-0.5">*</span>
-                        </Label>
-                        
-                        {dataTypeUpper === "INT" && (
-                            <Input
-                                type="number"
-                                step="1"
-                                value={data.intValue !== null && data.intValue !== undefined ? String(data.intValue) : ""}
-                                onChange={(e) => onInputChange("intValue", e.target.value)}
-                                placeholder={t("discount.amountPlaceholder") || "Enter value"}
-                                disabled={isDisabled}
-                                className={inputClassName}
-                            />
-                        )}
-
-                        {dataTypeUpper === "DECIMAL" && (
-                            <Input
-                                type="number"
-                                step="any"
-                                value={data.decimalValue !== null && data.decimalValue !== undefined ? String(data.decimalValue) : ""}
-                                onChange={(e) => onInputChange("decimalValue", e.target.value)}
-                                placeholder={t("discount.amountPlaceholder") || "Enter value"}
-                                disabled={isDisabled}
-                                className={inputClassName}
-                            />
-                        )}
-
-                        {dataTypeUpper === "VARCHAR" && (
-                            <Input
-                                value={data.textValue || ""}
-                                onChange={(e) => onInputChange("textValue", e.target.value)}
-                                placeholder={t("discount.amountPlaceholder") || "Enter text"}
-                                disabled={isDisabled}
-                                className={inputClassName}
-                            />
-                        )}
-
-                        {dataTypeUpper === "DATE" && (
-                            <Input
-                                type="date"
-                                value={data.dateValue || ""}
-                                onChange={(e) => onInputChange("dateValue", e.target.value)}
-                                disabled={isDisabled}
-                                className={inputClassName}
-                            />
-                        )}
-
-                        {isValueInvalid && <ValidationMessage message={validationError} />}
-                    </div>
+                    <DiscountValueInput
+                        data={data}
+                        isDisabled={isDisabled}
+                        inputClassName={inputClassName}
+                        onInputChange={onInputChange}
+                        isValueInvalid={isValueInvalid}
+                        validationError={validationError}
+                        t={t}
+                    />
                 )}
 
                 <div className="space-y-1.5 w-full">
@@ -163,7 +139,7 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
                         isUploading={data.isUploading}
                         isDisabled={isDisabled}
                         isDocumentInvalid={isDocumentInvalid}
-                        onFileUpload={onFileUpload}
+                        onFileUpload={handleFileUploadWithConfirm}
                         t={t}
                     />
                 </div>

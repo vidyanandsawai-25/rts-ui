@@ -33,7 +33,10 @@ interface MediaImageCardProps {
   badgeText?: string;
   hoverBorderColor?: string;
   onClick?: () => void;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
   children?: React.ReactNode;
+  priority?: boolean;
 }
 
 /**
@@ -47,12 +50,17 @@ export function MediaImageCard({
   badgeText,
   hoverBorderColor = 'hover:border-blue-500',
   onClick,
+  onMouseEnter,
+  onMouseLeave,
   children,
+  priority,
 }: MediaImageCardProps): React.ReactElement {
   return (
     <div
       className={`relative group bg-slate-100 rounded-lg overflow-hidden border-2 border-slate-300 shadow-md ${hoverBorderColor} hover:border-4 transition-all cursor-pointer flex-1 min-h-[150px] lg:min-h-0`}
       onClick={onClick}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
     >
       <ImageWithFallback
         src={src}
@@ -60,6 +68,7 @@ export function MediaImageCard({
         className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-110"
         width={400}
         height={300}
+        priority={priority}
       />
 
       {/* Action buttons (visible on hover) */}
@@ -68,7 +77,7 @@ export function MediaImageCard({
         <Button
           variant="secondary"
           size="xs"
-          className="h-7 w-7 p-0 shadow-lg"
+          className="h-7 w-7 p-0 shadow-lg cursor-pointer"
           aria-label="Download image"
           onClick={(e) => {
             e.stopPropagation();
@@ -80,7 +89,7 @@ export function MediaImageCard({
             document.body.removeChild(link);
           }}
         >
-          <Download className="w-3.5 h-3.5" />
+          <Download className="w-3.5 h-3.5 cursor-pointer" />
         </Button>
       </div>
 
@@ -106,6 +115,8 @@ export function MediaImageCard({
 interface AdditionalImagesGridProps {
   images: AdditionalImage[];
   onImageClick?: (index: number) => void;
+  onImageHover?: (src: string, title: string) => void;
+  onImageLeave?: () => void;
   onClose?: () => void;
 }
 
@@ -115,6 +126,8 @@ interface AdditionalImagesGridProps {
 export function AdditionalImagesGrid({
   images,
   onImageClick,
+  onImageHover,
+  onImageLeave,
 }: AdditionalImagesGridProps): React.ReactElement {
   const t = useTranslations('ptis');
   return (
@@ -138,6 +151,8 @@ export function AdditionalImagesGrid({
             className="relative group bg-slate-100 rounded-lg overflow-hidden border-2 border-slate-200 shadow-md hover:border-blue-400 transition-all cursor-pointer h-24 flex-shrink-0 animate-in fade-in slide-in-from-top-2 duration-300"
             style={{ animationDelay: `${index * 50}ms` }}
             onClick={() => onImageClick?.(index)}
+            onMouseEnter={() => onImageHover?.(image.fullSrc || image.src, image.title)}
+            onMouseLeave={onImageLeave}
           >
             <ImageWithFallback
               src={image.src}
