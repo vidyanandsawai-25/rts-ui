@@ -63,6 +63,7 @@ export default getRequestConfig(async ({ locale }) => {
     remarkMasterMessages,
     lockUnlockMessages,
     socialAttributeMessages,
+    applicableTaxesMessages,
     modulesMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
@@ -150,6 +151,9 @@ export default getRequestConfig(async ({ locale }) => {
     import(`./locales/${validatedLocale}/socialAttribute.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/applicableTaxes.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/modules.json`).then((m) => m.default),
   ]);
 
@@ -205,6 +209,7 @@ export default getRequestConfig(async ({ locale }) => {
       remarkMaster: remarkMasterMessages.remarkMaster,
       lockUnlock: lockUnlockMessages?.lockUnlock || lockUnlockMessages,
       socialAttribute: socialAttributeMessages.socialAttribute || socialAttributeMessages,
+      applicableTaxes: applicableTaxesMessages,
       modules: modulesMessages,
     },
   };
