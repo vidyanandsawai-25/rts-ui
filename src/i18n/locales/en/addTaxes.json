@@ -1,0 +1,356 @@
+{
+  "addTaxes": {
+    "title": "Property Tax Operations",
+    "subtitle": "Post, reverse, import, and monitor property tax transactions",
+    "breadcrumb": {
+      "home": "Home",
+      "propertyTax": "Property Tax",
+      "current": "Property Tax Operations"
+    },
+    "actions": {
+      "guidelines": "Guidelines",
+      "userManual": "User Manual",
+      "auditTrail": "Audit Trail"
+    },
+    "context": {
+      "financeYearLabel": "Finance Year",
+      "financeYearRequired": "*",
+      "processingOptions": "Processing Options",
+      "applyInterestPenalty": "Apply Interest / Penalty",
+      "sendSms": "Send SMS",
+      "sendEmail": "Send Email",
+      "previewBeforeExecute": "Preview Before Execute",
+      "permissionTitle": "User Permission",
+      "permissionDesc": "Allowed for Add Tax and Quarterly Add. Remove operations require approval."
+    },
+    "kpi": {
+      "totalProperties": "Total Properties",
+      "eligibleRecords": "Eligible Records",
+      "skippedRecords": "Skipped / Locked",
+      "runningJobs": "Running Jobs"
+    },
+    "runtime": {
+      "title": "Background Task: Property-wise Add Tax Execution",
+      "subtitle": "Active background job status. Click progress or View to see property-wise details.",
+      "view": "View",
+      "progressText": "{processed} / {total} properties processed",
+      "propertyListNote": "Property-wise list expands only when required.",
+      "status": {
+        "running": "Running",
+        "completed": "Completed",
+        "failed": "Failed",
+        "pending": "Pending"
+      },
+      "cards": {
+        "total": "Total",
+        "added": "Added",
+        "failed": "Failed",
+        "pending": "Pending"
+      },
+      "table": {
+        "propertyId": "Property ID",
+        "owner": "Owner",
+        "taxHead": "Tax Head",
+        "amount": "Amount",
+        "status": "Status",
+        "message": "Message"
+      },
+      "amountDisplay": "₹{amount}",
+      "pause": "Pause",
+      "downloadLog": "Download Log",
+      "openAudit": "Open Audit & Monitor"
+    },
+    "tabs": {
+      "manual": "Manual Selection",
+      "ai": "AI Assistant",
+      "excel": "Excel Import",
+      "audit": "Audit & Monitor"
+    },
+    "scope": {
+      "sectionTitle": "1. Scope Selection",
+      "subtitle": "Choose scope. Only relevant fields appear below.",
+      "selectTitle": "Select operation scope",
+      "selectSubtitle": "Choose how properties should be selected for this tax operation.",
+      "selected": "Selected: {scope}",
+      "modes": {
+        "all": "All Properties",
+        "zone": "Zone / Node",
+        "ward": "Ward / Sector",
+        "building": "Building Wise",
+        "property": "Property Wise",
+        "range": "Property Range",
+        "subtitles": {
+          "all": "Entire corporation",
+          "zone": "Zone-wise selection",
+          "ward": "Multi ward selection",
+          "building": "Building level",
+          "property": "Selected properties",
+          "range": "From-to property range"
+        }
+      },
+      "requiredInput": {
+        "title": "Required input for selected scope",
+        "allDesc": "All Properties is selected. No extra input is required."
+      },
+      "paramSummary": {
+        "selectedScope": "Selected Scope",
+        "requiredParams": "Required Parameters",
+        "expectedResult": "Expected Result",
+        "noInput": "No additional input",
+        "results": {
+          "all": "All eligible properties",
+          "zone": "Zone-wise eligible properties",
+          "ward": "Ward-wise eligible properties",
+          "building": "Building-wise eligible properties",
+          "property": "Selected eligible properties",
+          "range": "Range-wise eligible properties"
+        }
+      },
+      "panels": {
+        "allTitle": "No additional parameters are required for this scope",
+        "allMsg": "All Properties Selected",
+        "allDesc": "Operation applies to all properties under the corporation. Count details are available in the main summary and ready records section.",
+        "zoneTitle": "Select Zone / Node and Property Type",
+        "wardTitle": "Select one or more Ward / Sector values",
+        "buildingTitle": "Select Zone, Ward / Sector and Building",
+        "propertyTitle": "Search and add specific properties",
+        "rangeTitle": "Enter From Property No. and To Property No."
+      },
+      "fields": {
+        "zoneNode": "Zone / Node",
+        "wardSector": "Ward / Sector",
+        "propertyType": "Property Type",
+        "building": "Building",
+        "searchProperty": "Search Property",
+        "fromPropertyNo": "From Property No.",
+        "toPropertyNo": "To Property No.",
+        "allTypes": "All Types",
+        "required": "*",
+        "eligibleProperties": "Eligible Properties",
+        "selectedEligible": "Selected Eligible",
+        "eligibleInRange": "Eligible in Range",
+        "wardsSelected": "{count} wards selected",
+        "noWardsSelected": "Select wards...",
+        "addProperty": "+ Add Property",
+        "searchPlaceholder": "Property No. / Owner / Mobile",
+        "selectZone": "Select zone",
+        "selectWard": "Select ward",
+        "noWards": "No wards available",
+        "allWards": "All Ward / Sector",
+        "wardSearch": "Search ward...",
+        "zoneSearch": "Search zone...",
+        "noZones": "No zones found",
+        "allZoneNode": "All Zone / Node",
+        "selectZones": "Select Zone / Node",
+        "zonesSelected": "{count} zone(s) selected",
+        "propertySearching": "Searching...",
+        "propertyNoResults": "No properties found",
+        "propertySearchHint": "Enter at least 2 characters to search",
+        "alreadyAdded": "already added",
+        "buildingPlaceholder": "Search property no.",
+        "buildingLoading": "Loading properties...",
+        "buildingSelectWardFirst": "Select ward first"
+      },
+      "range": {
+        "warnTitle": "Select a specific property number range",
+        "warnDesc": "Range will be calculated only between the selected From Property and To Property. Zone/Ward duplication is avoided on this screen.",
+        "calcNote": "System will internally validate zone, ward and property sequence during preview.",
+        "calculate": "Calculate Range",
+        "fromPlaceholder": "Enter from property no.",
+        "toPlaceholder": "Enter to property no."
+      },
+      "validation": {
+        "title": "Execution Validation",
+        "financeYear": "Finance Year",
+        "scope": "Scope",
+        "eligibleRecords": "Eligible Records",
+        "permission": "Permission"
+      },
+      "readyRecords": "Ready Records",
+      "eligibleUnit": "eligible records",
+      "reviewExecute": "Review & Execute",
+      "reviewSubtitle": "Requires final confirmation"
+    },
+    "operations": {
+      "sectionTitle": "2. Validate Eligibility",
+      "sectionDesc": "Allowed actions based on user permission, finance year and selected scope.",
+      "labels": {
+        "addTax": "Add Tax",
+        "quarterlyAdd": "Quarterly Add",
+        "removeTax": "Remove Tax",
+        "quarterlyRemove": "Quarterly Remove"
+      },
+      "descriptions": {
+        "addTax": "Eligible for selected FY and scope",
+        "quarterlyAdd": "Eligible when quarter is selected",
+        "removeTax": "Requires senior confirmation",
+        "quarterlyRemove": "Requires approval note"
+      },
+      "badges": {
+        "allowed": "Allowed",
+        "restricted": "Restricted"
+      },
+      "hint": "Select allowed operation here. Final decision summary will be shown only after clicking Review & Execute."
+    },
+    "review": {
+      "title": "Review & Execute",
+      "subtitle": "Review the operation before executing",
+      "operation": "Operation",
+      "financeYear": "Finance Year",
+      "scope": "Scope",
+      "eligibleCount": "Eligible Records",
+      "options": "Processing Options",
+      "proceed": "Proceed & Start Execution",
+      "cancel": "Cancel",
+      "warning": "This action will apply taxes to {count} eligible properties. This cannot be undone."
+    },
+    "ai": {
+      "title": "AI Assistant",
+      "description": "AI prepares the operation. Final execution always requires review and eligibility validation.",
+      "inputPlaceholder": "e.g. Add tax for all residential properties in Ward 5 with interest",
+      "parseRequest": "Parse Request",
+      "parsedTitle": "Parsed & Eligible Result",
+      "parsedScope": "Scope",
+      "parsedOperation": "Operation",
+      "parsedEligible": "Eligible Records",
+      "parsedStatus": "Status",
+      "parsedAllowed": "Allowed",
+      "editRequest": "Edit Request",
+      "confirmProceed": "Confirm & Proceed"
+    },
+    "excel": {
+      "title": "Excel Import",
+      "description": "Upload file, validate eligibility, then import only valid rows.",
+      "dragDrop": "Drag and drop Excel file here",
+      "browseFile": "Browse File",
+      "uploadDesc": ".xlsx / .xls up to 10 MB",
+      "templateTitle": "Download Template",
+      "templateDesc": "Use standard import format.",
+      "downloadTemplate": "Download Template",
+      "validationTitle": "Eligibility Validation Preview",
+      "miniStats": {
+        "totalRows": "Total Rows",
+        "eligible": "Eligible",
+        "ineligible": "Ineligible",
+        "warnings": "Warnings"
+      },
+      "table": {
+        "rowNum": "Row",
+        "propertyId": "Property ID",
+        "operation": "Operation",
+        "eligibility": "Eligibility",
+        "reason": "Reason"
+      },
+      "validateEligibility": "Validate Eligibility",
+      "downloadRejected": "Download Rejected Rows",
+      "importEligible": "Import Eligible Rows"
+    },
+    "audit": {
+      "title": "Audit & Monitor",
+      "description": "Track who performed tax operations, where they were applied, runtime status, completion time and error reasons.",
+      "refresh": "Refresh",
+      "exportAudit": "Export Audit",
+      "filterSearch": "Search Job ID / Property / User / Ward",
+      "allOperations": "All Operations",
+      "allStatus": "All Status",
+      "filterApply": "Apply Filter",
+      "kpi": {
+        "totalJobs": "Total Jobs",
+        "completed": "Completed",
+        "running": "Running",
+        "failed": "Failed"
+      },
+      "kpiDesc": {
+        "allJobs": "All bulk tax operations",
+        "completed": "Successfully processed",
+        "running": "Currently executing",
+        "failed": "Require review"
+      },
+      "table": {
+        "jobId": "Job ID",
+        "dateTime": "Date & Time",
+        "operation": "Operation",
+        "doneBy": "Done By",
+        "scope": "Where / Scope",
+        "startTime": "Start Time",
+        "completeTime": "Complete Time",
+        "duration": "Duration",
+        "records": "Records",
+        "status": "Status",
+        "remarks": "Error / Remarks",
+        "action": "Action",
+        "view": "View"
+      },
+      "detail": {
+        "selectedJob": "Selected Job Details",
+        "jobId": "Job ID",
+        "operation": "Operation",
+        "financeYear": "Finance Year",
+        "quarter": "Quarter",
+        "startedBy": "Started By",
+        "userRole": "User Role",
+        "startTime": "Start Time",
+        "completeTime": "Complete Time",
+        "duration": "Duration",
+        "executionLocation": "Execution Location",
+        "sourceIp": "Source IP",
+        "device": "Device / Browser",
+        "processingSummary": "Processing Summary",
+        "totalSelected": "Total Selected",
+        "successfullyAdded": "Successfully Added",
+        "skippedRecords": "Skipped / Locked",
+        "failed": "Failed",
+        "skippedReasonBreakdown": "Skipped Reason Breakdown",
+        "propertyAuditTitle": "Property-wise Execution Audit",
+        "propertyAuditDesc": "Detailed record-level audit for selected job.",
+        "downloadPropertyLog": "Download Property Log"
+      },
+      "propertyColumns": {
+        "propertyId": "Property ID",
+        "owner": "Owner",
+        "taxHead": "Tax Head",
+        "amount": "Amount",
+        "execTime": "Execution Time",
+        "status": "Status",
+        "error": "Error / Reason"
+      },
+      "skipReasons": {
+        "alreadyProcessed": "Already processed for FY",
+        "propertyLocked": "Property locked by assessment process",
+        "pendingVerification": "Pending owner/property verification"
+      },
+      "paginationShowing": "{from}–{to} of {total}",
+      "amountDisplay": "₹{amount}",
+      "statuses": {
+        "added": "Added",
+        "failed": "Failed",
+        "skipped": "Skipped",
+        "locked": "Locked",
+        "running": "Running",
+        "completed": "Completed",
+        "pending": "Pending",
+        "processing": "Processing"
+      }
+    },
+    "messages": {
+      "noJobSelected": "Select a job row to view its details.",
+      "noEligibleRecords": "No eligible records found for the selected scope.",
+      "executionStarted": "Execution started for {count} properties.",
+      "executionCompleted": "Execution completed: {success} added, {failed} failed.",
+      "loadingInit": "Loading...",
+      "errorInit": "Failed to load operations console.",
+      "fetchFailed": "Failed to fetch data.",
+      "executeFailed": "Execution failed. Please try again."
+    },
+    "validation": {
+      "financeYearRequired": "Finance year is required.",
+      "scopeRequired": "Scope is required.",
+      "operationRequired": "Operation is required.",
+      "zoneRequired": "Zone is required for the selected scope.",
+      "wardRequired": "At least one ward is required.",
+      "buildingRequired": "Building is required.",
+      "propertyRequired": "Select at least one property.",
+      "rangeRequired": "Both from and to property numbers are required."
+    }
+  }
+}
