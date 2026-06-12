@@ -54,7 +54,7 @@ export function useOldTaxationForm(propertyOldDetails: PropertyOldDetailsApiItem
     const isPropertyValid = formData.oldPropertyNo.trim().length > 0;
 
     setAttemptedSubmit(true);
-
+    
     if (!isZoneValid || !isWardValid || !isPropertyValid) {
       toast.error(t("oldDetails.validation.fillRequiredFields"));
       return;
