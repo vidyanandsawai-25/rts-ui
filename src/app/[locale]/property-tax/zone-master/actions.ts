@@ -1043,7 +1043,10 @@ export async function getAllPropertiesForWardAction(wardId: number): Promise<{
       return { success: false, error: response.error || "Failed to fetch properties" };
     }
 
-    return { success: true, data: response.data.items || [] };
+    return {
+      success: true,
+      data: (response.data.items || []).filter((item) => item.markedForDeletion !== true),
+    };
   } catch (error) {
     if (error instanceof ApiError) {
       logger.error("[getAllPropertiesForWardAction] API Error", {
@@ -1079,7 +1082,13 @@ export async function getBuildingListByWardAction(wardId: number): Promise<{
     }
 
     const buildingList = await getBuildingListByWard(wardId);
-    return { success: true, data: buildingList };
+    return {
+      success: true,
+      data: buildingList.filter(
+        (item) =>
+          (item as BuildingListItem & { markedForDeletion?: boolean }).markedForDeletion !== true
+      ),
+    };
   } catch (error) {
     if (error instanceof ApiError) {
       logger.error("[getBuildingListByWardAction] API Error", {
