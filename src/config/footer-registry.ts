@@ -37,6 +37,7 @@ export const FOOTER_REGISTRY: Record<string, FooterButtonStyle> = {
   'PTIS_COMBINE': { iconName: 'Merge', variant: 'outline', alignment: 'middle' },
   'PTIS_PARTITION': { iconName: 'Split', variant: 'blue', alignment: 'middle' },
   'PTIS_TAP_WATER': { iconName: 'Droplet', variant: 'outline', alignment: 'middle' },
+  'PTIS_APPLICABLE_TAXES_INFO': { iconName: 'Info', variant: 'outline', alignment: 'middle' },
   'PTIS_SPLIT': { iconName: 'Split', variant: 'outline', alignment: 'middle' },
   'PTIS_TRANSFER': { iconName: 'User', variant: 'outline', alignment: 'middle' },
   'PTIS_AMALGAMATION': { iconName: 'Layers', variant: 'outline', alignment: 'middle' },
