@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useConfirm } from '@/components/common/ConfirmProvider';
-import { CombinePropertyItem } from '@/types/combine-property.types';
+import { CombinePropertyItem, PropertyCombineDetails } from '@/types/combine-property.types';
 import { useCombinePropertyFilters } from './useCombinePropertyFilters';
 import { useCombinePropertyState } from './useCombinePropertyState';
 import { useCombinePropertySubmit } from './useCombinePropertySubmit';
@@ -13,6 +13,7 @@ export interface UseCombinePropertyParams {
   selectedBasePropertyId?: string;
   selectedWardId?: string;
   selectedPropertyNo?: string;
+  initialReviewData?: PropertyCombineDetails[];
   t: (key: string, values?: Record<string, string | number>) => string;
 }
 
@@ -22,12 +23,13 @@ export function useCombinePropertyForm({
   selectedBasePropertyId,
   selectedWardId,
   selectedPropertyNo,
+  initialReviewData = [],
   t,
 }: UseCombinePropertyParams) {
   const { confirm } = useConfirm();
 
   // 1. State Hook
-  const state = useCombinePropertyState({ selectedBasePropertyId, t });
+  const state = useCombinePropertyState({ selectedBasePropertyId, initialReviewData, t });
 
   // 2. Filters Hook
   const filters = useCombinePropertyFilters(

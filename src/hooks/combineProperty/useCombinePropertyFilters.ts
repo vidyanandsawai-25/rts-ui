@@ -37,17 +37,20 @@ export function useCombinePropertyFilters(
 
   const calculatePropertyParams = useCallback(
     (method: SelectionMethod, from: string, to: string, individual: string[]) => {
+      const sortedSubPropertyList = [...subPropertyList].sort((a, b) => {
+        return (a.fromProperty || '').localeCompare(b.fromProperty || '', undefined, { numeric: true, sensitivity: 'base' });
+      });
       let slice: CombinePropertyItem[] = [];
       if (method === 'range' && from && to) {
-        const fromIdx = subPropertyList.findIndex((i) => String(i.id) === from);
-        const toIdx = subPropertyList.findIndex((i) => String(i.id) === to);
+        const fromIdx = sortedSubPropertyList.findIndex((i) => String(i.id) === from);
+        const toIdx = sortedSubPropertyList.findIndex((i) => String(i.id) === to);
         if (fromIdx !== -1 && toIdx !== -1) {
           const start = Math.min(fromIdx, toIdx);
           const end = Math.max(fromIdx, toIdx);
-          slice = subPropertyList.slice(start, end + 1);
+          slice = sortedSubPropertyList.slice(start, end + 1);
         }
       } else if (method === 'individual' && individual.length > 0) {
-        slice = subPropertyList.filter((i) => individual.includes(String(i.id)));
+        slice = sortedSubPropertyList.filter((i) => individual.includes(String(i.id)));
       }
       const partitionNos = Array.from(new Set(slice.map((i) => i.fromProperty || '0'))).join(',');
       const propertyNos = Array.from(new Set(slice.map((i) => i.propertyNo).filter(Boolean))).join(',');
@@ -88,8 +91,9 @@ export function useCombinePropertyFilters(
   const handleRangeFromChange = (_name: string, value: string) => {
     onClearReview();
     if (rangeTo) {
-      const fromIdx = subPropertyList.findIndex((i) => String(i.id) === value);
-      const toIdx = subPropertyList.findIndex((i) => String(i.id) === rangeTo);
+      const sortedSubPropertyList = [...subPropertyList].sort((a, b) => (a.fromProperty || '').localeCompare(b.fromProperty || '', undefined, { numeric: true, sensitivity: 'base' }));
+      const fromIdx = sortedSubPropertyList.findIndex((i) => String(i.id) === value);
+      const toIdx = sortedSubPropertyList.findIndex((i) => String(i.id) === rangeTo);
       if (fromIdx !== -1 && toIdx !== -1 && toIdx < fromIdx) {
         toast.error(t('rangeInvalidError'));
       }
@@ -101,8 +105,9 @@ export function useCombinePropertyFilters(
   const handleRangeToChange = (_name: string, value: string) => {
     onClearReview();
     if (rangeFrom) {
-      const fromIdx = subPropertyList.findIndex((i) => String(i.id) === rangeFrom);
-      const toIdx = subPropertyList.findIndex((i) => String(i.id) === value);
+      const sortedSubPropertyList = [...subPropertyList].sort((a, b) => (a.fromProperty || '').localeCompare(b.fromProperty || '', undefined, { numeric: true, sensitivity: 'base' }));
+      const fromIdx = sortedSubPropertyList.findIndex((i) => String(i.id) === rangeFrom);
+      const toIdx = sortedSubPropertyList.findIndex((i) => String(i.id) === value);
       if (fromIdx !== -1 && toIdx !== -1 && toIdx < fromIdx) {
         toast.error(t('rangeInvalidError'));
       }
@@ -141,8 +146,9 @@ export function useCombinePropertyFilters(
   const selectedCount = useMemo(() => {
     if (selectionMethod === 'individual') return selectedProperties.length;
     if (selectionMethod === 'range' && rangeFrom && rangeTo) {
-      const fromIdx = subPropertyList.findIndex((i) => String(i.id) === rangeFrom);
-      const toIdx = subPropertyList.findIndex((i) => String(i.id) === rangeTo);
+      const sortedSubPropertyList = [...subPropertyList].sort((a, b) => (a.fromProperty || '').localeCompare(b.fromProperty || '', undefined, { numeric: true, sensitivity: 'base' }));
+      const fromIdx = sortedSubPropertyList.findIndex((i) => String(i.id) === rangeFrom);
+      const toIdx = sortedSubPropertyList.findIndex((i) => String(i.id) === rangeTo);
       if (fromIdx === -1 || toIdx === -1) return 0;
       return Math.abs(toIdx - fromIdx) + 1;
     }
@@ -151,8 +157,9 @@ export function useCombinePropertyFilters(
 
   const isRangeInvalid = useMemo(() => {
     if (selectionMethod !== 'range' || !rangeFrom || !rangeTo) return false;
-    const fromIdx = subPropertyList.findIndex((i) => String(i.id) === rangeFrom);
-    const toIdx = subPropertyList.findIndex((i) => String(i.id) === rangeTo);
+    const sortedSubPropertyList = [...subPropertyList].sort((a, b) => (a.fromProperty || '').localeCompare(b.fromProperty || '', undefined, { numeric: true, sensitivity: 'base' }));
+    const fromIdx = sortedSubPropertyList.findIndex((i) => String(i.id) === rangeFrom);
+    const toIdx = sortedSubPropertyList.findIndex((i) => String(i.id) === rangeTo);
     return fromIdx !== -1 && toIdx !== -1 && toIdx < fromIdx;
   }, [selectionMethod, rangeFrom, rangeTo, subPropertyList]);
 

@@ -53,6 +53,7 @@ export async function getLockUnlockProperties(
   if (params.WardId) urlParams.append("WardId", params.WardId.toString());
   if (params.FromPropertyNo?.trim()) urlParams.append("FromPropertyNo", params.FromPropertyNo.trim());
   if (params.ToPropertyNo?.trim()) urlParams.append("ToPropertyNo", params.ToPropertyNo.trim());
+  if (params.PartitionNo?.trim()) urlParams.append("PartitionNo", params.PartitionNo.trim());
   if (params.Search?.trim()) urlParams.append("Search", params.Search.trim());
   if (params.SearchTerm?.trim()) urlParams.append("SearchTerm", params.SearchTerm.trim());
   if (params.SortBy?.trim()) urlParams.append("SortBy", params.SortBy.trim());

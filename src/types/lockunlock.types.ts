@@ -30,6 +30,7 @@ export interface LockUnlockPropertiesQueryParams {
   WardId?: number;
   FromPropertyNo?: string;
   ToPropertyNo?: string;
+  PartitionNo?: string;
   Search?: string;
   PageNumber?: number;
   PageSize?: number;

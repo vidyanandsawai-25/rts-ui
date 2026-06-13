@@ -269,10 +269,25 @@ export function useLockUnlockMaster({
       startTransition(async () => {
         setIsSearching(true);
         try {
+          let partitionNoStr: string | undefined = undefined;
+          if (formData.fromProperty && formData.toProperty && propertyOptions.length > 0) {
+            const fromIdx = propertyOptions.findIndex((p) => p.value === formData.fromProperty);
+            const toIdx = propertyOptions.findIndex((p) => p.value === formData.toProperty);
+            if (fromIdx !== -1 && toIdx !== -1 && fromIdx <= toIdx) {
+              const range = propertyOptions.slice(fromIdx, toIdx + 1);
+              const partitions = range
+                .map((p) => p.value.includes("-") ? p.value.substring(p.value.indexOf("-") + 1) : "0");
+              if (partitions.length > 0) {
+                partitionNoStr = partitions.join(",");
+              }
+            }
+          }
+
           const response: LockUnlockPropertiesResponse = await fetchLockUnlockPropertiesPagedAction({
             WardId: Number(formData.wardId),
             FromPropertyNo: formData.fromProperty ? formData.fromProperty.split("-")[0] : undefined,
             ToPropertyNo: formData.toProperty ? formData.toProperty.split("-")[0] : undefined,
+            PartitionNo: partitionNoStr,
             PageNumber: pageNum,
             PageSize: pageSz,
             Search: searchTerm || undefined,
@@ -305,7 +320,7 @@ export function useLockUnlockMaster({
         }
       });
     },
-    [appliedPropertySearchTerm, formData, t]
+    [appliedPropertySearchTerm, formData, propertyOptions, t]
   );
 
   const handleShow = useCallback(() => {

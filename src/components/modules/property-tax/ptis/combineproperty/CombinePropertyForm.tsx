@@ -32,6 +32,7 @@ interface CombinePropertyFormProps {
   selectedPropertyNo?: string;
   showHistory?: boolean;
   historyData?: PropertyCombineDetails[];
+  initialReviewData?: PropertyCombineDetails[];
 }
 
 /* ------------------------------------------------------------------ */
@@ -66,6 +67,7 @@ export default function CombinePropertyForm(props: CombinePropertyFormProps) {
     selectedPropertyNo,
     showHistory = false,
     historyData = [],
+    initialReviewData = [],
   } = props;
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -109,6 +111,7 @@ export default function CombinePropertyForm(props: CombinePropertyFormProps) {
     selectedBasePropertyId,
     selectedWardId,
     selectedPropertyNo,
+    initialReviewData,
     t,
   });
 
@@ -144,7 +147,10 @@ export default function CombinePropertyForm(props: CombinePropertyFormProps) {
   }, [basePropertyList]);
 
   const SUB_PROPERTY_OPTIONS = useMemo<SearchSelectOption[]>(() => {
-    return (subPropertyList || []).map(toSelectOption);
+    const sortedList = [...(subPropertyList || [])].sort((a, b) => {
+      return (a.fromProperty || '').localeCompare(b.fromProperty || '', undefined, { numeric: true, sensitivity: 'base' });
+    });
+    return sortedList.map(toSelectOption);
   }, [subPropertyList]);
 
   const PROPERTY_TYPE_OPTIONS = useMemo<SearchSelectOption[]>(() => {
