@@ -4,18 +4,19 @@ import { toast } from 'sonner';
 
 export interface UseCombinePropertyStateParams {
   selectedBasePropertyId?: string;
+  initialReviewData?: PropertyCombineDetails[];
   t?: (key: string, values?: Record<string, string | number>) => string;
 }
 
 export function useCombinePropertyState(params?: UseCombinePropertyStateParams) {
-  const { selectedBasePropertyId, t } = params || {};
-  const [reviewData, setReviewData] = useState<PropertyCombineDetails[]>([]);
-  const [isReviewing, setIsReviewing] = useState(false);
+  const { selectedBasePropertyId, initialReviewData = [], t } = params || {};
+  const [reviewData, setReviewData] = useState<PropertyCombineDetails[]>(initialReviewData);
+  const [isReviewing, setIsReviewing] = useState(initialReviewData.length > 0);
   const [remark, setRemark] = useState('');
   const [remarkError, setRemarkError] = useState(false);
   const [selectedPropertyType, setSelectedPropertyType] = useState('');
   const [showPropertyTypeDropdown, setShowPropertyTypeDropdown] = useState(false);
-  const [checkedPropertyIds, setCheckedPropertyIds] = useState<Set<number>>(new Set());
+  const [checkedPropertyIds, setCheckedPropertyIds] = useState<Set<number>>(new Set(initialReviewData.length > 0 && selectedBasePropertyId ? [Number(selectedBasePropertyId)] : []));
 
   const handleRemarkChange = (val: string) => {
     setRemark(val);
