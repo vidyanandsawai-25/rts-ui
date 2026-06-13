@@ -86,3 +86,8 @@ input::-ms-clear {
   max-width: 100vw !important;
 }
 
+/* Scroll lock when drawer/modal is open */
+body.drawer-open {
+  overflow: hidden !important;
+}
+

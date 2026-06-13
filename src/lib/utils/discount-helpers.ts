@@ -3,6 +3,7 @@ import {
     PropertyDiscountInfoResponseDto,
     DiscountAttributeItemDto
 } from "@/types/discount.types";
+import { getLocalizedName } from "@/lib/utils/social-details";
 
 /**
  * Maps the API response DTO to the dynamic local form state.
@@ -21,7 +22,10 @@ export const mapApiToDiscountState = (
     data.discountAttributes.forEach((attr) => {
         state[attr.id] = {
             ...attr,
-            enabled: !!attr.bitValue,
+            dataType: attr.dataType,
+            intValue: attr.intValue ?? null,
+            decimalValue: attr.decimalValue ?? null,
+            enabled: attr.dataType.toUpperCase() === "BIT" ? !!attr.bitValue : (attr.isActive ?? !!attr.bitValue),
             dateValue: attr.dateValue ? attr.dateValue.split("T")[0] : null,
             isUploading: false,
         };
@@ -86,7 +90,10 @@ export const getFilteredDiscounts = (
     discountData: DiscountState,
     searchTerm: string,
     showActiveFirst: boolean,
-    t: (key: string) => string
+    t: {
+        (key: string, values?: Record<string, string | number | Date>): string;
+        has?: (key: string) => boolean;
+    }
 ) => {
     let list = Object.values(discountData).sort(
         (a, b) => (a.displayOrder || 0) - (b.displayOrder || 0)
@@ -94,10 +101,11 @@ export const getFilteredDiscounts = (
     if (searchTerm) {
         const term = searchTerm.toLowerCase();
         list = list.filter((discount) => {
-            const translated = t(`discount.socialAttributes.${discount.socialAttributeCode}`);
-            const displayName = translated && !translated.includes("discount.socialAttributes")
-                ? translated
-                : discount.socialAttributeName;
+            const displayName = getLocalizedName(
+                discount.socialAttributeCode,
+                discount.socialAttributeName,
+                t
+            );
             return displayName.toLowerCase().includes(term);
         });
     }

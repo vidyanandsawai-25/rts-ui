@@ -85,7 +85,7 @@
       "valuationMethod": "Valuation Method",
       "filterType": "Filter Type",
       "amount": "Enter Amount",
-      "amountFrom": "Enter From Amount",
+      "amountFrom": "From Amount",
       "topCount": "Top Count (e.g. 1)",
       "toAmount": "To Amount",
       "taxDefaulter": "Tax Defaulter",

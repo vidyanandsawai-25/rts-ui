@@ -46,6 +46,12 @@ export const AttributeControl: React.FC<AttributeControlProps> = ({
                 </div>
             );
         case "INT": {
+            const code = attr.socialAttributeCode.toUpperCase();
+            const isYear = code === "WATER_CONN_YEAR";
+            const isTree = code.includes("TREE");
+            const isSolar = code.includes("SOLAR");
+            const digitsLimit = isYear ? 4 : isTree ? 6 : isSolar ? 4 : 3;
+
             const { min, max } = getMinMaxValues(attr.socialAttributeCode);
             return (
                 <Input
@@ -53,6 +59,7 @@ export const AttributeControl: React.FC<AttributeControlProps> = ({
                     step="1"
                     min={min}
                     max={max}
+                    maxLength={digitsLimit}
                     onKeyDown={preventNegativeInput}
                     placeholder={t("discount.socialPlaceholders.enterValue") || "Enter value"}
                     value={state.intValue ?? ""}
@@ -60,7 +67,9 @@ export const AttributeControl: React.FC<AttributeControlProps> = ({
                     error={hasError ? " " : undefined}
                     onChange={(e) => {
                         const raw = e.target.value;
-                        handleValueChange(attr.id, "intValue", raw === "" ? null : Number(raw));
+                        if (raw.replace(/\D/g, "").length <= digitsLimit) {
+                            handleValueChange(attr.id, "intValue", raw === "" ? null : raw);
+                        }
                     }}
                     className="h-8 w-full font-semibold"
                 />
@@ -79,13 +88,14 @@ export const AttributeControl: React.FC<AttributeControlProps> = ({
                     value={state.decimalValue ?? ""}
                     disabled={disabled}
                     error={hasError ? " " : undefined}
-                    onChange={(e) =>
+                    onChange={(e) => {
+                        const raw = e.target.value;
                         handleValueChange(
                             attr.id,
                             "decimalValue",
-                            e.target.value ? parseFloat(e.target.value) : null
-                        )
-                    }
+                            raw === "" ? null : raw
+                        );
+                    }}
                     className="h-8 w-full font-semibold"
                 />
             );

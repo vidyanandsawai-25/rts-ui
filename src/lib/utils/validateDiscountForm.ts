@@ -49,7 +49,19 @@ export const validateDiscountForm = (
                     missingFields.push(t("discount.socialValidation.invalidInteger") || "Value must be a valid integer.");
                 } else {
                     const val = Number(strVal);
-                    if (val <= 0) {
+                    const code = (item.socialAttributeCode || "").toUpperCase();
+                    const isYear = code === "WATER_CONN_YEAR";
+                    const isTree = code.includes("TREE") || code === "TREE_COUNT";
+                    const isSolar = code.includes("SOLAR");
+                    const digitsLimit = isYear ? 4 : isTree ? 6 : isSolar ? 4 : 3;
+
+                    if (strVal.length > digitsLimit) {
+                        missingFields.push(
+                            code === "WATER_CONN_YEAR"
+                                ? (t("discount.socialValidation.yearMaxDigits") || "Year cannot exceed 4 digits.")
+                                : (t("discount.socialValidation.maxDigits", { digits: digitsLimit }) || `Value cannot exceed ${digitsLimit} digits.`)
+                        );
+                    } else if (val <= 0) {
                         missingFields.push(t("discount.socialValidation.countMin") || "Value must be at least 1.");
                     } else if (val > 2147483647) {
                         missingFields.push(t("discount.socialValidation.maxVal", { max: 2147483647 }) || "Value cannot exceed 2147483647.");
@@ -72,10 +84,15 @@ export const validateDiscountForm = (
             if (strVal === "") {
                 missingFields.push(t("discount.socialValidation.required", { fieldName: displayName }) || `${displayName} is required.`);
             } else {
+                const parts = strVal.split(".");
+                const hasMoreThanTwoDecimals = parts[1] && parts[1].length > 2;
+
                 if (/\s/.test(strVal)) {
                     missingFields.push(t("common.validation.numberNoSpaces") || "Spaces are not allowed in numbers.");
                 } else if (!/^\d+(\.\d+)?$/.test(strVal)) {
                     missingFields.push(t("discount.socialValidation.invalidDecimal") || "Value must be a valid decimal number.");
+                } else if (hasMoreThanTwoDecimals) {
+                    missingFields.push(t("discount.socialValidation.maxTwoDecimals") || "Maximum 2 decimal places allowed.");
                 } else {
                     const val = Number(strVal);
                     if (val <= 0) {
@@ -83,6 +100,9 @@ export const validateDiscountForm = (
                     }
 
                     // Attribute-specific rules
+                    if (item.socialAttributeCode === "GREEN_PROPERTY_STAR" && (val < 1 || val > 5)) {
+                        missingFields.push(t("discount.socialValidation.ratingRange") || "Rating must be between 1 and 5.");
+                    }
                     if (item.socialAttributeCode === "SOLAR_ELECTRIC_CAPACITY" && val > 100000) {
                         missingFields.push(t("discount.socialValidation.maxCapacity") || "Capacity cannot exceed 100,000.");
                     }

@@ -92,7 +92,7 @@ export function PropertySearch({
 
   return (
     <PageContainer>
-      <div className="w-full space-y-1.5">
+      <div className="w-full space-y-1.5 relative z-30">
         <TableHeader
           title={t("title")}
           subtitle={t("subtitle")}

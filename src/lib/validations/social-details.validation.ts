@@ -62,15 +62,23 @@ export function validateSocialDetails(
             }
         }
 
-        // 2. Data Type specific value range check (Only if values are present)
         if (attr.dataType === "INT" && attr.intValue !== null && attr.intValue !== undefined && String(attr.intValue) !== "") {
             const val = Number(attr.intValue);
             const code = attr.socialAttributeCode.toUpperCase();
+            const strVal = String(attr.intValue).replace(/\D/g, "");
+            const isYear = code === "WATER_CONN_YEAR";
+            const isTree = code.includes("TREE");
+            const isSolar = code.includes("SOLAR");
+            const digitsLimit = isYear ? 4 : isTree ? 6 : isSolar ? 4 : 3;
 
             if (isNaN(val) || !Number.isInteger(val)) {
                 errors[attr.socialAttributeId] = getErr("invalidInteger", "Value must be a valid integer.");
             } else if (val < 0) {
                 errors[attr.socialAttributeId] = getErr("negativeNotAllowed", "Value cannot be negative.");
+            } else if (strVal.length > digitsLimit) {
+                errors[attr.socialAttributeId] = code === "WATER_CONN_YEAR"
+                    ? getErr("yearMaxDigits", "Year cannot exceed 4 digits.")
+                    : getErr("maxDigits", `Value cannot exceed ${digitsLimit} digits.`, { digits: digitsLimit });
             } else if (attr.isRequiredWhenParentTrue && val < 1) {
                 errors[attr.socialAttributeId] = getErr("countMin", "Count must be at least 1.");
             } else {
@@ -110,19 +118,29 @@ export function validateSocialDetails(
         if (attr.dataType === "DECIMAL" && attr.decimalValue !== null && attr.decimalValue !== undefined && String(attr.decimalValue) !== "") {
             const val = Number(attr.decimalValue);
             const code = attr.socialAttributeCode.toUpperCase();
+            const strVal = String(attr.decimalValue);
+            const hasMoreThanTwoDecimals = strVal.includes(".") && strVal.split(".")[1].length > 2;
 
             if (isNaN(val)) {
                 errors[attr.socialAttributeId] = getErr("invalidDecimal", "Value must be a valid number.");
             } else if (val < 0) {
                 errors[attr.socialAttributeId] = getErr("negativeNotAllowed", "Value cannot be negative.");
+            } else if (hasMoreThanTwoDecimals) {
+                errors[attr.socialAttributeId] = getErr("maxTwoDecimals", "Maximum 2 decimal places allowed.");
             } else if (attr.isRequiredWhenParentTrue && val <= 0) {
                 errors[attr.socialAttributeId] = getErr("countMin", "Value must be greater than 0.");
             } else {
                 const { min, max } = getMinMaxValues(code);
                 if (val < min) {
-                    errors[attr.socialAttributeId] = getErr("minVal", `Value cannot be less than ${min}.`, { min });
+                    if (code.includes("STAR_RATING") || code.includes("STAR_RAT") || code === "GREEN_PROPERTY_STAR") {
+                        errors[attr.socialAttributeId] = getErr("ratingRange", "Rating must be between 1 and 5.");
+                    } else {
+                        errors[attr.socialAttributeId] = getErr("minVal", `Value cannot be less than ${min}.`, { min });
+                    }
                 } else if (max !== undefined && val > max) {
-                    if (code === "ROAD_WIDTH") {
+                    if (code.includes("STAR_RATING") || code.includes("STAR_RAT") || code === "GREEN_PROPERTY_STAR") {
+                        errors[attr.socialAttributeId] = getErr("ratingRange", "Rating must be between 1 and 5.");
+                    } else if (code === "ROAD_WIDTH") {
                         errors[attr.socialAttributeId] = getErr("maxRoad", "Road width cannot exceed 500.");
                     } else if (code.includes("CAPACITY")) {
                         errors[attr.socialAttributeId] = getErr("maxCapacity", "Capacity cannot exceed 100,000.");
@@ -163,7 +181,7 @@ export function getMinMaxValues(socialAttributeCode: string) {
     let min = 0;
     let max: number | undefined = undefined;
 
-    if (code === "GREEN_PROPERTY_STAR" || code === "GREEN_PROPERTY_STAR_RATING" || code.includes("STAR_RATING") || code.includes("STAR_RAT")) {
+    if (code.includes("STAR_RATING") || code.includes("STAR_RAT") || code === "GREEN_PROPERTY_STAR") {
         min = 1;
         max = 5;
     } else if (code.includes("BOREWELL") || (code.includes("WELL") && !code.includes("BOREWELL"))) {
@@ -174,15 +192,13 @@ export function getMinMaxValues(socialAttributeCode: string) {
         max = 5000;
     } else if (code.includes("SWIMMING")) {
         max = 20;
-    } else if (code.includes("TREE")) {
+    } else if (code.includes("TREE") || code.includes("CAPACITY")) {
         max = 100000;
+    } else if (code === "ROAD_WIDTH") {
+        max = 500;
     } else if (code === "WATER_CONN_YEAR") {
         min = 1900;
         max = new Date().getFullYear();
-    } else if (code === "ROAD_WIDTH") {
-        max = 500;
-    } else if (code.includes("CAPACITY")) {
-        max = 100000;
     }
 
     return { min, max };

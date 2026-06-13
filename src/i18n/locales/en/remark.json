@@ -56,7 +56,9 @@
         "customRemarkTypeMinLength": "Custom Remark Type must be at least 3 characters.",
         "customRemarkTypeMaxLength": "Custom Remark Type cannot exceed 50 characters.",
         "customRemarkTypeSpacesOnly": "Custom Remark Type cannot contain only spaces.",
-        "customRemarkTypeConsecutiveSpaces": "Custom Remark Type cannot contain multiple consecutive spaces."
+        "customRemarkTypeConsecutiveSpaces": "Custom Remark Type cannot contain multiple consecutive spaces.",
+        "customRemarkTypeFormat": "Only letters, numbers and basic punctuation allowed (special characters only in between, single space only)",
+        "remarkFormat": "Only letters, numbers and basic punctuation allowed (special characters only in between, single space only)"
       }
     },
     "filter": {

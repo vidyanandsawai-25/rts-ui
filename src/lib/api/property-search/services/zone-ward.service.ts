@@ -123,7 +123,13 @@ async function fetchWardPagesForZone(
     pageNumber += 1;
   }
 
-  return Array.from(collected.values()).sort((a, b) =>
-    (a.description ?? a.wardNo).localeCompare(b.description ?? b.wardNo, "mr")
-  );
+  return Array.from(collected.values()).sort((a, b) => {
+    if (a.sequenceNo !== null && b.sequenceNo !== null && a.sequenceNo !== b.sequenceNo) {
+      return a.sequenceNo - b.sequenceNo;
+    }
+    return (a.description ?? a.wardNo).localeCompare(b.description ?? b.wardNo, "mr", {
+      numeric: true,
+      sensitivity: "base",
+    });
+  });
 }

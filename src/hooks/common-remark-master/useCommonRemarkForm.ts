@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
 import type { CommonRemark, CommonRemarkFormModel, RemarkCategory } from "@/types/common-remark-master/common-remark.types";
@@ -10,6 +10,8 @@ import {
   validateRemark,
   validateIsActive,
 } from "@/lib/api/common-remark-master/common-remark-validation";
+import { DESCRIPTION_SANITIZE } from "@/lib/utils/validation-rules";
+import { getCleanErrorMessage } from "@/lib/utils/backend-error-detection";
 
 interface UseCommonRemarkFormProps {
   id: number | null;
@@ -27,6 +29,7 @@ export function useCommonRemarkForm({
   onCancel,
 }: UseCommonRemarkFormProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const locale = useLocale();
   const [, startTransition] = useTransition();
   const isEdit = id != null;
@@ -82,7 +85,11 @@ export function useCommonRemarkForm({
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((p) => ({ ...p, [name]: value }));
+    let sanitizedValue = value;
+    if (name === "remark") {
+      sanitizedValue = value.replace(DESCRIPTION_SANITIZE, "");
+    }
+    setFormData((p) => ({ ...p, [name]: sanitizedValue }));
     setErrors((p) => ({ ...p, [name]: "" }));
   }, []);
 
@@ -99,7 +106,8 @@ export function useCommonRemarkForm({
 
   const handleCustomTypeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
-    setCustomRemarkType(value);
+    const sanitizedValue = value.replace(DESCRIPTION_SANITIZE, "");
+    setCustomRemarkType(sanitizedValue);
     setErrors((p) => ({ ...p, customRemarkType: "" }));
   }, []);
 
@@ -107,8 +115,13 @@ export function useCommonRemarkForm({
     const { name, value } = e.target;
     setTouched((p) => ({ ...p, [name]: true }));
 
-    const valData = { ...formData, [name]: value };
-    const ctVal = name === "customRemarkType" ? value : customRemarkType;
+    let sanitizedValue = value;
+    if (name === "remark" || name === "customRemarkType") {
+      sanitizedValue = value.replace(DESCRIPTION_SANITIZE, "");
+    }
+
+    const valData = { ...formData, [name]: sanitizedValue };
+    const ctVal = name === "customRemarkType" ? sanitizedValue : customRemarkType;
     const fieldErrors = validate(valData, ctVal);
     setErrors((p) => ({ ...p, [name]: fieldErrors[name] }));
   }, [formData, customRemarkType, validate]);
@@ -117,10 +130,11 @@ export function useCommonRemarkForm({
     setOpen(false);
     setTimeout(() => {
       startTransition(() => {
-        router.push(`/${locale}/configuration-settings/common-remark-master`);
+        const paramsStr = searchParams.toString();
+        router.push(`/${locale}/configuration-settings/common-remark-master${paramsStr ? `?${paramsStr}` : ""}`);
       });
     }, 300);
-  }, [router, locale]);
+  }, [router, locale, searchParams]);
 
   const handleCancel = useCallback(() => {
     onCancel();
@@ -194,7 +208,20 @@ export function useCommonRemarkForm({
         } else if (res.error === "invalid_id") {
           toast.error(t("apiErrors.invalidData"));
         } else {
-          toast.error(res.message || tCommon("errors.operationFailed"));
+          const rawMessage = res.message || "";
+          const cleanMsg = getCleanErrorMessage(rawMessage);
+          
+          if (cleanMsg === "RemarkTypeName_Invalid") {
+            const translated = t("form.validation.customRemarkTypeFormat") || "Invalid Custom Remark Type format.";
+            setErrors((p) => ({ ...p, customRemarkType: translated }));
+            toast.error(translated);
+          } else if (cleanMsg === "Remark_Invalid") {
+            const translated = t("form.validation.remarkFormat") || "Invalid Remark format.";
+            setErrors((p) => ({ ...p, remark: translated }));
+            toast.error(translated);
+          } else {
+            toast.error(cleanMsg || tCommon("errors.operationFailed"));
+          }
         }
         return;
       }
