@@ -157,6 +157,21 @@ describe("social-details.validation", () => {
             expect(errors[1]).toBe("Rating must be between 1 and 5.");
         });
 
+        it("should reject decimal ratings as they must be integers", () => {
+            const attrRating = createBaseAttr({
+                socialAttributeId: 1,
+                socialAttributeCode: "GREEN_PROPERTY_STAR_RATING",
+                dataType: "INT",
+                intValue: 4.2
+            });
+
+            const errors = validateSocialDetails({
+                1: attrRating
+            });
+
+            expect(errors[1]).toBe("Value must be a valid integer.");
+        });
+
         it("should enforce text field string length boundaries", () => {
             const attrStatus = createBaseAttr({
                 socialAttributeId: 1,
@@ -271,6 +286,89 @@ describe("social-details.validation", () => {
             });
             const errors = validateSocialDetails({ 1: attr });
             expect(errors[1]).toBeUndefined();
+        });
+
+        it("should reject integers exceeding digits limit (dynamic based on code)", () => {
+            const attrIntNormal = createBaseAttr({
+                socialAttributeId: 1,
+                dataType: "INT",
+                intValue: 1234
+            });
+            const attrIntYear = createBaseAttr({
+                socialAttributeId: 2,
+                socialAttributeCode: "WATER_CONN_YEAR",
+                dataType: "INT",
+                intValue: 2026
+            });
+            const attrIntYearInvalid = createBaseAttr({
+                socialAttributeId: 3,
+                socialAttributeCode: "WATER_CONN_YEAR",
+                dataType: "INT",
+                intValue: 20267
+            });
+            const attrIntTree = createBaseAttr({
+                socialAttributeId: 4,
+                socialAttributeCode: "NUMBER_OF_TREES",
+                dataType: "INT",
+                intValue: 98765
+            });
+            const attrIntTreeInvalid = createBaseAttr({
+                socialAttributeId: 5,
+                socialAttributeCode: "NUMBER_OF_TREES",
+                dataType: "INT",
+                intValue: 1234567
+            });
+            const attrIntSolar = createBaseAttr({
+                socialAttributeId: 6,
+                socialAttributeCode: "NUMBER_OF_SOLAR",
+                dataType: "INT",
+                intValue: 1234
+            });
+            const attrIntSolarInvalid = createBaseAttr({
+                socialAttributeId: 7,
+                socialAttributeCode: "NUMBER_OF_SOLAR",
+                dataType: "INT",
+                intValue: 12345
+            });
+
+            const errors = validateSocialDetails({
+                1: attrIntNormal,
+                2: attrIntYear,
+                3: attrIntYearInvalid,
+                4: attrIntTree,
+                5: attrIntTreeInvalid,
+                6: attrIntSolar,
+                7: attrIntSolarInvalid
+            });
+
+            expect(errors[1]).toBe("Value cannot exceed 3 digits.");
+            expect(errors[2]).toBeUndefined();
+            expect(errors[3]).toBe("Year cannot exceed 4 digits.");
+            expect(errors[4]).toBeUndefined();
+            expect(errors[5]).toBe("Value cannot exceed 6 digits.");
+            expect(errors[6]).toBeUndefined();
+            expect(errors[7]).toBe("Value cannot exceed 4 digits.");
+        });
+
+        it("should reject decimals with more than 2 decimal places", () => {
+            const attrDecValid = createBaseAttr({
+                socialAttributeId: 1,
+                dataType: "DECIMAL",
+                decimalValue: 12.34
+            });
+            const attrDecInvalid = createBaseAttr({
+                socialAttributeId: 2,
+                dataType: "DECIMAL",
+                decimalValue: 12.345
+            });
+
+            const errors = validateSocialDetails({
+                1: attrDecValid,
+                2: attrDecInvalid
+            });
+
+            expect(errors[1]).toBeUndefined();
+            expect(errors[2]).toBe("Maximum 2 decimal places allowed.");
         });
     });
 });

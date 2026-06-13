@@ -33,17 +33,30 @@ export const DiscountValueInput: React.FC<DiscountValueInputProps> = ({
                 <span className="text-red-500 ml-0.5">*</span>
             </Label>
             
-            {dataTypeUpper === "INT" && (
-                <Input
-                    type="number"
-                    step="1"
-                    value={data.intValue !== null && data.intValue !== undefined ? String(data.intValue) : ""}
-                    onChange={(e) => onInputChange("intValue", e.target.value)}
-                    placeholder={t("discount.amountPlaceholder") || "Enter value"}
-                    disabled={isDisabled}
-                    className={inputClassName}
-                />
-            )}
+            {dataTypeUpper === "INT" && (() => {
+                const code = (data.socialAttributeCode || "").toUpperCase();
+                const isYear = code === "WATER_CONN_YEAR";
+                const isTree = code.includes("TREE") || code === "TREE_COUNT";
+                const isSolar = code.includes("SOLAR");
+                const digitsLimit = isYear ? 4 : isTree ? 6 : isSolar ? 4 : 3;
+                return (
+                    <Input
+                        type="number"
+                        step="1"
+                        maxLength={digitsLimit}
+                        value={data.intValue !== null && data.intValue !== undefined ? String(data.intValue) : ""}
+                        onChange={(e) => {
+                            const raw = e.target.value;
+                            if (raw.replace(/\D/g, "").length <= digitsLimit) {
+                                onInputChange("intValue", raw);
+                            }
+                        }}
+                        placeholder={t("discount.amountPlaceholder") || "Enter value"}
+                        disabled={isDisabled}
+                        className={inputClassName}
+                    />
+                );
+            })()}
 
             {dataTypeUpper === "DECIMAL" && (
                 <Input

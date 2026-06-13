@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, startTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { FileText } from "lucide-react";
 
 import { PageContainer, TableHeader, SearchInput, Select } from "@/components/common";
@@ -13,6 +13,7 @@ import { useCommonRemarkMaster } from "@/hooks/common-remark-master/useCommonRem
 
 export default function CommonRemarkMaster(props: CommonRemarkProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const {
     isPending,
     searchValue,
@@ -49,7 +50,8 @@ export default function CommonRemarkMaster(props: CommonRemarkProps) {
           actionLabel={t("buttons.add")}
           onActionClick={() => {
             startTransition(() => {
-              router.push(`${base}/add`);
+              const paramsStr = searchParams.toString();
+              router.push(`${base}/add${paramsStr ? `?${paramsStr}` : ""}`);
             });
           }}
           className="relative z-30"
@@ -90,7 +92,8 @@ export default function CommonRemarkMaster(props: CommonRemarkProps) {
                 aria-label={tCommon("table.actions.edit")}
                 onClick={() => {
                   startTransition(() => {
-                    router.push(`${base}/edit/${row.id}`);
+                    const paramsStr = searchParams.toString();
+                    router.push(`${base}/edit/${row.id}${paramsStr ? `?${paramsStr}` : ""}`);
                   });
                 }}
               />

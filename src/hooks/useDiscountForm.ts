@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
 import { useLoading } from "@/hooks/useLoading";
@@ -33,16 +33,12 @@ export const useDiscountForm = (
         mapApiToDiscountState(initialDiscountData)
     );
 
-    // Sync state when server data (prop) changes — API is the single source of truth
     const [prevInitialDiscountData, setPrevInitialDiscountData] = useState(initialDiscountData);
 
-    useEffect(() => {
-        if (initialDiscountData !== prevInitialDiscountData) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect -- Sync initialDiscountData prop changes to local state
-            setPrevInitialDiscountData(initialDiscountData);
-            setDiscountData(mapApiToDiscountState(initialDiscountData));
-        }
-    }, [initialDiscountData, prevInitialDiscountData]);
+    if (initialDiscountData !== prevInitialDiscountData) {
+        setPrevInitialDiscountData(initialDiscountData);
+        setDiscountData(mapApiToDiscountState(initialDiscountData));
+    }
 
     const clearError = useCallback((id: number) => {
         setValidationErrors((prev) => {

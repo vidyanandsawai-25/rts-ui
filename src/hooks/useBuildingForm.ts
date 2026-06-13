@@ -32,6 +32,13 @@ export const useBuildingForm = (
         mapApiToBuildingState(initialData)
     );
 
+    const [prevInitialData, setPrevInitialData] = useState(initialData);
+
+    if (initialData !== prevInitialData) {
+        setPrevInitialData(initialData);
+        setBuildingPermission(mapApiToBuildingState(initialData));
+    }
+
     const clearError = useCallback((id: number) => {
         setValidationErrors((prev) => {
             const next = { ...prev };
