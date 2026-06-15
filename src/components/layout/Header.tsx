@@ -164,7 +164,7 @@ export function Header({ ulbData, userDisplayName, clientIp }: HeaderProps) {
   const ipDisplay = clientIp?.trim() || t('userMenu.ipUnavailable');
 
   return (
-    <header className="fixed inset-x-0 top-0 z-40 overflow-visible">
+    <header className="fixed inset-x-0 top-0 z-[100] overflow-visible">
       <div
         className="relative h-20 w-full overflow-visible shadow-2xl border-b border-white/10"
         style={{ backgroundColor: HEADER_COLORS.background }}

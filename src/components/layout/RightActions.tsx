@@ -11,12 +11,14 @@ interface RightActionsProps {
   actions: FooterAction[];
   onActionClick: (command: string) => void;
   isLoading?: boolean;
+  iconOnly?: boolean;
 }
 
 export function RightActions({
   actions,
   onActionClick,
   isLoading = false,
+  iconOnly = false,
 }: RightActionsProps) {
   const t = useTranslations('ptis');
 
@@ -41,7 +43,8 @@ export function RightActions({
           : buttonName;
 
         const buttonClasses = cn(
-          'text-[10px] h-8 sm:h-9 cursor-pointer rounded-lg transition-all duration-300 active:scale-95 shrink-0 flex flex-row items-center justify-center font-bold px-3 sm:px-4 whitespace-nowrap shadow-sm border border-slate-200 bg-white/95 text-slate-700',
+          'text-[10px] h-8 sm:h-9 cursor-pointer rounded-lg transition-all duration-300 active:scale-95 shrink-0 flex flex-row items-center justify-center font-bold whitespace-nowrap shadow-sm border border-slate-200 bg-white/95 text-slate-700',
+          iconOnly ? 'w-8 h-8 sm:w-9 sm:h-9 !p-0' : 'px-3 sm:px-4',
           
           variant === 'primary' || variant === 'blue'
             ? 'bg-gradient-to-r from-blue-700 to-indigo-900 text-white! border-transparent! hover:from-blue-800 hover:to-indigo-950 hover:shadow-[0_4px_12px_rgba(30,58,138,0.25)] hover:scale-[1.02]'
@@ -69,7 +72,7 @@ export function RightActions({
         const key = `${actionCommand}-${id ?? index}`;
         const hasText = !!localizedButtonName;
 
-        if (hasText) {
+        if (hasText && !iconOnly) {
           // If button has text + icon, render without Tooltip
           return (
             <Button
