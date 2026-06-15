@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import dynamic from 'next/dynamic';
 import { Button, ToastContainer } from '@/components/common';
 import type { ToastProps } from '@/components/common';
-import { CheckCircle, ArrowLeft, Loader2 } from 'lucide-react';
+import { CheckCircle, ArrowLeft, Loader2, AlertTriangle } from 'lucide-react';
 import { PropertyDetailsOnRenter } from './PropertyDetailsOnRenter';
 import AgreementDetails from './AgreementDetails';
 import { SelectedFloorDetails } from './SelectedFloorDetails';
@@ -206,6 +206,18 @@ export const RenterDetailsForm = memo(
       return validateRenterForm(formData.renterDetails, currentFloorContext, existingFloors).length === 0;
     }, [formData?.renterDetails, currentFloorContext, existingFloors]);
 
+    const isAgreementExpired = useMemo(() => {
+      const toDateStr = formData?.renterDetails?.agreementDateTo;
+      if (!toDateStr) return false;
+      const toDate = new Date(toDateStr);
+      if (isNaN(toDate.getTime())) return false;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const compDate = new Date(toDate);
+      compDate.setHours(0, 0, 0, 0);
+      return compDate < today;
+    }, [formData?.renterDetails?.agreementDateTo]);
+
     const [popupFY, setPopupFY] = useState<string | null>(null);
     const [toasts, setToasts] = useState<ToastProps[]>([]);
 
@@ -244,6 +256,14 @@ export const RenterDetailsForm = memo(
             </div>
           </div>
 
+          {isAgreementExpired && (
+            <div className="mb-4 flex items-center gap-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-red-700 animate-in fade-in slide-in-from-top-2 duration-300">
+              <AlertTriangle className="w-5 h-5 text-red-500 shrink-0" />
+              <span className="text-xs font-bold uppercase tracking-wider">
+                {t('floor.renterSection.agreementExpiredWarning')}
+              </span>
+            </div>
+          )}
 
           <SelectedFloorDetails
             formData={formData}

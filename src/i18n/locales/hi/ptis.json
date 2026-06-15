@@ -2,6 +2,7 @@
   "title": "संपत्ति कर मूल्यांकन",
   "subtitle": "संपत्ति की जानकारी का व्यापक प्रबंधन करें",
   "media": {
+    "title": "मीडिया / छवियां",
     "frontElevation": "मुख्य मुखभाग (सामने)",
     "floorPlan": "मंजिल का नक्शा",
     "satelliteTitle": "जीआईएस / सैटेलाइट दृश्य",
@@ -609,6 +610,7 @@
     "tryAgain": "पुनः प्रयास करें",
     "errorId": "त्रुटि आईडी: {id}",
     "propertyNotSearched": "कृपया संयोजन करने से पहले पहले एक संपत्ति खोजें।",
+    "selectPropertyFirst": "कृपया पहले एक संपत्ति चुनें।",
     "networkError": {
       "title": "सर्वर से कनेक्ट करने में असमर्थ",
       "description": "हम संपत्ति कर सेवा तक नहीं पहुँच सके। यह आमतौर पर एक अस्थायी नेटवर्क समस्या होती है।",
@@ -656,5 +658,11 @@
   "table": {
     "page": "पृष्ठ {current} का {total}",
     "property": "संपत्ति {current} की {total}"
+  },
+  "legends": {
+    "commercial": "निवासी",
+    "residential": "अनिवासी",
+    "nonResidential": "गैर-करयोग्य",
+    "industrial": "औद्योगिक"
   }
 }

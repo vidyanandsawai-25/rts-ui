@@ -107,8 +107,13 @@ export function useSocialAttributeList({
             startTransition(() => router.refresh());
           } else {
             let errorMessage = tCommon('errors.deleteError');
-            if (result.statusCode === 409) errorMessage = t('apiErrors.inUse');
-            else if (result.statusCode === 400) errorMessage = t('apiErrors.validationError');
+            if (result.statusCode === 409) {
+              if (result.messageKey === 'hasChildren') {
+                errorMessage = t('apiErrors.hasChildren');
+              } else {
+                errorMessage = t('apiErrors.inUse');
+              }
+            } else if (result.statusCode === 400) errorMessage = t('apiErrors.validationError');
             else if (result.statusCode === 404) errorMessage = t('apiErrors.notFound');
             else if (result.message) errorMessage = result.message;
             toast.error(errorMessage);

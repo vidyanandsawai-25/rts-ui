@@ -121,10 +121,12 @@ export function buildPropertySearchPayload(
   const criteria = applyTabSearchCriteria(searchCriteria, activeTab);
 
   if (activeTab === "quick-search") {
+    const propertyNoFrom = criteria.propertyNoFrom || undefined;
+    const propertyNoTo = criteria.propertyNoTo || propertyNoFrom || undefined;
     return withUnpagedResults({
       ...payload,
-      propertyNoFrom: criteria.propertyNoFrom || undefined,
-      propertyNoTo: criteria.propertyNoTo || undefined,
+      propertyNoFrom,
+      propertyNoTo,
       oldPropertyNo: criteria.oldPropertyNo || undefined,
       upicId: criteria.upicId || undefined,
       citySurveyNo: criteria.citySurveyNo || undefined,

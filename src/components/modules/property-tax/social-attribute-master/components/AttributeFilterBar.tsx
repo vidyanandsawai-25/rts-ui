@@ -34,7 +34,7 @@ export function AttributeFilterBar({
           <SearchInput
             value={searchValue}
             onChange={onSearchChange}
-            placeholder="Search by code or name"
+            placeholder={t('list.filters.search')}
             className="mb-0 w-full text-gray-900"
           />
         </div>
@@ -43,7 +43,7 @@ export function AttributeFilterBar({
             value={dataTypeValue}
             onChange={(e) => onDataTypeChange(e.target.value)}
             options={[
-              { label: 'All Data Types', value: 'ALL' },
+              { label: t('list.filters.dataType.placeholder'), value: 'ALL' },
               { label: 'BIT', value: 'BIT' },
               { label: 'INT', value: 'INTEGER' },
               { label: 'DECIMAL', value: 'DECIMAL' },
@@ -52,7 +52,7 @@ export function AttributeFilterBar({
             ]}
             selectSize="md"
             className="w-full text-gray-700 font-medium"
-            ariaLabel="Filter by Data Type"
+            ariaLabel={t('list.filters.dataType.ariaLabel')}
           />
         </div>
         <div className="w-[180px]">
@@ -60,14 +60,14 @@ export function AttributeFilterBar({
             value={attributeValue}
             onChange={(e) => onAttributeChange(e.target.value)}
             options={[
-              { label: 'All Attributes', value: 'ALL' },
-              { label: 'Parent Only', value: 'PARENT_ONLY' },
-              { label: 'Child Only', value: 'CHILD_ONLY' },
-              { label: 'Discount Applicable', value: 'DISCOUNT' },
+              { label: t('list.filters.attributeType.placeholder'), value: 'ALL' },
+              { label: t('list.filters.attributeType.parentOnly'), value: 'PARENT_ONLY' },
+              { label: t('list.filters.attributeType.childOnly'), value: 'CHILD_ONLY' },
+              { label: t('list.filters.attributeType.discount'), value: 'DISCOUNT' },
             ]}
             selectSize="md"
             className="w-full text-gray-700 font-medium"
-            ariaLabel="Filter by Attribute Type"
+            ariaLabel={t('list.filters.attributeType.ariaLabel')}
           />
         </div>
       </div>
