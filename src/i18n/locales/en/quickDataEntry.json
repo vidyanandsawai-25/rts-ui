@@ -772,7 +772,8 @@
             "attachDocument": "Attach Document",
             "download": "Download",
             "agreementPreview": "Agreement Preview",
-            "pleaseUploadAgreement": "Please upload an agreement to preview"
+            "pleaseUploadAgreement": "Please upload an agreement to preview",
+            "agreementExpiredWarning": "Warning: The agreement has expired!"
         },
         "rooms": "Rooms",
         "area": "Area",

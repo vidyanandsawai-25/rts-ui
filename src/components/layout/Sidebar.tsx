@@ -143,7 +143,7 @@ export function Sidebar({ menuItems, locale }: SidebarProps) {
                       </div>
                     </div>
                   </summary>
-                  <div className="ml-5 border-l-2 border-gray-200 pl-2 space-y-1 my-1 max-h-60 overflow-y-auto [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full">
+                  <div className="sidebar-expandable-label ml-5 border-l-2 border-gray-200 pl-2 space-y-1 my-1 max-h-60 overflow-y-auto [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full">
                     {item.subItems!.map((sub, sIdx) => {
                       const subPath = sub.href.startsWith('/') ? sub.href : `/${sub.href}`;
                       const subActive = isPathActive(subPath);
