@@ -610,6 +610,7 @@
     "unauthorized": "You do not have permission to view this data.",
     "serverError": "Internal server error occurred while fetching data.",
     "generic": "Something went wrong while processing your request.",
+    "propertyNotSearched": "Please search for a property first before combining.",
     "noValuationData": "No valuation data available for the selected method.",
     "ratesNotFound": "Rates not found for the selected assessment year. Please configure the Rate Master.",
     "invalidAssessmentYear": "Invalid or missing assessment year for one or more floor records.",

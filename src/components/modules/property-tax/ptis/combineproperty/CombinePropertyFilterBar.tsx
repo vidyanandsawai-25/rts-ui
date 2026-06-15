@@ -72,6 +72,7 @@ export function CombinePropertyFilterBar({
           onChange={handleBasePropertyChange}
           placeholder={t('select')}
           required
+          disabled={true}
           className="text-[11px] h-[28px]"
         />
       </div>
