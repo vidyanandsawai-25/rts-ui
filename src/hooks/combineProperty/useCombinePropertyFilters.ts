@@ -99,7 +99,7 @@ export function useCombinePropertyFilters(
       }
     }
     const params = calculatePropertyParams('range', value, rangeTo, []);
-    router.replace(buildUrl({ from: value, partitionNo: params.partitionNos, propertyNos: params.propertyNos }), { scroll: false });
+    router.replace(buildUrl({ from: value, combinePartitionNo: params.partitionNos, propertyNos: params.propertyNos }), { scroll: false });
   };
 
   const handleRangeToChange = (_name: string, value: string) => {
@@ -113,13 +113,13 @@ export function useCombinePropertyFilters(
       }
     }
     const params = calculatePropertyParams('range', rangeFrom, value, []);
-    router.replace(buildUrl({ to: value, partitionNo: params.partitionNos, propertyNos: params.propertyNos }), { scroll: false });
+    router.replace(buildUrl({ to: value, combinePartitionNo: params.partitionNos, propertyNos: params.propertyNos }), { scroll: false });
   };
 
   const handleIndividualChange = (values: string[]) => {
     onClearReview();
     const params = calculatePropertyParams('individual', '', '', values);
-    router.replace(buildUrl({ individual: values.join(','), partitionNo: params.partitionNos, propertyNos: params.propertyNos }), { scroll: false });
+    router.replace(buildUrl({ individual: values.join(','), combinePartitionNo: params.partitionNos, propertyNos: params.propertyNos }), { scroll: false });
   };
 
   const clearFilters = () => {
@@ -137,7 +137,7 @@ export function useCombinePropertyFilters(
         individual: undefined,
         rangeFromPartition: undefined,
         rangeToPartition: undefined,
-        partitionNo: undefined,
+        combinePartitionNo: undefined,
         propertyNos: undefined,
       })
     );

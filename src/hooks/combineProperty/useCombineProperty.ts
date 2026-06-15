@@ -52,7 +52,7 @@ export function useCombinePropertyForm({
     selectedBasePropertyId,
     basePartitionNo,
     submitPropertyNos: filters.searchParams.get('propertyNos') || undefined,
-    partitionNo: filters.searchParams.get('partitionNo') || '',
+    partitionNo: filters.searchParams.get('combinePartitionNo') || '',
     checkedProperties: state.checkedReviewData,
     selectedPropertyType: state.selectedPropertyType,
     remark: state.remark,

@@ -19,13 +19,14 @@ interface PageProps {
     societyDetailId?: string;
     showHistory?: string;
     partitionNo?: string;
+    combinePartitionNo?: string;
     propertyNos?: string;
   }>;
 }
 
 export default async function Page({ searchParams }: PageProps) {
   const params = await searchParams;
-  const { basePropertyId, wardId, wardNo, propertyNo, basePartitionNo, categoryId, societyDetailId, showHistory, partitionNo, propertyNos } = params;
+  const { basePropertyId, wardId, wardNo, propertyNo, basePartitionNo, categoryId, societyDetailId, showHistory, combinePartitionNo, propertyNos } = params;
 
   // ── 1. Fetch base property list (filtered by ward if available) ─────────
   const baseResult = await fetchCombinePropertiesPagedAction({
@@ -77,14 +78,14 @@ export default async function Page({ searchParams }: PageProps) {
     historyData = await fetchCombinePropertiesHistoryAction({});
   }
 
-  // ── 5. Fetch review data if partitionNo is present in URL ─────────
+  // ── 5. Fetch review data if combinePartitionNo is present in URL ─────────
   let initialReviewData: PropertyCombineDetails[] = [];
-  if (wardId && propertyNos && partitionNo && showHistory !== 'true') {
+  if (wardId && propertyNos && combinePartitionNo && showHistory !== 'true') {
     try {
       const data = await fetchPropertyCombineDetailsAction({
         wardId: Number(wardId),
         propertyNo: propertyNos,
-        partitionNo: partitionNo,
+        partitionNo: combinePartitionNo,
       });
 
       initialReviewData = [...data].sort((a, b) => {

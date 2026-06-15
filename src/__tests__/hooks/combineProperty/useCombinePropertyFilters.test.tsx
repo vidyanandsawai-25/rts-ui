@@ -100,7 +100,7 @@ describe('useCombinePropertyFilters', () => {
     });
 
     // P2 to P4 includes IDs 2, 3, 4
-    expect(mockReplace).toHaveBeenCalledWith('/test-path?from=2&to=4&partitionNo=P2%2CP3%2CP4&propertyNos=P2%2CP3%2CP4', { scroll: false });
+    expect(mockReplace).toHaveBeenCalledWith('/test-path?from=2&to=4&combinePartitionNo=P2%2CP3%2CP4&propertyNos=P2%2CP3%2CP4', { scroll: false });
   });
 
   it('shows error if range is invalid', () => {
@@ -125,7 +125,7 @@ describe('useCombinePropertyFilters', () => {
       result.current.handleIndividualChange(['2', '4']);
     });
 
-    expect(mockReplace).toHaveBeenCalledWith('/test-path?individual=2%2C4&partitionNo=P2%2CP4&propertyNos=P2%2CP4', { scroll: false });
+    expect(mockReplace).toHaveBeenCalledWith('/test-path?individual=2%2C4&combinePartitionNo=P2%2CP4&propertyNos=P2%2CP4', { scroll: false });
   });
 
   it('clears filters correctly', () => {
