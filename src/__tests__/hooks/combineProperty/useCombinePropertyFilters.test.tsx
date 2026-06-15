@@ -138,6 +138,6 @@ describe('useCombinePropertyFilters', () => {
       result.current.clearFilters();
     });
 
-    expect(mockPush).toHaveBeenCalledWith('/test-path?method=individual');
+    expect(mockPush).toHaveBeenCalledWith('/test-path?basePropertyId=1&wardId=10&method=individual');
   });
 });

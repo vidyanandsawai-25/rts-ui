@@ -125,13 +125,6 @@ export function useCombinePropertyFilters(
   const clearFilters = () => {
     router.push(
       buildUrl({
-        basePropertyId: undefined,
-        wardId: undefined,
-        wardNo: undefined,
-        propertyNo: undefined,
-        categoryId: undefined,
-        societyDetailId: undefined,
-        basePartitionNo: undefined,
         from: undefined,
         to: undefined,
         individual: undefined,
