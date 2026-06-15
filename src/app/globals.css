@@ -49,6 +49,11 @@ aside:not(.sidebar-expanded-aside) .sidebar-expandable-label {
   display: none !important;
 }
 
+aside:not(.sidebar-expanded-aside) details > div {
+  display: none !important;
+}
+
+
 aside:not(.sidebar-expanded-aside) .sidebar-footer-label {
   height: 0 !important;
   opacity: 0 !important;

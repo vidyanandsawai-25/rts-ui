@@ -2,8 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, usePathname } from 'next/navigation';
-import { useTranslations } from 'next-intl';
-import { Clock, LogOut } from 'lucide-react';
 
 import {
   AUTH_COOKIES,
@@ -16,7 +14,7 @@ import {
   getSessionExpiresAtUnixFromCookie,
   SESSION_EXPIRY_CLOCK_SKEW_SECONDS,
   isSessionExpiredAtUnix,
-  isSessionExpiredByCookie,
+  isSessionWarningActiveAtUnix,
 } from '@/lib/utils/session-expiry-client';
 import { locales } from '@/i18n/config';
 import { redirectSessionExpiredOnClient } from '@/lib/utils/session-unauthorized';
@@ -37,14 +35,14 @@ function hasLoggedInFlag(): boolean {
 }
 
 /**
- * When the session expires on a protected page: 10s countdown, then redirect to login.
- * Uses the client-readable `session_expires_at` cookie only — no server polling in effects.
+ * Headless controller monitoring session expiration.
+ * Dispatches 'ntis:session-warning-tick' custom event with warning duration.
+ * Redirects to login when session expires.
  */
 export function SessionTimeoutGuard() {
   const pathname = usePathname();
   const { locale: localeParam } = useParams();
   const locale = typeof localeParam === 'string' ? localeParam : 'en';
-  const t = useTranslations('common.login.sessionTimeout');
 
   const [visible, setVisible] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(SESSION_TIMEOUT_REDIRECT_SECONDS);
@@ -68,41 +66,65 @@ export function SessionTimeoutGuard() {
     }
   }, []);
 
-  const startCountdown = useCallback(() => {
+  const startCountdown = useCallback((initialSeconds: number) => {
     if (logoutStartedRef.current) return;
     logoutStartedRef.current = true;
     clearCountdown();
     clearExpiryTimer();
     setVisible(true);
-    setSecondsLeft(SESSION_TIMEOUT_REDIRECT_SECONDS);
+    setSecondsLeft(initialSeconds);
 
     countdownRef.current = setInterval(() => {
       setSecondsLeft((prev) => {
-        if (prev <= 1) {
-          clearCountdown();
-          return 0;
-        }
-        return prev - 1;
+        const next = prev - 1;
+        return next <= 0 ? 0 : next;
       });
     }, 1000);
   }, [clearCountdown, clearExpiryTimer]);
+
+  // Synchronize warning tick event with other components safely during commit phase (after render)
+  useEffect(() => {
+    if (!visible) return;
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('ntis:session-warning-tick', {
+          detail: { secondsLeft, active: secondsLeft > 0 },
+        })
+      );
+    }
+
+    if (secondsLeft <= 0) {
+      clearCountdown();
+    }
+  }, [secondsLeft, visible, clearCountdown]);
 
   const checkClientSessionExpiry = useCallback(() => {
     if (logoutStartedRef.current || redirectingRef.current) return;
 
     const nowUnix = Math.floor(Date.now() / 1000);
-    const knownExpiryUnix = knownExpiryUnixRef.current;
+    const expiresUnix = knownExpiryUnixRef.current ?? getSessionExpiresAtUnixFromCookie();
 
-    // Use in-memory expiry first so redirect still works after browser expires cookies.
-    if (knownExpiryUnix !== null && isSessionExpiredAtUnix(knownExpiryUnix, nowUnix)) {
-      startCountdown();
-      return;
-    }
+    if (expiresUnix !== null) {
+      if (isSessionExpiredAtUnix(expiresUnix, nowUnix)) {
+        redirectingRef.current = true;
+        clearLegacyAuthClientStorage();
+        window.location.assign(`/${locale}/login?error=${SESSION_EXPIRED_LOGIN_ERROR}`);
+        return;
+      }
 
-    if (isSessionExpiredByCookie(nowUnix)) {
-      startCountdown();
+      if (isSessionWarningActiveAtUnix(expiresUnix, nowUnix)) {
+        const remaining = (expiresUnix - SESSION_EXPIRY_CLOCK_SKEW_SECONDS) - nowUnix;
+        if (remaining > 0) {
+          startCountdown(remaining);
+        } else {
+          redirectingRef.current = true;
+          clearLegacyAuthClientStorage();
+          window.location.assign(`/${locale}/login?error=${SESSION_EXPIRED_LOGIN_ERROR}`);
+        }
+      }
     }
-  }, [startCountdown]);
+  }, [locale, startCountdown]);
 
   useEffect(() => {
     if (!pathname || isLoginPath(pathname)) return;
@@ -118,15 +140,30 @@ export function SessionTimeoutGuard() {
     }
 
     if (expiresUnix !== null && isSessionExpiredAtUnix(expiresUnix)) {
-      startCountdown();
+      redirectingRef.current = true;
+      clearLegacyAuthClientStorage();
+      window.location.assign(`/${locale}/login?error=${SESSION_EXPIRED_LOGIN_ERROR}`);
+      return;
+    }
+
+    if (expiresUnix !== null && isSessionWarningActiveAtUnix(expiresUnix)) {
+      const remaining = (expiresUnix - SESSION_EXPIRY_CLOCK_SKEW_SECONDS) - Math.floor(Date.now() / 1000);
+      if (remaining > 0) {
+        startCountdown(remaining);
+      } else {
+        redirectingRef.current = true;
+        clearLegacyAuthClientStorage();
+        window.location.assign(`/${locale}/login?error=${SESSION_EXPIRED_LOGIN_ERROR}`);
+      }
       return;
     }
 
     if (expiresUnix !== null) {
-      const msUntilExpiry =
-        (expiresUnix - SESSION_EXPIRY_CLOCK_SKEW_SECONDS) * 1000 - Date.now();
-      if (msUntilExpiry > 0 && msUntilExpiry <= MAX_TIMEOUT_MS) {
-        expiryTimerRef.current = setTimeout(checkClientSessionExpiry, msUntilExpiry);
+      const msUntilWarning =
+        (expiresUnix - SESSION_EXPIRY_CLOCK_SKEW_SECONDS - SESSION_TIMEOUT_REDIRECT_SECONDS) * 1000 -
+        Date.now();
+      if (msUntilWarning > 0 && msUntilWarning <= MAX_TIMEOUT_MS) {
+        expiryTimerRef.current = setTimeout(checkClientSessionExpiry, msUntilWarning);
       }
     }
 
@@ -143,8 +180,15 @@ export function SessionTimeoutGuard() {
       clearExpiryTimer();
       document.removeEventListener('visibilitychange', onVisibility);
       clearCountdown();
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('ntis:session-warning-tick', {
+            detail: { secondsLeft: 0, active: false },
+          })
+        );
+      }
     };
-  }, [pathname, startCountdown, clearCountdown, clearExpiryTimer, checkClientSessionExpiry]);
+  }, [pathname, startCountdown, clearCountdown, clearExpiryTimer, checkClientSessionExpiry, locale]);
 
   // Tab-session isolation: Ensure user has a valid tab-level session when authenticated.
   useEffect(() => {
@@ -168,8 +212,6 @@ export function SessionTimeoutGuard() {
         sessionStorage.setItem('is_tab_active_session', 'true');
       } catch {}
     } else if (!isTabSessionActive) {
-      // Authenticated according to cookies, but this tab session is not marked active.
-      // E.g. URL pasted in new tab or tab closed and reopened.
       redirectingRef.current = true;
       clearLegacyAuthClientStorage();
       try {
@@ -198,54 +240,5 @@ export function SessionTimeoutGuard() {
     window.location.assign(`/${locale}/login?error=${SESSION_EXPIRED_LOGIN_ERROR}`);
   }, [visible, secondsLeft, locale]);
 
-  const containerRef = useRef<HTMLDivElement>(null);
-  const previousFocusRef = useRef<HTMLElement | null>(null);
-
-  useEffect(() => {
-    if (visible) {
-      previousFocusRef.current = document.activeElement as HTMLElement;
-      containerRef.current?.focus();
-    } else {
-      previousFocusRef.current?.focus();
-      previousFocusRef.current = null;
-    }
-  }, [visible]);
-
-  if (!visible) return null;
-
-  return (
-    <div
-      ref={containerRef}
-      tabIndex={-1}
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 px-4 backdrop-blur-sm focus:outline-none"
-      role="alertdialog"
-      aria-modal="true"
-      aria-labelledby="session-timeout-title"
-      aria-describedby="session-timeout-desc"
-    >
-      <div className="w-full max-w-md rounded-2xl border border-amber-200/80 bg-white p-8 shadow-2xl">
-        <div className="mb-4 flex justify-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-100 text-amber-700">
-            <Clock className="h-7 w-7" aria-hidden />
-          </div>
-        </div>
-        <h2 id="session-timeout-title" className="text-center text-xl font-bold text-gray-900">
-          {t('title')}
-        </h2>
-        <p id="session-timeout-desc" className="mt-3 text-center text-sm text-gray-600">
-          {t('description')}
-        </p>
-        <p
-          className="mt-6 text-center text-4xl font-bold tabular-nums text-amber-600"
-          aria-live="polite"
-        >
-          {t('countdown', { seconds: secondsLeft })}
-        </p>
-        <p className="mt-4 flex items-center justify-center gap-2 text-center text-xs font-medium text-gray-500">
-          <LogOut className="h-3.5 w-3.5 shrink-0" aria-hidden />
-          {t('redirectHint')}
-        </p>
-      </div>
-    </div>
-  );
+  return null;
 }

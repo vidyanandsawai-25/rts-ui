@@ -772,7 +772,8 @@
             "attachDocument": "दस्तावेज़ संलग्न करें",
             "download": "डाउनलोड",
             "agreementPreview": "समझौता पूर्वदर्शन",
-            "pleaseUploadAgreement": "पूर्वावलोकन के लिए कृपया एक समझौता अपलोड करें"
+            "pleaseUploadAgreement": "पूर्वावलोकन के लिए कृपया एक समझौता अपलोड करें",
+            "agreementExpiredWarning": "चेतावनी: समझौता समाप्त हो गया है!"
         },
         "rooms": "कमरे",
         "area": "क्षेत्रफल",

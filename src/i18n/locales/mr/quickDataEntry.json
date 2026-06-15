@@ -772,7 +772,8 @@
             "attachDocument": "दस्तऐवज जोडा",
             "download": "डाउनलोड",
             "agreementPreview": "करार पूर्वदर्शन",
-            "pleaseUploadAgreement": "पूर्वदर्शनासाठी कृपया करार अपलोड करा"
+            "pleaseUploadAgreement": "पूर्वदर्शनासाठी कृपया करार अपलोड करा",
+            "agreementExpiredWarning": "चेतावणी: कराराची मुदत संपली आहे!"
         },
         "rooms": "खोल्या",
         "area": "क्षेत्रफळ",

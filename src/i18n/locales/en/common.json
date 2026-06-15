@@ -352,7 +352,8 @@
       "title": "Session expired",
       "description": "Your session has ended due to timeout. You will be signed out automatically.",
       "countdown": "{seconds}s",
-      "redirectHint": "Redirecting to login when the timer reaches zero"
+      "redirectHint": "Redirecting to login when the timer reaches zero",
+      "saveWorkHint": "Session Expiring, save the work!"
     },
     "errors": {
       "validationError": "Validation Error",

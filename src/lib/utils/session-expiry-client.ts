@@ -1,4 +1,4 @@
-import { AUTH_COOKIES } from '@/components/modules/login/constants';
+import { AUTH_COOKIES, SESSION_TIMEOUT_REDIRECT_SECONDS } from '@/components/modules/login/constants';
 import { getCookieValue } from '@/lib/utils/cookie';
 
 /** Align with middleware JWT/session skew (see session-validity.ts). */
@@ -9,6 +9,13 @@ export function isSessionExpiredAtUnix(
   nowUnix = Math.floor(Date.now() / 1000)
 ): boolean {
   return nowUnix >= expiresAtUnix - SESSION_EXPIRY_CLOCK_SKEW_SECONDS;
+}
+
+export function isSessionWarningActiveAtUnix(
+  expiresAtUnix: number,
+  nowUnix = Math.floor(Date.now() / 1000)
+): boolean {
+  return nowUnix >= expiresAtUnix - SESSION_EXPIRY_CLOCK_SKEW_SECONDS - SESSION_TIMEOUT_REDIRECT_SECONDS;
 }
 
 /** Reads session expiry unix seconds from the client-readable cookie set at login. */

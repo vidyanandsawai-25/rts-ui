@@ -75,7 +75,7 @@ export const AUTH_COOKIES = {
 } as const;
 
 /** Seconds to show session-timeout message before redirecting to login. */
-export const SESSION_TIMEOUT_REDIRECT_SECONDS = 10;
+export const SESSION_TIMEOUT_REDIRECT_SECONDS = 60;
 
 /**
  * ULB (Urban Local Body) branding cookie names.
