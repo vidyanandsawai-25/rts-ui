@@ -646,5 +646,11 @@
   "table": {
     "page": "Page {current} of {total}",
     "property": "Property {current} of {total}"
+  },
+  "legends": {
+    "commercial": "Commercial",
+    "residential": "Residential",
+    "nonResidential": "Non-Taxable",
+    "industrial": "Industrial"
   }
 }
