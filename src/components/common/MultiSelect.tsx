@@ -68,7 +68,9 @@ export function MultiSelect({
   const tCommon = useTranslations('common');
   const [isOpen, setIsOpen] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   // Generate a unique and stable ID for the dropdown for aria-controls
   const reactId = useId();
   const dropdownId = id || `multiselect-dropdown-${reactId}`;
@@ -87,6 +89,36 @@ export function MultiSelect({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [handleClickOutside]);
 
+  const [placement, setPlacement] = useState<'top' | 'bottom'>('bottom');
+
+  useEffect(() => {
+    if (isOpen) {
+      const timer = setTimeout(() => searchInputRef.current?.focus(), 50);
+      
+      if (wrapperRef.current) {
+        const rect = wrapperRef.current.getBoundingClientRect();
+        const spaceBelow = window.innerHeight - rect.bottom;
+        if (spaceBelow < 340 && rect.top > 340) {
+          setPlacement('top');
+        } else {
+          setPlacement('bottom');
+        }
+      }
+      
+      return () => clearTimeout(timer);
+    } else {
+      setSearchTerm("");
+      setPlacement('bottom');
+    }
+  }, [isOpen]);
+
+  const filteredOptions = useMemo(() => {
+    if (!searchTerm.trim()) return options;
+    return options.filter((opt) =>
+      opt.label.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [options, searchTerm]);
+
   const handleToggle = (optionValue: string) => {
     if (disabled) return;
 
@@ -97,13 +129,18 @@ export function MultiSelect({
     onChange(newValue);
   };
 
+  const isAllSelected = useMemo(() => {
+    if (filteredOptions.length === 0) return false;
+    return filteredOptions.every(opt => value.includes(opt.value));
+  }, [filteredOptions, value]);
+
   const handleSelectAll = () => {
     if (disabled) return;
-
-    if (value.length === options.length) {
-      onChange([]);
+    const filteredVals = filteredOptions.map(opt => opt.value);
+    if (isAllSelected) {
+      onChange(value.filter(v => !filteredVals.includes(v)));
     } else {
-      onChange(options.map(opt => opt.value));
+      onChange(Array.from(new Set([...value, ...filteredVals])));
     }
   };
 
@@ -157,21 +194,21 @@ export function MultiSelect({
       e.preventDefault();
     } else if (e.key === "ArrowDown") {
       setFocusedIndex((prev) => {
-        const next = prev === null ? 0 : Math.min(options.length - 1, prev + 1);
+        const next = prev === null ? 0 : Math.min(filteredOptions.length - 1, prev + 1);
         optionsRefs.current.items[next]?.focus();
         return next;
       });
       e.preventDefault();
     } else if (e.key === "ArrowUp") {
       setFocusedIndex((prev) => {
-        const next = prev === null ? options.length - 1 : Math.max(0, prev - 1);
+        const next = prev === null ? filteredOptions.length - 1 : Math.max(0, prev - 1);
         optionsRefs.current.items[next]?.focus();
         return next;
       });
       e.preventDefault();
     } else if (e.key === "Enter" || e.key === " ") {
-      if (focusedIndex !== null) {
-        handleToggle(options[focusedIndex].value);
+      if (focusedIndex !== null && filteredOptions[focusedIndex]) {
+        handleToggle(filteredOptions[focusedIndex].value);
       }
       e.preventDefault();
     }
@@ -180,10 +217,12 @@ export function MultiSelect({
   // Keyboard navigation for label elements
   const handleLabelKeyDown = (e: React.KeyboardEvent<HTMLDivElement>, idx: number) => {
     if (e.key === "Enter" || e.key === " ") {
-      handleToggle(options[idx].value);
+      if (filteredOptions[idx]) {
+        handleToggle(filteredOptions[idx].value);
+      }
       e.preventDefault();
     } else if (e.key === "ArrowDown") {
-      const next = Math.min(options.length - 1, idx + 1);
+      const next = Math.min(filteredOptions.length - 1, idx + 1);
       optionsRefs.current.items[next]?.focus();
       setFocusedIndex(next);
       e.preventDefault();
@@ -242,10 +281,22 @@ export function MultiSelect({
       {isOpen && !disabled && (
         <div
           id={dropdownId}
-          className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-64 overflow-hidden"
+          className={`absolute z-50 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-80 overflow-hidden flex flex-col ${placement === 'top' ? 'bottom-full mb-1.5' : 'top-full mt-1.5'}`}
         >
+          {/* Search Bar */}
+          <div className="p-2 border-b border-gray-200 bg-white">
+            <input
+              ref={searchInputRef}
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder={tCommon("multiSelect.search") || "Search..."}
+              className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+
           {/* Select All Option */}
-          <div className="border-b border-gray-200 bg-gray-50">
+          <div className="border-b border-gray-200 bg-gray-50 shrink-0">
             <div
               className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 cursor-pointer"
               tabIndex={0}
@@ -256,15 +307,15 @@ export function MultiSelect({
                   handleSelectAll();
                   e.preventDefault();
                 } else if (e.key === "ArrowDown") {
-                  if (options.length > 0) {
+                  if (filteredOptions.length > 0) {
                     optionsRefs.current.items[0]?.focus();
                     setFocusedIndex(0);
                   }
                   e.preventDefault();
                 } else if (e.key === "ArrowUp") {
-                  if (options.length > 0) {
-                    optionsRefs.current.items[options.length - 1]?.focus();
-                    setFocusedIndex(options.length - 1);
+                  if (filteredOptions.length > 0) {
+                    optionsRefs.current.items[filteredOptions.length - 1]?.focus();
+                    setFocusedIndex(filteredOptions.length - 1);
                   }
                   e.preventDefault();
                 } else if (e.key === "Escape") {
@@ -273,12 +324,12 @@ export function MultiSelect({
                   e.preventDefault();
                 }
               }}
-              aria-selected={value.length === options.length}
+              aria-selected={isAllSelected}
               aria-label={tCommon("multiSelect.selectAll")}
             >
               <input
                   type="checkbox"
-                  checked={value.length === options.length}
+                  checked={isAllSelected}
                   onChange={handleSelectAll}
                   className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   tabIndex={-1}
@@ -290,18 +341,24 @@ export function MultiSelect({
 
           {/* Options List */}
           <div
-            className="overflow-y-auto max-h-52"
+            className="overflow-y-auto max-h-52 flex-grow"
             role="listbox"
             aria-multiselectable="true"
             tabIndex={-1}
             onKeyDown={handleKeyDown}
           >
-            {options.map(renderOption)}
+            {filteredOptions.length === 0 ? (
+              <div className="px-4 py-3 text-sm text-gray-500 text-center">
+                {tCommon("multiSelect.noOptions") || "No options found"}
+              </div>
+            ) : (
+              filteredOptions.map(renderOption)
+            )}
           </div>
 
           {/* Selected Count */}
           {value.length > 0 && (
-            <div className="border-t border-gray-200 bg-gray-50 px-4 py-2">
+            <div className="border-t border-gray-200 bg-gray-50 px-4 py-2 shrink-0">
               <span className="text-xs text-gray-600">
                 {tCommon("multiSelect.selectedCount", { count: value.length })}
               </span>
