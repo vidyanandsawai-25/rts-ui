@@ -66,7 +66,7 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
   const tCommon = useTranslations("common");
   const locale = useLocale();
   useTableAutoScroll(isAutoScrolling);
-  
+
   // Excel export state
   const [isExporting, setIsExporting] = useState(false);
 
@@ -77,32 +77,32 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
       toast.error(t("export.missingParams") || "Missing ward ID or property number");
       return;
     }
-    
+
     setIsExporting(true);
-    
+
     // Show loading toast
     const loadingToastId = toast.loading(t("export.downloading") || "Downloading Excel file...");
-    
+
     try {
       // Build the secure API route URL (auth is handled server-side via cookies)
       const params = new URLSearchParams();
       params.append('WardId', String(wardId));
       params.append('PropertyNo', propertyNo);
       const exportUrl = `/${locale}/property-tax/ptis/appartmentQC/export-excel?${params.toString()}`;
-      
+
       // Fetch the Excel file from secure API route
       const response = await fetch(exportUrl, {
         method: 'GET',
         credentials: 'include', // Include cookies for authentication
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: response.statusText }));
         throw new Error(errorData.error || `Failed to export Excel: ${response.statusText}`);
       }
-      
+
       const blob = await response.blob();
-      
+
       // Create download link and trigger download
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -112,7 +112,7 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      
+
       // Dismiss loading toast and show success
       toast.dismiss(loadingToastId);
       toast.success(t("export.success") || "Excel file downloaded successfully!");
@@ -130,17 +130,17 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
     if (!applyTypeColors) return 'bg-white border-gray-300 hover:border-blue-400 text-blue-700';
     if (type === 'C') return 'bg-rose-50 border-rose-300 hover:border-rose-400 text-rose-700';
     if (type === 'R') return 'bg-indigo-100 border-indigo-300 hover:border-indigo-400 text-indigo-700';
-    if (type === 'N') return 'bg-sky-100 border-sky-300 hover:border-sky-400 text-sky-700';
-    if (type === 'I') return 'bg-cyan-100 border-cyan-300 hover:border-cyan-400 text-cyan-700';
+    if (type === 'N') return 'bg-emerald-100 border-emerald-300 hover:border-emerald-400 text-emerald-700';
+    if (type === 'I') return 'bg-amber-100 border-amber-300 hover:border-amber-400 text-amber-700';
     return 'bg-white border-gray-300 hover:border-blue-400 text-blue-700';
   }, [applyTypeColors]);
 
-  const styledColumns: Column<T>[] = useMemo(() => 
+  const styledColumns: Column<T>[] = useMemo(() =>
     columns.map((col) => {
       const filterField = FILTERABLE_COLUMNS[col.key as string];
       const isFilterable = !!filterField && !!onFilterChange && !!onFetchFilterOptions;
       const hasActiveFilter = filterField && activeFilters[filterField]?.length > 0;
-      
+
       return {
         ...col,
         label: (

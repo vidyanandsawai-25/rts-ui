@@ -656,5 +656,11 @@
   "table": {
     "page": "पृष्ठ {current} का {total}",
     "property": "संपत्ति {current} की {total}"
+  },
+  "legends": {
+    "commercial": "निवासी",
+    "residential": "अनिवासी",
+    "nonResidential": "गैर-करयोग्य",
+    "industrial": "औद्योगिक"
   }
 }

@@ -656,5 +656,11 @@
   "table": {
     "page": "पृष्ठ {current} चे {total}",
     "property": "मालमत्ता {current} चे {total}"
+  },
+  "legends": {
+    "commercial": "निवासी",
+    "residential": "अनिवासी",
+    "nonResidential": "करमुक्त",
+    "industrial": "औद्योगिक"
   }
 }

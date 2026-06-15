@@ -82,16 +82,16 @@ const AppartmentQCSection = ({
     if (!wardId || !propertyNo) {
       return;
     }
-    
+
     let cancelled = false;
-    
+
     const fetchData = async () => {
       try {
         // Reset state when starting new fetch
         setTaxDetails(null);
         setDualMethodDetails(null);
         setTaxDetailsLoading(true);
-        
+
         if (activeSubTab === 'rateable') {
           // Fetch Rateable Value data
           const result = await fetchApartmentPropertyTaxDetailsByTabAction(wardId, propertyNo, activeMainTab);
@@ -119,9 +119,9 @@ const AppartmentQCSection = ({
         }
       }
     };
-    
+
     fetchData();
-    
+
     return () => {
       cancelled = true;
     };
@@ -165,7 +165,7 @@ const AppartmentQCSection = ({
   const handleRowClick = useCallback((row: Record<string, unknown>) => {
     const propertyId = String(row.id || row.propertyDetailsId || '');
     if (!propertyId) return;
-    
+
     // Open drawer by updating URL params instead of navigating
     // Keep the original propertyId and use editPropertyId for the drawer
     const params = new URLSearchParams(searchParams.toString());
@@ -183,48 +183,48 @@ const AppartmentQCSection = ({
   // Fetch drawer data client-side when the drawer opens. The reset to `null`
   // lives in the cleanup return so React's set-state-in-effect rule is happy
   // — cleanups are exempt and they still fire on dep changes / unmount.
- useEffect(() => {
-  if (!drawerOpen || !selectedPropertyId) return;
+  useEffect(() => {
+    if (!drawerOpen || !selectedPropertyId) return;
 
-  let cancelled = false;
+    let cancelled = false;
 
-  queueMicrotask(() => setDrawerLoading(true));   // ✅ START LOADING
+    queueMicrotask(() => setDrawerLoading(true));   // ✅ START LOADING
 
-  const type = activeSubTab === 'dual-method' ? 'dual' : activeSubTab;
+    const type = activeSubTab === 'dual-method' ? 'dual' : activeSubTab;
 
-  Promise.all([
-    fetchApartmentQCDetailsSafeAction({ propertyId: selectedPropertyId, pageSize: 1 }),
-    fetchFloorQCByPropertyIdSafeAction(Number(selectedPropertyId), type),
-    fetchAllPropertyTypesAction(),
-  ])
-    .then(([basicArr, floorArr, propTypesRes]) => {
-      if (cancelled) return;
+    Promise.all([
+      fetchApartmentQCDetailsSafeAction({ propertyId: selectedPropertyId, pageSize: 1 }),
+      fetchFloorQCByPropertyIdSafeAction(Number(selectedPropertyId), type),
+      fetchAllPropertyTypesAction(),
+    ])
+      .then(([basicArr, floorArr, propTypesRes]) => {
+        if (cancelled) return;
 
-      setDrawerLocalData({
-        basicInfo: basicArr.length > 0 ? basicArr[0] : null,
-        floorQCData: floorArr,
-        propertyTypes: propTypesRes.success && propTypesRes.data ? propTypesRes.data : [],
+        setDrawerLocalData({
+          basicInfo: basicArr.length > 0 ? basicArr[0] : null,
+          floorQCData: floorArr,
+          propertyTypes: propTypesRes.success && propTypesRes.data ? propTypesRes.data : [],
+        });
+      })
+      .catch(() => {
+        if (cancelled) return;
+
+        setDrawerLocalData({
+          basicInfo: null,
+          floorQCData: [],
+          propertyTypes: [],
+        });
+      })
+      .finally(() => {
+        if (!cancelled) queueMicrotask(() => setDrawerLoading(false));  // ✅ STOP LOADING
       });
-    })
-    .catch(() => {
-      if (cancelled) return;
 
-      setDrawerLocalData({
-        basicInfo: null,
-        floorQCData: [],
-        propertyTypes: [],
-      });
-    })
-    .finally(() => {
-      if (!cancelled) queueMicrotask(() => setDrawerLoading(false));  // ✅ STOP LOADING
-    });
-
-  return () => {
-    cancelled = true;
-    setDrawerLocalData(null);
-    setDrawerLoading(false);
-  };
-}, [drawerOpen, selectedPropertyId, activeSubTab]);
+    return () => {
+      cancelled = true;
+      setDrawerLocalData(null);
+      setDrawerLoading(false);
+    };
+  }, [drawerOpen, selectedPropertyId, activeSubTab]);
 
   const selectedPropertyData = drawerLocalData?.basicInfo ?? null;
 
@@ -238,7 +238,7 @@ const AppartmentQCSection = ({
 
   return (
     <div className="flex flex-col h-full bg-white rounded-lg shadow-sm">
-      <div className="flex flex-row gap-4 p-4 border-b border-gray-100 bg-gray-50/50">
+      <div className="flex flex-row gap-4 py-2 px-4 border-b border-gray-100 bg-gray-50/50">
         <Tabs
           className="flex flex-row w-fit p-1 bg-white border border-gray-200 shadow-sm rounded-xl"
           value={activeMainTab}
@@ -257,7 +257,16 @@ const AppartmentQCSection = ({
           size="sm"
           activeTabClassName="bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-md border-none"
         />
+
+        <div className="flex gap-2 flex-base items-center ml-auto">
+          <span className="px-2 py-0.5 rounded-full border border-rose-300 bg-rose-50 text-rose-700 text-[12px] uppercase font-bold">{t("legends.commercial")}</span>
+          <span className="px-2 py-0.5 rounded-full border border-indigo-300 bg-indigo-100 text-indigo-700 text-[12px] uppercase font-bold">{t("legends.residential")}</span>
+          <span className="px-2 py-0.5 rounded-full border border-emerald-300 bg-emerald-100 text-emerald-700 text-[12px] uppercase font-bold">{t("legends.nonResidential")}</span>
+          <span className="px-2 py-0.5 rounded-full border border-amber-300 bg-amber-100 text-amber-700 text-[12px] uppercase font-bold">{t("legends.industrial")}</span>
+        </div>
       </div>
+
+
 
       <div className="flex-1 overflow-auto text-gray-900 bg-gray-50/30 p-2 relative min-h-[200px]">
         {isPending && (
@@ -280,7 +289,7 @@ const AppartmentQCSection = ({
             wardId={wardId}
             propertyNo={propertyNo}
           />
-          
+
           {/* Tax Details Table - shown for all sub-tabs */}
           <ApartmentTaxDetailsTable
             taxDetails={taxDetails}
@@ -294,23 +303,23 @@ const AppartmentQCSection = ({
 
       {/* Property Details Edit Drawer */}
       {drawerOpen && (
-  drawerLoading ? (
-    <div className="fixed inset-0 z-50 bg-white/70 flex items-center justify-center">
-      <LoadingPage translationNamespace="ptis.loading" />
-    </div>
-  ) : (
-    <PropertyDetailsEditScreenNew
-      key={`property-edit-${selectedPropertyId || 'new'}`}
-      open={drawerOpen}
-      onClose={handleCloseDrawer}
-      propertyData={selectedPropertyData}
-      subTab={activeSubTab}
-      returnTo={activeMainTab as 'amenities' | 'commercial' | 'residential'}
-      initialFloorQCData={drawerLocalData?.floorQCData}
-      initialPropertyTypes={drawerLocalData?.propertyTypes}
-    />
-  )
-)}
+        drawerLoading ? (
+          <div className="fixed inset-0 z-50 bg-white/70 flex items-center justify-center">
+            <LoadingPage translationNamespace="ptis.loading" />
+          </div>
+        ) : (
+          <PropertyDetailsEditScreenNew
+            key={`property-edit-${selectedPropertyId || 'new'}`}
+            open={drawerOpen}
+            onClose={handleCloseDrawer}
+            propertyData={selectedPropertyData}
+            subTab={activeSubTab}
+            returnTo={activeMainTab as 'amenities' | 'commercial' | 'residential'}
+            initialFloorQCData={drawerLocalData?.floorQCData}
+            initialPropertyTypes={drawerLocalData?.propertyTypes}
+          />
+        )
+      )}
     </div>
   );
 };
