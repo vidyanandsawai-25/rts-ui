@@ -47,7 +47,7 @@ export const FormFieldsSection = ({
     () => [
       { label: t('form.fields.parentAttribute.placeholder'), value: '' },
       ...parentAttributes
-        .filter((attr) => attr.id !== formData.id) // Cannot be own parent
+        .filter((attr) => attr.id !== formData.id && attr.parentAttributeId === null) // Cannot be own parent and must be a root parent
         .map((attr) => ({
           label: `${attr.socialAttributeName} (${attr.socialAttributeCode})`,
           value: String(attr.id),

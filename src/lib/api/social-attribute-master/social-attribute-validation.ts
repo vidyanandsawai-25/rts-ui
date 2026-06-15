@@ -15,31 +15,75 @@ export function validateAndPrepareSearchTerm(searchTerm?: string): string | unde
   return trimmedSearchTerm.slice(0, MAX_SEARCH_TERM_LENGTH);
 }
 
-export function validateCreateFormData(data: SocialAttributeFormModel): void {
-  if (!data.socialAttributeCode?.trim()) {
+export function validateSocialAttributeForm(data: SocialAttributeFormModel, isEdit: boolean): void {
+  if (isEdit && (!data.id || data.id <= 0)) {
+    throw new ApiError(400, 'Social Attribute ID is required for update', 'Validation failed');
+  }
+
+  const code = data.socialAttributeCode?.trim();
+  if (!code) {
     throw new ApiError(400, 'Social attribute code is required', 'Validation failed');
   }
-  if (!data.socialAttributeName?.trim()) {
+  if (code.length > 20) {
+    throw new ApiError(
+      400,
+      'Social attribute code cannot exceed 20 characters',
+      'Validation failed'
+    );
+  }
+  if (!/^[A-Z0-9_]+$/.test(code)) {
+    throw new ApiError(
+      400,
+      'Social attribute code format is invalid. Only English uppercase letters, numbers, and underscore are allowed.',
+      'Validation failed'
+    );
+  }
+
+  const name = data.socialAttributeName?.trim();
+  if (!name) {
     throw new ApiError(400, 'Social attribute name is required', 'Validation failed');
   }
-  if (!data.dataType?.trim()) {
+  if (name.length > 40) {
+    throw new ApiError(
+      400,
+      'Social attribute name cannot exceed 40 characters',
+      'Validation failed'
+    );
+  }
+  if (!/^[\p{L}\p{M}\p{N}\s\-]+$/u.test(name)) {
+    throw new ApiError(
+      400,
+      'Social attribute name format is invalid. Only letters, numbers, spaces, and dash (-) are allowed.',
+      'Validation failed'
+    );
+  }
+
+  const dataType = data.dataType?.trim();
+  if (!dataType) {
     throw new ApiError(400, 'Data type is required', 'Validation failed');
+  }
+
+  const unit = data.unit?.trim();
+  if (unit) {
+    if (unit.length > 10) {
+      throw new ApiError(400, 'Unit cannot exceed 10 characters', 'Validation failed');
+    }
+    if (!/^[\p{L}\p{M}\p{N}]+$/u.test(unit)) {
+      throw new ApiError(
+        400,
+        'Unit format is invalid. Only letters and numbers are allowed.',
+        'Validation failed'
+      );
+    }
   }
 }
 
+export function validateCreateFormData(data: SocialAttributeFormModel): void {
+  validateSocialAttributeForm(data, false);
+}
+
 export function validateUpdateFormData(data: SocialAttributeFormModel): void {
-  if (!data.id || data.id <= 0) {
-    throw new ApiError(400, 'Social Attribute ID is required for update', 'Validation failed');
-  }
-  if (!data.socialAttributeCode?.trim()) {
-    throw new ApiError(400, 'Social attribute code is required', 'Validation failed');
-  }
-  if (!data.socialAttributeName?.trim()) {
-    throw new ApiError(400, 'Social attribute name is required', 'Validation failed');
-  }
-  if (!data.dataType?.trim()) {
-    throw new ApiError(400, 'Data type is required', 'Validation failed');
-  }
+  validateSocialAttributeForm(data, true);
 }
 
 export function getDeleteErrorStatusCode(errorMsg: string): number {
@@ -52,7 +96,12 @@ export function getDeleteErrorStatusCode(errorMsg: string): number {
     lowerMsg.includes('linked') ||
     lowerMsg.includes('referenced') ||
     lowerMsg.includes('associated') ||
-    lowerMsg.includes('cannot delete')
+    lowerMsg.includes('cannot delete') ||
+    lowerMsg.includes('foreign key') ||
+    lowerMsg.includes('violate') ||
+    lowerMsg.includes('conflict') ||
+    lowerMsg.includes('reference constraint') ||
+    lowerMsg.includes('fk_')
   ) {
     return 409; // Conflict - record in use
   } else if (lowerMsg.includes('invalid') || lowerMsg.includes('bad request')) {

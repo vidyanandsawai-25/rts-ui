@@ -184,11 +184,12 @@ export function BottomActionBar({
           </div>
 
           {/* RIGHT: High-Priority Actions */}
-          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0 pl-2 border-l border-slate-100 md:border-l-0 md:pl-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 pl-2 border-l border-slate-100 md:border-l-0 md:pl-0">
             <RightActions
               actions={groupedActions.right}
               onActionClick={handleActionClick}
               isLoading={isLoading}
+              iconOnly={true}
             />
             {rightContent}
           </div>

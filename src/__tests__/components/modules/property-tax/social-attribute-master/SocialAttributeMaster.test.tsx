@@ -119,7 +119,7 @@ describe('SocialAttributeMaster', () => {
   it('updates URL on search input change', () => {
     render(<SocialAttributeMaster {...defaultProps} />);
 
-    const searchInput = screen.getByPlaceholderText('Search by code or name');
+    const searchInput = screen.getByPlaceholderText('socialAttribute.list.filters.search');
     fireEvent.change(searchInput, { target: { value: 'Water' } });
 
     vi.runAllTimers();
@@ -132,14 +132,18 @@ describe('SocialAttributeMaster', () => {
   it('updates URL on dropdown filters change', () => {
     render(<SocialAttributeMaster {...defaultProps} />);
 
-    const dataTypeSelect = screen.getByLabelText('Filter by Data Type');
+    const dataTypeSelect = screen.getByLabelText('socialAttribute.list.filters.dataType.ariaLabel');
     fireEvent.click(dataTypeSelect);
     const bitOption = screen.getByRole('option', { name: 'BIT' });
     fireEvent.click(bitOption);
 
-    const attributeSelect = screen.getByLabelText('Filter by Attribute Type');
+    const attributeSelect = screen.getByLabelText(
+      'socialAttribute.list.filters.attributeType.ariaLabel'
+    );
     fireEvent.click(attributeSelect);
-    const parentOnlyOption = screen.getByRole('option', { name: 'Parent Only' });
+    const parentOnlyOption = screen.getByRole('option', {
+      name: 'socialAttribute.list.filters.attributeType.parentOnly',
+    });
     fireEvent.click(parentOnlyOption);
 
     expect(mockRouterReplace).toHaveBeenCalledWith(
@@ -149,7 +153,9 @@ describe('SocialAttributeMaster', () => {
 
   it('navigates to edit page on edit button click', () => {
     render(<SocialAttributeMaster {...defaultProps} />);
-    const editButtons = screen.getAllByRole('button', { name: 'socialAttribute.list.buttons.edit' });
+    const editButtons = screen.getAllByRole('button', {
+      name: 'socialAttribute.list.buttons.edit',
+    });
     fireEvent.click(editButtons[0]); // Click first button (ID 1, ROAD_WIDTH)
     expect(mockRouterPush).toHaveBeenCalledWith('/en/property-tax/social-attribute-master/edit/1');
   });
@@ -158,7 +164,9 @@ describe('SocialAttributeMaster', () => {
     const confirmMock = vi.fn();
     vi.mocked(useConfirm).mockImplementation(() => ({ confirm: confirmMock }));
     render(<SocialAttributeMaster {...defaultProps} />);
-    const deleteButtons = screen.getAllByRole('button', { name: 'socialAttribute.list.buttons.delete' });
+    const deleteButtons = screen.getAllByRole('button', {
+      name: 'socialAttribute.list.buttons.delete',
+    });
     fireEvent.click(deleteButtons[0]);
     expect(confirmMock).toHaveBeenCalled();
   });

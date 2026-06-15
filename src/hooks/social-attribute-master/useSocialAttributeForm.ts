@@ -15,10 +15,12 @@ import {
   SOCIAL_ATTRIBUTE_NAME_MAX,
   UNIT_MAX,
 } from '@/components/modules/property-tax/social-attribute-master/constants';
+import { useConfirm } from '@/components/common/ConfirmProvider';
 
 interface UseSocialAttributeFormProps {
   id: number | null;
   initialData?: SocialAttribute;
+  existingAttributes?: SocialAttribute[];
   onSuccess: () => void;
   onCancel: () => void;
 }
@@ -26,6 +28,7 @@ interface UseSocialAttributeFormProps {
 export function useSocialAttributeForm({
   id,
   initialData,
+  existingAttributes = [],
   onSuccess,
   onCancel,
 }: UseSocialAttributeFormProps) {
@@ -33,6 +36,7 @@ export function useSocialAttributeForm({
   const locale = useLocale();
   const t = useTranslations('socialAttribute');
   const tCommon = useTranslations('common');
+  const { confirm } = useConfirm();
   const isEdit = Boolean(id);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -70,16 +74,40 @@ export function useSocialAttributeForm({
   const validate = useCallback(
     (data: SocialAttributeFormModel): Partial<Record<keyof SocialAttributeFormModel, string>> => {
       const schema: Record<string, (val: unknown) => string | undefined> = {
-        socialAttributeCode: commonValidations.masterCode(t, SOCIAL_ATTRIBUTE_CODE_MAX, {
-          required: 'form.validation.codeRequired',
-          format: 'form.validation.codeFormat',
-          maxLength: 'form.validation.codeMaxLength',
-        }),
-        socialAttributeName: commonValidations.masterDescription(t, SOCIAL_ATTRIBUTE_NAME_MAX, {
-          required: 'form.validation.nameRequired',
-          format: 'form.validation.nameFormat',
-          maxLength: 'form.validation.nameMaxLength',
-        }),
+        socialAttributeCode: (val: unknown) => {
+          const baseErr = commonValidations.masterCode(t, SOCIAL_ATTRIBUTE_CODE_MAX, {
+            required: 'form.validation.codeRequired',
+            format: 'form.validation.codeFormat',
+            maxLength: 'form.validation.codeMaxLength',
+          })(val);
+          if (baseErr) return baseErr;
+
+          const strVal = String(val ?? '')
+            .trim()
+            .toUpperCase();
+          const isDuplicate = existingAttributes.some(
+            (attr) => attr.id !== id && attr.socialAttributeCode.trim().toUpperCase() === strVal
+          );
+          if (isDuplicate) return t('form.validation.codeExists');
+          return undefined;
+        },
+        socialAttributeName: (val: unknown) => {
+          const baseErr = commonValidations.masterDescription(t, SOCIAL_ATTRIBUTE_NAME_MAX, {
+            required: 'form.validation.nameRequired',
+            format: 'form.validation.nameFormat',
+            maxLength: 'form.validation.nameMaxLength',
+          })(val);
+          if (baseErr) return baseErr;
+
+          const strVal = String(val ?? '')
+            .trim()
+            .toLowerCase();
+          const isDuplicate = existingAttributes.some(
+            (attr) => attr.id !== id && attr.socialAttributeName.trim().toLowerCase() === strVal
+          );
+          if (isDuplicate) return t('form.validation.nameExists');
+          return undefined;
+        },
         dataType: (val: unknown) => {
           const strVal = String(val ?? '').trim();
           if (!strVal) return t('form.validation.dataTypeRequired');
@@ -96,7 +124,7 @@ export function useSocialAttributeForm({
       };
       return validateForm(data, schema);
     },
-    [t, isEdit]
+    [t, isEdit, id, existingAttributes]
   );
 
   const showError = useCallback(
@@ -212,9 +240,34 @@ export function useSocialAttributeForm({
   }, [router, locale]);
 
   const handleCancel = useCallback(() => {
-    onCancel();
-    closeAndRoute();
-  }, [onCancel, closeAndRoute]);
+    const isDirty =
+      formData.socialAttributeCode !== (initialData?.socialAttributeCode ?? '') ||
+      formData.socialAttributeName !== (initialData?.socialAttributeName ?? '') ||
+      formData.dataType !== (initialData?.dataType ?? '') ||
+      formData.unit !== (initialData?.unit ?? '') ||
+      formData.displayOrder !== (initialData?.displayOrder ?? null) ||
+      formData.parentAttributeId !== (initialData?.parentAttributeId ?? null) ||
+      formData.isRequiredWhenParentTrue !== (initialData?.isRequiredWhenParentTrue ?? false) ||
+      formData.isDiscountApplicable !== (initialData?.isDiscountApplicable ?? false) ||
+      formData.isActive !== (initialData?.isActive ?? true);
+
+    if (isDirty) {
+      confirm({
+        variant: 'warning',
+        title: t('confirmClose.title'),
+        description: t('confirmClose.description'),
+        confirmText: t('confirmClose.confirmText'),
+        cancelText: t('confirmClose.cancelText'),
+        onConfirm: () => {
+          onCancel();
+          closeAndRoute();
+        },
+      });
+    } else {
+      onCancel();
+      closeAndRoute();
+    }
+  }, [formData, initialData, onCancel, closeAndRoute, confirm, t]);
 
   const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();

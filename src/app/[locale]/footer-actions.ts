@@ -1,8 +1,10 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import { revalidatePath } from 'next/cache';
 import { footerService, FooterAction } from '@/lib/api/footer.service';
 import { z } from 'zod';
+import { getTranslations } from 'next-intl/server';
 
 export type ActionResult<T> =
   | { success: true; data: T; message?: string }
@@ -194,6 +196,7 @@ export async function handleFooterAction(
         const suffix = queryString ? `?${queryString}` : '';
         redirect(`/${payloadLocale}/property-tax/waterconnection${suffix}`);
       }
+      case 'PTIS_APPLY':
       case 'PTIS_APPLICABLE_TAXES_INFO': {
         if (!payload.propertyId) {
           return { success: false, error: 'Property ID is missing.' };
@@ -207,6 +210,23 @@ export async function handleFooterAction(
         if (payload.partitionNo !== undefined) params.set('partitionNo', payload.partitionNo);
         if (payload.valuationTab) params.set('valuationTab', payload.valuationTab);
         redirect(`/${payloadLocale}/property-tax/ptis/applicable-taxes/applicable?${params.toString()}`);
+      }
+      case 'PTIS_REFRESH': {
+        const payloadLocale = payload.locale || 'en';
+        const propertyId = payload.propertyId;
+        const wardNo = payload.wardNo;
+        const propertyNo = payload.propertyNo;
+        const isSelected =
+          (propertyId && propertyId !== 'undefined' && propertyId !== 'null') ||
+          (wardNo && wardNo !== 'undefined' && propertyNo && propertyNo !== 'undefined');
+
+        if (!isSelected) {
+          const t = await getTranslations({ locale: payloadLocale, namespace: 'ptis' });
+          return { success: false, error: t('error.selectPropertyFirst') };
+        }
+
+        revalidatePath(`/${payloadLocale}/property-tax/ptis`, 'page');
+        return { success: true, data: null, message: 'Taxes refreshed successfully.' };
       }
       default:
         return { success: false, error: `Command ${command} is not yet implemented.` };

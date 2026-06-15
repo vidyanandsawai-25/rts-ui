@@ -167,9 +167,8 @@ export function usePropertySearchForm({
     (field: keyof SearchCriteria) =>
       (_: React.ChangeEvent<HTMLSelectElement>, value: string) => {
         setField(field, value);
-        updateDraftCriteria(field, value);
       },
-    [setField, updateDraftCriteria]
+    [setField]
   );
 
   const handleZoneChange = React.useCallback(
@@ -182,9 +181,8 @@ export function usePropertySearchForm({
         submitAttempted: false,
         touchedFields: new Set(),
       }));
-      updateDraftCriteria("zoneId", zoneId);
     },
-    [criteriaKey, getBaseFormState, updateDraftCriteria]
+    [criteriaKey, getBaseFormState]
   );
 
   const handleWardChange = React.useCallback(
@@ -192,9 +190,8 @@ export function usePropertySearchForm({
       const wardId = Number(value) || 0;
       setField("wardId", wardId);
       markFieldTouched("wardId");
-      updateDraftCriteria("wardId", wardId);
     },
-    [markFieldTouched, setField, updateDraftCriteria]
+    [markFieldTouched, setField]
   );
 
   const handleSubmit = React.useCallback(

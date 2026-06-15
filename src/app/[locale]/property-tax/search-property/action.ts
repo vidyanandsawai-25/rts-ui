@@ -51,7 +51,11 @@ function filterByPropertyNumberRange(
   searchCriteria: SearchCriteria
 ): SearchResult[] {
   const from = parsePositiveInteger(searchCriteria.propertyNoFrom);
-  const to = parsePositiveInteger(searchCriteria.propertyNoTo);
+  let to = parsePositiveInteger(searchCriteria.propertyNoTo);
+
+  if (from != null && to == null) {
+    to = from;
+  }
 
   if (from == null && to == null) {
     return results;
@@ -152,6 +156,10 @@ export async function filterPropertiesAction(
   isSearchActive: boolean,
   activeTab: SearchTab
 ): Promise<{ results: SearchResult[]; error: string | null }> {
+  if (!isSearchActive && !selectedStatus) {
+    return { results: [], error: null };
+  }
+
   const payload = buildPropertySearchPayload(
     selectedStatus,
     searchCriteria,
@@ -173,8 +181,8 @@ export async function filterPropertiesAction(
   } catch (err) {
     const message =
       err instanceof Error
-        ? resolveSearchErrorMessage(err)
-        : "Property search failed. Please review your filters and try again.";
+          ? resolveSearchErrorMessage(err)
+          : "Property search failed. Please review your filters and try again.";
 
     return { results: [], error: message };
   }
