@@ -11,8 +11,19 @@
       },
       "filters": {
         "show": "Show",
-        "search": "Search by Social Attribute...",
-        "noResults": "No social attributes found matching the filter criteria."
+        "search": "Search by code or name",
+        "noResults": "No social attributes found matching the filter criteria.",
+        "dataType": {
+          "placeholder": "All Data Types",
+          "ariaLabel": "Filter by Data Type"
+        },
+        "attributeType": {
+          "placeholder": "All Attributes",
+          "parentOnly": "Parent Only",
+          "childOnly": "Child Only",
+          "discount": "Discount Applicable",
+          "ariaLabel": "Filter by Attribute Type"
+        }
       },
       "table": {
         "socialAttributeCode": "Attribute Code",
@@ -88,7 +99,9 @@
         "dataTypeRequired": "Data type is required",
         "unitFormat": "Only letters and numbers allowed.",
         "displayOrderInvalid": "Display order must be 0 or greater",
-        "mustBeActive": "Social Attribute must be active to save"
+        "mustBeActive": "Social Attribute must be active to save",
+        "codeExists": "Social Attribute Code already exists",
+        "nameExists": "Social Attribute Name already exists"
       },
       "status": {
         "label": "Active Status",
@@ -112,6 +125,7 @@
       "invalidData": "Invalid data provided. Please check all fields.",
       "notFound": "Social attribute not found.",
       "inUse": "Cannot deactivate/delete this Social Attribute because it is referenced in other records.",
+      "hasChildren": "Cannot delete this parent attribute because it has child attributes. Please delete the child attributes first.",
       "operationFailed": "Operation failed. Please try again later."
     },
     "success": {
@@ -129,6 +143,12 @@
     "loading": {
       "message": "Loading Social Attribute...",
       "description": "Please wait while we fetch the social attribute data"
+    },
+    "confirmClose": {
+      "title": "Discard Unsaved Changes",
+      "description": "You have unsaved changes in the form. Are you sure you want to discard them?",
+      "confirmText": "Discard Changes",
+      "cancelText": "Keep Editing"
     }
   }
 }

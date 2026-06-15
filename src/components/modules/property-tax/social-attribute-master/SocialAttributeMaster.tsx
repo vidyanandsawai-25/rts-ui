@@ -9,7 +9,9 @@ import { PageContainer } from '@/components/common';
 import TableHeader from '@/components/common/TableHeader';
 import { useSocialAttributeList } from '@/hooks/social-attribute-master/useSocialAttributeList';
 import { AttributeFilterBar } from './components/AttributeFilterBar';
-import { ParentRow, ChildRow } from './components/AttributeRow';
+import { MasterTable } from '@/components/common/MasterTable';
+import { getSocialAttributeColumns, type TableRowItem } from './SocialAttributeColumns';
+import { EditButton, DeleteButton } from '@/components/common/ActionButtons';
 
 interface ExtendedSocialAttributeProps extends SocialAttributeProps {
   dataTypeFilter?: string;
@@ -47,6 +49,66 @@ export function SocialAttributeMaster({
     currentSearchTerm,
   });
 
+  const [pageNumber, setPageNumber] = React.useState(1);
+  const [pageSize, setPageSize] = React.useState(10);
+
+  // Total count is based strictly on the number of parent records
+  const totalCount = parentItems.length;
+  const totalPages = Math.ceil(totalCount / pageSize) || 1;
+
+  // Slice the parent items first
+  const paginatedParentItems = React.useMemo(() => {
+    const start = (pageNumber - 1) * pageSize;
+    return parentItems.slice(start, start + pageSize);
+  }, [parentItems, pageNumber, pageSize]);
+
+  // Flatten only the paginated parent items (and their children) for display in MasterTable
+  const paginatedData = React.useMemo(() => {
+    const flattened: TableRowItem[] = [];
+    paginatedParentItems.forEach(({ parent, children }) => {
+      flattened.push({
+        ...parent,
+        isChild: false,
+      });
+      children.forEach((child) => {
+        flattened.push({
+          ...child,
+          isChild: true,
+          parentCode: parent.socialAttributeCode,
+        });
+      });
+    });
+    return flattened;
+  }, [paginatedParentItems]);
+
+  const columns = React.useMemo(() => getSocialAttributeColumns(t), [t]);
+
+  const rowClassName = React.useCallback((row: TableRowItem) => {
+    return row.isChild ? 'bg-slate-50/35 hover:bg-slate-100/50' : 'bg-white font-semibold';
+  }, []);
+
+  const renderActions = React.useCallback(
+    (row: TableRowItem) => (
+      <div className="flex items-center justify-center gap-2">
+        <EditButton
+          onClick={(e) => {
+            e.stopPropagation();
+            handleEdit(row);
+          }}
+          aria-label={t('list.buttons.edit')}
+        />
+        <DeleteButton
+          onClick={(e) => {
+            e.stopPropagation();
+            handleDelete(row);
+          }}
+          aria-label={t('list.buttons.delete')}
+        />
+      </div>
+    ),
+    [handleEdit, handleDelete, t]
+  );
+
   return (
     <PageContainer>
       <div className="space-y-6">
@@ -67,39 +129,41 @@ export function SocialAttributeMaster({
           dataTypeValue={dataTypeFilter}
           attributeValue={attributeFilter}
           hasActiveFilters={hasActiveFilters}
-          onSearchChange={handleSearchChange}
-          onDataTypeChange={handleDataTypeChange}
-          onAttributeChange={handleAttributeFilterChange}
-          onReset={handleResetFilters}
+          onSearchChange={(val) => {
+            handleSearchChange(val);
+            setPageNumber(1);
+          }}
+          onDataTypeChange={(val) => {
+            handleDataTypeChange(val);
+            setPageNumber(1);
+          }}
+          onAttributeChange={(val) => {
+            handleAttributeFilterChange(val);
+            setPageNumber(1);
+          }}
+          onReset={() => {
+            handleResetFilters();
+            setPageNumber(1);
+          }}
         />
 
-        {/* Flat attribute tree */}
-        <div className="space-y-6 min-h-70 max-w-[100rem] mx-auto">
-          {parentItems.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-500 font-medium">
-              {t('list.filters.noResults')}
-            </div>
-          ) : (
-            parentItems.map(({ parent, children }) => (
-              <div key={parent.id} className="space-y-6">
-                <ParentRow item={parent} onEdit={handleEdit} onDelete={handleDelete} />
-
-                {children.length > 0 && (
-                  <div className="pl-6 md:pl-10 max-w-[85rem] mx-auto space-y-3 relative before:absolute before:left-3 before:top-0 before:bottom-6 before:w-[2px] before:bg-blue-100">
-                    {children.map((child) => (
-                      <ChildRow
-                        key={child.id}
-                        item={child}
-                        parentCode={parent.socialAttributeCode}
-                        onEdit={handleEdit}
-                        onDelete={handleDelete}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))
-          )}
+        {/* Master Table view representing hierarchy */}
+        <div className="w-full min-h-70">
+          <MasterTable<TableRowItem>
+            columns={columns}
+            data={paginatedData}
+            pageNumber={pageNumber}
+            pageSize={pageSize}
+            totalCount={totalCount}
+            totalPages={totalPages}
+            onPageChange={setPageNumber}
+            onPageSizeChange={setPageSize}
+            getRowKey={(row) => row.id}
+            renderActions={renderActions}
+            rowClassName={rowClassName}
+            emptyText={t('list.filters.noResults')}
+            paginationConfig={{ enabled: true, showPageSizeSelector: true }}
+          />
         </div>
       </div>
     </PageContainer>

@@ -13,12 +13,14 @@ export interface SocialAttributeFormProps {
   id: number | null;
   initialData?: SocialAttribute;
   parentAttributes?: SocialAttribute[];
+  existingAttributes?: SocialAttribute[];
 }
 
 export default function SocialAttributeForm({
   id,
   initialData,
   parentAttributes = [],
+  existingAttributes = [],
 }: SocialAttributeFormProps) {
   const {
     formData,
@@ -42,6 +44,7 @@ export default function SocialAttributeForm({
   } = useSocialAttributeForm({
     id,
     initialData,
+    existingAttributes,
     onSuccess: () => {},
     onCancel: () => {},
   });
