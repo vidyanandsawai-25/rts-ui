@@ -16,7 +16,9 @@ import {
 /** Fetches all social attributes from the API */
 export async function getSocialAttributes(): Promise<SocialAttribute[]> {
   try {
-    const response = await apiClient.get<PagedResponse<SocialAttribute>>('/SocialAttribute');
+    const response = await apiClient.get<PagedResponse<SocialAttribute>>(
+      '/SocialAttribute?PageNumber=1&PageSize=-1'
+    );
     if (!response.success) {
       throw new ApiError(
         response.statusCode ?? 500,
@@ -117,13 +119,7 @@ export async function getSocialAttributeById(
 }
 
 const mapDataTypeToBackend = (dataType: string): string => {
-  const t = dataType.trim().toUpperCase();
-  if (t === 'BIT') return 'bit';
-  if (t === 'INTEGER' || t === 'INT') return 'int';
-  if (t === 'DECIMAL') return 'decimal';
-  if (t === 'TEXT') return 'text';
-  if (t === 'DATE') return 'date';
-  return t.toLowerCase();
+  return dataType.trim().toUpperCase();
 };
 
 /** Creates a new social attribute */
@@ -184,23 +180,51 @@ export async function updateSocialAttribute(data: SocialAttributeFormModel): Pro
   }
 }
 
-/** Deletes a social attribute by ID */
+interface DeleteResponse {
+  success?: boolean;
+  message?: string;
+  error?: string;
+}
+
+/** Deletes a social attribute by ID (permanently purges it) */
 export async function deleteSocialAttribute(id: number): Promise<void> {
   try {
     if (!validateId(id)) {
       throw new ApiError(400, 'Valid Social Attribute ID is required', 'Validation failed');
     }
-    const response = await apiClient.delete<void>(
-      `/SocialAttribute/${encodeURIComponent(String(id))}`
+    const response = await apiClient.delete<DeleteResponse>(
+      `/SocialAttribute/${encodeURIComponent(String(id))}/purge`
     );
-    if (!response.success) {
+
+    const responseData = response.data;
+    const isWrappedError = response.success && responseData?.success === false;
+
+    if (!response.success || isWrappedError) {
       let statusCode = response.statusCode;
-      if (!statusCode) {
-        statusCode = getDeleteErrorStatusCode(response.error || '');
+      const errorMsg = responseData?.message || responseData?.error || response.error || '';
+      const lowerMsg = String(errorMsg).toLowerCase();
+
+      const isConflict =
+        lowerMsg.includes('foreign key') ||
+        lowerMsg.includes('reference') ||
+        lowerMsg.includes('constraint') ||
+        lowerMsg.includes('violate') ||
+        lowerMsg.includes('in use') ||
+        lowerMsg.includes('linked') ||
+        lowerMsg.includes('associated') ||
+        lowerMsg.includes('conflict') ||
+        lowerMsg.includes('cannot delete') ||
+        lowerMsg.includes('fk_');
+
+      if (isConflict) {
+        statusCode = 409;
+      } else if (!statusCode) {
+        statusCode = getDeleteErrorStatusCode(String(errorMsg));
       }
+
       throw new ApiError(
-        statusCode,
-        response.error || 'Failed to delete social attribute',
+        statusCode || 500,
+        String(errorMsg) || 'Failed to delete social attribute',
         `Delete social attribute ${id} failed`
       );
     }

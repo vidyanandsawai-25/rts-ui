@@ -132,7 +132,7 @@ export async function updateSocialAttributeAction(
 
 export async function deleteSocialAttributeAction(
   formData: FormData
-): Promise<{ success: boolean; message?: string; statusCode?: number }> {
+): Promise<{ success: boolean; message?: string; statusCode?: number; messageKey?: string }> {
   try {
     const cookieStore = await cookies();
     const userId = getUserIdFromCookies(cookieStore);
@@ -148,6 +148,19 @@ export async function deleteSocialAttributeAction(
         success: false,
         message: 'Valid Social Attribute ID is required',
         statusCode: 400,
+      };
+    }
+
+    // Check if parent attribute has any child attributes
+    const allAttributes = await getSocialAttributes();
+    const hasChildren = allAttributes.some((attr) => attr.parentAttributeId === id);
+    if (hasChildren) {
+      return {
+        success: false,
+        statusCode: 409,
+        messageKey: 'hasChildren',
+        message:
+          'Cannot delete parent attribute because it has child attributes. Please delete the child attributes first.',
       };
     }
 
@@ -201,6 +214,17 @@ export async function fetchAllActiveSocialAttributesAction(): Promise<SocialAttr
     return list.filter((item) => item.isActive);
   } catch (error) {
     logger.error('[fetchAllActiveSocialAttributesAction] Error fetching active social attributes', {
+      error: error as Error,
+    });
+    return [];
+  }
+}
+
+export async function fetchAllSocialAttributesAction(): Promise<SocialAttribute[]> {
+  try {
+    return await getSocialAttributes();
+  } catch (error) {
+    logger.error('[fetchAllSocialAttributesAction] Error fetching all social attributes', {
       error: error as Error,
     });
     return [];
