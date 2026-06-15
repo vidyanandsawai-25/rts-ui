@@ -219,8 +219,12 @@ export default function CombinePropertyForm(props: CombinePropertyFormProps) {
     if (selectedPropertyNo) params.set('propertyNo', selectedPropertyNo);
     if (selectedBasePropertyId) params.set('propertyId', selectedBasePropertyId);
 
+    const partitionNo = searchParams.get('partitionNo');
+    if (partitionNo) params.set('partitionNo', partitionNo);
+
     const qs = params.toString();
-    const target = qs ? `/property-tax/ptis?${qs}` : '/property-tax/ptis';
+    const locale = pathname.split('/')[1] || 'en';
+    const target = qs ? `/${locale}/property-tax/ptis?${qs}` : `/${locale}/property-tax/ptis`;
     router.push(target);
   };
 

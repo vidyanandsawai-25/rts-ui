@@ -44,9 +44,11 @@ export function UtilityActions({
 
         const hasText = actionCommand === 'PTIS_REFRESH' || buttonName.toUpperCase() === 'REFRESH TAXES' || localizedButtonName.toUpperCase() === 'REFRESH TAXES';
 
+        const isCombine = actionCommand === 'PTIS_COMBINE';
+
         const buttonClasses = cn(
-          'text-[10px] h-8 sm:h-9 cursor-pointer rounded-lg transition-all duration-300 active:scale-95 shrink-0 flex flex-row items-center justify-center font-bold whitespace-nowrap shadow-sm border border-slate-200 bg-white/95 text-slate-700',
-          hasText ? 'px-3 sm:px-4' : 'w-8 sm:w-9 p-0',
+          'text-[10px] cursor-pointer rounded-lg transition-all duration-300 active:scale-95 shrink-0 flex flex-row items-center justify-center font-bold whitespace-nowrap shadow-sm border border-slate-200 bg-white/95 text-slate-700',
+          isCombine ? 'h-7 sm:h-7.5 w-7 sm:w-7.5 p-0' : (hasText ? 'px-3 sm:px-4 h-8 sm:h-9' : 'w-8 sm:w-9 p-0 h-8 sm:h-9'),
           
           variant === 'primary' || variant === 'blue'
             ? 'bg-gradient-to-r from-blue-700 to-indigo-900 text-white! border-transparent! hover:from-blue-800 hover:to-indigo-950 hover:shadow-[0_4px_12px_rgba(30,58,138,0.2)] hover:scale-[1.02]'

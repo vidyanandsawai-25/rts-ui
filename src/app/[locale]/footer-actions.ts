@@ -170,6 +170,7 @@ export async function handleFooterAction(
         if (payload.wardId) params.set('wardId', String(payload.wardId));
         if (payload.wardNo) params.set('wardNo', payload.wardNo);
         if (payload.propertyNo) params.set('propertyNo', payload.propertyNo);
+        if (payload.partitionNo) params.set('partitionNo', payload.partitionNo);
 
         const queryString = params.toString();
         const suffix = queryString ? `?${queryString}` : '';
