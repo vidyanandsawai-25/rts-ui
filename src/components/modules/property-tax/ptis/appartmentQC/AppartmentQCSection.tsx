@@ -55,6 +55,8 @@ const AppartmentQCSection = ({
 
   const activeMainTab = searchParams.get('appartmentTab') || 'amenities';
   const activeSubTab = searchParams.get('subTab') || 'rateable';
+  const sortBy = searchParams.get('sortBy') || '';
+  const sortOrder = searchParams.get('sortOrder') || '';
   const [searchQuery, setSearchQuery] = useState(searchParams.get('searchTerm') || '');
   const [isAutoScrolling, setIsAutoScrolling] = useState(false);
   const isUpdatingFromUrl = useRef(false);
@@ -161,6 +163,10 @@ const AppartmentQCSection = ({
 
   const handleMainTabChange = (v: string | number) => updateUrl({ valuationTab: 'apartment', appartmentTab: v.toString(), subTab: 'rateable', pageNumber: 1 });
   const handleSubTabChange = (v: string | number) => updateUrl({ valuationTab: 'apartment', appartmentTab: activeMainTab, subTab: v.toString(), pageNumber: 1 });
+  const handleSort = useCallback((columnKey: string) => {
+    const nextSortOrder = sortBy === columnKey && sortOrder === 'asc' ? 'desc' : 'asc';
+    updateUrl({ sortBy: columnKey, sortOrder: nextSortOrder, pageNumber: 1 });
+  }, [sortBy, sortOrder, updateUrl]);
 
   const handleRowClick = useCallback((row: Record<string, unknown>) => {
     const propertyId = String(row.id || row.propertyDetailsId || '');
@@ -246,7 +252,7 @@ const AppartmentQCSection = ({
           items={tabs}
           onChange={handleMainTabChange}
           size="sm"
-          activeTabClassName="bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-md border-none"
+       activeTabClassName="bg-blue-800 text-white shadow-md border-none"
         />
         <Tabs
           className="flex flex-row p-1 bg-white border border-gray-200 shadow-sm rounded-xl"
@@ -255,7 +261,7 @@ const AppartmentQCSection = ({
           items={subTabs}
           onChange={handleSubTabChange}
           size="sm"
-          activeTabClassName="bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-md border-none"
+          activeTabClassName="bg-blue-800 text-white shadow-md border-none"
         />
 
         <div className="flex gap-2 flex-base items-center ml-auto">
@@ -286,6 +292,9 @@ const AppartmentQCSection = ({
             activeFilters={activeFilters}
             onFilterChange={handleFilterChange}
             onFetchFilterOptions={fetchFilterOptions}
+            sortBy={sortBy}
+            sortOrder={sortOrder}
+            onSort={handleSort}
             wardId={wardId}
             propertyNo={propertyNo}
           />

@@ -1,5 +1,6 @@
+
 {
-  "columns": {
+ "columns": {
     "propertyNo": "Property No",
     "partitionNo": "Partition No.",
     "oldPropertyNo": "Old Property No.",
@@ -13,7 +14,7 @@
     "renterName": "Renter Name",
     "description": "Description",
     "type": "Type",
-    "apartmentType": "Apartment Type",
+    "apartmentType": "Type",
     "floor": "Floor",
     "assessmentYear": "Assessment Year",
     "asstYear": "Asst Year",
@@ -25,6 +26,7 @@
     "toiletCount": "Toilet Count",
     "bhk": "BHK",
     "use": "Use",
+    
     "carpetAreaSqFt": "Carpet Area (sqFt)",
     "carpetAreaSqMtr": "Carpet Area (sqMtr)",
     "carpetASqFt": "Carpet A (sqFt)",
@@ -91,8 +93,8 @@
   },
   "apartmentTabs": {
     "amenitiesTitle": "Property Tax Amenities",
-    "commercialTitle": "Property Tax Commercial Details",
-    "residentialTitle": "Property Tax Residential Details",
+    "commercialTitle": "Property Tax Commercial Units",
+    "residentialTitle": "Property Tax Residential Units",
     "rateable": "Rateable",
     "capital": "Capital",
     "dual": "Dual Method",
@@ -129,6 +131,44 @@
       "rateable": "Rateable Value",
       "capital": "Capital Value"
     }
+  },
+  "tooltips": {
+    "propertyNo": "Property Number",
+    "oldPropertyNo": "Old Property Number", 
+    "wing": "Wing Name",
+    "flatOrShopNo": "Flat/Shop Number",
+    "ownerName": "Owner Name",
+    "occupierName": "Occupier Name",
+    "ocDate": "Occupancy Certificate Date",
+    "assessmentYear": "Assessment Year",
+    "constructionYear": "Construction Year",
+    "carpetArea": "Carpet Area (Sq.Ft / Sq.Mtr)",
+    "builtupArea": "Built-up Area (Sq.Ft / Sq.Mtr)",
+    "typeOfUse": "use",
+    "apartmentType": "Apartment Type",
+    "oldRV": "Old Rental Value",
+    "newRV": "New Rental Value",
+  "oldConstArea": "Old Construction Area",
+    "totalTax": "Total Tax",
+    "flatOrShopName": "Flat/Shop Name",
+    "renterName": "Renter Name",
+    "description": "Property Description",
+    "constructionType": "Construction Type",
+    "toiletCount": "Toilet Count",
+    "oldconstructionArea": "Old Construction Area",
+    "oldtax": "Old Tax",
+    "newtax": "New Tax",
+    "mobileNo": "Mobile Number",
+    "emailId": "Email ID",
+    "bhk": "BHK",
+  "rentMonthly": "rent Monthly",
+  "propertyTypeName": "Description of the property type",
+  "oldTotalTax": "Old Total Tax",
+  "newTotalTax": "New Total Tax",
+  "newTaxTotalCV": "New Tax Total (CV)",
+  "totalTaxCV": "Total Tax (CV)",
+  "rateableValue": "Rateable Value",
+  "capitalValue": "Capital Value"
   },
   "pageTitle": "Edit Property Details",
   "badges": {

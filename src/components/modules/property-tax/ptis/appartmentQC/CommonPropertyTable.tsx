@@ -1,16 +1,18 @@
 "use client";
 
-import { useMemo, useCallback, useState } from "react";
+import { useMemo, useCallback, useState, type MouseEventHandler } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
 import { MasterTable, Column } from "@/components/common/MasterTable";
-import { SearchInput, SortButton } from "@/components/common";
-import { ExternalLink } from "lucide-react";
+import { SearchInput } from "@/components/common";
+import { ArrowDown, ArrowUp, ArrowUpDown, ExternalLink } from "lucide-react";
 import { useTableAutoScroll } from "@/hooks/apartmentQc/useTableAutoScroll";
 import { ColumnFilterDropdown, type FilterField } from "./ColumnFilterDropdown";
+import { Tooltip } from "@/components/common/Tooltip";
 import { logger } from "@/lib/utils/logger";
 import { TEXT_SANITIZE } from "@/lib/utils/validation";
 import { ExportIconButton, EyeIconButton } from "@/components/common/ActionButtons";
+import { Button } from "@/components/common/ActionButton";
 
 // Map column keys to filter fields
 const FILTERABLE_COLUMNS: Record<string, FilterField> = {
@@ -20,9 +22,51 @@ const FILTERABLE_COLUMNS: Record<string, FilterField> = {
   'apartmentType': 'apartmentType',
 };
 
+const SORT_COLUMN_KEYS: Record<string, string> = {
+  propertyNo: "PropertyNo",
+  oldPropertyNo: "OldPropertyNo",
+  oldConstArea: "oldConstructionArea",
+  carpetArea: "carpetASqFt",
+  builtupArea: "builtupASqFt",
+  newRV: "newTaxTotalRV",
+  cv: "newTaxTotalCV",
+  totalTax: "newTaxTotal",
+};
+
 interface FilterOption {
   value: string;
   label: string;
+}
+
+type SortDirection = "asc" | "desc" | null;
+
+function ApartmentSortButton({
+  label,
+  sortDirection,
+  onClick,
+  ariaLabel,
+}: {
+  label: string;
+  sortDirection: SortDirection;
+  onClick?: MouseEventHandler<HTMLButtonElement>;
+  ariaLabel: string;
+}) {
+  const Icon = sortDirection === "asc" ? ArrowUp : sortDirection === "desc" ? ArrowDown : ArrowUpDown;
+
+  return (
+    <Button
+      type="button"
+      variant="secondary"
+      size="xs"
+      icon={Icon}
+      iconPosition="right"
+      onClick={onClick}
+      aria-label={ariaLabel}
+      className="h-6 flex items-center justify-center gap-1 rounded-md border border-gray-300 bg-gray-100 text-[11px] font-semibold text-gray-900 hover:bg-gray-200 pr-1.5"
+    >
+      <span className="truncate">{label}</span>
+    </Button>
+  );
 }
 
 type CommonPropertyTableProps<T extends Record<string, unknown>> = {
@@ -47,6 +91,9 @@ type CommonPropertyTableProps<T extends Record<string, unknown>> = {
   activeFilters?: Record<FilterField, string[]>;
   onFilterChange?: (field: FilterField, values: string[]) => void;
   onFetchFilterOptions?: (field: FilterField) => Promise<FilterOption[]>;
+  sortBy?: string;
+  sortOrder?: string;
+  onSort?: (columnKey: string) => void;
   // Excel export props
   wardId?: string;
   propertyNo?: string;
@@ -59,6 +106,9 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
   activeFilters = {} as Record<FilterField, string[]>,
   onFilterChange,
   onFetchFilterOptions,
+  sortBy,
+  sortOrder,
+  onSort,
   wardId,
   propertyNo,
 }: CommonPropertyTableProps<T>) {
@@ -138,8 +188,31 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
   const styledColumns: Column<T>[] = useMemo(() =>
     columns.map((col) => {
       const filterField = FILTERABLE_COLUMNS[col.key as string];
+      const sortColumnKey = SORT_COLUMN_KEYS[col.key as string] ?? String(col.key);
+      const columnLabel = String(col.label);
+      const sortDirection: SortDirection = sortBy === sortColumnKey && (sortOrder === "asc" || sortOrder === "desc") ? sortOrder : null;
       const isFilterable = !!filterField && !!onFilterChange && !!onFetchFilterOptions;
       const hasActiveFilter = filterField && activeFilters[filterField]?.length > 0;
+
+      // Create the sort button element
+      const sortButton = (
+        <ApartmentSortButton
+          label={columnLabel}
+          sortDirection={sortDirection}
+          onClick={onSort ? () => onSort(sortColumnKey) : undefined}
+          ariaLabel={`${tCommon("table.sort.by")} ${columnLabel}`}
+        />
+      );
+
+      // Wrap with tooltip if headerTooltip is provided
+      const headerContent = (col as any).headerTooltip ? (
+        <Tooltip
+          content={<div className="max-w-xs text-xs whitespace-normal">{typeof (col as any).headerTooltip === 'string' ? (col as any).headerTooltip : columnLabel}</div>}
+          placement="top"
+        >
+          <span className="cursor-help">{sortButton}</span>
+        </Tooltip>
+      ) : sortButton;
 
       return {
         ...col,
@@ -147,7 +220,7 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
           <div className="flex items-center gap-1 w-full justify-center">
             {/* Column name with sort icon and filter icon integrated */}
             <div className="relative inline-flex items-center gap-1">
-              <SortButton label={col.label as string} />
+              {headerContent}
               {/* Funnel icon positioned to the right of the button */}
               {isFilterable && (
                 <ColumnFilterDropdown
@@ -181,7 +254,7 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
           );
         },
       };
-    }), [columns, getCellColorClass, activeFilters, onFilterChange, onFetchFilterOptions]);
+    }), [columns, getCellColorClass, activeFilters, onFilterChange, onFetchFilterOptions, onSort, sortBy, sortOrder, tCommon]);
 
   const filteredData = useMemo(() => {
     if (!searchQuery.trim()) return data;
