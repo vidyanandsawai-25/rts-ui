@@ -19,6 +19,7 @@ import type { useDigitInputs } from './useDigitInputs';
 export const useKycFormValidation = (
   formData: KycFormData,
   mobileInput: ReturnType<typeof useDigitInputs>,
+  alternateMobileInput: ReturnType<typeof useDigitInputs>,
   aadharInput: ReturnType<typeof useDigitInputs>,
   KycDetailsData?: KycDetails | null
 ) => {
@@ -39,9 +40,10 @@ export const useKycFormValidation = (
       (formData.address ?? '') !== (KycDetailsData?.address ?? '') ||
       (formData.location ?? '') !== (KycDetailsData?.location ?? '') ||
       mobileInput.value !== (KycDetailsData?.mobileNo ?? '').replace(/\D/g, '') ||
+      alternateMobileInput.value !== (KycDetailsData?.alternateMobileNo ?? '').replace(/\D/g, '') ||
       aadharInput.value !== ((KycDetailsData?.adharCardNo ?? KycDetailsData?.aadharCardNo) ?? '').replace(/\D/g, '')
     );
-  }, [formData, mobileInput.value, aadharInput.value, KycDetailsData]);
+  }, [formData, mobileInput.value, alternateMobileInput.value, aadharInput.value, KycDetailsData]);
 
   /**
    * Validates all required form fields
@@ -72,6 +74,7 @@ export const useKycFormValidation = (
     
     // Check mobile and aadhar validity
     const isMobileValid = kycValidators.isValidMobile(mobileInput.value);
+    const isAlternateMobileValid = kycValidators.isValidMobile(alternateMobileInput.value);
     const isAadharValid = kycValidators.isValidAadhar(aadharInput.value);
     
     return (
@@ -81,9 +84,10 @@ export const useKycFormValidation = (
       isShopNameValid &&
       isOccupierNameValid &&
       isMobileValid &&
+      isAlternateMobileValid &&
       isAadharValid
     );
-  }, [formData, mobileInput.value, aadharInput.value]);
+  }, [formData, mobileInput.value, alternateMobileInput.value, aadharInput.value]);
 
   return {
     hasChanges,

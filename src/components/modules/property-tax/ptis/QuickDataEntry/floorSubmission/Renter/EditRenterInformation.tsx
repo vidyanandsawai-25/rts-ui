@@ -7,6 +7,7 @@ import { Input } from "@/components/common";
 import { useTranslations } from "next-intl";
 import { RenterFormDataDetails } from "@/types/renter.types";
 import { RenterFormData } from "@/types/renter.types";
+import { capitalizeEachWord } from "@/lib/utils/input-sanitization";
 
 interface EditRenterInformationProps {
     renterDetails: RenterFormDataDetails | undefined;
@@ -17,12 +18,18 @@ export const EditRenterInformation = memo(({ renterDetails, setFormData }: EditR
     const t = useTranslations('quickDataEntry');
     
     const handleChange = (field: keyof RenterFormDataDetails, value: string) => {
+        let val = value;
+        if (field === 'renterName') {
+            const filtered = value.replace(/[^A-Za-z\u0900-\u097F ]/g, '');
+            const normalized = filtered.replace(/^\s+/, '').replace(/\s{2,}/g, ' ').slice(0, 100);
+            val = capitalizeEachWord(normalized);
+        }
         setFormData(prev => {
             return {
                 ...prev,
                 renterDetails: {
                     ...prev.renterDetails,
-                    [field]: value
+                    [field]: val
                 }
             };
         });
@@ -41,6 +48,11 @@ export const EditRenterInformation = memo(({ renterDetails, setFormData }: EditR
                         id="renterName"
                         value={renterDetails?.renterName || ""}
                         onChange={(e) => handleChange('renterName', e.target.value)}
+                        onBlur={() => {
+                            if (renterDetails?.renterName) {
+                                handleChange('renterName', renterDetails.renterName.trim());
+                            }
+                        }}
                         placeholder="e.g. John Doe"
                         className="h-10 text-xs font-medium"
                     />

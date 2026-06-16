@@ -66,7 +66,7 @@ export function normalizeRoomData(raw: Record<string, unknown>): RoomData {
   if (!raw) return {} as RoomData;
 
   const shape = raw.shape || "Rectangle";
-  
+
   // Helper to safely get property regardless of case
   const getProp = (obj: Record<string, unknown>, key: string) => {
     if (!obj) return undefined;
@@ -126,7 +126,7 @@ export function normalizeRoomData(raw: Record<string, unknown>): RoomData {
  * Handles property name variances like 'floorId' vs 'floorID' vs 'FloorID'.
  */
 export function normalizeFloorData(
-  raw: Record<string, unknown>, 
+  raw: Record<string, unknown>,
   lookups: {
     floor?: LookupData[];
     subFloor?: LookupData[];
@@ -179,7 +179,7 @@ export function normalizeFloorData(
     builtupAreaSqFt: getString(raw.builtupAreaSqFt) || getString(raw.builtupAreaSqFeet) || '0.00',
     builtupAreaSqM: getString(raw.builtupAreaSqM) || getString(raw.builtupAreaSqMeter) || '0.00',
     isTaxable: (raw.isTaxable === 'Yes' || raw.isTaxable === true) ? 'Yes' : 'No',
-    
+
     // Renter details root level mappings for forms/UI state
     renterName: getString(raw.renterName) || getString(raw.renterNameEnglish) || getString(firstRenter?.renterName) || getString(firstRenter?.renterNameEnglish) || '',
     agreementFromDate: getString(raw.agreementFromDate) || getString(firstRenter?.agreementFromDate) || getString(firstRenter?.durationFrom) || null,
@@ -194,14 +194,14 @@ export function normalizeFloorData(
     constructionTypeId,
     typeOfUseId,
     subTypeOfUseId,
-    
+
     // Preserved Descriptions for initialLabel fallbacks
     floorDescription: floorDesc,
     subFloorDescription: subFloorDesc,
     constructionTypeDescription: conTypDesc,
     typeOfUseDescription: useDesc,
     subTypeOfUseDescription: subTypeDesc,
-    
+
     // Nested Data - Normalize rooms to ensure shapeParameters are present
     roomWiseSubmissionDetails: ((raw.roomWiseSubmissionDetails || raw.roomData || raw.propertyRooms || []) as unknown[]).map(r => normalizeRoomData(r as Record<string, unknown>)),
     renterDetails: (raw.renterDetails || []) as RenterDetailItem[],

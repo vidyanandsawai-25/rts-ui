@@ -18,7 +18,7 @@ vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => {
     const translations: Record<string, string> = {
       'kyc.title': 'Owner & Contact Information',
-      'kyc.ownerType': 'Owner Type',
+      'kyc.ownerType': 'Owner Category',
       'kyc.titleLabel': 'Title',
       'kyc.propertyHolderName': 'Property Holder Name',
       'kyc.occupierName': 'Occupier Name',

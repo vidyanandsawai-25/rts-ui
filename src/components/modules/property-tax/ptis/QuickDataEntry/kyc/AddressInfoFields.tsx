@@ -2,7 +2,7 @@ import React from 'react';
 import { Input } from '@/components/common';
 import { Label } from '@/components/common/label';
 import { KYC_VALIDATION_RULES, enhancedKycValidators } from '@/lib/utils/kyc-validation.constants';
-import { sanitizeName, sanitizeAddress } from '@/lib/utils/input-sanitization';
+import { sanitizeAddress, sanitizeShopName, capitalizeEachWord, sanitizeEmailStrict } from '@/lib/utils/input-sanitization';
 import { KycFormData } from '@/types/property-kyc.types';
 
 interface AddressInfoFieldsProps {
@@ -23,32 +23,6 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
   return (
     <>
       <div className="space-y-1.5">
-        <Label htmlFor="kyc-occupier" className="text-xs font-semibold text-gray-700">
-          {t('kyc.occupierName')}
-        </Label>
-        <Input
-          type="text"
-          id="kyc-occupier"
-          placeholder={t('kyc.enterOccupierName')}
-          value={formData.occupierName ?? ''}
-          className={`h-9 text-sm border-gray-300 focus:border-gray-600 focus:ring-2 focus:ring-gray-200 ${showError('occupierName', enhancedKycValidators.isValidOccupierName(formData.occupierName ?? ''))
-              ? 'border-red-300 focus:border-red-500'
-              : ''
-            }`}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-            // Sanitize to remove invalid characters and numbers immediately
-            const sanitized = sanitizeName(e.target.value);
-            setFormData((prev) => ({ ...prev, occupierName: sanitized }));
-          }}
-        />
-        {showError('occupierName', enhancedKycValidators.isValidOccupierName(formData.occupierName ?? '')) && (
-          <span className="text-xs text-red-500">
-            {t('kyc.validation.invalidName')}
-          </span>
-        )}
-      </div>
-
-      <div className="space-y-1.5">
         <Label htmlFor="kyc-shopname" className="text-xs font-semibold text-gray-700">
           {t('kyc.shopName')}
         </Label>
@@ -63,10 +37,11 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
               : ''
             }`}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-            // Sanitize to remove invalid characters and numbers immediately
-            const sanitized = sanitizeName(e.target.value);
-            if (sanitized.length <= KYC_VALIDATION_RULES.SHOP_NAME_MAX_LENGTH) {
-              setFormData((prev) => ({ ...prev, flatOrShopName: sanitized }));
+            // Sanitize to remove invalid characters, allowing realistic shop names with numbers and symbols
+            const sanitized = sanitizeShopName(e.target.value);
+            const capitalized = capitalizeEachWord(sanitized);
+            if (capitalized.length <= KYC_VALIDATION_RULES.SHOP_NAME_MAX_LENGTH) {
+              setFormData((prev) => ({ ...prev, flatOrShopName: capitalized }));
             }
           }}
         />
@@ -77,7 +52,7 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
         )}
       </div>
 
-      <div className="space-y-1.5">
+      <div className="col-span-2 space-y-1.5">
         <Label htmlFor="kyc-address" className="text-xs font-semibold text-gray-700">
           {t('kyc.address')}
         </Label>
@@ -104,6 +79,30 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
           <span className="text-xs text-red-500">
             {t('kyc.validation.invalidAddress')}
           </span>
+        )}
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="kyc-email" className="text-xs font-semibold text-gray-700">
+          {t('kyc.emailId')}
+        </Label>
+        <Input
+          id="kyc-email"
+          type="email"
+          placeholder={t('kyc.enterEmailId')}
+          value={formData.emailId ?? ''}
+          maxLength={KYC_VALIDATION_RULES.EMAIL_MAX_LENGTH}
+          className={`h-9 text-sm border-gray-300 focus:border-gray-600 focus:ring-2 focus:ring-gray-200 ${showError('emailId', enhancedKycValidators.isValidEmail(formData.emailId ?? '', true))
+            ? 'border-red-300 focus:border-red-500'
+            : ''
+            }`}
+          onChange={(e) => {
+            const sanitized = sanitizeEmailStrict(e.target.value);
+            setFormData((prev) => ({ ...prev, emailId: sanitized }));
+          }}
+        />
+        {showError('emailId', enhancedKycValidators.isValidEmail(formData.emailId ?? '', true)) && (
+          <span className="text-xs text-red-500">{t('kyc.validation.invalidEmail')}</span>
         )}
       </div>
     </>

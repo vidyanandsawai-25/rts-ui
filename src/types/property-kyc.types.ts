@@ -30,6 +30,7 @@ export interface KycDetails {
   /** @deprecated Use adharCardNo instead. Retained for backward compatibility. */
   aadharCardNo?: string | null;
   adharCardNo?: string | null;
+  alternateMobileNo?: string | null;
 }
 
 
