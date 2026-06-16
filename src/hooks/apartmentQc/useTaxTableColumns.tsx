@@ -4,10 +4,10 @@ import { useMemo } from 'react';
 import React from 'react';
 import type { Column } from '@/components/common/MasterTable';
 import { cn } from '@/lib/utils/cn';
-import { 
-  type TaxRowData, 
-  type TaxColumnDef, 
-  formatCurrency 
+import {
+  type TaxRowData,
+  type TaxColumnDef,
+  formatCurrency
 } from './useApartmentTaxDetailsTable';
 
 /* ============================================================
@@ -66,7 +66,7 @@ function renderMethodCell(value: unknown, row: TaxRowData): React.ReactNode {
 function renderTaxCell(value: unknown, row: TaxRowData): React.ReactNode {
   const amount = value as number | undefined;
   const formatted = amount !== undefined ? formatCurrency(amount) : '-';
-  
+
   if (row.rowType === 'total') {
     return <span className="text-xs font-semibold text-gray-900">{formatted}</span>;
   }
@@ -79,7 +79,7 @@ function renderTaxCell(value: unknown, row: TaxRowData): React.ReactNode {
 function renderTotalCell(value: unknown, row: TaxRowData, activeSubTab: string): React.ReactNode {
   const amount = value as number;
   const formatted = formatCurrency(amount);
-  
+
   if (row.rowType === 'rateable') {
     return (
       <div className="-mx-2 px-2 -my-2 py-2">
@@ -104,8 +104,11 @@ function renderTotalCell(value: unknown, row: TaxRowData, activeSubTab: string):
   // Single method
   const isCapital = activeSubTab === 'capital';
   return (
-    <div className={cn('-mx-2 px-2 -my-2 py-2', isCapital ? 'bg-green-600' : 'bg-[#fff]')}>
-      <span className="text-xs font-bold text-gray-700">{formatted}</span>
+    <div
+      className={cn("-mx-2 px-2 -my-2 py-2", isCapital ? "bg-white" : "bg-white")}>
+      <span className={cn("text-xs font-bold", isCapital ? "text-gray-700" : "text-gray-700")}>
+        {formatted}
+      </span>
     </div>
   );
 }
@@ -158,7 +161,7 @@ export function useTaxTableColumns({
       key: 'total' as keyof TaxRowData,
       label: t('taxDetails.total'),
       align: 'center',
-      headerClassName: 'border-gray-300 font-bold',
+      headerClassName: 'border-l border-gray-300 font-bold',
       cellClassName: 'border-l border-gray-300',
       render: (value, row) => renderTotalCell(value, row, activeSubTab),
     });
