@@ -21,6 +21,7 @@ export const useDigitInputs = (length: number, initialValue: string = '') => {
 
   const [prevInitialValue, setPrevInitialValue] = useState(initialValue);
   const [prevLength, setPrevLength] = useState(length);
+  const [lastTypedIndex, setLastTypedIndex] = useState<number>(-1);
 
   // Sync with initialValue or length changes in render phase
   const sanitizedInitialValue = initialValue.replace(/\D/g, '');
@@ -48,6 +49,12 @@ export const useDigitInputs = (length: number, initialValue: string = '') => {
       return next;
     });
 
+    if (val) {
+      setLastTypedIndex(index);
+    } else {
+      setLastTypedIndex(-1);
+    }
+
     // Move focus forward if a digit is entered
     if (val && index < length - 1) {
       inputRefs.current[index + 1]?.focus();
@@ -55,6 +62,8 @@ export const useDigitInputs = (length: number, initialValue: string = '') => {
   }, [length]);
 
   const handleKeyDown = useCallback((index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Reset typing index on backspace or editing keys
+    setLastTypedIndex(-1);
     // Move focus backward on backspace if current field is empty
     if (e.key === 'Backspace' && !digits[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
@@ -72,5 +81,6 @@ export const useDigitInputs = (length: number, initialValue: string = '') => {
     handleKeyDown,
     setRef,
     value: digits.join(''),
+    lastTypedIndex,
   };
 };

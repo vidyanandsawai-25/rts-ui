@@ -12,6 +12,7 @@ import { AgreementDocumentViewer } from "./AgreementDocumentViewer";
 import { RenterFormData, RenterFormDataDetails } from '@/types/renter.types';
 import { toast } from 'sonner';
 import { validateRenterForm, ExistingFloorData, type CurrentFloorContext } from '@/lib/utils/renter-validation';
+import { capitalizeEachWord } from '@/lib/utils/input-sanitization';
 
 interface AgreementDetailsProps {
   formData: RenterFormData;
@@ -327,9 +328,10 @@ const AgreementDetails = memo(({ formData, setFormData, existingFloors = [], cur
               const filtered = rawVal.replace(/[^A-Za-z\u0900-\u097F ]/g, '');
               // Trim leading spaces, collapse multiple spaces, slice to 100 max chars
               const val = filtered.replace(/^\s+/, '').replace(/\s{2,}/g, ' ').slice(0, 100);
+              const capitalized = capitalizeEachWord(val);
               
               setFormData(prev => {
-                return { ...prev, renterDetails: { ...prev.renterDetails, renterName: val } };
+                return { ...prev, renterDetails: { ...prev.renterDetails, renterName: capitalized } };
               });
               markTouched('renterName');
             }} 
@@ -341,7 +343,7 @@ const AgreementDetails = memo(({ formData, setFormData, existingFloors = [], cur
                   ...prev,
                   renterDetails: {
                     ...prev.renterDetails,
-                    renterName: prev.renterDetails.renterName.trim()
+                    renterName: capitalizeEachWord(prev.renterDetails.renterName.trim())
                   }
                 };
               });

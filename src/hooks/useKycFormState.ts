@@ -44,6 +44,11 @@ export const useKycFormState = (
     KycDetailsData?.mobileNo ?? ''
   );
 
+  const alternateMobileInput = useDigitInputs(
+    KYC_VALIDATION_RULES.MOBILE_LENGTH,
+    KycDetailsData?.alternateMobileNo ?? ''
+  );
+
   const aadharInput = useDigitInputs(
     KYC_VALIDATION_RULES.AADHAR_LENGTH,
     KycDetailsData?.adharCardNo ?? KycDetailsData?.aadharCardNo ?? ''
@@ -64,6 +69,7 @@ export const useKycFormState = (
     formData,
     setFormData,
     mobileInput,
+    alternateMobileInput,
     aadharInput,
     isSubmitted,
     setIsSubmitted,

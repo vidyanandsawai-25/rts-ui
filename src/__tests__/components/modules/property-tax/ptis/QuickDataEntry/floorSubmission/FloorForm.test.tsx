@@ -189,7 +189,7 @@ describe('FloorForm', () => {
       subFloor: 'Attic - ATTIC',
       subFloorId: 'Attic',
       conYr: '2026',
-      asstYr: '2024',
+      asstYr: '2026',
       conTyp: 'B - सीमेंट/चुना/दगड/विटांची भिंत व स्लॅब',
       constructionTypeId: 'B',
       use: 'R - R',
@@ -254,7 +254,7 @@ describe('FloorForm', () => {
     expect(result.success).toBe(true);
   });
 
-  it('bypasses year validation refinement when isAddingNewFloor is false', () => {
+  it('does NOT bypass year validation refinement when isAddingNewFloor is false', () => {
     const userFormData = {
       ...INITIAL_FORM_STATE,
       isAddingNewFloor: false, // update mode
@@ -279,7 +279,7 @@ describe('FloorForm', () => {
       builtupAreaSqM: '726',
     };
     const result = floorFormSchema.safeParse(userFormData);
-    expect(result.success).toBe(true);
+    expect(result.success).toBe(false);
   });
 
   it('enforces year validation refinement when isAddingNewFloor is true', () => {

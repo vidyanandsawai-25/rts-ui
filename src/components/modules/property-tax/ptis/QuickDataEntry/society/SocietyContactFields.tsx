@@ -1,7 +1,7 @@
 import { Input } from "@/components/common";
 import { Label } from "@/components/common/label";
 import { SOCIETY_VALIDATION_RULES, societyValidators, kycValidators } from '@/lib/utils/kyc-validation.constants';
-import { sanitizeEmailStrict, sanitizeName } from '@/lib/utils/input-sanitization';
+import { sanitizeEmailStrict, sanitizeName, capitalizeEachWord } from '@/lib/utils/input-sanitization';
 import { useDigitInputs } from '@/hooks/useDigitInputs';
 
 interface SocietyContactFieldsProps {
@@ -63,14 +63,15 @@ export const SocietyContactFields = ({
                     placeholder={t('society.managerNamePlaceholder')}
                     maxLength={SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH}
                     className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${showError('managerName', !managerName || societyValidators.isValidPersonName(managerName))
-                            ? 'border-red-300 focus:border-red-500'
-                            : ''
+                        ? 'border-red-300 focus:border-red-500'
+                        : ''
                         }`}
                     onChange={(e) => {
                         // Sanitize to remove invalid characters immediately
                         const sanitized = sanitizeName(e.target.value);
-                        if (sanitized.length <= SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH) {
-                            setManagerName(sanitized);
+                        const capitalized = capitalizeEachWord(sanitized);
+                        if (capitalized.length <= SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH) {
+                            setManagerName(capitalized);
                         }
                     }}
                 />
@@ -132,11 +133,11 @@ export const SocietyContactFields = ({
                                 onChange={(e) => managerMobileInput.handleChange(i, e.target.value)}
                                 onKeyDown={(e) => managerMobileInput.handleKeyDown(i, e)}
                                 ref={managerMobileInput.setRef(i)}
-                                naked                                
+                                naked
                                 className={`flex-1 min-w-0 w-full h-7 text-center text-xs font-semibold text-gray-900 border rounded bg-white outline-none focus:ring-1 ${showError('managerMobile', societyValidators.isValidMobile(managerMobileInput.value))
                                     ? 'border-red-300 focus:border-red-500 focus:ring-red-300'
                                     : 'border-gray-300 focus:border-purple-500 focus:ring-purple-300'
-                                    }`}
+                                    } ${managerMobileInput.lastTypedIndex === i ? 'animate-digit-pop' : ''}`}
                             />
                         ))}
                     </div>
@@ -155,14 +156,15 @@ export const SocietyContactFields = ({
                     placeholder={t('society.secretaryNamePlaceholder')}
                     maxLength={SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH}
                     className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${showError('secretaryName', !secretaryName || societyValidators.isValidPersonName(secretaryName))
-                            ? 'border-red-300 focus:border-red-500'
-                            : ''
+                        ? 'border-red-300 focus:border-red-500'
+                        : ''
                         }`}
                     onChange={(e) => {
                         // Sanitize to remove invalid characters immediately
                         const sanitized = sanitizeName(e.target.value);
-                        if (sanitized.length <= SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH) {
-                            setSecretaryName(sanitized);
+                        const capitalized = capitalizeEachWord(sanitized);
+                        if (capitalized.length <= SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH) {
+                            setSecretaryName(capitalized);
                         }
                     }}
                 />
@@ -228,7 +230,7 @@ export const SocietyContactFields = ({
                                 className={`flex-1 min-w-0 w-full h-7 text-center text-xs font-semibold text-gray-900 border rounded bg-white outline-none focus:ring-1 ${showError('secretaryMobile', societyValidators.isValidMobile(secretaryMobileInput.value))
                                     ? 'border-red-300 focus:border-red-500 focus:ring-red-300'
                                     : 'border-gray-300 focus:border-purple-500 focus:ring-purple-300'
-                                    }`}
+                                    } ${secretaryMobileInput.lastTypedIndex === i ? 'animate-digit-pop' : ''}`}
                             />
                         ))}
                     </div>
