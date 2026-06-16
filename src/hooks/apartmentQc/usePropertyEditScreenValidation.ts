@@ -1,14 +1,18 @@
-import { useCallback } from "react";
+import { useCallback } from 'react';
 import {
   PERSON_NAME_REGEX,
   EMAIL_REGEX,
   MOBILE_10_REGEX,
   YEAR_REGEX,
   CODE_REGEX,
-  POSITIVE_INTEGER_REGEX,
   TEXT_ALLOWED,
-} from "@/lib/utils/validation-rules";
-import { DrawerFormData, DrawerFormErrors, DrawerFloorDataRow } from "./propertyEditScreenDrawer.types";
+  ONE_TO_NINETY_NINE_REGEX,
+} from '@/lib/utils/validation-rules';
+import {
+  DrawerFormData,
+  DrawerFormErrors,
+  DrawerFloorDataRow,
+} from './propertyEditScreenDrawer.types';
 
 interface UsePropertyEditScreenValidationArgs {
   formData: DrawerFormData;
@@ -27,56 +31,66 @@ export function usePropertyEditScreenValidation({
   // Validate a single field
   const validateField = useCallback((field: string, value: string): string => {
     switch (field) {
-      case "ownerName":
-        if (!value.trim()) return "Owner name is required";
-        if (value.trim() && !PERSON_NAME_REGEX.test(value.trim())) return "Invalid name format";
+      case 'ownerName':
+        if (!value.trim()) return 'Owner name is required';
+        if (value.trim() && !PERSON_NAME_REGEX.test(value.trim())) return 'Invalid name format';
         break;
-      case "occupierName":
-        if (!value.trim()) return "Occupier name is required";
-        if (value.trim() && !PERSON_NAME_REGEX.test(value.trim())) return "Invalid name format";
+      case 'occupierName':
+        if (!value.trim()) return 'Occupier name is required';
+        if (value.trim() && !PERSON_NAME_REGEX.test(value.trim())) return 'Invalid name format';
         break;
-      case "renterName":
-        if (value.trim() && !PERSON_NAME_REGEX.test(value.trim())) return "Invalid name format";
+      case 'renterName':
+        if (value.trim() && !PERSON_NAME_REGEX.test(value.trim())) return 'Invalid name format';
         break;
-      case "mobileNo":
-        if (value.trim() && !MOBILE_10_REGEX.test(value.trim())) return "Enter valid 10-digit mobile";
+      case 'mobileNo':
+        if (value.trim() && !MOBILE_10_REGEX.test(value.trim()))
+          return 'Enter valid 10-digit mobile';
         break;
-      case "emailId":
-        if (value.trim() && !EMAIL_REGEX.test(value.trim())) return "Enter valid email";
+      case 'emailId': {
+        const email = value.trim();
+
+        if (!email) break;
+
+        if (!EMAIL_REGEX.test(email)) {
+          return 'Enter valid email address';
+        }
         break;
-      case "flatOrShopNo":
-        if (!value.trim()) return "Flat/Shop No. is required";
+      }
+      case 'flatOrShopNo':
+        if (!value.trim()) return 'Flat/Shop No. is required';
         break;
-      case "wingName":
-        if (value.trim() && !CODE_REGEX.test(value.trim())) return "Invalid wing format";
+      case 'wingName':
+        if (value.trim() && !CODE_REGEX.test(value.trim())) return 'Invalid wing format';
         break;
-      case "oldPropertyNo":
-        if (value.trim() && !CODE_REGEX.test(value.trim())) return "Invalid property no. format";
+      case 'oldPropertyNo':
+        if (value.trim() && !CODE_REGEX.test(value.trim())) return 'Invalid property no. format';
         break;
-      case "bhk":
-        if (value.trim() && !POSITIVE_INTEGER_REGEX.test(value.trim())) return "BHK must be a positive integer";
+      case 'bhk':
+       // if (!value.trim()) return 'BHK is required';
+        // if (!ONE_TO_NINETY_NINE_REGEX.test(value.trim()))
+        //   return 'BHK must be a number between 1 and 99';
         break;
-      case "flatOrShopName":
-        if (value.trim() && !TEXT_ALLOWED.test(value.trim())) return "Invalid shop name format";
+      case 'flatOrShopName':
+        if (value.trim() && !TEXT_ALLOWED.test(value.trim())) return 'Invalid shop name format';
         break;
     }
-    return "";
+    return '';
   }, []);
 
   // Validate all form fields
   const validateForm = useCallback((): boolean => {
     const errors: DrawerFormErrors = {};
 
-    errors.ownerName = validateField("ownerName", formData.ownerName) || undefined;
-    errors.occupierName = validateField("occupierName", formData.occupierName) || undefined;
-    errors.renterName = validateField("renterName", formData.renterName) || undefined;
-    errors.mobileNo = validateField("mobileNo", formData.mobileNo) || undefined;
-    errors.emailId = validateField("emailId", formData.emailId) || undefined;
-    errors.flatOrShopNo = validateField("flatOrShopNo", formData.flatOrShopNo) || undefined;
-    errors.wingName = validateField("wingName", formData.wingName) || undefined;
-    errors.oldPropertyNo = validateField("oldPropertyNo", formData.oldPropertyNo) || undefined;
-    errors.bhk = validateField("bhk", formData.bhk) || undefined;
-    errors.flatOrShopName = validateField("flatOrShopName", formData.flatOrShopName) || undefined;
+    errors.ownerName = validateField('ownerName', formData.ownerName) || undefined;
+    errors.occupierName = validateField('occupierName', formData.occupierName) || undefined;
+    errors.renterName = validateField('renterName', formData.renterName) || undefined;
+    errors.mobileNo = validateField('mobileNo', formData.mobileNo) || undefined;
+    errors.emailId = validateField('emailId', formData.emailId) || undefined;
+    errors.flatOrShopNo = validateField('flatOrShopNo', formData.flatOrShopNo) || undefined;
+    errors.wingName = validateField('wingName', formData.wingName) || undefined;
+    errors.oldPropertyNo = validateField('oldPropertyNo', formData.oldPropertyNo) || undefined;
+    errors.bhk = validateField('bhk', formData.bhk) || undefined;
+    errors.flatOrShopName = validateField('flatOrShopName', formData.flatOrShopName) || undefined;
 
     // Remove undefined errors
     const filteredErrors = Object.fromEntries(
@@ -89,11 +103,11 @@ export function usePropertyEditScreenValidation({
 
   // Validate year (4 digits, reasonable range)
   const validateYear = useCallback((year: string): string => {
-    if (!year.trim()) return "";
-    if (!YEAR_REGEX.test(year)) return "Enter 4-digit year";
+    if (!year.trim()) return '';
+    if (!YEAR_REGEX.test(year)) return 'Enter 4-digit year';
     const yearNum = parseInt(year, 10);
-    if (yearNum < 1900 || yearNum > 2100) return "Year out of range";
-    return "";
+    if (yearNum < 1900 || yearNum > 2100) return 'Year out of range';
+    return '';
   }, []);
 
   // Validate floor data years
@@ -111,7 +125,7 @@ export function usePropertyEditScreenValidation({
   // Handler for field blur validation
   const handleFieldBlur = useCallback(
     (field: keyof DrawerFormErrors) => {
-      const value = formData[field as keyof DrawerFormData] || "";
+      const value = formData[field as keyof DrawerFormData] || '';
       const error = validateField(field, value);
       setFormErrors((prev) => ({ ...prev, [field]: error || undefined }));
     },

@@ -217,10 +217,10 @@
         "label": "नया कर"
       },
       "oldArea": {
-        "label": "पुराना क्षेत्र"
+        "label": "पुराना क्षेत्र (sq.mtr)"
       },
       "newArea": {
-        "label": "नया क्षेत्र"
+        "label": "नया क्षेत्र (sq.mtr)"
       },
       "oldUseType": {
         "label": "पुराना उपयोग प्रकार"
