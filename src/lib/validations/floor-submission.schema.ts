@@ -171,10 +171,6 @@ export const floorSubmissionSchema = z.object({
     createdBy: z.number().optional(),
     updatedBy: z.number().optional(),
 }).refine((data) => {
-    // If it's an update, skip validation to allow existing database values
-    const rawDetailsId = Number(data.propertyDetailsId || (data as Record<string, unknown>).id || 0);
-    if (rawDetailsId > 0) return true;
-
     const conYear = parseInt(data.constructionYear, 10);
     const asstYear = parseInt(data.assessmentYear, 10);
     if (isNaN(conYear) || isNaN(asstYear)) return true;
