@@ -6,7 +6,6 @@ import {
   YEAR_REGEX,
   CODE_REGEX,
   TEXT_ALLOWED,
-  ONE_TO_NINETY_NINE_REGEX,
 } from '@/lib/utils/validation-rules';
 import {
   DrawerFormData,

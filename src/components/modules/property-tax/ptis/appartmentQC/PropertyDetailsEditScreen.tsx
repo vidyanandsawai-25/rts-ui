@@ -86,8 +86,8 @@ const ResidentialEditScreen = ({
     allSubTypes,
   });
 
-  // Destructure the hook handles used inside callbacks so the dep arrays are
-  // primitive references rather than `hook.x.y` chains (react-hooks/exhaustive-deps).
+  // Destructure the hook handles used within callbacks so the dep arrays are
+  // primitive references rather than 'hook.x.y' chains (react-hooks/exhaustive-deps).
   const {
     roomDrawerOpen,
     roomPdnId,
@@ -95,8 +95,6 @@ const ResidentialEditScreen = ({
     formData: hookFormData,
     updateFormField: hookUpdateFormField,
     floorData: hookFloorData,
-    updateFloorRowArea: hookUpdateFloorRowArea,
-    updateFloorRowCount: hookUpdateFloorRowCount,
     refetchFloorQC: hookRefetchFloorQC,
   } = hook;
 
@@ -386,7 +384,7 @@ const ResidentialEditScreen = ({
           setDualMethodTaxDetails(null);
         }
       }
-    } catch (e) {
+    } catch {
       toast.error('Failed to refresh tax details');
     } finally {
       setIsLoadingTaxDetails(false);
@@ -396,7 +394,7 @@ const ResidentialEditScreen = ({
   // the backend to recompute room aggregates for this floor (sync-rooms), then
   // refetch the Floor QC table so the new aggregates appear in the drawer.
   const handleRoomUpdate = useCallback(
-    async (data: {
+    async (_data: {
       floorNumber: string;
       rooms: import('@/types/room-details.types').RoomData[];
       totalAreaSqM: number;
@@ -436,9 +434,8 @@ const ResidentialEditScreen = ({
       roomPdnId,
       roomPropertyId,
       hookFloorData,
-      hookUpdateFloorRowArea,
-      hookUpdateFloorRowCount,
       hookRefetchFloorQC,
+      refetchTaxDetails,
     ]
   );
 
@@ -773,8 +770,8 @@ const ResidentialEditScreen = ({
 
               <h2 className="text-base font-bold flex items-center gap-2 text-blue-900">
                 <Layers className="w-4 h-4 text-blue-600" />
-                {t('drawer.roomWiseSubmission')} 
-                ({areaUnit === "sq.m" ? "sq.m" : "sq.ft"})
+                {t('drawer.roomWiseSubmission')}
+                ({areaUnit === "sq.m" ? t('drawer.units.sqM') : t('drawer.units.sqFt')})
               </h2>
 
               {/* Unit Toggle Pill */}
@@ -791,7 +788,7 @@ const ResidentialEditScreen = ({
                       : "text-blue-400/70 hover:text-blue-600"
                   }`}
                 >
-                  sq.m
+                  {t('drawer.units.sqM')}
                 </Button>
 
 
@@ -806,7 +803,7 @@ const ResidentialEditScreen = ({
                       : "text-blue-400/70 hover:text-blue-600"
                   }`}
                 >
-                  sq.ft
+                  {t('drawer.units.sqFt')}
                 </Button>
 
               </div>
