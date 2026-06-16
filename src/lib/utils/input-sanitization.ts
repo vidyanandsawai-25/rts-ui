@@ -110,6 +110,46 @@ export const sanitizeName = (name: string): string => {
 };
 
 /**
+ * Sanitize shop name input
+ * Allows letters, numbers, spaces, and basic punctuation safe for shop names (.,'-/()&)
+ * 
+ * @param name - Raw shop name input
+ * @returns Sanitized shop name
+ */
+export const sanitizeShopName = (name: string): string => {
+  if (!name || typeof name !== 'string') return '';
+
+  return name
+    // Remove HTML tags
+    .replace(/<[^>]*>/g, '')
+    // Remove script content
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    // Block all invalid special characters - allow letters, numbers, spaces, and basic shop punctuation (.,'-/()&)
+    .replace(/[^a-zA-Z0-9\u00C0-\u024F\u0900-\u097F\u0D00-\u0D7F\s.,'\/\-()&]/g, '')
+    // Remove multiple consecutive spaces
+    .replace(/\s+/g, ' ');
+};
+
+/**
+ * Capitalize the first letter of each word in a string
+ * Supports Unicode/international word boundaries
+ * 
+ * @param str - Input string
+ * @returns String with first letter of each word capitalized
+ */
+export const capitalizeEachWord = (str: string): string => {
+  if (!str) return '';
+  return str
+    .split(' ')
+    .map((word) => {
+      if (!word) return '';
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    })
+    .join(' ');
+};
+
+
+/**
  * Sanitize address input
  * More permissive than name sanitization but still blocks invalid special characters
  * Allows letters, numbers, multiple spaces, and common address punctuation (.,/-#&,)

@@ -3,7 +3,7 @@
 import { useRouter, usePathname, useSearchParams, useParams } from 'next/navigation';
 import { Drawer } from '@/components/common/Drawer';
 import { useTranslations } from 'next-intl';
-import { FileText } from 'lucide-react';
+import { FileText, MapPin, Hash, Layers, Tag } from 'lucide-react';
 import { TabNavigation } from "./TabNavigation";
 import { cn } from '@/lib/utils/cn';
 import { ReactNode } from 'react';
@@ -19,7 +19,8 @@ const RETURN_TAB_BY_QDE_SEGMENT: Record<string, string> = {
 
 function QuickDataEntryContent({
     children,
-}: { children: ReactNode }) {
+    categoryName,
+}: { children: ReactNode; categoryName?: string }) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -80,17 +81,30 @@ function QuickDataEntryContent({
     );
 
     const drawerTitle = (
-        <div className="flex flex-col">
+        <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-4 lg:gap-6">
             <h2 className="flex items-center gap-2 text-[15px] font-bold leading-tight text-white">
                 <FileText className="h-4 w-4 text-white" />
                 {t('roomSubmission.quickDataEntry')}
             </h2>
-            <div className="mt-1 flex items-center gap-1 text-[10px] font-medium text-white opacity-90">
-                <span>{t('roomSubmission.info.ward')}: {wardNo || '—'}</span>
-                <span className="mx-1">•</span>
-                <span>{t('roomSubmission.info.property')}: {propertyNo || '—'}</span>
-                <span className="mx-1">•</span>
-                <span>{t('roomSubmission.info.partition')}: {partitionNo || '—'}</span>
+            <div className="flex flex-wrap items-center gap-2">
+                <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/10 text-[11px] font-semibold text-white border border-white/10 backdrop-blur-xs transition-colors hover:bg-white/15">
+                    <MapPin className="h-3 w-3 text-white/80" />
+                    <span>{t('roomSubmission.info.ward')}: {wardNo || '—'}</span>
+                </div>
+                <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/10 text-[11px] font-semibold text-white border border-white/10 backdrop-blur-xs transition-colors hover:bg-white/15">
+                    <Hash className="h-3 w-3 text-white/80" />
+                    <span>{t('roomSubmission.info.property')}: {propertyNo || '—'}</span>
+                </div>
+                <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/10 text-[11px] font-semibold text-white border border-white/10 backdrop-blur-xs transition-colors hover:bg-white/15">
+                    <Layers className="h-3 w-3 text-white/80" />
+                    <span>{t('roomSubmission.info.partition')}: {partitionNo || '—'}</span>
+                </div>
+                {categoryName && (
+                    <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/15 text-[11px] font-semibold text-white border border-white/20 backdrop-blur-xs transition-colors hover:bg-white/20">
+                        <Tag className="h-3 w-3 text-white/95" />
+                        <span>{t('floor.propertyCategory') || 'Property Category'}: {categoryName}</span>
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -111,9 +125,9 @@ function QuickDataEntryContent({
     );
 }
 
-export function QuickDataEntryClientWrapper({ children }: { children: ReactNode }) {
+export function QuickDataEntryClientWrapper({ children, categoryName }: { children: ReactNode; categoryName?: string }) {
     return (
-        <QuickDataEntryContent>
+        <QuickDataEntryContent categoryName={categoryName}>
             {children}
         </QuickDataEntryContent>
     );

@@ -1,7 +1,7 @@
 import { Input, SearchSelect } from "@/components/common";
 import { Label } from "@/components/common/label";
 import { societyValidators, SOCIETY_VALIDATION_RULES, propertyValidators } from '@/lib/utils/kyc-validation.constants';
-import { sanitizeEmailStrict, sanitizeName, sanitizeAddress } from '@/lib/utils/input-sanitization';
+import { sanitizeEmailStrict, sanitizeName, sanitizeAddress, capitalizeEachWord } from '@/lib/utils/input-sanitization';
 import { useTranslations } from "next-intl";
 
 interface SocietyGeneralFieldsProps {
@@ -64,8 +64,9 @@ export const SocietyGeneralFields = ({
                     onChange={(e) => {
                         // Sanitize to remove invalid characters immediately
                         const sanitized = sanitizeName(e.target.value);
-                        if (sanitized.length <= SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH) {
-                            setLandOwnerName(sanitized);
+                        const capitalized = capitalizeEachWord(sanitized);
+                        if (capitalized.length <= SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH) {
+                            setLandOwnerName(capitalized);
                         }
                     }}
                 />
@@ -73,7 +74,7 @@ export const SocietyGeneralFields = ({
                     <span className="text-xs text-red-500">
                         {landOwnerName && (landOwnerName.trim().length < SOCIETY_VALIDATION_RULES.NAME_MIN_LENGTH || landOwnerName.trim().length > SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH)
                             ? t('society.validation.invalidNameLength')
-                            : t('kyc.validation.invalidName')}
+                            : t('society.validation.invalidName')}
                     </span>
                 )}
             </div>
@@ -94,8 +95,9 @@ export const SocietyGeneralFields = ({
                     onChange={(e) => {
                         // Sanitize to remove invalid characters immediately
                         const sanitized = sanitizeName(e.target.value);
-                        if (sanitized.length <= SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH) {
-                            setBuilderName(sanitized);
+                        const capitalized = capitalizeEachWord(sanitized);
+                        if (capitalized.length <= SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH) {
+                            setBuilderName(capitalized);
                         }
                     }}
                 />
@@ -103,7 +105,7 @@ export const SocietyGeneralFields = ({
                     <span className="text-xs text-red-500">
                         {builderName && (builderName.trim().length < SOCIETY_VALIDATION_RULES.NAME_MIN_LENGTH || builderName.trim().length > SOCIETY_VALIDATION_RULES.PERSON_NAME_MAX_LENGTH)
                             ? t('society.validation.invalidNameLength')
-                            : t('kyc.validation.invalidName')}
+                            : t('society.validation.invalidName')}
                     </span>
                 )}
             </div>
@@ -124,8 +126,9 @@ export const SocietyGeneralFields = ({
                     onChange={(e) => {
                         // Sanitize to remove invalid characters immediately
                         const sanitized = sanitizeName(e.target.value);
-                        if (sanitized.length <= SOCIETY_VALIDATION_RULES.SOCIETY_NAME_MAX_LENGTH) {
-                            setSocietyName(sanitized);
+                        const capitalized = capitalizeEachWord(sanitized);
+                        if (capitalized.length <= SOCIETY_VALIDATION_RULES.SOCIETY_NAME_MAX_LENGTH) {
+                            setSocietyName(capitalized);
                         }
                     }}
                 />
@@ -133,7 +136,7 @@ export const SocietyGeneralFields = ({
                     <span className="text-xs text-red-500">
                         {societyName && (societyName.trim().length < SOCIETY_VALIDATION_RULES.NAME_MIN_LENGTH || societyName.trim().length > SOCIETY_VALIDATION_RULES.SOCIETY_NAME_MAX_LENGTH)
                             ? t('society.validation.invalidNameLength')
-                            : t('kyc.validation.invalidName')}
+                            : t('society.validation.invalidName')}
                     </span>
                 )}
             </div>
