@@ -42,7 +42,7 @@ type CommonPropertyTableProps<T extends Record<string, unknown>> = {
   totalPages?: number;
   onPageChange?: (page: number) => void;
   onPageSizeChange?: (size: number) => void;
-  applyTypeColors?: boolean;
+  _applyTypeColors?: boolean;
   // Filter props
   activeFilters?: Record<FilterField, string[]>;
   onFilterChange?: (field: FilterField, values: string[]) => void;
@@ -55,7 +55,7 @@ type CommonPropertyTableProps<T extends Record<string, unknown>> = {
 function CommonPropertyTable<T extends Record<string, unknown>>({
   columns, data, title, activeTab, searchQuery, onSearchChange, onRowClick,
   loading = false, isAutoScrolling, onToggleAutoScroll, pageNumber = 1, pageSize = 10,
-  totalCount, totalPages, onPageChange, onPageSizeChange, applyTypeColors = false,
+  totalCount, totalPages, onPageChange, onPageSizeChange,
   activeFilters = {} as Record<FilterField, string[]>,
   onFilterChange,
   onFetchFilterOptions,
