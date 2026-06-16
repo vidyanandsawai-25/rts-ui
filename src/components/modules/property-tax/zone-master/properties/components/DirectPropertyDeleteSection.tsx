@@ -16,6 +16,8 @@ interface DirectPropertyDeleteSectionProps {
   propertyNo?: string | null;
   partitionNo?: string | null;
   categoryName?: string | null;
+  subRows?: DirectPropertyDeleteRow[];
+  onSubRowDeleted?: () => void;
   onDeleted: () => void;
   t: (key: string, params?: Record<string, string | number | Date>) => string;
 }
@@ -26,6 +28,8 @@ function DirectPropertyDeleteSectionInner({
   propertyNo,
   partitionNo,
   categoryName,
+  subRows,
+  onSubRowDeleted,
   onDeleted,
   t,
 }: DirectPropertyDeleteSectionProps) {
@@ -33,7 +37,36 @@ function DirectPropertyDeleteSectionInner({
   const { confirm } = useConfirm();
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const row: DirectPropertyDeleteRow = {
+  const createDeleteHandler = useCallback(
+    (rowPropertyId: string, rowPropertyNo: string, callback: () => void) => () => {
+      confirm({
+        variant: "delete",
+        title: t("createProperty.deletePropertyConfirm"),
+        description: t("createProperty.deleteSinglePropertyDesc"),
+        meta: { id: rowPropertyId, name: rowPropertyNo || rowPropertyId },
+        onConfirm: async () => {
+          setIsDeleting(true);
+          try {
+            const result = await deletePropertyAction(rowPropertyId);
+            if (result.success) {
+              toast.success(t("createProperty.propertyDeleteSuccess"));
+              callback();
+              router.refresh();
+            } else {
+              toast.error(result.error || t("createProperty.failedToDeleteProperty"));
+            }
+          } catch {
+            toast.error(t("createProperty.failedToDeleteProperty"));
+          } finally {
+            setIsDeleting(false);
+          }
+        },
+      });
+    },
+    [confirm, router, t]
+  );
+
+  const mainRow: DirectPropertyDeleteRow = {
     propertyId,
     wardNo: wardNo || "-",
     propertyNo: propertyNo || "-",
@@ -41,31 +74,8 @@ function DirectPropertyDeleteSectionInner({
     categoryName: categoryName || "-",
   };
 
-  const handleDelete = useCallback(() => {
-    confirm({
-      variant: "delete",
-      title: t("createProperty.deletePropertyConfirm"),
-      description: t("createProperty.deleteSinglePropertyDesc"),
-      meta: { id: propertyId, name: propertyNo || propertyId },
-      onConfirm: async () => {
-        setIsDeleting(true);
-        try {
-          const result = await deletePropertyAction(propertyId);
-          if (result.success) {
-            toast.success(t("createProperty.propertyDeleteSuccess"));
-            onDeleted();
-            router.refresh();
-          } else {
-            toast.error(result.error || t("createProperty.failedToDeleteProperty"));
-          }
-        } catch {
-          toast.error(t("createProperty.failedToDeleteProperty"));
-        } finally {
-          setIsDeleting(false);
-        }
-      },
-    });
-  }, [confirm, onDeleted, propertyId, propertyNo, router, t]);
+  const hasSubRows = subRows && subRows.length > 0;
+  const tableData = hasSubRows ? subRows : [mainRow];
 
   const columns: Column<DirectPropertyDeleteRow & Record<string, unknown>>[] = [
     {
@@ -94,17 +104,21 @@ function DirectPropertyDeleteSectionInner({
       key: "propertyId",
       label: t("createProperty.action"),
       align: "center",
-      render: () => (
-        <IconOnlyActionButton
-          icon={Trash2}
-          onClick={handleDelete}
-          aria-label={t("createProperty.deletePropertyConfirm")}
-          variant="ghost"
-          size="sm"
-          disabled={isDeleting}
-          className="text-red-500 hover:scale-110 transition-transform p-1.5 hover:bg-transparent"
-        />
-      ),
+      render: (_value, currentRow) => {
+        const item = currentRow as DirectPropertyDeleteRow;
+        const callback = hasSubRows ? (onSubRowDeleted ?? (() => {})) : onDeleted;
+        return (
+          <IconOnlyActionButton
+            icon={Trash2}
+            onClick={createDeleteHandler(item.propertyId, item.propertyNo, callback)}
+            aria-label={t("createProperty.deletePropertyConfirm")}
+            variant="ghost"
+            size="sm"
+            disabled={isDeleting}
+            className="text-red-500 hover:scale-110 transition-transform p-1.5 hover:bg-transparent"
+          />
+        );
+      },
     },
   ];
 
@@ -119,7 +133,7 @@ function DirectPropertyDeleteSectionInner({
 
       <MasterTable
         columns={columns as unknown as Column<Record<string, unknown>>[]}
-        data={[row] as unknown as Record<string, unknown>[]}
+        data={tableData as unknown as Record<string, unknown>[]}
         loading={isDeleting}
         emptyText={t("createProperty.noPropertiesFound")}
         height="xs"
