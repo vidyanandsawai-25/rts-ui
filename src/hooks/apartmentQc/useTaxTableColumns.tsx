@@ -82,30 +82,30 @@ function renderTotalCell(value: unknown, row: TaxRowData, activeSubTab: string):
   
   if (row.rowType === 'rateable') {
     return (
-      <div className="bg-blue-100 -mx-2 px-2 -my-2 py-2">
+      <div className="-mx-2 px-2 -my-2 py-2">
         <span className="text-xs font-semibold text-blue-900">{formatted}</span>
       </div>
     );
   }
   if (row.rowType === 'capital') {
     return (
-      <div className="bg-green-100 -mx-2 px-2 -my-2 py-2">
+      <div className="-mx-2 px-2 -my-2 py-2">
         <span className="text-xs font-semibold text-green-900">{formatted}</span>
       </div>
     );
   }
   if (row.rowType === 'total') {
     return (
-      <div className="bg-[#1E3A8A] -mx-2 px-2 -my-2 py-2">
-        <span className="text-xs font-bold text-white">{formatted}</span>
+      <div className="-mx-2 px-2 -my-2 py-2">
+        <span className="text-xs font-bold text-gray-700">{formatted}</span>
       </div>
     );
   }
   // Single method
   const isCapital = activeSubTab === 'capital';
   return (
-    <div className={cn('-mx-2 px-2 -my-2 py-2', isCapital ? 'bg-green-600' : 'bg-[#1E3A8A]')}>
-      <span className="text-xs font-bold text-white">{formatted}</span>
+    <div className={cn('-mx-2 px-2 -my-2 py-2', isCapital ? 'bg-green-600' : 'bg-[#fff]')}>
+      <span className="text-xs font-bold text-gray-700">{formatted}</span>
     </div>
   );
 }
@@ -158,7 +158,7 @@ export function useTaxTableColumns({
       key: 'total' as keyof TaxRowData,
       label: t('taxDetails.total'),
       align: 'center',
-      headerClassName: 'bg-amber-100 border-l border-gray-300 font-bold',
+      headerClassName: 'border-gray-300 font-bold',
       cellClassName: 'border-l border-gray-300',
       render: (value, row) => renderTotalCell(value, row, activeSubTab),
     });
