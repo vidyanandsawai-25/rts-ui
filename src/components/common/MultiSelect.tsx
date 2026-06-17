@@ -77,38 +77,44 @@ export function MultiSelect({
   // Use a stable callback ref pattern for each option and 'Select All'
   const optionsRefs = useRef<{ items: Array<HTMLDivElement | null>; selectAll?: HTMLDivElement | null }>({ items: [] });
 
+  const [placement, setPlacement] = useState<'top' | 'bottom'>('bottom');
+
+  const closeDropdown = useCallback(() => {
+    setIsOpen(false);
+    setSearchTerm("");
+    setPlacement('bottom');
+    setFocusedIndex(null);
+  }, []);
+
+  const openDropdown = useCallback(() => {
+    setIsOpen(true);
+    if (wrapperRef.current) {
+      const rect = wrapperRef.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      if (spaceBelow < 340 && rect.top > 340) {
+        setPlacement('top');
+      } else {
+        setPlacement('bottom');
+      }
+    }
+  }, []);
+
   // Close dropdown on outside click
   const handleClickOutside = useCallback((event: MouseEvent) => {
     if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
-      setIsOpen(false);
+      closeDropdown();
     }
-  }, []);
+  }, [closeDropdown]);
 
   useEffect(() => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [handleClickOutside]);
 
-  const [placement, setPlacement] = useState<'top' | 'bottom'>('bottom');
-
   useEffect(() => {
     if (isOpen) {
       const timer = setTimeout(() => searchInputRef.current?.focus(), 50);
-      
-      if (wrapperRef.current) {
-        const rect = wrapperRef.current.getBoundingClientRect();
-        const spaceBelow = window.innerHeight - rect.bottom;
-        if (spaceBelow < 340 && rect.top > 340) {
-          setPlacement('top');
-        } else {
-          setPlacement('bottom');
-        }
-      }
-      
       return () => clearTimeout(timer);
-    } else {
-      setSearchTerm("");
-      setPlacement('bottom');
     }
   }, [isOpen]);
 
@@ -182,15 +188,14 @@ export function MultiSelect({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement | HTMLDivElement>) => {
     if (!isOpen) {
       if (e.key === "ArrowDown" || e.key === "Enter" || e.key === " ") {
-        setIsOpen(true);
+        openDropdown();
         setFocusedIndex(0);
         e.preventDefault();
       }
       return;
     }
     if (e.key === "Escape") {
-      setIsOpen(false);
-      setFocusedIndex(null);
+      closeDropdown();
       e.preventDefault();
     } else if (e.key === "ArrowDown") {
       setFocusedIndex((prev) => {
@@ -232,8 +237,7 @@ export function MultiSelect({
       setFocusedIndex(prev);
       e.preventDefault();
     } else if (e.key === "Escape") {
-      setIsOpen(false);
-      setFocusedIndex(null);
+      closeDropdown();
       e.preventDefault();
     }
   };
@@ -245,7 +249,15 @@ export function MultiSelect({
         type="button"
         id={id}
         name={name}
-        onClick={() => !disabled && setIsOpen(!isOpen)}
+        onClick={() => {
+          if (!disabled) {
+            if (isOpen) {
+              closeDropdown();
+            } else {
+              openDropdown();
+            }
+          }
+        }}
         onKeyDown={handleKeyDown}
         disabled={disabled}
         role="combobox"
@@ -319,8 +331,7 @@ export function MultiSelect({
                   }
                   e.preventDefault();
                 } else if (e.key === "Escape") {
-                  setIsOpen(false);
-                  setFocusedIndex(null);
+                  closeDropdown();
                   e.preventDefault();
                 }
               }}
