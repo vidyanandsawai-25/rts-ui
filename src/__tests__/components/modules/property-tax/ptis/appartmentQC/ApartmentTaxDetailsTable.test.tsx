@@ -1,64 +1,70 @@
 import { render, screen } from '@testing-library/react';
-import type * as React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ApartmentTaxDetailsTable } from '@/components/modules/property-tax/ptis/appartmentQC/ApartmentTaxDetailsTable';
 import type { ApartmentTaxDetailsItems, DualMethodTaxDetails } from '@/types/apartmentQC.types';
 
 // Mock next-intl
 vi.mock('next-intl', () => ({
-  useTranslations: () => (key: string) => {
-    const translations: Record<string, string> = {
-      'taxDetails.title': 'Tax Details',
-      'taxDetails.subtitle': 'Summary of property taxes',
-      'taxDetails.method': 'Method',
-      'taxDetails.propertyType': 'Property Type',
-      'taxDetails.total': 'Total',
-      'taxDetails.columnTotal': 'Grand Total',
-      'taxDetails.noData': 'No data available',
-      'taxDetails.propertyCount': 'Property Count',
-      'taxDetails.rvPropertyCount': 'RV Property Count',
-      'taxDetails.cvPropertyCount': 'CV Property Count',
-      'apartmentTabs.amenities': 'Amenities',
-      'apartmentTabs.commercial': 'Commercial',
-      'apartmentTabs.residential': 'Residential',
-      'apartmentTabs.rateable': 'Rateable Value',
-      'apartmentTabs.capital': 'Capital Value',
-      'apartmentTabs.dual': 'Dual Method',
+  useTranslations: (namespace: string) => (key: string) => {
+    const translations: Record<string, Record<string, string>> = {
+      appartmentQC: {
+        'taxDetails.title': 'Tax Details',
+        'taxDetails.subtitle': 'Summary of property taxes',
+        'taxDetails.method': 'Method',
+        'taxDetails.propertyType': 'Property Type',
+        'taxDetails.total': 'Total',
+        'taxDetails.columnTotal': 'Grand Total',
+        'taxDetails.noData': 'No data available',
+      },
+      ptis: {
+        'apartmentTabs.amenities': 'Amenities',
+        'apartmentTabs.commercial': 'Commercial',
+        'apartmentTabs.residential': 'Residential',
+        'apartmentTabs.rateable': 'Rateable Value',
+        'apartmentTabs.capital': 'Capital Value',
+        'apartmentTabs.dual': 'Dual Method',
+        'apartmentTabs.loading': 'Loading...',
+      },
     };
-    return translations[key] || key;
+    return translations[namespace]?.[key] || key;
   },
 }));
 
 // Mock MasterTable component
 vi.mock('@/components/common/MasterTable', () => ({
   MasterTable: ({ 
-    headerTitle, 
-    headerSubtitle, 
+    headerExtra,
     data, 
     loading, 
     emptyText,
-    footerLeftContent,
     columns,
   }: {
-    headerTitle: string;
-    headerSubtitle?: string;
+    headerExtra?: React.ReactNode;
     data: unknown[];
     loading?: boolean;
     emptyText: string;
-    footerLeftContent?: React.ReactNode;
     columns: unknown[];
   }) => (
     <div data-testid="master-table">
-      <div data-testid="header-title">{headerTitle}</div>
-      {headerSubtitle && <div data-testid="header-subtitle">{headerSubtitle}</div>}
+      {headerExtra && <div data-testid="header-extra">{headerExtra}</div>}
       {loading && <div data-testid="loading">Loading...</div>}
       {!loading && data.length === 0 && <div data-testid="empty">{emptyText}</div>}
       <div data-testid="column-count">{columns.length} columns</div>
       <div data-testid="row-count">{data.length} rows</div>
-      {footerLeftContent && <div data-testid="footer">{footerLeftContent}</div>}
     </div>
   ),
 }));
+
+// Mock the hook utility functions
+vi.mock('@/hooks/apartmentQc/useApartmentTaxDetailsTable', async () => {
+  const actual = await vi.importActual<typeof import('@/hooks/apartmentQc/useApartmentTaxDetailsTable')>('@/hooks/apartmentQc/useApartmentTaxDetailsTable');
+  return actual;
+});
+
+vi.mock('@/hooks/apartmentQc/useTaxTableColumns', async () => {
+  const actual = await vi.importActual<typeof import('@/hooks/apartmentQc/useTaxTableColumns')>('@/hooks/apartmentQc/useTaxTableColumns');
+  return actual;
+});
 
 /* ============================================================
    TEST DATA
@@ -113,7 +119,7 @@ describe('ApartmentTaxDetailsTable', () => {
       expect(screen.getByTestId('master-table')).toBeInTheDocument();
     });
 
-    it('should display correct header title for amenities tab', () => {
+    it('should display header for amenities tab', () => {
       render(
         <ApartmentTaxDetailsTable
           taxDetails={mockTaxDetails}
@@ -123,10 +129,14 @@ describe('ApartmentTaxDetailsTable', () => {
         />
       );
 
-      expect(screen.getByTestId('header-title')).toHaveTextContent('Tax Details - Amenities (Rateable Value)');
+      const headerExtra = screen.getByTestId('header-extra');
+      expect(headerExtra).toBeInTheDocument();
+      expect(headerExtra).toHaveTextContent('Tax Details');
+      expect(headerExtra).toHaveTextContent('Amenities');
+      expect(headerExtra).toHaveTextContent('Rateable Value');
     });
 
-    it('should display correct header title for commercial tab', () => {
+    it('should display header for commercial tab', () => {
       render(
         <ApartmentTaxDetailsTable
           taxDetails={mockTaxDetails}
@@ -136,20 +146,27 @@ describe('ApartmentTaxDetailsTable', () => {
         />
       );
 
-      expect(screen.getByTestId('header-title')).toHaveTextContent('Tax Details - Commercial (Capital Value)');
+      const headerExtra = screen.getByTestId('header-extra');
+      expect(headerExtra).toHaveTextContent('Tax Details');
+      expect(headerExtra).toHaveTextContent('Commercial');
+      expect(headerExtra).toHaveTextContent('Capital Value');
     });
 
-    it('should display correct header title for residential tab', () => {
+    it('should display header for residential tab with dual method', () => {
       render(
         <ApartmentTaxDetailsTable
-          taxDetails={mockTaxDetails}
+          taxDetails={null}
+          dualMethodDetails={mockDualMethodDetails}
           loading={false}
           activeMainTab="residential"
           activeSubTab="dual-method"
         />
       );
 
-      expect(screen.getByTestId('header-title')).toHaveTextContent('Tax Details - Residential (Dual Method)');
+      const headerExtra = screen.getByTestId('header-extra');
+      expect(headerExtra).toHaveTextContent('Tax Details');
+      expect(headerExtra).toHaveTextContent('Residential');
+      expect(headerExtra).toHaveTextContent('Dual Method');
     });
   });
 
@@ -197,7 +214,7 @@ describe('ApartmentTaxDetailsTable', () => {
       expect(screen.getByTestId('row-count')).toHaveTextContent('1 rows');
     });
 
-    it('should show subtitle for rateable method', () => {
+    it('should show subtitle in header for rateable method', () => {
       render(
         <ApartmentTaxDetailsTable
           taxDetails={mockTaxDetails}
@@ -207,21 +224,8 @@ describe('ApartmentTaxDetailsTable', () => {
         />
       );
 
-      expect(screen.getByTestId('header-subtitle')).toHaveTextContent('Summary of property taxes');
-    });
-
-    it('should display property count in footer', () => {
-      render(
-        <ApartmentTaxDetailsTable
-          taxDetails={mockTaxDetails}
-          loading={false}
-          activeMainTab="amenities"
-          activeSubTab="rateable"
-        />
-      );
-
-      expect(screen.getByTestId('footer')).toHaveTextContent('Property Count:');
-      expect(screen.getByTestId('footer')).toHaveTextContent('10');
+      const headerExtra = screen.getByTestId('header-extra');
+      expect(headerExtra).toHaveTextContent('Summary of property taxes');
     });
   });
 
@@ -240,7 +244,7 @@ describe('ApartmentTaxDetailsTable', () => {
       expect(screen.getByTestId('row-count')).toHaveTextContent('3 rows');
     });
 
-    it('should show comparison subtitle for dual method', () => {
+    it('should show comparison subtitle in header for dual method', () => {
       render(
         <ApartmentTaxDetailsTable
           taxDetails={null}
@@ -251,24 +255,9 @@ describe('ApartmentTaxDetailsTable', () => {
         />
       );
 
-      expect(screen.getByTestId('header-subtitle')).toHaveTextContent('Rateable Value / Capital Value');
-    });
-
-    it('should display both RV and CV counts in footer', () => {
-      render(
-        <ApartmentTaxDetailsTable
-          taxDetails={null}
-          dualMethodDetails={mockDualMethodDetails}
-          loading={false}
-          activeMainTab="amenities"
-          activeSubTab="dual-method"
-        />
-      );
-
-      expect(screen.getByTestId('footer')).toHaveTextContent('RV Property Count:');
-      expect(screen.getByTestId('footer')).toHaveTextContent('5');
-      expect(screen.getByTestId('footer')).toHaveTextContent('CV Property Count:');
-      expect(screen.getByTestId('footer')).toHaveTextContent('3');
+      const headerExtra = screen.getByTestId('header-extra');
+      expect(headerExtra).toHaveTextContent('Rateable Value');
+      expect(headerExtra).toHaveTextContent('Capital Value');
     });
   });
 

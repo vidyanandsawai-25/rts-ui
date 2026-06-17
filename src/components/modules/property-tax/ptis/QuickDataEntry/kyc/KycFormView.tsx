@@ -24,6 +24,7 @@ const KycFormView: React.FC<KycFormViewProps> = ({ KycDetailsData, OwnerTypeMast
     formData,
     setFormData,
     mobileInput,
+    alternateMobileInput,
     aadharInput,
     isUpdating,
     hasChanges,
@@ -47,6 +48,7 @@ const KycFormView: React.FC<KycFormViewProps> = ({ KycDetailsData, OwnerTypeMast
             setFormData={setFormData}
             ownerTypeOptions={ownerTypeOptions}
             mobileInput={mobileInput}
+            alternateMobileInput={alternateMobileInput}
             aadharInput={aadharInput}
             isSubmitted={isSubmitted}
           />

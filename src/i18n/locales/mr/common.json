@@ -198,6 +198,7 @@
     "publicIp": "सार्वजनिक IP पत्ता",
     "sessionId": "सत्र आयडी",
     "loginTime": "लॉगिन वेळ",
+    "notAvailable": "उपलब्ध नाही",
     "mockName": "राजेश कुमार",
     "mockEmail": "rajesh.kumar@propertytax.gov.in",
     "mockUserId": "USR-2025-1047",
@@ -287,7 +288,8 @@
       "title": "सत्र कालबाह्य",
       "description": "वेळ संपल्यामुळे तुमचे सत्र समाप्त झाले आहे. तुम्हाला आपोआप साइन आउट केले जाईल.",
       "countdown": "{seconds} सेकंद",
-      "redirectHint": "टाइमर शून्य होताच लॉगिनवर पुनर्निर्देशित केले जाईल"
+      "redirectHint": "टाइमर शून्य होताच लॉगिनवर पुनर्निर्देशित केले जाईल",
+      "saveWorkHint": "सत्र समाप्त होणार आहे, आपले काम जतन करा!"
     },
     "errors": {
       "validationError": "सत्यापन त्रुटी",

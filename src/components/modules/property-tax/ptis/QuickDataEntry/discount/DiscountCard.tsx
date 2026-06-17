@@ -1,9 +1,10 @@
 import React from "react";
 import { Button, ToggleSwitch } from "@/components/common";
 import { Label } from "@/components/common/label";
-import { Eye, EyeOff, Upload } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { getViewDocumentUrl } from "@/lib/utils/document-utils";
+import { Eye, EyeOff, Upload, Loader2 } from "lucide-react";
+import { useTranslations, useLocale } from "next-intl";
+import { viewDocumentClient } from "@/lib/utils/document-client-utils";
+import { toast } from "sonner";
 import { DiscountAttributeState } from "@/types/discount.types";
 
 
@@ -21,11 +22,19 @@ export const DiscountCard: React.FC<DiscountCardProps> = ({
     onFileUpload
 }) => {
     const t = useTranslations('quickDataEntry');
+    const locale = useLocale();
+    const [isViewing, setIsViewing] = React.useState(false);
 
-    const handleViewDocument = (documentGuid?: string) => {
+    const handleViewDocument = async (documentGuid?: string) => {
         if (!documentGuid) return;
-        const url = getViewDocumentUrl(documentGuid);
-        window.open(url, "_blank", "noopener,noreferrer");
+        setIsViewing(true);
+        try {
+            await viewDocumentClient(documentGuid, locale);
+        } catch (error: unknown) {
+            toast.error(error instanceof Error ? error.message : "Failed to view document");
+        } finally {
+            setIsViewing(false);
+        }
     };
 
     return (
@@ -44,15 +53,23 @@ export const DiscountCard: React.FC<DiscountCardProps> = ({
                     {data.enabled && data.documentGuid ? (
                         <button
                             type="button"
+                            disabled={isViewing || data.isUploading}
                             aria-label={t('discount.viewDocument')}
-                            className="p-0 bg-transparent border-0 focus:outline-none"
+                            className="p-0 bg-transparent border-0 focus:outline-none disabled:opacity-50"
                             onClick={() => handleViewDocument(data.documentGuid || undefined)}
                         >
-                            <Eye
-                                size={16}
-                                aria-hidden="true"
-                                className="text-blue-600 hover:text-blue-800 transition-colors"
-                            />
+                            {isViewing ? (
+                                <Loader2
+                                    size={16}
+                                    className="text-blue-600 animate-spin"
+                                />
+                            ) : (
+                                <Eye
+                                    size={16}
+                                    aria-hidden="true"
+                                    className="text-blue-600 hover:text-blue-800 transition-colors"
+                                />
+                            )}
                         </button>
                     ) : (
                         <EyeOff size={16} className="text-gray-400" />
@@ -80,7 +97,11 @@ export const DiscountCard: React.FC<DiscountCardProps> = ({
                                     : "border-gray-300 bg-gray-50 text-gray-400 cursor-not-allowed opacity-75"
                                     }`}
                             >
-                                <Upload size={14} className={data.enabled ? "text-blue-600" : "text-gray-300"} />
+                                {data.isUploading ? (
+                                    <Loader2 size={14} className="animate-spin text-blue-600" />
+                                ) : (
+                                    <Upload size={14} className={data.enabled ? "text-blue-600" : "text-gray-300"} />
+                                )}
                                 <span className="truncate max-w-[120px]">
                                     {data.isUploading
                                         ? t("discount.uploading")
@@ -91,7 +112,7 @@ export const DiscountCard: React.FC<DiscountCardProps> = ({
                                 <input
                                     type="file"
                                     className="hidden"
-                                    disabled={!data.enabled || data.isUploading}
+                                    disabled={!data.enabled || data.isUploading || isViewing}
                                     onChange={(e) => {
                                         const file = e.target.files?.[0] || null;
                                         if (file) {
@@ -107,7 +128,9 @@ export const DiscountCard: React.FC<DiscountCardProps> = ({
                     <div className="pt-[18px]">
                         <Button
                             size="sm"
-                            disabled={!data.enabled || !data.documentGuid || data.isUploading}
+                            disabled={!data.enabled || !data.documentGuid || data.isUploading || isViewing}
+                            isLoading={isViewing}
+                            icon={Eye}
                             className={`h-8 px-3 text-[10px] flex items-center gap-1.5 border rounded-md font-semibold transition-all duration-300
                                   ${data.enabled && data.documentGuid
                                     ? "bg-blue-600 border-blue-600 text-white hover:bg-blue-700 shadow-md active:scale-95"
@@ -115,7 +138,6 @@ export const DiscountCard: React.FC<DiscountCardProps> = ({
                                 }`}
                             onClick={() => handleViewDocument(data.documentGuid || undefined)}
                         >
-                            <Eye size={14} className={data.enabled && data.documentGuid ? "text-blue-100" : "text-gray-400"} />
                             {t("discount.viewDocument")}
                         </Button>
                     </div>

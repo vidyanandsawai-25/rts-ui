@@ -44,16 +44,18 @@ export function UtilityActions({
 
         const hasText = actionCommand === 'PTIS_REFRESH' || buttonName.toUpperCase() === 'REFRESH TAXES' || localizedButtonName.toUpperCase() === 'REFRESH TAXES';
 
+        const isCombine = actionCommand === 'PTIS_COMBINE';
+
         const buttonClasses = cn(
-          'text-[10px] h-8 sm:h-9 cursor-pointer rounded-lg transition-all duration-300 active:scale-95 shrink-0 flex flex-row items-center justify-center font-bold whitespace-nowrap shadow-sm border border-slate-200 bg-white/95 text-slate-700',
-          hasText ? 'px-3 sm:px-4' : 'w-8 sm:w-9 p-0',
+          'text-[10px] cursor-pointer rounded-lg transition-all duration-300 active:scale-95 shrink-0 flex flex-row items-center justify-center font-bold whitespace-nowrap shadow-sm border border-slate-200 bg-white/95 text-slate-700',
+          isCombine ? 'h-7 sm:h-7.5 w-7 sm:w-7.5 p-0' : (hasText ? 'px-3 sm:px-4 h-8 sm:h-9' : 'w-8 sm:w-9 p-0 h-8 sm:h-9'),
           
           variant === 'primary' || variant === 'blue'
             ? 'bg-gradient-to-r from-blue-700 to-indigo-900 text-white! border-transparent! hover:from-blue-800 hover:to-indigo-950 hover:shadow-[0_4px_12px_rgba(30,58,138,0.2)] hover:scale-[1.02]'
             : variant === 'danger'
             ? 'bg-gradient-to-r from-rose-50 to-red-50 text-red-600 border-red-200/80 hover:from-rose-100 hover:to-red-100 hover:border-red-300 hover:scale-[1.02]'
             : variant === 'success'
-            ? 'bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 border-emerald-200/80 hover:from-emerald-100 hover:to-teal-100 hover:border-emerald-300 hover:scale-[1.02]'
+            ? 'bg-gradient-to-r from-emerald-600 to-teal-700 text-white! border-transparent! hover:from-emerald-700 hover:to-teal-800 hover:shadow-[0_4px_12px_rgba(16,185,129,0.25)] hover:scale-[1.02]'
             : variant === 'ghost'
             ? 'bg-transparent text-slate-600 border-transparent hover:bg-slate-100'
             : 'hover:border-blue-400/60 hover:bg-blue-50/20 hover:shadow-[0_4px_12px_rgba(59,130,246,0.08)] hover:scale-[1.02]'
@@ -65,9 +67,9 @@ export function UtilityActions({
             ? 'group-hover:rotate-180 duration-500'
             : 'group-hover:scale-110 group-hover:-translate-y-0.5',
           
-          !(variant === 'primary' || variant === 'blue') && (
+          !(variant === 'primary' || variant === 'blue' || variant === 'success') && (
             actionCommand.includes('DELETE') ? 'text-red-500!' :
-            actionCommand.includes('SAVE') || actionCommand.includes('SUBMIT') || actionCommand.includes('APPLY') ? 'text-emerald-500!' :
+            actionCommand.includes('SAVE') || actionCommand.includes('SUBMIT') ? 'text-emerald-500!' :
             actionCommand.includes('PRINT') ? 'text-purple-500!' :
             actionCommand.includes('CALC') || actionCommand.includes('TAX') ? 'text-teal-500!' :
             actionCommand.includes('SEARCH') || actionCommand.includes('FILTER') ? 'text-blue-500!' :

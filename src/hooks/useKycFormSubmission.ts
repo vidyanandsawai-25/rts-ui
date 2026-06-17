@@ -8,6 +8,7 @@ import type { useDigitInputs } from './useDigitInputs';
 interface UseKycFormSubmissionProps {
   formData: KycFormData;
   mobileInput: ReturnType<typeof useDigitInputs>;
+  alternateMobileInput: ReturnType<typeof useDigitInputs>;
   aadharInput: ReturnType<typeof useDigitInputs>;
   KycDetailsData?: KycDetails | null;
   OwnerTypeMasterList: OwnerTypeApiItem[];
@@ -36,6 +37,7 @@ export const useKycFormSubmission = (
   {
     formData,
     mobileInput,
+    alternateMobileInput,
     aadharInput,
     KycDetailsData,
     OwnerTypeMasterList,
@@ -103,6 +105,7 @@ export const useKycFormSubmission = (
               /** @deprecated Use adharCardNo instead. Retained for backward compatibility. */
               aadharCardNo: aadharInput.value || null,
               mobileNo: mobileInput.value || null,
+              alternateMobileNo: alternateMobileInput.value || null,
               emailId: formData.emailId?.trim() || null,
               ownerTitle: formData.ownerTitle?.trim() || null,
               ownerName: formData.ownerName?.trim() || null,

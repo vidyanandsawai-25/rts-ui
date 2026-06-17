@@ -157,18 +157,16 @@ describe('validateRenterForm', () => {
         });
     });
 
-    describe('Agreement Date Validation (Current Year)', () => {
-        it('should allow dates in the current year', () => {
-            const errors = validateRenterForm({ ...validBaseForm, agreementDate: `${currentYear}-05-20` });
-            expect(errors.filter(e => e.field === 'agreementDate')).toHaveLength(0);
-        });
+    describe('Agreement Date Validation', () => {
+        it('should allow dates in the current, past, and future years', () => {
+            const errorsCurrent = validateRenterForm({ ...validBaseForm, agreementDate: `${currentYear}-05-20` });
+            expect(errorsCurrent.filter(e => e.field === 'agreementDate')).toHaveLength(0);
 
-        it('should reject dates outside the current year', () => {
             const errorsPast = validateRenterForm({ ...validBaseForm, agreementDate: `${currentYear - 1}-12-31` });
-            expect(errorsPast.filter(e => e.field === 'agreementDate')).not.toHaveLength(0);
+            expect(errorsPast.filter(e => e.field === 'agreementDate')).toHaveLength(0);
 
             const errorsFuture = validateRenterForm({ ...validBaseForm, agreementDate: `${currentYear + 1}-01-01` });
-            expect(errorsFuture.filter(e => e.field === 'agreementDate')).not.toHaveLength(0);
+            expect(errorsFuture.filter(e => e.field === 'agreementDate')).toHaveLength(0);
         });
     });
 

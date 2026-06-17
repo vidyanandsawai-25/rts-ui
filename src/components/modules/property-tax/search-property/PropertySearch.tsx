@@ -33,14 +33,21 @@ export function PropertySearch({
   lookupOptions,
   selectedStatus,
   isSearchActive,
-  activeTab,
+  activeTab: activeTabProp,
   criteria,
   searchError = null,
 }: PropertySearchProps): React.ReactElement {
   const t = useTranslations("propertySearch");
+  const [activeTab, setActiveTab] = useState<SearchTab>(activeTabProp);
+  const [prevActiveTab, setPrevActiveTab] = useState<SearchTab>(activeTabProp);
   const [isPending, startTransition] = useTransition();
   const [awaitingResults, setAwaitingResults] = useState(false);
   const [statusClearedByTab, setStatusClearedByTab] = useState(false);
+
+  if (activeTabProp !== prevActiveTab) {
+    setPrevActiveTab(activeTabProp);
+    setActiveTab(activeTabProp);
+  }
 
   const displayedStatus =
     statusClearedByTab && selectedStatus ? null : selectedStatus;
@@ -49,7 +56,6 @@ export function PropertySearch({
   const {
     updateSearchCriteria,
     resetSearch,
-    updateTab,
     updateStatus,
   } = usePropertySearchNavigation({ startTransition });
 
@@ -85,14 +91,23 @@ export function PropertySearch({
       if (displayedStatus) {
         setStatusClearedByTab(true);
       }
-      updateTab(tab);
+      setActiveTab(tab);
+
+      // Update URL client-side only (no Next.js transition/refresh to prevent API calls)
+      const url = new URL(window.location.href);
+      if (tab === "quick-search") {
+        url.searchParams.delete("tab");
+      } else {
+        url.searchParams.set("tab", tab);
+      }
+      window.history.replaceState(null, "", url.toString());
     },
-    [activeTab, displayedStatus, updateTab]
+    [activeTab, displayedStatus]
   );
 
   return (
     <PageContainer>
-      <div className="w-full space-y-1.5">
+      <div className="w-full space-y-1.5 relative z-30">
         <TableHeader
           title={t("title")}
           subtitle={t("subtitle")}

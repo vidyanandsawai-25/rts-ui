@@ -237,7 +237,7 @@ export async function deleteCommonRemark(id: number): Promise<void> {
     throw new ApiError(400, "Valid Common Remark ID is required for deletion", "Invalid ID");
   }
 
-  const response = await apiClient.delete<void>(`/CommonRemarkDetails/${encodeURIComponent(String(id))}`);
+  const response = await apiClient.delete<void>(`/CommonRemarkDetails/${encodeURIComponent(String(id))}/purge`);
   if (!response.success) {
     let statusCode = response.statusCode;
     if (!statusCode) {

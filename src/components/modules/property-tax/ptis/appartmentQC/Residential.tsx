@@ -10,6 +10,7 @@ import { getApartmentQCColumns } from "./apartmentQC.columns";
 import { transformApartmentData } from "./apartmentQC.utils";
 import { useRouter } from "next/navigation";
 import { useColumnFilters } from "@/hooks/apartmentQc/useColumnFilters";
+import { TEXT_SANITIZE } from "@/lib/utils/validation";
 
 interface ResidentialProps {
   initialData: ApartmentQCDetail[];
@@ -75,7 +76,11 @@ const Residential = ({
     <div className="p-4">
       <CommonPropertyTable
         columns={columns} data={transformedData} title={tAqc("apartmentTabs.residentialTitle")} activeTab={activeTab}
-        searchQuery={searchQuery} onSearchChange={(q) => { setSearchQuery(q); updateQueryParams({ searchTerm: q, pageNumber: 1 }); }}
+        searchQuery={searchQuery} onSearchChange={(q) => { 
+          const sanitized = q.replace(TEXT_SANITIZE, '');
+          setSearchQuery(sanitized); 
+          updateQueryParams({ searchTerm: sanitized, pageNumber: 1 }); 
+        }}
         onRowClick={handleRowClick}
         loading={isPending} isAutoScrolling={isAutoScrolling} onToggleAutoScroll={() => setIsAutoScrolling(!isAutoScrolling)}
         pageNumber={initialPageNumber} pageSize={initialPageSize} totalCount={initialTotalCount} totalPages={initialTotalPages}

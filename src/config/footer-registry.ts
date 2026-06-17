@@ -34,9 +34,10 @@ export const FOOTER_REGISTRY: Record<string, FooterButtonStyle> = {
   // PTIS Dynamic Commands from API
   'PTIS_QC': { iconName: 'CheckCircle2', variant: 'outline', alignment: 'left' },
   'PTIS_QC_REVERT': { iconName: 'Undo2', variant: 'outline', alignment: 'left' },
-  'PTIS_COMBINE': { iconName: 'Merge', variant: 'outline', alignment: 'middle' },
-  'PTIS_PARTITION': { iconName: 'Split', variant: 'blue', alignment: 'middle' },
+ 'PTIS_COMBINE': { iconName: 'Merge', variant: 'blue', alignment: 'middle' },
+  'PTIS_PARTITION': { iconName: 'Split', variant: 'outline', alignment: 'middle' },
   'PTIS_TAP_WATER': { iconName: 'Droplet', variant: 'outline', alignment: 'middle' },
+  'PTIS_APPLICABLE_TAXES_INFO': { iconName: 'Info', variant: 'outline', alignment: 'middle' },
   'PTIS_SPLIT': { iconName: 'Split', variant: 'outline', alignment: 'middle' },
   'PTIS_TRANSFER': { iconName: 'User', variant: 'outline', alignment: 'middle' },
   'PTIS_AMALGAMATION': { iconName: 'Layers', variant: 'outline', alignment: 'middle' },
@@ -52,9 +53,9 @@ export const FOOTER_REGISTRY: Record<string, FooterButtonStyle> = {
   'PTIS_REPORT': { iconName: 'BarChart3', variant: 'outline', alignment: 'middle' },
   'PTIS_SAVE': { iconName: 'Save', variant: 'success', alignment: 'right' },
   'PTIS_SUBMIT': { iconName: 'Send', variant: 'success', alignment: 'right' },
-  'PTIS_APPLY': { iconName: 'CheckCircle', variant: 'success', alignment: 'right' },
-  'PTIS_ADD': { iconName: 'Plus', variant: 'success', alignment: 'right' },
-  'PTIS_NEW_PROPERTY': { iconName: 'Plus', variant: 'success', alignment: 'right' },
+  'PTIS_APPLY': { iconName: 'CheckCircle', variant: 'outline', alignment: 'left' },
+  'PTIS_ADD': { iconName: 'Plus', variant: 'outline', alignment: 'middle' },
+  'PTIS_NEW_PROPERTY': { iconName: 'Plus', variant: 'outline', alignment: 'right' },
   'PTIS_CANCEL': { iconName: 'X', variant: 'ghost', alignment: 'right' },
 };
 

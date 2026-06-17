@@ -6,6 +6,7 @@ import { Input, ValidationMessage, Label } from "@/components/common";
 import { CertificateData } from "@/types/building-permission.types";
 import { mapTypeNameToKey } from "@/lib/utils/building-helpers";
 import { DocumentAttachment } from "./DocumentAttachment";
+import { useConfirm } from "@/components/common/ConfirmProvider";
 
 interface BuildingDetailPaneProps {
     data: CertificateData | null | undefined;
@@ -22,6 +23,24 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
     validationError,
     t,
 }) => {
+    const { confirm } = useConfirm();
+
+    const handleFileUploadWithConfirm = (file: File) => {
+        if (data && data.documentGuid) {
+            confirm({
+                title: t("building.confirmReplaceTitle") || "Replace Document",
+                description: t("building.confirmReplaceDesc") || "Are you sure you want to replace the existing document with a new one?",
+                confirmText: t("building.confirmReplaceOk") || "Yes, Replace",
+                cancelText: t("building.confirmReplaceCancel") || "No, Cancel",
+                variant: "warning",
+                onConfirm: () => {
+                    onFileUpload(file);
+                }
+            });
+        } else {
+            onFileUpload(file);
+        }
+    };
     if (!data) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[500px] lg:h-[calc(100vh-220px)] bg-gray-50 border border-dashed border-gray-200 rounded-xl p-8 text-center">
@@ -44,7 +63,7 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
 
     if (!data.enabled && !hasAnyData) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[500px] lg:h-[calc(100vh-220px)] bg-gray-50 border border-gray-200 rounded-xl p-8 text-center">
+            <div className="flex flex-col items-center justify-center min-h-[300px] lg:h-[calc(100vh-340px)] bg-gray-50 border border-gray-200 rounded-xl p-8 text-center">
                 <AlertCircle size={36} className="text-blue-500 mb-3" />
                 <h4 className="text-base font-bold text-gray-800 mb-2">{displayName}</h4>
                 <p className="text-sm font-semibold text-gray-500 max-w-sm">
@@ -64,7 +83,7 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
     const isDocumentInvalid = !!validationError && (!data.documentGuid || data.documentGuid.trim() === "");
 
     return (
-        <div className={`flex flex-col min-h-[500px] lg:h-[calc(100vh-220px)] border rounded-xl shadow-sm p-4 justify-between transition-opacity ${
+        <div className={`flex flex-col min-h-[300px] lg:h-[calc(100vh-340px)] border rounded-xl shadow-sm p-4 justify-between transition-opacity ${
             isDisabled ? "bg-gray-50 border-gray-200 opacity-75" : "bg-white border-blue-100"
         }`}>
             <div>
@@ -130,7 +149,7 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
                         isUploading={data.isUploading}
                         isDisabled={isDisabled}
                         isDocumentInvalid={isDocumentInvalid}
-                        onFileUpload={onFileUpload}
+                        onFileUpload={handleFileUploadWithConfirm}
                         t={t}
                     />
                 </div>

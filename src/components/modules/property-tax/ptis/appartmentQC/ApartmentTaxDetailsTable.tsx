@@ -9,7 +9,6 @@ import {
   useTaxColumns,
   useTaxTableData,
   useHasData,
-  useFooterContent,
   getTabTranslationKey,
   getSubTabLabel,
   getHeaderGradientClass,
@@ -31,42 +30,6 @@ interface ApartmentTaxDetailsTableProps {
 }
 
 /* ============================================================
-   FOOTER COMPONENT
- ============================================================ */
-
-interface FooterContentProps {
-  footerData: { rvCount?: number; cvCount?: number; singleCount?: number } | null;
-  t: (key: string) => string;
-}
-
-function FooterContent({ footerData, t }: FooterContentProps) {
-  if (!footerData) return null;
-
-  if (footerData.singleCount !== undefined) {
-    return (
-      <p className="text-xs text-gray-500">
-        {t('taxDetails.propertyCount')}: <span className="font-medium text-gray-700">{footerData.singleCount}</span>
-      </p>
-    );
-  }
-
-  return (
-    <div className="flex gap-4 text-xs text-gray-500">
-      {footerData.rvCount !== undefined && (
-        <p>
-          {t('taxDetails.rvPropertyCount')}: <span className="font-medium text-blue-700">{footerData.rvCount}</span>
-        </p>
-      )}
-      {footerData.cvCount !== undefined && (
-        <p>
-          {t('taxDetails.cvPropertyCount')}: <span className="font-medium text-green-700">{footerData.cvCount}</span>
-        </p>
-      )}
-    </div>
-  );
-}
-
-/* ============================================================
    MAIN COMPONENT
  ============================================================ */
 
@@ -75,8 +38,8 @@ function FooterContent({ footerData, t }: FooterContentProps) {
  * Uses MasterTable for consistent styling.
  * Supports Rateable Value, Capital Value, and Dual Method views.
  */
-export function ApartmentTaxDetailsTable({ 
-  taxDetails, 
+export function ApartmentTaxDetailsTable({
+  taxDetails,
   dualMethodDetails,
   loading = false,
   activeMainTab,
@@ -89,15 +52,14 @@ export function ApartmentTaxDetailsTable({
   const taxColumns = useTaxColumns(taxDetails, dualMethodDetails, activeSubTab);
   const hasData = useHasData(taxDetails, dualMethodDetails, taxColumns, activeSubTab);
   const tableData = useTaxTableData(
-    taxDetails, 
-    dualMethodDetails, 
-    taxColumns, 
-    activeSubTab, 
-    activeMainTab, 
-    t, 
+    taxDetails,
+    dualMethodDetails,
+    taxColumns,
+    activeSubTab,
+    activeMainTab,
+    t,
     tPtis
   );
-  const footerData = useFooterContent(taxDetails, dualMethodDetails, activeSubTab);
 
   // Build table columns
   const columns = useTaxTableColumns({
@@ -131,9 +93,17 @@ export function ApartmentTaxDetailsTable({
         loading={loading}
         loadingText={tPtis('apartmentTabs.loading')}
         emptyText={t('taxDetails.noData')}
-        headerTitle={headerTitle}
-        headerSubtitle={headerSubtitle}
-        footerLeftContent={<FooterContent footerData={footerData} t={t} />}
+        headerExtra={
+          <div className="flex gap-2 items-center">
+            <div className="text-sm font-semibold text-[#1E3A8A]">
+              {headerTitle}
+            </div>
+            <span className="text-[#6B7280]">-</span>
+            <div className="text-sm text-[#6B7280]">
+              {headerSubtitle}
+            </div>
+          </div>
+        }
         getRowKey={(row) => row.id}
         rowClassName={getRowClassName}
         height="xs"

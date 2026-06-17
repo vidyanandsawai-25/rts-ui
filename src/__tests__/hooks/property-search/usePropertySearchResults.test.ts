@@ -7,6 +7,7 @@ function makeResult(id: string, propertyId = 1): SearchResult {
   return {
     id,
     propertyId,
+    upicId: "",
     zone: "",
     ward: "",
     propertyNo: "",

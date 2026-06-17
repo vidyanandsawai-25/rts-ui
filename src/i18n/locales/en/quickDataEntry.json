@@ -433,13 +433,14 @@
     },
     "kyc": {
         "title": "Owner & Contact Information",
-        "ownerType": "Owner Type",
+        "ownerType": "Owner Category",
         "titleLabel": "Title",
         "buildingName": "Building Name",
         "propertyHolderName": "Property Holder Name",
         "occupierName": "Occupier Name",
         "aadharCardNo": "Aadhar Card No",
         "mobileNo": "Mobile No",
+        "alternateMobileNo": "Alternate Mobile No",
         "emailId": "Email ID",
         "shopName": "Shop Name",
         "address": "Address",
@@ -596,6 +597,10 @@
         "title": "Building Permissions & Certificates",
         "uploadDocument": "Upload Document",
         "viewDocument": "View Document",
+        "confirmReplaceTitle": "Replace Document",
+        "confirmReplaceDesc": "Are you sure you want to replace the existing document with a new one?",
+        "confirmReplaceOk": "Yes, Replace",
+        "confirmReplaceCancel": "No, Cancel",
         "downloadDocument": "Download Document",
         "replaceDocument": "Replace File",
         "documentPreviouslyAttached": "Document Previously Attached",
@@ -768,7 +773,8 @@
             "attachDocument": "Attach Document",
             "download": "Download",
             "agreementPreview": "Agreement Preview",
-            "pleaseUploadAgreement": "Please upload an agreement to preview"
+            "pleaseUploadAgreement": "Please upload an agreement to preview",
+            "agreementExpiredWarning": "Warning: The agreement has expired!"
         },
         "rooms": "Rooms",
         "area": "Area",
@@ -921,7 +927,7 @@
     "discount": {
         "title": "Discount Information",
         "description": "Configure discount eligibility and percentage for this property",
-        "socialTitle": "Social Information",
+        "socialTitle": "Other Social Information",
         "socialDescription": "Configure social attributes, status, and associated documents for this property.",
         "simpleTogglesTitle": "Social Attributes",
         "complexFieldsTitle": "Detailed Attributes",
@@ -947,6 +953,10 @@
         "exServicemanOwner": "Ex Serviceman Owner",
         "uploadDocument": "Upload Document",
         "viewDocument": "View Document",
+        "confirmReplaceTitle": "Replace Document",
+        "confirmReplaceDesc": "Are you sure you want to replace the existing document with a new one?",
+        "confirmReplaceOk": "Yes, Replace",
+        "confirmReplaceCancel": "No, Cancel",
         "amountPlaceholder": "Enter amount",
         "PercentagePlaceholder": "Enter percentage",
         "uploading": "Uploading...",
@@ -994,8 +1004,11 @@
             "SEPTIC_TANK": "Septic Tank",
             "SEWAGE_TREATMENT_PLANT": "Sewage Treatment Plant",
             "STP": "Sewage Treatment Plant",
+            "HAS_STP": "Sewage Treatment Plant",
             "GARBAGE_SEGREGATION": "Garbage Segregation",
+            "HAS_GARBAGE_SEGREGATION": "Garbage Segregation",
             "GARBAGE_DISPOSAL": "Garbage Disposal",
+            "HAS_GARBAGE_DISPOSAL": "Garbage Disposal",
             "ELECTRIC_CONN": "Electric Connection",
             "ELECTRIC_CONNECTION": "Electric Connection",
             "ELECTRICAL_CONN": "Electric Connection",
@@ -1005,7 +1018,9 @@
             "EV_CHARGING_STATION": "EV Charging Station",
             "FIRE_FIGHTING": "Fire Fighting System",
             "FIRE_FIGHTING_SYSTEM": "Fire Fighting System",
+            "HAS_FIRE_FIGHTING_SYSTEM": "Fire Fighting System",
             "FIRE_MACHINE": "Fire Machine",
+            "HAS_FIRE_MACHINE": "Fire Machine",
             "STAIRS_AVAILABLE": "Stairs Available",
             "STAIRS": "Stairs Available",
             "RAINWATER_HARVESTING": "Rainwater Harvesting",
@@ -1092,6 +1107,9 @@
             "invalidInteger": "Value must be a valid integer.",
             "invalidDecimal": "Value must be a valid decimal number.",
             "negativeNotAllowed": "Value cannot be negative.",
+            "maxDigits": "Value cannot exceed {digits} digits.",
+            "yearMaxDigits": "Year cannot exceed 4 digits.",
+            "maxTwoDecimals": "Maximum 2 decimal places allowed.",
             "countMin": "Count must be at least 1.",
             "ratingRange": "Rating must be between 1 and 5.",
             "yearRange": "Year must be between 1900 and {max}.",
@@ -1365,5 +1383,14 @@
         "operationRequired": "Please select an operation."
     },
     "offsetTooltip": "Offset Details: {details}",
-    "offsetTooltipEmpty": "Click to edit offsets"
+    "offsetTooltipEmpty": "Click to edit offsets",
+    "document": {
+        "errors": {
+            "notFound": "The requested document could not be found on the server.",
+            "unauthorized": "You are not authorized to access this document. Please log in again.",
+            "forbidden": "Access to the requested document is forbidden.",
+            "general": "An unexpected error occurred while retrieving the document. Please try again.",
+            "uploadGeneral": "An error occurred while uploading the document. Please try again."
+        }
+    }
 }

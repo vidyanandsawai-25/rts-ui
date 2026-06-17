@@ -9,8 +9,8 @@ export interface FlatSocialAttributeState {
     parentAttributeId: number | null | undefined;
     isRequiredWhenParentTrue: boolean;
     bitValue: boolean | null;
-    intValue: number | null;
-    decimalValue: number | null;
+    intValue: number | string | null;
+    decimalValue: number | string | null;
     textValue: string | null;
     dateValue: string | null;
     documentBindingId: number | null;
@@ -26,10 +26,11 @@ export function flattenAttributes(attributes: SocialAttributeHierarchyDto[]): Re
     const map: Record<number, FlatSocialAttributeState> = {};
     const traverse = (attrs: SocialAttributeHierarchyDto[], parentId?: number | null) => {
         for (const attr of attrs) {
+            const code = attr.socialAttributeCode.toUpperCase();
             const isSpecialToggle = 
-                attr.socialAttributeCode.toUpperCase() === "ROAD_WIDTH" || 
-                attr.socialAttributeCode.toUpperCase() === "WATER_CONN_YEAR" || 
-                attr.socialAttributeCode.toUpperCase().includes("TREE");
+                code === "ROAD_WIDTH" || 
+                code === "WATER_CONN_YEAR" || 
+                code.includes("TREE");
 
             let initialBitValue = attr.bitValue ?? null;
             if (isSpecialToggle) {
@@ -107,7 +108,7 @@ export function getLocalizedName(
     name: string | undefined | null,
     t?: {
         (key: string, values?: Record<string, string | number | Date>): string;
-        has: (key: string) => boolean;
+        has?: (key: string) => boolean;
     }
 ): string {
     const rawName = name || code || "";
@@ -115,8 +116,19 @@ export function getLocalizedName(
 
     const tryTranslate = (key: string): string | null => {
         const fullKey = `discount.socialAttributes.${key}`;
-        if (typeof t.has === "function" && t.has(fullKey)) {
-            return t(fullKey);
+        if (typeof t.has === "function") {
+            if (t.has(fullKey)) {
+                return t(fullKey);
+            }
+        } else {
+            try {
+                const val = t(fullKey);
+                if (val && !val.includes("discount.socialAttributes")) {
+                    return val;
+                }
+            } catch {
+                // Ignore missing translation errors
+            }
         }
         return null;
     };

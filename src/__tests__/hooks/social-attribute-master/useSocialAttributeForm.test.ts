@@ -8,6 +8,7 @@ import {
   createSocialAttributeAction,
   updateSocialAttributeAction,
 } from '@/app/[locale]/property-tax/social-attribute-master/action';
+import { useConfirm } from '@/components/common/ConfirmProvider';
 
 // Mock next/navigation
 vi.mock('next/navigation', () => ({
@@ -35,6 +36,11 @@ vi.mock('sonner', () => ({
 vi.mock('@/app/[locale]/property-tax/social-attribute-master/action', () => ({
   createSocialAttributeAction: vi.fn(),
   updateSocialAttributeAction: vi.fn(),
+}));
+
+// Mock ConfirmProvider
+vi.mock('@/components/common/ConfirmProvider', () => ({
+  useConfirm: vi.fn(() => ({ confirm: vi.fn() })),
 }));
 
 describe('useSocialAttributeForm', () => {
@@ -211,5 +217,25 @@ describe('useSocialAttributeForm', () => {
     });
 
     expect(mockOnCancel).toHaveBeenCalled();
+  });
+
+  it('should prompt confirmation on cancel if form is dirty', () => {
+    const confirmMock = vi.fn();
+    vi.mocked(useConfirm).mockReturnValue({ confirm: confirmMock });
+
+    const { result } = renderHook(() => useSocialAttributeForm(defaultProps));
+
+    act(() => {
+      result.current.handleChange({
+        target: { name: 'socialAttributeCode', value: 'DIRTY_CODE' },
+      } as unknown as React.ChangeEvent<HTMLInputElement>);
+    });
+
+    act(() => {
+      result.current.handleCancel();
+    });
+
+    expect(confirmMock).toHaveBeenCalled();
+    expect(mockOnCancel).not.toHaveBeenCalled();
   });
 });

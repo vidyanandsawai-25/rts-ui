@@ -33,6 +33,7 @@ vi.mock('next-intl', () => ({
     'building.saveError': 'Error saving building permissions!',
     'common.saveChanges': 'Save Changes',
   }[key] || key),
+  useLocale: () => 'en',
 }));
 
 // Mock useConfirm

@@ -9,6 +9,7 @@ import { FooterPagination } from './FooterPagination';
 import { UtilityActions, RightActions } from './FooterActionButtons';
 import { useFooterActions } from '@/hooks/layout/useFooterActions';
 import type { PropertyListItem } from '@/types/ptis.types';
+import { useTranslations } from 'next-intl';
 
 interface BottomActionBarProps {
   actions?: FooterAction[];
@@ -38,6 +39,7 @@ export function BottomActionBar({
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
+  const t = useTranslations('ptis');
   const [, startTransition] = useTransition();
   const [isPaginationPending, startPaginationTransition] = useTransition();
 
@@ -83,6 +85,16 @@ export function BottomActionBar({
   const handleActionClick = async (command: string) => {
     if (onAction) {
       onAction(command);
+      return;
+    }
+    const propertyId = searchParams.get('propertyId') || undefined;
+    if (command === 'PTIS_COMBINE' && !propertyId) {
+      const msg = t.has('error.propertyNotSearched')
+        ? t('error.propertyNotSearched')
+        : (t.has('errors.propertyNotSearched')
+          ? t('errors.propertyNotSearched')
+          : 'Please search for a property first before combining.');
+      toast.error(msg);
       return;
     }
     startTransition(async () => {
@@ -172,11 +184,12 @@ export function BottomActionBar({
           </div>
 
           {/* RIGHT: High-Priority Actions */}
-          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0 pl-2 border-l border-slate-100 md:border-l-0 md:pl-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 pl-2 border-l border-slate-100 md:border-l-0 md:pl-0">
             <RightActions
               actions={groupedActions.right}
               onActionClick={handleActionClick}
               isLoading={isLoading}
+              iconOnly={true}
             />
             {rightContent}
           </div>

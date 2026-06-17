@@ -235,7 +235,7 @@ describe("common-remark-crud.service", () => {
 
       await deleteCommonRemark(10);
 
-      expect(apiClient.delete).toHaveBeenCalledWith("/CommonRemarkDetails/10");
+      expect(apiClient.delete).toHaveBeenCalledWith("/CommonRemarkDetails/10/purge");
     });
   });
 });

@@ -432,13 +432,14 @@
     },
     "kyc": {
         "title": "मालक आणि संपर्क माहिती",
-        "ownerType": "मालकाचा प्रकार",
+        "ownerType": "मालकाचा प्रवर्ग",
         "titleLabel": "शीर्षक",
         "buildingName": "इमारतीचे नाव",
         "propertyHolderName": "मालमत्ताधारकाचे नाव",
         "occupierName": "भोगवटादाराचे नाव",
         "aadharCardNo": "आधार कार्ड क्र.",
         "mobileNo": "मोबाईल क्र.",
+        "alternateMobileNo": "पर्यायी मोबाईल क्र.",
         "emailId": "ईमेल आयडी",
         "shopName": "दुकानाचे नाव",
         "address": "पत्ता",
@@ -586,6 +587,10 @@
         "billDate": "बिल दिनांक",
         "uploadDocument": "कागदपत्र अपलोड करा",
         "viewDocument": "कागदपत्र पहा",
+        "confirmReplaceTitle": "कागदपत्र बदला",
+        "confirmReplaceDesc": "तुम्हाला खात्री आहे की तुम्ही अस्तित्वात असलेले कागदपत्र नवीन कागदपत्राने बदलू इच्छिता?",
+        "confirmReplaceOk": "होय, बदला",
+        "confirmReplaceCancel": "नाही, रद्द करा",
         "downloadDocument": "कागदपत्र डाउनलोड करा",
         "replaceDocument": "फाइल बदला",
         "documentPreviouslyAttached": "कागदपत्र पूर्वी संलग्न",
@@ -768,7 +773,8 @@
             "attachDocument": "दस्तऐवज जोडा",
             "download": "डाउनलोड",
             "agreementPreview": "करार पूर्वदर्शन",
-            "pleaseUploadAgreement": "पूर्वदर्शनासाठी कृपया करार अपलोड करा"
+            "pleaseUploadAgreement": "पूर्वदर्शनासाठी कृपया करार अपलोड करा",
+            "agreementExpiredWarning": "चेतावणी: कराराची मुदत संपली आहे!"
         },
         "rooms": "खोल्या",
         "area": "क्षेत्रफळ",
@@ -920,7 +926,7 @@
     "discount": {
         "title": "सवलत माहिती",
         "description": "या मालमत्तेसाठी सवलत पात्रता आणि टक्केवारी कॉन्फिगर करा",
-        "socialTitle": "सामाजिक माहिती",
+        "socialTitle": "इतर सामाजिक माहिती",
         "socialDescription": "या मालमत्तेसाठी सामाजिक वैशिष्ट्ये, स्थिती आणि संबंधित दस्तऐवज कॉन्फिगर करा.",
         "simpleTogglesTitle": "सामाजिक वैशिष्ट्ये",
         "complexFieldsTitle": "तपशीलवार वैशिष्ट्ये",
@@ -946,6 +952,10 @@
         "exServicemanOwner": "माजी सैनिक मालक",
         "uploadDocument": "कागदपत्र अपलोड करा",
         "viewDocument": "कागदपत्र पहा",
+        "confirmReplaceTitle": "कागदपत्र बदला",
+        "confirmReplaceDesc": "तुम्हाला खात्री आहे की तुम्ही अस्तित्वात असलेले कागदपत्र नवीन कागदपत्राने बदलू इच्छिता?",
+        "confirmReplaceOk": "होय, बदला",
+        "confirmReplaceCancel": "नाही, रद्द करा",
         "amountPlaceholder": "रक्कम टाका",
         "PercentagePlaceholder": "टक्केवारी टाका",
         "saveSuccess": "सवलतीचा तपशील यशस्वीरित्या जतन केला गेला!",
@@ -991,8 +1001,11 @@
             "SEPTIC_TANK": "सेप्टिक टँक",
             "SEWAGE_TREATMENT_PLANT": "सांडपाणी प्रक्रिया प्रकल्प",
             "STP": "सांडपाणी प्रक्रिया प्रकल्प",
+            "HAS_STP": "सांडपाणी प्रक्रिया प्रकल्प",
             "GARBAGE_SEGREGATION": "कचरा वर्गीकरण",
+            "HAS_GARBAGE_SEGREGATION": "कचरा वर्गीकरण",
             "GARBAGE_DISPOSAL": "कचरा विल्हेवाट",
+            "HAS_GARBAGE_DISPOSAL": "कचरा विल्हेवाट",
             "ELECTRIC_CONN": "वीज कनेक्शन",
             "ELECTRIC_CONNECTION": "वीज कनेक्शन",
             "ELECTRICAL_CONN": "वीज कनेक्शन",
@@ -1002,7 +1015,9 @@
             "EV_CHARGING_STATION": "ईव्ही चार्जिंग स्टेशन",
             "FIRE_FIGHTING": "अग्निशमन प्रणाली",
             "FIRE_FIGHTING_SYSTEM": "अग्निशमन प्रणाली",
+            "HAS_FIRE_FIGHTING_SYSTEM": "अग्निशमन प्रणाली",
             "FIRE_MACHINE": "फायर मशीन",
+            "HAS_FIRE_MACHINE": "फायर मशीन",
             "STAIRS_AVAILABLE": "पायऱ्या उपलब्ध",
             "STAIRS": "पायऱ्या उपलब्ध",
             "RAINWATER_HARVESTING": "पावसाच्या पाण्याचे पुनर्भरण",
@@ -1091,6 +1106,9 @@
             "invalidInteger": "मूल्य एक वैध पूर्णांक असणे आवश्यक आहे.",
             "invalidDecimal": "मूल्य एक वैध दशांश संख्या असणे आवश्यक आहे।",
             "negativeNotAllowed": "मूल्य उणे असू शकत नाही.",
+            "maxDigits": "मूल्य {digits} अंकांपेक्षा जास्त असू शकत नाही.",
+            "yearMaxDigits": "वर्ष ४ अंकांपेक्षा जास्त असू शकत नाही.",
+            "maxTwoDecimals": "जास्तीत जास्त २ दशांश स्थानांना अनुमती आहे.",
             "countMin": "गणना किमान १ असावी.",
             "ratingRange": "रेटिंग १ आणि ५ च्या दरम्यान असावे.",
             "yearRange": "वर्ष १९०० आणि {max} च्या दरम्यान असावे.",
@@ -1356,5 +1374,14 @@
         "operationRequired": "कृपया ऑपरेशन निवडा."
     },
     "offsetTooltip": "ऑफसेट तपशील: {details}",
-    "offsetTooltipEmpty": "ऑफसेट संपादित करण्यासाठी क्लिक करा"
+    "offsetTooltipEmpty": "ऑफसेट संपादित करण्यासाठी क्लिक करा",
+    "document": {
+        "errors": {
+            "notFound": "विनंती केलेले दस्तऐवज सर्व्हरवर आढळले नाही.",
+            "unauthorized": "तुम्हाला हे दस्तऐवज पाहण्याची परवानगी नाही. कृपया पुन्हा लॉगिन करा.",
+            "forbidden": "विनंती केलेल्या दस्तऐवजाचा प्रवेश प्रतिबंधित आहे.",
+            "general": "दस्तऐवज मिळवताना एक अनपेक्षित त्रुटी आली. कृपया पुन्हा प्रयत्न करा.",
+            "uploadGeneral": "दस्तऐवज अपलोड करताना एक त्रुटी आली. कृपया पुन्हा प्रयत्न करा."
+        }
+    }
 }

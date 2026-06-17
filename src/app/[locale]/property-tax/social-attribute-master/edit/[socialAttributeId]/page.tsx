@@ -1,9 +1,14 @@
 import { default as SocialAttributeForm } from '@/components/modules/property-tax/social-attribute-master/SocialAttributeForm';
-import { getSocialAttributeByIdAction, fetchAllActiveSocialAttributesAction } from '../../action';
+import {
+  getSocialAttributeByIdAction,
+  fetchAllActiveSocialAttributesAction,
+  fetchAllSocialAttributesAction,
+} from '../../action';
 import { notFound } from 'next/navigation';
 import React from 'react';
 import type { SocialAttribute } from '@/types/social-attribute.types';
 import { ApiError } from '@/lib/utils/api';
+import { logger } from '@/lib/utils/logger';
 
 interface PageProps {
   params: Promise<{
@@ -21,18 +26,21 @@ export default async function EditPage({ params }: PageProps): Promise<React.Rea
 
   let socialAttributeData: SocialAttribute;
   let activeAttributes: SocialAttribute[] = [];
+  let allAttributes: SocialAttribute[] = [];
   try {
-    const [data, list] = await Promise.all([
+    const [data, list, all] = await Promise.all([
       getSocialAttributeByIdAction(socialAttributeId),
       fetchAllActiveSocialAttributesAction(),
+      fetchAllSocialAttributesAction(),
     ]);
     socialAttributeData = data;
     activeAttributes = list;
+    allAttributes = all;
   } catch (error) {
     if (error instanceof ApiError && error.statusCode === 404) {
       notFound();
     }
-    console.error('Failed to fetch social attribute:', error);
+    logger.error('Failed to fetch social attribute', { error: error as Error });
     throw error;
   }
 
@@ -42,6 +50,7 @@ export default async function EditPage({ params }: PageProps): Promise<React.Rea
         id={socialAttributeId}
         initialData={socialAttributeData}
         parentAttributes={activeAttributes}
+        existingAttributes={allAttributes}
       />
     </>
   );

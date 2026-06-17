@@ -69,7 +69,7 @@ export default async function RootLayout({ children, params }: Readonly<RootLayo
   if (!isAuthOrHomeServer && pathname) {
     let requiredAccess: 'view' | 'edit' | 'delete' = 'view';
     const pathLower = pathname.toLowerCase();
-    if (pathLower.includes('/add') || pathLower.includes('/edit/')) {
+    if (pathLower.includes('/add/') || pathLower.endsWith('/add') || pathLower.includes('/edit/')) {
       requiredAccess = 'edit';
     } else if (pathLower.includes('/delete/')) {
       requiredAccess = 'delete';

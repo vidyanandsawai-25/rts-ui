@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import NextImage from 'next/image';
 import { useTranslations } from 'next-intl';
+import { getDocumentAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/document.actions';
+import { ImageSkeleton, ImagePlaceholder } from './ImageViewerFallbacks';
 
 interface ImageWithFallbackProps {
   src: string;
@@ -21,56 +23,22 @@ function isBlobOrDataUrl(src: string): boolean {
   return src.startsWith('blob:') || src.startsWith('data:');
 }
 
-/** Shimmer skeleton shown while an image is loading. */
-function ImageSkeleton({ className }: { className: string }): React.ReactElement {
-  return (
-    <div
-      className={`bg-gradient-to-r from-slate-200 via-slate-300 to-slate-200 bg-[length:200%_100%] animate-[shimmer_1.5s_infinite] ${className}`}
-      aria-hidden="true"
-    />
-  );
-}
-
-/** Placeholder shown when src is empty or the image fails to load. */
-function ImagePlaceholder({
-  alt,
-  isSmall,
-  label,
-}: {
-  alt: string;
-  isSmall: boolean;
-  label: string;
-}): React.ReactElement {
-  return (
-    <div
-      className="flex items-center justify-center bg-gradient-to-br from-slate-200 to-slate-300 text-slate-500 w-full h-full"
-      aria-label={alt}
-    >
-      <div className="flex flex-col items-center justify-center gap-1 p-1">
-        <svg
-          className={`${isSmall ? 'w-5 h-5' : 'w-8 h-8'} opacity-40`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.5}
-            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-          />
-        </svg>
-        {!isSmall && <span className="text-xs font-medium opacity-60 text-center">{label}</span>}
-      </div>
-    </div>
-  );
-}
-
 /**
  * Image component with built-in loading skeleton, error fallback, and optimization.
  * All URLs are rendered through NextImage — blob/data/external URLs set `unoptimized`
  * to bypass the Next.js image optimizer.
  */
+// In-memory cache for document base64 data URLs to prevent re-fetching and flickering
+export const documentCache = new Map<string, string | Promise<string>>();
+
+/** Remove a single document from the in-memory cache so it will be re-fetched.
+ *  Call this after replacing an image to ensure the new version loads. */
+export function clearDocumentCacheEntry(src: string): void {
+  if (!src || !src.startsWith('/api/documents/')) return;
+  const guid = src.split('/')[3];
+  if (guid) documentCache.delete(guid);
+}
+
 export function ImageWithFallback({
   src,
   alt = '',
@@ -82,9 +50,102 @@ export function ImageWithFallback({
   sizes,
   priority = false,
 }: ImageWithFallbackProps): React.ReactElement {
+  const [prevSrc, setPrevSrc] = useState(src);
   const [hasError, setHasError] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+
+  const getInitialState = useCallback((currentSrc: string) => {
+    if (!currentSrc || !currentSrc.startsWith('/api/documents/')) {
+      return { resolved: currentSrc, loading: false };
+    }
+    const parts = currentSrc.split('/');
+    const guid = parts[3];
+    if (guid && documentCache.has(guid)) {
+      const cached = documentCache.get(guid)!;
+      if (typeof cached === 'string') {
+        return { resolved: cached, loading: false };
+      }
+    }
+    return { resolved: '', loading: true };
+  }, []);
+
+  const initialState = getInitialState(src);
+  const [resolvedSrc, setResolvedSrc] = useState(initialState.resolved);
+  const [isLoading, setIsLoading] = useState(initialState.loading);
   const t = useTranslations('ptis');
+
+  if (src !== prevSrc) {
+    setPrevSrc(src);
+    setHasError(false);
+    const nextState = getInitialState(src);
+    setIsLoading(nextState.loading);
+    setResolvedSrc(nextState.resolved);
+  }
+
+  useEffect(() => {
+    if (!src || !src.startsWith('/api/documents/')) {
+      return;
+    }
+    const parts = src.split('/');
+    const guid = parts[3];
+    if (!guid) return;
+
+    let active = true;
+
+    if (documentCache.has(guid)) {
+      const cached = documentCache.get(guid)!;
+      if (typeof cached === 'string') {
+        return;
+      }
+      cached.then((dataUrl) => {
+        if (active) {
+          setResolvedSrc(dataUrl);
+          setHasError(false);
+          setIsLoading(false);
+        }
+      }).catch(() => {
+        // Evict failed promise so a future render can retry.
+        documentCache.delete(guid);
+        if (active) {
+          setHasError(true);
+          setIsLoading(false);
+        }
+      });
+      return () => {
+        active = false;
+      };
+    }
+
+    const promise = getDocumentAction(decodeURIComponent(guid), 'view')
+      .then((res) => {
+        if (res.success && res.data?.base64) {
+          const dataUrl = `data:${res.data.contentType};base64,${res.data.base64}`;
+          documentCache.set(guid, dataUrl);
+          return dataUrl;
+        }
+        throw new Error('Failed to load');
+      });
+
+    documentCache.set(guid, promise);
+
+    promise.then((dataUrl) => {
+      if (active) {
+        setResolvedSrc(dataUrl);
+        setHasError(false);
+        setIsLoading(false);
+      }
+    }).catch(() => {
+      // Evict failed promise so a future render can retry.
+      documentCache.delete(guid);
+      if (active) {
+        setHasError(true);
+        setIsLoading(false);
+      }
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [src]);
 
   const handleError = useCallback(() => {
     setHasError(true);
@@ -93,7 +154,7 @@ export function ImageWithFallback({
 
   const handleLoad = useCallback(() => setIsLoading(false), []);
 
-  const effectiveSrc = hasError && fallbackSrc ? fallbackSrc : src;
+  const effectiveSrc = hasError && fallbackSrc ? fallbackSrc : resolvedSrc;
   const isSmall = width !== undefined && width < 100;
 
   if ((hasError || !src) && !fallbackSrc) {
@@ -103,25 +164,27 @@ export function ImageWithFallback({
   return (
     <div className="relative w-full h-full">
       {isLoading && <ImageSkeleton className={className} />}
-      <NextImage
-        src={effectiveSrc}
-        alt={alt}
-        className={className}
-        onError={handleError}
-        onLoad={handleLoad}
-        width={fill ? undefined : width}
-        height={fill ? undefined : height}
-        fill={fill}
-        sizes={sizes ?? (fill ? '100vw' : undefined)}
-        priority={priority}
-        quality={80}
-        loading={priority ? undefined : 'lazy'}
-        unoptimized={
-          isBlobOrDataUrl(effectiveSrc) ||
-          !effectiveSrc.startsWith('/') ||
-          effectiveSrc.startsWith('/api/documents/')
-        }
-      />
+      {!isLoading && effectiveSrc && (
+        <NextImage
+          src={effectiveSrc}
+          alt={alt}
+          className={className}
+          onError={handleError}
+          onLoad={handleLoad}
+          width={fill ? undefined : width}
+          height={fill ? undefined : height}
+          fill={fill}
+          sizes={sizes ?? (fill ? '100vw' : undefined)}
+          priority={priority}
+          quality={75}
+          loading={priority ? undefined : 'lazy'}
+          unoptimized={
+            isBlobOrDataUrl(effectiveSrc) ||
+            !effectiveSrc.startsWith('/') ||
+            effectiveSrc.startsWith('/api/documents/')
+          }
+        />
+      )}
     </div>
   );
 }

@@ -32,6 +32,7 @@ interface CombinePropertyFormProps {
   selectedPropertyNo?: string;
   showHistory?: boolean;
   historyData?: PropertyCombineDetails[];
+  initialReviewData?: PropertyCombineDetails[];
 }
 
 /* ------------------------------------------------------------------ */
@@ -66,6 +67,7 @@ export default function CombinePropertyForm(props: CombinePropertyFormProps) {
     selectedPropertyNo,
     showHistory = false,
     historyData = [],
+    initialReviewData = [],
   } = props;
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -109,6 +111,7 @@ export default function CombinePropertyForm(props: CombinePropertyFormProps) {
     selectedBasePropertyId,
     selectedWardId,
     selectedPropertyNo,
+    initialReviewData,
     t,
   });
 
@@ -144,7 +147,10 @@ export default function CombinePropertyForm(props: CombinePropertyFormProps) {
   }, [basePropertyList]);
 
   const SUB_PROPERTY_OPTIONS = useMemo<SearchSelectOption[]>(() => {
-    return (subPropertyList || []).map(toSelectOption);
+    const sortedList = [...(subPropertyList || [])].sort((a, b) => {
+      return (a.fromProperty || '').localeCompare(b.fromProperty || '', undefined, { numeric: true, sensitivity: 'base' });
+    });
+    return sortedList.map(toSelectOption);
   }, [subPropertyList]);
 
   const PROPERTY_TYPE_OPTIONS = useMemo<SearchSelectOption[]>(() => {
@@ -213,8 +219,12 @@ export default function CombinePropertyForm(props: CombinePropertyFormProps) {
     if (selectedPropertyNo) params.set('propertyNo', selectedPropertyNo);
     if (selectedBasePropertyId) params.set('propertyId', selectedBasePropertyId);
 
+    const partitionNo = searchParams.get('partitionNo');
+    if (partitionNo) params.set('partitionNo', partitionNo);
+
     const qs = params.toString();
-    const target = qs ? `/property-tax/ptis?${qs}` : '/property-tax/ptis';
+    const locale = pathname.split('/')[1] || 'en';
+    const target = qs ? `/${locale}/property-tax/ptis?${qs}` : `/${locale}/property-tax/ptis`;
     router.push(target);
   };
 

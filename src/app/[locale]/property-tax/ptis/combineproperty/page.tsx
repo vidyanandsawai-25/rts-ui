@@ -1,5 +1,5 @@
 import CombinePropertyForm from "@/components/modules/property-tax/ptis/combineproperty/CombinePropertyForm";
-import { fetchCombinePropertiesPagedAction, fetchCombinePropertiesHistoryAction } from "./action";
+import { fetchCombinePropertiesPagedAction, fetchCombinePropertiesHistoryAction, fetchPropertyCombineDetailsAction } from "./action";
 import { fetchPropertyTypePagedServerAction } from "../../propertytype/action";
 import { CombinePropertyItem } from "@/types/combine-property.types";
 import { PropertyType } from "@/types/property-type.types";
@@ -18,12 +18,15 @@ interface PageProps {
     categoryId?: string;
     societyDetailId?: string;
     showHistory?: string;
+    partitionNo?: string;
+    combinePartitionNo?: string;
+    propertyNos?: string;
   }>;
 }
 
 export default async function Page({ searchParams }: PageProps) {
   const params = await searchParams;
-  const { basePropertyId, wardId, wardNo, propertyNo, basePartitionNo, categoryId, societyDetailId, showHistory } = params;
+  const { basePropertyId, wardId, wardNo, propertyNo, basePartitionNo, categoryId, societyDetailId, showHistory, combinePartitionNo, propertyNos } = params;
 
   // ── 1. Fetch base property list (filtered by ward if available) ─────────
   const baseResult = await fetchCombinePropertiesPagedAction({
@@ -75,6 +78,28 @@ export default async function Page({ searchParams }: PageProps) {
     historyData = await fetchCombinePropertiesHistoryAction({});
   }
 
+  // ── 5. Fetch review data if combinePartitionNo is present in URL ─────────
+  let initialReviewData: PropertyCombineDetails[] = [];
+  if (wardId && propertyNos && combinePartitionNo && showHistory !== 'true') {
+    try {
+      const data = await fetchPropertyCombineDetailsAction({
+        wardId: Number(wardId),
+        propertyNo: propertyNos,
+        partitionNo: combinePartitionNo,
+      });
+
+      initialReviewData = [...data].sort((a, b) => {
+        const isABase = String(a.propertyId) === basePropertyId;
+        const isBBase = String(b.propertyId) === basePropertyId;
+        if (isABase && !isBBase) return -1;
+        if (!isABase && isBBase) return 1;
+        return 0;
+      });
+    } catch {
+      initialReviewData = [];
+    }
+  }
+
   return (
     <CombinePropertyForm
       basePropertyList={basePropertyList}
@@ -86,6 +111,7 @@ export default async function Page({ searchParams }: PageProps) {
       selectedPropertyNo={propertyNo}
       showHistory={showHistory === 'true'}
       historyData={historyData}
+      initialReviewData={initialReviewData}
     />
   );
 }

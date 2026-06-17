@@ -60,7 +60,7 @@ export function buildPropertySearchColumns(
   return [
     withFixedWidth(
       {
-        key: "id",
+        key: "upicId",
         label: t("columns.upicId"),
         render: (value, row) => (
           <UpicLinkCell

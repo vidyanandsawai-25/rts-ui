@@ -432,13 +432,14 @@
     },
     "kyc": {
         "title": "स्वामी एवं संपर्क जानकारी",
-        "ownerType": "स्वामी प्रकार",
+        "ownerType": "स्वामी श्रेणी",
         "buildingName": "भवन का नाम",
         "titleLabel": "शीर्षक",
         "propertyHolderName": "संपत्ति धारक का नाम",
         "occupierName": "भोगी का नाम",
         "aadharCardNo": "आधार कार्ड नं.",
         "mobileNo": "मोबाइल नं.",
+        "alternateMobileNo": "वैकल्पिक मोबाइल नं.",
         "emailId": "ईमेल आईडी",
         "shopName": "दुकान का नाम",
         "address": "पता",
@@ -593,6 +594,10 @@
         "title": "भवन अनुमतियाँ और प्रमाणपत्र",
         "uploadDocument": "दस्तावेज़ अपलोड करें",
         "viewDocument": "दस्तावेज़ देखें",
+        "confirmReplaceTitle": "दस्तावेज़ बदलें",
+        "confirmReplaceDesc": "क्या आप वाकई मौजूदा दस्तावेज़ को नए दस्तावेज़ से बदलना चाहते हैं?",
+        "confirmReplaceOk": "हाँ, बदलें",
+        "confirmReplaceCancel": "नहीं, रद्द करें",
         "downloadDocument": "दस्तावेज़ डाउनलोड करें",
         "replaceDocument": "फ़ाइल बदलें",
         "documentPreviouslyAttached": "दस्तावेज़ पूर्व में संलग्न",
@@ -768,7 +773,8 @@
             "attachDocument": "दस्तावेज़ संलग्न करें",
             "download": "डाउनलोड",
             "agreementPreview": "समझौता पूर्वदर्शन",
-            "pleaseUploadAgreement": "पूर्वावलोकन के लिए कृपया एक समझौता अपलोड करें"
+            "pleaseUploadAgreement": "पूर्वावलोकन के लिए कृपया एक समझौता अपलोड करें",
+            "agreementExpiredWarning": "चेतावनी: समझौता समाप्त हो गया है!"
         },
         "rooms": "कमरे",
         "area": "क्षेत्रफल",
@@ -920,7 +926,7 @@
     "discount": {
         "title": "छूट जानकारी",
         "description": "इस संपत्ति के लिए छूट पात्रता और प्रतिशत कॉन्फ़िगर करें",
-        "socialTitle": "सामाजिक जानकारी",
+        "socialTitle": "अन्य सामाजिक जानकारी",
         "socialDescription": "इस संपत्ति के लिए सामाजिक विशेषताओं, स्थिति और संबंधित दस्तावेजों को कॉन्फ़िगर करें।",
         "simpleTogglesTitle": "सामाजिक विशेषताएं",
         "complexFieldsTitle": "विस्तृत विशेषताएं",
@@ -946,6 +952,10 @@
         "exServicemanOwner": "पूर्व सैनिक मालिक",
         "uploadDocument": "दस्तावेज़ अपलोड करें",
         "viewDocument": "दस्तावेज़ देखें",
+        "confirmReplaceTitle": "दस्तावेज़ बदलें",
+        "confirmReplaceDesc": "क्या आप वाकई मौजूदा दस्तावेज़ को नए दस्तावेज़ से बदलना चाहते हैं?",
+        "confirmReplaceOk": "हाँ, बदलें",
+        "confirmReplaceCancel": "नहीं, रद्द करें",
         "amountPlaceholder": "राशि दर्ज करें",
         "PercentagePlaceholder": "प्रतिशत दर्ज करें",
         "saveSuccess": "छूट का विवरण सफलतापूर्वक सहेजा गया!",
@@ -991,8 +1001,11 @@
             "SEPTIC_TANK": "सेप्टिक टैंक",
             "SEWAGE_TREATMENT_PLANT": "मलजल उपचार संयंत्र",
             "STP": "मलजल उपचार संयंत्र",
+            "HAS_STP": "मलजल उपचार संयंत्र",
             "GARBAGE_SEGREGATION": "कचरा पृथक्करण",
+            "HAS_GARBAGE_SEGREGATION": "कचरा पृथक्करण",
             "GARBAGE_DISPOSAL": "कचरा निपटान",
+            "HAS_GARBAGE_DISPOSAL": "कचरा निपटान",
             "ELECTRIC_CONN": "बिजली कनेक्शन",
             "ELECTRIC_CONNECTION": "बिजली कनेक्शन",
             "ELECTRICAL_CONN": "बिजली कनेक्शन",
@@ -1002,7 +1015,9 @@
             "EV_CHARGING_STATION": "ईवी चार्जिंग स्टेशन",
             "FIRE_FIGHTING": "अग्निशमन प्रणाली",
             "FIRE_FIGHTING_SYSTEM": "अग्निशमन प्रणाली",
+            "HAS_FIRE_FIGHTING_SYSTEM": "अग्निशमन प्रणाली",
             "FIRE_MACHINE": "अग्निशमन मशीन",
+            "HAS_FIRE_MACHINE": "अग्निशमन मशीन",
             "STAIRS_AVAILABLE": "सीढ़ियाँ उपलब्ध",
             "STAIRS": "सीढ़ियाँ उपलब्ध",
             "RAINWATER_HARVESTING": "वर्षा जल संचयन",
@@ -1091,6 +1106,9 @@
             "invalidInteger": "मान एक वैध पूर्णांक होना चाहिए।",
             "invalidDecimal": "मान एक वैध दशमलव संख्या होना चाहिए।",
             "negativeNotAllowed": "मान नकारात्मक नहीं हो सकता।",
+            "maxDigits": "मान {digits} अंकों से अधिक नहीं हो सकता।",
+            "yearMaxDigits": "वर्ष 4 अंकों से अधिक नहीं हो सकता।",
+            "maxTwoDecimals": "अधिकतम 2 दशमलव स्थानों की अनुमति है।",
             "countMin": "गणना कम से कम 1 होनी चाहिए।",
             "ratingRange": "रेटिंग 1 और 5 के बीच होनी चाहिए।",
             "yearRange": "वर्ष 1900 और {max} के बीच होना चाहिए।",
@@ -1356,5 +1374,14 @@
         "operationRequired": "कृपया ऑपरेशन चुनें।"
     },
     "offsetTooltip": "ऑफ़सेट विवरण: {details}",
-    "offsetTooltipEmpty": "ऑफ़सेट संपादित करने के लिए क्लिक करें"
+    "offsetTooltipEmpty": "ऑफ़सेट संपादित करने के लिए क्लिक करें",
+    "document": {
+        "errors": {
+            "notFound": "अनुरोधित दस्तावेज़ सर्वर पर नहीं मिला।",
+            "unauthorized": "आपको यह दस्तावेज़ देखने की अनुमति नहीं है। कृपया फिर से लॉगिन करें।",
+            "forbidden": "अनुरोधित दस्तावेज़ तक पहुँच प्रतिबंधित है।",
+            "general": "दस्तावेज़ प्राप्त करते समय एक अप्रत्याशित त्रुटि हुई। कृपया पुन: प्रयास करें।",
+            "uploadGeneral": "दस्तावेज़ अपलोड करते समय एक त्रुटि हुई। कृपया पुन: प्रयास करें।"
+        }
+    }
 }

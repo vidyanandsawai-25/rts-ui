@@ -16,6 +16,10 @@ export interface SocialAttributeHierarchyDto {
     dateValue?: string | null;
     documentBindingId?: number | null;
     remark?: string | null;
+    photoTypeId?: number | null;
+    isPhotoRequired?: boolean;
+    isDocumentRequired?: boolean;
+    isActive?: boolean;
     children: SocialAttributeHierarchyDto[];
 }
 

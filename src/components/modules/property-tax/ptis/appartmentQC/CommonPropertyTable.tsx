@@ -42,7 +42,7 @@ type CommonPropertyTableProps<T extends Record<string, unknown>> = {
   totalPages?: number;
   onPageChange?: (page: number) => void;
   onPageSizeChange?: (size: number) => void;
-  applyTypeColors?: boolean;
+  _applyTypeColors?: boolean;
   // Filter props
   activeFilters?: Record<FilterField, string[]>;
   onFilterChange?: (field: FilterField, values: string[]) => void;
@@ -55,7 +55,7 @@ type CommonPropertyTableProps<T extends Record<string, unknown>> = {
 function CommonPropertyTable<T extends Record<string, unknown>>({
   columns, data, title, activeTab, searchQuery, onSearchChange, onRowClick,
   loading = false, isAutoScrolling, onToggleAutoScroll, pageNumber = 1, pageSize = 10,
-  totalCount, totalPages, onPageChange, onPageSizeChange, applyTypeColors = false,
+  totalCount, totalPages, onPageChange, onPageSizeChange,
   activeFilters = {} as Record<FilterField, string[]>,
   onFilterChange,
   onFetchFilterOptions,
@@ -66,7 +66,7 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
   const tCommon = useTranslations("common");
   const locale = useLocale();
   useTableAutoScroll(isAutoScrolling);
-  
+
   // Excel export state
   const [isExporting, setIsExporting] = useState(false);
 
@@ -77,32 +77,32 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
       toast.error(t("export.missingParams") || "Missing ward ID or property number");
       return;
     }
-    
+
     setIsExporting(true);
-    
+
     // Show loading toast
     const loadingToastId = toast.loading(t("export.downloading") || "Downloading Excel file...");
-    
+
     try {
       // Build the secure API route URL (auth is handled server-side via cookies)
       const params = new URLSearchParams();
       params.append('WardId', String(wardId));
       params.append('PropertyNo', propertyNo);
       const exportUrl = `/${locale}/property-tax/ptis/appartmentQC/export-excel?${params.toString()}`;
-      
+
       // Fetch the Excel file from secure API route
       const response = await fetch(exportUrl, {
         method: 'GET',
         credentials: 'include', // Include cookies for authentication
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: response.statusText }));
         throw new Error(errorData.error || `Failed to export Excel: ${response.statusText}`);
       }
-      
+
       const blob = await response.blob();
-      
+
       // Create download link and trigger download
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -112,7 +112,7 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      
+
       // Dismiss loading toast and show success
       toast.dismiss(loadingToastId);
       toast.success(t("export.success") || "Excel file downloaded successfully!");
@@ -126,21 +126,12 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
     }
   }, [wardId, propertyNo, t, locale]);
 
-  const getCellColorClass = useCallback((type: string | undefined) => {
-    if (!applyTypeColors) return 'bg-white border-gray-300 hover:border-blue-400 text-blue-700';
-    if (type === 'C') return 'bg-rose-50 border-rose-300 hover:border-rose-400 text-rose-700';
-    if (type === 'R') return 'bg-indigo-100 border-indigo-300 hover:border-indigo-400 text-indigo-700';
-    if (type === 'N') return 'bg-sky-100 border-sky-300 hover:border-sky-400 text-sky-700';
-    if (type === 'I') return 'bg-cyan-100 border-cyan-300 hover:border-cyan-400 text-cyan-700';
-    return 'bg-white border-gray-300 hover:border-blue-400 text-blue-700';
-  }, [applyTypeColors]);
-
-  const styledColumns: Column<T>[] = useMemo(() => 
+  const styledColumns: Column<T>[] = useMemo(() =>
     columns.map((col) => {
       const filterField = FILTERABLE_COLUMNS[col.key as string];
       const isFilterable = !!filterField && !!onFilterChange && !!onFetchFilterOptions;
       const hasActiveFilter = filterField && activeFilters[filterField]?.length > 0;
-      
+
       return {
         ...col,
         label: (
@@ -164,24 +155,26 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
         cellClassName: "px-1 py-1 whitespace-nowrap",
         headerClassName: "!px-1.5 !py-1 border-l !border-gray-400/50",
         render: (value: unknown, row: T, rowIndex: number) => {
-          const colorClass = getCellColorClass(String(row.type || ''));
+          // Enhanced cell design with improved font and border colors
           if (col.render) {
             return (
-              <div className={`group relative ${colorClass} rounded border px-1 py-0.5 text-xs text-center transition`}>
+              <div className="group relative bg-white border border-gray-300 hover:border-blue-500 rounded px-1 py-0.5 text-xs text-center transition-colors duration-200">
                 {col.render(value as T[keyof T] | undefined, row, rowIndex)}
               </div>
             );
           }
           const displayValue = value === null || value === undefined || value === "" ? "-" : String(value);
           return (
-            <div className={`group relative ${colorClass} rounded border px-1 py-0.5 text-xs text-center transition hover:border-blue-400`}>
-              <span className="group-hover:underline">{displayValue}</span>
-              <ExternalLink className="inline-block w-3 h-3 ml-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+            <div className="group relative bg-white border border-gray-300 hover:border-blue-500 rounded px-1 py-0.5 text-xs text-center transition-colors duration-200">
+              <span className="text-gray-800 font-medium group-hover:text-blue-700 group-hover:underline transition-colors duration-200">
+                {displayValue}
+              </span>
+              <ExternalLink className="inline-block w-3 h-3 ml-1 text-gray-400 group-hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-all duration-200" />
             </div>
           );
         },
       };
-    }), [columns, getCellColorClass, activeFilters, onFilterChange, onFetchFilterOptions]);
+    }), [columns, activeFilters, onFilterChange, onFetchFilterOptions]);
 
   const filteredData = useMemo(() => {
     if (!searchQuery.trim()) return data;

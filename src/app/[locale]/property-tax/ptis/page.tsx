@@ -27,7 +27,7 @@ import { assembleDualMethodSectionData } from '@/components/modules/property-tax
 import type { SearchSelectOption } from '@/components/common/SearchSelect';
 import type { ApartmentQCDetail } from '@/types/apartmentQC.types';
 import { BottomActionBar } from '@/components/layout/BottomActionBar';
-import { PtisFooterControls } from '@/components/modules/property-tax/ptis/PtisFooterControls';
+import { PtisBackButton, PtisFooterDropdowns } from '@/components/modules/property-tax/ptis/PtisFooterControls';
 import { FALLBACK_FOOTER_ACTIONS } from '@/config/footer-fallback';
 import { FOOTER_REGISTRY, DEFAULT_ACTION_STYLE } from '@/config/footer-registry';
 import { FooterAction } from '@/lib/api/footer.service';
@@ -234,6 +234,7 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
         oldTaxesResult,
         discountResult,
         photoSlotsRes,
+        photosRes,
       ] = await Promise.all([
         resolvedWardId && propertyNo
           ? getApartmentQCDataAction(
@@ -277,6 +278,9 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
         resolvedPropertyId
           ? photoPlanService.getPhotoTypesWithStatus(resolvedPropertyId)
           : Promise.resolve(null),
+        resolvedPropertyId
+          ? photoPlanService.getPhotosByProperty(resolvedPropertyId)
+          : Promise.resolve(null),
       ]);
 
       apartmentData = aptData;
@@ -308,7 +312,9 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
       if (photoSlotsRes?.success && photoSlotsRes.data) {
         initialPhotoSlots = photoSlotsRes.data;
       }
-      initialPhotos = [];
+      if (photosRes?.success && photosRes.data) {
+        initialPhotos = photosRes.data;
+      }
 
       // Dual Method data triggers additional valuation fetches internally,
       // so only load it when the dual-method UI is actually being rendered.
@@ -518,7 +524,8 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
       <BottomActionBar
         actions={footerActions}
         properties={rawPropertyData}
-        leftContent={<PtisFooterControls />}
+        leftContent={<PtisBackButton />}
+        rightContent={<PtisFooterDropdowns />}
       />
     </div>
   );

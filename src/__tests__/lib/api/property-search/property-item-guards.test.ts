@@ -35,6 +35,7 @@ describe("property-item-guards", () => {
     expect(result.items[0]).toMatchObject({
       propertyId: 101,
       id: "UPIC-101",
+      upicId: "UPIC-101",
       zone: "East",
       ward: "Ward 01",
       propertyNo: "P-2023-001",
@@ -51,6 +52,7 @@ describe("property-item-guards", () => {
       partitionNo: "",
     });
 
+    expect(result.upicId).toBe("UPIC-202");
     expect(result.zone).toBe("");
     expect(result.ward).toBe("");
     expect(result.propertyNo).toBe("");

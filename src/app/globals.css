@@ -49,6 +49,11 @@ aside:not(.sidebar-expanded-aside) .sidebar-expandable-label {
   display: none !important;
 }
 
+aside:not(.sidebar-expanded-aside) details > div {
+  display: none !important;
+}
+
+
 aside:not(.sidebar-expanded-aside) .sidebar-footer-label {
   height: 0 !important;
   opacity: 0 !important;
@@ -85,4 +90,29 @@ input::-ms-clear {
 .drawer-instance {
   max-width: 100vw !important;
 }
+
+/* Scroll lock when drawer/modal is open */
+body.drawer-open {
+  overflow: hidden !important;
+}
+
+@keyframes digit-pop {
+  0% {
+    opacity: 0;
+    transform: scale(2.0);
+  }
+  30% {
+    opacity: 1;
+    transform: scale(2.0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1.0);
+  }
+}
+
+.animate-digit-pop {
+  animation: digit-pop 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
 

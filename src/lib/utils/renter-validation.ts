@@ -161,20 +161,6 @@ export const validateRenterForm = (
         errors.push({ field: 'agreementDate', message: 'Agreement Date is required.' });
     } else if (!isValidCalendarDate(details.agreementDate)) {
         errors.push({ field: 'agreementDate', message: 'Agreement Date is required.' });
-    } else {
-        const agreementDateObj = new Date(details.agreementDate);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        agreementDateObj.setHours(0, 0, 0, 0);
-
-        if (agreementDateObj > today) {
-            errors.push({ field: 'agreementDate', message: 'Agreement Date cannot be a future date.' });
-        }
-
-        const currentYear = new Date().getFullYear();
-        if (agreementDateObj.getFullYear() !== currentYear) {
-            errors.push({ field: 'agreementDate', message: 'Agreement Date must be of current year only.' });
-        }
     }
 
     // ─── Renter Name ──────────────────────────────────────────────────────────

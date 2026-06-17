@@ -85,7 +85,7 @@
       "valuationMethod": "मूल्यांकन पद्धत",
       "filterType": "फिल्टर प्रकार",
       "amount": "रक्कम प्रविष्ट करा",
-      "amountFrom": "रक्कम सुरुवातीपासून प्रविष्ट करा",
+      "amountFrom": "पासून रक्कम",
       "topCount": "शीर्ष संख्या (उदा. 1)",
       "toAmount": "कमाल रक्कम",
       "taxDefaulter": "कर थकबाकीदार",

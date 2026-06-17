@@ -631,6 +631,11 @@ export async function createRoomWiseSubmissionAction(payload: {
     const cookieStore = await cookies();
     const userId = getUserIdFromCookies(cookieStore) || 1;
     const { createRoomWiseSubmissionSafe } = await import("@/lib/api/ptis/appartmentQC/appartmentQC-room.service");
+    const resolveIsOffset = (offset: { isOffset?: boolean; operation?: string }) =>
+      offset.isOffset !== undefined
+        ? offset.isOffset
+        : String(offset.operation || '').toLowerCase() === 'add';
+
     const result = await createRoomWiseSubmissionSafe({
       isActive: true,
       createdBy: userId,
@@ -638,7 +643,7 @@ export async function createRoomWiseSubmissionAction(payload: {
       roomWiseMinusData: payload.roomWiseMinusData?.map(offset => ({
         isActive: true,
         createdBy: userId,
-        isOffset: true,
+        isOffset: resolveIsOffset(offset),
         ...offset
       }))
     });
@@ -718,6 +723,11 @@ export async function updateRoomWithOffsetsAction(
       (roomWiseMinusData || []).map(async (offset) => {
         const isExisting = offset.id !== undefined && offset.id !== null && offset.id > 0;
         
+        const resolveIsOffset = (offset: { isOffset?: boolean; operation?: string }) =>
+          offset.isOffset !== undefined
+            ? offset.isOffset
+            : String(offset.operation || '').toLowerCase() === 'add';
+
         if (isExisting) {
           // Update existing offset
           const offsetId = offset.id as number;
@@ -726,7 +736,7 @@ export async function updateRoomWithOffsetsAction(
             isActive: true,
             updatedBy: userId,
             id: offsetId,
-            isOffset: true,
+            isOffset: resolveIsOffset(offset),
           });
           if (!updateResult.success) {
             console.error('Failed to update offset:', updateResult.error);
@@ -740,7 +750,7 @@ export async function updateRoomWithOffsetsAction(
             isActive: true,
             createdBy: userId,
             roomWiseSubmissionId: id,
-            isOffset: true,
+            isOffset: resolveIsOffset(offset),
           });
           if (!createResult.success) {
             console.error('Failed to create offset:', createResult.error);
@@ -855,12 +865,15 @@ export async function createRoomWiseMinusAction(payload: {
   remark?: string;
   base1Mtr?: number;
   base2Mtr?: number;
+  isOffset?: boolean;
 }): Promise<ActionResult<{ id: number }>> {
   try {
     const { createRoomWiseMinusSafe } = await import("@/lib/api/ptis/appartmentQC/appartmentQC-room.service");
     const result = await createRoomWiseMinusSafe({
       ...payload,
-      isOffset: true
+      isOffset: payload.isOffset !== undefined
+        ? payload.isOffset
+        : String(payload.operation || '').toLowerCase() === 'add',
     });
     if (!result.success) {
       return { success: false, error: result.error || "Failed to create offset" };
