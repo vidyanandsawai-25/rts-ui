@@ -122,7 +122,6 @@ export function SearchSelect({
   inputMode = 'text',
   loadingPlaceholder,
   noOptionsPlaceholder,
-  menuPlacement = 'bottom',
   error,
 }: SearchSelectProps): React.ReactElement {
   // Fallback id and name for backward compatibility
@@ -133,6 +132,7 @@ export function SearchSelect({
   const [search, setSearch] = useState('');
   const [hasTyped, setHasTyped] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const [placement, setPlacement] = useState<'top' | 'bottom'>('bottom');
   // Accessible id for aria attributes and listbox
   const accessibleId = name || id || 'search-select';
 
@@ -142,6 +142,20 @@ export function SearchSelect({
   const isFocused = useRef<boolean>(false);
   // Tracks whether a selection was just made to prevent blur from clearing
   const didSelectRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    if (isOpen && wrapperRef.current) {
+      const rect = wrapperRef.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      if (spaceBelow < 250 && rect.top > 250) {
+        setPlacement('top');
+      } else {
+        setPlacement('bottom');
+      }
+    } else {
+      setPlacement('bottom');
+    }
+  }, [isOpen]);
 
   /* ---------------- Safety checks ---------------- */
 
@@ -371,7 +385,7 @@ export function SearchSelect({
             shadow-xl shadow-slate-300/60
             ring-1 ring-slate-200
             animate-in fade-in-0 zoom-in-95 duration-150
-            ${menuPlacement === 'top' ? 'bottom-full mb-1.5' : 'top-full mt-1.5'}
+            ${placement === 'top' ? 'bottom-full mb-1.5' : 'top-full mt-1.5'}
           `}
         >
           {filteredOptions.length === 0 && !isLoading ? (
