@@ -13,13 +13,13 @@
   "targetFilter": {
     "ruleId": "Rule ID",
     "ruleIdValue": "Auto-generated",
-    "ruleName": "Rule Name",
-    "ruleNamePlaceholder": "Enter rule name",
+    "ruleName": "Rule Set Name",
+    "ruleNamePlaceholder": "Enter rule set name",
     "corp": "Corp",
     "category": "Category",
     "ruleScope": "Rule Scope",
-    "description": "Description",
-    "descriptionPlaceholder": "Enter rule description",
+    "description": "Rule Set Description",
+    "descriptionPlaceholder": "Enter rule set description",
     "priority": "Priority",
     "priorityPlaceholder": "e.g. 1",
     "selectCategory": "Select Category",
@@ -61,15 +61,16 @@
     "searchByCodeOrName": "Search by Code or Name...",
     "allCategories": "All Categories",
     "ruleCode": "Rule Code",
-    "ruleName": "Rule Name",
-    "description": "Description",
+    "ruleName": "Rule Set Name",
+    "description": "Rule Set Description",
     "category": "Category",
     "status": "Status",
     "deleteTitle": "Delete Calculation Rule?",
     "deleteDescription": "Are you sure you want to permanently delete this policy rule? This action cannot be undone and will impact property tax demand runs.",
     "deleteConfirm": "Permanently Delete",
     "deleteCancel": "Cancel",
-    "deleteSuccess": "Rule deleted successfully"
+    "deleteSuccess": "Rule deleted successfully",
+    "priority": "Priority"
   },
   "conditionGroup": {
     "if": "If",
@@ -146,5 +147,11 @@
     "typeOfUseId": "Type of Use",
     "constructionTypeId": "Construction Type",
     "usageTypeId": "Usage Type"
+  },
+  "unsavedChanges": {
+    "title": "Unsaved Changes",
+    "description": "You have unsaved changes. Are you sure you want to leave? Your changes will be permanently lost.",
+    "confirm": "Leave Anyway",
+    "cancel": "Stay & Edit"
   }
 }
