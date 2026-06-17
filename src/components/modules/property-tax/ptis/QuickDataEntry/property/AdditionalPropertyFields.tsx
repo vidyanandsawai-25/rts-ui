@@ -1,7 +1,7 @@
 import { Input, SearchSelect } from '@/components/common';
 import { Label } from '@/components/common/label';
 import { PropertyBasicDetailsApiItem, TaxZoneItem } from '@/types/property-basic-details.types';
-import { sanitizeSurveyNo, sanitizeSubZoneNo, sanitizePositiveInteger } from '@/lib/utils/input-sanitization';
+import { sanitizeSurveyNo, sanitizeSubZoneNo, sanitizePositiveInteger, sanitizePlotArea } from '@/lib/utils/input-sanitization';
 import { propertyValidators, PROPERTY_VALIDATION_RULES } from '@/lib/utils/kyc-validation.constants';
 import { useState, useMemo } from 'react';
 
@@ -24,12 +24,14 @@ export const AdditionalPropertyFields = ({
     const [subZoneNo, setSubZoneNo] = useState(propertyData?.subZoneNo ?? '');
     const [residentialToilets, setResidentialToilets] = useState(propertyData?.noOfResidentialToilets?.toString() ?? '');
     const [commercialToilets, setCommercialToilets] = useState(propertyData?.noOfCommercialToilets?.toString() ?? '');
+    const [plotArea, setPlotArea] = useState(propertyData?.plotArea?.toString() ?? '');
     
     const [showTaxZoneNoError, setShowTaxZoneNoError] = useState(false);
     const [showSurveyNoError, setShowSurveyNoError] = useState(false);
     const [showSubZoneNoError, setShowSubZoneNoError] = useState(false);
     const [showResidentialToiletsError, setShowResidentialToiletsError] = useState(false);
     const [showCommercialToiletsError, setShowCommercialToiletsError] = useState(false);
+    const [showPlotAreaError, setShowPlotAreaError] = useState(false);
 
     const taxZoneOptions = useMemo(() => {
         return (taxZones ?? [])
@@ -251,6 +253,47 @@ export const AdditionalPropertyFields = ({
                         {commercialToilets === '0'
                             ? t('property.validation.toiletCountZero')
                             : t('property.validation.invalidCommercialToilets')}
+                    </span>
+                )}
+            </div>
+
+            {/* Plot Area */}
+            <div className="space-y-1.5">
+                <Label htmlFor="pd-plotarea" className="text-xs font-semibold text-gray-700">
+                    {t('property.plotArea')}
+                </Label>
+                <Input
+                    id="pd-plotarea"
+                    name="plotArea"
+                    type="number"
+                    min="0"
+                    step="0.0001"
+                    value={plotArea}
+                    placeholder="1500.1234"
+                    className={`h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${
+                        showPlotAreaError && !propertyValidators.isValidPlotArea(plotArea)
+                            ? 'border-red-300 focus:border-red-500'
+                            : ''
+                    }`}
+                    onChange={(e) => {
+                        const value = e.target.value;
+                        // Prevent negative values
+                        if (value && parseFloat(value) < 0) return;
+                        const sanitized = sanitizePlotArea(value);
+                        setPlotArea(sanitized);
+                        if (sanitized) setShowPlotAreaError(true);
+                    }}
+                    onKeyDown={(e) => {
+                        // Prevent negative sign and 'e' character
+                        if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+') {
+                            e.preventDefault();
+                        }
+                    }}
+                    onBlur={() => setShowPlotAreaError(true)}
+                />
+                {showPlotAreaError && !propertyValidators.isValidPlotArea(plotArea) && (
+                    <span className="text-xs text-red-500">
+                        {t('property.validation.invalidPlotArea') || 'Invalid plot area. Max 15 digits total, 4 decimals allowed.'}
                     </span>
                 )}
             </div>

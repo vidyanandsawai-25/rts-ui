@@ -55,6 +55,7 @@ export const useKycForm = (
     formData,
     setFormData,
     mobileInput,
+    alternateMobileInput,
     aadharInput,
     isSubmitted,
     setIsSubmitted,
@@ -65,6 +66,7 @@ export const useKycForm = (
   const { hasChanges, canSubmit } = useKycFormValidation(
     formData,
     mobileInput,
+    alternateMobileInput,
     aadharInput,
     KycDetailsData
   );
@@ -74,6 +76,7 @@ export const useKycForm = (
     {
       formData,
       mobileInput,
+      alternateMobileInput,
       aadharInput,
       KycDetailsData,
       OwnerTypeMasterList,
@@ -91,6 +94,7 @@ export const useKycForm = (
     formData,
     setFormData,
     mobileInput,
+    alternateMobileInput,
     aadharInput,
     isUpdating,
     hasChanges,

@@ -263,13 +263,6 @@ const AppartmentQCSection = ({
           size="sm"
           activeTabClassName="bg-blue-800 text-white shadow-md border-none"
         />
-
-        <div className="flex gap-2 flex-base items-center ml-auto">
-          <span className="px-2 py-0.5 rounded-full border border-rose-300 bg-rose-50 text-rose-700 text-[12px] uppercase font-bold">{t("legends.commercial")}</span>
-          <span className="px-2 py-0.5 rounded-full border border-indigo-300 bg-indigo-100 text-indigo-700 text-[12px] uppercase font-bold">{t("legends.residential")}</span>
-          <span className="px-2 py-0.5 rounded-full border border-emerald-300 bg-emerald-100 text-emerald-700 text-[12px] uppercase font-bold">{t("legends.nonResidential")}</span>
-          <span className="px-2 py-0.5 rounded-full border border-amber-300 bg-amber-100 text-amber-700 text-[12px] uppercase font-bold">{t("legends.industrial")}</span>
-        </div>
       </div>
 
 
@@ -288,7 +281,7 @@ const AppartmentQCSection = ({
             loading={isPending} isAutoScrolling={isAutoScrolling} onToggleAutoScroll={() => setIsAutoScrolling(!isAutoScrolling)}
             pageNumber={activePagedData.pageNumber} pageSize={activePagedData.pageSize} totalCount={activePagedData.totalCount} totalPages={activePagedData.totalPages}
             onPageChange={(p) => updateUrl({ pageNumber: p })} onPageSizeChange={(s) => updateUrl({ pageSize: s, pageNumber: 1 })}
-            applyTypeColors={activeMainTab === 'commercial' || activeMainTab === 'residential'}
+            _applyTypeColors={activeMainTab === 'commercial' || activeMainTab === 'residential'}
             activeFilters={activeFilters}
             onFilterChange={handleFilterChange}
             onFetchFilterOptions={fetchFilterOptions}

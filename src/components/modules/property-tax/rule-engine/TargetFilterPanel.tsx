@@ -14,6 +14,8 @@ interface TargetFilterPanelProps {
   setRuleCategory: (val: string) => void;
   ruleDescription: string;
   setRuleDescription: (val: string) => void;
+  priority: number | undefined;
+  setPriority: (val: number | undefined) => void;
   scopes: RuleScope[];
   /** API-driven rule category options from PTIS.RuleCategoryMaster */
   ruleCategoryOptions: { label: string; value: string }[];
@@ -24,6 +26,7 @@ export default function TargetFilterPanel({
   ruleScopeId, setRuleScopeId,
   ruleCategory, setRuleCategory,
   ruleDescription, setRuleDescription,
+  priority, setPriority,
   scopes,
   ruleCategoryOptions,
 }: TargetFilterPanelProps) {
@@ -33,22 +36,20 @@ export default function TargetFilterPanel({
     ? ruleScopeId.toString()
     : '';
 
-
-
   const safeCategory =
     ruleCategoryOptions.some((o) => o.value === ruleCategory)
       ? ruleCategory
       : '';
 
   return (
-    <div className="flex flex-col gap-4 w-full bg-white p-4 border border-zinc-200 rounded-xl shadow-sm">
+    <div className="flex flex-col gap-3 w-full bg-white p-4 border border-zinc-200 rounded-xl shadow-sm">
       <h3 className="text-sm font-bold text-gray-800 border-b border-zinc-100 pb-2 mb-0.5">
         {t('builder.title', { scopeName: '' }).split('Builder')[0].trim() || 'Rule Metadata'}
       </h3>
-      <div className="flex flex-col gap-3.5">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
 
         {/* Rule Category — API-driven select */}
-        <div>
+        <div className="md:col-span-2 lg:col-span-2">
           <SearchSelect
             label={t('targetFilter.category')}
             options={ruleCategoryOptions}
@@ -60,7 +61,7 @@ export default function TargetFilterPanel({
         </div>
 
         {/* Rule Name */}
-        <div>
+        <div className="md:col-span-3 lg:col-span-3">
           <Input
             label={t('targetFilter.ruleName')}
             value={ruleName}
@@ -71,7 +72,7 @@ export default function TargetFilterPanel({
         </div>
 
         {/* Rule Scope — from API */}
-        <div>
+        <div className="md:col-span-2 lg:col-span-2">
           <SearchSelect
             label={t('targetFilter.ruleScope')}
             options={scopeOptions}
@@ -82,17 +83,29 @@ export default function TargetFilterPanel({
           />
         </div>
 
+        {/* Priority */}
+        <div className="md:col-span-1 lg:col-span-1">
+          <Input
+            label={t('targetFilter.priority')}
+            type="number"
+            value={priority === undefined || priority === null ? '' : priority.toString()}
+            onChange={(e) => {
+              const val = e.target.value;
+              setPriority(val === '' ? undefined : Number(val));
+            }}
+            placeholder={t('targetFilter.priorityPlaceholder')}
+            required
+            min={1}
+          />
+        </div>
+
         {/* Rule Description */}
-        <div className="flex flex-col gap-1 w-full">
-          <label className="text-[13px] font-semibold text-zinc-600">
-            {t('targetFilter.description')}
-          </label>
-          <textarea
+        <div className="md:col-span-4 lg:col-span-4">
+          <Input
+            label={t('targetFilter.description')}
             value={ruleDescription}
             onChange={(e) => setRuleDescription(e.target.value)}
             placeholder={t('targetFilter.descriptionPlaceholder')}
-            rows={3}
-            className="w-full text-sm p-2 border border-zinc-200 rounded-lg outline-none focus:border-blue-500 transition-all resize-none text-zinc-800"
           />
         </div>
       </div>

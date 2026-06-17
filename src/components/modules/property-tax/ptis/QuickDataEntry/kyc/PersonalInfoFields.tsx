@@ -1,11 +1,12 @@
 import React from 'react';
-import { FormFieldGroup, Label, SearchSelect } from '@/components/common';
+import { FormFieldGroup, Label, SearchSelect, Input } from '@/components/common';
 import {
   KYC_VALIDATION_RULES,
   KYC_TITLE_OPTIONS,
   kycValidators,
+  enhancedKycValidators,
 } from '@/lib/utils/kyc-validation.constants';
-import { sanitizeName } from '@/lib/utils/input-sanitization';
+import { sanitizeName, capitalizeEachWord } from '@/lib/utils/input-sanitization';
 import { KycFormData } from '@/types/property-kyc.types';
 
 interface PersonalInfoFieldsProps {
@@ -31,7 +32,7 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
 
   return (
     <>     
-      <div className="space-y-1.5 relative focus-within:z-50">
+      <div className="col-span-2 space-y-1.5 relative focus-within:z-50">
         <Label htmlFor="kyc-ownertype" className="text-xs font-semibold text-gray-700">
           {t('kyc.ownerType')}
         </Label>
@@ -41,7 +42,7 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
           options={ownerTypeOptions}
           value={formData.ownerTypeId?.toString() ?? ''}
           placeholder={t('kyc.select')}
-          onChange={(_name: string, value: string) => {
+          onChange={(_name, value) => {
             setFormData((prev) => ({
               ...prev,
               ownerTypeId: value ? Number(value) : null,            
@@ -51,7 +52,7 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
         />
       </div>
 
-      <div className="space-y-1.5 relative focus-within:z-40">
+      <div className="col-span-2 space-y-1.5 relative focus-within:z-40">
         <Label htmlFor="kyc-title" className="text-xs font-semibold text-gray-700">
           {t('kyc.titleLabel')}
         </Label>
@@ -61,14 +62,14 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
           options={titleOptions}
           value={formData.ownerTitle ?? ''}
           placeholder={t('kyc.select')}
-          onChange={(_name: string, value: string) => {
+          onChange={(_name, value) => {
             setFormData((prev) => ({ ...prev, ownerTitle: value }));
           }}
           className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
         />
       </div>
 
-      <div>
+      <div className="col-span-4">
         <FormFieldGroup
           type="text"
           id="kyc-ownername"
@@ -81,8 +82,9 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
             // Sanitize input to remove invalid characters immediately
             const sanitized = sanitizeName(e.target.value);
-            if (sanitized.length <= KYC_VALIDATION_RULES.NAME_MAX_LENGTH) {
-              setFormData((prev) => ({ ...prev, ownerName: sanitized }));
+            const capitalized = capitalizeEachWord(sanitized);
+            if (capitalized.length <= KYC_VALIDATION_RULES.NAME_MAX_LENGTH) {
+              setFormData((prev) => ({ ...prev, ownerName: capitalized }));
             }
           }}
         />
@@ -94,6 +96,33 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
                 (formData.ownerName ?? '').trim().length > KYC_VALIDATION_RULES.NAME_MAX_LENGTH
                 ? t('society.validation.invalidNameLength')
                 : t('kyc.validation.invalidName')}
+          </span>
+        )}
+      </div>
+
+      <div className="col-span-4 space-y-1.5">
+        <Label htmlFor="kyc-occupier" className="text-xs font-semibold text-gray-700">
+          {t('kyc.occupierName')}
+        </Label>
+        <Input
+          type="text"
+          id="kyc-occupier"
+          placeholder={t('kyc.enterOccupierName')}
+          value={formData.occupierName ?? ''}
+          className={`h-9 text-sm border-gray-300 focus:border-gray-600 focus:ring-2 focus:ring-gray-200 ${showError('occupierName', enhancedKycValidators.isValidOccupierName(formData.occupierName ?? ''))
+              ? 'border-red-300 focus:border-red-500'
+              : ''
+            }`}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+            // Sanitize to remove invalid characters and numbers immediately
+            const sanitized = sanitizeName(e.target.value);
+            const capitalized = capitalizeEachWord(sanitized);
+            setFormData((prev) => ({ ...prev, occupierName: capitalized }));
+          }}
+        />
+        {showError('occupierName', enhancedKycValidators.isValidOccupierName(formData.occupierName ?? '')) && (
+          <span className="text-xs text-red-500">
+            {t('kyc.validation.invalidName')}
           </span>
         )}
       </div>
