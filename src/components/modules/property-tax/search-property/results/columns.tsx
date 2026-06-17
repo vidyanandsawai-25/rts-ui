@@ -1,6 +1,7 @@
 "use client";
 
 import type { Column } from "@/components/common";
+import { Tooltip } from "@/components/common";
 import type { SearchResult } from "@/types/property-search.types";
 import {
   COLUMN_WIDTHS,
@@ -17,11 +18,21 @@ import { RvCvCell } from "./RvCvCell";
 type Translator = (key: string) => string;
 
 function withFixedWidth(
-  column: Column<SearchResult>,
+  column: Column<SearchResult> & { tooltip?: string },
   width: string
 ): Column<SearchResult> {
+  const { tooltip, ...rest } = column;
+  const label = tooltip ? (
+    <Tooltip content={tooltip} placement="top">
+      <span className="cursor-help">{column.label}</span>
+    </Tooltip>
+  ) : (
+    column.label
+  );
+
   return {
-    ...column,
+    ...rest,
+    label,
     width,
     headerClassName: column.headerClassName ?? WRAP_HEADER,
     cellClassName: column.cellClassName ?? WRAP_CELL,
@@ -62,6 +73,7 @@ export function buildPropertySearchColumns(
       {
         key: "upicId",
         label: t("columns.upicId"),
+        tooltip: t("columns.upicId"),
         render: (value, row) => (
           <UpicLinkCell
             upicId={String(value ?? "")}
@@ -73,12 +85,13 @@ export function buildPropertySearchColumns(
       },
       COLUMN_WIDTHS.upicId
     ),
-    withFixedWidth({ key: "zone", label: t("columns.zone") }, COLUMN_WIDTHS.zone),
-    withFixedWidth({ key: "ward", label: t("columns.ward") }, COLUMN_WIDTHS.ward),
+    withFixedWidth({ key: "zone", label: t("columns.zone"), tooltip: t("columns.zone") }, COLUMN_WIDTHS.zone),
+    withFixedWidth({ key: "ward", label: t("columns.ward"), tooltip: t("columns.ward") }, COLUMN_WIDTHS.ward),
     withFixedWidth(
       {
         key: "propertyNo",
-        label: t("columns.propertyNo"),
+        label: t("columns.propertyNoShort"),
+        tooltip: t("columns.propertyNo"),
         render: (value) => {
           const raw = String(value ?? "").trim();
           if (!raw) {
@@ -90,46 +103,48 @@ export function buildPropertySearchColumns(
       COLUMN_WIDTHS.propertyNo
     ),
     withFixedWidth(
-      { key: "partitionNo", label: t("columns.partitionNo") },
+      { key: "partitionNo", label: t("columns.partitionNoShort"), tooltip: t("columns.partitionNo") },
       COLUMN_WIDTHS.partitionNo
     ),
     withFixedWidth(
-      { key: "oldPropertyNo", label: t("columns.oldPropertyNo") },
+      { key: "oldPropertyNo", label: t("columns.oldPropertyNoShort"), tooltip: t("columns.oldPropertyNo") },
       COLUMN_WIDTHS.oldPropertyNo
     ),
     withFixedWidth(
-      { key: "citySurveyNo", label: t("columns.citySurveyNo") },
+      { key: "citySurveyNo", label: t("columns.citySurveyNoShort"), tooltip: t("columns.citySurveyNo") },
       COLUMN_WIDTHS.citySurveyNo
     ),
     withFixedWidth(
-      { key: "plotNo", label: t("columns.plotNo") },
+      { key: "plotNo", label: t("columns.plotNo"), tooltip: t("columns.plotNo") },
       COLUMN_WIDTHS.plotNo
     ),
     withFixedWidth(
-      { key: "wingFlatNo", label: t("columns.wingFlatNo") },
+      { key: "wingFlatNo", label: t("columns.wingFlatNoShort"), tooltip: t("columns.wingFlatNo") },
       COLUMN_WIDTHS.wingFlatNo
     ),
     withFixedWidth(
       {
         key: "category",
-        label: t("columns.category"),
+        label: t("columns.categoryShort"),
+        tooltip: t("columns.category"),
         headerClassName: `${WRAP_HEADER} pl-3`,
         cellClassName: `${WRAP_CELL} pl-3`,
       },
       COLUMN_WIDTHS.category
     ),
     withFixedWidth(
-      { key: "description", label: t("columns.description") },
+      { key: "description", label: t("columns.descriptionShort"), tooltip: t("columns.description") },
       COLUMN_WIDTHS.description
     ),
     withFixedWidth(
-      { key: "mobile", label: t("columns.mobile") },
+      { key: "mobile", label: t("columns.mobile"), tooltip: t("columns.mobile") },
       COLUMN_WIDTHS.mobile
     ),
     withFixedWidth(
       {
         key: "holderName",
-        label: t("columns.holderName"),
+        label: t("columns.holderNameShort"),
+        tooltip: t("columns.holderName"),
         render: (_, row) => <HolderNameCell row={row} />,
       },
       COLUMN_WIDTHS.holderName
@@ -137,27 +152,29 @@ export function buildPropertySearchColumns(
     withFixedWidth(
       {
         key: "occupierName",
-        label: t("columns.occupierName"),
+        label: t("columns.occupierNameShort"),
+        tooltip: t("columns.occupierName"),
         render: (_, row) => <OccupierNameCell row={row} />,
       },
       COLUMN_WIDTHS.occupierName
     ),
     withFixedWidth(
-      { key: "shopBuildingName", label: t("columns.shopBuildingName") },
+      { key: "shopBuildingName", label: t("columns.shopBuildingNameShort"), tooltip: t("columns.shopBuildingName") },
       COLUMN_WIDTHS.shopBuildingName
     ),
     withFixedWidth(
-      { key: "societyName", label: t("columns.societyName") },
+      { key: "societyName", label: t("columns.societyNameShort"), tooltip: t("columns.societyName") },
       COLUMN_WIDTHS.societyName
     ),
     withFixedWidth(
-      { key: "address", label: t("columns.address") },
+      { key: "address", label: t("columns.address"), tooltip: t("columns.address") },
       COLUMN_WIDTHS.address
     ),
     withFixedWidth(
       {
         key: "rv",
         label: t("columns.rvCv"),
+        tooltip: t("columns.rvCv"),
         align: "left",
         cellClassName: NUMERIC_CELL,
         render: (_, row) => <RvCvCell rv={row.rv} cv={row.cv} />,
@@ -167,7 +184,8 @@ export function buildPropertySearchColumns(
     withFixedWidth(
       {
         key: "totalTax",
-        label: t("columns.totalTax"),
+        label: t("columns.totalTaxShort"),
+        tooltip: t("columns.totalTax"),
         align: "right",
         cellClassName: NUMERIC_CELL,
         render: (value) => (
