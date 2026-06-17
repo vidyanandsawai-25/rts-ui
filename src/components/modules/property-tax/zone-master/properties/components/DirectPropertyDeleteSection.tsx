@@ -38,11 +38,12 @@ function DirectPropertyDeleteSectionInner({
   const [isDeleting, setIsDeleting] = useState(false);
 
   const createDeleteHandler = useCallback(
-    (rowPropertyId: string, callback: () => void) => () => {
+    (rowPropertyId: string, rowPropertyNo: string, callback: () => void) => () => {
       confirm({
         variant: "delete",
         title: t("createProperty.deletePropertyConfirm"),
         description: t("createProperty.deleteSinglePropertyDesc"),
+        meta: { id: rowPropertyId, name: rowPropertyNo || rowPropertyId },
         onConfirm: async () => {
           setIsDeleting(true);
           try {
@@ -79,7 +80,7 @@ function DirectPropertyDeleteSectionInner({
   const columns: Column<DirectPropertyDeleteRow & Record<string, unknown>>[] = [
     {
       key: "propertyIdentifier",
-      label: `${t("propertyList.columns.wardNo")} - ${t("createProperty.propertyNoLabel")} - ${t("createProperty.partitionNumber")}`,
+      label: ` ${t("createProperty.propertyNoLabel")}`,
       render: (_value, currentRow) => {
         const item = currentRow as DirectPropertyDeleteRow;
         return (
@@ -109,7 +110,7 @@ function DirectPropertyDeleteSectionInner({
         return (
           <IconOnlyActionButton
             icon={Trash2}
-            onClick={createDeleteHandler(item.propertyId, callback)}
+            onClick={createDeleteHandler(item.propertyId, item.propertyNo, callback)}
             aria-label={t("createProperty.deletePropertyConfirm")}
             variant="ghost"
             size="sm"
