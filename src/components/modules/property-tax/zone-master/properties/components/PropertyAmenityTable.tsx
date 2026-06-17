@@ -58,7 +58,7 @@ export function PropertyAmenityTable({
     },
     {
       key: "propertyIdentifier",
-      label: `${t("propertyList.columns.wardNo")} -${t("createProperty.propertyNoLabel")} - ${t("createProperty.partitionNumber")}`,
+      label: t("createProperty.propertyNoLabel"),
       render: (_value, row) => {
         const item = row as SocietyAmenityDetailItem;
         return (
