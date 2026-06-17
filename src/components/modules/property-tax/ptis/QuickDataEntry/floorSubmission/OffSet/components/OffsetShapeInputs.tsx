@@ -30,6 +30,18 @@ export const OffsetShapeInputs: React.FC<OffsetShapeInputsProps> = ({
 }) => {
     const t = useTranslations("quickDataEntry");
 
+    const cleanValue = (val: string): string | null => {
+        if (val === "" || /^\d*\.?\d*$/.test(val)) {
+            if (val.includes(".")) {
+                const [intPart, decPart] = val.split(".");
+                return intPart.slice(0, 4) + "." + (decPart.slice(0, 2));
+            } else {
+                return val.slice(0, 4);
+            }
+        }
+        return null;
+    };
+
     return (
         <div className="space-y-3">
             <div className="flex gap-2.5 items-end">
@@ -55,11 +67,12 @@ export const OffsetShapeInputs: React.FC<OffsetShapeInputsProps> = ({
                                 id="offset-length-input"
                                 type="text"
                                 value={offsetData.length}
-                                maxLength={4}
+                                maxLength={7}
                                 onFocus={(e) => e.target.select()}
-                                onChange={(e) =>
-                                    handleOffsetInputChange("length", e.target.value.slice(0, 4))
-                                }
+                                onChange={(e) => {
+                                    const cleaned = cleanValue(e.target.value);
+                                    if (cleaned !== null) handleOffsetInputChange("length", cleaned);
+                                }}
                                 onKeyDown={(e) => {
                                     if (e.key === "." && String(offsetData.length).includes(".")) {
                                         e.preventDefault();
@@ -82,11 +95,12 @@ export const OffsetShapeInputs: React.FC<OffsetShapeInputsProps> = ({
                                 id="offset-width-input"
                                 type="text"
                                 value={offsetData.width}
-                                maxLength={4}
+                                maxLength={7}
                                 onFocus={(e) => e.target.select()}
-                                onChange={(e) =>
-                                    handleOffsetInputChange("width", e.target.value.slice(0, 4))
-                                }
+                                onChange={(e) => {
+                                    const cleaned = cleanValue(e.target.value);
+                                    if (cleaned !== null) handleOffsetInputChange("width", cleaned);
+                                }}
                                 onKeyDown={(e) => {
                                     if (e.key === "." && String(offsetData.width).includes(".")) {
                                         e.preventDefault();
@@ -113,11 +127,12 @@ export const OffsetShapeInputs: React.FC<OffsetShapeInputsProps> = ({
                             id="offset-side-input"
                             type="text"
                             value={offsetData.side}
-                            maxLength={4}
+                            maxLength={7}
                             onFocus={(e) => e.target.select()}
-                            onChange={(e) =>
-                                handleOffsetInputChange("side", e.target.value.slice(0, 4))
-                            }
+                            onChange={(e) => {
+                                const cleaned = cleanValue(e.target.value);
+                                if (cleaned !== null) handleOffsetInputChange("side", cleaned);
+                            }}
                             onKeyDown={(e) => {
                                 if (e.key === "." && String(offsetData.side).includes(".")) {
                                     e.preventDefault();
@@ -144,11 +159,12 @@ export const OffsetShapeInputs: React.FC<OffsetShapeInputsProps> = ({
                                 id="offset-base-input"
                                 type="text"
                                 value={offsetData.base}
-                                maxLength={4}
+                                maxLength={7}
                                 onFocus={(e) => e.target.select()}
-                                onChange={(e) =>
-                                    handleOffsetInputChange("base", e.target.value.slice(0, 4))
-                                }
+                                onChange={(e) => {
+                                    const cleaned = cleanValue(e.target.value);
+                                    if (cleaned !== null) handleOffsetInputChange("base", cleaned);
+                                }}
                                 onKeyDown={(e) => {
                                     if (e.key === "." && String(offsetData.base).includes(".")) {
                                         e.preventDefault();
@@ -171,11 +187,12 @@ export const OffsetShapeInputs: React.FC<OffsetShapeInputsProps> = ({
                                 id="offset-height-input"
                                 type="text"
                                 value={offsetData.height}
-                                maxLength={4}
+                                maxLength={7}
                                 onFocus={(e) => e.target.select()}
-                                onChange={(e) =>
-                                    handleOffsetInputChange("height", e.target.value.slice(0, 4))
-                                }
+                                onChange={(e) => {
+                                    const cleaned = cleanValue(e.target.value);
+                                    if (cleaned !== null) handleOffsetInputChange("height", cleaned);
+                                }}
                                 onKeyDown={(e) => {
                                     if (e.key === "." && String(offsetData.height).includes(".")) {
                                         e.preventDefault();
@@ -203,11 +220,12 @@ export const OffsetShapeInputs: React.FC<OffsetShapeInputsProps> = ({
                                 id="offset-base1-input"
                                 type="text"
                                 value={offsetData.base1}
-                                maxLength={4}
+                                maxLength={7}
                                 onFocus={(e) => e.target.select()}
-                                onChange={(e) =>
-                                    handleOffsetInputChange("base1", e.target.value.slice(0, 4))
-                                }
+                                onChange={(e) => {
+                                    const cleaned = cleanValue(e.target.value);
+                                    if (cleaned !== null) handleOffsetInputChange("base1", cleaned);
+                                }}
                                 onKeyDown={(e) => {
                                     if (e.key === "." && String(offsetData.base1).includes(".")) {
                                         e.preventDefault();
@@ -230,11 +248,12 @@ export const OffsetShapeInputs: React.FC<OffsetShapeInputsProps> = ({
                                 id="offset-base2-input"
                                 type="text"
                                 value={offsetData.base2}
-                                maxLength={4}
+                                maxLength={7}
                                 onFocus={(e) => e.target.select()}
-                                onChange={(e) =>
-                                    handleOffsetInputChange("base2", e.target.value.slice(0, 4))
-                                }
+                                onChange={(e) => {
+                                    const cleaned = cleanValue(e.target.value);
+                                    if (cleaned !== null) handleOffsetInputChange("base2", cleaned);
+                                }}
                                 onKeyDown={(e) => {
                                     if (e.key === "." && String(offsetData.base2).includes(".")) {
                                         e.preventDefault();
@@ -257,11 +276,12 @@ export const OffsetShapeInputs: React.FC<OffsetShapeInputsProps> = ({
                                 id="offset-height-input-trap"
                                 type="text"
                                 value={offsetData.height}
-                                maxLength={4}
+                                maxLength={7}
                                 onFocus={(e) => e.target.select()}
-                                onChange={(e) =>
-                                    handleOffsetInputChange("height", e.target.value.slice(0, 4))
-                                }
+                                onChange={(e) => {
+                                    const cleaned = cleanValue(e.target.value);
+                                    if (cleaned !== null) handleOffsetInputChange("height", cleaned);
+                                }}
                                 onKeyDown={(e) => {
                                     if (e.key === "." && String(offsetData.height).includes(".")) {
                                         e.preventDefault();
@@ -288,11 +308,12 @@ export const OffsetShapeInputs: React.FC<OffsetShapeInputsProps> = ({
                             id="offset-radius-input"
                             type="text"
                             value={offsetData.radius}
-                            maxLength={4}
+                            maxLength={7}
                             onFocus={(e) => e.target.select()}
-                            onChange={(e) =>
-                                handleOffsetInputChange("radius", e.target.value.slice(0, 4))
-                            }
+                            onChange={(e) => {
+                                const cleaned = cleanValue(e.target.value);
+                                if (cleaned !== null) handleOffsetInputChange("radius", cleaned);
+                            }}
                             onKeyDown={(e) => {
                                 if (e.key === "." && String(offsetData.radius).includes(".")) {
                                     e.preventDefault();
