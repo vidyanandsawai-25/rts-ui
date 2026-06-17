@@ -12,6 +12,8 @@ import { getCombinePropertyColumns, getCombinePropertyHistoryColumns, PropertyRo
 import { MasterTable } from '@/components/common/MasterTable';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { PropertyType } from '@/types/property-type.types';
+import { PagedResponse } from '@/types/common.types';
+import { CombinePropertyHistoryDetails } from './CombinePropertyHistoryDetails';
 import { CombinePropertyFilterBar } from './CombinePropertyFilterBar';
 import { CombinePropertyReviewSection } from './CombinePropertyReviewSection';
 import { StatusBadge } from '@/components/common/StatusBadge';
@@ -31,7 +33,8 @@ interface CombinePropertyFormProps {
   selectedWardNo?: string;
   selectedPropertyNo?: string;
   showHistory?: boolean;
-  historyData?: PropertyCombineDetails[];
+  historyData?: PagedResponse<PropertyCombineDetails>;
+  historyDetailsData?: PagedResponse<PropertyCombineDetails>;
   initialReviewData?: PropertyCombineDetails[];
 }
 
@@ -65,9 +68,10 @@ export default function CombinePropertyForm(props: CombinePropertyFormProps) {
     selectedWardId,
     selectedWardNo,
     selectedPropertyNo,
-    showHistory = false,
-    historyData = [],
-    initialReviewData = [],
+    showHistory,
+    historyData,
+    historyDetailsData,
+    initialReviewData,
   } = props;
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -133,8 +137,21 @@ export default function CombinePropertyForm(props: CombinePropertyFormProps) {
 
   const historyColumns = useMemo(() => getCombinePropertyHistoryColumns(
     t as unknown as (key: string) => string, 
-    (row) => router.push(`${pathname}/${row.propertyId}`)
-  ), [t, router, pathname]);
+    (row) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set('detailsPropertyId', String(row.propertyId));
+      params.set('detailsPage', '1');
+      params.set('detailsSize', '10');
+      router.push(`${pathname}?${params.toString()}`);
+    }
+  ), [t, router, pathname, searchParams]);
+
+  const handleHistoryTableChange = (page: number, pageSize: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('historyPage', String(page));
+    params.set('historySize', String(pageSize));
+    router.push(`${pathname}?${params.toString()}`);
+  };
 
   /* ---- Options ---- */
   const BASE_PROPERTY_OPTIONS = useMemo<SearchSelectOption[]>(() => {
@@ -267,15 +284,24 @@ export default function CombinePropertyForm(props: CombinePropertyFormProps) {
           handleProceed();
         }}
         onShowHistory={handleShowHistory}
-        showHistory={showHistory}
+        showHistory={!!showHistory}
       />
 
       {showHistory ? (
         <div className="px-4 py-4 flex flex-col gap-4">
           <MasterTable<HistoryRow>
             columns={historyColumns}
-            data={historyData as HistoryRow[]}
-            paginationConfig={{ enabled: false }}
+            data={(historyData?.items || []) as HistoryRow[]}
+            paginationConfig={{
+              enabled: true,
+              showPageSizeSelector: true,
+            }}
+            pageNumber={historyData?.pageNumber || 1}
+            pageSize={historyData?.pageSize || 10}
+            totalCount={historyData?.totalCount || 0}
+            totalPages={historyData?.totalPages || 0}
+            onPageChange={(page) => handleHistoryTableChange(page, historyData?.pageSize || 10)}
+            onPageSizeChange={(size) => handleHistoryTableChange(historyData?.pageNumber || 1, size)}
             height="md"
             getRowKey={(row, i) => `history-${row.propertyId || 0}-${i}`}
             emptyText={t('emptyTableText')}
@@ -299,6 +325,10 @@ export default function CombinePropertyForm(props: CombinePropertyFormProps) {
           remarkError={remarkError}
           setRemark={setRemark}
         />
+      )}
+
+      {searchParams.has('detailsPropertyId') && historyDetailsData && (
+        <CombinePropertyHistoryDetails historyDetails={historyDetailsData} />
       )}
     </Drawer>
   );
