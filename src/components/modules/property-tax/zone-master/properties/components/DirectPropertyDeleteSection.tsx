@@ -43,7 +43,6 @@ function DirectPropertyDeleteSectionInner({
         variant: "delete",
         title: t("createProperty.deletePropertyConfirm"),
         description: t("createProperty.deleteSinglePropertyDesc"),
-        meta: { id: rowPropertyId, name: rowPropertyNo || rowPropertyId },
         onConfirm: async () => {
           setIsDeleting(true);
           try {
