@@ -7,10 +7,11 @@ import { Button } from '@/components/common';
 
 interface RuleBuilderHeaderProps {
   locale: string;
+  onBackClick?: () => void;
 }
 
 /** Displays the Rule Engine page header with icon, title, and back button. */
-export default function RuleBuilderHeader({ locale }: RuleBuilderHeaderProps) {
+export default function RuleBuilderHeader({ locale, onBackClick }: RuleBuilderHeaderProps) {
   const t = useTranslations('ruleEngine');
   const router = useRouter();
 
@@ -32,7 +33,7 @@ export default function RuleBuilderHeader({ locale }: RuleBuilderHeaderProps) {
         type="button"
         variant="secondary"
         icon={ArrowLeft}
-        onClick={() => router.push(`/${locale}/property-tax/rule-engine`)}
+        onClick={onBackClick || (() => router.push(`/${locale}/property-tax/rule-engine`))}
         className="h-10 px-4 font-bold text-slate-900 border-slate-300 hover:bg-slate-100 hover:text-blue-700 transition-all shadow-sm"
       >
         {t('header.backToList')}
