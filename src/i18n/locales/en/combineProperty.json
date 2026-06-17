@@ -50,7 +50,7 @@
   "confirmCombineDiffOwnerTitle": "Owner Names are Different",
   "confirmCombineDiffOwnerDesc": "Owner names are different for the selected properties. Do you want to combine? Click Combine to proceed or Cancel to abort.",
   "propertyTypeMismatchAlert": "Selected properties have different property types. Please select a property type from the dropdown to proceed.",
-  "remarkLabel": "Remark",
+  "remarkLabel": "Combine Remark",
   "remarkPlaceholder": "Enter remark for combining properties",
   "remarkRequiredError": "Please enter a remark",
   "cannotUncheckBaseProperty": "Cannot uncheck the primary property",
@@ -66,8 +66,11 @@
     "description": "Please wait while we fetch the property data"
   },
   "combinePropertyHistory": "Combine Property History Details",
+  "combinePropertyDetails": "Combine Property Details",
   "viewDetails": "View Details",
   "action": "Action",
   "showHistory": "Show History",
-  "hideHistory": "Hide History"
+  "hideHistory": "Hide History",
+  "basePropertyTooltip": "This is the base property",
+  "combinePropertyTooltip": "This property we are combining in base property"
 }
