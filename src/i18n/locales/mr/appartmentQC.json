@@ -164,6 +164,7 @@
   "oldTotalTax": "जुना एकूण कर",
   "newTotalTax": "नवीन एकूण कर",
   "newTaxTotalCV": "नवीन कर एकूण (CV)",
+  "newTaxTotalRV": "नवीन कर एकूण (RV)",
   "totalTaxCV": "एकूण कर (CV)",
   "rateableValue": "करयोग्य मूल्य",
   "capitalValue": "भांडवली मूल्य"
