@@ -146,7 +146,7 @@ describe('useTaxTableColumns', () => {
       expect(result.current[3].align).toBe('center');
     });
 
-    it('should have amber background on Total header', () => {
+    it('should have correct styling on Total header', () => {
       const { result } = renderHook(() => 
         useTaxTableColumns({
           taxColumns: mockTaxColumns,
@@ -157,7 +157,8 @@ describe('useTaxTableColumns', () => {
       );
 
       const totalColumn = result.current[result.current.length - 1];
-      expect(totalColumn.headerClassName).toContain('bg-amber-100');
+      expect(totalColumn.headerClassName).toContain('border-gray-300');
+      expect(totalColumn.headerClassName).toContain('font-bold');
     });
   });
 
