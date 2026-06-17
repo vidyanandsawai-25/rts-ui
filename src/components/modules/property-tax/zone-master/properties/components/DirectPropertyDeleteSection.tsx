@@ -38,7 +38,7 @@ function DirectPropertyDeleteSectionInner({
   const [isDeleting, setIsDeleting] = useState(false);
 
   const createDeleteHandler = useCallback(
-    (rowPropertyId: string, rowPropertyNo: string, callback: () => void) => () => {
+    (rowPropertyId: string, callback: () => void) => () => {
       confirm({
         variant: "delete",
         title: t("createProperty.deletePropertyConfirm"),
@@ -109,7 +109,7 @@ function DirectPropertyDeleteSectionInner({
         return (
           <IconOnlyActionButton
             icon={Trash2}
-            onClick={createDeleteHandler(item.propertyId, item.propertyNo, callback)}
+            onClick={createDeleteHandler(item.propertyId, callback)}
             aria-label={t("createProperty.deletePropertyConfirm")}
             variant="ghost"
             size="sm"
