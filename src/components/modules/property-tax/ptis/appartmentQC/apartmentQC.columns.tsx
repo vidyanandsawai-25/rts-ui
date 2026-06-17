@@ -85,7 +85,7 @@ const COLUMN_FULL_NAME_KEYS: Record<string, string> = {
   oldConstArea: "tooltips.oldConstArea",
   capitalValue: "tooltips.capitalValue",
   oldTotalTax: "tooltips.oldTotalTax",
-  newTaxTotal: "tooltips.newTaxTotal",
+  // newTaxTotal: "tooltips.newTaxTotal",
   newTaxTotalRV: "tooltips.newTaxTotalRV",
   newTaxTotalCV: "tooltips.newTaxTotalCV",
   mobileNo: "tooltips.mobileNo",
@@ -96,12 +96,37 @@ const COLUMN_FULL_NAME_KEYS: Record<string, string> = {
 };
 
 // Wrapper to add header tooltips with full names from translations
-const withHeaderTooltips = <T,>(columns: Column<T>[], t: (key: string) => string): Column<T>[] =>
-  columns.map((col) => ({
-    ...col,
-    // Use full name from tooltips translations if available, otherwise use the label
-    headerTooltip: COLUMN_FULL_NAME_KEYS[col.key] ? t(COLUMN_FULL_NAME_KEYS[col.key]) : col.label,
-  }));
+const withHeaderTooltips = <T,>(
+  columns: Column<T>[],
+  t: (key: string) => string
+): Column<T>[] =>
+  columns.map((col) => {
+    let tooltip: string | undefined;
+
+    // 1. If headerTooltip is a STRING → use it directly
+    if (typeof col.headerTooltip === "string") {
+      tooltip = col.headerTooltip;
+    }
+
+    // 2. If headerTooltip is TRUE → use translation mapping
+    else if (col.headerTooltip === true) {
+      tooltip = COLUMN_FULL_NAME_KEYS[col.key]
+        ? t(COLUMN_FULL_NAME_KEYS[col.key])
+        : col.label;
+    }
+
+    // 3. If undefined → fallback to mapping or label
+    else {
+      tooltip = COLUMN_FULL_NAME_KEYS[col.key]
+        ? t(COLUMN_FULL_NAME_KEYS[col.key])
+        : col.label;
+    }
+
+    return {
+      ...col,
+      headerTooltip: tooltip,
+    };
+  });
 // Helper function to render comma-separated values with count & tooltip
 const renderMultiRecord = (value: unknown): React.ReactNode => {
   if (value === null || typeof value === 'undefined') return '-';
@@ -192,7 +217,7 @@ export const getApartmentQCColumns = (activeMainTab: string, activeSubTab: strin
   if (activeMainTab === 'commercial') {
     if (activeSubTab === 'dual-method') {
       return withHeaderTooltips([
-        { key: "propertyNo", label:(t("columns.partitionNo")) },
+        { key: "propertyNo", label: (t("columns.partitionNo")) },
         { key: "oldPropertyNo", label: t("columns.oldPropertyNo") },
         { key: "wing", label: t("columns.wingName") },
         { key: "flatOrShopNo", label: t("columns.shopNo") },
@@ -204,8 +229,13 @@ export const getApartmentQCColumns = (activeMainTab: string, activeSubTab: strin
         },
         { key: "occupierName", label: t("columns.occupierName") },
         { key: "flatOrShopName", label: t("columns.shopName") },
-         { key: "ocDate", label: t("columns.ocDate") },
+        { key: "ocDate", label: t("columns.ocDate") },
         { key: "oldRV", label: t("columns.oldRV") },
+        {
+          key: "oldTotalTax",
+          label: t("columns.oldTax"),
+          headerTooltip: t("tooltips.oldRV") // 👈 THIS is what you want
+        },
         { key: "rateableValue", label: t("columns.newRV") },
         { key: "rentMonthly", label: t("columns.rent") },
         { key: "renterName", label: t("columns.renterName") },
@@ -217,7 +247,7 @@ export const getApartmentQCColumns = (activeMainTab: string, activeSubTab: strin
         { key: "constructionYear", label: t("columns.surveyConstructionYear"), render: renderMultiRecord },
         { key: "constructionType", label: t("columns.constructionType"), render: renderMultiRecordMax2 },
         { key: "toiletCount", label: t("columns.toiletCount") },
-       { key: 'carpetArea', label: t("columns.carpetAreaSqFtMtr") },
+        { key: 'carpetArea', label: t("columns.carpetAreaSqFtMtr") },
         // { key: "carpetAreaSqMtr", label: t("columns.carpetAreaSqMtr") },
         { key: 'builtupArea', label: t("columns.builtupAreaSqFtMtr") },
         // { key: "builtupASqMtr", label: t("columns.builtupAreaSqMtr") },
@@ -239,11 +269,16 @@ export const getApartmentQCColumns = (activeMainTab: string, activeSubTab: strin
         { key: "oldPropertyNo", label: t("columns.oldPropertyNo") },
         { key: "wing", label: t("columns.wingName") },
         { key: "flatOrShopNo", label: t("columns.shopNo") },
-         { key: "ocDate", label: t("columns.ocDate") },
+        { key: "ocDate", label: t("columns.ocDate") },
         { key: "oldRV", label: t("columns.oldRV") },
+        // {
+        //   key: "oldTotalTax",
+        //   label: t("columns.oldTax"),
+        //   headerTooltip: t("tooltips.oldRV") // 👈 THIS is what you want
+        // },
         { key: "rateableValue", label: t("columns.newRV") },
-        { key: "ownerName", label: t("columns.ownerName"), render: renderOwnerName ,cellClassName: "text-left min-w-[220px] max-w-[220px]",},
-         { key: "ocDate", label: t("columns.ocDate") },
+        { key: "ownerName", label: t("columns.ownerName"), render: renderOwnerName, cellClassName: "text-left min-w-[220px] max-w-[220px]", },
+        { key: "ocDate", label: t("columns.ocDate") },
         { key: "oldRV", label: t("columns.oldRV") },
         { key: "rateableValue", label: t("columns.newRV") },
         { key: "occupierName", label: t("columns.occupierName") },
@@ -261,9 +296,9 @@ export const getApartmentQCColumns = (activeMainTab: string, activeSubTab: strin
         { key: "constructionYear", label: t("columns.conYear"), render: renderMultiRecord },
         { key: "constructionType", label: t("columns.conType"), render: renderMultiRecordMax2 },
         { key: "toiletCount", label: t("columns.toiletCount") },
-       { key: 'carpetArea', label: t("columns.carpetAreaSqFtMtr") },
+        { key: 'carpetArea', label: t("columns.carpetAreaSqFtMtr") },
         // { key: "carpetASqMtr", label: t("columns.carpetASqMtr") },
-         { key: 'builtupArea', label: t("columns.builtupAreaSqFtMtr") },
+        { key: 'builtupArea', label: t("columns.builtupAreaSqFtMtr") },
         // { key: "builtupASqMtr", label: t("columns.builtupAreaSqMtr") },
         { key: "oldConstArea", label: t("columns.oldConstArea") },
         { key: "oldRV", label: t("columns.oldRVCV") },
@@ -280,10 +315,17 @@ export const getApartmentQCColumns = (activeMainTab: string, activeSubTab: strin
         { key: "oldPropertyNo", label: t("columns.oldPropertyNo") },
         { key: "wing", label: t("columns.wingName") },
         { key: "flatOrShopNo", label: t("columns.shopNo") },
-        { key: "ownerName", label: t("columns.ownerName"),render: renderOwnerName,
-          cellClassName: "text-left min-w-[220px] max-w-[220px]", },
-         { key: "ocDate", label: t("columns.ocDate") },
+        {
+          key: "ownerName", label: t("columns.ownerName"), render: renderOwnerName,
+          cellClassName: "text-left min-w-[220px] max-w-[220px]",
+        },
+        { key: "ocDate", label: t("columns.ocDate") },
         { key: "oldRV", label: t("columns.oldRV") },
+        // {
+        //   key: "oldTotalTax",
+        //   label: t("columns.oldTax"),
+        //   headerTooltip: t("tooltips.oldRV") // 👈 THIS is what you want
+        // },
         { key: "rateableValue", label: t("columns.newRV") },
         { key: "occupierName", label: t("columns.occupierName") },
         { key: "flatOrShopName", label: t("columns.shopName") },
@@ -297,10 +339,10 @@ export const getApartmentQCColumns = (activeMainTab: string, activeSubTab: strin
         { key: "constructionYear", label: t("columns.conYear"), render: renderMultiRecord },
         { key: "constructionType", label: t("columns.conType"), render: renderMultiRecordMax2 },
         { key: "toiletCount", label: t("columns.toiletCount") },
-       { key: 'carpetArea', label: t("columns.carpetAreaSqFtMtr") },
-       // { key: "carpetASqMtr", label: t("columns.carpetASqMtr") },
-         { key: 'builtupArea', label: t("columns.builtupAreaSqFtMtr") },
-       // { key: "builtupASqMtr", label: t("columns.builtupASqMtr") },
+        { key: 'carpetArea', label: t("columns.carpetAreaSqFtMtr") },
+        // { key: "carpetASqMtr", label: t("columns.carpetASqMtr") },
+        { key: 'builtupArea', label: t("columns.builtupAreaSqFtMtr") },
+        // { key: "builtupASqMtr", label: t("columns.builtupASqMtr") },
         { key: "oldConstArea", label: t("columns.oldConstArea") },
         // { key: "oldRV", label: t("columns.oldRV") },
         // { key: "rateableValue", label: t("columns.newRV") },
@@ -320,8 +362,8 @@ export const getApartmentQCColumns = (activeMainTab: string, activeSubTab: strin
         { key: "oldPropertyNo", label: t("columns.oldPropertyNo") },
         { key: "wing", label: t("columns.wingName") },
         { key: "flatOrShopNo", label: t("columns.flatNo") },
-        { key: "ownerName", label: t("columns.ownerName") , render: renderOwnerName ,cellClassName: "text-left min-w-[220px] max-w-[220px]",},
-         { key: "ocDate", label: t("columns.ocDate") },
+        { key: "ownerName", label: t("columns.ownerName"), render: renderOwnerName, cellClassName: "text-left min-w-[220px] max-w-[220px]", },
+        { key: "ocDate", label: t("columns.ocDate") },
         { key: "oldRV", label: t("columns.oldRV") },
         { key: "rateableValue", label: t("columns.newRV") },
         { key: "occupierName", label: t("columns.occupierName") },
@@ -336,10 +378,10 @@ export const getApartmentQCColumns = (activeMainTab: string, activeSubTab: strin
         { key: "constructionType", label: t("columns.constructionType"), render: renderMultiRecordMax2 },
         { key: "bhk", label: t("columns.bhk") },
         { key: "toiletCount", label: t("columns.toiletCount") },
-       { key: 'carpetArea', label: t("columns.carpetAreaSqFtMtr") },
-       // { key: "carpetAreaSqMtr", label: t("columns.carpetAreaSqMtr") },
+        { key: 'carpetArea', label: t("columns.carpetAreaSqFtMtr") },
+        // { key: "carpetAreaSqMtr", label: t("columns.carpetAreaSqMtr") },
         { key: "builtupArea", label: t("columns.builtupAreaSqFtMtr") },
-       // { key: "builtupAreaSqMtr", label: t("columns.builtupAreaSqMtr") },
+        // { key: "builtupAreaSqMtr", label: t("columns.builtupAreaSqMtr") },
         { key: "oldConstArea", label: t("columns.oldConstArea") },
         { key: "oldRV", label: t("columns.oldRV") },
         // { key: "oldTotalTax", label: t("columns.oldTax") },
@@ -357,8 +399,8 @@ export const getApartmentQCColumns = (activeMainTab: string, activeSubTab: strin
         { key: "oldPropertyNo", label: t("columns.oldPropertyNo") },
         { key: "wing", label: t("columns.wingName") },
         { key: "flatOrShopNo", label: t("columns.flatNo") },
-        { key: "ownerName", label: t("columns.ownerName"), render: renderOwnerName ,cellClassName: "text-left min-w-[220px] max-w-[220px]",},
-         { key: "ocDate", label: t("columns.ocDate") },
+        { key: "ownerName", label: t("columns.ownerName"), render: renderOwnerName, cellClassName: "text-left min-w-[220px] max-w-[220px]", },
+        { key: "ocDate", label: t("columns.ocDate") },
         { key: "oldRV", label: t("columns.oldRV") },
         { key: "rateableValue", label: t("columns.newRV") },
         { key: "occupierName", label: t("columns.occupierName") },
@@ -373,10 +415,10 @@ export const getApartmentQCColumns = (activeMainTab: string, activeSubTab: strin
         { key: "constructionType", label: t("columns.conType"), render: renderMultiRecordMax2 },
         { key: "bhk", label: t("columns.bhk") },
         { key: "toiletCount", label: t("columns.toiletCount") },
-       { key: 'carpetArea', label: t("columns.carpetAreaSqFtMtr") },
-       // { key: "carpetASqMtr", label: t("columns.carpetAreaSqMtr") },
+        { key: 'carpetArea', label: t("columns.carpetAreaSqFtMtr") },
+        // { key: "carpetASqMtr", label: t("columns.carpetAreaSqMtr") },
         { key: 'builtupArea', label: t("columns.builtupAreaSqFtMtr") },
-       // { key: "builtupASqMtr", label: t("columns.builtupAreaSqMtr") },
+        // { key: "builtupASqMtr", label: t("columns.builtupAreaSqMtr") },
         { key: "oldConstArea", label: t("columns.oldConstArea") },
         { key: "oldRV", label: t("columns.oldRVCV") },
         { key: "capitalValue", label: t("columns.newCV") },
@@ -392,8 +434,8 @@ export const getApartmentQCColumns = (activeMainTab: string, activeSubTab: strin
         { key: "oldPropertyNo", label: t("columns.oldPropertyNo") },
         { key: "wing", label: t("columns.wingName") },
         { key: "flatOrShopNo", label: t("columns.flatNo") },
-        { key: "ownerName", label: t("columns.ownerName"), render: renderOwnerName ,cellClassName: "text-left min-w-[220px] max-w-[220px]", },
-         { key: "ocDate", label: t("columns.ocDate") },
+        { key: "ownerName", label: t("columns.ownerName"), render: renderOwnerName, cellClassName: "text-left min-w-[220px] max-w-[220px]", },
+        { key: "ocDate", label: t("columns.ocDate") },
         { key: "oldRV", label: t("columns.oldRV") },
         { key: "rateableValue", label: t("columns.newRV") },
         { key: "occupierName", label: t("columns.occupierName") },
@@ -409,8 +451,8 @@ export const getApartmentQCColumns = (activeMainTab: string, activeSubTab: strin
         { key: "bhk", label: t("columns.bhk") },
         { key: "toiletCount", label: t("columns.toiletCount") },
         { key: 'carpetArea', label: t("columns.carpetAreaSqFtMtr") },
-       // { key: "carpetASqMtr", label: t("columns.carpetASqMtr") },
-       { key: 'builtupArea', label: t("columns.builtupAreaSqFtMtr") },
+        // { key: "carpetASqMtr", label: t("columns.carpetASqMtr") },
+        { key: 'builtupArea', label: t("columns.builtupAreaSqFtMtr") },
         //{ key: "builtupASqMtr", label: t("columns.builtupASqMtr") },
         { key: "oldConstArea", label: t("columns.oldConstArea") },
         // { key: "oldRV", label: t("columns.oldRV") },
@@ -432,9 +474,9 @@ export const getApartmentQCColumns = (activeMainTab: string, activeSubTab: strin
     { key: 'constructionYear', label: t("columns.conYear"), render: renderMultiRecord },
     { key: 'typeOfUse', label: t("columns.use"), render: renderMultiRecord },
     { key: 'apartmentType', label: t("columns.apartmentType"), render: renderMultiRecord },
-     { key: 'ocDate', label: t("columns.ocDate") },
-     { key: 'oldRV', label: t("columns.oldRV") },
-     { key: 'newRV', label: t("columns.newRV") },
+    { key: 'ocDate', label: t("columns.ocDate") },
+    { key: 'oldRV', label: t("columns.oldRV") },
+    { key: 'newRV', label: t("columns.newRV") },
     { key: 'carpetArea', label: t("columns.carpetAreaSqFtMtr") },
     { key: 'builtupArea', label: t("columns.builtupAreaSqFtMtr") },
     { key: 'oldConstArea', label: t("columns.oldConA") },
