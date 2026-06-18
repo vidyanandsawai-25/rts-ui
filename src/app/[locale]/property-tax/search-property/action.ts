@@ -79,29 +79,46 @@ function filterByPropertyNumberRange(
   results: SearchResult[],
   searchCriteria: SearchCriteria
 ): SearchResult[] {
-  const from = parsePositiveInteger(searchCriteria.propertyNoFrom);
-  let to = parsePositiveInteger(searchCriteria.propertyNoTo);
+  const fromRaw = searchCriteria.propertyNoFrom?.trim() || "";
+  let toRaw = searchCriteria.propertyNoTo?.trim() || "";
 
-  if (from != null && to == null) {
-    to = from;
+  if (fromRaw && !toRaw) {
+    toRaw = fromRaw;
   }
 
-  if (from == null && to == null) {
+  if (!fromRaw && !toRaw) {
     return results;
   }
 
+  const [fromPropNoStr, ...fromPartArr] = fromRaw.split("-");
+  const fromPart = fromPartArr.join("-").trim();
+  const fromPropNo = parsePositiveInteger(fromPropNoStr);
+
+  const [toPropNoStr, ...toPartArr] = toRaw.split("-");
+  const toPart = toPartArr.join("-").trim();
+  const toPropNo = parsePositiveInteger(toPropNoStr);
+
   return results.filter((item) => {
-    const propertyNo = parseNumericPart(item.propertyNo || "");
-    if (propertyNo == null) {
-      return false;
+    const itemPropNo = parseNumericPart(item.propertyNo || "");
+    const itemPart = item.partitionNo?.trim() || "";
+
+    if (itemPropNo == null) return false;
+
+    // Filter by property number bounds
+    if (fromPropNo != null && itemPropNo < fromPropNo) return false;
+    if (toPropNo != null && itemPropNo > toPropNo) return false;
+
+    // Filter by partition number if property numbers match exactly the bounds
+    if (fromPropNo != null && itemPropNo === fromPropNo && fromPart) {
+      if (itemPart.localeCompare(fromPart, undefined, { numeric: true, sensitivity: 'base' }) < 0) {
+        return false;
+      }
     }
 
-    if (from != null && propertyNo < from) {
-      return false;
-    }
-
-    if (to != null && propertyNo > to) {
-      return false;
+    if (toPropNo != null && itemPropNo === toPropNo && toPart) {
+      if (itemPart.localeCompare(toPart, undefined, { numeric: true, sensitivity: 'base' }) > 0) {
+        return false;
+      }
     }
 
     return true;

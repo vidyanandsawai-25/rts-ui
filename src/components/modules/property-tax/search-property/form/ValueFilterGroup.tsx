@@ -95,7 +95,7 @@ export function ValueFilterGroup({
     <div className="flex items-start gap-x-1.5">
       {/* Filter Type dropdown */}
       <div className="flex min-w-0 flex-col w-44 shrink-0">
-        <div className="mb-1 flex items-center justify-between gap-1">
+        <div className="mb-1 h-[18px] flex items-center justify-between gap-1">
           <Label htmlFor={String(filterField)} className={COMPACT_LABEL_CLASS}>
             {title}
           </Label>
@@ -124,7 +124,7 @@ export function ValueFilterGroup({
 
       {/* Amount / Top Count */}
       <div className="flex min-w-0 flex-col w-36 shrink-0">
-        <div className="mb-1 flex items-center justify-between gap-1">
+        <div className="mb-1 h-[18px] flex items-center justify-between gap-1">
           <Label htmlFor={String(fromField)} className={COMPACT_LABEL_CLASS}>
             {amountLabel}
           </Label>
@@ -168,7 +168,7 @@ export function ValueFilterGroup({
       {/* To Amount — only when "between" */}
       {isBetween && (
         <div className="flex min-w-0 flex-col w-36 shrink-0">
-          <div className="mb-1 flex items-center justify-between gap-1">
+          <div className="mb-1 h-[18px] flex items-center justify-between gap-1">
             <Label htmlFor={String(toField)} className={COMPACT_LABEL_CLASS}>
               {t("placeholders.toAmount")}
             </Label>

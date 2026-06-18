@@ -28,10 +28,10 @@ export function LookupInput({
 
   return (
     <div className="flex flex-col w-full">
-      <div className="mb-1 flex items-center justify-between gap-1">
+      <div className="mb-1 h-[18px] flex items-center justify-between gap-1">
         <Label
           htmlFor={id}
-          className={COMPACT_LABEL_CLASS}
+          className={cn(COMPACT_LABEL_CLASS, "flex items-center gap-1 h-full")}
           title={tooltip ?? (typeof label === "string" ? label : undefined)}
         >
           {label}

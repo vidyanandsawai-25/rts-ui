@@ -122,8 +122,11 @@ export function buildPropertySearchPayload(
   const criteria = applyTabSearchCriteria(searchCriteria, activeTab);
 
   if (activeTab === "quick-search") {
-    let propertyNoFrom = criteria.propertyNoFrom || undefined;
-    let propertyNoTo = criteria.propertyNoTo || propertyNoFrom || undefined;
+    const propertyNoFromRaw = criteria.propertyNoFrom || undefined;
+    const propertyNoToRaw = criteria.propertyNoTo || propertyNoFromRaw || undefined;
+
+    let propertyNoFrom = propertyNoFromRaw ? propertyNoFromRaw.split("-")[0] : undefined;
+    let propertyNoTo = propertyNoToRaw ? propertyNoToRaw.split("-")[0] : undefined;
 
     // If both from and to are specified and they are different, we do not pass them to the API payload
     // to avoid the broken backend string range comparison (e.g. "50" to "100").
@@ -133,12 +136,18 @@ export function buildPropertySearchPayload(
       propertyNoTo = undefined;
     }
 
+    let upicId = criteria.upicId || undefined;
+    const scanQR = criteria.scanQR?.trim();
+    if (scanQR && scanQR.length === 15) {
+      upicId = scanQR;
+    }
+
     return withUnpagedResults({
       ...payload,
       propertyNoFrom,
       propertyNoTo,
       oldPropertyNo: criteria.oldPropertyNo || undefined,
-      upicId: criteria.upicId || undefined,
+      upicId,
       citySurveyNo: criteria.citySurveyNo || undefined,
       subZoneNo: criteria.subZoneNo || undefined,
       plotNo: criteria.plotNo || undefined,
