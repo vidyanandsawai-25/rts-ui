@@ -1,7 +1,7 @@
 'use client';
 
 import React, { type ReactNode, useState, useMemo } from 'react';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ChevronRight, ChevronDown, ArrowUpDown, ArrowUp, ArrowDown, Home, type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { Tooltip } from './Tooltip';
@@ -208,6 +208,7 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
   renderHeader,
   renderFooter,
 }: FloorDetailsTableProps<Row>) {
+  const router = useRouter();
   const expandedRowIdSet = new Set(expandedRowIds.map(String));
 
   const [sortConfig, setSortConfig] = useState<{
@@ -387,6 +388,7 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
                   hoverable && 'hover:bg-blue-50/50',
                   bgClass
                 );
+              const expandHref = getExpandHref ? getExpandHref(row) : undefined;
 
               return (
                 <React.Fragment key={row.id}>
@@ -400,20 +402,22 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
                         )}
                       >
                         <div className="flex items-center justify-center">
-                          {getExpandHref ? (
-                            <Link
-                              href={getExpandHref(row)}
-                              scroll={false}
+                          {expandHref ? (
+                            <button
+                              onClick={() => {
+                                router.push(expandHref, { scroll: false });
+                              }}
+                              data-href={expandHref}
                               aria-label={expandedLabel}
                               aria-expanded={isExpanded}
-                              className="rounded border border-gray-300 p-0.5 transition-colors hover:border-blue-500 bg-white shadow-sm"
+                              className="rounded border border-gray-300 p-0.5 transition-colors hover:border-blue-500 bg-white shadow-sm cursor-pointer"
                             >
                               {isExpanded ? (
                                 <ChevronDown className="h-3 w-3 text-gray-700" />
                               ) : (
                                 <ExpandIcon className="h-3 w-3 text-gray-700" />
                               )}
-                            </Link>
+                            </button>
                           ) : (
                             <div className="h-3 w-3" />
                           )}

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { PropertySocietyDetailsApiItem } from '@/types/property-society-details.types';
-import { useDigitInputs } from './useDigitInputs';
-import { SOCIETY_VALIDATION_RULES } from '@/lib/utils/kyc-validation/kyc-validation.constants';
+import { SOCIETY_VALIDATION_RULES } from '@/lib/utils/society-validation/society-validation';
+import { useDigitInputs } from '@/hooks/useDigitInputs';
 
 export const useSocietyFormState = (societyData: PropertySocietyDetailsApiItem | null) => {
     // Use useDigitInputs hook for mobile number fields

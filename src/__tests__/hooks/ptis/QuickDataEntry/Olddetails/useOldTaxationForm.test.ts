@@ -193,4 +193,20 @@ describe('useOldTaxationForm', () => {
 
     expect(result.current.isRequiredFieldsValid).toBe(false);
   });
+
+  it('should only show errors after attemptedSubmit is true', () => {
+    const { result } = renderHook(() => useOldTaxationForm(mockPropertyOldDetails));
+
+    // Initially attemptedSubmit is false, so errors shouldn't show even if field is changed and invalid
+    act(() => {
+      result.current.handleInputChange('oldPlotArea', '');
+    });
+    expect(result.current.showError('oldPlotArea', false)).toBe(false);
+
+    // Call handleUpdate to trigger attemptedSubmit = true
+    act(() => {
+      result.current.handleUpdate();
+    });
+    expect(result.current.showError('oldPlotArea', false)).toBe(true);
+  });
 });

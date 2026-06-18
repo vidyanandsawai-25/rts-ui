@@ -1,7 +1,15 @@
 import { Input, SearchSelect } from "@/components/common";
 import { Label } from "@/components/common/label";
-import { societyValidators, SOCIETY_VALIDATION_RULES, propertyValidators } from '@/lib/utils/kyc-validation/kyc-validation.constants';
-import { sanitizeEmailStrict, sanitizeName, sanitizeAddress, capitalizeEachWord } from '@/lib/utils/input-sanitization';
+import {
+    societyValidators,
+    SOCIETY_VALIDATION_RULES
+} from '@/lib/utils/society-validation/society-validation';
+import {
+    sanitizeEmailStrict,
+    sanitizeName,
+    sanitizeAddress,
+    capitalizeEachWord
+} from '@/lib/utils/input-sanitization';
 import { useTranslations } from "next-intl";
 
 interface SocietyGeneralFieldsProps {
@@ -208,7 +216,7 @@ export const SocietyGeneralFields = ({
                         value={societyAddress}
                         placeholder={t('society.societyAddressPlaceholder')}
                         maxLength={SOCIETY_VALIDATION_RULES.ADDRESS_MAX_LENGTH}
-                        className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${showError('societyAddress', !societyAddress || propertyValidators.isValidAddress(societyAddress))
+                        className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${showError('societyAddress', !societyAddress || societyValidators.isValidAddress(societyAddress))
                             ? 'border-red-300 focus:border-red-500'
                             : ''
                             }`}
@@ -222,7 +230,7 @@ export const SocietyGeneralFields = ({
                             }
                         }}
                     />
-                    {showError('societyAddress', !societyAddress || propertyValidators.isValidAddress(societyAddress)) && (
+                    {showError('societyAddress', !societyAddress || societyValidators.isValidAddress(societyAddress)) && (
                         <span className="text-xs text-red-500">
                             {t('society.validation.societyAddress')}
                         </span>

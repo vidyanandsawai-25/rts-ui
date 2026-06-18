@@ -8,7 +8,6 @@ import {
     sanitizeSurveyNo,
     sanitizeSubZoneNo,
     sanitizePlotArea,
-    sanitizePositiveInteger,
 } from '@/lib/utils/input-sanitization';
 
 interface UsePropertyChangesProps {
@@ -33,8 +32,6 @@ export const usePropertyChanges = ({
     const checkFormChanges = useCallback(() => {
         if (!formRef.current) return;
         const formData = new FormData(formRef.current);
-        const residentialToilets = parseOptionalNumber(formData.get("noOfResidentialToilets"));
-        const commercialToilets = parseOptionalNumber(formData.get("noOfCommercialToilets"));
         const plotArea = parseOptionalNumber(formData.get("plotArea"));
         const taxZoneIdFromForm = parseOptionalNumber(formData.get("taxZoneId"));
 
@@ -44,8 +41,6 @@ export const usePropertyChanges = ({
             String(formData.get("flatOrShopNo") ?? "").trim() !== (propertyData?.flatOrShopNo ?? "") ||
             String(formData.get("surveyNo") ?? "").trim() !== (propertyData?.surveyNo ?? "") ||
             String(formData.get("subZoneNo") ?? "").trim() !== (propertyData?.subZoneNo ?? "") ||
-            residentialToilets !== (propertyData?.noOfResidentialToilets ?? null) ||
-            commercialToilets !== (propertyData?.noOfCommercialToilets ?? null) ||
             plotArea !== (propertyData?.plotArea ?? null) ||
             categoryId !== (propertyData?.categoryId ?? null) ||
             propertyTypeId !== (propertyData?.propertyTypeId ?? null) ||
@@ -56,8 +51,6 @@ export const usePropertyChanges = ({
         const surveyNo = sanitizeSurveyNo(String(formData.get("surveyNo") ?? ""));
         const subZoneNo = sanitizeSubZoneNo(String(formData.get("subZoneNo") ?? ""));
         const plotAreaStr = sanitizePlotArea(String(formData.get("plotArea") ?? ""));
-        const resToiletsStr = sanitizePositiveInteger(String(formData.get("noOfResidentialToilets") ?? ""));
-        const commToiletsStr = sanitizePositiveInteger(String(formData.get("noOfCommercialToilets") ?? ""));
         const taxZoneId = String(formData.get("taxZoneId") ?? "");
 
         const isValid =
@@ -67,8 +60,6 @@ export const usePropertyChanges = ({
             propertyValidators.isValidPlotArea(plotAreaStr) &&
             propertyValidators.isValidSurveyNo(surveyNo) &&
             propertyValidators.isValidSubZoneNo(subZoneNo) &&
-            propertyValidators.isValidPositiveNumber(resToiletsStr) &&
-            propertyValidators.isValidPositiveNumber(commToiletsStr) &&
             (taxZoneId !== '');
 
         setHasChanges(isChanged && isValid);

@@ -317,6 +317,8 @@
         "totalCarpetAreafmtr": "Total Carpet Area (sq.m)",
         "buildupArea": "Buildup Area (sq.ft)",
         "builtupAreaSqMeter": "Buildup Area (sq.m)",
+        "totalCarpetAreaWithUnit": "Total Carpet Area (sq.ft / sq.m)",
+        "buildupAreaWithUnit": "Total Buildup Area (sq.ft / sq.m)",
         "selectType": "Select type",
         "select": "Select",
         "residential": "Residential",
@@ -471,6 +473,7 @@
             "invalidAadhar": "Aadhar number must be exactly 12 digits",
             "invalidAadharStart": "Aadhar number cannot start with 0 or 1.",
             "invalidAddress": "Invalid address. Only letters, numbers, and common punctuation (. , - / #) are allowed. Special characters like *()_++_)(&&^%$@!~}{};  are not permitted.",
+            "invalidPinCode": "Pin code must be exactly 6 digits",
             "invalidRepeatedSequence": "Repeated number sequences are not allowed",
             "pleaseFixErrors": "Please fix the highlighted validation errors before submitting."
         },

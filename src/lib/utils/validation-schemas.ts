@@ -28,7 +28,8 @@ import {
 import { validateForm } from './validation-helpers';
 import { DateUtils } from './date-helpers';
 import { translateDevanagariDigits } from './input-sanitization';
-import { PROPERTY_VALIDATION_RULES, kycValidators, societyValidators } from './kyc-validation/kyc-validation.constants';
+import { PROPERTY_VALIDATION_RULES, kycValidators } from './kyc-validation/kyc-validation.constants';
+import { societyValidators } from './society-validation/society-validation';
 import type { Validator } from './validation-helpers';
 import type { OfficeFormModel } from '@/types/office.types';
 import type {

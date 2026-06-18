@@ -5,11 +5,11 @@ import { useTranslations } from "next-intl";
 import { useConfirm } from "@/components/common";
 import { PropertyOldDetailsApiItem } from "@/types/OldDetails/property-old-details.types";
 import { updatePropertyOldDetailsAction } from "@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/OldDetails/old-taxation/action";
-import { 
-  sanitizePlotArea, 
-  sanitizePropertyPartitionNo, 
-  sanitizeZoneName, 
-  sanitizeWardNo, 
+import {
+  sanitizePlotArea,
+  sanitizePropertyPartitionNo,
+  sanitizeZoneName,
+  sanitizeWardNo,
   sanitizeEgovNo,
   sanitizePlotNo,
   translateDevanagariDigits
@@ -42,7 +42,7 @@ export function useOldTaxationForm(propertyOldDetails: PropertyOldDetailsApiItem
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
 
-  const isChanged = 
+  const isChanged =
     translateDevanagariDigits(formData.oldZoneNo) !== translateDevanagariDigits(propertyOldDetails?.oldZoneNo ?? "") ||
     translateDevanagariDigits(formData.oldWardNo) !== translateDevanagariDigits(propertyOldDetails?.oldWardNo ?? "") ||
     translateDevanagariDigits(formData.oldPropertyNo) !== translateDevanagariDigits(propertyOldDetails?.oldPropertyNo ?? "") ||
@@ -57,18 +57,18 @@ export function useOldTaxationForm(propertyOldDetails: PropertyOldDetailsApiItem
     translateDevanagariDigits(formData.oldGeneralTax || "0") !== (propertyOldDetails?.oldGeneralTax?.toString() ?? "0") ||
     formData.oldTotalTax !== (propertyOldDetails?.oldTotalTax ?? 0);
 
-  const isRequiredFieldsValid = 
+  const isRequiredFieldsValid =
     formData.oldZoneNo.trim().length > 0 &&
     formData.oldWardNo.trim().length > 0 &&
     formData.oldPropertyNo.trim().length > 0 &&
     isValidDecimalField(translateDevanagariDigits(formData.oldPlotArea));
-
   /**
    * Helper to determine if an error should be shown for a specific field
    */
   const showError = useCallback((_field: string, isValid: boolean) => {
-    return (attemptedSubmit || isChanged) && !isValid;
-  }, [attemptedSubmit, isChanged]);
+    return attemptedSubmit && !isValid;
+  }, [attemptedSubmit]);
+
 
   const handleUpdate = () => {
     const isZoneValid = formData.oldZoneNo.trim().length > 0;
@@ -77,7 +77,7 @@ export function useOldTaxationForm(propertyOldDetails: PropertyOldDetailsApiItem
     const isPlotAreaValid = isValidDecimalField(translateDevanagariDigits(formData.oldPlotArea));
 
     setAttemptedSubmit(true);
-    
+
     if (!isZoneValid || !isWardValid || !isPropertyValid || !isPlotAreaValid) {
       toast.error(t("oldDetails.validation.fillRequiredFields"));
       return;
@@ -115,7 +115,7 @@ export function useOldTaxationForm(propertyOldDetails: PropertyOldDetailsApiItem
 
   const handleInputChange = (key: keyof typeof formData, value: string | number) => {
     let sanitizedValue = value;
-    
+
     // Apply sanitization based on field type
     if (typeof value === 'string') {
       let tempValue = value;
@@ -136,10 +136,10 @@ export function useOldTaxationForm(propertyOldDetails: PropertyOldDetailsApiItem
         sanitizedValue = sanitizeEgovNo(tempValue);
       } else if (key === 'oldPlotNo') {
         sanitizedValue = sanitizePlotNo(tempValue);
-      } else if (key === 'oldConstructionArea' || key === 'oldRV' || key === 'oldALV' || key === 'oldGeneralTax') {        
-         sanitizedValue = sanitizePlotArea(tempValue);
+      } else if (key === 'oldConstructionArea' || key === 'oldRV' || key === 'oldALV' || key === 'oldGeneralTax') {
+        sanitizedValue = sanitizePlotArea(tempValue);
       }
-    }    
+    }
     setFormData(prev => ({ ...prev, [key]: sanitizedValue }));
   };
 

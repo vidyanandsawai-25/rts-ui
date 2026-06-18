@@ -1,9 +1,9 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { useKycForm } from '@/hooks/useKycForm';
 import { toast } from 'sonner';
 import * as kycActions from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Kyc/action';
 import { KycDetails, OwnerTypeApiItem } from '@/types/property-kyc.types';
+import { useKycForm } from '@/hooks/ptis/QuickDataEntry/kyc/useKycForm';
 
 // Mock dependencies
 vi.mock('sonner', () => ({
@@ -42,6 +42,7 @@ describe('useKycForm', () => {
     flatOrShopNoEnglish: null,
     addressEnglish: null,
     locationEnglish: null,
+    pinCode: '123456',
   };
 
   const mockOwnerTypes: OwnerTypeApiItem[] = [
@@ -75,6 +76,7 @@ describe('useKycForm', () => {
       expect(result.current.formData.ownerTitle).toBe('Mr.');
       expect(result.current.formData.ownerName).toBe('John Doe');
       expect(result.current.formData.emailId).toBe('john@example.com');
+      expect(result.current.formData.pinCode).toBe('123456');
     });
 
     it('should initialize with empty data when KycDetailsData is null', () => {
@@ -89,6 +91,7 @@ describe('useKycForm', () => {
 
       expect(result.current.formData.ownerName).toBe('');
       expect(result.current.formData.emailId).toBe('');
+      expect(result.current.formData.pinCode).toBe('');
     });
 
     it('should initialize mobile input with KYC mobile number', () => {
@@ -181,6 +184,21 @@ describe('useKycForm', () => {
 
       expect(result.current.hasChanges).toBe(false);
     });
+
+    it('should detect changes when pincode is modified', () => {
+      const { result } = renderHook(() =>
+        useKycForm(defaultProps, mockT, mockConfirm, mockRouter)
+      );
+
+      act(() => {
+        result.current.setFormData((prev) => ({
+          ...prev,
+          pinCode: '654321',
+        }));
+      });
+
+      expect(result.current.hasChanges).toBe(true);
+    });
   });
 
   describe('canSubmit validation', () => {
@@ -241,6 +259,21 @@ describe('useKycForm', () => {
 
       act(() => {
         result.current.aadharInput.setDigits(['1', '2', '3', '', '', '', '', '', '', '', '', '']);
+      });
+
+      expect(result.current.canSubmit()).toBe(false);
+    });
+
+    it('should prevent submission with invalid pincode', () => {
+      const { result } = renderHook(() =>
+        useKycForm(defaultProps, mockT, mockConfirm, mockRouter)
+      );
+
+      act(() => {
+        result.current.setFormData((prev) => ({
+          ...prev,
+          pinCode: '12345',
+        }));
       });
 
       expect(result.current.canSubmit()).toBe(false);
@@ -337,6 +370,7 @@ describe('useKycForm', () => {
           emailId: 'john@example.com',
           mobileNo: '9876543210',
           adharCardNo: '223456789012',
+          pinCode: '123456',
         }),
         'en'
       );
