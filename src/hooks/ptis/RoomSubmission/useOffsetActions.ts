@@ -192,9 +192,19 @@ export const useOffsetActions = (state: RoomSubmissionState, handleEdit: (idx: n
     });
   };
 
+  const handleOffsetClose = useCallback(() => {
+    // If no offset data was saved (currentRoomOffsets is empty), revert offsetMinus to "No"
+    if (state.currentRoomOffsets.length === 0) {
+      setFormData(prev => ({ ...prev, offsetMinus: "No" }));
+    }
+    setOffsetModalOpen(false);
+    setOffsetList([]);
+    setOffsetData(INITIAL_OFFSET_DATA);
+  }, [state.currentRoomOffsets, setFormData, setOffsetModalOpen, setOffsetList, setOffsetData]);
+
   return {
     handleOpenOffset, handleSubtractClick, handleAddClick, handleOffsetInputChange,
-    handleShapeChange, handleAddOffset, handleOffsetOk, handleDeleteOffset,
+    handleShapeChange, handleAddOffset, handleOffsetOk, handleDeleteOffset, handleOffsetClose,
     calculateAdjustedRoomTotal
   };
 };

@@ -448,10 +448,14 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
         initialPhotos={initialPhotos}
       >
         <div className="flex flex-col gap-6 w-full">
-          <PropertyTabSection
+         <PropertyTabSection
             initialData={initialData}
             initialWardId={resolvedWardId}
-            initialTab={activeTab}
+            initialTab={
+              ptisParams.tab === 'apartment'
+                ? 'societydetails'
+                : activeTab
+            }
             initialError={initialError}
           />
           <PtisMainScreen

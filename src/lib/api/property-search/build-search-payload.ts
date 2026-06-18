@@ -47,14 +47,15 @@ function getValuesDuesAmountFields(criteria: SearchCriteria): {
 }
 
 function parsePositiveNumber(value: string): number | undefined {
-  const parsed = Number(value);
+  const clean = value.replace(/,/g, "").trim();
+  const parsed = Number(clean);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
 }
 
 function parseAmount(value: string): number | undefined {
-  const trimmed = value.trim();
-  if (!trimmed) return undefined;
-  const parsed = Number(trimmed);
+  const clean = value.replace(/,/g, "").trim();
+  if (!clean) return undefined;
+  const parsed = Number(clean);
   return Number.isFinite(parsed) ? parsed : undefined;
 }
 
@@ -121,8 +122,17 @@ export function buildPropertySearchPayload(
   const criteria = applyTabSearchCriteria(searchCriteria, activeTab);
 
   if (activeTab === "quick-search") {
-    const propertyNoFrom = criteria.propertyNoFrom || undefined;
-    const propertyNoTo = criteria.propertyNoTo || propertyNoFrom || undefined;
+    let propertyNoFrom = criteria.propertyNoFrom || undefined;
+    let propertyNoTo = criteria.propertyNoTo || propertyNoFrom || undefined;
+
+    // If both from and to are specified and they are different, we do not pass them to the API payload
+    // to avoid the broken backend string range comparison (e.g. "50" to "100").
+    // The filtering will be done completely SSR on the Next.js server in the action.
+    if (propertyNoFrom && propertyNoTo && propertyNoFrom !== propertyNoTo) {
+      propertyNoFrom = undefined;
+      propertyNoTo = undefined;
+    }
+
     return withUnpagedResults({
       ...payload,
       propertyNoFrom,

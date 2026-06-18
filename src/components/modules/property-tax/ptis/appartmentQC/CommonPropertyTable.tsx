@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useCallback, useState } from "react";
+import { useMemo, useCallback, useState, type MouseEventHandler } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
 import { MasterTable, Column } from "@/components/common/MasterTable";
@@ -48,7 +48,7 @@ function ApartmentSortButton({
 }: {
   label: string;
   sortDirection: SortDirection;
-  onClick?: () => void;
+  onClick?: MouseEventHandler<HTMLButtonElement>;
   ariaLabel: string;
 }) {
   const Icon = sortDirection === "asc" ? ArrowUp : sortDirection === "desc" ? ArrowDown : ArrowUpDown;
