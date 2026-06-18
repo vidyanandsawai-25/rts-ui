@@ -49,13 +49,13 @@ import { Tooltip } from "@/components/common/Tooltip";
 // };
 
 
-export type Column<T = any> = {
+export type Column<T = Record<string, unknown>> = {
   key: string;
   label: string;
   headerTooltip?: boolean | string;
   cellClassName?: string;
   headerClassName?: string;
-  render?: (value: any, row?: T) => React.ReactNode;
+  render?: (value: unknown, row?: T) => React.ReactNode;
 };
 
 // Mapping of column keys to their full tooltip translation keys

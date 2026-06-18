@@ -15,6 +15,8 @@ import { TEXT_SANITIZE } from "@/lib/utils/validation";
 import { ExportIconButton, EyeIconButton } from "@/components/common/ActionButtons";
 import { Button } from "@/components/common/ActionButton";
 
+type ColumnWithTooltip<T extends Record<string, unknown>> = Column<T> & { headerTooltip?: boolean | string };
+
 // Map column keys to filter fields
 const FILTERABLE_COLUMNS: Record<string, FilterField> = {
   'wing': 'wing',
@@ -197,9 +199,10 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
       );
 
       // Wrap with tooltip if headerTooltip is provided
-      const headerContent = (col as any).headerTooltip ? (
+      const colWithTooltip = col as ColumnWithTooltip<T>;
+      const headerContent = colWithTooltip.headerTooltip ? (
         <Tooltip
-          content={<div className="max-w-xs text-xs whitespace-normal">{typeof (col as any).headerTooltip === 'string' ? (col as any).headerTooltip : columnLabel}</div>}
+          content={<div className="max-w-xs text-xs whitespace-normal">{typeof colWithTooltip.headerTooltip === 'string' ? colWithTooltip.headerTooltip : columnLabel}</div>}
           placement="top"
         >
           <span className="cursor-help">{sortButton}</span>
@@ -248,7 +251,7 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
           );
         },
       };
-    }), [columns, activeFilters, onFilterChange, onFetchFilterOptions]);
+    }), [columns, activeFilters, onFilterChange, onFetchFilterOptions, onSort, sortBy, sortOrder, tCommon]);
 
   const filteredData = useMemo(() => {
     if (!searchQuery.trim()) return data;
