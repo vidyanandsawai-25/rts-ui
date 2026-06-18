@@ -1,6 +1,6 @@
 import { Input } from "@/components/common";
 import { Label } from "@/components/common/label";
-import { SOCIETY_VALIDATION_RULES, societyValidators, kycValidators } from '@/lib/utils/kyc-validation.constants';
+import { SOCIETY_VALIDATION_RULES, societyValidators, kycValidators } from '@/lib/utils/kyc-validation/kyc-validation.constants';
 import { sanitizeEmailStrict, sanitizeName, capitalizeEachWord } from '@/lib/utils/input-sanitization';
 import { useDigitInputs } from '@/hooks/useDigitInputs';
 
@@ -21,6 +21,8 @@ interface SocietyContactFieldsProps {
             'landOwnerName' | 'builderName' | 'societyName' | 'managerName' | 'secretaryName',
         isValid: boolean
     ) => boolean;
+    onFocusField: (field: string) => void;
+    onBlurField: () => void;
 }
 
 export const SocietyContactFields = ({
@@ -36,6 +38,8 @@ export const SocietyContactFields = ({
     secretaryName,
     setSecretaryName,
     showError,
+    onFocusField,
+    onBlurField,
 }: SocietyContactFieldsProps) => {
     const getMobileErrorMessage = (value: string): string => {
         const digits = value.replace(/\D/g, '');
@@ -66,6 +70,8 @@ export const SocietyContactFields = ({
                         ? 'border-red-300 focus:border-red-500'
                         : ''
                         }`}
+                    onFocus={() => onFocusField('managerName')}
+                    onBlur={onBlurField}
                     onChange={(e) => {
                         // Sanitize to remove invalid characters immediately
                         const sanitized = sanitizeName(e.target.value);
@@ -96,6 +102,8 @@ export const SocietyContactFields = ({
                         ? 'border-red-300 focus:border-red-500'
                         : ''
                         }`}
+                    onFocus={() => onFocusField('managerEmail')}
+                    onBlur={onBlurField}
                     onChange={(e) => {
                         const sanitized = sanitizeEmailStrict(e.target.value);
                         if (sanitized.length <= SOCIETY_VALIDATION_RULES.EMAIL_MAX_LENGTH) {
@@ -132,6 +140,8 @@ export const SocietyContactFields = ({
                                 value={managerMobileInput.digits[i]}
                                 onChange={(e) => managerMobileInput.handleChange(i, e.target.value)}
                                 onKeyDown={(e) => managerMobileInput.handleKeyDown(i, e)}
+                                onFocus={managerMobileInput.handleFocus}
+                                onBlur={managerMobileInput.handleBlur}
                                 ref={managerMobileInput.setRef(i)}
                                 naked
                                 className={`flex-1 min-w-0 w-full h-7 text-center text-xs font-semibold text-gray-900 border rounded bg-white outline-none focus:ring-1 ${showError('managerMobile', societyValidators.isValidMobile(managerMobileInput.value))
@@ -159,6 +169,8 @@ export const SocietyContactFields = ({
                         ? 'border-red-300 focus:border-red-500'
                         : ''
                         }`}
+                    onFocus={() => onFocusField('secretaryName')}
+                    onBlur={onBlurField}
                     onChange={(e) => {
                         // Sanitize to remove invalid characters immediately
                         const sanitized = sanitizeName(e.target.value);
@@ -189,6 +201,8 @@ export const SocietyContactFields = ({
                         ? 'border-red-300 focus:border-red-500'
                         : ''
                         }`}
+                    onFocus={() => onFocusField('secretaryEmail')}
+                    onBlur={onBlurField}
                     onChange={(e) => {
                         const sanitized = sanitizeEmailStrict(e.target.value);
                         if (sanitized.length <= SOCIETY_VALIDATION_RULES.EMAIL_MAX_LENGTH) {
@@ -225,6 +239,8 @@ export const SocietyContactFields = ({
                                 value={secretaryMobileInput.digits[i]}
                                 onChange={(e) => secretaryMobileInput.handleChange(i, e.target.value)}
                                 onKeyDown={(e) => secretaryMobileInput.handleKeyDown(i, e)}
+                                onFocus={secretaryMobileInput.handleFocus}
+                                onBlur={secretaryMobileInput.handleBlur}
                                 ref={secretaryMobileInput.setRef(i)}
                                 naked
                                 className={`flex-1 min-w-0 w-full h-7 text-center text-xs font-semibold text-gray-900 border rounded bg-white outline-none focus:ring-1 ${showError('secretaryMobile', societyValidators.isValidMobile(secretaryMobileInput.value))

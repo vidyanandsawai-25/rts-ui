@@ -5,7 +5,7 @@ import { AlertCircle } from "lucide-react";
 import { CreatePropertyFormData, CreatePropertyFormErrors } from "@/types/zone-master/properties/create-property-drawer.types";
 import { useTranslations } from "next-intl";
 import { sanitizeName } from "@/lib/utils/input-sanitization";
-import { KYC_VALIDATION_RULES } from "@/lib/utils/kyc-validation.constants";
+import { KYC_VALIDATION_RULES } from "@/lib/utils/kyc-validation/kyc-validation.constants";
 
 interface BulkCreateSectionProps {
   formData: CreatePropertyFormData;

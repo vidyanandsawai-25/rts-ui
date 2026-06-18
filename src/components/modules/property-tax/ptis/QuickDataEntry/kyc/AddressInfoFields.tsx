@@ -1,7 +1,7 @@
 import React from 'react';
 import { Input } from '@/components/common';
 import { Label } from '@/components/common/label';
-import { KYC_VALIDATION_RULES, enhancedKycValidators } from '@/lib/utils/kyc-validation.constants';
+import { KYC_VALIDATION_RULES, enhancedKycValidators } from '@/lib/utils/kyc-validation/kyc-validation.constants';
 import { sanitizeAddress, sanitizeShopName, capitalizeEachWord, sanitizeEmailStrict } from '@/lib/utils/input-sanitization';
 import { KycFormData } from '@/types/property-kyc.types';
 
@@ -10,6 +10,8 @@ interface AddressInfoFieldsProps {
   formData: KycFormData;
   setFormData: React.Dispatch<React.SetStateAction<KycFormData>>;
   showError: (field: keyof KycFormData, isValid: boolean) => boolean;
+  onFocusField: (field: keyof KycFormData) => void;
+  onBlurField: () => void;
 }
 
 export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
@@ -17,8 +19,9 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
   formData,
   setFormData,
   showError,
+  onFocusField,
+  onBlurField,
 }) => {
-
 
   return (
     <>
@@ -33,9 +36,11 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
           value={formData.flatOrShopName ?? ''}
           maxLength={KYC_VALIDATION_RULES.SHOP_NAME_MAX_LENGTH}
           className={`h-9 text-sm border-gray-300 focus:border-gray-600 focus:ring-2 focus:ring-gray-200 ${showError('flatOrShopName', enhancedKycValidators.isValidShopName(formData.flatOrShopName ?? ''))
-              ? 'border-red-300 focus:border-red-500'
-              : ''
+            ? 'border-red-300 focus:border-red-500'
+            : ''
             }`}
+          onFocus={() => onFocusField('flatOrShopName')}
+          onBlur={onBlurField}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
             // Sanitize to remove invalid characters, allowing realistic shop names with numbers and symbols
             const sanitized = sanitizeShopName(e.target.value);
@@ -63,9 +68,11 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
           value={formData.address ?? ''}
           maxLength={KYC_VALIDATION_RULES.ADDRESS_MAX_LENGTH}
           className={`h-9 text-sm border-gray-300 focus:border-gray-600 focus:ring-2 focus:ring-gray-200 ${showError('address', enhancedKycValidators.isValidAddress(formData.address ?? ''))
-              ? 'border-red-300 focus:border-red-500'
-              : ''
+            ? 'border-red-300 focus:border-red-500'
+            : ''
             }`}
+          onFocus={() => onFocusField('address')}
+          onBlur={onBlurField}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
             // Sanitize to remove invalid characters immediately
             const sanitized = sanitizeAddress(e.target.value);
@@ -96,6 +103,8 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
             ? 'border-red-300 focus:border-red-500'
             : ''
             }`}
+          onFocus={() => onFocusField('emailId')}
+          onBlur={onBlurField}
           onChange={(e) => {
             const sanitized = sanitizeEmailStrict(e.target.value);
             setFormData((prev) => ({ ...prev, emailId: sanitized }));

@@ -5,7 +5,7 @@ import {
   KYC_TITLE_OPTIONS,
   kycValidators,
   enhancedKycValidators,
-} from '@/lib/utils/kyc-validation.constants';
+} from '@/lib/utils/kyc-validation/kyc-validation.constants';
 import { sanitizeName, capitalizeEachWord } from '@/lib/utils/input-sanitization';
 import { KycFormData } from '@/types/property-kyc.types';
 
@@ -15,6 +15,8 @@ interface PersonalInfoFieldsProps {
   setFormData: React.Dispatch<React.SetStateAction<KycFormData>>;
   ownerTypeOptions: { label: string; value: string }[];
   showError: (field: keyof KycFormData, isValid: boolean) => boolean;
+  onFocusField: (field: keyof KycFormData) => void;
+  onBlurField: () => void;
 }
 
 export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
@@ -23,6 +25,8 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
   setFormData,
   ownerTypeOptions,
   showError,
+  onFocusField,
+  onBlurField,
 }) => {
   const titleOptions = [...KYC_TITLE_OPTIONS];
   const ownerNameError = showError(
@@ -31,7 +35,7 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
   );
 
   return (
-    <>     
+    <>
       <div className="col-span-2 space-y-1.5 relative focus-within:z-50">
         <Label htmlFor="kyc-ownertype" className="text-xs font-semibold text-gray-700">
           {t('kyc.ownerType')}
@@ -45,7 +49,7 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
           onChange={(_name, value) => {
             setFormData((prev) => ({
               ...prev,
-              ownerTypeId: value ? Number(value) : null,            
+              ownerTypeId: value ? Number(value) : null,
             }));
           }}
           className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
@@ -79,6 +83,8 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
           value={formData.ownerName ?? ''}
           maxLength={KYC_VALIDATION_RULES.NAME_MAX_LENGTH}
           hasError={ownerNameError}
+          onFocus={() => onFocusField('ownerName')}
+          onBlur={onBlurField}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
             // Sanitize input to remove invalid characters immediately
             const sanitized = sanitizeName(e.target.value);
@@ -110,9 +116,11 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
           placeholder={t('kyc.enterOccupierName')}
           value={formData.occupierName ?? ''}
           className={`h-9 text-sm border-gray-300 focus:border-gray-600 focus:ring-2 focus:ring-gray-200 ${showError('occupierName', enhancedKycValidators.isValidOccupierName(formData.occupierName ?? ''))
-              ? 'border-red-300 focus:border-red-500'
-              : ''
+            ? 'border-red-300 focus:border-red-500'
+            : ''
             }`}
+          onFocus={() => onFocusField('occupierName')}
+          onBlur={onBlurField}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
             // Sanitize to remove invalid characters and numbers immediately
             const sanitized = sanitizeName(e.target.value);

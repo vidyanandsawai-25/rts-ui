@@ -27,7 +27,8 @@ import {
 } from './validation-rules';
 import { validateForm } from './validation-helpers';
 import { DateUtils } from './date-helpers';
-import { PROPERTY_VALIDATION_RULES, kycValidators } from './kyc-validation.constants';
+import { translateDevanagariDigits } from './input-sanitization';
+import { PROPERTY_VALIDATION_RULES, kycValidators, societyValidators } from './kyc-validation/kyc-validation.constants';
 import type { Validator } from './validation-helpers';
 import type { OfficeFormModel } from '@/types/office.types';
 import type {
@@ -63,20 +64,20 @@ export const commonValidations = {
         maxLength?: string;
       }
     ): Validator =>
-    (fieldValue: unknown) => {
-      const strVal = String(fieldValue ?? '').trim();
+      (fieldValue: unknown) => {
+        const strVal = String(fieldValue ?? '').trim();
 
-      const keys = {
-        required: messageKeys?.required || 'form.validation.codeRequired',
-        format: messageKeys?.format || 'form.validation.codeFormat',
-        maxLength: messageKeys?.maxLength || 'form.validation.codeMaxLength',
-      };
+        const keys = {
+          required: messageKeys?.required || 'form.validation.codeRequired',
+          format: messageKeys?.format || 'form.validation.codeFormat',
+          maxLength: messageKeys?.maxLength || 'form.validation.codeMaxLength',
+        };
 
-      if (!strVal) return t(keys.required);
-      if (strVal.length > maxLength) return t(keys.maxLength, { count: maxLength });
-      if (!CODE_REGEX.test(strVal)) return t(keys.format);
-      return undefined;
-    },
+        if (!strVal) return t(keys.required);
+        if (strVal.length > maxLength) return t(keys.maxLength, { count: maxLength });
+        if (!CODE_REGEX.test(strVal)) return t(keys.format);
+        return undefined;
+      },
 
   /**
    * Generic master description validation (multilingual support)
@@ -98,20 +99,20 @@ export const commonValidations = {
         maxLength?: string;
       }
     ): Validator =>
-    (fieldValue: unknown) => {
-      const strVal = String(fieldValue ?? '').trim();
+      (fieldValue: unknown) => {
+        const strVal = String(fieldValue ?? '').trim();
 
-      const keys = {
-        required: messageKeys?.required || 'form.validation.descriptionRequired',
-        format: messageKeys?.format || 'form.validation.descriptionFormat',
-        maxLength: messageKeys?.maxLength || 'form.validation.descriptionMaxLength',
-      };
+        const keys = {
+          required: messageKeys?.required || 'form.validation.descriptionRequired',
+          format: messageKeys?.format || 'form.validation.descriptionFormat',
+          maxLength: messageKeys?.maxLength || 'form.validation.descriptionMaxLength',
+        };
 
-      if (!strVal) return t(keys.required);
-      if (strVal.length > maxLength) return t(keys.maxLength, { count: maxLength });
-      if (!DESCRIPTION_REGEX.test(strVal)) return t(keys.format);
-      return undefined;
-    },
+        if (!strVal) return t(keys.required);
+        if (strVal.length > maxLength) return t(keys.maxLength, { count: maxLength });
+        if (!DESCRIPTION_REGEX.test(strVal)) return t(keys.format);
+        return undefined;
+      },
 
   /**
    * Generic search sequence validation
@@ -125,15 +126,15 @@ export const commonValidations = {
       t: (key: string, values?: Record<string, string | number | Date>) => string,
       messageKey?: string
     ): Validator =>
-    (fieldValue: unknown) => {
-      const numVal = Number(fieldValue);
-      const key = messageKey || 'form.validation.sequenceInvalid';
+      (fieldValue: unknown) => {
+        const numVal = Number(fieldValue);
+        const key = messageKey || 'form.validation.sequenceInvalid';
 
-      if (!Number.isFinite(numVal) || numVal < 0) {
-        return t(key);
-      }
-      return undefined;
-    },
+        if (!Number.isFinite(numVal) || numVal < 0) {
+          return t(key);
+        }
+        return undefined;
+      },
 
   /**
    * Generic active status validation
@@ -149,17 +150,17 @@ export const commonValidations = {
       isEdit: boolean,
       messageKey?: string
     ): Validator =>
-    (fieldValue: unknown) => {
-      // ✅ Explicitly parse boolean values - handles both boolean and string types
-      // Common with HTML inputs/FormData which store booleans as strings
-      const isActive = fieldValue === true || fieldValue === 'true';
-      const key = messageKey || 'form.validation.mustBeActive';
+      (fieldValue: unknown) => {
+        // ✅ Explicitly parse boolean values - handles both boolean and string types
+        // Common with HTML inputs/FormData which store booleans as strings
+        const isActive = fieldValue === true || fieldValue === 'true';
+        const key = messageKey || 'form.validation.mustBeActive';
 
-      if (!isActive && !isEdit) {
-        return t(key);
-      }
-      return undefined;
-    },
+        if (!isActive && !isEdit) {
+          return t(key);
+        }
+        return undefined;
+      },
 
   /**
    * Generic email validation
@@ -172,16 +173,16 @@ export const commonValidations = {
       t: (key: string, values?: Record<string, string | number | Date>) => string,
       messageKey?: string
     ): Validator =>
-    (fieldValue: unknown) => {
-      const strVal = String(fieldValue ?? '').trim();
-      if (!strVal) return undefined; // Optional field, use required check if needed
+      (fieldValue: unknown) => {
+        const strVal = String(fieldValue ?? '').trim();
+        if (!strVal) return undefined; // Optional field, use required check if needed
 
-      const key = messageKey || 'form.validation.invalidEmail';
-      if (!EMAIL_REGEX.test(strVal)) {
-        return t(key);
-      }
-      return undefined;
-    },
+        const key = messageKey || 'form.validation.invalidEmail';
+        if (!EMAIL_REGEX.test(strVal)) {
+          return t(key);
+        }
+        return undefined;
+      },
 
   /**
    * Generic mobile number validation (10 digits)
@@ -194,16 +195,16 @@ export const commonValidations = {
       t: (key: string, values?: Record<string, string | number | Date>) => string,
       messageKey?: string
     ): Validator =>
-    (fieldValue: unknown) => {
-      const strVal = String(fieldValue ?? '').trim();
-      if (!strVal) return undefined; // Optional field
+      (fieldValue: unknown) => {
+        const strVal = String(fieldValue ?? '').trim();
+        if (!strVal) return undefined; // Optional field
 
-      const key = messageKey || 'form.validation.invalidMobile';
-      if (!MOBILE_10_REGEX.test(strVal)) {
-        return t(key);
-      }
-      return undefined;
-    },
+        const key = messageKey || 'form.validation.invalidMobile';
+        if (!MOBILE_10_REGEX.test(strVal)) {
+          return t(key);
+        }
+        return undefined;
+      },
 };
 
 /**
@@ -325,49 +326,49 @@ export const societyValidations = {
       label: string,
       t: (key: string, values?: Record<string, string | number | Date>) => string
     ): Validator =>
-    (value: unknown) => {
-      const strVal = String(value ?? '').trim();
-      if (!strVal) return undefined; // optional field
-      if (!PERSON_NAME_REGEX.test(strVal)) {
-        return t(`society.validation.${label}`);
-      }
-      return undefined;
-    },
+      (value: unknown) => {
+        const strVal = String(value ?? '').trim();
+        if (!strVal) return undefined; // optional field
+        if (!PERSON_NAME_REGEX.test(strVal)) {
+          return t(`society.validation.${label}`);
+        }
+        return undefined;
+      },
 
   email:
     (
       label: string,
       t: (key: string, values?: Record<string, string | number | Date>) => string
     ): Validator =>
-    (value: unknown) => {
-      const strVal = String(value ?? '').trim();
-      if (!strVal) return undefined; // optional field
-      if (!EMAIL_REGEX.test(strVal)) {
-        return t(`society.validation.${label}`);
-      }
-      return undefined;
-    },
+      (value: unknown) => {
+        const strVal = String(value ?? '').trim();
+        if (!strVal) return undefined; // optional field
+        if (!societyValidators.isValidEmail(strVal, true)) {
+          return t(`society.validation.${label}`);
+        }
+        return undefined;
+      },
 
   mobile10:
     (
       _label: string,
       t: (key: string, values?: Record<string, string | number | Date>) => string
     ): Validator =>
-    (value: unknown) => {
-      const strVal = String(value ?? '').trim();
-      if (!strVal) return undefined; // optional field
-      const digits = strVal.replace(/\D/g, '');
-      if (digits.length !== 10) {
-        return t('society.validation.invalidMobile');
-      }
-      if (!/^[6-9]/.test(digits)) {
-        return t('society.validation.invalidMobileStart');
-      }
-      if (kycValidators.hasRepeatedSequence(digits, 5)) {
-        return t('society.validation.invalidRepeatedSequence');
-      }
-      return undefined;
-    },
+      (value: unknown) => {
+        const strVal = String(value ?? '').trim();
+        if (!strVal) return undefined; // optional field
+        const digits = strVal.replace(/\D/g, '');
+        if (digits.length !== 10) {
+          return t('society.validation.invalidMobile');
+        }
+        if (!/^[6-9]/.test(digits)) {
+          return t('society.validation.invalidMobileStart');
+        }
+        if (kycValidators.hasRepeatedSequence(digits, 5)) {
+          return t('society.validation.invalidRepeatedSequence');
+        }
+        return undefined;
+      },
 };
 
 /**
@@ -379,13 +380,13 @@ export const propertyValidations = {
       label: string,
       t: (key: string, values?: Record<string, string | number | Date>) => string
     ): Validator =>
-    (value: unknown) => {
-      const strVal = String(value ?? '').trim();
-      if (!strVal) {
-        return t(`property.validation.${label}Required`);
-      }
-      return undefined;
-    },
+      (value: unknown) => {
+        const strVal = String(value ?? '').trim();
+        if (!strVal) {
+          return t(`property.validation.${label}Required`);
+        }
+        return undefined;
+      },
 
   number:
     (
@@ -393,14 +394,14 @@ export const propertyValidations = {
       t: (key: string, values?: Record<string, string | number | Date>) => string,
       min: number = 0
     ): Validator =>
-    (value: unknown) => {
-      const numVal = Number(value);
-      if (value === null || value === undefined || value === '') return undefined; // optional
-      if (!Number.isFinite(numVal) || numVal < min) {
-        return t(`property.validation.${label}Invalid`, { min });
-      }
-      return undefined;
-    },
+      (value: unknown) => {
+        const numVal = Number(value);
+        if (value === null || value === undefined || value === '') return undefined; // optional
+        if (!Number.isFinite(numVal) || numVal < min) {
+          return t(`property.validation.${label}Invalid`, { min });
+        }
+        return undefined;
+      },
 
   pattern:
     (
@@ -408,14 +409,14 @@ export const propertyValidations = {
       pattern: RegExp,
       t: (key: string, values?: Record<string, string | number | Date>) => string
     ): Validator =>
-    (value: unknown) => {
-      const strVal = String(value ?? '').trim();
-      if (!strVal) return undefined; // optional
-      if (!pattern.test(strVal)) {
-        return t(`property.validation.${label}Invalid`);
-      }
-      return undefined;
-    },
+      (value: unknown) => {
+        const strVal = String(value ?? '').trim();
+        if (!strVal) return undefined; // optional
+        if (!pattern.test(strVal)) {
+          return t(`property.validation.${label}Invalid`);
+        }
+        return undefined;
+      },
 
   year:
     (
@@ -423,11 +424,11 @@ export const propertyValidations = {
       t: (key: string, values?: Record<string, string | number | Date>) => string,
       pattern: RegExp = YEAR_REGEX
     ): Validator =>
-    (value: unknown) => {
-      const requiredError = propertyValidations.required(label, t)(value);
-      if (requiredError) return requiredError;
-      return propertyValidations.pattern(label, pattern, t)(value);
-    },
+      (value: unknown) => {
+        const requiredError = propertyValidations.required(label, t)(value);
+        if (requiredError) return requiredError;
+        return propertyValidations.pattern(label, pattern, t)(value);
+      },
 };
 
 /**
@@ -651,7 +652,7 @@ export const oldDetailsValidations = {
 
     // Additional validation for carpet area - must be a valid finite number > 0
     if (formData.oldAreaSqMeter) {
-      const areaValue = Number(formData.oldAreaSqMeter);
+      const areaValue = Number(translateDevanagariDigits(String(formData.oldAreaSqMeter)));
       if (!Number.isFinite(areaValue) || areaValue <= 0) {
         errors.oldAreaSqMeter = t('property.validation.invalidCarpetArea') || 'Carpet area must be a valid number greater than 0';
       }
@@ -659,7 +660,7 @@ export const oldDetailsValidations = {
 
     // Additional validation for construction year range (1700-2026)
     if (formData.oldConstructionYear) {
-      const year = parseInt(formData.oldConstructionYear, 10);
+      const year = parseInt(translateDevanagariDigits(String(formData.oldConstructionYear)), 10);
       if (!isNaN(year) && (year < PROPERTY_VALIDATION_RULES.MIN_CONSTRUCTION_YEAR || year > PROPERTY_VALIDATION_RULES.MAX_CONSTRUCTION_YEAR)) {
         errors.oldConstructionYear = t('property.validation.constructionYearRange') || 'Construction year must be between 1700 and 2026';
       }
@@ -667,7 +668,7 @@ export const oldDetailsValidations = {
 
     // Additional validation for assessment year range (1700-2026)
     if (formData.oldAssessmentYear) {
-      const year = parseInt(formData.oldAssessmentYear, 10);
+      const year = parseInt(translateDevanagariDigits(String(formData.oldAssessmentYear)), 10);
       if (!isNaN(year) && (year < PROPERTY_VALIDATION_RULES.MIN_CONSTRUCTION_YEAR || year > PROPERTY_VALIDATION_RULES.MAX_CONSTRUCTION_YEAR)) {
         errors.oldAssessmentYear = t('property.validation.assessmentYearRange') || 'Assessment year must be between 1700 and 2026';
       }
@@ -713,7 +714,7 @@ export const oldDetailsValidations = {
       }
     });
 
-    
+
     // String length and required validations
     if (data.oldZoneNo !== undefined) {
       const val = String(data.oldZoneNo).trim();
@@ -886,12 +887,12 @@ export const oldDetailsValidations = {
         if (!year.financeYearId || year.financeYearId <= 0) {
           errors[`taxYears.${index}.financeYearId`] = t('property.validation.financeYearRequired');
         }
-        
+
         // Validate individual tax amounts
         if (year.taxes && Array.isArray(year.taxes)) {
           year.taxes.forEach((tax: OldTaxItem, taxIndex: number) => {
             const taxAmount = Number(tax.taxAmount);
-            
+
             // Check for NaN
             if (isNaN(taxAmount)) {
               errors[`taxYears.${index}.taxes.${taxIndex}.taxAmount`] = t('property.validation.invalidTaxAmount');
@@ -921,7 +922,7 @@ export const oldDetailsValidations = {
       taxYears: (data.taxYears || []).map((year: OldTaxYear) => ({
         ...year,
         financeYearId: Number(year.financeYearId),
-        year: Number(year.year),       
+        year: Number(year.year),
         taxes: (year.taxes || []).map((tax: OldTaxItem) => ({
           ...tax,
           taxId: Number(tax.taxId),
