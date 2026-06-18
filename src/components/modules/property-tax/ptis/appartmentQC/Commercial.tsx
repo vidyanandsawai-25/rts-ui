@@ -76,7 +76,7 @@ const Commercial = ({
   }, [sortBy, sortOrder, updateQueryParams]);
 
   const tAqc = useTranslations("appartmentQC");
-  const columns = useMemo(() => getApartmentQCColumns('commercial', activeTab, tAqc), [activeTab, tAqc]);
+  const columns = useMemo(() => getApartmentQCColumns('commercial', activeTab, tAqc, initialPageNumber, initialPageSize), [activeTab, tAqc, initialPageNumber, initialPageSize]);
   const transformedData = useMemo(() => transformApartmentData(initialData, 'commercial'), [initialData]);
 
   return (

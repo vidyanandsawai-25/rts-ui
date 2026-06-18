@@ -1,7 +1,8 @@
 {
   "columns": {
+    "srNo": "क्र. सं.",
     "propertyNo": "संपत्ति नं",
-    "partitionNo": "विभाजन नं",
+    "partitionNo": "संपत्ति नं",
     "oldPropertyNo": "पुराना संपत्ति नं",
     "wingName": "विंग",
     "shopNo": "फ्लैट नं/दुकान नं",
@@ -18,7 +19,8 @@
     "assessmentYear": "मूल्यांकन वर्ष",
     "asstYear": "मू. वर्ष",
     "constructionYear": "निर्माण वर्ष",
-    "surveyConstructionYear": "सर्वेक्षण निर्माण वर्ष",
+    "OldConstructionYear":"पुराना निर्माण वर्ष",
+    "surveyConstructionYear": "निर्माण वर्ष",
     "conYear": "नि. वर्ष",
     "constructionType": "निर्माण प्रकार",
     "conType": "नि. प्रकार",
@@ -135,6 +137,7 @@
     }
   },
   "tooltips": {
+    "srNo": "क्रम संख्या",
     "propertyNo": "संपत्ति नंबर",
     "oldPropertyNo": "पुराना संपत्ति नंबर", 
     "wing": "विंग नाम",

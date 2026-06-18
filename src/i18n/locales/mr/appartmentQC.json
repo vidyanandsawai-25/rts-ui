@@ -1,7 +1,8 @@
 {
   "columns": {
+    "srNo": "अ. क्र.",
     "propertyNo": "मालमत्ता क्र",
-    "partitionNo": "विभाजन क्र",
+    "partitionNo": "मालमत्ता क्र",
     "oldPropertyNo": "जुना मालमत्ता क्र",
     "wingName": "विंग",
     "shopNo": "फ्लॅट क्र/दुकान क्र",
@@ -18,7 +19,8 @@
     "assessmentYear": "मूल्यांकन वर्ष",
     "asstYear": "मू. वर्ष",
     "constructionYear": "बांधकाम वर्ष",
-    "surveyConstructionYear": "सर्वेक्षण बांधकाम वर्ष",
+    "OldConstructionYear":"जुने बांधकाम वर्ष",
+    "surveyConstructionYear": "बांधकाम वर्ष",
     "conYear": "बां. वर्ष",
     "constructionType": "बांधकाम प्रकार",
     "conType": "बां. प्रकार",
@@ -135,6 +137,7 @@
     }
   },
   "tooltips": {
+    "srNo": "अनुक्रमांक",
     "propertyNo": "मालमत्ता क्र",
     "oldPropertyNo": "जुना मालमत्ता क्र", 
     "wing": "विंग",

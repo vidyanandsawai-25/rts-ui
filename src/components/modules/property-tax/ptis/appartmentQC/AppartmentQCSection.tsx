@@ -153,7 +153,7 @@ const AppartmentQCSection = ({
   }, [activeMainTab, initialData]);
 
   const tAqc = useTranslations("appartmentQC");
-  const columns = useMemo(() => getApartmentQCColumns(activeMainTab, activeSubTab, tAqc), [activeMainTab, activeSubTab, tAqc]);
+  const columns = useMemo(() => getApartmentQCColumns(activeMainTab, activeSubTab, tAqc, activePagedData.pageNumber, activePagedData.pageSize), [activeMainTab, activeSubTab, tAqc, activePagedData.pageNumber, activePagedData.pageSize]);
   const convertedData = useMemo(() => transformApartmentData(activePagedData.items || [], activeMainTab), [activePagedData, activeMainTab]);
 
   const handleRowClick = useCallback((row: Record<string, unknown>) => {
