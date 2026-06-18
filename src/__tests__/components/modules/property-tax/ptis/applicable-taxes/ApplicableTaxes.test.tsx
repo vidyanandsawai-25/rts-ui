@@ -1,5 +1,5 @@
-import { vi, describe, test, expect, beforeEach } from 'vitest';
 import React from 'react';
+import { vi, describe, test, expect, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import ApplicableTaxes from '@/components/modules/property-tax/ptis/applicable-taxes/ApplicableTaxes';
 import ApplicableTaxesTabNavigation from '@/components/modules/property-tax/ptis/applicable-taxes/ApplicableTaxesTabNavigation';
@@ -111,6 +111,7 @@ import type {
   PagedResponse,
   AssessmentYearRangeItem,
   TypeOfUseGroupItem,
+  TaxApplicabilityData,
 } from '@/types/applicable-taxes.types';
 
 interface TaxesTableTemplateProps {
@@ -183,11 +184,30 @@ const mockUseGroupsResponse: PagedResponse<TypeOfUseGroupItem> = {
   hasNext: false,
 };
 
-const mockTaxApplicabilityResponse: TaxApplicabilityItem[] = [
-  { taxId: 10, taxHead: 'Property Tax', taxCode: 'PT01', calculationType: 'Rate based', taxPercentage: 12.5, taxAmount: 0, isApplicable: true, isActive: true },
-  { taxId: 11, taxHead: 'Water Tax', taxCode: 'WT01', calculationType: 'Flat rate', taxPercentage: 5.0, taxAmount: 0, isApplicable: false, isActive: false },
-  { taxId: 12, taxHead: 'Education Cess', taxCode: 'EC01', calculationType: 'Percentage', taxPercentage: 2.0, taxAmount: 0, isApplicable: true, isActive: true },
-];
+const mockTaxApplicabilityPagedResponse: PagedResponse<TaxApplicabilityData> = {
+  items: [
+    {
+      propertyId: 123,
+      financialYearId: 1,
+      typeOfUseGroupId: 2,
+      applicableCount: 2,
+      exemptedCount: 1,
+      applicableTaxes: [
+        { taxId: 10, taxHead: 'Property Tax', taxCode: 'PT01', calculationType: 'Rate based', taxPercentage: 12.5, taxAmount: 0, isApplicable: true, isActive: true },
+        { taxId: 12, taxHead: 'Education Cess', taxCode: 'EC01', calculationType: 'Percentage', taxPercentage: 2.0, taxAmount: 0, isApplicable: true, isActive: true },
+      ],
+      exemptedTaxes: [
+        { taxId: 11, taxHead: 'Water Tax', taxCode: 'WT01', calculationType: 'Flat rate', taxPercentage: 5.0, taxAmount: 0, isApplicable: false, isActive: false },
+      ],
+    }
+  ],
+  totalCount: 3,
+  pageNumber: 1,
+  pageSize: 10,
+  totalPages: 1,
+  hasPrevious: false,
+  hasNext: false,
+};
 
 describe('ApplicableTaxes Screen Suite', () => {
   beforeEach(() => {
@@ -202,9 +222,7 @@ describe('ApplicableTaxes Screen Suite', () => {
         asseYearsResponse={mockAsseYearsResponse}
         useGroupsResponse={mockUseGroupsResponse}
         valuationTab=""
-        taxApplicabilityResponse={mockTaxApplicabilityResponse}
-        applicableCount={2}
-        exemptedCount={1}
+        taxApplicabilityPagedResponse={mockTaxApplicabilityPagedResponse}
       />
     );
 
@@ -230,9 +248,7 @@ describe('ApplicableTaxes Screen Suite', () => {
         asseYearsResponse={mockAsseYearsResponse}
         useGroupsResponse={mockUseGroupsResponse}
         valuationTab=""
-        taxApplicabilityResponse={mockTaxApplicabilityResponse}
-        applicableCount={2}
-        exemptedCount={1}
+        taxApplicabilityPagedResponse={mockTaxApplicabilityPagedResponse}
       />
     );
 
@@ -240,7 +256,7 @@ describe('ApplicableTaxes Screen Suite', () => {
     fireEvent.change(yearSelect, { target: { value: '2' } });
 
     expect(mockReplace).toHaveBeenCalledWith(
-      '/en/property-tax/ptis/applicable-taxes/applicable?propertyId=123&wardNo=W-01&propertyNo=P-100&asseYear=2&floorUse=2'
+      '/en/property-tax/ptis/applicable-taxes/applicable?propertyId=123&wardNo=W-01&propertyNo=P-100&asseYear=2&floorUse=2&pageNumber=1'
     );
   });
 
@@ -250,9 +266,7 @@ describe('ApplicableTaxes Screen Suite', () => {
         asseYearsResponse={mockAsseYearsResponse}
         useGroupsResponse={mockUseGroupsResponse}
         valuationTab=""
-        taxApplicabilityResponse={mockTaxApplicabilityResponse}
-        applicableCount={2}
-        exemptedCount={1}
+        taxApplicabilityPagedResponse={mockTaxApplicabilityPagedResponse}
       />
     );
 
@@ -277,14 +291,32 @@ describe('ApplicableTaxes Screen Suite', () => {
       isActive: true,
     }));
 
+    const largePagedResponse: PagedResponse<TaxApplicabilityData> = {
+      items: [
+        {
+          propertyId: 123,
+          financialYearId: 1,
+          typeOfUseGroupId: 2,
+          applicableCount: 15,
+          exemptedCount: 0,
+          applicableTaxes: largeTaxes.slice(0, 10),
+          exemptedTaxes: [],
+        }
+      ],
+      totalCount: 15,
+      pageNumber: 1,
+      pageSize: 10,
+      totalPages: 2,
+      hasPrevious: false,
+      hasNext: true,
+    };
+
     render(
       <ApplicableTaxes
         asseYearsResponse={mockAsseYearsResponse}
         useGroupsResponse={mockUseGroupsResponse}
         valuationTab=""
-        taxApplicabilityResponse={largeTaxes}
-        applicableCount={15}
-        exemptedCount={0}
+        taxApplicabilityPagedResponse={largePagedResponse}
       />
     );
 
@@ -293,8 +325,9 @@ describe('ApplicableTaxes Screen Suite', () => {
 
     // Click next page button
     fireEvent.click(screen.getByTestId('change-page-btn'));
-    expect(screen.getByTestId('page-number').textContent).toBe('2');
-    expect(screen.getAllByTestId('table-row').length).toBe(5); // Remaining 5 items
+    expect(mockReplace).toHaveBeenCalledWith(
+      expect.stringContaining('pageNumber=2')
+    );
   });
 
   test('Search filter restricts mapped items correctly', () => {
@@ -304,9 +337,7 @@ describe('ApplicableTaxes Screen Suite', () => {
         asseYearsResponse={mockAsseYearsResponse}
         useGroupsResponse={mockUseGroupsResponse}
         valuationTab=""
-        taxApplicabilityResponse={mockTaxApplicabilityResponse}
-        applicableCount={2}
-        exemptedCount={1}
+        taxApplicabilityPagedResponse={mockTaxApplicabilityPagedResponse}
       />
     );
 
@@ -324,9 +355,7 @@ describe('ApplicableTaxes Screen Suite', () => {
         asseYearsResponse={mockAsseYearsResponse}
         useGroupsResponse={mockUseGroupsResponse}
         valuationTab=""
-        taxApplicabilityResponse={mockTaxApplicabilityResponse}
-        applicableCount={2}
-        exemptedCount={1}
+        taxApplicabilityPagedResponse={mockTaxApplicabilityPagedResponse}
       />
     );
 
@@ -359,9 +388,7 @@ describe('ApplicableTaxes Screen Suite', () => {
         asseYearsResponse={mockAsseYearsResponse}
         useGroupsResponse={mockUseGroupsResponse}
         valuationTab=""
-        taxApplicabilityResponse={mockTaxApplicabilityResponse}
-        applicableCount={2}
-        exemptedCount={1}
+        taxApplicabilityPagedResponse={mockTaxApplicabilityPagedResponse}
       />
     );
 
@@ -379,9 +406,7 @@ describe('ApplicableTaxes Screen Suite', () => {
         asseYearsResponse={mockAsseYearsResponse}
         useGroupsResponse={mockUseGroupsResponse}
         valuationTab=""
-        taxApplicabilityResponse={mockTaxApplicabilityResponse}
-        applicableCount={2}
-        exemptedCount={1}
+        taxApplicabilityPagedResponse={mockTaxApplicabilityPagedResponse}
       />
     );
 

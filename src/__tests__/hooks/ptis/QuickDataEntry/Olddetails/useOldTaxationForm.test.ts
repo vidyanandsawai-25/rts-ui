@@ -117,4 +117,80 @@ describe('useOldTaxationForm', () => {
 
     expect(result.current.isChanged).toBe(true);
   });
+
+  it('should support Devanagari digits in input fields and sanitize them correctly', () => {
+    const { result } = renderHook(() => useOldTaxationForm(mockPropertyOldDetails));
+
+    act(() => {
+      result.current.handleInputChange('oldPlotArea', '१५००.२५');
+    });
+    expect(result.current.formData.oldPlotArea).toBe('१५००.२५');
+
+    act(() => {
+      result.current.handleInputChange('oldRV', '५०००');
+    });
+    expect(result.current.formData.oldRV).toBe('५०००');
+  });
+
+  it('should translate Devanagari digits to standard English numbers on submit', async () => {
+    mockConfirm.mockImplementation(({ onConfirm }) => onConfirm());
+    (updatePropertyOldDetailsAction as any).mockResolvedValue({ success: true });
+
+    const { result } = renderHook(() => useOldTaxationForm(mockPropertyOldDetails));
+
+    act(() => {
+      result.current.handleInputChange('oldPlotArea', '१५००.२५');
+      result.current.handleInputChange('oldRV', '५०००');
+    });
+
+    await act(async () => {
+      result.current.handleUpdate();
+    });
+
+    expect(updatePropertyOldDetailsAction).toHaveBeenCalledWith(
+      123,
+      expect.objectContaining({
+        oldPlotArea: 1500.25,
+        oldRV: 5000,
+      }),
+      'en'
+    );
+  });
+
+  it('should compute isChanged as false if equivalent Marathi digits are entered', () => {
+    const { result } = renderHook(() => useOldTaxationForm(mockPropertyOldDetails));
+
+    expect(result.current.isChanged).toBe(false);
+
+    act(() => {
+      // mockPropertyOldDetails has oldPlotArea: 200, oldRV: 500
+      result.current.handleInputChange('oldPlotArea', '२००');
+      result.current.handleInputChange('oldRV', '५००');
+    });
+
+    expect(result.current.isChanged).toBe(false);
+  });
+
+  it('should fail validation and show error toast if Plot Area is empty or invalid', async () => {
+    const { result } = renderHook(() => useOldTaxationForm({ ...mockPropertyOldDetails, oldPlotArea: 0 }));
+
+    await act(async () => {
+      result.current.handleUpdate();
+    });
+
+    expect(mockConfirm).not.toHaveBeenCalled();
+    expect(toast.error).toHaveBeenCalledWith('oldDetails.validation.fillRequiredFields');
+  });
+
+  it('should compute isRequiredFieldsValid correctly when required fields are missing', () => {
+    const { result } = renderHook(() => useOldTaxationForm(mockPropertyOldDetails));
+
+    expect(result.current.isRequiredFieldsValid).toBe(true);
+
+    act(() => {
+      result.current.handleInputChange('oldPlotArea', '');
+    });
+
+    expect(result.current.isRequiredFieldsValid).toBe(false);
+  });
 });

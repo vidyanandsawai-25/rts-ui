@@ -26,6 +26,9 @@ export default async function ApplicablePage({ params, searchParams }: PageProps
   const selectedAsseYear = typeof searchParamsResolved.asseYear === 'string' ? searchParamsResolved.asseYear : '';
   const selectedFloorUse = typeof searchParamsResolved.floorUse === 'string' ? searchParamsResolved.floorUse : '';
 
+  const pageNumber = typeof searchParamsResolved.pageNumber === 'string' ? Number(searchParamsResolved.pageNumber) : 1;
+  const pageSize = typeof searchParamsResolved.pageSize === 'string' ? Number(searchParamsResolved.pageSize) : 10;
+
   const [asseYearsResponse, useGroupsResponse] = await Promise.all([
     getAssessmentYearsAction(valuationTab, 1, -1),
     getUseGroupsAction(1, -1),
@@ -55,21 +58,21 @@ export default async function ApplicablePage({ params, searchParams }: PageProps
       financialYearId,
       typeOfUseGroupId,
       rvOrCv,
+      pageNumber,
+      pageSize,
     });
     if (!taxApplicabilityResult.success) {
       throw new Error(taxApplicabilityResult.error || t("errors.fetchTaxApplicability"));
     }
     taxApplicabilityResponse = taxApplicabilityResult.data || null;
   }
-
+  
   return (
     <ApplicableTaxes
       asseYearsResponse={asseYearsResponse.data ?? null}
       useGroupsResponse={useGroupsResponse.data ?? null}
       valuationTab={valuationTab}
-      taxApplicabilityResponse={taxApplicabilityResponse?.applicableTaxes || []}
-      applicableCount={taxApplicabilityResponse?.applicableCount || 0}
-      exemptedCount={taxApplicabilityResponse?.exemptedCount || 0}
+      taxApplicabilityPagedResponse={taxApplicabilityResponse}
     />
   );
 }

@@ -57,12 +57,12 @@ export const useKycFormSubmission = (
    */
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
+
     // ✅ RACE CONDITION GUARD: Prevent concurrent submissions
     if (isUpdating || isPending) {
       return;
     }
-    
+
     setIsSubmitted(true);
 
     // Validate property ID
@@ -93,8 +93,8 @@ export const useKycFormSubmission = (
               formData.ownerTypeId === null
                 ? null
                 : OwnerTypeMasterList.find(
-                    (item) => item.id === formData.ownerTypeId
-                  )?.ownerType ?? null;
+                  (item) => item.id === formData.ownerTypeId
+                )?.ownerType ?? null;
 
             // Build API payload
             const payload: KycDetails = {

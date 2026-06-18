@@ -38,6 +38,7 @@ const SocietyForm = (props: SocietyFormProps) => {
         canSubmit,
         handleSubmit,
         checkFormChanges,
+        setFocusedField,
     } = useSocietyForm(props);
 
     const t = useTranslations("quickDataEntry");
@@ -77,6 +78,8 @@ const SocietyForm = (props: SocietyFormProps) => {
                             wingOptions={wingOptions}
                             handleWingChange={handleWingChange}
                             showError={showError}
+                            onFocusField={setFocusedField}
+                            onBlurField={() => setFocusedField(null)}
                         />
 
                         <SocietyFormActions
