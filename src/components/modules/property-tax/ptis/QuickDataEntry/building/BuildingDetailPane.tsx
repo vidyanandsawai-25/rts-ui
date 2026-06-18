@@ -13,6 +13,7 @@ interface BuildingDetailPaneProps {
     onInputChange: (field: "number" | "date", value: string) => void;
     onFileUpload: (file: File) => void;
     validationError?: string;
+    fieldErrors?: { number?: string; date?: string; document?: string };
     t: (key: string) => string;
 }
 
@@ -21,6 +22,7 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
     onInputChange,
     onFileUpload,
     validationError,
+    fieldErrors,
     t,
 }) => {
     const { confirm } = useConfirm();
@@ -41,6 +43,7 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
             onFileUpload(file);
         }
     };
+
     if (!data) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[500px] lg:h-[calc(100vh-220px)] bg-gray-50 border border-dashed border-gray-200 rounded-xl p-8 text-center">
@@ -74,13 +77,19 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
     }
 
     const isDisabled = !data.enabled;
-    const isNumberInvalid = !!validationError && (
-        (!data.number || data.number.trim() === "") ||
-        /\s/.test(data.number ?? "") ||
-        validationError.includes("Certificate Number")
+    const isNumberInvalid = fieldErrors ? !!fieldErrors.number : (
+        !!validationError && (
+            (!data.number || data.number.trim() === "") ||
+            /\s/.test(data.number ?? "") ||
+            validationError.includes("Certificate Number")
+        )
     );
-    const isDateInvalid = !!validationError && (!data.date || data.date.trim() === "");
-    const isDocumentInvalid = !!validationError && (!data.documentGuid || data.documentGuid.trim() === "");
+    const isDateInvalid = fieldErrors ? !!fieldErrors.date : (
+        !!validationError && (!data.date || data.date.trim() === "")
+    );
+    const isDocumentInvalid = fieldErrors ? !!fieldErrors.document : (
+        !!validationError && (!data.documentGuid || data.documentGuid.trim() === "")
+    );
 
     return (
         <div className={`flex flex-col min-h-[300px] lg:h-[calc(100vh-340px)] border rounded-xl shadow-sm p-4 justify-between transition-opacity ${
@@ -118,7 +127,7 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
                                         : "bg-white text-gray-800 border-blue-200 focus:border-blue-600 focus:ring-blue-600 hover:border-blue-300"
                             }`}
                         />
-                        {isNumberInvalid && <ValidationMessage message={validationError} />}
+                        {isNumberInvalid && <ValidationMessage message={fieldErrors?.number || validationError} />}
                     </div>
 
                     <div className="space-y-1.5">
@@ -137,7 +146,7 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
                                         : "bg-white text-gray-800 border-blue-200 focus:border-blue-600 focus:ring-blue-600 hover:border-blue-300 cursor-pointer [&::-webkit-calendar-picker-indicator]:cursor-pointer"
                             }`}
                         />
-                        {isDateInvalid && <ValidationMessage message={validationError} />}
+                        {isDateInvalid && <ValidationMessage message={fieldErrors?.date || validationError} />}
                     </div>
                 </div>
 
@@ -149,6 +158,7 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
                         isUploading={data.isUploading}
                         isDisabled={isDisabled}
                         isDocumentInvalid={isDocumentInvalid}
+                        documentError={fieldErrors?.document || validationError}
                         onFileUpload={handleFileUploadWithConfirm}
                         t={t}
                     />

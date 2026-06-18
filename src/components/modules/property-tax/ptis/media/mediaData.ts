@@ -103,7 +103,7 @@ export function mapSlotsToCategories(
   slots: PropertyPhotoTypeWithStatusDto[],
   uploadedPhotos: PropertyPhotoDto[] = [],
   fullyLoadedIds?: Set<number>,
-  t?: (key: string) => string
+  t?: ((key: string) => string) & { has?: (key: string) => boolean }
 ): PhotoCategory[] {
   const systemCodes = ['FRONT', 'FLOOR', 'GIS', 'BACK', 'LIVING', 'KITCHEN', 'BEDROOM', 'BATHROOM', 'BALCONY', 'TERRACE', 'PARKING'];
   const baseCats = slots.map(s => {
@@ -121,6 +121,23 @@ export function mapSlotsToCategories(
       viewUrl: s.viewUrl,
     };
   });
+
+  // Append virtual Change Detection category
+  const hasChangeDetection = baseCats.some(c => c.photoTypeCode === 'CHANGE_DETECTION');
+  if (!hasChangeDetection) {
+    const cdName = t ? (t.has?.('media.changeDetection') ? t('media.changeDetection') : 'Change Detection') : 'Change Detection';
+    baseCats.push({
+      photoTypeId: 9999,
+      photoTypeCode: 'CHANGE_DETECTION',
+      photoTypeName: cdName,
+      isCustom: false,
+      hasPhoto: true,
+      photoCount: 2,
+      propertyPhotoId: undefined,
+      documentGuid: undefined,
+      viewUrl: undefined,
+    });
+  }
 
   return baseCats.map(cat => {
     let catPhotos = uploadedPhotos
@@ -147,6 +164,41 @@ export function mapSlotsToCategories(
         documentGuid: cat.documentGuid?.toString(),
         downloadUrl: cat.documentGuid ? getDownloadDocumentUrl(cat.documentGuid.toString()) : (cat.viewUrl ? cat.viewUrl.replace('/view', '/download') : undefined),
       }];
+    }
+
+    if (cat.photoTypeCode === 'CHANGE_DETECTION') {
+      const uploadedCDPhotos = uploadedPhotos
+        .filter(p => p.photoTypeId === cat.photoTypeId || p.photoTypeCode === 'CHANGE_DETECTION')
+        .sort((a, b) => (a.displayOrder ?? 999) - (b.displayOrder ?? 999))
+        .map(p => mapPropertyPhotoToAdditionalImage(p, cat.photoTypeName));
+
+      const beforePhoto = uploadedCDPhotos.find(p => p.displayOrder === 1);
+      const afterPhoto = uploadedCDPhotos.find(p => p.displayOrder === 2);
+
+      catPhotos = [
+        beforePhoto || {
+          src: '/images/thane-earth-2018.jpg',
+          fullSrc: '/images/thane-earth-2018.jpg',
+          alt: '2018 Satellite View',
+          title: '2018 Satellite View',
+          photoTypeId: cat.photoTypeId,
+          photoTypeCode: 'CHANGE_DETECTION',
+          propertyPhotoId: 9998,
+          hasPhoto: true,
+          displayOrder: 1,
+        },
+        afterPhoto || {
+          src: '/images/thane-earth-2026.jpg',
+          fullSrc: '/images/thane-earth-2026.jpg',
+          alt: '2026 Satellite View',
+          title: '2026 Satellite View',
+          photoTypeId: cat.photoTypeId,
+          photoTypeCode: 'CHANGE_DETECTION',
+          propertyPhotoId: 9999,
+          hasPhoto: true,
+          displayOrder: 2,
+        }
+      ];
     }
 
     return { ...cat, images: catPhotos };
