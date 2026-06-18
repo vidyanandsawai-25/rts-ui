@@ -24,8 +24,8 @@ vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => {
     const map: Record<string, string> = {
       "apartmentTabs.amenities": "Amenities",
-      "apartmentTabs.commercial": "Commercial Details",
-      "apartmentTabs.residential": "Residential Details",
+      "apartmentTabs.commercial": "Commercial Units",
+      "apartmentTabs.residential": "Residential Units",
       "apartmentTabs.rateable": "Rateable",
       "apartmentTabs.capital": "Capital",
       "apartmentTabs.dual": "Dual Method"
@@ -55,8 +55,8 @@ describe('AppartmentQCSection', () => {
   it('renders the correct initial tabs', () => {
     render(<AppartmentQCSection {...mockProps} />);
     expect(screen.getByText('Amenities')).toBeInTheDocument();
-    expect(screen.getByText('Commercial Details')).toBeInTheDocument();
-    expect(screen.getByText('Residential Details')).toBeInTheDocument();
+    expect(screen.getByText('Commercial Units')).toBeInTheDocument();
+    expect(screen.getByText('Residential Units')).toBeInTheDocument();
   });
 
   it('renders table component', () => {

@@ -65,7 +65,7 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = (props) => {
     { value: 'rateable', label: t('tabs.rateable'), activeGradient: 'from-indigo-600 to-purple-600' },
     { value: 'capital', label: t('tabs.capital'), activeGradient: 'from-purple-600 to-pink-600' },
     { value: 'dual', label: t('tabs.dual'), activeGradient: 'from-orange-600 to-red-600' },
-    { value: 'apartment', label: t('tabs.apartment'), activeGradient: 'from-amber-600 to-orange-600' },
+    { value: 'apartment', label: t('tabs.apartment'), activeGradient: 'from-blue-600 to-blue-800'}
   ];
 
   return (

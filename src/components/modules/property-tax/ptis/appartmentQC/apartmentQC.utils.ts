@@ -13,8 +13,8 @@ export const emptyPagedResponse: PagedResponse<ApartmentQCDetail> = {
 
 export const mainTabs = [
   { value: 'amenities', label: 'Amenities', icon: 'Building2' },
-  { value: 'commercial', label: 'Commercial Details', icon: 'Building' },
-  { value: 'residential', label: 'Residential Details', icon: 'Home' },
+  { value: 'commercial', label: 'Commercial Units', icon: 'Building' },
+  { value: 'residential', label: 'Residential Units', icon: 'Home' },
 ];
 
 export const subTabsList = [
