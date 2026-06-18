@@ -2,8 +2,45 @@ import { Column } from '@/components/common/MasterTable';
 import { PropertyCombineDetails } from '@/types/combine-property.types';
 import { Checkbox } from '@/components/common/checkbox';
 import { PreviewButton } from '@/components/common/ActionButtons';
+import { useState } from 'react';
+import { Tooltip } from '@/components/common/Tooltip';
 
 export type PropertyRow = PropertyCombineDetails & Record<string, unknown>;
+
+function ExpandableText({ text }: { text: string }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  if (!text) return <span className="text-gray-400">—</span>;
+
+  const words = text.split(/\s+/);
+  const hasManyWords = words.length > 5;
+  const isSingleVeryLongWord = words.length === 1 && text.length > 25;
+
+  if (!hasManyWords && !isSingleVeryLongWord) {
+    return <span className="text-gray-700">{text}</span>;
+  }
+
+  let displayText = '';
+  if (isExpanded) {
+    displayText = text;
+  } else {
+    if (hasManyWords) {
+      displayText = words.slice(0, 5).join(' ') + '...';
+    } else {
+      displayText = text.substring(0, 25) + '...';
+    }
+  }
+
+  return (
+    <Tooltip content={isExpanded ? 'Click to collapse' : 'Click to expand'}>
+      <span
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="cursor-pointer text-blue-600 hover:text-blue-800 transition-colors font-medium break-all"
+      >
+        {displayText}
+      </span>
+    </Tooltip>
+  );
+}
 
 export const getCombinePropertyColumns = (
   t: (key: string) => string,
@@ -49,32 +86,29 @@ export const getCombinePropertyColumns = (
     ),
   },
   {
-    key: 'wardNo',
-    label: t('ward'),
-    align: 'center',
-    width: '90px',
-    render: (val) => (
-      <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-blue-600 text-white text-[10px] font-bold">
-        {String(val ?? '-')}
-      </span>
-    ),
-  },
-  {
     key: 'propertyNo',
     label: t('propertyNo'),
     align: 'center',
-    width: '100px',
-    render: (val) => (
-      <span className="text-blue-600 font-semibold text-[12px]">
-        {String(val ?? '-')}
-      </span>
-    ),
-  },
-  {
-    key: 'partitionNo',
-    label: t('partitionNo'),
-    align: 'center',
-    width: '100px',
+    width: '180px',
+    render: (_val, row) => {
+      const ward = row.wardNo || '';
+      const prop = row.propertyNo || '';
+      const part = row.partitionNo || '';
+      const displayValue = [ward, prop, part].filter(Boolean).join('-');
+
+      const isBase = String(row.propertyId) === selectedBasePropertyId;
+      const tooltipText = isBase
+        ? t('basePropertyTooltip') || 'This is the base property'
+        : t('combinePropertyTooltip') || 'This property we are combining in base property';
+
+      return (
+        <Tooltip content={tooltipText}>
+          <span className="text-blue-600 font-semibold text-[12px] cursor-pointer inline-block w-full text-center">
+            {displayValue}
+          </span>
+        </Tooltip>
+      );
+    },
   },
   {
     key: 'oldPropertyNo',
@@ -142,9 +176,23 @@ export const getCombinePropertyHistoryColumns = (
   onPreviewClick?: (row: PropertyRow) => void
 ): Column<PropertyRow>[] => {
   const columns: Column<PropertyRow>[] = [
-    { key: 'propertyNo', label: t('propertyNo'), align: 'center', width: '100px' },
-    { key: 'wardNo', label: t('ward'), align: 'center', width: '100px' },
-    { key: 'partitionNo', label: t('partitionNo') || 'Partition No', align: 'center', width: '100px' },
+    {
+      key: 'propertyNo',
+      label: t('propertyNo'),
+      align: 'center',
+      width: '180px',
+      render: (_val, row) => {
+        const ward = row.wardNo || '';
+        const prop = row.propertyNo || '';
+        const part = row.partitionNo || '';
+        const displayValue = [ward, prop, part].filter(Boolean).join('-');
+        return (
+          <span className="text-gray-800 font-semibold text-[12px]">
+            {displayValue}
+          </span>
+        );
+      },
+    },
     { key: 'oldPropertyNo', label: t('oldPropertyNo'), align: 'center', width: '100px' },
     { key: 'propertyDescription', label: t('propertyType'), align: 'left' },
     { key: 'ownerName', label: t('ownerName'), align: 'left' },
@@ -173,7 +221,12 @@ export const getCombinePropertyHistoryColumns = (
         </span>
       ),
     },
-    { key: 'combineReason', label: t('remarkLabel') || 'Reason', align: 'left' },
+    {
+      key: 'combineReason',
+      label: t('remarkLabel') || 'Reason',
+      align: 'left',
+      render: (val) => <ExpandableText text={String(val ?? '')} />,
+    },
   ];
 
   if (onPreviewClick) {

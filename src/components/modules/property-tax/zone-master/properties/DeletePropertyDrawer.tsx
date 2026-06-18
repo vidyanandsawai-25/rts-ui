@@ -13,6 +13,10 @@ import { ZonePropertyItem } from "@/types/zone-master/properties/zoneProperty.ty
 
 import { SelectedPropertyHeaderInfo } from "./components/PropertySelectionSection";
 import { BuildingListItem } from "@/types/zone-master/properties/building-list.types";
+import { DirectPropertyDeleteRow } from "@/types/zoneMaster.types";
+
+const isNonZeroPartition = (p: string | null | undefined) =>
+  !!p && p !== "" && p !== "0";
 
 interface DeletePropertyDrawerProps {
   isOpen: boolean;
@@ -47,7 +51,7 @@ export default function DeletePropertyDrawer({
 
   const ward = selectedWard ?? null;
 
-  const { buildingList, loadingBuildingList } = useBuildingList({
+  const { buildingList, loadingBuildingList, refetchBuildingList } = useBuildingList({
     wardId: effectiveWardId,
   });
 
@@ -74,6 +78,7 @@ export default function DeletePropertyDrawer({
     return null;
   }, [selectedProperty, categoryMap]);
 
+  // Dropdown: only show main properties (partitionNo null / "" / "0")
   const propertyOptions = useMemo(() => {
     if (buildingList.length > 0) {
       return buildingList
@@ -95,6 +100,46 @@ export default function DeletePropertyDrawer({
         };
       });
   }, [buildingList, ssrProperties, categoryMap]);
+
+  // Sub-properties: same propertyNo as the selected main, with a non-zero partitionNo.
+  // Checks buildingList first; falls back to ssrProperties (which includes all ward properties).
+  const subPropertyRows = useMemo<DirectPropertyDeleteRow[]>(() => {
+    if (!selectedProperty) return [];
+    const matchingPropertyNo = selectedProperty.propertyNo;
+
+    const fromBuildingList = buildingList
+      .filter(
+        (item) =>
+          item.propertyNo === matchingPropertyNo &&
+          isNonZeroPartition(item.partitionNo)
+      )
+      .map((item) => ({
+        propertyId: String(item.propertyId),
+        wardNo: item.wardNo || "-",
+        propertyNo: item.propertyNo || "-",
+        partitionNo: item.partitionNo || "-",
+        categoryName: item.catPropertyCategoryName || "-",
+      }));
+
+    if (fromBuildingList.length > 0) return fromBuildingList;
+
+    return ssrProperties
+      .filter(
+        (item) =>
+          item.propertyNo === matchingPropertyNo &&
+          isNonZeroPartition(item.partitionNo)
+      )
+      .map((item) => {
+        const catName = item.categoryId ? categoryMap[item.categoryId] : null;
+        return {
+          propertyId: String(item.id),
+          wardNo: ward?.wardNo || "-",
+          propertyNo: item.propertyNo || "-",
+          partitionNo: item.partitionNo || "-",
+          categoryName: catName || "-",
+        };
+      });
+  }, [buildingList, ssrProperties, selectedProperty, categoryMap, ward]);
 
   const handleClose = () => {
     setSelectedPropertyId("");
@@ -164,6 +209,8 @@ export default function DeletePropertyDrawer({
                 propertyNo={selectedProperty.propertyNo}
                 partitionNo={selectedProperty.partitionNo}
                 categoryName={categoryName}
+                subRows={subPropertyRows}
+                onSubRowDeleted={refetchBuildingList}
                 onDeleted={() => setSelectedPropertyId("")}
                 t={tZone}
               />

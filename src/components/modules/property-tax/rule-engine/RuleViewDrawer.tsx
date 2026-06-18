@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { Drawer } from '@/components/common/Drawer';
 import { FieldConfig, RuleItem, RuleBlock, ConditionGroupState, ConditionState } from '@/types/rule-engine.types';
 import { initializeRulesList, getFieldLabel, getFriendlyOperatorLabel } from './useRuleBuilderHelpers';
-import { fetchFieldsForScopeAction } from '@/app/[locale]/property-tax/rule-engine/actions';
+import { fetchFieldsForScopeAction, fetchEffectTypeConfigsAction, fetchDynamicFieldOptionsAction } from '@/app/[locale]/property-tax/rule-engine/actions';
 
 interface RuleViewDrawerProps {
   rule: RuleItem | null;
@@ -18,6 +18,7 @@ interface RuleViewDrawerProps {
 export default function RuleViewDrawer({ rule, open, onClose, scopeName }: RuleViewDrawerProps) {
   const t = useTranslations('ruleEngine');
   const [fields, setFields] = React.useState<FieldConfig[]>([]);
+  const [paramOptions, setParamOptions] = React.useState<Record<string, string>>({});
 
   const ruleBlocks = React.useMemo<RuleBlock[]>(() => {
     if (!rule) return [];
@@ -36,6 +37,42 @@ export default function RuleViewDrawer({ rule, open, onClose, scopeName }: RuleV
       };
     }
   }, [open, rule?.ruleScopeId]);
+
+  React.useEffect(() => {
+    if (open && rule && ruleBlocks.length > 0) {
+      let active = true;
+      fetchEffectTypeConfigsAction()
+        .then(async (configs) => {
+          if (!active) return;
+          const uniqueTypes = Array.from(new Set(ruleBlocks.map((b) => b.effect.effectType).filter(Boolean)));
+          const newMap: Record<string, string> = {};
+
+          for (const type of uniqueTypes) {
+            const cfg = configs.find((c) => c.effectType === type);
+            if (cfg?.staticApiEndpoint) {
+              const opts = await fetchDynamicFieldOptionsAction(
+                cfg.staticApiEndpoint,
+                cfg.staticApiMethod ?? 'GET',
+                cfg.staticApiParamter ?? undefined,
+                cfg.staticApiResponseMapping ?? undefined
+              );
+              opts.forEach((opt) => {
+                newMap[opt.value] = opt.label;
+              });
+            }
+          }
+          if (active) {
+            setParamOptions((prev) => ({ ...prev, ...newMap }));
+          }
+        })
+        .catch(() => {});
+
+      return () => {
+        active = false;
+        setParamOptions({});
+      };
+    }
+  }, [open, rule, ruleBlocks]);
 
   if (!rule) return null;
 
@@ -103,35 +140,38 @@ export default function RuleViewDrawer({ rule, open, onClose, scopeName }: RuleV
                 {/* Effect Panel */}
                 <div className="flex flex-col gap-1 bg-slate-50/60 px-3 py-2 rounded-lg border border-slate-100">
                   <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">{t('simulation.outcomeAction')}</span>
-                  <div className="flex flex-wrap items-center gap-3 text-sm text-slate-800">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-zinc-500 font-medium">{t('simulation.effectType')}:</span>
-                      <span className="font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded text-xs border border-indigo-100">
-                        {block.effect.effectType || 'None'}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-zinc-500 font-medium">{t('simulation.value')}:</span>
-                      <span className="font-bold text-slate-900">
-                        {block.effect.value}{block.effect.isPercentage ? '%' : ''}
-                      </span>
-                    </div>
-                    {block.effect.multiplierField && (
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-zinc-500 font-medium">{t('simulation.multiplierField')}:</span>
-                        <span className="font-bold text-slate-900 font-mono text-xs bg-slate-100 px-1.5 py-0.5 rounded border">
-                          {block.effect.multiplierField}
-                        </span>
-                      </div>
-                    )}
-                    {block.effect.overrideRate && (
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-zinc-500 font-medium">{t('simulation.overrideRate')}:</span>
-                        <span className="font-bold text-slate-900">{block.effect.overrideRate}</span>
-                      </div>
-                    )}
+                  <div className="flex items-center justify-between text-sm text-slate-800 mt-0.5">
+                    <span className="font-semibold text-slate-800">
+                      {(() => {
+                        const typeLabel = block.effect.effectType || 'No action';
+                        const val = block.effect.value;
+                        const isPct = block.effect.isPercentage;
+                        const mult = block.effect.multiplierField;
+                        const overrideVal = block.effect.overrideRate;
+
+                        const paramLabel = (overrideVal !== undefined && overrideVal !== null)
+                          ? (paramOptions[overrideVal.toString()] || overrideVal.toString())
+                          : '';
+
+                        const subject = paramLabel || 'Rate';
+                        const typeLower = typeLabel.toLowerCase();
+
+                        let phrase = '';
+                        if (typeLower.includes('override') || typeLower.includes('set') || typeLower.includes('equal')) {
+                          phrase = `${typeLabel} ${subject} to ${val}${isPct ? '%' : ''}`;
+                        } else {
+                          phrase = `${typeLabel} ${subject} by ${val}${isPct ? '%' : ''}`;
+                        }
+
+                        if (mult) {
+                          phrase += ` based on ${mult}`;
+                        }
+
+                        return phrase;
+                      })()}
+                    </span>
                     {block.stopProcessing && (
-                      <div className="ml-auto flex items-center gap-1 text-amber-700 bg-amber-50 px-2 py-0.5 rounded text-xs font-semibold border border-amber-200">
+                      <div className="flex items-center gap-1 text-amber-700 bg-amber-50 px-2 py-0.5 rounded text-xs font-semibold border border-amber-200">
                         <ShieldAlert className="w-3 h-3" />
                         <span>{t('simulation.stopProcessingText')}</span>
                       </div>

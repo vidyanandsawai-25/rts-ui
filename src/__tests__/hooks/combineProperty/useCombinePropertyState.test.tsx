@@ -86,7 +86,7 @@ describe('useCombinePropertyState', () => {
     });
 
     expect(result.current.hasDifferentOwners).toBe(true);
-    expect(result.current.differentOwnerProps).toBe('Ward No.: W2 Property No.: P2');
+    expect(result.current.differentOwnerProps).toBe('PROPERTY NO.: W2-P2');
   });
 
   it('clears state correctly', () => {

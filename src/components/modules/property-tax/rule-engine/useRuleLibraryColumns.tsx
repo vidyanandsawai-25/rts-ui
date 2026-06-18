@@ -21,6 +21,18 @@ export function useRuleLibraryColumns({ t }: UseRuleLibraryColumnsArgs): Column<
       { key: 'ruleCode', label: t('library.ruleCode'), width: '150px' },
       { key: 'ruleName', label: t('library.ruleName'), width: '130px' },
       {
+        key: 'priority',
+        label: t('library.priority'),
+        width: '95px',
+        render: (val: unknown) => {
+          return typeof val === 'number' ? (
+            <span className="font-semibold text-gray-800">{val}</span>
+          ) : (
+            <span className="text-gray-300 text-xs">—</span>
+          );
+        },
+      },
+      {
         key: 'description',
         label: t('library.description'),
         render: (_val: unknown, row: RuleItemRecord) => {

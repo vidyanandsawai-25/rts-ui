@@ -1,46 +1,44 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Drawer } from '@/components/common/Drawer';
 import { MasterTable } from '@/components/common/MasterTable';
 import { PropertyCombineDetails } from '@/types/combine-property.types';
-import { useMemo, useCallback } from 'react';
+import { useMemo } from 'react';
 import { Merge } from 'lucide-react';
 import { getCombinePropertyHistoryColumns } from './combinePropertyColumns';
-
 import { PagedResponse } from '@/types/common.types';
-import { usePathname, useSearchParams } from 'next/navigation';
 
-export interface CombinePropertyHistoryProps {
+export interface CombinePropertyHistoryDetailsProps {
   historyDetails: PagedResponse<PropertyCombineDetails>;
 }
 
 export type HistoryRow = PropertyCombineDetails & Record<string, unknown>;
 
-export function CombinePropertyHistory({ historyDetails }: CombinePropertyHistoryProps) {
+export function CombinePropertyHistoryDetails({ historyDetails }: CombinePropertyHistoryDetailsProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const t = useTranslations('combineProperty');
 
-  const handlePreviewClick = useCallback((row: HistoryRow) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('detailsPropertyId', String(row.propertyId));
-    params.set('detailsPage', '1');
-    params.set('detailsSize', '10');
-    router.push(`${pathname}?${params.toString()}`);
-  }, [searchParams, router, pathname]);
-
   const historyColumns = useMemo(
-    () => getCombinePropertyHistoryColumns(t as unknown as (key: string) => string, handlePreviewClick),
-    [t, handlePreviewClick]
+    () => getCombinePropertyHistoryColumns(t as unknown as (key: string) => string),
+    [t]
   );
 
   const handleTableChange = (page: number, pageSize: number) => {
     const params = new URLSearchParams(searchParams.toString());
-    params.set('historyPage', String(page));
-    params.set('historySize', String(pageSize));
+    params.set('detailsPage', String(page));
+    params.set('detailsSize', String(pageSize));
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
+  const handleClose = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('detailsPropertyId');
+    params.delete('detailsPage');
+    params.delete('detailsSize');
     router.push(`${pathname}?${params.toString()}`);
   };
 
@@ -52,7 +50,7 @@ export function CombinePropertyHistory({ historyDetails }: CombinePropertyHistor
       <div className="flex flex-col gap-0.5">
         <div className="flex items-center gap-2">
           <h2 id="drawer-title" className="text-sm font-bold text-gray-900 leading-tight">
-            {t('combinePropertyHistory') || 'Combine Property History Details'}
+            {t('combinePropertyDetails') || 'Combine Property Details'}
           </h2>
         </div>
       </div>
@@ -62,7 +60,7 @@ export function CombinePropertyHistory({ historyDetails }: CombinePropertyHistor
   return (
     <Drawer
       open={true}
-      onClose={() => router.back()}
+      onClose={handleClose}
       title={DrawerTitle}
       width="xl"
       className="combine-property-history-drawer text-dark"
@@ -83,7 +81,7 @@ export function CombinePropertyHistory({ historyDetails }: CombinePropertyHistor
             onPageChange={(page) => handleTableChange(page, historyDetails.pageSize || 10)}
             onPageSizeChange={(size) => handleTableChange(historyDetails.pageNumber || 1, size)}
             height="md"
-            getRowKey={(row, i) => `history-detail-${row.propertyId || 0}-${i}`}
+            getRowKey={(row, i) => `history-detail-row-${row.propertyId || 0}-${i}`}
             emptyText={t('emptyTableText') || 'No details found'}
           />
         </div>

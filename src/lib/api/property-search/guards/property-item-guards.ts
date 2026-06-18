@@ -50,8 +50,40 @@ function toOptionalNumber(value: unknown): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function formatScientificNotation(val: string): string {
+  let trimmed = val.trim();
+  if (!trimmed) return "";
+
+  // 1. Resolve scientific notation (e.g. "9.93027e+009" -> "9930270000")
+  if (/^-?\d+(\.\d+)?[eE][+-]?\d+$/.test(trimmed)) {
+    const num = Number(trimmed);
+    if (Number.isFinite(num)) {
+      trimmed = String(num);
+    }
+  }
+
+  // 2. Strip trailing .0 or .00 from numeric values (e.g. "123.0" -> "123")
+  if (/^\d+\.0+$/.test(trimmed)) {
+    trimmed = trimmed.replace(/\.0+$/, "");
+  }
+
+  return trimmed;
+}
+
 function toRawText(value: string | null | undefined): string {
-  return value?.trim() ?? "";
+  return formatScientificNotation(value?.trim() ?? "");
+}
+
+function formatMobileNumber(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  if (/[eE.]/.test(trimmed)) {
+    const num = Number(trimmed);
+    if (Number.isFinite(num)) {
+      return String(Math.round(num));
+    }
+  }
+  return trimmed;
 }
 
 function readApiText(
@@ -60,7 +92,8 @@ function readApiText(
   pascal: string
 ): string {
   const raw = readField(obj, camel, pascal);
-  return raw == null ? "" : String(raw).trim();
+  if (raw == null) return "";
+  return formatScientificNotation(String(raw));
 }
 
 function normalizePropertySearchApiItem(
@@ -85,7 +118,7 @@ function normalizePropertySearchApiItem(
     categoryName: readApiText(raw, "categoryName", "CategoryName") || null,
     propertyDescription:
       readApiText(raw, "propertyDescription", "PropertyDescription") || null,
-    mobile: readApiText(raw, "mobile", "Mobile") || null,
+    mobile: formatMobileNumber(readApiText(raw, "mobile", "Mobile")) || null,
     propertyHolderName:
       readApiText(raw, "propertyHolderName", "PropertyHolderName") || null,
     occupierName: readApiText(raw, "occupierName", "OccupierName") || null,
@@ -151,7 +184,7 @@ export function normalizePropertySearchItem(
     propertyCount: item.propertyCount ?? 0,
     category: toRawText(item.categoryName),
     description: toRawText(item.propertyDescription),
-    mobile: toRawText(item.mobile),
+    mobile: formatMobileNumber(toRawText(item.mobile)),
     holderName: toRawText(item.propertyHolderName),
     holderNameMarathi: "",
     occupierName: toRawText(item.occupierName),

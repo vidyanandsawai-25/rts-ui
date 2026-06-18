@@ -121,6 +121,7 @@ export function CombinePropertyReviewSection({
               const val = e.target.value.replace(DESCRIPTION_SANITIZE, '');
               setRemark(val);
             }}
+            maxLength={500}
             placeholder={t('remarkPlaceholder')}
             disabled={isSubmitting || isPending || checkedCount <= 1}
             rows={2}
