@@ -20,6 +20,7 @@ function makeResult(id: string, propertyId = 1): SearchResult {
     category: "",
     description: "",
     mobile: "",
+    alternateMobile: "",
     holderName: "",
     holderNameMarathi: "",
     occupierName: "",

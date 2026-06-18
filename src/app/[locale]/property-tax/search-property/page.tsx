@@ -25,6 +25,7 @@ import {
   listPropertyTypeCategoriesAction,
   listWardsByZoneAction,
   listZonesAction,
+  listAllWardsAction,
 } from "./action";
 
 const EMPTY_LOOKUP = {
@@ -167,7 +168,7 @@ export default async function PropertySearchPage({
   // Default property records load on every visit. Stat cards filter immediately.
   // Form filters apply only after Search (`isActive=1`). Draft zone/ward URL
   // params load dropdown options but do not filter the table until Search.
-  const [zones, propertyAssessmentStatuses, propertyTypeCategories, wards, lookup, searchOutcome, stats] =
+  const [zones, propertyAssessmentStatuses, propertyTypeCategories, wards, lookup, searchOutcome, stats, allWards] =
     await Promise.all([
       listZonesAction(),
       listPropertyAssessmentStatusesAction(),
@@ -185,6 +186,7 @@ export default async function PropertySearchPage({
         activeTab
       ),
       getPropertyStatsAction(),
+      listAllWardsAction(),
     ]);
 
   const propertyTypeOptions: PropertyAssessmentStatusOption[] =
@@ -215,6 +217,18 @@ export default async function PropertySearchPage({
     zoneId: w.zoneId,
   }));
 
+  const allWardOptions: WardOption[] = allWards.map((w) => {
+    const wardNo = w.wardNo?.trim();
+    const desc = w.description?.trim();
+    const label =
+      wardNo && desc ? `${wardNo} - ${desc}` : desc || wardNo || "";
+    return {
+      id: w.wardId,
+      label,
+      zoneId: w.zoneId,
+    };
+  });
+
   const lookupOptions: LookupOptions = {
     propertyNos: lookup.propertyNos,
     oldPropertyNos: lookup.oldPropertyNos,
@@ -230,6 +244,7 @@ export default async function PropertySearchPage({
       stats={stats}
       zoneOptions={zoneOptions}
       wardOptions={wardOptions}
+      allWardOptions={allWardOptions}
       propertyTypeOptions={propertyTypeOptions}
       propertyDescriptionOptions={propertyDescriptionOptions}
       lookupOptions={lookupOptions}

@@ -237,3 +237,15 @@ export async function getWardOptionsAction(zone: string): Promise<string[]> {
   void zone;
   return [];
 }
+
+export async function listAllWardsAction(): Promise<WardApiResponse[]> {
+  try {
+    const zones = await fetchZones();
+    const allWards = await Promise.all(
+      zones.map((z) => fetchWardsByZone(z.zoneId))
+    );
+    return allWards.flat();
+  } catch {
+    return [];
+  }
+}
