@@ -25,7 +25,7 @@ export function LookupInput({
       <Label
         htmlFor={id}
         className={COMPACT_LABEL_CLASS}
-        title={tooltip ?? label}
+        title={tooltip ?? (typeof label === "string" ? label : undefined)}
       >
         {label}
       </Label>

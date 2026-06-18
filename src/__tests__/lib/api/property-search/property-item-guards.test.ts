@@ -62,4 +62,44 @@ describe("property-item-guards", () => {
     expect(result.propertyNo).not.toBe("-");
     expect(result.partitionNo).not.toBe("-");
   });
+
+  it("normalizes scientific notation and decimal mobile numbers", () => {
+    const result1 = normalizePropertySearchItem({
+      propertyId: 301,
+      mobile: "9.93027e+009",
+    });
+    expect(result1.mobile).toBe("9930270000");
+
+    const result2 = normalizePropertySearchItem({
+      propertyId: 302,
+      mobile: "9930270000.0",
+    });
+    expect(result2.mobile).toBe("9930270000");
+
+    const result3 = normalizePropertySearchItem({
+      propertyId: 303,
+      mobile: "9930270000",
+    });
+    expect(result3.mobile).toBe("9930270000");
+
+    const result4 = normalizePropertySearchItem({
+      propertyId: 304,
+      mobile: "N/A",
+    });
+    expect(result4.mobile).toBe("N/A");
+  });
+
+  it("normalizes scientific notation and decimal numbers for all text fields", () => {
+    const result = normalizePropertySearchItem({
+      propertyId: 401,
+      propertyNo: "1.2345e+004",
+      citySurveyNo: "789.00",
+      partitionNo: "12.3",
+      address: "123 Main St. Bldg 4.0",
+    });
+    expect(result.propertyNo).toBe("12345");
+    expect(result.citySurveyNo).toBe("789");
+    expect(result.partitionNo).toBe("12.3");
+    expect(result.address).toBe("123 Main St. Bldg 4.0");
+  });
 });
