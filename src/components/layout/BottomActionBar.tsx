@@ -143,6 +143,8 @@ export function BottomActionBar({
       }
     });
   };
+  const isPropertySelected = !!searchParams.get('propertyId');
+
   return (
     <div className="fixed bottom-0 left-0 right-0 z-[50] h-auto min-h-[48px] md:h-14 bg-white/95 backdrop-blur-xl border-t border-slate-200/60 shadow-[0_-8px_40px_rgb(0,0,0,0.06)] print:hidden transition-all duration-300 layout-content-shifted flex flex-col md:flex-row items-stretch md:items-center justify-between px-3 sm:px-6 py-2 md:py-0">
       {/* Premium glossy top highlight */}
@@ -159,6 +161,7 @@ export function BottomActionBar({
             isPropertyPagination={hasProperties}
             isLoading={isPaginationPending || isLoading}
             disabled={isPaginationDisabled}
+            isPropertySelected={isPropertySelected}
           />
         </div>
 

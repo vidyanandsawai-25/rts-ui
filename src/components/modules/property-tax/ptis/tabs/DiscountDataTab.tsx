@@ -15,7 +15,7 @@ export interface DiscountDataTabProps {
 
 const DiscountDataTab: React.FC<DiscountDataTabProps> = ({ initialData }) => {
   const t = useTranslations('ptis');
-  const items = (initialData?.items || []).filter((item) => item.bitValue !== false);
+  const items = (initialData?.items || []).filter((item) => item.isActive !== false);
 
   if (items.length === 0) {
     return (
@@ -26,12 +26,21 @@ const DiscountDataTab: React.FC<DiscountDataTabProps> = ({ initialData }) => {
     );
   }
 
+  const isSimpleToggle = (item: PropertySocialDetailItem) => {
+    return (
+      item.dateValue === null &&
+      item.intValue === null &&
+      item.decimalValue === null &&
+      item.textValue === null
+    );
+  };
+
   const getValueLabel = (item: PropertySocialDetailItem) => {
     if (item.dateValue !== null) return t('fields.dateLabel') || 'Date';
     if (item.intValue !== null) return t('fields.value') || 'Value';
     if (item.decimalValue !== null) return t('fields.value') || 'Value';
     if (item.textValue !== null) return t('fields.value') || 'Value';
-    if (item.bitValue !== null) return t('fields.status') || 'Status';
+    if (item.bitValue !== null || isSimpleToggle(item)) return t('fields.status') || 'Status';
     return t('fields.value') || 'Value';
   };
 
@@ -52,6 +61,8 @@ const DiscountDataTab: React.FC<DiscountDataTabProps> = ({ initialData }) => {
     if (item.textValue !== null) return item.textValue;
     if (item.bitValue !== null)
       return item.bitValue ? t('fields.yes') || 'Yes' : t('fields.no') || 'No';
+    if (isSimpleToggle(item))
+      return item.isActive ? t('fields.yes') || 'Yes' : t('fields.no') || 'No';
     return '-';
   };
 

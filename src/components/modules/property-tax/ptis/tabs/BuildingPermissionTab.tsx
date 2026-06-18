@@ -6,7 +6,8 @@ import { format } from 'date-fns';
 import { AlertCircle, Eye, Loader2 } from 'lucide-react';
 import FieldShell from '@/components/common/FieldShell';
 import { ValueDisplay } from './components/ValueDisplay';
-import { viewDocumentClient } from '@/lib/utils/document-client-utils';
+import { getDocumentBlobUrl } from '@/lib/utils/document-client-utils';
+import { DocumentViewerModal } from '@/components/common';
 import { toast } from 'sonner';
 import type {
   BuildingPermissionData,
@@ -23,7 +24,23 @@ const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({ data }) =
   const t = useTranslations('ptis');
   const locale = useLocale();
   const [activeViewingGuid, setActiveViewingGuid] = React.useState<string | null>(null);
+  const [viewerData, setViewerData] = React.useState<{ isOpen: boolean; url: string; name: string; label?: string } | null>(null);
   const items = (data?.items || []).filter((item) => item.isActive);
+
+  const closeViewer = React.useCallback(() => {
+    if (viewerData?.url) {
+      URL.revokeObjectURL(viewerData.url);
+    }
+    setViewerData(null);
+  }, [viewerData]);
+
+  React.useEffect(() => {
+    return () => {
+      if (viewerData?.url) {
+        URL.revokeObjectURL(viewerData.url);
+      }
+    };
+  }, [viewerData]);
 
   if (items.length === 0) {
     return (
@@ -78,7 +95,13 @@ const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({ data }) =
                 e.stopPropagation();
                 setActiveViewingGuid(item.documentGuid!);
                 try {
-                  await viewDocumentClient(item.documentGuid!, locale);
+                  const res = await getDocumentBlobUrl(item.documentGuid!, locale);
+                  setViewerData({
+                    isOpen: true,
+                    url: res.url,
+                    name: item.fileName || "Document",
+                    label: item.certificateTypeName
+                  });
                 } catch (err: unknown) {
                   toast.error(err instanceof Error ? err.message : "Failed to view document");
                 } finally {
@@ -101,11 +124,22 @@ const BuildingPermissionTab: React.FC<BuildingPermissionTabProps> = ({ data }) =
   };
 
   return (
-    <div className="max-h-[105px] overflow-y-auto snap-y snap-mandatory scroll-py-1 pr-1 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-blue-200 [&::-webkit-scrollbar-thumb]:rounded-full">
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
-        {items.map(renderCard)}
+    <>
+      <div className="max-h-[105px] overflow-y-auto snap-y snap-mandatory scroll-py-1 pr-1 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-blue-200 [&::-webkit-scrollbar-thumb]:rounded-full">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+          {items.map(renderCard)}
+        </div>
       </div>
-    </div>
+      {viewerData && (
+        <DocumentViewerModal
+          isOpen={viewerData.isOpen}
+          onClose={closeViewer}
+          fileUrl={viewerData.url}
+          fileName={viewerData.name}
+          label={viewerData.label}
+        />
+      )}
+    </>
   );
 };
 

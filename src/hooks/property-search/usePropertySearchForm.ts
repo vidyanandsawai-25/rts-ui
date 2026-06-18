@@ -80,7 +80,7 @@ export function usePropertySearchForm({
       submitAttempted: false,
       touchedFields: new Set(),
     });
-  }, [criteriaKey, initialCriteria]);
+  }, [criteriaKey, initialCriteria, activeTab]);
 
   const isDraftSynced = draft.criteriaKey === criteriaKey;
   const formState = isDraftSynced ? draft.formState : initialCriteria;

@@ -24,9 +24,9 @@ export interface UsePhotoPlanMutationsProps {
   selectedCategoryIndex: number;
   selectedImageIndex: number | null;
   setSelectedImageIndex?: (index: number | null) => void;
-  viewMode: 'grid' | 'viewer';
-  setViewMode?: (mode: 'grid' | 'viewer') => void;
-  setViewerIndexAndMode?: (index: number | null, mode: 'grid' | 'viewer') => void;
+  viewMode: 'grid' | 'viewer' | 'compare';
+  setViewMode?: (mode: 'grid' | 'viewer' | 'compare') => void;
+  setViewerIndexAndMode?: (index: number | null, mode: 'grid' | 'viewer' | 'compare') => void;
 }
 
 export function usePhotoPlanMutations({
@@ -48,7 +48,7 @@ export function usePhotoPlanMutations({
 
   const isUploading = isAdding || isReplacing || isDeleting;
 
-  const setViewerIndexAndModeValue = useCallback((idx: number | null, mode: 'grid' | 'viewer') => {
+  const setViewerIndexAndModeValue = useCallback((idx: number | null, mode: 'grid' | 'viewer' | 'compare') => {
     if (setViewerIndexAndMode) setViewerIndexAndMode(idx, mode);
     else {
       setSelectedImageIndex?.(idx);
