@@ -68,8 +68,12 @@ function KycField({
 
   return (
     <div className="flex min-w-0 flex-col w-full">
-      <div className="mb-1 flex items-center justify-between gap-1">
-        <Label htmlFor={field} className={COMPACT_LABEL_CLASS} title={tooltip}>
+      <div className="mb-1 h-[18px] flex items-center justify-between gap-1">
+        <Label
+          htmlFor={field}
+          className={cn(COMPACT_LABEL_CLASS, "flex items-center gap-1 h-full")}
+          title={tooltip}
+        >
           {label}
         </Label>
         {value && !disabled && (
@@ -138,7 +142,7 @@ export function KycSearchPanel({
   );
 
   return (
-    <div className="overflow-x-auto pb-1 pt-1.5">
+    <div className="overflow-x-auto px-2 pb-1 pt-1.5">
       <div className="grid min-w-[56rem] max-w-[76rem] grid-cols-[1.2fr_0.8fr_1.8fr_2.8fr_auto] items-start gap-x-1.5 gap-y-1">
         {KYC_SEARCH_FIELDS.map(renderField)}
         <div className="flex flex-col w-full">

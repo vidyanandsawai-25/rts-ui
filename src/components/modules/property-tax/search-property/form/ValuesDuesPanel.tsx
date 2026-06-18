@@ -61,7 +61,7 @@ export function ValuesDuesPanel({
     };
 
   return (
-    <div className="overflow-visible pb-1 pt-1.5">
+    <div className="overflow-visible px-2 pb-1 pt-1.5">
       <div className="flex flex-wrap items-start gap-x-1.5 gap-y-2">
         <ValueFilterGroup
           title={t("fields.filters")}

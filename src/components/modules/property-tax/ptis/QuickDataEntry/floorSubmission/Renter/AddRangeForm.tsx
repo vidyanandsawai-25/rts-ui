@@ -54,7 +54,7 @@ export const AddRangeForm = ({
                 </div>
             </div>
             
-            <div className="flex items-end gap-4 flex-wrap lg:flex-nowrap">
+            <div className="flex items-start gap-4 flex-wrap lg:flex-nowrap">
                 <div className="flex-1 min-w-[130px] space-y-1.5">
                     <Label className={fieldLabelClassName}>{t('floor.renterSection.fromDate')} *</Label>
                     <Input
@@ -141,13 +141,15 @@ export const AddRangeForm = ({
                     />
                 </div>
 
-                <Button
-                    disabled={!newRangeData.fromDate || !newRangeData.toDate || !newRangeData.incrementValue}
-                    onClick={onAdd}
-                    className="h-8 px-4 text-[10px] font-bold uppercase tracking-wider bg-blue-600 hover:bg-blue-700 text-white rounded-md flex items-center gap-2"
-                >
-                    <Plus className="w-3.5 h-3.5" /> {t('floor.renterSection.add')}
-                </Button>
+                <div className="pt-[22px]">
+                    <Button
+                        disabled={!newRangeData.fromDate || !newRangeData.toDate || !newRangeData.incrementValue}
+                        onClick={onAdd}
+                        className="h-8 px-4 text-[10px] font-bold uppercase tracking-wider bg-blue-600 hover:bg-blue-700 text-white rounded-md flex items-center gap-2"
+                    >
+                        <Plus className="w-3.5 h-3.5" /> {t('floor.renterSection.add')}
+                    </Button>
+                </div>
             </div>
         </div>
     );
