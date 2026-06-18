@@ -17,6 +17,7 @@ interface DocumentAttachmentProps {
     isUploading?: boolean;
     isDisabled: boolean;
     isDocumentInvalid: boolean;
+    documentError?: string;
     onFileUpload: (file: File) => void;
     t: (key: string) => string;
 }
@@ -29,6 +30,7 @@ export const DocumentAttachment: React.FC<DocumentAttachmentProps> = ({
     isUploading,
     isDisabled,
     isDocumentInvalid,
+    documentError,
     onFileUpload,
     t,
 }) => {
@@ -62,20 +64,19 @@ export const DocumentAttachment: React.FC<DocumentAttachmentProps> = ({
         }
     };
 
-    // State: No document at all — show upload dropzone
     if (!documentGuid && !hasDocumentBinding) {
         return (
             <UploadDropzone
                 isDisabled={isDisabled}
                 isUploading={isUploading}
                 isDocumentInvalid={isDocumentInvalid}
+                documentError={documentError}
                 onFileUpload={onFileUpload}
                 t={t}
             />
         );
     }
 
-    // State: Document binding exists but GUID is unavailable (page refresh scenario)
     if (!documentGuid && hasDocumentBinding) {
         return (
             <PreviousAttachmentInfo

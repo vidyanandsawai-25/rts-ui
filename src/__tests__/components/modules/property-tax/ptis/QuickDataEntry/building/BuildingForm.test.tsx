@@ -172,4 +172,85 @@ describe('BuildingForm', () => {
       expect(screen.getAllByText("common.validation.numberNoSpaces")[0]).toBeInTheDocument();
     });
   });
+
+  it('displays error when certificate number has repeated digits', async () => {
+    render(<BuildingForm initialBuildingPermission={mockInitialData} propertyId="123" />);
+    const inputs = screen.getAllByPlaceholderText(/Enter certificate number/i);
+    
+    fireEvent.change(inputs[0], { target: { value: '00000000' } });
+
+    const saveBtn = screen.getByRole('button', { name: /Save Changes/i });
+    fireEvent.click(saveBtn);
+
+    await waitFor(() => {
+      expect(screen.getAllByText("common.validation.numberRepeated")[0]).toBeInTheDocument();
+    });
+  });
+
+  it('validates Commencement Certificate format correctly', async () => {
+    const copData: PropertyCertificateWithStatusDto[] = [
+      { certificateTypeId: 2, certificateTypeName: "Commencement Certificate (CC)", displayOrder: 20, hasCertificate: false, propertyCertificateId: null, isActive: true, certificateNo: null, issueDate: "2023-01-01T00:00:00", documentGuid: "guid-456", fileName: "cc.pdf" }
+    ];
+    render(<BuildingForm initialBuildingPermission={copData} propertyId="123" />);
+    const inputs = screen.getAllByPlaceholderText(/Enter certificate number/i);
+    
+    // TMC is too short (length 3, pattern requires 5-50 chars)
+    fireEvent.change(inputs[0], { target: { value: 'TMC' } });
+
+    const saveBtn = screen.getByRole('button', { name: /Save Changes/i });
+    fireEvent.click(saveBtn);
+
+    await waitFor(() => {
+      expect(screen.getAllByText("common.validation.numberInvalidCOP")[0]).toBeInTheDocument();
+    });
+  });
+
+  it('validates Index 2 format correctly', async () => {
+    const indexData: PropertyCertificateWithStatusDto[] = [
+      { certificateTypeId: 4, certificateTypeName: "Index 2", displayOrder: 40, hasCertificate: false, propertyCertificateId: null, isActive: true, certificateNo: null, issueDate: "2023-01-01T00:00:00", documentGuid: "guid-789", fileName: "index2.pdf" }
+    ];
+    render(<BuildingForm initialBuildingPermission={indexData} propertyId="123" />);
+    const inputs = screen.getAllByPlaceholderText(/Enter certificate number/i);
+    
+    fireEvent.change(inputs[0], { target: { value: 'INVALID' } });
+
+    const saveBtn = screen.getByRole('button', { name: /Save Changes/i });
+    fireEvent.click(saveBtn);
+
+    await waitFor(() => {
+      expect(screen.getAllByText("common.validation.numberInvalidIndex2")[0]).toBeInTheDocument();
+    });
+  });
+
+  it('validates Electric Bill format correctly', async () => {
+    const electricData: PropertyCertificateWithStatusDto[] = [
+      { certificateTypeId: 5, certificateTypeName: "Electric Bill", displayOrder: 50, hasCertificate: false, propertyCertificateId: null, isActive: true, certificateNo: null, issueDate: "2023-01-01T00:00:00", documentGuid: "guid-999", fileName: "bill.pdf" }
+    ];
+    render(<BuildingForm initialBuildingPermission={electricData} propertyId="123" />);
+    const inputs = screen.getAllByPlaceholderText(/Enter certificate number/i);
+    
+    fireEvent.change(inputs[0], { target: { value: '123' } });
+
+    const saveBtn = screen.getByRole('button', { name: /Save Changes/i });
+    fireEvent.click(saveBtn);
+
+    await waitFor(() => {
+      expect(screen.getAllByText("common.validation.numberInvalidElectric")[0]).toBeInTheDocument();
+    });
+  });
+
+  it('validates date boundaries correctly', async () => {
+    render(<BuildingForm initialBuildingPermission={mockInitialData} propertyId="123" />);
+    const dateInputs = screen.getAllByPlaceholderText(/Select date/i);
+    
+    // Future date
+    fireEvent.change(dateInputs[0], { target: { value: '2099-12-31' } });
+
+    const saveBtn = screen.getByRole('button', { name: /Save Changes/i });
+    fireEvent.click(saveBtn);
+
+    await waitFor(() => {
+      expect(screen.getAllByText("common.validation.dateFuture")[0]).toBeInTheDocument();
+    });
+  });
 });

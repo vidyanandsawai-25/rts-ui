@@ -10,6 +10,7 @@ import {
 } from '@/components/common/ActionButtons';
 import { useTranslations } from 'next-intl';
 import { Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface FooterPaginationProps {
   currentPage: number;
@@ -19,6 +20,7 @@ interface FooterPaginationProps {
   isPropertyPagination?: boolean;
   isLoading?: boolean;
   disabled?: boolean;
+  isPropertySelected?: boolean;
 }
 
 export const FooterPagination = ({
@@ -29,6 +31,7 @@ export const FooterPagination = ({
   isPropertyPagination = false,
   isLoading = false,
   disabled = false,
+  isPropertySelected = true,
 }: FooterPaginationProps) => {
   const t = useTranslations('ptis');
 
@@ -42,6 +45,10 @@ export const FooterPagination = ({
     ? t('table.property', { current: displayCurrent, total: totalPages })
     : t('table.page', { current: displayCurrent, total: totalPages });
 
+  const handleDisabledClick = () => {
+    toast.error(t('error.selectPropertyFirst') || 'Please select a property first.');
+  };
+
   return (
     <nav 
       aria-label={t('pagination.label')} 
@@ -50,17 +57,17 @@ export const FooterPagination = ({
       <div className="flex items-center bg-slate-50 border border-slate-200 rounded-lg p-0.5 shadow-sm" role="group" aria-label={t('pagination.controls')}>
         <Tooltip content={firstTooltip} placement="top">
           <FirstPageButton
-            onClick={() => onPageChange?.(1)}
-            disabled={disabled || currentPage <= 1 || !onPageChange}
-            className="hidden sm:flex w-7 h-7 !p-0 !min-w-0 bg-transparent border-none hover:bg-white hover:shadow-sm cursor-pointer"
+            onClick={isPropertySelected ? () => onPageChange?.(1) : handleDisabledClick}
+            disabled={isPropertySelected ? (disabled || currentPage <= 1 || !onPageChange) : false}
+            className={`hidden sm:flex w-7 h-7 !p-0 !min-w-0 bg-transparent border-none hover:bg-white hover:shadow-sm cursor-pointer ${!isPropertySelected ? 'opacity-50 cursor-not-allowed' : ''}`}
             aria-label={firstTooltip}
           />
         </Tooltip>
         <Tooltip content={prevTooltip} placement="top">
           <PrevPageButton
-            onClick={() => onPageChange?.(currentPage - 1)}
-            disabled={disabled || currentPage <= 1 || !onPageChange}
-            className="w-7 h-7 !p-0 !min-w-0 bg-transparent border-none hover:bg-white hover:shadow-sm cursor-pointer"
+            onClick={isPropertySelected ? () => onPageChange?.(currentPage - 1) : handleDisabledClick}
+            disabled={isPropertySelected ? (disabled || currentPage <= 1 || !onPageChange) : false}
+            className={`w-7 h-7 !p-0 !min-w-0 bg-transparent border-none hover:bg-white hover:shadow-sm cursor-pointer ${!isPropertySelected ? 'opacity-50 cursor-not-allowed' : ''}`}
             aria-label={prevTooltip}
           />
         </Tooltip>
@@ -84,17 +91,17 @@ export const FooterPagination = ({
 
         <Tooltip content={nextTooltip} placement="top">
           <NextPageButton
-            onClick={() => onPageChange?.(currentPage + 1)}
-            disabled={disabled || currentPage === 0 || currentPage === totalPages || !onPageChange}
-            className="w-7 h-7 !p-0 !min-w-0 bg-transparent border-none hover:bg-white hover:shadow-sm cursor-pointer"
+            onClick={isPropertySelected ? () => onPageChange?.(currentPage + 1) : handleDisabledClick}
+            disabled={isPropertySelected ? (disabled || currentPage === 0 || currentPage === totalPages || !onPageChange) : false}
+            className={`w-7 h-7 !p-0 !min-w-0 bg-transparent border-none hover:bg-white hover:shadow-sm cursor-pointer ${!isPropertySelected ? 'opacity-50 cursor-not-allowed' : ''}`}
             aria-label={nextTooltip}
           />
         </Tooltip>
         <Tooltip content={lastTooltip} placement="top">
           <LastPageButton
-            onClick={() => onPageChange?.(totalPages)}
-            disabled={disabled || currentPage === 0 || currentPage === totalPages || !onPageChange}
-            className="hidden sm:flex w-7 h-7 !p-0 !min-w-0 bg-transparent border-none hover:bg-white hover:shadow-sm cursor-pointer"
+            onClick={isPropertySelected ? () => onPageChange?.(totalPages) : handleDisabledClick}
+            disabled={isPropertySelected ? (disabled || currentPage === 0 || currentPage === totalPages || !onPageChange) : false}
+            className={`hidden sm:flex w-7 h-7 !p-0 !min-w-0 bg-transparent border-none hover:bg-white hover:shadow-sm cursor-pointer ${!isPropertySelected ? 'opacity-50 cursor-not-allowed' : ''}`}
             aria-label={lastTooltip}
           />
         </Tooltip>

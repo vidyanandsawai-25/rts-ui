@@ -8,6 +8,7 @@ interface UploadDropzoneProps {
     isDisabled: boolean;
     isUploading?: boolean;
     isDocumentInvalid: boolean;
+    documentError?: string;
     onFileUpload: (file: File) => void;
     t: (key: string) => string;
 }
@@ -16,6 +17,7 @@ export const UploadDropzone: React.FC<UploadDropzoneProps> = ({
     isDisabled,
     isUploading = false,
     isDocumentInvalid,
+    documentError,
     onFileUpload,
     t,
 }) => {
@@ -59,7 +61,7 @@ export const UploadDropzone: React.FC<UploadDropzoneProps> = ({
                     }}
                 />
             </label>
-            {isDocumentInvalid && <ValidationMessage message={t("common.validation.documentRequired")} />}
+            {isDocumentInvalid && <ValidationMessage message={documentError || t("common.validation.documentRequired")} />}
         </div>
     );
 };

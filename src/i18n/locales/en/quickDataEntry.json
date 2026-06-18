@@ -1363,8 +1363,14 @@
             "numberRequired": "Certificate Number is required",
             "numberNoSpaces": "Spaces are not allowed in Certificate Number",
             "numberLength": "Certificate Number must be between {min} and {max} characters",
+            "numberRepeated": "Certificate number cannot consist of a single repeated character (e.g., 00000000)",
+            "numberInvalidCOP": "Must be 5-50 characters, allowing alphanumeric, slashes, and hyphens (e.g., TMC/TDD/0001/2023).",
+            "numberInvalidIndex2": "Format must be OfficeCode-DocNo-Year (e.g., TNN4-1234-2023).",
+            "numberInvalidElectric": "Consumer number must be exactly 9 to 12 digits.",
             "dateRequired": "Certificate Date is required",
             "invalidDate": "Please enter a valid date",
+            "dateFuture": "Date cannot be in the future",
+            "dateBefore1900": "Date cannot be before 01-01-1900",
             "documentRequired": "Certificate Document is required"
         }
     },
