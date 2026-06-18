@@ -1,8 +1,7 @@
 {
   "columns": {
     "srNo": "अ. क्र.",
-    "propertyNo": "मालमत्ता क्र",
-    "partitionNo": "मालमत्ता क्र",
+    "propertyNo": "मालमत्ता क्र.",
     "oldPropertyNo": "जुना मालमत्ता क्र",
     "wingName": "विंग",
     "shopNo": "फ्लॅट क्र/दुकान क्र",

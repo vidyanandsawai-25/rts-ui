@@ -2,8 +2,7 @@
 {
   "columns": {
     "srNo": "Sr. No.",
-    "propertyNo": "Property No",
-    "partitionNo": "Property No.",
+    "propertyNo": "Property No.",
     "oldPropertyNo": "Old Property No.",
     "wingName": "Wing",
     "shopNo": "Flat/Shop No.",

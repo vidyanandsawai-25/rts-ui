@@ -1,8 +1,7 @@
 {
   "columns": {
     "srNo": "क्र. सं.",
-    "propertyNo": "संपत्ति नं",
-    "partitionNo": "संपत्ति नं",
+    "propertyNo": "संपत्ति नं.",
     "oldPropertyNo": "पुराना संपत्ति नं",
     "wingName": "विंग",
     "shopNo": "फ्लैट नं/दुकान नं",
