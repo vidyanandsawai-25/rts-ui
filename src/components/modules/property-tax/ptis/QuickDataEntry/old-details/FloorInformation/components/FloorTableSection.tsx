@@ -132,10 +132,14 @@ export function FloorTableSection({
           const content = col.render
             ? col.render(value, row, index)
             : <span className="font-bold text-slate-900">{value === null || typeof value === 'undefined' ? '-' : String(value)}</span>;
+          const isCombinedArea = col.key === 'carpetAreaCombined' || col.key === 'builtupAreaCombined';
 
           return (
             <div className="px-1 py-1.5 text-[12px] text-center font-semibold text-slate-700">
-              <div className="truncate" title={value === null || typeof value === 'undefined' ? '-' : (typeof value === 'string' ? value : String(value))}>
+              <div 
+                className={isCombinedArea ? "whitespace-nowrap" : "truncate"} 
+                title={value === null || typeof value === 'undefined' ? '-' : (typeof value === 'string' ? value : String(value))}
+              >
                 {content}
               </div>
             </div>
@@ -152,7 +156,7 @@ export function FloorTableSection({
         columns={adaptedColumns}
         emptyText={t('floor.noFloorData')}
         maxBodyHeightClassName="max-h-[400px] whitespace-nowrap" //max-h-[400px]
-        tableClassName="table-fixed w-full min-w-[1230px]"
+        tableClassName="table-fixed w-full min-w-[1270px]"
         theadClassName="sticky top-0 z-20 bg-[#1e3a8a] text-white border-b border-blue-300 [&_th]:px-1 [&_th]:py-1.5 [&_th:last-child]:border-l [&_th:last-child]:border-solid [&_th:last-child]:border-white/30"
         rowClassName={() => "hover:bg-blue-50/50 transition-colors"}       
         pageNumber={pageNumber}

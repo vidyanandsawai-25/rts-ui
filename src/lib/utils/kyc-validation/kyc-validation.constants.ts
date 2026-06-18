@@ -7,6 +7,9 @@
  * @module kyc-validation
  */
 
+import { translateDevanagariDigits } from '../input-sanitization';
+import { EMAIL_REGEX, VALID_TLD_REGEX } from '../validation-rules';
+
 /**
  * KYC validation rules and constraints
  * Used across KYC form components for consistent validation
@@ -21,7 +24,7 @@ export const KYC_VALIDATION_RULES = {
   /** Maximum length for Property Holder Name and Occupier Name (1000 characters) */
   NAME_MAX_LENGTH: 1000,
   /** Email validation regex pattern */
-  EMAIL_REGEX: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+  EMAIL_REGEX,
   /** Maximum length for address fields (500 characters) */
   ADDRESS_MAX_LENGTH: 500,
   /** Maximum length for shop name (100 characters) */
@@ -277,16 +280,16 @@ export const societyValidators = {
       const domainParts = domain.split('.');
       // Must have at least 2 parts (domain.tld)
       if (domainParts.length < 2) return false;
-      // Last part (TLD) must be at least 2 chars and only letters
+      // Last part (TLD) must be a standard/valid extension
       const tld = domainParts[domainParts.length - 1];
-      if (!tld || tld.length < 2 || !/^[a-zA-Z]+$/.test(tld)) return false;
+      if (!tld || tld.length < 2 || !VALID_TLD_REGEX.test(tld)) return false;
     } else {
       // Domain has no dot yet - allow while typing (e.g., xyz@gmail)
       return !isStrict;
     }
 
     // Strict email validation pattern for complete emails
-    const validEmailPattern = /^[a-zA-Z0-9][a-zA-Z0-9.]*@[a-zA-Z0-9][a-zA-Z0-9.]*\.[a-zA-Z]{2,}$/;
+    const validEmailPattern = EMAIL_REGEX;
 
     return trimmedEmail.length <= SOCIETY_VALIDATION_RULES.EMAIL_MAX_LENGTH &&
       validEmailPattern.test(trimmedEmail);
@@ -333,14 +336,14 @@ export const propertyValidators = {
    */
   isOnlyInvalidCharacters: (value: string): boolean => {
     if (!value || !value.trim()) return false;
-    // Check if string contains only invalid characters and no valid alphanumerics
-    const hasValidChars = /[a-zA-Z0-9]/g.test(value);
+    // Check if string contains only invalid characters and no valid alphanumerics (including Devanagari)
+    const hasValidChars = /[a-zA-Z0-9\u0900-\u097F]/g.test(value);
     return !hasValidChars;
   },
 
   /**
    * Validate flat/shop number format
-   * Allows alphanumeric, hyphen (-), and forward slash (/)
+   * Allows alphanumeric (including Devanagari), hyphen (-), and forward slash (/)
    * @param value - Flat/shop number to validate
    * @returns True if valid format
    */
@@ -354,9 +357,9 @@ export const propertyValidators = {
     // Check for only invalid characters
     if (propertyValidators.isOnlyInvalidCharacters(trimmed)) return false;
 
-    // Allow alphanumeric, hyphen, and forward slash
+    // Allow alphanumeric (including Devanagari), hyphen, and forward slash
     // Value must start and end with alphanumeric, containing allowed separators in between
-    const validPattern = /^[a-zA-Z0-9]+([a-zA-Z0-9/-]*[a-zA-Z0-9]+)?$/;
+    const validPattern = /^[a-zA-Z0-9\u0900-\u097F]+([a-zA-Z0-9\u0900-\u097F/-]*[a-zA-Z0-9\u0900-\u097F]+)?$/;
     return validPattern.test(trimmed);
   },
 
@@ -381,8 +384,8 @@ export const propertyValidators = {
   //     return false;
   //   }
 
-    // Valid examples: A101, A-101, A/101, A-101/B
-    // Invalid examples: -A101, A101-, A--101, A//101
+  // Valid examples: A101, A-101, A/101, A-101/B
+  // Invalid examples: -A101, A101-, A--101, A//101
   //   const validPattern = /^[a-zA-Z0-9]+([-/][a-zA-Z0-9]+)*$/;
 
   //   return validPattern.test(trimmed);
@@ -391,7 +394,7 @@ export const propertyValidators = {
 
   /**
    * Validate plot number format
-   * Allows alphanumeric, hyphen (-), and forward slash (/)
+   * Allows alphanumeric (including Devanagari), hyphen (-), and forward slash (/)
    * @param value - Plot number to validate
    * @returns True if valid format
    */
@@ -404,8 +407,8 @@ export const propertyValidators = {
     // Check for only invalid characters
     if (propertyValidators.isOnlyInvalidCharacters(trimmed)) return false;
 
-    // Allow alphanumeric, hyphen, and forward slash
-    const validPattern = /^[a-zA-Z0-9]+([a-zA-Z0-9/-]*[a-zA-Z0-9]+)?$/;
+    // Allow alphanumeric (including Devanagari), hyphen, and forward slash
+    const validPattern = /^[a-zA-Z0-9\u0900-\u097F]+([a-zA-Z0-9\u0900-\u097F/-]*[a-zA-Z0-9\u0900-\u097F]+)?$/;
     return validPattern.test(trimmed);
   },
 
@@ -417,7 +420,7 @@ export const propertyValidators = {
    */
   isValidPlotArea: (value: string | number | null | undefined): boolean => {
     if (value === null || value === undefined || value === '') return true;
-    const str = String(value);
+    const str = translateDevanagariDigits(String(value));
     const num = Number(str);
 
     // Must be a valid positive number
@@ -447,7 +450,8 @@ export const propertyValidators = {
    */
   isValidPositiveNumber: (value: string | number | null | undefined): boolean => {
     if (value === null || value === undefined || value === '') return true; // Empty is valid
-    const num = Number(value);
+    const str = translateDevanagariDigits(String(value));
+    const num = Number(str);
     return !isNaN(num) && num >= 0 && isFinite(num);
   },
 
@@ -465,8 +469,8 @@ export const propertyValidators = {
     // Check for only invalid characters
     if (propertyValidators.isOnlyInvalidCharacters(trimmed)) return false;
 
-    // Allow alphanumeric and / or - as separators
-    const validPattern = /^[a-zA-Z0-9]+([a-zA-Z0-9/-]*[a-zA-Z0-9]+)?$/;
+    // Allow alphanumeric (including Devanagari) and / or - as separators
+    const validPattern = /^[a-zA-Z0-9\u0900-\u097F]+([a-zA-Z0-9\u0900-\u097F/-]*[a-zA-Z0-9\u0900-\u097F]+)?$/;
     return validPattern.test(trimmed);
   },
 
@@ -484,8 +488,8 @@ export const propertyValidators = {
     // Check for only invalid characters
     if (propertyValidators.isOnlyInvalidCharacters(trimmed)) return false;
 
-    // Allow alphanumeric, hyphen, and forward slash
-    const validPattern = /^[a-zA-Z0-9]+([a-zA-Z0-9/-]*[a-zA-Z0-9]+)?$/;
+    // Allow alphanumeric (including Devanagari), hyphen, and forward slash
+    const validPattern = /^[a-zA-Z0-9\u0900-\u097F]+([a-zA-Z0-9\u0900-\u097F/-]*[a-zA-Z0-9\u0900-\u097F]+)?$/;
     return validPattern.test(trimmed);
   },
 
@@ -585,16 +589,16 @@ export const enhancedKycValidators = {
       const domainParts = domain.split('.');
       // Must have at least 2 parts (domain.tld)
       if (domainParts.length < 2) return false;
-      // Last part (TLD) must be at least 2 chars and only letters
+      // Last part (TLD) must be a standard/valid extension
       const tld = domainParts[domainParts.length - 1];
-      if (!tld || tld.length < 2 || !/^[a-zA-Z]+$/.test(tld)) return false;
+      if (!tld || tld.length < 2 || !VALID_TLD_REGEX.test(tld)) return false;
     } else {
       // Domain has no dot yet - allow while typing (e.g., xyz@gmail)
       return !isStrict;
     }
 
     // Strict email validation pattern for complete emails
-    const validEmailPattern = /^[a-zA-Z0-9][a-zA-Z0-9.]*@[a-zA-Z0-9][a-zA-Z0-9.]*\.[a-zA-Z]{2,}$/;
+    const validEmailPattern = EMAIL_REGEX;
 
     return validEmailPattern.test(trimmedEmail) && trimmedEmail.length <= KYC_VALIDATION_RULES.EMAIL_MAX_LENGTH;
   },

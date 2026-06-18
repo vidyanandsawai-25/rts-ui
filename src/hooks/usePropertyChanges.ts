@@ -1,7 +1,7 @@
 import { useCallback, useEffect, RefObject } from 'react';
 import { PropertyBasicDetailsApiItem } from '@/types/property-basic-details.types';
-import { parseOptionalNumber } from '@/lib/utils/form-helpers';
-import { propertyValidators } from '@/lib/utils/kyc-validation.constants';
+import { parseOptionalNumber } from '@/lib/utils/kyc-validation/form-helpers';
+import { propertyValidators } from '@/lib/utils/kyc-validation/kyc-validation.constants';
 import {
     sanitizeFlatShopNo,
     sanitizePlotNo,
@@ -28,7 +28,7 @@ export const usePropertyChanges = ({
     propertyData,
     setHasChanges,
 }: UsePropertyChangesProps) => {
-    
+
 
     const checkFormChanges = useCallback(() => {
         if (!formRef.current) return;

@@ -46,4 +46,58 @@ describe('useFloorFormValidation', () => {
 
     expect(result.current.errors).toEqual({});
   });
+
+  describe('validateYearField', () => {
+    it('should clear errors for empty or short year values', () => {
+      const { result } = renderHook(() => useFloorFormValidation());
+
+      act(() => {
+        result.current.validateYearField('oldConstructionYear', '20');
+      });
+      expect(result.current.errors.oldConstructionYear).toBeUndefined();
+    });
+
+    it('should report error for invalid year range with standard digits', () => {
+      const { result } = renderHook(() => useFloorFormValidation());
+
+      act(() => {
+        result.current.validateYearField('oldConstructionYear', '1699');
+      });
+      expect(result.current.errors.oldConstructionYear).toBeDefined();
+
+      act(() => {
+        result.current.validateYearField('oldConstructionYear', '2027');
+      });
+      expect(result.current.errors.oldConstructionYear).toBeDefined();
+    });
+
+    it('should accept valid standard digit years without errors', () => {
+      const { result } = renderHook(() => useFloorFormValidation());
+
+      act(() => {
+        result.current.validateYearField('oldConstructionYear', '2020');
+      });
+      expect(result.current.errors.oldConstructionYear).toBeUndefined();
+    });
+
+    it('should accept and translate valid Marathi/Devanagari digit years without errors', () => {
+      const { result } = renderHook(() => useFloorFormValidation());
+
+      // '२०२०' is '2020' in Marathi digits
+      act(() => {
+        result.current.validateYearField('oldConstructionYear', '२०२०');
+      });
+      expect(result.current.errors.oldConstructionYear).toBeUndefined();
+    });
+
+    it('should report error for invalid Marathi/Devanagari digit year range', () => {
+      const { result } = renderHook(() => useFloorFormValidation());
+
+      // '१६९९' is '1699' in Marathi digits
+      act(() => {
+        result.current.validateYearField('oldConstructionYear', '१६९९');
+      });
+      expect(result.current.errors.oldConstructionYear).toBeDefined();
+    });
+  });
 });

@@ -36,17 +36,17 @@ export const getFieldErrorState = (
   // If form is submitted, show all validation errors
   if (isSubmitted) return !isValid;
 
-  // For digit inputs (mobile/alternateMobile/aadhar), show error only if user has entered data
-  if (field === 'mobile') {
-    return digitInputs.mobile.value.length > 0 && !isValid;
-  }
-
-  if (field === 'alternateMobile') {
-    return digitInputs.alternateMobile.value.length > 0 && !isValid;
-  }
-  
-  if (field === 'aadhar') {
-    return digitInputs.aadhar.value.length > 0 && !isValid;
+  // For digit inputs (mobile/alternateMobile/aadhar), show error only if:
+  // - the input has been blurred (isFocused is false) and has some content, OR
+  // - the input is active (isFocused is true) and is nearly complete (length >= input length - 2)
+  if (field === 'mobile' || field === 'alternateMobile' || field === 'aadhar') {
+    const input = digitInputs[field];
+    if (!input) return false;
+    const len = input.digits.length;
+    return !isValid && (
+      (!input.isFocused && input.value.length > 0) ||
+      (input.isFocused && input.value.length >= len - 2)
+    );
   }
 
   // For regular form fields, show error only if field has been touched (has value)

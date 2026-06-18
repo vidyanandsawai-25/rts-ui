@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useConfirm } from '@/components/common/ConfirmProvider';
-import { useLoading } from '@/hooks/useLoading';    
+import { useLoading } from '@/hooks/useLoading';
 import { hasErrors } from '@/lib/utils/validation';
 import { updatePropertyBasicDetailsAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Property/action';
 import {
@@ -14,8 +14,8 @@ import {
 import { usePropertyOptions } from '@/hooks/usePropertyOptions';
 import { usePropertyFormState } from '@/hooks/usePropertyFormState';
 import { usePropertyChanges } from '@/hooks/usePropertyChanges';
-import { parseOptionalNumber } from '@/lib/utils/form-helpers';
-import { validatePropertyForm } from '@/lib/utils/validatePropertyForm';
+import { parseOptionalNumber } from '@/lib/utils/kyc-validation/form-helpers';
+import { validatePropertyForm } from '@/lib/utils/propertybasic-validation/validatePropertyForm';
 
 export const usePropertyForm = (props: PropertyFormViewProps) => {
     const {
@@ -70,7 +70,7 @@ export const usePropertyForm = (props: PropertyFormViewProps) => {
         }
 
         const formData = new FormData(e.currentTarget);
-        
+
         const errors = validatePropertyForm(formData, categoryId, t);
 
         if (hasErrors(errors)) {
@@ -87,7 +87,7 @@ export const usePropertyForm = (props: PropertyFormViewProps) => {
             wardId: propertyData.wardId,
             taxZoneId,
             categoryId,
-            propertyTypeId: propertyTypeId || null,            
+            propertyTypeId: propertyTypeId || null,
             moujaId: moujaId,
             moujaName: moujaName || null,
             partitionNo: propertyData?.partitionNo ?? null,

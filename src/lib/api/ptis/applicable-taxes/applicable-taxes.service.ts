@@ -3,8 +3,7 @@ import type {
   AssessmentYearRangeItem,
   TypeOfUseGroupItem,
   PagedResponse,
-  TaxApplicabilityData,
-  TaxApplicabilityWrapper
+  TaxApplicabilityData
 } from '@/types/applicable-taxes.types';
 import { handleApiResponse } from '@/lib/utils/api';
 import { getTranslations } from 'next-intl/server';
@@ -46,15 +45,18 @@ export async function getAssessmentYearRangeCV(
 export async function getTaxApplicability(params: {
   propertyId: number;
   financialYearId: number;
-  typeOfUseGroupId: number; rvOrCv: 'RV' | 'CV';
-}): Promise<{ success: boolean; data?: TaxApplicabilityData; error?: string }> {
-  const { propertyId, financialYearId, typeOfUseGroupId, rvOrCv } = params;
-  const res = await apiClient.get<TaxApplicabilityWrapper>(
-    `/TaxApplicability?PropertyId=${propertyId}&FinancialYearId=${financialYearId}&TypeOfUseGroupId=${typeOfUseGroupId}&RvOrCv=${rvOrCv}`
+  typeOfUseGroupId: number;
+  rvOrCv: 'RV' | 'CV';
+  pageNumber?: number;
+  pageSize?: number;
+}): Promise<{ success: boolean; data?: PagedResponse<TaxApplicabilityData>; error?: string }> {
+  const { propertyId, financialYearId, typeOfUseGroupId, rvOrCv, pageNumber = 1, pageSize = 10 } = params;
+  const res = await apiClient.get<PagedResponse<TaxApplicabilityData>>(
+    `/TaxApplicability?PropertyId=${propertyId}&FinancialYearId=${financialYearId}&TypeOfUseGroupId=${typeOfUseGroupId}&RvOrCv=${rvOrCv}&PageNumber=${pageNumber}&PageSize=${pageSize}`
   );
 
-  if (res.success && res.data && res.data.items) {
-    return { success: true, data: res.data.items };
+  if (res.success && res.data) {
+    return { success: true, data: res.data };
   }
   return { success: false, error: res.error || 'Failed to fetch Tax Applicability' };
 }
