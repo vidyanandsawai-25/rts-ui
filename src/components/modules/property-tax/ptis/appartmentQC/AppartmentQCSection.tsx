@@ -49,7 +49,7 @@ const AppartmentQCSection = ({
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
-  const [drawerLoading, setDrawerLoading] = useState(false);
+  // const [drawerLoading, setDrawerLoading] = useState(false);
 
   const activeMainTab = searchParams.get('appartmentTab') || 'amenities';
   const activeSubTab = searchParams.get('subTab') || 'rateable';
@@ -180,7 +180,7 @@ const AppartmentQCSection = ({
 
     let cancelled = false;
 
-    queueMicrotask(() => setDrawerLoading(true));   // ✅ START LOADING
+    // queueMicrotask(() => setDrawerLoading(true));   // ✅ START LOADING
 
     const type = activeSubTab === 'dual-method' ? 'dual' : activeSubTab;
 
@@ -207,14 +207,14 @@ const AppartmentQCSection = ({
           propertyTypes: [],
         });
       })
-      .finally(() => {
-        if (!cancelled) queueMicrotask(() => setDrawerLoading(false));  // ✅ STOP LOADING
-      });
+      // .finally(() => {
+      //   if (!cancelled) queueMicrotask(() => setDrawerLoading(false));  // ✅ STOP LOADING
+      // });
 
     return () => {
       cancelled = true;
       setDrawerLocalData(null);
-      setDrawerLoading(false);
+      // setDrawerLoading(false);
     };
   }, [drawerOpen, selectedPropertyId, activeSubTab]);
 
@@ -266,7 +266,7 @@ const AppartmentQCSection = ({
       </div>
 
       {/* Property Details Edit Drawer */}
-      {drawerOpen && (
+      {/* {drawerOpen && (
         drawerLoading ? (
           <div className="fixed inset-0 z-50 bg-white/70 flex items-center justify-center">
             <LoadingPage translationNamespace="ptis.loading" />
@@ -284,7 +284,18 @@ const AppartmentQCSection = ({
             initialPropertyTypes={drawerLocalData?.propertyTypes}
           />
         )
-      )}
+      )} */}
+       <PropertyDetailsEditScreenNew
+            key={`property-edit-${selectedPropertyId || 'new'}`}
+            open={drawerOpen}
+            onClose={handleCloseDrawer}
+            onSaveOrClose={refetchTaxDetails}
+            propertyData={selectedPropertyData}
+            subTab={activeSubTab}
+            returnTo={activeMainTab as 'amenities' | 'commercial' | 'residential'}
+            initialFloorQCData={drawerLocalData?.floorQCData}
+            initialPropertyTypes={drawerLocalData?.propertyTypes}
+          />
     </div>
   );
 };

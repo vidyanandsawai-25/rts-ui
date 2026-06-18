@@ -136,6 +136,9 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
       const isFilterable = !!filterField && !!onFilterChange && !!onFetchFilterOptions;
       const hasActiveFilter = filterField && activeFilters[filterField]?.length > 0;
 
+      const isPropertyNo = col.key === 'propertyNo';
+      const isOldPropertyNo = col.key === 'oldPropertyNo';
+
       return {
         ...col,
         label: (
@@ -156,24 +159,26 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
             </div>
           </div>
         ) as unknown as string,
-        cellClassName: "px-1 py-1 whitespace-nowrap",
-        headerClassName: "!px-1.5 !py-1 border-l !border-gray-400/50",
+        cellClassName: `px-1 py-1 whitespace-nowrap ${col.cellClassName || ''}`,
+        headerClassName: `!px-1.5 !py-1 border-l !border-gray-400/50 ${col.headerClassName || ''}`,
         render: (value: unknown, row: T, rowIndex: number) => {
           // Enhanced cell design with improved font and border colors
           if (col.render) {
             return (
-              <div className="group relative bg-white border border-gray-300 hover:border-blue-500 rounded px-1 py-0.5 text-xs text-center transition-colors duration-200">
-                {col.render(value as T[keyof T] | undefined, row, rowIndex)}
+              <div className={`group relative border hover:border-blue-500 rounded px-1 py-0.5 text-xs text-center transition-colors duration-200 ${isPropertyNo ? 'bg-blue-50 border-blue-300' : isOldPropertyNo ? 'bg-amber-50 border-amber-300' : 'bg-white border-gray-300'}`}>
+                <span className={isPropertyNo ? 'text-blue-700 font-semibold' : isOldPropertyNo ? 'text-amber-700 font-semibold' : ''}>
+                  {col.render(value as T[keyof T] | undefined, row, rowIndex)}
+                </span>
               </div>
             );
           }
           const displayValue = value === null || value === undefined || value === "" ? "-" : String(value);
           return (
-            <div className="group relative bg-white border border-gray-300 hover:border-blue-500 rounded px-1 py-0.5 text-xs text-center transition-colors duration-200">
-              <span className="text-gray-800 font-medium group-hover:text-blue-700 group-hover:underline transition-colors duration-200">
+            <div className={`group relative border hover:border-blue-500 rounded px-1 py-0.5 text-xs text-center transition-colors duration-200 ${isPropertyNo ? 'bg-blue-50 border-blue-300' : isOldPropertyNo ? 'bg-amber-50 border-amber-300' : 'bg-white border-gray-300'}`}>
+              <span className={`text-gray-800 font-medium group-hover:text-blue-700 group-hover:underline transition-colors duration-200 ${isPropertyNo ? 'text-blue-700 font-semibold' : isOldPropertyNo ? 'text-amber-700 font-semibold' : ''}`}>
                 {displayValue}
               </span>
-              <ExternalLink className="inline-block w-3 h-3 ml-1 text-gray-400 group-hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-all duration-200" />
+              <ExternalLink className={`inline-block w-3 h-3 ml-1 text-gray-400 group-hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-all duration-200 ${isPropertyNo ? '!text-blue-500' : isOldPropertyNo ? '!text-amber-500' : ''}`} />
             </div>
           );
         },
