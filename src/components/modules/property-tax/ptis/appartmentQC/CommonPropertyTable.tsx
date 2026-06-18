@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useCallback, useState, type MouseEventHandler } from "react";
+import { useMemo, useCallback, useState } from "react";
+import type { MouseEventHandler } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
 import { MasterTable, Column } from "@/components/common/MasterTable";
