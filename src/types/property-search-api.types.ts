@@ -46,6 +46,7 @@ export interface PropertySearchApiItem {
   categoryName: string | null;
   propertyDescription: string | null;
   mobile: string | null;
+  alternateMobileNo?: string | null;
   propertyHolderName: string | null;
   occupierName: string | null;
   shopBuildingName: string | null;

@@ -388,18 +388,9 @@ export function getPropertySearchFieldErrors(
   }
 
   if (tab === "values-dues") {
-    if (criteria.rateableValueFilter === "between") {
-      if (!trimFieldValue(criteria.rateableValueFrom)) {
-        errors.rateableValueFrom = t("rateableValueBetweenRequired");
-      }
-      if (!trimFieldValue(criteria.rateableValueTo)) {
-        errors.rateableValueTo = t("rateableValueBetweenRequired");
-      }
-    } else if (criteria.rateableValueFilter === "top") {
+    if (criteria.rateableValueFilter === "top") {
       const fromVal = trimFieldValue(criteria.rateableValueFrom);
-      if (!fromVal) {
-        errors.rateableValueFrom = t("rateableValueInvalid");
-      } else {
+      if (fromVal) {
         const clean = fromVal.replace(/,/g, "");
         const num = Number(clean);
         if (!/^\d+$/.test(clean) || num <= 0) {
@@ -415,11 +406,15 @@ export function getPropertySearchFieldErrors(
       }
     }
 
-    if (criteria.rateableValueFilter === "between" && !errors.rateableValueFrom && !errors.rateableValueTo) {
-      const fromNum = Number(trimFieldValue(criteria.rateableValueFrom).replace(/,/g, ""));
-      const toNum = Number(trimFieldValue(criteria.rateableValueTo).replace(/,/g, ""));
-      if (toNum < fromNum) {
-        errors.rateableValueTo = t("rateableValueRangeInvalid");
+    if (criteria.rateableValueFilter === "between") {
+      const fromVal = trimFieldValue(criteria.rateableValueFrom);
+      const toVal = trimFieldValue(criteria.rateableValueTo);
+      if (fromVal && toVal && !errors.rateableValueFrom && !errors.rateableValueTo) {
+        const fromNum = Number(fromVal.replace(/,/g, ""));
+        const toNum = Number(toVal.replace(/,/g, ""));
+        if (toNum < fromNum) {
+          errors.rateableValueTo = t("rateableValueRangeInvalid");
+        }
       }
     }
   }

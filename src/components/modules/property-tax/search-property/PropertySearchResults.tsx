@@ -21,6 +21,8 @@ export function PropertySearchResults({
   results,
   loading = false,
   searchError = null,
+  zoneOptions,
+  allWardOptions,
 }: PropertySearchResultsProps): React.ReactElement {
   const t = useTranslations("propertySearch.results");
   const locale = useLocale();
@@ -43,27 +45,29 @@ export function PropertySearchResults({
     }
 
     const excelData = filteredData.map((row) => {
+      const propVal = row.partitionNo ? `${row.propertyNo}-${row.partitionNo}` : row.propertyNo;
+      const oldPropVal = row.oldPropertyNo ? ` (Old: ${row.oldPropertyNo})` : "";
+      const rawHolder = row.holderName?.trim() || "";
+      const isPlaceholderHolder = rawHolder.toLowerCase() === "the holder";
+      const holder = isPlaceholderHolder ? "" : rawHolder;
+      const holderMr = isPlaceholderHolder ? "" : (row.holderNameMarathi?.trim() || "");
+      
+      const ownerVal = holder ? `${holder}${holderMr ? ` (${holderMr})` : ""}` : "";
+      const occupierVal = row.occupierName ? `${ownerVal ? "\n" : ""}[Occupier]: ${row.occupierName}${row.occupierNameMarathi ? ` (${row.occupierNameMarathi})` : ""}` : "";
+      const finalOwnerOccupier = ownerVal || occupierVal ? `${ownerVal}${occupierVal}` : "-";
+
       return {
         [t("columns.upicId")]: row.upicId || "-",
-        [t("columns.zone")]: row.zone || "-",
-        [t("columns.ward")]: row.ward || "-",
-        [t("columns.propertyNo")]: row.propertyNo || "-",
-        [t("columns.partitionNo")]: row.partitionNo || "-",
-        [t("columns.oldPropertyNo")]: row.oldPropertyNo || "-",
-        [t("columns.citySurveyNo")]: row.citySurveyNo || "-",
-        [t("columns.plotNo")]: row.plotNo || "-",
-        [t("columns.wingFlatNo")]: row.wingFlatNo || "-",
+        [t("columns.zoneWard")]: `${row.zone || "-"} / ${row.ward || "-"}`,
+        [t("columns.propertyPartition")]: `${propVal || "-"}${oldPropVal}`,
         [t("columns.category")]: row.category || "-",
-        [t("columns.description")]: row.description || "-",
-        [t("columns.mobile")]: row.mobile || "-",
-        [t("columns.holderName")]: row.holderName || "-",
-        [t("columns.occupierName")]: row.occupierName || "-",
-        [t("columns.shopBuildingName")]: row.shopBuildingName || "-",
         [t("columns.societyName")]: row.societyName || "-",
-        [t("columns.address")]: row.address || "-",
-        [t("columns.rv")]: row.rv != null ? row.rv : "-",
-        [t("columns.cv")]: row.cv != null ? row.cv : "-",
+        [t("columns.description")]: row.description || "-",
+        [t("columns.ownerOccupier")]: finalOwnerOccupier,
+        [t("columns.mobileAlternate")]: `${row.mobile || "-"}${row.alternateMobile ? `\n[Alt]: ${row.alternateMobile}` : ""}`,
+        [t("columns.rvCv")]: `RV: ${row.rv != null ? row.rv : "-"}, CV: ${row.cv != null ? row.cv : "-"}`,
         [t("columns.totalTax")]: row.totalTax != null ? row.totalTax : "-",
+        [t("columns.address")]: row.address || "-",
       };
     });
 
@@ -88,8 +92,8 @@ export function PropertySearchResults({
   }, [filteredData, t]);
 
   const columns = React.useMemo(
-    () => buildPropertySearchColumns(t, locale),
-    [t, locale]
+    () => buildPropertySearchColumns(t, locale, zoneOptions, allWardOptions),
+    [t, locale, zoneOptions, allWardOptions]
   );
 
   return (
@@ -119,7 +123,7 @@ export function PropertySearchResults({
         onPageChange={handlePageChange}
         onPageSizeChange={handlePageSizeChange}
         containerClassName="w-full min-w-0"
-        tableClassName="table-fixed w-max min-w-full"
+        tableClassName="table-fixed w-full min-w-[1650px]"
         maxBodyHeightClassName="max-h-[calc(100vh-280px)]"
         emptyText={searchError ? t("searchFailed") : t("noResults")}
         pageSizeOptions={PAGE_SIZE_OPTIONS}

@@ -235,7 +235,7 @@ describe("property-search.validation", () => {
     it("accepts valid kyc search criteria", () => {
       const criteria: SearchCriteria = {
         ...INITIAL_SEARCH_CRITERIA,
-        holderName: "John Doe",
+        occupierName: "John Doe",
       };
 
       const result = validatePropertySearchCriteria(criteria, "kyc", t);
@@ -308,6 +308,46 @@ describe("property-search.validation", () => {
 
       expect(errors.rateableValueFrom).toBe("rateableValueInvalid");
       expect(errors.rateableValueTo).toBe("rateableValueInvalid");
+    });
+
+    it("does not return field errors for empty values in getPropertySearchFieldErrors", () => {
+      const criteria: SearchCriteria = {
+        ...INITIAL_SEARCH_CRITERIA,
+        rateableValueFilter: "between",
+        rateableValueFrom: "",
+        rateableValueTo: "",
+      };
+
+      const errors = getPropertySearchFieldErrors(criteria, "values-dues", t);
+      expect(errors.rateableValueFrom).toBeUndefined();
+      expect(errors.rateableValueTo).toBeUndefined();
+    });
+
+    it("rejects empty values-dues criteria in validatePropertySearchCriteria", () => {
+      const criteriaBetween: SearchCriteria = {
+        ...INITIAL_SEARCH_CRITERIA,
+        rateableValueFilter: "between",
+        rateableValueFrom: "",
+        rateableValueTo: "",
+      };
+      const resultBetween = validatePropertySearchCriteria(criteriaBetween, "values-dues", t);
+      expect(resultBetween).toEqual({ valid: false, message: "rateableValueBetweenRequired" });
+
+      const criteriaTop: SearchCriteria = {
+        ...INITIAL_SEARCH_CRITERIA,
+        rateableValueFilter: "top",
+        rateableValueFrom: "",
+      };
+      const resultTop = validatePropertySearchCriteria(criteriaTop, "values-dues", t);
+      expect(resultTop).toEqual({ valid: false, message: "rateableValueInvalid" });
+
+      const criteriaExact: SearchCriteria = {
+        ...INITIAL_SEARCH_CRITERIA,
+        rateableValueFilter: "exact",
+        rateableValueFrom: "",
+      };
+      const resultExact = validatePropertySearchCriteria(criteriaExact, "values-dues", t);
+      expect(resultExact).toEqual({ valid: false, message: "rateableValueInvalid" });
     });
   });
 });

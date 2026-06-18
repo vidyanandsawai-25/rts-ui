@@ -54,6 +54,23 @@ export function validatePropertySearchCriteria(
     return { valid: false, message: firstMessage ?? t("noSearchCriteria") };
   }
 
+  if (tab === "values-dues") {
+    const filter = normalized.rateableValueFilter;
+    if (filter === "between") {
+      if (!normalized.rateableValueFrom || !normalized.rateableValueTo) {
+        return fail("rateableValueBetweenRequired", t);
+      }
+    } else if (filter === "top") {
+      if (!normalized.rateableValueFrom) {
+        return fail("rateableValueInvalid", t);
+      }
+    } else if (filter === "exact" || filter === "moreThan" || filter === "lessThan") {
+      if (!normalized.rateableValueFrom) {
+        return fail("rateableValueInvalid", t);
+      }
+    }
+  }
+
   if (!hasTabSearchInput(normalized, tab) && !selectedStatus) {
     return fail("noSearchCriteria", t);
   }

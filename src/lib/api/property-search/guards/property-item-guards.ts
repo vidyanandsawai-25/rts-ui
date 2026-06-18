@@ -119,6 +119,7 @@ function normalizePropertySearchApiItem(
     propertyDescription:
       readApiText(raw, "propertyDescription", "PropertyDescription") || null,
     mobile: formatMobileNumber(readApiText(raw, "mobile", "Mobile")) || null,
+    alternateMobileNo: formatMobileNumber(readApiText(raw, "alternateMobileNo", "AlternateMobileNo") || readApiText(raw, "alternateMobile", "AlternateMobile")) || null,
     propertyHolderName:
       readApiText(raw, "propertyHolderName", "PropertyHolderName") || null,
     occupierName: readApiText(raw, "occupierName", "OccupierName") || null,
@@ -185,6 +186,7 @@ export function normalizePropertySearchItem(
     category: toRawText(item.categoryName),
     description: toRawText(item.propertyDescription),
     mobile: formatMobileNumber(toRawText(item.mobile)),
+    alternateMobile: formatMobileNumber(toRawText(item.alternateMobileNo)),
     holderName: toRawText(item.propertyHolderName),
     holderNameMarathi: "",
     occupierName: toRawText(item.occupierName),
