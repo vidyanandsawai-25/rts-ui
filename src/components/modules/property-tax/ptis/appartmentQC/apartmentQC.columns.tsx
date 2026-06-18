@@ -178,7 +178,7 @@ export const getApartmentQCColumns = (
       return withHeaderTooltips(
         [
           srNoColumn,
-          { key: 'propertyNo', label: t('columns.partitionNo') },
+          { key: 'propertyNo', label: t('columns.propertyNo') },
           { key: 'oldPropertyNo', label: t('columns.oldPropertyNo') },
           {
             key: 'constructionYear',
@@ -336,7 +336,7 @@ export const getApartmentQCColumns = (
       return withHeaderTooltips(
         [
           srNoColumn,
-          { key: 'propertyNo', label: t('columns.partitionNo') },
+          { key: 'propertyNo', label: t('columns.propertyNo') },
           { key: 'oldPropertyNo', label: t('columns.oldPropertyNo') },
           {
             key: 'constructionYear',
