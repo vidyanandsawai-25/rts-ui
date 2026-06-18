@@ -275,7 +275,7 @@ describe('SocietyForm', () => {
     });
 
     describe('Form Validation', () => {
-        it('should show error toast for invalid email format', async () => {
+        it('should disable update button for invalid email format', async () => {
             (updatePropertySocietyDetailsAction as Mock).mockClear();
 
             render(
@@ -290,16 +290,10 @@ describe('SocietyForm', () => {
             fireEvent.change(societyEmailInput, { target: { value: 'invalid-email' } });
 
             const submitButton = screen.getByRole('button', { name: /Update Changes/i });
-            fireEvent.click(submitButton);
-
-            await waitFor(() => {
-                expect(toast.error).toHaveBeenCalled();
-            });
-
-            expect(updatePropertySocietyDetailsAction).not.toHaveBeenCalled();
+            expect(submitButton).toBeDisabled();
         });
 
-        it('should validate manager mobile number length', async () => {
+        it('should disable update button for invalid manager mobile number length', async () => {
             (updatePropertySocietyDetailsAction as Mock).mockClear();
 
             render(
@@ -309,6 +303,10 @@ describe('SocietyForm', () => {
                     locale="en"
                 />
             );
+
+            // Change land owner to trigger hasChanges
+            const landOwnerInput = screen.getByPlaceholderText('Land Owner');
+            fireEvent.change(landOwnerInput, { target: { value: 'New Owner' } });
 
             const managerContainer = document.getElementById('manager-mobile-container');
             const inputs = managerContainer?.querySelectorAll('input') as NodeListOf<HTMLInputElement>;
@@ -321,16 +319,10 @@ describe('SocietyForm', () => {
             fireEvent.change(inputs[4], { target: { value: '5' } });
 
             const submitButton = screen.getByRole('button', { name: /Update Changes/i });
-            fireEvent.click(submitButton);
-
-            await waitFor(() => {
-                expect(toast.error).toHaveBeenCalled();
-            });
-
-            expect(updatePropertySocietyDetailsAction).not.toHaveBeenCalled();
+            expect(submitButton).toBeDisabled();
         });
 
-        it('should validate manager mobile number for repeated digit sequences', async () => {
+        it('should disable update button for manager mobile number with repeated digit sequences', async () => {
             (updatePropertySocietyDetailsAction as Mock).mockClear();
 
             render(
@@ -340,6 +332,10 @@ describe('SocietyForm', () => {
                     locale="en"
                 />
             );
+
+            // Change land owner to trigger hasChanges
+            const landOwnerInput = screen.getByPlaceholderText('Land Owner');
+            fireEvent.change(landOwnerInput, { target: { value: 'New Owner' } });
 
             const managerContainer = document.getElementById('manager-mobile-container');
             const inputs = managerContainer?.querySelectorAll('input') as NodeListOf<HTMLInputElement>;
@@ -355,13 +351,7 @@ describe('SocietyForm', () => {
             fireEvent.change(inputs[9], { target: { value: '5' } });
 
             const submitButton = screen.getByRole('button', { name: /Update Changes/i });
-            fireEvent.click(submitButton);
-
-            await waitFor(() => {
-                expect(toast.error).toHaveBeenCalled();
-            });
-
-            expect(updatePropertySocietyDetailsAction).not.toHaveBeenCalled();
+            expect(submitButton).toBeDisabled();
         });
     });
 
