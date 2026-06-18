@@ -145,6 +145,17 @@ describe('combinePropertyColumns', () => {
       expect(reasonCol).toBeDefined();
     });
 
+    it('should render combined propertyNo correctly in history columns', () => {
+      const columns = getCombinePropertyHistoryColumns(mockT);
+      const propNoCol = columns.find(c => c.key === 'propertyNo');
+      expect(propNoCol).toBeDefined();
+
+      if (propNoCol?.render) {
+        const { container } = render(propNoCol.render('P1', mockReviewData[0], 0) as React.ReactElement);
+        expect(container.textContent).toBe('W1-P1-1');
+      }
+    });
+
     it('should not truncate short reasons (< 5 words)', () => {
       const columns = getCombinePropertyHistoryColumns(mockT);
       const reasonCol = columns.find(c => c.key === 'combineReason');
