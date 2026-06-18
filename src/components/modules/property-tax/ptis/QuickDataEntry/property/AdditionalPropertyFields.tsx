@@ -2,7 +2,7 @@ import { Input, SearchSelect } from '@/components/common';
 import { Label } from '@/components/common/label';
 import { PropertyBasicDetailsApiItem, TaxZoneItem } from '@/types/property-basic-details.types';
 import { sanitizeSurveyNo, sanitizeSubZoneNo, sanitizePositiveInteger, sanitizePlotArea } from '@/lib/utils/input-sanitization';
-import { propertyValidators, PROPERTY_VALIDATION_RULES } from '@/lib/utils/kyc-validation.constants';
+import { propertyValidators, PROPERTY_VALIDATION_RULES } from '@/lib/utils/kyc-validation/kyc-validation.constants';
 import { useState, useMemo } from 'react';
 
 interface AdditionalPropertyFieldsProps {
@@ -25,7 +25,7 @@ export const AdditionalPropertyFields = ({
     const [residentialToilets, setResidentialToilets] = useState(propertyData?.noOfResidentialToilets?.toString() ?? '');
     const [commercialToilets, setCommercialToilets] = useState(propertyData?.noOfCommercialToilets?.toString() ?? '');
     const [plotArea, setPlotArea] = useState(propertyData?.plotArea?.toString() ?? '');
-    
+
     const [showTaxZoneNoError, setShowTaxZoneNoError] = useState(false);
     const [showSurveyNoError, setShowSurveyNoError] = useState(false);
     const [showSubZoneNoError, setShowSubZoneNoError] = useState(false);
@@ -68,11 +68,10 @@ export const AdditionalPropertyFields = ({
                     placeholder={t('property.selectTaxZonePlaceholder') || 'Select Tax Zone'}
                     value={taxZoneId}
                     onChange={handleTaxZoneChange}
-                    className={`h-9 border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${
-                        showTaxZoneNoError && !taxZoneId
-                            ? 'border-red-300 focus:border-red-500'
-                            : ''
-                    }`}
+                    className={`h-9 border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${showTaxZoneNoError && !taxZoneId
+                        ? 'border-red-300 focus:border-red-500'
+                        : ''
+                        }`}
                 />
                 <input type="hidden" name="taxZoneId" value={taxZoneId} />
                 <input type="hidden" name="taxZoneNo" value={taxZoneNo} />
@@ -94,11 +93,10 @@ export const AdditionalPropertyFields = ({
                     placeholder="45/2B"
                     value={surveyNo}
                     maxLength={PROPERTY_VALIDATION_RULES.SURVEY_NO_MAX_LENGTH}
-                    className={`h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${
-                        showSurveyNoError && !propertyValidators.isValidSurveyNo(surveyNo)
-                            ? 'border-red-300 focus:border-red-500'
-                            : ''
-                    }`}
+                    className={`h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${showSurveyNoError && !propertyValidators.isValidSurveyNo(surveyNo)
+                        ? 'border-red-300 focus:border-red-500'
+                        : ''
+                        }`}
                     onChange={(e) => {
                         const sanitized = sanitizeSurveyNo(e.target.value);
                         setSurveyNo(sanitized);
@@ -108,7 +106,7 @@ export const AdditionalPropertyFields = ({
                 />
                 {showSurveyNoError && !propertyValidators.isValidSurveyNo(surveyNo) && (
                     <span className="text-xs text-red-500">
-                    {t('property.validation.invalidSurveyNo') }
+                        {t('property.validation.invalidSurveyNo')}
                     </span>
                 )}
             </div>
@@ -124,11 +122,10 @@ export const AdditionalPropertyFields = ({
                     placeholder="SZ-12"
                     value={subZoneNo}
                     maxLength={PROPERTY_VALIDATION_RULES.SUB_ZONE_NO_MAX_LENGTH}
-                    className={`h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${
-                        showSubZoneNoError && !propertyValidators.isValidSubZoneNo(subZoneNo)
-                            ? 'border-red-300 focus:border-red-500'
-                            : ''
-                    }`}
+                    className={`h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${showSubZoneNoError && !propertyValidators.isValidSubZoneNo(subZoneNo)
+                        ? 'border-red-300 focus:border-red-500'
+                        : ''
+                        }`}
                     onChange={(e) => {
                         const sanitized = sanitizeSubZoneNo(e.target.value);
                         setSubZoneNo(sanitized);
@@ -155,7 +152,7 @@ export const AdditionalPropertyFields = ({
                     placeholder="UPIC2024001234"
                     defaultValue={propertyData?.upicId ?? ''}
                     // className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                      className="h-9 text-sm bg-gray-50 text-gray-600 cursor-not-allowed border-gray-300"
+                    className="h-9 text-sm bg-gray-50 text-gray-600 cursor-not-allowed border-gray-300"
                 />
             </div>
 
@@ -170,17 +167,16 @@ export const AdditionalPropertyFields = ({
                 <Input
                     id="pd-residentialtoilet"
                     name="noOfResidentialToilets"
-                    type="number"
+                    type="text"
                     min="0"
                     step="1"
                     value={residentialToilets}
                     placeholder="0"
                     maxLength={PROPERTY_VALIDATION_RULES.RESIDENTIAL_TOILET_MAX_LENGTH}
-                    className={`h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${
-                        showResidentialToiletsError && (!propertyValidators.isValidPositiveNumber(residentialToilets) || residentialToilets === '0')
-                            ? 'border-red-300 focus:border-red-500'
-                            : ''
-                    }`}
+                    className={`h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${showResidentialToiletsError && (!propertyValidators.isValidPositiveNumber(residentialToilets) || residentialToilets === '0')
+                        ? 'border-red-300 focus:border-red-500'
+                        : ''
+                        }`}
                     onChange={(e) => {
                         const value = e.target.value;
                         // Prevent negative values
@@ -201,8 +197,8 @@ export const AdditionalPropertyFields = ({
                 />
                 {showResidentialToiletsError && (!propertyValidators.isValidPositiveNumber(residentialToilets) || residentialToilets === '0') && (
                     <span className="text-xs text-red-500">
-                        {residentialToilets === '0' 
-                            ? t('property.validation.toiletCountZero') 
+                        {residentialToilets === '0'
+                            ? t('property.validation.toiletCountZero')
                             : t('property.validation.invalidResidentialToilets')}
                     </span>
                 )}
@@ -219,17 +215,16 @@ export const AdditionalPropertyFields = ({
                 <Input
                     id="pd-commercialtoilet"
                     name="noOfCommercialToilets"
-                    type="number"
+                    type="text"
                     min="0"
                     step="1"
                     value={commercialToilets}
                     placeholder="0"
                     maxLength={PROPERTY_VALIDATION_RULES.COMMERCIAL_TOILET_MAX_LENGTH}
-                    className={`h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${
-                        showCommercialToiletsError && (!propertyValidators.isValidPositiveNumber(commercialToilets) || commercialToilets === '0')
-                            ? 'border-red-300 focus:border-red-500'
-                            : ''
-                    }`}
+                    className={`h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${showCommercialToiletsError && (!propertyValidators.isValidPositiveNumber(commercialToilets) || commercialToilets === '0')
+                        ? 'border-red-300 focus:border-red-500'
+                        : ''
+                        }`}
                     onChange={(e) => {
                         const value = e.target.value;
                         // Prevent negative values
@@ -265,16 +260,15 @@ export const AdditionalPropertyFields = ({
                 <Input
                     id="pd-plotarea"
                     name="plotArea"
-                    type="number"
+                    type="text"
                     min="0"
                     step="0.0001"
                     value={plotArea}
                     placeholder="1500.1234"
-                    className={`h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${
-                        showPlotAreaError && !propertyValidators.isValidPlotArea(plotArea)
-                            ? 'border-red-300 focus:border-red-500'
-                            : ''
-                    }`}
+                    className={`h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${showPlotAreaError && !propertyValidators.isValidPlotArea(plotArea)
+                        ? 'border-red-300 focus:border-red-500'
+                        : ''
+                        }`}
                     onChange={(e) => {
                         const value = e.target.value;
                         // Prevent negative values

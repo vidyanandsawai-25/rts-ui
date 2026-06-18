@@ -53,6 +53,8 @@ const AppartmentQCSection = ({
 
   const activeMainTab = searchParams.get('appartmentTab') || 'amenities';
   const activeSubTab = searchParams.get('subTab') || 'rateable';
+  const sortBy = searchParams.get('sortBy') || '';
+  const sortOrder = searchParams.get('sortOrder') || '';
   const [searchQuery, setSearchQuery] = useState(searchParams.get('searchTerm') || '');
   const [isAutoScrolling, setIsAutoScrolling] = useState(false);
   const isUpdatingFromUrl = useRef(false);
@@ -250,6 +252,8 @@ const AppartmentQCSection = ({
             activeFilters={activeFilters}
             onFilterChange={handleFilterChange}
             onFetchFilterOptions={fetchFilterOptions}
+            sortBy={sortBy}
+            sortOrder={sortOrder}
             wardId={wardId}
             propertyNo={propertyNo}
           />
@@ -265,26 +269,6 @@ const AppartmentQCSection = ({
         </div>
       </div>
 
-      {/* Property Details Edit Drawer */}
-      {/* {drawerOpen && (
-        drawerLoading ? (
-          <div className="fixed inset-0 z-50 bg-white/70 flex items-center justify-center">
-            <LoadingPage translationNamespace="ptis.loading" />
-          </div>
-        ) : (
-          <PropertyDetailsEditScreenNew
-            key={`property-edit-${selectedPropertyId || 'new'}`}
-            open={drawerOpen}
-            onClose={handleCloseDrawer}
-            onSaveOrClose={refetchTaxDetails}
-            propertyData={selectedPropertyData}
-            subTab={activeSubTab}
-            returnTo={activeMainTab as 'amenities' | 'commercial' | 'residential'}
-            initialFloorQCData={drawerLocalData?.floorQCData}
-            initialPropertyTypes={drawerLocalData?.propertyTypes}
-          />
-        )
-      )} */}
        <PropertyDetailsEditScreenNew
             key={`property-edit-${selectedPropertyId || 'new'}`}
             open={drawerOpen}

@@ -256,4 +256,90 @@ describe('useDigitInputs', () => {
       expect(result.current.value).toBe('9876543210');
     });
   });
+
+  describe('Focus/Blur behavior', () => {
+    it('should initialize with isFocused as false', () => {
+      const { result } = renderHook(() => useDigitInputs(10, ''));
+      expect(result.current.isFocused).toBe(false);
+    });
+
+    it('should set isFocused to true when handleFocus is called', () => {
+      const { result } = renderHook(() => useDigitInputs(10, ''));
+
+      act(() => {
+        result.current.handleFocus();
+      });
+
+      expect(result.current.isFocused).toBe(true);
+    });
+
+    it('should remain focused when blurring to another input within the group', () => {
+      const { result } = renderHook(() => useDigitInputs(10, ''));
+      const mockInputs = Array(10).fill(null).map(() => ({}));
+
+      mockInputs.forEach((input, i) => {
+        act(() => {
+          result.current.setRef(i)(input as unknown as HTMLInputElement);
+        });
+      });
+
+      act(() => {
+        result.current.handleFocus();
+      });
+      expect(result.current.isFocused).toBe(true);
+
+      const mockBlurEvent = {
+        relatedTarget: mockInputs[1],
+      } as unknown as React.FocusEvent<HTMLInputElement>;
+
+      act(() => {
+        result.current.handleBlur(mockBlurEvent);
+      });
+
+      expect(result.current.isFocused).toBe(true);
+    });
+
+    it('should set isFocused to false when blurring to an element outside the group', () => {
+      const { result } = renderHook(() => useDigitInputs(10, ''));
+      const mockInputs = Array(10).fill(null).map(() => ({}));
+
+      mockInputs.forEach((input, i) => {
+        act(() => {
+          result.current.setRef(i)(input as unknown as HTMLInputElement);
+        });
+      });
+
+      act(() => {
+        result.current.handleFocus();
+      });
+      expect(result.current.isFocused).toBe(true);
+
+      const mockBlurEvent = {
+        relatedTarget: document.createElement('div'),
+      } as unknown as React.FocusEvent<HTMLInputElement>;
+
+      act(() => {
+        result.current.handleBlur(mockBlurEvent);
+      });
+
+      expect(result.current.isFocused).toBe(false);
+    });
+  });
+
+  describe('Marathi Numbers Support', () => {
+    it('should translate Marathi/Devanagari digits in initialValue', () => {
+      const { result } = renderHook(() => useDigitInputs(10, '९८७६५४३२१०'));
+      expect(result.current.digits).toEqual(['9', '8', '7', '6', '5', '4', '3', '2', '1', '0']);
+      expect(result.current.value).toBe('9876543210');
+    });
+
+    it('should translate Marathi/Devanagari digits on handleChange', () => {
+      const { result } = renderHook(() => useDigitInputs(10, ''));
+      act(() => {
+        result.current.handleChange(0, '५');
+      });
+      expect(result.current.digits[0]).toBe('5');
+      expect(result.current.value).toBe('5');
+    });
+  });
 });

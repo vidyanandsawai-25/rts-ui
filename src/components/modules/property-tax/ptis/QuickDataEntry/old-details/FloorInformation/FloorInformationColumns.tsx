@@ -9,17 +9,20 @@ const renderCombinedArea = (value: unknown, t: (key: string) => string) => {
   const parts = valStr.split(' (');
   if (parts.length === 2) {
     return (
-      <div className="flex flex-col items-center justify-center py-1">
-        <span className="text-xs font-bold text-blue-700 whitespace-nowrap">
-          {parts[0]} <span className="text-black">({parts[1]}</span>
+      <div className="flex items-center justify-center gap-1.5 py-1">
+        <span className="text-xs font-semibold text-blue-700 whitespace-nowrap">
+          {parts[0]}
+        </span>
+        <span className="text-[10px] text-black font-bold whitespace-nowrap">
+          ({parts[1]}
         </span>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col items-center justify-center py-1">
-      <span className="text-xs font-bold text-blue-700 whitespace-nowrap">
+    <div className="flex items-center justify-center py-1">
+      <span className="text-xs font-semibold text-blue-700 whitespace-nowrap">
         {valStr}
       </span>
     </div>
@@ -79,14 +82,14 @@ export const getFloorInformationColumns = (t: (key: string) => string): Column<F
     key: 'carpetAreaCombined',
     label: t('oldDetails.carpetformheaderArea'),
     headerClassName: 'text-xs uppercase border-r border-white/30 font-semibold text-white text-center whitespace-nowrap',
-    width: '140px',
+    width: '160px',
     render: (value: unknown) => renderCombinedArea(value, t),
   },
   {
     key: 'builtupAreaCombined',
     label: t('oldDetails.builtupformheaderArea'),
     headerClassName: 'text-xs uppercase border-r border-white/30 font-semibold text-white text-center whitespace-nowrap',
-    width: '140px',
+    width: '160px',
     render: (value: unknown) => renderCombinedArea(value, t),
   },
 ];

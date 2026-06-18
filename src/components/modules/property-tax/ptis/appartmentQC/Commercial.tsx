@@ -40,6 +40,8 @@ const Commercial = ({
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
   const activeTab = searchParams.get("subTab") || "rateable";
+  const sortBy = searchParams.get("sortBy") || "";
+  const sortOrder = searchParams.get("sortOrder") || "";
 
   // Column filters
   const { activeFilters, handleFilterChange, fetchFilterOptions } = useColumnFilters({
@@ -68,6 +70,11 @@ const Commercial = ({
     router.push(`${pathname}/edit/${rowId}`);
   }, [pathname, router]);
 
+  const handleSort = useCallback((columnKey: string) => {
+    const nextSortOrder = sortBy === columnKey && sortOrder === "asc" ? "desc" : "asc";
+    updateQueryParams({ sortBy: columnKey, sortOrder: nextSortOrder, pageNumber: 1 });
+  }, [sortBy, sortOrder, updateQueryParams]);
+
   const tAqc = useTranslations("appartmentQC");
   const columns = useMemo(() => getApartmentQCColumns('commercial', activeTab, tAqc), [activeTab, tAqc]);
   const transformedData = useMemo(() => transformApartmentData(initialData, 'commercial'), [initialData]);
@@ -85,6 +92,9 @@ const Commercial = ({
         loading={isPending} isAutoScrolling={isAutoScrolling} onToggleAutoScroll={() => setIsAutoScrolling(!isAutoScrolling)}
         pageNumber={initialPageNumber} pageSize={initialPageSize} totalCount={initialTotalCount} totalPages={initialTotalPages}
         onPageChange={(p) => updateQueryParams({ pageNumber: p })} onPageSizeChange={(s) => updateQueryParams({ pageSize: s, pageNumber: 1 })}
+        sortBy={sortBy}
+        sortOrder={sortOrder}
+        onSort={handleSort}
         activeFilters={activeFilters}
         onFilterChange={handleFilterChange}
         onFetchFilterOptions={fetchFilterOptions}

@@ -69,9 +69,7 @@ export interface ApplicableTaxesProps {
   asseYearsResponse: PagedResponse<AssessmentYearRangeItem> | null;
   useGroupsResponse: PagedResponse<TypeOfUseGroupItem> | null;
   valuationTab: string;
-  taxApplicabilityResponse: TaxApplicabilityItem[] | null;
-  applicableCount: number;
-  exemptedCount: number;
+  taxApplicabilityPagedResponse: PagedResponse<TaxApplicabilityData> | null;
 }
 
 export interface TabNavigationProps {
