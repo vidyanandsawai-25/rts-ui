@@ -176,9 +176,23 @@ export const getCombinePropertyHistoryColumns = (
   onPreviewClick?: (row: PropertyRow) => void
 ): Column<PropertyRow>[] => {
   const columns: Column<PropertyRow>[] = [
-    { key: 'wardNo', label: t('ward'), align: 'center', width: '100px' },
-    { key: 'propertyNo', label: t('propertyNo'), align: 'center', width: '100px' },
-    { key: 'partitionNo', label: t('partitionNo') || 'Partition No', align: 'center', width: '100px' },
+    {
+      key: 'propertyNo',
+      label: t('propertyNo'),
+      align: 'center',
+      width: '180px',
+      render: (_val, row) => {
+        const ward = row.wardNo || '';
+        const prop = row.propertyNo || '';
+        const part = row.partitionNo || '';
+        const displayValue = [ward, prop, part].filter(Boolean).join('-');
+        return (
+          <span className="text-gray-800 font-semibold text-[12px]">
+            {displayValue}
+          </span>
+        );
+      },
+    },
     { key: 'oldPropertyNo', label: t('oldPropertyNo'), align: 'center', width: '100px' },
     { key: 'propertyDescription', label: t('propertyType'), align: 'left' },
     { key: 'ownerName', label: t('ownerName'), align: 'left' },
