@@ -1,8 +1,9 @@
 
 {
- "columns": {
+  "columns": {
+    "srNo": "Sr. No.",
     "propertyNo": "Property No",
-    "partitionNo": "Partition No.",
+    "partitionNo": "Property No.",
     "oldPropertyNo": "Old Property No.",
     "wingName": "Wing",
     "shopNo": "Shop No.",
@@ -19,7 +20,8 @@
     "assessmentYear": "Assessment Year",
     "asstYear": "Asst Year",
     "constructionYear": "Construction Year",
-    "surveyConstructionYear": "Survey Construction Year",
+    "OldConstructionYear": "Old Construction Year",
+    "surveyConstructionYear": "Construction Year",
     "conYear": "Con Year",
     "constructionType": "Construction Type",
     "conType": "Con Type",
@@ -137,6 +139,7 @@
     }
   },
   "tooltips": {
+    "srNo": "Serial Number",
     "propertyNo": "Property Number",
     "oldPropertyNo": "Old Property Number", 
     "wing": "Wing Name",
