@@ -2,11 +2,11 @@
 {
  "columns": {
     "propertyNo": "Property No",
-    "partitionNo": "Partition No.",
+    "partitionNo": "Property No.",
     "oldPropertyNo": "Old Property No.",
     "wingName": "Wing",
-    "shopNo": "Shop No.",
-    "flatNo": "Flat No.",
+    "shopNo": "Flat/Shop No.",
+    "flatNo": "Flat/Shop No.",
     "ownerName": "Owner Name",
     "occupierName": "Occupier Name",
     "shopName": "Shop Name",
@@ -14,7 +14,7 @@
     "renterName": "Renter Name",
     "description": "Description",
     "type": "Type",
-    "apartmentType": "Type",
+    "apartmentType": " Type",
     "floor": "Floor",
     "assessmentYear": "Assessment Year",
     "asstYear": "Asst Year",

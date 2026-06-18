@@ -167,8 +167,8 @@ export const getApartmentQCColumns = (
     if (activeSubTab === 'dual-method') {
       return withHeaderTooltips(
         [
-          { key: 'propertyNo', label: t('columns.partitionNo') },
-          { key: 'oldPropertyNo', label: t('columns.oldPropertyNo') },
+          { key: 'propertyNo', label: t('columns.partitionNo'), cellClassName: 'font-semibold text-blue-700 bg-blue-50' },
+          { key: 'oldPropertyNo', label: t('columns.oldPropertyNo'), cellClassName: 'font-semibold text-amber-700 bg-amber-50' },
           { key: 'wing', label: t('columns.wingName') },
           { key: 'flatOrShopNo', label: t('columns.shopNo') },
           {
@@ -226,8 +226,8 @@ export const getApartmentQCColumns = (
     } else if (activeSubTab === 'capital') {
       return withHeaderTooltips(
         [
-          { key: 'propertyNo', label: t('columns.propertyNo') },
-          { key: 'oldPropertyNo', label: t('columns.oldPropertyNo') },
+          { key: 'propertyNo', label: t('columns.propertyNo'), cellClassName: 'font-semibold text-blue-700 bg-blue-50' },
+          { key: 'oldPropertyNo', label: t('columns.oldPropertyNo'), cellClassName: 'font-semibold text-amber-700 bg-amber-50' },
           { key: 'wing', label: t('columns.wingName') },
           { key: 'flatOrShopNo', label: t('columns.shopNo') },
           { key: 'ocDate', label: t('columns.ocDate') },
@@ -268,8 +268,8 @@ export const getApartmentQCColumns = (
     } else {
       return withHeaderTooltips(
         [
-          { key: 'propertyNo', label: t('columns.propertyNo') },
-          { key: 'oldPropertyNo', label: t('columns.oldPropertyNo') },
+          { key: 'propertyNo', label: t('columns.propertyNo'), cellClassName: 'font-semibold text-blue-700 bg-blue-50' },
+          { key: 'oldPropertyNo', label: t('columns.oldPropertyNo'), cellClassName: 'font-semibold text-amber-700 bg-amber-50' },
           { key: 'wing', label: t('columns.wingName') },
           { key: 'flatOrShopNo', label: t('columns.shopNo') },
           {
@@ -314,9 +314,8 @@ export const getApartmentQCColumns = (
     if (activeSubTab === 'dual-method') {
       return withHeaderTooltips(
         [
-          { key: 'propertyNo', label: t('columns.partitionNo') },
-          { key: 'oldPropertyNo', label: t('columns.oldPropertyNo') },
-          { key: 'wing', label: t('columns.wingName') },
+          { key: 'propertyNo', label: t('columns.partitionNo'), cellClassName: 'font-semibold text-blue-700 bg-blue-50' },
+          { key: 'oldPropertyNo', label: t('columns.oldPropertyNo'), cellClassName: 'font-semibold text-amber-700 bg-amber-50' },
           { key: 'flatOrShopNo', label: t('columns.flatNo') },
           {
             key: 'ownerName',
@@ -365,9 +364,8 @@ export const getApartmentQCColumns = (
     } else if (activeSubTab === 'capital') {
       return withHeaderTooltips(
         [
-          { key: 'propertyNo', label: t('columns.propertyNo') },
-          { key: 'oldPropertyNo', label: t('columns.oldPropertyNo') },
-          { key: 'wing', label: t('columns.wingName') },
+          { key: 'propertyNo', label: t('columns.propertyNo'), cellClassName: 'font-semibold text-blue-700 bg-blue-50' },
+          { key: 'oldPropertyNo', label: t('columns.oldPropertyNo'), cellClassName: 'font-semibold text-amber-700 bg-amber-50' },
           { key: 'flatOrShopNo', label: t('columns.flatNo') },
           {
             key: 'ownerName',
@@ -408,9 +406,8 @@ export const getApartmentQCColumns = (
     } else {
       return withHeaderTooltips(
         [
-          { key: 'propertyNo', label: t('columns.propertyNo') },
-          { key: 'oldPropertyNo', label: t('columns.oldPropertyNo') },
-          { key: 'wing', label: t('columns.wingName') },
+          { key: 'propertyNo', label: t('columns.propertyNo'), cellClassName: 'font-semibold text-blue-700 bg-blue-50' },
+          { key: 'oldPropertyNo', label: t('columns.oldPropertyNo'), cellClassName: 'font-semibold text-amber-700 bg-amber-50' },
           { key: 'flatOrShopNo', label: t('columns.flatNo') },
           {
             key: 'ownerName',
@@ -452,7 +449,7 @@ export const getApartmentQCColumns = (
 
   // Fallback / Amenities columns
   const baseColumns = [
-    { key: 'propertyNo', label: t('columns.propertyNo') },
+    { key: 'propertyNo', label: t('columns.propertyNo'), cellClassName: 'font-semibold text-blue-700 bg-blue-50' },
     { key: 'floor', label: t('columns.floor'), render: renderMultiRecord },
     { key: 'assessmentYear', label: t('columns.asstYear'), render: renderMultiRecord },
     { key: 'constructionYear', label: t('columns.conYear'), render: renderMultiRecord },
