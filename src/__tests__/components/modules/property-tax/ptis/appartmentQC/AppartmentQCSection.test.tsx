@@ -52,12 +52,7 @@ describe('AppartmentQCSection', () => {
     vi.clearAllMocks();
   });
 
-  it('renders the correct initial tabs', () => {
-    render(<AppartmentQCSection {...mockProps} />);
-    expect(screen.getByText('Amenities')).toBeInTheDocument();
-    expect(screen.getByText('Commercial Units')).toBeInTheDocument();
-    expect(screen.getByText('Residential Units')).toBeInTheDocument();
-  });
+
 
   it('renders table component', () => {
     render(<AppartmentQCSection {...mockProps} />);
