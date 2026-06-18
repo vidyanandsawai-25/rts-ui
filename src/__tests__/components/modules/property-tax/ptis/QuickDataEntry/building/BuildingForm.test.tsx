@@ -32,6 +32,10 @@ vi.mock('next-intl', () => ({
     'building.saveSuccess': 'Building permissions saved successfully!',
     'building.saveError': 'Error saving building permissions!',
     'common.saveChanges': 'Save Changes',
+    'building.errors.allZeros': 'Certificate number cannot be all zeros.',
+    'building.errors.dummyText': 'Dummy, sequential, or repetitive placeholder text is not allowed.',
+    'building.errors.invalidCharacters': 'Certificate number contains invalid characters.',
+    'building.errors.futureDate': 'Issue date cannot be in the future.',
   }[key] || key),
   useLocale: () => 'en',
 }));
@@ -187,6 +191,39 @@ describe('BuildingForm', () => {
     });
   });
 
+  it('displays error when certificate number is all zeros', async () => {
+    const zeroData: PropertyCertificateWithStatusDto[] = [
+      { certificateTypeId: 99, certificateTypeName: "Unknown Certificate", displayOrder: 99, hasCertificate: false, propertyCertificateId: null, isActive: true, certificateNo: null, issueDate: "2023-01-01T00:00:00", documentGuid: "guid-999", fileName: "zero.pdf" }
+    ];
+    render(<BuildingForm initialBuildingPermission={zeroData} propertyId="123" />);
+    const inputs = screen.getAllByPlaceholderText(/Enter certificate number/i);
+    
+    // single '0' doesn't trigger repeated digits (length < 2) and has valid length (min 1)
+    fireEvent.change(inputs[0], { target: { value: '0' } });
+
+    const saveBtn = screen.getByRole('button', { name: /Save Changes/i });
+    fireEvent.click(saveBtn);
+
+    await waitFor(() => {
+      expect(screen.getAllByText("Certificate number cannot be all zeros.")[0]).toBeInTheDocument();
+    });
+  });
+
+  it('displays error when certificate number is dummy text', async () => {
+    render(<BuildingForm initialBuildingPermission={mockInitialData} propertyId="123" />);
+    const inputs = screen.getAllByPlaceholderText(/Enter certificate number/i);
+    
+    // 'test12345' has length 9 (>= 8) and is not repeated, so it passes length check, then triggers dummyText check.
+    fireEvent.change(inputs[0], { target: { value: 'test12345' } });
+
+    const saveBtn = screen.getByRole('button', { name: /Save Changes/i });
+    fireEvent.click(saveBtn);
+
+    await waitFor(() => {
+      expect(screen.getAllByText("Dummy, sequential, or repetitive placeholder text is not allowed.")[0]).toBeInTheDocument();
+    });
+  });
+
   it('validates Commencement Certificate format correctly', async () => {
     const copData: PropertyCertificateWithStatusDto[] = [
       { certificateTypeId: 2, certificateTypeName: "Commencement Certificate (CC)", displayOrder: 20, hasCertificate: false, propertyCertificateId: null, isActive: true, certificateNo: null, issueDate: "2023-01-01T00:00:00", documentGuid: "guid-456", fileName: "cc.pdf" }
@@ -202,6 +239,21 @@ describe('BuildingForm', () => {
 
     await waitFor(() => {
       expect(screen.getAllByText("common.validation.numberInvalidCOP")[0]).toBeInTheDocument();
+    });
+  });
+
+  it('displays error when certificate number has dirty/invalid characters', async () => {
+    render(<BuildingForm initialBuildingPermission={mockInitialData} propertyId="123" />);
+    const inputs = screen.getAllByPlaceholderText(/Enter certificate number/i);
+    
+    // 'BP-123#45' has length 9 (>= 8) and has '#' which is invalid
+    fireEvent.change(inputs[0], { target: { value: 'BP-123#45' } });
+
+    const saveBtn = screen.getByRole('button', { name: /Save Changes/i });
+    fireEvent.click(saveBtn);
+
+    await waitFor(() => {
+      expect(screen.getAllByText("Certificate number contains invalid characters.")[0]).toBeInTheDocument();
     });
   });
 

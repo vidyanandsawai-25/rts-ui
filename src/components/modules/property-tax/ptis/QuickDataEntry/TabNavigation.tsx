@@ -139,7 +139,7 @@ export function TabNavigation() {
               key={tab.href}
               href={tabHref}
               className={[
-                'inline-flex items-center gap-1 px-2 py-2 text-[11px] rounded-md border font-semibold transition-all hover:shadow-md',
+                'inline-flex items-center gap-1 px-2 py-2 text-[11px] rounded-md border font-semibold transition-all hover:shadow-md whitespace-nowrap',
                 isActive
                   ? `bg-linear-to-br ${gradientClass} text-white shadow-lg`
                   : 'bg-white text-gray-600 border-gray-300',

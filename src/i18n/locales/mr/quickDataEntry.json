@@ -262,7 +262,7 @@
         "Society": "सोसायटी",
         "BuildingPermission": "इमारत परवानगी",
         "FloorSubmission": "मजला",
-        "Discount": "सवलत",
+        "Discount": "सवलत आणि सामाजिक डेटा",
         "OldDetails": "जुने तपशील",
         "OldTaxation": "जुना कर आकारणी",
         "FloorInformation": "मजला माहिती",
@@ -671,7 +671,10 @@
             "cannotEnableWithoutNumber": "प्रमाणपत्र क्रमांकाशिवाय प्रमाणपत्र सक्रिय करता येणार नाही.",
             "futureDate": "प्रमाणपत्र जारी करण्याची तारीख भविष्यातील असू शकत नाही.",
             "numberExceedsLimit": "प्रमाणपत्र क्रमांक 100 अक्षरांपेक्षा जास्त असू शकत नाही.",
-            "notFound": "प्रमाणपत्र आढळले नाही."
+            "notFound": "प्रमाणपत्र आढळले नाही.",
+            "allZeros": "प्रमाणपत्र क्रमांक सर्व शून्य असू शकत नाही.",
+            "dummyText": "डमी, अनुक्रमिक किंवा पुनरावृत्ती प्लेसहोल्डर मजकुरास अनुमती नाही.",
+            "invalidCharacters": "प्रमाणपत्र क्रमांकामध्ये अवैध अक्षरे आहेत. फक्त अक्षरे, अंक, हायफन, अंडरस्कोर आणि स्लॅशला परवानगी आहे।"
         }
     },
     "floor": {
@@ -978,6 +981,11 @@
         "statusIncomplete": "अपूर्ण",
         "showActiveFirst": "सक्रिय आधी दाखवा",
         "noDiscountsFound": "कोणतीही सवलत वैशिष्ट्ये आढळली नाहीत",
+        "fillRequiredBeforeUploadHint": "कृपया दस्तऐवज अपलोड सक्षम करण्यासाठी वरील आवश्यक तपशील प्रविष्ट करा.",
+        "previewNotAvailable": "पूर्वावलोकन उपलब्ध नाही",
+        "previewNotAvailableDesc": "हे फाईल स्वरूप ब्राउझरमध्ये पूर्वावलोकन केले जाऊ शकत नाही. आपण ते पाहण्यासाठी डाउनलोड करू शकता.",
+        "downloadToView": "पाहण्यासाठी डाउनलोड करा",
+        "detectingDocumentType": "दस्तऐवज प्रकार शोधत आहे...",
         "incompleteCertificates": "खालील वैशिष्ट्यांमध्ये अपूर्ण आवश्यक फील्ड आहेत",
         "bannerNavigationHint": "थेट संबंधित फील्डवर जाण्यासाठी वैशिष्ट्य टॅगवर क्लिक करा.",
         "bannerTagAriaLabel": "{name} साठी अपूर्ण फील्ड पहा",
@@ -1094,7 +1102,9 @@
             "NUMBER_OF_TREES": "झाडांची संख्या",
             "NUMBER_OF_LIFTS": "लिफ्टची संख्या",
             "NUMBER_OF_SOLAR_UNITS": "सौर युनिट्सची संख्या",
-            "NUMBER_OF_SWIMMING_POOLS": "स्विमिंग पूलची संख्या"
+            "NUMBER_OF_SWIMMING_POOLS": "स्विमिंग पूलची संख्या",
+            "NO_OF_RESIDENTIAL_TOILET": "निवासी शौचालयांची संख्या",
+            "NO_OF_COMMERCIAL_TOILET": "व्यावसायिक शौचालयांची संख्या"
         },
         "socialPlaceholders": {
             "enterValue": "मूल्य प्रविष्ट करा",

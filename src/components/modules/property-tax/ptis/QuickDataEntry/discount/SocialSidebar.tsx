@@ -3,15 +3,18 @@
 import React from "react";
 import { Filter, ShieldCheck, AlertCircle, EyeOff } from "lucide-react";
 import { ToggleSwitch, SearchInput, Badge } from "@/components/common";
-import { DiscountAttributeState } from "@/types/discount.types";
+import { FlatSocialAttributeState } from "@/lib/utils/social-details";
 import { getLocalizedName } from "@/lib/utils/social-details";
 
-interface DiscountSidebarProps {
+import { checkCompleteness, hasAnyError } from "@/lib/utils/social-guidelines";
+
+interface SocialSidebarProps {
     searchTerm: string;
     onSearchChange: (value: string) => void;
     showActiveFirst: boolean;
     onShowActiveChange: (checked: boolean) => void;
-    discounts: DiscountAttributeState[];
+    attributes: FlatSocialAttributeState[];
+    socialData: Record<number, FlatSocialAttributeState>;
     selectedId: number | null;
     onSelect: (id: number) => void;
     onToggleEnabled: (id: number, checked: boolean) => void;
@@ -22,20 +25,22 @@ interface DiscountSidebarProps {
     };
 }
 
-export const DiscountSidebar: React.FC<DiscountSidebarProps> = ({
+export const SocialSidebar: React.FC<SocialSidebarProps> = ({
     searchTerm,
     onSearchChange,
     showActiveFirst,
     onShowActiveChange,
-    discounts,
+    attributes,
+    socialData,
     selectedId,
     onToggleEnabled,
     onSelect,
     validationErrors,
     t,
 }) => {
-    const getStatusBadge = (discount: DiscountAttributeState) => {
-        if (!discount.enabled) {
+    const getStatusBadge = (attr: FlatSocialAttributeState) => {
+        const isEnabled = attr.bitValue === true;
+        if (!isEnabled) {
             return (
                 <Badge variant="secondary" size="sm" icon={EyeOff}>
                     {t("discount.statusDisabled") || "Disabled"}
@@ -43,7 +48,7 @@ export const DiscountSidebar: React.FC<DiscountSidebarProps> = ({
             );
         }
 
-        const errorMsg = validationErrors?.[discount.id];
+        const errorMsg = hasAnyError(attr, socialData, validationErrors);
         if (errorMsg) {
             return (
                 <Badge
@@ -57,24 +62,8 @@ export const DiscountSidebar: React.FC<DiscountSidebarProps> = ({
             );
         }
 
-        const isDocReq = discount.isDocumentRequired === true;
-        const hasDoc = (discount.documentGuid?.trim() ?? "") !== "" || !!discount.documentBindingId;
-        const isDocCompleted = !isDocReq || hasDoc;
-        const dataTypeUpper = (discount.dataType || "").toUpperCase();
-
-        // Check if value is filled when required
-        let hasValue = true;
-        if (dataTypeUpper === "INT" && (discount.intValue === null || discount.intValue === undefined || String(discount.intValue).trim() === "")) {
-            hasValue = false;
-        } else if (dataTypeUpper === "DECIMAL" && (discount.decimalValue === null || discount.decimalValue === undefined || String(discount.decimalValue).trim() === "")) {
-            hasValue = false;
-        } else if (dataTypeUpper === "VARCHAR" && (!discount.textValue || discount.textValue.trim() === "")) {
-            hasValue = false;
-        } else if (dataTypeUpper === "DATE" && (!discount.dateValue || discount.dateValue.trim() === "")) {
-            hasValue = false;
-        }
-
-        if (isDocCompleted && hasValue) {
+        const isComplete = checkCompleteness(attr, socialData);
+        if (isComplete) {
             return (
                 <Badge
                     variant="success"
@@ -106,7 +95,7 @@ export const DiscountSidebar: React.FC<DiscountSidebarProps> = ({
                 <SearchInput
                     value={searchTerm}
                     onChange={onSearchChange}
-                    placeholder={t("discount.searchPlaceholder") || "Search discount attributes..."}
+                    placeholder={t("discount.searchPlaceholder") || "Search social attributes..."}
                     className="w-full mb-0 shadow-sm"
                 />
 
@@ -130,20 +119,20 @@ export const DiscountSidebar: React.FC<DiscountSidebarProps> = ({
 
             {/* Scrollable list */}
             <div className="flex-1 overflow-y-auto pr-1 space-y-2 scrollbar-thin scrollbar-thumb-blue-100">
-                {discounts.length === 0 ? (
+                {attributes.length === 0 ? (
                     <div className="text-center py-8 text-sm font-semibold text-gray-400">
                         {t("discount.noDiscountsFound") || "No attributes found"}
                     </div>
                 ) : (
-                    discounts.map((discount) => {
-                        const isSelected = selectedId === discount.id;
-                        const hasError = discount.enabled && !!validationErrors?.[discount.id];
+                    attributes.map((attr) => {
+                        const isSelected = selectedId === attr.socialAttributeId;
+                        const errorMsg = hasAnyError(attr, socialData, validationErrors);
+                        const hasError = attr.bitValue === true && !!errorMsg;
                         const displayName = getLocalizedName(
-                            discount.socialAttributeCode,
-                            discount.socialAttributeName,
+                            attr.socialAttributeCode,
+                            attr.socialAttributeName,
                             t
                         );
-
 
                         const cardClass = isSelected
                             ? hasError
@@ -155,9 +144,9 @@ export const DiscountSidebar: React.FC<DiscountSidebarProps> = ({
 
                         return (
                             <div
-                                key={discount.id}
-                                data-certificate-id={discount.id}
-                                onClick={() => onSelect(discount.id)}
+                                key={attr.socialAttributeId}
+                                data-certificate-id={attr.socialAttributeId}
+                                onClick={() => onSelect(attr.socialAttributeId)}
                                 className={`group p-3 border rounded-xl cursor-pointer transition-all duration-200 flex flex-col gap-2 relative ${cardClass}`}
                             >
                                 {/* Active Selection Border Indicator */}
@@ -179,15 +168,15 @@ export const DiscountSidebar: React.FC<DiscountSidebarProps> = ({
                                     </span>
                                     <div onClick={(e) => e.stopPropagation()} className="cursor-pointer">
                                         <ToggleSwitch
-                                            checked={discount.enabled}
-                                            onChange={(checked) => onToggleEnabled(discount.id, checked)}
+                                            checked={attr.bitValue === true}
+                                            onChange={(checked) => onToggleEnabled(attr.socialAttributeId, checked)}
                                             showPopup={false}
                                         />
                                     </div>
                                 </div>
 
                                 <div className="flex justify-between items-center pl-1.5">
-                                    {getStatusBadge(discount)}
+                                    {getStatusBadge(attr)}
                                 </div>
                             </div>
                         );

@@ -3,7 +3,8 @@
 import React from "react";
 import { Eye, FileText, ShieldCheck, Download, UploadCloud, Loader2 } from "lucide-react";
 import { Button, Badge } from "@/components/common";
-import { viewDocumentClient, downloadDocumentClient } from "@/lib/utils/document-client-utils";
+import { downloadDocumentClient, getDocumentBlobUrl } from "@/lib/utils/document-client-utils";
+import { DocumentViewerModal } from "@/components/common";
 import { toast } from "sonner";
 import { useLocale } from "next-intl";
 import { UploadDropzone } from "./UploadDropzone";
@@ -20,6 +21,7 @@ interface DocumentAttachmentProps {
     documentError?: string;
     onFileUpload: (file: File) => void;
     t: (key: string) => string;
+    label?: string;
 }
 
 export const DocumentAttachment: React.FC<DocumentAttachmentProps> = ({
@@ -33,23 +35,46 @@ export const DocumentAttachment: React.FC<DocumentAttachmentProps> = ({
     documentError,
     onFileUpload,
     t,
+    label,
 }) => {
     const locale = useLocale();
     const [isViewing, setIsViewing] = React.useState(false);
     const [isDownloading, setIsDownloading] = React.useState(false);
+    const [viewerData, setViewerData] = React.useState<{ isOpen: boolean; url: string; name: string } | null>(null);
 
     const isAnyActionRunning = !!isUploading || isViewing || isDownloading;
+
+    // Cleanup blob url on unmount or when viewerData changes
+    React.useEffect(() => {
+        return () => {
+            if (viewerData?.url && viewerData.url.startsWith("blob:")) {
+                URL.revokeObjectURL(viewerData.url);
+            }
+        };
+    }, [viewerData]);
 
     const handleViewDocument = async () => {
         if (!documentGuid) return;
         setIsViewing(true);
         try {
-            await viewDocumentClient(documentGuid, locale);
+            const { url } = await getDocumentBlobUrl(documentGuid, locale);
+            setViewerData({
+                isOpen: true,
+                url,
+                name: fileName || "document"
+            });
         } catch (error: unknown) {
             toast.error(error instanceof Error ? error.message : "Failed to view document");
         } finally {
             setIsViewing(false);
         }
+    };
+
+    const closeViewer = () => {
+        if (viewerData?.url && viewerData.url.startsWith("blob:")) {
+            URL.revokeObjectURL(viewerData.url);
+        }
+        setViewerData(null);
     };
 
     const handleDownloadDocument = async () => {
@@ -64,6 +89,7 @@ export const DocumentAttachment: React.FC<DocumentAttachmentProps> = ({
         }
     };
 
+    // State: No document at all — show upload dropzone
     if (!documentGuid && !hasDocumentBinding) {
         return (
             <UploadDropzone
@@ -77,6 +103,7 @@ export const DocumentAttachment: React.FC<DocumentAttachmentProps> = ({
         );
     }
 
+    // State: Document binding exists but GUID is unavailable (page refresh scenario)
     if (!documentGuid && hasDocumentBinding) {
         return (
             <PreviousAttachmentInfo
@@ -157,6 +184,15 @@ export const DocumentAttachment: React.FC<DocumentAttachmentProps> = ({
                     />
                 </label>
             </div>
+            {viewerData && (
+                <DocumentViewerModal
+                    isOpen={viewerData.isOpen}
+                    onClose={closeViewer}
+                    fileUrl={viewerData.url}
+                    fileName={viewerData.name}
+                    label={label}
+                />
+            )}
         </div>
     );
 };

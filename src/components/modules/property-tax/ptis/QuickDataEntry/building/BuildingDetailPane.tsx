@@ -7,6 +7,7 @@ import { CertificateData } from "@/types/building-permission.types";
 import { mapTypeNameToKey } from "@/lib/utils/building-helpers";
 import { DocumentAttachment } from "./DocumentAttachment";
 import { useConfirm } from "@/components/common/ConfirmProvider";
+import { checkBuildingRequiredFields } from "@/lib/validation/building/checkBuildingRequiredFields";
 
 interface BuildingDetailPaneProps {
     data: CertificateData | null | undefined;
@@ -14,7 +15,7 @@ interface BuildingDetailPaneProps {
     onFileUpload: (file: File) => void;
     validationError?: string;
     fieldErrors?: { number?: string; date?: string; document?: string };
-    t: (key: string) => string;
+    t: (key: string, values?: Record<string, string | number>) => string;
 }
 
 export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
@@ -26,6 +27,14 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
     t,
 }) => {
     const { confirm } = useConfirm();
+
+    const maxDate = React.useMemo(() => {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
+    }, []);
 
     const handleFileUploadWithConfirm = (file: File) => {
         if (data && data.documentGuid) {
@@ -91,6 +100,8 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
         !!validationError && (!data.documentGuid || data.documentGuid.trim() === "")
     );
 
+    const isRequiredFieldMissing = data ? !!checkBuildingRequiredFields(data, t) : false;
+
     return (
         <div className={`flex flex-col min-h-[300px] lg:h-[calc(100vh-340px)] border rounded-xl shadow-sm p-4 justify-between transition-opacity ${
             isDisabled ? "bg-gray-50 border-gray-200 opacity-75" : "bg-white border-blue-100"
@@ -134,6 +145,7 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
                         <Label className="text-sm font-bold text-blue-800">{t("building.certificateDate")}<span className="text-red-500 ml-0.5">*</span></Label>
                         <Input
                             type="date"
+                            max={maxDate}
                             value={data.date}
                             onChange={(e) => onInputChange("date", e.target.value)}
                             placeholder={t("building.certificateDatePlaceholder")}
@@ -156,12 +168,18 @@ export const BuildingDetailPane: React.FC<BuildingDetailPaneProps> = ({
                         documentGuid={data.documentGuid}
                         fileName={data.fileName}
                         isUploading={data.isUploading}
-                        isDisabled={isDisabled}
+                        isDisabled={isDisabled || isRequiredFieldMissing}
                         isDocumentInvalid={isDocumentInvalid}
                         documentError={fieldErrors?.document || validationError}
                         onFileUpload={handleFileUploadWithConfirm}
                         t={t}
+                        label={displayName}
                     />
+                    {isRequiredFieldMissing && !isDisabled && (
+                        <p className="text-xs font-semibold text-amber-600 mt-1">
+                            {t("discount.fillRequiredBeforeUploadHint") || "Please enter the required details above to enable document upload."}
+                        </p>
+                    )}
                 </div>
             </div>
 

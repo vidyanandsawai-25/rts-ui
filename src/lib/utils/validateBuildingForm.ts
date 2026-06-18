@@ -65,12 +65,12 @@ const PROPERTY_IDENTITY_CERTIFICATES = [
     "Address Verification Certificate"
 ];
 
-interface LengthRule {
+export interface LengthRule {
     min: number;
     max: number;
 }
 
-const getCertificateLengthRule = (typeName?: string): LengthRule => {
+export const getCertificateLengthRule = (typeName?: string): LengthRule => {
     if (!typeName) return { min: 1, max: 100 };
     if (FINANCIAL_TAX_CERTIFICATES.includes(typeName)) return { min: 6, max: 25 };
     if (BUILDING_APPROVAL_CERTIFICATES.includes(typeName)) return { min: 8, max: 40 };
@@ -82,6 +82,28 @@ const getCertificateLengthRule = (typeName?: string): LengthRule => {
 const isRepeatedNumber = (val: string): boolean => {
     if (val.length < 2) return false;
     return /^([a-zA-Z0-9])\1+$/.test(val);
+};
+
+const isDummyOrRepeated = (val: string): boolean => {
+    if (/^(.)\1+$/.test(val)) return true;
+    const lowercaseVal = val.toLowerCase();
+    const dummyWords = [
+        "dummy", "test", "demo", "placeholder", "nil", "none", "null", 
+        "sample", "temp", "qwerty", "asdf", "xyz", "abc"
+    ];
+    const sequences = [
+        "123456", "234567", "345678", "456789", "012345",
+        "987654", "876543", "765432", "654321", "543210",
+        "abcdef", "bcdefg", "cdefgh", "defghi", "efghij", "fghijk",
+        "fedcba"
+    ];
+    if (dummyWords.some(word => lowercaseVal.includes(word)) || lowercaseVal === "na" || lowercaseVal === "n/a") {
+        return true;
+    }
+    if (sequences.some(seq => lowercaseVal.includes(seq))) {
+        return true;
+    }
+    return false;
 };
 
 export const validateBuildingForm = (
@@ -132,6 +154,17 @@ export const validateBuildingForm = (
                             fieldErrorsForCert.number = t("validation.numberLength", { min: rule.min, max: rule.max });
                         }
                     }
+                }
+            }
+
+            // Additional checks from feature branch (HEAD)
+            if (!fieldErrorsForCert.number) {
+                if (/^0+$/.test(trimmedNumber)) {
+                    fieldErrorsForCert.number = t("building.errors.allZeros");
+                } else if (!/^[a-zA-Z0-9\-_/]+$/.test(trimmedNumber)) {
+                    fieldErrorsForCert.number = t("building.errors.invalidCharacters");
+                } else if (isDummyOrRepeated(trimmedNumber)) {
+                    fieldErrorsForCert.number = t("building.errors.dummyText");
                 }
             }
         }

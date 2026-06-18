@@ -264,7 +264,7 @@
         "BuildingPermission": "Building Permission",
         "FloorSubmission": "Floor",
         "Floor": "Floor",
-        "Discount": "Discount",
+        "Discount": "Discount & Social Data",
         "OldDetails": "Old Details",
         "OldTaxation": "Old Taxation",
         "FloorInformation": "Floor Information",
@@ -672,7 +672,10 @@
             "cannotEnableWithoutNumber": "Cannot enable certificate without a certificate number.",
             "futureDate": "Issue date cannot be in the future.",
             "numberExceedsLimit": "Certificate number cannot exceed 100 characters.",
-            "notFound": "Certificate not found."
+            "notFound": "Certificate not found.",
+            "allZeros": "Certificate number cannot be all zeros.",
+            "dummyText": "Dummy, sequential, or repetitive placeholder text is not allowed.",
+            "invalidCharacters": "Certificate number contains invalid characters. Only alphanumeric, hyphens, underscores, and slashes are allowed."
         }
     },
     "floor": {
@@ -979,6 +982,11 @@
         "statusIncomplete": "Incomplete",
         "showActiveFirst": "Show Active First",
         "noDiscountsFound": "No discount attributes found",
+        "fillRequiredBeforeUploadHint": "Please enter the required details above to enable document upload.",
+        "previewNotAvailable": "Preview not available",
+        "previewNotAvailableDesc": "This file format cannot be previewed in the browser. You can download it to view.",
+        "downloadToView": "Download to View",
+        "detectingDocumentType": "Detecting document type...",
         "incompleteCertificates": "The following attributes have incomplete required fields",
         "bannerNavigationHint": "Click an attribute tag to navigate directly to its fields.",
         "bannerTagAriaLabel": "View incomplete fields for {name}",
@@ -1095,7 +1103,9 @@
             "NUMBER_OF_TREES": "Number Of Trees",
             "NUMBER_OF_LIFTS": "Number Of Lifts",
             "NUMBER_OF_SOLAR_UNITS": "Number Of Solar Units",
-            "NUMBER_OF_SWIMMING_POOLS": "Number Of Swimming Pools"
+            "NUMBER_OF_SWIMMING_POOLS": "Number Of Swimming Pools",
+            "NO_OF_RESIDENTIAL_TOILET": "Number of Residential Toilets",
+            "NO_OF_COMMERCIAL_TOILET": "Number of Commercial Toilets"
         },
         "socialPlaceholders": {
             "enterValue": "Enter value",

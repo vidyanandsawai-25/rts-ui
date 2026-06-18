@@ -18,6 +18,7 @@ import {
 } from "@/lib/utils/building-helpers";
 import { useLoading } from "@/hooks/useLoading";
 import { validateBuildingForm } from "@/lib/utils/validateBuildingForm";
+import { checkBuildingRequiredFields } from "@/lib/validation/building/checkBuildingRequiredFields";
 
 export const useBuildingForm = (
     initialData: PropertyCertificateWithStatusDto[] | null,
@@ -62,10 +63,21 @@ export const useBuildingForm = (
         }
 
         const certificate = buildingPermission[certificateTypeId];
+        if (!certificate) {
+            toast.error(t("building.errors.notFound") || "Certificate not found.");
+            return;
+        }
+
+        const validationError = checkBuildingRequiredFields(certificate, t);
+        if (validationError) {
+            toast.error(validationError);
+            return;
+        }
+
         const propId = Number(propertyId);
-        const certTypeId = certificate?.certificateTypeId;
-        if (!certificate || !Number.isFinite(propId) || !Number.isFinite(certTypeId)) {
-            toast.error(!certificate || !certTypeId ? (t("building.errors.notFound") || "Certificate not found.") : (t("building.saveError") || "Invalid property ID"));
+        const certTypeId = certificate.certificateTypeId;
+        if (!Number.isFinite(propId) || !Number.isFinite(certTypeId)) {
+            toast.error(t("building.saveError") || "Invalid property ID");
             return;
         }
 
@@ -142,7 +154,13 @@ export const useBuildingForm = (
         if (isSaving) return { success: false, isValid: true };
 
         const { isValid, errors, incompleteCertificates: invalidCerts, fieldErrors: fErrors } = validateBuildingForm(
-            buildingPermission, (key, params) => t(`common.${key}`, params)
+            buildingPermission,
+            (key, params) => {
+                if (key.startsWith("building.")) {
+                    return t(key, params);
+                }
+                return t(`common.${key}`, params);
+            }
         );
 
         if (!isValid) {
