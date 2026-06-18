@@ -171,7 +171,8 @@
   "newTaxTotalRV": "नवीन कर एकूण (RV)",
   "totalTaxCV": "एकूण कर (CV)",
   "rateableValue": "करयोग्य मूल्य",
-  "capitalValue": "भांडवली मूल्य"
+  "capitalValue": "भांडवली मूल्य",
+  "cv": "भांडवली मूल्य"
   },
   "pageTitle": "मालमत्ता तपशील संपादित करा",
   "badges": {

@@ -173,7 +173,8 @@
   "totalTaxCV": "Total Tax (CV)",
   "newTaxTotalRV": "New Tax Total (RV)",
   "rateableValue": "Rateable Value",
-  "capitalValue": "Capital Value"
+  "capitalValue": "Capital Value",
+  "cv": "Capital Value"
   },
   "pageTitle": "Edit Property Details",
   "badges": {

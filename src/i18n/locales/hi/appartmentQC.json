@@ -171,7 +171,8 @@
   "newTaxTotalRV": "नया कर कुल (RV)",
   "totalTaxCV": "कुल कर (CV)",
   "rateableValue": "करयोग्य मूल्य",
-  "capitalValue": "पूंजी मूल्य"
+  "capitalValue": "पूंजी मूल्य",
+  "cv": "पूंजी मूल्य"
   },
   "pageTitle": "संपत्ति विवरण संपादित करें",
   "badges": {
