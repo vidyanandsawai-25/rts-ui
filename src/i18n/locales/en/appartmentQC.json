@@ -128,6 +128,10 @@
     "tabs": {
       "rateable": "Rateable Value",
       "capital": "Capital Value"
+    },
+    "units": {
+      "sqM": "sq.m",
+      "sqFt": "sq.ft"
     }
   },
   "pageTitle": "Edit Property Details",
@@ -217,10 +221,10 @@
         "label": "New Tax"
       },
       "oldArea": {
-        "label": "Old Area"
+        "label": "Old Area (sq.mtr)"
       },
       "newArea": {
-        "label": "New Area"
+        "label": "New Area (sq.mtr)"
       },
       "oldUseType": {
         "label": "Old Use Type"
@@ -304,7 +308,7 @@
       "ownerName": "Owner Name",
       "occupierName": "Occupier Name",
       "type": "Type",
-      "oldArea": "Old Area",
+      "oldArea": "Old Area ",
       "newArea": "New Area",
       "oldRV": "Old RV",
       "newRV": "New RV",

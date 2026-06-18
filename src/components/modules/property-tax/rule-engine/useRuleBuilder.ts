@@ -43,6 +43,7 @@ export function useRuleBuilder({
   const [ruleScopeId, setRuleScopeId] = React.useState(initialRule?.ruleScopeId ?? 0);
   const [ruleCategory, setRuleCategory] = React.useState(initialRule?.ruleCategory ?? '');
   const [ruleDescription, setRuleDescription] = React.useState(initialRule?.description ?? '');
+  const [priority, setPriority] = React.useState<number | undefined>(initialRule?.priority);
 
   const [targetFilters, setTargetFilters] = React.useState<TargetFilterState>(
     () => safeParse<TargetFilterState>(initialRule?.targetFiltersJson, {})
@@ -143,7 +144,7 @@ export function useRuleBuilder({
         description: ruleDescription.trim(),
         ruleCategory,
         changeReason: changeReason.trim(),
-        priority: 1,
+        priority: priority,
         stopProcessing: rulesList[0]?.stopProcessing || false,
       };
       const res = await onSaveRule(payload);
@@ -165,6 +166,7 @@ export function useRuleBuilder({
     ruleScopeId, setRuleScopeId,
     ruleCategory, setRuleCategory,
     ruleDescription, setRuleDescription,
+    priority, setPriority,
     targetFilters, setTargetFilters,
     rulesList, setRulesList,
     fields, setFields,

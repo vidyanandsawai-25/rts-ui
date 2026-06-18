@@ -173,19 +173,25 @@ export default function EffectPanel({
             </div>
           </div>
         </div>
-
-        {/* 5. Stop Processing Toggle */}
-        {onStopProcessingChange && (
-          <div className="lg:ml-auto pb-2.5 shrink-0">
-            <ToggleSwitch
-              checked={stopProcessing || false}
-              onChange={onStopProcessingChange}
-              label={t('stopProcessing.toggleLabel')}
-              showPopup={false}
-            />
-          </div>
-        )}
       </div>
+
+      {/* 5. Stop Processing Toggle */}
+      {onStopProcessingChange && (
+        <div className={`inline-flex items-center gap-3.5 mt-2.5 px-3 py-1.5 rounded-lg border transition-all duration-200 w-fit ${
+          stopProcessing 
+            ? 'bg-amber-50/70 border-amber-200/80 shadow-sm' 
+            : 'bg-zinc-50 border-zinc-200'
+        }`}>
+          <span className="text-xs font-bold text-zinc-800 select-none">
+            {t('stopProcessing.toggleLabel')}
+          </span>
+          <ToggleSwitch
+            checked={stopProcessing || false}
+            onChange={onStopProcessingChange}
+            showPopup={false}
+          />
+        </div>
+      )}
     </div>
   );
 }

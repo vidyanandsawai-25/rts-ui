@@ -19,6 +19,7 @@ export const NON_PERSISTED_CRITERIA_FIELDS: ReadonlySet<keyof SearchCriteria> =
 
 /** Quick Search tab fields (Property No range counts as two keys). */
 export const QUICK_SEARCH_FIELDS: ReadonlyArray<StringCriteriaField> = [
+  "scanQR",
   "propertyNoFrom",
   "propertyNoTo",
   "oldPropertyNo",

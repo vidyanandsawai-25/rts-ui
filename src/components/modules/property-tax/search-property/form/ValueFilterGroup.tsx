@@ -96,7 +96,7 @@ export function ValueFilterGroup({
           value={String(formState[fromField] ?? "")}
           onChange={onInputChange(fromField)}
           onBlur={onInputBlur(fromField)}
-          disabled={disabled}
+          disabled={disabled || !filterValue}
           fullWidth
           className={cn(
             COMPACT_INPUT_CLASS,
@@ -129,7 +129,7 @@ export function ValueFilterGroup({
             value={String(formState[toField] ?? "")}
             onChange={onInputChange(toField)}
             onBlur={onInputBlur(toField)}
-            disabled={disabled}
+            disabled={disabled || !filterValue}
             fullWidth
             className={cn(
               COMPACT_INPUT_CLASS,
