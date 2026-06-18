@@ -31,6 +31,7 @@ interface UsePropertyEditScreenSubmissionArgs {
   validateForm: () => boolean;
   validateFloorYears: () => string[];
   setIsSavingFloorQC: React.Dispatch<React.SetStateAction<boolean>>;
+  onSaveOrClose?: () => void;
 }
 
 /**
@@ -47,6 +48,7 @@ export function usePropertyEditScreenSubmission({
   validateForm,
   validateFloorYears,
   setIsSavingFloorQC,
+  onSaveOrClose,
 }: UsePropertyEditScreenSubmissionArgs) {
   const [, startTransition] = useTransition();
 
@@ -155,11 +157,16 @@ export function usePropertyEditScreenSubmission({
       }
 
       // Show success message
-      if (basicDetailsSuccess && floorQCSuccess) {
-        toast.success("All changes saved successfully");
-      } else if (basicDetailsSuccess) {
-        toast.success("Basic details updated successfully");
-      }
+    if (basicDetailsSuccess && floorQCSuccess) {
+      toast.success("All changes saved successfully");
+      onSaveOrClose?.();
+    } else if (basicDetailsSuccess) {
+      toast.success("Basic details updated successfully");
+      onSaveOrClose?.();
+    } else if (floorQCSuccess) {
+      toast.success("Floor QC details updated successfully");
+      onSaveOrClose?.();
+    }
     });
   }, [
     propertyData,
@@ -172,6 +179,7 @@ export function usePropertyEditScreenSubmission({
     validateForm,
     validateFloorYears,
     setIsSavingFloorQC,
+    onSaveOrClose,
   ]);
 
   return { handleSave };

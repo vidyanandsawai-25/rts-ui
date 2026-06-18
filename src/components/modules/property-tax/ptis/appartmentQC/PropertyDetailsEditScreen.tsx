@@ -39,10 +39,12 @@ import type { RoomAPIResponse } from '@/types/room-details.types';
 import { RoomWiseSubmission } from './roomSubmission/RoomWiseSubmission';
 import { ApartmentTaxDetailsTable } from './ApartmentTaxDetailsTable';
 import { limitSingleAtEmail, limitTwoDigitNumber } from '@/lib/utils/validation-rules';
+import { capitalizeEachWord } from '@/lib/utils/input-sanitization';
 
 interface ResidentialEditScreenProps {
   open: boolean;
   onClose?: () => void;
+  onSaveOrClose?: () => void;
   propertyData?: ApartmentQCDetail | null;
   subTab?: string;
   floors?: Floor[];
@@ -57,6 +59,7 @@ interface ResidentialEditScreenProps {
 const ResidentialEditScreen = ({
   open,
   onClose,
+  onSaveOrClose,
   propertyData,
   subTab: subTabProp = 'rateable',
   floors = [],
@@ -76,6 +79,7 @@ const ResidentialEditScreen = ({
   const hook = usePropertyEditScreenDrawer({
     open,
     onClose,
+    onSaveOrClose,
     propertyData,
     subTabProp,
     initialFloorQCData,
@@ -541,7 +545,7 @@ const ResidentialEditScreen = ({
                     <EditableInput
                       label={t('basicInfo.fields.ownerName.label')}
                       value={hook.formData.ownerName}
-                      onChange={(v) => hook.updateFormField('ownerName', v)}
+                      onChange={(v) => hook.updateFormField('ownerName', capitalizeEachWord(v))}
                       required
                       error={hook.formErrors.ownerName}
                       onBlur={() => hook.handleFieldBlur('ownerName')}
@@ -549,7 +553,7 @@ const ResidentialEditScreen = ({
                     <EditableInput
                       label={t('basicInfo.fields.occupierName.label')}
                       value={hook.formData.occupierName}
-                      onChange={(v) => hook.updateFormField('occupierName', v)}
+                      onChange={(v) => hook.updateFormField('occupierName', capitalizeEachWord(v))}
                       required
                       error={hook.formErrors.occupierName}
                       onBlur={() => hook.handleFieldBlur('occupierName')}
@@ -557,7 +561,7 @@ const ResidentialEditScreen = ({
                     <EditableInput
                       label={t('basicInfo.fields.renterName.label')}
                       value={hook.formData.renterName}
-                      onChange={(v) => hook.updateFormField('renterName', v)}
+                      onChange={(v) => hook.updateFormField('renterName', capitalizeEachWord(v))}
                       error={hook.formErrors.renterName}
                       onBlur={() => hook.handleFieldBlur('renterName')}
                     />
@@ -599,14 +603,14 @@ const ResidentialEditScreen = ({
                     <EditableInput
                       label={t('basicInfo.fields.flatOrShopName.label')}
                       value={hook.formData.flatOrShopName}
-                      onChange={(v) => hook.updateFormField('flatOrShopName', v)}
+                      onChange={(v) => hook.updateFormField('flatOrShopName', capitalizeEachWord(v))}
                       error={hook.formErrors.flatOrShopName}
                       onBlur={() => hook.handleFieldBlur('flatOrShopName')}
                     />
                     <EditableInput
                       label={t('basicInfo.fields.wingName.label')}
                       value={hook.formData.wingName}
-                      onChange={(v) => hook.updateFormField('wingName', v)}
+                      onChange={(v) => hook.updateFormField('wingName', capitalizeEachWord(v))}
                       error={hook.formErrors.wingName}
                       onBlur={() => hook.handleFieldBlur('wingName')}
                     />
