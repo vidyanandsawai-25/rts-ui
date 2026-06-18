@@ -68,6 +68,40 @@ const AppartmentQCSection = ({
   const [dualMethodDetails, setDualMethodDetails] = useState<DualMethodTaxDetails | null>(null);
   const [taxDetailsLoading, setTaxDetailsLoading] = useState(false);
 
+  // Function to refetch tax details (used when property details drawer is closed after saving)
+  const refetchTaxDetails = useCallback(async () => {
+    if (!wardId || !propertyNo) {
+      return;
+    }
+
+    try {
+      setTaxDetails(null);
+      setDualMethodDetails(null);
+      setTaxDetailsLoading(true);
+
+      if (activeSubTab === 'rateable') {
+        const result = await fetchApartmentPropertyTaxDetailsByTabAction(wardId, propertyNo, activeMainTab);
+        if (result.success && result.data) {
+          setTaxDetails(result.data);
+        }
+      } else if (activeSubTab === 'capital') {
+        const result = await fetchApartmentPropertyTaxDetailsCvByTabAction(wardId, propertyNo, activeMainTab);
+        if (result.success && result.data) {
+          setTaxDetails(result.data);
+        }
+      } else if (activeSubTab === 'dual-method') {
+        const result = await fetchDualMethodTaxDetailsByTabAction(wardId, propertyNo, activeMainTab);
+        if (result.success && result.data) {
+          setDualMethodDetails(result.data);
+        }
+      }
+    } catch {
+      // Error handled silently, state already null
+    } finally {
+      setTaxDetailsLoading(false);
+    }
+  }, [activeSubTab, activeMainTab, wardId, propertyNo]);
+
   useEffect(() => {
     const urlSearchTerm = searchParams.get('searchTerm') || '';
     if (urlSearchTerm !== searchQuery && !isUpdatingFromUrl.current) {
@@ -85,36 +119,11 @@ const AppartmentQCSection = ({
 
     const fetchData = async () => {
       try {
-        // Reset state when starting new fetch
-        setTaxDetails(null);
-        setDualMethodDetails(null);
-        setTaxDetailsLoading(true);
-
-        if (activeSubTab === 'rateable') {
-          // Fetch Rateable Value data
-          const result = await fetchApartmentPropertyTaxDetailsByTabAction(wardId, propertyNo, activeMainTab);
-          if (!cancelled && result.success && result.data) {
-            setTaxDetails(result.data);
-          }
-        } else if (activeSubTab === 'capital') {
-          // Fetch Capital Value data
-          const result = await fetchApartmentPropertyTaxDetailsCvByTabAction(wardId, propertyNo, activeMainTab);
-          if (!cancelled && result.success && result.data) {
-            setTaxDetails(result.data);
-          }
-        } else if (activeSubTab === 'dual-method') {
-          // Fetch both RV and CV data for dual method
-          const result = await fetchDualMethodTaxDetailsByTabAction(wardId, propertyNo, activeMainTab);
-          if (!cancelled && result.success && result.data) {
-            setDualMethodDetails(result.data);
-          }
+        if (!cancelled) {
+          await refetchTaxDetails();
         }
       } catch {
-        // Error handled silently, state already null
-      } finally {
-        if (!cancelled) {
-          setTaxDetailsLoading(false);
-        }
+        // Error handled silently
       }
     };
 
@@ -123,7 +132,7 @@ const AppartmentQCSection = ({
     return () => {
       cancelled = true;
     };
-  }, [activeSubTab, activeMainTab, wardId, propertyNo]);
+  }, [activeSubTab, activeMainTab, wardId, propertyNo, refetchTaxDetails]);
 
   const updateUrl = useCallback((params: Record<string, string | number | null>) => {
     const newParams = new URLSearchParams(searchParams.toString());
@@ -211,13 +220,15 @@ const AppartmentQCSection = ({
 
   const selectedPropertyData = drawerLocalData?.basicInfo ?? null;
 
-  const handleCloseDrawer = useCallback(() => {
+  const handleCloseDrawer = useCallback(async () => {
     const params = new URLSearchParams(searchParams.toString());
     params.delete('drawer');
     params.delete('editPropertyId');
     // Keep the original propertyId intact
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-  }, [searchParams, pathname, router]);
+    // Refetch tax details when drawer is closed
+    await refetchTaxDetails();
+  }, [searchParams, pathname, router, refetchTaxDetails]);
 
   return (
     <div className="flex flex-col h-full bg-white rounded-lg shadow-sm">
@@ -265,6 +276,7 @@ const AppartmentQCSection = ({
             key={`property-edit-${selectedPropertyId || 'new'}`}
             open={drawerOpen}
             onClose={handleCloseDrawer}
+            onSaveOrClose={refetchTaxDetails}
             propertyData={selectedPropertyData}
             subTab={activeSubTab}
             returnTo={activeMainTab as 'amenities' | 'commercial' | 'residential'}

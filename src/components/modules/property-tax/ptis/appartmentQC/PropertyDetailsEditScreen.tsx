@@ -43,6 +43,7 @@ import { limitSingleAtEmail, limitTwoDigitNumber } from '@/lib/utils/validation-
 interface ResidentialEditScreenProps {
   open: boolean;
   onClose?: () => void;
+  onSaveOrClose?: () => void;
   propertyData?: ApartmentQCDetail | null;
   subTab?: string;
   floors?: Floor[];
@@ -57,6 +58,7 @@ interface ResidentialEditScreenProps {
 const ResidentialEditScreen = ({
   open,
   onClose,
+  onSaveOrClose,
   propertyData,
   subTab: subTabProp = 'rateable',
   floors = [],
@@ -76,6 +78,7 @@ const ResidentialEditScreen = ({
   const hook = usePropertyEditScreenDrawer({
     open,
     onClose,
+    onSaveOrClose,
     propertyData,
     subTabProp,
     initialFloorQCData,
