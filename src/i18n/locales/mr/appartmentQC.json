@@ -128,6 +128,10 @@
     "tabs": {
       "rateable": "करयोग्य मूल्य",
       "capital": "भांडवली मूल्य"
+    },
+    "units": {
+      "sqM": "चौ. मी",
+      "sqFt": "चौ. फूट"
     }
   },
   "tooltips": {
@@ -256,10 +260,10 @@
         "label": "नवीन कर"
       },
       "oldArea": {
-        "label": "जुने क्षेत्र"
+        "label": "जुने क्षेत्र (sq.mtr)"
       },
       "newArea": {
-        "label": "नवीन क्षेत्र"
+        "label": "नवीन क्षेत्र (sq.mtr)"
       },
       "oldUseType": {
         "label": "जुना उपयोग प्रकार"

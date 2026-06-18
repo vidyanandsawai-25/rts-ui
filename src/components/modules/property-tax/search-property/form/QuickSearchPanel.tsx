@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useTranslations } from "next-intl";
+import { QrCode } from "lucide-react";
 import type {
   LookupOptions,
   SearchCriteria,
@@ -35,7 +36,24 @@ export function QuickSearchPanel({
 
   return (
     <div className="overflow-x-auto pb-1 pt-1.5">
-      <div className="grid min-w-[78rem] grid-cols-7 items-start gap-x-1.5 gap-y-1">
+      <div className="grid min-w-[88rem] grid-cols-8 items-start gap-x-1.5 gap-y-1">
+        <LookupInput
+          id="scanQR"
+          label={
+            <span className="flex items-center gap-1">
+              <QrCode className="h-3.5 w-3.5 text-blue-600" />
+              {t("fields.scanQR")}
+            </span>
+          }
+          tooltip={t("fields.scanQR")}
+          placeholder={t("placeholders.scanQR")}
+          value={formState.scanQR}
+          options={[]}
+          error={fieldErrors.scanQR}
+          onChange={(v) => setField("scanQR", v)}
+          onBlur={onFieldBlur("scanQR")}
+          disabled={disabled}
+        />
         <LookupInput
           id="propertyNoFrom"
           label={t("fields.propertyNoFrom")}

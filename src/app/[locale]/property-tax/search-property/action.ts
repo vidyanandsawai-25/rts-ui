@@ -46,6 +46,35 @@ function parsePositiveInteger(value: string): number | null {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 }
 
+function parseNumericPart(value: string): number | null {
+  const match = value.match(/^\d+/);
+  if (match) {
+    const parsed = parseInt(match[0], 10);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+}
+
+function comparePropertyNo(a: string, b: string): number {
+  const cleanA = a.trim();
+  const cleanB = b.trim();
+
+  const numA = parseNumericPart(cleanA);
+  const numB = parseNumericPart(cleanB);
+
+  if (numA !== null && numB !== null) {
+    if (numA !== numB) {
+      return numA - numB;
+    }
+    return cleanA.localeCompare(cleanB, undefined, { numeric: true, sensitivity: "base" });
+  }
+
+  if (numA !== null) return -1;
+  if (numB !== null) return 1;
+
+  return cleanA.localeCompare(cleanB, undefined, { numeric: true, sensitivity: "base" });
+}
+
 function filterByPropertyNumberRange(
   results: SearchResult[],
   searchCriteria: SearchCriteria
@@ -62,7 +91,7 @@ function filterByPropertyNumberRange(
   }
 
   return results.filter((item) => {
-    const propertyNo = parsePositiveInteger(item.propertyNo);
+    const propertyNo = parseNumericPart(item.propertyNo || "");
     if (propertyNo == null) {
       return false;
     }
@@ -177,7 +206,11 @@ export async function filterPropertiesAction(
       ? filterByPropertyNumberRange(normalizedResults, searchCriteria)
       : normalizedResults;
 
-    return { results: filteredResults, error: null };
+    const sortedResults = [...filteredResults].sort((a, b) =>
+      comparePropertyNo(a.propertyNo, b.propertyNo)
+    );
+
+    return { results: sortedResults, error: null };
   } catch (err) {
     const message =
       err instanceof Error

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useCallback, useState, type MouseEventHandler } from "react";
+import { useMemo, useCallback, useState, useRef  } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
 import { MasterTable, Column } from "@/components/common/MasterTable";
@@ -119,6 +119,10 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
 
   // Excel export state
   const [isExporting, setIsExporting] = useState(false);
+  // Local search state for immediate UI updates
+  const [localSearch, setLocalSearch] = useState(searchQuery);
+  // Debounce timer ref
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Excel export handler - uses secure server-side API route
   const handleExcelExport = useCallback(async () => {
@@ -255,10 +259,25 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
     return data.filter(row => Object.values(row).some(val => val?.toString().toLowerCase().includes(query)));
   }, [data, searchQuery]);
 
-  const handleSearchInputChange = useCallback((value: string) => {
-    const sanitized = value.replace(TEXT_SANITIZE, "");
-    onSearchChange(sanitized);
-  }, [onSearchChange]);
+  const handleSearchInputChange = useCallback(
+    (value: string) => {
+      // Update input immediately
+      setLocalSearch(value);
+
+      const sanitized = value.replace(TEXT_SANITIZE, "");
+
+      // Cancel previous pending search
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+
+      // Trigger search after user stops typing
+      searchTimeoutRef.current = setTimeout(() => {
+        onSearchChange(sanitized);
+      }, 500);
+    },
+    [onSearchChange]
+  );
 
   const localizedTabLabel = useMemo(() => {
     if (activeTab === "rateable") return t("apartmentTabs.rateable");
@@ -284,7 +303,7 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
               <p className="text-sm text-[#6B7280]">{t("apartmentTabs.showingData", { tab: localizedTabLabel })}</p>
             </div>
             <div className="flex items-center gap-2">
-              <SearchInput value={searchQuery} onChange={handleSearchInputChange} placeholder={tCommon("searchPlaceholder")} className="w-80 mb-0" />
+              <SearchInput value={localSearch} onChange={handleSearchInputChange} placeholder={tCommon("searchPlaceholder")} className="w-80 mb-0" />
               <ExportIconButton
                 onClick={handleExcelExport}
                 isExporting={isExporting}

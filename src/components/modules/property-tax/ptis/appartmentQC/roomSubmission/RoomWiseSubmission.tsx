@@ -113,7 +113,7 @@ export const RoomWiseSubmission: React.FC<
     handleAddOffset: offsetActions.handleAddOffset,
     isOffsetDataValid: () => isOffsetValid(state.offsetData, state.selectedShape),
     handleOffsetOk: offsetActions.handleOffsetOk,
-    handleOffsetClose: () => state.setOffsetModalOpen(false),
+    handleOffsetClose: offsetActions.handleOffsetClose,
     areaUnit: state.areaUnit,
     shouldShake: state.shouldShake,
     deletingOffsetIndex: state.deletingOffsetIndex,

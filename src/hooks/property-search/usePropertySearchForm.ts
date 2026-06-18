@@ -2,6 +2,7 @@
 
 import React from "react";
 import { toast } from "sonner";
+import { useSearchParams } from "next/navigation";
 import type {
   SearchCriteria,
   SearchFieldErrorMap,
@@ -16,7 +17,6 @@ import {
   trimFieldValue,
 } from "@/lib/validations/property-search-field-rules";
 
-import { usePropertySearchNavigation } from "./usePropertySearchNavigation";
 
 type FormDraft = {
   criteriaKey: string;
@@ -69,8 +69,8 @@ export function usePropertySearchForm({
   });
   const validationRef = React.useRef<HTMLDivElement | null>(null);
 
-  const [, startTransition] = React.useTransition();
-  const { updateDraftCriteria } = usePropertySearchNavigation({ startTransition });
+  const searchParams = useSearchParams();
+  const isSearchActive = searchParams.get("isActive") === "1";
 
   React.useEffect(() => {
     setDraft({
@@ -166,9 +166,30 @@ export function usePropertySearchForm({
   const handleSelectChange = React.useCallback(
     (field: keyof SearchCriteria) =>
       (_: React.ChangeEvent<HTMLSelectElement>, value: string) => {
-        setField(field, value);
+        const nextValue = sanitizePropertySearchField(field, value);
+
+        setDraft((prev) => {
+          const nextFormState = { ...getBaseFormState(prev), [field]: nextValue };
+
+          if (field === "rateableValueFilter" && !value) {
+            nextFormState.rateableValueFrom = "";
+            nextFormState.rateableValueTo = "";
+          }
+          if (field === "capitalValueFilter" && !value) {
+            nextFormState.capitalValueFrom = "";
+            nextFormState.capitalValueTo = "";
+          }
+
+          return {
+            criteriaKey,
+            formState: nextFormState,
+            validationError: null,
+            submitAttempted: prev.criteriaKey === criteriaKey ? prev.submitAttempted : false,
+            touchedFields: prev.criteriaKey === criteriaKey ? prev.touchedFields : new Set(),
+          };
+        });
       },
-    [setField]
+    [criteriaKey, getBaseFormState]
   );
 
   const handleZoneChange = React.useCallback(
@@ -264,23 +285,28 @@ export function usePropertySearchForm({
 
   const handleClearFilterTag = React.useCallback(
     (field: keyof SearchCriteria) => {
+      let nextFormState: SearchCriteria;
       if (field === "zoneId") {
-        setDraft((prev) => ({
-          criteriaKey,
-          formState: { ...getBaseFormState(prev), zoneId: 0, wardId: 0 },
-          validationError: null,
-          submitAttempted: prev.criteriaKey === criteriaKey ? prev.submitAttempted : false,
-          touchedFields:
-            prev.criteriaKey === criteriaKey ? prev.touchedFields : new Set(),
-        }));
-        updateDraftCriteria("zoneId", "");
+        nextFormState = { ...formState, zoneId: 0, wardId: 0 };
       } else {
         const nextValue = field === "wardId" ? 0 : "";
-        setField(field, nextValue);
-        updateDraftCriteria(field, nextValue);
+        nextFormState = { ...formState, [field]: nextValue };
+      }
+
+      setDraft((prev) => ({
+        criteriaKey,
+        formState: nextFormState,
+        validationError: null,
+        submitAttempted: prev.criteriaKey === criteriaKey ? prev.submitAttempted : false,
+        touchedFields:
+          prev.criteriaKey === criteriaKey ? prev.touchedFields : new Set(),
+      }));
+
+      if (isSearchActive) {
+        onSearch(nextFormState, activeTab);
       }
     },
-    [criteriaKey, getBaseFormState, setField, updateDraftCriteria]
+    [criteriaKey, formState, activeTab, isSearchActive, onSearch]
   );
 
   return {

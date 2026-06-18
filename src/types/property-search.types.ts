@@ -225,7 +225,7 @@ export type SearchFieldErrorMap = Partial<
 
 export interface LookupInputProps {
   id: string;
-  label: string;
+  label: React.ReactNode;
   placeholder?: string;
   tooltip?: string;
   value: string;
@@ -332,6 +332,7 @@ export type SearchValidationKey =
   | "societyNameInvalid"
   | "addressInvalid"
   | "rateableValueBetweenRequired"
+  | "rateableValueRangeInvalid"
   | "capitalValueBetweenRequired"
   | "rateableValueInvalid"
   | "noSearchCriteria";
