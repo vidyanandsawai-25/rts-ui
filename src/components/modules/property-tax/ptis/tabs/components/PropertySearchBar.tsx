@@ -3,7 +3,7 @@
 import React, { useCallback, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { Search, Loader2 } from 'lucide-react';
-import { Button, Input, SearchSelect } from '@/components/common';
+import { Button, Input, SearchSelect, Tooltip } from '@/components/common';
 import { Label } from '@/components/common/label';
 import type { SearchSelectOption } from '@/components/common';
 import { normalizePartition } from '@/lib/utils/format';
@@ -190,7 +190,7 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
     <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 px-2 py-2">
       <form
         onSubmit={handleFormSubmit}
-        className="flex flex-wrap items-center gap-2 lg:gap-4 text-xs text-blue-700 font-bold"
+        className="flex flex-wrap items-center gap-2 lg:gap-2 text-xs text-blue-700 font-bold"
         method="GET"
       >
         {/* Ward No */}
@@ -228,7 +228,7 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
           >
             {t('search.propertyNo')}:
           </Label>
-          <div className="w-24 sm:w-28 lg:w-32 relative [&_ul]:top-full [&_ul]:!z-30">
+          <div className="w-24 sm:w-28 lg:w-38 relative [&_ul]:top-full [&_ul]:!z-30">
             <SearchSelect
               id="propertyNo"
               options={propertyOptions}
@@ -254,7 +254,7 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
           >
             {t('search.partitionNo')}:
           </Label>
-          <div className="w-16 sm:w-20 relative [&_ul]:top-full [&_ul]:!z-30">
+          <div className="w-16 sm:w-25 relative [&_ul]:top-full [&_ul]:!z-30">
             <SearchSelect
               id="partitionNo"
               options={partitionOptions}
@@ -289,7 +289,7 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
         </Button>
 
         {/* Summary Info */}
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 min-w-0">
+        <div className="flex flex-wrap items-center gap-x-1 gap-y-1 min-w-0">
           <div className="flex items-center gap-1 min-w-0">
             <span className="font-medium text-blue-900 text-[11px] lg:text-[13px] whitespace-nowrap">
               {t('fields.upicId')}:
@@ -303,9 +303,11 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
             <span className="font-medium text-blue-900 text-[11px] lg:text-[13px] whitespace-nowrap">
               {t('fields.propertyHolder')}:
             </span>
-            <span className="font-bold text-slate-700 text-xs lg:text-sm truncate max-w-[100px] lg:max-w-none">
-              {ownerName || '-'}
-            </span>
+            <Tooltip content={ownerName || '-'}>
+              <span className="font-bold text-slate-700 text-sm lg:text-sm truncate max-w-[120px] sm:max-w-[150px] md:max-w-[200px] lg:max-w-[250px] xl:max-w-[350px]">
+                {ownerName || '-'}
+              </span>
+            </Tooltip>
           </div>
           <div className="hidden sm:block h-4 w-px bg-slate-400" />
           <div className="flex items-center gap-1 min-w-0">

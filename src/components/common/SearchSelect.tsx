@@ -103,6 +103,11 @@ export interface SearchSelectProps {
   error?: string;
 }
 
+/** Helper to normalize string for forgiving/flexible option matching. */
+function normalizeSearchText(str: string): string {
+  return str.toLowerCase().replace(/[\s-]/g, '');
+}
+
 export function SearchSelect({
   id,
   name,
@@ -204,7 +209,10 @@ export function SearchSelect({
     // If search is disabled, always show all options
     if (disableSearch) return validOptions;
     if (!hasTyped) return validOptions;
-    return validOptions.filter((opt) => opt.label.toLowerCase().includes(search.toLowerCase()));
+    const cleanSearch = normalizeSearchText(search);
+    return validOptions.filter((opt) =>
+      normalizeSearchText(opt.label).includes(cleanSearch)
+    );
   }, [search, hasTyped, validOptions, disableSearch]);
 
   /* ---------------- Validate and clear on blur ---------------- */
@@ -218,9 +226,10 @@ export function SearchSelect({
     }
     setIsOpen(false);
     if (!hasOptions) return;
-    const matched = validOptions.find((opt) => opt.label === search);
+    const cleanSearch = normalizeSearchText(search);
+    const matched = validOptions.find((opt) => normalizeSearchText(opt.label) === cleanSearch);
     if (matched) {
-      // If user typed an exact match and blurred, commit it
+      // If user typed a match and blurred, commit it
       if (hasTyped) {
         onChange(fallbackName, matched.value);
         setHasTyped(false);
