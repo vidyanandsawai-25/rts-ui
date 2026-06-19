@@ -101,6 +101,7 @@ const ResidentialEditScreen = ({
     updateFormField: hookUpdateFormField,
     floorData: hookFloorData,
     refetchFloorQC: hookRefetchFloorQC,
+    handleOpenRoomSubmission: hookHandleOpenRoomSubmission,
   } = hook;
 
   // State for client-side fetched room data
@@ -118,9 +119,21 @@ const ResidentialEditScreen = ({
   // Clear selected floor row when room drawer closes
   useEffect(() => {
     if (!roomDrawerOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedFloorRow(null);
     }
   }, [roomDrawerOpen]);
+
+  // Update selectedFloorRow when hookFloorData changes (after refetch)
+  useEffect(() => {
+    if (selectedFloorRow && hookFloorData.length > 0) {
+      const updatedRow = hookFloorData.find((row) => row.pdnId === selectedFloorRow.pdnId);
+      if (updatedRow) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setSelectedFloorRow(updatedRow);
+      }
+    }
+  }, [hookFloorData, selectedFloorRow]);
 
   // Fetch room data when room drawer opens (client-side).
   // Reset state in cleanup (the lint rule exempts cleanups) instead of setting
@@ -457,9 +470,9 @@ const ResidentialEditScreen = ({
     (row: DrawerFloorDataRow) => {
       setIsLoadingRoomData(true);
       setSelectedFloorRow(row);
-      hook.handleOpenRoomSubmission(row);
+      hookHandleOpenRoomSubmission(row);
     },
-    [hook.handleOpenRoomSubmission]
+    [hookHandleOpenRoomSubmission]
   );
 
   // Column definitions
