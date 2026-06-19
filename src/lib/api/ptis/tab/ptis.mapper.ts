@@ -52,6 +52,7 @@ export const ptisMapper = {
       noOfResidentialToilets: data.noOfResidentialToilets?.toString() || '',
       noOfCommercialToilets: data.noOfCommercialToilets?.toString() || '',
       ownerName: data.ownerName || data.ownerNameEnglish || '',
+      categoryId: data.categoryId,
     };
   },
 
@@ -97,6 +98,7 @@ export const ptisMapper = {
       managerName: data.managerName || '',
       managerEmail: data.managerEmailId || '',
       managerMobileNo: data.managerMobileNo || '',
+      societyDetailId: data.societyDetailId,
     };
   },
 

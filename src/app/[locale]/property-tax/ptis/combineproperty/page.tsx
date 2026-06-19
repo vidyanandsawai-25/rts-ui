@@ -76,6 +76,8 @@ export default async function Page({ searchParams }: PageProps) {
             isActive: true,
             createdDate: null,
             updatedDate: null,
+            categoryId: categoryId ? Number(categoryId) : undefined,
+            societyDetailId: societyDetailId ? Number(societyDetailId) : undefined,
           };
         }
       } catch {
@@ -91,6 +93,8 @@ export default async function Page({ searchParams }: PageProps) {
           isActive: true,
           createdDate: null,
           updatedDate: null,
+          categoryId: categoryId ? Number(categoryId) : undefined,
+          societyDetailId: societyDetailId ? Number(societyDetailId) : undefined,
         };
       }
     } else {
