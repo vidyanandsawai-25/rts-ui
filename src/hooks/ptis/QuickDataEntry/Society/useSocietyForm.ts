@@ -7,10 +7,11 @@ import { useLoading } from '@/hooks/useLoading';
 import { societyValidations, validateForm, hasErrors } from "@/lib/utils/validation";
 import { updatePropertySocietyDetailsAction } from "@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Society/action";
 import { SocietyFormProps, UpdatePropertySocietyDetailsDto } from "@/types/property-society-details.types";
-import { societyValidators, propertyValidators, kycValidators } from '@/lib/utils/kyc-validation/kyc-validation.constants';
+import { kycValidators } from '@/lib/utils/kyc-validation/kyc-validation.constants';
+import { societyValidators } from '@/lib/utils/society-validation/society-validation';
 
-import { useSocietyChanges } from '@/hooks/useSocietyChanges';
-import { useSocietyFormState } from '@/hooks/useSocietyFormState';
+import { useSocietyChanges } from '@/hooks/ptis/QuickDataEntry/Society/useSocietyChanges';
+import { useSocietyFormState } from '@/hooks/ptis/QuickDataEntry/Society/useSocietyFormState';
 
 const getMobileErrorMessage = (value: string, t: (key: string) => string): string => {
     const digits = value.replace(/\D/g, '');
@@ -194,7 +195,7 @@ export const useSocietyForm = (props: SocietyFormProps) => {
         const isSecretaryNameValid = !secretaryName || societyValidators.isValidPersonName(secretaryName);
 
         // Check address - if filled, must be valid
-        const isSocietyAddressValid = !societyAddress || propertyValidators.isValidAddress(societyAddress);
+        const isSocietyAddressValid = !societyAddress || societyValidators.isValidAddress(societyAddress);
 
         return (
             isManagerEmailValid &&
@@ -232,7 +233,7 @@ export const useSocietyForm = (props: SocietyFormProps) => {
         const isSocietyNameValid = !societyName || societyValidators.isValidSocietyName(societyName);
         const isManagerNameValid = !managerName || societyValidators.isValidPersonName(managerName);
         const isSecretaryNameValid = !secretaryName || societyValidators.isValidPersonName(secretaryName);
-        const isSocietyAddressValid = !societyAddress || propertyValidators.isValidAddress(societyAddress);
+        const isSocietyAddressValid = !societyAddress || societyValidators.isValidAddress(societyAddress);
 
         // Show specific error messages for invalid fields
         if (!isManagerEmailValid && managerEmail) {

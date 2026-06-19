@@ -57,7 +57,7 @@ export const KycFormFields: React.FC<KycFormFieldsProps> = ({
       </div>
 
       {/* Row 2: Address & Email Info - Shop Name, Address, Email ID */}
-      <div className="grid grid-cols-4 gap-x-4 gap-y-3">
+      <div className="grid grid-cols-12 gap-x-4 gap-y-3">
         <AddressInfoFields
           t={t}
           formData={formData}
@@ -83,4 +83,3 @@ export const KycFormFields: React.FC<KycFormFieldsProps> = ({
     </div>
   );
 };
-
