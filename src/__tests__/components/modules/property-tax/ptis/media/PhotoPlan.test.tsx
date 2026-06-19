@@ -416,20 +416,13 @@ describe('PhotoPlan Section - Complete Tests', () => {
         result.current.handleReplacePhoto(0);
       });
       expect(result.current.isReplacement).toBe(true);
+      expect(result.current.isNamingOpen).toBe(true);
 
       const file = new File(['foo'], 'foo.png', { type: 'image/png' });
-      const event = {
-        target: {
-          files: [file],
-          value: 'val',
-        },
-      } as unknown as React.ChangeEvent<HTMLInputElement>;
-
       await act(async () => {
-        await result.current.handleFileChange(event);
+        await result.current.handleNamingSubmit('Category 1', 1, 101, file, 'remarks');
       });
 
-      expect(mockConfirm).toHaveBeenCalled();
       expect(mockReplacePropertyPhotoAction).toHaveBeenCalled();
       expect(onCategoriesChange).toHaveBeenCalled();
     });

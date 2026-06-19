@@ -2,7 +2,7 @@
 
 import React, { useCallback } from 'react';
 import { Images, X, Plus } from 'lucide-react';
-import { Button } from '@/components/common/ActionButton';
+import { Button } from '@/components/common';
 import { MediaImageCard, AdditionalImagesGrid } from './MediaImageCards';
 import { PhotoPlanDrawer } from './PhotoPlanDrawer';
 import { ImageHoverPreview } from './ImageHoverPreview';
@@ -64,7 +64,7 @@ function PropertyMediaPanel({
             <Button
               variant="edit"
               size="xs"
-              className="h-7 w-7 p-0 shadow-lg bg-white cursor-pointer"
+              className="!h-7 !w-7 !p-0 shadow-lg bg-white cursor-pointer"
               onClick={(e) => {
                 e.stopPropagation();
                 setShowMoreImages((p) => !p);
@@ -108,7 +108,7 @@ function PropertyMediaPanel({
           <Button
             variant="edit"
             size="xs"
-            className="h-7 w-7 p-0 shadow-lg bg-white cursor-pointer"
+            className="!h-7 !w-7 !p-0 shadow-lg bg-white cursor-pointer"
             onClick={handleCreateClick}
             aria-label="Create new plan"
           >

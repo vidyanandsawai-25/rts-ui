@@ -4,6 +4,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import NextImage from 'next/image';
 import { useTranslations } from 'next-intl';
 import { Plus, Minus, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/common';
 import { useImageViewerZoom } from '@/hooks/ptis/photoplan/useImageViewerZoom';
 import { getDocumentAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/document.actions';
 import { ImageLoadingSkeleton, ImageErrorFallback } from './ImageViewerFallbacks';
@@ -133,17 +134,37 @@ export function MainImageViewer({ src, alt, rotation }: MainImageViewerProps): R
         onMouseDown={(e) => e.stopPropagation()}
         onDoubleClick={(e) => e.stopPropagation()}
       >
-        <button onClick={() => handleZoom('out')} disabled={scale <= 0.5} className="p-1 hover:bg-slate-700/60 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed" aria-label="Zoom Out">
+        <Button
+          size="xs"
+          variant="ghost"
+          onClick={() => handleZoom('out')}
+          disabled={scale <= 0.5}
+          className="!p-1 hover:!bg-slate-700/60 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed !h-7 !w-7 !text-white hover:!text-white"
+          aria-label="Zoom Out"
+        >
           <Minus className="w-3.5 h-3.5" />
-        </button>
+        </Button>
         <span className="select-none min-w-[36px] text-center">{Math.round(scale * 100)}%</span>
-        <button onClick={() => handleZoom('in')} disabled={scale >= 8} className="p-1 hover:bg-slate-700/60 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed" aria-label="Zoom In">
+        <Button
+          size="xs"
+          variant="ghost"
+          onClick={() => handleZoom('in')}
+          disabled={scale >= 8}
+          className="!p-1 hover:!bg-slate-700/60 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed !h-7 !w-7 !text-white hover:!text-white"
+          aria-label="Zoom In"
+        >
           <Plus className="w-3.5 h-3.5" />
-        </button>
+        </Button>
         {scale !== 1 && (
-          <button onClick={() => handleZoom('reset')} className="p-1 hover:bg-slate-700/60 rounded-full transition-colors" aria-label="Reset Zoom">
+          <Button
+            size="xs"
+            variant="ghost"
+            onClick={() => handleZoom('reset')}
+            className="!p-1 hover:!bg-slate-700/60 rounded-full transition-colors !h-7 !w-7 !text-white hover:!text-white"
+            aria-label="Reset Zoom"
+          >
             <RefreshCw className="w-3.5 h-3.5" />
-          </button>
+          </Button>
         )}
       </div>
     </div>

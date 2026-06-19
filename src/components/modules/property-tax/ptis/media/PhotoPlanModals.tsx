@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { PhotoPlanNamingModal } from './PhotoPlanNamingModal';
+import type { AdditionalImage } from './MediaImageCards';
 
 interface PhotoPlanModalsProps {
   isNamingOpen: boolean;
@@ -19,6 +20,7 @@ interface PhotoPlanModalsProps {
     file?: File,
     remarks?: string
   ) => void;
+  replaceImage: AdditionalImage | null;
 }
 
 export function PhotoPlanModals({
@@ -31,6 +33,7 @@ export function PhotoPlanModals({
   isReplacement,
   isPhotoUploading,
   handleNamingSubmit,
+  replaceImage,
 }: PhotoPlanModalsProps): React.ReactElement {
   return (
     <>
@@ -40,11 +43,12 @@ export function PhotoPlanModals({
           onClose={onCloseNaming}
           onSubmit={handleNamingSubmit}
           availableTypes={[{ label: activeCategoryName, value: String(activeCategoryTypeId) }]}
-          defaultDisplayOrder={activeCategoryImagesLength ? activeCategoryImagesMaxOrder + 1 : 1}
-          defaultName={activeCategoryName}
+          defaultDisplayOrder={isReplacement && replaceImage ? (replaceImage.displayOrder ?? 1) : (activeCategoryImagesLength ? activeCategoryImagesMaxOrder + 1 : 1)}
+          defaultName={isReplacement && replaceImage ? replaceImage.title : activeCategoryName}
           isReplacement={isReplacement}
           defaultPhotoTypeId={activeCategoryTypeId}
           isLoading={isPhotoUploading}
+          defaultRemarks={isReplacement && replaceImage ? replaceImage.remarks : ''}
         />
       )}
     </>
