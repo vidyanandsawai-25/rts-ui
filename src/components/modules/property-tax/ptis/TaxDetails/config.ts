@@ -78,70 +78,43 @@ export const TAX_ROW_STYLE_THEMES = {
   [TAX_ROW_LABELS.ALL_TAXES]: 'bg-rose-50 text-rose-700 border-rose-200',
 } as const;
 
-// ==================== Row Definitions ====================
-
-/**
- * Complete row definition for tax table
- * Maps policy codes to display configuration
- */
-export interface TaxRowDefinition {
-  id: number;
-  policyCode: string;
-  labelKey: string;
-  styleClass: string;
-}
-
-/**
- * Fixed row definitions for the tax details table
- * Defines the structure, order, and styling of all tax rows
- */
-export const TAX_ROWS_DEFINITIONS: readonly TaxRowDefinition[] = [
-  {
-    id: 1,
-    policyCode: TAX_POLICY_CODES.NETTAX,
-    labelKey: TAX_ROW_LABELS.NET_TAXES,
-    styleClass: TAX_ROW_STYLE_THEMES[TAX_ROW_LABELS.NET_TAXES],
-  },
-  {
-    id: 2,
-    policyCode: TAX_POLICY_CODES.RETAIN,
-    labelKey: TAX_ROW_LABELS.RETAIN,
-    styleClass: TAX_ROW_STYLE_THEMES[TAX_ROW_LABELS.RETAIN],
-  },
-  {
-    id: 3,
-    policyCode: TAX_POLICY_CODES.HEARING,
-    labelKey: TAX_ROW_LABELS.HEARING,
-    styleClass: TAX_ROW_STYLE_THEMES[TAX_ROW_LABELS.HEARING],
-  },
-  {
-    id: 4,
-    policyCode: TAX_POLICY_CODES.ALLTAXES,
-    labelKey: TAX_ROW_LABELS.ALL_TAXES,
-    styleClass: TAX_ROW_STYLE_THEMES[TAX_ROW_LABELS.ALL_TAXES],
-  },
-] as const;
-
 // ==================== Helper Functions ====================
 
 /**
- * Gets the styling class for a tax row by its label key
+ * Gets the styling class for a tax row by its label key or policy code
  * 
- * @param labelKey - The translation key for the tax row
+ * @param labelKey - The translation key or policy code for the tax row
  * @returns Styling classes for the row, or default style if not found
  */
 export function getTaxRowStyleByLabel(labelKey: string): string {
-  const rowDef = TAX_ROWS_DEFINITIONS.find((def) => def.labelKey === labelKey);
-  return rowDef?.styleClass || DEFAULT_TAX_ROW_STYLE;
-}
-
-/**
- * Gets the policy code for a tax row by its label key
- * 
- * @param labelKey - The translation key for the tax row
- * @returns Policy code or undefined if not found
- */
-export function getPolicyCodeByLabel(labelKey: string): string | undefined {
-  const rowDef = TAX_ROWS_DEFINITIONS.find((def) => def.labelKey === labelKey);
-  return rowDef?.policyCode;
+  if (!labelKey) return DEFAULT_TAX_ROW_STYLE;
+  
+  const key = labelKey.toUpperCase().replace(/_/g, '');
+  if (key === 'NETTAX' || key === 'NETTAXES') {
+    return TAX_ROW_STYLE_THEMES[TAX_ROW_LABELS.NET_TAXES];
+  }
+  if (key === 'RETAIN') {
+    return TAX_ROW_STYLE_THEMES[TAX_ROW_LABELS.RETAIN];
+  }
+  if (key === 'HEARING') {
+    return TAX_ROW_STYLE_THEMES[TAX_ROW_LABELS.HEARING];
+  }
+  if (key === 'ALLTAXES') {
+    return TAX_ROW_STYLE_THEMES[TAX_ROW_LABELS.ALL_TAXES];
+  }
+  
+  // Deterministic fallback using only the 4 defined theme colors
+  const fallbackThemes = [
+    TAX_ROW_STYLE_THEMES[TAX_ROW_LABELS.HEARING],
+    TAX_ROW_STYLE_THEMES[TAX_ROW_LABELS.RETAIN],
+    TAX_ROW_STYLE_THEMES[TAX_ROW_LABELS.NET_TAXES],
+    TAX_ROW_STYLE_THEMES[TAX_ROW_LABELS.ALL_TAXES],
+  ];
+  
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) {
+    hash = key.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % fallbackThemes.length;
+  return fallbackThemes[index];
 }

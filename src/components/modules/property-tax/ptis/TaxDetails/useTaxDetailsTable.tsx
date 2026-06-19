@@ -2,7 +2,7 @@ import { useMemo, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import type { Column } from '@/components/common/MasterTable';
 import type { TaxDetailsData, TaxRow } from '@/types/ptisMain-taxdetails.types';
-import { TAX_ROWS_DEFINITIONS, getTaxRowStyleByLabel } from './config';
+import { getTaxRowStyleByLabel } from './config';
 import { getTaxDetailsColumns } from './TaxDetailsColumns';
 
 /**
@@ -17,34 +17,41 @@ export const useTaxDetailsTable = (initialTaxDetails?: TaxDetailsData) => {
     return getTaxRowStyleByLabel(labelKey);
   }, []);
 
-  // Generate tax rows data
+  // Generate tax rows data dynamically based on the returned policies
   const taxRows = useMemo(() => {
     const policies = initialTaxDetails?.policies || [];
 
-    return TAX_ROWS_DEFINITIONS.map((rowDef) => {
-      const translatedLabel = t(rowDef.labelKey);
+    // Deduplicate policies by case-insensitive policyCode
+    const seenPolicyCodes = new Set<string>();
+    const uniquePolicies: typeof policies = [];
+
+    policies.forEach((policy) => {
+      if (policy && policy.policyCode) {
+        const upperCode = policy.policyCode.toUpperCase();
+        if (!seenPolicyCodes.has(upperCode)) {
+          seenPolicyCodes.add(upperCode);
+          uniquePolicies.push(policy);
+        }
+      }
+    });
+
+    return uniquePolicies.map((policy, index) => {
       // Use Object.create(null) to prevent prototype pollution from API-provided taxName keys
       const row: TaxRow = Object.assign(Object.create(null), {
-        id: rowDef.id,
-        taxes: translatedLabel,
-        labelKey: rowDef.labelKey,
-        totalTax: '0.00',
+        id: 100 + index,
+        taxes: policy.policyCode,
+        labelKey: policy.policyCode,
+        totalTax: String(policy.taxTotal || 0),
       });
 
-      // Find policy by policyCode directly (locale-independent)
-      const policy = policies.find((p) => p.policyCode === rowDef.policyCode);
+      policy.taxAmounts.forEach((item) => {
+        // Safe to assign taxName as key since row has null prototype
+        row[item.taxName] = String(item.taxAmount || 0);
+      });
 
-      if (policy) {
-        policy.taxAmounts.forEach((item) => {
-          // Safe to assign taxName as key since row has null prototype
-          row[item.taxName] = String(item.taxAmount || 0);
-        });
-        // Use API-provided taxTotal instead of manual calculation
-        row.totalTax = String(policy.taxTotal || 0);
-      }
       return row;
     });
-  }, [initialTaxDetails, t]);
+  }, [initialTaxDetails]);
 
   // Generate table columns using the utility
   const taxColumns = useMemo<Column<TaxRow>[]>(() => {
@@ -61,3 +68,4 @@ export const useTaxDetailsTable = (initialTaxDetails?: TaxDetailsData) => {
     taxColumns,
   };
 };
+
