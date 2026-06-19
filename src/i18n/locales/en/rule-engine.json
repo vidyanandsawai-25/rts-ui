@@ -156,7 +156,18 @@
     "wasSkipped": "Was Skipped",
     "skipReason": "Skip Reason",
     "dryRunDetails": "Dry-Run Trace Details",
-    "showMatchedOnly": "Show Matched Only"
+    "showMatchedOnly": "Show Matched Only",
+    "dryRunAll": "Dry Run All Workflows",
+    "interactiveConsole": "Interactive Console",
+    "priorityText": "(Priority: {priority})",
+    "stopOnMatch": "Stop on Match",
+    "baseRate": "Base Rate",
+    "computedValue": "Computed Value",
+    "multiValueHint": "Multi-value field — enter comma-separated values (e.g. <codeTag>10, 28</codeTag>)",
+    "hideRawResponse": "Hide Raw Response",
+    "showRawResponse": "Show Raw Response",
+    "hideJsonTrace": "Hide JSON Trace",
+    "showJsonTrace": "Show JSON Trace"
   },
   "fields": {
     "floorId": "Floor",

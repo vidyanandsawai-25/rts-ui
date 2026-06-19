@@ -2,7 +2,7 @@ import React from 'react';
 import { Play, Plus, Terminal, Activity, XCircle, ListFilter } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/common/ActionButton';
-import { RuleItem } from '@/types/rule-engine.types';
+import { RuleItem, DryRunEffect, DryRunWorkflow } from '@/types/rule-engine.types';
 import { useSimulatorPayload } from './useSimulatorPayload';
 import RuleSimulatorStats from './RuleSimulatorStats';
 import RuleSimulatorWorkflow from './RuleSimulatorWorkflow';
@@ -30,7 +30,7 @@ export default function RuleSimulatorConsole({ rule }: RuleSimulatorConsoleProps
     getFieldConfig,
   } = useSimulatorPayload(rule);
 
-  const formatDryRunEffect = (effect: any) => {
+  const formatDryRunEffect = (effect: DryRunEffect | null | undefined) => {
     if (!effect) return '';
     const typeLabel = effect.effectType || 'No action';
     const val = effect.effectValue;
@@ -63,7 +63,7 @@ export default function RuleSimulatorConsole({ rule }: RuleSimulatorConsoleProps
             </div>
           </div>
           <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-700 bg-slate-200/60 px-2.5 py-1 rounded-full border border-slate-300/60">
-            Interactive Console
+            {t('simulation.interactiveConsole')}
           </span>
         </div>
 
@@ -82,6 +82,7 @@ export default function RuleSimulatorConsole({ rule }: RuleSimulatorConsoleProps
               getFieldConfig={getFieldConfig}
               handleRowChange={handleRowChange}
               handleRemoveRow={handleRemoveRow}
+              t={t}
             />
           </div>
 
@@ -143,7 +144,7 @@ export default function RuleSimulatorConsole({ rule }: RuleSimulatorConsoleProps
               />
 
               <div className="flex flex-col gap-4">
-                {dryRunResult.workflows?.map((wf: any, wfIdx: number) => (
+                {dryRunResult.workflows?.map((wf: DryRunWorkflow, wfIdx: number) => (
                   <RuleSimulatorWorkflow
                     key={wf.workflowName || wfIdx}
                     workflow={wf}
@@ -160,7 +161,7 @@ export default function RuleSimulatorConsole({ rule }: RuleSimulatorConsoleProps
                   onClick={() => setShowRawJson(!showRawJson)}
                   className="text-xs font-black text-slate-700 hover:text-slate-900 transition duration-150 border border-slate-300 hover:border-slate-450 px-3 py-1.5 rounded-lg w-fit flex items-center gap-1.5"
                 >
-                  {showRawJson ? 'Hide Raw Response' : 'Show Raw Response'}
+                  {showRawJson ? t('simulation.hideRawResponse') : t('simulation.showRawResponse')}
                 </button>
                 {showRawJson && (
                   <pre className="mt-3 text-[11px] bg-slate-900 text-slate-100 p-4 rounded-xl overflow-auto max-h-[300px] font-mono leading-relaxed select-text border border-slate-800 shadow-inner text-left w-full">

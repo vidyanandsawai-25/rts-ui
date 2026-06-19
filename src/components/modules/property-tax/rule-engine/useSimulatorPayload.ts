@@ -1,5 +1,5 @@
 import React from 'react';
-import { RuleItem, FieldConfig } from '@/types/rule-engine.types';
+import { RuleItem, FieldConfig, DryRunResult } from '@/types/rule-engine.types';
 import { ApiResponse } from '@/types/common.types';
 import { extractRuleParameters } from './useRuleBuilderHelpers';
 import { dryRunRuleAction, fetchFieldsForScopeAction } from '@/app/[locale]/property-tax/rule-engine/actions';
@@ -19,8 +19,21 @@ export interface InputRow {
 export function useSimulatorPayload(rule: RuleItem) {
   const [loading, setLoading]               = React.useState(false);
   const [executionResult, setExecutionResult] = React.useState<ApiResponse<unknown> | null>(null);
-  const [dryRunResult, setDryRunResult]     = React.useState<any | null>(null);
+  const [dryRunResult, setDryRunResult]     = React.useState<DryRunResult | null>(null);
   const [fields, setFields]                 = React.useState<FieldConfig[]>([]);
+
+  const [inputs, setInputs] = React.useState<InputRow[]>(() => {
+    const extracted = extractRuleParameters(rule);
+    let effectParam = 'Rate';
+    try {
+      const parsed = JSON.parse(rule.effectJson);
+      if (parsed?.parameterCode) effectParam = parsed.parameterCode.replace('input.', '').trim();
+    } catch { /* ignore */ }
+    if (effectParam && !extracted.includes(effectParam)) extracted.push(effectParam);
+    if (!extracted.includes('Rate') && !extracted.includes('BaseRate')) extracted.push('Rate');
+    const rows = extracted.map(field => ({ key: field, value: '', isExtracted: true }));
+    return rows.length === 0 ? [{ key: '', value: '', isExtracted: false }] : rows;
+  });
 
   /**
    * Fields that require array payload values.
@@ -31,17 +44,21 @@ export function useSimulatorPayload(rule: RuleItem) {
     const ARRAY_OPS = new Set(['contains any', 'contains all', 'contains_any', 'contains_all']);
     const result = new Set<string>();
     try {
-      const blocks = JSON.parse(rule.conditionsJson || '[]');
+      interface ConditionGroup {
+        conditions?: { fieldId?: string; operator?: string }[];
+        groups?: ConditionGroup[];
+      }
+      const blocks = JSON.parse(rule.conditionsJson || '[]') as { conditions?: ConditionGroup }[];
       if (Array.isArray(blocks)) {
-        const scanGroup = (g: any) => {
+        const scanGroup = (g?: ConditionGroup) => {
           if (!g) return;
-          (g.conditions || []).forEach((c: any) => {
+          (g.conditions || []).forEach((c) => {
             if (c?.fieldId && c?.operator && ARRAY_OPS.has(String(c.operator).toLowerCase()))
               result.add(c.fieldId);
           });
           (g.groups || []).forEach(scanGroup);
         };
-        blocks.forEach((block: any) => scanGroup(block?.conditions));
+        blocks.forEach((block) => scanGroup(block?.conditions));
       }
     } catch { /* invalid conditionsJson — ignore */ }
     return result;
@@ -78,7 +95,7 @@ export function useSimulatorPayload(rule: RuleItem) {
         setInputs(rows);
       })
       .catch(err => console.error('Failed to fetch scope fields:', err));
-  }, [rule.ruleScopeId, rule.id]);
+  }, [rule.ruleScopeId, rule.id, rule]);
 
   const getFieldConfig = React.useCallback((key: string): FieldConfig | undefined =>
     fields.find(f =>
@@ -88,18 +105,7 @@ export function useSimulatorPayload(rule: RuleItem) {
     ),
   [fields]);
 
-  const [inputs, setInputs] = React.useState<InputRow[]>(() => {
-    const extracted = extractRuleParameters(rule);
-    let effectParam = 'Rate';
-    try {
-      const parsed = JSON.parse(rule.effectJson);
-      if (parsed?.parameterCode) effectParam = parsed.parameterCode.replace('input.', '').trim();
-    } catch { /* ignore */ }
-    if (effectParam && !extracted.includes(effectParam)) extracted.push(effectParam);
-    if (!extracted.includes('Rate') && !extracted.includes('BaseRate')) extracted.push('Rate');
-    const rows = extracted.map(field => ({ key: field, value: '', isExtracted: true }));
-    return rows.length === 0 ? [{ key: '', value: '', isExtracted: false }] : rows;
-  });
+  // inputs state was moved above useEffect to prevent Cannot access variable before it is declared
 
   const handleAddRow    = () => setInputs(prev => [...prev, { key: '', value: '', isExtracted: false }]);
   const handleRemoveRow = (index: number) => setInputs(prev => prev.filter((_, i) => i !== index));
@@ -134,27 +140,24 @@ export function useSimulatorPayload(rule: RuleItem) {
       }
     });
 
-    console.group('%c[Simulator] Dry-Run Payload', 'color:#4f46e5;font-weight:bold');
-    console.log('📦 payload:', JSON.parse(JSON.stringify(payload)));
-    console.log('🔷 arrayFields:', [...types.arrayFields]);
-    console.log('🔢 numericFields:', [...types.numericFields]);
-    console.groupEnd();
+
 
     try {
       if (rule.id === -1 && rule.ruleCategory === 'ALL') {
         let categories: string[] = [];
         try {
           const blocks = JSON.parse(rule.conditionsJson);
-          categories = Array.from(new Set(blocks.map((b: any) => b.ruleCategory).filter(Boolean)));
+          categories = Array.from(new Set(blocks.map((b: Record<string, unknown> & { ruleCategory?: string }) => b.ruleCategory).filter(Boolean))) as string[];
         } catch { /* ignore */ }
         if (categories.length === 0) categories = ['ARV'];
 
         const responses = await Promise.all(categories.map(cat => dryRunRuleAction(cat, payload)));
-        const merged = { category: 'ALL', totalRulesLoaded: 0, totalSubRulesEvaluated: 0, matchedCount: 0, stoppedEarly: false, workflows: [] as any[] };
-        let fallback: any = null;
+        const merged: DryRunResult = { category: 'ALL', totalRulesLoaded: 0, totalSubRulesEvaluated: 0, matchedCount: 0, stoppedEarly: false, workflows: [] };
+        let fallback: ApiResponse<unknown> | null = null;
         let hasData = false;
         responses.forEach(res => {
-          const data = res && (res as any).success !== false ? ((res as any).data || res) : null;
+          const resTyped = res as ApiResponse<DryRunResult> & { success?: boolean };
+          const data = resTyped && resTyped.success !== false ? (resTyped.data || resTyped as unknown as DryRunResult) : null;
           if (data) {
             hasData = true;
             merged.totalRulesLoaded       += data.totalRulesLoaded || 0;
@@ -162,14 +165,23 @@ export function useSimulatorPayload(rule: RuleItem) {
             merged.matchedCount           += data.matchedCount || 0;
             if (data.stoppedEarly) merged.stoppedEarly = true;
             if (data.workflows) merged.workflows.push(...data.workflows);
-          } else { fallback = res; }
+          } else { fallback = res as ApiResponse<unknown>; }
         });
-        hasData ? setDryRunResult(merged) : fallback && setExecutionResult(fallback);
+        if (hasData) {
+          setDryRunResult(merged);
+        } else if (fallback) {
+          setExecutionResult(fallback);
+        }
       } else {
         const ruleJson = rule.id === -1 ? undefined : rule.ruleJson;
         const response = await dryRunRuleAction(rule.ruleCategory || 'ALL', payload, ruleJson);
-        const data = response && (response as any).success !== false ? ((response as any).data || response) : null;
-        data ? setDryRunResult(data) : setExecutionResult(response);
+        const responseTyped = response as ApiResponse<DryRunResult> & { success?: boolean };
+        const data = responseTyped && responseTyped.success !== false ? (responseTyped.data || responseTyped as unknown as DryRunResult) : null;
+        if (data) {
+          setDryRunResult(data);
+        } else {
+          setExecutionResult(response as ApiResponse<unknown>);
+        }
       }
     } catch (error) {
       setExecutionResult({ success: false, error: error instanceof Error ? error.message : 'Execution failed' });

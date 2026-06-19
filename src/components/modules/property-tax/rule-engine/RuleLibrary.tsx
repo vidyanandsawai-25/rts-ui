@@ -99,14 +99,14 @@ export default function RuleLibrary({
       const catRules = targetCategory === 'ALL'
         ? (fullRulesResult?.items || [])
         : (fullRulesResult?.items || []).filter(r => r.ruleCategory === targetCategory);
-      const allBlocks: any[] = [];
-      const allEngineRules: any[] = [];
+      const allBlocks: (Record<string, unknown> & { ruleCategory?: string })[] = [];
+      const allEngineRules: Record<string, unknown>[] = [];
       catRules.forEach(rule => {
         try {
           if (rule.conditionsJson) {
             const parsed = JSON.parse(rule.conditionsJson);
             if (Array.isArray(parsed)) {
-              parsed.forEach((b: any) => {
+              parsed.forEach((b: Record<string, unknown>) => {
                 b.ruleCategory = rule.ruleCategory;
               });
               allBlocks.push(...parsed);
@@ -213,7 +213,7 @@ export default function RuleLibrary({
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
           >
             <Terminal className="w-4 h-4 text-slate-600" />
-            <span>Dry Run All Workflows</span>
+            <span>{t('simulation.dryRunAll')}</span>
           </button>
         }
       />

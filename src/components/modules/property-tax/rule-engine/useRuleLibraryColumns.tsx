@@ -38,7 +38,9 @@ export function useRuleLibraryColumns({ t }: UseRuleLibraryColumnsArgs): Column<
         render: (_val: unknown, row: RuleItemRecord) => {
           let descs: string[] = [];
           if (row.subRules && Array.isArray(row.subRules)) {
-            descs = row.subRules.map((sr: any) => sr.description).filter(Boolean);
+            descs = row.subRules
+              .map((sr) => sr.description)
+              .filter((desc): desc is string => !!desc);
           }
           if (descs.length === 0 && row.description) {
             descs = [row.description];

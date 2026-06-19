@@ -1,4 +1,5 @@
 import { Trash2, HelpCircle, List } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Input } from '@/components/common/Input';
 import { FieldConfig } from '@/types/rule-engine.types';
 import ValueInput from './ValueInput';
@@ -10,6 +11,7 @@ interface RuleSimulatorInputsProps {
   getFieldConfig: (key: string) => FieldConfig | undefined;
   handleRowChange: (index: number, field: 'key' | 'value', val: string) => void;
   handleRemoveRow: (index: number) => void;
+  t: ReturnType<typeof useTranslations>;
 }
 
 export default function RuleSimulatorInputs({
@@ -18,6 +20,7 @@ export default function RuleSimulatorInputs({
   getFieldConfig,
   handleRowChange,
   handleRemoveRow,
+  t,
 }: RuleSimulatorInputsProps) {
   return (
     <>
@@ -78,7 +81,11 @@ export default function RuleSimulatorInputs({
             {isArrayField && !config && (
               <div className="flex items-center gap-1.5 pl-3 text-[10px] font-bold text-indigo-700">
                 <List className="w-3 h-3" />
-                <span>Multi-value field — enter comma-separated values (e.g. <code className="bg-indigo-50 px-1 rounded">10, 28</code>)</span>
+                <span>
+                  {t.rich('simulation.multiValueHint', {
+                    codeTag: (chunks: React.ReactNode) => <code className="bg-indigo-50 px-1 rounded">{chunks}</code>,
+                  })}
+                </span>
               </div>
             )}
           </div>

@@ -1,5 +1,5 @@
 import { apiClient } from '@/services/api.service';
-import { RuleItem, RuleListResponse } from '@/types/rule-engine.types';
+import { RuleItem, RuleListResponse, DryRunResult } from '@/types/rule-engine.types';
 import { ApiResponse } from '@/types/common.types';
 
 interface BackendRuleDto {
@@ -8,7 +8,7 @@ interface BackendRuleDto {
   ruleName?: string;
   ruleScopeId?: number;
   ruleScopeName?: string;
-  subRules?: any[];
+  subRules?: RuleItem['subRules'];
   isEnabled?: boolean;
   conditionsJson?: string;
   effectJson?: string;
@@ -43,7 +43,7 @@ interface RuleResponseData {
   ruleName?: string;
   ruleScopeId?: number;
   ruleScopeName?: string;
-  subRules?: any[];
+  subRules?: RuleItem['subRules'];
   isEnabled?: boolean;
   conditionsJson?: string;
   effectJson?: string;
@@ -64,6 +64,7 @@ interface RuleResponseData {
  * Reads conditionsJson/effectJson/targetFiltersJson directly from separate backend columns.
  */
 function mapBackendDtoToRuleItem(dto: BackendRuleDto): RuleItem {
+  const dtoWithActive = dto as BackendRuleDto & { isActive?: boolean };
   return {
     id: dto.id,
     ruleCode: dto.ruleCode || '',
@@ -71,7 +72,7 @@ function mapBackendDtoToRuleItem(dto: BackendRuleDto): RuleItem {
     ruleScopeId: dto.ruleScopeId || 0,
     ruleScopeName: dto.ruleScopeName,
     subRules: dto.subRules,
-    isActive: dto.isEnabled !== undefined ? !!dto.isEnabled : (dto as any).isActive !== undefined ? !!(dto as any).isActive : false,
+    isActive: dto.isEnabled !== undefined ? !!dto.isEnabled : dtoWithActive.isActive !== undefined ? !!dtoWithActive.isActive : false,
     conditionsJson: dto.conditionsJson ?? '',
     effectJson: dto.effectJson ?? '',
     ruleJson: dto.ruleJson,
@@ -267,8 +268,8 @@ export async function dryRunRule(
   category: string,
   input: Record<string, unknown>,
   ruleJson?: string
-): Promise<ApiResponse<any>> {
-  const response = await apiClient.post<any>('/RuleEngine/dry-run', {
+): Promise<ApiResponse<DryRunResult>> {
+  const response = await apiClient.post<DryRunResult>('/RuleEngine/dry-run', {
     category,
     input,
     ruleJson,

@@ -144,7 +144,18 @@
     "noDescription": "कोई विवरण नहीं दिया गया",
     "emptyValue": "खाली",
     "dryRunDetails": "ड्राई-रन ट्रेस विवरण",
-    "showMatchedOnly": "केवल मिलान दिखाएं"
+    "showMatchedOnly": "केवल मिलान दिखाएं",
+    "dryRunAll": "सभी वर्कफ़्लो का ड्राई रन",
+    "interactiveConsole": "इंटरएक्टिव कंसोल",
+    "priorityText": "(प्राथमिकता: {priority})",
+    "stopOnMatch": "मिलान पर रोकें",
+    "baseRate": "मूल दर",
+    "computedValue": "परिकलित मान",
+    "multiValueHint": "बहु-मूल्य फ़ील्ड — अल्पविराम से अलग किए गए मान दर्ज करें (उदा. <codeTag>10, 28</codeTag>)",
+    "hideRawResponse": "कच्चा उत्तर छिपाएं",
+    "showRawResponse": "कच्चा उत्तर दिखाएं",
+    "hideJsonTrace": "JSON ट्रेस छिपाएं",
+    "showJsonTrace": "JSON ट्रेस दिखाएं"
   },
   "fields": {
     "floorId": "मजला",

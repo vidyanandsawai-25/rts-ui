@@ -1,11 +1,13 @@
 import React from 'react';
 import { AlertTriangle, CheckCircle, XCircle, CornerDownRight } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { DryRunWorkflow, DryRunSubRule, DryRunEffect } from '@/types/rule-engine.types';
 
 interface RuleSimulatorWorkflowProps {
-  workflow: any;
+  workflow: DryRunWorkflow;
   showMatchedOnly: boolean;
-  formatDryRunEffect: (effect: any) => string;
-  t: (key: string) => string;
+  formatDryRunEffect: (effect: DryRunEffect | null | undefined) => string;
+  t: ReturnType<typeof useTranslations>;
 }
 
 export default function RuleSimulatorWorkflow({
@@ -22,7 +24,7 @@ export default function RuleSimulatorWorkflow({
 
   const displayedSubRules = React.useMemo(() => {
     return showMatchedOnly
-      ? (workflow.subRules || []).filter((sr: any) => sr.isMatch)
+      ? (workflow.subRules || []).filter((sr: DryRunSubRule) => sr.isMatch)
       : (workflow.subRules || []);
   }, [workflow.subRules, showMatchedOnly]);
 
@@ -40,20 +42,20 @@ export default function RuleSimulatorWorkflow({
           </span>
           {workflow.priority !== undefined && (
             <span className="text-[11px] font-extrabold text-slate-500">
-              (Priority: {workflow.priority})
+              {t('simulation.priorityText', { priority: workflow.priority })}
             </span>
           )}
         </div>
         {workflow.entityStopOnMatch && (
           <span className="text-[10px] font-extrabold text-amber-900 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full shadow-sm">
-            Stop on Match
+            {t('simulation.stopOnMatch')}
           </span>
         )}
       </div>
 
       {/* Sub rules inside Workflow */}
       <div className="divide-y divide-slate-200">
-        {displayedSubRules.map((sr: any) => {
+        {displayedSubRules.map((sr: DryRunSubRule) => {
           const isMatched = sr.isMatch;
           const isSkipped = sr.wasSkipped;
 
@@ -125,7 +127,7 @@ export default function RuleSimulatorWorkflow({
                   <div className="flex items-center gap-2.5 text-xs font-black text-emerald-950">
                     <CornerDownRight className="w-4 h-4 text-emerald-700 shrink-0" />
                     <div className="flex flex-wrap items-center gap-1.5">
-                      <span className="text-slate-600 font-bold">{t('simulation.outcomeAction') || 'Outcome Action'}:</span>
+                      <span className="text-slate-600 font-bold">{t('simulation.outcomeAction')}:</span>
                       <code className="bg-emerald-100 text-emerald-950 px-2 py-0.5 rounded font-mono font-black border border-emerald-300">
                         {formatDryRunEffect(sr.effect)}
                       </code>
@@ -137,7 +139,7 @@ export default function RuleSimulatorWorkflow({
                     <div className="grid grid-cols-2 gap-4 mt-2 pt-2 border-t border-emerald-200/40">
                       {sr.baseRate !== undefined && (
                         <div className="flex flex-col bg-white/60 p-2.5 rounded-lg border border-emerald-100/80">
-                          <span className="text-[10px] font-black text-slate-700 uppercase tracking-wider">Base Rate</span>
+                          <span className="text-[10px] font-black text-slate-700 uppercase tracking-wider">{t('simulation.baseRate')}</span>
                           <span className="text-sm font-black text-slate-900 mt-0.5 font-mono">
                             {typeof sr.baseRate === 'number' ? sr.baseRate.toFixed(2) : sr.baseRate}
                           </span>
@@ -145,7 +147,7 @@ export default function RuleSimulatorWorkflow({
                       )}
                       {sr.computedValue !== undefined && (
                         <div className="flex flex-col bg-emerald-100/40 p-2.5 rounded-lg border border-emerald-200/60">
-                          <span className="text-[10px] font-black text-emerald-800 uppercase tracking-wider">Computed Value</span>
+                          <span className="text-[10px] font-black text-emerald-800 uppercase tracking-wider">{t('simulation.computedValue')}</span>
                           <span className="text-sm font-black text-emerald-950 mt-0.5 font-mono">
                             {typeof sr.computedValue === 'number' ? sr.computedValue.toFixed(2) : sr.computedValue}
                           </span>
@@ -161,7 +163,7 @@ export default function RuleSimulatorWorkflow({
                       onClick={() => toggleJson(sr.ruleCode)}
                       className="text-[10.5px] font-black text-emerald-950 hover:text-emerald-900 transition duration-150 flex items-center gap-1.5 w-fit bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 px-3 py-1.5 rounded-xl shadow-sm"
                     >
-                      {expandedJson[sr.ruleCode] ? 'Hide JSON Trace' : 'Show JSON Trace'}
+                      {expandedJson[sr.ruleCode] ? t('simulation.hideJsonTrace') : t('simulation.showJsonTrace')}
                     </button>
                     {expandedJson[sr.ruleCode] && (
                       <pre className="text-[10px] bg-slate-900 text-slate-100 p-3.5 rounded-xl overflow-auto max-h-[220px] font-mono leading-relaxed select-text border border-slate-800 shadow-inner w-full">

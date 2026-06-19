@@ -5,10 +5,10 @@ interface RuleLibraryActionsProps {
   row: RuleItemRecord;
   locale: string;
   loadingRuleId: number | null;
-  handleOpenViewDrawer: (row: any) => void;
-  handleOpenTestDrawer: (row: any) => void;
+  handleOpenViewDrawer: (row: RuleItemRecord) => void;
+  handleOpenTestDrawer: (row: RuleItemRecord) => void;
   handleDelete: (id: number) => void;
-  router: any;
+  router: { push: (href: string) => void };
 }
 
 export default function RuleLibraryActions({
