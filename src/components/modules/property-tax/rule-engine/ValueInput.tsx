@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { FieldConfig, StaticValue } from '@/types/rule-engine.types';
+import { FieldConfig, StaticValue } from '@/types/rule-engine';
 import { Input, Checkbox } from '@/components/common';
 import { fetchDynamicFieldOptionsAction } from '@/app/[locale]/property-tax/rule-engine/actions';
 import DropdownValueInput from './DropdownValueInput';

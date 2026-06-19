@@ -15,8 +15,8 @@ import type {
   KYCDetailsData,
   SocietyDetailsData,
   OldDetailsData,
-} from '@/types/ptis.types';
-import { PTIS_TABS, PtisTabId } from '@/types/ptis.types';
+} from '@/types/ptis';
+import { PTIS_TABS, PtisTabId } from '@/types/ptis';
 
 /** Validate and coerce a raw tab param into a typed PtisTabId. */
 export const toValidTab = (value: unknown): PtisTabId => {

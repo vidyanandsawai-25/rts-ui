@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Column } from '@/components/common';
-import { RuleItem } from '@/types/rule-engine.types';
+import { RuleItem } from '@/types/rule-engine';
 import { getRuleWiseDescriptions } from './useRuleBuilderHelpers';
 
 export type RuleItemRecord = RuleItem & Record<string, unknown>;
@@ -11,10 +11,6 @@ interface UseRuleLibraryColumnsArgs {
   t: (key: string) => string;
 }
 
-/**
- * Returns the column definitions for the RuleLibrary table.
- * Extracted to keep RuleLibrary.tsx under the 200-line component limit.
- */
 export function useRuleLibraryColumns({ t }: UseRuleLibraryColumnsArgs): Column<RuleItemRecord>[] {
   return React.useMemo<Column<RuleItemRecord>[]>(
     () => [

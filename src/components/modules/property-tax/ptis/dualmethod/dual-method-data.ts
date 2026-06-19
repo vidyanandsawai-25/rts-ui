@@ -1,5 +1,5 @@
 import { getDualMethod } from '@/app/[locale]/property-tax/ptis/DualMethod.action';
-import type { OldDetailsData } from '@/types/ptis.types';
+import type { OldDetailsData } from '@/types/ptis';
 import type { DualMethodResponse } from '@/types/dualMethod.types';
 import type { RateableValueResponse } from '@/types/rateableValue.types';
 import type { CapitalValueResponse } from '@/types/capitalValue.types';

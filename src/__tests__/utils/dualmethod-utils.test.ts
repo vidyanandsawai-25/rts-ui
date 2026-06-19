@@ -17,7 +17,7 @@ import { validatePropertyId } from '@/lib/utils/ptis-normalization';
 import type { CapitalValueResponse } from '@/types/capitalValue.types';
 import type { DualMethodResponse, DualMethodTaxes } from '@/types/dualMethod.types';
 import type { RateableValueResponse } from '@/types/rateableValue.types';
-import type { OldDetailsData } from '@/types/ptis.types';
+import type { OldDetailsData } from '@/types/ptis';
 
 const mockOldDetails = {
   oldZoneName: '',

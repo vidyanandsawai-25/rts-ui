@@ -1,6 +1,6 @@
 'use client';
 
-import { RuleScope } from '@/types/rule-engine.types';
+import { RuleScope } from '@/types/rule-engine';
 import { Input, SearchSelect } from '@/components/common';
 import { useTranslations } from 'next-intl';
 

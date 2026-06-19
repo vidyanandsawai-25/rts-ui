@@ -37,7 +37,7 @@ import type {
   OldTaxesData,
   PtisInitialData,
   PropertyDetailsData,
-} from '@/types/ptis.types';
+} from '@/types/ptis';
 
 import { toPositiveInt, toSafeString } from '@/lib/utils/format';
 import { redirect } from 'next/navigation';

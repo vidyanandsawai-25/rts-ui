@@ -4,7 +4,7 @@ import React from 'react';
 import { useTranslations } from 'next-intl';
 import FieldShell from '@/components/common/FieldShell';
 import { ValueDisplay } from './components/ValueDisplay';
-import type { DiscountData, PropertySocialDetailItem } from '@/types/ptis.types';
+import type { DiscountData, PropertySocialDetailItem } from '@/types/ptis';
 import { AlertCircle } from 'lucide-react';
 
 export interface DiscountDataTabProps {

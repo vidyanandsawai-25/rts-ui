@@ -16,7 +16,7 @@ import type {
   OldTaxesData,
   DiscountData,
   BuildingPermissionData,
-} from '@/types/ptis.types';
+} from '@/types/ptis';
 
 export function useSyncedTabData(
   initialPropertyDetails?: PropertyDetailsData,

@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { normalizePartition } from '@/lib/utils/format';
 import type { SearchSelectOption } from '@/components/common/SearchSelect';
-import type { PropertyListItem } from '@/types/ptis.types';
+import type { PropertyListItem } from '@/types/ptis';
 
 /** Separator used in composite option-value keys to prevent key collisions. */
 const COMPOSITE_KEY_SEP = '::' as const;

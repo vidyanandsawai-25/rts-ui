@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { FooterPagination } from './FooterPagination';
 import { UtilityActions, RightActions } from './FooterActionButtons';
 import { useFooterActions } from '@/hooks/layout/useFooterActions';
-import type { PropertyListItem } from '@/types/ptis.types';
+import type { PropertyListItem } from '@/types/ptis';
 import { useTranslations } from 'next-intl';
 
 interface BottomActionBarProps {

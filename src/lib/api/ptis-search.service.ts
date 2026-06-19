@@ -1,5 +1,5 @@
 import { apiClient } from '@/services/api.service';
-import type { PagedResult, PropertySearchResult, WardResponse } from '@/types/ptis.types';
+import type { PagedResult, PropertySearchResult, WardResponse } from '@/types/ptis';
 
 export async function searchProperties(filters: {
   wardNo?: string;

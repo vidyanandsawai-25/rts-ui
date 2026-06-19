@@ -6,7 +6,7 @@ import {
   OldDetailsData,
   PtisTaxDetail,
   CapitalValueCollection,
-} from '@/types/ptis.types';
+} from '@/types/ptis';
 
 /**
  * Centralizes PTIS dual-method fallback precedence so the summary and expanded

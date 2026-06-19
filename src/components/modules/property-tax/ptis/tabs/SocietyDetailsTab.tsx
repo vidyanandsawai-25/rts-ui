@@ -1,7 +1,7 @@
 import { ValueDisplay } from './components/ValueDisplay';
 import { Building2, Mail, Phone, User, MessageCircle } from 'lucide-react';
 import FieldShell from '@/components/common/FieldShell';
-import type { SocietyDetailsData } from '@/types/ptis.types';
+import type { SocietyDetailsData } from '@/types/ptis';
 import { useTranslations } from 'next-intl';
 
 export interface SocietyDetailsTabProps {

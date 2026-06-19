@@ -7,17 +7,13 @@ import { useRuleFieldsConfig } from './useRuleFieldsConfig';
 import {
   RuleItem, RuleScope, FieldConfig,
   TargetFilterState, EffectTypeConfig, RuleBlock,
-} from '@/types/rule-engine.types';
+} from '@/types/rule-engine';
 import { safeParse } from '@/lib/utils/json-parse';
 import {
   initializeRulesList,
   validateRuleBuilder,
   safeUUID,
 } from './useRuleBuilderHelpers';
-
-// ─── Default fallback values ──────────────────────────────────────────────────
-
-// ─── Hook ────────────────────────────────────────────────────────────────────
 
 interface UseRuleBuilderProps {
   initialRule?: RuleItem;
@@ -32,7 +28,7 @@ interface UseRuleBuilderProps {
 export function useRuleBuilder({
   initialRule, scopes, initialFields,
   locale, onFetchFields, onSaveRule,
-  effectTypeConfigs: _effectTypeConfigs, // available for future use
+  effectTypeConfigs: _effectTypeConfigs,
 }: UseRuleBuilderProps) {
   const router = useRouter();
   const toast = useToast();
@@ -120,13 +116,12 @@ export function useRuleBuilder({
       toast.error('Please enter a reason for this change.');
       return;
     }
-    if (isSaving) return; // prevent double-submit
+    if (isSaving) return;
 
     setIsReasonOpen(false);
     setIsSaving(true);
 
     try {
-      // Backend generates ruleJson from conditionsJson + effectJson — no transform needed here
       const payload: RuleItem = {
         id: initialRule?.id,
         ruleName: ruleName.trim(),

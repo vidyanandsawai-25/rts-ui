@@ -1,10 +1,10 @@
 'use client';
 
-import { EffectState, EffectTypeConfig, FieldConfig } from '@/types/rule-engine.types';
+import { EffectState, EffectTypeConfig, FieldConfig } from '@/types/rule-engine';
 import { Input, SearchSelect, ToggleSwitch } from '@/components/common';
 import { adaptEffectConfigToFieldConfig } from '@/lib/api/rule-engine/mappers';
 import ValueInput from './ValueInput';
-import { useEffectPanelOptions } from './useEffectPanelOptions';
+import { useEffectPanelOptions } from '@/hooks/rule-engine/useEffectPanelOptions';
 import { useTranslations } from 'next-intl';
 
 interface EffectPanelProps {

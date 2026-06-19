@@ -4,6 +4,8 @@ import { ptisService } from '@/lib/api/ptis/tab/ptis.service';
 import { createPtisSchemas, propertyIdActionSchema } from '@/lib/validations/ptis.schema';
 import { retryWithBackoff } from '@/lib/utils/api';
 import { getTranslations } from 'next-intl/server';
+import { getPropertyRuleLogs } from '@/lib/api/rule-engine/property-rule-log.service';
+
 
 async function getPtisValidationSchemas() {
   const t = await getTranslations('ptis');
@@ -208,3 +210,17 @@ export async function fetchBuildingPermissionOnlyAction(propertyId: number) {
 
   return createAction(() => ptisService.getBuildingPermissionDetails(propertyId));
 }
+
+export async function fetchPropertyRuleLogsAction(propertyId: number) {
+  const validation = propertyIdActionSchema.safeParse({ propertyId });
+  if (!validation.success) {
+    return { success: false, error: validation.error.issues[0].message };
+  }
+
+  return createAction(async () => {
+    const data = await getPropertyRuleLogs(propertyId);
+    return { success: true, data };
+  });
+}
+
+

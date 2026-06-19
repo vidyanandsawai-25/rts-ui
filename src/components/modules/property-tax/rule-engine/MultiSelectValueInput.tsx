@@ -1,6 +1,6 @@
 'use client';
 
-import { FieldConfig } from '@/types/rule-engine.types';
+import { FieldConfig } from '@/types/rule-engine';
 import { MultiSelect } from '@/components/common/MultiSelect';
 
 interface MultiSelectValueInputProps {

@@ -1,5 +1,5 @@
 import { ViewButton, ExecuteTestButton, EditButton, DeleteButton } from '@/components/common/ActionButtons';
-import { RuleItemRecord } from './useRuleLibraryColumns';
+import { RuleItemRecord } from '@/hooks/rule-engine/useRuleLibraryColumns';
 
 interface RuleLibraryActionsProps {
   row: RuleItemRecord;

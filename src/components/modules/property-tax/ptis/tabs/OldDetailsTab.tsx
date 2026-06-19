@@ -2,7 +2,7 @@ import { Button } from '@/components/common/ActionButton';
 import { ValueDisplay } from './components/ValueDisplay';
 import FieldShell from '@/components/common/FieldShell';
 import { MasterTable, Column } from '@/components/common/MasterTable';
-import type { OldFloorDetailsData, OldDetailsData, OldTaxesData } from '@/types/ptis.types';
+import type { OldFloorDetailsData, OldDetailsData, OldTaxesData } from '@/types/ptis';
 import React from 'react';
 import { useTranslations } from 'next-intl';
 import { OldTaxDetailsTable } from './OldTaxDetailsTable';

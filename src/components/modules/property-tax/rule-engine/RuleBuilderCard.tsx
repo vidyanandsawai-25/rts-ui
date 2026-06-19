@@ -3,7 +3,7 @@
 import React from 'react';
 import { PlusCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { FieldConfig, RuleBlock, EffectTypeConfig, ConditionGroupState, EffectState } from '@/types/rule-engine.types';
+import { FieldConfig, RuleBlock, EffectTypeConfig, ConditionGroupState, EffectState } from '@/types/rule-engine';
 import RuleBlockItem from './RuleBlockItem';
 import SaveRulesButton from './SaveRulesButton';
 

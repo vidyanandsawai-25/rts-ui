@@ -685,5 +685,25 @@
     "residential": "अनिवासी",
     "nonResidential": "गैर-करयोग्य",
     "industrial": "औद्योगिक"
+  },
+  "appliedRules": {
+    "buttonLabel": "लागू नियम",
+    "drawerTitle": "लागू नियम",
+    "propertyId": "संपत्ति आईडी",
+    "propertyNo": "संपत्ति संख्या",
+    "columns": {
+      "applyOrder": "क्रम",
+      "ruleCategory": "श्रेणी",
+      "ruleName": "नियम का नाम",
+      "effectType": "प्रभाव प्रकार",
+      "effectValue": "प्रभाव मूल्य",
+      "baseValue": "आधार मूल्य",
+      "computedValue": "परिकलित मूल्य",
+      "cumulativeValue": "संचयी मूल्य",
+      "appliedAt": "लागू होने का समय"
+    },
+    "noAppliedRules": "इस संपत्ति पर कोई नियम लागू नहीं किया गया है।",
+    "loading": "लागू नियमों को लोड किया जा रहा है...",
+    "errorFetching": "लागू नियमों को प्राप्त करने में विफल।"
   }
 }

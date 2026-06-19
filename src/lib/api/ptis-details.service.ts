@@ -3,7 +3,7 @@ import type {
   OldDetailsData,
   OldFloorDetailsData,
   PropertyBasicDetailsApiResponse,
-} from '@/types/ptis.types';
+} from '@/types/ptis';
 import type { OldDetailsApiResponse, OldFloorDetailsApiResponse } from '@/types/ptis-page.types';
 
 export async function getOldDetails(propertyId: string | number): Promise<{

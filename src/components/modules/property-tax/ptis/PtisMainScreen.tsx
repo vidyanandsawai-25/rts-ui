@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { cn } from '@/lib/utils/cn';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -10,29 +10,9 @@ const { TabList, Tab } = Tabs;
 
 import { DualMethodSection } from '@/components/modules/property-tax/ptis/dualmethod';
 import AppartmentQCSection from '@/components/modules/property-tax/ptis/appartmentQC/AppartmentQCSection';
-import { PtisSearchParams } from '@/lib/utils/params';
-import type { DualMethodSectionData } from '@/components/modules/property-tax/ptis/dualmethod/dual-method-data';
-import type { ApartmentQCDetail, PagedResponse } from '@/types/apartmentQC.types';
-
-interface PtisMainScreenProps {
-  locale: string;
-  propertyId?: number;
-  ptisParams: PtisSearchParams;
-  resolvedSearchParams: Record<string, string | string[] | undefined>;
-  error?: string;
-  initialApartmentData?: {
-    amenities: PagedResponse<ApartmentQCDetail>;
-    commercial: PagedResponse<ApartmentQCDetail>;
-    residential: PagedResponse<ApartmentQCDetail>;
-  };
-  initialDualSectionData?: DualMethodSectionData;
-  wardId?: number | string;
-  propertyNo?: string;
-  rateableSection?: React.ReactNode;
-  capitalSection?: React.ReactNode;
-  dualRateableSection?: React.ReactNode;
-  dualCapitalSection?: React.ReactNode;
-}
+import { Button } from '@/components/common';
+import { AppliedRulesDrawer } from './AppliedRulesDrawer';
+import type { PtisMainScreenProps } from '@/types/ptis/ptis-screen.types';
 
 const PtisMainScreen: React.FC<PtisMainScreenProps> = (props) => {
   const {
@@ -54,33 +34,27 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = (props) => {
   const searchParams = useSearchParams();
   const t = useTranslations('ptis');
 
+  const [isAppliedRulesDrawerOpen, setIsAppliedRulesDrawerOpen] = useState(false);
+
   const activeTab = ptisParams.tab || 'rateable';
   const activeMainTab = searchParams.get('appartmentTab') || 'amenities';
   const activeSubTab = searchParams.get('subTab') || 'rateable';
 
-  const handleTabChange = (value: string | number) => {
+  const updateParams = (updates: Record<string, string>, replace = false) => {
     const params = new URLSearchParams(searchParams.toString());
-    params.set('valuationTab', value.toString());
-    router.push(`?${params.toString()}`);
+    Object.entries(updates).forEach(([key, val]) => params.set(key, val));
+    const url = `?${params.toString()}`;
+    if (replace) router.replace(url, { scroll: false });
+    else router.push(url);
   };
 
-  const handleApartmentMainTabChange = (v: string | number) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('valuationTab', 'apartment');
-    params.set('appartmentTab', v.toString());
-    params.set('subTab', 'rateable');
-    params.set('pageNumber', '1');
-    router.replace(`?${params.toString()}`, { scroll: false });
-  };
+  const handleTabChange = (value: string | number) => updateParams({ valuationTab: value.toString() });
 
-  const handleApartmentSubTabChange = (v: string | number) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('valuationTab', 'apartment');
-    params.set('appartmentTab', activeMainTab);
-    params.set('subTab', v.toString());
-    params.set('pageNumber', '1');
-    router.replace(`?${params.toString()}`, { scroll: false });
-  };
+  const handleApartmentMainTabChange = (v: string | number) =>
+    updateParams({ valuationTab: 'apartment', appartmentTab: v.toString(), subTab: 'rateable', pageNumber: '1' }, true);
+
+  const handleApartmentSubTabChange = (v: string | number) =>
+    updateParams({ valuationTab: 'apartment', appartmentTab: activeMainTab, subTab: v.toString(), pageNumber: '1' }, true);
 
   const tabs = [
     { value: 'rateable', label: t('tabs.rateable'), activeGradient: 'from-indigo-600 to-purple-600' },
@@ -93,7 +67,6 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = (props) => {
     <div className="bg-[#f1f5f9]">
       <div className="w-full px-1 py-0 sm:px-2">
         <main className="w-full mx-auto">
-          {/* Premium Style Tabs */}
           <div className="bg-white rounded-xl shadow-lg border border-indigo-50 overflow-hidden">
             <div className="bg-white border-b border-gray-200 px-4 py-2">
               <div className="flex items-center justify-between">
@@ -119,8 +92,21 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = (props) => {
                   </TabList>
                 </Tabs>
 
+                {activeTab !== 'apartment' && propertyId && (
+                  <Button
+                    id="applied-rules-tab-btn"
+                    variant="secondary"
+                    size="sm"
+                    icon={GitMerge}
+                    onClick={() => setIsAppliedRulesDrawerOpen(true)}
+                    className="bg-gradient-to-r from-indigo-50 via-white to-blue-50 border border-indigo-200 text-indigo-700 hover:from-indigo-100 hover:to-blue-100 hover:text-indigo-900 transition-all duration-300 font-bold shadow-sm rounded-lg"
+                  >
+                    {t('appliedRules.buttonLabel')}
+                  </Button>
+                )}
+
                 {activeTab === 'apartment' && (
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 flex-wrap">
                     <Tabs value={activeMainTab} onChange={handleApartmentMainTabChange} variant="pills" size="sm" activeTabClassName="bg-blue-700 text-white shadow-sm rounded-lg border-none">
                       <TabList className="bg-gray-100 p-1 rounded-lg inline-flex gap-1">
                         <Tab value="amenities" icon={Building2}>{t('apartmentTabs.amenities')}</Tab>
@@ -135,54 +121,61 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = (props) => {
                         <Tab value="dual-method" icon={GitMerge}>{t('apartmentTabs.dual')}</Tab>
                       </TabList>
                     </Tabs>
+                    {propertyId && (
+                      <Button
+                        id="applied-rules-apartment-btn"
+                        variant="secondary"
+                        size="sm"
+                        icon={GitMerge}
+                        onClick={() => setIsAppliedRulesDrawerOpen(true)}
+                        className="bg-gradient-to-r from-indigo-50 via-white to-blue-50 border border-indigo-200 text-indigo-700 hover:from-indigo-100 hover:to-blue-100 hover:text-indigo-900 transition-all duration-300 font-bold shadow-sm rounded-lg"
+                      >
+                        {t('appliedRules.buttonLabel')}
+                      </Button>
+                    )}
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Content Area */}
-            <div className="bg-white min-h-[200px]">
-              {activeTab === 'capital' ? (
-                <div className="p-0.5 sm:p-1">
-                  {capitalSection}
-                </div>
-              ) : activeTab === 'rateable' ? (
-                <div className="p-0.5 sm:p-1">
-                  {rateableSection}
-                </div>
-              ) : activeTab === 'apartment' ? (
-                <div className="p-0.5 sm:p-1">
-                  <AppartmentQCSection
-                    initialData={initialApartmentData}
-                    wardId={wardId?.toString() || ''}
-                    propertyNo={propertyNo || ''}
-                  />
-                </div>
-              ) : activeTab === 'dual' ? (
-                <div className="p-0.5 sm:p-1">
-                  <DualMethodSection
-                    propertyId={propertyId}
-                    searchParams={resolvedSearchParams as Record<string, string | string[] | undefined>}
-                    locale={locale}
-                    initialData={initialDualSectionData}
-                    rateableSection={dualRateableSection}
-                    capitalSection={dualCapitalSection}
-                  />
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center min-h-[500px] text-gray-400">
-                  <div className="p-1 rounded-full bg-slate-50 border border-slate-100 mb-4 text-4xl opacity-20">
-                    📊
-                  </div>
-                  <p className="font-medium text-lg">
-                    {t('noDataAvailable')}
-                  </p>
+            <div className="bg-white min-h-[200px] p-0.5 sm:p-1">
+              {activeTab === 'capital' && capitalSection}
+              {activeTab === 'rateable' && rateableSection}
+              {activeTab === 'apartment' && (
+                <AppartmentQCSection
+                  initialData={initialApartmentData}
+                  wardId={wardId?.toString() || ''}
+                  propertyNo={propertyNo || ''}
+                />
+              )}
+              {activeTab === 'dual' && (
+                <DualMethodSection
+                  propertyId={propertyId}
+                  searchParams={resolvedSearchParams as Record<string, string | string[] | undefined>}
+                  locale={locale}
+                  initialData={initialDualSectionData}
+                  rateableSection={dualRateableSection}
+                  capitalSection={dualCapitalSection}
+                />
+              )}
+              {!['rateable', 'capital', 'apartment', 'dual'].includes(activeTab) && (
+                <div className="flex flex-col items-center justify-center min-h-[500px] text-gray-400 p-4">
+                  <div className="p-1 rounded-full bg-slate-50 border border-slate-100 mb-4 text-4xl opacity-20">📊</div>
+                  <p className="font-medium text-lg">{t('noDataAvailable')}</p>
                 </div>
               )}
             </div>
           </div>
         </main>
       </div>
+
+      <AppliedRulesDrawer
+        open={isAppliedRulesDrawerOpen}
+        onClose={() => setIsAppliedRulesDrawerOpen(false)}
+        propertyId={propertyId}
+        propertyNo={propertyNo}
+        locale={locale}
+      />
     </div>
   );
 };

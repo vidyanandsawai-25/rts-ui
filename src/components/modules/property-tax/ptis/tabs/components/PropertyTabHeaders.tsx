@@ -4,7 +4,7 @@ import React from 'react';
 import { useTranslations } from 'next-intl';
 import { Building2, UserCheck, Users, History, Percent, FileText } from 'lucide-react';
 import { Tabs } from '@/components/common/Tabs';
-import type { PtisTabId } from '@/types/ptis.types';
+import type { PtisTabId } from '@/types/ptis';
 
 interface PropertyTabHeadersProps {
   activeTab: PtisTabId;

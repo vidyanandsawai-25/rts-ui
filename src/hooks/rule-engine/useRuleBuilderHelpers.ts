@@ -1,4 +1,4 @@
-import { RuleItem, RuleBlock, ConditionGroupState, ConditionState } from '@/types/rule-engine.types';
+import { RuleItem, RuleBlock, ConditionGroupState, ConditionState } from '@/types/rule-engine';
 
 /** Converts legacy verbose operator codes to the short symbols used in state. */
 function normalizeOperator(op: string): string {
@@ -151,5 +151,6 @@ export function getRuleWiseDescriptions(conditionsJson?: string): string[] {
   } catch {}
   return [];
 }
+
 // Re-export label helpers from their dedicated file so existing imports remain valid
-export { formatFieldName, getFieldLabel, getFriendlyOperatorLabel } from './field-label.helpers';
+export { formatFieldName, getFieldLabel, getFriendlyOperatorLabel } from '@/components/modules/property-tax/rule-engine/field-label.helpers';

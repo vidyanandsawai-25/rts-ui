@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 
-import type { PropertySearchParams } from '@/types/ptis.types';
+import type { PropertySearchParams } from '@/types/ptis';
 
 export interface PropertySearchState {
   wardNo: string;

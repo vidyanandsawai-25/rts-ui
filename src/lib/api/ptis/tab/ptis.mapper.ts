@@ -11,7 +11,7 @@ import type {
   OldFloorDetailApiResponse,
   DiscountData,
   BuildingPermissionData,
-} from '@/types/ptis.types';
+} from '@/types/ptis';
 import {
   defaultPropertyDetails,
   defaultKycDetails,

@@ -1,7 +1,7 @@
 import React from 'react';
 import { AlertTriangle, CheckCircle, XCircle, CornerDownRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { DryRunWorkflow, DryRunSubRule, DryRunEffect } from '@/types/rule-engine.types';
+import { DryRunWorkflow, DryRunSubRule, DryRunEffect } from '@/types/rule-engine';
 
 interface RuleSimulatorWorkflowProps {
   workflow: DryRunWorkflow;
