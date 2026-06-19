@@ -8,6 +8,8 @@ interface PageProps {
     wardId?: string;
     PropertyNo?: string;
     propertyNo?: string;
+    PartitionNo?: string;
+    partitionNo?: string;
     pageNumber?: string;
     page?: string;
     pageSize?: string;
@@ -29,6 +31,7 @@ const Page = async ({ searchParams }: PageProps) => {
   // Support both PascalCase and camelCase for better resilience
   const wardId = params.WardId || params.wardId || "";
   const propertyNo = params.PropertyNo || params.propertyNo || "";
+  const partitionNo = params.PartitionNo || params.partitionNo || "";
 
   const pageNumber = Number(params.pageNumber) || Number(params.page) || 1;
   const pageSize = Number(params.pageSize) || Number(params.limit) || 10;
@@ -56,6 +59,7 @@ const Page = async ({ searchParams }: PageProps) => {
     partType: "Aminity",
     wardId,
     propertyNo,
+    partitionNo,
     pageNumber,
     pageSize,
     searchTerm,

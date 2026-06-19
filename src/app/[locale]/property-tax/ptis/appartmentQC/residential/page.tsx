@@ -8,6 +8,8 @@ interface PageProps {
     wardId?: number;
     PropertyNo?: string;
     propertyNo?: string;
+    PartitionNo?: string;
+    partitionNo?: string;
     pageNumber?: string;
     pageSize?: string;
     searchTerm?: string;
@@ -26,6 +28,7 @@ const Page = async ({ searchParams }: PageProps) => {
   // Support both PascalCase and camelCase for better resilience
   const wardId = params.WardId || params.wardId;
   const propertyNo = params.PropertyNo || params.propertyNo;
+  const partitionNo = params.PartitionNo || params.partitionNo || "";
   
   const pageNumber = Number(params.pageNumber) || 1;
   const pageSize = Number(params.pageSize) || 10;
@@ -54,6 +57,7 @@ const Page = async ({ searchParams }: PageProps) => {
     partType: "R",
     wardId,
     propertyNo,
+    partitionNo,
     pageNumber,
     pageSize,
     searchTerm,

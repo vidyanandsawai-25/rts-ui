@@ -178,9 +178,10 @@ export async function fetchApartmentQCByWardAction(
  */
 export async function fetchApartmentQCByPropertyAction(
   wardId: number | string,
-  propertyNo: number | string
+  propertyNo: number | string,
+  partitionNo?: string
 ): Promise<ActionResult<ApartmentQCDetail[]>> {
-  return fetchApartmentQCDetailsAction({ wardId, propertyNo: String(propertyNo) });
+  return fetchApartmentQCDetailsAction({ wardId, propertyNo: String(propertyNo), partitionNo });
 }
 
 /* ============================================================

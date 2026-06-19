@@ -256,7 +256,8 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
               {
                 sortBy: sortBy || undefined,
                 sortOrder: sortOrder || undefined,
-              }
+              },
+              partitionNo
             )
           : Promise.resolve({
               amenities: emptyPaged,
