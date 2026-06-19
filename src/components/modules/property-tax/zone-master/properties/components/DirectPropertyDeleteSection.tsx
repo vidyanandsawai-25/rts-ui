@@ -1,7 +1,7 @@
 "use client";
 
 import { Building2, Trash2 } from "lucide-react";
-import { ConfirmProvider, MasterTable } from "@/components/common";
+import { Button, ConfirmProvider, MasterTable } from "@/components/common";
 import type { Column } from "@/components/common";
 import type { DirectPropertyDeleteRow } from "@/types/zoneMaster.types";
 import { useDirectPropertyDelete } from "./hooks/useDirectPropertyDelete";
@@ -88,14 +88,16 @@ function DirectPropertyDeleteSectionInner({
 
       {selectedRows.size > 0 && (
         <div className="flex justify-end pt-2">
-          <button
+          <Button
+            variant="danger"
+            size="sm"
+            icon={Trash2}
             onClick={handleBulkDelete}
+            isLoading={isDeleting}
             disabled={isDeleting}
-            className="flex items-center gap-2 bg-red-600 text-white px-3 py-2 rounded-md text-sm hover:bg-red-700"
           >
-            <Trash2 className="w-4 h-4" />
             {t("createProperty.deleteSelectedCount", { count: selectedRows.size })}
-          </button>
+          </Button>
         </div>
       )}
     </div>
