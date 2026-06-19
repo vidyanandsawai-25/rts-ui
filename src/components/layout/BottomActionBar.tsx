@@ -22,6 +22,8 @@ interface BottomActionBarProps {
   centerContent?: React.ReactNode;
   rightContent?: React.ReactNode;
   properties?: PropertyListItem[];
+  categoryId?: number;
+  societyDetailId?: number;
 }
 
 export function BottomActionBar({
@@ -35,6 +37,8 @@ export function BottomActionBar({
   centerContent,
   rightContent,
   properties = [],
+  categoryId,
+  societyDetailId,
 }: BottomActionBarProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -135,6 +139,8 @@ export function BottomActionBar({
         rateableExpand: rateableExpandParam,
         capitalExpand: capitalExpandParam,
         dualExpand: dualExpandParam,
+        categoryId,
+        societyDetailId,
       });
       if (result.success) {
         toast.success(result.message || 'Action executed.');

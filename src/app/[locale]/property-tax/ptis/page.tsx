@@ -536,6 +536,8 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
         properties={rawPropertyData}
         leftContent={<PtisBackButton />}
         rightContent={<PtisFooterDropdowns />}
+        categoryId={propertyDetailsResult.propertyDetails.categoryId}
+        societyDetailId={societyDetails.societyDetailId}
       />
     </div>
   );
