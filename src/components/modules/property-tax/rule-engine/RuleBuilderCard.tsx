@@ -119,7 +119,7 @@ export default function RuleBuilderCard({
         <button
           type="button"
           onClick={onAddRuleBlock}
-          className="flex items-center justify-center gap-2 w-full py-2.5 border-2 border-dashed border-zinc-300 hover:border-zinc-400 hover:bg-zinc-50 rounded-xl text-zinc-600 hover:text-zinc-800 transition-all font-semibold text-xs cursor-pointer shrink-0"
+          className="flex items-center justify-center gap-2 w-fit px-8 py-2.5 border-2 border-dashed border-zinc-300 hover:border-zinc-400 hover:bg-zinc-50 rounded-xl text-zinc-600 hover:text-zinc-800 transition-all font-semibold text-xs cursor-pointer self-center shrink-0"
         >
           <PlusCircle className="w-3.5 h-3.5" /> {t('library.addRule')}
         </button>

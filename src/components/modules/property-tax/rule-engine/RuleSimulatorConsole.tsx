@@ -1,178 +1,194 @@
-'use client';
-
 import React from 'react';
-import { Play, Plus, Trash2, HelpCircle } from 'lucide-react';
+import { Play, Plus, Terminal, Activity, XCircle, ListFilter } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/common/ActionButton';
-import { Input } from '@/components/common/Input';
 import { RuleItem } from '@/types/rule-engine.types';
-import { ApiResponse } from '@/types/common.types';
-import { extractRuleParameters } from './useRuleBuilderHelpers';
-import { executeRuleAction } from '@/app/[locale]/property-tax/rule-engine/actions';
+import { useSimulatorPayload } from './useSimulatorPayload';
+import RuleSimulatorStats from './RuleSimulatorStats';
+import RuleSimulatorWorkflow from './RuleSimulatorWorkflow';
+import RuleSimulatorInputs from './RuleSimulatorInputs';
 
 interface RuleSimulatorConsoleProps {
   rule: RuleItem;
 }
 
-interface InputRow {
-  key: string;
-  value: string;
-  isExtracted: boolean;
-}
-
 export default function RuleSimulatorConsole({ rule }: RuleSimulatorConsoleProps) {
   const t = useTranslations('ruleEngine');
-  const [loading, setLoading] = React.useState(false);
-  const [executionResult, setExecutionResult] = React.useState<ApiResponse<unknown> | null>(null);
+  const [showMatchedOnly, setShowMatchedOnly] = React.useState(false);
+  const [showRawJson, setShowRawJson] = React.useState(false);
 
-  const [inputs, setInputs] = React.useState<InputRow[]>(() => {
-    const extracted = extractRuleParameters(rule);
-    const initialRows: InputRow[] = extracted.map((field) => ({
-      key: field,
-      value: '',
-      isExtracted: true,
-    }));
-    return initialRows.length === 0 ? [{ key: '', value: '', isExtracted: false }] : initialRows;
-  });
+  const {
+    loading,
+    executionResult,
+    dryRunResult,
+    inputs,
+    arrayFieldIds,
+    handleAddRow,
+    handleRemoveRow,
+    handleRowChange,
+    handleRunSimulation,
+    getFieldConfig,
+  } = useSimulatorPayload(rule);
 
-  const handleAddRow = () => {
-    setInputs((prev) => [...prev, { key: '', value: '', isExtracted: false }]);
-  };
+  const formatDryRunEffect = (effect: any) => {
+    if (!effect) return '';
+    const typeLabel = effect.effectType || 'No action';
+    const val = effect.effectValue;
+    const parameterCode = effect.parameterCode;
+    
+    const subject = parameterCode ? parameterCode.replace('input.', '').trim() : 'Rate';
+    const typeLower = typeLabel.toLowerCase();
 
-  const handleRemoveRow = (index: number) => {
-    setInputs((prev) => prev.filter((_, idx) => idx !== index));
-  };
-
-  const handleRowChange = (index: number, field: 'key' | 'value', val: string) => {
-    setInputs((prev) =>
-      prev.map((row, idx) => (idx === index ? { ...row, [field]: val } : row))
-    );
-  };
-
-  const handleRunSimulation = async () => {
-    setLoading(true);
-    setExecutionResult(null);
-
-    const payload: Record<string, string> = {};
-    inputs.forEach((row) => {
-      const trimmedKey = row.key.trim();
-      if (trimmedKey) {
-        payload[trimmedKey] = row.value;
-      }
-    });
-
-    try {
-      const response = await executeRuleAction(rule.ruleCategory || 'ALL', payload);
-      setExecutionResult(response);
-    } catch (error) {
-      setExecutionResult({
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to complete execution',
-      });
-    } finally {
-      setLoading(false);
+    if (typeLower.includes('override') || typeLower.includes('set') || typeLower.includes('equal')) {
+      return `${typeLabel} ${subject} to ${val}`;
+    } else {
+      return `${typeLabel} ${subject} by ${val}%`;
     }
   };
 
   return (
-    <div className="flex flex-col gap-5 bg-white p-5 border border-blue-100 rounded-xl shadow-sm h-fit">
-      <div className="border-b border-gray-100 pb-3">
-        <h3 className="text-sm font-semibold text-gray-800">{t('simulation.simulator')}</h3>
-        <p className="text-xs text-gray-500 mt-0.5">
-          {t('simulation.simulatorHint')}
-        </p>
-      </div>
-
-      {/* Test Inputs list */}
-      <div className="flex flex-col gap-3">
-        <div className="grid grid-cols-12 gap-2 text-xs font-bold text-gray-600 px-1">
-          <span className="col-span-5">{t('simulation.parameterName')}</span>
-          <span className="col-span-6">{t('simulation.simulationValue')}</span>
-          <span className="col-span-1"></span>
+    <div className="flex flex-col gap-6 w-full">
+      {/* Simulation Controls Card */}
+      <div className="bg-gradient-to-br from-white to-slate-50/50 p-6 border border-slate-200/90 rounded-2xl shadow-xl shadow-slate-100/50 transition duration-300">
+        <div className="flex items-center justify-between border-b border-slate-200/80 pb-4 mb-5">
+          <div className="flex items-center gap-3">
+            <div className="bg-indigo-50 p-2 rounded-xl border border-indigo-200/60">
+              <Terminal className="w-5.5 h-5.5 text-indigo-700" />
+            </div>
+            <div>
+              <h3 className="text-base font-extrabold text-slate-900">{t('simulation.simulator')}</h3>
+              <p className="text-xs text-slate-700 font-medium mt-0.5">
+                {t('simulation.simulatorHint')}
+              </p>
+            </div>
+          </div>
+          <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-700 bg-slate-200/60 px-2.5 py-1 rounded-full border border-slate-300/60">
+            Interactive Console
+          </span>
         </div>
 
-        <div className="flex flex-col gap-2.5 max-h-[300px] overflow-y-auto pr-1">
-          {inputs.map((row, index) => (
-            <div key={index} className="grid grid-cols-12 gap-2 items-center">
-              <div className="col-span-5">
-                <Input
-                  placeholder="e.g. usageType"
-                  value={row.key}
-                  onChange={(e) => handleRowChange(index, 'key', e.target.value)}
-                  disabled={row.isExtracted}
-                  className={row.isExtracted ? 'bg-gray-50 font-mono text-xs text-gray-600 font-bold border-gray-200' : 'font-mono text-xs'}
-                />
+        {/* Test Inputs list */}
+        <div className="flex flex-col gap-4">
+          <div className="grid grid-cols-12 gap-3 text-[11px] font-black text-slate-700 uppercase tracking-wider px-1">
+            <span className="col-span-5">{t('simulation.parameterName')}</span>
+            <span className="col-span-6">{t('simulation.simulationValue')}</span>
+            <span className="col-span-1"></span>
+          </div>
+
+          <div className="flex flex-col gap-4 pb-4 border-b border-slate-200/80">
+            <RuleSimulatorInputs
+              inputs={inputs}
+              arrayFieldIds={arrayFieldIds}
+              getFieldConfig={getFieldConfig}
+              handleRowChange={handleRowChange}
+              handleRemoveRow={handleRemoveRow}
+            />
+          </div>
+
+          <div className="flex items-center justify-between pt-1">
+            <button
+              onClick={handleAddRow}
+              className="flex items-center gap-1.5 text-xs font-black text-indigo-700 hover:text-indigo-800 transition duration-200 px-3 py-1.5 rounded-lg hover:bg-indigo-50 border border-transparent hover:border-indigo-200/50"
+            >
+              <Plus className="w-4 h-4" />
+              <span>{t('simulation.addCustomParameter')}</span>
+            </button>
+
+            <Button
+              variant="primary"
+              onClick={handleRunSimulation}
+              isLoading={loading}
+              className="px-6 py-2.5 flex items-center gap-2 bg-indigo-655 hover:bg-indigo-700 border-indigo-655 text-white font-extrabold rounded-xl shadow-lg shadow-indigo-200/40 active:scale-[0.98] transition-all"
+              icon={Play}
+            >
+              {t('simulation.runSimulation')}
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Results panel */}
+      {(executionResult || dryRunResult) && (
+        <div className="bg-white p-6 border border-slate-250 rounded-2xl shadow-xl flex flex-col gap-5 text-left transition duration-300">
+          <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="bg-emerald-50 p-1.5 rounded-lg border border-emerald-200/65">
+                <Activity className="w-4.5 h-4.5 text-emerald-700" />
               </div>
-              <div className="col-span-6">
-                <Input
-                  placeholder="Input value..."
-                  value={row.value}
-                  onChange={(e) => handleRowChange(index, 'value', e.target.value)}
-                  className="font-mono text-xs"
-                />
+              <h4 className="text-sm font-black text-slate-900 uppercase tracking-wider">{t('simulation.dryRunDetails')}</h4>
+            </div>
+            
+            <label className="flex items-center gap-2 text-xs font-black text-slate-800 cursor-pointer select-none bg-slate-50 hover:bg-slate-100 border border-slate-255 px-3 py-1.5 rounded-xl transition duration-150">
+              <input
+                type="checkbox"
+                checked={showMatchedOnly}
+                onChange={(e) => setShowMatchedOnly(e.target.checked)}
+                className="rounded border-slate-400 text-indigo-650 focus:ring-indigo-500 w-4 h-4 transition cursor-pointer"
+              />
+              <span className="flex items-center gap-1">
+                <ListFilter className="w-3.5 h-3.5 text-slate-700" />
+                {t('simulation.showMatchedOnly') || 'Show Matched Only'}
+              </span>
+            </label>
+          </div>
+          
+          {dryRunResult ? (
+            <div className="flex flex-col gap-6">
+              <RuleSimulatorStats
+                totalRulesLoaded={dryRunResult.totalRulesLoaded || 0}
+                totalSubRulesEvaluated={dryRunResult.totalSubRulesEvaluated || 0}
+                matchedCount={dryRunResult.matchedCount || 0}
+                stoppedEarly={!!dryRunResult.stoppedEarly}
+                t={t}
+              />
+
+              <div className="flex flex-col gap-4">
+                {dryRunResult.workflows?.map((wf: any, wfIdx: number) => (
+                  <RuleSimulatorWorkflow
+                    key={wf.workflowName || wfIdx}
+                    workflow={wf}
+                    showMatchedOnly={showMatchedOnly}
+                    formatDryRunEffect={formatDryRunEffect}
+                    t={t}
+                  />
+                ))}
               </div>
-              <div className="col-span-1 flex justify-center">
-                {!row.isExtracted ? (
-                  <button
-                    onClick={() => handleRemoveRow(index)}
-                    title="Delete parameter"
-                    className="text-red-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                ) : (
-                  <div className="text-gray-300" title="Auto-extracted from rule block criteria">
-                    <HelpCircle className="w-4 h-4 text-gray-350" />
-                  </div>
+
+              <div className="pt-4 border-t border-slate-200 mt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowRawJson(!showRawJson)}
+                  className="text-xs font-black text-slate-700 hover:text-slate-900 transition duration-150 border border-slate-300 hover:border-slate-450 px-3 py-1.5 rounded-lg w-fit flex items-center gap-1.5"
+                >
+                  {showRawJson ? 'Hide Raw Response' : 'Show Raw Response'}
+                </button>
+                {showRawJson && (
+                  <pre className="mt-3 text-[11px] bg-slate-900 text-slate-100 p-4 rounded-xl overflow-auto max-h-[300px] font-mono leading-relaxed select-text border border-slate-800 shadow-inner text-left w-full">
+                    {JSON.stringify(dryRunResult, null, 2)}
+                  </pre>
                 )}
               </div>
             </div>
-          ))}
-        </div>
-
-        <button
-          onClick={handleAddRow}
-          className="flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition w-fit mt-1.5 px-2 py-1 rounded hover:bg-indigo-50"
-        >
-          <Plus className="w-3.5 h-3.5" />
-          <span>{t('simulation.addCustomParameter')}</span>
-        </button>
-      </div>
-
-      <Button
-        variant="primary"
-        onClick={handleRunSimulation}
-        isLoading={loading}
-        className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 border-indigo-600 text-white font-medium py-2.5 rounded-lg shadow-sm active:scale-[0.99]"
-        icon={Play}
-      >
-        {t('simulation.runSimulation')}
-      </Button>
-
-      {/* Results panel */}
-      {executionResult && (
-        <div className="flex flex-col gap-2 mt-2 pt-4 border-t border-gray-100">
-          <h4 className="text-xs font-bold text-gray-700">{t('simulation.resultOutput')}</h4>
-          
-          {executionResult.success !== false ? (
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2 px-3 py-2 bg-emerald-50 border border-emerald-100 text-emerald-800 rounded-lg text-xs font-medium">
-                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span>{t('simulation.successMessage')}</span>
-              </div>
-              <pre className="text-[11px] bg-slate-950 text-slate-350 p-4 rounded-lg overflow-auto max-h-[200px] font-mono leading-relaxed select-text border border-slate-800 shadow-inner">
-                {JSON.stringify(executionResult, null, 2)}
-              </pre>
-            </div>
           ) : (
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2 px-3 py-2 bg-rose-50 border border-rose-100 text-rose-800 rounded-lg text-xs font-medium">
-                <div className="w-2.5 h-2.5 rounded-full bg-rose-500" />
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-2.5 px-4 py-3 bg-rose-50 border border-rose-200 text-rose-955 rounded-xl text-xs font-black shadow-sm">
+                <XCircle className="w-4.5 h-4.5 text-rose-700" />
                 <span>{t('simulation.failureMessage')}</span>
               </div>
-              <pre className="text-[11px] bg-rose-950 text-rose-250 p-4 rounded-lg overflow-auto max-h-[160px] font-mono leading-relaxed select-text border border-rose-900 shadow-inner">
-                {JSON.stringify(executionResult, null, 2)}
-              </pre>
+              
+              <button
+                type="button"
+                onClick={() => setShowRawJson(!showRawJson)}
+                className="text-xs font-black text-slate-700 hover:text-slate-900 transition duration-150 border border-slate-350 hover:border-slate-450 px-3 py-1.5 rounded-lg w-fit flex items-center gap-1.5"
+              >
+                {showRawJson ? 'Hide Raw Response' : 'Show Raw Response'}
+              </button>
+
+              {showRawJson && (
+                <pre className="text-[11px] bg-slate-900 text-slate-100 p-4 rounded-xl overflow-auto max-h-[250px] font-mono leading-relaxed select-text border border-slate-800 shadow-inner text-left w-full">
+                  {JSON.stringify(executionResult, null, 2)}
+                </pre>
+              )}
             </div>
           )}
         </div>

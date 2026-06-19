@@ -7,6 +7,8 @@ interface BackendRuleDto {
   ruleCode?: string;
   ruleName?: string;
   ruleScopeId?: number;
+  ruleScopeName?: string;
+  subRules?: any[];
   isEnabled?: boolean;
   conditionsJson?: string;
   effectJson?: string;
@@ -19,6 +21,7 @@ interface BackendRuleDto {
   stopProcessing?: boolean;
   skipRuleIds?: number[];
   exclusionReason?: string;
+  ruleJson?: string;
 }
 
 interface RuleEngineBackendResponse {
@@ -39,6 +42,8 @@ interface RuleResponseData {
   ruleCode?: string;
   ruleName?: string;
   ruleScopeId?: number;
+  ruleScopeName?: string;
+  subRules?: any[];
   isEnabled?: boolean;
   conditionsJson?: string;
   effectJson?: string;
@@ -51,6 +56,7 @@ interface RuleResponseData {
   stopProcessing?: boolean;
   skipRuleIds?: number[];
   exclusionReason?: string;
+  ruleJson?: string;
 }
 
 /**
@@ -63,9 +69,12 @@ function mapBackendDtoToRuleItem(dto: BackendRuleDto): RuleItem {
     ruleCode: dto.ruleCode || '',
     ruleName: dto.ruleName || '',
     ruleScopeId: dto.ruleScopeId || 0,
-    isActive: !!dto.isEnabled,
+    ruleScopeName: dto.ruleScopeName,
+    subRules: dto.subRules,
+    isActive: dto.isEnabled !== undefined ? !!dto.isEnabled : (dto as any).isActive !== undefined ? !!(dto as any).isActive : false,
     conditionsJson: dto.conditionsJson ?? '',
     effectJson: dto.effectJson ?? '',
+    ruleJson: dto.ruleJson,
     targetFiltersJson: dto.targetFiltersJson ?? '',
     description: dto.description || '',
     ruleCategory: dto.ruleCategory || '',
@@ -84,23 +93,23 @@ function mapBackendDtoToRuleItem(dto: BackendRuleDto): RuleItem {
  */
 function mapRuleItemToBackendPayload(item: RuleItem, userId: number = 1) {
   return {
-    ruleCode:          item.ruleCode || '',
-    ruleName:          item.ruleName,
-    description:       item.description || '',
-    ruleScopeId:       item.ruleScopeId,
-    ruleCategory:      item.ruleCategory,
-    conditionsJson:    item.conditionsJson,
-    effectJson:        item.effectJson,
+    ruleCode: item.ruleCode || '',
+    ruleName: item.ruleName,
+    description: item.description || '',
+    ruleScopeId: item.ruleScopeId,
+    ruleCategory: item.ruleCategory,
+    conditionsJson: item.conditionsJson,
+    effectJson: item.effectJson,
     targetFiltersJson: item.targetFiltersJson,
-    isEnabled:         item.isActive,
-    changeReason:      item.changeReason,
-    isActive:          item.isActive,
-    createdBy:         userId,
-    updatedBy:         userId,
-    priority:          item.priority,
-    stopProcessing:    item.stopProcessing,
-    skipRuleIds:       item.skipRuleIds,
-    exclusionReason:   item.exclusionReason,
+    isEnabled: item.isActive,
+    changeReason: item.changeReason,
+    isActive: item.isActive,
+    createdBy: userId,
+    updatedBy: userId,
+    priority: item.priority,
+    stopProcessing: item.stopProcessing,
+    skipRuleIds: item.skipRuleIds,
+    exclusionReason: item.exclusionReason,
   };
 }
 
@@ -149,12 +158,54 @@ export async function getRules(
 }
 
 /**
+ * Fetches lightweight summary rules from /api/RuleEngine/summary endpoint.
+ */
+export async function getRulesSummary(
+  pageNumber: number,
+  pageSize: number,
+  searchTerm?: string,
+  ruleScopeId?: number
+): Promise<RuleListResponse> {
+  const params = new URLSearchParams();
+  params.set('PageNumber', pageNumber.toString());
+  params.set('PageSize', pageSize.toString());
+
+  if (searchTerm) params.set('SearchTerm', searchTerm);
+  if (ruleScopeId) params.set('RuleScopeId', ruleScopeId.toString());
+
+  const response = await apiClient.get<RuleEngineBackendResponse>(`/RuleEngine/summary?${params.toString()}`);
+  if (!response.success || !response.data) {
+    return {
+      items: [],
+      totalCount: 0,
+      pageNumber,
+      pageSize,
+      totalPages: 0,
+      hasPrevious: false,
+      hasNext: false,
+    };
+  }
+
+  const normalizedItems = (response.data.items || []).map((item) => mapBackendDtoToRuleItem(item));
+
+  return {
+    items: normalizedItems,
+    totalCount: response.data.totalCount || 0,
+    pageNumber: response.data.pageNumber || pageNumber,
+    pageSize: response.data.pageSize || pageSize,
+    totalPages: response.data.totalPages || 0,
+    hasPrevious: response.data.hasPreviousPage ?? response.data.hasPrevious ?? false,
+    hasNext: response.data.hasNextPage ?? response.data.hasNext ?? false,
+  };
+}
+
+/**
  * Fetches a single rule config by ID from /api/RuleEngine/{id}.
  */
 export async function getRuleById(id: number | string): Promise<RuleItem | null> {
   const response = await apiClient.get<RuleResponseData>(`/RuleEngine/${id}`);
   if (!response.success || !response.data) return null;
-  
+
   const dto = response.data.data || response.data;
   return mapBackendDtoToRuleItem(dto);
 }
@@ -210,16 +261,19 @@ export async function deleteRule(id: number | string): Promise<{ success: boolea
 }
 
 /**
- * Executes a rule category against an input payload.
+ * Performs a trace dry-run of a category and inputs.
  */
-export async function executeRule(
+export async function dryRunRule(
   category: string,
-  input: Record<string, string>
-): Promise<ApiResponse<Record<string, unknown>>> {
-  const response = await apiClient.post<Record<string, unknown>>('/RuleEngine/execute', {
+  input: Record<string, unknown>,
+  ruleJson?: string
+): Promise<ApiResponse<any>> {
+  const response = await apiClient.post<any>('/RuleEngine/dry-run', {
     category,
     input,
+    ruleJson,
   });
   return response;
 }
+
 

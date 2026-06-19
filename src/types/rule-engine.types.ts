@@ -165,6 +165,7 @@ export interface RuleItem {
   effectiveTo?: string;
   conditionsJson: string;   // Serialized ConditionGroupState (UI visual state)
   effectJson: string;       // Serialized EffectState (UI visual state)
+  ruleJson?: string;        // MS Rules Engine-compatible policy JSON
   targetFiltersJson?: string; // Serialized TargetFilterState
   createdDate?: string;
   updatedDate?: string;
@@ -185,6 +186,13 @@ export interface RuleItem {
   exclusionReason?: string;
   /** Populated by the API response — resolved skip rule references */
   skipRules?: SkipRuleRef[];
+  ruleScopeName?: string;
+  subRules?: {
+    id: string;
+    description: string | null;
+    isEnabled: boolean;
+    stopProcessing: boolean;
+  }[];
 }
 
 export interface RuleListResponse {
