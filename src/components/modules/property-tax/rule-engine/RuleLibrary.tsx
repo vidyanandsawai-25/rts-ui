@@ -3,17 +3,19 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { Terminal } from 'lucide-react';
 import { RuleItem, RuleScope } from '@/types/rule-engine.types';
 import TableHeader from '@/components/common/TableHeader';
-import { MasterTable, SearchSelect } from '@/components/common';
+import { MasterTable } from '@/components/common';
 import { Select } from '@/components/common/select';
-import { Input } from '@/components/common/Input';
-import { EditButton, DeleteButton, ExecuteTestButton, ViewButton } from '@/components/common/ActionButtons';
 import RuleExecutionDrawer from './RuleExecutionDrawer';
 import RuleViewDrawer from './RuleViewDrawer';
 import { useRuleLibraryColumns, RuleItemRecord } from './useRuleLibraryColumns';
 import { useConfirm } from '@/components/common/ConfirmProvider';
 import { useToast } from '@/components/common/ToastProvider';
+import { fetchRuleByIdAction, fetchFullRulesAction } from '@/app/[locale]/property-tax/rule-engine/actions';
+import RuleLibraryFilter from './RuleLibraryFilter';
+import RuleLibraryActions from './RuleLibraryActions';
 
 interface RuleLibraryProps {
   initialRules: RuleItem[];
@@ -51,15 +53,94 @@ export default function RuleLibrary({
   const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
   const [activeRuleForView, setActiveRuleForView] = React.useState<RuleItem | null>(null);
   const [isViewDrawerOpen, setIsViewDrawerOpen] = React.useState(false);
+  const [loadingRuleId, setLoadingRuleId] = React.useState<number | null>(null);
 
-  const handleOpenTestDrawer = (rule: RuleItem) => {
-    setActiveRuleForTest(rule);
-    setIsDrawerOpen(true);
+  const handleOpenTestDrawer = async (rule: RuleItem) => {
+    if (!rule.id) return;
+    setLoadingRuleId(rule.id);
+    try {
+      const fullRule = await fetchRuleByIdAction(rule.id);
+      if (fullRule) {
+        setActiveRuleForTest(fullRule);
+        setIsDrawerOpen(true);
+      } else {
+        toast.error('Failed to load rule details');
+      }
+    } catch {
+      toast.error('An error occurred while loading rule details');
+    } finally {
+      setLoadingRuleId(null);
+    }
   };
 
-  const handleOpenViewDrawer = (rule: RuleItem) => {
-    setActiveRuleForView(rule);
-    setIsViewDrawerOpen(true);
+  const handleOpenViewDrawer = async (rule: RuleItem) => {
+    if (!rule.id) return;
+    setLoadingRuleId(rule.id);
+    try {
+      const fullRule = await fetchRuleByIdAction(rule.id);
+      if (fullRule) {
+        setActiveRuleForView(fullRule);
+        setIsViewDrawerOpen(true);
+      } else {
+        toast.error('Failed to load rule details');
+      }
+    } catch {
+      toast.error('An error occurred while loading rule details');
+    } finally {
+      setLoadingRuleId(null);
+    }
+  };
+  const handleOpenGlobalTestDrawer = async () => {
+    setLoadingRuleId(-1);
+    try {
+      const targetCategory = filterCategory === 'ALL' ? 'ALL' : filterCategory;
+      const scopeId = scopes[0]?.id || 1;
+      const fullRulesResult = await fetchFullRulesAction(scopeId);
+      const catRules = targetCategory === 'ALL'
+        ? (fullRulesResult?.items || [])
+        : (fullRulesResult?.items || []).filter(r => r.ruleCategory === targetCategory);
+      const allBlocks: (Record<string, unknown> & { ruleCategory?: string })[] = [];
+      const allEngineRules: Record<string, unknown>[] = [];
+      catRules.forEach(rule => {
+        try {
+          if (rule.conditionsJson) {
+            const parsed = JSON.parse(rule.conditionsJson);
+            if (Array.isArray(parsed)) {
+              parsed.forEach((b: Record<string, unknown>) => {
+                b.ruleCategory = rule.ruleCategory;
+              });
+              allBlocks.push(...parsed);
+            } else {
+              allBlocks.push({ conditions: parsed, ruleCategory: rule.ruleCategory });
+            }
+          }
+          if (rule.ruleJson) {
+            const parsedJson = JSON.parse(rule.ruleJson);
+            const rulesList = parsedJson.rules || parsedJson.Rules || [];
+            if (Array.isArray(rulesList)) {
+              allEngineRules.push(...rulesList);
+            }
+          }
+        } catch {}
+      });
+
+      setActiveRuleForTest({
+        id: -1,
+        ruleName: 'Global Simulation',
+        ruleCode: targetCategory,
+        ruleCategory: targetCategory,
+        ruleScopeId: scopeId,
+        isActive: true,
+        conditionsJson: JSON.stringify(allBlocks),
+        ruleJson: JSON.stringify({ rules: allEngineRules }),
+        effectJson: '{}',
+      });
+      setIsDrawerOpen(true);
+    } catch {
+      toast.error('Failed to load full rule configurations for simulation');
+    } finally {
+      setLoadingRuleId(null);
+    }
   };
 
   React.useEffect(() => {
@@ -74,9 +155,10 @@ export default function RuleLibrary({
   }, [searchTerm, locale, router]);
 
   React.useEffect(() => {
+    if (searchTerm === initialSearchTerm) return;
     const delayDebounceFn = setTimeout(() => pushRoute(1, pageSize), 400);
     return () => clearTimeout(delayDebounceFn);
-  }, [pushRoute, pageSize]);
+  }, [searchTerm, initialSearchTerm, pushRoute, pageSize]);
 
   const handlePageChange = (page: number) => pushRoute(page, pageSize);
   const handlePageSizeChange = (size: string) => pushRoute(1, size);
@@ -125,16 +207,25 @@ export default function RuleLibrary({
         icon="settings"
         actionLabel={t('header.configureNew')}
         onActionClick={() => router.push(`/${locale}/property-tax/rule-engine/new`)}
+        rightContent={
+          <button
+            onClick={handleOpenGlobalTestDrawer}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
+          >
+            <Terminal className="w-4 h-4 text-slate-600" />
+            <span>{t('simulation.dryRunAll')}</span>
+          </button>
+        }
       />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 bg-white p-4 border border-blue-200 rounded-xl shadow-sm">
-        <Input
-          placeholder={t('library.searchByCodeOrName')}
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <SearchSelect options={categoryFilterOptions} value={filterCategory} onChange={(_e, val) => setFilterCategory(val)} />
-      </div>
+      <RuleLibraryFilter
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        filterCategory={filterCategory}
+        setFilterCategory={setFilterCategory}
+        categoryFilterOptions={categoryFilterOptions}
+        searchPlaceholder={t('library.searchByCodeOrName')}
+      />
 
       <MasterTable<RuleItemRecord>
         columns={columns}
@@ -146,12 +237,15 @@ export default function RuleLibrary({
         totalPages={totalPages}
         onPageChange={handlePageChange}
         renderActions={(row) => (
-          <div className="flex items-center gap-1.5 justify-center">
-            <ViewButton onClick={() => handleOpenViewDrawer(row)} />
-            <ExecuteTestButton onClick={() => handleOpenTestDrawer(row)} />
-            <EditButton onClick={() => router.push(`/${locale}/property-tax/rule-engine/${row.id}`)} />
-            <DeleteButton onClick={() => row.id !== undefined && handleDelete(row.id)} />
-          </div>
+          <RuleLibraryActions
+            row={row}
+            locale={locale}
+            loadingRuleId={loadingRuleId}
+            handleOpenViewDrawer={handleOpenViewDrawer}
+            handleOpenTestDrawer={handleOpenTestDrawer}
+            handleDelete={handleDelete}
+            router={router}
+          />
         )}
         footerLeftContent={
           <div className="flex items-center gap-4">
