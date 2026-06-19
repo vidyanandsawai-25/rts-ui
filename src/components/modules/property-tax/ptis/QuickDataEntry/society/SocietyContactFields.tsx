@@ -1,7 +1,15 @@
 import { Input } from "@/components/common";
 import { Label } from "@/components/common/label";
-import { SOCIETY_VALIDATION_RULES, societyValidators, kycValidators } from '@/lib/utils/kyc-validation/kyc-validation.constants';
-import { sanitizeEmailStrict, sanitizeName, capitalizeEachWord } from '@/lib/utils/input-sanitization';
+import { kycValidators } from '@/lib/utils/kyc-validation/kyc-validation.constants';
+import {
+    SOCIETY_VALIDATION_RULES,
+    societyValidators
+} from '@/lib/utils/society-validation/society-validation';
+import {
+    sanitizeEmailStrict,
+    sanitizeName,
+    capitalizeEachWord
+} from '@/lib/utils/input-sanitization';
 import { useDigitInputs } from '@/hooks/useDigitInputs';
 
 interface SocietyContactFieldsProps {

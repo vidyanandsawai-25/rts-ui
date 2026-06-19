@@ -25,7 +25,7 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
 
   return (
     <>
-      <div className="space-y-1.5">
+      <div className="col-span-3 space-y-1.5">
         <Label htmlFor="kyc-shopname" className="text-xs font-semibold text-gray-700">
           {t('kyc.shopName')}
         </Label>
@@ -57,7 +57,34 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
         )}
       </div>
 
-      <div className="col-span-2 space-y-1.5">
+
+      <div className="col-span-3 space-y-1.5">
+        <Label htmlFor="kyc-email" className="text-xs font-semibold text-gray-700">
+          {t('kyc.emailId')}
+        </Label>
+        <Input
+          id="kyc-email"
+          type="email"
+          placeholder={t('kyc.enterEmailId')}
+          value={formData.emailId ?? ''}
+          maxLength={KYC_VALIDATION_RULES.EMAIL_MAX_LENGTH}
+          className={`h-9 text-sm border-gray-300 focus:border-gray-600 focus:ring-2 focus:ring-gray-200 ${showError('emailId', enhancedKycValidators.isValidEmail(formData.emailId ?? '', true))
+            ? 'border-red-300 focus:border-red-500'
+            : ''
+            }`}
+          onFocus={() => onFocusField('emailId')}
+          onBlur={onBlurField}
+          onChange={(e) => {
+            const sanitized = sanitizeEmailStrict(e.target.value);
+            setFormData((prev) => ({ ...prev, emailId: sanitized }));
+          }}
+        />
+        {showError('emailId', enhancedKycValidators.isValidEmail(formData.emailId ?? '', true)) && (
+          <span className="text-xs text-red-500">{t('kyc.validation.invalidEmail')}</span>
+        )}
+      </div>
+
+      <div className="col-span-4 space-y-1.5">
         <Label htmlFor="kyc-address" className="text-xs font-semibold text-gray-700">
           {t('kyc.address')}
         </Label>
@@ -89,29 +116,29 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
         )}
       </div>
 
-      <div className="space-y-1.5">
-        <Label htmlFor="kyc-email" className="text-xs font-semibold text-gray-700">
-          {t('kyc.emailId')}
+      <div className="col-span-2 space-y-1.5">
+        <Label htmlFor="kyc-pincode" className="text-xs font-semibold text-gray-700">
+          {t('kyc.pinCode')}
         </Label>
         <Input
-          id="kyc-email"
-          type="email"
-          placeholder={t('kyc.enterEmailId')}
-          value={formData.emailId ?? ''}
-          maxLength={KYC_VALIDATION_RULES.EMAIL_MAX_LENGTH}
-          className={`h-9 text-sm border-gray-300 focus:border-gray-600 focus:ring-2 focus:ring-gray-200 ${showError('emailId', enhancedKycValidators.isValidEmail(formData.emailId ?? '', true))
+          id="kyc-pincode"
+          type="text"
+          placeholder={t('kyc.enterPinCode')}
+          value={formData.pinCode ?? ''}
+          maxLength={6}
+          className={`h-9 text-sm border-gray-300 focus:border-gray-600 focus:ring-2 focus:ring-gray-200 ${showError('pinCode', !formData.pinCode || /^[0-9]{6}$/.test(formData.pinCode))
             ? 'border-red-300 focus:border-red-500'
             : ''
             }`}
-          onFocus={() => onFocusField('emailId')}
+          onFocus={() => onFocusField('pinCode')}
           onBlur={onBlurField}
           onChange={(e) => {
-            const sanitized = sanitizeEmailStrict(e.target.value);
-            setFormData((prev) => ({ ...prev, emailId: sanitized }));
+            const sanitized = e.target.value.replace(/\D/g, '').slice(0, 6);
+            setFormData((prev) => ({ ...prev, pinCode: sanitized }));
           }}
         />
-        {showError('emailId', enhancedKycValidators.isValidEmail(formData.emailId ?? '', true)) && (
-          <span className="text-xs text-red-500">{t('kyc.validation.invalidEmail')}</span>
+        {showError('pinCode', !formData.pinCode || /^[0-9]{6}$/.test(formData.pinCode)) && (
+          <span className="text-xs text-red-500">{t('kyc.validation.invalidPinCode')}</span>
         )}
       </div>
     </>
