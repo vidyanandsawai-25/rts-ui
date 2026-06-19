@@ -6,7 +6,7 @@ import {
     updateDiscountDetailsAction,
     uploadDiscountDocumentAction,
     replaceDiscountDocumentAction
-} from "@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Discount/action";
+} from "@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Discount/discount-actions";
 import {
     DiscountState,
     PropertyDiscountInfoResponseDto
@@ -15,6 +15,7 @@ import { useTranslations } from "next-intl";
 
 import { mapApiToDiscountState, mapDiscountStateToApi } from "@/lib/utils/discount-helpers";
 import { validateDiscountForm } from "@/lib/utils/validateDiscountForm";
+import { checkDiscountRequiredFields } from "@/lib/validation/discount/checkDiscountRequiredFields";
 
 export const useDiscountForm = (
     initialDiscountData: PropertyDiscountInfoResponseDto | null,
@@ -88,6 +89,12 @@ export const useDiscountForm = (
 
         const item = discountData[id];
         if (!item) return;
+
+        const validationError = checkDiscountRequiredFields(item, (key, params) => t(key, params));
+        if (validationError) {
+            toast.error(validationError);
+            return;
+        }
 
         setDiscountData(prev => ({
             ...prev,

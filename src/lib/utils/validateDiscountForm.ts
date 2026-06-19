@@ -131,15 +131,20 @@ export const validateDiscountForm = (
                 const dateVal = new Date(strVal);
                 if (isNaN(dateVal.getTime())) {
                     missingFields.push(t("common.validation.invalidDate") || "Please enter a valid date.");
-                } else if (dateVal > new Date()) {
-                    missingFields.push(t("building.errors.futureDate") || "Date cannot be in the future.");
+                } else {
+                    const now = new Date();
+                    now.setHours(23, 59, 59, 999);
+                    if (dateVal > now) {
+                        missingFields.push(t("building.errors.futureDate") || "Date cannot be in the future.");
+                    }
                 }
             }
         }
 
         // 2. Validate document attachment (accept documentGuid OR documentBindingId as proof)
+        const isDocReq = item.isDocumentRequired === true;
         const hasDocument = (item.documentGuid && item.documentGuid.trim() !== "") || !!item.documentBindingId;
-        if (!hasDocument) {
+        if (isDocReq && !hasDocument) {
             missingFields.push(t("common.validation.documentRequired") || "Document is required.");
         }
 

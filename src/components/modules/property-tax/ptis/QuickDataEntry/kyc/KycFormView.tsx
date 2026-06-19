@@ -4,10 +4,9 @@ import { useConfirm } from '@/components/common';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { KycDetails, OwnerTypeApiItem } from '@/types/property-kyc.types';
-import { useKycForm } from '@/hooks/useKycForm';
+import { useKycForm } from '@/hooks/ptis/QuickDataEntry/kyc/useKycForm';
 import { KycFormFields } from './KycFormFields';
 import { KycFormActions } from './KycFormActions';
-
 interface KycFormViewProps {
   KycDetailsData?: KycDetails | null;
   OwnerTypeMasterList?: OwnerTypeApiItem[];

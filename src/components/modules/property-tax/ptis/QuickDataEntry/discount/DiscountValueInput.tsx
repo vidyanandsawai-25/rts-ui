@@ -14,6 +14,8 @@ interface DiscountValueInputProps {
     t: (key: string, values?: Record<string, string | number>) => string;
 }
 
+import { getFieldGuideline } from "@/lib/utils/social-guidelines";
+
 export const DiscountValueInput: React.FC<DiscountValueInputProps> = ({
     data,
     isDisabled,
@@ -24,6 +26,7 @@ export const DiscountValueInput: React.FC<DiscountValueInputProps> = ({
     t,
 }) => {
     const dataTypeUpper = (data.dataType || "").toUpperCase();
+    const guideline = getFieldGuideline(data.socialAttributeCode, dataTypeUpper, t);
 
     return (
         <div className="space-y-1.5 w-full">
@@ -88,6 +91,12 @@ export const DiscountValueInput: React.FC<DiscountValueInputProps> = ({
                     disabled={isDisabled}
                     className={inputClassName}
                 />
+            )}
+
+            {guideline && !isDisabled && (
+                <p className="text-slate-400 text-xs font-semibold mt-1 leading-normal">
+                    {guideline}
+                </p>
             )}
 
             {isValueInvalid && <ValidationMessage message={validationError} />}

@@ -8,7 +8,9 @@ interface TaxesTableTemplateProps {
   columns: Column<TaxApplicabilityItem>[];
   data: TaxApplicabilityItem[];
   pageNumber: number;
+  pageSize: number;
   totalCount: number;
+  totalPages: number;
   onPageChange: (page: number) => void;
 }
 
@@ -16,7 +18,9 @@ export const TaxesTableTemplate = ({
   columns,
   data,
   pageNumber,
+  pageSize,
   totalCount,
+  totalPages,
   onPageChange,
 }: TaxesTableTemplateProps) => {
   return (
@@ -24,9 +28,9 @@ export const TaxesTableTemplate = ({
       columns={columns}
       data={data}
       pageNumber={pageNumber}
-      pageSize={10}
+      pageSize={pageSize}
       totalCount={totalCount}
-      totalPages={Math.ceil(totalCount / 10)}
+      totalPages={totalPages}
       onPageChange={onPageChange}
       paginationConfig={{ enabled: true, showPageSizeSelector: false }}
       maxBodyHeightClassName="max-h-[calc(100vh-430px)]"

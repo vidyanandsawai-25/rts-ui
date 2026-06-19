@@ -17,6 +17,12 @@ export interface FlatSocialAttributeState {
     uploadedGuid?: string;
     remark: string | null;
     isUploading: boolean;
+    isPhotoRequired?: boolean;
+    isDocumentRequired?: boolean;
+    documentGuid?: string | null;
+    documentUrl?: string | null;
+    photoBindingId?: number | null;
+    photoGuid?: string | null;
 }
 
 /**
@@ -26,18 +32,17 @@ export function flattenAttributes(attributes: SocialAttributeHierarchyDto[]): Re
     const map: Record<number, FlatSocialAttributeState> = {};
     const traverse = (attrs: SocialAttributeHierarchyDto[], parentId?: number | null) => {
         for (const attr of attrs) {
-            const code = attr.socialAttributeCode.toUpperCase();
-            const isSpecialToggle = 
-                code === "ROAD_WIDTH" || 
-                code === "WATER_CONN_YEAR" || 
-                code.includes("TREE");
-
+            const isBitType = attr.dataType.toUpperCase() === "BIT";
             let initialBitValue = attr.bitValue ?? null;
-            if (isSpecialToggle) {
+
+            if (isBitType) {
+                initialBitValue = attr.bitValue ?? false;
+            } else {
                 const hasValue = 
                     (attr.intValue !== null && attr.intValue !== undefined) || 
                     (attr.decimalValue !== null && attr.decimalValue !== undefined) || 
-                    (attr.propertySocialDetailId !== null && attr.propertySocialDetailId !== undefined);
+                    (attr.textValue !== null && attr.textValue !== undefined && String(attr.textValue).trim() !== "") || 
+                    (attr.bitValue === true);
                 initialBitValue = hasValue;
             }
 
@@ -54,9 +59,15 @@ export function flattenAttributes(attributes: SocialAttributeHierarchyDto[]): Re
                 decimalValue: attr.decimalValue ?? null,
                 textValue: attr.textValue ?? null,
                 dateValue: attr.dateValue ? attr.dateValue.split("T")[0] : null,
-                documentBindingId: attr.documentBindingId ?? null,
+                documentBindingId: attr.documentBindingId ?? attr.photoBindingId ?? null,
                 remark: attr.remark ?? null,
-                isUploading: false
+                isUploading: false,
+                isPhotoRequired: attr.isPhotoRequired,
+                isDocumentRequired: attr.isDocumentRequired,
+                documentGuid: attr.documentGuid ?? attr.photoGuid ?? null,
+                documentUrl: (attr.documentGuid ?? attr.photoGuid) ? `/api/documents/${encodeURIComponent(attr.documentGuid ?? attr.photoGuid ?? "")}/view` : null,
+                photoBindingId: attr.photoBindingId ?? null,
+                photoGuid: attr.photoGuid ?? null
             };
             if (attr.children && attr.children.length > 0) {
                 traverse(attr.children, attr.id);
@@ -74,19 +85,25 @@ export function isAttributeEnabled(
     attr: FlatSocialAttributeState,
     currentData: Record<number, FlatSocialAttributeState>
 ): boolean {
+    const code = (attr.socialAttributeCode || "").toUpperCase();
     const isSpecialToggle = 
-        attr.socialAttributeCode.toUpperCase() === "ROAD_WIDTH" || 
-        attr.socialAttributeCode.toUpperCase() === "WATER_CONN_YEAR" || 
-        attr.socialAttributeCode.toUpperCase().includes("TREE");
+        code === "ROAD_WIDTH" || 
+        code.includes("WATER_CONN") || 
+        code.includes("TREE");
 
     if (isSpecialToggle && attr.bitValue === false) {
         return false;
     }
 
-    if (!attr.parentAttributeId) return true;
+    if (!attr.parentAttributeId) {
+        if (attr.dataType.toUpperCase() === "BIT") {
+            return attr.bitValue === true;
+        }
+        return true;
+    }
     const parent = currentData[attr.parentAttributeId];
     if (!parent) return false;
-    return !!parent.bitValue && isAttributeEnabled(parent, currentData);
+    return parent.bitValue === true && isAttributeEnabled(parent, currentData);
 }
 
 /**

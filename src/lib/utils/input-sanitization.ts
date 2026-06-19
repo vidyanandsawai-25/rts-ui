@@ -85,6 +85,19 @@ export const escapeHtml = (text: string): string => {
 };
 
 /**
+ * Translate Devanagari digits (०-९) to standard English digits (0-9)
+ * 
+ * @param input - Input string potentially containing Devanagari digits
+ * @returns String with Devanagari digits translated to standard digits
+ */
+export const translateDevanagariDigits = (input: string): string => {
+  if (!input || typeof input !== 'string') return '';
+
+  const devanagari = ['०', '१', '२', '३', '४', '५', '६', '७', '८', '९'];
+  return input.replace(/[०-९]/g, d => devanagari.indexOf(d).toString());
+};
+
+/**
  * Validate and sanitize a name input
  * Allows letters, spaces, hyphens, apostrophes, dots, forward slash, and common punctuation
  * Blocks all invalid special characters like *()_++_)(&&^%$#@!~!!@#$%}{};',, etc.
@@ -194,14 +207,12 @@ export const sanitizeAddress = (address: string): string => {
  * @returns Sanitized flat/shop number
  */
 
-
-
 export const sanitizeFlatShopNo = (input: string): string => {
   if (!input || typeof input !== 'string') return '';
 
   return input
-    // Allow only alphanumeric, hyphen, and forward slash
-    .replace(/[^a-zA-Z0-9/-]/g, '')
+    // Allow only alphanumeric (including Devanagari), hyphen, and forward slash
+    .replace(/[^a-zA-Z0-9\u0900-\u097F/-]/g, '')
     // Block consecutive same special characters
     .replace(/([-/])\1+/g, '$1')
     // Remove leading special characters only so user can type trailing ones
@@ -240,8 +251,8 @@ export const sanitizeSurveyNo = (input: string): string => {
   if (!input || typeof input !== 'string') return '';
 
   return input
-    // Allow only alphanumeric, hyphen, and forward slash
-    .replace(/[^a-zA-Z0-9/-]/g, '')
+    // Allow only alphanumeric (including Devanagari), hyphen, and forward slash
+    .replace(/[^a-zA-Z0-9\u0900-\u097F/-]/g, '')
     // Block consecutive same special characters
     .replace(/([-/])\1+/g, '$1')
     // Remove leading special characters only so user can type trailing ones
@@ -260,8 +271,8 @@ export const sanitizeSubZoneNo = (input: string): string => {
   if (!input || typeof input !== 'string') return '';
 
   return input
-    // Allow only alphanumeric, hyphen, and forward slash
-    .replace(/[^a-zA-Z0-9/-]/g, '')
+    // Allow only alphanumeric (including Devanagari), hyphen, and forward slash
+    .replace(/[^a-zA-Z0-9\u0900-\u097F/-]/g, '')
     // Block consecutive same special characters
     .replace(/([-/])\1+/g, '$1')
     // Remove leading special characters only so user can type trailing ones
@@ -279,8 +290,8 @@ export const sanitizeSubZoneNo = (input: string): string => {
 export const sanitizePositiveNumber = (input: string): string => {
   if (!input || typeof input !== 'string') return '';
 
-  // Remove negative signs and allow only digits and one decimal point
-  let sanitized = input.replace(/[^0-9.]/g, '');
+  // Remove negative signs and allow only digits (English & Devanagari) and one decimal point
+  let sanitized = input.replace(/[^0-9०-९.]/g, '');
 
   // Ensure only one decimal point
   const parts = sanitized.split('.');
@@ -301,8 +312,8 @@ export const sanitizePositiveNumber = (input: string): string => {
 export const sanitizePlotArea = (input: string): string => {
   if (!input || typeof input !== 'string') return '';
 
-  // Remove negative signs and allow only digits and one decimal point
-  let sanitized = input.replace(/[^0-9.]/g, '');
+  // Remove negative signs and allow only digits (English & Devanagari) and one decimal point
+  let sanitized = input.replace(/[^0-9०-९.]/g, '');
 
   // Ensure only one decimal point
   const parts = sanitized.split('.');
@@ -428,8 +439,8 @@ export const sanitizeEgovNo = (input: string): string => {
 export const sanitizePositiveInteger = (input: string): string => {
   if (!input || typeof input !== 'string') return '';
 
-  // Allow only digits
-  return input.replace(/[^0-9]/g, '');
+  // Allow only English and Devanagari digits
+  return input.replace(/[^0-9०-९]/g, '');
 };
 
 /**

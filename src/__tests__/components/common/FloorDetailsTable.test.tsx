@@ -125,9 +125,9 @@ describe('FloorDetailsTable', () => {
         getExpandHref={(row) => `/details/${row.id}`} 
       />
     );
-    const link = screen.getAllByRole('link')[0];
-    expect(link).toHaveAttribute('href', '/details/1');
-    expect(link).toHaveAttribute('aria-expanded', 'false');
+    const button = screen.getAllByRole('button')[0];
+    expect(button).toHaveAttribute('data-href', '/details/1');
+    expect(button).toHaveAttribute('aria-expanded', 'false');
   });
 
   it('renders expanded row content when row is in expandedRowIds', () => {
@@ -153,10 +153,10 @@ describe('FloorDetailsTable', () => {
         expandIcon={ChevronRight}
       />
     );
-    const expandedLink = screen.getAllByRole('link')[0];
-    expect(expandedLink).toHaveAttribute('aria-expanded', 'true');
+    const expandedButton = screen.getAllByRole('button')[0];
+    expect(expandedButton).toHaveAttribute('aria-expanded', 'true');
     // ChevronDown should be present for expanded row
-    expect(expandedLink.querySelector('.lucide-chevron-down')).toBeInTheDocument();
+    expect(expandedButton.querySelector('.lucide-chevron-down')).toBeInTheDocument();
   });
 
   it('renders empty expansion cell when getExpandHref is missing', () => {
@@ -168,7 +168,7 @@ describe('FloorDetailsTable', () => {
       />
     );
     const cells = container.querySelectorAll('tbody td:first-child');
-    expect(cells[0].querySelector('a')).toBeNull();
+    expect(cells[0].querySelector('button')).toBeNull();
     expect(cells[0].querySelector('.h-3.w-3')).toBeInTheDocument();
   });
 

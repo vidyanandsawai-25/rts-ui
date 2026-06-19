@@ -50,7 +50,7 @@
   "confirmCombineDiffOwnerTitle": "मालकांची नावे भिन्न आहेत",
   "confirmCombineDiffOwnerDesc": "निवडलेल्या मालमत्तांसाठी मालकांची नावे भिन्न आहेत. तुम्हाला एकत्र करायचे आहे का? पुढे जाण्यासाठी एकत्र करा वर क्लिक करा किंवा रद्द करण्यासाठी रद्द करा वर क्लिक करा.",
   "propertyTypeMismatchAlert": "निवडलेल्या मालमत्तांचे प्रकार भिन्न आहेत. कृपया पुढे जाण्यासाठी ड्रॉपडाउनमधून मालमत्ता प्रकार निवडा.",
-  "remarkLabel": "शेरा",
+  "remarkLabel": "एकत्रित शेरा",
   "remarkPlaceholder": "मालमत्ता एकत्र करण्यासाठी शेरा प्रविष्ट करा",
   "remarkRequiredError": "कृपया शेरा प्रविष्ट करा",
   "cannotUncheckBaseProperty": "प्राथमिक मालमत्तेची निवड काढता येणार नाही",
@@ -66,8 +66,11 @@
     "description": "आम्ही मालमत्ता डेटा प्राप्त करेपर्यंत कृपया प्रतीक्षा करा"
   },
   "combinePropertyHistory": "Combine Property History Details",
+  "combinePropertyDetails": "एकत्रित मालमत्ता तपशील",
   "viewDetails": "तपशील पहा",
   "action": "कृती",
   "showHistory": "इतिहास दाखवा",
-  "hideHistory": "इतिहास लपवा"
+  "hideHistory": "इतिहास लपवा",
+  "basePropertyTooltip": "ही आधार मालमत्ता आहे",
+  "combinePropertyTooltip": "ही मालमत्ता आपण आधार मालमत्तेत एकत्र करत आहोत"
 }

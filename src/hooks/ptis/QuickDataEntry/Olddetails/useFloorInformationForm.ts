@@ -6,6 +6,7 @@ import { hasErrors } from "@/lib/utils/validation";
 import { useFloorFormState } from "./useFloorFormState";
 import { useFloorFormValidation } from "./useFloorFormValidation";
 import { useFloorFormApi } from "./useFloorFormApi";
+import { translateDevanagariDigits } from "@/lib/utils/input-sanitization";
 
 /**
  * Orchestrator hook to manage Floor Information Form.
@@ -65,12 +66,12 @@ export function useFloorInformationForm({
   const isChanged = initialEditValues ? (
     formData.oldFloorId !== initialEditValues.oldFloorId ||
     formData.oldSubFloorId !== initialEditValues.oldSubFloorId ||
-    formData.oldConstructionYear !== initialEditValues.oldConstructionYear ||
-    formData.oldAssessmentYear !== initialEditValues.oldAssessmentYear ||
+    translateDevanagariDigits(formData.oldConstructionYear) !== translateDevanagariDigits(initialEditValues.oldConstructionYear) ||
+    translateDevanagariDigits(formData.oldAssessmentYear || "") !== translateDevanagariDigits(initialEditValues.oldAssessmentYear || "") ||
     formData.oldConstructionTypeId !== initialEditValues.oldConstructionTypeId ||
     formData.oldTypeOfUseId !== initialEditValues.oldTypeOfUseId ||
     formData.oldSubTypeOfUseId !== initialEditValues.oldSubTypeOfUseId ||
-    formData.oldAreaSqMeter !== initialEditValues.oldAreaSqMeter
+    translateDevanagariDigits(formData.oldAreaSqMeter || "") !== translateDevanagariDigits(initialEditValues.oldAreaSqMeter || "")
   ) : false;
 
   /**

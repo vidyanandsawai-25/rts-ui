@@ -3,7 +3,7 @@
 import { Input, ValidationMessage, CancelButton } from "@/components/common";
 import { PartitionFormErrors } from "@/types/zone-master/properties/partition-form.types";
 import { sanitizeWingName } from "@/lib/utils/input-sanitization";
-import { KYC_VALIDATION_RULES } from "@/lib/utils/kyc-validation.constants";
+import { KYC_VALIDATION_RULES } from "@/lib/utils/kyc-validation/kyc-validation.constants";
 
 interface AddWingFormProps {
   newWingNo: string;

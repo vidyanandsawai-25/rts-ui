@@ -25,7 +25,9 @@ export const mapApiToDiscountState = (
             dataType: attr.dataType,
             intValue: attr.intValue ?? null,
             decimalValue: attr.decimalValue ?? null,
-            enabled: attr.dataType.toUpperCase() === "BIT" ? !!attr.bitValue : (attr.isActive ?? !!attr.bitValue),
+            enabled: attr.dataType.toUpperCase() === "BIT"
+                ? (attr.bitValue ?? false)
+                : (attr.intValue !== null || attr.decimalValue !== null || attr.textValue !== null || attr.dateValue !== null),
             dateValue: attr.dateValue ? attr.dateValue.split("T")[0] : null,
             isUploading: false,
         };
@@ -66,16 +68,19 @@ export const mapDiscountStateToApi = (state: DiscountState): DiscountAttributeIt
             const textValue = enabled ? (item.textValue || null) : null;
             const dateValue = enabled ? (item.dateValue ? new Date(item.dateValue).toISOString() : null) : null;
 
+            const isBitType = item.dataType.toUpperCase() === "BIT";
+
             discountAttributes.push({
                 propertySocialDetailId: item.propertySocialDetailId ?? null,
                 socialAttributeId: item.id,
-                bitValue: enabled,
+                bitValue: isBitType ? enabled : null,
                 intValue,
                 decimalValue,
                 textValue,
                 dateValue,
                 documentBindingId: item.documentBindingId ?? null,
-                remark: enabled ? (item.remark || null) : null
+                remark: enabled ? (item.remark || null) : null,
+                isActive: true
             });
         }
     });

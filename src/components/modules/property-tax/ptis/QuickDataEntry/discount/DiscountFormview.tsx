@@ -179,15 +179,11 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
 
             {/* Social Information Tab */}
             <Tabs.TabPanel value="social" className="mt-0">
-                <div className="bg-white rounded-xl shadow-md border border-gray-200 p-5">
-                    <h3 className="text-sm font-bold text-black mb-1">
+                <div className="bg-white rounded-xl shadow-sm border border-blue-100 p-2 md:p-3">
+                    <h3 className="text-base font-bold text-blue-800 mb-3 pb-1.5 border-b border-blue-200">
                         {t("discount.socialTitle")}
                     </h3>
-                    <p className="text-xs text-gray-500 mb-4">
-                        {t("discount.socialDescription")}
-                    </p>
                     <SocialDetailsForm
-                        key={initialSocialData ? JSON.stringify(initialSocialData) : "empty"}
                         initialSocialData={initialSocialData}
                         propertyId={propertyId}
                     />

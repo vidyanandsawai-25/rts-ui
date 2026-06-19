@@ -20,6 +20,9 @@ export interface SocialAttributeHierarchyDto {
     isPhotoRequired?: boolean;
     isDocumentRequired?: boolean;
     isActive?: boolean;
+    documentGuid?: string | null;
+    photoBindingId?: number | null;
+    photoGuid?: string | null;
     children: SocialAttributeHierarchyDto[];
 }
 
@@ -54,6 +57,7 @@ export interface PropertySocialInfoItemDto {
     dateValue?: string | null;
     documentBindingId?: number | null;
     remark?: string | null;
+    isActive?: boolean;
 }
 
 export interface PropertySocialInfoApiResponse {

@@ -7,6 +7,8 @@ import { MediaImageCard, AdditionalImagesGrid } from './MediaImageCards';
 import { PhotoPlanDrawer } from './PhotoPlanDrawer';
 import { ImageHoverPreview } from './ImageHoverPreview';
 import { GisMapCard } from './GisMapCard';
+import { ChangeDetectionCard } from './ChangeDetectionCard';
+import { toast } from 'sonner';
 import { useMediaDrawerState } from '@/hooks/ptis/photoplan/useMediaDrawerState';
 import { usePropertyMedia } from '@/hooks/ptis/photoplan/usePropertyMedia';
 import type { PropertyPhotoTypeWithStatusDto, PropertyPhotoDto } from '@/types/photoplan.types';
@@ -43,7 +45,7 @@ function PropertyMediaPanel({
 
   return (
     <div className="h-auto lg:h-full w-full flex flex-col bg-white rounded-lg shadow-xl border border-slate-200 relative">
-      <ImageHoverPreview src={hoverPreview?.src ?? ''} title={hoverPreview?.title ?? ''} visible={hoverPreview !== null} />
+      <ImageHoverPreview src={hoverPreview?.src ?? ''} src2={hoverPreview?.src2} title={hoverPreview?.title ?? ''} visible={hoverPreview !== null} />
 
       <div className="flex-1 overflow-y-auto p-2 flex flex-col sm:grid sm:grid-cols-3 lg:flex lg:flex-col gap-2 scrollbar-thin">
         <MediaImageCard
@@ -118,6 +120,28 @@ function PropertyMediaPanel({
         <GisMapCard
           image={gisPhoto}
           onClick={() => openDrawer(gisCategory ? categories.indexOf(gisCategory) : 0, 0)}
+          onMouseEnter={() => handleImageHover(gisPhoto?.fullSrc || gisPhoto?.src || '', gisPhoto?.title || t('media.satelliteView'))}
+          onMouseLeave={handleImageLeave}
+        />
+
+        <div className="border-t border-slate-300 flex-shrink-0 sm:hidden lg:block" />
+        <ChangeDetectionCard
+          onMouseEnter={() => {
+            const cdCat = categories.find((c) => c.photoTypeCode === 'CHANGE_DETECTION');
+            const beforeImg = cdCat?.images?.[0]?.src || '/images/thane-earth-2018.jpg';
+            const afterImg = cdCat?.images?.[1]?.src || '/images/thane-earth-2026.jpg';
+            handleImageHover(beforeImg, t('media.changeDetection') || 'Change Detection', afterImg);
+          }}
+          onMouseLeave={handleImageLeave}
+          onClick={() => {
+            const changeDetectionCategory = categories.find((c) => c.photoTypeCode === 'CHANGE_DETECTION');
+            const changeDetectionIndex = changeDetectionCategory ? categories.indexOf(changeDetectionCategory) : -1;
+            if (changeDetectionIndex !== -1) {
+              openDrawer(changeDetectionIndex);
+            } else {
+              toast.error(t('error.generic') || 'Something went wrong.');
+            }
+          }}
         />
       </div>
 

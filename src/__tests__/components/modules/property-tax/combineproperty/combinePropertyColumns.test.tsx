@@ -1,6 +1,14 @@
 import { describe, it, expect, vi } from 'vitest';
-import { getCombinePropertyColumns, PropertyRow } from '@/components/modules/property-tax/ptis/combineproperty/combinePropertyColumns';
-import { render } from '@testing-library/react';
+import { getCombinePropertyColumns, getCombinePropertyHistoryColumns, PropertyRow } from '@/components/modules/property-tax/ptis/combineproperty/combinePropertyColumns';
+import { render, fireEvent } from '@testing-library/react';
+
+vi.mock('@/components/common/Tooltip', () => ({
+  Tooltip: ({ children, content }: { children: React.ReactNode; content: React.ReactNode }) => (
+    <span data-testid="mock-tooltip" data-content={String(content)}>
+      {children}
+    </span>
+  ),
+}));
 
 describe('combinePropertyColumns', () => {
   const mockT = vi.fn((key) => key);
@@ -13,7 +21,7 @@ describe('combinePropertyColumns', () => {
 
   it('should return correct number of columns', () => {
     const columns = getCombinePropertyColumns(mockT, mockReviewData);
-    expect(columns.length).toBe(11);
+    expect(columns.length).toBe(9);
   });
 
   it('should render serial number correctly', () => {
@@ -27,13 +35,14 @@ describe('combinePropertyColumns', () => {
     }
   });
 
-  it('should render wardNo correctly', () => {
+  it('should render combined propertyNo correctly', () => {
     const columns = getCombinePropertyColumns(mockT, mockReviewData);
-    const wardNoCol = columns.find(c => c.key === 'wardNo');
+    const propNoCol = columns.find(c => c.key === 'propertyNo');
+    expect(propNoCol).toBeDefined();
 
-    if (wardNoCol?.render) {
-      const { container } = render(wardNoCol.render('W1', mockReviewData[0], 0) as React.ReactElement);
-      expect(container.textContent).toBe('W1');
+    if (propNoCol?.render) {
+      const { container } = render(propNoCol.render('P1', mockReviewData[0], 0) as React.ReactElement);
+      expect(container.textContent).toBe('W1-P1-1');
     }
   });
 
@@ -77,11 +86,7 @@ describe('combinePropertyColumns', () => {
       expect(container.textContent).toBe('—');
     }
 
-    const wardCol = columns.find(c => c.key === 'wardNo');
-    if (wardCol?.render) {
-      const { container } = render(wardCol.render(null, mockReviewData[2], 2) as React.ReactElement);
-      expect(container.textContent).toBe('-');
-    }
+
   });
 
   it('should render the checkbox column and wire toggle callbacks', () => {
@@ -131,5 +136,121 @@ describe('combinePropertyColumns', () => {
       btn3?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
       expect(mockOnToggleCheck).toHaveBeenCalledWith(3);
     }
+  });
+
+  describe('getCombinePropertyHistoryColumns', () => {
+    it('should return correct columns list including combineReason', () => {
+      const columns = getCombinePropertyHistoryColumns(mockT);
+      const reasonCol = columns.find(c => c.key === 'combineReason');
+      expect(reasonCol).toBeDefined();
+    });
+
+    it('should render combined propertyNo correctly in history columns', () => {
+      const columns = getCombinePropertyHistoryColumns(mockT);
+      const propNoCol = columns.find(c => c.key === 'propertyNo');
+      expect(propNoCol).toBeDefined();
+
+      if (propNoCol?.render) {
+        const { container } = render(propNoCol.render('P1', mockReviewData[0], 0) as React.ReactElement);
+        expect(container.textContent).toBe('W1-P1-1');
+      }
+    });
+
+    it('should not truncate short reasons (< 5 words)', () => {
+      const columns = getCombinePropertyHistoryColumns(mockT);
+      const reasonCol = columns.find(c => c.key === 'combineReason');
+      
+      if (reasonCol?.render) {
+        const { container } = render(reasonCol.render('Short reason here', mockReviewData[0], 0) as React.ReactElement);
+        expect(container.textContent).toBe('Short reason here');
+        expect(container.querySelector('[data-testid="mock-tooltip"]')).toBeNull();
+      }
+    });
+
+    it('should truncate reasons with more than 5 words and toggle on click', () => {
+      const columns = getCombinePropertyHistoryColumns(mockT);
+      const reasonCol = columns.find(c => c.key === 'combineReason');
+      
+      if (reasonCol?.render) {
+        const { container } = render(
+          reasonCol.render('one two three four five six seven', mockReviewData[0], 0) as React.ReactElement
+        );
+        
+        // Initial state (truncated)
+        const tooltip = container.querySelector('[data-testid="mock-tooltip"]');
+        expect(tooltip).not.toBeNull();
+        expect(tooltip?.getAttribute('data-content')).toBe('Click to expand');
+        expect(container.textContent).toBe('one two three four five...');
+        
+        // Click to expand
+        const span = container.querySelector('span[class*="cursor-pointer"]');
+        if (span) {
+          fireEvent.click(span);
+        }
+        
+        // Check expanded state
+        const expandedTooltip = container.querySelector('[data-testid="mock-tooltip"]');
+        expect(expandedTooltip?.getAttribute('data-content')).toBe('Click to collapse');
+        expect(container.textContent).toBe('one two three four five six seven');
+      }
+    });
+
+    it('should truncate single extremely long words (> 25 characters) and toggle on click', () => {
+      const columns = getCombinePropertyHistoryColumns(mockT);
+      const reasonCol = columns.find(c => c.key === 'combineReason');
+      
+      if (reasonCol?.render) {
+        const longWord = 'a'.repeat(30);
+        const { container } = render(
+          reasonCol.render(longWord, mockReviewData[0], 0) as React.ReactElement
+        );
+        
+        // Initial state (truncated)
+        const tooltip = container.querySelector('[data-testid="mock-tooltip"]');
+        expect(tooltip).not.toBeNull();
+        expect(tooltip?.getAttribute('data-content')).toBe('Click to expand');
+        expect(container.textContent).toBe('a'.repeat(25) + '...');
+        
+        // Click to expand
+        const span = container.querySelector('span[class*="cursor-pointer"]');
+        if (span) {
+          fireEvent.click(span);
+        }
+        
+        // Check expanded state
+        const expandedTooltip = container.querySelector('[data-testid="mock-tooltip"]');
+        expect(expandedTooltip?.getAttribute('data-content')).toBe('Click to collapse');
+        expect(container.textContent).toBe(longWord);
+      }
+    });
+  });
+
+  describe('getCombinePropertyColumns tooltips', () => {
+    it('should render base property tooltip on the base property row', () => {
+      const selectedBasePropertyId = '1';
+      const columns = getCombinePropertyColumns(mockT, mockReviewData, undefined, undefined, undefined, selectedBasePropertyId);
+      const propNoCol = columns.find(c => c.key === 'propertyNo');
+      
+      if (propNoCol?.render) {
+        const { container } = render(propNoCol.render('P1', mockReviewData[0], 0) as React.ReactElement);
+        const tooltip = container.querySelector('[data-testid="mock-tooltip"]');
+        expect(tooltip).not.toBeNull();
+        expect(tooltip?.getAttribute('data-content')).toBe('basePropertyTooltip');
+      }
+    });
+
+    it('should render combine property tooltip on a non-base property row', () => {
+      const selectedBasePropertyId = '1';
+      const columns = getCombinePropertyColumns(mockT, mockReviewData, undefined, undefined, undefined, selectedBasePropertyId);
+      const propNoCol = columns.find(c => c.key === 'propertyNo');
+      
+      if (propNoCol?.render) {
+        // Row 2 is not the base property
+        const { container } = render(propNoCol.render('P2', mockReviewData[1], 1) as React.ReactElement);
+        const tooltip = container.querySelector('[data-testid="mock-tooltip"]');
+        expect(tooltip).not.toBeNull();
+        expect(tooltip?.getAttribute('data-content')).toBe('combinePropertyTooltip');
+      }
+    });
   });
 });

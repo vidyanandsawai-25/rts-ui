@@ -2,8 +2,7 @@
 import { useState, useMemo, useCallback, useEffect, useTransition, useRef } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { Tabs } from '@/components/common';
-import { Building, Home, Building2, Calculator, GitMerge, IndianRupee } from 'lucide-react';
+
 import CommonPropertyTable from './CommonPropertyTable';
 import ApartmentTaxDetailsTable from './ApartmentTaxDetailsTable';
 import { ApartmentQCDetail, PagedResponse, ApartmentTaxDetailsItems, DualMethodTaxDetails } from '@/types/apartmentQC.types';
@@ -47,14 +46,15 @@ const AppartmentQCSection = ({
   propertyNo = '',
 }: AppartmentQCSectionProps) => {
   const router = useRouter();
-  const t = useTranslations("ptis");
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
-  const [drawerLoading, setDrawerLoading] = useState(false);
+  // const [drawerLoading, setDrawerLoading] = useState(false);
 
   const activeMainTab = searchParams.get('appartmentTab') || 'amenities';
   const activeSubTab = searchParams.get('subTab') || 'rateable';
+  const sortBy = searchParams.get('sortBy') || '';
+  const sortOrder = searchParams.get('sortOrder') || '';
   const [searchQuery, setSearchQuery] = useState(searchParams.get('searchTerm') || '');
   const [isAutoScrolling, setIsAutoScrolling] = useState(false);
   const isUpdatingFromUrl = useRef(false);
@@ -69,6 +69,40 @@ const AppartmentQCSection = ({
   const [taxDetails, setTaxDetails] = useState<ApartmentTaxDetailsItems | null>(null);
   const [dualMethodDetails, setDualMethodDetails] = useState<DualMethodTaxDetails | null>(null);
   const [taxDetailsLoading, setTaxDetailsLoading] = useState(false);
+
+  // Function to refetch tax details (used when property details drawer is closed after saving)
+  const refetchTaxDetails = useCallback(async () => {
+    if (!wardId || !propertyNo) {
+      return;
+    }
+
+    try {
+      setTaxDetails(null);
+      setDualMethodDetails(null);
+      setTaxDetailsLoading(true);
+
+      if (activeSubTab === 'rateable') {
+        const result = await fetchApartmentPropertyTaxDetailsByTabAction(wardId, propertyNo, activeMainTab);
+        if (result.success && result.data) {
+          setTaxDetails(result.data);
+        }
+      } else if (activeSubTab === 'capital') {
+        const result = await fetchApartmentPropertyTaxDetailsCvByTabAction(wardId, propertyNo, activeMainTab);
+        if (result.success && result.data) {
+          setTaxDetails(result.data);
+        }
+      } else if (activeSubTab === 'dual-method') {
+        const result = await fetchDualMethodTaxDetailsByTabAction(wardId, propertyNo, activeMainTab);
+        if (result.success && result.data) {
+          setDualMethodDetails(result.data);
+        }
+      }
+    } catch {
+      // Error handled silently, state already null
+    } finally {
+      setTaxDetailsLoading(false);
+    }
+  }, [activeSubTab, activeMainTab, wardId, propertyNo]);
 
   useEffect(() => {
     const urlSearchTerm = searchParams.get('searchTerm') || '';
@@ -87,36 +121,11 @@ const AppartmentQCSection = ({
 
     const fetchData = async () => {
       try {
-        // Reset state when starting new fetch
-        setTaxDetails(null);
-        setDualMethodDetails(null);
-        setTaxDetailsLoading(true);
-
-        if (activeSubTab === 'rateable') {
-          // Fetch Rateable Value data
-          const result = await fetchApartmentPropertyTaxDetailsByTabAction(wardId, propertyNo, activeMainTab);
-          if (!cancelled && result.success && result.data) {
-            setTaxDetails(result.data);
-          }
-        } else if (activeSubTab === 'capital') {
-          // Fetch Capital Value data
-          const result = await fetchApartmentPropertyTaxDetailsCvByTabAction(wardId, propertyNo, activeMainTab);
-          if (!cancelled && result.success && result.data) {
-            setTaxDetails(result.data);
-          }
-        } else if (activeSubTab === 'dual-method') {
-          // Fetch both RV and CV data for dual method
-          const result = await fetchDualMethodTaxDetailsByTabAction(wardId, propertyNo, activeMainTab);
-          if (!cancelled && result.success && result.data) {
-            setDualMethodDetails(result.data);
-          }
+        if (!cancelled) {
+          await refetchTaxDetails();
         }
       } catch {
-        // Error handled silently, state already null
-      } finally {
-        if (!cancelled) {
-          setTaxDetailsLoading(false);
-        }
+        // Error handled silently
       }
     };
 
@@ -125,19 +134,7 @@ const AppartmentQCSection = ({
     return () => {
       cancelled = true;
     };
-  }, [activeSubTab, activeMainTab, wardId, propertyNo]);
-
-  const tabs = useMemo(() => [
-    { value: 'amenities', label: t("apartmentTabs.amenities"), icon: Building2, content: null },
-    { value: 'commercial', label: t("apartmentTabs.commercial"), icon: Building, content: null },
-    { value: 'residential', label: t("apartmentTabs.residential"), icon: Home, content: null },
-  ], [t]);
-
-  const subTabs = useMemo(() => [
-    { value: 'rateable', label: t("apartmentTabs.rateable"), icon: Calculator, content: null },
-    { value: 'capital', label: t("apartmentTabs.capital"), icon: IndianRupee, content: null },
-    { value: 'dual-method', label: t("apartmentTabs.dual"), icon: GitMerge, content: null },
-  ], [t]);
+  }, [activeSubTab, activeMainTab, wardId, propertyNo, refetchTaxDetails]);
 
   const updateUrl = useCallback((params: Record<string, string | number | null>) => {
     const newParams = new URLSearchParams(searchParams.toString());
@@ -156,11 +153,8 @@ const AppartmentQCSection = ({
   }, [activeMainTab, initialData]);
 
   const tAqc = useTranslations("appartmentQC");
-  const columns = useMemo(() => getApartmentQCColumns(activeMainTab, activeSubTab, tAqc), [activeMainTab, activeSubTab, tAqc]);
+  const columns = useMemo(() => getApartmentQCColumns(activeMainTab, activeSubTab, tAqc, activePagedData.pageNumber, activePagedData.pageSize), [activeMainTab, activeSubTab, tAqc, activePagedData.pageNumber, activePagedData.pageSize]);
   const convertedData = useMemo(() => transformApartmentData(activePagedData.items || [], activeMainTab), [activePagedData, activeMainTab]);
-
-  const handleMainTabChange = (v: string | number) => updateUrl({ valuationTab: 'apartment', appartmentTab: v.toString(), subTab: 'rateable', pageNumber: 1 });
-  const handleSubTabChange = (v: string | number) => updateUrl({ valuationTab: 'apartment', appartmentTab: activeMainTab, subTab: v.toString(), pageNumber: 1 });
 
   const handleRowClick = useCallback((row: Record<string, unknown>) => {
     const propertyId = String(row.id || row.propertyDetailsId || '');
@@ -188,7 +182,7 @@ const AppartmentQCSection = ({
 
     let cancelled = false;
 
-    queueMicrotask(() => setDrawerLoading(true));   // ✅ START LOADING
+    // queueMicrotask(() => setDrawerLoading(true));   // ✅ START LOADING
 
     const type = activeSubTab === 'dual-method' ? 'dual' : activeSubTab;
 
@@ -215,52 +209,31 @@ const AppartmentQCSection = ({
           propertyTypes: [],
         });
       })
-      .finally(() => {
-        if (!cancelled) queueMicrotask(() => setDrawerLoading(false));  // ✅ STOP LOADING
-      });
+      // .finally(() => {
+      //   if (!cancelled) queueMicrotask(() => setDrawerLoading(false));  // ✅ STOP LOADING
+      // });
 
     return () => {
       cancelled = true;
       setDrawerLocalData(null);
-      setDrawerLoading(false);
+      // setDrawerLoading(false);
     };
   }, [drawerOpen, selectedPropertyId, activeSubTab]);
 
   const selectedPropertyData = drawerLocalData?.basicInfo ?? null;
 
-  const handleCloseDrawer = useCallback(() => {
+  const handleCloseDrawer = useCallback(async () => {
     const params = new URLSearchParams(searchParams.toString());
     params.delete('drawer');
     params.delete('editPropertyId');
     // Keep the original propertyId intact
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-  }, [searchParams, pathname, router]);
+    // Refetch tax details when drawer is closed
+    await refetchTaxDetails();
+  }, [searchParams, pathname, router, refetchTaxDetails]);
 
   return (
     <div className="flex flex-col h-full bg-white rounded-lg shadow-sm">
-      <div className="flex flex-row gap-4 py-2 px-4 border-b border-gray-100 bg-gray-50/50">
-        <Tabs
-          className="flex flex-row w-fit p-1 bg-white border border-gray-200 shadow-sm rounded-xl"
-          value={activeMainTab}
-          variant="pills"
-          items={tabs}
-          onChange={handleMainTabChange}
-          size="sm"
-          activeTabClassName="bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-md border-none"
-        />
-        <Tabs
-          className="flex flex-row p-1 bg-white border border-gray-200 shadow-sm rounded-xl"
-          value={activeSubTab}
-          variant="pills"
-          items={subTabs}
-          onChange={handleSubTabChange}
-          size="sm"
-          activeTabClassName="bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-md border-none"
-        />
-      </div>
-
-
-
       <div className="flex-1 overflow-auto text-gray-900 bg-gray-50/30 p-2 relative min-h-[200px]">
         {isPending && (
           <div className="absolute inset-0 z-50 bg-white/60 backdrop-blur-[1px] flex items-center justify-center">
@@ -279,6 +252,8 @@ const AppartmentQCSection = ({
             activeFilters={activeFilters}
             onFilterChange={handleFilterChange}
             onFetchFilterOptions={fetchFilterOptions}
+            sortBy={sortBy}
+            sortOrder={sortOrder}
             wardId={wardId}
             propertyNo={propertyNo}
           />
@@ -294,25 +269,17 @@ const AppartmentQCSection = ({
         </div>
       </div>
 
-      {/* Property Details Edit Drawer */}
-      {drawerOpen && (
-        drawerLoading ? (
-          <div className="fixed inset-0 z-50 bg-white/70 flex items-center justify-center">
-            <LoadingPage translationNamespace="ptis.loading" />
-          </div>
-        ) : (
-          <PropertyDetailsEditScreenNew
+       <PropertyDetailsEditScreenNew
             key={`property-edit-${selectedPropertyId || 'new'}`}
             open={drawerOpen}
             onClose={handleCloseDrawer}
+            onSaveOrClose={refetchTaxDetails}
             propertyData={selectedPropertyData}
             subTab={activeSubTab}
             returnTo={activeMainTab as 'amenities' | 'commercial' | 'residential'}
             initialFloorQCData={drawerLocalData?.floorQCData}
             initialPropertyTypes={drawerLocalData?.propertyTypes}
           />
-        )
-      )}
     </div>
   );
 };

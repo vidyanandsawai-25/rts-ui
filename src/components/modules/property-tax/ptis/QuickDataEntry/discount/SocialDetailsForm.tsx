@@ -5,8 +5,10 @@ import { SaveButton } from "@/components/common";
 import { useSocialDetailsForm } from "@/hooks/useSocialDetailsForm";
 import { PropertySocialInfoResponseDto } from "@/types/property-social-details.types";
 import { useTranslations } from "next-intl";
-import { SimpleToggleSection } from "./SimpleToggleSection";
-import { ComplexNumericSection } from "./ComplexNumericSection";
+import { SocialSidebar } from "./SocialSidebar";
+import { SocialDetailPane } from "./SocialDetailPane";
+import { SocialValidationErrorBanner } from "./SocialValidationErrorBanner";
+import { getLocalizedName } from "@/lib/utils/social-details";
 
 interface SocialDetailsFormProps {
     initialSocialData: PropertySocialInfoResponseDto | null;
@@ -22,82 +24,160 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
         socialData,
         isSaving,
         hasChanges,
-        errors,
+        validationErrors,
+        incompleteAttributes,
         isAttributeEnabled,
-        handleValueChange,
+        handleInputChange,
+        handleToggleEnabled,
+        handlePhotoUpload,
         handleSave
     } = useSocialDetailsForm(initialSocialData, propertyId);
 
-    // 1. Data Segregation: Simple Yes/No Toggles
-    const simpleToggleFields = React.useMemo(() => {
+    const [selectedId, setSelectedId] = React.useState<number | null>(null);
+    const [searchTerm, setSearchTerm] = React.useState("");
+    const [showActiveFirst, setShowActiveFirst] = React.useState(false);
+
+    // List of root attributes
+    const rootAttributes = React.useMemo(() => {
         if (!initialSocialData?.socialAttributes) return [];
-        return initialSocialData.socialAttributes.filter(
-            (attr) =>
-                attr.dataType.toUpperCase() === "BIT" &&
-                (!attr.children || attr.children.length === 0)
-        ).sort((a, b) => (a.displayOrder ?? a.id) - (b.displayOrder ?? b.id));
-    }, [initialSocialData]);
+        return initialSocialData.socialAttributes.map((attr) => socialData[attr.id]).filter(Boolean);
+    }, [initialSocialData, socialData]);
 
-    // 2. Data Segregation: Complex numeric fields and toggles with child inputs
-    const complexNumericFields = React.useMemo(() => {
-        if (!initialSocialData?.socialAttributes) return [];
-        const fields = initialSocialData.socialAttributes.filter(
-            (attr) =>
-                attr.dataType.toUpperCase() !== "BIT" ||
-                (attr.children && attr.children.length > 0)
-        ).sort((a, b) => (a.displayOrder ?? a.id) - (b.displayOrder ?? b.id));
-
-        const wellIndex = fields.findIndex(
-            (attr) => {
-                const code = attr.socialAttributeCode.toUpperCase();
-                return code.includes("WELL") && !code.includes("BOREWELL");
-            }
-        );
-        const treesIndex = fields.findIndex(
-            (attr) => attr.socialAttributeCode.toUpperCase().includes("TREE")
-        );
-
-        if (wellIndex !== -1 && treesIndex !== -1) {
-            const temp = fields[wellIndex];
-            fields[wellIndex] = fields[treesIndex];
-            fields[treesIndex] = temp;
+    const filteredAttributes = React.useMemo(() => {
+        let list = [...rootAttributes];
+        if (searchTerm) {
+            const term = searchTerm.toLowerCase();
+            list = list.filter((attr) => {
+                const displayName = getLocalizedName(attr.socialAttributeCode, attr.socialAttributeName, t);
+                return displayName.toLowerCase().includes(term);
+            });
         }
+        if (showActiveFirst) {
+            list = [...list].sort((a, b) => {
+                const aEnabled = a.bitValue === true;
+                const bEnabled = b.bitValue === true;
+                if (aEnabled && !bEnabled) return -1;
+                if (!aEnabled && bEnabled) return 1;
+                return 0;
+            });
+        }
+        return list;
+    }, [rootAttributes, searchTerm, showActiveFirst, t]);
 
-        return fields;
-    }, [initialSocialData]);
+    const activeSelectedId = React.useMemo(() => {
+        if (selectedId !== null) {
+            const exists = filteredAttributes.some(d => d.socialAttributeId === selectedId);
+            if (exists) return selectedId;
+        }
+        return filteredAttributes.length > 0 ? filteredAttributes[0].socialAttributeId : null;
+    }, [filteredAttributes, selectedId]);
+
+    const selectedAttribute = activeSelectedId !== null ? socialData[activeSelectedId] : null;
+    
+    const selectedHierarchy = React.useMemo(() => {
+        if (activeSelectedId === null || !initialSocialData?.socialAttributes) return null;
+        return initialSocialData.socialAttributes.find(attr => attr.id === activeSelectedId);
+    }, [initialSocialData, activeSelectedId]);
+
+    const handleErrorTagClick = React.useCallback((id: number) => {
+        if (showActiveFirst) {
+            setShowActiveFirst(false);
+        }
+        setSearchTerm("");
+        setSelectedId(id);
+
+        requestAnimationFrame(() => {
+            const card = document.querySelector(`[data-certificate-id="${id}"]`);
+            if (card && typeof card.scrollIntoView === "function") {
+                card.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+        });
+    }, [showActiveFirst]);
+
+    const handleSaveClick = React.useCallback(async () => {
+        const result = await handleSave();
+        if (result && !result.isValid && result.errors) {
+            const firstInvalidIdStr = Object.keys(result.errors)[0];
+            if (firstInvalidIdStr) {
+                const firstInvalidId = Number(firstInvalidIdStr);
+                const findRootParentId = (attrId: number): number => {
+                    const attr = socialData[attrId];
+                    if (attr && attr.parentAttributeId) {
+                        return findRootParentId(attr.parentAttributeId);
+                    }
+                    return attrId;
+                };
+                const rootParentId = findRootParentId(firstInvalidId);
+                setSelectedId(rootParentId);
+                requestAnimationFrame(() => {
+                    const card = document.querySelector(`[data-certificate-id="${rootParentId}"]`);
+                    if (card && typeof card.scrollIntoView === "function") {
+                        card.scrollIntoView({ behavior: "smooth", block: "center" });
+                    }
+                });
+            }
+        }
+    }, [handleSave, socialData]);
+
+    const activeIncompleteAttributes = React.useMemo(() => {
+        return incompleteAttributes.filter(d => socialData[d.id]?.bitValue === true);
+    }, [incompleteAttributes, socialData]);
 
     return (
         <div className="w-full">
-            <div className="space-y-6 max-h-[calc(100vh-360px)] overflow-y-auto pr-1 no-scrollbar p-0.5">
-                {/* Section 1: Compact Toggles */}
-                {simpleToggleFields.length > 0 && (
-                    <SimpleToggleSection
-                        fields={simpleToggleFields}
-                        socialData={socialData}
-                        errors={errors}
-                        isAttributeEnabled={isAttributeEnabled}
-                        handleValueChange={handleValueChange}
-                        title={t("discount.simpleTogglesTitle") || "General Attributes"}
-                    />
-                )}
+            {/* Validation Error Banner */}
+            {activeIncompleteAttributes.length > 0 && (
+                <SocialValidationErrorBanner
+                    incompleteAttributes={activeIncompleteAttributes}
+                    onTagClick={handleErrorTagClick}
+                    t={t as unknown as (key: string) => string}
+                />
+            )}
 
-                {/* Section 2: Numeric / Complex Fields */}
-                {complexNumericFields.length > 0 && (
-                    <ComplexNumericSection
-                        fields={complexNumericFields}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-start">
+                {/* Left Sidebar */}
+                <div className="lg:col-span-5 xl:col-span-4">
+                    <SocialSidebar
+                        searchTerm={searchTerm}
+                        onSearchChange={setSearchTerm}
+                        showActiveFirst={showActiveFirst}
+                        onShowActiveChange={setShowActiveFirst}
+                        attributes={filteredAttributes}
                         socialData={socialData}
-                        errors={errors}
-                        isAttributeEnabled={isAttributeEnabled}
-                        handleValueChange={handleValueChange}
-                        title={t("discount.complexFieldsTitle") || "Detailed Attributes"}
+                        selectedId={activeSelectedId}
+                        onSelect={setSelectedId}
+                        onToggleEnabled={handleToggleEnabled}
+                        validationErrors={validationErrors}
+                        t={t as unknown as {
+                            (key: string, values?: Record<string, string | number | Date>): string;
+                            has?: (key: string) => boolean;
+                        }}
                     />
-                )}
+                </div>
+
+                {/* Right Detail Pane */}
+                <div className="lg:col-span-7 xl:col-span-8">
+                    <SocialDetailPane
+                        data={selectedAttribute}
+                        hierarchyData={selectedHierarchy}
+                        socialData={socialData}
+                        onInputChange={handleInputChange}
+                        onPhotoUpload={handlePhotoUpload}
+                        validationErrors={validationErrors}
+                        isAttributeEnabled={isAttributeEnabled}
+                        t={t as unknown as {
+                            (key: string, values?: Record<string, string | number | Date>): string;
+                            has?: (key: string) => boolean;
+                        }}
+                    />
+                </div>
             </div>
 
-            <div className="flex justify-end mt-4 pt-3 border-t border-slate-100">
+            {/* Save Button Section */}
+            <div className="flex justify-end mt-3 pt-2 border-t border-blue-100">
                 <SaveButton
-                    onClick={handleSave}
-                    disabled={!hasChanges}
+                    onClick={handleSaveClick}
+                    disabled={!hasChanges || isSaving}
                     isLoading={isSaving}
                     label={t("common.saveChanges") || "Save Changes"}
                 />

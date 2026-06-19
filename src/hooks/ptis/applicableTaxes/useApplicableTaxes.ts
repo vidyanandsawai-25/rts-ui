@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useCallback } from 'react';
+import { useMemo, useCallback } from 'react';
 import { useRouter, useSearchParams, useParams, usePathname } from 'next/navigation';
 import { useConfirm } from '@/components/common';
 import { useTranslations } from 'next-intl';
@@ -13,8 +13,10 @@ export function useApplicableTaxes({
   asseYearsResponse,
   useGroupsResponse,
   valuationTab,
-  taxApplicabilityResponse,
-}: Omit<ApplicableTaxesProps, 'applicableCount' | 'exemptedCount'>) {
+  taxApplicabilityPagedResponse,
+}: Omit<ApplicableTaxesProps, 'valuationTab'> & {
+  valuationTab: string;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -58,7 +60,14 @@ export function useApplicableTaxes({
   const selectedFloorUse = searchParams.get('floorUse') || '';
   const searchQuery = searchParams.get('search') || '';
 
-  const [pageNumber, setPageNumber] = useState(1);
+  const items = useMemo(() => taxApplicabilityPagedResponse?.items || [], [taxApplicabilityPagedResponse]);
+  const applicableCount = items[0]?.applicableCount || 0;
+  const exemptedCount = items[0]?.exemptedCount || 0;
+
+  const pageNumber = taxApplicabilityPagedResponse?.pageNumber || 1;
+  const pageSize = taxApplicabilityPagedResponse?.pageSize || 10;
+  const totalPages = taxApplicabilityPagedResponse?.totalPages || 1;
+  const totalCount = taxApplicabilityPagedResponse?.totalCount || 0;
 
   const handleToggleStatus = useCallback((id: number, newStatus: boolean, taxHeadName: string) => {
     confirm({
@@ -104,25 +113,30 @@ export function useApplicableTaxes({
     router.push(`/${locale}/property-tax/ptis?${newParams.toString()}`);
   };
 
-  const handleParamChange = (key: string, val: string) => {
+  const handleParamChange = useCallback((key: string, val: string) => {
     const newParams = new URLSearchParams(searchParams.toString());
     newParams.set(key, val);
+    if (key !== 'pageNumber') {
+      newParams.set('pageNumber', '1');
+    }
     router.replace(`${pathname}?${newParams.toString()}`);
-  };
+  }, [searchParams, pathname, router]);
+
+  const setPageNumber = useCallback((page: number) => {
+    handleParamChange('pageNumber', String(page));
+  }, [handleParamChange]);
 
   const filteredTaxes = useMemo(() => {
-    const taxesList = taxApplicabilityResponse || [];
-    return taxesList.filter(item => {
+    const rawTaxes = isExempted ? (items[0]?.exemptedTaxes || []) : (items[0]?.applicableTaxes || []);
+    return rawTaxes.filter(item => {
       const matchesSearch = item.taxHead.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesTab = isExempted ? !item.isActive : item.isActive;
-      return matchesSearch && matchesTab;
+      return matchesSearch;
     });
-  }, [taxApplicabilityResponse, searchQuery, isExempted]);
+  }, [items, searchQuery, isExempted]);
 
   const paginatedData = useMemo(() => {
-    const startIndex = (pageNumber - 1) * 10;
-    return filteredTaxes.slice(startIndex, startIndex + 10);
-  }, [filteredTaxes, pageNumber]);
+    return filteredTaxes;
+  }, [filteredTaxes]);
 
   const columns = useMemo(() => getColumns(t, handleToggleStatus), [t, handleToggleStatus]);
 
@@ -136,6 +150,11 @@ export function useApplicableTaxes({
     selectedAsseYear,
     selectedFloorUse,
     pageNumber,
+    pageSize,
+    totalPages,
+    totalCount,
+    applicableCount,
+    exemptedCount,
     setPageNumber,
     paginatedData,
     filteredTaxes,

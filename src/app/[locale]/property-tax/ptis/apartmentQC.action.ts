@@ -20,6 +20,11 @@ interface FilterParams {
   propertyType?: string;
 }
 
+interface SortParams {
+  sortBy?: string;
+  sortOrder?: string;
+}
+
 export async function getApartmentQCDataAction(
   wardId: number,
   propertyNo: string,
@@ -28,7 +33,8 @@ export async function getApartmentQCDataAction(
   pageSize: number = 10,
   searchTerm: string = '',
   propertyId?: number,
-  filters?: FilterParams
+  filters?: FilterParams,
+  sort?: SortParams
 ) {
   try {
     // We only fetch the active tab data to keep it efficient, 
@@ -47,6 +53,8 @@ export async function getApartmentQCDataAction(
       searchTerm,
       partType,
       propertyDetailsId: propertyId, // passing propertyId as propertyDetailsId
+      sortBy: sort?.sortBy,
+      sortOrder: sort?.sortOrder,
       // Column filter parameters
       wing: filters?.wing,
       flatOrShopNo: filters?.flatOrShopNo,

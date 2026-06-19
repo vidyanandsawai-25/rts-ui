@@ -36,14 +36,14 @@ describe('DiscountDataTab', () => {
     expect(screen.getByText('No data available')).toBeInTheDocument();
   });
 
-  it('should filter out items with bitValue === false', () => {
+  it('should filter out items with isActive === false', () => {
     const mockData: DiscountData = {
       items: [
         {
           id: 1,
           propertyId: 549442,
           socialAttributeId: 1,
-          bitValue: false,
+          bitValue: null,
           intValue: null,
           decimalValue: null,
           textValue: null,
@@ -52,7 +52,7 @@ describe('DiscountDataTab', () => {
           remark: null,
           socialAttributeCode: 'TEST',
           socialAttributeName: 'Should be hidden',
-          isActive: true,
+          isActive: false,
           createdDate: '',
           updatedDate: null,
         },
@@ -151,6 +151,36 @@ describe('DiscountDataTab', () => {
     render(<DiscountDataTab initialData={mockData} />);
 
     expect(screen.getByText('Club House Available')).toBeInTheDocument();
+    expect(screen.getByText('Status')).toBeInTheDocument();
+    expect(screen.getByRole('textbox')).toHaveTextContent('Yes');
+  });
+
+  it('should display Yes/No when bitValue is null but isActive is true', () => {
+    const mockData: DiscountData = {
+      items: [
+        {
+          id: 3030,
+          propertyId: 549442,
+          socialAttributeId: 39,
+          bitValue: null,
+          intValue: null,
+          decimalValue: null,
+          textValue: null,
+          dateValue: null,
+          documentBindingId: null,
+          remark: null,
+          socialAttributeCode: 'HAS_PLAYGROUND',
+          socialAttributeName: 'Playground Available',
+          isActive: true,
+          createdDate: '',
+          updatedDate: null,
+        },
+      ] as PropertySocialDetailItem[],
+    };
+
+    render(<DiscountDataTab initialData={mockData} />);
+
+    expect(screen.getByText('Playground Available')).toBeInTheDocument();
     expect(screen.getByText('Status')).toBeInTheDocument();
     expect(screen.getByRole('textbox')).toHaveTextContent('Yes');
   });

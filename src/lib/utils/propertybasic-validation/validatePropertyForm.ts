@@ -1,4 +1,5 @@
 import { validateForm, propertyValidations } from '@/lib/utils/validation';
+import { translateDevanagariDigits } from '../input-sanitization';
 
 /**
  * Validates the property basic details form data.
@@ -13,12 +14,16 @@ export const validatePropertyForm = (
     categoryId: number | null,
     t: (key: string, values?: Record<string, string | number | Date>) => string
 ) => {
+    const rawPlotArea = formData.get("plotArea");
+    const rawResToilets = formData.get("noOfResidentialToilets");
+    const rawCommToilets = formData.get("noOfCommercialToilets");
+
     const validationData = {
         categoryId,
         taxZoneId: formData.get("taxZoneId"),
-        plotArea: formData.get("plotArea"),
-        noOfResidentialToilets: formData.get("noOfResidentialToilets"),
-        noOfCommercialToilets: formData.get("noOfCommercialToilets"),
+        plotArea: typeof rawPlotArea === "string" ? translateDevanagariDigits(rawPlotArea) : rawPlotArea,
+        noOfResidentialToilets: typeof rawResToilets === "string" ? translateDevanagariDigits(rawResToilets) : rawResToilets,
+        noOfCommercialToilets: typeof rawCommToilets === "string" ? translateDevanagariDigits(rawCommToilets) : rawCommToilets,
     };
 
     return validateForm(validationData, {

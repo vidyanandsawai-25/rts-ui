@@ -87,4 +87,30 @@ describe("social-details.special-toggles", () => {
         const errors = validateSocialDetails(currentData);
         expect(errors[1]).toBe("Year must be between 1900 and 2026.");
     });
+
+    it("should consider water connection status as a special toggle and validate when active", () => {
+        const attr = createBaseAttr({
+            socialAttributeCode: "WATER_CONN_STATUS",
+            socialAttributeName: "Water Connection Status",
+            dataType: "TEXT",
+            bitValue: true,
+            textValue: null
+        });
+        const currentData = { 1: attr };
+        const errors = validateSocialDetails(currentData);
+        expect(errors[1]).toBe("Water Connection Status is required.");
+    });
+
+    it("should skip validation for water connection status when inactive", () => {
+        const attr = createBaseAttr({
+            socialAttributeCode: "WATER_CONN_STATUS",
+            socialAttributeName: "Water Connection Status",
+            dataType: "TEXT",
+            bitValue: false,
+            textValue: null
+        });
+        const currentData = { 1: attr };
+        const errors = validateSocialDetails(currentData);
+        expect(errors[1]).toBeUndefined();
+    });
 });

@@ -1036,6 +1036,7 @@ export async function getAllPropertiesForWardAction(wardId: number): Promise<{
     params.set("WardId", wardId.toString());
     params.set("PageNumber", "1");
     params.set("PageSize", "-1"); // -1 returns all items without pagination
+    params.set("MarkedForDeletion", "false");
 
     const response = await apiClient.get<ZonePropertyListResponse>(`/Property?${params.toString()}`);
 
@@ -1584,6 +1585,7 @@ export async function getNextPartitionNumberAction(
       PageSize: "1",
       SortBy: "Id",
       SortOrder: "desc",
+      MarkedForDeletion: "false",
     });
 
     const url = `/Property?${queryParams.toString()}`;

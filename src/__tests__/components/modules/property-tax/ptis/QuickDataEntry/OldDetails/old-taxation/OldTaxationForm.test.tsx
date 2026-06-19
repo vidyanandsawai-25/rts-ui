@@ -123,4 +123,20 @@ describe('OldTaxationForm Component', () => {
       expect(updatePropertyOldDetailsAction).toHaveBeenCalled();
     });
   });
+
+  it('allows entering Marathi/Devanagari numeric digits in decimal/area input fields', () => {
+    render(<OldTaxationForm propertyOldDetails={mockPropertyData as unknown as PropertyOldDetailsApiItem} />);
+    
+    const plotAreaInput = screen.getByPlaceholderText('quickDataEntry.oldDetails.plotAreaPlaceholder');
+    fireEvent.change(plotAreaInput, { target: { value: '१५००.५०' } });
+    expect(plotAreaInput).toHaveValue('१५००.५०');
+
+    const rvInput = screen.getByPlaceholderText('quickDataEntry.oldDetails.rvPlaceholder');
+    fireEvent.change(rvInput, { target: { value: '५०००' } });
+    expect(rvInput).toHaveValue('५०००');
+
+    const propertyTaxInput = screen.getByPlaceholderText('quickDataEntry.oldDetails.propertyTaxPlaceholder');
+    fireEvent.change(propertyTaxInput, { target: { value: '१२०२' } });
+    expect(propertyTaxInput).toHaveValue('१२०२');
+  });
 });

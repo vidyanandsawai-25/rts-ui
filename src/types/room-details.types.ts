@@ -238,10 +238,12 @@ export interface RoomActions {
 export interface OffsetActions {
     handleOpenOffset: (index: number) => void;
     handleSubtractClick: () => void;
+    handleAddClick?: () => void;
     handleOffsetInputChange: (field: keyof OffsetData, value: string) => void;
     handleShapeChange: (shape: string) => void;
     handleAddOffset: () => void;
     handleOffsetOk: () => void;
+    handleOffsetClose: () => void;
     handleDeleteOffset: (idx: number) => void;
     calculateAdjustedRoomTotal: () => number;
 }

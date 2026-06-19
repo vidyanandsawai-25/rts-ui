@@ -4,8 +4,9 @@ import {
   KycFormData,
   OwnerTypeApiItem
 } from '@/types/property-kyc.types';
-import { KYC_VALIDATION_RULES } from '@/lib/utils/kyc-validation.constants';
-import { useDigitInputs } from './useDigitInputs';
+import { KYC_VALIDATION_RULES } from '@/lib/utils/kyc-validation/kyc-validation.constants';
+import { useDigitInputs } from '@/hooks/useDigitInputs';
+
 
 /**
  * Hook for managing KYC form state
@@ -26,8 +27,8 @@ export const useKycFormState = (
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const [formData, setFormData] = useState<KycFormData>({
-    ownerTypeId: KycDetailsData?.ownerTypeId != null && KycDetailsData?.ownerTypeId !== undefined 
-      ? KycDetailsData.ownerTypeId 
+    ownerTypeId: KycDetailsData?.ownerTypeId != null && KycDetailsData?.ownerTypeId !== undefined
+      ? KycDetailsData.ownerTypeId
       : null,
     ownerTitle: KycDetailsData?.ownerTitle ?? '',
     ownerName: KycDetailsData?.ownerName ?? '',
@@ -36,6 +37,7 @@ export const useKycFormState = (
     emailId: KycDetailsData?.emailId ?? '',
     address: KycDetailsData?.address ?? '',
     location: KycDetailsData?.location ?? '',
+    pinCode: KycDetailsData?.pinCode ?? '',
   });
 
   // Digit inputs for mobile and Aadhar card numbers
@@ -58,8 +60,8 @@ export const useKycFormState = (
   const ownerTypeOptions = useMemo(() =>
     OwnerTypeMasterList.map((item) => ({
       label: item.ownerType,
-      value: item.id != null && item.id !== undefined 
-        ? String(item.id) 
+      value: item.id != null && item.id !== undefined
+        ? String(item.id)
         : '',
     })),
     [OwnerTypeMasterList]

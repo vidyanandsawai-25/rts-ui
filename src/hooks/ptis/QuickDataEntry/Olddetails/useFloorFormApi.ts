@@ -9,6 +9,7 @@ import {
   updateOldFloorDetailsAction,
 } from "@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/OldDetails/floor-information/action";
 import { SaveOldFloorDetailPayload, FloorInformationFormData } from "@/types/OldDetails/property-old-details.types";
+import { translateDevanagariDigits } from "@/lib/utils/input-sanitization";
 /**
  * Maps FloorInformationFormData to SaveOldFloorDetailPayload for API calls.
  * Ensures numeric fields are correctly parsed and optional fields are handled.
@@ -19,17 +20,22 @@ function mapFloorFormToPayload(
 ): SaveOldFloorDetailPayload {
   // Use the calculated values directly from formData (already computed in the form)
   // Use Number.isFinite to explicitly check for valid numbers and avoid masking NaN
-  const carpetAreaSqMeter = Number.isFinite(Number(formData.oldAreaSqMeter)) ? Number(formData.oldAreaSqMeter) : 0;
-  const carpetAreaSqFeet = Number.isFinite(Number(formData.oldCarpetAreaSqFeet)) ? Number(formData.oldCarpetAreaSqFeet) : 0;
-  const builtupAreaSqFeet = Number.isFinite(Number(formData.oldBuiltupAreaSqFeet)) ? Number(formData.oldBuiltupAreaSqFeet) : 0;
-  const builtupAreaSqMeter = Number.isFinite(Number(formData.oldBuiltupAreaSqMeter)) ? Number(formData.oldBuiltupAreaSqMeter) : 0;
+  const translatedAreaSqMeter = translateDevanagariDigits(formData.oldAreaSqMeter || "");
+  const translatedCarpetAreaSqFeet = translateDevanagariDigits(formData.oldCarpetAreaSqFeet || "");
+  const translatedBuiltupAreaSqFeet = translateDevanagariDigits(formData.oldBuiltupAreaSqFeet || "");
+  const translatedBuiltupAreaSqMeter = translateDevanagariDigits(formData.oldBuiltupAreaSqMeter || "");
+
+  const carpetAreaSqMeter = Number.isFinite(Number(translatedAreaSqMeter)) ? Number(translatedAreaSqMeter) : 0;
+  const carpetAreaSqFeet = Number.isFinite(Number(translatedCarpetAreaSqFeet)) ? Number(translatedCarpetAreaSqFeet) : 0;
+  const builtupAreaSqFeet = Number.isFinite(Number(translatedBuiltupAreaSqFeet)) ? Number(translatedBuiltupAreaSqFeet) : 0;
+  const builtupAreaSqMeter = Number.isFinite(Number(translatedBuiltupAreaSqMeter)) ? Number(translatedBuiltupAreaSqMeter) : 0;
 
   return {
     propertyId: propertyId,
     oldFloorId: Number(formData.oldFloorId),
     oldSubFloorId: formData.oldSubFloorId ? Number(formData.oldSubFloorId) : null,
-    oldConstructionYear: String(formData.oldConstructionYear),
-    oldAssessmentYear: formData.oldAssessmentYear ? String(formData.oldAssessmentYear) : undefined,
+    oldConstructionYear: translateDevanagariDigits(String(formData.oldConstructionYear)),
+    oldAssessmentYear: formData.oldAssessmentYear ? translateDevanagariDigits(String(formData.oldAssessmentYear)) : undefined,
     oldConstructionTypeId: Number(formData.oldConstructionTypeId),
     oldTypeOfUseId: Number(formData.oldTypeOfUseId),
     oldSubTypeOfUseId: formData.oldSubTypeOfUseId ? Number(formData.oldSubTypeOfUseId) : null,

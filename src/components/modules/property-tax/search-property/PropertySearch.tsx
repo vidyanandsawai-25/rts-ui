@@ -28,6 +28,7 @@ export function PropertySearch({
   stats,
   zoneOptions,
   wardOptions,
+  allWardOptions,
   propertyTypeOptions,
   propertyDescriptionOptions,
   lookupOptions,
@@ -159,6 +160,8 @@ export function PropertySearch({
               results={results}
               loading={resultsLoading}
               searchError={searchError}
+              zoneOptions={zoneOptions}
+              allWardOptions={allWardOptions}
             />
           </CardContent>
         </Card>

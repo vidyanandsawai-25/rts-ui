@@ -1,4 +1,5 @@
 import { BuildingPermissionState } from "@/types/building-permission.types";
+import { mapTypeNameToKey } from "./building-helpers";
 
 interface IncompleteCertificate {
     id: number;
@@ -11,6 +12,7 @@ interface ValidationResult {
     errors: Record<number, string>;
     /** Certificates that have at least one missing required field. */
     incompleteCertificates: IncompleteCertificate[];
+    fieldErrors?: Record<number, { number?: string; date?: string; document?: string }>;
 }
 
 const FINANCIAL_TAX_CERTIFICATES = [
@@ -63,69 +65,149 @@ const PROPERTY_IDENTITY_CERTIFICATES = [
     "Address Verification Certificate"
 ];
 
-interface LengthRule {
+export interface LengthRule {
     min: number;
     max: number;
 }
 
-const getCertificateLengthRule = (typeName?: string): LengthRule => {
+export const getCertificateLengthRule = (typeName?: string): LengthRule => {
     if (!typeName) return { min: 1, max: 100 };
-    
-    if (FINANCIAL_TAX_CERTIFICATES.includes(typeName)) {
-        return { min: 6, max: 25 };
-    }
-    if (BUILDING_APPROVAL_CERTIFICATES.includes(typeName)) {
-        return { min: 8, max: 40 };
-    }
-    if (SAFETY_NOC_CERTIFICATES.includes(typeName)) {
-        return { min: 6, max: 30 };
-    }
-    if (PROPERTY_IDENTITY_CERTIFICATES.includes(typeName)) {
-        return { min: 5, max: 30 };
-    }
-    
+    if (FINANCIAL_TAX_CERTIFICATES.includes(typeName)) return { min: 6, max: 25 };
+    if (BUILDING_APPROVAL_CERTIFICATES.includes(typeName)) return { min: 8, max: 40 };
+    if (SAFETY_NOC_CERTIFICATES.includes(typeName)) return { min: 6, max: 30 };
+    if (PROPERTY_IDENTITY_CERTIFICATES.includes(typeName)) return { min: 5, max: 30 };
     return { min: 1, max: 100 };
 };
 
-/**
- * Validates the building permission form state.
- * For every enabled certificate, all three fields (number, date, document) are required.
- * Also validates the length constraints of the certificate number based on category rules.
- */
+const isRepeatedNumber = (val: string): boolean => {
+    if (val.length < 2) return false;
+    return /^([a-zA-Z0-9])\1+$/.test(val);
+};
+
+const isDummyOrRepeated = (val: string): boolean => {
+    if (/^(.)\1+$/.test(val)) return true;
+    const lowercaseVal = val.toLowerCase();
+    const dummyWords = [
+        "dummy", "test", "demo", "placeholder", "nil", "none", "null", 
+        "sample", "temp", "qwerty", "asdf", "xyz", "abc"
+    ];
+    const sequences = [
+        "123456", "234567", "345678", "456789", "012345",
+        "987654", "876543", "765432", "654321", "543210",
+        "abcdef", "bcdefg", "cdefgh", "defghi", "efghij", "fghijk",
+        "fedcba"
+    ];
+    if (dummyWords.some(word => lowercaseVal.includes(word)) || lowercaseVal === "na" || lowercaseVal === "n/a") {
+        return true;
+    }
+    if (sequences.some(seq => lowercaseVal.includes(seq))) {
+        return true;
+    }
+    return false;
+};
+
 export const validateBuildingForm = (
     state: BuildingPermissionState,
     t: (key: string, params?: Record<string, string | number>) => string
 ): ValidationResult => {
     const errors: Record<number, string> = {};
+    const fieldErrors: Record<number, { number?: string; date?: string; document?: string }> = {};
     const incompleteCertificates: IncompleteCertificate[] = [];
     let isValid = true;
 
     Object.values(state).forEach((item) => {
         if (!item.enabled) return;
 
-        const missingFields: string[] = [];
+        const fieldErrorsForCert: { number?: string; date?: string; document?: string } = {};
 
+        // 1. Certificate Number Validation
         if (!item.number || item.number.trim() === "") {
-            missingFields.push(t("validation.numberRequired"));
+            fieldErrorsForCert.number = t("validation.numberRequired");
         } else {
-            if (/\s/.test(item.number)) {
-                missingFields.push(t("validation.numberNoSpaces"));
+            const trimmedNumber = item.number.trim();
+            if (isRepeatedNumber(trimmedNumber)) {
+                fieldErrorsForCert.number = t("validation.numberRepeated");
+            } else {
+                const typeKey = mapTypeNameToKey(item.certificateTypeName || "");
+                if (typeKey === "commencementCertificate" || typeKey === "occupancyCertificate" || typeKey === "possessionCertificate") {
+                    const copRegex = /^[A-Za-z0-9\/\-\s]{5,50}$/;
+                    if (!copRegex.test(trimmedNumber)) {
+                        fieldErrorsForCert.number = t("validation.numberInvalidCOP");
+                    }
+                } else if (typeKey === "index2") {
+                    const index2Regex = /^[A-Za-z0-9]{3,6}-\d{1,7}-\d{4}$/;
+                    if (!index2Regex.test(trimmedNumber)) {
+                        fieldErrorsForCert.number = t("validation.numberInvalidIndex2");
+                    }
+                } else if (typeKey === "electricBill") {
+                    const electricRegex = /^\d{9,12}$/;
+                    if (!electricRegex.test(trimmedNumber)) {
+                        fieldErrorsForCert.number = t("validation.numberInvalidElectric");
+                    }
+                } else {
+                    if (/\s/.test(trimmedNumber)) {
+                        fieldErrorsForCert.number = t("validation.numberNoSpaces");
+                    } else {
+                        const numLength = trimmedNumber.length;
+                        const rule = getCertificateLengthRule(item.certificateTypeName);
+                        if (numLength < rule.min || numLength > rule.max) {
+                            fieldErrorsForCert.number = t("validation.numberLength", { min: rule.min, max: rule.max });
+                        }
+                    }
+                }
             }
-            const numLength = item.number.trim().length;
-            const rule = getCertificateLengthRule(item.certificateTypeName);
-            if (numLength < rule.min || numLength > rule.max) {
-                missingFields.push(t("validation.numberLength", { min: rule.min, max: rule.max }));
+
+            // Additional checks from feature branch (HEAD)
+            if (!fieldErrorsForCert.number) {
+                if (/^0+$/.test(trimmedNumber)) {
+                    fieldErrorsForCert.number = t("building.errors.allZeros");
+                } else if (!/^[a-zA-Z0-9\-_/]+$/.test(trimmedNumber)) {
+                    fieldErrorsForCert.number = t("building.errors.invalidCharacters");
+                } else if (isDummyOrRepeated(trimmedNumber)) {
+                    fieldErrorsForCert.number = t("building.errors.dummyText");
+                }
             }
-        }
-        if (!item.date || item.date.trim() === "") {
-            missingFields.push(t("validation.dateRequired"));
-        }
-        if (!item.documentGuid || item.documentGuid.trim() === "") {
-            missingFields.push(t("validation.documentRequired"));
         }
 
-        if (missingFields.length > 0) {
-            errors[item.certificateTypeId] = missingFields[0];
+        // 2. Certificate Date Validation
+        if (!item.date || item.date.trim() === "") {
+            fieldErrorsForCert.date = t("validation.dateRequired");
+        } else {
+            const dateParts = item.date.split("-");
+            let dateIsValid = false;
+            let dateObj: Date | null = null;
+            if (dateParts.length === 3) {
+                const year = parseInt(dateParts[0], 10);
+                const month = parseInt(dateParts[1], 10) - 1;
+                const day = parseInt(dateParts[2], 10);
+                dateObj = new Date(year, month, day);
+                dateIsValid = !isNaN(dateObj.getTime()) && 
+                              dateObj.getFullYear() === year && 
+                              dateObj.getMonth() === month && 
+                              dateObj.getDate() === day;
+            }
+
+            if (!dateIsValid || !dateObj) {
+                fieldErrorsForCert.date = t("validation.invalidDate");
+            } else {
+                const now = new Date();
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                if (dateObj > today) {
+                    fieldErrorsForCert.date = t("validation.dateFuture");
+                } else if (dateObj < new Date(1900, 0, 1)) {
+                    fieldErrorsForCert.date = t("validation.dateBefore1900");
+                }
+            }
+        }
+
+        // 3. Document Validation
+        if (!item.documentGuid || item.documentGuid.trim() === "") {
+            fieldErrorsForCert.document = t("validation.documentRequired");
+        }
+
+        if (Object.keys(fieldErrorsForCert).length > 0) {
+            fieldErrors[item.certificateTypeId] = fieldErrorsForCert;
+            errors[item.certificateTypeId] = fieldErrorsForCert.number || fieldErrorsForCert.date || fieldErrorsForCert.document || "";
             incompleteCertificates.push({
                 id: item.certificateTypeId,
                 name: item.certificateTypeName || `Certificate #${item.certificateTypeId}`,
@@ -134,5 +216,5 @@ export const validateBuildingForm = (
         }
     });
 
-    return { isValid, errors, incompleteCertificates };
+    return { isValid, errors, incompleteCertificates, fieldErrors };
 };

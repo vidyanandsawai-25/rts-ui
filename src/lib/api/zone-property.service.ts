@@ -26,6 +26,7 @@ export async function getPropertiesByWard(
   params.set("PageNumber", pageNumber.toString());
   params.set("PageSize", pageSize.toString());
   params.set("WardId", wardId.toString());
+  params.set("MarkedForDeletion", "false");
 
   if (searchTerm) {
     // Search by PropertyNo or PartitionNo
@@ -66,6 +67,7 @@ export async function getPropertyCountByWard(wardId: number): Promise<number> {
   params.set("PageNumber", "1");
   params.set("PageSize", "1");
   params.set("WardId", wardId.toString());
+  params.set("MarkedForDeletion", "false");
 
   const response = await apiClient.get<ZonePropertyListResponse>(`/Property?${params.toString()}`);
 
@@ -150,6 +152,7 @@ export async function getNextPropertyNumber(wardId: number): Promise<string> {
   params.set("PageSize", "1");
   params.set("SortBy", "PropertySeqNo");
   params.set("SortOrder", "desc");
+  params.set("MarkedForDeletion", "false");
 
   const response = await apiClient.get<ZonePropertyListResponse>(`/Property?${params.toString()}`);
 

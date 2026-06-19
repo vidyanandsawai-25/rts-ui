@@ -11,9 +11,7 @@ export const ApplicableTaxes = ({
   asseYearsResponse,
   useGroupsResponse,
   valuationTab,
-  taxApplicabilityResponse,
-  applicableCount,
-  exemptedCount
+  taxApplicabilityPagedResponse,
 }: ApplicableTaxesProps) => {
   const {
     wardNo,
@@ -25,9 +23,13 @@ export const ApplicableTaxes = ({
     selectedAsseYear,
     selectedFloorUse,
     pageNumber,
+    pageSize,
+    totalPages,
+    totalCount,
+    applicableCount,
+    exemptedCount,
     setPageNumber,
     paginatedData,
-    filteredTaxes,
     columns,
     handleClose,
     handleParamChange,
@@ -36,7 +38,7 @@ export const ApplicableTaxes = ({
     asseYearsResponse,
     useGroupsResponse,
     valuationTab,
-    taxApplicabilityResponse,
+    taxApplicabilityPagedResponse,
   });
 
   return (
@@ -93,7 +95,9 @@ export const ApplicableTaxes = ({
             columns={columns}
             data={paginatedData}
             pageNumber={pageNumber}
-            totalCount={filteredTaxes.length}
+            pageSize={pageSize}
+            totalCount={totalCount}
+            totalPages={totalPages}
             onPageChange={(page) => setPageNumber(page)}
           />
         </div>

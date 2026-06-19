@@ -1,7 +1,7 @@
 import React from 'react';
 import { Input } from '@/components/common';
 import { Label } from '@/components/common/label';
-import { KYC_VALIDATION_RULES, kycValidators } from '@/lib/utils/kyc-validation.constants';
+import { KYC_VALIDATION_RULES, kycValidators } from '@/lib/utils/kyc-validation/kyc-validation.constants';
 import { KycFormData } from '@/types/property-kyc.types';
 import { useDigitInputs } from '@/hooks/useDigitInputs';
 
@@ -65,6 +65,8 @@ export const ContactInfoFields: React.FC<ContactInfoFieldsProps> = ({
                       value={aadharInput.digits[index]}
                       onChange={(e) => aadharInput.handleChange(index, e.target.value)}
                       onKeyDown={(e) => aadharInput.handleKeyDown(index, e)}
+                      onFocus={aadharInput.handleFocus}
+                      onBlur={aadharInput.handleBlur}
                       ref={aadharInput.setRef(index)}
                       naked
                       error={showError('aadhar', kycValidators.isValidAadhar(aadharInput.value)) ? 'error' : undefined}
@@ -119,6 +121,8 @@ export const ContactInfoFields: React.FC<ContactInfoFieldsProps> = ({
                 value={mobileInput.digits[i]}
                 onChange={(e) => mobileInput.handleChange(i, e.target.value)}
                 onKeyDown={(e) => mobileInput.handleKeyDown(i, e)}
+                onFocus={mobileInput.handleFocus}
+                onBlur={mobileInput.handleBlur}
                 ref={mobileInput.setRef(i)}
                 naked
                 error={showError('mobile', kycValidators.isValidMobile(mobileInput.value)) ? 'error' : undefined}
@@ -167,6 +171,8 @@ export const ContactInfoFields: React.FC<ContactInfoFieldsProps> = ({
                   value={alternateMobileInput.digits[i]}
                   onChange={(e) => alternateMobileInput.handleChange(i, e.target.value)}
                   onKeyDown={(e) => alternateMobileInput.handleKeyDown(i, e)}
+                  onFocus={alternateMobileInput.handleFocus}
+                  onBlur={alternateMobileInput.handleBlur}
                   ref={alternateMobileInput.setRef(i)}
                   naked
                   error={showError('alternateMobile', kycValidators.isValidMobile(alternateMobileInput.value)) ? 'error' : undefined}

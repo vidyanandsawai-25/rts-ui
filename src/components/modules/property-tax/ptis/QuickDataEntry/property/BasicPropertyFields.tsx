@@ -2,7 +2,7 @@ import { Input, SearchSelect } from '@/components/common';
 import { Label } from '@/components/common/label';
 import { PropertyBasicDetailsApiItem } from '@/types/property-basic-details.types';
 import { sanitizeFlatShopNo, sanitizePlotNo } from '@/lib/utils/input-sanitization';
-import { propertyValidators, PROPERTY_VALIDATION_RULES } from '@/lib/utils/kyc-validation.constants';
+import { propertyValidators, PROPERTY_VALIDATION_RULES } from '@/lib/utils/kyc-validation/kyc-validation.constants';
 import { useState } from 'react';
 
 interface BasicPropertyFieldsProps {
@@ -34,7 +34,7 @@ export const BasicPropertyFields = ({
 }: BasicPropertyFieldsProps) => {
     const [flatShopNo, setFlatShopNo] = useState(propertyData?.flatOrShopNo ?? '');
     const [plotNo, setPlotNo] = useState(propertyData?.plotNo ?? '');
-    
+
     const [showFlatShopError, setShowFlatShopError] = useState(false);
     const [showPlotNoError, setShowPlotNoError] = useState(false);
 
@@ -98,11 +98,10 @@ export const BasicPropertyFields = ({
                     placeholder={t('property.flatShopNoPlaceholder')}
                     value={flatShopNo}
                     maxLength={PROPERTY_VALIDATION_RULES.FLAT_SHOP_NO_MAX_LENGTH}
-                    className={`h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${
-                        showFlatShopError && !propertyValidators.isValidFlatShopNo(flatShopNo)
+                    className={`h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${showFlatShopError && !propertyValidators.isValidFlatShopNo(flatShopNo)
                             ? 'border-red-300 focus:border-red-500'
                             : ''
-                    }`}
+                        }`}
                     onChange={(e) => {
                         const sanitized = sanitizeFlatShopNo(e.target.value);
                         const limited = sanitized.slice(0, PROPERTY_VALIDATION_RULES.FLAT_SHOP_NO_MAX_LENGTH);
@@ -110,7 +109,7 @@ export const BasicPropertyFields = ({
                         if (limited) setShowFlatShopError(true);
                     }}
                     onBlur={() => setShowFlatShopError(true)}
-                /> 
+                />
                 {showFlatShopError && !propertyValidators.isValidFlatShopNo(flatShopNo) && (
                     <span className="text-xs text-red-500">
                         {t('property.validation.invalidFlatShopNo') || 'Invalid flat/shop number. Only alphanumeric, -, and / allowed (max 10 characters).'}
@@ -129,11 +128,10 @@ export const BasicPropertyFields = ({
                     placeholder={t('property.plotNoPlaceholder')}
                     value={plotNo}
                     maxLength={PROPERTY_VALIDATION_RULES.PLOT_NO_MAX_LENGTH}
-                    className={`h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${
-                        showPlotNoError && !propertyValidators.isValidPlotNo(plotNo)
+                    className={`h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${showPlotNoError && !propertyValidators.isValidPlotNo(plotNo)
                             ? 'border-red-300 focus:border-red-500'
                             : ''
-                    }`}
+                        }`}
                     onChange={(e) => {
                         const sanitized = sanitizePlotNo(e.target.value);
                         const limited = sanitized.slice(0, PROPERTY_VALIDATION_RULES.PLOT_NO_MAX_LENGTH);

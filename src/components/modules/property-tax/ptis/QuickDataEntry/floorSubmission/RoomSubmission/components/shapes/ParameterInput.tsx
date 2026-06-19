@@ -49,7 +49,7 @@ export const ParameterInput: React.FC<ParameterInputProps & { areaUnit?: "sq.m" 
                         ref={inputRef}
                         type="text"
                         value={value}
-                        maxLength={5}
+                        maxLength={7}
                         onFocus={(e) => e.target.select()}
                         onChange={handleChange}
                         onKeyDown={(e) => {

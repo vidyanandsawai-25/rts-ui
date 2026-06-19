@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Plus, Trash2, Upload, FileImage, AlertCircle, RefreshCw } from 'lucide-react';
+import { Plus, Trash2, Upload, FileImage, AlertCircle, RefreshCw, Split } from 'lucide-react';
 import { Button, useConfirm } from '@/components/common';
 import { useTranslations } from 'next-intl';
 import { ImageWithFallback } from './ImageWithFallback';
@@ -23,6 +23,8 @@ interface PhotoPlanGridProps {
   className?: string;
   isCarouselMode?: boolean;
   selectedImageIndex?: number | null;
+  photoTypeCode?: string;
+  onCompare?: () => void;
 }
 
 export function PhotoPlanGrid({
@@ -40,6 +42,8 @@ export function PhotoPlanGrid({
   className = '',
   isCarouselMode = false,
   selectedImageIndex = null,
+  photoTypeCode,
+  onCompare,
 }: PhotoPlanGridProps): React.ReactElement {
   const t = useTranslations('ptis');
   const { confirm } = useConfirm();
@@ -189,18 +193,34 @@ export function PhotoPlanGrid({
             );
           })}
 
-          {/* Inline Add Card */}
-          <div
-            onClick={onAddPhoto}
-            className="border border-dashed border-slate-300 rounded-lg hover:border-blue-400 bg-white hover:bg-blue-50/10 cursor-pointer transition-all duration-200 h-40 flex flex-col items-center justify-center select-none group"
-          >
-            <div className="p-2.5 bg-slate-50 rounded-full border border-slate-200 group-hover:scale-105 transition-transform duration-200 mb-2">
-              <Plus className="w-5 h-5 text-slate-400 group-hover:text-blue-500" />
+          {photoTypeCode === 'CHANGE_DETECTION' ? (
+            onCompare && (
+              <div
+                onClick={onCompare}
+                className="border border-slate-200 hover:border-blue-400 bg-white hover:bg-blue-50/10 cursor-pointer transition-all duration-200 h-40 flex flex-col items-center justify-center select-none group rounded-lg shadow-sm"
+              >
+                <div className="p-2.5 bg-slate-50 rounded-full border border-slate-200 group-hover:scale-105 transition-transform duration-200 mb-2">
+                  <Split className="w-5 h-5 text-slate-400 group-hover:text-blue-500" />
+                </div>
+                <span className="text-xs font-semibold text-slate-500 group-hover:text-blue-800">
+                  {t('media.compareImages') || 'Compare Images'}
+                </span>
+              </div>
+            )
+          ) : (
+            /* Inline Add Card */
+            <div
+              onClick={onAddPhoto}
+              className="border border-dashed border-slate-300 rounded-lg hover:border-blue-400 bg-white hover:bg-blue-50/10 cursor-pointer transition-all duration-200 h-40 flex flex-col items-center justify-center select-none group"
+            >
+              <div className="p-2.5 bg-slate-50 rounded-full border border-slate-200 group-hover:scale-105 transition-transform duration-200 mb-2">
+                <Plus className="w-5 h-5 text-slate-400 group-hover:text-blue-500" />
+              </div>
+              <span className="text-xs font-semibold text-slate-500 group-hover:text-blue-800">
+                {t('media.uploadImage') || 'Add Photo'}
+              </span>
             </div>
-            <span className="text-xs font-semibold text-slate-500 group-hover:text-blue-800">
-              {t('media.uploadImage') || 'Add Photo'}
-            </span>
-          </div>
+          )}
         </div>
       )}
     </div>
