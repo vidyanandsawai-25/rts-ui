@@ -5,7 +5,8 @@ import {
   OwnerTypeApiItem
 } from '@/types/property-kyc.types';
 import { KYC_VALIDATION_RULES } from '@/lib/utils/kyc-validation/kyc-validation.constants';
-import { useDigitInputs } from './useDigitInputs';
+import { useDigitInputs } from '@/hooks/useDigitInputs';
+
 
 /**
  * Hook for managing KYC form state
@@ -36,6 +37,7 @@ export const useKycFormState = (
     emailId: KycDetailsData?.emailId ?? '',
     address: KycDetailsData?.address ?? '',
     location: KycDetailsData?.location ?? '',
+    pinCode: KycDetailsData?.pinCode ?? '',
   });
 
   // Digit inputs for mobile and Aadhar card numbers

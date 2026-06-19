@@ -11,9 +11,9 @@ import {
     PropertyFormViewProps,
 } from '@/types/property-basic-details.types';
 
-import { usePropertyOptions } from '@/hooks/usePropertyOptions';
-import { usePropertyFormState } from '@/hooks/usePropertyFormState';
-import { usePropertyChanges } from '@/hooks/usePropertyChanges';
+import { usePropertyOptions } from '@/hooks/ptis/QuickDataEntry/Property/usePropertyOptions';
+import { usePropertyFormState } from '@/hooks/ptis/QuickDataEntry/Property/usePropertyFormState';
+import { usePropertyChanges } from '@/hooks/ptis/QuickDataEntry/Property/usePropertyChanges';
 import { parseOptionalNumber } from '@/lib/utils/kyc-validation/form-helpers';
 import { validatePropertyForm } from '@/lib/utils/propertybasic-validation/validatePropertyForm';
 

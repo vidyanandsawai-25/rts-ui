@@ -3,7 +3,8 @@ import { toast } from 'sonner';
 import { updatePropertyKycAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Kyc/action';
 import { KycDetails, KycFormData, OwnerTypeApiItem } from '@/types/property-kyc.types';
 import type { ConfirmContextType } from '@/components/common/ConfirmProvider';
-import type { useDigitInputs } from './useDigitInputs';
+import type { useDigitInputs } from '@/hooks/useDigitInputs';
+
 
 interface UseKycFormSubmissionProps {
   formData: KycFormData;
@@ -123,6 +124,7 @@ export const useKycFormSubmission = (
               location: formData.location?.trim() || null,
               addressEnglish: KycDetailsData.addressEnglish ?? null,
               locationEnglish: KycDetailsData.locationEnglish ?? null,
+              pinCode: formData.pinCode?.trim() || null,
             };
 
             // Validate propertyId before API call

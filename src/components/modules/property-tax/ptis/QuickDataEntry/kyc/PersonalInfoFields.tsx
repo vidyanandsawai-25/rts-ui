@@ -115,6 +115,7 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
           id="kyc-occupier"
           placeholder={t('kyc.enterOccupierName')}
           value={formData.occupierName ?? ''}
+          maxLength={KYC_VALIDATION_RULES.NAME_MAX_LENGTH}
           className={`h-9 text-sm border-gray-300 focus:border-gray-600 focus:ring-2 focus:ring-gray-200 ${showError('occupierName', enhancedKycValidators.isValidOccupierName(formData.occupierName ?? ''))
             ? 'border-red-300 focus:border-red-500'
             : ''
@@ -125,7 +126,9 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
             // Sanitize to remove invalid characters and numbers immediately
             const sanitized = sanitizeName(e.target.value);
             const capitalized = capitalizeEachWord(sanitized);
-            setFormData((prev) => ({ ...prev, occupierName: capitalized }));
+            if (capitalized.length <= KYC_VALIDATION_RULES.NAME_MAX_LENGTH) {
+              setFormData((prev) => ({ ...prev, occupierName: capitalized }));
+            }
           }}
         />
         {showError('occupierName', enhancedKycValidators.isValidOccupierName(formData.occupierName ?? '')) && (
