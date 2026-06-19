@@ -254,8 +254,8 @@ export function buildPropertySearchColumns(
     withFixedWidth(
       {
         key: "rv",
-        label: t("columns.rvCv"),
-        tooltip: t("columns.rvCvTooltip"),
+        label: t("columns.rv"),
+        tooltip: t("columns.rv"),
         align: "left",
         cellClassName: NUMERIC_CELL,
         render: (_, row) => <RvCvCell rv={row.rv} cv={row.cv} />,

@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils/cn';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Tabs } from '@/components/common/Tabs';
-import { Building, Home, Building2, Calculator, GitMerge, IndianRupee, Scale } from 'lucide-react';
+import { Building, Home, Building2, Calculator, GitMerge, IndianRupee } from 'lucide-react';
 const { TabList, Tab } = Tabs;
 
 import { DualMethodSection } from '@/components/modules/property-tax/ptis/dualmethod';
@@ -83,10 +83,10 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = (props) => {
   };
 
   const tabs = [
-    { value: 'rateable', label: t('tabs.rateable'), icon: Scale },
-    { value: 'capital', label: t('tabs.capital'), icon: IndianRupee },
-    { value: 'dual', label: t('tabs.dual'), icon: GitMerge },
-    { value: 'apartment', label: t('tabs.apartment'), icon: Building2 },
+    { value: 'rateable', label: t('tabs.rateable'), activeGradient: 'from-indigo-600 to-purple-600' },
+    { value: 'capital', label: t('tabs.capital'), activeGradient: 'from-purple-600 to-pink-600' },
+    { value: 'dual', label: t('tabs.dual'), activeGradient: 'from-orange-600 to-red-600' },
+    { value: 'apartment', label: t('tabs.apartment'), activeGradient: 'from-blue-600 to-blue-800' }
   ];
 
   return (
@@ -99,29 +99,23 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = (props) => {
               <div className="flex items-center justify-between">
                 <Tabs value={activeTab} onChange={handleTabChange} variant="pills" size="md">
                   <TabList
-                    scrollable={false}
-                    className="flex gap-2"
+                    scrollable={true}
+                    className="bg-white border border-indigo-100 p-1 rounded-full flex flex-wrap gap-2 shadow-inner inline-flex"
                   >
-                    {tabs.map((tab) => {
-                      const Icon = tab.icon;
-                      return (
-                        <Tab
-                          key={tab.value}
-                          value={tab.value}
-                          className={cn(
-                            'transition-all cursor-pointer duration-300 px-3 py-2 text-sm font-semibold',
-                            activeTab === tab.value
-                              ? 'text-blue-600 border-blue-600'
-                              : 'text-gray-600 hover:text-gray-900'
-                          )}
-                        >
-                          <span className="inline-flex items-center">
-                            {activeTab === tab.value && Icon && <Icon className="w-4 h-4 mr-2" />}
-                            {tab.label}
-                          </span>
-                        </Tab>
-                      );
-                    })}
+                    {tabs.map((tab) => (
+                      <Tab
+                        key={tab.value}
+                        value={tab.value}
+                        className={cn(
+                          'transition-all cursor-pointer duration-300 px-4 py-1 rounded-full text-xs font-bold min-w-[100px] text-center',
+                          activeTab === tab.value
+                            ? `bg-gradient-to-r ${tab.activeGradient} text-white shadow-sm`
+                            : 'text-indigo-600 hover:bg-white hover:text-indigo-800'
+                        )}
+                      >
+                        {tab.label}
+                      </Tab>
+                    ))}
                   </TabList>
                 </Tabs>
 
@@ -134,7 +128,7 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = (props) => {
                         <Tab value="residential" icon={Home}>{t('apartmentTabs.residential')}</Tab>
                       </TabList>
                     </Tabs>
-                    <Tabs value={activeSubTab} onChange={handleApartmentSubTabChange} variant="pills" size="sm" activeTabClassName="bg-green-700 text-white shadow-sm rounded-lg border-none">  
+                    <Tabs value={activeSubTab} onChange={handleApartmentSubTabChange} variant="pills" size="sm" activeTabClassName="bg-green-700 text-white shadow-sm rounded-lg border-none">
                       <TabList className="bg-gray-100 p-1 rounded-lg inline-flex gap-1">
                         <Tab value="rateable" icon={Calculator}>{t('apartmentTabs.rateable')}</Tab>
                         <Tab value="capital" icon={IndianRupee}>{t('apartmentTabs.capital')}</Tab>

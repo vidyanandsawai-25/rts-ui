@@ -65,7 +65,7 @@ export function PropertySearchResults({
         [t("columns.description")]: row.description || "-",
         [t("columns.ownerOccupier")]: finalOwnerOccupier,
         [t("columns.mobileAlternate")]: `${row.mobile || "-"}${row.alternateMobile ? `\n[Alt]: ${row.alternateMobile}` : ""}`,
-        [t("columns.rvCv")]: `RV: ${row.rv != null ? row.rv : "-"}, CV: ${row.cv != null ? row.cv : "-"}`,
+        [t("columns.rv")]: row.rv != null ? row.rv : "-",
         [t("columns.totalTax")]: row.totalTax != null ? row.totalTax : "-",
         [t("columns.address")]: row.address || "-",
       };
@@ -123,7 +123,7 @@ export function PropertySearchResults({
         onPageChange={handlePageChange}
         onPageSizeChange={handlePageSizeChange}
         containerClassName="w-full min-w-0"
-        tableClassName="table-fixed w-full min-w-[1650px]"
+        tableClassName="table-fixed w-full min-w-[1800px]"
         maxBodyHeightClassName="max-h-[calc(100vh-280px)]"
         emptyText={searchError ? t("searchFailed") : t("noResults")}
         pageSizeOptions={PAGE_SIZE_OPTIONS}

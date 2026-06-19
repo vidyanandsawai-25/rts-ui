@@ -8,7 +8,7 @@ export const COLUMN_WIDTHS = {
   description: "150px",
   ownerOccupier: "210px",
   mobileAlternate: "140px",
-  rvCv: "110px",
+  rvCv: "160px",
   totalTax: "160px",
   address: "230px",
   scrollbarSpacer: "20px",
@@ -32,6 +32,12 @@ export function formatInr(value: number): string {
   return `₹${value.toLocaleString("en-IN", {
     maximumFractionDigits: 2,
   })}`;
+}
+
+export function formatNumberOnly(value: number): string {
+  return value.toLocaleString("en-IN", {
+    maximumFractionDigits: 2,
+  });
 }
 
 /** Placeholder for empty table cells — apply at render time, not in domain data. */

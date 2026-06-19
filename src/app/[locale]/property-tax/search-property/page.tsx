@@ -202,7 +202,7 @@ export default async function PropertySearchPage({
     const zoneNo = z.zoneNo?.trim();
     const desc = z.description?.trim();
     const label =
-      zoneNo && desc ? `${zoneNo} - ${desc}` : desc || zoneNo || "";
+      zoneNo && desc && zoneNo !== desc ? `${zoneNo} - ${desc}` : desc || zoneNo || "";
     return {
       id: z.zoneId,
       label,
@@ -221,7 +221,7 @@ export default async function PropertySearchPage({
     const wardNo = w.wardNo?.trim();
     const desc = w.description?.trim();
     const label =
-      wardNo && desc ? `${wardNo} - ${desc}` : desc || wardNo || "";
+      wardNo && desc && wardNo !== desc ? `${wardNo} - ${desc}` : desc || wardNo || "";
     return {
       id: w.wardId,
       label,
