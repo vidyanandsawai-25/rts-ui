@@ -318,6 +318,32 @@
       "useFactor": "वापर घटक",
       "capitalValue": "भांडवली मूल्य"
     },
+     "toolTipFloorQC": {
+      "tooltips": {
+        "floor": "मजला",
+        "conYear": "बांधकाम वर्ष",
+        "asstYear": "मूल्यांकन वर्ष",
+        "conType": "बांधकाम प्रकार",
+        "use": "वापराचा प्रकार",
+        "subTypeOfUse": "उप-वापर प्रकार",
+        "noOfRooms": "खोल्यांची संख्या",
+        "area": "क्षेत्रफळ",
+        "rentMY": "भाडे मासिक / वार्षिक",
+        "rateMY": "दर मासिक / वार्षिक",
+        "rentalValue": "करयोग्य मूल्य",
+        "depreciation": "घसारा",
+        "alv": "वार्षिक भाडे मूल्य",
+        "mr": "देखभाल",
+        "rv": "भाडे मूल्य",
+        "sdrr": "SDRR",
+        "baseValue": "आधार मूल्य",
+        "floorFactor": "मजला गुणांक",
+        "ageFactor": "वय गुणांक",
+        "ntbFactor": "NTB गुणांक",
+        "useFactor": "वापर गुणांक",
+        "capitalValue": "भांडवली मूल्य"
+      }
+    },
     "tabs": {
       "rateable": "दर योग्य",
       "capital": "भांडवल"

@@ -22,6 +22,7 @@ type ParamConfig = {
 const PARAM_MAPPINGS: ParamConfig[] = [
   { key: 'wardId', queryParam: 'WardId' },
   { key: 'propertyNo', queryParam: 'PropertyNo' },
+  { key: 'partitionNo', queryParam: 'PartitionNo', shouldTrim: true },
   { key: 'propertyDetailsId', queryParam: 'PropertyDetailsId' },
   { key: 'propertyId', queryParam: 'PropertyId' },
   { key: 'partType', queryParam: 'PartType', shouldTrim: true },

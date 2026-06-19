@@ -190,6 +190,11 @@ export function usePropertyEditScreenDrawer({
     updateFloorRowArea: floorQCHook.updateFloorRowArea,
     updateFloorRowCount: floorQCHook.updateFloorRowCount,
     refetchFloorQC: floorQCHook.refetchFloorQC,
+    // Dropdowns (expose loaded options for label resolution)
+    loadedFloorOptions: stateHook.loadedFloorOptions,
+    loadedConTypeOptions: stateHook.loadedConTypeOptions,
+    loadedUseTypeOptions: stateHook.loadedUseTypeOptions,
+    loadedSubTypeOptions: stateHook.loadedSubTypeOptions,
     // Validation
     validateField: validationHook.validateField,
     handleFieldBlur: validationHook.handleFieldBlur,

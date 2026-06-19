@@ -28,14 +28,8 @@ const FILTERABLE_COLUMNS: Record<string, FilterField> = {
 };
 
 const SORT_COLUMN_KEYS: Record<string, string> = {
-  propertyNo: 'PropertyNo',
-  oldPropertyNo: 'OldPropertyNo',
-  oldConstArea: 'oldConstructionArea',
-  carpetArea: 'carpetASqFt',
-  builtupArea: 'builtupASqFt',
-  newRV: 'newTaxTotalRV',
-  cv: 'newTaxTotalCV',
-  totalTax: 'newTaxTotal',
+  propertyNo: 'PartitionNo',
+  flatOrShopNo: 'FlatOrShopNo',
 };
 
 interface FilterOption {
@@ -202,25 +196,29 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
     () =>
       columns.map((col) => {
         const filterField = FILTERABLE_COLUMNS[col.key as string];
-        const sortColumnKey = SORT_COLUMN_KEYS[col.key as string] ?? String(col.key);
         const columnLabel = String(col.label);
-        const sortDirection: SortDirection =
-          sortBy === sortColumnKey && (sortOrder === 'asc' || sortOrder === 'desc')
+        const isSortable = col.key in SORT_COLUMN_KEYS;
+        const sortColumnKey = isSortable ? SORT_COLUMN_KEYS[col.key as string] : String(col.key);
+        const sortDirection: SortDirection = isSortable
+          ? sortBy === sortColumnKey && (sortOrder === 'asc' || sortOrder === 'desc')
             ? sortOrder
-            : null;
+            : null
+          : null;
         const isFilterable = !!filterField && !!onFilterChange && !!onFetchFilterOptions;
         const hasActiveFilter = filterField && activeFilters[filterField]?.length > 0;
 
  const isPropertyNo = col.key === 'propertyNo';
       const isOldPropertyNo = col.key === 'oldPropertyNo';
-        // Create the sort button element
-        const sortButton = (
+        // Create the sort button element only for sortable columns
+        const sortButton = isSortable ? (
           <ApartmentSortButton
             label={columnLabel}
             sortDirection={sortDirection}
             onClick={onSort ? () => onSort(sortColumnKey) : undefined}
             ariaLabel={`${tCommon('table.sort.by')} ${columnLabel}`}
           />
+        ) : (
+          <span className="text-[11px] font-semibold text-gray-900">{columnLabel}</span>
         );
 
         // Wrap with tooltip if headerTooltip is provided

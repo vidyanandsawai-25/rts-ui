@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import type { ApartmentQCDetail } from "@/types/apartmentQC.types";
 import { getPropertyTypeByIdAction } from "@/app/[locale]/property-tax/propertytype/action";
 import { DrawerFormData, DrawerFormErrors, DrawerFloorDataRow, DrawerDropdownOption, DrawerSubTypeOption, INITIAL_DRAWER_FORM_DATA } from "./propertyEditScreenDrawer.types";
-import { PERSON_NAME_SANITIZE, CODE_SANITIZE, TEXT_SANITIZE } from "@/lib/utils/validation-rules";
+import { OWNER_NAME_SANITIZE, TEXT_SANITIZE, limitOldPropertyNo } from "@/lib/utils/validation-rules";
 
 interface UsePropertyEditScreenStateArgs { open: boolean; propertyData?: ApartmentQCDetail | null; }
 
@@ -122,12 +122,12 @@ export function usePropertyEditScreenState({ open, propertyData }: UsePropertyEd
       case "ownerName":
       case "occupierName":
       case "renterName":
-        sanitizedValue = value.replace(PERSON_NAME_SANITIZE, "");
+        sanitizedValue = value.replace(OWNER_NAME_SANITIZE, "");
         break;
       // Code/identifier fields - allow only alphanumeric and underscore
       case "wingName":
       case "oldPropertyNo":
-        sanitizedValue = value.replace(CODE_SANITIZE, "");
+        sanitizedValue = limitOldPropertyNo(value);
         break;
       // Text fields - allow letters, numbers, spaces, basic punctuation
       case "flatOrShopName":

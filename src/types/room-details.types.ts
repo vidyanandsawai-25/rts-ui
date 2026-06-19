@@ -6,6 +6,7 @@ import type { Dispatch, SetStateAction, FC, RefObject } from "react";
 import { ShapeParameters, RoomFormData } from "./common-details.types";
 import type { OffsetData, OffsetAPIResponse, MinusRoomItem } from "./offset-details.types";
 import { RenterDetailItem, RenterMastItem } from "./renter-details.types";
+import type { DrawerFloorDataRow, DrawerDropdownOption } from "@/hooks/apartmentQc/propertyEditScreenDrawer.types";
 export { type ShapeParameters };
 
 export interface FloorData {
@@ -166,6 +167,11 @@ export interface RoomWiseSubmissionProps {
     onSaveRooms?: (rooms: RoomData[], area: number) => void;
     onUpdate?: (data: { floorNumber: string; rooms: RoomData[]; totalAreaSqM: number; builtUpAreaSqM: number; roomCount: number }) => void;
     roomTypeData?: RoomTypeResponse[];
+    selectedFloorRow?: DrawerFloorDataRow | null;
+    floorLookup?: DrawerDropdownOption[];
+    constructionLookup?: DrawerDropdownOption[];
+    useLookup?: DrawerDropdownOption[];
+    subTypeLookup?: DrawerDropdownOption[];
 }
 
 export interface RoomTableHeaderProps {

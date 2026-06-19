@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import {
   PERSON_NAME_REGEX,
+  OWNER_NAME_REGEX,
   EMAIL_REGEX,
   MOBILE_10_REGEX,
   YEAR_REGEX,
@@ -32,7 +33,7 @@ export function usePropertyEditScreenValidation({
     switch (field) {
       case 'ownerName':
         if (!value.trim()) return 'Owner name is required';
-        if (value.trim() && !PERSON_NAME_REGEX.test(value.trim())) return 'Invalid name format';
+        if (value.trim() && !OWNER_NAME_REGEX.test(value.trim())) return 'Invalid name format';
         break;
       case 'occupierName':
         if (!value.trim()) return 'Occupier name is required';
@@ -62,7 +63,7 @@ export function usePropertyEditScreenValidation({
         if (value.trim() && !CODE_REGEX.test(value.trim())) return 'Invalid wing format';
         break;
       case 'oldPropertyNo':
-        if (value.trim() && !CODE_REGEX.test(value.trim())) return 'Invalid property no. format';
+        // Old property no allows digits, / and -
         break;
       case 'bhk':
        // if (!value.trim()) return 'BHK is required';
