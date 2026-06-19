@@ -78,6 +78,32 @@ export const limitSingleAtEmail = (v: string): string => {
     cleaned.slice(first + 1).replace(/@/g, '')
   );
 };
+export const OWNER_NAME_REGEX =
+  /^[\p{L}\p{M}\s.,&'()\/\-:]+$/u;
+export const OWNER_NAME_SANITIZE =
+  /[^\p{L}\p{M}\s.,&'()\/\-:]/gu;
+
+
+export const limitOldPropertyNo = (v: string) => {
+  const cleaned = v
+    .replace(/[^0-9/-]/g, '')       // allow only digits, /, -
+    .replace(/([/-]){2,}/g, '$1');  // prevent duplicate separators
+
+  const parts = cleaned.split(/([/-])/);
+
+  let result = '';
+
+  for (const part of parts) {
+    if (part === '/' || part === '-') {
+      result += part;
+    } else {
+      const digits = part.replace(/\D/g, '');
+      result += digits; // allow unlimited digits per block
+    }
+  }
+
+  return result;
+};
 export const MOBILE_10_REGEX = /^[6-9][0-9]{9}$/;
 export const PINCODE_6_REGEX = /^[0-9]{6}$/;
 export const CITY_NAME_REGEX = /^[a-zA-Z\s]+$/;

@@ -154,9 +154,11 @@ export function useDrawerCommonColumns(props: ColumnBuilderProps): Column<Drawer
       key: "area", label: makeFloorQcHeader("area", t), align:"center", cellClassName: "px-0.5 py-0.5", render: (_v, row) => (
         <div className="flex items-center gap-1">
           <ReadOnlyCell value={row.area} />
-          <button type="button" onClick={() => onOpenRoomSubmission(row)} disabled={!row.pdnId} className={cn("h-6 w-6 flex items-center justify-center rounded transition", row.pdnId ? "text-blue-600 hover:bg-blue-100 cursor-pointer" : "text-gray-300 cursor-not-allowed")} title={row.pdnId ? t("floorQC.tooltips.viewRoomDetails") : t("floorQC.tooltips.noDetailId")}>
+          <Tooltip content={row.pdnId ? t("floorQC.tooltips.viewRoomDetails") : t("floorQC.tooltips.noDetailId")} placement="top">
+          <button type="button" onClick={() => onOpenRoomSubmission(row)} disabled={!row.pdnId} className={cn("h-6 w-6 flex items-center justify-center rounded transition", row.pdnId ? "text-blue-600 hover:bg-blue-100 cursor-pointer" : "text-gray-300 cursor-not-allowed")}>
             <Eye className="w-3.5 h-3.5" />
           </button>
+        </Tooltip>
         </div>
       )
     },
