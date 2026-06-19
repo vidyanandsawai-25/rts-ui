@@ -28,7 +28,7 @@ const PropertyDetailsTab = ({ data }: PropertyDetailsTabProps) => {
           id="category"
           label={t('fields.category')}
           icon={Building2}
-          className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 2xl:col-span-2"
+          className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 2xl:col-span-3"
         >
           <ValueDisplay value={data.category} />
         </FieldShell>
@@ -37,7 +37,7 @@ const PropertyDetailsTab = ({ data }: PropertyDetailsTabProps) => {
           id="wingNo"
           label={t('fields.wing')}
           icon={Building2}
-          className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-2 2xl:col-span-1"
+          className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-2 2xl:col-span-2"
         >
           <ValueDisplay value={data.wingName || data.wingNo} />
         </FieldShell>
@@ -52,6 +52,54 @@ const PropertyDetailsTab = ({ data }: PropertyDetailsTabProps) => {
         </FieldShell>
 
         <FieldShell
+          id="taxZoneNo"
+          label={t('fields.taxZoneNo')}
+          icon={Building2}
+          className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-2 2xl:col-span-3"
+        >
+          <ValueDisplay
+            value={
+              data.rateSectionDescription
+                ? `${data.taxZoneNo} - ${data.rateSectionDescription}`
+                : data.taxZoneNo
+            }
+          />
+        </FieldShell>
+
+        {/* Row 2 */}
+        <FieldShell
+          id="moujaDescription"
+          label={t('fields.moujaDescription')}
+          icon={FileText}
+          className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-6 2xl:col-span-2"
+        >
+          <ValueDisplay value={data.moujaDescription} />
+        </FieldShell>
+
+        <FieldShell
+          id="subZoneNo"
+          label={t('fields.subZoneNo')}
+          icon={Building2}
+          className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 2xl:col-span-1"
+        >
+          <ValueDisplay value={data.subZoneNo} />
+        </FieldShell>
+
+        <FieldShell
+          id="surveyNo"
+          label={
+            <>
+              <FileText className="w-2.5 h-2.5 inline mr-0.5 text-blue-600" />
+              {t('fields.surveyNo')}
+            </>
+          }
+          className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 2xl:col-span-1"
+        >
+          <ValueDisplay value={data.surveyNo} />
+        </FieldShell>
+
+        {/* Row 3 */}
+        <FieldShell
           id="plotNo"
           label={
             <>
@@ -59,7 +107,7 @@ const PropertyDetailsTab = ({ data }: PropertyDetailsTabProps) => {
               {t('fields.plotNo')}
             </>
           }
-          className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-2 2xl:col-span-2"
+          className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-2 2xl:col-span-1"
         >
           <ValueDisplay value={data.plotNo} />
         </FieldShell>
@@ -74,68 +122,10 @@ const PropertyDetailsTab = ({ data }: PropertyDetailsTabProps) => {
         </FieldShell>
 
         <FieldShell
-          id="taxZoneNo"
-          label={t('fields.taxZoneNo')}
-          icon={Building2}
-          className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-2 2xl:col-span-2"
-        >
-          <ValueDisplay value={data.taxZoneNo} />
-        </FieldShell>
-
-        {/* Row 2 */}
-        <FieldShell
-          id="moujaDescription"
-          label={t('fields.moujaDescription')}
-          icon={FileText}
-          className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-4 2xl:col-span-2"
-        >
-          <ValueDisplay value={data.moujaDescription} />
-        </FieldShell>
-
-        <FieldShell
-          id="surveyNo"
-          label={
-            <>
-              <FileText className="w-2.5 h-2.5 inline mr-0.5 text-blue-600" />
-              {t('fields.surveyNo')}
-            </>
-          }
-          className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-2 2xl:col-span-1"
-        >
-          <ValueDisplay value={data.surveyNo} />
-        </FieldShell>
-
-        <FieldShell
-          id="subZoneNo"
-          label={t('fields.subZoneNo')}
-          icon={Building2}
-          className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-2 2xl:col-span-1"
-        >
-          <ValueDisplay value={data.subZoneNo} />
-        </FieldShell>
-
-        <FieldShell
-          id="residentialToilet"
-          label={t('fields.residentialToilet')}
-          icon={Building2}
-          className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 2xl:col-span-2"
-        >
-          <ValueDisplay value={data.noOfResidentialToilets} />
-        </FieldShell>
-
-        <FieldShell
-          id="commercialToilet"
-          label={t('fields.commercialToilet')}
-          icon={Building2}
-          className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 2xl:col-span-2"
-        >
-          <ValueDisplay value={data.noOfCommercialToilets} />
-        </FieldShell>
-
-        <FieldShell
           id="totalCarpetArea"
           label={t('fields.totalCarpetAreaWithUnit')}
-          className="col-span-2 sm:col-span-2 md:col-span-3 lg:col-span-3 2xl:col-span-2"
+          icon={Building2}
+          className="col-span-2 sm:col-span-2 md:col-span-3 lg:col-span-4 2xl:col-span-3"
         >
           <ValueDisplay value={data.totalCarpetArea} />
         </FieldShell>
@@ -143,7 +133,8 @@ const PropertyDetailsTab = ({ data }: PropertyDetailsTabProps) => {
         <FieldShell
           id="builtupArea"
           label={t('fields.builtupAreaWithUnit')}
-          className="col-span-2 sm:col-span-2 md:col-span-3 lg:col-span-3 2xl:col-span-2"
+          icon={Building2}
+          className="col-span-2 sm:col-span-2 md:col-span-3 lg:col-span-4 2xl:col-span-3"
         >
           <ValueDisplay value={data.builtupArea} />
         </FieldShell>
