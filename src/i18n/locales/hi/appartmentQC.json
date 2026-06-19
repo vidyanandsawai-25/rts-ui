@@ -318,6 +318,32 @@
       "useFactor": "उपयोग फैक्टर",
       "capitalValue": "पूंजी मूल्य"
     },
+     "toolTipFloorQC": {
+      "tooltips": {
+        "floor": "मंजिल",
+        "conYear": "निर्माण वर्ष",
+        "asstYear": "मूल्यांकन वर्ष",
+        "conType": "निर्माण प्रकार",
+        "use": "उपयोग का प्रकार",
+        "subTypeOfUse": "उप-उपयोग प्रकार",
+        "noOfRooms": "कमरों की संख्या",
+        "area": "क्षेत्रफल",
+        "rentMY": "किराया मासिक / वार्षिक ",
+        "rateMY": "दर मासिक / वार्षिक",
+        "rentalValue": "करयोग्य मूल्य",
+        "depreciation": "मूल्यह्रास",
+        "alv": "वार्षिक किराया मूल्य",
+        "mr": "रखरखाव",
+        "rv": "किराया मूल्य",
+        "sdrr": "SDRR",
+        "baseValue": "आधार मूल्य",
+        "floorFactor": "मंजिल गुणांक",
+        "ageFactor": "आयु गुणांक",
+        "ntbFactor": "NTB गुणांक",
+        "useFactor": "उपयोग गुणांक",
+        "capitalValue": "पूंजी मूल्य"
+      }
+    },
     "tabs": {
       "rateable": "दर योग्य",
       "capital": "पूंजी"

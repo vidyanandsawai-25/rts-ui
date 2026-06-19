@@ -3,7 +3,7 @@
 import React from "react";
 import { Eye } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
-import { SortableColumnHeader, Select, MatrixCellInput } from "@/components/common";
+import { Select, MatrixCellInput } from "@/components/common";
 import { YEAR_REGEX } from "@/lib/utils/validation-rules";
 import type { Column } from "@/components/common/MasterTable";
 import type { FloorDataRow, DropdownOption, FloorQCSectionCopy } from "@/types/propertyEdit.types";
@@ -199,7 +199,7 @@ export function buildCommonColumns(config: ColumnBuilderConfig): Column<FloorDat
   return [
     {
       key: "floorId",
-      label: (<SortableColumnHeader label={copy.columns.floor} sortable={false} />) as unknown as string,
+      label: copy.columns.floor,
       cellClassName: "px-0.5 py-0.5",
       render: (_v, row) => (
         <CompactSelect
@@ -211,7 +211,7 @@ export function buildCommonColumns(config: ColumnBuilderConfig): Column<FloorDat
     },
     {
       key: "conYear",
-      label: (<SortableColumnHeader label={copy.columns.conYear} sortable={false} />) as unknown as string,
+      label: copy.columns.conYear,
       cellClassName: "px-0.5 py-0.5",
       render: (_v, row) => (
         <YearCellInput
@@ -225,7 +225,7 @@ export function buildCommonColumns(config: ColumnBuilderConfig): Column<FloorDat
     },
     {
       key: "asstYear",
-      label: (<SortableColumnHeader label={copy.columns.asstYear} sortable={false} />) as unknown as string,
+      label: copy.columns.asstYear,
       cellClassName: "px-0.5 py-0.5",
       render: (_v, row) => (
         <YearCellInput
@@ -239,7 +239,7 @@ export function buildCommonColumns(config: ColumnBuilderConfig): Column<FloorDat
     },
     {
       key: "constructionTypeId",
-      label: (<SortableColumnHeader label={copy.columns.conType} sortable={false} />) as unknown as string,
+      label: copy.columns.conType,
       cellClassName: "px-0.5 py-0.5",
       render: (_v, row) => (
         <CompactSelect
@@ -251,7 +251,7 @@ export function buildCommonColumns(config: ColumnBuilderConfig): Column<FloorDat
     },
     {
       key: "typeOfUseId",
-      label: (<SortableColumnHeader label={copy.columns.use} sortable={false} />) as unknown as string,
+      label: copy.columns.use,
       cellClassName: "px-0.5 py-0.5",
       render: (_v, row) => (
         <CompactSelect
@@ -263,7 +263,7 @@ export function buildCommonColumns(config: ColumnBuilderConfig): Column<FloorDat
     },
     {
       key: "subTypeOfUseId",
-      label: (<SortableColumnHeader label={copy.columns.subTypeOfUse} sortable={false} />) as unknown as string,
+      label: copy.columns.subTypeOfUse,
       cellClassName: "px-0.5 py-0.5",
       render: (_v, row) => (
         <CompactSelect
@@ -276,13 +276,13 @@ export function buildCommonColumns(config: ColumnBuilderConfig): Column<FloorDat
     },
     {
       key: "noOfRooms",
-      label: (<SortableColumnHeader label={copy.columns.noOfRooms} sortable={false} />) as unknown as string,
+      label: copy.columns.noOfRooms,
       cellClassName: "px-0.5 py-0.5",
       render: (_v, row) => <ReadOnlyCell value={String(row.noOfRooms || "")} />,
     },
     {
       key: "area",
-      label: (<SortableColumnHeader label={copy.columns.area} sortable={false} />) as unknown as string,
+      label: copy.columns.area,
       cellClassName: "px-0.5 py-0.5",
       render: (_v, row) => (
         <div className="flex items-center gap-1">
@@ -314,13 +314,13 @@ export function buildCommonColumns(config: ColumnBuilderConfig): Column<FloorDat
  */
 export function buildRateableColumns(copy: FloorQCSectionCopy): Column<FloorDataRow>[] {
   return [
-    { key: "rentMY", label: (<SortableColumnHeader label={copy.columns.rentMY} sortable={false} />) as unknown as string, cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.rentMY} /> },
-    { key: "rateMY", label: (<SortableColumnHeader label={copy.columns.rateMY} sortable={false} />) as unknown as string, cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.rateMY} /> },
-    { key: "rentalValue", label: (<SortableColumnHeader label={copy.columns.rentalValue} sortable={false} />) as unknown as string, cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.rentalValue} /> },
-    { key: "depreciation", label: (<SortableColumnHeader label={copy.columns.depreciation} sortable={false} />) as unknown as string, cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.depreciation} /> },
-    { key: "alv", label: (<SortableColumnHeader label={copy.columns.alv} sortable={false} />) as unknown as string, cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.alv} /> },
-    { key: "mr", label: (<SortableColumnHeader label={copy.columns.mr} sortable={false} />) as unknown as string, cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.mr} /> },
-    { key: "rv", label: (<SortableColumnHeader label={copy.columns.rv} sortable={false} />) as unknown as string, cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.rv} /> },
+    { key: "rentMY", label: copy.columns.rentMY, cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.rentMY} /> },
+    { key: "rateMY", label: copy.columns.rateMY, cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.rateMY} /> },
+    { key: "rentalValue", label: copy.columns.rentalValue, cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.rentalValue} /> },
+    { key: "depreciation", label: copy.columns.depreciation, cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.depreciation} /> },
+    { key: "alv", label: copy.columns.alv, cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.alv} /> },
+    { key: "mr", label: copy.columns.mr, cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.mr} /> },
+    { key: "rv", label: copy.columns.rv, cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.rv} /> },
   ];
 }
 
@@ -329,13 +329,13 @@ export function buildRateableColumns(copy: FloorQCSectionCopy): Column<FloorData
  */
 export function buildCapitalColumns(copy: FloorQCSectionCopy): Column<FloorDataRow>[] {
   return [
-    { key: "sdrr", label: (<SortableColumnHeader label={copy.columns.sdrr} sortable={false} />) as unknown as string, cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.sdrr} /> },
-    { key: "baseValue", label: (<SortableColumnHeader label={copy.columns.baseValue} sortable={false} />) as unknown as string, cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.baseValue} /> },
-    { key: "floorFactor", label: (<SortableColumnHeader label={copy.columns.floorFactor} sortable={false} />) as unknown as string, cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.floorFactor} /> },
-    { key: "ageFactor", label: (<SortableColumnHeader label={copy.columns.ageFactor} sortable={false} />) as unknown as string, cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.ageFactor} /> },
-    { key: "ntbFactor", label: (<SortableColumnHeader label={copy.columns.ntbFactor} sortable={false} />) as unknown as string, cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.ntbFactor} /> },
-    { key: "useFactor", label: (<SortableColumnHeader label={copy.columns.useFactor} sortable={false} />) as unknown as string, cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.useFactor} /> },
-    { key: "capitalValue", label: (<SortableColumnHeader label={copy.columns.capitalValue} sortable={false} />) as unknown as string, cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.capitalValue} /> },
+    { key: "sdrr", label: copy.columns.sdrr, cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.sdrr} /> },
+    { key: "baseValue", label: copy.columns.baseValue, cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.baseValue} /> },
+    { key: "floorFactor", label: copy.columns.floorFactor, cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.floorFactor} /> },
+    { key: "ageFactor", label: copy.columns.ageFactor, cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.ageFactor} /> },
+    { key: "ntbFactor", label: copy.columns.ntbFactor, cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.ntbFactor} /> },
+    { key: "useFactor", label: copy.columns.useFactor, cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.useFactor} /> },
+    { key: "capitalValue", label: copy.columns.capitalValue, cellClassName: "px-0.5 py-0.5", render: (_v, row) => <ReadOnlyCell value={row.capitalValue} /> },
   ];
 }
 
