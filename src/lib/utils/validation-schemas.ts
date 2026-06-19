@@ -632,6 +632,7 @@ export const oldDetailsValidations = {
       oldTypeOfUseId: formData.oldTypeOfUseId,
       oldSubTypeOfUseId: formData.oldSubTypeOfUseId,
       oldAreaSqMeter: formData.oldAreaSqMeter,
+      oldCarpetAreaSqFeet: formData.oldCarpetAreaSqFeet,
     };
 
     const validationRules: Record<string, Validator> = {
@@ -642,6 +643,7 @@ export const oldDetailsValidations = {
       oldConstructionTypeId: propertyValidations.required('constructionType', t),
       oldTypeOfUseId: propertyValidations.required('typeOfUse', t),
       oldAreaSqMeter: propertyValidations.required('carpetArea', t),
+      oldCarpetAreaSqFeet: propertyValidations.required('carpetArea', t),
     };
 
     // Only require Sub Type if options are available
@@ -656,6 +658,13 @@ export const oldDetailsValidations = {
       const areaValue = Number(translateDevanagariDigits(String(formData.oldAreaSqMeter)));
       if (!Number.isFinite(areaValue) || areaValue <= 0) {
         errors.oldAreaSqMeter = t('property.validation.invalidCarpetArea') || 'Carpet area must be a valid number greater than 0';
+      }
+    }
+
+    if (formData.oldCarpetAreaSqFeet) {
+      const areaValue = Number(translateDevanagariDigits(String(formData.oldCarpetAreaSqFeet)));
+      if (!Number.isFinite(areaValue) || areaValue <= 0) {
+        errors.oldCarpetAreaSqFeet = t('property.validation.invalidCarpetArea') || 'Carpet area must be a valid number greater than 0';
       }
     }
 

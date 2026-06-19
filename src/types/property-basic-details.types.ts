@@ -104,6 +104,7 @@ export interface PropertyBasicDetailsApiItem {
     plotAreaMtrWidth: number;
     wingId: number | null;
     wingName: string | null;
+    rateSectionDescription?: string | null;
 }
 
 export interface TypeOfUseApiItem {
@@ -148,6 +149,7 @@ export interface UpdatePropertyBasicDetailsDto {
     plotAreaFtWidth: number | null;
     plotAreaMtrLength: number | null;
     plotAreaMtrWidth: number | null;
+    rateSectionDescription?: string | null;
 }
 
 //  Response wrapper for Property Basic Details API.

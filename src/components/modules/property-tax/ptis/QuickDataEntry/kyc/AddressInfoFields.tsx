@@ -117,7 +117,7 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
       </div>
 
       <div className="col-span-2 space-y-1.5">
-        <Label htmlFor="kyc-pincode" className="text-xs font-semibold text-gray-700">
+        <Label htmlFor="kyc-pincode" className="text-xs font-bold text-gray-700">
           {t('kyc.pinCode')}
         </Label>
         <Input
