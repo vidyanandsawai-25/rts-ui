@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { KycDetails, KycFormData } from '@/types/property-kyc.types';
-import { kycValidators, enhancedKycValidators } from '@/lib/utils/kyc-validation.constants';
-import type { useDigitInputs } from './useDigitInputs';
+import { kycValidators, enhancedKycValidators } from '@/lib/utils/kyc-validation/kyc-validation.constants';
+import { useDigitInputs } from '@/hooks/useDigitInputs';
 
 /**
  * Hook for KYC form validation logic
@@ -29,7 +29,7 @@ export const useKycFormValidation = (
    */
   const hasChanges = useMemo(() => {
     const normalizeEmail = (email: string | null | undefined) => email?.trim() || null;
-    
+
     return (
       (formData.ownerTypeId ?? null) !== (KycDetailsData?.ownerTypeId ?? null) ||
       (formData.ownerTitle ?? '') !== (KycDetailsData?.ownerTitle ?? '') ||
@@ -39,6 +39,7 @@ export const useKycFormValidation = (
       normalizeEmail(formData.emailId) !== normalizeEmail(KycDetailsData?.emailId) ||
       (formData.address ?? '') !== (KycDetailsData?.address ?? '') ||
       (formData.location ?? '') !== (KycDetailsData?.location ?? '') ||
+      (formData.pinCode ?? '') !== (KycDetailsData?.pinCode ?? '') ||
       mobileInput.value !== (KycDetailsData?.mobileNo ?? '').replace(/\D/g, '') ||
       alternateMobileInput.value !== (KycDetailsData?.alternateMobileNo ?? '').replace(/\D/g, '') ||
       aadharInput.value !== ((KycDetailsData?.adharCardNo ?? KycDetailsData?.aadharCardNo) ?? '').replace(/\D/g, '')
@@ -56,33 +57,38 @@ export const useKycFormValidation = (
     const address = formData.address ?? '';
     const shopName = formData.flatOrShopName ?? '';
     const occupierName = formData.occupierName ?? '';
-    
+    const pinCode = formData.pinCode ?? '';
+
     // Check if owner name exists and is valid
     const isOwnerNameValid = ownerName.trim().length > 0 && kycValidators.isValidName(ownerName);
-    
+
     // Check if email is either empty (optional) or valid with enhanced validation (strict)
     const isEmailValid = enhancedKycValidators.isValidEmail(email, true);
-    
+
     // Check if address is valid (can be empty or valid)
     const isAddressValid = enhancedKycValidators.isValidAddress(address);
-    
+
     // Check if shop name is valid (can be empty or valid, must not contain numbers)
     const isShopNameValid = enhancedKycValidators.isValidShopName(shopName);
-    
+
     // Check if occupier name is valid (can be empty or valid, must not contain numbers)
     const isOccupierNameValid = enhancedKycValidators.isValidOccupierName(occupierName);
-    
+
+    // Check if pinCode is valid (optional, but if provided must be exactly 6 digits)
+    const isPinCodeValid = !pinCode || /^[0-9]{6}$/.test(pinCode);
+
     // Check mobile and aadhar validity
     const isMobileValid = kycValidators.isValidMobile(mobileInput.value);
     const isAlternateMobileValid = kycValidators.isValidMobile(alternateMobileInput.value);
     const isAadharValid = kycValidators.isValidAadhar(aadharInput.value);
-    
+
     return (
       isOwnerNameValid &&
       isEmailValid &&
       isAddressValid &&
       isShopNameValid &&
       isOccupierNameValid &&
+      isPinCodeValid &&
       isMobileValid &&
       isAlternateMobileValid &&
       isAadharValid

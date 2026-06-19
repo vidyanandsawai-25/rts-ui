@@ -370,5 +370,36 @@ describe("social-details.validation", () => {
             expect(errors[1]).toBeUndefined();
             expect(errors[2]).toBe("Maximum 2 decimal places allowed.");
         });
+
+        it("should enforce photo required check when isPhotoRequired is true", () => {
+            const attrPhotoMissing = createBaseAttr({
+                socialAttributeId: 1,
+                isPhotoRequired: true,
+                documentGuid: null,
+                documentBindingId: null
+            });
+            const attrPhotoPresentGuid = createBaseAttr({
+                socialAttributeId: 2,
+                isPhotoRequired: true,
+                documentGuid: "some-guid",
+                documentBindingId: null
+            });
+            const attrPhotoPresentBinding = createBaseAttr({
+                socialAttributeId: 3,
+                isPhotoRequired: true,
+                documentGuid: null,
+                documentBindingId: 123
+            });
+
+            const errors = validateSocialDetails({
+                1: attrPhotoMissing,
+                2: attrPhotoPresentGuid,
+                3: attrPhotoPresentBinding
+            });
+
+            expect(errors[1]).toBe("Photo is required.");
+            expect(errors[2]).toBeUndefined();
+            expect(errors[3]).toBeUndefined();
+        });
     });
 });

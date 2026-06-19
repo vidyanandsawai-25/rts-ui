@@ -63,13 +63,52 @@ export function ValueFilterGroup({
       ? t("placeholders.amountFrom")
       : t("placeholders.amount");
 
+  const handleClearFilter = () => {
+    onSelectChange(filterField)(String(filterField), "");
+    
+    const fromEvent = {
+      target: { name: String(fromField), value: "" },
+    } as unknown as React.ChangeEvent<HTMLInputElement>;
+    onInputChange(fromField)(fromEvent);
+
+    const toEvent = {
+      target: { name: String(toField), value: "" },
+    } as unknown as React.ChangeEvent<HTMLInputElement>;
+    onInputChange(toField)(toEvent);
+  };
+
+  const handleClearFrom = () => {
+    const event = {
+      target: { name: String(fromField), value: "" },
+    } as unknown as React.ChangeEvent<HTMLInputElement>;
+    onInputChange(fromField)(event);
+  };
+
+  const handleClearTo = () => {
+    const event = {
+      target: { name: String(toField), value: "" },
+    } as unknown as React.ChangeEvent<HTMLInputElement>;
+    onInputChange(toField)(event);
+  };
+
   return (
     <div className="flex items-start gap-x-1.5">
       {/* Filter Type dropdown */}
       <div className="flex min-w-0 flex-col w-44 shrink-0">
-        <Label htmlFor={String(filterField)} className={COMPACT_LABEL_CLASS}>
-          {title}
-        </Label>
+        <div className="mb-1 h-[18px] flex items-center justify-between gap-1">
+          <Label htmlFor={String(filterField)} className={COMPACT_LABEL_CLASS}>
+            {title}
+          </Label>
+          {filterValue && !disabled && (
+            <button
+              type="button"
+              onClick={handleClearFilter}
+              className="text-[11px] font-semibold text-[#004c8c] hover:underline cursor-pointer leading-none"
+            >
+              {t("actions.clear")}
+            </button>
+          )}
+        </div>
         <SearchSelect
           key={`${String(filterField)}-${filterValue}`}
           id={String(filterField)}
@@ -85,9 +124,20 @@ export function ValueFilterGroup({
 
       {/* Amount / Top Count */}
       <div className="flex min-w-0 flex-col w-36 shrink-0">
-        <Label htmlFor={String(fromField)} className={COMPACT_LABEL_CLASS}>
-          {amountLabel}
-        </Label>
+        <div className="mb-1 h-[18px] flex items-center justify-between gap-1">
+          <Label htmlFor={String(fromField)} className={COMPACT_LABEL_CLASS}>
+            {amountLabel}
+          </Label>
+          {String(formState[fromField] ?? "") && !disabled && (
+            <button
+              type="button"
+              onClick={handleClearFrom}
+              className="text-[11px] font-semibold text-[#004c8c] hover:underline cursor-pointer leading-none"
+            >
+              {t("actions.clear")}
+            </button>
+          )}
+        </div>
         <Input
           id={String(fromField)}
           type="text"
@@ -96,7 +146,7 @@ export function ValueFilterGroup({
           value={String(formState[fromField] ?? "")}
           onChange={onInputChange(fromField)}
           onBlur={onInputBlur(fromField)}
-          disabled={disabled}
+          disabled={disabled || !filterValue}
           fullWidth
           className={cn(
             COMPACT_INPUT_CLASS,
@@ -118,9 +168,20 @@ export function ValueFilterGroup({
       {/* To Amount — only when "between" */}
       {isBetween && (
         <div className="flex min-w-0 flex-col w-36 shrink-0">
-          <Label htmlFor={String(toField)} className={COMPACT_LABEL_CLASS}>
-            {t("placeholders.toAmount")}
-          </Label>
+          <div className="mb-1 h-[18px] flex items-center justify-between gap-1">
+            <Label htmlFor={String(toField)} className={COMPACT_LABEL_CLASS}>
+              {t("placeholders.toAmount")}
+            </Label>
+            {String(formState[toField] ?? "") && !disabled && (
+              <button
+                type="button"
+                onClick={handleClearTo}
+                className="text-[11px] font-semibold text-[#004c8c] hover:underline cursor-pointer leading-none"
+              >
+                {t("actions.clear")}
+              </button>
+            )}
+          </div>
           <Input
             id={String(toField)}
             type="text"
@@ -129,7 +190,7 @@ export function ValueFilterGroup({
             value={String(formState[toField] ?? "")}
             onChange={onInputChange(toField)}
             onBlur={onInputBlur(toField)}
-            disabled={disabled}
+            disabled={disabled || !filterValue}
             fullWidth
             className={cn(
               COMPACT_INPUT_CLASS,

@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -7,10 +7,11 @@ import { useLoading } from '@/hooks/useLoading';
 import { societyValidations, validateForm, hasErrors } from "@/lib/utils/validation";
 import { updatePropertySocietyDetailsAction } from "@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Society/action";
 import { SocietyFormProps, UpdatePropertySocietyDetailsDto } from "@/types/property-society-details.types";
-import { societyValidators, propertyValidators, kycValidators } from '@/lib/utils/kyc-validation.constants';
+import { kycValidators } from '@/lib/utils/kyc-validation/kyc-validation.constants';
+import { societyValidators } from '@/lib/utils/society-validation/society-validation';
 
-import { useSocietyChanges } from '@/hooks/useSocietyChanges';
-import { useSocietyFormState } from '@/hooks/useSocietyFormState'; 
+import { useSocietyChanges } from '@/hooks/ptis/QuickDataEntry/Society/useSocietyChanges';
+import { useSocietyFormState } from '@/hooks/ptis/QuickDataEntry/Society/useSocietyFormState';
 
 const getMobileErrorMessage = (value: string, t: (key: string) => string): string => {
     const digits = value.replace(/\D/g, '');
@@ -29,7 +30,7 @@ const getMobileErrorMessage = (value: string, t: (key: string) => string): strin
 
 export const useSocietyForm = (props: SocietyFormProps) => {
     const { societyData, propertyIdSearch, locale } = props;
-    
+
     const t = useTranslations('quickDataEntry');
     const { confirm } = useConfirm();
     const router = useRouter();
@@ -67,24 +68,38 @@ export const useSocietyForm = (props: SocietyFormProps) => {
         setHasChanges,
     } = useSocietyFormState(societyData);
 
+    const [focusedField, setFocusedField] = useState<string | null>(null);
+
     // Validation error display logic - matches KYC pattern
     // Shows errors only if:
     // 1. Form has been submitted, OR
     // 2. Field has been touched (has a value) AND is invalid
     const showError = (
-        field: 'managerMobile' | 'secretaryMobile' | 'managerEmail' | 'secretaryEmail' | 'societyEmail' | 
-               'landOwnerName' | 'builderName' | 'societyName' | 'managerName' | 'secretaryName' | 'societyAddress', 
+        field: 'managerMobile' | 'secretaryMobile' | 'managerEmail' | 'secretaryEmail' | 'societyEmail' |
+            'landOwnerName' | 'builderName' | 'societyName' | 'managerName' | 'secretaryName' | 'societyAddress',
         isValid: boolean
     ): boolean => {
+        if (focusedField === field) return false;
+
         // If form is submitted, show all validation errors
         if (isSubmitted) return !isValid;
 
-        // For digit inputs (mobile numbers), show error only if user has entered data
+        // For digit inputs (mobile numbers), show error only if:
+        // - the input has been blurred (isFocused is false) and has some content, OR
+        // - the input is active (isFocused is true) and is nearly complete (length >= input length - 2)
         if (field === 'managerMobile') {
-            return managerMobileInput.value.length > 0 && !isValid;
+            const len = managerMobileInput.digits.length;
+            return !isValid && (
+                (!managerMobileInput.isFocused && managerMobileInput.value.length > 0) ||
+                (managerMobileInput.isFocused && managerMobileInput.value.length >= len - 2)
+            );
         }
         if (field === 'secretaryMobile') {
-            return secretaryMobileInput.value.length > 0 && !isValid;
+            const len = secretaryMobileInput.digits.length;
+            return !isValid && (
+                (!secretaryMobileInput.isFocused && secretaryMobileInput.value.length > 0) ||
+                (secretaryMobileInput.isFocused && secretaryMobileInput.value.length >= len - 2)
+            );
         }
 
         // For email fields, show error only if field has been touched (has value)
@@ -140,15 +155,20 @@ export const useSocietyForm = (props: SocietyFormProps) => {
         setHasChanges
     });
 
-    const wingOptions = (props.WingMaster || []).map((wing) => ({
-        label: wing.wingNo,
-        value: String(wing.id),
-    }));
+    const wingOptions = (props?.WingMaster && props?.WingMaster?.length > 0)
+        ? [
+            { label: t('commonbuttonmessages.clear') || 'Clear', value: 'CLEAR' },
+            ...props?.WingMaster?.map((wing) => ({
+                label: wing.wingNo,
+                value: String(wing?.id),
+            }))
+        ]
+        : [];
 
     const handleWingChange = (_name: string | undefined, value: string) => {
-        const id = Number(value) || null;
+        const id = (value && value !== 'CLEAR') ? (Number(value) || null) : null;
         setWingId(id);
-        const selectedWing = (props.WingMaster || []).find((w) => w.id === id);
+        const selectedWing = id !== null ? (props.WingMaster || []).find((w) => w.id === id) : undefined;
         setWingNo(selectedWing?.wingNo || null);
     };
 
@@ -162,7 +182,7 @@ export const useSocietyForm = (props: SocietyFormProps) => {
         const isManagerEmailValid = !managerEmail || societyValidators.isValidEmail(managerEmail, true);
         const isSecretaryEmailValid = !secretaryEmail || societyValidators.isValidEmail(secretaryEmail, true);
         const isSocietyEmailValid = !societyEmail || societyValidators.isValidEmail(societyEmail, true);
-        
+
         // Check mobile numbers - if filled, must be valid
         const isManagerMobileValid = !managerMobileStr || societyValidators.isValidMobile(managerMobileStr);
         const isSecretaryMobileValid = !secretaryMobileStr || societyValidators.isValidMobile(secretaryMobileStr);
@@ -173,9 +193,9 @@ export const useSocietyForm = (props: SocietyFormProps) => {
         const isSocietyNameValid = !societyName || societyValidators.isValidSocietyName(societyName);
         const isManagerNameValid = !managerName || societyValidators.isValidPersonName(managerName);
         const isSecretaryNameValid = !secretaryName || societyValidators.isValidPersonName(secretaryName);
-        
+
         // Check address - if filled, must be valid
-        const isSocietyAddressValid = !societyAddress || propertyValidators.isValidAddress(societyAddress);
+        const isSocietyAddressValid = !societyAddress || societyValidators.isValidAddress(societyAddress);
 
         return (
             isManagerEmailValid &&
@@ -213,7 +233,7 @@ export const useSocietyForm = (props: SocietyFormProps) => {
         const isSocietyNameValid = !societyName || societyValidators.isValidSocietyName(societyName);
         const isManagerNameValid = !managerName || societyValidators.isValidPersonName(managerName);
         const isSecretaryNameValid = !secretaryName || societyValidators.isValidPersonName(secretaryName);
-        const isSocietyAddressValid = !societyAddress || propertyValidators.isValidAddress(societyAddress);
+        const isSocietyAddressValid = !societyAddress || societyValidators.isValidAddress(societyAddress);
 
         // Show specific error messages for invalid fields
         if (!isManagerEmailValid && managerEmail) {
@@ -372,5 +392,7 @@ export const useSocietyForm = (props: SocietyFormProps) => {
         canSubmit,
         handleSubmit,
         checkFormChanges,
+        focusedField,
+        setFocusedField,
     };
 };

@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils/cn';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Tabs } from '@/components/common/Tabs';
+import { Building, Home, Building2, Calculator, GitMerge, IndianRupee } from 'lucide-react';
 const { TabList, Tab } = Tabs;
 
 import { DualMethodSection } from '@/components/modules/property-tax/ptis/dualmethod';
@@ -54,6 +55,8 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = (props) => {
   const t = useTranslations('ptis');
 
   const activeTab = ptisParams.tab || 'rateable';
+  const activeMainTab = searchParams.get('appartmentTab') || 'amenities';
+  const activeSubTab = searchParams.get('subTab') || 'rateable';
 
   const handleTabChange = (value: string | number) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -61,11 +64,29 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = (props) => {
     router.push(`?${params.toString()}`);
   };
 
+  const handleApartmentMainTabChange = (v: string | number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('valuationTab', 'apartment');
+    params.set('appartmentTab', v.toString());
+    params.set('subTab', 'rateable');
+    params.set('pageNumber', '1');
+    router.replace(`?${params.toString()}`, { scroll: false });
+  };
+
+  const handleApartmentSubTabChange = (v: string | number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('valuationTab', 'apartment');
+    params.set('appartmentTab', activeMainTab);
+    params.set('subTab', v.toString());
+    params.set('pageNumber', '1');
+    router.replace(`?${params.toString()}`, { scroll: false });
+  };
+
   const tabs = [
     { value: 'rateable', label: t('tabs.rateable'), activeGradient: 'from-indigo-600 to-purple-600' },
     { value: 'capital', label: t('tabs.capital'), activeGradient: 'from-purple-600 to-pink-600' },
     { value: 'dual', label: t('tabs.dual'), activeGradient: 'from-orange-600 to-red-600' },
-    { value: 'apartment', label: t('tabs.apartment'), activeGradient: 'from-amber-600 to-orange-600' },
+    { value: 'apartment', label: t('tabs.apartment'), activeGradient: 'from-blue-600 to-blue-800' }
   ];
 
   return (
@@ -74,28 +95,49 @@ const PtisMainScreen: React.FC<PtisMainScreenProps> = (props) => {
         <main className="w-full mx-auto">
           {/* Premium Style Tabs */}
           <div className="bg-white rounded-xl shadow-lg border border-indigo-50 overflow-hidden">
-            <div className="bg-slate-50 border-b border-indigo-50 p-1.5">
-              <Tabs value={activeTab} onChange={handleTabChange} variant="pills" size="md">
-                <TabList
-                  scrollable={true}
-                  className="bg-white border border-indigo-100 p-1 rounded-full flex flex-wrap gap-2 shadow-inner inline-flex"
-                >
-                  {tabs.map((tab) => (
-                    <Tab
-                      key={tab.value}
-                      value={tab.value}
-                      className={cn(
-                        'transition-all cursor-pointer duration-300 px-4 py-1 rounded-full text-xs font-bold min-w-[100px] text-center',
-                        activeTab === tab.value
-                          ? `bg-gradient-to-r ${tab.activeGradient} text-white shadow-sm`
-                          : 'text-indigo-600 hover:bg-white hover:text-indigo-800'
-                      )}
-                    >
-                      {tab.label}
-                    </Tab>
-                  ))}
-                </TabList>
-              </Tabs>
+            <div className="bg-white border-b border-gray-200 px-4 py-2">
+              <div className="flex items-center justify-between">
+                <Tabs value={activeTab} onChange={handleTabChange} variant="pills" size="md">
+                  <TabList
+                    scrollable={true}
+                    className="bg-white border border-indigo-100 p-1 rounded-full flex flex-wrap gap-2 shadow-inner inline-flex"
+                  >
+                    {tabs.map((tab) => (
+                      <Tab
+                        key={tab.value}
+                        value={tab.value}
+                        className={cn(
+                          'transition-all cursor-pointer duration-300 px-4 py-1 rounded-full text-xs font-bold min-w-[100px] text-center',
+                          activeTab === tab.value
+                            ? `bg-gradient-to-r ${tab.activeGradient} text-white shadow-sm`
+                            : 'text-indigo-600 hover:bg-white hover:text-indigo-800'
+                        )}
+                      >
+                        {tab.label}
+                      </Tab>
+                    ))}
+                  </TabList>
+                </Tabs>
+
+                {activeTab === 'apartment' && (
+                  <div className="flex items-center gap-3">
+                    <Tabs value={activeMainTab} onChange={handleApartmentMainTabChange} variant="pills" size="sm" activeTabClassName="bg-blue-700 text-white shadow-sm rounded-lg border-none">
+                      <TabList className="bg-gray-100 p-1 rounded-lg inline-flex gap-1">
+                        <Tab value="amenities" icon={Building2}>{t('apartmentTabs.amenities')}</Tab>
+                        <Tab value="commercial" icon={Building}>{t('apartmentTabs.commercial')}</Tab>
+                        <Tab value="residential" icon={Home}>{t('apartmentTabs.residential')}</Tab>
+                      </TabList>
+                    </Tabs>
+                    <Tabs value={activeSubTab} onChange={handleApartmentSubTabChange} variant="pills" size="sm" activeTabClassName="bg-green-700 text-white shadow-sm rounded-lg border-none">
+                      <TabList className="bg-gray-100 p-1 rounded-lg inline-flex gap-1">
+                        <Tab value="rateable" icon={Calculator}>{t('apartmentTabs.rateable')}</Tab>
+                        <Tab value="capital" icon={IndianRupee}>{t('apartmentTabs.capital')}</Tab>
+                        <Tab value="dual-method" icon={GitMerge}>{t('apartmentTabs.dual')}</Tab>
+                      </TabList>
+                    </Tabs>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Content Area */}

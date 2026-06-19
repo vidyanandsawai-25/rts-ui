@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { Tabs } from '@/components/common';
 import { PropertyFormViewProps } from '@/types/property-basic-details.types';
-import { usePropertyForm } from '@/hooks/usePropertyForm';
+import { usePropertyForm } from '@/hooks/ptis/QuickDataEntry/Property/usePropertyForm';
 import { PropertyFormFields } from './PropertyFormFields';
 import { PropertyFormActions } from './PropertyFormActions';
 

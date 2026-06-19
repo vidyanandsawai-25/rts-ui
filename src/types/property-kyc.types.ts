@@ -31,6 +31,7 @@ export interface KycDetails {
   aadharCardNo?: string | null;
   adharCardNo?: string | null;
   alternateMobileNo?: string | null;
+  pinCode?: string | null;
 }
 
 
@@ -46,6 +47,7 @@ export type KycFormData = Partial<
     | 'emailId'
     | 'address'
     | 'location'
+    | 'pinCode'
   >
 >;
 

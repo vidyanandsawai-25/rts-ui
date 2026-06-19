@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { SocietyFormProps } from "@/types/property-society-details.types";
 import { SocietyFormFields } from "./SocietyFormFields";
 import { SocietyFormActions } from "./SocietyFormActions";
-import { useSocietyForm } from "@/hooks/useSocietyForm";
+import { useSocietyForm } from "@/hooks/ptis/QuickDataEntry/Society/useSocietyForm";
 
 const SocietyForm = (props: SocietyFormProps) => {
     const {
@@ -38,6 +38,7 @@ const SocietyForm = (props: SocietyFormProps) => {
         canSubmit,
         handleSubmit,
         checkFormChanges,
+        setFocusedField,
     } = useSocietyForm(props);
 
     const t = useTranslations("quickDataEntry");
@@ -77,6 +78,8 @@ const SocietyForm = (props: SocietyFormProps) => {
                             wingOptions={wingOptions}
                             handleWingChange={handleWingChange}
                             showError={showError}
+                            onFocusField={setFocusedField}
+                            onBlurField={() => setFocusedField(null)}
                         />
 
                         <SocietyFormActions

@@ -26,6 +26,8 @@ export interface DiscountAttributeDto {
     documentGuid?: string | null;
     documentUrl?: string | null;
     remark?: string | null;
+    isPhotoRequired?: boolean;
+    isDocumentRequired?: boolean;
     isActive?: boolean;
 }
 
@@ -55,6 +57,7 @@ export interface DiscountAttributeItemDto {
     dateValue?: string | null;
     documentBindingId?: number | null;
     remark?: string | null;
+    isActive?: boolean;
 }
 
 export interface UpsertPropertyDiscountInfoDto {

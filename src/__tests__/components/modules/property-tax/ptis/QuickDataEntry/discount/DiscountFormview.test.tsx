@@ -106,16 +106,20 @@ vi.mock('sonner', () => ({
 }));
 
 // We need to mock the action as well because it's imported by the hook
-vi.mock('@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Discount/action', () => ({
+vi.mock('@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Discount/discount-actions', () => ({
   updateDiscountDetailsAction: vi.fn(),
   uploadDiscountDocumentAction: vi.fn(),
   replaceDiscountDocumentAction: vi.fn(),
-  getPropertySocialInfoAction: vi.fn(),
-  upsertPropertySocialInfoAction: vi.fn(),
 }));
 
-// Now we can safely import the action for our tests since it's mocked
-import { updateDiscountDetailsAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Discount/action';
+vi.mock('@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Discount/social-actions', () => ({
+  getPropertySocialInfoAction: vi.fn(),
+  upsertPropertySocialInfoAction: vi.fn(),
+  uploadSocialPhotoAction: vi.fn(),
+  replaceSocialPhotoAction: vi.fn(),
+}));
+
+import { updateDiscountDetailsAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Discount/discount-actions';
 
 const mockInitialData: PropertyDiscountInfoResponseDto = {
   propertyId: 123,
@@ -128,6 +132,7 @@ const mockInitialData: PropertyDiscountInfoResponseDto = {
       isDiscountApplicable: true,
       propertySocialDetailId: 10,
       bitValue: true,
+      isActive: true,
       documentGuid: "guid-solar",
       documentBindingId: 100
     },
@@ -139,6 +144,7 @@ const mockInitialData: PropertyDiscountInfoResponseDto = {
       isDiscountApplicable: true,
       propertySocialDetailId: null,
       bitValue: false,
+      isActive: false,
       documentGuid: "guid-water", // Setting documentGuid so that validation passes when enabled
       documentBindingId: 101
     }
@@ -253,6 +259,7 @@ describe('DiscountFormview', () => {
           expect.objectContaining({
             socialAttributeId: 2,
             bitValue: true,
+            isActive: true,
           })
         ])
       );

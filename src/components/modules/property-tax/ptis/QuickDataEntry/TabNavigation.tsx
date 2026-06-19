@@ -1,7 +1,6 @@
 'use client';
 
-import Link from 'next/link';
-import { usePathname, useSearchParams, useParams } from 'next/navigation';
+import { useRouter, usePathname, useSearchParams, useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Building2, Home, UserCheck, Percent } from 'lucide-react';
 import { Tab } from '@/types/property-basic-details.types';
@@ -30,6 +29,7 @@ const RETURN_TAB_BY_QDE_HREF: Record<string, string> = {
 };
 
 export function TabNavigation() {
+  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const routeParams = useParams();
@@ -135,11 +135,12 @@ export function TabNavigation() {
           const gradientClass = TAB_GRADIENT_CLASSES.activeClass;
 
           return (
-            <Link
+            <button
               key={tab.href}
-              href={tabHref}
+              onClick={() => router.push(tabHref)}
+              data-href={tabHref}
               className={[
-                'inline-flex items-center gap-1 px-2 py-2 text-[11px] rounded-md border font-semibold transition-all hover:shadow-md',
+                'inline-flex items-center gap-1 px-2 py-2 text-[11px] rounded-md border font-semibold transition-all hover:shadow-md cursor-pointer text-left focus:outline-none whitespace-nowrap',
                 isActive
                   ? `bg-linear-to-br ${gradientClass} text-white shadow-lg`
                   : 'bg-white text-gray-600 border-gray-300',
@@ -147,7 +148,7 @@ export function TabNavigation() {
             >
               <Icon className="w-4 h-4" />
               <span>{t(`tabs.${tab.label}`)}</span>
-            </Link>
+            </button>
           );
         })}
       </nav>

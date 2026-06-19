@@ -1,10 +1,11 @@
 "use client";
 
 import React from "react";
-import { Button, Label } from "@/components/common";
+import { Label } from "@/components/common";
 import type { Option } from "@/components/common";
 import { SearchSelect } from "@/components/common/SearchSelect";
 import { COMPACT_LABEL_CLASS } from "../form-field-styles";
+import { cn } from "@/lib/utils/cn";
 
 interface FilterSelectProps {
   label: string;
@@ -41,18 +42,16 @@ export function FilterSelect({
 
   return (
     <div className="w-full">
-      <div className="mb-1 flex items-center justify-between gap-1">
-        <Label className={COMPACT_LABEL_CLASS}>{label}</Label>
+      <div className="mb-1 h-[18px] flex items-center justify-between gap-1">
+        <Label className={cn(COMPACT_LABEL_CLASS, "flex items-center gap-1 h-full")}>{label}</Label>
         {value && !disabled && (
-          <Button
+          <button
             type="button"
-            variant="ghost"
-            size="xs"
             onClick={handleClear}
-            className="!h-auto !min-h-0 !px-0 !py-0 text-xs text-[#004c8c] hover:!bg-transparent hover:underline cursor-pointer"
+            className="text-[11px] font-semibold text-[#004c8c] hover:underline cursor-pointer leading-none"
           >
             {clearLabel}
-          </Button>
+          </button>
         )}
       </div>
       <SearchSelect

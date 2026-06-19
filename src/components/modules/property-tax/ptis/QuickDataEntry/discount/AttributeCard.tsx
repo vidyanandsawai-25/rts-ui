@@ -44,7 +44,7 @@ export const AttributeCard: React.FC<AttributeCardProps> = ({
 
     const isSpecialToggle = 
         attr.socialAttributeCode.toUpperCase() === "ROAD_WIDTH" || 
-        attr.socialAttributeCode.toUpperCase() === "WATER_CONN_YEAR" || 
+        attr.socialAttributeCode.toUpperCase().includes("WATER_CONN") || 
         attr.socialAttributeCode.toUpperCase().includes("TREE");
 
     if (attr.dataType.toUpperCase() === "BIT") {

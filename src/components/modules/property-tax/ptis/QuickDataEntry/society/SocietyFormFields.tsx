@@ -32,6 +32,8 @@ interface SocietyFormFieldsProps {
                'landOwnerName' | 'builderName' | 'societyName' | 'managerName' | 'secretaryName' | 'societyAddress',
         isValid: boolean
     ) => boolean;
+    onFocusField: (field: string) => void;
+    onBlurField: () => void;
 }
 
 export const SocietyFormFields = ({
@@ -60,7 +62,9 @@ export const SocietyFormFields = ({
     wingOptions,
     handleWingChange,
     showError,
-}: SocietyFormFieldsProps) => {
+    onFocusField,
+    onBlurField,
+}: SocietyFormFieldsProps & { onFocusField: (field: string) => void; onBlurField: () => void; }) => {
     return (
         <div className="grid grid-cols-3 gap-x-4 gap-y-3">
             <SocietyGeneralFields
@@ -78,6 +82,8 @@ export const SocietyFormFields = ({
                 wingOptions={wingOptions}
                 handleWingChange={handleWingChange}
                 showError={showError}
+                onFocusField={onFocusField}
+                onBlurField={onBlurField}
             />
             <SocietyContactFields
                 t={t}
@@ -92,6 +98,8 @@ export const SocietyFormFields = ({
                 secretaryName={secretaryName}
                 setSecretaryName={setSecretaryName}
                 showError={showError}
+                onFocusField={onFocusField}
+                onBlurField={onBlurField}
             />
         </div>
     );

@@ -97,6 +97,8 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
   const pageNumber = toPositiveInt(resolvedSearchParams?.pageNumber) || 1;
   const pageSize = toPositiveInt(resolvedSearchParams?.pageSize) || 10;
   const searchTerm = toSafeString(resolvedSearchParams?.searchTerm);
+  const sortBy = toSafeString(resolvedSearchParams?.sortBy);
+  const sortOrder = toSafeString(resolvedSearchParams?.sortOrder);
   const appartmentTab = toSafeString(resolvedSearchParams?.appartmentTab) || 'amenities';
 
   // Column filter parameters
@@ -250,6 +252,10 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
                 flatOrShopNo: filterFlatOrShopNo || undefined,
                 apartmentType: filterApartmentType || undefined,
                 propertyType: filterPropertyType || undefined,
+              },
+              {
+                sortBy: sortBy || undefined,
+                sortOrder: sortOrder || undefined,
               }
             )
           : Promise.resolve({
@@ -442,10 +448,14 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
         initialPhotos={initialPhotos}
       >
         <div className="flex flex-col gap-6 w-full">
-          <PropertyTabSection
+         <PropertyTabSection
             initialData={initialData}
             initialWardId={resolvedWardId}
-            initialTab={activeTab}
+            initialTab={
+              ptisParams.tab === 'apartment'
+                ? 'societydetails'
+                : activeTab
+            }
             initialError={initialError}
           />
           <PtisMainScreen

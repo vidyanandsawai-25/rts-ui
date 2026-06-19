@@ -31,8 +31,8 @@ vi.mock('next-intl', () => ({
       'property.upicId': 'UPIC ID',
       'property.residentialToilet': 'Residential Toilet',
       'property.commercialToilet': 'Commercial Toilet',
-      'property.totalCarpetArea': 'Total Carpet Area',
-      'property.buildupArea': 'Buildup Area',
+      'property.totalCarpetAreaWithUnit': 'Total Carpet Area (sq.ft / sq.m)',
+      'property.buildupAreaWithUnit': 'Total Buildup Area (sq.ft / sq.m)',
       'property.updateSuccess': 'Property basic details updated successfully',
       'property.updateError': 'An error occurred during update.',
       'property.errors.updatePropertyBasicDetails': 'Failed to update property basic details',
@@ -165,13 +165,12 @@ describe('PropertyFormView', () => {
     expect(screen.getByDisplayValue('45/2')).toBeInTheDocument(); // Survey No
     expect(screen.getByDisplayValue('SZ1')).toBeInTheDocument(); // Sub Zone No
     expect(screen.getByDisplayValue('UPIC123')).toBeInTheDocument(); // UPIC ID
-    expect(screen.getAllByDisplayValue('2')[0]).toBeInTheDocument(); // Residential Toilets
-    expect(screen.getByDisplayValue('1000.00')).toBeInTheDocument(); // Total Carpet Area
-    expect(screen.getByDisplayValue('1500.00')).toBeInTheDocument(); // Buildup Area
+    expect(screen.getByDisplayValue('1000.00 / 100.00')).toBeInTheDocument(); // Total Carpet Area
+    expect(screen.getByDisplayValue('1500.00 / 120.00')).toBeInTheDocument(); // Buildup Area
   });
 
   it('disables save button initially', () => {
-    render(
+    const { container } = render(
       <PropertyFormView
         MoujaMaster={mockMoujaMaster}
         propertyCategories={mockPropertyCategories}
@@ -184,6 +183,18 @@ describe('PropertyFormView', () => {
     );
 
     const submitBtn = screen.getByRole('button', { name: /Update Changes/i });
+    if (!submitBtn.hasAttribute('disabled')) {
+      const form = container.querySelector('form');
+      const formData = form ? new FormData(form) : null;
+      throw new Error(`DEBUG_INFO:
+        formData taxZoneId: "${formData?.get('taxZoneId')}" (propertyData: ${mockPropertyData.taxZoneId})
+        formData plotNo: "${formData?.get('plotNo')}" (propertyData: "${mockPropertyData.plotNo}")
+        formData flatOrShopNo: "${formData?.get('flatOrShopNo')}" (propertyData: "${mockPropertyData.flatOrShopNo}")
+        formData surveyNo: "${formData?.get('surveyNo')}" (propertyData: "${mockPropertyData.surveyNo}")
+        formData subZoneNo: "${formData?.get('subZoneNo')}" (propertyData: "${mockPropertyData.subZoneNo}")
+        formData plotArea: "${formData?.get('plotArea')}" (propertyData: "${mockPropertyData.plotArea}")
+      `);
+    }
     expect(submitBtn).toBeDisabled();
   });
 
@@ -382,35 +393,57 @@ describe('PropertyFormView', () => {
       });
     });
 
-    it('handles boundary values like zero', async () => {
-      (updatePropertyBasicDetailsAction as Mock).mockResolvedValue({ success: true });
+    it('handles empty or partial carpet and buildup area values correctly', () => {
+      const partialData = {
+        ...mockPropertyData,
+        totalCarpetAreaSqFeet: null,
+        totalCarpetAreaSqMeter: null,
+        totalBuiltupAreaSqFeet: 1200,
+        totalBuiltupAreaSqMeter: null,
+      };
+
       render(
         <PropertyFormView
           MoujaMaster={mockMoujaMaster}
           propertyCategories={mockPropertyCategories}
           propertyDescriptions={mockPropertyDescriptions}
-          propertyData={mockPropertyData as never}
+          propertyData={partialData as never}
           propertySocietyDetails={mockSocietyDetails as never}
           locale="en"
           taxZones={[]}
         />
       );
 
-      const residentialToiletsInput = screen.getByLabelText(/Residential Toilet/i);
-      fireEvent.change(residentialToiletsInput, { target: { value: '0' } });
+      const carpetInput = screen.getByLabelText(/Total Carpet Area/i);
+      expect(carpetInput).toHaveValue('');
 
-      const submitBtn = screen.getByRole('button', { name: /Update Changes/i });
-      fireEvent.click(submitBtn);
+      const buildupInput = screen.getByLabelText(/Buildup Area/i);
+      expect(buildupInput).toHaveValue('1200.00 / 0.00');
+    });
 
-      await waitFor(() => {
-        expect(updatePropertyBasicDetailsAction).toHaveBeenCalledWith(
-          'en',
-          mockPropertyData.propertyId,
-          expect.objectContaining({
-            noOfResidentialToilets: 0,
-          })
-        );
-      });
+    it('handles reversed null values where feet is null and meter is present', () => {
+      const partialData = {
+        ...mockPropertyData,
+        totalCarpetAreaSqFeet: null,
+        totalCarpetAreaSqMeter: 85.5,
+        totalBuiltupAreaSqFeet: null,
+        totalBuiltupAreaSqMeter: null,
+      };
+
+      render(
+        <PropertyFormView
+          MoujaMaster={mockMoujaMaster}
+          propertyCategories={mockPropertyCategories}
+          propertyDescriptions={mockPropertyDescriptions}
+          propertyData={partialData as never}
+          propertySocietyDetails={mockSocietyDetails as never}
+          locale="en"
+          taxZones={[]}
+        />
+      );
+
+      const carpetInput = screen.getByLabelText(/Total Carpet Area/i);
+      expect(carpetInput).toHaveValue('0.00 / 85.50');
     });
   });
 });

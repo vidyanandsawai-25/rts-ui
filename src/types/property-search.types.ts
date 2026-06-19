@@ -95,6 +95,7 @@ export interface SearchResult {
   category: string;
   description: string;
   mobile: string;
+  alternateMobile: string;
   holderName: string;
   holderNameMarathi: string;
   occupierName: string;
@@ -166,6 +167,7 @@ export interface PropertySearchProps {
   stats: PropertyStatsData[];
   zoneOptions: ZoneOption[];
   wardOptions: WardOption[];
+  allWardOptions: WardOption[];
   propertyTypeOptions: PropertyAssessmentStatusOption[];
   propertyDescriptionOptions: PropertyDescriptionOption[];
   lookupOptions: LookupOptions;
@@ -208,6 +210,8 @@ export interface PropertySearchResultsProps {
   results: SearchResult[];
   loading?: boolean;
   searchError?: string | null;
+  zoneOptions: ZoneOption[];
+  allWardOptions: WardOption[];
 }
 
 /* ================= SELECT OPTION ================= */
@@ -225,7 +229,7 @@ export type SearchFieldErrorMap = Partial<
 
 export interface LookupInputProps {
   id: string;
-  label: string;
+  label: React.ReactNode;
   placeholder?: string;
   tooltip?: string;
   value: string;
@@ -332,6 +336,7 @@ export type SearchValidationKey =
   | "societyNameInvalid"
   | "addressInvalid"
   | "rateableValueBetweenRequired"
+  | "rateableValueRangeInvalid"
   | "capitalValueBetweenRequired"
   | "rateableValueInvalid"
   | "noSearchCriteria";

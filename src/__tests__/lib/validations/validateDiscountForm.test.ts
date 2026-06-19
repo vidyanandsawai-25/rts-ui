@@ -84,6 +84,7 @@ describe("validateDiscountForm", () => {
         documentBindingId: null,
         remark: null,
         enabled: true,
+        isDocumentRequired: true,
         ...overrides
     });
 
@@ -316,6 +317,12 @@ describe("validateDiscountForm", () => {
             const result = validateDiscountForm({ 1: item }, tMock);
             expect(result.isValid).toBe(false);
             expect(result.errors[1]).toBe("Document is required.");
+        });
+
+        it("should pass if document is missing but isDocumentRequired is false", () => {
+            const item = createBaseAttr({ documentGuid: "", documentBindingId: null, isDocumentRequired: false });
+            const result = validateDiscountForm({ 1: item }, tMock);
+            expect(result.isValid).toBe(true);
         });
     });
 

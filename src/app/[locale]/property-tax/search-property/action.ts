@@ -46,33 +46,79 @@ function parsePositiveInteger(value: string): number | null {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 }
 
+function parseNumericPart(value: string): number | null {
+  const match = value.match(/^\d+/);
+  if (match) {
+    const parsed = parseInt(match[0], 10);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+}
+
+function comparePropertyNo(a: string, b: string): number {
+  const cleanA = a.trim();
+  const cleanB = b.trim();
+
+  const numA = parseNumericPart(cleanA);
+  const numB = parseNumericPart(cleanB);
+
+  if (numA !== null && numB !== null) {
+    if (numA !== numB) {
+      return numA - numB;
+    }
+    return cleanA.localeCompare(cleanB, undefined, { numeric: true, sensitivity: "base" });
+  }
+
+  if (numA !== null) return -1;
+  if (numB !== null) return 1;
+
+  return cleanA.localeCompare(cleanB, undefined, { numeric: true, sensitivity: "base" });
+}
+
 function filterByPropertyNumberRange(
   results: SearchResult[],
   searchCriteria: SearchCriteria
 ): SearchResult[] {
-  const from = parsePositiveInteger(searchCriteria.propertyNoFrom);
-  let to = parsePositiveInteger(searchCriteria.propertyNoTo);
+  const fromRaw = searchCriteria.propertyNoFrom?.trim() || "";
+  let toRaw = searchCriteria.propertyNoTo?.trim() || "";
 
-  if (from != null && to == null) {
-    to = from;
+  if (fromRaw && !toRaw) {
+    toRaw = fromRaw;
   }
 
-  if (from == null && to == null) {
+  if (!fromRaw && !toRaw) {
     return results;
   }
 
+  const [fromPropNoStr, ...fromPartArr] = fromRaw.split("-");
+  const fromPart = fromPartArr.join("-").trim();
+  const fromPropNo = parsePositiveInteger(fromPropNoStr);
+
+  const [toPropNoStr, ...toPartArr] = toRaw.split("-");
+  const toPart = toPartArr.join("-").trim();
+  const toPropNo = parsePositiveInteger(toPropNoStr);
+
   return results.filter((item) => {
-    const propertyNo = parsePositiveInteger(item.propertyNo);
-    if (propertyNo == null) {
-      return false;
+    const itemPropNo = parseNumericPart(item.propertyNo || "");
+    const itemPart = item.partitionNo?.trim() || "";
+
+    if (itemPropNo == null) return false;
+
+    // Filter by property number bounds
+    if (fromPropNo != null && itemPropNo < fromPropNo) return false;
+    if (toPropNo != null && itemPropNo > toPropNo) return false;
+
+    // Filter by partition number if property numbers match exactly the bounds
+    if (fromPropNo != null && itemPropNo === fromPropNo && fromPart) {
+      if (itemPart.localeCompare(fromPart, undefined, { numeric: true, sensitivity: 'base' }) < 0) {
+        return false;
+      }
     }
 
-    if (from != null && propertyNo < from) {
-      return false;
-    }
-
-    if (to != null && propertyNo > to) {
-      return false;
+    if (toPropNo != null && itemPropNo === toPropNo && toPart) {
+      if (itemPart.localeCompare(toPart, undefined, { numeric: true, sensitivity: 'base' }) > 0) {
+        return false;
+      }
     }
 
     return true;
@@ -177,7 +223,11 @@ export async function filterPropertiesAction(
       ? filterByPropertyNumberRange(normalizedResults, searchCriteria)
       : normalizedResults;
 
-    return { results: filteredResults, error: null };
+    const sortedResults = [...filteredResults].sort((a, b) =>
+      comparePropertyNo(a.propertyNo, b.propertyNo)
+    );
+
+    return { results: sortedResults, error: null };
   } catch (err) {
     const message =
       err instanceof Error
@@ -203,4 +253,16 @@ export async function getWardOptionsAction(zone: string): Promise<string[]> {
   // with a numeric zoneId. Stub returns an empty array.
   void zone;
   return [];
+}
+
+export async function listAllWardsAction(): Promise<WardApiResponse[]> {
+  try {
+    const zones = await fetchZones();
+    const allWards = await Promise.all(
+      zones.map((z) => fetchWardsByZone(z.zoneId))
+    );
+    return allWards.flat();
+  } catch {
+    return [];
+  }
 }

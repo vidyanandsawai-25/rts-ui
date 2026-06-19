@@ -30,7 +30,7 @@ export const PROPERTY_SEARCH_FIELD_LIMITS = {
   shopBuildingName: 100,
   societyName: 100,
   address: 300,
-  rateableValue: 15,
+  rateableValue: 30,
 } as const;
 
 /** Alphanumeric with hyphen (/) and slash (-), no leading/trailing separators. */
@@ -142,6 +142,43 @@ function validateMobile(value: string): boolean {
   const trimmed = value.trim();
   if (!trimmed) return true;
   return MOBILE_PATTERN.test(trimmed);
+}
+
+function validateAmount(value: string, max: number): boolean {
+  const trimmed = value.trim();
+  if (!trimmed) return true;
+  if (trimmed.length > max) return false;
+
+  // Check that it only contains digits, commas, and at most one dot
+  if (/[^0-9,.]/.test(trimmed)) return false;
+
+  // Dot count check
+  const dotCount = (trimmed.match(/\./g) || []).length;
+  if (dotCount > 1) return false;
+
+  // Commas should not be consecutive, leading, or trailing, and not after the dot
+  if (trimmed.startsWith(",") || trimmed.endsWith(",")) return false;
+  if (trimmed.includes(",,")) return false;
+
+  const dotIndex = trimmed.indexOf(".");
+  if (dotIndex !== -1) {
+    const integerPart = trimmed.slice(0, dotIndex);
+    const decimalPart = trimmed.slice(dotIndex + 1);
+
+    // Decimal part cannot contain commas
+    if (decimalPart.includes(",")) return false;
+    // Decimal part can have at most 2 digits
+    if (decimalPart.length > 2) return false;
+
+    // Integer part must have at least one digit
+    const cleanInteger = integerPart.replace(/,/g, "");
+    if (!/^\d+$/.test(cleanInteger)) return false;
+  } else {
+    const cleanInteger = trimmed.replace(/,/g, "");
+    if (!/^\d+$/.test(cleanInteger)) return false;
+  }
+
+  return true;
 }
 
 function validateDigitsOnly(value: string, max: number): boolean {
@@ -268,12 +305,18 @@ export function validateSearchFieldValue(
 
     case "rateableValueFrom":
     case "rateableValueTo":
-      return validateDigitsOnly(
+      if (!validateAmount(
         value,
         PROPERTY_SEARCH_FIELD_LIMITS.rateableValue
-      )
-        ? null
-        : t("rateableValueInvalid");
+      )) {
+        return t("rateableValueInvalid");
+      }
+      const cleanVal = String(value).replace(/,/g, "").trim();
+      const numVal = Number(cleanVal);
+      if (Number.isFinite(numVal) && numVal <= 0) {
+        return t("rateableValueInvalid");
+      }
+      return null;
 
     default:
       return null;
@@ -316,6 +359,7 @@ export function getPropertySearchFieldErrors(
     Object.assign(errors, validatePropertyNoRange(criteria, t));
 
     for (const field of [
+      "scanQR",
       "propertyNoFrom",
       "propertyNoTo",
       "oldPropertyNo",
@@ -344,12 +388,14 @@ export function getPropertySearchFieldErrors(
   }
 
   if (tab === "values-dues") {
-    if (criteria.rateableValueFilter === "between") {
-      if (!trimFieldValue(criteria.rateableValueFrom)) {
-        errors.rateableValueFrom = t("rateableValueBetweenRequired");
-      }
-      if (!trimFieldValue(criteria.rateableValueTo)) {
-        errors.rateableValueTo = t("rateableValueBetweenRequired");
+    if (criteria.rateableValueFilter === "top") {
+      const fromVal = trimFieldValue(criteria.rateableValueFrom);
+      if (fromVal) {
+        const clean = fromVal.replace(/,/g, "");
+        const num = Number(clean);
+        if (!/^\d+$/.test(clean) || num <= 0) {
+          errors.rateableValueFrom = t("rateableValueInvalid");
+        }
       }
     }
 
@@ -357,6 +403,18 @@ export function getPropertySearchFieldErrors(
       if (!errors[field]) {
         const message = validateSearchFieldValue(field, criteria[field], t);
         if (message) errors[field] = message;
+      }
+    }
+
+    if (criteria.rateableValueFilter === "between") {
+      const fromVal = trimFieldValue(criteria.rateableValueFrom);
+      const toVal = trimFieldValue(criteria.rateableValueTo);
+      if (fromVal && toVal && !errors.rateableValueFrom && !errors.rateableValueTo) {
+        const fromNum = Number(fromVal.replace(/,/g, ""));
+        const toNum = Number(toVal.replace(/,/g, ""));
+        if (toNum < fromNum) {
+          errors.rateableValueTo = t("rateableValueRangeInvalid");
+        }
       }
     }
   }

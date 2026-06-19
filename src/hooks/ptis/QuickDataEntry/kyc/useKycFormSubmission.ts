@@ -3,7 +3,8 @@ import { toast } from 'sonner';
 import { updatePropertyKycAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Kyc/action';
 import { KycDetails, KycFormData, OwnerTypeApiItem } from '@/types/property-kyc.types';
 import type { ConfirmContextType } from '@/components/common/ConfirmProvider';
-import type { useDigitInputs } from './useDigitInputs';
+import type { useDigitInputs } from '@/hooks/useDigitInputs';
+
 
 interface UseKycFormSubmissionProps {
   formData: KycFormData;
@@ -57,12 +58,12 @@ export const useKycFormSubmission = (
    */
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
+
     // ✅ RACE CONDITION GUARD: Prevent concurrent submissions
     if (isUpdating || isPending) {
       return;
     }
-    
+
     setIsSubmitted(true);
 
     // Validate property ID
@@ -93,8 +94,8 @@ export const useKycFormSubmission = (
               formData.ownerTypeId === null
                 ? null
                 : OwnerTypeMasterList.find(
-                    (item) => item.id === formData.ownerTypeId
-                  )?.ownerType ?? null;
+                  (item) => item.id === formData.ownerTypeId
+                )?.ownerType ?? null;
 
             // Build API payload
             const payload: KycDetails = {
@@ -123,6 +124,7 @@ export const useKycFormSubmission = (
               location: formData.location?.trim() || null,
               addressEnglish: KycDetailsData.addressEnglish ?? null,
               locationEnglish: KycDetailsData.locationEnglish ?? null,
+              pinCode: formData.pinCode?.trim() || null,
             };
 
             // Validate propertyId before API call

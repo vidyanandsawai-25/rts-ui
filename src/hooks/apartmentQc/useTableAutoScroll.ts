@@ -6,21 +6,31 @@ export const useTableAutoScroll = (isAutoScrolling: boolean) => {
   const scrollDirectionRef = useRef<number>(1);
 
   const findScrollableElement = useCallback(() => {
-    const selectors = [
-      '[class*="overflow-x-auto"]', '[class*="overflow-auto"]', '[style*="overflow"]',
-      'div[class*="table"]', '.table-container', '#table-wrapper div[style*="overflow"]',
-      '.master-table-container',
-    ];
-    for (const selector of selectors) {
-      const elements = document.querySelectorAll(selector);
-      for (const el of elements) {
-        const htmlEl = el as HTMLElement;
-        if (htmlEl.scrollWidth > htmlEl.clientWidth) return htmlEl;
-      }
-    }
-    return null;
-  }, []);
+    const candidates = Array.from(
+      document.querySelectorAll(".overflow-auto, .overflow-x-auto")
+    ) as HTMLElement[];
 
+    const scrollables = candidates.filter((el) => {
+      const style = window.getComputedStyle(el);
+
+      const isVisible =
+        style.display !== "none" &&
+        style.visibility !== "hidden" &&
+        el.offsetParent !== null;
+
+      const isScrollable =
+        el.scrollWidth > el.clientWidth + 5;
+
+      return isVisible && isScrollable;
+    });
+
+    // 🔥 IMPORTANT: pick the MOST horizontal scrollable one
+    return (
+      scrollables.sort(
+        (a, b) => (b.scrollWidth - b.clientWidth) - (a.scrollWidth - a.clientWidth)
+      )[0] || null
+    );
+  }, []);
   useEffect(() => {
     const smoothScroll = () => {
       if (!scrollContainerRef.current || !isAutoScrolling) return;
@@ -42,10 +52,10 @@ export const useTableAutoScroll = (isAutoScrolling: boolean) => {
         if (!container) return;
         activeContainer = container;
         scrollContainerRef.current = container;
-        
+
         mouseEnterHandler = () => { if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current); };
         mouseLeaveHandler = () => { if (isAutoScrolling) animationFrameRef.current = requestAnimationFrame(smoothScroll); };
-        
+
         container.addEventListener('mouseenter', mouseEnterHandler);
         container.addEventListener('mouseleave', mouseLeaveHandler);
         animationFrameRef.current = requestAnimationFrame(smoothScroll);

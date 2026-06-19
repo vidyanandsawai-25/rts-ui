@@ -42,9 +42,12 @@ describe('CommonPropertyTable', () => {
   });
 
   it('calls onSearchChange when search input changes', () => {
+    vi.useFakeTimers();
     render(<CommonPropertyTable {...mockProps} />);
     const searchInput = screen.getByPlaceholderText('Search properties...');
     fireEvent.change(searchInput, { target: { value: 'test' } });
+    vi.advanceTimersByTime(500);
     expect(mockProps.onSearchChange).toHaveBeenCalledWith('test');
+    vi.useRealTimers();
   });
 });

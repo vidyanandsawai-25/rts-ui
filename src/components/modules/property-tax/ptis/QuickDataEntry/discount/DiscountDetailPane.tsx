@@ -8,6 +8,7 @@ import { DocumentAttachment } from "../building/DocumentAttachment";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { DiscountValueInput } from "./DiscountValueInput";
 import { getLocalizedName } from "@/lib/utils/social-details";
+import { checkDiscountRequiredFields } from "@/lib/validation/discount/checkDiscountRequiredFields";
 
 interface DiscountDetailPaneProps {
     data: DiscountAttributeState | null | undefined;
@@ -94,6 +95,9 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
 
     const dataTypeUpper = (data.dataType || "").toUpperCase();
     const showValueInput = dataTypeUpper !== "BIT";
+    const isRequiredFieldMissing = showValueInput && data
+        ? !!checkDiscountRequiredFields(data, (key, params) => t(key, params))
+        : false;
 
     const inputClassName = `h-10 text-sm placeholder:text-gray-400 focus:ring-1 shadow-sm transition-colors font-semibold ${
         isDisabled
@@ -136,17 +140,26 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
                 )}
 
                 <div className="space-y-1.5 w-full">
-                    <Label className="text-sm font-bold text-blue-800">{t("discount.uploadDocument") || "Document Attachment"}<span className="text-red-500 ml-0.5">*</span></Label>
+                    <Label className="text-sm font-bold text-blue-800">
+                        {t("discount.uploadDocument") || "Document Attachment"}
+                        {data.isDocumentRequired === true && <span className="text-red-500 ml-0.5">*</span>}
+                    </Label>
                     <DocumentAttachment
                         documentGuid={data.documentGuid || undefined}
                         documentUrl={data.documentUrl || undefined}
                         hasDocumentBinding={!!data.documentBindingId}
                         isUploading={data.isUploading}
-                        isDisabled={isDisabled}
+                        isDisabled={isDisabled || isRequiredFieldMissing}
                         isDocumentInvalid={isDocumentInvalid}
                         onFileUpload={handleFileUploadWithConfirm}
                         t={t}
+                        label={displayName}
                     />
+                    {isRequiredFieldMissing && !isDisabled && (
+                        <p className="text-xs font-semibold text-amber-600 mt-1">
+                            {t("discount.fillRequiredBeforeUploadHint") || "Please enter the required details above to enable document upload."}
+                        </p>
+                    )}
                 </div>
 
                 <div className="space-y-1.5 w-full">

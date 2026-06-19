@@ -57,7 +57,9 @@ export const DiscountSidebar: React.FC<DiscountSidebarProps> = ({
             );
         }
 
+        const isDocReq = discount.isDocumentRequired === true;
         const hasDoc = (discount.documentGuid?.trim() ?? "") !== "" || !!discount.documentBindingId;
+        const isDocCompleted = !isDocReq || hasDoc;
         const dataTypeUpper = (discount.dataType || "").toUpperCase();
 
         // Check if value is filled when required
@@ -72,7 +74,7 @@ export const DiscountSidebar: React.FC<DiscountSidebarProps> = ({
             hasValue = false;
         }
 
-        if (hasDoc && hasValue) {
+        if (isDocCompleted && hasValue) {
             return (
                 <Badge
                     variant="success"

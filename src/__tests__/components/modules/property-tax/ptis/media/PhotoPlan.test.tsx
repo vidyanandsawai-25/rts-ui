@@ -243,9 +243,10 @@ describe('PhotoPlan Section - Complete Tests', () => {
       ];
 
       const categories = mapSlotsToCategories(slots, uploadedPhotos);
-      expect(categories.length).toBe(2);
+      expect(categories.length).toBe(3);
       expect(categories[0]?.isCustom).toBe(false);
       expect(categories[1]?.isCustom).toBe(true);
+      expect(categories[2]?.photoTypeCode).toBe('CHANGE_DETECTION');
       expect(categories[0]?.images.length).toBe(1);
     });
 

@@ -80,7 +80,7 @@ export function FloorFormFields({
                     className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
                     placeholder="YYYY"
                     onChange={(e) => {
-                        const val = e.target.value.replace(/\D/g, '').slice(0, 4);
+                        const val = e.target.value.replace(/[^0-9०-९]/g, '').slice(0, 4);
                         onFieldChange('oldConstructionYear', val);
                         // Validate year in real-time
                         validateYearField('oldConstructionYear', val);
@@ -100,7 +100,7 @@ export function FloorFormFields({
                     maxLength={4}
                     value={formData.oldAssessmentYear || ''}
                     onChange={(e) => {
-                        const val = e.target.value.replace(/\D/g, '').slice(0, 4);
+                        const val = e.target.value.replace(/[^0-9०-९]/g, '').slice(0, 4);
                         onFieldChange('oldAssessmentYear', val);
                         // Validate year in real-time
                         validateYearField('oldAssessmentYear', val);

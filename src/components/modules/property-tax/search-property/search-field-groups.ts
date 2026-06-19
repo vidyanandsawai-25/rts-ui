@@ -19,31 +19,18 @@ export const NON_PERSISTED_CRITERIA_FIELDS: ReadonlySet<keyof SearchCriteria> =
 
 /** Quick Search tab fields (Property No range counts as two keys). */
 export const QUICK_SEARCH_FIELDS: ReadonlyArray<StringCriteriaField> = [
+  "scanQR",
+  "upicId",
   "propertyNoFrom",
   "propertyNoTo",
   "oldPropertyNo",
-  "upicId",
-  "citySurveyNo",
-  "subZoneNo",
-  "plotNo",
-];
-
-/** KYC Search tab fields — first row (compact) and second row (wider). */
-export const KYC_COMPACT_FIELDS: ReadonlyArray<StringCriteriaField> = [
-  "holderName",
-  "occupierName",
-  "mobile",
-];
-
-export const KYC_WIDE_FIELDS: ReadonlyArray<StringCriteriaField> = [
-  "shopBuildingName",
-  "societyName",
-  "address",
 ];
 
 export const KYC_SEARCH_FIELDS: ReadonlyArray<StringCriteriaField> = [
-  ...KYC_COMPACT_FIELDS,
-  ...KYC_WIDE_FIELDS,
+  "occupierName",
+  "mobile",
+  "societyName",
+  "address",
 ];
 
 export const KYC_UI_FIELDS: ReadonlyArray<StringCriteriaField> = KYC_SEARCH_FIELDS;

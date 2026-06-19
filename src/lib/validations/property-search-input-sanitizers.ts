@@ -23,6 +23,23 @@ const ADDRESS_ALLOWED = /[^\p{L}\p{M}\p{N}\s,./\-]/gu;
 const onlyDigits = (max: number): Sanitizer => (value) =>
   value.replace(/\D/g, "").slice(0, max);
 
+const amountField = (max: number): Sanitizer => (value) => {
+  // Allow only digits, commas, and dots
+  let cleaned = value.replace(/[^0-9,.]/g, "");
+  const firstDotIndex = cleaned.indexOf(".");
+  if (firstDotIndex !== -1) {
+    const integerPart = cleaned.slice(0, firstDotIndex);
+    let decimalPart = cleaned.slice(firstDotIndex + 1).replace(/\./g, ""); // strip other dots
+    if (decimalPart.length > 2) {
+      decimalPart = decimalPart.slice(0, 2);
+    }
+    // Remove commas from decimal part
+    decimalPart = decimalPart.replace(/,/g, "");
+    cleaned = integerPart + "." + decimalPart;
+  }
+  return cleaned.slice(0, max);
+};
+
 const alphanumericWithSeparators =
   (max: number): Sanitizer =>
   (value) =>
@@ -91,8 +108,8 @@ const SANITIZERS: Partial<Record<keyof SearchCriteria, Sanitizer>> = {
   ),
   societyName: societyName(PROPERTY_SEARCH_FIELD_LIMITS.societyName),
   address: addressField(PROPERTY_SEARCH_FIELD_LIMITS.address),
-  rateableValueFrom: onlyDigits(PROPERTY_SEARCH_FIELD_LIMITS.rateableValue),
-  rateableValueTo: onlyDigits(PROPERTY_SEARCH_FIELD_LIMITS.rateableValue),
+  rateableValueFrom: amountField(PROPERTY_SEARCH_FIELD_LIMITS.rateableValue),
+  rateableValueTo: amountField(PROPERTY_SEARCH_FIELD_LIMITS.rateableValue),
 };
 
 /**
