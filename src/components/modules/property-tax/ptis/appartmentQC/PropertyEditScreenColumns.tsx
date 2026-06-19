@@ -3,11 +3,11 @@
 import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Column } from "@/components/common/MasterTable";
-import { ArrowUpDown, Eye } from "lucide-react";
+import { Eye } from "lucide-react";
 import { YEAR_REGEX } from "@/lib/utils/validation-rules";
 import { cn } from "@/lib/utils/cn";
 import { DrawerFloorDataRow, DrawerDropdownOption } from "@/hooks/apartmentQc/propertyEditScreenDrawer.types";
-import { Button, Tooltip } from "@/components/common";
+import { Tooltip } from "@/components/common";
 
 // ─── Compact Select (Table Cell) ────────────────────────────────────────────
 
