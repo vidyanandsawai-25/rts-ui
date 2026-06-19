@@ -12,7 +12,7 @@ import { DualMethodSection } from '@/components/modules/property-tax/ptis/dualme
 import AppartmentQCSection from '@/components/modules/property-tax/ptis/appartmentQC/AppartmentQCSection';
 import { Button } from '@/components/common';
 import { AppliedRulesDrawer } from './AppliedRulesDrawer';
-import type { PtisMainScreenProps } from '@/types/ptis/ptis-screen.types';
+import type { PtisMainScreenProps } from '@/types/ptis-screen/ptis-screen.types';
 
 const PtisMainScreen: React.FC<PtisMainScreenProps> = (props) => {
   const {
