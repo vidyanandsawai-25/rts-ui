@@ -70,7 +70,8 @@
     "deleteConfirm": "Permanently Delete",
     "deleteCancel": "Cancel",
     "deleteSuccess": "Rule deleted successfully",
-    "priority": "Priority"
+    "priority": "Priority",
+    "scope": "Rule Scope"
   },
   "conditionGroup": {
     "if": "If",
@@ -100,6 +101,8 @@
   "stopProcessing": {
     "sectionLabel": "Rule Exclusion & Stop Processing",
     "toggleLabel": "Stop Processing",
+    "activeNotice": "No further rules will execute",
+    "inactiveNotice": "Now further rules will execute",
     "toggleHint": "When enabled, no further rules will be evaluated after this rule matches",
     "warningText": "Stop processing is active. Once this rule matches, subsequent rules will not be evaluated. Use this with caution in complex rule chains.",
     "skipRulesLabel": "Skip Rules",
@@ -140,7 +143,31 @@
     "overrideRate": "Override Rate",
     "stopProcessingText": "Stop Processing",
     "noDescription": "No description provided",
-    "emptyValue": "Empty"
+    "emptyValue": "Empty",
+    "totalRulesLoaded": "Total Workflows Loaded",
+    "totalSubRulesEvaluated": "Sub-Rules Evaluated",
+    "matchedCount": "Matched Rules",
+    "stoppedEarly": "Stopped Early",
+    "expression": "Expression",
+    "status": "Status",
+    "skipped": "Skipped",
+    "notMatched": "Not Matched",
+    "matched": "Matched",
+    "wasSkipped": "Was Skipped",
+    "skipReason": "Skip Reason",
+    "dryRunDetails": "Dry-Run Trace Details",
+    "showMatchedOnly": "Show Matched Only",
+    "dryRunAll": "Dry Run All Workflows",
+    "interactiveConsole": "Interactive Console",
+    "priorityText": "(Priority: {priority})",
+    "stopOnMatch": "Stop on Match",
+    "baseRate": "Base Rate",
+    "computedValue": "Computed Value",
+    "multiValueHint": "Multi-value field — enter comma-separated values (e.g. <codeTag>10, 28</codeTag>)",
+    "hideRawResponse": "Hide Raw Response",
+    "showRawResponse": "Show Raw Response",
+    "hideJsonTrace": "Hide JSON Trace",
+    "showJsonTrace": "Show JSON Trace"
   },
   "fields": {
     "floorId": "Floor",

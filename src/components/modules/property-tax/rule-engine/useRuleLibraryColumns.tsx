@@ -36,10 +36,22 @@ export function useRuleLibraryColumns({ t }: UseRuleLibraryColumnsArgs): Column<
         key: 'description',
         label: t('library.description'),
         render: (_val: unknown, row: RuleItemRecord) => {
-          const descs = getRuleWiseDescriptions(row.conditionsJson);
-          if (descs.length === 0) return <span className="text-gray-300 text-xs">—</span>;
+          let descs: string[] = [];
+          if (row.subRules && Array.isArray(row.subRules)) {
+            descs = row.subRules
+              .map((sr) => sr.description)
+              .filter((desc): desc is string => !!desc);
+          }
+          if (descs.length === 0 && row.description) {
+            descs = [row.description];
+          }
+          if (descs.length === 0 && row.conditionsJson) {
+            descs = getRuleWiseDescriptions(row.conditionsJson);
+          }
+
+          if (descs.length === 0) return <span className="text-gray-800 text-sm">—</span>;
           return (
-            <div className="flex flex-col gap-0.5 text-xs text-gray-600 max-w-[320px]">
+            <div className="flex flex-col gap-0.5 text-gray-900 max-w-[320px]">
               {descs.map((desc, i) => (
                 <span key={i} title={desc} className="line-clamp-1 block font-medium">
                   {descs.length > 1 ? `${i + 1}. ${desc}` : desc}
@@ -49,8 +61,23 @@ export function useRuleLibraryColumns({ t }: UseRuleLibraryColumnsArgs): Column<
           );
         },
       },
-      { key: 'ruleCategory', label: t('library.category'), width: '140px' },
-      { key: 'isActive', label: t('library.status'), width: '110px', isStatus: true },
+      { key: 'ruleCategory', label: t('library.category'), width: '120px', align: 'center' },
+      {
+        key: 'ruleScopeName',
+        label: t('library.scope'),
+        width: '160px',
+        align: 'center',
+        render: (val: unknown) => {
+          return val ? (
+            <span className="font-semibold text-gray-800">
+              {String(val)}
+            </span>
+          ) : (
+            <span className="text-gray-350 text-xs">—</span>
+          );
+        }
+      },
+      { key: 'isActive', label: t('library.status'), width: '120px', isStatus: true, align: 'center' },
     ],
     [t]
   );
