@@ -47,13 +47,13 @@ export default function RuleBlockItem({
     <div className={`border border-zinc-200 bg-zinc-50/10 p-3.5 rounded-xl flex flex-col gap-3 relative shadow-sm hover:shadow-md transition-all ${!isCollapsed ? 'z-10' : 'z-0'}`}>
       
       {/* Rule block header */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-4 flex-1">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full">
+        <div className="flex flex-wrap items-center gap-3 flex-grow w-full sm:w-auto">
           <span className="text-sm font-bold text-blue-800 shrink-0">{t('builder.ruleIndex', { index: index + 1 })}</span>
           
-          <div className="flex items-center gap-2 flex-grow max-w-[60%]">
+          <div className="flex items-center gap-2 flex-grow sm:flex-1 min-w-[180px]">
             <span className="text-[13px] font-semibold text-zinc-500 shrink-0">{t('targetFilter.description')}:</span>
-            <div className="flex-1">
+            <div className="flex-grow">
               <Input
                 value={ruleBlock.description}
                 onChange={(e) => onUpdateRuleBlock(index, 'description', e.target.value)}
@@ -64,7 +64,7 @@ export default function RuleBlockItem({
           </div>
         </div>
         
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
             {/* Move Up */}
             <button
               type="button"
