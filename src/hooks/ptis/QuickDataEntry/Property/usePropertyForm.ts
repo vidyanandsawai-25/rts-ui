@@ -107,6 +107,7 @@ export const usePropertyForm = (props: PropertyFormViewProps) => {
             plotAreaFtLength: propertyData?.plotAreaFtLength ?? null,
             plotAreaMtrWidth: propertyData?.plotAreaMtrWidth ?? null,
             plotAreaMtrLength: propertyData?.plotAreaMtrLength ?? null,
+            rateSectionDescription: String(formData.get("rateSectionDescription") ?? "").trim() || null,
         };
 
         confirm({

@@ -41,7 +41,7 @@ export const BasicPropertyFields = ({
     return (
         <>
             {/* Division */}
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 col-span-12 md:col-span-4 order-[1]">
                 <Label htmlFor="pd-division" className="text-xs font-semibold text-gray-700">
                     {t('property.division')} <span className="text-red-500">*</span>
                 </Label>
@@ -55,24 +55,8 @@ export const BasicPropertyFields = ({
                 />
             </div>
 
-            {/* Mouja */}
-            <div className="space-y-1.5">
-                <Label htmlFor="pd-mouja" className="text-xs font-semibold text-gray-700">
-                    {t('property.mouja')}
-                </Label>
-                <SearchSelect
-                    id="pd-mouja"
-                    name="mouja"
-                    options={moujaOptions}
-                    value={moujaId?.toString() ?? ''}
-                    placeholder={t('property.select')}
-                    onChange={handleMoujaChange}
-                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                />
-            </div>
-
             {/* Category */}
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 col-span-12 md:col-span-4 order-[2]">
                 <Label htmlFor="pd-category" className="text-xs font-semibold text-gray-700">
                     {t('property.category')}
                 </Label>
@@ -88,7 +72,7 @@ export const BasicPropertyFields = ({
             </div>
 
             {/* Flat No / Shop No */}
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 col-span-12 md:col-span-4 order-[3]">
                 <Label htmlFor="pd-flat-shop" className="text-xs font-semibold text-gray-700">
                     {t('property.flatShopNo')}
                 </Label>
@@ -99,8 +83,8 @@ export const BasicPropertyFields = ({
                     value={flatShopNo}
                     maxLength={PROPERTY_VALIDATION_RULES.FLAT_SHOP_NO_MAX_LENGTH}
                     className={`h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${showFlatShopError && !propertyValidators.isValidFlatShopNo(flatShopNo)
-                            ? 'border-red-300 focus:border-red-500'
-                            : ''
+                        ? 'border-red-300 focus:border-red-500'
+                        : ''
                         }`}
                     onChange={(e) => {
                         const sanitized = sanitizeFlatShopNo(e.target.value);
@@ -117,8 +101,39 @@ export const BasicPropertyFields = ({
                 )}
             </div>
 
+            {/* Property Description */}
+            <div className="space-y-1.5 col-span-12 md:col-span-3 order-[7]">
+                <Label htmlFor="pd-description" className="text-xs font-semibold text-gray-700">
+                    {t('property.propertyDescription')}
+                </Label>
+                <SearchSelect
+                    name="propertyDescription"
+                    options={propertyDescriptionOptions}
+                    placeholder={t('property.select')}
+                    value={propertyTypeId?.toString() ?? ''}
+                    onChange={handlePropertyDescriptionChange}
+                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                />
+            </div>
+
+            {/* Mouja */}
+            <div className="space-y-1.5 col-span-12 md:col-span-3 order-[8]">
+                <Label htmlFor="pd-mouja" className="text-xs font-semibold text-gray-700">
+                    {t('property.mouja')}
+                </Label>
+                <SearchSelect
+                    id="pd-mouja"
+                    name="mouja"
+                    options={moujaOptions}
+                    value={moujaId?.toString() ?? ''}
+                    placeholder={t('property.select')}
+                    onChange={handleMoujaChange}
+                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                />
+            </div>
+
             {/* Plot No */}
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 col-span-12 md:col-span-3 order-[11]">
                 <Label htmlFor="pd-plot" className="text-xs font-semibold text-gray-700">
                     {t('property.plotNo')}
                 </Label>
@@ -129,8 +144,8 @@ export const BasicPropertyFields = ({
                     value={plotNo}
                     maxLength={PROPERTY_VALIDATION_RULES.PLOT_NO_MAX_LENGTH}
                     className={`h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${showPlotNoError && !propertyValidators.isValidPlotNo(plotNo)
-                            ? 'border-red-300 focus:border-red-500'
-                            : ''
+                        ? 'border-red-300 focus:border-red-500'
+                        : ''
                         }`}
                     onChange={(e) => {
                         const sanitized = sanitizePlotNo(e.target.value);
@@ -145,22 +160,6 @@ export const BasicPropertyFields = ({
                         {t('property.validation.invalidPlotNo') || 'Invalid plot number. Only alphanumeric, -, and / allowed (max 10 characters).'}
                     </span>
                 )}
-            </div>
-
-
-            {/* Property Description */}
-            <div className="space-y-1.5">
-                <Label htmlFor="pd-description" className="text-xs font-semibold text-gray-700">
-                    {t('property.propertyDescription')}
-                </Label>
-                <SearchSelect
-                    name="propertyDescription"
-                    options={propertyDescriptionOptions}
-                    placeholder={t('property.select')}
-                    value={propertyTypeId?.toString() ?? ''}
-                    onChange={handlePropertyDescriptionChange}
-                    className="h-9 text-sm border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                />
             </div>
         </>
     );
