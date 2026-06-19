@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { KycFormData } from '@/types/property-kyc.types';
 import { useDigitInputs } from '@/hooks/useDigitInputs';
 import { createShowErrorHelper } from '@/lib/utils/form-validation.utils';
@@ -27,12 +27,19 @@ export const KycFormFields: React.FC<KycFormFieldsProps> = ({
   aadharInput,
   isSubmitted = false,
 }) => {
+  const [focusedField, setFocusedField] = useState<string | null>(null);
+
   // Use extracted validation utility for better testability
-  const showError = createShowErrorHelper(
+  const baseShowError = createShowErrorHelper(
     formData,
     { mobile: mobileInput, alternateMobile: alternateMobileInput, aadhar: aadharInput },
     isSubmitted
   );
+
+  const showError = (field: keyof KycFormData | 'mobile' | 'alternateMobile' | 'aadhar', isValid: boolean): boolean => {
+    if (focusedField === field) return false;
+    return baseShowError(field, isValid);
+  };
 
   return (
     <div className="space-y-3">
@@ -44,16 +51,20 @@ export const KycFormFields: React.FC<KycFormFieldsProps> = ({
           setFormData={setFormData}
           ownerTypeOptions={ownerTypeOptions}
           showError={showError}
+          onFocusField={setFocusedField}
+          onBlurField={() => setFocusedField(null)}
         />
       </div>
 
       {/* Row 2: Address & Email Info - Shop Name, Address, Email ID */}
-      <div className="grid grid-cols-4 gap-x-4 gap-y-3">
+      <div className="grid grid-cols-12 gap-x-4 gap-y-3">
         <AddressInfoFields
           t={t}
           formData={formData}
           setFormData={setFormData}
           showError={showError}
+          onFocusField={setFocusedField}
+          onBlurField={() => setFocusedField(null)}
         />
       </div>
 
@@ -72,4 +83,3 @@ export const KycFormFields: React.FC<KycFormFieldsProps> = ({
     </div>
   );
 };
-

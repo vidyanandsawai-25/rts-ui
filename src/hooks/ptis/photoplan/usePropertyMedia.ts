@@ -19,7 +19,7 @@ export function usePropertyMedia({
 }: UsePropertyMediaProps) {
   const t = useTranslations('ptis');
   const [showMoreImages, setShowMoreImages] = useState(false);
-  const [hoverPreview, setHoverPreview] = useState<{ src: string; title: string } | null>(null);
+  const [hoverPreview, setHoverPreview] = useState<{ src: string; src2?: string; title: string } | null>(null);
   const [photos, setPhotos] = useState<PropertyPhotoDto[]>(initialPhotos);
   const [prevInitialPhotos, setPrevInitialPhotos] = useState<PropertyPhotoDto[]>(initialPhotos);
   const [fullyLoadedIds, setFullyLoadedIds] = useState<Set<number>>(() => new Set());
@@ -96,8 +96,8 @@ export function usePropertyMedia({
     });
   }, [categories, propertyPhoto, photoPlanPhoto]);
 
-  const handleImageHover = useCallback((src: string, title: string) => {
-    setHoverPreview({ src, title });
+  const handleImageHover = useCallback((src: string, title: string, src2?: string) => {
+    setHoverPreview({ src, src2, title });
   }, []);
 
   const handleImageLeave = useCallback(() => {

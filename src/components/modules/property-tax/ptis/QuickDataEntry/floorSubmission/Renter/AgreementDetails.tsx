@@ -386,13 +386,13 @@ const AgreementDetails = memo(({ formData, setFormData, existingFloors = [], cur
               className="border-none bg-transparent h-8 p-0 text-xs font-medium flex-1 outline-none min-w-0 text-slate-700" />
               <Calendar className="w-4 h-4 text-gray-400 cursor-pointer shrink-0" tabIndex={-1} onClick={() => triggerDatePicker(toDateRef)} />
             </div>
-            <Input type="date" ref={fromDateRef} naked tabIndex={-1} className="absolute inset-0 opacity-0 pointer-events-none" value={formData?.renterDetails?.agreementDateFrom || ""} onChange={e => {
+            <Input type="date" ref={fromDateRef} naked tabIndex={-1} className="absolute inset-0 opacity-0 pointer-events-none" min={formData?.renterDetails?.agreementDate || ""} value={formData?.renterDetails?.agreementDateFrom || ""} onChange={e => {
               setFormData(prev => {
                 return { ...prev, renterDetails: { ...prev.renterDetails, agreementDateFrom: e.target.value } };
               });
               markTouched('agreementDateFrom');
             }} />
-            <Input type="date" ref={toDateRef} naked tabIndex={-1} className="absolute inset-0 opacity-0 pointer-events-none" value={formData?.renterDetails?.agreementDateTo || ""} onChange={e => {
+            <Input type="date" ref={toDateRef} naked tabIndex={-1} className="absolute inset-0 opacity-0 pointer-events-none" min={formData?.renterDetails?.agreementDateFrom || formData?.renterDetails?.agreementDate || ""} value={formData?.renterDetails?.agreementDateTo || ""} onChange={e => {
               setFormData(prev => {
                 return { ...prev, renterDetails: { ...prev.renterDetails, agreementDateTo: e.target.value } };
               });

@@ -50,7 +50,7 @@
   "confirmCombineDiffOwnerTitle": "मालिक के नाम अलग-अलग हैं",
   "confirmCombineDiffOwnerDesc": "चयनित संपत्तियों के लिए मालिक के नाम अलग-अलग हैं। क्या आप मिलाना चाहते हैं? आगे बढ़ने के लिए कंबाइन पर क्लिक करें या रद्द करने के लिए रद्द करें पर क्लिक करें।",
   "propertyTypeMismatchAlert": "चयनित संपत्तियों के प्रकार अलग-अलग हैं। कृपया आगे बढ़ने के लिए ड्रॉपडाउन से संपत्ति का प्रकार चुनें।",
-  "remarkLabel": "टिप्पणी",
+  "remarkLabel": "संयुक्त टिप्पणी",
   "remarkPlaceholder": "संपत्तियों को मिलाने के लिए टिप्पणी दर्ज करें",
   "remarkRequiredError": "कृपया टिप्पणी दर्ज करें",
   "cannotUncheckBaseProperty": "प्राथमिक संपत्ति का चयन नहीं हटाया जा सकता",
@@ -66,8 +66,11 @@
     "description": "जब हम संपत्ति डेटा प्राप्त करते हैं तो कृपया प्रतीक्षा करें"
   },
   "combinePropertyHistory": "Combine Property History Details",
+  "combinePropertyDetails": "संयुक्त संपत्ति विवरण",
   "viewDetails": "विवरण देखें",
   "action": "कार्रवाई",
   "showHistory": "इतिहास दिखाएं",
-  "hideHistory": "इतिहास छुपाएं"
+  "hideHistory": "इतिहास छुपाएं",
+  "basePropertyTooltip": "यह आधार संपत्ति है",
+  "combinePropertyTooltip": "इस संपत्ति को हम आधार संपत्ति में मिला रहे हैं"
 }

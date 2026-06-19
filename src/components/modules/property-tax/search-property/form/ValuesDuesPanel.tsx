@@ -8,6 +8,9 @@ import type {
 } from "@/types/property-search.types";
 import { ValueFilterGroup } from "./ValueFilterGroup";
 import type { Option } from "@/components/common";
+import { Button } from "@/components/common";
+import { Search, RotateCcw } from "lucide-react";
+import { SEARCH_BRAND_BUTTON, SEARCH_RESET_BUTTON } from "../form-field-styles";
 
 interface ValuesDuesPanelProps {
   formState: SearchCriteria;
@@ -22,6 +25,9 @@ interface ValuesDuesPanelProps {
   onInputBlur: (
     field: keyof SearchCriteria
   ) => (e: React.FocusEvent<HTMLInputElement>) => void;
+  searchPending: boolean;
+  isSubmitDisabled: boolean;
+  onReset: () => void;
 }
 
 export function ValuesDuesPanel({
@@ -31,8 +37,12 @@ export function ValuesDuesPanel({
   onSelectChange,
   onInputChange,
   onInputBlur,
+  searchPending,
+  isSubmitDisabled,
+  onReset,
 }: ValuesDuesPanelProps) {
   const t = useTranslations("propertySearch.form");
+  const tCommon = useTranslations("common");
 
   const filterTypeOptions: Option[] = [
     { label: t("options.filterType.exact"), value: "exact" },
@@ -51,7 +61,7 @@ export function ValuesDuesPanel({
     };
 
   return (
-    <div className="overflow-visible pb-1 pt-1.5">
+    <div className="overflow-visible px-2 pb-1 pt-1.5">
       <div className="flex flex-wrap items-start gap-x-1.5 gap-y-2">
         <ValueFilterGroup
           title={t("fields.filters")}
@@ -66,6 +76,32 @@ export function ValuesDuesPanel({
           onInputChange={onInputChange}
           onInputBlur={onInputBlur}
         />
+        <div className="flex flex-col">
+          <div className="mb-1 h-[18px] flex items-center"></div>
+          <div className="flex items-center gap-1.5 h-8">
+            <Button
+              type="submit"
+              variant="primary"
+              size="sm"
+              icon={Search}
+              disabled={searchPending || isSubmitDisabled}
+              className={`${SEARCH_BRAND_BUTTON} cursor-pointer disabled:cursor-not-allowed`}
+            >
+              {tCommon("actions.search")}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              icon={RotateCcw}
+              onClick={onReset}
+              disabled={searchPending}
+              className={`${SEARCH_RESET_BUTTON} cursor-pointer disabled:cursor-not-allowed`}
+            >
+              {tCommon("actions.reset")}
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );

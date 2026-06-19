@@ -21,7 +21,7 @@ import {
   deleteWaterConnection,
   ApiError,
 } from '@/lib/api/waterconnection.services';
-import { getPropertyBasicDetails } from '@/lib/api/property-basic-details.service';
+import { getPropertyBasicDetails } from '@/lib/api/ptis/propertybasicdetails/property-basic-details.service';
 import { getPropertyKycById } from '@/lib/api/property-kyc.service';
 
 /** Lightweight action — fetches ONLY the paged connections list.

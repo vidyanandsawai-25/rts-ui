@@ -118,7 +118,7 @@ export function PropertyDetailsFields({
           value={formData.oldEgovNo}
           maxLength={10}
           onChange={(e) => {
-            const value = e.target.value.replace(/[^A-Za-z0-9\-\/]/g, '');
+            const value = e.target.value.replace(/[^A-Za-z0-9\-\/ऀ-ॿ]/g, '');
             onFieldChange('oldEgovNo', value);
           }}
         />

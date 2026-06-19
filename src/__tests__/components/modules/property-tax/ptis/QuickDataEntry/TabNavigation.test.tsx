@@ -5,6 +5,13 @@ import { usePathname, useSearchParams, useParams } from 'next/navigation';
 
 // Mock next/navigation
 vi.mock('next/navigation', () => ({
+    useRouter: () => ({
+        push: vi.fn(),
+        replace: vi.fn(),
+        refresh: vi.fn(),
+        back: vi.fn(),
+        forward: vi.fn(),
+    }),
     usePathname: vi.fn(),
     useSearchParams: vi.fn(),
     useParams: vi.fn(),
@@ -43,7 +50,7 @@ describe('TabNavigation', () => {
 
         render(<TabNavigation />);
 
-        const propertyTab = screen.getByText('Property Info').closest('a');
+        const propertyTab = screen.getByText('Property Info').closest('button');
         expect(propertyTab).toHaveClass('from-blue-500'); // Based on the gradient class for Property
     });
 
@@ -58,10 +65,10 @@ describe('TabNavigation', () => {
 
         render(<TabNavigation />);
 
-        const societyTab = screen.getByText('Society Info').closest('a');
-        expect(societyTab?.getAttribute('href')).toContain('wardNo=10');
-        expect(societyTab?.getAttribute('href')).toContain('wardId=1');
-        expect(societyTab?.getAttribute('href')).toContain('Society');
+        const societyTab = screen.getByText('Society Info').closest('button');
+        expect(societyTab?.getAttribute('data-href')).toContain('wardNo=10');
+        expect(societyTab?.getAttribute('data-href')).toContain('wardId=1');
+        expect(societyTab?.getAttribute('data-href')).toContain('Society');
     });
 
     it('updates returnTab based on the selected quick data entry tab', () => {
@@ -74,7 +81,7 @@ describe('TabNavigation', () => {
 
         render(<TabNavigation />);
 
-        const kycTab = screen.getByText('Kyc Info').closest('a');
-        expect(kycTab?.getAttribute('href')).toContain('returnTab=kycdetails');
+        const kycTab = screen.getByText('Kyc Info').closest('button');
+        expect(kycTab?.getAttribute('data-href')).toContain('returnTab=kycdetails');
     });
 });

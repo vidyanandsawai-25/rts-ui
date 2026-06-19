@@ -16,6 +16,7 @@ import {
   convertSqMToSqFt,
   calculateBuiltUpArea
 } from "@/lib/utils/RoomSubmission/conversions";
+import { translateDevanagariDigits } from "@/lib/utils/input-sanitization";
 
 // Import refactored components
 import { FloorFormFields } from "./components/FloorFormFields";
@@ -86,7 +87,7 @@ export default function FloorInformationForm({
   const handleFieldChange = (field: string, value: string) => {
     // If carpet area in sq m is changed, calculate all derived fields
     if (field === 'oldAreaSqMeter') {
-      const carpetAreaSqM = parseFloat(value) || 0;
+      const carpetAreaSqM = parseFloat(translateDevanagariDigits(value)) || 0;
 
       // Calculate Carpet Area (Sq Ft) from Carpet Area (Sq M)
       const carpetAreaSqFt = carpetAreaSqM > 0 ? convertSqMToSqFt(carpetAreaSqM) : 0;

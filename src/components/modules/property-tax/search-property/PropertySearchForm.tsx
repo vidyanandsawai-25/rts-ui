@@ -117,12 +117,9 @@ export function PropertySearchForm({
 
       <SearchTabs
         activeTab={activeTab}
-        searchPending={searchPending}
-        isSubmitDisabled={isSubmitDisabled}
         validationError={validationError}
         validationRef={validationRef}
         onTabChange={onTabChange}
-        onReset={handleReset}
         activeFiltersTags={activeFiltersTags}
         quickPanel={
           <div data-filter-field>
@@ -134,6 +131,9 @@ export function PropertySearchForm({
               disabled={disabled}
               setField={setField}
               onFieldBlur={handleInputBlur}
+              searchPending={searchPending}
+              isSubmitDisabled={isSubmitDisabled}
+              onReset={handleReset}
             />
           </div>
         }
@@ -145,6 +145,9 @@ export function PropertySearchForm({
               disabled={disabled}
               onInputChange={handleInputChange}
               onInputBlur={handleInputBlur}
+              searchPending={searchPending}
+              isSubmitDisabled={isSubmitDisabled}
+              onReset={handleReset}
             />
           </div>
         }
@@ -157,6 +160,9 @@ export function PropertySearchForm({
               onSelectChange={handleSelectChange}
               onInputChange={handleInputChange}
               onInputBlur={handleInputBlur}
+              searchPending={searchPending}
+              isSubmitDisabled={isSubmitDisabled}
+              onReset={handleReset}
             />
           </div>
         }

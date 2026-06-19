@@ -25,6 +25,9 @@ vi.mock('next-intl', () => ({
       'kyc.shopName': 'Shop Name',
       'kyc.address': 'Address',
       'kyc.emailId': 'Email ID',
+      'kyc.pinCode': 'Pin Code',
+      'kyc.enterPinCode': 'Enter 6 digit pin code',
+      'kyc.validation.invalidPinCode': 'Pin code must be exactly 6 digits',
       'kyc.aadharCardNo': 'Aadhar Card No',
       'kyc.mobileNo': 'Mobile No',
       'kyc.select': 'Select',
@@ -88,6 +91,7 @@ const mockKycDetailsData = {
   flatOrShopNoEnglish: '101',
   mobileNo: '9876543210',
   emailId: 'john@example.com',
+  pinCode: '123456',
 };
 
 describe('KycFormView', () => {
@@ -109,6 +113,7 @@ describe('KycFormView', () => {
     expect(screen.getByDisplayValue('My Shop')).toBeInTheDocument();
     expect(screen.getByDisplayValue('123 Street')).toBeInTheDocument();
     expect(screen.getByDisplayValue('john@example.com')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('123456')).toBeInTheDocument();
 
     // Check Aadhar digits
     const aadharInputs = screen.getAllByLabelText(/Aadhar Card No/i);
@@ -180,6 +185,7 @@ describe('KycFormView', () => {
           ownerName: 'John Smith',
           mobileNo: '9876543210',
           adharCardNo: '223456789012',
+          pinCode: '123456',
         }),
         'en'
       );

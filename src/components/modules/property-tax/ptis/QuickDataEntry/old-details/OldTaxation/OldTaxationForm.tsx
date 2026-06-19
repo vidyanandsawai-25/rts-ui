@@ -25,6 +25,7 @@ export default function OldTaxationForm({
     handleUpdate,
     handleInputChange,
     isChanged,
+    isRequiredFieldsValid,
     t
   } = useOldTaxationForm(propertyOldDetails);
 
@@ -90,7 +91,7 @@ export default function OldTaxationForm({
             type="submit"
             onClick={handleUpdate}
             isLoading={isSubmitting}
-            disabled={isSubmitting || !isChanged}
+            disabled={isSubmitting || !isChanged || !isRequiredFieldsValid}
           />
         </div>
       </div>

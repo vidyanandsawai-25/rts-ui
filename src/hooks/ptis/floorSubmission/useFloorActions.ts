@@ -52,6 +52,7 @@ export const useFloorActions = (params: {
       setShowRoomSubmission(false);
       updateUrlParams({
         floorId: null,
+        drawer: null,
         typeOfUseId: null,
         loadFloor: null,
         loadSubFloor: null,
@@ -89,6 +90,7 @@ export const useFloorActions = (params: {
       setIsAddingNewFloor(true);
       updateUrlParams({
         floorId: null,
+        drawer: 'add',
         typeOfUseId: null,
         loadFloor: 'false',
         loadSubFloor: 'false',

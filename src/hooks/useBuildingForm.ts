@@ -18,6 +18,7 @@ import {
 } from "@/lib/utils/building-helpers";
 import { useLoading } from "@/hooks/useLoading";
 import { validateBuildingForm } from "@/lib/utils/validateBuildingForm";
+import { checkBuildingRequiredFields } from "@/lib/validation/building/checkBuildingRequiredFields";
 
 export const useBuildingForm = (
     initialData: PropertyCertificateWithStatusDto[] | null,
@@ -27,13 +28,13 @@ export const useBuildingForm = (
     const [hasChanges, setHasChanges] = useState(false);
     const { isLoading: isSaving, startLoading, stopLoading } = useLoading(false);
     const [validationErrors, setValidationErrors] = useState<Record<number, string>>({});
+    const [fieldErrors, setFieldErrors] = useState<Record<number, { number?: string; date?: string; document?: string }>>({});
     const [incompleteCertificates, setIncompleteCertificates] = useState<{ id: number; name: string }[]>([]);
     const [buildingPermission, setBuildingPermission] = useState<BuildingPermissionState>(() =>
         mapApiToBuildingState(initialData)
     );
 
     const [prevInitialData, setPrevInitialData] = useState(initialData);
-
     if (initialData !== prevInitialData) {
         setPrevInitialData(initialData);
         setBuildingPermission(mapApiToBuildingState(initialData));
@@ -41,6 +42,11 @@ export const useBuildingForm = (
 
     const clearError = useCallback((id: number) => {
         setValidationErrors((prev) => {
+            const next = { ...prev };
+            delete next[id];
+            return next;
+        });
+        setFieldErrors((prev) => {
             const next = { ...prev };
             delete next[id];
             return next;
@@ -61,14 +67,17 @@ export const useBuildingForm = (
             toast.error(t("building.errors.notFound") || "Certificate not found.");
             return;
         }
-        const propId = Number(propertyId);
-        if (!Number.isFinite(propId)) {
-            toast.error(t("building.saveError") || "Invalid property ID");
+
+        const validationError = checkBuildingRequiredFields(certificate, t);
+        if (validationError) {
+            toast.error(validationError);
             return;
         }
+
+        const propId = Number(propertyId);
         const certTypeId = certificate.certificateTypeId;
-        if (!Number.isFinite(certTypeId)) {
-            toast.error(t("building.errors.notFound") || "Certificate type is missing.");
+        if (!Number.isFinite(propId) || !Number.isFinite(certTypeId)) {
+            toast.error(t("building.saveError") || "Invalid property ID");
             return;
         }
 
@@ -144,17 +153,25 @@ export const useBuildingForm = (
     const handleSave = async () => {
         if (isSaving) return { success: false, isValid: true };
 
-        const { isValid, errors, incompleteCertificates: invalidCerts } = validateBuildingForm(
-            buildingPermission, (key, params) => t(`common.${key}`, params)
+        const { isValid, errors, incompleteCertificates: invalidCerts, fieldErrors: fErrors } = validateBuildingForm(
+            buildingPermission,
+            (key, params) => {
+                if (key.startsWith("building.")) {
+                    return t(key, params);
+                }
+                return t(`common.${key}`, params);
+            }
         );
 
         if (!isValid) {
             setValidationErrors(errors);
+            setFieldErrors(fErrors || {});
             setIncompleteCertificates(invalidCerts);
             return { success: false, isValid: false, incompleteCertificates: invalidCerts };
         }
 
         setValidationErrors({});
+        setFieldErrors({});
         setIncompleteCertificates([]);
         startLoading();
         try {
@@ -166,19 +183,17 @@ export const useBuildingForm = (
                 toast.success(t("building.saveSuccess") || "Building permissions saved successfully!");
                 return { success: true, isValid: true };
             } else {
-                let displayError = t("building.saveError") || "Error saving building permissions!";
-                if (response.error) {
-                    displayError = parseAndLocalizeBackendError(response.error, buildingPermission, (key) => t(key));
-                }
+                const displayError = response.error 
+                    ? parseAndLocalizeBackendError(response.error, buildingPermission, (key) => t(key))
+                    : (t("building.saveError") || "Error saving building permissions!");
                 toast.error(displayError);
                 return { success: false, isValid: true };
             }
         } catch (error: unknown) {
             const rawMsg = error instanceof Error ? error.message : "";
-            let displayError = t("building.saveError") || "Error saving building permissions!";
-            if (rawMsg) {
-                displayError = parseAndLocalizeBackendError(rawMsg, buildingPermission, (key) => t(key));
-            }
+            const displayError = rawMsg 
+                ? parseAndLocalizeBackendError(rawMsg, buildingPermission, (key) => t(key))
+                : (t("building.saveError") || "Error saving building permissions!");
             toast.error(displayError);
             return { success: false, isValid: true };
         } finally {
@@ -191,6 +206,7 @@ export const useBuildingForm = (
         hasChanges,
         isSaving,
         validationErrors,
+        fieldErrors,
         incompleteCertificates,
         handleFileUpload,
         handleToggleEnabled,

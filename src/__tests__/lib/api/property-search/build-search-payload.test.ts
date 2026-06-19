@@ -98,6 +98,21 @@ describe("buildPropertySearchPayload", () => {
     expect(payload.pageNumber).toBe(1);
   });
 
+  it("handles commas and decimals in rateableValue values-dues payload building", () => {
+    const payload = buildPropertySearchPayload(
+      null,
+      {
+        ...INITIAL_SEARCH_CRITERIA,
+        rateableValueFilter: "exact",
+        rateableValueFrom: "1,07,45,17,92,073.64",
+      },
+      true,
+      "values-dues"
+    );
+
+    expect(payload.amountValue).toBe(107451792073.64);
+  });
+
   it("maps values-dues between search to AmountValue and AmountTo only", () => {
     const payload = buildPropertySearchPayload(
       null,
@@ -117,5 +132,53 @@ describe("buildPropertySearchPayload", () => {
     expect(payload.amountFilterOperator).toBeUndefined();
     expect(payload.pageSize).toBe(-1);
     expect(payload.pageNumber).toBe(1);
+  });
+
+  it("omits propertyNoFrom and propertyNoTo from payload when they are different (range search)", () => {
+    const payload = buildPropertySearchPayload(
+      null,
+      {
+        ...INITIAL_SEARCH_CRITERIA,
+        propertyNoFrom: "50",
+        propertyNoTo: "100",
+      },
+      true,
+      "quick-search"
+    );
+
+    expect(payload.propertyNoFrom).toBeUndefined();
+    expect(payload.propertyNoTo).toBeUndefined();
+  });
+
+  it("keeps propertyNoFrom and propertyNoTo in payload when only propertyNoFrom is provided", () => {
+    const payload = buildPropertySearchPayload(
+      null,
+      {
+        ...INITIAL_SEARCH_CRITERIA,
+        propertyNoFrom: "100",
+        propertyNoTo: "",
+      },
+      true,
+      "quick-search"
+    );
+
+    expect(payload.propertyNoFrom).toBe("100");
+    expect(payload.propertyNoTo).toBe("100");
+  });
+
+  it("keeps propertyNoFrom and propertyNoTo in payload when they are equal", () => {
+    const payload = buildPropertySearchPayload(
+      null,
+      {
+        ...INITIAL_SEARCH_CRITERIA,
+        propertyNoFrom: "100",
+        propertyNoTo: "100",
+      },
+      true,
+      "quick-search"
+    );
+
+    expect(payload.propertyNoFrom).toBe("100");
+    expect(payload.propertyNoTo).toBe("100");
   });
 });

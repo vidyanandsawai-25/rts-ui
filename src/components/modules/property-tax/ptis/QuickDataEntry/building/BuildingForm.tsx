@@ -18,6 +18,7 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
         hasChanges,
         isSaving,
         validationErrors,
+        fieldErrors,
         incompleteCertificates,
         handleFileUpload,
         handleToggleEnabled,
@@ -26,9 +27,10 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
         t
     } = useBuildingForm(initialBuildingPermission, propertyId);
 
-    const [selectedTypeId, setSelectedTypeId] = useState<number | null>(null);
+    const [selectedTypeId] = useState<number | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [showActiveFirst, setShowActiveFirst] = useState(false);
+    const [customSelectedTypeId, setCustomSelectedTypeId] = useState<number | null>(null);
 
     const sortedCertificates = useMemo(() => {
         return Object.values(buildingPermission).sort(
@@ -54,29 +56,24 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
         return searched;
     }, [sortedCertificates, searchTerm, showActiveFirst]);
 
-    // Derive selectedTypeId based on filtered list updates to avoid useEffect setState cascading renders
     const activeSelectedTypeId = useMemo(() => {
-        if (selectedTypeId !== null) {
-            const exists = filteredCertificates.some(c => c.certificateTypeId === selectedTypeId);
-            if (exists) return selectedTypeId;
+        const targetId = customSelectedTypeId !== null ? customSelectedTypeId : selectedTypeId;
+        if (targetId !== null) {
+            const exists = filteredCertificates.some(c => c.certificateTypeId === targetId);
+            if (exists) return targetId;
         }
         return filteredCertificates.length > 0 ? filteredCertificates[0].certificateTypeId : null;
-    }, [filteredCertificates, selectedTypeId]);
+    }, [filteredCertificates, selectedTypeId, customSelectedTypeId]);
 
     const selectedCert = activeSelectedTypeId !== null ? buildingPermission[activeSelectedTypeId] : null;
 
-    /** When user clicks a tag in the error banner, scroll to and select that certificate */
     const handleErrorTagClick = useCallback((certificateTypeId: number) => {
-        // Clear any active filter that might hide the certificate
         if (showActiveFirst) {
             setShowActiveFirst(false);
         }
         setSearchTerm("");
+        setCustomSelectedTypeId(certificateTypeId);
 
-        // Select the certificate
-        setSelectedTypeId(certificateTypeId);
-
-        // Scroll the sidebar card into view with a slight delay for filter reset
         requestAnimationFrame(() => {
             const card = document.querySelector(`[data-certificate-id="${certificateTypeId}"]`);
             if (card && typeof card.scrollIntoView === "function") {
@@ -93,7 +90,7 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
             );
             if (activeIncomplete.length > 0) {
                 const firstInvalidId = activeIncomplete[0].id;
-                setSelectedTypeId(firstInvalidId);
+                setCustomSelectedTypeId(firstInvalidId);
                 requestAnimationFrame(() => {
                     const card = document.querySelector(`[data-certificate-id="${firstInvalidId}"]`);
                     if (card && typeof card.scrollIntoView === "function") {
@@ -113,7 +110,6 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
                             {t("building.title")}
                         </h3>
 
-                        {/* Validation Error Banner with clickable tags */}
                         {incompleteCertificates.filter(c => buildingPermission[c.id]?.enabled).length > 0 && (
                             <ValidationErrorBanner
                                 incompleteCertificates={incompleteCertificates.filter(c => buildingPermission[c.id]?.enabled)}
@@ -123,7 +119,6 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
                         )}
 
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-start">
-                            {/* Left Sidebar */}
                             <div className="lg:col-span-5 xl:col-span-4">
                                 <BuildingSidebar
                                     searchTerm={searchTerm}
@@ -132,14 +127,13 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
                                     onShowActiveChange={setShowActiveFirst}
                                     certificates={filteredCertificates}
                                     selectedTypeId={activeSelectedTypeId}
-                                    onSelect={setSelectedTypeId}
+                                    onSelect={setCustomSelectedTypeId}
                                     onToggleEnabled={handleToggleEnabled}
                                     validationErrors={validationErrors}
                                     t={t}
                                 />
                             </div>
 
-                            {/* Right Detail Pane */}
                             <div className="lg:col-span-7 xl:col-span-8">
                                 <BuildingDetailPane
                                     data={selectedCert}
@@ -154,12 +148,12 @@ const BuildingForm: React.FC<BuildingFormProps> = ({
                                         }
                                     }}
                                     validationError={activeSelectedTypeId !== null ? validationErrors[activeSelectedTypeId] : undefined}
+                                    fieldErrors={activeSelectedTypeId !== null ? fieldErrors[activeSelectedTypeId] : undefined}
                                     t={t}
                                 />
                             </div>
                         </div>
 
-                        {/* Save Button Section */}
                         <div className="flex justify-end mt-3 pt-2 border-t border-blue-100">
                             <SaveButton
                                 onClick={handleSaveClick}

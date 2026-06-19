@@ -1,7 +1,15 @@
 import { Input, SearchSelect } from "@/components/common";
 import { Label } from "@/components/common/label";
-import { societyValidators, SOCIETY_VALIDATION_RULES, propertyValidators } from '@/lib/utils/kyc-validation.constants';
-import { sanitizeEmailStrict, sanitizeName, sanitizeAddress, capitalizeEachWord } from '@/lib/utils/input-sanitization';
+import {
+    societyValidators,
+    SOCIETY_VALIDATION_RULES
+} from '@/lib/utils/society-validation/society-validation';
+import {
+    sanitizeEmailStrict,
+    sanitizeName,
+    sanitizeAddress,
+    capitalizeEachWord
+} from '@/lib/utils/input-sanitization';
 import { useTranslations } from "next-intl";
 
 interface SocietyGeneralFieldsProps {
@@ -23,6 +31,8 @@ interface SocietyGeneralFieldsProps {
             'landOwnerName' | 'builderName' | 'societyName' | 'managerName' | 'secretaryName' | 'societyAddress',
         isValid: boolean
     ) => boolean;
+    onFocusField: (field: string) => void;
+    onBlurField: () => void;
 }
 
 export const SocietyGeneralFields = ({
@@ -41,6 +51,8 @@ export const SocietyGeneralFields = ({
     wingOptions,
     handleWingChange,
     showError,
+    onFocusField,
+    onBlurField,
 }: SocietyGeneralFieldsProps) => {
 
     const t = useTranslations('quickDataEntry');
@@ -61,6 +73,8 @@ export const SocietyGeneralFields = ({
                         ? 'border-red-300 focus:border-red-500'
                         : ''
                         }`}
+                    onFocus={() => onFocusField('landOwnerName')}
+                    onBlur={onBlurField}
                     onChange={(e) => {
                         // Sanitize to remove invalid characters immediately
                         const sanitized = sanitizeName(e.target.value);
@@ -92,6 +106,8 @@ export const SocietyGeneralFields = ({
                         ? 'border-red-300 focus:border-red-500'
                         : ''
                         }`}
+                    onFocus={() => onFocusField('builderName')}
+                    onBlur={onBlurField}
                     onChange={(e) => {
                         // Sanitize to remove invalid characters immediately
                         const sanitized = sanitizeName(e.target.value);
@@ -123,6 +139,8 @@ export const SocietyGeneralFields = ({
                         ? 'border-red-300 focus:border-red-500'
                         : ''
                         }`}
+                    onFocus={() => onFocusField('societyName')}
+                    onBlur={onBlurField}
                     onChange={(e) => {
                         // Sanitize to remove invalid characters immediately
                         const sanitized = sanitizeName(e.target.value);
@@ -172,6 +190,8 @@ export const SocietyGeneralFields = ({
                             ? 'border-red-300 focus:border-red-500'
                             : ''
                             }`}
+                        onFocus={() => onFocusField('societyEmail')}
+                        onBlur={onBlurField}
                         onChange={(e) => {
                             const value = e.target.value;
                             // Sanitize email input - removes spaces and invalid characters
@@ -196,10 +216,12 @@ export const SocietyGeneralFields = ({
                         value={societyAddress}
                         placeholder={t('society.societyAddressPlaceholder')}
                         maxLength={SOCIETY_VALIDATION_RULES.ADDRESS_MAX_LENGTH}
-                        className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${showError('societyAddress', !societyAddress || propertyValidators.isValidAddress(societyAddress))
+                        className={`h-9 text-sm border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 ${showError('societyAddress', !societyAddress || societyValidators.isValidAddress(societyAddress))
                             ? 'border-red-300 focus:border-red-500'
                             : ''
                             }`}
+                        onFocus={() => onFocusField('societyAddress')}
+                        onBlur={onBlurField}
                         onChange={(e) => {
                             // Sanitize to remove invalid characters immediately
                             const sanitized = sanitizeAddress(e.target.value);
@@ -208,7 +230,7 @@ export const SocietyGeneralFields = ({
                             }
                         }}
                     />
-                    {showError('societyAddress', !societyAddress || propertyValidators.isValidAddress(societyAddress)) && (
+                    {showError('societyAddress', !societyAddress || societyValidators.isValidAddress(societyAddress)) && (
                         <span className="text-xs text-red-500">
                             {t('society.validation.societyAddress')}
                         </span>

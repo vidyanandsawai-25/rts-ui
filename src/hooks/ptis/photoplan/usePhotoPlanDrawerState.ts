@@ -40,9 +40,13 @@ export function usePhotoPlanDrawerState({
     return initialHasImages ? 0 : null;
   });
 
-  const [viewMode, setViewModeState] = useState<'grid' | 'viewer'>(() => {
+  const [viewMode, setViewModeState] = useState<'grid' | 'viewer' | 'compare'>(() => {
     const val = searchParams.get('viewMode');
-    return (val === 'grid' || val === 'viewer') ? val : (initialHasImages ? 'viewer' : 'grid');
+    if (val === 'grid' || val === 'viewer' || val === 'compare') return val;
+    if (initialCat?.photoTypeCode === 'CHANGE_DETECTION') {
+      return initialHasImages ? 'compare' : 'grid';
+    }
+    return initialHasImages ? 'viewer' : 'grid';
   });
 
   const [rotation, setRotation] = useState(0);
@@ -73,20 +77,22 @@ export function usePhotoPlanDrawerState({
 
   const setSelectedImageIndex = useCallback((idx: number | null) => setSelectedImageIndexState(idx), []);
 
-  const setViewMode = useCallback((mode: 'grid' | 'viewer') => setViewModeState(mode), []);
+  const setViewMode = useCallback((mode: 'grid' | 'viewer' | 'compare') => setViewModeState(mode), []);
 
   const setSelectedCategoryIndex = useCallback((idx: number) => {
     setSelectedCategoryIndexState(idx);
     const targetCat = cachedCategories[idx];
     const hasImgs = targetCat?.images && targetCat.images.length > 0;
     const nextImgIdx = hasImgs ? 0 : null;
-    const nextViewMode = hasImgs ? 'viewer' : 'grid';
+    const nextViewMode = targetCat?.photoTypeCode === 'CHANGE_DETECTION'
+      ? (hasImgs ? 'compare' : 'grid')
+      : (hasImgs ? 'viewer' : 'grid');
 
     setSelectedImageIndexState(nextImgIdx);
     setViewModeState(nextViewMode);
   }, [cachedCategories]);
 
-  const setViewerIndexAndMode = useCallback((idx: number | null, mode: 'grid' | 'viewer') => {
+  const setViewerIndexAndMode = useCallback((idx: number | null, mode: 'grid' | 'viewer' | 'compare') => {
     setSelectedImageIndexState(idx);
     setViewModeState(mode);
   }, []);
@@ -101,7 +107,9 @@ export function usePhotoPlanDrawerState({
     const hasImages = targetCat?.images && targetCat.images.length > 0;
 
     let targetIdx: number | null = hasImages ? 0 : null;
-    let targetMode: 'grid' | 'viewer' = hasImages ? 'viewer' : 'grid';
+    let targetMode: 'grid' | 'viewer' | 'compare' = targetCat?.photoTypeCode === 'CHANGE_DETECTION'
+      ? (hasImages ? 'compare' : 'grid')
+      : (hasImages ? 'viewer' : 'grid');
     
     const selParam = searchParams.get('selectedImageIndex');
     if (selParam !== null) {
@@ -109,7 +117,7 @@ export function usePhotoPlanDrawerState({
       if (!isNaN(parsed)) targetIdx = parsed;
     }
     const modeParam = searchParams.get('viewMode');
-    if (modeParam === 'grid' || modeParam === 'viewer') targetMode = modeParam;
+    if (modeParam === 'grid' || modeParam === 'viewer' || modeParam === 'compare') targetMode = modeParam;
 
     setSelectedImageIndexState(targetIdx);
     setViewModeState(targetMode);

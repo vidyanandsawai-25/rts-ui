@@ -36,7 +36,8 @@ export const useApartmentQCOffsetActions = (state: RoomSubmissionState, handleEd
     offsetList, setOffsetList, offsetData, setOffsetData,
     selectedOperation, setSelectedOperation, setIsShakingSubtract,
     setOffsetValidationError, selectedShape, setSelectedShape,
-    setOffsetModalOpen, setCurrentRoomOffsets, setFormData,
+    setOffsetModalOpen, setCurrentRoomOffsets, currentRoomOffsets,
+    setFormData,
     rooms, setRooms, editingIndex, pendingOffsetModalOpenRef, formData, shapeParameters,
   } = state;
 
@@ -136,6 +137,15 @@ export const useApartmentQCOffsetActions = (state: RoomSubmissionState, handleEd
     }
   };
 
+  const handleOffsetClose = useCallback(() => {
+    if (!currentRoomOffsets || currentRoomOffsets.length === 0) {
+      setFormData(prev => ({ ...prev, offsetMinus: "No" }));
+    }
+    setOffsetModalOpen(false);
+    setOffsetList([]);
+    setOffsetData(INITIAL_OFFSET_DATA);
+  }, [currentRoomOffsets, setFormData, setOffsetModalOpen, setOffsetList, setOffsetData]);
+
   const handleDeleteOffset = (idx: number) => {
     confirm({
       variant: 'delete',
@@ -189,7 +199,7 @@ export const useApartmentQCOffsetActions = (state: RoomSubmissionState, handleEd
 
   return {
     handleOpenOffset, handleSubtractClick, handleAddClick, handleOffsetInputChange,
-    handleShapeChange, handleAddOffset, handleOffsetOk, handleDeleteOffset,
+    handleShapeChange, handleAddOffset, handleOffsetOk, handleOffsetClose, handleDeleteOffset,
     calculateAdjustedRoomTotal
   };
 };

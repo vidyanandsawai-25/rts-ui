@@ -59,6 +59,15 @@ export interface GetPropertyCombineDetailsParams {
 
 export interface GetCombinePropertiesHistoryParams {
   sourcePropertyId?: number;
+  wardId?: number;
+  propertyNo?: string;
+  partitionNo?: string;
+  pageNumber?: number;
+  pageSize?: number;
+  searchTerm?: string;
+  sortBy?: string;
+  sortOrder?: string;
+  filterLogic?: number;
 }
 
 export interface CombinePropertyPayload {

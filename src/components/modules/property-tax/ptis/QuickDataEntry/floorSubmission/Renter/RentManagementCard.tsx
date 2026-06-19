@@ -112,6 +112,7 @@ export const RentManagementCard = React.memo(({
                                     renterDetails: {
                                         ...prev.renterDetails, 
                                         incrementFrequency: frequency, 
+                                        incrementValue: "",
                                         customDateRanges: frequency === "Custom Date" ? (prev.renterDetails?.customDateRanges || []) : []
                                     }
                                 };
@@ -139,7 +140,7 @@ export const RentManagementCard = React.memo(({
                         onChange={(_, val) => {
                             markTouched('incrementType');
                             setFormData((prev) => {
-                                return {...prev, renterDetails: {...prev.renterDetails, incrementType: val as RenterFormDataDetails['incrementType']}};
+                                return {...prev, renterDetails: {...prev.renterDetails, incrementType: val as RenterFormDataDetails['incrementType'], incrementValue: ""}};
                             });
                         }}
                         onBlur={() => markTouched('incrementType')}

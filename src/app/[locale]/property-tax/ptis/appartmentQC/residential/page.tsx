@@ -11,6 +11,8 @@ interface PageProps {
     pageNumber?: string;
     pageSize?: string;
     searchTerm?: string;
+    sortBy?: string;
+    sortOrder?: string;
     filterWing?: string;
     filterFlatOrShopNo?: string;
     filterApartmentType?: string;
@@ -28,6 +30,8 @@ const Page = async ({ searchParams }: PageProps) => {
   const pageNumber = Number(params.pageNumber) || 1;
   const pageSize = Number(params.pageSize) || 10;
   const searchTerm = params.searchTerm || "";
+  const sortBy = params.sortBy || "";
+  const sortOrder = params.sortOrder || "";
 
   // If required params are missing, return empty state
   if (!wardId || !propertyNo) {
@@ -53,6 +57,8 @@ const Page = async ({ searchParams }: PageProps) => {
     pageNumber,
     pageSize,
     searchTerm,
+    sortBy,
+    sortOrder,
   });
 
   const data: ApartmentQCDetail[] = result.success ? (result.data?.items ?? []) : [];

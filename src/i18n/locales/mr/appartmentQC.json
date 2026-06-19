@@ -1,11 +1,11 @@
 {
   "columns": {
-    "propertyNo": "मालमत्ता क्र",
-    "partitionNo": "विभाजन क्र",
+    "srNo": "अ. क्र.",
+    "propertyNo": "मालमत्ता क्र.",
     "oldPropertyNo": "जुना मालमत्ता क्र",
     "wingName": "विंग",
-    "shopNo": "दुकान क्र",
-    "flatNo": "फ्लॅट क्र",
+    "shopNo": "फ्लॅट क्र/दुकान क्र",
+    "flatNo": "फ्लॅट क्र/दुकान क्र",
     "ownerName": "मालमत्ता धारकाचे नाव",
     "occupierName": "भोगवटादाराचे नाव",
     "shopName": "दुकानाचे नाव",
@@ -13,12 +13,13 @@
     "renterName": "भाडेकरूचे नाव",
     "description": "वर्णन",
     "type": "प्रकार",
-    "apartmentType": "अपार्टमेंट प्रकार",
+    "apartmentType": " प्रकार",
     "floor": "मजला",
     "assessmentYear": "मूल्यांकन वर्ष",
     "asstYear": "मू. वर्ष",
     "constructionYear": "बांधकाम वर्ष",
-    "surveyConstructionYear": "सर्वेक्षण बांधकाम वर्ष",
+    "OldConstructionYear":"जुने बांधकाम वर्ष",
+    "surveyConstructionYear": "बांधकाम वर्ष",
     "conYear": "बां. वर्ष",
     "constructionType": "बांधकाम प्रकार",
     "conType": "बां. प्रकार",
@@ -128,7 +129,52 @@
     "tabs": {
       "rateable": "करयोग्य मूल्य",
       "capital": "भांडवली मूल्य"
+    },
+    "units": {
+      "sqM": "चौ. मी",
+      "sqFt": "चौ. फूट"
     }
+  },
+  "tooltips": {
+    "srNo": "अनुक्रमांक",
+    "propertyNo": "मालमत्ता क्र",
+    "oldPropertyNo": "जुना मालमत्ता क्र", 
+    "wing": "विंग",
+    "flatOrShopNo": "फ्लॅट/दुकान क्र",
+    "ownerName": "मालकाचे नाव",
+    "occupierName": "राहणाऱ्याचे नाव",
+    "ocDate": "ओसी दिनांक",
+    "assessmentYear": "मूल्यमापन वर्ष",
+    "constructionYear": "बांधकाम वर्ष",
+    "carpetArea": "कार्पेट क्षेत्र (वर्ग फूट / वर्ग मीटर)",
+    "builtupArea": "बांधकाम क्षेत्र (वर्ग फूट / वर्ग मीटर)",
+    "typeOfUse": "वापराचा प्रकार",
+    "apartmentType": "अपार्टमेंट प्रकार",
+    "oldRV": "जुना आरव्ही",
+    "newRV": "नवीन आरव्ही",
+  "oldConstArea": "जुने बांधकाम क्षेत्रफळ",
+    "totalTax": "एकूण कर",
+    "flatOrShopName": "फ्लॅट/दुकान नाव",
+    "renterName": "भाडेकरूचे नाव",
+    "description": "वर्णन",
+    "constructionType": "बांधकाम प्रकार",
+    "toiletCount": "शौचालय संख्या",
+    "oldconstructionArea": "जुने बांधकाम क्षेत्रफळ",
+    "oldtax": "जुना कर",
+    "newtax": "नवीन कर",
+    "mobileNo": "मोबाईल नंबर",
+    "emailId": "ईमेल आयडी",
+    "bhk": "BHK",
+  "rentMonthly": "मासिक भाडे",
+  "propertyTypeName": "मालमत्तेचा प्रकार",
+  "oldTotalTax": "जुना एकूण कर",
+  "newTotalTax": "नवीन एकूण कर",
+  "newTaxTotalCV": "नवीन कर एकूण (CV)",
+  "newTaxTotalRV": "नवीन कर एकूण (RV)",
+  "totalTaxCV": "एकूण कर (CV)",
+  "rateableValue": "करयोग्य मूल्य",
+  "capitalValue": "भांडवली मूल्य",
+  "cv": "भांडवली मूल्य"
   },
   "pageTitle": "मालमत्ता तपशील संपादित करा",
   "badges": {
@@ -217,10 +263,10 @@
         "label": "नवीन कर"
       },
       "oldArea": {
-        "label": "जुने क्षेत्र"
+        "label": "जुने क्षेत्र (sq.mtr)"
       },
       "newArea": {
-        "label": "नवीन क्षेत्र"
+        "label": "नवीन क्षेत्र (sq.mtr)"
       },
       "oldUseType": {
         "label": "जुना उपयोग प्रकार"

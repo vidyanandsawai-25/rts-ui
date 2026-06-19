@@ -12,6 +12,8 @@
  * Old Taxation validation rules and constraints
  * Used across Old Taxation form components for consistent validation
  */
+import { translateDevanagariDigits } from '../input-sanitization';
+
 export const OLD_TAXATION_VALIDATION_RULES = {
   /** Maximum length for zone name (100 characters) */
   ZONE_NAME_MAX_LENGTH: 100,
@@ -36,13 +38,13 @@ export const OLD_TAXATION_VALIDATION_RULES = {
   /** Minimum length for text fields (1 character) */
   TEXT_MIN_LENGTH: 1,
   /** Regex pattern for text fields (alphanumeric, spaces, hyphen, slash) */
-  TEXT_FIELD_REGEX: /^[A-Za-z0-9\s\-\/]+$/,
+  TEXT_FIELD_REGEX: /^[A-Za-z0-9\u0900-\u097F\s\-\/]+$/,
   /** Regex pattern for e-gov field (alphanumeric, hyphen, slash - no spaces) */
-  EGOV_FIELD_REGEX: /^[A-Za-z0-9\-\/]+$/,
+  EGOV_FIELD_REGEX: /^[A-Za-z0-9\u0900-\u097F\-\/]+$/,
   /** Regex pattern for area fields (positive decimals with 4 decimal places) */
-  AREA_FIELD_REGEX: /^\d{0,15}(\.\d{0,4})?$/,
+  AREA_FIELD_REGEX: /^[0-9०-९]{0,15}(\.[0-9०-९]{0,4})?$/,
   /** Regex pattern for tax/value fields (positive decimals with 2 decimal places) */
-  TAX_FIELD_REGEX: /^\d{0,15}(\.\d{0,2})?$/,
+  TAX_FIELD_REGEX: /^[0-9०-९]{0,15}(\.[0-9०-९]{0,2})?$/,
 } as const;
 
 /**
@@ -183,7 +185,7 @@ export const oldTaxationValidators = {
     }
 
     // Additional validation: must not be negative
-    const numValue = parseFloat(strValue);
+    const numValue = parseFloat(translateDevanagariDigits(strValue));
     return !isNaN(numValue) && numValue >= 0;
   },
 
@@ -207,7 +209,7 @@ export const oldTaxationValidators = {
     }
 
     // Additional validation: must not be negative
-    const numValue = parseFloat(strValue);
+    const numValue = parseFloat(translateDevanagariDigits(strValue));
     return !isNaN(numValue) && numValue >= 0;
   },
 
@@ -218,7 +220,7 @@ export const oldTaxationValidators = {
    * @returns Sanitized value
    */
   sanitizeTextField: (value: string): string => {
-    return value.replace(/[^A-Za-z0-9\s\-\/]/g, '');
+    return value.replace(/[^A-Za-z0-9\u0900-\u097F\s\-\/]/g, '');
   },
 
   /**
@@ -228,7 +230,7 @@ export const oldTaxationValidators = {
    * @returns Sanitized value
    */
   sanitizeEgovField: (value: string): string => {
-    return value.replace(/[^A-Za-z0-9\-\/]/g, '');
+    return value.replace(/[^A-Za-z0-9\u0900-\u097F\-\/]/g, '');
   },
 
   /**
@@ -241,7 +243,7 @@ export const oldTaxationValidators = {
     if (!value) return '';
     
     // Remove leading zeros except for "0" or "0."
-    const formatted = value.replace(/^0+(?=\d)/, '');
+    const formatted = value.replace(/^[0०]+(?=[0-9०-९])/, '');
     
     // Ensure it matches the area regex pattern
     if (OLD_TAXATION_VALIDATION_RULES.AREA_FIELD_REGEX.test(formatted)) {
@@ -261,7 +263,7 @@ export const oldTaxationValidators = {
     if (!value) return '';
     
     // Remove leading zeros except for "0" or "0."
-    const formatted = value.replace(/^0+(?=\d)/, '');
+    const formatted = value.replace(/^[0०]+(?=[0-9०-९])/, '');
     
     // Ensure it matches the tax regex pattern
     if (OLD_TAXATION_VALIDATION_RULES.TAX_FIELD_REGEX.test(formatted)) {
@@ -271,20 +273,18 @@ export const oldTaxationValidators = {
     return value;
   },
 
-  /**
-   * Check if all required fields are filled
-   * @param formData - Form data object
-   * @returns True if all required fields have valid values
-   */
   areRequiredFieldsFilled: (formData: {
     oldZoneNo: string;
     oldWardNo: string;
     oldPropertyNo: string;
+    oldPlotArea: string | number;
   }): boolean => {
     return (
       oldTaxationValidators.isValidZoneName(formData.oldZoneNo) &&
       oldTaxationValidators.isValidWardNo(formData.oldWardNo) &&
-      oldTaxationValidators.isValidPropertyNo(formData.oldPropertyNo)
+      oldTaxationValidators.isValidPropertyNo(formData.oldPropertyNo) &&
+      oldTaxationValidators.isValidAreaField(formData.oldPlotArea) &&
+      String(formData.oldPlotArea).trim().length > 0
     );
   },
 } as const;

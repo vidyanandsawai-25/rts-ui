@@ -64,15 +64,31 @@ export const LETTERS_ONLY_SANITIZE = /[^\p{L}\p{M}]/gu;
 export const PERSON_NAME_REGEX = /^[\p{L}\p{M}\s.,'-]+$/u;
 // Sanitize pattern for person names: removes anything not letter/mark/space/period/comma/apostrophe/hyphen
 export const PERSON_NAME_SANITIZE = /[^\p{L}\p{M}\s.,'-]/gu;
-export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export const VALID_TLD_REGEX = /^(com|in|org|net|edu|gov|mil|info|biz|me|io|nic|ai|app|dev|tech|online|store|site|live|pro|xyz|club|agency|digital|solutions|company|email|cloud|finance|global|group|services|systems|world|today|news|media|care|center)$/i;
+export const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|in|org|net|edu|gov|mil|info|biz|me|io|nic|ai|app|dev|tech|online|store|site|live|pro|xyz|club|agency|digital|solutions|company|email|cloud|finance|global|group|services|systems|world|today|news|media|care|center)(?:\.[a-zA-Z]{2})?$/i;
 export const EMAIL_LOWERCASE_RESTRICTED_REGEX = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.(com|in)$/;
+export const limitSingleAtEmail = (v: string): string => {
+  const cleaned = v.toLowerCase().replace(/[^\w@.+-]/g, '');
+
+  const first = cleaned.indexOf('@');
+  if (first === -1) return cleaned;
+
+  return (
+    cleaned.slice(0, first + 1) +
+    cleaned.slice(first + 1).replace(/@/g, '')
+  );
+};
 export const MOBILE_10_REGEX = /^[6-9][0-9]{9}$/;
 export const PINCODE_6_REGEX = /^[0-9]{6}$/;
 export const CITY_NAME_REGEX = /^[a-zA-Z\s]+$/;
-export const YEAR_REGEX = /^\d{4}$/;
+export const YEAR_REGEX = /^[0-9०-९]{4}$/;
 // Positive integer (one or more digits, no decimal/sign). Generic — usable
 // for BHK, room counts, floor counts, etc.
 export const POSITIVE_INTEGER_REGEX = /^\d+$/;
+export const ONE_TO_NINETY_NINE_REGEX = /^(?:[1-9]|[1-9][0-9])$/;
+export const limitTwoDigitNumber = (value: string): string =>
+  value.replace(/[^0-9]/g, "").slice(0, 2);
+
 
 
 /* ================= POSITIVE DECIMAL VALIDATION ================= */

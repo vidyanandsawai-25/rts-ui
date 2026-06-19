@@ -8,6 +8,14 @@ expect.extend(matchers);
 // Mock server-only for tests
 vi.mock('server-only', () => ({}));
 
+// Mock next/cache for tests
+vi.mock('next/cache', () => ({
+  revalidatePath: vi.fn(),
+  revalidateTag: vi.fn(),
+  unstable_cache: vi.fn((fn: () => unknown) => fn),
+  unstable_noStore: vi.fn(),
+}));
+
 // Mock next/headers for tests
 vi.mock('next/headers', () => ({
   cookies: vi.fn(() => ({

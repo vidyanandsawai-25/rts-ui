@@ -264,7 +264,7 @@
         "BuildingPermission": "Building Permission",
         "FloorSubmission": "Floor",
         "Floor": "Floor",
-        "Discount": "Discount",
+        "Discount": "Discount & Social Data",
         "OldDetails": "Old Details",
         "OldTaxation": "Old Taxation",
         "FloorInformation": "Floor Information",
@@ -317,6 +317,8 @@
         "totalCarpetAreafmtr": "Total Carpet Area (sq.m)",
         "buildupArea": "Buildup Area (sq.ft)",
         "builtupAreaSqMeter": "Buildup Area (sq.m)",
+        "totalCarpetAreaWithUnit": "Total Carpet Area (sq.ft / sq.m)",
+        "buildupAreaWithUnit": "Total Buildup Area (sq.ft / sq.m)",
         "selectType": "Select type",
         "select": "Select",
         "residential": "Residential",
@@ -471,6 +473,7 @@
             "invalidAadhar": "Aadhar number must be exactly 12 digits",
             "invalidAadharStart": "Aadhar number cannot start with 0 or 1.",
             "invalidAddress": "Invalid address. Only letters, numbers, and common punctuation (. , - / #) are allowed. Special characters like *()_++_)(&&^%$@!~}{};  are not permitted.",
+            "invalidPinCode": "Pin code must be exactly 6 digits",
             "invalidRepeatedSequence": "Repeated number sequences are not allowed",
             "pleaseFixErrors": "Please fix the highlighted validation errors before submitting."
         },
@@ -672,7 +675,10 @@
             "cannotEnableWithoutNumber": "Cannot enable certificate without a certificate number.",
             "futureDate": "Issue date cannot be in the future.",
             "numberExceedsLimit": "Certificate number cannot exceed 100 characters.",
-            "notFound": "Certificate not found."
+            "notFound": "Certificate not found.",
+            "allZeros": "Certificate number cannot be all zeros.",
+            "dummyText": "Dummy, sequential, or repetitive placeholder text is not allowed.",
+            "invalidCharacters": "Certificate number contains invalid characters. Only alphanumeric, hyphens, underscores, and slashes are allowed."
         }
     },
     "floor": {
@@ -979,6 +985,11 @@
         "statusIncomplete": "Incomplete",
         "showActiveFirst": "Show Active First",
         "noDiscountsFound": "No discount attributes found",
+        "fillRequiredBeforeUploadHint": "Please enter the required details above to enable document upload.",
+        "previewNotAvailable": "Preview not available",
+        "previewNotAvailableDesc": "This file format cannot be previewed in the browser. You can download it to view.",
+        "downloadToView": "Download to View",
+        "detectingDocumentType": "Detecting document type...",
         "incompleteCertificates": "The following attributes have incomplete required fields",
         "bannerNavigationHint": "Click an attribute tag to navigate directly to its fields.",
         "bannerTagAriaLabel": "View incomplete fields for {name}",
@@ -1095,7 +1106,9 @@
             "NUMBER_OF_TREES": "Number Of Trees",
             "NUMBER_OF_LIFTS": "Number Of Lifts",
             "NUMBER_OF_SOLAR_UNITS": "Number Of Solar Units",
-            "NUMBER_OF_SWIMMING_POOLS": "Number Of Swimming Pools"
+            "NUMBER_OF_SWIMMING_POOLS": "Number Of Swimming Pools",
+            "NO_OF_RESIDENTIAL_TOILET": "Number of Residential Toilets",
+            "NO_OF_COMMERCIAL_TOILET": "Number of Commercial Toilets"
         },
         "socialPlaceholders": {
             "enterValue": "Enter value",
@@ -1363,8 +1376,14 @@
             "numberRequired": "Certificate Number is required",
             "numberNoSpaces": "Spaces are not allowed in Certificate Number",
             "numberLength": "Certificate Number must be between {min} and {max} characters",
+            "numberRepeated": "Certificate number cannot consist of a single repeated character (e.g., 00000000)",
+            "numberInvalidCOP": "Must be 5-50 characters, allowing alphanumeric, slashes, and hyphens (e.g., TMC/TDD/0001/2023).",
+            "numberInvalidIndex2": "Format must be OfficeCode-DocNo-Year (e.g., TNN4-1234-2023).",
+            "numberInvalidElectric": "Consumer number must be exactly 9 to 12 digits.",
             "dateRequired": "Certificate Date is required",
             "invalidDate": "Please enter a valid date",
+            "dateFuture": "Date cannot be in the future",
+            "dateBefore1900": "Date cannot be before 01-01-1900",
             "documentRequired": "Certificate Document is required"
         }
     },

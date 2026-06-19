@@ -43,7 +43,7 @@ export function OffSetSidebar(props: FullOffSetFormProps) {
                 width="md"
             >
                 <div className="flex flex-col h-full">
-                    <div className="flex-1 overflow-y-auto">
+                    <div className="flex-1 h-full">
                         <OffSetForm {...props} isInline={false} />
                     </div>
                 </div>

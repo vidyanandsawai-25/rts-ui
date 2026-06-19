@@ -1,13 +1,11 @@
-'use client';
-
-import Link from 'next/link';
-import { usePathname, useParams, useSearchParams } from 'next/navigation';
+import { useRouter, usePathname, useParams, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils/cn';
 import { ReceiptText, Layers3, Calculator } from 'lucide-react';
 import { Section } from '@/types/OldDetails/property-old-floor-info.types';
 
 export function OldDetailsTabNav() {
+    const router = useRouter();
     const pathname = usePathname();
     const params = useParams();
     const searchParams = useSearchParams();
@@ -85,11 +83,12 @@ export function OldDetailsTabNav() {
                         pathname === sectionPath || pathname.endsWith(`/${section.href}`);
 
                     return (
-                        <Link
+                        <button
                             key={section.id}
-                            href={sectionHref}
+                            onClick={() => router.push(sectionHref)}
+                            data-href={sectionHref}
                             className={cn(
-                                'inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-xs font-bold transition-all duration-200 focus:outline-none',
+                                'inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-xs font-bold transition-all duration-200 focus:outline-none cursor-pointer text-left',
                                 'hover:-translate-y-0.5 hover:shadow-md',
                                 isActive
                                     ? `bg-linear-to-br ${section.activeClass} text-white shadow-md`
@@ -98,7 +97,7 @@ export function OldDetailsTabNav() {
                         >
                             <Icon className="h-4 w-4" />
                             <span>{section.label}</span>
-                        </Link>
+                        </button>
                     );
                 })}
             </nav>

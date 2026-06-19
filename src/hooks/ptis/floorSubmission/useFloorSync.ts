@@ -23,6 +23,7 @@ export const useFloorSync = (params: {
   INITIAL_FORM_STATE: FloorData;
 }) => {
   const hasSyncedRef = useRef<string | number | null>(null);
+  const restoredSessionFormRef = useRef<any>(null);
   const {
     props,
     isAddingNewFloor,
@@ -101,8 +102,11 @@ export const useFloorSync = (params: {
             const parsed = JSON.parse(sessionForm);
             if (String(parsed.id) === String(floorDataMapped.id)) {
               savedForm = parsed;
+              restoredSessionFormRef.current = parsed;
               sessionStorage.removeItem('editingFloorForm'); // Clear immediately so it does not persist across page reloads
             }
+          } else if (restoredSessionFormRef.current && String(restoredSessionFormRef.current.id) === String(floorDataMapped.id)) {
+            savedForm = restoredSessionFormRef.current;
           }
         } catch (_e) { }
 
@@ -171,8 +175,11 @@ export const useFloorSync = (params: {
           const parsed = JSON.parse(sessionForm);
           if (!parsed.id || parsed.id === 'new') {
             savedForm = parsed;
+            restoredSessionFormRef.current = parsed;
             sessionStorage.removeItem('editingFloorForm'); // Clear immediately
           }
+        } else if (restoredSessionFormRef.current && (!restoredSessionFormRef.current.id || restoredSessionFormRef.current.id === 'new')) {
+          savedForm = restoredSessionFormRef.current;
         }
       } catch (_e) { }
 
@@ -247,8 +254,11 @@ export const useFloorSync = (params: {
           const parsed = JSON.parse(sessionForm);
           if (String(parsed.id) === String(currentFloorIdUrl)) {
             savedForm = parsed;
+            restoredSessionFormRef.current = parsed;
             sessionStorage.removeItem('editingFloorForm'); // Clear immediately
           }
+        } else if (restoredSessionFormRef.current && String(restoredSessionFormRef.current.id) === String(currentFloorIdUrl)) {
+          savedForm = restoredSessionFormRef.current;
         }
       } catch (_e) { }
 

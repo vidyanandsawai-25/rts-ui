@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
+import { translateDevanagariDigits } from '@/lib/utils/input-sanitization';
 
 /**
  * Hook to manage multi-digit input fields (like Aadhar or Mobile numbers)
@@ -15,17 +16,21 @@ import { useState, useRef, useCallback } from 'react';
  */
 export const useDigitInputs = (length: number, initialValue: string = '') => {
   const [digits, setDigits] = useState<string[]>(() => {
-    const sanitized = initialValue.replace(/\D/g, '');
+    const translated = translateDevanagariDigits(initialValue);
+    const sanitized = translated.replace(/\D/g, '');
     return Array.from({ length }, (_, i) => sanitized[i] ?? '');
   });
 
   const [prevInitialValue, setPrevInitialValue] = useState(initialValue);
   const [prevLength, setPrevLength] = useState(length);
   const [lastTypedIndex, setLastTypedIndex] = useState<number>(-1);
+  const [isFocused, setIsFocused] = useState(false);
 
   // Sync with initialValue or length changes in render phase
-  const sanitizedInitialValue = initialValue.replace(/\D/g, '');
-  const prevSanitized = prevInitialValue.replace(/\D/g, '');
+  const translatedInitial = translateDevanagariDigits(initialValue);
+  const sanitizedInitialValue = translatedInitial.replace(/\D/g, '');
+  const translatedPrev = translateDevanagariDigits(prevInitialValue);
+  const prevSanitized = translatedPrev.replace(/\D/g, '');
 
   if (
     sanitizedInitialValue !== prevSanitized ||
@@ -41,7 +46,8 @@ export const useDigitInputs = (length: number, initialValue: string = '') => {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const handleChange = useCallback((index: number, value: string) => {
-    const val = value.replace(/\D/g, '').slice(-1);
+    const translated = translateDevanagariDigits(value);
+    const val = translated.replace(/\D/g, '').slice(-1);
 
     setDigits((prev) => {
       const next = [...prev];
@@ -70,6 +76,18 @@ export const useDigitInputs = (length: number, initialValue: string = '') => {
     }
   }, [digits]);
 
+  const handleFocus = useCallback(() => {
+    setIsFocused(true);
+  }, []);
+
+  const handleBlur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
+    const nextActive = e.relatedTarget as HTMLElement;
+    const isMovingWithin = inputRefs.current.some(ref => ref && ref === nextActive);
+    if (!isMovingWithin) {
+      setIsFocused(false);
+    }
+  }, []);
+
   const setRef = useCallback((index: number) => (el: HTMLInputElement | null) => {
     inputRefs.current[index] = el;
   }, []);
@@ -79,8 +97,11 @@ export const useDigitInputs = (length: number, initialValue: string = '') => {
     setDigits,
     handleChange,
     handleKeyDown,
+    handleFocus,
+    handleBlur,
     setRef,
     value: digits.join(''),
     lastTypedIndex,
+    isFocused,
   };
 };

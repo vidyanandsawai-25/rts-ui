@@ -6,7 +6,7 @@ import {
   getAssessmentYearRangeCV,
   getTaxApplicability,
   updateTaxApplicability,
-} from '@/lib/api/ptis/applicable-taxes.service';
+} from '@/lib/api/ptis/applicable-taxes/applicable-taxes.service';
 import type {
   AssessmentYearRangeItem,
   TypeOfUseGroupItem,
@@ -87,7 +87,9 @@ export async function getTaxApplicabilityAction(params: {
   financialYearId: number;
   typeOfUseGroupId: number;
   rvOrCv: 'RV' | 'CV';
-}): Promise<ActionResult<TaxApplicabilityData>> {
+  pageNumber?: number;
+  pageSize?: number;
+}): Promise<ActionResult<PagedResponse<TaxApplicabilityData>>> {
   const t = await getTranslations("applicableTaxes");
   try {
     const response = await getTaxApplicability(params);

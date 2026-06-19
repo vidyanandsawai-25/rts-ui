@@ -15,6 +15,7 @@ import type { DrawerFloorDataRow } from "./propertyEditScreenDrawer.types";
 interface UsePropertyEditScreenDrawerArgs {
   open: boolean;
   onClose?: () => void;
+  onSaveOrClose?: () => void;
   propertyData?: ApartmentQCDetail | null;
   subTabProp?: string;
   floors?: Floor[];
@@ -32,6 +33,7 @@ interface UsePropertyEditScreenDrawerArgs {
 export function usePropertyEditScreenDrawer({
   open,
   onClose,
+  onSaveOrClose,
   propertyData,
   subTabProp = "rateable",
   floors = [],
@@ -113,6 +115,7 @@ export function usePropertyEditScreenDrawer({
     validateForm: validationHook.validateForm,
     validateFloorYears: validationHook.validateFloorYears,
     setIsSavingFloorQC: stateHook.setIsSavingFloorQC,
+    onSaveOrClose,
   });
 
   // ── Room Submission Management ──────────────────────────────────────────────
