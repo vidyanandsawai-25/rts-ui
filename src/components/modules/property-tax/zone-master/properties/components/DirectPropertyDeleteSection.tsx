@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState, useMemo } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Building2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -13,7 +13,7 @@ import {
 import type { Column } from "@/components/common";
 import { IconOnlyActionButton } from "@/components/common/ActionButtons";
 import { Checkbox } from "@/components/common/checkbox";
-import { deletePropertyAction } from "@/app/[locale]/property-tax/zone-master/actions";
+import { deletePropertyAction, deleteBulkPropertiesAction } from "@/app/[locale]/property-tax/zone-master/actions";
 import type { DirectPropertyDeleteRow } from "@/types/zoneMaster.types";
 
 interface DirectPropertyDeleteSectionProps {
@@ -55,37 +55,42 @@ function DirectPropertyDeleteSectionInner({
     partitionNo: partitionNo || "",
     categoryName: categoryName || "",
   };
-const selectedCount = selectedRows.size;
-const selectedIds = Array.from(selectedRows);
-const handleBulkDelete = useCallback(() => {
-  confirm({
-    variant: "delete",
-    title: t("createProperty.deletePropertyConfirm"),
-    description: `${selectedCount} ${t("createProperty.selectedPropertiesWillBeDeleted")}`,
-    onConfirm: async () => {
-      setIsDeleting(true);
-      try {
-        const results = await Promise.all(
-          selectedIds.map((id) => deletePropertyAction(id))
-        );
+  // Always holds the latest selectedRows so onConfirm never reads a stale closure
+  const selectedRowsRef = useRef(selectedRows);
+  selectedRowsRef.current = selectedRows;
 
-        const success = results.every((r) => r.success);
+  const handleBulkDelete = useCallback(() => {
+    const currentIds = Array.from(selectedRowsRef.current);
+    const count = currentIds.length;
+    if (count === 0) return;
 
-        if (success) {
-          toast.success(t("createProperty.propertyDeleteSuccess"));
-          setSelectedRows(new Set());
-          router.refresh();
-        } else {
+    const callback = hasSubRows ? (onSubRowDeleted ?? (() => {})) : onDeleted;
+
+    confirm({
+      variant: "delete",
+      title: t("createProperty.deleteSelectedPropertiesTitle"),
+      description: t("createProperty.deleteSelectedPropertiesDesc", { count }),
+      onConfirm: async () => {
+        setIsDeleting(true);
+        try {
+          const result = await deleteBulkPropertiesAction(currentIds);
+
+          if (result.success) {
+            toast.success(result.message ?? t("createProperty.propertyDeleteSuccess"));
+            setSelectedRows(new Set());
+            callback();
+            router.refresh();
+          } else {
+            toast.error(result.error ?? t("createProperty.failedToDeleteProperty"));
+          }
+        } catch {
           toast.error(t("createProperty.failedToDeleteProperty"));
+        } finally {
+          setIsDeleting(false);
         }
-      } catch {
-        toast.error(t("createProperty.failedToDeleteProperty"));
-      } finally {
-        setIsDeleting(false);
-      }
-    },
-  });
-}, [selectedIds, selectedCount, confirm, router, t]);
+      },
+    });
+  }, [confirm, router, t, hasSubRows, onSubRowDeleted, onDeleted]);
   const tableData = hasSubRows ? subRows : [mainRow];
 
   // ==============================
@@ -126,7 +131,7 @@ const handleBulkDelete = useCallback(() => {
         variant: "delete",
         title: t("createProperty.deletePropertyConfirm"),
         description: t("createProperty.deleteSinglePropertyDesc"),
-        meta: { id: rowPropertyId, name: rowPropertyNo || rowPropertyId },
+        meta: { name: rowPropertyNo },
         onConfirm: async () => {
           setIsDeleting(true);
           try {
@@ -155,7 +160,7 @@ const handleBulkDelete = useCallback(() => {
   // ==============================
 
   const columns: Column<DirectPropertyDeleteRow & Record<string, unknown>>[] = [
-    // ✅ Checkbox column (NEW)
+    
     {
       key: "select",
       label: (
@@ -267,7 +272,7 @@ const handleBulkDelete = useCallback(() => {
       className="flex items-center gap-2 bg-red-600 text-white px-3 py-2 rounded-md text-sm hover:bg-red-700"
     >
       <Trash2 className="w-4 h-4" />
-      Delete Selected ({selectedRows.size})
+      {t("createProperty.deleteSelectedCount", { count: selectedRows.size })}
     </button>
   </div>
 )}
