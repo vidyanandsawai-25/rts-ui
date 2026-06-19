@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef, useState,useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useConfirm } from "@/components/common";
@@ -29,7 +29,9 @@ export function useDirectPropertyDelete({
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
 
   const selectedRowsRef = useRef(selectedRows);
+  useEffect(() => {
   selectedRowsRef.current = selectedRows;
+}, [selectedRows]);
 
   const allSelected =
     tableData.length > 0 && selectedRows.size === tableData.length;
