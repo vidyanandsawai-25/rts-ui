@@ -24,11 +24,15 @@ vi.mock('next/image', () => ({
 
 // Mock useConfirm
 const mockConfirm = vi.fn();
-vi.mock('@/components/common', () => ({
-  useConfirm: () => ({
-    confirm: mockConfirm,
-  }),
-}));
+vi.mock('@/components/common', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/components/common')>();
+  return {
+    ...actual,
+    useConfirm: () => ({
+      confirm: mockConfirm,
+    }),
+  };
+});
 
 const mockActiveCategory = {
   photoTypeId: 9999,

@@ -12,13 +12,9 @@ interface PhotoPlanViewerProps {
   categoryName: string;
   images: AdditionalImage[];
   selectedImageIndex: number;
-  rotation: number;
   onBackToGrid: () => void;
   onNext: () => void;
   onPrev: () => void;
-  onRotateLeft: () => void;
-  onRotateRight: () => void;
-  onResetRotation: () => void;
   onDownload: () => void;
   onUpload: () => void;
   onReplace: (index: number) => void;
@@ -32,13 +28,9 @@ export function PhotoPlanViewer({
   categoryName,
   images,
   selectedImageIndex,
-  rotation,
   onBackToGrid,
   onNext,
   onPrev,
-  onRotateLeft,
-  onRotateRight,
-  onResetRotation,
   onDownload,
   onUpload,
   onReplace,
@@ -133,7 +125,7 @@ export function PhotoPlanViewer({
               key={currentImage?.src || ''}
               src={currentImage?.src || ''}
               alt={currentImage?.title || ''}
-              rotation={rotation}
+              rotation={0}
             />
           )}
         </div>
@@ -144,10 +136,6 @@ export function PhotoPlanViewer({
         currentIndex={selectedImageIndex}
         totalCount={images.length}
         hasImage={!!currentImage?.src}
-        rotation={rotation}
-        onRotateLeft={onRotateLeft}
-        onRotateRight={onRotateRight}
-        onReset={onResetRotation}
         onDownload={onDownload}
         onUpload={onUpload}
         onReplace={() => onReplace(selectedImageIndex)}

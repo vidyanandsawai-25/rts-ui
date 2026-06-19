@@ -25,6 +25,8 @@ export interface FooterActionPayload {
   rateableExpand?: string | string[];
   capitalExpand?: string | string[];
   dualExpand?: string | string[];
+  categoryId?: number;
+  societyDetailId?: number;
 }
 
 const ptisEditRedirectSchema = z.object({
@@ -187,6 +189,8 @@ export async function handleFooterAction(
         if (payload.wardNo) params.set('wardNo', payload.wardNo);
         if (payload.propertyNo) params.set('propertyNo', payload.propertyNo);
         if (payload.partitionNo) params.set('partitionNo', payload.partitionNo);
+        if (payload.categoryId) params.set('categoryId', String(payload.categoryId));
+        if (payload.societyDetailId) params.set('societyDetailId', String(payload.societyDetailId));
 
         const queryString = params.toString();
         const suffix = queryString ? `?${queryString}` : '';

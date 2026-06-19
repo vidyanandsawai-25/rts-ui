@@ -20,14 +20,38 @@ export function useChangeDetectionCompare({ mode }: UseChangeDetectionComparePro
   const [isDraggingImage, setIsDraggingImage] = useState(false);
   const [draggedImageType, setDraggedImageType] = useState<'before' | 'after' | 'both' | null>(null);
   
-  const dragRef = useRef({ startX: 0, startY: 0, cw: 0, ch: 0, iw: 0, ih: 0 });
+  const [beforeRatio, setBeforeRatio] = useState(1);
+  const [afterRatio, setAfterRatio] = useState(1);
 
-  const getClampingBounds = useCallback((zoomValue: number) => {
+  const beforePanRef = useRef(beforePan);
+  const afterPanRef = useRef(afterPan);
+  const beforeRatioRef = useRef(1);
+  const afterRatioRef = useRef(1);
+
+  useEffect(() => {
+    beforePanRef.current = beforePan;
+  }, [beforePan]);
+
+  useEffect(() => {
+    afterPanRef.current = afterPan;
+  }, [afterPan]);
+
+  useEffect(() => {
+    beforeRatioRef.current = beforeRatio;
+  }, [beforeRatio]);
+
+  useEffect(() => {
+    afterRatioRef.current = afterRatio;
+  }, [afterRatio]);
+
+  const dragRef = useRef({ startX: 0, startY: 0, cw: 0, ch: 0, iw: 0, ih: 0, type: 'before' as 'before' | 'after' });
+
+  const getClampingBounds = useCallback((zoomValue: number, type: 'before' | 'after') => {
     const d = dragRef.current;
-    if (!d.cw || !d.ch || !d.iw || !d.ih) return { maxX: 0, maxY: 0 };
+    if (!d.cw || !d.ch) return { maxX: 0, maxY: 0 };
 
     const containerRatio = d.cw / d.ch;
-    const imageRatio = d.iw / d.ih;
+    const imageRatio = type === 'before' ? beforeRatioRef.current : afterRatioRef.current;
     
     // object-cover scaling dimensions
     let imageWidth = d.cw;
@@ -45,7 +69,16 @@ export function useChangeDetectionCompare({ mode }: UseChangeDetectionComparePro
     };
   }, []);
 
-
+  const handleImageLoad = useCallback((type: 'before' | 'after', width: number, height: number) => {
+    if (width && height) {
+      const ratio = width / height;
+      if (type === 'before') {
+        setBeforeRatio(ratio);
+      } else {
+        setAfterRatio(ratio);
+      }
+    }
+  }, []);
 
   // Handle Drag / Pan movements
   useEffect(() => {
@@ -59,23 +92,37 @@ export function useChangeDetectionCompare({ mode }: UseChangeDetectionComparePro
         const dx = clientX - dragRef.current.startX;
         const dy = clientY - dragRef.current.startY;
 
-        const updatePan = (prev: { x: number; y: number }) => {
-          const newX = prev.x + dx;
-          const newY = prev.y + dy;
-          const { maxX, maxY } = getClampingBounds(zoom);
-          return {
-            x: Math.min(Math.max(newX, -maxX), maxX),
-            y: Math.min(Math.max(newY, -maxY), maxY),
-          };
+        const activeType = dragRef.current.type;
+        const activePan = activeType === 'before' ? beforePanRef.current : afterPanRef.current;
+        const newX = activePan.x + dx;
+        const newY = activePan.y + dy;
+
+        let maxX = 0;
+        let maxY = 0;
+
+        if (draggedImageType === 'both') {
+          const { maxX: beforeMaxX, maxY: beforeMaxY } = getClampingBounds(zoom, 'before');
+          const { maxX: afterMaxX, maxY: afterMaxY } = getClampingBounds(zoom, 'after');
+          maxX = Math.min(beforeMaxX, afterMaxX);
+          maxY = Math.min(beforeMaxY, afterMaxY);
+        } else {
+          const bounds = getClampingBounds(zoom, draggedImageType);
+          maxX = bounds.maxX;
+          maxY = bounds.maxY;
+        }
+        
+        const nextPan = {
+          x: Math.min(Math.max(newX, -maxX), maxX),
+          y: Math.min(Math.max(newY, -maxY), maxY),
         };
 
         if (draggedImageType === 'both') {
-          setBeforePan(updatePan);
-          setAfterPan(updatePan);
+          setBeforePan(nextPan);
+          setAfterPan(nextPan);
         } else if (draggedImageType === 'before') {
-          setBeforePan(updatePan);
+          setBeforePan(nextPan);
         } else {
-          setAfterPan(updatePan);
+          setAfterPan(nextPan);
         }
         dragRef.current.startX = clientX;
         dragRef.current.startY = clientY;
@@ -126,6 +173,7 @@ export function useChangeDetectionCompare({ mode }: UseChangeDetectionComparePro
         ch: rect.height,
         iw: img?.naturalWidth || rect.width,
         ih: img?.naturalHeight || rect.height,
+        type: type,
       };
       setDraggedImageType(isSyncPan ? 'both' : type);
       setIsDraggingImage(true);
@@ -146,15 +194,15 @@ export function useChangeDetectionCompare({ mode }: UseChangeDetectionComparePro
   const zoomOut = useCallback(() => {
     setZoom(prev => {
       const nextZoom = Math.max(prev - 0.25, 1);
-      const clamp = (p: { x: number; y: number }) => {
-        const { maxX, maxY } = getClampingBounds(nextZoom);
+      const clamp = (type: 'before' | 'after') => (p: { x: number; y: number }) => {
+        const { maxX, maxY } = getClampingBounds(nextZoom, type);
         return {
           x: Math.min(Math.max(p.x, -maxX), maxX),
           y: Math.min(Math.max(p.y, -maxY), maxY),
         };
       };
-      setBeforePan(clamp);
-      setAfterPan(clamp);
+      setBeforePan(clamp('before'));
+      setAfterPan(clamp('after'));
       return nextZoom;
     });
   }, [getClampingBounds]);
@@ -182,5 +230,8 @@ export function useChangeDetectionCompare({ mode }: UseChangeDetectionComparePro
     resetZoomAndPan,
     handleStartDrag,
     handleTouchStart,
+    handleImageLoad,
+    beforeRatio,
+    afterRatio,
   };
 }

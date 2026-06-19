@@ -3,7 +3,7 @@
 import React from 'react';
 import { useTranslations } from 'next-intl';
 import { ArrowLeft, Split, Columns, Hand, ZoomIn, ZoomOut, RotateCcw, Link, Link2 } from 'lucide-react';
-import { Button } from '@/components/common/ActionButton';
+import { Button } from '@/components/common';
 
 interface ChangeDetectionHeaderProps {
   photoTypeName: string;
@@ -57,72 +57,77 @@ export function ChangeDetectionHeader({
         {/* Zoom and Pan Mode Toggles */}
         {mode === 'side-by-side' && (
           <div className="flex items-center gap-1.5 bg-slate-100 p-0.5 rounded-lg border border-slate-200 shadow-sm">
-            <button
+            <Button
+              size="xs"
+              variant={isPanningMode ? 'primary' : 'secondary'}
+              icon={Hand}
               onClick={() => setIsPanningMode(!isPanningMode)}
-              className={`flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded transition-all cursor-pointer ${
-                isPanningMode ? 'bg-blue-600 text-white shadow-sm' : 'bg-white text-slate-700 hover:text-slate-905 border border-slate-200/50'
-              }`}
+              className="!h-7 !w-7 !p-0 shadow-sm cursor-pointer [&_svg]:w-3.5 [&_svg]:h-3.5"
               title={t('media.panMode') || 'Pan Mode'}
-            >
-              <Hand className="w-3.5 h-3.5" />
-            </button>
+            />
             {isPanningMode && (
-              <button
+              <Button
+                size="xs"
+                variant={isSyncPan ? 'primary' : 'secondary'}
+                icon={isSyncPan ? Link : Link2}
                 onClick={() => setIsSyncPan(!isSyncPan)}
-                className={`flex items-center justify-center p-1 rounded transition-all cursor-pointer shadow-sm ${
-                  isSyncPan ? 'bg-blue-600 text-white shadow-sm' : 'bg-white text-slate-700 hover:text-slate-95 border border-slate-200/50'
-                }`}
+                className="!h-7 !w-7 !p-0 shadow-sm cursor-pointer [&_svg]:w-3.5 [&_svg]:h-3.5"
                 title={isSyncPan ? (t('media.syncPanActive') || 'Sync Panning (Active)') : (t('media.syncPanInactive') || 'Individual Panning')}
-              >
-                {isSyncPan ? <Link className="w-3.5 h-3.5" /> : <Link2 className="w-3.5 h-3.5" />}
-              </button>
+              />
             )}
-            <button
+            <Button
+              size="xs"
+              variant="secondary"
+              icon={ZoomIn}
               onClick={zoomIn}
-              className="flex items-center justify-center p-1 bg-white text-slate-700 hover:text-slate-95 border border-slate-200/50 rounded transition-all cursor-pointer shadow-sm"
+              className="!h-7 !w-7 !p-0 shadow-sm cursor-pointer [&_svg]:w-3.5 [&_svg]:h-3.5"
               title={t('media.zoomIn') || 'Zoom In'}
-            >
-              <ZoomIn className="w-3.5 h-3.5" />
-            </button>
-            <button
+            />
+            <Button
+              size="xs"
+              variant="secondary"
+              icon={ZoomOut}
               onClick={zoomOut}
-              className="flex items-center justify-center p-1 bg-white text-slate-700 hover:text-slate-95 border border-slate-200/50 rounded transition-all cursor-pointer shadow-sm"
+              className="!h-7 !w-7 !p-0 shadow-sm cursor-pointer [&_svg]:w-3.5 [&_svg]:h-3.5"
               title={t('media.zoomOut') || 'Zoom Out'}
-            >
-              <ZoomOut className="w-3.5 h-3.5" />
-            </button>
+            />
             {(zoom > 1 || beforePan.x !== 0 || beforePan.y !== 0 || afterPan.x !== 0 || afterPan.y !== 0) && (
-              <button
+              <Button
+                size="xs"
+                variant="secondary"
+                icon={RotateCcw}
                 onClick={resetZoomAndPan}
-                className="flex items-center justify-center p-1 bg-white text-slate-700 hover:text-slate-95 border border-slate-200/50 rounded transition-all cursor-pointer shadow-sm"
+                className="!h-7 !w-7 !p-0 shadow-sm cursor-pointer [&_svg]:w-3.5 [&_svg]:h-3.5"
                 title={t('media.resetView') || 'Reset View'}
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-              </button>
+              />
             )}
           </div>
         )}
 
         {/* View Toggles */}
         <div className="flex items-center gap-1.5 bg-slate-100 p-0.5 rounded-lg border border-slate-200 shadow-inner">
-          <button
+          <Button
+            size="xs"
+            variant={mode === 'slider' ? 'secondary' : 'ghost'}
+            icon={Split}
             onClick={() => { setMode('slider'); resetZoomAndPan(); setIsPanningMode(false); }}
-            className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md transition-all ${
-              mode === 'slider' ? 'bg-white text-blue-700 shadow-sm border border-slate-200/50' : 'text-slate-600 hover:text-slate-905'
+            className={`!h-7 !px-2.5 cursor-pointer [&_svg]:w-3.5 [&_svg]:h-3.5 ${
+              mode === 'slider' ? '!text-blue-700 shadow-sm border border-slate-200/50' : ''
             }`}
           >
-            <Split className="w-3.5 h-3.5" />
             {t('media.compareModeSlider')}
-          </button>
-          <button
+          </Button>
+          <Button
+            size="xs"
+            variant={mode === 'side-by-side' ? 'secondary' : 'ghost'}
+            icon={Columns}
             onClick={() => { setMode('side-by-side'); resetZoomAndPan(); setIsPanningMode(true); }}
-            className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md transition-all ${
-              mode === 'side-by-side' ? 'bg-white text-blue-700 shadow-sm border border-slate-200/50' : 'text-slate-600 hover:text-slate-905'
+            className={`!h-7 !px-2.5 cursor-pointer [&_svg]:w-3.5 [&_svg]:h-3.5 ${
+              mode === 'side-by-side' ? '!text-blue-700 shadow-sm border border-slate-200/50' : ''
             }`}
           >
-            <Columns className="w-3.5 h-3.5" />
             {t('media.compareModeSideBySide')}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

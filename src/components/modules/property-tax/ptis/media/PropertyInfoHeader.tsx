@@ -3,8 +3,7 @@
 import React from 'react';
 import { Languages } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { Button } from '@/components/common/ActionButton';
-import { Tooltip } from '@/components/common/Tooltip';
+import { Button, Tooltip } from '@/components/common';
 
 interface PropertyInfoHeaderProps {
   wardNo: string;

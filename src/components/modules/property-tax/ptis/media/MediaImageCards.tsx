@@ -2,10 +2,9 @@
 
 import React from 'react';
 import { Download, Images } from 'lucide-react';
-import { Button } from '@/components/common/ActionButton';
+import { Button, Badge } from '@/components/common';
 import { ImageWithFallback } from './ImageWithFallback';
 import { useTranslations } from 'next-intl';
-import { Badge } from '@/components/common/Badge';
 
 export interface AdditionalImage {
   src: string;

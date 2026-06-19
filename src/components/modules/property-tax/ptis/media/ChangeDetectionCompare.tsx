@@ -31,6 +31,7 @@ export function ChangeDetectionCompare({
     isSyncPan, setIsSyncPan, containerRef,
     isDraggingImage, setIsDraggingHandle,
     zoomIn, zoomOut, resetZoomAndPan, handleStartDrag, handleTouchStart,
+    handleImageLoad, beforeRatio, afterRatio,
   } = useChangeDetectionCompare({ mode });
 
   const {
@@ -115,6 +116,9 @@ export function ChangeDetectionCompare({
             hasCustomBefore={hasCustomBefore}
             hasCustomAfter={hasCustomAfter}
             isDraggingImage={isDraggingImage}
+            handleImageLoad={handleImageLoad}
+            beforeRatio={beforeRatio}
+            afterRatio={afterRatio}
           />
         )}
       </div>

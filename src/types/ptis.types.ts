@@ -41,6 +41,7 @@ export interface PropertyDetailsData {
   noOfResidentialToilets?: string;
   noOfCommercialToilets?: string;
   ownerName?: string;
+  categoryId?: number;
   rateSectionDescription?: string;
 }
 
@@ -83,6 +84,7 @@ export interface SocietyDetailsData {
   managerName: string;
   managerEmail: string;
   managerMobileNo: string;
+  societyDetailId?: number;
 }
 
 export interface OldDetailsData {

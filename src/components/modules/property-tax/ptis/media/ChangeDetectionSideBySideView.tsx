@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React from 'react';
 import { useTranslations } from 'next-intl';
+import { ImageWithFallback } from './ImageWithFallback';
 
 interface ViewportProps {
   image: string;
@@ -12,6 +13,8 @@ interface ViewportProps {
   onStartDrag: (e: React.MouseEvent) => void;
   onTouchStart: (e: React.TouchEvent) => void;
   isDraggingImage: boolean;
+  onLoad: (width: number, height: number) => void;
+  aspectRatio: number;
 }
 
 function SideBySideViewport({
@@ -23,80 +26,46 @@ function SideBySideViewport({
   onStartDrag,
   onTouchStart,
   isDraggingImage,
+  onLoad,
+  aspectRatio,
 }: ViewportProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [imageRatio, setImageRatio] = useState(1);
-  const [containerRatio, setContainerRatio] = useState(1);
-
-  // Measure container on mount and resize
-  useEffect(() => {
-    if (!containerRef.current) return;
-    const updateSize = () => {
-      if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect();
-        if (rect.width && rect.height) {
-          setContainerRatio(rect.width / rect.height);
-        }
-      }
-    };
-    updateSize();
-    window.addEventListener('resize', updateSize);
-    return () => window.removeEventListener('resize', updateSize);
-  }, []);
-
-  const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    const img = e.currentTarget;
-    if (img.naturalWidth && img.naturalHeight) {
-      setImageRatio(img.naturalWidth / img.naturalHeight);
-    }
+  const containerStyle: React.CSSProperties = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: `translate(-50%, -50%) translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+    transformOrigin: 'center center',
+    transition: isDraggingImage ? 'none' : 'transform 0.15s ease-out',
+    minWidth: '100%',
+    minHeight: '100%',
+    aspectRatio: `${aspectRatio}`,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   };
-
-  const isWider = imageRatio > containerRatio;
-
-  const imageStyle: React.CSSProperties = isWider
-    ? {
-        position: 'absolute',
-        height: '100%',
-        width: 'auto',
-        maxWidth: 'none',
-        left: '50%',
-        top: '50%',
-        transform: `translate(-50%, -50%) translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-        transformOrigin: 'center center',
-        transition: isDraggingImage ? 'none' : 'transform 0.15s ease-out',
-      }
-    : {
-        position: 'absolute',
-        width: '100%',
-        height: 'auto',
-        maxHeight: 'none',
-        left: '50%',
-        top: '50%',
-        transform: `translate(-50%, -50%) translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-        transformOrigin: 'center center',
-        transition: isDraggingImage ? 'none' : 'transform 0.15s ease-out',
-      };
 
   return (
     <div
-      ref={containerRef}
       className={`relative h-full w-full rounded-xl overflow-hidden shadow-2xl border border-slate-800 bg-slate-950 ${
         isPanningMode ? 'cursor-grab active:cursor-grabbing' : ''
       }`}
       onMouseDown={onStartDrag}
       onTouchStart={onTouchStart}
     >
-      <div className="w-full h-full relative pointer-events-none">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+      <div style={containerStyle} className="pointer-events-none">
+        <ImageWithFallback
           src={image}
           alt={label}
-          onLoad={handleImageLoad}
-          style={imageStyle}
-          className="pointer-events-none select-none"
+          fill
+          priority
+          onLoad={(e) => {
+            const img = e.currentTarget;
+            onLoad(img.naturalWidth, img.naturalHeight);
+          }}
+          className="pointer-events-none select-none object-cover"
         />
       </div>
-      <div className="absolute top-4 left-4 bg-black/75 text-white text-xs font-bold px-2.5 py-1 rounded shadow-md backdrop-blur-[2px]">
+      <div className="absolute top-4 left-4 bg-black/75 text-white text-xs font-bold px-2.5 py-1 rounded shadow-md backdrop-blur-[2px] z-10">
         {label}
       </div>
     </div>
@@ -115,6 +84,9 @@ interface ChangeDetectionSideBySideViewProps {
   hasCustomBefore: boolean;
   hasCustomAfter: boolean;
   isDraggingImage: boolean;
+  handleImageLoad: (type: 'before' | 'after', width: number, height: number) => void;
+  beforeRatio: number;
+  afterRatio: number;
 }
 
 export function ChangeDetectionSideBySideView({
@@ -129,6 +101,9 @@ export function ChangeDetectionSideBySideView({
   hasCustomBefore,
   hasCustomAfter,
   isDraggingImage,
+  handleImageLoad,
+  beforeRatio,
+  afterRatio,
 }: ChangeDetectionSideBySideViewProps): React.ReactElement {
   const t = useTranslations('ptis');
 
@@ -151,6 +126,8 @@ export function ChangeDetectionSideBySideView({
         onStartDrag={(e) => handleStartDrag(e, 'before')}
         onTouchStart={(e) => handleTouchStart(e, 'before')}
         isDraggingImage={isDraggingImage}
+        onLoad={(w, h) => handleImageLoad('before', w, h)}
+        aspectRatio={beforeRatio}
       />
       <SideBySideViewport
         image={afterImage}
@@ -161,6 +138,8 @@ export function ChangeDetectionSideBySideView({
         onStartDrag={(e) => handleStartDrag(e, 'after')}
         onTouchStart={(e) => handleTouchStart(e, 'after')}
         isDraggingImage={isDraggingImage}
+        onLoad={(w, h) => handleImageLoad('after', w, h)}
+        aspectRatio={afterRatio}
       />
     </div>
   );
