@@ -126,8 +126,8 @@ export function TabNavigation() {
           const isOldDetailsTab = tab.href === 'OldDetails/old-taxation';
           const isActive = isOldDetailsTab
             ? pathname === tabPath ||
-            pathname === oldDetailsSectionPath ||
-            pathname.startsWith(`${oldDetailsSectionPath}/`)
+              pathname === oldDetailsSectionPath ||
+              pathname.startsWith(`${oldDetailsSectionPath}/`)
             : activeSegment === tab.href || pathname === tabPath;
 
           const Icon = tab.icon;
