@@ -259,6 +259,15 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
               },
               partitionNo
             )
+                flatOrShopNo: filterFlatOrShopNo || undefined,
+                apartmentType: filterApartmentType || undefined,
+                propertyType: filterPropertyType || undefined,
+              },
+              {
+                sortBy: sortBy || undefined,
+                sortOrder: sortOrder || undefined,
+              }
+            )
           : Promise.resolve({
               amenities: emptyPaged,
               commercial: emptyPaged,
