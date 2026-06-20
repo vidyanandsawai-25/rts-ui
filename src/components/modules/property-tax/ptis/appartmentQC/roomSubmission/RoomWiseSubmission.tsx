@@ -4,6 +4,7 @@ import React from "react";
 
 import { RoomWiseSubmissionProps } from "@/types/room-details.types";
 import { FullOffSetFormProps } from "@/types/offset-details.types";
+import type { DrawerFloorDataRow } from "@/hooks/apartmentQc/propertyEditScreenDrawer.types";
 import { OffSetSidebar } from "../floorSubmission/offset/OffSetSidebar";
 
 // ── Reused state & pure-logic hooks (no Quick Data Entry–specific API calls) ──
@@ -30,6 +31,7 @@ import {
   getDimensionsString,
   isOffsetValid,
 } from "@/lib/utils/RoomSubmission/room-submission.utils";
+import { MasterTable } from "@/components/common";
 
 
 export const RoomWiseSubmission: React.FC<
@@ -138,6 +140,96 @@ export const RoomWiseSubmission: React.FC<
             availableRooms={state.availableRooms}
             displayMode={displayMode}
           />
+
+          {/* Selected floor row from Floor QC table */}
+          {props.selectedFloorRow && (
+            <div className="mb-4 animate-in fade-in slide-in-from-top-4 duration-500">
+              <MasterTable<DrawerFloorDataRow>
+                columns={[
+                  {
+                    key: "floorId",
+                    label: "Floor",
+                    render: (_: unknown, row: DrawerFloorDataRow) => {
+                      const id = row.floorId;
+                      const lookup = props.floorLookup || [];
+                      const item = lookup.find((i) => String(i.value) === String(id));
+                      return item ? item.label : (id || "-");
+                    },
+                    headerClassName: "text-center",
+                    cellClassName: "text-center font-bold text-slate-700"
+                  },
+                  {
+                    key: "conYear",
+                    label: "Con. Year",
+                    render: (val: unknown) => (val as string | number) || "-",
+                    headerClassName: "text-center",
+                    cellClassName: "text-center font-semibold"
+                  },
+                  {
+                    key: "asstYear",
+                    label: "Asst. Year",
+                    render: (val: unknown) => (val as string | number) || "-",
+                    headerClassName: "text-center",
+                    cellClassName: "text-center font-semibold"
+                  },
+                  {
+                    key: "constructionTypeId",
+                    label: "Construction Type",
+                    render: (_: unknown, row: DrawerFloorDataRow) => {
+                      const id = row.constructionTypeId;
+                      const lookup = props.constructionLookup || [];
+                      const item = lookup.find((i) => String(i.value) === String(id));
+                      return item ? item.label : (id || "-");
+                    },
+                    headerClassName: "text-center",
+                    cellClassName: "text-center font-semibold"
+                  },
+                  {
+                    key: "typeOfUseId",
+                    label: "Type of Use",
+                    render: (_: unknown, row: DrawerFloorDataRow) => {
+                      const id = row.typeOfUseId;
+                      const lookup = props.useLookup || [];
+                      const item = lookup.find((i) => String(i.value) === String(id));
+                      return item ? item.label : (id || "-");
+                    },
+                    headerClassName: "text-center",
+                    cellClassName: "text-center font-semibold"
+                  },
+                  {
+                    key: "subTypeOfUseId",
+                    label: "Sub Type",
+                    render: (_: unknown, row: DrawerFloorDataRow) => {
+                      const id = row.subTypeOfUseId;
+                      const lookup = props.subTypeLookup || [];
+                      const item = lookup.find((i) => String(i.value) === String(id));
+                      return item ? item.label : (id || "-");
+                    },
+                    headerClassName: "text-center",
+                    cellClassName: "text-center font-semibold"
+                  },
+                  {
+                    key: "noOfRooms",
+                    label: "Rooms",
+                    render: (val: unknown) => (val as string | number) ?? "-",
+                    headerClassName: "text-center",
+                    cellClassName: "text-center font-semibold"
+                  },
+                  {
+                    key: "area",
+                    label: "Area",
+                    render: (val: unknown) => (val as string | number) ?? "-",
+                    headerClassName: "text-center",
+                    cellClassName: "text-center font-bold text-slate-800"
+                  }
+                ]}
+                data={[props.selectedFloorRow]}
+                headerTitle={props.t?.('floorQC.selectedFloorDetails') || 'Selected Floor Row'}
+                containerClassName="rounded-xl overflow-hidden shadow-sm pt-0"
+                tableClassName="text-xs"
+              />
+            </div>
+          )}
 
           {/* Apartment QC layout — uses always-editable InputBox and no empty-slot addNewRow */}
           <ApartmentQCRoomLayout

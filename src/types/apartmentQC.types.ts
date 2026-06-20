@@ -178,6 +178,7 @@ export interface ApartmentQCResponse {
 export interface ApartmentQCSearchParams {
   wardId?: number | string;
   propertyNo?: string;
+  partitionNo?: string;
   propertyDetailsId?: number | string;
   propertyId?: number | string;
   partType?: string;

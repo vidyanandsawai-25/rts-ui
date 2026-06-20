@@ -36,6 +36,7 @@ import {
   fetchDualMethodTaxDetailsByIdAction,
 } from '@/app/[locale]/property-tax/ptis/appartmentQC/action';
 import type { RoomAPIResponse } from '@/types/room-details.types';
+import type { DrawerFloorDataRow } from '@/hooks/apartmentQc/propertyEditScreenDrawer.types';
 import { RoomWiseSubmission } from './roomSubmission/RoomWiseSubmission';
 import { ApartmentTaxDetailsTable } from './ApartmentTaxDetailsTable';
 import { limitSingleAtEmail, limitTwoDigitNumber } from '@/lib/utils/validation-rules';
@@ -100,11 +101,13 @@ const ResidentialEditScreen = ({
     updateFormField: hookUpdateFormField,
     floorData: hookFloorData,
     refetchFloorQC: hookRefetchFloorQC,
+    handleOpenRoomSubmission: hookHandleOpenRoomSubmission,
   } = hook;
 
   // State for client-side fetched room data
   const [clientRoomData, setClientRoomData] = useState<RoomWiseSubmissionData[]>([]);
   const [isLoadingRoomData, setIsLoadingRoomData] = useState(false);
+  const [selectedFloorRow, setSelectedFloorRow] = useState<DrawerFloorDataRow | null>(null);
 
   // State for tax details
   const [taxDetails, setTaxDetails] = useState<ApartmentTaxDetailsItems | null>(null);
@@ -113,35 +116,51 @@ const ResidentialEditScreen = ({
   );
   const [isLoadingTaxDetails, setIsLoadingTaxDetails] = useState(false);
 
+  // Clear selected floor row when room drawer closes
+  useEffect(() => {
+    if (!roomDrawerOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSelectedFloorRow(null);
+    }
+  }, [roomDrawerOpen]);
+
+  // Update selectedFloorRow when hookFloorData changes (after refetch)
+  useEffect(() => {
+    if (selectedFloorRow && hookFloorData.length > 0) {
+      const updatedRow = hookFloorData.find((row) => row.pdnId === selectedFloorRow.pdnId);
+      if (updatedRow) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setSelectedFloorRow(updatedRow);
+      }
+    }
+  }, [hookFloorData, selectedFloorRow]);
+
   // Fetch room data when room drawer opens (client-side).
   // Reset state in cleanup (the lint rule exempts cleanups) instead of setting
   // it inside the effect body, which would trip react-hooks/set-state-in-effect.
   useEffect(() => {
     if (!roomDrawerOpen || !roomPdnId || !roomPropertyId) return;
     let cancelled = false;
-    // Schedule the "loading=true" flag as a microtask so React doesn't see
-    // a synchronous setState inside this effect body (react-hooks/set-state-in-effect).
-    queueMicrotask(() => {
-      if (!cancelled) setIsLoadingRoomData(true);
-    });
-    getRoomWiseSubmissionsAction({
-      propertyId: Number(roomPropertyId),
-      propertyDetailsId: Number(roomPdnId),
-    })
-      .then((result) => {
-        if (cancelled) return;
-        setClientRoomData(result.success && result.data ? result.data : []);
-      })
-      .catch(() => {
+    const fetchRoomData = async () => {
+      try {
+        setIsLoadingRoomData(true);
+        const result = await getRoomWiseSubmissionsAction({
+          propertyId: Number(roomPropertyId),
+          propertyDetailsId: Number(roomPdnId),
+        });
+        if (!cancelled) {
+          setClientRoomData(result.success && result.data ? result.data : []);
+        }
+      } catch {
         if (!cancelled) setClientRoomData([]);
-      })
-      .finally(() => {
+      } finally {
         if (!cancelled) setIsLoadingRoomData(false);
-      });
+      }
+    };
+    fetchRoomData();
     return () => {
       cancelled = true;
       setClientRoomData([]);
-      setIsLoadingRoomData(false);
     };
   }, [roomDrawerOpen, roomPdnId, roomPropertyId]);
 
@@ -443,6 +462,19 @@ const ResidentialEditScreen = ({
     ]
   );
 
+  // Wrap the room submission opener so the loader appears immediately in the
+  // same synchronous event tick as the URL change. React 18 batches these
+  // state updates, so the RoomWiseSubmission drawer renders with the loader
+  // on the very first frame instead of flashing empty data.
+  const handleOpenRoomSubmissionWithLoading = useCallback(
+    (row: DrawerFloorDataRow) => {
+      setIsLoadingRoomData(true);
+      setSelectedFloorRow(row);
+      hookHandleOpenRoomSubmission(row);
+    },
+    [hookHandleOpenRoomSubmission]
+  );
+
   // Column definitions
   const commonColumns = useDrawerCommonColumns({
     floorOptions: hook.floorOptions,
@@ -456,7 +488,7 @@ const ResidentialEditScreen = ({
     handleConTypeDropdownClick: hook.handleConTypeDropdownClick,
     handleUseTypeDropdownClick: hook.handleUseTypeDropdownClick,
     updateRow: hook.updateFloorRow,
-    onOpenRoomSubmission: hook.handleOpenRoomSubmission,
+    onOpenRoomSubmission: handleOpenRoomSubmissionWithLoading,
   });
   const rateableColumns = useDrawerRateableColumns();
   const capitalColumns = useDrawerCapitalColumns();
@@ -817,10 +849,7 @@ const ResidentialEditScreen = ({
         }
         >
           {isLoadingRoomData ? (
-            <div className="p-8 text-center">
-              <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
-              <p className="mt-4 text-gray-600">{t('drawer.loadingRoomData')}</p>
-            </div>
+            <LoadingPage />
           ) : (
             <RoomWiseSubmission
               key={`room-submission-${hook.roomPdnId}-${clientRoomData.length}`}
@@ -836,6 +865,11 @@ const ResidentialEditScreen = ({
               externalAreaUnit={areaUnit}
               onExternalToggleUnit={handleToggleUnit}
               maxRooms={100}
+              selectedFloorRow={selectedFloorRow}
+              floorLookup={hook.loadedFloorOptions}
+              constructionLookup={hook.loadedConTypeOptions}
+              useLookup={hook.loadedUseTypeOptions}
+              subTypeLookup={hook.loadedSubTypeOptions}
             />
           )}
         </Drawer>

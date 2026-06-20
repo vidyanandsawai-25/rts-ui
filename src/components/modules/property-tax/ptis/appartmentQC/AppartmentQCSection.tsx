@@ -145,6 +145,25 @@ const AppartmentQCSection = ({
     startTransition(() => router.replace(`${pathname}?${newParams.toString()}`, { scroll: false }));
   }, [searchParams, pathname, router]);
 
+  const handleSort = useCallback((columnKey: string) => {
+    const currentSortBy = searchParams.get('sortBy') || '';
+    const currentSortOrder = searchParams.get('sortOrder') || '';
+
+    let nextSortBy: string | null = columnKey;
+    let nextSortOrder: string | null = 'asc';
+
+    if (currentSortBy === columnKey) {
+      if (currentSortOrder === 'asc') {
+        nextSortOrder = 'desc';
+      } else if (currentSortOrder === 'desc') {
+        nextSortBy = null;
+        nextSortOrder = null;
+      }
+    }
+
+    updateUrl({ sortBy: nextSortBy, sortOrder: nextSortOrder, pageNumber: 1 });
+  }, [searchParams, updateUrl]);
+
   const activePagedData = useMemo(() => {
     if (!initialData) return emptyPagedResponse;
     if (activeMainTab === 'commercial') return initialData.commercial || emptyPagedResponse;
@@ -254,6 +273,7 @@ const AppartmentQCSection = ({
             onFetchFilterOptions={fetchFilterOptions}
             sortBy={sortBy}
             sortOrder={sortOrder}
+            onSort={handleSort}
             wardId={wardId}
             propertyNo={propertyNo}
           />
