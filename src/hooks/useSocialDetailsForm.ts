@@ -3,7 +3,9 @@ import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useLoading } from "@/hooks/useLoading";
 import { 
-    upsertPropertySocialInfoAction
+    upsertPropertySocialInfoAction,
+    uploadSocialPhotoAction,
+    replaceSocialPhotoAction
 } from "@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Discount/social-actions";
 import { PropertySocialInfoResponseDto } from "@/types/property-social-details.types";
 import { useConfirm } from "@/components/common/ConfirmProvider";
@@ -41,7 +43,7 @@ export const useSocialDetailsForm = (
         handleToggleEnabled
     } = useSocialFormState(initialSocialData);
 
-    const { handlePhotoUpload } = useSocialPhotoUpload(
+    const { handlePhotoUpload, handlePhotoDelete } = useSocialPhotoUpload(
         socialData,
         propertyId,
         setFormState,
@@ -49,7 +51,8 @@ export const useSocialDetailsForm = (
         t as unknown as {
             (key: string, values?: Record<string, string | number | Date>): string;
             has?: (key: string) => boolean;
-        }
+        },
+        initialFlatData
     );
 
     const incompleteAttributes = useMemo(() => {
@@ -100,7 +103,84 @@ export const useSocialDetailsForm = (
                 onConfirm: async () => {
                     startLoading();
                     try {
-                        const { socialAttributes, socialAttributeIdsToRemove } = mapSocialStateToApi(socialData, initialFlatData);
+                        // 1. Find all attributes that are enabled and have a pending File
+                        const pendingUploads = Object.values(socialData).filter(
+                            attr => attr.bitValue === true && attr.pendingFile
+                        );
+
+                        // Map of successfully uploaded details to update state later
+                        const uploadedDetails: Record<number, {
+                            propertySocialDetailId: number;
+                            documentBindingId: number;
+                            documentGuid: string;
+                            documentUrl: string;
+                        }> = {};
+
+                        // 2. Upload pending files sequentially
+                        for (const attr of pendingUploads) {
+                            // Show loader on the target card
+                            setFormState(prev => {
+                                const nextData = { ...prev.data };
+                                if (nextData[attr.socialAttributeId]) {
+                                    nextData[attr.socialAttributeId] = {
+                                        ...nextData[attr.socialAttributeId],
+                                        isUploading: true
+                                    };
+                                }
+                                return { ...prev, data: nextData };
+                            });
+
+                            const formData = new FormData();
+                            formData.append("File", attr.pendingFile!);
+                            
+                            const hasDetailId = !!attr.id;
+                            if (!hasDetailId) {
+                                formData.append("PropertyId", String(propertyId));
+                                formData.append("SocialAttributeId", String(attr.socialAttributeId));
+                            }
+                            formData.append("IsPhoto", "true");
+
+                            const uploadResult = hasDetailId
+                                ? await replaceSocialPhotoAction(attr.id!, formData)
+                                : await uploadSocialPhotoAction(formData);
+
+                            if (!uploadResult.success || !uploadResult.data) {
+                                throw new Error(uploadResult.error || `Failed to upload file for ${attr.socialAttributeName}`);
+                            }
+
+                            uploadedDetails[attr.socialAttributeId] = {
+                                propertySocialDetailId: uploadResult.data.propertySocialDetailId,
+                                documentBindingId: uploadResult.data.documentBindingId,
+                                documentGuid: uploadResult.data.documentGuid,
+                                documentUrl: `/api/documents/${encodeURIComponent(uploadResult.data.documentGuid)}/view`
+                            };
+                        }
+
+                        // 3. Update state with uploaded file data and clear pendingFile
+                        const finalSocialData = { ...socialData };
+                        Object.keys(uploadedDetails).forEach((key) => {
+                            const attrId = Number(key);
+                            const info = uploadedDetails[attrId];
+                            finalSocialData[attrId] = {
+                                ...finalSocialData[attrId],
+                                id: info.propertySocialDetailId,
+                                documentBindingId: info.documentBindingId,
+                                documentGuid: info.documentGuid,
+                                documentUrl: info.documentUrl,
+                                pendingFile: undefined,
+                                isUploading: false
+                            };
+                        });
+
+                        if (Object.keys(uploadedDetails).length > 0) {
+                            setFormState(prev => ({
+                                ...prev,
+                                data: { ...prev.data, ...finalSocialData }
+                            }));
+                        }
+
+                        // 4. Map the state to API payload
+                        const { socialAttributes, socialAttributeIdsToRemove } = mapSocialStateToApi(finalSocialData, initialFlatData);
 
                         if (socialAttributes.length === 0 && socialAttributeIdsToRemove.length === 0) {
                             setHasChanges(false);
@@ -123,8 +203,20 @@ export const useSocialDetailsForm = (
                             toast.error(response.error || t("discount.socialConfirm.saveError") || "Failed to save social details.");
                             resolve({ success: false, isValid: true });
                         }
-                    } catch (_error) {
-                        toast.error(t("discount.socialConfirm.unexpectedError") || "An unexpected error occurred while saving.");
+                    } catch (error: unknown) {
+                        // Reset uploading loaders on error
+                        setFormState(prev => {
+                            const nextData = { ...prev.data };
+                            Object.keys(nextData).forEach((key) => {
+                                const attrId = Number(key);
+                                if (nextData[attrId].isUploading) {
+                                    nextData[attrId] = { ...nextData[attrId], isUploading: false };
+                                }
+                            });
+                            return { ...prev, data: nextData };
+                        });
+                        const msg = error instanceof Error ? error.message : String(error);
+                        toast.error(msg || t("discount.socialConfirm.unexpectedError") || "An unexpected error occurred while saving.");
                         resolve({ success: false, isValid: true });
                     } finally {
                         stopLoading();
@@ -147,6 +239,7 @@ export const useSocialDetailsForm = (
         handleInputChange,
         handleToggleEnabled,
         handlePhotoUpload,
+        handlePhotoDelete,
         handleSave
     };
 };

@@ -163,3 +163,12 @@ export async function replaceDiscountDocument(
 
     return parseResponse<DiscountDocumentUploadResponseDto>(response, "Replace");
 }
+
+/**
+ * Delete a discount detail document
+ */
+export async function deleteDiscountDocument(propertySocialDetailId: number): Promise<ApiResponse<void>> {
+    const response = await apiClient.delete<void>(`/Property/discount-details/${propertySocialDetailId}/document`);
+    return response;
+}
+

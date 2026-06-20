@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Eye, FileText, ShieldCheck, Download, UploadCloud, Loader2 } from "lucide-react";
+import { Eye, FileText, ShieldCheck, Download, UploadCloud, Loader2, Trash2 } from "lucide-react";
 import { Button, Badge } from "@/components/common";
 import { downloadDocumentClient, getDocumentBlobUrl } from "@/lib/utils/document-client-utils";
 import { DocumentViewerModal } from "@/components/common";
@@ -20,6 +20,7 @@ interface DocumentAttachmentProps {
     isDocumentInvalid: boolean;
     documentError?: string;
     onFileUpload: (file: File) => void;
+    onFileDelete?: () => void;
     t: (key: string) => string;
     label?: string;
 }
@@ -34,6 +35,7 @@ export const DocumentAttachment: React.FC<DocumentAttachmentProps> = ({
     isDocumentInvalid,
     documentError,
     onFileUpload,
+    onFileDelete,
     t,
     label,
 }) => {
@@ -115,6 +117,8 @@ export const DocumentAttachment: React.FC<DocumentAttachmentProps> = ({
         );
     }
 
+    const isPending = documentGuid === "pending";
+
     return (
         <div className="border border-blue-100 rounded-xl bg-blue-50/10 p-4 space-y-4 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-center gap-3">
@@ -124,41 +128,64 @@ export const DocumentAttachment: React.FC<DocumentAttachmentProps> = ({
                 <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold text-blue-950 truncate mb-1">{fileName || t("building.documentAttached") || "Document Attached"}</p>
                     <div className="flex items-center gap-1.5">
-                        <Badge
-                            variant="success"
-                            size="sm"
-                            icon={ShieldCheck}
-                            className="bg-emerald-50 text-emerald-700 border-emerald-100 font-bold"
-                        >
-                            {t("building.activeAttachment") || "Active Attachment"}
-                        </Badge>
+                        {isPending ? (
+                            <Badge
+                                variant="warning"
+                                size="sm"
+                                icon={ShieldCheck}
+                                className="bg-amber-50 text-amber-700 border-amber-200 font-bold animate-pulse"
+                            >
+                                {t("building.pendingSave") || "Pending Save"}
+                            </Badge>
+                        ) : (
+                            <Badge
+                                variant="success"
+                                size="sm"
+                                icon={ShieldCheck}
+                                className="bg-emerald-50 text-emerald-700 border-emerald-100 font-bold"
+                            >
+                                {t("building.activeAttachment") || "Active Attachment"}
+                            </Badge>
+                        )}
                     </div>
                 </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-3 pt-1">
                 <Button
-                    disabled={isDisabled || isAnyActionRunning}
+                    disabled={isDisabled || isAnyActionRunning || isPending}
                     isLoading={isViewing}
                     variant="primary"
                     size="sm"
                     icon={Eye}
-                    className="text-sm font-bold bg-blue-700 hover:bg-blue-800 text-white rounded-lg cursor-pointer"
+                    className="text-sm font-bold bg-blue-700 hover:bg-blue-800 text-white rounded-lg cursor-pointer disabled:opacity-50"
                     onClick={handleViewDocument}
                 >
                     {t("building.viewDocument") || "View Document"}
                 </Button>
                 <Button
-                    disabled={isDisabled || isAnyActionRunning}
+                    disabled={isDisabled || isAnyActionRunning || isPending}
                     isLoading={isDownloading}
                     variant="secondary"
                     size="sm"
                     icon={Download}
-                    className="text-sm font-bold border border-blue-200 text-blue-700 rounded-lg hover:bg-blue-50/40 hover:border-blue-500 cursor-pointer"
+                    className="text-sm font-bold border border-blue-200 text-blue-700 rounded-lg hover:bg-blue-50/40 hover:border-blue-500 cursor-pointer disabled:opacity-50"
                     onClick={handleDownloadDocument}
                 >
                     {t("building.downloadDocument") || "Download Document"}
                 </Button>
+                {onFileDelete && (
+                    <Button
+                        disabled={isDisabled || isAnyActionRunning}
+                        variant="delete"
+                        size="sm"
+                        icon={Trash2}
+                        className="text-sm font-bold border border-red-200 text-red-700 rounded-lg hover:bg-red-50/40 hover:border-red-500 cursor-pointer"
+                        onClick={onFileDelete}
+                    >
+                        {t("building.deleteDocument") || "Delete Document"}
+                    </Button>
+                )}
                 <label
                     className={`h-8 px-3 text-sm font-bold flex items-center gap-2 border border-blue-200 text-blue-700 rounded-lg transition-all bg-white shadow-sm whitespace-nowrap ${
                         isDisabled || isAnyActionRunning ? "opacity-50 pointer-events-none cursor-not-allowed" : "cursor-pointer hover:bg-blue-50/40 hover:border-blue-500"

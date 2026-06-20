@@ -46,6 +46,7 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
         handleToggleEnabled,
         handleInputChange,
         handleFileUpload,
+        handleFileDelete,
         handleSave
     } = useDiscountForm(initialDiscountData, propertyId);
 
@@ -157,6 +158,11 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
                                 onFileUpload={(file) => {
                                     if (activeSelectedId !== null) {
                                         handleFileUpload(activeSelectedId, file);
+                                    }
+                                }}
+                                onFileDelete={() => {
+                                    if (activeSelectedId !== null) {
+                                        handleFileDelete(activeSelectedId);
                                     }
                                 }}
                                 validationError={activeSelectedId !== null ? validationErrors[activeSelectedId] : undefined}

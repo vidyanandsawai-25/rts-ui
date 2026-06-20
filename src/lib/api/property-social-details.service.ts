@@ -134,3 +134,12 @@ export async function replaceSocialPhoto(
     return parseResponse<DiscountDocumentUploadResponseDto>(response, "Replace");
 }
 
+/**
+ * Delete a social detail document
+ */
+export async function deleteSocialDocument(propertySocialDetailId: number): Promise<ApiResponse<void>> {
+    const response = await apiClient.delete<void>(`/PropertySocialDetails/${propertySocialDetailId}/document?isPhoto=true`);
+    return response;
+}
+
+

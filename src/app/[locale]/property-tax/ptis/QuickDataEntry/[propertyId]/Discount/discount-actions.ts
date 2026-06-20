@@ -7,7 +7,8 @@ import {
     getDiscountDetails, 
     updateDiscountDetails,
     uploadDiscountDocument,
-    replaceDiscountDocument
+    replaceDiscountDocument,
+    deleteDiscountDocument
 } from "@/lib/api/discount.service";
 import { getUserIdFromCookies } from "@/lib/utils/cookie";
 import { logger } from "@/lib/utils/logger";
@@ -136,3 +137,14 @@ export async function replaceDiscountDocumentAction(propertySocialDetailId: numb
         return handleActionError(error, "discount.uploadError");
     }
 }
+
+export async function deleteDiscountDocumentAction(propertySocialDetailId: number): Promise<ApiResponse<void>> {
+    try {
+        const result = await deleteDiscountDocument(propertySocialDetailId);
+        return result;
+    } catch (error: unknown) {
+        logger.error("deleteDiscountDocumentAction failed", { propertySocialDetailId, error: error as Error });
+        return handleActionError(error, "discount.deleteError");
+    }
+}
+
