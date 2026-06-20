@@ -509,6 +509,16 @@
   "modules": {
     "PtisTaxDetails": {
       "title": "Tax Details",
+      "area": "Area",
+      "changeOfUse": "Change of Use",
+      "oldLabel": "OLD:",
+      "newLabel": "NEW:",
+      "tax": "Tax",
+      "yes": "YES",
+      "no": "NO",
+      "m2Unit": "m²",
+      "cv": "CV",
+      "rv": "RV",
       "oldTotalRv": "[Old] Total RV",
       "oldTotalAlv": "[Old] Total ALV",
       "oldTotalCv": "[Old] Total CV",

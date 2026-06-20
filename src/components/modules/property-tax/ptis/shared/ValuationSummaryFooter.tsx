@@ -1,6 +1,7 @@
 import type { TaxDetailsData } from '@/types/ptisMain-taxdetails.types';
-import TaxDetails from '../TaxDetails/TaxDetails';
 import { type BadgeThemeColor } from './TaxBadge';
+import { getTranslations } from 'next-intl/server';
+import TaxDetails from '../TaxDetails/TaxDetails';
 
 /**
  * Represents a single badge in the summary footer (maintained for prop compatibility)
@@ -15,114 +16,137 @@ export interface ValuationSummaryFooterProps {
   title: string;
   badges?: SummaryBadge[];
   initialTaxDetails?: TaxDetailsData;
+  locale?: string;
 }
 
 /**
  * ValuationSummaryFooter Component
  * Displays a clean title, a Net Impact summary card, and metrics cards for Area, Change of Use, RV, and Tax.
  */
-export function ValuationSummaryFooter({
+export async function ValuationSummaryFooter({
   title,
   badges,
   initialTaxDetails,
+  locale = 'en',
 }: ValuationSummaryFooterProps) {
+  const tVal = await getTranslations({ locale, namespace: 'ptis.modules.PtisTaxDetails' });
+
+  // Find badges by matching translated labels to avoid sequence mismatch issues
+  const oldValRVBadge = badges?.find(
+    item => item.label === tVal('oldTotalRv') || item.label === tVal('oldTotalCv')
+  );
+  const newValRVBadge = badges?.find(
+    item => item.label === tVal('totalRv') || item.label === tVal('totalCv')
+  );
+  const oldTaxBadge = badges?.find(
+    item => item.label === tVal('oldTotalTax')
+  );
+  const newTaxBadge = badges?.find(
+    item => item.label === tVal('totalTax')
+  );
+
+  const oldValRV = Number(oldValRVBadge?.value ?? 0);
+  const newValRV = Number(newValRVBadge?.value ?? 0);
+  const valDiffRV = newValRV - oldValRV;
+
+  const oldTax = Number(oldTaxBadge?.value ?? 0);
+  const newTax = Number(newTaxBadge?.value ?? 0);
+  const taxDiff = newTax - oldTax;
+
+  const isCV = oldValRVBadge?.label === tVal('oldTotalCv');
+ const valLabel = isCV ? tVal('cv') : tVal('rv');
 
   // Static simplified data matching specifications
-  const oldArea = 18.63;
-  const newArea = 1193.08;
-  const areaDiff = 1174.45;
+  const oldArea = 0;
+  const newArea = 0;
+  const areaDiff = 0;
 
-  const oldUseType = 'N/A';
-  const newUseType = 'Mix';
-
-  const oldVal = 3434;
-  const newVal = 128882;
-  const valDiff = 125548;
-
-  const oldTax = 0;
-  const newTax = 47310;
-  const taxDiff = 47310;
+  const oldUseType: string = 'N/A';
+  const newUseType: string = 'Mix';
 
   // Simple formatting helper
   const formatCurrency = (val: number) => {
-    return '₹' + val.toLocaleString('en-IN');
+    return '₹' + Math.round(val).toLocaleString('en-IN');
   };
 
-  console.log("badges :", badges);
+  const getDiffColor = (diff: number) => {
+    if (diff > 0) return 'text-emerald-600';
+    if (diff < 0) return 'text-rose-600';
+    return 'text-gray-500';
+  };
+
+  const getDiffArrow = (diff: number) => {
+    if (diff > 0) return '↑ ';
+    if (diff < 0) return '↓ ';
+    return '';
+  };
 
   return (
-    <div className="overflow-hidden rounded-xl border border-blue-200 bg-white shadow-xs">
-      {/* Banner / Header with tighter padding and smaller overall size */}
-      <div className="flex flex-col xl:flex-row w-full items-center justify-between gap-2 border-t-2 border-blue-700 bg-blue-50/70 p-1.5 px-3">
+    <div className="overflow-hidden rounded-xl border border-blue-200 bg-white shadow-md">
+      {/* Banner / Header with comfortable padding and layout */}
+      <div className="flex flex-col lg:flex-row w-full items-center justify-between gap-3 border-t-2 border-blue-700 bg-blue-50/70 p-1.5 px-4">
         <div className="flex items-center gap-2 shrink-0">
-          <h3 className="text-xs font-black tracking-wide text-blue-900 uppercase">
-            {title.includes("Summary") ? title : `${title} & Reassessment Summary`}
+          <h3 className="text-xs sm:text-sm font-black tracking-wide text-blue-900 uppercase">
+            {title}
           </h3>
-
-          {/* Small Summary Card highlighting Net Impact */}
-          <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-200 rounded-md py-0.5 px-1.5 shadow-xs shrink-0">
-            <span className="text-emerald-700 font-extrabold text-[8px] uppercase tracking-wider">Impact</span>
-            <div className="border-l border-emerald-200 h-3.5 mx-0.5"></div>
-            <span className="text-emerald-700 font-black text-[11px]">↑ ₹47,310</span>
-          </div>
         </div>
 
-        {/* Cards Row with tight margins and small sizing */}
-        <div className="flex flex-wrap items-center justify-center xl:justify-end gap-1.5 w-full xl:w-auto">
+        {/* Cards Row with clean margins and visible sizing */}
+        <div className="flex flex-wrap items-center justify-center lg:justify-end gap-2.5 w-full lg:w-auto">
           {/* Card 1: Area */}
-          <div className="flex items-center gap-1.5 bg-white rounded-lg border border-blue-100 p-1 px-2 shadow-xs transition-all duration-200 hover:shadow-xs">
-            <span className="text-blue-600 font-extrabold text-[10px]">Area</span>
-            <div className="border-l border-gray-200 h-5.5 mx-0.5"></div>
-            <div className="flex flex-col text-[8.5px] text-gray-500 leading-tight">
-              <span>OLD: <span className="font-semibold text-gray-700">{oldArea} m²</span></span>
-              <span>NEW: <span className="font-semibold text-blue-600">{newArea} m²</span></span>
+          <div className="flex items-center gap-2 bg-white rounded-lg border border-blue-100 p-1.5 px-3 shadow-sm transition-all duration-200 hover:shadow-md">
+            <span className="text-blue-600 font-extrabold text-xs">{tVal('area')}</span>
+            <div className="border-l border-gray-200 h-7 mx-0.5"></div>
+            <div className="flex flex-col text-[9.5px] xl:text-[10px] text-gray-500 leading-tight">
+              <span>{tVal('oldLabel')}{' '}<span className="font-semibold text-gray-700">{oldArea}{' '}{tVal('m2Unit')}</span></span>
+              <span>{tVal('newLabel')}{' '}<span className="font-semibold text-blue-600">{newArea}{' '}{tVal('m2Unit')}</span></span>
             </div>
-            <div className="border-l border-gray-200 h-5.5 mx-0.5"></div>
-            <span className="text-emerald-600 font-extrabold text-[9.5px] flex items-center shrink-0">
-              ↑ {areaDiff.toLocaleString('en-IN')} m²
+            <div className="border-l border-gray-200 h-7 mx-0.5"></div>
+            <span className="text-emerald-600 font-extrabold text-[10px] xl:text-xs flex items-center shrink-0">
+              {getDiffArrow(areaDiff) || '↑ '}{areaDiff.toLocaleString('en-IN')}{' '}{tVal('m2Unit')}
             </span>
           </div>
 
           {/* Card 2: Change of Use */}
-          <div className="flex items-center gap-1.5 bg-white rounded-lg border border-blue-100 p-1 px-2 shadow-xs transition-all duration-200 hover:shadow-xs">
+          <div className="flex items-center gap-2 bg-white rounded-lg border border-blue-100 p-1.5 px-3 shadow-sm transition-all duration-200 hover:shadow-md">
             <div className="flex flex-col items-start leading-tight">
-              <span className="text-purple-600 font-extrabold text-[8.5px]">Change of Use</span>
-              <span className="text-[7.5px] font-black px-0.5 rounded-xs uppercase tracking-wider bg-gray-100 text-gray-500 border border-gray-200 leading-none">
-                NO
+              <span className="text-purple-600 font-extrabold text-[10px]">{tVal('changeOfUse')}</span>
+              <span className="text-[8px] xl:text-[9px] font-black px-1 py-0.5 rounded-sm uppercase tracking-wider bg-gray-100 text-gray-500 border border-gray-200 leading-none mt-0.5">
+                {oldUseType !== newUseType ? tVal('yes') : tVal('no')}
               </span>
             </div>
-            <div className="border-l border-gray-200 h-5.5 mx-0.5"></div>
-            <div className="flex flex-col text-[8.5px] text-gray-500 leading-tight">
-              <span>OLD: <span className="font-semibold text-gray-700">{oldUseType}</span></span>
-              <span>NEW: <span className="font-semibold text-purple-600">{newUseType}</span></span>
+            <div className="border-l border-gray-200 h-7 mx-0.5"></div>
+            <div className="flex flex-col text-[9.5px] xl:text-[10px] text-gray-500 leading-tight">
+              <span>{tVal('oldLabel')}{' '}<span className="font-semibold text-gray-700">{oldUseType}</span></span>
+              <span>{tVal('newLabel')}{' '}<span className="font-semibold text-purple-600">{newUseType}</span></span>
             </div>
           </div>
 
           {/* Card 3: RV/CV */}
-          <div className="flex items-center gap-1.5 bg-white rounded-lg border border-blue-100 p-1 px-2 shadow-xs transition-all duration-200 hover:shadow-xs">
-            <span className="text-orange-600 font-extrabold text-[10px]">RV</span>
-            <div className="border-l border-gray-200 h-5.5 mx-0.5"></div>
-            <div className="flex flex-col text-[8.5px] text-gray-500 leading-tight">
-              <span>OLD: <span className="font-semibold text-gray-700">{formatCurrency(oldVal)}</span></span>
-              <span>NEW: <span className="font-semibold text-orange-600">{formatCurrency(newVal)}</span></span>
+          <div className="flex items-center gap-2 bg-white rounded-lg border border-blue-100 p-1.5 px-3 shadow-sm transition-all duration-200 hover:shadow-md">
+            <span className="text-orange-600 font-extrabold text-xs">{valLabel}</span>
+            <div className="border-l border-gray-200 h-7 mx-0.5"></div>
+            <div className="flex flex-col text-[9.5px] xl:text-[10px] text-gray-500 leading-tight">
+              <span>{tVal('oldLabel')}{' '}<span className="font-semibold text-gray-700">{formatCurrency(oldValRV)}</span></span>
+              <span>{tVal('newLabel')}{' '}<span className="font-semibold text-orange-600">{formatCurrency(newValRV)}</span></span>
             </div>
-            <div className="border-l border-gray-200 h-5.5 mx-0.5"></div>
-            <span className="text-emerald-600 font-extrabold text-[9.5px] flex items-center shrink-0">
-              ↑ {formatCurrency(valDiff)}
+            <div className="border-l border-gray-200 h-7 mx-0.5"></div>
+            <span className={`font-extrabold text-[10px] xl:text-xs flex items-center shrink-0 ${getDiffColor(valDiffRV)}`}>
+              {getDiffArrow(valDiffRV)}{formatCurrency(Math.abs(valDiffRV))}
             </span>
           </div>
 
           {/* Card 4: Tax */}
-          <div className="flex items-center gap-1.5 bg-white rounded-lg border border-blue-100 p-1 px-2 shadow-xs transition-all duration-200 hover:shadow-xs">
-            <span className="text-emerald-600 font-extrabold text-[10px]">Tax</span>
-            <div className="border-l border-gray-200 h-5.5 mx-0.5"></div>
-            <div className="flex flex-col text-[8.5px] text-gray-500 leading-tight">
-              <span>OLD: <span className="font-semibold text-gray-700">{formatCurrency(oldTax)}</span></span>
-              <span>NEW: <span className="font-semibold text-emerald-600">{formatCurrency(newTax)}</span></span>
+          <div className="flex items-center gap-2 bg-white rounded-lg border border-blue-100 p-1.5 px-3 shadow-sm transition-all duration-200 hover:shadow-md">
+            <span className="text-emerald-600 font-extrabold text-xs">{tVal('tax')}</span>
+            <div className="border-l border-gray-200 h-7 mx-0.5"></div>
+            <div className="flex flex-col text-[9.5px] xl:text-[10px] text-gray-500 leading-tight">
+              <span>{tVal('oldLabel')}{' '}<span className="font-semibold text-gray-700">{formatCurrency(oldTax)}</span></span>
+              <span>{tVal('newLabel')}{' '}<span className="font-semibold text-emerald-600">{formatCurrency(newTax)}</span></span>
             </div>
-            <div className="border-l border-gray-200 h-5.5 mx-0.5"></div>
-            <span className="text-emerald-600 font-extrabold text-[9.5px] flex items-center shrink-0">
-              ↑ {formatCurrency(taxDiff)}
+            <div className="border-l border-gray-200 h-7 mx-0.5"></div>
+            <span className={`font-extrabold text-[10px] xl:text-xs flex items-center shrink-0 ${getDiffColor(taxDiff)}`}>
+              {getDiffArrow(taxDiff)}{formatCurrency(Math.abs(taxDiff))}
             </span>
           </div>
         </div>
