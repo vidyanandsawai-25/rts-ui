@@ -320,6 +320,32 @@
       "useFactor": "Use Factor",
       "capitalValue": "Capital Value"
     },
+     "toolTipFloorQC": {
+      "tooltips": {
+        "floor": "Floor",
+        "conYear": "Construction Year",
+        "asstYear": "Assessment Year",
+        "conType": "Construction Type",
+        "use": "Type of Use",
+        "subTypeOfUse": "Sub Type of Use",
+        "noOfRooms": "Number of Rooms",
+        "area": "Area",
+        "rentMY": "Rent Monthly / Yearly",
+        "rateMY": "Rate Monthly / Yearly",
+        "rentalValue": "Rateable Value",
+        "depreciation": "Depreciation",
+        "alv": "Annual Letting Value",
+        "mr": "Maintenance",
+        "rv": "Rental Value",
+        "sdrr": "SDRR",
+        "baseValue": "Base Value",
+        "floorFactor": "Floor Factor",
+        "ageFactor": "Age Factor",
+        "ntbFactor": "NTB Factor",
+        "useFactor": "Use Factor",
+        "capitalValue": "Capital Value"
+      }
+    },
     "tabs": {
       "rateable": "Rateable",
       "capital": "Capital"
