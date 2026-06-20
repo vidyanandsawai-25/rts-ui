@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, act } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { LockedScreen } from "@/types/lockunlock.types";
 import { PropertySelectionCard } from "@/components/modules/property-tax/lockunlock/PropertySelectionCard";
