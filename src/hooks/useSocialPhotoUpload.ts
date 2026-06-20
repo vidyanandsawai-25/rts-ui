@@ -3,13 +3,12 @@ import { toast } from "sonner";
 import { FlatSocialAttributeState } from "@/lib/utils/social-details";
 import { checkSocialRequiredFields } from "@/lib/validations/social-details.validation";
 import { 
-    uploadSocialPhotoAction, 
-    replaceSocialPhotoAction 
+    deleteSocialDocumentAction
 } from "@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Discount/social-actions";
 
 export const useSocialPhotoUpload = (
     socialData: Record<number, FlatSocialAttributeState>,
-    propertyId: string,
+    _propertyId: string,
     setFormState: React.Dispatch<React.SetStateAction<{
         data: Record<number, FlatSocialAttributeState>;
         errors: Record<number, string>;
@@ -18,7 +17,8 @@ export const useSocialPhotoUpload = (
     t: {
         (key: string, values?: Record<string, string | number | Date>): string;
         has?: (key: string) => boolean;
-    }
+    },
+    initialFlatData?: Record<number, FlatSocialAttributeState>
 ) => {
     const handlePhotoUpload = useCallback(async (socialAttributeId: number, file: File) => {
         if (file.size > 5 * 1024 * 1024 || !['image/jpeg', 'image/png'].includes(file.type)) {
@@ -38,39 +38,73 @@ export const useSocialPhotoUpload = (
         setFormState(prev => {
             const nextData = { ...prev.data };
             if (nextData[socialAttributeId]) {
+                nextData[socialAttributeId] = {
+                    ...nextData[socialAttributeId],
+                    pendingFile: file,
+                    documentGuid: "pending",
+                    documentUrl: "pending",
+                };
+            }
+            const nextErrors = { ...prev.errors };
+            delete nextErrors[socialAttributeId];
+            return {
+                data: nextData,
+                errors: nextErrors
+            };
+        });
+        setHasChanges(true);
+    }, [socialData, t, setFormState, setHasChanges]);
+
+    const handlePhotoDelete = useCallback(async (socialAttributeId: number) => {
+        const item = socialData[socialAttributeId];
+        if (!item) return;
+
+        // If the document is currently in pending state, revert to the initial flat state or null if it didn't exist
+        if (item.documentGuid === "pending") {
+            const initialItem = initialFlatData?.[socialAttributeId];
+            setFormState(prev => {
+                const nextData = { ...prev.data };
+                if (nextData[socialAttributeId]) {
+                    nextData[socialAttributeId] = {
+                        ...nextData[socialAttributeId],
+                        pendingFile: undefined,
+                        documentGuid: initialItem?.documentGuid || null,
+                        documentUrl: initialItem?.documentUrl || null,
+                        documentBindingId: initialItem?.documentBindingId || null
+                    };
+                }
+                return { ...prev, data: nextData };
+            });
+            setHasChanges(true);
+            toast.success(t("discount.deleteSuccess") || "File removed successfully!");
+            return;
+        }
+
+        // If it was a saved document, call the DELETE API
+        if (!item.id) return;
+
+        setFormState(prev => {
+            const nextData = { ...prev.data };
+            if (nextData[socialAttributeId]) {
                 nextData[socialAttributeId] = { ...nextData[socialAttributeId], isUploading: true };
             }
             return { ...prev, data: nextData };
         });
 
         try {
-            const formData = new FormData();
-            formData.append("File", file);
+            const result = await deleteSocialDocumentAction(item.id);
 
-            const hasDetailId = !!item.id;
-            if (!hasDetailId) {
-                formData.append("PropertyId", String(propertyId));
-                formData.append("SocialAttributeId", String(socialAttributeId));
-            }
-            formData.append("IsPhoto", "true");
-
-            const result = hasDetailId
-                ? await replaceSocialPhotoAction(item.id!, formData)
-                : await uploadSocialPhotoAction(formData);
-
-            if (result.success && result.data) {
-                const docData = result.data;
-
+            if (result.success) {
                 setFormState(prev => {
                     const nextData = { ...prev.data };
                     if (nextData[socialAttributeId]) {
                         nextData[socialAttributeId] = {
                             ...nextData[socialAttributeId],
-                            id: docData.propertySocialDetailId,
-                            documentBindingId: docData.documentBindingId,
-                            documentGuid: docData.documentGuid,
-                            documentUrl: `/api/documents/${encodeURIComponent(docData.documentGuid)}/view`,
-                            isUploading: false
+                            documentBindingId: null,
+                            documentGuid: null,
+                            documentUrl: null,
+                            isUploading: false,
+                            pendingFile: undefined
                         };
                     }
                     const nextErrors = { ...prev.errors };
@@ -81,9 +115,9 @@ export const useSocialPhotoUpload = (
                     };
                 });
                 setHasChanges(true);
-                toast.success(t("discount.uploadSuccess") || "File uploaded successfully!");
+                toast.success(t("discount.deleteSuccess") || "File deleted successfully!");
             } else {
-                throw new Error(result.error || t("discount.uploadError"));
+                throw new Error(result.error || t("discount.deleteError"));
             }
         } catch (error: unknown) {
             setFormState(prev => {
@@ -94,9 +128,9 @@ export const useSocialPhotoUpload = (
                 return { ...prev, data: nextData };
             });
             const message = error instanceof Error ? error.message : String(error);
-            toast.error(message || t("discount.uploadError"));
+            toast.error(message || t("discount.deleteError") || "Failed to delete file");
         }
-    }, [socialData, propertyId, t, setFormState, setHasChanges]);
+    }, [socialData, t, setFormState, setHasChanges, initialFlatData]);
 
-    return { handlePhotoUpload };
+    return { handlePhotoUpload, handlePhotoDelete };
 };
