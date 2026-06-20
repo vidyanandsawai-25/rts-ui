@@ -1,9 +1,8 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { LockedScreen } from "@/types/lockunlock.types";
-import { PropertySelectionCard } from "@/components/modules/property-tax/lockunlock/PropertySelectionCard";
+import { ScreenSelectionCard } from "@/components/modules/property-tax/lockunlock/ScreenSelectionCard";
 
-const mockPush = vi.fn();
 const mockGet = vi.fn();
 const mockUpdateQueries = vi.fn();
 const mockSearchParams = {
@@ -20,7 +19,7 @@ vi.mock("@/hooks/useQueryTransition", () => ({
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
-    push: mockPush,
+    push: vi.fn(),
     replace: vi.fn(),
     refresh: vi.fn(),
   }),
@@ -34,9 +33,6 @@ vi.mock("next-intl", () => ({
       return `${values?.count} selected`;
     }
     const translations: Record<string, string> = {
-      "selectPropertyCard.title": "Select properties",
-      "selectPropertyCard.showButton": "Show",
-      "selectPropertyCard.clearButton": "Clear all",
       "screenSelectionCard.title": "Screen selection",
       "screenSelectionCard.noScreens": "No screens available to select.",
     };
@@ -44,77 +40,42 @@ vi.mock("next-intl", () => ({
   },
 }));
 
-describe("PropertySelectionCard", () => {
+describe("ScreenSelectionCard", () => {
   const mockScreens: LockedScreen[] = [
     { id: 1, screenCode: "S1", screenName: "Screen 1", screenNameLocal: "Screen 1 Local", displayOrder: 1 },
     { id: 2, screenCode: "S2", screenName: "Screen 2", screenNameLocal: "Screen 2 Local", displayOrder: 2 },
   ];
-
-  const mockProps = {
-    formData: {
-      wardId: "1",
-      fromProperty: "P1",
-      toProperty: "P2",
-    },
-    handleSelectChange: vi.fn(),
-    wardOptions: [{ label: "Ward 1", value: "1" }],
-    propertyOptions: [
-      { label: "Prop 1", value: "P1" },
-      { label: "Prop 2", value: "P2" },
-    ],
-    toPropertyOptions: [
-      { label: "Prop 1", value: "P1" },
-      { label: "Prop 2", value: "P2" },
-    ],
-    handleShow: vi.fn(),
-    handleClearAll: vi.fn(),
-    isPending: false,
-    isLoadingProperties: false,
-    screens: mockScreens,
-    selectedScreenIds: [1],
-    setSelectedScreenIds: vi.fn(),
-  };
 
   beforeEach(() => {
     vi.clearAllMocks();
     mockGet.mockReturnValue(null);
   });
 
-  it("should render components inside PropertySelectionCard", () => {
-    render(<PropertySelectionCard {...mockProps} />);
+  it("should render screen selection card with screens", () => {
+    const mockSetSelected = vi.fn();
+    render(
+      <ScreenSelectionCard
+        screens={mockScreens}
+        selectedScreenIds={[1]}
+        setSelectedScreenIds={mockSetSelected}
+      />
+    );
 
-    expect(screen.getByText("Select properties")).toBeInTheDocument();
-    expect(screen.getByText("Show")).toBeInTheDocument();
-    expect(screen.getByText("Clear all")).toBeInTheDocument();
     expect(screen.getByText("Screen selection")).toBeInTheDocument();
     expect(screen.getByText("1 selected")).toBeInTheDocument();
+    expect(screen.getByLabelText("Screen 1")).toBeInTheDocument();
+    expect(screen.getByLabelText("Screen 2")).toBeInTheDocument();
   });
 
   it("should display empty message if no screens", () => {
     render(
-      <PropertySelectionCard
-        {...mockProps}
+      <ScreenSelectionCard
         screens={[]}
         selectedScreenIds={[]}
+        setSelectedScreenIds={vi.fn()}
       />
     );
     
     expect(screen.getByText("No screens available to select.")).toBeInTheDocument();
-  });
-
-  it("should trigger handleShow when Show button is clicked", () => {
-    render(<PropertySelectionCard {...mockProps} />);
-
-    const showBtn = screen.getByRole("button", { name: /show/i });
-    fireEvent.click(showBtn);
-    expect(mockProps.handleShow).toHaveBeenCalled();
-  });
-
-  it("should trigger handleClearAll when Clear all button is clicked", () => {
-    render(<PropertySelectionCard {...mockProps} />);
-
-    const clearBtn = screen.getByRole("button", { name: /clear all/i });
-    fireEvent.click(clearBtn);
-    expect(mockProps.handleClearAll).toHaveBeenCalled();
   });
 });

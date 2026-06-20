@@ -2,7 +2,7 @@
 
 import React from "react";
 import { ShieldAlert } from "lucide-react";
-import { PageContainer, LockButton, UnlockButton, SearchButton } from "@/components/common";
+import { PageContainer, LockButton, UnlockButton, SearchButton, Card } from "@/components/common";
 import TableHeader from "@/components/common/TableHeader";
 import { MasterTable } from "@/components/common/MasterTable";
 import { SearchInput } from "@/components/common/SearchInput";
@@ -13,6 +13,7 @@ import { useLockUnlockMaster, PaginationState } from "@/hooks/lockunlock/useLock
 import { TableModal } from "./TableModal";
 import { useTranslations } from "next-intl";
 import { PropertySelectionCard } from "./PropertySelectionCard";
+import { ScreenSelectionCard } from "./ScreenSelectionCard";
 
 export interface LockUnlockMasterProps {
   wards: WardItem[];
@@ -84,7 +85,7 @@ return (
       <div className="grid grid-cols-12 gap-2 items-stretch">
   {/* Left Panel */}
   <div className="col-span-5 flex flex-col gap-2 h-full">
-    <div className="flex-1 rounded-xl shadow-lg border border-[#1A86E8]/20">
+    <Card className="rounded-xl shadow-lg border border-[#1A86E8]/20 overflow-visible h-full flex flex-col gap-4 p-4 bg-white">
       <PropertySelectionCard
         formData={formData}
         handleSelectChange={handleSelectChange}
@@ -95,11 +96,13 @@ return (
         handleClearAll={handleClearAll}
         isPending={isPending}
         isLoadingProperties={isLoadingProperties}
+      />
+      <ScreenSelectionCard
         screens={screens}
         selectedScreenIds={selectedScreenIds}
         setSelectedScreenIds={setSelectedScreenIds}
       />
-    </div>
+    </Card>
   </div>
 
   {/* Right Panel */}
