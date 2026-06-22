@@ -647,13 +647,17 @@ export interface FilterOptionsResponse {
 export async function getFilterOptions(
   wardId: number | string,
   propertyNo: string,
-  field: FilterField
+  field: FilterField,
+  partType?: string
 ): Promise<ApiResponse<FilterOptionsResponse>> {
   try {
     const params = new URLSearchParams();
     params.append('WardId', String(wardId));
     params.append('PropertyNo', propertyNo);
     params.append('field', field);
+    if (partType) {
+      params.append('PartType', partType);
+    }
     
     const endpoint = `/ApartmentQC/filter-options?${params.toString()}`;
     const response = await apiClient.get<FilterOptionsResponse>(endpoint);
@@ -670,10 +674,11 @@ export async function getFilterOptions(
 export async function getFilterOptionsLocalized(
   wardId: number | string,
   propertyNo: string,
-  field: FilterField
+  field: FilterField,
+  partType?: string
 ): Promise<FilterOptionsResponse> {
   try {
-    const res = await getFilterOptions(wardId, propertyNo, field);
+    const res = await getFilterOptions(wardId, propertyNo, field, partType);
     if (!res.success) {
       throw new ApiError(
         res.statusCode ?? 500,

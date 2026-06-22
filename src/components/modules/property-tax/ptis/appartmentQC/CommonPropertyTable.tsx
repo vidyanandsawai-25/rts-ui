@@ -14,6 +14,7 @@ import { logger } from '@/lib/utils/logger';
 import { TEXT_SANITIZE } from '@/lib/utils/validation';
 import { ExportIconButton, EyeIconButton } from '@/components/common/ActionButtons';
 import { Button } from '@/components/common/ActionButton';
+import { SEARCH_ALPHANUMERIC_SANITIZE } from '@/lib/utils/validation-rules';
 
 type ColumnWithTooltip<T extends Record<string, unknown>> = Column<T> & {
   headerTooltip?: boolean | string;
@@ -90,7 +91,6 @@ type CommonPropertyTableProps<T extends Record<string, unknown>> = {
   // Filter props
   activeFilters?: Record<FilterField, string[]>;
   onFilterChange?: (field: FilterField, values: string[]) => void;
-  onFetchFilterOptions?: (field: FilterField) => Promise<FilterOption[]>;
   sortBy?: string;
   sortOrder?: string;
   onSort?: (columnKey: string) => void;
@@ -118,7 +118,6 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
   onPageSizeChange,
   activeFilters = {} as Record<FilterField, string[]>,
   onFilterChange,
-  onFetchFilterOptions,
   sortBy,
   sortOrder,
   onSort,
@@ -192,6 +191,33 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
     }
   }, [wardId, propertyNo, t, locale]);
 
+  // Derive filter options from the current data (only values actually appearing in the columns)
+  const localFilterOptions = useMemo(() => {
+    const optionsMap: Record<string, FilterOption[]> = {};
+
+    for (const [colKey, field] of Object.entries(FILTERABLE_COLUMNS)) {
+      const values = new Set<string>();
+      data.forEach((row) => {
+        const rawVal = row[colKey] as string | number | null | undefined;
+        if (rawVal !== null && rawVal !== undefined && rawVal !== '') {
+          values.add(String(rawVal));
+        }
+      });
+      optionsMap[field] = Array.from(values)
+        .sort((a, b) => a.localeCompare(b))
+        .map((v) => ({ value: v, label: v }));
+    }
+    return optionsMap;
+  }, [data]);
+
+  // Local fetch function that returns only values present in the current column data
+  const handleLocalFetchFilterOptions = useCallback(
+    async (field: FilterField): Promise<FilterOption[]> => {
+      return localFilterOptions[field] || [];
+    },
+    [localFilterOptions]
+  );
+
   const styledColumns: Column<T>[] = useMemo(
     () =>
       columns.map((col) => {
@@ -204,7 +230,7 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
             ? sortOrder
             : null
           : null;
-        const isFilterable = !!filterField && !!onFilterChange && !!onFetchFilterOptions;
+        const isFilterable = !!filterField && !!onFilterChange;
         const hasActiveFilter = filterField && activeFilters[filterField]?.length > 0;
 
  const isPropertyNo = col.key === 'propertyNo';
@@ -234,7 +260,7 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
             }
             placement="top"
           >
-            <span className="cursor-help">{sortButton}</span>
+            <span>{sortButton}</span>
           </Tooltip>
         ) : (
           sortButton
@@ -253,7 +279,7 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
                     field={filterField}
                     selectedValues={activeFilters[filterField] || []}
                     onFilterChange={onFilterChange}
-                    onFetchOptions={onFetchFilterOptions}
+                    onFetchOptions={handleLocalFetchFilterOptions}
                     isActive={hasActiveFilter}
                   />
                 )}
@@ -289,11 +315,11 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
       columns,
       activeFilters,
       onFilterChange,
-      onFetchFilterOptions,
       onSort,
       sortBy,
       sortOrder,
       tCommon,
+      handleLocalFetchFilterOptions,
     ]
   );
 
@@ -307,9 +333,10 @@ function CommonPropertyTable<T extends Record<string, unknown>>({
 
   const handleSearchInputChange = useCallback(
     (value: string) => {
-      setLocalSearch(value);
+      
 
-      const sanitized = value.replace(TEXT_SANITIZE, '');
+      const sanitized = value.replace(SEARCH_ALPHANUMERIC_SANITIZE,  '');
+      setLocalSearch(sanitized);
 
       if (searchTimeoutRef.current) {
         clearTimeout(searchTimeoutRef.current);

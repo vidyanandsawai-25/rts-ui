@@ -31,7 +31,7 @@ import {
   getDimensionsString,
   isOffsetValid,
 } from "@/lib/utils/RoomSubmission/room-submission.utils";
-import { MasterTable } from "@/components/common";
+import { MasterTable, Tooltip } from "@/components/common";
 
 
 export const RoomWiseSubmission: React.FC<
@@ -148,7 +148,16 @@ export const RoomWiseSubmission: React.FC<
                 columns={[
                   {
                     key: "floorId",
-                    label: "Floor",
+                    label: (
+                      <Tooltip
+                        content={<div className="text-xs max-w-xs whitespace-normal break-words">{props.t?.(`floorQC.toolTipFloorQC.tooltips.floor`) || "Floor"}</div>}
+                        placement="top"
+                      >
+                        <span className=" font-semibold text-gray-900">
+                          {props.t?.("floorQC.columns.floor") || "Floor"}
+                        </span>
+                      </Tooltip>
+                    ) as unknown as string,
                     render: (_: unknown, row: DrawerFloorDataRow) => {
                       const id = row.floorId;
                       const lookup = props.floorLookup || [];
@@ -160,21 +169,48 @@ export const RoomWiseSubmission: React.FC<
                   },
                   {
                     key: "conYear",
-                    label: "Con. Year",
+                    label: (
+                      <Tooltip
+                        content={<div className="text-xs max-w-xs whitespace-normal break-words">{props.t?.(`floorQC.toolTipFloorQC.tooltips.conYear`) || "Construction Year"}</div>}
+                        placement="top"
+                      >
+                        <span className=" font-semibold text-gray-900">
+                          {props.t?.("floorQC.columns.conYear") || "Con. Year"}
+                        </span>
+                      </Tooltip>
+                    ) as unknown as string,
                     render: (val: unknown) => (val as string | number) || "-",
                     headerClassName: "text-center",
                     cellClassName: "text-center font-semibold"
                   },
                   {
                     key: "asstYear",
-                    label: "Asst. Year",
+                    label: (
+                      <Tooltip
+                        content={<div className="text-xs max-w-xs whitespace-normal break-words">{props.t?.(`floorQC.toolTipFloorQC.tooltips.asstYear`) || "Assessment Year"}</div>}
+                        placement="top"
+                      >
+                        <span className=" font-semibold text-gray-900">
+                          {props.t?.("floorQC.columns.asstYear") || "Asst. Year"}
+                        </span>
+                      </Tooltip>
+                    ) as unknown as string,
                     render: (val: unknown) => (val as string | number) || "-",
                     headerClassName: "text-center",
                     cellClassName: "text-center font-semibold"
                   },
                   {
                     key: "constructionTypeId",
-                    label: "Construction Type",
+                    label: (
+                      <Tooltip
+                        content={<div className="text-xs max-w-xs whitespace-normal break-words">{props.t?.(`floorQC.toolTipFloorQC.tooltips.conType`) || "Construction Type"}</div>}
+                        placement="top"
+                      >
+                        <span className=" font-semibold text-gray-900">
+                          {props.t?.("floorQC.columns.conType") || "Construction Type"}
+                        </span>
+                      </Tooltip>
+                    ) as unknown as string,
                     render: (_: unknown, row: DrawerFloorDataRow) => {
                       const id = row.constructionTypeId;
                       const lookup = props.constructionLookup || [];
@@ -186,7 +222,16 @@ export const RoomWiseSubmission: React.FC<
                   },
                   {
                     key: "typeOfUseId",
-                    label: "Type of Use",
+                    label: (
+                      <Tooltip
+                        content={<div className="text-xs max-w-xs whitespace-normal break-words">{props.t?.(`floorQC.toolTipFloorQC.tooltips.use`) || "Type of Use"}</div>}
+                        placement="top"
+                      >
+                        <span className=" font-semibold text-gray-900">
+                          {props.t?.("floorQC.columns.use") || "Type of Use"}
+                        </span>
+                      </Tooltip>
+                    ) as unknown as string,
                     render: (_: unknown, row: DrawerFloorDataRow) => {
                       const id = row.typeOfUseId;
                       const lookup = props.useLookup || [];
@@ -198,7 +243,16 @@ export const RoomWiseSubmission: React.FC<
                   },
                   {
                     key: "subTypeOfUseId",
-                    label: "Sub Type",
+                    label: (
+                      <Tooltip
+                        content={<div className="text-xs max-w-xs whitespace-normal break-words">{props.t?.(`floorQC.toolTipFloorQC.tooltips.subTypeOfUse`) || "Sub Type of Use"}</div>}
+                        placement="top"
+                      >
+                        <span className=" font-semibold text-gray-900">
+                          {props.t?.("floorQC.columns.subTypeOfUse") || "Sub Type"}
+                        </span>
+                      </Tooltip>
+                    ) as unknown as string,
                     render: (_: unknown, row: DrawerFloorDataRow) => {
                       const id = row.subTypeOfUseId;
                       const lookup = props.subTypeLookup || [];
@@ -210,21 +264,38 @@ export const RoomWiseSubmission: React.FC<
                   },
                   {
                     key: "noOfRooms",
-                    label: "Rooms",
+                    label: (
+                      <Tooltip
+                        content={<div className="text-xs max-w-xs whitespace-normal break-words">{props.t?.(`floorQC.toolTipFloorQC.tooltips.noOfRooms`) || "Number of Rooms"}</div>}
+                        placement="top"
+                      >
+                        <span className=" font-semibold text-gray-900">
+                          {props.t?.("floorQC.columns.noOfRooms") || "Rooms"}
+                        </span>
+                      </Tooltip>
+                    ) as unknown as string,
                     render: (val: unknown) => (val as string | number) ?? "-",
                     headerClassName: "text-center",
                     cellClassName: "text-center font-semibold"
                   },
                   {
                     key: "area",
-                    label: "Area",
+                    label: (
+                      <Tooltip
+                        content={<div className="text-xs max-w-xs whitespace-normal break-words">{props.t?.(`floorQC.toolTipFloorQC.tooltips.area`) || "Floor Area"}</div>}
+                        placement="top"
+                      >
+                        <span className=" font-semibold text-gray-900">
+                          {props.t?.("floorQC.columns.area") || "Area"}
+                        </span>
+                      </Tooltip>
+                    ) as unknown as string,
                     render: (val: unknown) => (val as string | number) ?? "-",
                     headerClassName: "text-center",
                     cellClassName: "text-center font-bold text-slate-800"
                   }
                 ]}
                 data={[props.selectedFloorRow]}
-                headerTitle={props.t?.('floorQC.selectedFloorDetails') || 'Selected Floor Row'}
                 containerClassName="rounded-xl overflow-hidden shadow-sm pt-0"
                 tableClassName="text-xs"
               />
