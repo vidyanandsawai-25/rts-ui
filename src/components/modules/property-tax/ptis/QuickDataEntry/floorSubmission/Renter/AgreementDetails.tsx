@@ -54,8 +54,8 @@ const formatManualDate = (val: string) => {
 
 // ─── Validation Helpers ───────────────────────────────────────────────────────
 
-/** Agreement ID: digits only, up to 8 characters */
-const isValidAgreementId = (val: string) => /^\d*$/.test(val);
+/** Agreement ID: alphanumeric, hyphen, and underscore, up to 8 characters */
+const isValidAgreementId = (val: string) => /^[A-Za-z0-9_-]*$/.test(val);
 
 const fieldLabelClassName = 'text-xs leading-snug tracking-normal !font-semibold text-slate-700';
 const errorClassName = 'text-[10px] text-red-500 font-medium mt-0.5 animate-in fade-in duration-200';
@@ -264,11 +264,11 @@ const AgreementDetails = memo(({ formData, setFormData, existingFloors = [], cur
           <Label className={fieldLabelClassName}>{t('floor.renterSection.agreementId')} <span className="text-red-500">*</span></Label>
           <Input
             type="text"
-            inputMode="numeric"
+            inputMode="text"
             maxLength={8}
             value={formData?.renterDetails?.agreementId || ""}
             onChange={e => {
-              const val = e.target.value.replace(/\D/g, '').slice(0, 8);
+              const val = e.target.value.slice(0, 8);
               if (!isValidAgreementId(val)) {
                 markTouched('agreementId');
                 return;
