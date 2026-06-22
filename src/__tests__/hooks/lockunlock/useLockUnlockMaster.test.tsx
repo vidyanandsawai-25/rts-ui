@@ -198,13 +198,17 @@ describe("useLockUnlockMaster", () => {
       result.current.handleSelectAllProperties();
     });
 
-    expect(result.current.selectedPropertyIds).toEqual([101]);
+    expect(result.current.isAllPropertiesSelected).toBe(true);
+    expect(result.current.selectedPropertyIds).toEqual([]);
+    expect(result.current.excludedPropertyIds).toEqual([]);
 
     act(() => {
       result.current.handleSelectAllProperties();
     });
 
+    expect(result.current.isAllPropertiesSelected).toBe(false);
     expect(result.current.selectedPropertyIds).toEqual([]);
+    expect(result.current.excludedPropertyIds).toEqual([]);
   });
 
   it("should handle clear all", () => {
