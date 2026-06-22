@@ -60,9 +60,10 @@ const AppartmentQCSection = ({
   const isUpdatingFromUrl = useRef(false);
 
   // Column filters
-  const { activeFilters, handleFilterChange, fetchFilterOptions } = useColumnFilters({
+  const { activeFilters, handleFilterChange } = useColumnFilters({
     wardId,
     propertyNo,
+    activeMainTab,
   });
 
   // Tax details state - supports rateable, capital, and dual method
@@ -270,7 +271,6 @@ const AppartmentQCSection = ({
             _applyTypeColors={activeMainTab === 'commercial' || activeMainTab === 'residential'}
             activeFilters={activeFilters}
             onFilterChange={handleFilterChange}
-            onFetchFilterOptions={fetchFilterOptions}
             sortBy={sortBy}
             sortOrder={sortOrder}
             onSort={handleSort}
