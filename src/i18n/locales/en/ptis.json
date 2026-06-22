@@ -598,7 +598,14 @@
         "remove_remission": "Remove Remission",
         "remove_all_appeals": "Remove All Appeals"
       }
-    }
+    },
+    "billDistribution": {
+      "title": "Confirm Bill Distribution",
+      "description": "Are you sure you want to distribute the bill?",
+      "confirmText": "Yes",
+      "cancelText": "No"
+    },
+    "qcDoneLabel": "QC Done"
   },
   "footerActions": {
     "R_SAVE": "Save",

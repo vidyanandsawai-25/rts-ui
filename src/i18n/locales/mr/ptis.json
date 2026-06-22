@@ -602,7 +602,14 @@
         "remove_remission": "सवलत काढा",
         "remove_all_appeals": "सर्व अपीले काढा"
       }
-    }
+    },
+    "billDistribution": {
+      "title": "बिल वितरणाची खात्री करा",
+      "description": "तुम्हाला खात्री आहे की तुम्ही बिल वितरित करू इच्छिता?",
+      "confirmText": "होय",
+      "cancelText": "नाही"
+    },
+    "qcDoneLabel": "QC Done"
   },
   "footerActions": {
     "R_SAVE": "जतन करा",

@@ -602,6 +602,12 @@
         "remove_remission": "छूट हटाएँ",
         "remove_all_appeals": "सभी अपीलें हटाएँ"
       }
+    },
+    "billDistribution": {
+      "title": "बिल वितरण की पुष्टि करें",
+      "description": "क्या आप निश्चित रूप से बिल वितरित करना चाहते हैं?",
+      "confirmText": "हाँ",
+      "cancelText": "नहीं"
     }
   },
   "footerActions": {

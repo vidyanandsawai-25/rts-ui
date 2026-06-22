@@ -263,13 +263,13 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
               partitionNo,
             )
           : Promise.resolve({
-              amenities: emptyPaged,
-              commercial: emptyPaged,
-              residential: emptyPaged,
-            }),
+            amenities: emptyPaged,
+            commercial: emptyPaged,
+            residential: emptyPaged,
+          }),
         resolvedPropertyId ? getRateableValue(resolvedPropertyId) : Promise.resolve(null),
         resolvedPropertyId &&
-        (valuationTab === 'capital' || (valuationTab === 'dual' && showDetailsParam))
+          (valuationTab === 'capital' || (valuationTab === 'dual' && showDetailsParam))
           ? getCapitalValue(resolvedPropertyId)
           : Promise.resolve(null),
         resolvedPropertyId ? fetchKycDetailsOnlyAction(resolvedPropertyId) : Promise.resolve(null),
@@ -331,11 +331,11 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
       dualSectionData =
         ptisParams.tab === 'dual'
           ? await assembleDualMethodSectionData(
-              resolvedPropertyId,
-              oldDetails,
-              rateableRes,
-              capitalRes
-            )
+            resolvedPropertyId,
+            oldDetails,
+            rateableRes,
+            capitalRes
+          )
           : undefined;
     } catch (err) {
       criticalError = getCleanErrorMessage(err, t('search.errors.fetchPropertiesFailed'));
@@ -453,7 +453,7 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
         initialMediaPanelVisible={initialMediaPanelVisible}
       >
         <div className="flex flex-col gap-6 w-full">
-         <PropertyTabSection
+          <PropertyTabSection
             initialData={initialData}
             initialWardId={resolvedWardId}
             initialTab={
