@@ -11,7 +11,7 @@ import { useTableAutoScroll } from '@/hooks/apartmentQc/useTableAutoScroll';
 import { ColumnFilterDropdown, type FilterField } from './ColumnFilterDropdown';
 import { Tooltip } from '@/components/common/Tooltip';
 import { logger } from '@/lib/utils/logger';
-import { TEXT_SANITIZE } from '@/lib/utils/validation';
+
 import { ExportIconButton, EyeIconButton } from '@/components/common/ActionButtons';
 import { Button } from '@/components/common/ActionButton';
 import { SEARCH_ALPHANUMERIC_SANITIZE } from '@/lib/utils/validation-rules';

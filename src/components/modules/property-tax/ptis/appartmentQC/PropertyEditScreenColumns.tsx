@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Column } from "@/components/common/MasterTable";
-import { Eye, ExternalLink } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { YEAR_REGEX } from "@/lib/utils/validation-rules";
 import { cn } from "@/lib/utils/cn";
 import { DrawerFloorDataRow, DrawerDropdownOption } from "@/hooks/apartmentQc/propertyEditScreenDrawer.types";
