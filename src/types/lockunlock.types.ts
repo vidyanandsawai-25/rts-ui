@@ -40,8 +40,19 @@ export interface LockUnlockPropertiesQueryParams {
   FilterLogic?: number;
 }
 
+export interface BulkLockUnlockFilters {
+  wardId: number;
+  fromProperty?: string;
+  toProperty?: string;
+  partitionNo?: string;
+  search?: string;
+}
+
 export interface BulkLockUnlockPayload {
-  propertyIds: number[];
+  propertyIds?: number[];
   screenIds: number[];
   action: "lock" | "unlock";
+  selectAll?: boolean;
+  excludedPropertyIds?: number[];
+  filters?: BulkLockUnlockFilters;
 }
