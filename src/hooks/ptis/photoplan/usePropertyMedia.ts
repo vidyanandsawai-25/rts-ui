@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import type { PropertyPhotoTypeWithStatusDto, PropertyPhotoDto } from '@/types/photoplan.types';
 import type { PhotoCategory } from '@/components/modules/property-tax/ptis/media/PhotoPlanSidebar';
@@ -61,7 +61,8 @@ export function usePropertyMedia({
 
   const [photoPlanCategory, propertyPhotoCategory] = useMemo(() => [
     findCategory(categories, ['PHOTO_PLAN'], ['photo plan', 'plan']),
-    findCategory(categories, ['PROPERTY_PHOTO', 'PROPERTY'], ['property']),
+    findCategory(categories, ['PROPERTY_PHOTO', 'PROPERTY'], ['property']) ||
+      findCategory(categories, ['FRONT', 'BUILDING_PHOTO', 'BUILDING'], ['front', 'building']),
   ], [categories]);
 
   const gisCategory = useMemo(() =>
@@ -96,12 +97,31 @@ export function usePropertyMedia({
     });
   }, [categories, propertyPhoto, photoPlanPhoto]);
 
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const handleImageHover = useCallback((src: string, title: string, src2?: string) => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
     setHoverPreview({ src, src2, title });
   }, []);
 
   const handleImageLeave = useCallback(() => {
-    setHoverPreview(null);
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    hoverTimeoutRef.current = setTimeout(() => {
+      setHoverPreview(null);
+      hoverTimeoutRef.current = null;
+    }, 150);
+  }, []);
+
+  const cancelImageLeave = useCallback(() => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
   }, []);
 
   return {
@@ -123,6 +143,7 @@ export function usePropertyMedia({
     remainingImages,
     handleImageHover,
     handleImageLeave,
+    cancelImageLeave,
     t,
   };
 }

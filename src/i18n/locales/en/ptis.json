@@ -20,6 +20,8 @@
     "changeDetection": "Change Detection",
     "changeDetectionComingSoon": "Change Detection details coming soon.",
     "photoPlan": "Photo Plan",
+    "showPhotoPlan": "Show Photo Plan",
+    "hidePhotoPlan": "Hide Photo Plan",
     "propertyPhoto": "Property Photo",
     "buildingPhoto": "Building Photo",
     "rearElevation": "Rear Elevation",

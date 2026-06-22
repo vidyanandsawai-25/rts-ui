@@ -39,6 +39,7 @@ import type {
   PropertyDetailsData,
 } from '@/types/ptis.types';
 
+import { cookies } from 'next/headers';
 import { toPositiveInt, toSafeString } from '@/lib/utils/format';
 import { redirect } from 'next/navigation';
 import { AlertCircle } from 'lucide-react';
@@ -78,6 +79,8 @@ interface PtisPageProps {
 export default async function PtisPage({ params, searchParams }: PtisPageProps) {
   const resolvedParams = await params;
   const resolvedSearchParams = await searchParams;
+  const cookieStore = await cookies();
+  const initialMediaPanelVisible = cookieStore.get('ptis_media_panel_visible')?.value === 'true';
   const wardNo = toSafeString(resolvedSearchParams?.wardNo);
   const propertyNo = toSafeString(resolvedSearchParams?.propertyNo);
   const rawPartitionNo = toSafeString(resolvedSearchParams?.partitionNo);
@@ -282,10 +285,10 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
         resolvedPropertyId
           ? fetchDiscountDetailsOnlyAction(resolvedPropertyId)
           : Promise.resolve(null),
-        resolvedPropertyId
+        resolvedPropertyId && initialMediaPanelVisible
           ? photoPlanService.getPhotoTypesWithStatus(resolvedPropertyId)
           : Promise.resolve(null),
-        resolvedPropertyId
+        resolvedPropertyId && initialMediaPanelVisible
           ? photoPlanService.getPhotosByProperty(resolvedPropertyId)
           : Promise.resolve(null),
       ]);
@@ -447,6 +450,7 @@ export default async function PtisPage({ params, searchParams }: PtisPageProps) 
         propertyId={resolvedPropertyId}
         initialPhotoSlots={initialPhotoSlots}
         initialPhotos={initialPhotos}
+        initialMediaPanelVisible={initialMediaPanelVisible}
       >
         <div className="flex flex-col gap-6 w-full">
          <PropertyTabSection

@@ -108,6 +108,15 @@ vi.mock('@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/document.a
   getDocumentAction: (guid: string, action: 'view' | 'download') => mockGetDocumentAction(guid, action),
 }));
 
+// Mock useMediaPanelVisibility context hook
+const mockTogglePanel = vi.fn();
+vi.mock('@/hooks/ptis/photoplan/useMediaPanelVisibility', () => ({
+  useMediaPanel: () => ({
+    isPanelVisible: true,
+    togglePanel: mockTogglePanel,
+  }),
+}));
+
 // Import target utilities and configurations
 import { getAdditionalImages, getGalleryImages } from '@/components/modules/property-tax/ptis/media/mediaConfig';
 import {
@@ -191,7 +200,7 @@ describe('PhotoPlan Section - Complete Tests', () => {
       const img1 = mapPropertyPhotoToAdditionalImage(p1, 'Default Category');
       expect(img1.title).toBe('Custom Title');
       expect(img1.remarks).toBe('Custom Remark details');
-      expect(img1.src).toBe('http://test.url/view');
+      expect(img1.src).toBe('/api/documents/123-guid/view');
 
       const p2 = {
         propertyId: 1,

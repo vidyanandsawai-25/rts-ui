@@ -31,7 +31,7 @@ export function ChangeDetectionCard({
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       className={`
-        relative h-[200px] lg:h-[220px] w-full rounded-lg overflow-hidden
+        relative flex-1 min-h-[150px] lg:min-h-0 w-full rounded-lg overflow-hidden
         border border-slate-200/80 shadow-md transition-all duration-300
         hover:shadow-lg hover:border-blue-400 bg-white
         ${onClick ? 'cursor-pointer hover:scale-[1.01]' : ''}
@@ -46,7 +46,6 @@ export function ChangeDetectionCard({
             alt={`${beforeLabel} Satellite View`}
             fill
             sizes="(max-width: 768px) 50vw, 100px"
-            priority
             className="object-cover transition-transform duration-500 group-hover/before:scale-110"
           />
           {/* Year Badge */}
@@ -62,7 +61,6 @@ export function ChangeDetectionCard({
             alt={`${afterLabel} Satellite View`}
             fill
             sizes="(max-width: 768px) 50vw, 100px"
-            priority
             className="object-cover transition-transform duration-500 group-hover/after:scale-110"
           />
           {/* Year Badge (Emerald highlight to indicate new/updated) */}
