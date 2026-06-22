@@ -34,7 +34,7 @@ export async function CapitalTaxDetailsSection({
   taxDetailsError,
   locale,
 }: Props) {
-  
+
   const { data: capitalData, error } = await resolveValuationData<CapitalValueResponse>({
     propertyId,
     initialData,
@@ -64,6 +64,7 @@ export async function CapitalTaxDetailsSection({
           { label: t('totalTax'), value: tax, color: 'purple' },
         ]}
         initialTaxDetails={initialTaxDetails}
+        locale={locale}
       />
     </div>
   );
