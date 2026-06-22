@@ -129,15 +129,15 @@ export const validateRenterForm = (
     } else {
         const agreementIdVal = details.agreementId.trim();
 
-        if (!/^\d+$/.test(agreementIdVal)) {
+        if (!/^[A-Za-z0-9_-]+$/.test(agreementIdVal)) {
             errors.push({
                 field: 'agreementId',
-                message: 'Agreement ID must contain numbers only.'
+                message: 'Agreement ID must be alphanumeric and can contain hyphens and underscores.'
             });
         } else if (agreementIdVal.length > 8) {
             errors.push({
                 field: 'agreementId',
-                message: 'Agreement ID must be at most 8 digits.'
+                message: 'Agreement ID must be at most 8 characters.'
             });
         } else if (existingFloors) {
             const hasDuplicate = existingFloors.some(f => {
@@ -208,26 +208,28 @@ export const validateRenterForm = (
     // ─── Duration Dates ───────────────────────────────────────────────────────
     if (!details.agreementDateFrom) {
         errors.push({ field: 'agreementDateFrom', message: 'From Date is required.' });
-    }
-    if (!details.agreementDateTo) {
-        errors.push({ field: 'agreementDateTo', message: 'To Date is required.' });
+    } else if (!isValidCalendarDate(details.agreementDateFrom)) {
+        errors.push({ field: 'agreementDateFrom', message: 'Enter a valid From Date.' });
+    } else if (details.agreementDate && isValidCalendarDate(details.agreementDate)) {
+        const fromDateObj = new Date(details.agreementDateFrom);
+        const agreementDateObj = new Date(details.agreementDate);
+        if (fromDateObj < agreementDateObj) {
+            errors.push({ field: 'agreementDateFrom', message: 'From Date should not be before Agreement Date.' });
+        }
     }
 
-    if (details.agreementDateFrom && details.agreementDateTo) {
+    if (!details.agreementDateTo) {
+        errors.push({ field: 'agreementDateTo', message: 'To Date is required.' });
+    } else if (!isValidCalendarDate(details.agreementDateTo)) {
+        errors.push({ field: 'agreementDateTo', message: 'Enter a valid To Date.' });
+    }
+
+    if (details.agreementDateFrom && details.agreementDateTo && isValidCalendarDate(details.agreementDateFrom) && isValidCalendarDate(details.agreementDateTo)) {
         const fromDateObj = new Date(details.agreementDateFrom);
         const toDateObj = new Date(details.agreementDateTo);
 
-        if (!isNaN(fromDateObj.getTime()) && !isNaN(toDateObj.getTime())) {
-            if (toDateObj <= fromDateObj) {
-                errors.push({ field: 'agreementDateTo', message: 'To Date must be greater than From Date.' });
-            }
-
-            if (details.agreementDate) {
-                const agreementDateObj = new Date(details.agreementDate);
-                if (!isNaN(agreementDateObj.getTime()) && fromDateObj < agreementDateObj) {
-                    errors.push({ field: 'agreementDateFrom', message: 'From Date should not be before Agreement Date.' });
-                }
-            }
+        if (toDateObj <= fromDateObj) {
+            errors.push({ field: 'agreementDateTo', message: 'To Date must be greater than From Date.' });
         }
     }
 

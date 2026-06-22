@@ -513,6 +513,16 @@
   "modules": {
     "PtisTaxDetails": {
       "title": "कर तपशील",
+      "area": "क्षेत्रफळ",
+      "changeOfUse": "वापरात बदल",
+      "oldLabel": "जुने:",
+      "newLabel": "नवीन:",
+      "tax": "कर",
+      "yes": "होय",
+      "no": "नाही",
+      "cv": "सीव्ही",
+      "rv": "आरव्ही",
+      "m2Unit": "चौ.मी.",
       "oldTotalRv": "[जुने] एकूण आर.व्ही.",
       "oldTotalAlv": "[जुने] एकूण ए.एल.व्ही.",
       "oldTotalCv": "[जुने] एकूण सी.व्ही.",

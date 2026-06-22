@@ -78,8 +78,8 @@ export default function TaxationBreakdownForm({
           </div>
         )}
 
-        {/* 3-column form layout */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-3">
+        {/* 4-column form layout */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-x-6 gap-y-3">
           <div className="relative flex flex-col space-y-1.5 z-[100] group">
             <Label className="text-xs font-semibold text-slate-700 transition-colors group-focus-within:text-blue-600">
              {t("assessmentYear")} <span className="text-red-500 ml-0.5">*</span>
