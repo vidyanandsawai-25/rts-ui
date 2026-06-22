@@ -50,7 +50,7 @@ export function useChangeDetectionUpload({
         const res = await replacePropertyPhotoAction(existingImg.propertyPhotoId, formData, locale);
         if (res.success && res.data) {
           clearDocumentCacheEntry(existingImg.src);
-          const url = res.data.viewUrl || getViewDocumentUrl(res.data.documentGuid);
+          const url = (res.data.documentGuid ? getViewDocumentUrl(res.data.documentGuid) : res.data.viewUrl) || '';
           onImagesChange(activeCategory.images.map((img, i) => i === idx ? { ...img, src: url, fullSrc: url } : img));
           toast.success(t('media.photoReplacedSuccess') || 'Photo replaced successfully');
         } else {
@@ -62,7 +62,7 @@ export function useChangeDetectionUpload({
         formData.append('DisplayOrder', displayOrder.toString());
         const res = await uploadPropertyPhotoAction(formData, locale);
         if (res.success && res.data) {
-          const url = res.data.viewUrl || getViewDocumentUrl(res.data.documentGuid);
+          const url = (res.data.documentGuid ? getViewDocumentUrl(res.data.documentGuid) : res.data.viewUrl) || '';
           const newImg: AdditionalImage = {
             src: url, fullSrc: url, alt: name, title: name,
             photoTypeId: activeCategory.photoTypeId, propertyPhotoId: res.data.propertyPhotoId,

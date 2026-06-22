@@ -112,7 +112,7 @@ export function BottomActionBar({
       const appartmentTab = searchParams.get('appartmentTab') || undefined;
       const subTab = searchParams.get('subTab') || undefined;
       const showDetails = searchParams.get('showDetails') || undefined;
-      
+
       const rateableExpand = searchParams.getAll('rateableExpand');
       const capitalExpand = searchParams.getAll('capitalExpand');
       const dualExpand = searchParams.getAll('dualExpand');

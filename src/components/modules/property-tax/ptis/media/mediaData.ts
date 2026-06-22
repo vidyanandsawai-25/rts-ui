@@ -73,9 +73,10 @@ export function mapPropertyPhotoToAdditionalImage(p: PropertyPhotoDto, categoryN
     parsedRemarks = '';
   }
 
+  const resolvedUrl = p.documentGuid ? getViewDocumentUrl(p.documentGuid) : p.viewUrl;
   return {
-    src: p.viewUrl || (p.documentGuid ? getViewDocumentUrl(p.documentGuid) : ''),
-    fullSrc: p.viewUrl || (p.documentGuid ? getViewDocumentUrl(p.documentGuid) : ''),
+    src: resolvedUrl || '',
+    fullSrc: resolvedUrl || '',
     alt: parsedTitle,
     title: parsedTitle,
     photoTypeId: p.photoTypeId,
@@ -152,9 +153,10 @@ export function mapSlotsToCategories(
     const isFullyLoaded = fullyLoadedIds?.has(cat.photoTypeId);
 
     if (catPhotos.length === 0 && !isFullyLoaded && cat.hasPhoto && (cat.viewUrl || cat.documentGuid)) {
+      const resolvedUrl = cat.documentGuid ? getViewDocumentUrl(cat.documentGuid) : cat.viewUrl;
       catPhotos = [{
-        src: cat.viewUrl || (cat.documentGuid ? getViewDocumentUrl(cat.documentGuid) : ''),
-        fullSrc: cat.viewUrl || (cat.documentGuid ? getViewDocumentUrl(cat.documentGuid) : ''),
+        src: resolvedUrl || '',
+        fullSrc: resolvedUrl || '',
         alt: cat.photoTypeName,
         title: cat.photoTypeName,
         photoTypeId: cat.photoTypeId,
