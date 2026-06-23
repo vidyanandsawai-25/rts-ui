@@ -32,10 +32,22 @@ export const useKycFormState = (
       : null,
     ownerTitle: KycDetailsData?.ownerTitle ?? '',
     ownerName: KycDetailsData?.ownerName ?? '',
+    ownerNameEnglish: KycDetailsData?.ownerNameEnglish && KycDetailsData.ownerNameEnglish.trim() !== ''
+      ? KycDetailsData.ownerNameEnglish
+      : (KycDetailsData?.ownerName ?? ''),
     occupierName: KycDetailsData?.occupierName ?? '',
+    occupierNameEnglish: KycDetailsData?.occupierNameEnglish && KycDetailsData.occupierNameEnglish.trim() !== ''
+      ? KycDetailsData.occupierNameEnglish
+      : (KycDetailsData?.occupierName ?? ''),
     flatOrShopName: KycDetailsData?.flatOrShopName ?? '',
+    flatOrShopNameEnglish: KycDetailsData?.flatOrShopNameEnglish && KycDetailsData.flatOrShopNameEnglish.trim() !== ''
+      ? KycDetailsData.flatOrShopNameEnglish
+      : (KycDetailsData?.flatOrShopName ?? ''),
     emailId: KycDetailsData?.emailId ?? '',
     address: KycDetailsData?.address ?? '',
+    addressEnglish: KycDetailsData?.addressEnglish && KycDetailsData.addressEnglish.trim() !== ''
+      ? KycDetailsData.addressEnglish
+      : (KycDetailsData?.address ?? ''),
     location: KycDetailsData?.location ?? '',
     pinCode: KycDetailsData?.pinCode ?? '',
   });

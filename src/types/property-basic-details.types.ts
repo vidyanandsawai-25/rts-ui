@@ -1,5 +1,4 @@
 // PROPERTY API TYPES    
-import { PropertySocietyDetailsApiItem } from "./property-society-details.types";
  import type { ElementType, ReactNode } from "react";
 
 // Represents an owner type item from OwnerType API. Endpoint: GET /api/OwnerType
@@ -213,7 +212,6 @@ export interface PropertyFormViewProps {
     propertyCategories: PropertyCategoryApiItem[];
     propertyDescriptions: PropertyTypeApiItem[];
     propertyData: PropertyBasicDetailsApiItem | null;
-    propertySocietyDetails: PropertySocietyDetailsApiItem | null;
     locale: string;
     taxZones: TaxZoneItem[];
 }
