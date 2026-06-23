@@ -4,6 +4,7 @@ import { FloorSubmissionErrorBoundary } from '@/components/modules/property-tax/
 import { FloorResponse, ConstructionTypeResponse, TypeOfUseApiItem, SubFloorResponse, SubTypeOfUseResponse } from '@/types/floor-details.types';
 import { FloorData, RoomTypeResponse } from '@/types/room-details.types';
 import { normalizeObjectResponse, normalizeArrayResponse, normalizeWrappedResponse, } from '@/lib/utils/action-response-helpers';
+import { getPropertyBasicDetails } from '@/lib/api/ptis/propertybasicdetails/property-basic-details.service';
 import { getFloorDataAction, getConstructionTypeDataAction, getTypeOfUseDataAction, getSubFloorDataAction, getSubTypeOfUseDataAction, getRoomTypeDataAction, getQuickDataEntryAction, getPropertyByDetailsAction, getFloorByIdAction, getFloorSubmissionsByOwnerAction, } from './actions';
 
 // Force dynamic rendering — this page relies on per-request search params.
@@ -76,10 +77,41 @@ export default async function FloorSubmissionPage({
     const knownPropertyId = propertyId || propertyIdSp || undefined;
 
     // ── Phase 1: Dynamic Data Fetching (On-Demand Pattern) ──────────────────
-    // Only fetch dropdown lookups if requested or if editing a floor
-    const shouldLoadAll = !!floorId;
+    // ── Phase 1: Fetch Property Details to get propertyTypeId ───────────────
+    const [quickDataRaw, propertyRaw] = await Promise.all([
+        hasPropertyKeys ? getQuickDataEntryAction(wardNo, propertyNo, partitionNo) : Promise.resolve(null),
+        hasPropertyKeys ? getPropertyByDetailsAction(wardNo, propertyNo, partitionNo) : Promise.resolve(null),
+    ]);
 
-    // Determine if we need subtype data upfront
+    const metadataErrors: string[] = [];
+
+    const quickData = normalizeObjectResponse(quickDataRaw, (m) => metadataErrors.push(m));
+    const propertyData = normalizeObjectResponse(propertyRaw, (m) => metadataErrors.push(m));
+
+    const quickDataPropertyID = quickData ? extractPropertyId(quickData) : undefined;
+    const propertyDataPropertyID = propertyData ? extractPropertyId(propertyData) : undefined;
+
+    const initialPropertyID: string | number | undefined =
+        quickDataPropertyID ?? propertyDataPropertyID ?? knownPropertyId;
+    let initialPropertyData: Record<string, unknown> | null = quickData ?? propertyData;
+
+    // If we only have propertyId and wardNo/propertyNo/partitionNo weren't provided,
+    // we fetch the basic details by propertyId on-demand to resolve propertyTypeId
+    if (!initialPropertyData && initialPropertyID && initialPropertyID !== 'new') {
+        try {
+            const basicDetails = await getPropertyBasicDetails(Number(initialPropertyID));
+            if (basicDetails) {
+                initialPropertyData = basicDetails as unknown as Record<string, unknown>;
+            }
+        } catch (_e) {
+            // Ignore error to avoid blocking the page
+        }
+    }
+
+    const resolvedPropertyTypeId = initialPropertyData ? (initialPropertyData.propertyTypeId ?? initialPropertyData.propertyTypeID) as number : undefined;
+
+    // ── Phase 2: Fetch Dropdowns & Floor List on-demand ─────────────────────
+    const shouldLoadAll = !!floorId;
     const shouldLoadSubType = shouldLoadAll || asString(sp.loadSubType) === 'true';
     const effectiveUseIdForPrefetch = shouldLoadSubType ? typeOfUseId : undefined;
 
@@ -90,25 +122,18 @@ export default async function FloorSubmissionPage({
         subFloorDataResult,
         subTypeDataResult,
         roomTypeDataResult,
-        quickDataRaw,
-        propertyRaw,
         floorDetailRaw,
         initialFloorsRaw,
     ] = await Promise.all([
         (shouldLoadAll || asString(sp.loadFloor) === 'true') ? getFloorDataAction() : Promise.resolve([]),
         (shouldLoadAll || asString(sp.loadConstruction) === 'true') ? getConstructionTypeDataAction() : Promise.resolve([]),
-        (shouldLoadAll || asString(sp.loadUsage) === 'true') ? getTypeOfUseDataAction() : Promise.resolve([]),
+        (shouldLoadAll || asString(sp.loadUsage) === 'true') ? getTypeOfUseDataAction(resolvedPropertyTypeId) : Promise.resolve([]),
         (shouldLoadAll || asString(sp.loadSubFloor) === 'true') ? getSubFloorDataAction() : Promise.resolve([]),
         shouldLoadSubType ? getSubTypeOfUseDataAction(effectiveUseIdForPrefetch) : Promise.resolve([]),
         getRoomTypeDataAction(),
-        hasPropertyKeys ? getQuickDataEntryAction(wardNo, propertyNo, partitionNo) : Promise.resolve(null),
-        hasPropertyKeys ? getPropertyByDetailsAction(wardNo, propertyNo, partitionNo) : Promise.resolve(null),
         (floorId && floorId !== 'new') ? getFloorByIdAction(floorId) : Promise.resolve(null),
         (knownPropertyId && !hasPropertyKeys) ? getFloorSubmissionsByOwnerAction(knownPropertyId) : Promise.resolve([]),
     ]);
-
-    // Extract errors and data
-    const metadataErrors: string[] = [];
 
     /** 
      * Validates API result and returns data or empty array.
@@ -143,17 +168,6 @@ export default async function FloorSubmissionPage({
     const subFloorData = checkResult<SubFloorResponse>(subFloorDataResult, 'Sub-floor data');
     let subTypeData = checkResult<SubTypeOfUseResponse>(subTypeDataResult, 'Sub-usage types');
     const roomTypeData = checkResult<RoomTypeResponse>(roomTypeDataResult, 'Room types');
-
-    // ── Resolve property data & ID ──────────────────────────────────────────
-    const quickData = normalizeObjectResponse(quickDataRaw, (m) => metadataErrors.push(m));
-    const propertyData = normalizeObjectResponse(propertyRaw, (m) => metadataErrors.push(m));
-
-    const quickDataPropertyID = quickData ? extractPropertyId(quickData) : undefined;
-    const propertyDataPropertyID = propertyData ? extractPropertyId(propertyData) : undefined;
-
-    const initialPropertyID: string | number | undefined =
-        quickDataPropertyID ?? propertyDataPropertyID ?? knownPropertyId;
-    const initialPropertyData: Record<string, unknown> | null = quickData ?? propertyData;
 
     // ── Floor List (already fetched in Phase 1 if propertyId was known) ─────
     let finalFloorsRaw = initialFloorsRaw;

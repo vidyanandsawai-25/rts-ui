@@ -44,7 +44,7 @@ const Commercial = ({
   const sortOrder = searchParams.get("sortOrder") || "";
 
   // Column filters
-  const { activeFilters, handleFilterChange, fetchFilterOptions } = useColumnFilters({
+  const { activeFilters, handleFilterChange } = useColumnFilters({
     wardId,
     propertyNo,
   });
@@ -97,7 +97,6 @@ const Commercial = ({
         onSort={handleSort}
         activeFilters={activeFilters}
         onFilterChange={handleFilterChange}
-        onFetchFilterOptions={fetchFilterOptions}
       />
     </div>
   );

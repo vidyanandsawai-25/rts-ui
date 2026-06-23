@@ -20,6 +20,8 @@
     "changeDetection": "बदल शोधणे",
     "changeDetectionComingSoon": "बदल शोधण्याचे तपशील लवकरच येत आहेत.",
     "photoPlan": "फोटो प्लॅन",
+    "showPhotoPlan": "फोटो प्लॅन दाखवा",
+    "hidePhotoPlan": "फोटो प्लॅन लपवा",
     "propertyPhoto": "मालमत्ता फोटो",
     "buildingPhoto": "इमारत फोटो",
     "rearElevation": "मागील बाजू",
@@ -513,6 +515,16 @@
   "modules": {
     "PtisTaxDetails": {
       "title": "कर तपशील",
+      "area": "क्षेत्रफळ",
+      "changeOfUse": "वापरात बदल",
+      "oldLabel": "जुने:",
+      "newLabel": "नवीन:",
+      "tax": "कर",
+      "yes": "होय",
+      "no": "नाही",
+      "cv": "सीव्ही",
+      "rv": "आरव्ही",
+      "m2Unit": "चौ.मी.",
       "oldTotalRv": "[जुने] एकूण आर.व्ही.",
       "oldTotalAlv": "[जुने] एकूण ए.एल.व्ही.",
       "oldTotalCv": "[जुने] एकूण सी.व्ही.",
@@ -590,7 +602,14 @@
         "remove_remission": "सवलत काढा",
         "remove_all_appeals": "सर्व अपीले काढा"
       }
-    }
+    },
+    "billDistribution": {
+      "title": "बिल वितरणाची खात्री करा",
+      "description": "तुम्हाला खात्री आहे की तुम्ही बिल वितरित करू इच्छिता?",
+      "confirmText": "होय",
+      "cancelText": "नाही"
+    },
+    "qcDoneLabel": "QC Done"
   },
   "footerActions": {
     "R_SAVE": "जतन करा",

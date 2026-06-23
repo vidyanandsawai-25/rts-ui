@@ -22,8 +22,6 @@ import {
   filterScreensByAllocatedRoles,
 } from '@/lib/utils/module-access-guard';
 
-
-
 export interface MainLayoutProps {
   children: React.ReactNode;
   /** Locale segment for sidebar links; optional. */
@@ -99,7 +97,6 @@ const fetchUserMenuItems = cache(async (userId: number, token?: string) => {
           ? applyModuleActivationGate(mergedScreens, activeModuleIds)
           : mergedScreens;
 
-
       const userMenuItems = buildSidebarTreeFromUserScreens(effectiveScreens);
       if (userMenuItems.length > 0) {
         return { menuItems: userMenuItems, rawScreens: effectiveScreens };
@@ -141,32 +138,21 @@ const getLayoutChromeData = cache(async () => {
     ...getLayoutShellContextFromCookies(cookieStore),
   };
 });
-
 async function SidebarWithData({ locale }: { locale: string }) {
   const { menuItems } = await getLayoutChromeData();
   return <Sidebar menuItems={menuItems} locale={locale} />;
 }
-
 async function HeaderWithRequestContext() {
   const { ulbData, userDisplayName, clientIp } = await getLayoutChromeData();
   return <Header ulbData={ulbData} userDisplayName={userDisplayName} clientIp={clientIp} />;
 }
-
 async function FooterWithUlb() {
   const { ulbData } = await getLayoutChromeData();
   return <Footer ulbData={ulbData} />;
 }
-
 function HeaderSkeleton() {
-  return (
-    <div
-      className="fixed inset-x-0 top-0 z-40 h-20 w-full border-b border-white/10 shadow-2xl"
-      style={{ backgroundColor: '#4b70a6' }}
-      aria-hidden
-    />
-  );
+  return <div className="fixed inset-x-0 top-0 z-40 h-20 w-full border-b border-white/10 shadow-2xl" style={{ backgroundColor: '#4b70a6' }} aria-hidden />;
 }
-
 function FooterSkeleton() {
   return <div className="mt-auto h-16 w-full shrink-0 bg-slate-100" aria-hidden />;
 }
@@ -189,13 +175,13 @@ export async function MainLayout({ children, locale: localeProp }: MainLayoutPro
         <Suspense fallback={null}>
           <SidebarWithData locale={locale} />
         </Suspense>
-
         <Suspense fallback={<HeaderSkeleton />}>
           <HeaderWithRequestContext />
         </Suspense>
-
         <main className="flex-1 transition-all duration-300 pt-20 flex flex-col layout-content-shifted">
-          <div className="flex-1 w-full px-3 py-3 md:px-4">{children}</div>
+          <div className={`flex-1 w-full py-3 ${isPtisRoute ? 'px-1 md:px-2' : 'px-3 md:px-4'}`}>
+            {children}
+          </div>
         </main>
 
         {!isPtisRoute && (

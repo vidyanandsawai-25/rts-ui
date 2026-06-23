@@ -985,11 +985,12 @@ export interface FilterOptionsItems {
 export async function fetchFilterOptionsAction(
   wardId: number | string,
   propertyNo: string,
-  field: FilterField
+  field: FilterField,
+  partType?: string
 ): Promise<ActionResult<FilterOptionsItems>> {
   try {
     const { getFilterOptionsLocalized } = await import("@/lib/api/ptis/appartmentQC/appartmentQC.service");
-    const result = await getFilterOptionsLocalized(wardId, propertyNo, field);
+    const result = await getFilterOptionsLocalized(wardId, propertyNo, field, partType);
     return { success: true, data: result.items, message: result.message };
   } catch (error) {
     return handleActionError(error, "Failed to fetch filter options");

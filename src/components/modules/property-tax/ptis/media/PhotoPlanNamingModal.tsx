@@ -21,12 +21,14 @@ interface PhotoPlanNamingModalProps {
   availableTypes: { label: string; value: string }[];
   defaultDisplayOrder: number; defaultName?: string; isReplacement?: boolean;
   defaultPhotoTypeId?: number; isEdit?: boolean; defaultRemarks?: string; isLoading?: boolean;
+  photoTypeCode?: string;
 }
 
 export function PhotoPlanNamingModal({
   open, onClose, onSubmit, availableTypes, defaultDisplayOrder,
   defaultName = '', isReplacement = false, defaultPhotoTypeId,
   isEdit = false, defaultRemarks = '', isLoading = false,
+  photoTypeCode = '',
 }: PhotoPlanNamingModalProps): React.ReactElement {
   const t = useTranslations('ptis');
   const [name, setName] = useState(defaultName);
@@ -84,38 +86,14 @@ export function PhotoPlanNamingModal({
 
   return (
     <>
-      {open && (
-        <style dangerouslySetInnerHTML={{
-          __html: `
-            body:has(.photo-plan-naming-modal-content) div:has(+ .drawer-instance) {
-              background-color: transparent !important;
-              backdrop-filter: none !important;
-            }
-          `
-        }} />
-      )}
+      {open && <style dangerouslySetInnerHTML={{ __html: 'body:has(.photo-plan-naming-modal-content) div:has(+ .drawer-instance) { background-color: transparent !important; backdrop-filter: none !important; }' }} />}
       <Drawer
         open={open} onClose={onClose} width="sm"
-        title={
-          <div className="flex flex-col">
-            <h2 className="text-base font-semibold text-slate-800">{titleStr}</h2>
-            {subtitleStr && <p className="text-xs text-slate-400 font-normal mt-0.5">{subtitleStr}</p>}
-          </div>
-        }
+        title={<div className="flex flex-col"><h2 className="text-base font-semibold text-slate-800">{titleStr}</h2>{subtitleStr && <p className="text-xs text-slate-400 font-normal mt-0.5">{subtitleStr}</p>}</div>}
         footer={
           <div className="flex gap-2 justify-end w-full">
-            <Button
-              variant="secondary" onClick={onClose} type="button" disabled={isLoading}
-              className="cursor-pointer hover:!bg-slate-100 hover:!text-slate-900 transition-all hover:scale-105 active:scale-95 duration-200"
-            >
-              {t('actions.cancel') || 'Cancel'}
-            </Button>
-            <Button
-              variant="primary" onClick={handleSubmit} type="button" disabled={isSaveDisabled}
-              className="!bg-blue-600 hover:!bg-blue-700 !text-white font-medium px-4 py-2 rounded-lg cursor-pointer hover:scale-105 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading ? t('media.saving') || 'Saving...' : t('actions.save') || 'Save'}
-            </Button>
+            <Button variant="secondary" onClick={onClose} type="button" disabled={isLoading} className="cursor-pointer hover:!bg-slate-100 hover:!text-slate-900 transition-all hover:scale-105 active:scale-95 duration-200">{t('actions.cancel') || 'Cancel'}</Button>
+            <Button variant="primary" onClick={handleSubmit} type="button" disabled={isSaveDisabled} className="!bg-blue-600 hover:!bg-blue-700 !text-white font-medium px-4 py-2 rounded-lg cursor-pointer hover:scale-105 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">{isLoading ? t('media.saving') || 'Saving...' : t('actions.save') || 'Save'}</Button>
           </div>
         }
       >
@@ -149,7 +127,12 @@ export function PhotoPlanNamingModal({
             label={t('media.displayOrder') || 'Display Order'} placeholder="e.g. 1, 2, 3"
             type="number" min="1" value={displayOrder} error={errors.displayOrder} required disabled={isReplacement || isLoading} fullWidth
             onChange={(e) => {
-              setDisplayOrder(e.target.value);
+              const val = e.target.value;
+              setDisplayOrder(val);
+              if (photoTypeCode === 'CHANGE_DETECTION' && !isReplacement && !isEdit) {
+                if (val === '1') setName('OLD');
+                else if (val === '2') setName('NEW');
+              }
               setErrors((prev) => {
                 const { displayOrder: _, ...next } = prev;
                 return next;

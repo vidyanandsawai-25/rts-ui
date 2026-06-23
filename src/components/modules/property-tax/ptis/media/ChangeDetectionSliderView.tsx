@@ -1,9 +1,9 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
 import { Maximize2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { ImageWithFallback } from './ImageWithFallback';
 
 interface ChangeDetectionSliderViewProps {
   containerRef: React.RefObject<HTMLDivElement | null>;
@@ -14,8 +14,6 @@ interface ChangeDetectionSliderViewProps {
   afterImage: string;
   beforeTransformStyle: React.CSSProperties;
   afterTransformStyle: React.CSSProperties;
-  hasCustomBefore: boolean;
-  hasCustomAfter: boolean;
   sliderPosition: number;
   setIsDraggingHandle: (val: boolean) => void;
 }
@@ -29,8 +27,6 @@ export function ChangeDetectionSliderView({
   afterImage,
   beforeTransformStyle,
   afterTransformStyle,
-  hasCustomBefore,
-  hasCustomAfter,
   sliderPosition,
   setIsDraggingHandle,
 }: ChangeDetectionSliderViewProps): React.ReactElement {
@@ -48,10 +44,10 @@ export function ChangeDetectionSliderView({
       {/* Before Image (Base Layer - 2018) */}
       <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden">
         <div className="w-full h-full relative" style={beforeTransformStyle}>
-          <Image src={beforeImage} alt="Before View" fill priority className="object-cover pointer-events-none" />
+          <ImageWithFallback src={beforeImage} alt="Before View" fill priority className="object-cover pointer-events-none" />
         </div>
         <div className="absolute top-4 left-4 bg-black/75 text-white text-xs font-bold px-2.5 py-1 rounded shadow-md backdrop-blur-[2px]">
-          {hasCustomBefore ? (t('media.beforeCustomLabel') || 'Before (Old)') : (t('media.beforeSatelliteLabel') || '2018 Satellite')}
+          {t('media.beforeCustomLabel') || 'Before (Old)'}
         </div>
       </div>
 
@@ -61,10 +57,10 @@ export function ChangeDetectionSliderView({
         style={{ clipPath: `inset(0 0 0 ${sliderPosition}%)` }}
       >
         <div className="w-full h-full relative" style={afterTransformStyle}>
-          <Image src={afterImage} alt="After View" fill priority className="object-cover pointer-events-none" />
+          <ImageWithFallback src={afterImage} alt="After View" fill priority className="object-cover pointer-events-none" />
         </div>
         <div className="absolute top-4 right-4 bg-emerald-600 text-white text-xs font-bold px-2.5 py-1 rounded shadow-md">
-          {hasCustomAfter ? (t('media.afterCustomLabel') || 'After (New)') : (t('media.afterSatelliteLabel') || '2026 Satellite')}
+          {t('media.afterCustomLabel') || 'After (New)'}
         </div>
       </div>
 
