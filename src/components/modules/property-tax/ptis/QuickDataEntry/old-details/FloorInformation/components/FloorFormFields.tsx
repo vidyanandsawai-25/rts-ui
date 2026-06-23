@@ -31,7 +31,7 @@ export function FloorFormFields({
     onReset
 }: FloorFormFieldsProps) {
     return (
-        <div className="grid grid-cols-3 gap-x-4 gap-y-3 p-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-3">
             {/* Floor */}
             <div className="space-y-1.5 relative focus-within:z-60">
                 <Label className="text-xs font-semibold text-gray-700">
@@ -251,7 +251,7 @@ export function FloorFormFields({
                     placeholder="0.00"
                 />
             </div>
-            <div className="space-y-1.5 mt-6 w-full flex justify-end gap-5 items-end">
+            <div className="col-span-1 md:col-span-3 space-y-1.5 mt-6 w-full flex justify-end gap-5 items-end">
                 <FloorFormActions
                     t={t}
                     isEditMode={!!formData.id}

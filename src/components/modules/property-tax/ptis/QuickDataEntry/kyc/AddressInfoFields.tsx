@@ -58,7 +58,7 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
   return (
     <>
       {/* Occupier Name Regional */}
-      <div className="col-span-3 space-y-1.5">
+      <div className="col-span-12 sm:col-span-6 md:col-span-3 space-y-1.5">
         <Label htmlFor="kyc-occupier" className="text-xs font-semibold text-gray-700">
           {t('kyc.occupierNameMarathi')}
         </Label>
@@ -88,7 +88,7 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
       </div>
 
       {/* Occupier Name English */}
-      <div className="col-span-3 space-y-1.5">
+      <div className="col-span-12 sm:col-span-6 md:col-span-3 space-y-1.5">
         <Label htmlFor="kyc-occupier-english" className="text-xs font-semibold text-gray-700">
           {t('kyc.occupierNameEnglish')}
         </Label>
@@ -118,7 +118,7 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
       </div>
 
       {/* Shop Name Regional */}
-      <div className="col-span-3 space-y-1.5">
+      <div className="col-span-12 sm:col-span-6 md:col-span-3 space-y-1.5">
         <Label htmlFor="kyc-shopname" className="text-xs font-semibold text-gray-700">
           {t('kyc.shopNameMarathi')}
         </Label>
@@ -148,7 +148,7 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
       </div>
 
       {/* Shop Name English */}
-      <div className="col-span-3 space-y-1.5">
+      <div className="col-span-12 sm:col-span-6 md:col-span-3 space-y-1.5">
         <Label htmlFor="kyc-shopname-english" className="text-xs font-semibold text-gray-700">
           {t('kyc.shopNameEnglish')}
         </Label>
@@ -178,7 +178,7 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
       </div>
 
       {/* Address Regional */}
-      <div className="col-span-4 space-y-1.5">
+      <div className="col-span-12 sm:col-span-6 md:col-span-4 space-y-1.5">
         <Label htmlFor="kyc-address" className="text-xs font-semibold text-gray-700">
           {t('kyc.addressMarathi')}
         </Label>
@@ -208,7 +208,7 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
       </div>
 
       {/* Address English */}
-      <div className="col-span-4 space-y-1.5">
+      <div className="col-span-12 sm:col-span-6 md:col-span-4 space-y-1.5">
         <Label htmlFor="kyc-address-english" className="text-xs font-semibold text-gray-700">
           {t('kyc.addressEnglish')}
         </Label>
@@ -238,7 +238,7 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
       </div>
 
       {/* Pin Code */}
-      <div className="col-span-2 space-y-1.5">
+      <div className="col-span-12 sm:col-span-6 md:col-span-2 space-y-1.5">
         <Label htmlFor="kyc-pincode" className="text-xs font-bold text-gray-700">
           {t('kyc.pinCode')}
         </Label>
@@ -262,7 +262,7 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
       </div>
 
       {/* Email ID */}
-      <div className="col-span-2 space-y-1.5">
+      <div className="col-span-12 sm:col-span-6 md:col-span-2 space-y-1.5">
         <Label htmlFor="kyc-email" className="text-xs font-semibold text-gray-700">
           {t('kyc.emailId')}
         </Label>

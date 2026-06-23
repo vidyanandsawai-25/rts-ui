@@ -40,7 +40,7 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
   return (
     <>
       {/* Owner Category */}
-      <div className="col-span-2 space-y-1.5 relative focus-within:z-50">
+      <div className="col-span-12 sm:col-span-6 md:col-span-2 space-y-1.5 relative focus-within:z-50">
         <Label htmlFor="kyc-ownertype" className="text-xs font-semibold text-gray-700">
           {t('kyc.ownerType')}
         </Label>
@@ -61,7 +61,7 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
       </div>
 
       {/* Title */}
-      <div className="col-span-2 space-y-1.5 relative focus-within:z-40">
+      <div className="col-span-12 sm:col-span-6 md:col-span-2 space-y-1.5 relative focus-within:z-40">
         <Label htmlFor="kyc-title" className="text-xs font-semibold text-gray-700">
           {t('kyc.titleLabel')}
         </Label>
@@ -79,7 +79,7 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
       </div>
 
       {/* Property Holder Name Regional */}
-      <div className="col-span-4">
+      <div className="col-span-12 sm:col-span-6 md:col-span-4">
         <FormFieldGroup
           type="text"
           id="kyc-ownername"
@@ -113,7 +113,7 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
       </div>
 
       {/* Property Holder Name English */}
-      <div className="col-span-4">
+      <div className="col-span-12 sm:col-span-6 md:col-span-4">
         <FormFieldGroup
           type="text"
           id="kyc-ownername-english"

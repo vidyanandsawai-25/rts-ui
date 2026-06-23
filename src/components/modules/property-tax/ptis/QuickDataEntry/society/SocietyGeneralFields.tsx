@@ -160,7 +160,7 @@ export const SocietyGeneralFields = ({
             </div>
 
             {/* Row 2: Wing, Society Email & Society Address */}
-            <div className="col-span-3 grid grid-cols-3 gap-4">
+            <div className="col-span-1 md:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-1.5 relative focus-within:z-100">
                     <Label htmlFor="society-wing" className="text-xs font-semibold text-gray-900">
                         {t('society.wing')}
