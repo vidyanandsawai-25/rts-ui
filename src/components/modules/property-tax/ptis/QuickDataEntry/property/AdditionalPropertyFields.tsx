@@ -32,7 +32,6 @@ export const AdditionalPropertyFields = ({
     const [surveyNo, setSurveyNo] = useState(propertyData?.surveyNo ?? '');
     const [subZoneNo, setSubZoneNo] = useState(propertyData?.subZoneNo ?? '');
     const [plotArea, setPlotArea] = useState(propertyData?.plotArea?.toString() ?? '');
-
     const [showTaxZoneNoError, setShowTaxZoneNoError] = useState(false);
     const [showSurveyNoError, setShowSurveyNoError] = useState(false);
     const [showSubZoneNoError, setShowSubZoneNoError] = useState(false);
