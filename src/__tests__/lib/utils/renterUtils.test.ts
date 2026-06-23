@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { resolveAgreementBaseMonthlyRent } from '@/lib/utils/renterUtils';
+import { resolveAgreementBaseMonthlyRent } from '@/lib/utils/renter/renterUtils';
 
 describe('resolveAgreementBaseMonthlyRent', () => {
     it('prefers nonCalculateRentMonthly over calculated mast/detail rents', () => {

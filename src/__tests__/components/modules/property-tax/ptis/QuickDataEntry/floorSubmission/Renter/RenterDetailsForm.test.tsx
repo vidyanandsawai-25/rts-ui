@@ -1,7 +1,7 @@
 import { render, screen, cleanup, fireEvent } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { RenterDetailsForm } from '@/components/modules/property-tax/ptis/QuickDataEntry/floorSubmission/Renter/RenterDetailsForm';
-import { useRenterForm } from '@/hooks/ptis/floorSubmission/useRenterForm';
+import { useRenterForm } from '@/hooks/ptis/floorSubmission/renter/useRenterForm';
 
 // Mock next-intl
 vi.mock('next-intl', () => ({
@@ -20,7 +20,7 @@ vi.mock('next/navigation', () => ({
 }));
 
 // Mock the validation utility
-vi.mock('@/lib/utils/renter-validation', () => ({
+vi.mock('@/lib/utils/renter/renter-validation', () => ({
   validateRenterForm: vi.fn(() => []),
   areDatesOverlapping: vi.fn(() => false),
 }));
@@ -37,7 +37,7 @@ vi.mock('sonner', () => ({
 const mockSetFormData = vi.fn();
 const mockHandleSave = vi.fn();
 
-vi.mock('@/hooks/ptis/floorSubmission/useRenterForm', () => ({
+vi.mock('@/hooks/ptis/floorSubmission/renter/useRenterForm', () => ({
   useRenterForm: vi.fn(() => ({
     formData: {
       renterName: 'John Doe',

@@ -5,7 +5,7 @@
 import type { Dispatch, SetStateAction, FC, RefObject } from "react";
 import { ShapeParameters, RoomFormData } from "./common-details.types";
 import type { OffsetData, OffsetAPIResponse, MinusRoomItem } from "./offset-details.types";
-import { RenterDetailItem, RenterMastItem } from "./renter-details.types";
+import { RenterDetailItem, RenterMastItem } from "./renter/renter-details.types";
 import type { DrawerFloorDataRow, DrawerDropdownOption } from "@/hooks/apartmentQc/propertyEditScreenDrawer.types";
 export { type ShapeParameters };
 

@@ -105,7 +105,7 @@ export const extractAgreementData = (text: string) => {
     // Clean text
     const cleanText = text.replace(/\n+/g, " ").replace(/\s+/g, " ").trim();
 
-    // Extract Agreement ID (patterns: AGR-XXX, Agreement No: XXX, Agr. ID: XXX)
+    // Extract Agreement No (patterns: AGR-XXX, Agreement No: XXX, Agr. ID: XXX)
     const agrIdPatterns = [
         /Agreement\s*(?:No|ID|Number)[:\s]+([A-Z0-9-]+)/i,
         /AGR[:\s-]+([A-Z0-9-]+)/i,
