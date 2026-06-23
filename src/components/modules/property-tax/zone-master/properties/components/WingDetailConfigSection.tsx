@@ -1,6 +1,6 @@
 "use client";
 
-import { Input, Select, ValidationMessage, CancelButton } from "@/components/common";
+import { Input, Select, SearchSelect, ValidationMessage, CancelButton } from "@/components/common";
 import { Info, AlertCircle } from "lucide-react";
 import { PartitionFormState, PartitionFormErrors } from "@/types/zone-master/properties/partition-form.types";
 import { Option } from "@/components/common";
@@ -91,14 +91,15 @@ export function WingDetailConfigSection({
       <div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <Select
+            <SearchSelect
               label={t("partitionForm.wing.fromFloor")}
               required
               value={form.fromFloor}
-              onChange={handleFromFloorChange}
+              onChange={(_name, value) => {
+                handleFromFloorChange({} as React.ChangeEvent<HTMLSelectElement>, value);
+              }}
               options={fromFloorOptions}
               placeholder={t("partitionForm.wing.placeholders.fromFloor")}
-              selectSize="md"
             />
             <ValidationMessage
               message={errors.fromFloor}
@@ -107,14 +108,15 @@ export function WingDetailConfigSection({
             />
           </div>
           <div>
-            <Select
+            <SearchSelect
               label={t("partitionForm.wing.toFloor")}
               required
               value={form.toFloor}
-              onChange={handleToFloorChange}
+              onChange={(_name, value) => {
+                handleToFloorChange({} as React.ChangeEvent<HTMLSelectElement>, value);
+              }}
               options={toFloorOptions}
               placeholder={t("partitionForm.wing.placeholders.toFloor")}
-              selectSize="md"
             />
             <ValidationMessage
               message={errors.toFloor}

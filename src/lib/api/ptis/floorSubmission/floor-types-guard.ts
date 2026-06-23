@@ -7,7 +7,7 @@ import {
 } from '@/types/room-details.types';
 import { type OffsetAPIResponse, type OffsetData } from '@/types/offset-details.types';
 import { parseBoolean } from "@/lib/utils/type-guards";
-import { resolveAgreementBaseMonthlyRent } from "@/lib/utils/renterUtils";
+import { resolveAgreementBaseMonthlyRent } from "@/lib/utils/renter/renterUtils";
 
 
 export const mapRoomDataToUi = (room: RoomAPIResponse, index: number): RoomData => {

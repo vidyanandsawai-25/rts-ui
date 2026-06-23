@@ -9,8 +9,8 @@ import { useTranslations } from "next-intl";
 import { RentIncrementCalculator } from "./RentIncrementCalculator";
 import { DurationWiseRentDetails } from "./DurationWiseRentDetails";
 import { CustomDateRangeManager } from "./CustomDateRangeManager";
-import { RenterFormData, RenterFormDataDetails } from "@/types/renter.types";
-import { validateRenterForm } from "@/lib/utils/renter-validation";
+import { RenterFormData, RenterFormDataDetails } from "@/types/renter/renter.types";
+import { validateRenterForm } from "@/lib/utils/renter/renter-validation";
 import { DateUtils } from "@/lib/utils/date-helpers";
 
 const fieldLabelClassName =

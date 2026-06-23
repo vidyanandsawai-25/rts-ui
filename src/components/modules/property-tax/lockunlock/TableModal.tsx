@@ -77,8 +77,8 @@ export function TableModal({
               <div
                 key={screen.id}
                 className={cn(
-                  "flex items-center gap-3 p-3 rounded-lg border hover:bg-slate-50/50 transition-colors",
-                  isChecked ? "border-red-200 bg-red-50/10" : "border-slate-200 bg-white"
+                  "text-slate-500 flex items-center gap-3 p-3 rounded-lg border hover:bg-slate-50/50 transition-colors",
+                  isChecked ? "border-red-200 bg-red-50/10" : "border-slate-200/90 bg-white"
                 )}
               >
                 <div className="flex-1">

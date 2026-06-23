@@ -756,7 +756,7 @@
             "fixedAmount": "निश्चित रक्कम",
             "document": "कागदपत्र",
             "ocrError": "दस्तऐवज प्रक्रिया करण्यात अयशस्वी. कृपया पुन्हा प्रयत्न करा.",
-            "agreementId": "करार आयडी",
+            "agreementId": "करार क्रमांक",
             "agreementDate": "करार तारीख",
             "renterName": "भाडेकरूचे नाव",
             "rentAmountLabel": "भाडे रक्कम (मासिक)",

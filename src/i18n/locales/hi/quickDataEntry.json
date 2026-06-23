@@ -756,7 +756,7 @@
             "fixedAmount": "निश्चित राशि",
             "document": "दस्तावेज़",
             "ocrError": "दस्तावेज़ को संसाधित करने में विफल। कृपया पुनः प्रयास करें।",
-            "agreementId": "समझौता आईडी",
+            "agreementId": "समझौता संख्या",
             "agreementDate": "समझौता दिनांक",
             "renterName": "किरायेदार का नाम",
             "rentAmountLabel": "किराया राशि (मासिक)",
