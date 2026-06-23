@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useTranslations } from "next-intl";
-import { Building2, Layers, Home, Grid3x3, Loader2, Info, Zap, X } from "lucide-react";
+import { Building2, Layers, Home, Grid3x3, Loader2, Info, Zap, X, ArrowUp, Hash } from "lucide-react";
 import { toast } from "sonner";
 import { Modal } from "@/components/common/Modal";
 import { BuildingStructureItem } from "@/types/zone-master/properties/building-structure.types";
@@ -449,7 +449,7 @@ export function BuildingPreviewModal({
                                 }`}
                             >
                               <span>
-                                {isGround ? `${t("partitionForm.wing.preview.groundFloorLabel")} (${t("partitionForm.wing.preview.floorLabel")}${floor.floorNo})` : `${t("partitionForm.wing.preview.floorLabel")}${floor.floorNo}`}
+                                {isGround ? `${t("partitionForm.wing.preview.floorLabel")}${floor.floorNo}` : `${t("partitionForm.wing.preview.floorLabel")}${floor.floorNo}`}
                               </span>
                               {isTop && (
                                 <span className="text-[8px] bg-amber-200 text-amber-800 rounded px-1 py-px">
@@ -541,37 +541,52 @@ export function BuildingPreviewModal({
                 </span>
               </div>
               <div className="space-y-2">
-                <div className="bg-white rounded-md border border-slate-200 px-2.5 py-2">
-                  <span className="block text-[10px] font-semibold text-slate-500 leading-none">
-                    {t("partitionForm.wing.preview.flatRange")}
-                  </span>
-                  <span className="text-[13px] font-semibold text-slate-800 leading-tight mt-0.5 block">
-                    {organizedData.flatStart} – {organizedData.flatEnd}
-                  </span>
+                <div className="bg-white rounded-md border border-slate-200 px-2.5 py-2 flex items-center gap-2.5">
+                  <Grid3x3 className="w-4 h-4 text-blue-600 shrink-0" />
+                  <div>
+                    <span className="block text-[10px] font-semibold text-slate-500 leading-none">
+                      {t("partitionForm.wing.preview.flatRange")}
+                    </span>
+                    <span className="text-[13px] font-semibold text-slate-800 leading-tight mt-0.5 block">
+                      {organizedData.flatStart} – {organizedData.flatEnd}
+                    </span>
+                  </div>
                 </div>
-                <div className="bg-white rounded-md border border-slate-200 px-2.5 py-2">
-                  <span className="block text-[10px] font-semibold text-slate-500 leading-none">
-                    {t("partitionForm.wing.preview.increment")}
-                  </span>
-                  <span className="text-[13px] font-semibold text-slate-800 leading-tight mt-0.5 block">
-                    +{organizedData.incrementedBy}
-                  </span>
+
+                <div className="bg-white rounded-md border border-slate-200 px-2.5 py-2 flex items-center gap-2.5">
+                  <ArrowUp className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <div>
+                    <span className="block text-[10px] font-semibold text-slate-500 leading-none">
+                      {t("partitionForm.wing.preview.increment")}
+                    </span>
+                    <span className="text-[13px] font-semibold text-slate-800 leading-tight mt-0.5 block">
+                      +{organizedData.incrementedBy}
+                    </span>
+                  </div>
                 </div>
-                <div className="bg-white rounded-md border border-slate-200 px-2.5 py-2">
-                  <span className="block text-[10px] font-semibold text-slate-500 leading-none">
-                    {t("partitionForm.wing.preview.prefix")}
-                  </span>
-                  <span className="text-[13px] font-semibold text-slate-800 leading-tight mt-0.5 block">
-                    {organizedData.prefix || "—"}
-                  </span>
+
+                <div className="bg-white rounded-md border border-slate-200 px-2.5 py-2 flex items-center gap-2.5">
+                  <Hash className="w-4 h-4 text-purple-600 shrink-0" />
+                  <div>
+                    <span className="block text-[10px] font-semibold text-slate-500 leading-none">
+                      {t("partitionForm.wing.preview.prefix")}
+                    </span>
+                    <span className="text-[13px] font-semibold text-slate-800 leading-tight mt-0.5 block">
+                      {organizedData.prefix || "—"}
+                    </span>
+                  </div>
                 </div>
-                <div className="bg-white rounded-md border border-slate-200 px-2.5 py-2">
-                  <span className="block text-[10px] font-semibold text-slate-500 leading-none">
-                    {t("partitionForm.wing.preview.type")}
-                  </span>
-                  <span className="text-[13px] font-semibold text-slate-800 leading-tight mt-0.5 block uppercase">
-                    {generationTypeLabels[organizedData.generationType] || organizedData.generationType}
-                  </span>
+
+                <div className="bg-white rounded-md border border-slate-200 px-2.5 py-2 flex items-center gap-2.5">
+                  <Layers className="w-4 h-4 text-amber-600 shrink-0" />
+                  <div>
+                    <span className="block text-[10px] font-semibold text-slate-500 leading-none">
+                      {t("partitionForm.wing.preview.type")}
+                    </span>
+                    <span className="text-[13px] font-semibold text-slate-800 leading-tight mt-0.5 block uppercase">
+                      {generationTypeLabels[organizedData.generationType] || organizedData.generationType}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>

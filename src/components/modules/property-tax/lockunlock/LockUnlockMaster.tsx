@@ -2,7 +2,7 @@
 
 import React from "react";
 import { ShieldAlert } from "lucide-react";
-import { LockButton, UnlockButton, SearchButton, Card } from "@/components/common";
+import { LockButton, UnlockButton, SearchButton, Card, PageContainer } from "@/components/common";
 import TableHeader from "@/components/common/TableHeader";
 import { MasterTable } from "@/components/common/MasterTable";
 import { SearchInput } from "@/components/common/SearchInput";
@@ -40,6 +40,7 @@ export default function LockUnlockMaster({
     showResults,
     properties,
     selectedPropertyIds,
+    excludedPropertyIds,
     isAllPropertiesSelected,
     editModal,
     setEditModal,
@@ -73,16 +74,20 @@ export default function LockUnlockMaster({
     value: String(w.id),
   }));
 
-  return (
+  const selectedCount = isAllPropertiesSelected
+    ? pagination.totalCount - excludedPropertyIds.length
+    : selectedPropertyIds.length;
 
-    <div className="space-y-2">
+  return (
+  <PageContainer>
+    <div className="space-y-2 flex flex-col gap-4.5 w-full select-none">
       <TableHeader
         title={t("title")}
         subtitle={t("subtitle")}
         icon={ShieldAlert}
       />
 
-      <div className="grid grid-cols-12 gap-2 items-stretch">
+      <div className="flex flex-col xl:grid xl:grid-cols-12 gap-2 items-stretch">
         {/* Left Panel */}
         <div className="col-span-5 flex flex-col gap-2 h-full">
           <Card className="rounded-xl shadow-lg border border-[#1A86E8]/20 overflow-visible h-full flex flex-col gap-4 p-4 bg-white">
@@ -109,7 +114,7 @@ export default function LockUnlockMaster({
         <div className="col-span-7 flex h-full">
           <div className="flex-1">
             {showResults ? (
-              <div className="h-full animate-in fade-in slide-in-bottom-up-2 duration-200">
+              <div className="h-full animate-in fade-in  duration-200">
                 <MasterTable<LockUnlockPropertyItem>
                   columns={columns}
                   data={properties}
@@ -127,14 +132,14 @@ export default function LockUnlockMaster({
                   }}
                   //headerTitle={t("resultsTable.propertyMasterTitle")}
                   headerExtra={
-                    <div className="flex items-center gap-3 w-full justify-end">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 w-full justify-start">
                       <SearchInput
                         value={propertySearchTerm}
                         onChange={handlePropertySearch}
                         placeholder={t(
                           "resultsTable.searchPropertyPlaceholder"
                         )}
-                        className="!mb-0 w-118"
+                        className="!mb-0 w-80"
                       />
 
                       <SearchButton
@@ -164,6 +169,9 @@ export default function LockUnlockMaster({
                         }
                         onClick={() => handleBulkAction("unlock")}
                       />
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 justify-end">
+                       {t("screenSelectionCard.selectedCount", { count: selectedCount})}
+                      </span>
                     </div>
                   }
                 />
@@ -189,6 +197,6 @@ export default function LockUnlockMaster({
         isPending={isPending}
       />
     </div>
-
+  </PageContainer>
   );
 }
