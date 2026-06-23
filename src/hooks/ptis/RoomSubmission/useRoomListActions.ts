@@ -233,7 +233,11 @@ export const useRoomListActions = (state: RoomSubmissionState, props: RoomWiseSu
 
         if (props.onUpdate) {
           const sumTotal = updated.reduce((sum, r) => sum + ((r.total || 0) * (parseInt(String(r.roomCount || 1)) || 1)), 0);
-          const sumBuiltUp = updated.reduce((sum, r) => sum + ((r.builtUpArea || 0) * (parseInt(String(r.roomCount || 1)) || 1)), 0);
+          const sumBuiltUp = updated.reduce((sum, r) => {
+            const carpet = parseFloat(String(r.carpetArea || r.total || 0)) || 0;
+            const builtUp = Number((carpet * 1.20).toFixed(2));
+            return sum + (builtUp * (parseInt(String(r.roomCount || 1)) || 1));
+          }, 0);
           props.onUpdate({
             floorNumber: props.floorNumber || "0",
             rooms: updated,
