@@ -37,8 +37,8 @@ export function useChangeDetectionUpload({
     const displayOrder = type === 'before' ? 1 : 2;
     const idx = activeCategory.images.findIndex(img => img.displayOrder === displayOrder);
     const existingImg = idx !== -1 ? activeCategory.images[idx] : null;
-    const isCustom = existingImg && existingImg.propertyPhotoId !== 9998 && existingImg.propertyPhotoId !== 9999;
-    const name = type === 'before' ? 'Before (Old) Image' : 'After (New) Image';
+    const isCustom = !!existingImg?.hasPhoto;
+    const name = type === 'before' ? 'OLD' : 'NEW';
 
     setIsUploading(true);
     try {
@@ -87,7 +87,7 @@ export function useChangeDetectionUpload({
     const idx = activeCategory.images.findIndex(img => img.displayOrder === displayOrder);
     if (idx === -1) return;
     const img = activeCategory.images[idx];
-    if (img.propertyPhotoId === 9998 || img.propertyPhotoId === 9999) return;
+    if (!img.hasPhoto) return;
 
     confirm({
       title: t('media.deleteImageTitle') || 'Delete Photo',
@@ -99,12 +99,12 @@ export function useChangeDetectionUpload({
           if (res.success) {
             toast.success(t('media.photoDeletedSuccess') || 'Photo deleted successfully');
             const defaultImg: AdditionalImage = {
-              src: type === 'before' ? '/images/thane-earth-2018.jpg' : '/images/thane-earth-2026.jpg',
-              fullSrc: type === 'before' ? '/images/thane-earth-2018.jpg' : '/images/thane-earth-2026.jpg',
-              alt: type === 'before' ? '2018 Satellite View' : '2026 Satellite View',
-              title: type === 'before' ? '2018 Satellite View' : '2026 Satellite View',
+              src: '',
+              fullSrc: '',
+              alt: type === 'before' ? 'Before (Old)' : 'After (New)',
+              title: type === 'before' ? 'Before (Old)' : 'After (New)',
               photoTypeId: activeCategory.photoTypeId, photoTypeCode: 'CHANGE_DETECTION',
-              propertyPhotoId: type === 'before' ? 9998 : 9999, hasPhoto: true, displayOrder,
+              propertyPhotoId: type === 'before' ? 9998 : 9999, hasPhoto: false, displayOrder,
             };
             onImagesChange(activeCategory.images.map((item, i) => i === idx ? defaultImg : item));
           } else {

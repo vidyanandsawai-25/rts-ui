@@ -38,6 +38,7 @@ export function getLocalizedCategoryName(code: string, fallbackName: string, t: 
     'SIGNATURE': 'media.ownerSignaturePhoto',
     'OTHER': 'media.otherPhoto',
     'OTHER_PHOTO': 'media.otherPhoto',
+    'CHANGE_DETECTION': 'media.changeDetection',
   };
 
   const key = mapping[codeUpper];
@@ -97,6 +98,7 @@ export function getEnglishCategoryName(code: string, fallbackName: string): stri
     'SIGNATURE': 'Owner Signature Photo',
     'OTHER': 'Other Photo',
     'OTHER_PHOTO': 'Other Photo',
+    'CHANGE_DETECTION': 'Change Detection',
   };
   return mapping[codeUpper] || fallbackName;
 }

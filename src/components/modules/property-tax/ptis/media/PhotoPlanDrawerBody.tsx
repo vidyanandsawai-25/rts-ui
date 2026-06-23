@@ -154,6 +154,7 @@ export function PhotoPlanDrawerBody({
         onCloseNaming={() => setIsNamingOpen(false)}
         activeCategoryName={activeCategory?.photoTypeName || ''}
         activeCategoryTypeId={activeCategory?.photoTypeId || 0}
+        activeCategoryTypeCode={activeCategory?.photoTypeCode || ''}
         activeCategoryImagesLength={activeCategory?.images?.length || 0}
         activeCategoryImagesMaxOrder={imagesMaxOrder}
         isReplacement={isReplacement}

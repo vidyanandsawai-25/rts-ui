@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
 import { useTranslations } from 'next-intl';
+import { ImageWithFallback } from './ImageWithFallback';
 
 interface ChangeDetectionCardProps {
   beforeImageSrc?: string;
@@ -15,10 +15,10 @@ interface ChangeDetectionCardProps {
 }
 
 export function ChangeDetectionCard({
-  beforeImageSrc = '/images/thane-earth-2018.jpg',
-  afterImageSrc = '/images/thane-earth-2026.jpg',
-  beforeLabel = '2018',
-  afterLabel = '2026',
+  beforeImageSrc = '',
+  afterImageSrc = '',
+  beforeLabel = 'Before (Old)',
+  afterLabel = 'After (New)',
   onClick,
   onMouseEnter,
   onMouseLeave,
@@ -41,7 +41,7 @@ export function ChangeDetectionCard({
       <div className="grid grid-cols-2 h-full w-full relative">
         {/* Left Side: Before */}
         <div className="relative h-full w-full overflow-hidden group/before border-r border-slate-200">
-          <Image
+          <ImageWithFallback
             src={beforeImageSrc}
             alt={`${beforeLabel} Satellite View`}
             fill
@@ -49,14 +49,14 @@ export function ChangeDetectionCard({
             className="object-cover transition-transform duration-500 group-hover/before:scale-110"
           />
           {/* Year Badge */}
-          <div className="absolute top-2 left-2 z-10 bg-black/75 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm backdrop-blur-[1px]">
+          <div className="absolute top-2 left-2 z-10 bg-black/75 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm backdrop-blur-[2px]">
             {beforeLabel}
           </div>
         </div>
 
         {/* Right Side: After */}
         <div className="relative h-full w-full overflow-hidden group/after">
-          <Image
+          <ImageWithFallback
             src={afterImageSrc}
             alt={`${afterLabel} Satellite View`}
             fill

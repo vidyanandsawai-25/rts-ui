@@ -43,7 +43,7 @@ export function usePropertyMedia({
   const handleCategoriesChange = useCallback((newCats: PhotoCategory[]) => {
     const updated: PropertyPhotoDto[] = [];
     newCats.forEach(c => c.images.forEach(img => {
-      if (img.propertyPhotoId) {
+      if (img.propertyPhotoId && img.hasPhoto) {
         updated.push({
           propertyPhotoId: img.propertyPhotoId,
           propertyId: propertyId || 0,
@@ -90,7 +90,7 @@ export function usePropertyMedia({
     const all = categories.flatMap((c) => c.images);
     return all.filter((img) => {
       const code = img.photoTypeCode?.toUpperCase() || '';
-      if (code === 'FLOOR' || code === 'GIS') return false;
+      if (code === 'FLOOR' || code === 'GIS' || code === 'CHANGE_DETECTION') return false;
       if (propertyPhoto && img.propertyPhotoId === propertyPhoto.propertyPhotoId) return false;
       if (photoPlanPhoto && img.propertyPhotoId === photoPlanPhoto.propertyPhotoId) return false;
       return true;
