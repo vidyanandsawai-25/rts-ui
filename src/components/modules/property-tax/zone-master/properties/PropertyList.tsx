@@ -5,7 +5,7 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Building2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { MasterTable } from "@/components/common/MasterTable";
-import { SearchInput, StatusBadge, AddButton, Select, Option, Label } from "@/components/common";
+import { SearchInput, StatusBadge, AddButton, SearchSelect, Option, Label } from '@/components/common';
 import { ZonePropertyItem } from "@/types/zone-master/properties/zoneProperty.types";
 import { WardItem } from "@/types/wardMaster.types";
 import { usePropertyListHandlers } from "@/hooks/zoneMaster/usePropertyListHandlers";
@@ -138,7 +138,7 @@ export default function PropertyList({
                     {selectedWardId && (
                         <StatusBadge
                             label={wardOptions.find(w => w.value === String(selectedWardId))?.label || `${t("propertyList.ward")} ${selectedWardId}`}
-                            variant="info"
+                            variant="pending"
                         />
                     )}
                 </div>
@@ -146,14 +146,13 @@ export default function PropertyList({
                 {/* Ward Dropdown and Search Row */}
                 <div className="grid grid-cols-2 gap-4">
                     <div>
-                        <Select
+                        <SearchSelect
                             label={t("propertyList.selectWard")}
                             options={wardOptions}
                             value={selectedWardId ? String(selectedWardId) : ""}
-                            onChange={(_, value) => handleWardChange(value)}
+                            onChange={(_name, value) => handleWardChange(value)}
                             placeholder={t("propertyList.selectWardPlaceholder")}
                             disabled={wards.length === 0}
-                            selectSize="md"
                         />
                     </div>
                     <div>
